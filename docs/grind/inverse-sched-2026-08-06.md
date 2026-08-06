@@ -143,12 +143,91 @@ because Phase 4 was scoped to new files plus the policy layer.
 
 ---
 
+---
+
+# Phase 5 addendum (2026-08-06) — goalmap alignment fix + func_80072CD4 resolved
+
+## The `goalmap.align` fix
+
+`align()`'s second pass pairs the leftover deletes against the leftover
+inserts; those pairs ARE the reordering signal, and a mis-pair is worse than no
+pair, because it yields a goal that is not a topological order of the block's
+dependences — a schedule the compiler could not have produced.
+
+**The defect was the greedy ORDER, not the matching rule.** The pass walked
+`dels` ascending and gave each one its nearest free insert, so with duplicate
+instruction text an early delete took a far slot that a later delete needed.
+Measured on func_80072CD4: `h36 sb $2,12($17)` was paired to `t55`, 19
+positions away, while `h39 li $2,252` got no target slot at all.
+
+Two changes, both conservative:
+
+- **Global assignment order.** Candidate pairs are now scored `(exact-text
+  before skeleton, then distance)` and assigned cheapest-first across the whole
+  leftover set, instead of per-delete nearest.
+- **A distance bound** (`MAX_MOVE = 24`). A scheduling move is a within-block
+  displacement; a pairing spanning far more than a block is duplicate text.
+  Beyond the bound the instruction is left unmapped, and the caller's
+  interpolation states the weaker, honest claim.
+
+**Measured, corpus-wide** (702 functions / 3650 blocks across text1a, text1b,
+main), old pairing vs new:
+
+| | GOAL-DIFFERS blocks | topo violations |
+|---|---|---|
+| old | 52 | 126 |
+| new | 52 | **97** |
+
+Same set of differing blocks (the fix invents no differences and loses none),
+**23% fewer violations**. Per-block: **10 blocks better, 4 blocks worse by +1
+each** — so this is a net improvement, not a strict dominance, and that is
+stated rather than smoothed over. The four regressions are in two functions
+that improve more elsewhere (`func_80048530` block 0: 3→1; `exec_game` block 2:
+1→0). `gnd_init_80041688` block 18 reproduces its Phase 4 goal **identically**.
+
+Honest note on the bound: the sweep below shows `MAX_MOVE` made **no
+difference** on the measured case — violations were 6 at every window from 30
+down to 6. The global-ordering change is what produced the improvement; the
+bound is a guard that did not bind here.
+
+## func_80072CD4 — resolved verdict: **NOT A SCHEDULING RESIDUAL**
+
+The fix improved both blocks (block 4: 16→4 differing slots, 5→4 violations;
+block 5 pass 1: 3→**0** violations, i.e. a now-VALID goal). Searching the
+now-valid block 5 returns a **NEGATIVE**: no perturbation of dependence edges,
+LUID order or instruction costs reaches target's order at depth 2.
+
+Reading the two streams directly explains why, and it is not an alignment
+problem at all:
+
+```
+ours  h35..h40          target t35..t40
+addiu $2,252            addiu $2,70      <- a constant ours doesn't have here
+sb $2,12($17)           sb $3,4($17)
+sb $3,14($17)           sb $3,12($17)    <- offset 12 from $3, not $2
+sb $2,20($17)           sb $2,14($17)    <- offset 14 from $2, not $3
+addiu $2,252   <- AGAIN addiu $2,252
+sb $2,4($17)            sb $2,20($17)
+```
+
+Target holds 252 in `$3` (materialised once, earlier — where our build's `$3`
+holds 70) and stores offsets 4 and 12 from it. Our build materialises 252
+**twice** into `$2` and swaps the `$2`/`$3` roles. The instruction MULTISET
+differs, so no dependence-graph perturbation can produce target's order: the
+insns themselves are not the same insns.
+
+That matches the park reason ("store-scheduling **duplication**") — the
+duplication is the double constant materialisation. **This is a
+constant-CSE + register-allocation residual wearing scheduling clothes.** The
+productive next step is the RA/CSE side, not the scheduler.
+
 ## Verdicts
 
 | function | pass/block | verdict |
 |---|---|---|
 | `gnd_init_80041688` | 1 / 18 | **LEVER** — 4 single-atom vectors; no statement-reorder solution exists; routes to `walking-pointer-serializes-parallel-loads` |
-| `func_80072CD4` | 2 / 4 and 2 / 5 | **GOAL NOT DERIVABLE** — goalmap topo check rejects both goals; search correctly refused |
+| `func_80072CD4` | 1 / 5 | **UNREACHABLE, diagnosed** — goal now valid after the alignment fix; search negative because the instruction multiset differs (252 materialised twice vs once, `$2`/`$3` roles swapped). Not a scheduling residual. |
+| `func_80072CD4` | 2 / 4, 2 / 5 | **GOAL STILL INVALID** — fewer violations after the fix but not zero, same structural cause |
 
 ## Reproduce
 

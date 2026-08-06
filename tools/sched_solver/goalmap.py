@@ -25,6 +25,14 @@ INSN_OPEN = re.compile(
     r"^(\s*)\((insn|jump_insn|call_insn|code_label|barrier|note)"
     r"(?:[:/][^\s(]*)?\s+(\d+)")
 
+# Maximum displacement accepted when pairing a leftover delete against a
+# leftover insert (see align()).  A scheduling difference moves an instruction
+# WITHIN its basic block, so the plausible range is a block length; the largest
+# blocks in this corpus are ~20 insns and reorg can displace a delay-slot insn
+# a little further.  Pairings beyond this are duplicate instruction text in a
+# different block, not a move.
+MAX_MOVE = 24
+
 SKIP_DIR = (".set", ".frame", ".mask", ".fmask", ".ent", ".end", ".align",
             ".loc", ".size", ".type", ".globl", ".text", ".rdata", ".data",
             ".word", ".byte", ".half", ".space", ".ascii", ".sdata",
@@ -148,15 +156,48 @@ def align(a, b, label="", verbose=False):
         else:
             inss += list(range(j1, j2))
 
+    # Pair the leftover deletes against the leftover inserts.  These pairs are
+    # the reordering signal, and getting them wrong is worse than not pairing
+    # at all: a mis-pair produces a goal order that is not a topological order
+    # of the block's dependences, i.e. a schedule the compiler could not have
+    # produced.
+    #
+    # The original pass walked `dels` in ascending order and gave each one its
+    # nearest free insert.  That is greedy in the WRONG order: with duplicate
+    # instruction text (the same `li $2,252` / `sb $2,12($17)` appearing in
+    # several blocks) an early delete takes a far-away slot that a later delete
+    # needed, and the later one is then left unmapped.  MEASURED on
+    # func_80072CD4: h36 `sb $2,12($17)` was paired to t55, 19 positions away,
+    # while h39 `li $2,252` got NO target slot — and the resulting goals for
+    # blocks 4 and 5 failed the topological check with 5 and 3 violations.
+    #
+    # Two changes, both conservative:
+    #   * assign GLOBALLY in order of increasing cost rather than per-delete —
+    #     exact-text matches before skeleton matches, then nearest first, so the
+    #     cheapest pairs are made before any far-fetched one is considered;
+    #   * bound the distance (MAX_MOVE).  A scheduling move is a within-block
+    #     displacement; a pairing that spans far more than a block is duplicate
+    #     text, not a move.  Beyond the bound, leave the instruction unmapped
+    #     and let the caller's interpolation state the weaker, honest claim
+    #     ("unchanged relative to its neighbours") instead of a fiction.
     free = set(inss)
+    cands = []
     for i in dels:
-        cand = [j for j in free if ka[i] == kb[j]] or \
-               [j for j in free if skel(a[i]) == skel(b[j])]
-        if cand:
-            j = min(cand, key=lambda x: abs(x - i))
-            amap[i] = j
-            free.discard(j)
-            stats["moved"] += 1
+        for j in free:
+            if abs(i - j) > MAX_MOVE:
+                continue
+            if ka[i] == kb[j]:
+                cands.append((0, abs(i - j), i, j))
+            elif skel(a[i]) == skel(b[j]):
+                cands.append((1, abs(i - j), i, j))
+    taken_i = set()
+    for _tier, _d, i, j in sorted(cands):
+        if i in taken_i or j not in free:
+            continue
+        amap[i] = j
+        free.discard(j)
+        taken_i.add(i)
+        stats["moved"] += 1
     stats["delete"] = len(dels) - stats["moved"]
     stats["insert"] = len(free)
     if verbose:

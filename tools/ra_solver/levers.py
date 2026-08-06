@@ -46,6 +46,10 @@ EXTRA_QTY = "extra_qty"            # one more competing quantity in the block
 CLASS_CHANGE = "class_change"      # preferred register class differs
 ALLOC_ORDER = "alloc_order"        # allocation order forced, no input explains it
 
+# --- reload (reload1.c spill loop / retry_global_alloc) classes ------------
+RELOAD_FORBIDDEN = "reload_forbidden"   # the `losers` / forbidden_regs set
+RELOAD_PRESSURE = "reload_pressure"     # whether the pseudo is spilled at all
+
 # --- scheduler (sched.c list scheduler) classes ----------------------------
 DEP_ADD_TRUE = "dep_add_true"      # a true/data LOG_LINK edge added
 DEP_ADD_ANTI = "dep_add_anti"      # an anti/output edge added
@@ -178,6 +182,27 @@ LEVERS = {
          "register class is decided by the RTL idiom, not by spelling: MD_REGS "
          "($hi/$lo) come from mult/div and GCC's divide-by-constant `mulhi`.  "
          "Change the arithmetic the function performs, or accept it."),
+    ],
+    # ---- reload ---------------------------------------------------------
+    RELOAD_FORBIDDEN: [
+        ("(register pressure at the reload point)", PLAIN,
+         "forbidden_regs is reload's `losers` argument — the registers reload "
+         "spilled to satisfy this insn's max_needs.  Which registers land there "
+         "follows from how many values are simultaneously live AT THAT INSN, so "
+         "the lever is pressure: fewer live values across the point (split a "
+         "long-lived variable, sink a computation past it, or reduce the "
+         "operand count of the insn that needed the reload)."),
+        ("(operand shape)", PLAIN,
+         "max_needs is decided by find_reloads from the INSN's operands — a "
+         "memory operand needing an address register, a constant needing "
+         "materialisation.  Changing the expression changes the need."),
+    ],
+    RELOAD_PRESSURE: [
+        ("(avoid the spill entirely)", PLAIN,
+         "the cleanest answer to a retry is usually not to steer it but to "
+         "prevent it: if the pseudo is not evicted, the initial global_alloc "
+         "assignment stands and the pre-reload model (simulate.py) governs.  "
+         "Reduce live values across the spill point."),
     ],
     # ---- scheduler ------------------------------------------------------
     # NOTE the asymmetry with the RA classes.  A dependence edge is the one
