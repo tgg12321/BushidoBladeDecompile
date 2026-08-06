@@ -262,10 +262,12 @@ LEVERS = {
          "recomputing or reading the source twice."),
         ("walking-pointer-serializes-parallel-loads", PLAIN,
          "walk the array with post-increment pointers (`*ap++`); the pointer "
-         "dependence serialises otherwise-parallel loads, which is the "
-         "legitimate way to stop the scheduler stealing later loads into delay "
-         "slots.  Explicitly the SANCTIONED alternative to the memory-clobber "
-         "barrier and the per-load register pin."),
+         "dependence serialises otherwise-parallel loads.  PRECONDITION "
+         "(measured 2026-08-06, do not skip): the rule needs intervening "
+         "memory WRITES between the loads — that is where its dependence "
+         "comes from.  Read-only loads of one object provide NO edge, so this "
+         "lever cannot apply to them.  Check for the stores before proposing "
+         "it."),
         ("store-before-jal", PLAIN,
          "ordering recipe for a value saved across a call site."),
         ("defer-store-past-later-compute-into-jal-delay", PLAIN,
@@ -395,6 +397,20 @@ MEASURED_NEGATIVES = {
         "Per walking-pointer-serializes-parallel-loads: memory-clobber barriers "
         "and per-load register pins were the ORIGINAL (rejected) fix for this "
         "shape; the pointer-walk restructure is what replaced them.",
+        "MEASURED 2026-08-06 (gnd_init_80041688, 12-spelling sweep): the "
+        "walking-pointer lever does NOT apply to read-only parallel loads. Its "
+        "two confirmed cases serialise via intervening memory WRITES; three "
+        "byte reads feeding one expression have no store between them, reads do "
+        "not anti-depend on reads, and GCC folds constant byte offsets into the "
+        "lbu displacement so no pointer register even survives to carry a "
+        "dependence. All 12 spellings emitted byte-identical code.",
+        "Same case: an add_dep vector is NOT automatically a LUID/statement-"
+        "order question. Bottom-up readiness can pin the outcome — a load whose "
+        "SOLE consumer is the final `or` becomes ready earlier than its "
+        "siblings and is therefore picked early and EMITTED LAST, regardless of "
+        "where the statement sits in the source. Placing it first and last in "
+        "RTL both emitted it last. Only a genuine dependence edge delaying its "
+        "readiness changes that.",
     ],
     INSN_COST: [
         "INSN_COST / unit atoms are only spellable when target's instruction "

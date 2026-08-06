@@ -33,12 +33,44 @@ new:
 only cheats are RULES already has an honest scheduler model on main. Only
 cheat-asm in the C source (register pins, `__asm__` barriers) contaminates it;
 for those, build from the stripped source first (`mkasm_honest.sh`).
-`gnd_init_80041688` is rules-only (3 regfix), so `text1a.sched.json` is honest
-as extracted.
+~~`gnd_init_80041688` is rules-only (3 regfix), so `text1a.sched.json` is honest
+as extracted.~~
+
+> **CORRECTED 2026-08-06.** That premise was FALSE: `gnd_init_80041688` is
+> *not* rules-only. Its body carries an undocumented `volatile s32 sp10[8];` +
+> `(void)sp10;` frame cheat (commit `fd1497f7`). The conclusion still holds —
+> the block-18 model IS honest, measured three ways below — but it held by
+> luck, not by the reasoning given here. The general rule stands for
+> *genuinely* rules-only functions; the error was asserting this function
+> qualified without checking. **Verify the cheat inventory before invoking
+> this note** (`engine/volatile_cheats.py`, or diff the source against
+> `engine.inlineasm.write_stripped` output). A park reason is not a cheat
+> inventory — this one omitted the frame cheat for 15 sessions.
 
 ---
 
-## Case 1 — `gnd_init_80041688` (src/text1a.c), pass 1 block 18: **LEVER**
+> ## ⚠ CORRECTION 2026-08-06 (commit `fd1497f7`) — READ BEFORE CASE 1
+>
+> **The Case-1 LEVER verdict below is KILLED.** The mapped lever
+> (`walking-pointer-serializes-parallel-loads`) does not apply to this block,
+> and the function's recorded debt was incomplete. Case 1 is retained
+> unedited as the record of what the tool produced; this box states what is
+> now known. Details in the Phase-4 correction section at the end of this
+> document.
+>
+> - **The lever is dead.** A 12-spelling sweep (including the rule's literal
+>   post-increment walk) emits byte-identical code. The mechanism requires
+>   intervening memory WRITES; three read-only loads provide no edge.
+> - **The mechanism is bottom-up readiness, not LUID.** The +26 load's sole
+>   consumer is the final `or`, so it is ready earliest, picked early, and
+>   emitted last — placing it first *or* last in RTL both emit it last.
+> - **The model itself was NOT contaminated** by the undocumented cheat —
+>   measured three ways, see the correction section.
+> - **The function's real debt is larger** than the 3 regfix rules recorded:
+>   a `volatile s32 sp10[8]` frame reservation is load-bearing and belongs to
+>   the phantom-slot surface.
+
+## Case 1 — `gnd_init_80041688` (src/text1a.c), pass 1 block 18: **LEVER** *(KILLED — see correction box above)*
 
 Park reason: "sched1 lbu emit-order (3 regfix)".
 
@@ -225,9 +257,113 @@ productive next step is the RA/CSE side, not the scheduler.
 
 | function | pass/block | verdict |
 |---|---|---|
-| `gnd_init_80041688` | 1 / 18 | **LEVER** — 4 single-atom vectors; no statement-reorder solution exists; routes to `walking-pointer-serializes-parallel-loads` |
+| `gnd_init_80041688` | 1 / 18 | ~~LEVER~~ → **KILLED** (`fd1497f7`): 4 vectors stand, but the mapped lever needs intervening memory writes and cannot apply to three read-only loads; bottom-up readiness (sole consumer of the final `or`) decides, not LUID. Model verified UNcontaminated. Debt is 3 regfix **+ an undocumented frame cheat**. |
 | `func_80072CD4` | 1 / 5 | **UNREACHABLE, diagnosed** — goal now valid after the alignment fix; search negative because the instruction multiset differs (252 materialised twice vs once, `$2`/`$3` roles swapped). Not a scheduling residual. |
 | `func_80072CD4` | 2 / 4, 2 / 5 | **GOAL STILL INVALID** — fewer violations after the fix but not zero, same structural cause |
+
+---
+
+# Phase-4 correction (2026-08-06) — Case 1 re-examined after `fd1497f7`
+
+## Item 1 — was the Phase 4 model contaminated? **NO, measured three ways**
+
+The concern was legitimate: Phase 4 asserted an honest model on the strength of
+"rules-only", and that premise was false — the body carries a `volatile s32
+sp10[8]; (void)sp10;` frame cheat that `engine/volatile_cheats.py` flags and
+`write_stripped` strips. So the model had to be re-derived rather than trusted.
+
+The sched model for text1a was re-extracted from three source states and block
+18 compared field by field (`n_insns`, `ready0`, node attributes incl. LUID /
+unit / icost / priority / ref-count, the full `deps` graph, the pick sequence
+and the per-pick clocks):
+
+| source state | block-18 model |
+|---|---|
+| on-main `src/text1a.c` (full cheat present) — the Phase 4 model | reference |
+| `write_stripped` output (`(void)sp10;` discard removed) | **IDENTICAL** |
+| `sp10` declaration removed as well (no trace of the cheat) | **IDENTICAL** |
+
+Every field matches: `ready0 [200]`, picks `[200,198,195,191,194,193,187,183]`,
+clocks `[1..8]`, 5 dependence entries, 8 nodes. Re-running the inverse search
+against the fully-stripped model returns **the same 4 vectors in the same
+order**. Both re-extractions reported `parity=True` (instrumented cc1 agrees
+with the build compiler).
+
+**Conclusion: the Phase 4 block-18 derivation was NOT contaminated.** The cheat
+reserves 32 frame bytes; it emits no instructions into this block and adds no
+edges to its dependence graph, so the scheduler model never sees it.
+
+Two things worth carrying forward, because the *reasoning* was wrong even
+though the *answer* was right:
+
+1. **`write_stripped` is not a complete strip.** It removed the `(void)sp10;`
+   discard but left `volatile s32 sp10[8];` standing. Anything relying on
+   "stripped source == honest source" should verify per-construct rather than
+   assume; the third source state above had to be built by hand.
+2. **Frame-reserving cheats are invisible to the sched and RA graphs but not
+   to the byte score.** Removing sp10 regresses the honest distance 2 → 8 at an
+   unchanged 82 insns (per `fd1497f7`). A model can be perfectly honest for the
+   question you are asking while the function still carries load-bearing debt.
+
+## Item 2 — the LEVER verdict is KILLED
+
+Per `fd1497f7`, a 12-spelling sweep (the rule's literal post-increment walk, a
+walk visiting +26 first, a split-pointer form, both local orderings, two
+fully-inlined forms, three named-intermediate forms) emitted **byte-identical
+code** in every case — `lbu +24, +25, +26`, sandbox 2 at 82 insns.
+
+**Why the mapped lever cannot work here.**
+`walking-pointer-serializes-parallel-loads` derives its dependence from
+intervening memory **writes**; both of its confirmed cases have stores between
+the loads. Block 18 is three reads feeding one expression with no store between
+them, and reads do not anti-depend on reads. GCC additionally folds every
+constant byte offset into the `lbu` displacement, so no pointer register even
+survives to carry a dependence.
+
+**What actually decides the order — and it is not LUID.** The C statement order
+*does* reach sched1: spelling the locals `b,r,g` produces target's exact
+pre-scheduling RTL order (+26, +24, +25) in `.combine`, and sched1 alone reverts
+it. All three loads carry equal priority so the LUID tiebreak nominally
+decides — but LUID is not binding: placing the +26 load first *and* last in RTL
+both emit it last. The cause is **bottom-up readiness**: the +26 load's sole
+consumer is the final `or`, so it becomes ready strictly earlier than the
++24/+25 loads (which wait on their `sll`s and the inner `or`), and is therefore
+picked early and emitted late. Only a genuine dependence edge delaying its
+readiness changes that.
+
+**The tool's report was not wrong about the space** — the absence of any
+cost-1 LUID vector was already the finding that "this is not a statement
+reorder", and the other two vectors were labelled forbidden (volatile-spelled
+anti-dep) and unspellable (insn_cost). What was wrong was the lever the
+`dep_add_true` class mapped to. That mapping is now corrected in `levers.py`
+with the precondition and both measured negatives recorded, so it cannot
+over-promise this again.
+
+## Item 3 — corrected function state
+
+`gnd_init_80041688` debt is **larger than recorded**:
+
+- 3 regfix rules (the recorded park reason), plus
+- an undocumented `volatile s32 sp10[8]; (void)sp10;` frame reservation —
+  cheat-asm by the engine's own classification, load-bearing (removing it costs
+  6 diffs), absent from the s1–s15 ledger, the park reason and the filed owner
+  escalation.
+
+So closing the lbu order would **not** have reached COMPLETED-C. The frame
+reservation is a separate residual belonging to the
+[[phantom-slot-frame-lever]] diagnosis surface.
+
+## Reproduce the correction
+
+```bash
+# re-extract the sched model from an arbitrary source (tmp scratch)
+python3 tmp/_honest_sched.py tmp/inverse_work/src/text1a.c \
+        tmp/sched_solver_work/text1a.honest.sched.json
+python3 tmp/_diff_blk18.py tmp/sched_solver_work/text1a.sched.json \
+        tmp/sched_solver_work/text1a.honest.sched.json
+```
+
+---
 
 ## Reproduce
 
