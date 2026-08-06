@@ -3561,3 +3561,21 @@ DISPOSITION OPTIONS (owner picks one):
     settle whether control transfer appears in the family's actual base, and rule afterward.
 
 The operator takes no further action on this function pending the call. [skip-park-src-guard]
+
+## 2026-08-05 — hirahira_w_ctrl_2 — PROVISIONAL team-lead ruling: real-store relocation is statement reordering, not a new family
+
+A byte-exact 0-score candidate (memory/wip/hirahira_w_ctrl_2/candidate_0.diff) was
+FAILED by layer-2 and NOT committed: the load-bearing edit — relocating the real,
+required store `a1[2] = sinB;` earlier in the body — works by a combine-stage
+mechanism the session could not fully explain (sinB itself becomes `lhu` by a route
+the cited "store between load and cast" rule does not describe). Correct refusal:
+empirically-found arrangement ≠ understood technique.
+
+**Provisional ruling (team-lead, autonomous session, for owner confirmation):**
+relocating a REAL semantically-required store between independent statements is
+ordinary C statement reordering — the standard probe-ladder lever used across the
+project — and NOT a new coercion family, PROVIDED (a) the mechanism is documented
+per-site, (b) the reorder is genuinely independent (no observable semantic change),
+(c) a FRESH layer-2 passes on the explained version. Gate sequence: explain the
+sinB mechanism via .combine/.flow dumps FIRST; only then re-submit. Owner may
+override; nothing lands before the fresh layer-2 PASS.
