@@ -8,6 +8,24 @@ _'Ours' is built from the CHEAT-STRIPPED source (`mkasm_honest.sh`): a parked fu
 
 _Re-run 2026-08-06 after the `extract.py` greg<->ent alignment fix (ALLOCDBG-indexed instead of pseudo-set-subset): func_80037A20 moved GAP -> LEVER; the other four verdicts are unchanged, and `validate.py` stayed 10/10 EXACT._
 
+> **BASELINE-ROUTING CAVEAT (2026-08-06, measured on func_80072CD4 — commit
+> b9d92391).** The stripped-source baseline above is MAIN's body with cheat-asm
+> stripped. For a parked function whose BANKED CANDIDATE beats main (WIP/grind
+> ledger records a lower floor than the stripped-main distance), every model
+> here is extracted from the WRONG baseline: the vectors may target a
+> sub-problem the candidate already solved (func_80072CD4's 22 local vectors
+> named exactly the exchange its distance-4 candidate had fixed; its stripped
+> main is distance 12). Before acting on any verdict in this doc, check the
+> function's ledger for a banked candidate and, if one exists, RE-DERIVE the
+> model from that candidate body first. special_camera_get_rot_dir has this
+> shape (banked 9 vs stripped-main 12). Separately: `write_stripped` is not a
+> complete strip (leaves volatile array DECLARATIONS standing — commit
+> d42977db), so frame-sensitive questions need per-construct verification.
+> Also refuted by direct attempt: func_80037A20's pref_add vector was
+> foreclosed as not-C-reachable, and the function's swap then fell to a plain
+> named-intermediate restructure the solver never proposed (commit 8e1fd614) —
+> the suite diagnoses residuals; it does not enumerate every closing spelling.
+
 ## func_800611A4  (`src/text1b.c`)
 **Park reason:** v0<->v1 RA swap (local-alloc.c:472 + find_free_reg)
 Honest stream 35 insns, target 35 insns. Derived substitutions: `$v1->$v0` x6, `$v0->$v1` x4
