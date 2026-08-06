@@ -124,3 +124,10 @@ diff tmp/oracle.dump tmp/cur.dump | head -80`
 ## 2026-07-11 11:22:15 -- DEFERRED (crlf/crlf-build-file)  [known-unfixed]
 - **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\regfix.txt`
 - **Why unfixable now:** Known signature crlf-via-edit-write already registered; guard caught the CRLF write, normalize_lf.py restored LF (grep -c $'\r' regfix.txt = 0), oracle re-verified build_matches=true. No new permanent fix is available at the Claude Code layer — the incident is the same recurring Windows-side Edit-tool behavior the existing signature already covers.
+
+## 2026-08-06 00:22:08 — RESOLVED (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tools\gcc-2.7.2\reload1.c`
+- **Root cause:** tools/gcc-2.7.2/ is gitignored, so the existing .gitattributes 'tools/gcc-2.7.2/** text eol=lf' rule never applies (git does not normalize untracked paths); upstream reload1.c already shipped 7179 CRLF lines and the Edit tool preserved them.
+- **Permanent guard:** `tools/ra_solver/cc1_hooks.patch.md` (uncommitted change)
+- **Verified by:** python3 tools/normalize_lf.py on reload1.c+global.c; grep -c $'\r' now reports 0 for both; cc1 rebuild + parity check against build/cc1 follows.
+- **Occurrences this incident:** 1

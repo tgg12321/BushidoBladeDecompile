@@ -114,6 +114,22 @@ def parse_flow_regs(seg: str) -> dict:
     return regs
 
 
+def _md_kind(rhs: str):
+    """Which multiply/divide half a def's RHS produces, or None if the RHS is
+    not an MD result at all.  See the call site for the three shapes."""
+    head = re.match(r"\s*(\w+):", rhs)
+    if not head:
+        return None
+    op = head.group(1)
+    if op in ("mult", "div", "udiv", "umult"):
+        return "lo"
+    if op in ("mod", "umod"):
+        return "hi"
+    if op == "truncate" and "lshiftrt:DI" in rhs and "mult:DI" in rhs:
+        return "hi"
+    return None
+
+
 def parse_greg_segment(seg: str) -> dict:
     d = {"order": [], "sizes": {}, "conflicts": {}, "hard_conflicts": {},
          "prefs": {}, "dispositions": {}, "modes": {}}
@@ -270,14 +286,23 @@ def main():
             # inside bare (use)) -> regclass leaves it NO_REGS -> never
             # allocated by find_reg
             model["use_only"].append(pp)
-        # MD/LO class: regclass sends a pseudo to $lo only when its every
-        # def is a mult/div result and it isn't a user variable (reg/v) —
-        # mixed-def user vars cost out to GR_REGS.
+        # MD class: regclass sends a pseudo to $lo/$hi when EVERY def is a
+        # multiply/divide result.  The RHS shape decides which half:
+        #   mult / div / udiv          -> $lo (65)
+        #   mod / umod                 -> $hi (64)
+        #   truncate(lshiftrt(mult:DI  -> $hi (64)   the `mulhi` idiom GCC
+        #                     ...,32))              emits for division by a
+        #                                           constant
+        # The third form is why saTan4FireDisp's pseudo 99 (the `/255` colour
+        # conversion) was mis-typed as GR_REGS before 2026-08-06: the old
+        # regex only looked at the OUTERMOST operator and saw `truncate`.
         defs = re.findall(
-            rf"\(set \(reg:\w+ {pp}\)\s*\((\w+):", lseg)
-        if defs and all(d in ("mult", "div", "mod", "umult", "udiv", "umod")
-                        for d in defs):
+            rf"\(set \(reg[/\w]*:\w+ {pp}\)\s*\((.*?)(?=\n\s*\(set |\Z)",
+            lseg, re.S)
+        kinds = [_md_kind(d) for d in defs]
+        if kinds and all(kinds):
             model["md_class"].append(pp)
+            model.setdefault("md_reg", {})[pp] = 64 if "hi" in kinds else 65
     model["allocdbg"] = ablocks["rows"].get(a.func, [])
     model["seed_used"] = ablocks["seeds"].get(a.func, [])
     model["flow"] = parse_flow_regs(fsegs[k]) if k < len(fsegs) else {}

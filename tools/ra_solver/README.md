@@ -61,7 +61,47 @@ requirement: one extra qty overlapping [6,38) with pri > 22500 moves it only to
 together** give `$a1`. That is why the call-argument family, which supplies only
 part 2, was uniformly inert.
 
-## Phase 5 stage 2 — reload spill-retry (NOT STARTED)
+## Phase 6 — reload spill-retry: DONE (2026-08-06, Campaign 7)
+
+| file | role |
+|---|---|
+| `reload_harvest.sh` | tree-wide `BB2_RELOAD_DEBUG=1` run → `tmp/reload_work/<stem>.reload.log` |
+| `reload_extract.py` | parse the stream → `<stem>.reload.json` (spill order / needs / new_spill_reg / kickouts / retries with their find_reg exclusion sets) |
+| `reload_sim.py` | `--check` = SCAN + SETS validation; `--show <stem> <func>`; `--target <stem> <func> <pseudo> <reg>` = the inverse solver |
+
+**Validated 194/194 at both levels** over 55 functions in 8 TUs
+(SCAN = reproduce `best_reg` from the dumped sets; SETS = rebuild the
+exclusion sets from find_reg's recipe out of the RETRYDBG primitives).
+
+**The law.** Preferences are destructively consumed during `global_alloc`, so
+they are empty in **0/194** retry calls, and the pass-0/pass-1 split never
+changes the answer. The retry outcome is therefore closed-form:
+
+```
+got = min { r : r ∉ base ∪ forbidden_regs ∪ ~reg_class_contents[class] ∪ hard_reg_conflicts }
+base = fixed_reg_set (calls_crossed == 0) | call_used_reg_set | call_fixed_reg_set (acc)
+```
+
+The preference lever, dominant pre-reload, is **inert** at retry; the only
+inputs are conflicts, the forbidden set, the class, and calls-crossed.
+Still dumped rather than derived: `max_needs[class]` (reload.c `find_reloads`),
+which decides *how many* regs get spilled and hence what `forbidden_regs` holds.
+
+Two pipeline defects fixed in the same pass — `simulate.py` was comparing
+against `.greg` dispositions (written AFTER reload, so post-retry) instead of
+the ALLOCDBG stream, and `extract.py` mis-typed the `mulhi` idiom
+(`truncate(lshiftrt(mult:DI …))`, GCC's division-by-constant) as GR_REGS.
+`simulate.py` is now class-aware (preferred single-register class, then the
+GR_REGS alternate, per global.c:585). **`validate.py` is 10/10 exact**, up
+from 9/10; saTan4FireDisp reproduces 17/17.
+
+Measured negatives worth not re-deriving: **`display.c` has zero retry calls**,
+so the prologue twins (func_8007C2A0 / func_8007C4B8) never enter reload's
+spill loop; and saTan4FireDisp has exactly **one** retry-affected pseudo (the
+`mulhi` for `channel / 255`, `$hi` → `$t1`), which does not touch its `$s`
+rotation. Full write-up: `memory/wip/_reload_solver_2026-08-06.md`.
+
+## Phase 5 stage 2 — reload spill-retry (superseded by Phase 6 above)
 
 The other unmodeled mechanism, and the one live in `saTan4FireDisp`'s own dump
 (pseudos 100/106/112). Entry points for whoever picks it up:

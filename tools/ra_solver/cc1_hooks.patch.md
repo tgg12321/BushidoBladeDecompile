@@ -2,7 +2,16 @@
 
 `tools/gcc-2.7.2/` is gitignored (local toolchain build), so the env-gated
 diagnostic hooks that `extract.py` depends on are recorded here for
-reproduction. All are print-only fprintf under env guards; rebuild with
+reproduction.
+
+> **CRLF footgun (2026-08-06).** Because `tools/gcc-2.7.2/` is **gitignored**,
+> the `.gitattributes` line `tools/gcc-2.7.2/** text eol=lf` never applies —
+> git does not normalize files it does not track. Several upstream GCC sources
+> ship with CRLF (`reload1.c` had 7179 CR lines before any hook was added), and
+> the Windows Edit/Write tool preserves/reintroduces them, which trips
+> `tools/hooks/tooling_error_guard.py`. **After editing any file under
+> `tools/gcc-2.7.2/`, run `python3 tools/normalize_lf.py <file>` before
+> rebuilding**, then do the usual parity check. All are print-only fprintf under env guards; rebuild with
 `cd tools/gcc-2.7.2 && TMPDIR=/dev/shm make cc1` (produces `./cc1`;
 `build/cc1` is untouched — verify with tmp/parity_check.sh pattern).
 
@@ -108,6 +117,83 @@ orphaned pseudo — `reg_n_refs > 0` but no surviving RTL reference after combin
 gets one of those slots while emitting **no instruction at all**. That is the
 phantom-slot class, and `tmp/csz/gn_orph2.py` names its members from a `.greg`
 dump (empty conflict list + absent from the dispositions).
+
+## 6. global.c + reload1.c — BB2_RELOAD_DEBUG (NEW 2026-08-06, Campaign 7)
+
+The reload/retry instrument. Everything is print-only under
+`getenv ("BB2_RELOAD_DEBUG")`; parity re-verified on 5 TUs after the rebuild,
+and the env var itself is output-inert (`tmp/parity_check_multi.sh`).
+
+### Shared helper (added to the top of BOTH files, after the last `#include`)
+
+    /* BB2 instrumentation: print-only hard-reg-set dump of the 32 GPRs.  */
+    #define BB2_DUMP_HRS(LABEL, SET)					\
+      do {									\
+        int bb2_dk_;							\
+        fprintf (stderr, "%s", (LABEL));					\
+        for (bb2_dk_ = 0; bb2_dk_ < 32; bb2_dk_++)				\
+          if (TEST_HARD_REG_BIT ((SET), bb2_dk_))				\
+    	fprintf (stderr, " %d", bb2_dk_);				\
+        fprintf (stderr, "\n");						\
+      } while (0)
+
+reload1.c additionally gets, next to it, the spill-loop iteration counter
+
+    int bb2_reload_pass = 0;
+
+zeroed in `reload` (next to `bzero (cannot_omit_stores, max_regno);`) and
+incremented right after the `something_changed = 0;` at the top of the
+`while (something_changed)` body.
+
+### global.c
+
+* **`retry_global_alloc`** — after `int allocno = reg_allocno[regno];`, a block
+  printing `RETRYDBG func= pseudo= allocno= nrefs= livelen= calls=` followed by
+  `BB2_DUMP_HRS` of `forbidden_regs`, `hard_reg_conflicts[allocno]` and
+  `regs_used_so_far`; and at the very end of the function a
+  `RETRYDBG  result func= pseudo= got=` line reading `reg_renumber[regno]`.
+* **`find_reg`** — the existing `BB2_FINDREG_DEBUG` block's gate becomes
+
+      if ((dbg && atoi (dbg) == allocno_reg[allocno])
+          || (retrying && getenv ("BB2_RELOAD_DEBUG")))
+
+  so every retrying call dumps its sets for every pseudo. Three lines are
+  appended inside it: `BB2_DUMP_HRS ("FINDREGDBG  pass1_used:", used1)`,
+  `BB2_DUMP_HRS ("FINDREGDBG  used2_noconflict:", used2)`, and
+  `FINDREGDBG  class=%d mode=%d size=%d` from `class`, `mode`,
+  `allocno_size[allocno]`.
+* **`find_reg`** — immediately before the `if (best_reg >= 0)` under the
+  "Did we find a register?" comment, a
+  `FINDREGDBG  best func= pseudo= alt= acc= best_reg=` line, gated on
+  `retrying && getenv ("BB2_RELOAD_DEBUG")`.
+
+### reload1.c
+
+* **`order_regs_for_reload`** — at the end, `RELOADDBG order func= prr=` (the
+  `potential_reload_regs` entries below 32, comma-separated), `RELOADDBG  uses=`
+  (`regno:uses` pairs from the sorted `hard_reg_n_uses`), and
+  `BB2_DUMP_HRS ("RELOADDBG  bad_spill_regs:", bad_spill_regs)`.
+  This line is emitted once per function and is the stream's segmenter.
+* **`new_spill_reg`** — before `potential_reload_regs[i] = -1;`:
+  `RELOADDBG new_spill_reg func= pass= idx= regno= class= n_spills= need= nongroup=`.
+* **`spill_hard_reg`** — after `SET_HARD_REG_BIT (forbidden_regs, regno);`:
+  `RELOADDBG spill_hard_reg func= pass= regno= class= cant_eliminate= global=`
+  plus `BB2_DUMP_HRS ("RELOADDBG  forbidden_after:", forbidden_regs)`.
+* **`spill_hard_reg`** — immediately before `reg_renumber[i] = -1;` in the
+  eviction loop (so `had` still reads the old assignment):
+  `RELOADDBG kickout func= pass= spillreg= pseudo= had= nrefs= bb=` from
+  `reg_renumber[i]`, `reg_n_refs[i]`, `reg_basic_block[i]`.
+* **`reload`** — just before the "If all needs are met, we win." comment:
+  `RELOADDBG needs func= pass=` followed by, for each class with a non-zero
+  need, ` NAME(idx):n=,g=,ng=` from `max_needs` / `max_groups` /
+  `max_nongroups` (using the loop-local `reg_class_names`), then
+  ` new_bb_needs= changed=`.
+
+### Reading it
+
+`bash tools/ra_solver/reload_harvest.sh` runs the whole tree;
+`python3 tools/ra_solver/reload_extract.py` turns the logs into JSON;
+`python3 tools/ra_solver/reload_sim.py --check` validates the model.
 
 ### Reference-pollution note (2026-08-05)
 

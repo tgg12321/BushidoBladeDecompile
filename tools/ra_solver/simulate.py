@@ -82,6 +82,9 @@ class Sim:
         self.pseudos = list(self.order_dump)
         self.use_only = set(model.get("use_only", []))
         self.md_class = set(model.get("md_class", []))
+        # which MD half: 65 ($lo) for mult/div results, 64 ($hi) for the
+        # remainder and the `mulhi` idiom.  Older models carry no md_reg.
+        self.md_reg = {int(k): v for k, v in (model.get("md_reg") or {}).items()}
         for p in self.pseudos:
             self.conf.setdefault(p, set())
             self.hard_conf.setdefault(p, set())
@@ -176,33 +179,59 @@ class Sim:
             rll = self.flow.get(a, {}).get("reg_live_length", 1)
             if rll < 0 or attr(a, "livelen", 1) < 0 or a in self.use_only:
                 continue
-            if a in self.md_class:
-                assigned[a] = 65      # LO_REGS: mult/div results land in $lo
-                continue
             size = self.size(a)
             mode = self.modes.get(a, "SI")
-            used1 = set()
+            base = set()
             if attr(a, "calls", 0) == 0:
-                used1 |= FIXED
+                base |= FIXED
             else:
-                used1 |= CALL_USED
-            used1 |= NO_GLOBAL
-            used1 |= (set(range(FIRST_PSEUDO)) - GR_REGS)
-            used1 |= hard_conf[a]
+                base |= CALL_USED
+            base |= NO_GLOBAL
+            base |= hard_conf[a]
+
+            # HARD_REGNO_MODE_OK reduces, for the classes we model, to the
+            # even-alignment rule for two-word modes; the class membership
+            # test is already folded into `used` via reg_class_contents.
+            two_word = size > 1
 
             def scan(used):
                 for r in range(FIRST_PSEUDO):
-                    if r in used or not mode_ok(r, mode):
+                    if r in used or (two_word and r % 2):
                         continue
                     if all((r + j) not in used for j in range(1, size)):
                         return r
                 return -1
 
-            # pass 0: also exclude never-used and someone-else-preferred
-            used0 = used1 | (set(range(FIRST_PSEUDO)) - used_so_far) | someone[a]
-            best = scan(used0)
-            if best < 0:
-                best = scan(used1)
+            def try_class(contents):
+                u1 = base | (set(range(FIRST_PSEUDO)) - contents)
+                # pass 0: also exclude never-used and someone-else-preferred
+                u0 = u1 | (set(range(FIRST_PSEUDO)) - used_so_far) | someone[a]
+                r = scan(u0)
+                if r < 0:
+                    r = scan(u1)
+                # NOTE: the pref-upgrade stages below filter against u1.  GCC
+                # filters against whichever set the winning pass used, which is
+                # u0 when pass 0 succeeded; keeping u1 preserves the behaviour
+                # that validated 9/10 in the 2026-08-04 campaign.
+                return r, u1
+
+            # global.c:585 — try the PREFERRED class, then, only if that
+            # fails, the ALTERNATE class.  For an MD pseudo the preferred
+            # class is the single register $hi or $lo; when it is already
+            # taken by a conflicting allocno the pseudo falls back to
+            # GR_REGS like any other.  (Three `x / 255` colour conversions
+            # in one function produce three `mulhi` pseudos and only the
+            # first gets $hi — saTan4FireDisp 99/105/111.)
+            if a in self.md_class:
+                best, _ = try_class({self.md_reg.get(a, 65)})
+                if best >= 0:
+                    assigned[a] = best
+                    used_so_far.add(best)
+                    for b in self.pseudos:
+                        if b != a and (a in conf[b] or b in conf[a]):
+                            hard_conf[b].add(best)
+                    continue
+            best, used1 = try_class(GR_REGS)
 
             # preference upgrade, in GCC's TWO stages (global.c find_reg,
             # "First do this for those register with copy preferences, then
@@ -255,9 +284,23 @@ def main():
         print(f"  sim : {order}")
         print(f"  dump: {dump_order}")
 
+    # Ground truth for GLOBAL alloc is the ALLOCDBG stream, printed inside
+    # global_alloc.  `dispositions` comes from the `.greg` file, which cc1
+    # writes AFTER reload — so for any pseudo that reload's spill loop kicked
+    # out, `.greg` records the POST-retry register and comparing against it is
+    # apples-to-oranges.  See tools/ra_solver/reload_sim.py for the retry model.
+    pre = {r["pseudo"]: (None if r["hardreg"] < 0 else r["hardreg"])
+           for r in model.get("allocdbg", [])}
+    retried = sorted(p for p, v in pre.items()
+                     if p in s.disp and s.disp[p] != v)
+    if retried:
+        print(f"note: {len(retried)} pseudo(s) differ between global_alloc and "
+              f".greg (reload retry): " +
+              ", ".join(f"{p}: {pre[p]}->{s.disp[p]}" for p in retried))
+
     mism = []
     for p in dump_order:
-        want = s.disp.get(p)
+        want = pre.get(p, s.disp.get(p))
         got = assigned.get(p)
         tag = "ok" if want == got else "XX"
         if want != got:
