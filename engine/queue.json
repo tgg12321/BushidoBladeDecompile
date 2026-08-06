@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-08-05T23:22:08",
+  "generated_at": "2026-08-06T02:20:11",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
     {
-      "func": "save_vc_ctrl",
-      "file": "text1a",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "func": "saEft00Add",
+      "file": "system",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -90,6 +90,14 @@
       "distance": 20,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "PutShadowRmd",
+      "file": "text1a",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 3,
       "status": "active"
     },
     {
@@ -186,14 +194,6 @@
       "distance": 22,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "PutShadowRmd",
-      "file": "text1a",
-      "distance": 22,
-      "verdict": "C",
-      "rules": 3,
       "status": "active"
     },
     {
@@ -530,6 +530,14 @@
       "status": "active"
     },
     {
+      "func": "func_80040D48",
+      "file": "text1a",
+      "distance": 34,
+      "verdict": "C",
+      "rules": 34,
+      "status": "active"
+    },
+    {
       "func": "cpu_side_move_dir",
       "file": "code6cac_b",
       "distance": 35,
@@ -823,14 +831,6 @@
       "distance": 50,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80040D48",
-      "file": "text1a",
-      "distance": 50,
-      "verdict": "C",
-      "rules": 34,
       "status": "active"
     },
     {
@@ -2209,6 +2209,534 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
+      "func": "save_vc_ctrl",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "InitFadePanel",
+      "file": "text1b",
+      "distance": 3,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "myRobGeneiOpen",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052CD4",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052C28",
+      "file": "text1b",
+      "distance": 8,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052BE4",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052720",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052754",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052B44",
+      "file": "text1b",
+      "distance": 13,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800526A0",
+      "file": "text1b",
+      "distance": 29,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80052C4C",
+      "file": "text1b",
+      "distance": 30,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004A76C",
+      "file": "text1b",
+      "distance": 35,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800525D8",
+      "file": "text1b",
+      "distance": 42,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004A808",
+      "file": "text1b",
+      "distance": 72,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800527FC",
+      "file": "text1b",
+      "distance": 74,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004BB68",
+      "file": "text1b",
+      "distance": 82,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004C1F4",
+      "file": "text1b",
+      "distance": 97,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050774",
+      "file": "text1b",
+      "distance": 100,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004A348",
+      "file": "text1b",
+      "distance": 101,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8006BD28",
+      "file": "text1b",
+      "distance": 101,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051208",
+      "file": "text1b",
+      "distance": 105,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800515AC",
+      "file": "text1b",
+      "distance": 105,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050908",
+      "file": "text1b",
+      "distance": 107,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050AB8",
+      "file": "text1b",
+      "distance": 107,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050E60",
+      "file": "text1b",
+      "distance": 107,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80054440",
+      "file": "text1b",
+      "distance": 108,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051944",
+      "file": "text1b",
+      "distance": 111,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800523E0",
+      "file": "text1b",
+      "distance": 111,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004FB74",
+      "file": "text1b",
+      "distance": 114,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051D08",
+      "file": "text1b",
+      "distance": 114,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004F798",
+      "file": "text1b",
+      "distance": 117,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004D244",
+      "file": "text1b",
+      "distance": 119,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004FF40",
+      "file": "text1b",
+      "distance": 119,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051ED4",
+      "file": "text1b",
+      "distance": 120,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004EF10",
+      "file": "text1b",
+      "distance": 122,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051754",
+      "file": "text1b",
+      "distance": 123,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004C994",
+      "file": "text1b",
+      "distance": 125,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050C68",
+      "file": "text1b",
+      "distance": 125,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051010",
+      "file": "text1b",
+      "distance": 125,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800513B0",
+      "file": "text1b",
+      "distance": 126,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004EAC8",
+      "file": "text1b",
+      "distance": 127,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004FD40",
+      "file": "text1b",
+      "distance": 127,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004D634",
+      "file": "text1b",
+      "distance": 128,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004F970",
+      "file": "text1b",
+      "distance": 128,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050334",
+      "file": "text1b",
+      "distance": 128,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80051B04",
+      "file": "text1b",
+      "distance": 128,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004D424",
+      "file": "text1b",
+      "distance": 131,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050120",
+      "file": "text1b",
+      "distance": 132,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004F0FC",
+      "file": "text1b",
+      "distance": 133,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004CB8C",
+      "file": "text1b",
+      "distance": 136,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004F314",
+      "file": "text1b",
+      "distance": 137,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004CDB0",
+      "file": "text1b",
+      "distance": 139,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004D838",
+      "file": "text1b",
+      "distance": 142,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_80050538",
+      "file": "text1b",
+      "distance": 142,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004ECC8",
+      "file": "text1b",
+      "distance": 145,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004F53C",
+      "file": "text1b",
+      "distance": 150,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004CFE0",
+      "file": "text1b",
+      "distance": 152,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004E574",
+      "file": "text1b",
+      "distance": 155,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004A4E0",
+      "file": "text1b",
+      "distance": 161,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004E7E4",
+      "file": "text1b",
+      "distance": 182,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_800520B8",
+      "file": "text1b",
+      "distance": 200,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004DA74",
+      "file": "text1b",
+      "distance": 207,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "saTan2LineDraw",
+      "file": "text1b",
+      "distance": 329,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004C404",
+      "file": "text1b",
+      "distance": 349,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "func_8004DDB4",
+      "file": "text1b",
+      "distance": 476,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
+      "func": "calc_loc_mat_fw_8004A940",
+      "file": "text1b",
+      "distance": 1154,
+      "verdict": "CANON-EXTRACT",
+      "rules": 1,
+      "status": "authorize"
+    },
+    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 0,
@@ -2536,17 +3064,19 @@
     }
   ],
   "counts": {
-    "total": 301,
+    "total": 367,
     "active": 265,
     "by_status": {
       "active": 265,
+      "authorize": 66,
       "parked": 36
     },
     "by_verdict": {
-      "ASM-PARTIAL": 46,
-      "C": 85,
+      "C": 86,
+      "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 108,
-      "ASM-STRUCTURAL": 26
+      "ASM-STRUCTURAL": 26,
+      "CANON-EXTRACT": 66
     }
   }
 }
