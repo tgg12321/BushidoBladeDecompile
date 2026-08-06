@@ -3619,3 +3619,19 @@ hirahira_w_ctrl_2 remains banked at honest floor 62. Unclosed avenue (recorded):
 history (shallow clone) — owner may commission a full-history pass if ever desired.
 
 [skip-park-src-guard]
+
+## 2026-08-06 — Campaign 7 verdict: the reload/retry route is MEASURED DEAD for all three RA endgames
+
+The reload/retry solver (371ff97c; validated 194/194 retry calls across 55 functions,
+ra_solver validate now 10/10 EXACT after two pipeline-defect fixes) returns a closed-form
+retry law — preferences are destructively consumed pre-retry and thus INERT; only
+conflicts, forbidden set, class, and calls-crossed matter — and a NEGATIVE answer:
+- prologue twins func_8007C2A0/C4B8: display.c has ZERO retry calls; their wall is
+  save_restore_insns prologue EMIT ORDER, not allocation. Reload route closed — do not
+  reopen.
+- saTan4FireDisp: the one retry-affected pseudo is the /255 mulhi ($hi->$t1), NOT the
+  $s2/$s3/$s4 rotation residual. The old "pseudos 100/106/112" open item was a simulator
+  artifact (mulhi mis-typing, now fixed) and is closed.
+The three functions remain parked with proofs; their remaining lever spaces are now
+save_restore_insns order (twins) and the rotation's non-reload allocation walls
+(saTan4FireDisp). [skip-park-src-guard]
