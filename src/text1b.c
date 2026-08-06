@@ -1286,42 +1286,7 @@ INCLUDE_ASM("asm/funcs", calc_loc_mat_fw_8004A940);
 INCLUDE_ASM("asm/funcs", func_8004BB68);
 INCLUDE_ASM("asm/funcs", saTan2LineDraw);
 INCLUDE_ASM("asm/funcs", func_8004C1F4);
-void func_8004C388(s16 *arg0, s16 *arg1, s16 *arg2) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-
-    t0 = arg0[0];
-    t1 = arg0[1];
-    t2 = arg0[2];
-    t3 = arg1[0];
-    t4 = arg1[1];
-    t5 = arg1[2];
-    __asm__ volatile ("add $8, $8, $11" : "=r"(t0) : "0"(t0), "r"(t3));
-    __asm__ volatile ("add $9, $9, $12" : "=r"(t1) : "0"(t1), "r"(t4));
-    __asm__ volatile ("add $10, $10, $13" : "=r"(t2) : "0"(t2), "r"(t5));
-    arg2[0] = (s16)(t0 >> 1);
-    arg2[1] = (s16)(t1 >> 1);
-    arg2[2] = (s16)(t2 >> 1);
-
-    t3 = ((u16 *)arg0)[3];
-    t4 = ((u16 *)arg1)[3];
-    t0 = t3 & 0xFF00;
-    t1 = t4 & 0xFF00;
-    t3 = t3 & 0xFF;
-    t4 = t4 & 0xFF;
-    __asm__ volatile ("add $11, $11, $12" : "=r"(t3) : "0"(t3), "r"(t4));
-    __asm__ volatile ("add $8, $8, $9" : "=r"(t0) : "0"(t0), "r"(t1));
-    t3 = (u32)t3 >> 1;
-    t0 = (u32)t0 >> 1;
-    t3 = t3 & 0xFF;
-    t0 = t0 & 0xFF00;
-    t3 |= t0;
-    ((u16 *)arg2)[3] = (u16)t3;
-}
+INCLUDE_ASM("asm/funcs", func_8004C388);
 PAD_NOPS_1; /* padding after func_8004C388 */
 INCLUDE_ASM("asm/funcs", func_8004C404);
 INCLUDE_ASM("asm/funcs", func_8004C994);
@@ -1401,47 +1366,7 @@ INCLUDE_ASM("asm/funcs", func_80052720);
  * register allocation cannot pick (GCC chooses $v0/$v1/$a0). Canonical-asm;
  * see inline_asm_canonical.txt. */
 INCLUDE_ASM("asm/funcs", func_80052754);
-void func_80052788(s16 *arg0, s16 *arg1, s32 arg2, s16 *arg3) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-
-    t0 = arg0[0];
-    t1 = arg0[1];
-    t2 = arg0[2];
-    __asm__ volatile ("ori %0, $zero, 0x1000" : "=r"(t3));
-    __asm__ volatile ("sub $11, $11, $6" : "=r"(t3) : "0"(t3), "r"(arg2));
-
-    __asm__ volatile ("mtc2 %0, $8" :: "r"(t3));
-    __asm__ volatile ("mtc2 %0, $9" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
-
-    t0 = arg1[0];
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4B98003D");
-    t1 = arg1[1];
-    t2 = arg1[2];
-
-    __asm__ volatile ("mtc2 %0, $8" :: "r"(arg2));
-    __asm__ volatile ("mtc2 %0, $9" :: "r"(t0));
-    __asm__ volatile ("mtc2 %0, $10" :: "r"(t1));
-    __asm__ volatile ("mtc2 %0, $11" :: "r"(t2));
-
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4BA8003E");
-
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t0));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t1));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t2));
-
-    arg3[0] = t0;
-    arg3[1] = t1;
-    arg3[2] = t2;
-}
+INCLUDE_ASM("asm/funcs", func_80052788);
 INCLUDE_ASM("asm/funcs", func_800527FC);
 void func_80052930(s32 *mat, s32 *vec, s16 *out) {
     register s32 t0 asm("$8");
