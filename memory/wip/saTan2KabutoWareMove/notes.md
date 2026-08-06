@@ -55,6 +55,46 @@ and folds it, collapsing the two values into one register.
 score stayed 44.** The zero-extending `lhu` still tells combine the value fits in 16 bits,
 so the declared type of the holder is irrelevant.
 
+## 2026-08-06 session 2 — the `andi` mechanism is LOCALISED (floor still 44)
+
+**The basic-block-boundary lever proposed above is REFUTED — do not run it.** The target's
+own layout disproves the premise: its `andi v1,a1,0xffff` sits at index 14, immediately
+after `lhu a1,106(s0)` (12) and `lw s4,0(s0)` (13), with no branch between. The mask is in
+the SAME basic block as the load, so combine's block-local `nonzero_bits` was never the
+reason the original kept it.
+
+**The real signal is an asymmetry between the two `lhu`s.** The second one
+(`lhu v0,106(s4)`, index 19 — same 0x6A offset, different base) gets NO `andi` in target.
+The only structural difference: `temp_a1` has TWO uses (the mask at :522 and the
+`- 0x19` subtraction at :534); the second load's value has one. So the `andi` exists
+because the raw value must stay live for a second, differently-extended use.
+
+Probes this session, all measured:
+
+| probe | change | score | what it taught |
+|---|---|---|---|
+| P0 | `u16 temp_a1` -> `u32` | 44 | dead; the `lhu` proves 16-bit regardless of holder type |
+| P1 | drop the mask, `temp_v1 = temp_a1;` | 44 | the explicit `& 0xFFFF` is not what enables the fold |
+| **P2** | **`u16 temp_a1` -> `s16`** | **44** | **STRUCTURALLY RIGHT: `andi v1,a2,0xffff` appears at index 14, matching target exactly.** Net zero because both uses then sign-extend, so the load becomes `lh` where target has `lhu` |
+| P3 | P2 + `(u16)` cast at the subtraction | 63 | much worse; reverted |
+
+Tree is back at HEAD for this file (all probes reverted).
+
+## What the residual actually requires
+
+Target needs, simultaneously: a ZERO-extending load (`lhu`) for the raw value that feeds
+`addiu v0,a1,-25`, AND a separate non-folded `andi` producing the compare operand. With a
+`u16` holder both uses zero-extend and the mask is provably redundant (folds). With `s16`
+the mask survives but the load turns signed. **P2 shows the `andi` is reachable; the open
+question is narrowly "how to keep `lhu` while the mask survives".**
+
+Untried ideas, in order:
+1. Give `temp_v1` a second reaching definition so the conversion sits at a merge point and
+   cannot be folded into the single-def load.
+2. Look for a use that forces `temp_a1` to stay a 16-bit quantity (stored/passed as u16)
+   rather than being promoted at both sites.
+3. Only then the prologue rotation (known-hard save-order class).
+
 ## Recommended next moves
 
 1. The fold is basic-block-local (`reg_last_set_nonzero_bits`). The lever is therefore to

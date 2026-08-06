@@ -39,7 +39,44 @@ re-hoists.
 2. Load-placement reorder in the final block — load stayed at index 197, score stayed 32.
 3. Dead self-assign removal — inert.
 
-## Solver state (extracted, not yet exploited)
+## 2026-08-06 session 2 — block correlation DONE, and it CORRECTS the guidance below
+
+Ran the correlation the old note said was needed, with `tools/blockmap.py code6cac
+DispPracticeMenuTex_A 112` (splits the emitted stream into basic blocks and aligns them by
+ordinal with the QTYDBG block numbering, which GCC 2.7.2 emits in order).
+
+**The block-12 vectors recorded below are aimed at the WRONG BLOCK — do not spend
+iterations on them.** Block 12 is `asm[174:181]`. The contested hunk at asm 112-119 lands
+in ordinal 3 = model **block 3**, which spans `asm[98:118]`.
+
+**And block 3 has only ONE local quantity** (`q0 -> $v0`, refs 4, birth 2 death 6). The
+contested region uses two values, so the other one is NOT a local quantity at all:
+
+- the `use_high` / `lh 0(gp)` value is born and dies inside the block -> local quantity q0
+- the `dx` delta chain is born at 112 and still live at 118-119, which the block split puts
+  in ordinal 4 -> it CROSSES the block boundary, so local-alloc never sees it; it is a
+  **global allocno**
+
+So the $v0/$v1 exchange is **global-vs-local, not local-vs-local**. `inverse.py local`
+cannot express it by construction — it permutes quantities within one block, and one of
+the two participants is not one. This is exactly the caveat the previous note flagged
+("block 12 was a GUESS"), now resolved: the guess was wrong.
+
+Global model extracted for the next step: `tools/ra_solver/extract.py
+DispPracticeMenuTex_A code6cac` -> `tmp/ra_solver_work/DispPracticeMenuTex_A.model.json`
+(order = 27 pseudos, 133 dispositions).
+
+**Remaining blocker for the global backend: goal derivation.** `inverse.py global` needs a
+goal (`{pseudo: hardreg}`), and `goal_from_asm.py` derives it by aligning our stream with
+the target's — which is precisely what does NOT work for a `replace_with_asmfile` function
+(same root cause as the classify limitation; see docs/grind/inverse-compose-2026-08-06.md).
+The goal must therefore be built by hand: identify which pseudo in `dispositions` is the
+`dx` chain (currently `$v0` = 2, wanted `$v1` = 3) and which is its partner, then
+`inverse.py global tmp/ra_solver_work/DispPracticeMenuTex_A.model.json --swap A,B`.
+Mapping pseudo -> asm position is the un-done piece; the model's `allocdbg` / `flow`
+fields are the place to start.
+
+## Solver state — SUPERSEDED, see the correction above
 
 `tools/ra_solver/local_extract.py code6cac --func DispPracticeMenuTex_A` succeeded ->
 `tmp/ra_solver_work/code6cac.local.json`. Running
