@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T14:59:32",
+  "generated_at": "2026-08-06T16:10:48",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -86,7 +86,7 @@
     },
     {
       "func": "PutShadowRmd",
-      "file": "text1a",
+      "file": "text1a_pre",
       "distance": 20,
       "verdict": "C",
       "rules": 3,
@@ -369,7 +369,7 @@
     },
     {
       "func": "hirahira_w_ctrl",
-      "file": "text1a",
+      "file": "text1a_pre",
       "distance": 27,
       "verdict": "C",
       "rules": 16,
@@ -467,7 +467,7 @@
     },
     {
       "func": "rob_calc_2d_position",
-      "file": "text1a",
+      "file": "text1a_pre",
       "distance": 32,
       "verdict": "C",
       "rules": 15,
@@ -523,7 +523,7 @@
     },
     {
       "func": "func_80040D48",
-      "file": "text1a",
+      "file": "text1a_pre",
       "distance": 34,
       "verdict": "C",
       "rules": 34,
@@ -723,7 +723,7 @@
     },
     {
       "func": "saTan4FireDisp",
-      "file": "text1a",
+      "file": "text1a_post",
       "distance": 41,
       "verdict": "C",
       "rules": 35,
@@ -2248,7 +2248,7 @@
     },
     {
       "func": "gnd_init_80041688",
-      "file": "text1a",
+      "file": "text1a_post",
       "distance": 8,
       "verdict": "C",
       "rules": 3,
