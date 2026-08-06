@@ -130,6 +130,24 @@ labels. `asmfix.txt:22` documents a past instance verbatim: *"removing `save_vc_
 pure-C body shifted text1a.c's cc1 label counter down by 7."* Rules written with
 `{lbl#N}` slot references are drift-robust; rules with a hardcoded `.L<N>` are not.
 
+> **ERRATUM (2026-08-06, Wave-0 execution audit).** The table below is a scan
+> artifact and Wave 0 had NOTHING to convert. `tmp/resplit_scope.py`'s
+> `HARD_L = re.compile(r'(?<!\{lbl)\.L\d+')` lacks a trailing boundary, so it
+> matches the digit PREFIX of self-defined ADDRESS-form labels
+> (`.L80070D7C` → matches `.L80070`). Per-line audit
+> (`tmp/verify_wave0_drift.py`): all four "drifted rule owners" have ZERO
+> cc1-numbered label references — func_80056CB8 / func_80070C70 are already
+> `{lbl#N}` slot-form; CalcHiraNormal / func_8002CA8C anchor on `^\.frame` /
+> `^\.end` assembler directives with payload-self-defined address labels.
+> The genuinely hardcoded cc1-label references in the tree are elsewhere:
+> asmfix SetPacketData (`.L761/.L762/.L764`), regfix tslPrintScreen (`.L26`),
+> marionation_Exec (`.L999` ×3), mk_leaf_newpos (`.L631`). tslPrintScreen and
+> marionation_Exec sit before every substantial stub in their TU (safe);
+> **SetPacketData and mk_leaf_newpos were NOT ordering-assessed by this plan
+> and must be checked before their TUs' waves (5 and text1b's 6).** Fix the
+> regex (`\.L\d+(?![0-9A-Za-z_])`) and regenerate `label_drift_exposure` in
+> `tmp/resplit_map.json` before consulting it for Waves 2–7.
+
 Measured exposure — a substantial stub with a hardcoded-`.L` rule **after** it in the same
 TU — is **four rules in three TUs**:
 
