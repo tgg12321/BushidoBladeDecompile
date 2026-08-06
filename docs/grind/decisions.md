@@ -3635,3 +3635,52 @@ conflicts, forbidden set, class, and calls-crossed matter — and a NEGATIVE ans
 The three functions remain parked with proofs; their remaining lever spaces are now
 save_restore_insns order (twins) and the rotation's non-reload allocation walls
 (saTan4FireDisp). [skip-park-src-guard]
+
+## 2026-08-06 — owner ruling: ALL asmfix entries are debt; end state is ZERO regfix + ZERO asmfix
+
+Full evaluation of the 237 asmfix.txt rule lines (218 functions) against the SOTN
+bar, cross-referenced with inline_asm_canonical.txt and engine/queue.json
+(tmp/asmfix_eval.py). **Owner ruled: the handoff's "65 owner-approved
+canonical-extraction wirings are finished-form, not debt" framing is CORRECTED —
+under SOTN standards all 237 lines are debt. The project's end state carries no
+regfix.txt and no asmfix.txt at all.**
+
+Three-tier breakdown:
+
+1. **Cheat-class rewrites — 31 lines, 13 functions.** delete_between/insert_before
+   body injections (pad_main_control, saSeInit_2, CalcHiraNormal, func_8002CA8C,
+   func_80017848 carry entire bodies as rule text; func_80060A68 / func_80070C70 /
+   func_80056CB8 are mid-body slices) + label-retarget compensations (SetPacketData,
+   saTan4FireDisp, mk_leaf_newpos, saTan5TakeAnim2, func_80033DF4). The regfix cheat
+   family in asmfix spelling. All 13 queue-active (honestly tracked INCOMPLETE).
+2. **replace_with_asmfile on 140 queue-active functions** (139 non-canonical +
+   save_vc_ctrl's bookkeeping wart). Semantically SOTN's INCLUDE_ASM/NON_MATCHING
+   state, byte-honest (verbatim .s content), honestly queued — but the C file
+   compiles a plausible-looking body that is silently discarded, which no reference
+   project does. Debt = the decomp work itself, already tracked.
+3. **The 65 canonical-extraction wirings — infrastructure debt** (this is the
+   correction). The canonical AUTHORIZATIONS stand — evidence is solid (ghost
+   callee-saves, trapping add/addi, custom $s0 ABIs, leaf delay-slot signals); the
+   functions were genuinely hand-written asm and their bytes are final. But the
+   FINISHED FORM fails the bar: (a) the completion standard defines
+   COMPLETED-INLINE-ASM-CANONICAL as ZERO rules — each of these carries one; (b)
+   SOTN's finished form for hand-asm is source/build-level (INCLUDE_ASM or linked
+   .s objects), never a post-cc1 text substitution; (c) the jtbl-infra resolution
+   (2026-06-09) already ruled asmfix-as-infrastructure a workaround whose proper fix
+   is source-level TU re-attribution; (d) the wirings generate secondary label-shift
+   compensation rules in siblings. The wiring papers over a fork divergence (under
+   our cc1's -G8, file-scope __asm__ floats to .text 0; cc1psx evidently kept
+   mid-TU asm in place) — a toolchain workaround, not a representation of the
+   original.
+
+**Remediation shape (the jtbl-precedent path):** TU re-split so each canonical
+function's asm/funcs/*.s is assembled and linked as its own object via bb2.ld —
+zero rules, byte-identical output, SOTN's exact mechanism. Tier-2 wirings migrate
+to the same rule-free form as they are worked; the end state deletes
+replace_with_asmfile (and asmfix.py, and regfix.py) from the pipeline entirely.
+This is representation/infrastructure work — it does NOT reopen the 65 functions'
+canonical status or change any bytes. The [infra-rule: canonical-asm-extraction]
+guard category remains available as a TRANSITIONAL mechanism only; wirings it
+admits count as debt, not finished form.
+
+[skip-park-src-guard]
