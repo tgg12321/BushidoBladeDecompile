@@ -1,105 +1,104 @@
-# gnd_land_hit_char_tsuba — WIP (current state 2026-08-05)
+# gnd_land_hit_char_tsuba — WIP (current state 2026-08-05, harvest rotation 6)
 
 `src/text1b.c:12751`. HEAD baseline: honest pure-C distance **65**, 88 rules, canonical
-ASM-SUSPECT. Measure: `wsl bash tmp/csz/gn_score.sh` (driver `tmp/csz/gn_var.py`),
-`wsl bash tmp/csz/frame.sh gnd_land_hit_char_tsuba text1b`.
+ASM-SUSPECT. Measure: `wsl bash tmp/csz/gn_score.sh` (variant driver `tmp/csz/gn_v3.py`,
+sweep `tmp/csz/gn_sweep2.sh`), frame census `wsl bash tmp/csz/gn_frame.sh text1b <func>`.
 
 ## Candidates (banked as diffs; tree left clean)
 
 | file | score | insns | frame |
 |---|---|---|---|
 | `candidate_56.diff` | 56 | 178 vs 176 | vars 56 (target 64) |
-| `candidate_40.diff` | **40** | **176 vs 176** | vars 56 (target 64) |
+| `candidate_40.diff` | 40 | 176 vs 176 | vars 56 (target 64) |
+| `candidate_8.diff` | **8** | **176 vs 176** | **vars 64 == target** |
 
-`candidate_40` = `candidate_56` + split-init accumulation on **all four** offset statements.
+`candidate_8` = `candidate_40` + the loop guard written in the loop variable
+(`if (i < ((D_800A326C + 1) * 2))` instead of `if (((D_800A326C + 1) * 2) > 0)`)
++ a named displaced pointer (`p_b2ec = p_b2e0 + 0xC; base_offset = (s32*)(p_b2ec + stride)`).
+Guard alone: 40 -> 10. Adding `p_b2ec`: 10 -> 8.
+Still needs the family's `/* FAKE */` annotation on the split-init accumulation
+before any commit — nothing was committed.
 
-## The frame delta, decomposed
+## THE FRAME DELTA IS CLOSED — mechanism proven, not inferred
 
-Target `addiu sp,sp,-120`, ours `-112`; `vars` 64 vs 56. Callee-save SET is identical
-(s0-s8 + ra). Layout read off the stores (both sides agree on every field offset):
+New instrument (this session): a **FRAMEDBG hook in cc1's `assign_stack_local`**
+printing every frame allocation with a caller tag (`stack_temp` / `spill_new_p<N>` /
+`spill_grow_p<N>` / `put_reg_into_stack` / `assign_parms_*` / `round_frame`).
+Patch recorded in `tools/ra_solver/cc1_hooks.patch.md` §5; parity-checked OK on
+text1b + main. Census tool: `tmp/csz/gn_census.py <framedbg.log> <asm.s> --only-phantom`
+(pairs allocations against emitted sp traffic, treats `addiu $rX,$sp,K` as address-taken).
 
-- `0..15` a0-a3 home area · `16..59` the `S46C s` local struct (`s.p1` @20, `s.zero18` @40,
-  `s.zero1C` @44, `s.c20` @48, `s.c24` @52) — field offsets match target exactly.
-- `64` — a live 4-byte local holding a pointer, spilled and reloaded. **LANDED** (below).
-- `68..79` — 12 bytes **no instruction on either side touches**: phantom slots
-  ([[phantom-slot-frame-lever]]). **This is the whole remaining delta.**
+At candidate_40 our 56 bytes decomposed EXACTLY as:
+`stack_temp 48B` (the `S46C s` local, 44 rounded to 8) + `spill_new_p88 8B`.
+Target's 64 = the same two + **one more 8-byte block that no instruction touches**
+(target sp[72..79); confirmed no `lw/sw` and no `addiu $rX,$sp,72`).
 
-## What landed, and why (65 → 40)
+**Producer, measured on an in-tree witness (`func_8004954C`, same TU):** a comparison
+pseudo that is BORN as reg-vs-reg `slt` at RTL-generation and that **combine later folds
+into a zero-compare**. In the witness, `.flow` has
+`(set (reg 80) (lt (reg 75) (reg 73)))` + `(if_then_else (eq (reg 80) 0) ...)`; combine
+const-props reg 75 = 0 and rewrites the branch to `(le (reg 73) (const_int 0))` — a bare
+`blez`. Pseudo 80 keeps `reg_n_refs > 0` but has **zero surviving RTL refs and an empty
+conflict list**, so `global_alloc` skips it (`reg_live_length < 0`) and reload's
+`alter_reg` hands it an 8-byte slot that nothing ever accesses. Signature to look for:
+`;; N conflicts:` empty AND N absent from `;; Register dispositions:`
+(`tmp/csz/gn_orph2.py <dump>.greg [func]`).
 
-**The first +8 came from an exact RA spec: `refs+1` on pseudo 85.** `tools/ra_solver`
-reproduces our allocation 16/16 exactly. Pseudo 85 (`p_b388`, `REG_EQUIV symbol_ref
-D_8009B388`) was the only unallocated allocno, priority 159
-(`floor_log2(refs)*refs*size/livelen*10000`), so one more reference takes it to 425, past 86
-(412) and 87 (315) — evicting 87 (`base_offset`, no constant equivalence) to a **real** spill
-slot, i.e. the `64(sp)` local. `perturb.py` over 157 single atoms returns `pseudo 85: refs+1`
-as the **ONLY** solution. Ref arithmetic (def at depth 1 + each in-loop use at depth 2) checks
-out on all four allocnos, so **an in-loop use adds 2 and the needed +1 must land at loop depth
-1** — which is why the round-2 in-loop spelling was wrong. The landing spelling precomputes
-half 2's pointer outside the loop:
-```c
-p_b388 = &D_8009B388;
-p_b390 = p_b388 + 2;      /* depth-1 ref -> nrefs 3 -> 4, pri 159 -> 425 */
-```
+Our literal-zero guard `(...) > 0` is folded by the FRONT END, so no pseudo is ever born
+(the fold/emit dichotomy). Writing the guard in `i` — which is exactly what jump.c's
+`duplicate_loop_exit_test` produces from a `for`/`while` loop — births the pseudo, combine
+folds it back to the identical `blez`, and the phantom slot appears **at zero instruction
+cost**: 176 insns before and after, `vars` 56 -> 64, `.frame` 112 -> 120.
 
-**The +2 instruction gap then closed via split-init accumulation.** Target folds each `rN - K`
-into an accumulator held across the call (`addu a2,a2,v0`); we emitted
-`addiu v0,v0,-K; addu v0,sX,v0`. Per [[split-init-accumulation-sanctioned]]:
-```c
-a2_offset = (s32)r4 - 0x19;
-a2_offset += ((u32)(D_800A3418 * 0x32) >> 0xF);
-```
-Sweep (`tmp/csz/gn_split.py <variant>`, driver `tmp/csz/gn_sweep.sh`) is monotone in the number
-of statements split: none 56/178, 2nd-half a2 49/178, 2nd-half a0 51/177, 2nd-half both 44/177,
-+1st-half a2 43/177, +1st-half a0 41/176, **all four 40/176**. This **supersedes the round-4
-negative** ("all four → 68/178"), which was measured on the pre-round-5 source.
+This supersedes the round-5 "phantom producer #1 is unreachable here" negative, which
+tested spellings of the guard *expression* rather than the guard's *operand form*.
 
-**If this lands it needs the family's `/* FAKE */` annotation** — not yet added, since nothing
-is being committed.
+## Residual at score 8 — three groups, no RA renames left
 
-## Residual at score 40 — the phantom +8 and nothing else
+Every register assignment now matches; the epilogue/frame diff is gone.
 
-```
-target: addiu a2,s4,-25   |  ours: move a1,zero      (one moved pair, counts equal)
-target: slt v1,s2,v1      |  ours: slt v1,s3,v1      ($s2/$s3 rename)
-target: lw ra,116(sp) ... addiu sp,sp,120
-ours:   lw ra,108(sp) ... addiu sp,sp,112            (every slot -8)
-```
-The epilogue shift IS the +8; the rename and the moved pair follow from it.
+1. `target addu v0,s0,s8` vs `ours addu v0,s8,s0` — operand order of
+   `s.p0 = (void *)(p_b2e0 + stride)` (1 insn).
+2. ×2 (one per loop half): target fills the `lw v1,%gprel(D_800A3418)` load-delay slot
+   with `addiu a2,s4,-K` and hoists `move a1,zero` earlier; ours issues `addiu a2,s4,-K`
+   before `addiu a0,sp,16` and fills the slot with `move a1,zero`. Pure sched.c choice —
+   `tools/sched_solver` is the right instrument next.
+3. `target lui/addiu %hi/%lo(D_8009B390)` vs `ours lui %hi(D_8009B388); addiu a3,a3,8`.
 
 ## Settled negatives — do NOT re-run
 
-- **`S46C` is not under-sized.** Growing it 44→60 gives +16 with field offsets unchanged, but
-  its two other users in text1b.c (`func_8005D46C`, `func_8005FA98`) match the oracle today at
-  `vars= 48` with ZERO rules. Growing it breaks them.
-- **Pointer reassociation is inert** (`p_b2e0 + stride + 0xC` → `p_b2e0 + 0xC + stride`): 65 →
-  65. GCC canonicalizes the PLUS chain.
-- **Def placement cannot buy refs.** Moving `p_b388 = &D_8009B388;` inside the `do/while` is
-  inert — `loop.c` hoists it back to the preheader; the extracted model is byte-identical.
-- **The exec_game identity/holder levers do NOT transfer** (frame stayed 48 in every variant):
-  inlining the `c100`/`c1` holders as literals scores 67 (they are load-bearing here), and
-  splitting `a0_offset`/`a2_offset` per call-half is inert — GCC coalesces the split because
-  the two ranges do not overlap.
-- **Phantom producer #1 (folded guard compare) is unreachable here.** Three spellings naming
-  the entry guard `((D_800A326C + 1) * 2) > 0` on top of candidate_40 (`tmp/csz/gn_phantom.py`,
-  driver `tmp/csz/gn_ph_run.sh`) are **all inert**: 40 / 176 / vars 56. Target's entry guard is
-  a **bare `blez $v1`** (`asm/funcs/gnd_land_hit_char_tsuba.s:53`) and the loop condition
-  `slt $v1,$s2,$v1; bnez` (161-162) — a `blez` needs no compare pseudo, so a named local has
-  nothing to strand. (Target's `D_800A326C` traffic: prologue read, store at 22, guard re-read
-  at 49, loop-condition re-read at 157, `+= 1` read/store at 165/168 — our C already matches.)
-- **Phantom producer #2 (combine orphan-USE) has no site.** Orphan census
-  (`tmp/csz/gn_orphan.sh`): `.greg` dispositions run 72-152 with **86 and 88 absent**, i.e. we
-  already carry exactly two unallocated pseudos (`p_b2e0`, `p_b390`); combine emits **zero**
-  bare `(use (reg N))` anywhere in the function, consistent with the arithmetic being all
-  s32/u32 with no HImode intermediate to strand.
+- Everything in the round-5 list still holds (S46C is not under-sized; pointer
+  reassociation of the `p_b2e0 + stride + 0xC` chain is inert; def placement cannot buy
+  refs; the exec_game identity/holder levers do not transfer).
+- **Phantom producer #2 (combine orphan-USE) has no site** — combine emits zero bare
+  `(use (reg N))` in this function.
+- **`p_b390 = p_b388 + 2` is load-bearing and cannot be replaced by `&D_8009B390`.**
+  Every form that names the symbol instead drops to **174 insns** — it loses
+  `base_offset`'s spill pair (`sw v0,64(sp)` / `lw a3,64(sp)`), because a symbol-named
+  pointer gets a `REG_EQUIV symbol_ref` and is rematerialised at no register pressure.
+  Measured: `&D_8009B390` with p_b390 kept 43/174; no p_b390 variable 45/174;
+  both pointers from symbols, either birth order 43/174; `p_b388` derived from
+  `p_b390` 14/176; `&p_b388[2]` 8/176 (identical to `+ 2`). So residual group 3 needs a
+  *different* source of pressure on `base_offset`, not a respelling of this line.
+- **Base_offset association is exhausted except the named form.** `p_b2e0 + 0xC + stride`,
+  `(p_b2e0 + 0xC) + stride`, `stride + (p_b2e0 + 0xC)` are all inert at 10; only the
+  named `p_b2ec` intermediate moves it (to 8).
+- **`s.p0` operand order is not source-controllable by spelling**: `stride + p_b2e0` and
+  `&p_b2e0[stride]` both stay at 8.
+- **Split-init accumulation on all four offset statements is still optimal** under the new
+  guard (re-measured, since the old sweep predates it): re-fusing site 1 or 3 gives
+  11/177, site 2 or 4 gives 9/176, sites 2+4 gives 16/176, sites 1+3 gives 16/178.
+- **Reversing the accumulation order** (start from the `D_800A3418` term) is worse:
+  a2 sites 16/176, a0 sites 16/178, both 24/178.
+- **A real `while` loop** also reaches `vars=64` but costs 2 instructions (29/174) —
+  loop.c hoists differently. The `if (i < ...) do {...} while (i < ...)` form is the one
+  that keeps 176.
 
 ## Next
 
-1. **Producers #1 and #2 are ruled out; #3 is what remains** — live named locals on multi-read
-   values, at zero instruction cost. `D_800A3418` is NOT the candidate it looks like: each
-   `^=` update is followed by a single use, so it is not multi-read per segment. Look for a
-   value the function reads more than once between updates.
-2. Also test whether giving pseudo 88 (`p_b390`) a clean `REG_EQUIV symbol_ref D_8009B390`
-   changes the slot accounting — target rematerialises `&D_8009B390` as `lui`/`addiu` (align
-   idx 106-107), so ours materialising it differently may be why our two orphans pay fewer
-   bytes than target's phantom block.
+1. `tools/sched_solver` on residual group 2 — it is a single load-delay-slot fill choice
+   duplicated across the two loop halves, and it is the largest remaining group.
+2. Group 3 needs a pressure source for `base_offset` that is not `p_b388 + 2`.
+   Re-run `tools/ra_solver` **at the candidate_8 baseline** (the round-5 pseudo-85
+   priority spec was derived at the old allocation and is stale).
 3. **Do NOT commit.** The owner runs the gate.
