@@ -148,6 +148,11 @@ class Sim:
                 temp_excl |= CALL_USED
             temp_excl |= (set(range(FIRST_PSEUDO)) - GR_REGS)
             pruned_prefs[a] = prefs[a] - temp_excl
+            # prune_preferences prunes hard_reg_copy_preferences with the same
+            # mask (global.c:897); keep them SEPARATE from hard_reg_preferences
+            # because find_reg upgrades in two stages, copy prefs first.
+            pruned_prefs.setdefault("_copy", {})
+            pruned_prefs["_copy"][a] = copy_prefs_in.get(a, set()) - temp_excl
             # someone_prefers accumulates the FULL preference sets of
             # lower-priority conflicting allocnos (pruned the same way)
             pruned_full = full_prefs_in.get(a, prefs[a]) - temp_excl
@@ -199,13 +204,25 @@ class Sim:
             if best < 0:
                 best = scan(used1)
 
-            # preference upgrade (single dumped pref set; copy==full approx)
+            # preference upgrade, in GCC's TWO stages (global.c find_reg,
+            # "First do this for those register with copy preferences, then
+            # all preferred registers"): scan hard_reg_copy_preferences
+            # ascending and, on a hit, `goto no_prefs` — the plain-preference
+            # stage is SKIPPED entirely. Only if no copy pref fits does
+            # hard_reg_preferences get its turn.
             if best >= 0:
-                for r in sorted(pruned_prefs[a] - used1):
-                    if mode_ok(r, mode) and \
-                       all((r + j) not in used1 for j in range(1, size)):
-                        best = r
-                        break
+                def upgrade(cands):
+                    for r in sorted(cands - used1):
+                        if mode_ok(r, mode) and \
+                           all((r + j) not in used1 for j in range(1, size)):
+                            return r
+                    return -1
+
+                r = upgrade(pruned_prefs.get("_copy", {}).get(a, set()))
+                if r < 0:
+                    r = upgrade(pruned_prefs[a])
+                if r >= 0:
+                    best = r
 
             if self.trace:
                 import sys as _s
