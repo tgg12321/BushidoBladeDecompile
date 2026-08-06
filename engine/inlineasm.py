@@ -25,6 +25,153 @@ import classify_inline_asm as cia  # noqa: E402
 _PIN_QUALIFIER = re.compile(r'\basm\s*\(\s*"[^"]+"\s*\)')
 _REGISTER_KEYWORD = re.compile(r"\bregister\b")
 
+# --- whole-body asm constructs -------------------------------------------
+# A function whose bytes come VERBATIM from asm/funcs/<name>.s instead of being
+# compiled from C. Two spellings reach the build:
+#
+#   INCLUDE_ASM("asm/funcs", name);              the include_asm.h macro
+#   __asm__(... ".include \"asm/funcs/name.s\"")  the same thing, hand-expanded
+#   __asm__(... "glabel name" ...)                a hand-written whole body
+#
+# None is compiled C, so all three are cheat-asm ATTRIBUTED to `name` even
+# though no C body exists to attribute them to positionally.
+#
+# Attribution is deliberately spelling-INDEPENDENT. An earlier draft covered
+# only the two INCLUDE_ASM forms and argued the `glabel` spelling was safe
+# because every glabel body in the tree today happens to be canonical-authorized
+# (and so drops earlier via canon_funcs). Layer-2 review rejected that: it is a
+# census of the current tree, not an invariant, and
+# .claude/rules/canonical-asm-authorization-recipe.md actively instructs authors
+# to write that form — so a future non-canonical glabel body would reproduce the
+# ang_hosei defect one spelling over. Whether an attributed function may still be
+# COMPLETED is decided by canonical-asm membership, never by which spelling was
+# used.
+#
+# ATTRIBUTION IS NOT STRIPPING. Only the INCLUDE_ASM forms are stripped for
+# scoring; `glabel` bodies keep _block_category's "canonical_body" never-strip
+# treatment, unchanged.
+#
+# The MACRO spelling is the one that used to escape entirely: this module runs
+# on UNEXPANDED source text, where `INCLUDE_ASM(` is simply not `__asm__(` and
+# so never matches cia.ASM_KEYWORD_RE. It only becomes `__asm__` after cpp,
+# which the stripper never runs. The construct was therefore never even a
+# CANDIDATE for stripping — it was not classified and kept, it was unseen. That
+# blind spot let a function with zero lines of decompiled C report an honest
+# pure-C sandbox distance of 0 (measured on ang_hosei: recorded distance 50,
+# post-conversion `sandbox --disable all` score 0), and made
+# func_cheat_asm_count return -1, which queue.generate/mark_done read as clean.
+_INCLUDE_ASM_MACRO_RE = re.compile(
+    r'(?m)^[ \t]*INCLUDE_ASM\s*\(\s*"[^"]*"\s*,\s*([A-Za-z_]\w*)\s*\)\s*;?[ \t]*')
+_INCLUDE_DIRECTIVE_RE = re.compile(r'\.include\s+\\?"[^"\\]*?/([A-Za-z_]\w*)\.s\\?"')
+_GLABEL_NAME_RE = re.compile(r'\bglabel\s+([A-Za-z_]\w*)')
+
+
+def include_asm_spans(text: str) -> list[tuple[str, int, int]]:
+    """(func, start, end) for every `INCLUDE_ASM(FOLDER, func)` invocation.
+
+    Anchored at line start, so a `#define INCLUDE_ASM(...)` in a header and a
+    commented-out invocation do not match.
+    """
+    return [(m.group(1), m.start(), m.end())
+            for m in _INCLUDE_ASM_MACRO_RE.finditer(text)]
+
+
+# Directives known NOT to emit bytes. This is a DENY-list on purpose: anything
+# unrecognised counts as emitting, so an unfamiliar directive fails safe toward
+# "this block is a body" (retained/attributed) rather than "this is a bare
+# marker" (droppable as not-a-function). `.align` is listed because emitting
+# only alignment padding does not make a block a body.
+#
+# The inverse allowlist was the first draft and it misfiled real code: ings.c
+# ships func_800164F8 as a raw word stream (0x2402270F = `addiu v0,0x270F`,
+# 0x03E00008 = `jr ra`) and func_800164AC as a 19-entry `.word` pointer table.
+# Treating every `.`-prefixed line as a non-instruction called both bare symbol
+# markers. Census of every directive head across all `__asm__` blocks in src/:
+# .aent .global .globl .include .section .set .text .type .word
+_NON_EMITTING_DIRECTIVES = (".set", ".section", ".text", ".data", ".rodata",
+                            ".bss", ".globl", ".global", ".type", ".size",
+                            ".ent", ".end", ".aent", ".align", ".local",
+                            ".weak", ".extern", ".file", ".ident", ".internal")
+_LABEL_MACROS = ("glabel", "endlabel", "alabel", "jlabel", "dlabel",
+                 "enddlabel", "ehlabel", "nonmatching")
+
+
+def _asm_block_has_instructions(body: str) -> bool:
+    """True when an `__asm__` block EMITS BYTES — a real instruction or a
+    byte-emitting directive — as opposed to only layout/symbol directives, label
+    definitions and glabel/endlabel macros.
+
+    A whole-BODY construct needs an actual body. Some blocks exist purely to
+    place a SYMBOL — e.g. system.c emits `glabel D_80081F1C` with nothing in it,
+    so that `&D_80081F1C` resolves to the address just before cdrom_IrqHandler.
+    Attributing those would put a bare label marker in the queue as if it were an
+    undecompiled function.
+    """
+    for s in cia.extract_strings(body):
+        for line in s.replace("\\n", "\n").splitlines():
+            t = line.strip()
+            if not t or t.endswith(":"):
+                continue
+            head = t.split()[0]
+            if head in _LABEL_MACROS:
+                continue
+            if head.startswith(".") and head in _NON_EMITTING_DIRECTIVES:
+                continue
+            return True
+    return False
+
+
+def symbol_marker_funcs(text: str) -> set[str]:
+    """Names declared by an `__asm__` block that places a SYMBOL and nothing
+    else — a `glabel <name>` with no instructions in the block.
+
+    These are address markers, not functions (system.c's `glabel D_80081F1C`
+    exists so `&D_80081F1C` resolves to the address before cdrom_IrqHandler).
+    They land in the object's function symbol table, so the queue needs to know
+    they are not decomp work.
+    """
+    names: set[str] = set()
+    for m in cia.ASM_KEYWORD_RE.finditer(text):
+        line_start = text.rfind("\n", 0, m.start()) + 1
+        if text[line_start:m.start()].lstrip().startswith("#"):
+            continue
+        paren_open = m.end() - 1
+        close = _match_paren(text, paren_open)
+        if close < 0:
+            continue
+        body = text[paren_open + 1:close - 1]
+        if _INCLUDE_DIRECTIVE_RE.search(body):
+            continue  # pulls in an asm/funcs body — a body, never a marker
+        if not _asm_block_has_instructions(body):
+            names.update(_GLABEL_NAME_RE.findall(body))
+    return names
+
+
+def whole_body_asm_funcs(text: str) -> set[str]:
+    """Names of functions this file supplies wholly from asm rather than C:
+    INCLUDE_ASM macro invocations, their hand-expanded `.include` equivalent, and
+    `glabel <name>` whole-body `__asm__` blocks.
+
+    Used to attribute cheat-asm to a function that has NO C body, so the
+    completion gate and the queue can tell "undecompiled, asm-supplied" apart
+    from "unknown". Whether such a function may still be COMPLETED is decided by
+    canonical-asm membership (inline_asm_canonical.txt), not here.
+    """
+    names = {f for f, _s, _e in include_asm_spans(text)}
+    for m in cia.ASM_KEYWORD_RE.finditer(text):
+        line_start = text.rfind("\n", 0, m.start()) + 1
+        if text[line_start:m.start()].lstrip().startswith("#"):
+            continue
+        paren_open = m.end() - 1
+        close = _match_paren(text, paren_open)
+        if close < 0:
+            continue
+        body = text[paren_open + 1:close - 1]
+        names.update(_INCLUDE_DIRECTIVE_RE.findall(body))
+        if _asm_block_has_instructions(body):
+            names.update(_GLABEL_NAME_RE.findall(body))
+    return names
+
 
 def _code_without_comments_and_strings(text: str) -> str:
     """Return text with comments and string/char literals blanked, preserving
@@ -162,9 +309,17 @@ def _block_category(asm_body: str) -> str:
 
 
 def _strip_spans(text: str) -> list[tuple[int, int]]:
-    """Char spans to delete: cheat-asm __asm__ statements + the asm("$N")
-    qualifier of register pins (the variable declaration itself is kept)."""
-    spans = []
+    """Char spans to delete: cheat-asm __asm__ statements, INCLUDE_ASM whole-body
+    invocations, + the asm("$N") qualifier of register pins (the variable
+    declaration itself is kept).
+
+    INCLUDE_ASM is stripped because it is not compiled C: leaving it in would let
+    the sandbox assemble the target bytes straight from asm/funcs/<name>.s and
+    report an honest pure-C distance of 0 for a function with no C at all.
+    Whole-body `glabel` __asm__ blocks are deliberately NOT stripped here —
+    _block_category calls them "canonical_body" and that behaviour is unchanged.
+    """
+    spans = [(s, e) for _f, s, e in include_asm_spans(text)]
     for m in cia.ASM_KEYWORD_RE.finditer(text):
         line_start = text.rfind("\n", 0, m.start()) + 1
         if text[line_start:m.start()].lstrip().startswith("#"):
@@ -229,8 +384,21 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     Earlier versions used `text.find('{', m.end())` which silently picked up
     the NEXT function's opening brace when `func` had an extern declaration
     at the top of the file, attributing far-away unrelated cheats to it.
+
+    Two real shapes in this tree that a strict column-0 + `)`-then-`{` rule
+    missed, leaving the function's cheat count UNKNOWN and its body's cheats
+    invisible to the completion gate:
+      * `}s32 func_8007DE08(s32 arg0) {`  (display.c) — the definition shares a
+        line with the previous function's closing brace. A single optional `}`
+        is allowed before the return type; arbitrary indentation still is NOT,
+        because that is what distinguishes a definition from a call.
+      * `void func_8004A1FC(arg0) s16 *arg0; {` (text1b.c) — old-style K&R
+        parameter declarations sit between `)` and `{`.
     """
-    pattern = re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(")
+    # Leading whitespace is permitted ONLY after a closing `}`; a bare indented
+    # line stays non-matching, which is what separates a definition from a call.
+    pattern = re.compile(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
+                         + re.escape(func) + r"\s*\(")
     n = len(text)
     for m in pattern.finditer(text):
         # Walk to the matching `)` of the opening `(`.
@@ -256,6 +424,19 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
         j = i
         while j < n and text[j] in " \t\n\r":
             j += 1
+        if j < n and text[j] != "{":
+            # Possible K&R parameter declarations between `)` and `{`: a run of
+            # `type name[, name];` statements. Accept only that shape — anything
+            # else (`;` = a plain declaration, `=`, `(`) rejects the candidate.
+            k = j
+            while True:
+                dm = re.compile(r"[A-Za-z_][\w \t\*,\[\]]*;").match(text, k)
+                if not dm:
+                    break
+                k = dm.end()
+                while k < n and text[k] in " \t\n\r":
+                    k += 1
+            j = k if (k > j and k < n and text[k] == "{") else j
         if j >= n or text[j] != "{":
             continue  # declaration or other; skip this candidate
         end = _match_brace(text, j)
@@ -278,7 +459,13 @@ def func_cheat_asm_count(text: str, func: str) -> int:
     """
     span = _func_body_span(text, func)
     if span is None:
-        return -1
+        # No C body. If the file supplies this function wholly from asm
+        # (INCLUDE_ASM invocation or a `glabel <func>` block), that construct IS
+        # the cheat construct and is attributed to `func` — otherwise a function
+        # with zero lines of C would count as clean and be recorded COMPLETED-C.
+        # Only when nothing explains the symbol do we report -1 (UNKNOWN), which
+        # callers must treat as not-clean rather than as zero.
+        return 1 if func in whole_body_asm_funcs(text) else -1
     lo, hi = span
     strip_spans = _strip_spans(text) + register_hint_spans(text)
     cheat_asm = sum(1 for s, _e in strip_spans if lo <= s < hi)

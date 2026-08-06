@@ -65,18 +65,37 @@ def sandbox_score(func: str, disable: str = "lost-codegen",
         res = score.score_func(disabled_o, reference_o, func)
         res["scorable"] = True
     except KeyError as e:
-        # The function is ABSENT from the cheat-disabled object: the whole-file
-        # build got truncated — typically a SIBLING function's index-based regfix
-        # `reorder` rule crashed the pipeline after cheat-asm stripping shifted
-        # maspsx indices (see .claude/rules/jtbl-rodata-split-infrastructure.md).
-        # Return a clean unscorable result instead of a traceback so callers
-        # (CLI, canonical, the headless worker) can fall back to structural
-        # analysis.
-        res = {"score": None, "scorable": False, "target_insns": None,
-               "build_insns": None,
-               "error": (f"score unavailable: {e}. Cheat-disabled build of {stem}.c "
-                         f"is missing {func} (pipeline likely truncated by a sibling "
-                         f"index-based reorder rule after cheat-asm strip).")}
+        # The function is ABSENT from the cheat-disabled object. Two very
+        # different causes, and conflating them hides the honest distance:
+        #
+        # (a) We stripped the function's own whole-body asm (INCLUDE_ASM), so
+        #     there is no C for it at all. That is not an error — the honest
+        #     pure-C distance is "every target instruction is missing". Report
+        #     it as a real score so an undecompiled function can never read 0.
+        # (b) The whole-file build got truncated — typically a SIBLING's
+        #     index-based regfix `reorder` rule crashed the pipeline after
+        #     stripping shifted maspsx indices (see
+        #     .claude/rules/jtbl-rodata-split-infrastructure.md). Unscorable.
+        no_c_body = False
+        if strip_cheat_asm:
+            from . import inlineasm
+            try:
+                src_text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+                no_c_body = (func in inlineasm.whole_body_asm_funcs(src_text)
+                             and inlineasm._func_body_span(src_text, func) is None)
+            except OSError:
+                no_c_body = False
+        if no_c_body:
+            target_insns = len(score.normalized_insns(reference_o, func))
+            res = {"score": target_insns, "scorable": True,
+                   "target_insns": target_insns, "build_insns": 0,
+                   "no_c_body": True}
+        else:
+            res = {"score": None, "scorable": False, "target_insns": None,
+                   "build_insns": None,
+                   "error": (f"score unavailable: {e}. Cheat-disabled build of {stem}.c "
+                             f"is missing {func} (pipeline likely truncated by a sibling "
+                             f"index-based reorder rule after cheat-asm strip).")}
     res.update(func=func, file=stem, disable=disable, strip_cheat_asm=strip_cheat_asm,
                rules_dropped=ov["dropped"], cheat_asm_stripped=cheat_asm_stripped,
                disabled_o=disabled_o)

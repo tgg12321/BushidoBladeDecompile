@@ -35,6 +35,7 @@ queue {next,done,park,status,regen}`.
 from __future__ import annotations
 
 import json
+import re
 import time
 from collections import Counter
 from pathlib import Path
@@ -66,6 +67,53 @@ def _rule_count(func: str) -> int:
     return (len(cheats.func_rule_lines(func, cheats.REGFIX))
             + len(cheats.func_rule_lines(func, cheats.REGFIX2))
             + len(cheats.func_rule_lines(func, cheats.ASMFIX)))
+
+
+def _no_c_body(stem: str, func: str) -> bool:
+    """True when src/<stem>.c supplies `func` wholly from asm (INCLUDE_ASM or a
+    `glabel` block) and carries no C definition for it."""
+    try:
+        text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return (func in inlineasm.whole_body_asm_funcs(text)
+            and inlineasm._func_body_span(text, func) is None)
+
+
+_AENT_RE = re.compile(r'\.aent\s+([A-Za-z_]\w*)')
+
+
+def _not_a_c_function(stem: str, func: str) -> bool:
+    """True when `func` is a symbol in the object's function table that is not a
+    C-level function of src/<stem>.c at all, and therefore is not decomp work.
+
+    This is what lets an UNKNOWN cheat count be dropped SAFELY. Without the
+    distinction, "unknown" has two very different causes and treating both as
+    not-clean floods the queue: measured 2026-08-06, 11 of the 12 remaining
+    unknowns are non-C symbols, and they arrive with distance 0, which _sort_key
+    puts at the very top of the active lane.
+
+    Three mechanical signals, all conservative:
+      * the name never appears in the .c text at all — it comes from an
+        `.include`d asm body (8 symbols: D_80088BA0, the text1b D_8005xxxx set);
+      * it is declared `.aent <name>` — an alternate ENTRY into another function,
+        not a function of its own (3 symbols: g_data_start, g_module_func_tbl,
+        g_module_type_tbl);
+      * it is placed by an instruction-less `glabel <name>` marker block — an
+        address marker, not a body (1 symbol: D_80081F1C, declared `extern u8`
+        and taken by address).
+
+    A body-span parse failure matches NONE of them, so it is retained as
+    outstanding rather than silently dropped.
+    """
+    try:
+        text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    if re.search(r'\b' + re.escape(func) + r'\b', text) is None:
+        return True
+    return (func in set(_AENT_RE.findall(text))
+            or func in inlineasm.symbol_marker_funcs(text))
 
 
 def _route(opcode_verdict: str, distance: int) -> str:
@@ -142,10 +190,21 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # honest distance here. Distance is recorded as -1 to indicate
                 # unscored.
                 cheats_unscored = inlineasm.file_func_cheat_asm_count(stem, func)
-                if rules == 0 and prologue == 0 and (cheats_unscored <= 0 or func in canon_funcs):
+                if rules == 0 and prologue == 0 and (
+                        cheats_unscored == 0 or func in canon_funcs
+                        or (cheats_unscored < 0 and _not_a_c_function(stem, func))):
                     continue  # nothing to track
                 dist = -1
                 scorable = False
+                if cheats_unscored > 0 and _no_c_body(stem, func):
+                    # Asm-supplied with no C at all: the honest pure-C distance
+                    # is the whole function, not "unknown". Keeps easiest-first
+                    # ordering meaningful instead of parking it at -1.
+                    try:
+                        dist = len(score.normalized_insns(ref_o, func))
+                        scorable = True
+                    except KeyError:
+                        pass
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
             if rules == 0 and prologue == 0:
                 # COMPLETED-INLINE-ASM-CANONICAL: function is in inline_asm_canonical.txt
@@ -158,7 +217,15 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 if func in canon_funcs:
                     continue
                 # COMPLETED-C: 0 rules + 0 distance + 0 cheat-asm = pure-C byte-clean.
-                if dist == 0 and cheat_count <= 0:
+                #
+                # ONLY a measured-zero count may drop. A NEGATIVE count is
+                # UNKNOWN and must never read as clean — that is precisely how an
+                # undecompiled function silently left the queue (ang_hosei,
+                # 2026-08-06). The one safe exception is a symbol that is not a
+                # C-level function at all (`_not_a_c_function`), which is not
+                # decomp work in the first place.
+                if dist == 0 and (cheat_count == 0
+                                  or (cheat_count < 0 and _not_a_c_function(stem, func))):
                     continue
             if func in prev:  # sticky parked
                 pv = prev[func]
@@ -178,6 +245,18 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # INCLUDE_ASM/TU-resplit campaign. Keep it visible outside
                 # the active lane, like jtbl-infra.
                 verdict, status = "CANON-EXTRACT", "authorize"
+            elif _no_c_body(stem, func):
+                # Asm-supplied, no C at all. `dist` here is definitionally "the
+                # whole function is missing", so it carries ZERO information
+                # about whether the original was hand-written asm — feeding it to
+                # _route would send every large conversion to ASM-STRUCTURAL and
+                # out of the active lane on exactly the distance heuristic
+                # .claude/rules/canonical-gate-distance-not-evidence.md
+                # disclaims (and that the owner overturned for 26 functions on
+                # 2026-08-01). Keep the distance for ORDERING, route on the
+                # opcode verdict alone.
+                verdict = _route(verdicts.get(func, "C"), 0)
+                status = "authorize" if verdict in _AUTHORIZE else "active"
             else:
                 verdict = _route(verdicts.get(func, "C"), dist)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
@@ -260,6 +339,19 @@ def mark_done(func: str) -> dict:
                                f"Fix the C and delete the gate entry; see "
                                f".claude/rules/maspsx-gate-lists.md.")}
         cheat_count = inlineasm.file_func_cheat_asm_count(item["file"], func)
+        if cheat_count < 0:
+            # UNKNOWN, not clean. No C body could be located for a function that
+            # is not canonical-authorized, so there is nothing to certify as
+            # pure C. Refusing is the safe direction: treating unknown as zero is
+            # exactly how an undecompiled function gets recorded COMPLETED-C.
+            return {"ok": False, "func": func,
+                    "reason": (f"cheat-construct count for {func} is UNKNOWN — no C "
+                               f"definition found in src/{item['file']}.c. A function "
+                               f"with no C body cannot be COMPLETED-C. If its body is "
+                               f"supplied from asm (INCLUDE_ASM or a glabel block), it "
+                               f"is undecompiled and stays INCOMPLETE; if it is "
+                               f"genuinely hand-written asm, authorize it in "
+                               f"inline_asm_canonical.txt with evidence.")}
         if cheat_count > 0:
             return {"ok": False, "func": func,
                     "reason": (f"{cheat_count} cheat construct(s) in src/{item['file']}.c "

@@ -1266,6 +1266,207 @@ def test_prologue_cheat() -> None:
             cheats.PROLOGUE_CONFIG, cheats.DELAY_SLOT_RA, cheats.FRAME_FIX = orig
 
 
+def test_include_asm_whole_body() -> None:
+    """A whole-body INCLUDE_ASM must never read as clean, pure-C, or complete.
+
+    Regression for the 2026-08-06 Campaign-4 pilot finding: the stripper runs on
+    UNEXPANDED source, so `INCLUDE_ASM(...)` never matched cia.ASM_KEYWORD_RE
+    (which only knows `__asm__`/`__asm`) and was not even a candidate for
+    stripping. A function with zero lines of decompiled C therefore scored an
+    honest pure-C distance of 0 and counted as clean (-1 read as <= 0), so
+    queue.generate dropped it and mark_done would have recorded it COMPLETED-C.
+    """
+    inc = 'INCLUDE_ASM("asm/funcs", ang_hosei);\n'
+
+    # 1. Recognition + attribution.
+    eq("include_asm: macro invocation recognised",
+       [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["ang_hosei"])
+    check("include_asm: named in whole_body_asm_funcs",
+          "ang_hosei" in inlineasm.whole_body_asm_funcs(inc))
+    check("include_asm: a #define of the macro is not an invocation",
+          inlineasm.include_asm_spans('#define INCLUDE_ASM(F, N) __asm__()\n') == [])
+
+    # 2. Stripped for scoring — otherwise the sandbox assembles target bytes
+    #    straight from asm/funcs/<name>.s and reports distance 0.
+    out, n = inlineasm.strip_cheat_asm_file(inc)
+    check("include_asm: stripped from the sandbox source", "INCLUDE_ASM" not in out)
+    check("include_asm: counted as a stripped cheat construct", n >= 1)
+
+    # 3. Counted > 0 despite there being no C body to attribute it to.
+    eq("include_asm: attributed to the named function",
+       inlineasm.func_cheat_asm_count(inc, "ang_hosei"), 1)
+    # The hand-expanded `.include` spelling is the same fact.
+    exp = ('__asm__(\n    ".section .text\\n"\n'
+           '    "    .include \\"asm/funcs/ang_hosei.s\\"\\n"\n);\n')
+    check("include_asm: hand-expanded .include attributed too",
+          "ang_hosei" in inlineasm.whole_body_asm_funcs(exp))
+    # Genuinely unexplained symbols still report UNKNOWN rather than a fake 1.
+    eq("include_asm: unrelated symbol still UNKNOWN",
+       inlineasm.func_cheat_asm_count(inc, "some_other_func"), -1)
+    # Attribution is spelling-INDEPENDENT: a `glabel` whole-body block is the
+    # same fact and must attribute too, or the defect just moves one spelling
+    # over. (It is still never STRIPPED — canonical_body behaviour is unchanged.)
+    gl = ('__asm__(\n    ".section .text\\n"\n    "glabel md_gview_init\\n"\n'
+          '    "    jr $ra\\n"\n    "    nop\\n"\n    "endlabel md_gview_init\\n"\n);\n')
+    eq("include_asm: glabel whole-body block attributed",
+       inlineasm.func_cheat_asm_count(gl, "md_gview_init"), 1)
+    check("include_asm: glabel whole-body block still NOT stripped",
+          "glabel md_gview_init" in inlineasm.strip_cheat_asm_file(gl)[0])
+    # ...but a glabel block with NO instructions is a bare SYMBOL marker, not a
+    # body (system.c emits one so `&D_80081F1C` resolves). Not decomp work.
+    marker = '__asm__(\n    ".set noreorder\\n"\n    "glabel D_80081F1C\\n"\n);\n'
+    eq("include_asm: instruction-less glabel marker NOT attributed",
+       inlineasm.func_cheat_asm_count(marker, "D_80081F1C"), -1)
+    # A body encoded entirely as byte-emitting `.word`s IS a body, not a marker
+    # (ings.c ships func_800164F8 that way: 0x03E00008 is `jr ra`).
+    words = ('__asm__(\n    ".set noreorder\\n"\n    "glabel func_800164F8\\n"\n'
+             '    ".word 0x2402270F\\n"\n    ".word 0x03E00008\\n"\n);\n')
+    eq("include_asm: .word-encoded body attributed as a body",
+       inlineasm.func_cheat_asm_count(words, "func_800164F8"), 1)
+    # A block carrying BOTH a glabel and an asm/funcs `.include` is a body, and
+    # must not also be reported as a marker — the two sets must stay disjoint,
+    # or _not_a_c_function could call an attributed function "not a function".
+    hybrid = ('__asm__(\n    "glabel foo\\n"\n'
+              '    "    .include \\"asm/funcs/foo.s\\"\\n"\n);\n')
+    check("include_asm: glabel+.include block is a body",
+          "foo" in inlineasm.whole_body_asm_funcs(hybrid))
+    check("include_asm: glabel+.include block is NOT a marker",
+          "foo" not in inlineasm.symbol_marker_funcs(hybrid))
+    # Unknown directives fail SAFE toward "this is a body", so a future
+    # byte-emitting directive can never make a real function droppable.
+    unknown = '__asm__(\n    "glabel bar\\n"\n    "    .quad 0x1\\n"\n);\n'
+    check("include_asm: unrecognised directive counts as a body",
+          "bar" not in inlineasm.symbol_marker_funcs(unknown))
+    for stem in ("ings", "ings2", "system", "main", "text1b", "display"):
+        t = Path(f"src/{stem}.c").read_text(encoding="utf-8")
+        eq(f"include_asm: body/marker sets disjoint in {stem}.c",
+           sorted(inlineasm.whole_body_asm_funcs(t)
+                  & inlineasm.symbol_marker_funcs(t)), [])
+
+    # 3b. Body-span shapes that used to be misparsed as "no C body", which left
+    #     a real function's cheat count UNKNOWN and its cheats unpoliced.
+    brace_prefixed = ('void prev(void) {\n    int a;\n'
+                      '}s32 func_8007DE08(s32 arg0) {\n'
+                      '    __asm__ volatile("addu $8,$3,$0");\n    return arg0;\n}\n')
+    eq("body-span: definition sharing a line with the previous `}`",
+       inlineasm.func_cheat_asm_count(brace_prefixed, "func_8007DE08"), 1)
+    knr = ('void func_8004A1FC(arg0) s16 *arg0; {\n'
+           '    __asm__ volatile("addu $8,$3,$0");\n}\n')
+    eq("body-span: K&R parameter declarations between `)` and `{`",
+       inlineasm.func_cheat_asm_count(knr, "func_8004A1FC"), 1)
+    # ...without letting an indented CALL be mistaken for a definition.
+    call_only = ('extern int foo(int);\nvoid bar(void) {\n    foo(1);\n}\n')
+    eq("body-span: an indented call is still not a definition",
+       inlineasm.func_cheat_asm_count(call_only, "foo"), -1)
+
+    # 4. generate(): a negative (UNKNOWN) count must NOT drop an item, and a
+    #    measured-zero count still must.
+    def _regen_with(cheat_count: int, canon: set, src_text: str | None = None) -> list:
+        with tempfile.TemporaryDirectory() as td:
+            cwd = os.getcwd()
+            os.chdir(td)
+            Path("build/src").mkdir(parents=True)
+            Path("build/src/faketu.o").write_text("")
+            if src_text is not None:
+                Path("src").mkdir()
+                Path("src/faketu.c").write_text(src_text)
+            orig = (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
+                    cheats.canonical_asm_funcs, Q._rule_count,
+                    cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                    cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
+                    Q.sandbox.build_stripped_object, score._o_func_table,
+                    score.score_func)
+            Q.QUEUE_PATH = str(Path(td) / "queue.json")
+            Path(Q.QUEUE_PATH).write_text(json.dumps({"items": [], "counts": {}}))
+            P.c_stems = lambda: ["faketu"]
+            canonical.scan_all = lambda: []
+            cheats.canonical_asm_funcs = lambda: canon
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            inlineasm.file_func_cheat_asm_count = lambda s, f: cheat_count
+            cheats.is_jtbl_infra = lambda f: False
+            cheats.is_canonical_extraction_only = lambda f: False
+            Q.sandbox.build_stripped_object = lambda *a, **k: {}
+            score._o_func_table = lambda o: {"func_WB": (0, 0)}
+            score.score_func = lambda a, b, f: {"score": 0}
+            try:
+                return [it["func"] for it in Q.generate(workdir=td)["items"]]
+            finally:
+                os.chdir(cwd)
+                (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
+                 cheats.canonical_asm_funcs, Q._rule_count,
+                 cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                 cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
+                 Q.sandbox.build_stripped_object, score._o_func_table,
+                 score.score_func) = orig
+
+    # An asm-supplied function reaches generate() with an ATTRIBUTED count of 1,
+    # never -1, so this is the case that keeps ang_hosei in the queue.
+    eq("include_asm: regen KEEPS an item with attributed cheat-asm",
+       _regen_with(1, set()), ["func_WB"])
+    eq("include_asm: regen still drops a measured-clean COMPLETED-C item",
+       _regen_with(0, set()), [])
+    eq("include_asm: regen still drops a canonical-authorized item",
+       _regen_with(1, {"func_WB"}), [])
+    # THE INVARIANT: unknown never reads as clean. A -1 count is retained, so a
+    # function whose body-span parse failed can never silently leave the queue.
+    eq("include_asm: regen KEEPS an item whose cheat count is UNKNOWN",
+       _regen_with(-1, set()), ["func_WB"])
+    # The ONE safe exception: the symbol is not a C-level function at all.
+    eq("include_asm: regen drops an UNKNOWN symbol absent from the .c",
+       _regen_with(-1, set(), src_text="void other(void) {}\n"), [])
+    eq("include_asm: regen drops an UNKNOWN `.aent` alternate entry",
+       _regen_with(-1, set(),
+                   src_text='__asm__("    .aent func_WB\\n");\n'), [])
+    eq("include_asm: regen drops an instruction-less glabel symbol marker",
+       _regen_with(-1, set(),
+                   src_text='__asm__(\n    ".set noreorder\\n"\n'
+                            '    "glabel func_WB\\n"\n);\n'), [])
+
+    # 5. mark_done(): refuse a non-canonical function on attributed cheat-asm
+    #    AND on UNKNOWN; still ACCEPT a canonical one (the campaign's payoff
+    #    path — the 66 authorized functions must reach zero-rule canonical
+    #    completion once their asmfix wiring is retired).
+    def _done_with(cheat_count: int, canon: set) -> dict:
+        with tempfile.TemporaryDirectory() as td:
+            qp = Path(td) / "queue.json"
+            qp.write_text(json.dumps(
+                {"items": [{"func": "func_WB", "file": "faketu", "distance": 0,
+                            "verdict": "C", "rules": 0, "status": "active"}],
+                 "counts": {}}))
+            orig = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+                    cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+                    inlineasm.file_func_cheat_asm_count, Q.O.verify)
+            Q.QUEUE_PATH = str(qp)
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            cheats.canonical_asm_funcs = lambda: canon
+            cheats.maspsx_gate_entries = lambda f: []
+            inlineasm.file_func_cheat_asm_count = lambda s, f: cheat_count
+            Q.O.verify = lambda rebuild=False: {"build_matches": True,
+                                                "build_sha1": "deadbeef"}
+            try:
+                return Q.mark_done("func_WB")
+            finally:
+                (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
+                 cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
+                 inlineasm.file_func_cheat_asm_count, Q.O.verify) = orig
+
+    r_attr = _done_with(1, set())
+    check("include_asm: queue done REFUSES attributed cheat-asm",
+          r_attr.get("ok") is False)
+    r_unk = _done_with(-1, set())
+    check("include_asm: queue done REFUSES an UNKNOWN cheat count",
+          r_unk.get("ok") is False)
+    check("include_asm: UNKNOWN refusal names the missing C body",
+          "UNKNOWN" in r_unk.get("reason", ""))
+    r_canon = _done_with(1, {"func_WB"})
+    check("include_asm: canonical-authorized function still completes",
+          r_canon.get("ok") is True)
+    eq("include_asm: canonical completion state",
+       r_canon.get("completion"), "COMPLETED-INLINE-ASM-CANONICAL")
+
+
 def main() -> int:
     test_canonical()
     test_score()
@@ -1276,6 +1477,7 @@ def main() -> int:
     test_volatile_extern_allowlist()
     test_lowercase_asm_cheats()
     test_macro_asm_strip_round_trip()
+    test_include_asm_whole_body()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()
