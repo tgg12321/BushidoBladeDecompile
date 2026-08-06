@@ -143,22 +143,43 @@ def cmd_classify(a):
     # DISASSEMBLY, so identical instructions compare unequal (`subu $sp,$sp,144`
     # vs `addiu $sp, $sp, -0x90`). Measured on func_80089F3C: PRE-RA with a
     # 287-vs-318 gap when the real codegen residual was ZERO.
-    if _replace_with_asmfile(a.func):
+    wired = _replace_with_asmfile(a.func)
+    if wired and a.force_text:
+        print("PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — "
+              f"{a.func} IS wired `replace_with_asmfile`, so the verdict below "
+              "is FICTION. Do not act on it.\n")
+    elif wired:
         sys.exit(
             f"{a.func} is wired `replace_with_asmfile` in asmfix.txt, so its "
             f"target in {a.stem}.tgt.s is disassembly text this classifier "
             f"cannot read; it would report a FICTITIOUS PRE-RA verdict.\n"
             f"Use the object-level classifier instead:\n"
             f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
+            f"(--force-text bypasses this guard for debugging the guard itself.)\n"
             f"See docs/grind/inverse-compose-2026-08-06.md.")
+    else:
+        print(f"PATH: text-stream classifier ({a.stem}.hon.s vs {a.stem}.tgt.s); "
+              f"{a.func} is not `replace_with_asmfile`-wired.\n")
     work = ROOT / a.work
     hon_p, tgt_p = work / f"{a.stem}.hon.s", work / f"{a.stem}.tgt.s"
     for p in (hon_p, tgt_p):
         if not p.exists():
             sys.exit(f"missing {p} — run: bash tools/ra_solver/mkasm_honest.sh "
                      f"{a.stem}")
-    hon = [t for t, _ in G.asm_body(hon_p, a.func)]
-    tgt = [t for t, _ in G.asm_body(tgt_p, a.func)]
+    try:
+        hon = [t for t, _ in G.asm_body(hon_p, a.func)]
+        tgt = [t for t, _ in G.asm_body(tgt_p, a.func)]
+    except KeyError as e:
+        if wired:
+            sys.exit(
+                f"{e}\n\nThis is cause #1 of the guard's rationale, reproduced: "
+                f"the target block is a glabel/endlabel section of "
+                f"`/* off addr bytes */` disassembly, which asm_body skips.\n"
+                f"(Cause #2, the source-vs-disassembly spelling mismatch, only "
+                f"shows once a stream is parseable at all.)\n"
+                f"Use: python3 tools/ra_solver/goal_from_tgt.py classify "
+                f"{a.stem} {a.func}")
+        raise
     stage, ev = classify(hon, tgt)
 
     print(f"{a.func} ({a.stem}): honest {ev['honest_insns']} insns, "
@@ -335,6 +356,11 @@ def main():
     c.add_argument("stem")
     c.add_argument("func")
     c.add_argument("--work", default="tmp/inverse_work")
+    c.add_argument("--force-text", action="store_true",
+                   help="bypass the replace_with_asmfile guard and classify "
+                        "from the TEXT streams anyway. The verdict is known to "
+                        "be fiction for that class (see cmd_classify); for "
+                        "debugging the guard itself, not for deriving work.")
     c.set_defaults(fn=cmd_classify)
     h = sub.add_parser("hypothesis", help="replay RA under an upstream change")
     h.add_argument("model")

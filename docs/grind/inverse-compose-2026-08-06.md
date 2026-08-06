@@ -232,6 +232,20 @@ check**. Nops are downstream of RA (maspsx inserts them after the fact), so they
 settle the question — `DispPracticeMenuTex_A` has a real RA component that the old
 nop-only SCHED verdict hid entirely.
 
+**Every verdict is now traceable to the path that produced it.** Detection is automatic
+(it reads `asmfix.txt`) and each of the three outcomes announces itself, so a future
+debugging session can always tell which classifier spoke:
+
+```
+PATH: text-stream classifier (<stem>.hon.s vs <stem>.tgt.s); F is not `replace_with_asmfile`-wired.
+PATH: text-stream classifier, GUARD OVERRIDDEN (--force-text) — F IS wired ... the verdict below is FICTION.
+F (stem): ours N insns, target M insns   [object-level: replace_with_asmfile-safe]
+```
+
+The old behaviour stays reachable via `--force-text`, which warns first and then reproduces
+cause #1 gracefully (`asm_body` KeyError, explained in place) rather than throwing a
+traceback — so the flag documents the guard's rationale instead of merely bypassing it.
+
 **Known remaining limit — attribution, not parsing.** `goal` now runs on these functions,
 but `attribute()` is position-blind: it maps "reg R should be T" onto "which pseudos hold
 R", and on `DispPracticeMenuTex_A` 85 pseudos hold `$v0`, so it honestly reports AMBIGUOUS
