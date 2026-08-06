@@ -1366,36 +1366,12 @@ INCLUDE_ASM("asm/funcs", func_800513B0);
 INCLUDE_ASM("asm/funcs", func_800515AC);
 INCLUDE_ASM("asm/funcs", func_80051754);
 INCLUDE_ASM("asm/funcs", func_80051944);
-void func_80051B04() {
-    /* Body from asm/funcs/func_80051B04.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051D08() {
-    /* Body from asm/funcs/func_80051D08.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051ED4() {
-    /* Body from asm/funcs/func_80051ED4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_800520B8() {
-    /* Body from asm/funcs/func_800520B8.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_800523E0() {
-    /* Body from asm/funcs/func_800523E0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_800525D8() {
-    /* Body from asm/funcs/func_800525D8.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80051B04);
+INCLUDE_ASM("asm/funcs", func_80051D08);
+INCLUDE_ASM("asm/funcs", func_80051ED4);
+INCLUDE_ASM("asm/funcs", func_800520B8);
+INCLUDE_ASM("asm/funcs", func_800523E0);
+INCLUDE_ASM("asm/funcs", func_800525D8);
 /* func_800526A0: hand-coded asm in original PSY-Q source.
  * Evidence (see memory/feedback_hand_coded_asm_recognition.md):
  *   - 5 trapping arithmetic ops (add/addi/sub) GCC 2.7.2 cannot
@@ -1409,11 +1385,7 @@ void func_800525D8() {
  *   - Pure-C+§6.1 attempt reached 27/30 insns; remaining 3 are
  *     GCC-impossible structural patterns.
  * User-authorized 2026-05-16. */
-void func_800526A0() {
-    /* Body from asm/funcs/func_800526A0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_800526A0);
 PAD_NOPS_2; /* padding after func_800526A0 */
 /* func_80052720: GTE sqr tail-call wrapper — mtc2 IR1-3 -> sqr -> sum
  * MAC1-3 into $a0 -> frameless `j func_800526A0` tail-call.
@@ -1423,20 +1395,12 @@ PAD_NOPS_2; /* padding after func_800526A0 */
  * GCC 2.7.2 for the frameless j. Tail-call variant of the authorized
  * sibling func_80052754 below. Canonical-asm; see inline_asm_canonical.txt.
  * User-authorized 2026-06-12. */
-void func_80052720() {
-    /* Body from asm/funcs/func_80052720.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80052720);
 /* GTE sqr (squared-vector-length) leaf wrapper: mtc2 IR1-3 -> sqr -> sum MAC1-3.
  * Hand-written asm — mfc2 results land in $t0/$t1/$t2, which natural cc1
  * register allocation cannot pick (GCC chooses $v0/$v1/$a0). Canonical-asm;
  * see inline_asm_canonical.txt. */
-void func_80052754() {
-    /* Body from asm/funcs/func_80052754.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80052754);
 void func_80052788(s16 *arg0, s16 *arg1, s32 arg2, s16 *arg3) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
@@ -1478,11 +1442,7 @@ void func_80052788(s16 *arg0, s16 *arg1, s32 arg2, s16 *arg3) {
     arg3[1] = t1;
     arg3[2] = t2;
 }
-void func_800527FC() {
-    /* Body from asm/funcs/func_800527FC.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_800527FC);
 void func_80052930(s32 *mat, s32 *vec, s16 *out) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
@@ -1659,11 +1619,7 @@ void func_80052B00(s32 *matrix) {
  * jr-ra delay slot. All cop2 + mechanical load packaging; hand-written GTE asm
  * (prologue instruction-identical to canonical-body func_8007ED6C, display.c).
  * Canonical-body authorized 2026-07-27 (judge PASS, docs/grind/decisions.md). */
-void func_80052B44() {
-    /* Body from asm/funcs/func_80052B44.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80052B44);
 void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
@@ -1704,39 +1660,14 @@ void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
  * in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a1), and the jr $ra
  * delay slot holds a canonical nop where GCC's reorg would fill the last sb.
  * Canonical-asm; see inline_asm_canonical.txt. User-authorized 2026-06-12. */
-void func_80052BE4() {
-    /* Body from asm/funcs/func_80052BE4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void InitFadePanel() {
-    /* Body from asm/funcs/InitFadePanel.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80052BE4);
+INCLUDE_ASM("asm/funcs", InitFadePanel);
 PAD_NOPS_1; /* padding after InitFadePanel */
-void func_80052C28() {
-    /* Body from asm/funcs/func_80052C28.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80052C4C() {
-    /* Body from asm/funcs/func_80052C4C.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80052CD4() {
-    /* Body from asm/funcs/func_80052CD4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80052C28);
+INCLUDE_ASM("asm/funcs", func_80052C4C);
+INCLUDE_ASM("asm/funcs", func_80052CD4);
 PAD_NOPS_3; /* padding after func_80052CD4 */
-s32 func_80052D00(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80052D00.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_80052D00);
 extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00();
 extern void func_80053754();
@@ -1846,18 +1777,8 @@ s32 func_80053694(s32 *arg0, s16 *arg1) {
     }
     return 0;
 }
-void func_80053754(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80053754.s).
-     * 466 inst, 40 branches, 1 jal, 127 loads, 69 stores. m2c output had
-     * type errors. Pure-C decomp pending. */
-    (void)arg0; (void)arg1;
-}
-void func_80053E9C(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80053E9C.s).
-     * 349 inst, 36 branches, 3 jal, 91 loads, 49 stores. m2c output had
-     * type/operand errors. Pure-C decomp pending. */
-    (void)arg0; (void)arg1;
-}
+INCLUDE_ASM("asm/funcs", func_80053754);
+INCLUDE_ASM("asm/funcs", func_80053E9C);
 extern s32 D_800A33F0;
 void func_80054410(s32 a0) {
     D_800A33F0 = a0;
@@ -1869,16 +1790,8 @@ extern s16 D_800A33F8;
 s16 func_80054434(void) {
     return D_800A33F8;
 }
-void func_80054440() {
-    /* Body from asm/funcs/func_80054440.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void myRobGeneiOpen() {
-    /* Body from asm/funcs/myRobGeneiOpen.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_80054440);
+INCLUDE_ASM("asm/funcs", myRobGeneiOpen);
 void func_80054604(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80054604.s).
      * Pure-C decomp pending future purification work. */
