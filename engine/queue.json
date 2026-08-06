@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "AllocRobRmd",
-      "file": "text1a",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "save_vc_ctrl",
       "file": "text1a",
       "distance": 2,
@@ -2544,15 +2536,15 @@
     }
   ],
   "counts": {
-    "total": 302,
-    "active": 266,
+    "total": 301,
+    "active": 265,
     "by_status": {
-      "active": 266,
+      "active": 265,
       "parked": 36
     },
     "by_verdict": {
-      "C": 86,
       "ASM-PARTIAL": 46,
+      "C": 85,
       "ASM-SUSPECT": 108,
       "ASM-STRUCTURAL": 26
     }
