@@ -308,13 +308,7 @@ s32 gpu_GetDrawEnv(s32 a0) {
     bb2_memcpy(a0, &g_gpu_draw_env, 0x5C);
     return a0;
 }
-void func_8007BC08(s32 arg0) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007BC08.s).
-     * GPU display environment setup: sets up DISPENV registers (mode, hres,
-     * vres, frame buffer addresses) based on arg0 fields. m2c output had
-     * function-pointer parse errors. Pure-C decomp pending. */
-    (void)arg0;
-}
+INCLUDE_ASM("asm/funcs", func_8007BC08);
 s32 gpu_GetDispEnv(s32 a0) {
     bb2_memcpy(a0, &g_gpu_disp_env, 0x14);
     return a0;
@@ -740,11 +734,7 @@ s32 func_8007CAC8(s32 arg0, s32 arg1) {
     }
     return arg1;
 }
-void func_8007CBB0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007CBB0.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_8007CBB0);
 typedef struct {
     s32 unk0;
     s16 x;
@@ -834,11 +824,7 @@ y_done:
     return 0;
 }
 
-void func_8007D048(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007D048.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_8007D048);
 void func_8007D2CC(u32 a0) {
     *g_gpu_stat_reg = a0;
     g_gpu_color_table[a0 >> 24] = a0;
@@ -954,11 +940,7 @@ loop_13:
         return var_v0;
     }
 }
-void func_8007D6D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8007D6D8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_8007D6D8);
 extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
 extern s32 motion_make_table(s32);
 extern s32 func_8007DE08(s32);
