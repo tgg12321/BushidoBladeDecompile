@@ -1,49 +1,67 @@
 # func_80037A20 — WIP (memcard file-count via firstfile/nextfile)
 
 ## TL;DR
-Honest pin-free floor = **13** (sandbox --disable all), identical to HEAD's
-honest distance. HEAD "matches" ONLY via two `register asm()` pins
-(`var_s0 asm("s0")`, `var_s1 asm("s1")`) + a forbidden opt-barrier
-`__asm__("" : "=r"(var_s1) : "0"(var_s1))` that the 2026-04-04 commit message
-admits was added to "block constant propagation." All three are cheats; this
-function is INCOMPLETE. candidate.c is the faithful pin/barrier-free body
-(33=33 insns, 13 diffs).
+Honest pin-free floor = **13** (sandbox --disable all), same as HEAD's honest
+distance. HEAD "matches" ONLY via two `register asm()` pins (`var_s0 asm("s0")`,
+`var_s1 asm("s1")`) plus a forbidden `__asm__("" : "=r"(var_s1) : "0"(var_s1))`
+opt-barrier — all three are cheats, so this function is INCOMPLETE.
+`candidate.c` is the faithful pin/barrier-free body (33=33 insns, 13 diffs).
 
 ## The 13 diffs decompose into exactly TWO coupled problems
-1. **s0<->s1 register swap (~12 of 13 diffs).** Target: var_s0(ptr)->s0,
-   var_s1(counter)->s1. Our pin-free build: ptr->s1, counter->s0. The counter
-   out-prioritises the pointer for the preferred callee-saved reg s0 because it
-   is incremented in the loop AND is the return value (live to function end),
-   while the pointer's address-load lives from the top too. Tied loop-weighted
-   refs -> global.c allocno-priority tiebreaker. Decl reorder (var_s1 first /
-   var_s0 first) does NOT flip it. This is the [[register-alloc-pure-c]]
-   "confirmed limit" class (global.c:624 tiebreaker).
-2. **`li s0,1` vs target `addiu s1,s1,1` (1 diff).** The faithful structure
-   requires an entry `var_s1++` (counts the firstfile hit = slot 0) SEPARATE
-   from the loop's `var_s1++`. Since `var_s1 = 0;` immediately dominates that
-   entry `++`, GCC constant-folds `0 + 1` -> `li 1`. The target's real cc1
-   emitted `addiu` (did NOT fold). This is the EXACT fold the cheat
-   `__asm__("")` barrier was suppressing. No pure-C structural lever found that
-   keeps the faithful count semantics AND disrupts the fold (see rejected/).
+1. **s0<->s1 register swap (~12 of 13).** Target: pointer→s0, counter→s1.
+   Ours: pointer→s1, counter→s0.
+2. **`li s0,1` vs target `addiu s1,s1,1` (1 diff).** cse's FIRST pass const-props
+   the dominating `var_s1 = 0` into the entry `++` (REG_WAS_0 note).
+
+## Quantified escape (grid over the validated forward model, 2026-08-06)
+ALLOCDBG ground truth: counter(pseudo 75) nrefs=8 livelen=14 pri=17142 → s0;
+pointer(pseudo 74) nrefs=5 livelen=17 pri=5882 → s1. Priority is
+`floor_log2(n)*n*10000/livelen`. Brute-forcing refs 1..20 × livelen 1..160 in
+`tools/ra_solver`'s simulator, the goal (74→s0, 75→s1) is reached ONLY by:
+- pointer refs **≥10** at its structural livelen 17 (has 5), or
+- counter refs **≤4** at its livelen 14 (has 8), or
+- counter livelen **≥41** at refs 8 (has 14).
+All three are byte-forced by target's mandatory 33-insn do-while + entry-`++`
+structure: s8 measured the pointer has only one if-block and one loop so no
+byte-neutral duplication can reach 10+ refs, and s7's barrier probe showed
+defeating the fold *raises* the counter to 22000 (adds a read-ref), entrenching
+the swap rather than flipping it.
+
+## The inverse solver's LEVER verdict is NOT C-reachable
+`docs/grind/inverse-sweep-2026-08-06.md` names one 1-atom vector: pseudo 75
+acquires a copy preference for `$s1`. Foreclosed at the mechanism level:
+`global.c set_preference` records a preference only from a SET between a pseudo
+and a **hard reg**, and `$s1` — like every callee-saved register — **never
+appears in pre-RA RTL** (verified on this function's `.lreg` dump: only v0, a0,
+a1, a2, a3, ra are present). `prune_preferences` (global.c:897) additionally
+strips every call-used reg from a call-crossing allocno's preferences, so no
+argument/return flow can leave a surviving one. Only a `register asm()` pin
+could create it — the forbidden construct. NB the solver's atom space caps
+refs deltas at +3/-2, which is why it reported pref_add as the *unique* 1-atom
+vector; the refs routes above sit outside that window (and are the s7/s8 kills).
 
 ## rejected_forms (measured, do NOT re-derive)
-- do-while w/ s1++ at loop top, no entry-++, no s1-- : WRONG COUNT (drops
-  slot-0 count; off by one). v6/v7.
-- v3 (nextfile in the if-condition, s1++ before branch): 34 insns (+1 nop),
-  fold persists, swap persists.
-- decl reorder var_s1-first (v4) / var_s0-first: allocation UNCHANGED.
-- inlining firstfile into a v0_val temp (v5): 13, unchanged.
+- do-while w/ s1++ at loop top, no entry-++: WRONG COUNT (off by one).
+- nextfile-in-if-condition: 34 insns (+1 nop), fold and swap persist.
+- decl reorder (either direction): allocation UNCHANGED.
+- firstfile inlined to a v0 temp: 13, unchanged.
+- pointer-init-after-call: 16 (worse); GCC hoists the `la` regardless.
+- counter-init-before-call: 15 (worse); order and dispositions unchanged.
+- return-value split to drop counter refs: 13, `result` copy-propagated away.
+- u32 counter narrowing: 13, width-invariant.
+- do-while(0) around the entry `++`: collapses; fold and swap persist.
+- 3 permuter chassis, ~21k iters: all converge to the same attractor, zero never
+  approached.
+- cc1psx calibration: output byte-identical to our fork (also swaps AND folds)
+  ⇒ compiler-divergence escalation foreclosed.
+- duplicated-statement-into-arms ref-lift: structurally unavailable (one if,
+  one loop; pointer refs byte-forced at 5).
 
-## Avenues for next session (change MODALITY)
-- **decomp-permuter** from candidate.c — the documented modality for both a
-  tied register rename AND a fold-disrupting structural mutation. Not yet run
-  (per-fn permuter setup for code6cac_c is the remaining work).
-- **cc1 -da greg dump** to confirm the allocno-priority tiebreaker is the s0/s1
-  driver, then a live-range lever to raise the pointer's priority.
-- Possible **cc1-vs-cc1psx divergence** on the `li 1` fold — calibration check
-  (cc1psx may not fold here). If confirmed-divergent + permuter-negative, this
-  is an escalation candidate, not a worker close.
+## Status
+Every sanctioned axis (structural, permuter, compiler-divergence, instrumented
+RA, and now the inverse-solver atom) is measured dead with a named mechanism.
+Disposition remains the filed endgame-lock owner escalation.
 
 ## Floor
 - HEAD honest distance: 13 (carries 2 pins + 1 opt-barrier cheat)
-- candidate.c honest distance: 13 (zero cheats) — floor NOT lowered below HEAD.
+- candidate.c honest distance: 13 (zero cheats)

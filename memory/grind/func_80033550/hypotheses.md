@@ -393,3 +393,27 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: sandbox func_80033550 --disable all on HEAD's pinned form, then on the re-applied pin-free candidate
 - result: pinned form 4 / cheat_asm_stripped 371; pin-free candidate 4 / 369 (identical JSON to s2-s7 baselines); candidate left in place in src
 - verdict: CONFIRMED
+
+## [s9] The inverse solver's LEVER atom (pseudo 74 acquires an $a3 copy preference) is reachable by an argument-flow / call-return C spelling.
+- mechanism: global.c set_preference records a hard-reg copy preference when a
+  SET copies between a pseudo and a hard reg; find_reg then tries the preferred
+  register first, so pseudo 74 preferring $a3 would home arg0's pointer there.
+- probe: (a) read the pre-RA RTL (tmp/inverse_work/ra/code6cac_b.i.lreg) for
+  every hard GPR the function's RTL actually contains; (b) brute-force the
+  solver's own validated forward model over refs 1..40 x livelen 1..160 for
+  every focus pseudo, checking whether ANY flow configuration alone reaches
+  74 -> $a3.
+- result: FORECLOSED, two independent ways. (a) The ONLY hard GPR anywhere in
+  this function's pre-RA RTL is $a0 (regno 4) — the function is call-free (zero
+  jal in target) and single-parameter, so $a3 never appears and set_preference
+  can never record a preference for it; expand_preferences can only propagate
+  preferences that already exist. Creating one would require a 4-argument call
+  or a 4th incoming parameter, neither of which the target's 34-insn shape
+  admits. (b) The grid sweep returns NO (refs, livelen) configuration for any
+  focus pseudo that reaches $a3 — the preference is the model's only route, and
+  it is not C-reachable. This is an independent empirical confirmation of the s6
+  closure theorem's "set_preference needs a hard-reg SET = calls" clause.
+  NB the sweep report's LEVER verdict is an artifact: inverse.py generates a
+  PREF_ADD atom for any goal register without checking that the register can
+  appear as a hard reg in that function's RTL.
+- verdict: KILLED
