@@ -59,8 +59,17 @@ MASPSX_FLAGS = (
     "--expand-dest-funcs=expand_dest_funcs.txt "
     "--label-nop-funcs=maspsx_label_nop_funcs.txt"
 )
+# MUST mirror Makefile MASPSX_FLAGS_GP verbatim (the 2026-08-05 text1a landing
+# brought it to full parity with MASPSX_FLAGS — 7 options — and dropped the
+# old --dont-force-G0/-G8 maspsx args). Divergence here made the engine's
+# driver emit a 44-byte-short text1a.o whenever it recompiled text1a,
+# false-MISMATCHing the oracle (caught 2026-08-06, text1b extraction landing).
 MASPSX_FLAGS_GP = (
-    "--expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8"
+    "--expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt "
+    "--sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb "
+    "--expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt "
+    "--expand-dest-funcs=expand_dest_funcs.txt "
+    "--label-nop-funcs=maspsx_label_nop_funcs.txt"
 )
 
 # -- Per-file opt-ins (C file stem, no path/extension) ----------------------
