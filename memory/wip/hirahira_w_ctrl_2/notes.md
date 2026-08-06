@@ -54,11 +54,30 @@ at `src/text1a_c.c:406`; if a retype is the answer it must clear all four prongs
 
 ## The rest of the residual
 
-- **Frame: ours 56, target 48 — we reserve 8 bytes MORE.** This is the *reverse* of the
-  phantom-slot case (we have surplus locals, not a missing spill), so the
-  [[phantom-slot-frame-lever]] recipe applies in the opposite direction: find the live value
-  we are keeping that target rematerialises. 27 locals are declared; several are single-use
-  products that may not need to be named.
+- **Frame: ours 56, target 48 — MEASURED 2026-08-05, and it is NOT "surplus locals".**
+  The FRAMEDBG instrument (`wsl bash tmp/csz/gn_frame.sh text1a_c hirahira_w_ctrl_2`,
+  hook in `tools/ra_solver/cc1_hooks.patch.md` §5) shows our `vars=48` is **six
+  8-byte `spill_new_p*` slots and nothing else** — p106, p111, p117, p125, p133, p141 —
+  and `tmp/csz/gn_census.py` shows **all six are untouched**: no instruction reads or
+  writes any of them. Target's `vars` is 40 (frame 0x30 = 40 locals + 8 for the s0/s1
+  saves at 0x28/0x2C) and its only sp traffic is those two saves, so target has the
+  **same class of slot, five of them instead of six**. So this is the phantom-slot case
+  after all, in surplus: the target is to lose exactly ONE orphaned pseudo. Do not hunt
+  a live value we keep and target rematerialises — there is no such value.
+- **The producer is address folding, not the folded-compare producer.** `gn_cmp.py`
+  reports **zero** compare-result pseudos here. Instead each orphan is a one-use address
+  computation that combine folds into the `MEM` it feeds — p106 at `.flow` is
+  `(set (reg 106) (plus (reg 105) (reg 103)))` consumed by
+  `(set (reg/v:HI 81) (mem/s:HI (reg 106)))`, and it is gone by `.combine`. It keeps
+  `reg_n_refs > 0` with an empty conflict list, so `global_alloc` skips it and
+  `alter_reg` pays it an 8-byte slot for zero instructions.
+- **Six orphans = the six `Judge[...]` reads** (sinB, sinC, sinA, cosB, cosC, cosA), one
+  address computation each. Target has six loads but only five orphans, so in the
+  original ONE of the six does not get its own folded address pseudo — it either reuses
+  an already-computed address or its address stays live. Identifying which one is the
+  frame lever, and it is likely the same question as the 2/4 `lh`/`lhu` split above:
+  both ask which of the six reads is spelled differently from the other five.
+  `tmp/csz/gn_orph2.py <dump>.greg hirahira_w_ctrl_2` lists the orphans directly.
 - **A register rotation** over the multiply cluster (`$a2`/`$t3`/`$t1`/`$t2` and
   `$a3`/`$t2`), i.e. RENAME 25 in the triage. Expect it to follow the frame once that is
   fixed — treat it as downstream, not as its own target.
@@ -68,6 +87,9 @@ at `src/text1a_c.c:406`; if a retype is the answer it must clear all four prongs
 ## Next
 
 1. **Remove the volatile cheat and re-measure** — that is the honest baseline.
-2. Map target's 6 `Judge` loads to the 6 source reads and explain the 2/4 `lh`/`lhu` split.
-3. Then the −8 frame (surplus locals), then the rotation.
-4. **Do NOT commit.** The owner runs the gate.
+2. Map target's 6 `Judge` loads to the 6 source reads. This now serves BOTH open items:
+   the 2/4 `lh`/`lhu` split and the six-vs-five orphan count are probably the same
+   "one of these six reads is spelled differently" question.
+3. Frame lever: drop exactly one folded address pseudo (see the measured section above).
+4. Then the register rotation, which is expected to follow.
+5. **Do NOT commit src.** The owner runs the gate.
