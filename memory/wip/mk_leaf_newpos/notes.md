@@ -1,4 +1,4 @@
-# mk_leaf_newpos — WIP (round 2, 2026-08-05) — 65 -> 58, primary rename CLOSED
+# mk_leaf_newpos — WIP (round 4, 2026-08-06) — 65 -> 51, BANKED (spec-grade)
 
 `src/code6cac_b.c:3374`, stem **`code6cac_b`** (note: `code6cac.c` only declares it
 `extern`; callers are in `code6cac.c:1839/1944` and `code6cac_c2.c:873`).
@@ -9,7 +9,7 @@ frame `wsl bash tmp/csz/gn_frame.sh code6cac_b mk_leaf_newpos`.
 
 | quantity | ours | target |
 |---|---|---|
-| honest `sandbox --disable all` | **58** (`candidate_58.diff`; HEAD 65) | 0 |
+| honest `sandbox --disable all` | **51** (`candidate_51.diff`; HEAD 65) | 0 |
 | `build_insns` | **176** | **176** |
 | frame | `.frame $sp,48 vars=0 regs=7/0 args=16` | `addiu $sp,$sp,-0x30` = 48 |
 
@@ -58,41 +58,48 @@ Banked as `candidate_58.diff`: **58 / 176 insns**, and `ra_solver` re-extracted 
 **18/18 exact**. This is an artifact removal, not a codegen construct: it deletes a
 declaration, a dead store, and a redundant recomputation.
 
-## ROUND 3 REFRAME: at 58 the residual is NOT renames — it is two LICM hoists
+## ROUND 4 (2026-08-06): 58 -> 51 by removing the second m2c artifact
 
-Re-derived the ours->target register map from the aligned streams at the 58 baseline
-(`tmp/csz/mk_renames.py <ref.s> <sbx.s>`, both 176 insns). Result: **ZERO same-shape
-register substitutions.** The three `$16<->$20` / `$5<->$3` leads read off `regfix.txt`
-describe the OLD (pre-candidate_58) allocation and are now stale — do not build specs
-from them.
+`candidate_51.diff` (supersedes `candidate_58.diff`, includes it) adds two changes, both
+artifact removals that ADD nothing:
 
-What the alignment actually shows is two loop-invariant values that **we hoist into
-callee-saves and target materialises inside the loop**:
+1. **The `goto do_call` dispatch becomes a plain `if / else if / else if` chain**, and the
+   `a0_val` holder disappears — each arm just calls
+   `func_800325E0((&D_8008EBF4)[cat] + K, (s32 *)pos)`. 58 -> **51**, insns still 176.
+2. **`(s32)slot < (s32)&D_800A391E` becomes `slot < &D_800A391E`** — a plain pointer
+   comparison, dropping two casts. Score-inert (58 either way) but plainly better C;
+   included because it is a cleanup, not a lever.
+
+Probes that did NOT move it: a named `u8 *end = &D_800A391E;` compared as pointers (58).
+
+## THE REMAINING RESIDUAL AT 51 — an exact, unchanged spec
+
+Re-derived at 51 with `mk_renames.py`: still **ZERO register renames**; both sides 176
+insns. The entire residual is the two loop-invariant hoists, unchanged by rounds 3-4:
 
 | value | ours | target |
 |---|---|---|
-| the constant `1` | `li s5,1` before the loop, `bne v1,s5` in it | `addiu $v0,$zero,0x1` at idx 28 INSIDE the loop, reused by the `bne v1,v0` at idx 29/41/53 |
-| `&D_800A391E` (the loop bound) | `lui s4,%hi / addiu s4,%lo` hoisted | rematerialised (this is what regfix's `insert "la $2,D_800A391E"` was papering over) |
+| the constant `1` | `li s5,1` in the preheader; `bne v1,s5` in the loop | `li v0,1` INSIDE the loop, then `bne v1,v0` |
+| `&D_800A391E` | `lui s4,0x0` / `addiu s4,s4,0` hoisted | rematerialised in-loop |
 
-Both hoists cost us two extra live callee-saves (`$s4`, `$s5`), which forces the prologue
-`sw s4,32(sp)` / `sw s5,36(sp)` pair to sit where target has none, and everything the old
-rules called a "rename" is downstream of that. Note target's `addiu $v0,$zero,1` sits
-INSIDE the `if (*slot != 0)` guard (target idx 22 `beqz $v0` jumps past it), so the
-original's shape kept the constant conditionally-executed where ours is hoisted to the
-preheader.
-
-**So the primary remaining axis is LICM, not RA** — the triage listed it as secondary at
-15%; at this baseline it is what is left. `defeat-licm-hoist-var-reuse` is the relevant
-recipe, but read it before spelling anything, and prefer a shape where the loop bound and
-the comparison constant are naturally where target has them over a scratch-variable reuse.
-The `(s32)slot < (s32)&D_800A391E` pointer-to-s32 cast in the loop condition is itself a
-decomp artifact worth revisiting first — a natural pointer comparison may change what
-`loop.c` treats as invariant.
+Those two hoists are the whole gap: they keep `$s4`/`$s5` live across the loop's call, so
+we emit a `sw s4,32(sp)` / `sw s5,36(sp)` prologue pair target places differently, and the
+alignment's other 80-odd STRUCT lines are that displacement rippling through. Target's
+`li v0,1` sits INSIDE the `if (*slot != 0)` guard, so in the original the constant was
+conditionally executed where ours reaches the preheader.
 
 ## Next
 
-1. The LICM axis above. Re-derive renames with `mk_renames.py` after ANY change; the
-   regfix rule list is stale from candidate_58 onward.
+1. **The LICM axis is the only remaining work.** Read [[defeat-licm-hoist-var-reuse]]
+   before spelling anything; prefer a shape where the constant and the loop bound are
+   naturally where target has them over a scratch-variable reuse. Two reviewers have
+   already rejected a codegen-motivated construct elsewhere in this queue — same bar.
+2. Worth checking first: why `loop.c` treats the `li 1` as always-executed here when
+   target's is inside the `*slot != 0` guard (`scan_loop`'s `maybe_never` logic). That is
+   a diagnosis, not yet a lever.
+3. Re-derive renames with `mk_renames.py` after ANY change; **`regfix.txt`'s rule list is
+   stale from `candidate_58` onward** and its `$16<->$20` / `$5<->$3` leads are dead.
+4. **Do NOT commit src.** Owner runs the gate; layer-2 before any completion claim.
 3. `defeat-licm-hoist-var-reuse` (LICM 15% in triage) is the secondary axis; treat it as
    downstream of the RA fix.
 4. **Do NOT commit src.** Owner runs the gate; layer-2 before any completion claim.
