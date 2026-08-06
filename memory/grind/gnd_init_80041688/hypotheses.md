@@ -264,3 +264,59 @@
 - probe: `scan_hand_coded.py --single gnd_init_80041688`; cross-check against endgame-lock-disposition.md two AND-gates; verify Judge 2026-07-20 13:32 (a) already REFUSED canonical-asm at the Judge layer
 - result: scan_hand_coded output: `HAND_CODED: tier=LOW  score=0/8  (gnd_init_80041688, 82 insns) Reason: no strong hand-coded indicators`. Judge 2026-07-20 13:32 (decisions.md line 1019-1029) refused canonical-asm citing identical grounds. Both AND-gates fail -> species disposition = INCOMPLETE-owner-accepted per rule.
 - verdict: CONFIRMED
+
+## [s16] The sched-solver's LEVER verdict (walking-pointer-serializes-parallel-loads) closes BB18's lbu emit order.
+- mechanism: docs/grind/inverse-sched-2026-08-06.md maps the block-18 residual to
+  `dep_add_true 183 <- 191` and routes it to
+  [[walking-pointer-serializes-parallel-loads]], whose recorded symptom text is
+  this exact three-parallel-loads shape. The rule's claim is that a
+  post-increment pointer walk threads a dependence through the pointer and
+  serializes the loads.
+- probe: 12 else-branch spellings swept via tools/sweep_variants.py, plus an
+  RTL-order trace (rtl -> combine -> sched -> lreg -> greg -> sched2 -> dbr) and
+  BB2_PRIO_DEBUG/BB2_RANK_DEBUG on the instrumented cc1. Spellings: the rule's
+  literal walk over 0x18..0x1A; a walk visiting +26 first then +24/+25; a
+  split-pointer form (separate bp for +26, walked cp for +24/+25); locals in
+  b,r,g and b,g,r order; fully inlined loads in the expression; inlined via a
+  u8* base with [] indexing; b-in-temp with r/g inlined; three named-intermediate
+  forms.
+- result: KILLED. ALL 12 emit byte-identical code (`lbu +24, lbu +25, lbu +26`),
+  sandbox 2, 82 insns. The walking-pointer mechanism CANNOT apply here: its two
+  confirmed cases serialize via intervening MEMORY WRITES between the loads
+  (stores to distinct globals), and this block has three loads feeding one
+  expression with no store between them. GCC also folds every constant byte
+  offset into the lbu displacement, so no pointer register survives to carry a
+  dependence. NEW first-hand detail confirming s6/s15: the C statement order DOES
+  reach sched1 — `b,r,g` produces target's exact pre-sched RTL order (+26, +24,
+  +25) in .combine — and sched1 alone reverts it (.sched onward is stable). All
+  three loads carry EQUAL priority, so the LUID tiebreak decides; but LUID is not
+  the binding constraint either: putting the +26 load FIRST (vB) and LAST (vJ,
+  named-rg intermediate) in RTL both emit +26 last, because bottom-up the +26
+  load's only consumer is the final `or`, so it becomes ready strictly earlier
+  than the +24/+25 loads (which wait for their slls and the inner or) and is
+  therefore always picked early = emitted late. Only a real dependence edge
+  delaying its readiness changes this, and three independent byte reads of the
+  same object provide none (reads do not anti-depend on reads). The solver's
+  remaining vectors are the volatile-spelled anti-dep (FORBIDDEN) and an
+  insn_cost change (unspellable) — the report labels both correctly.
+- verdict: KILLED
+
+## [s16] SECOND, PREVIOUSLY UNDOCUMENTED CHEAT — the function's byte match also depends on a frame-coercion construct, not only the 3 regfix rules.
+- mechanism: The body declares `volatile s32 sp10[8];` and discards it with
+  `(void)sp10;`. `engine/volatile_cheats.py` (the `(void) <name>;` discard-cast
+  detector, the scalar variant of the `(void)&local;` frame-coercion family)
+  flags it, and `engine.inlineasm.write_stripped` strips it — so it is cheat-asm
+  by the engine's own classification and `queue done` refuses it independently of
+  the rule count.
+- probe: Built NOSP variants (declaration + discard removed) over two else-branch
+  spellings and scored them.
+- result: CONFIRMED and LOAD-BEARING. Removing the construct regresses the honest
+  distance 2 -> 8 at an unchanged 82 insns: the target genuinely reserves the
+  32 frame bytes and the array is holding them. This is NOT recorded anywhere in
+  the s1-s15 ledger, the park reason ("sched1 lbu emit-order (3 regfix)"), or the
+  filed owner escalation — all of which describe the debt as 3 regfix rules only.
+  Consequence: closing BB18's lbu order would NOT reach COMPLETED-C; the
+  frame reservation is a separate residual worth 6 diffs and belongs to the
+  [[phantom-slot-frame-lever]] diagnosis surface (find the honest producer of the
+  8-word frame slot), not to the scheduler problem.
+- verdict: CONFIRMED
