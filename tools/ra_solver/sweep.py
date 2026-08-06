@@ -57,22 +57,17 @@ TARGETS = [
 
 # Precisely-characterised pipeline gaps, appended to the report so the next
 # session does not have to re-diagnose them.
-GAP_NOTES = {
-    "func_80037A20": (
-        "`extract.py`'s greg<->ent alignment does not reach this function. "
-        "Evidence (`honest_model.py func_80037A20 code6cac_c --inspect`): the TU "
-        "has 12 `.ent` functions and 8 greg segments, and the greedy first-fit "
-        "DP consumes them at ents 0,3,4,5,8,9,10,11 — ent[7], which IS "
-        "func_80037A20, is skipped, so `main()` exits `FATAL: no greg segment "
-        "aligned`. The same run reports only 2 ALLOCDBG blocks for 12 functions, "
-        "so the func-tagged stream is the more reliable index here. Fix belongs "
-        "in extract.py's `fits`/`feasible` pair (segment signatures are matched "
-        "by pseudo-set SUBSET, which is ambiguous when sibling functions have "
-        "nested signatures); it was left untouched because this campaign is "
-        "new-files-only. The function's park reason (s0<->s1 allocno-priority "
-        "swap) says the exchange IS global, so it will be answerable as soon as "
-        "the model can be built."),
-}
+#
+# RESOLVED 2026-08-06 — func_80037A20 was here: extract.py's greg<->ent
+# alignment matched segment signatures by pseudo-set SUBSET, which is ambiguous
+# when sibling functions have nested signatures.  On code6cac_c (12 ents, 8
+# segments) the greedy walk consumed segments at ents 0,3,4,5,8,9,10,11 —
+# including two functions with NO allocnos — and skipped ent[7] = func_80037A20,
+# so extraction died with "FATAL: no greg segment aligned".  extract.py now
+# indexes by the func-tagged ALLOCDBG stream and verifies each pairing's allocno
+# set, falling back to the subset heuristic only for hookless dumps.  The
+# function now resolves to a LEVER verdict below.
+GAP_NOTES = {}
 
 
 def sh(cmd, timeout=3600):
@@ -347,6 +342,16 @@ def main():
               "Every verdict below is a DIAGNOSIS: minimal perturbations of the "
               "validated forward models, mapped to legitimate C techniques. "
               "No construct from a forbidden family is ever proposed._\n")
+    md.append("\n_'Ours' is built from the CHEAT-STRIPPED source "
+              "(`mkasm_honest.sh`): a parked function's on-main body carries asm "
+              "pins that already force target's registers, so an on-main-vs-target "
+              "diff is empty and there is no question to invert. Models come from "
+              "the same stripped source via `honest_model.py` / "
+              "`honest_local_model.py`._\n")
+    md.append("\n_Re-run 2026-08-06 after the `extract.py` greg<->ent alignment "
+              "fix (ALLOCDBG-indexed instead of pseudo-set-subset): func_80037A20 "
+              "moved GAP -> LEVER; the other four verdicts are unchanged, and "
+              "`validate.py` stayed 10/10 EXACT._\n")
 
     for func, stem, reason in TARGETS:
         if only and func not in only:

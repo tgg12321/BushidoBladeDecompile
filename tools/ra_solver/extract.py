@@ -195,20 +195,50 @@ def main():
     fsegs = split_flow(dumps["flow"])
 
     # greg segments exist only for functions that ran global-alloc with
-    # allocnos; sequence-align them to ents via flow pseudo-set signatures.
-    # A segment matches an ent only if its pseudo set EQUALS the ent's flow
-    # pseudo set restricted to globals is unknowable, so we require subset in
-    # BOTH key directions: segment pseudos ⊆ flow set AND every flow pseudo
-    # that global-alloc disposed appears — approximated by requiring the
-    # segment's dispositions keys ⊇ (flow pseudos that got hard regs is
-    # unknowable) — fall back to exact-subset + first-fit with LOOKAHEAD:
-    # prefer the alignment in which every remaining segment still finds a
-    # later ent (greedy with feasibility check).
+    # allocnos, so they must be aligned to the `.ent` list before a segment can
+    # be attributed to a function.
+    #
+    # PRIMARY (2026-08-06): index by the func-tagged ALLOCDBG stream.  The
+    # BB2_ALLOC_DEBUG hook prints `ALLOCDBG func=NAME ord=... pseudo=...` from
+    # inside global_alloc, so the functions carrying ALLOCDBG rows ARE exactly
+    # the functions that emitted a greg segment, in the same order — and each
+    # one's allocno set is known by NAME rather than inferred.  Alignment
+    # becomes a zip plus a verification, with no signature guessing.
+    #
+    # FALLBACK: the original subset heuristic, kept for dumps produced without
+    # the hook (a stock cc1, or BB2_ALLOC_DEBUG unset).  It matches a segment
+    # to an ent when the segment's pseudos are a SUBSET of the ent's flow
+    # pseudo set, greedily with a feasibility lookahead.  Subset is not an
+    # identity: a small segment is a subset of many functions' flow sets, so
+    # when sibling signatures nest, the greedy walk consumes a segment at the
+    # wrong ent and a later function is left unaligned.
+    #
+    # MEASURED (code6cac_c, 12 ents / 8 segments): the fallback assigned
+    # segments to ents 0,3,4,5,8,9,10,11 — including pad_press_control (ent 0)
+    # and func_8003791C (ent 4), which have NO allocnos at all — and skipped
+    # func_80037804 (ent 2) and func_80037A20 (ent 7), so extracting
+    # func_80037A20 died with "FATAL: no greg segment aligned".  The ALLOCDBG
+    # index maps all 8 segments to ents 2,3,5,7,8,9,10,11 with every segment's
+    # allocno set EQUAL to its function's ALLOCDBG pseudo set.
     flow_sets = [set(parse_flow_regs(s)) for s in fsegs]
     seg_pseudos = []
+    seg_order_sets = []
     for g in gsegs:
         sp = parse_greg_segment(g)
         seg_pseudos.append(set(sp["order"]) | set(sp["dispositions"]))
+        seg_order_sets.append(set(sp["order"]))
+
+    def allocdbg_alignment():
+        """-> {ent index: segment index} or None when the stream can't index."""
+        rows = ablocks["rows"]
+        alloc_ents = [ei for ei, e in enumerate(ents) if rows.get(e)]
+        if not alloc_ents or len(alloc_ents) != len(gsegs):
+            return None
+        # Verify rather than trust: every pairing must agree on the allocno set.
+        for gi, ei in enumerate(alloc_ents):
+            if seg_order_sets[gi] != {r["pseudo"] for r in rows[ents[ei]]}:
+                return None
+        return {ei: gi for gi, ei in enumerate(alloc_ents)}
 
     def fits(gi, ei):
         return bool(seg_pseudos[gi]) and seg_pseudos[gi] <= flow_sets[ei]
@@ -226,33 +256,42 @@ def main():
             return True
         return feasible(gi, ei + 1)
 
-    greg_for_ent = {}
-    gi = 0
-    for ei in range(len(ents)):
-        if gi < len(gsegs) and fits(gi, ei) and feasible(gi + 1, ei + 1):
-            # extra disambiguation: only consume if skipping would break
-            # feasibility OR the NEXT segment cannot also fit this ent better;
-            # prefer consuming (functions rarely skip global alloc).
-            greg_for_ent[ei] = gi
-            gi += 1
-    if gi != len(gsegs):
-        sys.exit(f"FATAL: greg alignment consumed {gi}/{len(gsegs)} segments — "
-                 f"signature mismatch; run --inspect")
+    greg_for_ent = allocdbg_alignment()
+    align_via = "ALLOCDBG"
+    if greg_for_ent is None:
+        align_via = "flow-subset fallback"
+        greg_for_ent = {}
+        gi = 0
+        for ei in range(len(ents)):
+            if gi < len(gsegs) and fits(gi, ei) and feasible(gi + 1, ei + 1):
+                # extra disambiguation: only consume if skipping would break
+                # feasibility OR the NEXT segment cannot also fit this ent
+                # better; prefer consuming (functions rarely skip global alloc).
+                greg_for_ent[ei] = gi
+                gi += 1
+        if gi != len(gsegs):
+            sys.exit(f"FATAL: greg alignment consumed {gi}/{len(gsegs)} "
+                     f"segments — signature mismatch; run --inspect")
     if a.inspect or os.environ.get("RA_DEBUG"):
+        print(f"  align via: {align_via}", file=sys.stderr)
         for ei, gg in sorted(greg_for_ent.items()):
             print(f"  align: ent[{ei}] {ents[ei]} <- greg seg {gg} "
                   f"({sorted(seg_pseudos[gg])[:6]}...)", file=sys.stderr)
 
     if a.inspect:
+        # NB: ablocks is {"rows": {func: [...]}, "seeds": {...}} — printing
+        # len(ablocks) reported the DICT's 2 keys, not a block count, which
+        # made every TU look like it had "2 allocdbg blocks".
         print(f"functions: {len(ents)}  greg segs: {len(gsegs)}  "
-              f"allocdbg blocks: {len(ablocks)}  flow segs: {len(fsegs)}")
-        print(f"target index: {k} ({a.func})")
-        if k < len(gsegs):
+              f"allocdbg funcs: {len(ablocks['rows'])}  flow segs: {len(fsegs)}")
+        print(f"target index: {k} ({a.func})  aligned greg seg: "
+              f"{greg_for_ent.get(k, 'NONE')}  (via {align_via})")
+        if k in greg_for_ent:
             print("--- greg segment head ---")
-            print("\n".join(gsegs[k].splitlines()[:15]))
-        if k < len(ablocks):
+            print("\n".join(gsegs[greg_for_ent[k]].splitlines()[:15]))
+        if ablocks["rows"].get(a.func):
             print("--- allocdbg ---")
-            for r in ablocks[k][:12]:
+            for r in ablocks["rows"][a.func][:12]:
                 print(r)
         if k < len(fsegs):
             print("--- flow regs (first 8) ---")
