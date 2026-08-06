@@ -2541,23 +2541,14 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-02 - func_80052B00 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
-    },
-    {
-      "func": "func_80021280",
-      "file": "code6cac",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "OWNER-PENDING: Judge PASS (00:11) vs layer-2 FAIL conflict on loop-tail-duplication family scope - see decisions.md 2026-08-04 OWNER-PENDING entry; bytes-proven 0-form banked in ledger candidate.c"
     }
   ],
   "counts": {
-    "total": 303,
+    "total": 302,
     "active": 266,
     "by_status": {
       "active": 266,
-      "parked": 37
+      "parked": 36
     },
     "by_verdict": {
       "C": 86,
