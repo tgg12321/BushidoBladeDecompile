@@ -557,7 +557,7 @@ typedef struct { s32 a, b, c, d, e, f, g, h; } Copy8_40D48;
 extern s32 D_800A9A10[];
 extern s32 D_80094CFC[];
 extern s32 D_800A3820;
-extern FuncPtr_40D48 D_800F66A0;
+extern FuncPtr_40D48 D_800F66A0[];
 extern void func_800417D0(s32 *);
 extern void md_option_reset_800400B0(s32 *, s32);
 extern void ang_hosei_8003F62C(s32 *);
@@ -631,7 +631,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         *(s32 *)(s2 + 0x50) = -(s32)*(s16 *)((u8 *)s1 + 0x6E);
         *(s32 *)(s2 + 0x54) = -(s32)*(s16 *)((u8 *)s1 + 0x70);
         *(s16 *)(s2 + 0x10) = *(u16 *)((u8 *)s1 + 0x72);
-        s0_fn = &D_800F66A0;
+        s0_fn = D_800F66A0;
         *(s16 *)(s2 + 0x12) = -(s16)*(u16 *)((u8 *)s1 + 0x74);
         *(s16 *)(s2 + 0x14) = -(s16)*(u16 *)((u8 *)s1 + 0x76);
 
@@ -880,36 +880,11 @@ void func_80041430(s32 a0, s32 a1) {
     } while (i < 0x14);
     func_80040A78((s32)s0);
 }
-__asm__(
-    ".set\tnoat\n"
-    ".set\tnoreorder\n"
-    ".set noat\n"
-    ".set noreorder\n"
-    "glabel save_vc_ctrl\n"
-    "    addiu   $sp,$sp,-0x8\n"
-    "    beqz    $a2,.L80041530_svc\n"
-    "    addiu   $v1,$a2,-0x1\n"
-    "    addiu   $a2,$zero,-0x1\n"
-    "    addiu   $a1,$a1,0xC\n"
-    ".L80041510_svc:\n"
-    "    lw      $v0,0($a1)\n"
-    "    nop\n"
-    "    beqz    $v0,.L80041524_svc\n"
-    "    addu    $v0,$v0,$a0\n"
-    "    sw      $v0,0($a1)\n"
-    ".L80041524_svc:\n"
-    "    addiu   $v1,$v1,-0x1\n"
-    "    bne     $v1,$a2,.L80041510_svc\n"
-    "    addiu   $a1,$a1,0x68\n"
-    ".L80041530_svc:\n"
-    "    addiu   $sp,$sp,0x8\n"
-    "    jr      $ra\n"
-    "    nop\n"
-    ".set\treorder\n"
-    ".set\tat\n"
-    ".set reorder\n"
-    ".set at\n"
-);
+void save_vc_ctrl(s32 a0, s32 a1, s32 a2) {
+    /* body replaced by asmfix replace_with_asmfile (asm/funcs/save_vc_ctrl.s).
+     * Canonical hand-coded leaf, user-authorized 2026-06-07. */
+    (void)a0; (void)a1; (void)a2;
+}
 extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
     return g_player_ptrs[a0];
@@ -1232,14 +1207,12 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
   if (outer < 2) { goto loop_outer; }
   if (single_game_SetStageId() == 1) { func_8003E120(); }
 }
-extern s16 g_anim_select;
-extern s16 D_800A323A;
-extern s16 D_800A323C;
+extern s16 g_anim_select[3];
 extern Block16 D_800A9B28;
 void func_80041E10(Block16 *a0, s32 a1) {
-    g_anim_select = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
-    D_800A323A = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
-    D_800A323C = (s16)(((a1 & 0xFF) << 12) / 255);
+    g_anim_select[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
+    g_anim_select[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
+    g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
 extern s32 func_80052754(s32, s32, s32);
@@ -1251,7 +1224,7 @@ extern s16 D_800F62E0[];
 extern s16 D_800F6340[];
 void decBs0(s32 a0, s32 a1)
 {
-    register s16 *fp_ptr asm("fp");
+    s16 *fp_ptr;
     s32 outer;
     s32 *cam;
     s16 *tbl;
@@ -1266,75 +1239,75 @@ void decBs0(s32 a0, s32 a1)
     outer = 0;
     cam = (s32 *)&D_800A9B28;
 
-loop_outer:
-    tbl = fp_ptr;
-    if (outer == 0) {
-        ptr = (s32 *)a0;
-    } else {
-        ptr = (s32 *)a1;
-        tbl = D_800F6340;
-    }
+    do {
+        tbl = fp_ptr;
+        if (outer == 0) {
+            ptr = (s32 *)a0;
+        } else {
+            ptr = (s32 *)a1;
+            tbl = D_800F6340;
+        }
 
-    if (ptr == 0) { goto skip; }
-    if (g_anim_select < 0) { goto skip; }
+        if (ptr == 0) { goto skip; }
+        if (g_anim_select[0] < 0) { goto skip; }
 
-    dx = ptr[0] - cam[0];
-    dy = ptr[1] - cam[1];
-    dz = ptr[2] - cam[2];
+        dx = ptr[0] - cam[0];
+        dy = ptr[1] - cam[1];
+        dz = ptr[2] - cam[2];
 
-    if (dx < 0) goto neg_dx;
-    if (dx < 0x7000) goto check_dy;
-    goto calc;
-neg_dx:
-    if (-dx >= 0x7000) goto calc;
-check_dy:
-    if (dy < 0) goto neg_dy;
-    if (dy < 0x7000) goto check_dz;
-    goto calc;
-neg_dy:
-    if (-dy >= 0x7000) goto calc;
-check_dz:
-    if (dz < 0) goto neg_dz;
-    if (dz < 0x7000) goto dist_check;
-    goto calc;
-neg_dz:
-    if (-dz >= 0x7000) goto calc;
+        if (dx < 0) goto neg_dx;
+        if (dx < 0x7000) goto check_dy;
+        goto calc;
+    neg_dx:
+        if (-dx >= 0x7000) goto calc;
+    check_dy:
+        if (dy < 0) goto neg_dy;
+        if (dy < 0x7000) goto check_dz;
+        goto calc;
+    neg_dy:
+        if (-dy >= 0x7000) goto calc;
+    check_dz:
+        if (dz < 0) goto neg_dz;
+        if (dz < 0x7000) goto dist_check;
+        goto calc;
+    neg_dz:
+        if (-dz >= 0x7000) goto calc;
 
-dist_check:
-    if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
+    dist_check:
+        if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
 
-calc:
-    angle = single_game_getEnemyCharId(dx, dz);
-    cos_val = math_Cos(angle);
-    {
-        s32 sin_val = math_Sin(angle);
-        s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-        tbl[4] = (s16)-single_game_getEnemyCharId(dy, cross);
-    }
-    tbl[5] = (s16)angle;
-    tbl[6] = 1;
-    *(u16 *)&tbl[29] = *(u16 *)&g_anim_select;
-    *(u16 *)&tbl[32] = *(u16 *)&D_800A323A;
-    *(u16 *)&tbl[35] = *(u16 *)&D_800A323C;
-    goto end_loop;
+    calc:
+        angle = single_game_getEnemyCharId(dx, dz);
+        cos_val = math_Cos(angle);
+        {
+            s32 sin_val = math_Sin(angle);
+            s32 cross = (cos_val * dz + sin_val * dx) >> 12;
+            tbl[4] = (s16)-single_game_getEnemyCharId(dy, cross);
+        }
+        tbl[5] = (s16)angle;
+        tbl[6] = 1;
+        tbl[29] = g_anim_select[0];
+        tbl[32] = g_anim_select[1];
+        tbl[35] = g_anim_select[2];
+        goto end_loop;
 
-skip:
-    tbl[6] = 0;
+    skip:
+        tbl[6] = 0;
 
-end_loop:
-    outer++;
-    if (outer < 2) { goto loop_outer; }
+    end_loop:
+        outer++;
+    } while (outer < 2);
 
     func_8004A1FC((s32)fp_ptr);
     func_8004A1FC((s32)D_800F6340);
 }
 extern s16 g_anim_counter;
-extern s16 g_anim_select;
+extern s16 g_anim_select[3];
 void func_800420D0(void) {
     extern s16 g_anim_hit_flags;
     g_anim_counter = 0;
     g_anim_hit_flags = 0;
-    g_anim_select = -1;
+    g_anim_select[0] = -1;
 }
 extern s16 g_anim_hit_flags[];
 extern s32 g_anim_hit_data[];
@@ -1389,7 +1362,7 @@ void func_800421C8(s32 a0) {
     D_800F62E0 = val & 0xFFF;
     func_80042478(*(s32 *)((u8 *)p + 4));
 }
-extern s16 D_800F6318;
+extern s16 D_800F6318[];
 extern s16 D_800F631E;
 extern s16 D_800F6324;
 extern u8 D_800F6338;
@@ -1401,7 +1374,7 @@ extern s16 D_800F6384;
 extern u8 D_800F6398;
 extern u8 D_800F6399;
 extern u8 D_800F639A;
-extern s16 D_800F6498;
+extern s16 D_800F6498[];
 extern s16 D_800F649E;
 extern s16 D_800F64A4;
 extern u8 D_800F64B8;
@@ -1432,7 +1405,7 @@ void gnd_land_hit_char_die_main(s32 a0, s32 packed, s32 a2, s32 a3) {
     if (a2 != 0) {
         goto alt_scale;
     }
-    new_var = &D_800F6318;
+    new_var = D_800F6318;
     *new_var = r2;
     D_800F631E = g2;
     D_800F6324 = b2;
@@ -1444,7 +1417,7 @@ void gnd_land_hit_char_die_main(s32 a0, s32 packed, s32 a2, s32 a3) {
     goto out;
 alt_scale:
     {
-        s16 *p2 = &D_800F6498;
+        s16 *p2 = D_800F6498;
         *p2 = r2;
         D_800F649E = g2;
         D_800F64A4 = b2;

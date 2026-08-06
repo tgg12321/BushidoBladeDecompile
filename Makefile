@@ -19,7 +19,7 @@ REGFIX_STAGE2:= REGFIX_CONFIG=regfix_stage2.txt python3 tools/regfix.py
 ASMFIX       := python3 tools/asmfix.py
 MASPSX       := python3 tools/maspsx/maspsx.py
 MASPSX_FLAGS := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --label-nop-funcs=maspsx_label_nop_funcs.txt
-MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --dont-force-G0 --sdata-syms=sdata_syms.txt -G8
+MASPSX_FLAGS_GP := --expand-div --aspsx-version=2.34 --sdata-syms=sdata_syms.txt --sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt --label-nop-funcs=maspsx_label_nop_funcs.txt
 
 # GNU MIPS cross-tools
 AS           := mipsel-linux-gnu-as
@@ -101,7 +101,7 @@ $(EXE): $(BIN)
 # -- Per-file GP-relative opt-in --
 # List C files (without path/extension) that need GP-relative addressing.
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
-GP_FILES :=
+GP_FILES := text1a
 
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.

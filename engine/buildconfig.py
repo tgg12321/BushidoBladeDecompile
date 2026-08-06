@@ -67,7 +67,7 @@ MASPSX_FLAGS_GP = (
 # Mirrors the Makefile GP_FILES / EXPAND_LB_FILES / FIX_LWL_FILES /
 # RODATA_ALIGN2_FILES / NO_SR_FILES lists. Byte-parity (task 4) is the proof
 # these are correct; do not edit without re-running `engine parity`.
-GP_FILES = set()
+GP_FILES = {"text1a"}
 EXPAND_LB_FILES = {"code6cac_b"}
 EXPAND_LH_FILES = set()
 FIX_LWL_FILES = set()  # obsolete since -mel adoption 2026-08-04
