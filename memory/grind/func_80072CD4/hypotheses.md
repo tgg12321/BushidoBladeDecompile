@@ -122,3 +122,44 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
 - probe: Cross-checked the committed judge ruling + full s1-s4 ledger against the endgame-lock-disposition policy; filed the OWNER-ESCALATION entry naming func_80072CD4 in docs/grind/decisions.md.
 - result: Every grind-advanceable axis measured/ruled dead; escalation filed; clean floor-4 candidate applied to src (sandbox --disable all = 4, build_insns 79 == target).
 - verdict: CONFIRMED
+
+## [s+] The inverse-compose RA verdict (block 5, qty 3 <-> qty 1) names a residual this function's banked candidate has ALREADY solved.
+- mechanism: `inverse_compose.py classify text1b func_80072CD4` reports FIRST
+  DIVERGENCE: RA, with 252 in $v0 (ours) vs $v1 (target) and 50/70 the other way,
+  and routes to the local backend (22 single-atom vectors, cheapest live_shrink
+  qty 1 span 14->3 / refs_up qty 1 3->7).
+- probe: Checked what baseline the model is built from. `mkasm_honest.sh` compiles
+  `engine.inlineasm.write_stripped(<stem>)` — that is MAIN's source with cheat-asm
+  stripped. main here carries 9 regfix rules and no cheat-asm, so the honest stream
+  is the distance-12 body, NOT the banked distance-4 candidate.
+- result: The classifier's $v0<->$v1 constant-holder exchange is precisely the
+  diff the s2 candidate already fixed (its header records the 18 -> 9 step as
+  "the value stops sharing a live range with the $v0 byte-store constants, so RA
+  matches target: fc_const->$v1, @0xE-value->$v0"). So the 22 vectors address a
+  solved sub-problem. GENERAL: for any parked function whose banked candidate
+  beats main, every ra_solver / sched_solver model is extracted from the wrong
+  baseline, and its verdict must be re-derived from the candidate before use.
+- verdict: CONFIRMED
+
+## [s+] Live-range / naming perturbations on the cross-block @0xE value keep its `li` in the arm delay slot and reach the target merge store order.
+- mechanism: The candidate's own FRONTIER: target writes @0xE once at the merge
+  from a cross-block variable, and its `li` sits in the arm's j-delay slot; our
+  cross-block form lets sched1 hoist that `li` to the arm top, so the value goes
+  live across the $v0 byte constants, conflicts, and lands in $v1. The
+  func_80037A20 result this session (a named intermediate moved a pseudo's refs
+  and live range enough to flip a global.c allocno order) suggested the same
+  family might shape this live range.
+- probe: Six variants over the candidate, all with the cross-block `e_val` and a
+  single merge-point `sb @0xE`: plain target shape; `e_val` declared before
+  `fc_const`; `e_val` assigned FIRST in each arm (longest arm-local range);
+  `fc_const` also made cross-block; @4/@0xC fed through their own named locals;
+  and @0xE written before @4/@0xC as a control.
+- result: KILLED. All six score 13 at 78 insns — identical to the ledger's
+  documented cross-block failure, and worse than the banked candidate's 4 at 79.
+  Declaration order, arm-local assignment position, extra named merge locals and
+  the control ordering are all inert: sched1 hoists the `li` regardless, so the
+  conflict that forces $v1 is re-created every time. The naming family that
+  worked on func_80037A20 does not transfer here, because there the lever moved a
+  pseudo's REFERENCE COUNT (an allocno-priority input) whereas here the binding
+  constraint is a scheduler hoist that no naming choice constrains.
+- verdict: KILLED
