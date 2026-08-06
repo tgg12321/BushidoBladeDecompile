@@ -298,18 +298,8 @@ static void SsSeqCalledTbyT(void) {
     }
 }
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
-void func_800841E0(s16 arg0, s16 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800841E0.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)arg0;
-    (void)arg1;
-}
-void func_80084500(s16 arg0, s16 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80084500.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)arg0;
-    (void)arg1;
-}
+INCLUDE_ASM("asm/funcs", func_800841E0);
+INCLUDE_ASM("asm/funcs", func_80084500);
 void spu_SetMotionState(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
@@ -919,8 +909,7 @@ s32 func_800859F0(s16 a0) {
     }
     return g_snd_ch_addr[a0];
 }
-void AllocBukiRmd(void) {
-}
+INCLUDE_ASM("asm/funcs", AllocBukiRmd);
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 D_800F5750;
 extern s16 D_800F5758;
@@ -1114,11 +1103,9 @@ void spu_ResetCounter(void) {
     D_800F66F8 = 0;
 }
 
-void action_CheckHitZangeki(void) {
-}
+INCLUDE_ASM("asm/funcs", action_CheckHitZangeki);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
-void md_game_end(s32 arg0) {
-}
+INCLUDE_ASM("asm/funcs", md_game_end);
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
 extern u8 D_801027F7;
 extern u8 D_801027FC;
@@ -1156,8 +1143,7 @@ s32 func_80086BFC(u16 arg0, u16 arg1) {
     }
     return var_v1;
 }
-void func_80086CF8(s32 arg0) {
-}
+INCLUDE_ASM("asm/funcs", func_80086CF8);
 extern u16 D_800F1B10;
 extern u16 D_800F1B12;
 extern s16 D_800F4E18;
@@ -1207,10 +1193,8 @@ void func_800871D4(s32 a0_arg)
   D_801078DA = temp_a0_da;
   D_800F1B12 = temp_v0_1b12 & ~temp_a0_da;
 }
-void func_800872A4(void) {
-}
-void func_80087770(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-}
+INCLUDE_ASM("asm/funcs", func_800872A4);
+INCLUDE_ASM("asm/funcs", func_80087770);
 extern s16 D_80102806;
 s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
     u8 *base;
@@ -1724,8 +1708,7 @@ s32 func_80088740(s32 a0) {
     D_800A2D18 = 0;
     return 0;
 }
-void DispUpdateStatusMessage(s32 arg0, s32 arg1) {
-}
+INCLUDE_ASM("asm/funcs", DispUpdateStatusMessage);
 /* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
@@ -3087,9 +3070,7 @@ void func_8008B400(u8 *status) {
         voice++;
     } while (voice < limit);
 }
-void saTan1MainJump(void *a0) {
-    (void)a0;
-}
+INCLUDE_ASM("asm/funcs", saTan1MainJump);
 /* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
 s32 func_8008BB24(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     volatile s32 sp0;
@@ -3572,8 +3553,7 @@ return_val:
     }
 }
 /* kengo:MED  |  am_rmd/SetPacketData  |  159i */
-s32 func_8008C464(s32 arg0, s32 arg1, s32 arg2) {
-}
+INCLUDE_ASM("asm/funcs", func_8008C464);
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
