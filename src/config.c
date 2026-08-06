@@ -385,10 +385,7 @@ check_arg1:
 done:
     return;
 }
-s32 func_8003FA24(void *a0) {
-    (void)a0;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8003FA24);
 s16 *func_8003FE40(s16 *a0, s32 a1, s16 *a2) {
     s32 i;
     i = 0;
