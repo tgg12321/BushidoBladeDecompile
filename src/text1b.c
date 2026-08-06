@@ -639,11 +639,7 @@ extern s32 g_snd_play_count;
 void saTan5GetTakeCutAnimType(s32 a0) {
     g_snd_play_count += a0;
 }
-void func_80048BA4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80048BA4.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80048BA4);
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
 extern void InitFadePanel(void);
@@ -1280,48 +1276,16 @@ void func_8004A1FC(arg0) s16 *arg0; {
         i++;
     } while (i < 3);
 }
-void func_8004A348() {
-    /* Body from asm/funcs/func_8004A348.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004A4E0() {
-    /* Body from asm/funcs/func_8004A4E0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004A76C() {
-    /* Body from asm/funcs/func_8004A76C.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004A808() {
-    /* Body from asm/funcs/func_8004A808.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_8004A348);
+INCLUDE_ASM("asm/funcs", func_8004A4E0);
+INCLUDE_ASM("asm/funcs", func_8004A76C);
+INCLUDE_ASM("asm/funcs", func_8004A808);
 void func_8004A938(void) {
 }
-void calc_loc_mat_fw_8004A940() {
-    /* Body from asm/funcs/calc_loc_mat_fw_8004A940.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004BB68() {
-    /* Body from asm/funcs/func_8004BB68.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void saTan2LineDraw() {
-    /* Body from asm/funcs/saTan2LineDraw.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004C1F4() {
-    /* Body from asm/funcs/func_8004C1F4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", calc_loc_mat_fw_8004A940);
+INCLUDE_ASM("asm/funcs", func_8004BB68);
+INCLUDE_ASM("asm/funcs", saTan2LineDraw);
+INCLUDE_ASM("asm/funcs", func_8004C1F4);
 void func_8004C388(s16 *arg0, s16 *arg1, s16 *arg2) {
     register s32 t0 asm("$8");
     register s32 t1 asm("$9");
@@ -1359,61 +1323,17 @@ void func_8004C388(s16 *arg0, s16 *arg1, s16 *arg2) {
     ((u16 *)arg2)[3] = (u16)t3;
 }
 PAD_NOPS_1; /* padding after func_8004C388 */
-void func_8004C404() {
-    /* Body from asm/funcs/func_8004C404.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004C994() {
-    /* Body from asm/funcs/func_8004C994.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004CB8C() {
-    /* Body from asm/funcs/func_8004CB8C.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004CDB0() {
-    /* Body from asm/funcs/func_8004CDB0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004CFE0() {
-    /* Body from asm/funcs/func_8004CFE0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004D244() {
-    /* Body from asm/funcs/func_8004D244.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004D424() {
-    /* Body from asm/funcs/func_8004D424.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004D634() {
-    /* Body from asm/funcs/func_8004D634.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004D838() {
-    /* Body from asm/funcs/func_8004D838.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004DA74() {
-    /* Body from asm/funcs/func_8004DA74.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004DDB4() {
-    /* Body from asm/funcs/func_8004DDB4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_8004C404);
+INCLUDE_ASM("asm/funcs", func_8004C994);
+INCLUDE_ASM("asm/funcs", func_8004CB8C);
+INCLUDE_ASM("asm/funcs", func_8004CDB0);
+INCLUDE_ASM("asm/funcs", func_8004CFE0);
+INCLUDE_ASM("asm/funcs", func_8004D244);
+INCLUDE_ASM("asm/funcs", func_8004D424);
+INCLUDE_ASM("asm/funcs", func_8004D634);
+INCLUDE_ASM("asm/funcs", func_8004D838);
+INCLUDE_ASM("asm/funcs", func_8004DA74);
+INCLUDE_ASM("asm/funcs", func_8004DDB4);
 PAD_NOPS_1; /* padding after func_8004DDB4 */
 void func_8004E564(void) {
 }
