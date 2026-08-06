@@ -77,6 +77,21 @@ duplicating CALLS (changes bytes), or any duplication that survives to
 the final bytes (fails prerequisite 2 — that's a real code change).
 Per [[no-new-park-categories]], other spellings need their own evidence.
 
+## Clarified scope — control-transfer tails (owner ruling 2026-08-06)
+
+The family DOES cover duplicating a multi-statement tail that ends in a
+control transfer — including a loop tail with its conditional branch —
+when every prerequisite holds (byte-neutral via cross-jump re-merge,
+exhaustion documented, FAKE-annotated, dual review). Evidence pass
+(docs/grind/sotn-evidence-2026-08-06.md): matched SOTN duplicates
+transfer-terminated tails into arms routinely — counter-bump + backward
+goto across 2 arms (e_shop.c:986-1009), 4-statement return-tails
+written out 3× (vs_vh.c:69-128), instances in base file doors.c
+(:222-224, :437-439, :678-680). SOTN's instances end in UNCONDITIONAL
+transfers; the owner ruled the conditional-branch tail a difference of
+DEGREE, not kind (func_80021280, first accepted instance — the
+mechanism record lives in that function's preamble comment).
+
 ## Related
 
 - [[sotn-family-research-2026-07-01]] — the evidence framework.

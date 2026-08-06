@@ -3598,3 +3598,24 @@ override; nothing lands before the fresh layer-2 PASS.
 4. **func_8006BD28** — owner rules: leave authorized (the 2026-06-07 decision stands).
 
 [skip-park-src-guard]
+
+## 2026-08-06 — SOTN evidence verdicts + owner rulings (resolves the two evidence passes)
+
+**Q1 (func_80021280 / control-transfer duplication): EVIDENCE-FOUND with a scope split.**
+Matched SOTN routinely duplicates multi-statement tails ENDING in control transfers into
+arms — counter-bump + backward goto across 2 arms (e_shop.c:986-1009), return-tails
+written out 3x (vs_vh.c:69-128), and instances in cited base file doors.c — but every
+SOTN transfer is UNCONDITIONAL; BB2's candidate duplicates a conditional loop tail.
+**Owner ruled: difference of DEGREE — ACCEPTED.** func_80021280 completed
+(COMPLETED-C, gate-verified SHA1, rule retired, first accepted instance); rule doc's
+scope clarified with the citations. Full report: docs/grind/sotn-evidence-2026-08-06.md.
+
+**Q2 (hirahira_w_ctrl_2 / real-store relocation): NO-EVIDENCE.** 1936 files, the full
+117-instance FAKE census, ordering/mechanism vocabulary greps, two structural store
+scans: matched SOTN never relocates a real store for codegen effect (it reaches for
+type-level levers — LOH/LOHU x370 — or dead reads instead). **Per the owner's standing
+directive the family is DEAD with authority**; the double layer-2 FAIL stands and
+hirahira_w_ctrl_2 remains banked at honest floor 62. Unclosed avenue (recorded): PR-thread
+history (shallow clone) — owner may commission a full-history pass if ever desired.
+
+[skip-park-src-guard]
