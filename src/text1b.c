@@ -1792,11 +1792,7 @@ s16 func_80054434(void) {
 }
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", myRobGeneiOpen);
-void func_80054604(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80054604.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3; (void)arg4; (void)arg5; (void)arg6;
-}
+INCLUDE_ASM("asm/funcs", func_80054604);
 extern s16 InfoPosYTbl1[];
 extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
 void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
@@ -1810,12 +1806,7 @@ void katinuki_game_setData_800548DC(void) {
     func_8004659C(-1);
     snd_StopSelection();
 }
-s32 func_8005490C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005490C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005490C);
 extern u32 D_80102C00;
 extern u16 D_800A38D6;
 extern s32 D_800A374C;
@@ -1886,12 +1877,7 @@ void func_800550E8(s32 arg0) {
         p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
     } while (++i < 8);
 }
-void single_game_SetStatusUpData(s32 arg0, s32 arg1, s32 arg2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/single_game_SetStatusUpData.s).
-     * 516 inst, 57 branches, 5 jal, 63 loads, 72 stores. m2c output had
-     * type errors. Pure-C decomp pending. */
-    (void)arg0; (void)arg1; (void)arg2;
-}
+INCLUDE_ASM("asm/funcs", single_game_SetStatusUpData);
 extern u16 D_80099D88;
 
 s32 func_80055948(u8 *arg0) {
@@ -1976,11 +1962,7 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3C8) = 0;
     *(s32 *)(a0 + 0x3CC) = -1;
 }
-void calc_loc_mat_fw_80055B60(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/calc_loc_mat_fw_80055B60.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", calc_loc_mat_fw_80055B60);
 void func_80056CB8(s32 arg0) {
     /* Bind locals to specific callee-save regs to match target's allocation. */
     register s32 r_arg0 asm("$23") = arg0;     /* $s7 */
@@ -2137,26 +2119,9 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     return var_v0;
 }
-void func_800571C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800571C0.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_8005763C(s32 arg0, s32 arg1, s32 arg2, s32 arg3,
-                   s32 arg4, s32 arg5, s32 arg6, s32 arg7,
-                   s32 *arg8, s32 *arg9) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005763C.s).
-     * Pure C decomp: line/segment intersection (clip-to-rect) routine,
-     * 66 branches, leaf function. Pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    (void)arg4; (void)arg5; (void)arg6; (void)arg7;
-    (void)arg8; (void)arg9;
-}
-void func_80057ACC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80057ACC.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_800571C0);
+INCLUDE_ASM("asm/funcs", func_8005763C);
+INCLUDE_ASM("asm/funcs", func_80057ACC);
 extern s32 single_game_getEnemyCharId(s32, s32);
 extern s16 Judge;
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
@@ -2209,16 +2174,8 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     *arg3 = cy + ((scale * (s32)(new_var = *(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
 }
 
-void func_80057E84(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80057E84.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_80058580(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80058580.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80057E84);
+INCLUDE_ASM("asm/funcs", func_80058580);
 extern s16 D_800A3400;
 extern s32 D_800A3408;
 extern s32 D_800EFB38;
@@ -2808,12 +2765,7 @@ void saFidLoad(s32, s32);
 void obj_ExecTask(s32 a0) {
     saFidLoad(a0, 9);
 }
-s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005BA8C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005BA8C);
 extern void title_mv_exec2(s32);
 extern void saFidLoad(s32, s32);
 extern s32 D_800EFC50;
@@ -2921,17 +2873,8 @@ s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     D_800EFB38[arg1] = arg2;
     return arg2 + D_800EFC38[arg1][3];
 }
-void func_8005C074(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C074.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-s32 tslGlobalMemFree_8005C2A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/tslGlobalMemFree_8005C2A8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005C074);
+INCLUDE_ASM("asm/funcs", tslGlobalMemFree_8005C2A8);
 extern s32 D_800EFC38;
 extern s32 func_80087F64(s32);
 extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
@@ -3010,18 +2953,8 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
         a3 = (s16)(a3 + 1);
     } while ((s16)a3 < 0x18);
 }
-s32 func_8005C6D0(void) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C6D0.s).
-     * Pure-C decomp pending future purification work. */
-    return 0;
-}
-s32 func_8005C8A8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005C8A8.s).
-     * 753 inst, 69 branches, 29 jal, 80 loads, 162 stores. m2c output had
-     * duplicate sp variable declarations. Pure-C decomp pending. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005C6D0);
+INCLUDE_ASM("asm/funcs", func_8005C8A8);
 extern s32 func_80073728();
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
@@ -3155,37 +3088,17 @@ s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
     D_800A326C += 1;
     return ret;
 }
-s32 func_8005D814(s16 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005D814.s).
-     * 545 inst, 46 branches, 12 jal, 45 loads, 86 stores. m2c output had
-     * duplicate sp variable declarations. Pure-C decomp pending. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005D814);
 extern s16 D_8009B488;
 extern s8 D_8009B48E;
 
-s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005E098.s).
-     * Pure C decomp pending. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005E098);
 s32 func_8005E098(s32, s32, s32, s32);
 s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
     return func_8005E098(-1, a0 - 1, a1, a2);
 }
-s32 func_8005E54C(s32 arg0, s32 arg1, s32 arg2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005E54C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2;
-    return 0;
-}
-void func_8005F1C8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005F1C8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_8005E54C);
+INCLUDE_ASM("asm/funcs", func_8005F1C8);
 extern s32 D_8009B610;
 extern s32 D_8009B634;
 extern s32 D_8009B63C;
@@ -3258,12 +3171,7 @@ extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 saMotionSet(s32, s32);
 
-s32 func_8005FC9C(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8005FC9C.s).
-     * Pure C decomp pending; m2c output incomplete (M2C_ERROR markers). */
-    (void)arg0; (void)arg1;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8005FC9C);
 typedef struct {
     s32 *p0;
     s32 *p1;
@@ -4526,11 +4434,7 @@ end:
     p[1] = 0;
     *(s32 *)((u8 *)&D_800F1198 + i12) = 0;
 }
-void func_800620B8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800620B8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_800620B8);
 s32 func_8006288C(void) {
     extern s32 D_800A3460;
     extern s32 D_800A347C;
@@ -4580,11 +4484,7 @@ loop_top:
     }
     return 1;
 }
-void func_8006295C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006295C.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_8006295C);
 extern s32 D_800A347C;
 
 s32 func_80062FEC(void) {
@@ -4616,11 +4516,7 @@ found:
     *((s16 *) (((u8 *) (new_var = &D_800F0BEC)) + idx)) = 0;
     return 1;
 }
-void func_80063084(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80063084.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80063084);
 extern s32 D_800A3468;
 extern s32 D_800F10D0;
 extern s16 D_800A345C;
@@ -4651,18 +4547,8 @@ u8 func_80063BA4(void) {
     *(s32 *)D_800A3480 = D_800A345E;
     return func_80063E10(1);
 }
-u8 func_80063BD0(s32 arg0) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80063BD0.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0;
-    return 0;
-}
-s32 func_80063E10(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80063E10.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_80063BD0);
+INCLUDE_ASM("asm/funcs", func_80063E10);
 void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
 {
     s32 i;
@@ -4736,11 +4622,7 @@ loop_inner:
     } while (cont != 0);
     return 1;
 }
-void func_800646E8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800646E8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_800646E8);
 extern void *D_800A347C;
 extern s32 D_800F0CA0;
 extern s32 D_800F0CA4;
@@ -5181,12 +5063,7 @@ u8 func_800657B0(void) {
     }
     return 0;
 }
-u8 motion_SetExMotion(s32 arg0) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/motion_SetExMotion.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", motion_SetExMotion);
 extern s32 D_800F10D8;
 u8 func_80067200(s32, s32, s32);
 u8 func_80066EC0(void) {
@@ -5299,12 +5176,7 @@ u8 func_800671CC(void) {
     D_800F1134 = 2;
     return ret;
 }
-u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80067200.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_80067200);
 u8 func_800678A8(s32, s32);
 u8 func_80067D14(s32, s32);
 u8 func_80068D88(s32, s32);
@@ -5369,18 +5241,8 @@ u8 func_8006786C(void) {
     func_80067D14(7, 2);
     return func_80068D88(7, 2);
 }
-u8 func_800678A8(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800678A8.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1;
-    return 0;
-}
-u8 func_80067D14(s32 arg0, s32 arg1) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80067D14.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_800678A8);
+INCLUDE_ASM("asm/funcs", func_80067D14);
 u8 func_80068D88(s32 arg0, s32 arg1) {
     extern s32 D_800A34EC;
     extern s32 D_800A37D4;
@@ -5690,12 +5552,11 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
         return sum;
     } while (0);
 }
-s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_800693CC.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-    return 0;
-}
+/* Signature UNVERIFIED — restated verbatim from the pre-INCLUDE_ASM stub so cc1's
+ * input is unchanged for the caller(s) below; the asm proves at least 2 argument(s). See
+ * memory/grind/func_800693CC/pre-include-asm-body.c. */
+s32 func_800693CC(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+INCLUDE_ASM("asm/funcs", func_800693CC);
 extern void initTile(u8 *p);
 extern void gpu_SetSemiTransp(u8 *p, s32 semi);
 extern void ot_Link(u32 *ot, u32 *prim);
@@ -5974,16 +5835,8 @@ void func_80069E18(s32 arg0) {
     s.in_tex = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C((s32)&s);
 }
-void func_80069F80(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80069F80.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_8006A1A0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006A1A0.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80069F80);
+INCLUDE_ASM("asm/funcs", func_8006A1A0);
 extern s32 saMotionSet(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
@@ -6019,26 +5872,18 @@ void func_8006A494(s32 *arg0, u8 *arg1) {
     ot_Link(D_800A374C + 4, arg0[7]);
     arg0[7] += 0xC;
 }
-void saTan3GaugeMain_8006A564(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan3GaugeMain_8006A564.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_8006A880(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006A880.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_8006B120(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006B120.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
-void func_8006B578(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006B578.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", saTan3GaugeMain_8006A564);
+INCLUDE_ASM("asm/funcs", func_8006A880);
+/* Signature UNVERIFIED — restated verbatim from the pre-INCLUDE_ASM stub so cc1's
+ * input is unchanged for the caller(s) below; the asm proves at least 1 argument(s). See
+ * memory/grind/func_8006B120/pre-include-asm-body.c. */
+void func_8006B120(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+INCLUDE_ASM("asm/funcs", func_8006B120);
+/* Signature UNVERIFIED — restated verbatim from the pre-INCLUDE_ASM stub so cc1's
+ * input is unchanged for the caller(s) below; the asm proves at least 2 argument(s). See
+ * memory/grind/func_8006B578/pre-include-asm-body.c. */
+void func_8006B578(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+INCLUDE_ASM("asm/funcs", func_8006B578);
 extern s32 D_800A36AC;
 extern u8 g_disp_fb_base;
 void func_8006B898(s32 arg0, s32 arg1) {
@@ -6121,11 +5966,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
     return var_s0;
 }
 
-void func_8006BB68(s32 arg0) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_8006BB68.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0;
-}
+INCLUDE_ASM("asm/funcs", func_8006BB68);
 void func_8006BD28() {
     /* Body from asm/funcs/func_8006BD28.s via asmfix replace_with_asmfile
      * (extracted from a file-scope __asm__ block: -G8 defers function
