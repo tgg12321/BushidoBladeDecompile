@@ -563,3 +563,103 @@ set) has exactly 2 HAND declaration blockers (func_800693CC, func_8006B578 —
 probe arity 1 vs m2c `void f(void)`; resolve from the prologue) + 1 CORROBORATED
 adoption (func_8006B120). Wave 7 = save_vc_ctrl TU re-split. Wave 8 gated on
 tier-1 (now 29 lines across 12 functions + the 4 retained near-matches' wirings).
+
+### Execution record — Wave 6 CLOSED at 136/136 (2026-08-06). READ BEFORE WAVE 7.
+
+`src/text1b.c` is COMPLETE. Six conversion commits — `1f9b1dbe` (6a, 1),
+`9d7a5198` (6b, 20), `eba14d75` (6c, 27), `60c991d6` (6d, 21), `5abe15a2`
+(6e, 37), `f4a5e3dd` (6f, 30) — plus three tool commits, `da6a4191`,
+`69657061` and `345c03d1`. Every commit gated on `verify-oracle --rebuild`
+at `62efab4f73f992798c43e8c730aa43baa10bb4fa`, the R6 check on every
+non-canonical function, the canonical-payoff check on every canonical one,
+`engine test`, and a fresh layer-2 `cheat-reviewer` (6/6 PASS, each re-running
+the oracle itself).
+
+**asmfix.txt is down to 34 rule lines / 5 `replace_with_asmfile`** (from
+170/141 at the start of this wave; 319/206 at campaign start). The five
+survivors are all deliberately out of scope: `func_80089F3C`,
+`DispPracticeMenuTex_A`, `saTan2KabutoWareMove`, `SetPacketData` (the Wave 5
+retained near-matches) and `save_vc_ctrl` (Wave 7). **65 canonical functions
+reached COMPLETED-INLINE-ASM-CANONICAL** — the campaign's payoff set, realised.
+
+**THE 3 HAND BLOCKERS WERE ONE TOOL BUG, NOT THREE SIGNATURE QUESTIONS.** The
+Wave 5 prep framed `func_800693CC` / `func_8006B578` as "probe arity 1 vs m2c
+`void f(void)`, resolve from the prologue", to be settled for or against m2c.
+That framing was wrong in three ways, and the correction matters for any future
+wave that consults `asm_incoming_args`:
+
+1. There were **3** blockers in text1b, not 2. `func_8006B120` — the
+   "CORROBORATED" case the prep expected to sail through — aborted identically,
+   because its stub also declares the uniform 4-parameter fiction.
+2. The helper's `asm_arity()` returned `len(asm_incoming_args(func))`, the
+   COUNT of argument registers read, and compared it for EQUALITY against the
+   declared parameter count. That is a lower bound compared as an exact value.
+   A function may simply IGNORE parameters; all three stubs declare 4 and use 1.
+3. Even as a bound it was wrong. Under o32 argument N lives in `$a(N-1)`, so
+   the floor is an INDEX: reading only `$a1` proves argument **2** exists,
+   hence arity >= 2. The old code scored that 1.
+
+**m2c is NOT the tiebreaker the prep assumed.** It declares `func_800693CC` and
+`func_8006B578` as `void f(void)`, which the live-in `$a1` falsifies on arity
+and which `result = func_800693CC();` falsifies on return type. Read off the
+asm: `func_800693CC` insn 3 `addu $s0,$a1,$zero` with `$a0` only ever DEFINED
+(`addiu $a0,$sp,0x10`) and never read — floor 2, first parameter unused;
+`func_8006B578` identical shape then `lw $v1,0x0($s1)`, floor 2, and its caller
+`func_8006B578(&arg0,&arg1)` passes exactly two pointers; `func_8006B120`
+`addu $s1,$a0,$zero` then `lw $v0,0x4($s1)`, floor 1, agreeing with m2c
+(`GameObj *`) and its caller `func_8006B120(sp10)`.
+
+Fixed in `da6a4191`: `asm_min_arity()` (highest `$aN` index + 1, or 4 + stack
+slots) with the test `floor > nparams`. Since the asm can only witness a floor,
+a declaration too NARROW is the only detectable contradiction; a WIDER one is
+ordinary unused parameters. All three then converted with their headers
+PRESERVED VERBATIM — byte-neutral by construction, since cc1 saw exactly that
+prototype before the change and sees it after — and are the wave's ONLY three
+declarations. `345c03d1` makes each carry a generated `Signature UNVERIFIED`
+caveat naming the floor, because an unannotated `extern` reads as authoritative
+typing when it is really the stub's unchecked guess.
+
+**Two generator defects this wave's output exposed, both fixed:**
+* `69657061` — the forbidden-construct banner counted on RAW text, so 19 of 20
+  ledger files in 6b were stamped "FORBIDDEN CONSTRUCTS BELOW: 1 __asm__
+  occurrence" over bodies containing none: text1b's canonical stubs are empty
+  bodies whose COMMENT reads "extracted from a file-scope `__asm__` block".
+  Counting on `_code_without_comments_and_strings` is the wrong fix — it blanks
+  string literals, gutting `cpu_check_run_attack`'s real banner from "4
+  register-asm pins, 6 hardcoded-$N, 34 raw .word" to a bare count, since those
+  patterns live INSIDE the asm templates. Hence `strip_comments()`: comments
+  blanked to equal-length spans, strings preserved. Measured across all 42
+  existing ledgers: 23 unchanged, 19 false positives removed, 0 regressions.
+* `345c03d1` — `drop_asmfix_rule`'s pattern ended `\s*\n` and `\s` matches
+  newlines, so a rule followed by a blank line consumed it. Wave 6e was the
+  first to hit it (0 additions / 39 deletions for 37 rules), eating the
+  separator before the `# func_80070C70: asmfix-slice` header. Inert, but a
+  wave should not silently edit lines it never claimed; 6e was reverted and
+  re-converted with the fix.
+
+**`func_80048FFC` was converted, NOT retained** (`1f9b1dbe`, its own commit with
+R2 ledgering). Its 91-line stub was a genuine draft, so the Wave 5 retention
+ruling had to be applied rather than assumed: at distance 163 / ASM-SUSPECT it
+brackets with the drafts Wave 5 converted normally (`cpu_check_run_attack`
+170/ASM-PARTIAL, `PutRobShadow` 236/ASM-SUSPECT), not with the retained
+20/32/34/44 verdict-C set. Layer-2 independently ranked it 142/265 among active
+items — the median — while all four retained functions sit below the 25th
+percentile. **Every other one of the 136 bodies was a placeholder**; layer-2
+read all 30 of 6f's in the diff rather than trusting the classifier.
+
+**OPEN — the queue checkpoint is 65 entries stale.** No wave updated
+`engine/queue.json` (the regen checkpoint is the orchestrator's), so
+`queue status` and `check_completion_integrity.py` still report 1011 / 104 /
+367. A read-only regen returns 302 items: 6b's 19 + 6c's 27 + 6d's 18 + 6f's 1
+= 65 canonical drops. `active` is UNCHANGED at 265 throughout — no grind work
+vanished, which was the decisive anti-laundering check every reviewer re-ran.
+**Run the regen checkpoint before Wave 7.**
+
+**Recorded, not fixed — pre-existing signature debt in text1b**, surfaced when
+the stubs came out and worth its own cleanup wave (a wrong prototype can mask a
+future match): `func_80052754` is declared both `(s32,s32,s32)` and
+`(s32,s32,s32,s32)`; `func_80052D00` as `()`, `(s32,s32)` and `()`;
+`func_8006E534`'s removed stub said `(s32,s32,s32,s32)` against an extern
+`(s32,s32,u8*,s32)`; `motion_ShiftControl` 4 params against an extern with 2;
+`func_80073728` is declared K&R `()` at :2958 governing 7 call sites while
+:5858 declares `(s32,s32)`.
