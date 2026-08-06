@@ -57,6 +57,7 @@ Usage (WSL, repo root, venv active):
 """
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -120,7 +121,36 @@ def classify(hon, tgt):
     return IDENTICAL, ev
 
 
+def _replace_with_asmfile(func):
+    """True if FUNC's emitted block is substituted wholesale from asm/funcs/ by
+    an asmfix rule. Such a target is unreadable to this text-stream classifier
+    (see the guard in cmd_classify)."""
+    try:
+        txt = (ROOT / "asmfix.txt").read_text(errors="replace")
+    except OSError:
+        return False
+    return re.search(rf"^{re.escape(func)}:\s*replace_with_asmfile\b",
+                     txt, re.M) is not None
+
+
 def cmd_classify(a):
+    # GUARD (2026-08-06): for a `replace_with_asmfile` function this classifier
+    # returns a FICTITIOUS verdict rather than no verdict, which is worse — it
+    # reports PRE-RA / rtl_shape, the one answer meaning "stop, no model can
+    # reach this". Two compounding causes: <stem>.tgt.s carries the target as a
+    # glabel/endlabel block of `/* off addr bytes */` disassembly that
+    # goalmap.asm_body skips, and the two streams are assembler SOURCE vs
+    # DISASSEMBLY, so identical instructions compare unequal (`subu $sp,$sp,144`
+    # vs `addiu $sp, $sp, -0x90`). Measured on func_80089F3C: PRE-RA with a
+    # 287-vs-318 gap when the real codegen residual was ZERO.
+    if _replace_with_asmfile(a.func):
+        sys.exit(
+            f"{a.func} is wired `replace_with_asmfile` in asmfix.txt, so its "
+            f"target in {a.stem}.tgt.s is disassembly text this classifier "
+            f"cannot read; it would report a FICTITIOUS PRE-RA verdict.\n"
+            f"Use the object-level classifier instead:\n"
+            f"  python3 tools/ra_solver/goal_from_tgt.py classify {a.stem} {a.func}\n"
+            f"See docs/grind/inverse-compose-2026-08-06.md.")
     work = ROOT / a.work
     hon_p, tgt_p = work / f"{a.stem}.hon.s", work / f"{a.stem}.tgt.s"
     for p in (hon_p, tgt_p):

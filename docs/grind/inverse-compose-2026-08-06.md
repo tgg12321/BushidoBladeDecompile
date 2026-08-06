@@ -198,7 +198,48 @@ Two independent failures compound:
    PRE-RA with a 287-vs-318 insn gap when the true residual was **zero codegen difference
    at all** (20 link-neutral relocation addends; see `memory/wip/func_80089F3C/notes.md`).
 
-**Use `tools/pairdiff.py <stem> <func>` instead** (added 5c654c3b). It diffs the two
+### RESOLVED — `goal_from_tgt.py` + a guard on `classify`
+
+`classify` now **refuses** this class instead of answering it wrongly: a guard in
+`cmd_classify` detects an asmfix `replace_with_asmfile` rule for the function and exits
+with a pointer. A confidently-wrong verdict is worse than no verdict, because `rtl_shape`
+is the one answer that tells you to stop.
+
+`tools/ra_solver/goal_from_tgt.py` supplies the real answers for this class, with both
+`classify` and `goal` subcommands. It does NOT try to canonicalise the text — there are too
+many assembler macro spellings for a rewrite rule set to be trustworthy, and a wrong
+normalisation would produce exactly the confident fiction being removed. It compares the
+OBJECTS, which objdump renders canonically on both sides:
+
+    ours    tmp/sandbox/<func>/<stem>.o   cheat-stripped honest build
+    target  build/src/<stem>.o            canonical build; for a wired function
+                                          this block IS the split asm file's bytes
+
+Alignment and attribution reuse `goalmap.align` and `goal_from_asm.attribute` unchanged, so
+`goal_from_asm.py`'s 702-function corpus path is untouched by construction.
+
+Verdicts on the four retained near-matches, replacing four fictitious PRE-RAs:
+
+| function | verdict |
+|---|---|
+| `func_80089F3C` | NO DIVERGENCE (streams identical — it is COMPLETED-C) |
+| `DispPracticeMenuTex_A` | SCHED (1 nop) **and** RA: `$v0->$v1` x30, `$v1->$v0` x4, `$a0->$v0` x2 |
+| `SetPacketData` | PRE-RA (target-only `move`, `lui`, `addiu` x2 — prologue arg-homing) |
+| `saTan2KabutoWareMove` | PRE-RA (target-only `andi #,#,0xffff`) |
+
+One logic fix rides along: a **nop-only multiset difference no longer short-circuits the RA
+check**. Nops are downstream of RA (maspsx inserts them after the fact), so they cannot
+settle the question — `DispPracticeMenuTex_A` has a real RA component that the old
+nop-only SCHED verdict hid entirely.
+
+**Known remaining limit — attribution, not parsing.** `goal` now runs on these functions,
+but `attribute()` is position-blind: it maps "reg R should be T" onto "which pseudos hold
+R", and on `DispPracticeMenuTex_A` 85 pseudos hold `$v0`, so it honestly reports AMBIGUOUS
+and returns an empty goal rather than guessing. Narrowing that needs a pseudo -> asm
+position mapping (liveness at the substitution site). That is a separate gap from the
+tgt-parsing blindness fixed here.
+
+**For a raw diff, `tools/pairdiff.py <stem> <func>`** (added 5c654c3b) diffs the two
 OBJECT files the score is actually computed from — `tmp/sandbox/<func>/<stem>.o` against
 `build/src/<stem>.o` — through `engine.score.normalized_insns` with the engine's own
 control-flow masking. Object-vs-object is what `sandbox` reports, so its diff reconciles
