@@ -69,6 +69,48 @@ TARGETS = [
 # function now resolves to a LEVER verdict below.
 GAP_NOTES = {}
 
+# Owner/lead caveat block, carried in the GENERATOR so a sweep re-run cannot
+# wipe it.  Originally committed as c9b5a6e8; the foreclosure paragraph was
+# added 2026-08-06 (commit 61912561's model gap).
+CAVEAT_BLOCK = """
+> **BASELINE-ROUTING CAVEAT (2026-08-06, measured on func_80072CD4 — commit
+> b9d92391).** The stripped-source baseline above is MAIN's body with cheat-asm
+> stripped. For a parked function whose BANKED CANDIDATE beats main (WIP/grind
+> ledger records a lower floor than the stripped-main distance), every model
+> here is extracted from the WRONG baseline: the vectors may target a
+> sub-problem the candidate already solved (func_80072CD4's 22 local vectors
+> named exactly the exchange its distance-4 candidate had fixed; its stripped
+> main is distance 12). Before acting on any verdict in this doc, check the
+> function's ledger for a banked candidate and, if one exists, RE-DERIVE the
+> model from that candidate body first. special_camera_get_rot_dir has this
+> shape (banked 9 vs stripped-main 12). Separately: `write_stripped` is not a
+> complete strip (leaves volatile array DECLARATIONS standing — commit
+> d42977db), so frame-sensitive questions need per-construct verification.
+> Also refuted by direct attempt: func_80037A20's pref_add vector was
+> foreclosed as not-C-reachable, and the function's swap then fell to a plain
+> named-intermediate restructure the solver never proposed (commit 8e1fd614) —
+> the suite diagnoses residuals; it does not enumerate every closing spelling.
+
+> **PREFERENCE FORECLOSURE (2026-08-06, commit 61912561 — now ENFORCED).**
+> Every PREF_ADD lever this sweep emitted before today was mechanically
+> impossible. `global.c set_preference` records a hard-reg copy preference ONLY
+> from a SET between a pseudo and a HARD register, so a register that never
+> appears as a hard reg in the function's pre-RA RTL can never be preferred —
+> and callee-saved registers never appear there from ANY C (they enter at
+> prologue/epilogue, after reload; only a forbidden `register asm("$N")` pin
+> creates one). `prune_preferences` (global.c:897) independently strips every
+> call-used register from a CALL-CROSSING allocno's preferences.
+> `inverse.py` now carries the pre-RA hard-reg set in the model
+> (`prera_hard`) and reports unreachable preference atoms as **FORECLOSED**
+> with the mechanism instead of emitting them as levers. Ground truth
+> reproduced exactly: func_80037A20 `v0 a0 a1 a2 a3 ra` (no $s1),
+> func_80033550 `a0` (no $a3), special_camera_get_rot_dir `v0 v1 a0 a1 a2 ra`
+> (no $s5). The refs-delta search was also widened from +3/-2 to +12/-6 with a
+> cost gradient, and every report now prints its search bounds — the old cap is
+> why pref_add looked like the UNIQUE 1-atom vector for func_80037A20 when
+> wider refs deltas reach the goal too.
+"""
+
 
 def sh(cmd, timeout=3600):
     r = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True,
@@ -352,6 +394,11 @@ def main():
               "fix (ALLOCDBG-indexed instead of pseudo-set-subset): func_80037A20 "
               "moved GAP -> LEVER; the other four verdicts are unchanged, and "
               "`validate.py` stayed 10/10 EXACT._\n")
+    # The caveat block lives HERE, in the generator, not in the .md — the doc
+    # is regenerated on every sweep run, so anything hand-edited into it is
+    # silently destroyed (as happened to c9b5a6e8's block on the 2026-08-06
+    # foreclosure re-run).  Edit this text, not the output.
+    md.append(CAVEAT_BLOCK)
 
     for func, stem, reason in TARGETS:
         if only and func not in only:
@@ -371,6 +418,32 @@ def main():
             r["detail"]["gap_note"] = GAP_NOTES[r["func"]]
             md.append(f"\n**Characterised gap ({r['func']}):** "
                       f"{GAP_NOTES[r['func']]}\n")
+
+    # Verdict table: a LEVER whose surviving vectors are all refs-deltas is a
+    # materially different claim from one with a cheap spellable vector, and
+    # 61912561 measured those particular deltas as byte-forced.  Say which.
+    md.append("\n---\n\n## Verdict table (post-foreclosure)\n\n")
+    md.append("| function | verdict | what the verdict now rests on |\n")
+    md.append("|---|---|---|\n")
+    for r in results:
+        det = r.get("detail", {})
+        kinds = set()
+        for blkres in det.get("local_results", []) + det.get("global_results", []):
+            for v in blkres.get("vectors", []):
+                kinds |= {a["class"] for a in v["atoms"]}
+        for v in det.get("vectors", []):
+            kinds |= {a["class"] for a in v["atoms"]}
+        rests = ", ".join(sorted(kinds)) if kinds else "—"
+        if r["verdict"] == "GAP":
+            rests = "no reachable vector (" + det.get("gap", "")[:60] + "…)"
+        md.append(f"| `{r['func']}` | {r['verdict']} | {rests} |\n")
+    md.append("\n_No `pref_add` / `pref_reroute` entry can appear in this "
+              "table any more: those atoms are foreclosed before emission "
+              "unless the register is provably appearable. Where a verdict "
+              "rests only on `refs_up`/`refs_down`, note that 61912561 "
+              "measured func_80037A20's refs vectors (pointer >=10, counter "
+              "<=4) as byte-forced and already killed in s7/s8 — the model "
+              "reaches the goal, the C cannot._\n")
 
     counts = {}
     for r in results:

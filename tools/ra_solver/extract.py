@@ -342,6 +342,23 @@ def main():
         if kinds and all(kinds):
             model["md_class"].append(pp)
             model.setdefault("md_reg", {})[pp] = 64 if "hi" in kinds else 65
+    # PRE-RA HARD REGISTERS (added 2026-08-06, commit 61912561's model gap).
+    # global.c set_preference records a hard-reg copy preference ONLY from a
+    # SET between a pseudo and a HARD register, and expand_preferences only
+    # propagates preferences that already exist.  So a register that never
+    # appears as a hard reg in the function's pre-RA RTL can NEVER be
+    # preferred — and callee-saved registers never appear there from any C at
+    # all (they enter at prologue/epilogue generation, after reload; the only
+    # construct that creates one is a forbidden `register asm("$N")` pin).
+    # The inverse solver needs this set to avoid emitting mechanically
+    # impossible PREF_ADD/PREF_REROUTE atoms as levers.
+    #
+    # lreg spells a hard reg as `(reg:SI 4 a0)` — a number FOLLOWED BY A NAME —
+    # while a pseudo is `(reg/v:SI 75)` with no name.  That trailing name is
+    # the discriminator.
+    model["prera_hard"] = sorted({
+        int(m.group(1))
+        for m in re.finditer(r"\(reg[/\w]*:\w+ (\d+) [^)\s]+\)", lseg)})
     model["allocdbg"] = ablocks["rows"].get(a.func, [])
     model["seed_used"] = ablocks["seeds"].get(a.func, [])
     model["flow"] = parse_flow_regs(fsegs[k]) if k < len(fsegs) else {}

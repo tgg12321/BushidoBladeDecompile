@@ -50,6 +50,10 @@ from simulate import Sim, pri as global_pri          # noqa: E402
 FIRST_PSEUDO = 68
 FIXED = {0, 1, 26, 27, 28, 29, 31, 67}
 GR_REGS = set(range(0, 32))
+# mips.h CALL_USED_REGISTERS, GPR half — what prune_preferences strips from a
+# call-crossing allocno's preferences.
+CALL_USED_REGS = set(range(0, 16)) | {24, 25, 26, 27, 28, 29, 31}
+CALLEE_SAVED = set(range(16, 24)) | {30}
 
 REGNAMES = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
             "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
@@ -79,6 +83,12 @@ class Atom:
 # Plausibility cost: how big a C change the perturbation implies.  Ranking is
 # (number of atoms, total cost) — a 1-atom answer always beats a 2-atom one,
 # and among equals the cheaper C change wins.
+# Refs-delta search width.  These are the SEARCH BOUNDS, printed in every
+# report: a vector needing a wider delta than this exists but will not be
+# found, and saying so beats a silent cap (61912561).
+REFS_UP_MAX = 12
+REFS_DOWN_MAX = 6
+
 COST = {
     L.BIRTH_ORDER: 1,
     L.LIVE_SHRINK: 2,
@@ -108,6 +118,45 @@ class GlobalBackend:
         self.model = json.loads(Path(model_path).read_text())
         self.sim = Sim(self.model)
         self.units = "pseudo"
+        # Pre-RA hard registers: the ONLY registers a copy preference can ever
+        # name (see foreclose_pref).  None = the model predates the field, in
+        # which case appearability is UNCHECKED and said so in the report.
+        self.prera = (set(self.model["prera_hard"])
+                      if "prera_hard" in self.model else None)
+        self.foreclosed = []
+
+    def foreclose_pref(self, p, tp):
+        """Why a preference for TP on pseudo P is mechanically unreachable — or
+        None if it is reachable.
+
+        Two independent mechanisms, both from global.c and both measured in
+        commit 61912561 against .lreg dumps:
+
+        1. set_preference records a hard-reg copy preference ONLY from a SET
+           between a pseudo and a HARD reg, and expand_preferences only
+           propagates preferences that already exist.  A register absent from
+           the function's pre-RA RTL can never be preferred.  Callee-saved
+           registers are absent from pre-RA RTL for ANY C — they enter at
+           prologue/epilogue generation, after reload — so only a forbidden
+           `register asm("$N")` pin could create one.
+        2. prune_preferences (global.c:897) strips every call-used register
+           from a CALL-CROSSING allocno's preferences, so argument-flow and
+           call-return spellings cannot leave a surviving preference there.
+        """
+        if self.prera is not None and tp not in self.prera:
+            extra = ("  It is CALLEE-SAVED: callee-saved registers cannot "
+                     "appear in pre-RA RTL from any C at all, so no spelling "
+                     "reaches this — only a forbidden register-asm pin would."
+                     if tp in CALLEE_SAVED else "")
+            return (f"{rname(tp)} never appears as a hard reg in this "
+                    f"function's pre-RA RTL, so global.c set_preference can "
+                    f"never record a preference for it.{extra}")
+        if self.sim.calls_crossed(p) > 0 and tp in CALL_USED_REGS:
+            return (f"pseudo {p} crosses {self.sim.calls_crossed(p)} call(s) "
+                    f"and {rname(tp)} is call-used, so prune_preferences "
+                    f"(global.c:897) strips it from this allocno's preferences "
+                    f"before find_reg ever sees it.")
+        return None
 
     def baseline(self):
         _, a = self.sim.simulate()
@@ -142,11 +191,17 @@ class GlobalBackend:
         for p in focus:
             f = s.flow.get(p, {})
             nr, ll = f.get("nrefs_flow", 1), f.get("livelen_flow", 1)
-            for d in (1, 2, 3):
+            # Refs deltas run to the FULL plausible range, not a +3/-2 cap.
+            # 61912561 measured that the cap made pref_add look like the unique
+            # 1-atom vector for func_80037A20 when wider deltas also reach the
+            # goal (pointer refs >= 10, counter refs <= 4).  A capped search
+            # that hides real vectors is worse than a slower one; the cost
+            # GRADIENT (not a cutoff) keeps small, spellable deltas ranked first.
+            for d in range(1, REFS_UP_MAX + 1):
                 out.append(Atom(L.REFS_UP, f"pseudo {p}: refs {nr}->{nr + d}",
                                 COST[L.REFS_UP] + d - 1,
                                 ("ov", {p: {"nrefs": nr + d}})))
-            for d in (-1, -2):
+            for d in range(-1, -REFS_DOWN_MAX - 1, -1):
                 if nr + d >= 1:
                     out.append(Atom(L.REFS_DOWN,
                                     f"pseudo {p}: refs {nr}->{nr + d}",
@@ -177,6 +232,15 @@ class GlobalBackend:
                                     ("ov", {p: {"conf_add": [q]}})))
             for tp in sorted(set(goal.values())):
                 cur = sorted(s.prefs.get(p, set()))
+                # APPEARABILITY GATE (61912561).  A preference atom naming a
+                # register that global.c can never record a preference for is
+                # not a lever, it is fiction — report it as FORECLOSED with the
+                # mechanism instead of emitting it.
+                why = self.foreclose_pref(p, tp)
+                if why:
+                    self.foreclosed.append(
+                        (f"pseudo {p}: preference for {rname(tp)}", why))
+                    continue
                 # With no existing preference this is a genuine ADD (create a
                 # copy relationship).  With one, it is a REROUTE — and the
                 # distinction matters, because find_reg takes the LOWEST
@@ -215,6 +279,10 @@ class GlobalBackend:
                                 f"birth order {p} <-> {q}", COST[L.BIRTH_ORDER],
                                 ("order", swapped)))
         return out
+
+    def bounds_note(self):
+        return (f"refs delta +{REFS_UP_MAX}/-{REFS_DOWN_MAX}, live length "
+                f"+/-2,4,8")
 
     def describe(self, goal, assigned):
         return ", ".join(f"{self.units} {p}: {rname(assigned.get(p))} -> "
@@ -396,6 +464,11 @@ class LocalBackend:
                                 COST[L.ALLOC_ORDER], ("order", list(perm))))
         return out
 
+    def bounds_note(self):
+        # The local backend enumerates birth/death EXHAUSTIVELY over the
+        # block's index range, so only the refs deltas are bounded here.
+        return "refs delta +4/-2, birth/death enumerated exhaustively"
+
     def describe(self, goal, assigned):
         return ", ".join(f"{self.units} {q}: {rname(assigned.get(q))} -> "
                          f"{rname(r)}" for q, r in sorted(goal.items()))
@@ -421,7 +494,27 @@ def search(backend, goal, depth, top):
 
     atoms = backend.atoms(goal)
     print(f"atom space : {len(atoms)} single perturbations "
-          f"over {len(set(a.cls for a in atoms))} classes\n")
+          f"over {len(set(a.cls for a in atoms))} classes")
+    print(f"search bounds: {backend.bounds_note()}, depth {depth}. "
+          f"A vector outside these bounds exists but is not searched.")
+    fc = getattr(backend, "foreclosed", None)
+    if fc:
+        print(f"\nFORECLOSED — {len(fc)} preference atom(s) NOT emitted "
+              f"(mechanically unreachable from C):")
+        seen_fc = set()
+        for what, why in fc:
+            if why in seen_fc:
+                continue
+            seen_fc.add(why)
+            print(f"  {what}")
+            for line in L._wrap(why, 68):
+                print(f"      {line}")
+    elif getattr(backend, "prera", "missing") is None:
+        print("\nNOTE: this model predates the `prera_hard` field, so "
+              "preference APPEARABILITY IS UNCHECKED —\n"
+              "a pref atom below may be mechanically unreachable. Re-extract "
+              "to enable the gate.")
+    print()
     if getattr(backend, "caveat", None):
         print(backend.caveat + "\n")
 
