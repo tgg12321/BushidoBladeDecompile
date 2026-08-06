@@ -1,67 +1,56 @@
 # func_80037A20 — WIP (memcard file-count via firstfile/nextfile)
 
-## TL;DR
-Honest pin-free floor = **13** (sandbox --disable all), same as HEAD's honest
-distance. HEAD "matches" ONLY via two `register asm()` pins (`var_s0 asm("s0")`,
-`var_s1 asm("s1")`) plus a forbidden `__asm__("" : "=r"(var_s1) : "0"(var_s1))`
-opt-barrier — all three are cheats, so this function is INCOMPLETE.
-`candidate.c` is the faithful pin/barrier-free body (33=33 insns, 13 diffs).
+## TL;DR (2026-08-06) — floor 13 -> 1, the s0<->s1 swap is SOLVED in plain C
+`candidate.c` is cheat-free (no pins, no barrier) and now sits at honest
+distance **1** at the correct 33 instructions. Its disassembly is
+instruction-for-instruction AND register-for-register identical to target
+except ONE insn: we emit `li s1,1` where target has `addiu $s1,$s1,0x1`.
+cheat-reviewer PASS 2026-08-06. HEAD still byte-matches only via two
+`register asm()` pins + an `__asm__("")` barrier, so the function is INCOMPLETE.
 
-## The 13 diffs decompose into exactly TWO coupled problems
-1. **s0<->s1 register swap (~12 of 13).** Target: pointer→s0, counter→s1.
-   Ours: pointer→s1, counter→s0.
-2. **`li s0,1` vs target `addiu s1,s1,1` (1 diff).** cse's FIRST pass const-props
-   the dominating `var_s1 = 0` into the entry `++` (REG_WAS_0 note).
+## What closed the register swap (this is the reusable finding)
+Two ordinary-C changes, together:
+1. the hand-written `loop:`/`goto loop` became a real `do { ... } while (v0_val);`
+2. the loop body NAMES the next entry before consuming it:
+   `next = (s32*)((u8*)var_s0 + 0x28); v0_val = bios_nextfile_B(next); var_s0 = next;`
+   instead of `var_s0 += 0x28; v0_val = bios_nextfile_B(var_s0);`
+Change (2) is the load-bearing one: naming the intermediate moves the pointer
+pseudo's references/live range, which flips the global.c allocno order so the
+pointer takes $s0 and the counter takes $s1 — target's assignment. This
+REFUTES the s1-s8 conclusion that the structural axis was exhausted and that
+the swap was cc1-internal; it was a named-intermediate away.
+Reviewer classed (2) as the SOTN-resolved named-intermediate-declaration-order
+family (the `w_037.c randy` precedent), which carries no FAKE/exhaustion
+prerequisite. It is also the shape target actually performs (advance, then call).
 
-## Quantified escape (grid over the validated forward model, 2026-08-06)
-ALLOCDBG ground truth: counter(pseudo 75) nrefs=8 livelen=14 pri=17142 → s0;
-pointer(pseudo 74) nrefs=5 livelen=17 pri=5882 → s1. Priority is
-`floor_log2(n)*n*10000/livelen`. Brute-forcing refs 1..20 × livelen 1..160 in
-`tools/ra_solver`'s simulator, the goal (74→s0, 75→s1) is reached ONLY by:
-- pointer refs **≥10** at its structural livelen 17 (has 5), or
-- counter refs **≤4** at its livelen 14 (has 8), or
-- counter livelen **≥41** at refs 8 (has 14).
-All three are byte-forced by target's mandatory 33-insn do-while + entry-`++`
-structure: s8 measured the pointer has only one if-block and one loop so no
-byte-neutral duplication can reach 10+ refs, and s7's barrier probe showed
-defeating the fold *raises* the counter to 22000 (adds a read-ref), entrenching
-the swap rather than flipping it.
+## The sole residual: the cse REG_WAS_0 fold (1 insn)
+`var_s1 = 0;` dominates the entry `var_s1++`, so cse's FIRST pass
+constant-folds `0 + 1` and emits `li 1` instead of an increment.
+Mechanism (cse.c): a cse basic block runs until a `CODE_LABEL` or, pre-loop,
+a `NOTE_INSN_LOOP_END` (`cse_end_of_basic_block`, cse.c:8038-8055). Nothing
+separates the zero-init from the entry `++` — the conditional branch does not
+end the block — so the zero stays in the equivalence class and folds.
+Target's bytes prove its cc1 did NOT fold under the same visible structure.
 
-## The inverse solver's LEVER verdict is NOT C-reachable
-`docs/grind/inverse-sweep-2026-08-06.md` names one 1-atom vector: pseudo 75
-acquires a copy preference for `$s1`. Foreclosed at the mechanism level:
-`global.c set_preference` records a preference only from a SET between a pseudo
-and a **hard reg**, and `$s1` — like every callee-saved register — **never
-appears in pre-RA RTL** (verified on this function's `.lreg` dump: only v0, a0,
-a1, a2, a3, ra are present). `prune_preferences` (global.c:897) additionally
-strips every call-used reg from a call-crossing allocno's preferences, so no
-argument/return flow can leave a surviving one. Only a `register asm()` pin
-could create it — the forbidden construct. NB the solver's atom space caps
-refs deltas at +3/-2, which is why it reported pref_add as the *unique* 1-atom
-vector; the refs routes above sit outside that window (and are the s7/s8 kills).
+## Fold spellings measured DEAD this session (all still 1, do not re-derive)
+- `var_s1 += 1;` / `var_s1 = var_s1 + 1;` instead of `var_s1++`
+- firstfile result staged into `v0_val` before the zero-init and the branch
+- zero-init hoisted above the func_80079A30 call (5) and into both arms (16)
+- explicit two-way `goto have_first;` to place a CODE_LABEL immediately before
+  the increment, and the `goto`-flag variant — jump.c collapses both before cse
+- inverted guard (`== 0 goto end`), `while(1)/break`, `for(;;)`, do/while
+- jump-into-loop so the `++` has two reaching definitions: 20 @ 37 insns (worse)
+NOT attempted, deliberately: `do { } while (0)` around the zero-init. Its rule
+sanctions it only for the LABEL_OUTSIDE_LOOP_P / reorg.c interaction and
+explicitly refuses to be a precedent for other wrappers or effects; s2 also
+measured it collapsing here.
 
-## rejected_forms (measured, do NOT re-derive)
-- do-while w/ s1++ at loop top, no entry-++: WRONG COUNT (off by one).
-- nextfile-in-if-condition: 34 insns (+1 nop), fold and swap persist.
-- decl reorder (either direction): allocation UNCHANGED.
-- firstfile inlined to a v0 temp: 13, unchanged.
-- pointer-init-after-call: 16 (worse); GCC hoists the `la` regardless.
-- counter-init-before-call: 15 (worse); order and dispositions unchanged.
-- return-value split to drop counter refs: 13, `result` copy-propagated away.
-- u32 counter narrowing: 13, width-invariant.
-- do-while(0) around the entry `++`: collapses; fold and swap persist.
-- 3 permuter chassis, ~21k iters: all converge to the same attractor, zero never
-  approached.
-- cc1psx calibration: output byte-identical to our fork (also swaps AND folds)
-  ⇒ compiler-divergence escalation foreclosed.
-- duplicated-statement-into-arms ref-lift: structurally unavailable (one if,
-  one loop; pointer refs byte-forced at 5).
-
-## Status
-Every sanctioned axis (structural, permuter, compiler-divergence, instrumented
-RA, and now the inverse-solver atom) is measured dead with a named mechanism.
-Disposition remains the filed endgame-lock owner escalation.
+## Next session
+The remaining question is narrow and mechanical: what C shape puts a
+`CODE_LABEL` or `NOTE_INSN_LOOP_END` between `var_s1 = 0` and the entry
+`var_s1++`, or otherwise removes 0 from the counter's cse equivalence class,
+WITHOUT changing the 33-instruction shape. Everything else already matches.
 
 ## Floor
 - HEAD honest distance: 13 (carries 2 pins + 1 opt-barrier cheat)
-- candidate.c honest distance: 13 (zero cheats)
+- candidate.c honest distance: **1** (zero cheats), 33/33 insns
