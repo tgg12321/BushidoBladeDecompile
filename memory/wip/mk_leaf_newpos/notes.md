@@ -19,55 +19,18 @@ applies here; every point of the 65 is register choice or ordering. That is cons
 with the heavy-12 triage row (43 rules, RENAME 39 = 60%, STRUCT 9, class MIXED RA 60% /
 LICM 15%) and makes this the cleanest `ra_solver` case in the queue.
 
-## ra_solver is now EXACT here (18/18) — and the fix was a real solver bug
+## ra_solver is EXACT here (18/18)
 
-Round 1 measured 17/18 with pseudo 89 missing (sim `$2`, dump `$4`). Diagnosed:
-`BB2_FINDREG_DEBUG=89` shows `retry=0` and **zero `retry=1` anywhere in this function**,
-so it was NOT the known reload-spill-retry gap. The dump gives
-`own_copy_prefs: 4`, `own_full_prefs: 2 4` — GCC took the COPY preference (`$4`) while
-`simulate.py` took the lowest of the merged set (`$2`).
+Round 1's 17/18 miss (pseudo 89) was a real solver bug, not the reload-retry gap
+(`BB2_FINDREG_DEBUG=89` → `retry=0`, zero retries in the function). `simulate.py` merged
+the copy- and plain-preference sets; GCC's `find_reg` upgrades in two stages, copy prefs
+first with `goto no_prefs` on a hit. Fixed in commit `f527fae3`; `validate.py` still 9/10
+(baseline unchanged). Per-function instrumented-cc1 parity here is **OK** — the TU-level
+`parity=False` is confined to `func_80030900`.
 
-Cause: `simulate.py`'s preference upgrade was an explicit approximation
-(`# single dumped pref set; copy==full approx`). GCC's `find_reg`
-(`global.c:1077-1115`) upgrades in **two stages** — scan
-`hard_reg_copy_preferences` ascending and on a hit `goto no_prefs`, **skipping the
-plain-preference stage entirely**; only if no copy pref fits does `hard_reg_preferences`
-get its turn. `prune_preferences` masks the copy set the same way (`global.c:897`).
-Fixed in `tools/ra_solver/simulate.py` (the model already extracted `copy_prefs`
-separately, so no extractor change was needed).
-
-**Regression check: `validate.py` still 9/10**, identical to the documented baseline —
-the only miss remains `saTan4FireDisp` (the known reload-retry case, 14/17). No banked
-function changed. `mk_leaf_newpos` goes 17/18 -> **18/18 exact**.
-
-Per-function instrumented-cc1 parity for `mk_leaf_newpos` in `code6cac_b` is **OK**
-(`wsl bash tmp/csz/mk_parity.sh code6cac_b mk_leaf_newpos`) — the TU-level `parity=False`
-noted in the sched_solver README is confined to `func_80030900` (`or` vs `addu`, line
-9204) and does not touch this function.
-
-## The primary rename has an exact spec (10 single-atom solutions)
-
-`regfix.txt` carries 41 rules; the clean rename leads are `$16 <-> $17 @ 1-71`,
-`$16 <-> $20 @ 77-78`, `$5 <-> $3 @ 81-97`, `$5 <-> $3 @ 136-142`.
-
-For the first: ALLOCDBG has **84 -> `$16` (nrefs 12, livelen 22, pri 16363)** and
-**72 -> `$17` (nrefs 17, livelen 42, pri 16190)**. 84 outranks 72 by only **173 points**,
-so 84 takes `$16` first; target wants the opposite order. `perturb.py` with spec
-`{"84": 17, "72": 16}` returns **ten** single-atom solutions:
-
-| allocno | atoms that flip it |
-|---|---|
-| 72 | `refs+1`, `refs+2`, `live-2`, `live-4`, `live-8` |
-| 84 | `refs-1`, `live+2`, `live+4`, `pref+r17`, `pref=r17` (reroute) |
-
-i.e. lift 72's priority or lower 84's. Per the catalog laws: refs = real uses,
-livelen = statement span, pref = a copy relationship. **Identify what 72 and 84 ARE in
-the C before spelling anything** — the atoms are cheap to satisfy in several ways and
-only the semantically-motivated one is acceptable.
-
-NB the rule set is NOT purely RA: it also has `delete`, `reorder`, `insert`, and
-`subst "nop" "<insn>"` rules (the last are lost-codegen inserts). Instruction count
-already matches, so those are scheduling/delay-slot shape, not missing work.
+The primary rename lead (`$16 <-> $17`) came from allocnos **84 = `cat`** (`$16`, pri
+16363) and **72 = `slot`** (`$17`, pri 16190), only 173 points apart; `perturb.py` gave
+ten single-atom solutions and `84: refs-1` was the semantically-motivated one.
 
 ## The primary rename is CLOSED by removing an m2c artifact (65 -> 58)
 
@@ -95,11 +58,41 @@ Banked as `candidate_58.diff`: **58 / 176 insns**, and `ra_solver` re-extracted 
 **18/18 exact**. This is an artifact removal, not a codegen construct: it deletes a
 declaration, a dead store, and a redundant recomputation.
 
+## ROUND 3 REFRAME: at 58 the residual is NOT renames — it is two LICM hoists
+
+Re-derived the ours->target register map from the aligned streams at the 58 baseline
+(`tmp/csz/mk_renames.py <ref.s> <sbx.s>`, both 176 insns). Result: **ZERO same-shape
+register substitutions.** The three `$16<->$20` / `$5<->$3` leads read off `regfix.txt`
+describe the OLD (pre-candidate_58) allocation and are now stale — do not build specs
+from them.
+
+What the alignment actually shows is two loop-invariant values that **we hoist into
+callee-saves and target materialises inside the loop**:
+
+| value | ours | target |
+|---|---|---|
+| the constant `1` | `li s5,1` before the loop, `bne v1,s5` in it | `addiu $v0,$zero,0x1` at idx 28 INSIDE the loop, reused by the `bne v1,v0` at idx 29/41/53 |
+| `&D_800A391E` (the loop bound) | `lui s4,%hi / addiu s4,%lo` hoisted | rematerialised (this is what regfix's `insert "la $2,D_800A391E"` was papering over) |
+
+Both hoists cost us two extra live callee-saves (`$s4`, `$s5`), which forces the prologue
+`sw s4,32(sp)` / `sw s5,36(sp)` pair to sit where target has none, and everything the old
+rules called a "rename" is downstream of that. Note target's `addiu $v0,$zero,1` sits
+INSIDE the `if (*slot != 0)` guard (target idx 22 `beqz $v0` jumps past it), so the
+original's shape kept the constant conditionally-executed where ours is hoisted to the
+preheader.
+
+**So the primary remaining axis is LICM, not RA** — the triage listed it as secondary at
+15%; at this baseline it is what is left. `defeat-licm-hoist-var-reuse` is the relevant
+recipe, but read it before spelling anything, and prefer a shape where the loop bound and
+the comparison constant are naturally where target has them over a scratch-variable reuse.
+The `(s32)slot < (s32)&D_800A391E` pointer-to-s32 cast in the loop condition is itself a
+decomp artifact worth revisiting first — a natural pointer comparison may change what
+`loop.c` treats as invariant.
+
 ## Next
 
-1. Remaining rename leads: `$16 <-> $20 @ 77-78`, `$5 <-> $3 @ 81-97`, `$5 <-> $3 @
-   136-142`. Build each spec from ALLOCDBG + the rule ranges and re-run `perturb.py`
-   (now trustworthy at 18/18). Same bar: take the semantically-motivated atom only.
+1. The LICM axis above. Re-derive renames with `mk_renames.py` after ANY change; the
+   regfix rule list is stale from candidate_58 onward.
 3. `defeat-licm-hoist-var-reuse` (LICM 15% in triage) is the secondary axis; treat it as
    downstream of the RA fix.
 4. **Do NOT commit src.** Owner runs the gate; layer-2 before any completion claim.
