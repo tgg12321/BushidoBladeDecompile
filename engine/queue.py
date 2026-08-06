@@ -303,34 +303,47 @@ def mark_done(func: str) -> dict:
     q = load()
     item = next((it for it in q.get("items", []) if it["func"] == func), None)
     if item is None:
-        # A canonical-authorized function with zero rules is not MISSING, it is
-        # COMPLETE. generate() drops it (the `func in canon_funcs: continue`
-        # branch below), so after a regen checkpoint `queue done <func>` lands
-        # here — and a bare "not in queue" reads as an error for what is
-        # actually the success state. Campaign 4 Wave 6's payoff checker first
-        # reported 0/19 FAILED for exactly this reason.
+        # A canonical-authorized function with no rules is the state generate()
+        # DROPS (the in-loop `func in canon_funcs: continue`), so after a regen
+        # checkpoint `queue done <func>` lands here — and a bare "not in queue"
+        # reads as an error for what is normally the success state. Campaign 4
+        # Wave 6's payoff checker first reported 0/19 FAILED for that reason.
         #
-        # The predicate MUST mirror generate()'s drop conjunct for conjunct.
-        # Absence from the queue has causes other than completion (a stale
-        # queue.json, a missing build/src/<stem>.o, a stripped build pushed to
-        # `failures`), so a predicate weaker than the drop's would assert
-        # completion for a function the drop would have RETAINED. The first
-        # version of this branch omitted `prologue == 0` and could therefore
-        # have called a function carrying a prologue_fix cheat complete.
+        # This EXPLAINS the absence; it does not certify completion, and it
+        # deliberately returns NO machine-readable completion key. Two reasons:
+        #   * no oracle evidence. Every other `completion` value in this
+        #     function is gated on O.verify()["build_matches"] (below). Minting
+        #     a completion token here would be more assertive on less evidence
+        #     than any other path, against non-negotiable #2 — and precisely
+        #     during a conversion campaign, when build/ is most likely stale.
+        #     (Calling O.verify here is not the fix either: oracle.verify runs
+        #     P.build_all() when build/bb2.exe is missing, so a refusal path
+        #     could seize the build lock.)
+        #   * it cannot mirror generate()'s OUTPUT even in principle. The
+        #     conjuncts below match the in-loop drop, but generate() re-adds
+        #     `origin == "regression"` items after the loop, and reopen() puts
+        #     no canonical restriction on what may be reopened. That state
+        #     lives only in queue.json, so once an item is absent it is
+        #     unrecoverable here — a regression-reopened canonical function is
+        #     RETAINED by generate() while these conjuncts hold.
+        # An earlier version also omitted `prologue == 0` and so could describe
+        # a prologue_fix-carrying function as complete.
         if (_rule_count(func) == 0 and cheats.func_prologue_count(func) == 0
                 and func in cheats.canonical_asm_funcs()):
             return {"ok": False, "func": func,
-                    # Machine-readable, because the bug this branch fixes was a
-                    # checker interpreting prose. Callers key on `ok` (cli.py
-                    # exits 1) and can now distinguish "refused" from "already
-                    # complete" without substring-matching the reason.
-                    "already_complete": True,
-                    "completion": "COMPLETED-INLINE-ASM-CANONICAL",
-                    "reason": (f"{func} is already COMPLETED-INLINE-ASM-CANONICAL "
-                               f"— canonical-authorized in inline_asm_canonical.txt "
-                               f"with 0 rules. Queue presence means INCOMPLETE, so "
-                               f"regen correctly dropped it; the drop IS the "
-                               f"completion and there is nothing left to mark.")}
+                    "reason": (f"{func} is not in the queue, and for this function "
+                               f"that is the EXPECTED state: it is "
+                               f"canonical-authorized in inline_asm_canonical.txt "
+                               f"with 0 rules and 0 prologue_fix entries, which is "
+                               f"the state regen drops as "
+                               f"COMPLETED-INLINE-ASM-CANONICAL — queue presence "
+                               f"means INCOMPLETE, so the drop is itself the "
+                               f"completion and there is nothing here to mark. "
+                               f"This describes the CONFIG only: no oracle check "
+                               f"was run, and a stale or hand-edited queue.json (or "
+                               f"a regression-reopened item) is the other way to "
+                               f"land here. Treat it as an explanation of the "
+                               f"absence, not as certification.")}
         return {"ok": False, "func": func, "reason": "not in queue"}
     rules = _rule_count(func)
     if rules > 0:

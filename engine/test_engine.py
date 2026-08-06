@@ -1602,24 +1602,33 @@ def test_canonical_completion_is_the_drop() -> None:
             check("canon-drop: refusal is not the bare not-in-queue string",
                   r2.get("reason") != "not in queue")
 
-            check("canon-drop: refusal carries a machine-readable flag",
-                  r2.get("already_complete") is True
-                  and r2.get("completion") == "COMPLETED-INLINE-ASM-CANONICAL")
+            # The refusal EXPLAINS the absence; it must not CERTIFY completion.
+            # No oracle runs on this path, so a machine-readable completion key
+            # here would be more assertive on less evidence than any other
+            # `completion` in mark_done (all of which are O.verify-gated), and
+            # it cannot mirror generate()'s output anyway — generate() re-adds
+            # origin=="regression" items after the loop, a state that lives only
+            # in queue.json and is unrecoverable once the item is absent.
+            check("canon-drop: refusal mints NO machine-readable completion key",
+                  r2.get("already_complete") is None
+                  and r2.get("completion") is None
+                  and r2.get("completion_state") is None)
+            check("canon-drop: refusal says no oracle check was run",
+                  "no oracle check" in r2.get("reason", ""))
 
-            # The refusal's predicate must mirror generate()'s drop CONJUNCT FOR
-            # CONJUNCT. Absence from the queue has causes other than completion
-            # (stale queue.json, missing build/src/<stem>.o, a failed stripped
-            # build), so a predicate weaker than the drop's would assert
-            # completion for a function the drop would have RETAINED. The first
-            # version of this branch omitted `prologue == 0` and would have
-            # called a prologue_fix-carrying function complete.
+            # The refusal's predicate must still match the IN-LOOP drop conjunct
+            # for conjunct: absence has causes other than completion (stale
+            # queue.json, missing build/src/<stem>.o, a failed stripped build),
+            # so a predicate weaker than the drop's would describe a function
+            # the drop would have RETAINED. An earlier version omitted
+            # `prologue == 0` and so covered a prologue_fix-carrying function.
             cheats.func_prologue_count = lambda f: 1
             r4 = Q.mark_done("func_CANON")
-            check("canon-drop: prologue_fix entry blocks the completion claim",
+            check("canon-drop: prologue_fix entry blocks the completion wording",
                   r4.get("ok") is False
                   and "COMPLETED-INLINE-ASM-CANONICAL" not in r4.get("reason", ""))
-            check("canon-drop: prologue_fix absentee carries no complete flag",
-                  r4.get("already_complete") is None)
+            eq("canon-drop: prologue_fix absentee gets the plain refusal",
+               r4.get("reason"), "not in queue")
             # ...and generate() likewise RETAINS it, which is the property the
             # refusal is mirroring.
             qp.write_text(json.dumps(seed))
