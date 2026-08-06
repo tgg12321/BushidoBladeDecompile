@@ -73,7 +73,7 @@ EXPAND_LH_FILES = set()
 FIX_LWL_FILES = set()  # obsolete since -mel adoption 2026-08-04
 RODATA_ALIGN2_FILES = {
     "code6cac", "code6cac_b", "code6cac_c", "code6cac_c0", "code6cac_c_ab",
-    "code6cac_c_mid", "code6cac_c2", "text1a", "text1a_b", "text1a_c",
+    "code6cac_c2", "text1a", "text1a_b", "text1a_c",
     "text1a_c2", "text1b_b", "main",
 }
 NO_SR_FILES = set()

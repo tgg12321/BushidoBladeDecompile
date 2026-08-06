@@ -14,7 +14,7 @@
 #define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
 
 /* Extern data declarations */
-extern u8 D_800F33D8;
+extern u8 D_800F33D8[];
 extern u32 D_800A378C;
 extern u32 D_80101E3C;
 extern u32 D_80101E44;
@@ -314,7 +314,7 @@ s32 damage_DebugDisp(s32 *arg0) {
 /* kengo:HIGH  |  is_damage_calc/damage_DebugDisp  |  79i */
 
 void func_80038148(void) {
-    u8 *p = &D_800F33D8;
+    u8 *p = D_800F33D8;
     s32 i = 0;
     do {
         *p = 0;
@@ -322,7 +322,7 @@ void func_80038148(void) {
         p++;
     } while ((u32)i < 0x200);
 }
-extern u8 D_8008F1C0;
+extern u8 D_8008F1C0[];
 /* Rodata moved from asm/data/101C.rodata_pre_post.s (rodata-cleanup project,
  * docs/rodata-cleanup-project.md, 2026-06-09). func_80038170 (this file) is the
  * sole owner — uses these as &-addressed byte/word lookups. Declared as u32
@@ -362,7 +362,7 @@ void func_80038170(u8 *out) {
     for (i = 0; i < 0x1B; i++) {
         bit = 1 << i;
         if (mask & bit) {
-            s32 v = (&D_8008F204)[i];
+            s32 v = D_8008F204[i];
             switch (v) {
                 case 0: s1++; break;
                 case 1: s2++; break;
@@ -386,12 +386,12 @@ void func_80038170(u8 *out) {
         } while (i >= 0);
     }
 
-    func_80079194(out + 4, &D_8008F1C0);
+    func_80079194(out + 4, D_8008F1C0);
 
-    out[0x22] = (&D_8008F1A8)[s1 * 2 + 0];
-    out[0x23] = (&D_8008F1A8)[s1 * 2 + 1];
-    out[0x3C] = (&D_8008F1A8)[s2 * 2 + 0];
-    out[0x3D] = (&D_8008F1A8)[s2 * 2 + 1];
+    out[0x22] = D_8008F1A8[s1 * 2 + 0];
+    out[0x23] = D_8008F1A8[s1 * 2 + 1];
+    out[0x3C] = D_8008F1A8[s2 * 2 + 0];
+    out[0x3D] = D_8008F1A8[s2 * 2 + 1];
 
     if (s3 > 0) {
         out[0x40] = D_800A3200;
@@ -517,9 +517,9 @@ state_3:
 setup_load:
     D_800A38CC = 1;
     func_80038148();
-    func_80038170(&D_800F33D8);
-    camera_SetMatrix(&D_800F33D8 + 0x100);
-    if (func_80037C34(0, 0, D_800A31F0, &D_800F33D8, 1, 0x200, var_s1) != 0) {
+    func_80038170(D_800F33D8);
+    camera_SetMatrix(D_800F33D8 + 0x100);
+    if (func_80037C34(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
         bios_FileClose_B(D_800A3794);
         var_v0 = 3;
         goto finish;
@@ -536,7 +536,7 @@ state_5:
     }
     D_800A379E = 4;
     func_80038148();
-    if (func_80037B90(0, 0, D_800A31F0, &D_800F33D8, 0x200) != 0) {
+    if (func_80037B90(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
         bios_FileClose_B(D_800A3794);
         var_v0 = 6;
         goto finish;
@@ -891,9 +891,6 @@ end:
     return result;
 }
 
-asm(".section .rodata
-	.space 4
-	.previous");
 
 s32 motion_SetMotion(void) {
     extern u8 D_800A3207;
@@ -1203,7 +1200,7 @@ end:
 }
 /* kengo:MED  |  is_motion/motion_SetMotion  |  425i  |  -23 5.4% */
 s32 *func_800392B8(void) {
-    return &D_800F33D8;
+    return (s32 *)D_800F33D8;
 }
 void func_800392C8(void) {
     u8 val;
@@ -1213,7 +1210,7 @@ void func_800392C8(void) {
 
     val = 0xFF;
     i = 0x1F0;
-    D_800A36EC = (u8 *)&D_800F33D8;
+    D_800A36EC = (u8 *)D_800F33D8;
     D_800A36F8 = 0;
     D_800A3782 = 0;
 loop1:
@@ -1224,7 +1221,7 @@ loop1:
     new_var = -1;
     j = 0xB30;
 loop2:
-    *((s16 *)((u8 *)&D_800F68E0 + j)) = new_var;
+    *((s16 *)((u8 *)D_800F68E0 + j)) = new_var;
     j -= 0x10;
     if (j >= 0) goto loop2;
 }
@@ -1249,7 +1246,7 @@ void func_80039320(void) {
         p += 0x10;
     } while (i < 0x20);
 
-    q = (s16 *)&D_800F68E0;
+    q = D_800F68E0;
     i = 0;
     do {
         val = *q;
@@ -1272,7 +1269,7 @@ void saSeInit_2(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3209;
     s32 frame_pad[2];
     register u8 mode asm("t4") = arg0;
-    register u8 *slot asm("a0") = (u8 *)&D_800F68E0;
+    register u8 *slot asm("a0") = (u8 *)D_800F68E0;
     register s32 i asm("t2") = 0;
     register u8 *tail asm("t1") = slot + 0xE;
     s32 next;
@@ -1343,7 +1340,7 @@ miss:
     }
 
     value = D_800A3714;
-    slot = (u8 *)&D_800F68E0 + value * 0x10;
+    slot = (u8 *)D_800F68E0 + value * 0x10;
 
     if (value < 0xB4) {
 find_free:
