@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T07:43:09",
+  "generated_at": "2026-08-06T14:59:32",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -518,7 +518,7 @@
       "file": "main",
       "distance": 34,
       "verdict": "C",
-      "rules": 3,
+      "rules": 1,
       "status": "active"
     },
     {
@@ -559,14 +559,6 @@
       "distance": 35,
       "verdict": "C",
       "rules": 10,
-      "status": "active"
-    },
-    {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 35,
-      "verdict": "C",
-      "rules": 2,
       "status": "active"
     },
     {
@@ -687,6 +679,14 @@
       "distance": 39,
       "verdict": "C",
       "rules": 37,
+      "status": "active"
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 2,
       "status": "active"
     },
     {
@@ -1005,25 +1005,25 @@
     {
       "func": "func_8006BB68",
       "file": "text1b",
-      "distance": 110,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 112,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006DD94",
       "file": "text1b",
-      "distance": 115,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 117,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005C6D0",
       "file": "text1b",
-      "distance": 117,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 118,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1053,57 +1053,57 @@
     {
       "func": "func_8006D3DC",
       "file": "text1b",
-      "distance": 124,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 126,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80057ACC",
       "file": "text1b",
-      "distance": 125,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 127,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "tslGlobalMemFree_8005C2A8",
       "file": "text1b",
-      "distance": 133,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 134,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80069F80",
       "file": "text1b",
-      "distance": 134,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 136,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006A1A0",
       "file": "text1b",
-      "distance": 137,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 139,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005C074",
       "file": "text1b",
-      "distance": 139,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 141,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80063BD0",
       "file": "text1b",
-      "distance": 143,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 144,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1117,17 +1117,9 @@
     {
       "func": "func_80054604",
       "file": "text1b",
-      "distance": 158,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_80076D74",
-      "file": "text1b",
-      "distance": 159,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 160,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1139,43 +1131,35 @@
       "status": "active"
     },
     {
-      "func": "func_80048FFC",
+      "func": "func_80076D74",
       "file": "text1b",
-      "distance": 163,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 161,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "saTan1GaugeMain",
       "file": "text1b",
-      "distance": 164,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006BEC4",
-      "file": "text1b",
-      "distance": 167,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 166,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005BA8C",
       "file": "text1b",
-      "distance": 168,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 169,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
-      "func": "cpu_check_run_attack",
-      "file": "code6cac",
-      "distance": 170,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "func": "func_8006BEC4",
+      "file": "text1b",
+      "distance": 169,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1195,14 +1179,6 @@
       "status": "active"
     },
     {
-      "func": "func_8006CCC8",
-      "file": "text1b",
-      "distance": 187,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80056CB8",
       "file": "text1b",
       "distance": 188,
@@ -1211,67 +1187,59 @@
       "status": "active"
     },
     {
+      "func": "func_8006CCC8",
+      "file": "text1b",
+      "distance": 189,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "saTan3GaugeMain_8006A564",
       "file": "text1b",
-      "distance": 197,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 199,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800841E0",
       "file": "main",
-      "distance": 198,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 200,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006B578",
       "file": "text1b",
-      "distance": 198,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 200,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "saTan3GaugeMain_80073200",
       "file": "text1b",
-      "distance": 201,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 203,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "saTan0KiWareMoveB",
       "file": "code6cac_b",
-      "distance": 203,
+      "distance": 204,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "DispUpdateStatusMessage",
       "file": "main",
-      "distance": 204,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_800747D8",
-      "file": "text1b",
       "distance": 206,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006ECF4",
-      "file": "text1b",
-      "distance": 207,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1283,51 +1251,67 @@
       "status": "active"
     },
     {
+      "func": "func_800747D8",
+      "file": "text1b",
+      "distance": 208,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006ECF4",
+      "file": "text1b",
+      "distance": 209,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80074488",
       "file": "text1b",
-      "distance": 210,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 212,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006CFBC",
       "file": "text1b",
-      "distance": 217,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 218,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006E534",
       "file": "text1b",
-      "distance": 220,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 222,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "DispPracticeMenuTex_B",
       "file": "code6cac",
-      "distance": 229,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 231,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "DispPracticeMenuTex_C",
       "file": "code6cac_b",
-      "distance": 230,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 231,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
-      "func": "func_80084500",
-      "file": "main",
-      "distance": 233,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "func": "func_80048FFC",
+      "file": "text1b",
+      "distance": 232,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1339,27 +1323,27 @@
       "status": "active"
     },
     {
+      "func": "func_80084500",
+      "file": "main",
+      "distance": 235,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80077374",
       "file": "text1b",
-      "distance": 234,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 236,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80048BA4",
       "file": "text1b",
-      "distance": 235,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "PutRobShadow",
-      "file": "code6cac_b",
-      "distance": 236,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 237,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1373,25 +1357,33 @@
     {
       "func": "md_game_end",
       "file": "main",
-      "distance": 247,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 249,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80075F80",
       "file": "text1b",
-      "distance": 249,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 251,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "PutRobShadow",
+      "file": "code6cac_b",
+      "distance": 252,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "AllocBukiRmd",
       "file": "main",
-      "distance": 257,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 259,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1413,41 +1405,41 @@
     {
       "func": "func_8006F100",
       "file": "text1b",
-      "distance": 264,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 266,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005FC9C",
       "file": "text1b",
-      "distance": 266,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 267,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8002F2D0",
       "file": "code6cac_b",
-      "distance": 268,
+      "distance": 270,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80071C4C",
       "file": "text1b",
-      "distance": 268,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 270,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "action_CheckHitZangeki",
       "file": "main",
-      "distance": 269,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 271,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1461,105 +1453,97 @@
     {
       "func": "func_8005763C",
       "file": "text1b",
-      "distance": 274,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 276,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006F528",
       "file": "text1b",
-      "distance": 275,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 277,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8006B120",
       "file": "text1b",
-      "distance": 276,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 278,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80074E08",
       "file": "text1b",
-      "distance": 279,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 281,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800678A8",
       "file": "text1b",
-      "distance": 282,
+      "distance": 283,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80021DB0",
       "file": "code6cac",
-      "distance": 283,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 285,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800571C0",
       "file": "text1b",
-      "distance": 285,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 287,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "single_game_CheckStatusUpDataTotalOver",
       "file": "code6cac",
-      "distance": 287,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 289,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005E098",
       "file": "text1b",
-      "distance": 288,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 289,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8001C8DC",
       "file": "code6cac",
-      "distance": 289,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 291,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800768DC",
       "file": "text1b",
-      "distance": 292,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 294,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80021424",
       "file": "code6cac",
-      "distance": 295,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8002F770",
-      "file": "code6cac_b",
       "distance": 297,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1571,11 +1555,11 @@
       "status": "active"
     },
     {
-      "func": "func_80067200",
-      "file": "text1b",
-      "distance": 297,
+      "func": "func_8002F770",
+      "file": "code6cac_b",
+      "distance": 298,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1587,11 +1571,19 @@
       "status": "active"
     },
     {
+      "func": "func_80067200",
+      "file": "text1b",
+      "distance": 298,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_800872A4",
       "file": "main",
-      "distance": 299,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 301,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1605,103 +1597,111 @@
     {
       "func": "func_80086CF8",
       "file": "main",
-      "distance": 303,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 305,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "cpu_check_run_attack",
+      "file": "code6cac",
+      "distance": 307,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800693CC",
       "file": "text1b",
-      "distance": 306,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 307,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800207C8",
       "file": "code6cac",
-      "distance": 315,
+      "distance": 317,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80087770",
       "file": "main",
-      "distance": 321,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 323,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80031B24",
       "file": "code6cac_b",
-      "distance": 325,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 327,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80073728",
       "file": "text1b",
-      "distance": 339,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 340,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80026DA4",
       "file": "code6cac_b",
-      "distance": 340,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 342,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "md_game_rob_data_init",
       "file": "code6cac",
-      "distance": 345,
+      "distance": 347,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80053E9C",
       "file": "text1b",
-      "distance": 345,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 347,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8007636C",
       "file": "text1b",
-      "distance": 346,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 348,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "special_camera_Init",
       "file": "code6cac_b",
-      "distance": 351,
+      "distance": 352,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006D808",
-      "file": "text1b",
-      "distance": 353,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80080828",
       "file": "system",
       "distance": 354,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8006D808",
+      "file": "text1b",
+      "distance": 355,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -1717,57 +1717,49 @@
     {
       "func": "func_80073C78",
       "file": "text1b",
-      "distance": 360,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 362,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800759D0",
       "file": "text1b",
-      "distance": 362,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 364,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80052D00",
       "file": "text1b",
-      "distance": 384,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 385,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8001BE20",
       "file": "code6cac",
-      "distance": 391,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 393,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8005490C",
       "file": "text1b",
-      "distance": 398,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 399,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8002A458",
       "file": "code6cac_b",
-      "distance": 415,
+      "distance": 416,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8006295C",
-      "file": "text1b",
-      "distance": 418,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1779,65 +1771,73 @@
       "status": "active"
     },
     {
+      "func": "func_8006295C",
+      "file": "text1b",
+      "distance": 420,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "saTan1MainJump",
       "file": "main",
-      "distance": 421,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 423,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80063E10",
       "file": "text1b",
-      "distance": 430,
+      "distance": 431,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80057E84",
       "file": "text1b",
-      "distance": 445,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 447,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "saTan3MainJump",
       "file": "code6cac_b",
-      "distance": 463,
+      "distance": 465,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80053754",
       "file": "text1b",
-      "distance": 464,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 466,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80032C50",
       "file": "code6cac_b",
-      "distance": 465,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "mario_test_Exec",
-      "file": "code6cac",
       "distance": 467,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80077D94",
       "file": "text1b_b",
       "distance": 468,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "mario_test_Exec",
+      "file": "code6cac",
+      "distance": 469,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -1853,25 +1853,25 @@
     {
       "func": "func_800646E8",
       "file": "text1b",
-      "distance": 488,
+      "distance": 490,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800620B8",
       "file": "text1b",
-      "distance": 499,
+      "distance": 501,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_8002DE20",
       "file": "code6cac_b",
-      "distance": 505,
+      "distance": 506,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1888,9 +1888,9 @@
     {
       "func": "func_8006F97C",
       "file": "text1b",
-      "distance": 513,
+      "distance": 515,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1899,9 +1899,9 @@
     {
       "func": "single_game_SetStatusUpData",
       "file": "text1b",
-      "distance": 514,
+      "distance": 516,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1932,9 +1932,9 @@
     {
       "func": "func_80034708",
       "file": "code6cac_b",
-      "distance": 542,
+      "distance": 544,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1943,9 +1943,9 @@
     {
       "func": "func_8005D814",
       "file": "text1b",
-      "distance": 544,
+      "distance": 545,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1954,9 +1954,9 @@
     {
       "func": "func_8006A880",
       "file": "text1b",
-      "distance": 550,
+      "distance": 552,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1965,9 +1965,9 @@
     {
       "func": "func_8005F1C8",
       "file": "text1b",
-      "distance": 562,
+      "distance": 564,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1976,9 +1976,9 @@
     {
       "func": "calc_teasi_loc_fw",
       "file": "code6cac_b",
-      "distance": 572,
+      "distance": 574,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1987,17 +1987,17 @@
     {
       "func": "func_8001A820",
       "file": "code6cac",
-      "distance": 574,
+      "distance": 576,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "camera_set_target_zoom",
       "file": "code6cac",
-      "distance": 586,
+      "distance": 588,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2006,9 +2006,9 @@
     {
       "func": "func_80022580",
       "file": "code6cac",
-      "distance": 619,
+      "distance": 621,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2017,9 +2017,9 @@
     {
       "func": "saTan4GaugeMain",
       "file": "text1b",
-      "distance": 620,
+      "distance": 622,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2028,25 +2028,25 @@
     {
       "func": "single_game_setModeRequest",
       "file": "code6cac",
-      "distance": 642,
+      "distance": 644,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80063084",
       "file": "text1b",
-      "distance": 659,
+      "distance": 661,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_800720FC",
       "file": "text1b",
-      "distance": 688,
+      "distance": 690,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2055,9 +2055,9 @@
     {
       "func": "replay_camera_attack",
       "file": "text1b",
-      "distance": 696,
+      "distance": 698,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2066,9 +2066,9 @@
     {
       "func": "func_80030D7C",
       "file": "code6cac_b",
-      "distance": 707,
+      "distance": 709,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2077,9 +2077,9 @@
     {
       "func": "func_800198D0",
       "file": "code6cac",
-      "distance": 747,
+      "distance": 749,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2088,9 +2088,9 @@
     {
       "func": "func_8005C8A8",
       "file": "text1b",
-      "distance": 752,
+      "distance": 753,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2099,9 +2099,9 @@
     {
       "func": "func_8008C464",
       "file": "main",
-      "distance": 761,
+      "distance": 763,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2110,9 +2110,9 @@
     {
       "func": "func_8005E54C",
       "file": "text1b",
-      "distance": 798,
+      "distance": 799,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2121,9 +2121,9 @@
     {
       "func": "motion_ShiftControl",
       "file": "text1b",
-      "distance": 808,
+      "distance": 810,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2132,9 +2132,9 @@
     {
       "func": "func_80029454",
       "file": "code6cac_b",
-      "distance": 1024,
+      "distance": 1025,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2143,17 +2143,17 @@
     {
       "func": "func_80067D14",
       "file": "text1b",
-      "distance": 1046,
+      "distance": 1047,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "calc_loc_mat_fw_80055B60",
       "file": "text1b",
-      "distance": 1108,
+      "distance": 1110,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2162,9 +2162,9 @@
     {
       "func": "calc_loc_mat_fw",
       "file": "code6cac_b",
-      "distance": 1110,
+      "distance": 1112,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2173,17 +2173,17 @@
     {
       "func": "motion_SetExMotion",
       "file": "text1b",
-      "distance": 1453,
+      "distance": 1454,
       "verdict": "ASM-PARTIAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "func_80023F08",
       "file": "code6cac",
-      "distance": 2981,
+      "distance": 2983,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2192,9 +2192,9 @@
     {
       "func": "func_80058580",
       "file": "text1b",
-      "distance": 2989,
+      "distance": 2991,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -2207,535 +2207,6 @@
       "verdict": "CANON-EXTRACT",
       "rules": 1,
       "status": "authorize"
-    },
-    {
-      "func": "InitFadePanel",
-      "file": "text1b",
-      "distance": 3,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "myRobGeneiOpen",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052CD4",
-      "file": "text1b",
-      "distance": 6,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052C28",
-      "file": "text1b",
-      "distance": 8,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052BE4",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052720",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052754",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052B44",
-      "file": "text1b",
-      "distance": 13,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800526A0",
-      "file": "text1b",
-      "distance": 29,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80052C4C",
-      "file": "text1b",
-      "distance": 30,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004A76C",
-      "file": "text1b",
-      "distance": 35,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800525D8",
-      "file": "text1b",
-      "distance": 42,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004A808",
-      "file": "text1b",
-      "distance": 72,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800527FC",
-      "file": "text1b",
-      "distance": 74,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004BB68",
-      "file": "text1b",
-      "distance": 82,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004C1F4",
-      "file": "text1b",
-      "distance": 97,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050774",
-      "file": "text1b",
-      "distance": 100,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004A348",
-      "file": "text1b",
-      "distance": 101,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8006BD28",
-      "file": "text1b",
-      "distance": 101,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051208",
-      "file": "text1b",
-      "distance": 105,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800515AC",
-      "file": "text1b",
-      "distance": 105,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050908",
-      "file": "text1b",
-      "distance": 107,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050AB8",
-      "file": "text1b",
-      "distance": 107,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050E60",
-      "file": "text1b",
-      "distance": 107,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80054440",
-      "file": "text1b",
-      "distance": 108,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051944",
-      "file": "text1b",
-      "distance": 111,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800523E0",
-      "file": "text1b",
-      "distance": 111,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004FB74",
-      "file": "text1b",
-      "distance": 114,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051D08",
-      "file": "text1b",
-      "distance": 114,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004F798",
-      "file": "text1b",
-      "distance": 117,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004D244",
-      "file": "text1b",
-      "distance": 119,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004FF40",
-      "file": "text1b",
-      "distance": 119,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051ED4",
-      "file": "text1b",
-      "distance": 120,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004EF10",
-      "file": "text1b",
-      "distance": 122,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051754",
-      "file": "text1b",
-      "distance": 123,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004C994",
-      "file": "text1b",
-      "distance": 125,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050C68",
-      "file": "text1b",
-      "distance": 125,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051010",
-      "file": "text1b",
-      "distance": 125,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800513B0",
-      "file": "text1b",
-      "distance": 126,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004EAC8",
-      "file": "text1b",
-      "distance": 127,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004FD40",
-      "file": "text1b",
-      "distance": 127,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004D634",
-      "file": "text1b",
-      "distance": 128,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004F970",
-      "file": "text1b",
-      "distance": 128,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050334",
-      "file": "text1b",
-      "distance": 128,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80051B04",
-      "file": "text1b",
-      "distance": 128,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004D424",
-      "file": "text1b",
-      "distance": 131,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050120",
-      "file": "text1b",
-      "distance": 132,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004F0FC",
-      "file": "text1b",
-      "distance": 133,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004CB8C",
-      "file": "text1b",
-      "distance": 136,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004F314",
-      "file": "text1b",
-      "distance": 137,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004CDB0",
-      "file": "text1b",
-      "distance": 139,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004D838",
-      "file": "text1b",
-      "distance": 142,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80050538",
-      "file": "text1b",
-      "distance": 142,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004ECC8",
-      "file": "text1b",
-      "distance": 145,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004F53C",
-      "file": "text1b",
-      "distance": 150,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004CFE0",
-      "file": "text1b",
-      "distance": 152,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004E574",
-      "file": "text1b",
-      "distance": 155,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004A4E0",
-      "file": "text1b",
-      "distance": 161,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004E7E4",
-      "file": "text1b",
-      "distance": 182,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_800520B8",
-      "file": "text1b",
-      "distance": 200,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004DA74",
-      "file": "text1b",
-      "distance": 207,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "saTan2LineDraw",
-      "file": "text1b",
-      "distance": 329,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004C404",
-      "file": "text1b",
-      "distance": 349,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_8004DDB4",
-      "file": "text1b",
-      "distance": 476,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "calc_loc_mat_fw_8004A940",
-      "file": "text1b",
-      "distance": 1154,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +8B (dummy[2]); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "motion_SetMotion",
@@ -2754,15 +2225,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (buf[8]); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "gnd_init_80041688",
-      "file": "text1a",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80045294",
@@ -2793,13 +2255,13 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
-      "func": "AddTbpOfst_80047EE8",
-      "file": "text1b",
+      "func": "gnd_init_80041688",
+      "file": "text1a",
       "distance": 8,
       "verdict": "C",
-      "rules": 0,
+      "rules": 3,
       "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (sibling); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "cpu_check_tubazeri_2",
@@ -2928,6 +2390,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
     },
     {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +8B (dummy[2]); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+    },
+    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 12,
@@ -3019,6 +2490,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     },
     {
+      "func": "AddTbpOfst_80047EE8",
+      "file": "text1b",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (sibling); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+    },
+    {
       "func": "func_80036FD4",
       "file": "code6cac_b2_post",
       "distance": 17,
@@ -3056,19 +2536,19 @@
     }
   ],
   "counts": {
-    "total": 366,
+    "total": 301,
     "active": 264,
     "by_status": {
       "active": 264,
-      "authorize": 66,
+      "authorize": 1,
       "parked": 36
     },
     "by_verdict": {
-      "C": 101,
+      "C": 172,
       "ASM-PARTIAL": 45,
-      "ASM-SUSPECT": 92,
+      "ASM-SUSPECT": 21,
       "ASM-STRUCTURAL": 26,
-      "CANON-EXTRACT": 66
+      "CANON-EXTRACT": 1
     }
   }
 }
