@@ -643,3 +643,424 @@ one would mean drafting a rationale the evidence does not support.
 
 Machine-readable summary: `tmp/auth_packets_2026-08-06.json`. Raw structural scan:
 `tmp/auth_signals.json` (generator: `tmp/auth_signal_scan.py`).
+
+---
+
+# Batch 2 — 2026-08-06
+
+Population: the **7 canonical-eligible functions** from the ASM-SUSPECT/ASM-PARTIAL census
+(`docs/grind/asm-suspect-census-2026-08-06.md`, buckets A1+A2; machine-readable
+`tmp/census_2026-08-06.json`). All 7 carry queue verdict `ASM-PARTIAL`. Plus one
+Wave-1 finding folded in: the **splat mis-scoping of `asm/funcs/ang_hosei.s`**, which
+fuses the program's boot/entry stub onto a 9-instruction function.
+
+Same posture as batch 1: **nothing here is authorized**, nothing was committed, no build
+was run, and no build-pipeline file was touched. Default-FAIL — weak evidence returns the
+function to the pure-C pool.
+
+## Headline
+
+**8 of 8 units rate DECISIVE or STRONG and are recommended FOR whole-function
+authorization** (7 census functions + the boot stub, which needs a symbol split first).
+This is the opposite of batch 1's Batch-A result, and it is opposite for a measurable
+reason rather than a rhetorical one.
+
+Two independent base-rate measurements, run fresh today over all 1,437 `asm/funcs/*.s`
+(generators: `tmp/batch2_trap_check.py`, `tmp/batch2_neighbors.py`):
+
+**1. Trapping arithmetic is GCC-2.7.2-impossible in this corpus — 64 vs 0.**
+
+| Population | Functions containing `add` / `addi` / `sub` / `neg` (trapping forms) |
+|---|---:|
+| authorized canonical (`inline_asm_canonical.txt`) | **64** |
+| still-queued | **3** — and they are exactly `ang_hosei`, `func_8004C388`, `func_80052788` |
+| **already COMPLETED-C (0 rules, byte-matched)** | **0** |
+
+Zero counter-examples. GCC 2.7.2's `addsi3`/`subsi3` MIPS patterns emit the `u` forms
+because C addition does not trap; `add`/`sub`/`addi` are what a human types in an ASPSX
+`.s` file. This clears the census's "decisive signal" bar (GCC-impossible with zero
+COMPLETED-C counter-examples) with a wide margin — and note it is a *stronger* enrichment
+than G1 ghost-callee-save (11 vs 2), which the census itself demoted to corroborating.
+
+**2. Non-div-guard `break` codes form a closed 4-member cluster, 3 already authorized.**
+
+| Function | Status | `break` codes |
+|---|---|---|
+| `func_80083698` | authorized canonical | 259 (0x103) |
+| `md_gview_init` | authorized canonical | 260 (0x104) |
+| `func_8008393C` | authorized canonical | 261 (0x105) |
+| **`ang_hosei`** | **queued** | **263 (0x107)**, plus `break 0, 1` |
+
+Those are the only four functions in the entire executable with a `break` whose code is
+not the 6/7 division guard. Three are signed off; `ang_hosei` is the fourth member of the
+same Marionation engine-call family, at the next code up.
+
+**3. The candidates are holes in an otherwise-solid hand-written object file.** In the
+address band `0x8004A000-0x80053000`, **60 of 73 functions are already authorized
+canonical**. The non-canonical remainder is five trivial 2–88-instruction stubs, one real
+C function at the band edge (`func_80052D00`, 385 insns / distance 384), and **six of our
+seven candidates**. `func_8004C388` sits between authorized `func_8004C1F4` and authorized
+`func_8004C404`. The whole `0x80052788-0x80052B7C` GTE run alternates
+authorized/candidate/authorized with `func_800527FC`, `func_80052754`, `func_80052B44`,
+`InitFadePanel`, `func_80052C28` already signed off. `ang_hosei` sits immediately after
+authorized `md_gview_init` and immediately before authorized `bios_InitHeap`.
+
+## On the island-vs-whole-function question
+
+The task brief is right that for **most** ASM-PARTIAL functions the correct disposition is
+"pure C body + canonical inline-asm island" (the `func_8002EA24` precedent,
+`docs/grind/decisions.md` 2026-07-30), not whole-function authorization. That doctrine
+presupposes an *ordinary C body* with a small no-C-form span inside it. **For these seven
+that premise is false**, and the census's own density column shows where the line falls:
+
+- Census bucket B/C ASM-PARTIALs: cop2 spans of **0–17%** inside 90–1,473-instruction
+  bodies with frames, spills and calls. Island doctrine applies. `motion_SetExMotion`
+  (15/1454 = 1%) is the extreme case.
+- These seven: **43–58% cop2** (or 100% trapping-arith-and-shift) in **26–60-instruction
+  leaves** with **no stack frame, no spills, and no calls**. A "pure C body plus island"
+  form here would be a C function whose entire body is a sequence of back-to-back
+  `__asm__` blocks with nothing between them — which is whole-function canonical asm
+  written in a more fragile spelling, not pure C.
+
+`func_80052930` is the only one where the question is genuinely close (34 of its 60
+instructions are general-purpose), so I delimit its island decomposition below as an
+explicit fallback and rate it STRONG rather than DECISIVE.
+
+## Summary table
+
+| Unit | File | Insns | Dist | Rules | Decisive signal | Rating | Disposition | Recommend |
+|---|---|---:|---:|---:|---|---|---|---|
+| `ang_hosei` (9-insn trampoline) | src/ings2.c | 9 | — | 0 | `break 0, 263`; custom arg-shift ABI | **DECISIVE** | whole-function | **FOR** |
+| boot/entry stub @ `0x800836EC` | src/ings2.c (fused) | 42 | — | 0 | crt0: builds `$sp`/`$gp`/`$fp`, `$ra` in a global, trapping `addi`, `break 0, 1` | **DECISIVE** | **split to own symbol**, then whole-function | **FOR** (after split) |
+| `func_8004C388` | src/text1b.c | 30 | 29 | 0 | 5× trapping `add` | **DECISIVE** | whole-function | **FOR** |
+| `func_80052788` | src/text1b.c | 29 | 23 | 0 | trapping `sub`; duplicated `mfc2 $t0,$9`; `gpf`/`gpl` | **DECISIVE** | whole-function | **FOR** |
+| `game_2d_CheckLifeGaugeNoDisp` | src/text1b.c | 26 | 20 | 1 | `swc2 $11` in the `jr $ra` delay slot | **DECISIVE** | whole-function | **FOR** |
+| `func_80052A88` | src/text1b.c | 30 | 25 | 1 | `swc2 $11` in the `jr $ra` delay slot | **DECISIVE** (reaffirmed) | whole-function | **FOR** |
+| `func_80052B7C` | src/text1b.c | 26 | 20 | 1 | `swc2 $11` in the `jr $ra` delay slot | **DECISIVE** (reaffirmed) | whole-function | **FOR** |
+| `func_80052930` | src/text1b.c | 60 | 51 | 0 | mvmva-latency interleave; 10 cop2 regions | **STRONG** | whole-function (island fallback delimited) | **FOR** |
+
+`func_80052A88` and `func_80052B7C` already carry DECISIVE packets in batch 1 above; they
+are not re-litigated here, only reaffirmed with the new cluster evidence. Their proposed
+`inline_asm_canonical.txt` entries in batch 1 stand unchanged.
+
+## Standing finding — two candidates are carrying inline-asm injection right now
+
+Independent of the authorization decision, the owner should know that `src/text1b.c`
+contains hardcoded-`$N` `__asm__` templates for two of these functions. **Line numbers
+below are `git show HEAD:src/text1b.c`** — the working tree was dirty from a concurrent
+agent while this packet was written, and these constructs were verified present in HEAD,
+so they are pre-existing and not that agent's in-flight edit:
+
+- `func_8004C388` — HEAD `src/text1b.c:1339-1341` and `1352-1353`, five templates:
+  `__asm__ volatile ("add $8, $8, $11" : "=r"(t0) : "0"(t0), "r"(t3));` and siblings.
+- `func_80052788` — HEAD `src/text1b.c:1638`:
+  `__asm__ volatile ("sub $11, $11, $6" : "=r"(t3) : "0"(t3), "r"(arg2));`.
+
+These have constraints attached but the *template text* names `$8`/`$11`/`$6` literally, so
+the emitted registers come from the template rather than from GCC's choice — the
+[[inline-asm-injection]] signature with paperwork. Both functions also carry
+`register s32 tN asm("$N")` pins. The census's "0 regfix rules" column is therefore
+misleading for these two: they have zero *rules* but are not cheat-free.
+
+Whole-function authorization moots this (the body becomes one `glabel` block and the pins
+and templates are deleted). If the owner instead sends them back to the pure-C pool, these
+constructs must be removed first, not left in place. Either way the current state should
+not persist. The GTE-op templates in `func_80052788` (`mtc2 %0, $8`, `ori %0, $zero,
+0x1000`, `.word 0x4B98003D`) use `%N` placeholders and are the legitimate canonical form —
+this finding is only about the `add`/`sub` pair.
+
+## Per-unit packets
+
+### `ang_hosei` — DECISIVE — recommend FOR (whole-function, 9 instructions only)
+
+- **File:** src/ings2.c:609 (`INCLUDE_ASM`) · **asm:** asm/funcs/ang_hosei.s lines 2-11 ·
+  `0x800836C8-0x800836E8` · queue: active, ASM-PARTIAL, distance 51, 0 rules.
+- **The function is 9 instructions, not 51.** The recorded distance of 51 counts the boot
+  stub fused onto it (next section). The real body:
+
+```
+800836C8  addu  $a3, $a2, $zero      # arg shift: a2 -> a3
+800836CC  addu  $a2, $a1, $zero      #            a1 -> a2
+800836D0  addu  $a1, $a0, $zero      #            a0 -> a1
+800836D4  break 0, 263               # Marionation engine call, code 0x107
+800836D8  beqz  $v0, .L800836E4
+800836DC   addu $v0, $v1, $zero      # (delay) success: return $v1
+800836E0  addiu $v0, $zero, -0x1     # failure: return -1
+800836E4: jr    $ra
+800836E8   nop
+```
+
+- **Why it is unreachable from C.** Two independent reasons. (a) `break` with a custom
+  code field cannot be emitted by GCC 2.7.2 at all, and maspsx cannot assemble `break`
+  with an arbitrary code — the three authorized siblings all encode it as a raw `.word`
+  for exactly this reason (`inline_asm_canonical.txt:131-133`). (b) The three `addu`
+  shifts implement a **custom calling convention**: the callee reads its arguments from
+  `$a1/$a2/$a3` and returns a pair in `$v0/$v1`, with `$a0` left free for the engine.
+  No C function signature produces that shift, and no C construct reads a second return
+  register.
+- **Precedent fit.** Exact. `func_80083698` (code 0x103), `md_gview_init` (0x104) and
+  `bios_FileReadRaw`/`func_8008393C` (0x105) are all authorized, all in the same
+  address neighbourhood, all described in the existing entries as "break with custom code
+  plus return-value handling." `ang_hosei` is code 0x107 and has the same shape plus the
+  arg shift. The measured corpus census above shows these four are the *only* non-div-guard
+  `break` users in the executable.
+- **Naming note (not blocking).** `ang_hosei` is engine-call-0x107, not angle correction.
+  Its call sites (`src/ings.c:141,143,170` — `ang_hosei(fd, 0, 2)`, `ang_hosei(fd,
+  sector << 11, 0)`) read as a file seek/read/size primitive, which fits the
+  `bios_FileReadRaw` family. `named_syms.txt` already flags two other `ang_hosei*` symbols
+  as misnamed (lines 2497, 3457), so the prefix is known drift. Renaming is optional and
+  independent of the authorization.
+- **Proposed entry (approve verbatim, and only after the split below):**
+
+```
+ang_hosei  # Marionation engine call, break code 0x107: custom-ABI arg shift (a0/a1/a2 -> a1/a2/a3, leaving a0 for the engine), `break 0, 263`, then a $v0/$v1 two-register return select (beqz $v0 -> return $v1 else -1). `break` with a custom code field has no C form and maspsx cannot assemble it (the authorized siblings encode it as a raw .word); the arg shift and the $v1 second return value have no C signature. Fourth and last member of the authorized break-trampoline family (func_80083698 0x103, md_gview_init 0x104, func_8008393C 0x105).
+```
+
+### Boot/entry stub at `0x800836EC` — DECISIVE — recommend FOR, **after a symbol split**
+
+This is the Wave-1 finding, assessed.
+
+- **Currently:** lines 12-54 of `asm/funcs/ang_hosei.s`, with no symbol of its own, emitted
+  inside `endlabel ang_hosei`. Nothing reaches it — `ang_hosei` returns at `0x800836E4`
+  with a `nop` delay slot, so there is no fallthrough; the only entry is the PS-EXE
+  header. `AGENTS.md:32`, `README.md:51` and `docs/ARCHITECTURE.md:33` all record
+  **`0x800836EC` as the executable's entry point**, and grep confirms no symbol,
+  `symbol_addrs.txt` entry, or `named_syms.txt` entry exists at that address.
+
+- **Is it hand-written asm?** Yes, and this one is not a close call. It is a textbook crt0:
+
+| Address | Instruction | Why no C form exists |
+|---|---|---|
+| `800836EC-8008370C` | `lui/addiu` bounds + `sw $zero` loop over `D_800A3308 -> D_801078E0` | BSS clear; runs *before* any C environment |
+| `80083710-80083724` | `lw D_800A2690`; `addi $v0, $v0, -0x8` **(trapping, splat-tagged `handwritten instruction`)**; `or $sp, $v0, $t0` with `$t0 = 0x80000000` | **Assigns the stack pointer.** C has no construct that writes `$sp`. |
+| `80083728-80083734` | `sll $a0,3 / srl $a0,3` | strips the KSEG0 bit off the heap base by shifting — a hand idiom, not a C mask |
+| `80083760-80083764` | `sw $ra, D_800A3668` | **saves the return address into a global, not a stack slot** — because no frame exists yet |
+| `80083768-8008376C` | `lui/addiu $gp, %hi/%lo(_gp)` | **assigns `$gp`.** GCC assumes `$gp` is already live; it never initialises it. |
+| `80083770` | `addu $fp, $sp, $zero` | assigns the frame pointer directly |
+| `80083774-80083778` | `jal bios_InitHeap` with `addi $a0, $a0, 4` **(trapping, splat-tagged)** in the delay slot | second trapping-arith instance |
+| `8008377C-8008378C` | reload `$ra` from the global, `jal` into `main` | — |
+| `80083790` | `break 0, 1` | program terminate; custom break code, no C form |
+
+  A function with no prologue, no frame, no callee-saves, that *constructs* `$sp`, `$gp`
+  and `$fp` and stores `$ra` in a global, is hand-written by definition — this is the code
+  that establishes the environment C compilation presupposes. Two of its instructions
+  carry splat's own `/* handwritten instruction */` tag, and it contributes 2 of the 3
+  queued trapping-arith hits measured above.
+
+  Secondary finding: the `jal` at `0x80083788` targets
+  `cpu_set_move_command_and_dir_for_no_action_2`. A crt0's final call is `main`. That
+  symbol name is almost certainly drift and worth re-checking independently of this packet.
+
+- **Splat / symbol_addrs implications — read before acting.** The split is cheap but the
+  obvious route is booby-trapped:
+
+  1. **Do NOT add `0x800836EC` to `symbol_addrs.txt` and re-run splat.** `CLAUDE.md` and
+     `splat.yaml` both record that **`bb2.ld` is hand-maintained and `make setup` must not
+     be run** — it re-adds dead rodata lines and conflicts with the const declarations now
+     living in `src/*.c`. Regenerating to pick up one symbol would cost a `bb2.ld`
+     recovery.
+  2. **The manual split is byte-neutral and is the route to take.** `INCLUDE_ASM` expands
+     (`include/include_asm.h:7-15`) to `.section .text` + `.set noat/noreorder` +
+     `.include "<folder>/<name>.s"`. So: cut lines 12-54 of `asm/funcs/ang_hosei.s` into a
+     new `asm/funcs/<newsym>.s` with its own `glabel`/`endlabel`, close `ang_hosei.s` after
+     line 11, and put two consecutive `INCLUDE_ASM` lines in `src/ings2.c` where line 609
+     is now. The instruction stream, its order and its alignment are unchanged (both
+     halves are 4-byte aligned and contiguous at `0x800836E8 -> 0x800836EC`), and
+     `.section .text` at an already-aligned offset emits no padding. It adds a symbol and
+     zero bytes.
+  3. `symbol_addrs.txt` should still get the name so future splat runs and `named_syms.txt`
+     agree, but it is documentation here, not the mechanism.
+  4. **Oracle-verify the split on its own commit, before any authorization commit.** It is
+     byte-neutral by construction but it touches the build pipeline, so it should stand or
+     fall on `verify-oracle` alone rather than being bundled with a rules change.
+  5. Suggested symbol name: `_start` or `main_entry` (whichever matches the project's
+     convention for the PS-EXE entry; nothing currently claims either).
+
+- **Consequence for the queue.** Once split, `ang_hosei`'s recorded distance of 51 is
+  wrong by construction — the 9-instruction trampoline is the whole function, and the
+  42-instruction stub becomes a separate item. `docs/HANDOFF-2026-08-06B.md:51` already
+  records this ("recorded distance 51 overstates the 9-insn function"). A `queue regen`
+  after the split will correct it.
+
+- **Proposed entry (approve verbatim, for the new symbol):**
+
+```
+<newsym>  # PS-EXE entry point / crt0 at 0x800836EC (AGENTS.md records this as the executable's entry). No prologue, no frame, no callee-saves: zeroes BSS from D_800A3308 to D_801078E0, computes and ASSIGNS $sp from D_800A2690 via a trapping `addi` (splat-tagged 'handwritten instruction'), strips KSEG0 off the heap base by sll/srl, saves $ra into the GLOBAL D_800A3668 because no stack frame exists yet, loads $gp from _gp, sets $fp from $sp, calls bios_InitHeap with a second trapping `addi` in the delay slot, then jal's main and terminates with `break 0, 1`. Startup code that establishes the environment C compilation presupposes — $sp/$gp/$fp assignment and a custom-code break have no C form. Split from asm/funcs/ang_hosei.s, where splat had fused it onto the unrelated 9-instruction function ending at 0x800836E8.
+```
+
+### `func_8004C388` — DECISIVE — recommend FOR (whole-function)
+
+- **File:** src/text1b.c (HEAD line 1325) · **asm:** asm/funcs/func_8004C388.s · **30 instructions** ·
+  queue: active, ASM-PARTIAL, distance 29, 0 rules (but see the injection finding above).
+- **Shape.** A frameless, call-free leaf: six `lh` loads of two 3-vectors from `*$a0`/`*$a1`
+  (`8004C388-8004C39C`), three trapping `add` (`8004C3A0`, `8004C3A4`, `8004C3A8`), three
+  `sra 1` — a midpoint average — then three `sh` to `*$a2`. The tail
+  (`8004C3C4-8004C3FC`) does the same midpoint on a packed byte pair out of halfword 3
+  (`andi 0xFF00` / `andi 0xFF`, two more trapping `add`, `srl 1`, re-pack via `or`), with
+  the final `sh $t3, 0x6($a2)` in the `jr $ra` delay slot.
+- **Decisive signal.** **Five trapping `add`** at `8004C3A0/A4/A8/DC/E0`, every one carrying
+  splat's `/* handwritten instruction */` tag. Per the corpus measurement above, trapping
+  arithmetic appears in 64 authorized-canonical functions and **0 COMPLETED-C functions** —
+  GCC 2.7.2 emits `addu` for C `+` unconditionally. There is no C input to the frozen
+  compiler that produces these five bytes.
+- **Why whole-function rather than island.** The five adds are not one span; they are
+  interleaved through the whole body at instructions 8, 9, 10, 22 and 23 of 30. An island
+  decomposition means five separate `__asm__` blocks with operand bindings surrounding
+  ~25 instructions of load/shift/store — and the register allocation of that C would have
+  to be steered to match, which is what the current source is doing with pins and hardcoded
+  templates. The function is a 30-instruction hand-written leaf inside a 60-of-73
+  authorized band; whole-function is the honest form.
+- **Cluster fit.** Immediate neighbours `func_8004C1F4` (before) and `func_8004C404`
+  (after) are both already authorized canonical, and both also contain trapping arith
+  (22 and 16 instances). This function is a hole in a signed-off object file.
+- **Proposed entry (approve verbatim):**
+
+```
+func_8004C388  # Hand-written midpoint-average leaf: 6x lh of two s16 3-vectors -> 5x TRAPPING `add` (splat-tagged 'handwritten instruction') -> sra/srl 1 -> 3x sh, plus a packed-byte-pair midpoint on halfword 3 with the final sh in the jr-ra delay slot. Frameless, call-free, no spills. GCC 2.7.2 emits `addu` for C addition unconditionally (addsi3); trapping `add` appears in 64 authorized-canonical functions and 0 COMPLETED-C functions corpus-wide, so these bytes are unreachable from any C. Sits between authorized func_8004C1F4 and func_8004C404 in a band where 60 of 73 functions are already authorized.
+```
+
+### `func_80052788` — DECISIVE — recommend FOR (whole-function)
+
+- **File:** src/text1b.c (HEAD line 1628) · **asm:** asm/funcs/func_80052788.s · **29 instructions** ·
+  queue: active, ASM-PARTIAL, distance 23, 0 rules (see the injection finding above).
+- **Shape.** GTE `gpf`/`gpl` interpolation leaf. 15 of 27 body instructions are cop2:
+  `ori $t3, $zero, 0x1000` then a **trapping `sub`** to form `0x1000 - t` (`80052798`),
+  `mtc2 $t3/$t0/$t1/$t2 -> $8/$9/$10/$11`, `gpf 1` (`800527B4`), a second `mtc2` quartet,
+  two unfilled GTE latency `nop`s, `gpl 1` (`800527D8`), then `mfc2` reads and three `sh`
+  with the last in the `jr $ra` delay slot.
+- **Three independent decisive signals.**
+  1. **Trapping `sub`** at `80052798`, splat-tagged — the 64-vs-0 argument above.
+  2. **`mfc2 $t0, $9` emitted twice in a row** at `800527DC` and `800527E0`, both
+     splat-tagged. The second read is mathematically redundant and its destination is
+     immediately overwritten. GCC's CSE collapses an identical back-to-back read
+     unconditionally; a hand coder writes it as a GTE result-latency pad. This is the
+     census's X1 signal and it is the same *kind* of construct as the S8
+     redundant-mask signal that carried `func_8007EDBC` to authorization
+     (`.claude/rules/packed-multiply-cluster.md`).
+  3. `gpf`/`gpl` and the hand-placed latency `nop`s have no C form.
+- **Cluster fit.** Immediate neighbours `func_80052754` (before) and `func_800527FC`
+  (after) are both authorized canonical.
+- **Proposed entry (approve verbatim):**
+
+```
+func_80052788  # GTE gpf/gpl interpolation leaf, 15/27 cop2: TRAPPING `sub` forms 0x1000-t (splat-tagged; GCC 2.7.2 emits subu for C subtraction — trapping arith is present in 64 authorized-canonical and 0 COMPLETED-C functions corpus-wide), 4x mtc2 -> gpf 1 -> 4x mtc2 -> two unfilled GTE latency nops -> gpl 1 -> mfc2 reads with `mfc2 $t0,$9` emitted TWICE back-to-back as a result-latency pad (GCC's CSE collapses an identical adjacent read unconditionally), then 3x sh with the last in the jr-ra delay slot. Frameless leaf between authorized func_80052754 and func_800527FC.
+```
+
+### `game_2d_CheckLifeGaugeNoDisp` — DECISIVE — recommend FOR (whole-function)
+
+- **File:** src/text1b.c (HEAD line 1746) · **asm:** asm/funcs/game_2d_CheckLifeGaugeNoDisp.s ·
+  **26 instructions** · queue: active, ASM-PARTIAL, distance 20, 1 rule
+  (`regfix.txt:3321 fill_delay @ 24 <- 23`).
+- **Shape.** Verbatim PsyQ LIBGTE matrix-vector multiply. Eight `lw` from `*$a0`
+  (`80052A20-80052A3C`) feeding **eight splat-tagged `ctc2 $t0-$t7, $0-$7`**
+  (`80052A40-80052A5C`), `lwc2 $0, 0x0($a1)` / `lwc2 $1, 0x4($a1)`, two unfilled GTE
+  latency `nop`s, `mvmva 1,0,0,0,0` (`80052A70`), a third latency `nop`, then
+  `swc2 $9/$10` and **`swc2 $11, 0x8($a2)` in the `jr $ra` delay slot** (`80052A84`).
+  Zero general-purpose computation — 14 of 24 body instructions are cop2 and the other
+  ten are the `lw` feed.
+- **Decisive signal.** The delay-slot `swc2`. Per the granted `func_80052B44` ruling
+  (batch 1 above, from `tools/gcc-2.7.2/reorg.c`): `stop_search_p` halts the delay-slot
+  search at `ASM_INPUT` and `resource_conflicts_p` returns 1 for volatile asm, so **GCC
+  2.7.2 can never place a cop2 op in a `jr $ra` delay slot**. `cop2` can only enter
+  compilation as inline asm. The bytes are unreachable from any C input.
+- **Precedent fit.** This is the same construct as authorized `func_8007ED6C`
+  (`inline_asm_canonical.txt:308`) — the census measures opcode-signature Jaccard 0.704
+  against it — and the direct sibling of `func_80052A88` / `func_80052B7C`, both rated
+  DECISIVE in batch 1. It is the plainest member of the family: no halfword packing at all.
+- **Naming note (not blocking).** The symbol is misleading. `game_2d_CheckLifeGaugeNoDisp`
+  reads as a 2D UI predicate returning a flag; the body is a GTE 3x3-matrix × vector
+  multiply writing three words through `$a2` and returning nothing. Its two call sites
+  (`src/config.c:263-264`) pass three pointers, consistent with the GTE reading and not
+  with the name. Worth re-checking alongside the `ang_hosei` family drift.
+- **Proposed entry (approve verbatim):**
+
+```
+game_2d_CheckLifeGaugeNoDisp  # LIBGTE matrix-vector leaf (MISNAMED — body is a GTE 3x3 x vector multiply, not a UI predicate): 8x lw <- *a0 -> 8x ctc2 $0-$7 (all splat-tagged 'handwritten instruction'), lwc2 $0/$1 <- *a1, two unfilled GTE latency nops, mvmva 1,0,0,0,0, a third latency nop, then swc2 $9/$10 and swc2 $11 IN the jr-ra delay slot (0x80052A84). Zero general-purpose computation. GCC 2.7.2 cannot fill a delay slot with asm (reorg.c stop_search_p halts at ASM_INPUT), so the bytes are unreachable from any C. Opcode-signature Jaccard 0.704 to authorized func_8007ED6C; direct sibling of authorized func_80052B44.
+```
+
+### `func_80052930` — STRONG — recommend FOR (whole-function; island fallback delimited)
+
+- **File:** src/text1b.c (HEAD line 1674) · **asm:** asm/funcs/func_80052930.s · **60 instructions** ·
+  queue: active, ASM-PARTIAL, distance 51, 0 rules. Currently carries 11 `register asm("$N")`
+  pins in HEAD (`src/text1b.c:1675-1685`).
+- **Shape.** The three-cycle sibling of the family: eight splat-tagged
+  `ctc2 $t0-$t4, $0-$4` + `ctc2 $zero, $5-$7` (`80052948-80052964`) load a packed 3x3
+  rotation matrix with zero translation, then **three `mvmva 1,0,0,0,0` cycles**
+  (`8005299C`, `800529CC`, `80052A00`), each writing its vector via `mtc2 $0/$1` and
+  reading the previous cycle's result via `mfc2 $t5/$t6/$t7, $9/$10/$11`.
+- **Why STRONG and not DECISIVE.** There is no single GCC-impossible instruction here:
+  the delay slot holds an ordinary `sh $t7, 0x10($a2)` (GCC fills those routinely), there
+  is no trapping arithmetic, and volatile `__asm__` blocks are not reordered by GCC, so
+  an island form is *technically* constructible. I am not going to call that decisive.
+- **Why the evidence is still strong.**
+  1. **The interleave is hand-scheduling.** Cycle N+1's `mtc2` setup and cycle N's `mfc2`
+     result reads are placed *inside* the preceding `mvmva`'s latency window, and the
+     general-purpose packing (`and`/`andi`/`or`/`sll`/`srl` at
+     `8005297C-80052994`, `800529A0-800529A8`, `800529D0-800529DC`) is threaded into the
+     same windows. `.claude/rules/gte-3x3.md` names exactly this — "the
+     mvmva→mfc2→mtc2→nop→mvmva pipeline interleaving (cycle N+1's setup during cycle N's
+     GTE latency) is canonical hand-scheduling" — as the signature that carried
+     `calc_fc_frame_8007EC5C` to ASM-WHOLE authorization on 2026-05-31.
+  2. **The `0xFFFF0000` mask is materialised once** into `$t9` at `80052944`, before the
+     first `ctc2`, and held live across all 60 instructions for three uses. `$t9` is a
+     caller-saved temp; GCC's CSE/remat would not reserve one across a 55-instruction span
+     for a constant that costs one `lui`.
+  3. **Cluster.** It sits in the middle of the `0x80052788-0x80052B7C` run, immediately
+     after authorized `func_800527FC` and immediately before
+     `game_2d_CheckLifeGaugeNoDisp`; the band is 60-of-73 authorized.
+  4. It is a frameless, call-free, spill-free leaf (census: `S3:no-spills`).
+- **Island fallback, delimited.** If the owner prefers the region-granular disposition,
+  the cop2 spans are **10 regions**, 26 of 60 instructions:
+
+  | Region | Range | Ops |
+  |---|---|---|
+  | 1 | `80052948-80052964` | `ctc2 $t0-$t4, $0-$4`; `ctc2 $zero, $5-$7` (8) |
+  | 2 | `80052988` | `mtc2 $t5, $0` |
+  | 3 | `80052990` | `mtc2 $t6, $1` |
+  | 4 | `8005299C` | `mvmva 1,0,0,0,0` |
+  | 5 | `800529AC-800529B4` | `mfc2 $t5/$t6/$t7, $9/$10/$11` |
+  | 6 | `800529B8-800529BC` | `mtc2 $v0, $0`; `mtc2 $v1, $1` |
+  | 7 | `800529CC` | `mvmva 1,0,0,0,0` |
+  | 8 | `800529E0-800529E8` | `mfc2 $t5/$t6/$t7, $9/$10/$11` |
+  | 9 | `800529EC-800529F0` | `mtc2 $v0, $0`; `mtc2 $v1, $1` |
+  | 10 | `80052A00-80052A0C` | `mvmva`; `mfc2 $t5/$t6/$t7` |
+
+  Ten `__asm__` blocks separated by one-to-four instructions of packing, in a
+  60-instruction leaf, is the argument *against* the island form rather than for it — but
+  the decomposition is recorded so the owner can rule either way on facts rather than on
+  my framing.
+- **Proposed entry (approve verbatim, whole-function disposition):**
+
+```
+func_80052930  # LIBGTE 3-cycle matrix-vector leaf: 5x ctc2 $0-$4 (packed 3x3 R matrix) + 3x ctc2 $zero to $5-$7 (zero translation), all splat-tagged 'handwritten instruction', then three mvmva 1,0,0,0,0 cycles with each cycle's mtc2 $0/$1 setup and the previous cycle's mfc2 $9/$10/$11 result reads placed INSIDE the preceding mvmva's latency window, and the halfword packing threaded into the same windows. Canonical hand-scheduling per the calc_fc_frame_8007EC5C precedent (.claude/rules/gte-3x3.md, authorized 2026-05-31). The 0xFFFF0000 mask is materialised once into caller-saved $t9 and held live across all 60 instructions for three uses. Frameless, call-free, spill-free leaf in the 0x80052788-0x80052B7C hand-written run.
+```
+
+## Counts and the recommend-FOR list
+
+- **DECISIVE: 6** — `ang_hosei` (9-insn trampoline), the boot/entry stub at `0x800836EC`,
+  `func_8004C388`, `func_80052788`, `game_2d_CheckLifeGaugeNoDisp`, plus the two batch-1
+  reaffirmations (`func_80052A88`, `func_80052B7C`).
+- **STRONG: 1** — `func_80052930`.
+- **WEAK / recommend AGAINST: 0.**
+- All dispositions are **whole-function**, not island. The island doctrine's premise
+  (an ordinary C body containing a small no-C-form span) does not hold for any of these
+  26–60-instruction frameless leaves; it holds for the census's bucket-B and bucket-C
+  ASM-PARTIALs, which are not in this batch.
+
+**Suggested owner sequencing:**
+
+1. **Split `asm/funcs/ang_hosei.s`** into the 9-instruction function and the boot stub, on
+   its own oracle-verified commit that touches no rules. This is a prerequisite for the
+   `ang_hosei` authorization — authorizing the fused file today would sign off the entry
+   point under the wrong symbol.
+2. **Authorize the five uncontested new entries** — `func_8004C388`, `func_80052788`,
+   `game_2d_CheckLifeGaugeNoDisp`, `func_80052930`, `ang_hosei` — plus the new boot-stub
+   symbol, and the two batch-1 siblings if not already signed off.
+3. **Either way, clean the two injection sites** at HEAD `src/text1b.c:1339-1341` /
+   `1352-1353` and HEAD `src/text1b.c:1638`. Authorization removes them as a side effect; a decision to send
+   these functions back to the pure-C pool does not, and they must not be left standing.
+
+Machine-readable summary: `tmp/auth_packets2_2026-08-06.json`. Generators for the two
+base-rate measurements: `tmp/batch2_trap_check.py` (trapping-arith and break-code census
+over all 1,437 `asm/funcs/*.s`) and `tmp/batch2_neighbors.py` (address-ordered
+canonical-density neighbourhood map).
