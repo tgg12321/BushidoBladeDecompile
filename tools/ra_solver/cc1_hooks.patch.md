@@ -108,3 +108,19 @@ orphaned pseudo — `reg_n_refs > 0` but no surviving RTL reference after combin
 gets one of those slots while emitting **no instruction at all**. That is the
 phantom-slot class, and `tmp/csz/gn_orph2.py` names its members from a `.greg`
 dump (empty conflict list + absent from the dispositions).
+
+### Reference-pollution note (2026-08-05)
+
+FRAMEDBG numbers are **structurally immune to `build/` reference pollution**:
+`gn_frame.sh` / `gn_census.py` / `gn_da.sh` read cc1's own stderr and its `-o`
+output, and the `.frame vars=` figure is printed by `get_frame_size()` inside
+cc1. None of them open `build/src/*.o`. Only the *sandbox score* and the
+normalized objdump diff (`tmp/csz/d.sh`) consult `build/src/<stem>.o`, and they
+consult it read-only.
+
+Standing rule: **no script may write into `build/src/`** — scratch goes to
+`tmp/` (or `/dev/shm`). A tool that overwrites the pristine reference before
+scoring makes the measurement circular; the `-G8` census defect of 2026-08-05
+is the cautionary case. The `build/cc1` paths in `tmp/csz/gn_*.sh` are the
+*compiler binary* under `tools/gcc-2.7.2/`, a different `build/` entirely, and
+are execute-only.
