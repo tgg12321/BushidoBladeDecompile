@@ -296,10 +296,15 @@ edges to its dependence graph, so the scheduler model never sees it.
 Two things worth carrying forward, because the *reasoning* was wrong even
 though the *answer* was right:
 
-1. **`write_stripped` is not a complete strip.** It removed the `(void)sp10;`
-   discard but left `volatile s32 sp10[8];` standing. Anything relying on
-   "stripped source == honest source" should verify per-construct rather than
-   assume; the third source state above had to be built by hand.
+1. **`write_stripped` was not a complete strip — FIXED 2026-08-06.** It removed
+   the `(void)sp10;` discard but left `volatile s32 sp10[8];` standing, so the
+   third source state above had to be built by hand. `engine/volatile_cheats.py`
+   now closes that gap generally (`find_orphaned_local_decls`): a local
+   declaration whose every remaining reference lies inside a span the stripper
+   already removes is stripped with it. `sandbox gnd_init_80041688 --disable all`
+   reports **8** directly, matching the hand-built state and confirming the 2 → 8
+   measurement below. The general caution still stands for constructs outside the
+   detector roster — verify per-construct rather than assume.
 2. **Frame-reserving cheats are invisible to the sched and RA graphs but not
    to the byte score.** Removing sp10 regresses the honest distance 2 → 8 at an
    unchanged 82 insns (per `fd1497f7`). A model can be perfectly honest for the

@@ -320,3 +320,11 @@
   [[phantom-slot-frame-lever]] diagnosis surface (find the honest producer of the
   8-word frame slot), not to the scheduler problem.
 - verdict: CONFIRMED
+- follow-up 2026-08-06: the 2 -> 8 measurement above needed a hand-built NOSP
+  variant because `write_stripped` removed the `(void)sp10;` discard but left the
+  declaration standing (GCC still reserved the 32 bytes, so the "honest" sandbox
+  reported 2). `engine/volatile_cheats.py:find_orphaned_local_decls` now strips a
+  declaration whose every remaining reference is itself stripped, and
+  `sandbox gnd_init_80041688 --disable all` reports **8** directly — the recorded
+  claim verified, no correction needed. The queue's recorded distance for this
+  function (2) is stale until the next `queue regen`.

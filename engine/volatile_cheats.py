@@ -583,6 +583,211 @@ def find_void_discard_unused_locals(text: str, body_lo: int, body_hi: int,
     return out
 
 
+# ORPHANED LOCAL DECLARATIONS — the strip-completeness closure.
+#
+# Several detectors above flag the USE of a coercion local rather than its
+# declaration: `(void)&name;` (find_addr_coerced_locals), `(void)name;`
+# (find_void_discard_unused_locals), and any construct whose stripped span
+# happens to contain the variable's only references (an `if (1) { ... }`
+# scaffold, a lowercase-`asm` block). The stripper removed the flagged
+# statement and left the DECLARATION standing — which is not a complete strip,
+# because GCC 2.7.2 reserves frame bytes for a declared local whether or not any
+# instruction touches it (see memory/project/phantom-frame-slots-gcc272.md). The
+# frame reservation IS the coercion in the whole `(void)x;` family, so leaving
+# the declaration leaves the cheat's entire effect in the "honest" build and the
+# cheat-invisible sandbox UNDER-reports the pure-C distance.
+#
+# Measured on gnd_init_80041688 (text1a.c, commits fd1497f7 / d42977db): body
+# declares `volatile s32 sp10[8];` and discards it with `(void)sp10;`. The
+# discard was stripped, the 32-byte array was not, and the function scored an
+# "honest" 2 against a true cheat-free distance of 8.
+#
+# The rule is the completeness closure, not a new detector: a local declaration
+# is stripped when every reference to it OUTSIDE its own declaration lies inside
+# a span the stripper is ALREADY removing. Then no live code can refer to it and
+# removing it cannot break compilation.
+#
+# Deliberately conservative — each exclusion below fails toward KEEPING the
+# declaration (a kept declaration is an under-strip, i.e. the sandbox stays as
+# optimistic as it is today; a wrongly-removed one would break the build or
+# alter live semantics). `orphaned_decl_audit` reports the kept cases with their
+# reason so the under-strip is visible rather than silent:
+#   * ZERO references at all — vacuously "all refs are stripped", but nothing
+#     ties it to a cheat construct. Flagging those would make every genuinely
+#     unused local a cheat, which is a separate policy question; this closure
+#     requires >= 1 reference INSIDE a stripped span.
+#   * An initializer (`s32 x = f();`) — dropping it could drop a side effect.
+#   * Multiple declarators (`s32 a, b;`) — the siblings may well be live.
+#   * struct/union member declarations, and `static` locals (no frame slot).
+_ORPHAN_DECL_RE = re.compile(
+    r"(?m)^[ \t]*(?P<quals>(?:(?:volatile|register|const|signed|unsigned)[ \t]+)*)"
+    r"(?P<type>(?:s8|s16|s32|s64|u8|u16|u32|u64|int|char|short|long|float|double)"
+    r"(?:[ \t]+(?:int|long|short|char))*)"
+    r"[ \t]+\**[ \t]*(?P<name>\w+)[ \t]*(?:\[[^\];]*\])*[ \t]*;[ \t]*$"
+)
+
+
+def find_orphaned_local_decls(
+    text: str, body_lo: int, body_hi: int,
+    stripped_spans: list[tuple[int, int]],
+    kept: list[tuple[str, str]] | None = None,
+) -> list[tuple[int, int, str]]:
+    """Local declarations inside the body whose every remaining reference is
+    itself being stripped. Returns (start, end, name).
+
+    `stripped_spans` are the absolute spans the stripper has already scheduled
+    for this body. A declaration qualifies only when it has at least one
+    reference inside those spans and NONE outside them — so removing it cannot
+    orphan live code. Declarations that are near-misses are appended to `kept`
+    as (name, reason) when a list is supplied.
+    """
+    body = text[body_lo:body_hi]
+    out: list[tuple[int, int, str]] = []
+    for m in _ORPHAN_DECL_RE.finditer(body):
+        name = m.group("name")
+        ds, de = body_lo + m.start(), body_lo + m.end()
+        if any(s <= ds and de <= e for s, e in stripped_spans):
+            continue  # the declaration itself is already inside a stripped span
+        if "static" in m.group("quals"):
+            if kept is not None:
+                kept.append((name, "static local — no frame slot"))
+            continue
+        if _is_inside_struct(body[:m.start()], body[m.start()] == "{"):
+            continue  # struct/union member, not a local
+        refs = [body_lo + r.start()
+                for r in re.finditer(rf"\b{re.escape(name)}\b", body)
+                if not (m.start() <= r.start() < m.end())]
+        if not refs:
+            continue  # zero-reference local — out of this closure's scope
+        outside = [r for r in refs
+                   if not any(s <= r < e for s, e in stripped_spans)]
+        if outside:
+            continue  # live uses remain — keep (silently: this is the norm)
+        out.append((ds, de, name))
+    if kept is not None:
+        _record_kept_orphan_candidates(text, body_lo, body_hi, stripped_spans, kept)
+    return out
+
+
+# Near-miss shapes the closure deliberately declines to strip. Matched only for
+# the audit report, so an under-strip is documented rather than invisible.
+_ORPHAN_DECL_INIT_RE = re.compile(
+    r"(?m)^[ \t]*(?:(?:volatile|register|static|const|signed|unsigned)[ \t]+)*"
+    r"(?:s8|s16|s32|s64|u8|u16|u32|u64|int|char|short|long|float|double)"
+    r"(?:[ \t]+(?:int|long|short|char))*"
+    r"[ \t]+\**[ \t]*(?P<name>\w+)[ \t]*(?:\[[^\];]*\])*[ \t]*"
+    r"(?P<tail>=[^;]+|,[^;]+);[ \t]*$"
+)
+
+
+def _record_kept_orphan_candidates(
+    text: str, body_lo: int, body_hi: int,
+    stripped_spans: list[tuple[int, int]],
+    kept: list[tuple[str, str]],
+) -> None:
+    body = text[body_lo:body_hi]
+    for m in _ORPHAN_DECL_INIT_RE.finditer(body):
+        name = m.group("name")
+        ds, de = body_lo + m.start(), body_lo + m.end()
+        if any(s <= ds and de <= e for s, e in stripped_spans):
+            continue
+        refs = [body_lo + r.start()
+                for r in re.finditer(rf"\b{re.escape(name)}\b", body)
+                if not (m.start() <= r.start() < m.end())]
+        if not refs:
+            continue
+        if any(not any(s <= r < e for s, e in stripped_spans) for r in refs):
+            continue
+        reason = ("initializer — may carry a side effect"
+                  if m.group("tail").startswith("=")
+                  else "multiple declarators — siblings may be live")
+        kept.append((name, reason))
+
+
+def _body_base_spans(text: str, body_lo: int, body_hi: int,
+                     params: list[str]) -> list[tuple[int, int]]:
+    """The per-body detector roster, BEFORE the orphaned-declaration closure.
+
+    SINGLE source of truth for that roster. It used to be spelled out three
+    times (find_all_cheats, strip_volatile_cheats_file,
+    func_volatile_cheat_count); the copies are exactly the kind of thing that
+    goes stale, and the strip-vs-detect gap the closure fixes was a version of
+    that drift.
+    """
+    spans: list[tuple[int, int]] = []
+    for s, e, _n in find_unused_local_arrays(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e, _n in find_addr_coerced_locals(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e, _n in find_void_discard_unused_locals(text, body_lo, body_hi, params):
+        spans.append((s, e))
+    for s, e, _n in find_volatile_unused_locals(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e in find_lowercase_asm_cheats(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e in find_always_true_if_scaffolds(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e, _c in find_empty_if_dead_reads(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e, _v, _r in find_dead_conditional_stores(text, body_lo, body_hi):
+        spans.append((s, e))
+    for s, e, _n in find_dead_param_assigns(text, body_lo, body_hi, params):
+        spans.append((s, e))
+    return spans
+
+
+def body_cheat_spans(text: str, body_lo: int, body_hi: int,
+                     params: list[str]) -> list[tuple[int, int]]:
+    """Every in-body cheat span the stripper removes for one function body:
+    the detector roster plus the orphaned-declaration closure, applied to
+    fixpoint so a declaration orphaned by another stripped declaration is
+    caught too."""
+    spans = _body_base_spans(text, body_lo, body_hi, params)
+    if not spans:
+        return spans
+    for _ in range(4):  # fixpoint; chains beyond 4 links do not occur in src/
+        new = [(s, e) for s, e, _n
+               in find_orphaned_local_decls(text, body_lo, body_hi, spans)]
+        if not new:
+            break
+        spans.extend(new)
+    return spans
+
+
+def _iter_func_bodies(text: str):
+    """Yield (fname, body_lo, body_hi, params) for each function DEFINITION."""
+    for m in re.finditer(r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(", text):
+        fname = m.group(1)
+        span = _func_body_span(text, fname)
+        if span is None or m.start() != span[0]:
+            continue
+        yield fname, span[0], span[1], _extract_func_params(text, span)
+
+
+def orphaned_decl_audit(text: str) -> dict:
+    """Accounting for the orphaned-declaration closure over one file:
+    `stripped` = declarations the closure removes, `kept` = near-misses it
+    deliberately leaves standing (with the reason), which are under-strips and
+    therefore keep the sandbox distance optimistic for those functions."""
+    stripped: list[dict] = []
+    kept: list[dict] = []
+    for fname, lo, hi, params in _iter_func_bodies(text):
+        # The pre-closure span set, so the report names the declarations the
+        # closure itself contributes rather than skipping them as already-covered.
+        spans = _body_base_spans(text, lo, hi, params)
+        if not spans:
+            continue
+        k: list[tuple[str, str]] = []
+        for s, e, name in find_orphaned_local_decls(text, lo, hi, spans, kept=k):
+            stripped.append({"func": fname, "name": name,
+                             "decl": text[s:e].strip()})
+        for name, reason in k:
+            kept.append({"func": fname, "name": name, "reason": reason})
+    return {"stripped": stripped, "kept": kept}
+
+
 # Dead-conditional-store: an assignment `<var> = <rhs>;` inside a control-flow
 # block (if/else/switch/loop/do) where the IDENTICAL `<var> = <rhs>;` also
 # appears at the enclosing function-body scope after the block. The inner
@@ -1037,40 +1242,10 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
     # Macro asm definitions (line-anchored)
     for s, e, _name in find_macro_asm_defs(text):
         out.append((s, e, s))
-    # Per-function unused-locals + dead-param-assigns. We need each func's body
-    # span and parameter list, so we iterate over function definitions.
-    for func_def_match in re.finditer(
-        r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(",
-        text,
-    ):
-        fname = func_def_match.group(1)
-        span = _func_body_span(text, fname)
-        if span is None:
-            continue
-        body_lo, body_hi = span
-        # Skip if this match isn't actually the def we located (multi-def file safety)
-        if func_def_match.start() != body_lo:
-            continue
-        params = _extract_func_params(text, span)
-        for s, e, _name in find_unused_local_arrays(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e, _name in find_addr_coerced_locals(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e, _name in find_void_discard_unused_locals(text, body_lo, body_hi, params):
-            out.append((s, e, s))
-        for s, e, _name in find_volatile_unused_locals(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e in find_lowercase_asm_cheats(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e in find_always_true_if_scaffolds(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e, _cond in find_empty_if_dead_reads(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e, _var, _rhs in find_dead_conditional_stores(text, body_lo, body_hi):
-            out.append((s, e, s))
-        for s, e, _name in find_dead_param_assigns(text, body_lo, body_hi, params):
+    # Per-function in-body cheats (unused locals, dead stores, orphaned
+    # declarations, ...) — one roster, shared with the strip path.
+    for _fname, body_lo, body_hi, params in _iter_func_bodies(text):
+        for s, e in body_cheat_spans(text, body_lo, body_hi, params):
             out.append((s, e, s))
     out.sort()
     return out
@@ -1161,38 +1336,8 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
     # Unused local arrays + dead-param assignments inside function bodies.
     # We iterate definitions to get their spans, then enumerate per-func.
     body_extra_spans: list[tuple[int, int]] = []
-    for func_def_match in re.finditer(
-        r"(?m)^[A-Za-z_][\w \t\*]*\b([A-Za-z_]\w*)\s*\(",
-        text,
-    ):
-        fname = func_def_match.group(1)
-        span = _func_body_span(text, fname)
-        if span is None:
-            continue
-        if func_def_match.start() != span[0]:
-            continue
-        body_lo, body_hi = span
-        params = _extract_func_params(text, span)
-        for s, e, _ in find_unused_local_arrays(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e, _ in find_addr_coerced_locals(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e, _ in find_void_discard_unused_locals(text, body_lo, body_hi, params):
-            body_extra_spans.append((s, e))
-        for s, e, _ in find_volatile_unused_locals(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e in find_lowercase_asm_cheats(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e in find_always_true_if_scaffolds(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e, _ in find_empty_if_dead_reads(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e, _, _ in find_dead_conditional_stores(text, body_lo, body_hi):
-            body_extra_spans.append((s, e))
-        for s, e, _ in find_dead_param_assigns(text, body_lo, body_hi, params):
-            body_extra_spans.append((s, e))
+    for _fname, body_lo, body_hi, params in _iter_func_bodies(text):
+        body_extra_spans.extend(body_cheat_spans(text, body_lo, body_hi, params))
 
     # Apply edits in reverse order.
     all_edits = []
@@ -1316,27 +1461,11 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     for s, e, name in find_macro_asm_defs(text):
         if name in used:
             counted_vol_positions.add(s)
-    # Unused local arrays + dead-param-assigns inside this function body.
+    # In-body cheats (unused locals, dead stores, orphaned declarations, ...) —
+    # the same roster the strip path removes, so the gate refuses exactly what
+    # the sandbox makes invisible.
     params = _extract_func_params(text, span)
-    for s, e, _name in find_unused_local_arrays(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e, _name in find_addr_coerced_locals(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e, _name in find_void_discard_unused_locals(text, lo, hi, params):
-        counted_vol_positions.add(s)
-    for s, e, _name in find_volatile_unused_locals(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e in find_lowercase_asm_cheats(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e in find_always_true_if_scaffolds(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e in find_empty_do_while_zero(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e, _cond in find_empty_if_dead_reads(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e, _var, _rhs in find_dead_conditional_stores(text, lo, hi):
-        counted_vol_positions.add(s)
-    for s, e, _name in find_dead_param_assigns(text, lo, hi, params):
+    for s, _e in body_cheat_spans(text, lo, hi, params):
         counted_vol_positions.add(s)
     return len(counted_vol_positions)
 

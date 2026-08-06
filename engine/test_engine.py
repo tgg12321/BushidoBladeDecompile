@@ -1047,9 +1047,15 @@ void j(void) {
     check("addr-coerced: strip removes the `(void)&stk_a;` line",
           "(void)&stk_a;" not in stripped)
 
-    # Wired-into-count check — counts the cheat
+    # Wired-into-count check — counts the cheat. TWO since 2026-08-06: the
+    # coercion statement AND the declaration it orphans (`s32 stk_a;` has no
+    # remaining reference once `(void)&stk_a;` is stripped, and leaving it
+    # standing left the frame reservation — the coercion's entire effect — in
+    # the "honest" build). See find_orphaned_local_decls.
     cnt = volatile_cheats.func_volatile_cheat_count(text5, "j")
-    eq("addr-coerced: func_volatile_cheat_count includes the coercion", cnt, 1)
+    eq("addr-coerced: func_volatile_cheat_count includes the coercion", cnt, 2)
+    check("addr-coerced: strip also removes the orphaned declaration",
+          "stk_a" not in volatile_cheats.strip_volatile_cheats_file(text5)[0])
 
 
 # --------------------------------------------------------------------------
@@ -1477,6 +1483,112 @@ def test_include_asm_whole_body() -> None:
        r_canon.get("completion"), "COMPLETED-INLINE-ASM-CANONICAL")
 
 
+def test_orphaned_local_decls() -> None:
+    """find_orphaned_local_decls — the strip-completeness closure (2026-08-06).
+
+    A detected construct whose stripped span held a local's only references
+    used to leave the DECLARATION standing, so GCC still reserved the frame
+    bytes and the cheat-invisible sandbox under-reported the honest pure-C
+    distance. Measured on gnd_init_80041688: stripped distance 2 vs true
+    cheat-free 8, the whole gap being a 32-byte volatile array (fd1497f7).
+    """
+
+    # Positive — the gnd_init shape: volatile array whose only use is a
+    # `(void)` discard the stripper already removes.
+    text = """\
+void f(void) {
+    s32 live;
+    volatile s32 sp10[8];
+
+    live = 1;
+    use(live);
+    (void)sp10;
+}
+"""
+    stripped, _n = volatile_cheats.strip_volatile_cheats_file(text)
+    check("orphan-decl: strips the declaration whose only use was a discard",
+          "sp10" not in stripped)
+    check("orphan-decl: leaves an unrelated live local alone",
+          "s32 live;" in stripped)
+    cnt = volatile_cheats.func_volatile_cheat_count(text, "f")
+    eq("orphan-decl: count covers discard + orphaned declaration", cnt, 2)
+
+    # Negative — a volatile local WITH real uses is not stripped. `hw` is read
+    # into a live value, so nothing about it is a frame-coercion cheat.
+    text2 = """\
+void g(void) {
+    volatile s32 hw;
+    s32 dead;
+
+    hw = read_reg();
+    sink(hw);
+    (void)dead;
+}
+"""
+    stripped2, _n2 = volatile_cheats.strip_volatile_cheats_file(text2)
+    check("orphan-decl: volatile local with real uses is KEPT",
+          "volatile s32 hw;" in stripped2)
+    check("orphan-decl: its real uses survive too", "sink(hw);" in stripped2)
+    check("orphan-decl: the genuinely orphaned sibling is still stripped",
+          "dead" not in stripped2)
+
+    # Negative — zero-reference locals are out of scope: the closure requires a
+    # reference INSIDE a stripped span, so a plain unused local stays.
+    text3 = """\
+void h(void) {
+    s32 never_used;
+    s32 dead;
+
+    (void)dead;
+}
+"""
+    stripped3, _n3 = volatile_cheats.strip_volatile_cheats_file(text3)
+    check("orphan-decl: zero-reference local is NOT claimed by the closure",
+          "s32 never_used;" in stripped3)
+
+    # Conservative keeps: an initializer may carry a side effect, and a
+    # multi-declarator statement may have live siblings. Both stay, and the
+    # audit reports them so the under-strip is visible.
+    text4 = """\
+void i(void) {
+    s32 sized = compute();
+    s32 a, b;
+
+    (void)sized;
+    if (1) {
+        a = b;
+    }
+}
+"""
+    stripped4, _n4 = volatile_cheats.strip_volatile_cheats_file(text4)
+    check("orphan-decl: initialized declaration is KEPT (side-effect safety)",
+          "s32 sized = compute();" in stripped4)
+    check("orphan-decl: multi-declarator statement is KEPT",
+          "s32 a, b;" in stripped4)
+    reasons = {(d["name"], d["reason"]) for d in
+               volatile_cheats.orphaned_decl_audit(text4)["kept"]}
+    check("orphan-decl: audit documents the initializer keep",
+          any(n == "sized" and "initializer" in r for n, r in reasons))
+    check("orphan-decl: audit documents the multi-declarator keep",
+          any(n == "a" and "declarator" in r for n, r in reasons))
+
+    # Struct members are not locals — a body-local struct definition must not
+    # have its members stripped.
+    text5 = """\
+void j(void) {
+    struct { s32 field; } s;
+    s32 dead;
+
+    s.field = 1;
+    sink(s.field);
+    (void)dead;
+}
+"""
+    stripped5, _n5 = volatile_cheats.strip_volatile_cheats_file(text5)
+    check("orphan-decl: struct member declaration is not treated as a local",
+          "s32 field;" in stripped5)
+
+
 def main() -> int:
     test_canonical()
     test_score()
@@ -1493,6 +1605,7 @@ def main() -> int:
     test_empty_do_while_zero()
     test_empty_if_dead_reads()
     test_void_discard_unused_locals()
+    test_orphaned_local_decls()
     test_dead_conditional_stores()
     test_fake_annotated_lever_d_bypass()
     test_metrics()
