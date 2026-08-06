@@ -605,12 +605,8 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 ang_hosei(s32 a0, s32 a1, s32 a2) {
-    (void)a0;
-    (void)a1;
-    (void)a2;
-    return 0;
-}
+extern s32 ang_hosei(s32, s32, s32);
+INCLUDE_ASM("asm/funcs", ang_hosei);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
 extern s32 D_800A2668;
