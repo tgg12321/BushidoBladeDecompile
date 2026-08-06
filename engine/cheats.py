@@ -82,6 +82,42 @@ def canonical_asm_funcs(path: str = INLINE_ASM_CANONICAL) -> set[str]:
             out.add(ln.split()[0])
     return out
 
+# An owner-sanctioned canonical-asm extraction wiring: a replace_with_asmfile
+# rule whose target function is authorized in inline_asm_canonical.txt.
+# Sanctioned [infra-rule: canonical-asm-extraction] (owner 2026-08-05, guard
+# dbfa90f6) as the TRANSITIONAL representation for canonical bodies extracted
+# to asm/funcs/ (the -G8 file-scope-asm float). Per the 2026-08-06 ruling it
+# is infrastructure DEBT (retired by the TU-resplit/INCLUDE_ASM campaign),
+# but it does not block COMPLETED-INLINE-ASM-CANONICAL status — mirroring the
+# guard's mechanical narrowness: replace_with_asmfile + canonical member ONLY.
+_CANON_EXTRACT_RE = re.compile(
+    r'^\s*([A-Za-z_]\w*)\s*:\s*replace_with_asmfile\s+"asm/funcs/[\w./-]+\.s"\s*$')
+
+
+def is_canonical_extraction_rule(line: str) -> bool:
+    """True iff `line` is a replace_with_asmfile wiring for a function
+    authorized in inline_asm_canonical.txt. Any other rule shape — or the
+    same shape targeting a non-canonical function — returns False."""
+    m = _CANON_EXTRACT_RE.match(line)
+    return bool(m) and m.group(1) in canonical_asm_funcs()
+
+
+def is_canonical_extraction_only(func: str) -> bool:
+    """True iff `func` carries at least one rule and EVERY rule keyed to it
+    (regfix + regfix2 + asmfix) is a canonical-extraction wiring. Such a
+    function is NOT complete (the wiring is infrastructure debt per the
+    2026-08-06 ruling — completion requires zero rules) and NOT per-function
+    grind work either: the wiring is retired by the INCLUDE_ASM/TU-resplit
+    campaign (docs/superpowers/specs/2026-08-06-tu-resplit-campaign.md).
+    The queue generator routes these to the `authorize` bucket (verdict
+    CANON-EXTRACT), mirroring the jtbl-infra precedent."""
+    lines = (func_rule_lines(func, REGFIX)
+             + func_rule_lines(func, REGFIX2)
+             + func_rule_lines(func, ASMFIX))
+    return bool(lines) and all(is_canonical_extraction_rule(ln)
+                               for _, ln in lines)
+
+
 # A lost-codegen insert: insert/insert_after whose body is an `addu` that writes
 # a register sourced from $zero/$0 — the instruction GCC's optimizer dropped
 # (const-prop / dead-store). These are asm injection: bytes not from C.

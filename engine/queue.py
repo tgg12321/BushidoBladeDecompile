@@ -170,6 +170,14 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # canonical jump-table rodata-split infra — needs a global rodata
                 # reorder (user-authorized), not per-function pure-C work.
                 verdict, status = "JTBL-INFRA", "authorize"
+            elif cheats.is_canonical_extraction_only(func):
+                # Authorized canonical body whose ONLY rule is the
+                # [infra-rule: canonical-asm-extraction] replace_with_asmfile
+                # wiring. Tracked debt (NOT complete — zero-rules bar), but
+                # not per-function grind work: the wiring is retired by the
+                # INCLUDE_ASM/TU-resplit campaign. Keep it visible outside
+                # the active lane, like jtbl-infra.
+                verdict, status = "CANON-EXTRACT", "authorize"
             else:
                 verdict = _route(verdicts.get(func, "C"), dist)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
@@ -219,6 +227,16 @@ def mark_done(func: str) -> dict:
         return {"ok": False, "func": func, "reason": "not in queue"}
     rules = _rule_count(func)
     if rules > 0:
+        if cheats.is_canonical_extraction_only(func):
+            return {"ok": False, "func": func,
+                    "reason": (f"{func} is canonical-authorized but its "
+                               f"replace_with_asmfile wiring is still in asmfix.txt "
+                               f"— transitional infrastructure debt (2026-08-06 "
+                               f"ruling; zero-rules bar). It is retired by the "
+                               f"INCLUDE_ASM/TU-resplit campaign "
+                               f"(docs/superpowers/specs/2026-08-06-tu-resplit-"
+                               f"campaign.md), not by queue done. The function "
+                               f"routes to CANON-EXTRACT/authorize on regen.")}
         return {"ok": False, "func": func,
                 "reason": (f"{rules} regfix/asmfix rule(s) still keyed to {func} — "
                            f"not COMPLETED-C")}

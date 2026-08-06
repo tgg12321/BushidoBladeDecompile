@@ -36,7 +36,7 @@ PROJECT_TITLE = "BB2 Decomp"
 ENGINE_STATUS_TO_COLUMN = {"active": "Backlog", "authorize": "Needs-Decision", "parked": "Blocked"}
 
 STATUS_OPTIONS = ["Backlog", "Needs-Decision", "Blocked", "In-Progress", "In-Review", "Done"]
-VERDICT_OPTIONS = ["C", "ASM-PARTIAL", "ASM-SUSPECT", "ASM-STRUCTURAL", "ASM-WHOLE", "JTBL-INFRA"]
+VERDICT_OPTIONS = ["C", "ASM-PARTIAL", "ASM-SUSPECT", "ASM-STRUCTURAL", "ASM-WHOLE", "JTBL-INFRA", "CANON-EXTRACT"]
 WIP_OPTIONS = ["yes", "no"]
 ACTIVE_COLUMNS = {"Backlog", "Needs-Decision", "Blocked"}
 

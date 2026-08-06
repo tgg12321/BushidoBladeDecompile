@@ -243,6 +243,33 @@ def test_cheats() -> None:
     check("is_lost_codegen: replace_with_asmfile is NOT",
           not cheats.is_lost_codegen('funcA: replace_with_asmfile foo'))
 
+    # canonical-extraction wiring recognition ([infra-rule: canonical-asm-
+    # extraction]): replace_with_asmfile + inline_asm_canonical.txt member
+    # ONLY. Uses a real canonical member (save_vc_ctrl, authorized 2026-06-07)
+    # so the check exercises the live list.
+    check("canon-extract: wiring for canonical member IS exempt",
+          cheats.is_canonical_extraction_rule(
+              'save_vc_ctrl: replace_with_asmfile "asm/funcs/save_vc_ctrl.s"'))
+    check("canon-extract: wiring for NON-canonical func is NOT exempt",
+          not cheats.is_canonical_extraction_rule(
+              'not_a_canonical_func_zz: replace_with_asmfile "asm/funcs/x.s"'))
+    check("canon-extract: non-wiring rule for canonical member is NOT exempt",
+          not cheats.is_canonical_extraction_rule(
+              'save_vc_ctrl: insert_after "addu $8,$3,$zero"'))
+    check("canon-extract: path outside asm/funcs is NOT exempt",
+          not cheats.is_canonical_extraction_rule(
+              'save_vc_ctrl: replace_with_asmfile "tmp/evil.s"'))
+    # The wiring still COUNTS as a rule for completion purposes (reviewer
+    # verdict 2026-08-06: zero-rules bar unchanged; the recognizer only
+    # routes wiring-only functions to the authorize bucket, never to done).
+    from engine import queue as _q
+    check("canon-extract: wiring-only func still has rule_count > 0",
+          _q._rule_count("save_vc_ctrl") > 0)
+    check("canon-extract: is_canonical_extraction_only(save_vc_ctrl)",
+          cheats.is_canonical_extraction_only(func="save_vc_ctrl"))
+    check("canon-extract: mark_done still REFUSES wiring-only func",
+          not _q.mark_done("save_vc_ctrl").get("ok"))
+
     with tempfile.TemporaryDirectory() as td:
         cfg = Path(td) / "regfix.txt"
         cfg.write_text(
