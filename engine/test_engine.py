@@ -1358,6 +1358,16 @@ def test_include_asm_whole_body() -> None:
     call_only = ('extern int foo(int);\nvoid bar(void) {\n    foo(1);\n}\n')
     eq("body-span: an indented call is still not a definition",
        inlineasm.func_cheat_asm_count(call_only, "foo"), -1)
+    # engine/volatile_cheats.py used to carry a verbatim COPY of the body span,
+    # which went stale the moment inlineasm's learned these shapes — leaving the
+    # same two functions policed by one detector and invisible to the other.
+    # One implementation, so the two can never diverge again.
+    check("body-span: volatile_cheats delegates to the single implementation",
+          volatile_cheats._func_body_span(brace_prefixed, "func_8007DE08")
+          == inlineasm._func_body_span(brace_prefixed, "func_8007DE08")
+          is not None)
+    check("body-span: volatile_cheats sees the K&R shape too",
+          volatile_cheats._func_body_span(knr, "func_8004A1FC") is not None)
 
     # 4. generate(): a negative (UNKNOWN) count must NOT drop an item, and a
     #    measured-zero count still must.

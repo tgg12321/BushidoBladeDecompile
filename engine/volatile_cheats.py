@@ -1244,59 +1244,19 @@ def write_stripped(stem: str, out_path: str) -> int:
 
 
 def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
-    """Locate `func`'s DEFINITION body. Splat-generated src/*.c put each
-    definition at column 0; calls and nested references are indented. We must
-    skip extern declarations (`extern T func(args);`) which match the same
-    column-0 pattern — these are recognised by the FIRST non-whitespace after
-    the closing `)` being `;` (declaration) rather than `{` (definition)."""
-    import re as _re
+    """Locate `func`'s DEFINITION body — delegates to the single implementation
+    in engine.inlineasm.
 
-    pattern = _re.compile(r"(?m)^[A-Za-z_][\w \t\*]*\b" + _re.escape(func) + r"\s*\(")
-    for m in pattern.finditer(text):
-        # Walk forward to the matching `)` of the opening `(`.
-        i, n = m.end(), len(text)
-        depth = 1  # we matched the opening `(`
-        in_str = False
-        while i < n and depth > 0:
-            c = text[i]
-            if in_str:
-                if c == "\\":
-                    i += 2
-                    continue
-                if c == "\"":
-                    in_str = False
-            elif c == "\"":
-                in_str = True
-            elif c == "(":
-                depth += 1
-            elif c == ")":
-                depth -= 1
-            i += 1
-        if depth != 0:
-            continue
-        # Now i is past the closing `)`. Skip whitespace and find next non-ws.
-        j = i
-        while j < n and text[j] in " \t\n\r":
-            j += 1
-        if j >= n:
-            continue
-        if text[j] == ";":
-            continue  # declaration, not definition
-        if text[j] != "{":
-            continue  # weird; skip
-        # Match the closing `}` of the body.
-        brace = j
-        depth, k = 0, brace
-        while k < n:
-            c = text[k]
-            if c == "{":
-                depth += 1
-            elif c == "}":
-                depth -= 1
-                if depth == 0:
-                    return (m.start(), k + 1)
-            k += 1
-    return None
+    This was a verbatim COPY of that function until 2026-08-06. The copy silently
+    went stale: when inlineasm's span learned the two real definition shapes it
+    had been missing (a definition sharing a line with the previous function's
+    closing brace, and old-style K&R parameter declarations), this one kept the
+    narrow pattern — so display.c's func_8007DE08 and text1b.c's func_8004A1FC
+    were policed by the inline-asm detector but still invisible to the VOLATILE
+    detector. One span, one behaviour.
+    """
+    from . import inlineasm  # local import: inlineasm imports this module lazily
+    return inlineasm._func_body_span(text, func)
 
 
 def _names_used_in_body(text: str, lo: int, hi: int) -> set[str]:
