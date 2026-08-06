@@ -607,6 +607,7 @@ __asm__(
 );
 extern s32 ang_hosei(s32, s32, s32);
 INCLUDE_ASM("asm/funcs", ang_hosei);
+INCLUDE_ASM("asm/funcs", _start);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
 extern s32 D_800A2668;
