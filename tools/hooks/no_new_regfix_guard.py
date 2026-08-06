@@ -71,6 +71,16 @@ SANCTIONED_CATEGORIES = {
     # reverted commit + the verdict. User decision 2026-06-10 (saFidLoad
     # retroactive-audit revert).
     "reviewer-fail-revert",
+    # canonical-asm-extraction: wiring an ALREADY-AUTHORIZED whole-body
+    # canonical-asm function out of a file-scope __asm__ block into an
+    # asm/funcs/<f>.s file via a `replace_with_asmfile` rule. Owner-sanctioned
+    # 2026-08-05 (text1b extraction) with a MECHANICAL narrowness check
+    # (check_canonical_extraction): every added rule must be a
+    # replace_with_asmfile whose target is listed in inline_asm_canonical.txt
+    # at commit time — so the category cannot smuggle asm for functions the
+    # owner never authorized. Representation-only; byte-neutrality is the
+    # oracle's job.
+    "canonical-asm-extraction",
 }
 
 # Files under guard. The hook silently passes if neither is in the staged diff.
@@ -255,6 +265,48 @@ def main(msg_path: str) -> int:
 
     # Net additions detected. Check for the escape hatch.
     tag = find_infra_tag(body)
+    if tag == "canonical-asm-extraction":
+        # Narrow category: every ADDED rule line must be a
+        # replace_with_asmfile whose target function is already listed in
+        # inline_asm_canonical.txt (staged version). Anything else is a
+        # smuggling attempt — block.
+        try:
+            auth_txt = subprocess.run(
+                ["git", "show", ":inline_asm_canonical.txt"],
+                capture_output=True, text=True).stdout
+        except OSError:
+            auth_txt = ""
+        if not auth_txt:
+            auth_txt = Path("inline_asm_canonical.txt").read_text(
+                encoding="utf-8", errors="replace")
+        authorized = {ln.split()[0] for ln in auth_txt.splitlines()
+                      if ln.strip() and not ln.lstrip().startswith("#")}
+        extract_re = re.compile(
+            r"^([a-zA-Z_][a-zA-Z_0-9]*):\s*replace_with_asmfile\s")
+        bad = []
+        for line in diff.splitlines():
+            if not line.startswith("+") or line.startswith("+++"):
+                continue
+            added = line[1:]
+            if not RULE_LINE_RE.match(added):
+                continue
+            m = extract_re.match(added)
+            if not m or m.group(1) not in authorized:
+                bad.append(added.strip())
+        if bad:
+            print(
+                "no_new_regfix_guard: BLOCKED — [infra-rule: "
+                "canonical-asm-extraction] only covers replace_with_asmfile "
+                "rules whose target is ALREADY in inline_asm_canonical.txt. "
+                "Offending added line(s):", file=sys.stderr)
+            for b in bad[:10]:
+                print(f"  {b}", file=sys.stderr)
+            return 1
+        print(
+            f"no_new_regfix_guard: ALLOW — {net} replace_with_asmfile "
+            f"line(s), all targets verified in inline_asm_canonical.txt "
+            f"[infra-rule: canonical-asm-extraction]", file=sys.stderr)
+        return 0
     if tag is not None:
         if tag in SANCTIONED_CATEGORIES:
             print(
