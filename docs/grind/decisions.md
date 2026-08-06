@@ -3579,3 +3579,22 @@ per-site, (b) the reorder is genuinely independent (no observable semantic chang
 (c) a FRESH layer-2 passes on the explained version. Gate sequence: explain the
 sinB mechanism via .combine/.flow dumps FIRST; only then re-submit. Owner may
 override; nothing lands before the fresh layer-2 PASS.
+
+## 2026-08-06 — owner rulings on the pending shelf (four items)
+
+1. **func_80021280** — owner directs option (c): a targeted SOTN evidence pass on the
+   duplicated-statement family's actual base (doors.c, unk_365FC.c "identical
+   multi-statement blocks") to determine whether control-transfer duplication appears.
+   Ruling follows the evidence; function stays parked meanwhile.
+2. **hirahira_w_ctrl_2 store-relocation family** — owner directs an SOTN evidence pass
+   (2026-06-02 borderline-research methodology): does matched SOTN code relocate real
+   stores for combine/codegen effect? Sanction with prerequisites if evidence exists;
+   otherwise the double-FAIL stands with authority. Floor 62 banked meanwhile.
+3. **RA-locked endgames (prologue twins func_8007C2A0/C4B8, saTan4FireDisp)** — owner
+   directs building the reload/retry solver: extend tools/ra_solver with a reload1.c
+   model of the find_reg retry path (the one unmodeled allocation stage; every banked
+   proof points there). Functions stay parked until the model produces perturbation
+   answers.
+4. **func_8006BD28** — owner rules: leave authorized (the 2026-06-07 decision stands).
+
+[skip-park-src-guard]
