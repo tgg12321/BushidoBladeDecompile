@@ -272,12 +272,36 @@ def convert_source(text: str, func: str) -> tuple[str, str]:
                     f"  (=> at least {floor} argument(s))\n"
                     f"Hand-verify against asm/funcs/{func}.s and "
                     f"include/m2c_context.h, fix the declaration, then re-run.")
-            decl = f"{head};\n"
+            # Mark it unverified IN SOURCE. The header is restated verbatim so
+            # cc1's input is unchanged, but it is the stub's signature and
+            # nothing ever checked it — text1b's func_800693CC declares four
+            # parameters while the asm reads one argument register, m2c says
+            # `void f(void)`, and the call site passes none. The ledger already
+            # carries a do-not-trust note; src/ is the file the next
+            # decompiler actually reads, so the caveat belongs here too.
+            # Comments cost no bytes, and if someone later writes the true
+            # signature the failure is a loud compile error, not silence.
+            # Say what the floor MEANS. It is an o32 argument-index bound, not a
+            # register tally: func_800693CC reads only $a1, which proves a
+            # SECOND argument exists and says nothing about the first.
+            floor_txt = (f"the asm proves at least {floor} argument(s)" if floor
+                         else "the asm reads no argument registers")
+            decl = (f"/* Signature UNVERIFIED — restated verbatim from the "
+                    f"pre-INCLUDE_ASM stub so cc1's\n"
+                    f" * input is unchanged for the caller(s) below; "
+                    f"{floor_txt}. See\n"
+                    f" * memory/grind/{func}/pre-include-asm-body.c. */\n"
+                    f"{head};\n")
     return text[:lo] + decl + f'INCLUDE_ASM("asm/funcs", {func});' + text[hi:], body
 
 
 def drop_asmfix_rule(text: str, func: str) -> str:
-    pat = re.compile(rf'(?m)^{re.escape(func)}:\s*replace_with_asmfile\s+"[^"]+"\s*\n')
+    # `[ \t]*\n`, NOT `\s*\n`: `\s` matches newlines, so a rule followed by a
+    # blank line had that blank consumed too. Wave 6e was the first to hit it
+    # (0 additions / 39 deletions for 37 rules) and it ate the separator before
+    # the `# func_80070C70: asmfix-slice` section header. Inert — asmfix's
+    # parser skips blanks — but it silently edits lines the wave never claimed.
+    pat = re.compile(rf'(?m)^{re.escape(func)}:\s*replace_with_asmfile\s+"[^"]+"[ \t]*\n')
     new, n = pat.subn("", text)
     if n != 1:
         raise SystemExit(f"{func}: expected exactly 1 replace_with_asmfile rule, found {n}")
