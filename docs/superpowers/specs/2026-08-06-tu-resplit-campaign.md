@@ -455,6 +455,52 @@ suite pins. 33 carry the stack-arg hint but only one of them blocks.
 **Wave 6 is therefore not wholesale-blocked** — `text1b`'s 136 targets contain
 exactly 3 blockers. The helper's whole-run abort still stands as the guard; this
 table is what unblocks it case by case.
+
+### Wave 5 CLOSED at 44/48 — four functions DELIBERATELY RETAINED (owner ruling 2026-08-06)
+
+Wave 5 is COMPLETE. 44 of its 48 targets converted; the remaining **four are not
+missed, skipped or blocked — they are deliberately retained** as pure-C decomp
+targets. Any later session reading this must not "finish" them without a fresh
+owner ruling.
+
+| retained function | TU | distance | verdict |
+|---|---|---:|---|
+| `func_80089F3C` | main | 20 | C |
+| `DispPracticeMenuTex_A` | code6cac | 32 | C |
+| `SetPacketData` | main | 34 | C |
+| `saTan2KabutoWareMove` | code6cac_b | 44 | C |
+
+**The finding.** All four are NEAR-MATCHABLE pure-C targets, not stalled ones.
+Converting one (`DispPracticeMenuTex_A`) was measured to move it from 32/C to
+231/ASM-PARTIAL; that conversion was reverted.
+
+**The ruling and its rationale.** The campaign is representation honesty IN
+SERVICE OF 100% decompiled, so it must never de-prioritise the project's closest
+work. Three things make these four different from the 58 stubs:
+
+1. `engine/queue.json` is ordered easiest-first and the Grinder works the top. A
+   distance-20 verdict-C function sits at the front of the active lane; at 200+
+   under ASM-PARTIAL it does not.
+2. For a near-matchable function the fastest route to zero-asmfix is
+   **COMPLETED-C itself** — `retire` deletes the wiring anyway, so holding
+   reaches the same endpoint with no conversion round-trip. **Holding costs
+   nothing at the endpoint.**
+3. The stub's measured distance is the project's best signal about that draft.
+   Converting destroys the signal AND buries the function.
+
+For the 58 stubs there was no tension: their bodies were placeholders carrying no
+signal. For these four the honest-source gain and the decomp-signal loss point in
+opposite directions.
+
+**Disposition.** Convert one of these four ONLY if a future Grinder session
+stalls it, and record why. `PutRobShadow` (236/ASM-SUSPECT) and
+`cpu_check_run_attack` (170/ASM-PARTIAL) were NOT in this set and were converted
+normally — layer-2 independently placed `PutRobShadow` at rank 169/265 among
+active items, safely outside the near-matchable band.
+
+**Status: this ruling is ON THE OWNER SHELF for confirmation.** It interprets the
+owner's campaign directive against their queue-ordering directive, and the team
+lead chose the reading that serves the decomp goal. It is not owner-confirmed.
 | 8 | pipeline | — | Blocked on tier-1 (12 functions of real decomp). When `asmfix.txt` is empty: drop the `ASMFIX` stage from the Makefile pipeline, retire `tools/asmfix.py`, drop it from `PIPELINE_DEPS`, and update `engine/cheats.py` + `CLAUDE.md`. |
 
 ### Wave 7 recipe — `text1a` / `save_vc_ctrl` (0x80041434)
