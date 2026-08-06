@@ -3723,3 +3723,24 @@ injection templates — the live hardcoded-$N templates and register pins in
 func_8004C388 / func_80052788 / func_80052930 / func_80052B00 are DELETED by
 the conversion); each commit oracle-gated + fresh layer-2 per
 review-discipline; regen realizes the completions (the drop).
+
+## 2026-08-06 — execution record + evidence CORRECTION on the 9-unit grant
+
+8 of 9 granted units landed (7dcd8302 split, 291af521 LIBGTE x4, 73a2c68f
+trapping pair, 5813b586 ang_hosei+_start listings; regen 7b35d5a1 realized 7
+queue completions; oracle green at every gate; project now 1012 COMPLETED-C +
+177 CANONICAL = 1189/1410).
+
+**func_80052930: ATTEMPTED, REVERTED on layer-2 FAIL — grant evidence did not
+survive verification.** Corrections to the packet and to the grant entry above:
+(a) the "$t9 mask live across 55-60 insns for three uses" claim is FALSE —
+measured: set once, used TWICE, 36-insn range; (b) splat's `/* handwritten
+instruction */` tag is a generic cop2 decoder artifact (153 files, incl.
+island-doctrine functions), not provenance evidence. Remaining signal is the
+mvmva-interleave precedent (STRONG-not-DECISIVE) + an 11-pin RA-wall symptom
+that no-new-park-categories routes to more search. Orchestrator recommendation
+REVERSED to not-authorize-now; owner ruling pending. The 8 landed units are
+unaffected — their reviewers decoded decisive signals (delay-slot cop2 via
+reorg.c; trapping opcode bit patterns) from instruction words, not tags.
+
+[skip-park-src-guard]
