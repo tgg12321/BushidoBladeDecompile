@@ -1,8 +1,32 @@
 {
-  "generated_at": "2026-08-04T00:31:05",
+  "generated_at": "2026-08-05T23:22:08",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "saEft00Add",
+      "file": "system",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "AllocRobRmd",
+      "file": "text1a",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "save_vc_ctrl",
+      "file": "text1a",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 1,
+      "status": "active"
+    },
     {
       "func": "func_80044CCC",
       "file": "text1a_c",
@@ -82,14 +106,6 @@
       "distance": 20,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "PutShadowRmd",
-      "file": "text1a",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 3,
       "status": "active"
     },
     {
@@ -186,6 +202,14 @@
       "distance": 22,
       "verdict": "C",
       "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "PutShadowRmd",
+      "file": "text1a",
+      "distance": 22,
+      "verdict": "C",
+      "rules": 3,
       "status": "active"
     },
     {
@@ -372,7 +396,7 @@
       "file": "text1a",
       "distance": 27,
       "verdict": "C",
-      "rules": 18,
+      "rules": 16,
       "status": "active",
       "prologue_fix": 1
     },
@@ -421,7 +445,7 @@
       "func": "func_8004C388",
       "file": "text1b",
       "distance": 29,
-      "verdict": "C",
+      "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
     },
@@ -522,14 +546,6 @@
       "status": "active"
     },
     {
-      "func": "func_80040D48",
-      "file": "text1a",
-      "distance": 34,
-      "verdict": "C",
-      "rules": 34,
-      "status": "active"
-    },
-    {
       "func": "cpu_side_move_dir",
       "file": "code6cac_b",
       "distance": 35,
@@ -558,7 +574,7 @@
       "file": "text1a_c2",
       "distance": 35,
       "verdict": "C",
-      "rules": 16,
+      "rules": 10,
       "status": "active"
     },
     {
@@ -821,8 +837,16 @@
       "func": "ang_hosei",
       "file": "ings2",
       "distance": 50,
-      "verdict": "C",
+      "verdict": "ASM-PARTIAL",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80040D48",
+      "file": "text1a",
+      "distance": 50,
+      "verdict": "C",
+      "rules": 34,
       "status": "active"
     },
     {
@@ -959,7 +983,7 @@
       "file": "text1b",
       "distance": 79,
       "verdict": "ASM-SUSPECT",
-      "rules": 41,
+      "rules": 29,
       "status": "active"
     },
     {
@@ -2537,15 +2561,15 @@
     }
   ],
   "counts": {
-    "total": 301,
-    "active": 264,
+    "total": 304,
+    "active": 267,
     "by_status": {
-      "active": 264,
+      "active": 267,
       "parked": 37
     },
     "by_verdict": {
       "C": 87,
-      "ASM-PARTIAL": 43,
+      "ASM-PARTIAL": 46,
       "ASM-SUSPECT": 108,
       "ASM-STRUCTURAL": 26
     }

@@ -116,6 +116,13 @@ def _detect(dlines) -> tuple[list, int, int]:
         # the generic coprocessor mnemonic "c2  0x......" (e.g. 4aa00428 = c2).
         elif _GTE.match(mn) or mn in ("c2", "cop2"):
             reason = f"GTE/cop2 op ({mn})"
+        # Trapping-overflow arithmetic: GCC 2.7.2 emits only the unsigned
+        # forms (addu/addiu/subu) from C. Verified empirically 2026-08-05:
+        # every function in build/bb2.elf containing add/addi/sub is either
+        # canonical-listed hand-asm (70) or unresolved asm debt (3) — zero
+        # compiled-C functions fire this signal.
+        elif mn in ("add", "addi", "sub"):
+            reason = f"trapping-overflow op ({mn}) — no GCC 2.7.2 C form"
         if reason:
             hits.append((idx, mn, reason))
         idx += 1
