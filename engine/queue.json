@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saEft00Add",
-      "file": "system",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "AllocRobRmd",
       "file": "text1a",
       "distance": 1,
@@ -2561,14 +2553,14 @@
     }
   ],
   "counts": {
-    "total": 304,
-    "active": 267,
+    "total": 303,
+    "active": 266,
     "by_status": {
-      "active": 267,
+      "active": 266,
       "parked": 37
     },
     "by_verdict": {
-      "C": 87,
+      "C": 86,
       "ASM-PARTIAL": 46,
       "ASM-SUSPECT": 108,
       "ASM-STRUCTURAL": 26
