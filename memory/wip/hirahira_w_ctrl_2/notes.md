@@ -14,12 +14,25 @@ regs=2/0` == target, and `retire` dropped **all 63 regfix rules** with full-buil
 pre-existing volatile-coercion cheat. Tree was reverted (`src/text1a_c.c` + `regfix.txt`)
 and `verify-oracle` re-confirmed `build_matches: true`.
 
-**Layer-2 `cheat-reviewer` returned FAIL.** Three grounds, all fair:
-1. No `/* FAKE */` annotations on the staging locals or the relocated store.
-2. No lever-exhaustion ledger for this exact form (round-2 notes said "do NOT commit").
-3. **The substantive one — my stated mechanism does not explain `sinB`.** See below.
-Per [[review-discipline-before-commit]] a FAIL is never bypassed. Escalated to the owner
-for a construct ruling; do not re-submit without resolving item 3.
+**TWO independent layer-2 `cheat-reviewer` runs both returned FAIL. Do not re-submit
+this construct without an owner-confirmed sanctioning pass.**
+
+Round-3 FAIL (three grounds): no annotations; no lever-exhaustion ledger; and **the
+stated mechanism did not explain `sinB`**. The third was correct and I resolved it
+(mechanism now fully derived from the RTL — see below).
+
+Round-4 FAIL (fresh reviewer, mechanism explained, annotations written, owner's
+provisional ruling disclosed to it): it FAILED on tests 1/2/3/4/5 and stated that the
+owner's ruling, being provisional, **cannot substitute for an independent clearance or
+for a completed SOTN-evidence pass for this family**. Its decisive point is test 3:
+the entire justification — mine and the in-source comment's — is `combine.c` internals
+(LOG_LINKS, `can_combine_p`, insn numbers, sched1's hoist), not program logic, and
+resolving `sinB` "doubles down on the exact defect rather than curing it". It also
+notes the form was found by probe search and rationalised afterwards.
+
+`next_action`: revert (done), keep the function INCOMPLETE, and if the family is to be
+sanctioned it needs its own SOTN-master-branch evidence pass submitted SEPARATELY from
+any match commit and owner-confirmed first.
 
 ## Baselines
 
@@ -63,27 +76,40 @@ Measured constraints, in the order they were discovered:
 Probe ladder: probe1 (flip confirmed, +2 param loads) -> probe2 (3 `lh`/3 `lhu`, 121 insns)
 -> probe3 (vars 40, 30/119) -> probe3+cosAstage (19/120) -> **probe5 (0/122)**.
 
-## THE OPEN MECHANISM QUESTION (blocks re-submission)
+## The mechanism, now fully derived (round 4) — TWO sub-mechanisms, not one
 
-In `candidate_0` the store sits **after** `sinB`'s own cast:
-```c
-sinB = (s16)rawB;
-a1[2] = sinB;
-sinC = (s16)rawC;  sinA = (s16)rawA;  cosA = (s16)rawcosA;
-```
-By the cited mechanism only `rawC`/`rawA`/`rawcosA` are protected — yet the load census
-shows **`sinB` is `lhu` too** (`lhu $11,Judge($6)`), and removing the store reverts
-everything to 62/116. So the store is load-bearing for `sinB` as well, by some route that
-"a memory write between the load and the cast" does not describe. Until that is explained,
-this is an empirically-found arrangement, not an understood technique, and the reviewer is
-right to refuse it. Resolve by dumping `.combine` / `.flow` for `rawB`'s pseudo and finding
-what actually blocks `simplify_shift_const` — do NOT re-submit on the analogy alone.
+From the candidate's `.combine` dump (`wsl bash tmp/csz/gn_da.sh text1a_c`, then
+`wsl python3 tmp/csz/hw_rtl.py tmp/csz/rtl_text1a_c/text1a_c.i.combine hirahira_w_ctrl_2`):
+
+- **sinB — multi-use, not the memory barrier.** `a1[2] = sinB;` stores 16 bits of a
+  sign-extension of `rawB`, which IS `rawB`, so RTL-gen emits the store as a direct use of
+  the HImode variable: insn 113 is
+  `(set (mem/s:HI (plus (reg/v:SI 73) (const_int 4))) (reg/v:HI 77))`. `rawB` (reg 77) then
+  has two uses — insn 113 and the shift at insn 126 — so **no LOG_LINK is built from 126
+  back to the load at insn 29 (insn 126's LOG_LINKS is literally `(nil)`)** and combine
+  never attempts the fold.
+- **sinC / sinA / cosA — the sibling's barrier.** Their casts sit after insn 113, so
+  `can_combine_p` refuses to fold the MEM load across an insn that may write memory.
+
+**Control (decisive):** move `a1[2] = sinB;` back to the tail, everything else identical →
+the `.combine` dump shows **6x `sign_extend(mem)` and ZERO surviving `movhi` loads**, and
+the `a1[2]` store becomes `(subreg:HI (reg:SI 153) 0)` — it consumes the already
+sign-extended value, so `rawB` has a single use. Score 0 -> 62, insns 122 -> 116.
+
+## Standing observation for whoever picks this up
+
+Target's own bytes contain `lhu` + `sll 16` + `sra 16` at four sites. Our compiler folds
+that chain to `lh` whenever the load has a single use and no memory write intervenes. So
+**the original source must itself have contained something that prevented the fold** — the
+question is not whether to prevent it but what natural C did so. That does not make the
+current construct acceptable (two reviewers say it is not); it means the search should look
+for the program-logic shape that has this effect, per the round-4 `next_action`.
 
 ## Next
 
-1. Explain `sinB` (above). That is the gate.
-2. Then: `/* FAKE */` annotations naming the exact pass per site, and an owner ruling on
-   whether relocating a REAL required store for combine effect is a sanctioned family or a
-   new one needing its own SOTN evidence pass ([[review-discipline-before-commit]]: a new
-   family never ships in the match commit).
-3. **Do NOT commit src.** Owner runs the gate.
+1. Do NOT re-submit the store-relocation + staging form. Two independent FAILs.
+2. If the family is to be sanctioned: a separate SOTN-master-branch evidence pass, its own
+   review, owner-confirmed, BEFORE it can back any completion
+   ([[review-discipline-before-commit]] — never in the match commit).
+3. Otherwise keep searching for a program-logic-motivated structure. Honest floor stays 62.
+4. **Do NOT commit src.** Owner runs the gate.
