@@ -527,3 +527,39 @@ removes the dishonesty the ruling named (a C body compiled and silently discarde
 **not** decompile anything: those 140 stay INCOMPLETE and queue-active. Worth confirming
 the owner reads that as progress on representation rather than as a change in completion
 status — the queue count does not move.
+
+### Execution record — Wave 5 close-out (2026-08-06, orchestrator ruling). READ BEFORE WAVE 6.
+
+**Wave 5 is COMPLETE at 44/48 — four functions DELIBERATELY RETAINED, not missed:**
+`func_80089F3C` (distance 20, verdict C), `DispPracticeMenuTex_A` (32, C),
+`SetPacketData` (34, C), `saTan2KabutoWareMove` (44, C).
+
+**The ruling (option b of the executor's escalation, flagged to the owner shelf):**
+these four "substantial stubs" turned out to be NEAR-MATCHABLE drafts — among the
+closest-to-done functions in the project. The campaign is representation honesty
+IN SERVICE OF 100% decompiled; converting them would have (a) destroyed the
+project's best closeness signal (measured: DispPracticeMenuTex_A went 32/C →
+231/ASM-PARTIAL when trial-converted, then reverted), and (b) relocated the
+most-finished work from the front of the easiest-first active lane to 200+.
+Their asmfix wirings retire via ordinary COMPLETED-C (retire deletes the rule),
+so holding costs NOTHING at the endpoint. Convert one of these ONLY if a future
+Grinder session stalls it, and record why.
+
+**Wave 5 landed:** 5f790252 / 80afc987 / 39454a52 (batches, waves 2-4 report),
+7b2d0931 (probe_func_labels doc fix), dcbfa6d6 (SetPacketData dead rules),
+d87b092e + a9bc1749 + e5b118da (generator: stack-arg counting, forbidden-construct
+ledger warnings incl. the volatile-coercion address classifier), d9caa6c9
+(cpu_check_run_attack — ledger carries 4 pins / 6 hardcoded-$N / 34 .word behind
+an explicit archaeology-not-resume-point warning), b1517c75 (PutRobShadow —
+ledger carries 49 scratchpad volatile-coercion casts; note the load-bearing
+dead-store pair at 0x1F800360 materializing target's redundant sw).
+
+**State at close:** asmfix.txt 170 rule lines / 141 replace_with_asmfile (from
+237/205). Queue untouched at 367 — regen checkpoint is the orchestrator's.
+mk_leaf_newpos needs NO repair (named-anchor rule absorbs drift — measured both
+ways against the oracle; but its asmfix.txt:32 tier-1 rule is now load-bearing
+for that protection). Wave 6 (text1b, 136 targets incl. the 65-canonical payoff
+set) has exactly 2 HAND declaration blockers (func_800693CC, func_8006B578 —
+probe arity 1 vs m2c `void f(void)`; resolve from the prologue) + 1 CORROBORATED
+adoption (func_8006B120). Wave 7 = save_vc_ctrl TU re-split. Wave 8 gated on
+tier-1 (now 29 lines across 12 functions + the 4 retained near-matches' wirings).
