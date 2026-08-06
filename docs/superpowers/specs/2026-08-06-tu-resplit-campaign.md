@@ -181,18 +181,66 @@ reason. Do not start Wave 7 until that work has landed and `verify-oracle` is gr
 `.include`), but a TU split would need both lists extended for the new stems — one more
 reason to prefer the in-place route.
 
-**R6 — engine/tooling awareness.** `engine/cheats.py` counts asmfix rules per function and
-`engine/canonical.py` gates on them. A whole-body `INCLUDE_ASM` is cheat-asm by the
-detectors' definition, so:
-- the 66 canonical-authorized functions must stay listed in `inline_asm_canonical.txt` —
-  they then reach **COMPLETED-INLINE-ASM-CANONICAL with zero rules**, which is the whole
-  point of the ruling;
-- the 140 unauthorized ones stay **INCOMPLETE** in `engine/queue.json`, correctly — they are
-  undecompiled. The change is that their INCOMPLETE state is now honestly represented in
+**R6 — engine/tooling awareness.** *(CORRECTED 2026-08-06 after the Wave 1 pilot. The
+original text is preserved at the end of this section; all three of its claims were
+measurably FALSE, and acting on them would have silently deleted ~140 undecompiled
+functions from the queue.)*
+
+`engine/cheats.py` counts asmfix rules per function and `engine/canonical.py` gates on
+them. The intended end state is unchanged:
+
+- the 66 canonical-authorized functions stay listed in `inline_asm_canonical.txt` — they
+  then reach **COMPLETED-INLINE-ASM-CANONICAL with zero rules**, which is the whole point
+  of the ruling;
+- the 140 unauthorized ones stay **INCOMPLETE** in `engine/queue.json` — they are
+  undecompiled. What changes is that their INCOMPLETE state is now honestly represented in
   source (SOTN's `INCLUDE_ASM` / `NON_MATCHING` state) instead of a build-time text
   substitution.
-- `sandbox --disable all` strips cheat-asm before scoring, so the honest pure-C distance
-  metric is unaffected by the conversion. Confirm with `engine test` after Wave 1.
+
+**But none of that was true of the engine as it stood.** Measured on the pilot:
+
+| Claim in the original R6 | Measured before the fix |
+|---|---|
+| "a whole-body `INCLUDE_ASM` is cheat-asm by the detectors' definition" | FALSE — `engine/inlineasm.py` runs on UNEXPANDED source and `cia.ASM_KEYWORD_RE` matches only `__asm__`/`__asm`. `INCLUDE_ASM(...)` is a macro INVOCATION: zero matches, never a candidate. It only becomes `__asm__` after cpp, which the stripper never runs. |
+| "the 140 unauthorized ones stay INCOMPLETE, correctly" | FALSE — with no C body, `file_func_cheat_asm_count` returned -1, which `generate()` (`cheat_count <= 0`) read as CLEAN and dropped, and which `mark_done()` (`cheat_count > 0`) did not refuse. `queue done` would have recorded an undecompiled function as COMPLETED-C. |
+| "`sandbox --disable all` strips cheat-asm, so the honest distance is unaffected" | FALSE — nothing was stripped, so the sandbox assembled the target bytes straight from `asm/funcs/<name>.s`: `sandbox ang_hosei --disable all` returned **0** for a function with zero lines of C (recorded distance 50). A direct break of CLAUDE.md non-negotiable #3. |
+
+`engine test` passing did NOT contradict any of this — no test pinned `INCLUDE_ASM`
+behaviour. Layer-2 review FAILed the pilot on these grounds and the source change was
+reverted until the engine was fixed.
+
+**Resolved by commit `9e68966c`** (`engine: make whole-body asm visible to the cheat
+detectors + completion gate`), which must land before any further wave:
+
+- whole-body asm is recognised and ATTRIBUTED to the named function across all three
+  spellings (`INCLUDE_ASM`, the hand-expanded `.include`, and `glabel` bodies), so a
+  function with no C body counts > 0 instead of UNKNOWN;
+- the `INCLUDE_ASM` forms are STRIPPED for scoring, so the honest distance reflects "no C
+  exists" (pilot: 0 → 51). Attribution is not stripping — `glabel` bodies keep their
+  never-strip `canonical_body` treatment;
+- `mark_done()` refuses a non-canonical function on an UNKNOWN count; `generate()` drops
+  only on a MEASURED-ZERO count, with an explicit `_not_a_c_function()` exception for
+  symbols that are not C-level functions at all;
+- asm-supplied functions route on the opcode verdict alone, so the "whole function is
+  missing" distance cannot push large conversions to `ASM-STRUCTURAL`/`authorize` and out
+  of the active lane.
+
+**Standing check for waves 2-7.** After each wave, confirm on a sample of the converted
+functions: `sandbox <func> --disable all` is NON-ZERO with `no_c_body: true`; a read-only
+regen simulation retains them as active; `queue done <func>` is REFUSED. A conversion that
+makes the sandbox read 0 is the defect recurring, not a success.
+
+<details><summary>Original R6 text (superseded — retained so the failure mode stays legible)</summary>
+
+> A whole-body `INCLUDE_ASM` is cheat-asm by the detectors' definition, so: […] the 140
+> unauthorized ones stay **INCOMPLETE** in `engine/queue.json`, correctly […]
+> `sandbox --disable all` strips cheat-asm before scoring, so the honest pure-C distance
+> metric is unaffected by the conversion. Confirm with `engine test` after Wave 1.
+
+The lesson: the plan asserted what the detectors *ought* to do from reading their intent,
+and never measured what they *did*. "Confirm with `engine test`" was circular — the suite
+had no assertion covering the new construct.
+</details>
 
 ---
 
