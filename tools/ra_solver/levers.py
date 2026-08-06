@@ -46,6 +46,14 @@ EXTRA_QTY = "extra_qty"            # one more competing quantity in the block
 CLASS_CHANGE = "class_change"      # preferred register class differs
 ALLOC_ORDER = "alloc_order"        # allocation order forced, no input explains it
 
+# --- scheduler (sched.c list scheduler) classes ----------------------------
+DEP_ADD_TRUE = "dep_add_true"      # a true/data LOG_LINK edge added
+DEP_ADD_ANTI = "dep_add_anti"      # an anti/output edge added
+DEP_DROP = "dep_drop"              # an edge removed
+LUID_ORDER = "luid_order"          # INSN_LUID order = source statement order
+INSN_COST = "insn_cost"            # INSN_COST = instruction selection
+SCHED_UNIT = "sched_unit"          # function unit (hazard side of selection)
+
 # --------------------------------------------------------------------------
 # class -> [(slug, tier, how)]
 # `slug` is a .claude/rules/<slug>.md file unless noted.
@@ -171,6 +179,82 @@ LEVERS = {
          "($hi/$lo) come from mult/div and GCC's divide-by-constant `mulhi`.  "
          "Change the arithmetic the function performs, or accept it."),
     ],
+    # ---- scheduler ------------------------------------------------------
+    # NOTE the asymmetry with the RA classes.  A dependence edge is the one
+    # perturbation whose most OBVIOUS spelling is a cheat: `volatile`, a
+    # memory clobber, or an `__asm__` barrier all create edges directly.  Those
+    # are FORBIDDEN, so the mapping routes edge atoms exclusively to
+    # restructures that make the dependence REAL — the data genuinely flows, or
+    # the two accesses genuinely alias.
+    DEP_ADD_TRUE: [
+        ("(value flow)", PLAIN,
+         "make the dependence real: the second statement must CONSUME what the "
+         "first produces.  Name the intermediate and use it, instead of "
+         "recomputing or reading the source twice."),
+        ("walking-pointer-serializes-parallel-loads", PLAIN,
+         "walk the array with post-increment pointers (`*ap++`); the pointer "
+         "dependence serialises otherwise-parallel loads, which is the "
+         "legitimate way to stop the scheduler stealing later loads into delay "
+         "slots.  Explicitly the SANCTIONED alternative to the memory-clobber "
+         "barrier and the per-load register pin."),
+        ("store-before-jal", PLAIN,
+         "ordering recipe for a value saved across a call site."),
+        ("defer-store-past-later-compute-into-jal-delay", PLAIN,
+         "hoist the stored value into a local and move the store statement "
+         "AFTER a later independent compute, so the sw schedules into the "
+         "jal delay slot."),
+    ],
+    DEP_ADD_ANTI: [
+        ("(genuine aliasing)", PLAIN,
+         "an anti/output edge means two accesses touch the SAME location. The "
+         "honest producers are: access both through the same pointer/lvalue, or "
+         "read and write the same object rather than two separate ones.  If the "
+         "accesses genuinely cannot alias, this edge is not reachable in C and "
+         "the answer is a different vector."),
+        ("legitimate-volatile-interrupt-touched", SANCTIONED,
+         "the ONLY volatile route, and it is a narrow gate, not a lever: the "
+         "global must be genuinely IRQ-touched (two-prong test) or a type-level "
+         "MMIO register (0x1F801000-0x1F802FFF).  sched.c's read_dependence "
+         "needs BOTH reads volatile.  Qualify the SYMBOL first; never add "
+         "volatile because an edge was wanted."),
+    ],
+    DEP_DROP: [
+        ("(break the aliasing)", PLAIN,
+         "split the value, or access the two locations through distinct objects "
+         "so the compiler can prove independence."),
+        ("split-read-defeats-hoist", PLAIN,
+         "duplicate the read into the arms so the shared edge disappears."),
+        ("loop-exit-work-inside-loop-sched-fence", PLAIN,
+         "move the loop's exit work INSIDE the loop (`if (cond) continue; tail; "
+         "break;`) so post-loop inits stop being hoisted above a tail store."),
+    ],
+    LUID_ORDER: [
+        ("(statement order)", PLAIN,
+         "INSN_LUID is source order and is the scheduler's final tie-break — "
+         "the cheapest atom to spell.  Move the generating statement."),
+        ("switch-break-shared-return-sched-hoist", PLAIN,
+         "`break;` + one shared trailing `return 0;` instead of per-case "
+         "returns, so sched1 stops hoisting the v0-set into a load-delay slot."),
+        ("loop-note-fixes-delay-slot-steal", PLAIN,
+         "write the loop as a real `while`/`do` rather than relying on a "
+         "barrier to block a delay-slot steal."),
+        ("hoist-call-arg-local-flips-jal-delay", PLAIN,
+         "hoist the late-loaded call argument into a local declared FIRST in "
+         "the block."),
+    ],
+    INSN_COST: [
+        ("(instruction selection)", PLAIN,
+         "INSN_COST is a property of the INSTRUCTION CHOSEN, not a knob: a load "
+         "is 2, a move 1, a multiply 12.  Changing it means computing the value "
+         "a different way (shift vs multiply, cached local vs re-load).  If the "
+         "target's instruction is the same as ours, this atom is not spellable "
+         "and the vector is fiction."),
+    ],
+    SCHED_UNIT: [
+        ("(instruction selection)", PLAIN,
+         "same as INSN_COST seen from the hazard side — the function unit "
+         "follows from the opcode.  Only reachable by changing the operation."),
+    ],
     ALLOC_ORDER: [
         ("(OUT OF MODEL)", PLAIN,
          "No modelled input explains this flip: the order had to be forced "
@@ -230,6 +314,23 @@ MEASURED_NEGATIVES = {
         "For a fully-pinned block (every insn accounted for in target), refs / "
         "span / birth are all constrained by the instruction stream; there may "
         "be no free parameter left to move.",
+    ],
+    DEP_ADD_ANTI: [
+        "The obvious spellings of a new anti/output edge — `volatile`, a "
+        "`memory` clobber, an `__asm__` scheduling barrier — are ALL forbidden "
+        "families. An anti-edge vector is only real if the two accesses "
+        "genuinely alias; otherwise report the vector as unspellable rather "
+        "than reaching for a barrier.",
+    ],
+    DEP_ADD_TRUE: [
+        "Per walking-pointer-serializes-parallel-loads: memory-clobber barriers "
+        "and per-load register pins were the ORIGINAL (rejected) fix for this "
+        "shape; the pointer-walk restructure is what replaced them.",
+    ],
+    INSN_COST: [
+        "INSN_COST / unit atoms are only spellable when target's instruction "
+        "actually differs from ours. Check the two streams before believing a "
+        "cost vector — otherwise it is describing a change C cannot make.",
     ],
 }
 
