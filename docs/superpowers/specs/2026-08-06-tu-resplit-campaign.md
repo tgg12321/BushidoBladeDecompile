@@ -370,6 +370,91 @@ guard refuses a rebuild with uncommitted build inputs; the dirty state IS the
 intended reference). Never `rm -rf memory/grind/<func>` — `ledger()` overwrites in
 place, and doing so destroyed committed recon files for `func_80079A30` during
 Wave 3 (caught by layer-2, restored bit-identical; see `80afc987`).
+
+### Wave 5 PREP — assessments (2026-08-06). Four findings, three of them corrections.
+
+Assessment only; no conversions. Probes: `tmp/w5_ordering.py`,
+`tmp/w5_label_reality.py`, `tmp/w5_mkleaf_detail.py`, `tmp/w5_stubs_and_nontext.py`,
+`tmp/w5_rodata_measure.py`, `tmp/w5_section_content.py`, `tmp/w5_decl_triage.py`
+(table: `tmp/w5_decl_triage.json`). New tool `tools/probe_func_labels.py`.
+
+**1 — hardcoded `.L` ordering. Only ONE real exposure, and `{lbl#N}` cannot fix it.**
+Five functions own hardcoded-`.L` rules. Three are safe because no campaign
+removal precedes them in their TU (`func_80017848`/ings, `marionation_Exec`/system,
+`tslPrintScreen`/config). The two in Wave 5 TUs both looked exposed by ordering;
+measuring the actual stream separated them:
+
+* **`SetPacketData` (main.c) — its two rules are DEAD NO-OPS.** `.L761`, `.L762`
+  and `.L764` are **absent from main.c's pre-asmfix stream entirely**, and both
+  `replace_first` PATTERNS match **zero** times (the function today emits
+  `.L997`-`.L1020`). asmfix warns and changes nothing. They are not
+  drift-exposed because they never fire. **They are 2 lines of inert debt that
+  should delete with no byte change** — verify with one `verify-oracle --rebuild`
+  and take the free reduction; do not "migrate" them.
+* **`mk_leaf_newpos` (code6cac_b.c) — genuinely exposed, and NOT `{lbl#N}`-migratable.**
+  Its rule is `subst "addiu\t$2,$zero,1" "beq\t$3,$21,.L631" @ 83` — the label is
+  in the REPLACEMENT, i.e. an emitted branch TARGET. `.L631` is **defined in
+  `func_80032854`'s block and referenced from `mk_leaf_newpos`** — a CROSS-FUNCTION
+  absolute label. `{lbl#N}` slots are function-local by construction, so they
+  cannot express it (`tools/probe_func_labels.py mk_leaf_newpos --map .L631`
+  reports exactly this). **16 conversion targets precede `func_80032854`**, so
+  Wave 5 shifts the counter and `.L631` will silently resolve to a DIFFERENT
+  label — wrong branch target, caught by the oracle only as a SHA1 mismatch.
+  Neither the definer nor the referencer is itself a conversion target.
+  Options, in ascending order of durability: (a) mechanical drift repair — after
+  converting, re-probe and update the literal, SHA1-verified (fast, leaves the
+  landmine); (b) `insert_label` a stable NAMED label at the target site and
+  reference that (drift-robust, but a net rule addition needing the
+  `[infra-rule:]` escape); (c) retire the rule to pure C (the real fix).
+  **Whichever is chosen, it must land BEFORE or WITH the code6cac_b conversions.**
+
+**2 — the 6 Wave-5 substantial stubs are ALL GENUINE DRAFTS. R2 is live again.**
+Waves 2-4 found 20/20 placeholders; Wave 5 inverts that. Measured with the same
+classifier plus a hand read: `cpu_check_run_attack` (214L, 201 surviving
+statements — bisection loop, GTE `.word` ops, scratchpad I/O, register pins),
+`DispPracticeMenuTex_A` (79L/70), `saTan2KabutoWareMove` (137L/104),
+`PutRobShadow` (85L/83), `func_80089F3C` (121L/99), `SetPacketData` (79L/72).
+Bodies captured under `tmp/w5_bodies/`. **Ledger every one before replacing** —
+these are real resume points, which is exactly what R2 was written for. Do NOT
+carry the waves-2-4 "all placeholders" result into Wave 5.
+
+**3 — the 3 non-`.text` emitters are object-NEUTRAL. R3 does not materialise.**
+Measured, not assumed: each TU was built twice into `tmp/` (as-is, and with the
+function converted in memory) and the sections compared. For all three —
+`cpu_check_run_attack`, `func_80089F3C`, `SetPacketData` — `.text`, `.rodata`,
+`.data` and `.bss` are **byte-identical**, including `func_80089F3C`'s three
+switch statements. The discarded bodies contribute no rodata today, so removing
+them shifts nothing. **They do not need individual commits on rodata grounds**
+and can batch normally. (The `.o` files differ in symbol/relocation metadata
+only, which the link resolves; the oracle remains the gate.)
+
+**4 — only 4 of 185 remaining targets actually block, not ~153.**
+That earlier figure was a per-TU artifact of the helper's whole-run abort. Run
+per function, 181 of 185 convert today. `tmp/w5_decl_triage.json` has the table.
+
+| bucket | n | meaning |
+|---|---:|---|
+| AUTO | 149 | converts now; no declaration required |
+| AUTO (stack-arg hint) | 32 | ditto — the `$a3` ceiling is moot when no declaration is emitted |
+| CORROBORATED | 1 | needs a declaration; probe arity == m2c arity (`func_8006B120`, `void f(GameObj *)`) — adopt as PRESERVED-plus-corroborated, recording the corroboration |
+| HAND | 3 | evidence conflicts or may take stack args |
+
+The three needing hand verification, with the evidence each needs:
+* `DispPracticeMenuTex_A` (code6cac, w5) — probe 4, no m2c declaration, and it
+  LOADS from >=16($sp) without storing first, the o32 signature of 5+ arguments.
+  The probe's `$a3` ceiling means its 4 is a floor, not a count. Needs the stack
+  slots read in the prologue counted by hand.
+* `func_800693CC` (text1b, w6) — probe 1, m2c says `void f(void)`. One of them is
+  wrong; resolve from the prologue.
+* `func_8006B578` (text1b, w6) — probe 1, m2c says `void f(void)`. Same shape.
+
+66 of the 185 are canonical-authorized (all but one in `text1b`); they are the
+campaign's payoff path and reach COMPLETED-INLINE-ASM-CANONICAL, which the engine
+suite pins. 33 carry the stack-arg hint but only one of them blocks.
+
+**Wave 6 is therefore not wholesale-blocked** — `text1b`'s 136 targets contain
+exactly 3 blockers. The helper's whole-run abort still stands as the guard; this
+table is what unblocks it case by case.
 | 8 | pipeline | — | Blocked on tier-1 (12 functions of real decomp). When `asmfix.txt` is empty: drop the `ASMFIX` stage from the Makefile pipeline, retire `tools/asmfix.py`, drop it from `PIPELINE_DEPS`, and update `engine/cheats.py` + `CLAUDE.md`. |
 
 ### Wave 7 recipe — `text1a` / `save_vc_ctrl` (0x80041434)
