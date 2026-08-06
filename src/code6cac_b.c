@@ -160,8 +160,8 @@ extern s32 D_80102314;
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 INCLUDE_RODATA("asm/rodata", jtbl_8001042C);
-void func_80026DA4(void) {
-}
+void func_80026DA4(void);
+INCLUDE_ASM("asm/funcs", func_80026DA4);
 s32 func_800272FC(s32 a0) {
     s32 v1;
     if (a0 < 0) {
@@ -508,9 +508,7 @@ void func_80027A58(s32 *a0) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
-s32 calc_teasi_loc_fw() {
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", calc_teasi_loc_fw);
 s32 saTan2KabutoWareMove(u8 *arg0, u8 *arg1) {
     u16 temp_a1;
     u8 *temp_s4;
@@ -717,8 +715,7 @@ void func_8002872C(void) {
         offset += 0x44C;
     } while (i < 2);
 }
-void saTan3MainJump(void) {
-}
+INCLUDE_ASM("asm/funcs", saTan3MainJump);
 /* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
     s16 *ptr = snd_GetSeId();
@@ -727,19 +724,11 @@ void func_8002906C(void) {
         ptr = (s16 *)((u8 *)ptr + 0x10);
     }
 }
-s32 DispPracticeMenuTex_C() {
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
-s32 func_80029454(void) {
-    return 0;
-}
-s32 func_8002A458() {
-    return 0;
-}
-void calc_loc_mat_fw(s32 a0) {
-    (void)a0;
-}
+INCLUDE_ASM("asm/funcs", func_80029454);
+INCLUDE_ASM("asm/funcs", func_8002A458);
+INCLUDE_ASM("asm/funcs", calc_loc_mat_fw);
 /* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
@@ -1128,9 +1117,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
     (void)a1;
     (void)a2;
 }
-s32 special_camera_Init() {
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", special_camera_Init);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
@@ -1443,17 +1430,10 @@ edge_check:
     }
 }
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision */
-s32 saTan0KiWareMoveB(u8 *obj) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/saTan0KiWareMoveB.s).
-     * Inline-asm scaffolding retired; pure-C decomp pending. */
-    (void)obj;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
 
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
-s32 func_8002DE20() {
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_8002DE20);
 s32 pad_main_control(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     s32 x0 = arg0[0];
     s32 z0 = arg0[2];
@@ -1897,13 +1877,9 @@ void func_8002EECC(void *arg0, void *arg1) {
     *(s16 *)((u8 *)arg1 + 0xE) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 0xE)) - (*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 0xC))) / temp_v1_2);
     *(s16 *)((u8 *)arg1 + 0x10) = (s16) ((s32) ((*(s16 *)((u8 *)arg0 + 2) * *(s16 *)((u8 *)arg0 + 6)) - (*(s16 *)((u8 *)arg0 + 0) * *(s16 *)((u8 *)arg0 + 8))) / temp_v1_2);
 }
-void func_8002F2D0(s32 *a0, s32 *a1) {
-    (void)a0;
-    (void)a1;
-}
-s32 func_8002F770() {
-    return 0;
-}
+void func_8002F2D0(s32 *a0, s32 *a1);
+INCLUDE_ASM("asm/funcs", func_8002F2D0);
+INCLUDE_ASM("asm/funcs", func_8002F770);
 s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
     s32 *va;
     s32 *vb;
@@ -2668,8 +2644,7 @@ s32 func_80030D50(s32 arg0, s32 arg1, s32 arg2) {
     }
     return arg1 + ((arg0 * arg2) >> 12);
 }
-void func_80030D7C(void) {
-}
+INCLUDE_ASM("asm/funcs", func_80030D7C);
 void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
     s32 *mat;
     s32 angle1;
@@ -2797,8 +2772,7 @@ void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
         }
     }
 }
-void func_80031B24(void) {
-}
+INCLUDE_ASM("asm/funcs", func_80031B24);
 void func_80032040(void) {
     s32 i;
     for (i = 0x84; i >= 0; i -= 0x2C) {
@@ -3235,10 +3209,8 @@ void func_80032854(s32 arg0, s32 arg1, u8 *arg2, s16 *arg3) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010698);
-void func_80032C50(s32 a0, s32 a1) {
-    (void)a0;
-    (void)a1;
-}
+void func_80032C50(s32 a0, s32 a1);
+INCLUDE_ASM("asm/funcs", func_80032C50);
 void cpu_check_same_dir_timer(s32 *base) {
     u8 *s0;
     s32 a1val;
@@ -4031,8 +4003,7 @@ skip_clear:
     }
 }
 /* kengo:LOW  |  su_menu_vs/_DispSamnailWindow  |  149i  |  PS2 UI — reverted */
-void func_80034708(void) {
-}
+INCLUDE_ASM("asm/funcs", func_80034708);
 /* TABLED: -4 bytes, score 1980. Target alternates v1/a0 for g_file_flags address — unreproducible register allocation pattern */
 void func_80034F88(void) {
     s32 *p;
