@@ -150,15 +150,32 @@ def asm_stack_args(func: str) -> int:
     return max(idx) + 1 if idx else 0
 
 
-def asm_arity(func: str) -> int:
-    """Total incoming arguments: register args, widened by any stack args.
+def asm_min_arity(func: str) -> int:
+    """LOWER BOUND on the incoming argument count — never the count itself.
 
-    When a stack argument exists at index N, every register slot below it is in
-    use by definition, so the count is 4 + stack slots rather than the number of
-    `$aN` reads actually observed.
+    A function is free to IGNORE parameters, and these stubs routinely declare
+    more than the code uses, so the asm can only ever prove a floor. Two rules:
+
+      * o32 assigns argument N to `$a(N-1)`, so the highest argument register
+        read gives the floor: reading `$a1` proves argument 2 exists, hence
+        arity >= 2 — regardless of whether `$a0` is ever read. (`$a0` being
+        DEFINED without being read, as `addiu $a0,$sp,0x10`, is the ordinary
+        shape of an unused first parameter, not evidence against one.)
+      * a stack argument at index N puts the floor at 4 + N + 1, since every
+        register slot below it is occupied by definition.
+
+    The earlier `len(asm_incoming_args(func))` conflated "registers read" with
+    "arity" and was wrong in BOTH directions: it undercounted unused leading
+    parameters ($a1-only reads scored 1, not 2) and undercounted unused trailing
+    ones. Compared for EQUALITY against a declared count it produced false
+    contradictions on every function with an unused parameter — text1b's
+    func_800693CC, func_8006B120 and func_8006B578 (Wave 6).
     """
     stack = asm_stack_args(func)
-    return 4 + stack if stack else len(asm_incoming_args(func))
+    if stack:
+        return 4 + stack
+    regs = asm_incoming_args(func)
+    return max(int(r[2:]) for r in regs) + 1 if regs else 0
 
 
 def has_declaration(text: str, func: str) -> bool:
@@ -231,18 +248,28 @@ def convert_source(text: str, func: str) -> tuple[str, str]:
                     f"(K&R parameters or a trailing comment): {head!r}. "
                     f"Refusing to transform it — hand-convert this one.")
             params = head[head.find("("):] if "(" in head else ""
+            # Comma-counting miscounts a function-pointer parameter or a `/* */`
+            # comment inside the list (the "//" guard above catches only line
+            # comments). Both are pre-existing and both skew toward a LARGER
+            # nparams, i.e. toward not firing — the permissive direction, which
+            # only ever preserves the header HEAD already has.
             nparams = (0 if re.fullmatch(r'\(\s*(void)?\s*\)', params)
                        else params.count(",") + 1)
-            incoming = asm_arity(func)
-            # Cross-check the preserved signature against the code. A mismatch
-            # means the in-file caller is already calling with the wrong arity;
-            # do not bake that into a declaration silently.
-            if nparams != incoming:
+            floor = asm_min_arity(func)
+            # Cross-check the preserved signature against the code. The asm can
+            # only prove a FLOOR (see asm_min_arity), so the sole detectable
+            # contradiction is a declaration too NARROW to carry the arguments
+            # the code demonstrably receives. A declaration WIDER than the floor
+            # is ordinary unused parameters and proves nothing either way; it is
+            # preserved as-is and stays unverified, which is exactly the claim
+            # HEAD already makes at every call site in the TU.
+            if floor > nparams:
                 raise SystemExit(
                     f"{func}: called at line {line} AFTER the definition, so its "
                     f"signature must be preserved — but it CONTRADICTS the asm.\n"
                     f"  definition header : {head}   ({nparams} parameter(s))\n"
-                    f"  asm reads         : {sorted(asm_incoming_args(func)) or 'no argument registers'}\n"
+                    f"  asm reads         : {sorted(asm_incoming_args(func)) or 'no argument registers'}"
+                    f"  (=> at least {floor} argument(s))\n"
                     f"Hand-verify against asm/funcs/{func}.s and "
                     f"include/m2c_context.h, fix the declaration, then re-run.")
             decl = f"{head};\n"
