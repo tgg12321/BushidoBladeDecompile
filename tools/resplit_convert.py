@@ -115,6 +115,52 @@ def asm_incoming_args(func: str) -> set[str]:
     return incoming
 
 
+_SP_LOAD = re.compile(r'\b(?:lw|lh|lhu|lb|lbu)\s+\$\w+,\s*(0x[0-9A-Fa-f]+)\(\$sp\)')
+_SP_STORE = re.compile(r'\b(?:sw|sh|sb)\s+\$\w+,\s*(0x[0-9A-Fa-f]+)\(\$sp\)')
+_FRAME = re.compile(r'addiu\s+\$sp,\s*\$sp,\s*-(0x[0-9A-Fa-f]+)')
+
+
+def asm_stack_args(func: str) -> int:
+    """Number of incoming STACK arguments (o32 arguments 5+).
+
+    `asm_incoming_args` can only see `$a0`-`$a3`, so on its own it reports at most
+    4 and silently undercounts wider functions — the ceiling that made
+    DispPracticeMenuTex_A (6 real arguments) look like a 4-vs-6 contradiction.
+
+    o32: the caller reserves 0x10 for `$a0`-`$a3` homing and puts argument 5+ at
+    16($sp), 20($sp)… in ITS frame, so after the callee's `addiu $sp,$sp,-FRAME`
+    they sit at FRAME+0x10, FRAME+0x14, … A load from there that was never stored
+    to is an incoming argument; the highest such slot gives the count.
+    """
+    p = ROOT / f"asm/funcs/{func}.s"
+    if not p.exists():
+        return 0
+    text = p.read_text(encoding="utf-8")
+    m = _FRAME.search(text)
+    base = (int(m.group(1), 16) if m else 0) + 0x10
+    stored, idx = set(), []
+    for raw in text.splitlines():
+        line = re.sub(r'/\*.*?\*/', ' ', raw)
+        for mm in _SP_STORE.finditer(line):
+            stored.add(int(mm.group(1), 16))
+        for mm in _SP_LOAD.finditer(line):
+            off = int(mm.group(1), 16)
+            if off >= base and off not in stored:
+                idx.append((off - base) // 4)
+    return max(idx) + 1 if idx else 0
+
+
+def asm_arity(func: str) -> int:
+    """Total incoming arguments: register args, widened by any stack args.
+
+    When a stack argument exists at index N, every register slot below it is in
+    use by definition, so the count is 4 + stack slots rather than the number of
+    `$aN` reads actually observed.
+    """
+    stack = asm_stack_args(func)
+    return 4 + stack if stack else len(asm_incoming_args(func))
+
+
 def has_declaration(text: str, func: str) -> bool:
     """True when `text` already declares `func` (a `... func(...) ;` at line
     start) — src/ings.c declares func_80017A44 on the line after its
@@ -187,7 +233,7 @@ def convert_source(text: str, func: str) -> tuple[str, str]:
             params = head[head.find("("):] if "(" in head else ""
             nparams = (0 if re.fullmatch(r'\(\s*(void)?\s*\)', params)
                        else params.count(",") + 1)
-            incoming = len(asm_incoming_args(func))
+            incoming = asm_arity(func)
             # Cross-check the preserved signature against the code. A mismatch
             # means the in-file caller is already calling with the wrong arity;
             # do not bake that into a declaration silently.
