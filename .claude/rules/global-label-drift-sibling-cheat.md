@@ -79,13 +79,32 @@ already emits within the function.
 
 To migrate a rule:
 1. Probe cc1's current label sequence for the function:
-   `bash tmp/probe_func_labels.sh <func_name> [src/<file>.c]`
+   `python3 tools/probe_func_labels.py <func_name> [--map .L<N>]`
    (Returns labels in document order, 1-indexed.)
 2. Identify which slot # each hardcoded label maps to.
 3. Rewrite the rule, e.g. `"j\t.L152"` → `"j\t{lbl#1}"`.
 4. `verify-oracle --rebuild` — the bytes don't change (same labels resolved),
    confirming the migration is byte-for-byte correct.
 5. The rule is now drift-robust.
+
+**When `{lbl#N}` CANNOT apply — the cross-function case (measured 2026-08-06).**
+Slots are FUNCTION-LOCAL: `{lbl#N}` resolves against the labels cc1 emits inside
+the rule's OWN function. If the hardcoded label belongs to a DIFFERENT function,
+no slot can express it and step 2 has no answer. `probe_func_labels.py` reports
+this explicitly ("NOT EMITTED by <func>") rather than letting you pick a wrong
+slot.
+
+Confirmed case — `mk_leaf_newpos` (code6cac_b.c): the rule is
+`subst "addiu\t$2,$zero,1" "beq\t$3,$21,.L631" @ 83`, so the label sits in the
+REPLACEMENT as an emitted branch TARGET, and `.L631` is defined in
+`func_80032854` while being referenced from `mk_leaf_newpos`. Note the two
+distinct shapes: a label in the MATCH pattern must exist in the owner's own body
+(migratable), whereas a label in the REPLACEMENT can point anywhere in the TU
+(often not). Check which one you have before reaching for a slot.
+
+For the cross-function shape the options are the fallbacks below — mechanical
+drift repair, `insert_label` with a stable NAMED anchor (a net-positive rule
+line, so it needs the `[infra-rule:]` escape), or retiring the rule to pure C.
 
 **Fallback alternatives (only when {lbl#N} doesn't apply):**
 

@@ -95,7 +95,7 @@ literal will BREAK** when the labels shift. Confirmed examples from the A-pass:
 2. If SHA1 mismatches, diff your `build/src/<file>.o` against oracle to
    find which function's bytes drifted. The drift will be in a sibling
    function later in source order than the authorized one.
-3. Use `bash tmp/probe_func_labels.sh <sibling>` to find the new
+3. Use `python3 tools/probe_func_labels.py <sibling>` to find the new
    `.L<N>` mapping vs the old.
 4. Update affected sibling asmfix/regfix rules with new label numbers
    (or migrate to `{lbl#N}` function-local slots per
