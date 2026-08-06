@@ -222,9 +222,15 @@ def ledger(func: str, body: str) -> Path:
     # of them and false of a `{ (void)a0; return 0; }` placeholder — and
     # asserting it blindly is the same genre of unchecked claim the campaign
     # exists to remove. Classify instead of assert.
-    stripped = [l.strip() for l in body.split("{", 1)[-1].splitlines() if l.strip()]
-    meat = [l for l in stripped
-            if not re.fullmatch(r'\(void\)\s*\w+\s*;|return\s+[-\w]+\s*;|\}', l)]
+    # Comments are not logic — a stub whose only content is an explanatory
+    # comment plus `(void)arg;` casts is still a placeholder.
+    code = inlineasm._code_without_comments_and_strings(body)
+    stripped = [l.strip() for l in code.split("{", 1)[-1].splitlines() if l.strip()]
+    meat = []
+    for l in stripped:
+        for part in (p.strip() for p in l.split(";")):
+            if part and not re.fullmatch(r'\(void\)\s*\w+|return\s+[-\w]*|\}', part):
+                meat.append(part)
     kind = ("a real prior decomp attempt — the resume point when this function "
             "is decompiled" if meat else
             "a PLACEHOLDER (no decompiled logic), kept only for provenance")

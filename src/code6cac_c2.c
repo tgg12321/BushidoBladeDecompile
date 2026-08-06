@@ -1538,19 +1538,13 @@ void func_8003E2AC(void) {
 u32 func_8003E2C8(void) {
     return D_800905F8;
 }
-void replay_camera_get_attack_number(s32 a0, s32 a1, s32 a2, s32 a3) {
-    (void)a0;
-    (void)a1;
-    (void)a2;
-    (void)a3;
-}
+void replay_camera_get_attack_number(s32 a0, s32 a1, s32 a2, s32 a3);
+INCLUDE_ASM("asm/funcs", replay_camera_get_attack_number);
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_get_attack_number  |  242i */
 void func_8003E6A0(s32 arg0, s32 arg1) {
     replay_camera_get_attack_number(D_80101E3C, D_80101E44, arg0, arg1);
 }
-void DispHira(s32 a0) {
-    (void)a0;
-}
+INCLUDE_ASM("asm/funcs", DispHira);
 /* kengo:MED  |  am_rmd/DispHira  |  299i */
 s32 *CalcHiraNormal(s32 a0, s32 a1, s32 *out) {
     s32 sp[0x21];
@@ -1668,8 +1662,5 @@ s32 *CalcHiraNormal(s32 a0, s32 a1, s32 *out) {
 
     return out;
 }
-void md_game_check_mode(s32 *a0, s32 a1) {
-    (void)a0;
-    (void)a1;
-}
+INCLUDE_ASM("asm/funcs", md_game_check_mode);
 /* kengo:HIGH  |  md_game/md_game_check_mode  |  234i */

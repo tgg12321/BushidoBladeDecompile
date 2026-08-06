@@ -105,7 +105,7 @@ extern s32 g_file_disc_size;
 /* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
-void func_80035828(void) {}
+INCLUDE_ASM("asm/funcs", func_80035828);
 void special_camera_check_pos_outside_ground_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
@@ -232,9 +232,10 @@ do_stop:
     cdrom_SetCallbackB(0);
     func_80080390(9, 0);
 }
-void special_camera_set_win_cam(void) {}
+INCLUDE_ASM("asm/funcs", special_camera_set_win_cam);
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
-void special_camera_Exec(void) {}
+void special_camera_Exec(void);
+INCLUDE_ASM("asm/funcs", special_camera_Exec);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
     return D_80101E62[0] == 0;

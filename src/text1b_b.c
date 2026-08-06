@@ -917,11 +917,7 @@ extern s32 D_800A3600;
 s32 func_80077D74(s32 a0) {
     return D_800A35F4 + a0 * 44;
 }
-void func_80077D94(s32 *arg0) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80077D94.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0;
-}
+INCLUDE_ASM("asm/funcs", func_80077D94);
 s32 camera_get_rot_normal_rad(s32 arg0) {
     s32 s0;
     s32 r;
@@ -1906,11 +1902,7 @@ void debug_printf(s32 fmt, s32 a, s32 b, s32 c) {
     ap[3] = c;
     func_80079244(1, fmt, ap + 1);
 }
-void func_80079244(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079244.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80079244);
 extern u8 D_8009BD8D;
 u8 func_800798CC(u8 a0) {
     u8 c = a0;
@@ -1968,8 +1960,4 @@ def:
 tail:
     bios_FileWrite_B(1, &sp10, 1);
 }
-void func_80079A30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    /* Body replaced by asmfix replace_with_asmfile (asm/funcs/func_80079A30.s).
-     * Pure-C decomp pending future purification work. */
-    (void)arg0; (void)arg1; (void)arg2; (void)arg3;
-}
+INCLUDE_ASM("asm/funcs", func_80079A30);

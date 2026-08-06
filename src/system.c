@@ -337,9 +337,7 @@ s32 cdrom_BcdToFrames(u8 *a0) {
         return total - 150;
     }
 }
-s32 func_80080828(void) {
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", func_80080828);
 extern s32 sys_VSync(s32);
 extern void tslTm2LoadImage_2(void *);
 extern void debug_printf(void *, void *, s32, s32, s32);
@@ -616,13 +614,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   }
 }
 /* kengo:HIGH  |  nm_mario/marionation_Exec  |  180i  |  +1 near-exact */
-s32 tslTm2LoadImage(s32 a0, void *a1, void *a2, s32 a3) {
-    (void)a0;
-    (void)a1;
-    (void)a2;
-    (void)a3;
-    return 0;
-}
+INCLUDE_ASM("asm/funcs", tslTm2LoadImage);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 extern volatile u8 *g_cd_index_reg;
 extern volatile u8 *g_cd_req_reg;
