@@ -1515,104 +1515,9 @@ void func_80052930(s32 *mat, s32 *vec, s16 *out) {
     out[5] = (s16)t6;
     out[8] = (s16)t7;
 }
-void game_2d_CheckLifeGaugeNoDisp(s32 *matrix, s32 *vec, s16 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    t0 = matrix[0];
-    t1 = matrix[1];
-    t2 = matrix[2];
-    t3 = matrix[3];
-    t4 = matrix[4];
-    t5 = matrix[5];
-    t6 = matrix[6];
-    t7 = matrix[7];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 %0, $5" :: "r"(t5));
-    __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
-    __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
-    __asm__ volatile ("lwc2 $0, 0(%0)" :: "r"(vec));
-    __asm__ volatile ("lwc2 $1, 4(%0)" :: "r"(vec));
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");               /* mvmva 1,0,0,0,0 */
-    __asm__ volatile ("nop");
-    __asm__ volatile ("swc2 $9, 0(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $10, 4(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $11, 8(%0)" :: "r"(out));
-}
-void func_80052A88(s32 *matrix, s32 *vec, s32 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    t0 = matrix[0];
-    t1 = matrix[1];
-    t2 = matrix[2];
-    t3 = matrix[3];
-    t4 = matrix[4];
-    t5 = matrix[5];
-    t6 = matrix[6];
-    t7 = matrix[7];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    t1 = ((s16 *)vec)[2];
-    t0 = ((u16 *)vec)[0] | (t1 << 16);
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 %0, $5" :: "r"(t5));
-    __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
-    __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("lwc2 $1, 8(%0)" :: "r"(vec));
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");               /* mvmva 1,0,0,0,0 */
-    __asm__ volatile ("nop");
-    __asm__ volatile ("swc2 $9, 0(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $10, 4(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $11, 8(%0)" :: "r"(out));
-}
-void func_80052B00(s32 *matrix) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    t0 = matrix[0];
-    t1 = matrix[1];
-    t2 = matrix[2];
-    t3 = matrix[3];
-    t4 = matrix[4];
-    t5 = matrix[5];
-    t6 = matrix[6];
-    t7 = matrix[7];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 %0, $5" :: "r"(t5));
-    __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
-    __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
-}
+INCLUDE_ASM("asm/funcs", game_2d_CheckLifeGaugeNoDisp);
+INCLUDE_ASM("asm/funcs", func_80052A88);
+INCLUDE_ASM("asm/funcs", func_80052B00);
 /* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
  * 3x3 rotation matrix (5 s32 words) from *a0 into cop2 controls CR0-CR4, then
  * zeroes the translation vector CR5-CR7 (TRX/TRY/TRZ), the last ctc2 in the
@@ -1620,41 +1525,7 @@ void func_80052B00(s32 *matrix) {
  * (prologue instruction-identical to canonical-body func_8007ED6C, display.c).
  * Canonical-body authorized 2026-07-27 (judge PASS, docs/grind/decisions.md). */
 INCLUDE_ASM("asm/funcs", func_80052B44);
-void func_80052B7C(s32 *matrix5, s16 *tr3, s32 *vec, s32 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    t0 = matrix5[0];
-    t1 = matrix5[1];
-    t2 = matrix5[2];
-    t3 = matrix5[3];
-    t4 = matrix5[4];
-    t5 = tr3[0];
-    t6 = tr3[1];
-    t7 = tr3[2];
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 %0, $5" :: "r"(t5));
-    __asm__ volatile ("ctc2 %0, $6" :: "r"(t6));
-    __asm__ volatile ("ctc2 %0, $7" :: "r"(t7));
-    __asm__ volatile ("lwc2 $0, 0(%0)" :: "r"(vec));
-    __asm__ volatile ("lwc2 $1, 4(%0)" :: "r"(vec));
-    __asm__ volatile ("nop");
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");               /* mvmva 1,0,0,0,0 */
-    __asm__ volatile ("nop");
-    __asm__ volatile ("swc2 $9, 0(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $10, 4(%0)" :: "r"(out));
-    __asm__ volatile ("swc2 $11, 8(%0)" :: "r"(out));
-}
+INCLUDE_ASM("asm/funcs", func_80052B7C);
 /* func_80052BE4: GTE far-color read wrapper — cfc2 RFC/GFC/BFC (cop2 ctrl
  * 21/22/23) -> srl 4 -> sb to *a0[0..2]. Hand-written asm: cfc2 results land
  * in $t0/$t1/$t2 (natural cc1 allocation picks $v0/$v1/$a1), and the jr $ra
