@@ -81,6 +81,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import score                        # noqa: E402
 from goalmap import align                       # noqa: E402
 from goal_from_asm import attribute, rname      # noqa: E402
+from pseudo_scope import scopes, candidates     # noqa: E402
 
 REGNAMES = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
             "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
@@ -192,6 +193,79 @@ def cmd_classify(a):
     return 0
 
 
+_BR = re.compile(r"^(b|bal|beq|bne|blez|bgtz|bltz|bgez|beqz|bnez|j|jal|jr|jalr)\b")
+
+
+def _block_starts(ours):
+    """Basic-block start indices of the emitted stream. A block ends after a
+    branch plus its delay slot; a branch TARGET starts one. Targets are masked
+    to '@' here, so only the fall-through rule applies — which is why the
+    resulting ordinals are compared against cc1's numbering, not trusted blind
+    (see the confidence note printed with the results)."""
+    starts = {0}
+    for i, t in enumerate(ours):
+        if _BR.match(t) and not t.startswith("jr"):
+            starts.add(min(i + 2, len(ours)))
+    return sorted(s for s in starts if s < len(ours))
+
+
+def _block_of_index(starts, i):
+    b = 0
+    for k, s in enumerate(starts):
+        if i >= s:
+            b = k
+    return b
+
+
+def _scoped_attribution(a, ours, detail, disp):
+    """Narrow attribution per substitution SITE by block scope, then union per
+    goal register. Emits a goal entry only where exactly one candidate survives."""
+    block_of, multi, _ = scopes(a.stem, a.func)
+    starts = _block_starts(ours)
+    holders = {}
+    for p, r in disp.items():
+        if r is not None and r >= 0:
+            holders.setdefault(r, []).append(p)
+
+    per_reg = {}
+    for i, j, x, y, pairs in detail:
+        blk = _block_of_index(starts, i)
+        for o, t in pairs:
+            cand = candidates(holders.get(o, []), blk, block_of, multi)
+            key = (o, t)
+            if key in per_reg:
+                per_reg[key] &= set(cand)
+            else:
+                per_reg[key] = set(cand)
+
+    print(f"\nscope-narrowed attribution ({len(starts)} emitted blocks; "
+          f"{len(block_of)} block-local + {len(multi)} multi-block pseudos):")
+    goal = {}
+    for (o, t), cand in sorted(per_reg.items(), key=lambda kv: -len(kv[1])):
+        allh = len(holders.get(o, []))
+        c = sorted(cand)
+        if len(c) == 1:
+            goal[c[0]] = t
+            print(f"  {rname(o)} -> {rname(t)}: {allh} holder(s) narrowed to "
+                  f"UNIQUE pseudo {c[0]}")
+        elif c:
+            print(f"  {rname(o)} -> {rname(t)}: {allh} holder(s) narrowed to "
+                  f"{len(c)} -> {c} (still ambiguous, no goal entry)")
+        else:
+            print(f"  {rname(o)} -> {rname(t)}: {allh} holder(s) narrowed to "
+                  f"NONE — the register is a local-alloc quantity or a hard "
+                  f"operand here, not a global allocno; use the `local` backend")
+    print(f"\ngoal: {json.dumps({str(k): v for k, v in goal.items()})}")
+    print("  confidence: block ordinals are derived from the emitted stream's "
+          "fall-through\n  structure; cross-check a surprising attribution "
+          "against `tools/blockmap.py`.")
+    if a.json and goal:
+        Path(a.json).write_text(json.dumps(
+            {str(k): v for k, v in goal.items()}, indent=2))
+        print(f"written: {a.json}")
+    return 0
+
+
 def cmd_goal(a):
     ours = obj_insns(a.stem, a.func, "ours")
     tgt = obj_insns(a.stem, a.func, "target")
@@ -217,6 +291,8 @@ def cmd_goal(a):
         return 0
     model = json.loads(Path(a.model).read_text())
     disp = {int(k): v for k, v in model["dispositions"].items()}
+    if a.scope:
+        return _scoped_attribution(a, ours, detail, disp)
     goal, notes = attribute(subs, disp)
     print("\nattribution:")
     for n in notes:
@@ -239,6 +315,8 @@ def main():
     g.add_argument("--model", help="model.json (enables pseudo attribution)")
     g.add_argument("--json", help="write the derived goal here")
     g.add_argument("--show", action="store_true")
+    g.add_argument("--scope", action="store_true",
+                   help="narrow attribution per substitution site by .lreg block scope (see pseudo_scope.py)")
     g.set_defaults(fn=cmd_goal)
     c = sub.add_parser("classify", help="which model owns the residual")
     c.add_argument("stem")

@@ -246,12 +246,50 @@ The old behaviour stays reachable via `--force-text`, which warns first and then
 cause #1 gracefully (`asm_body` KeyError, explained in place) rather than throwing a
 traceback — so the flag documents the guard's rationale instead of merely bypassing it.
 
-**Known remaining limit — attribution, not parsing.** `goal` now runs on these functions,
-but `attribute()` is position-blind: it maps "reg R should be T" onto "which pseudos hold
-R", and on `DispPracticeMenuTex_A` 85 pseudos hold `$v0`, so it honestly reports AMBIGUOUS
-and returns an empty goal rather than guessing. Narrowing that needs a pseudo -> asm
-position mapping (liveness at the substitution site). That is a separate gap from the
-tgt-parsing blindness fixed here.
+### Attribution — RESOLVED by scope narrowing (`pseudo_scope.py`, `goal --scope`)
+
+`attribute()` is position-blind: it maps "reg R should be T" onto "which pseudos hold R",
+and on `DispPracticeMenuTex_A` 85 pseudos hold `$v0`, so it honestly returned an empty goal.
+
+`tools/ra_solver/pseudo_scope.py` narrows by SCOPE. cc1's `.lreg` dump states each pseudo's
+scope in plain text, and the presence or absence of the clause is the whole signal:
+
+```
+Register 87 used 5 times across 8 insns in block 0; ...   -> confined to block 0
+Register 85 used 4 times across 10 insns; ...             -> spans blocks (global allocno)
+```
+
+A substitution happens at an instruction in a specific block, so a pseudo confined to a
+DIFFERENT block cannot be the one renamed there. Candidates at a site in block B are
+therefore `scoped-to-B + multi-block`, intersected per site and unioned per goal register.
+`goal --scope` does this automatically. Measured on `DispPracticeMenuTex_A`:
+
+| substitution | holders | narrowed |
+|---|---|---|
+| `$v1 -> $v0` | 27 | **UNIQUE, pseudo 100** |
+| `$v0 -> $v1` | 85 | 3 (`83, 84, 98`) |
+| `$a0 -> $v0` | 5 | 3 (`85, 99, 132`) |
+
+Full insn-level liveness was deliberately NOT built: it needs a four-hop chain (object ->
+hon.s -> cc1.s -> dbr uids -> .lreg pseudos), each hop its own alignment and failure mode,
+where block scope is one hop over a fact cc1 already states. Build the RTL chain only if a
+case survives this filter ambiguous AND matters.
+
+The narrowing still never PICKS — where more than one candidate survives it says so and
+emits no goal entry, the same contract as `attribute()`.
+
+### End-to-end result on DispPracticeMenuTex_A: validated UNREACHABLE
+
+The derived goal `{100: $v0}` and all three full-exchange variants
+(`+{83|84|98: $v1}`) were run through `inverse.py global` at depth 2. **All four return
+NEGATIVE**, with 5-17 preference atoms additionally FORECLOSED (`prune_preferences`,
+global.c:897, strips `$v0` preferences from allocnos that cross calls, and these do).
+
+So the function's RA component is not produced by refs, live span, birth order, conflicts,
+preferences or calls-crossed — no C spelling that moves only those can close it. Per the
+tool's own guidance the next move is INSTRUMENTATION (the local-alloc suggested-register
+pass, `qty_phys_copy_sugg`/`qty_phys_sugg`, reported-not-scored today), not another
+spelling search.
 
 **For a raw diff, `tools/pairdiff.py <stem> <func>`** (added 5c654c3b) diffs the two
 OBJECT files the score is actually computed from — `tmp/sandbox/<func>/<stem>.o` against
