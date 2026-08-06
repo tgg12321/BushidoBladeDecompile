@@ -312,6 +312,64 @@ substantial stubs and the 3 non-`.text` emitters.
 | 5 | `main`, `code6cac`, `code6cac_b` | 48 | Holds 6 of the 12 substantial stubs and all 3 non-`.text` emitters — individual commits for those 9, batched for the other 39. |
 | 6 | `text1b` | 136 | The bulk. 65 of the 66 canonical-authorized functions live here, so this wave is what converts the canonical set to zero-rule finished form. Split into ~5 commits by address range. |
 | 7 | `text1a` | 1 | The only true TU re-split. Blocked on the concurrent `src/text1a.c` work. |
+
+### Execution record — Waves 0-4 (2026-08-06). READ BEFORE WAVE 5.
+
+Waves 0-4 are landed: `1f8346c2` (Wave 0 erratum — nothing to convert), `9b855093`
+(Wave 1 pilot), `5f790252` (Wave 2), `80afc987` (Wave 3), `39454a52` (Wave 4).
+20 functions; `asmfix.txt` 237 → 216 rule lines, 205 → 185 `replace_with_asmfile`
+rules. Every wave verified at the oracle SHA1 with a 4-condition R6 check per
+converted function.
+
+**`tools/resplit_convert.py` limits — carried forward from `5f790252`, all still
+open.** They apply to every remaining wave, not just the one that recorded them:
+
+1. `asm_incoming_args()` cannot see past `$a3`. MIPS o32 passes arguments 5+ on
+   the stack, so a 5+-argument function whose stub happens to declare 4 would
+   pass the arity gate. Its agreement with `include/m2c_context.h` (158/175) hides
+   this structural ceiling rather than being a sampling result.
+2. Only ARITY is cross-checked. Return and parameter TYPES are copied verbatim
+   from the stub, so a stub with coincidentally-correct arity and a fictional
+   return type still gets promoted into a declaration. Byte-neutral — the oracle
+   is the backstop — but not fully honest.
+3. `has_declaration()`'s regex can match an unindented `return func_X(a);` and so
+   suppress a NEEDED declaration. It would break the oracle rather than pass
+   silently.
+4. A contradicting function ABORTS THE WHOLE RUN. Atomicity holds (nothing is
+   written), but `--tu text1b` (136 targets) and `--tu code6cac` (17) currently
+   abort on `func_800693CC` and `DispPracticeMenuTex_A`. **~153 of the remaining
+   targets are therefore blocked pending hand-verified declarations** — this is
+   the dominant fact about Wave 6's shape, and `DispPracticeMenuTex_A` is a
+   false-positive abort caused by limit 1.
+
+**Declaration policy (established by the Wave 2 FAIL, `5f790252`).** A
+declaration is emitted ONLY when an in-file caller FOLLOWS the conversion point
+and the file carries none already — there, re-stating the definition's prototype
+PRESERVES typing the caller was already compiled against. Emitting one where no
+caller follows ASSERTS a new claim, and the stub's signature is fiction nothing
+ever checked (`func_8003FA24`'s stub said `s32 f(void *a0)`; the asm reads
+`$a0/$a1/$a2` and m2c declares `void f(GameObj *, s32, s32)` — wrong arity AND
+wrong return). Across all 20 conversions this produced just two declarations.
+
+`replay_camera_get_attack_number`'s `void` return is **PRESERVED, NOT VERIFIED** —
+byte-neutral and identical to what HEAD already asserted, but the helper checks
+only arity. (Consistent on inspection: the epilogue sets no `$v0` and the sole
+call site discards the result. That is corroboration, not a check the tool ran.)
+
+**Stub-body classification is a HEURISTIC, and its result is scoped to waves 2-4.**
+All 20 removed bodies measured as PLACEHOLDERS — `(void)argN;` casts and comments,
+no decompiled logic — including all four functions §5 flags as
+"marginal-substantial"/"substantial" and routes through R2. **Do not generalise
+this to later TUs**: `main`, `code6cac`, `code6cac_b` and `text1b` may hold genuine
+drafts, and R2 (ledger the body BEFORE converting) stands unconditionally. The
+classifier strips comments and splits on `;`; it can only tell "no statements
+survive" from "some do", so treat it as triage, never as a verdict.
+
+**Process notes.** `verify-oracle --rebuild` needs `--allow-dirty` mid-wave (the
+guard refuses a rebuild with uncommitted build inputs; the dirty state IS the
+intended reference). Never `rm -rf memory/grind/<func>` — `ledger()` overwrites in
+place, and doing so destroyed committed recon files for `func_80079A30` during
+Wave 3 (caught by layer-2, restored bit-identical; see `80afc987`).
 | 8 | pipeline | — | Blocked on tier-1 (12 functions of real decomp). When `asmfix.txt` is empty: drop the `ASMFIX` stage from the Makefile pipeline, retire `tools/asmfix.py`, drop it from `PIPELINE_DEPS`, and update `engine/cheats.py` + `CLAUDE.md`. |
 
 ### Wave 7 recipe — `text1a` / `save_vc_ctrl` (0x80041434)
