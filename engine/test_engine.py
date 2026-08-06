@@ -1483,6 +1483,167 @@ def test_include_asm_whole_body() -> None:
        r_canon.get("completion"), "COMPLETED-INLINE-ASM-CANONICAL")
 
 
+def test_canonical_completion_is_the_drop() -> None:
+    """THE DROP is the canonical completion — pinned end-to-end, not just at
+    mark_done.
+
+    Campaign 4 Wave 6 converted 65 canonical-authorized functions to zero-rule
+    INCLUDE_ASM form, and the payoff checker written for it first reported
+    0/19 FAILED: it called mark_done on the POST-regen queue and got "not in
+    queue" every time. Nothing was broken. generate() DROPS a canonical
+    zero-rule function before mark_done can ever see it, so the drop IS the
+    completion.
+
+    test_include_asm_whole_body could not have surfaced that: it hand-builds a
+    queue CONTAINING the function and calls mark_done, which is precisely the
+    precondition regen removes. That gap is the reason this test exists —
+    a unit test that constructs the state the real path deletes will pass
+    forever while the real path says something else.
+
+    Pinned here:
+      1. generate() drops a zero-rule canonical member.
+      2. mark_done on a queue that still LISTS it returns
+         COMPLETED-INLINE-ASM-CANONICAL (the gate itself).
+      3. mark_done AFTER the drop refuses, and the refusal says the function is
+         already complete rather than the bare "not in queue" that reads as an
+         error to anyone typing `queue done <canonical-func>`.
+    """
+    import pathlib
+
+    class _RefObjExists:
+        """Path shim — a `.o` always 'exists', everything else is a real Path.
+
+        Keeps this in the FAST tier: driving generate() against real build/
+        objects would both need a build and race any agent mid-rebuild.
+        """
+
+        def __init__(self, p):
+            self._p = pathlib.Path(p)
+
+        def exists(self):
+            return True if str(self._p).endswith(".o") else self._p.exists()
+
+        def __getattr__(self, n):
+            return getattr(self._p, n)
+
+        def __fspath__(self):
+            return str(self._p)
+
+        def __str__(self):
+            return str(self._p)
+
+    seed = {"items": [{"func": "func_CANON", "file": "faketu", "distance": 300,
+                       "verdict": "ASM-WHOLE", "rules": 0, "status": "authorize"}],
+            "counts": {}}
+
+    with tempfile.TemporaryDirectory() as td:
+        qp = Path(td) / "queue.json"
+        orig = (Q.QUEUE_PATH, Q.Path, P.c_stems, canonical.scan_all,
+                cheats.canonical_asm_funcs, Q._rule_count,
+                cheats.func_prologue_count, cheats.maspsx_gate_entries,
+                inlineasm.file_func_cheat_asm_count,
+                Q.sandbox.build_stripped_object, score._o_func_table,
+                score.score_func, Q.O.verify, cheats.is_jtbl_infra,
+                cheats.is_canonical_extraction_only)
+        try:
+            # Patch INSIDE the try: a raise part-way through the assignments
+            # would otherwise leak monkeypatches into every later test in the
+            # process.
+            Q.QUEUE_PATH = str(qp)
+            Q.Path = _RefObjExists
+            P.c_stems = lambda: ["faketu"]
+            canonical.scan_all = lambda: [{"func": "func_CANON", "verdict": "ASM-WHOLE"}]
+            cheats.canonical_asm_funcs = lambda: {"func_CANON"}
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            cheats.maspsx_gate_entries = lambda f: []
+            # Stub these two as well, or the rule-count-1 regen below reads the
+            # REAL regfix.txt/asmfix.txt (matching test_include_asm_whole_body).
+            cheats.is_jtbl_infra = lambda f: False
+            cheats.is_canonical_extraction_only = lambda f: False
+            # >0 == whole-body asm attributed to it, which is what a converted
+            # canonical function looks like to the detectors (9e68966c).
+            inlineasm.file_func_cheat_asm_count = lambda s, f: 1
+            Q.sandbox.build_stripped_object = lambda *a, **k: None
+            score._o_func_table = lambda o: ["func_CANON"]
+            score.score_func = lambda a, b, f: {"score": 300}
+            Q.O.verify = lambda rebuild=False: {"build_matches": True,
+                                                "build_sha1": "deadbeef"}
+            # 2. the gate, against a queue that still lists it
+            qp.write_text(json.dumps(seed))
+            r = Q.mark_done("func_CANON")
+            check("canon-drop: mark_done accepts a listed zero-rule canonical",
+                  r.get("ok") is True)
+            eq("canon-drop: completion state",
+               r.get("completion"), "COMPLETED-INLINE-ASM-CANONICAL")
+
+            # 1. regen drops it
+            qp.write_text(json.dumps(seed))
+            regen = Q.generate(workdir=str(Path(td) / "wd"), preserve=False)
+            names = [it["func"] for it in regen["items"]]
+            check("canon-drop: generate() DROPS a zero-rule canonical member",
+                  "func_CANON" not in names)
+
+            # ...and does NOT drop it once a rule reappears — the drop must be
+            # earned by the zero-rule state, not by canonical membership alone.
+            Q._rule_count = lambda f: 1
+            regen2 = Q.generate(workdir=str(Path(td) / "wd2"), preserve=False)
+            check("canon-drop: a canonical member WITH a rule is retained",
+                  "func_CANON" in [it["func"] for it in regen2["items"]])
+            Q._rule_count = lambda f: 0
+
+            # 3. post-drop mark_done: refused, and the reason says COMPLETE
+            qp.write_text(json.dumps(regen))
+            r2 = Q.mark_done("func_CANON")
+            check("canon-drop: mark_done after the drop is REFUSED",
+                  r2.get("ok") is False)
+            check("canon-drop: refusal names the completion, not 'not in queue'",
+                  "COMPLETED-INLINE-ASM-CANONICAL" in r2.get("reason", ""))
+            check("canon-drop: refusal is not the bare not-in-queue string",
+                  r2.get("reason") != "not in queue")
+
+            check("canon-drop: refusal carries a machine-readable flag",
+                  r2.get("already_complete") is True
+                  and r2.get("completion") == "COMPLETED-INLINE-ASM-CANONICAL")
+
+            # The refusal's predicate must mirror generate()'s drop CONJUNCT FOR
+            # CONJUNCT. Absence from the queue has causes other than completion
+            # (stale queue.json, missing build/src/<stem>.o, a failed stripped
+            # build), so a predicate weaker than the drop's would assert
+            # completion for a function the drop would have RETAINED. The first
+            # version of this branch omitted `prologue == 0` and would have
+            # called a prologue_fix-carrying function complete.
+            cheats.func_prologue_count = lambda f: 1
+            r4 = Q.mark_done("func_CANON")
+            check("canon-drop: prologue_fix entry blocks the completion claim",
+                  r4.get("ok") is False
+                  and "COMPLETED-INLINE-ASM-CANONICAL" not in r4.get("reason", ""))
+            check("canon-drop: prologue_fix absentee carries no complete flag",
+                  r4.get("already_complete") is None)
+            # ...and generate() likewise RETAINS it, which is the property the
+            # refusal is mirroring.
+            qp.write_text(json.dumps(seed))
+            regen3 = Q.generate(workdir=str(Path(td) / "wd3"), preserve=False)
+            check("canon-drop: canonical member WITH a prologue entry is retained",
+                  "func_CANON" in [it["func"] for it in regen3["items"]])
+            cheats.func_prologue_count = lambda f: 0
+
+            # A NON-canonical absentee still gets the plain message — the
+            # friendlier reason must not leak onto typos or unknown symbols.
+            cheats.canonical_asm_funcs = lambda: set()
+            r3 = Q.mark_done("func_TYPO")
+            eq("canon-drop: unknown function keeps the plain refusal",
+               r3.get("reason"), "not in queue")
+        finally:
+            (Q.QUEUE_PATH, Q.Path, P.c_stems, canonical.scan_all,
+             cheats.canonical_asm_funcs, Q._rule_count,
+             cheats.func_prologue_count, cheats.maspsx_gate_entries,
+             inlineasm.file_func_cheat_asm_count,
+             Q.sandbox.build_stripped_object, score._o_func_table,
+             score.score_func, Q.O.verify, cheats.is_jtbl_infra,
+             cheats.is_canonical_extraction_only) = orig
+
+
 def test_orphaned_local_decls() -> None:
     """find_orphaned_local_decls — the strip-completeness closure (2026-08-06).
 
@@ -1600,6 +1761,7 @@ def main() -> int:
     test_lowercase_asm_cheats()
     test_macro_asm_strip_round_trip()
     test_include_asm_whole_body()
+    test_canonical_completion_is_the_drop()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

@@ -303,6 +303,34 @@ def mark_done(func: str) -> dict:
     q = load()
     item = next((it for it in q.get("items", []) if it["func"] == func), None)
     if item is None:
+        # A canonical-authorized function with zero rules is not MISSING, it is
+        # COMPLETE. generate() drops it (the `func in canon_funcs: continue`
+        # branch below), so after a regen checkpoint `queue done <func>` lands
+        # here — and a bare "not in queue" reads as an error for what is
+        # actually the success state. Campaign 4 Wave 6's payoff checker first
+        # reported 0/19 FAILED for exactly this reason.
+        #
+        # The predicate MUST mirror generate()'s drop conjunct for conjunct.
+        # Absence from the queue has causes other than completion (a stale
+        # queue.json, a missing build/src/<stem>.o, a stripped build pushed to
+        # `failures`), so a predicate weaker than the drop's would assert
+        # completion for a function the drop would have RETAINED. The first
+        # version of this branch omitted `prologue == 0` and could therefore
+        # have called a function carrying a prologue_fix cheat complete.
+        if (_rule_count(func) == 0 and cheats.func_prologue_count(func) == 0
+                and func in cheats.canonical_asm_funcs()):
+            return {"ok": False, "func": func,
+                    # Machine-readable, because the bug this branch fixes was a
+                    # checker interpreting prose. Callers key on `ok` (cli.py
+                    # exits 1) and can now distinguish "refused" from "already
+                    # complete" without substring-matching the reason.
+                    "already_complete": True,
+                    "completion": "COMPLETED-INLINE-ASM-CANONICAL",
+                    "reason": (f"{func} is already COMPLETED-INLINE-ASM-CANONICAL "
+                               f"— canonical-authorized in inline_asm_canonical.txt "
+                               f"with 0 rules. Queue presence means INCOMPLETE, so "
+                               f"regen correctly dropped it; the drop IS the "
+                               f"completion and there is nothing left to mark.")}
         return {"ok": False, "func": func, "reason": "not in queue"}
     rules = _rule_count(func)
     if rules > 0:
