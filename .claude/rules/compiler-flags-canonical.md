@@ -50,7 +50,7 @@ remains frozen and the walls remain source-structure.
 
 | Mechanism (Makefile) | Flag | Why |
 |---|---|---|
-| `GP_FILES` | `-G8` instead of `-G0` | small-data threshold for GP-relative files |
+| `GP_FILES` | `-G8` instead of `-G0` | small-data threshold for GP-relative files. **First member: text1a (owner-approved 2026-08-05** — target %gp_rel loads + MEM_IN_STRUCT_P dependence + cost-model proof; PsyQ's ccpsx defaulted to -G8 and the maspsx sdata_syms machinery had been compensating). Census screening rule for further adoptions: a file is G8-safe only if every <=8-byte extern is in-gp-range (sdata_syms.txt) or honestly non-small-typed, and any file-scope `__asm__` is extracted to asm/funcs first (-G8 defers function bodies; top-level asm floats to .text 0). |
 | `NO_SR_FILES` | `-fno-strength-reduce` | files where strength-reduction diverges |
 | `FIX_LWL_FILES` | RETIRED 2026-08-04 (empty) | fix_lwl XOR-corrected big-endian lwl/lwr offsets; obsolete under -mel |
 
