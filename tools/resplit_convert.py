@@ -289,8 +289,25 @@ def ledger(func: str, body: str) -> Path:
     hard = len(re.findall(r'__asm__[^;]*"\s*[a-z.]+[^"]*\$\d', body))
     asms = body.count("__asm__")
     words = len(re.findall(r'__asm__[^;]*"\s*\.word', body))
+
+    # Volatile-coercion casts. `.claude/rules/mmio-volatile-type-level.md` makes
+    # volatile LEGITIMATE for hardware I/O registers (0x1F801000-0x1F802FFF) and
+    # explicitly EXCLUDES scratchpad (0x1F800000-0x1F8003FF); a cast anywhere
+    # else — including `&D_xxxxxxxx` — is the forbidden volatile-coercion family.
+    # PutRobShadow's preserved body carries 49 scratchpad casts, several of them
+    # load-bearing (a store/reload pair that exists only to keep a dead store
+    # alive), and the first version of this warning said nothing about them.
+    vol_mmio = vol_coerce = 0
+    for m in re.finditer(r'\*\s*\(\s*volatile\s+[\w ]+\*+\s*\)\s*(0x[0-9A-Fa-f]+|&\w+)',
+                         body):
+        tgt = m.group(1)
+        if tgt.startswith("0x") and 0x1F801000 <= int(tgt, 16) <= 0x1F802FFF:
+            vol_mmio += 1
+        else:
+            vol_coerce += 1
+
     warn = ""
-    if pins or asms:
+    if pins or asms or vol_coerce:
         bits = []
         if pins:
             bits.append(f"{pins} register-asm pin(s)")
@@ -303,6 +320,11 @@ def ledger(func: str, body: str) -> Path:
             # this warning exists to prevent.
             bits.append(f"{asms} __asm__ occurrence(s)"
                         + (f" incl. {words} raw .word encoding(s)" if words else ""))
+        if vol_coerce:
+            bits.append(f"{vol_coerce} volatile-coercion cast(s) OUTSIDE the "
+                        f"hardware-MMIO range (scratchpad 0x1F8000xx and/or "
+                        f"&D_xxxxxxxx — see mmio-volatile-type-level.md, which "
+                        f"excludes scratchpad from the carve-out)")
         warn = (
             f" *\n"
             f" * !! WARNING — FORBIDDEN CONSTRUCTS BELOW: {', '.join(bits)}.\n"
