@@ -3684,3 +3684,42 @@ guard category remains available as a TRANSITIONAL mechanism only; wirings it
 admits count as debt, not finished form.
 
 [skip-park-src-guard]
+
+## 2026-08-06 — owner grants 9 canonical-asm authorizations (evidence packets batch 1+2)
+
+Owner reviewed the orchestrator's per-unit recommendations (packets:
+docs/grind/auth-packets-2026-08-06.md; independent spot-verification of the
+decisive signals against asm/funcs/*.s recorded in the session transcript:
+trapping ops, break-code cluster 259/260/261/263, delay-slot cop2 in all four
+LIBGTE leaves, back-to-back identical mfc2 pair, zero trapping forms in three
+COMPLETED-C controls) and **GRANTED authorization for 9 units**:
+
+1. func_80052B00 — LIBGTE leaf, ctc2 in jr-ra delay slot (func_80052B44 construct)
+2. func_80052A88 — LIBGTE mvmva leaf, swc2 in delay slot
+3. func_80052B7C — LIBGTE mvmva leaf (4-arg), swc2 in delay slot
+4. game_2d_CheckLifeGaugeNoDisp — LIBGTE mvmva leaf (misnamed; rename optional)
+5. func_8004C388 — 5x trapping add midpoint leaf (64-vs-0 corpus base rate)
+6. func_80052788 — trapping sub + duplicated mfc2 latency pad + gpf/gpl
+7. ang_hosei — break 0x107 trampoline (closed 4-member family), AFTER the
+   boot-stub symbol split
+8. the PS-EXE boot/entry stub at 0x800836EC — crt0 ($sp/$gp/$fp construction,
+   $ra-in-global, 2x trapping addi, break 0,1), AFTER being split from
+   asm/funcs/ang_hosei.s per the packet recipe (manual, byte-neutral, no splat
+   re-run, own oracle-gated commit)
+9. func_80052930 — the one judgment call: no single GCC-impossible insn;
+   granted on the mvmva pipeline-interleave precedent (calc_fc_frame_8007EC5C,
+   2026-05-31), the 55-insn live constant, and the 11-pin HEAD evidence that
+   the island form is cheat-dependent
+
+NOT granted (unchanged from the recommendation): func_8002BEA0 and
+func_8002EA24 stay unlisted — their islands qualify but the "otherwise
+matches" contingency is unmet; their pure-C residuals (floor 4 and 2) remain
+ordinary grind work. The proposed island-wording pre-approval remains an open
+shelf item.
+
+Conditions on execution: finished form is the campaign-standard in-place
+INCLUDE_ASM + inline_asm_canonical.txt listing (zero rules, zero pins, zero
+injection templates — the live hardcoded-$N templates and register pins in
+func_8004C388 / func_80052788 / func_80052930 / func_80052B00 are DELETED by
+the conversion); each commit oracle-gated + fresh layer-2 per
+review-discipline; regen realizes the completions (the drop).
