@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T02:20:11",
+  "generated_at": "2026-08-06T07:43:09",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -826,19 +826,19 @@
       "status": "active"
     },
     {
-      "func": "ang_hosei",
-      "file": "ings2",
-      "distance": 50,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80073060",
       "file": "text1b",
       "distance": 50,
       "verdict": "C",
       "rules": 9,
+      "status": "active"
+    },
+    {
+      "func": "ang_hosei",
+      "file": "ings2",
+      "distance": 51,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1117,9 +1117,9 @@
     {
       "func": "func_8007CBB0",
       "file": "display",
-      "distance": 149,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 151,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1131,19 +1131,19 @@
       "status": "active"
     },
     {
-      "func": "func_8007D048",
-      "file": "display",
+      "func": "func_80076D74",
+      "file": "text1b",
       "distance": 159,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
       "status": "active"
     },
     {
-      "func": "func_80076D74",
-      "file": "text1b",
-      "distance": 159,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "func": "func_8007D048",
+      "file": "display",
+      "distance": 161,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1197,9 +1197,9 @@
     {
       "func": "func_8007D6D8",
       "file": "display",
-      "distance": 185,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 187,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1267,14 +1267,6 @@
       "status": "active"
     },
     {
-      "func": "func_80017A44",
-      "file": "ings",
-      "distance": 206,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_800747D8",
       "file": "text1b",
       "distance": 206,
@@ -1288,6 +1280,14 @@
       "distance": 207,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80017A44",
+      "file": "ings",
+      "distance": 208,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1331,19 +1331,19 @@
       "status": "active"
     },
     {
-      "func": "md_game_check_mode",
-      "file": "code6cac_c2",
-      "distance": 232,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80084500",
       "file": "main",
       "distance": 233,
       "verdict": "ASM-SUSPECT",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "md_game_check_mode",
+      "file": "code6cac_c2",
+      "distance": 234,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1373,9 +1373,9 @@
     {
       "func": "replay_camera_get_attack_number",
       "file": "code6cac_c2",
-      "distance": 238,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 240,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1405,17 +1405,17 @@
     {
       "func": "func_8003FA24",
       "file": "config",
-      "distance": 262,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 263,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
       "func": "tslTm2LoadImage",
       "file": "system",
-      "distance": 262,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 263,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1461,9 +1461,9 @@
     {
       "func": "special_camera_Exec",
       "file": "code6cac_b2_post",
-      "distance": 272,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 274,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1563,22 +1563,6 @@
       "status": "active"
     },
     {
-      "func": "DispHira",
-      "file": "code6cac_c2",
-      "distance": 295,
-      "verdict": "ASM-PARTIAL",
-      "rules": 1,
-      "status": "active"
-    },
-    {
-      "func": "func_8007BC08",
-      "file": "display",
-      "distance": 296,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8002F770",
       "file": "code6cac_b",
       "distance": 297,
@@ -1587,11 +1571,27 @@
       "status": "active"
     },
     {
+      "func": "DispHira",
+      "file": "code6cac_c2",
+      "distance": 297,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80067200",
       "file": "text1b",
       "distance": 297,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8007BC08",
+      "file": "display",
+      "distance": 298,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1605,9 +1605,9 @@
     {
       "func": "efc_rob_set_type_particle",
       "file": "text1a_c",
-      "distance": 300,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 302,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1699,14 +1699,6 @@
       "status": "active"
     },
     {
-      "func": "func_80080828",
-      "file": "system",
-      "distance": 352,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8006D808",
       "file": "text1b",
       "distance": 353,
@@ -1715,11 +1707,19 @@
       "status": "active"
     },
     {
+      "func": "func_80080828",
+      "file": "system",
+      "distance": 354,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80035828",
       "file": "code6cac_b2_post",
-      "distance": 358,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 360,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1771,19 +1771,19 @@
       "status": "active"
     },
     {
-      "func": "func_80079244",
-      "file": "text1b_b",
-      "distance": 416,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8006295C",
       "file": "text1b",
       "distance": 418,
       "verdict": "ASM-PARTIAL",
       "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_80079244",
+      "file": "text1b_b",
+      "distance": 418,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1835,14 +1835,6 @@
       "status": "active"
     },
     {
-      "func": "func_80077D94",
-      "file": "text1b_b",
-      "distance": 466,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "mario_test_Exec",
       "file": "code6cac",
       "distance": 467,
@@ -1851,11 +1843,19 @@
       "status": "active"
     },
     {
+      "func": "func_80077D94",
+      "file": "text1b_b",
+      "distance": 468,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80043454",
       "file": "text1a_c",
-      "distance": 477,
-      "verdict": "ASM-SUSPECT",
-      "rules": 1,
+      "distance": 479,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -1885,9 +1885,9 @@
     {
       "func": "special_camera_set_win_cam",
       "file": "code6cac_b2_post",
-      "distance": 510,
+      "distance": 512,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1918,9 +1918,9 @@
     {
       "func": "func_8003993C",
       "file": "code6cac_c_mid",
-      "distance": 524,
+      "distance": 526,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -1929,9 +1929,9 @@
     {
       "func": "func_80079A30",
       "file": "text1b_b",
-      "distance": 533,
+      "distance": 535,
       "verdict": "ASM-STRUCTURAL",
-      "rules": 1,
+      "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
@@ -3072,9 +3072,9 @@
       "parked": 36
     },
     "by_verdict": {
-      "C": 86,
+      "C": 102,
       "ASM-PARTIAL": 45,
-      "ASM-SUSPECT": 108,
+      "ASM-SUSPECT": 92,
       "ASM-STRUCTURAL": 26,
       "CANON-EXTRACT": 66
     }
