@@ -1339,141 +1339,33 @@ void func_8004E564(void) {
 }
 void func_8004E56C(void) {
 }
-void func_8004E574() {
-    /* Body from asm/funcs/func_8004E574.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004E7E4() {
-    /* Body from asm/funcs/func_8004E7E4.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004EAC8() {
-    /* Body from asm/funcs/func_8004EAC8.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004ECC8() {
-    /* Body from asm/funcs/func_8004ECC8.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004EF10() {
-    /* Body from asm/funcs/func_8004EF10.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004F0FC() {
-    /* Body from asm/funcs/func_8004F0FC.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004F314() {
-    /* Body from asm/funcs/func_8004F314.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004F53C() {
-    /* Body from asm/funcs/func_8004F53C.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004F798() {
-    /* Body from asm/funcs/func_8004F798.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004F970() {
-    /* Body from asm/funcs/func_8004F970.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004FB74() {
-    /* Body from asm/funcs/func_8004FB74.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004FD40() {
-    /* Body from asm/funcs/func_8004FD40.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_8004FF40() {
-    /* Body from asm/funcs/func_8004FF40.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050120() {
-    /* Body from asm/funcs/func_80050120.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050334() {
-    /* Body from asm/funcs/func_80050334.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050538() {
-    /* Body from asm/funcs/func_80050538.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050774() {
-    /* Body from asm/funcs/func_80050774.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050908() {
-    /* Body from asm/funcs/func_80050908.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050AB8() {
-    /* Body from asm/funcs/func_80050AB8.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050C68() {
-    /* Body from asm/funcs/func_80050C68.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80050E60() {
-    /* Body from asm/funcs/func_80050E60.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051010() {
-    /* Body from asm/funcs/func_80051010.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051208() {
-    /* Body from asm/funcs/func_80051208.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_800513B0() {
-    /* Body from asm/funcs/func_800513B0.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_800515AC() {
-    /* Body from asm/funcs/func_800515AC.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051754() {
-    /* Body from asm/funcs/func_80051754.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
-void func_80051944() {
-    /* Body from asm/funcs/func_80051944.s via asmfix replace_with_asmfile
-     * (extracted from a file-scope __asm__ block: -G8 defers function
-     * bodies, so file-scope asm floats to the top of .text). */
-}
+INCLUDE_ASM("asm/funcs", func_8004E574);
+INCLUDE_ASM("asm/funcs", func_8004E7E4);
+INCLUDE_ASM("asm/funcs", func_8004EAC8);
+INCLUDE_ASM("asm/funcs", func_8004ECC8);
+INCLUDE_ASM("asm/funcs", func_8004EF10);
+INCLUDE_ASM("asm/funcs", func_8004F0FC);
+INCLUDE_ASM("asm/funcs", func_8004F314);
+INCLUDE_ASM("asm/funcs", func_8004F53C);
+INCLUDE_ASM("asm/funcs", func_8004F798);
+INCLUDE_ASM("asm/funcs", func_8004F970);
+INCLUDE_ASM("asm/funcs", func_8004FB74);
+INCLUDE_ASM("asm/funcs", func_8004FD40);
+INCLUDE_ASM("asm/funcs", func_8004FF40);
+INCLUDE_ASM("asm/funcs", func_80050120);
+INCLUDE_ASM("asm/funcs", func_80050334);
+INCLUDE_ASM("asm/funcs", func_80050538);
+INCLUDE_ASM("asm/funcs", func_80050774);
+INCLUDE_ASM("asm/funcs", func_80050908);
+INCLUDE_ASM("asm/funcs", func_80050AB8);
+INCLUDE_ASM("asm/funcs", func_80050C68);
+INCLUDE_ASM("asm/funcs", func_80050E60);
+INCLUDE_ASM("asm/funcs", func_80051010);
+INCLUDE_ASM("asm/funcs", func_80051208);
+INCLUDE_ASM("asm/funcs", func_800513B0);
+INCLUDE_ASM("asm/funcs", func_800515AC);
+INCLUDE_ASM("asm/funcs", func_80051754);
+INCLUDE_ASM("asm/funcs", func_80051944);
 void func_80051B04() {
     /* Body from asm/funcs/func_80051B04.s via asmfix replace_with_asmfile
      * (extracted from a file-scope __asm__ block: -G8 defers function
