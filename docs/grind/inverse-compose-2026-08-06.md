@@ -167,3 +167,45 @@ python3 tools/ra_solver/inverse_compose.py hypothesis \
 python3 tools/ra_solver/inverse.py local tmp/inverse_work/ra/text1b.local.json \
         --func func_80072CD4 --block 5 --swap 3,1 --depth 1
 ```
+
+## LIMITATION — `classify` returns a FICTITIOUS verdict on `replace_with_asmfile` functions
+
+Found 2026-08-06 (nearmatch, the four retained Wave-5 near-matches). **Do not act on a
+`classify` verdict for any function wired with an asmfix `replace_with_asmfile` rule.**
+The verdict is an artifact of text conventions, not a measurement.
+
+Two independent failures compound:
+
+1. **The target is unreadable.** `mkasm_honest.sh` builds `<stem>.tgt.s` by running the
+   real cheat pipeline, so a `replace_with_asmfile` function arrives as the split asm
+   file's own text: a `glabel F` / `endlabel F` block whose instruction lines are prefixed
+   `/* offset addr bytes */`. `goalmap.asm_body` looks for `F:` and skips lines starting
+   with `/*`, so it raises `KeyError: F not found in <stem>.tgt.s` — or, worse, silently
+   returns an empty/partial body if the name happens to appear another way.
+
+2. **Normalizing the labels is not enough — the two sides are different languages.**
+   `.hon.s` is ASSEMBLER SOURCE (maspsx output); the target block is DISASSEMBLY. They
+   spell the same instruction differently, and `classify` compares register-blanked TEXT:
+
+   | | ours (`.hon.s`) | target (asm/funcs) |
+   |---|---|---|
+   | frame setup | `subu $sp,$sp,144` | `addiu $sp, $sp, -0x90` |
+   | immediates | decimal, no spaces | hex, comma-space |
+
+   Both assemble to the identical word. `classify` sees a different instruction MULTISET
+   and reports **PRE-RA / `rtl_shape`** — the one verdict that tells you to stop, because
+   "no perturbation of RA or scheduler can reach it." On `func_80089F3C` it reported
+   PRE-RA with a 287-vs-318 insn gap when the true residual was **zero codegen difference
+   at all** (20 link-neutral relocation addends; see `memory/wip/func_80089F3C/notes.md`).
+
+**Use `tools/pairdiff.py <stem> <func>` instead** (added 5c654c3b). It diffs the two
+OBJECT files the score is actually computed from — `tmp/sandbox/<func>/<stem>.o` against
+`build/src/<stem>.o` — through `engine.score.normalized_insns` with the engine's own
+control-flow masking. Object-vs-object is what `sandbox` reports, so its diff reconciles
+with the score by construction, and relocations render identically on both sides.
+
+Note the corollary for the artifact family: because `pairdiff` compares OBJECTS, a
+HI16/LO16 relocation-addend difference (`sw s0,4(at)` against `D_800A2888+4` vs
+`sw s0,0(at)` against `D_800A288C`) still shows as a diff and still counts toward the
+score, even though the linker erases it. That is a scoring artifact, not a codegen gap —
+see the saEft00Add / AllocRobRmd rulings in `docs/grind/decisions.md`.
