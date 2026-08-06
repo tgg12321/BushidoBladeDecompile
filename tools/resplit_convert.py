@@ -277,15 +277,50 @@ def ledger(func: str, body: str) -> Path:
         for part in (p.strip() for p in l.split(";")):
             if part and not re.fullmatch(r'\(void\)\s*\w+|return\s+[-\w]*|\}', part):
                 meat.append(part)
-    kind = ("a real prior decomp attempt — the resume point when this function "
-            "is decompiled" if meat else
+    kind = ("a real prior decomp attempt — archaeology for the C SHAPE when this "
+            "function is decompiled" if meat else
             "a PLACEHOLDER (no decompiled logic), kept only for provenance")
+
+    # A ledger file lives OUTSIDE every detector's scope — audit_asm_cheats.py and
+    # check_completion_integrity.py glob src/*.c only. So a preserved body carrying
+    # forbidden constructs must carry its own warning, or the header's invitation
+    # to resume from it quietly normalises them as sanctioned reference material.
+    pins = len(re.findall(r'\bregister\b[^;]*\basm\s*\(\s*"', body))
+    hard = len(re.findall(r'__asm__[^;]*"\s*[a-z.]+[^"]*\$\d', body))
+    asms = body.count("__asm__")
+    words = len(re.findall(r'__asm__[^;]*"\s*\.word', body))
+    warn = ""
+    if pins or asms:
+        bits = []
+        if pins:
+            bits.append(f"{pins} register-asm pin(s)")
+        if hard:
+            bits.append(f"{hard} hardcoded-$N inline-asm block(s)")
+        if asms:
+            # Only claim `.word` blocks when there ARE some — asserting them
+            # unconditionally would make the warning itself untrue for a body
+            # with __asm__ and no raw encodings, which is the exact defect class
+            # this warning exists to prevent.
+            bits.append(f"{asms} __asm__ occurrence(s)"
+                        + (f" incl. {words} raw .word encoding(s)" if words else ""))
+        warn = (
+            f" *\n"
+            f" * !! WARNING — FORBIDDEN CONSTRUCTS BELOW: {', '.join(bits)}.\n"
+            f" * These are NOT sanctioned and must NOT be carried back into src/.\n"
+            f" * See .claude/rules/register-asm-pins.md (diagnostic-only, never\n"
+            f" * committable), inline-asm-injection.md (hardcoded-$N) and\n"
+            f" * inline-move-aliasing.md (archived tombstone). This file is outside\n"
+            f" * every detector's scope, so nothing will flag them for you.\n"
+            f" * Resume from the C SHAPE only — control flow, field offsets, the\n"
+            f" * algorithm — and re-derive in PURE C.\n")
+
     write_lf(p, (
         f"/* {func} — C body removed by Campaign 4 (INCLUDE_ASM conversion).\n"
         f" * The build DISCARDED this body (asmfix replace_with_asmfile substituted\n"
         f" * asm/funcs/{func}.s verbatim), so it never reached the binary.\n"
         f" * This body is {kind}.\n"
         f" * NOTE: its signature was never checked by anything — do not trust it.\n"
+        f"{warn}"
         f" * Campaign plan R2.\n"
         f" */\n{body}\n"))
     return p
