@@ -284,6 +284,53 @@ def drop_asmfix_rule(text: str, func: str) -> str:
     return new
 
 
+def strip_comments(text: str) -> str:
+    """Remove /* */ and // comments, PRESERVING string literals.
+
+    The forbidden-construct scan needs exactly this and neither of the obvious
+    alternatives. Counting raw text lets a comment that merely NAMES a construct
+    warn as if the body contained one. But
+    `inlineasm._code_without_comments_and_strings` blanks string literals as
+    well, which guts the scan for the bodies it matters most for: the `$N`
+    registers and `.word` encodings live INSIDE the asm template strings, so
+    cpu_check_run_attack's warning degraded from "4 register-asm pin(s), 6
+    hardcoded-$N inline-asm block(s), 62 __asm__ occurrence(s) incl. 34 raw
+    .word encoding(s)" to a bare occurrence count.
+    """
+    out = []
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "\"'":
+            j = i + 1
+            while j < n and text[j] != c:
+                j += 2 if text[j] == "\\" else 1
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            if j < 0:
+                # UNTERMINATED comment: blanking to end of text would hide every
+                # construct after it, the one direction this scan must never
+                # fail in. Unreachable for a body extracted from source that
+                # compiles, so treat it as not-a-comment rather than swallowing
+                # the rest.
+                out.append(text[i:])
+                break
+            j += 2
+            out.append(" " * (j - i))
+            i = j
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            out.append(" " * (j - i))
+            i = j
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
 def ledger(func: str, body: str) -> Path:
     """Preserve a substantial stub before it is replaced (campaign R2: the body
     is a real prior decomp attempt and is the resume point)."""
@@ -312,10 +359,20 @@ def ledger(func: str, body: str) -> Path:
     # check_completion_integrity.py glob src/*.c only. So a preserved body carrying
     # forbidden constructs must carry its own warning, or the header's invitation
     # to resume from it quietly normalises them as sanctioned reference material.
-    pins = len(re.findall(r'\bregister\b[^;]*\basm\s*\(\s*"', body))
-    hard = len(re.findall(r'__asm__[^;]*"\s*[a-z.]+[^"]*\$\d', body))
-    asms = body.count("__asm__")
-    words = len(re.findall(r'__asm__[^;]*"\s*\.word', body))
+    #
+    # Count on comment-stripped code with STRINGS INTACT (see strip_comments).
+    # Counting raw text made a body whose comment merely NAMES a construct warn
+    # as if it contained one: text1b's canonical stubs are empty bodies whose
+    # comment reads "extracted from a file-scope __asm__ block", and every one
+    # of them earned a "FORBIDDEN CONSTRUCTS BELOW: 1 __asm__ occurrence" banner
+    # over zero constructs (Wave 6b, 19 of 20). A warning that cries wolf on
+    # placeholders is the same unchecked-assertion defect the campaign exists to
+    # remove, and it trains the next reader to skip the banner that matters.
+    scan = strip_comments(body)
+    pins = len(re.findall(r'\bregister\b[^;]*\basm\s*\(\s*"', scan))
+    hard = len(re.findall(r'__asm__[^;]*"\s*[a-z.]+[^"]*\$\d', scan))
+    asms = scan.count("__asm__")
+    words = len(re.findall(r'__asm__[^;]*"\s*\.word', scan))
 
     # Volatile-coercion casts. `.claude/rules/mmio-volatile-type-level.md` makes
     # volatile LEGITIMATE for hardware I/O registers (0x1F801000-0x1F802FFF) and
@@ -326,7 +383,7 @@ def ledger(func: str, body: str) -> Path:
     # alive), and the first version of this warning said nothing about them.
     vol_mmio = vol_coerce = 0
     for m in re.finditer(r'\*\s*\(\s*volatile\s+[\w ]+\*+\s*\)\s*(0x[0-9A-Fa-f]+|&\w+)',
-                         body):
+                         scan):
         tgt = m.group(1)
         if tgt.startswith("0x") and 0x1F801000 <= int(tgt, 16) <= 0x1F802FFF:
             vol_mmio += 1
