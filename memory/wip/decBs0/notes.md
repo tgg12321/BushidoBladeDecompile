@@ -1,109 +1,88 @@
 # decBs0 — WIP (current state 2026-08-05)
 
-`src/text1a.c:1252`. HEAD baseline: honest pure-C distance **58**, 39 regfix rules, plus a
-`register s16 *fp_ptr asm("fp")` pin (cheat-asm — the sandbox strips it, hence honest 58 vs
-`--keep-cheat-asm` 52). Measure: `wsl bash tmp/csz/d.sh decBs0 text1a` /
-`wsl bash tmp/csz/frame.sh decBs0 text1a`.
+`src/text1a.c:1252`. HEAD baseline: honest distance **58**, 39 regfix rules, plus a
+`register s16 *fp_ptr asm("fp")` pin. Measure: `wsl bash tmp/csz/d.sh decBs0 text1a`.
 
-**Status: owner-blocked on a per-file `-G8` ruling.** The residual mechanism is proven and the
-C form that closes it is known; only the build-flag question remains.
+**Status: SOLVED in a snapshot; blocked on one pipeline issue before it can land.** The owner
+APPROVED the `text1a` `-G8` adoption 2026-08-05. Migration executed in `~/bb2_g8_exp/snap`
+(scripts `tmp/csz/g8_*.sh`); the snapshot was verified == oracle before any change.
 
-## Standing constraint from the layer-2 FAIL (commit a6a83d99)
+## The result
 
-The stride-3 pointer walk over `tbl[29]/[32]/[35]` was REJECTED — mechanism-motivated
-`MEM_IN_STRUCT_P` coercion outside [[walking-pointer-serializes-parallel-loads]]'s scope.
-**The whole store side stays closed**; reopening it needs fresh SOTN evidence + an owner
-ruling. Cleared and now in use: the real `do {} while (outer < 2)` rewrite and the pin removal.
-Cleanup on any landing: stray comment at `regfix.txt:927`.
+With `GP_FILES := text1a`, `MASPSX_FLAGS_GP` at parity, `candidate_g8_array.diff` applied and
+decBs0's 39 rules deleted: **decBs0 sandbox score 0, 134/134 insns, ZERO rules, no pin** —
+COMPLETED-C shape. Candidates banked: `candidate_11.diff` (11, at `-G0`) and
+`candidate_g8_array.diff` (**0** at `-G8`; 16 at `-G0`).
 
-## Candidates (banked as diffs; tree left clean)
+## Why the aggregate is the fix (mechanism, proven)
 
-| file | score | insns | notes |
-|---|---|---|---|
-| `candidate_11.diff` | 11 | 132 vs 134 | pin removal + real `do`-loop + plain indexed stores. Frame/RA EXACT (72, `vars=16`, `$fp`=fp_ptr, `$s3`=tbl). |
-| `candidate_g8_array.diff` | **2** at -G8 / 16 at -G0 | **134 vs 134** | candidate_11 + colour triple as `extern s16 g_anim_select[3]`. Frame exact at -G8. |
+`sched_solver` (exact for text1a, 528/528 blocks) localises the whole residual to **block 19**.
+Applying dependence edges by hand (`tmp/csz/bs0_edges.py`) shows **each colour load must depend
+on EVERY preceding `tbl[]` store — 12 edges — to reproduce target's pass-2 order exactly**; the
+one-edge-per-pair version does not. A 12-edge change is why no depth-1 atom search found it
+(searched: spellable atoms and the full 2163/1906-atom sets, both passes, no vector).
 
-## The residual is a memory-dependence problem — PROVEN
-
-`sched_solver` (model exact for text1a, 528/528 blocks) localises the entire residual to
-**block 19**; every other block is goal == identity in both passes.
-
-**Do NOT trust `--goal-from-target` here.** It reports `GOAL INVALID (2 dependence violations)`
-and blames duplicate text; the real cause is that target's three `lhu $2,SYM` share an operand
-skeleton and mis-pair. Both streams hold the same 14 insns — only the `lhu`s move. Hand-derived
-pass-2 goal (pick order):
-`257,255,253,250,248,245,243,240,235,238,230,228,223,221,215,306,219,213,303,211,206,200,204,198,196,193,191,189,187`
-
-Searches against that goal (`tmp/csz/bs0_perturb*.sh`): depth 1 `--atoms luid,luid_move` → **no
-vector**; depth 1 ALL atoms (2163 pass-2 / 1906 pass-1) → **no vector**. Applying the
-hypothesised edges by hand (`tmp/csz/bs0_edges.py`): **each colour load depending on EVERY
-preceding `tbl[]` store — 12 edges — reproduces target's pass-2 order EXACTLY**; the minimal
-one-edge-per-pair version does not. A 12-edge change is why no depth-1/2 atom search could
-ever find it.
-
-## Why the aggregate is the fix (mechanism, measured)
-
-`sched.c:true_dependence` (821-838) drops the edge via exclusion #1, which requires
-`!MEM_IN_STRUCT_P(load) && !rtx_addr_varies_p(load)`. **An in-struct load at a FIXED address
-defeats exclusion #1 without triggering exclusion #2** (which needs a *varying* in-struct
-load). Per `expr.c:4589-4700`, a **constant-index** `ARRAY_REF` falls through to the shared
-handler at `expr.c:4888`, which sets `MEM_IN_STRUCT_P = 1` on a `plus_constant(symbol, off)` —
-in-struct, fixed. Exactly the shape needed.
-
-Use-site evidence for the aggregate: `func_80041E10` writes all three as R/G/B from one packed
-colour, `func_800420D0` sets `[0] = -1` as a sentinel, decBs0 copies them into a
+`sched.c:true_dependence` (821-838) drops the edge via exclusion #1, which needs
+`!MEM_IN_STRUCT_P(load) && !rtx_addr_varies_p(load)`. An **in-struct load at a FIXED address**
+defeats it without triggering exclusion #2 (which needs a *varying* in-struct load). Per
+`expr.c:4589-4700` a **constant-index** `ARRAY_REF` reaches the shared handler at
+`expr.c:4888`, which sets `MEM_IN_STRUCT_P` on a `plus_constant(symbol, off)` — exactly that
+shape. Use-site evidence for the aggregate: `func_80041E10` writes all three as R/G/B from one
+packed colour, `func_800420D0` sets `[0] = -1` as a sentinel, decBs0 copies them into a
 3-halfword-stride matrix column.
 
-With `extern s16 g_anim_select[3]` the block order becomes **target's, exactly**
-(`negu/sh 8/li 1/sh 10/sh 12/lhu/nop/sh 58/lhu/nop/sh 64/lhu/j/sh 70`). The scheduling class
-is CLOSED. At `-G0` the cost is a base register (`la $23,g_anim_select` in the *prologue*,
-above loop head `.L285`, addressed `0/2/4($23)`) which burns `$s7` + save/restore and displaces
-fp_ptr → 16, 138 insns. At `-G8` the hoist disappears, loads become direct
-`lhu $2,g_anim_select / +2 / +4` → **2, 134 vs 134, frame exact**. The leftover 2 is a
-*relocation-form* artifact only (ours `lhu v0,2(gp)` + `GPREL16 g_anim_select`; target
-`lhu v0,0(gp)` + `GPREL16 D_800A323A`) — same address, same linked bytes. Full-build SHA1 is
-the only way to settle it.
+`-G8` is required because at `-G0` cc1's **address-cost model** (3 refs × 2 insns beats `la` +
+3 × 1 insn) hoists `la $23,g_anim_select` into the prologue, burning `$s7` and displacing
+fp_ptr (16, 138 insns). A struct spelling measures identically (16/138), so spelling is not the
+lever; and since target's loads are fixed-address in RTL they must be `MEM_IN_STRUCT_P` for
+target's dependence to exist — i.e. the original TU really was built with small data enabled.
 
-## Path 2 (defeat the -G0 hoist in pure C) — EXHAUSTED; it is a cost-model decision
+Standing constraint: the **store side stays closed** (the stride-3 pointer walk was layer-2
+REJECTED, commit a6a83d99). Cleanup on landing: stray comment at `regfix.txt:927`.
 
-1. **Target really is gp-relative** (`asm/funcs/decBs0.s:116-122`):
-   `lhu $v0, %gp_rel(D_800A3238/A/C)($gp)`, three direct loads, no base register. Target's
-   `$s7` holds `D_800A9B28` and `$fp` holds `D_800F62E0` — **no spare callee-save** exists.
-2. **sdata_syms.txt + maspsx cannot dissolve it.** They run strictly downstream of cc1 (the
-   Makefile passes `--sdata-syms`/`--sdata-funcs`/`--sdata-exclude` to **maspsx only**; cc1
-   always gets `-G0`). Measured: maspsx rewrites every direct reference
-   (`sh $2,g_anim_select+2` → `%gp_rel(g_anim_select+2)($gp)`) but leaves **`la $23,...`
-   untouched** — by then cc1 has already spent the register and the RA cascade.
-3. **Spelling is not the lever.** A struct (`{ s16 r, g, b; }`, `.r/.g/.b`) measures
-   **identically: 16, 138 insns** — `ARRAY_REF` and `COMPONENT_REF` share the `expr.c:4888`
-   path. [[defeat-licm-hoist-var-reuse]] does not apply: its lever is a *C variable's* pseudo
-   going multi-set, and no C variable holds this address — cc1 invents the pseudo itself.
-4. **Target's loads are fixed-address in RTL, so they must be `MEM_IN_STRUCT_P` for target's
-   dependence to exist** — the original source DID use an aggregate. `-G8` is the only measured
-   config where cc1 both treats the load as in-struct and declines to CSE a base: positive
-   evidence the original TU was built with small data enabled.
-5. So at `-G0` the base register is chosen by the **address-cost model**, not the source shape
-   (3 refs × 2 insns beats `la` + 3 × 1 insn). Every remaining `-G0` lever is a coercion —
-   volatile, barriers, or `extern s16 X[1]` one-element arrays.
+## Migration recipe (snapshot-verified except the last step)
 
-## The ruling needed
+1. **`MASPSX_FLAGS_GP` parity is mandatory.** It was a reduced set, missing `--sdata-funcs`,
+   `--sdata-exclude`, `--expand-lb`, `--expand-lb-funcs`, `--multu-funcs`,
+   `--expand-dest-funcs`, `--label-nop-funcs`. Parity alone collapses the blast radius from a
+   diffuse −24 bytes to exactly the 2 predicted siblings.
+2. `GP_FILES := text1a`; apply `candidate_g8_array.diff`; delete decBs0's 39 `regfix.txt` rules.
+3. **Both siblings re-matched**, via a finding that generalises to any `-G8` adoption: at `-G8`
+   cc1 treats any **≤8-byte extern** as small-data addressable and stops CSE-ing its address
+   into a register — but `D_800F6318`, `D_800F6498` (`s16` scalars) and `D_800F66A0` (a 4-byte
+   fn-ptr typedef) sit ~340 KB past `$gp`, far outside GPREL16 range, so maspsx cannot rewrite
+   them and we pay a `lui` per use. All three are declared as scalars yet used as **table
+   bases** (`&X` assigned to a walking pointer), so the fix is the honest array declaration
+   (`extern s16 D_800F6318[];`) with `&X` → `X` at the use sites.
 
-`Makefile:104` has `GP_FILES :=` empty, with `cc_flags_for`/`maspsx_flags_for` already wired to
-switch a listed file to `CC_FLAGS_GP` + `MASPSX_FLAGS_GP`. Mechanism exists and is documented,
-but unused, and [[compiler-flags-canonical]] settled flags project-wide. Measured blast radius:
+## REMAINING BLOCKER — the file-scope glabel block relocates under -G8
 
-- Full build, HEAD source + `GP_FILES := text1a`: **MISMATCH, −24 bytes**.
-- cc1-level `-G0` vs `-G8` across the TU's 37 functions: only **2 change** —
-  `gnd_land_hit_char_die_main` (−2) and `func_80040D48` (−1). decBs0 itself unchanged at HEAD
-  source. Total cc1 delta −3.
-- The other −3 is likely `MASPSX_FLAGS_GP` (`Makefile:22`) being a *reduced* flag set: it omits
-  `--expand-lb`, `--expand-lb-funcs`, `--multu-funcs`, `--expand-dest-funcs`,
-  `--label-nop-funcs`, `--sdata-funcs`, `--sdata-exclude`. Looks like an infrastructure gap.
+Full build MISMATCHes (correct size, wrong SHA1). Everything is byte-identical except:
+`src/text1a.c:883`'s file-scope `__asm__("glabel save_vc_ctrl")` (0x40 bytes) moves from its
+source position (object offset **0x1330**) to the **front of `.text` (0x0)**, shifting the
+first 16 functions by 0x40 and cascading through the image (1255 differing words).
+
+Ruled out as the cause: an explicit `".text\n"` directive at the top of the block (no effect);
+`--dont-force-G0` (no effect); the maspsx/`as` side entirely — with `MASPSX_FLAGS_GP` made
+*identical* to `MASPSX_FLAGS` and `-G8` left **only on cc1**, the shift persists. cc1's own
+`.ent` emission ORDER is unchanged between `-G0` and `-G8`.
+
+Next hypotheses: inspect the raw `cc1 -G8` `.s` immediately around the glabel block for a
+preceding `.sdata`/`.sbss`/`.rdata` section directive that changes the section state; or move
+`save_vc_ctrl` out of the TU into `asm/funcs/` (the project already supports
+`replace_with_asmfile`), sidestepping top-level-asm placement entirely.
+
+NB decBs0 and `func_80041E10` also show a *benign* diff — the gp addend split
+(`0(gp)`+`D_800A323A` vs `2(gp)`+`g_anim_select`). Same final address, expected to link
+identically, but **not yet independently confirmed** since the build has not reached SHA1
+parity.
 
 ## Next
 
-1. **Ruling YES**: bring `MASPSX_FLAGS_GP` to parity, apply `candidate_g8_array.diff`, retire
-   the 39 rules + pin, re-match the 2 perturbed siblings, full-build SHA1.
-2. **Ruling NO**: path 2 is exhausted; anything further at `-G0` is a coercion, and the store
-   side stays closed.
-3. **Do NOT commit a completion.** The owner runs the gate.
+1. Resolve the glabel relocation, then full-build SHA1 in the snapshot.
+2. Then the tree-wide per-file `-G` census (**NOT yet run**). Instrument is built and committed:
+   `tools/objdiff.py` — normalized per-function object comparison that cancels objdump's
+   `jal 0 <name>` symbol artifact and branch-target shifts. Without it every comparison is
+   noise (23 false "changed" functions vs the true 4).
+3. **Do NOT port to main.** The owner runs the port + gates (fresh layer-2 on decBs0,
+   `queue done`, commits).
