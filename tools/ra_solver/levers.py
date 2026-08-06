@@ -46,6 +46,12 @@ EXTRA_QTY = "extra_qty"            # one more competing quantity in the block
 CLASS_CHANGE = "class_change"      # preferred register class differs
 ALLOC_ORDER = "alloc_order"        # allocation order forced, no input explains it
 
+# --- pre-RA (cse.c / combine.c / loop.c — the RTL the earlier passes build) -
+CSE_MERGE = "cse_merge"            # one materialisation where we have two
+CSE_SPLIT = "cse_split"            # two where we have one (CSE defeated)
+RTL_SHAPE = "rtl_shape"            # the insn stream itself differs; no
+                                   # downstream perturbation can reach it
+
 # --- reload (reload1.c spill loop / retry_global_alloc) classes ------------
 RELOAD_FORBIDDEN = "reload_forbidden"   # the `losers` / forbidden_regs set
 RELOAD_PRESSURE = "reload_pressure"     # whether the pseudo is spilled at all
@@ -182,6 +188,44 @@ LEVERS = {
          "register class is decided by the RTL idiom, not by spelling: MD_REGS "
          "($hi/$lo) come from mult/div and GCC's divide-by-constant `mulhi`.  "
          "Change the arithmetic the function performs, or accept it."),
+    ],
+    # ---- pre-RA (CSE / combine) -----------------------------------------
+    CSE_MERGE: [
+        ("store-const-reload-cse", PLAIN,
+         "target materialises a value ONCE where we materialise it twice: "
+         "re-read the GLOBAL (or keep reading the one lvalue) instead of "
+         "caching a local, so cse.c sees one expression and keeps one "
+         "register copy."),
+        ("(single named intermediate)", PLAIN,
+         "give the value ONE name and use it in both places, rather than "
+         "writing the constant/expression out twice.  Two textual occurrences "
+         "of the same constant are two RTL sets unless CSE unifies them."),
+        ("named-local-fake-exception", SANCTIONED,
+         "a constant-holder local, LAST RESORT: FAKE-annotated, documented "
+         "lever exhaustion, layer-1+2 review.  Only after the honest single-"
+         "naming above has been tried and measured."),
+        ("staged-value-reused-variable", SANCTIONED,
+         "stage the value through an EXISTING currently-dead local; live code "
+         "only, zero dead stores, FAKE-annotated + exhaustion documented."),
+    ],
+    CSE_SPLIT: [
+        ("split-read-defeats-hoist", PLAIN,
+         "duplicate the read into the branch arms so CSE cannot unify them "
+         "(SOTN-sanctioned)."),
+        ("duplicated-statement-into-arms", SANCTIONED,
+         "a REAL statement duplicated into 2+ arms; byte-neutrality verified, "
+         "exhaustion documented, FAKE annotation, layer-1/2 review."),
+        ("defeat-combine-symbol-fold", PLAIN,
+         "pre-compute a displaced pointer so combine cannot fold the "
+         "displacement into the addressing mode."),
+    ],
+    RTL_SHAPE: [
+        ("(upstream of every model)", PLAIN,
+         "The instruction MULTISET differs, so the residual is not an "
+         "allocation or a schedule: it is the RTL the front end and the early "
+         "optimisers built.  No perturbation of RA or scheduler inputs can "
+         "reach it — those models permute and rename a FIXED set of insns.  "
+         "Fix the expression the C computes, then re-derive."),
     ],
     # ---- reload ---------------------------------------------------------
     RELOAD_FORBIDDEN: [
