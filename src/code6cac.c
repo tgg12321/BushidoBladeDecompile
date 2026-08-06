@@ -601,8 +601,8 @@ post_loop:
     }
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
-void single_game_setModeRequest(s32 arg0, s32 *arg1) {
-}
+void single_game_setModeRequest(s32 arg0, s32 *arg1);
+INCLUDE_ASM("asm/funcs", single_game_setModeRequest);
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
@@ -925,8 +925,7 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     } while (i >= 0);
     *(s32 *)(base + 0x10C) = 0;
 }
-void func_800198D0(s32 arg0, s32 arg1, s32 arg2, GameObj *arg3) {
-}
+INCLUDE_ASM("asm/funcs", func_800198D0);
 void func_8001A484(u16 *arg0) {
     s32 i;
     u16 *p;
@@ -1016,8 +1015,8 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     arg0[0] = (s16)func_8001A62C(arg2[0] + ((dx << 10) / ((s32)log2_val)));
     arg0[2] = (s16)func_8001A62C(arg2[2] + ((dz << 10) / ((s32)log2_val)));
 }
-void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3) {
-}
+void func_8001A820(s32 arg0, GameObj *arg1, s32 arg2, s32 arg3);
+INCLUDE_ASM("asm/funcs", func_8001A820);
 void func_8001B138(s32 *arg0) {
     D_800FF5C8 = 0;
     D_800FF5CC = 0;
@@ -1331,8 +1330,8 @@ void LWCard_SetAccessData(s32 *arg0) {
     arg0[4] = 0;
     arg0[5] = -1;
 }
-void func_8001BE20(s32 arg0, GameObj *arg1) {
-}
+void func_8001BE20(s32 arg0, GameObj *arg1);
+INCLUDE_ASM("asm/funcs", func_8001BE20);
 void func_8001C444(void) {
     D_8010277A = 0x800;
     D_80102778 = 0x800;
@@ -1453,8 +1452,8 @@ void mario_getMarioVoiceData_8001C820(void) {
     func_800325E0(a0, (s32)((u8 *)s0 + 0x536));
 }
 INCLUDE_RODATA("asm/rodata", jtbl_800100C4);
-void func_8001C8DC(void) {
-}
+void func_8001C8DC(void);
+INCLUDE_ASM("asm/funcs", func_8001C8DC);
 void func_8001CD68(s16 *arg0) {
     s32 val = D_800A3858;
 
@@ -1475,8 +1474,8 @@ void func_8001CD68(s16 *arg0) {
         }
     }
 }
-void camera_set_target_zoom(void) {
-}
+void camera_set_target_zoom(void);
+INCLUDE_ASM("asm/funcs", camera_set_target_zoom);
 /* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
 extern s8 D_800A30FC;
 extern s8 D_800A30FD;
@@ -1632,8 +1631,7 @@ void camera_SetMatrix_8001DBE4(void) {
     gpu_InitDisplay();
     gpu_DisableDisplay();
 }
-void mario_test_Exec(void) {
-}
+INCLUDE_ASM("asm/funcs", mario_test_Exec);
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 typedef struct {
     s32 vx, vy, vz;
@@ -1990,8 +1988,7 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
         *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
     }
 }
-void md_game_rob_data_init(void) {
-}
+INCLUDE_ASM("asm/funcs", md_game_rob_data_init);
 /* kengo:HIGH  |  md_game/md_game_rob_data_init  |  351i */
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
@@ -2125,8 +2122,8 @@ check3:
     }
     return v0;
 }
-void single_game_CheckStatusUpDataTotalOver(void) {
-}
+void single_game_CheckStatusUpDataTotalOver(void);
+INCLUDE_ASM("asm/funcs", single_game_CheckStatusUpDataTotalOver);
 /* kengo:HIGH  |  nm_single_game/single_game_CheckStatusUpDataTotalOver  |  289i */
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
@@ -2382,8 +2379,7 @@ loop:
     }
     if (t0 < 0x16) goto loop;
 }
-void func_800207C8(GameObj *arg0, s32 arg1, GameObj *arg2, s32 arg3) {
-}
+INCLUDE_ASM("asm/funcs", func_800207C8);
 void func_80020CDC(void) {
     if (D_800A38C6 == 0xFFFF) {
         seq_Reset();
@@ -2410,8 +2406,7 @@ void func_80020D70(void) {
     func_80020CDC();
 }
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
-void DispPracticeMenuTex_B(void) {
-}
+INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
@@ -2530,8 +2525,7 @@ void func_800213A0(s16 *arg0) {
         arg0[0x86 / 2] = (s16)((a1 + 1) % v[0x14 / 2]);
     }
 }
-void *func_80021424(s32 arg0, u16 arg1, s32 arg2) {
-}
+INCLUDE_ASM("asm/funcs", func_80021424);
 void func_800218C8(s32 a0) {
     s32 offset = a0 * 1100;
     *(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);
@@ -2681,8 +2675,7 @@ void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
     arg1[1] = (s32)temp_v0[1];
     arg1[2] = (s32)temp_v0[2];
 }
-void func_80021DB0(void) {
-}
+INCLUDE_ASM("asm/funcs", func_80021DB0);
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 dists[6];
     s16 *base;
@@ -2815,8 +2808,7 @@ void pad_button_info_clear(s16 *arg0) {
     arg0[0x138] = 0;
     arg0[0x139] = 0;
 }
-void func_80022580(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-}
+INCLUDE_ASM("asm/funcs", func_80022580);
 void func_80022F34(void) {
     s32 i;
     u16 *tbl;
@@ -3370,8 +3362,7 @@ void func_80023E40(u8 *arg0) {
     *(s32 *)(arg0 + 0x148) = *(s32 *)(arg0 + 0xBC);
 done:;
 }
-void func_80023F08(s32 arg0, s32 arg1) {
-}
+INCLUDE_ASM("asm/funcs", func_80023F08);
 
 /* Rodata moved from asm/data/800.rodata_post.s (rodata-cleanup project,
  * docs/rodata-cleanup-project.md, 2026-06-09). The 66-string animation/asset
