@@ -65,8 +65,18 @@ DATA_O_FILES := $(patsubst $(ASM_DIR)/data/%.s,$(BUILD_DIR)/$(ASM_DIR)/data/%.o,
 C_FILES      := $(wildcard $(SRC_DIR)/*.c)
 C_O_FILES    := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/$(SRC_DIR)/%.o,$(C_FILES))
 
+# Per-function asm objects linked directly (explicit opt-in — NOT a wildcard;
+# asm/funcs/ holds all 1437 split functions and we want only the listed ones).
+# Used where a function cannot live inside a C translation unit: text1a is the
+# project's sole -G8 file, and under -G8 cc1 buffers function bodies to a temp
+# file (TARGET_FILE_SWITCHING) so a file-scope __asm__ floats to the top of the
+# TU instead of staying in place. bb2.ld links this object between the
+# text1a_pre / text1a_post fragments.
+LINKED_ASM_FUNCS := save_vc_ctrl
+ASM_FUNC_O_FILES := $(patsubst %,$(BUILD_DIR)/$(ASM_DIR)/funcs/%.o,$(LINKED_ASM_FUNCS))
+
 # All objects
-ALL_O_FILES  := $(S_O_FILES) $(DATA_O_FILES) $(C_O_FILES)
+ALL_O_FILES  := $(S_O_FILES) $(DATA_O_FILES) $(C_O_FILES) $(ASM_FUNC_O_FILES)
 
 # -- Top-level targets --
 .PHONY: all clean setup check clean-check validate
@@ -101,7 +111,7 @@ $(EXE): $(BIN)
 # -- Per-file GP-relative opt-in --
 # List C files (without path/extension) that need GP-relative addressing.
 # These are compiled with -G8 and use sdata_syms.txt for selective GP-rel.
-GP_FILES := text1a
+GP_FILES := text1a_pre text1a_post
 
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
@@ -119,7 +129,7 @@ FIX_LWL_FILES :=
 # GCC 2.7.2 emits .align 3 (8-byte) for switch tables in .rodata.
 # When rodata is split across objects, this creates unwanted padding.
 # Downgrade to .align 2 (4-byte) for files whose rodata is sandwiched.
-RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a text1a_b text1a_c text1a_c2 text1b_b main
+RODATA_ALIGN2_FILES := code6cac code6cac_b code6cac_c code6cac_c0 code6cac_c_ab code6cac_c2 text1a_pre text1a_post text1a_b text1a_c text1a_c2 text1b_b main
 
 # -- Per-file -fno-strength-reduce opt-in --
 # Some functions were originally compiled without GCC's loop strength-reduction.

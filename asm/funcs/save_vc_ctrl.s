@@ -1,3 +1,7 @@
+.include "macro.inc"
+
+.section .text
+
 .set	noat
 .set	noreorder
 .set noat
@@ -22,6 +26,7 @@ glabel save_vc_ctrl
     addiu   $sp,$sp,0x8
     jr      $ra
     nop
+endlabel save_vc_ctrl
 .set	reorder
 .set	at
 .set reorder

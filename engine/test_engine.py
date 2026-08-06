@@ -262,13 +262,50 @@ def test_cheats() -> None:
     # The wiring still COUNTS as a rule for completion purposes (reviewer
     # verdict 2026-08-06: zero-rules bar unchanged; the recognizer only
     # routes wiring-only functions to the authorize bucket, never to done).
+    #
+    # SYNTHETIC fixture since Campaign 4 Wave 7 (2026-08-06). save_vc_ctrl was
+    # the LAST live canonical-extraction wiring, and its TU re-split retired it,
+    # so no function in the tree exhibits this state any more. Re-keying to a
+    # fabricated function keeps the routing pinned: the recognizer must still
+    # refuse a wiring-only function if one is ever introduced again.
     from engine import queue as _q
-    check("canon-extract: wiring-only func still has rule_count > 0",
-          _q._rule_count("save_vc_ctrl") > 0)
-    check("canon-extract: is_canonical_extraction_only(save_vc_ctrl)",
-          cheats.is_canonical_extraction_only(func="save_vc_ctrl"))
-    check("canon-extract: mark_done still REFUSES wiring-only func",
-          not _q.mark_done("save_vc_ctrl").get("ok"))
+    with tempfile.TemporaryDirectory() as td:
+        rf = Path(td) / "regfix.txt";        rf.write_text("")
+        rf2 = Path(td) / "regfix_stage2.txt"; rf2.write_text("")
+        af = Path(td) / "asmfix.txt"
+        af.write_text('canon_zz: replace_with_asmfile "asm/funcs/canon_zz.s"\n')
+        qp = Path(td) / "queue.json"
+        qp.write_text(json.dumps({"items": [{
+            "func": "canon_zz", "file": "text1a_post", "distance": 2,
+            "verdict": "CANON-EXTRACT", "rules": 1, "status": "authorize"}],
+            "counts": {}}))
+        saved = (cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX,
+                 cheats.canonical_asm_funcs, _q.QUEUE_PATH)
+        cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX = str(rf), str(rf2), str(af)
+        cheats.canonical_asm_funcs = lambda *a, **k: {"canon_zz"}
+        _q.QUEUE_PATH = str(qp)
+        try:
+            check("canon-extract: wiring-only func still has rule_count > 0",
+                  _q._rule_count("canon_zz") > 0)
+            check("canon-extract: is_canonical_extraction_only(wiring-only func)",
+                  cheats.is_canonical_extraction_only(func="canon_zz"))
+            r = _q.mark_done("canon_zz")
+            check("canon-extract: mark_done still REFUSES wiring-only func",
+                  not r.get("ok"))
+            check("canon-extract: the refusal names the wiring, not a bare rule count",
+                  "replace_with_asmfile" in r.get("reason", ""))
+        finally:
+            (cheats.REGFIX, cheats.REGFIX2, cheats.ASMFIX,
+             cheats.canonical_asm_funcs, _q.QUEUE_PATH) = saved
+
+    # Campaign 4 end state (Wave 7): the tree carries NO canonical-extraction
+    # wiring. Every remaining replace_with_asmfile belongs to a NON-canonical,
+    # queue-active function (the four deliberately-retained near-matches), so
+    # none of them may be routed CANON-EXTRACT / dropped as canonical.
+    live_wirings = [ln for ln in Path(cheats.ASMFIX).read_text(encoding="utf-8").splitlines()
+                    if "replace_with_asmfile" in ln and not ln.lstrip().startswith("#")]
+    check("canon-extract: no canonical-extraction wiring remains in asmfix.txt",
+          not any(cheats.is_canonical_extraction_rule(ln) for ln in live_wirings))
 
     with tempfile.TemporaryDirectory() as td:
         cfg = Path(td) / "regfix.txt"

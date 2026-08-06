@@ -165,6 +165,9 @@ def build_all(build_dir: str = "build") -> str:
         build_asm_object(str(s), str(bd / "asm" / f"{s.stem}.o"))
     for s in sorted(Path("asm/data").glob("*.s")):
         build_asm_object(str(s), str(bd / "asm" / "data" / f"{s.stem}.o"))
+    for name in cfg.LINKED_ASM_FUNCS:
+        build_asm_object(f"asm/funcs/{name}.s",
+                         str(bd / "asm" / "funcs" / f"{name}.o"))
     link(build_dir)
     return make_exe(build_dir)
 

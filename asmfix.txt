@@ -18,9 +18,12 @@ func_80033DF4: delete_between "^addu\\s+\\$3,\\$3,1$" "^sb\\s+\\$3,D_8010277D$"
 func_80033DF4: insert_before "^sb\\s+\\$3,D_8010277D$" "addiu $2,$3,1\nsll $5,$5,2\nlui $1,%hi(D_800A38E2)\nsb $2,%lo(D_800A38E2)($1)\nlui $2,%hi(cpu_practice_honmokuroku_data_tbl)\naddiu $2,$2,%lo(cpu_practice_honmokuroku_data_tbl)\naddu $5,$5,$2\nlui $1,%hi(D_800A376B)\nsb $0,%lo(D_800A376B)($1)\nlbu $6,0($5)\nlui $2,%hi(D_8010277C)\nlb $2,%lo(D_8010277C)($2)\nlui $1,%hi(D_800A384C)\nsb $6,%lo(D_800A384C)($1)\n.set noat\nlui $at,%hi(D_8008D538)\naddu $at,$at,$2\nlbu $2,%lo(D_8008D538)($at)\n.set at\nlui $3,%hi(D_8008EC24)\naddiu $3,$3,%lo(D_8008EC24)\n.set noat\nlui $at,%hi(D_8008D9EC)\naddu $at,$at,$2\nlbu $2,%lo(D_8008D9EC)($at)\n.set at\nandi $6,$6,0x00FF\nsltu $2,$2,1\nsll $4,$2,2\naddu $4,$4,$2\naddu $3,$4,$3\naddu $3,$3,$6\nlbu $2,0($3)\nlui $1,%hi(D_800A38DE)\nsb $2,%lo(D_800A38DE)($1)\nlbu $2,1($5)\nlui $1,%hi(D_800A38EC)\nsb $2,%lo(D_800A38EC)($1)\nlbu $2,2($5)\nlui $1,%hi(D_800A38ED)\nsb $2,%lo(D_800A38ED)($1)\nlbu $2,3($5)\nlui $1,%hi(D_800A38EE)\nsb $2,%lo(D_800A38EE)($1)\nlui $2,%hi(D_8008E908)\naddiu $2,$2,%lo(D_8008E908)\naddu $4,$4,$2\naddu $4,$4,$6\nlbu $3,0($4)\naddiu $2,$zero,1\nlui $1,%hi(D_8010277D)"
 func_80033DF4: replace_first "^sb\\s+\\$3,D_8010277D$" "sb $3,%lo(D_8010277D)($1)"
 
-# saTan4FireDisp: move .L272 label before lh/lhu (inner_check jump target fix)
-# NB: cc1 auto-label was .L279 before save_vc_ctrl was retired to canonical asm (2026-06-07);
-# removing save_vc_ctrl's pure-C body shifted text1a.c's cc1 label counter down by 7.
+# saTan4FireDisp: move its 6th cc1 label before lh/lhu (inner_check jump target fix)
+# NB: the rules address the label by FUNCTION-LOCAL SLOT ({lbl#6}), never by number,
+# which is what makes them survive cc1's file-global counter moving under them:
+#   2026-06-07  save_vc_ctrl retired to canonical asm -> counter -7  (.L279 -> .L272)
+#   2026-08-06  text1a split into text1a_pre/_post (Wave 7) -> the function landed in
+#               a fresh TU, counter -186 (.L272 -> .L93). Slot 6 of 7 either way.
 saTan4FireDisp: delete_between "#nop.*'{lbl#6}:'" "^bgez"
 saTan4FireDisp: insert_before "^lh\t\$2,0\(\$16\)" "{lbl#6}:"
 
@@ -108,7 +111,6 @@ func_80056CB8: insert_before "^\.L80056FB4:$" ".L80056D24:\nlui	$at,%hi(D_8009A8
 # target's body BEFORE it.
 func_80060A68: delete_between "^lhu\t\$4,0\(\$3\)$" "^jal\t\$31,\$2$"
 func_80060A68: insert_before "^jal\t\$31,\$2$" "lhu	$2,0($3)\nnop\nsll	$2,$2,2\nlui	$1,%hi(D_800F10D0)\naddu	$1,$1,$2\nsw	$0,%lo(D_800F10D0)($1)\nlw	$2,12($3)\nlw	$4,12($3)\nlw	$5,16($3)\nlw	$2,0($2)\nnop\nsw	$2,32($3)\nlw	$2,4($4)\nlw	$4,12($3)\nsw	$2,36($3)\nlw	$2,8($4)\nlw	$4,16($3)\nsw	$2,40($3)\nlhu	$2,0($4)\nlw	$4,16($3)\nsh	$2,24($3)\nlhu	$4,2($4)\naddu	$2,$3,24\nsw	$2,%gp_rel(D_800A3478)($28)\nsh	$4,26($3)\nlhu	$5,4($5)\nlhu	$4,0($3)\naddu	$2,$3,32\nsw	$2,%gp_rel(D_800A347C)($28)\nsh	$5,28($3)\nsll	$3,$4,2\nlui	$1,%hi(D_8009BA60)\naddu	$1,$1,$4\nlbu	$2,%lo(D_8009BA60)($1)\nlui	$1,%hi(D_800F10D0)\naddu	$1,$1,$3\nlw	$3,%lo(D_800F10D0)($1)\nnop\naddu	$2,$2,$3\nsll	$2,$2,2\nlui	$1,%hi(chractar_use_pset_combo_id_table)\naddu	$1,$1,$2\nlw	$2,%lo(chractar_use_pset_combo_id_table)($1)\nnop"
-save_vc_ctrl: replace_with_asmfile "asm/funcs/save_vc_ctrl.s"
 
 # --- text1b file-scope __asm__ extraction (representation cleanup;
 #     also the prerequisite for any future -G8 adoption of this file) ---

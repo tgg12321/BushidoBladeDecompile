@@ -12,6 +12,7 @@ from __future__ import annotations
 import functools
 from pathlib import Path
 
+from . import buildconfig as cfg
 from . import cheats
 from . import fixtures as fx
 from . import pipeline
@@ -26,6 +27,16 @@ def _file_index_cached() -> dict[str, str]:
 def func_file(func: str) -> str:
     stem = _file_index_cached().get(func)
     if stem is None:
+        # A LINKED_ASM_FUNCS member has no C translation unit at all: its object
+        # is assembled straight from asm/funcs/<name>.s and linked by bb2.ld
+        # (Campaign 4 Wave 7 — the -G8 file-scope-asm float leaves no in-place
+        # C spelling for text1a). There is no C source to score, so building
+        # cannot help; saying so beats the generic "run engine build first".
+        if func in cfg.LINKED_ASM_FUNCS:
+            raise KeyError(
+                f"{func}: no C source to score — it is a LINKED_ASM_FUNCS member, "
+                f"assembled from asm/funcs/{func}.s and linked directly by bb2.ld. "
+                f"Rebuilding will not produce a build/src/*.o entry for it.")
         raise KeyError(f"{func}: not found in any build/src/*.o (run `engine build` first)")
     return stem
 

@@ -2201,14 +2201,6 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "save_vc_ctrl",
-      "file": "text1a",
-      "distance": 2,
-      "verdict": "CANON-EXTRACT",
-      "rules": 1,
-      "status": "authorize"
-    },
-    {
       "func": "motion_SetMotion",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2536,19 +2528,17 @@
     }
   ],
   "counts": {
-    "total": 301,
+    "total": 300,
     "active": 264,
     "by_status": {
       "active": 264,
-      "authorize": 1,
       "parked": 36
     },
     "by_verdict": {
       "C": 172,
       "ASM-PARTIAL": 45,
       "ASM-SUSPECT": 21,
-      "ASM-STRUCTURAL": 26,
-      "CANON-EXTRACT": 1
+      "ASM-STRUCTURAL": 26
     }
   }
 }

@@ -50,7 +50,8 @@ SECTIONS
         build/src/code6cac_c_ab_pad.o(.rodata);
         build/src/code6cac_c2.o(.rodata);
         build/src/config.o(.rodata);
-        build/src/text1a.o(.rodata);
+        build/src/text1a_pre.o(.rodata);
+        build/src/text1a_post.o(.rodata);
         build/src/text1a_c.o(.rodata);
         build/src/text1a_filepaths.o(.rodata);
         build/src/text1a_c2.o(.rodata);
@@ -82,7 +83,9 @@ SECTIONS
         build/src/code6cac_c_ab.o(.text);
         build/src/code6cac_c2.o(.text);
         build/src/config.o(.text);
-        build/src/text1a.o(.text);
+        build/src/text1a_pre.o(.text);
+        build/asm/funcs/save_vc_ctrl.o(.text);
+        build/src/text1a_post.o(.text);
         build/src/text1a_c.o(.text);
         build/src/text1a_c2.o(.text);
         build/src/text1a_b.o(.text);
@@ -107,7 +110,8 @@ SECTIONS
         build/src/code6cac_c_ab.o(.data);
         build/src/code6cac_c2.o(.data);
         build/src/config.o(.data);
-        build/src/text1a.o(.data);
+        build/src/text1a_pre.o(.data);
+        build/src/text1a_post.o(.data);
         build/src/text1a_c.o(.data);
         build/src/text1a_c2.o(.data);
         build/src/text1a_b.o(.data);
@@ -133,7 +137,8 @@ SECTIONS
         build/src/code6cac_c_ab.o(.bss);
         build/src/code6cac_c2.o(.bss);
         build/src/config.o(.bss);
-        build/src/text1a.o(.bss);
+        build/src/text1a_pre.o(.bss);
+        build/src/text1a_post.o(.bss);
         build/src/text1a_c.o(.bss);
         build/src/text1a_c2.o(.bss);
         build/src/text1a_b.o(.bss);
