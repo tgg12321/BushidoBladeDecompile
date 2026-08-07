@@ -547,13 +547,13 @@ void func_8003B5A4(void) {
             }
 
             case 3: {
-                s32 data = D_800A3844;
-                u8 byte0 = *(u8 *)data;
-                u8 byte1 = *(u8 *)(data + 1);
-                D_800A3844 = data + 1;
+                u8 *p = (u8 *)D_800A3844;
+                u8 byte0;
+                D_800A3844 = (s32)(p + 1);
+                byte0 = p[0];
+                D_800A3844 = (s32)(p + 2);
                 chardata[0] = byte0;
-                D_800A3844 = data + 2;
-                chardata[2] = byte1;
+                chardata[2] = p[1];
                 if ((s8)byte0 == D_800A3915) {
                     player_SetCharId(1, D_800A36F4);
                 }
@@ -564,9 +564,10 @@ void func_8003B5A4(void) {
 
             case 1: {
                 u8 byte;
+                u8 *p = (u8 *)D_800A3844;
                 u8 counter = D_800A37A0;
-                byte = *(u8 *)D_800A3844;
-                D_800A3844 += 1;
+                D_800A3844 = (s32)(p + 1);
+                byte = *p;
                 D_800A37A0 = counter + 1;
                 D_800A36A4 = byte;
                 (&D_800A37A8)[counter] = byte;

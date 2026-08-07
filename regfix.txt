@@ -1291,20 +1291,10 @@ func_80081030: reorder 133,132,130,131,134,135 @ 130-135
 
 # suDispMentalBar: case 3 register + scheduling fix
 # ptr: $3->$4, byte0: $4->$3, byte1: $5->$2, ptr+2 dest: $3->$2
-func_8003B5A4: $3 <-> $4 @ 36-49
-func_8003B5A4: subst "\$5" "$2" @ 40
-func_8003B5A4: subst "addu\t\$4," "addu\t$2," @ 41
-func_8003B5A4: subst "\$4" "$2" @ 43
-func_8003B5A4: subst "\$5" "$2" @ 46
 # Reorder: interleave stores between loads (target does sw,lbu,sw,sb,lbu)
-func_8003B5A4: reorder 38,42,39,41,43,44,40,45,46 @ 38-46
 
 # suDispMentalBar: case 1 register + scheduling fix
 # D_800A3844 ptr in $5 not $2, lbu byte moved after store sequence
-func_8003B5A4: subst "\$2" "$5" @ 61
-func_8003B5A4: subst "\$2" "$5" @ 63
-func_8003B5A4: subst ",\$2," ",$5," @ 64
-func_8003B5A4: reorder 64,65,66,63 @ 63-66
 
 # === coli_HitPauseKatana regfix rules ===
 # 64 rules: register renames, re-reads, inline return, operand swaps
