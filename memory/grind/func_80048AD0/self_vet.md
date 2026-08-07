@@ -27,11 +27,11 @@ Locals are `temp_v0, sound, idx, base, delta, p, q` — descriptive of role, no 
 SANCTIONED-FAMILY-CLAIMS:
   FAMILY: Variable reuse for codegen control (construct 1)
   SCOPE: "Variable reuse for codegen control ([[defeat-licm-hoist-var-reuse]]): reusing one C variable for two unrelated values to influence loop-invariant detection or RA. SOTN ships `idxSub = idxSub;` and `randy = basePoint.x; baseX = randy;` with \"FAKE but makes register allocation work\" comments."
-  PRECEDENT: .claude/rules/inline-asm-policy.md §"SOTN-accepted techniques (resolved 2026-06-02 borderline-rule research)" first bullet (SOTN idxSub/randy); in-project: this exact construct on this exact function was layer-2 CONFIRMED by two reviewers — memory/grind/func_80048AD0/evidence.md §"Layer-2: (B) CLEARS on its merits" (2026-08-07).
+  PRECEDENT: .claude/rules/no-new-park-categories.md:172 (SOTN idxSub/randy "FAKE but makes register allocation work" bullet); in-project: this exact construct on this exact function was layer-2 CONFIRMED by two reviewers — memory/grind/func_80048AD0/evidence.md:92 (2026-08-07).
 
   FAMILY: Duplicate-read into branch arms (construct 2, secondary cover only)
   SCOPE: "Duplicate-read into branch arms ([[split-read-defeats-hoist]] #1+#2): pin offset computations inside their branch via duplication. SOTN ships `color_fake = *palette;` repeated rebinds (`src/dra/42398.c`)."
-  PRECEDENT: SOTN src/dra/42398.c repeated `color_fake = *palette;` rebinds as cited in .claude/rules/inline-asm-policy.md; the construct here is the same duplicate-read intent (re-read a memory location instead of routing the cached local) though not arm-shaped — if layer-1 judges the arm-shape scope sentence too narrow to cover a straight-line duplicate read, the correct disposition is a ruling on construct 2, and the author flags this explicitly rather than claiming the family by analogy.
+  PRECEDENT: .claude/rules/no-new-park-categories.md:188 (SOTN src/dra/42398.c repeated `color_fake = *palette;` rebinds); the construct here is the same duplicate-read intent (re-read a memory location instead of routing the cached local) though not arm-shaped — if layer-1 judges the arm-shape scope sentence too narrow to cover a straight-line duplicate read, the correct disposition is a ruling on construct 2, and the author flags this explicitly rather than claiming the family by analogy.
 
 ANNOTATION-CONFORMANCE: one FAKE construct; annotation present in src/text1b.c at the loop head:
   /* FAKE: the record counter reuses `sound` rather than a fresh local. ... */

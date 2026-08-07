@@ -195,6 +195,20 @@ an in-tree definition, or (iii) an owner ruling. (iii) is escalated and open.
   OPERATOR: until the memory/grind/func_80048AD0/ ledger is committed, every
   fresh session will be dispatched with the stale floor-1 digest and must repeat
   this re-apply step ([[grinder-stale-digest-uncommitted-ledger]]).
+- [s2-resubmit-3, 2026-08-07] src/text1b.c was a THIRD time found at the pinned HEAD
+  body at session start (uncommitted-ledger/stale-digest cycle — the driver again
+  dispatched from the committed s1 floor-1 digest). This session re-applied the
+  candidate.c body verbatim (declarations untouched; refused edit (A) not re-filed)
+  and re-measured: **sandbox --disable all = 0, 47/47 insns**, cheat_asm_stripped
+  confirms the 4 HEAD pins replaced by the pure-C body. ADDITIONALLY this session
+  fixed the self_vet.md PRECEDENT lines to the validator-accepted hard form per the
+  16:05 circuit-break operator note (grindlib.py:54 regex — `file.ext:LINE`):
+  Variable-reuse → .claude/rules/no-new-park-categories.md:172 +
+  memory/grind/func_80048AD0/evidence.md:92; Duplicate-read →
+  .claude/rules/no-new-park-categories.md:188. Scope sentences verified verbatim
+  against no-new-park-categories.md:170-174 and :186-188 this session. The prior
+  discarded self-vets' `§"heading"` citation format is what tripped the validator,
+  NOT the constructs themselves.
 - [s2] Self-vet written (memory/grind/func_80048AD0/self_vet.md): two constructs —
   the s1 layer-2-confirmed FAKE counter-reuse (Variable-reuse family, SOTN idxSub
   precedent) and the direct-array-read argument (live dataflow, primary position:

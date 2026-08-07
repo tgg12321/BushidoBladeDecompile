@@ -4044,3 +4044,7 @@ Follow-up to the same-day overturn entry. A dedicated re-verification lane
 3. Census method lesson saved as memory: base-register-store-invisible-to-
    symbol-grep (grep misses struct-member stores through a materialized
    base; read the handler window end-to-end).
+
+## 2026-08-07 18:29 — func_80048AD0 — layer-1 review — **FAIL**
+
+Construct 2 (duplicate-read call argument `snd_LoadBgm((&D_80099BCC)[idx])`) is a codegen-motivated respelling of the twice-refused declaration-type-correction (A), reached by a different syntactic route to the same truncation-avoidance effect; construct 1 (counter-reuse) is adequately documented but is inseparable from the failing construct in this candidate.

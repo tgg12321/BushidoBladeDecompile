@@ -28,7 +28,14 @@
    "next_probe": "tools/permuter_campaign.py launch from candidate.c with a clean single-function target.o, wait + harvest --stop in-turn per fresh-seed discipline"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Construct 2 (duplicate-read call argument `snd_LoadBgm((&D_80099BCC)[idx])`) is a codegen-motivated respelling of the twice-refused declaration-type-correction (A), reached by a different syntactic route to the same truncation-avoidance effect; construct 1 (counter-reuse) is adequately documented but is inseparable from the failing construct in this candidate. Next action: Revert the call-argument change (construct 2); keep `snd_LoadBgm(sound)`, which the ledger already measured as the honest, non-cheat floor at sandbox distance 1 (single-instruction andi residual)"
+ ],
  "origin": "queue",
- "created": "2026-08-07T16:20:21.595631+00:00"
+ "created": "2026-08-07T16:20:21.595631+00:00",
+ "banned_constructs": [
+  "base = (u8 *)snd_LoadBgm((&D_80099BCC)[idx]); -- re-reading the global array element a second time as the call argument, instead of passing the already-cached, already-checked `sound` local",
+  "Same construct, evaluated independently of the (A)-respelling angle"
+ ],
+ "ladder_skip": 2
 }

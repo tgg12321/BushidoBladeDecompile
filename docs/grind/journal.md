@@ -787,3 +787,4 @@
 - 2026-08-07 11:20 func_8003B5A4 COMPLETED-C after 1 sessions.
 - 2026-08-07 11:30 func_80048AD0 s1 [recon] floor=1: Recon: honest floor established at 1 (was 19) via the layer-2-confirmed (B) reuse form without the refused decl edit; reuse-counter type matrix closed with two new kills
 - 2026-08-07 16:05 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_80048AD0
+- 2026-08-07 18:29 func_80048AD0: LAYER-1 FAILED a sandbox-0 candidate — Construct 2 (duplicate-read call argument `snd_LoadBgm((&D_80099BCC)[idx])`) is a codegen-motivated respelling of the twice-refused declaration-type-correction (A), reached by a different syntactic route to the same truncation-avoidance effect; construct 1 (counter-reuse) is adequately documented but is inseparable from the failing construct in this candidate.
