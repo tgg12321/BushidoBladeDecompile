@@ -15,6 +15,7 @@ file-wide strip + masked scoring triages every cheat-asm function in one build.
 """
 from __future__ import annotations
 
+import functools
 import re
 import sys
 from pathlib import Path
@@ -226,10 +227,17 @@ def _preprocessor_line(text: str, idx: int) -> bool:
 
 def register_hint_spans(text: str) -> list[tuple[int, int]]:
     """Char spans for C `register` storage-class hints in real code tokens.
-    Macro definitions are skipped so strip mode does not rewrite definitions."""
+    Macro definitions are skipped so strip mode does not rewrite definitions.
+
+    Memoized by text (see _strip_spans); returns a fresh list each call."""
+    return list(_register_hint_spans_cached(text))
+
+
+@functools.lru_cache(maxsize=8)
+def _register_hint_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     masked = _code_without_comments_and_strings(text)
-    return [m.span() for m in _REGISTER_KEYWORD.finditer(masked)
-            if not _preprocessor_line(masked, m.start())]
+    return tuple(m.span() for m in _REGISTER_KEYWORD.finditer(masked)
+                 if not _preprocessor_line(masked, m.start()))
 
 
 def _match_paren(text: str, open_idx: int) -> int:
@@ -318,7 +326,17 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
     report an honest pure-C distance of 0 for a function with no C at all.
     Whole-body `glabel` __asm__ blocks are deliberately NOT stripped here —
     _block_category calls them "canonical_body" and that behaviour is unchanged.
+
+    Memoized by text: this is a whole-file scan and `func_cheat_asm_count`
+    calls it once per FUNCTION, so a 400-function TU used to re-scan itself 400
+    times. Returns a fresh list each call so callers can mutate the result
+    without corrupting the cache.
     """
+    return list(_strip_spans_cached(text))
+
+
+@functools.lru_cache(maxsize=8)
+def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     spans = [(s, e) for _f, s, e in include_asm_spans(text)]
     for m in cia.ASM_KEYWORD_RE.finditer(text):
         line_start = text.rfind("\n", 0, m.start()) + 1
@@ -340,7 +358,7 @@ def _strip_spans(text: str) -> list[tuple[int, int]]:
         am = _PIN_QUALIFIER.search(pm.group(0))
         if am:
             spans.append((pm.start() + am.start(), pm.start() + am.end()))
-    return spans
+    return tuple(spans)
 
 
 def strip_cheat_asm_file(text: str) -> tuple[str, int]:

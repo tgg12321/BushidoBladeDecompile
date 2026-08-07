@@ -39,6 +39,8 @@ without it, and the resulting C compiles with normal (non-coerced) semantics.
 """
 from __future__ import annotations
 
+import contextlib
+import functools
 import re
 import sys
 from pathlib import Path
@@ -70,15 +72,42 @@ _GLOBAL_NAME_RE = re.compile(r"^D_[0-9A-Fa-f]+")
 # bypassed by this allowlist — they stay forbidden across the board.
 _VOLATILE_EXTERN_ALLOWLIST_FILENAME = "volatile_extern_allowlist.txt"
 _volatile_extern_allowlist_cache: tuple[Path, float, frozenset[str]] | None = None
+# Set ONLY via use_allowlist(); see that function for why this exists.
+_allowlist_path_override: str | None = None
+
+
+@contextlib.contextmanager
+def use_allowlist(path: str | None):
+    """Temporarily read the volatile-extern allowlist from `path`.
+
+    Exists so a tool can evaluate the detector AS IT WAS at some other revision
+    — e.g. tools/spotcheck asking "which functions were COMPLETED-C at ref X",
+    which is only answerable with ref X's allowlist. Without it the detector
+    always reads the working tree, so a historical comparison silently applies
+    today's grants to yesterday's source and cannot see an allowlist regression
+    at all (the 2026-08-07 D_800F7420 class).
+
+    `path=None` is a no-op, so callers can pass an optional override through
+    unconditionally. The loader caches on (path, mtime), so switching back and
+    forth is correct rather than merely cheap.
+    """
+    global _allowlist_path_override
+    prev = _allowlist_path_override
+    _allowlist_path_override = path if path is not None else prev
+    try:
+        yield
+    finally:
+        _allowlist_path_override = prev
 
 
 def _load_volatile_extern_allowlist() -> frozenset[str]:
     """Load the per-symbol allowlist for `extern volatile T G;` carve-out.
     Returns frozenset of D_xxxxxxxx symbol names. Missing file ⇒ empty set
-    (default ban applies). Cached per file mtime so the detector stays cheap
-    on hot paths."""
+    (default ban applies). Cached per (path, mtime) so the detector stays cheap
+    on hot paths; the path is the working-tree file unless a caller has entered
+    use_allowlist()."""
     global _volatile_extern_allowlist_cache
-    path = Path(_VOLATILE_EXTERN_ALLOWLIST_FILENAME)
+    path = Path(_allowlist_path_override or _VOLATILE_EXTERN_ALLOWLIST_FILENAME)
     try:
         mtime = path.stat().st_mtime
     except OSError:
@@ -1118,7 +1147,16 @@ def _decl_has_pointer(text: str, vol_start: int) -> bool:
 
 def find_alias_renames(text: str) -> list[tuple[int, int, str]]:
     """All `extern volatile T NAME asm("SYM");` alias renames where NAME != SYM.
-    Returns (start, end, vol_keyword_index)."""
+    Returns (start, end, vol_keyword_index).
+
+    Memoized by text — pure in `text` (unlike find_plain_volatile_externs, this
+    pattern is forbidden regardless of allowlist membership). Returns a fresh
+    list each call so callers may mutate it."""
+    return list(_find_alias_renames_cached(text))
+
+
+@functools.lru_cache(maxsize=8)
+def _find_alias_renames_cached(text: str) -> tuple[tuple[int, int, str], ...]:
     out = []
     for m in _ALIAS_RENAME_RE.finditer(text):
         name, sym = m.group("name"), m.group("sym")
@@ -1128,7 +1166,7 @@ def find_alias_renames(text: str) -> list[tuple[int, int, str]]:
         # (the alias gives access via a non-`g_` name). Treat as cheat regardless.
         vol_idx = m.start("vol")
         out.append((m.start(), m.end(), vol_idx))
-    return out
+    return tuple(out)
 
 
 def find_global_volatile_casts(text: str) -> list[tuple[int, int, str]]:
@@ -1202,8 +1240,20 @@ def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
     The allowlist applies ONLY to this pattern (plain scalar extern). Alias
     renames, inline volatile casts, non-volatile alias renames, and
     macro-hidden __asm__ are unchanged — they stay forbidden regardless of
-    allowlist membership."""
-    allowlisted = _load_volatile_extern_allowlist()
+    allowlist membership.
+
+    Memoized on (text, allowlist) — NOT on text alone. The result depends on
+    `volatile_extern_allowlist.txt`, so the loaded frozenset is part of the
+    cache key; the loader is itself mtime-cached, so an edit to the allowlist
+    produces a different key and the memo cannot serve a stale answer. Returns
+    a fresh list each call."""
+    return list(_find_plain_volatile_externs_cached(
+        text, _load_volatile_extern_allowlist()))
+
+
+@functools.lru_cache(maxsize=8)
+def _find_plain_volatile_externs_cached(
+        text: str, allowlisted: frozenset[str]) -> tuple[tuple[int, int, str], ...]:
     out = []
     for m in _PLAIN_VOLATILE_RE.finditer(text):
         name = m.group("name")
@@ -1217,7 +1267,7 @@ def find_plain_volatile_externs(text: str) -> list[tuple[int, int, str]]:
         if name in allowlisted:
             continue  # narrow IRQ-touched-global carve-out
         out.append((m.start(), m.end(), m.start("vol")))
-    return out
+    return tuple(out)
 
 
 def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
@@ -1231,7 +1281,17 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
     statement start (the whole statement is stripped).
 
     Spans may OVERLAP in pathological text; the strip path tolerates this by
-    keyword-position dedup."""
+    keyword-position dedup.
+
+    Memoized on (text, allowlist) — it aggregates find_plain_volatile_externs,
+    so it inherits that function's allowlist dependency and must NOT be keyed on
+    text alone. Returns a fresh list each call."""
+    return list(_find_all_cheats_cached(text, _load_volatile_extern_allowlist()))
+
+
+@functools.lru_cache(maxsize=8)
+def _find_all_cheats_cached(
+        text: str, allowlisted: frozenset[str]) -> tuple[tuple[int, int, str], ...]:
     out = []
     out.extend(find_alias_renames(text))
     out.extend(find_global_volatile_casts(text))
@@ -1248,7 +1308,7 @@ def find_all_cheats(text: str) -> list[tuple[int, int, str]]:
         for s, e in body_cheat_spans(text, body_lo, body_hi, params):
             out.append((s, e, s))
     out.sort()
-    return out
+    return tuple(out)
 
 
 _VOLATILE_KW_RE = re.compile(r"\bvolatile\b")
