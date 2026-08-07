@@ -1,0 +1,38 @@
+# Per-TU asm digests emitted by the oracle compiler built from
+# tools/build_oracle_cc1.sh + tools/cc1-no-plus-to-ior.patch.
+# Keyed to the source tree: they change whenever src/ or include/ does.
+# Refresh with: bash tools/build_oracle_cc1.sh --record-manifest
+# src-digest 3323427fc8f5ddd402312e8e11a38d962ec3b116
+# recorded 2026-08-07T07:21:11Z
+b7581c2455a984b98b46d598376b667ebe324284  code6cac
+90fe6491a8704bcad0331ed9b34784181b0bda0e  code6cac_b
+240f1c4e5e4b5756a278a954e2a9131311ab5b35  code6cac_b2_post
+6511954987d3688b809051c2652587a004273939  code6cac_b2_pre
+fd6cc2e9e4ec00f297f81f2d51c0c2f9c75a89b4  code6cac_b_rodata_post
+0db18b7164ac1796532d97555b775ea1bf649716  code6cac_b_rodata_pre
+af37b374c02a912c59adc17e58441988257074ea  code6cac_c
+a3436a38ad992092389530d57aac4470c9310e31  code6cac_c0
+46af243c6958b600e83f3604835ff3d972105c10  code6cac_c2
+53cd403135f4c969b0353d1bbcbdd25a2f3a00fe  code6cac_c_ab
+48f6c19281765aec597280388ea3a861283710e7  code6cac_c_ab_pad
+53fd9f2f120ece666174f264a8a03a4ba5a8644f  code6cac_c_mid
+5d22f226346b219f7fe03860f122e7284714bc9b  config
+4fde02fe1cd5a0bb169800e5feafed630083e78e  display
+97c68df77e8cd8cd237441e30fcda286a19d2717  gpu
+992231edc466a658e8f246e059e311c883e6ee3d  ings
+5168ac0163876aeff04f29bd08978a3b51ce4cc6  ings2
+36fddf221ff4de38d525456862b723821bb5d3f3  ings_strings
+7d7b38cefae14f52eb802c973fe9e2791e2b38e3  main
+3f872da4afa0f726a1f413d9d4da3716d3dfff28  replay_camera_rob_back_loose2
+cddb1a7ade8ee9147196a3b4def3d0e1dabdc94d  sound
+ab1ebdf6d6f450b42f012720a7041f484fd7a4d7  system
+72b9e0801c99233f84199ef7c1aad735728dde1c  text1a_b
+2bd125d8d13940ec3dc28199d89fa7e539a92dde  text1a_b_post_rodata
+cceb0fe1d98e3f2f715311c9cecf75a6da84ff8e  text1a_b_pre_rodata
+0ce9ae450a3c71d6c2e0c1701a766190ffaba9cf  text1a_c
+2eadb3356d63206b6a827b5d456b202fb2e4161c  text1a_c2
+ac772e650f2e1dc01b0ee767256f7023ab470967  text1a_filepaths
+392216adb7677555c7dd06e85c967bf6652bb671  text1a_post
+31e74a185cafdd96c92b51f5b72ad015963612af  text1a_pre
+44a4d500b1c55283ff4150f81e173085712bb63c  text1b
+7b79fbd7f107dc3fc73aab8baa962de575ed025c  text1b_b

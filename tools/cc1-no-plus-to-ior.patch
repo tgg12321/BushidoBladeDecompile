@@ -1,0 +1,54 @@
+Remove combine.c's PLUS->IOR conversion from GCC 2.7.2's simplify_rtx.
+
+This is THE patch that defines the Bushido Blade 2 oracle compiler. It is
+applied by tools/build_oracle_cc1.sh to a pristine checkout of
+decompals/mips-gcc-2.7.2 @ 43d1cdb67ed135879869b5266f01efaaada5e35a inside a
+scratch tree; tools/gcc-2.7.2/ is gitignored, which is why the patch lives
+here, tracked, instead of as an edit in the compiler tree.
+
+WHAT IT DOES
+  Stock GCC rewrites `a + b` into `a | b` whenever it can prove the two
+  operands have no bits in common (`nonzero_bits(a) & nonzero_bits(b) == 0`).
+  Removing the conversion makes the compiler emit `addu`/`addiu` where stock
+  emits `or`/`ori`. Behaviourally that is the ONLY difference: a cc1 built
+  with this patch is byte-identical in output to the frozen 2026-05-18 oracle
+  binary (sha1 045c9543d39ab8109583b92137c7adde084f7a25) on all 32 project
+  TUs, and `simplify_rtx` matches its shipped size exactly (0x39ab vs stock
+  0x3a11).
+
+WHY IT IS HERE (owner election, docs/grind/decisions.md 2026-08-07, d99ab6a6)
+  The patch was introduced accidentally: a 2026-05-18 compiler-patch
+  experiment whose output binary became the project compiler and was never
+  reverted. It is retained — now visible, pinned and reproducible — on the
+  SOTN pattern: that project's cc1-psx-26 is likewise a PATCHED GCC built
+  from a pinned upstream commit and distributed as a hash-verified binary.
+  The community bar is "visible, pinned, reproducible", not "unpatched
+  stock". Retention is MATCH-PROVEN (full-build SHA1 == the original
+  executable), and is NOT a claim that the original PsyQ compiler behaved
+  this way — that question is recorded OPEN in docs/ORACLE-COMPILER.md, with
+  evidence pointing both ways.
+
+  This does not loosen the no-compiler-divergence rule. That freeze stands
+  for everything else; this single documented, owner-elected, match-proven
+  patch is its only in-scope amendment.
+
+diff --git a/combine.c b/combine.c
+index 473adc8..fbb05c8 100644
+--- a/combine.c
++++ b/combine.c
+@@ -3615,15 +3615,6 @@ simplify_rtx (x, op0_mode, last, in_dest)
+ 				 GET_MODE_BITSIZE (mode) - 1),
+ 	   GET_MODE_BITSIZE (mode) - 1);
+ 
+-      /* If we are adding two things that have no bits in common, convert
+-	 the addition into an IOR.  This will often be further simplified,
+-	 for example in cases like ((a & 1) + (a & 2)), which can
+-	 become a & 3.  */
+-
+-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+-	  && (nonzero_bits (XEXP (x, 0), mode)
+-	      & nonzero_bits (XEXP (x, 1), mode)) == 0)
+-	return gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+       break;
+ 
+     case MINUS:
