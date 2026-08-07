@@ -3744,3 +3744,37 @@ unaffected — their reviewers decoded decisive signals (delay-slot cop2 via
 reorg.c; trapping opcode bit patterns) from instruction words, not tags.
 
 [skip-park-src-guard]
+
+## 2026-08-06 — three rulings (owner delegated to orchestrator recommendation, evidence-backed)
+
+**1. func_80052930 grant RESCINDED pending new evidence.** The unit's cited
+evidence degraded under verification ($t9: 2 uses / 36-insn range, not 3/55+;
+splat tag = decoder artifact). Remaining signal (mvmva interleave) is
+STRONG-not-DECISIVE by the packet's own rating, an island form is technically
+constructible, and the 11-pin HEAD state is an RA-wall SYMPTOM that
+no-new-park-categories routes to more search, never escalation. SOTN standard:
+whole-body asm requires no-C-form evidence; "hard to match" is not it. The
+function returns to the pure-C pool (island decomposition per the packet's
+10-region table is the named next step; the pins remain tracked debt).
+Re-escalation requires NEW decisive evidence.
+
+**2. D_800F1AEC volatile-pointer carve-out GRANTED for SetPacketData —
+scoped.** Verified this session: 0x800F1AEC+8 = 0x800F1AF4, i.e. the polled
+flag[2] IS the already-granted ISR-decremented packet counter reached through
+a base pointer — the same IRQ-touched memory as the existing D_800F1AF4 grant,
+not a new global. Prong 2 measured load-bearing (floor 27 -> 39 without it).
+Decisive in-repo precedent: byte-matched COMPLETED-C sibling func_8008C184
+ships the IDENTICAL `volatile s32 *loop_flag` spelling over the same block
+(src/main.c:3399). SOTN standard: volatile for ISR-shared state is ordinary
+C semantics. Scope: the volatile base-pointer spelling over the packet-state
+block in SetPacketData (+ the existing sibling), NOT a general grant for other
+D_800F1AEx elements.
+
+**3. Option-(b) disposition CONFIRMED as standing.** The retained-near-match
+ruling (Wave-5 close-out) is ratified: measured evidence (trial conversion
+destroyed the closeness signal 32 -> 231; func_80089F3C from this set already
+reached COMPLETED-C, proving the retention path); endpoint cost zero (wirings
+retire via ordinary COMPLETED-C). No later session converts these without a
+fresh owner ruling.
+
+[skip-park-src-guard]
