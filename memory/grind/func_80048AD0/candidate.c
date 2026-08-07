@@ -1,21 +1,26 @@
-/* func_80048AD0 — BEST SANCTIONED FORM — honest sandbox distance 1 (measured s1, 2026-08-07)
+/* func_80048AD0 — SANDBOX DISTANCE 0 (measured s2, 2026-08-07) — 47/47 insns,
+ * every opcode/operand/offset verified against asm/funcs/func_80048AD0.s
+ * (disassembly diff: tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt).
  *
- * 47/47 instructions; the single residual is `andi $a0,$a0,0xff` in the
- * snd_LoadBgm jal delay slot where target has `nop`. The andi is caller-side
- * truncation forced by text1b.c's local extern `s32 snd_LoadBgm(u8)` when the
- * s32-typed `sound` is passed. The declaration correction to match sound.c's
- * actual definition `s32 *snd_LoadBgm(s32)` (change (A)) was REFUSED twice by
- * layer-2 (see evidence.md) and must NOT be re-filed. Distance 0 is measured
- * reachable ONLY as (A)+(B) so far; path (ii) — andi-free codegen with the u8
- * decl kept — has three measured kills this session (see evidence.md s1).
+ * The s1 residual (andi $a0,$a0,0xff in the snd_LoadBgm jal delay slot, from
+ * passing the s32 `sound` to the u8-prototyped snd_LoadBgm) is closed WITHOUT
+ * any declaration edit — the reviewer's path (ii). The call argument is the
+ * u8-typed table element read directly: `snd_LoadBgm((&D_80099BCC)[idx])`.
+ * Being u8 → u8, no caller-side truncation is emitted (the lbu IS the
+ * zero-extension); CSE folds this read into `sound`'s cached load pseudo, so
+ * the emitted code has exactly ONE lbu and the argument copy still hands the
+ * {$a0} preference to `sound` (the reused counter). Target delay slot: nop —
+ * matched.
  *
- * Requires the surrounding declarations exactly as at HEAD:
+ * Requires the surrounding declarations exactly as at HEAD (UNTOUCHED —
+ * refused edit (A) is NOT re-filed):
  *   extern s32 snd_LoadBgm(u8);  extern s32 snd_PlayBgm(s32);
  *   extern u8 D_80099BCC;  extern s32 D_800A33E0;  extern s32 D_800A33E4;
  *   extern s32 func_8004153C(s32);
  *
  * The FAKE reuse below is the (B) construct layer-2 confirmed as genuine on
- * its merits (RTL-verified $a0-preference mechanism, ~60-variant exhaustion).
+ * its merits in s1 (RTL-verified $a0-preference mechanism, ~60-variant
+ * exhaustion). Self-vet: memory/grind/func_80048AD0/self_vet.md.
  */
 s32 func_80048AD0(s32 arg0) {
     s32 temp_v0;
@@ -32,7 +37,7 @@ s32 func_80048AD0(s32 arg0) {
     D_800A33E0 = arg0;
     sound = (&D_80099BCC)[idx];
     if (sound == 0xFF) return 0;
-    base = (u8 *)snd_LoadBgm(sound);
+    base = (u8 *)snd_LoadBgm((&D_80099BCC)[idx]);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;

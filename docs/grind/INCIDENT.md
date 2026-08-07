@@ -1,34 +1,38 @@
-# GRINDER CIRCUIT-BREAK — 2026-08-04 01:03
+# GRINDER CIRCUIT-BREAK — 2026-08-07 16:05
 
-**Reason:** 3 consecutive invalid sessions on saEft00Add
+**Reason:** 3 consecutive invalid sessions on func_80048AD0
 
-git HEAD: 04e22879
+git HEAD: 011f275c
 git status:
 ```
- M memory/grind/saEft00Add/evidence.md
+ M memory/grind/func_80048AD0/candidate.c
+ M memory/grind/func_80048AD0/evidence.md
+ M memory/grind/func_80048AD0/hypotheses.md
  M metrics/events.jsonl
+?? memory/grind/func_80048AD0/rejected/named-temp-arg-delta-pref.c
+?? memory/grind/func_80048AD0/self_vet.md
 
 ```
 Last 20 log lines:
 ```
-[grind 2026-08-04 00:31:58] grinder stopped.
-[grind 2026-08-04 00:32:04] grinder starting (pid 38124, model claude-fable-5[1m], judge claude-fable-5[1m])
-[grind 2026-08-04 00:32:05] pre-flight: oracle green.
-[grind 2026-08-04 00:32:05] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 00:47:04] saEft00Add: judge ruling PASS recorded.
-[grind 2026-08-04 00:47:27] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 00:49:28] saEft00Add: INVALID session output (owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names saEft00Add) — discarded, src reverted, respawning.
-[grind 2026-08-04 00:49:50] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 00:50:19] STOP sentinel written; driver exits at next session boundary.
-[grind 2026-08-04 00:51:41] saEft00Add: INVALID session output (owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names saEft00Add) — discarded, src reverted, respawning.
-[grind 2026-08-04 00:52:02] STOP sentinel found; exiting cleanly.
-[grind 2026-08-04 00:52:02] grinder stopped.
-[grind 2026-08-04 00:57:07] grinder starting (pid 39876, model claude-fable-5[1m], judge claude-fable-5[1m])
-[grind 2026-08-04 00:57:28] pre-flight: oracle green.
-[grind 2026-08-04 00:57:29] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 00:59:16] saEft00Add: INVALID session output (owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names saEft00Add) — discarded, src reverted, respawning.
-[grind 2026-08-04 00:59:37] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 01:01:23] saEft00Add: INVALID session output (owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names saEft00Add) — discarded, src reverted, respawning.
-[grind 2026-08-04 01:01:44] saEft00Add: session 2 starting, modality=structural
-[grind 2026-08-04 01:03:23] saEft00Add: INVALID session output (owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names saEft00Add) — discarded, src reverted, respawning.
+[grind 2026-08-07 15:26:39] func_80048AD0: SCOPE VIOLATION —  M regfix.txt — session discarded.
+[grind 2026-08-07 15:26:39] grinder stopped.
+[grind 2026-08-07 15:26:59] grinder starting (pid 25976, model claude-fable-5[1m], judge claude-fable-5[1m])
+[grind 2026-08-07 15:27:20] pre-flight: oracle green.
+[grind 2026-08-07 15:27:21] func_80048AD0: session 2 starting, modality=structural
+[grind 2026-08-07 15:27:21] func_80048AD0: INVALID session output (progress requires >=1 hypothesis with verdict CONFIRMED/KILLED and a numeric measurement in result) — discarded, src reverted, respawning.
+[grind 2026-08-07 15:27:22] grinder stopped.
+[grind 2026-08-07 15:27:22] grinder starting (pid 23228, model claude-fable-5[1m], judge claude-fable-5[1m])
+[grind 2026-08-07 15:27:23] pre-flight: oracle green.
+[grind 2026-08-07 15:27:24] func_80048AD0: session 2 starting, modality=structural
+[grind 2026-08-07 15:27:24] func_80048AD0: SCOPE VIOLATION —  M regfix.txt — session discarded.
+[grind 2026-08-07 15:27:24] grinder stopped.
+[grind 2026-08-07 15:46:53] grinder starting (pid 15688, model claude-fable-5[1m], judge claude-fable-5[1m])
+[grind 2026-08-07 15:47:16] pre-flight: oracle green.
+[grind 2026-08-07 15:47:17] func_80048AD0: session 2 starting, modality=structural
+[grind 2026-08-07 16:00:23] func_80048AD0: INVALID session output (self_vet.md PRECEDENT '.claude/rules/inline-asm-policy.md ┬º"SOTN-accepted techniques (resolved 2026-06-02 borderline-rule research)" first bullet (SOTN idxSub/randy); in-project: this exact construct on this exact function was layer-2 CONFIRMED by two reviewers ΓÇö memory/grind/func_80048AD0/evidence.md ┬º"Layer-2: (B) CLEARS on its merits" (2026-08-07).' is not a citation ΓÇö give file:line or a commit hash ('same spirit' does not count)) — discarded, src reverted, respawning.
+[grind 2026-08-07 16:00:46] func_80048AD0: session 2 starting, modality=structural
+[grind 2026-08-07 16:02:55] func_80048AD0: INVALID session output (self_vet.md PRECEDENT '.claude/rules/inline-asm-policy.md ┬º"SOTN-accepted techniques (resolved 2026-06-02 borderline-rule research)" first bullet (SOTN idxSub/randy); in-project: this exact construct on this exact function was layer-2 CONFIRMED by two reviewers ΓÇö memory/grind/func_80048AD0/evidence.md ┬º"Layer-2: (B) CLEARS on its merits" (2026-08-07).' is not a citation ΓÇö give file:line or a commit hash ('same spirit' does not count)) — discarded, src reverted, respawning.
+[grind 2026-08-07 16:03:17] func_80048AD0: session 2 starting, modality=structural
+[grind 2026-08-07 16:05:12] func_80048AD0: INVALID session output (self_vet.md PRECEDENT '.claude/rules/inline-asm-policy.md ┬º"SOTN-accepted techniques (resolved 2026-06-02 borderline-rule research)" first bullet (SOTN idxSub/randy); in-project: this exact construct on this exact function was layer-2 CONFIRMED by two reviewers ΓÇö memory/grind/func_80048AD0/evidence.md ┬º"Layer-2: (B) CLEARS on its merits" (2026-08-07).' is not a citation ΓÇö give file:line or a commit hash ('same spirit' does not count)) — discarded, src reverted, respawning.
 ```

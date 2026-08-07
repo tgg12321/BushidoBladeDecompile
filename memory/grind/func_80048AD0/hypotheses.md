@@ -49,6 +49,24 @@
 - result: score 20 (48 insns): copy-prop keeps the param pseudo live across call #1, calls_crossed>0 bars it from $a0, lands $s0 plus a second callee-save for saved; side-finding: idx->$v0 half matched once idx was a separate pseudo
 - verdict: KILLED
 
+## [s2] A named-intermediate arg spelling (`t = delta + 0x6E8; snd_PlayBgm(t);`) strips delta's {$a0} preference (frontier lever (b))
+- mechanism: set_preference would record the {$a0} copy-pref on t, not delta, since delta no longer appears as the PLUS first operand of an insn setting $a0
+- probe: u8 sound + fresh s32 counter + named temp; sandbox + objdump of the sandbox .o
+- result: score 6; disassembly shows `subu a0` + `addiu a0,a0,1768` — t COALESCED with delta on $a0. delta dies in the t-insn and expand_preferences (global.c:829-874) merges prefs bidirectionally between the SET allocno and any REG_DEAD allocno, handing {$a0} straight back to delta. Since delta must die feeding the $a0 chain in any spelling, the whole lever is closed, not just this form.
+- verdict: KILLED
+
+## [s2] Some dying-pseudo/SET chain can hand {$a0} to a fresh post-call counter whose init is `i = 0` (frontier lever (a))
+- mechanism: expand_preferences merges only when an insn SETs an allocno AND another allocno carries a REG_DEAD note on that same insn
+- probe: read tools/gcc-2.7.2/global.c:829-874 (expand_preferences, verbatim); enumerate the counter's SET insns in this function shape
+- result: the counter's only SETs are the init ((set i (const_int 0)) — const source, no REG_DEAD; the target bytes `addu $a0,$zero,$zero` force exactly this RTL) and the increment (no REG_DEAD). No merge site exists; provably impossible, no dump needed.
+- verdict: KILLED
+
+## [s2] The u8-typed table element passed DIRECTLY as the snd_LoadBgm argument reaches andi-free codegen while `sound` (s32) keeps the counter-reuse {$a0} mechanism
+- mechanism: `(&D_80099BCC)[idx]` has type u8 = the prototype's param type, so no caller-side truncation is emitted (the lbu IS the zero-extension); CSE folds this second source-level read into `sound`'s cached load pseudo (one emitted lbu), so the argument copy still gives `sound` the {$a0} copy-preference and the whole s1 score-1 allocation is preserved with the andi replaced by target's nop
+- probe: applied to src/text1b.c; sandbox --disable all; full objdump diff vs asm/funcs/func_80048AD0.s
+- result: **sandbox 0, 47/47**, every opcode/operand/offset equal (tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt); no declaration touched (refused (A) not re-filed)
+- verdict: CONFIRMED
+
 ## [s1] Keeping sound u8 AND reusing it as the counter avoids the call-site andi at acceptable loop cost
 - mechanism: u8 var passed to u8 param needs no truncation; question was the QImode counter's SImode-consumer cost
 - probe: u8 sound reused as loop counter; sandbox

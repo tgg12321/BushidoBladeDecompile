@@ -143,3 +143,80 @@ an in-tree definition, or (iii) an owner ruling. (iii) is escalated and open.
 - [s1] no duplicate/sibling leads: tmp/duplicates_leads.txt has no 80048AD0 entry
 
 - [s1] src/text1b.c restored to HEAD (oracle-green); best form lives in memory/grind/func_80048AD0/candidate.c
+
+## s2 (structural, 2026-08-07) — SANDBOX 0, path (ii) closed WITHOUT any declaration edit
+
+- [s2] **SANDBOX 0 (47/47)** with edits IN PLACE in src/text1b.c. The closing change
+  over the s1 score-1 form is ONE spelling: the snd_LoadBgm argument is the u8-typed
+  table element read directly — `base = (u8 *)snd_LoadBgm((&D_80099BCC)[idx]);` —
+  while `sound` (s32) still caches the same element for the 0xFF check and is still
+  the FAKE-annotated reused counter. Mechanism: the argument expression has type u8,
+  matching the u8 prototype, so NO caller-side truncation is emitted (the lbu is
+  itself the zero-extension); CSE folds the second source-level read into `sound`'s
+  cached pseudo (emitted code has exactly ONE lbu), and the argument copy therefore
+  still hands the {$a0} copy-preference to `sound`. Every instruction verified
+  against target: nop in the snd_LoadBgm delay slot, `move a0,zero` counter init,
+  `subu a2,v1,v0` delta, `addiu a0,a2,0x6E8` in the snd_PlayBgm delay slot.
+  Disassembly: tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt. This is the
+  reviewer's path (ii) ("andi-free codegen WITHOUT any width/pointer-changing
+  declaration edit") — no declaration touched; refused edit (A) NOT re-filed.
+- [s2] Frontier lever (b) (delta-pref removal by arg respelling) KILLED with a
+  measurement + mechanism: named-temp `t = delta + 0x6E8; snd_PlayBgm(t);` with u8
+  sound + fresh counter scores 6; disassembly shows t coalesced with delta on $a0.
+  global.c expand_preferences (:829-874) merges preferences BIDIRECTIONALLY between
+  the SET allocno and any REG_DEAD allocno of the same insn — delta dies in the
+  t-insn, so t's {$a0} copy-pref flows back to delta. Since delta must semantically
+  die feeding the $a0 argument chain and every chain insn SETs the next pseudo, ANY
+  respelling returns the pref to delta. rejected/named-temp-arg-delta-pref.c.
+- [s2] Frontier lever (a) (fresh zero-init counter receiving {$a0}) KILLED
+  analytically with source citation: global.c expand_preferences requires a single
+  SET whose dest is an allocno AND a REG_DEAD note for another allocno in the SAME
+  insn. The counter's only SETs are `i = 0` ((set i (const_int 0)) — no source reg,
+  no dying reg; target bytes `addu $a0,$zero,$zero` require exactly this shape) and
+  `i++` (no dying reg). Therefore NO pure-C chain can ever hand a preference to a
+  fresh zero-initialized counter in this function shape. The counter can carry {$a0}
+  ONLY by being the call-argument pseudo (the reuse) or its dying ancestor.
+- [s2-resubmit, 2026-08-07] The prior s2 session's src edits did not survive (src/text1b.c
+  was back at the pinned HEAD body; only the uncommitted ledger + self-vet + scratch
+  artifact remained — the stale-digest/uncommitted-ledger situation). THIS session
+  re-applied memory/grind/func_80048AD0/candidate.c verbatim to src/text1b.c
+  (declarations untouched; refused edit (A) not re-filed) and re-measured:
+  **sandbox --disable all = 0, 47/47 insns** with the edits in place. No new
+  constructs; self-vet unchanged and still accurate against the applied diff.
+- [s2-resubmit-2, 2026-08-07] src/text1b.c was AGAIN found at the pinned HEAD body at
+  session start (the uncommitted-ledger/stale-digest cycle repeated — the driver
+  dispatched a "structural" session from the committed s1 digest while the s2
+  ledger sat uncommitted). This session re-applied the candidate.c body verbatim
+  (declarations untouched; refused edit (A) not re-filed) and re-measured:
+  **sandbox --disable all = 0, 47/47 insns**, cheat_asm_stripped confirms the 4
+  HEAD pins were replaced by the pure-C body. Artifact
+  tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt still present; self_vet.md
+  unchanged and re-verified accurate against the applied diff. NOTE FOR THE
+  OPERATOR: until the memory/grind/func_80048AD0/ ledger is committed, every
+  fresh session will be dispatched with the stale floor-1 digest and must repeat
+  this re-apply step ([[grinder-stale-digest-uncommitted-ledger]]).
+- [s2] Self-vet written (memory/grind/func_80048AD0/self_vet.md): two constructs —
+  the s1 layer-2-confirmed FAKE counter-reuse (Variable-reuse family, SOTN idxSub
+  precedent) and the direct-array-read argument (live dataflow, primary position:
+  ordinary C; secondary cover: duplicate-read family, SOTN dra/42398.c precedent,
+  with the arm-shape scope caveat flagged honestly for layer-1).
+
+## OPERATOR NOTE — 2026-08-07 circuit-break resolution (citation format)
+
+The 16:05 circuit-break was three consecutive self-vet rejections for ONE
+mechanical reason: PRECEDENT lines must match the validator regex
+(grindlib.py:54) — `file.ext:LINE` or a 7-40 hex commit hash. A
+`file.md §"heading"` reference is rejected regardless of merit.
+
+The precedents this candidate's self-vet cited, resolved to hard form
+(also NOTE: the scope sentences live in no-new-park-categories.md, NOT
+inline-asm-policy.md as the discarded self-vets claimed):
+
+- Variable reuse for codegen control (SOTN idxSub/randy bullet):
+  .claude/rules/no-new-park-categories.md:172
+- Duplicate-read into branch arms (SOTN color_fake rebinds, src/dra/42398.c):
+  .claude/rules/no-new-park-categories.md:188
+- In-project layer-2 confirmation of construct (B) on this function:
+  memory/grind/func_80048AD0/evidence.md:92
+
+Use this exact form in future self_vet.md PRECEDENT lines.
