@@ -77,6 +77,23 @@ function Test-OracleGreen {
     try { Invoke-Eng @('verify-oracle') | Out-Null; return $LASTEXITCODE -eq 0 }
     catch { return $false }
 }
+function Attribute-RedBuild([string]$When) {
+    # Red SHA1 -> function list. Spotcheck attribute mode compares
+    # build/bb2.exe against disc/SLUS_006.63 per function via the ELF symbol
+    # table (no compile), so the driver logs WHICH functions moved instead of
+    # a bare hash mismatch. Best-effort diagnostic: never blocks or alters the
+    # failure path. Sleeps past the spotcheck fresh-artifact window (45s) so
+    # its preflight does not refuse the tree the failed build just wrote;
+    # --ignore-locks because OUR OWN driver lock is legitimately present.
+    try {
+        Start-Sleep -Seconds 50
+        $wslRoot = (& wsl wslpath -a "$Root" 2>$null | Out-String).Trim()
+        if (-not $wslRoot) { Log "red-build attribution skipped ($When): wslpath failed"; return }
+        $cmd = "cd '$wslRoot' && source .venv/bin/activate && python3 tools/spotcheck/spot_check_completed.py --mode attribute --all --ignore-locks 2>&1 | tail -40"
+        $out = (& wsl bash -c $cmd | Out-String)
+        Log "red-build attribution (${When}):`n$out"
+    } catch { Log "red-build attribution failed (${When}): $_" }
+}
 function Get-QueueTop {
     # DELIBERATE DEVIATION from the plan's line-filter parser (which kept only
     # lines starting with '{'/'['): `queue next` PRETTY-PRINTS a multi-line JSON
@@ -130,6 +147,7 @@ function Reap-PermuterOrphans([string]$When) {
 Log "grinder starting (pid $PID, model $Model, judge $JudgeModel)"
 if (-not (Test-OracleGreen)) {
     Log "PRE-FLIGHT FAIL: oracle not green on main. Fix before grinding."
+    Attribute-RedBuild 'pre-flight'
     Remove-Item $PidFile; exit 2
 }
 Log "pre-flight: oracle green."
@@ -914,7 +932,10 @@ while ($true) {
     }
     # spec: oracle checked around every session — src is reverted (or merged) by
     # this point, so any red here means real corruption -> stop, don't limp.
-    if (-not (Test-OracleGreen)) { Circuit-Break "oracle not green after session on $func" }
+    if (-not (Test-OracleGreen)) {
+        Attribute-RedBuild 'post-session'
+        Circuit-Break "oracle not green after session on $func"
+    }
     if ($Once) { break }
 }
 Remove-Item $PidFile -ErrorAction SilentlyContinue
