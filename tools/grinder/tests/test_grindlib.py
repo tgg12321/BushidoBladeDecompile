@@ -163,7 +163,11 @@ class TestBriefAndWip(unittest.TestCase):
         for token in ("func_X", "structural", "OUTCOME.json",
                       "no dead constant-holders", "candidate.c", "rejected/"):
             self.assertIn(token, b)
-        self.assertNotIn("blocked", b.lower())  # the word must not appear
+        # "blocked" must never be OFFERED as an outcome value. The bare word is
+        # legitimate prose ("Bytes proven but blocked ONLY by...", grindlib:518)
+        # — the enforcement that result="blocked" is invalid lives in
+        # test_blocked_is_not_a_result / validate_outcome.
+        self.assertNotIn('"blocked"', b.lower())
 
     def test_wip_conversion_seeds_ledger(self):
         wd = os.path.join(self.root, "memory", "wip", "func_W")
@@ -194,6 +198,186 @@ class TestBriefAndWip(unittest.TestCase):
         self.assertIn("floor=9", b)
         self.assertIn("hy", b)
         self.assertIn("np", b)
+
+
+GOOD_VET = """# SELF-VET — func_X
+CONSTRUCTS: goto end + shared return, s32 tmp intermediate
+## T1 semantic purpose: both carry a real value on every path
+## T2 human-programmer: yes, this is the natural shape of the spec
+## T3 GCC-internals justification: none needed; program logic explains it
+## T4 permuter/search provenance: derived by hand, permuter only confirmed
+## T5 family check: no forbidden family; one sanctioned family claimed below
+## T6 naming-announces-intent: names are semantic (tmp holds the pitch delta)
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: mixed exit forms
+  SCOPE: "deliberately mix goto endK with inline return to defeat find_cross_jump"
+  PRECEDENT: src/main/psxsdk/libsnd/vs_vh.c:412
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct in this diff
+"""
+
+
+class TestSelfVet(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write_vet(self, text):
+        with open(G.self_vet_path(self.root, "func_X"), "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def test_missing_self_vet_fails(self):
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("self_vet.md", why)
+
+    def test_good_self_vet_passes(self):
+        self.write_vet(GOOD_VET)
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertTrue(ok, why)
+
+    def test_missing_a_test_answer_fails(self):
+        self.write_vet(GOOD_VET.replace(
+            "## T4 permuter/search provenance: derived by hand, permuter only confirmed\n", ""))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("T4", why)
+
+    def test_family_claim_without_scope_quote_fails(self):
+        self.write_vet(GOOD_VET.replace(
+            '  SCOPE: "deliberately mix goto endK with inline return to defeat find_cross_jump"\n', ""))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("SCOPE", why)
+
+    def test_family_claim_with_uncited_precedent_fails(self):
+        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412",
+                                        "SOTN does the same thing in spirit"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("PRECEDENT", why)
+
+    def test_commit_hash_counts_as_a_citation(self):
+        self.write_vet(GOOD_VET.replace("src/main/psxsdk/libsnd/vs_vh.c:412", "a1b2c3d4e5"))
+        ok, why = G.validate_self_vet(self.root, "func_X")
+        self.assertTrue(ok, why)
+
+    def test_candidate_ready_requires_self_vet_when_func_known(self):
+        o = {"result": "candidate-ready", "floor": 0, "headline": "matched",
+             "hypotheses": [], "evidence": [], "frontier": [], "artifacts": []}
+        ok, _ = G.validate_outcome(o, "structural", self.root, "func_X")
+        self.assertFalse(ok)
+        self.write_vet(GOOD_VET)
+        ok, why = G.validate_outcome(o, "structural", self.root, "func_X")
+        self.assertTrue(ok, why)
+        # back-compat: no func => the gate cannot run and must not fire
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertTrue(ok, why)
+
+
+class TestBannedConstructs(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+        with open(G.self_vet_path(self.root, "func_X"), "w", encoding="utf-8") as f:
+            f.write(GOOD_VET)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_clean_vet_passes(self):
+        G.add_banned_construct(self.root, "func_X", "unused local array frame coercion")
+        ok, why = G.check_banned_constructs(self.root, "func_X")
+        self.assertTrue(ok, why)
+
+    def test_redeclared_banned_construct_is_rejected(self):
+        G.add_banned_construct(self.root, "func_X", "shared return label with goto end accumulator")
+        ok, why = G.check_banned_constructs(self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("BANNED", why)
+
+    def test_candidate_ready_rejected_on_banned_construct(self):
+        G.add_banned_construct(self.root, "func_X", "shared return label with goto end accumulator")
+        o = {"result": "candidate-ready", "floor": 0, "headline": "matched",
+             "hypotheses": [], "evidence": [], "frontier": [], "artifacts": []}
+        ok, why = G.validate_outcome(o, "structural", self.root, "func_X")
+        self.assertFalse(ok)
+        self.assertIn("BANNED", why)
+
+    def test_ban_is_deduplicated(self):
+        G.add_banned_construct(self.root, "func_X", "dead conditional store")
+        G.add_banned_construct(self.root, "func_X", "dead conditional store")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(st["banned_constructs"], ["dead conditional store"])
+
+
+class TestModalityRouting(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def bump_sessions(self, n):
+        st = G.load_state(self.root, "func_X")
+        st["session_count"] = n
+        G.save_state(self.root, "func_X", st)
+
+    def test_advance_modality_changes_the_rung(self):
+        self.bump_sessions(3)   # ladder index 2 => 'permuter'
+        st = G.load_state(self.root, "func_X")
+        before = G.assign_modality(3, st)
+        after = G.advance_modality(self.root, "func_X")
+        self.assertNotEqual(before, after)
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(G.assign_modality(3, st), after)
+
+    def test_ladder_skip_persists_across_sessions(self):
+        self.bump_sessions(1)
+        G.advance_modality(self.root, "func_X")
+        st = G.load_state(self.root, "func_X")
+        self.assertGreaterEqual(int(st["ladder_skip"]), 1)
+
+    def test_pending_fixup_short_circuits_to_annotation_fix(self):
+        self.bump_sessions(4)
+        G.set_pending_fixup(self.root, "func_X", "annotation", "FAKE comment lacks a mechanism")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(G.assign_modality(4, st), "annotation-fix")
+        G.clear_pending_fixup(self.root, "func_X")
+        st = G.load_state(self.root, "func_X")
+        self.assertNotEqual(G.assign_modality(4, st), "annotation-fix")
+
+    def test_annotation_fix_brief_is_tiny_scope(self):
+        G.set_pending_fixup(self.root, "func_X", "annotation", "FAKE comment lacks a mechanism")
+        b = G.build_brief(self.root, "func_X", "annotation-fix", "OUT.json")
+        self.assertIn("NO NEW CONSTRUCTS", b)
+        self.assertIn("FAKE comment lacks a mechanism", b)
+
+    def test_annotation_fix_progress_needs_only_evidence(self):
+        o = {"result": "progress", "floor": 4, "headline": "annotation could not be written",
+             "hypotheses": [], "evidence": ["no exhaustion exists to cite"],
+             "frontier": [], "artifacts": []}
+        ok, why = G.validate_outcome(o, "annotation-fix", self.root, "func_X")
+        self.assertTrue(ok, why)
+        o["evidence"] = []
+        ok, _ = G.validate_outcome(o, "annotation-fix", self.root, "func_X")
+        self.assertFalse(ok)
+
+    def test_banned_constructs_are_loud_in_the_brief(self):
+        G.add_banned_construct(self.root, "func_X", "dead conditional store")
+        b = G.build_brief(self.root, "func_X", "structural", "OUT.json")
+        self.assertIn("BANNED CONSTRUCTS", b)
+        self.assertIn("dead conditional store", b)
+
+    def test_brief_carries_the_self_vet_requirement(self):
+        b = G.build_brief(self.root, "func_X", "structural", "OUT.json")
+        self.assertIn("self_vet.md", b)
 
 
 if __name__ == "__main__":

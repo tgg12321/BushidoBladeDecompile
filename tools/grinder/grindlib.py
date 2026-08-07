@@ -22,6 +22,170 @@ LADDER = ["structural", "structural", "permuter", "permuter",
 RESULTS = ("progress", "candidate-ready", "ruling-request", "owner-gated")
 MAX_FRONTIER = 3
 
+# ── Self-vet artifact (2026-08-07 review-audit fix #2) ───────────────────────
+# 46% of Judge FAILs were cheat-by-spelling where the worker prompt never
+# carried the standards, and 10/18 cited a rule whose own text excluded the
+# construct. The standards now front-load into roles/grind-session.md; this is
+# the matching LAYER-1 ARTIFACT: a candidate-ready session must have answered
+# the 6 tests IN WRITING, quoted the SCOPE SENTENCE of every rule it claims,
+# and cited the SOTN precedent as file:line or a commit hash. A session that
+# cannot write this down does not have a defensible candidate, and the driver
+# discards it exactly like a scope violation.
+SELF_VET_NAME = "self_vet.md"
+# Each entry: (regex, human explanation of what is missing)
+_SELF_VET_REQUIRED = (
+    (r"(?im)^\s*CONSTRUCTS\s*:", "a `CONSTRUCTS:` line enumerating every construct in the diff"),
+    (r"(?im)^\s*#*\s*T1\b", "the T1 (semantic purpose) answer"),
+    (r"(?im)^\s*#*\s*T2\b", "the T2 (human-programmer) answer"),
+    (r"(?im)^\s*#*\s*T3\b", "the T3 (GCC-internals justification) answer"),
+    (r"(?im)^\s*#*\s*T4\b", "the T4 (permuter/search provenance) answer"),
+    (r"(?im)^\s*#*\s*T5\b", "the T5 (family check) answer"),
+    (r"(?im)^\s*#*\s*T6\b", "the T6 (naming-announces-intent) answer"),
+    (r"(?im)^\s*SANCTIONED-FAMILY-CLAIMS\s*:",
+     "a `SANCTIONED-FAMILY-CLAIMS:` section (write `none` if you claim no family)"),
+    (r"(?im)^\s*ANNOTATION-CONFORMANCE\s*:",
+     "an `ANNOTATION-CONFORMANCE:` line (write `n/a — no FAKE construct` if none)"),
+)
+# A claimed family must carry BOTH a verbatim scope quote and a hard citation.
+_FAMILY_BLOCK = re.compile(r"(?im)^\s*FAMILY\s*:\s*(.+)$")
+_SCOPE_LINE = re.compile("(?im)^\\s*SCOPE\\s*:\\s*[\"“](.+?)[\"”]\\s*$")
+_PRECEDENT_LINE = re.compile(r"(?im)^\s*PRECEDENT\s*:\s*(.+)$")
+# file:line, or a git hash (>=7 hex). "same spirit" is explicitly not a citation.
+_CITATION = re.compile(r"([\w./\\-]+\.\w+:\d+)|(\b[0-9a-f]{7,40}\b)")
+
+
+def self_vet_path(root, func):
+    return os.path.join(ledger_dir(root, func), SELF_VET_NAME)
+
+
+def validate_self_vet(root, func):
+    """Return (ok, reason) for memory/grind/<func>/self_vet.md.
+
+    Mechanical only — it cannot tell a good answer from a bad one. Its job is to
+    make the ANSWERS EXIST before a Judge cycle is spent, and to refuse the two
+    failure shapes the audit measured: a family claimed with no verbatim scope
+    sentence, and a precedent asserted with no file:line/commit citation."""
+    p = self_vet_path(root, func)
+    if not os.path.isfile(p):
+        return False, (f"candidate-ready requires a self-vet artifact at "
+                       f"memory/grind/{func}/{SELF_VET_NAME} (6 tests answered in "
+                       f"writing, scope sentences quoted, precedents cited) — none found")
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            txt = f.read()
+    except OSError as e:
+        return False, f"self_vet.md unreadable: {e}"
+    if len(txt.strip()) < 80:
+        return False, "self_vet.md is effectively empty"
+    missing = [why for rx, why in _SELF_VET_REQUIRED if not re.search(rx, txt)]
+    if missing:
+        return False, "self_vet.md is missing " + "; ".join(missing)
+    # Family claims: every FAMILY: block needs a quoted SCOPE: and a cited PRECEDENT:
+    fams = _FAMILY_BLOCK.findall(txt)
+    if fams:
+        scopes = _SCOPE_LINE.findall(txt)
+        precs = _PRECEDENT_LINE.findall(txt)
+        if len(scopes) < len(fams):
+            return False, (f"self_vet.md claims {len(fams)} sanctioned family/families but "
+                           f"quotes only {len(scopes)} verbatim SCOPE sentence(s) — every "
+                           "claimed family needs its rule's scope sentence in quotes")
+        if len(precs) < len(fams):
+            return False, (f"self_vet.md claims {len(fams)} sanctioned family/families but "
+                           f"gives only {len(precs)} PRECEDENT line(s)")
+        for pr in precs:
+            if not _CITATION.search(pr):
+                return False, (f"self_vet.md PRECEDENT {pr.strip()!r} is not a citation — "
+                               "give file:line or a commit hash ('same spirit' does not count)")
+    return True, ""
+
+
+def _declared_constructs(root, func):
+    """Lowercased text of the self-vet's declared constructs (whole file, so a
+    construct mentioned anywhere in the vet still trips the banned check)."""
+    try:
+        with open(self_vet_path(root, func), encoding="utf-8", errors="replace") as f:
+            return f.read().lower()
+    except OSError:
+        return ""
+
+
+def _significant_terms(text):
+    """Content words of a banned-construct phrase, for substring matching.
+
+    Deliberately crude: the ban is a TRIPWIRE, not a parser. If enough of the
+    phrase's content words appear in the self-vet, the session is re-proposing
+    the banned thing under some spelling and the driver makes it explain itself
+    rather than burning a Judge cycle."""
+    stop = {"the", "a", "an", "of", "to", "in", "for", "and", "or", "is", "it",
+            "that", "this", "with", "on", "as", "by", "be", "was", "not", "no",
+            "construct", "family", "form", "use", "using", "used", "cheat"}
+    return [w for w in re.findall(r"[a-z0-9_()*]{4,}", str(text).lower())
+            if w not in stop]
+
+
+def check_banned_constructs(root, func):
+    """Return (ok, reason). A candidate whose self-vet re-declares a construct
+    the Judge already banned for this function is rejected before the Judge sees
+    it — the audit found 59% of FAILs sat in respelling loops."""
+    st = load_state(root, func) or {}
+    banned = st.get("banned_constructs") or []
+    if not banned:
+        return True, ""
+    vet = _declared_constructs(root, func)
+    if not vet:
+        return True, ""
+    for b in banned:
+        terms = _significant_terms(b)
+        if len(terms) < 2:
+            continue
+        hits = [t for t in terms if t in vet]
+        if len(hits) >= max(2, int(len(terms) * 0.5)):
+            return False, (f"self-vet re-declares a BANNED construct for {func}: {b!r} "
+                           f"(matched on {', '.join(hits[:5])}). A banned construct "
+                           "respelled is the same construct — change the attack, not the "
+                           "spelling, or emit ruling-request.")
+    return True, ""
+
+
+def add_banned_construct(root, func, text):
+    st = load_state(root, func)
+    st.setdefault("banned_constructs", [])
+    if text and text not in st["banned_constructs"]:
+        st["banned_constructs"].append(text)
+    save_state(root, func, st)
+
+
+def set_pending_fixup(root, func, kind, detail):
+    """Queue a tiny-scope fix-up brief for the NEXT session (one-shot)."""
+    st = load_state(root, func)
+    st["pending_fixup"] = {"kind": kind, "detail": detail, "set": _now()}
+    save_state(root, func, st)
+
+
+def clear_pending_fixup(root, func):
+    st = load_state(root, func)
+    if st.get("pending_fixup"):
+        st["pending_fixup"] = None
+        save_state(root, func, st)
+
+
+def advance_modality(root, func):
+    """Force the NEXT session onto a DIFFERENT rung of the ladder.
+
+    Called after a construct-class FAIL: repeating the same modality is how a
+    respelling loop starts, so the driver bumps a persistent ladder offset until
+    the next assignment differs from the modality that produced the FAIL."""
+    st = load_state(root, func)
+    if st.get("pending_fixup"):
+        return assign_modality(st.get("session_count", 0), st)   # fix-up wins; nothing to rotate
+    cur = assign_modality(st.get("session_count", 0), st)
+    for _ in range(len(LADDER)):
+        st["ladder_skip"] = 1 + int(st.get("ladder_skip") or 0)
+        if assign_modality(st.get("session_count", 0), st) != cur:
+            break
+    save_state(root, func, st)
+    return assign_modality(st.get("session_count", 0), st)
+
 
 def _now():
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -58,7 +222,8 @@ def init_ledger(root, func, file_stem, origin="queue"):
         save_state(root, func, {
             "func": func, "file": file_stem, "session_count": 0,
             "current_modality": None, "floor_history": [], "frontier": [],
-            "judge_constraints": [], "origin": origin, "created": _now(),
+            "judge_constraints": [], "banned_constructs": [], "ladder_skip": 0,
+            "pending_fixup": None, "origin": origin, "created": _now(),
         })
     for name, header in (("evidence.md", f"# Evidence bank — {func}\n"),
                          ("hypotheses.md", f"# Hypothesis ledger — {func}\n")):
@@ -91,7 +256,7 @@ def _has_measurement(text):
     return any(ch.isdigit() for ch in str(text))
 
 
-def validate_outcome(o, modality, root):
+def validate_outcome(o, modality, root, func=None):
     """Return (ok, reason). A session is VALID only if it proves work:
     - candidate-ready / ruling-request have their own requirements;
     - progress requires >=1 hypothesis with a CONFIRMED/KILLED verdict and a
@@ -149,8 +314,27 @@ def validate_outcome(o, modality, root):
     if not isinstance(o.get("floor"), int):
         return False, "floor (int) is required"
     if res == "candidate-ready":
+        # LAYER-1 GATE (2026-08-07). `func` is optional for back-compat with
+        # callers that don't know it; when the driver passes it, a candidate
+        # without a conforming self-vet — or one that re-declares a banned
+        # construct — is an INVALID SESSION, not a Judge problem.
+        if func:
+            ok, why = validate_self_vet(root, func)
+            if not ok:
+                return False, why
+            ok, why = check_banned_constructs(root, func)
+            if not ok:
+                return False, why
         return True, ""
     # res == progress
+    if modality == "annotation-fix":
+        # A fix-up session's job is to re-submit the SAME form with a corrected
+        # annotation, so it has no new measurement to make. It must still say in
+        # writing what it did (or why the fix-up was not possible).
+        if not o.get("evidence"):
+            return False, ("annotation-fix must bank evidence saying what the "
+                           "annotation now reads, or why the fix-up failed")
+        return True, ""
     if modality == "recon":
         if not o.get("frontier"):
             return False, "recon must produce an initial frontier"
@@ -214,12 +398,24 @@ def assign_modality(session_count, state=None):
     """Modality for the NEXT session. Session 1 = recon; then walk/repeat LADDER —
     UNLESS the function is exhaustion-ready (flat floor across many modalities), in
     which case force `escalation` so the run reaches a disposition instead of
-    looping. `state` is optional for back-compat; without it the trigger never fires."""
+    looping. `state` is optional for back-compat; without it the trigger never fires.
+
+    Two overrides sit ABOVE the ladder (2026-08-07 review-audit fix #3):
+      * a pending ANNOTATION fix-up short-circuits to the `annotation-fix`
+        modality — a FAIL on comment format is a one-comment job, not a re-grind;
+      * `ladder_skip` (bumped by advance_modality after a construct-class FAIL)
+        rotates the ladder so the next session cannot repeat the modality that
+        produced the FAIL. That is what makes a no-respelling constraint bite:
+        the session is moved to a different ATTACK, not just told to stop."""
+    st = state or {}
+    if isinstance(st, dict) and (st.get("pending_fixup") or {}):
+        return "annotation-fix"
     if session_count == 0:
         return "recon"
     if _exhaustion_ready(state):
         return "escalation"
-    return LADDER[(session_count - 1) % len(LADDER)]
+    skip = int(st.get("ladder_skip") or 0) if isinstance(st, dict) else 0
+    return LADDER[(session_count - 1 + skip) % len(LADDER)]
 
 
 def apply_outcome(root, func, o, modality):
@@ -326,6 +522,22 @@ MODALITY_PLAYBOOK = {
     "synthesis": ("Re-read the ENTIRE ledger (evidence.md + hypotheses.md + rejected/). "
                   "Write the best merged attack. Reset the frontier to the strongest 1-3 "
                   "hypotheses for the next ladder pass."),
+    "annotation-fix": ("ANNOTATION FIX-UP — TINY SCOPE. The Judge FAILed the previous "
+                       "candidate on ANNOTATION FORMAT ONLY: the work itself was accepted, "
+                       "and the sole defect is the /* FAKE: ... */ comment's presence or "
+                       "wording. Your ENTIRE job this session: restore "
+                       "memory/grind/<func>/candidate.c into src/, fix the annotation so it "
+                       "reads /* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: "
+                       "<where> */ per the Judge's stated defect (quoted in the fix-up notice "
+                       "below), re-run `sandbox <func> --disable all` to confirm the floor is "
+                       "unchanged, refresh self_vet.md's ANNOTATION-CONFORMANCE line, and "
+                       "return candidate-ready. NO NEW CONSTRUCTS ARE PERMITTED THIS SESSION — "
+                       "not a rename, not a reordering, not a 'while I'm here' improvement. A "
+                       "diff that changes anything but comments (and the self-vet) is a scope "
+                       "violation and the session is discarded. If the annotation genuinely "
+                       "cannot be written truthfully — because the exhaustion or the mechanism "
+                       "the template demands does not exist — that is not a comment problem: "
+                       "say so in `evidence` and return progress, and the ladder resumes."),
     "escalation": ("DISPOSITION SESSION — the honest floor has been FLAT across many "
                    "sessions and >=4 distinct modalities, so the driver has determined the "
                    "pure-C levers are exhausted. Your job THIS session is to REACH A "
@@ -470,6 +682,26 @@ def build_brief(root, func, modality, outcome_path):
                          f"    next probe: {f['next_probe']}"
                          for f in st["frontier"]) or "  (empty — build one)"
     constraints = "\n".join(f"  - {c}" for c in st["judge_constraints"]) or "  (none)"
+    # Banned constructs get their own loud block ABOVE the ledger state: the audit
+    # found 59% of FAILs sitting in respelling loops, where the constraint existed
+    # but read as advice buried in a list. This one is mechanically enforced.
+    banned_list = st.get("banned_constructs") or []
+    if banned_list:
+        banned = ("\n## BANNED CONSTRUCTS — MECHANICALLY ENFORCED, NOT ADVICE\n"
+                  "The Judge has already ruled each of these a cheat FOR THIS FUNCTION. The\n"
+                  "driver REJECTS a candidate-ready whose self_vet.md re-declares one, under any\n"
+                  "spelling, before the Judge ever sees it — the session is discarded as invalid\n"
+                  "and your work is lost. Respelling a banned construct is the same construct.\n"
+                  "Change the ATTACK. If you believe a ban is wrong, emit `ruling-request`.\n"
+                  + "\n".join(f"  - BANNED: {b}" for b in banned_list) + "\n")
+    else:
+        banned = ""
+    fx = st.get("pending_fixup") or {}
+    if fx:
+        fixup = ("\n## FIX-UP NOTICE — the Judge's stated defect (this is your whole task)\n"
+                 f"  kind: {fx.get('kind')}\n  defect: {fx.get('detail')}\n")
+    else:
+        fixup = ""
     # Sony-library provenance goes ABOVE the modality playbook: if the target is
     # library code with published reference C, that changes what the session
     # should DO, so it must be read before the playbook frames the work.
@@ -481,7 +713,7 @@ modality for THIS session is: **{modality}**
 
 {psyq}
 {MODALITY_PLAYBOOK[modality]}
-
+{fixup}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
@@ -510,6 +742,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
   "evidence": ["fact ..."], "frontier": [<=3 of {{"hypothesis","mechanism","next_probe"}}],
   "artifacts": ["tmp/grind/..."], "ruling_question": "", "escalation_ref": ""}}
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
+- SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
 - "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and parks the function so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
@@ -562,7 +795,12 @@ def convert_wip(root, func, file_stem):
 if __name__ == "__main__":
     # CLI for the PowerShell driver:
     #   grindlib.py brief <root> <func> <modality> <outcome_path>   -> prints brief
-    #   grindlib.py validate <root> <outcome_json_path> <modality>  -> exit 0 ok / 1 invalid (prints reason)
+    #   grindlib.py validate <root> <outcome_json_path> <modality> [func] -> exit 0 ok / 1 invalid (prints reason)
+    #   grindlib.py selfvet <root> <func>                           -> exit 0 ok / 1 invalid (prints reason)
+    #   grindlib.py ban <root> <func> <construct>
+    #   grindlib.py advance-modality <root> <func>                  -> prints the new modality
+    #   grindlib.py fixup <root> <func> <kind> <detail>
+    #   grindlib.py clear-fixup <root> <func>
     #   grindlib.py apply <root> <func> <outcome_json_path> <modality>
     #   grindlib.py init <root> <func> <file_stem> [origin]
     #   grindlib.py convert-wip <root> <func> <file_stem>
@@ -576,10 +814,26 @@ if __name__ == "__main__":
         print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
     elif cmd == "validate":
         o = json.load(open(sys.argv[3], encoding="utf-8"))
-        ok, why = validate_outcome(o, sys.argv[4], sys.argv[2])
+        ok, why = validate_outcome(o, sys.argv[4], sys.argv[2],
+                                   sys.argv[5] if len(sys.argv) > 5 else None)
         if not ok:
             print(why)
             sys.exit(1)
+    elif cmd == "selfvet":
+        ok, why = validate_self_vet(sys.argv[2], sys.argv[3])
+        if ok:
+            ok, why = check_banned_constructs(sys.argv[2], sys.argv[3])
+        if not ok:
+            print(why)
+            sys.exit(1)
+    elif cmd == "ban":
+        add_banned_construct(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "advance-modality":
+        print(advance_modality(sys.argv[2], sys.argv[3]))
+    elif cmd == "fixup":
+        set_pending_fixup(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    elif cmd == "clear-fixup":
+        clear_pending_fixup(sys.argv[2], sys.argv[3])
     elif cmd == "apply":
         # grindlib.py apply <root> <func> <outcome_json_path> <modality>
         o = json.load(open(sys.argv[4], encoding="utf-8"))

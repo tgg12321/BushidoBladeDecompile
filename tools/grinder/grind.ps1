@@ -22,9 +22,14 @@ param(
     [switch]$Stop,
     [string]$Model = 'claude-fable-5[1m]',
     [string]$JudgeModel = 'claude-fable-5[1m]',
+    # Layer-1 (the pre-Judge cheat-reviewer gate) runs on the model the agent
+    # definition declares — it is a high-volume, cheap gate whose job is to bounce
+    # obvious cheat-by-spelling before a Judge cycle is spent.
+    [string]$Layer1Model = 'claude-sonnet-5',
     [int]$SessionTimeoutMin = 90,
     [string]$MockSessionScript = '',
-    [string]$MockJudgeScript = ''
+    [string]$MockJudgeScript = '',
+    [string]$MockLayer1Script = ''
 )
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)   # repo root
@@ -175,6 +180,96 @@ function Get-JudgeLimitReset([string]$AgentLog) {
     } catch { return $null }
 }
 
+function Record-Review([string]$func, [string]$layer, [string]$verdict, [string]$cause = '') {
+    # Review telemetry (2026-08-07 review-audit fix #5). Best-effort by the
+    # metrics contract: it can never raise, never block, never gate.
+    try { python tools/grinder/record_review.py $func $layer $verdict $cause 2>$null | Out-Null } catch { }
+}
+
+function Get-Layer1RoleFile {
+    # The cheat-reviewer agent definition is a Claude-Code agent file with YAML
+    # frontmatter; --append-system-prompt-file wants the prompt body alone. Strip
+    # the frontmatter into tmp/ once per driver run. Returns '' if the definition
+    # is missing, which makes layer-1 fail OPEN (the Judge still gates).
+    $src = Join-Path $Root '.claude\agents\cheat-reviewer.md'
+    if (-not (Test-Path $src)) { return '' }
+    $dst = Join-Path $GrindTmp 'layer1_role.md'
+    try {
+        $lines = @(Get-Content $src)
+        if ($lines.Count -and $lines[0].Trim() -eq '---') {
+            $end = -1
+            for ($i = 1; $i -lt $lines.Count; $i++) { if ($lines[$i].Trim() -eq '---') { $end = $i; break } }
+            if ($end -ge 0) { $lines = $lines[($end + 1)..($lines.Count - 1)] }
+        }
+        Set-Content $dst -Value ($lines -join "`n") -Encoding utf8
+        return $dst
+    } catch { return '' }
+}
+
+function Invoke-Layer1([string]$func, [string]$stem, [string]$diff) {
+    # LAYER-1 GATE (2026-08-07 review-audit fix #2b). A fresh adversarial
+    # cheat-reviewer rules on the candidate diff + the session's own self-vet
+    # BEFORE the Judge is spawned. Rationale from the audit: 46% of Judge FAILs
+    # were cheat-by-spelling that a cheap adversarial pass catches, and every one
+    # of them burned a full Judge cycle to say so.
+    #
+    # FAILS OPEN by design. If the reviewer is unreachable or returns nothing
+    # parseable, the candidate proceeds to the Judge — which is default-FAIL and
+    # is the authoritative gate. Layer-1 exists to SAVE Judge cycles, never to
+    # become a second way to lose a bytes-proven candidate to an API hiccup.
+    $role = Get-Layer1RoleFile
+    if (-not $role) { Log "${func}: layer-1 role file unavailable — skipping to Judge."; return $null }
+    $outPath = Join-Path $GrindTmp "layer1_$func.json"
+    $briefPath = Join-Path $GrindTmp "layer1_brief_$func.md"
+    $led = "memory/grind/$func"
+    $vetPath = Join-Path $Root "memory\grind\$func\self_vet.md"
+    $vet = if (Test-Path $vetPath) { Get-Content $vetPath -Raw } else { '(no self-vet on disk)' }
+    $task = @"
+LAYER-1 REVIEW for $func (src/$stem.c) — you are the pre-Judge gate in the
+Grinder pipeline. A grind session has produced a candidate whose honest
+cheat-invisible sandbox distance is 0. Rule ONLY on whether the C is legitimate
+under the cheats-by-any-spelling policy. Default to FAIL.
+
+The candidate diff against HEAD:
+``````diff
+$diff
+``````
+
+The session's OWN self-vet (its written answers to the 6-test checklist, its
+claimed sanctioned families with scope sentences + precedents, and its
+annotation-conformance line). Treat it as a CLAIM to verify, never as evidence:
+``````
+$vet
+``````
+
+Verify against the ledger yourself: $led/state.json (judge_constraints and
+banned_constructs — a re-declared banned construct is an automatic FAIL),
+$led/hypotheses.md and $led/evidence.md (the lever-exhaustion the FAKE
+prerequisites demand — check it, do not take the claim), $led/rejected/.
+Every quoted SCOPE sentence must actually appear in the rule file it cites, and
+every PRECEDENT must resolve to the file:line or commit it names. A citation
+that does not check out is a FAIL, not a rounding error.
+
+Write your verdict JSON (the schema in your role prompt: decision / function /
+summary / evidence / next_action) to the exact path below. Write NOTHING else to
+disk — you are read-only on the repo.
+"@
+    Set-Content $briefPath -Value $task -Encoding utf8
+    $v = $null
+    for ($try = 1; $try -le 2; $try++) {
+        $v = Invoke-GrindAgent $briefPath $outPath $role $Layer1Model $MockLayer1Script -UsageFunc $func -UsageRole 'layer1'
+        if ($v -and $v.decision) { break }
+        Log "${func}: layer-1 attempt $try returned no parseable decision."
+        if ($try -lt 2) { Start-Sleep -Seconds 30 }
+    }
+    if (-not $v -or -not $v.decision) {
+        Log "${func}: layer-1 UNAVAILABLE — failing open to the Judge."
+        Record-Review $func 'layer1' 'UNAVAILABLE' 'unreachable'
+        return $null
+    }
+    return $v
+}
+
 function Invoke-Judge([string]$func, [string]$TaskText) {
     # Retry transient failures with backoff (a proven candidate is never
     # discarded because of an API hiccup). Usage-limit 429s are NOT transient
@@ -190,7 +285,7 @@ function Invoke-Judge([string]$func, [string]$TaskText) {
         # NB: $Func deliberately NOT passed (judges never launch campaigns, so the
         # GRIND_FUNC Stop-gate stays unarmed); UsageFunc carries it for telemetry.
         $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript -UsageFunc $func -UsageRole 'judge'
-        if ($v -and $v.verdict -in @('PASS', 'FAIL')) { return $v }
+        if ($v -and $v.verdict -in @('PASS', 'FAIL', 'ESCALATE')) { return $v }
         $reset = if ($MockJudgeScript) { $null } else { Get-JudgeLimitReset ($outPath + '.agent.log') }
         if ($reset) {
             $limitWaits++
@@ -217,6 +312,68 @@ function Invoke-Judge([string]$func, [string]$TaskText) {
     }
 }
 
+function Invoke-JudgeEscalation([string]$func, [string]$kind, $v) {
+    # ESCALATE (2026-08-07 review-audit fix #4). 23% of measured FAILs were
+    # AUTHORITY ARTIFACTS: the work was sound, the Judge simply had no verdict for
+    # "the grant you are asking for is above my pay grade", so it FAILed and the
+    # driver re-ground a function that was actually finished pending one owner
+    # ruling. ESCALATE routes to the SAME disposition as an owner-gated park: the
+    # function freezes, the queue advances, and nothing is re-ground until the
+    # owner rules. It is a wait-state, not a completion and not a refusal.
+    $date = Get-Date -Format 'yyyy-MM-dd'
+    $ref = "$date — $func — OWNER-ESCALATION (judge ESCALATE on $kind; awaiting owner ruling)"
+    $body = @"
+**Filed by the grinder Judge ($date)** — verdict ESCALATE: the work is sound and
+complete, but the grant it needs is above the Judge's standing authority (a rule
+extension, a new construct family, or an owner-policy question). No re-grind is
+warranted; the function is parked until the owner rules.
+
+**The Judge's packet:**
+
+$($v.justification)
+
+$(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.constraint)" })
+
+The candidate C is preserved at ``memory/grind/$func/candidate.c``; main is back at
+HEAD. Owner action: rule on the question above, then unpark via
+``& tools/wteng.ps1 main queue regen`` (or reopen the item) so the grind resumes.
+"@
+    @("", "## $ref", "", $body) | Add-Content $Decisions
+    Invoke-Eng @('queue', 'park', $func, '--reason', "owner escalation pending (judge ESCALATE): $ref") | Out-Null
+    Journal "$func JUDGE ESCALATE ($kind) — parked pending owner ruling."
+    Log "${func}: judge ESCALATE — owner escalation filed, function parked."
+    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+    git -C $Root commit -m "grind: $func judge ESCALATE — owner escalation filed [skip-park-src-guard]" 2>$null | Out-Null
+}
+
+function Set-FailRouting([string]$func, $v) {
+    # BINDING NO-RESPELLING (2026-08-07 review-audit fix #3). A construct-class
+    # FAIL does three things instead of one: the construct is BANNED for this
+    # function (the driver rejects a later candidate that re-declares it), the
+    # modality ladder is FORCE-ADVANCED so the next session attacks differently
+    # rather than respelling, and an annotation-format-only FAIL is routed to a
+    # one-comment fix-up brief instead of a whole re-grind.
+    $ground = [string]$v.fail_ground
+    if ($ground -eq 'ANNOTATION-FORMAT') {
+        $detail = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
+        $detail = $detail.Substring(0, [Math]::Min(600, $detail.Length))
+        python tools/grinder/grindlib.py fixup . $func 'annotation' $detail | Out-Null
+        Log "${func}: FAIL ground = ANNOTATION-FORMAT — next session routed to the fix-up brief (comment only)."
+        return 'annotation'
+    }
+    $banned = ''
+    if ($v.banned_construct) { $banned = [string]$v.banned_construct }
+    elseif ($ground -eq 'CONSTRUCT' -and $v.constraint) { $banned = [string]$v.constraint }
+    if ($banned) {
+        $banned = $banned.Substring(0, [Math]::Min(400, $banned.Length))
+        python tools/grinder/grindlib.py ban . $func $banned | Out-Null
+        Log "${func}: construct BANNED for this function — $banned"
+    }
+    $newMod = (python tools/grinder/grindlib.py advance-modality . $func 2>&1 | Out-String).Trim()
+    Log "${func}: modality force-advanced after FAIL — next session is '$newMod'."
+    if ($ground) { return $ground.ToLower() } else { return 'construct' }
+}
+
 function Invoke-JudgeRuling([string]$func, [string]$question) {
     $led = "memory/grind/$func"
     $task = @"
@@ -231,6 +388,13 @@ Write your verdict JSON to the exact path given below.
 "@
     $v = Invoke-Judge $func $task
     $qShort = $question.Substring(0, [Math]::Min(80, $question.Length))
+    Record-Review $func 'judge' ([string]$v.verdict) 'ruling'
+    if ($v.verdict -eq 'ESCALATE') {
+        Add-Decision $func "ruling: $qShort" 'ESCALATE' $v.justification
+        if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
+        Invoke-JudgeEscalation $func 'ruling request' $v
+        return
+    }
     Add-Decision $func "ruling: $qShort" $v.verdict $v.justification
     if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
@@ -319,6 +483,40 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         }
         return
     }
+    # 1b) LAYER-1 GATE — a fresh adversarial cheat-reviewer rules on the diff +
+    # self-vet BEFORE any Judge cycle (or the expensive retire+rebuild) is spent.
+    # A FAIL here short-circuits straight back to the worker with the construct
+    # banned and the modality advanced. Sandbox has already proven the honest
+    # distance is 0, so nothing about the bytes is lost by rejecting here.
+    $l1 = Invoke-Layer1 $func $stem ((git -C $Root diff -- "src/$stem.c" | Out-String))
+    if ($l1 -and $l1.decision -eq 'FAIL') {
+        $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'layer-1 cheat-reviewer FAIL' }
+        $l1Constructs = @($l1.evidence | ForEach-Object { [string]$_.construct } | Where-Object { $_ })
+        Record-Review $func 'layer1' 'FAIL' 'construct'
+        Log "${func}: LAYER-1 FAIL — $l1Summary (no Judge cycle spent)."
+        Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
+        Revert-SessionEdits
+        $c = "LAYER-1 CHEAT-REVIEWER FAIL: $l1Summary" +
+             $(if ($l1.next_action) { " Next action: $($l1.next_action)" })
+        python tools/grinder/grindlib.py constrain . $func $c.Substring(0, [Math]::Min(600, $c.Length)) | Out-Null
+        foreach ($bc in $l1Constructs) {
+            python tools/grinder/grindlib.py ban . $func $bc.Substring(0, [Math]::Min(400, $bc.Length)) | Out-Null
+        }
+        $newMod = (python tools/grinder/grindlib.py advance-modality . $func 2>&1 | Out-String).Trim()
+        Log "${func}: modality force-advanced after layer-1 FAIL — next session is '$newMod'."
+        Add-Decision $func 'layer-1 review' 'FAIL' $l1Summary
+        Journal "${func}: LAYER-1 FAILED a sandbox-0 candidate — $l1Summary"
+        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root commit -m "grind: $func layer-1 FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
+        return
+    }
+    if ($l1 -and $l1.decision) {
+        # NEEDS_USER is NOT a stop here: it is precisely the authority question the
+        # Judge's new ESCALATE verdict exists to route, and the Judge outranks
+        # layer-1 on policy. Record it and let the Judge rule.
+        Record-Review $func 'layer1' ([string]$l1.decision) $(if ($l1.decision -eq 'NEEDS_USER') { 'authority' } else { '' })
+        Log "${func}: layer-1 $($l1.decision) — proceeding to bytes + Judge."
+    }
     $null = Invoke-Eng @('retire', $func)          # drops rules if any; SHA1-gated internally
     $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
     if ($LASTEXITCODE -ne 0) {
@@ -350,6 +548,18 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
 "@
     $v = Invoke-Judge $func $task
     $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)
+    Record-Review $func 'judge' ([string]$v.verdict) ([string]$v.fail_ground).ToLower()
+    if ($v.verdict -eq 'ESCALATE') {
+        # Sound work, authority limit. Preserve the candidate as the escalation's
+        # evidence, put main back to HEAD, file + park. No re-grind.
+        Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\candidate.c") -ErrorAction SilentlyContinue
+        git -C $Root add -- metrics/events.jsonl 2>$null
+        git -C $Root checkout -- . 2>$null
+        Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
+        Add-Decision $func 'final call' 'ESCALATE' $v.justification
+        Invoke-JudgeEscalation $func 'final call' $v
+        return
+    }
     if ($v.verdict -eq 'PASS') {
         $qd = Invoke-Eng @('queue', 'done', $func)
         if ($qd -notmatch '"ok"\s*:\s*true') {
@@ -410,6 +620,9 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         Add-Decision $func 'final call' 'FAIL' $v.justification
         $c = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
         python tools/grinder/grindlib.py constrain . $func $c | Out-Null
+        # Make the constraint BIND: ban the construct + force a modality change,
+        # or route an annotation-only FAIL to the one-comment fix-up brief.
+        $null = Set-FailRouting $func $v
         git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
         git -C $Root commit -m "grind: $func judge FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
         Log "${func}: judge FAILED the candidate — constraint banked, grind continues."
@@ -527,6 +740,10 @@ while ($true) {
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
     $briefPath = Join-Path $GrindTmp "brief_$func.md"
     python tools/grinder/grindlib.py brief . $func $modality $outPath | Set-Content $briefPath -Encoding utf8
+    # The annotation fix-up is ONE-SHOT: consume it once the brief has carried the
+    # notice, so a discarded or failed fix-up session drops back onto the normal
+    # ladder instead of pinning the function on comments forever.
+    if ($modality -eq 'annotation-fix') { python tools/grinder/grindlib.py clear-fixup . $func | Out-Null }
     $stObj = Get-Content $state -Raw | ConvertFrom-Json
     $sessionN = ($stObj.session_count + 1)
     # Floor entering this session — the escalation backstop uses it to tell a real
@@ -569,8 +786,18 @@ while ($true) {
     $invalidReason = if ($o) { '' } else { 'no outcome file / unparseable JSON' }
     if ($o) {
         $o | ConvertTo-Json -Depth 8 | Set-Content $outPath -Encoding utf8
-        $invalidReason = (python tools/grinder/grindlib.py validate . $outPath $modality 2>&1 | Out-String).Trim()
+        # $func is passed so the validator can run the SELF-VET gate and the
+        # banned-construct check on a candidate-ready (2026-08-07 review-audit
+        # fixes #2a/#3b): a candidate with no written 6-test vet, or one whose vet
+        # re-declares a construct the Judge already banned for this function, is an
+        # INVALID SESSION — discarded and respawned like a scope violation, with no
+        # Judge cycle spent.
+        $invalidReason = (python tools/grinder/grindlib.py validate . $outPath $modality $func 2>&1 | Out-String).Trim()
         $valid = ($LASTEXITCODE -eq 0)
+        if (-not $valid -and [string]$o.result -eq 'candidate-ready') {
+            $cause = if ($invalidReason -match 'BANNED') { 'banned' } else { 'selfvet' }
+            Record-Review $func 'layer1' 'REJECTED' $cause
+        }
         # owner-gated: the validator can't see $func, so the driver verifies the
         # cited OWNER-ESCALATION entry actually names THIS function.
         if ($valid -and [string]$o.result -eq 'owner-gated') {

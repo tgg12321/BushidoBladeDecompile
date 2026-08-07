@@ -251,3 +251,101 @@ plain-English justification. This is the owner's post-hoc audit trail.
 - No parallel lanes, no rotation, no tractability re-ranking (owner ruled:
   grind until done, period).
 - No changes to the engine's scoring, canonical gate, or oracle.
+
+---
+
+## Addendum — the review-pipeline hardening (owner-approved 2026-08-07 per review audit)
+
+An owner-approved audit of the Judge / layer-2 pipeline (raw findings in
+`tmp/review_audit/`, principally `fails.txt` + `entries.json`) measured an 8.3%
+FAIL rate on submissions and, more importantly, WHY those FAILs happened:
+
+- **46% of FAILs were cheat-by-spelling where the worker prompt never contained
+  the standards.** The session was judged against a policy it had never been
+  shown.
+- **10 of 18 sampled FAILs cited a rule whose own text excluded the construct** —
+  the session had a rule name but not the rule's scope sentence.
+- **23% were authority artifacts**: the work was sound and the Judge simply had
+  no verdict for "this grant is above my authority", so it FAILed and the driver
+  re-ground a finished function.
+- **59% of FAILs sat in respelling loops** — the constraint existed but bound
+  nothing, so the next session re-proposed the same construct differently.
+
+Six changes. Five were owner-approved 2026-08-07 from the audit findings; the sixth was added the same day after the drill incident described below:
+
+1. **Standards front-loaded into the session role.** `roles/grind-session.md`
+   now carries, VERBATIM, the 6-test cheat checklist, the frozen SOTN-accepted
+   list with its non-extension clause, the ~25-family forbidden catalog, and the
+   `/* FAKE: <what>, mechanism: <named pass>, lever-exhaustion: <where> */`
+   template with its three prerequisites - plus the governing line: *first reach
+   of an unsanctioned family is a cheat regardless of spelling; if no family
+   covers your construct, the answer is a ruling request, not a submission.*
+2. **Self-vet artifact + layer-1 gate.** A `candidate-ready` outcome now requires
+   `memory/grind/<func>/self_vet.md`: the 6 tests answered in writing per
+   construct, every claimed family carrying its rule's SCOPE sentence quoted
+   verbatim plus a precedent as file:line or commit hash, and an
+   annotation-conformance line. The driver rejects a candidate without it as an
+   INVALID SESSION (discard + respawn, same as a scope violation). Before any
+   Judge cycle, the driver spawns the `cheat-reviewer` agent on the diff +
+   self-vet; a layer-1 FAIL short-circuits back to the worker. Layer-1 FAILS OPEN
+   on an unreachable reviewer - the default-FAIL Judge remains the authoritative
+   gate, and layer-1 must never become a second way to lose a proven candidate to
+   an API hiccup.
+3. **Binding no-respelling.** A construct-class FAIL now (a) force-advances the
+   modality ladder via a persistent `ladder_skip`, so the next session attacks
+   differently instead of respelling; (b) records the construct in
+   `state.json.banned_constructs`, and the driver rejects a later candidate whose
+   self-vet re-declares it; (c) if the FAIL's stated ground is ANNOTATION FORMAT
+   ONLY, routes the next session to a one-shot `annotation-fix` brief - fix the
+   comment, resubmit, no new constructs permitted.
+4. **ESCALATE verdict.** `judge.md`'s schema is now `PASS|FAIL|ESCALATE`, where
+   ESCALATE means *the work is sound and complete but the grant is above my
+   authority* (rule extension, new family, owner-policy question). The driver
+   files an OWNER-ESCALATION and parks the function exactly like an owner-gated
+   park, instead of triggering a re-grind. Default-FAIL is unchanged: uncertainty
+   about whether a construct is a CHEAT is still a FAIL. The Judge also now
+   states `fail_ground` (CONSTRUCT / EVIDENCE / ANNOTATION-FORMAT) and
+   `banned_construct`, which is what makes change 3 mechanical.
+5. **Review metrics.** Every review boundary emits a `review` event into
+   `metrics/events.jsonl` - `{func, layer: layer1|judge|layer2, verdict, cause}`
+   - via `tools/grinder/record_review.py`, which reuses `engine.metrics`'
+   silent/best-effort/never-raises append contract. The audit had to mine ledgers
+   and commit prose precisely because no event ever recorded a verdict.
+
+6. **Clean-tree preflight on the drill.** `tools/grinder/drill.ps1` now refuses
+   to run when `git status --porcelain` is non-empty (metrics/events.jsonl
+   excepted — it is append-only telemetry that engine commands touch
+   constantly), printing the dirty paths and exiting 2. There is deliberately no
+   `-Force` override. The guard belongs to the DRILL WRAPPER ONLY: grind.ps1's
+   own `-Once` path keeps the discard behaviour, which is correct for a real
+   session.
+
+### Why fix 6 exists — the 2026-08-07 drill incident
+
+The drills are not read-only. Drill A and Drill B each spawn `grind.ps1 -Once`,
+and Drill B deliberately provokes the driver's invalid-session discard path:
+`git checkout -- .` plus `git clean -fdq -e memory -e docs -e src -e include`,
+applied to the ENTIRE worktree rather than to the drill's own changes.
+
+During this implementation session the drill was run as a verification step
+while another agent had a large naming wave in progress. The first iteration
+classified that agent's work as a SCOPE VIOLATION and discarded it: **342 files
+carrying unstaged modifications** (`asm/funcs/*.s` plus `asm/data/7D920.data.s`)
+were reset to their staged content, and an untracked file under `tools/` was
+deleted. Two properties limited the damage and are worth remembering:
+`git checkout -- .` restores from the INDEX, so **staged work survived** (all 714
+staged entries came through intact), and HEAD never moved, so nothing was lost
+from history. The affected paths were recoverable from the driver's own
+`tmp/grind/grind.log` SCOPE VIOLATION line, which lists every path with its
+porcelain status code.
+
+The lesson is not "be careful with the drill" — it is that a destructive tool
+must refuse unsafe input rather than rely on the operator remembering. Hence the
+preflight. Operator note: both drills (plain and `-WithJudge`) remain REQUIRED
+before relaunching the Grinder on these changes, and must be run on a clean tree.
+
+Surfaces changed: `tools/grinder/roles/grind-session.md`,
+`tools/grinder/roles/judge.md`, `tools/grinder/grindlib.py`,
+`tools/grinder/grind.ps1`, `tools/grinder/drill.ps1`,
+`tools/grinder/record_review.py` (new),
+`tools/grinder/tests/test_grindlib.py`.

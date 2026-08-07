@@ -2,15 +2,55 @@
 .SYNOPSIS
   Grinder pre-flight drills. Exit 0 = GO, non-zero = NO-GO.
 .DESCRIPTION
+  Preflight: REFUSES to run on a dirty tree (see the guard below) — the drills
+  spawn real grind.ps1 sessions and exercise the worktree-wide discard path.
   Drill A: a give-up session (prose, no measurements) MUST be discarded.
   Drill B: a scope-violating session (touches regfix.txt) MUST be discarded and reverted.
   Drill C (live, -WithJudge): the judge MUST FAIL a known-cheat candidate.
+.NOTES
+  NOT read-only, and not safe to run alongside other work. Exit codes:
+  0 = GO, 1 = a drill failed, 2 = preflight refused (dirty tree).
 #>
 [CmdletBinding()]
 param([switch]$WithJudge, [string]$JudgeModel = 'claude-fable-5[1m]')
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $Root
+
+# ── CLEAN-TREE PREFLIGHT (added 2026-08-07 after a real incident) ─────────────
+# The drills are not read-only. Drill A and Drill B each run `grind.ps1 -Once`,
+# and Drill B deliberately provokes the driver's discard path — which is
+# `git checkout -- .` plus `git clean -fdq -e memory -e docs -e src -e include`
+# across the ENTIRE worktree, not just the drill's own changes. That is correct
+# behaviour for a real grind session and catastrophic for a shared tree.
+#
+# 2026-08-07: a drill run during another agent's naming wave reset 342 files
+# that had unstaged modifications (asm/funcs/*.s + asm/data/7D920.data.s) to
+# their staged content, and deleted an untracked file under tools/. Staged work
+# survived (checkout restores from the INDEX) and HEAD never moved, but unstaged
+# content was gone. Hence: the drill runs on a CLEAN TREE OR NOT AT ALL.
+#
+# There is deliberately NO -Force override — an escape hatch here just
+# reintroduces the footgun. Commit or stash first. This guard belongs to the
+# drill wrapper alone: grind.ps1's own -Once path keeps the discard behaviour,
+# which is by design for real sessions.
+# metrics/events.jsonl is the one allowed exception: it is append-only telemetry
+# that engine commands touch constantly, the driver never reverts it, and
+# requiring it clean would make the drill unrunnable in normal operation.
+$dirty = @(git -C $Root status --porcelain |
+           Where-Object { $_ -and ($_.Substring([Math]::Min(3, $_.Length)).Trim().Trim('"') -ne 'metrics/events.jsonl') })
+if ($dirty.Count) {
+    Write-Host "DRILL PREFLIGHT: REFUSING TO RUN — the working tree is dirty ($($dirty.Count) path(s))." -ForegroundColor Red
+    Write-Host "The drills exercise the grinder's discard path, which runs 'git checkout -- .' and" -ForegroundColor Yellow
+    Write-Host "'git clean' over the WHOLE worktree. On a dirty tree that destroys unstaged work" -ForegroundColor Yellow
+    Write-Host "(2026-08-07: 342 files reset this way). Commit or stash first, then re-run." -ForegroundColor Yellow
+    Write-Host ""
+    $dirty | Select-Object -First 40 | ForEach-Object { Write-Host "  $_" }
+    if ($dirty.Count -gt 40) { Write-Host "  ... and $($dirty.Count - 40) more" }
+    Write-Host "`nDRILL VERDICT: NO-GO (preflight — dirty tree)" -ForegroundColor Red
+    exit 2
+}
+
 New-Item -ItemType Directory -Force tmp/grind | Out-Null
 $fail = 0
 
