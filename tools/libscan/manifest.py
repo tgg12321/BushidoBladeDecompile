@@ -20,14 +20,17 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 from psyq_lib import lib_modules, parse_obj
 
-# Artifacts live with the evidence, not with the tool.
-OUT = os.path.join(REPO, "docs", "naming", "libscan")
+# Artifacts live with the evidence, not with the tool. LIBSCAN_OUT redirects the
+# WRITES for sandbox/verification runs; committed inputs (matches.json) are
+# always read from the tracked evidence directory.
+IN_DIR = os.path.join(REPO, "docs", "naming", "libscan")
+OUT = os.environ.get("LIBSCAN_OUT", IN_DIR)
 os.makedirs(OUT, exist_ok=True)
 # The PsyQ 4.0 .LIB set is a third-party SDK input, kept OUT of the repo. Point
 # PSYQ_LIB_DIR at a local copy to re-run the scan; see README.md.
 LIBDIR = os.environ.get("PSYQ_LIB_DIR", os.path.join(REPO, "tmp", "libscan", "psyq40"))
 
-M = json.load(open(os.path.join(OUT, "matches.json"), encoding="utf-8"))
+M = json.load(open(os.path.join(IN_DIR, "matches.json"), encoding="utf-8"))
 taddr = int(M["taddr"], 16)
 
 objs = {}
@@ -91,10 +94,131 @@ for _pass in range(3):
 
 accepted = sorted(set(accepted))
 
-# The main verbatim block per final_stats.txt; three tiny "island" placements
-# outside it (LIBSPU/S_CB, LIBGS/GS_008, GS_009 near 0x800469A0/0x80046B20) were
-# excluded from the region accounting there.  Keep them but flag them.
+# The main verbatim block per final_stats.txt; tiny "island" placements outside
+# it (LIBSPU/S_CB, LIBGS/GS_008, GS_009 near 0x800469A0/0x80046B20) sit inside
+# the game's own text and are subject to the reachability filter below.
 BLOCK_LO, BLOCK_HI = 0x80078948, 0x8008D070
+
+# ------------------------------------------------- filter 1: reachability
+# (addendum 2026-08-07, docs/naming/libscan/ambiguous_resolutions.md). A library
+# module is only pulled into a link because something references a symbol it
+# defines. A placement none of whose exported addresses has a single j/jal
+# caller or word-sized data reference from outside the module's own span is not
+# a linked module — it is game code that happens to be byte-identical to a tiny
+# library stub (proven: LIBGS/GS_008 at 0x80046B20 and LIBSPU/S_CB at
+# 0x800469A0 are dead game one-liners). Rejection applies to placements OUTSIDE
+# the main verbatim block only: inside it, contiguity with hundreds of
+# independently placed neighbours is stronger corroboration, and lui/addiu-
+# materialized function pointers (invisible to this word scan) would risk
+# false rejections.
+EXE = os.environ.get("BB2_EXE", os.path.join(REPO, "disc", "SLUS_006.63"))
+jal_sites = collections.defaultdict(list)   # target vaddr -> [j/jal site vaddr]
+word_sites = collections.defaultdict(list)  # word value  -> [word vaddr]
+exe_words = []
+if os.path.exists(EXE):
+    _body = open(EXE, "rb").read()[2048:]
+    exe_words = list(struct.unpack_from("<%dI" % (len(_body) // 4), _body, 0))
+    for _i, _wd in enumerate(exe_words):
+        _va = taddr + _i * 4
+        if (_wd >> 26) in (2, 3):                 # j / jal
+            jal_sites[0x80000000 | ((_wd & 0x3FFFFFF) << 2)].append(_va)
+        if 0x80010000 <= _wd < 0x800A4000:        # in-image pointer-sized ref
+            word_sites[_wd].append(_va)
+
+filter_log = []
+
+
+def _refs_outside(sym, a, b):
+    return [s for s in jal_sites.get(sym, []) + word_sites.get(sym, [])
+            if not (a <= s < b)]
+
+
+if exe_words:
+    _kept = []
+    for a, b, lib, mod, wcnt in accepted:
+        o = objs.get((lib, mod))
+        sid = text_sid(o) if o else None
+        syms = [a + off for nm, sec, off in (o.xdefs if o else []) if sec == sid] or [a]
+        reachable = any(_refs_outside(s, a, b) for s in syms)
+        if reachable or BLOCK_LO <= a < BLOCK_HI:
+            if not reachable:
+                filter_log.append(
+                    "UNREACHABLE (kept, inside main block): %s/%s @0x%08X — no j/jal "
+                    "caller and no word-sized data ref to any exported address"
+                    % (lib, mod, a))
+            _kept.append((a, b, lib, mod, wcnt))
+        else:
+            filter_log.append(
+                "REJECTED_UNREACHABLE: %s/%s @0x%08X — island placement with zero "
+                "j/jal callers and zero word-sized data refs to any exported "
+                "address; not a linked module" % (lib, mod, a))
+    accepted = _kept
+
+# --------------------------------------- filter 2: reloc-target consistency
+# Every tie in the 2026-08-07 ambiguous set came from 4-12-word modules whose
+# only distinguishing word is a masked jal. Un-masking it decides them: a REL26
+# reloc names the external symbol the module calls, the placed code's actual
+# jal target is right there in the EXE, and the callee is usually itself an
+# independently placed XDEF. A candidate whose reloc'd callee is placed
+# somewhere else is wrong.
+placed_xdef = collections.defaultdict(set)   # name -> {placed vaddr}
+for a, b, lib, mod, wcnt in accepted:
+    o = objs.get((lib, mod))
+    if not o:
+        continue
+    sid = text_sid(o)
+    for nm, sec, off in o.xdefs:
+        if sec == sid and a + off < b:
+            placed_xdef[nm].add(a + off)
+
+# A REL26 expression references one symbol, spelled `sym:NAME` when the XREF
+# record preceded the RELOCATION record in the OBJ stream and `sym:<index>`
+# when it followed it (parse_expr resolves eagerly); resolve indices through
+# the module's completed xref table.
+_SYMEXPR = re.compile(r"sym:(\w+)")
+
+
+def _expr_symbol(o, e):
+    toks = _SYMEXPR.findall(e)
+    if len(toks) != 1:
+        return None
+    t = toks[0]
+    return o.xrefs.get(int(t)) if t.isdigit() else t
+
+
+def reloc_verdict(lib, mod, a):
+    """(checked, bad) for module (lib, mod) hypothetically placed at vaddr a.
+
+    checked = REL26 relocs whose callee is a placed XDEF; bad = those whose
+    actual jal target in the EXE is NOT one of that callee's placed addresses.
+    checked > 0 with bad == [] is affirmative consistency; checked == 0 is
+    unverifiable (callees not placed) and decides nothing.
+    """
+    o = objs.get((lib, mod))
+    if not o or not exe_words:
+        return 0, []
+    sid = text_sid(o)
+    checked, bad = 0, []
+    for rsec, t, roff, e in o.relocs:
+        if rsec != sid or t != 74:
+            continue
+        callee = _expr_symbol(o, e)
+        if not callee or callee not in placed_xdef:
+            continue
+        wi = (a - taddr) // 4 + roff // 4
+        if not (0 <= wi < len(exe_words)):
+            continue
+        wd = exe_words[wi]
+        if (wd >> 26) not in (2, 3):
+            continue
+        target = 0x80000000 | ((wd & 0x3FFFFFF) << 2)
+        checked += 1
+        if target not in placed_xdef[callee]:
+            bad.append("+0x%X jal->0x%08X but %s placed at %s"
+                       % (roff, target, callee,
+                          "/".join("0x%08X" % x
+                                   for x in sorted(placed_xdef[callee]))))
+    return checked, bad
 
 # ------------------------------------------------------------- symbol export
 # vaddr -> list of (name, kind, lib, mod, mod_start, mod_end)
@@ -336,6 +460,48 @@ for nm, rs in _bp.items():
                  "from bytes alone" % (nm, ", ".join(x["addr"] for x in rs)))
             r["proposed_name"] = ""
 
+# --------------------------- filter 2 applied: resolve AMBIGUOUS ties
+# A tie is resolved when EXACTLY ONE candidate module is affirmatively
+# consistent (>=1 verifiable REL26 callee, all landing on their placed
+# addresses) and no rival is. Rivals fall two ways: contradicted (a reloc'd
+# callee is placed elsewhere) or unverifiable (callees not placed — e.g. an
+# unlinked LIBGS module's); either way the single strong candidate is a
+# positive identification: the placed code demonstrably calls the exact
+# external symbol that candidate declares, at that symbol's placed address.
+for r in rows:
+    if r["classification"] != "AMBIGUOUS":
+        continue
+    va = int(r["addr"], 16)
+    cands, _seen = [], set()
+    for nm, kind, lib, mod, ms, me in symrecs.get(va, []):
+        if kind != "xdef" or (lib, mod) in _seen:
+            continue
+        _seen.add((lib, mod))
+        checked, bad = reloc_verdict(lib, mod, ms)
+        cands.append((nm, lib, mod, ms, checked, bad))
+    strong = [c for c in cands if c[4] > 0 and not c[5]]
+    if len(strong) == 1:
+        nm, lib, mod, ms, checked, bad = strong[0]
+        rivals = [c for c in cands if c is not strong[0]]
+        r["classification"] = "RESOLVED_RELOC_TARGET"
+        r["proposed_name"] = nm
+        r["module"], r["lib"], r["mod_start"] = mod, lib, "0x%08X" % ms
+        r["note"] = ((r["note"] + " | ") if r["note"] else "") + (
+            "tie resolved by reloc-target consistency: %s/%s has %d verifiable "
+            "REL26 callee(s), all landing on their placed addresses; rivals: %s"
+            % (lib, mod, checked,
+               "; ".join("%s/%s %s" % (c[1], c[2],
+                         ("CONTRADICTED (%s)" % c[5][0]) if c[5] else
+                         "unverifiable (callees not placed)") for c in rivals)))
+        filter_log.append("RESOLVED_RELOC_TARGET: %s -> %s (%s/%s)"
+                          % (r["addr"], nm, lib, mod))
+    elif cands:
+        filter_log.append(
+            "STILL-AMBIGUOUS: %s — %s"
+            % (r["addr"],
+               "; ".join("%s/%s xdef %s checked=%d bad=%d"
+                         % (c[1], c[2], c[0], c[4], len(c[5])) for c in cands)))
+
 # sanity: every proposed mapping's XDEF offset must land exactly on the glabel
 for r in rows:
     if r["proposed_name"]:
@@ -357,6 +523,12 @@ with open(os.path.join(OUT, "rename_manifest.csv"), "w", newline="",
 with open(os.path.join(OUT, "anomalies.txt"), "w", encoding="utf-8",
           newline="\n") as f:
     f.write("\n".join(anomalies) + ("\n" if anomalies else ""))
+
+with open(os.path.join(OUT, "reloc_checks.txt"), "w", encoding="utf-8",
+          newline="\n") as f:
+    f.write("# reachability + reloc-target-consistency filter log "
+            "(tools/libscan/manifest.py)\n")
+    f.write("\n".join(filter_log) + ("\n" if filter_log else ""))
 
 # ------------------------------------------------------------- collisions
 existing_names = {}
@@ -445,6 +617,9 @@ meaning = {
  "AMBIGUOUS": "two code-identical library modules match here, or one module matched "
               "at two addresses — the byte evidence does not pick a name. "
               "**No proposal**; both candidates recorded in `all_sony_names`",
+ "RESOLVED_RELOC_TARGET": "was a code-identical tie, resolved by the reloc-target "
+              "consistency filter: exactly one candidate's REL26 callees all land "
+              "on their independently placed addresses (see `reloc_checks.txt`)",
 }
 for k, v in cnt.most_common():
     w("| %s | %d | %s |" % (k, v, meaning.get(k, "")))
@@ -588,6 +763,9 @@ print("in-span functions:", len(rows))
 for k, v in cnt.most_common():
     print("  %-20s %d" % (k, v))
 print("queued & in-span:", sum(1 for r in rows if r["queued"]))
+print("filter log (%d):" % len(filter_log))
+for x in filter_log:
+    print("  " + x)
 print("anomalies:", len(anomalies))
 for x in anomalies[:40]:
     print("  " + x)
