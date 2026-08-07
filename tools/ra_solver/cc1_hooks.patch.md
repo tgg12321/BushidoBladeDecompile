@@ -11,9 +11,35 @@ reproduction.
 > the Windows Edit/Write tool preserves/reintroduces them, which trips
 > `tools/hooks/tooling_error_guard.py`. **After editing any file under
 > `tools/gcc-2.7.2/`, run `python3 tools/normalize_lf.py <file>` before
-> rebuilding**, then do the usual parity check. All are print-only fprintf under env guards; rebuild with
-`cd tools/gcc-2.7.2 && TMPDIR=/dev/shm make cc1` (produces `./cc1`;
+> rebuilding**, then do the usual parity check.
+
+Rebuild with `cd tools/gcc-2.7.2 && TMPDIR=/dev/shm make cc1` (produces `./cc1`;
 `build/cc1` is untouched — verify with tmp/parity_check.sh pattern).
+
+## What the hooks are — and the ONE exception (corrected 2026-08-06)
+
+This file used to say "All are print-only fprintf under env guards." **That was
+an overstatement.** Almost all of them are, but `reorg.c` carries two
+**BEHAVIOURAL what-if knobs** that change codegen when enabled:
+
+| knob | effect when set |
+|---|---|
+| `BB2_NO_FT_STEAL` | makes `fill_eager_delay_slots` skip the fall-through fill entirely |
+| `BB2_ALLLIVE_LABEL=<uid>[,<uid>…]` | forces `mark_target_live_regs` to its conservative everything-live answer for the listed target uids (simulating `find_basic_block () == -1`) |
+
+Both are **inert unless their env var is set**, both live only in the
+diagnostic binary (`tools/gcc-2.7.2/cc1`), and neither is reachable from the
+shipped compiler. But they are experiments, not observations: **never enable
+them while gathering evidence without saying so in the record**, because any
+dump produced under them describes a compiler that does not exist.
+
+### Inertness proof for the WHOLE hook set (2026-08-06)
+
+Not an assertion — measured. A cc1 built from **pristine reverted sources**
+(every local modification backed out) emits **byte-identical output to the
+fully instrumented cc1 on all 32 TUs**. That covers every hook in this
+document, the two knobs above included, and is stronger than the per-hook A/B
+in section 7 because it removes all of them at once rather than one family.
 
 ## 1. global.c — ALLOCDBG per-allocno line (existing hook, + func tag)
 
