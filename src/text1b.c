@@ -448,7 +448,6 @@ void func_80048744(s32 a0) {
     }
 }
 void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
-    s32 pad[2];
     s32 temp_a3;
     s32 temp_v1;
     s32 var_t0;
@@ -456,7 +455,7 @@ void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
     s32 temp_a1;
     var_t1 = arg0;
     var_t0 = arg1 - 1;
-    if (arg1 != 0) {
+    if (var_t0 != -1) {
         do {
             temp_a1 = *var_t1;
             var_t1 += 1;
@@ -465,12 +464,13 @@ void func_8004876C(u16 *arg0, s32 arg1, u16 *arg2) {
             {
                 s32 b;
                 s32 g;
-                temp_a3 = (temp_a1 & 0x1F) * 0x547;
+                s32 bt;
+                temp_a3 = temp_a1 & 0x1F;
+                temp_a3 = temp_a3 * 0x547;
                 b = (temp_v1 >> 0x1A) & 0x1F;
                 g = (temp_v1 >> 0xA) & 0xF800;
-                asm volatile("" : : "r"(b));
-                temp_a3 = ((temp_a3 + b * 0x2B8) + g) >> 0xC;
-                temp_a3 &= 0x1F;
+                bt = b * 0x2B8;
+                temp_a3 = ((temp_a3 + g + bt) >> 0xC) & 0x1F;
             }
             *arg2 = (u16) ((((temp_a1 & (~0x7FFF)) + (temp_a3 << 0xA)) + (temp_a3 << 5)) + temp_a3);
             arg2 += 1;
