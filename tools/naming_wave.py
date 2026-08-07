@@ -236,6 +236,7 @@ class Op:
         self.olds: set[str] = set()      # semantic identifiers being retired
         self.glabel = row.get("glabel", "")
         self.notes: list[str] = []
+        self.delete_stale: str | None = None   # stale duplicate .s to remove
 
     def __repr__(self):
         return f"<{self.kind} {self.address} {sorted(self.olds)} -> {self.new_name}>"
@@ -270,6 +271,33 @@ class Wave:
 # ------------------------------------------------------------------ census --
 
 
+OVERRIDES = ROOT / "docs/naming/action-overrides.csv"
+
+
+def load_overrides(path: Path | None = None) -> dict[str, dict]:
+    """Rulings that differ from what build_census.py derives.
+
+    function-names.csv is generated, so a hand-edit there is reverted by the next
+    regen. Overrides are keyed by address, or by NAME for the rows whose census
+    address is unusable (which is exactly the case that needs excluding).
+    """
+    p = path or OVERRIDES
+    if not p.exists():
+        return {}
+    out: dict[str, dict] = {}
+    with open(p, encoding="utf-8", newline="") as fh:
+        rows = [ln for ln in fh if not ln.lstrip().startswith("#")]
+    for r in csv.DictReader(rows):
+        key = (r.get("key") or "").strip()
+        if key:
+            out[key.lower()] = {
+                "action": (r.get("action") or "").strip().upper(),
+                "new_name": (r.get("new_name") or "").strip(),
+                "note": (r.get("note") or "").strip(),
+            }
+    return out
+
+
 def load_census() -> list[dict]:
     with open(CENSUS, encoding="utf-8", errors="replace", newline="") as fh:
         return list(csv.DictReader(fh))
@@ -297,11 +325,30 @@ def build_ops(rows: list[dict], only: set[str] | None, allow_invalid: bool) -> t
     rejects: list[str] = []
     seen: set[str] = set()
 
+    ov = load_overrides()
+    used_ov: set[str] = set()
+
     for r in rows:
         action = (r.get("action") or "").strip()
+        addr = (r.get("address") or "").strip().lower()
+
+        # An override may re-class, re-target, or exclude a row. Keyed by address,
+        # or by name where the census address is unusable.
+        o = ov.get(addr) or ov.get((r.get("current_name") or "").strip().lower()) \
+            or ov.get((r.get("glabel") or "").strip().lower())
+        if o and action in ("RESET", "RENAME", ""):
+            used_ov.add(o["note"][:40])
+            if o["action"] == "EXCLUDE":
+                if action in ("RESET", "RENAME"):
+                    rejects.append(
+                        f"{addr or r.get('current_name')}: EXCLUDED by ruling — {o['note']}")
+                continue
+            if o["action"] in ("RESET", "RENAME"):
+                action = o["action"]
+                r = dict(r, action=action, proposed_name=o["new_name"] or r.get("proposed_name", ""))
+
         if action not in ("RESET", "RENAME"):
             continue
-        addr = (r.get("address") or "").strip().lower()
         if only is not None and addr not in only:
             continue
 
@@ -388,12 +435,29 @@ def preflight(ops: list[Op]) -> dict[str, list[str]]:
         # P4 — target .s filename must be free, or belong to this function.
         tgt_s = stems.get(op.new_name)
         if tgt_s is not None and op.glabel != op.new_name:
-            first = read(tgt_s).lstrip().split("\n", 1)[0]
-            errors[op.address].append(
-                f"asm/funcs/{op.new_name}.s already exists "
-                f"(head: {first.strip()!r}) while the live glabel is '{op.glabel}' — "
-                f"stale duplicate split artifact; resolve it before resetting"
-            )
+            own_s = stems.get(op.glabel)
+            orphan = not asm_file_referenced(op.new_name)
+            twin = own_s is not None and opcodes_of(tgt_s) == opcodes_of(own_s) \
+                and opcodes_of(tgt_s) != []
+            if orphan and twin:
+                # A stale split artifact: same instructions, different label,
+                # wired to nothing. Deleting it frees the target name.
+                op.delete_stale = str(tgt_s.relative_to(ROOT)).replace("\\", "/")
+                op.notes.append(
+                    f"asm/funcs/{op.new_name}.s is a stale duplicate of "
+                    f"asm/funcs/{op.glabel}.s (opcode bytes identical; referenced by no "
+                    f"INCLUDE_ASM, bb2.ld entry or LINKED_ASM_FUNCS) — deleted so the "
+                    f"reset target name is free")
+            else:
+                why = []
+                if not orphan:
+                    why.append("it IS referenced by a build input")
+                if not twin:
+                    why.append("its opcode bytes DIFFER from this function's")
+                errors[op.address].append(
+                    f"asm/funcs/{op.new_name}.s already exists while the live glabel "
+                    f"is '{op.glabel}', and " + " and ".join(why) +
+                    " — resolve by hand before resetting")
 
         # P5 — a glabel-layer op must have its source .s file present.
         if op.glabel and not AUTO_RE.match(op.glabel):
@@ -412,6 +476,45 @@ def preflight(ops: list[Op]) -> dict[str, list[str]]:
         seen[op.new_name] = op.address
 
     return dict(errors)
+
+
+_OPCODE_COL = re.compile(r"/\*\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s*\*/")
+
+
+def opcodes_of(p: Path) -> list[str]:
+    """The instruction bytes of a split .s, ignoring labels and whitespace.
+
+    Two splat runs format the same function differently (column widths change),
+    so text comparison is useless for deciding whether one file is a stale
+    duplicate of another. The opcode column is the invariant.
+    """
+    return [m.group(1).upper() for m in _OPCODE_COL.finditer(read(p))]
+
+
+_ASM_REF_CACHE: dict[str, bool] | None = None
+
+
+def asm_file_referenced(stem: str) -> bool:
+    """Is asm/funcs/<stem>.s pulled into the build by anything?
+
+    Three ways in: an INCLUDE_ASM argument (which expands to a literal
+    `.include "asm/funcs/<NAME>.s"`), the Makefile's LINKED_ASM_FUNCS, or a
+    direct bb2.ld object reference. Anything else in asm/funcs/ is reference-only.
+    """
+    global _ASM_REF_CACHE
+    if _ASM_REF_CACHE is None:
+        refs: set[str] = set()
+        ia = re.compile(r'INCLUDE_ASM\s*\(\s*"[^"]+"\s*,\s*(\w+)\s*\)')
+        for p in sorted((ROOT / "src").glob("*.c")):
+            refs |= {m.group(1) for m in ia.finditer(read(p))}
+        mk = read(ROOT / "Makefile")
+        m = re.search(r"^LINKED_ASM_FUNCS\s*:=\s*(.*)$", mk, re.M)
+        if m:
+            refs |= set(m.group(1).split())
+        for m in re.finditer(r"asm/funcs/(\w+)\.o", read(ROOT / "bb2.ld")):
+            refs.add(m.group(1))
+        _ASM_REF_CACHE = {r: True for r in refs}
+    return stem in _ASM_REF_CACHE
 
 
 _SRC_DEF_CACHE: dict[str, bool] = {}
@@ -456,6 +559,7 @@ class Plan:
     def __init__(self):
         self.file_edits: dict[str, tuple[str, int]] = {}   # relpath -> (new text, hits)
         self.file_renames: list[tuple[str, str]] = []      # relpath old -> new
+        self.file_deletes: list[str] = []                 # stale duplicate .s
         self.dir_renames: list[tuple[str, str]] = []
         self.sym_deletes: list[tuple[str, int, str]] = []  # file, lineno, line
         self.json_edits: dict[str, tuple[str, list[str]]] = {}
@@ -484,6 +588,10 @@ def plan_wave(wave: Wave) -> Plan:
         new, n = sub_c(pat, repl, t)
         plan.note_edit(str(p.relative_to(ROOT)).replace("\\", "/"), new, n, t)
 
+    for op in wave.ops:
+        if op.delete_stale:
+            plan.file_deletes.append(op.delete_stale)
+
     # --- assembly ---------------------------------------------------------
     # .s files carry no prose comments (only /* addr bytes */ machine columns),
     # so a plain whole-word substitution is safe and covers glabel, endlabel,
@@ -497,6 +605,8 @@ def plan_wave(wave: Wave) -> Plan:
         t = read(p)
         new, n = pat.subn(repl, t)
         rel = str(p.relative_to(ROOT)).replace("\\", "/")
+        if rel in plan.file_deletes:
+            continue
         plan.note_edit(rel, new, n, t)
         # The INCLUDE_ASM argument expands to a literal `.include "<name>.s"`,
         # so the filename must move with the glabel.
@@ -792,6 +902,7 @@ def report(wave: Wave, plan: Plan, rejects: list[str], errors: dict[str, list[st
         "preflight_errors": {k: v for k, v in errors.items()},
         "file_edits": {rel: n for rel, (_, n) in sorted(plan.file_edits.items())},
         "file_renames": plan.file_renames,
+        "stale_deletions": plan.file_deletes,
         "dir_renames": plan.dir_renames,
         "symbol_deletions": [{"file": f, "line": ln, "text": t.strip()} for f, ln, t in plan.sym_deletes],
         "json_edits": {rel: changed for rel, (_, changed) in plan.json_edits.items()},
@@ -833,6 +944,11 @@ def apply_plan(plan: Plan) -> None:
         write_lf(ROOT / rel, text)
     for rel, (text, _) in plan.json_edits.items():
         write_lf(ROOT / rel, text)
+    for rel in plan.file_deletes:
+        r = subprocess.run(["git", "rm", "-q", "--", rel], cwd=ROOT,
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            (ROOT / rel).unlink(missing_ok=True)
     for old, new in plan.file_renames:
         _git_mv(old, new)
     for old, new in plan.dir_renames:

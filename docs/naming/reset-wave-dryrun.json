@@ -14,39 +14,29 @@
     },
     {
       "address": "0x80016868",
-      "kind": "RESET",
-      "new_name": "func_80016868",
+      "kind": "RENAME",
+      "new_name": "gpu_EnableDisplay",
       "old_names": [
         "gpu_EnableDisplay_80016868",
         "katinuki_game_get_katinuki_max_num_80016868"
       ],
       "glabel": "katinuki_game_get_katinuki_max_num_80016868",
       "notes": [
-        "'func_80016868' is not object-defined per build/bb2.map \u2014 named_syms.txt:271 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'gpu_EnableDisplay' is not object-defined per build/bb2.map \u2014 named_syms.txt:270 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
       "address": "0x800168d0",
-      "kind": "RESET",
-      "new_name": "func_800168D0",
+      "kind": "RENAME",
+      "new_name": "gpu_DisableDisplay",
       "old_names": [
         "gpu_DisableDisplay_800168D0",
         "katinuki_game_get_katinuki_max_num_800168D0"
       ],
       "glabel": "katinuki_game_get_katinuki_max_num_800168D0",
       "notes": [
-        "'func_800168D0' is not object-defined per build/bb2.map \u2014 named_syms.txt:272 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'gpu_DisableDisplay' is not object-defined per build/bb2.map \u2014 named_syms.txt:271 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
-    },
-    {
-      "address": "0x80017200",
-      "kind": "RENAME",
-      "new_name": "main",
-      "old_names": [
-        "cpu_set_move_command_and_dir_for_no_action_2"
-      ],
-      "glabel": "cpu_set_move_command_and_dir_for_no_action_2",
-      "notes": []
     },
     {
       "address": "0x800174f4",
@@ -107,7 +97,7 @@
       ],
       "glabel": "single_game_setModeRequest",
       "notes": [
-        "'func_800187F4' is not object-defined per build/bb2.map \u2014 named_syms.txt:1563 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_800187F4' is not object-defined per build/bb2.map \u2014 named_syms.txt:1561 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -140,7 +130,7 @@
       ],
       "glabel": "mario_getMarioVoiceData_8001B3C0",
       "notes": [
-        "'func_8001B3C0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2506 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8001B3C0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2504 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -204,7 +194,7 @@
       ],
       "glabel": "mario_getMarioVoiceData_8001C820",
       "notes": [
-        "'func_8001C820' is not object-defined per build/bb2.map \u2014 named_syms.txt:2507 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8001C820' is not object-defined per build/bb2.map \u2014 named_syms.txt:2505 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -277,7 +267,7 @@
       ],
       "glabel": "camera_SetMatrix_8001DBE4",
       "notes": [
-        "'func_8001DBE4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2500 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8001DBE4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2498 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -353,7 +343,7 @@
       ],
       "glabel": "calc_fc_frame_800203B4",
       "notes": [
-        "'func_800203B4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2499 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_800203B4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2497 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -531,7 +521,7 @@
       ],
       "glabel": "calc_loc_mat_fw",
       "notes": [
-        "'func_8002AB08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2466 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8002AB08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2464 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -582,16 +572,6 @@
         "saTan0KiWareMoveB"
       ],
       "glabel": "saTan0KiWareMoveB",
-      "notes": []
-    },
-    {
-      "address": "0x8002e6b0",
-      "kind": "RESET",
-      "new_name": "func_8002E6B0",
-      "old_names": [
-        "pad_main_control"
-      ],
-      "glabel": "pad_main_control",
       "notes": []
     },
     {
@@ -718,6 +698,20 @@
       ],
       "glabel": "Pad_Prs",
       "notes": []
+    },
+    {
+      "address": "0x800324d0",
+      "kind": "RESET",
+      "new_name": "func_800324D0",
+      "old_names": [
+        "cpu_get_dist_2",
+        "cpu_get_dist_2_800324D0"
+      ],
+      "glabel": "cpu_get_dist_2",
+      "notes": [
+        "merged 2 census rows at this address",
+        "asm/funcs/func_800324D0.s is a stale duplicate of asm/funcs/cpu_get_dist_2.s (opcode bytes identical; referenced by no INCLUDE_ASM, bb2.ld entry or LINKED_ASM_FUNCS) \u2014 deleted so the reset target name is free"
+      ]
     },
     {
       "address": "0x80033498",
@@ -961,7 +955,7 @@
       ],
       "glabel": "motion_LoadPreCalcData_80037F08",
       "notes": [
-        "'func_80037F08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2510 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80037F08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2508 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -974,16 +968,6 @@
         "file_disc_checksum_copy_80037F40"
       ],
       "glabel": "func_80037F40",
-      "notes": []
-    },
-    {
-      "address": "0x8003800c",
-      "kind": "RESET",
-      "new_name": "func_8003800C",
-      "old_names": [
-        "damage_DebugDisp"
-      ],
-      "glabel": "damage_DebugDisp",
       "notes": []
     },
     {
@@ -1060,7 +1044,7 @@
       ],
       "glabel": "motion_SavePreCalcData_8003A3F0",
       "notes": [
-        "'func_8003A3F0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2513 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003A3F0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2511 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1073,7 +1057,7 @@
       ],
       "glabel": "motion_SavePreCalcData_8003A574",
       "notes": [
-        "'func_8003A574' is not object-defined per build/bb2.map \u2014 named_syms.txt:2514 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003A574' is not object-defined per build/bb2.map \u2014 named_syms.txt:2512 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1193,7 +1177,7 @@
       ],
       "glabel": "katinuki_game_setData_8003D2C4",
       "notes": [
-        "'func_8003D2C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2504 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003D2C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2502 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1204,17 +1188,6 @@
         "change_shadow_tex_reg"
       ],
       "glabel": "change_shadow_tex_reg",
-      "notes": []
-    },
-    {
-      "address": "0x8003d330",
-      "kind": "RESET",
-      "new_name": "func_8003D330",
-      "old_names": [
-        "ReturnVTMenu",
-        "ReturnVTMenu_8003D330"
-      ],
-      "glabel": "func_8003D330",
       "notes": []
     },
     {
@@ -1291,7 +1264,7 @@
       ],
       "glabel": "camera_SetMatrix_8003E164",
       "notes": [
-        "'func_8003E164' is not object-defined per build/bb2.map \u2014 named_syms.txt:2501 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003E164' is not object-defined per build/bb2.map \u2014 named_syms.txt:2499 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1428,7 +1401,7 @@
       ],
       "glabel": "FadeOut_8003FFA8",
       "notes": [
-        "'func_8003FFA8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2491 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003FFA8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2489 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1441,7 +1414,7 @@
       ],
       "glabel": "FadeOut_8003FFC4",
       "notes": [
-        "'func_8003FFC4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2492 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8003FFC4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2490 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1576,7 +1549,7 @@
       ],
       "glabel": "gnd_init_80041688",
       "notes": [
-        "'func_80041688' is not object-defined per build/bb2.map \u2014 named_syms.txt:2503 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80041688' is not object-defined per build/bb2.map \u2014 named_syms.txt:2501 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1764,7 +1737,7 @@
       ],
       "glabel": "calc_fc_frame",
       "notes": [
-        "'func_80044378' is not object-defined per build/bb2.map \u2014 named_syms.txt:2498 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80044378' is not object-defined per build/bb2.map \u2014 named_syms.txt:2496 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1777,7 +1750,7 @@
       ],
       "glabel": "saTanMainDispGnd_800444BC",
       "notes": [
-        "'func_800444BC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2524 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_800444BC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2522 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1821,7 +1794,7 @@
       ],
       "glabel": "saTan2InfoInit_80044F80",
       "notes": [
-        "'func_80044F80' is not object-defined per build/bb2.map \u2014 named_syms.txt:2520 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80044F80' is not object-defined per build/bb2.map \u2014 named_syms.txt:2518 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1914,7 +1887,7 @@
       ],
       "glabel": "saTanMainDispGnd_80046020",
       "notes": [
-        "'func_80046020' is not object-defined per build/bb2.map \u2014 named_syms.txt:2525 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80046020' is not object-defined per build/bb2.map \u2014 named_syms.txt:2523 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1927,7 +1900,7 @@
       ],
       "glabel": "katinuki_game_get_katinuki_max_num_80046914",
       "notes": [
-        "'func_80046914' is not object-defined per build/bb2.map \u2014 named_syms.txt:273 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80046914' is not object-defined per build/bb2.map \u2014 named_syms.txt:272 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1940,7 +1913,7 @@
       ],
       "glabel": "katinuki_game_get_katinuki_max_num_80046934",
       "notes": [
-        "'func_80046934' is not object-defined per build/bb2.map \u2014 named_syms.txt:274 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80046934' is not object-defined per build/bb2.map \u2014 named_syms.txt:273 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -1953,7 +1926,7 @@
       ],
       "glabel": "katinuki_game_get_katinuki_max_num_80046A60",
       "notes": [
-        "'func_80046A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:275 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80046A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:274 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2004,16 +1977,6 @@
         "saEft03Start"
       ],
       "glabel": "func_80047A90",
-      "notes": []
-    },
-    {
-      "address": "0x80047ee8",
-      "kind": "RESET",
-      "new_name": "func_80047EE8",
-      "old_names": [
-        "AddTbpOfst_80047EE8"
-      ],
-      "glabel": "AddTbpOfst_80047EE8",
       "notes": []
     },
     {
@@ -2068,7 +2031,7 @@
       ],
       "glabel": "mario_getMarioVoiceData_80048AD0",
       "notes": [
-        "'func_80048AD0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2508 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80048AD0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2506 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2091,7 +2054,7 @@
       ],
       "glabel": "gnd_close_8004939C",
       "notes": [
-        "'func_8004939C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2502 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8004939C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2500 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2104,7 +2067,7 @@
       ],
       "glabel": "calc_loc_mat_fw_8004A940",
       "notes": [
-        "'func_8004A940' is not object-defined per build/bb2.map \u2014 named_syms.txt:2530 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8004A940' is not object-defined per build/bb2.map \u2014 named_syms.txt:2528 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2148,16 +2111,6 @@
       "notes": []
     },
     {
-      "address": "0x800545f4",
-      "kind": "RESET",
-      "new_name": "func_800545F4",
-      "old_names": [
-        "myRobGeneiOpen"
-      ],
-      "glabel": "myRobGeneiOpen",
-      "notes": []
-    },
-    {
       "address": "0x800548dc",
       "kind": "RESET",
       "new_name": "func_800548DC",
@@ -2167,7 +2120,7 @@
       ],
       "glabel": "katinuki_game_setData_800548DC",
       "notes": [
-        "'func_800548DC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2505 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_800548DC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2503 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2212,7 +2165,7 @@
       ],
       "glabel": "ang_hosei_80056FE8",
       "notes": [
-        "'func_80056FE8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2497 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80056FE8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2495 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2245,7 +2198,7 @@
       ],
       "glabel": "motion_LoadPreCalcData_8005B98C",
       "notes": [
-        "'func_8005B98C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2511 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8005B98C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2509 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2258,7 +2211,7 @@
       ],
       "glabel": "mario_getMarioVoiceData_8005BE84",
       "notes": [
-        "'func_8005BE84' is not object-defined per build/bb2.map \u2014 named_syms.txt:2509 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8005BE84' is not object-defined per build/bb2.map \u2014 named_syms.txt:2507 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2324,16 +2277,6 @@
       "notes": []
     },
     {
-      "address": "0x80060e04",
-      "kind": "RESET",
-      "new_name": "func_80060E04",
-      "old_names": [
-        "gnd_get_fog"
-      ],
-      "glabel": "gnd_get_fog",
-      "notes": []
-    },
-    {
       "address": "0x80065800",
       "kind": "RESET",
       "new_name": "func_80065800",
@@ -2373,7 +2316,7 @@
       ],
       "glabel": "saTan2InfoInit_8006C1FC",
       "notes": [
-        "'func_8006C1FC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2521 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8006C1FC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2519 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2466,7 +2409,7 @@
       ],
       "glabel": "saTanMainDispGnd_80077A04",
       "notes": [
-        "'func_80077A04' is not object-defined per build/bb2.map \u2014 named_syms.txt:2526 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80077A04' is not object-defined per build/bb2.map \u2014 named_syms.txt:2524 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2479,7 +2422,7 @@
       ],
       "glabel": "saTan2InfoInit_80077A60",
       "notes": [
-        "'func_80077A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:2522 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80077A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:2520 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2492,7 +2435,7 @@
       ],
       "glabel": "saTan2InfoInit_80077AC0",
       "notes": [
-        "'func_80077AC0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2523 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80077AC0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2521 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2505,7 +2448,7 @@
       ],
       "glabel": "saTan2GaugeInit_80077B20",
       "notes": [
-        "'func_80077B20' is not object-defined per build/bb2.map \u2014 named_syms.txt:2518 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80077B20' is not object-defined per build/bb2.map \u2014 named_syms.txt:2516 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2518,7 +2461,7 @@
       ],
       "glabel": "saTan2GaugeInit_80077D00",
       "notes": [
-        "'func_80077D00' is not object-defined per build/bb2.map \u2014 named_syms.txt:2519 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80077D00' is not object-defined per build/bb2.map \u2014 named_syms.txt:2517 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2550,7 +2493,7 @@
       ],
       "glabel": "suDraw2DLib_8007A5C4",
       "notes": [
-        "'func_8007A5C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:259 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8007A5C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:258 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2562,7 +2505,7 @@
       ],
       "glabel": "suDraw2DLib_8007A62C",
       "notes": [
-        "'func_8007A62C' is not object-defined per build/bb2.map \u2014 named_syms.txt:260 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8007A62C' is not object-defined per build/bb2.map \u2014 named_syms.txt:259 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2575,7 +2518,7 @@
       ],
       "glabel": "tslSmdSendVu1Code_8007A87C",
       "notes": [
-        "'func_8007A87C' is not object-defined per build/bb2.map \u2014 named_syms.txt:276 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8007A87C' is not object-defined per build/bb2.map \u2014 named_syms.txt:275 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2588,7 +2531,7 @@
       ],
       "glabel": "tslSmdSendVu1Code_8007A898",
       "notes": [
-        "'func_8007A898' is not object-defined per build/bb2.map \u2014 named_syms.txt:277 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8007A898' is not object-defined per build/bb2.map \u2014 named_syms.txt:276 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2601,7 +2544,7 @@
       ],
       "glabel": "motion_LoadPreCalcData_8007DC68",
       "notes": [
-        "'func_8007DC68' is not object-defined per build/bb2.map \u2014 named_syms.txt:2512 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8007DC68' is not object-defined per build/bb2.map \u2014 named_syms.txt:2510 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2655,7 +2598,7 @@
       ],
       "glabel": "motion_SavePreCalcData_80080014",
       "notes": [
-        "'func_80080014' is not object-defined per build/bb2.map \u2014 named_syms.txt:2515 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80080014' is not object-defined per build/bb2.map \u2014 named_syms.txt:2513 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2668,7 +2611,7 @@
       ],
       "glabel": "motion_SavePreCalcData_8008003C",
       "notes": [
-        "'func_8008003C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2516 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_8008003C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2514 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2681,7 +2624,7 @@
       ],
       "glabel": "motion_SavePreCalcData_80080064",
       "notes": [
-        "'func_80080064' is not object-defined per build/bb2.map \u2014 named_syms.txt:2517 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80080064' is not object-defined per build/bb2.map \u2014 named_syms.txt:2515 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2694,7 +2637,7 @@
       ],
       "glabel": "Vu0SetLightColMatrix_800801E8",
       "notes": [
-        "'func_800801E8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2493 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_800801E8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2491 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2707,7 +2650,7 @@
       ],
       "glabel": "Vu0SetLightColMatrix_80080208",
       "notes": [
-        "'func_80080208' is not object-defined per build/bb2.map \u2014 named_syms.txt:2494 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80080208' is not object-defined per build/bb2.map \u2014 named_syms.txt:2492 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2754,7 +2697,7 @@
       ],
       "glabel": "Vu0SetLightColMatrix_80080640",
       "notes": [
-        "'func_80080640' is not object-defined per build/bb2.map \u2014 named_syms.txt:2495 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80080640' is not object-defined per build/bb2.map \u2014 named_syms.txt:2493 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -2777,7 +2720,7 @@
       ],
       "glabel": "Vu0SetLightColMatrix_80080684",
       "notes": [
-        "'func_80080684' is not object-defined per build/bb2.map \u2014 named_syms.txt:2496 rewritten in place rather than deleted, so the symbol keeps a definition"
+        "'func_80080684' is not object-defined per build/bb2.map \u2014 named_syms.txt:2494 rewritten in place rather than deleted, so the symbol keeps a definition"
       ]
     },
     {
@@ -3301,23 +3244,21 @@
     }
   ],
   "rejects": [
-    "RESET row 'save_vc_ctrl' has unusable address '0x' \u2014 no reset target can be derived",
-    "0x800324d0: DROPPED \u2014 asm/funcs/func_800324D0.s already exists (head: 'glabel func_800324D0') while the live glabel is 'cpu_get_dist_2' \u2014 stale duplicate split artifact; resolve it before resetting"
+    "0x800414fc: EXCLUDED by ruling \u2014 STAYS EXCLUDED from the wave (ruling 2026-08-07). It is the tree's sole LINKED_ASM_FUNCS entry (Makefile:75), gets its own object line in the HAND-MAINTAINED bb2.ld (bb2.ld:87), and holds an inline_asm_canonical authorization \u2014 so a reset moves a linker-script object path and a Makefile variable, not just symbols. If the owner wants it reset it is a bespoke operation with its own oracle run, not wave material. (The census originally carried no address for this row; the 2026-08-07 refresh resolved it to 0x800414FC. The exclusion rests on the bb2.ld/Makefile wiring, not on the missing address, so it stands either way.)"
   ],
   "preflight_errors": {},
   "file_edits": {
-    "asm/6CAC.s": 539,
+    "asm/6CAC.s": 536,
     "asm/data/7D920.data.s": 1,
     "asm/funcs/AddTbpOfst.s": 2,
-    "asm/funcs/AddTbpOfst_80047EE8.s": 3,
     "asm/funcs/AllocBukiRmd.s": 6,
-    "asm/funcs/AllocRobRmd.s": 16,
+    "asm/funcs/AllocRobRmd.s": 15,
     "asm/funcs/CalcHiraNormal.s": 2,
     "asm/funcs/CheckFadeEnd.s": 2,
     "asm/funcs/DispHira.s": 5,
     "asm/funcs/DispPracticeMenuTex_A.s": 2,
     "asm/funcs/DispPracticeMenuTex_B.s": 3,
-    "asm/funcs/DispPracticeMenuTex_C.s": 4,
+    "asm/funcs/DispPracticeMenuTex_C.s": 3,
     "asm/funcs/DispSamnailWindow.s": 5,
     "asm/funcs/DispSchoolBG.s": 4,
     "asm/funcs/DispSleepMenuTex.s": 3,
@@ -3344,7 +3285,6 @@
     "asm/funcs/Vu0SetLightColMatrix_80080640.s": 2,
     "asm/funcs/Vu0SetLightColMatrix_80080684.s": 3,
     "asm/funcs/_SelectSection.s": 2,
-    "asm/funcs/_start.s": 1,
     "asm/funcs/action_CheckHitZangeki.s": 3,
     "asm/funcs/ang_hosei.s": 2,
     "asm/funcs/ang_hosei_8003F62C.s": 6,
@@ -3377,16 +3317,15 @@
     "asm/funcs/cpu_check_tubazeri.s": 3,
     "asm/funcs/cpu_check_tubazeri_2.s": 3,
     "asm/funcs/cpu_get_dist.s": 1,
+    "asm/funcs/cpu_get_dist_2.s": 2,
     "asm/funcs/cpu_get_move_pattern_table_number.s": 6,
     "asm/funcs/cpu_reset_dir.s": 2,
     "asm/funcs/cpu_set_move_command_and_dir.s": 1,
     "asm/funcs/cpu_set_move_command_and_dir_for_no_action.s": 2,
-    "asm/funcs/cpu_set_move_command_and_dir_for_no_action_2.s": 8,
     "asm/funcs/cpu_side_move_dir.s": 2,
     "asm/funcs/cpu_side_move_dir_2.s": 8,
     "asm/funcs/cpu_side_move_dir_3.s": 2,
     "asm/funcs/cpu_side_move_dir_4.s": 3,
-    "asm/funcs/damage_DebugDisp.s": 2,
     "asm/funcs/decBs0.s": 4,
     "asm/funcs/efc_buki_ZanzouClose.s": 3,
     "asm/funcs/efc_buki_draw_zanzou.s": 2,
@@ -3419,6 +3358,7 @@
     "asm/funcs/func_8001F1C4.s": 2,
     "asm/funcs/func_8002006C.s": 1,
     "asm/funcs/func_800207C8.s": 3,
+    "asm/funcs/func_80021A98.s": 1,
     "asm/funcs/func_80021DB0.s": 2,
     "asm/funcs/func_80022580.s": 2,
     "asm/funcs/func_80022F34.s": 1,
@@ -3454,7 +3394,6 @@
     "asm/funcs/func_800371F8.s": 1,
     "asm/funcs/func_80037348.s": 2,
     "asm/funcs/func_80037540.s": 1,
-    "asm/funcs/func_80038658.s": 1,
     "asm/funcs/func_80038734.s": 1,
     "asm/funcs/func_8003880C.s": 1,
     "asm/funcs/func_80038988.s": 2,
@@ -3484,7 +3423,7 @@
     "asm/funcs/func_8003FA24.s": 3,
     "asm/funcs/func_80040510.s": 6,
     "asm/funcs/func_80040D48.s": 2,
-    "asm/funcs/func_80041988.s": 5,
+    "asm/funcs/func_80041988.s": 4,
     "asm/funcs/func_8004211C.s": 1,
     "asm/funcs/func_800421C8.s": 4,
     "asm/funcs/func_80042E90.s": 6,
@@ -3522,6 +3461,7 @@
     "asm/funcs/func_800475A4.s": 2,
     "asm/funcs/func_8004779C.s": 1,
     "asm/funcs/func_80047BE0.s": 1,
+    "asm/funcs/func_80047EE8.s": 1,
     "asm/funcs/func_800481E8.s": 1,
     "asm/funcs/func_80048A7C.s": 1,
     "asm/funcs/func_80048F58.s": 1,
@@ -3659,12 +3599,11 @@
     "asm/funcs/gnd_close_8001DB9C.s": 2,
     "asm/funcs/gnd_close_8004939C.s": 2,
     "asm/funcs/gnd_disp_loop_ctrl.s": 4,
-    "asm/funcs/gnd_get_fog.s": 2,
     "asm/funcs/gnd_init_8001B294.s": 3,
     "asm/funcs/gnd_init_80041688.s": 3,
     "asm/funcs/gnd_land_hit_char_die_main.s": 2,
     "asm/funcs/gnd_land_hit_char_tsuba.s": 2,
-    "asm/funcs/gnd_load_tex.s": 4,
+    "asm/funcs/gnd_load_tex.s": 2,
     "asm/funcs/gnd_open.s": 3,
     "asm/funcs/hirahira_w_ctrl.s": 2,
     "asm/funcs/hirahira_w_ctrl_2.s": 2,
@@ -3680,6 +3619,7 @@
     "asm/funcs/kgm_clamp_patch_init.s": 2,
     "asm/funcs/leaf_muki_awase_800421A4.s": 3,
     "asm/funcs/leaf_muki_awase_800444E0.s": 2,
+    "asm/funcs/main.s": 4,
     "asm/funcs/mario_getMarioVoiceData_8001B3C0.s": 2,
     "asm/funcs/mario_getMarioVoiceData_8001C820.s": 2,
     "asm/funcs/mario_getMarioVoiceData_80048AD0.s": 2,
@@ -3723,7 +3663,6 @@
     "asm/funcs/motutil_GetWalkDir.s": 2,
     "asm/funcs/myRobGeneiDraw2.s": 2,
     "asm/funcs/myRobGeneiMove.s": 3,
-    "asm/funcs/myRobGeneiOpen.s": 2,
     "asm/funcs/obj_ExecTask.s": 1,
     "asm/funcs/obj_InitAll.s": 1,
     "asm/funcs/obj_InitChars.s": 2,
@@ -3735,7 +3674,6 @@
     "asm/funcs/pad_FuncAnalog.s": 6,
     "asm/funcs/pad_Init.s": 2,
     "asm/funcs/pad_button_info_clear.s": 2,
-    "asm/funcs/pad_main_control.s": 2,
     "asm/funcs/pad_press_control.s": 2,
     "asm/funcs/replay_camera_attack.s": 3,
     "asm/funcs/replay_camera_get_attack_number.s": 2,
@@ -3825,27 +3763,27 @@
     "asm/funcs/videoDecCreate.s": 2,
     "asm/text1b.s": 29,
     "asm/text2.s": 9,
-    "asmfix.txt": 28,
+    "asmfix.txt": 24,
+    "engine/test_engine.py": 11,
     "include/code6cac.h": 6,
-    "include/m2c_context.h": 103,
-    "inline_asm_canonical.txt": 10,
-    "maspsx_label_nop_funcs.txt": 2,
-    "named_syms.txt": 234,
-    "regfix.txt": 1031,
+    "inline_asm_canonical.txt": 9,
+    "maspsx_label_nop_funcs.txt": 1,
+    "named_syms.txt": 233,
+    "regfix.txt": 998,
     "regfix_stage2.txt": 4,
-    "sdata_exclude.txt": 18,
-    "sdata_funcs.txt": 54,
-    "src/code6cac.c": 96,
+    "sdata_exclude.txt": 17,
+    "sdata_funcs.txt": 51,
+    "src/code6cac.c": 98,
     "src/code6cac_b.c": 74,
     "src/code6cac_b2_post.c": 28,
     "src/code6cac_b2_pre.c": 7,
     "src/code6cac_c.c": 11,
     "src/code6cac_c2.c": 70,
     "src/code6cac_c_ab.c": 22,
-    "src/code6cac_c_mid.c": 52,
+    "src/code6cac_c_mid.c": 49,
     "src/config.c": 18,
     "src/display.c": 25,
-    "src/ings.c": 35,
+    "src/ings.c": 30,
     "src/ings2.c": 13,
     "src/main.c": 77,
     "src/replay_camera_rob_back_loose2.c": 2,
@@ -3853,20 +3791,25 @@
     "src/system.c": 64,
     "src/text1a_c.c": 61,
     "src/text1a_c2.c": 15,
-    "src/text1a_post.c": 23,
-    "src/text1a_pre.c": 41,
-    "src/text1b.c": 185,
+    "src/text1a_post.c": 22,
+    "src/text1a_pre.c": 38,
+    "src/text1b.c": 182,
     "src/text1b_b.c": 35,
-    "undefined_syms_auto.txt": 26
+    "tools/grinder/reopen_regressions.py": 2,
+    "tools/mar_apply_candidate.py": 1,
+    "tools/mar_probe_kit.py": 4,
+    "tools/memory_audit.py": 1,
+    "tools/psyq_stdlib_scan.py": 1,
+    "tools/ra_solver/sweep.py": 1,
+    "tools/ra_solver/tmv_local.py": 1,
+    "tools/ra_solver/validate.py": 5,
+    "tools/test_board_cards.py": 6,
+    "undefined_syms_auto.txt": 27
   },
   "file_renames": [
     [
       "asm/funcs/AddTbpOfst.s",
       "asm/funcs/func_80087E3C.s"
-    ],
-    [
-      "asm/funcs/AddTbpOfst_80047EE8.s",
-      "asm/funcs/func_80047EE8.s"
     ],
     [
       "asm/funcs/AllocBukiRmd.s",
@@ -4129,6 +4072,10 @@
       "asm/funcs/func_800307D0.s"
     ],
     [
+      "asm/funcs/cpu_get_dist_2.s",
+      "asm/funcs/func_800324D0.s"
+    ],
+    [
       "asm/funcs/cpu_get_move_pattern_table_number.s",
       "asm/funcs/func_8001EA84.s"
     ],
@@ -4139,10 +4086,6 @@
     [
       "asm/funcs/cpu_set_move_command_and_dir_for_no_action.s",
       "asm/funcs/func_800338CC.s"
-    ],
-    [
-      "asm/funcs/cpu_set_move_command_and_dir_for_no_action_2.s",
-      "asm/funcs/main.s"
     ],
     [
       "asm/funcs/cpu_side_move_dir.s",
@@ -4159,10 +4102,6 @@
     [
       "asm/funcs/cpu_side_move_dir_4.s",
       "asm/funcs/func_80080DB0.s"
-    ],
-    [
-      "asm/funcs/damage_DebugDisp.s",
-      "asm/funcs/func_8003800C.s"
     ],
     [
       "asm/funcs/decBs0.s",
@@ -4217,10 +4156,6 @@
       "asm/funcs/func_800174F4.s"
     ],
     [
-      "asm/funcs/gnd_get_fog.s",
-      "asm/funcs/func_80060E04.s"
-    ],
-    [
       "asm/funcs/gnd_init_8001B294.s",
       "asm/funcs/func_8001B294.s"
     ],
@@ -4262,11 +4197,11 @@
     ],
     [
       "asm/funcs/katinuki_game_get_katinuki_max_num_80016868.s",
-      "asm/funcs/func_80016868.s"
+      "asm/funcs/gpu_EnableDisplay.s"
     ],
     [
       "asm/funcs/katinuki_game_get_katinuki_max_num_800168D0.s",
-      "asm/funcs/func_800168D0.s"
+      "asm/funcs/gpu_DisableDisplay.s"
     ],
     [
       "asm/funcs/katinuki_game_get_katinuki_max_num_80046914.s",
@@ -4473,10 +4408,6 @@
       "asm/funcs/func_8001B478.s"
     ],
     [
-      "asm/funcs/myRobGeneiOpen.s",
-      "asm/funcs/func_800545F4.s"
-    ],
-    [
       "asm/funcs/pad_ClearAppliBuffer.s",
       "asm/funcs/func_8003A5A0.s"
     ],
@@ -4491,10 +4422,6 @@
     [
       "asm/funcs/pad_button_info_clear.s",
       "asm/funcs/func_80022568.s"
-    ],
-    [
-      "asm/funcs/pad_main_control.s",
-      "asm/funcs/func_8002E6B0.s"
     ],
     [
       "asm/funcs/pad_press_control.s",
@@ -4837,11 +4764,10 @@
       "asm/funcs/func_800432A0.s"
     ]
   ],
+  "stale_deletions": [
+    "asm/funcs/func_800324D0.s"
+  ],
   "dir_renames": [
-    [
-      "memory/wip/AddTbpOfst_80047EE8",
-      "memory/wip/func_80047EE8"
-    ],
     [
       "memory/wip/DispPracticeMenuTex_A",
       "memory/wip/func_8001B748"
@@ -4865,10 +4791,6 @@
     [
       "memory/wip/cpu_side_move_dir_4",
       "memory/wip/func_80080DB0"
-    ],
-    [
-      "memory/wip/damage_DebugDisp",
-      "memory/wip/func_8003800C"
     ],
     [
       "memory/wip/decBs0",
@@ -4895,6 +4817,10 @@
       "memory/wip/func_800167EC"
     ],
     [
+      "memory/wip/mario_getMarioVoiceData_80048AD0",
+      "memory/wip/func_80048AD0"
+    ],
+    [
       "memory/wip/mario_getMarioVoiceData_8005BE84",
       "memory/wip/func_8005BE84"
     ],
@@ -4919,6 +4845,10 @@
       "memory/wip/func_80042504"
     ],
     [
+      "memory/wip/saEft00Add",
+      "memory/wip/func_8008241C"
+    ],
+    [
       "memory/wip/saTan2KabutoWareMove",
       "memory/wip/func_800283D0"
     ],
@@ -4937,10 +4867,6 @@
     [
       "memory/wip/tslGlobalMemFree_800861BC",
       "memory/wip/func_800861BC"
-    ],
-    [
-      "memory/grind/AddTbpOfst_80047EE8",
-      "memory/grind/func_80047EE8"
     ],
     [
       "memory/grind/InitFadePanel",
@@ -4991,10 +4917,6 @@
       "memory/grind/func_80080DB0"
     ],
     [
-      "memory/grind/damage_DebugDisp",
-      "memory/grind/func_8003800C"
-    ],
-    [
       "memory/grind/efc_rob_set_type_particle",
       "memory/grind/func_80045B68"
     ],
@@ -5025,10 +4947,6 @@
     [
       "memory/grind/motion_ShiftControl",
       "memory/grind/func_80070F78"
-    ],
-    [
-      "memory/grind/myRobGeneiOpen",
-      "memory/grind/func_800545F4"
     ],
     [
       "memory/grind/replay_camera_attack",
@@ -5221,937 +5139,936 @@
     {
       "file": "named_syms.txt",
       "line": 208,
-      "text": "ReturnVTMenu = 0x8003D330;"
-    },
-    {
-      "file": "named_syms.txt",
-      "line": 209,
       "text": "_McAccessSection = 0x8003D39C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 210,
+      "line": 209,
       "text": "coli_calc_motion = 0x8003D888;"
     },
     {
       "file": "named_syms.txt",
-      "line": 211,
+      "line": 210,
       "text": "md_game_restart_init2 = 0x8003F6D8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 212,
+      "line": 211,
       "text": "audioDecBeginPut = 0x80040CB8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 213,
+      "line": 212,
       "text": "tslDrTex1Init3 = 0x80043BD0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 214,
+      "line": 213,
       "text": "gnd_set_fog = 0x80043C7C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 215,
+      "line": 214,
       "text": "tslDrTex1Init4 = 0x80043D34;"
     },
     {
       "file": "named_syms.txt",
-      "line": 216,
+      "line": 215,
       "text": "gnd_set_fog2 = 0x80043DE0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 217,
+      "line": 216,
       "text": "replay_camera_rob_back_win_near = 0x80046BF4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 218,
+      "line": 217,
       "text": "tanren_get_bamboo_anim_info = 0x800475A4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 219,
+      "line": 218,
       "text": "robtest_disp2 = 0x800470B0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 220,
+      "line": 219,
       "text": "motion_CheckSituation = 0x800477E8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 221,
+      "line": 220,
       "text": "saEft03Start = 0x80047A90;"
     },
     {
       "file": "named_syms.txt",
-      "line": 222,
+      "line": 221,
       "text": "_DispCharacterName = 0x80080258;"
     },
     {
       "file": "named_syms.txt",
-      "line": 223,
+      "line": 222,
       "text": "myRobGeneiDraw3 = 0x80080390;"
     },
     {
       "file": "named_syms.txt",
-      "line": 224,
+      "line": 223,
       "text": "damage_CalcHitDamage2 = 0x80082A14;"
     },
     {
       "file": "named_syms.txt",
-      "line": 225,
+      "line": 224,
       "text": "disp_mario_jimaku = 0x800832A0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 226,
+      "line": 225,
       "text": "md_game_check_change_main_mode_default = 0x80083A48;"
     },
     {
       "file": "named_syms.txt",
-      "line": 227,
+      "line": 226,
       "text": "action_check_defense = 0x80086130;"
     },
     {
       "file": "named_syms.txt",
-      "line": 228,
+      "line": 227,
       "text": "disp_mario_jimaku2 = 0x80086BFC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 229,
+      "line": 228,
       "text": "motutil_GetAngTableNum = 0x800871D4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 230,
+      "line": 229,
       "text": "action_check_defense2 = 0x80089EB0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 231,
+      "line": 230,
       "text": "coli_calc_motion2 = 0x8008ACD0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 234,
+      "line": 233,
       "text": "func_80019568 = 0x80019568;"
     },
     {
       "file": "named_syms.txt",
-      "line": 235,
+      "line": 234,
       "text": "func_800321E8 = 0x800321E8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 236,
+      "line": 235,
       "text": "func_800335D8 = 0x800335D8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 237,
+      "line": 236,
       "text": "func_80035280 = 0x80035280;"
     },
     {
       "file": "named_syms.txt",
-      "line": 238,
+      "line": 237,
       "text": "func_8003B5A4 = 0x8003B5A4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 239,
+      "line": 238,
       "text": "func_8003DA8C = 0x8003DA8C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 240,
+      "line": 239,
       "text": "func_8003F824 = 0x8003F824;"
     },
     {
       "file": "named_syms.txt",
-      "line": 241,
+      "line": 240,
       "text": "func_80041BF4 = 0x80041BF4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 242,
+      "line": 241,
       "text": "func_80041EB0 = 0x80041EB0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 243,
+      "line": 242,
       "text": "func_800422BC = 0x800422BC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 244,
+      "line": 243,
       "text": "func_80042874 = 0x80042874;"
     },
     {
       "file": "named_syms.txt",
-      "line": 245,
+      "line": 244,
       "text": "func_80042A88 = 0x80042A88;"
     },
     {
       "file": "named_syms.txt",
-      "line": 246,
+      "line": 245,
       "text": "func_800432A0 = 0x800432A0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 247,
+      "line": 246,
       "text": "func_800858D0 = 0x800858D0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 248,
+      "line": 247,
       "text": "func_800890D4 = 0x800890D4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 249,
+      "line": 248,
       "text": "func_80089D60 = 0x80089D60;"
     },
     {
       "file": "named_syms.txt",
-      "line": 250,
+      "line": 249,
       "text": "saTan0Init = 0x80045294;"
     },
     {
       "file": "named_syms.txt",
-      "line": 283,
+      "line": 282,
       "text": "ptr_load_kseg0_8007A87C       = 0x8007A87C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 284,
+      "line": 283,
       "text": "is_ot_terminator_8007A898     = 0x8007A898;"
     },
     {
       "file": "named_syms.txt",
-      "line": 285,
+      "line": 284,
       "text": "channel_helper_8_80046914     = 0x80046914;"
     },
     {
       "file": "named_syms.txt",
-      "line": 286,
+      "line": 285,
       "text": "channel_helper_9_80046934     = 0x80046934;"
     },
     {
       "file": "named_syms.txt",
-      "line": 287,
+      "line": 286,
       "text": "channel_helper_A_80046A60     = 0x80046A60;"
     },
     {
       "file": "named_syms.txt",
-      "line": 312,
+      "line": 311,
       "text": "char_motion_nibble_scan_80021280              = 0x80021280;  /* supersedes title_mv_exec (motion subsystem, not title screen) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 313,
+      "line": 312,
       "text": "tslTm2_command_with_retry_80080258            = 0x80080258;  /* supersedes _DispCharacterName (clearly a TIM/CD-load retry wrapper, not name display) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 314,
+      "line": 313,
       "text": "tslTm2_command_with_retry_no_arg3_80080390    = 0x80080390;  /* supersedes myRobGeneiDraw3 (2-arg twin of above; not draw) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 315,
+      "line": 314,
       "text": "char_store_pos_pair_80086130                  = 0x80086130;  /* supersedes action_check_defense (stores paired values into 16-byte slot records; not defense check) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 316,
+      "line": 315,
       "text": "spawn_hit_particle_80030900                   = 0x80030900;  /* parallel to myRobGeneiDraw (compatible; the \"afterimage\" might be one kind of hit particle this spawns) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 370,
+      "line": 369,
       "text": "memcard_event_init_800375EC                       = 0x800375EC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 374,
+      "line": 373,
       "text": "cdrom_stream_callback_80036064                    = 0x80036064;"
     },
     {
       "file": "named_syms.txt",
-      "line": 378,
+      "line": 377,
       "text": "bios_exec_wrapper_with_setup_80037468             = 0x80037468;"
     },
     {
       "file": "named_syms.txt",
-      "line": 382,
+      "line": 381,
       "text": "scene_teardown_80035DC8                           = 0x80035DC8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 386,
+      "line": 385,
       "text": "ndata_disc_read_scheduler_80036E34                = 0x80036E34;"
     },
     {
       "file": "named_syms.txt",
-      "line": 497,
+      "line": 496,
       "text": "gpu_EnableDisplay_80016868      = 0x80016868;  /* gpu_SetMode(1) wrapper */"
     },
     {
       "file": "named_syms.txt",
-      "line": 499,
+      "line": 498,
       "text": "gpu_DisableDisplay_800168D0     = 0x800168D0;  /* gpu_SetDispMask(1) wrapper */"
     },
     {
       "file": "named_syms.txt",
-      "line": 667,
+      "line": 661,
+      "text": "cpu_get_dist_2_800324D0                          = 0x800324D0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 666,
       "text": "suLeagueSystemInit_8001BCF0                      = 0x8001BCF0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 668,
+      "line": 667,
       "text": "md_game_restart_init_8001E6E4                    = 0x8001E6E4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 669,
+      "line": 668,
       "text": "hirahira_w_frie2_8001EEB4                        = 0x8001EEB4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 670,
+      "line": 669,
       "text": "title_mv_exec_80021280                           = 0x80021280;"
     },
     {
       "file": "named_syms.txt",
-      "line": 671,
+      "line": 670,
       "text": "tslDrTex1Init_8002738C                           = 0x8002738C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 672,
+      "line": 671,
       "text": "_CardCheckPulled_80027438                        = 0x80027438;"
     },
     {
       "file": "named_syms.txt",
-      "line": 673,
+      "line": 672,
       "text": "motion_GameCalcMotion_8002872C                   = 0x8002872C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 674,
+      "line": 673,
       "text": "myRobGeneiDraw_80030900                          = 0x80030900;"
     },
     {
       "file": "named_syms.txt",
-      "line": 675,
+      "line": 674,
       "text": "motion_shift_check_e_kawashi_80030B10            = 0x80030B10;"
     },
     {
       "file": "named_syms.txt",
-      "line": 676,
+      "line": 675,
       "text": "ki_attack_ougi_80033498                          = 0x80033498;"
     },
     {
       "file": "named_syms.txt",
-      "line": 677,
+      "line": 676,
       "text": "motutil_CheckKamaeReq_80033D38                   = 0x80033D38;"
     },
     {
       "file": "named_syms.txt",
-      "line": 678,
+      "line": 677,
       "text": "robtest_disp_800340A0                            = 0x800340A0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 679,
+      "line": 678,
       "text": "_GetBattleSwichData_80034200                     = 0x80034200;"
     },
     {
       "file": "named_syms.txt",
-      "line": 680,
+      "line": 679,
       "text": "tslDrTex1Init2_8003553C                          = 0x8003553C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 681,
+      "line": 680,
       "text": "mottest_rob_init_80036FD4                        = 0x80036FD4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 682,
+      "line": 681,
       "text": "_CardCheckPulled2_80037A20                       = 0x80037A20;"
     },
     {
       "file": "named_syms.txt",
-      "line": 683,
+      "line": 682,
       "text": "camera_SetMatrix_80037F40                        = 0x80037F40;  /* MISNAMED: not a camera fn; checksums g_file_disc_size (0x24 bytes) and copies Quad records */"
     },
     {
       "file": "named_syms.txt",
-      "line": 684,
+      "line": 683,
       "text": "damage_CalcHitDamage_8003880C                    = 0x8003880C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 685,
+      "line": 684,
       "text": "md_menu_logo_exec_8003AFFC                       = 0x8003AFFC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 686,
+      "line": 685,
       "text": "kgm_init_hitrect_8003B10C                        = 0x8003B10C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 687,
-      "text": "ReturnVTMenu_8003D330                            = 0x8003D330;"
-    },
-    {
-      "file": "named_syms.txt",
-      "line": 688,
+      "line": 686,
       "text": "_McAccessSection_8003D39C                        = 0x8003D39C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 689,
+      "line": 687,
       "text": "coli_calc_motion_8003D888                        = 0x8003D888;"
     },
     {
       "file": "named_syms.txt",
-      "line": 690,
+      "line": 688,
       "text": "audioDecBeginPut_80040CB8                        = 0x80040CB8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 691,
+      "line": 689,
       "text": "tslDrTex1Init3_80043BD0                          = 0x80043BD0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 692,
+      "line": 690,
       "text": "gnd_set_fog_80043C7C                             = 0x80043C7C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 693,
+      "line": 691,
       "text": "tslDrTex1Init4_80043D34                          = 0x80043D34;"
     },
     {
       "file": "named_syms.txt",
-      "line": 694,
+      "line": 692,
       "text": "gnd_set_fog2_80043DE0                            = 0x80043DE0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 695,
+      "line": 693,
       "text": "suLeagueSystemInit2_80044CCC                     = 0x80044CCC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 696,
+      "line": 694,
       "text": "_DispCharacterName_80080258                      = 0x80080258;  /* legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 697,
+      "line": 695,
       "text": "myRobGeneiDraw3_80080390                         = 0x80080390;  /* legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 698,
+      "line": 696,
       "text": "action_check_defense_80086130                    = 0x80086130;  /* legacy; canonical is char_store_pos_pair_80086130 (misnomer) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 699,
+      "line": 697,
       "text": "disp_mario_jimaku2_80086BFC                      = 0x80086BFC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 700,
+      "line": 698,
       "text": "motutil_GetAngTableNum_800871D4                  = 0x800871D4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 701,
+      "line": 699,
       "text": "action_check_defense2_80089EB0                   = 0x80089EB0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 702,
+      "line": 700,
       "text": "coli_calc_motion2_8008ACD0                       = 0x8008ACD0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 1312,
+      "line": 1310,
       "text": "coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */"
     },
     {
       "file": "named_syms.txt",
-      "line": 1564,
+      "line": 1562,
       "text": "saTan2LinePrimInit                                      = 0x8002EA24;"
     },
     {
       "file": "named_syms.txt",
-      "line": 1767,
+      "line": 1765,
       "text": "mode_handler_18_UnlockAnimDispatch                      = 0x8003C040;  /* dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 1784,
+      "line": 1782,
       "text": "mode_handler_00_GameInit                                = 0x8001DCB0;  /* main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */"
     },
     {
       "file": "named_syms.txt",
-      "line": 1785,
+      "line": 1783,
       "text": "mode_handler_07_SubModeTransition                       = 0x8003BCB4;  /* increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3135,
+      "line": 3133,
       "text": "view_pos_init_from_obj_8001B3C0 = 0x8001B3C0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3136,
+      "line": 3134,
       "text": "sound_dispatch_56_to_58_8001C820 = 0x8001C820;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3137,
+      "line": 3135,
       "text": "display_framebuffer_dispatch_8001DBE4 = 0x8001DBE4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3138,
+      "line": 3136,
       "text": "bios_FormatDevice_B_wrapper_80037F08 = 0x80037F08;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3139,
+      "line": 3137,
       "text": "file_disc_checksum_copy_80037F40 = 0x80037F40;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3140,
+      "line": 3138,
       "text": "set_event_flag_8003A3F0 = 0x8003A3F0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3141,
+      "line": 3139,
       "text": "bios_FileRead_B_wrapper_8003A574 = 0x8003A574;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3142,
+      "line": 3140,
       "text": "ground_load_with_cache_8003E164 = 0x8003E164;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3143,
+      "line": 3141,
       "text": "bgm_sound_table_init_80048AD0 = 0x80048AD0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3144,
+      "line": 3142,
       "text": "saFidLoad_pair_8005B98C = 0x8005B98C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3145,
+      "line": 3143,
       "text": "mode_change_to_katinuki_8005BE84 = 0x8005BE84;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3146,
+      "line": 3144,
       "text": "gpu_vcount_init_8007DC68 = 0x8007DC68;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3147,
+      "line": 3145,
       "text": "bios_DeliverEvent_class3_evt20_80080014 = 0x80080014;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3148,
+      "line": 3146,
       "text": "bios_DeliverEvent_class3_evt40_8008003C = 0x8008003C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3149,
+      "line": 3147,
       "text": "bios_DeliverEvent_class3_evt40_80080064 = 0x80080064;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3150,
+      "line": 3148,
       "text": "cpu_side_move_dir_4_wrapper_800801E8 = 0x800801E8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3151,
+      "line": 3149,
       "text": "marionation_Exec_wrapper_80080208 = 0x80080208;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3152,
+      "line": 3150,
       "text": "cdrom_dma_idle_check_80080640 = 0x80080640;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3153,
+      "line": 3151,
       "text": "saEft01Init_wrapper_80080684 = 0x80080684;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3163,
+      "line": 3161,
       "text": "apply_motion_matrix_800203B4 = 0x800203B4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3164,
+      "line": 3162,
       "text": "gpu_dma_schedule_8002AB08 = 0x8002AB08;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3165,
+      "line": 3163,
       "text": "gpu_LoadImage_wrapper_8003D2C4 = 0x8003D2C4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3166,
+      "line": 3164,
       "text": "align_4byte_round_8003FFA8 = 0x8003FFA8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3167,
+      "line": 3165,
       "text": "set_array_slot3_8003FFC4 = 0x8003FFC4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3168,
+      "line": 3166,
       "text": "player_equipment_flag_init_80041688 = 0x80041688;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3169,
+      "line": 3167,
       "text": "build_offset_table_80044378 = 0x80044378;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3170,
+      "line": 3168,
       "text": "disp_dispatch_via_D_800A378C_800444BC = 0x800444BC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3171,
+      "line": 3169,
       "text": "dispatch_via_4D_offset_80044F80 = 0x80044F80;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3172,
+      "line": 3170,
       "text": "display_setup_80046020 = 0x80046020;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3173,
+      "line": 3171,
       "text": "sentinel_array_init_8004939C = 0x8004939C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3174,
+      "line": 3172,
       "text": "stream_decode_via_8004A76C_8004A940 = 0x8004A940;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3175,
+      "line": 3173,
       "text": "ui_stop_selection_800548DC = 0x800548DC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3176,
+      "line": 3174,
       "text": "char_disp_offset_80056FE8 = 0x80056FE8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3177,
+      "line": 3175,
       "text": "func_8006C168_wrapper_8006C1FC = 0x8006C1FC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3178,
+      "line": 3176,
       "text": "motion_state_reset_80077A04 = 0x80077A04;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3179,
+      "line": 3177,
       "text": "func_8006E068_wrapper_80077A60 = 0x80077A60;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3180,
+      "line": 3178,
       "text": "func_80077724_wrapper_80077AC0 = 0x80077AC0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3181,
+      "line": 3179,
       "text": "gauge_flag_set_80077B20 = 0x80077B20;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3182,
+      "line": 3180,
       "text": "gauge_data_ptr_get_80077D00 = 0x80077D00;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3187,
+      "line": 3185,
       "text": "md_mode_set_800400B0 = 0x800400B0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3188,
+      "line": 3186,
       "text": "efc_buki_draw_setup_80047FBC = 0x80047FBC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3189,
+      "line": 3187,
       "text": "efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3210,
+      "line": 3208,
       "text": "record_array_sentinel_init_8003043C = 0x8003043C;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3220,
+      "line": 3218,
       "text": "pad_clear_buffer_80038148 = 0x80038148;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3322,
+      "line": 3320,
       "text": "suDispMentalBar_helper_8003B2C8 = 0x8003B2C8;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3323,
+      "line": 3321,
       "text": "suDispMentalBar_helper_8003B3A4 = 0x8003B3A4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3324,
+      "line": 3322,
       "text": "suDispMentalBar_helper_8003B4DC = 0x8003B4DC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3325,
+      "line": 3323,
       "text": "tslLineG5Init_helper_8003DBE4 = 0x8003DBE4;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3326,
+      "line": 3324,
       "text": "tslPrintScreen_helper_8003FA24 = 0x8003FA24;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3327,
+      "line": 3325,
       "text": "tslPrintScreen_helper_8003FECC = 0x8003FECC;"
     },
     {
       "file": "named_syms.txt",
-      "line": 3438,
+      "line": 3436,
       "text": "clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload \u2014 pass 4) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3439,
+      "line": 3437,
       "text": "practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3521,
+      "line": 3519,
       "text": "tsllineg5init_helper_8003DDF8                      = 0x8003DDF8;  /* first-pass subsystem tag (tsllineg5init); <-tslLineG5Init_helper_8003DBE4 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3527,
+      "line": 3525,
       "text": "tslprintscreen_helper_8003FE40                     = 0x8003FE40;  /* first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3559,
+      "line": 3557,
       "text": "tslglobalmemfree_helper_8005C074                   = 0x8005C074;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3560,
+      "line": 3558,
       "text": "tslglobalmemfree_helper_8005C5A8                   = 0x8005C5A8;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3636,
+      "line": 3634,
       "text": "tslglobalmemfree_helper_800859F0                   = 0x800859F0;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3640,
+      "line": 3638,
       "text": "tslglobalmemfree_helper_80088584                   = 0x80088584;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3752,
+      "line": 3750,
       "text": "tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3862,
+      "line": 3860,
       "text": "get_D_800F6650_80042864                                = 0x80042864;  /* getter: returns D_800F6650 (no calls/branches) */"
     },
     {
       "file": "named_syms.txt",
-      "line": 3867,
+      "line": 3865,
       "text": "gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */"
     },
     {
       "file": "undefined_syms_auto.txt",
       "line": 1504,
-      "text": "ReturnVTMenu = 0x8003D330;"
-    },
-    {
-      "file": "undefined_syms_auto.txt",
-      "line": 1505,
       "text": "_CardCheckPulled2 = 0x80037A20;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1511,
+      "line": 1510,
       "text": "camera_SetMatrix = 0x80037F40;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1519,
+      "line": 1518,
       "text": "func_80019568 = 0x80019568;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1520,
+      "line": 1519,
       "text": "func_800321E8 = 0x800321E8;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1521,
+      "line": 1520,
       "text": "func_800335D8 = 0x800335D8;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1522,
+      "line": 1521,
       "text": "func_80035280 = 0x80035280;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1523,
+      "line": 1522,
       "text": "func_8003B5A4 = 0x8003B5A4;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1524,
+      "line": 1523,
       "text": "func_8003DA8C = 0x8003DA8C;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1525,
+      "line": 1524,
       "text": "func_8003F824 = 0x8003F824;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1526,
+      "line": 1525,
       "text": "func_80041BF4 = 0x80041BF4;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1527,
+      "line": 1526,
       "text": "func_80041EB0 = 0x80041EB0;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1528,
+      "line": 1527,
       "text": "func_800422BC = 0x800422BC;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1529,
+      "line": 1528,
       "text": "func_80042874 = 0x80042874;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1530,
+      "line": 1529,
       "text": "func_80042A88 = 0x80042A88;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1531,
+      "line": 1530,
       "text": "func_800432A0 = 0x800432A0;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1532,
+      "line": 1531,
       "text": "func_800858D0 = 0x800858D0;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1533,
+      "line": 1532,
       "text": "func_800890D4 = 0x800890D4;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1534,
+      "line": 1533,
       "text": "func_80089D60 = 0x80089D60;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1674,
+      "line": 1673,
       "text": "getScreenPosition = 0x80017FA0;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1697,
+      "line": 1676,
+      "text": "gpu_DisableDisplay = 0x800168D0;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1677,
+      "text": "gpu_EnableDisplay = 0x80016868;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1696,
       "text": "kgm_init_hitrect = 0x8003B10C;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1701,
+      "line": 1700,
       "text": "md_menu_logo_exec = 0x8003AFFC;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1703,
+      "line": 1702,
       "text": "motion_GameCalcMotion = 0x8002872C;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1704,
+      "line": 1703,
       "text": "mottest_rob_init = 0x80036FD4;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1705,
+      "line": 1704,
       "text": "motutil_CheckKamaeReq = 0x80033D38;"
     },
     {
       "file": "undefined_syms_auto.txt",
-      "line": 1709,
+      "line": 1708,
       "text": "replay_camera_rob_back_win_near = 0x80046BF4;"
     }
   ],
   "json_edits": {
     "tools/prologue_config.json": [
-      "AddTbpOfst_80047EE8",
       "marionation_Exec",
       "hirahira_w_ctrl"
     ],
@@ -6159,7 +6076,6 @@
       "saEft00Add -> func_8008241C",
       "mario_getMarioVoiceData_80048AD0 -> func_80048AD0",
       "suDispMentalBar -> func_8003B5A4",
-      "cpu_set_move_command_and_dir_for_no_action_2 -> main",
       "PutShadowRmd -> func_800401CC",
       "coli_check_circle_hit_line -> func_8002FDB0",
       "pad_ClearAppliBuffer -> func_8003A5A0",
@@ -6167,6 +6083,7 @@
       "motion_Open -> func_80083794",
       "gnd_disp_loop_ctrl -> func_800174F4",
       "Pad_Prs -> func_80032314",
+      "cpu_get_dist_2 -> func_800324D0",
       "title_mv_exec2 -> func_800858D0",
       "hirahira_w_ctrl -> func_80041188",
       "cpu_check_tubazeri -> func_8002FC80",
@@ -6195,7 +6112,6 @@
       "ang_near_dif -> func_8003F6D8",
       "saTan0KiWareMoveA -> func_8002D780",
       "marionation_Exec -> func_80081030",
-      "pad_main_control -> func_8002E6B0",
       "saSeInit_2 -> func_800393C8",
       "hirahira_w_ctrl_2 -> func_80042C80",
       "tslPrintScreen -> func_8003F824",
@@ -6247,13 +6163,45 @@
       "cpu_side_move_dir_4 -> func_80080DB0",
       "gnd_init_80041688 -> func_80041688",
       "cpu_check_tubazeri_2 -> func_800307D0",
-      "damage_DebugDisp -> func_8003800C",
       "ang_hosei_80056FE8 -> func_80056FE8",
-      "AddTbpOfst_80047EE8 -> func_80047EE8",
       "saEft01Init -> func_80081BB0"
     ]
   },
   "out_of_scope": [
-    "bb2.ld: names a FILE after 'replay_camera_rob_back_loose2' \u2014 the symbol is renamed but the file/object path is left alone (a source-file rename is a separate, owner-level decision)"
+    "bb2.ld: names a FILE after 'replay_camera_rob_back_loose2' \u2014 the symbol is renamed but the file/object path is left alone (a source-file rename is a separate, owner-level decision)",
+    "engine/canonical.py:L1: ['motion_Open'] in prose/docstring \u2014 NOT rewritten",
+    "engine/score.py:L1: ['saEft00Add'] in prose/docstring \u2014 NOT rewritten",
+    "engine/test_engine.py:L1541: ['md_gview_init'] in prose/docstring \u2014 NOT rewritten",
+    "engine/test_engine.py:L1542: ['md_gview_init'] in prose/docstring \u2014 NOT rewritten",
+    "engine/test_engine.py:L186: ['saEft00Add'] in prose/docstring \u2014 NOT rewritten",
+    "engine/test_engine.py:L1883: ['gnd_init_80041688'] in prose/docstring \u2014 NOT rewritten",
+    "engine/test_engine.py:L211: ['saEft00Add'] in prose/docstring \u2014 NOT rewritten",
+    "include/m2c_context.h: gitignored (generated) \u2014 skipped, because an edit there could not be rolled back with git; regenerate it instead",
+    "tools/canonical_funcname.py:L2: ['motion_SavePreCalcData_80080014'] in prose/docstring \u2014 NOT rewritten",
+    "tools/decomp_me_scrape.py:L2: ['AddTbpOfst'] in prose/docstring \u2014 NOT rewritten",
+    "tools/grinder/grindlib.py:L357: ['marionation_Exec', 'saEft01Init'] in prose/docstring \u2014 NOT rewritten",
+    "tools/grinder/grindlib.py:L423: ['saEft01Init'] in prose/docstring \u2014 NOT rewritten",
+    "tools/headless_review.py:L2: ['replay_camera_rob_back_loose2'] in prose/docstring \u2014 NOT rewritten",
+    "tools/kengo_ref.py:L2: ['camera_SetMatrix', 'special_camera_Exec'] in prose/docstring \u2014 NOT rewritten",
+    "tools/mar_apply_candidate.py:L2: ['marionation_Exec'] in prose/docstring \u2014 NOT rewritten",
+    "tools/memory_check.py:L189: ['calc_fc_frame'] in prose/docstring \u2014 NOT rewritten",
+    "tools/naming_wave.py:L738: ['getScreenPosition'] in prose/docstring \u2014 NOT rewritten",
+    "tools/probe_func_labels.py:L2: ['SetPacketData', 'mk_leaf_newpos'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/inverse.py:L2: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/inverse.py:L304: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/inverse_reload.py:L2: ['saTan4FireDisp'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/levers.py:L129: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/levers.py:L380: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/levers.py:L400: ['gnd_init_80041688'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/levers.py:L75: ['motion_SetMotion'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/pseudo_scope.py:L2: ['DispPracticeMenuTex_A'] in prose/docstring \u2014 NOT rewritten",
+    "tools/ra_solver/tmv_local.py:L2: ['title_mv_exec2'] in prose/docstring \u2014 NOT rewritten",
+    "tools/regfix.py:L2: ['PutShadowRmd'] in prose/docstring \u2014 NOT rewritten",
+    "tools/render_naming_docs.py:L497: ['psyq_memset'] in prose/docstring \u2014 NOT rewritten",
+    "tools/render_naming_docs.py:L542: ['katinuki_game_get_katinuki_max_num_80016868'] in prose/docstring \u2014 NOT rewritten",
+    "tools/resplit_convert.py:L124: ['DispPracticeMenuTex_A'] in prose/docstring \u2014 NOT rewritten",
+    "tools/resplit_convert.py:L312: ['cpu_check_run_attack'] in prose/docstring \u2014 NOT rewritten",
+    "tools/scan_hand_coded.py:L149: ['calc_fc_frame_8007EC5C'] in prose/docstring \u2014 NOT rewritten",
+    "tools/scan_hand_coded.py:L776: ['calc_fc_frame'] in prose/docstring \u2014 NOT rewritten"
   ]
 }
