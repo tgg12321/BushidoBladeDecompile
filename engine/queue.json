@@ -12,23 +12,6 @@
       "status": "active"
     },
     {
-      "func": "func_80044CCC",
-      "file": "text1a_c",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
-      "func": "func_8004876C",
-      "file": "text1b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active"
-    },
-    {
       "func": "mario_getMarioVoiceData_80048AD0",
       "file": "text1b",
       "distance": 19,
@@ -2471,14 +2454,14 @@
     }
   ],
   "counts": {
-    "total": 293,
-    "active": 258,
+    "total": 291,
+    "active": 256,
     "by_status": {
-      "active": 258,
+      "active": 256,
       "parked": 35
     },
     "by_verdict": {
-      "C": 172,
+      "C": 170,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 21,
       "ASM-STRUCTURAL": 26

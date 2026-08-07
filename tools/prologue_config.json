@@ -195,24 +195,6 @@
     "sll\t$s0, $v0, 1",
     "addu\t$s0, $s0, $v0"
   ],
-  "func_80044CCC": [
-    "addiu\t$sp, $sp, -0x50",
-    "sw\t$s0, 0x38($sp)",
-    "addu\t$s0, $a1, $zero",
-    "sw\t$s1, 0x3C($sp)",
-    "addu\t$s1, $a2, $zero",
-    "sw\t$ra, 0x4C($sp)",
-    "sw\t$s4, 0x48($sp)",
-    "sw\t$s3, 0x44($sp)",
-    "sw\t$s2, 0x40($sp)",
-    "lh\t$v0, 0x0($a0)",
-    "addu\t$s2, $a3, $zero",
-    "sw\t$v0, 0x1C($sp)",
-    "lh\t$s3, 0x2($a0)",
-    "lh\t$s4, 0x4($a0)",
-    "jal\tfunc_8007DF20",
-    "addu\t$a0, $s3, $zero"
-  ],
   "func_80045294": [
     "addiu\t$sp, $sp, -0x30",
     "sw\t$s2, 0x18($sp)",

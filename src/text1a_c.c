@@ -1470,26 +1470,23 @@ extern s32 math_Cos(s32);
 void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
-    s16 angle;
+    s32 angle;
     s32 radius;
-    s32 v0;
 
     sp18[1] = a0[0];
     angle = a0[1];
     radius = a0[2];
     sp18[0] = (math_Sin(angle) * radius) >> 12;
-    v0 = math_Cos(angle);
+    sp18[2] = (math_Cos(angle) * radius) >> 12;
     sp18[1] = -sp18[1];
-    sp18[2] = (v0 * radius) >> 12;
     sp18[2] = -sp18[2];
 
     sp28[1] = a1[0];
     angle = a1[1];
     radius = a1[2];
     sp28[0] = (math_Sin(angle) * radius) >> 12;
-    v0 = math_Cos(angle);
+    sp28[2] = (math_Cos(angle) * radius) >> 12;
     sp28[1] = -sp28[1];
-    sp28[2] = (v0 * radius) >> 12;
     sp28[2] = -sp28[2];
 
     func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
