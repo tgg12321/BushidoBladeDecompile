@@ -1097,7 +1097,23 @@ void D_80082320(void) {
 s32 saEft00Add(s32 arg0) {
     u8 sp10;
     s32 temp_s0;
+    /* FAKE: second C handle for D_800A1500 / D_800A14DC. Target materializes
+       each address into its own register (0x80082440 and 0x8008252C: lui/addiu
+       then lw 0(reg)) instead of the 2-insn %hi/%lo macro form the direct
+       global read compiles to. Reading the globals directly leaves the address
+       as a bare (mem (symbol_ref)), which aspsx expands to lui/lw and drops
+       both addiu — measured 131/133 insns (honest distance 4). The alias gives
+       the symbol address its own pseudo, which survives to the emitted la-form.
+       Lever exhaustion (memory/wip/saEft00Add/notes.md): direct scalars, value
+       locals, hoisted predicate flag, captured callback returns, statement
+       reorder and split byte-read all measured 131/133 or worse; the CdlREAD
+       one-object struct view reaches 133/133 but was FAILed at layer-2 as the
+       same coercion in different syntax. NB the third read of the SAME word at
+       the end of this function stays a direct global read, matching target's
+       macro form there. Same shape as the COMPLETED siblings saEft00Add_sub
+       (below) and func_800826CC, which alias this same Sony cdread block. */
     volatile s32 *tsl;
+    /* FAKE: see above — the mode member's address, same mechanism. */
     volatile s32 *md;
 
     cdrom_SetCallbackA(0);

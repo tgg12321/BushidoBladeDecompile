@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "saEft00Add",
-      "file": "system",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "mario_getMarioVoiceData_80048AD0",
       "file": "text1b",
       "distance": 19,
@@ -2454,14 +2446,14 @@
     }
   ],
   "counts": {
-    "total": 291,
-    "active": 256,
+    "total": 290,
+    "active": 255,
     "by_status": {
-      "active": 256,
+      "active": 255,
       "parked": 35
     },
     "by_verdict": {
-      "C": 170,
+      "C": 169,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 21,
       "ASM-STRUCTURAL": 26
