@@ -3847,3 +3847,20 @@ Sites: gnd_disp_loop_ctrl (ings), func_80033DF4 (code6cac_b — verify the
 divergent line survives its tier-1 asmfix injection before respelling),
 cpu_set_move_command_and_dir_for_no_action_2/main (ings).
 [skip-park-src-guard]
+
+## 2026-08-07 — OWNER APPROVES the full naming reset wave (307 ops)
+
+Owner approves executing the remaining Phase-2 naming wave per
+docs/naming/suspect-list.md + docs/naming/reset-wave-dryrun.json: ~304
+RESETs of SUSPECT names (Kengo-derived provenance, PS2-only families,
+recorded contradictions) to auto func_80XXXXXX form, plus the re-classed
+gpu_Enable/DisableDisplay DROP-BAD-ALIAS pair, under the orchestrator's
+recorded census-item rulings (save_vc_ctrl EXCLUDED — bespoke op if ever;
+cpu_get_dist_2's stale-file collision investigated-then-handled with
+evidence in the manifest). Mechanism: tools/naming_wave.py exactly as
+pilot-proven (350ee1b9 — 12 cascade surfaces incl. tool-source string
+keys). Gates: EXCLUSIVE quiet-tree window (no concurrent committers),
+full clean verify-oracle == 62efab4f... , engine test green, residual
+audit (no retired name surviving any keyed surface), fresh layer-2 on
+the wave diff, queue regen + integrity audit after. Scheduled after the
+oracle-compiler migration completes. [skip-park-src-guard]
