@@ -26,8 +26,8 @@ extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern s32 D_800109BC;
@@ -68,7 +68,7 @@ extern void func_800602AC(s32, s32);
 extern void func_8003AFFC(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
@@ -76,7 +76,7 @@ extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void func_800174F4(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -85,10 +85,10 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 D_800A3210;
-extern void func_8008BE04(void);
+extern void AddCOMB(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -148,24 +148,24 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 bios_TestEvent(s32);
-extern void bios_CloseEvent(s32);
-extern void bios_EnableEvent(s32);
+extern s32 TestEvent(s32);
+extern void CloseEvent(s32);
+extern void EnableEvent(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void bios_FileRead_B(s32, s32 *, s32);
-extern void bios_FileClose_B(s32);
-extern s32 bios_firstfile_B(s32 *, s32 *);
-extern s32 bios_nextfile_B(s32 *);
-extern void func_80078BA8(s32);
-extern s32 func_80078B04(s32);
-extern void func_8007A400(void);
-extern void func_8008BE4C(void);
+extern void read(s32, s32 *, s32);
+extern void close(s32);
+extern s32 firstfile(s32 *, s32 *);
+extern s32 nextfile(s32 *);
+extern void ResetRCnt(s32);
+extern s32 GetRCnt(s32);
+extern void StopCARD(void);
+extern void DelCOMB(void);
 extern void func_8006BEC4(s32, s32);
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
 extern void func_80022568(u8 *);
 extern s32 g_str_memcard_fmt;
@@ -179,7 +179,7 @@ extern u16 func_80035E88(s32);
 extern s32 func_80035EDC(s16);
 extern u16 func_80019488(void);
 extern void func_800194C0(s16);
-extern u16 func_80079154(void);
+extern u16 rand(void);
 extern void func_80019568(s32);
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
@@ -199,7 +199,7 @@ s32 func_8003AB44(void) {
             func_8003A308();
             D_800A37D8 = 0;
             if (D_800A38A0 == 0) {
-                gpu_SetDispMask(1);
+                SetDispMask(1);
                 D_800A38AC = 2;
                 break;
             }
@@ -209,17 +209,17 @@ s32 func_8003AB44(void) {
             if (D_80102794 & 0x10) {
                 goto fail;
             }
-            if (func_8008C464(3, 1, 0) == 0) {
+            if (_comb_control(3, 1, 0) == 0) {
                 break;
             }
             goto done;
         case 3:
-            if (func_8008C464(3, 1, 0) != 0) {
+            if (_comb_control(3, 1, 0) != 0) {
                 goto retry;
             }
             /* fall through */
         done:
-            func_8008C464(3, 0, 0);
+            _comb_control(3, 0, 0);
             D_800A38AC = 4;
             break;
         retry:
@@ -232,7 +232,7 @@ s32 func_8003AB44(void) {
             func_8003A39C();
             return -1;
         case 4:
-            gpu_SetDispMask(0);
+            SetDispMask(0);
         case 5:
         case 6:
             D_800A38AC++;
@@ -248,7 +248,7 @@ s32 func_8003ACB8(void) {
     s32 temp_s0;
 
     func_80077AE0();
-    gpu_SetDispMask(0);
+    SetDispMask(0);
     D_800A37B8 = 0;
     D_800A38AC = 0;
     D_800A38D0 = 0;
@@ -259,29 +259,29 @@ s32 func_8003ACB8(void) {
         func_80019568(1);
         func_8005C6D0();
         temp_s0 = func_8003AB44();
-        sys_VSync(2);
+        VSync(2);
     } while (temp_s0 == 0);
     func_80077B00();
     func_800194F4();
     D_800A37C4 = func_80035E88(g_file_disc_size);
     func_8003AA48();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
     D_800A38E4 = func_80035EDC(D_800A36C6);
     D_800A37C4 = func_80019488();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
     func_800194C0(D_800A36C6);
-    D_800A37C4 = func_80079154();
-    sys_VSync(1);
+    D_800A37C4 = rand();
+    VSync(1);
     func_8003AA48();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
-    sys_VSync(1);
+    VSync(1);
     func_8003AA48();
     {
         s32 var_v0;
@@ -294,7 +294,7 @@ s32 func_8003ACB8(void) {
     }
     gpu_InitDisplay();
     gpu_DisableDisplay();
-    func_80078BA8(0xF2000001);
+    ResetRCnt(0xF2000001);
     return temp_s0;
 }
 void func_8003AE5C(u8 *arg0) {
@@ -639,7 +639,7 @@ void func_8003B8E4(void) {
         D_800A38B4 = D_800A38B4 + (ret / 4) * 4;
     }
     if (D_800A37B8 == 3) {
-        gpu_DrawSync(0);
+        DrawSync(0);
         func_8003AE5C(D_800A3844);
         D_800A37C0 = 500;
         D_800A38F8 = 0;

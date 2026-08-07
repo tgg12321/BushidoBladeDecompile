@@ -59,7 +59,7 @@ glabel func_8003E6D8
     /* 2EFBC 8003E7BC 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2EFC0 8003E7C0 3800A48F */  lw         $a0, 0x38($sp)
     /* 2EFC4 8003E7C4 4000A58F */  lw         $a1, 0x40($sp)
-    /* 2EFC8 8003E7C8 57FF010C */  jal        func_8007FD5C
+    /* 2EFC8 8003E7C8 57FF010C */  jal        ratan2
     /* 2EFCC 8003E7CC 00000000 */   nop
     /* 2EFD0 8003E7D0 F1FF2426 */  addiu      $a0, $s1, -0xF
     /* 2EFD4 8003E7D4 F1FF0526 */  addiu      $a1, $s0, -0xF

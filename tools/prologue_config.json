@@ -91,7 +91,7 @@
     "bnez\t$v1, .L80084B28",
     "sb\t$v0, 0x21($s0)"
   ],
-  "func_80080258": [
+  "CdControl": [
     "addiu\t$sp, $sp, -0x38",
     "sw\t$s1, 0x14($sp)",
     "addu\t$s1, $a1, $zero",
@@ -120,7 +120,7 @@
     "beq\t$s3, $v0, .L800802EC",
     "nop"
   ],
-  "func_80080390": [
+  "CdControlF": [
     "addiu\t$sp, $sp, -0x30",
     "sw\t$s1, 0x14($sp)",
     "addu\t$s1, $a1, $zero",
@@ -147,7 +147,7 @@
     "beq\t$s2, $v0, .L8008041C",
     "nop"
   ],
-  "func_80081030": [
+  "CD_ready": [
     "addiu\t$sp, $sp, -0x40",
     "sw\t$s7, 0x34($sp)",
     "addu\t$s7, $a0, $zero",

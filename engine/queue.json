@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T12:13:32",
+  "generated_at": "2026-08-07T13:49:12",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -100,7 +100,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007B6C8",
+      "func": "MoveImage",
       "file": "display",
       "distance": 21,
       "verdict": "C",
@@ -172,7 +172,7 @@
       "status": "active"
     },
     {
-      "func": "func_80080390",
+      "func": "CdControlF",
       "file": "system",
       "distance": 23,
       "verdict": "C",
@@ -229,7 +229,7 @@
       "status": "active"
     },
     {
-      "func": "func_80080258",
+      "func": "CdControl",
       "file": "system",
       "distance": 25,
       "verdict": "C",
@@ -601,7 +601,7 @@
       "status": "active"
     },
     {
-      "func": "func_8008BB24",
+      "func": "_spu_note2pitch",
       "file": "main",
       "distance": 39,
       "verdict": "C",
@@ -801,7 +801,7 @@
       "status": "active"
     },
     {
-      "func": "func_80081030",
+      "func": "CD_ready",
       "file": "system",
       "distance": 56,
       "verdict": "ASM-SUSPECT",
@@ -850,7 +850,7 @@
       "status": "active"
     },
     {
-      "func": "func_8008BC60",
+      "func": "_spu_pitch2note",
       "file": "main",
       "distance": 64,
       "verdict": "ASM-SUSPECT",
@@ -962,7 +962,7 @@
       "status": "active"
     },
     {
-      "func": "func_800896A0",
+      "func": "_spu_gcSPU",
       "file": "main",
       "distance": 121,
       "verdict": "ASM-SUSPECT",
@@ -1314,7 +1314,7 @@
       "status": "active"
     },
     {
-      "func": "func_800812FC",
+      "func": "CD_cw",
       "file": "system",
       "distance": 263,
       "verdict": "C",
@@ -1482,7 +1482,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007BC08",
+      "func": "PutDispEnv",
       "file": "display",
       "distance": 298,
       "verdict": "C",
@@ -1682,7 +1682,7 @@
       "status": "active"
     },
     {
-      "func": "func_80079244",
+      "func": "prnt",
       "file": "text1b_b",
       "distance": 418,
       "verdict": "C",
@@ -1842,7 +1842,7 @@
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
     },
     {
-      "func": "func_80079A30",
+      "func": "sprintf",
       "file": "text1b_b",
       "distance": 535,
       "verdict": "ASM-SUSPECT",
@@ -2034,7 +2034,7 @@
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
     },
     {
-      "func": "func_8008C464",
+      "func": "_comb_control",
       "file": "main",
       "distance": 763,
       "verdict": "ASM-SUSPECT",
@@ -2183,7 +2183,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA $a1-vs-$a3 (asm pin); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_80080DB0",
+      "func": "CD_sync",
       "file": "system",
       "distance": 7,
       "verdict": "C",
@@ -2454,7 +2454,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-30 \u2014 func_8002EA24 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
-      "func": "func_80081BB0",
+      "func": "CD_datasync",
       "file": "system",
       "distance": 18,
       "verdict": "C",

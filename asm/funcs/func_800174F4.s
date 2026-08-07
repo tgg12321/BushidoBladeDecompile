@@ -18,14 +18,14 @@ glabel func_800174F4
     /* 7D34 80017534 1000B1AF */  sw         $s1, 0x10($sp)
     /* 7D38 80017538 0100C630 */  andi       $a2, $a2, 0x1
     /* 7D3C 8001753C 23300600 */  negu       $a2, $a2
-    /* 7D40 80017540 A5E9010C */  jal        gpu_InitDrawEnv
+    /* 7D40 80017540 A5E9010C */  jal        SetDefDrawEnv
     /* 7D44 80017544 F000C630 */   andi      $a2, $a2, 0xF0
     /* 7D48 80017548 21200002 */  addu       $a0, $s0, $zero
-    /* 7D4C 8001754C 6CEE010C */  jal        func_8007B9B0
+    /* 7D4C 8001754C 6CEE010C */  jal        PutDrawEnv
     /* 7D50 80017550 3800A0A3 */   sb        $zero, 0x38($sp)
     /* 7D54 80017554 1800A427 */  addiu      $a0, $sp, 0x18
     /* 7D58 80017558 800684AF */  sw         $a0, %gp_rel(D_800A374C)($gp)
-    /* 7D5C 8001755C 11EE010C */  jal        func_8007B844
+    /* 7D5C 8001755C 11EE010C */  jal        ClearOTagR
     /* 7D60 80017560 02000524 */   addiu     $a1, $zero, 0x2
     /* 7D64 80017564 9C068593 */  lbu        $a1, %gp_rel(D_800A3768)($gp)
     /* 7D68 80017568 0A000224 */  addiu      $v0, $zero, 0xA
@@ -49,7 +49,7 @@ glabel func_800174F4
     /* 7DAC 800175AC 00000000 */  nop
     /* 7DB0 800175B0 11006010 */  beqz       $v1, .L800175F8
     /* 7DB4 800175B4 21904000 */   addu      $s2, $v0, $zero
-    /* 7DB8 800175B8 55E4010C */  jal        func_80079154
+    /* 7DB8 800175B8 55E4010C */  jal        rand
     /* 7DBC 800175BC 21800000 */   addu      $s0, $zero, $zero
     /* 7DC0 800175C0 03004230 */  andi       $v0, $v0, 0x3
     /* 7DC4 800175C4 04005124 */  addiu      $s1, $v0, 0x4
@@ -67,7 +67,7 @@ glabel func_800174F4
     /* 7DF0 800175F0 755D0008 */  j          .L800175D4
     /* 7DF4 800175F4 21204002 */   addu      $a0, $s2, $zero
   .L800175F8:
-    /* 7DF8 800175F8 55E4010C */  jal        func_80079154
+    /* 7DF8 800175F8 55E4010C */  jal        rand
     /* 7DFC 800175FC 00000000 */   nop
     /* 7E00 80017600 07004230 */  andi       $v0, $v0, 0x7
     /* 7E04 80017604 37004014 */  bnez       $v0, .L800176E4
@@ -134,9 +134,9 @@ glabel func_800174F4
     /* 7EE0 800176E0 21300000 */   addu      $a2, $zero, $zero
   .L800176E4:
     /* 7EE4 800176E4 8006848F */  lw         $a0, %gp_rel(D_800A374C)($gp)
-    /* 7EE8 800176E8 4FEE010C */  jal        gpu_DrawOTag
+    /* 7EE8 800176E8 4FEE010C */  jal        DrawOTag
     /* 7EEC 800176EC 04008424 */   addiu     $a0, $a0, 0x4
-    /* 7EF0 800176F0 CFEC010C */  jal        gpu_DrawSync
+    /* 7EF0 800176F0 CFEC010C */  jal        DrawSync
     /* 7EF4 800176F4 21200000 */   addu      $a0, $zero, $zero
   .L800176F8:
     /* 7EF8 800176F8 9400BF8F */  lw         $ra, 0x94($sp)

@@ -17,15 +17,15 @@ glabel func_8001A538
     /* AD74 8001A574 2000A2A7 */  sh         $v0, 0x20($sp)
     /* AD78 8001A578 10000486 */  lh         $a0, 0x10($s0)
     /* AD7C 8001A57C 1000A527 */  addiu      $a1, $sp, 0x10
-    /* AD80 8001A580 1FFE010C */  jal        func_8007F87C
+    /* AD80 8001A580 1FFE010C */  jal        RotMatrixX
     /* AD84 8001A584 23200400 */   negu      $a0, $a0
     /* AD88 8001A588 12000486 */  lh         $a0, 0x12($s0)
     /* AD8C 8001A58C 1000A527 */  addiu      $a1, $sp, 0x10
-    /* AD90 8001A590 87FE010C */  jal        func_8007FA1C
+    /* AD90 8001A590 87FE010C */  jal        RotMatrixY
     /* AD94 8001A594 23200400 */   negu      $a0, $a0
     /* AD98 8001A598 14000486 */  lh         $a0, 0x14($s0)
     /* AD9C 8001A59C 1000A527 */  addiu      $a1, $sp, 0x10
-    /* ADA0 8001A5A0 EFFE010C */  jal        func_8007FBBC
+    /* ADA0 8001A5A0 EFFE010C */  jal        RotMatrixZ
     /* ADA4 8001A5A4 23200400 */   negu      $a0, $a0
     /* ADA8 8001A5A8 1400A387 */  lh         $v1, 0x14($sp)
     /* ADAC 8001A5AC 1800028E */  lw         $v0, 0x18($s0)

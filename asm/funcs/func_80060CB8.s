@@ -51,12 +51,12 @@ glabel func_80060CB8
     /* 51568 80060D68 80000224 */  addiu      $v0, $zero, 0x80
     /* 5156C 80060D6C 1200A0A7 */  sh         $zero, 0x12($sp)
     /* 51570 80060D70 1400A2A7 */  sh         $v0, 0x14($sp)
-    /* 51574 80060D74 CFEC010C */  jal        gpu_DrawSync
+    /* 51574 80060D74 CFEC010C */  jal        DrawSync
     /* 51578 80060D78 1600B0A7 */   sh        $s0, 0x16($sp)
     /* 5157C 80060D7C 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 51580 80060D80 80ED010C */  jal        gpu_LoadImage
+    /* 51580 80060D80 80ED010C */  jal        LoadImage
     /* 51584 80060D84 21282002 */   addu      $a1, $s1, $zero
-    /* 51588 80060D88 CFEC010C */  jal        gpu_DrawSync
+    /* 51588 80060D88 CFEC010C */  jal        DrawSync
     /* 5158C 80060D8C 21200000 */   addu      $a0, $zero, $zero
     /* 51590 80060D90 0100053C */  lui        $a1, (0x1DC00 >> 16)
     /* 51594 80060D94 00DCA534 */  ori        $a1, $a1, (0x1DC00 & 0xFFFF)
@@ -66,15 +66,15 @@ glabel func_80060CB8
     /* 515A4 80060DA4 1400A2A7 */  sh         $v0, 0x14($sp)
     /* 515A8 80060DA8 24000224 */  addiu      $v0, $zero, 0x24
     /* 515AC 80060DAC 1200B0A7 */  sh         $s0, 0x12($sp)
-    /* 515B0 80060DB0 80ED010C */  jal        gpu_LoadImage
+    /* 515B0 80060DB0 80ED010C */  jal        LoadImage
     /* 515B4 80060DB4 1600A2A7 */   sh        $v0, 0x16($sp)
-    /* 515B8 80060DB8 CFEC010C */  jal        gpu_DrawSync
+    /* 515B8 80060DB8 CFEC010C */  jal        DrawSync
     /* 515BC 80060DBC 21200000 */   addu      $a0, $zero, $zero
     /* 515C0 80060DC0 1883010C */  jal        func_80060C60
     /* 515C4 80060DC4 00000000 */   nop
-    /* 515C8 80060DC8 55E4010C */  jal        func_80079154
+    /* 515C8 80060DC8 55E4010C */  jal        rand
     /* 515CC 80060DCC 00000000 */   nop
-    /* 515D0 80060DD0 61E4010C */  jal        func_80079184
+    /* 515D0 80060DD0 61E4010C */  jal        srand
     /* 515D4 80060DD4 21204000 */   addu      $a0, $v0, $zero
     /* 515D8 80060DD8 50464326 */  addiu      $v1, $s2, 0x4650
     /* 515DC 80060DDC 50466224 */  addiu      $v0, $v1, 0x4650

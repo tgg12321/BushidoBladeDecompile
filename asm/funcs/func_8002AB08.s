@@ -929,7 +929,7 @@ glabel func_8002AB08
     /* 1C084 8002B884 23881100 */  negu       $s1, $s1
     /* 1C088 8002B888 21200002 */  addu       $a0, $s0, $zero
   .L8002B88C:
-    /* 1C08C 8002B88C 57FF010C */  jal        func_8007FD5C
+    /* 1C08C 8002B88C 57FF010C */  jal        ratan2
     /* 1C090 8002B890 21282002 */   addu      $a1, $s1, $zero
     /* 1C094 8002B894 D8016386 */  lh         $v1, 0x1D8($s3)
     /* 1C098 8002B898 00000000 */  nop
@@ -947,7 +947,7 @@ glabel func_8002AB08
     /* 1C0C4 8002B8C4 21106202 */  addu       $v0, $s3, $v0
     /* 1C0C8 8002B8C8 1401448C */  lw         $a0, 0x114($v0)
     /* 1C0CC 8002B8CC 1C01458C */  lw         $a1, 0x11C($v0)
-    /* 1C0D0 8002B8D0 57FF010C */  jal        func_8007FD5C
+    /* 1C0D0 8002B8D0 57FF010C */  jal        ratan2
     /* 1C0D4 8002B8D4 00000000 */   nop
     /* 1C0D8 8002B8D8 3000AB8F */  lw         $t3, 0x30($sp)
     /* 1C0DC 8002B8DC 00000000 */  nop

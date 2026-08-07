@@ -16,21 +16,21 @@ glabel func_8005BE84
     /* 4C6BC 8005BEBC 40801000 */   sll       $s0, $s0, 1
     /* 4C6C0 8005BEC0 E617020C */  jal        func_80085F98
     /* 4C6C4 8005BEC4 00000000 */   nop
-    /* 4C6C8 8005BEC8 B917020C */  jal        func_80085EE4
+    /* 4C6C8 8005BEC8 B917020C */  jal        SsUtSetReverbType
     /* 4C6CC 8005BECC 21200000 */   addu      $a0, $zero, $zero
     /* 4C6D0 8005BED0 21200000 */  addu       $a0, $zero, $zero
-    /* 4C6D4 8005BED4 9317020C */  jal        func_80085E4C
+    /* 4C6D4 8005BED4 9317020C */  jal        SsUtSetReverbDepth
     /* 4C6D8 8005BED8 21280000 */   addu      $a1, $zero, $zero
     /* 4C6DC 8005BEDC 00002486 */  lh         $a0, 0x0($s1)
-    /* 4C6E0 8005BEE0 B917020C */  jal        func_80085EE4
+    /* 4C6E0 8005BEE0 B917020C */  jal        SsUtSetReverbType
     /* 4C6E4 8005BEE4 00000000 */   nop
     /* 4C6E8 8005BEE8 00002486 */  lh         $a0, 0x0($s1)
-    /* 4C6EC 8005BEEC 4A2A020C */  jal        func_8008A928
+    /* 4C6EC 8005BEEC 4A2A020C */  jal        SpuClearReverbWorkArea
     /* 4C6F0 8005BEF0 21884000 */   addu      $s1, $v0, $zero
     /* 4C6F4 8005BEF4 01000426 */  addiu      $a0, $s0, 0x1
     /* 4C6F8 8005BEF8 00240400 */  sll        $a0, $a0, 16
     /* 4C6FC 8005BEFC 03240400 */  sra        $a0, $a0, 16
-    /* 4C700 8005BF00 9317020C */  jal        func_80085E4C
+    /* 4C700 8005BF00 9317020C */  jal        SsUtSetReverbDepth
     /* 4C704 8005BF04 21288000 */   addu      $a1, $a0, $zero
     /* 4C708 8005BF08 EE17020C */  jal        func_80085FB8
     /* 4C70C 8005BF0C 00000000 */   nop

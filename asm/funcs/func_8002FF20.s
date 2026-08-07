@@ -27,20 +27,20 @@ glabel func_8002FF20
     /* 20784 8002FF84 160000A6 */  sh         $zero, 0x16($s0)
     /* 20788 8002FF88 180000A6 */  sh         $zero, 0x18($s0)
     /* 2078C 8002FF8C 1A0000A6 */  sh         $zero, 0x1A($s0)
-    /* 20790 8002FF90 1FFE010C */  jal        func_8007F87C
+    /* 20790 8002FF90 1FFE010C */  jal        RotMatrixX
     /* 20794 8002FF94 1C0002A6 */   sh        $v0, 0x1C($s0)
     /* 20798 8002FF98 56000486 */  lh         $a0, 0x56($s0)
-    /* 2079C 8002FF9C 87FE010C */  jal        func_8007FA1C
+    /* 2079C 8002FF9C 87FE010C */  jal        RotMatrixY
     /* 207A0 8002FFA0 21282002 */   addu      $a1, $s1, $zero
     /* 207A4 8002FFA4 58000486 */  lh         $a0, 0x58($s0)
-    /* 207A8 8002FFA8 EFFE010C */  jal        func_8007FBBC
+    /* 207A8 8002FFA8 EFFE010C */  jal        RotMatrixZ
     /* 207AC 8002FFAC 21282002 */   addu      $a1, $s1, $zero
     /* 207B0 8002FFB0 21204002 */  addu       $a0, $s2, $zero
     /* 207B4 8002FFB4 B3BB000C */  jal        func_8002EECC
     /* 207B8 8002FFB8 1000A527 */   addiu     $a1, $sp, 0x10
     /* 207BC 8002FFBC 1000A427 */  addiu      $a0, $sp, 0x10
     /* 207C0 8002FFC0 21282002 */  addu       $a1, $s1, $zero
-    /* 207C4 8002FFC4 37F9010C */  jal        func_8007E4DC
+    /* 207C4 8002FFC4 37F9010C */  jal        MulMatrix0
     /* 207C8 8002FFC8 2130A000 */   addu      $a2, $a1, $zero
     /* 207CC 8002FFCC 2C00028E */  lw         $v0, 0x2C($s0)
     /* 207D0 8002FFD0 1400438E */  lw         $v1, 0x14($s2)

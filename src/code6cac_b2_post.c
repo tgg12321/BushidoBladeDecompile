@@ -23,8 +23,8 @@ extern void func_80023CB4(s32, s32);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern void game_Cleanup(void);
 extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
@@ -59,7 +59,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
@@ -69,7 +69,7 @@ extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -78,8 +78,8 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void func_80037774(void);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -90,8 +90,8 @@ extern s16 D_800A3678;
 extern s32 D_800A3708;
 extern s32 D_800A374C;
 extern s32 D_80106A50;
-extern void initPolyG4(u8 *p);
-extern void ot_Link(u32 *a0, u32 *a1);
+extern void SetPolyG4(u8 *p);
+extern void AddPrim(u32 *a0, u32 *a1);
 extern u8 D_800A377C;
 extern u8 D_800A37A8;
 extern u16 D_800A3904;
@@ -160,7 +160,7 @@ s32 func_80035EDC(s32 a0) {
     } while (i < 0x1B);
     return result;
 }
-extern void func_80080600(u8 *);
+extern void CdMix(u8 *);
 extern u8 D_800A3718;
 extern s16 D_800A3854;
 void func_80035F30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -168,7 +168,7 @@ void func_80035F30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     D_800A3719 = (u8)arg1;
     D_800A371A = (u8)arg2;
     D_800A371B = (u8)arg3;
-    func_80080600(&D_800A3718);
+    CdMix(&D_800A3718);
     D_800A3854 = 0;
 }
 extern u8 D_800A36B8;
@@ -182,13 +182,13 @@ void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A36BB = (u8)arg4;
 }
 void func_80035FA8(void) {
-    spu_SetVolume(0, 0, 1);
-    func_80085448(0, 0x7F, 0x7F);
+    SsSetSerialAttr(0, 0, 1);
+    SsSetSerialVol(0, 0x7F, 0x7F);
 }
 extern u8 D_800A31E4;
 void func_80035FE0(void) {
-    func_8007FF7C();
-    cdrom_SetDebugLevel(0);
+    CdInit();
+    CdSetDebug(0);
     func_80035F30(0, 0, 0, 0);
     D_80101E62[0] = 0;
     if (D_800A31E4 == 0) {
@@ -196,12 +196,12 @@ void func_80035FE0(void) {
     }
 }
 void func_80036034(void) {
-    func_80080148();
-    func_8007FF7C();
-    sys_VSync(4);
+    CdFlush();
+    CdInit();
+    VSync(4);
 }
-extern void func_80080620(s32, s32);
-extern s32 cdrom_BcdToFrames(s32);
+extern void CdGetSector(s32, s32);
+extern s32 CdPosToInt(s32);
 void func_80036064(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
@@ -209,15 +209,15 @@ void func_80036064(u8 arg0) {
         if (D_80101E80 <= 0) {
             return;
         }
-        func_80080620((s32)sp, 3);
+        CdGetSector((s32)sp, 3);
         {
-            s32 v0 = cdrom_BcdToFrames((s32)sp);
+            s32 v0 = CdPosToInt((s32)sp);
             if (v0 != D_80101EA0) {
                 D_80101E80 = -2;
                 goto do_stop;
             }
         }
-        func_80080620(D_80101E84, 0x200);
+        CdGetSector(D_80101E84, 0x200);
         D_80101E84 = D_80101E84 + 0x800;
         D_80101E80 = D_80101E80 - 1;
         D_80101EA0 = D_80101EA0 + 1;
@@ -229,8 +229,8 @@ void func_80036064(u8 arg0) {
         D_80101E80 = -1;
     }
 do_stop:
-    cdrom_SetCallbackB(0);
-    func_80080390(9, 0);
+    CdReadyCallback(0);
+    CdControlF(9, 0);
 }
 INCLUDE_ASM("asm/funcs", func_80036140);
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
@@ -266,7 +266,7 @@ s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
-    cdrom_FramesToBcd(cdrom_BcdToFrames((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);
+    CdIntToPos(CdPosToInt((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);
     D_80101E78 = arg3;
     return 1;
 }
@@ -274,10 +274,10 @@ s32 func_80036EA8(s32 arg0, s32 arg1) {
     return (&D_8008F12C)[arg0] + arg1;
 }
 void game_FrameInit(void) {
-    cdrom_SetCallbackB(0);
+    CdReadyCallback(0);
     func_80035F30(0, 0, 0, 0);
-    func_80080148();
-    func_80080390(9, 0);
+    CdFlush();
+    CdControlF(9, 0);
     D_80101E68 = 1;
     D_80101E62[0] = 0xB;
     D_80101E5C = 0;
@@ -300,11 +300,11 @@ void game_FrameLoop(void) {
         }
         func_800174F4();
         *s0 = *s0 + 2;
-        sys_VSync(2);
+        VSync(2);
     }
     func_8003AAB0();
 }
-extern void func_800804BC(s32, u8 *, s32);
+extern void CdControlB(s32, u8 *, s32);
 s32 func_80036FD4(s32 arg0, s32 arg1) {
     s16 *s0 = D_80101E62;
 
@@ -325,7 +325,7 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
 
     {
         extern u8 SpecialCam;
-        D_80101E74 = cdrom_BcdToFrames((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
+        D_80101E74 = CdPosToInt((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
     }
 
     if (arg1 < 0) {
@@ -336,7 +336,7 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
         D_80101E94 = 1;
         *base = 1;
         D_80101E59 = arg1;
-        func_800804BC(0xD, base, 0);
+        CdControlB(0xD, base, 0);
         D_80101E90 = 0xC8;
     }
 
@@ -354,7 +354,7 @@ s32 func_80037110(s32 arg0) {
     v0 = func_80036FD4(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = cdrom_BcdToFrames((s32)&SpecialCam + (s32)D_80101E60 * 8);
+            v0 = CdPosToInt((s32)&SpecialCam + (s32)D_80101E60 * 8);
             D_80101E74 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
@@ -393,7 +393,7 @@ void func_80037260(void) {
     while (D_80101E62[0] != 0x16) {
         func_8003AA48();
         func_80036940();
-        sys_VSync(2);
+        VSync(2);
     }
 }
 void func_800372C0(void) {
@@ -408,19 +408,19 @@ s32 func_800372F4(s32 arg0) {
     if (arg0 < 0) {
         arg0 = v + 0xFFE;
     }
-    func_800826CC(arg0 >> 11);
+    CdRead(arg0 >> 11);
     do {
-        v = func_800827D0(1, 0);
+        v = CdReadSync(1, 0);
         if (v > 0) {
-            sys_VSync(0);
+            VSync(0);
         }
     } while (v > 0);
     return v;
 }
 typedef struct { s32 w_q[4]; } Quad;
 typedef struct { s32 w_t[3]; } Triple;
-extern void func_80080258(s32, s32, s32);
-extern void cdrom_FramesToBcd(s32, s32);
+extern void CdControl(s32, s32, s32);
+extern void CdIntToPos(s32, s32);
 void special_camera_get_rot_dir(s32 *dest) {
     u8 sp_buf[0x800];
     u8 sp_buf2[8];
@@ -438,7 +438,7 @@ void special_camera_get_rot_dir(s32 *dest) {
     buf2_ptr = (s32 *)sp_buf2;
 
 retry:
-    func_80080258(2, index + cam_base, 0);
+    CdControl(2, index + cam_base, 0);
     v0 = ((s32 (*)())func_800372F4)(0x800, (s32)sp_buf, constant_80);
     if (v0 != 0) goto retry;
 
@@ -453,35 +453,35 @@ retry:
         *(Triple *)dst_q = *(Triple *)src;
     }
 
-    v0 = cdrom_BcdToFrames(index + cam_base);
-    cdrom_FramesToBcd(v0 + 1, (s32)buf2_ptr);
-    func_80080258(2, (s32)buf2_ptr, 0);
+    v0 = CdPosToInt(index + cam_base);
+    CdIntToPos(v0 + 1, (s32)buf2_ptr);
+    CdControl(2, (s32)buf2_ptr, 0);
     v0 = ((s32 (*)())func_800372F4)(dest[3], dest[2], constant_80);
     if (v0 != 0) goto retry;
 }
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
 void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
-    sys_VSync(0);
-    gpu_SetDispMask(0);
+    VSync(0);
+    SetDispMask(0);
     gpu_EnableDisplay();
     func_8005B50C();
     func_80037774();
-    irq_DisableInterrupts();
-    func_8007FF7C();
+    ResetCallback();
+    CdInit();
     special_camera_get_rot_dir(sp);
-    gpu_DrawSync(0);
-    gpu_SetMode(0);
-    func_80078D68();
-    irq_Reset();
+    DrawSync(0);
+    ResetGraph(0);
+    StopPAD();
+    StopCallback();
     sp[8] = a2;
     sp[9] = 0;
     EnterCriticalSection();
-    bios_Exec(sp, a0, a1);
+    Exec(sp, a0, a1);
     sys_Init();
     file_LoadSoundData();
-    sys_VSync(0);
-    gpu_SetDispMask(1);
+    VSync(0);
+    SetDispMask(1);
 }
 extern s32 func_800392B8(void);
 extern void func_80037468(s32, s32 *, s32);

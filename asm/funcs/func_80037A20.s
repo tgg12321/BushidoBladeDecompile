@@ -9,18 +9,18 @@ glabel func_80037A20
     /* 2823C 80037A3C 0180053C */  lui        $a1, %hi(D_800109B0)
     /* 28240 80037A40 B009A524 */  addiu      $a1, $a1, %lo(D_800109B0)
     /* 28244 80037A44 3800BFAF */  sw         $ra, 0x38($sp)
-    /* 28248 80037A48 8CE6010C */  jal        func_80079A30
+    /* 28248 80037A48 8CE6010C */  jal        sprintf
     /* 2824C 80037A4C 3400B1AF */   sw        $s1, 0x34($sp)
     /* 28250 80037A50 21880000 */  addu       $s1, $zero, $zero
     /* 28254 80037A54 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 28258 80037A58 8EE2010C */  jal        bios_firstfile_B
+    /* 28258 80037A58 8EE2010C */  jal        firstfile
     /* 2825C 80037A5C 21280002 */   addu      $a1, $s0, $zero
     /* 28260 80037A60 08004010 */  beqz       $v0, .L80037A84
     /* 28264 80037A64 00000000 */   nop
     /* 28268 80037A68 01003126 */  addiu      $s1, $s1, 0x1
   .L80037A6C:
     /* 2826C 80037A6C 28001026 */  addiu      $s0, $s0, 0x28
-    /* 28270 80037A70 92E2010C */  jal        bios_nextfile_B
+    /* 28270 80037A70 92E2010C */  jal        nextfile
     /* 28274 80037A74 21200002 */   addu      $a0, $s0, $zero
     /* 28278 80037A78 FCFF4014 */  bnez       $v0, .L80037A6C
     /* 2827C 80037A7C 01003126 */   addiu     $s1, $s1, 0x1

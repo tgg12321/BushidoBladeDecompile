@@ -5,10 +5,10 @@ glabel obj_Reset
     /* 4C748 8005BF48 21200000 */   addu      $a0, $zero, $zero
     /* 4C74C 8005BF4C E617020C */  jal        func_80085F98
     /* 4C750 8005BF50 00000000 */   nop
-    /* 4C754 8005BF54 B917020C */  jal        func_80085EE4
+    /* 4C754 8005BF54 B917020C */  jal        SsUtSetReverbType
     /* 4C758 8005BF58 21200000 */   addu      $a0, $zero, $zero
     /* 4C75C 8005BF5C 21200000 */  addu       $a0, $zero, $zero
-    /* 4C760 8005BF60 9317020C */  jal        func_80085E4C
+    /* 4C760 8005BF60 9317020C */  jal        SsUtSetReverbDepth
     /* 4C764 8005BF64 21280000 */   addu      $a1, $zero, $zero
     /* 4C768 8005BF68 1000BF8F */  lw         $ra, 0x10($sp)
     /* 4C76C 8005BF6C 1800BD27 */  addiu      $sp, $sp, 0x18

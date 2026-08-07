@@ -4,8 +4,8 @@
 
 /* Forward declarations */
 extern void spu_Init(void);
-extern void func_80083A48(void);
-extern void func_800892F8(void);
+extern void _SsInit(void);
+extern void SpuQuit(void);
 
 /* Externs for globals */
 extern s32 g_sys_vsync_mode;
@@ -14,11 +14,11 @@ extern u16 g_sys_vblank_count;
 extern u16 *g_sys_irq_counter;
 extern s32 *g_sys_irq_vtable;
 extern volatile s32 g_sys_dma_region;
-extern void func_8008AF9C(s32 *);
+extern void SpuSetCommonAttr(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
 
-s32 sys_SetVsyncMode(s32 a0) {
+s32 CdReadCallback(s32 a0) {
     s32 old = g_sys_vsync_mode;
     g_sys_vsync_mode = a0;
     return old;
@@ -44,7 +44,7 @@ typedef struct {
 } CdlREAD;
 extern volatile CdlREAD D_800A14D0;
 
-s32 sys_SetTimer(s32 a0) {
+s32 CdReadMode(s32 a0) {
     s32 old = D_800A14D0.tslmode;
     D_800A14D0.tslmode = a0;
     return old;
@@ -56,7 +56,7 @@ extern s32 D_800A1518;
 extern s32 D_800A151C;
 void func_80082A14(s32 a0, s32 a1);
 
-s32 sys_VSync(s32 a0) {
+s32 VSync(s32 a0) {
     s32 s0_val;
     s32 s1_val;
 
@@ -105,9 +105,9 @@ s32 sys_VSync(s32 a0) {
 }
 
 extern s32 D_80016318;
-extern void func_80082000(void *);
-extern void bios_ChangeClearPad(s32);
-extern void bios_ChangeClearRCnt(s32, s32);
+extern void puts(void *);
+extern void ChangeClearPAD(s32);
+extern void ChangeClearRCnt(s32, s32);
 /* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libetc/vsync.c.
    FAKE(partial-use volatile array, Ruling 3 2026-07-10): only [0] is
@@ -119,9 +119,9 @@ void func_80082A14(s32 a0, s32 a1) {
     timeout[0] = a1 << 0xF;
     while (g_sys_dma_region < a0) {
         if (timeout[0]-- == 0) {
-            func_80082000(&D_80016318);
-            bios_ChangeClearPad(0);
-            bios_ChangeClearRCnt(3, 0);
+            puts(&D_80016318);
+            ChangeClearPAD(0);
+            ChangeClearRCnt(3, 0);
             return;
         }
     }
@@ -130,44 +130,44 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_ChangeClearRCnt\n"
+    "glabel ChangeClearRCnt\n"
     "    addiu $t2, $zero, 0xC0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0xA\n"
     "    nop\n"
-    "endlabel bios_ChangeClearRCnt\n"
+    "endlabel ChangeClearRCnt\n"
     "    .set reorder\n"
     "    .set at\n"
 );
-void irq_DisableInterrupts(void) {
+void ResetCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[3])();
 }
-void irq_EnableInterrupts(void) {
+void InterruptCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[2])();
 }
 
-void irq_AcknowledgeVblank(void) {
+void DMACallback(void) {
     ((void (*)(void))g_sys_irq_vtable[1])();
 }
-void irq_SetAlarm(s32 a0) {
+void VSyncCallback(s32 a0) {
     ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0);
 }
 
-void irq_ClearAlarm(void) {
+void VSyncCallbacks(void) {
     ((void (*)(void))g_sys_irq_vtable[5])();
 }
-void irq_Reset(void) {
+void StopCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[4])();
 }
 
-void irq_Dispatch(void) {
+void RestartCallback(void) {
     ((void (*)(void))g_sys_irq_vtable[6])();
 }
-u32 sys_GetVblankCount(void) {
+u32 CheckCallback(void) {
     return g_sys_vblank_count;
 }
 
-u32 sys_GetIrqCounter(void) {
+u32 GetIntrMask(void) {
     return *g_sys_irq_counter;
 }
 /* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
@@ -191,11 +191,11 @@ extern intrEnv_t D_800A1578;
 extern s32 func_800831A4(u16 *, s32);
 extern s32 setjmp(u16 *);
 extern void func_80082D34(void);
-extern void bios_SetCustomExitFromException(s32 *);
-extern s32 func_800832A0();
-extern s32 func_800833C8();
-extern void bios_CdRemove_A0(s32 *);
-u16 func_80082C3C(u16 arg0) {
+extern void HookEntryInt(s32 *);
+extern s32 startIntrVSync();
+extern s32 startIntrDMA();
+extern void _96_remove(s32 *);
+u16 SetIntrMask(u16 arg0) {
     u16 *ptr = g_sys_irq_counter;
     u16 old = *ptr;
     *(volatile u16 *)ptr = arg0;
@@ -215,18 +215,18 @@ u16 *func_80082C58(void) {
         func_80082D34();
     }
     D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
-    bios_SetCustomExitFromException(D_800A1578.buf);
+    HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
-    g_sys_irq_vtable[5] = func_800832A0();
+    g_sys_irq_vtable[5] = startIntrVSync();
     {
         /* v1.76 evidence: the compiled Sony object keeps pCallbacks live in
            $a0 INTO the _96_remove call (v1.73's plain `_96_remove();` compiles
            to $v1 here — measured, tmp/closer/intr_test.c); the v1.76 source
            passed the pointer through. */
-        s32 r = func_800833C8();
+        s32 r = startIntrDMA();
         s32 *cb = g_sys_irq_vtable;
         cb[1] = r;
-        bios_CdRemove_A0(cb);
+        _96_remove(cb);
     }
     ExitCriticalSection();
     return (u16 *)&D_800A1578;
@@ -240,8 +240,8 @@ typedef void (*IntrCallback)(void);
 extern u8 D_8001635C;  /* "unexpected interrupt(%04x)\n" */
 extern u8 D_80016378;  /* "intr timeout(%04x:%04x)\n" */
 extern s32 D_800A2610; /* trapMissedCount */
-extern void bios_ReturnFromException(void);
-extern void bios_SetDefaultExitFromException(void);
+extern void ReturnFromException(void);
+extern void ResetEntryInt(void);
 
 /* trapIntr */
 void func_80082D34(void) {
@@ -249,8 +249,8 @@ void func_80082D34(void) {
     u16 mask;
 
     if (!D_800A1578.interruptsInitialized) {
-        debug_printf(&D_8001635C, *D_800A2604);
-        bios_ReturnFromException();
+        printf(&D_8001635C, *D_800A2604);
+        ReturnFromException();
     }
     D_800A1578.inInterrupt = 1;
     while ((mask = (D_800A1578.enabledInterruptsMask & *D_800A2604) &
@@ -266,7 +266,7 @@ void func_80082D34(void) {
     }
     if (*D_800A2604 & *(volatile u16 *)g_sys_irq_counter) {
         if (D_800A2610++ > 0x800) {
-            debug_printf(&D_80016378, *D_800A2604,
+            printf(&D_80016378, *D_800A2604,
                          *(volatile u16 *)g_sys_irq_counter);
             D_800A2610 = 0;
             *D_800A2604 = 0;
@@ -275,7 +275,7 @@ void func_80082D34(void) {
         D_800A2610 = 0;
     }
     D_800A1578.inInterrupt = 0;
-    bios_ReturnFromException();
+    ReturnFromException();
 }
 
 /* setIntr (LIBETC intr.c static, vtable slot 0x800A25E8) */
@@ -297,17 +297,17 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
             D_800A1578.enabledInterruptsMask &= ~(1 << irq);
         }
         if (irq == 0) {
-            bios_ChangeClearPad(handler == 0);
-            bios_ChangeClearRCnt(3, handler == 0);
+            ChangeClearPAD(handler == 0);
+            ChangeClearRCnt(3, handler == 0);
         }
         if (irq == 4) {
-            bios_ChangeClearRCnt(0, handler == 0);
+            ChangeClearRCnt(0, handler == 0);
         }
         if (irq == 5) {
-            bios_ChangeClearRCnt(1, handler == 0);
+            ChangeClearRCnt(1, handler == 0);
         }
         if (irq == 6) {
-            bios_ChangeClearRCnt(2, handler == 0);
+            ChangeClearRCnt(2, handler == 0);
         }
         *(volatile u16 *)g_sys_irq_counter = mask;
     }
@@ -324,7 +324,7 @@ static intrEnv_t *stopIntr(void) {
     D_800A1578.savedPcr = *D_800A260C;
     *D_800A2604 = (*(volatile u16 *)g_sys_irq_counter = 0);
     *D_800A260C &= 0x77777777;
-    bios_SetDefaultExitFromException();
+    ResetEntryInt();
     D_800A1578.interruptsInitialized = 0;
     return &D_800A1578;
 }
@@ -334,7 +334,7 @@ static intrEnv_t *restartIntr(void) {
     if (D_800A1578.interruptsInitialized) {
         return 0;
     }
-    bios_SetCustomExitFromException(D_800A1578.buf);
+    HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
     *(volatile u16 *)g_sys_irq_counter = D_800A1578.savedMask;
     *D_800A260C = D_800A1578.savedPcr;
@@ -362,14 +362,14 @@ __asm__(
        trampoline's module. */
     "    .word 0x15007350\n"
     "    .word 0x0040809C\n"
-    "glabel bios_CdRemove_A0\n"
+    "glabel _96_remove\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x72\n"
     "    nop\n"
     "    nop\n"
     "    nop\n"
-    "endlabel bios_CdRemove_A0\n"
+    "endlabel _96_remove\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -377,12 +377,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_ReturnFromException\n"
+    "glabel ReturnFromException\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x17\n"
     "    nop\n"
-    "endlabel bios_ReturnFromException\n"
+    "endlabel ReturnFromException\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -390,12 +390,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_SetDefaultExitFromException\n"
+    "glabel ResetEntryInt\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x18\n"
     "    nop\n"
-    "endlabel bios_SetDefaultExitFromException\n"
+    "endlabel ResetEntryInt\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -403,12 +403,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_SetCustomExitFromException\n"
+    "glabel HookEntryInt\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x19\n"
     "    nop\n"
-    "endlabel bios_SetCustomExitFromException\n"
+    "endlabel HookEntryInt\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -460,11 +460,11 @@ extern s32 *D_800A2638;
 void D_800832F8(void);
 void D_80083370(s32, s32);
 
-s32 func_800832A0(void) {
+s32 startIntrVSync(void) {
     *D_800A2638 = 0x107;
     D_800A2634 = 0;
     sys_MemClear(&D_800A2614[0], 8);
-    ((void (*)(s32, void *))irq_EnableInterrupts)(0, (void *)D_800832F8);
+    ((void (*)(s32, void *))InterruptCallback)(0, (void *)D_800832F8);
     return (s32)D_80083370;
 }
 
@@ -509,10 +509,10 @@ void sys_MemClear(s32 *a0, s32 a1) {
         *a0++ = 0;
     }
 }
-s32 func_800833C8(void) {
+s32 startIntrDMA(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
     *D_800A263C = 0;
-    ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
+    ((void (*)(s32, void *))InterruptCallback)(3, (void *)D_80083418);
     return (s32)D_8008359C;
 }
 
@@ -534,9 +534,9 @@ void D_80083418(void) {
     }
 
     if ((*D_800A263C & 0xFF000000) == 0x80000000 || *D_800A263C & 0x8000) {
-        debug_printf(&D_80016394, *D_800A263C);
+        printf(&D_80016394, *D_800A263C);
         for (i = 0; i < 7; i++) {
-            debug_printf(&D_800163B0, i, D_800A2660[4 * i]);
+            printf(&D_800163B0, i, D_800A2660[4 * i]);
         }
     }
 }
@@ -564,7 +564,7 @@ void sys_MemClear2(s32 *a0, s32 a1) {
     }
 }
 
-s32 sys_SetVideoMode(s32 a0) {
+s32 SetVideoMode(s32 a0) {
     s32 old = g_sys_video_mode;
     g_sys_video_mode = a0;
     return old;
@@ -655,12 +655,12 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel bios_InitHeap\n"
+    "glabel InitHeap\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr $t2\n"
     "    addiu $t1, $zero, 0x39\n"
     "    nop\n"
-    "endlabel bios_InitHeap\n"
+    "endlabel InitHeap\n"
     "    .set reorder\n"
     "    .set at\n"
 );
@@ -716,7 +716,7 @@ extern s32 D_800A26D8;
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 
-void irq_ProcessPending(void) {
+void SsEnd(void) {
     if (D_800A26D0 != 0) {
         return;
     }
@@ -726,22 +726,22 @@ void irq_ProcessPending(void) {
     }
     EnterCriticalSection();
     if (D_800A26DC != 0) {
-        irq_SetAlarm(0);
+        VSyncCallback(0);
         D_800A26DC = 0;
     } else if (D_800A26DE == 0) {
-        ((void (*)(s32, s32))irq_EnableInterrupts)(0, D_800A26D8);
+        ((void (*)(s32, s32))InterruptCallback)(0, D_800A26D8);
         D_800A26D8 = 0;
     } else {
-        ((void (*)(s32, s32))irq_EnableInterrupts)(6, 0);
+        ((void (*)(s32, s32))InterruptCallback)(6, 0);
     }
     ExitCriticalSection();
     D_800A26DE = 0x7F;
 }
 
 void sys_Shutdown(void) {
-    irq_DisableInterrupts();
+    ResetCallback();
     spu_Init();
-    func_80083A48();
+    _SsInit();
 }
 
 extern u16 D_800A269C;
@@ -754,7 +754,7 @@ extern void func_80086818(s32);
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/ssinit.c */
-void func_80083A48(void) {
+void _SsInit(void) {
     u16 *var_a2;
     int i, j;
 
@@ -784,10 +784,10 @@ void func_80083A48(void) {
 }
 
 void spu_Reset(void) {
-    func_800892F8();
+    SpuQuit();
 }
 
-void spu_SetVolume(s32 a0, s32 a1, s32 a2) {
+void SsSetSerialAttr(s32 a0, s32 a1, s32 a2) {
     s32 buf[10];
 
     if ((a0 & 0xFF) == 0) {
@@ -810,5 +810,5 @@ void spu_SetVolume(s32 a0, s32 a1, s32 a2) {
             buf[8] = a2 & 0xFF;
         }
     }
-    func_8008AF9C(buf);
+    SpuSetCommonAttr(buf);
 }

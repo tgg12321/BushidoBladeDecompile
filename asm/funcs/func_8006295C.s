@@ -45,7 +45,7 @@ glabel func_8006295C
     /* 53204 80062A04 18009000 */  mult       $a0, $s0
     /* 53208 80062A08 C3270400 */  sra        $a0, $a0, 31
     /* 5320C 80062A0C 10400000 */  mfhi       $t0
-    /* 53210 80062A10 C8F7010C */  jal        math_Sin
+    /* 53210 80062A10 C8F7010C */  jal        rsin
     /* 53214 80062A14 23200401 */   subu      $a0, $t0, $a0
     /* 53218 80062A18 0000C386 */  lh         $v1, 0x0($s6)
     /* 5321C 80062A1C 00000000 */  nop
@@ -64,10 +64,10 @@ glabel func_8006295C
     /* 53250 80062A50 21104300 */  addu       $v0, $v0, $v1
     /* 53254 80062A54 080002AD */  sw         $v0, 0x8($t0)
     /* 53258 80062A58 040002AD */  sw         $v0, 0x4($t0)
-    /* 5325C 80062A5C 7BFD010C */  jal        func_8007F5EC
+    /* 5325C 80062A5C 7BFD010C */  jal        RotMatrixZYX
     /* 53260 80062A60 000002AD */   sw        $v0, 0x0($t0)
     /* 53264 80062A64 4800A58F */  lw         $a1, 0x48($sp)
-    /* 53268 80062A68 6FFB010C */  jal        func_8007EDBC
+    /* 53268 80062A68 6FFB010C */  jal        ScaleMatrix
     /* 5326C 80062A6C 21208002 */   addu      $a0, $s4, $zero
     /* 53270 80062A70 A403848F */  lw         $a0, %gp_rel(D_800A3470)($gp)
     /* 53274 80062A74 0F80013C */  lui        $at, %hi(D_800F0FB8)
@@ -90,13 +90,13 @@ glabel func_8006295C
     /* 532B8 80062AB8 0800838C */  lw         $v1, 0x8($a0)
     /* 532BC 80062ABC A803848F */  lw         $a0, %gp_rel(D_800A3474)($gp)
     /* 532C0 80062AC0 23104300 */  subu       $v0, $v0, $v1
-    /* 532C4 80062AC4 7BF9010C */  jal        func_8007E5EC
+    /* 532C4 80062AC4 7BF9010C */  jal        CompMatrix
     /* 532C8 80062AC8 1C0082AE */   sw        $v0, 0x1C($s4)
     /* 532CC 80062ACC 3000A48F */  lw         $a0, 0x30($sp)
-    /* 532D0 80062AD0 BBFB010C */  jal        gte_SetRotMatrix
+    /* 532D0 80062AD0 BBFB010C */  jal        SetRotMatrix
     /* 532D4 80062AD4 21900000 */   addu      $s2, $zero, $zero
     /* 532D8 80062AD8 3000A48F */  lw         $a0, 0x30($sp)
-    /* 532DC 80062ADC D3FB010C */  jal        gte_SetTransVector
+    /* 532DC 80062ADC D3FB010C */  jal        SetTransMatrix
     /* 532E0 80062AE0 20003026 */   addiu     $s0, $s1, 0x20
     /* 532E4 80062AE4 2800A88F */  lw         $t0, 0x28($sp)
     /* 532E8 80062AE8 00000000 */  nop
@@ -278,13 +278,13 @@ glabel func_8006295C
     /* 53584 80062D84 00000000 */  nop
     /* 53588 80062D88 00004294 */  lhu        $v0, 0x0($v0)
     /* 5358C 80062D8C 21202002 */  addu       $a0, $s1, $zero
-    /* 53590 80062D90 87EA010C */  jal        initPolyFT4
+    /* 53590 80062D90 87EA010C */  jal        SetPolyFT4
     /* 53594 80062D94 040002A6 */   sh        $v0, 0x4($s0)
     /* 53598 80062D98 21202002 */  addu       $a0, $s1, $zero
-    /* 5359C 80062D9C 64EA010C */  jal        gpu_SetRawTexture
+    /* 5359C 80062D9C 64EA010C */  jal        SetShadeTex
     /* 535A0 80062DA0 01000524 */   addiu     $a1, $zero, 0x1
     /* 535A4 80062DA4 21202002 */  addu       $a0, $s1, $zero
-    /* 535A8 80062DA8 5AEA010C */  jal        gpu_SetSemiTransp
+    /* 535A8 80062DA8 5AEA010C */  jal        SetSemiTrans
     /* 535AC 80062DAC 01000524 */   addiu     $a1, $zero, 0x1
     /* 535B0 80062DB0 40211200 */  sll        $a0, $s2, 5
     /* 535B4 80062DB4 0A80023C */  lui        $v0, %hi(D_8009BB84)
@@ -303,7 +303,7 @@ glabel func_8006295C
     /* 535E8 80062DE8 1000B3AF */  sw         $s3, 0x10($sp)
     /* 535EC 80062DEC 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 535F0 80062DF0 2000A8AF */  sw         $t0, 0x20($sp)
-    /* 535F4 80062DF4 B7FC010C */  jal        func_8007F2DC
+    /* 535F4 80062DF4 B7FC010C */  jal        RotTransPers4
     /* 535F8 80062DF8 2400A3AF */   sw        $v1, 0x24($sp)
     /* 535FC 80062DFC 0404888F */  lw         $t0, %gp_rel(D_800A34D0)($gp)
     /* 53600 80062E00 00000000 */  nop
@@ -405,7 +405,7 @@ glabel func_8006295C
     /* 53770 80062F70 0A80023C */  lui        $v0, %hi(D_800A374C)
     /* 53774 80062F74 4C37428C */  lw         $v0, %lo(D_800A374C)($v0)
     /* 53778 80062F78 80200400 */  sll        $a0, $a0, 2
-    /* 5377C 80062F7C 2DEA010C */  jal        ot_Link
+    /* 5377C 80062F7C 2DEA010C */  jal        AddPrim
     /* 53780 80062F80 21204400 */   addu      $a0, $v0, $a0
     /* 53784 80062F84 2B103202 */  sltu       $v0, $s1, $s2
     /* 53788 80062F88 F6FF4014 */  bnez       $v0, .L80062F64

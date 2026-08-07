@@ -34,7 +34,7 @@ glabel func_80036940
   .L800369B4:
     /* 271B4 800369B4 1000A527 */  addiu      $a1, $sp, 0x10
     /* 271B8 800369B8 A0000224 */  addiu      $v0, $zero, 0xA0
-    /* 271BC 800369BC E400020C */  jal        func_80080390
+    /* 271BC 800369BC E400020C */  jal        CdControlF
     /* 271C0 800369C0 1000A2A3 */   sb        $v0, 0x10($sp)
     /* 271C4 800369C4 1080013C */  lui        $at, %hi(D_80101E66)
     /* 271C8 800369C8 661E20A4 */  sh         $zero, %lo(D_80101E66)($at)
@@ -45,7 +45,7 @@ glabel func_80036940
   jlabel .L800369DC
     /* 271DC 800369DC 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 271E0 800369E0 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 271E4 800369E4 7A00020C */  jal        func_800801E8
+    /* 271E4 800369E4 7A00020C */  jal        CdSync
     /* 271E8 800369E8 01000424 */   addiu     $a0, $zero, 0x1
     /* 271EC 800369EC 21184000 */  addu       $v1, $v0, $zero
     /* 271F0 800369F0 02000224 */  addiu      $v0, $zero, 0x2
@@ -92,13 +92,13 @@ glabel func_80036940
     /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E84)($at)
     /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E80)
     /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E80)($at)
-    /* 27298 80036A98 EA01020C */  jal        cdrom_BcdToFrames
+    /* 27298 80036A98 EA01020C */  jal        CdPosToInt
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
     /* 272A8 80036AA8 1080013C */  lui        $at, %hi(D_80101EA0)
     /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(D_80101EA0)($at)
-    /* 272B0 80036AB0 9600020C */  jal        func_80080258
+    /* 272B0 80036AB0 9600020C */  jal        CdControl
     /* 272B4 80036AB4 21300000 */   addu      $a2, $zero, $zero
     /* 272B8 80036AB8 1080013C */  lui        $at, %hi(D_80101E98)
     /* 272BC 80036ABC 981E20A4 */  sh         $zero, %lo(D_80101E98)($at)
@@ -107,7 +107,7 @@ glabel func_80036940
   jlabel .L80036AC8
     /* 272C8 80036AC8 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 272CC 80036ACC 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 272D0 80036AD0 7A00020C */  jal        func_800801E8
+    /* 272D0 80036AD0 7A00020C */  jal        CdSync
     /* 272D4 80036AD4 01000424 */   addiu     $a0, $zero, 0x1
     /* 272D8 80036AD8 21184000 */  addu       $v1, $v0, $zero
     /* 272DC 80036ADC 02000224 */  addiu      $v0, $zero, 0x2
@@ -117,10 +117,10 @@ glabel func_80036940
     /* 272EC 80036AEC 64608424 */  addiu      $a0, $a0, %lo(func_80036064)
     /* 272F0 80036AF0 1080103C */  lui        $s0, %hi(D_80101E98)
     /* 272F4 80036AF4 981E1026 */  addiu      $s0, $s0, %lo(D_80101E98)
-    /* 272F8 80036AF8 9000020C */  jal        cdrom_SetCallbackB
+    /* 272F8 80036AF8 9000020C */  jal        CdReadyCallback
     /* 272FC 80036AFC 000000A6 */   sh        $zero, 0x0($s0)
     /* 27300 80036B00 06000424 */  addiu      $a0, $zero, 0x6
-    /* 27304 80036B04 E400020C */  jal        func_80080390
+    /* 27304 80036B04 E400020C */  jal        CdControlF
     /* 27308 80036B08 D4FF0526 */   addiu     $a1, $s0, -0x2C
     /* 2730C 80036B0C 5BDB0008 */  j          .L80036D6C
     /* 27310 80036B10 06000224 */   addiu     $v0, $zero, 0x6
@@ -143,7 +143,7 @@ glabel func_80036940
   jlabel .L80036B50
     /* 27350 80036B50 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 27354 80036B54 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 27358 80036B58 7A00020C */  jal        func_800801E8
+    /* 27358 80036B58 7A00020C */  jal        CdSync
     /* 2735C 80036B5C 01000424 */   addiu     $a0, $zero, 0x1
     /* 27360 80036B60 21184000 */  addu       $v1, $v0, $zero
     /* 27364 80036B64 02000224 */  addiu      $v0, $zero, 0x2
@@ -170,14 +170,14 @@ glabel func_80036940
     /* 273B4 80036BB4 3D004228 */  slti       $v0, $v0, 0x3D
     /* 273B8 80036BB8 6E004014 */  bnez       $v0, .L80036D74
     /* 273BC 80036BBC 00000000 */   nop
-    /* 273C0 80036BC0 9000020C */  jal        cdrom_SetCallbackB
+    /* 273C0 80036BC0 9000020C */  jal        CdReadyCallback
     /* 273C4 80036BC4 21200000 */   addu      $a0, $zero, $zero
     /* 273C8 80036BC8 5BDB0008 */  j          .L80036D6C
     /* 273CC 80036BCC 0A000224 */   addiu     $v0, $zero, 0xA
   .L80036BD0:
     /* 273D0 80036BD0 05006214 */  bne        $v1, $v0, .L80036BE8
     /* 273D4 80036BD4 00000000 */   nop
-    /* 273D8 80036BD8 9000020C */  jal        cdrom_SetCallbackB
+    /* 273D8 80036BD8 9000020C */  jal        CdReadyCallback
     /* 273DC 80036BDC 21200000 */   addu      $a0, $zero, $zero
     /* 273E0 80036BE0 5BDB0008 */  j          .L80036D6C
     /* 273E4 80036BE4 09000224 */   addiu     $v0, $zero, 0x9
@@ -193,7 +193,7 @@ glabel func_80036940
     /* 27408 80036C08 3D004228 */  slti       $v0, $v0, 0x3D
     /* 2740C 80036C0C 59004014 */  bnez       $v0, .L80036D74
     /* 27410 80036C10 00000000 */   nop
-    /* 27414 80036C14 9000020C */  jal        cdrom_SetCallbackB
+    /* 27414 80036C14 9000020C */  jal        CdReadyCallback
     /* 27418 80036C18 21200000 */   addu      $a0, $zero, $zero
     /* 2741C 80036C1C 5BDB0008 */  j          .L80036D6C
     /* 27420 80036C20 0A000224 */   addiu     $v0, $zero, 0xA
@@ -207,14 +207,14 @@ glabel func_80036940
     /* 2743C 80036C3C 0C000224 */   addiu     $v0, $zero, 0xC
   jlabel .L80036C40
     /* 27440 80036C40 01000424 */  addiu      $a0, $zero, 0x1
-    /* 27444 80036C44 E400020C */  jal        func_80080390
+    /* 27444 80036C44 E400020C */  jal        CdControlF
     /* 27448 80036C48 21280000 */   addu      $a1, $zero, $zero
     /* 2744C 80036C4C 32DB0008 */  j          .L80036CC8
     /* 27450 80036C50 0B000224 */   addiu     $v0, $zero, 0xB
   jlabel .L80036C54
     /* 27454 80036C54 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 27458 80036C58 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 2745C 80036C5C 7A00020C */  jal        func_800801E8
+    /* 2745C 80036C5C 7A00020C */  jal        CdSync
     /* 27460 80036C60 01000424 */   addiu     $a0, $zero, 0x1
     /* 27464 80036C64 21184000 */  addu       $v1, $v0, $zero
     /* 27468 80036C68 02000224 */  addiu      $v0, $zero, 0x2
@@ -240,7 +240,7 @@ glabel func_80036940
     /* 274B4 80036CB4 0B004228 */   slti      $v0, $v0, 0xB
   jlabel .L80036CB8
     /* 274B8 80036CB8 13000424 */  addiu      $a0, $zero, 0x13
-    /* 274BC 80036CBC E400020C */  jal        func_80080390
+    /* 274BC 80036CBC E400020C */  jal        CdControlF
     /* 274C0 80036CC0 21280000 */   addu      $a1, $zero, $zero
     /* 274C4 80036CC4 0D000224 */  addiu      $v0, $zero, 0xD
   .L80036CC8:
@@ -253,7 +253,7 @@ glabel func_80036940
   jlabel .L80036CE0
     /* 274E0 80036CE0 0A80053C */  lui        $a1, %hi(D_800A3760)
     /* 274E4 80036CE4 6037A524 */  addiu      $a1, $a1, %lo(D_800A3760)
-    /* 274E8 80036CE8 7A00020C */  jal        func_800801E8
+    /* 274E8 80036CE8 7A00020C */  jal        CdSync
     /* 274EC 80036CEC 01000424 */   addiu     $a0, $zero, 0x1
     /* 274F0 80036CF0 21184000 */  addu       $v1, $v0, $zero
     /* 274F4 80036CF4 02000224 */  addiu      $v0, $zero, 0x2
@@ -262,13 +262,13 @@ glabel func_80036940
     /* 27500 80036D00 02000224 */  addiu      $v0, $zero, 0x2
     /* 27504 80036D04 1080013C */  lui        $at, %hi(D_80101E62)
     /* 27508 80036D08 621E22A4 */  sh         $v0, %lo(D_80101E62)($at)
-    /* 2750C 80036D0C 330A020C */  jal        sys_VSync
+    /* 2750C 80036D0C 330A020C */  jal        VSync
     /* 27510 80036D10 04000424 */   addiu     $a0, $zero, 0x4
-    /* 27514 80036D14 330A020C */  jal        sys_VSync
+    /* 27514 80036D14 330A020C */  jal        VSync
     /* 27518 80036D18 04000424 */   addiu     $a0, $zero, 0x4
-    /* 2751C 80036D1C 330A020C */  jal        sys_VSync
+    /* 2751C 80036D1C 330A020C */  jal        VSync
     /* 27520 80036D20 04000424 */   addiu     $a0, $zero, 0x4
-    /* 27524 80036D24 330A020C */  jal        sys_VSync
+    /* 27524 80036D24 330A020C */  jal        VSync
     /* 27528 80036D28 04000424 */   addiu     $a0, $zero, 0x4
     /* 2752C 80036D2C 5DDB0008 */  j          .L80036D74
     /* 27530 80036D30 00000000 */   nop
@@ -285,7 +285,7 @@ glabel func_80036940
   .L80036D58:
     /* 27558 80036D58 06004014 */  bnez       $v0, .L80036D74
     /* 2755C 80036D5C 00000000 */   nop
-    /* 27560 80036D60 5200020C */  jal        func_80080148
+    /* 27560 80036D60 5200020C */  jal        CdFlush
     /* 27564 80036D64 00000000 */   nop
   .L80036D68:
     /* 27568 80036D68 0A000224 */  addiu      $v0, $zero, 0xA

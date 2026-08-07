@@ -13,7 +13,7 @@ glabel func_800770B8
     /* 678E4 800770E4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 678E8 800770E8 58001126 */  addiu      $s1, $s0, 0x58
     /* 678EC 800770EC 1000A0A7 */  sh         $zero, 0x10($sp)
-    /* 678F0 800770F0 11EE010C */  jal        func_8007B844
+    /* 678F0 800770F0 11EE010C */  jal        ClearOTagR
     /* 678F4 800770F4 1200A0A7 */   sh        $zero, 0x12($sp)
     /* 678F8 800770F8 0C0590AF */  sw         $s0, %gp_rel(D_800A35D8)($gp)
     /* 678FC 800770FC A81A010C */  jal        snd_StopAll

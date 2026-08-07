@@ -31,8 +31,8 @@ extern void game_FrameLoop(void);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern void game_Cleanup(void);
@@ -74,7 +74,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
@@ -88,11 +88,11 @@ extern s32 D_800A384C;
 extern u8 D_8008E908;
 extern u8 D_8008EC24;
 extern s32 D_80106A50;
-extern s32 func_8007FD5C(s32, s32);
-extern s32 func_80079154(void);
-extern void func_8007F87C(s32, s32 *);
-extern void func_8007FA1C(s32, s32 *);
-extern void *func_8007FBBC(s32, s32 *);
+extern s32 ratan2(s32, s32);
+extern s32 rand(void);
+extern void RotMatrixX(s32, s32 *);
+extern void RotMatrixY(s32, s32 *);
+extern void *RotMatrixZ(s32, s32 *);
 extern s16 D_80101E74;
 extern void func_80033D38(void);
 
@@ -103,8 +103,8 @@ extern s32 stage_GetDataPtr(void);
 extern void func_8005B50C(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -866,7 +866,7 @@ void func_8002C0DC(void) {
         arg2 = *(s32 *)(var_s0 + 0xE0);
         arg1 = *(s32 *)(ptr + 0xD8) - arg1;
         arg2 = *(s32 *)(ptr + 0xE0) - arg2;
-        func_8001F860((s16 *)var_s0, func_8007FD5C(arg1, arg2));
+        func_8001F860((s16 *)var_s0, ratan2(arg1, arg2));
         var_s0 += 0x44C;
     } while (var_s1 < 2);
 
@@ -1395,7 +1395,7 @@ void func_8002E838(u8 *arg0) {
     {
         s32 dz = (*(s32 **)((u8 *)arg0 + 0x64))[2] - (*(s32 **)((u8 *)arg0 + 0x60))[2];
         *(s32 *)((u8 *)arg0 + 0xB0) = dz;
-        charId = func_8007FD5C(*(s32 *)((u8 *)arg0 + 0xA8), dz);
+        charId = ratan2(*(s32 *)((u8 *)arg0 + 0xA8), dz);
     }
 
     dist_sq = (u32)((*(s32 *)((u8 *)arg0 + 0xA8) * *(s32 *)((u8 *)arg0 + 0xA8))
@@ -1429,7 +1429,7 @@ void func_8002E838(u8 *arg0) {
         }
     }
 
-    charId = func_8007FD5C(*(s32 *)((u8 *)arg0 + 0xAC), a1_volume);
+    charId = ratan2(*(s32 *)((u8 *)arg0 + 0xAC), a1_volume);
     mat = (s32 *)((u8 *)arg0 + 0xD8);
     *(s16 *)((u8 *)arg0 + 0xF8) = (s16)(0x800 - charId);
 
@@ -1444,8 +1444,8 @@ void func_8002E838(u8 *arg0) {
     *(s16 *)((u8 *)arg0 + 0xE4) = 0;
     *(s16 *)((u8 *)arg0 + 0xE6) = 0;
     *(s16 *)((u8 *)arg0 + 0xE8) = 0x1000;
-    func_8007FA1C(*(s16 *)((u8 *)arg0 + 0xFA), mat);
-    func_8007F87C(*(s16 *)((u8 *)arg0 + 0xF8), mat);
+    RotMatrixY(*(s16 *)((u8 *)arg0 + 0xFA), mat);
+    RotMatrixX(*(s16 *)((u8 *)arg0 + 0xF8), mat);
 
     /* Load 5 packed rotation-matrix words into GTE coef regs $0..$4. */
     {
@@ -1597,7 +1597,7 @@ void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
 
     mat = (s32 *)(scr + 0xD8);
 
-    charId1 = func_8007FD5C(arg1[0], arg1[2]);
+    charId1 = ratan2(arg1[0], arg1[2]);
     *(s16 *)0x1F8003B2 = (s16)(0x800 - charId1);
 
     {
@@ -1632,7 +1632,7 @@ void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
         }
     }
 
-    charId2 = func_8007FD5C(arg1[1], (s32)volume);
+    charId2 = ratan2(arg1[1], (s32)volume);
     *(s16 *)(scr + 0xF8) = (s16)(0x800 - charId2);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
@@ -1643,8 +1643,8 @@ void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     *(s16 *)(scr + 0xE4) = 0;
     *(s16 *)(scr + 0xE6) = 0;
     *(s16 *)(scr + 0xE8) = 0x1000;
-    func_8007FA1C(*(s16 *)(scr + 0xFA), mat);
-    func_8007F87C(*(s16 *)(scr + 0xF8), mat);
+    RotMatrixY(*(s16 *)(scr + 0xFA), mat);
+    RotMatrixX(*(s16 *)(scr + 0xF8), mat);
 
     /* First MVMVA: rotate arg0's vec via composed rotation */
     {
@@ -1718,8 +1718,8 @@ void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     *(s16 *)(scr + 0xE4) = 0;
     *(s16 *)(scr + 0xE6) = 0;
     *(s16 *)(scr + 0xE8) = 0x1000;
-    func_8007F87C(-(s32)*(s16 *)(scr + 0xF8), mat);
-    func_8007FA1C(-(s32)*(s16 *)(scr + 0xFA), mat);
+    RotMatrixX(-(s32)*(s16 *)(scr + 0xF8), mat);
+    RotMatrixY(-(s32)*(s16 *)(scr + 0xFA), mat);
 
     /* Second MVMVA: inverse-rotate the scaled vec, store to arg2 */
     {
@@ -1867,7 +1867,7 @@ s32 func_8002FC80(s32 *a0, s32 *a1, s32 *a2) {
         __asm__ volatile ("swc2 $26, 4(%0)" :: "r"(mp));
         __asm__ volatile ("swc2 $27, 8(%0)" :: "r"(mp));
         __asm__ volatile ("lw %0, 0x1F800388" : "=r"(arg1_val));
-        ret = func_8007FD5C(q[0], arg1_val);
+        ret = ratan2(q[0], arg1_val);
         __asm__ volatile ("lw %0, 0x1F800384" : "=r"(flag));
         if (flag > 0) {
             ret += 0x800;
@@ -1994,11 +1994,11 @@ void func_8002FF20(u8 *arg0, u8 arg1) {
     *(s16 *)((u8 *)arg0 + 0x18) = 0;
     *(s16 *)((u8 *)arg0 + 0x1A) = 0;
     *(s16 *)((u8 *)arg0 + 0x1C) = 0x1000;
-    func_8007F87C(*(s16 *)((u8 *)arg0 + 0x54), rot_mat);
-    func_8007FA1C(*(s16 *)((u8 *)arg0 + 0x56), rot_mat);
-    func_8007FBBC(*(s16 *)((u8 *)arg0 + 0x58), rot_mat);
+    RotMatrixX(*(s16 *)((u8 *)arg0 + 0x54), rot_mat);
+    RotMatrixY(*(s16 *)((u8 *)arg0 + 0x56), rot_mat);
+    RotMatrixZ(*(s16 *)((u8 *)arg0 + 0x58), rot_mat);
     func_8002EECC(s2_ptr, mat_local);
-    func_8007E4DC(mat_local, rot_mat, rot_mat);
+    MulMatrix0(mat_local, rot_mat, rot_mat);
 
     /* Subtract opponent reference position from self position. */
     *(s32 *)((u8 *)arg0 + 0x2C) -= s2_ptr[5];
@@ -2115,7 +2115,7 @@ void func_800300B4(u8 *arg0) {
     mac_result[1] += mat[6];
     mac_result[2] += mat[7];
 
-    func_8007E4DC(mat, (s32 *)(arg0 + 0xC), buf3);
+    MulMatrix0(mat, (s32 *)(arg0 + 0xC), buf3);
     func_8002F2D0(buf3, buf2);
 
     lookup = (&D_8008EB80)[*(s16 *)(arg0 + 2)];
@@ -2181,7 +2181,7 @@ void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 rx;
     s32 rz;
     s32 v48;
-    angle = func_8007FD5C(a1[0], a1[2]);
+    angle = ratan2(a1[0], a1[2]);
     cos_val = *((&Judge) + ((angle + 0x400) & 0xFFF));
     /* FAKE: do-while(0) scheduling fence */
     do {
@@ -2602,9 +2602,9 @@ void func_80031890(s32 arg0, s32 arg1, s32 arg2) {
         *(s16 *)((u8 *)arg0 + 0xE8) = 0x1000;
         angle1 = (s32)(angle1_raw & 0xFFF);
         angle2 = (s32)((((pos_x * 16) + pos_y + (pos_z * 8)) & 0x7FF) - 0x400);
-        func_8007FA1C(angle1, mat);
+        RotMatrixY(angle1, mat);
     }
-    func_8007F87C(angle2, mat);
+    RotMatrixX(angle2, mat);
 
     /* Load 5 packed rotation-matrix words into GTE coef regs $0..$4. */
     {
@@ -3406,9 +3406,9 @@ void func_800338CC(void) {
     i = 0;
     do {
         i++;
-        idx1 = func_80079154() % count;
+        idx1 = rand() % count;
         {
-            s32 idx2 = func_80079154() % count;
+            s32 idx2 = rand() % count;
             s32 tmp = (u8)(&D_801077B0)[idx1];
             (&D_801077B0)[idx1] = (u8)(&D_801077B0)[idx2];
             (&D_801077B0)[idx2] = tmp;
@@ -3426,7 +3426,7 @@ void func_800338CC(void) {
             goto block_12;
         }
         if (v0 != 0) {
-            if (func_80079154() & 1) {
+            if (rand() & 1) {
                 s32 t1 = sp[1];
                 s32 t2 = sp[0];
                 sp[0] = t1;

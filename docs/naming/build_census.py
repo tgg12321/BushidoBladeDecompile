@@ -279,6 +279,41 @@ for r in _rd("dark_rescue.csv"):
     _add(r.get("address", ""), "dark_rescue.csv", r.get("proposed_name", ""),
          r.get("confidence", ""), r.get("technique", ""), r.get("evidence", ""))
 
+# ---------------------------------------------------------------- libscan (verbatim PsyQ modules)
+# The one DISPOSITIVE naming source in this tree. A PsyQ .LIB module whose entire .text is
+# bit-identical to a span of the shipped EXE (reloc fields masked) carries Sony's own XDEF
+# records, and module_placement_vaddr + xdef_offset is the exported symbol's BB2 address. That
+# is byte evidence, not inference, so it outranks kengo-derived and naming-analyzer alike.
+# Method + regeneration: tools/libscan/README.md.
+libscan = {}   # ADDR(no 0x, upper) -> dict(name, lib, module, offset, classification, note)
+lp = J("docs", "naming", "libscan", "rename_manifest.csv")
+if os.path.exists(lp):
+    with open(lp, newline="", encoding="utf-8", errors="replace") as fh:
+        for r in csv.DictReader(fh):
+            if not r.get("proposed_name"):
+                continue          # MODULE_LOCAL_STATIC / AMBIGUOUS / IN_SPAN_NO_SYMBOL
+            a = (r.get("addr") or "").strip().upper().replace("0X", "")
+            if not re.fullmatch(r"[0-9A-F]{8}", a):
+                continue
+            # The XDEF's section-relative offset is what the placement was derived FROM;
+            # recover it as vaddr - module base rather than re-parsing the .LIB set.
+            try:
+                off = int(a, 16) - int((r.get("mod_start") or "0"), 16)
+            except ValueError:
+                off = None
+            libscan[a] = dict(name=r["proposed_name"].strip(),
+                              lib=r.get("lib", ""), module=r.get("module", ""),
+                              offset=off, classification=r.get("classification", ""),
+                              note=(r.get("note") or "").strip())
+
+
+def libscan_evidence(a):
+    """`libscan-verbatim: <LIB>/<MODULE> XDEF <name> @ +0x<off>` — the fixed evidence form."""
+    e = libscan[a]
+    off = "+0x%X" % e["offset"] if isinstance(e["offset"], int) and e["offset"] >= 0 else "+0x?"
+    return "libscan-verbatim: %s/%s XDEF %s @ %s" % (e["lib"], e["module"], e["name"], off)
+
+
 # ---------------------------------------------------------------- queue
 queue_funcs = set()
 qp = J("engine", "queue.json")
@@ -332,7 +367,15 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
 
     # ---- resolve the name a READER actually sees, across all three layers ----
     aliases = [s for (s, sf, i, c) in addr_syms.get(addr, [])]
-    semantic_aliases = [s for s in aliases if not AUTOPAT.match(strip_addr(s))]
+    # An alias is AUTO if it is auto-shaped itself (`func_8007A5C4 = 0x8007A5C4;` — a
+    # reverse-alias line the registry carries for its own convenience), or if stripping
+    # its `_<ADDR>` suffix leaves an auto-shaped name. Testing only the stripped form was
+    # a bug: strip_addr("func_8007A5C4") is "func", which AUTOPAT does not match, so the
+    # reverse alias was read as a semantic claim and the row's current_name became the
+    # bare word `func`. Nine such rows fed `func` into the 2026-08-07 libscan wave's
+    # rename map as a renameable identifier.
+    semantic_aliases = [s for s in aliases
+                        if not AUTOPAT.match(s) and not AUTOPAT.match(strip_addr(s))]
     c_names = [s for s in {strip_addr(a) for a in semantic_aliases} if s in src_def]
 
     if not AUTOPAT.match(glabel):
@@ -360,6 +403,36 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
                   name_layer=layer, aliases=";".join(sorted(set(semantic_aliases)))[:300],
                   insns=info["insns"], src_location=src_def.get(nm, ""),
                   queued="yes" if (nm in queue_funcs or glabel in queue_funcs) else "")
+
+    # --- libscan: bit-verbatim PsyQ module identity.
+    # Checked FIRST, and before the AUTO short-circuit — a FILL row is precisely a
+    # function whose glabel is still `func_XXXXXXXX`. Nothing below can demote this:
+    # every other tier reasons from behaviour or provenance, this one reads the name
+    # off Sony's own OBJ record for bytes that are identical to Sony's own module.
+    if addr in libscan:
+        e = libscan[addr]
+        ev = [libscan_evidence(addr)]
+        WHY = {
+            "CONFIRM": "already carries this name — no action",
+            "FILL": "no naming claim existed at this address",
+            "CONTRADICTED": "the glabel asserts a DIFFERENT name; this rename retires a misname",
+            "CONTRADICTED_ALIAS": "the glabel is auto but a live alias asserts a DIFFERENT "
+                                  "name; this rename fills the glabel and retires the alias",
+        }
+        ev.append(WHY.get(e["classification"], e["classification"]))
+        if e["note"]:
+            ev.append(e["note"][:200])
+        if nm in name_in_binary:
+            ev.append("cross-check: the in-binary self-identifying string agrees"
+                      if norm(nm).endswith(norm(e["name"])) else
+                      "CONFLICT: this address also carries an in-binary self-identifying "
+                      "string that does NOT match the XDEF name — review before applying")
+        same = (nm == e["name"]) or e["classification"] == "CONFIRM"
+        rows.append(dict(common, origin="libscan-verbatim", tier="VERIFIED",
+                         evidence="; ".join(ev)[:1000],
+                         action="KEEP" if same else "RENAME",
+                         proposed_name="" if same else e["name"]))
+        continue
 
     # --- AUTO
     if AUTOPAT.match(nm):
@@ -561,6 +634,80 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
 
     rows.append(dict(common, origin=origin, tier=tier,
                      evidence="; ".join(ev)[:1000], action=action, proposed_name=proposed))
+
+# ------------------------------------------------- libscan rows outside the asm/funcs universe
+# The universe above is asm/funcs/*.s, so a function that reached COMPLETED-C — pure C in
+# src/, no split file left — has no census row at all. 16 libscan placements land on exactly
+# such functions, including some of the campaign's worst misnames (memcard_SetBusy is really
+# SsSetMono). Skipping them would silently drop the strongest evidence in the set, so they get
+# rows here. They carry no glabel, which is correct: there is no .s file and nothing for the
+# wave to rename in asm/.
+_covered = {r["address"].upper().replace("0X", "") for r in rows}
+# These rows have no glabel to read a live name from, so the CURRENT name comes from the
+# link map — `<addr> <name>` lines are object-provided definitions. Reading it (rather than
+# trusting the manifest's current_name, which is a snapshot from whenever the scan last ran)
+# is what lets the census self-heal after a wave: otherwise these 16 rows keep proposing a
+# rename that already landed.
+_mapdef = defaultdict(list)
+_mp = J("build", "bb2.map")
+if os.path.exists(_mp):
+    MAPDEF = re.compile(r"^\s+0x0*([0-9a-f]{8})\s+([A-Za-z_]\w*)\s*$")
+    for ln in open(_mp, encoding="utf-8", errors="replace"):
+        m = MAPDEF.match(ln)
+        if m:
+            _mapdef[m.group(1).upper()].append(m.group(2))
+_lsrows = {}
+if os.path.exists(lp):
+    with open(lp, newline="", encoding="utf-8", errors="replace") as fh:
+        for r in csv.DictReader(fh):
+            _lsrows[(r.get("addr") or "").strip().upper().replace("0X", "")] = r
+for a in sorted(libscan):
+    if a in _covered:
+        continue
+    e = libscan[a]
+    mr = _lsrows.get(a, {})
+    live = [n for n in _mapdef.get(a, []) if not AUTOPAT.match(n)] or _mapdef.get(a, [])
+    nm = (live[0] if live else (mr.get("current_name") or "")).strip()
+    if not nm:
+        continue
+    al = sorted({x.strip() for x in (mr.get("aliases") or "").split(";") if x.strip()}
+                | {s for (s, sf, i, c) in addr_syms.get(a, [])
+                   if not AUTOPAT.match(strip_addr(s))})
+    same = (nm == e["name"]) or e["classification"] == "CONFIRM"
+    rows.append(dict(
+        address="0x" + a, glabel="", current_name=nm,
+        name_layer=mr.get("name_source", "src/*.c definition (no asm/funcs split file)"),
+        aliases=";".join(al)[:300], insns="", src_location=src_def.get(nm, ""),
+        queued="yes" if nm in queue_funcs else "",
+        origin="libscan-verbatim", tier="VERIFIED",
+        evidence="; ".join([
+            libscan_evidence(a),
+            "outside the asm/funcs universe — decompiled to pure C in src/, so this row is "
+            "seeded from the libscan manifest rather than a glabel",
+            e["classification"]])[:1000],
+        action="KEEP" if same else "RENAME",
+        proposed_name="" if same else e["name"]))
+rows.sort(key=lambda r: r["address"])
+
+# ------------------------------------------------- BIOS jumptable index (second chain)
+# Two addresses where the BIOS index decode and the libscan XDEF name DIFFER without
+# contradicting each other: the library wrapper exports one name and trampolines to a
+# BIOS entry that has another. Owner ruling 2026-08-07 takes the XDEF (the symbol the
+# original linker actually placed) and requires the jumptable entry recorded so the
+# second evidence chain is not lost. Hardcoded deliberately: the full index
+# (tmp/bios_decode/bios_names.csv) is promoted in the addendum pass, not this wave.
+BIOS_INDEX = {
+    "80078948": "BIOS jumptable cross-check: A0:0x43 DoExecute — the library wrapper "
+                "exported as Exec trampolines to it; the two names agree on the function, "
+                "not on the spelling, and the XDEF is what the link placed here",
+    "80078968": "BIOS jumptable cross-check: A0:0x9F SetMemSize — the library wrapper "
+                "exported as SetMem trampolines to it; same relationship as Exec/DoExecute "
+                "and as DelDrv/RemoveDevice at 0x8008D060",
+}
+for r in rows:
+    a = r["address"].upper().replace("0X", "")
+    if a in BIOS_INDEX:
+        r["evidence"] = (r["evidence"] + "; " + BIOS_INDEX[a])[:1200]
 
 # ---------------------------------------------------------------- targeted overrides
 OVERRIDES = {

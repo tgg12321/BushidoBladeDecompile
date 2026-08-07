@@ -14,9 +14,9 @@ glabel func_8005BF78
     /* 4C7A8 8005BFA8 1400B1AF */   sw        $s1, 0x14($sp)
     /* 4C7AC 8005BFAC 008C1200 */  sll        $s1, $s2, 16
     /* 4C7B0 8005BFB0 038C1100 */  sra        $s1, $s1, 16
-    /* 4C7B4 8005BFB4 D91F020C */  jal        func_80087F64
+    /* 4C7B4 8005BFB4 D91F020C */  jal        SsVabClose
     /* 4C7B8 8005BFB8 21202002 */   addu      $a0, $s1, $zero
-    /* 4C7BC 8005BFBC 892B020C */  jal        func_8008AE24
+    /* 4C7BC 8005BFBC 892B020C */  jal        SpuSetTransferStartAddr
     /* 4C7C0 8005BFC0 21200002 */   addu      $a0, $s0, $zero
     /* 4C7C4 8005BFC4 0F80103C */  lui        $s0, %hi(D_800EFC38)
     /* 4C7C8 8005BFC8 38FC1026 */  addiu      $s0, $s0, %lo(D_800EFC38)
@@ -27,23 +27,23 @@ glabel func_8005BF78
     /* 4C7DC 8005BFDC 0C00458C */  lw         $a1, 0xC($v0)
     /* 4C7E0 8005BFE0 592B020C */  jal        func_8008AD64
     /* 4C7E4 8005BFE4 21208002 */   addu      $a0, $s4, $zero
-    /* 4C7E8 8005BFE8 AC2B020C */  jal        func_8008AEB0
+    /* 4C7E8 8005BFE8 AC2B020C */  jal        SpuIsTransferCompleted
     /* 4C7EC 8005BFEC 01000424 */   addiu     $a0, $zero, 0x1
-    /* 4C7F0 8005BFF0 892B020C */  jal        func_8008AE24
+    /* 4C7F0 8005BFF0 892B020C */  jal        SpuSetTransferStartAddr
     /* 4C7F4 8005BFF4 21206002 */   addu      $a0, $s3, $zero
     /* 4C7F8 8005BFF8 0000028E */  lw         $v0, 0x0($s0)
     /* 4C7FC 8005BFFC 00000000 */  nop
     /* 4C800 8005C000 0C00458C */  lw         $a1, 0xC($v0)
     /* 4C804 8005C004 712B020C */  jal        func_8008ADC4
     /* 4C808 8005C008 21208002 */   addu      $a0, $s4, $zero
-    /* 4C80C 8005C00C AC2B020C */  jal        func_8008AEB0
+    /* 4C80C 8005C00C AC2B020C */  jal        SpuIsTransferCompleted
     /* 4C810 8005C010 01000424 */   addiu     $a0, $zero, 0x1
     /* 4C814 8005C014 0000028E */  lw         $v0, 0x0($s0)
     /* 4C818 8005C018 21282002 */  addu       $a1, $s1, $zero
     /* 4C81C 8005C01C 0400448C */  lw         $a0, 0x4($v0)
-    /* 4C820 8005C020 2E20020C */  jal        func_800880B8
+    /* 4C820 8005C020 2E20020C */  jal        SsVabFakeHead
     /* 4C824 8005C024 21306002 */   addu      $a2, $s3, $zero
-    /* 4C828 8005C028 FA1F020C */  jal        func_80087FE8
+    /* 4C828 8005C028 FA1F020C */  jal        SsVabFakeBody
     /* 4C82C 8005C02C 21202002 */   addu      $a0, $s1, $zero
     /* 4C830 8005C030 0F80013C */  lui        $at, %hi(D_800EFB38)
     /* 4C834 8005C034 21083200 */  addu       $at, $at, $s2

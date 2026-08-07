@@ -6,9 +6,9 @@ extern s32 D_800A3890;
 extern s32 D_800A3924;
 extern s32 D_800A37F4;
 
-extern void bios_A0_0xAB_wrapper(s32);
-extern void bios_A0_0xAC_wrapper(s32);
-extern void func_8007A318(s32);
+extern void _card_info(s32);
+extern void _card_load(s32);
+extern void _card_clear(s32);
 extern s32  func_80037804(void);
 extern void func_800379D8(void);
 extern s32  func_80037964(void);
@@ -21,7 +21,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
 
     switch (D_800A31EC) {
     case 0:
-        bios_A0_0xAB_wrapper(p);
+        _card_info(p);
         D_800A31EC = 1;
         D_800A3924 = 0;
         D_800A3890 = 0;
@@ -52,7 +52,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
     c1_df4:
         D_800A37F4 = 2;
         func_800379D8();
-        func_8007A318(p);
+        _card_clear(p);
         func_80037964();
         D_800A31EC = 2;
         D_800A31E8 = 0;
@@ -67,7 +67,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
     }
     case 2:
         func_8003791C();
-        bios_A0_0xAC_wrapper(p);
+        _card_load(p);
         D_800A31EC = 3;
         D_800A3924 = 0;
         break;

@@ -11,6 +11,6 @@ extern s32 g_snd_se_id;
 extern s32 g_snd_volume;
 
 /* Functions */
-extern void spu_SetVolume(s32, s32, s32);
+extern void SsSetSerialAttr(s32, s32, s32);
 
 #endif /* SOUND_H */

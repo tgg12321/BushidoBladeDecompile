@@ -8,7 +8,7 @@ glabel func_8005C6D0
     /* 4CEE8 8005C6E8 4400B3AF */  sw         $s3, 0x44($sp)
     /* 4CEEC 8005C6EC 4000B2AF */  sw         $s2, 0x40($sp)
     /* 4CEF0 8005C6F0 3C00B1AF */  sw         $s1, 0x3C($sp)
-    /* 4CEF4 8005C6F4 002D020C */  jal        func_8008B400
+    /* 4CEF4 8005C6F4 002D020C */  jal        SpuGetAllKeysStatus
     /* 4CEF8 8005C6F8 3800B0AF */   sw        $s0, 0x38($sp)
     /* 4CEFC 8005C6FC 21A00000 */  addu       $s4, $zero, $zero
     /* 4CF00 8005C700 21980000 */  addu       $s3, $zero, $zero
@@ -40,7 +40,7 @@ glabel func_8005C6D0
     /* 4CF64 8005C764 00141300 */   sll       $v0, $s3, 16
     /* 4CF68 8005C768 21906000 */  addu       $s2, $v1, $zero
   .L8005C76C:
-    /* 4CF6C 8005C76C 342B020C */  jal        func_8008ACD0
+    /* 4CF6C 8005C76C 342B020C */  jal        SpuGetKeyStatus
     /* 4CF70 8005C770 04201502 */   sllv      $a0, $s5, $s0
     /* 4CF74 8005C774 30005510 */  beq        $v0, $s5, .L8005C838
     /* 4CF78 8005C778 01000226 */   addiu     $v0, $s0, 0x1

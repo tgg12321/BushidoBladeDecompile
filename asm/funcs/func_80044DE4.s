@@ -25,7 +25,7 @@ glabel func_80044DE4
     /* 35640 80044E40 23100200 */  negu       $v0, $v0
     /* 35644 80044E44 3000A2AF */  sw         $v0, 0x30($sp)
     /* 35648 80044E48 1000A7AF */  sw         $a3, 0x10($sp)
-    /* 3564C 80044E4C 6BF8010C */  jal        func_8007E1AC
+    /* 3564C 80044E4C 6BF8010C */  jal        LoadAverage12
     /* 35650 80044E50 21386000 */   addu      $a3, $v1, $zero
     /* 35654 80044E54 3800BF8F */  lw         $ra, 0x38($sp)
     /* 35658 80044E58 4000BD27 */  addiu      $sp, $sp, 0x40

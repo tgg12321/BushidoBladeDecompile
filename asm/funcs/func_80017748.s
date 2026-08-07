@@ -19,13 +19,13 @@ glabel func_80017748
     /* 7F8C 8001778C 2000A527 */  addiu      $a1, $sp, 0x20
     /* 7F90 80017790 23104300 */  subu       $v0, $v0, $v1
     /* 7F94 80017794 83100200 */  sra        $v0, $v0, 2
-    /* 7F98 80017798 2FFC010C */  jal        func_8007F0BC
+    /* 7F98 80017798 2FFC010C */  jal        Square12
     /* 7F9C 8001779C 1800A2AF */   sw        $v0, 0x18($sp)
     /* 7FA0 800177A0 2000A48F */  lw         $a0, 0x20($sp)
     /* 7FA4 800177A4 2400A28F */  lw         $v0, 0x24($sp)
     /* 7FA8 800177A8 2800A38F */  lw         $v1, 0x28($sp)
     /* 7FAC 800177AC 21208200 */  addu       $a0, $a0, $v0
-    /* 7FB0 800177B0 0FF9010C */  jal        func_8007E43C
+    /* 7FB0 800177B0 0FF9010C */  jal        SquareRoot12
     /* 7FB4 800177B4 21208300 */   addu      $a0, $a0, $v1
     /* 7FB8 800177B8 3000BF8F */  lw         $ra, 0x30($sp)
     /* 7FBC 800177BC 80100200 */  sll        $v0, $v0, 2

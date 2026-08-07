@@ -1,23 +1,23 @@
-glabel cdrom_CheckReady
+glabel CdReset
     /* 708DC 800800DC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 708E0 800800E0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 708E4 800800E4 21808000 */  addu       $s0, $a0, $zero
     /* 708E8 800800E8 02000224 */  addiu      $v0, $zero, 0x2
     /* 708EC 800800EC 05000216 */  bne        $s0, $v0, .L80080104
     /* 708F0 800800F0 1400BFAF */   sw        $ra, 0x14($sp)
-    /* 708F4 800800F4 5D06020C */  jal        cdrom_Shutdown
+    /* 708F4 800800F4 5D06020C */  jal        CD_initintr
     /* 708F8 800800F8 00000000 */   nop
     /* 708FC 800800FC 4D000208 */  j          .L80080134
     /* 70900 80080100 01000224 */   addiu     $v0, $zero, 0x1
   .L80080104:
-    /* 70904 80080104 7106020C */  jal        cdrom_Initialize
+    /* 70904 80080104 7106020C */  jal        CD_init
     /* 70908 80080108 00000000 */   nop
     /* 7090C 8008010C 09004014 */  bnez       $v0, .L80080134
     /* 70910 80080110 21100000 */   addu      $v0, $zero, $zero
     /* 70914 80080114 01000224 */  addiu      $v0, $zero, 0x1
     /* 70918 80080118 06000216 */  bne        $s0, $v0, .L80080134
     /* 7091C 8008011C 00000000 */   nop
-    /* 70920 80080120 2006020C */  jal        cdrom_ConfigSPU
+    /* 70920 80080120 2006020C */  jal        CD_initvol
     /* 70924 80080124 00000000 */   nop
     /* 70928 80080128 02004014 */  bnez       $v0, .L80080134
     /* 7092C 8008012C 21100000 */   addu      $v0, $zero, $zero
@@ -28,4 +28,4 @@ glabel cdrom_CheckReady
     /* 7093C 8008013C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 70940 80080140 0800E003 */  jr         $ra
     /* 70944 80080144 00000000 */   nop
-endlabel cdrom_CheckReady
+endlabel CdReset

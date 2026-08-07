@@ -29,20 +29,20 @@ glabel func_8005C4C0
     /* 4CD2C 8005C52C 0400628C */  lw         $v0, 0x4($v1)
     /* 4CD30 8005C530 21204002 */  addu       $a0, $s2, $zero
     /* 4CD34 8005C534 21105100 */  addu       $v0, $v0, $s1
-    /* 4CD38 8005C538 D91F020C */  jal        func_80087F64
+    /* 4CD38 8005C538 D91F020C */  jal        SsVabClose
     /* 4CD3C 8005C53C 040062AC */   sw        $v0, 0x4($v1)
     /* 4CD40 8005C540 0000028E */  lw         $v0, 0x0($s0)
     /* 4CD44 8005C544 0F80013C */  lui        $at, %hi(D_800EFB38)
     /* 4CD48 8005C548 21083300 */  addu       $at, $at, $s3
     /* 4CD4C 8005C54C 38FB268C */  lw         $a2, %lo(D_800EFB38)($at)
     /* 4CD50 8005C550 0400448C */  lw         $a0, 0x4($v0)
-    /* 4CD54 8005C554 2E20020C */  jal        func_800880B8
+    /* 4CD54 8005C554 2E20020C */  jal        SsVabFakeHead
     /* 4CD58 8005C558 21284002 */   addu      $a1, $s2, $zero
     /* 4CD5C 8005C55C 00140200 */  sll        $v0, $v0, 16
     /* 4CD60 8005C560 03140200 */  sra        $v0, $v0, 16
     /* 4CD64 8005C564 08005214 */  bne        $v0, $s2, .L8005C588
     /* 4CD68 8005C568 00000000 */   nop
-    /* 4CD6C 8005C56C FA1F020C */  jal        func_80087FE8
+    /* 4CD6C 8005C56C FA1F020C */  jal        SsVabFakeBody
     /* 4CD70 8005C570 21204000 */   addu      $a0, $v0, $zero
     /* 4CD74 8005C574 61710108 */  j          .L8005C584
     /* 4CD78 8005C578 00140200 */   sll       $v0, $v0, 16

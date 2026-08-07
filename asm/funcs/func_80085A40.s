@@ -35,7 +35,7 @@ glabel func_80085A40
     /* 762C0 80085AC0 00240500 */   sll       $a0, $a1, 16
     /* 762C4 80085AC4 03240400 */  sra        $a0, $a0, 16
     /* 762C8 80085AC8 002C0600 */  sll        $a1, $a2, 16
-    /* 762CC 80085ACC 8F1F020C */  jal        func_80087E3C
+    /* 762CC 80085ACC 8F1F020C */  jal        _SsVmVSetUp
     /* 762D0 80085AD0 032C0500 */   sra       $a1, $a1, 16
     /* 762D4 80085AD4 6E004014 */  bnez       $v0, .L80085C90
     /* 762D8 80085AD8 21000224 */   addiu     $v0, $zero, 0x21
@@ -218,7 +218,7 @@ glabel func_80085A40
     /* 76574 80085D74 64170208 */  j          .L80085D90
     /* 76578 80085D78 00000000 */   nop
   .L80085D7C:
-    /* 7657C 80085D7C FF1A020C */  jal        func_80086BFC
+    /* 7657C 80085D7C FF1A020C */  jal        note2pitch2
     /* 76580 80085D80 2128C003 */   addu      $a1, $fp, $zero
     /* 76584 80085D84 01000424 */  addiu      $a0, $zero, 0x1
     /* 76588 80085D88 A91C020C */  jal        func_800872A4

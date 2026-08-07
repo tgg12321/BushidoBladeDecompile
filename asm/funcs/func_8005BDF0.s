@@ -14,7 +14,7 @@ glabel func_8005BDF0
     /* 4C620 8005BE20 2000BFAF */  sw         $ra, 0x20($sp)
   .L8005BE24:
     /* 4C624 8005BE24 00000492 */  lbu        $a0, 0x0($s0)
-    /* 4C628 8005BE28 D91F020C */  jal        func_80087F64
+    /* 4C628 8005BE28 D91F020C */  jal        SsVabClose
     /* 4C62C 8005BE2C 00000000 */   nop
     /* 4C630 8005BE30 00000292 */  lbu        $v0, 0x0($s0)
     /* 4C634 8005BE34 00000000 */  nop

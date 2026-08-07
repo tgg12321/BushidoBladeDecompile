@@ -59,10 +59,10 @@ func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
 
 # func_80080258: 3-way register rotation s2/s3/s4 in body (TEXT 11-59)
 # My: s2=idx, s3=a0, s4=a2 → Target: s2=a2, s3=idx, s4=a0
-func_80080258: $18 <-> $20 @ 11-59
-func_80080258: $19 <-> $20 @ 11-59
+CdControl: $18 <-> $20 @ 11-59
+CdControl: $19 <-> $20 @ 11-59
 # func_80080258: interleave argument moves with prologue saves
-func_80080258: reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19
+CdControl: reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19
 
 # func_80036FD4: SpecialCam in $5(a1) -> $3(v1), entry loads $3/$2 -> $4/$5
 # Reorder: put sra after SpecialCam load
@@ -83,28 +83,28 @@ func_80036FD4: subst "\$2" "$5" @ 19
 func_80036FD4: subst "\$5" "$3" @ 24
 
 # saEft01Init: 3-way s-reg rotation (s0->s2, s2->s1, s1->s0)
-func_80081BB0: $16 <-> $18
-func_80081BB0: $16 <-> $17
+CD_datasync: $16 <-> $18
+CD_datasync: $16 <-> $17
 # Fix prologue save offsets after s-reg swap
-func_80081BB0: subst ",24\(" ",32(" @ 1
-func_80081BB0: subst ",32\(" ",28(" @ 6
-func_80081BB0: subst ",28\(" ",24(" @ 8
+CD_datasync: subst ",24\(" ",32(" @ 1
+CD_datasync: subst ",32\(" ",28(" @ 6
+CD_datasync: subst ",28\(" ",24(" @ 8
 # Arg block register fixes: idx[1] path v1->v0 ($3->$2)
-func_80081BB0: $2 <-> $3 @ 35-35
-func_80081BB0: $2 <-> $3 @ 38-39
+CD_datasync: $2 <-> $3 @ 35-35
+CD_datasync: $2 <-> $3 @ 38-39
 # Arg block register fixes: idx[0] path v0->a0 ($2->$4)
-func_80081BB0: $2 <-> $4 @ 36-36
-func_80081BB0: $2 <-> $4 @ 40-42
+CD_datasync: $2 <-> $4 @ 36-36
+CD_datasync: $2 <-> $4 @ 40-42
 # Arg block: fix lw source register at insn 44
-func_80081BB0: subst "0\(\$3\)" "0($2)" @ 44
+CD_datasync: subst "0\(\$3\)" "0($2)" @ 44
 # Arg block reorder to match target evaluation order
-func_80081BB0: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
+CD_datasync: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
 # Fix epilogue restore offsets after s-reg swap
-func_80081BB0: subst ",32\(" ",28(" @ 70
-func_80081BB0: subst ",28\(" ",24(" @ 71
-func_80081BB0: subst ",24\(" ",32(" @ 72
+CD_datasync: subst ",32\(" ",28(" @ 70
+CD_datasync: subst ",28\(" ",24(" @ 71
+CD_datasync: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
-func_80081BB0: reorder 72,70,71 @ 70-72
+CD_datasync: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 
@@ -1228,66 +1228,66 @@ func_8003A728: subst "sll\s+\$2,\$2,16" "sll $2,$16,16" @ 133
 # File order=processing order; insert "nop" first, then "lw" -> final layout: sra, lw, nop, subu
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
-func_80080DB0: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
-func_80080DB0: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
-func_80080DB0: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
-func_80080DB0: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
-func_80080DB0: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
+CD_sync: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
+CD_sync: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
+CD_sync: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
+CD_sync: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
+CD_sync: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
 
 # marionation_Exec: s-reg rotation (two permutation cycles)
 # 3-cycle: s5($21)→s7($23)→s6($22)→s5
-func_80081030: $21 <-> $23
-func_80081030: $21 <-> $22
+CD_ready: $21 <-> $23
+CD_ready: $21 <-> $22
 # 4-cycle: s1($17)→s4($20)→s3($19)→s2($18)→s1
-func_80081030: $17 <-> $20
-func_80081030: $17 <-> $19
-func_80081030: $17 <-> $18
+CD_ready: $17 <-> $20
+CD_ready: $17 <-> $19
+CD_ready: $17 <-> $18
 
 # marionation_Exec: debug_printf block register + scheduling fix
-func_80081030: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
-func_80081030: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
-func_80081030: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
-func_80081030: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
-func_80081030: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
-func_80081030: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
-func_80081030: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
-func_80081030: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
-func_80081030: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
+CD_ready: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
+CD_ready: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
+CD_ready: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
+CD_ready: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
+CD_ready: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
+CD_ready: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
+CD_ready: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
+CD_ready: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
+CD_ready: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
 
 # marionation_Exec: prologue frame offset correction (swaps rename regs but not offsets)
-func_80081030: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
-func_80081030: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
-func_80081030: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
-func_80081030: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
-func_80081030: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
-func_80081030: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
-func_80081030: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
+CD_ready: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
+CD_ready: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
+CD_ready: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
+CD_ready: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
+CD_ready: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
+CD_ready: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
+CD_ready: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
 
 # marionation_Exec: epilogue register correction (swaps permuted restore reg names)
 # indices shifted +1 after register asm added addu at .L124 (idx 143)
-func_80081030: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
-func_80081030: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
-func_80081030: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
-func_80081030: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
-func_80081030: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
-func_80081030: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
-func_80081030: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
+CD_ready: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
+CD_ready: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
+CD_ready: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
+CD_ready: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
+CD_ready: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
+CD_ready: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
+CD_ready: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
 
 # marionation_Exec: block 1+2 lbu->v0+andi, delay slot, tail layout fix
-func_80081030: subst "lbu\t\$6" "lbu\t$2" @ 106
-func_80081030: subst "lbu\t\$6" "lbu\t$2" @ 124
-func_80081030: subst "addu.*" "nop" @ 127
-func_80081030: subst "\.L\d+" ".L999" @ 111
-func_80081030: subst "\.L\d+" ".L999" @ 129
-func_80081030: subst "j" ".L999:\n\tj" @ 139
-func_80081030: subst "nop" "addu\t$2,$0,$zero" @ 142
-func_80081030: delete @ 143
-func_80081030: insert "andi\t$6,$2,0x00FF" @ 108
-func_80081030: insert "andi\t$6,$2,0x00FF" @ 126
-func_80081030: insert "addu\t$5,$20,$zero" @ 130
-func_80081030: reorder 3,2 @ 2-3
-func_80081030: reorder 113,111,112,114,115,116 @ 111-116
-func_80081030: reorder 133,132,130,131,134,135 @ 130-135
+CD_ready: subst "lbu\t\$6" "lbu\t$2" @ 106
+CD_ready: subst "lbu\t\$6" "lbu\t$2" @ 124
+CD_ready: subst "addu.*" "nop" @ 127
+CD_ready: subst "\.L\d+" ".L999" @ 111
+CD_ready: subst "\.L\d+" ".L999" @ 129
+CD_ready: subst "j" ".L999:\n\tj" @ 139
+CD_ready: subst "nop" "addu\t$2,$0,$zero" @ 142
+CD_ready: delete @ 143
+CD_ready: insert "andi\t$6,$2,0x00FF" @ 108
+CD_ready: insert "andi\t$6,$2,0x00FF" @ 126
+CD_ready: insert "addu\t$5,$20,$zero" @ 130
+CD_ready: reorder 3,2 @ 2-3
+CD_ready: reorder 113,111,112,114,115,116 @ 111-116
+CD_ready: reorder 133,132,130,131,134,135 @ 130-135
 
 # suDispMentalBar: case 3 register + scheduling fix
 # ptr: $3->$4, byte0: $4->$3, byte1: $5->$2, ptr+2 dest: $3->$2
@@ -1952,73 +1952,73 @@ func_80040D48: subst "\$5" "$4" @ 236
 # Strategy: delete labeled insns to detach labels, re-insert at correct positions
 #
 # Swaps (Phase 1, original indices)
-func_8008BB24: $3 <-> $6 @ 35-62
-func_8008BB24: $7 <-> $8 @ 43-69
+_spu_note2pitch: $3 <-> $6 @ 35-62
+_spu_note2pitch: $7 <-> $8 @ 43-69
 #
 # Substs (Phase 2, original indices)
 # abs_diff: a0($4)->a1($5)
-func_8008BB24: subst "\$4" "$5" @ 11
-func_8008BB24: subst "\$4" "$5" @ 12
-func_8008BB24: subst "\$4" "$5" @ 15
-func_8008BB24: subst "\$4" "$5" @ 16
-func_8008BB24: subst "\$4" "$5" @ 24
+_spu_note2pitch: subst "\$4" "$5" @ 11
+_spu_note2pitch: subst "\$4" "$5" @ 12
+_spu_note2pitch: subst "\$4" "$5" @ 15
+_spu_note2pitch: subst "\$4" "$5" @ 16
+_spu_note2pitch: subst "\$4" "$5" @ 24
 # Division magic constant format
-func_8008BB24: subst "lui\t\$2,\(715784192 >> 16\) & 0xFFFF" "lui\t$2,10922" @ 13
-func_8008BB24: subst "ori\t\$2,\$2,0xaaab" "ori\t$2,$2,(715827883 & 65535)" @ 14
+_spu_note2pitch: subst "lui\t\$2,\(715784192 >> 16\) & 0xFFFF" "lui\t$2,10922" @ 13
+_spu_note2pitch: subst "ori\t\$2,\$2,0xaaab" "ori\t$2,$2,(715827883 & 65535)" @ 14
 # quot: v1($3)->a0($4)
-func_8008BB24: subst "\$3" "$4" @ 20
-func_8008BB24: subst "\$3" "$4" @ 21
-func_8008BB24: subst "\$3" "$4" @ 27
-func_8008BB24: subst "\$3" "$4" @ 30
-func_8008BB24: subst "\$3" "$4" @ 30
-func_8008BB24: subst "\$3" "$4" @ 33
+_spu_note2pitch: subst "\$3" "$4" @ 20
+_spu_note2pitch: subst "\$3" "$4" @ 21
+_spu_note2pitch: subst "\$3" "$4" @ 27
+_spu_note2pitch: subst "\$3" "$4" @ 30
+_spu_note2pitch: subst "\$3" "$4" @ 30
+_spu_note2pitch: subst "\$3" "$4" @ 33
 # rem: a3($7)->v1($3)
-func_8008BB24: subst "\$7" "$3" @ 24
-func_8008BB24: subst "\$7" "$3" @ 28
-func_8008BB24: subst "\$7" "$3" @ 31
-func_8008BB24: subst "\$7" "$3" @ 31
+_spu_note2pitch: subst "\$7" "$3" @ 24
+_spu_note2pitch: subst "\$7" "$3" @ 28
+_spu_note2pitch: subst "\$7" "$3" @ 31
+_spu_note2pitch: subst "\$7" "$3" @ 31
 # a3_val: t0($8)->a3($7)
-func_8008BB24: subst "\$8" "$7" @ 36
+_spu_note2pitch: subst "\$8" "$7" @ 36
 # abs_rem copy: $7->$3
-func_8008BB24: subst "\$7" "$3" @ 37
+_spu_note2pitch: subst "\$7" "$3" @ 37
 # bgez: v0($2)->v1($3)
-func_8008BB24: subst "\$2" "$3" @ 38
+_spu_note2pitch: subst "\$2" "$3" @ 38
 # loop subu/srl: v0($2)->a0($4)
-func_8008BB24: subst "\$2" "$4" @ 54
-func_8008BB24: subst "\$2" "$4" @ 55
+_spu_note2pitch: subst "\$2" "$4" @ 54
+_spu_note2pitch: subst "\$2" "$4" @ 55
 # loop mflo/sw: t2($10)->t1($9)
-func_8008BB24: subst "\$10" "$9" @ 59
-func_8008BB24: subst "\$10" "$9" @ 60
+_spu_note2pitch: subst "\$10" "$9" @ 59
+_spu_note2pitch: subst "\$10" "$9" @ 60
 # post-loop lw: v0($2)->t1($9)
-func_8008BB24: subst "lw\t\$2,8" "lw\t$9,8" @ 63
+_spu_note2pitch: subst "lw\t\$2,8" "lw\t$9,8" @ 63
 # post-loop subu: after $7<->$8 swap $8->$7; need $2,$7 -> $9,$7
-func_8008BB24: subst "subu\t\$2,\$2,\$7" "subu\t$2,$9,$7" @ 65
+_spu_note2pitch: subst "subu\t\$2,\$2,\$7" "subu\t$2,$9,$7" @ 65
 #
 # Deletes (Phase 4, original indices)
 # Delete li mult_const at orig 34 (.L680 label falls to andi at orig 35)
-func_8008BB24: delete @ 34
+_spu_note2pitch: delete @ 34
 # Delete mult at orig 41 (.L682 label falls to srl at orig 42)
-func_8008BB24: delete @ 41
+_spu_note2pitch: delete @ 41
 # Delete bnez delay-slot mult at orig 62
-func_8008BB24: delete @ 62
+_spu_note2pitch: delete @ 62
 #
 # Inserts (Phase 3, post-delete indices, sorted descending internally)
 # Re-insert mult before sll a3_val (post-delete 35=sll); use final regs ($6 from $3<->$6 swap)
-func_8008BB24: insert "mult\t$6,$4" @ 35
+_spu_note2pitch: insert "mult\t$6,$4" @ 35
 # Insert quot copy (addu $4,$3,$0) at orig 20 position
-func_8008BB24: insert "addu\t$4,$3,$0" @ 20
+_spu_note2pitch: insert "addu\t$4,$3,$0" @ 20
 #
 # Insert_afters (Phase 3.5, post-Phase-3-insert indices)
 # Re-insert li mult_const after andi (post-Phase-3 idx 35 = andi)
-func_8008BB24: insert_after "addiu\t$4,$zero,4155" @ 35
+_spu_note2pitch: insert_after "addiu\t$4,$zero,4155" @ 35
 #
 # Reorders (Phase 7, post-all-insert indices)
 # Scheduling: counter(41),bgez(40),abs_rem(39) -> counter,bgez,abs_rem
-func_8008BB24: reorder 41,40,39 @ 39-41
+_spu_note2pitch: reorder 41,40,39 @ 39-41
 # beq before sw for delay slot fill
-func_8008BB24: reorder 47,46 @ 46-47
+_spu_note2pitch: reorder 47,46 @ 46-47
 # bne before sw for delay slot fill
-func_8008BB24: reorder 62,61 @ 61-62
+_spu_note2pitch: reorder 62,61 @ 61-62
 
 # motion_SetMotion: anti-cross-jump fix
 func_80038C70: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
@@ -2566,31 +2566,31 @@ func_800644FC: insert_label ".Lfunc44FC_after_call:" @ 29
 func_800644FC: subst "\.L\d+" ".Lfunc44FC_after_call" @ 22
 
 # func_8007B6C8: layout fix beq->bne
-func_8007B6C8: subst "beq\s+\$2,\$0,\.L\d+" "bne	$2,$0,.LbodyB6C8" @ 17
-func_8007B6C8: subst "addiu\s+\$2,\$zero,-1" "sll	$2,$17,16" @ 18
-func_8007B6C8: insert_after "addiu	$2,$zero,-1" @ 18
-func_8007B6C8: insert_after "j	{lbl#1}" @ 18
-func_8007B6C8: insert_label ".LbodyB6C8:" @ 20
+MoveImage: subst "beq\s+\$2,\$0,\.L\d+" "bne	$2,$0,.LbodyB6C8" @ 17
+MoveImage: subst "addiu\s+\$2,\$zero,-1" "sll	$2,$17,16" @ 18
+MoveImage: insert_after "addiu	$2,$zero,-1" @ 18
+MoveImage: insert_after "j	{lbl#1}" @ 18
+MoveImage: insert_label ".LbodyB6C8:" @ 20
 # Body register flip: $v0->$a1 (bf24), $v1->$a0 (arg0[0]), $a3->$v1 (g_gpu_dev_table), $a2->$v0 (arg0[1])
-func_8007B6C8: subst "la\s+\$2,D_8009BF24" "la	$5,D_8009BF24" @ 19
-func_8007B6C8: subst "lw\s+\$3,0\(\$16\)" "lw	$4,0($16)" @ 20
-func_8007B6C8: subst "lw\s+\$7,g_gpu_dev_table" "lw	$3,g_gpu_dev_table" @ 21
-func_8007B6C8: subst "sw\s+\$3,0\(\$2\)" "sw	$4,0($5)" @ 23
-func_8007B6C8: subst "lw\s+\$4,24\(\$7\)" "lw	$4,24($3)" @ 26
-func_8007B6C8: subst "lw\s+\$6,4\(\$16\)" "lw	$2,4($16)" @ 27
-func_8007B6C8: subst "lw\s+\$2,8\(\$7\)" "lw	$2,8($3)" @ 30
-func_8007B6C8: subst "sw\s+\$6,D_8009BF2C" "sw	$2,D_8009BF2C" @ 32
+MoveImage: subst "la\s+\$2,D_8009BF24" "la	$5,D_8009BF24" @ 19
+MoveImage: subst "lw\s+\$3,0\(\$16\)" "lw	$4,0($16)" @ 20
+MoveImage: subst "lw\s+\$7,g_gpu_dev_table" "lw	$3,g_gpu_dev_table" @ 21
+MoveImage: subst "sw\s+\$3,0\(\$2\)" "sw	$4,0($5)" @ 23
+MoveImage: subst "lw\s+\$4,24\(\$7\)" "lw	$4,24($3)" @ 26
+MoveImage: subst "lw\s+\$6,4\(\$16\)" "lw	$2,4($16)" @ 27
+MoveImage: subst "lw\s+\$2,8\(\$7\)" "lw	$2,8($3)" @ 30
+MoveImage: subst "sw\s+\$6,D_8009BF2C" "sw	$2,D_8009BF2C" @ 32
 # Delete redundant sll (already in bne delay slot via subst @ 18)
-func_8007B6C8: delete @ 24
+MoveImage: delete @ 24
 # Move bf24-=8 from early body to jalr delay slot
-func_8007B6C8: delete @ 22
-func_8007B6C8: subst "addiu\s+\$6,\$zero,20" "addiu	$5,$5,-8" @ 34
+MoveImage: delete @ 22
+MoveImage: subst "addiu\s+\$6,\$zero,20" "addiu	$5,$5,-8" @ 34
 # Insert addiu $a2,20 in body (target has it before D_8009BF28 store)
-func_8007B6C8: insert "addiu	$6,$zero,20" @ 22
+MoveImage: insert "addiu	$6,$zero,20" @ 22
 # Insert nop before jalr (target has load-delay nop)
-func_8007B6C8: insert "nop" @ 31
+MoveImage: insert "nop" @ 31
 # Reorder body to match target: andi/or first, la $a1, lw $a0, lw $v1, addiu $a2, sw D_8009BF28, sw 0($a1), lw $v0 4(s0), addu $a3, sw D_8009BF2C, lw $a0 vtable[6], lw $v0 vtable[2], nop, jalr, addiu $a1 -8
-func_8007B6C8: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
+MoveImage: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
 
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
 # RETIRED (targeted-permuter): func_80060CB8: reorder 3,4,1,2 @ 1-4
@@ -3365,117 +3365,117 @@ func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
 func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
 
 # exec_game phase 1
-func_800896A0: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
-func_800896A0: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
+_spu_gcSPU: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
+_spu_gcSPU: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
 
  (maspsx idx 0-51): register map + LICM unhoist + SR-IV elim + prologue reorder
 # reg map mine->target: $10<->$11 (2FFF/0FFF consts), cur $8->$7, base $13->$8
-func_800896A0: $10 <-> $11 @ 0-51
-func_800896A0: $8 <-> $7 @ 0-51
-func_800896A0: $13 <-> $8 @ 0-51
-func_800896A0: $5 <-> $3 @ 19-24
-func_800896A0: delete @ 10
-func_800896A0: delete @ 12
-func_800896A0: delete @ 46
-func_800896A0: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
-func_800896A0: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
-func_800896A0: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
-func_800896A0: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
-func_800896A0: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
-func_800896A0: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
-func_800896A0: delete @ 23
-func_800896A0: insert "sll\t$2,$6,3" @ 24
-func_800896A0: reorder 4,6,3,7,8,5,9,10 @ 3-10
+_spu_gcSPU: $10 <-> $11 @ 0-51
+_spu_gcSPU: $8 <-> $7 @ 0-51
+_spu_gcSPU: $13 <-> $8 @ 0-51
+_spu_gcSPU: $5 <-> $3 @ 19-24
+_spu_gcSPU: delete @ 10
+_spu_gcSPU: delete @ 12
+_spu_gcSPU: delete @ 46
+_spu_gcSPU: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
+_spu_gcSPU: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
+_spu_gcSPU: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
+_spu_gcSPU: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
+_spu_gcSPU: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
+_spu_gcSPU: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
+_spu_gcSPU: delete @ 23
+_spu_gcSPU: insert "sll\t$2,$6,3" @ 24
+_spu_gcSPU: reorder 4,6,3,7,8,5,9,10 @ 3-10
 # exec_game phase 2 (idx 52-68): register substs + in-place reorder
-func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
-func_800896A0: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
-func_800896A0: subst "nop" "addu\t$9,$0,$zero" @ 55
-func_800896A0: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
-func_800896A0: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
-func_800896A0: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
-func_800896A0: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
-func_800896A0: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
-func_800896A0: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
-func_800896A0: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
-func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
+_spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
+_spu_gcSPU: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
+_spu_gcSPU: subst "nop" "addu\t$9,$0,$zero" @ 55
+_spu_gcSPU: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
+_spu_gcSPU: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
+_spu_gcSPU: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
+_spu_gcSPU: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
+_spu_gcSPU: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
+_spu_gcSPU: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
+_spu_gcSPU: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
+_spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
 # exec_game phase 3 (idx 69-118): register-rename substs + SR-IV elim (LICM $25 deferred)
-func_800896A0: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
-func_800896A0: subst "bltz\s+\$11," "bltz\t$3," @ 70
-func_800896A0: delete @ 71
-func_800896A0: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
-func_800896A0: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
-func_800896A0: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
-func_800896A0: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
-func_800896A0: delete @ 77
-func_800896A0: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
-func_800896A0: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
-func_800896A0: insert "addu\t$8,$10,$zero" @ 82
-func_800896A0: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
-func_800896A0: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
-func_800896A0: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
-func_800896A0: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
-func_800896A0: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
-func_800896A0: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
-func_800896A0: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
-func_800896A0: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
-func_800896A0: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
-func_800896A0: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
-func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
-func_800896A0: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
-func_800896A0: delete @ 79
-func_800896A0: delete @ 91
-func_800896A0: delete @ 110
-func_800896A0: delete @ 115
-func_800896A0: delete @ 114
-func_800896A0: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
-func_800896A0: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
-func_800896A0: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
-func_800896A0: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
+_spu_gcSPU: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
+_spu_gcSPU: subst "bltz\s+\$11," "bltz\t$3," @ 70
+_spu_gcSPU: delete @ 71
+_spu_gcSPU: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
+_spu_gcSPU: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
+_spu_gcSPU: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
+_spu_gcSPU: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
+_spu_gcSPU: delete @ 77
+_spu_gcSPU: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
+_spu_gcSPU: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
+_spu_gcSPU: insert "addu\t$8,$10,$zero" @ 82
+_spu_gcSPU: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
+_spu_gcSPU: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
+_spu_gcSPU: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
+_spu_gcSPU: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
+_spu_gcSPU: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
+_spu_gcSPU: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
+_spu_gcSPU: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
+_spu_gcSPU: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
+_spu_gcSPU: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
+_spu_gcSPU: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
+_spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
+_spu_gcSPU: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
+_spu_gcSPU: delete @ 79
+_spu_gcSPU: delete @ 91
+_spu_gcSPU: delete @ 110
+_spu_gcSPU: delete @ 115
+_spu_gcSPU: delete @ 114
+_spu_gcSPU: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
+_spu_gcSPU: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
+_spu_gcSPU: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
+_spu_gcSPU: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
 # exec_game phase 5 (idx 149-179): register-rename substs + SR-IV elim
-func_800896A0: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
-func_800896A0: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
-func_800896A0: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
-func_800896A0: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
-func_800896A0: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
-func_800896A0: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
-func_800896A0: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
-func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
-func_800896A0: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
-func_800896A0: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
-func_800896A0: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
-func_800896A0: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
-func_800896A0: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
-func_800896A0: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
-func_800896A0: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
-func_800896A0: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
-func_800896A0: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
-func_800896A0: delete @ 160
-func_800896A0: delete @ 175
-func_800896A0: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
+_spu_gcSPU: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
+_spu_gcSPU: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
+_spu_gcSPU: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
+_spu_gcSPU: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
+_spu_gcSPU: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
+_spu_gcSPU: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
+_spu_gcSPU: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
+_spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
+_spu_gcSPU: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
+_spu_gcSPU: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
+_spu_gcSPU: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
+_spu_gcSPU: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
+_spu_gcSPU: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
+_spu_gcSPU: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
+_spu_gcSPU: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
+_spu_gcSPU: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
+_spu_gcSPU: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
+_spu_gcSPU: delete @ 160
+_spu_gcSPU: delete @ 175
+_spu_gcSPU: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
 # exec_game phase 4 (idx 119-148): register-rename substs (gen_substs.py)
-func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
-func_800896A0: subst "bltz\s+\$11," "bltz\t$a1," @ 121
-func_800896A0: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
-func_800896A0: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
-func_800896A0: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
-func_800896A0: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
-func_800896A0: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
-func_800896A0: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
-func_800896A0: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
-func_800896A0: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
-func_800896A0: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
-func_800896A0: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
-func_800896A0: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
-func_800896A0: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
-func_800896A0: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
-func_800896A0: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
-func_800896A0: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
-func_800896A0: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
-func_800896A0: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
-func_800896A0: delete @ 145
-func_800896A0: delete @ 143
-func_800896A0: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
-func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
+_spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
+_spu_gcSPU: subst "bltz\s+\$11," "bltz\t$a1," @ 121
+_spu_gcSPU: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
+_spu_gcSPU: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
+_spu_gcSPU: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
+_spu_gcSPU: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
+_spu_gcSPU: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
+_spu_gcSPU: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
+_spu_gcSPU: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
+_spu_gcSPU: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
+_spu_gcSPU: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
+_spu_gcSPU: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
+_spu_gcSPU: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
+_spu_gcSPU: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
+_spu_gcSPU: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
+_spu_gcSPU: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
+_spu_gcSPU: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
+_spu_gcSPU: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
+_spu_gcSPU: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
+_spu_gcSPU: delete @ 145
+_spu_gcSPU: delete @ 143
+_spu_gcSPU: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
+_spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
 
 # Manual pan_L/pan_R + dy² regfix rules for func_800325E0
 func_800325E0: subst "subu\s+\$4,\$4,\$3" "subu\t$5,$4,$3" @ 118

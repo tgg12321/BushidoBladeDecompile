@@ -38,7 +38,7 @@ glabel func_8001DCB0
   .L8001DD3C:
     /* E53C 8001DD3C B159000C */  jal        disp_CalcFov
     /* E540 8001DD40 21800000 */   addu      $s0, $zero, $zero
-    /* E544 8001DD44 FFFB010C */  jal        func_8007EFFC
+    /* E544 8001DD44 FFFB010C */  jal        SetGeomScreen
     /* E548 8001DD48 21204000 */   addu      $a0, $v0, $zero
   .L8001DD4C:
     /* E54C 8001DD4C 0A80023C */  lui        $v0, %hi(D_800A38DC)

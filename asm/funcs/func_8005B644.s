@@ -10,7 +10,7 @@ glabel func_8005B644
     /* 4BE64 8005B664 21883002 */  addu       $s1, $s1, $s0
     /* 4BE68 8005B668 01003126 */  addiu      $s1, $s1, 0x1
     /* 4BE6C 8005B66C 00241100 */  sll        $a0, $s1, 16
-    /* 4BE70 8005B670 D91F020C */  jal        func_80087F64
+    /* 4BE70 8005B670 D91F020C */  jal        SsVabClose
     /* 4BE74 8005B674 03240400 */   sra       $a0, $a0, 16
     /* 4BE78 8005B678 80881100 */  sll        $s1, $s1, 2
     /* 4BE7C 8005B67C 0F80013C */  lui        $at, %hi(D_800EFC38)

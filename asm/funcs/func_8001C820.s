@@ -34,7 +34,7 @@ glabel func_8001C820
     /* D09C 8001C89C 00000000 */  nop
     /* D0A0 8001C8A0 07006210 */  beq        $v1, $v0, .L8001C8C0
     /* D0A4 8001C8A4 56000424 */   addiu     $a0, $zero, 0x56
-    /* D0A8 8001C8A8 55E4010C */  jal        func_80079154
+    /* D0A8 8001C8A8 55E4010C */  jal        rand
     /* D0AC 8001C8AC 00000000 */   nop
     /* D0B0 8001C8B0 01004230 */  andi       $v0, $v0, 0x1
     /* D0B4 8001C8B4 02004010 */  beqz       $v0, .L8001C8C0

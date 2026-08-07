@@ -57,8 +57,8 @@ elif tag in ("t5", "t6"):
     if tag == "t6":
         # i1495 second ref via printf fmt chain
         body = body.replace(
-            "debug_printf(&D_800161C8, ",
-            "debug_printf((void *)((u8 *)idx_1495 + ((s32)&D_800161C8 - ((s32)&D_800A1494 + 1))), /* FAKE */ ",
+            "printf(&D_800161C8, ",
+            "printf((void *)((u8 *)idx_1495 + ((s32)&D_800161C8 - ((s32)&D_800A1494 + 1))), /* FAKE */ ",
             1)
         assert "(s32)&D_800161C8 - ((s32)&D_800A1494 + 1)" in body
 elif tag == "u1":
@@ -132,8 +132,8 @@ elif tag == "u6":
         "  u8 b;\n  D_800F19B8",
         "  u8 b;\n  int new_var;\n  int new_var3;\n  D_800F19B8", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;\n    poll:",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;\n    poll:",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;\n    poll:",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;\n    poll:",
         1)
     body = body.replace(
         "  {\n    register s32 check asm(\"$6\");\n    check = *idx_1496;\n    if (!check) goto check2;\n",
@@ -150,8 +150,8 @@ elif tag == "u7":
         "  u8 b;\n  D_800F19B8",
         "  u8 b;\n  int new_var;\n  int new_var3;\n  D_800F19B8", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n",
         1)
     body = body.replace(
         "  {\n    register s32 check asm(\"$6\");\n    check = *idx_1496;\n    if (!check) goto check2;\n",
@@ -172,8 +172,8 @@ elif tag == "u8":
         "  u8 b;\n  D_800F19B8",
         "  u8 b;\n  int new_var;\n  int new_var3;\n  D_800F19B8", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n",
         1)
     body = body.replace(
         "  {\n    register s32 check asm(\"$6\");\n    check = *idx_1496;\n    if (!check) goto check2;\n",
@@ -193,8 +193,8 @@ elif tag in ("u9", "u10"):
         "  u8 b;\n  D_800F19B8",
         "  u8 b;\n  int new_var;\n  int new_var3;\n  D_800F19B8", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n",
         1)
     m1, m2 = ("new_var", "new_var3") if tag == "u9" else ("new_var3", "new_var")
     if tag == "u10" and __import__("os").environ.get("SWAP_SETS"):
@@ -227,8 +227,8 @@ elif tag == "u11":
         "  u8 *idx_1496;\n  s32 *tbl_125c;",
         "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  s32 *tbl_125c;", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
         1)
     body = body.replace(
         "  {\n    register s32 check asm(\"$6\");\n    check = *idx_1496;\n    if (!check) goto check2;\n",
@@ -249,8 +249,8 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         "  u8 *idx_1496;\n  s32 *tbl_125c;",
         "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  s32 *tbl_125c;", 1)
     body = body.replace(
-        "  new_var = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
-        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (sys_GetVblankCount() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
+        "  new_var = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
+        "  new_var = 0xFF;\n  new_var3 = 0xFF;\n  if (CheckCallback() != 0)\n  {\n    saved = (*D_800A147C_2) & 3;",
         1)
     body = body.replace(
         "  {\n    register s32 check asm(\"$6\");\n    check = *idx_1496;\n    if (!check) goto check2;\n",
@@ -288,43 +288,43 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         # csmd4-candidate printf shape: split-index + arg5-first + arg4
         # INLINE in the call (v16-style stretch -> arg4 addr chain to a0)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[t0], arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[t0], arg5);\n  }",
             1)
         print("w10 dbg:", "printf" if "tbl_125c[t0], arg5);" in body else "NO-printf")
     if tag == "w11":
         # csmd4 candidate EXACT: split-index t0 first, arg5 local, arg4 LOCAL
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg4, arg5;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg4 = tbl_125c[t0];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg4, arg5;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg4 = tbl_125c[t0];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, arg5);\n  }",
             1)
         print("w11 dbg:", "printf" if "arg4 = tbl_125c[t0];" in body else "NO-printf")
     if tag == "w12":
         # all-locals in target order: t0, arg5, arg2v (11DC[11D5]), arg4
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg4, arg5;\n    s32 arg2v;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg2v = D_800A11DC[D_800A11D5];\n    arg4 = tbl_125c[t0];\n    debug_printf(&D_800161C8, D_800F19C0, arg2v, arg4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg4, arg5;\n    s32 arg2v;\n    u8 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg2v = D_800A11DC[D_800A11D5];\n    arg4 = tbl_125c[t0];\n    printf(&D_800161C8, D_800F19C0, arg2v, arg4, arg5);\n  }",
             1)
         print("w12 dbg:", "printf" if "arg2v = D_800A11DC" in body else "NO-printf")
     if tag == "w13":
         # s32 t0 split (zero-extending SI load at stmt pos), arg5+arg4 locals
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg4, arg5;\n    s32 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg4 = tbl_125c[t0];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg4, arg5;\n    s32 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    arg4 = tbl_125c[t0];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, arg5);\n  }",
             1)
         print("w13 dbg:", "printf" if "s32 t0;" in body else "NO-printf")
     if tag == "w14":
         # s32 t0 early stmt (uservar pins birth) + arg4 INLINE (lw after sw)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[t0], arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], tbl_125c[t0], arg5);\n  }",
             1)
         print("w14 dbg:", "printf" if "tbl_125c[t0], arg5);" in body else "NO-printf")
     if tag == "w15":
         # t0 early + ADDRESS local p4 (sll/addu at stmt-3) + *p4 inline (lw after sw)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], *p4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    t0 = idx_1494[0];\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], *p4, arg5);\n  }",
             1)
         print("w15 dbg:", "printf" if "p4 = &tbl_125c[t0];" in body else "NO-printf")
     if tag == "w16":
@@ -332,8 +332,8 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         # symbol into the mem IN PLACE -> (set a1 (mem sym)) direct load,
         # no clock-5 a1-move -> fmt-la wins clock 5 -> a0 free for chain4
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *p4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *p4, arg5);\n  }",
             1)
         print("w16 dbg:", "printf" if "*pp, D_800A11DC" in body else "NO-printf")
     if tag == "w17":
@@ -343,14 +343,14 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         body = body.replace(
             "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  s32 *tbl_125c;",
             "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  u8 *pi_11d5;\n  s32 *tbl_125c;", 1)
-        _h, _s, _t = body.partition("s32 func_80081030")
+        _h, _s, _t = body.partition("s32 CD_ready")
         _t = _t.replace(
             "  idx_1496 = idx_1494 + 2;\n  D_800F19BC = 0;",
             "  idx_1496 = idx_1494 + 2;\n  pi_11d5 = (u8 *)&D_800A11D5;\n  D_800F19BC = 0;", 1)
         body = _h + _s + _t
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    debug_printf(&D_800161C8, *pp, D_800A11DC[*pi_11d5], *p4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    printf(&D_800161C8, *pp, D_800A11DC[*pi_11d5], *p4, arg5);\n  }",
             1)
         print("w17 dbg:", "pi" if "pi_11d5 = (u8 *)&D_800A11D5;" in body else "NO-pi",
               "printf" if "D_800A11DC[*pi_11d5]" in body else "NO-printf")
@@ -359,16 +359,16 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         # 11D5 launch cascade -> sw slots after its lbu -> val5->v1 ->
         # chain4 -> a0)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    s32 i5;\n    s32 i5s;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    i5 = D_800A11D5;\n    i5s = i5 * 4;\n    p4 = &tbl_125c[t0];\n    debug_printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5s), *p4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    s32 i5;\n    s32 i5s;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    i5 = D_800A11D5;\n    i5s = i5 * 4;\n    p4 = &tbl_125c[t0];\n    printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5s), *p4, arg5);\n  }",
             1)
         print("w18 dbg:", "printf" if "i5s = i5 * 4;" in body else "NO-printf")
     if tag == "w19":
         # w18 but i5/i5s adjacent to the call (densify the 11D5 qty so it
         # allocates before chain4 -> v0; chain4 stays sparse-last -> a0)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    s32 i5;\n    s32 i5s;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    i5 = D_800A11D5;\n    i5s = i5 * 4;\n    debug_printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5s), *p4, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    s32 *p4;\n    void **pp;\n    s32 i5;\n    s32 i5s;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    p4 = &tbl_125c[t0];\n    i5 = D_800A11D5;\n    i5s = i5 * 4;\n    printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5s), *p4, arg5);\n  }",
             1)
         print("w19 dbg:", "printf" if "i5s = i5 * 4;" in body else "NO-printf")
     if tag == "w20":
@@ -376,48 +376,48 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         # backward-sched storm): t0 3-set same-reg chain (target byte form),
         # i5 2-set index; pp keeps the clock-5 la win.
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    s32 i5;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    i5 = D_800A11D5;\n    i5 *= 4;\n    debug_printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5), *(s32 *)t0, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    s32 i5;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    i5 = D_800A11D5;\n    i5 *= 4;\n    printf(&D_800161C8, *pp, *(s32 *)((u8 *)D_800A11DC + i5), *(s32 *)t0, arg5);\n  }",
             1)
         print("w20 dbg:", "printf" if "t0 = (s32)((u8 *)tbl_125c + t0);" in body else "NO-printf")
     if tag == "w21":
         # t0 3-set chain (de-launched, byte-indexed arg4) + a2 ARRAY-form
         # inline (direct a2 load, no clock-5 thief) + pp a1
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    arg5 = tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
             1)
         print("w21 dbg:", "printf" if "*(s32 *)t0, arg5" in body else "NO-printf")
     if tag == "w22":
         # w21 + arg5 INLINE (value temp adjacent to the sw -> densest ->
         # val5 allocated before chain4 -> v1; chain4 -> a0)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, tbl_125c[idx_1494[1]]);\n  }",
             1)
         print("w22 dbg:", "printf" if "tbl_125c[idx_1494[1]]);" in body else "NO-printf")
     if tag == "w23":
         # w22 + arg5 via addr-local p5 (*p5 inline): stmt-luid addr chain,
         # store-phase value load gated by aliasing
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 t0;\n    void **pp;\n    s32 *p5;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    p5 = &tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, *p5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 t0;\n    void **pp;\n    s32 *p5;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    p5 = &tbl_125c[idx_1494[1]];\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, *p5);\n  }",
             1)
         print("w23 dbg:", "printf" if "*(s32 *)t0, *p5);" in body else "NO-printf")
     if tag == "w24":
         # w21 but t0's final set FIRST-declared... variant: swap stmt order
         # (t0-chain completes before arg5's stmt: chain4 luids < arg5's)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    arg5 = tbl_125c[idx_1494[1]];\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    arg5 = tbl_125c[idx_1494[1]];\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
             1)
         print("w24 dbg:", "printf" if "arg5 = tbl_125c" in body else "NO-printf")
     if tag in ("w25", "w26", "w27"):
         # w24 + arm-1 reverted to ORIGINAL param-test shape (target bytes:
         # beqz s4 with move a1,s4 in the delay; u12's arm-1 reshape undone)
         body = body.replace(
-            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
-            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    arg5 = tbl_125c[idx_1494[1]];\n    debug_printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
+            "  {\n    s32 arg5;\n    s32 arg4;\n    ;\n    arg4 = tbl_125c[idx_1494[0]];\n    printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], arg4, tbl_125c[idx_1494[1]]);\n  }",
+            "  {\n    s32 arg5;\n    s32 t0;\n    void **pp;\n    t0 = idx_1494[0];\n    pp = (void **)&D_800F19C0;\n    t0 *= 4;\n    t0 = (s32)((u8 *)tbl_125c + t0);\n    arg5 = tbl_125c[idx_1494[1]];\n    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);\n  }",
             1)
         body = body.replace(
             "    *idx_1496 = 0;\n    dst = a1;\n    src = (u8 *) (&D_800F19B0);\n    i = 7;\n    if (a1 != 0)\n    {\n      do\n",
@@ -473,7 +473,7 @@ try:
          "-w", "-da", "tmp/rtl/mar.i", "-o", "tmp/rtl/mar.s"],
         capture_output=True, text=True)
     greg = Path("tmp/rtl/mar.i.greg").read_text()
-    i = greg.index(";; Function func_80081030")
+    i = greg.index(";; Function CD_ready")
     sect = greg[i:i + 20000]
     m = re.search(r";; Register dispositions:\n((?:[^\n]*\n){1,8})", sect)
     disp = dict(re.findall(r"(\d+) in (\d+)", m.group(1)))
@@ -486,7 +486,7 @@ try:
         r = int(disp.get(p, -1))
         out.append(f"{nm}={rn.get(r, r)}")
     s = Path("tmp/rtl/mar.s").read_text()
-    fm = re.search(r"func_80081030:\n(.*?)\n\t\.end\s+func_80081030",
+    fm = re.search(r"CD_ready:\n(.*?)\n\t\.end\s+CD_ready",
                    s, re.DOTALL)
     lines = [ln for ln in fm.group(1).splitlines()
              if (ln.startswith("\t") and not ln.startswith("\t.set")

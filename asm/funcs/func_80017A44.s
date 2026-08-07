@@ -16,10 +16,10 @@ glabel func_80017A44
     /* 827C 80017A7C 2400A0AF */  sw         $zero, 0x24($sp)
     /* 8280 80017A80 2800A0AF */  sw         $zero, 0x28($sp)
     /* 8284 80017A84 0C00448E */  lw         $a0, 0xC($s2)
-    /* 8288 80017A88 BBFB010C */  jal        gte_SetRotMatrix
+    /* 8288 80017A88 BBFB010C */  jal        SetRotMatrix
     /* 828C 80017A8C 21880000 */   addu      $s1, $zero, $zero
     /* 8290 80017A90 0C00448E */  lw         $a0, 0xC($s2)
-    /* 8294 80017A94 D3FB010C */  jal        gte_SetTransVector
+    /* 8294 80017A94 D3FB010C */  jal        SetTransMatrix
     /* 8298 80017A98 21980000 */   addu      $s3, $zero, $zero
     /* 829C 80017A9C 3800A88F */  lw         $t0, 0x38($sp)
     /* 82A0 80017AA0 00004286 */  lh         $v0, 0x0($s2)
@@ -36,7 +36,7 @@ glabel func_80017A44
     /* 82C8 80017AC8 180002AE */  sw         $v0, 0x18($s0)
     /* 82CC 80017ACC 0400448E */  lw         $a0, 0x4($s2)
     /* 82D0 80017AD0 3000A627 */  addiu      $a2, $sp, 0x30
-    /* 82D4 80017AD4 ABFC010C */  jal        func_8007F2AC
+    /* 82D4 80017AD4 ABFC010C */  jal        RotTrans
     /* 82D8 80017AD8 21208300 */   addu      $a0, $a0, $v1
     /* 82DC 80017ADC 1000A28F */  lw         $v0, 0x10($sp)
     /* 82E0 80017AE0 1800A38F */  lw         $v1, 0x18($sp)

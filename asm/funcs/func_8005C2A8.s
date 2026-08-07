@@ -35,7 +35,7 @@ glabel func_8005C2A8
     /* 4CB28 8005C328 00000000 */  nop
     /* 4CB2C 8005C32C 07004010 */  beqz       $v0, .L8005C34C
     /* 4CB30 8005C330 00000000 */   nop
-    /* 4CB34 8005C334 D91F020C */  jal        func_80087F64
+    /* 4CB34 8005C334 D91F020C */  jal        SsVabClose
     /* 4CB38 8005C338 21200002 */   addu      $a0, $s0, $zero
     /* 4CB3C 8005C33C 000040AE */  sw         $zero, 0x0($s2)
     /* 4CB40 8005C340 0F80013C */  lui        $at, %hi(D_800EFB38)
@@ -96,7 +96,7 @@ glabel func_8005C2A8
     /* 4CC08 8005C408 6A71010C */  jal        func_8005C5A8
     /* 4CC0C 8005C40C 040022AE */   sw        $v0, 0x4($s1)
     /* 4CC10 8005C410 01000424 */  addiu      $a0, $zero, 0x1
-    /* 4CC14 8005C414 6121020C */  jal        func_80088584
+    /* 4CC14 8005C414 6121020C */  jal        SsVabTransCompleted
     /* 4CC18 8005C418 21804000 */   addu      $s0, $v0, $zero
     /* 4CC1C 8005C41C 00841000 */  sll        $s0, $s0, 16
     /* 4CC20 8005C420 03841000 */  sra        $s0, $s0, 16
@@ -105,7 +105,7 @@ glabel func_8005C2A8
     /* 4CC2C 8005C42C 80101000 */   sll       $v0, $s0, 2
     /* 4CC30 8005C430 0180043C */  lui        $a0, %hi(D_800158CC)
     /* 4CC34 8005C434 CC588424 */  addiu      $a0, $a0, %lo(D_800158CC)
-    /* 4CC38 8005C438 82E4010C */  jal        debug_printf
+    /* 4CC38 8005C438 82E4010C */  jal        printf
     /* 4CC3C 8005C43C 21284002 */   addu      $a1, $s2, $zero
     /* 4CC40 8005C440 25710108 */  j          .L8005C494
     /* 4CC44 8005C444 21100000 */   addu      $v0, $zero, $zero
@@ -120,7 +120,7 @@ glabel func_8005C2A8
     /* 4CC64 8005C464 21186200 */  addu       $v1, $v1, $v0
     /* 4CC68 8005C468 3C0382AF */  sw         $v0, %gp_rel(D_800A3408)($gp)
     /* 4CC6C 8005C46C 380383AF */  sw         $v1, %gp_rel(D_800A3404)($gp)
-    /* 4CC70 8005C470 7C16020C */  jal        func_800859F0
+    /* 4CC70 8005C470 7C16020C */  jal        SsUtGetVBaddrInSB
     /* 4CC74 8005C474 21204002 */   addu      $a0, $s2, $zero
     /* 4CC78 8005C478 80181200 */  sll        $v1, $s2, 2
     /* 4CC7C 8005C47C 0F80013C */  lui        $at, %hi(D_800EFB38)

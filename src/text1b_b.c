@@ -75,7 +75,7 @@ extern void func_80052C10(void);
 extern s32 D_800A36AC;
 extern s32 D_800A378C;
 extern s32 D_800EF848;
-extern s32 initLoadImage(void *, s16 *, s32, s32);
+extern s32 SetDrawMove(void *, s16 *, s32, s32);
 extern s16 D_800EF9F2;
 extern s16 D_800EF9F4;
 extern s16 D_800A33EA;
@@ -95,8 +95,8 @@ extern u8 *D_800A3820;
 extern u8 *D_800A38B4;
 extern s32 (*g_anim_func_table)(s16 *, s16 *);
 extern u8 *func_8004153C(s32);
-extern void func_8007E4DC(s16 *, s16 *, s16 *);
-extern void func_8007ED6C(s32, s16 *, s32 *);
+extern void MulMatrix0(s16 *, s16 *, s16 *);
+extern void ApplyMatrix(s32, s16 *, s32 *);
 extern s16 D_80099D3C[];
 extern void func_800417D0(s32 *);
 extern s16 D_80099CC2;
@@ -132,9 +132,9 @@ extern u8 D_800F6339;
 extern u8 D_800F633A;
 extern void func_8004A09C(s32, u16 *);
 extern void gte_SetColorMatrix(s32 *);
-extern void gte_SetBackColor(s32, s32, s32);
-extern s32 math_Cos();
-extern s32 math_Sin();
+extern void SetBackColor(s32, s32, s32);
+extern s32 rcos();
+extern s32 rsin();
 extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00();
 extern void func_80053754();
@@ -167,7 +167,7 @@ extern u16 D_80099D88;
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 extern s16 Judge;
@@ -177,13 +177,13 @@ extern s32 D_800EFB38;
 extern s32 D_800EFB78;
 extern s32 D_800EFB7C;
 extern s32 D_800EFC38;
-extern void func_80083E9C(void);
-extern s32 func_80085544(s32);
-extern s32 memcard_SetSlot(s32);
+extern void SsStart(void);
+extern s32 SsSetTickMode(s32);
+extern s32 SsSetReservedVoice(s32);
 extern s32 sys_Shutdown(void);
 extern s32 func_800858D0(s32);
-extern s32 func_80085E4C(s32, s32);
-extern s32 func_80085EE4(s32);
+extern s32 SsUtSetReverbDepth(s32, s32);
+extern s32 SsUtSetReverbType(s32);
 extern s32 func_80085F98(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
@@ -440,24 +440,24 @@ extern void func_8005C4C0(s32, s32);
 extern u32 D_800EFC38[];
 extern u32 D_800EFB38[];
 extern u8 D_8009AD18[];
-extern void func_80087F64(s32);
+extern void SsVabClose(s32);
 extern s32 D_8009AD1C;
 extern s32 func_80085F98();
-extern s32 func_80085EE4(s16);
-extern s32 func_80085E4C(s16, s16);
+extern s32 SsUtSetReverbType(s16);
+extern s32 SsUtSetReverbDepth(s16, s16);
 extern s32 func_80085FB8();
-extern s32 func_8008A928(s16);
-extern s32 func_80087F64();
-extern s32 func_80087FE8();
-extern s32 func_800880B8();
+extern s32 SpuClearReverbWorkArea(s16);
+extern s32 SsVabClose();
+extern s32 SsVabFakeBody();
+extern s32 SsVabFakeHead();
 extern s32 func_8008AD64();
 extern s32 func_8008ADC4();
-extern s32 func_8008AE24();
-extern s32 func_8008AEB0();
+extern s32 SpuSetTransferStartAddr();
+extern s32 SpuIsTransferCompleted();
 extern s32 *D_800EFC38[];
-extern s32 func_80087F64(s32);
-extern s16 func_800880B8(s32, s32, s32);
-extern s16 func_80087FE8(s16);
+extern s32 SsVabClose(s32);
+extern s16 SsVabFakeHead(s32, s32, s32);
+extern s16 SsVabFakeBody(s16);
 extern s32 D_8009AA70;
 extern u8 D_800EFB7C;
 extern u8 D_800EFB7D;
@@ -465,7 +465,7 @@ extern s32 func_80073728();
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
 extern s32 D_8009B358;
-    extern s32 func_80079154(void);
+    extern s32 rand(void);
     extern u8 D_8009B2E0;
     extern s32 D_8009B388;
     extern s32 D_8009B390;
@@ -485,9 +485,9 @@ extern s32 D_800A3278;
 extern s32 D_8009B698;
 extern s32 D_8009B6B0;
 extern s32 D_800F7438;
-extern s32 initDrawArea(s32, u16 *);
-extern s32 initPolyG4(s32);
-extern s32 gpu_SetSemiTransp(s32, s32);
+extern s32 SetDrawArea(s32, u16 *);
+extern s32 SetPolyG4(s32);
+extern s32 SetSemiTrans(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 D_8009B6F0;
 extern s32 D_8009B6FC;
@@ -517,10 +517,10 @@ extern u16 D_800A32B6;
 extern u16 D_800A32B4;
 extern s32 D_8009B0C0;
 extern void func_8006D808(s32 *, s32 *, s32 *, s32, s32);
-extern s32 gpu_SetSemiTransp(void *, s32);
-extern s32 initTexPage(void *, s32, s32, s32, s32);
-extern s32 initTile(void *);
-extern s32 ot_Link(s32, void *);
+extern s32 SetSemiTrans(void *, s32);
+extern s32 SetDrawMode(void *, s32, s32, s32, s32);
+extern s32 SetTile(void *);
+extern s32 AddPrim(s32, void *);
     extern s32 D_800A3468;
     extern s32 D_800A3478;
     extern s32 D_800A347C;
@@ -582,7 +582,7 @@ extern s32 func_80041E10();
 extern s32 func_800421A4();
 extern s32 func_80060B70();
 extern s32 func_80060E38();
-extern s32 debug_printf(s32 *, s32);
+extern s32 printf(s32 *, s32);
 extern s32 D_800158E0;
 extern s32 D_800A32BC;
 extern s32 D_800A3464;
@@ -617,7 +617,7 @@ extern s32 D_800A32B8;
     extern s32 D_800F10A4;
     extern s32 D_800F1138;
 extern volatile s32 D_800A347C;
-extern s32 func_80079154(void);
+extern s32 rand(void);
 extern void *D_800A347C;
 extern volatile s32 D_800F0CA0;
 extern volatile s32 D_800F0CA4;
@@ -720,25 +720,25 @@ extern s32 snd_StopAll(void);
 extern s32 func_8006E950(s32, s32);
 extern s32 func_8006919C(s32);
 extern s32 *func_8006E49C(s32, s32);
-extern s32 gpu_DrawSync(s32);
-extern s32 func_8007B6C8(u8 *, s32, s32);
+extern s32 DrawSync(s32);
+extern s32 MoveImage(u8 *, s32, s32);
 extern s32 func_8005C650();
 extern void func_80069E18(s32, s32);
 extern s32 func_8006E390();
 extern s32 D_800A3514;
 extern u32 D_800A32D0;
-extern void initTile(u8 *p);
-extern void gpu_SetSemiTransp(u8 *p, s32 semi);
-extern void ot_Link(u32 *ot, u32 *prim);
-extern void initPolyF4(u8 *p);
+extern void SetTile(u8 *p);
+extern void SetSemiTrans(u8 *p, s32 semi);
+extern void AddPrim(u32 *ot, u32 *prim);
+extern void SetPolyF4(u8 *p);
 extern void func_80069A8C(u8 *p);
 extern s32 func_80073728(s32, s32);
 extern u8 g_disp_fb_base;
 extern s32 D_800A350C;
 extern s32 D_800A36E0;
 extern s32 D_800A36E4;
-extern void initTexPage();
-extern void ot_Link();
+extern void SetDrawMode();
+extern void AddPrim();
 extern void func_8006BB68(s32);
 extern s32 func_8006B92C();
 extern void func_8006C21C(s32);
@@ -758,14 +758,14 @@ extern s32 func_8006DF68();
 extern u8 D_800A32D8[8];
 extern void func_80036F28(s32);
 extern void game_FrameLoop(void);
-extern void gpu_InitDrawEnv(s32, s32, s32, s32, s32);
-extern void gpu_InitDispEnv(s32, s32, s32, s32, s32);
-extern void gpu_LoadImage(u8 *, s32);
-extern void func_8007B4D0(s32, s32, s32, s32);
-extern void func_8007B9B0(s32);
-extern void func_8007BC08(s32);
-extern void gpu_SetDispMask(s32);
-extern void gpu_DrawSync(s32);
+extern void SetDefDrawEnv(s32, s32, s32, s32, s32);
+extern void SetDefDispEnv(s32, s32, s32, s32, s32);
+extern void LoadImage(u8 *, s32);
+extern void ClearImage(s32, s32, s32, s32);
+extern void PutDrawEnv(s32);
+extern void PutDispEnv(s32);
+extern void SetDispMask(s32);
+extern void DrawSync(s32);
 extern u8 D_800A32E0[8];
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
 extern s32 D_800A3520;
@@ -783,7 +783,7 @@ extern s16 D_800A3570;
 extern u16 D_800A3578;
 extern s16 D_800A3584;
 extern volatile u16 D_800A3550;
-extern s32 initTile(s32);
+extern s32 SetTile(s32);
 extern s32 D_800A3558;
 extern s32 D_800A35B0;
 extern s32 func_8007352C(s32 *prim);
@@ -793,25 +793,25 @@ extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
 extern void func_80073200(s32);
 extern u8 D_8009BC7C[];
-extern s32 gpu_SetSemiTransp(GameObj *, s32);
-extern s32 initPolyG4(GameObj *);
-extern s32 ot_Link(s32, GameObj *);
+extern s32 SetSemiTrans(GameObj *, s32);
+extern s32 SetPolyG4(GameObj *);
+extern s32 AddPrim(s32, GameObj *);
 extern s32 func_80073060(s32);
 extern s32 func_80072CD4(s32, GameObj *);
-extern s32 initSprt(s32, s16);
-extern s32 gpu_SetRawTexture(s32, s32);
+extern s32 SetSprt(s32, s16);
+extern s32 SetShadeTex(s32, s32);
 extern s32 func_8003D52C(s32 *, s32);
-extern s32 gpu_CalcClut(u16, u16);
+extern s32 GetClut(u16, u16);
 extern s32 D_800159A0;
-extern void initPolyF4(s32);
+extern void SetPolyF4(s32);
 extern s32 func_80069A8C(s32);
-extern s32 initTile(GameObj *);
+extern s32 SetTile(GameObj *);
 extern u8 *D_800A36A0;
 extern s16 D_800A35D0;
 extern s32 func_8005C650(s32, s32, s32);
 extern s32 D_800A35D8;
 extern s8 D_800A35DC;
-extern s32 func_8007B844(s32, s32);
+extern s32 ClearOTagR(s32, s32);
 extern s32 func_8006E950(s32, s32 *);
 extern s32 func_80076FF8(s32 *);
 extern u8 *func_8006E49C(s32, s32);
@@ -922,7 +922,7 @@ s32 func_800784E4(s32 arg0) {
     s32 s0;
     s32 r;
 
-    func_8007B844(D_800A374C, 0x1008);
+    ClearOTagR(D_800A374C, 0x1008);
     s0 = arg0 + 0x58;
     D_800A35F4 = arg0;
     D_800A35F8 = s0;
@@ -985,8 +985,8 @@ s32 func_80078634(s32 a0) {
 }
 extern s32 func_8006E480(s32, s32);
 extern s32 func_8007352C(s32 *);
-extern s32 initTexPage(s32, s32, s32, s32, s32);
-extern s32 ot_Link(s32, s32);
+extern s32 SetDrawMode(s32, s32, s32, s32, s32);
+extern s32 AddPrim(s32, s32);
 extern s32 D_800A3608;
 extern s32 *D_800A3610;
 extern s32 D_800A374C;
@@ -1036,8 +1036,8 @@ void func_80078654(s32 *arg0) {
         }
         s.c = arg0[3];
         arg0[3] = func_8007352C(&s.a);
-        initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
-        ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+        SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+        AddPrim(D_800A374C + (s.f * 4), arg0[5]);
         arg0[5] = arg0[5] + 0xC;
     }
     s.cd_flag = 0;
@@ -1048,8 +1048,8 @@ loop:
     s.h = -D_800A3608;
     s.c = arg0[3];
     arg0[3] = func_8007352C(&s.a);
-    initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
-    ot_Link(D_800A374C + (s.f * 4), arg0[5]);
+    SetDrawMode(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
+    AddPrim(D_800A374C + (s.f * 4), arg0[5]);
     var_s0++;
     arg0[5] = arg0[5] + 0xC;
 check:
@@ -1064,7 +1064,7 @@ s32 func_80078824(s32 arg0) {
     s32 s0;
     s32 r;
 
-    func_8007B844(D_800A374C, 0x1008);
+    ClearOTagR(D_800A374C, 0x1008);
     s0 = arg0 + 0x58;
     D_800A360C = arg0;
     D_800A3610 = s0;
@@ -1102,11 +1102,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_Exec\n"
+    "glabel Exec\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x43\n"
-    "endlabel bios_Exec\n"
+    "endlabel Exec\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1117,11 +1117,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios__bu_init_A0\n"
+    "glabel _bu_init\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x70\n"
-    "endlabel bios__bu_init_A0\n"
+    "endlabel _bu_init\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1132,11 +1132,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_SetMem\n"
+    "glabel SetMem\n"
     "addiu $t2, $zero, 0xA0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x9F\n"
-    "endlabel bios_SetMem\n"
+    "endlabel SetMem\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1147,11 +1147,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_OpenEvent\n"
+    "glabel OpenEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x8\n"
-    "endlabel bios_OpenEvent\n"
+    "endlabel OpenEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1162,11 +1162,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_CloseEvent\n"
+    "glabel CloseEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x9\n"
-    "endlabel bios_CloseEvent\n"
+    "endlabel CloseEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1177,11 +1177,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_TestEvent\n"
+    "glabel TestEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xB\n"
-    "endlabel bios_TestEvent\n"
+    "endlabel TestEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1192,11 +1192,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_EnableEvent\n"
+    "glabel EnableEvent\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0xC\n"
-    "endlabel bios_EnableEvent\n"
+    "endlabel EnableEvent\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1238,7 +1238,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800789D8\n"
+    "glabel SetSp\n"
     "    addu  $v0,$sp,$zero\n"
     "    jr  $ra\n"
     "    addu  $sp,$a0,$zero\n"
@@ -1252,11 +1252,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_FileOpen_B\n"
+    "glabel open\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x32\n"
-    "endlabel bios_FileOpen_B\n"
+    "endlabel open\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1267,11 +1267,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_FileRead_B\n"
+    "glabel read\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x34\n"
-    "endlabel bios_FileRead_B\n"
+    "endlabel read\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1282,11 +1282,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_FileWrite_B\n"
+    "glabel write\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x35\n"
-    "endlabel bios_FileWrite_B\n"
+    "endlabel write\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1297,11 +1297,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_FileClose_B\n"
+    "glabel close\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x36\n"
-    "endlabel bios_FileClose_B\n"
+    "endlabel close\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1312,11 +1312,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_FormatDevice_B\n"
+    "glabel format\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x41\n"
-    "endlabel bios_FormatDevice_B\n"
+    "endlabel format\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1327,11 +1327,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_firstfile_B\n"
+    "glabel firstfile\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x42\n"
-    "endlabel bios_firstfile_B\n"
+    "endlabel firstfile\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1342,11 +1342,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_nextfile_B\n"
+    "glabel nextfile\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x43\n"
-    "endlabel bios_nextfile_B\n"
+    "endlabel nextfile\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1357,18 +1357,18 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_ChangeClearPad\n"
+    "glabel ChangeClearPAD\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x5B\n"
-    "endlabel bios_ChangeClearPad\n"
+    "endlabel ChangeClearPAD\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after bios_ChangeClearPad */
-s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
+s32 SetRCnt(s32 arg0, s32 arg1, s32 arg2) {
     s32 a3;
     s32 t0;
     s32 v0;
@@ -1404,14 +1404,14 @@ s32 func_80078A68(s32 arg0, s32 arg1, s32 arg2) {
     *(volatile u16 *) (((t0 * 0x10) + D_8009BD6C) + 4) = a3;
     return 1;
 }
-s32 func_80078B04(s32 arg0) {
+s32 GetRCnt(s32 arg0) {
     s32 v = arg0 & 0xFFFF;
     if (v >= 3) {
         return 0;
     }
     return *(volatile u16 *)(D_8009BD6C + v * 0x10);
 }
-s32 func_80078B3C(s32 arg0) {
+s32 StartRCnt(s32 arg0) {
     s32 v;
     volatile s32 *base;
     v = arg0 & 0xFFFF;
@@ -1419,7 +1419,7 @@ s32 func_80078B3C(s32 arg0) {
     base[1] = base[1] | (&D_8009BD70)[v];
     return v < 3;
 }
-s32 func_80078B70(s32 arg0) {
+s32 StopRCnt(s32 arg0) {
     s32 v;
     volatile s32 *base;
     v = arg0 & 0xFFFF;
@@ -1427,7 +1427,7 @@ s32 func_80078B70(s32 arg0) {
     base[1] = base[1] & ~(&D_8009BD70)[v];
     return 1;
 }
-s32 func_80078BA8(s32 arg0) {
+s32 ResetRCnt(s32 arg0) {
     s32 v = arg0 & 0xFFFF;
     if (v >= 3) {
         return 0;
@@ -1436,75 +1436,75 @@ s32 func_80078BA8(s32 arg0) {
     return 1;
 }
 extern s32 D_8009BD80;
-void func_80078BE0(s32 a0) {
+void SetInitPadFlag(s32 a0) {
     D_8009BD80 = a0;
 }
 extern s32 D_8009BD80;
-s32 func_80078BF0(void) {
+s32 ReadInitPadFlag(void) {
     return D_8009BD80;
 }
-void func_800790C0(void);
+void _remove_ChgclrPAD(void);
 void EnterCriticalSection(void);
-void func_80078F88(void);
+void _patch_pad(void);
 void ExitCriticalSection(void);
-void bios_ChangeClearPad(s32);
+void ChangeClearPAD(s32);
 s32 func_80078DA0(void);
-void bios_OutdatedPadInitAndStart(s32, s32, s32, s32);
-void func_80079028(void);
+void PAD_init2(s32, s32, s32, s32);
+void _send_pad(void);
 extern s32 D_8009BD80;
-void func_80078C00(s32 a0, s32 a1, s32 a2, s32 a3) {
-    func_800790C0();
+void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
+    _remove_ChgclrPAD();
     EnterCriticalSection();
-    func_80078F88();
+    _patch_pad();
     ExitCriticalSection();
-    bios_ChangeClearPad(0);
+    ChangeClearPAD(0);
     func_80078DA0();
-    bios_OutdatedPadInitAndStart(a0, a1, a2, a3);
-    func_80079028();
+    PAD_init2(a0, a1, a2, a3);
+    _send_pad();
     D_8009BD80 = 1;
 }
-void func_800790C0(void);
+void _remove_ChgclrPAD(void);
 void EnterCriticalSection(void);
-void func_80078F88(void);
+void _patch_pad(void);
 void ExitCriticalSection(void);
-void bios_ChangeClearPad(s32);
+void ChangeClearPAD(s32);
 s32 func_80078DA0(void);
-void bios_InitPad(s32, s32, s32, s32);
-void func_80079028(void);
+void InitPAD2(s32, s32, s32, s32);
+void _send_pad(void);
 extern s32 D_8009BD80;
-void func_80078C9C(s32 a0, s32 a1, s32 a2, s32 a3) {
-    func_800790C0();
+void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
+    _remove_ChgclrPAD();
     EnterCriticalSection();
-    func_80078F88();
+    _patch_pad();
     ExitCriticalSection();
-    bios_ChangeClearPad(0);
+    ChangeClearPAD(0);
     func_80078DA0();
-    bios_InitPad(a0, a1, a2, a3);
-    func_80079028();
+    InitPAD2(a0, a1, a2, a3);
+    _send_pad();
     D_8009BD80 = 1;
 }
-void bios_StartPad(void);
-void bios_ChangeClearPad(s32);
-void func_80078F60(void);
-void func_80078D38(void) {
-    bios_StartPad();
-    bios_ChangeClearPad(0);
-    func_80078F60();
+void StartPAD2(void);
+void ChangeClearPAD(s32);
+void EnablePAD(void);
+void StartPAD(void) {
+    StartPAD2();
+    ChangeClearPAD(0);
+    EnablePAD();
 }
 extern s32 D_8009BD80;
-void func_80078F74(void);
-void bios_StopPad(void);
+void DisablePAD(void);
+void StopPAD2(void);
 s32 func_80078E20(void);
-void func_80078D68(void) {
-    func_80078F74();
-    bios_StopPad();
+void StopPAD(void) {
+    DisablePAD();
+    StopPAD2();
     func_80078E20();
     D_8009BD80 = 0;
 }
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void bios_SysDeqIntRP(s32, u32 *);
-extern void bios_SysEnqIntRP(s32, u32 *);
+extern void SysDeqIntRP(s32, u32 *);
+extern void SysEnqIntRP(s32, u32 *);
 extern void func_80078E58(void);
 extern s32 func_80078EC0(void);
 extern u32 D_800F183C;
@@ -1519,18 +1519,18 @@ s32 func_80078DA0(void) {
     D_800F1840 = (u32)func_80078EC0;
     D_800F1838 = 0;
     D_800F1844 = 0;
-    bios_SysDeqIntRP(1, s0);
-    bios_SysEnqIntRP(1, s0);
+    SysDeqIntRP(1, s0);
+    SysEnqIntRP(1, s0);
     ExitCriticalSection();
     return 1;
 }
 void EnterCriticalSection(void);
-void bios_SysDeqIntRP(s32, s16*);
+void SysDeqIntRP(s32, s16*);
 void ExitCriticalSection(void);
 extern s16 D_800F1838;
 s32 func_80078E20(void) {
     EnterCriticalSection();
-    bios_SysDeqIntRP(1, &D_800F1838);
+    SysDeqIntRP(1, &D_800F1838);
     ExitCriticalSection();
     return 1;
 }
@@ -1566,11 +1566,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_InitPad\n"
+    "glabel InitPAD2\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x12\n"
-    "endlabel bios_InitPad\n"
+    "endlabel InitPAD2\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1581,11 +1581,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_StartPad\n"
+    "glabel StartPAD2\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x13\n"
-    "endlabel bios_StartPad\n"
+    "endlabel StartPAD2\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1596,11 +1596,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_StopPad\n"
+    "glabel StopPAD2\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x14\n"
-    "endlabel bios_StopPad\n"
+    "endlabel StopPAD2\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1611,11 +1611,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_OutdatedPadInitAndStart\n"
+    "glabel PAD_init2\n"
     "addiu $t2, $zero, 0xB0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x15\n"
-    "endlabel bios_OutdatedPadInitAndStart\n"
+    "endlabel PAD_init2\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1626,11 +1626,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_SysEnqIntRP\n"
+    "glabel SysEnqIntRP\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x2\n"
-    "endlabel bios_SysEnqIntRP\n"
+    "endlabel SysEnqIntRP\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1641,11 +1641,11 @@ __asm__(
     ".section .text\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel bios_SysDeqIntRP\n"
+    "glabel SysDeqIntRP\n"
     "addiu $t2, $zero, 0xC0\n"
     "jr    $t2\n"
     "addiu $t1, $zero, 0x3\n"
-    "endlabel bios_SysDeqIntRP\n"
+    "endlabel SysDeqIntRP\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1665,7 +1665,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F60\n"
+    "glabel EnablePAD\n"
     "    lui  $t1,%hi(jtbl_800A3620)\n"
     "    lw  $t1,%lo(jtbl_800A3620)($t1)\n"
     "    nop\n"
@@ -1681,7 +1681,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F74\n"
+    "glabel DisablePAD\n"
     "    lui  $t1,%hi(jtbl_800A3624)\n"
     "    lw  $t1,%lo(jtbl_800A3624)($t1)\n"
     "    nop\n"
@@ -1697,7 +1697,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078F88\n"
+    "glabel _patch_pad\n"
     "    lui  $at,%hi(D_800A3618)\n"
     "    sw  $ra,%lo(D_800A3618)($at)\n"
     "    jal  EnterCriticalSection\n"
@@ -1718,7 +1718,7 @@ __asm__(
     "    sw  $zero,1428($v0)\n"
     "    bnez  $t1,.L80078FC4\n"
     "    addiu  $v0,$v0,4\n"
-    "    jal  func_80078FF0\n"
+    "    jal  FlushCache\n"
     "    nop\n"
     "    lui  $ra,%hi(D_800A3618)\n"
     "    lw  $ra,%lo(D_800A3618)($ra)\n"
@@ -1735,7 +1735,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80078FF0\n"
+    "glabel FlushCache\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x44\n"
@@ -1750,7 +1750,7 @@ __asm__(
     "    addiu $sp, $sp, 24\n"
     "    jr    $ra\n"
     "    nop\n"
-    "endlabel func_80078FF0\n"
+    "endlabel FlushCache\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1761,7 +1761,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_80079028\n"
+    "glabel _send_pad\n"
     "    lui  $at,%hi(D_800A3628)\n"
     "    sw  $ra,%lo(D_800A3628)($at)\n"
     "    jal  EnterCriticalSection\n"
@@ -1784,7 +1784,7 @@ __asm__(
     "    addiu  $v0,$v0,4\n"
     "    bne  $t2,$t1,.L80079064\n"
     "    sw  $v1,1244($v0)\n"
-    "    jal  func_80078FF0\n"
+    "    jal  FlushCache\n"
     "    nop\n"
     "    jal  ExitCriticalSection\n"
     "    nop\n"
@@ -1818,7 +1818,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_800790C0\n"
+    "glabel _remove_ChgclrPAD\n"
     "    lui  $at,%hi(D_800A3638)\n"
     "    sw  $ra,%lo(D_800A3638)($at)\n"
     "    jal  EnterCriticalSection\n"
@@ -1834,7 +1834,7 @@ __asm__(
     "    sw  $zero,0($v1)\n"
     "    bnez  $t2,.L800790E8\n"
     "    addiu  $v1,$v1,4\n"
-    "    jal  func_80078FF0\n"
+    "    jal  FlushCache\n"
     "    nop\n"
     "    jal  ExitCriticalSection\n"
     "    nop\n"
@@ -1849,7 +1849,7 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* padding after func_800790C0 */
-u8* bb2_memcpy(u8 *dst, u8 *src, s32 len) {
+u8* memcpy(u8 *dst, u8 *src, s32 len) {
     u8 *ret;
     if (!dst) {
         return 0;
@@ -1864,15 +1864,15 @@ u8* bb2_memcpy(u8 *dst, u8 *src, s32 len) {
     return ret;
 }
 extern u32 D_800F1848;
-s32 func_80079154(void) {
+s32 rand(void) {
     D_800F1848 = D_800F1848 * 0x41C64E6D + 0x3039;
     return (D_800F1848 >> 16) & 0x7FFF;
 }
 extern s32 D_800F1848;
-void func_80079184(s32 a0) {
+void srand(s32 a0) {
     D_800F1848 = a0;
 }
-u8 *func_80079194(u8 *a0, u8 *a1) {
+u8 *strcpy(u8 *a0, u8 *a1) {
     u8 *v1;
     if (!a0) {
         return 0;
@@ -1885,7 +1885,7 @@ u8 *func_80079194(u8 *a0, u8 *a1) {
     }
     return v1;
 }
-s32 func_800791D8(u8 *a0) {
+s32 strlen(u8 *a0) {
     s32 v1 = 0;
     if (!a0) {
         return 0;
@@ -1895,16 +1895,16 @@ s32 func_800791D8(u8 *a0) {
     }
     return v1;
 }
-void debug_printf(s32 fmt, s32 a, s32 b, s32 c) {
+void printf(s32 fmt, s32 a, s32 b, s32 c) {
     s32 *ap = &fmt;
     ap[1] = a;
     ap[2] = b;
     ap[3] = c;
-    func_80079244(1, fmt, ap + 1);
+    prnt(1, fmt, ap + 1);
 }
-INCLUDE_ASM("asm/funcs", func_80079244);
+INCLUDE_ASM("asm/funcs", prnt);
 extern u8 D_8009BD8D;
-u8 func_800798CC(u8 a0) {
+u8 toupper(u8 a0) {
     u8 c = a0;
     if ((&D_8009BD8D)[c] & 2) {
         c = a0 - 0x20;
@@ -1912,14 +1912,14 @@ u8 func_800798CC(u8 a0) {
     return c;
 }
 extern u8 D_8009BD8D;
-u8 func_800798FC(u8 a0) {
+u8 tolower(u8 a0) {
     u8 c = a0;
     if ((&D_8009BD8D)[c] & 1) {
         c = a0 + 0x20;
     }
     return c;
 }
-u8 *func_8007992C(u8 *buf, s32 ch, s32 len) {
+u8 *memchr(u8 *buf, s32 ch, s32 len) {
     if (buf == 0) return 0;
     if (len <= 0) return 0;
     len--;
@@ -1935,8 +1935,8 @@ loop:
     if (len >= 0) goto loop;
     return 0;
 }
-void bios_FileWrite_B(s32, u8 *, s32);
-void func_8007997C(s8 arg0) {
+void write(s32, u8 *, s32);
+void putchar(s8 arg0) {
     u8 sp10;
     s32 temp_a0;
 
@@ -1944,13 +1944,13 @@ void func_8007997C(s8 arg0) {
     temp_a0 = arg0 & 0xFF;
     if (temp_a0 == 9) goto loop;
     if (temp_a0 == 0xA) {
-        func_8007997C(0xD);
+        putchar(0xD);
         D_800F1850 = 0;
         goto tail;
     }
     goto def;
 loop:
-    func_8007997C(0x20);
+    putchar(0x20);
     if ((D_800F1850 & 7) == 0) return;
     goto loop;
 def:
@@ -1958,6 +1958,6 @@ def:
         D_800F1850 += 1;
     }
 tail:
-    bios_FileWrite_B(1, &sp10, 1);
+    write(1, &sp10, 1);
 }
-INCLUDE_ASM("asm/funcs", func_80079A30);
+INCLUDE_ASM("asm/funcs", sprintf);

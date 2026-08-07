@@ -4,8 +4,8 @@
 #include "psx.h"
 
 /* Forward declarations */
-extern void bios_StopCard(void);
-extern void func_8007A458(void);
+extern void StopCARD2(void);
+extern void _ExitCard(void);
 
 /* Externs for globals */
 extern s32 D_80015D58;
@@ -85,7 +85,7 @@ typedef struct GameObj {
 } GameObj;
 /* PsyQ 4.0 LIBC2 MEMMOVE: memmove — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libc/memmove.c */
-u8 *func_8007A28C(u8 *dst, u8 *src, s32 n) {
+u8 *memmove(u8 *dst, u8 *src, s32 n) {
     if (dst >= src) {
         while (n-- > 0) {
             dst[n] = src[n];
@@ -100,7 +100,7 @@ u8 *func_8007A28C(u8 *dst, u8 *src, s32 n) {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_A0_0xAB_wrapper\n"
+    "glabel _card_info\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xAB\n"
@@ -111,7 +111,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_A0_0xAC_wrapper\n"
+    "glabel _card_load\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0xAC\n"
@@ -119,14 +119,14 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_8007A318(s32 a0) {
-    bios__new_card(a0);
-    bios__card_write(a0, 0x3F, 0);
+void _card_clear(s32 a0) {
+    _new_card(a0);
+    _card_write(a0, 0x3F, 0);
 }
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios__card_write\n"
+    "glabel _card_write\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4E\n"
@@ -137,7 +137,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios__new_card\n"
+    "glabel _new_card\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x50\n"
@@ -145,31 +145,31 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_8007A370(s32 a0) {
-    bios_ChangeClearPad(0);
+void InitCARD(s32 a0) {
+    ChangeClearPAD(0);
     EnterCriticalSection();
-    if (func_80078BF0() == 0) {
+    if (ReadInitPadFlag() == 0) {
         a0 = 0;
     }
-    bios_InitCard(a0);
+    InitCARD2(a0);
     ExitCriticalSection();
 }
-void func_8007A3C8(void) {
+void StartCARD(void) {
     EnterCriticalSection();
-    bios_StartCard();
-    bios_ChangeClearPad(0);
+    StartCARD2();
+    ChangeClearPAD(0);
     ExitCriticalSection();
 }
 
-void func_8007A400(void) {
-    bios_StopCard();
-    func_8007A458();
+void StopCARD(void) {
+    StopCARD2();
+    _ExitCard();
 }
 
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_InitCard\n"
+    "glabel InitCARD2\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4A\n"
@@ -180,7 +180,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_StartCard\n"
+    "glabel StartCARD2\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4B\n"
@@ -191,7 +191,7 @@ __asm__(
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_StopCard\n"
+    "glabel StopCARD2\n"
     "    addiu $t2, $zero, 0xB0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x4C\n"
@@ -204,7 +204,7 @@ __asm__(
     ".set noreorder\n"
     ".set\tnoat\n"
     ".set noat\n"
-    "glabel func_8007A458\n"
+    "glabel _ExitCard\n"
     "\tlui\t$at,%hi(D_800A3648)\n"
     "\tsw\t$ra,%lo(D_800A3648)($at)\n"
     "\tjal\tEnterCriticalSection\n"
@@ -223,7 +223,7 @@ __asm__(
     "\taddiu\t$v0,$v0,4\n"
     "\tbne\t$t2,$t1,.L8007A488\n"
     "\tsw\t$v1,108($v0)\n"
-    "\tjal\tfunc_80078FF0\n"
+    "\tjal\tFlushCache\n"
     "\tnop\n"
     "\tjal\tExitCriticalSection\n"
     "\tnop\n"
@@ -243,7 +243,7 @@ __asm__(
     ".set\tat\n"
     ".set at\n"
 );
-u16 gpu_LoadTexture(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut) {
+u16 LoadTPage(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut) {
     s16 buf[4];
     buf[0] = a3;
     buf[3] = clut;
@@ -259,8 +259,8 @@ u16 gpu_LoadTexture(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s3
         buf[2] = width;
         break;
     }
-    gpu_LoadImage((s32)buf, a0);
-    return gpu_CalcTPage(mode, a2, a3, texpage) & 0xFFFF;
+    LoadImage((s32)buf, a0);
+    return GetTPage(mode, a2, a3, texpage) & 0xFFFF;
 }
 
 u16 gpu_LoadClut256(s32 a0, s32 a1, s32 a2) {
@@ -269,8 +269,8 @@ u16 gpu_LoadClut256(s32 a0, s32 a1, s32 a2) {
     buf[1] = a2;
     buf[2] = 0x100;
     buf[3] = 1;
-    gpu_LoadImage((s32)buf, a0);
-    return gpu_CalcClut(a1, a2);
+    LoadImage((s32)buf, a0);
+    return GetClut(a1, a2);
 }
 u16 gpu_LoadClut16(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
@@ -278,10 +278,10 @@ u16 gpu_LoadClut16(s32 a0, s32 a1, s32 a2) {
     buf[1] = a2;
     buf[2] = 0x10;
     buf[3] = 1;
-    gpu_LoadImage((s32)buf, a0);
-    return gpu_CalcClut(a1, a2);
+    LoadImage((s32)buf, a0);
+    return GetClut(a1, a2);
 }
-s16 *gpu_InitDrawEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
+s16 *SetDefDrawEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     s32 ret;
     ret = sys_GetVideoMode();
     a0[0] = a1;
@@ -308,7 +308,7 @@ s16 *gpu_InitDrawEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     return a0;
 }
 
-s16 *gpu_InitDispEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
+s16 *SetDefDispEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     a0[0] = a1;
     a0[1] = a2;
     a0[2] = a3;
@@ -323,18 +323,18 @@ s16 *gpu_InitDispEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     a0[3] = a4;
     return a0;
 }
-u32 gpu_CalcTPage(s32 a0, s32 a1, s32 a2, s32 a3) {
+u32 GetTPage(s32 a0, s32 a1, s32 a2, s32 a3) {
     return ((a0 & 3) << 7) | ((a1 & 3) << 5) | ((a3 & 0x100) >> 4) | ((a2 & 0x3FF) >> 6) | ((a3 & 0x200) << 2);
 }
-u32 gpu_CalcClut(s32 a0, s32 a1) {
+u32 GetClut(s32 a0, s32 a1) {
     return ((a1 << 6) | ((a0 >> 4) & 0x3F)) & 0xFFFF;
 }
-void gpu_DebugTPage(s32 a0) {
+void DumpTPage(s32 a0) {
     u32 val = a0 & 0xFFFF;
     g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
-void gpu_DebugClut(s32 a0) {
+void DumpClut(s32 a0) {
     g_gpu_debug_func(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
 }
 u32 ot_GetTag(u32 *a0) {
@@ -344,21 +344,21 @@ u32 ot_GetTag(u32 *a0) {
 u32 ot_IsEnd(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) == OT_ADDR_MASK;
 }
-void ot_Link(OTag *a0, OTag *a1) {
+void AddPrim(OTag *a0, OTag *a1) {
     a1->addr = a0->addr;
     a0->addr = (u32)a1;
 }
-void ot_Insert(OTag *a0, u32 a1, OTag *a2) {
+void AddPrims(OTag *a0, u32 a1, OTag *a2) {
     a2->addr = a0->addr;
     a0->addr = a1;
 }
-void ot_SetAddr(u32 *a0, u32 a1) {
+void CatPrim(u32 *a0, u32 a1) {
     *a0 = (*a0 & OT_TAG_MASK) | (a1 & OT_ADDR_MASK);
 }
-void ot_SetEnd(u32 *a0) {
+void TermPrim(u32 *a0) {
     *a0 |= OT_ADDR_MASK;
 }
-void gpu_SetSemiTransp(u8 *a0, s32 a1) {
+void SetSemiTrans(u8 *a0, s32 a1) {
     if (a1) {
         a0[7] |= 2;
     } else {
@@ -366,7 +366,7 @@ void gpu_SetSemiTransp(u8 *a0, s32 a1) {
     }
 }
 
-void gpu_SetRawTexture(u8 *a0, s32 a1) {
+void SetShadeTex(u8 *a0, s32 a1) {
     if (a1) {
         a0[7] |= 1;
     } else {
@@ -374,116 +374,116 @@ void gpu_SetRawTexture(u8 *a0, s32 a1) {
     }
 }
 
-void initPolyF3(u8 *p) {
+void SetPolyF3(u8 *p) {
     p[3] = 0x4;
     p[7] = 0x20;
 }
 
-void initPolyFT3(u8 *p) {
+void SetPolyFT3(u8 *p) {
     p[3] = 0x7;
     p[7] = 0x24;
 }
 
-void initPolyG3(u8 *p) {
+void SetPolyG3(u8 *p) {
     p[3] = 0x6;
     p[7] = 0x30;
 }
 
-void initPolyGT3(u8 *p) {
+void SetPolyGT3(u8 *p) {
     p[3] = 0x9;
     p[7] = 0x34;
 }
 
-void initPolyF4(u8 *p) {
+void SetPolyF4(u8 *p) {
     p[3] = 0x5;
     p[7] = 0x28;
 }
 
-void initPolyFT4(u8 *p) {
+void SetPolyFT4(u8 *p) {
     p[3] = 0x9;
     p[7] = 0x2C;
 }
 
-void initPolyG4(u8 *p) {
+void SetPolyG4(u8 *p) {
     p[3] = 0x8;
     p[7] = 0x38;
 }
 
-void initPolyGT4(u8 *p) {
+void SetPolyGT4(u8 *p) {
     p[3] = 0xC;
     p[7] = 0x3C;
 }
 
-void initSprt8(u8 *p) {
+void SetSprt8(u8 *p) {
     p[3] = 0x3;
     p[7] = 0x74;
 }
 
-void initSprt16(u8 *p) {
+void SetSprt16(u8 *p) {
     p[3] = 0x3;
     p[7] = 0x7C;
 }
 
-void initSprt(u8 *p) {
+void SetSprt(u8 *p) {
     p[3] = 0x4;
     p[7] = 0x64;
 }
 
-void initTile1(u8 *p) {
+void SetTile1(u8 *p) {
     p[3] = 0x2;
     p[7] = 0x68;
 }
 
-void initTile8(u8 *p) {
+void SetTile8(u8 *p) {
     p[3] = 0x2;
     p[7] = 0x70;
 }
 
-void initTile16(u8 *p) {
+void SetTile16(u8 *p) {
     p[3] = 0x2;
     p[7] = 0x78;
 }
 
-void initTile(u8 *p) {
+void SetTile(u8 *p) {
     p[3] = 0x3;
     p[7] = 0x60;
 }
 
-void initLineF2(u8 *p) {
+void SetLineF2(u8 *p) {
     p[3] = 0x3;
     p[7] = 0x40;
 }
 
-void initLineG2(u8 *p) {
+void SetLineG2(u8 *p) {
     p[3] = 0x4;
     p[7] = 0x50;
 }
 
-void initPolyF3_dither(u8 *p) {
+void SetLineF3(u8 *p) {
     p[3] = 0x5;
     p[7] = 0x48;
     *(u32 *)(p + 0x14) = GPU_DITHER_PATTERN;
 }
 
-void initPolyG3_dither(u8 *p) {
+void SetLineG3(u8 *p) {
     p[3] = 0x7;
     p[7] = 0x58;
     *(u32 *)(p + 0x1C) = GPU_DITHER_PATTERN;
 }
 
-void initPolyF4_dither(u8 *p) {
+void SetLineF4(u8 *p) {
     p[3] = 0x6;
     p[7] = 0x4C;
     *(u32 *)(p + 0x18) = GPU_DITHER_PATTERN;
 }
 
-void initPolyG4_dither(u8 *p) {
+void SetLineG4(u8 *p) {
     p[3] = 0x9;
     p[7] = 0x5C;
     *(u32 *)(p + 0x24) = GPU_DITHER_PATTERN;
 }
 
-void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
+void SetDrawTPage(u8 *a0, s32 a1, s32 a2, u32 a3) {
     u32 cmd;
     u32 val;
     a0[3] = 1;
@@ -504,7 +504,7 @@ void initDrawMode(u8 *a0, s32 a1, s32 a2, u32 a3) {
     }
     *(u32 *)(a0 + 4) = cmd | val;
 }
-void initLoadImage(u32 *a0, s16 *a1, u32 a2, u32 a3) {
+void SetDrawMove(u32 *a0, s16 *a1, u32 a2, u32 a3) {
     s32 size = 5;
     if (a1[2] == 0) {
         size = 0;
@@ -518,7 +518,7 @@ void initLoadImage(u32 *a0, s16 *a1, u32 a2, u32 a3) {
     a0[4] = (a3 << 16) | (a2 & 0xFFFF);
     a0[5] = *(u32 *)&a1[2];
 }
-void initStoreImage(u32 *a0, s16 *a1) {
+void SetDrawLoad(u32 *a0, s16 *a1) {
     u32 nwords;
     s32 size;
     u32 *end;
@@ -534,7 +534,7 @@ void initStoreImage(u32 *a0, s16 *a1) {
     end = a0 + size;
     *end = OT_TERMINATOR;
 }
-s32 gpu_CatPacket(u8 *a0, u32 *a1) {
+s32 MargePrim(u8 *a0, u32 *a1) {
     s32 size;
     size = a0[3] + ((u8 *)a1)[3] + 1;
     if (size >= 17) {
@@ -544,7 +544,7 @@ s32 gpu_CatPacket(u8 *a0, u32 *a1) {
     *a1 = 0;
     return 0;
 }
-void gpu_DebugDispEnv(s16 *a0) {
+void DumpDrawEnv(s16 *a0) {
     u32 val;
     g_gpu_debug_func(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
     g_gpu_debug_func(&D_80015D98, a0[4], a0[5]);
@@ -555,7 +555,7 @@ void gpu_DebugDispEnv(s16 *a0) {
     g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
-void gpu_DebugDrawEnv(s16 *a0) {
+void DumpDispEnv(s16 *a0) {
     g_gpu_debug_func(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
     g_gpu_debug_func(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
     g_gpu_debug_func(&D_80015E10, ((u8 *)a0)[0x10]);
@@ -571,19 +571,19 @@ typedef struct {
 } GpuConfig;
 /* PsyQ LIBGPU sys.c v1.129: ResetGraph — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c */
-u32 gpu_SetMode(s32 a0) {
+u32 ResetGraph(s32 a0) {
     GpuConfig *s0;
     u32 idx;
     switch (a0 & 7) {
     case 0:
     case 3:
-        debug_printf(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
+        printf(&D_80015E5C, &D_8009BE2C, &g_gpu_type);
         /* fallthrough */
     case 5:
         s0 = (GpuConfig *)&g_gpu_type;
         bb2_memset(s0, 0, 0x80);
-        irq_DisableInterrupts();
-        bios_GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
+        ResetCallback();
+        GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
         s0->mode = (idx = func_8007D9C4(a0));
         idx = (u8)idx;
         s0->active = 1;
@@ -600,7 +600,7 @@ u32 gpu_SetMode(s32 a0) {
         break;
     }
 }
-u32 gpu_SetDither(s32 a0) {
+u32 SetGraphReverse(s32 a0) {
     u8 *p = &g_gpu_dither;
     u32 old = *p;
     u32 val;
@@ -626,7 +626,7 @@ u32 gpu_SetDither(s32 a0) {
     return old;
 }
 
-u32 gpu_SetDebugLevel(s32 a0) {
+u32 SetGraphDebug(s32 a0) {
     u8 *p = &g_gpu_debug_level;
     u32 old = *p;
     u32 val = a0 & 0xFF;
@@ -636,7 +636,7 @@ u32 gpu_SetDebugLevel(s32 a0) {
     }
     return old;
 }
-u32 gpu_SetInterlace(s32 a0) {
+u32 SetGraphQueue(s32 a0) {
     u8 *p = &g_gpu_interlace;
     u32 old = *p;
     if (g_gpu_debug_level >= 2) {
@@ -645,15 +645,15 @@ u32 gpu_SetInterlace(s32 a0) {
     if (a0 != *p) {
         ((void (*)(s32))g_gpu_dev_table[0x34 / 4])(1);
         *p = a0;
-        irq_AcknowledgeVblank(2, 0);
+        DMACallback(2, 0);
     }
     return old;
 }
 
-u32 gpu_GetType(void) {
+u32 GetGraphType(void) {
     return g_gpu_type;
 }
 
-u32 gpu_GetDebugLevel(void) {
+u32 GetGraphDebug(void) {
     return g_gpu_debug_level;
 }

@@ -26,7 +26,7 @@ glabel func_8001D904
     /* E160 8001D960 21200002 */  addu       $a0, $s0, $zero
     /* E164 8001D964 1980053C */  lui        $a1, (0x80190800 >> 16)
     /* E168 8001D968 0008A534 */  ori        $a1, $a1, (0x80190800 & 0xFFFF)
-    /* E16C 8001D96C 48E4010C */  jal        bb2_memcpy
+    /* E16C 8001D96C 48E4010C */  jal        memcpy
     /* E170 8001D970 21302002 */   addu      $a2, $s1, $zero
     /* E174 8001D974 9B6E010C */  jal        obj_ExecTask
     /* E178 8001D978 23201202 */   subu      $a0, $s0, $s2

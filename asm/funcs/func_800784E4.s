@@ -6,7 +6,7 @@ glabel func_800784E4
     /* 68CF4 800784F4 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 68CF8 800784F8 08100524 */  addiu      $a1, $zero, 0x1008
     /* 68CFC 800784FC 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 68D00 80078500 11EE010C */  jal        func_8007B844
+    /* 68D00 80078500 11EE010C */  jal        ClearOTagR
     /* 68D04 80078504 1000B0AF */   sw        $s0, 0x10($sp)
     /* 68D08 80078508 32000424 */  addiu      $a0, $zero, 0x32
     /* 68D0C 8007850C 58003026 */  addiu      $s0, $s1, 0x58

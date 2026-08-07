@@ -1,0 +1,10502 @@
+{
+ "taddr": "0x80010000",
+ "results": [
+  {
+   "lib": "LIBAPI",
+   "mod": "C57",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008386C"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C58",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C65",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C66",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C67",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078948"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C68",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078FF0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C73",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007DF10"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C81",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C82",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C112",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078958"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C113",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C114",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800831D0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C157",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C159",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078968"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C160",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C161",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C167",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C168",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C169",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C170",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "C174",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A07",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008008C"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A08",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078978"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A09",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078988"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A10",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AAC4"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A11",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078998"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A12",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789A8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A13",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089374"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A14",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A15",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A16",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A18",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F00"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A19",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F10"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A20",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F20"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A21",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F30"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A22",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A23",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800831F0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A24",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083200"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A25",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083210"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A32",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A36",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789B8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A37",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789C8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A38",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A39",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789D8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A40",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A41",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A50",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789E8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A51",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A52",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800789F8"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A53",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A08"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A54",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A18"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A55",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A64",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A65",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A28"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A66",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A38"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A67",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A48"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A68",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A69",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A70",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A71",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008D050"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A72",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008D060"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A81",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A84",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A85",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A91",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A58"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A94",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A95",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A96",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "A97",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "L02",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F40"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "L03",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F50"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "L10",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80082AB0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "words": 94,
+   "masked_words": 20,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078A68"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "SC2B",
+   "words": 207,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "__MAIN",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "PATCH",
+   "words": 36,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078F60"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "words": 200,
+   "masked_words": 57,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078BE0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "I_HEAP2",
+   "words": 21,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 15,
+   "best_vaddr": "0x80083664"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "MALLOC2",
+   "words": 137,
+   "masked_words": 34,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "FREE2",
+   "words": 14,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "REALLOC2",
+   "words": 150,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "CALLOC2",
+   "words": 34,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "SENDPAD",
+   "words": 48,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079000"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "SEND",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800168F8",
+    "0x8003E6B8",
+    "0x800444C0",
+    "0x800444E4",
+    "0x80044650",
+    "0x8004746C",
+    "0x8004748C",
+    "0x800474F0",
+    "0x80047510",
+    "0x80047530",
+    "0x80047550",
+    "0x8004777C",
+    "0x8004779C",
+    "0x8006C1FC",
+    "0x80077A60",
+    "0x80077AC0",
+    "0x80077AE0",
+    "0x80077B00",
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "CHCLRPAD",
+   "words": 24,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800790C0"
+   ]
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "I_HEAP3",
+   "words": 24,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "MALLOC3",
+   "words": 44,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "FREE3",
+   "words": 79,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "REALLOC3",
+   "words": 113,
+   "masked_words": 28,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBAPI",
+   "mod": "CALLOC3",
+   "words": 33,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A56",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A58",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A59",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A60",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A61",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A62",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "A63",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C10",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C12",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C13",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C14",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C15",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C16",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C17",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C18",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C19",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C20",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C21",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C22",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C23",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C24",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C25",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C26",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C27",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C28",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C29",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C30",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C31",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C32",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C33",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C34",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C36",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C37",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C38",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C39",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C40",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C42",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C43",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C46",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C47",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C48",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C51",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C52",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C53",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C54",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C55",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C56",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "C63",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "CTYPE0",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "SPRINTF",
+   "words": 535,
+   "masked_words": 34,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079A30"
+   ]
+  },
+  {
+   "lib": "LIBC",
+   "mod": "ITOA",
+   "words": 16,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "MEMMOVE",
+   "words": 27,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A28C"
+   ]
+  },
+  {
+   "lib": "LIBC",
+   "mod": "BCMP",
+   "words": 19,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "MEMCMP",
+   "words": 19,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "STRTOK",
+   "words": 64,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC",
+   "mod": "QSORT",
+   "words": 98,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "ABS",
+   "words": 10,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "ATOI",
+   "words": 85,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "BCMP",
+   "words": 19,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "BCOPY",
+   "words": 13,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "BZERO",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "CTYPE",
+   "words": 24,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800798CC"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "GETC",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "GETCHAR",
+   "words": 11,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "GETS",
+   "words": 94,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 86,
+   "best_vaddr": "0x8005B64C"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MEMCHR",
+   "words": 20,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007992C"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MEMCMP",
+   "words": 19,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MEMCPY",
+   "words": 13,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079120"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MEMMOVE",
+   "words": 27,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A28C"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MEMSET",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "PUTC",
+   "words": 11,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 5,
+   "best_vaddr": "0x80079A04"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "PUTCHAR",
+   "words": 45,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007997C"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "QSORT",
+   "words": 98,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "RAND",
+   "words": 16,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079154"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRCAT",
+   "words": 42,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRCHR",
+   "words": 13,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRCMP",
+   "words": 25,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRCPY",
+   "words": 17,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079194"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRCSPN",
+   "words": 29,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRINGS",
+   "words": 31,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRLEN",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800791D8"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRNCAT",
+   "words": 29,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRNCMP",
+   "words": 32,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRNCPY",
+   "words": 30,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRPBRK",
+   "words": 27,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRRCHR",
+   "words": 18,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRSPN",
+   "words": 29,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRSTR",
+   "words": 29,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRTOK",
+   "words": 64,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRTOL",
+   "words": 113,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "STRTOUL",
+   "words": 84,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "TODIGIT",
+   "words": 24,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "PRINTF",
+   "words": 15,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079208"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "PRNT",
+   "words": 418,
+   "masked_words": 55,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079244"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "SPRINTF",
+   "words": 535,
+   "masked_words": 34,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80079A30"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "ITOA",
+   "words": 16,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "PUTS",
+   "words": 20,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80082000"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "BSEARCH",
+   "words": 52,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "LSEARCH",
+   "words": 25,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "SETJMP",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083220"
+   ]
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "EXIT",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBC2",
+   "mod": "MALLOC",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "C112",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078958"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "C171",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A2F8"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "C172",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A308"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "C173",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A74",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A428"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A75",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A438"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A76",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A448"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A78",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A350"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A79",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A80",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A360"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A88",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A92",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "A93",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "CARD",
+   "words": 14,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A318"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "PATCH",
+   "words": 104,
+   "masked_words": 28,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "INIT",
+   "words": 46,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A370"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "END",
+   "words": 32,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A458"
+   ]
+  },
+  {
+   "lib": "LIBCARD",
+   "mod": "FORMAT",
+   "words": 209,
+   "masked_words": 33,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "CDROM",
+   "words": 12,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 4,
+   "best_vaddr": "0x80020DAC"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "TOC",
+   "words": 146,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "EVENT",
+   "words": 68,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007FF7C"
+   ]
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "words": 483,
+   "masked_words": 89,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008009C"
+   ]
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "words": 1526,
+   "masked_words": 531,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80080828"
+   ]
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "ISO9660",
+   "words": 611,
+   "masked_words": 178,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "words": 543,
+   "masked_words": 246,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80082050"
+   ]
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "CDREAD2",
+   "words": 45,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "TYPE",
+   "words": 155,
+   "masked_words": 24,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "CDREADE",
+   "words": 151,
+   "masked_words": 33,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "CDPLAY",
+   "words": 247,
+   "masked_words": 100,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_002",
+   "words": 24,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 13,
+   "best_vaddr": "0x8005B6CC"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_003",
+   "words": 33,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 19,
+   "best_vaddr": "0x8007A3A4"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_004",
+   "words": 60,
+   "masked_words": 25,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_005",
+   "words": 34,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 24,
+   "best_vaddr": "0x80077C78"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_006",
+   "words": 29,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 20,
+   "best_vaddr": "0x8001BD94"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_007",
+   "words": 46,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_008",
+   "words": 15,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_009",
+   "words": 49,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_010",
+   "words": 8,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2,
+   "best_vaddr": "0x80087EE0"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_011",
+   "words": 728,
+   "masked_words": 306,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_012",
+   "words": 13,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 8,
+   "best_vaddr": "0x8003722C"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_013",
+   "words": 32,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_014",
+   "words": 41,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCD",
+   "mod": "C_015",
+   "words": 50,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "words": 1171,
+   "masked_words": 386,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008BE04"
+   ]
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSSYS_1",
+   "words": 1045,
+   "masked_words": 446,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSSYS_2",
+   "words": 1261,
+   "masked_words": 323,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSSYS_3",
+   "words": 157,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 47,
+   "best_vaddr": "0x80080624"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSSYS_4",
+   "words": 64,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSSYS_5",
+   "words": 28,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSTOC",
+   "words": 92,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSREAD",
+   "words": 327,
+   "masked_words": 133,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSREAD2",
+   "words": 64,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSREADE",
+   "words": 270,
+   "masked_words": 72,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSFILE",
+   "words": 610,
+   "masked_words": 175,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSPLAY",
+   "words": 299,
+   "masked_words": 103,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSREADY",
+   "words": 267,
+   "masked_words": 86,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSTYPE",
+   "words": 96,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 88,
+   "best_vaddr": "0x800898A4"
+  },
+  {
+   "lib": "LIBDS",
+   "mod": "DSCB",
+   "words": 19,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 9,
+   "best_vaddr": "0x80080638"
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "PAD",
+   "words": 38,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 19,
+   "best_vaddr": "0x80016880"
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "VSYNC",
+   "words": 121,
+   "masked_words": 40,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800828CC"
+   ]
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "words": 452,
+   "masked_words": 132,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80082AC0"
+   ]
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "INTR_VB",
+   "words": 74,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800832A0"
+   ]
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "words": 170,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800833C8"
+   ]
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "VMODE",
+   "words": 10,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083670"
+   ]
+  },
+  {
+   "lib": "LIBETC",
+   "mod": "HWCONFIG",
+   "words": 64,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "words": 172,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A4D8"
+   ]
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "EXTA",
+   "words": 279,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "FONT",
+   "words": 677,
+   "masked_words": 116,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "FONTTEX",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "KPRINTF",
+   "words": 935,
+   "masked_words": 181,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "KROM2TIM",
+   "words": 360,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "OTAG",
+   "words": 242,
+   "masked_words": 58,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "words": 445,
+   "masked_words": 51,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007A788"
+   ]
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "words": 3109,
+   "masked_words": 782,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007AE7C"
+   ]
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "TMD",
+   "words": 1599,
+   "masked_words": 164,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "KTRANS",
+   "words": 454,
+   "masked_words": 71,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGPU",
+   "mod": "BREAK",
+   "words": 156,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_BG0",
+   "words": 526,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_BG1",
+   "words": 496,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_BG2",
+   "words": 318,
+   "masked_words": 44,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_BG3",
+   "words": 302,
+   "masked_words": 40,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_COM0",
+   "words": 349,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_COM1",
+   "words": 37,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_LIN0",
+   "words": 54,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_LIN1",
+   "words": 66,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_BOX0",
+   "words": 54,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_PRIM",
+   "words": 113,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP0",
+   "words": 319,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP1",
+   "words": 95,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP2",
+   "words": 149,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP4",
+   "words": 293,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP0A",
+   "words": 318,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP1A",
+   "words": 94,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP0B",
+   "words": 323,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "2D_SP1B",
+   "words": 98,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_001",
+   "words": 384,
+   "masked_words": 196,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_002",
+   "words": 73,
+   "masked_words": 39,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 61,
+   "best_vaddr": "0x8001CC44"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_003",
+   "words": 36,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 26,
+   "best_vaddr": "0x80085E54"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_004",
+   "words": 62,
+   "masked_words": 29,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 50,
+   "best_vaddr": "0x80049E54"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_005",
+   "words": 32,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_006",
+   "words": 14,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 8,
+   "best_vaddr": "0x800194FC"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_007",
+   "words": 14,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "near",
+   "vaddr": "0x80046AE8",
+   "mismatch_words": 1
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_008",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80046B20"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_009",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80046B20"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_010",
+   "words": 45,
+   "masked_words": 24,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 34,
+   "best_vaddr": "0x80037240"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_011",
+   "words": 31,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_012",
+   "words": 26,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 20,
+   "best_vaddr": "0x8003B1A4"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_013",
+   "words": 6,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2,
+   "best_vaddr": "0x800194DC"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "MATRIX",
+   "words": 250,
+   "masked_words": 26,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_101",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_102",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_103",
+   "words": 40,
+   "masked_words": 29,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 27,
+   "best_vaddr": "0x8003B494"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_104",
+   "words": 30,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 21,
+   "best_vaddr": "0x80035DC0"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_105",
+   "words": 30,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_106",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800168F8",
+    "0x8003E6B8",
+    "0x800444C0",
+    "0x800444E4",
+    "0x80044650",
+    "0x8004746C",
+    "0x8004748C",
+    "0x800474F0",
+    "0x80047510",
+    "0x80047530",
+    "0x80047550",
+    "0x8004777C",
+    "0x8004779C",
+    "0x8006C1FC",
+    "0x80077A60",
+    "0x80077AC0",
+    "0x80077AE0",
+    "0x80077B00",
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_107",
+   "words": 357,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_108",
+   "words": 35,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 22,
+   "best_vaddr": "0x8003BD84"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_109",
+   "words": 20,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 10,
+   "best_vaddr": "0x8008BE4C"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_110",
+   "words": 10,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_111",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "near",
+   "vaddr": "0x80077A04",
+   "mismatch_words": 1
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_112",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "near",
+   "vaddr": "0x80077A04",
+   "mismatch_words": 1
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_113",
+   "words": 22,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_114",
+   "words": 44,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_115",
+   "words": 174,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_116",
+   "words": 36,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_117",
+   "words": 47,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_118",
+   "words": 47,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_119",
+   "words": 46,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_120",
+   "words": 72,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_121",
+   "words": 19,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 10,
+   "best_vaddr": "0x80020CEC"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_122",
+   "words": 57,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_123",
+   "words": 49,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_124",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80078BE0",
+    "0x80079184",
+    "0x80080170",
+    "0x80080230",
+    "0x80080248",
+    "0x80081F0C",
+    "0x800828A4",
+    "0x80083678"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_125",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8003E2C8",
+    "0x80078BF0",
+    "0x80079094",
+    "0x80083688"
+   ]
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_126",
+   "words": 49,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_127",
+   "words": 32,
+   "masked_words": 27,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 20,
+   "best_vaddr": "0x80049ECC"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_131",
+   "words": 362,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_132",
+   "words": 89,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_133",
+   "words": 177,
+   "masked_words": 20,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_134",
+   "words": 181,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_135",
+   "words": 200,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_136",
+   "words": 74,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GS_137",
+   "words": 387,
+   "masked_words": 46,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "PRESET",
+   "words": 602,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "PRESET2",
+   "words": 1142,
+   "masked_words": 262,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "PRESET3",
+   "words": 1142,
+   "masked_words": 262,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "PRESET4",
+   "words": 2160,
+   "masked_words": 756,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2097,
+   "best_vaddr": "0x8007BAF8"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "GLOBAL",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "PMD",
+   "words": 239,
+   "masked_words": 65,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "OBJT",
+   "words": 95,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "OBJT2",
+   "words": 549,
+   "masked_words": 157,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "OBJT3",
+   "words": 549,
+   "masked_words": 157,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4_00",
+   "words": 867,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4_01",
+   "words": 867,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4_02",
+   "words": 811,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4_03",
+   "words": 827,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4M00",
+   "words": 932,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4M01",
+   "words": 932,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4M02",
+   "words": 877,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4M03",
+   "words": 896,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4_00",
+   "words": 764,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4_01",
+   "words": 764,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4_02",
+   "words": 755,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4_03",
+   "words": 751,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4M00",
+   "words": 833,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4M01",
+   "words": 833,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4M02",
+   "words": 820,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4M03",
+   "words": 817,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4_00",
+   "words": 775,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4_01",
+   "words": 775,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4_02",
+   "words": 735,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4_03",
+   "words": 749,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4_00",
+   "words": 683,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4_01",
+   "words": 683,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4_02",
+   "words": 669,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4_03",
+   "words": 669,
+   "masked_words": 35,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3_00",
+   "words": 721,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3_01",
+   "words": 721,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3_02",
+   "words": 683,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3_03",
+   "words": 694,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3_00",
+   "words": 643,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3_01",
+   "words": 643,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3_02",
+   "words": 613,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3_03",
+   "words": 624,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GF00",
+   "words": 123,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GF01",
+   "words": 123,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GF02",
+   "words": 90,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GP00",
+   "words": 123,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GP01",
+   "words": 123,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3GP02",
+   "words": 82,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3_00",
+   "words": 645,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3_01",
+   "words": 645,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3_02",
+   "words": 632,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3_03",
+   "words": 629,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3_00",
+   "words": 579,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3_01",
+   "words": 579,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3_02",
+   "words": 560,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3_03",
+   "words": 560,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GF00",
+   "words": 129,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GF01",
+   "words": 129,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GF02",
+   "words": 95,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GP00",
+   "words": 127,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GP01",
+   "words": 127,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3GP02",
+   "words": 82,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3MF00",
+   "words": 265,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG3MF01",
+   "words": 265,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3MF0",
+   "words": 288,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG3MF1",
+   "words": 288,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4MF00",
+   "words": 341,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4MF01",
+   "words": 341,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4MF0",
+   "words": 370,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DATG4MF1",
+   "words": 370,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3MF00",
+   "words": 209,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF3MF01",
+   "words": 209,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3MF0",
+   "words": 232,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT3MF1",
+   "words": 232,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4MF00",
+   "words": 251,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4MF01",
+   "words": 251,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4MF0",
+   "words": 280,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAFT4MF1",
+   "words": 280,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4GF00",
+   "words": 162,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4GF01",
+   "words": 162,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAF4GF02",
+   "words": 118,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4GF00",
+   "words": 156,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4GF01",
+   "words": 156,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "DAG4GF02",
+   "words": 113,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "SCANUNIT",
+   "words": 116,
+   "masked_words": 43,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "SORTUNIT",
+   "words": 74,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "MAPUNIT",
+   "words": 103,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "CMAPUNIT",
+   "words": 33,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "LWUNIT",
+   "words": 177,
+   "masked_words": 20,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "LSUNIT",
+   "words": 181,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "LWSUNIT",
+   "words": 200,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "VWUNIT",
+   "words": 89,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "RVWUNIT",
+   "words": 362,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "RVWLUNIT",
+   "words": 387,
+   "masked_words": 46,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "00000000",
+   "words": 7,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "02000000",
+   "words": 34,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "02000001",
+   "words": 43,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01000000",
+   "words": 92,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0100000C",
+   "words": 230,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0100000D",
+   "words": 202,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01000014",
+   "words": 474,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01000015",
+   "words": 349,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0102000C",
+   "words": 279,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0102000D",
+   "words": 249,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01020014",
+   "words": 299,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01020015",
+   "words": 366,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040048",
+   "words": 128,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040049",
+   "words": 137,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0104004C",
+   "words": 134,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "0104004D",
+   "words": 143,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040050",
+   "words": 150,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040051",
+   "words": 162,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040054",
+   "words": 159,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "01040055",
+   "words": 171,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000000",
+   "words": 263,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000010",
+   "words": 119,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000001",
+   "words": 111,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000011",
+   "words": 212,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000911",
+   "words": 255,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000111",
+   "words": 313,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000019",
+   "words": 212,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000119",
+   "words": 313,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000009",
+   "words": 111,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000909",
+   "words": 154,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000100",
+   "words": 123,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "03000910",
+   "words": 165,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010010",
+   "words": 530,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010011",
+   "words": 244,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010018",
+   "words": 71,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010019",
+   "words": 63,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010020",
+   "words": 143,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "04010028",
+   "words": 65,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "MAPJNT",
+   "words": 67,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "MAPVTX",
+   "words": 146,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "MAPNRM",
+   "words": 146,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGS",
+   "mod": "ANIM",
+   "words": 60,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SINCOS",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GEO",
+   "words": 627,
+   "masked_words": 24,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GEO_00",
+   "words": 51,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007DF20"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GEO_01",
+   "words": 40,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007DFEC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GEO_02",
+   "words": 304,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GEO_03",
+   "words": 216,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FOG_00",
+   "words": 23,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FOG_01",
+   "words": 25,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FOG_02",
+   "words": 67,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 58,
+   "best_vaddr": "0x8007DA14"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_00",
+   "words": 116,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_01",
+   "words": 72,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_02",
+   "words": 49,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_03",
+   "words": 118,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_04",
+   "words": 95,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_05",
+   "words": 124,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "COR_06",
+   "words": 53,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SPL",
+   "words": 976,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SQRTBL",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC00",
+   "words": 36,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E08C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC01",
+   "words": 36,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E11C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC02",
+   "words": 168,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC03",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC04",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC05",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "words": 164,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E1AC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC07",
+   "words": 26,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC08",
+   "words": 35,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MSC09",
+   "words": 40,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E43C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_000",
+   "words": 68,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E4DC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_001",
+   "words": 60,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_002",
+   "words": 60,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_003",
+   "words": 88,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E5EC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_004",
+   "words": 88,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E74C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_005",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E8AC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_006",
+   "words": 80,
+   "masked_words": 26,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_007",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_008",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_009",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_00A",
+   "words": 76,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007E8DC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_00B",
+   "words": 68,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_00C",
+   "words": 148,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_01",
+   "words": 80,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EA0C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_02",
+   "words": 60,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_03",
+   "words": 68,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EB4C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_04",
+   "words": 68,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EC5C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_05",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007ED6C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_06",
+   "words": 24,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_07",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_08",
+   "words": 76,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EDBC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_09",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EEEC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_10",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_11",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EF1C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "MTX_12",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EF4C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG00",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG02",
+   "words": 40,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG03",
+   "words": 68,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG04",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EF6C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG05",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG06",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG07",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG08",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG09",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EF8C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG10",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EF9C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG11",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EFBC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG12",
+   "words": 8,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EFDC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "REG13",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007EFFC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP",
+   "words": 120,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "words": 132,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F00C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_01",
+   "words": 64,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_02",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F21C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_03",
+   "words": 24,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F24C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_04",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F2AC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_05",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMP_06",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_00",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F2DC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_01",
+   "words": 24,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_02",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_03",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_04",
+   "words": 36,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_05",
+   "words": 44,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_06",
+   "words": 36,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_07",
+   "words": 44,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_08",
+   "words": 52,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_09",
+   "words": 52,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_10",
+   "words": 16,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_11",
+   "words": 16,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_12",
+   "words": 20,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_13",
+   "words": 40,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_14",
+   "words": 28,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_15",
+   "words": 40,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_16",
+   "words": 28,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_17",
+   "words": 32,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CMB_18",
+   "words": 64,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "TMD",
+   "words": 1068,
+   "masked_words": 96,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "NOM",
+   "words": 224,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "HGT",
+   "words": 40,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CSTBL",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_00",
+   "words": 16,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_01",
+   "words": 164,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F35C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_02",
+   "words": 164,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_03",
+   "words": 164,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F5EC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_04",
+   "words": 104,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007F87C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_05",
+   "words": 104,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007FA1C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_06",
+   "words": 104,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007FBBC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FGO_07",
+   "words": 28,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_F3",
+   "words": 300,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_F4",
+   "words": 348,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_F4S",
+   "words": 360,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_G3",
+   "words": 336,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_G4",
+   "words": 396,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_G4S",
+   "words": 412,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_FT3",
+   "words": 312,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_FT4",
+   "words": 356,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_FT4S",
+   "words": 368,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_GT3",
+   "words": 348,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_GT4",
+   "words": 408,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PRS_GT4S",
+   "words": 420,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PMD",
+   "words": 1092,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_00",
+   "words": 120,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_01",
+   "words": 120,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_02",
+   "words": 120,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_03",
+   "words": 120,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_04",
+   "words": 140,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_05",
+   "words": 140,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_06",
+   "words": 140,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_07",
+   "words": 140,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_08",
+   "words": 124,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_09",
+   "words": 124,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_10",
+   "words": 124,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_11",
+   "words": 124,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_12",
+   "words": 156,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_13",
+   "words": 156,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_14",
+   "words": 156,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "SMD_15",
+   "words": 156,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_00",
+   "words": 116,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_01",
+   "words": 116,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_02",
+   "words": 116,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_03",
+   "words": 116,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_04",
+   "words": 136,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_05",
+   "words": 136,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_06",
+   "words": 136,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_07",
+   "words": 136,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_08",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_09",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_10",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_11",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_12",
+   "words": 152,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_13",
+   "words": 152,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_14",
+   "words": 152,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMD_15",
+   "words": 152,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "NMD",
+   "words": 1068,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIP_INI",
+   "words": 73,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_00",
+   "words": 28,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_01",
+   "words": 30,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_02",
+   "words": 82,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_03",
+   "words": 92,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_04",
+   "words": 505,
+   "masked_words": 66,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIPF_05",
+   "words": 50,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIP_G",
+   "words": 884,
+   "masked_words": 134,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIP_FT",
+   "words": 854,
+   "masked_words": 124,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "CLIP_GT",
+   "words": 932,
+   "masked_words": 135,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3_00",
+   "words": 142,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3_01",
+   "words": 142,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3_02",
+   "words": 122,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3_03",
+   "words": 122,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3_04",
+   "words": 84,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3_00",
+   "words": 190,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3_01",
+   "words": 192,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3_02",
+   "words": 162,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3_03",
+   "words": 162,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3_04",
+   "words": 104,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3_00",
+   "words": 145,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3_01",
+   "words": 145,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3_02",
+   "words": 126,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3_03",
+   "words": 127,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3_04",
+   "words": 96,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3_00",
+   "words": 158,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3_01",
+   "words": 158,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3_02",
+   "words": 140,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3_03",
+   "words": 143,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3_04",
+   "words": 118,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4_00",
+   "words": 154,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4_01",
+   "words": 155,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4_02",
+   "words": 142,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4_03",
+   "words": 143,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4_04",
+   "words": 99,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4_00",
+   "words": 167,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4_01",
+   "words": 168,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4_02",
+   "words": 160,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4_03",
+   "words": 161,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4_04",
+   "words": 125,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4_00",
+   "words": 170,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4_01",
+   "words": 176,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4_02",
+   "words": 150,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4_03",
+   "words": 151,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4_04",
+   "words": 116,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4_00",
+   "words": 186,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4_01",
+   "words": 192,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4_02",
+   "words": 162,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4_03",
+   "words": 170,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4_04",
+   "words": 143,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVF3A",
+   "words": 220,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVFT3A",
+   "words": 256,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVG3A",
+   "words": 260,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVGT3A",
+   "words": 296,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVF4A",
+   "words": 288,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVFT4A",
+   "words": 328,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVG4A",
+   "words": 340,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVGT4A",
+   "words": 392,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DIVP",
+   "words": 304,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4M00",
+   "words": 246,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4M01",
+   "words": 246,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4M02",
+   "words": 238,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4M03",
+   "words": 239,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4M00",
+   "words": 263,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4M01",
+   "words": 269,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4M02",
+   "words": 239,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4M03",
+   "words": 248,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_F",
+   "words": 116,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_G",
+   "words": 124,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_FT",
+   "words": 116,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_GT",
+   "words": 124,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_FC",
+   "words": 108,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_GC",
+   "words": 116,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_FCT",
+   "words": 88,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_GCT",
+   "words": 88,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPS_T",
+   "words": 108,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_F",
+   "words": 128,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 118,
+   "best_vaddr": "0x8007F81C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_G",
+   "words": 144,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 135,
+   "best_vaddr": "0x8007A28C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_FT",
+   "words": 128,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 118,
+   "best_vaddr": "0x8007F81C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_GT",
+   "words": 144,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 135,
+   "best_vaddr": "0x8007A28C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_FC",
+   "words": 120,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 112,
+   "best_vaddr": "0x8007EE1C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_GC",
+   "words": 132,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_FCT",
+   "words": 100,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 93,
+   "best_vaddr": "0x8007EE6C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_GCT",
+   "words": 108,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 102,
+   "best_vaddr": "0x80052B50"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPR_T",
+   "words": 120,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 110,
+   "best_vaddr": "0x8007A2EC"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RMPQ_T",
+   "words": 516,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 496,
+   "best_vaddr": "0x8007F20C"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "RATAN",
+   "words": 96,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007FD5C"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PPMFT",
+   "words": 1808,
+   "masked_words": 158,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PPM",
+   "words": 188,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PATCHGTE",
+   "words": 40,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8007FEDC"
+   ]
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "TRR",
+   "words": 300,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "PHN",
+   "words": 188,
+   "masked_words": 36,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "F3",
+   "words": 324,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "F4",
+   "words": 372,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "F4S",
+   "words": 392,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "G3",
+   "words": 364,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "G4",
+   "words": 432,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "G4S",
+   "words": 452,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT3",
+   "words": 364,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4",
+   "words": 424,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4S",
+   "words": 444,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT3",
+   "words": 400,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4",
+   "words": 476,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4S",
+   "words": 496,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4M_00",
+   "words": 188,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4M_01",
+   "words": 188,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4M_02",
+   "words": 192,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4M_03",
+   "words": 192,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4M_00",
+   "words": 196,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4M_01",
+   "words": 184,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4M_02",
+   "words": 216,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4M_03",
+   "words": 216,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT3F",
+   "words": 400,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010008",
+   "words": 163,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010009",
+   "words": 179,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0001000C",
+   "words": 166,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0001000D",
+   "words": 179,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010010",
+   "words": 172,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010011",
+   "words": 190,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010014",
+   "words": 190,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00010015",
+   "words": 212,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030008",
+   "words": 163,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030009",
+   "words": 179,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0003000C",
+   "words": 166,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0003000D",
+   "words": 179,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030010",
+   "words": 173,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030011",
+   "words": 191,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030014",
+   "words": 196,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00030015",
+   "words": 219,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050048",
+   "words": 145,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050049",
+   "words": 159,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0005004C",
+   "words": 153,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0005004D",
+   "words": 168,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050050",
+   "words": 165,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050051",
+   "words": 179,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050054",
+   "words": 175,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00050055",
+   "words": 191,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000008",
+   "words": 96,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000009",
+   "words": 100,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000A",
+   "words": 108,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000B",
+   "words": 112,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000C",
+   "words": 112,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000D",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000E",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000000F",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000010",
+   "words": 108,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000011",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000012",
+   "words": 124,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000013",
+   "words": 132,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000014",
+   "words": 132,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000015",
+   "words": 140,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000016",
+   "words": 136,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000017",
+   "words": 148,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000018",
+   "words": 156,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000019",
+   "words": 164,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000001C",
+   "words": 180,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000001D",
+   "words": 192,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000209",
+   "words": 104,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0000020D",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000211",
+   "words": 120,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00000215",
+   "words": 144,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020008",
+   "words": 96,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020009",
+   "words": 100,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0002000C",
+   "words": 112,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0002000D",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020010",
+   "words": 108,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020011",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020014",
+   "words": 132,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00020015",
+   "words": 140,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040048",
+   "words": 92,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040049",
+   "words": 96,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004004C",
+   "words": 92,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004004D",
+   "words": 100,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040050",
+   "words": 104,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040051",
+   "words": 108,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040054",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040055",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040058",
+   "words": 140,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040059",
+   "words": 148,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004005C",
+   "words": 148,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004005D",
+   "words": 156,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040148",
+   "words": 92,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040149",
+   "words": 88,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004014C",
+   "words": 92,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0004014D",
+   "words": 92,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "0044014D",
+   "words": 116,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040150",
+   "words": 104,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040151",
+   "words": 104,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040154",
+   "words": 108,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "00040155",
+   "words": 104,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "F3B",
+   "words": 304,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "F4B",
+   "words": 352,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "G3B",
+   "words": 344,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "G4B",
+   "words": 412,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT3B",
+   "words": 344,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "FT4B",
+   "words": 404,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT3B",
+   "words": 380,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "GT4B",
+   "words": 456,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3B00",
+   "words": 134,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3B01",
+   "words": 135,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3B02",
+   "words": 123,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF3B03",
+   "words": 124,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4B00",
+   "words": 150,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4B01",
+   "words": 151,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4B02",
+   "words": 140,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVF4B03",
+   "words": 141,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3B00",
+   "words": 143,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3B01",
+   "words": 144,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3B02",
+   "words": 136,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT3B03",
+   "words": 137,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4B00",
+   "words": 164,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4B01",
+   "words": 165,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4B02",
+   "words": 157,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVFT4B03",
+   "words": 158,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3B00",
+   "words": 145,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3B01",
+   "words": 147,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3B02",
+   "words": 127,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG3B03",
+   "words": 128,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4B00",
+   "words": 170,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4B01",
+   "words": 173,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4B02",
+   "words": 147,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVG4B03",
+   "words": 148,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3B00",
+   "words": 153,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3B01",
+   "words": 155,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3B02",
+   "words": 140,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT3B03",
+   "words": 142,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4B00",
+   "words": 183,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4B01",
+   "words": 185,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4B02",
+   "words": 159,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBGTE",
+   "mod": "DVGT4B03",
+   "words": 166,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "ADDDF3",
+   "words": 224,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "ADDMANT",
+   "words": 44,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "ADDSF3",
+   "words": 106,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "DBSHIFT",
+   "words": 50,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "DBSHIFTU",
+   "words": 50,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "DIVDF3",
+   "words": 202,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "DIVSF3",
+   "words": 83,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "EQDF2",
+   "words": 20,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "EQSF2",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "EXTSFDF2",
+   "words": 88,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FIXDFSI",
+   "words": 64,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FIXSFSI",
+   "words": 45,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FIXUDFSI",
+   "words": 68,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FIXUSFSI",
+   "words": 51,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FLTSIDF",
+   "words": 65,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FLTSISF",
+   "words": 45,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "GEDF2",
+   "words": 55,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "GESF2",
+   "words": 42,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "GTDF2",
+   "words": 55,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "GTSF2",
+   "words": 38,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LEDF2",
+   "words": 54,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LESF2",
+   "words": 41,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LTDF2",
+   "words": 56,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LTSF2",
+   "words": 39,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "MAINASU",
+   "words": 29,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "MULDF3",
+   "words": 257,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "MULSF3",
+   "words": 81,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "NEDF2",
+   "words": 20,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "NEGDF2",
+   "words": 14,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "NEGSF2",
+   "words": 7,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "NESF2",
+   "words": 12,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "SUBDF3",
+   "words": 33,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "SUBSF3",
+   "words": 24,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 18,
+   "best_vaddr": "0x80046A40"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "TRUDFSF2",
+   "words": 77,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "ARC",
+   "words": 520,
+   "masked_words": 84,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "EXP",
+   "words": 137,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FLOOR",
+   "words": 174,
+   "masked_words": 28,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "HYPOT",
+   "words": 135,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LDEXP",
+   "words": 123,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "LOG",
+   "words": 184,
+   "masked_words": 27,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "MODF",
+   "words": 123,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "POW",
+   "words": 139,
+   "masked_words": 20,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "SIN",
+   "words": 292,
+   "masked_words": 44,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "SINH",
+   "words": 190,
+   "masked_words": 33,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "SQRT",
+   "words": 76,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "PRINTF2",
+   "words": 1372,
+   "masked_words": 146,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "FERR",
+   "words": 26,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBMATH",
+   "mod": "STRTOD",
+   "words": 337,
+   "masked_words": 70,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "LIBPRESS",
+   "words": 472,
+   "masked_words": 129,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "VLC",
+   "words": 230,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "VLC_C",
+   "words": 229,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "BUILD",
+   "words": 58,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "ENCSPU",
+   "words": 287,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBPRESS",
+   "mod": "TABLE",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSIO",
+   "mod": "SIOHANDL",
+   "words": 592,
+   "masked_words": 151,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSIO",
+   "mod": "LIBSIO",
+   "words": 16,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSIO",
+   "mod": "SIO",
+   "words": 152,
+   "masked_words": 50,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSIO",
+   "mod": "SIOCB",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CCADSR",
+   "words": 63,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_0",
+   "words": 30,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_6",
+   "words": 266,
+   "masked_words": 21,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_7",
+   "words": 52,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_10",
+   "words": 50,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_11",
+   "words": 58,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_64",
+   "words": 42,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_91",
+   "words": 34,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_98",
+   "words": 76,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_99",
+   "words": 77,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_100",
+   "words": 28,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_101",
+   "words": 28,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CC_121",
+   "words": 47,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_0",
+   "words": 36,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_1",
+   "words": 47,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 35,
+   "best_vaddr": "0x80082E60"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_2",
+   "words": 36,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_3",
+   "words": 36,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_4",
+   "words": 45,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_5",
+   "words": 46,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_6",
+   "words": 44,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_7",
+   "words": 44,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_8",
+   "words": 45,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_9",
+   "words": 46,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_10",
+   "words": 45,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_11",
+   "words": 42,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_12",
+   "words": 55,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_13",
+   "words": 40,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_14",
+   "words": 40,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_15",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x80079220"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_16",
+   "words": 10,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_17",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x80079220"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_18",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x80079220"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DE_19",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x80079220"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "CRES",
+   "words": 191,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DECRES",
+   "words": 175,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDIBEND",
+   "words": 44,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDICC",
+   "words": 142,
+   "masked_words": 41,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDIMETA",
+   "words": 116,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDINOTE",
+   "words": 56,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDIPROG",
+   "words": 28,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDIREAD",
+   "words": 445,
+   "masked_words": 53,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 113,
+   "best_vaddr": "0x80084974"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "MIDITIME",
+   "words": 44,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085064"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "NEXT",
+   "words": 63,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085114"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "NPAUSE",
+   "words": 23,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "PAUSE",
+   "words": 39,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800848AC"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "PLAY",
+   "words": 11,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80084948",
+    "0x8008541C"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "REPLAY",
+   "words": 24,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085210"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SEPINIT",
+   "words": 250,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SEQINIT",
+   "words": 211,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSACCELE",
+   "words": 144,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSCALL",
+   "words": 157,
+   "masked_words": 27,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083F6C"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSCLOSE",
+   "words": 113,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSCMUTE",
+   "words": 31,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 19,
+   "best_vaddr": "0x80085064"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSCRES",
+   "words": 114,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSDECRES",
+   "words": 114,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSEND",
+   "words": 49,
+   "masked_words": 25,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083954"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGM",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGMV",
+   "words": 32,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 27,
+   "best_vaddr": "0x80078560"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGNC",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGRV",
+   "words": 34,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGSATTR",
+   "words": 41,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGSV",
+   "words": 53,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSINIT",
+   "words": 58,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083A48"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSINIT_C",
+   "words": 12,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083A18"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSINIT_H",
+   "words": 12,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083A18"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSLOOP",
+   "words": 32,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 20,
+   "best_vaddr": "0x80085064"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSMARK",
+   "words": 10,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSNEXT",
+   "words": 62,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSNOFF",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800168F8",
+    "0x8003E6B8",
+    "0x800444C0",
+    "0x800444E4",
+    "0x80044650",
+    "0x8004746C",
+    "0x8004748C",
+    "0x800474F0",
+    "0x80047510",
+    "0x80047530",
+    "0x80047550",
+    "0x8004777C",
+    "0x8004779C",
+    "0x8006C1FC",
+    "0x80077A60",
+    "0x80077AC0",
+    "0x80077AE0",
+    "0x80077B00",
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSNON",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSOPENP",
+   "words": 223,
+   "masked_words": 159,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSOPENQ",
+   "words": 200,
+   "masked_words": 159,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSOPENPJ",
+   "words": 75,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSOPENQJ",
+   "words": 52,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSPAUSE",
+   "words": 73,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 49,
+   "best_vaddr": "0x80085324"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSPLAY",
+   "words": 28,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSPLAYB",
+   "words": 47,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSQUIT",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800168F8",
+    "0x8003E6B8",
+    "0x800444C0",
+    "0x800444E4",
+    "0x80044650",
+    "0x8004746C",
+    "0x8004748C",
+    "0x800474F0",
+    "0x80047510",
+    "0x80047530",
+    "0x80047550",
+    "0x8004777C",
+    "0x8004779C",
+    "0x8006C1FC",
+    "0x80077A60",
+    "0x80077AC0",
+    "0x80077AE0",
+    "0x80077B00",
+    "0x80080148",
+    "0x800801E8",
+    "0x80080208",
+    "0x80080684",
+    "0x80083B30"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSREPLAY",
+   "words": 60,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 37,
+   "best_vaddr": "0x80085358"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "PLAYMODE",
+   "words": 71,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSRIT",
+   "words": 143,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSATTR",
+   "words": 37,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083B50"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSM",
+   "words": 16,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 8,
+   "best_vaddr": "0x8007A3C0"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSMV",
+   "words": 20,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083BE4"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSNC",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSRV",
+   "words": 34,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "words": 206,
+   "masked_words": 66,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80083C34"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSTOP",
+   "words": 120,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 51,
+   "best_vaddr": "0x80085268"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSSV",
+   "words": 63,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085448"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSTABLE",
+   "words": 118,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSTEMPO",
+   "words": 79,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSTICK",
+   "words": 91,
+   "masked_words": 39,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085544"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSTICKCB",
+   "words": 9,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSVKOFF",
+   "words": 15,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSVKON",
+   "words": 19,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSVOL",
+   "words": 53,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "TEMPO",
+   "words": 136,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800856B0"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VOL",
+   "words": 62,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 49,
+   "best_vaddr": "0x80085064"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "DMYPRINT",
+   "words": 614,
+   "masked_words": 259,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 568,
+   "best_vaddr": "0x800821B8"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "SSGCP",
+   "words": 16,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 4,
+   "best_vaddr": "0x80085064"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_AKO",
+   "words": 69,
+   "masked_words": 21,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_AUTOP",
+   "words": 25,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 18,
+   "best_vaddr": "0x80085FC8"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_AUTOV",
+   "words": 25,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 18,
+   "best_vaddr": "0x80085FC8"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_CADSR",
+   "words": 54,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_CP",
+   "words": 80,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_F",
+   "words": 16,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 8,
+   "best_vaddr": "0x80078D60"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GPA",
+   "words": 66,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GVA",
+   "words": 143,
+   "masked_words": 36,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GVAD",
+   "words": 45,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GVAFT",
+   "words": 58,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GVBA",
+   "words": 20,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800859F0"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_GVH",
+   "words": 55,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_KEY",
+   "words": 316,
+   "masked_words": 127,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 212,
+   "best_vaddr": "0x80085A50"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_KEYV",
+   "words": 259,
+   "masked_words": 109,
+   "unknown_reloc_types": [],
+   "status": "near",
+   "vaddr": "0x80085A40",
+   "mismatch_words": 4
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_PB",
+   "words": 36,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_RDEL",
+   "words": 16,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_RDEP",
+   "words": 38,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085E4C"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_REV",
+   "words": 45,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80085EE4"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_RFB",
+   "words": 16,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_ROFF",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80016E40",
+    "0x800474D0",
+    "0x8004775C",
+    "0x8005B58C",
+    "0x80083EBC",
+    "0x80085F98",
+    "0x800885AC"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_RON",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80016868",
+    "0x800168D0",
+    "0x80083E9C",
+    "0x80085FB8"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_SPA",
+   "words": 51,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_SVA",
+   "words": 114,
+   "masked_words": 36,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_SVH",
+   "words": 34,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "UT_VVOL",
+   "words": 141,
+   "masked_words": 26,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_ALOC1",
+   "words": 163,
+   "masked_words": 42,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_ALOC2",
+   "words": 133,
+   "masked_words": 57,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 33,
+   "best_vaddr": "0x800861B8"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_AUTOP",
+   "words": 366,
+   "masked_words": 79,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_AUTOV",
+   "words": 368,
+   "masked_words": 79,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_DOFF",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80037250",
+    "0x80042854",
+    "0x80046E44",
+    "0x80046E6C",
+    "0x8004875C",
+    "0x800863CC",
+    "0x80087F24"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_DON",
+   "words": 5,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "near",
+   "vaddr": "0x8001B6E0",
+   "mismatch_words": 1
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_F",
+   "words": 237,
+   "masked_words": 83,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_G",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_INIT",
+   "words": 196,
+   "masked_words": 95,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 128,
+   "best_vaddr": "0x80086818"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_KEY",
+   "words": 495,
+   "masked_words": 91,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_N2P",
+   "words": 112,
+   "masked_words": 18,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80086B38"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NO1",
+   "words": 305,
+   "masked_words": 86,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NO2",
+   "words": 103,
+   "masked_words": 41,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NOFF",
+   "words": 17,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NOISE",
+   "words": 105,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NOWOF",
+   "words": 52,
+   "masked_words": 25,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 4,
+   "best_vaddr": "0x800871D4"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_NOWON",
+   "words": 300,
+   "masked_words": 74,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 192,
+   "best_vaddr": "0x800872A4"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_PB",
+   "words": 188,
+   "masked_words": 39,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_PORTA",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_PROG",
+   "words": 100,
+   "masked_words": 16,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_SEQ",
+   "words": 434,
+   "masked_words": 65,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_SPB",
+   "words": 102,
+   "masked_words": 26,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_STAV",
+   "words": 45,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_VIB",
+   "words": 4,
+   "masked_words": 0,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800168E8",
+    "0x80017F88",
+    "0x80017F90",
+    "0x80030D40",
+    "0x80035428",
+    "0x800457CC",
+    "0x8004694C",
+    "0x800477B4",
+    "0x800477BC",
+    "0x800477C4",
+    "0x800477CC",
+    "0x80049708",
+    "0x8004A930",
+    "0x8004E564",
+    "0x8008BE94"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_VOL",
+   "words": 351,
+   "masked_words": 43,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VM_VSU",
+   "words": 49,
+   "masked_words": 23,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80087E3C"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_AUTO",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800194E4",
+    "0x80087F00",
+    "0x80087F54"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_MONO",
+   "words": 9,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80087F10"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_SRV",
+   "words": 12,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80087F34"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VAB",
+   "words": 33,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80087F64"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VFB",
+   "words": 28,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80087FE8"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "words": 283,
+   "masked_words": 54,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80088058"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VT",
+   "words": 32,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VTB",
+   "words": 48,
+   "masked_words": 13,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800884C4"
+   ]
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VTBP",
+   "words": 88,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 77,
+   "best_vaddr": "0x80016498"
+  },
+  {
+   "lib": "LIBSND",
+   "mod": "VS_VTC",
+   "words": 10,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80088584"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "words": 741,
+   "masked_words": 226,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80088740"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_CB",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800469A0"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_DCB",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800892D4"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SPU_GEX",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_INI",
+   "words": 93,
+   "masked_words": 55,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800885CC"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_I",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80016E40",
+    "0x800474D0",
+    "0x8004775C",
+    "0x8005B58C",
+    "0x80083EBC",
+    "0x80085F98",
+    "0x800885AC"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_IH",
+   "words": 8,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80016868",
+    "0x800168D0",
+    "0x80083E9C",
+    "0x80085FB8"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_Q",
+   "words": 31,
+   "masked_words": 17,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800892F8"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SM",
+   "words": 22,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GM",
+   "words": 8,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_INT",
+   "words": 194,
+   "masked_words": 37,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800896A0"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_INIT",
+   "words": 21,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089384"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_UTIL",
+   "words": 67,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089E30"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_M",
+   "words": 178,
+   "masked_words": 41,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800893D8"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_WSA",
+   "words": 389,
+   "masked_words": 97,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_F",
+   "words": 31,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x800899A8"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_M_X",
+   "words": 44,
+   "masked_words": 11,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SE",
+   "words": 25,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_F",
+   "words": 135,
+   "masked_words": 58,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SAV",
+   "words": 130,
+   "masked_words": 30,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 64,
+   "best_vaddr": "0x80089A70"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GAV",
+   "words": 12,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVA",
+   "words": 10,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 4,
+   "best_vaddr": "0x80027964"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVA",
+   "words": 26,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 18,
+   "best_vaddr": "0x80046A80"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SN_SVA",
+   "words": 12,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 6,
+   "best_vaddr": "0x8002795C"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SN_GVA",
+   "words": 234,
+   "masked_words": 38,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SNV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089A24"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GNV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SNC",
+   "words": 20,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089D10"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GNC",
+   "words": 8,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SR",
+   "words": 52,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089D60"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GR",
+   "words": 8,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_RMP",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRMP",
+   "words": 318,
+   "masked_words": 75,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x80089F3C"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRMP",
+   "words": 20,
+   "masked_words": 10,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 17,
+   "best_vaddr": "0x80022F98"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRA",
+   "words": 308,
+   "masked_words": 64,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008A434"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_RRWA",
+   "words": 20,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 13,
+   "best_vaddr": "0x80046DC8"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_IRWAR",
+   "words": 17,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRD",
+   "words": 30,
+   "masked_words": 8,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008A904"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_CRWA",
+   "words": 103,
+   "masked_words": 32,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008A928"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_RDD",
+   "words": 28,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SI",
+   "words": 80,
+   "masked_words": 19,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GI",
+   "words": 8,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SIA",
+   "words": 16,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GIA",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SIC",
+   "words": 17,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 9,
+   "best_vaddr": "0x800779C0"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SK",
+   "words": 127,
+   "masked_words": 61,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AAD4"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GKS",
+   "words": 37,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008ACD0"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SKOWA",
+   "words": 13,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 6,
+   "best_vaddr": "0x800346D4"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVEA",
+   "words": 28,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_R",
+   "words": 24,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AD64",
+    "0x8008ADC4"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_W",
+   "words": 24,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AD64",
+    "0x8008ADC4"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_W0",
+   "words": 87,
+   "masked_words": 27,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_STSA",
+   "words": 22,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AE24"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GTSA",
+   "words": 6,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_STM",
+   "words": 13,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AE7C"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GTM",
+   "words": 17,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_WP",
+   "words": 35,
+   "masked_words": 12,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 24,
+   "best_vaddr": "0x80082988"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_ITC",
+   "words": 42,
+   "masked_words": 14,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AEB0"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_STC",
+   "words": 9,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x80055058"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_IT",
+   "words": 17,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AF58"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SPLV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GPLV",
+   "words": 9,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCA",
+   "words": 229,
+   "masked_words": 52,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008AF9C"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCA",
+   "words": 193,
+   "masked_words": 38,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "words": 189,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008BA94"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SR_SV",
+   "words": 399,
+   "masked_words": 56,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SR_SVA",
+   "words": 13,
+   "masked_words": 1,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 7,
+   "best_vaddr": "0x80027958"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "SR_GAKS",
+   "words": 86,
+   "masked_words": 15,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008B330"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "ST",
+   "words": 1187,
+   "masked_words": 545,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "T_C",
+   "words": 155,
+   "masked_words": 36,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "VERSION",
+   "status": "no-text"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVV",
+   "words": 16,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 9,
+   "best_vaddr": "0x800372B4"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVVA",
+   "words": 76,
+   "masked_words": 21,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 66,
+   "best_vaddr": "0x800473E0"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVP",
+   "words": 13,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 5,
+   "best_vaddr": "0x8003C924"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVN",
+   "words": 27,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 19,
+   "best_vaddr": "0x80037254"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVSN",
+   "words": 12,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 5,
+   "best_vaddr": "0x8003D2C4"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVSA",
+   "words": 11,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x800372C8"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVLSA",
+   "words": 11,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 3,
+   "best_vaddr": "0x800372C8"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVAR",
+   "words": 17,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 10,
+   "best_vaddr": "0x80020D98"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVDR",
+   "words": 17,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 10,
+   "best_vaddr": "0x80020D98"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVSR",
+   "words": 18,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 11,
+   "best_vaddr": "0x800168D0"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVRR",
+   "words": 17,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 9,
+   "best_vaddr": "0x800444C0"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVSL",
+   "words": 17,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 9,
+   "best_vaddr": "0x800444C0"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVARA",
+   "words": 21,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 14,
+   "best_vaddr": "0x80020D88"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVSRA",
+   "words": 39,
+   "masked_words": 7,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 30,
+   "best_vaddr": "0x8003BD74"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVRRA",
+   "words": 23,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 15,
+   "best_vaddr": "0x80077A04"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVAD",
+   "words": 28,
+   "masked_words": 3,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 21,
+   "best_vaddr": "0x80020D6C"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SVADA",
+   "words": 64,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVV",
+   "words": 24,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008BD88"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVVA",
+   "words": 131,
+   "masked_words": 24,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVVX",
+   "words": 14,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVP",
+   "words": 7,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVN",
+   "words": 26,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVSN",
+   "words": 6,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 4,
+   "best_vaddr": "0x8008BDEC"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVEX",
+   "words": 7,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "verbatim",
+   "vaddrs": [
+    "0x8008BDE8"
+   ]
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVSA",
+   "words": 11,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVLSA",
+   "words": 11,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVAR",
+   "words": 10,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVDR",
+   "words": 10,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVSR",
+   "words": 11,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVRR",
+   "words": 10,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVSL",
+   "words": 9,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVARA",
+   "words": 17,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVSRA",
+   "words": 27,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVRRA",
+   "words": 17,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVAD",
+   "words": 22,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GVADA",
+   "words": 52,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCMV",
+   "words": 8,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCMVA",
+   "words": 88,
+   "masked_words": 22,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCCV",
+   "words": 7,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCCR",
+   "words": 17,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SCCM",
+   "words": 17,
+   "masked_words": 5,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCMV",
+   "words": 29,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCMVX",
+   "words": 12,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCMVA",
+   "words": 130,
+   "masked_words": 25,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCCV",
+   "words": 12,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCCR",
+   "words": 12,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GCCM",
+   "words": 12,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRMT",
+   "words": 119,
+   "masked_words": 40,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRMD",
+   "words": 11,
+   "masked_words": 6,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 6,
+   "best_vaddr": "0x80034074"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRMDT",
+   "words": 70,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_SRMFB",
+   "words": 47,
+   "masked_words": 9,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRMT",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2,
+   "best_vaddr": "0x8001B284"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRMD",
+   "words": 8,
+   "masked_words": 4,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 5,
+   "best_vaddr": "0x80060B80"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRMDT",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2,
+   "best_vaddr": "0x8001B284"
+  },
+  {
+   "lib": "LIBSPU",
+   "mod": "S_GRMFB",
+   "words": 4,
+   "masked_words": 2,
+   "unknown_reloc_types": [],
+   "status": "no-match",
+   "best_mismatch": 2,
+   "best_vaddr": "0x8001B284"
+  },
+  {
+   "lib": "LIBTAP",
+   "mod": "TAP",
+   "words": 1192,
+   "masked_words": 119,
+   "unknown_reloc_types": [],
+   "status": "no-match"
+  }
+ ],
+ "lib_errors": []
+}

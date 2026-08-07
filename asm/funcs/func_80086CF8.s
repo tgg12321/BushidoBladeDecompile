@@ -179,7 +179,7 @@ glabel func_80086CF8
     /* 7779C 80086F9C 00284290 */  lbu        $v0, %lo(D_80102800)($v0)
     /* 777A0 80086FA0 00000000 */  nop
     /* 777A4 80086FA4 23208200 */  subu       $a0, $a0, $v0
-    /* 777A8 80086FA8 4427020C */  jal        func_80089D10
+    /* 777A8 80086FA8 4427020C */  jal        SpuSetNoiseClock
     /* 777AC 80086FAC 3F008430 */   andi      $a0, $a0, 0x3F
     /* 777B0 80086FB0 FF007032 */  andi       $s0, $s3, 0xFF
     /* 777B4 80086FB4 00191000 */  sll        $v1, $s0, 4
@@ -314,7 +314,7 @@ glabel func_80086CF8
     /* 779A0 800871A0 00140200 */  sll        $v0, $v0, 16
     /* 779A4 800871A4 002C0500 */  sll        $a1, $a1, 16
     /* 779A8 800871A8 032C0500 */  sra        $a1, $a1, 16
-    /* 779AC 800871AC 8926020C */  jal        spu_WaitReady
+    /* 779AC 800871AC 8926020C */  jal        SpuSetNoiseVoice
     /* 779B0 800871B0 25284500 */   or        $a1, $v0, $a1
     /* 779B4 800871B4 2800BF8F */  lw         $ra, 0x28($sp)
     /* 779B8 800871B8 2400B38F */  lw         $s3, 0x24($sp)

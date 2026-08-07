@@ -26,8 +26,8 @@ extern void game_FrameLoop(void);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
@@ -77,7 +77,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
@@ -88,7 +88,7 @@ extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -96,7 +96,7 @@ extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
-extern void initLoadImage(u32 *, s16 *, s32, s32);
+extern void SetDrawMove(u32 *, s16 *, s32, s32);
 extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
 extern s32 func_800788B0(void);
@@ -125,13 +125,13 @@ extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern void func_800342A0(void);
 extern s32 func_80022408(s32 *);
-extern void gpu_StoreImage(s32 *, u16 *);
+extern void StoreImage(s32 *, u16 *);
 extern void func_80052BE4(u8 *);
 extern void func_8003F388(s16 *);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -798,7 +798,7 @@ extern u16 D_80101ED6;
 extern s32 D_800A3818;
 extern void func_8001DA2C(void);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void SetGeomScreen(s32);
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 func_80022408(s32 *);
@@ -816,7 +816,7 @@ void func_8003CE18(void) {
     func_8003E22C();
     game_SetPlayerCount(0);
     v0 = disp_CalcFov(0x2D);
-    func_8007EFFC(v0);
+    SetGeomScreen(v0);
     player = D_800A3748;
     {
         u16 val = *((u16 *)((u8 *)&D_80101ED6 + player * 1100));
@@ -927,7 +927,7 @@ void func_8003CF84(void) {
     D_800A37B8 = D_800A37B8 + 1;
 }
 void func_8003D2C4(void) {
-    gpu_LoadImage((s32)&D_800A3220, (s32)&D_80090178);
+    LoadImage((s32)&D_800A3220, (s32)&D_80090178);
 }
 extern s32 D_800A3364;
 extern s32 D_800A3218;
@@ -1032,8 +1032,8 @@ typedef char *va_list;
 #define va_start(ap, last) (ap = (char *)__builtin_next_arg(last))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-s32 func_800791D8(u8 *);
-void func_80079A30(u8 *, u8 *, s32);
+s32 strlen(u8 *);
+void sprintf(u8 *, u8 *, s32);
 
 void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     u8 buf[0x400];
@@ -1062,7 +1062,7 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
                     seen_pct = 1;
                 } else {
                     *seg_ptr = 0;
-                    func_80079A30(buf_ptr + func_800791D8(buf), seg_start, cur_arg);
+                    sprintf(buf_ptr + strlen(buf), seg_start, cur_arg);
                     seg_ptr = seg_start;
                     cur_arg = va_arg(ap, s32);
                 }
@@ -1073,7 +1073,7 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     }
 
     *seg_ptr = 0;
-    func_80079A30(buf + func_800791D8(buf), seg, cur_arg);
+    sprintf(buf + strlen(buf), seg, cur_arg);
 
     ch = buf[0];
     if (ch != 0) {
@@ -1234,7 +1234,7 @@ void func_8003D9A0(s16 *a0, s32 a1, u32 *a2) {
                 a0[1] = s3;
                 a0[0] = (u16)a0[0] + (u16)a0[2];
             }
-            initLoadImage(s1, a0, s4, s3);
+            SetDrawMove(s1, a0, s4, s3);
             *(Copy24 *)((u8 *)s1 + 0x18) = *(Copy24 *)s1;
             s1 = (u32 *)((u8 *)s1 + 0x30);
         } while (--s2 != -1);
@@ -1376,13 +1376,13 @@ void func_8003DE14(s16 *rect, s32 count) {
     register s32 b asm("s3");
     s32 target_color;
 
-    gpu_DrawSync(0);
+    DrawSync(0);
     count--;
-    gpu_StoreImage((s32 *)rect, src_buf);
-    gpu_DrawSync(0);
+    StoreImage((s32 *)rect, src_buf);
+    DrawSync(0);
     i = 0;
     ((u16 *)rect)[1] -= ((u16 *)rect)[3];
-    gpu_LoadImage((s32)rect, (s32)src_buf);
+    LoadImage((s32)rect, (s32)src_buf);
     saved_y = rect[1];
     rect[1] = ((u16 *)rect)[3] + saved_y;
     func_80052BE4(color_info);
@@ -1455,8 +1455,8 @@ void func_8003DE14(s16 *rect, s32 count) {
                     ((u16 *)rect)[0] += ((u16 *)rect)[2];
                 }
             }
-            gpu_LoadImage((s32)rect, (s32)dst_buf);
-            gpu_DrawSync(0);
+            LoadImage((s32)rect, (s32)dst_buf);
+            DrawSync(0);
             i++;
         } while (i < count);
     }
@@ -1478,7 +1478,7 @@ void func_8003E120(void) {
     func_8003DE14(buf, 0x13);
 }
 extern s32 D_800A3228;
-extern void func_8007B6C8(s16 *, s32, s32);
+extern void MoveImage(s16 *, s32, s32);
 void func_8003E164(s32 arg0) {
     s16 buf[4];
     s32 *s0;
@@ -1499,13 +1499,13 @@ void func_8003E164(s32 arg0) {
     buf[1] = 0xF8;
     buf[2] = 0x40;
     buf[3] = 6;
-    func_8007B6C8(buf, 0x140, 0x1E8);
+    MoveImage(buf, 0x140, 0x1E8);
     if (arg0 == 0) {
         func_800432A0(*(s16 *)((u8 *)s0 + 0x14), 0, 0, -0x140, 0xE8);
     } else {
         func_800432A0(*(s16 *)((u8 *)s0 + 0x14), 0, 0, -0x1C0, 0xE8);
     }
-    gpu_DrawSync(0);
+    DrawSync(0);
     func_8003E120();
 end:
     D_800A3228 = arg0;

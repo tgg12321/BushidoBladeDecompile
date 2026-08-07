@@ -1,15 +1,15 @@
-glabel cdrom_Initialize
+glabel CD_init
     /* 721C4 800819C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 721C8 800819C8 0180043C */  lui        $a0, %hi(D_800162A8)
     /* 721CC 800819CC A8628424 */  addiu      $a0, $a0, %lo(D_800162A8)
     /* 721D0 800819D0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 721D4 800819D4 0008020C */  jal        func_80082000
+    /* 721D4 800819D4 0008020C */  jal        puts
     /* 721D8 800819D8 00000000 */   nop
     /* 721DC 800819DC 0180043C */  lui        $a0, %hi(D_800162B4)
     /* 721E0 800819E0 B4628424 */  addiu      $a0, $a0, %lo(D_800162B4)
     /* 721E4 800819E4 0A80053C */  lui        $a1, %hi(D_800A1498)
     /* 721E8 800819E8 9814A524 */  addiu      $a1, $a1, %lo(D_800A1498)
-    /* 721EC 800819EC 82E4010C */  jal        debug_printf
+    /* 721EC 800819EC 82E4010C */  jal        printf
     /* 721F0 800819F0 00000000 */   nop
     /* 721F4 800819F4 0A80013C */  lui        $at, %hi(D_800A11D5)
     /* 721F8 800819F8 D51120A0 */  sb         $zero, %lo(D_800A11D5)($at)
@@ -23,11 +23,11 @@ glabel cdrom_Initialize
     /* 72218 80081A18 C81120AC */  sw         $zero, %lo(D_800A11C8)($at)
     /* 7221C 80081A1C 0A80013C */  lui        $at, %hi(D_800A11C4)
     /* 72220 80081A20 C41120AC */  sw         $zero, %lo(D_800A11C4)($at)
-    /* 72224 80081A24 B00A020C */  jal        irq_DisableInterrupts
+    /* 72224 80081A24 B00A020C */  jal        ResetCallback
     /* 72228 80081A28 00000000 */   nop
     /* 7222C 80081A2C 0880053C */  lui        $a1, %hi(D_80081F1C)
     /* 72230 80081A30 1C1FA524 */  addiu      $a1, $a1, %lo(D_80081F1C)
-    /* 72234 80081A34 BC0A020C */  jal        irq_EnableInterrupts
+    /* 72234 80081A34 BC0A020C */  jal        InterruptCallback
     /* 72238 80081A38 02000424 */   addiu     $a0, $zero, 0x2
     /* 7223C 80081A3C 0A80033C */  lui        $v1, %hi(D_800A147C)
     /* 72240 80081A40 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
@@ -88,7 +88,7 @@ glabel cdrom_Initialize
     /* 72314 80081B14 8C14638C */  lw         $v1, %lo(D_800A148C)($v1)
     /* 72318 80081B18 25130224 */  addiu      $v0, $zero, 0x1325
     /* 7231C 80081B1C 000062AC */  sw         $v0, 0x0($v1)
-    /* 72320 80081B20 BF04020C */  jal        func_800812FC
+    /* 72320 80081B20 BF04020C */  jal        CD_cw
     /* 72324 80081B24 00000000 */   nop
     /* 72328 80081B28 0A80023C */  lui        $v0, %hi(D_800A11C4)
     /* 7232C 80081B2C C411428C */  lw         $v0, %lo(D_800A11C4)($v0)
@@ -98,25 +98,25 @@ glabel cdrom_Initialize
     /* 7233C 80081B3C 01000424 */   addiu     $a0, $zero, 0x1
     /* 72340 80081B40 21280000 */  addu       $a1, $zero, $zero
     /* 72344 80081B44 21300000 */  addu       $a2, $zero, $zero
-    /* 72348 80081B48 BF04020C */  jal        func_800812FC
+    /* 72348 80081B48 BF04020C */  jal        CD_cw
     /* 7234C 80081B4C 21380000 */   addu      $a3, $zero, $zero
   .L80081B50:
     /* 72350 80081B50 0A000424 */  addiu      $a0, $zero, 0xA
     /* 72354 80081B54 21280000 */  addu       $a1, $zero, $zero
     /* 72358 80081B58 21300000 */  addu       $a2, $zero, $zero
-    /* 7235C 80081B5C BF04020C */  jal        func_800812FC
+    /* 7235C 80081B5C BF04020C */  jal        CD_cw
     /* 72360 80081B60 21380000 */   addu      $a3, $zero, $zero
     /* 72364 80081B64 0E004014 */  bnez       $v0, .L80081BA0
     /* 72368 80081B68 FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 7236C 80081B6C 0C000424 */  addiu      $a0, $zero, 0xC
     /* 72370 80081B70 21280000 */  addu       $a1, $zero, $zero
     /* 72374 80081B74 21300000 */  addu       $a2, $zero, $zero
-    /* 72378 80081B78 BF04020C */  jal        func_800812FC
+    /* 72378 80081B78 BF04020C */  jal        CD_cw
     /* 7237C 80081B7C 21380000 */   addu      $a3, $zero, $zero
     /* 72380 80081B80 07004014 */  bnez       $v0, .L80081BA0
     /* 72384 80081B84 FFFF0224 */   addiu     $v0, $zero, -0x1
     /* 72388 80081B88 21200000 */  addu       $a0, $zero, $zero
-    /* 7238C 80081B8C 6C03020C */  jal        func_80080DB0
+    /* 7238C 80081B8C 6C03020C */  jal        CD_sync
     /* 72390 80081B90 21280000 */   addu      $a1, $zero, $zero
     /* 72394 80081B94 02004238 */  xori       $v0, $v0, 0x2
     /* 72398 80081B98 2B100200 */  sltu       $v0, $zero, $v0
@@ -126,4 +126,4 @@ glabel cdrom_Initialize
     /* 723A4 80081BA4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 723A8 80081BA8 0800E003 */  jr         $ra
     /* 723AC 80081BAC 00000000 */   nop
-endlabel cdrom_Initialize
+endlabel CD_init

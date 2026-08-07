@@ -5,11 +5,11 @@ glabel func_8003A39C
     /* 2ABA8 8003A3A8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2ABAC 8003A3AC 400180A3 */  sb         $zero, %gp_rel(D_800A320C)($gp)
     /* 2ABB0 8003A3B0 640680AF */  sw         $zero, %gp_rel(D_800A3730)($gp)
-    /* 2ABB4 8003A3B4 1931020C */  jal        func_8008C464
+    /* 2ABB4 8003A3B4 1931020C */  jal        _comb_control
     /* 2ABB8 8003A3B8 21300000 */   addu      $a2, $zero, $zero
     /* 2ABBC 8003A3BC 01000424 */  addiu      $a0, $zero, 0x1
     /* 2ABC0 8003A3C0 01000524 */  addiu      $a1, $zero, 0x1
-    /* 2ABC4 8003A3C4 1931020C */  jal        func_8008C464
+    /* 2ABC4 8003A3C4 1931020C */  jal        _comb_control
     /* 2ABC8 8003A3C8 21300000 */   addu      $a2, $zero, $zero
     /* 2ABCC 8003A3CC 99E8000C */  jal        func_8003A264
     /* 2ABD0 8003A3D0 00000000 */   nop

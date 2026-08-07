@@ -34,27 +34,27 @@ glabel func_8002F770
     /* 1FFF0 8002F7F0 9E0320A4 */  sh         $zero, (0x1F80039E & 0xFFFF)($at)
     /* 1FFF4 8002F7F4 801F013C */  lui        $at, (0x1F8003A0 >> 16)
     /* 1FFF8 8002F7F8 A00322A4 */  sh         $v0, (0x1F8003A0 & 0xFFFF)($at)
-    /* 1FFFC 8002F7FC 1FFE010C */  jal        func_8007F87C
+    /* 1FFFC 8002F7FC 1FFE010C */  jal        RotMatrixX
     /* 20000 8002F800 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20004 8002F804 21200002 */  addu       $a0, $s0, $zero
     /* 20008 8002F808 801F053C */  lui        $a1, (0x1F800390 >> 16)
-    /* 2000C 8002F80C 87FE010C */  jal        func_8007FA1C
+    /* 2000C 8002F80C 87FE010C */  jal        RotMatrixY
     /* 20010 8002F810 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20014 8002F814 23201100 */  negu       $a0, $s1
     /* 20018 8002F818 801F053C */  lui        $a1, (0x1F800390 >> 16)
-    /* 2001C 8002F81C EFFE010C */  jal        func_8007FBBC
+    /* 2001C 8002F81C EFFE010C */  jal        RotMatrixZ
     /* 20020 8002F820 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20024 8002F824 801F053C */  lui        $a1, (0x1F800390 >> 16)
     /* 20028 8002F828 00006486 */  lh         $a0, 0x0($s3)
-    /* 2002C 8002F82C 1FFE010C */  jal        func_8007F87C
+    /* 2002C 8002F82C 1FFE010C */  jal        RotMatrixX
     /* 20030 8002F830 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20034 8002F834 801F053C */  lui        $a1, (0x1F800390 >> 16)
     /* 20038 8002F838 02006486 */  lh         $a0, 0x2($s3)
-    /* 2003C 8002F83C 87FE010C */  jal        func_8007FA1C
+    /* 2003C 8002F83C 87FE010C */  jal        RotMatrixY
     /* 20040 8002F840 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20044 8002F844 801F053C */  lui        $a1, (0x1F800390 >> 16)
     /* 20048 8002F848 04006486 */  lh         $a0, 0x4($s3)
-    /* 2004C 8002F84C EFFE010C */  jal        func_8007FBBC
+    /* 2004C 8002F84C EFFE010C */  jal        RotMatrixZ
     /* 20050 8002F850 9003A534 */   ori       $a1, $a1, (0x1F800390 & 0xFFFF)
     /* 20054 8002F854 801F083C */  lui        $t0, (0x1F80039A >> 16)
     /* 20058 8002F858 9A030885 */  lh         $t0, (0x1F80039A & 0xFFFF)($t0)
@@ -222,7 +222,7 @@ glabel func_8002F770
   .L8002FAB4:
     /* 202B4 8002FAB4 12B00000 */  mflo       $s6
     /* 202B8 8002FAB8 21200002 */  addu       $a0, $s0, $zero
-    /* 202BC 8002FABC 57FF010C */  jal        func_8007FD5C
+    /* 202BC 8002FABC 57FF010C */  jal        ratan2
     /* 202C0 8002FAC0 21282002 */   addu      $a1, $s1, $zero
     /* 202C4 8002FAC4 18003102 */  mult       $s1, $s1
     /* 202C8 8002FAC8 12180000 */  mflo       $v1
@@ -268,7 +268,7 @@ glabel func_8002F770
     /* 20360 8002FB60 06504400 */  srlv       $t2, $a0, $v0
   .L8002FB64:
     /* 20364 8002FB64 21208002 */  addu       $a0, $s4, $zero
-    /* 20368 8002FB68 57FF010C */  jal        func_8007FD5C
+    /* 20368 8002FB68 57FF010C */  jal        ratan2
     /* 2036C 8002FB6C 21284001 */   addu      $a1, $t2, $zero
     /* 20370 8002FB70 2120A002 */  addu       $a0, $s5, $zero
     /* 20374 8002FB74 D8005026 */  addiu      $s0, $s2, 0xD8
@@ -283,10 +283,10 @@ glabel func_8002F770
     /* 20398 8002FB98 E20040A6 */  sh         $zero, 0xE2($s2)
     /* 2039C 8002FB9C E40040A6 */  sh         $zero, 0xE4($s2)
     /* 203A0 8002FBA0 E60040A6 */  sh         $zero, 0xE6($s2)
-    /* 203A4 8002FBA4 EFFE010C */  jal        func_8007FBBC
+    /* 203A4 8002FBA4 EFFE010C */  jal        RotMatrixZ
     /* 203A8 8002FBA8 E80043A6 */   sh        $v1, 0xE8($s2)
     /* 203AC 8002FBAC 21202002 */  addu       $a0, $s1, $zero
-    /* 203B0 8002FBB0 87FE010C */  jal        func_8007FA1C
+    /* 203B0 8002FBB0 87FE010C */  jal        RotMatrixY
     /* 203B4 8002FBB4 21280002 */   addu      $a1, $s0, $zero
     /* 203B8 8002FBB8 21600002 */  addu       $t4, $s0, $zero
     /* 203BC 8002FBBC 00008D8D */  lw         $t5, 0x0($t4)
@@ -319,7 +319,7 @@ glabel func_8002F770
     /* 20428 8002FC28 08009BE9 */  swc2       $27, 0x8($t4) /* handwritten instruction */
     /* 2042C 8002FC2C B000448E */  lw         $a0, 0xB0($s2)
     /* 20430 8002FC30 AC00458E */  lw         $a1, 0xAC($s2)
-    /* 20434 8002FC34 57FF010C */  jal        func_8007FD5C
+    /* 20434 8002FC34 57FF010C */  jal        ratan2
     /* 20438 8002FC38 23881100 */   negu      $s1, $s1
     /* 2043C 8002FC3C 000062A6 */  sh         $v0, 0x0($s3)
     /* 20440 8002FC40 23101500 */  negu       $v0, $s5

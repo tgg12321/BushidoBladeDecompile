@@ -27,7 +27,7 @@ glabel game_FrameLoop
     /* 2779C 80036F9C 00000296 */  lhu        $v0, 0x0($s0)
     /* 277A0 80036FA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 277A4 80036FA4 02004224 */  addiu      $v0, $v0, 0x2
-    /* 277A8 80036FA8 330A020C */  jal        sys_VSync
+    /* 277A8 80036FA8 330A020C */  jal        VSync
     /* 277AC 80036FAC 000002A6 */   sh        $v0, 0x0($s0)
     /* 277B0 80036FB0 D6DB0008 */  j          .L80036F58
     /* 277B4 80036FB4 00000000 */   nop

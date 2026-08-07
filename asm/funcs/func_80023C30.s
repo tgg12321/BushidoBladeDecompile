@@ -17,13 +17,13 @@ glabel func_80023C30
     /* 1446C 80023C6C 0A0000A6 */  sh         $zero, 0xA($s0)
     /* 14470 80023C70 0C0000A6 */  sh         $zero, 0xC($s0)
     /* 14474 80023C74 0E0000A6 */  sh         $zero, 0xE($s0)
-    /* 14478 80023C78 1FFE010C */  jal        func_8007F87C
+    /* 14478 80023C78 1FFE010C */  jal        RotMatrixX
     /* 1447C 80023C7C 100002A6 */   sh        $v0, 0x10($s0)
     /* 14480 80023C80 21202002 */  addu       $a0, $s1, $zero
-    /* 14484 80023C84 87FE010C */  jal        func_8007FA1C
+    /* 14484 80023C84 87FE010C */  jal        RotMatrixY
     /* 14488 80023C88 21280002 */   addu      $a1, $s0, $zero
     /* 1448C 80023C8C 21204002 */  addu       $a0, $s2, $zero
-    /* 14490 80023C90 EFFE010C */  jal        func_8007FBBC
+    /* 14490 80023C90 EFFE010C */  jal        RotMatrixZ
     /* 14494 80023C94 21280002 */   addu      $a1, $s0, $zero
     /* 14498 80023C98 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* 1449C 80023C9C 1800B28F */  lw         $s2, 0x18($sp)

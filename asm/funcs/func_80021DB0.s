@@ -13,9 +13,9 @@ glabel func_80021DB0
     /* 125DC 80021DDC 9800B0AF */  sw         $s0, 0x98($sp)
     /* 125E0 80021DE0 C51B010C */  jal        stage_GetDataPtr
     /* 125E4 80021DE4 6000A6AF */   sw        $a2, 0x60($sp)
-    /* 125E8 80021DE8 55E4010C */  jal        func_80079154
+    /* 125E8 80021DE8 55E4010C */  jal        rand
     /* 125EC 80021DEC 6800A2AF */   sw        $v0, 0x68($sp)
-    /* 125F0 80021DF0 55E4010C */  jal        func_80079154
+    /* 125F0 80021DF0 55E4010C */  jal        rand
     /* 125F4 80021DF4 7800A2AF */   sw        $v0, 0x78($sp)
     /* 125F8 80021DF8 801F0A3C */  lui        $t2, (0x1F8002B8 >> 16)
     /* 125FC 80021DFC B8024A35 */  ori        $t2, $t2, (0x1F8002B8 & 0xFFFF)

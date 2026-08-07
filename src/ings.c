@@ -7,7 +7,7 @@
 
 /* Forward declarations for called functions */
 extern void func_8001945C(void);
-extern void func_8007B4D0(void *, s32, s32, s32);
+extern void ClearImage(void *, s32, s32, s32);
 extern void snd_PlaySystemSe(void);
 
 /* Externs for globals */
@@ -24,13 +24,13 @@ extern u32 D_800F5370;
 extern u8 g_str_overflow;
 extern u8 g_str_eff_init;
 
-extern void debug_printf();
+extern void printf();
 extern void func_800164F8(void);
 extern s16 Judge[];
 extern s32 func_80083698(s32, s32, s32);
 extern s32 func_800836C8(s32, s32, s32);
 extern s32 bios_FileRead(s32, u8 *, s32);
-extern void bios_FileClose_B(s32);
+extern void close(s32);
 extern void func_800836B8(s32);
 
 
@@ -48,22 +48,22 @@ extern u8 D_800F7438;
 extern u8 D_800A37A8[];
 extern void replay_camera_Init(s32, s32);
 extern void game_FrameLoop(void);
-extern void func_8007BC08(u8 *);
-extern void gpu_LoadImage(u8 *, u8 *);
-extern void sys_VSync(s32);
-extern void func_8007B844(u8 *, s32);
+extern void PutDispEnv(u8 *);
+extern void LoadImage(u8 *, u8 *);
+extern void VSync(s32);
+extern void ClearOTagR(u8 *, s32);
 extern void func_80019568(s32);
 extern s32 func_8005C8A8(s32, s32, u32, s32);
 extern void func_8005C650(s32, s32, s32);
-extern void func_8007B9B0(u8 *);
-extern void gpu_DrawOTag(u8 *);
-extern void func_80078BA8(u32);
-extern s32 func_80078B04(u32);
-extern s32 func_80079154(void);
+extern void PutDrawEnv(u8 *);
+extern void DrawOTag(u8 *);
+extern void ResetRCnt(u32);
+extern s32 GetRCnt(u32);
+extern s32 rand(void);
 extern void func_800372C0(void);
 extern void func_80083794(void);
-extern void func_800789D8(u32);
-extern void bios_SetMem(s32);
+extern void SetSp(u32);
+extern void SetMem(s32);
 extern void func_80060E04(s32);
 extern void func_8003D2F4(void);
 extern void func_8003D330(void);
@@ -76,9 +76,9 @@ extern u8 *func_8005D46C(u8 *);
 extern u8 *func_8005D554(u8 *, u8);
 extern s32 func_8005E54C(s32, u8 *, s32);
 extern void func_80060414(s32, u8 *, s32);
-extern void gte_SetRotMatrix(u8 *);
-extern void gte_SetTransVector(u8 *);
-extern void func_8007F2AC(u8 *, s32 *, s32 *);
+extern void SetRotMatrix(u8 *);
+extern void SetTransMatrix(u8 *);
+extern void RotTrans(u8 *, s32 *, s32 *);
 
 typedef struct {
     s16 x;
@@ -148,7 +148,7 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
                 chunk = remaining;
             }
             if (bios_FileRead(fd, dest, chunk) != chunk) {
-                bios_FileClose_B(fd);
+                close(fd);
                 return -1;
             }
             remaining -= chunk;
@@ -172,7 +172,7 @@ s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     if (count > 0) {
         do {
             if (bios_FileRead(fd, dest, 0x800) != 0x800) {
-                bios_FileClose_B(fd);
+                close(fd);
                 return -1;
             }
             i += 1;
@@ -244,18 +244,18 @@ void func_800167EC(void) {
 }
 
 void gpu_EnableDisplay(void) {
-    gpu_SetMode(1);
+    ResetGraph(1);
 }
 
 void gpu_InitDisplay(void) {
-    gpu_SetDispMask(0);
-    gpu_SetMode(1);
-    func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
-    gpu_DrawSync(0);
+    SetDispMask(0);
+    ResetGraph(1);
+    ClearImage(&g_disp_gp_base, 0, 0, 0);
+    DrawSync(0);
 }
 
 void gpu_DisableDisplay(void) {
-    gpu_SetDispMask(1);
+    SetDispMask(1);
 }
 
 void sys_StubEmpty(void) {
@@ -265,42 +265,42 @@ void sys_InitSound(void) {
     snd_PlaySystemSe();
 }
 
-extern void gpu_SetDebugLevel(s32);
-extern void func_8007E094(void);
-extern void gte_SetScreenOffset(s32, s32);
-extern void func_8007EFFC(s32);
-extern void gpu_InitDrawEnv(u8 *, s32, s32, s32, s32);
-extern void gpu_InitDispEnv(u8 *, s32, s32, s32, s32);
+extern void SetGraphDebug(s32);
+extern void InitGeom(void);
+extern void SetGeomOffset(s32, s32);
+extern void SetGeomScreen(s32);
+extern void SetDefDrawEnv(u8 *, s32, s32, s32, s32);
+extern void SetDefDispEnv(u8 *, s32, s32, s32, s32);
 void disp_Init(void) {
     u8 *base;
 
-    gpu_SetMode(0);
-    gpu_SetDebugLevel(0);
-    gpu_SetDispMask(0);
-    func_8007E094();
-    gte_SetScreenOffset(0x140, 0x78);
-    func_8007EFFC(disp_CalcFov(0x2D));
+    ResetGraph(0);
+    SetGraphDebug(0);
+    SetDispMask(0);
+    InitGeom();
+    SetGeomOffset(0x140, 0x78);
+    SetGeomScreen(disp_CalcFov(0x2D));
     base = &g_disp_fb_base;
-    gpu_InitDrawEnv(base, 0, 0, 0x280, 0xF0);
-    gpu_InitDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
-    gpu_InitDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
-    gpu_InitDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv(base, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv(base + 0x4090, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(base + 0x5C, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(base + 0x40EC, 0, 0, 0x280, 0xF0);
     disp_SetFramebufferMode(1, 0, 0, 0);
-    func_8007B4D0(&g_disp_gp_base, 0, 0, 0);
-    gpu_DrawSync(0);
+    ClearImage(&g_disp_gp_base, 0, 0, 0);
+    DrawSync(0);
 }
-extern void func_80078C9C(u8 *, s32, u8 *, s32);
-extern void func_80078D38(void);
-extern void bios_ChangeClearPad(s32);
+extern void InitPAD(u8 *, s32, u8 *, s32);
+extern void StartPAD(void);
+extern void ChangeClearPAD(s32);
 extern void func_80035FE0(void);
 extern void func_800375EC(void);
 extern u8 g_pad_data;
 void sys_Init(void) {
     u8 *base = &g_pad_data;
-    irq_DisableInterrupts();
-    func_80078C9C(base, 8, base + 0x24, 8);
-    func_80078D38();
-    bios_ChangeClearPad(0);
+    ResetCallback();
+    InitPAD(base, 8, base + 0x24, 8);
+    StartPAD();
+    ChangeClearPAD(0);
     disp_Init();
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
@@ -314,16 +314,16 @@ void func_80016A8C(u8 *arg0) {
 
     rect = *(Rect *)&D_800A30D4;
 
-    gpu_SetDispMask(0);
-    gpu_InitDispEnv(&D_800FB524, 0, 0, 0x140, 0xF0);
+    SetDispMask(0);
+    SetDefDispEnv(&D_800FB524, 0, 0, 0x140, 0xF0);
     game_FrameLoop();
     replay_camera_Init(func_80036EA8(2, 0x61), (s32)arg0);
     game_FrameLoop();
-    func_8007BC08(&D_800FB524);
-    gpu_DrawSync(0);
-    gpu_LoadImage((u8 *)&rect, arg0 + 0x14);
-    gpu_DrawSync(0);
-    gpu_SetDispMask(1);
+    PutDispEnv(&D_800FB524);
+    DrawSync(0);
+    LoadImage((u8 *)&rect, arg0 + 0x14);
+    DrawSync(0);
+    SetDispMask(1);
 
     for (i = 0; i < 0x96; i++) {
         if (i >= 0x79) {
@@ -344,19 +344,19 @@ void func_80016A8C(u8 *arg0) {
                 value += pixel;
                 *pixels = value;
             }
-            gpu_LoadImage((u8 *)&rect, arg0 + 0x14);
+            LoadImage((u8 *)&rect, arg0 + 0x14);
         }
 
-        gpu_DrawSync(0);
-        sys_VSync(0);
+        DrawSync(0);
+        VSync(0);
     }
 
-    gpu_SetDispMask(0);
-    gpu_InitDispEnv(&D_800FB524, 0, 0, 0x280, 0xF0);
-    gpu_SetDispMask(1);
+    SetDispMask(0);
+    SetDefDispEnv(&D_800FB524, 0, 0, 0x280, 0xF0);
+    SetDispMask(1);
 }
 void sys_Panic(void) {
-    debug_printf((s32)&g_str_overflow);
+    printf((s32)&g_str_overflow);
     while (1) {
         func_800164F8();
     }
@@ -372,7 +372,7 @@ void file_LoadOverlay(void) {
         return;
     }
     size = func_80060CB8(0x801D8800, 0x8010E800);
-    debug_printf((s32)&g_str_eff_init, 0x8010E800, size);
+    printf((s32)&g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) {
         sys_Panic();
     }
@@ -380,7 +380,7 @@ void file_LoadOverlay(void) {
 }
 extern void func_8005B43C(void);
 extern s32 func_8005B7C4(u32);
-extern void bb2_memcpy(u32, u32, s32);
+extern void memcpy(u32, u32, s32);
 extern void func_8005C4C0(u32, s32);
 extern void func_8005C614(void);
 void file_LoadSoundData(void) {
@@ -391,7 +391,7 @@ void file_LoadSoundData(void) {
     if (size >= 0xD01) {
         sys_Panic();
     }
-    bb2_memcpy(0x8010DB00, 0x801D8800, size);
+    memcpy(0x8010DB00, 0x801D8800, size);
     func_8005C4C0(0xFFF35300, 0);
     func_8005C614();
     D_800A3906 = 1;
@@ -410,7 +410,7 @@ extern void func_80019534(void);
 extern void func_8003D2C4(void);
 extern void func_8001C444(void);
 void sys_GameInit(void) {
-    debug_printf((s32)&g_str_limit, 0x8010DB00);
+    printf((s32)&g_str_limit, 0x8010DB00);
     func_800167EC();
     func_80020D70();
     D_800A3770 = 0x801D8800;
@@ -435,7 +435,7 @@ void sys_GameInit(void) {
 }
 
 void gpu_SetDrawMode(void) {
-    gpu_DrawSync(0);
+    DrawSync(0);
 }
 
 void func_80016E60(u8 *arg0) {
@@ -470,7 +470,7 @@ void func_80016E60(u8 *arg0) {
         D_800A374C = (u8 *)&ot[idx];
         env = &D_800F7438 + (idx * 0x4090);
 
-        func_8007B844(D_800A374C, 1);
+        ClearOTagR(D_800A374C, 1);
         func_80019568();
         if (special != 0) {
             func_8005C8A8(2, select | (D_800A3788 << 16), D_800A38B4, 0);
@@ -481,12 +481,12 @@ void func_80016E60(u8 *arg0) {
         }
         func_80036940();
         func_8005C6D0();
-        gpu_DrawSync(0);
-        sys_VSync(2);
-        func_8007BC08(env + 0x5C);
-        func_8007B9B0(env);
-        gpu_DrawOTag(saved_arg0 + 0x408C);
-        gpu_DrawOTag(D_800A374C);
+        DrawSync(0);
+        VSync(2);
+        PutDispEnv(env + 0x5C);
+        PutDrawEnv(env);
+        DrawOTag(saved_arg0 + 0x408C);
+        DrawOTag(D_800A374C);
         D_800A36AC++;
 
         if (D_80102794 & 0x100010) {
@@ -565,8 +565,8 @@ void func_80016E60(u8 *arg0) {
         }
     }
 
-    gpu_DrawSync(0);
-    func_80078BA8(0xF2000001);
+    DrawSync(0);
+    ResetRCnt(0xF2000001);
     D_800A36B0 = 1;
 }
 void rng_SetSeed(s32 a0) {
@@ -587,11 +587,11 @@ void main(void) {
     u32 *tbl;
 
     func_80083794();
-    func_800789D8(0x801FFF00);
-    bios_SetMem(2);
+    SetSp(0x801FFF00);
+    SetMem(2);
     sys_Init();
     sys_GameInit();
-    gpu_SetDispMask(1);
+    SetDispMask(1);
     func_80016A8C((u8 *)0x80118800);
 
     tbl = &D_800A3770;
@@ -603,7 +603,7 @@ loop:
     idx = D_800A36AC & 1;
     env = &D_800F7438 + idx * 0x4090;
     ot = env + 0x70;
-    func_8007B844(ot, 0x1008);
+    ClearOTagR(ot, 0x1008);
     D_800A374C = ot;
     D_800A38B4 = tbl[idx];
     func_80060E04(idx);
@@ -624,19 +624,19 @@ loop:
     func_8003D330();
 
     do {
-        if (func_80078B04(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;
-        func_80079154();
+        if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;
+        rand();
     } while (1);
 
-    sys_VSync(1);
-    gpu_DrawSync(0);
-    sys_VSync(0);
-    func_80078BA8(0xF2000001u);
+    VSync(1);
+    DrawSync(0);
+    VSync(0);
+    ResetRCnt(0xF2000001u);
 
     voice = D_800A390D;
     if (voice == 0) {
-        func_8007BC08(env + 0x5C);
-        func_8007B9B0(env);
+        PutDispEnv(env + 0x5C);
+        PutDrawEnv(env);
     }
 
     {
@@ -646,7 +646,7 @@ loop:
             D_800A30DC = remaining;
         }
         if (remaining < 0) {
-            debug_printf(&D_80010034);
+            printf(&D_80010034);
             while (1) {
                 func_800164F8();
             }
@@ -656,7 +656,7 @@ loop:
     if (D_800A390D != 0) {
         D_800A390D--;
     } else {
-        gpu_DrawOTag(env + 0x408C);
+        DrawOTag(env + 0x408C);
         D_800A36AC++;
     }
 
@@ -690,12 +690,12 @@ void func_800174F4(void) {
     s1_var = 0xF0;
     mask = D_800A36AC & 1;
     mask = -mask;
-    gpu_InitDrawEnv((u8 *)s0_var, 0, mask & 0xF0, 0x280, s1_var);
+    SetDefDrawEnv((u8 *)s0_var, 0, mask & 0xF0, 0x280, s1_var);
     new_var2 = 0;
     sp20[0x18] = new_var2;
-    func_8007B9B0((u8 *)s0_var);
+    PutDrawEnv((u8 *)s0_var);
     D_800A374C = sp18;
-    func_8007B844(sp18, 2);
+    ClearOTagR(sp18, 2);
     switch (g_disp_enable) {
     case 1:
     case 2:
@@ -704,7 +704,7 @@ void func_800174F4(void) {
             s32 v0;
             s32 a0_temp;
             s0_var = new_var2;
-            v0 = func_80079154();
+            v0 = rand();
             v0 &= 3;
             s1_var = v0 + 4;
             if (s1_var != new_var2) {
@@ -718,7 +718,7 @@ void func_800174F4(void) {
                 a0_temp = s2_var;
                 goto inner_loop;
             }
-        } else if ((func_80079154() & 7) == new_var2) {
+        } else if ((rand() & 7) == new_var2) {
             func_8005D554((u8 *)s2_var, g_disp_enable);
         }
         break;
@@ -759,9 +759,9 @@ void func_800174F4(void) {
         break;
     }
     }
-    gpu_DrawOTag((u8 *)(D_800A374C + 4));
+    DrawOTag((u8 *)(D_800A374C + 4));
     new_var = new_var2;
-    gpu_DrawSync(new_var);
+    DrawSync(new_var);
 }
 void obj_ClearAll(void) {
     s32 i;
@@ -774,8 +774,8 @@ s32 obj_CalcOffset(s32 a0, s32 a1) {
     return (a0 << 6) + (a1 << 4);
 }
 
-extern s32 func_8007F0BC(s32 *, s32 *);
-extern s32 func_8007E43C(s32);
+extern s32 Square12(s32 *, s32 *);
+extern s32 SquareRoot12(s32);
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
     s32 out[3];
@@ -783,8 +783,8 @@ s32 math_Distance3D(s32 *a0, s32 *a1) {
     in[0] = (a0[0] - a1[0]) >> 2;
     in[1] = (a0[1] - a1[1]) >> 2;
     in[2] = (a0[2] - a1[2]) >> 2;
-    func_8007F0BC(in, out);
-    return func_8007E43C(out[0] + out[1] + out[2]) << 2;
+    Square12(in, out);
+    return SquareRoot12(out[0] + out[1] + out[2]) << 2;
 }
 s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     s32 in[3];
@@ -793,8 +793,8 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     in[0] = (a0[0] - a1[0]) >> 4;
     in[1] = (a0[1] - a1[1]) >> 4;
     in[2] = (a0[2] - a1[2]) >> 4;
-    func_8007F0BC(in, out);
-    return func_8007E43C(out[0] + out[1] + out[2]) << 4;
+    Square12(in, out);
+    return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     register u8 *ctxp asm("s2") = ctx;

@@ -35,11 +35,11 @@ glabel func_8003D52C
     /* 2DDAC 8003D5AC 76F50008 */  j          .L8003D5D8
     /* 2DDB0 8003D5B0 01001624 */   addiu     $s6, $zero, 0x1
   .L8003D5B4:
-    /* 2DDB4 8003D5B4 76E4010C */  jal        func_800791D8
+    /* 2DDB4 8003D5B4 76E4010C */  jal        strlen
     /* 2DDB8 8003D5B8 000020A2 */   sb        $zero, 0x0($s1)
     /* 2DDBC 8003D5BC 2120E202 */  addu       $a0, $s7, $v0
     /* 2DDC0 8003D5C0 21288002 */  addu       $a1, $s4, $zero
-    /* 2DDC4 8003D5C4 8CE6010C */  jal        func_80079A30
+    /* 2DDC4 8003D5C4 8CE6010C */  jal        sprintf
     /* 2DDC8 8003D5C8 2130A002 */   addu      $a2, $s5, $zero
     /* 2DDCC 8003D5CC 21888002 */  addu       $s1, $s4, $zero
     /* 2DDD0 8003D5D0 04007326 */  addiu      $s3, $s3, 0x4
@@ -53,12 +53,12 @@ glabel func_8003D52C
     /* 2DDEC 8003D5EC 01005226 */   addiu     $s2, $s2, 0x1
   .L8003D5F0:
     /* 2DDF0 8003D5F0 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 2DDF4 8003D5F4 76E4010C */  jal        func_800791D8
+    /* 2DDF4 8003D5F4 76E4010C */  jal        strlen
     /* 2DDF8 8003D5F8 000020A2 */   sb        $zero, 0x0($s1)
     /* 2DDFC 8003D5FC 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2DE00 8003D600 21208200 */  addu       $a0, $a0, $v0
     /* 2DE04 8003D604 1004A527 */  addiu      $a1, $sp, 0x410
-    /* 2DE08 8003D608 8CE6010C */  jal        func_80079A30
+    /* 2DE08 8003D608 8CE6010C */  jal        sprintf
     /* 2DE0C 8003D60C 2130A002 */   addu      $a2, $s5, $zero
     /* 2DE10 8003D610 1000B093 */  lbu        $s0, 0x10($sp)
     /* 2DE14 8003D614 00000000 */  nop

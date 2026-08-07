@@ -10,7 +10,7 @@ glabel func_8008AD64
     /* 7B584 8008AD84 0700103C */  lui        $s0, (0x7EFF0 >> 16)
     /* 7B588 8008AD88 F0EF1036 */  ori        $s0, $s0, (0x7EFF0 & 0xFFFF)
   .L8008AD8C:
-    /* 7B58C 8008AD8C 0924020C */  jal        func_80089024
+    /* 7B58C 8008AD8C 0924020C */  jal        _spu_Fr
     /* 7B590 8008AD90 21280002 */   addu      $a1, $s0, $zero
     /* 7B594 8008AD94 0A80023C */  lui        $v0, %hi(D_800A2D14)
     /* 7B598 8008AD98 142D428C */  lw         $v0, %lo(D_800A2D14)($v0)

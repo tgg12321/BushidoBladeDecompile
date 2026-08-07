@@ -6,17 +6,17 @@ glabel func_8005C5A8
     /* 4CDB8 8005C5B8 00840500 */  sll        $s0, $a1, 16
     /* 4CDBC 8005C5BC 03841000 */  sra        $s0, $s0, 16
     /* 4CDC0 8005C5C0 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 4CDC4 8005C5C4 D91F020C */  jal        func_80087F64
+    /* 4CDC4 8005C5C4 D91F020C */  jal        SsVabClose
     /* 4CDC8 8005C5C8 21200002 */   addu      $a0, $s0, $zero
     /* 4CDCC 8005C5CC 0400248E */  lw         $a0, 0x4($s1)
     /* 4CDD0 8005C5D0 3803868F */  lw         $a2, %gp_rel(D_800A3404)($gp)
-    /* 4CDD4 8005C5D4 2220020C */  jal        func_80088088
+    /* 4CDD4 8005C5D4 2220020C */  jal        SsVabOpenHeadSticky
     /* 4CDD8 8005C5D8 21280002 */   addu      $a1, $s0, $zero
     /* 4CDDC 8005C5DC 0400228E */  lw         $v0, 0x4($s1)
     /* 4CDE0 8005C5E0 00000000 */  nop
     /* 4CDE4 8005C5E4 080050AC */  sw         $s0, 0x8($v0)
     /* 4CDE8 8005C5E8 0800248E */  lw         $a0, 0x8($s1)
-    /* 4CDEC 8005C5EC 3121020C */  jal        func_800884C4
+    /* 4CDEC 8005C5EC 3121020C */  jal        SsVabTransBody
     /* 4CDF0 8005C5F0 21280002 */   addu      $a1, $s0, $zero
     /* 4CDF4 8005C5F4 00140200 */  sll        $v0, $v0, 16
     /* 4CDF8 8005C5F8 03140200 */  sra        $v0, $v0, 16

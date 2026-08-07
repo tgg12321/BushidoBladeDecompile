@@ -14,7 +14,7 @@ glabel func_8002EBDC
     /* 1F40C 8002EC0C 00002486 */  lh         $a0, 0x0($s1)
     /* 1F410 8002EC10 04002586 */  lh         $a1, 0x4($s1)
     /* 1F414 8002EC14 4800B58F */  lw         $s5, 0x48($sp)
-    /* 1F418 8002EC18 57FF010C */  jal        func_8007FD5C
+    /* 1F418 8002EC18 57FF010C */  jal        ratan2
     /* 1F41C 8002EC1C 21A0E000 */   addu      $s4, $a3, $zero
     /* 1F420 8002EC20 00080324 */  addiu      $v1, $zero, 0x800
     /* 1F424 8002EC24 23186200 */  subu       $v1, $v1, $v0
@@ -65,7 +65,7 @@ glabel func_8002EBDC
     /* 1F4D0 8002ECD0 06284400 */  srlv       $a1, $a0, $v0
   .L8002ECD4:
     /* 1F4D4 8002ECD4 02002486 */  lh         $a0, 0x2($s1)
-    /* 1F4D8 8002ECD8 57FF010C */  jal        func_8007FD5C
+    /* 1F4D8 8002ECD8 57FF010C */  jal        ratan2
     /* 1F4DC 8002ECDC D8001126 */   addiu     $s1, $s0, 0xD8
     /* 1F4E0 8002ECE0 21282002 */  addu       $a1, $s1, $zero
     /* 1F4E4 8002ECE4 00080324 */  addiu      $v1, $zero, 0x800
@@ -81,10 +81,10 @@ glabel func_8002EBDC
     /* 1F50C 8002ED0C E20000A6 */  sh         $zero, 0xE2($s0)
     /* 1F510 8002ED10 E40000A6 */  sh         $zero, 0xE4($s0)
     /* 1F514 8002ED14 E60000A6 */  sh         $zero, 0xE6($s0)
-    /* 1F518 8002ED18 87FE010C */  jal        func_8007FA1C
+    /* 1F518 8002ED18 87FE010C */  jal        RotMatrixY
     /* 1F51C 8002ED1C E80012A6 */   sh        $s2, 0xE8($s0)
     /* 1F520 8002ED20 F8000486 */  lh         $a0, 0xF8($s0)
-    /* 1F524 8002ED24 1FFE010C */  jal        func_8007F87C
+    /* 1F524 8002ED24 1FFE010C */  jal        RotMatrixX
     /* 1F528 8002ED28 21282002 */   addu      $a1, $s1, $zero
     /* 1F52C 8002ED2C 21602002 */  addu       $t4, $s1, $zero
     /* 1F530 8002ED30 00008D8D */  lw         $t5, 0x0($t4)
@@ -151,11 +151,11 @@ glabel func_8002EBDC
     /* 1F618 8002EE18 E40000A6 */  sh         $zero, 0xE4($s0)
     /* 1F61C 8002EE1C E60000A6 */  sh         $zero, 0xE6($s0)
     /* 1F620 8002EE20 E80012A6 */  sh         $s2, 0xE8($s0)
-    /* 1F624 8002EE24 1FFE010C */  jal        func_8007F87C
+    /* 1F624 8002EE24 1FFE010C */  jal        RotMatrixX
     /* 1F628 8002EE28 23200400 */   negu      $a0, $a0
     /* 1F62C 8002EE2C FA000486 */  lh         $a0, 0xFA($s0)
     /* 1F630 8002EE30 21282002 */  addu       $a1, $s1, $zero
-    /* 1F634 8002EE34 87FE010C */  jal        func_8007FA1C
+    /* 1F634 8002EE34 87FE010C */  jal        RotMatrixY
     /* 1F638 8002EE38 23200400 */   negu      $a0, $a0
     /* 1F63C 8002EE3C 21602002 */  addu       $t4, $s1, $zero
     /* 1F640 8002EE40 00008D8D */  lw         $t5, 0x0($t4)

@@ -26,7 +26,7 @@ glabel func_8003E164
     /* 2E9C0 8003E1C0 40000224 */  addiu      $v0, $zero, 0x40
     /* 2E9C4 8003E1C4 1C00A2A7 */  sh         $v0, 0x1C($sp)
     /* 2E9C8 8003E1C8 06000224 */  addiu      $v0, $zero, 0x6
-    /* 2E9CC 8003E1CC B2ED010C */  jal        func_8007B6C8
+    /* 2E9CC 8003E1CC B2ED010C */  jal        MoveImage
     /* 2E9D0 8003E1D0 1E00A2A7 */   sh        $v0, 0x1E($sp)
     /* 2E9D4 8003E1D4 04002016 */  bnez       $s1, .L8003E1E8
     /* 2E9D8 8003E1D8 21280000 */   addu      $a1, $zero, $zero
@@ -41,7 +41,7 @@ glabel func_8003E164
     /* 2E9F4 8003E1F4 E8000224 */  addiu      $v0, $zero, 0xE8
     /* 2E9F8 8003E1F8 A80C010C */  jal        func_800432A0
     /* 2E9FC 8003E1FC 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 2EA00 8003E200 CFEC010C */  jal        gpu_DrawSync
+    /* 2EA00 8003E200 CFEC010C */  jal        DrawSync
     /* 2EA04 8003E204 21200000 */   addu      $a0, $zero, $zero
     /* 2EA08 8003E208 48F8000C */  jal        func_8003E120
     /* 2EA0C 8003E20C 00000000 */   nop

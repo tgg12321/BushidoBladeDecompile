@@ -165,7 +165,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     func_80054410((s32)sp10);
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
-    gpu_DrawSync(0);
+    DrawSync(0);
     func_80045600(s7, (s32)s1);
     func_80045694(s7, (s32)func_800466C0);
     stage_ExecInitFunc();

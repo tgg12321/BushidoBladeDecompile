@@ -256,9 +256,9 @@ def test_read_wip_real_func_8002bea0():
 
 def test_read_wip_string_reviewer_guard():
     # initDrawMode's meta has reviewer as a bare string — must not crash.
-    wip = bc.read_wip("initDrawMode")
+    wip = bc.read_wip("SetDrawTPage")
     if wip is None:
-        check("SKIP read_wip (initDrawMode WIP absent)", True)
+        check("SKIP read_wip (SetDrawTPage WIP absent)", True)
         return
     check("string reviewer handled", isinstance(wip["reviewer"], (str, type(None))))
 

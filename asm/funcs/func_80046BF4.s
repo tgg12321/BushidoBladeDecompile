@@ -59,7 +59,7 @@ glabel func_80046BF4
     /* 374D8 80046CD8 3400A2A7 */   sh        $v0, 0x34($sp)
     /* 374DC 80046CDC 21200002 */  addu       $a0, $s0, $zero
     /* 374E0 80046CE0 2000A527 */  addiu      $a1, $sp, 0x20
-    /* 374E4 80046CE4 D3F9010C */  jal        func_8007E74C
+    /* 374E4 80046CE4 D3F9010C */  jal        ApplyMatrixLV
     /* 374E8 80046CE8 1000A627 */   addiu     $a2, $sp, 0x10
     /* 374EC 80046CEC 1000A28F */  lw         $v0, 0x10($sp)
     /* 374F0 80046CF0 0000438E */  lw         $v1, 0x0($s2)

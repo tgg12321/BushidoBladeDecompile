@@ -4,13 +4,13 @@ glabel func_80086818
     /* 77020 80086820 21888000 */  addu       $s1, $a0, $zero
     /* 77024 80086824 21200000 */  addu       $a0, $zero, $zero
     /* 77028 80086828 5800BFAF */  sw         $ra, 0x58($sp)
-    /* 7702C 8008682C D62B020C */  jal        func_8008AF58
+    /* 7702C 8008682C D62B020C */  jal        _spu_setInTransfer
     /* 77030 80086830 5000B0AF */   sw        $s0, 0x50($sp)
     /* 77034 80086834 0F80053C */  lui        $a1, %hi(MarioCam_str)
     /* 77038 80086838 D019A524 */  addiu      $a1, $a1, %lo(MarioCam_str)
     /* 7703C 8008683C 0F80013C */  lui        $at, %hi(D_800F66F8)
     /* 77040 80086840 F86620A4 */  sh         $zero, %lo(D_800F66F8)($at)
-    /* 77044 80086844 E124020C */  jal        spu_IrqHandler
+    /* 77044 80086844 E124020C */  jal        SpuInitMalloc
     /* 77048 80086848 20000424 */   addiu     $a0, $zero, 0x20
     /* 7704C 8008684C 21800000 */  addu       $s0, $zero, $zero
     /* 77050 80086850 1080033C */  lui        $v1, %hi(D_80102A78)

@@ -8,10 +8,10 @@ glabel obj_InitAll
     /* 4BF44 8005B744 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4BF48 8005B748 E617020C */  jal        func_80085F98
     /* 4BF4C 8005B74C 01001024 */   addiu     $s0, $zero, 0x1
-    /* 4BF50 8005B750 B917020C */  jal        func_80085EE4
+    /* 4BF50 8005B750 B917020C */  jal        SsUtSetReverbType
     /* 4BF54 8005B754 21200000 */   addu      $a0, $zero, $zero
     /* 4BF58 8005B758 21200000 */  addu       $a0, $zero, $zero
-    /* 4BF5C 8005B75C 9317020C */  jal        func_80085E4C
+    /* 4BF5C 8005B75C 9317020C */  jal        SsUtSetReverbDepth
     /* 4BF60 8005B760 21280000 */   addu      $a1, $zero, $zero
     /* 4BF64 8005B764 0F80123C */  lui        $s2, %hi(D_800EFB3C)
     /* 4BF68 8005B768 3CFB5226 */  addiu      $s2, $s2, %lo(D_800EFB3C)
@@ -19,7 +19,7 @@ glabel obj_InitAll
     /* 4BF70 8005B770 3CFC3126 */  addiu      $s1, $s1, %lo(D_800EFC3C)
   .L8005B774:
     /* 4BF74 8005B774 00241000 */  sll        $a0, $s0, 16
-    /* 4BF78 8005B778 D91F020C */  jal        func_80087F64
+    /* 4BF78 8005B778 D91F020C */  jal        SsVabClose
     /* 4BF7C 8005B77C 03240400 */   sra       $a0, $a0, 16
     /* 4BF80 8005B780 000020AE */  sw         $zero, 0x0($s1)
     /* 4BF84 8005B784 000040AE */  sw         $zero, 0x0($s2)

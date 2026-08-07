@@ -10,9 +10,9 @@ extern s32 *func_800455AC(s32);
 extern void func_80045510(s32, s32);
 extern void func_80045230(s32);
 extern void func_80054FDC(s32);
-extern void func_80078A68(u32, s32, s32);
-extern void func_80078B04(u32);
-extern void func_80078B3C(u32);
+extern void SetRCnt(u32, s32, s32);
+extern void GetRCnt(u32);
+extern void StartRCnt(u32);
 extern void func_8004473C(void);
 extern void func_80044800(void);
 extern void func_80048F58(s32, s32);
@@ -35,8 +35,8 @@ extern void func_80046020(void);
 extern void func_80049E1C(void);
 extern void camera_InitRotation(u8 *);
 extern void func_80042A88(s32 *, s32 *);
-extern void func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 func_8007FD5C(s32, s32);
+extern void ApplyMatrix(s32 *, s16 *, s32 *);
+extern s16 ratan2(s32, s32);
 extern s16 Judge[];
 extern s16 D_800A33C8;
 extern s16 D_800A33CA;
@@ -74,7 +74,7 @@ extern s16 D_800EEDC0;
 
 extern void func_800451A0(void);
 extern void func_800451D0(void);
-extern void func_8007E74C(void *, void *, void *);
+extern void ApplyMatrixLV(void *, void *, void *);
 extern void func_800418D0(s32 *);
 extern void func_8004A1FC(void *);
 extern void func_800420D0(void);
@@ -190,7 +190,7 @@ void snd_LoadSe(s32 a0) {
     func_80045694(9, snd_SeNullCallback);
 }
 
-void snd_PlaySe(s32 a0) {
+void _SpuCallback(s32 a0) {
     func_80045510(9, a0);
 }
 
@@ -231,12 +231,12 @@ void snd_StopAll(void) {
 }
 
 void snd_PlaySystemSe(void) {
-    func_80078A68(0xF2000001, -1, 0x2000);
-    func_80078B3C(0xF2000001);
+    SetRCnt(0xF2000001, -1, 0x2000);
+    StartRCnt(0xF2000001);
 }
 
 void snd_StopSystemSe(void) {
-    func_80078B04(0xF2000001);
+    GetRCnt(0xF2000001);
 }
 
 void game_Init(void) {
@@ -308,7 +308,7 @@ void func_80046BF4(s32 *a0, u16 *a1, s32 a2) {
 
         ((void (*)(s16 *, s32 *))g_anim_func_table[0])(rot, matrix_buf);
 
-        func_8007E74C(matrix_buf, trans, result);
+        ApplyMatrixLV(matrix_buf, trans, result);
 
         {
             s32 *rp = result;
@@ -524,11 +524,11 @@ s16 *camera_CalcAngles(void) {
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0x1000;
-    func_8007ED6C(pos, rot, sp18);
-    s0 = func_8007FD5C(sp18[0], sp18[2]);
+    ApplyMatrix(pos, rot, sp18);
+    s0 = ratan2(sp18[0], sp18[2]);
     sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
               + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-    D_800A33C8 = -func_8007FD5C(sp18[1], sp18[2]);
+    D_800A33C8 = -ratan2(sp18[1], sp18[2]);
     D_800A33CA = s0;
     return &D_800A33C8;
 }
@@ -578,7 +578,7 @@ extern s32 D_80101E1C;
 extern s32 D_80101E20;
 extern s32 D_80101E24;
 extern s32 D_800F66B0;
-extern void func_8007E4DC(s32 *, s32 *, s32 *);
+extern void MulMatrix0(s32 *, s32 *, s32 *);
 void func_800475A4(void) {
     s16 rot[3];
     s32 result[4];
@@ -595,15 +595,15 @@ void func_800475A4(void) {
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0x6590;
-    func_8007ED6C((s32 *)&D_80101E08, rot, result);
+    ApplyMatrix((s32 *)&D_80101E08, rot, result);
 
-    angle = func_8007FD5C(result[0], result[2]);
+    angle = ratan2(result[0], result[2]);
 
     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
     result[2] = computed;
 
     {
-        s16 neg = -func_8007FD5C(result[1], computed);
+        s16 neg = -ratan2(result[1], computed);
         base = &g_cam_bone_data2;
         D_800EEE00 = neg;
     }
@@ -613,7 +613,7 @@ void func_800475A4(void) {
     D_800EEE24 = D_80101E24 + 0x6590;
     ((void (*)(u8 *, s32 *))D_800F66B0)(base + 0x10, buf1);
     ((void (*)(u8 *, s32 *))g_anim_func_table[0])((u8 *)&D_80101E08 - 8, buf2);
-    func_8007E4DC(buf2, buf1, (s32 *)(base + 0x18));
+    MulMatrix0(buf2, buf1, (s32 *)(base + 0x18));
 
     {
         s32 *temp = (s32 *)D_800A3820;
@@ -653,8 +653,8 @@ void game_Stub4(void) {
 void snd_SetVolume(s32 a0) {
     g_snd_volume = a0;
 }
-extern u32 gpu_CalcTPage(s32, s32, s32, s32);
-extern u32 gpu_CalcClut(s32, s32);
+extern u32 GetTPage(s32, s32, s32, s32);
+extern u32 GetClut(s32, s32);
 extern void func_800417D0(s32 *);
 extern s16 *D_800A33D0;
 extern s8 D_800EF070;
@@ -691,10 +691,10 @@ s32 func_800477E8(void) {
     s32 val;
 
     s0 = D_800A33D0;
-    s3val = gpu_CalcTPage(0, 0, 0x2C0, 0x1C0);
-    s2val = gpu_CalcTPage(0, 0, 0x2C0, 0x180);
-    s1val = gpu_CalcClut(0x10, 0x1E0);
-    t1val = gpu_CalcClut(0x10, 0x1E0);
+    s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
+    s2val = GetTPage(0, 0, 0x2C0, 0x180);
+    s1val = GetClut(0x10, 0x1E0);
+    t1val = GetClut(0x10, 0x1E0);
     a3 = 0;
     t2 = 0x2C00;
     a0 = 0;
@@ -886,8 +886,8 @@ void func_80047A90(void) {
 }
 
 
-extern void func_8007F24C(s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *);
-extern void gte_GetScreenXY(s32 *, s32 *, s32 *);
+extern void RotTransPers3(s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *);
+extern void ReadSZfifo3(s32 *, s32 *, s32 *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern s16 D_800EF0D8;
 extern s16 D_800EF168;
@@ -950,9 +950,9 @@ inner1:
     p = base;
     j = 0;
 inner2:
-    func_8007F24C(p, p + 4, p + 8, &loc20, &loc24, &loc28, &loc2C, &loc30);
+    RotTransPers3(p, p + 4, p + 8, &loc20, &loc24, &loc28, &loc2C, &loc30);
     p += 12;
-    gte_GetScreenXY(&loc34, &loc38, &loc3C);
+    ReadSZfifo3(&loc34, &loc38, &loc3C);
     j++;
     *dst32 = loc20;
     dst32++;

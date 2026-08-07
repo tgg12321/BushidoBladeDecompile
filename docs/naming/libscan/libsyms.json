@@ -1,0 +1,4366 @@
+{
+ "0x800469A0": [
+  {
+   "name": "_SpuCallback",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_CB",
+   "mod_start": "0x800469A0",
+   "mod_end": "0x800469C4"
+  }
+ ],
+ "0x80046B20": [
+  {
+   "name": "GsGetVcount",
+   "kind": "xdef",
+   "lib": "LIBGS",
+   "mod": "GS_008",
+   "mod_start": "0x80046B20",
+   "mod_end": "0x80046B44"
+  },
+  {
+   "name": "GsClearVcount",
+   "kind": "xdef",
+   "lib": "LIBGS",
+   "mod": "GS_009",
+   "mod_start": "0x80046B20",
+   "mod_end": "0x80046B44"
+  }
+ ],
+ "0x80078948": [
+  {
+   "name": "Exec",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C67",
+   "mod_start": "0x80078948",
+   "mod_end": "0x80078958"
+  }
+ ],
+ "0x80078958": [
+  {
+   "name": "_bu_init",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C112",
+   "mod_start": "0x80078958",
+   "mod_end": "0x80078968"
+  },
+  {
+   "name": "_bu_init",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "C112",
+   "mod_start": "0x80078958",
+   "mod_end": "0x80078968"
+  }
+ ],
+ "0x80078968": [
+  {
+   "name": "SetMem",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C159",
+   "mod_start": "0x80078968",
+   "mod_end": "0x80078978"
+  }
+ ],
+ "0x80078978": [
+  {
+   "name": "OpenEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A08",
+   "mod_start": "0x80078978",
+   "mod_end": "0x80078988"
+  }
+ ],
+ "0x80078988": [
+  {
+   "name": "CloseEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A09",
+   "mod_start": "0x80078988",
+   "mod_end": "0x80078998"
+  }
+ ],
+ "0x80078998": [
+  {
+   "name": "TestEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A11",
+   "mod_start": "0x80078998",
+   "mod_end": "0x800789A8"
+  }
+ ],
+ "0x800789A8": [
+  {
+   "name": "EnableEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A12",
+   "mod_start": "0x800789A8",
+   "mod_end": "0x800789B8"
+  }
+ ],
+ "0x800789B8": [
+  {
+   "name": "EnterCriticalSection",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A36",
+   "mod_start": "0x800789B8",
+   "mod_end": "0x800789C8"
+  }
+ ],
+ "0x800789C8": [
+  {
+   "name": "ExitCriticalSection",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A37",
+   "mod_start": "0x800789C8",
+   "mod_end": "0x800789D8"
+  }
+ ],
+ "0x800789D8": [
+  {
+   "name": "SetSp",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A39",
+   "mod_start": "0x800789D8",
+   "mod_end": "0x800789E8"
+  }
+ ],
+ "0x800789E8": [
+  {
+   "name": "open",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A50",
+   "mod_start": "0x800789E8",
+   "mod_end": "0x800789F8"
+  }
+ ],
+ "0x800789F8": [
+  {
+   "name": "read",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A52",
+   "mod_start": "0x800789F8",
+   "mod_end": "0x80078A08"
+  }
+ ],
+ "0x80078A08": [
+  {
+   "name": "write",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A53",
+   "mod_start": "0x80078A08",
+   "mod_end": "0x80078A18"
+  }
+ ],
+ "0x80078A18": [
+  {
+   "name": "close",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A54",
+   "mod_start": "0x80078A18",
+   "mod_end": "0x80078A28"
+  }
+ ],
+ "0x80078A28": [
+  {
+   "name": "format",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A65",
+   "mod_start": "0x80078A28",
+   "mod_end": "0x80078A38"
+  }
+ ],
+ "0x80078A38": [
+  {
+   "name": "firstfile",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A66",
+   "mod_start": "0x80078A38",
+   "mod_end": "0x80078A48"
+  }
+ ],
+ "0x80078A48": [
+  {
+   "name": "nextfile",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A67",
+   "mod_start": "0x80078A48",
+   "mod_end": "0x80078A58"
+  }
+ ],
+ "0x80078A58": [
+  {
+   "name": "ChangeClearPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A91",
+   "mod_start": "0x80078A58",
+   "mod_end": "0x80078A68"
+  }
+ ],
+ "0x80078A68": [
+  {
+   "name": "SetRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "mod_start": "0x80078A68",
+   "mod_end": "0x80078BE0"
+  }
+ ],
+ "0x80078B04": [
+  {
+   "name": "GetRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "mod_start": "0x80078A68",
+   "mod_end": "0x80078BE0"
+  }
+ ],
+ "0x80078B3C": [
+  {
+   "name": "StartRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "mod_start": "0x80078A68",
+   "mod_end": "0x80078BE0"
+  }
+ ],
+ "0x80078B70": [
+  {
+   "name": "StopRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "mod_start": "0x80078A68",
+   "mod_end": "0x80078BE0"
+  }
+ ],
+ "0x80078BA8": [
+  {
+   "name": "ResetRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "COUNTER",
+   "mod_start": "0x80078A68",
+   "mod_end": "0x80078BE0"
+  }
+ ],
+ "0x80078BE0": [
+  {
+   "name": "SetInitPadFlag",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078BF0": [
+  {
+   "name": "ReadInitPadFlag",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078C00": [
+  {
+   "name": "PAD_init",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078C9C": [
+  {
+   "name": "InitPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078D38": [
+  {
+   "name": "StartPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078D68": [
+  {
+   "name": "StopPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078DA0": [
+  {
+   "name": "SetPatchPad",
+   "kind": "static",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078E20": [
+  {
+   "name": "RemovePatchPad",
+   "kind": "static",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078E58": [
+  {
+   "name": "_Pad1",
+   "kind": "static",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078EC0": [
+  {
+   "name": "_IsVSync",
+   "kind": "static",
+   "lib": "LIBAPI",
+   "mod": "PAD",
+   "mod_start": "0x80078BE0",
+   "mod_end": "0x80078F00"
+  }
+ ],
+ "0x80078F00": [
+  {
+   "name": "InitPAD2",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A18",
+   "mod_start": "0x80078F00",
+   "mod_end": "0x80078F10"
+  }
+ ],
+ "0x80078F10": [
+  {
+   "name": "StartPAD2",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A19",
+   "mod_start": "0x80078F10",
+   "mod_end": "0x80078F20"
+  }
+ ],
+ "0x80078F20": [
+  {
+   "name": "StopPAD2",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A20",
+   "mod_start": "0x80078F20",
+   "mod_end": "0x80078F30"
+  }
+ ],
+ "0x80078F30": [
+  {
+   "name": "PAD_init2",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A21",
+   "mod_start": "0x80078F30",
+   "mod_end": "0x80078F40"
+  }
+ ],
+ "0x80078F40": [
+  {
+   "name": "SysEnqIntRP",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "L02",
+   "mod_start": "0x80078F40",
+   "mod_end": "0x80078F50"
+  }
+ ],
+ "0x80078F50": [
+  {
+   "name": "SysDeqIntRP",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "L03",
+   "mod_start": "0x80078F50",
+   "mod_end": "0x80078F60"
+  }
+ ],
+ "0x80078F60": [
+  {
+   "name": "EnablePAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PATCH",
+   "mod_start": "0x80078F60",
+   "mod_end": "0x80078FF0"
+  }
+ ],
+ "0x80078F74": [
+  {
+   "name": "DisablePAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PATCH",
+   "mod_start": "0x80078F60",
+   "mod_end": "0x80078FF0"
+  }
+ ],
+ "0x80078F88": [
+  {
+   "name": "_patch_pad",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "PATCH",
+   "mod_start": "0x80078F60",
+   "mod_end": "0x80078FF0"
+  }
+ ],
+ "0x80078FF0": [
+  {
+   "name": "FlushCache",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C68",
+   "mod_start": "0x80078FF0",
+   "mod_end": "0x80079000"
+  }
+ ],
+ "0x80079000": [
+  {
+   "name": "_SendPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "SENDPAD",
+   "mod_start": "0x80079000",
+   "mod_end": "0x800790C0"
+  }
+ ],
+ "0x80079028": [
+  {
+   "name": "_send_pad",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "SENDPAD",
+   "mod_start": "0x80079000",
+   "mod_end": "0x800790C0"
+  }
+ ],
+ "0x800790C0": [
+  {
+   "name": "_remove_ChgclrPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "CHCLRPAD",
+   "mod_start": "0x800790C0",
+   "mod_end": "0x80079120"
+  }
+ ],
+ "0x80079120": [
+  {
+   "name": "memcpy",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "MEMCPY",
+   "mod_start": "0x80079120",
+   "mod_end": "0x80079154"
+  }
+ ],
+ "0x80079154": [
+  {
+   "name": "rand",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "RAND",
+   "mod_start": "0x80079154",
+   "mod_end": "0x80079194"
+  }
+ ],
+ "0x80079184": [
+  {
+   "name": "srand",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "RAND",
+   "mod_start": "0x80079154",
+   "mod_end": "0x80079194"
+  }
+ ],
+ "0x80079194": [
+  {
+   "name": "strcpy",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "STRCPY",
+   "mod_start": "0x80079194",
+   "mod_end": "0x800791D8"
+  }
+ ],
+ "0x800791D8": [
+  {
+   "name": "strlen",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "STRLEN",
+   "mod_start": "0x800791D8",
+   "mod_end": "0x80079208"
+  }
+ ],
+ "0x80079208": [
+  {
+   "name": "printf",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "PRINTF",
+   "mod_start": "0x80079208",
+   "mod_end": "0x80079244"
+  }
+ ],
+ "0x80079244": [
+  {
+   "name": "prnt",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "PRNT",
+   "mod_start": "0x80079244",
+   "mod_end": "0x800798CC"
+  }
+ ],
+ "0x800798CC": [
+  {
+   "name": "toupper",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "CTYPE",
+   "mod_start": "0x800798CC",
+   "mod_end": "0x8007992C"
+  }
+ ],
+ "0x800798FC": [
+  {
+   "name": "tolower",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "CTYPE",
+   "mod_start": "0x800798CC",
+   "mod_end": "0x8007992C"
+  }
+ ],
+ "0x8007992C": [
+  {
+   "name": "memchr",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "MEMCHR",
+   "mod_start": "0x8007992C",
+   "mod_end": "0x8007997C"
+  }
+ ],
+ "0x8007997C": [
+  {
+   "name": "putchar",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "PUTCHAR",
+   "mod_start": "0x8007997C",
+   "mod_end": "0x80079A30"
+  }
+ ],
+ "0x80079A30": [
+  {
+   "name": "sprintf",
+   "kind": "xdef",
+   "lib": "LIBC",
+   "mod": "SPRINTF",
+   "mod_start": "0x80079A30",
+   "mod_end": "0x8007A28C"
+  },
+  {
+   "name": "sprintf",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "SPRINTF",
+   "mod_start": "0x80079A30",
+   "mod_end": "0x8007A28C"
+  }
+ ],
+ "0x8007A28C": [
+  {
+   "name": "memmove",
+   "kind": "xdef",
+   "lib": "LIBC",
+   "mod": "MEMMOVE",
+   "mod_start": "0x8007A28C",
+   "mod_end": "0x8007A2F8"
+  },
+  {
+   "name": "memmove",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "MEMMOVE",
+   "mod_start": "0x8007A28C",
+   "mod_end": "0x8007A2F8"
+  }
+ ],
+ "0x8007A2F8": [
+  {
+   "name": "_card_info",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "C171",
+   "mod_start": "0x8007A2F8",
+   "mod_end": "0x8007A308"
+  }
+ ],
+ "0x8007A308": [
+  {
+   "name": "_card_load",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "C172",
+   "mod_start": "0x8007A308",
+   "mod_end": "0x8007A318"
+  }
+ ],
+ "0x8007A318": [
+  {
+   "name": "_card_clear",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "CARD",
+   "mod_start": "0x8007A318",
+   "mod_end": "0x8007A350"
+  }
+ ],
+ "0x8007A350": [
+  {
+   "name": "_card_write",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "A78",
+   "mod_start": "0x8007A350",
+   "mod_end": "0x8007A360"
+  }
+ ],
+ "0x8007A360": [
+  {
+   "name": "_new_card",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "A80",
+   "mod_start": "0x8007A360",
+   "mod_end": "0x8007A370"
+  }
+ ],
+ "0x8007A370": [
+  {
+   "name": "InitCARD",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "INIT",
+   "mod_start": "0x8007A370",
+   "mod_end": "0x8007A428"
+  }
+ ],
+ "0x8007A3C8": [
+  {
+   "name": "StartCARD",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "INIT",
+   "mod_start": "0x8007A370",
+   "mod_end": "0x8007A428"
+  }
+ ],
+ "0x8007A400": [
+  {
+   "name": "StopCARD",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "INIT",
+   "mod_start": "0x8007A370",
+   "mod_end": "0x8007A428"
+  }
+ ],
+ "0x8007A428": [
+  {
+   "name": "InitCARD2",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "A74",
+   "mod_start": "0x8007A428",
+   "mod_end": "0x8007A438"
+  }
+ ],
+ "0x8007A438": [
+  {
+   "name": "StartCARD2",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "A75",
+   "mod_start": "0x8007A438",
+   "mod_end": "0x8007A448"
+  }
+ ],
+ "0x8007A448": [
+  {
+   "name": "StopCARD2",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "A76",
+   "mod_start": "0x8007A448",
+   "mod_end": "0x8007A458"
+  }
+ ],
+ "0x8007A458": [
+  {
+   "name": "_ExitCard",
+   "kind": "xdef",
+   "lib": "LIBCARD",
+   "mod": "END",
+   "mod_start": "0x8007A458",
+   "mod_end": "0x8007A4D8"
+  }
+ ],
+ "0x8007A4D8": [
+  {
+   "name": "LoadTPage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "mod_start": "0x8007A4D8",
+   "mod_end": "0x8007A788"
+  }
+ ],
+ "0x8007A5C4": [
+  {
+   "name": "LoadClut",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "mod_start": "0x8007A4D8",
+   "mod_end": "0x8007A788"
+  }
+ ],
+ "0x8007A62C": [
+  {
+   "name": "LoadClut2",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "mod_start": "0x8007A4D8",
+   "mod_end": "0x8007A788"
+  }
+ ],
+ "0x8007A694": [
+  {
+   "name": "SetDefDrawEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "mod_start": "0x8007A4D8",
+   "mod_end": "0x8007A788"
+  }
+ ],
+ "0x8007A74C": [
+  {
+   "name": "SetDefDispEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "EXT",
+   "mod_start": "0x8007A4D8",
+   "mod_end": "0x8007A788"
+  }
+ ],
+ "0x8007A788": [
+  {
+   "name": "GetTPage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A7C4": [
+  {
+   "name": "GetClut",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A7DC": [
+  {
+   "name": "DumpTPage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A83C": [
+  {
+   "name": "DumpClut",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A87C": [
+  {
+   "name": "NextPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A898": [
+  {
+   "name": "IsEndPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A8B4": [
+  {
+   "name": "AddPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A8F0": [
+  {
+   "name": "AddPrims",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A92C": [
+  {
+   "name": "CatPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A950": [
+  {
+   "name": "TermPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A968": [
+  {
+   "name": "SetSemiTrans",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A990": [
+  {
+   "name": "SetShadeTex",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A9B8": [
+  {
+   "name": "SetPolyF3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A9CC": [
+  {
+   "name": "SetPolyFT3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A9E0": [
+  {
+   "name": "SetPolyG3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007A9F4": [
+  {
+   "name": "SetPolyGT3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA08": [
+  {
+   "name": "SetPolyF4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA1C": [
+  {
+   "name": "SetPolyFT4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA30": [
+  {
+   "name": "SetPolyG4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA44": [
+  {
+   "name": "SetPolyGT4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA58": [
+  {
+   "name": "SetSprt8",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA6C": [
+  {
+   "name": "SetSprt16",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA80": [
+  {
+   "name": "SetSprt",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AA94": [
+  {
+   "name": "SetTile1",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AAA8": [
+  {
+   "name": "SetTile8",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AABC": [
+  {
+   "name": "SetTile16",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AAD0": [
+  {
+   "name": "SetTile",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AAE4": [
+  {
+   "name": "SetLineF2",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AAF8": [
+  {
+   "name": "SetLineG2",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AB0C": [
+  {
+   "name": "SetLineF3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AB2C": [
+  {
+   "name": "SetLineG3",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AB4C": [
+  {
+   "name": "SetLineF4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AB6C": [
+  {
+   "name": "SetLineG4",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AB8C": [
+  {
+   "name": "SetDrawTPage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007ABB8": [
+  {
+   "name": "SetDrawMove",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AC18": [
+  {
+   "name": "SetDrawLoad",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AC84": [
+  {
+   "name": "MargePrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007ACBC": [
+  {
+   "name": "DumpDrawEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007ADD0": [
+  {
+   "name": "DumpDispEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "PRIM",
+   "mod_start": "0x8007A788",
+   "mod_end": "0x8007AE7C"
+  }
+ ],
+ "0x8007AE7C": [
+  {
+   "name": "ResetGraph",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B000": [
+  {
+   "name": "SetGraphReverse",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B114": [
+  {
+   "name": "SetGraphDebug",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B178": [
+  {
+   "name": "SetGraphQueue",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B224": [
+  {
+   "name": "GetGraphType",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B234": [
+  {
+   "name": "GetGraphDebug",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B244": [
+  {
+   "name": "DrawSyncCallback",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B2A0": [
+  {
+   "name": "SetDispMask",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B33C": [
+  {
+   "name": "DrawSync",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B3A8": [
+  {
+   "name": "checkRECT",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B4D0": [
+  {
+   "name": "ClearImage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B564": [
+  {
+   "name": "ClearImage2",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B600": [
+  {
+   "name": "LoadImage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B664": [
+  {
+   "name": "StoreImage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B6C8": [
+  {
+   "name": "MoveImage",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B78C": [
+  {
+   "name": "ClearOTag",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B844": [
+  {
+   "name": "ClearOTagR",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B8DC": [
+  {
+   "name": "DrawPrim",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B93C": [
+  {
+   "name": "DrawOTag",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007B9B0": [
+  {
+   "name": "PutDrawEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007BAB4": [
+  {
+   "name": "DrawOTagEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007BBD0": [
+  {
+   "name": "GetDrawEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007BC08": [
+  {
+   "name": "PutDispEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C0B0": [
+  {
+   "name": "GetDispEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C0E8": [
+  {
+   "name": "GetODE",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C118": [
+  {
+   "name": "SetTexWindow",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C154": [
+  {
+   "name": "SetDrawArea",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C1D8": [
+  {
+   "name": "SetDrawOffset",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C21C": [
+  {
+   "name": "SetPriority",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C248": [
+  {
+   "name": "SetDrawMode",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C2A0": [
+  {
+   "name": "SetDrawEnv",
+   "kind": "xdef",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C4B8": [
+  {
+   "name": "SetDrawEnv2",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C748": [
+  {
+   "name": "get_mode",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C7A0": [
+  {
+   "name": "get_cs",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C86C": [
+  {
+   "name": "get_ce",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C938": [
+  {
+   "name": "get_ofs",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007C97C": [
+  {
+   "name": "get_tw",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007CA00": [
+  {
+   "name": "get_dx",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007CAB0": [
+  {
+   "name": "_status",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007CAC8": [
+  {
+   "name": "_otc",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007CBB0": [
+  {
+   "name": "_clr",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007CE0C": [
+  {
+   "name": "_dws",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D048": [
+  {
+   "name": "_drs",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D2CC": [
+  {
+   "name": "_ctl",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D2F4": [
+  {
+   "name": "_getctl",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D308": [
+  {
+   "name": "_cwb",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D358": [
+  {
+   "name": "_cwc",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D3A4": [
+  {
+   "name": "_param",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D3D4": [
+  {
+   "name": "_addque",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D3F8": [
+  {
+   "name": "_addque2",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D6D8": [
+  {
+   "name": "_exeque",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007D9C4": [
+  {
+   "name": "_reset",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DB20": [
+  {
+   "name": "_sync",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DC68": [
+  {
+   "name": "set_alarm",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DC9C": [
+  {
+   "name": "get_alarm",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DE08": [
+  {
+   "name": "_version",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DEE4": [
+  {
+   "name": "memset",
+   "kind": "static",
+   "lib": "LIBGPU",
+   "mod": "SYS",
+   "mod_start": "0x8007AE7C",
+   "mod_end": "0x8007DF10"
+  }
+ ],
+ "0x8007DF10": [
+  {
+   "name": "GPU_cw",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C73",
+   "mod_start": "0x8007DF10",
+   "mod_end": "0x8007DF20"
+  }
+ ],
+ "0x8007DF20": [
+  {
+   "name": "rsin",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "GEO_00",
+   "mod_start": "0x8007DF20",
+   "mod_end": "0x8007DFEC"
+  }
+ ],
+ "0x8007DF5C": [
+  {
+   "name": "sin_1",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "GEO_00",
+   "mod_start": "0x8007DF20",
+   "mod_end": "0x8007DFEC"
+  }
+ ],
+ "0x8007DFEC": [
+  {
+   "name": "rcos",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "GEO_01",
+   "mod_start": "0x8007DFEC",
+   "mod_end": "0x8007E08C"
+  }
+ ],
+ "0x8007E094": [
+  {
+   "name": "InitGeom",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC00",
+   "mod_start": "0x8007E08C",
+   "mod_end": "0x8007E11C"
+  }
+ ],
+ "0x8007E11C": [
+  {
+   "name": "SquareRoot0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC01",
+   "mod_start": "0x8007E11C",
+   "mod_end": "0x8007E1AC"
+  }
+ ],
+ "0x8007E1AC": [
+  {
+   "name": "LoadAverage12",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E1FC": [
+  {
+   "name": "LoadAverage0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E24C": [
+  {
+   "name": "LoadAverageShort12",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E2D4": [
+  {
+   "name": "LoadAverageShort0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E35C": [
+  {
+   "name": "LoadAverageByte",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E3BC": [
+  {
+   "name": "LoadAverageCol",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC06",
+   "mod_start": "0x8007E1AC",
+   "mod_end": "0x8007E43C"
+  }
+ ],
+ "0x8007E43C": [
+  {
+   "name": "SquareRoot12",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MSC09",
+   "mod_start": "0x8007E43C",
+   "mod_end": "0x8007E4DC"
+  }
+ ],
+ "0x8007E4DC": [
+  {
+   "name": "MulMatrix0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_000",
+   "mod_start": "0x8007E4DC",
+   "mod_end": "0x8007E5EC"
+  }
+ ],
+ "0x8007E5EC": [
+  {
+   "name": "CompMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_003",
+   "mod_start": "0x8007E5EC",
+   "mod_end": "0x8007E74C"
+  }
+ ],
+ "0x8007E74C": [
+  {
+   "name": "ApplyMatrixLV",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_004",
+   "mod_start": "0x8007E74C",
+   "mod_end": "0x8007E8AC"
+  }
+ ],
+ "0x8007E8AC": [
+  {
+   "name": "ApplyRotMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_005",
+   "mod_start": "0x8007E8AC",
+   "mod_end": "0x8007E8DC"
+  }
+ ],
+ "0x8007E8DC": [
+  {
+   "name": "ScaleMatrixL",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_00A",
+   "mod_start": "0x8007E8DC",
+   "mod_end": "0x8007EA0C"
+  }
+ ],
+ "0x8007EA0C": [
+  {
+   "name": "ApplyRotMatrixLV",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_01",
+   "mod_start": "0x8007EA0C",
+   "mod_end": "0x8007EB4C"
+  }
+ ],
+ "0x8007EB4C": [
+  {
+   "name": "MulMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_03",
+   "mod_start": "0x8007EB4C",
+   "mod_end": "0x8007EC5C"
+  }
+ ],
+ "0x8007EC5C": [
+  {
+   "name": "MulMatrix2",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_04",
+   "mod_start": "0x8007EC5C",
+   "mod_end": "0x8007ED6C"
+  }
+ ],
+ "0x8007ED6C": [
+  {
+   "name": "ApplyMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_05",
+   "mod_start": "0x8007ED6C",
+   "mod_end": "0x8007EDBC"
+  }
+ ],
+ "0x8007EDBC": [
+  {
+   "name": "ScaleMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_08",
+   "mod_start": "0x8007EDBC",
+   "mod_end": "0x8007EEEC"
+  }
+ ],
+ "0x8007EEEC": [
+  {
+   "name": "SetRotMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_09",
+   "mod_start": "0x8007EEEC",
+   "mod_end": "0x8007EF1C"
+  }
+ ],
+ "0x8007EF1C": [
+  {
+   "name": "SetColorMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_11",
+   "mod_start": "0x8007EF1C",
+   "mod_end": "0x8007EF4C"
+  }
+ ],
+ "0x8007EF4C": [
+  {
+   "name": "SetTransMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "MTX_12",
+   "mod_start": "0x8007EF4C",
+   "mod_end": "0x8007EF6C"
+  }
+ ],
+ "0x8007EF6C": [
+  {
+   "name": "ReadSZfifo3",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG04",
+   "mod_start": "0x8007EF6C",
+   "mod_end": "0x8007EF8C"
+  }
+ ],
+ "0x8007EF8C": [
+  {
+   "name": "ReadGeomScreen",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG09",
+   "mod_start": "0x8007EF8C",
+   "mod_end": "0x8007EF9C"
+  }
+ ],
+ "0x8007EF9C": [
+  {
+   "name": "SetBackColor",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG10",
+   "mod_start": "0x8007EF9C",
+   "mod_end": "0x8007EFBC"
+  }
+ ],
+ "0x8007EFBC": [
+  {
+   "name": "SetFarColor",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG11",
+   "mod_start": "0x8007EFBC",
+   "mod_end": "0x8007EFDC"
+  }
+ ],
+ "0x8007EFDC": [
+  {
+   "name": "SetGeomOffset",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG12",
+   "mod_start": "0x8007EFDC",
+   "mod_end": "0x8007EFFC"
+  }
+ ],
+ "0x8007EFFC": [
+  {
+   "name": "SetGeomScreen",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "REG13",
+   "mod_start": "0x8007EFFC",
+   "mod_end": "0x8007F00C"
+  }
+ ],
+ "0x8007F00C": [
+  {
+   "name": "LightColor",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F034": [
+  {
+   "name": "DpqColorLight",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F05C": [
+  {
+   "name": "DpqColor3",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F098": [
+  {
+   "name": "Intpl",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F0BC": [
+  {
+   "name": "Square12",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F0E4": [
+  {
+   "name": "Square0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F10C": [
+  {
+   "name": "AverageZ3",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F12C": [
+  {
+   "name": "AverageZ4",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F150": [
+  {
+   "name": "OuterProduct12",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F1A8": [
+  {
+   "name": "OuterProduct0",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F200": [
+  {
+   "name": "Lzc",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_00",
+   "mod_start": "0x8007F00C",
+   "mod_end": "0x8007F21C"
+  }
+ ],
+ "0x8007F21C": [
+  {
+   "name": "RotTransPers",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_02",
+   "mod_start": "0x8007F21C",
+   "mod_end": "0x8007F24C"
+  }
+ ],
+ "0x8007F24C": [
+  {
+   "name": "RotTransPers3",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_03",
+   "mod_start": "0x8007F24C",
+   "mod_end": "0x8007F2AC"
+  }
+ ],
+ "0x8007F2AC": [
+  {
+   "name": "RotTrans",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "SMP_04",
+   "mod_start": "0x8007F2AC",
+   "mod_end": "0x8007F2DC"
+  }
+ ],
+ "0x8007F2DC": [
+  {
+   "name": "RotTransPers4",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "CMB_00",
+   "mod_start": "0x8007F2DC",
+   "mod_end": "0x8007F35C"
+  }
+ ],
+ "0x8007F35C": [
+  {
+   "name": "RotMatrix",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "FGO_01",
+   "mod_start": "0x8007F35C",
+   "mod_end": "0x8007F5EC"
+  }
+ ],
+ "0x8007F5EC": [
+  {
+   "name": "RotMatrixZYX",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "FGO_03",
+   "mod_start": "0x8007F5EC",
+   "mod_end": "0x8007F87C"
+  }
+ ],
+ "0x8007F87C": [
+  {
+   "name": "RotMatrixX",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "FGO_04",
+   "mod_start": "0x8007F87C",
+   "mod_end": "0x8007FA1C"
+  }
+ ],
+ "0x8007FA1C": [
+  {
+   "name": "RotMatrixY",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "FGO_05",
+   "mod_start": "0x8007FA1C",
+   "mod_end": "0x8007FBBC"
+  }
+ ],
+ "0x8007FBBC": [
+  {
+   "name": "RotMatrixZ",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "FGO_06",
+   "mod_start": "0x8007FBBC",
+   "mod_end": "0x8007FD5C"
+  }
+ ],
+ "0x8007FD5C": [
+  {
+   "name": "ratan2",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "RATAN",
+   "mod_start": "0x8007FD5C",
+   "mod_end": "0x8007FEDC"
+  }
+ ],
+ "0x8007FEDC": [
+  {
+   "name": "_patch_gte",
+   "kind": "xdef",
+   "lib": "LIBGTE",
+   "mod": "PATCHGTE",
+   "mod_start": "0x8007FEDC",
+   "mod_end": "0x8007FF7C"
+  }
+ ],
+ "0x8007FF7C": [
+  {
+   "name": "CdInit",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "EVENT",
+   "mod_start": "0x8007FF7C",
+   "mod_end": "0x8008008C"
+  }
+ ],
+ "0x80080014": [
+  {
+   "name": "def_cbsync",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "EVENT",
+   "mod_start": "0x8007FF7C",
+   "mod_end": "0x8008008C"
+  }
+ ],
+ "0x8008003C": [
+  {
+   "name": "def_cbready",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "EVENT",
+   "mod_start": "0x8007FF7C",
+   "mod_end": "0x8008008C"
+  }
+ ],
+ "0x80080064": [
+  {
+   "name": "def_cbread",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "EVENT",
+   "mod_start": "0x8007FF7C",
+   "mod_end": "0x8008008C"
+  }
+ ],
+ "0x8008008C": [
+  {
+   "name": "DeliverEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A07",
+   "mod_start": "0x8008008C",
+   "mod_end": "0x8008009C"
+  }
+ ],
+ "0x8008009C": [
+  {
+   "name": "CdStatus",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800800AC": [
+  {
+   "name": "CdMode",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800800BC": [
+  {
+   "name": "CdLastCom",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800800CC": [
+  {
+   "name": "CdLastPos",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800800DC": [
+  {
+   "name": "CdReset",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080148": [
+  {
+   "name": "CdFlush",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080168": [
+  {
+   "name": "CdSetDebug",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080180": [
+  {
+   "name": "CdComstr",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800801B4": [
+  {
+   "name": "CdIntstr",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800801E8": [
+  {
+   "name": "CdSync",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080208": [
+  {
+   "name": "CdReady",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080228": [
+  {
+   "name": "CdSyncCallback",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080240": [
+  {
+   "name": "CdReadyCallback",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080258": [
+  {
+   "name": "CdControl",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080390": [
+  {
+   "name": "CdControlF",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800804BC": [
+  {
+   "name": "CdControlB",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080600": [
+  {
+   "name": "CdMix",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080620": [
+  {
+   "name": "CdGetSector",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080640": [
+  {
+   "name": "CdGetSector2",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080660": [
+  {
+   "name": "CdDataCallback",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080684": [
+  {
+   "name": "CdDataSync",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800806A4": [
+  {
+   "name": "CdIntToPos",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x800807A8": [
+  {
+   "name": "CdPosToInt",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "SYS",
+   "mod_start": "0x8008009C",
+   "mod_end": "0x80080828"
+  }
+ ],
+ "0x80080828": [
+  {
+   "name": "getintr",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80080DB0": [
+  {
+   "name": "CD_sync",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081030": [
+  {
+   "name": "CD_ready",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x800812FC": [
+  {
+   "name": "CD_cw",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081718": [
+  {
+   "name": "CD_vol",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x800817A0": [
+  {
+   "name": "CD_flush",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081880": [
+  {
+   "name": "CD_initvol",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081974": [
+  {
+   "name": "CD_initintr",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x800819C4": [
+  {
+   "name": "CD_init",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081BB0": [
+  {
+   "name": "CD_datasync",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081D1C": [
+  {
+   "name": "CD_getsector",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081E1C": [
+  {
+   "name": "CD_getsector2",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081F0C": [
+  {
+   "name": "CD_set_test_parmnum",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80081F1C": [
+  {
+   "name": "callback",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "BIOS",
+   "mod_start": "0x80080828",
+   "mod_end": "0x80082000"
+  }
+ ],
+ "0x80082000": [
+  {
+   "name": "puts",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "PUTS",
+   "mod_start": "0x80082000",
+   "mod_end": "0x80082050"
+  }
+ ],
+ "0x80082050": [
+  {
+   "name": "cb_read",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x80082320": [
+  {
+   "name": "cb_data",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x8008241C": [
+  {
+   "name": "cd_read_retry",
+   "kind": "static",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x80082630": [
+  {
+   "name": "CdReadBreak",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x800826CC": [
+  {
+   "name": "CdRead",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x800827D0": [
+  {
+   "name": "CdReadSync",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x8008289C": [
+  {
+   "name": "CdReadCallback",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x800828B4": [
+  {
+   "name": "CdReadMode",
+   "kind": "xdef",
+   "lib": "LIBCD",
+   "mod": "CDREAD",
+   "mod_start": "0x80082050",
+   "mod_end": "0x800828CC"
+  }
+ ],
+ "0x800828CC": [
+  {
+   "name": "VSync",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "VSYNC",
+   "mod_start": "0x800828CC",
+   "mod_end": "0x80082AB0"
+  }
+ ],
+ "0x80082A14": [
+  {
+   "name": "v_wait",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "VSYNC",
+   "mod_start": "0x800828CC",
+   "mod_end": "0x80082AB0"
+  }
+ ],
+ "0x80082AB0": [
+  {
+   "name": "ChangeClearRCnt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "L10",
+   "mod_start": "0x80082AB0",
+   "mod_end": "0x80082AC0"
+  }
+ ],
+ "0x80082AC0": [
+  {
+   "name": "ResetCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082AF0": [
+  {
+   "name": "InterruptCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082B20": [
+  {
+   "name": "DMACallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082B50": [
+  {
+   "name": "VSyncCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082B84": [
+  {
+   "name": "VSyncCallbacks",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082BB4": [
+  {
+   "name": "StopCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082BE4": [
+  {
+   "name": "RestartCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082C14": [
+  {
+   "name": "CheckCallback",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082C24": [
+  {
+   "name": "GetIntrMask",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082C3C": [
+  {
+   "name": "SetIntrMask",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082C58": [
+  {
+   "name": "startIntr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082D34": [
+  {
+   "name": "trapIntr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80082F1C": [
+  {
+   "name": "setIntr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x80083070": [
+  {
+   "name": "stopIntr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x8008311C": [
+  {
+   "name": "restartIntr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x800831A4": [
+  {
+   "name": "memclr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR",
+   "mod_start": "0x80082AC0",
+   "mod_end": "0x800831D0"
+  }
+ ],
+ "0x800831D8": [
+  {
+   "name": "_96_remove",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C114",
+   "mod_start": "0x800831D0",
+   "mod_end": "0x800831F0"
+  }
+ ],
+ "0x800831F0": [
+  {
+   "name": "ReturnFromException",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A23",
+   "mod_start": "0x800831F0",
+   "mod_end": "0x80083200"
+  }
+ ],
+ "0x80083200": [
+  {
+   "name": "ResetEntryInt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A24",
+   "mod_start": "0x80083200",
+   "mod_end": "0x80083210"
+  }
+ ],
+ "0x80083210": [
+  {
+   "name": "HookEntryInt",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A25",
+   "mod_start": "0x80083210",
+   "mod_end": "0x80083220"
+  }
+ ],
+ "0x80083220": [
+  {
+   "name": "setjmp",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "SETJMP",
+   "mod_start": "0x80083220",
+   "mod_end": "0x800832A0"
+  }
+ ],
+ "0x8008325C": [
+  {
+   "name": "longjmp",
+   "kind": "xdef",
+   "lib": "LIBC2",
+   "mod": "SETJMP",
+   "mod_start": "0x80083220",
+   "mod_end": "0x800832A0"
+  }
+ ],
+ "0x800832A0": [
+  {
+   "name": "startIntrVSync",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR_VB",
+   "mod_start": "0x800832A0",
+   "mod_end": "0x800833C8"
+  }
+ ],
+ "0x800832F8": [
+  {
+   "name": "trapIntrVSync",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_VB",
+   "mod_start": "0x800832A0",
+   "mod_end": "0x800833C8"
+  }
+ ],
+ "0x80083370": [
+  {
+   "name": "setIntrVSync",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_VB",
+   "mod_start": "0x800832A0",
+   "mod_end": "0x800833C8"
+  }
+ ],
+ "0x8008339C": [
+  {
+   "name": "memclr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_VB",
+   "mod_start": "0x800832A0",
+   "mod_end": "0x800833C8"
+  }
+ ],
+ "0x800833C8": [
+  {
+   "name": "startIntrDMA",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "mod_start": "0x800833C8",
+   "mod_end": "0x80083670"
+  }
+ ],
+ "0x80083418": [
+  {
+   "name": "trapIntrDMA",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "mod_start": "0x800833C8",
+   "mod_end": "0x80083670"
+  }
+ ],
+ "0x8008359C": [
+  {
+   "name": "setIntrDMA",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "mod_start": "0x800833C8",
+   "mod_end": "0x80083670"
+  }
+ ],
+ "0x80083644": [
+  {
+   "name": "memclr",
+   "kind": "static",
+   "lib": "LIBETC",
+   "mod": "INTR_DMA",
+   "mod_start": "0x800833C8",
+   "mod_end": "0x80083670"
+  }
+ ],
+ "0x80083670": [
+  {
+   "name": "SetVideoMode",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "VMODE",
+   "mod_start": "0x80083670",
+   "mod_end": "0x80083698"
+  }
+ ],
+ "0x80083688": [
+  {
+   "name": "GetVideoMode",
+   "kind": "xdef",
+   "lib": "LIBETC",
+   "mod": "VMODE",
+   "mod_start": "0x80083670",
+   "mod_end": "0x80083698"
+  }
+ ],
+ "0x8008386C": [
+  {
+   "name": "InitHeap",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "C57",
+   "mod_start": "0x8008386C",
+   "mod_end": "0x8008387C"
+  }
+ ],
+ "0x80083954": [
+  {
+   "name": "SsEnd",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSEND",
+   "mod_start": "0x80083954",
+   "mod_end": "0x80083A18"
+  }
+ ],
+ "0x80083A18": [
+  {
+   "name": "SsInit",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSINIT_C",
+   "mod_start": "0x80083A18",
+   "mod_end": "0x80083A48"
+  },
+  {
+   "name": "SsInitHot",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSINIT_H",
+   "mod_start": "0x80083A18",
+   "mod_end": "0x80083A48"
+  }
+ ],
+ "0x80083A48": [
+  {
+   "name": "_SsInit",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSINIT",
+   "mod_start": "0x80083A48",
+   "mod_end": "0x80083B30"
+  }
+ ],
+ "0x80083B30": [
+  {
+   "name": "SendPAD",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "SEND",
+   "mod_start": "0x80083B30",
+   "mod_end": "0x80083B50"
+  },
+  {
+   "name": "GsSetProjection",
+   "kind": "xdef",
+   "lib": "LIBGS",
+   "mod": "GS_106",
+   "mod_start": "0x80083B30",
+   "mod_end": "0x80083B50"
+  },
+  {
+   "name": "SsSetNoiseOff",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSNOFF",
+   "mod_start": "0x80083B30",
+   "mod_end": "0x80083B50"
+  },
+  {
+   "name": "SsQuit",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSQUIT",
+   "mod_start": "0x80083B30",
+   "mod_end": "0x80083B50"
+  }
+ ],
+ "0x80083B50": [
+  {
+   "name": "SsSetSerialAttr",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSSATTR",
+   "mod_start": "0x80083B50",
+   "mod_end": "0x80083BE4"
+  }
+ ],
+ "0x80083BE4": [
+  {
+   "name": "SsSetMVol",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSSMV",
+   "mod_start": "0x80083BE4",
+   "mod_end": "0x80083C34"
+  }
+ ],
+ "0x80083C34": [
+  {
+   "name": "_SsStart",
+   "kind": "static",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "mod_start": "0x80083C34",
+   "mod_end": "0x80083F6C"
+  }
+ ],
+ "0x80083E9C": [
+  {
+   "name": "SsStart",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "mod_start": "0x80083C34",
+   "mod_end": "0x80083F6C"
+  }
+ ],
+ "0x80083EBC": [
+  {
+   "name": "SsStart2",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "mod_start": "0x80083C34",
+   "mod_end": "0x80083F6C"
+  }
+ ],
+ "0x80083EDC": [
+  {
+   "name": "_SsTrapIntrVSync",
+   "kind": "static",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "mod_start": "0x80083C34",
+   "mod_end": "0x80083F6C"
+  }
+ ],
+ "0x80083F1C": [
+  {
+   "name": "_SsSeqCalledTbyT_1per2",
+   "kind": "static",
+   "lib": "LIBSND",
+   "mod": "SSSTART",
+   "mod_start": "0x80083C34",
+   "mod_end": "0x80083F6C"
+  }
+ ],
+ "0x80083F6C": [
+  {
+   "name": "SsSeqCalledTbyT",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSCALL",
+   "mod_start": "0x80083F6C",
+   "mod_end": "0x800841E0"
+  }
+ ],
+ "0x800848AC": [
+  {
+   "name": "_SsSndPause",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "PAUSE",
+   "mod_start": "0x800848AC",
+   "mod_end": "0x80084948"
+  }
+ ],
+ "0x80084948": [
+  {
+   "name": "_SsSndPlay",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "PLAY",
+   "mod_start": "0x80084948",
+   "mod_end": "0x80084974"
+  }
+ ],
+ "0x80085064": [
+  {
+   "name": "_SsReadDeltaValue",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "MIDITIME",
+   "mod_start": "0x80085064",
+   "mod_end": "0x80085114"
+  }
+ ],
+ "0x80085114": [
+  {
+   "name": "_SsSndNextSep",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "NEXT",
+   "mod_start": "0x80085114",
+   "mod_end": "0x80085210"
+  }
+ ],
+ "0x80085210": [
+  {
+   "name": "_SsSndReplay",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "REPLAY",
+   "mod_start": "0x80085210",
+   "mod_end": "0x80085270"
+  }
+ ],
+ "0x8008541C": [
+  {
+   "name": "_SsSndPlay",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "PLAY",
+   "mod_start": "0x8008541C",
+   "mod_end": "0x80085448"
+  }
+ ],
+ "0x80085448": [
+  {
+   "name": "SsSetSerialVol",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSSV",
+   "mod_start": "0x80085448",
+   "mod_end": "0x80085544"
+  }
+ ],
+ "0x80085544": [
+  {
+   "name": "SsSetTickMode",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "SSTICK",
+   "mod_start": "0x80085544",
+   "mod_end": "0x800856B0"
+  }
+ ],
+ "0x800856B0": [
+  {
+   "name": "_SsSndTempo",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "TEMPO",
+   "mod_start": "0x800856B0",
+   "mod_end": "0x800858D0"
+  }
+ ],
+ "0x800859F0": [
+  {
+   "name": "SsUtGetVBaddrInSB",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_GVBA",
+   "mod_start": "0x800859F0",
+   "mod_end": "0x80085A40"
+  }
+ ],
+ "0x80085E4C": [
+  {
+   "name": "SsUtSetReverbDepth",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_RDEP",
+   "mod_start": "0x80085E4C",
+   "mod_end": "0x80085EE4"
+  }
+ ],
+ "0x80085EE4": [
+  {
+   "name": "SsUtSetReverbType",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_REV",
+   "mod_start": "0x80085EE4",
+   "mod_end": "0x80085F98"
+  }
+ ],
+ "0x80085F88": [
+  {
+   "name": "SsUtGetReverbType",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_REV",
+   "mod_start": "0x80085EE4",
+   "mod_end": "0x80085F98"
+  }
+ ],
+ "0x80085F98": [
+  {
+   "name": "SsUtReverbOff",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_ROFF",
+   "mod_start": "0x80085F98",
+   "mod_end": "0x80085FB8"
+  },
+  {
+   "name": "SpuInit",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_I",
+   "mod_start": "0x80085F98",
+   "mod_end": "0x80085FB8"
+  }
+ ],
+ "0x80085FB8": [
+  {
+   "name": "SsUtReverbOn",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_RON",
+   "mod_start": "0x80085FB8",
+   "mod_end": "0x80085FD8"
+  },
+  {
+   "name": "SpuInitHot",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_IH",
+   "mod_start": "0x80085FB8",
+   "mod_end": "0x80085FD8"
+  }
+ ],
+ "0x80086B38": [
+  {
+   "name": "note2pitch",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VM_N2P",
+   "mod_start": "0x80086B38",
+   "mod_end": "0x80086CF8"
+  }
+ ],
+ "0x80086BFC": [
+  {
+   "name": "note2pitch2",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VM_N2P",
+   "mod_start": "0x80086B38",
+   "mod_end": "0x80086CF8"
+  }
+ ],
+ "0x80087E3C": [
+  {
+   "name": "_SsVmVSetUp",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VM_VSU",
+   "mod_start": "0x80087E3C",
+   "mod_end": "0x80087F00"
+  }
+ ],
+ "0x80087F00": [
+  {
+   "name": "SsSetAutoKeyOffMode",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_AUTO",
+   "mod_start": "0x80087F00",
+   "mod_end": "0x80087F10"
+  }
+ ],
+ "0x80087F10": [
+  {
+   "name": "SsSetMono",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_MONO",
+   "mod_start": "0x80087F10",
+   "mod_end": "0x80087F34"
+  }
+ ],
+ "0x80087F24": [
+  {
+   "name": "SsSetStereo",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_MONO",
+   "mod_start": "0x80087F10",
+   "mod_end": "0x80087F34"
+  }
+ ],
+ "0x80087F34": [
+  {
+   "name": "SsSetReservedVoice",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_SRV",
+   "mod_start": "0x80087F34",
+   "mod_end": "0x80087F64"
+  }
+ ],
+ "0x80087F64": [
+  {
+   "name": "SsVabClose",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VAB",
+   "mod_start": "0x80087F64",
+   "mod_end": "0x80087FE8"
+  }
+ ],
+ "0x80087FE8": [
+  {
+   "name": "SsVabFakeBody",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VFB",
+   "mod_start": "0x80087FE8",
+   "mod_end": "0x80088058"
+  }
+ ],
+ "0x80088058": [
+  {
+   "name": "SsVabOpenHead",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "mod_start": "0x80088058",
+   "mod_end": "0x800884C4"
+  }
+ ],
+ "0x80088088": [
+  {
+   "name": "SsVabOpenHeadSticky",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "mod_start": "0x80088058",
+   "mod_end": "0x800884C4"
+  }
+ ],
+ "0x800880B8": [
+  {
+   "name": "SsVabFakeHead",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "mod_start": "0x80088058",
+   "mod_end": "0x800884C4"
+  }
+ ],
+ "0x800880E8": [
+  {
+   "name": "SsVabOpenHeadWithMode",
+   "kind": "static",
+   "lib": "LIBSND",
+   "mod": "VS_VH",
+   "mod_start": "0x80088058",
+   "mod_end": "0x800884C4"
+  }
+ ],
+ "0x800884C4": [
+  {
+   "name": "SsVabTransBody",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VTB",
+   "mod_start": "0x800884C4",
+   "mod_end": "0x80088584"
+  }
+ ],
+ "0x80088584": [
+  {
+   "name": "SsVabTransCompleted",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "VS_VTC",
+   "mod_start": "0x80088584",
+   "mod_end": "0x800885AC"
+  }
+ ],
+ "0x800885AC": [
+  {
+   "name": "SsUtReverbOff",
+   "kind": "xdef",
+   "lib": "LIBSND",
+   "mod": "UT_ROFF",
+   "mod_start": "0x800885AC",
+   "mod_end": "0x800885CC"
+  },
+  {
+   "name": "SpuInit",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_I",
+   "mod_start": "0x800885AC",
+   "mod_end": "0x800885CC"
+  }
+ ],
+ "0x800885CC": [
+  {
+   "name": "_SpuInit",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_INI",
+   "mod_start": "0x800885CC",
+   "mod_end": "0x80088740"
+  }
+ ],
+ "0x800886C4": [
+  {
+   "name": "SpuStart",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_INI",
+   "mod_start": "0x800885CC",
+   "mod_end": "0x80088740"
+  }
+ ],
+ "0x80088740": [
+  {
+   "name": "_spu_init",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x800889D4": [
+  {
+   "name": "_spu_FwriteByIO",
+   "kind": "static",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80088BA0": [
+  {
+   "name": "_spu_FiDMA",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80088C60": [
+  {
+   "name": "_spu_Fr_",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80088D0C": [
+  {
+   "name": "_spu_t",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80088F9C": [
+  {
+   "name": "_spu_Fw",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80089024": [
+  {
+   "name": "_spu_Fr",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x8008908C": [
+  {
+   "name": "_spu_FsetRXX",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x800890D4": [
+  {
+   "name": "_spu_FsetRXXa",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80089178": [
+  {
+   "name": "_spu_FgetRXXa",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x800891B4": [
+  {
+   "name": "_spu_FsetPCR",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80089214": [
+  {
+   "name": "_spu_FsetDelayW",
+   "kind": "static",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x80089240": [
+  {
+   "name": "_spu_FsetDelayR",
+   "kind": "static",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x8008926C": [
+  {
+   "name": "_spu_Fw1ts",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SPU",
+   "mod_start": "0x80088740",
+   "mod_end": "0x800892D4"
+  }
+ ],
+ "0x800892D4": [
+  {
+   "name": "_SpuDataCallback",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_DCB",
+   "mod_start": "0x800892D4",
+   "mod_end": "0x800892F8"
+  }
+ ],
+ "0x800892F8": [
+  {
+   "name": "SpuQuit",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_Q",
+   "mod_start": "0x800892F8",
+   "mod_end": "0x80089374"
+  }
+ ],
+ "0x80089374": [
+  {
+   "name": "DisableEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A13",
+   "mod_start": "0x80089374",
+   "mod_end": "0x80089384"
+  }
+ ],
+ "0x80089384": [
+  {
+   "name": "SpuInitMalloc",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_INIT",
+   "mod_start": "0x80089384",
+   "mod_end": "0x800893D8"
+  }
+ ],
+ "0x800893D8": [
+  {
+   "name": "SpuMalloc",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_M",
+   "mod_start": "0x800893D8",
+   "mod_end": "0x800896A0"
+  }
+ ],
+ "0x800896A0": [
+  {
+   "name": "_spu_gcSPU",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_INT",
+   "mod_start": "0x800896A0",
+   "mod_end": "0x800899A8"
+  }
+ ],
+ "0x800899A8": [
+  {
+   "name": "SpuFree",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_F",
+   "mod_start": "0x800899A8",
+   "mod_end": "0x80089A24"
+  }
+ ],
+ "0x80089A24": [
+  {
+   "name": "SpuSetNoiseVoice",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SNV",
+   "mod_start": "0x80089A24",
+   "mod_end": "0x80089A48"
+  }
+ ],
+ "0x80089D10": [
+  {
+   "name": "SpuSetNoiseClock",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SNC",
+   "mod_start": "0x80089D10",
+   "mod_end": "0x80089D60"
+  }
+ ],
+ "0x80089D60": [
+  {
+   "name": "SpuSetReverb",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SR",
+   "mod_start": "0x80089D60",
+   "mod_end": "0x80089E30"
+  }
+ ],
+ "0x80089E30": [
+  {
+   "name": "_SpuIsInAllocateArea",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_UTIL",
+   "mod_start": "0x80089E30",
+   "mod_end": "0x80089F3C"
+  }
+ ],
+ "0x80089EB0": [
+  {
+   "name": "_SpuIsInAllocateArea_",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_M_UTIL",
+   "mod_start": "0x80089E30",
+   "mod_end": "0x80089F3C"
+  }
+ ],
+ "0x80089F3C": [
+  {
+   "name": "SpuSetReverbModeParam",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SRMP",
+   "mod_start": "0x80089F3C",
+   "mod_end": "0x8008A434"
+  }
+ ],
+ "0x8008A434": [
+  {
+   "name": "_spu_setReverbAttr",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SRA",
+   "mod_start": "0x8008A434",
+   "mod_end": "0x8008A904"
+  }
+ ],
+ "0x8008A904": [
+  {
+   "name": "SpuSetReverbVoice",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SRV",
+   "mod_start": "0x8008A904",
+   "mod_end": "0x8008A928"
+  }
+ ],
+ "0x8008A928": [
+  {
+   "name": "SpuClearReverbWorkArea",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_CRWA",
+   "mod_start": "0x8008A928",
+   "mod_end": "0x8008AAC4"
+  }
+ ],
+ "0x8008AAC4": [
+  {
+   "name": "WaitEvent",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A10",
+   "mod_start": "0x8008AAC4",
+   "mod_end": "0x8008AAD4"
+  }
+ ],
+ "0x8008AAD4": [
+  {
+   "name": "SpuSetKey",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SK",
+   "mod_start": "0x8008AAD4",
+   "mod_end": "0x8008ACD0"
+  }
+ ],
+ "0x8008ACD0": [
+  {
+   "name": "SpuGetKeyStatus",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_GKS",
+   "mod_start": "0x8008ACD0",
+   "mod_end": "0x8008AD64"
+  }
+ ],
+ "0x8008AD64": [
+  {
+   "name": "SpuRead",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_R",
+   "mod_start": "0x8008AD64",
+   "mod_end": "0x8008ADC4"
+  },
+  {
+   "name": "SpuWrite",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_W",
+   "mod_start": "0x8008AD64",
+   "mod_end": "0x8008ADC4"
+  }
+ ],
+ "0x8008ADC4": [
+  {
+   "name": "SpuRead",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_R",
+   "mod_start": "0x8008ADC4",
+   "mod_end": "0x8008AE24"
+  },
+  {
+   "name": "SpuWrite",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_W",
+   "mod_start": "0x8008ADC4",
+   "mod_end": "0x8008AE24"
+  }
+ ],
+ "0x8008AE24": [
+  {
+   "name": "SpuSetTransferStartAddr",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_STSA",
+   "mod_start": "0x8008AE24",
+   "mod_end": "0x8008AE7C"
+  }
+ ],
+ "0x8008AE7C": [
+  {
+   "name": "SpuSetTransferMode",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_STM",
+   "mod_start": "0x8008AE7C",
+   "mod_end": "0x8008AEB0"
+  }
+ ],
+ "0x8008AEB0": [
+  {
+   "name": "SpuIsTransferCompleted",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_ITC",
+   "mod_start": "0x8008AEB0",
+   "mod_end": "0x8008AF58"
+  }
+ ],
+ "0x8008AF58": [
+  {
+   "name": "_spu_setInTransfer",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_IT",
+   "mod_start": "0x8008AF58",
+   "mod_end": "0x8008AF9C"
+  }
+ ],
+ "0x8008AF84": [
+  {
+   "name": "_spu_getInTransfer",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_IT",
+   "mod_start": "0x8008AF58",
+   "mod_end": "0x8008AF9C"
+  }
+ ],
+ "0x8008AF9C": [
+  {
+   "name": "SpuSetCommonAttr",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_SCA",
+   "mod_start": "0x8008AF9C",
+   "mod_end": "0x8008B330"
+  }
+ ],
+ "0x8008B330": [
+  {
+   "name": "SpuRGetAllKeysStatus",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SR_GAKS",
+   "mod_start": "0x8008B330",
+   "mod_end": "0x8008B488"
+  }
+ ],
+ "0x8008B400": [
+  {
+   "name": "SpuGetAllKeysStatus",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "SR_GAKS",
+   "mod_start": "0x8008B330",
+   "mod_end": "0x8008B488"
+  }
+ ],
+ "0x8008BA94": [
+  {
+   "name": "_spu_2pitch",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "mod_start": "0x8008BA94",
+   "mod_end": "0x8008BD88"
+  }
+ ],
+ "0x8008BB24": [
+  {
+   "name": "_spu_note2pitch",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "mod_start": "0x8008BA94",
+   "mod_end": "0x8008BD88"
+  }
+ ],
+ "0x8008BC60": [
+  {
+   "name": "_spu_pitch2note",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_N2P",
+   "mod_start": "0x8008BA94",
+   "mod_end": "0x8008BD88"
+  }
+ ],
+ "0x8008BD88": [
+  {
+   "name": "SpuGetVoiceVolume",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_GVV",
+   "mod_start": "0x8008BD88",
+   "mod_end": "0x8008BDE8"
+  }
+ ],
+ "0x8008BDE8": [
+  {
+   "name": "SpuGetVoiceEnvelope",
+   "kind": "xdef",
+   "lib": "LIBSPU",
+   "mod": "S_GVEX",
+   "mod_start": "0x8008BDE8",
+   "mod_end": "0x8008BE04"
+  }
+ ],
+ "0x8008BE04": [
+  {
+   "name": "AddCOMB",
+   "kind": "xdef",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008BE4C": [
+  {
+   "name": "DelCOMB",
+   "kind": "xdef",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008BE9C": [
+  {
+   "name": "ChangeClearSIO",
+   "kind": "xdef",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008BEA4": [
+  {
+   "name": "SioAnsyncRead",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008BF04": [
+  {
+   "name": "SioSyncroRead",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008C184": [
+  {
+   "name": "SioAnsyncWrite",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008C1E8": [
+  {
+   "name": "SioSyncroWrite",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008C464": [
+  {
+   "name": "_comb_control",
+   "kind": "xdef",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008C978": [
+  {
+   "name": "EvalpSio",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008C9F4": [
+  {
+   "name": "HandleSio",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008CD8C": [
+  {
+   "name": "r_sioinit",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008CEAC": [
+  {
+   "name": "r_sioopen",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008CEB4": [
+  {
+   "name": "r_sioclose",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008CEBC": [
+  {
+   "name": "r_sioremove",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008CF5C": [
+  {
+   "name": "r_siostrategy",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008D048": [
+  {
+   "name": "__nulldev",
+   "kind": "static",
+   "lib": "LIBCOMB",
+   "mod": "COMB",
+   "mod_start": "0x8008BE04",
+   "mod_end": "0x8008D050"
+  }
+ ],
+ "0x8008D050": [
+  {
+   "name": "AddDrv",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A71",
+   "mod_start": "0x8008D050",
+   "mod_end": "0x8008D060"
+  }
+ ],
+ "0x8008D060": [
+  {
+   "name": "DelDrv",
+   "kind": "xdef",
+   "lib": "LIBAPI",
+   "mod": "A72",
+   "mod_start": "0x8008D060",
+   "mod_end": "0x8008D070"
+  }
+ ]
+}

@@ -39,7 +39,7 @@ extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
 extern u8 D_80094D40[];
-extern void initLoadImage(s32, s16 *, s32, s32);
+extern void SetDrawMove(s32, s16 *, s32, s32);
 
 extern s32 g_player_ptrs[];
 s32 func_8004153C(s32 a0) {
@@ -292,16 +292,16 @@ void func_80041AC8(s16 *arg0)
       rect[2] = w;
       rect[3] = h;
       rect[1] = v0_val + var_s2;
-      gpu_StoreImage(rect, var_s1);
+      StoreImage(rect, var_s1);
       var_s0 += 2;
       var_s1 += 0x10;
       v1_val = (u16) (*var_s0);
     }
     while ((*var_s0) >= 0);
   }
-  gpu_DrawSync(0);
+  DrawSync(0);
 }
-extern void gpu_LoadImage(s32, s32);
+extern void LoadImage(s32, s32);
 extern void func_80048A7C(s16, s16, s32, s32, s32, s32);
 extern s32 func_8003E2A0(void);
 extern void func_8003E120(void);
@@ -353,8 +353,8 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     tbl += 2;
     rect[2] = 0x10;
     rect[3] = 1;
-    gpu_LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
-    gpu_DrawSync(0);
+    LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
+    DrawSync(0);
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
   }
   r = tbl[0];
@@ -373,9 +373,9 @@ void func_80041E10(Block16 *a0, s32 a1) {
     D_800A9B28 = *a0;
 }
 extern s32 func_80052754(s32, s32, s32);
-extern s32 func_8007FD5C(s32, s32);
-extern s32 math_Cos(s32);
-extern s32 math_Sin(s32);
+extern s32 ratan2(s32, s32);
+extern s32 rcos(s32);
+extern s32 rsin(s32);
 extern s32 func_8004A1FC(s32);
 extern s16 D_800F62E0[];
 extern s16 D_800F6340[];
@@ -434,12 +434,12 @@ void func_80041EB0(s32 a0, s32 a1)
         if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
 
     calc:
-        angle = func_8007FD5C(dx, dz);
-        cos_val = math_Cos(angle);
+        angle = ratan2(dx, dz);
+        cos_val = rcos(angle);
         {
-            s32 sin_val = math_Sin(angle);
+            s32 sin_val = rsin(angle);
             s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-            tbl[4] = (s16)-func_8007FD5C(dy, cross);
+            tbl[4] = (s16)-ratan2(dy, cross);
         }
         tbl[5] = (s16)angle;
         tbl[6] = 1;
@@ -601,7 +601,7 @@ out:;
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void disp_SetFramebufferMode(s32, s32, s32, s32);
-extern void gte_SetFarColor(s32, s32, s32);
+extern void SetFarColor(s32, s32, s32);
 void func_80042478(s32 a0) {
     s32 r = (a0 >> 16) & 0xFF;
     s32 g = (a0 >> 8) & 0xFF;
@@ -612,5 +612,5 @@ void func_80042478(s32 a0) {
         r = b;
     }
     disp_SetFramebufferMode(1, r, g, b);
-    gte_SetFarColor(r, g, b);
+    SetFarColor(r, g, b);
 }

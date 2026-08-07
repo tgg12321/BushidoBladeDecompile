@@ -99,7 +99,7 @@ glabel func_80049718
     /* 3A094 80049894 18004626 */  addiu      $a2, $s2, 0x18
     /* 3A098 80049898 12400000 */  mflo       $t0
     /* 3A09C 8004989C 03130800 */  sra        $v0, $t0, 12
-    /* 3A0A0 800498A0 37F9010C */  jal        func_8007E4DC
+    /* 3A0A0 800498A0 37F9010C */  jal        MulMatrix0
     /* 3A0A4 800498A4 540002AE */   sw        $v0, 0x54($s0)
     /* 3A0A8 800498A8 4C00028E */  lw         $v0, 0x4C($s0)
     /* 3A0AC 800498AC 00000000 */  nop
@@ -112,7 +112,7 @@ glabel func_80049718
     /* 3A0C8 800498C8 1400A2A7 */  sh         $v0, 0x14($sp)
     /* 3A0CC 800498CC 0C00048E */  lw         $a0, 0xC($s0)
     /* 3A0D0 800498D0 2C004626 */  addiu      $a2, $s2, 0x2C
-    /* 3A0D4 800498D4 5BFB010C */  jal        func_8007ED6C
+    /* 3A0D4 800498D4 5BFB010C */  jal        ApplyMatrix
     /* 3A0D8 800498D8 18008424 */   addiu     $a0, $a0, 0x18
     /* 3A0DC 800498DC 0C00038E */  lw         $v1, 0xC($s0)
     /* 3A0E0 800498E0 2C00428E */  lw         $v0, 0x2C($s2)

@@ -322,7 +322,7 @@ glabel func_8001A820
     /* B4CC 8001ACCC 0200E2A6 */   sh        $v0, (0x1F800002 & 0xFFFF)($s7)
   .L8001ACD0:
     /* B4D0 8001ACD0 21202002 */  addu       $a0, $s1, $zero
-    /* B4D4 8001ACD4 57FF010C */  jal        func_8007FD5C
+    /* B4D4 8001ACD4 57FF010C */  jal        ratan2
     /* B4D8 8001ACD8 21280002 */   addu      $a1, $s0, $zero
     /* B4DC 8001ACDC 00040324 */  addiu      $v1, $zero, 0x400
     /* B4E0 8001ACE0 23186200 */  subu       $v1, $v1, $v0

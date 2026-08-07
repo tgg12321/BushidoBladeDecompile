@@ -5,9 +5,9 @@ glabel func_80037F08
     /* 28714 80037F14 2138A000 */  addu       $a3, $a1, $zero
     /* 28718 80037F18 0180053C */  lui        $a1, %hi(D_800109C8)
     /* 2871C 80037F1C C809A524 */  addiu      $a1, $a1, %lo(D_800109C8)
-    /* 28720 80037F20 8CE6010C */  jal        func_80079A30
+    /* 28720 80037F20 8CE6010C */  jal        sprintf
     /* 28724 80037F24 1000A427 */   addiu     $a0, $sp, 0x10
-    /* 28728 80037F28 8AE2010C */  jal        bios_FormatDevice_B
+    /* 28728 80037F28 8AE2010C */  jal        format
     /* 2872C 80037F2C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 28730 80037F30 1800BF8F */  lw         $ra, 0x18($sp)
     /* 28734 80037F34 2000BD27 */  addiu      $sp, $sp, 0x20

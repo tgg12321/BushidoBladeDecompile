@@ -22,12 +22,12 @@ glabel func_80070F78
     /* 617C8 80070FC8 21300000 */  addu       $a2, $zero, $zero
     /* 617CC 80070FCC 1000A0AF */  sw         $zero, 0x10($sp)
     /* 617D0 80070FD0 1800E48E */  lw         $a0, 0x18($s7)
-    /* 617D4 80070FD4 92F0010C */  jal        initTexPage
+    /* 617D4 80070FD4 92F0010C */  jal        SetDrawMode
     /* 617D8 80070FD8 21384000 */   addu      $a3, $v0, $zero
     /* 617DC 80070FDC 0A80043C */  lui        $a0, %hi(D_800A374C)
     /* 617E0 80070FE0 4C37848C */  lw         $a0, %lo(D_800A374C)($a0)
     /* 617E4 80070FE4 1800E58E */  lw         $a1, 0x18($s7)
-    /* 617E8 80070FE8 2DEA010C */  jal        ot_Link
+    /* 617E8 80070FE8 2DEA010C */  jal        AddPrim
     /* 617EC 80070FEC 20008424 */   addiu     $a0, $a0, 0x20
     /* 617F0 80070FF0 1800E28E */  lw         $v0, 0x18($s7)
     /* 617F4 80070FF4 1800A0AF */  sw         $zero, 0x18($sp)
@@ -349,9 +349,9 @@ glabel func_80070F78
     /* 61C90 80071490 21186200 */  addu       $v1, $v1, $v0
   .L80071494:
     /* 61C94 80071494 0000658C */  lw         $a1, 0x0($v1)
-    /* 61C98 80071498 80ED010C */  jal        gpu_LoadImage
+    /* 61C98 80071498 80ED010C */  jal        LoadImage
     /* 61C9C 8007149C 21208402 */   addu      $a0, $s4, $a0
-    /* 61CA0 800714A0 CFEC010C */  jal        gpu_DrawSync
+    /* 61CA0 800714A0 CFEC010C */  jal        DrawSync
     /* 61CA4 800714A4 21200000 */   addu      $a0, $zero, $zero
     /* 61CA8 800714A8 A6C50108 */  j          .L80071698
     /* 61CAC 800714AC 00000000 */   nop
@@ -540,7 +540,7 @@ glabel func_80070F78
     /* 61F54 80071754 04108200 */  sllv       $v0, $v0, $a0
     /* 61F58 80071758 40220300 */  sll        $a0, $v1, 9
     /* 61F5C 8007175C 23208300 */  subu       $a0, $a0, $v1
-    /* 61F60 80071760 C8F7010C */  jal        math_Sin
+    /* 61F60 80071760 C8F7010C */  jal        rsin
     /* 61F64 80071764 21204400 */   addu      $a0, $v0, $a0
     /* 61F68 80071768 80190200 */  sll        $v1, $v0, 6
     /* 61F6C 8007176C 23186200 */  subu       $v1, $v1, $v0
@@ -625,9 +625,9 @@ glabel func_80070F78
     /* 620A0 800718A0 2128A200 */  addu       $a1, $a1, $v0
     /* 620A4 800718A4 2128A300 */  addu       $a1, $a1, $v1
     /* 620A8 800718A8 0000A58C */  lw         $a1, 0x0($a1)
-    /* 620AC 800718AC 80ED010C */  jal        gpu_LoadImage
+    /* 620AC 800718AC 80ED010C */  jal        LoadImage
     /* 620B0 800718B0 21208402 */   addu      $a0, $s4, $a0
-    /* 620B4 800718B4 CFEC010C */  jal        gpu_DrawSync
+    /* 620B4 800718B4 CFEC010C */  jal        DrawSync
     /* 620B8 800718B8 21200000 */   addu      $a0, $zero, $zero
     /* 620BC 800718BC 00141300 */  sll        $v0, $s3, 16
   .L800718C0:

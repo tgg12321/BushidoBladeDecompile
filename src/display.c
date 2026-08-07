@@ -10,9 +10,9 @@
 
 
 /* Forward declarations */
-extern s32 sys_VSync(s32);
-extern s32 bb2_memcpy(s32, void *, s32);
-extern void bios_DeliverEvent(s32, s32);
+extern s32 VSync(s32);
+extern s32 memcpy(s32, void *, s32);
+extern void DeliverEvent(s32, s32);
 
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
@@ -42,7 +42,7 @@ extern u8 D_80015F4C;
 
 /* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
 
-u32 func_8007B244(s32 a0) {
+u32 DrawSyncCallback(s32 a0) {
     u32 old;
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&D_80015EE8, a0);
@@ -68,7 +68,7 @@ typedef struct {
     u8 disp_env[0x14]; /* +0x6C g_gpu_disp_env */
 } GpuCtx;              /* size 0x80 */
 
-void gpu_SetDispMask(s32 a0) {
+void SetDispMask(s32 a0) {
     u8 *p = &((GpuCtx *)&g_gpu_type)->debug_level;
     if (*p >= 2) {
         g_gpu_debug_func(&g_str_setdispmask, a0);
@@ -85,7 +85,7 @@ void gpu_SetDispMask(s32 a0) {
         ((void (*)(u32))v0[4])(cmd);
     }
 }
-void gpu_DrawSync(s32 a0) {
+void DrawSync(s32 a0) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_drawsync, a0);
     }
@@ -126,7 +126,7 @@ extern u8 g_str_clearimage;
 extern s32 g_gpu_dev_table;
 extern void func_8007B3A8(u8 *, s16 *);
 
-void func_8007B4D0(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+void ClearImage(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     s32 *p;
     void (*fn)();
     func_8007B3A8(&g_str_clearimage, arg0);
@@ -134,7 +134,7 @@ void func_8007B4D0(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     fn = (void (*)())p[2];
     fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
-void func_8007B564(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+void ClearImage2(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     s32 *p;
     void (*fn)();
     u32 hi, lo;
@@ -147,7 +147,7 @@ void func_8007B564(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
 }
 extern u32 g_str_loadimage;
 
-void gpu_LoadImage(s32 a0, s32 a1) {
+void LoadImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_loadimage, a0);
     v0 = g_gpu_dev_table;
@@ -155,7 +155,7 @@ void gpu_LoadImage(s32 a0, s32 a1) {
 }
 extern u32 g_str_storeimage;
 
-void gpu_StoreImage(s32 a0, s32 a1) {
+void StoreImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_storeimage, a0);
     v0 = g_gpu_dev_table;
@@ -166,7 +166,7 @@ extern s32 D_8009BF24;
 extern s32 D_8009BF28;
 extern s32 D_8009BF2C;
 
-s32 func_8007B6C8(s32 *arg0, s16 arg1, s16 arg2) {
+s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
     s32 *p;
     s32 (*fn)();
     s32 packed;
@@ -191,7 +191,7 @@ s32 func_8007B6C8(s32 *arg0, s16 arg1, s16 arg2) {
 extern u32 g_str_clearotag;
 extern u32 g_gpu_ot_end;
 
-u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
+u32 *ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_clearotag, a0, a1);
     }
@@ -213,7 +213,7 @@ u32 *gpu_ClearOTag(u32 *a0, s32 a1) {
 }
 extern u32 D_80015F98;
 
-u32 *func_8007B844(u32 *ot, s32 n) {
+u32 *ClearOTagR(u32 *ot, s32 n) {
     u32 *new_var;
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&D_80015F98, ot, n);
@@ -227,14 +227,14 @@ u32 *func_8007B844(u32 *ot, s32 n) {
     *new_var = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
     return new_var;
 }
-void gpu_SendPacket(u8 *a0) {
+void DrawPrim(u8 *a0) {
     u32 *dev = g_gpu_dev_table;
     u32 size = a0[3];
     ((void (*)(s32))dev[15])(0);
     dev = g_gpu_dev_table;
     ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
 }
-void gpu_DrawOTag(s32 a0) {
+void DrawOTag(s32 a0) {
     if (g_gpu_debug_level >= 2) {
         g_gpu_debug_func(&g_str_drawotag, a0);
     }
@@ -249,7 +249,7 @@ extern s32 func_8007C4B8(s32 *, s32 *);
 typedef struct { s32 a, b, c, d; } _drawenv_q;
 typedef struct { s32 a, b, c; } _drawenv_t;
 
-s32 *func_8007B9B0(s32 *arg0) {
+s32 *PutDrawEnv(s32 *arg0) {
     s32 *p;
     u32 *dev;
     _drawenv_q *src;
@@ -277,7 +277,7 @@ s32 *func_8007B9B0(s32 *arg0) {
     *(_drawenv_t *)dst = *(_drawenv_t *)src;
     return arg0;
 }
-void func_8007BAB4(s32 arg0, s32 *arg1) {
+void DrawOTagEnv(s32 arg0, s32 *arg1) {
     s32 *p;
     u32 *dev;
     _drawenv_q *src;
@@ -304,35 +304,35 @@ void func_8007BAB4(s32 arg0, s32 *arg1) {
     } while (src != end);
     *(_drawenv_t *)dst = *(_drawenv_t *)src;
 }
-s32 gpu_GetDrawEnv(s32 a0) {
-    bb2_memcpy(a0, &g_gpu_draw_env, 0x5C);
+s32 GetDrawEnv(s32 a0) {
+    memcpy(a0, &g_gpu_draw_env, 0x5C);
     return a0;
 }
-INCLUDE_ASM("asm/funcs", func_8007BC08);
-s32 gpu_GetDispEnv(s32 a0) {
-    bb2_memcpy(a0, &g_gpu_disp_env, 0x14);
+INCLUDE_ASM("asm/funcs", PutDispEnv);
+s32 GetDispEnv(s32 a0) {
+    memcpy(a0, &g_gpu_disp_env, 0x14);
     return a0;
 }
-u32 gpu_IsDrawing(void) {
+u32 GetODE(void) {
     s32 (*func)(void) = ((s32 (**)(void))g_gpu_dev_table)[0xE];
     return (u32)func() >> 31;
 }
-void initClearImage(u8 *a0, s32 a1) {
+void SetTexWindow(u8 *a0, s32 a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C97C(a1);
     *(u32 *)(a0 + 8) = 0;
 }
-void initDrawArea(u8 *a0, s16 *a1) {
+void SetDrawArea(u8 *a0, s16 *a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C7A0(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = func_8007C86C((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
 }
-void initDrawOffset(u8 *a0, s16 *a1) {
+void SetDrawOffset(u8 *a0, s16 *a1) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C938(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = 0;
 }
-void initMaskBit(u8 *a0, s32 a1, s32 a2) {
+void SetPriority(u8 *a0, s32 a1, s32 a2) {
     u32 v0;
     a0[3] = 2;
     v0 = 0xE6000000;
@@ -345,7 +345,7 @@ void initMaskBit(u8 *a0, s32 a1, s32 a2) {
     *(u32 *)(a0 + 4) = v0;
     *(u32 *)(a0 + 8) = 0;
 }
-void initTexPage(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
+void SetDrawMode(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
     a0[3] = 2;
     *(u32 *)(a0 + 4) = func_8007C748(a1, a2, a3);
     *(u32 *)(a0 + 8) = func_8007C97C(a4);
@@ -367,7 +367,7 @@ typedef struct {
     u8 g;
     u8 b;
 } Rect;
-void func_8007C2A0(s32 *out, Rect *r)
+void SetDrawEnv(s32 *out, Rect *r)
 {
   s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
                    (decisions.md 10:35), tombstone narrowed to sanction a
@@ -860,8 +860,8 @@ extern s32 func_8007DC68();
 
 void func_8007D6D8();                           /* extern */
 s32 func_8007DC9C();                                /* extern */
-s32 irq_AcknowledgeVblank(s32, s32 (*)()); /* extern */
-s32 func_80082C3C(s32);                         /* extern */
+s32 DMACallback(s32, s32 (*)()); /* extern */
+s32 SetIntrMask(s32);                         /* extern */
 extern u8 D_8009BE75;
 extern s32 D_8009BE7C;
 extern s32 D_8009BE80;
@@ -895,7 +895,7 @@ check_top:
         goto err_loop;
     }
     {
-        D_8009BF80 = func_80082C3C(0);
+        D_8009BF80 = SetIntrMask(0);
         D_8009BE7C = 1;
         if ((D_8009BE75 == 0) || ((D_8009BF78 == D_8009BF7C) && !(*D_8009BF54 & 0x01000000) && (D_8009BE80 == 0))) {
             do {
@@ -904,10 +904,10 @@ check_top:
             D_8009BF68 = arg0;
             D_8009BF6C = arg1;
             D_8009BF70 = arg3;
-            func_80082C3C(D_8009BF80);
+            SetIntrMask(D_8009BF80);
             return 0;
         }
-        irq_AcknowledgeVblank(2, func_8007D6D8);
+        DMACallback(2, func_8007D6D8);
         var_a2 = 0;
         if (arg2 != 0) {
             s32 v_shift;
@@ -934,7 +934,7 @@ loop_13:
         *(s32 *)((s32)&D_80103688 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg3;
         *(s32 (**)(s32 *, s32))((s32)&D_80103680 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg0;
         D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
-        func_80082C3C(D_8009BF80);
+        SetIntrMask(D_8009BF80);
         func_8007D6D8();
         var_v0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
         return var_v0;
@@ -942,7 +942,7 @@ loop_13:
 }
 INCLUDE_ASM("asm/funcs", func_8007D6D8);
 extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
-extern s32 func_80082C3C(s32);
+extern s32 SetIntrMask(s32);
 extern s32 func_8007DE08(s32);
 extern volatile s32 *D_8009BF48;
 extern s32 *D_8009BF54;
@@ -958,9 +958,9 @@ extern volatile int *D_8009BF64;
 extern s32 D_8009BF68[];
 extern s32 D_8009BF6C;
 extern s32 D_8009BF70;
-extern s32 debug_printf();
+extern s32 printf();
 s32 func_8007D9C4(s32 arg0) {
-    D_8009BF88 = func_80082C3C(0);
+    D_8009BF88 = SetIntrMask(0);
     D_8009BF7C = 0;
     D_8009BF78 = D_8009BF7C;
     switch (arg0 & 7) {
@@ -980,7 +980,7 @@ s32 func_8007D9C4(s32 arg0) {
         *D_8009BF48 = 0x01000000;
         break;
     }
-    func_80082C3C(D_8009BF88);
+    SetIntrMask(D_8009BF88);
     if (arg0 & 7) {
         return 0;
     }
@@ -1018,7 +1018,7 @@ s32 func_8007DB20(s32 arg0) {
     return ret;
 }
 void func_8007DC68(void) {
-    g_gpu_vcount = sys_VSync(-1) + 0xF0;
+    g_gpu_vcount = VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
 s32 func_8007DC9C(void) {
@@ -1027,12 +1027,12 @@ s32 func_8007DC9C(void) {
     s32 temp_v1;
     s32 new_var;
     new_var2 = &D_8009BF7C;
-    if ((g_gpu_vcount < sys_VSync(-1)) || ((temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, (temp_v1 > 0xF0000) != 0))) {
+    if ((g_gpu_vcount < VSync(-1)) || ((temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, (temp_v1 > 0xF0000) != 0))) {
         new_var = *g_gpu_stat_reg;
-        debug_printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
         (void)new_var;
-        debug_printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
-        temp_v0 = func_80082C3C(0);
+        printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
+        temp_v0 = SetIntrMask(0);
         D_8009BF7C = 0;
         D_8009BF88 = temp_v0;
         D_8009BF78 = *new_var2;
@@ -1040,7 +1040,7 @@ s32 func_8007DC9C(void) {
         *D_8009BF64 |= 0x800;
         *g_gpu_stat_reg = 0x02000000;
         *g_gpu_stat_reg = 0x01000000;
-        func_80082C3C(D_8009BF88);
+        SetIntrMask(D_8009BF88);
         return -1;
     }
     return 0;
@@ -1073,7 +1073,7 @@ void bb2_memset(u8 *a0, u8 a1, s32 a2) {
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
-    "glabel bios_GPU_cw\n"
+    "glabel GPU_cw\n"
     "    addiu $t2, $zero, 0xA0\n"
     "    jr    $t2\n"
     "    addiu $t1, $zero, 0x49\n"
@@ -1081,21 +1081,21 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_1; /* 1 NOP after bios_GPU_cw */
-extern s32 math_SinLookup(s32);
-s32 math_Sin(s32 a0) {
+extern s32 sin_1(s32);
+s32 rsin(s32 a0) {
     s32 v;
     if (a0 < 0) {
-        v = math_SinLookup((-a0) & 0xFFF);
+        v = sin_1((-a0) & 0xFFF);
         return -v;
     }
-    return math_SinLookup(a0 & 0xFFF);
+    return sin_1(a0 & 0xFFF);
 }
 extern s16 g_sin_lut_q1[];
 extern s16 g_sin_lut_q3[];
 extern s16 g_cos_lut_q2[];
 extern s16 g_cos_lut_q4[];
 
-s32 math_SinLookup(s32 a0) {
+s32 sin_1(s32 a0) {
     if (a0 < 0x801) {
         if (a0 < 0x401) {
             return g_sin_lut_q1[a0];
@@ -1107,7 +1107,7 @@ s32 math_SinLookup(s32 a0) {
     }
     return -g_sin_lut_q1[0x1000 - a0];
 }
-s32 math_Cos(s32 a0) {
+s32 rcos(s32 a0) {
     if (a0 < 0) {
         a0 = -a0;
     }
@@ -1140,10 +1140,10 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007E094\n"
+    "glabel InitGeom\n"
     "    lui    $at, %hi(g_gte_saved_ra)\n"
     "    sw     $ra, %lo(g_gte_saved_ra)($at)\n"
-    "    jal    func_8007FEDC\n"
+    "    jal    _patch_gte\n"
     "    nop\n"
     "    lui    $ra, %hi(g_gte_saved_ra)\n"
     "    lw     $ra, %lo(g_gte_saved_ra)($ra)\n"
@@ -1185,7 +1185,7 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007E11C\n"
+    "glabel SquareRoot0\n"
     "    mtc2   $a0, $30\n"
     "    nop\n"
     "    nop\n"
@@ -1239,7 +1239,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E1AC\n"
+    "glabel LoadAverage12\n"
     "    mtc2   $a2, $8\n"
     "    lwc2   $9, 0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
@@ -1260,7 +1260,7 @@ __asm__(
     "    swc2   $11, 8($t0)\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007E1AC\n"
+    "endlabel LoadAverage12\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1275,7 +1275,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E1FC\n"
+    "glabel LoadAverage0\n"
     "    mtc2   $a2, $8\n"
     "    lwc2   $9, 0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
@@ -1296,7 +1296,7 @@ __asm__(
     "    swc2   $11, 8($t0)\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007E1FC\n"
+    "endlabel LoadAverage0\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1313,7 +1313,7 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 func_8007E24C(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
+s32 LoadAverageShort12(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
     s32 v0;
     __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
     __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
@@ -1361,7 +1361,7 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 func_8007E2D4(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
+s32 LoadAverageShort0(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
     s32 v0;
     __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
     __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
@@ -1398,7 +1398,7 @@ s32 func_8007E2D4(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
     (void)out;
     return v0;
 }
-s32 func_8007E35C(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
+s32 LoadAverageByte(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
     s32 v0;
     __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
     __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
@@ -1425,7 +1425,7 @@ s32 func_8007E35C(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
     (void)out;
     return v0;
 }
-s32 func_8007E3BC(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
+s32 LoadAverageCol(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
     s32 v0;
     __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
     __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
@@ -1466,7 +1466,7 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007E43C\n"
+    "glabel SquareRoot12\n"
     "    mtc2   $a0, $30\n"
     "    nop\n"
     "    nop\n"
@@ -1527,7 +1527,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E4DC\n"
+    "glabel MulMatrix0\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -1595,7 +1595,7 @@ __asm__(
     "    addu   $v0, $a2, $zero\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007E4DC\n"
+    "endlabel MulMatrix0\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1608,7 +1608,7 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007E5EC\n"
+    "glabel CompMatrix\n"
     "    lw $t0, 0($a0)\n"
     "    lw $t1, 4($a0)\n"
     "    lw $t2, 8($a0)\n"
@@ -1716,7 +1716,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E74C\n"
+    "glabel ApplyMatrixLV\n"
     "    lw         $t0, 0($a0)\n"
     "    lw         $t1, 4($a0)\n"
     "    lw         $t2, 8($a0)\n"
@@ -1817,7 +1817,7 @@ __asm__(
     "    sw         $t2, 8($a2)\n"
     "    jr         $ra\n"
     "     addu      $v0, $a2, $zero\n"
-    "endlabel func_8007E74C\n"
+    "endlabel ApplyMatrixLV\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1836,7 +1836,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E8AC\n"
+    "glabel ApplyRotMatrix\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    mtc2   $t0, $0\n"
@@ -1866,7 +1866,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007E8DC\n"
+    "glabel ScaleMatrixL\n"
     "    lw         $t0, 0($a0)\n"
     "    lw         $t3, 0($a1)\n"
     "    andi       $t1, $t0, 0xFFFF\n"
@@ -1940,7 +1940,7 @@ __asm__(
     "    sra        $t1, $t1, 12\n"
     "    jr         $ra\n"
     "    sw         $t1, 16($a0)\n"
-    "endlabel func_8007E8DC\n"
+    "endlabel ScaleMatrixL\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -1960,7 +1960,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007EA0C\n"
+    "glabel ApplyRotMatrixLV\n"
     "    lw         $t0, 0($a0)\n"
     "    lw         $t1, 4($a0)\n"
     "    lw         $t2, 8($a0)\n"
@@ -2051,7 +2051,7 @@ __asm__(
     "    sw         $t2, 8($a1)\n"
     "    jr         $ra\n"
     "    addu      $v0, $a1, $zero\n"
-    "endlabel func_8007EA0C\n"
+    "endlabel ApplyRotMatrixLV\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -2069,7 +2069,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007EB4C\n"
+    "glabel MulMatrix\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -2137,7 +2137,7 @@ __asm__(
     "    addu   $v0, $a0, $zero\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007EB4C\n"
+    "endlabel MulMatrix\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -2157,7 +2157,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007EC5C\n"
+    "glabel MulMatrix2\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -2225,7 +2225,7 @@ __asm__(
     "    addu   $v0, $a1, $zero\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007EC5C\n"
+    "endlabel MulMatrix2\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -2241,7 +2241,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007ED6C\n"
+    "glabel ApplyMatrix\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -2262,7 +2262,7 @@ __asm__(
     "    addu   $v0, $a2, $zero\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel func_8007ED6C\n"
+    "endlabel ApplyMatrix\n"
 );
 
 /* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed
@@ -2284,7 +2284,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007EDBC\n"
+    "glabel ScaleMatrix\n"
     "    lw         $t0, 0($a0)\n"
     "    lw         $t3, 0($a1)\n"
     "    andi       $t1, $t0, 0xFFFF\n"
@@ -2358,7 +2358,7 @@ __asm__(
     "    sra        $t1, $t1, 12\n"
     "    jr         $ra\n"
     "     sw        $t1, 16($a0)\n"
-    "endlabel func_8007EDBC\n"
+    "endlabel ScaleMatrix\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -2368,7 +2368,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel gte_SetRotMatrix\n"
+    "glabel SetRotMatrix\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -2414,7 +2414,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel gte_SetTransVector\n"
+    "glabel SetTransMatrix\n"
     "    lw     $t0, 20($a0)\n"
     "    lw     $t1, 24($a0)\n"
     "    lw     $t2, 28($a0)\n"
@@ -2433,7 +2433,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel gte_GetScreenXY\n"
+    "glabel ReadSZfifo3\n"
     "    swc2   $17, 0($a0)\n"
     "    swc2   $18, 0($a1)\n"
     "    swc2   $19, 0($a2)\n"
@@ -2445,9 +2445,9 @@ __asm__(
     ".set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
-s32 gte_GetH(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
+s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
 PAD_NOPS_1; /* 1 NOP after gte_GetH */
-void gte_SetBackColor(s32 a0, s32 a1, s32 a2) {
+void SetBackColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
@@ -2455,7 +2455,7 @@ void gte_SetBackColor(s32 a0, s32 a1, s32 a2) {
     __asm__ volatile (".word 0x48C57000" :: "r"(a1));  /* ctc2 $a1, $14 */
     __asm__ volatile (".word 0x48C67800" :: "r"(a2));  /* ctc2 $a2, $15 */
 }
-void gte_SetFarColor(s32 a0, s32 a1, s32 a2) {
+void SetFarColor(s32 a0, s32 a1, s32 a2) {
     a0 <<= 4;
     a1 <<= 4;
     a2 <<= 4;
@@ -2463,14 +2463,14 @@ void gte_SetFarColor(s32 a0, s32 a1, s32 a2) {
     __asm__ volatile (".word 0x48C5B000" :: "r"(a1));  /* ctc2 $a1, $22 */
     __asm__ volatile (".word 0x48C6B800" :: "r"(a2));  /* ctc2 $a2, $23 */
 }
-void gte_SetScreenOffset(s32 a0, s32 a1) {
+void SetGeomOffset(s32 a0, s32 a1) {
     a0 <<= 16;
     a1 <<= 16;
     __asm__ volatile (".word 0x48C4C000" :: "r"(a0));  /* ctc2 $a0, $24 */
     __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
 }
 PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
-void func_8007EFFC(s32 a0) {
+void SetGeomScreen(s32 a0) {
     __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
 }
 PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
@@ -2479,7 +2479,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F00C\n"
+    "glabel LightColor\n"
     "    lwc2   $9,  0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
     "    lwc2   $11, 8($a0)\n"
@@ -2500,7 +2500,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F034\n"
+    "glabel DpqColorLight\n"
     "    lwc2   $9,  0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
     "    lwc2   $11, 8($a0)\n"
@@ -2516,7 +2516,7 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_8007F05C(s32 *a0, s32 *a1, s32 *a2, s32 a3, s32 *o0, s32 *o1, s32 *o2) {
+void DpqColor3(s32 *a0, s32 *a1, s32 *a2, s32 a3, s32 *o0, s32 *o1, s32 *o2) {
     __asm__ volatile (".word 0xC8940000" :: "r"(a0));  /* lwc2 $20, 0($a0) */
     __asm__ volatile (".word 0xC8B50000" :: "r"(a1));  /* lwc2 $21, 0($a1) */
     __asm__ volatile (".word 0xC8D60000" :: "r"(a2));  /* lwc2 $22, 0($a2) */
@@ -2537,7 +2537,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F098\n"
+    "glabel Intpl\n"
     "    lwc2   $9,  0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
     "    lwc2   $11, 8($a0)\n"
@@ -2566,7 +2566,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F0BC\n"
+    "glabel Square12\n"
     "    lwc2   $9, 0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
     "    lwc2   $11, 8($a0)\n"
@@ -2587,7 +2587,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F0E4\n"
+    "glabel Square0\n"
     "    lwc2   $9, 0($a0)\n"
     "    lwc2   $10, 4($a0)\n"
     "    lwc2   $11, 8($a0)\n"
@@ -2603,7 +2603,7 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-s32 func_8007F10C(s32 a0, s32 a1, s32 a2) {
+s32 AverageZ3(s32 a0, s32 a1, s32 a2) {
     s32 v0;
     __asm__ volatile (".word 0x48848800" :: "r"(a0));  /* mtc2 $a0, $17 */
     __asm__ volatile (".word 0x48859000" :: "r"(a1));  /* mtc2 $a1, $18 */
@@ -2624,7 +2624,7 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-s32 func_8007F12C(s32 a0, s32 a1, s32 a2, s32 a3) {
+s32 AverageZ4(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 v0;
     __asm__ volatile (".word 0x48848000" :: "r"(a0));  /* mtc2 $a0, $16 */
     __asm__ volatile (".word 0x48858800" :: "r"(a1));  /* mtc2 $a1, $17 */
@@ -2635,7 +2635,7 @@ s32 func_8007F12C(s32 a0, s32 a1, s32 a2, s32 a3) {
     __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
     return v0;
 }
-void func_8007F150(s32 *a0, s16 *a1, s32 *a2) {
+void OuterProduct12(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
     __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
     __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
@@ -2657,7 +2657,7 @@ void func_8007F150(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
     __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
 }
-void func_8007F1A8(s32 *a0, s16 *a1, s32 *a2) {
+void OuterProduct0(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
     __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
     __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
@@ -2679,7 +2679,7 @@ void func_8007F1A8(s32 *a0, s16 *a1, s32 *a2) {
     __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
     __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
 }
-s32 func_8007F200(s32 a0) {
+s32 Lzc(s32 a0) {
     s32 v0;
     __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
     __asm__ volatile ("nop");
@@ -2688,7 +2688,7 @@ s32 func_8007F200(s32 a0) {
     return v0;
 }
 PAD_NOPS_1; /* 1 NOP after func_8007F200 */
-s32 func_8007F21C(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
+s32 RotTransPers(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
     s32 v1;
     s32 v0;
     __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
@@ -2713,7 +2713,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F24C\n"
+    "glabel RotTransPers3\n"
     "    lwc2   $0, 0($a0)\n"
     "    lwc2   $1, 4($a0)\n"
     "    lwc2   $2, 0($a1)\n"
@@ -2735,14 +2735,14 @@ __asm__(
     "    sw     $v1, 0($t3)\n"
     "    jr     $ra\n"
     "    sra    $v0, $v0, 2\n"
-    "endlabel func_8007F24C\n"
+    "endlabel RotTransPers3\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
     ".set at\n"
 );
 PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
-void func_8007F2AC(s32 *a0, s32 *a1, s32 *a2) {
+void RotTrans(s32 *a0, s32 *a1, s32 *a2) {
     s32 v0;
     __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
     __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
@@ -2764,7 +2764,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel func_8007F2DC\n"
+    "glabel RotTransPers4\n"
     "    lwc2   $0, 0($a0)\n"
     "    lwc2   $1, 4($a0)\n"
     "    lwc2   $2, 0($a1)\n"
@@ -2795,7 +2795,7 @@ __asm__(
     "    sw     $t0, 0($t2)\n"
     "    jr     $ra\n"
     "    sra    $v0, $v0, 2\n"
-    "endlabel func_8007F2DC\n"
+    "endlabel RotTransPers4\n"
 );
 PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
 /* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.
@@ -2809,7 +2809,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007F35C\n"
+    "glabel RotMatrix\n"
     "    lh         $t7, 0($a0)\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007F3A0\n"
@@ -2982,7 +2982,7 @@ __asm__(
     "    sh         $t6, 14($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel func_8007F35C\n"
+    "endlabel RotMatrix\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3000,7 +3000,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007F5EC\n"
+    "glabel RotMatrixZYX\n"
     "    lh         $t7, 0($a0)\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007F630\n"
@@ -3173,7 +3173,7 @@ __asm__(
     "    sh         $t6, 10($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel func_8007F5EC\n"
+    "endlabel RotMatrixZYX\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3192,7 +3192,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007F87C\n"
+    "glabel RotMatrixX\n"
     "    addu       $t7, $a0, $zero\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007F8C0\n"
@@ -3298,7 +3298,7 @@ __asm__(
     "    sh         $t8, 16($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel func_8007F87C\n"
+    "endlabel RotMatrixX\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3314,7 +3314,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007FA1C\n"
+    "glabel RotMatrixY\n"
     "    addu       $t7, $a0, $zero\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007FA5C\n"
@@ -3420,7 +3420,7 @@ __asm__(
     "    sh         $t8, 16($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel func_8007FA1C\n"
+    "endlabel RotMatrixY\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3436,7 +3436,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel func_8007FBBC\n"
+    "glabel RotMatrixZ\n"
     "    addu       $t7, $a0, $zero\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007FC00\n"
@@ -3542,7 +3542,7 @@ __asm__(
     "    sh         $t8, 10($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel func_8007FBBC\n"
+    "endlabel RotMatrixZ\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3603,7 +3603,7 @@ extern s16 D_800A0928[];
 
 /* PsyQ LIBGTE ratan: ratan2 â€” verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
-s32 func_8007FD5C(s32 arg0, s32 arg1) {
+s32 ratan2(s32 arg0, s32 arg1) {
     s32 var_v1;
     s32 var_a0;
     s32 var_a1;
@@ -3655,7 +3655,7 @@ __asm__(
     "    .set\tnoreorder\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel func_8007FEDC\n"
+    "glabel _patch_gte\n"
     "    lui $at, %hi(D_800A3658)\n"
     "    sw $ra, %lo(D_800A3658)($at)\n"
     "    jal EnterCriticalSection\n"
@@ -3664,17 +3664,17 @@ __asm__(
     "    jalr $t2\n"
     "    addiu $t1, $zero, 0x56\n"
     "    lui $t2, %hi(D_8007FF44)\n"
-    "    lui $t1, %hi(func_8007FF7C)\n"
+    "    lui $t1, %hi(CdInit)\n"
     "    lw $v0, 24($v0)\n"
     "    addiu $t2, $t2, %lo(D_8007FF44)\n"
-    "    addiu $t1, $t1, %lo(func_8007FF7C)\n"
+    "    addiu $t1, $t1, %lo(CdInit)\n"
     ".L8007FF0C:\n"
     "    lw $v1, 0($t2)\n"
     "    addiu $t2, $t2, 0x4\n"
     "    addiu $v0, $v0, 0x4\n"
     "    bne $t2, $t1, .L8007FF0C\n"
     "    sw $v1, -4($v0)\n"
-    "    jal func_80078FF0\n"
+    "    jal FlushCache\n"
     "    nop\n"
     "    jal ExitCriticalSection\n"
     "    nop\n"
@@ -3704,39 +3704,39 @@ __asm__(
     "    .set at\n"
 );
 PAD_NOPS_1; /* 1 NOP after func_8007FEDC */
-extern s32 cdrom_CheckReady(s32);
-extern s32 cdrom_SetCallbackA(s32);
-extern s32 sys_SetVsyncMode(s32);
-extern s32 sys_SetTimer(s32);
+extern s32 CdReset(s32);
+extern s32 CdSyncCallback(s32);
+extern s32 CdReadCallback(s32);
+extern s32 CdReadMode(s32);
 extern s32 D_80080014;
 extern s32 D_8008003C;
 extern s32 D_80080064;
 extern u32 g_str_cdinit_fail;
 
-s32 func_8007FF7C(void) {
+s32 CdInit(void) {
     s32 retries = 4;
 loop:
-    if (cdrom_CheckReady(1) != 1) {
+    if (CdReset(1) != 1) {
         retries--;
         if (retries != -1) goto loop;
-        debug_printf(&g_str_cdinit_fail);
+        printf(&g_str_cdinit_fail);
         return 0;
     }
-    cdrom_SetCallbackA((s32)&D_80080014);
-    cdrom_SetCallbackB((s32)&D_8008003C);
-    sys_SetVsyncMode((s32)&D_80080064);
-    sys_SetTimer(0);
+    CdSyncCallback((s32)&D_80080014);
+    CdReadyCallback((s32)&D_8008003C);
+    CdReadCallback((s32)&D_80080064);
+    CdReadMode(0);
     return 1;
 }
 
 void func_80080014(void) {
-    bios_DeliverEvent(0xF0000003, 0x20);
+    DeliverEvent(0xF0000003, 0x20);
 }
 
 void func_8008003C(void) {
-    bios_DeliverEvent(0xF0000003, 0x40);
+    DeliverEvent(0xF0000003, 0x40);
 }
 
 void func_80080064(void) {
-    bios_DeliverEvent(0xF0000003, 0x40);
+    DeliverEvent(0xF0000003, 0x40);
 }

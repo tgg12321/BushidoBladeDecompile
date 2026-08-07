@@ -25,7 +25,7 @@ glabel func_8005BA8C
     /* 4C2E8 8005BAE8 03001126 */  addiu      $s1, $s0, 0x3
   .L8005BAEC:
     /* 4C2EC 8005BAEC 00000492 */  lbu        $a0, 0x0($s0)
-    /* 4C2F0 8005BAF0 D91F020C */  jal        func_80087F64
+    /* 4C2F0 8005BAF0 D91F020C */  jal        SsVabClose
     /* 4C2F4 8005BAF4 00000000 */   nop
     /* 4C2F8 8005BAF8 00000292 */  lbu        $v0, 0x0($s0)
     /* 4C2FC 8005BAFC 00000000 */  nop

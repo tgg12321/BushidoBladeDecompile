@@ -26,8 +26,8 @@ extern void func_80023CB4(s32, s32);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern void game_Cleanup(void);
 extern void seq_Start(s32, s32);
 extern u16 g_game_p1_ctrl;
@@ -62,7 +62,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
@@ -72,7 +72,7 @@ extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -81,8 +81,8 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void func_80037774(void);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -93,8 +93,8 @@ extern s16 D_800A3678;
 extern s32 D_800A3708;
 extern s32 D_800A374C;
 extern s32 D_80106A50;
-extern void initPolyG4(u8 *p);
-extern void ot_Link(u32 *a0, u32 *a1);
+extern void SetPolyG4(u8 *p);
+extern void AddPrim(u32 *a0, u32 *a1);
 extern u8 D_800A377C;
 extern u8 D_800A37A8;
 extern u16 D_800A3904;
@@ -163,7 +163,7 @@ void func_8003553C(void) {
     u32 *ot;
 
     g = (POLY_G4 *)D_800A38B4;
-    initPolyG4((u8 *)g);
+    SetPolyG4((u8 *)g);
     g->x0 = 0; g->y0 = 0;
     g->x1 = 640; g->y1 = 0;
     g->x2 = 0; g->y2 = 240;
@@ -175,7 +175,7 @@ void func_8003553C(void) {
     ot = (u32 *)(D_800A374C + 0x401C);
     q = g;
     g += 1;
-    ot_Link(ot, (u32 *)q);
+    AddPrim(ot, (u32 *)q);
     D_800A38B4 = g;
 }
 void func_800355E8(void) {

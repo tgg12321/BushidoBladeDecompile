@@ -29,7 +29,7 @@ glabel func_8003AB44
     /* 2B3A8 8003ABA8 0C0780AF */  sw         $zero, %gp_rel(D_800A37D8)($gp)
     /* 2B3AC 8003ABAC 07004014 */  bnez       $v0, .L8003ABCC
     /* 2B3B0 8003ABB0 03000224 */   addiu     $v0, $zero, 0x3
-    /* 2B3B4 8003ABB4 A8EC010C */  jal        gpu_SetDispMask
+    /* 2B3B4 8003ABB4 A8EC010C */  jal        SetDispMask
     /* 2B3B8 8003ABB8 01000424 */   addiu     $a0, $zero, 0x1
     /* 2B3BC 8003ABBC 02000224 */  addiu      $v0, $zero, 0x2
     /* 2B3C0 8003ABC0 E00782A3 */  sb         $v0, %gp_rel(D_800A38AC)($gp)
@@ -47,7 +47,7 @@ glabel func_8003AB44
     /* 2B3E8 8003ABE8 1C004014 */  bnez       $v0, .L8003AC5C
     /* 2B3EC 8003ABEC 03000424 */   addiu     $a0, $zero, 0x3
     /* 2B3F0 8003ABF0 01000524 */  addiu      $a1, $zero, 0x1
-    /* 2B3F4 8003ABF4 1931020C */  jal        func_8008C464
+    /* 2B3F4 8003ABF4 1931020C */  jal        _comb_control
     /* 2B3F8 8003ABF8 21300000 */   addu      $a2, $zero, $zero
     /* 2B3FC 8003ABFC 2A004010 */  beqz       $v0, .L8003ACA8
     /* 2B400 8003AC00 21100000 */   addu      $v0, $zero, $zero
@@ -56,13 +56,13 @@ glabel func_8003AB44
   jlabel .L8003AC0C
     /* 2B40C 8003AC0C 03000424 */  addiu      $a0, $zero, 0x3
     /* 2B410 8003AC10 01000524 */  addiu      $a1, $zero, 0x1
-    /* 2B414 8003AC14 1931020C */  jal        func_8008C464
+    /* 2B414 8003AC14 1931020C */  jal        _comb_control
     /* 2B418 8003AC18 21300000 */   addu      $a2, $zero, $zero
     /* 2B41C 8003AC1C 08004014 */  bnez       $v0, .L8003AC40
     /* 2B420 8003AC20 03000424 */   addiu     $a0, $zero, 0x3
   .L8003AC24:
     /* 2B424 8003AC24 21280000 */  addu       $a1, $zero, $zero
-    /* 2B428 8003AC28 1931020C */  jal        func_8008C464
+    /* 2B428 8003AC28 1931020C */  jal        _comb_control
     /* 2B42C 8003AC2C 21300000 */   addu      $a2, $zero, $zero
     /* 2B430 8003AC30 04000224 */  addiu      $v0, $zero, 0x4
     /* 2B434 8003AC34 E00782A3 */  sb         $v0, %gp_rel(D_800A38AC)($gp)
@@ -82,7 +82,7 @@ glabel func_8003AB44
     /* 2B464 8003AC64 2AEB0008 */  j          .L8003ACA8
     /* 2B468 8003AC68 FFFF0224 */   addiu     $v0, $zero, -0x1
   jlabel .L8003AC6C
-    /* 2B46C 8003AC6C A8EC010C */  jal        gpu_SetDispMask
+    /* 2B46C 8003AC6C A8EC010C */  jal        SetDispMask
     /* 2B470 8003AC70 21200000 */   addu      $a0, $zero, $zero
   jlabel .L8003AC74
     /* 2B474 8003AC74 E0078293 */  lbu        $v0, %gp_rel(D_800A38AC)($gp)

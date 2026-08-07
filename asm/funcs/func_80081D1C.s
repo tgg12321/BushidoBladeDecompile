@@ -1,4 +1,4 @@
-glabel cdrom_DmaToRam
+glabel CD_getsector
     /* 7251C 80081D1C 0A80023C */  lui        $v0, %hi(D_800A147C)
     /* 72520 80081D20 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
     /* 72524 80081D24 0200063C */  lui        $a2, (0x20943 >> 16)
@@ -66,4 +66,4 @@ glabel cdrom_DmaToRam
     /* 72610 80081E10 000062AC */  sw         $v0, 0x0($v1)
     /* 72614 80081E14 0800E003 */  jr         $ra
     /* 72618 80081E18 21100000 */   addu      $v0, $zero, $zero
-endlabel cdrom_DmaToRam
+endlabel CD_getsector

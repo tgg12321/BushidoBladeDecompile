@@ -3,13 +3,13 @@ glabel func_8005B6AC
     /* 4BEB0 8005B6B0 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4BEB4 8005B6B4 3416020C */  jal        func_800858D0
     /* 4BEB8 8005B6B8 21200000 */   addu      $a0, $zero, $zero
-    /* 4BEBC 8005B6BC D91F020C */  jal        func_80087F64
+    /* 4BEBC 8005B6BC D91F020C */  jal        SsVabClose
     /* 4BEC0 8005B6C0 02000424 */   addiu     $a0, $zero, 0x2
     /* 4BEC4 8005B6C4 0F80013C */  lui        $at, %hi(D_800EFC40)
     /* 4BEC8 8005B6C8 40FC20AC */  sw         $zero, %lo(D_800EFC40)($at)
     /* 4BECC 8005B6CC 0F80013C */  lui        $at, %hi(D_800EFB40)
     /* 4BED0 8005B6D0 40FB20AC */  sw         $zero, %lo(D_800EFB40)($at)
-    /* 4BED4 8005B6D4 D91F020C */  jal        func_80087F64
+    /* 4BED4 8005B6D4 D91F020C */  jal        SsVabClose
     /* 4BED8 8005B6D8 05000424 */   addiu     $a0, $zero, 0x5
     /* 4BEDC 8005B6DC 0F80013C */  lui        $at, %hi(D_800EFC4C)
     /* 4BEE0 8005B6E0 4CFC20AC */  sw         $zero, %lo(D_800EFC4C)($at)

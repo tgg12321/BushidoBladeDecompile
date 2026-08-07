@@ -3,7 +3,7 @@ glabel obj_InitTask
     /* 4C1C8 8005B9C8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 4C1CC 8005B9CC 3416020C */  jal        func_800858D0
     /* 4C1D0 8005B9D0 21200000 */   addu      $a0, $zero, $zero
-    /* 4C1D4 8005B9D4 D91F020C */  jal        func_80087F64
+    /* 4C1D4 8005B9D4 D91F020C */  jal        SsVabClose
     /* 4C1D8 8005B9D8 09000424 */   addiu     $a0, $zero, 0x9
     /* 4C1DC 8005B9DC 0F80013C */  lui        $at, %hi(D_800EFC5C)
     /* 4C1E0 8005B9E0 5CFC20AC */  sw         $zero, %lo(D_800EFC5C)($at)

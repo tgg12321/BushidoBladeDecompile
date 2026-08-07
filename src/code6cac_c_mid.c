@@ -26,8 +26,8 @@ extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
 extern void func_800194F4(void);
 extern void seq_Reset(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern s32 D_800109BC;
@@ -66,7 +66,7 @@ extern void sys_Panic(void);
 extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
@@ -74,7 +74,7 @@ extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
 extern void func_800174F4(void);
 extern s32 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -83,10 +83,10 @@ extern void stage_GetDataPtr(void);
 
 extern void func_8005B50C(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 D_800A3210;
-extern void func_8008BE04(void);
+extern void AddCOMB(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -146,24 +146,24 @@ extern s32 D_800A3915_ext;
 extern s32 D_800A36F4_ext;
 
 /* Extern function declarations for decompiled functions */
-extern s32 bios_TestEvent(s32);
-extern void bios_CloseEvent(s32);
-extern void bios_EnableEvent(s32);
+extern s32 TestEvent(s32);
+extern void CloseEvent(s32);
+extern void EnableEvent(s32);
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
-extern void bios_FileRead_B(s32, s32 *, s32);
-extern void bios_FileClose_B(s32);
-extern s32 bios_firstfile_B(s32 *, s32 *);
-extern s32 bios_nextfile_B(s32 *);
-extern void func_80078BA8(s32);
-extern s32 func_80078B04(s32);
-extern void func_8007A400(void);
-extern void func_8008BE4C(void);
+extern void read(s32, s32 *, s32);
+extern void close(s32);
+extern s32 firstfile(s32 *, s32 *);
+extern s32 nextfile(s32 *);
+extern void ResetRCnt(s32);
+extern s32 GetRCnt(s32);
+extern void StopCARD(void);
+extern void DelCOMB(void);
 extern void func_8006BEC4(s32, s32);
 extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void SetGeomScreen(s32);
 extern void func_8001B6F4(void);
 extern void func_80022568(u8 *);
 extern s32 g_str_memcard_fmt;
@@ -182,8 +182,8 @@ extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
 
 s32 func_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
-    func_80079A30(buf, &D_800109C8, a0, a1);
-    return bios_FormatDevice_B(buf);
+    sprintf(buf, &D_800109C8, a0, a1);
+    return format(buf);
 }
 
 typedef struct { s32 w[4]; } Quad;
@@ -347,7 +347,7 @@ const u32 D_80010A2C[38] = {
 };
 extern u8 D_800A3200;
 extern u8 D_800A3201;
-extern u8 *func_80079194(u8 *, u8 *);
+extern u8 *strcpy(u8 *, u8 *);
 
 void func_80038170(u8 *out) {
     register s32 i asm("a3");
@@ -386,7 +386,7 @@ void func_80038170(u8 *out) {
         } while (i >= 0);
     }
 
-    func_80079194(out + 4, D_8008F1C0);
+    strcpy(out + 4, D_8008F1C0);
 
     out[0x22] = D_8008F1A8[s1 * 2 + 0];
     out[0x23] = D_8008F1A8[s1 * 2 + 1];
@@ -520,7 +520,7 @@ setup_load:
     func_80038170(D_800F33D8);
     func_80037F40(D_800F33D8 + 0x100);
     if (func_80037C34(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
-        bios_FileClose_B(D_800A3794);
+        close(D_800A3794);
         var_v0 = 3;
         goto finish;
     }
@@ -537,7 +537,7 @@ state_5:
     D_800A379E = 4;
     func_80038148();
     if (func_80037B90(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
-        bios_FileClose_B(D_800A3794);
+        close(D_800A3794);
         var_v0 = 6;
         goto finish;
     }
@@ -577,7 +577,7 @@ block_4:
     if (var_s0 == 0) {
         goto block_store;
     }
-    bios_FileClose_B(D_800A3794);
+    close(D_800A3794);
     var_v0 = 1;
     if (var_s0 != var_v0) {
         var_v0 = 3;
@@ -591,7 +591,7 @@ block_6:
     if (var_s0 == 0) {
         goto block_store;
     }
-    bios_FileClose_B(D_800A3794);
+    close(D_800A3794);
     var_v0 = 1;
     if (var_s0 != var_v0) {
         var_v0 = 6;
@@ -1466,7 +1466,7 @@ void func_800397D4(void) {
     gpu_EnableDisplay();
     func_8003E22C();
     game_SetPlayerCount(0);
-    func_8007EFFC(disp_CalcFov(0x2D));
+    SetGeomScreen(disp_CalcFov(0x2D));
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();
@@ -1515,60 +1515,60 @@ void func_8003A174(void) {
     EnterCriticalSection();
     neg1 = -1;
     do {
-        D_800A3738 = bios_OpenEvent(0xF000000B, 0x400, 0x2000, 0);
+        D_800A3738 = OpenEvent(0xF000000B, 0x400, 0x2000, 0);
     } while (D_800A3738 == neg1);
     neg1 = -1;
     do {
-        D_800A3810 = bios_OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
+        D_800A3810 = OpenEvent(0xF000000B, 0x8000, 0x2000, 0);
     } while (D_800A3810 == neg1);
     ExitCriticalSection();
     neg1 = -1;
-    sys_VSync(2);
-    func_8008BE04();
+    VSync(2);
+    AddCOMB();
     do {
-        D_800A373C = bios_FileOpen_B(&D_800A3210, 2);
+        D_800A373C = open(&D_800A3210, 2);
     } while (D_800A373C == neg1);
     neg1 = -1;
     do {
-        D_800A3734 = bios_FileOpen_B(&D_800A3210, 0x8001);
+        D_800A3734 = open(&D_800A3210, 0x8001);
     } while (D_800A3734 == neg1);
-    func_8008C464(2, 0, 0);
-    func_8008C464(1, 3, 0xE100);
-    func_8008C464(1, 4, 1);
+    _comb_control(2, 0, 0);
+    _comb_control(1, 3, 0xE100);
+    _comb_control(1, 4, 1);
 }
 void func_8003A264(void) {
-    bios_FileClose_B(D_800A3734);
-    bios_FileClose_B(D_800A373C);
+    close(D_800A3734);
+    close(D_800A373C);
     EnterCriticalSection();
-    bios_CloseEvent(D_800A3738);
-    bios_CloseEvent(D_800A3810);
+    CloseEvent(D_800A3738);
+    CloseEvent(D_800A3810);
     ExitCriticalSection();
-    sys_VSync(2);
-    func_8008BE4C();
-    func_8008C464(1, 1, 0);
+    VSync(2);
+    DelCOMB();
+    _comb_control(1, 1, 0);
 }
 s32 func_8003A2DC(void) {
-    return (func_8008C464(0, 0, 0) & 0x180) == 0;
+    return (_comb_control(0, 0, 0) & 0x180) == 0;
 }
 void func_8003A308(void) {
-    if (func_8008C464(3, 1, 0) != 0) {
+    if (_comb_control(3, 1, 0) != 0) {
         D_800A38A0 = 1;
     } else {
         D_800A38A0 = 0;
     }
-    func_8008C464(3, 0, 1);
+    _comb_control(3, 0, 1);
 }
 void func_8003A360(void) {
-    bios_EnableEvent(D_800A3810);
-    bios_EnableEvent(D_800A3738);
+    EnableEvent(D_800A3810);
+    EnableEvent(D_800A3738);
     D_800A320C = 1;
     D_800A3730 = 0;
 }
 void func_8003A39C(void) {
     D_800A320C = 0;
     D_800A3730 = 0;
-    func_8008C464(2, 0, 0);
-    func_8008C464(1, 1, 0);
+    _comb_control(2, 0, 0);
+    _comb_control(1, 1, 0);
     func_8003A264();
     D_800A3834 = 8;
 }
@@ -1590,25 +1590,25 @@ s32 func_8003A450(void) {
     s32 s1;
     s32 s0;
 
-    s1 = func_80078B04(0xF2000001);
+    s1 = GetRCnt(0xF2000001);
     if (s1 >= 0x401) {
-        func_80078BA8(0xF2000001);
+        ResetRCnt(0xF2000001);
         s1 = 0;
     }
 
     while (1) {
         while (1) {
-            if (func_8008C464(3, 1, 0) != 0) {
+            if (_comb_control(3, 1, 0) != 0) {
                 break;
             }
-            if (func_80078B04(0xF2000001) - s1 >= 0x7801) {
+            if (GetRCnt(0xF2000001) - s1 >= 0x7801) {
                 return 0;
             }
         }
 
         s0 = 0;
         do {
-            if (func_8008C464(3, 1, 0) == 0) {
+            if (_comb_control(3, 1, 0) == 0) {
                 break;
             }
             s0++;
@@ -1619,16 +1619,16 @@ s32 func_8003A450(void) {
         }
     }
 
-    func_8008C464(1, 1, 1);
+    _comb_control(1, 1, 1);
     D_800A382C = 1;
-    func_8008C464(4, 0, (s32)&func_8003A42C);
-    bios_FileWrite_B(D_800A373C, &D_800A3698, 8);
-    func_8008C464(4, 0, 0);
-    func_8008C464(1, 1, 0);
+    _comb_control(4, 0, (s32)&func_8003A42C);
+    write(D_800A373C, &D_800A3698, 8);
+    _comb_control(4, 0, 0);
+    _comb_control(1, 1, 0);
     return D_800A382C;
 }
 void func_8003A574(void) {
-    bios_FileRead_B(D_800A3734, &D_800A3688, 8);
+    read(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
 s32 func_8003A5A0(void) {
@@ -1639,35 +1639,35 @@ s32 func_8003A5A0(void) {
     s32 v0;
 
     s1 = 0;
-    s0 = func_80078B04(0xF2000001);
+    s0 = GetRCnt(0xF2000001);
     if (s0 >= 0x401) {
         goto overflow;
     }
     goto loop_check;
 overflow:
-    func_80078BA8(0xF2000001);
+    ResetRCnt(0xF2000001);
     s0 = 0;
 loop_check:
-    if (bios_TestEvent(D_800A3738) != 0) {
+    if (TestEvent(D_800A3738) != 0) {
         goto success;
     }
-    if (bios_TestEvent(D_800A3810) == 0) {
+    if (TestEvent(D_800A3810) == 0) {
         goto poll;
     }
     s1 += 1;
     if (s1 >= 5) {
         goto ret0_tramp;
     }
-    func_8008C464(2, 0, 0);
+    _comb_control(2, 0, 0);
     s0 = 0;
     func_8003A574();
-    func_80078BA8(0xF2000001);
+    ResetRCnt(0xF2000001);
 poll:
-    v0 = (func_8008C464(0, 0, 0) >> 7) & 3;
+    v0 = (_comb_control(0, 0, 0) >> 7) & 3;
     if (v0 == 1) {
         goto loop_check;
     }
-    v0 = func_80078B04(0xF2000001) - s0;
+    v0 = GetRCnt(0xF2000001) - s0;
     if (v0 < 0x3C01) {
         goto loop_check;
     }
@@ -1842,26 +1842,26 @@ void func_8003AA48(void) {
 }
 void func_8003AA78(void) {
     D_800A3870 = 1;
-    sys_VSync(2);
+    VSync(2);
     func_8003AA48();
-    sys_VSync(2);
+    VSync(2);
 }
 void func_8003AAB0(void) {
     s32 val;
     D_800A3870 = 2;
-    sys_VSync(2);
+    VSync(2);
     val = 2;
     do {
         func_8003AA48();
         if (D_800A320C == 0) {
             goto end;
         }
-        func_80078BA8(0xF2000001);
+        ResetRCnt(0xF2000001);
         do {
-        } while (func_80078B04(0xF2000001) < 0x100);
+        } while (GetRCnt(0xF2000001) < 0x100);
     } while (D_800A3870 == val);
 end:
-    sys_VSync(2);
+    VSync(2);
     func_8003AA48();
-    sys_VSync(2);
+    VSync(2);
 }

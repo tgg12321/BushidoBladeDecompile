@@ -193,8 +193,8 @@ D_800A3206 = 0x800A3206;
 efc_buki_get_vertex_color = 0x8003F568;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
-func_8007A5C4 = 0x8007A5C4;
-func_8007A62C = 0x8007A62C;
+LoadClut = 0x8007A5C4;
+LoadClut2 = 0x8007A62C;
 
 /* === Kengo-derived globals (kengo_globals.py) === */
 MotDataBaseAddress = 0x80104F38;
@@ -210,8 +210,8 @@ gpu_DisableDisplay = 0x800168D0;  /* MISNAMED: actually gpu_DisableDisplay (alre
 func_80046914 = 0x80046914;  /* MISNAMED: 1-line wrapper func_800453E0(8); not katinuki-related */
 func_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
 func_80046A60 = 0x80046A60;  /* MISNAMED: 1-line wrapper func_800453E0(0xA); not katinuki-related */
-func_8007A87C = 0x8007A87C;  /* MISNAMED: VU1 is PS2-only; actually a ptr-to-KSEG0 converter (top byte = 0x80) */
-func_8007A898 = 0x8007A898;  /* MISNAMED: VU1 is PS2-only; actually an OT-terminator check (low 24 bits all 1?) */
+NextPrim = 0x8007A87C;  /* MISNAMED: VU1 is PS2-only; actually a ptr-to-KSEG0 converter (top byte = 0x80) */
+IsEndPrim = 0x8007A898;  /* MISNAMED: VU1 is PS2-only; actually an OT-terminator check (low 24 bits all 1?) */
 
 /* === Misnomer-replacement aliases (2026-05-17 audit) === */
 /* Replacement names for the Kengo entries above, derived from asm body */
@@ -256,7 +256,6 @@ player_find_empty_slot_80041584 = 0x80041584;  /* find first NULL in g_player_pt
 /* */
 /* Functions: see docs/naming/evidence/func_{80079154,80040510}.md */
 /* Data:      see docs/naming/data_evidence/D_{800F1848,8008F13C}.md */
-bb2_rand = 0x80079154;
 player_rob_Init = 0x80040510;
 g_rand_state = 0x800F1848;
 g_special_cam_command_table = 0x8008F13C;
@@ -278,14 +277,11 @@ g_motion_data_base_ptr      = 0x800A3860;
 memcard_event_pool_close_80037774                       = 0x80037774;
 memcard_event_wait_class0xF0000011_80037964             = 0x80037964;
 memcard_event_wait_class0xF4000001_with_timeout_80037804 = 0x80037804;
-cd_dma_idle_80080620                                     = 0x80080620;
 
 /* === Batch 4 high-confidence function renames (2026-05-17) === */
 /* See docs/naming/evidence/func_{80042478,80044650,80079184,80080600}.md */
 disp_set_fade_color_80042478       = 0x80042478;
 init_fade_panel_wrapper_80044650   = 0x80044650;
-bb2_srand_80079184                 = 0x80079184;
-cd_send_cmd_80080600               = 0x80080600;
 
 /* === Misnomer aliases (2026-05-17 deepen-pass) === */
 /* Five functions whose names in src/*.c are demonstrably wrong but */
@@ -321,7 +317,7 @@ cd_send_cmd_80080600               = 0x80080600;
 /* commit by the rebuild script. */
 get_snd_bgm_id_80046780      = 0x80046780;  /* 3-insn gp-rel getter for g_snd_bgm_id (legacy renamer: snd_GetBgmId) */
 get_stage_id_80046798        = 0x80046798;  /* 4-insn lh-based signed getter for g_stage_id (legacy renamer: stage_GetId) */
-get_sys_video_mode_80083688  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode (legacy renamer: sys_GetVideoMode) */
+GetVideoMode  = 0x80083688;  /* 4-insn lw-based getter for g_sys_video_mode (legacy renamer: sys_GetVideoMode) */
 empty_stub_80046954          = 0x80046954;  /* literal `jr ra; nop` -- 2 insns total (legacy renamer: snd_SeNullCallback -- a null SE callback table slot) */
 
 /* === Batch 6 refinement (2026-05-17) -- cross-validate `tools/rename_funcs.py` === */
@@ -391,7 +387,7 @@ game_AnimCleanup_800474D0       = 0x800474D0;  /* wrapper -> func_80048FFC(0) */
 game_AnimStart_80047738         = 0x80047738;  /* wrapper -> func_80048F58(1, 0) -- a0=1 differs from AnimInit's a0=0 */
 /* Sound dispatchers (4) */
 snd_PlayBgm_800468B0            = 0x800468B0;  /* saSeMain(8, a0) + saTan5TakeGetPos(0) */
-snd_PlaySe_800469A0             = 0x800469A0;  /* saSeMain(9, a0) */
+/* RENAME 0x800469A0: retired name 'snd_PlaySe_800469A0' — preserved note: saSeMain(9, a0) */
 snd_PlaySystemSe_80046AE8       = 0x80046AE8;  /* SsSet stuff with 0xF2000001 (SS event class) */
 snd_StopSystemSe_80046B20       = 0x80046B20;  /* SsCalledTickMode-style stop using 0xF2000001 */
 
@@ -463,16 +459,16 @@ g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of 
 /* func_80082B84/BE4/C24, func_80083670). */
 /* See LEGACY_RENAMER_AUDIT.md for the full triage. */
 /* System config setters (2) */
-sys_SetVsyncMode_8008289C       = 0x8008289C;  /* swap-and-return on g_vsync_mode */
-sys_SetTimer_800828B4           = 0x800828B4;  /* swap-and-return on g_timer_setting */
+/* RENAME 0x8008289C: retired name 'sys_SetVsyncMode_8008289C' — preserved note: swap-and-return on g_vsync_mode */
+/* RENAME 0x800828B4: retired name 'sys_SetTimer_800828B4' — preserved note: swap-and-return on g_timer_setting */
 /* IRQ vector-table dispatchers (5) -- each calls g_psyq_io_vec_table->fn at fixed offset */
-irq_DisableInterrupts_80082AC0  = 0x80082AC0;  /* jalr [g_psyq_io_vec_table+0xC] */
-irq_EnableInterrupts_80082AF0   = 0x80082AF0;  /* jalr [g_psyq_io_vec_table+0x8] */
-irq_AcknowledgeVblank_80082B20  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
-irq_SetAlarm_80082B50           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
-irq_Reset_80082BB4              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
+/* RENAME 0x80082AC0: retired name 'irq_DisableInterrupts_80082AC0' — preserved note: jalr [g_psyq_io_vec_table+0xC] */
+InterruptCallback   = 0x80082AF0;  /* jalr [g_psyq_io_vec_table+0x8] */
+DMACallback  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
+VSyncCallback           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
+StopCallback              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
 /* System counters (1) */
-sys_GetVblankCount_80082C14     = 0x80082C14;  /* lhu of g_vblank_count */
+CheckCallback     = 0x80082C14;  /* lhu of g_vblank_count */
 /* Memory clear (2; identical bodies, position-distinct) */
 sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
 sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
@@ -480,11 +476,11 @@ sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct addre
 bios_FileRead_8008387C          = 0x8008387C;  /* chunked reader wrapping bios_FileReadRaw */
 bios_FileReadRaw_8008393C       = 0x8008393C;  /* 6-insn raw BIOS file-read trap */
 /* Interrupt processing + shutdown (2) */
-irq_ProcessPending_80083954     = 0x80083954;  /* critsec + alarm/IRQ state-machine processing (was proposed as kernel_alarm_cancel in batch 6) */
+/* RENAME 0x80083954: retired name 'irq_ProcessPending_80083954' — preserved note: critsec + alarm/IRQ state-machine processing (was proposed as kernel_alarm_cancel in batch 6) */
 sys_Shutdown_80083A18           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state cleanup */
 /* SPU (2) */
 spu_Reset_80083B30              = 0x80083B30;  /* 8-insn wrapper around func_800892F8 */
-spu_SetVolume_80083B50          = 0x80083B50;  /* 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
+/* RENAME 0x80083B50: retired name 'spu_SetVolume_80083B50' — preserved note: 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
 
 /* === Data names landed by the ings2.c cluster audit (5) === */
 g_psyq_io_vec_table             = 0x800A2600;  /* function-pointer table for IRQ dispatch (irq_Enable/Disable/Ack/Set/Reset all load from here) */
@@ -506,81 +502,36 @@ g_irq_counter_ptr               = 0x800A2608;  /* pointer to a halfword counter;
 /* See LEGACY_RENAMER_AUDIT.md for full triage. */
 /* Address-suffixed to avoid collisions. */
 /* GPU primitive init (21) -- each writes a fixed opcode byte to packet+0x7 */
-initPolyF3_8007A9B8                              = 0x8007A9B8;
-initPolyFT3_8007A9CC                             = 0x8007A9CC;
-initPolyG3_8007A9E0                              = 0x8007A9E0;
-initPolyGT3_8007A9F4                             = 0x8007A9F4;
-initPolyF4_8007AA08                              = 0x8007AA08;
-initPolyFT4_8007AA1C                             = 0x8007AA1C;
-initPolyG4_8007AA30                              = 0x8007AA30;
-initPolyGT4_8007AA44                             = 0x8007AA44;
-initSprt8_8007AA58                               = 0x8007AA58;
-initSprt16_8007AA6C                              = 0x8007AA6C;
-initSprt_8007AA80                                = 0x8007AA80;
-initTile1_8007AA94                               = 0x8007AA94;
-initTile8_8007AAA8                               = 0x8007AAA8;
-initTile16_8007AABC                              = 0x8007AABC;
-initTile_8007AAD0                                = 0x8007AAD0;
-initLineF2_8007AAE4                              = 0x8007AAE4;
-initLineG2_8007AAF8                              = 0x8007AAF8;
-initPolyF3_dither_8007AB0C                       = 0x8007AB0C;
-initPolyG3_dither_8007AB2C                       = 0x8007AB2C;
-initPolyF4_dither_8007AB4C                       = 0x8007AB4C;
-initPolyG4_dither_8007AB6C                       = 0x8007AB6C;
+SetPolyG4                              = 0x8007AA30;
+SetTile                                = 0x8007AAD0;
 /* GPU/OT helpers (35) */
-gpu_LoadTexture_8007A4D8                         = 0x8007A4D8;
-gpu_InitDrawEnv_8007A694                         = 0x8007A694;
-gpu_InitDispEnv_8007A74C                         = 0x8007A74C;
-gpu_CalcTPage_8007A788                           = 0x8007A788;
-gpu_CalcClut_8007A7C4                            = 0x8007A7C4;
-gpu_DebugTPage_8007A7DC                          = 0x8007A7DC;
-gpu_DebugClut_8007A83C                           = 0x8007A83C;
-ot_Link_8007A8B4                                 = 0x8007A8B4;
-ot_Insert_8007A8F0                               = 0x8007A8F0;
-ot_SetAddr_8007A92C                              = 0x8007A92C;
-ot_SetEnd_8007A950                               = 0x8007A950;
-gpu_SetSemiTransp_8007A968                       = 0x8007A968;
-gpu_SetRawTexture_8007A990                       = 0x8007A990;
-initDrawMode_8007AB8C                            = 0x8007AB8C;
-initLoadImage_8007ABB8                           = 0x8007ABB8;
-initStoreImage_8007AC18                          = 0x8007AC18;
-gpu_CatPacket_8007AC84                           = 0x8007AC84;
-gpu_DebugDispEnv_8007ACBC                        = 0x8007ACBC;
-gpu_DebugDrawEnv_8007ADD0                        = 0x8007ADD0;
-gpu_SetMode_8007AE7C                             = 0x8007AE7C;
-gpu_SetDither_8007B000                           = 0x8007B000;
-gpu_SetDebugLevel_8007B114                       = 0x8007B114;
-gpu_SetInterlace_8007B178                        = 0x8007B178;
-gpu_GetType_8007B224                             = 0x8007B224;
-gpu_GetDebugLevel_8007B234                       = 0x8007B234;
-gpu_GetDispEnv_8007C0B0                          = 0x8007C0B0;
-gpu_IsDrawing_8007C0E8                           = 0x8007C0E8;
-initClearImage_8007C118                          = 0x8007C118;
-initDrawArea_8007C154                            = 0x8007C154;
-initDrawOffset_8007C1D8                          = 0x8007C1D8;
-initMaskBit_8007C21C                             = 0x8007C21C;
-initTexPage_8007C248                             = 0x8007C248;
+SetDefDrawEnv                         = 0x8007A694;
+SetDefDispEnv                         = 0x8007A74C;
+GetTPage                           = 0x8007A788;
+GetClut                            = 0x8007A7C4;
+AddPrim                                 = 0x8007A8B4;
+SetSemiTrans                       = 0x8007A968;
+SetDrawMove                           = 0x8007ABB8;
+SetGraphDebug                       = 0x8007B114;
+SetDrawMode                             = 0x8007C248;
 gpu_SendData_8007D308                            = 0x8007D308;
 gpu_StartDmaList_8007D358                        = 0x8007D358;
 gpu_GetInfo_8007D3A4                             = 0x8007D3A4;
 /* GTE COP2 wrappers (8) */
-gte_SetRotMatrix_8007EEEC                        = 0x8007EEEC;  /* ctc2 to COP2 control regs 0-4 (3x3 rotation matrix) */
-gte_SetColorMatrix_8007EF1C                      = 0x8007EF1C;  /* ctc2 to color matrix regs */
-gte_SetTransVector_8007EF4C                      = 0x8007EF4C;  /* ctc2 to COP2 control regs 5-7 (translation vector) */
-gte_GetScreenXY_8007EF6C                         = 0x8007EF6C;
-gte_GetH_8007EF8C                                = 0x8007EF8C;  /* cfc2 of COP2 control reg 26 (H == perspective divide) */
-gte_SetBackColor_8007EF9C                        = 0x8007EF9C;
-gte_SetFarColor_8007EFBC                         = 0x8007EFBC;
-gte_SetScreenOffset_8007EFDC                     = 0x8007EFDC;
+SetRotMatrix                        = 0x8007EEEC;  /* ctc2 to COP2 control regs 0-4 (3x3 rotation matrix) */
+SetColorMatrix                      = 0x8007EF1C;  /* ctc2 to color matrix regs */
+SetTransMatrix                      = 0x8007EF4C;  /* ctc2 to COP2 control regs 5-7 (translation vector) */
+ReadSZfifo3                         = 0x8007EF6C;
+/* RENAME 0x8007EF8C: retired name 'gte_GetH_8007EF8C' — preserved note: cfc2 of COP2 control reg 26 (H == perspective divide) */
+SetFarColor                         = 0x8007EFBC;
+SetGeomOffset                     = 0x8007EFDC;
 /* Math (4) */
 bb2_memset_8007DEE4                              = 0x8007DEE4;
-math_Sin_8007DF20                                = 0x8007DF20;
-math_SinLookup_8007DF5C                          = 0x8007DF5C;
-math_Cos_8007DFEC                                = 0x8007DFEC;
+rsin                                = 0x8007DF20;
+sin_1                          = 0x8007DF5C;
+rcos                                = 0x8007DFEC;
 /* Memcard (3) */
-memcard_SetData_80087F00                         = 0x80087F00;
-memcard_ClearBusy_80087F24                       = 0x80087F24;
-memcard_SetSlot_80087F34                         = 0x80087F34;
+SsSetReservedVoice                         = 0x80087F34;
 /* SPU (1) */
 spu_Init_800885AC                                = 0x800885AC;
 /* Kengo CPU/camera misc (6) */
@@ -910,8 +861,8 @@ efc_gte_setup_and_draw_80067200                         = 0x80067200;  /* GTE ro
 efc_init_phase1_setup_buffer_800678A8                   = 0x800678A8;  /* effect-init phase 1: type code + texture dims + per-mode defaults */
 efc_init_phase2_randomize_80067D14                      = 0x80067D14;  /* effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
 /* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
-seq_channel_byte_advance_80085064                       = 0x80085064;  /* SEQ delta-time decoder: 7-bit varint -> ch[0x88] */
-seq_channel_state_init_80085114                         = 0x80085114;  /* per-channel state-init in g_seq_bank_table */
+_SsReadDeltaValue                       = 0x80085064;  /* SEQ delta-time decoder: 7-bit varint -> ch[0x88] */
+_SsSndNextSep                         = 0x80085114;  /* per-channel state-init in g_seq_bank_table */
 spu_channel_reset_80085270                              = 0x80085270;  /* single SPU channel reset (calls spu_NotifyChannel + spu_ResetCounter) */
 /* HUD / display (5) */
 disp_init_for_mode_80077820                             = 0x80077820;  /* loads config + disp_SetFramebufferMode + clears g_satan2_gauge_state */
@@ -1192,22 +1143,22 @@ g_practice_lesson_char_id                               = 0x8010277C;  /* charac
 /* Functions whose debug_printf strings reveal their purpose. */
 marionation_GetFrameOffset                              = 0x80044FA0;  /* fetches byte offset for an animation frame; infinite-loops on "Marionation over flow" (Marionation = BB2's engine) */
 eff_FrameUpdate                                         = 0x80061064;  /* per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded */
-spu_FlushVoiceChannels                                  = 0x80088740;  /* clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
+/* RENAME 0x80088740: retired name 'spu_FlushVoiceChannels' — preserved note: clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
 gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
 
 /* === Wrapper/curried function names (2026-05-17) -- 6 highs === */
 /* Functions whose body is a clear single-purpose wrapper around a */
 /* named function with extra logic (clamp, walk list, set+return old). */
 snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
-gpu_DrawSyncCallback                                    = 0x8007B244;  /* PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
-snd_ChannelDmaFlush                                     = 0x80087F64;  /* if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
+/* RENAME 0x8007B244: retired name 'gpu_DrawSyncCallback' — preserved note: PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
+/* RENAME 0x80087F64: retired name 'snd_ChannelDmaFlush' — preserved note: if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
 spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 /* RESET 0x8008A904: retired name 'coli_HitPauseKatana_3' — preserved note: coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
 
 /* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
 gpu_DebugCheckRect                                      = 0x8007B3A8;  /* PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
-gpu_DrawOTagEnv                                         = 0x8007BAB4;  /* PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
+/* RENAME 0x8007BAB4: retired name 'gpu_DrawOTagEnv' — preserved note: PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
 
 /* === Practice-lesson state struct continued (2026-05-17) -- 5 highs === */
 /* From code6cac_b.c func_80033DF4 lines 3765-3783: each lesson entry */
@@ -1625,7 +1576,7 @@ g_motion_state_flag_table                               = 0x800F10D0;  /* 24-ent
 /* "MoveImage" (at D_80015F74), validates rect, packs (x,y) args, */
 /* submits via g_gpu_dev_table[2] with cmd 0x14 (=20 bytes = RECT prim). */
 /* Signature (RECT*, s16 x, s16 y) matches PSX libgpu's MoveImage. */
-gpu_MoveImage                                           = 0x8007B6C8;  /* PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
+/* RENAME 0x8007B6C8: retired name 'gpu_MoveImage' — preserved note: PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
 
 /* === g_module_func_tbl mode handler decode (2026-05-17) -- 15 highs === */
 /* The 34-entry mode-dispatch table at 0x8008D090 holds per-state update */
@@ -1919,12 +1870,12 @@ g_intro_extra_state                                     = 0x800A3614;  /* extra 
 /* From text1b_b.c func_800798CC and func_800798FC: classic libc-style */
 /* char-class lookup + case conversion. */
 g_char_class_table                                      = 0x8009BD8D;  /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */
-bb2_toupper                                             = 0x800798CC;  /* if (class_table[c] & 2) c -= 0x20  (lower -> upper) */
-bb2_tolower                                             = 0x800798FC;  /* if (class_table[c] & 1) c += 0x20  (upper -> lower) */
+/* RENAME 0x800798CC: retired name 'bb2_toupper' — preserved note: if (class_table[c] & 2) c -= 0x20  (lower -> upper) */
+/* RENAME 0x800798FC: retired name 'bb2_tolower' — preserved note: if (class_table[c] & 1) c += 0x20  (upper -> lower) */
 
 /* === bb2 libc helpers + stdout state (2026-05-17) -- 3 highs === */
-bb2_memchr                                              = 0x8007992C;  /* memchr(buf, ch, len): linear search; returns buf-1 on found, 0 on not found / null buf / nonpositive len */
-bb2_putchar_stdout                                      = 0x8007997C;  /* fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
+/* RENAME 0x8007992C: retired name 'bb2_memchr' — preserved note: memchr(buf, ch, len): linear search; returns buf-1 on found, 0 on not found / null buf / nonpositive len */
+/* RENAME 0x8007997C: retired name 'bb2_putchar_stdout' — preserved note: fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 g_stdout_column_counter                                 = 0x800F1850;  /* stdout column counter; reset to 0 on newline, incremented on printable chars (class table bit 0x97) */
 
 /* === Menu screen state backup/restore (2026-05-17) -- 6 highs === */
@@ -1945,11 +1896,11 @@ g_menu_screen_live_byte_c                               = 0x8009BD43;
 g_irq_event_struct_ptr                                  = 0x8009BD68;  /* IRQ event state struct ptr; base[1] = per-slot enable bitmask */
 g_irq_event_slots_3x16                                  = 0x8009BD6C;  /* 3-entry table x 16-byte stride; per-slot config (u16 at +4 = mode) */
 g_irq_event_masks_3                                     = 0x8009BD70;  /* 3-entry per-slot bit-mask values (used to set/clear bits in g_irq_event_struct_ptr->bitmask) */
-irq_event_slot_configure                                = 0x80078A68;  /* func_80078A68(slot, arg1, arg2): writes config to slot */
-irq_event_slot_read                                     = 0x80078B04;  /* func_80078B04(slot): reads u16 from slot */
-irq_event_slot_enable                                   = 0x80078B3C;  /* func_80078B3C(slot): OR slot's mask into bitmask */
-irq_event_slot_disable                                  = 0x80078B70;  /* func_80078B70(slot): AND-NOT slot's mask from bitmask */
-irq_event_slot_clear                                    = 0x80078BA8;  /* func_80078BA8(slot): zero u16 at slot offset */
+/* RENAME 0x80078A68: retired name 'irq_event_slot_configure' — preserved note: func_80078A68(slot, arg1, arg2): writes config to slot */
+/* RENAME 0x80078B04: retired name 'irq_event_slot_read' — preserved note: func_80078B04(slot): reads u16 from slot */
+/* RENAME 0x80078B3C: retired name 'irq_event_slot_enable' — preserved note: func_80078B3C(slot): OR slot's mask into bitmask */
+/* RENAME 0x80078B70: retired name 'irq_event_slot_disable' — preserved note: func_80078B70(slot): AND-NOT slot's mask from bitmask */
+/* RENAME 0x80078BA8: retired name 'irq_event_slot_clear' — preserved note: func_80078BA8(slot): zero u16 at slot offset */
 
 /* === Fade dispatch surrounding state + gnd target sibling (2026-05-17) -- 4 highs === */
 /* From text1b.c around line 16080-16103: the fade-dispatch table */
@@ -2383,10 +2334,10 @@ g_memcard1_poll_count                                   = 0x800A3924;  /* increm
 /* in named_syms.txt.  Addresses derived from asm/funcs/<name>.s. */
 func_8003FFA8                                        = 0x8003FFA8;  /* MISNAMED: not fade; 4-byte alignment via modulo-and-round */
 func_8003FFC4                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
-func_800801E8                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
-func_80080208                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
-func_80080640                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */
-func_80080684                           = 0x80080684;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of saEft01Init(a0) */
+CdSync                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
+CdReady                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
+CdGetSector2                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */
+CdDataSync                           = 0x80080684;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of saEft01Init(a0) */
 func_80056FE8                                      = 0x80056FE8;  /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
 func_80044378                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
 func_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
@@ -3078,12 +3029,7 @@ cpu_apply_move_input_scaling_80054884 = 0x80054884;
 cpu_attenuate_character_damage_800550E8 = 0x800550E8;
 cpu_render_stage_geometry_8005C8A8 = 0x8005C8A8;
 cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
-cpu_set_or_clear_move_flag_800789D8 = 0x800789D8;
 pad_interrupt_dequeue_80078E20 = 0x80078E20;
-pad_state_dispatch_wrapper_80078F74 = 0x80078F74;
-pad_press_control_init_8007A370 = 0x8007A370;
-pad_press_control_start_8007A3C8 = 0x8007A3C8;
-cpu_copy_display_buffer_and_sync_8007BC08 = 0x8007BC08;
 
 /* === Cluster naming pass 2 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
@@ -3112,13 +3058,8 @@ replay_camera_decode_player_bits_80077940 = 0x80077940;
 replay_camera_init_framebuffer_80077A28 = 0x80077A28;
 replay_camera_apply_transform_and_flip_80077A80 = 0x80077A80;
 camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
-motion_matrix_multiply_light_8007E8AC = 0x8007E8AC;
-motion_matrix_multiply_signed_8007EA0C = 0x8007EA0C;
 motion_exception_handler_init_80082D34 = 0x80082D34;
-motion_setjmp_longjmp_frames_80083220 = 0x80083220;
 satan_voice_init_80084A7C = 0x80084A7C;
-satan_state_toggle_wrapper_8008AF84 = 0x8008AF84;
-satan_angle_interpolation_8008BB24 = 0x8008BB24;
 
 /* === Cluster naming pass 3 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* in 14 smaller subsystem */
@@ -3152,12 +3093,7 @@ se_ResetChannels_8005BDF0 = 0x8005BDF0;
 gnd_draw_texpage_2poly_8005D46C = 0x8005D46C;
 gnd_render_affine_texpage_8005E54C = 0x8005E54C;
 gnd_draw_single_texpage_80060414 = 0x80060414;
-special_camera_clear_cdrom_irq_80080148 = 0x80080148;
-obj_SetControlData_80085E4C = 0x80085E4C;
-obj_SetReverbValue_80085EE4 = 0x80085EE4;
 obj_ResetReverbMode_80085F98 = 0x80085F98;
-action_apply_hit_flags_8008AAD4 = 0x8008AAD4;
-action_read_spu_voice_8008BDE8 = 0x8008BDE8;
 
 /* === Medium-tier sole_caller_path helpers (2026-05-18) === */
 /* sole_caller_path proposals: function X is called ONLY by Y, so */
@@ -3172,11 +3108,8 @@ AllocRobRmd_helper_80041988 = 0x80041988;
 AllocRobRmd_helper_80043398 = 0x80043398;
 efc_rob_set_type_particle_helper_80049C24 = 0x80049C24;
 DispHira_helper_800620B8 = 0x800620B8;
-debug_printf_helper_80079244 = 0x80079244;
-saEft00Add_helper_800800CC = 0x800800CC;
 DispStuff_helper_800841E0 = 0x800841E0;
 DispStuff_helper_80084500 = 0x80084500;
-DispStuff_helper_800856B0 = 0x800856B0;
 AllocBukiRmd_helper_80086CF8 = 0x80086CF8;
 AllocBukiRmd_helper_800872A4 = 0x800872A4;
 
@@ -3282,16 +3215,16 @@ g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 
 /* RESET 0x8005509C: retired name 'practice_menu_clear_field414_8005509C' — preserved note: clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
 text_render_cursor_reset_80060758            = 0x80060758;  /* zeros g_text_render_cursor_a/b u16 pair; sole caller SetCurrentCursor */
 gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-Triple lighting loop: nct op, light matrix via ctc2 $8-12, streams vertex normals -> RGB FIFO; sole caller + nct evidence */
-gpu_draw_color_prim_8007B4D0                 = 0x8007B4D0;  /* GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
-gpu_draw_color_prim_stp_8007B564             = 0x8007B564;  /* as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
-gpu_copy_draw_packet_8007B9B0                = 0x8007B9B0;  /* GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
+/* RENAME 0x8007B4D0: retired name 'gpu_draw_color_prim_8007B4D0' — preserved note: GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
+/* RENAME 0x8007B564: retired name 'gpu_draw_color_prim_stp_8007B564' — preserved note: as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
+/* RENAME 0x8007B9B0: retired name 'gpu_copy_draw_packet_8007B9B0' — preserved note: GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
 graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
 calc_fighter_separation_vec_8002BC68           = 0x8002BC68;  /* inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
 math_sqrt_800526A0                             = 0x800526A0;  /* fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT D_80015620, halve  */
 calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */
 coli_find_nearest_edge_hit_80057ACC            = 0x80057ACC;  /* loops polygons($s6: count+vert-array, 8B entries)->edges; intersects each edge vs actor move-seg via func_8005763C; trac */
-matrix_scale_3x3_rows_8007E8DC                 = 0x8007E8DC;  /* scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
-matrix_scale_3x3_cols_8007EDBC                 = 0x8007EDBC;  /* column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12  */
+/* RENAME 0x8007E8DC: retired name 'matrix_scale_3x3_rows_8007E8DC' — preserved note: scales rows of a GTE 3x3 matrix (5-word/9-halfword packed layout m00,m01|m02,m10|m11,m12|m20,m21|m22) in place: row0*$a1 */
+/* RENAME 0x8007EDBC: retired name 'matrix_scale_3x3_cols_8007EDBC' — preserved note: column-scale counterpart of matrix_scale_3x3_rows: col0*$a1[0], col1*$a1[4], col2*$a1[8] of the packed 3x3 matrix, 4.12 */
 get_ptr_D_800A9D10_80045814                    = 0x80045814;  /* returns &D_800A9D10 (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 get_ptr_D_800EFB0C_8005507C                    = 0x8005507C;  /* returns &D_800EFB0C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
 get_ptr_D_80101E1C_8005508C                    = 0x8005508C;  /* returns &D_80101E1C (2-insn ptr getter); was Kengo-misnomer 'replay_camera_check_stage' */
@@ -3473,23 +3406,23 @@ gpu_helper_8007D048                                = 0x8007D048;  /* first-pass 
 gpu_helper_8007D3F8                                = 0x8007D3F8;  /* first-pass subsystem tag (gpu); ->gpu_vcount_init_8007DC68;->gpu_DrawTimeoutCheck */
 gpu_helper_8007D9C4                                = 0x8007D9C4;  /* first-pass subsystem tag (gpu); <-gpu_SetMode_8007AE7C */
 gpu_helper_8007DB20                                = 0x8007DB20;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
-math_helper_8007E43C                               = 0x8007E43C;  /* first-pass subsystem tag (math); <-math_Distance3D_80017748;<-math_Distance3D_16_800177C8 */
-md_game_helper_8007FBBC                            = 0x8007FBBC;  /* first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
-special_camera_helper_800826CC                     = 0x800826CC;  /* first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
+/* RENAME 0x8007E43C: retired name 'math_helper_8007E43C' — preserved note: first-pass subsystem tag (math); <-math_Distance3D_80017748;<-math_Distance3D_16_800177C8 */
+/* RENAME 0x8007FBBC: retired name 'md_game_helper_8007FBBC' — preserved note: first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
+/* RENAME 0x800826CC: retired name 'special_camera_helper_800826CC' — preserved note: first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
 /* RESET 0x800859F0: retired name 'tslglobalmemfree_helper_800859F0' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 mario_helper_80085FB8                              = 0x80085FB8;  /* first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
 dispstuff_helper_80087770                          = 0x80087770;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 dispstuff_helper_80087CAC                          = 0x80087CAC;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 /* RESET 0x80088584: retired name 'tslglobalmemfree_helper_80088584' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
-spu_helper_800885CC                                = 0x800885CC;  /* first-pass subsystem tag (spu); <-spu_Init_800885AC;->spu_FlushVoiceChannels */
-bios_helper_800886C4                               = 0x800886C4;  /* first-pass subsystem tag (bios); ->bios_OpenEvent;->bios_EnableEvent */
-spu_helper_80088F9C                                = 0x80088F9C;  /* first-pass subsystem tag (spu); <-spu_TransferData_capped */
-spu_helper_80089024                                = 0x80089024;  /* first-pass subsystem tag (spu); <-spu_TransferDirect_capped */
-snd_helper_800899A8                                = 0x800899A8;  /* first-pass subsystem tag (snd); <-snd_ChannelDmaFlush */
-allocbukirmd_helper_80089D10                       = 0x80089D10;  /* first-pass subsystem tag (allocbukirmd); <-AllocBukiRmd_helper_80086CF8 */
-obj_helper_80089F3C                                = 0x80089F3C;  /* first-pass subsystem tag (obj); <-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4 */
-spu_helper_8008AF9C                                = 0x8008AF9C;  /* first-pass subsystem tag (spu); <-spu_SetVolume_80083B50 */
-bios_helper_8008C464                               = 0x8008C464;  /* first-pass subsystem tag (bios); ->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent */
+_SpuInit                                = 0x800885CC;  /* first-pass subsystem tag (spu); <-spu_Init_800885AC;->spu_FlushVoiceChannels */
+SpuStart                               = 0x800886C4;  /* first-pass subsystem tag (bios); ->bios_OpenEvent;->bios_EnableEvent */
+_spu_Fw                                = 0x80088F9C;  /* first-pass subsystem tag (spu); <-spu_TransferData_capped */
+_spu_Fr                                = 0x80089024;  /* first-pass subsystem tag (spu); <-spu_TransferDirect_capped */
+SpuFree                                = 0x800899A8;  /* first-pass subsystem tag (snd); <-snd_ChannelDmaFlush */
+/* RENAME 0x80089D10: retired name 'allocbukirmd_helper_80089D10' — preserved note: first-pass subsystem tag (allocbukirmd); <-AllocBukiRmd_helper_80086CF8 */
+/* RENAME 0x80089F3C: retired name 'obj_helper_80089F3C' — preserved note: first-pass subsystem tag (obj); <-obj_SetControlData_80085E4C;<-obj_SetReverbValue_80085EE4 */
+/* RENAME 0x8008AF9C: retired name 'spu_helper_8008AF9C' — preserved note: first-pass subsystem tag (spu); <-spu_SetVolume_80083B50 */
+/* RENAME 0x8008C464: retired name 'bios_helper_8008C464' — preserved note: first-pass subsystem tag (bios); ->bios_SysEnqIntRP;->bios_SysDeqIntRP;->bios_DeliverEvent */
 mode_helper_8001979C                               = 0x8001979C;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_29_StageLeafUpdate'] ->[] */
 mode_helper_800198D0                               = 0x800198D0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_05_NoOp'] ->[] */
 md_game_helper_8001A538                            = 0x8001A538;  /* first-pass tag(clean-anchor); md_game: <-['md_game_restart_init'] ->[] */
@@ -3558,47 +3491,47 @@ get_global_80071C20                                = 0x80071C20;  /* structural 
 get_global_80077D74                                = 0x80077D74;  /* structural role; n=8 */
 get_global_80078634                                = 0x80078634;  /* structural role; n=8 */
 mode_helper_800788B0                               = 0x800788B0;  /* first-pass tag(clean-anchor); mode: <-['mode_handler_11_PadInputCheck'] ->[] */
-set_global_80078BE0                                = 0x80078BE0;  /* structural role; n=4 */
-get_global_80078BF0                                = 0x80078BF0;  /* structural role; n=4 */
-bios_helper_80078C00                               = 0x80078C00;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_OutdatedPadInitAndStart'] */
-bios_helper_80078C9C                               = 0x80078C9C;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_InitPad'] */
-bios_helper_80078D38                               = 0x80078D38;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_StartPad'] */
+/* RENAME 0x80078BE0: retired name 'set_global_80078BE0' — preserved note: structural role; n=4 */
+/* RENAME 0x80078BF0: retired name 'get_global_80078BF0' — preserved note: structural role; n=4 */
+/* RENAME 0x80078C00: retired name 'bios_helper_80078C00' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_OutdatedPadInitAndStart'] */
+/* RENAME 0x80078C9C: retired name 'bios_helper_80078C9C' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_InitPad'] */
+/* RENAME 0x80078D38: retired name 'bios_helper_80078D38' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_StartPad'] */
 bios_helper_80078DA0                               = 0x80078DA0;  /* first-pass tag(clean-anchor); bios: <-[] ->['EnterCriticalSection'] */
 get_field0x4_80078EC0                              = 0x80078EC0;  /* structural role; n=16 */
-get_global_80078F60                                = 0x80078F60;  /* structural role; n=5 */
-copy_80078FF0                                      = 0x80078FF0;  /* structural role; n=14 */
+/* RENAME 0x80078F60: retired name 'get_global_80078F60' — preserved note: structural role; n=5 */
+/* RENAME 0x80078FF0: retired name 'copy_80078FF0' — preserved note: structural role; n=14 */
 stub_800790A4                                      = 0x800790A4;  /* structural role; n=1 */
-dispsleepmenutex_helper_800791D8                   = 0x800791D8;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['DispSleepMenuTex'] ->[] */
-dispsleepmenutex_helper_80079A30                   = 0x80079A30;  /* first-pass tag(clean-anchor); dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr'] */
-bios_helper_8007A318                               = 0x8007A318;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios__new_card'] */
+/* RENAME 0x800791D8: retired name 'dispsleepmenutex_helper_800791D8' — preserved note: first-pass tag(clean-anchor); dispsleepmenutex: <-['DispSleepMenuTex'] ->[] */
+/* RENAME 0x80079A30: retired name 'dispsleepmenutex_helper_80079A30' — preserved note: first-pass tag(clean-anchor); dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr'] */
+/* RENAME 0x8007A318: retired name 'bios_helper_8007A318' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios__new_card'] */
 get_field0x0_8007CAB0                              = 0x8007CAB0;  /* structural role; n=6 */
 copy_8007D2CC                                      = 0x8007D2CC;  /* structural role; n=10 */
 get_global_8007D2F4                                = 0x8007D2F4;  /* structural role; n=5 */
-tanren_helper_8007E4DC                             = 0x8007E4DC;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
-replay_camera_helper_8007E74C                      = 0x8007E74C;  /* first-pass tag(clean-anchor); replay_camera: <-['replay_camera_rob_back_win_near'] ->[] */
-tanren_helper_8007ED6C                             = 0x8007ED6C;  /* first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
-copy_8007F00C                                      = 0x8007F00C;  /* structural role; n=10 */
-copy_8007F034                                      = 0x8007F034;  /* structural role; n=10 */
-copy_8007F05C                                      = 0x8007F05C;  /* structural role; n=15 */
-copy_8007F098                                      = 0x8007F098;  /* structural role; n=9 */
-copy_8007F0BC                                      = 0x8007F0BC;  /* structural role; n=10 */
-copy_8007F0E4                                      = 0x8007F0E4;  /* structural role; n=10 */
-stub_8007F10C                                      = 0x8007F10C;  /* structural role; n=8 */
-stub_8007F12C                                      = 0x8007F12C;  /* structural role; n=9 */
-stub_8007F200                                      = 0x8007F200;  /* structural role; n=6 */
-copy_8007F21C                                      = 0x8007F21C;  /* structural role; n=11 */
-copy_8007F2AC                                      = 0x8007F2AC;  /* structural role; n=10 */
-get_global_8008009C                                = 0x8008009C;  /* structural role; n=4 */
-get_global_800800AC                                = 0x800800AC;  /* structural role; n=8 */
-copy_80080228                                      = 0x80080228;  /* structural role; n=6 */
-copy_80080240                                      = 0x80080240;  /* structural role; n=6 */
+/* RENAME 0x8007E4DC: retired name 'tanren_helper_8007E4DC' — preserved note: first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+/* RENAME 0x8007E74C: retired name 'replay_camera_helper_8007E74C' — preserved note: first-pass tag(clean-anchor); replay_camera: <-['replay_camera_rob_back_win_near'] ->[] */
+/* RENAME 0x8007ED6C: retired name 'tanren_helper_8007ED6C' — preserved note: first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
+/* RENAME 0x8007F00C: retired name 'copy_8007F00C' — preserved note: structural role; n=10 */
+/* RENAME 0x8007F034: retired name 'copy_8007F034' — preserved note: structural role; n=10 */
+/* RENAME 0x8007F05C: retired name 'copy_8007F05C' — preserved note: structural role; n=15 */
+/* RENAME 0x8007F098: retired name 'copy_8007F098' — preserved note: structural role; n=9 */
+/* RENAME 0x8007F0BC: retired name 'copy_8007F0BC' — preserved note: structural role; n=10 */
+/* RENAME 0x8007F0E4: retired name 'copy_8007F0E4' — preserved note: structural role; n=10 */
+/* RENAME 0x8007F10C: retired name 'stub_8007F10C' — preserved note: structural role; n=8 */
+/* RENAME 0x8007F12C: retired name 'stub_8007F12C' — preserved note: structural role; n=9 */
+/* RENAME 0x8007F200: retired name 'stub_8007F200' — preserved note: structural role; n=6 */
+/* RENAME 0x8007F21C: retired name 'copy_8007F21C' — preserved note: structural role; n=11 */
+/* RENAME 0x8007F2AC: retired name 'copy_8007F2AC' — preserved note: structural role; n=10 */
+/* RENAME 0x8008009C: retired name 'get_global_8008009C' — preserved note: structural role; n=4 */
+/* RENAME 0x800800AC: retired name 'get_global_800800AC' — preserved note: structural role; n=8 */
+/* RENAME 0x80080228: retired name 'copy_80080228' — preserved note: structural role; n=6 */
+/* RENAME 0x80080240: retired name 'copy_80080240' — preserved note: structural role; n=6 */
 /* RESET 0x80080828: retired name 'tsltm2loadimage_helper_80080828' — preserved note: first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
-tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
+CD_init                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
 set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
 copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
 copy_80089240                                      = 0x80089240;  /* structural role; n=11 */
-bios_helper_800892F8                               = 0x800892F8;  /* first-pass tag(clean-anchor); bios: <-[] ->['bios_DisableEvent'] */
-set_global_8008AE7C                                = 0x8008AE7C;  /* structural role; n=13 */
+/* RENAME 0x800892F8: retired name 'bios_helper_800892F8' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_DisableEvent'] */
+/* RENAME 0x8008AE7C: retired name 'set_global_8008AE7C' — preserved note: structural role; n=13 */
 gte_mvmva_80019310                                 = 0x80019310;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_8002D320                                 = 0x8002D320;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_8002DE20                                 = 0x8002DE20;  /* GTE: mvmva matrix*vector(+translation) */
@@ -3658,17 +3591,17 @@ gte_mtx_apply_vec_80052A88                         = 0x80052A88;  /* GTE: mvmva:
 gte_mvmva_80052B7C                                 = 0x80052B7C;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_80052C4C                                 = 0x80052C4C;  /* GTE: mvmva matrix*vector(+translation) */
 gte_mvmva_80063E10                                 = 0x80063E10;  /* GTE: mvmva matrix*vector(+translation) */
-gte_gpf_8007E1AC                                   = 0x8007E1AC;  /* GTE: gpf scalar interpolation */
-gte_gpf_8007E1FC                                   = 0x8007E1FC;  /* GTE: gpf scalar interpolation */
-gte_gpf_8007E24C                                   = 0x8007E24C;  /* GTE: gpf scalar interpolation */
-gte_gpf_8007E2D4                                   = 0x8007E2D4;  /* GTE: gpf scalar interpolation */
-gte_gpf_8007E35C                                   = 0x8007E35C;  /* GTE: gpf scalar interpolation */
-gte_gpf_8007E3BC                                   = 0x8007E3BC;  /* GTE: gpf scalar interpolation */
-gte_mvmva_8007E5EC                                 = 0x8007E5EC;  /* GTE: mvmva matrix*vector(+translation) */
-gte_mvmva_8007EB4C                                 = 0x8007EB4C;  /* GTE: mvmva matrix*vector(+translation) */
-gte_outerprod_8007F150                             = 0x8007F150;  /* GTE: op outer/cross product */
-gte_outerprod_8007F1A8                             = 0x8007F1A8;  /* GTE: op outer/cross product */
-gte_rtpt_8007F24C                                  = 0x8007F24C;  /* GTE: rtpt perspective transform of 3 verts */
+/* RENAME 0x8007E1AC: retired name 'gte_gpf_8007E1AC' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E1FC: retired name 'gte_gpf_8007E1FC' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E24C: retired name 'gte_gpf_8007E24C' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E2D4: retired name 'gte_gpf_8007E2D4' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E35C: retired name 'gte_gpf_8007E35C' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E3BC: retired name 'gte_gpf_8007E3BC' — preserved note: GTE: gpf scalar interpolation */
+/* RENAME 0x8007E5EC: retired name 'gte_mvmva_8007E5EC' — preserved note: GTE: mvmva matrix*vector(+translation) */
+/* RENAME 0x8007EB4C: retired name 'gte_mvmva_8007EB4C' — preserved note: GTE: mvmva matrix*vector(+translation) */
+/* RENAME 0x8007F150: retired name 'gte_outerprod_8007F150' — preserved note: GTE: op outer/cross product */
+/* RENAME 0x8007F1A8: retired name 'gte_outerprod_8007F1A8' — preserved note: GTE: op outer/cross product */
+/* RENAME 0x8007F24C: retired name 'gte_rtpt_8007F24C' — preserved note: GTE: rtpt perspective transform of 3 verts */
 motion_CheckSituation_wrapper_80047530                 = 0x80047530;  /* thin pass-through wrapper for motion_CheckSituation */
 saEft03Start_wrapper_80047550                          = 0x80047550;  /* thin pass-through wrapper for saEft03Start */
 md_menu_logo_init_8003B484                             = 0x8003B484;  /* sets flag D_800A3712 + 3 config bytes from arg, calls func_8003AF40(1)+md_menu_logo_exec; logo-mode init */
@@ -3683,8 +3616,8 @@ check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12
 special_camera_check_pos_outside_ground_wrap_800451A0  = 0x800451A0;  /* thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
 title_mv_exec2_wrapper_8005B58C                        = 0x8005B58C;  /* thin pass-through wrapper for title_mv_exec2 */
 saTan4GaugeInit_wrapper_80084948                       = 0x80084948;  /* thin pass-through wrapper for saTan4GaugeInit */
-irq_AcknowledgeVblank_wrapper_800892D4                 = 0x800892D4;  /* thin pass-through wrapper for irq_AcknowledgeVblank */
-coli_HitPauseKatana_2_wrapper_80089A24                 = 0x80089A24;  /* thin pass-through wrapper for coli_HitPauseKatana_2 */
+_SpuDataCallback                 = 0x800892D4;  /* thin pass-through wrapper for irq_AcknowledgeVblank */
+/* RENAME 0x80089A24: retired name 'coli_HitPauseKatana_2_wrapper_80089A24' — preserved note: thin pass-through wrapper for coli_HitPauseKatana_2 */
 efc_spawn_80066EC0                                     = 0x80066EC0;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 efc_spawn_80066EF4                                     = 0x80066EF4;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 efc_spawn_80066F28                                     = 0x80066F28;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
@@ -3706,7 +3639,7 @@ buki_collision_alloc_8005C6D0                          = 0x8005C6D0;  /* iterate
 set_D_80101E64_if_valid_800371AC                       = 0x800371AC;  /* calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
 events_enable_8003A360                                 = 0x8003A360;  /* bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
 gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
-gte_set_projection_params_8007E094                     = 0x8007E094;  /* loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
+/* RENAME 0x8007E094: retired name 'gte_set_projection_params_8007E094' — preserved note: loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
 /* RESET 0x8007EFFC: retired name 'gte_set_proj_distance_8007EFFC' — preserved note: loads GTE control reg 26 (H = projection plane distance) */
 calc_rotated_enemy_pos_80042FA0                        = 0x80042FA0;  /* computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
 init_move_to_target_80053304                           = 0x80053304;  /* stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
@@ -3748,23 +3681,23 @@ gpu_render_8006295C                                = 0x8006295C;  /* builds + OT
 gpu_render_800646E8                                = 0x800646E8;  /* builds + OT-links GPU primitive(s) (initPoly/initTile/ot_Link); n=490 */
 efc_buki_zanzou_drawlist_800481E8 = 0x800481E8;  /* draw-loop over buki-zanzou record list, on-screen cull x<0x280, calls efc_buki_draw_zanzou per entry */
 motutil_GetWalkDir_all_800644FC = 0x800644FC;  /* bitmask(D_800A3454[idx]) loop over count, calls motutil_GetWalkDir for each active entry (stride 0x20) */
-mtx_rotate_8007F87C = 0x8007F87C;  /* in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
+/* RENAME 0x8007F87C: retired name 'mtx_rotate_8007F87C' — preserved note: in-place rotate matrix rows@+6/+C by angle a0 via sincos LUT D_8009C928 (pairs [6,C],[8,E],[A,10]) */
 motion_ExMotionDrive0_800652F4 = 0x800652F4;  /* calls motion_SetExMotion(0), advances accum D_800F0BA8 += 0x1FF, gated return (<0x1001) */
 motion_ExMotionDrive3_800653E4 = 0x800653E4;  /* calls motion_SetExMotion(3), advances accum D_800F0BAE += 0x19, gated return (<0xC9) */
 motion_ExMotionDriveA_800655E0 = 0x800655E0;  /* calls motion_SetExMotion(0xA), advances accum D_800F0BBC += 0x32, gated return (<0x100) */
 motion_ExMotionDriveDF_800656EC = 0x800656EC;  /* calls motion_SetExMotion(0xD)+(0xF), advances accums D_800F0BC2/BC6, gated return (<0xB) */
 motion_ExMotionDrive11_800657B0 = 0x800657B0;  /* calls motion_SetExMotion(0x11), advances accum D_800F0BCA += 0x1C6, gated return (<0x11C8) */
 gpu_SetTexAttr_800485EC = 0x800485EC;  /* parses src prim header (type 0x10), fills dst descriptor with uv + clut(gpu_CalcClut) + tpage(gpu_CalcTPage) */
-dev_AddDevice_8008BE04 = 0x8008BE04;  /* EnterCS + bios_AddDevice_B(DCB @ D_800A307C) + ExitCS = register one device driver */
-bios_InstallHandler_8007FEDC = 0x8007FEDC;  /* EnterCS + BIOS B-call, copies handler code stub (D_8007FF44, reads COP0 $13 CAUSE) into BIOS table, FlushCache */
-bios_SetupJumpTbl_80078F88 = 0x80078F88;  /* EnterCS + BIOS B-call, sets jtbl_800A3620/24 from kernel tbl +0x884/0x894, zeros 0xB entries at +0x594 */
-bios_PatchTable_80079028 = 0x80079028;  /* EnterCS + BIOS B-call, copies 4-word handler stub (func_800790A4) into BIOS table +0x3D8/+0x4DC */
-bios_ClearTable_800790C0 = 0x800790C0;  /* EnterCS + BIOS B-call, zeros 9 entries at BIOS table +0x62C */
-bios_PatchTable_8007A458 = 0x8007A458;  /* EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
-cdrom_InitCallbacks_8007FF7C = 0x8007FF7C;  /* waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
+/* RENAME 0x8008BE04: retired name 'dev_AddDevice_8008BE04' — preserved note: EnterCS + bios_AddDevice_B(DCB @ D_800A307C) + ExitCS = register one device driver */
+/* RENAME 0x8007FEDC: retired name 'bios_InstallHandler_8007FEDC' — preserved note: EnterCS + BIOS B-call, copies handler code stub (D_8007FF44, reads COP0 $13 CAUSE) into BIOS table, FlushCache */
+/* RENAME 0x80078F88: retired name 'bios_SetupJumpTbl_80078F88' — preserved note: EnterCS + BIOS B-call, sets jtbl_800A3620/24 from kernel tbl +0x884/0x894, zeros 0xB entries at +0x594 */
+/* RENAME 0x80079028: retired name 'bios_PatchTable_80079028' — preserved note: EnterCS + BIOS B-call, copies 4-word handler stub (func_800790A4) into BIOS table +0x3D8/+0x4DC */
+/* RENAME 0x800790C0: retired name 'bios_ClearTable_800790C0' — preserved note: EnterCS + BIOS B-call, zeros 9 entries at BIOS table +0x62C */
+/* RENAME 0x8007A458: retired name 'bios_PatchTable_8007A458' — preserved note: EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
+/* RENAME 0x8007FF7C: retired name 'cdrom_InitCallbacks_8007FF7C' — preserved note: waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
 gpu_PutDrawEnv_8007CBB0 = 0x8007CBB0;  /* clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
 calc_dirvec_from_angles_8004A1FC = 0x8004A1FC;  /* for 3 entries: build vec3s @+0x18 from angle pair via math_Cos/Sin scaled by mag [base+0x5C] */
-math_Sqrt_8007E11C = 0x8007E11C;  /* fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
+/* RENAME 0x8007E11C: retired name 'math_Sqrt_8007E11C' — preserved note: fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
 calc_dir_from_points_8001A67C = 0x8001A67C;  /* dx/dz between pts A/B, distance via sqrt (LUT D_8008D118 + GTE LZC), normalize, per-comp angle via func_8001A62C -> [out+0]/[out+4] */
 stage_SetCollisionAtPos_8003F420 = 0x8003F420;  /* world (x,z)+0x7D00 /1000 -> grid cell, stage_SetCollision x4 on the 2x2 cell block around the position */
 gpu_LoadImageBatch_8003D9A0 = 0x8003D9A0;  /* loop N entries (stride 0x30) calling initLoadImage with auto VRAM cursor (x+=[+4], y wraps at 0x200), saves rect to +0x18..+0x2C */
@@ -3779,18 +3712,18 @@ game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct
 /* Kengo rename map apply-batch 2026-07-13 (docs/naming/kengo-rename-audit-2026-07-13.md):
    registry lines for glabel-applied names from 2971df5e that never got symbol-file
    entries. Names match the existing linker-authoritative glabels (unsuffixed). */
-cdrom_CheckReady = 0x800800DC;  /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mode 1); returns 1 ok / 0 fail */
-cdrom_SetDebugLevel = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
-cdrom_FramesToBcd = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
-cdrom_BcdToFrames = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
-cdrom_SendCmd = 0x80081718;  /* writes cmd via g_cd_index_reg/g_cd_irq_reg register-pointer block */
-cdrom_ClearIrq = 0x800817A0;  /* acks IRQ via g_cd_irq_reg, drains D_800A1496 */
-cdrom_ConfigSPU = 0x80081880;  /* programs CD-audio path regs (g_cd_index_reg block + D_800A1490) */
-cdrom_Shutdown = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
-cdrom_DmaToRam = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_index_reg block */
-cdrom_DmaChain = 0x80081E1C;  /* chained CD DMA transfer; calls func_80080828; g_cd_index_reg/g_cd_dma_ctrl */
+CdReset = 0x800800DC;  /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mode 1); returns 1 ok / 0 fail */
+CdSetDebug = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
+CdIntToPos = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
+CdPosToInt = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
+CD_vol = 0x80081718;  /* writes cmd via g_cd_index_reg/g_cd_irq_reg register-pointer block */
+CD_flush = 0x800817A0;  /* acks IRQ via g_cd_irq_reg, drains D_800A1496 */
+CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_index_reg block + D_800A1490) */
+CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
+CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_index_reg block */
+CD_getsector2 = 0x80081E1C;  /* chained CD DMA transfer; calls func_80080828; g_cd_index_reg/g_cd_dma_ctrl */
 stage_ExecInitFunc = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
 game_SetPlayerCount = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
 stage_InitCollision = 0x8003F274;  /* per-player collision setup: game_GetPlayerCount, D_800A8FB0 block */
 stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
-cdrom_Initialize = 0x800819C4;  /* glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */
+/* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */

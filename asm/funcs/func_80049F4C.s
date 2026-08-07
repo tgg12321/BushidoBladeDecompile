@@ -80,7 +80,7 @@ glabel func_80049F4C
     /* 3A870 8004A070 3963A590 */  lbu        $a1, %lo(D_800F6339)($a1)
     /* 3A874 8004A074 0F80063C */  lui        $a2, %hi(D_800F633A)
     /* 3A878 8004A078 3A63C690 */  lbu        $a2, %lo(D_800F633A)($a2)
-    /* 3A87C 8004A07C E7FB010C */  jal        gte_SetBackColor
+    /* 3A87C 8004A07C E7FB010C */  jal        SetBackColor
     /* 3A880 8004A080 00000000 */   nop
     /* 3A884 8004A084 4800BF8F */  lw         $ra, 0x48($sp)
     /* 3A888 8004A088 4400B18F */  lw         $s1, 0x44($sp)

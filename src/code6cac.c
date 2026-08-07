@@ -29,8 +29,8 @@ extern void game_FrameInit(void);
 extern void game_FrameLoop(void);
 extern void seq_Reset(void);
 extern void func_8003A39C(void);
-extern void sys_VSync(s32);
-extern void gpu_LoadImage(s32, s32);
+extern void VSync(s32);
+extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
 extern void func_80035FA8(void);
 extern void game_Cleanup(void);
@@ -70,7 +70,7 @@ extern void func_8003AFFC(void);
 extern void sys_Panic(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
-extern s32 bb2_memcpy(s32 *, s32, s32);
+extern s32 memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
@@ -83,7 +83,7 @@ extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern u8 D_800A384C;
-extern s32 func_8007FD5C(s32, s32);
+extern s32 ratan2(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
@@ -93,8 +93,8 @@ extern s32 stage_GetDataPtr(void);
 extern void func_8005B50C(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void func_80078D68(void);
-extern void irq_Reset(void);
+extern void StopPAD(void);
+extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
@@ -116,17 +116,17 @@ extern s16 D_80101ED6;
 extern u8 D_800F1B18[];
 extern s32 g_file_disc_size;
 extern s32 replay_camera_Init(s32, s32);
-extern s32 func_80079154();
+extern s32 rand();
 extern void func_800325E0(s32, s32);
 extern void func_80046BF4(s32 *, s32 *, s32);
 extern s32 game_GetPlayerData(s32);
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
 extern void func_8002EECC(s32, s32 *);
 extern void func_80061064(s32 *, s32 *);
-extern s32 func_8007E11C(s32);
-extern void *func_8007F87C(s32, s32);
-extern void *func_8007FA1C(s32, s32);
-extern void *func_8007FBBC(s32, s32);
+extern s32 SquareRoot0(s32);
+extern void *RotMatrixX(s32, s32);
+extern void *RotMatrixY(s32, s32);
+extern void *RotMatrixZ(s32, s32);
 extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern u16 D_8008D59C;
 extern s16 D_8008EB40;
@@ -136,7 +136,7 @@ extern void func_80033BC0(void);
 extern void func_8001DA2C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void func_8007EFFC(s32);
+extern void SetGeomScreen(s32);
 extern void func_8003F3D4(s16 *);
 extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
@@ -695,9 +695,9 @@ void func_8001A538(s32 *arg0, s32 *arg1) {
     m.m[2][0] = 0;
     m.m[2][1] = 0;
     m.m[2][2] = 0x1000;
-    func_8007F87C(-*(s16 *)((u8 *)arg0 + 0x10), (s32)&m);
-    func_8007FA1C(-*(s16 *)((u8 *)arg0 + 0x12), (s32)&m);
-    func_8007FBBC(-*(s16 *)((u8 *)arg0 + 0x14), (s32)&m);
+    RotMatrixX(-*(s16 *)((u8 *)arg0 + 0x10), (s32)&m);
+    RotMatrixY(-*(s16 *)((u8 *)arg0 + 0x12), (s32)&m);
+    RotMatrixZ(-*(s16 *)((u8 *)arg0 + 0x14), (s32)&m);
     arg1[0] = arg0[0] - ((s32)(m.m[0][2] * arg0[6]) >> 12);
     arg1[1] = arg0[1] - ((s32)(m.m[1][2] * arg0[6]) >> 12);
     arg1[2] = arg0[2] - ((s32)(m.m[2][2] * arg0[6]) >> 12);
@@ -792,7 +792,7 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = func_8007FD5C(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
 void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
 void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
@@ -844,7 +844,7 @@ void func_8001B478(s32 arg0) {
 
             {
                 s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
-                s32 result = func_8007FD5C(base_val - a2, D_800A387C);
+                s32 result = ratan2(base_val - a2, D_800A387C);
                 val = (result * (0x400 - val)) >> 10;
             }
         }
@@ -1010,7 +1010,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     } else {
         var_s3 = 0x1000;
     }
-    temp_a2 = func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+    temp_a2 = ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
                              *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
     var_v1 = arg2;
     if (arg2 < 0) {
@@ -1025,7 +1025,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
 void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
@@ -1182,7 +1182,7 @@ void func_8001C820(void) {
     if (D_800A3712 != 0) return;
     a0 = 0x56;
     if (D_800A3680 != D_800A3671) {
-        if (func_80079154(0x56) & 1) {
+        if (rand(0x56) & 1) {
             a0 = 0x57;
         } else {
             a0 = 0x58;
@@ -1254,7 +1254,7 @@ void func_8001D790(void) {
         }
 
         s0 = &D_800FF6A8;
-        bb2_memcpy(s0, s2, s1);
+        memcpy(s0, s2, s1);
         func_8005BD30((s32)s0 - s2);
     }
 }
@@ -1271,7 +1271,7 @@ void func_8001D904(void) {
         sys_Panic();
     }
     s0 = &MotDataBaseAddress;
-    bb2_memcpy(s0, (s32)0x80190800, s1);
+    memcpy(s0, (s32)0x80190800, s1);
     obj_ExecTask((s32)s0 - s2);
 }
 void func_8001D998(void) {
@@ -1286,7 +1286,7 @@ void func_8001D998(void) {
         sys_Panic();
     }
     s0 = &MotDataBaseAddress;
-    bb2_memcpy(s0, (s32)0x80190800, s1);
+    memcpy(s0, (s32)0x80190800, s1);
     func_8005B98C((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
@@ -1356,14 +1356,14 @@ void func_8001DBE4(void) {
         do {
             func_8003AA48();
             func_800174F4();
-            sys_VSync(2);
+            VSync(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
             func_8003AA48();
             i += 1;
             func_800174F4();
-            sys_VSync(2);
+            VSync(2);
         } while (i < 15);
     }
     func_8003AAB0();
@@ -1413,7 +1413,7 @@ void func_8001E404(void) {
             if (D_800A36FA == 0) {
                 fov = 0x50;
             }
-            func_8007EFFC(disp_CalcFov(fov));
+            SetGeomScreen(disp_CalcFov(fov));
         }
 
         if (D_800A36FA == 0) {
@@ -1751,7 +1751,7 @@ s32 func_8001F888(void) {
     {
         s32 v0 = dx * dx;
         s32 v1 = dy * dy;
-        s32 r = func_8007E11C(v0 + v1);
+        s32 r = SquareRoot0(v0 + v1);
         return r << s0;
     }
 }
@@ -1884,7 +1884,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     disc = arg1[0]; /* FAKE: stage the minuend through the currently-dead disc */
     dx = disc - arg0[0];
     dz = arg1[2] - arg0[2];
-    dist = func_8007E11C(dx * dx + dz * dz);
+    dist = SquareRoot0(dx * dx + dz * dz);
 
     if (dist == 0) {
         arg4[2] = 0;
@@ -1911,7 +1911,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
 
             if (disc >= 0) {
                 s32 a2;
-                disc = func_8007E11C(disc << 10);
+                disc = SquareRoot0(disc << 10);
                 a2 = arg2 << 5;
                 a0 = ((a2 + disc) * dist) / dy2 / 32;
 
@@ -2477,7 +2477,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
         }
     }
 
-    base += dists[4 + (func_80079154() & 1)] * 6 + 3;
+    base += dists[4 + (rand() & 1)] * 6 + 3;
     arg1[0] = base[0];
     arg1[1] = base[1];
     arg1[2] = base[2];
@@ -2738,7 +2738,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
     *(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
 
     {
-        s32 fwd_angle = func_8007FD5C(out1[0], out1[2]);
+        s32 fwd_angle = ratan2(out1[0], out1[2]);
         s32 fwd_800;
 
         pos[0] = *(s32 *)(arg0 + 0xB8);
@@ -2985,7 +2985,7 @@ int func_800238C4(u8 *arg0)
     }
     {
         s32 kind;
-        s1 = ((*((s16 *) (arg0 + 0x1CA))) - func_8007FD5C(offsets[0], offsets[2])) & 0xFFF;
+        s1 = ((*((s16 *) (arg0 + 0x1CA))) - ratan2(offsets[0], offsets[2])) & 0xFFF;
         if (s1 >= 0x800) {
             s1 = 0x1000 - s1;
         }
@@ -3035,9 +3035,9 @@ void func_80023C30(s32 arg0, s32 arg1, s32 arg2, s16 *arg3) {
     arg3[6] = 0;
     arg3[7] = 0;
     arg3[8] = 0x1000;
-    func_8007F87C(arg0, (s32)arg3);
-    func_8007FA1C(arg1, (s32)arg3);
-    func_8007FBBC(arg2, (s32)arg3);
+    RotMatrixX(arg0, (s32)arg3);
+    RotMatrixY(arg1, (s32)arg3);
+    RotMatrixZ(arg2, (s32)arg3);
 }
 void func_80023CB4(s16 *arg0, s16 arg1) {
     s16 v;

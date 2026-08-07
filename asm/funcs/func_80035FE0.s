@@ -1,9 +1,9 @@
 glabel func_80035FE0
     /* 267E0 80035FE0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 267E4 80035FE4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 267E8 80035FE8 DFFF010C */  jal        func_8007FF7C
+    /* 267E8 80035FE8 DFFF010C */  jal        CdInit
     /* 267EC 80035FEC 00000000 */   nop
-    /* 267F0 80035FF0 5A00020C */  jal        cdrom_SetDebugLevel
+    /* 267F0 80035FF0 5A00020C */  jal        CdSetDebug
     /* 267F4 80035FF4 21200000 */   addu      $a0, $zero, $zero
     /* 267F8 80035FF8 21200000 */  addu       $a0, $zero, $zero
     /* 267FC 80035FFC 21280000 */  addu       $a1, $zero, $zero

@@ -10,6 +10,6 @@ extern u8 g_file_disc_type;
 extern s16 g_file_vram_timer;
 
 /* Functions */
-extern void irq_DisableInterrupts(void);
+extern void ResetCallback(void);
 
 #endif /* SYSTEM_H */

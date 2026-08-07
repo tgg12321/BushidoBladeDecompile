@@ -39,7 +39,7 @@ extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
 extern u8 D_80094D40[];
-extern void initLoadImage(s32, s16 *, s32, s32);
+extern void SetDrawMove(s32, s16 *, s32, s32);
 
 void func_800401CC(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
@@ -68,7 +68,7 @@ void func_800401CC(s32 a0, s32 a1, s32 a2) {
             buf[0] = buf[0] + 0x80;
             u = u + 0x80;
         }
-        initLoadImage((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
+        SetDrawMove((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
         pkt = (s32 *)D_800A3378;
         ot = (s32 *)D_800A378C;
         *pkt = (*pkt & 0xFF000000) | (ot[0x3FFC / 4] & 0xFFFFFF);
@@ -288,7 +288,7 @@ after_select:
     }
 
 done_cases:
-    gpu_DrawSync(0);
+    DrawSync(0);
     func_80041988(((s16 *)a0)[2], ((s16 *)a0)[4], D_80094B88[((s16 *)a0)[2]], (s32)sec);
 
     {
@@ -298,7 +298,7 @@ done_cases:
         D_80094B88[((s16 *)a0)[2]] = 0;
     }
 
-    gpu_DrawSync(0);
+    DrawSync(0);
     a0[9] = a0[7] + off;
     func_80045A28(((s16 *)a0)[2], off);
 }

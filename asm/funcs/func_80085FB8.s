@@ -1,7 +1,7 @@
 glabel func_80085FB8
     /* 767B8 80085FB8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 767BC 80085FBC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 767C0 80085FC0 5827020C */  jal        func_80089D60
+    /* 767C0 80085FC0 5827020C */  jal        SpuSetReverb
     /* 767C4 80085FC4 01000424 */   addiu     $a0, $zero, 0x1
     /* 767C8 80085FC8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 767CC 80085FCC 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -16,7 +16,7 @@ glabel func_80085FB8
     /* 767F0 80085FF0 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80085FF4:
     /* 767F4 80085FF4 00240400 */  sll        $a0, $a0, 16
-    /* 767F8 80085FF8 622F020C */  jal        func_8008BD88
+    /* 767F8 80085FF8 622F020C */  jal        SpuGetVoiceVolume
     /* 767FC 80085FFC 03240400 */   sra       $a0, $a0, 16
     /* 76800 80086000 21100000 */  addu       $v0, $zero, $zero
   .L80086004:
@@ -68,7 +68,7 @@ glabel func_80085FB8
     /* 768AC 800860AC 00240400 */  sll        $a0, $a0, 16
     /* 768B0 800860B0 03240400 */  sra        $a0, $a0, 16
     /* 768B4 800860B4 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 768B8 800860B8 622F020C */  jal        func_8008BD88
+    /* 768B8 800860B8 622F020C */  jal        SpuGetVoiceVolume
     /* 768BC 800860BC 1200A627 */   addiu     $a2, $sp, 0x12
     /* 768C0 800860C0 E00F053C */  lui        $a1, (0xFE03F81 >> 16)
     /* 768C4 800860C4 1000A397 */  lhu        $v1, 0x10($sp)

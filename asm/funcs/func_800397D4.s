@@ -9,7 +9,7 @@ glabel func_800397D4
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero
     /* 29FF4 800397F4 B159000C */  jal        disp_CalcFov
     /* 29FF8 800397F8 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 29FFC 800397FC FFFB010C */  jal        func_8007EFFC
+    /* 29FFC 800397FC FFFB010C */  jal        SetGeomScreen
     /* 2A000 80039800 21204000 */   addu      $a0, $v0, $zero
     /* 2A004 80039804 21200000 */  addu       $a0, $zero, $zero
     /* 2A008 80039808 A205010C */  jal        func_80041688

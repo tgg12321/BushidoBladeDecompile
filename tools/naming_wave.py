@@ -139,6 +139,45 @@ def write_lf(p: Path, text: str) -> None:
 
 _C_TOKEN = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*.*?\*/', re.S)
 
+# A C escape sequence. Inside a string literal these are the real token boundaries.
+_C_ESCAPE = re.compile(r"\\(?:x[0-9A-Fa-f]+|[0-7]{1,3}|.)", re.S)
+
+
+def sub_in_string(pattern: re.Pattern, repl, tok: str) -> tuple[str, int]:
+    r"""Whole-word substitution inside a C string literal, escape-aware.
+
+    A `\b`-anchored pattern is wrong here. In `"\tjal\tfunc_80078FF0\n"` the RAW
+    source characters are ... l, \, t, f, u, n, c ..., so there is no word boundary
+    before `func` — the escape's letter is glued to the identifier and the name is
+    skipped. That is not hypothetical: it survived the 2026-08-07 libscan wave into
+    the link, as `undefined reference to 'func_80078FF0'` from src/gpu.c:226.
+
+    Splitting the literal on its escape sequences restores the boundaries the
+    COMPILED string actually has, and substituting per segment is then correct.
+    """
+    out, n, pos = [], 0, 0
+    for m in _C_ESCAPE.finditer(tok):
+        seg, k = pattern.subn(repl, tok[pos:m.start()])
+        out.append(seg)
+        n += k
+        out.append(m.group(0))
+        pos = m.end()
+    seg, k = pattern.subn(repl, tok[pos:])
+    out.append(seg)
+    n += k
+    return "".join(out), n
+
+
+def find_in_string(pattern: re.Pattern, tok: str) -> set[str]:
+    """The names sub_in_string would rewrite — same escape-aware segmentation."""
+    found: set[str] = set()
+    pos = 0
+    for m in _C_ESCAPE.finditer(tok):
+        found |= set(pattern.findall(tok[pos:m.start()]))
+        pos = m.end()
+    found |= set(pattern.findall(tok[pos:]))
+    return found
+
 
 def sub_c(pattern: re.Pattern, repl, text: str) -> tuple[str, int]:
     """Whole-word substitution in C/H text, skipping comments but NOT strings.
@@ -157,7 +196,7 @@ def sub_c(pattern: re.Pattern, repl, text: str) -> tuple[str, int]:
         if tok.startswith(("//", "/*")):
             out.append(tok)  # comment: verbatim
         else:
-            new, k = pattern.subn(repl, tok)  # string literal: in scope
+            new, k = sub_in_string(pattern, repl, tok)  # string literal: in scope
             out.append(new)
             n += k
         pos = m.end()
@@ -339,15 +378,60 @@ def load_census() -> list[dict]:
         return list(csv.DictReader(fh))
 
 
+_SYMFILE_NAMES: dict[str, set[str]] | None = None
+
+
+def symfile_names(addr: str) -> set[str]:
+    """Names bound to <addr> by a `name = 0xADDR;` line in any symbol registry.
+
+    `undefined_syms_auto.txt` / `undefined_funcs_auto.txt` are real naming claims that
+    the census does not read, so they have to be consulted directly.
+    """
+    global _SYMFILE_NAMES
+    if _SYMFILE_NAMES is None:
+        _SYMFILE_NAMES = defaultdict(set)
+        for rel in SYMBOL_FILES:
+            p = ROOT / rel
+            if not p.exists():
+                continue
+            for line in read(p).split("\n"):
+                m = SYM_LINE.match(line)
+                if m:
+                    _SYMFILE_NAMES[m.group(4).lower()].add(m.group(2))
+    return _SYMFILE_NAMES.get(addr.lower(), set())
+
+
 def idents_of(row: dict) -> set[str]:
+    """Every identifier at this address that is a REAL symbol.
+
+    `current_name` is the census's DISPLAY name. For an alias-only row it is the alias
+    with its `_<ADDR>` suffix stripped, and that stem is frequently not an identifier
+    that exists anywhere: `copy_8007F034` displays as `copy`, `stub_8007F10C` as `stub`.
+    Admitting a display stem into the rename map would remap the bare words `copy` /
+    `stub` / `func` across the whole tree — nine addresses mapped `func` to nine
+    different targets in the 2026-08-07 libscan dry run, and a dict keeps only the last.
+
+    So a display name is admitted only when it is also a real one: the glabel, one of
+    the census aliases, a symbol-registry line at this address, or a definition in src/.
+    A name that fails all four resolves to nothing today and cannot be a build key.
+    """
     out = set()
-    for n in [row.get("glabel", ""), row.get("current_name", "")]:
-        if n:
-            out.add(n.strip())
-    for a in (row.get("aliases") or "").split(";"):
-        a = a.strip()
-        if a:
-            out.add(a)
+    glabel = (row.get("glabel") or "").strip()
+    if glabel:
+        out.add(glabel)
+    aliases = {a.strip() for a in (row.get("aliases") or "").split(";") if a.strip()}
+    out |= aliases
+    addr = (row.get("address") or "").strip()
+    out |= symfile_names(addr)
+    cur = (row.get("current_name") or "").strip()
+    # An auto name spelled from this row's own address is a real identifier by
+    # construction — it is splat's glabel convention — and it can never be a generic
+    # English word, so it is admitted without further proof. This matters for a
+    # function whose whole body is a canonical `__asm__("glabel func_XXXXXXXX\n")`
+    # block: the identifier is real and assembled, but _defined_in_src cannot see it.
+    auto_here = bool(ADDR_RE.match(addr)) and cur.lower() == "func_" + addr[2:].lower()
+    if cur and (cur in out or auto_here or _defined_in_src(cur)):
+        out.add(cur)
     return {n for n in out if n}
 
 
@@ -1067,7 +1151,20 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
 
     def scan(rel: str, text: str, comment: str | None):
         if comment == "c":
-            hits = set(pat.findall(re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.S)))
+            # Mirror sub_c exactly: comments out of scope, string literals IN scope and
+            # segmented on escape sequences. Using a flat `\b` findall here would let a
+            # name glued to an escape (`"\tjal\tfunc_XXXXXXXX\n"`) pass the audit for the
+            # same reason the substitution missed it, so the audit would confirm a clean
+            # tree that does not link.
+            hits = set()
+            pos = 0
+            for m in _C_TOKEN.finditer(text):
+                hits |= set(pat.findall(text[pos:m.start()]))
+                tok = m.group(0)
+                if not tok.startswith(("//", "/*")):
+                    hits |= find_in_string(pat, tok)
+                pos = m.end()
+            hits |= set(pat.findall(text[pos:]))
         elif comment == "hash":
             hits = set(pat.findall(re.sub(r"#[^\n]*", "", text)))
         else:
@@ -1125,6 +1222,10 @@ def main() -> int:
                     help="take RESET/RENAME rows from docs/naming/function-names.csv")
     ap.add_argument("--only", default=None,
                     help="comma-separated addresses to restrict the wave to")
+    ap.add_argument("--only-file", default=None,
+                    help="file of addresses (one per line, '#' comments allowed) to restrict "
+                         "the wave to; unioned with --only. A batch of a few hundred addresses "
+                         "belongs in a reviewable file, not on the command line")
     ap.add_argument("--apply", action="store_true", help="write changes (default: dry run)")
     ap.add_argument("--manifest", default=None, help="write the manifest JSON here")
     ap.add_argument("--allow-invalid", action="store_true",
@@ -1143,6 +1244,21 @@ def main() -> int:
     only = None
     if args.only:
         only = {a.strip().lower() for a in args.only.split(",") if a.strip()}
+    if args.only_file:
+        p = Path(args.only_file)
+        if not p.is_absolute():
+            p = ROOT / p
+        if not p.exists():
+            die(f"--only-file {p} does not exist")
+        picked = set()
+        for ln in read(p).split("\n"):
+            ln = ln.split("#", 1)[0].strip().lower()
+            if not ln:
+                continue
+            if not ADDR_RE.match(ln):
+                die(f"--only-file {p}: {ln!r} is not a 0x8XXXXXXX address")
+            picked.add(ln)
+        only = picked if only is None else (only | picked)
 
     rows = load_census()
     ops, rejects = build_ops(rows, only, args.allow_invalid)

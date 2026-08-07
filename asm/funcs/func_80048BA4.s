@@ -50,7 +50,7 @@ glabel func_80048BA4
     /* 39460 80048C60 3000A2A7 */  sh         $v0, 0x30($sp)
     /* 39464 80048C64 0000648E */  lw         $a0, 0x0($s3)
     /* 39468 80048C68 1803928F */  lw         $s2, %gp_rel(D_800A33E4)($gp)
-    /* 3946C 80048C6C 5BFB010C */  jal        func_8007ED6C
+    /* 3946C 80048C6C 5BFB010C */  jal        ApplyMatrix
     /* 39470 80048C70 21300002 */   addu      $a2, $s0, $zero
     /* 39474 80048C74 0000638E */  lw         $v1, 0x0($s3)
     /* 39478 80048C78 0000028E */  lw         $v0, 0x0($s0)
@@ -216,7 +216,7 @@ glabel func_80048BA4
     /* 396E8 80048EE8 80220400 */  sll        $a0, $a0, 10
     /* 396EC 80048EEC 21208200 */  addu       $a0, $a0, $v0
     /* 396F0 80048EF0 0C0884AF */  sw         $a0, %gp_rel(D_800A38D8)($gp)
-    /* 396F4 80048EF4 11EE010C */  jal        func_8007B844
+    /* 396F4 80048EF4 11EE010C */  jal        ClearOTagR
     /* 396F8 80048EF8 00010524 */   addiu     $a1, $zero, 0x100
     /* 396FC 80048EFC FF00053C */  lui        $a1, (0xFFFFFF >> 16)
     /* 39700 80048F00 FFFFA534 */  ori        $a1, $a1, (0xFFFFFF & 0xFFFF)

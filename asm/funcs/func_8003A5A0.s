@@ -5,24 +5,24 @@ glabel func_8003A5A0
     /* 2ADAC 8003A5AC 00F2043C */  lui        $a0, (0xF2000001 >> 16)
     /* 2ADB0 8003A5B0 01008434 */  ori        $a0, $a0, (0xF2000001 & 0xFFFF)
     /* 2ADB4 8003A5B4 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 2ADB8 8003A5B8 C1E2010C */  jal        func_80078B04
+    /* 2ADB8 8003A5B8 C1E2010C */  jal        GetRCnt
     /* 2ADBC 8003A5BC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 2ADC0 8003A5C0 21804000 */  addu       $s0, $v0, $zero
     /* 2ADC4 8003A5C4 0104022A */  slti       $v0, $s0, 0x401
     /* 2ADC8 8003A5C8 04004014 */  bnez       $v0, .L8003A5DC
     /* 2ADCC 8003A5CC 00F2043C */   lui       $a0, (0xF2000001 >> 16)
   .L8003A5D0:
-    /* 2ADD0 8003A5D0 EAE2010C */  jal        func_80078BA8
+    /* 2ADD0 8003A5D0 EAE2010C */  jal        ResetRCnt
     /* 2ADD4 8003A5D4 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
     /* 2ADD8 8003A5D8 21800000 */  addu       $s0, $zero, $zero
   .L8003A5DC:
     /* 2ADDC 8003A5DC 6C06848F */  lw         $a0, %gp_rel(D_800A3738)($gp)
-    /* 2ADE0 8003A5E0 66E2010C */  jal        bios_TestEvent
+    /* 2ADE0 8003A5E0 66E2010C */  jal        TestEvent
     /* 2ADE4 8003A5E4 00000000 */   nop
     /* 2ADE8 8003A5E8 27004014 */  bnez       $v0, .L8003A688
     /* 2ADEC 8003A5EC 00000000 */   nop
     /* 2ADF0 8003A5F0 4407848F */  lw         $a0, %gp_rel(D_800A3810)($gp)
-    /* 2ADF4 8003A5F4 66E2010C */  jal        bios_TestEvent
+    /* 2ADF4 8003A5F4 66E2010C */  jal        TestEvent
     /* 2ADF8 8003A5F8 00000000 */   nop
     /* 2ADFC 8003A5FC 0E004010 */  beqz       $v0, .L8003A638
     /* 2AE00 8003A600 21200000 */   addu      $a0, $zero, $zero
@@ -31,24 +31,24 @@ glabel func_8003A5A0
     /* 2AE0C 8003A60C 2F004010 */  beqz       $v0, .L8003A6CC
     /* 2AE10 8003A610 02000424 */   addiu     $a0, $zero, 0x2
     /* 2AE14 8003A614 21280000 */  addu       $a1, $zero, $zero
-    /* 2AE18 8003A618 1931020C */  jal        func_8008C464
+    /* 2AE18 8003A618 1931020C */  jal        _comb_control
     /* 2AE1C 8003A61C 21300000 */   addu      $a2, $zero, $zero
     /* 2AE20 8003A620 5DE9000C */  jal        func_8003A574
     /* 2AE24 8003A624 21800000 */   addu      $s0, $zero, $zero
     /* 2AE28 8003A628 00F2043C */  lui        $a0, (0xF2000001 >> 16)
-    /* 2AE2C 8003A62C EAE2010C */  jal        func_80078BA8
+    /* 2AE2C 8003A62C EAE2010C */  jal        ResetRCnt
     /* 2AE30 8003A630 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
     /* 2AE34 8003A634 21200000 */  addu       $a0, $zero, $zero
   .L8003A638:
     /* 2AE38 8003A638 21280000 */  addu       $a1, $zero, $zero
-    /* 2AE3C 8003A63C 1931020C */  jal        func_8008C464
+    /* 2AE3C 8003A63C 1931020C */  jal        _comb_control
     /* 2AE40 8003A640 21300000 */   addu      $a2, $zero, $zero
     /* 2AE44 8003A644 C3110200 */  sra        $v0, $v0, 7
     /* 2AE48 8003A648 03004230 */  andi       $v0, $v0, 0x3
     /* 2AE4C 8003A64C 01000324 */  addiu      $v1, $zero, 0x1
     /* 2AE50 8003A650 E2FF4310 */  beq        $v0, $v1, .L8003A5DC
     /* 2AE54 8003A654 00F2043C */   lui       $a0, (0xF2000001 >> 16)
-    /* 2AE58 8003A658 C1E2010C */  jal        func_80078B04
+    /* 2AE58 8003A658 C1E2010C */  jal        GetRCnt
     /* 2AE5C 8003A65C 01008434 */   ori       $a0, $a0, (0xF2000001 & 0xFFFF)
     /* 2AE60 8003A660 23105000 */  subu       $v0, $v0, $s0
     /* 2AE64 8003A664 013C4228 */  slti       $v0, $v0, 0x3C01

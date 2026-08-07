@@ -30,7 +30,7 @@ glabel func_800863DC
     /* 76C4C 8008644C 21800000 */  addu       $s0, $zero, $zero
   .L80086450:
     /* 76C50 80086450 21202002 */  addu       $a0, $s1, $zero
-    /* 76C54 80086454 7A2F020C */  jal        func_8008BDE8
+    /* 76C54 80086454 7A2F020C */  jal        SpuGetVoiceEnvelope
     /* 76C58 80086458 21284002 */   addu      $a1, $s2, $zero
     /* 76C5C 8008645C 0F80013C */  lui        $at, %hi(D_800F4E1E)
     /* 76C60 80086460 21083000 */  addu       $at, $at, $s0
@@ -91,7 +91,7 @@ glabel func_800863DC
     /* 76D2C 8008652C 04005314 */  bne        $v0, $s3, .L80086540
     /* 76D30 80086530 21200000 */   addu      $a0, $zero, $zero
     /* 76D34 80086534 FF00053C */  lui        $a1, (0xFFFFFF >> 16)
-    /* 76D38 80086538 8926020C */  jal        spu_WaitReady
+    /* 76D38 80086538 8926020C */  jal        SpuSetNoiseVoice
     /* 76D3C 8008653C FFFFA534 */   ori       $a1, $a1, (0xFFFFFF & 0xFFFF)
   .L80086540:
     /* 76D40 80086540 0F80013C */  lui        $at, %hi(D_800F4E35)
@@ -251,7 +251,7 @@ glabel func_800863DC
     /* 76F78 80086778 1080023C */  lui        $v0, %hi(D_801078D8)
     /* 76F7C 8008677C D8784294 */  lhu        $v0, %lo(D_801078D8)($v0)
     /* 76F80 80086780 002C0500 */  sll        $a1, $a1, 16
-    /* 76F84 80086784 B52A020C */  jal        func_8008AAD4
+    /* 76F84 80086784 B52A020C */  jal        SpuSetKey
     /* 76F88 80086788 2528A200 */   or        $a1, $a1, $v0
     /* 76F8C 8008678C 01000424 */  addiu      $a0, $zero, 0x1
     /* 76F90 80086790 0F80053C */  lui        $a1, %hi(D_800F1B12)
@@ -259,7 +259,7 @@ glabel func_800863DC
     /* 76F98 80086798 0F80023C */  lui        $v0, %hi(D_800F1B10)
     /* 76F9C 8008679C 101B4294 */  lhu        $v0, %lo(D_800F1B10)($v0)
     /* 76FA0 800867A0 002C0500 */  sll        $a1, $a1, 16
-    /* 76FA4 800867A4 B52A020C */  jal        func_8008AAD4
+    /* 76FA4 800867A4 B52A020C */  jal        SpuSetKey
     /* 76FA8 800867A8 2528A200 */   or        $a1, $a1, $v0
     /* 76FAC 800867AC 08000424 */  addiu      $a0, $zero, 0x8
     /* 76FB0 800867B0 0F80053C */  lui        $a1, %hi(D_800F2B68)
@@ -267,7 +267,7 @@ glabel func_800863DC
     /* 76FB8 800867B8 0F80023C */  lui        $v0, %hi(D_800F1B14)
     /* 76FBC 800867BC 141B4294 */  lhu        $v0, %lo(D_800F1B14)($v0)
     /* 76FC0 800867C0 002C0500 */  sll        $a1, $a1, 16
-    /* 76FC4 800867C4 412A020C */  jal        func_8008A904
+    /* 76FC4 800867C4 412A020C */  jal        SpuSetReverbVoice
     /* 76FC8 800867C8 2528A200 */   or        $a1, $a1, $v0
     /* 76FCC 800867CC 1080013C */  lui        $at, %hi(D_801078D8)
     /* 76FD0 800867D0 D87820A4 */  sh         $zero, %lo(D_801078D8)($at)

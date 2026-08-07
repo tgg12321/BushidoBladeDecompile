@@ -1,0 +1,43 @@
+glabel CdInit
+    /* 7077C 8007FF7C E8FFBD27 */  addiu      $sp, $sp, -0x18
+    /* 70780 8007FF80 1000B0AF */  sw         $s0, 0x10($sp)
+    /* 70784 8007FF84 04001024 */  addiu      $s0, $zero, 0x4
+    /* 70788 8007FF88 1400BFAF */  sw         $ra, 0x14($sp)
+  .L8007FF8C:
+    /* 7078C 8007FF8C 3700020C */  jal        CdReset
+    /* 70790 8007FF90 01000424 */   addiu     $a0, $zero, 0x1
+    /* 70794 8007FF94 01000324 */  addiu      $v1, $zero, 0x1
+    /* 70798 8007FF98 11004314 */  bne        $v0, $v1, .L8007FFE0
+    /* 7079C 8007FF9C FFFF1026 */   addiu     $s0, $s0, -0x1
+    /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(D_80080014)
+    /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(D_80080014)
+    /* 707A8 8007FFA8 8A00020C */  jal        CdSyncCallback
+    /* 707AC 8007FFAC 00000000 */   nop
+    /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(D_8008003C)
+    /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(D_8008003C)
+    /* 707B8 8007FFB8 9000020C */  jal        CdReadyCallback
+    /* 707BC 8007FFBC 00000000 */   nop
+    /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
+    /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)
+    /* 707C8 8007FFC8 270A020C */  jal        CdReadCallback
+    /* 707CC 8007FFCC 00000000 */   nop
+    /* 707D0 8007FFD0 2D0A020C */  jal        CdReadMode
+    /* 707D4 8007FFD4 21200000 */   addu      $a0, $zero, $zero
+    /* 707D8 8007FFD8 00000208 */  j          .L80080000
+    /* 707DC 8007FFDC 01000224 */   addiu     $v0, $zero, 0x1
+  .L8007FFE0:
+    /* 707E0 8007FFE0 FFFF0224 */  addiu      $v0, $zero, -0x1
+    /* 707E4 8007FFE4 E9FF0216 */  bne        $s0, $v0, .L8007FF8C
+    /* 707E8 8007FFE8 00000000 */   nop
+    /* 707EC 8007FFEC 0180043C */  lui        $a0, %hi(D_8001605C)
+    /* 707F0 8007FFF0 5C608424 */  addiu      $a0, $a0, %lo(D_8001605C)
+    /* 707F4 8007FFF4 82E4010C */  jal        printf
+    /* 707F8 8007FFF8 00000000 */   nop
+    /* 707FC 8007FFFC 21100000 */  addu       $v0, $zero, $zero
+  .L80080000:
+    /* 70800 80080000 1400BF8F */  lw         $ra, 0x14($sp)
+    /* 70804 80080004 1000B08F */  lw         $s0, 0x10($sp)
+    /* 70808 80080008 1800BD27 */  addiu      $sp, $sp, 0x18
+    /* 7080C 8008000C 0800E003 */  jr         $ra
+    /* 70810 80080010 00000000 */   nop
+endlabel CdInit

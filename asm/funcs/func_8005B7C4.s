@@ -8,7 +8,7 @@ glabel func_8005B7C4
     /* 4BFDC 8005B7DC 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4BFE0 8005B7E0 0180043C */  lui        $a0, %hi(D_800158B4)
     /* 4BFE4 8005B7E4 B4588424 */  addiu      $a0, $a0, %lo(D_800158B4)
-    /* 4BFE8 8005B7E8 82E4010C */  jal        debug_printf
+    /* 4BFE8 8005B7E8 82E4010C */  jal        printf
     /* 4BFEC 8005B7EC 21282002 */   addu      $a1, $s1, $zero
     /* 4BFF0 8005B7F0 D0DB000C */  jal        game_FrameLoop
     /* 4BFF4 8005B7F4 00000000 */   nop

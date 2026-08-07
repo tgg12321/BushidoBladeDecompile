@@ -40,7 +40,7 @@ extern u8 D_800A9920;
 extern u16 D_80094AF4;
 extern u8 D_80094B48[];
 extern u8 D_80094D40[];
-extern void initLoadImage(s32, s16 *, s32, s32);
+extern void SetDrawMove(s32, s16 *, s32, s32);
 
 
 extern s32 func_800486FC(s32 *);
@@ -526,11 +526,11 @@ void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
     *a1 = (cos_x + sin_y) >> 12;
     *a0 = (sin_x - cos_y) >> 12;
 }
-extern s32 *func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 func_8007FD5C(s32, s32);
-extern s32 math_Cos(s32);
-extern s32 math_Sin(s32);
-extern void func_8007EB4C(s32 *, s32 *);
+extern s32 *ApplyMatrix(s32 *, s16 *, s32 *);
+extern s16 ratan2(s32, s32);
+extern s32 rcos(s32);
+extern s32 rsin(s32);
+extern void MulMatrix(s32 *, s32 *);
 void func_80042FA0(s32 *a0, s16 *a1) {
     s16 rot[3];
     s32 result[4];
@@ -543,31 +543,31 @@ void func_80042FA0(s32 *a0, s16 *a1) {
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0x1000;
-    func_8007ED6C(a0, rot, result);
+    ApplyMatrix(a0, rot, result);
 
-    angle1 = func_8007FD5C(result[0], result[2]);
+    angle1 = ratan2(result[0], result[2]);
 
-    cos_val = math_Cos((s16)angle1);
-    sin_val = math_Sin((s16)angle1);
+    cos_val = rcos((s16)angle1);
+    sin_val = rsin((s16)angle1);
 
     combined = (cos_val * result[2] + sin_val * result[0]) >> 12;
-    neg_angle2 = -func_8007FD5C(result[1], combined);
+    neg_angle2 = -ratan2(result[1], combined);
 
     rot[0] = -neg_angle2;
     rot[1] = -angle1;
     rot[2] = 0;
     func_80042C80(rot, sp28);
 
-    func_8007EB4C(sp28, a0);
+    MulMatrix(sp28, a0);
 
     rot[0] = 0;
     rot[1] = 0x1000;
     rot[2] = 0;
-    func_8007ED6C(sp28, rot, result);
+    ApplyMatrix(sp28, rot, result);
 
     {
         s16 angle3;
-        angle3 = func_8007FD5C(result[0], result[1]);
+        angle3 = ratan2(result[0], result[1]);
         a1[0] = neg_angle2;
         a1[1] = angle1;
         a1[2] = -angle3;
@@ -1152,9 +1152,9 @@ extern s32 D_800FF610;
 extern s16 D_80095328;
 extern s32 D_80102C00;
 extern void func_80042874(s32 *, s32 *);
-extern void func_8007EB4C(s32 *, s32 *);
-extern void func_8007EC5C(s32 *, s32 *);
-extern void func_8007E4DC(s32 *, s32 *, s32 *);
+extern void MulMatrix(s32 *, s32 *);
+extern void MulMatrix2(s32 *, s32 *);
+extern void MulMatrix0(s32 *, s32 *, s32 *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
 extern s32 game_GetPlayerCount(void);
@@ -1164,9 +1164,9 @@ extern void game_SetPause(s32);
 void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
     func_80042874(&D_800A3678, s0);
-    func_8007EB4C(s0, (s32 *)(D_800A3708 + 0x18));
-    func_8007EC5C((s32 *)(D_800A370C + 0x18), s0);
-    func_8007E4DC((s32 *)(D_800A370C + 0x18), (s32 *)(D_800A3708 + 0x18), &D_800FF610);
+    MulMatrix(s0, (s32 *)(D_800A3708 + 0x18));
+    MulMatrix2((s32 *)(D_800A370C + 0x18), s0);
+    MulMatrix0((s32 *)(D_800A370C + 0x18), (s32 *)(D_800A3708 + 0x18), &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
@@ -1338,7 +1338,7 @@ void func_80044800(void) {
                 *(s16 *)(obj + 0x14) = *(u16 *)(scan + 1);
                 *(s16 *)(obj + 0x6) = 0;
                 func_800417D0((s32 *)obj);
-                func_8007EC5C((s32 *)sp18, (s32 *)(obj + 0x18));
+                MulMatrix2((s32 *)sp18, (s32 *)(obj + 0x18));
 
                 cos_val = judge_base[(angle + 0x400) & 0xFFF];
 
@@ -1465,8 +1465,8 @@ void func_80044C70(s32 a0) {
     D_800A9D04 += a0;
     D_800A9D00 += a0;
 }
-extern s32 math_Sin(s32);
-extern s32 math_Cos(s32);
+extern s32 rsin(s32);
+extern s32 rcos(s32);
 void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -1476,22 +1476,22 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     sp18[1] = a0[0];
     angle = a0[1];
     radius = a0[2];
-    sp18[0] = (math_Sin(angle) * radius) >> 12;
-    sp18[2] = (math_Cos(angle) * radius) >> 12;
+    sp18[0] = (rsin(angle) * radius) >> 12;
+    sp18[2] = (rcos(angle) * radius) >> 12;
     sp18[1] = -sp18[1];
     sp18[2] = -sp18[2];
 
     sp28[1] = a1[0];
     angle = a1[1];
     radius = a1[2];
-    sp28[0] = (math_Sin(angle) * radius) >> 12;
-    sp28[2] = (math_Cos(angle) * radius) >> 12;
+    sp28[0] = (rsin(angle) * radius) >> 12;
+    sp28[2] = (rcos(angle) * radius) >> 12;
     sp28[1] = -sp28[1];
     sp28[2] = -sp28[2];
 
-    func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
+    LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
-extern void func_8007E1AC(s32 *, s32 *, s32, s32, s32);
+extern void LoadAverage12(s32 *, s32 *, s32, s32, s32);
 void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -1503,7 +1503,7 @@ void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     a1++;
     sp28[1] = -a1[0];
     sp28[2] = -a1[1];
-    func_8007E1AC(sp18, sp28, 0x1000 - a2, a2, a3);
+    LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
 s32 func_80044E64(void) {
     return 0x25;
@@ -1567,7 +1567,7 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     }
     v0 = func_800457DC();
     if (v0 < s0) {
-        debug_printf(D_8001528C, a0, s0 - v0);
+        printf(D_8001528C, a0, s0 - v0);
         while (1) {
             func_800164F8();
         }
@@ -1679,7 +1679,7 @@ void func_80045294(s32 a0, s32 a1) {
         s32 *ptr;
         s32 idx;
 
-        gpu_DrawSync(0);
+        DrawSync(0);
         func_800520B8(s4, s5, sum);
 
         i = a0;

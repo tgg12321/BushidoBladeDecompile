@@ -36,7 +36,7 @@ glabel func_80054604
     /* 44E88 80054688 00000000 */   nop
     /* 44E8C 8005468C 0180043C */  lui        $a0, %hi(D_80015840)
     /* 44E90 80054690 40588424 */  addiu      $a0, $a0, %lo(D_80015840)
-    /* 44E94 80054694 82E4010C */  jal        debug_printf
+    /* 44E94 80054694 82E4010C */  jal        printf
     /* 44E98 80054698 00000000 */   nop
   .L8005469C:
     /* 44E9C 8005469C 711A010C */  jal        snd_LoadSelection
@@ -126,7 +126,7 @@ glabel func_80054604
     /* 44FD8 800547D8 080033A6 */   sh        $s3, 0x8($s1)
     /* 44FDC 800547DC B159000C */  jal        disp_CalcFov
     /* 44FE0 800547E0 2D000424 */   addiu     $a0, $zero, 0x2D
-    /* 44FE4 800547E4 FFFB010C */  jal        func_8007EFFC
+    /* 44FE4 800547E4 FFFB010C */  jal        SetGeomScreen
     /* 44FE8 800547E8 21204000 */   addu      $a0, $v0, $zero
     /* 44FEC 800547EC 0400228E */  lw         $v0, 0x4($s1)
     /* 44FF0 800547F0 00000000 */  nop
