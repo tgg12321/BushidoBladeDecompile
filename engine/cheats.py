@@ -168,13 +168,38 @@ def is_jtbl_infra(func: str, regfix: str = REGFIX, regfix2: str = REGFIX2,
     return saw_jtbl
 
 
+# One-pass rule index per config, cached on (path, mtime). func_rule_lines
+# used to re-read and re-split the whole config PER CALL — ~3 full reads of a
+# 3,500-line regfix.txt per function made it the dominant cost of whole-corpus
+# audits (most of check_completion_integrity.py's residual 43s). A rule line is
+# keyed `^<identifier>\s*:` (same shape _key_re matches for a single function),
+# so one scan bucketing every line by its key is equivalent.
+_RULE_INDEX_KEY_RE = re.compile(r"^([A-Za-z_]\w*)\s*:")
+_rule_index_cache: dict[str, tuple[float, dict[str, list[tuple[int, str]]]]] = {}
+
+
+def _rule_index(cfg: str) -> dict[str, list[tuple[int, str]]]:
+    """func -> [(0-based line index, line)] for every rule in `cfg`."""
+    try:
+        mtime = Path(cfg).stat().st_mtime
+    except OSError:
+        return {}
+    hit = _rule_index_cache.get(cfg)
+    if hit is not None and hit[0] == mtime:
+        return hit[1]
+    idx: dict[str, list[tuple[int, str]]] = {}
+    for i, ln in enumerate(Path(cfg).read_text(encoding="utf-8").splitlines()):
+        m = _RULE_INDEX_KEY_RE.match(ln)
+        if m:
+            idx.setdefault(m.group(1), []).append((i, ln))
+    _rule_index_cache[cfg] = (mtime, idx)
+    return idx
+
+
 def func_rule_lines(func: str, cfg: str = REGFIX) -> list[tuple[int, str]]:
-    """(0-based line index, line) for every rule keyed by `func` in `cfg`."""
-    kr = _key_re(func)
-    if not Path(cfg).exists():
-        return []
-    return [(i, ln) for i, ln in enumerate(Path(cfg).read_text(encoding="utf-8").splitlines())
-            if kr.match(ln)]
+    """(0-based line index, line) for every rule keyed by `func` in `cfg`.
+    Returns a fresh list each call so callers may mutate it."""
+    return list(_rule_index(cfg).get(func, []))
 
 
 def _filter_text(func: str, disable: str, cfg: str) -> tuple[str, int]:

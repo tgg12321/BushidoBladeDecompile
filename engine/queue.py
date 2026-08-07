@@ -188,10 +188,19 @@ def _not_a_c_function(stem: str, func: str) -> bool:
     A body-span parse failure matches NONE of them, so it is retained as
     outstanding rather than silently dropped.
     """
-    try:
-        text = Path(f"src/{stem}.c").read_text(encoding="utf-8")
-    except OSError:
+    text = inlineasm._read_src_cached(stem)
+    if text is None:
         return False
+    return not_a_c_function_text(text, func)
+
+
+def not_a_c_function_text(text: str, func: str) -> bool:
+    """The text-level core of _not_a_c_function, split out so tools can apply
+    the SAME structural test to a source text they already hold (including a
+    git-ref blob, where reading the working tree would be wrong). Owner ruling
+    2026-08-07: symbols matching this test are excluded from the COMPLETED-C
+    pool/count project-wide (check_completion_integrity.py, tools/spotcheck/)
+    — they are data extracted as code, not completions."""
     if re.search(r'\b' + re.escape(func) + r'\b', text) is None:
         return True
     return (func in set(_AENT_RE.findall(text))

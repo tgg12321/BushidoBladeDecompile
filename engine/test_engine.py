@@ -2114,6 +2114,130 @@ def test_queue_write_serialization() -> None:
             Q.QUEUE_PATH = orig_path
 
 
+def test_memo_and_rule_index_caches() -> None:
+    """Pin the 2026-08-07 memoization contracts (promoted from
+    tmp/spotcheck/verify_memo.py per owner approval 2026-08-07).
+
+    Load-bearing property: find_plain_volatile_externs / find_all_cheats depend
+    on volatile_extern_allowlist.txt, not on `text` alone. A text-only memo key
+    would let a stale answer survive an allowlist edit — the exact D_800F7420
+    failure class (a silently dropped grant) reintroduced INSIDE the detector.
+    Also pins: use_allowlist() overrides are observed through the memo and fully
+    restored on exit; returned lists are fresh copies; and the func_rule_lines
+    one-pass index invalidates on config edit."""
+    import time as _t
+
+    def _clear_memos():
+        for f in (inlineasm._strip_spans_cached,
+                  inlineasm._register_hint_spans_cached,
+                  volatile_cheats._find_alias_renames_cached,
+                  volatile_cheats._find_plain_volatile_externs_cached,
+                  volatile_cheats._find_all_cheats_cached):
+            f.cache_clear()
+
+    text = (
+        'extern volatile s32 D_80098894;\n'
+        'extern volatile s32 D_8009AAAA;\n'
+        'extern volatile s32 D_80098894_v asm("D_80098894");\n'
+        'void f(void) {\n'
+        '    register int x;\n'
+        '    __asm__ volatile ("addu $8, $3, $zero");\n'
+        '    x = 1;\n'
+        '}\n'
+    )
+
+    original_cache = volatile_cheats._volatile_extern_allowlist_cache
+    original_cwd = os.getcwd()
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            os.chdir(td)
+            volatile_cheats._volatile_extern_allowlist_cache = None
+            Path("volatile_extern_allowlist.txt").write_text(
+                "D_80098894    # granted\nD_8009AAAA    # granted\n")
+
+            # 1. Memoized results identical to from-scratch, cold/warm/re-cold.
+            _clear_memos()
+            cold_all = volatile_cheats.find_all_cheats(text)
+            cold_strip = inlineasm._strip_spans(text)
+            warm_all = volatile_cheats.find_all_cheats(text)
+            warm_strip = inlineasm._strip_spans(text)
+            _clear_memos()
+            recold_all = volatile_cheats.find_all_cheats(text)
+            eq("memo: find_all_cheats warm == cold", warm_all, cold_all)
+            eq("memo: find_all_cheats recold == cold", recold_all, cold_all)
+            eq("memo: _strip_spans warm == cold", warm_strip, cold_strip)
+
+            # 2. An allowlist edit is OBSERVED through the memo (invalidation).
+            before = len(volatile_cheats.find_plain_volatile_externs(text))
+            eq("memo: both plain externs granted before the edit", before, 0)
+            Path("volatile_extern_allowlist.txt").write_text("# emptied\n")
+            future = _t.time() + 2
+            os.utime("volatile_extern_allowlist.txt", (future, future))
+            after = len(volatile_cheats.find_plain_volatile_externs(text))
+            eq("memo: allowlist emptied -> plain externs now flagged THROUGH "
+               "the memo (no stale answer)", after, 2)
+            after_all = volatile_cheats.find_all_cheats(text)
+            eq("memo: find_all_cheats grew with the dropped grants",
+               len(after_all), len(cold_all) + 2)
+
+            # 3. use_allowlist(): override observed through the memo, restored
+            # exactly on exit; path=None is a no-op.
+            Path("granted.txt").write_text("D_80098894\nD_8009AAAA\n")
+            with volatile_cheats.use_allowlist(str(Path("granted.txt").resolve())):
+                eq("use_allowlist: override observed through the memo",
+                   len(volatile_cheats.find_plain_volatile_externs(text)), 0)
+                with volatile_cheats.use_allowlist(None):
+                    eq("use_allowlist: None nested inside is a no-op "
+                       "(keeps the outer override)",
+                       len(volatile_cheats.find_plain_volatile_externs(text)), 0)
+            eq("use_allowlist: working-tree allowlist restored on exit",
+               len(volatile_cheats.find_plain_volatile_externs(text)), 2)
+
+            # 4. Returned lists are fresh copies — a mutating caller cannot
+            # poison the cache.
+            a = volatile_cheats.find_all_cheats(text)
+            n = len(a)
+            a.clear()
+            eq("memo: mutating find_all_cheats result does not corrupt cache",
+               len(volatile_cheats.find_all_cheats(text)), n)
+            b = inlineasm._strip_spans(text)
+            m = len(b)
+            b.clear()
+            eq("memo: mutating _strip_spans result does not corrupt cache",
+               len(inlineasm._strip_spans(text)), m)
+
+            # 5. func_rule_lines one-pass index: correct, invalidates on edit,
+            # returns fresh copies.
+            cfgp = str(Path("rules.txt").resolve())
+            Path(cfgp).write_text(
+                'foo: insert_after "addu\\t$18,$0,$zero" @ 52\n'
+                '# comment line\n'
+                'bar: rename $t0 $t1\n'
+                'foo: reorder 3 5\n')
+            eq("rule-index: two lines keyed foo, correct indices",
+               cheats.func_rule_lines("foo", cfgp),
+               [(0, 'foo: insert_after "addu\\t$18,$0,$zero" @ 52'),
+                (3, 'foo: reorder 3 5')])
+            eq("rule-index: one line keyed bar",
+               len(cheats.func_rule_lines("bar", cfgp)), 1)
+            eq("rule-index: unknown key -> empty",
+               cheats.func_rule_lines("baz", cfgp), [])
+            got = cheats.func_rule_lines("foo", cfgp)
+            got.clear()
+            eq("rule-index: mutating the result does not corrupt the cache",
+               len(cheats.func_rule_lines("foo", cfgp)), 2)
+            Path(cfgp).write_text('bar: rename $t0 $t1\n')
+            os.utime(cfgp, (future + 2, future + 2))
+            eq("rule-index: config edit observed (foo's rules gone)",
+               cheats.func_rule_lines("foo", cfgp), [])
+            eq("rule-index: missing file -> empty",
+               cheats.func_rule_lines("foo", str(Path("absent.txt").resolve())), [])
+    finally:
+        os.chdir(original_cwd)
+        volatile_cheats._volatile_extern_allowlist_cache = original_cache
+        _clear_memos()
+
+
 def main() -> int:
     test_canonical()
     test_score()
@@ -2123,6 +2247,7 @@ def main() -> int:
     test_prologue_cheat()
     test_addr_coerced_locals()
     test_volatile_extern_allowlist()
+    test_memo_and_rule_index_caches()
     test_lowercase_asm_cheats()
     test_macro_asm_strip_round_trip()
     test_include_asm_whole_body()
