@@ -4017,3 +4017,30 @@ codegen-load-bearing (de-volatilizing broke byte-matched siblings) and
 their use-site shapes qualify per-symbol — but prong 1's ISR attribution
 deserves a dedicated re-verification pass before any future grant leans
 on it as precedent.
+
+## 2026-08-07 — HandleSio attribution CURED (five grants); D_800F1AEC stays reverted; doctrine question to owner
+
+Follow-up to the same-day overturn entry. A dedicated re-verification lane
++ a fresh adversarial layer-2 (new facts, prior verdicts not credited):
+
+1. **The five 2026-07-10 grants STAND, attribution cured.** The earlier
+   "HandleSio does not exist" finding was an artifact of splat scoping:
+   func_8008C464.s holds SEVEN functions of verbatim Sony COMB.OBJ (libscan
+   ground truth) — _comb_control (the synchronous dispatcher mainline
+   calls), EvalpSio (IRQ verifier @0x8008C978), HandleSio (IRQ handler
+   @0x8008C9F4), r_sioinit/r_sioremove/etc. Registration: r_sioinit calls
+   bios_SysEnqIntRP(3, &D_800A304C) @0x8008CE1C; the InterruptElement's
+   handler word IS 0x8008C9F4 (asm/data/7D920.data.s:33468). Each granted
+   symbol has its own verified in-handler store. Three wrong citations
+   corrected in volatile_extern_allowlist.txt (comment-only).
+2. **D_800F1AEC remains plain extern s32.** Prong 1 now cures independently
+   (in-handler clear @0x8008CCD4; EvalpSio read @0x8008C9A8) but prong 2
+   still fails: both C-visible read sites are single-read guards. The
+   "one C object" rescue (AEC..AF8 as one asm-emitted struct) is base-
+   pointer inference with no declared C struct — extending the symbol-level
+   grant doctrine to cover it is an OWNER rule-extension question, not a
+   review grant. OPEN OWNER ITEM (recommended: defer until SetPacketData's
+   endgame concretely needs the qualifier; if it never does, never extend).
+3. Census method lesson saved as memory: base-register-store-invisible-to-
+   symbol-grep (grep misses struct-member stores through a materialized
+   base; read the handler window end-to-end).
