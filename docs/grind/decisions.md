@@ -3864,3 +3864,35 @@ full clean verify-oracle == 62efab4f... , engine test green, residual
 audit (no retired name surviving any keyed surface), fresh layer-2 on
 the wave diff, queue regen + integrity audit after. Scheduled after the
 oracle-compiler migration completes. [skip-park-src-guard]
+
+## 2026-08-07 — ELECTION REVISED: legacy-oracle adopted as the committed reproducible baseline (SOTN pattern)
+
+Phase-0 diligence (migration lane) materially undercut the World-A premise:
+21 respellings at real site A all emit `ori` under stock AND cc1psx-on-the-
+real-TU (the forensics had probed isolates only); the original binary
+carries two andi;addiu disjoint-bits shapes (one in raw INCLUDE_ASM) that a
+transform-performing compiler should have rewritten; site C cuts the other
+way. VERDICT: whether the original compiler performed PLUS->IOR on this
+code is UNDETERMINED — recorded as an open research question, not resolved.
+
+Owner elects the SOTN-pattern resolution (precedent verified: SOTN's own
+cc1-psx-26 is GCC 2.6.3 WITH PATCHES built from pinned decompals/old-gcc@
+370040a, distributed as a hash-verified release binary — the community bar
+is visible/pinned/reproducible, not unpatched-stock):
+- The 9-line PLUS->IOR removal becomes a COMMITTED PATCH FILE (tracked
+  location — tools/, since tools/gcc-2.7.2/ is gitignored) + the validated
+  recipe script tools/build_oracle_cc1.sh (--legacy-oracle mode: ZERO
+  behavioral differences vs the frozen oracle across all 32 TUs).
+- The in-use build/cc1 is SWAPPED to the recipe's own output so the
+  operative binary is exactly what the committed recipe produces; the
+  historical 045c9543 binary is retained as an artifact (backups + hash).
+- Full verify-oracle == 62efab4f... gates the swap (behavioral identity
+  pre-proven). The instrumented diagnostic cc1 is rebuilt with the same
+  patch; UNFAITHFUL_STEMS empties ON THE MERITS.
+- docs/ORACLE-COMPILER.md rewritten: REPRODUCIBLE via committed patch +
+  recipe; the fidelity question logged open; no-compiler-divergence is
+  amended IN SCOPE ONLY by this documented, owner-elected, match-proven
+  patch (no new patching license — the freeze stands for everything else).
+- Sites B/C need nothing under legacy (B's line lives in asmfix-injected
+  text; C's 2 rules remain as-is). Site A ceases to be a migration issue.
+[skip-park-src-guard]
