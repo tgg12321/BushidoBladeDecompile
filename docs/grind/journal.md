@@ -784,3 +784,4 @@
 - 2026-08-03 23:44 func_80021280 s1 [recon] floor=2: Recon: floor 2 re-confirmed and diff reduced to ONE adjacent-pair swap (move t1,v1 <-> move a1,zero); real-loop family and a1-first-textual family both killed with mechanisms
 - 2026-08-04 01:03 CIRCUIT-BREAK: 3 consecutive invalid sessions on saEft00Add
 - 2026-08-04 02:00 saEft00Add re-accepted COMPLETED-C (judge 00:47 artifact ruling; operator executed queue done after circuit-break triage; grinder held stopped per owner directive)
+- 2026-08-07 11:20 func_8003B5A4 COMPLETED-C after 1 sessions.
