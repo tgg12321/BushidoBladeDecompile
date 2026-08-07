@@ -3825,3 +3825,25 @@ track record) — categorically distinct from the pin/rename cheat family.
 The earlier FAIL is attributed to mechanism-first briefing (the correct
 default posture, correctly overridden on the actual code + precedent).
 [skip-park-src-guard]
+
+## 2026-08-07 — OWNER ELECTION: migrate the oracle-compiler baseline to reproducible stock GCC 2.7.2
+
+Per the Phase-1 forensics (9420b811, docs/grind/cc1-forensics-2026-08-07.md):
+build/cc1 is stock GCC 2.7.2 minus combine.c's 9-line PLUS->IOR conversion —
+a 2026-05-18 compiler-patch experiment whose binary silently became the
+project compiler. World A confirmed (cc1psx PERFORMS the conversion; the
+modification is not fidelity). Owner elects MIGRATION: rebuild stock cc1
+under the recovered recipe (-O0, combine.o at -O, -fgnu89-inline), re-spell
+the three divergent sites in pure C so STOCK compiles them to the oracle
+bytes (probe-verified reachable: v12/v3 shapes emit target's exact
+instructions under stock AND cc1psx), swap the baseline, full-build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa as the gate. The pre-migration
+binary (045c9543...) is PRESERVED as a historical artifact (backups + hash
+stay in docs/ORACLE-COMPILER.md). End state: fully reproducible toolchain
+(recipe committed as a script), UNFAITHFUL_STEMS emptied, no-compiler-
+divergence true from the binary up. Same election class as -mel
+(2026-08-04): configuration fidelity, not flag-hunting.
+Sites: gnd_disp_loop_ctrl (ings), func_80033DF4 (code6cac_b — verify the
+divergent line survives its tier-1 asmfix injection before respelling),
+cpu_set_move_command_and_dir_for_no_action_2/main (ings).
+[skip-park-src-guard]
