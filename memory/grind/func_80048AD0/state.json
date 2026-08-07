@@ -1,0 +1,34 @@
+{
+ "func": "func_80048AD0",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 1,
+   "modality": "recon",
+   "headline": "Recon: honest floor established at 1 (was 19) via the layer-2-confirmed (B) reuse form without the refused decl edit; reuse-counter type matrix closed with two new kills"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "expand_preferences pass order/direction determines whether ANY dying-pseudo/SET chain can hand {$a0} to a fresh post-call counter whose init is (set i (const 0))",
+   "mechanism": "global.c set_preference runs first (copy prefs), then expand_preferences merges via REG_DEAD links; a const-init insn has no dying pseudo, so the chain must enter through a different semantically-real init spelling \u2014 or is provably impossible",
+   "next_probe": "forensics: read tools/gcc-2.7.2/global.c expand_preferences loop; confirm direction with a -da greg dump of the score-1 form in tmp/grind/func_80048AD0/s2/"
+  },
+  {
+   "hypothesis": "delta's {$a0} preference can be removed by an arg spelling for snd_PlayBgm that still emits addiu $a0,<delta>,0x6E8 but whose RTL first operand is not delta's pseudo at set_preference time",
+   "mechanism": "without delta in regs_someone_prefers[counter], prune_preferences stops making the counter avoid $a0 and it takes $a0 naturally; note p_end - base rewrite is DEAD (emits subu, and base is dead pre-loop in target)",
+   "next_probe": "enumerate arg spellings beyond the k2..k7 same-shape respellings; verify each still folds to a single addiu into $a0 before scoring"
+  },
+  {
+   "hypothesis": "a permuter campaign seeded from the score-1 candidate can surface a counter/arg spelling neither hand-analysis covered",
+   "mechanism": "weighted permuter metric has real gradient at score 1 (single-insn diff); PERM directives can sweep counter-init and call-arg forms",
+   "next_probe": "tools/permuter_campaign.py launch from candidate.c with a clean single-function target.o, wait + harvest --stop in-turn per fresh-seed discipline"
+  }
+ ],
+ "judge_constraints": [],
+ "origin": "queue",
+ "created": "2026-08-07T16:20:21.595631+00:00"
+}
