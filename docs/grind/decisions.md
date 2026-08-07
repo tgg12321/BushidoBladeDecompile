@@ -3959,3 +3959,20 @@ byte-neutrality + fresh layer-2 review. Corrections recorded: the delegated
 ruling's precedent citation (main.c:3399 = func_8008BF04, not func_8008C184);
 open items inherited, not blocking: ISR attribution within the func_8008C464
 blob unpinned; LIBCOMB-vs-SPU naming contradiction in named_syms.txt.
+
+## 2026-08-07 — owner CONFIRMS the option-(b) ruling as standing; RTL pathway deferred
+
+1. **Option (b) (Wave-5 close-out) CONFIRMED.** The four near-matchable
+   asmfix drafts deliberately left unconverted stay unconverted; no session
+   may "finish" them without a fresh owner ruling. This confirmation closes
+   the shelf item — the protection itself was already recorded at the
+   Wave-5 close-out.
+2. **RTL-level extraction pathway DEFERRED** (owner accepts the operator
+   recommendation): no research investment while the queue still yields
+   cheap completions; revisit when median grind session counts climb.
+   func_80037A20 (floor 1) and Wave 8 asmfix retirement need no owner
+   action — both resolve through queue order.
+3. Standing bar restated with the go-ahead: no cheats, no workarounds, no
+   reward hacks — the SOTN standard governs every item in flight (the
+   D_800F1AEC application, the maintenance sweep, and any naming wave all
+   land only behind full verify-oracle proof + fresh layer-2 review).
