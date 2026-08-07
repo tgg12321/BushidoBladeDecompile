@@ -62,7 +62,7 @@ typedef struct GameObj {
 extern s32 func_800484A0(s32, s32, s32);
 extern void func_800485EC(s32, s32, s32, s32, s32, s32);
 extern s16 g_color_mode;
-extern s32 snd_LoadBgm(u8);
+extern s32 *snd_LoadBgm(s32);
 extern s32 snd_PlayBgm(s32);
 extern u8 D_80099BCC;
 extern s32 D_800A33E0;

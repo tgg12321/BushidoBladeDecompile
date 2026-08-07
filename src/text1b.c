@@ -593,7 +593,7 @@ void saTan4FireDisp_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s3
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     saTan4FireDisp_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
-extern s32 snd_LoadBgm(u8);
+extern s32 *snd_LoadBgm(s32);
 extern s32 snd_PlayBgm(s32);
 extern u8 D_80099BCC;
 extern s32 D_800A33E0;
