@@ -290,17 +290,18 @@ re-splits `regfix.txt` (3.5k lines) per call, which is the bulk of the remaining
 
 ## 7. Open questions / owner-gated
 
-1. **Data-as-code symbols in the pool — OWNER-GATED, deliberately not applied.**
-   12 symbols are listed `F .text` in the objects but have no C body (data
-   extracted as code). They inflate the pool and read UNSCORED in sandbox mode.
-   Name-based filtering would be wrong — most `D_`-named symbols here are
-   genuinely un-renamed functions — so the right filter is structural (no C body
-   and no whole-body-asm, the distinction `queue.py` draws via
-   `_not_a_c_function`). **Applying it changes the project-wide COMPLETED-C
-   count**, so it needs an owner decision, not a side effect of landing a tool.
-   Note `check_completion_integrity.py` counts these the same way today, so this
-   is a project-wide convention question. The tool surfaces the list on every
-   run instead of filtering it.
+1. **Data-as-code symbols in the pool — RESOLVED (owner ruling 2026-08-07):
+   the full structural filter is applied.** The 12 symbols listed `F .text` in
+   the objects that are structurally not C functions (`.include`d asm bodies,
+   `.aent` alternate entries, instruction-less `glabel` markers — the test
+   `queue.not_a_c_function_text` draws) are EXCLUDED from the COMPLETED-C pool
+   here and in `check_completion_integrity.py`, in the same commit, so the two
+   tools agree. This changed the headline count 1016 → 1004 — a definitional
+   correction, not a regression. Both tools print the excluded list on every
+   run. Name-based filtering remains wrong (most `D_`-named symbols are
+   genuinely un-renamed functions); the filter is structural only. The
+   longer-term fix — reclassifying these symbols as data in the split — would
+   make the filter moot.
 2. **Should `spot_check_completed.py` be an engine subcommand?** It reuses
    `engine.sandbox` / `score` / `cheats` directly and would pick up metrics
    capture free via `engine/metrics.py`. `check_completion_integrity.py` set the

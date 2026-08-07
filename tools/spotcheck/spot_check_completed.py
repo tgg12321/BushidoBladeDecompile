@@ -88,6 +88,7 @@ os.chdir(REPO)
 from engine import buildconfig as cfg  # noqa: E402
 from engine import cheats, inlineasm, sandbox, score  # noqa: E402
 from engine import pipeline as P  # noqa: E402
+from engine import queue as Q  # noqa: E402
 from engine import volatile_cheats as vc  # noqa: E402
 
 QUEUE_REL = "engine/queue.json"
@@ -280,9 +281,13 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
     carries a cheat: a completion-integrity VIOLATION, not a regression. It is
     reported separately and handed to check_completion_integrity.py.
 
-    no-C-body collects symbols the object lists as `F .text` that have no C
-    definition at all (data extracted as code, e.g. text1b's D_8005xxxx). They
-    are surfaced, not filtered — see README §8 q4 (owner-gated).
+    no-C-body collects symbols the object lists as `F .text` that are
+    structurally not C functions of the file at all (data extracted as code,
+    e.g. text1b's D_8005xxxx; `.aent` alternate entries; instruction-less
+    `glabel` markers) — the same test the queue generator draws via
+    queue.not_a_c_function_text. Owner ruling 2026-08-07: they are EXCLUDED
+    from the COMPLETED-C pool (they are not completions), and surfaced in the
+    third return value so no run hides the exclusion.
 
     `unknown_is_completed` governs a symbol whose cheat count is -1, i.e. the C
     body could not be located at all:
@@ -313,13 +318,13 @@ def classify_pool(symbols: dict[str, list[str]], in_queue: set[str],
         for func in funcs:
             if func in in_queue or func in canon:
                 continue
+            if text is not None and Q.not_a_c_function_text(text, func):
+                no_body.append((func, stem))
+                continue  # data-as-code: not a completion (owner ruling 2026-08-07)
             rules = rulecount.get(func, 0)
             prologue = 1 if func in prologued else 0
             cheat_count = (inlineasm.func_cheat_asm_count(text, func)
                            if (file_has_cheat_asm and text is not None) else 0)
-            if text is not None and inlineasm._func_body_span(text, func) is None \
-                    and func not in inlineasm.whole_body_asm_funcs(text):
-                no_body.append((func, stem))
             if cheat_count < 0 and not unknown_is_completed:
                 continue  # body unlocatable at this ref — no evidence either way
             if rules or prologue or cheat_count > 0:
@@ -751,9 +756,9 @@ def main() -> int:
         for v in violations:
             print(f"  ~~ {v}")
     if no_body:
-        print(f"\nno-C-body symbols in the pool ({len(no_body)}) — data extracted as "
-              f"code; they will read UNSCORED in sandbox mode. Filtering them is "
-              f"OWNER-GATED (it changes the COMPLETED-C count): "
+        print(f"\ndata-as-code symbols ({len(no_body)}) — structurally not C "
+              f"functions; EXCLUDED from the COMPLETED-C pool "
+              f"(owner ruling 2026-08-07): "
               f"{', '.join(f + ' (' + s + ')' for f, s in sorted(no_body))}")
 
     if args.list:

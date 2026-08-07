@@ -44,6 +44,7 @@ sys.path.insert(0, str(REPO))
 # resolve correctly regardless of where this tool was invoked from.
 os.chdir(REPO)
 from engine import cheats, inlineasm, pipeline as P, score  # noqa: E402
+from engine import queue as Q  # noqa: E402
 
 QUEUE = REPO / "engine" / "queue.json"
 
@@ -57,6 +58,7 @@ def main() -> int:
 
     violations: list[str] = []
     gate_notes: list[str] = []
+    data_as_code: list[str] = []
     total_completed_c = 0
     total_completed_canon = 0
 
@@ -68,9 +70,21 @@ def main() -> int:
         ref_o = f"build/src/{stem}.o"
         if not Path(ref_o).exists():
             continue
+        src_text = inlineasm._read_src_cached(stem)
         for func in score._o_func_table(ref_o):
             if func in in_queue:
                 continue  # INCOMPLETE — the queue covers it
+            # Data-as-code: a symbol in the object's function table that is not
+            # a C-level function of the file at all (`.include`d asm body,
+            # `.aent` alternate entry, instruction-less `glabel` marker). Owner
+            # ruling 2026-08-07: these are NOT completions and are excluded
+            # from the COMPLETED-C count project-wide (same structural test the
+            # queue generator uses; tools/spotcheck applies it too). Surfaced,
+            # not silently dropped.
+            if src_text is not None and func not in canon \
+                    and Q.not_a_c_function_text(src_text, func):
+                data_as_code.append(f"{func} ({stem}.c)")
+                continue
             # Function is not in the queue: must be one of the COMPLETED states.
             rules = (len(cheats.func_rule_lines(func, cheats.REGFIX))
                      + len(cheats.func_rule_lines(func, cheats.REGFIX2))
@@ -132,6 +146,12 @@ def main() -> int:
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")
     print(f"INCOMPLETE (in queue):          {len(in_queue)} functions")
+    if data_as_code:
+        print(f"\ndata-as-code symbols ({len(data_as_code)}) — in the objects' "
+              f"function tables but structurally not C functions; excluded from "
+              f"the COMPLETED-C count (owner ruling 2026-08-07):")
+        for d in sorted(data_as_code):
+            print(f"  -- {d}")
 
     if gate_notes:
         print(f"\nmaspsx gate-dependent completions ({len(gate_notes)}) — "
