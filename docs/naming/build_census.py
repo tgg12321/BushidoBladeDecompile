@@ -20,7 +20,7 @@ for fn in sorted(os.listdir(FUNCDIR)):
     if not fn.endswith(".s"):
         continue
     path = os.path.join(FUNCDIR, fn)
-    with open(path, "r", errors="replace") as fh:
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
         lines = fh.readlines()
     name = None
     addr = None
@@ -47,7 +47,7 @@ if _need:
     for fn in os.listdir(FUNCDIR):
         if not fn.endswith(".s") or not _need:
             continue
-        for ln in open(os.path.join(FUNCDIR, fn), errors="replace"):
+        for ln in open(os.path.join(FUNCDIR, fn), encoding="utf-8", errors="replace"):
             m = JALLINE.search(ln)
             if not m or m.group(2) not in _need:
                 continue
@@ -64,7 +64,7 @@ INCASM = re.compile(r'INCLUDE_ASM\([^,]+,\s*([A-Za-z_]\w*)\s*\)')
 for f in sorted(os.listdir(J("src"))):
     if not f.endswith(".c"):
         continue
-    with open(J("src", f), errors="replace") as fh:
+    with open(J("src", f), encoding="utf-8", errors="replace") as fh:
         for i, ln in enumerate(fh, 1):
             m = INCASM.search(ln)
             if m:
@@ -81,7 +81,7 @@ for sf in ("named_syms.txt", "symbol_addrs.txt"):
     p = J(sf)
     if not os.path.exists(p):
         continue
-    with open(p, errors="replace") as fh:
+    with open(p, encoding="utf-8", errors="replace") as fh:
         for i, ln in enumerate(fh, 1):
             m = SYMLINE.match(ln)
             if m:
@@ -98,7 +98,7 @@ MISFLAG = re.compile(r"MISNAMED|misnamed|likely misnamed|\bwrong\b", re.I)
 kengo = {}
 kp = J("kengo_matches.csv")
 if os.path.exists(kp):
-    with open(kp, newline="", errors="replace") as fh:
+    with open(kp, newline="", encoding="utf-8", errors="replace") as fh:
         for row in csv.DictReader(fh):
             kengo[row["bb2_func"]] = row
 
@@ -110,7 +110,7 @@ for row in kengo.values():
 kengo_decisions = {}
 kd = J("kengo_name_decisions.csv")
 if os.path.exists(kd):
-    with open(kd, newline="", errors="replace") as fh:
+    with open(kd, newline="", encoding="utf-8", errors="replace") as fh:
         for row in csv.DictReader(fh):
             kengo_decisions[row["renamed_to"]] = row
 
@@ -120,7 +120,7 @@ rename_band = {}    # new_name -> (band_label, evidence_class)
 rp = J("tools", "rename_funcs.py")
 if os.path.exists(rp):
     band = "unbanded"
-    for ln in open(rp, errors="replace"):
+    for ln in open(rp, encoding="utf-8", errors="replace"):
         s = ln.strip()
         if s.startswith("#"):
             c = s.lstrip("#").strip()
@@ -143,7 +143,7 @@ rename_targets = set(rename_map.values())
 psyq = {}
 pp = J("known_psyq_stdlib.txt")
 if os.path.exists(pp):
-    for ln in open(pp, errors="replace"):
+    for ln in open(pp, encoding="utf-8", errors="replace"):
         if ln.startswith("#") or not ln.strip():
             continue
         parts = ln.split()
@@ -154,7 +154,7 @@ if os.path.exists(pp):
 canon = {}
 cp = J("inline_asm_canonical.txt")
 if os.path.exists(cp):
-    for ln in open(cp, errors="replace"):
+    for ln in open(cp, encoding="utf-8", errors="replace"):
         s = ln.strip()
         if not s or s.startswith("#"):
             continue
@@ -214,7 +214,7 @@ for nm, info in funcs.items():
     path = os.path.join(FUNCDIR, info["stem"] + ".s")
     if not os.path.exists(path):
         continue
-    body = open(path, errors="replace").read()
+    body = open(path, encoding="utf-8", errors="replace").read()
     refs = set(SYMREF.findall(body))
     for r in refs:
         va = None
@@ -237,7 +237,7 @@ for nm, info in funcs.items():
 misnomer_doc = set()
 mp = J("docs", "naming", "MISNOMERS.md")
 if os.path.exists(mp):
-    mt = open(mp, errors="replace").read()
+    mt = open(mp, encoding="utf-8", errors="replace").read()
     for m in re.finditer(r"`([A-Za-z_]\w*)`", mt):
         misnomer_doc.add(m.group(1))
 
@@ -256,7 +256,7 @@ def _rd(fname):
     p = J("docs", "naming", fname)
     if not os.path.exists(p):
         return []
-    with open(p, newline="", errors="replace") as fh:
+    with open(p, newline="", encoding="utf-8", errors="replace") as fh:
         return list(csv.DictReader(fh))
 
 for r in _rd("residual_named.csv"):
@@ -284,7 +284,7 @@ queue_funcs = set()
 qp = J("engine", "queue.json")
 if os.path.exists(qp):
     try:
-        q = json.load(open(qp, errors="replace"))
+        q = json.load(open(qp, encoding="utf-8", errors="replace"))
         items = q if isinstance(q, list) else q.get("items", q.get("functions", []))
         for it in items:
             if isinstance(it, dict):
