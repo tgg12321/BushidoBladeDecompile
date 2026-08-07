@@ -195,6 +195,100 @@ incremented right after the `something_changed = 0;` at the top of the
 `python3 tools/ra_solver/reload_extract.py` turns the logs into JSON;
 `python3 tools/ra_solver/reload_sim.py --check` validates the model.
 
+## 7. local-alloc.c — BB2_SUGG_DEBUG, the suggested-register pass (NEW 2026-08-06)
+
+The last unmodeled local-alloc pass. Print-only under `getenv ("BB2_SUGG_DEBUG")`.
+Both hooks live in `local-alloc.c`.
+
+### `block_alloc` — the per-qty input table
+
+Immediately after the first `qty_order[i] = i;` loop and **before** the
+`qty_sugg_compare` sort, one line per qty:
+
+    SUGGDBG-QTY func= blk= qty= reg1= birth= death= refs= size= mode= minclass=
+                altclass= calls= chgsize= ncopysugg= nsugg= copysugg=a,b, sugg=c,d,
+
+**Placement is load-bearing.** It must be dumped before the suggested-register
+pass runs, because `find_free_reg`'s retry path (local-alloc.c:2216) *clears*
+`qty_phys_num_copy_sugg[qty]` as a side effect — a dump taken afterwards
+under-reports the copy suggestions on exactly the qtys that are most
+interesting.
+
+`size` is `qty_size`, previously the known Phase-5 hook gap: the Python model
+hardcoded 1, which feeds `qty_compare`'s priority directly.
+
+### `find_free_reg` — the scanned hard-reg sets
+
+Immediately before the `GO_IF_HARD_REG_SUBSET (..., fail)`, i.e. after
+`first_used` is final:
+
+    SUGGDBG-FFR qty= class= mode= jts= acc= born= dead= used=… first_used=…
+
+`used` is the conflict set; `first_used` is it restricted to the suggestion set
+when `jts` (`just_try_suggested`) is on — that restriction *is* the whole of the
+suggested-register preference. One line per call, so the copy-sugg→sugg retry
+and the caller-saves retry each appear as their own line.
+
+### Reading it
+
+    python3 tools/ra_solver/local_extract.py <stem> --suggest   # -> <stem>.sugg.json
+    python3 tools/ra_solver/local_alloc.py   <stem> --suggest   # scores the pass
+    python3 tools/ra_solver/inverse.py local … --sugg <stem>.sugg.json
+
+`--suggest` is additive: `<stem>.local.json` is byte-identical with and without
+it (verified on 5 stems against the pre-change extractor), so every existing
+consumer is unaffected.
+
+**Model status: EXACT.** Corpus-wide (all 32 TUs): preference 1578/1578,
+assignment 947/947. Two source details the first cut missed, both now modelled:
+the retry at 2216 scans the *plain* suggestion set (the pre-pass `ncopysugg` no
+longer applies), and a qty's several `jts=1` calls are one retry chain with a
+single outcome, not several assignments.
+
+### Neutrality evidence
+
+A hooks-free cc1 was built from the same tree and compared against the
+instrumented one on all 32 TUs: **identical output on every TU**, and
+`BB2_SUGG_DEBUG=1` is itself output-inert. Script: `tmp/sugg_ab3.sh`.
+The project build uses `tools/gcc-2.7.2/build/cc1` (Makefile:12), which these
+hooks do not touch at all.
+
+### Fidelity caveat found while validating (2026-08-06)
+
+The instrumented `tools/gcc-2.7.2/cc1` and the build compiler
+`tools/gcc-2.7.2/build/cc1` are different builds, and they **disagree on two
+TUs**: `ings` (5 diff lines) and `code6cac_b` (2 diff lines) — constant-folding
+and `ori`-vs-`addu` differences, unrelated to any BB2 hook and present before
+this change. Dumps for functions in those two TUs are therefore not faithful to
+what the project actually builds; treat ra_solver evidence there as suspect
+until the two binaries are reconciled. All other 30 TUs agree byte-for-byte.
+Script: `tmp/sugg_fidelity.sh`. `local_extract.py` carries the pair in
+`UNFAITHFUL_STEMS` and warns on stderr when either is extracted, so the
+exclusion is visible at the point of use and not only here.
+
+### What this pass did NOT explain (2026-08-06)
+
+The hook was built for two functions and cleared neither. Recorded so nobody
+re-runs the avenue:
+
+* **`camera_set_zoom`** (banked floor 3, block 41) — with `candidate.diff`
+  applied the function has 52 qtys and **none** carries a suggestion. The pass
+  never runs here, so the banked "a `$v0` suggestion on the pointer would
+  pre-empt the main pass" hypothesis is refuted structurally: `combine_regs`
+  only creates a suggestion when one side of a copy is a HARD register, and the
+  contested block (`lw $v1,0($s0)` / `li $v0,2` / `sh $v0,646($v1)`) has no
+  hard-reg copy. The other named gap, `qty_size`, measures 1 for both contested
+  qtys — the model's hardcoded 1 was already right. The 12 `alloc_order` vectors
+  survive unchanged and the necessary-not-sufficient caveat still stands.
+* **`DispPracticeMenuTex_A`** — 2 of 72 qtys carry a suggestion (block 13,
+  `reg1=217` and `reg1=225`, both suggested `$a0`, both placed and honored).
+  No contested pseudo is among them, and not merely because it is absent from
+  the `reg1` column: pseudos 100/83/84/98/85/99 are all **global allocnos**
+  (present in `DispPracticeMenuTex_A.model.json`'s `order`), and `global_alloc`
+  builds allocnos only for pseudos local-alloc left unassigned — so they cannot
+  be a member of any qty, first or otherwise. Pseudo 132 is local-allocated and
+  carries no suggestion. The validated-UNREACHABLE verdict stands.
+
 ### Reference-pollution note (2026-08-05)
 
 FRAMEDBG numbers are **structurally immune to `build/` reference pollution**:

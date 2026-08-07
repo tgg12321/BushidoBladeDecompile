@@ -309,7 +309,7 @@ class LocalBackend:
         "SUFFICIENT, until re-derived from a QTYDBG dump of the candidate."
     )
 
-    def __init__(self, path, func, block):
+    def __init__(self, path, func, block, sugg=None):
         data = json.loads(Path(path).read_text())
         if func not in data:
             raise SystemExit(f"{func} not in {path}; have "
@@ -319,11 +319,36 @@ class LocalBackend:
         if not rows:
             raise SystemExit(f"{func} block {block}: no main-pass qty rows")
         self.rows = rows
+
+        # qty_size: 1 unless a suggestion table says otherwise.  The old
+        # hardcoded 1 is right for every single-register quantity, but it feeds
+        # qty_compare's priority directly, so a multi-register qty in the block
+        # silently mis-ordered the whole replay.
+        sizes = {}
+        # The suggested-register pass runs BEFORE the main pass and
+        # post_mark_life's whatever it places, so those registers are occupied
+        # for the whole main pass.  Dropping the rows (as this backend used to)
+        # made the block look emptier than it is.
+        sugg_live = {}
+        for r in data[func]:
+            if r["blk"] == block and r["pass"] == "sugg" and r["got"] >= 0:
+                for i in range(r["birth"], r["death"] + 1):
+                    sugg_live.setdefault(i, set()).add(r["got"])
+        if sugg:
+            tbl = json.loads(Path(sugg).read_text())
+            blk = tbl.get(func, {}).get(str(block), {})
+            for k, v in blk.items():
+                if k != "_ffr":
+                    sizes[int(k)] = v["size"]
+
         self.state = {r["qty"]: {"refs": r["refs"], "birth": r["birth"],
-                                 "death": r["death"], "size": 1}
+                                 "death": r["death"],
+                                 "size": sizes.get(r["qty"], 1)}
                       for r in rows}
         self.dump = {r["qty"]: r["got"] for r in rows}
-        self.hard_live = {}          # pos -> set(hard regs) held by NON-qtys
+        # pos -> set(hard regs) held by NON-qtys, seeded with the sugg pass's
+        # placements
+        self.hard_live = sugg_live
         self.extra = {}              # synthetic competing quantities
 
     # -- forward -----------------------------------------------------------
@@ -587,6 +612,9 @@ def main():
     lo.add_argument("model")
     lo.add_argument("--func", required=True)
     lo.add_argument("--block", type=int, required=True)
+    lo.add_argument("--sugg", help="<stem>.sugg.json from "
+                                   "`local_extract.py --suggest`; supplies the "
+                                   "real qty_size (default 1)")
 
     for p in (g, lo):
         p.add_argument("--goal", help='{"<unit>": <hardreg>, ...}')
@@ -598,7 +626,7 @@ def main():
     if a.mode == "global":
         backend = GlobalBackend(a.model)
     else:
-        backend = LocalBackend(a.model, a.func, a.block)
+        backend = LocalBackend(a.model, a.func, a.block, a.sugg)
 
     if a.swap:
         x, y = (int(t) for t in a.swap.split(","))

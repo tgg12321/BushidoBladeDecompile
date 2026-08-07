@@ -46,17 +46,81 @@ QTY = re.compile(
     r"death=(?P<death>-?\d+) refs=(?P<refs>-?\d+) got=(?P<got>-?\d+)")
 FUNC = re.compile(r"^ALLOCDBG func=(?P<func>\S+)")
 
+# --- BB2_SUGG_DEBUG (--suggest only; see cc1_hooks.patch.md section 7) --------
+# SUGGDBG-QTY is the complete per-qty input table, printed BEFORE the suggested-
+# register pass runs (find_free_reg's retry clears qty_phys_num_copy_sugg, so a
+# later dump would under-report).  SUGGDBG-FFR is one line per find_free_reg
+# call carrying the two hard-reg sets it scans.
+SUGG_QTY = re.compile(
+    r"^SUGGDBG-QTY func=(?P<func>\S+) blk=(?P<blk>-?\d+) qty=(?P<qty>-?\d+) "
+    r"reg1=(?P<reg1>-?\d+) birth=(?P<birth>-?\d+) death=(?P<death>-?\d+) "
+    r"refs=(?P<refs>-?\d+) size=(?P<size>-?\d+) mode=(?P<mode>-?\d+) "
+    r"minclass=(?P<minclass>-?\d+) altclass=(?P<altclass>-?\d+) "
+    r"calls=(?P<calls>-?\d+) chgsize=(?P<chgsize>-?\d+) "
+    r"ncopysugg=(?P<ncopysugg>-?\d+) nsugg=(?P<nsugg>-?\d+) "
+    r"copysugg=(?P<copysugg>[\d,]*) sugg=(?P<sugg>[\d,]*)")
+SUGG_FFR = re.compile(
+    r"^SUGGDBG-FFR qty=(?P<qty>-?\d+) class=(?P<class>-?\d+) "
+    r"mode=(?P<mode>-?\d+) jts=(?P<jts>-?\d+) acc=(?P<acc>-?\d+) "
+    r"born=(?P<born>-?\d+) dead=(?P<dead>-?\d+) "
+    r"used=(?P<used>[\d,]*) first_used=(?P<first_used>[\d,]*)")
 
-def run(stem):
+
+# TUs where the instrumented cc1 and the BUILD compiler (build/cc1, Makefile:12)
+# emit different code — measured 2026-08-06, tmp/sugg_fidelity.sh. The two are
+# different builds; the divergence predates any BB2 hook and is unrelated to it
+# (a hooks-free cc1 matches the instrumented one on all 32 TUs). Dumps for these
+# stems do not describe what the project actually builds, so they are announced
+# at the point of use rather than left to a caveat in the docs.
+UNFAITHFUL_STEMS = {"ings": 5, "code6cac_b": 2}
+
+
+def _regs(s):
+    return [int(x) for x in s.split(",") if x]
+
+
+def run(stem, suggest=False):
     WORK.mkdir(parents=True, exist_ok=True)
     ifile = WORK / f"{stem}.i"
     subprocess.run(f'{CPP} "{ROOT / "src" / (stem + ".c")}" > "{ifile}"',
                    shell=True, cwd=ROOT, check=True, stderr=subprocess.DEVNULL)
     env = dict(os.environ, BB2_QTY_DEBUG="1", BB2_ALLOC_DEBUG="1")
+    if suggest:
+        env["BB2_SUGG_DEBUG"] = "1"
     r = subprocess.run(
         f'"{CC1}" {CC1_FLAGS} -da "{ifile}" -o "{WORK / (stem + ".s")}"',
         shell=True, cwd=ROOT, env=env, capture_output=True, text=True)
     return r.stderr
+
+
+def segment_sugg(stderr):
+    """SUGGDBG-QTY carries func= itself, so it needs no segmentation.  FFR lines
+    do not, and are attributed to the block whose QTY table most recently
+    preceded them -- which is exact, because block_alloc prints the whole table
+    before making any find_free_reg call for that block."""
+    out, cur = {}, None
+    for line in stderr.splitlines():
+        m = SUGG_QTY.match(line)
+        if m:
+            d = m.groupdict()
+            cur = (d["func"], int(d["blk"]))
+            row = {k: int(v) for k, v in d.items()
+                   if k not in ("func", "copysugg", "sugg")}
+            row["copysugg"] = _regs(d["copysugg"])
+            row["sugg"] = _regs(d["sugg"])
+            out.setdefault(d["func"], {}).setdefault(str(row["blk"]), {})[
+                str(row["qty"])] = row
+            continue
+        f = SUGG_FFR.match(line)
+        if f and cur:
+            d = f.groupdict()
+            row = {k: int(v) for k, v in d.items()
+                   if k not in ("used", "first_used")}
+            row["used"] = _regs(d["used"])
+            row["first_used"] = _regs(d["first_used"])
+            blk = out.setdefault(cur[0], {}).setdefault(str(cur[1]), {})
+            blk.setdefault("_ffr", []).append(row)
+    return out
 
 
 def segment(stderr):
@@ -87,12 +151,35 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("stem")
     ap.add_argument("--func")
+    ap.add_argument("--suggest", action="store_true",
+                    help="also enable BB2_SUGG_DEBUG and write "
+                         "<stem>.sugg.json (per-qty suggestion sets, qty_size, "
+                         "class/mode, and find_free_reg's scanned hard-reg "
+                         "sets). The .local.json output is unchanged either way.")
     a = ap.parse_args()
-    per_func = segment(run(a.stem))
+    if a.stem in UNFAITHFUL_STEMS:
+        print("WARNING: the instrumented cc1 disagrees with the build compiler "
+              "(build/cc1) on %s by %d instruction(s). This dump does NOT "
+              "describe what the project builds — do not treat it as ground "
+              "truth. See cc1_hooks.patch.md section 7."
+              % (a.stem, UNFAITHFUL_STEMS[a.stem]), file=sys.stderr)
+    stderr = run(a.stem, suggest=a.suggest)
+    per_func = segment(stderr)
     path = WORK / f"{a.stem}.local.json"
     path.write_text(json.dumps(per_func, indent=1))
     print("local model written: %s  (%d functions, %d qty rows)"
           % (path, len(per_func), sum(len(v) for v in per_func.values())))
+    if a.suggest:
+        sg = segment_sugg(stderr)
+        spath = WORK / f"{a.stem}.sugg.json"
+        spath.write_text(json.dumps(sg, indent=1))
+        nq = sum(len([k for k in b if k != "_ffr"])
+                 for f in sg.values() for b in f.values())
+        nsug = sum(1 for f in sg.values() for b in f.values()
+                   for k, r in b.items()
+                   if k != "_ffr" and (r["ncopysugg"] or r["nsugg"]))
+        print("suggestion table written: %s  (%d functions, %d qtys, "
+              "%d carrying a suggestion)" % (spath, len(sg), nq, nsug))
     if a.func:
         rows = per_func.get(a.func, [])
         print("\n%s: %d qty rows" % (a.func, len(rows)))
