@@ -3896,3 +3896,32 @@ is visible/pinned/reproducible, not unpatched-stock):
 - Sites B/C need nothing under legacy (B's line lives in asmfix-injected
   text; C's 2 rules remain as-is). Site A ceases to be a migration issue.
 [skip-park-src-guard]
+
+## 2026-08-07 — owner rules on the two open auth-shelf questions (batch 1+2 close-out)
+
+Context: the 2026-08-06 batch-1+2 grants are landed and verified (8 units in
+inline_asm_canonical.txt; func_80052930 grant rescinded). Two questions
+remained open on the shelf; the owner ruled on both today.
+
+1. **LZC island-wording PRE-APPROVED for func_8002BEA0 and func_8002EA24 —
+   LZC-ONLY SCOPE.** The island's clobber-list wording is pre-approved so the
+   grind can bank each function the instant its pure-C residual closes (no
+   fresh escalation needed at that moment). Conditions binding the grant:
+   - Effective ONLY when the function otherwise matches (the 2026-07-30
+     func_8002EA24 precedent's otherwise-match requirement is unchanged —
+     this pre-approves the WORDING, not an early listing).
+   - Scope is the LZC island ONLY. The drafted func_8002EA24 vector/MVMVA
+     block is NOT covered: as drafted it swallowed plain pointer arithmetic
+     (`addiu $v0, %0, 0xF8` / `0x100` on a C-visible parameter) into
+     hardcoded-$N template text — the inline-asm-injection signature. Any
+     vector-block asm must narrow to `addu $t4, %0, $zero` + cop2 ops with
+     the address bound as an operand, and would need its own authorization.
+2. **func_80052930 — standing plan CONFIRMED, nothing added.** Island
+   decomposition in pure C per the packet's 10-region table; re-escalation
+   requires NEW decisive evidence (the rescission rationale stands).
+
+Also noted from the same review, mechanical follow-up (not a ruling): the 26
+ASM-STRUCTURAL queue verdicts are stale pre-fix records (the population the
+2026-06-09 audit rejected; engine/canonical.py could not produce them today)
+— a gate re-run should demote them to ASM-SUSPECT and the rejection rationale
+should be persisted so the population does not resurface a third time.
