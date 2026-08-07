@@ -3929,3 +3929,33 @@ should be persisted so the population does not resurface a third time.
 ## 2026-08-07 11:20 — func_8003B5A4 — final call — **PASS**
 
 func_8003B5A4 (suDispMentalBar command-byte interpreter) reaches COMPLETED-C legitimately. Verified against the tree, not the session's claims: (1) the working diff removes all 10 regfix rules (regfix.txt lines 1294-1307 at HEAD); grep confirms zero remaining func_8003B5A4 entries in regfix.txt, asmfix.txt, and inline_asm_canonical.txt. (2) The candidate body (src/code6cac_c_ab.c:549-579) contains no __asm__, no register-asm pins, no volatile coercion, no alias renames, no FAKE constructs, and no intent-announcing names -- locals are p/byte0/byte/counter, ordinary parser vocabulary. (3) Every statement is live in the emitted output. The one construct worth scrutiny -- case 3 stores D_800A3844 = p+1 and then D_800A3844 = p+2 two statements later -- is NOT a manufactured dead store: the HEAD body had the identical double store (data+1 then data+2), and the ledger's evidence.md records the target byte sequence as sw,lbu,sw,sb,lbu, i.e. the original binary itself performs both cursor stores. This is the idiomatic byte-stream form (advance the stream cursor as each byte is consumed), preserved from the original, not introduced to steer GCC. (4) The actual change is statement order (store the advanced cursor before loading through the saved pointer local) and loading p[1] at its use site instead of pre-caching -- statement ordering and live-local choice are the ordinary pure-C search space, and a human writing a stream parser from spec could naturally write this shape (save pointer, bump cursor, read through saved pointer). No sanctioned-exception family is invoked, so no exhaustion/annotation prerequisites apply. (5) Ledger is clean: state.json judge_constraints is empty (queue origin, not a regression item), hypotheses.md H1 is a plain mechanism claim (pointer pseudo dies at last load, register reused) describing WHY the natural C matches -- the construct itself carries semantic purpose independent of that explanation. The 6-test cheat checklist passes affirmatively on every test. Bytes were already proven on main per the FINAL CALL brief (sandbox 0, rules retired, full-build SHA1 == oracle).
+
+## 2026-08-07 — owner RATIFIES the D_800F1AEC carve-out, converted to the rule's own spelling
+
+The 2026-08-06 delegated grant (scoped, SetPacketData) is CONFIRMED on the
+verified evidence: the IRQ-writer prong holds by direct adjacency (two of the
+three D_800F1AEC stores in func_8008C464 immediately precede the exact stores
+the existing allowlist entries cite), the four-word block arithmetic holds
+(AEC is element [0]; [1]/[2]/[3] already granted), and the IRQ-mutated-loop-
+bound use-site shape is present in func_8008C1E8.
+
+The grant's FORM changes: the volatile-base-pointer wording is mechanically
+unrecordable (matches no detector pattern; the allowlist cannot express it;
+it reads as an un-annotated load-bearing pointer alias — the saEft00Add-revert
+family). The owner converts it to the written rule's only spelling:
+
+- `extern volatile s32 D_800F1AEC;` (src/main.c) + one
+  volatile_extern_allowlist.txt line citing the func_8008C464 stores
+  (0x8008C83C / 0x8008CE58 / 0x8008CF2C).
+- The local pointer-to-volatile spellings in SetPacketData become
+  unnecessary and are retired with the change.
+- The redundant `*(volatile s32 *)&D_800F1AF4` casts (main.c:3499/3546) are
+  dropped in the same pass (already-volatile extern; detector-visible debt).
+
+APPLICATION IS DEFERRED to a grinder-quiet window: the qualifier compiles
+into the whole main.c TU (non-volatile consumers incl. COMPLETED-C
+func_8008C184), so the change lands only with full verify-oracle proof of
+byte-neutrality + fresh layer-2 review. Corrections recorded: the delegated
+ruling's precedent citation (main.c:3399 = func_8008BF04, not func_8008C184);
+open items inherited, not blocking: ISR attribution within the func_8008C464
+blob unpinned; LIBCOMB-vs-SPU naming contradiction in named_syms.txt.
