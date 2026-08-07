@@ -33,7 +33,7 @@ Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting ga
 - Stack: `0x801FFFF0`, GP: `0x800A30CC`
 - Text+data size: `0x93800` (604,160 bytes), loads at file offset `0x800`
 - Code ends ~`0x8008D070`, data/tables from ~`0x8008D080` to `0x800A3800`
-- 1,410 functions identified by splat
+- 1,436 functions identified by splat (per the naming census, `docs/naming/README.md`: 1,438 `asm/funcs/*.s` files, minus the `D_8007E08C` data-as-code blob, minus two duplicate-glabel pairs)
 
 **Overlay EXE:** `disc/STR/MOVOVL.EXE` (122,880 bytes) — FMV/MDEC playback overlay
 - Loads at `0x801D8800`, entry `0x801DA084` — no overlap with main EXE
@@ -52,7 +52,7 @@ This regenerates `asm/`, the linker script, and symbol files.
 
 Current split layout:
 - `asm/data/800.rodata.s` — .rodata section (strings, jump tables, constants)
-- `asm/6CAC.s` — .text section (1,410 functions, all assembly)
+- `asm/6CAC.s` — .text section (all assembly; the per-function split lives in `asm/funcs/`)
 - `asm/data/7D920.data.s` — .data section (initialized globals)
 - `bb2.ld` — generated linker script
 - `undefined_syms_auto.txt` — auto-detected data symbol addresses
