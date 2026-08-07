@@ -3812,3 +3812,16 @@ already-s32 radius) is the defensible story. A third informed review with
 BOTH framings adjudicates it.
 
 [skip-park-src-guard]
+
+## 2026-08-07 — func_80044CCC adjudication: PASS, a7884c50 STANDS
+
+The third (adjudicating) reviewer, briefed with BOTH framings, PASSed the
+commit on independently verified merits: math_Sin/math_Cos are declared
+s32 f(s32) (text1a_c.c:1468-1469); `radius` is a pre-existing same-function
+sibling of the exact s16-source/s32-local pattern; the negation reorder
+drops no store and adds none; and the width-retype is the established
+Lever-B technique class (register-alloc-pure-c, multi-function accepted
+track record) — categorically distinct from the pin/rename cheat family.
+The earlier FAIL is attributed to mechanism-first briefing (the correct
+default posture, correctly overridden on the actual code + precedent).
+[skip-park-src-guard]
