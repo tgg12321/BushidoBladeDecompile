@@ -147,17 +147,25 @@ harvested rather than derived — the same treatment `ra_solver` gives
                  max_priority, INSN_PRIORITY (prev));
     }
 
-## Parity status (2026-08-05)
+## Parity status — RESOLVED 2026-08-07
 
-Instrumented `cc1` vs `build/cc1` over all 29 `src/*.c` TUs with no BB2_*
-env set: **28 byte-identical, 1 differs — `src/ings.c`.**
+Instrumented `cc1` vs `build/cc1` over all `src/*.c` TUs with no BB2_* env
+set: **byte-identical on every TU.** Diagnostics taken from the instrumented
+compiler now describe exactly what the project builds.
 
-That divergence **pre-dates these hooks** (verified by rebuilding `cc1` from
-the pre-hook `sched.c`: byte-identical to the hooked build on every TU, and
-still different from `build/cc1` on `ings`). `build/cc1` was built 2026-05-18
-and the source tree has since had `jump.c`, `global.c`, `local-alloc.c`,
-`reorg.c` and the regenerated `insn-*.c` touched. It does not affect the
-build (the Makefile uses `build/cc1`), but any `ings.c` diagnostic taken from
-the instrumented `cc1` describes a different compiler. `extract.py` flags it.
-Worth resolving separately — it also silently affects `ra_solver` extractions
-on that TU.
+**Previously (2026-08-05):** 28 identical, 1 differed — `src/ings.c`. The
+divergence pre-dated these hooks (verified by rebuilding `cc1` from the
+pre-hook `sched.c`), so it was correctly ruled not-our-fault, but the actual
+cause stayed hidden for two days: only `build/cc1` carried an undocumented
+removal of `combine.c`'s PLUS→IOR conversion, left behind by a 2026-05-18
+compiler-patch experiment. The suspected causes at the time — the touched
+`jump.c` / `global.c` / `local-alloc.c` / `reorg.c` and regenerated `insn-*.c`
+— were not it.
+
+The patch is now committed (`tools/cc1-no-plus-to-ior.patch`) and both
+binaries are built from it: `tools/build_oracle_cc1.sh` for `build/cc1`,
+`tools/build_diagnostic_cc1.sh` for the instrumented one. Re-verify with the
+latter (no `--install`); it names divergent stems and `none` is the contract.
+The same fix closed `ra_solver`'s `UNFAITHFUL_STEMS`. Background, and the
+still-open question of what the original PsyQ compiler did, are in
+`docs/ORACLE-COMPILER.md`.

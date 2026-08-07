@@ -279,29 +279,31 @@ instrumented one on all 32 TUs: **identical output on every TU**, and
 The project build uses `tools/gcc-2.7.2/build/cc1` (Makefile:12), which these
 hooks do not touch at all.
 
-### Fidelity caveat found while validating (2026-08-06)
+### Fidelity caveat found while validating (2026-08-06) — CLOSED 2026-08-07
 
-The instrumented `tools/gcc-2.7.2/cc1` and the build compiler
-`tools/gcc-2.7.2/build/cc1` are different builds, and they **disagree on two
-TUs**: `ings` (5 diff lines) and `code6cac_b` (2 diff lines) — constant-folding
-and `ori`-vs-`addu` differences, unrelated to any BB2 hook and present before
-this change. Dumps for functions in those two TUs are therefore not faithful to
-what the project actually builds; treat ra_solver evidence there as suspect
-until the two binaries are reconciled. All other 30 TUs agree byte-for-byte.
-Reproduce with `bash tools/wsl.sh 'bash tmp/sugg_fidelity.sh'` — it compiles
-every TU with both binaries and names the ones that differ. `local_extract.py`
-carries the pair in `UNFAITHFUL_STEMS` and warns on stderr when either is
-extracted, so the exclusion is visible at the point of use and not only here.
+**Historical, kept for the reasoning.** The instrumented `tools/gcc-2.7.2/cc1`
+and the build compiler `tools/gcc-2.7.2/build/cc1` were different builds and
+**disagreed on two TUs**: `ings` (5 diff lines) and `code6cac_b` (2 diff
+lines) — constant-folding and `ori`-vs-`addu` differences, unrelated to any BB2
+hook. Dumps for those TUs did not describe what the project builds, so
+`local_extract.py` carried the pair in `UNFAITHFUL_STEMS` and warned on stderr
+at the point of use.
 
-**Open item, owner shelf (routed 2026-08-06).** This is solver infrastructure,
-not a decomp function, and reconciling the two cc1 binaries is deliberately NOT
-something to do unilaterally (rule 1 of [[no-compiler-divergence]]). It has a
-known consumer: **`saTan2KabutoWareMove` is an active work item in
-`code6cac_b`**, so the gap must be resolved before that function's next
-solver-driven session — any ra_solver evidence gathered for it today describes
-a compiler the project does not ship. `camera_set_zoom` and
-`DispPracticeMenuTex_A` are unaffected (both in `src/code6cac.c`, which is
-faithful).
+**Resolution (2026-08-07).** The cause was found: only `build/cc1` carried a
+removal of `combine.c`'s PLUS→IOR conversion — an undocumented 2026-05-18
+compiler-patch experiment that had silently become the project compiler. That
+patch is now committed (`tools/cc1-no-plus-to-ior.patch`), the oracle compiler
+is rebuilt from it by `tools/build_oracle_cc1.sh`, and the instrumented cc1 is
+rebuilt from the same hooked sources **plus the same patch** by
+`tools/build_diagnostic_cc1.sh`. The two now agree on **all 32 TUs**, so
+`UNFAITHFUL_STEMS` is empty — the divergence was removed, not waived, and
+`saTan2KabutoWareMove` (the consumer this blocked, in `code6cac_b`) has
+faithful solver evidence available again.
+
+Re-verify at any time with `bash tools/build_diagnostic_cc1.sh` (no
+`--install`): it names the divergent stems, and `none` is the contract. Full
+background, including the still-open question of whether the ORIGINAL PsyQ
+compiler performed that conversion, is in `docs/ORACLE-COMPILER.md`.
 
 ### What this pass did NOT explain (2026-08-06)
 

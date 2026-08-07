@@ -67,12 +67,17 @@ SUGG_FFR = re.compile(
 
 
 # TUs where the instrumented cc1 and the BUILD compiler (build/cc1, Makefile:12)
-# emit different code — measured 2026-08-06, tmp/sugg_fidelity.sh. The two are
-# different builds; the divergence predates any BB2 hook and is unrelated to it
-# (a hooks-free cc1 matches the instrumented one on all 32 TUs). Dumps for these
-# stems do not describe what the project actually builds, so they are announced
-# at the point of use rather than left to a caveat in the docs.
-UNFAITHFUL_STEMS = {"ings": 5, "code6cac_b": 2}
+# emit different code. EMPTY since 2026-08-07: the divergence was removed, not
+# waived. It had never been about the BB2 hooks — the two binaries were simply
+# different builds, and only the build compiler carried the combine.c PLUS->IOR
+# removal. The instrumented cc1 is now rebuilt from the same hooked sources PLUS
+# tools/cc1-no-plus-to-ior.patch (tools/build_diagnostic_cc1.sh), and the two
+# agree on all 32 TUs — so every dump describes what the project actually
+# builds. Re-verify with `bash tools/build_diagnostic_cc1.sh` (no --install):
+# it reports the divergent stems, and "none" is the contract.
+# Keep the machinery below: if the binaries ever drift again, refill this dict
+# rather than discovering it downstream. See docs/ORACLE-COMPILER.md.
+UNFAITHFUL_STEMS = {}
 
 
 def _regs(s):
