@@ -343,7 +343,7 @@ elif tag in ("u12", "u13", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15",
         body = body.replace(
             "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  s32 *tbl_125c;",
             "  u8 *idx_1496;\n  int new_var;\n  int new_var3;\n  u8 *pi_11d5;\n  s32 *tbl_125c;", 1)
-        _h, _s, _t = body.partition("s32 marionation_Exec")
+        _h, _s, _t = body.partition("s32 func_80081030")
         _t = _t.replace(
             "  idx_1496 = idx_1494 + 2;\n  D_800F19BC = 0;",
             "  idx_1496 = idx_1494 + 2;\n  pi_11d5 = (u8 *)&D_800A11D5;\n  D_800F19BC = 0;", 1)
@@ -473,7 +473,7 @@ try:
          "-w", "-da", "tmp/rtl/mar.i", "-o", "tmp/rtl/mar.s"],
         capture_output=True, text=True)
     greg = Path("tmp/rtl/mar.i.greg").read_text()
-    i = greg.index(";; Function marionation_Exec")
+    i = greg.index(";; Function func_80081030")
     sect = greg[i:i + 20000]
     m = re.search(r";; Register dispositions:\n((?:[^\n]*\n){1,8})", sect)
     disp = dict(re.findall(r"(\d+) in (\d+)", m.group(1)))
@@ -486,7 +486,7 @@ try:
         r = int(disp.get(p, -1))
         out.append(f"{nm}={rn.get(r, r)}")
     s = Path("tmp/rtl/mar.s").read_text()
-    fm = re.search(r"marionation_Exec:\n(.*?)\n\t\.end\s+marionation_Exec",
+    fm = re.search(r"func_80081030:\n(.*?)\n\t\.end\s+func_80081030",
                    s, re.DOTALL)
     lines = [ln for ln in fm.group(1).splitlines()
              if (ln.startswith("\t") and not ln.startswith("\t.set")

@@ -63,34 +63,34 @@ extern s16 *snd_GetSeId(void);
 extern void func_8003553C(void);
 
 extern void sys_Panic(void);
-extern s32 EndADRSound(void);
+extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern s32 func_80036D88(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern s32 D_800A384C;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void pad_Init(void);
+extern void func_80078D68(void);
 extern void irq_Reset(void);
 extern s32 D_800A3210;
 extern void func_8008BE04(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern u8 D_8008E6A4;
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -160,19 +160,19 @@ extern s32 func_80078B04(s32);
 extern void func_8007A400(void);
 extern void func_8008BE4C(void);
 extern void func_8006BEC4(s32, s32);
-extern void gnd_open(void);
+extern void func_8003E22C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void tslDmaDrawListDelAll(s32);
+extern void func_8007EFFC(s32);
 extern void func_8001B6F4(void);
-extern void pad_button_info_clear(u8 *);
+extern void func_80022568(u8 *);
 extern s32 g_str_memcard_fmt;
 extern s32 D_80102810;
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
 extern s32 D_800A3794;
-extern s32 _CardCheckPulled2(s32, s32);
-extern void camera_SetMatrix(void *);
+extern s32 func_80037A20(s32, s32);
+extern void func_80037F40(void *);
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
 extern s32 func_80037B90(s32, s32, s32, void *, s32);
@@ -180,7 +180,7 @@ extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-s32 motion_LoadPreCalcData_80037F08(s32 a0, s32 a1) {
+s32 func_80037F08(s32 a0, s32 a1) {
     s32 buf[2];
     func_80079A30(buf, &D_800109C8, a0, a1);
     return bios_FormatDevice_B(buf);
@@ -443,7 +443,7 @@ void func_80038170(u8 *out) {
     }
 }
 
-void pad_FuncAnalog(void) {
+void func_800383A4(void) {
     s32 var_v1;
     s32 var_v0;
     s32 temp_s0;
@@ -499,7 +499,7 @@ state_other:
 
 state_3:
     D_800A379E = 1;
-    _CardCheckPulled2(0, 0);
+    func_80037A20(0, 0);
     temp_s0 = func_80037AA4();
     if (func_80037B00(D_800A31F0) != 0) {
         var_s1 = 0;
@@ -518,7 +518,7 @@ setup_load:
     D_800A38CC = 1;
     func_80038148();
     func_80038170(D_800F33D8);
-    camera_SetMatrix(D_800F33D8 + 0x100);
+    func_80037F40(D_800F33D8 + 0x100);
     if (func_80037C34(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
         bios_FileClose_B(D_800A3794);
         var_v0 = 3;
@@ -528,7 +528,7 @@ setup_load:
     return;
 
 state_5:
-    _CardCheckPulled2(0, 0);
+    func_80037A20(0, 0);
     func_80037AA4();
     if (func_80037B00(D_800A31F0) == 0) {
         var_v0 = 0xE;
@@ -545,7 +545,7 @@ state_5:
     return;
 
 state_7:
-    var_v0 = motion_LoadPreCalcData_80037F08(0, 0);
+    var_v0 = func_80037F08(0, 0);
     if (var_v0 != 0) {
         var_v0 = 0xB;
         goto finish;
@@ -615,11 +615,11 @@ s32 func_80038734(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
     }
-    pad_FuncAnalog();
+    func_800383A4();
     func_80038658();
     return D_800A379E;
 }
-void motion_shift_check_m_hit_stop(void) {
+void func_8003877C(void) {
     D_800A379E = 4;
     D_800A3814 = 0;
     D_800A37C8 = 0;
@@ -647,7 +647,7 @@ void func_800387E8(void) {
 }
 extern u8 D_800A3203;
 extern u8 D_800A31FC;
-extern void motion_shift_check_m_hit_stop(void);
+extern void func_8003877C(void);
 extern s32 func_80038734(void);
 extern void func_8006BEC4(s32, s32);
 
@@ -659,7 +659,7 @@ s32 func_8003880C(void) {
     if (D_800A3203) {
         D_800A3203 = 0;
         D_800A31FC = 1;
-        motion_shift_check_m_hit_stop();
+        func_8003877C();
     }
     v0 = func_80038734();
     switch (v0 - 4) {
@@ -761,7 +761,7 @@ s32 func_80038988(void) {
         D_800A3328 = 0;
         D_800A332C = 0;
         D_800A31FC = 1;
-        motion_shift_check_m_hit_stop();
+        func_8003877C();
         D_800A3205 = 0;
         D_800A3330 = 0x5A;
         D_800A3334 = 0;
@@ -818,7 +818,7 @@ s32 func_80038988(void) {
                 D_800A3330 = 0x5A;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 11:
             D_800A332C++;
@@ -826,7 +826,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 6:
             D_800A3328++;
@@ -834,7 +834,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 10:
             D_800A3324++;
@@ -842,7 +842,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 2:
             D_800A31FC = 0;
@@ -853,7 +853,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 D_800A3338 = 1;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         default:
             break;
@@ -892,7 +892,7 @@ end:
 }
 
 
-s32 motion_SetMotion(void) {
+s32 func_80038C70(void) {
     extern u8 D_800A3207;
     extern u8 D_800A334C;
     extern u8 D_800A3350;
@@ -903,7 +903,7 @@ s32 motion_SetMotion(void) {
     extern u8 D_800A3348;
     extern void func_8006BEC4(s32, s32);
     extern void func_8005C650(s32, s32, s32);
-    extern void motion_shift_check_m_hit_stop(void);
+    extern void func_8003877C(void);
     extern void func_8003879C(void);
     extern void func_800387C0(void);
     extern void func_800387E8(void);
@@ -1043,7 +1043,7 @@ sel_dispatch:
                 D_800A334C = 0x5A;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 1: case 2: case 3:
         case 9: case 10: case 11:
@@ -1053,7 +1053,7 @@ sel_dispatch:
                 func_8003879C();
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         case 6:
             D_800A3344++;
@@ -1061,7 +1061,7 @@ sel_dispatch:
                 D_800A31FC = 0;
                 break;
             }
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             break;
         default:
             break;
@@ -1113,7 +1113,7 @@ sel_dispatch:
             break;
         case 11:
             D_800A31FC = 1;
-            motion_shift_check_m_hit_stop();
+            func_8003877C();
             D_800A3207 = 3;
             D_800A334C = 0x5A;
             break;
@@ -1141,7 +1141,7 @@ sel_dispatch:
                     D_800A3340 = 0;
                     D_800A3344 = 0;
                     D_800A31FC = 1;
-                    motion_shift_check_m_hit_stop();
+                    func_8003877C();
                 } else {
                     if (D_800A3350 != 0) goto area_c_long;
                     func_800387C0();
@@ -1264,7 +1264,7 @@ void func_80039320(void) {
     D_800A379C = 0;
     D_800A3714 = 0;
 }
-void saSeInit_2(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
+void func_800393C8(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern s16 D_800A3714;
     extern u8 D_800A3209;
     s32 frame_pad[2];
@@ -1464,11 +1464,11 @@ void func_800397A0(void) {
 }
 void func_800397D4(void) {
     gpu_EnableDisplay();
-    gnd_open();
+    func_8003E22C();
     game_SetPlayerCount(0);
-    tslDmaDrawListDelAll(disp_CalcFov(0x2D));
-    gnd_init_80041688(0, 0);
-    gnd_init_80041688(1, 0);
+    func_8007EFFC(disp_CalcFov(0x2D));
+    func_80041688(0, 0);
+    func_80041688(1, 0);
     func_8001B6F4();
     game_Cleanup();
     D_800A37D0 = 0;
@@ -1572,7 +1572,7 @@ void func_8003A39C(void) {
     func_8003A264();
     D_800A3834 = 8;
 }
-void motion_SavePreCalcData_8003A3F0(void) {
+void func_8003A3F0(void) {
     func_8003A39C();
     D_800A3928 = 1;
 }
@@ -1627,11 +1627,11 @@ s32 func_8003A450(void) {
     func_8008C464(1, 1, 0);
     return D_800A382C;
 }
-void motion_SavePreCalcData_8003A574(void) {
+void func_8003A574(void) {
     bios_FileRead_B(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
-s32 pad_ClearAppliBuffer(void) {
+s32 func_8003A5A0(void) {
     s32 s0;
     s32 s1;
     s32 a1;
@@ -1660,7 +1660,7 @@ loop_check:
     }
     func_8008C464(2, 0, 0);
     s0 = 0;
-    motion_SavePreCalcData_8003A574();
+    func_8003A574();
     func_80078BA8(0xF2000001);
 poll:
     v0 = (func_8008C464(0, 0, 0) >> 7) & 3;
@@ -1754,17 +1754,17 @@ void func_8003A728(s32 a0) {
     if (D_800A3916 == 0) goto path_pad;
 
     if (vsync == 0) {
-        motion_SavePreCalcData_8003A574();
+        func_8003A574();
         goto post_8F4;
     }
 
     if (((FuncBufType)func_8003A450)(&D_800A3698) == 0) goto err_no_check;
     D_800A3908 += func_8003A6FC(lower);
-    motion_SavePreCalcData_8003A574();
+    func_8003A574();
     goto post_8F4;
 
 path_pad:
-    if (pad_ClearAppliBuffer() == 0) goto err_no_check;
+    if (func_8003A5A0() == 0) goto err_no_check;
     if (D_800A38A0 != 1) goto retry_a450;
     if ((D_800A36C0 & 0x40000000) != 0) goto err_with_check;
     if ((D_800A36D0 & 0x40000000) != 0) goto err_with_check;
@@ -1772,11 +1772,11 @@ path_pad:
 retry_a450:
     if (((FuncBufType)func_8003A450)(&D_800A3698) != 0) goto continue_a450;
 err_no_check:
-    motion_SavePreCalcData_8003A3F0();
+    func_8003A3F0();
     return;
 continue_a450:
     D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
-    motion_SavePreCalcData_8003A574();
+    func_8003A574();
     if (D_800A38A0 != 0) goto post_8F4;
     if (D_800A3730 != 0) goto err_with_check;
     if ((D_800A36C0 & 0x40000000) == 0) goto post_8F4;

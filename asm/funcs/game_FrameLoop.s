@@ -12,7 +12,7 @@ glabel game_FrameLoop
     /* 27764 80036F64 00000000 */   nop
     /* 27768 80036F68 92EA000C */  jal        func_8003AA48
     /* 2776C 80036F6C 00000000 */   nop
-    /* 27770 80036F70 50DA000C */  jal        special_camera_Exec
+    /* 27770 80036F70 50DA000C */  jal        func_80036940
     /* 27774 80036F74 00000000 */   nop
     /* 27778 80036F78 0A80023C */  lui        $v0, %hi(D_800A3906)
     /* 2777C 80036F7C 06394290 */  lbu        $v0, %lo(D_800A3906)($v0)
@@ -22,7 +22,7 @@ glabel game_FrameLoop
     /* 2778C 80036F8C B471010C */  jal        func_8005C6D0
     /* 27790 80036F90 00000000 */   nop
   .L80036F94:
-    /* 27794 80036F94 3D5D000C */  jal        gnd_disp_loop_ctrl
+    /* 27794 80036F94 3D5D000C */  jal        func_800174F4
     /* 27798 80036F98 00000000 */   nop
     /* 2779C 80036F9C 00000296 */  lhu        $v0, 0x0($s0)
     /* 277A0 80036FA0 02000424 */  addiu      $a0, $zero, 0x2

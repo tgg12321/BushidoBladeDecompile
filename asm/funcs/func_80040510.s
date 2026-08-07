@@ -10,18 +10,18 @@ glabel func_80040510
     /* 30D30 80040530 0B80013C */  lui        $at, %hi(D_800A9A10)
     /* 30D34 80040534 21083100 */  addu       $at, $at, $s1
     /* 30D38 80040538 109A30AC */  sw         $s0, %lo(D_800A9A10)($at)
-    /* 30D3C 8004053C 6501010C */  jal        AllocRobRmd
+    /* 30D3C 8004053C 6501010C */  jal        func_80040594
     /* 30D40 80040540 21200002 */   addu      $a0, $s0, $zero
-    /* 30D44 80040544 3E02010C */  jal        rob_life_ctrl
+    /* 30D44 80040544 3E02010C */  jal        func_800408F8
     /* 30D48 80040548 21200002 */   addu      $a0, $s0, $zero
-    /* 30D4C 8004054C D102010C */  jal        rob_calc_2d_position
+    /* 30D4C 8004054C D102010C */  jal        func_80040B44
     /* 30D50 80040550 21200002 */   addu      $a0, $s0, $zero
     /* 30D54 80040554 21200002 */  addu       $a0, $s0, $zero
-    /* 30D58 80040558 09FE000C */  jal        tslPrintScreen
+    /* 30D58 80040558 09FE000C */  jal        func_8003F824
     /* 30D5C 8004055C 01000524 */   addiu     $a1, $zero, 0x1
-    /* 30D60 80040560 F1FF000C */  jal        FadeOut_8003FFC4
+    /* 30D60 80040560 F1FF000C */  jal        func_8003FFC4
     /* 30D64 80040564 21200002 */   addu      $a0, $s0, $zero
-    /* 30D68 80040568 2E03010C */  jal        audioDecBeginPut
+    /* 30D68 80040568 2E03010C */  jal        func_80040CB8
     /* 30D6C 8004056C 21200002 */   addu      $a0, $s0, $zero
     /* 30D70 80040570 48F8000C */  jal        func_8003E120
     /* 30D74 80040574 00000000 */   nop

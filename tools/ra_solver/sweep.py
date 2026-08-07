@@ -48,7 +48,7 @@ RA = WORK / "ra"
 TARGETS = [
     ("func_800611A4", "text1b", "v0<->v1 RA swap (local-alloc.c:472 + find_free_reg)"),
     ("func_80037A20", "code6cac_c", "s0<->s1 allocno-priority swap + cse REG_WAS_0 fold"),
-    ("ang_hosei_80056FE8", "text1b", "a1<->a2 find_reg swap, no copy-preference anchor"),
+    ("func_80056FE8", "text1b", "a1<->a2 find_reg swap, no copy-preference anchor"),
     ("func_80033550", "code6cac_b", "RA $a1-vs-$a3 (asm pin)"),
     ("special_camera_get_rot_dir", "code6cac_b2_post",
      "copy_end->s5 rotation reachable only via register pin"),

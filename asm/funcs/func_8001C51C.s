@@ -56,11 +56,11 @@ glabel func_8001C51C
     /* CDEC 8001C5EC 41C3000C */  jal        func_80030D04
     /* CDF0 8001C5F0 00000000 */   nop
     /* CDF4 8001C5F4 56FB0426 */  addiu      $a0, $s0, -0x4AA
-    /* CDF8 8001C5F8 A56C000C */  jal        gnd_init_8001B294
+    /* CDF8 8001C5F8 A56C000C */  jal        func_8001B294
     /* CDFC 8001C5FC A2FF0526 */   addiu     $a1, $s0, -0x5E
     /* CE00 8001C600 B2E4000C */  jal        func_800392C8
     /* CE04 8001C604 00000000 */   nop
-    /* CE08 8001C608 A084000C */  jal        title_mv_exec
+    /* CE08 8001C608 A084000C */  jal        func_80021280
     /* CE0C 8001C60C 01000424 */   addiu     $a0, $zero, 0x1
     /* CE10 8001C610 1C00BF8F */  lw         $ra, 0x1C($sp)
     /* CE14 8001C614 1800B08F */  lw         $s0, 0x18($sp)

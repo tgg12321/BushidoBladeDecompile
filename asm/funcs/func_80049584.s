@@ -92,13 +92,13 @@ glabel func_80049584
   .L800496C4:
     /* 39EC4 800496C4 0B002016 */  bnez       $s1, .L800496F4
     /* 39EC8 800496C8 00000000 */   nop
-    /* 39ECC 800496CC 0818010C */  jal        saTanMainDispGnd_80046020
+    /* 39ECC 800496CC 0818010C */  jal        func_80046020
     /* 39ED0 800496D0 00000000 */   nop
     /* 39ED4 800496D4 2003848F */  lw         $a0, %gp_rel(D_800A33EC)($gp)
     /* 39ED8 800496D8 21280002 */  addu       $a1, $s0, $zero
     /* 39EDC 800496DC 0F80063C */  lui        $a2, %hi(D_800EF980)
     /* 39EE0 800496E0 80F9C624 */  addiu      $a2, $a2, %lo(D_800EF980)
-    /* 39EE4 800496E4 DA16010C */  jal        efc_rob_set_type_particle
+    /* 39EE4 800496E4 DA16010C */  jal        func_80045B68
     /* 39EE8 800496E8 21384002 */   addu      $a3, $s2, $zero
     /* 39EEC 800496EC 48F8000C */  jal        func_8003E120
     /* 39EF0 800496F0 00000000 */   nop

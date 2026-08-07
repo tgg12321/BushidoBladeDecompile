@@ -712,7 +712,7 @@ s32 func_8007CA00(s16 *arg0) {
 u32 func_8007CAB0(void) {
     return *g_gpu_stat_reg;
 }
-extern s32 motion_LoadPreCalcData_8007DC68();
+extern s32 func_8007DC68();
 extern s32 func_8007DC9C();
 extern volatile s32 *D_8009BF58;
 extern volatile s32 *D_8009BF5C;
@@ -724,7 +724,7 @@ s32 func_8007CAC8(s32 arg0, s32 arg1) {
     *D_8009BF58 = (arg0 - 4) + (arg1 * 4);
     *D_8009BF5C = arg1;
     *D_8009BF60 = 0x11000002;
-    motion_LoadPreCalcData_8007DC68();
+    func_8007DC68();
     if (*D_8009BF60 & 0x01000000) {
         do {
             if (func_8007DC9C() != 0) {
@@ -751,7 +751,7 @@ s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     u16 a0_tmp;
     s32 v0_ext;
 
-    motion_LoadPreCalcData_8007DC68();
+    func_8007DC68();
 
     coord = (v1_tmp = arg0->x);
     var_s5 = 0;
@@ -856,12 +856,12 @@ void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
 extern s32 *D_8009BF48;
 extern s32 D_8009BF78;
 extern s32 D_8009BF7C;
-extern s32 motion_LoadPreCalcData_8007DC68();
+extern s32 func_8007DC68();
 
 void func_8007D6D8();                           /* extern */
 s32 func_8007DC9C();                                /* extern */
 s32 irq_AcknowledgeVblank(s32, s32 (*)()); /* extern */
-s32 motion_make_table(s32);                         /* extern */
+s32 func_80082C3C(s32);                         /* extern */
 extern u8 D_8009BE75;
 extern s32 D_8009BE7C;
 extern s32 D_8009BE80;
@@ -883,7 +883,7 @@ s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
     s32 var_v0;
     s32 var_v0_2;
 
-    motion_LoadPreCalcData_8007DC68();
+    func_8007DC68();
     goto check_top;
 err_loop:
     if (func_8007DC9C() != 0) {
@@ -895,7 +895,7 @@ check_top:
         goto err_loop;
     }
     {
-        D_8009BF80 = motion_make_table(0);
+        D_8009BF80 = func_80082C3C(0);
         D_8009BE7C = 1;
         if ((D_8009BE75 == 0) || ((D_8009BF78 == D_8009BF7C) && !(*D_8009BF54 & 0x01000000) && (D_8009BE80 == 0))) {
             do {
@@ -904,7 +904,7 @@ check_top:
             D_8009BF68 = arg0;
             D_8009BF6C = arg1;
             D_8009BF70 = arg3;
-            motion_make_table(D_8009BF80);
+            func_80082C3C(D_8009BF80);
             return 0;
         }
         irq_AcknowledgeVblank(2, func_8007D6D8);
@@ -934,7 +934,7 @@ loop_13:
         *(s32 *)((s32)&D_80103688 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg3;
         *(s32 (**)(s32 *, s32))((s32)&D_80103680 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg0;
         D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
-        motion_make_table(D_8009BF80);
+        func_80082C3C(D_8009BF80);
         func_8007D6D8();
         var_v0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
         return var_v0;
@@ -942,7 +942,7 @@ loop_13:
 }
 INCLUDE_ASM("asm/funcs", func_8007D6D8);
 extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
-extern s32 motion_make_table(s32);
+extern s32 func_80082C3C(s32);
 extern s32 func_8007DE08(s32);
 extern volatile s32 *D_8009BF48;
 extern s32 *D_8009BF54;
@@ -960,7 +960,7 @@ extern s32 D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 debug_printf();
 s32 func_8007D9C4(s32 arg0) {
-    D_8009BF88 = motion_make_table(0);
+    D_8009BF88 = func_80082C3C(0);
     D_8009BF7C = 0;
     D_8009BF78 = D_8009BF7C;
     switch (arg0 & 7) {
@@ -980,7 +980,7 @@ s32 func_8007D9C4(s32 arg0) {
         *D_8009BF48 = 0x01000000;
         break;
     }
-    motion_make_table(D_8009BF88);
+    func_80082C3C(D_8009BF88);
     if (arg0 & 7) {
         return 0;
     }
@@ -992,7 +992,7 @@ s32 func_8007DB20(s32 arg0) {
     s32 ret;
 
     if (arg0 == 0) {
-        motion_LoadPreCalcData_8007DC68();
+        func_8007DC68();
         while (D_8009BF78 != D_8009BF7C) {
             func_8007D6D8();
             if (func_8007DC9C() != 0) return -1;
@@ -1017,7 +1017,7 @@ s32 func_8007DB20(s32 arg0) {
     }
     return ret;
 }
-void motion_LoadPreCalcData_8007DC68(void) {
+void func_8007DC68(void) {
     g_gpu_vcount = sys_VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
@@ -1032,7 +1032,7 @@ s32 func_8007DC9C(void) {
         debug_printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
         (void)new_var;
         debug_printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
-        temp_v0 = motion_make_table(0);
+        temp_v0 = func_80082C3C(0);
         D_8009BF7C = 0;
         D_8009BF88 = temp_v0;
         D_8009BF78 = *new_var2;
@@ -1040,7 +1040,7 @@ s32 func_8007DC9C(void) {
         *D_8009BF64 |= 0x800;
         *g_gpu_stat_reg = 0x02000000;
         *g_gpu_stat_reg = 0x01000000;
-        motion_make_table(D_8009BF88);
+        func_80082C3C(D_8009BF88);
         return -1;
     }
     return 0;
@@ -2157,7 +2157,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel calc_fc_frame_8007EC5C\n"
+    "glabel func_8007EC5C\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"
@@ -2225,7 +2225,7 @@ __asm__(
     "    addu   $v0, $a1, $zero\n"
     "    jr     $ra\n"
     "    nop\n"
-    "endlabel calc_fc_frame_8007EC5C\n"
+    "endlabel func_8007EC5C\n"
     ".set\treorder\n"
     ".set\tat\n"
     ".set reorder\n"
@@ -2470,7 +2470,7 @@ void gte_SetScreenOffset(s32 a0, s32 a1) {
     __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
 }
 PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
-void tslDmaDrawListDelAll(s32 a0) {
+void func_8007EFFC(s32 a0) {
     __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
 }
 PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
@@ -2809,7 +2809,7 @@ __asm__(
     ".section .text\n"
     ".set\tnoreorder\n"
     ".set\tnoat\n"
-    "glabel motutil_GetWalkDir\n"
+    "glabel func_8007F35C\n"
     "    lh         $t7, 0($a0)\n"
     "    addu       $v0, $a1, $zero\n"
     "    bgez       $t7, .L8007F3A0\n"
@@ -2982,7 +2982,7 @@ __asm__(
     "    sh         $t6, 14($a1)\n"
     "    jr         $ra\n"
     "     nop\n"
-    "endlabel motutil_GetWalkDir\n"
+    "endlabel func_8007F35C\n"
     ".set\treorder\n"
     ".set\tat\n"
 );
@@ -3603,7 +3603,7 @@ extern s16 D_800A0928[];
 
 /* PsyQ LIBGTE ratan: ratan2 â€” verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
-s32 single_game_getEnemyCharId(s32 arg0, s32 arg1) {
+s32 func_8007FD5C(s32 arg0, s32 arg1) {
     s32 var_v1;
     s32 var_a0;
     s32 var_a1;
@@ -3729,14 +3729,14 @@ loop:
     return 1;
 }
 
-void motion_SavePreCalcData_80080014(void) {
+void func_80080014(void) {
     bios_DeliverEvent(0xF0000003, 0x20);
 }
 
-void motion_SavePreCalcData_8008003C(void) {
+void func_8008003C(void) {
     bios_DeliverEvent(0xF0000003, 0x40);
 }
 
-void motion_SavePreCalcData_80080064(void) {
+void func_80080064(void) {
     bios_DeliverEvent(0xF0000003, 0x40);
 }

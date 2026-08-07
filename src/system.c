@@ -6,13 +6,13 @@
 
 /* Forward declarations */
 extern void cdrom_ClearIrq(void);
-extern s32 cpu_side_move_dir_4(s32, u8 *);
-extern s32 marionation_Exec(s32, u8 *);
+extern s32 func_80080DB0(s32, u8 *);
+extern s32 func_80081030(s32, u8 *);
 extern s32 cdrom_SendCmd();
 extern s32 cdrom_DmaToRam();
 extern s32 cdrom_DmaChain();
 extern s32 irq_AcknowledgeVblank(s32, s32);
-extern s32 saEft01Init(s32);
+extern s32 func_80081BB0(s32);
 
 /* Externs for globals */
 extern u8 g_cd_mode;
@@ -106,14 +106,14 @@ void *cdrom_GetResultName(u8 intr) {
 
 /* PsyQ 4.0 LIBCD sys: CdSync — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
-s32 Vu0SetLightColMatrix_800801E8(s32 mode, u8 *result) {
-    return cpu_side_move_dir_4(mode, result);
+s32 func_800801E8(s32 mode, u8 *result) {
+    return func_80080DB0(mode, result);
 }
 
 /* PsyQ 4.0 LIBCD sys: CdReady — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/sys.c */
-s32 Vu0SetLightColMatrix_80080208(s32 mode, u8 *result) {
-    return marionation_Exec(mode, result);
+s32 func_80080208(s32 mode, u8 *result) {
+    return func_80081030(mode, result);
 }
 
 s32 cdrom_SetCallbackA(s32 a0) {
@@ -129,7 +129,7 @@ s32 cdrom_SetCallbackB(s32 a0) {
 }
 
 extern s32 g_cd_sector_buf[];
-extern s32 tslTm2LoadImage(s32, void *, void *, s32);
+extern s32 func_800812FC(s32, void *, void *, s32);
 
 s32 func_80080258(s32 a0, s32 a1, s32 a2) {
     register s32 result asm("s7");
@@ -153,18 +153,18 @@ loop:
 
     if (idx != 1) {
         if (g_cd_mode & 0x10) {
-            tslTm2LoadImage(1, 0, 0, 0);
+            func_800812FC(1, 0, 0, 0);
         }
     }
     if (a1 != 0) {
         if ((*elem) != 0) {
-            if (tslTm2LoadImage(2, a1, a2, 0) != 0) {
+            if (func_800812FC(2, a1, a2, 0) != 0) {
                 goto next;
             }
         }
     }
     g_cd_callback_a = saved;
-    if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
+    if (func_800812FC(a0 & 0xFF, a1, a2, 0) == 0) {
         goto done;
     }
 next:
@@ -200,18 +200,18 @@ loop:
 
     if (idx != 1) {
         if (g_cd_mode & 0x10) {
-            tslTm2LoadImage(1, 0, 0, 0);
+            func_800812FC(1, 0, 0, 0);
         }
     }
     if (a1 != 0) {
         if ((*elem) != 0) {
-            if (tslTm2LoadImage(2, a1, 0, 0) != 0) {
+            if (func_800812FC(2, a1, 0, 0) != 0) {
                 goto next;
             }
         }
     }
     g_cd_callback_a = saved;
-    if (tslTm2LoadImage(a0 & 0xFF, a1, 0, 1) == 0) {
+    if (func_800812FC(a0 & 0xFF, a1, 0, 1) == 0) {
         goto done;
     }
 next:
@@ -225,7 +225,7 @@ next:
 done:
     return result + 1;
 }
-s32 tslPolyF4Init(u8 a0, s32 a1, s32 a2) {
+s32 func_800804BC(u8 a0, s32 a1, s32 a2) {
     s32 count;
     s32 idx;
     s32 saved;
@@ -244,18 +244,18 @@ loop:
 
     if (idx != 1) {
         if (g_cd_mode & 0x10) {
-            tslTm2LoadImage(1, 0, 0, 0);
+            func_800812FC(1, 0, 0, 0);
         }
     }
     if (a1 != 0) {
         if ((*elem) != 0) {
-            if (tslTm2LoadImage(2, a1, a2, 0) != 0) {
+            if (func_800812FC(2, a1, a2, 0) != 0) {
                 goto next;
             }
         }
     }
     g_cd_callback_a = saved;
-    if (tslTm2LoadImage(a0 & 0xFF, a1, a2, 0) == 0) {
+    if (func_800812FC(a0 & 0xFF, a1, a2, 0) == 0) {
         status = 0;
         goto done;
     }
@@ -272,7 +272,7 @@ done:
     }
     {
         s32 r;
-        r = ((s32 (*)(s32, s32))cpu_side_move_dir_4)(0, a2);
+        r = ((s32 (*)(s32, s32))func_80080DB0)(0, a2);
         r ^= 2;
         return (u32)r < 1;
     }
@@ -291,18 +291,18 @@ s32 func_80080620(s32 madr, s32 size) {
     return cdrom_DmaToRam(madr, size) == 0;
 }
 
-s32 Vu0SetLightColMatrix_80080640(s32 madr, s32 size) {
+s32 func_80080640(s32 madr, s32 size) {
     return cdrom_DmaChain(madr, size) == 0;
 }
 
 /* PsyQ 4.0 LIBCD sys: CdDataCallback — verbatim-linked Sony object (census
    2026-07-09); returns the previous callback */
-s32 tslTmlGetHeda(s32 a0) {
+s32 func_80080660(s32 a0) {
     return irq_AcknowledgeVblank(3, a0);
 }
 
-void Vu0SetLightColMatrix_80080684(s32 a0) {
-    saEft01Init(a0);
+void func_80080684(s32 a0) {
+    func_80081BB0(a0);
 }
 
 /* PsyQ 4.0 LIBCD sys: CdIntToPos — verbatim-linked Sony object (census
@@ -318,7 +318,7 @@ u8 *cdrom_FramesToBcd(s32 i, u8 *p) {
 }
 
 extern s32 g_cd_sector_buf[];
-extern s32 tslTm2LoadImage(s32, void *, void *, s32);
+extern s32 func_800812FC(s32, void *, void *, s32);
 extern s32 func_80080DB0_ret(s32, void *);
 /* --- text3 segment functions (0x800807A8-0x800827D0, 17 funcs) --- */
 
@@ -339,7 +339,7 @@ s32 cdrom_BcdToFrames(u8 *a0) {
 }
 INCLUDE_ASM("asm/funcs", func_80080828);
 extern s32 sys_VSync(s32);
-extern void tslTm2LoadImage_2(void *);
+extern void func_80082000(void *);
 extern void debug_printf(void *, void *, s32, s32, s32);
 extern s32 sys_GetVblankCount(void);
 extern s32 func_80080828(void);
@@ -361,7 +361,7 @@ extern s32 D_800A11DC[];
 extern s32 D_800A125C[];
 extern u8 D_800A1494;
 extern u8 D_800A1495;
-s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
+s32 func_80080DB0(s32 a0, u8 *a1)
 {
   int new_var;
   s32 v0;
@@ -396,7 +396,7 @@ s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
     goto success;
   }
   do_timeout:
-  tslTm2LoadImage_2(&D_800161B8);
+  func_80082000(&D_800161B8);
 
   {
     s32 arg4, arg5;
@@ -472,7 +472,7 @@ s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
 }
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir_4  |  160i  |  x4 size collision */
 extern volatile u8 *D_800A147C_2 asm("D_800A147C");
-s32 marionation_Exec(s32 a0, u8 *a1)
+s32 func_80081030(s32 a0, u8 *a1)
 {
   s32 v0;
   s32 cnt;
@@ -507,7 +507,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto success;
   }
   do_timeout:
-  tslTm2LoadImage_2(&D_800161B8);
+  func_80082000(&D_800161B8);
 
   {
     s32 arg5;
@@ -614,7 +614,7 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   }
 }
 /* kengo:HIGH  |  nm_mario/marionation_Exec  |  180i  |  +1 near-exact */
-INCLUDE_ASM("asm/funcs", tslTm2LoadImage);
+INCLUDE_ASM("asm/funcs", func_800812FC);
 /* kengo:MED  |  tsl_tm2/tslTm2LoadImage  |  253i  |  -10 x2 size collision */
 extern volatile u8 *g_cd_index_reg;
 extern volatile u8 *g_cd_req_reg;
@@ -702,7 +702,7 @@ s32 cdrom_Initialize(void) {
     u8 v0;
     volatile u8 *p94;
 
-    tslTm2LoadImage_2(&D_800162A8);
+    func_80082000(&D_800162A8);
     debug_printf(&D_800162B4, &D_800A1498);
 
     g_cd_ready_flag2 = 0;
@@ -735,27 +735,27 @@ s32 cdrom_Initialize(void) {
     *g_cd_irq_reg = 0;
     *g_cd_dma_madr = 0x1325;
 
-    tslTm2LoadImage(1, 0, 0, 0);
+    func_800812FC(1, 0, 0, 0);
 
     if (*(s32 *)&g_cd_mode & 0x10) {
-        tslTm2LoadImage(1, 0, 0, 0);
+        func_800812FC(1, 0, 0, 0);
     }
 
-    if (tslTm2LoadImage(0xA, 0, 0, 0) != 0) {
+    if (func_800812FC(0xA, 0, 0, 0) != 0) {
         return -1;
     }
-    if (tslTm2LoadImage(0xC, 0, 0, 0) != 0) {
+    if (func_800812FC(0xC, 0, 0, 0) != 0) {
         return -1;
     }
     {
         s32 r;
-        r = ((s32 (*)(s32, s32))cpu_side_move_dir_4)(0, 0);
+        r = ((s32 (*)(s32, s32))func_80080DB0)(0, 0);
         r ^= 2;
         return -((u32)(0 < (u32)r));
     }
 }
 extern s32 sys_VSync(s32);
-extern void tslTm2LoadImage_2(void *);
+extern void func_80082000(void *);
 extern void debug_printf(void *, void *, s32, s32, s32);
 extern s32 D_800F19B8;
 extern s32 D_800F19BC;
@@ -770,7 +770,7 @@ extern u8 D_800A1494;
 extern u8 D_800A1495;
 extern volatile u32 *D_800A14C0;
 extern s32 D_800161B8;
-s32 saEft01Init(s32 a0) {
+s32 func_80081BB0(s32 a0) {
     s32 v0;
     s32 cnt;
     s32 *tbl_11dc;
@@ -796,7 +796,7 @@ loop:
     }
 
 do_timeout:
-    tslTm2LoadImage_2(&D_800161B8);
+    func_80082000(&D_800161B8);
     {
         s32 arg5, arg4;
         arg5 = tbl_125c[idx_1494[1]];
@@ -929,7 +929,7 @@ void cdrom_IrqHandler(void) {
    from the ground-truth object: putchar loop with "<NULL>" fallback. */
 extern s32 D_800162CC;
 extern void func_8007997C();
-void tslTm2LoadImage_2(void *a0) {
+void func_80082000(void *a0) {
     char *s = a0;
     char c;
 
@@ -1011,7 +1011,7 @@ extern volatile s32 D_800A14FC;
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
 extern s32 D_800A14CC;   /* CD_ReadCallbackFunc */
 extern s32 D_800162D4;   /* "CdRead: sector error\n" */
-extern s32 myRobGeneiDraw3(s32, s32); /* CdControlF */
+extern s32 func_80080390(s32, s32); /* CdControlF */
 
 /* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c
@@ -1027,22 +1027,22 @@ static void D_80082050(u8 intr, u8 *result) {
         if (D_800A14E4 > 0) {
             if (D_800A14E0 == 0x200) {
                 if (D_800A1500 & 1) {
-                    tslTmlGetHeda(0);
-                    Vu0SetLightColMatrix_80080640((s32)pos, 3);
-                    Vu0SetLightColMatrix_80080684(0);
-                    tslTmlGetHeda((s32)&D_80082320);
+                    func_80080660(0);
+                    func_80080640((s32)pos, 3);
+                    func_80080684(0);
+                    func_80080660((s32)&D_80082320);
                 } else {
                     func_80080620((s32)pos, 3);
                 }
                 pp = &D_800A14F0; /* target la-form read 0x800820F4+ */
                 if (cdrom_BcdToFrames((u8 *)pos) != *pp) {
-                    tslTm2LoadImage_2(&D_800162D4);
+                    func_80082000(&D_800162D4);
                     D_800A14E4 = -1;
                 }
             }
             tsl = &D_800A1500; /* target la-form read */
             if (*tsl & 1) {
-                Vu0SetLightColMatrix_80080640(D_800A14D8, D_800A14E0);
+                func_80080640(D_800A14D8, D_800A14E0);
             } else {
                 func_80080620(D_800A14D8, D_800A14E0);
                 D_800A14D8 += D_800A14E0 * 4;
@@ -1055,7 +1055,7 @@ static void D_80082050(u8 intr, u8 *result) {
     }
     D_800A14E8 = sys_VSync(-1);
     if (D_800A14E4 < 0) {
-        saEft00Add(1);
+        func_8008241C(1);
     }
     if (sys_VSync(-1) > D_800A14EC + 1200) {
         D_800A14E4 = -1;
@@ -1066,9 +1066,9 @@ static void D_80082050(u8 intr, u8 *result) {
     cdrom_SetCallbackA(D_800A14F4);
     cdrom_SetCallbackB(D_800A14F8);
     if (D_800A1500 & 1) {
-        tslTmlGetHeda(D_800A14FC);
+        func_80080660(D_800A14FC);
     }
-    myRobGeneiDraw3(9, 0);
+    func_80080390(9, 0);
     if (D_800A14CC != 0) {
         ((void (*)(u8, u8 *))D_800A14CC)(D_800A14E4 == 0 ? 2 : 5, result);
     }
@@ -1086,15 +1086,15 @@ void D_80082320(void) {
     cdrom_SetCallbackA(D_800A14F4);
     cdrom_SetCallbackB(D_800A14F8);
     if (D_800A1500 & 1) {
-        tslTmlGetHeda(D_800A14FC);
+        func_80080660(D_800A14FC);
     }
-    myRobGeneiDraw3(9, 0);
+    func_80080390(9, 0);
     if (D_800A14CC != 0) {
         ((void (*)(u8, u8 *))D_800A14CC)(2, D_800A1504);
     }
 }
 
-s32 saEft00Add(s32 arg0) {
+s32 func_8008241C(s32 arg0) {
     u8 sp10;
     s32 temp_s0;
     /* FAKE: second C handle for D_800A1500 / D_800A14DC. Target materializes
@@ -1120,11 +1120,11 @@ s32 saEft00Add(s32 arg0) {
     cdrom_SetCallbackB(0);
     tsl = &D_800A1500;
     if (*tsl & 1) {
-        tslTmlGetHeda(0);
+        func_80080660(0);
     }
     if (cdrom_GetMode() & 0x10) {
         if (!(sys_VSync(-1) & 0x3F)) {
-            tslTm2LoadImage_2(&D_800162EC);
+            func_80082000(&D_800162EC);
         }
         func_80080390(1, 0);
         D_800A14EC = sys_VSync(-1);
@@ -1132,7 +1132,7 @@ s32 saEft00Add(s32 arg0) {
         return D_800A14E4;
     }
     if (arg0 != 0) {
-        tslTm2LoadImage_2(&D_80016304);
+        func_80082000(&D_80016304);
         func_80080258(9, 0, 0);
         temp_s0 = (s32)func_800800CC();
         if (func_80080258(2, temp_s0, 0) == 0) {
@@ -1153,7 +1153,7 @@ s32 saEft00Add(s32 arg0) {
     D_800A14F0 = cdrom_BcdToFrames(func_800800CC());
     cdrom_SetCallbackB((s32)&D_80082050);
     if (D_800A1500 & 1) {
-        tslTmlGetHeda((s32)&D_80082320);
+        func_80080660((s32)&D_80082320);
     }
     D_800A14D8 = D_800A14D4;
     func_80080390(6, 0);
@@ -1172,13 +1172,13 @@ void saEft00Add_sub(void) {
     volatile s32 *tsl = &D_800A1500; /* target caches &tslmode in $s0
         (0x80082638 lui/addiu) and re-reads 0($s0) twice */
     if (*tsl & 1) {
-        Vu0SetLightColMatrix_80080684(0);
+        func_80080684(0);
     }
     D_800A14E4 = 0;
     cdrom_SetCallbackA(D_800A14F4);
     cdrom_SetCallbackB(D_800A14F8);
     if (*tsl & 1) {
-        tslTmlGetHeda(D_800A14FC);
+        func_80080660(D_800A14FC);
     }
     func_80080390(9, 0);
 }
@@ -1209,13 +1209,13 @@ s32 func_800826CC(s32 sectors, s32 buf, s32 mode) {
     D_800A14F4 = cdrom_SetCallbackA(0);
     D_800A14F8 = cdrom_SetCallbackB(0);
     if (D_800A1500 & 1) {
-        D_800A14FC = tslTmlGetHeda(0);
+        D_800A14FC = func_80080660(0);
     }
     D_800A14EC = sys_VSync(-1);
     if (cdrom_GetMode() & 0xE0) {
-        tslPolyF4Init(9, 0, 0);
+        func_800804BC(9, 0, 0);
     }
-    return saEft00Add(0) > 0;
+    return func_8008241C(0) > 0;
 }
 
 /* PsyQ 4.0 LIBCD cdread.c: CdReadSync — verbatim-linked Sony object (census
@@ -1233,14 +1233,14 @@ s32 func_800827D0(s32 mode, s32 result) {
         if (sys_VSync(-1) <= D_800A14D0.t1 + 1200) {
             if (D_800A14D0.cnt < 0 ||
                 sys_VSync(-1) > D_800A14D0.t2 + 60) {
-                saEft00Add(1);
+                func_8008241C(1);
                 var_s0 = D_800A14D0.sectors;
             } else {
                 var_s0 = D_800A14D0.cnt;
             }
         }
         if (mode != 0 || var_s0 <= 0) {
-            Vu0SetLightColMatrix_80080208(1, (u8 *)result);
+            func_80080208(1, (u8 *)result);
             return var_s0;
         }
     }

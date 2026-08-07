@@ -62,7 +62,7 @@ extern s8 D_8010277F;
 extern s16 D_800A391D;
 extern s32 file_GetFlag2(void);
 extern s16 *snd_GetSeId(void);
-extern void cpu_get_dist_2(u8 *);
+extern void func_800324D0(u8 *);
 extern void func_8003553C(void);
 extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
@@ -74,31 +74,31 @@ extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 extern s32 func_80054434(void);
-extern void DispSchoolBG(s16 *, s16 *, s32 *, s32, s32);
+extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern u8 D_800A384C;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s16 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern s32 stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void pad_Init(void);
+extern void func_80078D68(void);
 extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -127,7 +127,7 @@ extern s32 func_8007E11C(s32);
 extern void *func_8007F87C(s32, s32);
 extern void *func_8007FA1C(s32, s32);
 extern void *func_8007FBBC(s32, s32);
-extern s32 camera_check_inside_screen_rob_dpos(s32 *, s32 *, s32 *, s32 *, s32);
+extern s32 func_80053614(s32 *, s32 *, s32 *, s32 *, s32);
 extern u16 D_8008D59C;
 extern s16 D_8008EB40;
 extern u8 D_800F5F68;
@@ -136,9 +136,9 @@ extern void func_80033BC0(void);
 extern void func_8001DA2C(void);
 extern void game_SetPlayerCount(s32);
 extern s32 disp_CalcFov(s32);
-extern void tslDmaDrawListDelAll(s32);
+extern void func_8007EFFC(s32);
 extern void func_8003F3D4(s16 *);
-extern void single_game_SetStatusUpData(s32, s32, s32);
+extern void func_80055138(s32, s32, s32);
 extern void func_8003FFE0(s32);
 extern s32 D_80101F90;
 extern s32 D_801020C0;
@@ -154,17 +154,17 @@ extern void game_StageInit(s32);
 extern void func_800335D8(void);
 extern s32 D_80102030;
 extern s8 D_800A3768;
-extern void myRobGeneiDraw2(void);
-extern void mk_leaf_newpos(void);
-extern void mottest_disp(void);
+extern void func_800321E8(void);
+extern void func_800335D8(void);
+extern void func_80033BC0(void);
 extern void func_8005C650(s32, s32, s32);
 extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern s32 func_8005D814(s16 *, s32, s32, s32);
 extern void func_800550E8(s32);
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
-extern void getScreenPosition(void);
-extern void cpu_check_run_attack(s32 *);
+extern void func_80017FA0(void);
+extern void func_80018300(s32 *);
 extern void func_800372C0(void);
 extern void func_80023F08(s32, s32);
 
@@ -225,7 +225,7 @@ void func_80017FA0(s32 *a0) {
 end:
     asm volatile("" : : "m"(_frame));
 }
-void marionation_camera_Exec(s32 *arg0, s32 *arg1) {
+void func_80018094(s32 *arg0, s32 *arg1) {
     register s32 *p0 asm("s0") = arg0;
     register s32 *p1 asm("s1") = arg1;
     s32 sp_area[4];
@@ -260,7 +260,7 @@ void marionation_camera_Exec(s32 *arg0, s32 *arg1) {
     __asm__ volatile (".word 0x48CE3000");
     __asm__ volatile (".word 0x48CF3800");
 
-    getScreenPosition();
+    func_80017FA0();
 
     {
         s32 *mat;
@@ -335,13 +335,13 @@ void marionation_camera_Exec(s32 *arg0, s32 *arg1) {
         *(Copy16 *)((u8 *)p1 + 0x24) = *(Copy16 *)((u8 *)src + 0x10);
     }
 
-    cpu_check_run_attack(p1);
+    func_80018300(p1);
 }
 /* kengo:MED  |  nm_mario_cam/marionation_camera_Exec  |  155i */
-INCLUDE_ASM("asm/funcs", cpu_check_run_attack);
+INCLUDE_ASM("asm/funcs", func_80018300);
 /* kengo:HIGH  |  nm_cpu/cpu_check_run_attack  |  322i  |  +5 near-exact */
-void single_game_setModeRequest(s32 arg0, s32 *arg1);
-INCLUDE_ASM("asm/funcs", single_game_setModeRequest);
+void func_800187F4(s32 arg0, s32 *arg1);
+INCLUDE_ASM("asm/funcs", func_800187F4);
 /* kengo:HIGH  |  nm_single_game/single_game_setModeRequest  |  663i  |  +1 near-exact */
 extern s32 g_file_data_buf;
 void func_8001924C(s16 *arg0, s32 arg1) {
@@ -358,7 +358,7 @@ void func_8001924C(s16 *arg0, s32 arg1) {
                 func_80019310(s0, (s32 *)(val * 52 + new_var));
             } else {
                 s16 val = s0[0];
-                single_game_setModeRequest(s0, (s32 *)(val * 52 + new_var));
+                func_800187F4(s0, (s32 *)(val * 52 + new_var));
             }
             i++;
             s0 = (s16 *)((u8 *)s0 + 16);
@@ -461,7 +461,7 @@ void func_80019534(void) {
     D_8010278C = 1;
     D_8010278E = 1;
 }
-void single_game_VoiceContorol(s32 arg0) {
+void func_80019568(s32 arg0) {
     typedef struct {
         u8 b0;
         u8 b1;
@@ -672,7 +672,7 @@ void func_8001A484(u16 *arg0) {
     p = arg0 + 2;
     do {
         i++;
-        DispSleepMenuTex((s32)&D_800100A4, arg0[0], p[-1], p[0]);
+        func_8003D52C((s32)&D_800100A4, arg0[0], p[-1], p[0]);
         p += 3;
         arg0 += 3;
     } while (i < 0x16);
@@ -792,9 +792,9 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void gnd_init_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = single_game_getEnemyCharId(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
-void mario_getMarioVoiceData_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
-void myRobGeneiMove(s32 arg0) {
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = func_8007FD5C(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
+void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
+void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
     s32 a2;
@@ -844,7 +844,7 @@ void myRobGeneiMove(s32 arg0) {
 
             {
                 s32 base_val = *(s32 *)(*(s32 *)obj + 0xF8);
-                s32 result = single_game_getEnemyCharId(base_val - a2, D_800A387C);
+                s32 result = func_8007FD5C(base_val - a2, D_800A387C);
                 val = (result * (0x400 - val)) >> 10;
             }
         }
@@ -910,14 +910,14 @@ void func_8001B690(s32 arg0, s32 arg1) {
     }
 }
 void func_8001B6F4(void) {
-    gnd_init_80041688(0, 0);
-    gnd_init_80041688(1, 0);
+    func_80041688(0, 0);
+    func_80041688(1, 0);
     D_800A36FA = 1;
     D_800F6627 = 0;
     D_800F5347 = 0;
     game_SetControllerPorts(0);
 }
-void DispPracticeMenuTex_A(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
+void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
     int new_var;
@@ -1010,7 +1010,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     } else {
         var_s3 = 0x1000;
     }
-    temp_a2 = single_game_getEnemyCharId(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
+    temp_a2 = func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4),
                              *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8));
     var_v1 = arg2;
     if (arg2 < 0) {
@@ -1020,14 +1020,14 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
     if (var_v0 < 0) {
         var_v0 += 3;
     }
-    DispPracticeMenuTex_A(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
+    func_8001B748(&D_800F6608, arg0, arg1, (s32 *)arg2, var_s3, (0x500 - temp_a2) - (var_v0 >> 2));
 }
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    DispPracticeMenuTex_A((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - single_game_getEnemyCharId(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - func_8007FD5C(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
-void cpu_check_move_dir_pattern_enemy_attack(u8 *arg0, s32 arg1) {
+void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
     Vec3 *dst;
     Vec3 *src;
@@ -1063,7 +1063,7 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
         D_800F661A = val - lhu_val;
     }
 }
-void LWCard_SetAccessData(s32 *arg0) {
+void func_8001BE08(s32 *arg0) {
     arg0[2] = 0;
     arg0[3] = 0;
     arg0[4] = 0;
@@ -1115,7 +1115,7 @@ void func_8001C51C(void) {
     D_800A3748 = -1;
     func_80030524();
     func_80030D04();
-    gnd_init_8001B294((s32)((u8 *)s0 - 0x4AA), (s32)((u8 *)s0 - 0x5E));
+    func_8001B294((s32)((u8 *)s0 - 0x4AA), (s32)((u8 *)s0 - 0x5E));
     func_800392C8();
     func_80021280(1);
 }
@@ -1172,7 +1172,7 @@ void func_8001C624(void) {
     *(s32 *)(e + 0x148) = *(s32 *)(e + 0xBC);
     func_8003FFE0(0);
 }
-void mario_getMarioVoiceData_8001C820(void) {
+void func_8001C820(void) {
     s16 *s0 = &D_80101ED2;
     s32 a0;
     if ((&D_8008D9EC)[*s0] != 0) {
@@ -1213,13 +1213,13 @@ void func_8001CD68(s16 *arg0) {
         }
     }
 }
-void camera_set_target_zoom(void);
-INCLUDE_ASM("asm/funcs", camera_set_target_zoom);
+void func_8001CE60(void);
+INCLUDE_ASM("asm/funcs", func_8001CE60);
 /* kengo:MED  |  nm_camera/camera_set_target_zoom  |  593i  |  +5 */
 extern s8 D_800A30FC;
 extern s8 D_800A30FD;
 extern s32 D_800FF6A8;
-void se_data_set(void) {
+void func_8001D790(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
@@ -1238,7 +1238,7 @@ void se_data_set(void) {
          * See memory/grind/se_data_set/. */
         u8 *p = &D_8010277C;
 
-        EndADRSound();
+        func_80020D38();
         game_StageCleanup(D_800A36A4, s2);
         func_8002906C();
         func_8005BDF0();
@@ -1259,12 +1259,12 @@ void se_data_set(void) {
     }
 }
 /* kengo:HIGH  |  md_game/se_data_set  |  93i */
-void motion_Close_8001D904(void) {
+void func_8001D904(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
     gpu_EnableDisplay();
-    EndADRSound();
+    func_80020D38();
     obj_InitTask();
     s1 = obj_InitTaskCamera((s32)0x80190800);
     if (s1 >= 0xE81) {
@@ -1274,12 +1274,12 @@ void motion_Close_8001D904(void) {
     bb2_memcpy(s0, (s32)0x80190800, s1);
     obj_ExecTask((s32)s0 - s2);
 }
-void motion_Close_8001D998(void) {
+void func_8001D998(void) {
     s32 s2 = (s32)0x80190800;
     s32 s1;
     s32 *s0;
     gpu_EnableDisplay();
-    EndADRSound();
+    func_80020D38();
     obj_InitPair();
     s1 = func_8005B8B8((s32)0x80190800);
     if (s1 >= 0x1B19) {
@@ -1287,7 +1287,7 @@ void motion_Close_8001D998(void) {
     }
     s0 = &MotDataBaseAddress;
     bb2_memcpy(s0, (s32)0x80190800, s1);
-    motion_LoadPreCalcData_8005B98C((s32)s0 - s2);
+    func_8005B98C((s32)s0 - s2);
 }
 void func_8001DA2C(void) {
     obj_InitChars();
@@ -1299,7 +1299,7 @@ void func_8001DA2C(void) {
         obj_InitPair();
     }
 }
-void camera_SetMatrix_8001DA8C(void) {
+void func_8001DA8C(void) {
     func_80035FA8();
     if (file_GetFlag2()) {
         return;
@@ -1341,11 +1341,11 @@ s32 func_8001DB58(void) {
     }
     return 1;
 }
-void gnd_close_8001DB9C(void) {
+void func_8001DB9C(void) {
     seq_Start((&D_8008D9EC)[D_80101ED2] < 1, (s32)0x80190800);
     D_800A38C6 = (u16)0xFFFF;
 }
-void camera_SetMatrix_8001DBE4(void) {
+void func_8001DBE4(void) {
     s32 i;
 
     if (g_disp_enable != DISP_ACTIVE) {
@@ -1355,14 +1355,14 @@ void camera_SetMatrix_8001DBE4(void) {
     if (!(D_800A38F8 > D_800A37A0)) {
         do {
             func_8003AA48();
-            gnd_disp_loop_ctrl();
+            func_800174F4();
             sys_VSync(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
             func_8003AA48();
             i += 1;
-            gnd_disp_loop_ctrl();
+            func_800174F4();
             sys_VSync(2);
         } while (i < 15);
     }
@@ -1370,7 +1370,7 @@ void camera_SetMatrix_8001DBE4(void) {
     gpu_InitDisplay();
     gpu_DisableDisplay();
 }
-INCLUDE_ASM("asm/funcs", mario_test_Exec);
+INCLUDE_ASM("asm/funcs", func_8001DCB0);
 /* kengo:MED  |  nm_mario_test/mario_test_Exec  |  450i  |  -19 */
 typedef struct {
     s32 vx, vy, vz;
@@ -1413,15 +1413,15 @@ void func_8001E404(void) {
             if (D_800A36FA == 0) {
                 fov = 0x50;
             }
-            tslDmaDrawListDelAll(disp_CalcFov(fov));
+            func_8007EFFC(disp_CalcFov(fov));
         }
 
         if (D_800A36FA == 0) {
-            gnd_init_80041688(D_800A36F6, 1);
-            gnd_init_80041688(D_800A36F6 == 0, 0);
+            func_80041688(D_800A36F6, 1);
+            func_80041688(D_800A36F6 == 0, 0);
         } else {
-            gnd_init_80041688(0, 0);
-            gnd_init_80041688(1, 0);
+            func_80041688(0, 0);
+            func_80041688(1, 0);
         }
         goto common_tail;
     }
@@ -1511,7 +1511,7 @@ void func_8001E878(void) {
     D_800A3778 = v0;
     func_8001A820((s32)a0, (s32)((u8 *)a0 + 0x44C), (s32)s0, (s32)((u8 *)a0 + 0x2E4));
     if (D_800A38BA != 0) {
-        myRobGeneiMove((s32)(s0 + D_800A36F6 * 1100));
+        func_8001B478((s32)(s0 + D_800A36F6 * 1100));
     }
     func_8001E404();
     func_80039320();
@@ -1531,14 +1531,14 @@ void func_8001E878(void) {
         func_8003E6A0(D_80102408, D_80102410);
     }
     game_StageInit((D_800A3690 ^ 1) != 0);
-    camera_set_target_zoom();
+    func_8001CE60();
     func_800335D8();
     func_8001C8DC();
 }
 void func_8001EA04(void) {
     u8 v;
-    gnd_init_80041688(0, 0);
-    gnd_init_80041688(1, 0);
+    func_80041688(0, 0);
+    func_80041688(1, 0);
     game_Cleanup();
     v = D_800A38D4;
     D_8010262E = 0;
@@ -1549,7 +1549,7 @@ void func_8001EA04(void) {
     D_800A3804 = v < 1;
     D_800A3817 = v < 1;
 }
-void cpu_get_move_pattern_table_number(void) {
+void func_8001EA84(void) {
     s32 sp10[6];
     s16 buf[4];
     s32 ret;
@@ -1561,19 +1561,19 @@ void cpu_get_move_pattern_table_number(void) {
     if (D_800A3748 == 0) {
         base += 0x44C;
     }
-    cpu_check_move_dir_pattern_enemy_attack(base, D_800A37B8 << 3);
+    func_8001BC70(base, D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
     func_8002006C();
-    LWCard_SetAccessData(sp10);
+    func_8001BE08(sp10);
     func_80023F08(0, (s32)sp10);
     func_80023F08(1, (s32)sp10);
     func_8002C61C();
     func_80030D7C();
-    myRobGeneiDraw2();
+    func_800321E8();
     func_800397A0();
     game_StageInit(1);
-    mk_leaf_newpos();
+    func_800335D8();
     if (D_800A38DC == 3) {
         func_8001CD68(buf);
         D_800A38B4 = D_800A38B4 + ((func_8005D814(buf, D_800A38E2, D_800A38B4, 1) / 4) * 4);
@@ -1670,15 +1670,15 @@ void func_8001EFA0(void) {
     func_8001E404();
     func_80039320();
     func_8002006C();
-    LWCard_SetAccessData(sp10);
+    func_8001BE08(sp10);
     func_80023F08(0, (s32)sp10);
     func_80023F08(1, (s32)sp10);
     func_8002C61C();
     func_80030D7C();
-    myRobGeneiDraw2();
+    func_800321E8();
     func_800397A0();
     game_StageInit(1);
-    mk_leaf_newpos();
+    func_800335D8();
 
     if (*(&D_80101F5E + D_800A3748 * 550) != 0 && D_800A38DC == 1) {
         D_800A37B8 = 0x69;
@@ -1693,7 +1693,7 @@ void func_8001EFA0(void) {
             if (D_800A3748 == 0) {
                 func_8001DA2C();
                 D_800A3768 = 2;
-                mottest_disp();
+                func_80033BC0();
                 return;
             }
             var_v0 = 0xC;
@@ -1712,8 +1712,8 @@ void func_8001EFA0(void) {
 void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
     s16 temp_v1;
     if (!(*(u8 *)(arg1 + 0x18) & 0x80)) {
-        katinuki_game_getMyWeaponId((s32 *)arg2);
-        katinuki_game_getMyWeaponId((s32 *)arg3);
+        func_80027334((s32 *)arg2);
+        func_80027334((s32 *)arg3);
     }
     func_8002F770((s32 *)(arg2 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
     func_8002F770((s32 *)(arg3 + 0x36), *(s8 *)(arg1 + 0x14) * 4, *(s8 *)(arg1 + 0x15) * 4, 0);
@@ -1727,7 +1727,7 @@ void func_8001F1C4(u8 *arg0, u8 *arg1, u8 *arg2, u8 *arg3) {
         *(u16 *)(arg3 + 0x72) = (u16)(*(u16 *)(arg3 + 0x72) + (*(s8 *)(arg1 + 0x16) * 4));
     }
 }
-INCLUDE_ASM("asm/funcs", md_game_rob_data_init);
+INCLUDE_ASM("asm/funcs", func_8001F2E4);
 /* kengo:HIGH  |  md_game/md_game_rob_data_init  |  351i */
 void func_8001F860(s16 *arg0, s32 arg1) {
     arg1 = (arg1 - *(s16 *)((u8 *)arg0 + 0x1CA)) & 0xFFF;
@@ -1861,8 +1861,8 @@ check3:
     }
     return v0;
 }
-void single_game_CheckStatusUpDataTotalOver(void);
-INCLUDE_ASM("asm/funcs", single_game_CheckStatusUpDataTotalOver);
+void func_8001FBE8(void);
+INCLUDE_ASM("asm/funcs", func_8001FBE8);
 /* kengo:HIGH  |  nm_single_game/single_game_CheckStatusUpDataTotalOver  |  289i */
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
@@ -1871,7 +1871,7 @@ s32 func_8002006C(void) {
     D_800A387C = v0;
     D_800A38F0 = v0 - s0;
     if (v != 5 && v != 2) {
-        single_game_CheckStatusUpDataTotalOver();
+        func_8001FBE8();
     }
     D_800A38A8 = 0;
 }
@@ -1941,7 +1941,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
         }
     }
 }
-void calc_fc_frame_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
+void func_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
     s32 mat[8];
     s32 vec[3];
     s32 m0;
@@ -2003,7 +2003,7 @@ void calc_fc_frame_800203B4(u8 *arg0, s32 arg1, s16 *arg2) {
         __asm__ volatile ("swc2 $27, 8(%0)" :: "r"(outp));
     }
 }
-void single_game_SetAbilityData(u8 *arg0) {
+void func_800204C0(u8 *arg0) {
     long temp_s1;
     s32 sp10[3];
     s16 sp20[3];
@@ -2129,7 +2129,7 @@ void func_80020CDC(void) {
     D_800A38C1 = 0xFF;
     D_800A38C0 = 0xFF;
 }
-void EndADRSound(void) {
+void func_80020D38(void) {
     if (D_800A38C6 == 0xFFFF) {
         seq_Reset();
     }
@@ -2145,7 +2145,7 @@ void func_80020D70(void) {
     func_80020CDC();
 }
 void func_80020DDC(void) {    s32 v0;    s32 v1;    s32 v2;    v0 = func_80036EA8(1, 1);    replay_camera_Init(v0, D_800A3830);    game_FrameLoop();    v1 = D_800A3830;    D_80102760 = v1 + 0x14;    D_80102764 = v1 + *(s32 *)(v1 + 4);    D_80102768 = v1 + *(s32 *)(v1 + 8);    v2 = *(s32 *)(v1 + 0x10);    D_800A3880 = 1;    D_80102770 = v1 + v2;}
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_B);
+INCLUDE_ASM("asm/funcs", func_80020E74);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_80021210(void) {
     func_8001979C(0, D_80102770);
@@ -2366,7 +2366,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 }
                 *((u8 *) (s0 + 0xAD)) = a0_flag;
             }
-            cpu_get_dist_2(s0);
+            func_800324D0(s0);
             {
                 s32 kind2 = *((u16 *) (s0 + 0x6A));
                 s32 v1k = kind2 & 0xFFFF;
@@ -2541,7 +2541,7 @@ s32 func_800224E0(s32 *arg0) {
     } while ((s32)p < (s32)end);
     return 0;
 }
-void pad_button_info_clear(s16 *arg0) {
+void func_80022568(s16 *arg0) {
     arg0[0x136] = 1;
     arg0[0x137] = 0;
     arg0[0x138] = 0;
@@ -2583,7 +2583,7 @@ loop_22F34:
                 a0 = *(u8 **)a0;
                 {
                     s16 idx2 = *(s16 *)(a0 + 0x4A);
-                    single_game_SetStatusUpData(i, val1, (&D_801027BC)[idx2 * 5]);
+                    func_80055138(i, val1, (&D_801027BC)[idx2 * 5]);
                 }
             }
         }
@@ -2613,7 +2613,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
     }
     *((s8 *) (obj + 0xB1)) = (s8) func_80054434();
     *(Quad_2304C *)pos1 = *(Quad_2304C *)scratch;
-    DispSchoolBG((s16 *) arg3, (s16 *) scratch_c, arg3, -0x40, 0xE6);
+    func_8002EBDC((s16 *) arg3, (s16 *) scratch_c, arg3, -0x40, 0xE6);
     {
       s16 vel;
       vel = *((s16 *) (((u8 *) scratch) + 0x10));
@@ -2648,7 +2648,7 @@ void func_8002304C(u8 *obj, s32 *pos1, s32 *pos2, s32 *arg3)
         {
           step = 0x100;
         }
-        DispSchoolBG(scratch_d, (s16 *) scratch_c, (s32 *) scratch_d, 0, step);
+        func_8002EBDC(scratch_d, (s16 *) scratch_c, (s32 *) scratch_d, 0, step);
       }
       {
         s16 vel_y = *((s16 *) (((u8 *) scratch) + 0x12));
@@ -2731,14 +2731,14 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         }
     }
 
-    if (camera_check_inside_screen_rob_dpos(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+    if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
         return 0;
     }
 
     *(SVec8_233AC *)(arg0 + 0x98) = *(SVec8_233AC *)out1;
 
     {
-        s32 fwd_angle = single_game_getEnemyCharId(out1[0], out1[2]);
+        s32 fwd_angle = func_8007FD5C(out1[0], out1[2]);
         s32 fwd_800;
 
         pos[0] = *(s32 *)(arg0 + 0xB8);
@@ -2761,7 +2761,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
             off[2] = pos[2] + jv4 / 8;
         }
 
-        if (camera_check_inside_screen_rob_dpos(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
+        if (func_80053614(pos, off, out2, (s32 *)out1, (s32)0x1F8002B8) != 0) {
             return 0;
         }
 
@@ -2769,7 +2769,7 @@ s32 func_800233AC(u8 *arg0, s32 *arg1) {
         pos[1] = off[1] + 0x190;
         pos[2] = off[2];
 
-        if (camera_check_inside_screen_rob_dpos(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
+        if (func_80053614(off, pos, out2, (s32 *)out1, (s32)0x1F8002B8) == 0) {
             return 0;
         }
 
@@ -2872,7 +2872,7 @@ void func_80023648(u8 *arg0) {
         }
     }
 }
-int camera_set_zoom(u8 *arg0)
+int func_800238C4(u8 *arg0)
 {
     s32 src[4];
     s32 dst[4];
@@ -2912,7 +2912,7 @@ int camera_set_zoom(u8 *arg0)
     dst[0] = *((s32 *) (arg0 + 0xB8));
     dst[1] = (*((s32 *) (arg0 + 0xBC))) + 0x514;
     dst[2] = *((s32 *) (arg0 + 0xC0));
-    s1 = camera_check_inside_screen_rob_dpos(src, dst, out, (s32 *) offsets, scratchpad);
+    s1 = func_80053614(src, dst, out, (s32 *) offsets, scratchpad);
     ok = 1;
     if (s1 != 0)
     {
@@ -2937,7 +2937,7 @@ int camera_set_zoom(u8 *arg0)
                 tmp += 7;
             }
             dst[2] += tmp >> 3;
-            ok = camera_check_inside_screen_rob_dpos(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
+            ok = func_80053614(src, dst, out, (s32 *) offsets2, scratchpad) == 0;
             goto ok_check;
         }
     }
@@ -2985,7 +2985,7 @@ int camera_set_zoom(u8 *arg0)
     }
     {
         s32 kind;
-        s1 = ((*((s16 *) (arg0 + 0x1CA))) - single_game_getEnemyCharId(offsets[0], offsets[2])) & 0xFFF;
+        s1 = ((*((s16 *) (arg0 + 0x1CA))) - func_8007FD5C(offsets[0], offsets[2])) & 0xFFF;
         if (s1 >= 0x800) {
             s1 = 0x1000 - s1;
         }
@@ -3093,7 +3093,7 @@ void func_80023E40(u8 *arg0) {
         s1[0xC] = *(s32 *)(arg0 + 0xB8);
         s1[0xD] = *(s32 *)(arg0 + 0xBC) + 0x1F40;
         s1[0xE] = *(s32 *)(arg0 + 0xC0);
-        v0 = camera_check_inside_screen_rob_dpos((s32 *)(arg0 + 0xB8), &s1[0xC], s1, &s1[4], (s32)v3);
+        v0 = func_80053614((s32 *)(arg0 + 0xB8), &s1[0xC], s1, &s1[4], (s32)v3);
         if (v0 == 0) goto done;
         *(s32 *)(arg0 + 0x148) = s1[1];
         goto done;

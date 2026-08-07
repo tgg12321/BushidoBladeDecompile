@@ -6,7 +6,7 @@ glabel func_8005BD30
     /* 4C540 8005BD40 2000BFAF */  sw         $ra, 0x20($sp)
     /* 4C544 8005BD44 1800B2AF */  sw         $s2, 0x18($sp)
     /* 4C548 8005BD48 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 4C54C 8005BD4C 3416020C */  jal        title_mv_exec2
+    /* 4C54C 8005BD4C 3416020C */  jal        func_800858D0
     /* 4C550 8005BD50 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4C554 8005BD54 0F80033C */  lui        $v1, %hi(D_800EFC50)
     /* 4C558 8005BD58 50FC638C */  lw         $v1, %lo(D_800EFC50)($v1)
@@ -27,7 +27,7 @@ glabel func_8005BD30
     /* 4C58C 8005BD8C 0A80013C */  lui        $at, %hi(D_8009AD18)
     /* 4C590 8005BD90 21082200 */  addu       $at, $at, $v0
     /* 4C594 8005BD94 18AD2590 */  lbu        $a1, %lo(D_8009AD18)($at)
-    /* 4C598 8005BD98 3071010C */  jal        saFidLoad
+    /* 4C598 8005BD98 3071010C */  jal        func_8005C4C0
     /* 4C59C 8005BD9C 01001026 */   addiu     $s0, $s0, 0x1
     /* 4C5A0 8005BDA0 FF000232 */  andi       $v0, $s0, 0xFF
     /* 4C5A4 8005BDA4 2B105200 */  sltu       $v0, $v0, $s2

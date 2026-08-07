@@ -1,6 +1,6 @@
 {
   "mode": "dry-run",
-  "head": "d99ab6a6",
+  "head": "2f42a3ce",
   "link_map": {
     "fresh": true,
     "detail": "build/bb2.map is present and newer than every build input"
@@ -4850,10 +4850,6 @@
       "memory/wip/func_80042504"
     ],
     [
-      "memory/wip/saEft00Add",
-      "memory/wip/func_8008241C"
-    ],
-    [
       "memory/wip/saTan2KabutoWareMove",
       "memory/wip/func_800283D0"
     ],
@@ -6078,7 +6074,6 @@
       "hirahira_w_ctrl"
     ],
     "engine/queue.json": [
-      "saEft00Add -> func_8008241C",
       "mario_getMarioVoiceData_80048AD0 -> func_80048AD0",
       "suDispMentalBar -> func_8003B5A4",
       "PutShadowRmd -> func_800401CC",

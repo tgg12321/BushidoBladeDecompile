@@ -20,7 +20,7 @@ glabel func_80042FA0
     /* 337E8 80042FE8 1400B4A7 */   sh        $s4, 0x14($sp)
     /* 337EC 80042FEC 1800A48F */  lw         $a0, 0x18($sp)
     /* 337F0 80042FF0 2000A58F */  lw         $a1, 0x20($sp)
-    /* 337F4 80042FF4 57FF010C */  jal        single_game_getEnemyCharId
+    /* 337F4 80042FF4 57FF010C */  jal        func_8007FD5C
     /* 337F8 80042FF8 00000000 */   nop
     /* 337FC 80042FFC 21884000 */  addu       $s1, $v0, $zero
     /* 33800 80043000 00841100 */  sll        $s0, $s1, 16
@@ -40,7 +40,7 @@ glabel func_80042FA0
     /* 33838 80043038 1C00A48F */  lw         $a0, 0x1C($sp)
     /* 3383C 8004303C 12180000 */  mflo       $v1
     /* 33840 80043040 2128A300 */  addu       $a1, $a1, $v1
-    /* 33844 80043044 57FF010C */  jal        single_game_getEnemyCharId
+    /* 33844 80043044 57FF010C */  jal        func_8007FD5C
     /* 33848 80043048 032B0500 */   sra       $a1, $a1, 12
     /* 3384C 8004304C 23980200 */  negu       $s3, $v0
     /* 33850 80043050 1000A427 */  addiu      $a0, $sp, 0x10
@@ -49,7 +49,7 @@ glabel func_80042FA0
     /* 3385C 8004305C 1000A2A7 */  sh         $v0, 0x10($sp)
     /* 33860 80043060 23101100 */  negu       $v0, $s1
     /* 33864 80043064 1200A2A7 */  sh         $v0, 0x12($sp)
-    /* 33868 80043068 200B010C */  jal        hirahira_w_ctrl_2
+    /* 33868 80043068 200B010C */  jal        func_80042C80
     /* 3386C 8004306C 1400A0A7 */   sh        $zero, 0x14($sp)
     /* 33870 80043070 21200002 */  addu       $a0, $s0, $zero
     /* 33874 80043074 D3FA010C */  jal        func_8007EB4C
@@ -63,7 +63,7 @@ glabel func_80042FA0
     /* 33894 80043094 1400A0A7 */   sh        $zero, 0x14($sp)
     /* 33898 80043098 1800A48F */  lw         $a0, 0x18($sp)
     /* 3389C 8004309C 1C00A58F */  lw         $a1, 0x1C($sp)
-    /* 338A0 800430A0 57FF010C */  jal        single_game_getEnemyCharId
+    /* 338A0 800430A0 57FF010C */  jal        func_8007FD5C
     /* 338A4 800430A4 00000000 */   nop
     /* 338A8 800430A8 23100200 */  negu       $v0, $v0
     /* 338AC 800430AC 000053A6 */  sh         $s3, 0x0($s2)

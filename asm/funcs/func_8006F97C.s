@@ -23,7 +23,7 @@ glabel func_8006F97C
     /* 601D0 8006F9D0 21A08000 */  addu       $s4, $a0, $zero
     /* 601D4 8006F9D4 0000C48F */  lw         $a0, 0x0($fp)
     /* 601D8 8006F9D8 21280000 */  addu       $a1, $zero, $zero
-    /* 601DC 8006F9DC 20B9010C */  jal        saMotionSet
+    /* 601DC 8006F9DC 20B9010C */  jal        func_8006E480
     /* 601E0 8006F9E0 1800A4AF */   sw        $a0, 0x18($sp)
     /* 601E4 8006F9E4 01000524 */  addiu      $a1, $zero, 0x1
     /* 601E8 8006F9E8 21300000 */  addu       $a2, $zero, $zero
@@ -272,7 +272,7 @@ glabel func_8006F97C
     /* 6058C 8006FD8C 3400A0AF */  sw         $zero, 0x34($sp)
     /* 60590 8006FD90 0400C48F */  lw         $a0, 0x4($fp)
     /* 60594 8006FD94 60000524 */  addiu      $a1, $zero, 0x60
-    /* 60598 8006FD98 20B9010C */  jal        saMotionSet
+    /* 60598 8006FD98 20B9010C */  jal        func_8006E480
     /* 6059C 8006FD9C 1800A4AF */   sw        $a0, 0x18($sp)
     /* 605A0 8006FDA0 01000524 */  addiu      $a1, $zero, 0x1
     /* 605A4 8006FDA4 21300000 */  addu       $a2, $zero, $zero
@@ -485,7 +485,7 @@ glabel func_8006F97C
     /* 608A8 800700A8 2000A3AF */   sw        $v1, 0x20($sp)
     /* 608AC 800700AC 100082AE */  sw         $v0, 0x10($s4)
     /* 608B0 800700B0 1800A48F */  lw         $a0, 0x18($sp)
-    /* 608B4 800700B4 20B9010C */  jal        saMotionSet
+    /* 608B4 800700B4 20B9010C */  jal        func_8006E480
     /* 608B8 800700B8 60000524 */   addiu     $a1, $zero, 0x60
     /* 608BC 800700BC 01000524 */  addiu      $a1, $zero, 0x1
     /* 608C0 800700C0 21300000 */  addu       $a2, $zero, $zero
@@ -513,7 +513,7 @@ glabel func_8006F97C
     /* 60918 80070118 01000224 */  addiu      $v0, $zero, 0x1
     /* 6091C 8007011C 26A6010C */  jal        func_80069898
     /* 60920 80070120 5600A2A7 */   sh        $v0, 0x56($sp)
-    /* 60924 80070124 62C0010C */  jal        replay_camera_attack
+    /* 60924 80070124 62C0010C */  jal        func_80070188
     /* 60928 80070128 21208002 */   addu      $a0, $s4, $zero
     /* 6092C 8007012C 3DBB010C */  jal        func_8006ECF4
     /* 60930 80070130 21208002 */   addu      $a0, $s4, $zero
@@ -523,7 +523,7 @@ glabel func_8006F97C
     /* 60940 80070140 1D0283A3 */  sb         $v1, %gp_rel(D_800A32E9)($gp)
     /* 60944 80070144 84CB010C */  jal        func_80072E10
     /* 60948 80070148 21208002 */   addu      $a0, $s4, $zero
-    /* 6094C 8007014C 80CC010C */  jal        saTan3GaugeMain_80073200
+    /* 6094C 8007014C 80CC010C */  jal        func_80073200
     /* 60950 80070150 21208002 */   addu      $a0, $s4, $zero
     /* 60954 80070154 8400BF8F */  lw         $ra, 0x84($sp)
     /* 60958 80070158 8000BE8F */  lw         $fp, 0x80($sp)

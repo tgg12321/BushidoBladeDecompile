@@ -6,7 +6,7 @@ glabel func_80047384
     /* 37B94 80047394 0837848C */  lw         $a0, %lo(D_800A3708)($a0)
     /* 37B98 80047398 21280002 */  addu       $a1, $s0, $zero
     /* 37B9C 8004739C 5400BFAF */  sw         $ra, 0x54($sp)
-    /* 37BA0 800473A0 A20A010C */  jal        replay_camera_rob_back_loose3
+    /* 37BA0 800473A0 A20A010C */  jal        func_80042A88
     /* 37BA4 800473A4 10008424 */   addiu     $a0, $a0, 0x10
     /* 37BA8 800473A8 21200002 */  addu       $a0, $s0, $zero
     /* 37BAC 800473AC 1000A527 */  addiu      $a1, $sp, 0x10
@@ -18,7 +18,7 @@ glabel func_80047384
     /* 37BC4 800473C4 1400A2A7 */   sh        $v0, 0x14($sp)
     /* 37BC8 800473C8 1800A48F */  lw         $a0, 0x18($sp)
     /* 37BCC 800473CC 2000A58F */  lw         $a1, 0x20($sp)
-    /* 37BD0 800473D0 57FF010C */  jal        single_game_getEnemyCharId
+    /* 37BD0 800473D0 57FF010C */  jal        func_8007FD5C
     /* 37BD4 800473D4 00000000 */   nop
     /* 37BD8 800473D8 21804000 */  addu       $s0, $v0, $zero
     /* 37BDC 800473DC 00141000 */  sll        $v0, $s0, 16
@@ -45,7 +45,7 @@ glabel func_80047384
     /* 37C30 80047430 12180000 */  mflo       $v1
     /* 37C34 80047434 2128A300 */  addu       $a1, $a1, $v1
     /* 37C38 80047438 032B0500 */  sra        $a1, $a1, 12
-    /* 37C3C 8004743C 57FF010C */  jal        single_game_getEnemyCharId
+    /* 37C3C 8004743C 57FF010C */  jal        func_8007FD5C
     /* 37C40 80047440 2000A5AF */   sw        $a1, 0x20($sp)
     /* 37C44 80047444 23180200 */  negu       $v1, $v0
     /* 37C48 80047448 0A80023C */  lui        $v0, %hi(D_800A33C8)

@@ -34,9 +34,9 @@ glabel func_8002C61C
     /* 1CE94 8002C694 03B20008 */  j          .L8002C80C
     /* 1CE98 8002C698 00000000 */   nop
   .L8002C69C:
-    /* 1CE9C 8002C69C CBA1000C */  jal        motion_GameCalcMotion
+    /* 1CE9C 8002C69C CBA1000C */  jal        func_8002872C
     /* 1CEA0 8002C6A0 00000000 */   nop
-    /* 1CEA4 8002C6A4 32A2000C */  jal        saTan3MainJump
+    /* 1CEA4 8002C6A4 32A2000C */  jal        func_800288C8
     /* 1CEA8 8002C6A8 00000000 */   nop
     /* 1CEAC 8002C6AC 15A5000C */  jal        func_80029454
     /* 1CEB0 8002C6B0 00000000 */   nop
@@ -45,7 +45,7 @@ glabel func_8002C61C
     /* 1CEBC 8002C6BC 00140200 */  sll        $v0, $v0, 16
     /* 1CEC0 8002C6C0 1F004004 */  bltz       $v0, .L8002C740
     /* 1CEC4 8002C6C4 00000000 */   nop
-    /* 1CEC8 8002C6C8 8BB0000C */  jal        PutRobShadow
+    /* 1CEC8 8002C6C8 8BB0000C */  jal        func_8002C22C
     /* 1CECC 8002C6CC 00000000 */   nop
     /* 1CED0 8002C6D0 0A80023C */  lui        $v0, %hi(D_800A3824)
     /* 1CED4 8002C6D4 24384284 */  lh         $v0, %lo(D_800A3824)($v0)
@@ -64,11 +64,11 @@ glabel func_8002C61C
     /* 1CF08 8002C708 00000000 */   nop
   .L8002C70C:
     /* 1CF0C 8002C70C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF10 8002C710 F4A0000C */  jal        saTan2KabutoWareMove
+    /* 1CF10 8002C710 F4A0000C */  jal        func_800283D0
     /* 1CF14 8002C714 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF18 8002C718 21200002 */  addu       $a0, $s0, $zero
     /* 1CF1C 8002C71C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF20 8002C720 F4A0000C */  jal        saTan2KabutoWareMove
+    /* 1CF20 8002C720 F4A0000C */  jal        func_800283D0
     /* 1CF24 8002C724 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF28 8002C728 1080013C */  lui        $at, %hi(D_801023C1)
     /* 1CF2C 8002C72C C12320A0 */  sb         $zero, %lo(D_801023C1)($at)
@@ -77,7 +77,7 @@ glabel func_8002C61C
     /* 1CF38 8002C738 D2B10008 */  j          .L8002C748
     /* 1CF3C 8002C73C 00000000 */   nop
   .L8002C740:
-    /* 1CF40 8002C740 C2AA000C */  jal        calc_loc_mat_fw
+    /* 1CF40 8002C740 C2AA000C */  jal        func_8002AB08
     /* 1CF44 8002C744 21200000 */   addu      $a0, $zero, $zero
   .L8002C748:
     /* 1CF48 8002C748 3C00228E */  lw         $v0, 0x3C($s1)
@@ -289,7 +289,7 @@ glabel func_8002C61C
     /* 1D260 8002CA60 00000000 */  nop
     /* 1D264 8002CA64 03005014 */  bne        $v0, $s0, .L8002CA74
     /* 1D268 8002CA68 00000000 */   nop
-    /* 1D26C 8002CA6C C5C8000C */  jal        Pad_Prs
+    /* 1D26C 8002CA6C C5C8000C */  jal        func_80032314
     /* 1D270 8002CA70 00000000 */   nop
   .L8002CA74:
     /* 1D274 8002CA74 1800BF8F */  lw         $ra, 0x18($sp)

@@ -1,10 +1,18 @@
 {
-  "generated_at": "2026-08-06T18:19:00",
+  "generated_at": "2026-08-07T03:50:24",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
     {
-      "func": "mario_getMarioVoiceData_80048AD0",
+      "func": "func_8003B5A4",
+      "file": "code6cac_c_ab",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 10,
+      "status": "active"
+    },
+    {
+      "func": "func_80048AD0",
       "file": "text1b",
       "distance": 19,
       "verdict": "C",
@@ -17,14 +25,6 @@
       "distance": 20,
       "verdict": "C",
       "rules": 19,
-      "status": "active"
-    },
-    {
-      "func": "suDispMentalBar",
-      "file": "code6cac_c_ab",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 10,
       "status": "active"
     },
     {
@@ -60,7 +60,7 @@
       "status": "active"
     },
     {
-      "func": "PutShadowRmd",
+      "func": "func_800401CC",
       "file": "text1a_pre",
       "distance": 20,
       "verdict": "C",
@@ -84,7 +84,7 @@
       "status": "active"
     },
     {
-      "func": "coli_check_circle_hit_line",
+      "func": "func_8002FDB0",
       "file": "code6cac_b",
       "distance": 21,
       "verdict": "ASM-PARTIAL",
@@ -100,7 +100,7 @@
       "status": "active"
     },
     {
-      "func": "pad_ClearAppliBuffer",
+      "func": "func_8003A5A0",
       "file": "code6cac_c_mid",
       "distance": 21,
       "verdict": "C",
@@ -124,7 +124,7 @@
       "status": "active"
     },
     {
-      "func": "_SelectSection",
+      "func": "func_80042874",
       "file": "text1a_c",
       "distance": 21,
       "verdict": "C",
@@ -172,7 +172,7 @@
       "status": "active"
     },
     {
-      "func": "motion_Open",
+      "func": "func_80083794",
       "file": "ings2",
       "distance": 23,
       "verdict": "C",
@@ -229,7 +229,7 @@
       "status": "active"
     },
     {
-      "func": "gnd_disp_loop_ctrl",
+      "func": "func_800174F4",
       "file": "ings",
       "distance": 25,
       "verdict": "C",
@@ -279,7 +279,7 @@
       "status": "active"
     },
     {
-      "func": "Pad_Prs",
+      "func": "func_80032314",
       "file": "code6cac_b",
       "distance": 27,
       "verdict": "ASM-PARTIAL",
@@ -287,7 +287,7 @@
       "status": "active"
     },
     {
-      "func": "cpu_get_dist_2",
+      "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
       "verdict": "C",
@@ -303,7 +303,7 @@
       "status": "active"
     },
     {
-      "func": "title_mv_exec2",
+      "func": "func_800858D0",
       "file": "main",
       "distance": 27,
       "verdict": "C",
@@ -311,7 +311,7 @@
       "status": "active"
     },
     {
-      "func": "hirahira_w_ctrl",
+      "func": "func_80041188",
       "file": "text1a_pre",
       "distance": 27,
       "verdict": "C",
@@ -320,7 +320,7 @@
       "prologue_fix": 1
     },
     {
-      "func": "cpu_check_tubazeri",
+      "func": "func_8002FC80",
       "file": "code6cac_b",
       "distance": 28,
       "verdict": "ASM-PARTIAL",
@@ -336,7 +336,7 @@
       "status": "active"
     },
     {
-      "func": "saTan4GaugeInit",
+      "func": "func_80084974",
       "file": "main",
       "distance": 28,
       "verdict": "C",
@@ -377,7 +377,7 @@
       "status": "active"
     },
     {
-      "func": "DispPracticeMenuTex_A",
+      "func": "func_8001B748",
       "file": "code6cac",
       "distance": 32,
       "verdict": "C",
@@ -401,7 +401,7 @@
       "status": "active"
     },
     {
-      "func": "rob_calc_2d_position",
+      "func": "func_80040B44",
       "file": "text1a_pre",
       "distance": 32,
       "verdict": "C",
@@ -417,7 +417,7 @@
       "status": "active"
     },
     {
-      "func": "calc_fc_frame_800203B4",
+      "func": "func_800203B4",
       "file": "code6cac",
       "distance": 33,
       "verdict": "ASM-PARTIAL",
@@ -425,7 +425,7 @@
       "status": "active"
     },
     {
-      "func": "saTan5TakeAnim2",
+      "func": "func_8002D518",
       "file": "code6cac_b",
       "distance": 33,
       "verdict": "ASM-PARTIAL",
@@ -433,7 +433,7 @@
       "status": "active"
     },
     {
-      "func": "SetCurrentCursor",
+      "func": "func_8003C714",
       "file": "code6cac_c2",
       "distance": 33,
       "verdict": "C",
@@ -449,7 +449,7 @@
       "status": "active"
     },
     {
-      "func": "SetPacketData",
+      "func": "func_8008C1E8",
       "file": "main",
       "distance": 34,
       "verdict": "C",
@@ -465,7 +465,7 @@
       "status": "active"
     },
     {
-      "func": "cpu_side_move_dir",
+      "func": "func_80027640",
       "file": "code6cac_b",
       "distance": 35,
       "verdict": "C",
@@ -497,7 +497,7 @@
       "status": "active"
     },
     {
-      "func": "func_80031890",
+      "func": "func_8002E838",
       "file": "code6cac_b",
       "distance": 36,
       "verdict": "ASM-PARTIAL",
@@ -505,7 +505,7 @@
       "status": "active"
     },
     {
-      "func": "saSeInit",
+      "func": "func_80031890",
       "file": "code6cac_b",
       "distance": 36,
       "verdict": "ASM-PARTIAL",
@@ -521,7 +521,7 @@
       "status": "active"
     },
     {
-      "func": "InitHiraRmd_800480C0",
+      "func": "func_800480C0",
       "file": "text1b",
       "distance": 36,
       "verdict": "C",
@@ -553,7 +553,7 @@
       "status": "active"
     },
     {
-      "func": "tslGlobalMemFree_800861BC",
+      "func": "func_800861BC",
       "file": "main",
       "distance": 37,
       "verdict": "C",
@@ -577,7 +577,7 @@
       "status": "active"
     },
     {
-      "func": "coli_hit_body_weapon",
+      "func": "func_80030580",
       "file": "code6cac_b",
       "distance": 38,
       "verdict": "C",
@@ -585,7 +585,7 @@
       "status": "active"
     },
     {
-      "func": "DispSleepMenuTex",
+      "func": "func_8003D52C",
       "file": "code6cac_c2",
       "distance": 38,
       "verdict": "C",
@@ -633,14 +633,6 @@
       "status": "active"
     },
     {
-      "func": "efc_rob_set_type_flash",
-      "file": "text1a_c",
-      "distance": 40,
-      "verdict": "C",
-      "rules": 14,
-      "status": "active"
-    },
-    {
       "func": "func_8004473C",
       "file": "text1a_c",
       "distance": 40,
@@ -649,7 +641,15 @@
       "status": "active"
     },
     {
-      "func": "cpu_side_move_dir_3",
+      "func": "func_80044800",
+      "file": "text1a_c",
+      "distance": 40,
+      "verdict": "C",
+      "rules": 14,
+      "status": "active"
+    },
+    {
+      "func": "func_8008BF04",
       "file": "main",
       "distance": 41,
       "verdict": "C",
@@ -657,7 +657,7 @@
       "status": "active"
     },
     {
-      "func": "saTan4FireDisp",
+      "func": "func_80041BF4",
       "file": "text1a_post",
       "distance": 41,
       "verdict": "C",
@@ -665,7 +665,7 @@
       "status": "active"
     },
     {
-      "func": "single_game_VoiceContorol",
+      "func": "func_80019568",
       "file": "code6cac",
       "distance": 42,
       "verdict": "C",
@@ -689,19 +689,19 @@
       "status": "active"
     },
     {
+      "func": "func_800283D0",
+      "file": "code6cac_b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
       "func": "func_8002C61C",
       "file": "code6cac_b",
       "distance": 44,
       "verdict": "C",
       "rules": 42,
-      "status": "active"
-    },
-    {
-      "func": "saTan2KabutoWareMove",
-      "file": "code6cac_b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -713,7 +713,7 @@
       "status": "active"
     },
     {
-      "func": "coli_HitPauseKatana_2",
+      "func": "func_80089A48",
       "file": "main",
       "distance": 45,
       "verdict": "C",
@@ -721,7 +721,7 @@
       "status": "active"
     },
     {
-      "func": "camera_set_zoom",
+      "func": "func_800238C4",
       "file": "code6cac",
       "distance": 48,
       "verdict": "C",
@@ -745,7 +745,7 @@
       "status": "active"
     },
     {
-      "func": "single_game_SetWazaData",
+      "func": "func_80035280",
       "file": "code6cac_b",
       "distance": 49,
       "verdict": "C",
@@ -769,7 +769,7 @@
       "status": "active"
     },
     {
-      "func": "single_game_SetAbilityData",
+      "func": "func_800204C0",
       "file": "code6cac",
       "distance": 52,
       "verdict": "ASM-PARTIAL",
@@ -793,7 +793,7 @@
       "status": "active"
     },
     {
-      "func": "ang_near_dif",
+      "func": "func_8003F6D8",
       "file": "config",
       "distance": 55,
       "verdict": "ASM-SUSPECT",
@@ -801,7 +801,7 @@
       "status": "active"
     },
     {
-      "func": "saTan0KiWareMoveA",
+      "func": "func_8002D780",
       "file": "code6cac_b",
       "distance": 56,
       "verdict": "ASM-PARTIAL",
@@ -809,7 +809,7 @@
       "status": "active"
     },
     {
-      "func": "marionation_Exec",
+      "func": "func_80081030",
       "file": "system",
       "distance": 56,
       "verdict": "ASM-SUSPECT",
@@ -826,7 +826,7 @@
       "status": "active"
     },
     {
-      "func": "saSeInit_2",
+      "func": "func_800393C8",
       "file": "code6cac_c_mid",
       "distance": 57,
       "verdict": "ASM-SUSPECT",
@@ -834,7 +834,7 @@
       "status": "active"
     },
     {
-      "func": "hirahira_w_ctrl_2",
+      "func": "func_80042C80",
       "file": "text1a_c",
       "distance": 58,
       "verdict": "ASM-SUSPECT",
@@ -842,7 +842,7 @@
       "status": "active"
     },
     {
-      "func": "tslPrintScreen",
+      "func": "func_8003F824",
       "file": "config",
       "distance": 61,
       "verdict": "ASM-SUSPECT",
@@ -866,7 +866,7 @@
       "status": "active"
     },
     {
-      "func": "mk_leaf_newpos",
+      "func": "func_800335D8",
       "file": "code6cac_b",
       "distance": 65,
       "verdict": "ASM-SUSPECT",
@@ -874,7 +874,7 @@
       "status": "active"
     },
     {
-      "func": "gnd_land_hit_char_tsuba",
+      "func": "func_8005D554",
       "file": "text1b",
       "distance": 65,
       "verdict": "ASM-SUSPECT",
@@ -898,7 +898,7 @@
       "status": "active"
     },
     {
-      "func": "saTan4FireDisp_80048864",
+      "func": "func_80048864",
       "file": "text1b",
       "distance": 87,
       "verdict": "ASM-SUSPECT",
@@ -906,7 +906,7 @@
       "status": "active"
     },
     {
-      "func": "DispSchoolBG",
+      "func": "func_8002EBDC",
       "file": "code6cac_b",
       "distance": 97,
       "verdict": "ASM-PARTIAL",
@@ -914,7 +914,7 @@
       "status": "active"
     },
     {
-      "func": "CalcHiraNormal",
+      "func": "func_8003EB84",
       "file": "code6cac_c2",
       "distance": 98,
       "verdict": "ASM-SUSPECT",
@@ -922,7 +922,7 @@
       "status": "active"
     },
     {
-      "func": "marionation_camera_Exec",
+      "func": "func_80018094",
       "file": "code6cac",
       "distance": 103,
       "verdict": "ASM-PARTIAL",
@@ -970,7 +970,7 @@
       "status": "active"
     },
     {
-      "func": "exec_game",
+      "func": "func_800896A0",
       "file": "main",
       "distance": 121,
       "verdict": "ASM-SUSPECT",
@@ -994,7 +994,7 @@
       "status": "active"
     },
     {
-      "func": "tslGlobalMemFree_8005C2A8",
+      "func": "func_8005C2A8",
       "file": "text1b",
       "distance": 134,
       "verdict": "C",
@@ -1066,7 +1066,7 @@
       "status": "active"
     },
     {
-      "func": "saTan1GaugeMain",
+      "func": "func_800753D8",
       "file": "text1b",
       "distance": 166,
       "verdict": "C",
@@ -1122,7 +1122,7 @@
       "status": "active"
     },
     {
-      "func": "saTan3GaugeMain_8006A564",
+      "func": "func_8006A564",
       "file": "text1b",
       "distance": 199,
       "verdict": "C",
@@ -1146,7 +1146,7 @@
       "status": "active"
     },
     {
-      "func": "saTan3GaugeMain_80073200",
+      "func": "func_80073200",
       "file": "text1b",
       "distance": 203,
       "verdict": "C",
@@ -1154,7 +1154,7 @@
       "status": "active"
     },
     {
-      "func": "saTan0KiWareMoveB",
+      "func": "func_8002DAD0",
       "file": "code6cac_b",
       "distance": 204,
       "verdict": "ASM-PARTIAL",
@@ -1162,7 +1162,7 @@
       "status": "active"
     },
     {
-      "func": "DispUpdateStatusMessage",
+      "func": "func_800889D4",
       "file": "main",
       "distance": 206,
       "verdict": "C",
@@ -1218,7 +1218,7 @@
       "status": "active"
     },
     {
-      "func": "DispPracticeMenuTex_B",
+      "func": "func_80020E74",
       "file": "code6cac",
       "distance": 231,
       "verdict": "C",
@@ -1226,7 +1226,7 @@
       "status": "active"
     },
     {
-      "func": "DispPracticeMenuTex_C",
+      "func": "func_800290B8",
       "file": "code6cac_b",
       "distance": 231,
       "verdict": "C",
@@ -1242,7 +1242,7 @@
       "status": "active"
     },
     {
-      "func": "md_game_check_mode",
+      "func": "func_8003EDC0",
       "file": "code6cac_c2",
       "distance": 234,
       "verdict": "C",
@@ -1274,7 +1274,7 @@
       "status": "active"
     },
     {
-      "func": "replay_camera_get_attack_number",
+      "func": "func_8003E2D8",
       "file": "code6cac_c2",
       "distance": 240,
       "verdict": "C",
@@ -1282,7 +1282,7 @@
       "status": "active"
     },
     {
-      "func": "md_game_end",
+      "func": "func_80086818",
       "file": "main",
       "distance": 249,
       "verdict": "C",
@@ -1298,7 +1298,7 @@
       "status": "active"
     },
     {
-      "func": "PutRobShadow",
+      "func": "func_8002C22C",
       "file": "code6cac_b",
       "distance": 252,
       "verdict": "C",
@@ -1306,7 +1306,7 @@
       "status": "active"
     },
     {
-      "func": "AllocBukiRmd",
+      "func": "func_80085A40",
       "file": "main",
       "distance": 259,
       "verdict": "C",
@@ -1322,7 +1322,7 @@
       "status": "active"
     },
     {
-      "func": "tslTm2LoadImage",
+      "func": "func_800812FC",
       "file": "system",
       "distance": 263,
       "verdict": "C",
@@ -1362,7 +1362,7 @@
       "status": "active"
     },
     {
-      "func": "action_CheckHitZangeki",
+      "func": "func_800863DC",
       "file": "main",
       "distance": 271,
       "verdict": "C",
@@ -1370,7 +1370,7 @@
       "status": "active"
     },
     {
-      "func": "special_camera_Exec",
+      "func": "func_80036940",
       "file": "code6cac_b2_post",
       "distance": 274,
       "verdict": "C",
@@ -1434,7 +1434,7 @@
       "status": "active"
     },
     {
-      "func": "single_game_CheckStatusUpDataTotalOver",
+      "func": "func_8001FBE8",
       "file": "code6cac",
       "distance": 289,
       "verdict": "C",
@@ -1474,7 +1474,7 @@
       "status": "active"
     },
     {
-      "func": "DispHira",
+      "func": "func_8003E6D8",
       "file": "code6cac_c2",
       "distance": 297,
       "verdict": "ASM-PARTIAL",
@@ -1514,7 +1514,7 @@
       "status": "active"
     },
     {
-      "func": "efc_rob_set_type_particle",
+      "func": "func_80045B68",
       "file": "text1a_c",
       "distance": 302,
       "verdict": "C",
@@ -1530,7 +1530,7 @@
       "status": "active"
     },
     {
-      "func": "cpu_check_run_attack",
+      "func": "func_80018300",
       "file": "code6cac",
       "distance": 307,
       "verdict": "ASM-PARTIAL",
@@ -1586,7 +1586,7 @@
       "status": "active"
     },
     {
-      "func": "md_game_rob_data_init",
+      "func": "func_8001F2E4",
       "file": "code6cac",
       "distance": 347,
       "verdict": "ASM-PARTIAL",
@@ -1610,7 +1610,7 @@
       "status": "active"
     },
     {
-      "func": "special_camera_Init",
+      "func": "func_8002CD58",
       "file": "code6cac_b",
       "distance": 352,
       "verdict": "ASM-PARTIAL",
@@ -1706,7 +1706,7 @@
       "status": "active"
     },
     {
-      "func": "saTan1MainJump",
+      "func": "func_8008B488",
       "file": "main",
       "distance": 423,
       "verdict": "C",
@@ -1730,7 +1730,7 @@
       "status": "active"
     },
     {
-      "func": "saTan3MainJump",
+      "func": "func_800288C8",
       "file": "code6cac_b",
       "distance": 465,
       "verdict": "ASM-PARTIAL",
@@ -1762,7 +1762,7 @@
       "status": "active"
     },
     {
-      "func": "mario_test_Exec",
+      "func": "func_8001DCB0",
       "file": "code6cac",
       "distance": 469,
       "verdict": "C",
@@ -1802,7 +1802,7 @@
       "status": "active"
     },
     {
-      "func": "special_camera_set_win_cam",
+      "func": "func_80036140",
       "file": "code6cac_b2_post",
       "distance": 512,
       "verdict": "ASM-STRUCTURAL",
@@ -1824,7 +1824,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "single_game_SetStatusUpData",
+      "func": "func_80055138",
       "file": "text1b",
       "distance": 516,
       "verdict": "ASM-STRUCTURAL",
@@ -1901,7 +1901,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "calc_teasi_loc_fw",
+      "func": "func_80027AD8",
       "file": "code6cac_b",
       "distance": 574,
       "verdict": "ASM-STRUCTURAL",
@@ -1920,7 +1920,7 @@
       "status": "active"
     },
     {
-      "func": "camera_set_target_zoom",
+      "func": "func_8001CE60",
       "file": "code6cac",
       "distance": 588,
       "verdict": "ASM-STRUCTURAL",
@@ -1942,7 +1942,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "saTan4GaugeMain",
+      "func": "func_8006C21C",
       "file": "text1b",
       "distance": 622,
       "verdict": "ASM-STRUCTURAL",
@@ -1953,7 +1953,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "single_game_setModeRequest",
+      "func": "func_800187F4",
       "file": "code6cac",
       "distance": 644,
       "verdict": "ASM-PARTIAL",
@@ -1980,7 +1980,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "replay_camera_attack",
+      "func": "func_80070188",
       "file": "text1b",
       "distance": 698,
       "verdict": "ASM-STRUCTURAL",
@@ -2046,7 +2046,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "motion_ShiftControl",
+      "func": "func_80070F78",
       "file": "text1b",
       "distance": 810,
       "verdict": "ASM-STRUCTURAL",
@@ -2076,7 +2076,7 @@
       "status": "active"
     },
     {
-      "func": "calc_loc_mat_fw_80055B60",
+      "func": "func_80055B60",
       "file": "text1b",
       "distance": 1110,
       "verdict": "ASM-STRUCTURAL",
@@ -2087,7 +2087,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "calc_loc_mat_fw",
+      "func": "func_8002AB08",
       "file": "code6cac_b",
       "distance": 1112,
       "verdict": "ASM-STRUCTURAL",
@@ -2098,7 +2098,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "motion_SetExMotion",
+      "func": "func_80065800",
       "file": "text1b",
       "distance": 1454,
       "verdict": "ASM-PARTIAL",
@@ -2128,7 +2128,7 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual."
     },
     {
-      "func": "motion_SetMotion",
+      "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
       "verdict": "C",
@@ -2137,7 +2137,7 @@
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
     },
     {
-      "func": "InitHiraRmd_80047FBC",
+      "func": "func_80047FBC",
       "file": "text1b",
       "distance": 1,
       "verdict": "C",
@@ -2165,7 +2165,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA $a1-vs-$a3 (asm pin); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "cpu_side_move_dir_4",
+      "func": "func_80080DB0",
       "file": "system",
       "distance": 7,
       "verdict": "C",
@@ -2174,22 +2174,13 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
-      "func": "gnd_init_80041688",
+      "func": "func_80041688",
       "file": "text1a_post",
       "distance": 8,
       "verdict": "C",
       "rules": 3,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "cpu_check_tubazeri_2",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): 1-insn addu operand order (cheat-free); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_8002BEA0",
@@ -2199,6 +2190,15 @@
       "rules": 7,
       "status": "parked",
       "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
+    },
+    {
+      "func": "func_800307D0",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 9,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): 1-insn addu operand order (cheat-free); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_8003800C",
@@ -2264,7 +2264,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
-      "func": "ang_hosei_80056FE8",
+      "func": "func_80056FE8",
       "file": "text1b",
       "distance": 10,
       "verdict": "C",
@@ -2436,7 +2436,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-30 \u2014 func_8002EA24 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
-      "func": "saEft01Init",
+      "func": "func_80081BB0",
       "file": "system",
       "distance": 18,
       "verdict": "C",

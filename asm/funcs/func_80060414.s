@@ -55,7 +55,7 @@ glabel func_80060414
     /* 50CDC 800604DC 4BCD010C */  jal        func_8007352C
     /* 50CE0 800604E0 2000A3AF */   sw        $v1, 0x20($sp)
     /* 50CE4 800604E4 1800A48F */  lw         $a0, 0x18($sp)
-    /* 50CE8 800604E8 20B9010C */  jal        saMotionSet
+    /* 50CE8 800604E8 20B9010C */  jal        func_8006E480
     /* 50CEC 800604EC 21280000 */   addu      $a1, $zero, $zero
     /* 50CF0 800604F0 21202002 */  addu       $a0, $s1, $zero
     /* 50CF4 800604F4 01000524 */  addiu      $a1, $zero, 0x1

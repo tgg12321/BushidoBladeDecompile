@@ -71,7 +71,7 @@ extern s32 func_8004153C(s32);
 extern s32 g_snd_play_count;
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 extern s32 D_800A36AC;
 extern s32 D_800A378C;
 extern s32 D_800EF848;
@@ -81,15 +81,15 @@ extern s16 D_800EF9F4;
 extern s16 D_800A33EA;
 extern s16 D_800A33E8;
 extern s32 D_800A33EC;
-extern s32 InitFadePanel();
+extern s32 func_80052C10();
 extern u8 D_80099CC8[];
 extern u8 D_80099CC9[];
 extern s16 D_800EF980[];
 extern s16 D_80099C50[];
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
-extern s32 saTanMainDispGnd_80046020();
-extern void efc_rob_set_type_particle(s32, s32, s16 *, s32);
+extern s32 func_80046020();
+extern void func_80045B68(s32, s32, s16 *, s32);
 extern s32 func_8003E120();
 extern u8 *D_800A3820;
 extern u8 *D_800A38B4;
@@ -154,7 +154,7 @@ extern u32 D_80102C00;
 extern u16 D_800A38D6;
 extern s32 D_800A3808;
 extern s32 func_8005490C(void);
-extern void leaf_muki_awase_800444E0(void);
+extern void func_800444E0(void);
 extern s32 D_800EFB14;
 extern s32 D_800EFB18;
 extern s32 D_800EFB1C;
@@ -167,7 +167,7 @@ extern u16 D_80099D88;
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 extern s16 Judge;
@@ -177,11 +177,11 @@ extern s32 D_800EFB38;
 extern s32 D_800EFB78;
 extern s32 D_800EFB7C;
 extern s32 D_800EFC38;
-extern void DispStuff(void);
-extern s32 SetBloodSpot(s32);
+extern void func_80083E9C(void);
+extern s32 func_80085544(s32);
 extern s32 memcard_SetSlot(s32);
 extern s32 sys_Shutdown(void);
-extern s32 title_mv_exec2(s32);
+extern s32 func_800858D0(s32);
 extern s32 func_80085E4C(s32, s32);
 extern s32 func_80085EE4(s32);
 extern s32 func_80085F98(void);
@@ -421,7 +421,7 @@ extern s32 D_800EFB3C[];
 extern s32 D_800EFC3C[];
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
-extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+extern s32 func_8005C2A8(s32, s32, s32);
 extern s32 D_800158B4;
 extern s32 D_800A3404;
 extern s32 D_800A340C;
@@ -435,8 +435,8 @@ extern void obj_InitPair(void);
 extern void replay_camera_Init(s32, s32);
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
-extern void title_mv_exec2(s32);
-extern void saFidLoad(s32, s32);
+extern void func_800858D0(s32);
+extern void func_8005C4C0(s32, s32);
 extern u32 D_800EFC38[];
 extern u32 D_800EFB38[];
 extern u8 D_8009AD18[];
@@ -446,18 +446,18 @@ extern s32 func_80085F98();
 extern s32 func_80085EE4(s16);
 extern s32 func_80085E4C(s16, s16);
 extern s32 func_80085FB8();
-extern s32 md_game_check_change_main_mode_katinuki(s16);
+extern s32 func_8008A928(s16);
 extern s32 func_80087F64();
-extern s32 tslCDFileRead();
-extern s32 coli_CheckBukiPreHit_800880B8();
+extern s32 func_80087FE8();
+extern s32 func_800880B8();
 extern s32 func_8008AD64();
 extern s32 func_8008ADC4();
 extern s32 func_8008AE24();
 extern s32 func_8008AEB0();
 extern s32 *D_800EFC38[];
 extern s32 func_80087F64(s32);
-extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
-extern s16 tslCDFileRead(s16);
+extern s16 func_800880B8(s32, s32, s32);
+extern s16 func_80087FE8(s16);
 extern s32 D_8009AA70;
 extern u8 D_800EFB7C;
 extern u8 D_800EFB7D;
@@ -497,7 +497,7 @@ extern u8 D_800A3294[8];
 extern u8 D_800A329C[8];
 extern u8 D_800A32A4[8];
 extern u8 D_800A32AC[8];
-extern s32 saMotionSet();
+extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern s32 D_8009B7AC;
 extern s32 D_8009B7B8;
@@ -579,7 +579,7 @@ extern s32 D_800A34E4;
 extern s32 D_800A34E8;
 extern s32 D_800A34EC;
 extern s32 func_80041E10();
-extern s32 leaf_muki_awase_800421A4();
+extern s32 func_800421A4();
 extern s32 func_80060B70();
 extern s32 func_80060E38();
 extern s32 debug_printf(s32 *, s32);
@@ -685,7 +685,7 @@ extern s16 D_800F0BB4;
 extern s16 D_800F0BB6;
 extern s16 D_800F0BBC;
 extern s16 D_800F0BBE;
-extern s32 motion_SetExMotion(s32);
+extern s32 func_80065800(s32);
 extern s16 D_800F0BC4;
 extern s16 D_800F0BC8;
 extern s16 D_800F0BCA;
@@ -718,7 +718,7 @@ extern s16 D_800A350C;
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
 extern s32 func_8006E950(s32, s32);
-extern s32 efc_rob_Close(s32);
+extern s32 func_8006919C(s32);
 extern s32 *func_8006E49C(s32, s32);
 extern s32 gpu_DrawSync(s32);
 extern s32 func_8007B6C8(u8 *, s32, s32);
@@ -741,7 +741,7 @@ extern void initTexPage();
 extern void ot_Link();
 extern void func_8006BB68(s32);
 extern s32 func_8006B92C();
-extern void saTan4GaugeMain(s32);
+extern void func_8006C21C(s32);
 extern s32 func_8006CFBC(s32);
 extern void func_8006CCC8(s32, s32, s32);
 extern void *D_800A3524;
@@ -788,10 +788,10 @@ extern s32 D_800A3558;
 extern s32 D_800A35B0;
 extern s32 func_8007352C(s32 *prim);
 extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
-extern void motion_ShiftControl(s32 a0, s32 *prim);
+extern void func_80070F78(s32 a0, s32 *prim);
 extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
-extern void saTan3GaugeMain_80073200(s32);
+extern void func_80073200(s32);
 extern u8 D_8009BC7C[];
 extern s32 gpu_SetSemiTransp(GameObj *, s32);
 extern s32 initPolyG4(GameObj *);
@@ -800,7 +800,7 @@ extern s32 func_80073060(s32);
 extern s32 func_80072CD4(s32, GameObj *);
 extern s32 initSprt(s32, s16);
 extern s32 gpu_SetRawTexture(s32, s32);
-extern s32 DispSleepMenuTex(s32 *, s32);
+extern s32 func_8003D52C(s32 *, s32);
 extern s32 gpu_CalcClut(u16, u16);
 extern s32 D_800159A0;
 extern void initPolyF4(s32);
@@ -838,11 +838,11 @@ extern u8 D_8009BD42;
 extern u8 D_8009BD43;
 extern s32 motion_CalcMotion_80077B30(s32, s32);
 extern s32 saTan2InfoInit_8006C1FC_local(s32, s32);
-extern void cpu_reset_dir(void);
+extern void func_8006D324(void);
 extern s32 motion_shift_check_80077B30(s32, s32);
 s32 func_80077B30(s32 arg0, s32 arg1) {
     extern s32 func_8006B898(s32, s32);
-    extern s32 saTan2InfoInit_8006C1FC(s32, s32);
+    extern s32 func_8006C1FC(s32, s32);
     extern s32 func_8006D338(s32, s32);
     s32 s2;
     s32 result;
@@ -865,7 +865,7 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         goto end;
     case 1:
         s2 = 0;
-        result = saTan2InfoInit_8006C1FC(arg0, arg1);
+        result = func_8006C1FC(arg0, arg1);
         if (result == 1) { D_800A35E4 = 0; goto end; }
         if (result == 2) { D_800A35E4 = result; goto end; }
         if (result == 3) { D_800A35E4 = result; }
@@ -877,7 +877,7 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         s2 = 3;
         goto end;
     case 4:
-        cpu_reset_dir();
+        func_8006D324();
         D_800A35E4 = D_800A35E4 + 1;
         /* fall through */
     case 5:
@@ -897,7 +897,7 @@ end:
     return s2;
 }
 extern s32 D_8009BD24;
-s32* saTan2GaugeInit_80077D00(void) {
+s32* func_80077D00(void) {
     return &D_8009BD24;
 }
 void func_8006920C(s32*, s32);
@@ -918,7 +918,7 @@ s32 func_80077D74(s32 a0) {
     return D_800A35F4 + a0 * 44;
 }
 INCLUDE_ASM("asm/funcs", func_80077D94);
-s32 camera_get_rot_normal_rad(s32 arg0) {
+s32 func_800784E4(s32 arg0) {
     s32 s0;
     s32 r;
 
@@ -983,7 +983,7 @@ extern s32 D_800A360C;
 s32 func_80078634(s32 a0) {
     return D_800A360C + a0 * 44;
 }
-extern s32 saMotionSet(s32, s32);
+extern s32 func_8006E480(s32, s32);
 extern s32 func_8007352C(s32 *);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -1036,7 +1036,7 @@ void func_80078654(s32 *arg0) {
         }
         s.c = arg0[3];
         arg0[3] = func_8007352C(&s.a);
-        initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
+        initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
         ot_Link(D_800A374C + (s.f * 4), arg0[5]);
         arg0[5] = arg0[5] + 0xC;
     }
@@ -1048,7 +1048,7 @@ loop:
     s.h = -D_800A3608;
     s.c = arg0[3];
     arg0[3] = func_8007352C(&s.a);
-    initTexPage(arg0[5], 1, 0, saMotionSet(s.a, zero), 0);
+    initTexPage(arg0[5], 1, 0, func_8006E480(s.a, zero), 0);
     ot_Link(D_800A374C + (s.f * 4), arg0[5]);
     var_s0++;
     arg0[5] = arg0[5] + 0xC;
@@ -1495,7 +1495,7 @@ extern s32 D_8009BD80;
 void func_80078F74(void);
 void bios_StopPad(void);
 s32 func_80078E20(void);
-void pad_Init(void) {
+void func_80078D68(void) {
     func_80078F74();
     bios_StopPad();
     func_80078E20();

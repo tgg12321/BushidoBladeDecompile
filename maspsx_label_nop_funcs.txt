@@ -16,5 +16,5 @@
 spu_DmaTransfer
 cdrom_DmaToRam
 func_80060E04
-AllocRobRmd
+func_80040594
 func_80088740

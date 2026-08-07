@@ -56,34 +56,34 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 EndADRSound(void);
+extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void func_80037774(void);
-extern void pad_Init(void);
+extern void func_80078D68(void);
 extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern s16 D_800A3678;
@@ -106,7 +106,7 @@ extern s32 g_file_disc_size;
  * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
 INCLUDE_ASM("asm/funcs", func_80035828);
-void special_camera_check_pos_outside_ground_80035DC8(void) {
+void func_80035DC8(void) {
     gpu_EnableDisplay();
     gpu_InitDisplay();
     func_80020CDC();
@@ -118,10 +118,10 @@ void special_camera_check_pos_outside_ground_80035DC8(void) {
     D_800A3834 = 0x1B;
     gpu_DisableDisplay();
 }
-void saRobDraw(void) {
+void func_80035E38(void) {
     D_800A36F1 = 1;
     func_8003553C();
-    if (motion_SetMotion() != 0) {
+    if (func_80038C70() != 0) {
         D_800A3834 = 8;
         D_800A36F1 = 2;
     }
@@ -202,7 +202,7 @@ void func_80036034(void) {
 }
 extern void func_80080620(s32, s32);
 extern s32 cdrom_BcdToFrames(s32);
-void marionation_camera_Init_80036064(u8 arg0) {
+void func_80036064(u8 arg0) {
     s32 sp[4];
     if (arg0 == 1) {
         D_80101E98 = 0;
@@ -232,10 +232,10 @@ do_stop:
     cdrom_SetCallbackB(0);
     func_80080390(9, 0);
 }
-INCLUDE_ASM("asm/funcs", special_camera_set_win_cam);
+INCLUDE_ASM("asm/funcs", func_80036140);
 /* kengo:MED  |  nm_special_cam/special_camera_set_win_cam  |  502i  |  -10 */
-void special_camera_Exec(void);
-INCLUDE_ASM("asm/funcs", special_camera_Exec);
+void func_80036940(void);
+INCLUDE_ASM("asm/funcs", func_80036940);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
     return D_80101E62[0] == 0;
@@ -262,7 +262,7 @@ s32 replay_camera_Init(s32 a0, s32 a1) {
     return 1;
 }
 /* kengo:HIGH  |  nm_replay_cam/replay_camera_Init  |  39i */
-s32 special_camera_check_pos_outside_ground_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
@@ -294,17 +294,17 @@ void game_FrameLoop(void) {
             break;
         }
         func_8003AA48();
-        special_camera_Exec();
+        func_80036940();
         if (D_800A3906 != 0) {
             func_8005C6D0();
         }
-        gnd_disp_loop_ctrl();
+        func_800174F4();
         *s0 = *s0 + 2;
         sys_VSync(2);
     }
     func_8003AAB0();
 }
-extern void tslPolyF4Init(s32, u8 *, s32);
+extern void func_800804BC(s32, u8 *, s32);
 s32 func_80036FD4(s32 arg0, s32 arg1) {
     s16 *s0 = D_80101E62;
 
@@ -336,7 +336,7 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
         D_80101E94 = 1;
         *base = 1;
         D_80101E59 = arg1;
-        tslPolyF4Init(0xD, base, 0);
+        func_800804BC(0xD, base, 0);
         D_80101E90 = 0xC8;
     }
 
@@ -374,9 +374,9 @@ void func_800371E8(s16 arg0) {
     D_80101E6A = arg0;
 }
 s32 func_800371F8(void) {
-    extern s32 mottest_rob_init();
+    extern s32 func_80036FD4();
 
-    if (mottest_rob_init() != 0) {
+    if (func_80036FD4() != 0) {
         D_80101E64 = 1;
         return 1;
     }
@@ -389,10 +389,10 @@ void func_80037234(void) {
 void func_80037250(void) {
     D_80101E64 = 0;
 }
-void marionation_camera_GetMaxFrame(void) {
+void func_80037260(void) {
     while (D_80101E62[0] != 0x16) {
         func_8003AA48();
-        special_camera_Exec();
+        func_80036940();
         sys_VSync(2);
     }
 }
@@ -460,19 +460,19 @@ retry:
     if (v0 != 0) goto retry;
 }
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
-void marionation_camera_Init_80037468(s32 a0, s32 *a1, s32 a2) {
+void func_80037468(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     sys_VSync(0);
     gpu_SetDispMask(0);
     gpu_EnableDisplay();
-    get_point_value();
+    func_8005B50C();
     func_80037774();
     irq_DisableInterrupts();
     func_8007FF7C();
     special_camera_get_rot_dir(sp);
     gpu_DrawSync(0);
     gpu_SetMode(0);
-    pad_Init();
+    func_80078D68();
     irq_Reset();
     sp[8] = a2;
     sp[9] = 0;
@@ -484,7 +484,7 @@ void marionation_camera_Init_80037468(s32 a0, s32 *a1, s32 a2) {
     gpu_SetDispMask(1);
 }
 extern s32 func_800392B8(void);
-extern void marionation_camera_Init_80037468(s32, s32 *, s32);
+extern void func_80037468(s32, s32 *, s32);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
        saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals
@@ -505,5 +505,5 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     sp[4] = (s32)&SpecialCam + v0 * 8;
     sp[5] = a4;
     v0 = func_800392B8();
-    marionation_camera_Init_80037468(6, sp, v0 + 0x7FC);
+    func_80037468(6, sp, v0 + 0x7FC);
 }

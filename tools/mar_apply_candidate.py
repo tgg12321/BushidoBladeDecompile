@@ -8,7 +8,7 @@ from pathlib import Path
 src = Path("src/system.c")
 body = src.read_text()
 cand = Path("tmp/mar_candidate.c").read_text()
-head, sep, tail = body.partition("s32 marionation_Exec(s32 a0, u8 *a1)\n{")
+head, sep, tail = body.partition("s32 func_80081030(s32 a0, u8 *a1)\n{")
 assert sep, "function start not found"
 # find the matching closing brace of the function in tail
 depth = 1

@@ -1,7 +1,7 @@
 glabel func_8003504C
     /* 2584C 8003504C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 25850 80035050 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 25854 80035054 40DF010C */  jal        saTan2GaugeInit_80077D00
+    /* 25854 80035054 40DF010C */  jal        func_80077D00
     /* 25858 80035058 00000000 */   nop
     /* 2585C 8003505C 21380000 */  addu       $a3, $zero, $zero
     /* 25860 80035060 05000A24 */  addiu      $t2, $zero, 0x5
@@ -142,7 +142,7 @@ glabel func_8003504C
     /* 25A60 80035260 EAFF4014 */  bnez       $v0, .L8003520C
     /* 25A64 80035264 02002925 */   addiu     $t1, $t1, 0x2
   .L80035268:
-    /* 25A68 80035268 2DD1000C */  jal        DispSamnailWindow
+    /* 25A68 80035268 2DD1000C */  jal        func_800344B4
     /* 25A6C 8003526C 00000000 */   nop
     /* 25A70 80035270 1000BF8F */  lw         $ra, 0x10($sp)
     /* 25A74 80035274 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -12,7 +12,7 @@
 extern s32 D_80106A50;
 extern u8 D_800A3740;
 
-void replay_camera_rob_back_loose2(s32 arg0) {
+void func_80035618(s32 arg0) {
     s32 temp;
 
     if ((u32)arg0 >= 8) {
@@ -22,7 +22,7 @@ void replay_camera_rob_back_loose2(s32 arg0) {
     switch (arg0) {
     case 0:
         if (D_800A31DA == 0) {
-            camera_get_rot_normal_rad(0x80118800);
+            func_800784E4(0x80118800);
             func_80035FA8();
             func_80037110(0);
             D_800A3740 = 4;

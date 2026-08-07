@@ -7,42 +7,42 @@
 /* Forward declarations for called functions */
 extern void func_800453E0(s32);
 extern s32 *func_800455AC(s32);
-extern void saSeMain_80045510(s32, s32);
-extern void saTan5TakeGetPos_80045230(s32);
+extern void func_80045510(s32, s32);
+extern void func_80045230(s32);
 extern void func_80054FDC(s32);
 extern void func_80078A68(u32, s32, s32);
 extern void func_80078B04(u32);
 extern void func_80078B3C(u32);
 extern void func_8004473C(void);
-extern void efc_rob_set_type_flash(void);
+extern void func_80044800(void);
 extern void func_80048F58(s32, s32);
 extern void func_80048FFC(s32);
 extern void *func_8004153C(void);
 extern s32 func_800477E8(void);
 extern void func_80047A90(void);
-extern void saTan5GetTakeCutAnimType(s32);
+extern void func_80048B8C(s32);
 extern void func_80044100(s32, s32);
-extern void saSeMain_80045600(s32, s32);
-extern void saTan5TakeGetPos_80045694(s32, void (*)(void));
+extern void func_80045600(s32, s32);
+extern void func_80045694(s32, void (*)(void));
 extern void func_800460E4(s32);
 extern void func_800421C8(s32);
 extern void func_8003E0E0(void);
-extern void DispHira(s32);
+extern void func_8003E6D8(s32);
 extern void func_8003DA8C(s32, s32);
 extern void player_Destroy(s32);
 extern void func_8004668C(void);
-extern void saTanMainDispGnd_80046020(void);
+extern void func_80046020(void);
 extern void func_80049E1C(void);
 extern void camera_InitRotation(u8 *);
 extern void func_80042A88(s32 *, s32 *);
 extern void func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 single_game_getEnemyCharId(s32, s32);
+extern s16 func_8007FD5C(s32, s32);
 extern s16 Judge[];
 extern s16 D_800A33C8;
 extern s16 D_800A33CA;
 extern s32 D_800A3708;
 extern void func_8004211C(void);
-extern void saTanMainDispGnd_800444BC(void);
+extern void func_800444BC(void);
 extern void func_80052930(void *, void *, void *);
 extern void func_80044FA0(s32, s32 *);
 extern s16 g_pad_selection;
@@ -98,7 +98,7 @@ extern void func_80044498(void);
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
 extern void func_8003D91C(void);
-extern void saTan5TakeGetCnt(void);
+extern void func_800404D8(void);
 extern void func_8003F7F4(void);
 extern s16 D_800F6650;
 extern s16 g_color_mode;
@@ -107,7 +107,7 @@ extern s16 D_800F665A;
 extern s32 D_800A33BC;
 extern s32 func_800486FC(void);
 extern s32 *func_8004574C(s32);
-extern void saTan2InfoInit_80044F80(s32, s32 *);
+extern void func_80044F80(s32, s32 *);
 extern void func_80044010(s32 *, s32);
 extern s16 D_800A3248;
 
@@ -146,30 +146,30 @@ s32 *snd_LoadBgm(s32 a0) {
             s32 *s1;
             s32 *s0;
             s2 = func_800455AC(chan);
-            saTan2InfoInit_80044F80(arg, s2);
+            func_80044F80(arg, s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
                 s32 off0 = (u32)s2[1] >> 2 << 2;
                 s1 = (s32 *)((u8 *)s2 + off1);
                 s0 = (s32 *)((u8 *)s2 + off0);
             }
-            saTan5TakeGetPos_80045230((s32)s1);
+            func_80045230((s32)s1);
             func_80044010(s0, 9);
-            saSeMain_80045600(chan, (s32)s1);
+            func_80045600(chan, (s32)s1);
             D_800A3248 = arg;
         }
     }
-    saTan5TakeGetPos_80045694(chan, snd_BgmCallback);
+    func_80045694(chan, snd_BgmCallback);
     return s2;
 }
 
 void snd_PlayBgm(s32 a0) {
-    saSeMain_80045510(8, a0);
-    saTan5TakeGetPos_80045230(0);
+    func_80045510(8, a0);
+    func_80045230(0);
 }
 
 void snd_BgmCallback(s32 a0, s32 a1) {
-    saTan5GetTakeCutAnimType(a1);
+    func_80048B8C(a1);
     func_80044100(9, a1);
 }
 
@@ -185,13 +185,13 @@ void snd_SeNullCallback(void) {
 }
 
 void snd_LoadSe(s32 a0) {
-    saTan5TakeGetPos_80045230(a0);
-    saSeMain_80045600(9, a0);
-    saTan5TakeGetPos_80045694(9, snd_SeNullCallback);
+    func_80045230(a0);
+    func_80045600(9, a0);
+    func_80045694(9, snd_SeNullCallback);
 }
 
 void snd_PlaySe(s32 a0) {
-    saSeMain_80045510(9, a0);
+    func_80045510(9, a0);
 }
 
 void snd_SelectionCallback(s32, s32);
@@ -205,11 +205,11 @@ s32 *snd_LoadSelection(s32 a0) {
     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
-        saTan5TakeGetPos_80045230((s32)s0);
-        saSeMain_80045600(0xA, (s32)s0);
+        func_80045230((s32)s0);
+        func_80045600(0xA, (s32)s0);
     }
     g_pad_selection = (s16)a0;
-    saTan5TakeGetPos_80045694(0xA, snd_SelectionCallback);
+    func_80045694(0xA, snd_SelectionCallback);
     return v0;
 }
 
@@ -225,7 +225,7 @@ void snd_StopAll(void) {
     player_Destroy(0);
     player_Destroy(1);
     func_8004668C();
-    saTanMainDispGnd_80046020();
+    func_80046020();
     func_80049E1C();
     snd_StopBgm();
 }
@@ -253,7 +253,7 @@ void game_Init(void) {
     func_80049E4C();
     func_80049F4C();
     func_8003D91C();
-    saTan5TakeGetCnt();
+    func_800404D8();
     func_8003F7F4();
     one = 1;
     two = 2;
@@ -338,7 +338,7 @@ void game_StageInit(s32 a0) {
         game_InitStageSound(g_snd_stage_bgm);
     }
     func_8004211C();
-    saTanMainDispGnd_800444BC();
+    func_800444BC();
 }
 
 s32 game_GetDummyFlag(void) {
@@ -382,7 +382,7 @@ void game_ResetTimer(void) {
 }
 
 void game_InitStageSound(s32 a0) {
-    DispHira(a0);
+    func_8003E6D8(a0);
     {
         s32 v0 = stage_GetId();
         func_8003DA8C(v0, a0);
@@ -525,10 +525,10 @@ s16 *camera_CalcAngles(void) {
     rot[1] = 0;
     rot[2] = 0x1000;
     func_8007ED6C(pos, rot, sp18);
-    s0 = single_game_getEnemyCharId(sp18[0], sp18[2]);
+    s0 = func_8007FD5C(sp18[0], sp18[2]);
     sp18[2] = ((s32)Judge[((s16)s0 + 0x400) & 0xFFF] * sp18[2]
               + (s32)Judge[s0 & 0xFFF] * sp18[0]) >> 12;
-    D_800A33C8 = -single_game_getEnemyCharId(sp18[1], sp18[2]);
+    D_800A33C8 = -func_8007FD5C(sp18[1], sp18[2]);
     D_800A33CA = s0;
     return &D_800A33C8;
 }
@@ -538,7 +538,7 @@ void game_EffInit(void) {
 }
 
 void game_EffCleanup(void) {
-    efc_rob_set_type_flash();
+    func_80044800();
 }
 
 void game_AnimInit(void) {
@@ -554,7 +554,7 @@ void game_EffInit2(void) {
 }
 
 void game_EffCleanup2(void) {
-    efc_rob_set_type_flash();
+    func_80044800();
 }
 
 void game_SndInit(void) {
@@ -597,13 +597,13 @@ void func_800475A4(void) {
     rot[2] = 0x6590;
     func_8007ED6C((s32 *)&D_80101E08, rot, result);
 
-    angle = single_game_getEnemyCharId(result[0], result[2]);
+    angle = func_8007FD5C(result[0], result[2]);
 
     computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result[2] + (s32)Judge[angle & 0xFFF] * result[0]) >> 12;
     result[2] = computed;
 
     {
-        s16 neg = -single_game_getEnemyCharId(result[1], computed);
+        s16 neg = -func_8007FD5C(result[1], computed);
         base = &g_cam_bone_data2;
         D_800EEE00 = neg;
     }
@@ -635,7 +635,7 @@ void game_EffStart(void) {
 }
 
 void game_EffStop(void) {
-    efc_rob_set_type_flash();
+    func_80044800();
 }
 
 void game_Stub1(void) {
@@ -888,7 +888,7 @@ void func_80047A90(void) {
 
 extern void func_8007F24C(s16 *, s16 *, s16 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 extern void gte_GetScreenXY(s32 *, s32 *, s32 *);
-extern s16 *saTan2LineDraw(s32, s16 *, s16 *, s32);
+extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern s16 D_800EF0D8;
 extern s16 D_800EF168;
 void func_80047BE0(void) {
@@ -969,7 +969,7 @@ inner2:
     dst16++;
     if (j < 6) goto inner2;
     if (i != 0) {
-        s7val = saTan2LineDraw(0x10, base, s7val, 0);
+        s7val = func_8004BCC0(0x10, base, s7val, 0);
     }
     i++;
     src += 17;

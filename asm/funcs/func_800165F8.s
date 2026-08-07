@@ -26,7 +26,7 @@ glabel func_800165F8
     /* 6E54 80016654 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80016658:
     /* 6E58 80016658 C02A1000 */  sll        $a1, $s0, 11
-    /* 6E5C 8001665C B20D020C */  jal        ang_hosei
+    /* 6E5C 8001665C B20D020C */  jal        func_800836C8
     /* 6E60 80016660 21300000 */   addu      $a2, $zero, $zero
     /* 6E64 80016664 0B00601A */  blez       $s3, .L80016694
     /* 6E68 80016668 21800000 */   addu      $s0, $zero, $zero
@@ -42,7 +42,7 @@ glabel func_800165F8
     /* 6E8C 8001668C F8FF4014 */  bnez       $v0, .L80016670
     /* 6E90 80016690 00085226 */   addiu     $s2, $s2, 0x800
   .L80016694:
-    /* 6E94 80016694 AE0D020C */  jal        md_gview_init
+    /* 6E94 80016694 AE0D020C */  jal        func_800836B8
     /* 6E98 80016698 21202002 */   addu      $a0, $s1, $zero
     /* 6E9C 8001669C C0121300 */  sll        $v0, $s3, 11
   .L800166A0:

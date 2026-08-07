@@ -6,12 +6,12 @@
 # cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
 
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
-PutShadowRmd: $2 <-> $3 @ 1-5
-PutShadowRmd: $2 <-> $3 @ 14-21
-PutShadowRmd: $6 <-> $7 @ 51-68
+func_800401CC: $2 <-> $3 @ 1-5
+func_800401CC: $2 <-> $3 @ 14-21
+func_800401CC: $6 <-> $7 @ 51-68
 
 # gnd_disp_loop_ctrl: switch variable in v1 ($3) instead of a1 ($5)
-gnd_disp_loop_ctrl: $3 <-> $5 @ 27-41
+func_800174F4: $3 <-> $5 @ 27-41
 
 # cpu_get_dist: cos_idx in a0 ($4) instead of v1 ($3), plus scheduling reorder
 # Reorder: move cos_idx sll/lui/addu/lh before vx load, push sin mask after mult
@@ -83,28 +83,28 @@ func_80036FD4: subst "\$2" "$5" @ 19
 func_80036FD4: subst "\$5" "$3" @ 24
 
 # saEft01Init: 3-way s-reg rotation (s0->s2, s2->s1, s1->s0)
-saEft01Init: $16 <-> $18
-saEft01Init: $16 <-> $17
+func_80081BB0: $16 <-> $18
+func_80081BB0: $16 <-> $17
 # Fix prologue save offsets after s-reg swap
-saEft01Init: subst ",24\(" ",32(" @ 1
-saEft01Init: subst ",32\(" ",28(" @ 6
-saEft01Init: subst ",28\(" ",24(" @ 8
+func_80081BB0: subst ",24\(" ",32(" @ 1
+func_80081BB0: subst ",32\(" ",28(" @ 6
+func_80081BB0: subst ",28\(" ",24(" @ 8
 # Arg block register fixes: idx[1] path v1->v0 ($3->$2)
-saEft01Init: $2 <-> $3 @ 35-35
-saEft01Init: $2 <-> $3 @ 38-39
+func_80081BB0: $2 <-> $3 @ 35-35
+func_80081BB0: $2 <-> $3 @ 38-39
 # Arg block register fixes: idx[0] path v0->a0 ($2->$4)
-saEft01Init: $2 <-> $4 @ 36-36
-saEft01Init: $2 <-> $4 @ 40-42
+func_80081BB0: $2 <-> $4 @ 36-36
+func_80081BB0: $2 <-> $4 @ 40-42
 # Arg block: fix lw source register at insn 44
-saEft01Init: subst "0\(\$3\)" "0($2)" @ 44
+func_80081BB0: subst "0\(\$3\)" "0($2)" @ 44
 # Arg block reorder to match target evaluation order
-saEft01Init: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
+func_80081BB0: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
 # Fix epilogue restore offsets after s-reg swap
-saEft01Init: subst ",32\(" ",28(" @ 70
-saEft01Init: subst ",28\(" ",24(" @ 71
-saEft01Init: subst ",24\(" ",32(" @ 72
+func_80081BB0: subst ",32\(" ",28(" @ 70
+func_80081BB0: subst ",28\(" ",24(" @ 71
+func_80081BB0: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
-saEft01Init: reorder 72,70,71 @ 70-72
+func_80081BB0: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 
@@ -113,15 +113,15 @@ saEft01Init: reorder 72,70,71 @ 70-72
 # func_800477E8: swap t1/t2 and v1/a1 registers
 
 # motion_Open: prologue register v0->t0, save offsets 0/4/8->4/8/C, ori for delay
-motion_Open: $2 <-> $8 @ 0-7
-motion_Open: reorder 2,3,5,4 @ 2-5
-motion_Open: subst "\$31,8" "$16,4" @ 2
-motion_Open: subst ",4\(" ",8(" @ 3
-motion_Open: subst "\$16,0\(" "$31,0xc(" @ 5
-motion_Open: subst "addiu" "ori" @ 6
-motion_Open: subst ",8\(" ",0xc(" @ 18
-motion_Open: subst ",4\(" ",8(" @ 19
-motion_Open: subst ",0\(" ",4(" @ 20
+func_80083794: $2 <-> $8 @ 0-7
+func_80083794: reorder 2,3,5,4 @ 2-5
+func_80083794: subst "\$31,8" "$16,4" @ 2
+func_80083794: subst ",4\(" ",8(" @ 3
+func_80083794: subst "\$16,0\(" "$31,0xc(" @ 5
+func_80083794: subst "addiu" "ori" @ 6
+func_80083794: subst ",8\(" ",0xc(" @ 18
+func_80083794: subst ",4\(" ",8(" @ 19
+func_80083794: subst ",0\(" ",4(" @ 20
 
 # motion_Close: prologue register v0->t0, save offsets, insert nop for delay slot
 motion_Close: $2 <-> $8 @ 0-4
@@ -148,52 +148,52 @@ func_8003800C: insert "nop" @ 53
 func_8003800C: reorder 55,54 @ 54-55
 
 # pad_ClearAppliBuffer: GCC uses $3(v1) for result, target uses $2(v0)
-pad_ClearAppliBuffer: subst "\$3," "$2," @ 42
-pad_ClearAppliBuffer: subst "\$2," "$3," @ 43
-pad_ClearAppliBuffer: subst "\$3,\$2" "$2,$3" @ 44
-pad_ClearAppliBuffer: subst "\$3,\$2" "$2,$2" @ 48
-pad_ClearAppliBuffer: subst ",\$3," ",$2," @ 49
-pad_ClearAppliBuffer: subst "\$3,\$0" "$2,$0" @ 55
-pad_ClearAppliBuffer: subst "\$3,\$5" "$2,$5" @ 60
-pad_ClearAppliBuffer: subst "\$3,\$3,\$5" "$2,$5,$2" @ 61
-pad_ClearAppliBuffer: subst "\$2,\$4" "$3,$4" @ 62
-pad_ClearAppliBuffer: subst "\$3,\$3,\$2" "$2,$2,$3" @ 63
-pad_ClearAppliBuffer: subst "\$3,\$3" "$2,$2" @ 64
-pad_ClearAppliBuffer: subst "\$2,\$4" "$3,$4" @ 65
-pad_ClearAppliBuffer: subst "\$2,\$3" "$3,$2" @ 66
-pad_ClearAppliBuffer: subst "\$3,\$0,\$zero" "$2,$0,$zero" @ 67
-pad_ClearAppliBuffer: subst "\$2," "$3," @ 68
-pad_ClearAppliBuffer: subst "\$2,\$2,1" "$3,$3,1" @ 70
-pad_ClearAppliBuffer: subst "\$2," "$3," @ 71
-pad_ClearAppliBuffer: subst "addu.*" "nop" @ 73
-pad_ClearAppliBuffer: subst "\$3,\$0" "$2,$0" @ 75
-pad_ClearAppliBuffer: subst "\$3,\$zero" "$2,$zero" @ 76
-pad_ClearAppliBuffer: delete @ 79
+func_8003A5A0: subst "\$3," "$2," @ 42
+func_8003A5A0: subst "\$2," "$3," @ 43
+func_8003A5A0: subst "\$3,\$2" "$2,$3" @ 44
+func_8003A5A0: subst "\$3,\$2" "$2,$2" @ 48
+func_8003A5A0: subst ",\$3," ",$2," @ 49
+func_8003A5A0: subst "\$3,\$0" "$2,$0" @ 55
+func_8003A5A0: subst "\$3,\$5" "$2,$5" @ 60
+func_8003A5A0: subst "\$3,\$3,\$5" "$2,$5,$2" @ 61
+func_8003A5A0: subst "\$2,\$4" "$3,$4" @ 62
+func_8003A5A0: subst "\$3,\$3,\$2" "$2,$2,$3" @ 63
+func_8003A5A0: subst "\$3,\$3" "$2,$2" @ 64
+func_8003A5A0: subst "\$2,\$4" "$3,$4" @ 65
+func_8003A5A0: subst "\$2,\$3" "$3,$2" @ 66
+func_8003A5A0: subst "\$3,\$0,\$zero" "$2,$0,$zero" @ 67
+func_8003A5A0: subst "\$2," "$3," @ 68
+func_8003A5A0: subst "\$2,\$2,1" "$3,$3,1" @ 70
+func_8003A5A0: subst "\$2," "$3," @ 71
+func_8003A5A0: subst "addu.*" "nop" @ 73
+func_8003A5A0: subst "\$3,\$0" "$2,$0" @ 75
+func_8003A5A0: subst "\$3,\$zero" "$2,$zero" @ 76
+func_8003A5A0: delete @ 79
 
 # tslLineG5Init: fix playerCount branch direction and register
 
 # saTan4GaugeInit regfix
 # Swap s0/s1 in body (base pointer register)
-saTan4GaugeInit: $16 <-> $17 @ 18-58
+func_80084974: $16 <-> $17 @ 18-58
 # Fix arg register renames in prologue
-saTan4GaugeInit: subst "sll\s+\$4," "sll	$7," @ 1
-saTan4GaugeInit: subst "sra\s+\$3,\$4" "sra	$4,$7" @ 2
-saTan4GaugeInit: subst "sra\s+\$5,\$5" "sra	$3,$5" @ 4
-saTan4GaugeInit: $3 <-> $5 @ 5-8
-saTan4GaugeInit: subst ",\$3$" ",$4" @ 15
+func_80084974: subst "sll\s+\$4," "sll	$7," @ 1
+func_80084974: subst "sra\s+\$3,\$4" "sra	$4,$7" @ 2
+func_80084974: subst "sra\s+\$5,\$5" "sra	$3,$5" @ 4
+func_80084974: $3 <-> $5 @ 5-8
+func_80084974: subst ",\$3$" ",$4" @ 15
 # Fix diff/gauge region registers
-saTan4GaugeInit: $4 <-> $6 @ 22-23
-saTan4GaugeInit: $6 <-> $7 @ 24-24
-saTan4GaugeInit: $6 <-> $7 @ 35-35
-saTan4GaugeInit: $4 <-> $6 @ 39-39
+func_80084974: $4 <-> $6 @ 22-23
+func_80084974: $6 <-> $7 @ 24-24
+func_80084974: $6 <-> $7 @ 35-35
+func_80084974: $4 <-> $6 @ 39-39
 # Fix sa0/sa1 save region: a0->a3 and sll->addu
-saTan4GaugeInit: subst "\$4," "$7," @ 43
-saTan4GaugeInit: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
+func_80084974: subst "\$4," "$7," @ 43
+func_80084974: subst "sll\s+(\$18,\$5),16" "addu	$18,$5,$zero" @ 44
 # Fix loop body register allocation: v0/v1 and v1/a0
-saTan4GaugeInit: $2 <-> $3 @ 48-53
-saTan4GaugeInit: $3 <-> $4 @ 52-56
+func_80084974: $2 <-> $3 @ 48-53
+func_80084974: $3 <-> $4 @ 52-56
 # Fix outer loop branch target (.L10 -> .L13)
-saTan4GaugeInit: subst "\.L\d+" "{lbl#4}+4" @ 55
+func_80084974: subst "\.L\d+" "{lbl#4}+4" @ 55
 # func_80034F88: register alloc + load reorder + address recompute
 func_80034F88: subst "la\t\$5," "la	$3," @ 4
 func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
@@ -240,28 +240,28 @@ func_80034F88: reorder 26,25 @ 25-26
 
 # title_mv_exec2: GCC hoists 0x18 and 1 into s2/s3, target only hoists 0xFF into s1
 # Remove s2/s3 saves, change sign-ext reg $3->$5 in loop, fresh load 0x18 and 1<<a1
-title_mv_exec2: $3 <-> $5 @ 26-32
-title_mv_exec2: subst "104" "96" @ 0
-title_mv_exec2: subst ",96\(" ",88(" @ 14
-title_mv_exec2: subst "sll\t\$3,\$18,\$3" "addiu	$3,$zero,24" @ 33
-title_mv_exec2: subst "\$19," "$3," @ 34
-title_mv_exec2: subst "sw\t\$3,16" "sw	$2,16" @ 41
-title_mv_exec2: subst ",96\(" ",88(" @ 53
-title_mv_exec2: subst "104" "96" @ 58
-title_mv_exec2: delete @ 15
-title_mv_exec2: delete @ 16
-title_mv_exec2: delete @ 23
-title_mv_exec2: delete @ 24
-title_mv_exec2: delete @ 54
-title_mv_exec2: delete @ 55
-title_mv_exec2: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
-title_mv_exec2: insert "addiu $2,$zero,1" @ 36
-title_mv_exec2: reorder 3,4,5,1,2 @ 1-5
-title_mv_exec2: reorder 17,19,18,16 @ 16-19
+func_800858D0: $3 <-> $5 @ 26-32
+func_800858D0: subst "104" "96" @ 0
+func_800858D0: subst ",96\(" ",88(" @ 14
+func_800858D0: subst "sll\t\$3,\$18,\$3" "addiu	$3,$zero,24" @ 33
+func_800858D0: subst "\$19," "$3," @ 34
+func_800858D0: subst "sw\t\$3,16" "sw	$2,16" @ 41
+func_800858D0: subst ",96\(" ",88(" @ 53
+func_800858D0: subst "104" "96" @ 58
+func_800858D0: delete @ 15
+func_800858D0: delete @ 16
+func_800858D0: delete @ 23
+func_800858D0: delete @ 24
+func_800858D0: delete @ 54
+func_800858D0: delete @ 55
+func_800858D0: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
+func_800858D0: insert "addiu $2,$zero,1" @ 36
+func_800858D0: reorder 3,4,5,1,2 @ 1-5
+func_800858D0: reorder 17,19,18,16 @ 16-19
 
 # coli_hit_body_weapon: addiu $v1,$a3,10 hoisted too early; move from idx 4 to idx 6
 # Target order: move t1, lui hi, addiu lo, move a0, addiu t0=-1, addiu a2=0xff, addiu v1
-coli_hit_body_weapon: reorder 5,6,4 @ 4-6
+func_80030580: reorder 5,6,4 @ 4-6
 # func_800453E0: addu operand order - GCC puts base(s2/s3) first, target has offset(v0) first
 func_800453E0: subst "\$7,\$18,\$2" "$7,$2,$18" @ 33
 func_800453E0: subst "\$6,\$19,\$2" "$6,$2,$19" @ 34
@@ -294,15 +294,15 @@ func_8002C0DC: subst "addu\t\$16,\$16,\$2" "addu $16,$2,$3" @ 36
 # saEft03Start2: insert nop for load-use delay in case_0 block
 # saEft03Start2: reorder case_0: swap sw/lhu after nop insert (post-insert indices 12-13)
 # cpu_check_tubazeri_2: fix a0->v0 register allocation in xor check section
-cpu_check_tubazeri_2: subst "addu	\$4,\$0,\$zero" "sll	$2,$17,1" @ 18
-cpu_check_tubazeri_2: subst "lh	\$4," "lh	$2," @ 19
-cpu_check_tubazeri_2: subst "xor	\$17,\$4,\$3" "xor	$2,$2,$3" @ 22
-cpu_check_tubazeri_2: subst "sltu	\$17,\$17," "sltu	$17,$2," @ 23
-cpu_check_tubazeri_2: subst "sll	\$4," "sll	$2," @ 24
-cpu_check_tubazeri_2: subst "\$18,\$16,\$4" "$18,$2,$16" @ 25
-cpu_check_tubazeri_2: subst "addu	\$3,\$18,818" "addu	$3,$18,$zero" @ 37
-cpu_check_tubazeri_2: subst "lhu	\$2,2\(\$3\)" "lhu	$2,820($3)" @ 38
-cpu_check_tubazeri_2: subst "sh	\$2,0\(\$3\)" "sh	$2,818($3)" @ 40
+func_800307D0: subst "addu	\$4,\$0,\$zero" "sll	$2,$17,1" @ 18
+func_800307D0: subst "lh	\$4," "lh	$2," @ 19
+func_800307D0: subst "xor	\$17,\$4,\$3" "xor	$2,$2,$3" @ 22
+func_800307D0: subst "sltu	\$17,\$17," "sltu	$17,$2," @ 23
+func_800307D0: subst "sll	\$4," "sll	$2," @ 24
+func_800307D0: subst "\$18,\$16,\$4" "$18,$2,$16" @ 25
+func_800307D0: subst "addu	\$3,\$18,818" "addu	$3,$18,$zero" @ 37
+func_800307D0: subst "lhu	\$2,2\(\$3\)" "lhu	$2,820($3)" @ 38
+func_800307D0: subst "sh	\$2,0\(\$3\)" "sh	$2,818($3)" @ 40
 
 # func_800432A0 (videoDecCreate): v0/v1 swap and reorder in la addr computations,
 # stack offset fix for 5th arg (lhu 66 -> 64)
@@ -358,27 +358,27 @@ func_80019310: reorder 2,1 @ 1-2
 # func_80041988: swap v0<->v1 in dispatch (li and beq)
 
 # rob_calc_2d_position: global data_ptr/t2 swap
-rob_calc_2d_position: $10 <-> $11
+func_80040B44: $10 <-> $11
 # rob_calc_2d_position: first init loop counter/ptr swap
-rob_calc_2d_position: $4 <-> $5 @ 5-12
+func_80040B44: $4 <-> $5 @ 5-12
 # rob_calc_2d_position: second init loop - counter $5->$4
-rob_calc_2d_position: subst "\$5,\$zero" "$4,$zero" @ 13
-rob_calc_2d_position: subst "\$5,\$5,-1" "$4,$4,-1" @ 16
-rob_calc_2d_position: subst "\$5," "$4," @ 17
+func_80040B44: subst "\$5,\$zero" "$4,$zero" @ 13
+func_80040B44: subst "\$5,\$5,-1" "$4,$4,-1" @ 16
+func_80040B44: subst "\$5," "$4," @ 17
 # rob_calc_2d_position: second init loop - ptr $4->$2
-rob_calc_2d_position: subst "\$4,\$14" "$2,$14" @ 14
-rob_calc_2d_position: subst "6708\(\$4\)" "6708($2)" @ 15
-rob_calc_2d_position: subst "\$4,\$4,-4" "$2,$2,-4" @ 18
+func_80040B44: subst "\$4,\$14" "$2,$14" @ 14
+func_80040B44: subst "6708\(\$4\)" "6708($2)" @ 15
+func_80040B44: subst "\$4,\$4,-4" "$2,$2,-4" @ 18
 # rob_calc_2d_position: operand order fixes in addu
-rob_calc_2d_position: subst "\$5,\$sp,\$2" "$5,$2,$sp" @ 31
-rob_calc_2d_position: subst "\$3,\$15,\$3" "$3,$3,$15" @ 41
-rob_calc_2d_position: subst "\$2,\$14,\$2" "$2,$2,$14" @ 43
-rob_calc_2d_position: subst "\$6,\$15,\$2" "$6,$2,$15" @ 54
-rob_calc_2d_position: subst "\$2,\$14,\$2" "$2,$2,$14" @ 81
+func_80040B44: subst "\$5,\$sp,\$2" "$5,$2,$sp" @ 31
+func_80040B44: subst "\$3,\$15,\$3" "$3,$3,$15" @ 41
+func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 43
+func_80040B44: subst "\$6,\$15,\$2" "$6,$2,$15" @ 54
+func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 81
 # rob_calc_2d_position: insert dead t3-=2 after loop delay slot
-rob_calc_2d_position: insert_after "addu $11,$11,-2" @ 87
+func_80040B44: insert_after "addu $11,$11,-2" @ 87
 # rob_calc_2d_position: reorder constant setup block
-rob_calc_2d_position: reorder 24,27,25,26 @ 24-27
+func_80040B44: reorder 24,27,25,26 @ 24-27
 # func_800430E4: GCC hoists scratchpad addresses into regs, target uses inline lui/lo
 # Register renames: arg saves t6->t2, t7->t3; dst t5->t1; loaded val t4->t0; FF610 ptr t3->a1
 func_800430E4: $14 <-> $10
@@ -417,9 +417,9 @@ func_800430E4: delete @ 14
 # gnd_init_80041688: FALSE color branch in text1a.c
 # Target loads in order (b=$3, r=$4, g=$2); mine loads (r=$4, g=$2, b=$3).
 # Swap register+offset in-place at each load index to match target order.
-gnd_init_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
-gnd_init_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
-gnd_init_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
+func_80041688: subst "\$4,24\(\$16\)" "$3,26($16)" @ 68
+func_80041688: subst "\$2,25\(\$16\)" "$4,24($16)" @ 69
+func_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
 
 # saTan1SyuryoDraw: val+step delay slot fill uses $v1 intermediate,
 # target has nop in beqz delay and addu $a1,$a1,$a0 after D_800A2D0C load.
@@ -437,14 +437,14 @@ gnd_init_80041688: subst "\$3,26\(\$16\)" "$2,25($16)" @ 70
 # free, target uses $t1 ($9) as mfhi temp; variant uses $t2 ($10).
 # Recipe: rename $10->$9 in body, $9->$2 in single mult, delete preheader
 # reorder prologue (target sets $a3 before $a2/$a1).
-SetCurrentCursor: $10 <-> $9 @ 20-66
-SetCurrentCursor: subst "\$9" "$2" @ 19
-SetCurrentCursor: delete @ 13
-SetCurrentCursor: delete @ 14
-SetCurrentCursor: delete @ 18
-SetCurrentCursor: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 15
-SetCurrentCursor: insert_after "ori	$2,$2,0xb3c5" @ 16
-SetCurrentCursor: reorder 13,14,11,12 @ 11-14
+func_8003C714: $10 <-> $9 @ 20-66
+func_8003C714: subst "\$9" "$2" @ 19
+func_8003C714: delete @ 13
+func_8003C714: delete @ 14
+func_8003C714: delete @ 18
+func_8003C714: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 15
+func_8003C714: insert_after "ori	$2,$2,0xb3c5" @ 16
+func_8003C714: reorder 13,14,11,12 @ 11-14
 
 # func_8008AAD4: GCC 2.7.2 caches D_800F7424 base in v1 ($3) for 3 accesses;
 # target emits 3 fresh lui/lhu/sh pseudos. Plus the conditional store nor uses
@@ -485,13 +485,13 @@ SetCurrentCursor: reorder 13,14,11,12 @ 11-14
 # Mine hoists it to $10 in preheader and inserts nop delay filler.
 # Recipe: delete preheader lui+ori, delete nop delay filler, insert lui $2 before lw,
 # insert_after ori $2 as delay slot. Cascade rename $11->$10 for mfhi/addu uses.
-single_game_SetWazaData: $10 <-> $11 @ 47-92
-single_game_SetWazaData: subst "\$10" "$2" @ 46
-single_game_SetWazaData: delete @ 39
-single_game_SetWazaData: delete @ 40
-single_game_SetWazaData: delete @ 45
-single_game_SetWazaData: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 42
-single_game_SetWazaData: insert_after "ori	$2,$2,0xb3c5" @ 43
+func_80035280: $10 <-> $11 @ 47-92
+func_80035280: subst "\$10" "$2" @ 46
+func_80035280: delete @ 39
+func_80035280: delete @ 40
+func_80035280: delete @ 45
+func_80035280: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 42
+func_80035280: insert_after "ori	$2,$2,0xb3c5" @ 43
 
 # single_game_SetWazaData: bit setup 4-cycle register rotation
 # Mine:   pbit=$4, v=$5, bit=$2, mask=$3
@@ -500,11 +500,11 @@ single_game_SetWazaData: insert_after "ori	$2,$2,0xb3c5" @ 43
 # in range [8-26] (bit setup loop body), plus surgical substs for $4 at
 # indices 5 and 6 (la pbit + src1 init), which can't be in range because
 # [7] uses $2 as jal return value.
-single_game_SetWazaData: $5 <-> $2 @ 8-26
-single_game_SetWazaData: $5 <-> $3 @ 8-26
-single_game_SetWazaData: $5 <-> $4 @ 8-26
-single_game_SetWazaData: subst "\$4" "$5" @ 5
-single_game_SetWazaData: subst "\$4" "$5" @ 6
+func_80035280: $5 <-> $2 @ 8-26
+func_80035280: $5 <-> $3 @ 8-26
+func_80035280: $5 <-> $4 @ 8-26
+func_80035280: subst "\$4" "$5" @ 5
+func_80035280: subst "\$4" "$5" @ 6
 
 # single_game_SetWazaData: dst base bias fix.
 # Mine: addu $8,$8,36 (bias t0 to p+0x24), sb with -3..0($8) offsets.
@@ -512,22 +512,22 @@ single_game_SetWazaData: subst "\$4" "$5" @ 6
 # Need to: (1) rename $5 tmp at [70,71] to $4 (target destroys $4 with subu),
 # freeing $5 for dst base; (2) substitute the bias with a move; (3) update
 # store offsets and the loop-increment in the delay slot.
-single_game_SetWazaData: subst "\$5" "$4" @ 70
-single_game_SetWazaData: subst "\$5" "$4" @ 71
-single_game_SetWazaData: subst "addu\s+\$8,\$8,36" "addu	$5,$8,$0" @ 43
-single_game_SetWazaData: subst "-3\(\$8\)" "33($5)" @ 52
-single_game_SetWazaData: subst "-2\(\$8\)" "34($5)" @ 71
-single_game_SetWazaData: subst "-1\(\$8\)" "35($5)" @ 96
-single_game_SetWazaData: subst "0\(\$8\)" "36($5)" @ 99
-single_game_SetWazaData: subst "\$8,\$8,4" "$5,$5,4" @ 102
+func_80035280: subst "\$5" "$4" @ 70
+func_80035280: subst "\$5" "$4" @ 71
+func_80035280: subst "addu\s+\$8,\$8,36" "addu	$5,$8,$0" @ 43
+func_80035280: subst "-3\(\$8\)" "33($5)" @ 52
+func_80035280: subst "-2\(\$8\)" "34($5)" @ 71
+func_80035280: subst "-1\(\$8\)" "35($5)" @ 96
+func_80035280: subst "0\(\$8\)" "36($5)" @ 99
+func_80035280: subst "\$8,\$8,4" "$5,$5,4" @ 102
 
 # single_game_SetWazaData: final diffs after Phases 1-4.
 # Diff A: loop 1 entry operand order $3,$7,$8 -> $3,$8,$7.
-single_game_SetWazaData: subst "addu\s+\$3,\$7,\$8" "addu	$3,$8,$7" @ 27
+func_80035280: subst "addu\s+\$3,\$7,\$8" "addu	$3,$8,$7" @ 27
 # Diff B: preheader scheduling — move la $6 (pos 37) after t1 lui/ori pair.
 # Post-insert indices: 37=la $6, 38=a3=0, 39=lui $9, 40=ori $9, 41=a1=t0.
 # Target order: a3=0, lui $9, ori $9, la $6, a1=t0.
-single_game_SetWazaData: reorder 38,39,40,37,41 @ 37-41
+func_80035280: reorder 38,39,40,37,41 @ 37-41
 
 # func_80085270: scheduling diffs.
 # Diff A: sra t0, 14 should come after la D_80106F28 (index 2 -> index 3).
@@ -541,18 +541,18 @@ single_game_SetWazaData: reorder 38,39,40,37,41 @ 37-41
 # loop 4 init: reorder 3-way ($v1=$a0 / $a1=0 / $a2=-1) -> ($a1=0 / $a2=-1 / $v1=$a0)
 
 # Pad_Prs: regalloc fixup for multiply chain and log2 shift chain
-Pad_Prs: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
-Pad_Prs: subst "mflo\s+\$2" "mflo $3" @ 58
-Pad_Prs: subst "addu\s+\$4,\$4,\$2" "addu $4,$2,$3" @ 59
-Pad_Prs: subst "and\s+\$3,\$3,\$2" "and $2,$3,$2" @ 76
-Pad_Prs: subst "addiu\s+\$2,\$zero,22" "addiu $3,$zero,22" @ 77
-Pad_Prs: subst "subu\s+\$2,\$2,\$3" "subu $3,$3,$2" @ 78
-Pad_Prs: subst "srl\s+\$4,\$4,\$2" "srl $2,$4,$3" @ 79
-Pad_Prs: subst "addu\s+\$at,\$at,\$4" "addu $at,$at,$2" @ 81
-Pad_Prs: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
-Pad_Prs: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
-Pad_Prs: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
-Pad_Prs: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
+func_80032314: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
+func_80032314: subst "mflo\s+\$2" "mflo $3" @ 58
+func_80032314: subst "addu\s+\$4,\$4,\$2" "addu $4,$2,$3" @ 59
+func_80032314: subst "and\s+\$3,\$3,\$2" "and $2,$3,$2" @ 76
+func_80032314: subst "addiu\s+\$2,\$zero,22" "addiu $3,$zero,22" @ 77
+func_80032314: subst "subu\s+\$2,\$2,\$3" "subu $3,$3,$2" @ 78
+func_80032314: subst "srl\s+\$4,\$4,\$2" "srl $2,$4,$3" @ 79
+func_80032314: subst "addu\s+\$at,\$at,\$4" "addu $at,$at,$2" @ 81
+func_80032314: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
+func_80032314: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
+func_80032314: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
+func_80032314: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 
 # func_8001BAE4: GCC optimizes signed shift to srl due to & 0x1FFE mask, target has sra
 # TEXT index 29 = srl ,,1 -> sra ,,1
@@ -618,33 +618,33 @@ func_8001F938: insert_label ".LfuncF938_join:" @ 80
 
 # tslPrintScreen: first-stage cleanup
 # Early sentinel/token register cleanup.
-tslPrintScreen: $3 <-> $4 @ 18-19
-tslPrintScreen: $3 <-> $4 @ 28-32
-tslPrintScreen: subst "\.L\d+" "{lbl#6}" @ 34
+func_8003F824: $3 <-> $4 @ 18-19
+func_8003F824: $3 <-> $4 @ 28-32
+func_8003F824: subst "\.L\d+" "{lbl#6}" @ 34
 # InitFadePanel neighborhood and s0 carry.
-tslPrintScreen: subst "\.L\d+" "{lbl#3}+4" @ 39
-tslPrintScreen: subst "addu.*" "addu\t$5,$17,$zero" @ 40
-tslPrintScreen: subst "lh.*" "lh\t$3,0($19)" @ 43
-tslPrintScreen: subst "nop.*" "addu\t$6,$16,$zero" @ 44
-tslPrintScreen: insert "addu\t$5,$17,$zero" @ 43
-tslPrintScreen: subst "lw.*" "lw\t$16,6708($2)" @ 54
-tslPrintScreen: subst "sw.*" "sw\t$6,24($18)" @ 56
-tslPrintScreen: subst "sw.*" "sw\t$16,20($18)" @ 58
-tslPrintScreen: subst "addu.*" "addu\t$3,$3,$19" @ 62
-tslPrintScreen: subst "sb.*" "sb\t$3,0($16)" @ 72
+func_8003F824: subst "\.L\d+" "{lbl#3}+4" @ 39
+func_8003F824: subst "addu.*" "addu\t$5,$17,$zero" @ 40
+func_8003F824: subst "lh.*" "lh\t$3,0($19)" @ 43
+func_8003F824: subst "nop.*" "addu\t$6,$16,$zero" @ 44
+func_8003F824: insert "addu\t$5,$17,$zero" @ 43
+func_8003F824: subst "lw.*" "lw\t$16,6708($2)" @ 54
+func_8003F824: subst "sw.*" "sw\t$6,24($18)" @ 56
+func_8003F824: subst "sw.*" "sw\t$16,20($18)" @ 58
+func_8003F824: subst "addu.*" "addu\t$3,$3,$19" @ 62
+func_8003F824: subst "sb.*" "sb\t$3,0($16)" @ 72
 # Marker entry and tail reshaping.
-tslPrintScreen: subst "lh.*" "lh\t$2,0($17)" @ 95
-tslPrintScreen: reorder 97,98,96 @ 96-98
-tslPrintScreen: subst "lh.*" "addiu\t$3,$zero,-2" @ 99
-tslPrintScreen: subst "nop.*" "lh\t$2,0($17)" @ 100
+func_8003F824: subst "lh.*" "lh\t$2,0($17)" @ 95
+func_8003F824: reorder 97,98,96 @ 96-98
+func_8003F824: subst "lh.*" "addiu\t$3,$zero,-2" @ 99
+func_8003F824: subst "nop.*" "lh\t$2,0($17)" @ 100
 # .L26 is a CROSS-FUNCTION reference (stage_InitCollision's label in this same
 # .c file). `{lbl#N}` is function-local; cross-function refs are inherently
 # brittle (any TU label-renumber breaks them). Leave as-is — Phase 2b notes.
-tslPrintScreen: subst "bne.*" "bne\t$2,$3,.L26" @ 101
-tslPrintScreen: reorder 102,103,101 @ 101-103
-tslPrintScreen: subst "lh.*" "lh\t$3,0($17)" @ 105
-tslPrintScreen: subst "lhu.*" "lhu\t$4,0($17)" @ 106
-tslPrintScreen: subst "bne.*" "bne\t$3,$2,{lbl#2}" @ 107
+func_8003F824: subst "bne.*" "bne\t$2,$3,.L26" @ 101
+func_8003F824: reorder 102,103,101 @ 101-103
+func_8003F824: subst "lh.*" "lh\t$3,0($17)" @ 105
+func_8003F824: subst "lhu.*" "lhu\t$4,0($17)" @ 106
+func_8003F824: subst "bne.*" "bne\t$3,$2,{lbl#2}" @ 107
 
 # myRobGeneiMove: val $4->$16, far $5->$4, neg_angle $5->$16
 
@@ -765,48 +765,48 @@ func_8003504C: subst "\$3" "$2" @ 51
 
 # tslGlobalMemFree_800861BC: compound regfix - 30 rules (0-based TEXT indices)
 # Prologue register renames
-tslGlobalMemFree_800861BC: subst "\$8" "$3" @ 4
-tslGlobalMemFree_800861BC: subst "\$9" "$8" @ 2
-tslGlobalMemFree_800861BC: subst "\$8" "$3" @ 6
+func_800861BC: subst "\$8" "$3" @ 4
+func_800861BC: subst "\$9" "$8" @ 2
+func_800861BC: subst "\$8" "$3" @ 6
 # Loop: precomputed pointer offset + register swap
-tslGlobalMemFree_800861BC: subst "-2\(\$8\)" "0($9)" @ 19
-tslGlobalMemFree_800861BC: subst "\$9" "$8" @ 21
+func_800861BC: subst "-2\(\$8\)" "0($9)" @ 19
+func_800861BC: subst "\$9" "$8" @ 21
 # Branch: beq -> blez
-tslGlobalMemFree_800861BC: subst "beq" "blez" @ 31
-tslGlobalMemFree_800861BC: subst ",\$0" "" @ 31
+func_800861BC: subst "beq" "blez" @ 31
+func_800861BC: subst ",\$0" "" @ 31
 # If-branch v0<->v1 swap
-tslGlobalMemFree_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 40
-tslGlobalMemFree_800861BC: subst "\$2," "$3," @ 41
-tslGlobalMemFree_800861BC: subst "\$3,12\(\$3\)" "$2,12($2)" @ 42
-tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 44
+func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 40
+func_800861BC: subst "\$2," "$3," @ 41
+func_800861BC: subst "\$3,12\(\$3\)" "$2,12($2)" @ 42
+func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 44
 # Else-branch v0<->v1 swap
-tslGlobalMemFree_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 52
-tslGlobalMemFree_800861BC: subst "\$2," "$3," @ 53
-tslGlobalMemFree_800861BC: subst "\$3,14\(\$3\)" "$2,14($2)" @ 54
-tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 55
+func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 52
+func_800861BC: subst "\$2," "$3," @ 53
+func_800861BC: subst "\$3,14\(\$3\)" "$2,14($2)" @ 54
+func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 55
 # Merge point: sh operands v0<->v1
-tslGlobalMemFree_800861BC: subst "\$3,D_80102A7E\(\$2\)" "$2,D_80102A7E($3)" @ 56
+func_800861BC: subst "\$3,D_80102A7E\(\$2\)" "$2,D_80102A7E($3)" @ 56
 # Tail block 1: base in v0, D_8010280C via a1
-tslGlobalMemFree_800861BC: subst "\$5," "$2," @ 70
-tslGlobalMemFree_800861BC: subst "\$2,0\(\$8\)" "$3,0($5)" @ 71
-tslGlobalMemFree_800861BC: subst "\$3,16\(\$5\)" "$2,16($2)" @ 72
-tslGlobalMemFree_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 73
-tslGlobalMemFree_800861BC: subst "\$3,D_80102A80\(\$2\)" "$2,D_80102A80($3)" @ 74
+func_800861BC: subst "\$5," "$2," @ 70
+func_800861BC: subst "\$2,0\(\$8\)" "$3,0($5)" @ 71
+func_800861BC: subst "\$3,16\(\$5\)" "$2,16($2)" @ 72
+func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 73
+func_800861BC: subst "\$3,D_80102A80\(\$2\)" "$2,D_80102A80($3)" @ 74
 # Tail block 2
-tslGlobalMemFree_800861BC: subst "\$5," "$2," @ 80
-tslGlobalMemFree_800861BC: subst "0\(\$8\)" "0($5)" @ 81
-tslGlobalMemFree_800861BC: subst "18\(\$5\)" "18($2)" @ 82
+func_800861BC: subst "\$5," "$2," @ 80
+func_800861BC: subst "0\(\$8\)" "0($5)" @ 81
+func_800861BC: subst "18\(\$5\)" "18($2)" @ 82
 # Final D_8010280A: lhu -> lh
-tslGlobalMemFree_800861BC: subst "lhu" "lh" @ 87
+func_800861BC: subst "lhu" "lh" @ 87
 # Prologue/epilogue frame inserts (0-based: first insn=0, last=94)
-tslGlobalMemFree_800861BC: insert "addiu $sp,$sp,-8" @ 0
-tslGlobalMemFree_800861BC: insert "addiu $sp,$sp,8" @ 94
+func_800861BC: insert "addiu $sp,$sp,-8" @ 0
+func_800861BC: insert "addiu $sp,$sp,8" @ 94
 # Insert precompute t1=v1-2 (post-insert: T4 la shifted to idx 5)
-tslGlobalMemFree_800861BC: insert_after "addiu $9,$3,-2" @ 5
+func_800861BC: insert_after "addiu $9,$3,-2" @ 5
 # Insert tail reload (post-insert: T63 sb shifted to idx 64)
-tslGlobalMemFree_800861BC: insert_after "la $5,D_8010280C" @ 64
+func_800861BC: insert_after "la $5,D_8010280C" @ 64
 # Reorder prologue (post-all-inserts: indices 1-6)
-tslGlobalMemFree_800861BC: reorder 2,5,6,3,4,1 @ 1-6
+func_800861BC: reorder 2,5,6,3,4,1 @ 1-6
 
 # func_80084A7C: 156-insn motion state handler (main.c)
 # Phase 1: swap a2/a3 for base_ptr/offset register assignment
@@ -837,80 +837,80 @@ func_80084A7C: reorder 16,14,17,18,15 @ 14-18
 # Score 360 -> 0 via 18 subst rules (0-based indices)
 
 # Loop1 first half: operand order in addu v1 (s1,s0 -> s0,s1)
-hirahira_w_ctrl: subst "\$3,\$17,\$16" "$3,$16,$17" @ 30
+func_80041188: subst "\$3,\$17,\$16" "$3,$16,$17" @ 30
 
 # Loop1 first half: scheduling rotation (s5->a0, a0->a1, a1->s5)
-hirahira_w_ctrl: subst "addu\t\$21,\$21,4" "addu\t$4,$sp,16" @ 32
-hirahira_w_ctrl: subst "addu\t\$4,\$sp,16" "addu\t$5,$23,$zero" @ 35
-hirahira_w_ctrl: subst "addu\t\$5,\$23,\$zero" "addu\t$21,$21,4" @ 39
+func_80041188: subst "addu\t\$21,\$21,4" "addu\t$4,$sp,16" @ 32
+func_80041188: subst "addu\t\$4,\$sp,16" "addu\t$5,$23,$zero" @ 35
+func_80041188: subst "addu\t\$5,\$23,\$zero" "addu\t$21,$21,4" @ 39
 
 # Loop1 second half: v1($3) -> s0($16) for a2+offset base
-hirahira_w_ctrl: subst "\$3,\$18,\$16" "$16,$16,$18" @ 43
-hirahira_w_ctrl: subst "\$2,0\(\$3\)" "$2,0($16)" @ 44
-hirahira_w_ctrl: subst "\$2,2\(\$3\)" "$2,2($16)" @ 47
-hirahira_w_ctrl: subst "\$2,4\(\$3\)" "$2,4($16)" @ 51
+func_80041188: subst "\$3,\$18,\$16" "$16,$16,$18" @ 43
+func_80041188: subst "\$2,0\(\$3\)" "$2,0($16)" @ 44
+func_80041188: subst "\$2,2\(\$3\)" "$2,2($16)" @ 47
+func_80041188: subst "\$2,4\(\$3\)" "$2,4($16)" @ 51
 
 # Inter-loop: register reassignment for loop2
 # out2: s6($22) -> s3($19)
-hirahira_w_ctrl: subst "\$22,\$23,32" "$19,$23,32" @ 70
+func_80041188: subst "\$22,\$23,32" "$19,$23,32" @ 70
 # stptr: s3($19) -> s0($16)
-hirahira_w_ctrl: subst "\$19,\$8,1872" "$16,$8,1872" @ 71
+func_80041188: subst "\$19,\$8,1872" "$16,$8,1872" @ 71
 
 # Loop2: stptr s3($19) -> s0($16)
-hirahira_w_ctrl: subst "\$7,\$19,76" "$7,$16,76" @ 76
-hirahira_w_ctrl: subst "\$7,\$19,56" "$7,$16,56" @ 112
-hirahira_w_ctrl: subst "\$2,6\(\$19\)" "$2,6($16)" @ 114
-hirahira_w_ctrl: subst "\$19,\$19,104" "$16,$16,104" @ 117
+func_80041188: subst "\$7,\$19,76" "$7,$16,76" @ 76
+func_80041188: subst "\$7,\$19,56" "$7,$16,56" @ 112
+func_80041188: subst "\$2,6\(\$19\)" "$2,6($16)" @ 114
+func_80041188: subst "\$19,\$19,104" "$16,$16,104" @ 117
 
 # Stack offset: saved var at sp+28 -> sp+24
 
 # Loop2: out2 s6($22) -> s3($19)
-hirahira_w_ctrl: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 97
-hirahira_w_ctrl: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
+func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 97
+func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
 
 # saTan4FireDisp: 3-way register cycle ($23/$fp/$21) for fp_ptr/r/xoff
-saTan4FireDisp: $23 <-> $fp @ 16-119
-saTan4FireDisp: $23 <-> $21 @ 44-102
+func_80041BF4: $23 <-> $fp @ 16-119
+func_80041BF4: $23 <-> $21 @ 44-102
 # saTan4FireDisp: frame size 72->88 (all save/restore offsets +16)
-saTan4FireDisp: subst ",72" ",88" @ 0
-saTan4FireDisp: subst ",32\(" ",48(" @ 1
-saTan4FireDisp: subst ",36\(" ",52(" @ 3
-saTan4FireDisp: subst ",40\(" ",56(" @ 5
-saTan4FireDisp: subst ",68\(" ",84(" @ 8
-saTan4FireDisp: subst ",64\(" ",80(" @ 9
-saTan4FireDisp: subst ",60\(" ",76(" @ 10
-saTan4FireDisp: subst ",56\(" ",72(" @ 11
-saTan4FireDisp: subst ",52\(" ",68(" @ 12
-saTan4FireDisp: subst ",48\(" ",64(" @ 13
-saTan4FireDisp: subst ",44\(" ",60(" @ 15
-saTan4FireDisp: subst ",68\(" ",84(" @ 120
-saTan4FireDisp: subst ",64\(" ",80(" @ 121
-saTan4FireDisp: subst ",60\(" ",76(" @ 122
-saTan4FireDisp: subst ",56\(" ",72(" @ 123
-saTan4FireDisp: subst ",52\(" ",68(" @ 124
-saTan4FireDisp: subst ",48\(" ",64(" @ 125
-saTan4FireDisp: subst ",44\(" ",60(" @ 126
-saTan4FireDisp: subst ",40\(" ",56(" @ 127
-saTan4FireDisp: subst ",36\(" ",52(" @ 128
-saTan4FireDisp: subst ",32\(" ",48(" @ 129
-saTan4FireDisp: subst ",72" ",88" @ 130
+func_80041BF4: subst ",72" ",88" @ 0
+func_80041BF4: subst ",32\(" ",48(" @ 1
+func_80041BF4: subst ",36\(" ",52(" @ 3
+func_80041BF4: subst ",40\(" ",56(" @ 5
+func_80041BF4: subst ",68\(" ",84(" @ 8
+func_80041BF4: subst ",64\(" ",80(" @ 9
+func_80041BF4: subst ",60\(" ",76(" @ 10
+func_80041BF4: subst ",56\(" ",72(" @ 11
+func_80041BF4: subst ",52\(" ",68(" @ 12
+func_80041BF4: subst ",48\(" ",64(" @ 13
+func_80041BF4: subst ",44\(" ",60(" @ 15
+func_80041BF4: subst ",68\(" ",84(" @ 120
+func_80041BF4: subst ",64\(" ",80(" @ 121
+func_80041BF4: subst ",60\(" ",76(" @ 122
+func_80041BF4: subst ",56\(" ",72(" @ 123
+func_80041BF4: subst ",52\(" ",68(" @ 124
+func_80041BF4: subst ",48\(" ",64(" @ 125
+func_80041BF4: subst ",44\(" ",60(" @ 126
+func_80041BF4: subst ",40\(" ",56(" @ 127
+func_80041BF4: subst ",36\(" ",52(" @ 128
+func_80041BF4: subst ",32\(" ",48(" @ 129
+func_80041BF4: subst ",72" ",88" @ 130
 # saTan4FireDisp: inner loop - off register v1->v0
-saTan4FireDisp: subst "\$3,\$5" "$2,$5" @ 85
+func_80041BF4: subst "\$3,\$5" "$2,$5" @ 85
 # saTan4FireDisp: inner loop - lhu source from check (v1) + xoff (s5)
-saTan4FireDisp: subst "\$2,\$2,\$21" "$2,$3,$21" @ 86
+func_80041BF4: subst "\$2,\$2,\$21" "$2,$3,$21" @ 86
 # saTan4FireDisp: inner check - lh dest s5->v0
-saTan4FireDisp: subst "\$21,0" "$2,0" @ 106
+func_80041BF4: subst "\$21,0" "$2,0" @ 106
 # saTan4FireDisp: inner check - bgez source s5->v0
-saTan4FireDisp: subst "\$21" "$2" @ 107
+func_80041BF4: subst "\$21" "$2" @ 107
 # saTan4FireDisp: delay slot sll - off dest v1->v0
-saTan4FireDisp: subst "\$3," "$2," @ 108
+func_80041BF4: subst "\$3," "$2," @ 108
 # saTan4FireDisp: epilogue - comparison constant v1->t0
-saTan4FireDisp: subst "\$3," "$8," @ 115
-saTan4FireDisp: subst ",\$3" ",$8" @ 116
+func_80041BF4: subst "\$3," "$8," @ 115
+func_80041BF4: subst ",\$3" ",$8" @ 116
 # saTan4FireDisp: delete body lhu (moved to check)
-saTan4FireDisp: delete @ 84
+func_80041BF4: delete @ 84
 # saTan4FireDisp: insert lhu at check point (post-delete idx 105)
-saTan4FireDisp: insert_after "lhu $3,0($16)" @ 105
+func_80041BF4: insert_after "lhu $3,0($16)" @ 105
 
 # decBs0: compound regfix — frame 64→72, dead move delete, both args to stack,
 # s2↔s3 swap, store block reorder+nop, loop top restructure (~50 rules)
@@ -951,22 +951,22 @@ saTan4FireDisp: insert_after "lhu $3,0($16)" @ 105
 # _SelectSection: rotation matrix function regfix
 # Block 1: Fix negSinAxsinB_12 register + scheduling (TEXT 21-27)
 # GCC puts mflo result in $8 (t0), target has $12 (t4); sra/mult use $4 (a0), target $2 (v0)
-_SelectSection: subst "mflo\s+\$8" "mflo\t$12" @ 21
-_SelectSection: subst "sra\s+\$4,\$8,12" "sra\t$2,$12,12" @ 22
-_SelectSection: subst "mult\s+\$4,\$8" "mult\t$2,$8" @ 27
+func_80042874: subst "mflo\s+\$8" "mflo\t$12" @ 21
+func_80042874: subst "sra\s+\$4,\$8,12" "sra\t$2,$12,12" @ 22
+func_80042874: subst "mult\s+\$4,\$8" "mult\t$2,$8" @ 27
 # Delete extra nop at TEXT 26 (target fills this delay slot with the sra instead)
-_SelectSection: delete @ 26
+func_80042874: delete @ 26
 # Reorder post-delete 22-25: move sra after lh to fill load delay slot
-_SelectSection: reorder 23,24,25,22 @ 22-25
+func_80042874: reorder 23,24,25,22 @ 22-25
 # Block 2: Fix volatile addressing (TEXT 56-59) + scheduling
 # la+addu+lhu(ptr) -> lui $at + addu $at + lhu %lo($at)
-_SelectSection: subst "la\s+\$2,Judge" ".set\tnoat\nlui\t$at,%hi(Judge)" @ 56
-_SelectSection: subst "addu\s+\$7,\$7,\$2" "addu\t$at,$at,$7" @ 57
-_SelectSection: subst "lhu\s+\$3,0\(\$7\)" "lhu\t$3,%lo(Judge)($at)\n.set\tat" @ 59
+func_80042874: subst "la\s+\$2,Judge" ".set\tnoat\nlui\t$at,%hi(Judge)" @ 56
+func_80042874: subst "addu\s+\$7,\$7,\$2" "addu\t$at,$at,$7" @ 57
+func_80042874: subst "lhu\s+\$3,0\(\$7\)" "lhu\t$3,%lo(Judge)($at)\n.set\tat" @ 59
 # Insert nop after lhu (post-delete idx 58) for load delay slot
-_SelectSection: insert_after "nop" @ 58
+func_80042874: insert_after "nop" @ 58
 # Reorder post-insert 55-63: move subu down, swap sll/mflo order
-_SelectSection: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
+func_80042874: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
 # ---- mot_data_set: RGB-to-HSV, insert max_val copy + register cascade ----
 # GCC keeps max_val in $4(a0) but target copies to $11(t3), shifting sat/dR/mfhi up by 1
 # TEXT indices from --expand-div maspsx output
@@ -975,69 +975,69 @@ _SelectSection: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
 
 # hirahira_w_ctrl_2: 3x3 rotation matrix, compound regfix
 # lh->lhu + sign-ext for sinB/sinA/sinC, volatile cosA fix, register cycle
-hirahira_w_ctrl_2: subst "56" "48" @ 0
-hirahira_w_ctrl_2: subst "52" "44" @ 1
-hirahira_w_ctrl_2: subst "48" "40" @ 2
-hirahira_w_ctrl_2: subst "\$7" "$6" @ 3
-hirahira_w_ctrl_2: subst "\$6" "$8" @ 4
-hirahira_w_ctrl_2: subst "\$7" "$6" @ 5
-hirahira_w_ctrl_2: subst "\$6" "$8" @ 10
-hirahira_w_ctrl_2: subst "\$9" "$10" @ 17
-hirahira_w_ctrl_2: subst "\$8" "$9" @ 20
-hirahira_w_ctrl_2: subst "\$9,\$8" "$10,$9" @ 22
-hirahira_w_ctrl_2: subst "\$7,\$7" "$6,$6" @ 23
-hirahira_w_ctrl_2: subst "\$7,\$7" "$6,$6" @ 24
-hirahira_w_ctrl_2: subst "\$7" "$6" @ 27
-hirahira_w_ctrl_2: subst "lh\t\$7" "lhu\t$11" @ 28
-hirahira_w_ctrl_2: subst "lh\t\$10" "lhu\t$7" @ 34
-hirahira_w_ctrl_2: subst "\$10,\$7" "$7,$6" @ 36
-hirahira_w_ctrl_2: subst "\$6,\$6" "$8,$8" @ 37
-hirahira_w_ctrl_2: subst "\$6,\$6" "$8,$8" @ 38
-hirahira_w_ctrl_2: subst "\$6" "$8" @ 40
-hirahira_w_ctrl_2: subst "lh\t" "lhu\t" @ 41
-hirahira_w_ctrl_2: subst "\$11" "$8" @ 43
-hirahira_w_ctrl_2: subst "\$9,\$11" "$10,$8" @ 45
-hirahira_w_ctrl_2: subst "\$6,\$2" "$2,$2" @ 47
-hirahira_w_ctrl_2: subst "\$6,\$8" "$2,$9" @ 49
-hirahira_w_ctrl_2: subst "\$6,\$11" "$2,$8" @ 65
-hirahira_w_ctrl_2: subst ",\$8" ",$9" @ 69
-hirahira_w_ctrl_2: subst "\$7" "$6" @ 71
-hirahira_w_ctrl_2: subst "\$11" "$12" @ 74
-hirahira_w_ctrl_2: subst "\$10" "$7" @ 75
-hirahira_w_ctrl_2: subst "\$9" "$10" @ 77
-hirahira_w_ctrl_2: subst "\$6" "$8" @ 78
-hirahira_w_ctrl_2: subst "\$11" "$12" @ 79
-hirahira_w_ctrl_2: subst ",\$8" ",$9" @ 81
-hirahira_w_ctrl_2: subst ",\$7" ",$6" @ 85
-hirahira_w_ctrl_2: subst "\$10" "$7" @ 89
-hirahira_w_ctrl_2: subst "\$11" "$6" @ 90
-hirahira_w_ctrl_2: subst ",\$9" ",$10" @ 97
-hirahira_w_ctrl_2: subst "\$7," "$11," @ 98
-hirahira_w_ctrl_2: subst "\$9" "$10" @ 103
-hirahira_w_ctrl_2: subst ",\$6," ",$8," @ 104
-hirahira_w_ctrl_2: subst "\$10,\$8" "$7,$9" @ 106
-hirahira_w_ctrl_2: subst ",\$9," ",$10," @ 107
-hirahira_w_ctrl_2: subst "\$11" "$6" @ 115
-hirahira_w_ctrl_2: subst "52" "44" @ 122
-hirahira_w_ctrl_2: subst "48" "40" @ 123
-hirahira_w_ctrl_2: subst "56" "48" @ 124
-hirahira_w_ctrl_2: delete @ 31
-hirahira_w_ctrl_2: delete @ 35
-hirahira_w_ctrl_2: delete @ 44
-hirahira_w_ctrl_2: delete @ 55
-hirahira_w_ctrl_2: delete @ 56
-hirahira_w_ctrl_2: delete @ 57
-hirahira_w_ctrl_2: insert "lhu $3,%lo(Judge)($at)" @ 52
-hirahira_w_ctrl_2: insert "addu $at,$at,$3" @ 52
-hirahira_w_ctrl_2: insert "lui $at,%hi(Judge)" @ 52
-hirahira_w_ctrl_2: insert_after "sra $6,$6,16" @ 30
-hirahira_w_ctrl_2: insert_after "sll $6,$11,16" @ 30
-hirahira_w_ctrl_2: insert_after "sra $7,$7,16" @ 33
-hirahira_w_ctrl_2: insert_after "sll $7,$7,16" @ 33
-hirahira_w_ctrl_2: insert_after "mflo $16" @ 33
-hirahira_w_ctrl_2: insert_after "sll $4,$4,16" @ 39
-hirahira_w_ctrl_2: insert_after "nop" @ 39
-hirahira_w_ctrl_2: insert_after "sra $4,$4,16" @ 40
+func_80042C80: subst "56" "48" @ 0
+func_80042C80: subst "52" "44" @ 1
+func_80042C80: subst "48" "40" @ 2
+func_80042C80: subst "\$7" "$6" @ 3
+func_80042C80: subst "\$6" "$8" @ 4
+func_80042C80: subst "\$7" "$6" @ 5
+func_80042C80: subst "\$6" "$8" @ 10
+func_80042C80: subst "\$9" "$10" @ 17
+func_80042C80: subst "\$8" "$9" @ 20
+func_80042C80: subst "\$9,\$8" "$10,$9" @ 22
+func_80042C80: subst "\$7,\$7" "$6,$6" @ 23
+func_80042C80: subst "\$7,\$7" "$6,$6" @ 24
+func_80042C80: subst "\$7" "$6" @ 27
+func_80042C80: subst "lh\t\$7" "lhu\t$11" @ 28
+func_80042C80: subst "lh\t\$10" "lhu\t$7" @ 34
+func_80042C80: subst "\$10,\$7" "$7,$6" @ 36
+func_80042C80: subst "\$6,\$6" "$8,$8" @ 37
+func_80042C80: subst "\$6,\$6" "$8,$8" @ 38
+func_80042C80: subst "\$6" "$8" @ 40
+func_80042C80: subst "lh\t" "lhu\t" @ 41
+func_80042C80: subst "\$11" "$8" @ 43
+func_80042C80: subst "\$9,\$11" "$10,$8" @ 45
+func_80042C80: subst "\$6,\$2" "$2,$2" @ 47
+func_80042C80: subst "\$6,\$8" "$2,$9" @ 49
+func_80042C80: subst "\$6,\$11" "$2,$8" @ 65
+func_80042C80: subst ",\$8" ",$9" @ 69
+func_80042C80: subst "\$7" "$6" @ 71
+func_80042C80: subst "\$11" "$12" @ 74
+func_80042C80: subst "\$10" "$7" @ 75
+func_80042C80: subst "\$9" "$10" @ 77
+func_80042C80: subst "\$6" "$8" @ 78
+func_80042C80: subst "\$11" "$12" @ 79
+func_80042C80: subst ",\$8" ",$9" @ 81
+func_80042C80: subst ",\$7" ",$6" @ 85
+func_80042C80: subst "\$10" "$7" @ 89
+func_80042C80: subst "\$11" "$6" @ 90
+func_80042C80: subst ",\$9" ",$10" @ 97
+func_80042C80: subst "\$7," "$11," @ 98
+func_80042C80: subst "\$9" "$10" @ 103
+func_80042C80: subst ",\$6," ",$8," @ 104
+func_80042C80: subst "\$10,\$8" "$7,$9" @ 106
+func_80042C80: subst ",\$9," ",$10," @ 107
+func_80042C80: subst "\$11" "$6" @ 115
+func_80042C80: subst "52" "44" @ 122
+func_80042C80: subst "48" "40" @ 123
+func_80042C80: subst "56" "48" @ 124
+func_80042C80: delete @ 31
+func_80042C80: delete @ 35
+func_80042C80: delete @ 44
+func_80042C80: delete @ 55
+func_80042C80: delete @ 56
+func_80042C80: delete @ 57
+func_80042C80: insert "lhu $3,%lo(Judge)($at)" @ 52
+func_80042C80: insert "addu $at,$at,$3" @ 52
+func_80042C80: insert "lui $at,%hi(Judge)" @ 52
+func_80042C80: insert_after "sra $6,$6,16" @ 30
+func_80042C80: insert_after "sll $6,$11,16" @ 30
+func_80042C80: insert_after "sra $7,$7,16" @ 33
+func_80042C80: insert_after "sll $7,$7,16" @ 33
+func_80042C80: insert_after "mflo $16" @ 33
+func_80042C80: insert_after "sll $4,$4,16" @ 39
+func_80042C80: insert_after "nop" @ 39
+func_80042C80: insert_after "sra $4,$4,16" @ 40
 
 # func_800856B0 — 64-rule compound regfix (leaf function, 133 TEXT insns)
 # All indices are 0-based from function entry point
@@ -1079,32 +1079,32 @@ hirahira_w_ctrl_2: insert_after "sra $4,$4,16" @ 40
 # Prologue: la before sra
 # --- cpu_side_move_dir: 25 reg diffs across 3 groups + 1 reload insert + 1 lost-nop insert ---
 # Group A: if-branch division output cascade (target keeps sum in $v1, mfhi to $t1)
-cpu_side_move_dir: subst "addu\t\$2,\$6,\$3" "addu\t$3,$6,$3" @ 69
-cpu_side_move_dir: subst "mult\t\$2,\$5" "mult\t$3,$5" @ 71
-cpu_side_move_dir: subst "sra\t\$2,\$2,31" "sra\t$3,$3,31" @ 72
-cpu_side_move_dir: subst "mfhi\t\$3" "mfhi\t$9" @ 73
-cpu_side_move_dir: subst "sra\t\$3,\$3,5" "sra\t$2,$9,5" @ 74
-cpu_side_move_dir: subst "subu\t\$4,\$3,\$2" "subu\t$2,$2,$3" @ 76
+func_80027640: subst "addu\t\$2,\$6,\$3" "addu\t$3,$6,$3" @ 69
+func_80027640: subst "mult\t\$2,\$5" "mult\t$3,$5" @ 71
+func_80027640: subst "sra\t\$2,\$2,31" "sra\t$3,$3,31" @ 72
+func_80027640: subst "mfhi\t\$3" "mfhi\t$9" @ 73
+func_80027640: subst "sra\t\$3,\$3,5" "sra\t$2,$9,5" @ 74
+func_80027640: subst "subu\t\$4,\$3,\$2" "subu\t$2,$2,$3" @ 76
 
 # Group B: else-branch p computation (target keeps p in $a0, lh dest in $v0)
-cpu_side_move_dir: subst "addu\t\$2,\$4,\$2" "addu\t$4,$4,$2" @ 83
-cpu_side_move_dir: subst "lh\t\$3,0\(\$2\)" "lh\t$2,0($4)" @ 84
-cpu_side_move_dir: subst "sw\t\$3,16\(\$sp\)" "sw\t$2,16($sp)" @ 86
-cpu_side_move_dir: subst "lh\t\$4,4\(\$2\)" "lh\t$2,4($4)" @ 87
+func_80027640: subst "addu\t\$2,\$4,\$2" "addu\t$4,$4,$2" @ 83
+func_80027640: subst "lh\t\$3,0\(\$2\)" "lh\t$2,0($4)" @ 84
+func_80027640: subst "sw\t\$3,16\(\$sp\)" "sw\t$2,16($sp)" @ 86
+func_80027640: subst "lh\t\$4,4\(\$2\)" "lh\t$2,4($4)" @ 87
 
 # Group C: post-.L7 sp18 store + .L7 join cascade (indices shifted -1 vs prior version)
-cpu_side_move_dir: subst "sw\t\$4,24\(\$sp\)" "sw\t$2,24($sp)" @ 88
-cpu_side_move_dir: subst "lw\t\$3,16\(\$sp\)" "lw\t$4,16($sp)" @ 89
-cpu_side_move_dir: subst "subu\t\$3,\$3,\$2" "subu\t$4,$4,$2" @ 92
-cpu_side_move_dir: subst "sw\t\$3,16\(\$sp\)" "sw\t$4,16($sp)" @ 93
-cpu_side_move_dir: subst "lw\t\$2,252\(\$17\)" "lw\t$3,252($17)" @ 94
-cpu_side_move_dir: subst "subu\t\$2,\$4,\$2" "subu\t$2,$2,$3" @ 96
-cpu_side_move_dir: subst "addu\t\$2,\$2,\$3" "addu\t$2,$2,$4" @ 100
+func_80027640: subst "sw\t\$4,24\(\$sp\)" "sw\t$2,24($sp)" @ 88
+func_80027640: subst "lw\t\$3,16\(\$sp\)" "lw\t$4,16($sp)" @ 89
+func_80027640: subst "subu\t\$3,\$3,\$2" "subu\t$4,$4,$2" @ 92
+func_80027640: subst "sw\t\$3,16\(\$sp\)" "sw\t$4,16($sp)" @ 93
+func_80027640: subst "lw\t\$2,252\(\$17\)" "lw\t$3,252($17)" @ 94
+func_80027640: subst "subu\t\$2,\$4,\$2" "subu\t$2,$2,$3" @ 96
+func_80027640: subst "addu\t\$2,\$2,\$3" "addu\t$2,$2,$4" @ 100
 
 # Insert lw $v0, sp18 (reload) BEFORE idx 93 (sw sp10)
-cpu_side_move_dir: insert "lw\t$2,24($sp)" @ 93
+func_80027640: insert "lw\t$2,24($sp)" @ 93
 # Insert nop BEFORE idx 88 (load delay for lh $2,4($4) that maspsx wrongly stripped)
-cpu_side_move_dir: insert "nop" @ 88
+func_80027640: insert "nop" @ 88
 
 # func_80088740 — match attempt (2026-04-18)
 # Region 1 (init): rename cached D_800A2CDC pointer $3->$2 (target uses $v0)
@@ -1143,17 +1143,17 @@ cpu_side_move_dir: insert "nop" @ 88
 # cpu_side_move_dir_3: target swaps r_arg1 (s4<->s3) and loop counter/flag (s1<->s0)
 # r_arg1 in s3 instead of s4; chunk_size in s4 instead of s3
 # Range [0,134] = body+prologue saves; epilogue restores at [136-140] keep their slots
-cpu_side_move_dir_3: $19 <-> $20 @ 0-134
+func_8008BF04: $19 <-> $20 @ 0-134
 # Loop counter in s0 instead of s1; loop_flag pointer in s1 instead of s0
-cpu_side_move_dir_3: $16 <-> $17 @ 68-121
+func_8008BF04: $16 <-> $17 @ 68-121
 # After s3<->s4 swap, prologue saves have wrong offsets:
-cpu_side_move_dir_3: subst "32" "28" @ 1
-cpu_side_move_dir_3: subst "28" "32" @ 5
+func_8008BF04: subst "32" "28" @ 1
+func_8008BF04: subst "28" "32" @ 5
 # Fill beqz delay slot (idx 67 nop) with loop counter init (idx 68 = addu $16,$0,$zero after swap)
-cpu_side_move_dir_3: fill_delay @ 66 <- 68
+func_8008BF04: fill_delay @ 66 <- 68
 # cleanup_B uses $v1 for D_800A3044 pointer; GCC picks $a2 (carried over from main_work).
 # Range [39,44] covers cleanup_B's lw/lhu/sh uses; cleanup_A and loop_top still use $a2.
-cpu_side_move_dir_3: $3 <-> $6 @ 39-44
+func_8008BF04: $3 <-> $6 @ 39-44
 
 # func_8003B9D0: target schedules andi ,,0x0010 into beqz delay slot of &0x30 check.
 # GCC put nop in delay because asm constraint (=r/0 on eda) blocks scheduling past la.
@@ -1228,83 +1228,83 @@ func_8003A728: subst "sll\s+\$2,\$2,16" "sll $2,$16,16" @ 133
 # File order=processing order; insert "nop" first, then "lw" -> final layout: sra, lw, nop, subu
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
-cpu_side_move_dir_4: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
-cpu_side_move_dir_4: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
-cpu_side_move_dir_4: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
-cpu_side_move_dir_4: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
-cpu_side_move_dir_4: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
+func_80080DB0: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
+func_80080DB0: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
+func_80080DB0: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
+func_80080DB0: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
+func_80080DB0: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
 
 # marionation_Exec: s-reg rotation (two permutation cycles)
 # 3-cycle: s5($21)→s7($23)→s6($22)→s5
-marionation_Exec: $21 <-> $23
-marionation_Exec: $21 <-> $22
+func_80081030: $21 <-> $23
+func_80081030: $21 <-> $22
 # 4-cycle: s1($17)→s4($20)→s3($19)→s2($18)→s1
-marionation_Exec: $17 <-> $20
-marionation_Exec: $17 <-> $19
-marionation_Exec: $17 <-> $18
+func_80081030: $17 <-> $20
+func_80081030: $17 <-> $19
+func_80081030: $17 <-> $18
 
 # marionation_Exec: debug_printf block register + scheduling fix
-marionation_Exec: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
-marionation_Exec: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
-marionation_Exec: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
-marionation_Exec: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
-marionation_Exec: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
-marionation_Exec: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
-marionation_Exec: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
-marionation_Exec: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
-marionation_Exec: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
+func_80081030: subst "lbu\t\$2,0\(\$18\)" "lbu\t$4,0($18)" @ 41
+func_80081030: subst "lbu\t\$3,1\(\$18\)" "lbu\t$2,1($18)" @ 42
+func_80081030: subst "sll\t\$2,\$2,2" "sll\t$4,$4,2" @ 44
+func_80081030: subst "addu\t\$2,\$2,\$21" "addu\t$4,$4,$21" @ 45
+func_80081030: subst "sll\t\$3,\$3,2" "sll\t$2,$2,2" @ 46
+func_80081030: subst "addu\t\$3,\$3,\$21" "addu\t$2,$2,$21" @ 47
+func_80081030: subst "lw\t\$7,0\(\$2\)" "lw\t$7,0($4)" @ 48
+func_80081030: subst "lw\t\$3,0\(\$3\)" "lw\t$3,0($2)" @ 50
+func_80081030: reorder 41,42,43,46,47,44,50,49,45,51,52,53,54,55,48 @ 41-55
 
 # marionation_Exec: prologue frame offset correction (swaps rename regs but not offsets)
-marionation_Exec: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
-marionation_Exec: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
-marionation_Exec: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
-marionation_Exec: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
-marionation_Exec: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
-marionation_Exec: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
-marionation_Exec: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
+func_80081030: subst "sw\t\$23,44\(\$sp\)" "sw\t$23,52($sp)" @ 1
+func_80081030: subst "sw\t\$20,28\(\$sp\)" "sw\t$20,40($sp)" @ 2
+func_80081030: subst "sw\t\$22,52\(\$sp\)" "sw\t$22,48($sp)" @ 7
+func_80081030: subst "sw\t\$21,48\(\$sp\)" "sw\t$21,44($sp)" @ 8
+func_80081030: subst "sw\t\$19,40\(\$sp\)" "sw\t$19,36($sp)" @ 9
+func_80081030: subst "sw\t\$18,36\(\$sp\)" "sw\t$18,32($sp)" @ 10
+func_80081030: subst "sw\t\$17,32\(\$sp\)" "sw\t$17,28($sp)" @ 11
 
 # marionation_Exec: epilogue register correction (swaps permuted restore reg names)
 # indices shifted +1 after register asm added addu at .L124 (idx 143)
-marionation_Exec: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
-marionation_Exec: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
-marionation_Exec: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
-marionation_Exec: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
-marionation_Exec: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
-marionation_Exec: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
-marionation_Exec: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
+func_80081030: subst "lw\t\$22,52\(\$sp\)" "lw\t$23,52($sp)" @ 145
+func_80081030: subst "lw\t\$21,48\(\$sp\)" "lw\t$22,48($sp)" @ 146
+func_80081030: subst "lw\t\$23,44\(\$sp\)" "lw\t$21,44($sp)" @ 147
+func_80081030: subst "lw\t\$19,40\(\$sp\)" "lw\t$20,40($sp)" @ 148
+func_80081030: subst "lw\t\$18,36\(\$sp\)" "lw\t$19,36($sp)" @ 149
+func_80081030: subst "lw\t\$17,32\(\$sp\)" "lw\t$18,32($sp)" @ 150
+func_80081030: subst "lw\t\$20,28\(\$sp\)" "lw\t$17,28($sp)" @ 151
 
 # marionation_Exec: block 1+2 lbu->v0+andi, delay slot, tail layout fix
-marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 106
-marionation_Exec: subst "lbu\t\$6" "lbu\t$2" @ 124
-marionation_Exec: subst "addu.*" "nop" @ 127
-marionation_Exec: subst "\.L\d+" ".L999" @ 111
-marionation_Exec: subst "\.L\d+" ".L999" @ 129
-marionation_Exec: subst "j" ".L999:\n\tj" @ 139
-marionation_Exec: subst "nop" "addu\t$2,$0,$zero" @ 142
-marionation_Exec: delete @ 143
-marionation_Exec: insert "andi\t$6,$2,0x00FF" @ 108
-marionation_Exec: insert "andi\t$6,$2,0x00FF" @ 126
-marionation_Exec: insert "addu\t$5,$20,$zero" @ 130
-marionation_Exec: reorder 3,2 @ 2-3
-marionation_Exec: reorder 113,111,112,114,115,116 @ 111-116
-marionation_Exec: reorder 133,132,130,131,134,135 @ 130-135
+func_80081030: subst "lbu\t\$6" "lbu\t$2" @ 106
+func_80081030: subst "lbu\t\$6" "lbu\t$2" @ 124
+func_80081030: subst "addu.*" "nop" @ 127
+func_80081030: subst "\.L\d+" ".L999" @ 111
+func_80081030: subst "\.L\d+" ".L999" @ 129
+func_80081030: subst "j" ".L999:\n\tj" @ 139
+func_80081030: subst "nop" "addu\t$2,$0,$zero" @ 142
+func_80081030: delete @ 143
+func_80081030: insert "andi\t$6,$2,0x00FF" @ 108
+func_80081030: insert "andi\t$6,$2,0x00FF" @ 126
+func_80081030: insert "addu\t$5,$20,$zero" @ 130
+func_80081030: reorder 3,2 @ 2-3
+func_80081030: reorder 113,111,112,114,115,116 @ 111-116
+func_80081030: reorder 133,132,130,131,134,135 @ 130-135
 
 # suDispMentalBar: case 3 register + scheduling fix
 # ptr: $3->$4, byte0: $4->$3, byte1: $5->$2, ptr+2 dest: $3->$2
-suDispMentalBar: $3 <-> $4 @ 36-49
-suDispMentalBar: subst "\$5" "$2" @ 40
-suDispMentalBar: subst "addu\t\$4," "addu\t$2," @ 41
-suDispMentalBar: subst "\$4" "$2" @ 43
-suDispMentalBar: subst "\$5" "$2" @ 46
+func_8003B5A4: $3 <-> $4 @ 36-49
+func_8003B5A4: subst "\$5" "$2" @ 40
+func_8003B5A4: subst "addu\t\$4," "addu\t$2," @ 41
+func_8003B5A4: subst "\$4" "$2" @ 43
+func_8003B5A4: subst "\$5" "$2" @ 46
 # Reorder: interleave stores between loads (target does sw,lbu,sw,sb,lbu)
-suDispMentalBar: reorder 38,42,39,41,43,44,40,45,46 @ 38-46
+func_8003B5A4: reorder 38,42,39,41,43,44,40,45,46 @ 38-46
 
 # suDispMentalBar: case 1 register + scheduling fix
 # D_800A3844 ptr in $5 not $2, lbu byte moved after store sequence
-suDispMentalBar: subst "\$2" "$5" @ 61
-suDispMentalBar: subst "\$2" "$5" @ 63
-suDispMentalBar: subst ",\$2," ",$5," @ 64
-suDispMentalBar: reorder 64,65,66,63 @ 63-66
+func_8003B5A4: subst "\$2" "$5" @ 61
+func_8003B5A4: subst "\$2" "$5" @ 63
+func_8003B5A4: subst ",\$2," ",$5," @ 64
+func_8003B5A4: reorder 64,65,66,63 @ 63-66
 
 # === coli_HitPauseKatana regfix rules ===
 # 64 rules: register renames, re-reads, inline return, operand swaps
@@ -1350,138 +1350,138 @@ func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
 # saTan5TakeAnim2: 154-insn line-sphere intersection, compound regfix
 # 152 TEXT instructions (0-151) from dump_text_indices (--expand-div, .word not counted)
 # dist_sq ordering: rotate to after c_val computation
-saTan5TakeAnim2: reorder 76,77,78,75 @ 75-78
+func_8002D518: reorder 76,77,78,75 @ 75-78
 # dist_sq register a2->a1 (original idx 75 = addu $6,$8,$6)
-saTan5TakeAnim2: subst "\$6,\$8,\$6" "$5,$8,$6" @ 75
-saTan5TakeAnim2: subst "\$6," "$5," @ 80
+func_8002D518: subst "\$6,\$8,\$6" "$5,$8,$6" @ 75
+func_8002D518: subst "\$6," "$5," @ 80
 # disc register a0->a2
-saTan5TakeAnim2: subst "subu\t\$4" "subu\t$6" @ 84
-saTan5TakeAnim2: subst "\$4" "$6" @ 85
-saTan5TakeAnim2: subst ",\$4," ",$6," @ 86
+func_8002D518: subst "subu\t\$4" "subu\t$6" @ 84
+func_8002D518: subst "\$4" "$6" @ 85
+func_8002D518: subst ",\$4," ",$6," @ 86
 # result=0 in j delay slot: a2->v0
-saTan5TakeAnim2: subst "addu\t\$6" "addu\t$2" @ 88
+func_8002D518: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
-saTan5TakeAnim2: subst "nop.*" "addu\t$4,$6,$zero" @ 90
+func_8002D518: subst "nop.*" "addu\t$4,$6,$zero" @ 90
 # disc in LUT path a0->a2
-saTan5TakeAnim2: subst ",\$4" ",$6" @ 92
+func_8002D518: subst ",\$4" ",$6" @ 92
 # sqrt_val v0->a2
-saTan5TakeAnim2: subst "srl\t\$2" "srl\t$6" @ 95
+func_8002D518: subst "srl\t\$2" "srl\t$6" @ 95
 # disc in big sqrt path a0->a2
-saTan5TakeAnim2: subst "bltz\t\$4" "bltz\t$6" @ 96
+func_8002D518: subst "bltz\t\$4" "bltz\t$6" @ 96
 # sqrt_val srlv output v0->a2
-saTan5TakeAnim2: subst "srl\t\$2" "srl\t$6" @ 115
+func_8002D518: subst "srl\t\$2" "srl\t$6" @ 115
 # sqrt_val << 9: sll a1,v0 -> sll a2,a2
-saTan5TakeAnim2: subst "\$5,\$2" "$6,$6" @ 116
+func_8002D518: subst "\$5,\$2" "$6,$6" @ 116
 # denom: sll a0,a2,1 -> sll v1,a1,1
-saTan5TakeAnim2: subst "\$4,\$6" "$3,$5" @ 118
+func_8002D518: subst "\$4,\$6" "$3,$5" @ 118
 # t1_num: addu v1,v0,a1 -> addu a0,v0,a2
-saTan5TakeAnim2: subst "\$3,\$2,\$5" "$4,$2,$6" @ 119
+func_8002D518: subst "\$3,\$2,\$5" "$4,$2,$6" @ 119
 # t1_num shift: sll v1,v1,8 -> sll a0,a0,8
-saTan5TakeAnim2: subst "\$3,\$3" "$4,$4" @ 120
+func_8002D518: subst "\$3,\$3" "$4,$4" @ 120
 # reorder: denom after t1_num pair (target: addu,sll,sll vs our sll,addu,sll)
-saTan5TakeAnim2: reorder 119,120,118 @ 118-120
+func_8002D518: reorder 119,120,118 @ 118-120
 # div1 operand swap: div $zero,v1,a0 -> div $zero,a0,v1
-saTan5TakeAnim2: subst ",\$3,\$4" ",$4,$3" @ 121
+func_8002D518: subst ",\$3,\$4" ",$4,$3" @ 121
 # div1 expansion: bnez divisor a0->v1
-saTan5TakeAnim2: subst "\$4" "$3" @ 122
+func_8002D518: subst "\$4" "$3" @ 122
 # div1 expansion: bne divisor a0->v1
-saTan5TakeAnim2: subst "\$4," "$3," @ 126
+func_8002D518: subst "\$4," "$3," @ 126
 # div1 expansion: bne dividend v1->a0
-saTan5TakeAnim2: subst "\$3," "$4," @ 128
+func_8002D518: subst "\$3," "$4," @ 128
 # mflo t1_val: v1->a0
-saTan5TakeAnim2: subst "\$3" "$4" @ 131
+func_8002D518: subst "\$3" "$4" @ 131
 # subu neg_b - sq: a1->a2
-saTan5TakeAnim2: subst "\$5" "$6" @ 132
+func_8002D518: subst "\$5" "$6" @ 132
 # div2 divisor: a0->v1
-saTan5TakeAnim2: subst ",\$4" ",$3" @ 134
+func_8002D518: subst ",\$4" ",$3" @ 134
 # div2 expansion: bnez divisor a0->v1
-saTan5TakeAnim2: subst "\$4" "$3" @ 135
+func_8002D518: subst "\$4" "$3" @ 135
 # div2 expansion: bne divisor a0->v1
-saTan5TakeAnim2: subst "\$4," "$3," @ 139
+func_8002D518: subst "\$4," "$3," @ 139
 # mflo t2_val: a0->v1
-saTan5TakeAnim2: subst "\$4" "$3" @ 144
+func_8002D518: subst "\$4" "$3" @ 144
 # bltz t1_val: v1->a0
-saTan5TakeAnim2: subst "bltz\t\$3" "bltz\t$4" @ 145
+func_8002D518: subst "bltz\t\$3" "bltz\t$4" @ 145
 # result=0: a2->a1
-saTan5TakeAnim2: subst "addu\t\$6" "addu\t$5" @ 146
+func_8002D518: subst "addu\t\$6" "addu\t$5" @ 146
 # slt result,t2_val: a2,a0 -> a1,v1
-saTan5TakeAnim2: subst "\$6,\$4" "$5,$3" @ 147
+func_8002D518: subst "\$6,\$4" "$5,$3" @ 147
 # return result: a2->a1
-saTan5TakeAnim2: subst "\$6" "$5" @ 148
+func_8002D518: subst "\$6" "$5" @ 148
 
 # camera_set_zoom: delay slot fills (fix +8 bytes)
-camera_set_zoom: subst "nop" "addiu\t$2,$zero,1" @ 24
-camera_set_zoom: delete @ 25
-camera_set_zoom: subst "nop" "addiu\t$2,$zero,40" @ 27
-camera_set_zoom: delete @ 28
+func_800238C4: subst "nop" "addiu\t$2,$zero,1" @ 24
+func_800238C4: delete @ 25
+func_800238C4: subst "nop" "addiu\t$2,$zero,40" @ 27
+func_800238C4: delete @ 28
 
 # camera_set_zoom: s1<->s2 swap (out pointer <-> func result)
-camera_set_zoom: $17 <-> $18 @ 43-55
-camera_set_zoom: $17 <-> $18 @ 88-88
-camera_set_zoom: $17 <-> $18 @ 101-101
-camera_set_zoom: $17 <-> $18 @ 152-186
+func_800238C4: $17 <-> $18 @ 43-55
+func_800238C4: $17 <-> $18 @ 88-88
+func_800238C4: $17 <-> $18 @ 101-101
+func_800238C4: $17 <-> $18 @ 152-186
 
 # camera_set_zoom: first rounding $8->$3 + undo delay slot fill
-camera_set_zoom: subst "\$8" "$3" @ 74
-camera_set_zoom: subst "\$8" "$3" @ 76
-camera_set_zoom: subst "\.L[0-9]+" ".Lcam_rnd1" @ 76
-camera_set_zoom: subst "sra\t\$3,\$8,3" "nop" @ 77
-camera_set_zoom: subst "\$8" "$3" @ 78
-camera_set_zoom: subst "\$8" "$3" @ 78
-camera_set_zoom: subst "\$8" "$3" @ 79
-camera_set_zoom: insert ".Lcam_rnd1:" @ 77
+func_800238C4: subst "\$8" "$3" @ 74
+func_800238C4: subst "\$8" "$3" @ 76
+func_800238C4: subst "\.L[0-9]+" ".Lcam_rnd1" @ 76
+func_800238C4: subst "sra\t\$3,\$8,3" "nop" @ 77
+func_800238C4: subst "\$8" "$3" @ 78
+func_800238C4: subst "\$8" "$3" @ 78
+func_800238C4: subst "\$8" "$3" @ 79
+func_800238C4: insert ".Lcam_rnd1:" @ 77
 
 # camera_set_zoom: s1==0 branch dx_delta ($3->$4, $17->$4)
-camera_set_zoom: subst "\$3" "$4" @ 103
-camera_set_zoom: subst "\$17" "$4" @ 106
-camera_set_zoom: subst "\$3" "$4" @ 106
-camera_set_zoom: subst "sll\t\$4,\$17,16" "sh\t$4,72($sp)" @ 107
-camera_set_zoom: subst "sh\t\$17,72\(\$sp\)" "sll\t$4,$4,16" @ 108
-camera_set_zoom: subst "\$17" "$4" @ 111
-camera_set_zoom: subst "\$17" "$4" @ 114
-camera_set_zoom: subst "\$17" "$4" @ 117
+func_800238C4: subst "\$3" "$4" @ 103
+func_800238C4: subst "\$17" "$4" @ 106
+func_800238C4: subst "\$3" "$4" @ 106
+func_800238C4: subst "sll\t\$4,\$17,16" "sh\t$4,72($sp)" @ 107
+func_800238C4: subst "sh\t\$17,72\(\$sp\)" "sll\t$4,$4,16" @ 108
+func_800238C4: subst "\$17" "$4" @ 111
+func_800238C4: subst "\$17" "$4" @ 114
+func_800238C4: subst "\$17" "$4" @ 117
 
 # camera_set_zoom: s1==0 branch dz_delta ($19->$3)
-camera_set_zoom: subst "\$19" "$3" @ 121
-camera_set_zoom: subst "\$19" "$3" @ 123
-camera_set_zoom: subst "\$19" "$3" @ 126
+func_800238C4: subst "\$19" "$3" @ 121
+func_800238C4: subst "\$19" "$3" @ 123
+func_800238C4: subst "\$19" "$3" @ 126
 
 # camera_set_zoom: s1==0 final loads ($17->$19, $19->$18)
-camera_set_zoom: subst "\$17" "$19" @ 130
-camera_set_zoom: subst "\$19" "$18" @ 131
+func_800238C4: subst "\$17" "$19" @ 130
+func_800238C4: subst "\$19" "$18" @ 131
 
 # camera_set_zoom: else branch dx ($17->$2)
-camera_set_zoom: subst "\$17" "$2" @ 134
-camera_set_zoom: subst "\$17" "$2" @ 136
-camera_set_zoom: subst "\$17" "$2" @ 138
-camera_set_zoom: subst "\$17" "$2" @ 138
+func_800238C4: subst "\$17" "$2" @ 134
+func_800238C4: subst "\$17" "$2" @ 136
+func_800238C4: subst "\$17" "$2" @ 138
+func_800238C4: subst "\$17" "$2" @ 138
 
 # camera_set_zoom: else branch dz ($19->$3)
-camera_set_zoom: subst "\$19" "$3" @ 139
-camera_set_zoom: subst "\$19" "$3" @ 141
-camera_set_zoom: subst "\$19" "$3" @ 143
-camera_set_zoom: subst "\$19" "$3" @ 143
+func_800238C4: subst "\$19" "$3" @ 139
+func_800238C4: subst "\$19" "$3" @ 141
+func_800238C4: subst "\$19" "$3" @ 143
+func_800238C4: subst "\$19" "$3" @ 143
 
 # camera_set_zoom: else branch sra dest/src splits
-camera_set_zoom: subst "\$17" "$19" @ 142
-camera_set_zoom: subst "\$17" "$2" @ 142
-camera_set_zoom: subst "\$19" "$18" @ 144
-camera_set_zoom: subst "\$19" "$3" @ 144
+func_800238C4: subst "\$17" "$19" @ 142
+func_800238C4: subst "\$17" "$2" @ 142
+func_800238C4: subst "\$19" "$18" @ 144
+func_800238C4: subst "\$19" "$3" @ 144
 
 # camera_set_zoom: v0<->v1 swap for pointer deref block
-camera_set_zoom: $2 <-> $3 @ 181-184
+func_800238C4: $2 <-> $3 @ 181-184
 
 # camera_set_zoom: D_800A3758 section (reorder lhu/sb + register fix)
-camera_set_zoom: subst "sb\t\$2,D_800A3769" "lhu\t$3,4($16)" @ 187
-camera_set_zoom: subst "lhu\t\$2,4\(\$16\)" "sb\t$2,D_800A3769" @ 188
-camera_set_zoom: subst "\$2" "$3" @ 189
+func_800238C4: subst "sb\t\$2,D_800A3769" "lhu\t$3,4($16)" @ 187
+func_800238C4: subst "lhu\t\$2,4\(\$16\)" "sb\t$2,D_800A3769" @ 188
+func_800238C4: subst "\$2" "$3" @ 189
 
 # camera_set_zoom: final adds dx/dz register fix
-camera_set_zoom: subst "\$17" "$19" @ 206
-camera_set_zoom: subst "\$19" "$18" @ 207
+func_800238C4: subst "\$17" "$19" @ 206
+func_800238C4: subst "\$19" "$18" @ 207
 
 # DispSleepMenuTex: insert va_start home store for first_arg
-DispSleepMenuTex: insert "sw	$21,1340($29)" @ 19
+func_8003D52C: insert "sw	$21,1340($29)" @ 19
 
 # Register swaps (Phase 1)
 # Substs (Phase 1.5, original indices)
@@ -1646,25 +1646,25 @@ main: subst "\.L\d+" ".Linner" @ 169
 # Reorders (post-insert indices)
 
 # efc_rob_set_type_flash: type==0x12 branch — lw/addu use v0 not s2
-efc_rob_set_type_flash: subst "\$18" "$2" @ 111
-efc_rob_set_type_flash: subst "\$18,\$18" "$18,$2" @ 113
+func_80044800: subst "\$18" "$2" @ 111
+func_80044800: subst "\$18,\$18" "$18,$2" @ 113
 # efc_rob_set_type_flash: prologue — content swap, pseudo conversions, insert, reorder
-efc_rob_set_type_flash: subst "lh" "subu" @ 0
-efc_rob_set_type_flash: subst "\$2,D_800A9CFE" "$sp,$sp,104" @ 0
-efc_rob_set_type_flash: subst "subu" "lh" @ 1
-efc_rob_set_type_flash: subst "\$sp,\$sp,104" "$2,D_800A9CFE" @ 1
-efc_rob_set_type_flash: subst "lw" "la" @ 3
-efc_rob_set_type_flash: subst "\$18" "$3" @ 3
-efc_rob_set_type_flash: subst "la" "addiu" @ 14
-efc_rob_set_type_flash: subst "D_800A9D04-10" "$3,-10" @ 14
+func_80044800: subst "lh" "subu" @ 0
+func_80044800: subst "\$2,D_800A9CFE" "$sp,$sp,104" @ 0
+func_80044800: subst "subu" "lh" @ 1
+func_80044800: subst "\$sp,\$sp,104" "$2,D_800A9CFE" @ 1
+func_80044800: subst "lw" "la" @ 3
+func_80044800: subst "\$18" "$3" @ 3
+func_80044800: subst "la" "addiu" @ 14
+func_80044800: subst "D_800A9D04-10" "$3,-10" @ 14
 # Delete loop tail nop (original idx 180) — compiled has 205 binary, target 204
-efc_rob_set_type_flash: delete @ 180
+func_80044800: delete @ 180
 # Insert lw s2,0(v1) before sw s0 (original idx 13)
-efc_rob_set_type_flash: insert "lw\t$18,0($3)" @ 13
+func_80044800: insert "lw\t$18,0($3)" @ 13
 # Prologue reorder (post-insert indices: insert at 13 shifts 13+ by +1)
-efc_rob_set_type_flash: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 @ 1-19
+func_80044800: reorder 9,1,3,4,5,6,7,8,10,2,11,14,13,12,18,15,19,16,17 @ 1-19
 # Loop tail reorder (post-delete+insert: obj=178, i++=179, lh=180 → obj,lh,i++)
-efc_rob_set_type_flash: reorder 178,180,179 @ 178-180
+func_80044800: reorder 178,180,179 @ 178-180
 
 # func_800460E4: 3-way register rotation ($17->$18, $18->$19, $19->$17)
 # Two swaps on body only (exclude prologue 0-14 and epilogue 227+)
@@ -1728,75 +1728,75 @@ func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165
 
 # mk_leaf_newpos: 176-insn leaf spawner — compound regfix (LICM unhoist + reg swap + delay slot fills)
 # Phase 1: s0<->s1 swap for loop 1 (slot/cat register assignment)
-mk_leaf_newpos: $16 <-> $17 @ 1-71
+func_800335D8: $16 <-> $17 @ 1-71
 # Phase 1: s0<->s4 swap for loop 2 setup (base load direction)
-mk_leaf_newpos: $16 <-> $20 @ 77-78
+func_800335D8: $16 <-> $20 @ 77-78
 # Phase 1.5: Fix save offsets after s0<->s1 swap (s0@0x10, s1@0x14)
-mk_leaf_newpos: subst "sw\t\$16,20" "sw\t$16,16" @ 1
-mk_leaf_newpos: subst "sw\t\$17,16" "sw\t$17,20" @ 13
+func_800335D8: subst "sw\t\$16,20" "sw\t$16,16" @ 1
+func_800335D8: subst "sw\t\$17,16" "sw\t$17,20" @ 13
 # Phase 1.5: Fill load delay with li v0,1 (replaces nop after lbu in loop 1)
-mk_leaf_newpos: subst "nop" "addiu\t$2,$zero,1" @ 24
+func_800335D8: subst "nop" "addiu\t$2,$zero,1" @ 24
 # Phase 1.5: bne uses v0(=1) not s5 for comparison
-mk_leaf_newpos: subst "\$21" "$2" @ 25
+func_800335D8: subst "\$21" "$2" @ 25
 # Phase 1.5: Fill j delay slot (cur==1 path) with move a1,s2
-mk_leaf_newpos: subst "nop" "addu\t$5,$18,$zero" @ 31
+func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 31
 # Phase 1.5: Fill bne delay slot (EBFC path) with move a1,s2
-mk_leaf_newpos: subst "nop" "addu\t$5,$18,$zero" @ 37
+func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 37
 # Phase 1.5: EBFC EBF4 lookup — lbu v0->a0
-mk_leaf_newpos: subst "\$2,%lo" "$4,%lo" @ 40
+func_800335D8: subst "\$2,%lo" "$4,%lo" @ 40
 # Phase 1.5: EBFC EBF4 lookup — addu source v0->a0
-mk_leaf_newpos: subst "\$2," "$4," @ 42
+func_800335D8: subst "\$2," "$4," @ 42
 # Phase 1.5: EBFD EBF4 lookup — lbu v0->a0
-mk_leaf_newpos: subst "\$2,%lo" "$4,%lo" @ 51
+func_800335D8: subst "\$2,%lo" "$4,%lo" @ 51
 # Phase 1.5: EBFD EBF4 lookup — addu source v0->a0
-mk_leaf_newpos: subst "\$2," "$4," @ 53
+func_800335D8: subst "\$2," "$4," @ 53
 # Phase 1.5: Clear jal delay slot (move a1,s2 distributed to j/bne delay slots)
-mk_leaf_newpos: subst "addu\t\$5,\$18,\$zero" "nop" @ 55
+func_800335D8: subst "addu\t\$5,\$18,\$zero" "nop" @ 55
 # Phase 1.5: Loop 1 tail — slt uses v0 not s4 (LICM unhoist)
-mk_leaf_newpos: subst "\$20" "$2" @ 69
+func_800335D8: subst "\$20" "$2" @ 69
 # Phase 1.5: Between-loops beq delay slot — li s5,1 instead of data=tbl+1
-mk_leaf_newpos: subst "addu\t\$18,\$19,1" "addiu\t$21,$zero,1" @ 75
+func_800335D8: subst "addu\t\$18,\$19,1" "addiu\t$21,$zero,1" @ 75
 # Phase 2: Delete LICM hoists from prologue
-mk_leaf_newpos: delete @ 6
-mk_leaf_newpos: delete @ 8
+func_800335D8: delete @ 6
+func_800335D8: delete @ 8
 # Phase 3: Insert inline D_800A391E materialization in loop 1 tail (post-delete idx 67)
-mk_leaf_newpos: insert "la $2,D_800A391E" @ 67
+func_800335D8: insert "la $2,D_800A391E" @ 67
 # Phase 3.5: Insert data=tbl+1 after between-loops delay slot (post-insert idx 74)
-mk_leaf_newpos: insert_after "addu\t$18,$19,1" @ 74
+func_800335D8: insert_after "addu\t$18,$19,1" @ 74
 # Phase 4: Reorder prologue saves — move sw s5,s4 after sw ra (post-delete idx 5-9)
-mk_leaf_newpos: reorder 7,8,9,5,6 @ 5-9
+func_800335D8: reorder 7,8,9,5,6 @ 5-9
 
 # mk_leaf_newpos Phase 5: Loop 2 type register swap (a1->v1)
-mk_leaf_newpos: $5 <-> $3 @ 81-97
-mk_leaf_newpos: $5 <-> $3 @ 136-142
+func_800335D8: $5 <-> $3 @ 81-97
+func_800335D8: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
-mk_leaf_newpos: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
+func_800335D8: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
 # .L631 is a CROSS-FUNCTION reference (label in a different function in
 # code6cac_b.c). `{lbl#N}` is function-local; cross-function refs cannot
 # use it — leave as-is, Phase 2b notes.
-mk_leaf_newpos: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
-mk_leaf_newpos: subst "beq\t\$3,\$2,\.L\d+" "andi\t$6,$2,0x03ff" @ 84
+func_800335D8: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
+func_800335D8: subst "beq\t\$3,\$2,\.L\d+" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
-mk_leaf_newpos: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
+func_800335D8: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
-mk_leaf_newpos: subst "lhu\t\$3" "lhu\t$2" @ 98
-mk_leaf_newpos: subst "sll\t\$6,\$2" "sll\t$5,$3" @ 99
-mk_leaf_newpos: subst "addu\t\$3,\$3,1" "addu\t$2,$2,1" @ 100
-mk_leaf_newpos: subst "sh\t\$3" "sh\t$2" @ 101
-mk_leaf_newpos: subst "sll\t\$3,\$3,16" "sll\t$2,$2,16" @ 102
+func_800335D8: subst "lhu\t\$3" "lhu\t$2" @ 98
+func_800335D8: subst "sll\t\$6,\$2" "sll\t$5,$3" @ 99
+func_800335D8: subst "addu\t\$3,\$3,1" "addu\t$2,$2,1" @ 100
+func_800335D8: subst "sh\t\$3" "sh\t$2" @ 101
+func_800335D8: subst "sll\t\$3,\$3,16" "sll\t$2,$2,16" @ 102
 # Phase 5: adj2 register a2->a1
-mk_leaf_newpos: subst ",\$6" ",$5" @ 104
-mk_leaf_newpos: subst ",\$6" ",$5" @ 114
+func_800335D8: subst ",\$6" ",$5" @ 104
+func_800335D8: subst ",\$6" ",$5" @ 114
 # Phase 5: thresh/scount/limit register rotation
-mk_leaf_newpos: subst "lbu\t\$4," "lbu\t$3," @ 105
-mk_leaf_newpos: subst "sra\t\$3,\$3,16" "sra\t$4,$2,16" @ 106
-mk_leaf_newpos: subst ",\$4," ",$3," @ 107
-mk_leaf_newpos: subst ",\$4" ",$3" @ 108
-mk_leaf_newpos: subst "sll\t\$5" "sll\t$3" @ 109
-mk_leaf_newpos: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
-mk_leaf_newpos: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
+func_800335D8: subst "lbu\t\$4," "lbu\t$3," @ 105
+func_800335D8: subst "sra\t\$3,\$3,16" "sra\t$4,$2,16" @ 106
+func_800335D8: subst ",\$4," ",$3," @ 107
+func_800335D8: subst ",\$4" ",$3" @ 108
+func_800335D8: subst "sll\t\$5" "sll\t$3" @ 109
+func_800335D8: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
+func_800335D8: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
 # Phase 5: rnd register a3->a2
-mk_leaf_newpos: subst "\$7,\$3" "$6,$3" @ 132
+func_800335D8: subst "\$7,\$3" "$6,$3" @ 132
 
 # marionation_camera_Exec: 155-insn GTE camera — compound regfix
 # INDICES: .word lines are NOT counted by regfix.py (they start with '.')
@@ -1805,113 +1805,113 @@ mk_leaf_newpos: subst "\$7,\$3" "$6,$3" @ 132
 
 # === Section A: First scratchpad stores (lui+ori+sw→lui+sw(offset)) ===
 # Store dx to 0x1F800024
-marionation_camera_Exec: subst "lui\t\$3" "lui\t$1" @ 15
-marionation_camera_Exec: delete @ 16
-marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0024($1)" @ 17
+func_80018094: subst "lui\t\$3" "lui\t$1" @ 15
+func_80018094: delete @ 16
+func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0024($1)" @ 17
 # Store dy to 0x1F800028
-marionation_camera_Exec: subst "lui\t\$3" "lui\t$1" @ 25
-marionation_camera_Exec: delete @ 26
-marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0028($1)" @ 27
+func_80018094: subst "lui\t\$3" "lui\t$1" @ 25
+func_80018094: delete @ 26
+func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x0028($1)" @ 27
 # Store dz to 0x1F80002C
-marionation_camera_Exec: subst "lui\t\$2" "lui\t$1" @ 39
-marionation_camera_Exec: delete @ 40
-marionation_camera_Exec: subst "sw\t\$3,0\(\$2\)" "sw\t$2,0x002c($1)" @ 41
+func_80018094: subst "lui\t\$2" "lui\t$1" @ 39
+func_80018094: delete @ 40
+func_80018094: subst "sw\t\$3,0\(\$2\)" "sw\t$2,0x002c($1)" @ 41
 
 # === Section B: Third iteration load reorder + register fix ===
-marionation_camera_Exec: subst "lw\t\$3,28" "lw\t$2,28" @ 30
-marionation_camera_Exec: subst "lw\t\$2,48" "lw\t$3,48" @ 31
-marionation_camera_Exec: delete @ 29
-marionation_camera_Exec: reorder 28,27 @ 27-28
+func_80018094: subst "lw\t\$3,28" "lw\t$2,28" @ 30
+func_80018094: subst "lw\t\$2,48" "lw\t$3,48" @ 31
+func_80018094: delete @ 29
+func_80018094: reorder 28,27 @ 27-28
 # Fix third iteration registers
-marionation_camera_Exec: subst "mflo\t\$5" "mflo\t$4" @ 32
-marionation_camera_Exec: subst "subu\t\$3,\$3,\$2" "subu\t$2,$2,$3" @ 33
-marionation_camera_Exec: subst "mult\t\$3,\$3" "mult\t$2,$2" @ 35
+func_80018094: subst "mflo\t\$5" "mflo\t$4" @ 32
+func_80018094: subst "subu\t\$3,\$3,\$2" "subu\t$2,$2,$3" @ 33
+func_80018094: subst "mult\t\$3,\$3" "mult\t$2,$2" @ 35
 
 # === Section C: 250000 constant register ($4→$3) ===
-marionation_camera_Exec: subst "lui\t\$4" "lui\t$3" @ 37
-marionation_camera_Exec: subst "ori\t\$4,\$4" "ori\t$3,$3" @ 38
-marionation_camera_Exec: subst "slt\t\$4,\$4" "slt\t$3,$3" @ 45
-marionation_camera_Exec: subst "bne\t\$4" "bne\t$3" @ 46
+func_80018094: subst "lui\t\$4" "lui\t$3" @ 37
+func_80018094: subst "ori\t\$4,\$4" "ori\t$3,$3" @ 38
+func_80018094: subst "slt\t\$4,\$4" "slt\t$3,$3" @ 45
+func_80018094: subst "bne\t\$4" "bne\t$3" @ 46
 
 # === Section D: dx²/dy²/dz² accumulator registers ===
-marionation_camera_Exec: subst "mflo\t\$7" "mflo\t$5" @ 21
-marionation_camera_Exec: subst "addu\t\$2,\$7,\$5" "addu\t$2,$5,$4" @ 42
-marionation_camera_Exec: subst "mflo\t\$8" "mflo\t$7" @ 43
-marionation_camera_Exec: subst "addu\t\$5,\$2,\$8" "addu\t$5,$2,$7" @ 44
+func_80018094: subst "mflo\t\$7" "mflo\t$5" @ 21
+func_80018094: subst "addu\t\$2,\$7,\$5" "addu\t$2,$5,$4" @ 42
+func_80018094: subst "mflo\t\$8" "mflo\t$7" @ 43
+func_80018094: subst "addu\t\$5,\$2,\$8" "addu\t$5,$2,$7" @ 44
 
 # === Section E: Delay slot fills ===
 # bnez delay slot: move addiu scale to delay slot
-marionation_camera_Exec: delete @ 36
-marionation_camera_Exec: subst "nop" "addiu\t$3,$zero,256" @ 47
+func_80018094: delete @ 36
+func_80018094: subst "nop" "addiu\t$3,$zero,256" @ 47
 # beqz delay slot: fill with move a0,a1
-marionation_camera_Exec: subst "nop" "addu\t$4,$5,$zero" @ 53
+func_80018094: subst "nop" "addu\t$4,$5,$zero" @ 53
 # scale=0 register ($6→$3)
-marionation_camera_Exec: subst "addu\t\$6,\$0,\$zero" "addu\t$3,$0,$zero" @ 51
+func_80018094: subst "addu\t\$6,\$0,\$zero" "addu\t$3,$0,$zero" @ 51
 
 # === Section F: log2/scale register cascade ===
-marionation_camera_Exec: subst "srl\t\$3" "srl\t$5" @ 58
-marionation_camera_Exec: subst "addu\t\$12,\$5" "addu\t$12,$4" @ 59
-marionation_camera_Exec: subst "sra\t\$3,\$4" "sra\t$5,$4" @ 77
-marionation_camera_Exec: subst "sll\t\$3,\$3,6" "sll\t$3,$5,6" @ 80
-marionation_camera_Exec: subst "mfhi\t\$9" "mfhi\t$6" @ 83
-marionation_camera_Exec: subst "sra\t\$2,\$9" "sra\t$2,$6" @ 84
-marionation_camera_Exec: subst "addu\t\$6,\$2" "addu\t$3,$2" @ 86
+func_80018094: subst "srl\t\$3" "srl\t$5" @ 58
+func_80018094: subst "addu\t\$12,\$5" "addu\t$12,$4" @ 59
+func_80018094: subst "sra\t\$3,\$4" "sra\t$5,$4" @ 77
+func_80018094: subst "sll\t\$3,\$3,6" "sll\t$3,$5,6" @ 80
+func_80018094: subst "mfhi\t\$9" "mfhi\t$6" @ 83
+func_80018094: subst "sra\t\$2,\$9" "sra\t$2,$6" @ 84
+func_80018094: subst "addu\t\$6,\$2" "addu\t$3,$2" @ 86
 
 # === Section F2: GTE sqrt scheduling — move addiu $sp after mtc2+nops (post-delete) ===
-marionation_camera_Exec: reorder 56,57,55 @ 55-57
+func_80018094: reorder 56,57,55 @ 55-57
 
 # === Section G: Second scratchpad reads (lui+ori+lw(0)→lui+lw(offset)) ===
 # Read 1 (0x1F800024)
-marionation_camera_Exec: subst "lui\t\$5" "lui\t$2" @ 87
-marionation_camera_Exec: delete @ 88
-marionation_camera_Exec: subst "lw\t\$2,0\(\$5\)" "lw\t$2,0x0024($2)" @ 89
-marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 91
+func_80018094: subst "lui\t\$5" "lui\t$2" @ 87
+func_80018094: delete @ 88
+func_80018094: subst "lw\t\$2,0\(\$5\)" "lw\t$2,0x0024($2)" @ 89
+func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 91
 # Read 2 (0x1F800028)
-marionation_camera_Exec: subst "lui\t\$4" "lui\t$2" @ 92
-marionation_camera_Exec: delete @ 93
-marionation_camera_Exec: subst "mflo\t\$8" "mflo\t$7" @ 94
-marionation_camera_Exec: subst "lw\t\$2,0\(\$4\)" "lw\t$2,0x0028($2)" @ 95
-marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 97
+func_80018094: subst "lui\t\$4" "lui\t$2" @ 92
+func_80018094: delete @ 93
+func_80018094: subst "mflo\t\$8" "mflo\t$7" @ 94
+func_80018094: subst "lw\t\$2,0\(\$4\)" "lw\t$2,0x0028($2)" @ 95
+func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 97
 # Read 3 (0x1F80002C)
-marionation_camera_Exec: subst "lui\t\$3" "lui\t$2" @ 98
-marionation_camera_Exec: delete @ 99
-marionation_camera_Exec: subst "mflo\t\$7" "mflo\t$4" @ 100
-marionation_camera_Exec: subst "lw\t\$2,0\(\$3\)" "lw\t$2,0x002c($2)" @ 101
-marionation_camera_Exec: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 103
+func_80018094: subst "lui\t\$3" "lui\t$2" @ 98
+func_80018094: delete @ 99
+func_80018094: subst "mflo\t\$7" "mflo\t$4" @ 100
+func_80018094: subst "lw\t\$2,0\(\$3\)" "lw\t$2,0x002c($2)" @ 101
+func_80018094: subst "mult\t\$2,\$6" "mult\t$2,$3" @ 103
 
 # === Section H: Reorder mflo/lui in second scratchpad reads (post-delete indices) ===
-marionation_camera_Exec: reorder 87,86 @ 86-87
-marionation_camera_Exec: reorder 92,91 @ 91-92
+func_80018094: reorder 87,86 @ 86-87
+func_80018094: reorder 92,91 @ 91-92
 
 # === Section I: Second scratchpad stores (insert lui $at + convert sw) ===
-marionation_camera_Exec: subst "sra\t\$2,\$8" "sra\t$2,$7" @ 104
-marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 97
-marionation_camera_Exec: subst "sw\t\$2,0\(\$5\)" "sw\t$2,0x0024($1)" @ 105
-marionation_camera_Exec: subst "sra\t\$2,\$7" "sra\t$2,$4" @ 106
-marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 99
-marionation_camera_Exec: subst "sw\t\$2,0\(\$4\)" "sw\t$2,0x0028($1)" @ 107
-marionation_camera_Exec: subst "mflo\t\$10" "mflo\t$3" @ 108
-marionation_camera_Exec: subst "sra\t\$2,\$10" "sra\t$2,$3" @ 109
-marionation_camera_Exec: insert "lui\t$1,0x1f80" @ 102
-marionation_camera_Exec: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x002c($1)" @ 110
+func_80018094: subst "sra\t\$2,\$8" "sra\t$2,$7" @ 104
+func_80018094: insert "lui\t$1,0x1f80" @ 97
+func_80018094: subst "sw\t\$2,0\(\$5\)" "sw\t$2,0x0024($1)" @ 105
+func_80018094: subst "sra\t\$2,\$7" "sra\t$2,$4" @ 106
+func_80018094: insert "lui\t$1,0x1f80" @ 99
+func_80018094: subst "sw\t\$2,0\(\$4\)" "sw\t$2,0x0028($1)" @ 107
+func_80018094: subst "mflo\t\$10" "mflo\t$3" @ 108
+func_80018094: subst "sra\t\$2,\$10" "sra\t$2,$3" @ 109
+func_80018094: insert "lui\t$1,0x1f80" @ 102
+func_80018094: subst "sw\t\$2,0\(\$3\)" "sw\t$2,0x002c($1)" @ 110
 
 # === Section J: Struct copy (register rotation + base register + delay slot) ===
 # Rotate load/store data registers: $4→$5, $5→$6, $6→$7
-marionation_camera_Exec: $6 <-> $7 @ 114-128
-marionation_camera_Exec: $5 <-> $6 @ 114-128
-marionation_camera_Exec: $4 <-> $5 @ 114-128
+func_80018094: $6 <-> $7 @ 114-128
+func_80018094: $5 <-> $6 @ 114-128
+func_80018094: $4 <-> $5 @ 114-128
 # Move "move a0,s1" from jal delay slot to before struct loads
-marionation_camera_Exec: subst "nop" "addu\t$4,$17,$zero" @ 112
-marionation_camera_Exec: subst "addu\t\$4,\$17,\$zero" "nop" @ 130
+func_80018094: subst "nop" "addu\t$4,$17,$zero" @ 112
+func_80018094: subst "addu\t\$4,\$17,\$zero" "nop" @ 130
 # Change store base from s1($17) to a0($4)
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 117
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 118
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 119
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 120
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 125
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 126
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 127
-marionation_camera_Exec: subst "\$17\)" "$4)" @ 128
+func_80018094: subst "\$17\)" "$4)" @ 117
+func_80018094: subst "\$17\)" "$4)" @ 118
+func_80018094: subst "\$17\)" "$4)" @ 119
+func_80018094: subst "\$17\)" "$4)" @ 120
+func_80018094: subst "\$17\)" "$4)" @ 125
+func_80018094: subst "\$17\)" "$4)" @ 126
+func_80018094: subst "\$17\)" "$4)" @ 127
+func_80018094: subst "\$17\)" "$4)" @ 128
 
 # func_80040D48: register swaps s5/s6
 func_80040D48: $21 <-> $22 @ 15-15
@@ -2031,7 +2031,7 @@ func_8008BB24: reorder 47,46 @ 46-47
 func_8008BB24: reorder 62,61 @ 61-62
 
 # motion_SetMotion: anti-cross-jump fix
-motion_SetMotion: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
+func_80038C70: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 
 # === SUBSTS (ORIGINAL indices) ===
 
@@ -2253,131 +2253,131 @@ func_8002C61C: reorder 225,227,226 @ 225-227
 
 # === GTE block: 1-insn addiu->2-insn addiu+addu pattern (+3 insns) ===
 # idx 26: change addu t4,s0,248 to nop (moved to after sh)
-saTan0KiWareMoveA: subst "addu\t\$12,\$16,248" "nop" @ 26
+func_8002D780: subst "addu\t\$12,\$16,248" "nop" @ 26
 # idx 33: change opcode/dest for 2-insn pattern
-saTan0KiWareMoveA: subst "addu\t\$12,\$16,256" "addiu\t$2,$16,256" @ 33
+func_8002D780: subst "addu\t\$12,\$16,256" "addiu\t$2,$16,256" @ 33
 # insert_after idx 28 (post-delete): addiu+addu for 0xF8 address (reversed file order)
-saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 28
-saTan0KiWareMoveA: insert_after "addiu\t$2,$16,248" @ 28
+func_8002D780: insert_after "addu\t$12,$2,$zero" @ 28
+func_8002D780: insert_after "addiu\t$2,$16,248" @ 28
 # insert_after idx 33 (post-delete): addu for 0x100 address
-saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 33
+func_8002D780: insert_after "addu\t$12,$2,$zero" @ 33
 
 # === Triangle test 1st cross product: 5-way register cycle + deferred cz ===
 # Register mapping: x0($8->$9), z0($6->$7), z2($7->$8), cx($9->$10),
 #   cz_raw($4->$6), sum_x($3->$2), sum_z($2->$3),
 #   z0*px($3->$4), x0*pz($17->$2), x0*cz($2->$17)
-saTan0KiWareMoveA: subst "\$8" "$9" @ 44
-saTan0KiWareMoveA: subst "\$3" "$2" @ 47
-saTan0KiWareMoveA: subst "\$8" "$9" @ 47
-saTan0KiWareMoveA: subst "\$3" "$2" @ 48
-saTan0KiWareMoveA: subst "\$6" "$7" @ 49
-saTan0KiWareMoveA: subst "\$7" "$8" @ 50
-saTan0KiWareMoveA: subst "\$9" "$10" @ 51
+func_8002D780: subst "\$8" "$9" @ 44
+func_8002D780: subst "\$3" "$2" @ 47
+func_8002D780: subst "\$8" "$9" @ 47
+func_8002D780: subst "\$3" "$2" @ 48
+func_8002D780: subst "\$6" "$7" @ 49
+func_8002D780: subst "\$7" "$8" @ 50
+func_8002D780: subst "\$9" "$10" @ 51
 # idx 52: cycle $2->$3, $6->$7, $7->$8 - full-instruction subst
-saTan0KiWareMoveA: subst "addu\t\$2,\$6,\$7" "addu\t$3,$7,$8" @ 52
-saTan0KiWareMoveA: subst "\$2" "$3" @ 54
-saTan0KiWareMoveA: subst "\$4" "$6" @ 55
+func_8002D780: subst "addu\t\$2,\$6,\$7" "addu\t$3,$7,$8" @ 52
+func_8002D780: subst "\$2" "$3" @ 54
+func_8002D780: subst "\$4" "$6" @ 55
 # idx 56: sra $3,$3,31 -> sra $2,$2,31 (two $3 occurrences)
-saTan0KiWareMoveA: subst "\$3" "$2" @ 56
-saTan0KiWareMoveA: subst "\$3" "$2" @ 56
+func_8002D780: subst "\$3" "$2" @ 56
+func_8002D780: subst "\$3" "$2" @ 56
 # idx 57: subu $9,$9,$3 -> subu $10,$10,$2 (two $9 + one $3)
-saTan0KiWareMoveA: subst "\$9" "$10" @ 57
-saTan0KiWareMoveA: subst "\$9" "$10" @ 57
-saTan0KiWareMoveA: subst "\$3" "$2" @ 57
-saTan0KiWareMoveA: subst "\$6" "$7" @ 58
-saTan0KiWareMoveA: subst "\$9" "$10" @ 58
+func_8002D780: subst "\$9" "$10" @ 57
+func_8002D780: subst "\$9" "$10" @ 57
+func_8002D780: subst "\$3" "$2" @ 57
+func_8002D780: subst "\$6" "$7" @ 58
+func_8002D780: subst "\$9" "$10" @ 58
 # idx 60: sra $2,$2,31 -> sra $3,$3,31 (deferred to after loads, two $2 occurrences)
-saTan0KiWareMoveA: subst "\$2" "$3" @ 60
-saTan0KiWareMoveA: subst "\$2" "$3" @ 60
+func_8002D780: subst "\$2" "$3" @ 60
+func_8002D780: subst "\$2" "$3" @ 60
 # idx 61: subu $10,$4,$2 -> subu $6,$6,$3 (both $10,$4 map to $6)
-saTan0KiWareMoveA: subst "subu\t\$10,\$4,\$2" "subu\t$6,$6,$3" @ 61
+func_8002D780: subst "subu\t\$10,\$4,\$2" "subu\t$6,$6,$3" @ 61
 # idx 62: mult $8,$10 -> mult $9,$6 (x0*cz)
-saTan0KiWareMoveA: subst "\$8" "$9" @ 62
-saTan0KiWareMoveA: subst "\$10" "$6" @ 62
+func_8002D780: subst "\$8" "$9" @ 62
+func_8002D780: subst "\$10" "$6" @ 62
 # idx 63: mflo $2 -> mflo $17 (x0*cz result)
-saTan0KiWareMoveA: subst "\$2" "$17" @ 63
+func_8002D780: subst "\$2" "$17" @ 63
 # idx 66: mult $6,$11 -> mult $7,$11 (z0*px)
-saTan0KiWareMoveA: subst "\$6" "$7" @ 66
+func_8002D780: subst "\$6" "$7" @ 66
 # idx 67: mflo $3 -> mflo $4 (z0*px result)
-saTan0KiWareMoveA: subst "\$3" "$4" @ 67
+func_8002D780: subst "\$3" "$4" @ 67
 # idx 70: mult $8,$12 -> mult $9,$12 (x0*pz)
-saTan0KiWareMoveA: subst "\$8" "$9" @ 70
+func_8002D780: subst "\$8" "$9" @ 70
 # idx 71: subu $2,$14,$2 -> subu $2,$14,$17 (cross_c, second $2 only)
-saTan0KiWareMoveA: subst "subu\t\$2,\$14,\$2" "subu\t$2,$14,$17" @ 71
+func_8002D780: subst "subu\t\$2,\$14,\$2" "subu\t$2,$14,$17" @ 71
 # idx 72: mflo $17 -> mflo $2 (x0*pz result)
-saTan0KiWareMoveA: subst "\$17" "$2" @ 72
+func_8002D780: subst "\$17" "$2" @ 72
 # idx 73: subu $3,$3,$17 -> subu $3,$4,$2 (cross_p)
-saTan0KiWareMoveA: subst "subu\t\$3,\$3,\$17" "subu\t$3,$4,$2" @ 73
+func_8002D780: subst "subu\t\$3,\$3,\$17" "subu\t$3,$4,$2" @ 73
 # idx 76: mult $7,$9 -> mult $8,$10 (z2*cx delay slot)
-saTan0KiWareMoveA: subst "\$7" "$8" @ 76
-saTan0KiWareMoveA: subst "\$9" "$10" @ 76
+func_8002D780: subst "\$7" "$8" @ 76
+func_8002D780: subst "\$9" "$10" @ 76
 
 # === Triangle test 2nd cross product: register substs ===
 # idx 80: mult $13,$10 -> mult $13,$6 (x2*cz, cz=$10->$6)
-saTan0KiWareMoveA: subst "\$10" "$6" @ 80
+func_8002D780: subst "\$10" "$6" @ 80
 # idx 84: mult $7,$11 -> mult $8,$11 (z2*px, z2=$7->$8)
-saTan0KiWareMoveA: subst "\$7" "$8" @ 84
+func_8002D780: subst "\$7" "$8" @ 84
 # idx 90: mflo $14 -> mflo $17 (x2*pz result)
-saTan0KiWareMoveA: subst "\$14" "$17" @ 90
+func_8002D780: subst "\$14" "$17" @ 90
 # idx 91: subu $3,$3,$14 -> subu $3,$3,$17 (cross_p)
-saTan0KiWareMoveA: subst "\$14" "$17" @ 91
+func_8002D780: subst "\$14" "$17" @ 91
 
 # === Triangle test 3rd cross product: register substs ===
 # idx 94: subu $4,$7,$6 -> subu $4,$8,$7 (dz, cycle: $7->$8, $6->$7)
-saTan0KiWareMoveA: subst "\$7" "$8" @ 94
-saTan0KiWareMoveA: subst "\$6" "$7" @ 94
+func_8002D780: subst "\$7" "$8" @ 94
+func_8002D780: subst "\$6" "$7" @ 94
 # idx 95: subu $2,$9,$8 -> subu $2,$10,$9 (cx-x0)
-saTan0KiWareMoveA: subst "\$9" "$10" @ 95
-saTan0KiWareMoveA: subst "\$8" "$9" @ 95
+func_8002D780: subst "\$9" "$10" @ 95
+func_8002D780: subst "\$8" "$9" @ 95
 # idx 97: mflo $9 -> mflo $8
-saTan0KiWareMoveA: subst "\$9" "$8" @ 97
+func_8002D780: subst "\$9" "$8" @ 97
 # idx 98: subu $3,$13,$8 -> subu $3,$13,$9 (dx=x2-x0)
-saTan0KiWareMoveA: subst "\$8" "$9" @ 98
+func_8002D780: subst "\$8" "$9" @ 98
 # idx 99: subu $2,$10,$6 -> subu $2,$6,$7 (cz-z0, cycle)
-saTan0KiWareMoveA: subst "subu\t\$2,\$10,\$6" "subu\t$2,$6,$7" @ 99
+func_8002D780: subst "subu\t\$2,\$10,\$6" "subu\t$2,$6,$7" @ 99
 # idx 101: mflo $7 -> mflo $6
-saTan0KiWareMoveA: subst "\$7" "$6" @ 101
+func_8002D780: subst "\$7" "$6" @ 101
 # idx 102: subu $2,$11,$8 -> subu $2,$11,$9 (px-x0)
-saTan0KiWareMoveA: subst "\$8" "$9" @ 102
+func_8002D780: subst "\$8" "$9" @ 102
 # idx 106: subu $2,$12,$6 -> subu $2,$12,$7 (pz-z0)
-saTan0KiWareMoveA: subst "\$6" "$7" @ 106
+func_8002D780: subst "\$6" "$7" @ 106
 # idx 109: subu $2,$9,$7 -> subu $2,$8,$6 (cross_c sub)
-saTan0KiWareMoveA: subst "\$9" "$8" @ 109
-saTan0KiWareMoveA: subst "\$7" "$6" @ 109
+func_8002D780: subst "\$9" "$8" @ 109
+func_8002D780: subst "\$7" "$6" @ 109
 
 # === Sqrt block: mflo reg, delay slot fill, sp address pattern (+1 insn) ===
 # idx 118: mflo $15 -> mflo $24 ($t7->$t8)
-saTan0KiWareMoveA: subst "\$15" "$24" @ 118
+func_8002D780: subst "\$15" "$24" @ 118
 # idx 119: subu $17,$5,$15 -> subu $17,$5,$24
-saTan0KiWareMoveA: subst "\$15" "$24" @ 119
+func_8002D780: subst "\$15" "$24" @ 119
 # idx 122: fill beq delay slot: nop -> addu $4,$17,$zero
-saTan0KiWareMoveA: subst "nop" "addu\t$4,$17,$zero" @ 122
+func_8002D780: subst "nop" "addu\t$4,$17,$zero" @ 122
 # idx 130: addu $12,$17,$zero -> addu $12,$4,$zero (use a0 from delay slot)
-saTan0KiWareMoveA: subst "\$17" "$4" @ 130
+func_8002D780: subst "\$17" "$4" @ 130
 # idx 133: 1-insn -> 2-insn sp address pattern
-saTan0KiWareMoveA: subst "addu\t\$12,\$sp,16" "addiu\t$2,$sp,16" @ 133
-saTan0KiWareMoveA: insert_after "addu\t$12,$2,$zero" @ 133
+func_8002D780: subst "addu\t\$12,\$sp,16" "addiu\t$2,$sp,16" @ 133
+func_8002D780: insert_after "addu\t$12,$2,$zero" @ 133
 # idx 139: srl $2,$17,$3 -> srl $2,$4,$3 (use a0)
-saTan0KiWareMoveA: subst "\$17" "$4" @ 139
+func_8002D780: subst "\$17" "$4" @ 139
 
 # === End branch: integrate li/branch optimization (-1 insn) ===
 # idx 186: delay slot: move -> li
-saTan0KiWareMoveA: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
+func_8002D780: subst "addu\t\$4,\$18,\$zero" "addiu\t$2,$zero,1" @ 186
 # delete j .L284 (idx 191) and .L283: li (idx 193)
-saTan0KiWareMoveA: delete @ 193
-saTan0KiWareMoveA: delete @ 191
+func_8002D780: delete @ 193
+func_8002D780: delete @ 191
 # insert the moved addu after the branch (post-delete idx 186)
-saTan0KiWareMoveA: insert_after "addu\t$4,$18,$zero" @ 186
+func_8002D780: insert_after "addu\t$4,$18,$zero" @ 186
 
 # === Reorders (post-everything indices) ===
 # Deferred cz correction: move sra/subu/mult(x0*cz) after px/pz loads
 # Original 60-73 -> post-everything 63-76 (+3 from GTE inserts)
 # Target order: lw_px,nop,mult_z0px,mflo_z0px,lw_pz,nop,mult_x0pz,mflo_x0pz,
 #               sra_cz,subu_cz,mult_x0cz,subu_crossp,mflo_x0cz,subu_crossc
-saTan0KiWareMoveA: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
+func_8002D780: reorder 67,68,69,70,71,72,73,75,63,64,65,76,66,74 @ 63-76
 # 3rd cross product: swap delay slot (cx-x0 before dz)
 # Original 94,95 -> post-everything 97,98 (+3 from GTE, no shift from sqrt/end)
-saTan0KiWareMoveA: reorder 98,97 @ 97-98
+func_8002D780: reorder 98,97 @ 97-98
 
 # func_8002304C (tanren_CameraControl) — 16-rule compound regfix
 # LICM unhoist: subst delay-slot fills to nop (s7 materialized in prologue instead)
@@ -2501,40 +2501,40 @@ func_8007C86C: subst "addu\s+\$sp,\$sp,24" "addu	$sp,$sp,16" @ 45
 # InitHiraRmd_800480C0: 6-arg call-loop with sx_arg2/3/4/5 + arg0_saved (7 callee-saves).
 # Same prologue restructure recipe as 800483DC/47FBC + frame +32 + stack offset
 # substs, with 2 stack-arg lws shifting position.
-InitHiraRmd_800480C0: subst "subu\s+\$sp,\$sp,56" "subu	$sp,$sp,88" @ 0
-InitHiraRmd_800480C0: subst "sw\s+\$16,24" "sw	$16,56" @ 3
-InitHiraRmd_800480C0: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
-InitHiraRmd_800480C0: subst "sw\s+\$18,32" "sw	$18,64" @ 5
-InitHiraRmd_800480C0: subst "addu\s+\$18,\$4,\$zero" "addu	$18,$16,$zero" @ 6
-InitHiraRmd_800480C0: subst "sw\s+\$31,52" "sw	$31,84" @ 7
-InitHiraRmd_800480C0: subst "sw\s+\$22,48" "sw	$22,80" @ 8
-InitHiraRmd_800480C0: subst "sw\s+\$21,44" "sw	$21,76" @ 9
-InitHiraRmd_800480C0: subst "sw\s+\$20,40" "sw	$20,72" @ 10
-InitHiraRmd_800480C0: subst "sw\s+\$19,36" "sw	$19,68" @ 11
-InitHiraRmd_800480C0: subst "sw\s+\$17,28" "sw	$17,60" @ 12
-InitHiraRmd_800480C0: subst "lw\s+\$20,72" "lw	$3,104" @ 14
-InitHiraRmd_800480C0: subst "lw\s+\$19,76" "lw	$4,108" @ 15
-InitHiraRmd_800480C0: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 18
-InitHiraRmd_800480C0: subst "sll\s+\$22,\$6,16" "sll	$2,$6,16" @ 24
-InitHiraRmd_800480C0: subst "sra\s+\$22,\$22,16" "sra	$22,$2,16" @ 25
-InitHiraRmd_800480C0: subst "sll\s+\$21,\$7,16" "sll	$2,$7,16" @ 26
-InitHiraRmd_800480C0: subst "sra\s+\$21,\$21,16" "sra	$21,$2,16" @ 27
-InitHiraRmd_800480C0: subst "sll\s+\$20,\$20,16" "sll	$2,$3,16" @ 28
-InitHiraRmd_800480C0: subst "sra\s+\$20,\$20,16" "sra	$20,$2,16" @ 29
-InitHiraRmd_800480C0: subst "sll\s+\$19,\$19,16" "sll	$2,$4,16" @ 30
-InitHiraRmd_800480C0: subst "sra\s+\$19,\$19,16" "sra	$19,$2,16" @ 31
-InitHiraRmd_800480C0: insert_after "addu	$16,$4,$zero" @ 3
-InitHiraRmd_800480C0: reorder 3,4,6,7,1,2,5 @ 1-7
+func_800480C0: subst "subu\s+\$sp,\$sp,56" "subu	$sp,$sp,88" @ 0
+func_800480C0: subst "sw\s+\$16,24" "sw	$16,56" @ 3
+func_800480C0: subst "addu\s+\$16,\$4,\$5" "addu	$16,$16,$5" @ 4
+func_800480C0: subst "sw\s+\$18,32" "sw	$18,64" @ 5
+func_800480C0: subst "addu\s+\$18,\$4,\$zero" "addu	$18,$16,$zero" @ 6
+func_800480C0: subst "sw\s+\$31,52" "sw	$31,84" @ 7
+func_800480C0: subst "sw\s+\$22,48" "sw	$22,80" @ 8
+func_800480C0: subst "sw\s+\$21,44" "sw	$21,76" @ 9
+func_800480C0: subst "sw\s+\$20,40" "sw	$20,72" @ 10
+func_800480C0: subst "sw\s+\$19,36" "sw	$19,68" @ 11
+func_800480C0: subst "sw\s+\$17,28" "sw	$17,60" @ 12
+func_800480C0: subst "lw\s+\$20,72" "lw	$3,104" @ 14
+func_800480C0: subst "lw\s+\$19,76" "lw	$4,108" @ 15
+func_800480C0: subst "addu\s+\$16,\$4,\$2" "addu	$16,$18,$2" @ 18
+func_800480C0: subst "sll\s+\$22,\$6,16" "sll	$2,$6,16" @ 24
+func_800480C0: subst "sra\s+\$22,\$22,16" "sra	$22,$2,16" @ 25
+func_800480C0: subst "sll\s+\$21,\$7,16" "sll	$2,$7,16" @ 26
+func_800480C0: subst "sra\s+\$21,\$21,16" "sra	$21,$2,16" @ 27
+func_800480C0: subst "sll\s+\$20,\$20,16" "sll	$2,$3,16" @ 28
+func_800480C0: subst "sra\s+\$20,\$20,16" "sra	$20,$2,16" @ 29
+func_800480C0: subst "sll\s+\$19,\$19,16" "sll	$2,$4,16" @ 30
+func_800480C0: subst "sra\s+\$19,\$19,16" "sra	$19,$2,16" @ 31
+func_800480C0: insert_after "addu	$16,$4,$zero" @ 3
+func_800480C0: reorder 3,4,6,7,1,2,5 @ 1-7
 # Epilogue
-InitHiraRmd_800480C0: subst "lw\s+\$31,52" "lw	$31,84" @ 62
-InitHiraRmd_800480C0: subst "lw\s+\$22,48" "lw	$22,80" @ 63
-InitHiraRmd_800480C0: subst "lw\s+\$21,44" "lw	$21,76" @ 64
-InitHiraRmd_800480C0: subst "lw\s+\$20,40" "lw	$20,72" @ 65
-InitHiraRmd_800480C0: subst "lw\s+\$19,36" "lw	$19,68" @ 66
-InitHiraRmd_800480C0: subst "lw\s+\$18,32" "lw	$18,64" @ 67
-InitHiraRmd_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
-InitHiraRmd_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
-InitHiraRmd_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
+func_800480C0: subst "lw\s+\$31,52" "lw	$31,84" @ 62
+func_800480C0: subst "lw\s+\$22,48" "lw	$22,80" @ 63
+func_800480C0: subst "lw\s+\$21,44" "lw	$21,76" @ 64
+func_800480C0: subst "lw\s+\$20,40" "lw	$20,72" @ 65
+func_800480C0: subst "lw\s+\$19,36" "lw	$19,68" @ 66
+func_800480C0: subst "lw\s+\$18,32" "lw	$18,64" @ 67
+func_800480C0: subst "lw\s+\$17,28" "lw	$17,60" @ 68
+func_800480C0: subst "lw\s+\$16,24" "lw	$16,56" @ 69
+func_800480C0: subst "addu\s+\$sp,\$sp,56" "addu	$sp,$sp,88" @ 70
 
 # Same prologue recipe as 80047EE8, plus $v0/$v1 swap in loop body to match
 # target's register allocation, plus a reorder to move the call-arg addu
@@ -3005,50 +3005,50 @@ func_8007352C: subst "sll\s+\$2,\$3,16" "sll	$2,$2,16" @ 109
 func_8007352C: insert_label ".LCF352C_t:" @ 105
 func_8007352C: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LCF352C_t" @ 45
 # saTan4FireDisp_80048864: regfix recipe (post strength-reduce inlining)
-saTan4FireDisp_80048864: delete @ 36
-saTan4FireDisp_80048864: delete @ 44
-saTan4FireDisp_80048864: insert "addiu	$2,$0,1" @ 53
-saTan4FireDisp_80048864: insert_after "addu	$12,$12,2" @ 50
-saTan4FireDisp_80048864: $11 <-> $12
-saTan4FireDisp_80048864: $10 <-> $13
-saTan4FireDisp_80048864: $9 <-> $10
+func_80048864: delete @ 36
+func_80048864: delete @ 44
+func_80048864: insert "addiu	$2,$0,1" @ 53
+func_80048864: insert_after "addu	$12,$12,2" @ 50
+func_80048864: $11 <-> $12
+func_80048864: $10 <-> $13
+func_80048864: $9 <-> $10
 # Move sll $2,$10,14 (g_term) earlier in case 1 (post-regfix idx 85 -> 78)
-saTan4FireDisp_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
+func_80048864: reorder 85,78,79,80,81,82,83,84 @ 78-85
 # saTan4FireDisp_80048864: subst register names for case 1 entry
-saTan4FireDisp_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
-saTan4FireDisp_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
-saTan4FireDisp_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,{lbl#4}" @ 55
+func_80048864: subst "andi\s+\$3,\$2,0x001f" "andi	$9,$2,0x001f" @ 51
+func_80048864: subst "sll\s+\$5,\$3,3" "sll	$5,$9,3" @ 52
+func_80048864: subst "beq\s+\$18,\$9,\.L\d+" "beq	$18,$2,{lbl#4}" @ 55
 # saTan4FireDisp_80048864: case 1 r-term register renames (correct)
-saTan4FireDisp_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
-saTan4FireDisp_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
-saTan4FireDisp_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
-saTan4FireDisp_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
-saTan4FireDisp_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
-saTan4FireDisp_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
+func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 73
+func_80048864: subst "sll\s+\$2,\$6,6" "sll	$2,$2,6" @ 74
+func_80048864: subst "addu\s+\$6,\$2,\$4" "addu	$2,$2,$4" @ 75
+func_80048864: subst "sll\s+\$2,\$6,3" "sll	$3,$2,3" @ 76
+func_80048864: subst "subu\s+\$6,\$2,\$6" "subu	$4,$3,$2" @ 77
+func_80048864: subst "addu\s+\$6,\$6,\$2" "addu	$2,$4,$6" @ 86
 # saTan4FireDisp_80048864: g-term subst
-saTan4FireDisp_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
+func_80048864: subst "sll\s+\$2,\$10,14" "sll	$6,$10,14" @ 85
 # saTan4FireDisp_80048864: b-term register/shift renames
-saTan4FireDisp_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
-saTan4FireDisp_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
-saTan4FireDisp_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
-saTan4FireDisp_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
-saTan4FireDisp_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
+func_80048864: subst "sll\s+\$2,\$3,1" "sll	$2,$9,4" @ 78
+func_80048864: subst "addu\s+\$2,\$2,\$3" "addu	$2,$2,$5" @ 79
+func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 81
+func_80048864: subst "subu\s+\$2,\$2,\$3" "subu	$2,$2,$5" @ 83
+func_80048864: subst "sll\s+\$13,\$2,6" "sll	$5,$2,3" @ 84
 # saTan4FireDisp_80048864: lum/packing register renames
-saTan4FireDisp_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
-saTan4FireDisp_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
-saTan4FireDisp_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
-saTan4FireDisp_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
-saTan4FireDisp_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
-saTan4FireDisp_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
-saTan4FireDisp_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
-saTan4FireDisp_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
-saTan4FireDisp_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
+func_80048864: subst "addu\s+\$6,\$6,\$13" "addu	$2,$2,$5" @ 87
+func_80048864: subst "sra\s+\$13,\$6,15" "sra	$4,$2,15" @ 88
+func_80048864: subst "mult\s+\$13,\$22" "mult	$4,$22" @ 89
+func_80048864: subst "or\s+\$4,\$7,\$4" "or	$2,$7,$4" @ 104
+func_80048864: subst "sll\s+\$6,\$6,5" "sll	$3,$6,5" @ 105
+func_80048864: subst "or\s+\$4,\$4,\$6" "or	$2,$2,$3" @ 106
+func_80048864: subst "sll\s+\$5,\$5,10" "sll	$3,$5,10" @ 107
+func_80048864: subst "or\s+\$4,\$4,\$5" "or	$2,$2,$3" @ 108
+func_80048864: subst "sh\s+\$4,0\(\$11\)" "sh	$2,0($11)" @ 109
 # Insert new label after addu $12,$12,2 to fix bne target
-saTan4FireDisp_80048864: insert_label ".LBNE_TGT:" @ 43
-saTan4FireDisp_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
+func_80048864: insert_label ".LBNE_TGT:" @ 43
+func_80048864: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.LBNE_TGT" @ 40
 # Insert label between two andi for j to skip first
-saTan4FireDisp_80048864: insert_label ".LJMP_TGT:" @ 101
-saTan4FireDisp_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
+func_80048864: insert_label ".LJMP_TGT:" @ 101
+func_80048864: subst "j\s+\.L\d+" "j	.LJMP_TGT" @ 57
 # Reorder prologue saves
 # Mode==1 store order: sh v0,4 last in target
 
@@ -3127,94 +3127,94 @@ func_800770B8: insert_label ".L_post988:" @ 108
 func_800770B8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.L_post988" @ 99
 
 # regfix-suggest: auto-generated rules for gnd_land_hit_char_tsuba
-gnd_land_hit_char_tsuba: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
-gnd_land_hit_char_tsuba: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
-gnd_land_hit_char_tsuba: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
-gnd_land_hit_char_tsuba: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
-gnd_land_hit_char_tsuba: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
-gnd_land_hit_char_tsuba: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
-gnd_land_hit_char_tsuba: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
-gnd_land_hit_char_tsuba: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
-gnd_land_hit_char_tsuba: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
-gnd_land_hit_char_tsuba: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
-gnd_land_hit_char_tsuba: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
-gnd_land_hit_char_tsuba: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
-gnd_land_hit_char_tsuba: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
-gnd_land_hit_char_tsuba: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
-gnd_land_hit_char_tsuba: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
-gnd_land_hit_char_tsuba: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
-gnd_land_hit_char_tsuba: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
-gnd_land_hit_char_tsuba: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
-gnd_land_hit_char_tsuba: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
-gnd_land_hit_char_tsuba: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
-gnd_land_hit_char_tsuba: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
-gnd_land_hit_char_tsuba: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
-gnd_land_hit_char_tsuba: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
-gnd_land_hit_char_tsuba: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
-gnd_land_hit_char_tsuba: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
-gnd_land_hit_char_tsuba: delete @ 105  # auto: extra `la	$2,D_8009B390`
-gnd_land_hit_char_tsuba: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
-gnd_land_hit_char_tsuba: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
-gnd_land_hit_char_tsuba: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
-gnd_land_hit_char_tsuba: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
-gnd_land_hit_char_tsuba: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
-gnd_land_hit_char_tsuba: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
-gnd_land_hit_char_tsuba: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
-gnd_land_hit_char_tsuba: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
-gnd_land_hit_char_tsuba: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
-gnd_land_hit_char_tsuba: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
-gnd_land_hit_char_tsuba: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
-gnd_land_hit_char_tsuba: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
-gnd_land_hit_char_tsuba: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
-gnd_land_hit_char_tsuba: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
-gnd_land_hit_char_tsuba: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
-gnd_land_hit_char_tsuba: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
-gnd_land_hit_char_tsuba: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
-gnd_land_hit_char_tsuba: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
-gnd_land_hit_char_tsuba: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
-gnd_land_hit_char_tsuba: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
-gnd_land_hit_char_tsuba: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
-gnd_land_hit_char_tsuba: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
-gnd_land_hit_char_tsuba: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
-gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-gnd_land_hit_char_tsuba: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
-gnd_land_hit_char_tsuba: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
-gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-gnd_land_hit_char_tsuba: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
-gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
-gnd_land_hit_char_tsuba: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
-gnd_land_hit_char_tsuba: insert_label ".L_loopfix:" @ 62
-gnd_land_hit_char_tsuba: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
+func_8005D554: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
+func_8005D554: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
+func_8005D554: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
+func_8005D554: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
+func_8005D554: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
+func_8005D554: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
+func_8005D554: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
+func_8005D554: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
+func_8005D554: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
+func_8005D554: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
+func_8005D554: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
+func_8005D554: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
+func_8005D554: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
+func_8005D554: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
+func_8005D554: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
+func_8005D554: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
+func_8005D554: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
+func_8005D554: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
+func_8005D554: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+func_8005D554: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
+func_8005D554: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
+func_8005D554: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
+func_8005D554: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
+func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
+func_8005D554: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
+func_8005D554: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
+func_8005D554: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
+func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+func_8005D554: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
+func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
+func_8005D554: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
+func_8005D554: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
+func_8005D554: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
+func_8005D554: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
+func_8005D554: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
+func_8005D554: delete @ 105  # auto: extra `la	$2,D_8009B390`
+func_8005D554: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
+func_8005D554: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
+func_8005D554: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
+func_8005D554: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
+func_8005D554: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
+func_8005D554: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
+func_8005D554: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
+func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
+func_8005D554: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
+func_8005D554: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
+func_8005D554: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
+func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+func_8005D554: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
+func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
+func_8005D554: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
+func_8005D554: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
+func_8005D554: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
+func_8005D554: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
+func_8005D554: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
+func_8005D554: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
+func_8005D554: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
+func_8005D554: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
+func_8005D554: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
+func_8005D554: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
+func_8005D554: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
+func_8005D554: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
+func_8005D554: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
+func_8005D554: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
+func_8005D554: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
+func_8005D554: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
+func_8005D554: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
+func_8005D554: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
+func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
+func_8005D554: insert_label ".L_loopfix:" @ 62
+func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
 func_8007D3F8: reorder 41,38,39,40,37 @ 37-41
 func_8007D3F8: $2 <-> $3 @ 49-54
 func_8007D3F8: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60
@@ -3317,10 +3317,10 @@ func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14
 # func_8006EC0C: u16-typed D_800A3578 emits lhu; target uses lbu for entry byte read
 
 # regfix-suggest: auto-generated rules for cpu_check_tubazeri
-cpu_check_tubazeri: delete @ 29
-cpu_check_tubazeri: reorder 31,32,29,30 @ 29-32
-cpu_check_tubazeri: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
-cpu_check_tubazeri: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
+func_8002FC80: delete @ 29
+func_8002FC80: reorder 31,32,29,30 @ 29-32
+func_8002FC80: subst "lw \$5, 0x1F800388" "lw $4,0($2)" @ 55
+func_8002FC80: subst "lw\s+\$4,0\(\$2\)" "lw $5, 0x1F800388" @ 56
 
 # $a0/$a1 for the temp pointers; target uses $v0/$a0.  These subst rules
 # rename the registers in-place (no structural change).
@@ -3375,117 +3375,117 @@ func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
 func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
 
 # exec_game phase 1
-exec_game: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
-exec_game: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
+func_800896A0: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
+func_800896A0: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
 
  (maspsx idx 0-51): register map + LICM unhoist + SR-IV elim + prologue reorder
 # reg map mine->target: $10<->$11 (2FFF/0FFF consts), cur $8->$7, base $13->$8
-exec_game: $10 <-> $11 @ 0-51
-exec_game: $8 <-> $7 @ 0-51
-exec_game: $13 <-> $8 @ 0-51
-exec_game: $5 <-> $3 @ 19-24
-exec_game: delete @ 10
-exec_game: delete @ 12
-exec_game: delete @ 46
-exec_game: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
-exec_game: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
-exec_game: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
-exec_game: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
-exec_game: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
-exec_game: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
-exec_game: delete @ 23
-exec_game: insert "sll\t$2,$6,3" @ 24
-exec_game: reorder 4,6,3,7,8,5,9,10 @ 3-10
+func_800896A0: $10 <-> $11 @ 0-51
+func_800896A0: $8 <-> $7 @ 0-51
+func_800896A0: $13 <-> $8 @ 0-51
+func_800896A0: $5 <-> $3 @ 19-24
+func_800896A0: delete @ 10
+func_800896A0: delete @ 12
+func_800896A0: delete @ 46
+func_800896A0: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
+func_800896A0: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
+func_800896A0: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
+func_800896A0: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
+func_800896A0: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
+func_800896A0: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
+func_800896A0: delete @ 23
+func_800896A0: insert "sll\t$2,$6,3" @ 24
+func_800896A0: reorder 4,6,3,7,8,5,9,10 @ 3-10
 # exec_game phase 2 (idx 52-68): register substs + in-place reorder
-exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
-exec_game: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
-exec_game: subst "nop" "addu\t$9,$0,$zero" @ 55
-exec_game: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
-exec_game: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
-exec_game: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
-exec_game: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
-exec_game: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
-exec_game: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
-exec_game: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
-exec_game: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
+func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
+func_800896A0: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
+func_800896A0: subst "nop" "addu\t$9,$0,$zero" @ 55
+func_800896A0: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
+func_800896A0: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
+func_800896A0: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
+func_800896A0: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
+func_800896A0: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
+func_800896A0: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
+func_800896A0: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
+func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
 # exec_game phase 3 (idx 69-118): register-rename substs + SR-IV elim (LICM $25 deferred)
-exec_game: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
-exec_game: subst "bltz\s+\$11," "bltz\t$3," @ 70
-exec_game: delete @ 71
-exec_game: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
-exec_game: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
-exec_game: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
-exec_game: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
-exec_game: delete @ 77
-exec_game: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
-exec_game: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
-exec_game: insert "addu\t$8,$10,$zero" @ 82
-exec_game: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
-exec_game: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
-exec_game: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
-exec_game: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
-exec_game: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
-exec_game: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
-exec_game: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
-exec_game: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
-exec_game: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
-exec_game: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
-exec_game: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
-exec_game: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
-exec_game: delete @ 79
-exec_game: delete @ 91
-exec_game: delete @ 110
-exec_game: delete @ 115
-exec_game: delete @ 114
-exec_game: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
-exec_game: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
-exec_game: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
-exec_game: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
+func_800896A0: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
+func_800896A0: subst "bltz\s+\$11," "bltz\t$3," @ 70
+func_800896A0: delete @ 71
+func_800896A0: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
+func_800896A0: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
+func_800896A0: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
+func_800896A0: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
+func_800896A0: delete @ 77
+func_800896A0: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
+func_800896A0: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
+func_800896A0: insert "addu\t$8,$10,$zero" @ 82
+func_800896A0: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
+func_800896A0: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
+func_800896A0: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
+func_800896A0: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
+func_800896A0: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
+func_800896A0: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
+func_800896A0: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
+func_800896A0: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
+func_800896A0: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
+func_800896A0: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
+func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
+func_800896A0: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
+func_800896A0: delete @ 79
+func_800896A0: delete @ 91
+func_800896A0: delete @ 110
+func_800896A0: delete @ 115
+func_800896A0: delete @ 114
+func_800896A0: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
+func_800896A0: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
+func_800896A0: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
+func_800896A0: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
 # exec_game phase 5 (idx 149-179): register-rename substs + SR-IV elim
-exec_game: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
-exec_game: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
-exec_game: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
-exec_game: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
-exec_game: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
-exec_game: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
-exec_game: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
-exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
-exec_game: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
-exec_game: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
-exec_game: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
-exec_game: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
-exec_game: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
-exec_game: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
-exec_game: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
-exec_game: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
-exec_game: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
-exec_game: delete @ 160
-exec_game: delete @ 175
-exec_game: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
+func_800896A0: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
+func_800896A0: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
+func_800896A0: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
+func_800896A0: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
+func_800896A0: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
+func_800896A0: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
+func_800896A0: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
+func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
+func_800896A0: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
+func_800896A0: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
+func_800896A0: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
+func_800896A0: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
+func_800896A0: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
+func_800896A0: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
+func_800896A0: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
+func_800896A0: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
+func_800896A0: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
+func_800896A0: delete @ 160
+func_800896A0: delete @ 175
+func_800896A0: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
 # exec_game phase 4 (idx 119-148): register-rename substs (gen_substs.py)
-exec_game: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
-exec_game: subst "bltz\s+\$11," "bltz\t$a1," @ 121
-exec_game: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
-exec_game: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
-exec_game: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
-exec_game: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
-exec_game: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
-exec_game: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
-exec_game: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
-exec_game: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
-exec_game: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
-exec_game: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
-exec_game: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
-exec_game: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
-exec_game: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
-exec_game: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
-exec_game: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
-exec_game: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
-exec_game: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
-exec_game: delete @ 145
-exec_game: delete @ 143
-exec_game: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
-exec_game: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
+func_800896A0: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
+func_800896A0: subst "bltz\s+\$11," "bltz\t$a1," @ 121
+func_800896A0: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
+func_800896A0: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
+func_800896A0: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
+func_800896A0: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
+func_800896A0: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
+func_800896A0: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
+func_800896A0: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
+func_800896A0: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
+func_800896A0: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
+func_800896A0: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
+func_800896A0: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
+func_800896A0: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
+func_800896A0: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
+func_800896A0: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
+func_800896A0: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
+func_800896A0: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
+func_800896A0: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
+func_800896A0: delete @ 145
+func_800896A0: delete @ 143
+func_800896A0: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
+func_800896A0: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
 
 # Manual pan_L/pan_R + dy² regfix rules for func_800325E0
 func_800325E0: subst "subu\s+\$4,\$4,\$3" "subu\t$5,$4,$3" @ 118
@@ -3506,59 +3506,59 @@ func_800325E0: subst "sra\s+\$5,\$9,16" "sra\t$5,$3,16" @ 137
 func_800325E0: reorder 58,55,56,57 @ 55-58
 
 # regfix-suggest: auto-generated rules for DispSchoolBG
-DispSchoolBG: delete @ 19  # auto (replace): drop `sh	$3,528483250`
-DispSchoolBG: insert_after "sh	$v1,(0x1F8003B2 & 0xFFFF)($at)" @ 18  # auto (replace): target has after idx 18
-DispSchoolBG: insert_after "lui	$at,(0x1F8003B2 >> 16)" @ 18  # auto (replace): target has after idx 18
-DispSchoolBG: delete @ 29  # auto (replace): drop `lui	$18,(528482304 >> 16) & 0xFFFF`
-DispSchoolBG: delete @ 28  # auto (replace): drop `ori	$16,$16,0x02b8`
-DispSchoolBG: delete @ 27  # auto (replace): drop `lui	$16,(528482304 >> 16) & 0xFFFF`
-DispSchoolBG: insert_after "lui	$s0,(0x1F8002B8 >> 16)" @ 26  # auto (replace): target has after idx 26
-DispSchoolBG: subst "sltu\s+\$2,\$4,1024" "sltiu	$v0,$a0,0x400" @ 32  # auto: was `sltu	$2,$4,1024` -> `sltiu	$v0,$a0,0x400`
-DispSchoolBG: subst "ori\s+\$18,\$18,0x0390" "ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)" @ 34  # auto: was `ori	$18,$18,0x0390` -> `ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)`
+func_8002EBDC: delete @ 19  # auto (replace): drop `sh	$3,528483250`
+func_8002EBDC: insert_after "sh	$v1,(0x1F8003B2 & 0xFFFF)($at)" @ 18  # auto (replace): target has after idx 18
+func_8002EBDC: insert_after "lui	$at,(0x1F8003B2 >> 16)" @ 18  # auto (replace): target has after idx 18
+func_8002EBDC: delete @ 29  # auto (replace): drop `lui	$18,(528482304 >> 16) & 0xFFFF`
+func_8002EBDC: delete @ 28  # auto (replace): drop `ori	$16,$16,0x02b8`
+func_8002EBDC: delete @ 27  # auto (replace): drop `lui	$16,(528482304 >> 16) & 0xFFFF`
+func_8002EBDC: insert_after "lui	$s0,(0x1F8002B8 >> 16)" @ 26  # auto (replace): target has after idx 26
+func_8002EBDC: subst "sltu\s+\$2,\$4,1024" "sltiu	$v0,$a0,0x400" @ 32  # auto: was `sltu	$2,$4,1024` -> `sltiu	$v0,$a0,0x400`
+func_8002EBDC: subst "ori\s+\$18,\$18,0x0390" "ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)" @ 34  # auto: was `ori	$18,$18,0x0390` -> `ori	$s0,$s0,(0x1F8002B8 & 0xFFFF)`
 # RETIRE: DispSchoolBG: insert_after "mtc2	$t4,$30 /* handwritten instruction */" @ 42  # auto: target has this after idx 42
 # RETIRE: DispSchoolBG: insert_after "swc2	$31,0x0($t4)" @ 46  # auto: target has this after idx 46
-DispSchoolBG: subst "srl\s+\$2,\$4,\$3" "srlv	$v0,$a0,$v1" @ 52  # auto: was `srl	$2,$4,$3` -> `srlv	$v0,$a0,$v1`
-DispSchoolBG: subst "srl\s+\$5,\$4,\$2" "srlv	$a1,$a0,$v0" @ 60  # auto: was `srl	$5,$4,$2` -> `srlv	$a1,$a0,$v0`
-DispSchoolBG: subst "addiu\s+\$17,\$zero,4096" "addiu	$s1,$s0,0xD8" @ 63  # auto: was `addiu	$17,$zero,4096` -> `addiu	$s1,$s0,0xD8`
-DispSchoolBG: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 64  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
-DispSchoolBG: insert_after "addiu	$s2,$zero,0x1000" @ 67  # auto: target has this after idx 67
-DispSchoolBG: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 69  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
-DispSchoolBG: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 73  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
-DispSchoolBG: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 78  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
-DispSchoolBG: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 81  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
-DispSchoolBG: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 82  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
-DispSchoolBG: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 85  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 86  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 90  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 91  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 92  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
-DispSchoolBG: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 98  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
+func_8002EBDC: subst "srl\s+\$2,\$4,\$3" "srlv	$v0,$a0,$v1" @ 52  # auto: was `srl	$2,$4,$3` -> `srlv	$v0,$a0,$v1`
+func_8002EBDC: subst "srl\s+\$5,\$4,\$2" "srlv	$a1,$a0,$v0" @ 60  # auto: was `srl	$5,$4,$2` -> `srlv	$a1,$a0,$v0`
+func_8002EBDC: subst "addiu\s+\$17,\$zero,4096" "addiu	$s1,$s0,0xD8" @ 63  # auto: was `addiu	$17,$zero,4096` -> `addiu	$s1,$s0,0xD8`
+func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 64  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+func_8002EBDC: insert_after "addiu	$s2,$zero,0x1000" @ 67  # auto: target has this after idx 67
+func_8002EBDC: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 69  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
+func_8002EBDC: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 73  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
+func_8002EBDC: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 78  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
+func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 81  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+func_8002EBDC: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 82  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
+func_8002EBDC: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 85  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 86  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 90  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 91  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 92  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
+func_8002EBDC: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 98  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
 # RETIRE: DispSchoolBG: insert_after "mvmva	1,0,0,3,0" @ 101  # auto: target has this after idx 101
-DispSchoolBG: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 105  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
-DispSchoolBG: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 106  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
-DispSchoolBG: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 130  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
-DispSchoolBG: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 134  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
-DispSchoolBG: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 138  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
-DispSchoolBG: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 142  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
-DispSchoolBG: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 144  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
-DispSchoolBG: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 146  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
-DispSchoolBG: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 148  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
-DispSchoolBG: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 149  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
-DispSchoolBG: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 152  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 153  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 157  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 158  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
-DispSchoolBG: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 159  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
-DispSchoolBG: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 165  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
+func_8002EBDC: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 105  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
+func_8002EBDC: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 106  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
+func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 130  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+func_8002EBDC: subst "sh\s+\$17,216\(\$16\)" "sh	$s2,0xD8($s0)" @ 134  # auto: was `sh	$17,216($16)` -> `sh	$s2,0xD8($s0)`
+func_8002EBDC: subst "sh\s+\$17,224\(\$16\)" "sh	$s2,0xE0($s0)" @ 138  # auto: was `sh	$17,224($16)` -> `sh	$s2,0xE0($s0)`
+func_8002EBDC: subst "sh\s+\$17,232\(\$16\)" "sh	$s2,0xE8($s0)" @ 142  # auto: was `sh	$17,232($16)` -> `sh	$s2,0xE8($s0)`
+func_8002EBDC: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 144  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
+func_8002EBDC: subst "addu\s+\$5,\$18,\$zero" "addu	$a1,$s1,$zero" @ 146  # auto: was `addu	$5,$18,$zero` -> `addu	$a1,$s1,$zero`
+func_8002EBDC: subst "subu\s+\$4,\$0,\$4" "negu	$a0,$a0" @ 148  # auto: was `subu	$4,$0,$4` -> `negu	$a0,$a0`
+func_8002EBDC: subst "addu\s+\$12,\s+\$18,\$zero" "addu	$t4,$s1,$zero" @ 149  # auto: was `addu	$12, $18,$zero` -> `addu	$t4,$s1,$zero`
+func_8002EBDC: subst "ctc2\s+\$13,\s+\$0" "ctc2	$t5,$0 /* handwritten instruction */" @ 152  # auto: was `ctc2 $13, $0` -> `ctc2	$t5,$0 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$14,\s+\$1" "ctc2	$t6,$1 /* handwritten instruction */" @ 153  # auto: was `ctc2 $14, $1` -> `ctc2	$t6,$1 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$13,\s+\$2" "ctc2	$t5,$2 /* handwritten instruction */" @ 157  # auto: was `ctc2 $13, $2` -> `ctc2	$t5,$2 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$14,\s+\$3" "ctc2	$t6,$3 /* handwritten instruction */" @ 158  # auto: was `ctc2 $14, $3` -> `ctc2	$t6,$3 /* handwritten instruction */`
+func_8002EBDC: subst "ctc2\s+\$15,\s+\$4" "ctc2	$t7,$4 /* handwritten instruction */" @ 159  # auto: was `ctc2 $15, $4` -> `ctc2	$t7,$4 /* handwritten instruction */`
+func_8002EBDC: subst "mtc2\s+\$13,\s+\$0" "mtc2	$t5,$0 /* handwritten instruction */" @ 165  # auto: was `mtc2 $13, $0` -> `mtc2	$t5,$0 /* handwritten instruction */`
 # RETIRE: DispSchoolBG: insert_after "mvmva	1,0,0,3,0" @ 168  # auto: target has this after idx 168
-DispSchoolBG: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 171  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
-DispSchoolBG: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 172  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
+func_8002EBDC: subst "swc2\s+\$26,\s+4\(\$12\)" "swc2	$26,0x4($t4) /* handwritten instruction */" @ 171  # auto: was `swc2 $26, 4($12)` -> `swc2	$26,0x4($t4) /* handwritten instruction */`
+func_8002EBDC: subst "swc2\s+\$27,\s+8\(\$12\)" "swc2	$27,0x8($t4) /* handwritten instruction */" @ 172  # auto: was `swc2 $27, 8($12)` -> `swc2	$27,0x8($t4) /* handwritten instruction */`
 
 # Reorder mflo/lui — fill mult delay slot with lui $s0
-DispSchoolBG: reorder 29,28 @ 28-29
+func_8002EBDC: reorder 29,28 @ 28-29
 
 # Hoist 0x1000 load before first matrix sh
-DispSchoolBG: reorder 71,67,68,69,70 @ 67-71
+func_8002EBDC: reorder 71,67,68,69,70 @ 67-71
 func_80048530: subst "addu\s+\$5,\$5,\$4" "addu $a1,$a1,$v1" @ 6
 func_80048530: subst "addu\s+\$3,\$4,\$2" "addu $v1,$v0,$v1" @ 9
 func_80048530: delete @ 8
@@ -3585,8 +3585,8 @@ func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 51
 func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 52
 func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 53
 
-single_game_VoiceContorol: reorder 7,12,5,8,9,10,11,6 @ 5-12
-single_game_VoiceContorol: reorder 27,26 @ 26-27
-single_game_VoiceContorol: subst "lbu\s+\$3,2\(\$7\)" "lbu\t$2,2($7)" @ 41
-single_game_VoiceContorol: subst "lbu\s+\$2,3\(\$7\)" "lbu\t$3,3($7)" @ 42
-single_game_VoiceContorol: subst "sll\s+\$3,\$3,8" "sll\t$2,$2,8" @ 43
+func_80019568: reorder 7,12,5,8,9,10,11,6 @ 5-12
+func_80019568: reorder 27,26 @ 26-27
+func_80019568: subst "lbu\s+\$3,2\(\$7\)" "lbu\t$2,2($7)" @ 41
+func_80019568: subst "lbu\s+\$2,3\(\$7\)" "lbu\t$3,3($7)" @ 42
+func_80019568: subst "sll\s+\$3,\$3,8" "sll\t$2,$2,8" @ 43

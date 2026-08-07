@@ -5,7 +5,7 @@ glabel cpu_set_move_command_and_dir
     /* 21238 80030A38 1000B0AF */  sw         $s0, 0x10($sp)
     /* 2123C 80030A3C 2180C000 */  addu       $s0, $a2, $zero
     /* 21240 80030A40 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 21244 80030A44 60C1000C */  jal        coli_hit_body_weapon
+    /* 21244 80030A44 60C1000C */  jal        func_80030580
     /* 21248 80030A48 1400B1AF */   sw        $s1, 0x14($sp)
     /* 2124C 80030A4C 21884000 */  addu       $s1, $v0, $zero
     /* 21250 80030A50 040020A2 */  sb         $zero, 0x4($s1)

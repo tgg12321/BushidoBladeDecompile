@@ -23,7 +23,7 @@ glabel func_80035828
     /* 26078 80035878 00000000 */   nop
     /* 2607C 8003587C 0A80043C */  lui        $a0, %hi(D_800A38DC)
     /* 26080 80035880 DC388484 */  lh         $a0, %lo(D_800A38DC)($a0)
-    /* 26084 80035884 86D5000C */  jal        replay_camera_rob_back_loose2
+    /* 26084 80035884 86D5000C */  jal        func_80035618
     /* 26088 80035888 00000000 */   nop
     /* 2608C 8003588C 0E0180A3 */  sb         $zero, %gp_rel(D_800A31DA)($gp)
   .L80035890:
@@ -40,9 +40,9 @@ glabel func_80035828
     /* 260B8 800358B8 08004000 */  jr         $v0
     /* 260BC 800358BC 00000000 */   nop
   jlabel .L800358C0
-    /* 260C0 800358C0 4FD5000C */  jal        tslDrTex1Init2
+    /* 260C0 800358C0 4FD5000C */  jal        func_8003553C
     /* 260C4 800358C4 00000000 */   nop
-    /* 260C8 800358C8 03E2000C */  jal        damage_CalcHitDamage
+    /* 260C8 800358C8 03E2000C */  jal        func_8003880C
     /* 260CC 800358CC 00000000 */   nop
     /* 260D0 800358D0 21184000 */  addu       $v1, $v0, $zero
     /* 260D4 800358D4 01000224 */  addiu      $v0, $zero, 0x1
@@ -53,7 +53,7 @@ glabel func_80035828
     /* 260E8 800358E8 67D70008 */  j          .L80035D9C
     /* 260EC 800358EC 00000000 */   nop
   jlabel .L800358F0
-    /* 260F0 800358F0 4FD5000C */  jal        tslDrTex1Init2
+    /* 260F0 800358F0 4FD5000C */  jal        func_8003553C
     /* 260F4 800358F4 00000000 */   nop
     /* 260F8 800358F8 2AE2000C */  jal        func_800388A8
     /* 260FC 800358FC 00000000 */   nop
@@ -72,7 +72,7 @@ glabel func_80035828
     /* 2612C 8003592C 67D70008 */  j          .L80035D9C
     /* 26130 80035930 00000000 */   nop
   jlabel .L80035934
-    /* 26134 80035934 4FD5000C */  jal        tslDrTex1Init2
+    /* 26134 80035934 4FD5000C */  jal        func_8003553C
     /* 26138 80035938 00000000 */   nop
     /* 2613C 8003593C 62E2000C */  jal        func_80038988
     /* 26140 80035940 00000000 */   nop
@@ -165,7 +165,7 @@ glabel func_80035828
     /* 26280 80035A80 1080013C */  lui        $at, %hi(D_80102785)
     /* 26284 80035A84 852722A0 */  sb         $v0, %lo(D_80102785)($at)
     /* 26288 80035A88 00160200 */  sll        $v0, $v0, 24
-    /* 2628C 80035A8C 86D5000C */  jal        replay_camera_rob_back_loose2
+    /* 2628C 80035A8C 86D5000C */  jal        func_80035618
     /* 26290 80035A90 03260200 */   sra       $a0, $v0, 24
     /* 26294 80035A94 67D70008 */  j          .L80035D9C
     /* 26298 80035A98 00000000 */   nop
@@ -241,27 +241,27 @@ glabel func_80035828
     /* 26398 80035B98 00000000 */   nop
   jlabel .L80035B9C
     /* 2639C 80035B9C 21200000 */  addu       $a0, $zero, $zero
-    /* 263A0 80035BA0 7FB0010C */  jal        saTan2InfoInit_8006C1FC
+    /* 263A0 80035BA0 7FB0010C */  jal        func_8006C1FC
     /* 263A4 80035BA4 21280000 */   addu      $a1, $zero, $zero
     /* 263A8 80035BA8 62E2000C */  jal        func_80038988
     /* 263AC 80035BAC 00000000 */   nop
     /* 263B0 80035BB0 7A004010 */  beqz       $v0, .L80035D9C
     /* 263B4 80035BB4 00000000 */   nop
-    /* 263B8 80035BB8 C8DE010C */  jal        saTan2GaugeInit_80077B20
+    /* 263B8 80035BB8 C8DE010C */  jal        func_80077B20
     /* 263BC 80035BBC 00000000 */   nop
-    /* 263C0 80035BC0 A0D4000C */  jal        single_game_SetWazaData
+    /* 263C0 80035BC0 A0D4000C */  jal        func_80035280
     /* 263C4 80035BC4 00000000 */   nop
     /* 263C8 80035BC8 FED60008 */  j          .L80035BF8
     /* 263CC 80035BCC 02000224 */   addiu     $v0, $zero, 0x2
   jlabel .L80035BD0
     /* 263D0 80035BD0 21200000 */  addu       $a0, $zero, $zero
-    /* 263D4 80035BD4 7FB0010C */  jal        saTan2InfoInit_8006C1FC
+    /* 263D4 80035BD4 7FB0010C */  jal        func_8006C1FC
     /* 263D8 80035BD8 21280000 */   addu      $a1, $zero, $zero
-    /* 263DC 80035BDC 1CE3000C */  jal        motion_SetMotion
+    /* 263DC 80035BDC 1CE3000C */  jal        func_80038C70
     /* 263E0 80035BE0 00000000 */   nop
     /* 263E4 80035BE4 6D004010 */  beqz       $v0, .L80035D9C
     /* 263E8 80035BE8 00000000 */   nop
-    /* 263EC 80035BEC C8DE010C */  jal        saTan2GaugeInit_80077B20
+    /* 263EC 80035BEC C8DE010C */  jal        func_80077B20
     /* 263F0 80035BF0 00000000 */   nop
     /* 263F4 80035BF4 02000224 */  addiu      $v0, $zero, 0x2
   .L80035BF8:
@@ -299,7 +299,7 @@ glabel func_80035828
     /* 26468 80035C68 9027848C */  lw         $a0, %lo(D_80102790)($a0)
     /* 2646C 80035C6C 1080053C */  lui        $a1, %hi(D_80102794)
     /* 26470 80035C70 9427A58C */  lw         $a1, %lo(D_80102794)($a1)
-    /* 26474 80035C74 81DE010C */  jal        saTanMainDispGnd_80077A04
+    /* 26474 80035C74 81DE010C */  jal        func_80077A04
     /* 26478 80035C78 00000000 */   nop
     /* 2647C 80035C7C 21184000 */  addu       $v1, $v0, $zero
     /* 26480 80035C80 46006010 */  beqz       $v1, .L80035D9C
@@ -313,7 +313,7 @@ glabel func_80035828
     /* 2649C 80035C9C 9027848C */  lw         $a0, %lo(D_80102790)($a0)
     /* 264A0 80035CA0 1080053C */  lui        $a1, %hi(D_80102794)
     /* 264A4 80035CA4 9427A58C */  lw         $a1, %lo(D_80102794)($a1)
-    /* 264A8 80035CA8 98DE010C */  jal        saTan2InfoInit_80077A60
+    /* 264A8 80035CA8 98DE010C */  jal        func_80077A60
     /* 264AC 80035CAC 00000000 */   nop
     /* 264B0 80035CB0 21184000 */  addu       $v1, $v0, $zero
     /* 264B4 80035CB4 39006010 */  beqz       $v1, .L80035D9C
@@ -354,7 +354,7 @@ glabel func_80035828
     /* 26534 80035D34 9027848C */  lw         $a0, %lo(D_80102790)($a0)
     /* 26538 80035D38 1080053C */  lui        $a1, %hi(D_80102794)
     /* 2653C 80035D3C 9427A58C */  lw         $a1, %lo(D_80102794)($a1)
-    /* 26540 80035D40 B0DE010C */  jal        saTan2InfoInit_80077AC0
+    /* 26540 80035D40 B0DE010C */  jal        func_80077AC0
     /* 26544 80035D44 00000000 */   nop
     /* 26548 80035D48 21184000 */  addu       $v1, $v0, $zero
     /* 2654C 80035D4C 13006010 */  beqz       $v1, .L80035D9C

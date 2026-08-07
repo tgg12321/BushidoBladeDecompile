@@ -24,9 +24,9 @@ glabel func_8003BE10
     /* 2C668 8003BE68 AADB000C */  jal        func_80036EA8
     /* 2C66C 8003BE6C 20000524 */   addiu     $a1, $zero, 0x20
     /* 2C670 8003BE70 21204000 */  addu       $a0, $v0, $zero
-    /* 2C674 8003BE74 F5DB000C */  jal        mottest_rob_init
+    /* 2C674 8003BE74 F5DB000C */  jal        func_80036FD4
     /* 2C678 8003BE78 04000524 */   addiu     $a1, $zero, 0x4
-    /* 2C67C 8003BE7C 98DC000C */  jal        marionation_camera_GetMaxFrame
+    /* 2C67C 8003BE7C 98DC000C */  jal        func_80037260
     /* 2C680 8003BE80 00000000 */   nop
     /* 2C684 8003BE84 0B000224 */  addiu      $v0, $zero, 0xB
     /* 2C688 8003BE88 0A80013C */  lui        $at, %hi(D_800A3834)

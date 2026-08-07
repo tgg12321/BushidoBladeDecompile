@@ -71,44 +71,44 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 EndADRSound(void);
+extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern s32 D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *, s32);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern void func_8003AA78(void);
 extern s32 func_80036D88(void);
 extern void func_8003AA48(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
 extern u8 D_8008E908;
 extern u8 D_8008EC24;
 extern s32 D_80106A50;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 func_80079154(void);
 extern void func_8007F87C(s32, s32 *);
 extern void func_8007FA1C(s32, s32 *);
 extern void *func_8007FBBC(s32, s32 *);
 extern s16 D_80101E74;
-extern void motutil_CheckKamaeReq(void);
+extern void func_80033D38(void);
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern s32 stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void func_80037774(void);
 extern void special_camera_get_rot_dir(s32 *);
-extern void pad_Init(void);
+extern void func_80078D68(void);
 extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern void *D_800A36B4;
@@ -126,7 +126,7 @@ extern u16 D_80101E02;
 extern u16 D_80101E04;
 extern u8 D_80106A73;
 extern u8 D_80106A78;
-extern s32 *saTan2GaugeInit_80077D00(void);
+extern s32 *func_80077D00(void);
 extern s32 D_80106A58;
 extern s16 D_80101ED6;
 extern s32 g_file_disc_size;
@@ -139,9 +139,9 @@ extern s16 D_800A3824;
 extern s16 D_800A3876;
 extern s16 D_800A38A8;
 extern void func_8001F860(s16 *arg0, s32 arg1);
-extern void calc_loc_mat_fw(s32 a0);
-extern void motion_GameCalcMotion(void);
-extern void saTan3MainJump(void);
+extern void func_8002AB08(s32 a0);
+extern void func_8002872C(void);
+extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_80031B24(void);
 extern s32 D_801020D8;
@@ -178,7 +178,7 @@ s32 func_800272FC(s32 a0) {
     }
     return v1;
 }
-void katinuki_game_getMyWeaponId(s16 *arg0) {
+void func_80027334(s16 *arg0) {
     arg0[0x1E] = 0x3F5;
     arg0[0x1F] = 0x2B6;
     arg0[0x20] = 0x77A;
@@ -319,7 +319,7 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
 extern void *func_80021424(s32, u16, s32);
 extern s32 func_80021A98(s16, void *, s16);
 extern s32 func_80032854(s16, s32, s32 *, s32);
-void cpu_side_move_dir(s32 arg0)
+void func_80027640(s32 arg0)
 {
     volatile s32 sp10;
     volatile s32 _g14;
@@ -399,7 +399,7 @@ void cpu_side_move_dir(s32 arg0)
 }
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
-void mk_g2l(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
+void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
     s32 chk_obj;
 
     if (a0 == 1) {
@@ -508,8 +508,8 @@ void func_80027A58(s32 *a0) {
     }
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
-INCLUDE_ASM("asm/funcs", calc_teasi_loc_fw);
-s32 saTan2KabutoWareMove(u8 *arg0, u8 *arg1) {
+INCLUDE_ASM("asm/funcs", func_80027AD8);
+s32 func_800283D0(u8 *arg0, u8 *arg1) {
     u16 temp_a1;
     u8 *temp_s4;
     s32 temp_v1;
@@ -715,7 +715,7 @@ void func_8002872C(void) {
         offset += 0x44C;
     } while (i < 2);
 }
-INCLUDE_ASM("asm/funcs", saTan3MainJump);
+INCLUDE_ASM("asm/funcs", func_800288C8);
 /* kengo:HIGH  |  sa_tan3/saTan3MainJump  |  492i  |  +3 near-exact */
 void func_8002906C(void) {
     s16 *ptr = snd_GetSeId();
@@ -724,11 +724,11 @@ void func_8002906C(void) {
         ptr = (s16 *)((u8 *)ptr + 0x10);
     }
 }
-INCLUDE_ASM("asm/funcs", DispPracticeMenuTex_C);
+INCLUDE_ASM("asm/funcs", func_800290B8);
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 INCLUDE_ASM("asm/funcs", func_80029454);
 INCLUDE_ASM("asm/funcs", func_8002A458);
-INCLUDE_ASM("asm/funcs", calc_loc_mat_fw);
+INCLUDE_ASM("asm/funcs", func_8002AB08);
 /* kengo:MED  |  se_fc/calc_loc_mat_fw  |  1074i  |  -38 3.5% no-affinity fallback */
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
@@ -866,7 +866,7 @@ void func_8002C0DC(void) {
         arg2 = *(s32 *)(var_s0 + 0xE0);
         arg1 = *(s32 *)(ptr + 0xD8) - arg1;
         arg2 = *(s32 *)(ptr + 0xE0) - arg2;
-        func_8001F860((s16 *)var_s0, single_game_getEnemyCharId(arg1, arg2));
+        func_8001F860((s16 *)var_s0, func_8007FD5C(arg1, arg2));
         var_s0 += 0x44C;
     } while (var_s1 < 2);
 
@@ -880,7 +880,7 @@ void func_8002C0DC(void) {
         if (chk == 0) {
             if (D_800A3758 == 0xFF) {
                 if (*(u8 *)(var_s0 + 0xAA) == *(s16 *)(var_s0 + 0x40)) {
-                    calc_loc_mat_fw(1);
+                    func_8002AB08(1);
                 }
             }
         }
@@ -906,8 +906,8 @@ void func_8002C0DC(void) {
         }
     }
 }
-void PutRobShadow(void);
-INCLUDE_ASM("asm/funcs", PutRobShadow);
+void func_8002C22C(void);
+INCLUDE_ASM("asm/funcs", func_8002C22C);
 /* kengo:MED  |  am_rmd/PutRobShadow  |  252i */
 typedef struct { s32 x, y, z; } Vec3i;
 
@@ -925,21 +925,21 @@ void func_8002C61C(void) {
     } else if (mode == 0x11) {
         func_8002C0DC();
     } else {
-        motion_GameCalcMotion();
-        saTan3MainJump();
+        func_8002872C();
+        func_800288C8();
         D_800A3824 = func_80029454();
         if (D_800A3824 < 0) goto do_calc;
-        PutRobShadow();
+        func_8002C22C();
         if (D_800A3824 < 0) goto do_calc;
         if (D_80101F75 != 0 || D_801023C1 != 0) {
-            saTan2KabutoWareMove(s1, (u8 *)0x1F8003F4);
-            saTan2KabutoWareMove(s0, (u8 *)0x1F8003F4);
+            func_800283D0(s1, (u8 *)0x1F8003F4);
+            func_800283D0(s0, (u8 *)0x1F8003F4);
             D_801023C1 = 0;
             D_80101F75 = 0;
             goto after_calc;
         }
     do_calc:
-        calc_loc_mat_fw(0);
+        func_8002AB08(0);
     after_calc:
 
         if (*(s32 *)(s1 + 0x3C) >= 3 && *(s32 *)(s0 + 0x3C) >= 3 &&
@@ -1019,7 +1019,7 @@ void func_8002C61C(void) {
         if (saved == -1) {
             func_80031B24();
             if (*(s16 *)(s1 + 0x286) == saved) {
-                Pad_Prs();
+                func_80032314();
             }
         }
     }
@@ -1029,7 +1029,7 @@ void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
     (void)a1;
     (void)a2;
 }
-INCLUDE_ASM("asm/funcs", special_camera_Init);
+INCLUDE_ASM("asm/funcs", func_8002CD58);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
@@ -1126,7 +1126,7 @@ s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         }
     }
 }
-s32 saTan5TakeAnim2(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
+s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
 
     x1 = p1[0];
@@ -1233,7 +1233,7 @@ dist_calc:
 
 
 /* kengo:MED  |  sa_tan5/saTan5TakeAnim2  |  154i  |  x2 size collision */
-s32 saTan0KiWareMoveA(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
+s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
         *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
@@ -1328,21 +1328,21 @@ edge_check:
         p124[0] = *(s32 *)(obj + 0xB8) - *(s32 *)(obj + 0x100);
         p124[1] = *(s32 *)(obj + 0xBC) - *(s32 *)(obj + 0x104);
 
-        if (saTan5TakeAnim2(sqrt_val, dist, p118, p124) != 0) return 1;
+        if (func_8002D518(sqrt_val, dist, p118, p124) != 0) return 1;
 
         {
             s32 *p10C = (s32 *)(obj + 0x10C);
             p10C[0] = -*(s32 *)(obj + 0x100);
             p10C[1] = -*(s32 *)(obj + 0x104);
 
-            if (saTan5TakeAnim2(sqrt_val, dist, p10C, p118) != 0) return 1;
+            if (func_8002D518(sqrt_val, dist, p10C, p118) != 0) return 1;
 
-            return saTan5TakeAnim2(sqrt_val, dist, p10C, p124) != 0;
+            return func_8002D518(sqrt_val, dist, p10C, p124) != 0;
         }
     }
 }
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveA  |  212i  |  x2 size collision */
-INCLUDE_ASM("asm/funcs", saTan0KiWareMoveB);
+INCLUDE_ASM("asm/funcs", func_8002DAD0);
 
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
@@ -1381,7 +1381,7 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     return (cross_center ^ cross_point) >= 0;
 }
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
-void saSeInit(u8 *arg0) {
+void func_8002E838(u8 *arg0) {
     s32 sp_tmp;
     s32 *mat;
     u32 dist_sq;
@@ -1395,7 +1395,7 @@ void saSeInit(u8 *arg0) {
     {
         s32 dz = (*(s32 **)((u8 *)arg0 + 0x64))[2] - (*(s32 **)((u8 *)arg0 + 0x60))[2];
         *(s32 *)((u8 *)arg0 + 0xB0) = dz;
-        charId = single_game_getEnemyCharId(*(s32 *)((u8 *)arg0 + 0xA8), dz);
+        charId = func_8007FD5C(*(s32 *)((u8 *)arg0 + 0xA8), dz);
     }
 
     dist_sq = (u32)((*(s32 *)((u8 *)arg0 + 0xA8) * *(s32 *)((u8 *)arg0 + 0xA8))
@@ -1429,7 +1429,7 @@ void saSeInit(u8 *arg0) {
         }
     }
 
-    charId = single_game_getEnemyCharId(*(s32 *)((u8 *)arg0 + 0xAC), a1_volume);
+    charId = func_8007FD5C(*(s32 *)((u8 *)arg0 + 0xAC), a1_volume);
     mat = (s32 *)((u8 *)arg0 + 0xD8);
     *(s16 *)((u8 *)arg0 + 0xF8) = (s16)(0x800 - charId);
 
@@ -1582,7 +1582,7 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         return 1;
     }
 }
-void DispSchoolBG(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
+void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     s32 sp_tmp;
     u8 *scr = (u8 *)0x1F8002B8;
     s32 *mat;
@@ -1597,7 +1597,7 @@ void DispSchoolBG(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
 
     mat = (s32 *)(scr + 0xD8);
 
-    charId1 = single_game_getEnemyCharId(arg1[0], arg1[2]);
+    charId1 = func_8007FD5C(arg1[0], arg1[2]);
     *(s16 *)0x1F8003B2 = (s16)(0x800 - charId1);
 
     {
@@ -1632,7 +1632,7 @@ void DispSchoolBG(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
         }
     }
 
-    charId2 = single_game_getEnemyCharId(arg1[1], (s32)volume);
+    charId2 = func_8007FD5C(arg1[1], (s32)volume);
     *(s16 *)(scr + 0xF8) = (s16)(0x800 - charId2);
     *(s16 *)(scr + 0xD8) = 0x1000;
     *(s16 *)(scr + 0xDA) = 0;
@@ -1792,7 +1792,7 @@ void func_8002EECC(void *arg0, void *arg1) {
 void func_8002F2D0(s32 *a0, s32 *a1);
 INCLUDE_ASM("asm/funcs", func_8002F2D0);
 INCLUDE_ASM("asm/funcs", func_8002F770);
-s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
+s32 func_8002FC80(s32 *a0, s32 *a1, s32 *a2) {
     s32 *va;
     s32 *vb;
     s32 *out;
@@ -1867,7 +1867,7 @@ s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
         __asm__ volatile ("swc2 $26, 4(%0)" :: "r"(mp));
         __asm__ volatile ("swc2 $27, 8(%0)" :: "r"(mp));
         __asm__ volatile ("lw %0, 0x1F800388" : "=r"(arg1_val));
-        ret = single_game_getEnemyCharId(q[0], arg1_val);
+        ret = func_8007FD5C(q[0], arg1_val);
         __asm__ volatile ("lw %0, 0x1F800384" : "=r"(flag));
         if (flag > 0) {
             ret += 0x800;
@@ -1877,7 +1877,7 @@ s32 cpu_check_tubazeri(s32 *a0, s32 *a1, s32 *a2) {
     return ret;
 }
 /* kengo:HIGH  |  nm_cpu/cpu_check_tubazeri  |  76i  |  x2 size collision */
-s32 coli_check_circle_hit_line(s32 *arg0) {
+s32 func_8002FDB0(s32 *arg0) {
     s32 stride;
     s32 v1, v2;
     s32 ret;
@@ -2120,7 +2120,7 @@ void func_800300B4(u8 *arg0) {
 
     lookup = (&D_8008EB80)[*(s16 *)(arg0 + 2)];
     func_80049718(lookup, 1, mac_result, (s16 *)buf2);
-    saSeInit_2(arg0[10], lookup, mac_result, (u16 *)buf2);
+    func_800393C8(arg0[10], lookup, mac_result, (u16 *)buf2);
 }
 void func_80030208(void) {
     u8 *base;
@@ -2163,7 +2163,7 @@ call_with_a1:
     ptr1 = base + 0x2C;
     ptr0 = base + 0x54;
     func_80049718(lookup, 1, ptr1, ptr0);
-    saSeInit_2(*(u8 *)p, lookup, ptr1, ptr0);
+    func_800393C8(*(u8 *)p, lookup, ptr1, ptr0);
 
 increment:
     i++;
@@ -2181,7 +2181,7 @@ void cpu_get_dist(s32 *a0, s16 *a1) {
     s32 rx;
     s32 rz;
     s32 v48;
-    angle = single_game_getEnemyCharId(a1[0], a1[2]);
+    angle = func_8007FD5C(a1[0], a1[2]);
     cos_val = *((&Judge) + ((angle + 0x400) & 0xFFF));
     /* FAKE: do-while(0) scheduling fence */
     do {
@@ -2256,7 +2256,7 @@ void func_80030524(void) {
         off += 0x64;
     } while (++i < 12);
 }
-s32 *coli_hit_body_weapon(s32 *arg0, s32 arg1) {
+s32 *func_80030580(s32 *arg0, s32 arg1) {
     volatile s32 _spill[3];
     register u8 *t1 asm("t1") = (u8 *)arg0;
     register u8 *a3 asm("a3") = (u8 *)&D_80106A78;
@@ -2338,9 +2338,9 @@ found:
 }
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
-extern s32 *coli_hit_body_weapon(s32 *, s32);
+extern s32 *func_80030580(s32 *, s32);
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
-s32 cpu_check_tubazeri_2(s32 *a0) {
+s32 func_800307D0(s32 *a0) {
     s32 count;
     s32 s1;
     s32 v0;
@@ -2369,7 +2369,7 @@ do_sll:
 after_sll:
     s2 = (s32 *)((u8 *)a0 + v0);
     s3 = *(s16 *)((u8 *)s2 + 0x332);
-    a2 = coli_hit_body_weapon(a0, s3);
+    a2 = func_80030580(a0, s3);
     v0 = s1;
     if (v0 < *(s16 *)((u8 *)a0 + 0x330) - 1) {
         s32 *ptr = s2;
@@ -2393,13 +2393,13 @@ after_sll:
 }
 typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
-extern s32 *coli_hit_body_weapon(s32 *, s32);
+extern s32 *func_80030580(s32 *, s32);
 void func_80030900(u8 *a0, s32 *a1) {
     s32 *p;
     s32 rnd;
     s32 i;
 
-    p = coli_hit_body_weapon((s32 *)a0, *(s16 *)(a0 + 0x332));
+    p = func_80030580((s32 *)a0, *(s16 *)(a0 + 0x332));
     *((u8 *)p + 4) = 0;
     *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a1;
     *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
@@ -2423,7 +2423,7 @@ void cpu_set_move_command_and_dir(s32 *a0, s32 a1, s32 *a2) {
     s32 *p;
     s32 rnd;
 
-    p = coli_hit_body_weapon(a0, a1);
+    p = func_80030580(a0, a1);
     *((u8 *)p + 4) = 0;
     *(Vec3_copy *)((u8 *)p + 0x2C) = *(Vec3_copy *)a2;
     *(s32 *)((u8 *)p + 0x44) = (rng_Next() & 0xFF) - 0x80;
@@ -2733,7 +2733,7 @@ u8 *func_80032064(u8 *src, s32 type) {
     }
     return s0;
 }
-void myRobGeneiDraw2(void) {
+void func_800321E8(void) {
     s32 *sp = (s32 *)0x1F8002B8;
     u8 *base = &D_80104E88;
     s32 i;
@@ -2764,7 +2764,7 @@ void myRobGeneiDraw2(void) {
 }
 extern u8 D_8008D118;
 extern void func_8005C650(s32, s32, s32);
-void Pad_Prs(void) {
+void func_80032314(void) {
     register u8 *t0 asm("t0") = &D_80104E88;
     register s32 t1 asm("t1") = 0;
     register u8 *a3 asm("a3") = &D_80104E88 + 2;
@@ -2838,7 +2838,7 @@ next:
     if (t1 < 4) goto loop;
 }
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
-void cpu_get_dist_2(u8 *a0) {
+void func_800324D0(u8 *a0) {
     register u8 *v1 asm("v1");
     register u8 v0 asm("v0");
     register u32 a2 asm("a2");
@@ -3255,7 +3255,7 @@ void func_80033550(s32 *arg0)
   *((s32 *) (((u8 *) (&D_80107858)) + idx)) = w2;
 }
 
-void mk_leaf_newpos(void) {
+void func_800335D8(void) {
     u8 *slot = &D_800A3918;
     u8 *pos = (u8 *)&D_80107850;
     u8 *tbl = &D_8008E914 + D_800A36A4 * 8;
@@ -3377,7 +3377,7 @@ void func_80033898(void) {
     D_800A37B8 = 0;
     D_800A3834 = 3;
 }
-void cpu_set_move_command_and_dir_for_no_action(void) {
+void func_800338CC(void) {
     s32 sp[2];
     s32 count;
     s32 i;
@@ -3492,7 +3492,7 @@ set_count:
     D_800A37BC = 0;
 }
 /* kengo:HIGH  |  nm_cpu/cpu_set_move_command_and_dir_for_no_action  |  189i  |  x2 size collision */
-void mottest_disp(void) {
+void func_80033BC0(void) {
     u8 a0 = D_800A3783;
     u8 b = D_800A391F;
 
@@ -3620,7 +3620,7 @@ s32 func_80033DF4(void) {
             *a0 = v1 | tableIndex;
         }
 
-        motutil_CheckKamaeReq();
+        func_80033D38();
         D_800A3834 = 4;
         return 0;
     } else {
@@ -3827,11 +3827,11 @@ void func_800343F0(void) {
 
 
 extern void func_8003B20C(s32);
-extern void suDispMentalBar(void);
+extern void func_8003B5A4(void);
 extern s32 func_8005509C(s32);
 INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
 
-void DispSamnailWindow(void) {
+void func_800344B4(void) {
     func_800343F0();
 
     switch (D_800A38DC) {
@@ -3845,15 +3845,15 @@ void DispSamnailWindow(void) {
     case 0:
         func_8003B20C((&D_8008D538)[(s8)D_8010277C]);
         D_8010277D = 0;
-        suDispMentalBar();
+        func_8003B5A4();
         func_8005509C(1);
         goto skip_clear;
 
     case 1:
         D_80102781 = 1;
-        cpu_set_move_command_and_dir_for_no_action();
+        func_800338CC();
         D_800A3768 = 1;
-        mottest_disp();
+        func_80033BC0();
         goto skip_clear;
 
     case 3:
@@ -3924,7 +3924,7 @@ void func_80034F88(void) {
     u8 val2;
     s32 i;
 
-    p = saTan2GaugeInit_80077D00();
+    p = func_80077D00();
     ptr = &D_80106A73;
     *ptr &= 0xF8;
     asm volatile("" ::: "memory");
@@ -3965,7 +3965,7 @@ void func_8003504C(void) {
     s8 val;
     u8 tmp;
 
-    p = saTan2GaugeInit_80077D00();
+    p = func_80077D00();
     i = 0;
     src = (u8 *)p;
     base = &D_80102785;
@@ -4035,10 +4035,10 @@ void func_8003504C(void) {
         }
     }
 
-    DispSamnailWindow();
+    func_800344B4();
 }
 
-void single_game_SetWazaData(void) {
+void func_80035280(void) {
     s32 *p;
     u8 *src1;
     u8 *src2;
@@ -4049,7 +4049,7 @@ void single_game_SetWazaData(void) {
     s32 v;
     volatile u8 *pbit;
 
-    p = saTan2GaugeInit_80077D00();
+    p = func_80077D00();
     pbit = &D_80106A73;
     v = p[8];
     v = v & (~1);

@@ -27,7 +27,7 @@ glabel func_8001E878
     /* F0DC 8001E8DC 80200400 */  sll        $a0, $a0, 2
     /* F0E0 8001E8E0 23208200 */  subu       $a0, $a0, $v0
     /* F0E4 8001E8E4 80200400 */  sll        $a0, $a0, 2
-    /* F0E8 8001E8E8 1E6D000C */  jal        myRobGeneiMove
+    /* F0E8 8001E8E8 1E6D000C */  jal        func_8001B478
     /* F0EC 8001E8EC 21209000 */   addu      $a0, $a0, $s0
   .L8001E8F0:
     /* F0F0 8001E8F0 0179000C */  jal        func_8001E404
@@ -52,7 +52,7 @@ glabel func_8001E878
     /* F13C 8001E93C 00000000 */   nop
     /* F140 8001E940 5FC3000C */  jal        func_80030D7C
     /* F144 8001E944 00000000 */   nop
-    /* F148 8001E948 7AC8000C */  jal        myRobGeneiDraw2
+    /* F148 8001E948 7AC8000C */  jal        func_800321E8
     /* F14C 8001E94C 00000000 */   nop
     /* F150 8001E950 E8E5000C */  jal        func_800397A0
     /* F154 8001E954 00000000 */   nop
@@ -90,9 +90,9 @@ glabel func_8001E878
     /* F1CC 8001E9CC 01008438 */  xori       $a0, $a0, 0x1
     /* F1D0 8001E9D0 6A1B010C */  jal        game_StageInit
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
-    /* F1D8 8001E9D8 9873000C */  jal        camera_set_target_zoom
+    /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
     /* F1DC 8001E9DC 00000000 */   nop
-    /* F1E0 8001E9E0 76CD000C */  jal        mk_leaf_newpos
+    /* F1E0 8001E9E0 76CD000C */  jal        func_800335D8
     /* F1E4 8001E9E4 00000000 */   nop
     /* F1E8 8001E9E8 3772000C */  jal        func_8001C8DC
     /* F1EC 8001E9EC 00000000 */   nop

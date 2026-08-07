@@ -17,14 +17,14 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
 extern s32 D_800A3240;
 extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
-extern void md_game_check_mode(s32 *, s32);
+extern void func_8003EDC0(s32 *, s32);
 extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
@@ -41,7 +41,7 @@ extern u8 D_80094B48[];
 extern u8 D_80094D40[];
 extern void initLoadImage(s32, s16 *, s32, s32);
 
-void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
+void func_800401CC(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     s32 v0;
     u16 *tbl;
@@ -76,7 +76,7 @@ void PutShadowRmd(s32 a0, s32 a1, s32 a2) {
         ot[0x3FFC / 4] = (ot[0x3FFC / 4] & 0xFF000000) | ((s32)pkt & 0xFFFFFF);
     }
 }
-void efc_rob_Init(s32 a0, s32 a1) {
+void func_80040304(s32 a0, s32 a1) {
     s32 ptr;
     s32 mask;
     s32 i;
@@ -103,8 +103,8 @@ void efc_rob_Init(s32 a0, s32 a1) {
             mask = 0x12;
             break;
         case 6:
-            PutShadowRmd(a0, 5);
-            PutShadowRmd(a0, 6);
+            func_800401CC(a0, 5);
+            func_800401CC(a0, 6);
             mask = 0;
             break;
         }
@@ -112,7 +112,7 @@ void efc_rob_Init(s32 a0, s32 a1) {
         i = 0;
         do {
             if (mask & 1) {
-                PutShadowRmd(a0, 4 - i);
+                func_800401CC(a0, 4 - i);
             }
             i++;
             mask >>= 1;
@@ -162,34 +162,34 @@ void func_800404A0(s16 *a0, s32 a1) {
 }
 extern s32 g_player_ptrs[];
 extern s32 g_player_char_ids[];
-void saTan5TakeGetCnt(void) {
+void func_800404D8(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
         g_player_ptrs[i] = 0;
         g_player_char_ids[i] = 0;
     }
 }
-extern void AllocRobRmd(s32 *);
-extern void rob_life_ctrl(s32 *);
-extern void rob_calc_2d_position(s32 *);
+extern void func_80040594(s32 *);
+extern void func_800408F8(s32 *);
+extern void func_80040B44(s32 *);
 extern s32 *func_80045878(s32);
 extern void func_8003F824(s32 *, s32);
-extern void FadeOut_8003FFC4(s32 *);
+extern void func_8003FFC4(s32 *);
 extern void func_8003E120(void);
 s32 *func_80040510(s32 a0) {
     s32 *ptr;
     ptr = func_80045878(a0);
     g_player_ptrs[a0] = (s32)ptr;
-    AllocRobRmd(ptr);
+    func_80040594(ptr);
     /* FAKE: loop-note ref weighting seats ptr in s0 (s0/s1 swap) */
-    do { rob_life_ctrl(ptr); rob_calc_2d_position(ptr); func_8003F824(ptr, 1); } while (0);
-    FadeOut_8003FFC4(ptr);
+    do { func_800408F8(ptr); func_80040B44(ptr); func_8003F824(ptr, 1); } while (0);
+    func_8003FFC4(ptr);
     func_80040CB8(ptr);
     func_8003E120();
     return ptr;
 }
 extern s32 D_80094B88[];
-void AllocRobRmd(s32 *a0)
+void func_80040594(s32 *a0)
 {
     s32 *rmd;
     s32 *sec;
@@ -216,7 +216,7 @@ void AllocRobRmd(s32 *a0)
     if (((s16 *)a0)[2] == 1) goto after_b644;
 
 call_b644:
-    GetAllocPacketSize(((s16 *)a0)[2]);
+    func_8005B644(((s16 *)a0)[2]);
 
 after_b644:
     if (count < 6) goto simple;
@@ -227,10 +227,10 @@ after_b644:
         s32 idx;
         ptr = (s32 *)((s32)rmd + prev_off);
         idx = ((s16 *)a0)[2] * 3 + 1;
-        ptr = (s32 *)((s32)ptr + tslGlobalMemFree_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
+        ptr = (s32 *)((s32)ptr + func_8005C2A8(ptr, idx, (s32 *)((s32)rmd + next_off)));
 
         if (ptr == 0) {
-            InitFadePanel();
+            func_80052C10();
         }
 
         a0[0] |= 2;
@@ -247,7 +247,7 @@ after_select:
         func_800520B8(a0[8], a0[7], off);
         rmd = (s32 *)a0[7];
         if ((a0[0] >> 1) & 1) {
-            saFidLoad((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
+            func_8005C4C0((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
         }
     }
 
@@ -268,23 +268,23 @@ after_select:
         if (player != 0) goto done_cases;
 
         func_80047EE8(sec, 0);
-        if (single_game_SetStageId() != 0) goto done_cases;
-        videoDecCreate(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
-        InitHiraRmd_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
+        if (func_8003E2A0() != 0) goto done_cases;
+        func_800432A0(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
+        func_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        InitHiraRmd_80047FBC(sec, 0, 0x80, 0);
-        if (single_game_SetStageId() != player) goto case_1_else;
-        videoDecCreate(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
-        InitHiraRmd_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
+        func_80047FBC(sec, 0, 0x80, 0);
+        if (func_8003E2A0() != player) goto case_1_else;
+        func_800432A0(((s16 *)a0)[10], 0x80, 0, -0x140, 0xE8);
+        func_800480C0(sec, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
         func_80043398(((s16 *)a0)[10], 2, 0, 2, 0);
 
     case_1_done:
-        InitHiraRmd_80041AC8((s16 *)a0);
+        func_80041AC8((s16 *)a0);
     }
 
 done_cases:
@@ -300,7 +300,7 @@ done_cases:
 
     gpu_DrawSync(0);
     a0[9] = a0[7] + off;
-    tslFileClose(((s16 *)a0)[2], off);
+    func_80045A28(((s16 *)a0)[2], off);
 }
 
 
@@ -310,7 +310,7 @@ extern s16 D_80094B98[];
 extern s16 D_80094B9A[];
 extern s16 D_80094B9C[];
 extern s16 D_80094C68[];
-void rob_life_ctrl(s32 *a0) {
+void func_800408F8(s32 *a0) {
     s16 *tbl;
     s32 count;
     s16 idx;
@@ -402,7 +402,7 @@ void func_80040A78(s32 arg0) {
 }
 typedef struct { s32 f0, f1, f2, f3; } Copy16;
 typedef struct { s32 f0, f1; } Copy8;
-void rob_calc_2d_position(s32 *arg0) {
+void func_80040B44(s32 *arg0) {
     s32 seen[18];
     s32 *t5;
     s32 *t7;
@@ -559,8 +559,8 @@ extern s32 D_80094CFC[];
 extern s32 D_800A3820;
 extern FuncPtr_40D48 D_800F66A0[];
 extern void func_800417D0(s32 *);
-extern void md_option_reset_800400B0(s32 *, s32);
-extern void ang_hosei_8003F62C(s32 *);
+extern void func_800400B0(s32 *, s32);
+extern void func_8003F62C(s32 *);
 extern void func_800420E8(s32, s32);
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     register s32 a0_s7 asm("s7") = a0;
@@ -740,8 +740,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     func_800404A0((s16 *)(s4 + 0x8B4), arg5);
     *(s16 *)(s4 + 0x1A84) = (s16)arg5;
-    md_option_reset_800400B0((s32 *)s4, arg5);
-    ang_hosei_8003F62C((s32 *)s4);
+    func_800400B0((s32 *)s4, arg5);
+    func_8003F62C((s32 *)s4);
     func_800420E8(a0_s7, (s32)(s3 + 0x2C));
 }
 
@@ -750,7 +750,7 @@ extern s32 D_800A9A10[];
 extern void func_8004A348(s16 *, s32 *);
 extern void func_800523E0(s32 *, s32 *, s32, s32);
 extern void func_80044DE4(s16 *, s16 *, s32, s32);
-void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
+void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     register s32 *s7_a4 asm("s7") = a4;
     s32 *tbl = D_80094CFC;
@@ -823,7 +823,7 @@ extern s32 func_800545F4;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
-void gnd_load_tex(s32 a0) {
+void func_80041398(s32 a0) {
     s32 **t0 = D_80015820;
     s32 t1 = 0;
     s32 mask8 = ~0xFF;

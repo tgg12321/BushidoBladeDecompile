@@ -23,9 +23,9 @@ extern s32 g_game_flag_b;
 extern s32 g_game_flag_a;
 extern s32 g_stage_init_tbl;
 extern void func_8001924C(s32 *, s32);
-extern void tslFileClose(s32, s32);
-extern void game_2d_CheckLifeGaugeNoDisp(s32 *, s32 *, s16 *);
-extern void InitFadePanel(void);
+extern void func_80045A28(s32, s32);
+extern void func_80052A20(s32 *, s32 *, s16 *);
+extern void func_80052C10(void);
 
 /* Externs for globals */
 extern u8 g_char_data;
@@ -191,7 +191,7 @@ void stage_ApplyLighting(void) {
     sys_StubEmpty3(D_800A93B8, D_800A93C4, 2);
 }
 
-void ang_hosei_8003F62C(s32 *a0) {
+void func_8003F62C(s32 *a0) {
     s16 *s0;
     s32 *s1 = a0;
     s0 = (s16 *)s1[9];
@@ -201,16 +201,16 @@ void ang_hosei_8003F62C(s32 *a0) {
         func_8003F824(s1, 0);
     }
     if (s0[1]) {
-        md_option_reset_8004001C((u8 *)s0);
+        func_8004001C((u8 *)s0);
     }
-    ang_near_dif(s0);
+    func_8003F6D8(s0);
     func_8001924C((s32 *)((u8 *)s0 + 0x418), s0[0]);
     if (s0[1]) {
-        md_option_reset_80040068((u8 *)s0);
+        func_80040068((u8 *)s0);
         s0[1] = 0;
     }
 }
-void ang_near_dif(s16 *arg0) {
+void func_8003F6D8(s16 *arg0) {
     volatile s32 _arg0_spill;
     volatile s32 _p0, _p1, _p2, _p3, _p4;
     volatile s32 sp28;
@@ -260,8 +260,8 @@ L8003F750:
                     temp_s0 = *(s32 *)((u8 *)var_s3 + 4);
                     var_s3 = (void *)((u8 *)var_s3 + 4);
                     temp_s0 += 0x18;
-                    game_2d_CheckLifeGaugeNoDisp((s32 *)temp_s0, call_a1, call_a2);
-                    game_2d_CheckLifeGaugeNoDisp((s32 *)temp_s0, (s32 *)((u8 *)var_s2 + 8), (s16 *)((u8 *)temp_s1 + 0x10));
+                    func_80052A20((s32 *)temp_s0, call_a1, call_a2);
+                    func_80052A20((s32 *)temp_s0, (s32 *)((u8 *)var_s2 + 8), (s16 *)((u8 *)temp_s1 + 0x10));
                 }
                 var_s2 = (void *)((u8 *)temp_s4 + var_s5);
                 var_s7 += 1;
@@ -287,7 +287,7 @@ void func_8003F7F4(void) {
     g_game_flag_a = 0;
     g_game_flag_b = 0;
 }
-void tslPrintScreen(u8 *arg0, s32 arg1)
+void func_8003F824(u8 *arg0, s32 arg1)
 {
     register u8 *arg0_s4 asm("s4") = arg0;
     register s32 arg1_s7 asm("s7") = arg1;
@@ -326,7 +326,7 @@ outer_loop:
     if (new_var3 == new_var5) goto past_marker;
     new_var = (s16 *)s3;
     if (*((s16 *)s3) >= 5) {
-        InitFadePanel();
+        func_80052C10();
     }
     cur = (*new_var) * 0xD0 + 8;
     s2 = s3 + cur;
@@ -378,7 +378,7 @@ past_marker:
     if (s5 != -3) { s5++; goto outer_loop; }
 check_arg1:
     if (arg1_s7 != 0) {
-        tslFileClose(
+        func_80045A28(
             (s32)(*((s16 *)(arg0_s4 + 0x4))),
             (s32)(s0 - *((u8 **)(arg0_s4 + 0x1C))));
     }
@@ -489,13 +489,13 @@ void func_8003FECC(s32 *a0, s32 *a1, s16 *a2)
 
   a1[5] = t2;
 }
-s32 FadeOut_8003FFA8(s32 a0) {
+s32 func_8003FFA8(s32 a0) {
     if (a0 & 3) {
         a0 = (a0 + 3) & ~3;
     }
     return a0;
 }
-void FadeOut_8003FFC4(s32 *a0) {
+void func_8003FFC4(s32 *a0) {
     s16 *v1 = (s16 *)a0[9];
     if (v1) {
         v1[3] = 1;
@@ -510,21 +510,21 @@ void func_8003FFE0(void) {
         }
     }
 }
-void md_option_reset_8004001C(u8 *a0) {
+void func_8004001C(u8 *a0) {
     s32 i;
     for (i = 0; i < *(s16 *)a0; i++) {
         a0[0x41A + i * 0x10] = 1;
         a0[0xE + i * 0xD0] = 1;
     }
 }
-void md_option_reset_80040068(u8 *a0) {
+void func_80040068(u8 *a0) {
     s32 i;
     for (i = 0; i < *(s16 *)a0; i++) {
         a0[0x41A + i * 0x10] = 0;
         a0[0xE + i * 0xD0] = 0;
     }
 }
-void md_option_reset_800400B0(s32 *a0, s32 a1) {
+void func_800400B0(s32 *a0, s32 a1) {
     s16 *v1 = (s16 *)a0[9];
     if (v1) {
         s32 i;

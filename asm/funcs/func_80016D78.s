@@ -6,7 +6,7 @@ glabel func_80016D78
     /* 7588 80016D88 1000BFAF */  sw         $ra, 0x10($sp)
     /* 758C 80016D8C 82E4010C */  jal        debug_printf
     /* 7590 80016D90 00DBA534 */   ori       $a1, $a1, (0x8010DB00 & 0xFFFF)
-    /* 7594 80016D94 FB59000C */  jal        coli_CheckRobEnemy
+    /* 7594 80016D94 FB59000C */  jal        func_800167EC
     /* 7598 80016D98 00000000 */   nop
     /* 759C 80016D9C 5C83000C */  jal        func_80020D70
     /* 75A0 80016DA0 00000000 */   nop
@@ -26,7 +26,7 @@ glabel func_80016D78
     /* 75D8 80016DD8 00000000 */   nop
     /* 75DC 80016DDC 4D65000C */  jal        func_80019534
     /* 75E0 80016DE0 00000000 */   nop
-    /* 75E4 80016DE4 B1F4000C */  jal        katinuki_game_setData_8003D2C4
+    /* 75E4 80016DE4 B1F4000C */  jal        func_8003D2C4
     /* 75E8 80016DE8 00000000 */   nop
     /* 75EC 80016DEC 1171000C */  jal        func_8001C444
     /* 75F0 80016DF0 00000000 */   nop

@@ -69,12 +69,12 @@ void func_80047EE8(s32 arg0, s32 arg1)
             new_var2 = word >> 2;
             v0v = (s16) (*((u16 *) p));
             p = (u32 *) (((s32) p) + 2);
-            efc_buki_draw_zanzou(saved + (new_var2 << 2), new_var, a2v, a3v, v0v);
+            func_800482C8(saved + (new_var2 << 2), new_var, a2v, a3v, v0v);
         }
         while ((count--) != 0);
     }
 }
-void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
+void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
 {
     /* Frame: the 32-byte dead-vars padding (frame=80, vars=32) emerges
      * from the declared `s32 buf[8]` local — GCC 2.7.2 reserves frame for
@@ -132,7 +132,7 @@ void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
             p = (u32 *)(((s32)p) + 2);
             v0v = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            efc_buki_draw_zanzou(new_var,
+            func_800482C8(new_var,
                           (s32)a1v + sx_arg2,
                           (s32)a2v + sx_arg3,
                           (s32)a3v + sx_arg2,
@@ -141,7 +141,7 @@ void InitHiraRmd_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
     }
     (void)buf;
 }
-void InitHiraRmd_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
+void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     register s32 saved_arg0 asm("$18");
     register s32 sx_arg2 asm("$22");
@@ -180,7 +180,7 @@ void InitHiraRmd_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 
             p = (u32 *)(((s32)p) + 2);
             v_plus = (s32)v0v + sx_arg5;
             new_var2 = word >> 2;
-            efc_buki_draw_zanzou(saved_arg0 + (new_var2 << 2),
+            func_800482C8(saved_arg0 + (new_var2 << 2),
                           (s32)a1v + sx_arg2,
                           (s32)a2v + sx_arg3,
                           (s32)a3v + sx_arg4,
@@ -245,7 +245,7 @@ void func_800481E8(s32 arg0, s32 arg1)
             if ((s32)a3v < 0x280) {
                 v0v += 1;
             }
-            efc_buki_draw_zanzou(a0_for_call,
+            func_800482C8(a0_for_call,
                           (s32)a1v,
                           (s32)a2v,
                           (s32)a3v,
@@ -253,7 +253,7 @@ void func_800481E8(s32 arg0, s32 arg1)
         } while ((count--) != 0);
     }
 }
-void efc_buki_draw_zanzou(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
+void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = *(u16 *)&arg4;
     s16 rect[4];
     s16 buf[512];
@@ -484,7 +484,7 @@ s32 func_8004881C(s32 arg0, s32 arg1, s32 arg2) {
     return (arg0 + arg1 + arg2) >> 12;
 }
 
-void saTan4FireDisp_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
+void func_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy)
 {
   u16 src_buf[256];
   u16 dst_buf[256];
@@ -591,7 +591,7 @@ void saTan4FireDisp_80048864(s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s3
   gpu_DrawSync(0);
 }
 void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    saTan4FireDisp_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
+    func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
 extern s32 snd_LoadBgm(u8);
 extern s32 snd_PlayBgm(s32);
@@ -599,7 +599,7 @@ extern u8 D_80099BCC;
 extern s32 D_800A33E0;
 extern s32 D_800A33E4;
 extern s32 func_8004153C(s32);
-s32 mario_getMarioVoiceData_80048AD0(s32 arg0) {
+s32 func_80048AD0(s32 arg0) {
     s32 temp_v0;
     u8 sound;
     u8 *base;
@@ -636,20 +636,20 @@ s32 mario_getMarioVoiceData_80048AD0(s32 arg0) {
     return 1;
 }
 extern s32 g_snd_play_count;
-void saTan5GetTakeCutAnimType(s32 a0) {
+void func_80048B8C(s32 a0) {
     g_snd_play_count += a0;
 }
 INCLUDE_ASM("asm/funcs", func_80048BA4);
 extern u8 g_snd_ch_data[];
 extern u16 g_snd_se_bank[];
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 void func_80048F58(s32 a0, s32 a1) {
     s32 i;
     u16 *src;
     u16 *dst;
     u8 *base;
     if (a1 > 0) {
-        InitFadePanel();
+        func_80052C10();
     }
     base = g_snd_ch_data + a1 * 308;
     *(u32 *)base = 0;
@@ -674,7 +674,7 @@ extern s16 D_800EF9F4;
 extern s16 D_800A33EA;
 extern s16 D_800A33E8;
 extern s32 D_800A33EC;
-void gnd_close_8004939C(void) {
+void func_8004939C(void) {
     s16 val = -1;
     s32 i = 0x39;
     s16 *p = &D_800EF9F2;
@@ -688,7 +688,7 @@ void gnd_close_8004939C(void) {
     D_800A33E8 = -1;
     D_800A33EC = -1;
 }
-extern s32 InitFadePanel();
+extern s32 func_80052C10();
 extern u8 D_80099CC8[];
 extern u8 D_80099CC9[];
 extern s32 D_800A33EC;
@@ -706,10 +706,10 @@ void func_800493E4(s32 arg0) {
         }
     } else {
         if (D_800A33EC == 0 && !(arg0 < 0x33)) {
-            InitFadePanel();
+            func_80052C10();
         }
         if (D_800A33EC == 1 && arg0 < 0x33) {
-            InitFadePanel();
+            func_80052C10();
         }
     }
     idx = arg0 * 2;
@@ -724,7 +724,7 @@ void func_800493E4(s32 arg0) {
 }
 extern s32 D_800A33EC;
 extern s16 D_800A33E8;
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 void func_800494D4(s32 idx, s32 val) {
     s32 cond;
     if (D_800A33EC == 0) {
@@ -733,10 +733,10 @@ void func_800494D4(s32 idx, s32 val) {
         cond = val < 8;
     }
     if (!cond) {
-        InitFadePanel();
+        func_80052C10();
     }
     if (((u32)idx) >= 2U) {
-        InitFadePanel();
+        func_80052C10();
     }
     (&D_800A33E8)[idx] = (s16)val;
 }
@@ -758,8 +758,8 @@ extern s16 D_800A33E8;
 extern s16 D_800A33EA;
 extern s32 D_800A324C;
 extern s32 func_8004954C(s32, s32, s32);
-extern s32 saTanMainDispGnd_80046020();
-extern void efc_rob_set_type_particle(s32, s32, s16 *, s32);
+extern s32 func_80046020();
+extern void func_80045B68(s32, s32, s16 *, s32);
 extern s32 func_8003E120();
 void func_80049584(s32 arg0) {
     register s32 var_s2 asm("$18") = arg0;
@@ -831,8 +831,8 @@ end:
         var_s1 = 0;
     }
     if (var_s1 == 0) {
-        saTanMainDispGnd_80046020();
-        efc_rob_set_type_particle(D_800A33EC, var_s0_3, D_800EF980, var_s2);
+        func_80046020();
+        func_80045B68(D_800A33EC, var_s0_3, D_800EF980, var_s2);
         func_8003E120();
     }
     (void) var_s2;
@@ -845,7 +845,7 @@ extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
 extern s32 (*g_anim_func_table)(s16 *, s16 *);
 extern u8 *func_8004153C(s32);
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 extern void func_8007E4DC(s16 *, s16 *, s16 *);
 extern void func_8007ED6C(s32, s16 *, s32 *);
 
@@ -867,7 +867,7 @@ void func_80049718(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     }
     var_s3 = arg1;
     if ((*p_anim) < 0) {
-        InitFadePanel();
+        func_80052C10();
     }
     obj = D_800A38B4;
     var_s5 = 0;
@@ -970,7 +970,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     new_var8 = (u8 *) D_800EF980;
     p_anim = (s16 *) (new_var8 + (temp_v1 * 2));
     if ((*p_anim) < 0) {
-        InitFadePanel();
+        func_80052C10();
     }
     vehicle = (u8 *) func_8004153C(arg1 >> 1);
     obj = D_800A38B4;
@@ -1079,7 +1079,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         var_s0 = 1;
         var_s2 = 0;
     } else {
-        InitFadePanel();
+        func_80052C10();
     }
 
     hdr = ~var_s0;
@@ -1101,8 +1101,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        saTan5TakeGetPos_80045230(a0_arg);
-        var_s1 += tslGlobalMemFree_8005C2A8(var_s1, 2, var_s7);
+        func_80045230(a0_arg);
+        var_s1 += func_8005C2A8(var_s1, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
@@ -1114,8 +1114,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        saTan5TakeGetPos_80045230(a0_arg);
-        var_s1 += tslGlobalMemFree_8005C2A8(var_s1, 5, var_s7);
+        func_80045230(a0_arg);
+        var_s1 += func_8005C2A8(var_s1, 5, var_s7);
     }
     return var_s1;
 }
@@ -1282,9 +1282,9 @@ INCLUDE_ASM("asm/funcs", func_8004A76C);
 INCLUDE_ASM("asm/funcs", func_8004A808);
 void func_8004A938(void) {
 }
-INCLUDE_ASM("asm/funcs", calc_loc_mat_fw_8004A940);
+INCLUDE_ASM("asm/funcs", func_8004A940);
 INCLUDE_ASM("asm/funcs", func_8004BB68);
-INCLUDE_ASM("asm/funcs", saTan2LineDraw);
+INCLUDE_ASM("asm/funcs", func_8004BCC0);
 INCLUDE_ASM("asm/funcs", func_8004C1F4);
 INCLUDE_ASM("asm/funcs", func_8004C388);
 PAD_NOPS_1; /* padding after func_8004C388 */
@@ -1440,7 +1440,7 @@ void func_80052930(s32 *mat, s32 *vec, s16 *out) {
     out[5] = (s16)t6;
     out[8] = (s16)t7;
 }
-INCLUDE_ASM("asm/funcs", game_2d_CheckLifeGaugeNoDisp);
+INCLUDE_ASM("asm/funcs", func_80052A20);
 INCLUDE_ASM("asm/funcs", func_80052A88);
 INCLUDE_ASM("asm/funcs", func_80052B00);
 /* func_80052B44 = LIBGTE-style SetRotMatrix + zero-translation. Loads a packed
@@ -1457,7 +1457,7 @@ INCLUDE_ASM("asm/funcs", func_80052B7C);
  * delay slot holds a canonical nop where GCC's reorg would fill the last sb.
  * Canonical-asm; see inline_asm_canonical.txt. User-authorized 2026-06-12. */
 INCLUDE_ASM("asm/funcs", func_80052BE4);
-INCLUDE_ASM("asm/funcs", InitFadePanel);
+INCLUDE_ASM("asm/funcs", func_80052C10);
 PAD_NOPS_1; /* padding after InitFadePanel */
 INCLUDE_ASM("asm/funcs", func_80052C28);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
@@ -1547,7 +1547,7 @@ void func_80053584(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     func_80052D00(arg2, arg3);
 }
 typedef struct { s32 a, b, c, d; } _S16_53614;
-void camera_check_inside_screen_rob_dpos(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+void func_80053614(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A33F4 = arg4;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 8) = *(_S16_53614 *)arg0;
     *(_S16_53614 *)((u8 *)D_800A33F4 + 0x18) = *(_S16_53614 *)arg1;
@@ -1597,7 +1597,7 @@ void func_80054884(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a
 void gpu_DrawSync(s32);
 void func_8004659C(s32);
 void snd_StopSelection(void);
-void katinuki_game_setData_800548DC(void) {
+void func_800548DC(void) {
     gpu_DrawSync(0);
     func_8004659C(-1);
     snd_StopSelection();
@@ -1609,7 +1609,7 @@ extern s32 D_800A374C;
 extern s32 D_800A3808;
 extern s32 D_800A378C;
 extern s32 func_8005490C(void);
-extern void leaf_muki_awase_800444E0(void);
+extern void func_800444E0(void);
 s32 func_80054F68(void) {
     s32 v3;
     s32 s0;
@@ -1619,7 +1619,7 @@ s32 func_80054F68(void) {
     D_800A3808 = v3;
     D_800A378C = v3 + 0x10;
     s0 = func_8005490C();
-    leaf_muki_awase_800444E0();
+    func_800444E0();
     return s0;
 }
 extern s32 D_800EFB14;
@@ -1673,7 +1673,7 @@ void func_800550E8(s32 arg0) {
         p[i * 2 + 0x415] = p[i * 2 + 0x415] >> 1;
     } while (++i < 8);
 }
-INCLUDE_ASM("asm/funcs", single_game_SetStatusUpData);
+INCLUDE_ASM("asm/funcs", func_80055138);
 extern u16 D_80099D88;
 
 s32 func_80055948(u8 *arg0) {
@@ -1758,7 +1758,7 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3C8) = 0;
     *(s32 *)(a0 + 0x3CC) = -1;
 }
-INCLUDE_ASM("asm/funcs", calc_loc_mat_fw_80055B60);
+INCLUDE_ASM("asm/funcs", func_80055B60);
 void func_80056CB8(s32 arg0) {
     /* Bind locals to specific callee-save regs to match target's allocation. */
     register s32 r_arg0 asm("$23") = arg0;     /* $s7 */
@@ -1826,8 +1826,8 @@ void func_80056CB8(s32 arg0) {
                 sp38 = 0; sp3C = 0; sp40 = 0;
                 sp48 = 0; sp4C = 0; sp50 = 0;
                 sp58 = 0; sp5C = 0;
-                camera_check_inside_screen_rob_dpos((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
-                camera_check_inside_screen_rob_dpos((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
+                func_80053614((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
+                func_80053614((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
                 *(s8 *)(r_arg0 + 0x444 + var_s6) = 0;
                 var_s6 += 1;
                 var_fp += 2;
@@ -1856,7 +1856,7 @@ void func_80056CB8(s32 arg0) {
 extern u8 D_8009A830;
 extern s8 D_8009A838;
 extern u8 D_8009A840;
-s32 ang_hosei_80056FE8(s32 arg0) {
+s32 func_80056FE8(s32 arg0) {
     s32 a2 = *((s32 *) arg0);
     s32 a3 = *((u8 *) ((*((s32 *) (a2 + 0x58))) + 3));
     s32 base = a3 * 40;
@@ -1876,7 +1876,7 @@ s32 ang_hosei_80056FE8(s32 arg0) {
         return partial + (*((s16 *) ((*((s32 *) arg0)) + 0x40A))) + 0x12C;
     }
 }
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 func_800233AC(void *, s32 *);
 extern s32 D_8009AA50[];
 
@@ -1887,8 +1887,8 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = single_game_getEnemyCharId(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
-    var_v0 = temp_s0 - single_game_getEnemyCharId(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
+    temp_s0 = func_8007FD5C(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
+    var_v0 = temp_s0 - func_8007FD5C(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;
     temp_v1 = temp_v0 & 7;
@@ -1918,7 +1918,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
 INCLUDE_ASM("asm/funcs", func_800571C0);
 INCLUDE_ASM("asm/funcs", func_8005763C);
 INCLUDE_ASM("asm/funcs", func_80057ACC);
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s16 Judge;
 void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
@@ -1953,9 +1953,9 @@ void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     }
 
     p = (s16 *)((s32)table + (((s32)(prev_idx << 16) >> 16) << 2));
-    ang_prev = single_game_getEnemyCharId(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+    ang_prev = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
     p = (s16 *)((s32)(*(s16 **)(arg0 + 4)) + (((s32)(next_idx << 16) >> 16) << 2));
-    ang_next = single_game_getEnemyCharId(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
+    ang_next = func_8007FD5C(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
         base = ang_prev + 0x800;
@@ -1978,11 +1978,11 @@ extern s32 D_800EFB38;
 extern s32 D_800EFB78;
 extern s32 D_800EFB7C;
 extern s32 D_800EFC38;
-extern void DispStuff(void);
-extern s32 SetBloodSpot(s32);
+extern void func_80083E9C(void);
+extern s32 func_80085544(s32);
 extern s32 memcard_SetSlot(s32);
 extern s32 sys_Shutdown(void);
-extern s32 title_mv_exec2(s32);
+extern s32 func_800858D0(s32);
 extern s32 func_80085E4C(s32, s32);
 extern s32 func_80085EE4(s32);
 extern s32 func_80085F98(void);
@@ -2004,12 +2004,12 @@ void func_8005B43C(void) {
         p2 += 1;
     } while (i < 0x10);
     sys_Shutdown();
-    title_mv_exec2(0);
+    func_800858D0(0);
     func_80085F98();
     func_80085EE4(0);
     func_80085E4C(0, 0);
     memcard_SetSlot(0);
-    SetBloodSpot(1);
+    func_80085544(1);
     {
         s32 v = 0x7F;
         q = (u8 *)&D_800EFB78;
@@ -2022,7 +2022,7 @@ void func_8005B43C(void) {
             q += 8;
         } while (j < 0xC0);
     }
-    DispStuff();
+    func_80083E9C();
     D_800A3408 = 0;
     D_800A3400 = 0;
 }
@@ -2035,7 +2035,7 @@ void spu_Reset(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
 extern s32 D_800A3408;
-void get_point_value(void) {
+void func_8005B50C(void) {
     s32 i;
     s32 *a0;
     s32 *v1;
@@ -2339,7 +2339,7 @@ extern s32 D_80101E40;
 extern s32 D_80101E44;
 extern s32 D_80103624;
 extern s32 D_800EFB38;
-void GetAllocPacketSize(s32 a0) {
+void func_8005B644(s32 a0) {
     s32 v;
     func_800858D0(0);
     v = a0 * 2 + a0 + 1;
@@ -2454,12 +2454,12 @@ typedef struct GameObj {
 } GameObj;
 extern s32 func_80036EA8();
 extern s32 func_80036F28();
-extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+extern s32 func_8005C2A8(s32, s32, s32);
 
 s32 debug_printf(s32 *, s32);               /* extern */
 s32 game_FrameLoop();                           /* extern */
 s32 replay_camera_Init(s32, s32);               /* extern */
-s32 title_mv_exec2(s32);                    /* extern */
+s32 func_800858D0(s32);                    /* extern */
 extern s32 D_800158B4;
 extern s32 D_800A3404;
 extern s32 D_800A3408;
@@ -2470,7 +2470,7 @@ s32 func_8005B7C4(s32 arg0) {
     u32 temp_s0;
     s32 ret;
 
-    title_mv_exec2(0);
+    func_800858D0(0);
     debug_printf(&D_800158B4, arg0);
     game_FrameLoop();
     temp_v0 = func_80036EA8(2, 1);
@@ -2480,7 +2480,7 @@ s32 func_8005B7C4(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     D_800A3404 = 0x1010;
-    ret = tslGlobalMemFree_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
+    ret = func_8005C2A8((GameObj *) arg0, 0, arg0 + temp_s0);
     D_800A340C = D_800A3404;
     return ret;
 }
@@ -2501,7 +2501,7 @@ void obj_InitPair(void) {
 }
 extern s32 func_80036EA8(s32, s32);
 extern s32 func_80036F28(s32);
-extern s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+extern s32 func_8005C2A8(s32, s32, s32);
 extern void obj_InitPair(void);
 extern void func_800858D0(s32);
 extern void replay_camera_Init(s32, s32);
@@ -2518,18 +2518,18 @@ s32 func_8005B8B8(s32 arg0) {
     replay_camera_Init(t0, arg0);
     size = func_80036F28(t0);
     game_FrameLoop();
-    ret = tslGlobalMemFree_8005C2A8(arg0, 8, arg0 + size);
+    ret = func_8005C2A8(arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
     game_FrameLoop();
     replay_camera_Init(t0_2, arg0 + ret);
     size = func_80036F28(t0_2) + ret;
     game_FrameLoop();
-    return tslGlobalMemFree_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
+    return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
 }
-void saFidLoad(s32, s32);
-void motion_LoadPreCalcData_8005B98C(s32 a0) {
-    saFidLoad(a0, 8);
-    saFidLoad(a0, 4);
+void func_8005C4C0(s32, s32);
+void func_8005B98C(s32 a0) {
+    func_8005C4C0(a0, 8);
+    func_8005C4C0(a0, 4);
 }
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
@@ -2546,7 +2546,7 @@ s32 func_80036EA8(s32, s32);
 s32 game_FrameLoop(void);
 void replay_camera_Init(s32, s32);
 s32 func_80036F28(s32);
-s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
+s32 func_8005C2A8(s32, s32, s32);
 void obj_InitTaskCamera(s32 a0) {
     s32 s1;
     obj_InitTask();
@@ -2555,28 +2555,28 @@ void obj_InitTaskCamera(s32 a0) {
     replay_camera_Init(s1, a0);
     s1 = func_80036F28(s1);
     game_FrameLoop();
-    tslGlobalMemFree_8005C2A8(a0, 9, a0 + s1);
+    func_8005C2A8(a0, 9, a0 + s1);
 }
-void saFidLoad(s32, s32);
+void func_8005C4C0(s32, s32);
 void obj_ExecTask(s32 a0) {
-    saFidLoad(a0, 9);
+    func_8005C4C0(a0, 9);
 }
 INCLUDE_ASM("asm/funcs", func_8005BA8C);
-extern void title_mv_exec2(s32);
-extern void saFidLoad(s32, s32);
+extern void func_800858D0(s32);
+extern void func_8005C4C0(s32, s32);
 extern s32 D_800EFC50;
 extern s32 D_800EFC44;
 extern u8 D_8009AD18;
 void func_8005BD30(s32 arg0) {
     u8 count;
     s32 i;
-    title_mv_exec2(0);
+    func_800858D0(0);
     count = (D_800EFC50 == D_800EFC44) ? 2 : 3;
     i = 0;
     if (count != 0) {
         do {
             u8 byte = (&D_8009AD18)[i & 0xFF];
-            saFidLoad(arg0, byte);
+            func_8005C4C0(arg0, byte);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
     }
@@ -2601,20 +2601,20 @@ void func_8005BDF0(void) {
     } while ((s32)s0 < (s32)s1);
 }
 extern s16 D_8009AD1C[][2];
-extern s32 title_mv_exec2(s32);
+extern s32 func_800858D0(s32);
 extern s32 func_80085F98();
 extern s32 func_80085EE4(s16);
 extern s32 func_80085E4C(s16, s16);
 extern s32 func_80085FB8();
-extern s32 md_game_check_change_main_mode_katinuki(s16);
-s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
+extern s32 func_8008A928(s16);
+s32 func_8005BE84(s32 arg0)
 {
   s32 result;
   s16 *p;
   s16 temp_a0;
   s16 *base;
   s32 doubled;
-  title_mv_exec2(0);
+  func_800858D0(0);
   base = &D_8009AD1C[0][0];
   p = base + arg0 * 2;
   doubled = arg0 << 1;
@@ -2624,7 +2624,7 @@ s32 mario_getMarioVoiceData_8005BE84(s32 arg0)
     func_80085EE4(0);
     func_80085E4C(0, 0);
     result = func_80085EE4(*p);
-    md_game_check_change_main_mode_katinuki(*p);
+    func_8008A928(*p);
     temp_a0 = doubled + 1;
     func_80085E4C(temp_a0, temp_a0);
     func_80085FB8();
@@ -2646,8 +2646,8 @@ void obj_Reset(void) {
     func_80085E4C(0, 0);
 }
 extern s32 func_80087F64();
-extern s32 tslCDFileRead();
-extern s32 coli_CheckBukiPreHit_800880B8();
+extern s32 func_80087FE8();
+extern s32 func_800880B8();
 extern s32 func_8008AD64();
 extern s32 func_8008ADC4();
 extern s32 func_8008AE24();
@@ -2664,31 +2664,31 @@ s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_8008AE24(arg2);
     func_8008ADC4(arg0, D_800EFC38[arg1][3]);
     func_8008AEB0(1);
-    coli_CheckBukiPreHit_800880B8(D_800EFC38[arg1][1], (s16) arg1, arg2);
-    tslCDFileRead((s16) arg1);
+    func_800880B8(D_800EFC38[arg1][1], (s16) arg1, arg2);
+    func_80087FE8((s16) arg1);
     D_800EFB38[arg1] = arg2;
     return arg2 + D_800EFC38[arg1][3];
 }
 INCLUDE_ASM("asm/funcs", func_8005C074);
-INCLUDE_ASM("asm/funcs", tslGlobalMemFree_8005C2A8);
+INCLUDE_ASM("asm/funcs", func_8005C2A8);
 extern s32 D_800EFC38;
 extern s32 func_80087F64(s32);
-extern s16 coli_CheckBukiPreHit_800880B8(s32, s32, s32);
-extern s16 tslCDFileRead(s16);
+extern s16 func_800880B8(s32, s32, s32);
+extern s16 func_80087FE8(s16);
 /* saFidLoad tail: s16 result-carrier + single trailing return — the target
  * CFG (li -1 in its own block; shared sll/sra sext join) is only producible
  * from this spelling class (direct-return floors at 4, s32 carrier at 8).
  * Structured single-exit representative sanctioned by user 2026-06-10; the
  * goto-end spelling remains REJECTED. See
  * .claude/rules/proven-spelling-class-reconstruction.md. */
-s32 saFidLoad(s32 arg0, s16 arg1) {
+s32 func_8005C4C0(s32 arg0, s16 arg1) {
     s32 idx;
     u8 *base;
     s32 **p;
     s32 *v;
     s32 *vv;
     s16 ret;
-    title_mv_exec2(0);
+    func_800858D0(0);
     idx = arg1;
     base = (u8 *)&D_800EFC38;
     p = (s32 **)(base + idx * 4);
@@ -2700,11 +2700,11 @@ s32 saFidLoad(s32 arg0, s16 arg1) {
         vv = *p;
         *(s32 *)((u8 *)vv + 4) = *(s32 *)((u8 *)vv + 4) + arg0;
         func_80087F64(idx);
-        ret = coli_CheckBukiPreHit_800880B8(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&D_800EFB38 + idx * 4));
+        ret = func_800880B8(*(s32 *)((u8 *)*p + 4), idx, *(s32 *)((u8 *)&D_800EFB38 + idx * 4));
         if (ret != idx) {
             return ret;
         }
-        ret = tslCDFileRead(ret);
+        ret = func_80087FE8(ret);
     } else {
         ret = -1;
     }
@@ -2713,11 +2713,11 @@ s32 saFidLoad(s32 arg0, s16 arg1) {
 
 extern s32 D_800A3404;
 void func_80087F64(s32);
-void coli_CheckBukiPreHit_80088088(s32, s16, s32);
+void func_80088088(s32, s16, s32);
 s32 func_800884C4(s32, s16);
 s16 func_8005C5A8(s32 *a0, s16 a1) {
     func_80087F64(a1);
-    coli_CheckBukiPreHit_80088088(a0[1], a1, D_800A3404);
+    func_80088088(a0[1], a1, D_800A3404);
     *(s32 *)(a0[1] + 8) = a1;
     return (s16)func_800884C4(a0[2], a1);
 }
@@ -2801,7 +2801,7 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.ret = ret;
     func_80073728((GameObj *)(&s), 0);
 }
-s32 gnd_land_hit_char_tsuba(s32 arg0, s32 arg1) {
+s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 func_80079154(void);
     extern u8 D_8009B2E0;
     extern s32 D_8009B388;
@@ -2965,7 +2965,7 @@ extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
 extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 func_8007352C(s32);
-extern s32 saMotionSet(s32, s32);
+extern s32 func_8006E480(s32, s32);
 
 INCLUDE_ASM("asm/funcs", func_8005FC9C);
 typedef struct {
@@ -3031,7 +3031,7 @@ loop_60C8:
         i += 1;
         if (i < 2) goto loop_60C8;
     }
-    initTexPage(dist_off, 1, 0, saMotionSet((s32 *)&D_8009B6F0, 0), 0);
+    initTexPage(dist_off, 1, 0, func_8006E480((s32 *)&D_8009B6F0, 0), 0);
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
@@ -3065,7 +3065,7 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     gpu_LoadImage((s32)r4, (s32)((u8 *)arg1 + 0x14));
     gpu_DrawSync(0);
 }
-extern s32 saMotionSet();
+extern s32 func_8006E480();
 extern s32 func_8007352C();
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -3111,7 +3111,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.p_static = &D_800A328C;
     s.arg1_field = new_var;
     func_8007352C((s32)(&s));
-    initTexPage(dist_off, 1, 0, saMotionSet((s32)s.p_geom, 0), 0);
+    initTexPage(dist_off, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
     ot_Link(D_800A374C + (arg2 * 4), dist_off);
     return end_off - arg1;
 }
@@ -3265,7 +3265,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         j += 1;
         p0 = (s32 *)(((s32)p0) + 0xC);
     } while (j < 2);
-    initTexPage(new_var3, 1, 0, saMotionSet((s32)s.p_geom, 0), 0);
+    initTexPage(new_var3, 1, 0, func_8006E480((s32)s.p_geom, 0), 0);
     ot_Link(D_800A374C + (arg1 * 4), new_var3);
     return new_var6 - arg0;
 }
@@ -3460,7 +3460,7 @@ extern s32 D_800A344C;
 extern s32 D_800A3460;
 extern s32 D_800A3444;
 extern s32 D_800A3448;
-void saTan1GaugeInit(void) {
+void func_80060C60(void) {
     s32 i = 0;
     s32 *p = D_800F10D0;
     do {
@@ -3540,7 +3540,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1)
   s.sp16 = 0x24;
   gpu_LoadImage(&s.sp10, new_var + 0x1DC00);
   gpu_DrawSync(0);
-  saTan1GaugeInit();
+  func_80060C60();
   func_80079184(func_80079154());
   ret = arg1 + 0x4650;
   D_800A3420 = arg1;
@@ -3624,7 +3624,7 @@ void func_80060E38(s32 arg0, s32 arg1) {
     *(s32 *)0x1F800008 = arg1;
 }
 extern s32 func_80041E10();
-extern s32 leaf_muki_awase_800421A4();
+extern s32 func_800421A4();
 extern s32 func_80060B70();
 extern s32 func_80060E38();
 extern s32 debug_printf(s32 *, s32);
@@ -3653,7 +3653,7 @@ void func_80061064(void) {
         D_800A32BC -= 1;
         func_80041E10(&D_800F1140, D_800A3464);
     } else if (D_800A32BC == 1) {
-        leaf_muki_awase_800421A4();
+        func_800421A4();
         D_800A32BC = 0;
     }
     temp_a1 = (s32)-((D_800A37D4 - D_800A3720) * 0x33333333) >> 3;
@@ -3662,11 +3662,11 @@ void func_80061064(void) {
     }
 }
 extern s32 D_800A32BC;
-void saTan1GaugeInit(void);
-void leaf_muki_awase_800421A4(void);
+void func_80060C60(void);
+void func_800421A4(void);
 void game_Cleanup(void) {
-    saTan1GaugeInit();
-    leaf_muki_awase_800421A4();
+    func_80060C60();
+    func_800421A4();
     D_800A32BC = 0;
 }
 extern u8 D_800F116A;
@@ -4062,7 +4062,7 @@ void func_80061C00(s32 arg0, s32 arg1, s32 arg2) {
     sp18[1] = arg1;
     sp18[2] = 0;
     sp18[0] = 0;
-    motutil_GetWalkDir(sp18, sp30);
+    func_8007F35C(sp18, sp30);
     *(s32 *)(sp30 + 0x1C) = 0;
     *(s32 *)(sp30 + 0x18) = 0;
     *(s32 *)(sp30 + 0x14) = 0;
@@ -4096,7 +4096,7 @@ end:
 }
 extern u8 D_800F1168[];
 void func_8007F2AC(s16 *, s32 *, s32 *);
-void *motutil_GetWalkDir(s16 *, u8 *);
+void *func_8007F35C(s16 *, u8 *);
 void gte_SetRotMatrix(u8 *);
 void gte_SetTransVector(u8 *);
 void func_80061D74(s32 arg0, s16 arg1) {
@@ -4116,7 +4116,7 @@ void func_80061D74(s32 arg0, s16 arg1) {
     sp18[2] = 0;
     sp18[1] = arg1;
     sp18[0] = 0;
-    motutil_GetWalkDir(sp18, sp30);
+    func_8007F35C(sp18, sp30);
     *(s32 *)(sp30 + 0x1C) = 0;
     *(s32 *)(sp30 + 0x18) = 0;
     *(s32 *)(sp30 + 0x14) = 0;
@@ -4176,7 +4176,7 @@ end:
 }
 extern s32 D_800A34EC;
 extern u8 D_8009BB74[];
-void *motutil_GetWalkDir(u16*, u8*);
+void *func_8007F35C(u16*, u8*);
 void func_8007E8DC(u8*, u8*);
 void gte_SetRotMatrix(u8*);
 void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
@@ -4186,7 +4186,7 @@ void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
     dest[0] = v1[0];
     dest[1] = v1[1];
     dest[2] = v1[2];
-    motutil_GetWalkDir(dest, s0);
+    func_8007F35C(dest, s0);
     *(s32 *)(s0 + 0x1C) = 0;
     *(s32 *)(s0 + 0x18) = 0;
     *(s32 *)(s0 + 0x14) = 0;
@@ -4366,7 +4366,7 @@ void func_800644FC(s32 *arg0, s32 arg1, s32 arg2)
             if ((*bits_p) & mask) {
                 u8 *base;
                 __asm__ volatile ("" : "=r"(base) : "0"(&D_800F1000));
-                motutil_GetWalkDir((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
+                func_8007F35C((u16 *)(base + mul50 + (i << 3)), (u8 *)ptr);
             }
             i += 1;
             ptr += 0x20;
@@ -4668,9 +4668,9 @@ void func_800652AC(void) {
     D_800F0D74 = last;
 }
 extern s16 D_800F0BA8;
-u8 motion_SetExMotion(s32);
+u8 func_80065800(s32);
 u8 func_800652F4(void) {
-    u8 v0 = motion_SetExMotion(0);
+    u8 v0 = func_80065800(0);
     s16 *p = &D_800F0BA8;
     s16 v1 = *p;
     v1 += 0x1FF;
@@ -4682,7 +4682,7 @@ u8 func_800652F4(void) {
 }
 extern u16 D_800F0BAA;
 u8 func_80065344(void) {
-    u8 v0 = motion_SetExMotion(1);
+    u8 v0 = func_80065800(1);
     u16 *p = &D_800F0BAA;
     u16 v1 = *p;
     v1 += 0x1C6;
@@ -4694,7 +4694,7 @@ u8 func_80065344(void) {
 }
 extern s16 D_800F0BAC;
 u8 func_80065394(void) {
-    u8 v0 = motion_SetExMotion(2);
+    u8 v0 = func_80065800(2);
     s16 *p = &D_800F0BAC;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -4706,7 +4706,7 @@ u8 func_80065394(void) {
 }
 extern s16 D_800F0BAE;
 u8 func_800653E4(void) {
-    u8 v0 = motion_SetExMotion(3);
+    u8 v0 = func_80065800(3);
     s16 *p = &D_800F0BAE;
     s16 v1 = *p;
     v1 += 0x19;
@@ -4718,7 +4718,7 @@ u8 func_800653E4(void) {
 }
 extern u16 D_800F0BB0;
 u8 func_80065434(void) {
-    u8 v0 = motion_SetExMotion(4);
+    u8 v0 = func_80065800(4);
     u16 *p = &D_800F0BB0;
     u16 v1 = *p;
     v1 += 0x19;
@@ -4733,7 +4733,7 @@ u8 func_80065484(void) {
     unsigned int temp_v1;
     u8 v0;
     *D_800A3484 = (s32)*(s16 *)&D_800A3440;
-    v0 = motion_SetExMotion(5);
+    v0 = func_80065800(5);
     temp_v1 = *D_800A3484;
     switch (temp_v1) {
     case 0: {
@@ -4759,7 +4759,7 @@ u8 func_80065484(void) {
 }
 extern u16 D_800F0BB4;
 u8 func_80065540(void) {
-    u8 v0 = motion_SetExMotion(6);
+    u8 v0 = func_80065800(6);
     u16 *p = &D_800F0BB4;
     u16 v1 = *p;
     v1 += 0x32;
@@ -4771,7 +4771,7 @@ u8 func_80065540(void) {
 }
 extern u16 D_800F0BB6;
 u8 func_80065590(void) {
-    u8 v0 = motion_SetExMotion(7);
+    u8 v0 = func_80065800(7);
     u16 *p = &D_800F0BB6;
     u16 v1 = *p;
     v1 += 0x32;
@@ -4783,7 +4783,7 @@ u8 func_80065590(void) {
 }
 extern s16 D_800F0BBC;
 u8 func_800655E0(void) {
-    u8 v0 = motion_SetExMotion(0xA);
+    u8 v0 = func_80065800(0xA);
     s16 *p = &D_800F0BBC;
     s16 v1 = *p;
     v1 += 0x32;
@@ -4795,7 +4795,7 @@ u8 func_800655E0(void) {
 }
 extern s16 D_800F0BBE;
 u8 func_80065630(void) {
-    u8 v0 = motion_SetExMotion(0xB);
+    u8 v0 = func_80065800(0xB);
     s16 *p = &D_800F0BBE;
     s16 v1 = *p;
     v1 += 0x32;
@@ -4805,16 +4805,16 @@ u8 func_80065630(void) {
     }
     return 0;
 }
-extern s32 motion_SetExMotion(s32);
+extern s32 func_80065800(s32);
 extern u16 D_800F0BC0;
 s32 func_80065680(void) {
     u16 *v1;
     s32 v0;
-    motion_SetExMotion(0xC);
+    func_80065800(0xC);
     v1 = &D_800F0BC0;
     v0 = *v1 + 1;
     *v1 = v0;
-    v0 = motion_SetExMotion(0xE);
+    v0 = func_80065800(0xE);
     D_800F0BC4 = D_800F0BC4 + 1;
     if ((s16)D_800F0BC4 < 11) {
         return v0 & 0xFF;
@@ -4826,9 +4826,9 @@ extern u16 D_800F0BC6;
 s32 func_800656EC(void) {
     u16 *s0 = &D_800F0BC2;
     s32 v0;
-    motion_SetExMotion(0xD);
+    func_80065800(0xD);
     *s0 = *s0 + 1;
-    v0 = motion_SetExMotion(0xF);
+    v0 = func_80065800(0xF);
     D_800F0BC6 = D_800F0BC6 + 1;
     if ((s16)*s0 < 11) {
         return v0 & 0xFF;
@@ -4837,7 +4837,7 @@ s32 func_800656EC(void) {
 }
 extern s16 D_800F0BC8;
 u8 func_80065760(void) {
-    u8 v0 = motion_SetExMotion(0x10);
+    u8 v0 = func_80065800(0x10);
     s16 *p = &D_800F0BC8;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -4849,7 +4849,7 @@ u8 func_80065760(void) {
 }
 extern s16 D_800F0BCA;
 u8 func_800657B0(void) {
-    u8 v0 = motion_SetExMotion(0x11);
+    u8 v0 = func_80065800(0x11);
     s16 *p = &D_800F0BCA;
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -4859,7 +4859,7 @@ u8 func_800657B0(void) {
     }
     return 0;
 }
-INCLUDE_ASM("asm/funcs", motion_SetExMotion);
+INCLUDE_ASM("asm/funcs", func_80065800);
 extern s32 D_800F10D8;
 u8 func_80067200(s32, s32, s32);
 u8 func_80066EC0(void) {
@@ -5125,7 +5125,7 @@ extern s32 D_8009BC04;
 extern u8 D_800A32C0[8];
 extern s32 snd_StopAll(void);
 extern s32 func_8006E950(s32, s32);
-extern s32 efc_rob_Close(s32);
+extern s32 func_8006919C(s32);
 extern s32 *func_8006E49C(s32, s32);
 extern s32 gpu_DrawSync(s32);
 extern s32 func_8007B6C8(u8 *, s32, s32);
@@ -5142,7 +5142,7 @@ s32 func_80068F70(s32 arg0, s32 *arg1) {
     snd_StopAll();
     func_8006E950(2, D_800A3500);
     D_800A372C = D_800A3500;
-    v0_efc = efc_rob_Close(D_800A3500);
+    v0_efc = func_8006919C(D_800A3500);
     D_800A3500 = v0_efc;
     v0_e49c = func_8006E49C(v0_efc, D_800A351C);
     v0_e49c[9] = temp_s0;
@@ -5235,8 +5235,8 @@ s32 *func_80069120(s32 a0) {
 }
 
 void func_8006920C(s32 *, s32);
-s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
-s32 efc_rob_Close(s32 *a0) {
+s32 func_8005C2A8(s32, s32, s32);
+s32 func_8006919C(s32 *a0) {
     s32 i = 0;
     s32 *p = &a0[5];
     do {
@@ -5244,7 +5244,7 @@ s32 efc_rob_Close(s32 *a0) {
         p++;
         i++;
     } while (i < 12);
-    tslGlobalMemFree_8005C2A8(a0[0], 1, a0[1]);
+    func_8005C2A8(a0[0], 1, a0[1]);
     return a0[1];
 }
 void func_8006920C(s32 *a0, s32 a1) {
@@ -5400,9 +5400,9 @@ void func_80069898(GameObj *arg0, u16 *arg1, s32 arg2) {
 
     arg0->field_18 = (s32) p;
 }
-s32 *saTan2GaugeInit_80077D00(void);
+s32 *func_80077D00(void);
 void func_80069A30(u8 *a0) {
-    s32 *p = saTan2GaugeInit_80077D00();
+    s32 *p = func_80077D00();
     s32 v0;
     if (p[8] & 1) {
         v0 = 0x22;
@@ -5416,9 +5416,9 @@ void func_80069A30(u8 *a0) {
     }
     a0[6] = (u8)v0;
 }
-s32 *saTan2GaugeInit_80077D00(void);
+s32 *func_80077D00(void);
 void func_80069A8C(u8 *a0) {
-    s32 *p = saTan2GaugeInit_80077D00();
+    s32 *p = func_80077D00();
     s32 v0;
     if (p[8] & 1) {
         v0 = 8;
@@ -5436,7 +5436,7 @@ typedef struct {
     s8 sp40;
 } S_69AE4;
 
-extern s32 saMotionSet(s32, s32);
+extern s32 func_8006E480(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern void initPolyF4(u8 *p);
@@ -5514,7 +5514,7 @@ void func_80069AE4(s32 *arg0, s32 mode, s32 unused_arg) {
     {
         s32 first = qbase[0];
         s.sp18 = first;
-        initTexPage(arg0[7], 1, 0, saMotionSet(first, 0), 0);
+        initTexPage(arg0[7], 1, 0, func_8006E480(first, 0), 0);
     }
     ot_Link(D_800A374C + 0x48, arg0[7]);
 
@@ -5607,7 +5607,7 @@ void func_80069E18(s32 arg0) {
     s.byte28 = 0;
 
     s.p0 = (s32 *)*(s32 *)ptr;
-    initTexPage(*(s32 *)(arg0 + 0x1C), 1, 0, saMotionSet((s32)s.p0, 0), 0);
+    initTexPage(*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480((s32)s.p0, 0), 0);
     ot_Link(D_800A374C + 0x44, *(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 
@@ -5633,7 +5633,7 @@ void func_80069E18(s32 arg0) {
 }
 INCLUDE_ASM("asm/funcs", func_80069F80);
 INCLUDE_ASM("asm/funcs", func_8006A1A0);
-extern s32 saMotionSet(s32, s32);
+extern s32 func_8006E480(s32, s32);
 extern s32 func_8007352C(s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
@@ -5647,7 +5647,7 @@ void func_8006A3CC(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;
     *(s32 *)(arg1 + 8) = arg0[5];
     arg0[5] = func_8007352C((s32)arg1);
-    initTexPage(arg0[7], 1, 0, saMotionSet(*(s32 *)(arg1 + 0), 0), 0);
+    initTexPage(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
     ot_Link(D_800A374C + 4, arg0[7]);
     arg0[7] += 0xC;
 }
@@ -5664,11 +5664,11 @@ void func_8006A494(s32 *arg0, u8 *arg1) {
     *(s32 *)(arg1 + 4) = *(s32 *)(arg1 + 0) + 0xC;
     *(s32 *)(arg1 + 0xC) = arg0[2];
     arg0[2] = func_80073728((s32)arg1, 0);
-    initTexPage(arg0[7], 1, 0, saMotionSet(*(s32 *)(arg1 + 0), 0), 0);
+    initTexPage(arg0[7], 1, 0, func_8006E480(*(s32 *)(arg1 + 0), 0), 0);
     ot_Link(D_800A374C + 4, arg0[7]);
     arg0[7] += 0xC;
 }
-INCLUDE_ASM("asm/funcs", saTan3GaugeMain_8006A564);
+INCLUDE_ASM("asm/funcs", func_8006A564);
 INCLUDE_ASM("asm/funcs", func_8006A880);
 /* Signature UNVERIFIED — restated verbatim from the pre-INCLUDE_ASM stub so cc1's
  * input is unchanged for the caller(s) below; the asm proves at least 1 argument(s). See
@@ -5777,10 +5777,10 @@ s32 func_8006C168(s32 arg0, s32 arg1) {
     func_8006BB68(sp10);
     return func_8006B92C(&arg0, &arg1);
 }
-s32 saTan2InfoInit_8006C1FC(s32 a0, s32 a1) {
+s32 func_8006C1FC(s32 a0, s32 a1) {
     return func_8006C168(a0, a1);
 }
-INCLUDE_ASM("asm/funcs", saTan4GaugeMain);
+INCLUDE_ASM("asm/funcs", func_8006C21C);
 extern s32 D_800A34FC;
 extern s32 D_800A3524;
 
@@ -5812,12 +5812,12 @@ void func_8006CBD4(s32 arg0, s32 arg1) {
 INCLUDE_ASM("asm/funcs", func_8006CCC8);
 INCLUDE_ASM("asm/funcs", func_8006CFBC);
 extern s32 D_800A34FC;
-void cpu_reset_dir(void) {
+void func_8006D324(void) {
     s16 *v1 = (s16 *)D_800A34FC;
     v1[0x15] = 5;
     v1[0x14] = 5;
 }
-extern void saTan4GaugeMain(s32);
+extern void func_8006C21C(s32);
 extern s32 func_8006CFBC(s32);
 extern void func_8006CCC8(s32, s32, s32);
 void func_8006D338(s32 arg0, s32 arg1) {
@@ -5828,7 +5828,7 @@ void func_8006D338(s32 arg0, s32 arg1) {
     t = ((D_800A36AC & 1) * 0x4090) + &g_disp_fb_base;
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 2, t);
-    saTan4GaugeMain(sp10);
+    func_8006C21C(sp10);
     r = func_8006CFBC(sp10);
     func_8006CCC8(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
@@ -6060,7 +6060,7 @@ void func_8006E440(s32 *a0) {
         p++;
     }
 }
-s32 saMotionSet(u8 *a0, s32 a1) {
+s32 func_8006E480(u8 *a0, s32 a1) {
     s32 v0 = a0[0] & 0xFE1F;
     s32 v1 = a0[1] << 7;
     return v0 + v1 + a1;
@@ -6103,14 +6103,14 @@ extern s32 D_800A35AC;
 s32 func_8006E8AC(s32 a0) {
     return D_800A35AC + a0 * 44;
 }
-s32* saTan2GaugeInit_80077D00(void);
+s32* func_80077D00(void);
 void gpu_DrawSync(s32);
 void gpu_LoadImage(s16*, s32);
 void func_8006E8CC(s32 *a0) {
     s32 *p;
     s32 data;
     s16 rect[4];
-    p = saTan2GaugeInit_80077D00();
+    p = func_80077D00();
     if (p[8] & 1) {
         data = a0[4];
     } else {
@@ -6161,8 +6161,8 @@ void func_8006E950(s32 *a0, s32 *a1) {
     func_8006E8CC(s1);
 }
 void func_8006920C(s32 *, s32);
-s32 tslGlobalMemFree_8005C2A8(s32, s32, s32);
-s32 efc_buki_ZanzouClose(s32 *a0) {
+s32 func_8005C2A8(s32, s32, s32);
+s32 func_8006EA28(s32 *a0) {
     func_8006920C(a0, a0[21]);
     func_8006920C(a0, a0[22]);
     func_8006920C(a0, a0[23]);
@@ -6172,7 +6172,7 @@ s32 efc_buki_ZanzouClose(s32 *a0) {
     func_8006920C(a0, a0[27]);
     func_8006920C(a0, a0[28]);
     func_8006920C(a0, a0[29]);
-    tslGlobalMemFree_8005C2A8(a0[0], 1, a0[1]);
+    func_8005C2A8(a0[0], 1, a0[1]);
     return a0[1];
 }
 extern s32 D_8009BC1C;
@@ -6291,7 +6291,7 @@ void func_8006F038(s32 arg0) {
 INCLUDE_ASM("asm/funcs", func_8006F100);
 INCLUDE_ASM("asm/funcs", func_8006F528);
 INCLUDE_ASM("asm/funcs", func_8006F97C);
-INCLUDE_ASM("asm/funcs", replay_camera_attack);
+INCLUDE_ASM("asm/funcs", func_80070188);
 extern s32 D_800A3558;
 extern u8 D_800A3560;
 extern s16 D_800A3590;
@@ -6300,14 +6300,14 @@ extern s32 D_800A35B0;
 extern s32 D_800A35BC;
 extern s32 D_800A374C;
 extern s32 func_8007352C(s32 *prim);
-extern s32 saMotionSet(s32, s32);
+extern s32 func_8006E480(s32, s32);
 extern s32 initTexPage(s32, s32, s32, s32, s32);
 extern s32 ot_Link(s32, s32);
 extern s32 func_80069898(s32 a0, s32 *p, s32 mode);
-extern void motion_ShiftControl(s32 a0, s32 *prim);
+extern void func_80070F78(s32 a0, s32 *prim);
 extern void func_8006ECF4(s32);
 extern void func_80072E10(s32);
-extern void saTan3GaugeMain_80073200(s32);
+extern void func_80073200(s32);
 
 typedef struct PrimC70 {
     s32 p_geom;
@@ -6353,7 +6353,7 @@ void func_80070C70(s32 arg0) {
     { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
     prim.link = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
     icon.sp4C = 0xE7;
@@ -6373,7 +6373,7 @@ void func_80070C70(s32 arg0) {
         prim.p_geom += 0xC;
     } while (var_s0 < 6);
     prim.p_geom = *(s32 *)(ctx_or_var_s2);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
     var_s0 = 0;
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
@@ -6409,15 +6409,15 @@ void func_80070C70(s32 arg0) {
             ctx_or_var_s2 += 3;
         } while (var_s0 < (s32)(D_800A35B0 + ((s16)D_800A3558 + 1)));
     }
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(prim.p_geom, c60), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
     ot_Link(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    motion_ShiftControl(arg0, (s32 *)&prim);
+    func_80070F78(arg0, (s32 *)&prim);
     func_8006ECF4(arg0);
     func_80072E10(arg0);
-    saTan3GaugeMain_80073200(arg0);
+    func_80073200(arg0);
 }
-INCLUDE_ASM("asm/funcs", motion_ShiftControl);
+INCLUDE_ASM("asm/funcs", func_80070F78);
 extern u8 D_800A3561;
 extern u8 D_8009BC7C[];
 s32 func_80071C20(void) {
@@ -6701,12 +6701,12 @@ void func_80073060(s32 arg0) {
     } while (i < 5);
     *(GameObj **)((s32)arg0 + 0x14) = p;
 }
-INCLUDE_ASM("asm/funcs", saTan3GaugeMain_80073200);
+INCLUDE_ASM("asm/funcs", func_80073200);
 extern s32 initSprt(s32, s16);
 extern s32 gpu_SetRawTexture(s32, s32);
 extern s32 gpu_SetSemiTransp(s32, s32);
 extern s32 ot_Link(s32, s32);
-extern s32 DispSleepMenuTex(s32 *, s32);
+extern s32 func_8003D52C(s32 *, s32);
 extern s32 gpu_CalcClut(u16, u16);
 extern s32 D_800159A0;
 
@@ -6785,7 +6785,7 @@ loop_top:
         register s32 sleep_arg asm("$5") = buf;
         if (env->ot_idx >= 0x1006U) {
             env->ot_idx = 1U;
-            DispSleepMenuTex(&D_800159A0, buf);
+            func_8003D52C(&D_800159A0, buf);
             /* INLINE_MOVE_ALIASING: target re-emits `addu $a1,$s5,$zero` after
              * DispSleepMenuTex at 0x800736b8 (lost_codegen pattern from regfix
              * line 4222: `insert "addu $5,$21,$zero" @ 93`). Plain `saved_buf
@@ -6866,7 +6866,7 @@ skip_init:
     } while (i < 3);
 
     sp[0] = *temp_s2;
-    a3 = saMotionSet(sp[0], 0);
+    a3 = func_8006E480(sp[0], 0);
     initTexPage(arg0[6], 1, 0, a3, 0);
     ot_Link(D_800A374C + 0x7C, arg0[6]);
     q = arg0[2];
@@ -7031,7 +7031,7 @@ void func_80074D2C(s32 arg0, s32 arg1, s32 arg2) {
     s.sp2C = var_s1;
     s.sp20 = *(s32 *)(arg0 + 0x10);
     *(s32 *)(arg0 + 0x10) = func_8007352C((s32)&s.sp18);
-    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, saMotionSet(s.sp18, 0), 0);
+    initTexPage(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(s.sp18, 0), 0);
     ot_Link(D_800A374C + var_s1 * 4, *(s32 *)(arg0 + 0x18));
     *(s32 *)(arg0 + 0x18) += 0xC;
 }
@@ -7092,7 +7092,7 @@ void func_8007526C(void) {
         p += 2;
     } while (i < 2);
 }
-INCLUDE_ASM("asm/funcs", saTan1GaugeMain);
+INCLUDE_ASM("asm/funcs", func_800753D8);
 extern u8 *D_800A36A0;
 extern s16 D_800A35D0;
 extern s32 func_8005C650(s32, s32, s32);
@@ -7450,7 +7450,7 @@ s32 func_800779C8(void) {
 }
 extern s32 D_800A35E4;
 void func_8006D74C(s32, s32);
-void saTanMainDispGnd_80077A04(s32 a0, s32 a1) {
+void func_80077A04(s32 a0, s32 a1) {
     D_800A35E4 = 0;
     func_8006D74C(a0, a1);
 }
@@ -7463,7 +7463,7 @@ void func_80077A28(void) {
     func_8006D7FC();
 }
 void func_8006E068(void);
-void saTan2InfoInit_80077A60(void) {
+void func_80077A60(void) {
     func_8006E068();
 }
 extern s32 D_800A35E8;
@@ -7477,7 +7477,7 @@ s32 func_80077A80(s32 a0) {
 }
 
 void func_80077724(void);
-void saTan2InfoInit_80077AC0(void) {
+void func_80077AC0(void) {
     func_80077724();
 }
 void func_8006E10C(void);
@@ -7489,6 +7489,6 @@ void func_80077B00(void) {
     func_8006E2A8();
 }
 extern s32 D_800A35E4;
-void saTan2GaugeInit_80077B20(void) {
+void func_80077B20(void) {
     D_800A35E4 = 1;
 }

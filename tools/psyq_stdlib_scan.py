@@ -120,7 +120,7 @@ def classify_func(func: str) -> tuple[str | None, str | None]:
     if cpy_ok:
         return f"psyq_{cpy_kind}", f"{len(insns)} insns, lbu/sb loop"
     if looks_like_memset(insns):
-        return "psyq_memset", f"{len(insns)} insns, store-loop with no load"
+        return "func_8005509C", f"{len(insns)} insns, store-loop with no load"
     if is_handwritten(insns):
         return "handwritten_asm", "uses GCC-unfriendly mnemonics (add/addi/sub/syscall)"
     return None, None

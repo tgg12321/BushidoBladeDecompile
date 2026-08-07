@@ -147,7 +147,7 @@
     "beq\t$s2, $v0, .L8008041C",
     "nop"
   ],
-  "marionation_Exec": [
+  "func_80081030": [
     "addiu\t$sp, $sp, -0x40",
     "sw\t$s7, 0x34($sp)",
     "addu\t$s7, $a0, $zero",
@@ -163,7 +163,7 @@
     "jal\tfunc_800828CC",
     "sw\t$s0, 0x18($sp)"
   ],
-  "hirahira_w_ctrl": [
+  "func_80041188": [
     "addiu\t$sp, $sp, -0x48",
     "sw\t$s1, 0x24($sp)",
     "addu\t$s1, $a1, $zero",

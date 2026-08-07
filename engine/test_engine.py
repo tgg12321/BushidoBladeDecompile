@@ -1393,9 +1393,9 @@ def test_canonical_build() -> None:
     if "motion_Close" in tbl:
         eq("classify(motion_Close): resolves (not NO-TARGET)",
            canonical.classify("motion_Close")["verdict"], "C")
-    if "DispSchoolBG" in tbl:
-        eq("classify(DispSchoolBG): GTE -> ASM-PARTIAL",
-           canonical.classify("DispSchoolBG")["verdict"], "ASM-PARTIAL")
+    if "func_8002EBDC" in tbl:
+        eq("classify(func_8002EBDC): GTE -> ASM-PARTIAL",
+           canonical.classify("func_8002EBDC")["verdict"], "ASM-PARTIAL")
     if "game_GetMode" in tbl:
         eq("classify(game_GetMode): ordinary C -> C",
            canonical.classify("game_GetMode")["verdict"], "C")
@@ -1508,13 +1508,13 @@ def test_include_asm_whole_body() -> None:
     honest pure-C distance of 0 and counted as clean (-1 read as <= 0), so
     queue.generate dropped it and mark_done would have recorded it COMPLETED-C.
     """
-    inc = 'INCLUDE_ASM("asm/funcs", ang_hosei);\n'
+    inc = 'INCLUDE_ASM("asm/funcs", func_800836C8);\n'
 
     # 1. Recognition + attribution.
     eq("include_asm: macro invocation recognised",
-       [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["ang_hosei"])
+       [f for f, _s, _e in inlineasm.include_asm_spans(inc)], ["func_800836C8"])
     check("include_asm: named in whole_body_asm_funcs",
-          "ang_hosei" in inlineasm.whole_body_asm_funcs(inc))
+          "func_800836C8" in inlineasm.whole_body_asm_funcs(inc))
     check("include_asm: a #define of the macro is not an invocation",
           inlineasm.include_asm_spans('#define INCLUDE_ASM(F, N) __asm__()\n') == [])
 
@@ -1526,24 +1526,24 @@ def test_include_asm_whole_body() -> None:
 
     # 3. Counted > 0 despite there being no C body to attribute it to.
     eq("include_asm: attributed to the named function",
-       inlineasm.func_cheat_asm_count(inc, "ang_hosei"), 1)
+       inlineasm.func_cheat_asm_count(inc, "func_800836C8"), 1)
     # The hand-expanded `.include` spelling is the same fact.
     exp = ('__asm__(\n    ".section .text\\n"\n'
-           '    "    .include \\"asm/funcs/ang_hosei.s\\"\\n"\n);\n')
+           '    "    .include \\"asm/funcs/func_800836C8.s\\"\\n"\n);\n')
     check("include_asm: hand-expanded .include attributed too",
-          "ang_hosei" in inlineasm.whole_body_asm_funcs(exp))
+          "func_800836C8" in inlineasm.whole_body_asm_funcs(exp))
     # Genuinely unexplained symbols still report UNKNOWN rather than a fake 1.
     eq("include_asm: unrelated symbol still UNKNOWN",
        inlineasm.func_cheat_asm_count(inc, "some_other_func"), -1)
     # Attribution is spelling-INDEPENDENT: a `glabel` whole-body block is the
     # same fact and must attribute too, or the defect just moves one spelling
     # over. (It is still never STRIPPED — canonical_body behaviour is unchanged.)
-    gl = ('__asm__(\n    ".section .text\\n"\n    "glabel md_gview_init\\n"\n'
-          '    "    jr $ra\\n"\n    "    nop\\n"\n    "endlabel md_gview_init\\n"\n);\n')
+    gl = ('__asm__(\n    ".section .text\\n"\n    "glabel func_800836B8\\n"\n'
+          '    "    jr $ra\\n"\n    "    nop\\n"\n    "endlabel func_800836B8\\n"\n);\n')
     eq("include_asm: glabel whole-body block attributed",
-       inlineasm.func_cheat_asm_count(gl, "md_gview_init"), 1)
+       inlineasm.func_cheat_asm_count(gl, "func_800836B8"), 1)
     check("include_asm: glabel whole-body block still NOT stripped",
-          "glabel md_gview_init" in inlineasm.strip_cheat_asm_file(gl)[0])
+          "glabel func_800836B8" in inlineasm.strip_cheat_asm_file(gl)[0])
     # ...but a glabel block with NO instructions is a bare SYMBOL marker, not a
     # body (system.c emits one so `&D_80081F1C` resolves). Not decomp work.
     marker = '__asm__(\n    ".set noreorder\\n"\n    "glabel D_80081F1C\\n"\n);\n'

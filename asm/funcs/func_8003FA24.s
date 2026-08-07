@@ -231,7 +231,7 @@ glabel func_8003FA24
     /* 30574 8003FD74 02002326 */  addiu      $v1, $s1, 0x2
   .L8003FD78:
     /* 30578 8003FD78 21886000 */  addu       $s1, $v1, $zero
-    /* 3057C 8003FD7C 8C14010C */  jal        saTan5TakeGetPos_80045230
+    /* 3057C 8003FD7C 8C14010C */  jal        func_80045230
     /* 30580 8003FD80 21202002 */   addu      $a0, $s1, $zero
     /* 30584 8003FD84 00000296 */  lhu        $v0, 0x0($s0)
     /* 30588 8003FD88 00000000 */  nop
@@ -239,7 +239,7 @@ glabel func_8003FA24
     /* 30590 8003FD90 00000000 */   nop
     /* 30594 8003FD94 0180043C */  lui        $a0, %hi(D_80010D8C)
     /* 30598 8003FD98 8C0D8424 */  addiu      $a0, $a0, %lo(D_80010D8C)
-    /* 3059C 8003FD9C 044B010C */  jal        InitFadePanel
+    /* 3059C 8003FD9C 044B010C */  jal        func_80052C10
     /* 305A0 8003FDA0 00000000 */   nop
   .L8003FDA4:
     /* 305A4 8003FDA4 1400A48F */  lw         $a0, 0x14($sp)
@@ -250,7 +250,7 @@ glabel func_8003FA24
     /* 305B8 8003FDB8 18007026 */  addiu      $s0, $s3, 0x18
     /* 305BC 8003FDBC 000E0224 */  addiu      $v0, $zero, 0xE00
     /* 305C0 8003FDC0 1C00B0AF */  sw         $s0, 0x1C($sp)
-    /* 305C4 8003FDC4 615F000C */  jal        efc_rob_ougi_control
+    /* 305C4 8003FDC4 615F000C */  jal        func_80017D84
     /* 305C8 8003FDC8 1200A2A7 */   sh        $v0, 0x12($sp)
     /* 305CC 8003FDCC 000042A6 */  sh         $v0, 0x0($s2)
     /* 305D0 8003FDD0 2000A28F */  lw         $v0, 0x20($sp)

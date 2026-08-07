@@ -18,14 +18,14 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
 extern s32 D_800A3240;
 extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
-extern void md_game_check_mode(s32 *, s32);
+extern void func_8003EDC0(s32 *, s32);
 extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
@@ -47,7 +47,7 @@ extern s32 func_800486FC(s32 *);
 extern s32 g_anim_func_table[];
 extern s16 D_800F62E0;
 
-void rob_life_ctrl_2(s32 *hsv, s32 *rgb) {
+void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
     s32 s = hsv[1];
     s32 v = hsv[2];
@@ -95,7 +95,7 @@ out:
  * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the chroma
  * deltas / max-channel compares. */
-void mot_data_set(s32 *a0, s32 *a1) {
+void func_80042684(s32 *a0, s32 *a1) {
     s32 r, g, b;
     s32 max_val, min_val;
     s32 chroma;
@@ -186,11 +186,11 @@ void func_8004283C(s32 a0) {
     }
 }
 extern s16 D_800F6650;
-s32 rob_ScaleMarioInit(void) {
+s32 func_80042864(void) {
     return D_800F6650;
 }
 extern s16 Judge[];
-void _SelectSection(u16 *a0, s16 *a1) {
+void func_80042874(u16 *a0, s16 *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -333,7 +333,7 @@ void _SelectSection(u16 *a0, s16 *a1) {
  *     by any of the 30 spellings measured across s2+s3.
  */
 extern s16 Judge[];
-void replay_camera_rob_back_loose3(u16 *a0, s16 *a1) {
+void func_80042A88(u16 *a0, s16 *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
     s16 cosB, cosC;
@@ -404,7 +404,7 @@ void replay_camera_rob_back_loose3(u16 *a0, s16 *a1) {
     a1[7] = (scb_cosC + sinB_sinC) >> 12;
 }
 extern s16 Judge[];
-void hirahira_w_ctrl_2(u16 *a0, s16 *a1) {
+void func_80042C80(u16 *a0, s16 *a1) {
     s32 angB, angC;
     s16 cosB, cosC;
     s32 cosB_cosC, cosB_negsinC;
@@ -481,7 +481,7 @@ void hirahira_w_ctrl_2(u16 *a0, s16 *a1) {
 extern void func_8004A348(s16 *, s32 *);
 extern void func_80042874(void);
 extern void func_80042A88(void);
-extern void hirahira_w_ctrl_2();
+extern void func_80042C80();
 extern s32 D_800F66A8;
 extern s32 D_800F66B0;
 extern s32 D_800F66B4;
@@ -489,7 +489,7 @@ void func_80042E90(void) {
     g_anim_func_table[0] = (s32)func_8004A348;
     D_800F66A8 = (s32)func_80042874;
     D_800F66B0 = (s32)func_80042A88;
-    D_800F66B4 = (s32)hirahira_w_ctrl_2;
+    D_800F66B4 = (s32)func_80042C80;
 }
 void func_80042ED8(u16 *a0) {
     /* FAKE: statement staging (2026-07-06 ALLOWED list) — saving one
@@ -527,7 +527,7 @@ void func_80042F10(s32 *a0, s32 *a1, s32 a2) {
     *a0 = (sin_x - cos_y) >> 12;
 }
 extern s32 *func_8007ED6C(s32 *, s16 *, s32 *);
-extern s16 single_game_getEnemyCharId(s32, s32);
+extern s16 func_8007FD5C(s32, s32);
 extern s32 math_Cos(s32);
 extern s32 math_Sin(s32);
 extern void func_8007EB4C(s32 *, s32 *);
@@ -545,18 +545,18 @@ void func_80042FA0(s32 *a0, s16 *a1) {
     rot[2] = 0x1000;
     func_8007ED6C(a0, rot, result);
 
-    angle1 = single_game_getEnemyCharId(result[0], result[2]);
+    angle1 = func_8007FD5C(result[0], result[2]);
 
     cos_val = math_Cos((s16)angle1);
     sin_val = math_Sin((s16)angle1);
 
     combined = (cos_val * result[2] + sin_val * result[0]) >> 12;
-    neg_angle2 = -single_game_getEnemyCharId(result[1], combined);
+    neg_angle2 = -func_8007FD5C(result[1], combined);
 
     rot[0] = -neg_angle2;
     rot[1] = -angle1;
     rot[2] = 0;
-    hirahira_w_ctrl_2(rot, sp28);
+    func_80042C80(rot, sp28);
 
     func_8007EB4C(sp28, a0);
 
@@ -567,7 +567,7 @@ void func_80042FA0(s32 *a0, s16 *a1) {
 
     {
         s16 angle3;
-        angle3 = single_game_getEnemyCharId(result[0], result[1]);
+        angle3 = func_8007FD5C(result[0], result[1]);
         a1[0] = neg_angle2;
         a1[1] = angle1;
         a1[2] = -angle3;
@@ -631,7 +631,7 @@ s32 func_80043278(s32 a0) {
 extern s32 *D_80103608[];
 extern u16 D_80103658[];
 extern void func_80043454(s32, s16, s16, s16);
-void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
+void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = *(u16 *)&arg4;
     s32 idx = arg0;
     u16 *cnt_base = D_80103658;
@@ -658,7 +658,7 @@ void videoDecCreate(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     ;
 }
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
-    videoDecCreate(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
+    func_800432A0(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
 }
 void func_800433E4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
@@ -995,7 +995,7 @@ s32 func_80044170(s32 *a0, ...) {
             varptr++;
             entry = *(varptr - 1);
             if (entry >= old_first) {
-                InitFadePanel();
+                func_80052C10();
             }
             count--;
             tbl = (s32 *)((entry * 4) + (s32)a0);
@@ -1013,7 +1013,7 @@ s32 func_80044170(s32 *a0, ...) {
     return dest;
 }
 extern void func_800520B8(s32, s32, s32);
-s32 hirahira_w_frie(s32 *base, s16 *offsets) {
+s32 func_8004428C(s32 *base, s16 *offsets) {
     s32 *b = base; /* FAKE: prologue pair order — owner ruling 2026-07-17
                       (decisions.md 10:35, tombstone narrowed): single
                       forward-order param alias sanctioned under
@@ -1068,7 +1068,7 @@ done:
 }
 /* kengo:MED  |  my_hirahira/hirahira_w_frie  |  59i */
 extern void func_800520B8(s32, s32, s32);
-s32 calc_fc_frame(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
+s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s16 *fp;
     s16 *scan;
     s32 *orig_dest;
@@ -1138,10 +1138,10 @@ void func_80044498(void) {
     }
 }
 extern s32 D_800A378C;
-void saTanMainDispGnd_800444BC(void) {
+void func_800444BC(void) {
     func_80044504(D_800A378C);
 }
-void leaf_muki_awase_800444E0(void) {
+void func_800444E0(void) {
     func_80044504(D_800A378C);
 }
 extern s32 D_800A3678;
@@ -1153,7 +1153,7 @@ extern s16 D_80095328;
 extern s32 D_80102C00;
 extern void func_80042874(s32 *, s32 *);
 extern void func_8007EB4C(s32 *, s32 *);
-extern void calc_fc_frame_8007EC5C(s32 *, s32 *);
+extern void func_8007EC5C(s32 *, s32 *);
 extern void func_8007E4DC(s32 *, s32 *, s32 *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
@@ -1165,7 +1165,7 @@ void func_80044504(s32 a0) {
     s32 *s0 = &D_80101BD0;
     func_80042874(&D_800A3678, s0);
     func_8007EB4C(s0, (s32 *)(D_800A3708 + 0x18));
-    calc_fc_frame_8007EC5C((s32 *)(D_800A370C + 0x18), s0);
+    func_8007EC5C((s32 *)(D_800A370C + 0x18), s0);
     func_8007E4DC((s32 *)(D_800A370C + 0x18), (s32 *)(D_800A3708 + 0x18), &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
@@ -1202,9 +1202,9 @@ void func_80044504(s32 a0) {
     game_SetPause(1);
     D_800A3820 = (s32)&D_80102C00;
 }
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 void func_80044650(void) {
-    InitFadePanel();
+    func_80052C10();
 }
 extern s16 D_800A9CF8;
 extern s32 D_800A9D00;
@@ -1297,7 +1297,7 @@ void func_8004473C(void)
   }
 }
 extern void func_800417D0(s32 *);
-void efc_rob_set_type_flash(void) {
+void func_80044800(void) {
     s16 local[3];
     s16 sp18[10];
     s32 pad[4];
@@ -1338,7 +1338,7 @@ void efc_rob_set_type_flash(void) {
                 *(s16 *)(obj + 0x14) = *(u16 *)(scan + 1);
                 *(s16 *)(obj + 0x6) = 0;
                 func_800417D0((s32 *)obj);
-                calc_fc_frame_8007EC5C((s32 *)sp18, (s32 *)(obj + 0x18));
+                func_8007EC5C((s32 *)sp18, (s32 *)(obj + 0x18));
 
                 cos_val = judge_base[(angle + 0x400) & 0xFFF];
 
@@ -1512,14 +1512,14 @@ s32 func_80044E6C(void) {
     return 0x26;
 }
 extern void game_FrameLoop(void);
-extern void special_camera_check_pos_outside_ground_80036E34(s32, s32, s32, s32);
+extern void func_80036E34(s32, s32, s32, s32);
 
 typedef struct { s16 start_sector; s16 length_sectors; } NdataInfEntry;
 extern NdataInfEntry D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
     game_FrameLoop();
-    special_camera_check_pos_outside_ground_80036E34(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
+    func_80036E34(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
     game_FrameLoop();
 }
 void func_80044ED8(s32 a0, s32 a1) {
@@ -1543,7 +1543,7 @@ void func_80044F50(s32 a0, s32 a1, s32 a2) {
         func_80044E74(a1 + 0x10C, a2);
     }
 }
-void saTan2InfoInit_80044F80(s32 a0, s32 a1) {
+void func_80044F80(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x4D, a1);
 }
 extern s32 D_800A3240;
@@ -1628,7 +1628,7 @@ s32 seq_GetState(void) {
     return D_800A3244;
 }
 void func_800451A0(void) {
-    special_camera_check_pos_outside_ground_80036E34(1, (s32)D_800963EC, 0, 2);
+    func_80036E34(1, (s32)D_800963EC, 0, 2);
 }
 void func_800451D0(void) {
     s32 v1 = -1;
@@ -1643,7 +1643,7 @@ L_loop:
     D_800A33A8 = 0;
     func_80049E1C();
 }
-void saTan5TakeGetPos_80045230(s32 a0) {
+void func_80045230(s32 a0) {
     s32 v1;
     if (!a0) {
         a0 = D_800A33A0;
@@ -1655,7 +1655,7 @@ void saTan5TakeGetPos_80045230(s32 a0) {
     }
     D_800A33A8 = v1;
     if (a0 > 0x44FFF) {
-        InitFadePanel();
+        func_80052C10();
     }
 }
 void func_80045294(s32 a0, s32 a1) {
@@ -1727,7 +1727,7 @@ L_search:
     if (v0 != a0) goto L_not_found;
 
     s1 = s0 + 1;
-    saTan0Init(s1, -(*(s32 *)((u8 *)&D_800EED18 + v1)));
+    func_80045294(s1, -(*(s32 *)((u8 *)&D_800EED18 + v1)));
 
     {
         s32 v1b = D_800A33AC;
@@ -1782,7 +1782,7 @@ L_not_found:
 L_exit:
     return;
 }
-void saSeMain_80045510(s32 a0, s32 a1) {
+void func_80045510(s32 a0, s32 a1) {
     s32 i = 0;
     s32 count = D_800A33AC;
     if (i >= count) return;
@@ -1818,7 +1818,7 @@ s32 *func_800455AC(s32 a0) {
     *(s32 *)((u8 *)slot + 0xC) = 0;
     return ret;
 }
-void saSeMain_80045600(s32 a0, s32 a1) {
+void func_80045600(s32 a0, s32 a1) {
     s32 i = 0;
     s32 count = D_800A33AC;
     s16 *a3;
@@ -1847,12 +1847,12 @@ found:
         return;
     }
 not_found:
-    InitFadePanel();
+    func_80052C10();
 }
 extern s16 D_800EED10[];
 extern s32 D_800EED1C[];
 extern s32 D_800A33AC;
-void saTan5TakeGetPos_80045694(s32 a0, s32 a1) {
+void func_80045694(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
     if (count <= 0) return;
@@ -1926,17 +1926,17 @@ void *func_80045814(void) {
     return &D_800A9D10;
 }
 extern void func_800520B8(s32, s32, s32);
-void md_mtest_init(s32 a0, s32 a1, s32 a2) {
-    saTan5TakeGetPos_80045230(a1 + a2);
+void func_80045824(s32 a0, s32 a1, s32 a2) {
+    func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
-extern void saTan5TakeGetPos_80045230(s32);
-extern void saTan5TakeGetPos_80045694(s32, s32);
+extern void func_80045230(s32);
+extern void func_80045694(s32, s32);
 extern void func_800400F8(s32);
 extern void func_80044ED8(s32, s32);
 extern s32 *func_8004574C(s32);
 extern s32 *func_800455AC(s32);
-extern void saSeMain_80045600(s32, s32);
+extern void func_80045600(s32, s32);
 extern void func_80045AA4(s32, s32);
 
 void func_80045878(s32 a0, s32 a1, s32 a2) {
@@ -1949,9 +1949,9 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         s1 = (s16 *) v0[1];
     } else {
         s1 = (s16 *) func_800455AC(a0);
-        saSeMain_80045600(a0, 0x1A88 + ((s32) s1));
-        saTan5TakeGetPos_80045230(0);
-        saTan5TakeGetPos_80045694(a0, (s32) (&func_80045AA4));
+        func_80045600(a0, 0x1A88 + ((s32) s1));
+        func_80045230(0);
+        func_80045694(a0, (s32) (&func_80045AA4));
         s1[4] = -1;
         s1[3] = 0;
         s3 = a0 - -3;
@@ -1970,10 +1970,10 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
         } else {
             func_80044ED8(a1, s0);
             s0 = s0 + ((((u32) ((s32 *) s0)[*((s32 *) s0)]) >> 2) << 2);
-            saTan5TakeGetPos_80045230(s0);
+            func_80045230(s0);
         }
-        saSeMain_80045600(s3, s0);
-        saTan5TakeGetPos_80045694(s3, (s32) (&func_80045AA4));
+        func_80045600(s3, s0);
+        func_80045694(s3, (s32) (&func_80045AA4));
         s1[3] = 1;
         *((s32 *) (((s32) s1) + 0x24)) = 0;
         *((s32 *) s1) = 0;
@@ -1985,22 +1985,22 @@ void func_80045878(s32 a0, s32 a1, s32 a2) {
     s1[8] = a0;
     *((s32 *) (((s32) s1) + 0x18)) = 0x8000;
 }
-void tslFileClose(s32 a0, s32 a1) {
-    saSeMain_80045510(a0 + 3, a1);
-    saTan5TakeGetPos_80045230(0);
+void func_80045A28(s32 a0, s32 a1) {
+    func_80045510(a0 + 3, a1);
+    func_80045230(0);
 }
-extern void GetAllocPacketSize(void);
+extern void func_8005B644(void);
 extern void func_800456F0(s32);
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
-    GetAllocPacketSize();
+    func_8005B644();
     func_800456F0(a0p3);
     func_800456F0(a0);
     func_800453E0(a0p3);
     func_800453E0(a0);
 }
 extern void func_80044100(s32, s32);
-extern void saFidLoad(s32, s32);
+extern void func_8005C4C0(s32, s32);
 void func_80045AA4(s32 a0, s32 a1) {
     s32 *ptr;
     s32 idx;
@@ -2018,16 +2018,16 @@ void func_80045AA4(s32 a0, s32 a1) {
     if ((ptr[0] >> 1) & 1) {
         s32 val = *(s16 *)((u8 *)ptr + 4);
         idx = 3 * val + 1;
-        saFidLoad(a1, idx);
+        func_8005C4C0(a1, idx);
     }
 }
-INCLUDE_ASM("asm/funcs", efc_rob_set_type_particle);
+INCLUDE_ASM("asm/funcs", func_80045B68);
 extern void func_8005B6AC(void);
-void saTanMainDispGnd_80046020(void) {
+void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();
 }
-extern void saFidLoad(s32, s32);
+extern void func_8005C4C0(s32, s32);
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
@@ -2050,7 +2050,7 @@ void func_80046048(s32 a0, s32 a1) {
     }
     s0++;
     do {
-        saFidLoad(a1, *s0++);
+        func_8005C4C0(a1, *s0++);
         count--;
     } while (count != -1);
 }

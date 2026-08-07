@@ -318,12 +318,12 @@ def test_disasm_by_address_slices_flat_stream():
         "8004437c:\tafb40020 \tsw\ts4,32(sp)\n"
         "80044380:\t00a0a021 \tmove\ts4,a1\n"
     )
-    sym = {0x80044360: "prev_func", 0x80044378: "calc_fc_frame"}
+    sym = {0x80044360: "prev_func", 0x80044378: "func_80044378"}
     d = bc._disasm_by_address(text, sym)
-    check("header-less func recovered", "calc_fc_frame" in d)
-    check("synthesized header", d["calc_fc_frame"].splitlines()[0] == "80044378 <calc_fc_frame>:")
-    check("owns its insns", "addiu\tsp,sp,-56" in d["calc_fc_frame"])
-    check("stops at next boundary not present here", "8004437c" in d["calc_fc_frame"])
+    check("header-less func recovered", "func_80044378" in d)
+    check("synthesized header", d["func_80044378"].splitlines()[0] == "80044378 <func_80044378>:")
+    check("owns its insns", "addiu\tsp,sp,-56" in d["func_80044378"])
+    check("stops at next boundary not present here", "8004437c" in d["func_80044378"])
     check("prev func owns earlier insns", "80044370" in d.get("prev_func", ""))
 
 

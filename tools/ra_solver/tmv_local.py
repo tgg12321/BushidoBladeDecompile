@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 ROWS = json.loads(
-    Path('tmp/ra_solver_work/main.local.json').read_text())['title_mv_exec2']
+    Path('tmp/ra_solver_work/main.local.json').read_text())['func_800858D0']
 BLK = [r for r in ROWS if r['blk'] == 2]
 FIXED = {0, 1, 26, 27, 28, 29, 31, 67}
 

@@ -40,7 +40,7 @@ glabel func_8005C6D0
     /* 4CF64 8005C764 00141300 */   sll       $v0, $s3, 16
     /* 4CF68 8005C768 21906000 */  addu       $s2, $v1, $zero
   .L8005C76C:
-    /* 4CF6C 8005C76C 342B020C */  jal        coli_calc_motion2
+    /* 4CF6C 8005C76C 342B020C */  jal        func_8008ACD0
     /* 4CF70 8005C770 04201502 */   sllv      $a0, $s5, $s0
     /* 4CF74 8005C774 30005510 */  beq        $v0, $s5, .L8005C838
     /* 4CF78 8005C778 01000226 */   addiu     $v0, $s0, 0x1
@@ -88,7 +88,7 @@ glabel func_8005C6D0
     /* 4D01C 8005C81C 21083200 */  addu       $at, $at, $s2
     /* 4D020 8005C820 7CFB2290 */  lbu        $v0, %lo(D_800EFB7C)($at)
     /* 4D024 8005C824 0F00E730 */  andi       $a3, $a3, 0xF
-    /* 4D028 8005C828 9016020C */  jal        AllocBukiRmd
+    /* 4D028 8005C828 9016020C */  jal        func_80085A40
     /* 4D02C 8005C82C 1C00A2AF */   sw        $v0, 0x1C($sp)
     /* 4D030 8005C830 14720108 */  j          .L8005C850
     /* 4D034 8005C834 00141300 */   sll       $v0, $s3, 16

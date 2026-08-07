@@ -25,7 +25,7 @@ glabel func_8001BAE4
     /* C338 8001BB38 08004286 */  lh         $v0, 0x8($s2)
     /* C33C 8001BB3C 08002586 */  lh         $a1, 0x8($s1)
     /* C340 8001BB40 23206400 */  subu       $a0, $v1, $a0
-    /* C344 8001BB44 57FF010C */  jal        single_game_getEnemyCharId
+    /* C344 8001BB44 57FF010C */  jal        func_8007FD5C
     /* C348 8001BB48 23284500 */   subu      $a1, $v0, $a1
     /* C34C 8001BB4C 21180002 */  addu       $v1, $s0, $zero
     /* C350 8001BB50 02000106 */  bgez       $s0, .L8001BB5C
@@ -54,7 +54,7 @@ glabel func_8001BAE4
     /* C3A4 8001BBA4 21304002 */  addu       $a2, $s2, $zero
     /* C3A8 8001BBA8 21380002 */  addu       $a3, $s0, $zero
     /* C3AC 8001BBAC 1000B3AF */  sw         $s3, 0x10($sp)
-    /* C3B0 8001BBB0 D26D000C */  jal        DispPracticeMenuTex_A
+    /* C3B0 8001BBB0 D26D000C */  jal        func_8001B748
     /* C3B4 8001BBB4 1400A2AF */   sw        $v0, 0x14($sp)
     /* C3B8 8001BBB8 2800BF8F */  lw         $ra, 0x28($sp)
     /* C3BC 8001BBBC 2400B38F */  lw         $s3, 0x24($sp)

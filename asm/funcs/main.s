@@ -5,7 +5,7 @@ glabel main
     /* 7A0C 8001720C 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 7A10 80017210 1800B2AF */  sw         $s2, 0x18($sp)
     /* 7A14 80017214 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 7A18 80017218 E50D020C */  jal        motion_Open
+    /* 7A18 80017218 E50D020C */  jal        func_80083794
     /* 7A1C 8001721C 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7A20 80017220 1F80043C */  lui        $a0, (0x801FFF00 >> 16)
     /* 7A24 80017224 76E2010C */  jal        func_800789D8
@@ -52,11 +52,11 @@ glabel main
     /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(D_800A38B4)($gp)
     /* 7AC4 800172C4 8183010C */  jal        func_80060E04
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
-    /* 7ACC 800172CC BDF4000C */  jal        change_shadow_tex_reg
+    /* 7ACC 800172CC BDF4000C */  jal        func_8003D2F4
     /* 7AD0 800172D0 00000000 */   nop
-    /* 7AD4 800172D4 5A65000C */  jal        single_game_VoiceContorol
+    /* 7AD4 800172D4 5A65000C */  jal        func_80019568
     /* 7AD8 800172D8 21206002 */   addu      $a0, $s3, $zero
-    /* 7ADC 800172DC 50DA000C */  jal        special_camera_Exec
+    /* 7ADC 800172DC 50DA000C */  jal        func_80036940
     /* 7AE0 800172E0 00000000 */   nop
     /* 7AE4 800172E4 B471010C */  jal        func_8005C6D0
     /* 7AE8 800172E8 00000000 */   nop

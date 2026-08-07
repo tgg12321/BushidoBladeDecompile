@@ -59,34 +59,34 @@ extern void func_8003AF40(s32);
 extern void func_8003AFFC(void);
 
 extern void sys_Panic(void);
-extern s32 EndADRSound(void);
+extern s32 func_80020D38(void);
 extern s32 obj_InitTaskCamera(s32);
 extern void *D_800A38B4;
 extern s32 bb2_memcpy(s32 *, s32, s32);
 extern void obj_ExecTask(s32);
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s32 *);
 
-extern void motion_LoadPreCalcData_8005B98C(s32);
+extern void func_8005B98C(s32);
 extern void func_8003AA78(void);
 extern void func_8003AA48(void);
-extern void gnd_disp_loop_ctrl(void);
+extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void get_point_value(void);
+extern void func_8005B50C(void);
 extern void func_80037774(void);
-extern void pad_Init(void);
+extern void func_80078D68(void);
 extern void irq_Reset(void);
 extern s32 EnterCriticalSection(void);
 extern void sys_Init(void);
 extern void file_LoadSoundData(void);
-extern s32 gnd_close_8004939C(void);
+extern s32 func_8004939C(void);
 extern s32 func_800392B8(void);
 extern s16 Judge;
 extern s16 D_800A3678;

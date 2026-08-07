@@ -437,8 +437,8 @@ extern s32 D_80107854;
 extern s32 D_80107858;
 
 /* Functions */
-extern void DispPracticeMenuTex_A(u8 *, u8 *, u8 *, s32, s32, s32);
-extern void DispSleepMenuTex(s32, s32, s32, s32);
+extern void func_8001B748(u8 *, u8 *, u8 *, s32, s32, s32);
+extern void func_8003D52C(s32, s32, s32, s32);
 extern void func_80021A98(s32, u8 *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
@@ -446,7 +446,7 @@ extern void func_8003A728(s32);
 extern void func_8003AE5C(s32);
 extern void func_8003DE14(s32 *, s32);
 extern void game_SetControllerPorts(s32);
-extern void gnd_init_80041688(s32, s32);
+extern void func_80041688(s32, s32);
 extern void func_80048BA4(s32, s32, s32);
 extern void func_800493E4(s32);
 extern void func_800494D4(s32, s32);
@@ -468,8 +468,8 @@ extern void func_800826CC(s32);
 extern s32 func_800827D0(s32, s32);
 extern void func_80085448(s32, s32, s32);
 extern s32 func_8008C464(s32, s32, s32);
-extern s32 motion_SetMotion(void);
-extern void replay_camera_get_attack_number(s32, s32, s32, s32);
-extern void special_camera_Exec(void);
+extern s32 func_80038C70(void);
+extern void func_8003E2D8(s32, s32, s32, s32);
+extern void func_80036940(void);
 
 #endif /* CODE6CAC_H */

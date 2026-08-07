@@ -5,17 +5,17 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 CASES = [
-    ("hirahira_w_ctrl", "text1a"),
-    ("saTan4FireDisp", "text1a"),
-    ("tslGlobalMemFree_800861BC", "main"),
-    ("title_mv_exec2", "main"),
+    ("func_80041188", "text1a"),
+    ("func_80041BF4", "text1a"),
+    ("func_800861BC", "main"),
+    ("func_800858D0", "main"),
     ("func_8007C7A0", "display"),
     ("func_8007C86C", "display"),
     ("func_8007CE0C", "display"),
     # completed controls
     ("func_8003D9A0", "code6cac_c2"),
     ("func_8003DBE4", "code6cac_c2"),
-    ("tslLineG5Init", "code6cac_c2"),
+    ("func_8003DA8C", "code6cac_c2"),
 ]
 
 ok = bad = 0

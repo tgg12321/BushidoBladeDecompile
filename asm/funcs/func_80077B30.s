@@ -64,7 +64,7 @@ glabel func_80077B30
   jlabel .L80077C14
     /* 68414 80077C14 21900000 */  addu       $s2, $zero, $zero
     /* 68418 80077C18 21200002 */  addu       $a0, $s0, $zero
-    /* 6841C 80077C1C 7FB0010C */  jal        saTan2InfoInit_8006C1FC
+    /* 6841C 80077C1C 7FB0010C */  jal        func_8006C1FC
     /* 68420 80077C20 21282002 */   addu      $a1, $s1, $zero
     /* 68424 80077C24 21184000 */  addu       $v1, $v0, $zero
     /* 68428 80077C28 01000224 */  addiu      $v0, $zero, 0x1
@@ -85,7 +85,7 @@ glabel func_80077B30
     /* 68458 80077C58 38DF0108 */  j          .L80077CE0
     /* 6845C 80077C5C 03001224 */   addiu     $s2, $zero, 0x3
   jlabel .L80077C60
-    /* 68460 80077C60 C9B4010C */  jal        cpu_reset_dir
+    /* 68460 80077C60 C9B4010C */  jal        func_8006D324
     /* 68464 80077C64 00000000 */   nop
     /* 68468 80077C68 1805828F */  lw         $v0, %gp_rel(D_800A35E4)($gp)
     /* 6846C 80077C6C 00000000 */  nop

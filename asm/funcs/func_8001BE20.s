@@ -43,7 +43,7 @@ glabel func_8001BE20
     /* C6B8 8001BEB8 00000000 */  nop
     /* C6BC 8001BEBC 05004010 */  beqz       $v0, .L8001BED4
     /* C6C0 8001BEC0 21202002 */   addu      $a0, $s1, $zero
-    /* C6C4 8001BEC4 D856010C */  jal        calc_loc_mat_fw_80055B60
+    /* C6C4 8001BEC4 D856010C */  jal        func_80055B60
     /* C6C8 8001BEC8 21280002 */   addu      $a1, $s0, $zero
     /* C6CC 8001BECC 0B710008 */  j          .L8001C42C
     /* C6D0 8001BED0 00000000 */   nop
@@ -352,7 +352,7 @@ glabel func_8001BE20
     /* CB0C 8001C30C 04004010 */  beqz       $v0, .L8001C320
     /* CB10 8001C310 01000224 */   addiu     $v0, $zero, 0x1
   .L8001C314:
-    /* CB14 8001C314 826F000C */  jal        LWCard_SetAccessData
+    /* CB14 8001C314 826F000C */  jal        func_8001BE08
     /* CB18 8001C318 21200002 */   addu      $a0, $s0, $zero
     /* CB1C 8001C31C 01000224 */  addiu      $v0, $zero, 0x1
   .L8001C320:

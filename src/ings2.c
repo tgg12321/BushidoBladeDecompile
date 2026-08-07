@@ -105,7 +105,7 @@ s32 sys_VSync(s32 a0) {
 }
 
 extern s32 D_80016318;
-extern void tslTm2LoadImage_2(void *);
+extern void func_80082000(void *);
 extern void bios_ChangeClearPad(s32);
 extern void bios_ChangeClearRCnt(s32, s32);
 /* PsyQ 4.0 LIBETC VSYNC: v_wait (static) — verbatim-linked Sony object
@@ -119,7 +119,7 @@ void func_80082A14(s32 a0, s32 a1) {
     timeout[0] = a1 << 0xF;
     while (g_sys_dma_region < a0) {
         if (timeout[0]-- == 0) {
-            tslTm2LoadImage_2(&D_80016318);
+            func_80082000(&D_80016318);
             bios_ChangeClearPad(0);
             bios_ChangeClearRCnt(3, 0);
             return;
@@ -193,9 +193,9 @@ extern s32 setjmp(u16 *);
 extern void func_80082D34(void);
 extern void bios_SetCustomExitFromException(s32 *);
 extern s32 func_800832A0();
-extern s32 conv_matrix_rotation();
+extern s32 func_800833C8();
 extern void bios_CdRemove_A0(s32 *);
-u16 motion_make_table(u16 arg0) {
+u16 func_80082C3C(u16 arg0) {
     u16 *ptr = g_sys_irq_counter;
     u16 old = *ptr;
     *(volatile u16 *)ptr = arg0;
@@ -223,7 +223,7 @@ u16 *func_80082C58(void) {
            $a0 INTO the _96_remove call (v1.73's plain `_96_remove();` compiles
            to $v1 here — measured, tmp/closer/intr_test.c); the v1.76 source
            passed the pointer through. */
-        s32 r = conv_matrix_rotation();
+        s32 r = func_800833C8();
         s32 *cb = g_sys_irq_vtable;
         cb[1] = r;
         bios_CdRemove_A0(cb);
@@ -509,7 +509,7 @@ void sys_MemClear(s32 *a0, s32 a1) {
         *a0++ = 0;
     }
 }
-s32 conv_matrix_rotation(void) {
+s32 func_800833C8(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
     *D_800A263C = 0;
     ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
@@ -596,17 +596,17 @@ __asm__(
     ".section .text\n"
     "    .set noat\n"
     "    .set noreorder\n"
-    "glabel md_gview_init\n"
+    "glabel func_800836B8\n"
     "    addu $a1, $a0, $zero\n"
     "    .word 0x0000410D\n"
     "    jr $ra\n"
     "    nop\n"
-    "endlabel md_gview_init\n"
+    "endlabel func_800836B8\n"
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 ang_hosei(s32, s32, s32);
-INCLUDE_ASM("asm/funcs", ang_hosei);
+extern s32 func_800836C8(s32, s32, s32);
+INCLUDE_ASM("asm/funcs", func_800836C8);
 INCLUDE_ASM("asm/funcs", _start);
 /* kengo:MED  |  common/ang_hosei  |  47i  |  +4 8.5% */
 /* motion_Open + motion_Close (paired open/close functions) */
@@ -614,7 +614,7 @@ extern s32 D_800A2668;
 extern void (*D_8008D070)(void);
 extern s32 D_00000000;
 
-void motion_Open(void) {
+void func_80083794(void) {
     register void (**p)(void) asm("s0");
     register s32 count asm("s1");
 
@@ -750,7 +750,7 @@ extern s32 D_80106FA8[32][16];
 extern s32 D_80104E80;
 extern s32 D_801027E4;
 extern s32 D_800FF630;
-extern void md_game_end(s32);
+extern void func_80086818(s32);
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/ssinit.c */
@@ -770,7 +770,7 @@ void func_80083A48(void) {
         *var_a2++ = (&D_800A26AC)[i];
     }
 
-    md_game_end(0x18);
+    func_80086818(0x18);
 
     for (j = 0; j < 32; j++) {
         for (i = 0; i < 16; i++) {

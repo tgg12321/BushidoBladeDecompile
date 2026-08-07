@@ -100,7 +100,15 @@ PY_EXCLUDE_PARTS = {"archive", "maspsx", "decomp-permuter", "gcc-2.7.2", ".venv"
 # applied to which address, and docs/naming/build_census.py reads it as an
 # evidence source — rewriting it would rewrite the census's own input and turn
 # every entry into a self-map. History stays history.
-PY_EXCLUDE_FILES = {"tools/rename_funcs.py", "tools/propose_function_names.py"}
+PY_EXCLUDE_FILES = {
+    "tools/rename_funcs.py",
+    "tools/propose_function_names.py",
+    # Same class: its RESOLVED set is matched against docs/fleet/regressions.md,
+    # and docs deliberately keep historical names. Renaming the key desyncs the
+    # tool from its own data source (layer-2 finding, 2026-08-07). A tool whose
+    # string keys index HISTORY must keep history's spelling.
+    "tools/grinder/reopen_regressions.py",
+}
 # A short string literal is an identifier or dict key; a long one is prose that
 # happens to cite a function. Only the former is a KEY worth rewriting.
 PY_KEYLIKE_MAXLEN = 60
@@ -177,6 +185,24 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
     except Exception:
         return text, 0, ["(unparseable — left untouched)"]
 
+    def keylike(s: str) -> bool:
+        return (len(s) <= PY_KEYLIKE_MAXLEN
+                and not s.startswith(('"""', "'''", 'r"""', "r'''")))
+
+    # Pass 1 — which names does this file use as a KEY (a short literal)?
+    #
+    # Consistency within a file is the thing that must hold. A file that renames
+    # a name in its short literals but leaves it in a long one desyncs itself:
+    # engine/test_engine.py builds an asm fixture in a long string and asserts on
+    # it with a short one, so renaming only the assertion made the fixture and
+    # the assertion disagree and two tests failed. So a name used as a key
+    # ANYWHERE in the file is renamed EVERYWHERE in that file's literals; a name
+    # that appears only in long strings is prose and is left alone.
+    keyed: set[str] = set()
+    for tok in toks:
+        if tok.type == tokenize.STRING and keylike(tok.string):
+            keyed.update(pattern.findall(tok.string))
+
     edits: list[tuple[tuple[int, int], tuple[int, int], str]] = []
     n = 0
     for tok in toks:
@@ -186,10 +212,20 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
         hits = pattern.findall(s)
         if not hits:
             continue
-        if len(s) > PY_KEYLIKE_MAXLEN or s.startswith(('"""', "'''", 'r"""', "r'''")):
-            skips.append(f"L{tok.start[0]}: {sorted(set(hits))} in prose/docstring — NOT rewritten")
-            continue
-        new, k = pattern.subn(repl, s)
+        if not keylike(s):
+            prose_only = [h for h in set(hits) if h not in keyed]
+            if prose_only:
+                skips.append(
+                    f"L{tok.start[0]}: {sorted(prose_only)} in prose/docstring — NOT rewritten")
+            if not (set(hits) & keyed):
+                continue
+            # Rename ONLY the names this file also uses as keys, so the file
+            # stays self-consistent without rewriting genuine prose.
+            sub_pat = re.compile(r"\b(" + "|".join(
+                sorted((re.escape(h) for h in set(hits) & keyed), key=len, reverse=True)) + r")\b")
+            new, k = sub_pat.subn(repl, s)
+        else:
+            new, k = pattern.subn(repl, s)
         if k:
             edits.append((tok.start, tok.end, new))
             n += k

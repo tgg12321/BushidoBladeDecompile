@@ -67,7 +67,7 @@ def topic_signature(name: str, body: str) -> set[str]:
     body_lower = body.lower()
     keywords = {
         "voice-control": ["voice_contorol", "single_game_voicecontorol"],
-        "exec-game": ["exec_game"],
+        "exec-game": ["func_800896A0"],
         "cc1psx": ["cc1psx"],
         "regfix": ["regfix"],
         "asmfix": ["asmfix", "bridge"],

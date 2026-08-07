@@ -17,14 +17,14 @@ extern s32 D_800A33A4;
 extern s32 D_800A33A8;
 extern u8 D_800A9D10;
 extern void func_80049E1C(void);
-extern void InitFadePanel(void);
+extern void func_80052C10(void);
 extern void func_80044098(s16);
 extern void func_80044010(s32 *, s16);
 extern s32 D_800A3240;
 extern s32 D_800A3398;
 extern s32 D_800A3244;
 extern s16 D_800963EE;
-extern void md_game_check_mode(s32 *, s32);
+extern void func_8003EDC0(s32 *, s32);
 extern void func_80054410(s32 *);
 extern s32 func_800457A0(s32);
 extern void func_80041430(s32, s32);
@@ -91,9 +91,9 @@ s32 func_80041650(s32 a0) {
 }
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
-extern void gnd_load_tex(s32);
+extern void func_80041398(s32);
 
-void gnd_init_80041688(s32 arg0, s32 arg1) {
+void func_80041688(s32 arg0, s32 arg1) {
     s32 *player;
     s32 i;
     u8 *p;
@@ -136,12 +136,12 @@ after2:
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
         v = func_8004881C(b, g, r);
-        gnd_load_tex((v << 16) | (v << 8) | v);
+        func_80041398((v << 16) | (v << 8) | v);
     } else {
         r = *((u8 *)player + 0x18);
         g = *((u8 *)player + 0x19);
         b = *((u8 *)player + 0x1A);
-        gnd_load_tex(b | ((r << 16) | (g << 8)));
+        func_80041398(b | ((r << 16) | (g << 8)));
     }
     (void)sp10;
 }
@@ -217,17 +217,17 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         }
         goto shift;
     case0:
-        if (single_game_SetStageId() == 0) {
-            InitHiraRmd_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
+        if (func_8003E2A0() == 0) {
+            func_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
         } else {
             func_80047EE8(a3, i + 1);
         }
         goto shift;
     case1:
-        if (single_game_SetStageId() == a0) {
-            InitHiraRmd_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
+        if (func_8003E2A0() == a0) {
+            func_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
         } else {
-            InitHiraRmd_80047FBC(a3, i + 1, 0x80, 0);
+            func_80047FBC(a3, i + 1, 0x80, 0);
         }
     shift:
         bit >>= 1;
@@ -239,7 +239,7 @@ extern s32 D_80094DF0[];
 extern u8 D_80094E08[];
 extern s16 D_800A9A20;
 extern u16 D_800A9A24;
-void InitHiraRmd_80041AC8(s16 *arg0)
+void func_80041AC8(s16 *arg0)
 {
   s16 rect[4];
   s16 *var_s0;
@@ -265,7 +265,7 @@ void InitHiraRmd_80041AC8(s16 *arg0)
   id_ptr = &arg0[4];
   D_800A9A20 = arg0[4];
   var_s0 = (s16 *) D_80094DF0[D_80094E08[*id_ptr]];
-  if (single_game_SetStageId() != 1)
+  if (func_8003E2A0() != 1)
   {
     goto else_lbl;
   }
@@ -303,9 +303,9 @@ void InitHiraRmd_80041AC8(s16 *arg0)
 }
 extern void gpu_LoadImage(s32, s32);
 extern void func_80048A7C(s16, s16, s32, s32, s32, s32);
-extern s32 single_game_SetStageId(void);
+extern s32 func_8003E2A0(void);
 extern void func_8003E120(void);
-void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
+void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
   s32 *fp_ptr;
   s32 r;
@@ -362,7 +362,7 @@ void saTan4FireDisp(s32 a0, s32 a1, s32 a2)
   if (r >= 0) { goto inner_body; }
   outer++;
   if (outer < 2) { goto loop_outer; }
-  if (single_game_SetStageId() == 1) { func_8003E120(); }
+  if (func_8003E2A0() == 1) { func_8003E120(); }
 }
 extern s16 g_anim_select[3];
 extern Block16 D_800A9B28;
@@ -373,13 +373,13 @@ void func_80041E10(Block16 *a0, s32 a1) {
     D_800A9B28 = *a0;
 }
 extern s32 func_80052754(s32, s32, s32);
-extern s32 single_game_getEnemyCharId(s32, s32);
+extern s32 func_8007FD5C(s32, s32);
 extern s32 math_Cos(s32);
 extern s32 math_Sin(s32);
 extern s32 func_8004A1FC(s32);
 extern s16 D_800F62E0[];
 extern s16 D_800F6340[];
-void decBs0(s32 a0, s32 a1)
+void func_80041EB0(s32 a0, s32 a1)
 {
     s16 *fp_ptr;
     s32 outer;
@@ -434,12 +434,12 @@ void decBs0(s32 a0, s32 a1)
         if (func_80052754(dx, dy, dz) > 0x17D7840) { goto skip; }
 
     calc:
-        angle = single_game_getEnemyCharId(dx, dz);
+        angle = func_8007FD5C(dx, dz);
         cos_val = math_Cos(angle);
         {
             s32 sin_val = math_Sin(angle);
             s32 cross = (cos_val * dz + sin_val * dx) >> 12;
-            tbl[4] = (s16)-single_game_getEnemyCharId(dy, cross);
+            tbl[4] = (s16)-func_8007FD5C(dy, cross);
         }
         tbl[5] = (s16)angle;
         tbl[6] = 1;
@@ -490,7 +490,7 @@ void func_8004211C(void) {
     }
 }
 extern void func_80041EB0(s32, s32);
-void leaf_muki_awase_800421A4(void) {
+void func_800421A4(void) {
     func_80041EB0(0, 0);
 }
 extern void func_800422BC(s32, s32, s32, s32);
@@ -540,7 +540,7 @@ extern u8 D_800F64BA;
 extern s32 func_800486FC(s32);
 extern s32 func_8004881C(s32, s32, s32);
 extern void func_8004A1FC(s16 *);
-void gnd_land_hit_char_die_main(s32 a0, s32 packed, s32 a2, s32 a3) {
+void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     s32 r = (packed >> 16) & 0xFF;
     s32 g = (packed >> 8) & 0xFF;
     s32 b = packed & 0xFF;

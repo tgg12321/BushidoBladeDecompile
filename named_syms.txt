@@ -27,9 +27,9 @@ g_str_bios_id = 0x80016274;
 g_str_intr_id = 0x80016328;
 data_as_code_lb_table_800164AC = 0x800164AC;
 syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper; loop of ~0x270F 'break 1' instrs (debug/breakpoint stub) */
-psyq_memset_8003043C = 0x8003043C;  /* MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
-psyq_memset_80038148 = 0x80038148;  /* MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
-psyq_memset_8005509C = 0x8005509C;  /* MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
+/* RESET 0x8003043C: retired name 'psyq_memset_8003043C' — preserved note: MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */
+/* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
+/* RESET 0x8005509C: retired name 'psyq_memset_8005509C' — preserved note: MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
 replay_camera_check_stage_80060758 = 0x80060758;  /* MISNAMED: 2-halfword clear of g_text_render_cursor_a/b — Kengo name-unique size collision, not a stage check */
 syscall_wrapper_break_80083698 = 0x80083698;
 g_sin_table = 0x800973FC;
@@ -182,71 +182,9 @@ g_str_bbm_t123 = 0x80010390;
 g_str_bbm_s123 = 0x800103C0;
 
 /* Kengo rename aliases: new names for functions defined with old names */
-coli_CheckRobEnemy = 0x800167EC;
-efc_rob_ougi_control = 0x80017D84;
-getScreenPosition = 0x80017FA0;
-suLeagueSystemInit = 0x8001BCF0;
-md_game_restart_init = 0x8001E6E4;
-hirahira_w_frie2 = 0x8001EEB4;
-title_mv_exec = 0x80021280;
-tslDrTex1Init = 0x8002738C;
-_CardCheckPulled = 0x80027438;
-motion_GameCalcMotion = 0x8002872C;
-myRobGeneiDraw = 0x80030900;
-motion_shift_check_e_kawashi = 0x80030B10;
-ki_attack_ougi = 0x80033498;
-motutil_CheckKamaeReq = 0x80033D38;
-robtest_disp = 0x800340A0;
-_GetBattleSwichData = 0x80034200;
-tslDrTex1Init2 = 0x8003553C;
-mottest_rob_init = 0x80036FD4;
-_CardCheckPulled2 = 0x80037A20;
-camera_SetMatrix = 0x80037F40;  /* MISNAMED: not a camera fn; see file_disc_checksum_copy_80037F40 in pass-5 replacement section */
-damage_CalcHitDamage = 0x8003880C;
-md_menu_logo_exec = 0x8003AFFC;
-kgm_init_hitrect = 0x8003B10C;
-_McAccessSection = 0x8003D39C;
-coli_calc_motion = 0x8003D888;
-md_game_restart_init2 = 0x8003F6D8;
-audioDecBeginPut = 0x80040CB8;
-tslDrTex1Init3 = 0x80043BD0;
-gnd_set_fog = 0x80043C7C;
-tslDrTex1Init4 = 0x80043D34;
-gnd_set_fog2 = 0x80043DE0;
-replay_camera_rob_back_win_near = 0x80046BF4;
-tanren_get_bamboo_anim_info = 0x800475A4;
-robtest_disp2 = 0x800470B0;
-motion_CheckSituation = 0x800477E8;
-saEft03Start = 0x80047A90;
-_DispCharacterName = 0x80080258;
-myRobGeneiDraw3 = 0x80080390;
-damage_CalcHitDamage2 = 0x80082A14;
-disp_mario_jimaku = 0x800832A0;
-md_game_check_change_main_mode_default = 0x80083A48;
-action_check_defense = 0x80086130;
-disp_mario_jimaku2 = 0x80086BFC;
-motutil_GetAngTableNum = 0x800871D4;
-action_check_defense2 = 0x80089EB0;
-coli_calc_motion2 = 0x8008ACD0;
+/* RESET 0x80037F40: retired name 'camera_SetMatrix' — preserved note: MISNAMED: not a camera fn; see file_disc_checksum_copy_80037F40 in pass-5 replacement section */
 
 /* Reverse aliases: C files call old func_ names for renamed stubs */
-func_80019568 = 0x80019568;
-func_800321E8 = 0x800321E8;
-func_800335D8 = 0x800335D8;
-func_80035280 = 0x80035280;
-func_8003B5A4 = 0x8003B5A4;
-func_8003DA8C = 0x8003DA8C;
-func_8003F824 = 0x8003F824;
-func_80041BF4 = 0x80041BF4;
-func_80041EB0 = 0x80041EB0;
-func_800422BC = 0x800422BC;
-func_80042874 = 0x80042874;
-func_80042A88 = 0x80042A88;
-func_800432A0 = 0x800432A0;
-func_800858D0 = 0x800858D0;
-func_800890D4 = 0x800890D4;
-func_80089D60 = 0x80089D60;
-saTan0Init = 0x80045294;
 D_800A3205 = 0x800A3205;
 D_800A3207 = 0x800A3207;
 D_800A3206 = 0x800A3206;
@@ -255,8 +193,8 @@ D_800A3206 = 0x800A3206;
 efc_buki_get_vertex_color = 0x8003F568;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
-suDraw2DLib_8007A5C4 = 0x8007A5C4;
-suDraw2DLib_8007A62C = 0x8007A62C;
+func_8007A5C4 = 0x8007A5C4;
+func_8007A62C = 0x8007A62C;
 
 /* === Kengo-derived globals (kengo_globals.py) === */
 MotDataBaseAddress = 0x80104F38;
@@ -267,23 +205,18 @@ MotDataBaseAddress = 0x80104F38;
 /* See docs/naming/MISNOMERS.md for the audit. The replacement aliases */
 /* with the correct semantic names are added at the same addresses */
 /* in the "Misnomer-replacement aliases" section further down. */
-katinuki_game_get_katinuki_max_num_80016868 = 0x80016868;  /* MISNAMED: actually gpu_EnableDisplay (already in undefined_syms_auto.txt at this addr) */
-katinuki_game_get_katinuki_max_num_800168D0 = 0x800168D0;  /* MISNAMED: actually gpu_DisableDisplay (already in undefined_syms_auto.txt at this addr) */
-katinuki_game_get_katinuki_max_num_80046914 = 0x80046914;  /* MISNAMED: 1-line wrapper func_800453E0(8); not katinuki-related */
-katinuki_game_get_katinuki_max_num_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
-katinuki_game_get_katinuki_max_num_80046A60 = 0x80046A60;  /* MISNAMED: 1-line wrapper func_800453E0(0xA); not katinuki-related */
-tslSmdSendVu1Code_8007A87C = 0x8007A87C;  /* MISNAMED: VU1 is PS2-only; actually a ptr-to-KSEG0 converter (top byte = 0x80) */
-tslSmdSendVu1Code_8007A898 = 0x8007A898;  /* MISNAMED: VU1 is PS2-only; actually an OT-terminator check (low 24 bits all 1?) */
+gpu_EnableDisplay = 0x80016868;  /* MISNAMED: actually gpu_EnableDisplay (already in undefined_syms_auto.txt at this addr) */
+gpu_DisableDisplay = 0x800168D0;  /* MISNAMED: actually gpu_DisableDisplay (already in undefined_syms_auto.txt at this addr) */
+func_80046914 = 0x80046914;  /* MISNAMED: 1-line wrapper func_800453E0(8); not katinuki-related */
+func_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
+func_80046A60 = 0x80046A60;  /* MISNAMED: 1-line wrapper func_800453E0(0xA); not katinuki-related */
+func_8007A87C = 0x8007A87C;  /* MISNAMED: VU1 is PS2-only; actually a ptr-to-KSEG0 converter (top byte = 0x80) */
+func_8007A898 = 0x8007A898;  /* MISNAMED: VU1 is PS2-only; actually an OT-terminator check (low 24 bits all 1?) */
 
 /* === Misnomer-replacement aliases (2026-05-17 audit) === */
 /* Replacement names for the Kengo entries above, derived from asm body */
 /* analysis. The Kengo aliases stay for compat but readers should use */
 /* these instead. See docs/naming/MISNOMERS.md. */
-ptr_load_kseg0_8007A87C       = 0x8007A87C;
-is_ot_terminator_8007A898     = 0x8007A898;
-channel_helper_8_80046914     = 0x80046914;
-channel_helper_9_80046934     = 0x80046934;
-channel_helper_A_80046A60     = 0x80046A60;
 /* (gpu_EnableDisplay / gpu_DisableDisplay are already in */
 /* undefined_syms_auto.txt -- no need to re-declare here.) */
 
@@ -308,11 +241,11 @@ player_find_empty_slot_80041584 = 0x80041584;  /* find first NULL in g_player_pt
 /* is added as the primary alias. The Kengo names retained higher in */
 /* this file remain valid aliases for back-compat but should be treated */
 /* as deprecated. */
-char_motion_nibble_scan_80021280              = 0x80021280;  /* supersedes title_mv_exec (motion subsystem, not title screen) */
-tslTm2_command_with_retry_80080258            = 0x80080258;  /* supersedes _DispCharacterName (clearly a TIM/CD-load retry wrapper, not name display) */
-tslTm2_command_with_retry_no_arg3_80080390    = 0x80080390;  /* supersedes myRobGeneiDraw3 (2-arg twin of above; not draw) */
-char_store_pos_pair_80086130                  = 0x80086130;  /* supersedes action_check_defense (stores paired values into 16-byte slot records; not defense check) */
-spawn_hit_particle_80030900                   = 0x80030900;  /* parallel to myRobGeneiDraw (compatible; the "afterimage" might be one kind of hit particle this spawns) */
+/* RESET 0x80021280: retired name 'char_motion_nibble_scan_80021280' — preserved note: supersedes title_mv_exec (motion subsystem, not title screen) */
+/* RESET 0x80080258: retired name 'tslTm2_command_with_retry_80080258' — preserved note: supersedes _DispCharacterName (clearly a TIM/CD-load retry wrapper, not name display) */
+/* RESET 0x80080390: retired name 'tslTm2_command_with_retry_no_arg3_80080390' — preserved note: supersedes myRobGeneiDraw3 (2-arg twin of above; not draw) */
+/* RESET 0x80086130: retired name 'char_store_pos_pair_80086130' — preserved note: supersedes action_check_defense (stores paired values into 16-byte slot records; not defense check) */
+/* RESET 0x80030900: retired name 'spawn_hit_particle_80030900' — preserved note: parallel to myRobGeneiDraw (compatible; the "afterimage" might be one kind of hit particle this spawns) */
 
 /* === Hand-reviewed manual_review names (2026-05-17) === */
 /* SHA1-invariance verified on 2026-05-17: clean rebuild with and without */
@@ -366,23 +299,18 @@ cd_send_cmd_80080600               = 0x80080600;
 /* pad_press_control (src/code6cac_c.c:175) -- does memcard init, */
 /* not pad press handling. Calls bios__bu_init_A0 + opens 8 memcard */
 /* events. */
-memcard_event_init_800375EC                       = 0x800375EC;
 /* marionation_camera_Init_80036064 (src/code6cac_b2.c:380) -- a */
 /* CD streaming callback that loads 0x200 sectors via func_80080620. */
 /* Uses cdrom_BcdToFrames and cdrom_SetCallbackB. */
-cdrom_stream_callback_80036064                    = 0x80036064;
 /* marionation_camera_Init_80037468 (src/code6cac_b2.c:651) -- a */
 /* system-restart wrapper around bios_Exec(sp, a0, a1). Sets up GPU, */
 /* interrupts, critical section then EXECs a new PS-X EXE. */
-bios_exec_wrapper_with_setup_80037468             = 0x80037468;
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
 /* gpu_EnableDisplay + player_Destroy(0,1) + obj_InitAll + disp config */
 /* swap. NOT a position check. */
-scene_teardown_80035DC8                           = 0x80035DC8;
 /* special_camera_check_pos_outside_ground_80036E34 -- NDATA disc-read */
 /* scheduler. Called by func_800451A0 to DMA NDATA files into RAM. */
 /* See docs/formats/NDATA.md "Reader (func_80044E74)". */
-ndata_disc_read_scheduler_80036E34                = 0x80036E34;
 
 /* === Batch 6 high-confidence renames (2026-05-17, asm-only pool) === */
 /* Three pure-getter accessors of already-named globals + one literal */
@@ -493,9 +421,9 @@ file_GetFlag2_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1`
 /* Display / GPU init (8) */
 disp_CalcFov_800166C4           = 0x800166C4;  /* uses Judge table for trig calc */
 disp_SetFramebufferMode_80016768 = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
-gpu_EnableDisplay_80016868      = 0x80016868;  /* gpu_SetMode(1) wrapper */
+/* RENAME 0x80016868: retired name 'gpu_EnableDisplay_80016868' — preserved note: gpu_SetMode(1) wrapper */
 gpu_InitDisplay_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
-gpu_DisableDisplay_800168D0     = 0x800168D0;  /* gpu_SetDispMask(1) wrapper */
+/* RENAME 0x800168D0: retired name 'gpu_DisableDisplay_800168D0' — preserved note: gpu_SetDispMask(1) wrapper */
 gpu_SetDrawMode_80016E40        = 0x80016E40;  /* wrapper around gpu_DrawSync */
 disp_Init_80016918              = 0x80016918;  /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
 /* System init / panic (4) */
@@ -658,46 +586,14 @@ spu_Init_800885AC                                = 0x800885AC;
 /* Kengo CPU/camera misc (6) */
 cpu_get_dist_8003032C                            = 0x8003032C;
 cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
-cpu_get_dist_2_800324D0                          = 0x800324D0;
 cpu_check_same_dir_timer_8003339C                = 0x8003339C;
 replay_camera_Init_80036D98                      = 0x80036D98;
 special_camera_get_rot_dir_80037348              = 0x80037348;
 /* Kengo Item 7 cross-ref (36) */
-suLeagueSystemInit_8001BCF0                      = 0x8001BCF0;
-md_game_restart_init_8001E6E4                    = 0x8001E6E4;
-hirahira_w_frie2_8001EEB4                        = 0x8001EEB4;
-title_mv_exec_80021280                           = 0x80021280;
-tslDrTex1Init_8002738C                           = 0x8002738C;
-_CardCheckPulled_80027438                        = 0x80027438;
-motion_GameCalcMotion_8002872C                   = 0x8002872C;
-myRobGeneiDraw_80030900                          = 0x80030900;
-motion_shift_check_e_kawashi_80030B10            = 0x80030B10;
-ki_attack_ougi_80033498                          = 0x80033498;
-motutil_CheckKamaeReq_80033D38                   = 0x80033D38;
-robtest_disp_800340A0                            = 0x800340A0;
-_GetBattleSwichData_80034200                     = 0x80034200;
-tslDrTex1Init2_8003553C                          = 0x8003553C;
-mottest_rob_init_80036FD4                        = 0x80036FD4;
-_CardCheckPulled2_80037A20                       = 0x80037A20;
-camera_SetMatrix_80037F40                        = 0x80037F40;  /* MISNAMED: not a camera fn; checksums g_file_disc_size (0x24 bytes) and copies Quad records */
-damage_CalcHitDamage_8003880C                    = 0x8003880C;
-md_menu_logo_exec_8003AFFC                       = 0x8003AFFC;
-kgm_init_hitrect_8003B10C                        = 0x8003B10C;
-_McAccessSection_8003D39C                        = 0x8003D39C;
-coli_calc_motion_8003D888                        = 0x8003D888;
-audioDecBeginPut_80040CB8                        = 0x80040CB8;
-tslDrTex1Init3_80043BD0                          = 0x80043BD0;
-gnd_set_fog_80043C7C                             = 0x80043C7C;
-tslDrTex1Init4_80043D34                          = 0x80043D34;
-gnd_set_fog2_80043DE0                            = 0x80043DE0;
-suLeagueSystemInit2_80044CCC                     = 0x80044CCC;
-_DispCharacterName_80080258                      = 0x80080258;  /* legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */
-myRobGeneiDraw3_80080390                         = 0x80080390;  /* legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */
-action_check_defense_80086130                    = 0x80086130;  /* legacy; canonical is char_store_pos_pair_80086130 (misnomer) */
-disp_mario_jimaku2_80086BFC                      = 0x80086BFC;
-motutil_GetAngTableNum_800871D4                  = 0x800871D4;
-action_check_defense2_80089EB0                   = 0x80089EB0;
-coli_calc_motion2_8008ACD0                       = 0x8008ACD0;
+/* RESET 0x80037F40: retired name 'camera_SetMatrix_80037F40' — preserved note: MISNAMED: not a camera fn; checksums g_file_disc_size (0x24 bytes) and copies Quad records */
+/* RESET 0x80080258: retired name '_DispCharacterName_80080258' — preserved note: legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */
+/* RESET 0x80080390: retired name 'myRobGeneiDraw3_80080390' — preserved note: legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */
+/* RESET 0x80086130: retired name 'action_check_defense_80086130' — preserved note: legacy; canonical is char_store_pos_pair_80086130 (misnomer) */
 
 /* === Legacy renamer audit: remaining sound.c Held entries (2026-05-17) === */
 /* Reprocessed the 23 entries Held from earlier sound.c audit.  After deeper */
@@ -1307,7 +1203,7 @@ gpu_DrawSyncCallback                                    = 0x8007B244;  /* PSX li
 snd_ChannelDmaFlush                                     = 0x80087F64;  /* if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
 spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
-coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
+/* RESET 0x8008A904: retired name 'coli_HitPauseKatana_3' — preserved note: coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
 
 /* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
 gpu_DebugCheckRect                                      = 0x8007B3A8;  /* PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
@@ -1558,8 +1454,7 @@ g_shadow_tex_state_b                                    = 0x800A321C;  /* shadow
 /* generally accurate for BB2 functions where the function body matches. */
 /* These were noted in src/ comments but never promoted into */
 /* named_syms.txt. */
-single_game_setModeRequest                              = 0x800187F4;  /* in code6cac.c */
-saTan2LinePrimInit                                      = 0x8002EA24;
+func_800187F4                              = 0x800187F4;  /* in code6cac.c */
 /* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
@@ -1762,7 +1657,7 @@ mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirror
 /*   - Reads g_practice_unlock_anim_id (D_800A38A4): cases 6, 7, 8, 9 */
 /*   - Each case sets g_practice_lesson_char_id + slot for the */
 /*     specific unlock-animation character/move combo */
-mode_handler_18_UnlockAnimDispatch                      = 0x8003C040;  /* dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
+/* RESET 0x8003C040: retired name 'mode_handler_18_UnlockAnimDispatch' — preserved note: dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */
 
 /* === g_module_func_tbl mode handler decode (cont'd 2) -- 8 highs === */
 /* Additional handlers identified from body analysis. */
@@ -1779,8 +1674,8 @@ mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls 
 
 /* === Final 2 mode handlers from asm (2026-05-17) -- 2 highs === */
 /* Modes 0 and 7 are asm-only; decoded directly from asm/6CAC.s. */
-mode_handler_00_GameInit                                = 0x8001DCB0;  /* main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
-mode_handler_07_SubModeTransition                       = 0x8003BCB4;  /* increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
+/* RESET 0x8001DCB0: retired name 'mode_handler_00_GameInit' — preserved note: main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
+/* RESET 0x8003BCB4: retired name 'mode_handler_07_SubModeTransition' — preserved note: increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
 
 /* g_module_func_tbl coverage: 34/34 modes named (100% complete) */
 
@@ -2461,7 +2356,7 @@ g_gpu_prim_template_d                                   = 0x80054600;  /* templa
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
 /* as a starting point for future analysis. */
-calc_loc_mat_fw                                         = 0x8002AB08;  /* MISNAMED: actually a GPU DMA scheduler (see gpu_dma_schedule_8002AB08 in pass-6 replacement section) */
+func_8002AB08                                         = 0x8002AB08;  /* MISNAMED: actually a GPU DMA scheduler (see gpu_dma_schedule_8002AB08 in pass-6 replacement section) */
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */
@@ -2486,46 +2381,46 @@ g_memcard1_poll_count                                   = 0x800A3924;  /* increm
 /* === Bulk-promotion: 222 semantic-named functions defined in src/ (2026-05-17) === */
 /* These functions had proper names in their C source but no addr binding */
 /* in named_syms.txt.  Addresses derived from asm/funcs/<name>.s. */
-FadeOut_8003FFA8                                        = 0x8003FFA8;  /* MISNAMED: not fade; 4-byte alignment via modulo-and-round */
-FadeOut_8003FFC4                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
-Vu0SetLightColMatrix_800801E8                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
-Vu0SetLightColMatrix_80080208                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
-Vu0SetLightColMatrix_80080640                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */
-Vu0SetLightColMatrix_80080684                           = 0x80080684;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of saEft01Init(a0) */
-ang_hosei_80056FE8                                      = 0x80056FE8;  /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
-calc_fc_frame                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
-calc_fc_frame_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
-camera_SetMatrix_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a camera fn; dispatches func_8003AA78/AA48 based on g_disp_enable */
-camera_SetMatrix_8003E164                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
-gnd_close_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
-gnd_init_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
-katinuki_game_setData_8003D2C4                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&D_800A3220, &D_80090178) */
-katinuki_game_setData_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
-mario_getMarioVoiceData_8001B3C0                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
-mario_getMarioVoiceData_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional func_800325E0 with sound IDs 0x56..0x58 */
-mario_getMarioVoiceData_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
-mario_getMarioVoiceData_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
-motion_LoadPreCalcData_80037F08                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
-motion_LoadPreCalcData_8005B98C                         = 0x8005B98C;  /* MISNAMED: not motion-pre-calc; calls saFidLoad(a0, 8) then saFidLoad(a0, 4) */
-motion_LoadPreCalcData_8007DC68                         = 0x8007DC68;  /* MISNAMED: not motion-pre-calc; sets g_gpu_vcount = sys_VSync(-1) + 0xF0 */
-motion_SavePreCalcData_8003A3F0                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
-motion_SavePreCalcData_8003A574                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
-motion_SavePreCalcData_80080014                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
-motion_SavePreCalcData_8008003C                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
-motion_SavePreCalcData_80080064                         = 0x80080064;  /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
-saTan2GaugeInit_80077B20                                = 0x80077B20;  /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
-saTan2GaugeInit_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
-saTan2InfoInit_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80044E74(a0+0x4D, a1) */
-saTan2InfoInit_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
-saTan2InfoInit_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
-saTan2InfoInit_80077AC0                                 = 0x80077AC0;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80077724() */
-saTanMainDispGnd_800444BC                               = 0x800444BC;  /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
-saTanMainDispGnd_80046020                               = 0x80046020;  /* MISNAMED: not ground display; func_800453E0(6) then func_8005B6AC() */
-saTanMainDispGnd_80077A04                               = 0x80077A04;  /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
+func_8003FFA8                                        = 0x8003FFA8;  /* MISNAMED: not fade; 4-byte alignment via modulo-and-round */
+func_8003FFC4                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
+func_800801E8                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
+func_80080208                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
+func_80080640                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */
+func_80080684                           = 0x80080684;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of saEft01Init(a0) */
+func_80056FE8                                      = 0x80056FE8;  /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
+func_80044378                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
+func_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
+func_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a camera fn; dispatches func_8003AA78/AA48 based on g_disp_enable */
+func_8003E164                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
+func_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
+func_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
+func_8003D2C4                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&D_800A3220, &D_80090178) */
+func_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
+func_8001B3C0                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
+func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional func_800325E0 with sound IDs 0x56..0x58 */
+func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
+func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
+func_80037F08                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
+func_8005B98C                         = 0x8005B98C;  /* MISNAMED: not motion-pre-calc; calls saFidLoad(a0, 8) then saFidLoad(a0, 4) */
+func_8007DC68                         = 0x8007DC68;  /* MISNAMED: not motion-pre-calc; sets g_gpu_vcount = sys_VSync(-1) + 0xF0 */
+func_8003A3F0                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
+func_8003A574                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
+func_80080014                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
+func_8008003C                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
+func_80080064                         = 0x80080064;  /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
+func_80077B20                                = 0x80077B20;  /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
+func_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
+func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80044E74(a0+0x4D, a1) */
+func_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
+func_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
+func_80077AC0                                 = 0x80077AC0;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80077724() */
+func_800444BC                               = 0x800444BC;  /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
+func_80046020                               = 0x80046020;  /* MISNAMED: not ground display; func_800453E0(6) then func_8005B6AC() */
+func_80077A04                               = 0x80077A04;  /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
 
 /* === asm/funcs bulk promotion: 51 BIOS/library wrappers + helpers (2026-05-17) === */
 /* asm/funcs/<name>.s files with semantic names not yet in named_syms.txt. */
-calc_loc_mat_fw_8004A940                                = 0x8004A940;  /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to func_8004A76C */
+func_8004A940                                = 0x8004A940;  /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to func_8004A76C */
 
 /* === Tier 1 batch: named-adjacent sibling fields (2026-05-17) === */
 /* 187 unnamed addresses that sit 1-8 bytes after a */
@@ -3130,25 +3025,6 @@ g_char_p21_field_422                                         = 0x801078DA;
 /* For Kengo-derived names where body audit shows the name is wrong. */
 /* The Kengo aliases above stay (compat with src/*.c usage) but readers */
 /* should use these instead. See docs/naming/MISNOMERS.md pass 5. */
-view_pos_init_from_obj_8001B3C0 = 0x8001B3C0;
-sound_dispatch_56_to_58_8001C820 = 0x8001C820;
-display_framebuffer_dispatch_8001DBE4 = 0x8001DBE4;
-bios_FormatDevice_B_wrapper_80037F08 = 0x80037F08;
-file_disc_checksum_copy_80037F40 = 0x80037F40;
-set_event_flag_8003A3F0 = 0x8003A3F0;
-bios_FileRead_B_wrapper_8003A574 = 0x8003A574;
-ground_load_with_cache_8003E164 = 0x8003E164;
-bgm_sound_table_init_80048AD0 = 0x80048AD0;
-saFidLoad_pair_8005B98C = 0x8005B98C;
-mode_change_to_katinuki_8005BE84 = 0x8005BE84;
-gpu_vcount_init_8007DC68 = 0x8007DC68;
-bios_DeliverEvent_class3_evt20_80080014 = 0x80080014;
-bios_DeliverEvent_class3_evt40_8008003C = 0x8008003C;
-bios_DeliverEvent_class3_evt40_80080064 = 0x80080064;
-cpu_side_move_dir_4_wrapper_800801E8 = 0x800801E8;
-marionation_Exec_wrapper_80080208 = 0x80080208;
-cdrom_dma_idle_check_80080640 = 0x80080640;
-saEft01Init_wrapper_80080684 = 0x80080684;
 
 /* === MISNOMERS pass 6 replacement aliases (2026-05-18 audit) === */
 /* Continued Kengo mass-rename audit (24 of 50 audited funcs were misnomers). */
@@ -3158,33 +3034,10 @@ saEft01Init_wrapper_80080684 = 0x80080684;
 /* ALSO a misnomer (caught by the audit) -- demoted here. The proposer's */
 /* 'syscall_wrapper' category is itself unreliable for break-loops. */
 breakpoint_trap_loop_800164F8 = 0x800164F8;
-apply_motion_matrix_800203B4 = 0x800203B4;
-gpu_dma_schedule_8002AB08 = 0x8002AB08;
-gpu_LoadImage_wrapper_8003D2C4 = 0x8003D2C4;
-align_4byte_round_8003FFA8 = 0x8003FFA8;
-set_array_slot3_8003FFC4 = 0x8003FFC4;
-player_equipment_flag_init_80041688 = 0x80041688;
-build_offset_table_80044378 = 0x80044378;
-disp_dispatch_via_D_800A378C_800444BC = 0x800444BC;
-dispatch_via_4D_offset_80044F80 = 0x80044F80;
-display_setup_80046020 = 0x80046020;
-sentinel_array_init_8004939C = 0x8004939C;
-stream_decode_via_8004A76C_8004A940 = 0x8004A940;
-ui_stop_selection_800548DC = 0x800548DC;
-char_disp_offset_80056FE8 = 0x80056FE8;
-func_8006C168_wrapper_8006C1FC = 0x8006C1FC;
-motion_state_reset_80077A04 = 0x80077A04;
-func_8006E068_wrapper_80077A60 = 0x80077A60;
-func_80077724_wrapper_80077AC0 = 0x80077AC0;
-gauge_flag_set_80077B20 = 0x80077B20;
-gauge_data_ptr_get_80077D00 = 0x80077D00;
 
 /* === MISNOMERS pass 6 supplementary aliases (PARTIAL verdicts) === */
 /* For functions where the existing name partially fits; supplementary */
 /* name added for clarity. Both names remain valid. */
-md_mode_set_800400B0 = 0x800400B0;
-efc_buki_draw_setup_80047FBC = 0x80047FBC;
-efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;
 
 /* === Cluster naming pass 1 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* entries in 3 large */
@@ -3205,7 +3058,6 @@ mario_test_initialize_match_80022580 = 0x80022580;
 mario_test_apply_status_updates_80022F34 = 0x80022F34;
 cpu_calc_move_pattern_trajectory_80023F08 = 0x80023F08;
 cpu_exec_main_game_loop_frame_8002C61C = 0x8002C61C;
-record_array_sentinel_init_8003043C = 0x8003043C;
 cpu_ai_pick_move_for_situation_80030D7C = 0x80030D7C;
 mario_test_clear_movement_buffer_80032040 = 0x80032040;
 cpu_check_special_move_input_80032C50 = 0x80032C50;
@@ -3215,7 +3067,6 @@ pad_analog_volume_calc_80037AA4 = 0x80037AA4;
 pad_analog_button_test_80037B00 = 0x80037B00;
 pad_file_read_init_80037B90 = 0x80037B90;
 pad_file_write_wrapper_80037C34 = 0x80037C34;
-pad_clear_buffer_80038148 = 0x80038148;
 pad_controller_init_80038170 = 0x80038170;
 mario_test_init_dialog_memory_800392C8 = 0x800392C8;
 cpu_clear_move_buffers_80039320 = 0x80039320;
@@ -3317,12 +3168,6 @@ kgm_clamp_patch_init_helper_8001945C = 0x8001945C;
 calc_loc_mat_fw_helper_8002CA8C = 0x8002CA8C;
 DispSamnailWindow_helper_800343F0 = 0x800343F0;
 DispSamnailWindow_helper_8003B20C = 0x8003B20C;
-suDispMentalBar_helper_8003B2C8 = 0x8003B2C8;
-suDispMentalBar_helper_8003B3A4 = 0x8003B3A4;
-suDispMentalBar_helper_8003B4DC = 0x8003B4DC;
-tslLineG5Init_helper_8003DBE4 = 0x8003DBE4;
-tslPrintScreen_helper_8003FA24 = 0x8003FA24;
-tslPrintScreen_helper_8003FECC = 0x8003FECC;
 AllocRobRmd_helper_80041988 = 0x80041988;
 AllocRobRmd_helper_80043398 = 0x80043398;
 efc_rob_set_type_particle_helper_80049C24 = 0x80049C24;
@@ -3433,8 +3278,8 @@ g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 
 /* Demoted above; body-derived replacements added here.                       */
 /* See docs/naming/MISNOMERS.md "Pass 9" for the per-entry verdict.           */
 
-clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload — pass 4) */
-practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
+/* RESET 0x80038148: retired name 'clear_disp_state_buf_80038148' — preserved note: sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload — pass 4) */
+/* RESET 0x8005509C: retired name 'practice_menu_clear_field414_8005509C' — preserved note: clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */
 text_render_cursor_reset_80060758            = 0x80060758;  /* zeros g_text_render_cursor_a/b u16 pair; sole caller SetCurrentCursor */
 gte_nct_wrapper_80054440                     = 0x80054440;  /* GTE Normal-Color-Triple lighting loop: nct op, light matrix via ctc2 $8-12, streams vertex normals -> RGB FIFO; sole caller + nct evidence */
 gpu_draw_color_prim_8007B4D0                 = 0x8007B4D0;  /* GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
@@ -3516,13 +3361,13 @@ mode_helper_8003B328                               = 0x8003B328;  /* first-pass 
 mode_helper_8003B534                               = 0x8003B534;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_05_NoOp */
 sudispmentalbar_helper_8003B56C                    = 0x8003B56C;  /* first-pass subsystem tag (sudispmentalbar); <-suDispMentalBar */
 game_helper_8003D91C                               = 0x8003D91C;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
-tsllineg5init_helper_8003DDF8                      = 0x8003DDF8;  /* first-pass subsystem tag (tsllineg5init); <-tslLineG5Init_helper_8003DBE4 */
+/* RESET 0x8003DDF8: retired name 'tsllineg5init_helper_8003DDF8' — preserved note: first-pass subsystem tag (tsllineg5init); <-tslLineG5Init_helper_8003DBE4 */
 gpu_helper_8003DE14                                = 0x8003DE14;  /* first-pass subsystem tag (gpu); ->gpu_StoreImage;->gpu_LoadImage;->gpu_DrawSync */
 game_helper_8003E0E0                               = 0x8003E0E0;  /* first-pass subsystem tag (game); <-game_StageCleanup_80046EDC */
 mode_helper_8003E6A0                               = 0x8003E6A0;  /* first-pass subsystem tag (mode); <-mode_handler_01_GameFrameUpdate */
 cpu_helper_8003F3D4                                = 0x8003F3D4;  /* first-pass subsystem tag (cpu); <-cpu_init_stage_and_camera_setup_8001E404 */
 game_helper_8003F7F4                               = 0x8003F7F4;  /* first-pass subsystem tag (game); <-game_Init_80046B44 */
-tslprintscreen_helper_8003FE40                     = 0x8003FE40;  /* first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */
+/* RESET 0x8003FE40: retired name 'tslprintscreen_helper_8003FE40' — preserved note: first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */
 player_helper_800400F8                             = 0x800400F8;  /* first-pass subsystem tag (player); <-player_sprite_free_8004016C */
 replay_camera_helper_800418D0                      = 0x800418D0;  /* first-pass subsystem tag (replay_camera); <-replay_camera_rob_back_win_near */
 eff_helper_80041E10                                = 0x80041E10;  /* first-pass subsystem tag (eff); <-eff_FrameUpdate */
@@ -3554,8 +3399,8 @@ calc_helper_80056CB8                               = 0x80056CB8;  /* first-pass 
 calc_helper_80058580                               = 0x80058580;  /* first-pass subsystem tag (calc); <-calc_loc_mat_fw_80055B60 */
 obj_helper_8005B43C                                = 0x8005B43C;  /* first-pass subsystem tag (obj); ->obj_SetReverbValue_80085EE4;->obj_SetControlData_80085E4C;->obj_ResetReverbMode_80085F98 */
 spu_helper_8005BF78                                = 0x8005BF78;  /* first-pass subsystem tag (spu); ->spu_TransferDirect_capped;->spu_TransferData_capped */
-tslglobalmemfree_helper_8005C074                   = 0x8005C074;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
-tslglobalmemfree_helper_8005C5A8                   = 0x8005C5A8;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+/* RESET 0x8005C074: retired name 'tslglobalmemfree_helper_8005C074' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+/* RESET 0x8005C5A8: retired name 'tslglobalmemfree_helper_8005C5A8' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 file_helper_8005C614                               = 0x8005C614;  /* first-pass subsystem tag (file); <-file_LoadSoundData_80016CF8 */
 mode_helper_8005C650                               = 0x8005C650;  /* first-pass subsystem tag (mode); <-mode_handler_29_StageLeafUpdate;<-mode_handler_03_NoOp;<-mode_handler_25_PostBattleSetup */
 mode_helper_800600C8                               = 0x800600C8;  /* first-pass subsystem tag (mode); <-mode_handler_33_RebootBegin */
@@ -3631,11 +3476,11 @@ gpu_helper_8007DB20                                = 0x8007DB20;  /* first-pass 
 math_helper_8007E43C                               = 0x8007E43C;  /* first-pass subsystem tag (math); <-math_Distance3D_80017748;<-math_Distance3D_16_800177C8 */
 md_game_helper_8007FBBC                            = 0x8007FBBC;  /* first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
 special_camera_helper_800826CC                     = 0x800826CC;  /* first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
-tslglobalmemfree_helper_800859F0                   = 0x800859F0;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+/* RESET 0x800859F0: retired name 'tslglobalmemfree_helper_800859F0' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 mario_helper_80085FB8                              = 0x80085FB8;  /* first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
 dispstuff_helper_80087770                          = 0x80087770;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 dispstuff_helper_80087CAC                          = 0x80087CAC;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
-tslglobalmemfree_helper_80088584                   = 0x80088584;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
+/* RESET 0x80088584: retired name 'tslglobalmemfree_helper_80088584' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
 spu_helper_800885CC                                = 0x800885CC;  /* first-pass subsystem tag (spu); <-spu_Init_800885AC;->spu_FlushVoiceChannels */
 bios_helper_800886C4                               = 0x800886C4;  /* first-pass subsystem tag (bios); ->bios_OpenEvent;->bios_EnableEvent */
 spu_helper_80088F9C                                = 0x80088F9C;  /* first-pass subsystem tag (spu); <-spu_TransferData_capped */
@@ -3747,7 +3592,7 @@ get_global_8008009C                                = 0x8008009C;  /* structural 
 get_global_800800AC                                = 0x800800AC;  /* structural role; n=8 */
 copy_80080228                                      = 0x80080228;  /* structural role; n=6 */
 copy_80080240                                      = 0x80080240;  /* structural role; n=6 */
-tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
+/* RESET 0x80080828: retired name 'tsltm2loadimage_helper_80080828' — preserved note: first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
 tsltm2loadimage_helper_800819C4                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
 set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
 copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
@@ -3857,12 +3702,12 @@ efc_spawn_80067164                                     = 0x80067164;  /* effect-
 efc_spawn_80067198                                     = 0x80067198;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 efc_spawn_800671CC                                     = 0x800671CC;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */
 buki_collision_alloc_8005C6D0                          = 0x8005C6D0;  /* iterates 0x18-entry object list D_800EFB78; coli_calc_motion2 per slot, builds params (7-bit fields), AllocBukiRmd for weapon hits */
-get_D_800F6650_80042864                                = 0x80042864;  /* getter: returns D_800F6650 (no calls/branches) */
+/* RESET 0x80042864: retired name 'get_D_800F6650_80042864' — preserved note: getter: returns D_800F6650 (no calls/branches) */
 set_D_80101E64_if_valid_800371AC                       = 0x800371AC;  /* calls func_80037110; if result!=0 stores it to D_80101E64 and returns 1, else returns 0 */
 events_enable_8003A360                                 = 0x8003A360;  /* bios_EnableEvent on D_800A3810 + D_800A3738, sets enabled-flag D_800A320C=1, clears D_800A3730 */
 gte_load_rot_matrix_80052B00                           = 0x80052B00;  /* loads 3x3 rotation matrix + translation from arg into GTE control regs 0-7 (ctc2) */
 gte_set_projection_params_8007E094                     = 0x8007E094;  /* loads GTE projection control regs 24-30 (OFX/OFY/H/DQA/DQB/ZSF3/ZSF4) */
-gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */
+/* RESET 0x8007EFFC: retired name 'gte_set_proj_distance_8007EFFC' — preserved note: loads GTE control reg 26 (H = projection plane distance) */
 calc_rotated_enemy_pos_80042FA0                        = 0x80042FA0;  /* computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
 init_move_to_target_80053304                           = 0x80053304;  /* stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
 gpu_build_gradient_quad_80072CD4                       = 0x80072CD4;  /* initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
