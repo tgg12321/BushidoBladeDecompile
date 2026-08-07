@@ -1,0 +1,6259 @@
+{
+  "mode": "dry-run",
+  "ops": [
+    {
+      "address": "0x800167ec",
+      "kind": "RESET",
+      "new_name": "func_800167EC",
+      "old_names": [
+        "coli_CheckRobEnemy",
+        "kgm_clamp_patch_init"
+      ],
+      "glabel": "kgm_clamp_patch_init",
+      "notes": []
+    },
+    {
+      "address": "0x80016868",
+      "kind": "RESET",
+      "new_name": "func_80016868",
+      "old_names": [
+        "gpu_EnableDisplay_80016868",
+        "katinuki_game_get_katinuki_max_num_80016868"
+      ],
+      "glabel": "katinuki_game_get_katinuki_max_num_80016868",
+      "notes": [
+        "'func_80016868' is not object-defined per build/bb2.map \u2014 named_syms.txt:271 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800168d0",
+      "kind": "RESET",
+      "new_name": "func_800168D0",
+      "old_names": [
+        "gpu_DisableDisplay_800168D0",
+        "katinuki_game_get_katinuki_max_num_800168D0"
+      ],
+      "glabel": "katinuki_game_get_katinuki_max_num_800168D0",
+      "notes": [
+        "'func_800168D0' is not object-defined per build/bb2.map \u2014 named_syms.txt:272 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80017200",
+      "kind": "RENAME",
+      "new_name": "main",
+      "old_names": [
+        "cpu_set_move_command_and_dir_for_no_action_2"
+      ],
+      "glabel": "cpu_set_move_command_and_dir_for_no_action_2",
+      "notes": []
+    },
+    {
+      "address": "0x800174f4",
+      "kind": "RESET",
+      "new_name": "func_800174F4",
+      "old_names": [
+        "gnd_disp_loop_ctrl"
+      ],
+      "glabel": "gnd_disp_loop_ctrl",
+      "notes": []
+    },
+    {
+      "address": "0x80017d84",
+      "kind": "RESET",
+      "new_name": "func_80017D84",
+      "old_names": [
+        "efc_rob_ougi_control"
+      ],
+      "glabel": "func_80017D84",
+      "notes": []
+    },
+    {
+      "address": "0x80017fa0",
+      "kind": "RESET",
+      "new_name": "func_80017FA0",
+      "old_names": [
+        "getScreenPosition"
+      ],
+      "glabel": "func_80017FA0",
+      "notes": []
+    },
+    {
+      "address": "0x80018094",
+      "kind": "RESET",
+      "new_name": "func_80018094",
+      "old_names": [
+        "marionation_camera_Exec"
+      ],
+      "glabel": "marionation_camera_Exec",
+      "notes": []
+    },
+    {
+      "address": "0x80018300",
+      "kind": "RESET",
+      "new_name": "func_80018300",
+      "old_names": [
+        "cpu_check_run_attack"
+      ],
+      "glabel": "cpu_check_run_attack",
+      "notes": []
+    },
+    {
+      "address": "0x800187f4",
+      "kind": "RESET",
+      "new_name": "func_800187F4",
+      "old_names": [
+        "single_game_setModeRequest"
+      ],
+      "glabel": "single_game_setModeRequest",
+      "notes": [
+        "'func_800187F4' is not object-defined per build/bb2.map \u2014 named_syms.txt:1563 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80019568",
+      "kind": "RESET",
+      "new_name": "func_80019568",
+      "old_names": [
+        "single_game_VoiceContorol"
+      ],
+      "glabel": "single_game_VoiceContorol",
+      "notes": []
+    },
+    {
+      "address": "0x8001b294",
+      "kind": "RESET",
+      "new_name": "func_8001B294",
+      "old_names": [
+        "gnd_init_8001B294"
+      ],
+      "glabel": "gnd_init_8001B294",
+      "notes": []
+    },
+    {
+      "address": "0x8001b3c0",
+      "kind": "RESET",
+      "new_name": "func_8001B3C0",
+      "old_names": [
+        "mario_getMarioVoiceData_8001B3C0",
+        "view_pos_init_from_obj_8001B3C0"
+      ],
+      "glabel": "mario_getMarioVoiceData_8001B3C0",
+      "notes": [
+        "'func_8001B3C0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2506 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8001b478",
+      "kind": "RESET",
+      "new_name": "func_8001B478",
+      "old_names": [
+        "myRobGeneiMove"
+      ],
+      "glabel": "myRobGeneiMove",
+      "notes": []
+    },
+    {
+      "address": "0x8001b748",
+      "kind": "RESET",
+      "new_name": "func_8001B748",
+      "old_names": [
+        "DispPracticeMenuTex_A"
+      ],
+      "glabel": "DispPracticeMenuTex_A",
+      "notes": []
+    },
+    {
+      "address": "0x8001bc70",
+      "kind": "RESET",
+      "new_name": "func_8001BC70",
+      "old_names": [
+        "cpu_check_move_dir_pattern_enemy_attack"
+      ],
+      "glabel": "cpu_check_move_dir_pattern_enemy_attack",
+      "notes": []
+    },
+    {
+      "address": "0x8001bcf0",
+      "kind": "RESET",
+      "new_name": "func_8001BCF0",
+      "old_names": [
+        "suLeagueSystemInit",
+        "suLeagueSystemInit_8001BCF0"
+      ],
+      "glabel": "func_8001BCF0",
+      "notes": []
+    },
+    {
+      "address": "0x8001be08",
+      "kind": "RESET",
+      "new_name": "func_8001BE08",
+      "old_names": [
+        "LWCard_SetAccessData"
+      ],
+      "glabel": "LWCard_SetAccessData",
+      "notes": []
+    },
+    {
+      "address": "0x8001c820",
+      "kind": "RESET",
+      "new_name": "func_8001C820",
+      "old_names": [
+        "mario_getMarioVoiceData_8001C820",
+        "sound_dispatch_56_to_58_8001C820"
+      ],
+      "glabel": "mario_getMarioVoiceData_8001C820",
+      "notes": [
+        "'func_8001C820' is not object-defined per build/bb2.map \u2014 named_syms.txt:2507 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8001ce60",
+      "kind": "RESET",
+      "new_name": "func_8001CE60",
+      "old_names": [
+        "camera_set_target_zoom"
+      ],
+      "glabel": "camera_set_target_zoom",
+      "notes": []
+    },
+    {
+      "address": "0x8001d790",
+      "kind": "RESET",
+      "new_name": "func_8001D790",
+      "old_names": [
+        "se_data_set"
+      ],
+      "glabel": "se_data_set",
+      "notes": []
+    },
+    {
+      "address": "0x8001d904",
+      "kind": "RESET",
+      "new_name": "func_8001D904",
+      "old_names": [
+        "motion_Close_8001D904"
+      ],
+      "glabel": "motion_Close_8001D904",
+      "notes": []
+    },
+    {
+      "address": "0x8001d998",
+      "kind": "RESET",
+      "new_name": "func_8001D998",
+      "old_names": [
+        "motion_Close_8001D998"
+      ],
+      "glabel": "motion_Close_8001D998",
+      "notes": []
+    },
+    {
+      "address": "0x8001da8c",
+      "kind": "RESET",
+      "new_name": "func_8001DA8C",
+      "old_names": [
+        "camera_SetMatrix_8001DA8C"
+      ],
+      "glabel": "camera_SetMatrix_8001DA8C",
+      "notes": []
+    },
+    {
+      "address": "0x8001db9c",
+      "kind": "RESET",
+      "new_name": "func_8001DB9C",
+      "old_names": [
+        "gnd_close_8001DB9C"
+      ],
+      "glabel": "gnd_close_8001DB9C",
+      "notes": []
+    },
+    {
+      "address": "0x8001dbe4",
+      "kind": "RESET",
+      "new_name": "func_8001DBE4",
+      "old_names": [
+        "camera_SetMatrix_8001DBE4",
+        "display_framebuffer_dispatch_8001DBE4"
+      ],
+      "glabel": "camera_SetMatrix_8001DBE4",
+      "notes": [
+        "'func_8001DBE4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2500 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8001dcb0",
+      "kind": "RESET",
+      "new_name": "func_8001DCB0",
+      "old_names": [
+        "mario_test_Exec",
+        "mode_handler_00_GameInit"
+      ],
+      "glabel": "mario_test_Exec",
+      "notes": []
+    },
+    {
+      "address": "0x8001e6e4",
+      "kind": "RESET",
+      "new_name": "func_8001E6E4",
+      "old_names": [
+        "md_game_restart_init",
+        "md_game_restart_init_8001E6E4"
+      ],
+      "glabel": "func_8001E6E4",
+      "notes": []
+    },
+    {
+      "address": "0x8001ea84",
+      "kind": "RESET",
+      "new_name": "func_8001EA84",
+      "old_names": [
+        "cpu_get_move_pattern_table_number"
+      ],
+      "glabel": "cpu_get_move_pattern_table_number",
+      "notes": []
+    },
+    {
+      "address": "0x8001eeb4",
+      "kind": "RESET",
+      "new_name": "func_8001EEB4",
+      "old_names": [
+        "hirahira_w_frie2",
+        "hirahira_w_frie2_8001EEB4"
+      ],
+      "glabel": "func_8001EEB4",
+      "notes": []
+    },
+    {
+      "address": "0x8001f2e4",
+      "kind": "RESET",
+      "new_name": "func_8001F2E4",
+      "old_names": [
+        "md_game_rob_data_init"
+      ],
+      "glabel": "md_game_rob_data_init",
+      "notes": []
+    },
+    {
+      "address": "0x8001fbe8",
+      "kind": "RESET",
+      "new_name": "func_8001FBE8",
+      "old_names": [
+        "single_game_CheckStatusUpDataTotalOver"
+      ],
+      "glabel": "single_game_CheckStatusUpDataTotalOver",
+      "notes": []
+    },
+    {
+      "address": "0x800203b4",
+      "kind": "RESET",
+      "new_name": "func_800203B4",
+      "old_names": [
+        "apply_motion_matrix_800203B4",
+        "calc_fc_frame_800203B4"
+      ],
+      "glabel": "calc_fc_frame_800203B4",
+      "notes": [
+        "'func_800203B4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2499 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800204c0",
+      "kind": "RESET",
+      "new_name": "func_800204C0",
+      "old_names": [
+        "single_game_SetAbilityData"
+      ],
+      "glabel": "single_game_SetAbilityData",
+      "notes": []
+    },
+    {
+      "address": "0x80020d38",
+      "kind": "RESET",
+      "new_name": "func_80020D38",
+      "old_names": [
+        "EndADRSound"
+      ],
+      "glabel": "EndADRSound",
+      "notes": []
+    },
+    {
+      "address": "0x80020e74",
+      "kind": "RESET",
+      "new_name": "func_80020E74",
+      "old_names": [
+        "DispPracticeMenuTex_B"
+      ],
+      "glabel": "DispPracticeMenuTex_B",
+      "notes": []
+    },
+    {
+      "address": "0x80021280",
+      "kind": "RESET",
+      "new_name": "func_80021280",
+      "old_names": [
+        "char_motion_nibble_scan_80021280",
+        "title_mv_exec",
+        "title_mv_exec_80021280"
+      ],
+      "glabel": "func_80021280",
+      "notes": []
+    },
+    {
+      "address": "0x80022568",
+      "kind": "RESET",
+      "new_name": "func_80022568",
+      "old_names": [
+        "pad_button_info_clear"
+      ],
+      "glabel": "pad_button_info_clear",
+      "notes": []
+    },
+    {
+      "address": "0x800238c4",
+      "kind": "RESET",
+      "new_name": "func_800238C4",
+      "old_names": [
+        "camera_set_zoom"
+      ],
+      "glabel": "camera_set_zoom",
+      "notes": []
+    },
+    {
+      "address": "0x80027334",
+      "kind": "RESET",
+      "new_name": "func_80027334",
+      "old_names": [
+        "katinuki_game_getMyWeaponId"
+      ],
+      "glabel": "katinuki_game_getMyWeaponId",
+      "notes": []
+    },
+    {
+      "address": "0x8002738c",
+      "kind": "RESET",
+      "new_name": "func_8002738C",
+      "old_names": [
+        "tslDrTex1Init",
+        "tslDrTex1Init_8002738C"
+      ],
+      "glabel": "func_8002738C",
+      "notes": []
+    },
+    {
+      "address": "0x80027438",
+      "kind": "RESET",
+      "new_name": "func_80027438",
+      "old_names": [
+        "_CardCheckPulled",
+        "_CardCheckPulled_80027438"
+      ],
+      "glabel": "func_80027438",
+      "notes": []
+    },
+    {
+      "address": "0x80027640",
+      "kind": "RESET",
+      "new_name": "func_80027640",
+      "old_names": [
+        "cpu_side_move_dir"
+      ],
+      "glabel": "cpu_side_move_dir",
+      "notes": []
+    },
+    {
+      "address": "0x800278c0",
+      "kind": "RESET",
+      "new_name": "func_800278C0",
+      "old_names": [
+        "mk_g2l"
+      ],
+      "glabel": "mk_g2l",
+      "notes": []
+    },
+    {
+      "address": "0x80027ad8",
+      "kind": "RESET",
+      "new_name": "func_80027AD8",
+      "old_names": [
+        "calc_teasi_loc_fw"
+      ],
+      "glabel": "calc_teasi_loc_fw",
+      "notes": []
+    },
+    {
+      "address": "0x800283d0",
+      "kind": "RESET",
+      "new_name": "func_800283D0",
+      "old_names": [
+        "saTan2KabutoWareMove"
+      ],
+      "glabel": "saTan2KabutoWareMove",
+      "notes": []
+    },
+    {
+      "address": "0x8002872c",
+      "kind": "RESET",
+      "new_name": "func_8002872C",
+      "old_names": [
+        "motion_GameCalcMotion",
+        "motion_GameCalcMotion_8002872C"
+      ],
+      "glabel": "func_8002872C",
+      "notes": []
+    },
+    {
+      "address": "0x800288c8",
+      "kind": "RESET",
+      "new_name": "func_800288C8",
+      "old_names": [
+        "saTan3MainJump"
+      ],
+      "glabel": "saTan3MainJump",
+      "notes": []
+    },
+    {
+      "address": "0x800290b8",
+      "kind": "RESET",
+      "new_name": "func_800290B8",
+      "old_names": [
+        "DispPracticeMenuTex_C"
+      ],
+      "glabel": "DispPracticeMenuTex_C",
+      "notes": []
+    },
+    {
+      "address": "0x8002ab08",
+      "kind": "RESET",
+      "new_name": "func_8002AB08",
+      "old_names": [
+        "calc_loc_mat_fw",
+        "gpu_dma_schedule_8002AB08"
+      ],
+      "glabel": "calc_loc_mat_fw",
+      "notes": [
+        "'func_8002AB08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2466 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8002c22c",
+      "kind": "RESET",
+      "new_name": "func_8002C22C",
+      "old_names": [
+        "PutRobShadow"
+      ],
+      "glabel": "PutRobShadow",
+      "notes": []
+    },
+    {
+      "address": "0x8002cd58",
+      "kind": "RESET",
+      "new_name": "func_8002CD58",
+      "old_names": [
+        "special_camera_Init"
+      ],
+      "glabel": "special_camera_Init",
+      "notes": []
+    },
+    {
+      "address": "0x8002d518",
+      "kind": "RESET",
+      "new_name": "func_8002D518",
+      "old_names": [
+        "saTan5TakeAnim2"
+      ],
+      "glabel": "saTan5TakeAnim2",
+      "notes": []
+    },
+    {
+      "address": "0x8002d780",
+      "kind": "RESET",
+      "new_name": "func_8002D780",
+      "old_names": [
+        "saTan0KiWareMoveA"
+      ],
+      "glabel": "saTan0KiWareMoveA",
+      "notes": []
+    },
+    {
+      "address": "0x8002dad0",
+      "kind": "RESET",
+      "new_name": "func_8002DAD0",
+      "old_names": [
+        "saTan0KiWareMoveB"
+      ],
+      "glabel": "saTan0KiWareMoveB",
+      "notes": []
+    },
+    {
+      "address": "0x8002e6b0",
+      "kind": "RESET",
+      "new_name": "func_8002E6B0",
+      "old_names": [
+        "pad_main_control"
+      ],
+      "glabel": "pad_main_control",
+      "notes": []
+    },
+    {
+      "address": "0x8002e838",
+      "kind": "RESET",
+      "new_name": "func_8002E838",
+      "old_names": [
+        "saSeInit"
+      ],
+      "glabel": "saSeInit",
+      "notes": []
+    },
+    {
+      "address": "0x8002ea24",
+      "kind": "RESET",
+      "new_name": "func_8002EA24",
+      "old_names": [
+        "saTan2LinePrimInit"
+      ],
+      "glabel": "func_8002EA24",
+      "notes": []
+    },
+    {
+      "address": "0x8002ebdc",
+      "kind": "RESET",
+      "new_name": "func_8002EBDC",
+      "old_names": [
+        "DispSchoolBG"
+      ],
+      "glabel": "DispSchoolBG",
+      "notes": []
+    },
+    {
+      "address": "0x8002fc80",
+      "kind": "RESET",
+      "new_name": "func_8002FC80",
+      "old_names": [
+        "cpu_check_tubazeri"
+      ],
+      "glabel": "cpu_check_tubazeri",
+      "notes": []
+    },
+    {
+      "address": "0x8002fdb0",
+      "kind": "RESET",
+      "new_name": "func_8002FDB0",
+      "old_names": [
+        "coli_check_circle_hit_line"
+      ],
+      "glabel": "coli_check_circle_hit_line",
+      "notes": []
+    },
+    {
+      "address": "0x8003043c",
+      "kind": "RESET",
+      "new_name": "func_8003043C",
+      "old_names": [
+        "psyq_memset",
+        "psyq_memset_8003043C",
+        "record_array_sentinel_init_8003043C"
+      ],
+      "glabel": "func_8003043C",
+      "notes": []
+    },
+    {
+      "address": "0x80030580",
+      "kind": "RESET",
+      "new_name": "func_80030580",
+      "old_names": [
+        "coli_hit_body_weapon"
+      ],
+      "glabel": "coli_hit_body_weapon",
+      "notes": []
+    },
+    {
+      "address": "0x800307d0",
+      "kind": "RESET",
+      "new_name": "func_800307D0",
+      "old_names": [
+        "cpu_check_tubazeri_2"
+      ],
+      "glabel": "cpu_check_tubazeri_2",
+      "notes": []
+    },
+    {
+      "address": "0x80030900",
+      "kind": "RESET",
+      "new_name": "func_80030900",
+      "old_names": [
+        "myRobGeneiDraw",
+        "myRobGeneiDraw_80030900",
+        "spawn_hit_particle_80030900"
+      ],
+      "glabel": "func_80030900",
+      "notes": []
+    },
+    {
+      "address": "0x80030b10",
+      "kind": "RESET",
+      "new_name": "func_80030B10",
+      "old_names": [
+        "motion_shift_check_e_kawashi",
+        "motion_shift_check_e_kawashi_80030B10"
+      ],
+      "glabel": "func_80030B10",
+      "notes": []
+    },
+    {
+      "address": "0x800321e8",
+      "kind": "RESET",
+      "new_name": "func_800321E8",
+      "old_names": [
+        "myRobGeneiDraw2"
+      ],
+      "glabel": "myRobGeneiDraw2",
+      "notes": []
+    },
+    {
+      "address": "0x80032314",
+      "kind": "RESET",
+      "new_name": "func_80032314",
+      "old_names": [
+        "Pad_Prs"
+      ],
+      "glabel": "Pad_Prs",
+      "notes": []
+    },
+    {
+      "address": "0x80033498",
+      "kind": "RESET",
+      "new_name": "func_80033498",
+      "old_names": [
+        "ki_attack_ougi",
+        "ki_attack_ougi_80033498"
+      ],
+      "glabel": "func_80033498",
+      "notes": []
+    },
+    {
+      "address": "0x800335d8",
+      "kind": "RESET",
+      "new_name": "func_800335D8",
+      "old_names": [
+        "mk_leaf_newpos"
+      ],
+      "glabel": "mk_leaf_newpos",
+      "notes": []
+    },
+    {
+      "address": "0x800338cc",
+      "kind": "RESET",
+      "new_name": "func_800338CC",
+      "old_names": [
+        "cpu_set_move_command_and_dir_for_no_action"
+      ],
+      "glabel": "cpu_set_move_command_and_dir_for_no_action",
+      "notes": []
+    },
+    {
+      "address": "0x80033bc0",
+      "kind": "RESET",
+      "new_name": "func_80033BC0",
+      "old_names": [
+        "mottest_disp"
+      ],
+      "glabel": "mottest_disp",
+      "notes": []
+    },
+    {
+      "address": "0x80033d38",
+      "kind": "RESET",
+      "new_name": "func_80033D38",
+      "old_names": [
+        "motutil_CheckKamaeReq",
+        "motutil_CheckKamaeReq_80033D38"
+      ],
+      "glabel": "func_80033D38",
+      "notes": []
+    },
+    {
+      "address": "0x800340a0",
+      "kind": "RESET",
+      "new_name": "func_800340A0",
+      "old_names": [
+        "robtest_disp",
+        "robtest_disp_800340A0"
+      ],
+      "glabel": "func_800340A0",
+      "notes": []
+    },
+    {
+      "address": "0x80034200",
+      "kind": "RESET",
+      "new_name": "func_80034200",
+      "old_names": [
+        "_GetBattleSwichData",
+        "_GetBattleSwichData_80034200"
+      ],
+      "glabel": "func_80034200",
+      "notes": []
+    },
+    {
+      "address": "0x800344b4",
+      "kind": "RESET",
+      "new_name": "func_800344B4",
+      "old_names": [
+        "DispSamnailWindow"
+      ],
+      "glabel": "DispSamnailWindow",
+      "notes": []
+    },
+    {
+      "address": "0x80035280",
+      "kind": "RESET",
+      "new_name": "func_80035280",
+      "old_names": [
+        "single_game_SetWazaData"
+      ],
+      "glabel": "single_game_SetWazaData",
+      "notes": []
+    },
+    {
+      "address": "0x8003553c",
+      "kind": "RESET",
+      "new_name": "func_8003553C",
+      "old_names": [
+        "tslDrTex1Init2",
+        "tslDrTex1Init2_8003553C"
+      ],
+      "glabel": "func_8003553C",
+      "notes": []
+    },
+    {
+      "address": "0x80035618",
+      "kind": "RESET",
+      "new_name": "func_80035618",
+      "old_names": [
+        "replay_camera_rob_back_loose2"
+      ],
+      "glabel": "replay_camera_rob_back_loose2",
+      "notes": []
+    },
+    {
+      "address": "0x80035dc8",
+      "kind": "RESET",
+      "new_name": "func_80035DC8",
+      "old_names": [
+        "scene_teardown_80035DC8",
+        "special_camera_check_pos_outside_ground_80035DC8"
+      ],
+      "glabel": "special_camera_check_pos_outside_ground_80035DC8",
+      "notes": []
+    },
+    {
+      "address": "0x80035e38",
+      "kind": "RESET",
+      "new_name": "func_80035E38",
+      "old_names": [
+        "saRobDraw"
+      ],
+      "glabel": "saRobDraw",
+      "notes": []
+    },
+    {
+      "address": "0x80036064",
+      "kind": "RESET",
+      "new_name": "func_80036064",
+      "old_names": [
+        "cdrom_stream_callback_80036064",
+        "marionation_camera_Init_80036064"
+      ],
+      "glabel": "marionation_camera_Init_80036064",
+      "notes": []
+    },
+    {
+      "address": "0x80036140",
+      "kind": "RESET",
+      "new_name": "func_80036140",
+      "old_names": [
+        "special_camera_set_win_cam"
+      ],
+      "glabel": "special_camera_set_win_cam",
+      "notes": []
+    },
+    {
+      "address": "0x80036940",
+      "kind": "RESET",
+      "new_name": "func_80036940",
+      "old_names": [
+        "special_camera_Exec"
+      ],
+      "glabel": "special_camera_Exec",
+      "notes": []
+    },
+    {
+      "address": "0x80036e34",
+      "kind": "RESET",
+      "new_name": "func_80036E34",
+      "old_names": [
+        "ndata_disc_read_scheduler_80036E34",
+        "special_camera_check_pos_outside_ground_80036E34"
+      ],
+      "glabel": "special_camera_check_pos_outside_ground_80036E34",
+      "notes": []
+    },
+    {
+      "address": "0x80036fd4",
+      "kind": "RESET",
+      "new_name": "func_80036FD4",
+      "old_names": [
+        "mottest_rob_init",
+        "mottest_rob_init_80036FD4"
+      ],
+      "glabel": "func_80036FD4",
+      "notes": []
+    },
+    {
+      "address": "0x80037260",
+      "kind": "RESET",
+      "new_name": "func_80037260",
+      "old_names": [
+        "marionation_camera_GetMaxFrame"
+      ],
+      "glabel": "marionation_camera_GetMaxFrame",
+      "notes": []
+    },
+    {
+      "address": "0x80037468",
+      "kind": "RESET",
+      "new_name": "func_80037468",
+      "old_names": [
+        "bios_exec_wrapper_with_setup_80037468",
+        "marionation_camera_Init_80037468"
+      ],
+      "glabel": "marionation_camera_Init_80037468",
+      "notes": []
+    },
+    {
+      "address": "0x800375ec",
+      "kind": "RESET",
+      "new_name": "func_800375EC",
+      "old_names": [
+        "memcard_event_init_800375EC",
+        "pad_press_control"
+      ],
+      "glabel": "pad_press_control",
+      "notes": []
+    },
+    {
+      "address": "0x80037a20",
+      "kind": "RESET",
+      "new_name": "func_80037A20",
+      "old_names": [
+        "_CardCheckPulled2",
+        "_CardCheckPulled2_80037A20"
+      ],
+      "glabel": "func_80037A20",
+      "notes": []
+    },
+    {
+      "address": "0x80037f08",
+      "kind": "RESET",
+      "new_name": "func_80037F08",
+      "old_names": [
+        "bios_FormatDevice_B_wrapper_80037F08",
+        "motion_LoadPreCalcData_80037F08"
+      ],
+      "glabel": "motion_LoadPreCalcData_80037F08",
+      "notes": [
+        "'func_80037F08' is not object-defined per build/bb2.map \u2014 named_syms.txt:2510 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80037f40",
+      "kind": "RESET",
+      "new_name": "func_80037F40",
+      "old_names": [
+        "camera_SetMatrix",
+        "camera_SetMatrix_80037F40",
+        "file_disc_checksum_copy_80037F40"
+      ],
+      "glabel": "func_80037F40",
+      "notes": []
+    },
+    {
+      "address": "0x8003800c",
+      "kind": "RESET",
+      "new_name": "func_8003800C",
+      "old_names": [
+        "damage_DebugDisp"
+      ],
+      "glabel": "damage_DebugDisp",
+      "notes": []
+    },
+    {
+      "address": "0x80038148",
+      "kind": "RESET",
+      "new_name": "func_80038148",
+      "old_names": [
+        "clear_disp_state_buf_80038148",
+        "pad_clear_buffer_80038148",
+        "psyq_memset",
+        "psyq_memset_80038148"
+      ],
+      "glabel": "func_80038148",
+      "notes": []
+    },
+    {
+      "address": "0x800383a4",
+      "kind": "RESET",
+      "new_name": "func_800383A4",
+      "old_names": [
+        "pad_FuncAnalog"
+      ],
+      "glabel": "pad_FuncAnalog",
+      "notes": []
+    },
+    {
+      "address": "0x8003877c",
+      "kind": "RESET",
+      "new_name": "func_8003877C",
+      "old_names": [
+        "motion_shift_check_m_hit_stop"
+      ],
+      "glabel": "motion_shift_check_m_hit_stop",
+      "notes": []
+    },
+    {
+      "address": "0x8003880c",
+      "kind": "RESET",
+      "new_name": "func_8003880C",
+      "old_names": [
+        "damage_CalcHitDamage",
+        "damage_CalcHitDamage_8003880C"
+      ],
+      "glabel": "func_8003880C",
+      "notes": []
+    },
+    {
+      "address": "0x80038c70",
+      "kind": "RESET",
+      "new_name": "func_80038C70",
+      "old_names": [
+        "motion_SetMotion"
+      ],
+      "glabel": "motion_SetMotion",
+      "notes": []
+    },
+    {
+      "address": "0x800393c8",
+      "kind": "RESET",
+      "new_name": "func_800393C8",
+      "old_names": [
+        "saSeInit_2"
+      ],
+      "glabel": "saSeInit_2",
+      "notes": []
+    },
+    {
+      "address": "0x8003a3f0",
+      "kind": "RESET",
+      "new_name": "func_8003A3F0",
+      "old_names": [
+        "motion_SavePreCalcData_8003A3F0",
+        "set_event_flag_8003A3F0"
+      ],
+      "glabel": "motion_SavePreCalcData_8003A3F0",
+      "notes": [
+        "'func_8003A3F0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2513 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8003a574",
+      "kind": "RESET",
+      "new_name": "func_8003A574",
+      "old_names": [
+        "bios_FileRead_B_wrapper_8003A574",
+        "motion_SavePreCalcData_8003A574"
+      ],
+      "glabel": "motion_SavePreCalcData_8003A574",
+      "notes": [
+        "'func_8003A574' is not object-defined per build/bb2.map \u2014 named_syms.txt:2514 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8003a5a0",
+      "kind": "RESET",
+      "new_name": "func_8003A5A0",
+      "old_names": [
+        "pad_ClearAppliBuffer"
+      ],
+      "glabel": "pad_ClearAppliBuffer",
+      "notes": []
+    },
+    {
+      "address": "0x8003affc",
+      "kind": "RESET",
+      "new_name": "func_8003AFFC",
+      "old_names": [
+        "md_menu_logo_exec",
+        "md_menu_logo_exec_8003AFFC"
+      ],
+      "glabel": "func_8003AFFC",
+      "notes": []
+    },
+    {
+      "address": "0x8003b10c",
+      "kind": "RESET",
+      "new_name": "func_8003B10C",
+      "old_names": [
+        "kgm_init_hitrect",
+        "kgm_init_hitrect_8003B10C"
+      ],
+      "glabel": "func_8003B10C",
+      "notes": []
+    },
+    {
+      "address": "0x8003b2c8",
+      "kind": "RESET",
+      "new_name": "func_8003B2C8",
+      "old_names": [
+        "suDispMentalBar_helper",
+        "suDispMentalBar_helper_8003B2C8"
+      ],
+      "glabel": "func_8003B2C8",
+      "notes": []
+    },
+    {
+      "address": "0x8003b3a4",
+      "kind": "RESET",
+      "new_name": "func_8003B3A4",
+      "old_names": [
+        "suDispMentalBar_helper",
+        "suDispMentalBar_helper_8003B3A4"
+      ],
+      "glabel": "func_8003B3A4",
+      "notes": []
+    },
+    {
+      "address": "0x8003b4dc",
+      "kind": "RESET",
+      "new_name": "func_8003B4DC",
+      "old_names": [
+        "suDispMentalBar_helper",
+        "suDispMentalBar_helper_8003B4DC"
+      ],
+      "glabel": "func_8003B4DC",
+      "notes": []
+    },
+    {
+      "address": "0x8003b5a4",
+      "kind": "RESET",
+      "new_name": "func_8003B5A4",
+      "old_names": [
+        "suDispMentalBar"
+      ],
+      "glabel": "suDispMentalBar",
+      "notes": []
+    },
+    {
+      "address": "0x8003bcb4",
+      "kind": "RESET",
+      "new_name": "func_8003BCB4",
+      "old_names": [
+        "md_game_check_change_sub_mode",
+        "mode_handler_07_SubModeTransition"
+      ],
+      "glabel": "md_game_check_change_sub_mode",
+      "notes": []
+    },
+    {
+      "address": "0x8003c040",
+      "kind": "RESET",
+      "new_name": "func_8003C040",
+      "old_names": [
+        "cpu_side_move_dir_2",
+        "mode_handler_18_UnlockAnimDispatch"
+      ],
+      "glabel": "cpu_side_move_dir_2",
+      "notes": []
+    },
+    {
+      "address": "0x8003c714",
+      "kind": "RESET",
+      "new_name": "func_8003C714",
+      "old_names": [
+        "SetCurrentCursor"
+      ],
+      "glabel": "SetCurrentCursor",
+      "notes": []
+    },
+    {
+      "address": "0x8003d2c4",
+      "kind": "RESET",
+      "new_name": "func_8003D2C4",
+      "old_names": [
+        "gpu_LoadImage_wrapper_8003D2C4",
+        "katinuki_game_setData_8003D2C4"
+      ],
+      "glabel": "katinuki_game_setData_8003D2C4",
+      "notes": [
+        "'func_8003D2C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2504 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8003d2f4",
+      "kind": "RESET",
+      "new_name": "func_8003D2F4",
+      "old_names": [
+        "change_shadow_tex_reg"
+      ],
+      "glabel": "change_shadow_tex_reg",
+      "notes": []
+    },
+    {
+      "address": "0x8003d330",
+      "kind": "RESET",
+      "new_name": "func_8003D330",
+      "old_names": [
+        "ReturnVTMenu",
+        "ReturnVTMenu_8003D330"
+      ],
+      "glabel": "func_8003D330",
+      "notes": []
+    },
+    {
+      "address": "0x8003d39c",
+      "kind": "RESET",
+      "new_name": "func_8003D39C",
+      "old_names": [
+        "_McAccessSection",
+        "_McAccessSection_8003D39C"
+      ],
+      "glabel": "func_8003D39C",
+      "notes": []
+    },
+    {
+      "address": "0x8003d52c",
+      "kind": "RESET",
+      "new_name": "func_8003D52C",
+      "old_names": [
+        "DispSleepMenuTex"
+      ],
+      "glabel": "DispSleepMenuTex",
+      "notes": []
+    },
+    {
+      "address": "0x8003d888",
+      "kind": "RESET",
+      "new_name": "func_8003D888",
+      "old_names": [
+        "coli_calc_motion",
+        "coli_calc_motion_8003D888"
+      ],
+      "glabel": "func_8003D888",
+      "notes": []
+    },
+    {
+      "address": "0x8003da8c",
+      "kind": "RESET",
+      "new_name": "func_8003DA8C",
+      "old_names": [
+        "tslLineG5Init"
+      ],
+      "glabel": "tslLineG5Init",
+      "notes": []
+    },
+    {
+      "address": "0x8003dbe4",
+      "kind": "RESET",
+      "new_name": "func_8003DBE4",
+      "old_names": [
+        "tslLineG5Init_helper",
+        "tslLineG5Init_helper_8003DBE4"
+      ],
+      "glabel": "func_8003DBE4",
+      "notes": []
+    },
+    {
+      "address": "0x8003ddf8",
+      "kind": "RESET",
+      "new_name": "func_8003DDF8",
+      "old_names": [
+        "tsllineg5init_helper",
+        "tsllineg5init_helper_8003DDF8"
+      ],
+      "glabel": "func_8003DDF8",
+      "notes": []
+    },
+    {
+      "address": "0x8003e164",
+      "kind": "RESET",
+      "new_name": "func_8003E164",
+      "old_names": [
+        "camera_SetMatrix_8003E164",
+        "ground_load_with_cache_8003E164"
+      ],
+      "glabel": "camera_SetMatrix_8003E164",
+      "notes": [
+        "'func_8003E164' is not object-defined per build/bb2.map \u2014 named_syms.txt:2501 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8003e22c",
+      "kind": "RESET",
+      "new_name": "func_8003E22C",
+      "old_names": [
+        "gnd_open"
+      ],
+      "glabel": "gnd_open",
+      "notes": []
+    },
+    {
+      "address": "0x8003e2a0",
+      "kind": "RESET",
+      "new_name": "func_8003E2A0",
+      "old_names": [
+        "single_game_SetStageId"
+      ],
+      "glabel": "single_game_SetStageId",
+      "notes": []
+    },
+    {
+      "address": "0x8003e2d8",
+      "kind": "RESET",
+      "new_name": "func_8003E2D8",
+      "old_names": [
+        "replay_camera_get_attack_number"
+      ],
+      "glabel": "replay_camera_get_attack_number",
+      "notes": []
+    },
+    {
+      "address": "0x8003e6d8",
+      "kind": "RESET",
+      "new_name": "func_8003E6D8",
+      "old_names": [
+        "DispHira"
+      ],
+      "glabel": "DispHira",
+      "notes": []
+    },
+    {
+      "address": "0x8003eb84",
+      "kind": "RESET",
+      "new_name": "func_8003EB84",
+      "old_names": [
+        "CalcHiraNormal"
+      ],
+      "glabel": "CalcHiraNormal",
+      "notes": []
+    },
+    {
+      "address": "0x8003edc0",
+      "kind": "RESET",
+      "new_name": "func_8003EDC0",
+      "old_names": [
+        "md_game_check_mode"
+      ],
+      "glabel": "md_game_check_mode",
+      "notes": []
+    },
+    {
+      "address": "0x8003f62c",
+      "kind": "RESET",
+      "new_name": "func_8003F62C",
+      "old_names": [
+        "ang_hosei_8003F62C"
+      ],
+      "glabel": "ang_hosei_8003F62C",
+      "notes": []
+    },
+    {
+      "address": "0x8003f6d8",
+      "kind": "RESET",
+      "new_name": "func_8003F6D8",
+      "old_names": [
+        "ang_near_dif",
+        "md_game_restart_init2"
+      ],
+      "glabel": "ang_near_dif",
+      "notes": []
+    },
+    {
+      "address": "0x8003f824",
+      "kind": "RESET",
+      "new_name": "func_8003F824",
+      "old_names": [
+        "tslPrintScreen"
+      ],
+      "glabel": "tslPrintScreen",
+      "notes": []
+    },
+    {
+      "address": "0x8003fa24",
+      "kind": "RESET",
+      "new_name": "func_8003FA24",
+      "old_names": [
+        "tslPrintScreen_helper",
+        "tslPrintScreen_helper_8003FA24"
+      ],
+      "glabel": "func_8003FA24",
+      "notes": []
+    },
+    {
+      "address": "0x8003fe40",
+      "kind": "RESET",
+      "new_name": "func_8003FE40",
+      "old_names": [
+        "tslprintscreen_helper",
+        "tslprintscreen_helper_8003FE40"
+      ],
+      "glabel": "func_8003FE40",
+      "notes": []
+    },
+    {
+      "address": "0x8003fecc",
+      "kind": "RESET",
+      "new_name": "func_8003FECC",
+      "old_names": [
+        "tslPrintScreen_helper",
+        "tslPrintScreen_helper_8003FECC"
+      ],
+      "glabel": "func_8003FECC",
+      "notes": []
+    },
+    {
+      "address": "0x8003ffa8",
+      "kind": "RESET",
+      "new_name": "func_8003FFA8",
+      "old_names": [
+        "FadeOut_8003FFA8",
+        "align_4byte_round_8003FFA8"
+      ],
+      "glabel": "FadeOut_8003FFA8",
+      "notes": [
+        "'func_8003FFA8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2491 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8003ffc4",
+      "kind": "RESET",
+      "new_name": "func_8003FFC4",
+      "old_names": [
+        "FadeOut_8003FFC4",
+        "set_array_slot3_8003FFC4"
+      ],
+      "glabel": "FadeOut_8003FFC4",
+      "notes": [
+        "'func_8003FFC4' is not object-defined per build/bb2.map \u2014 named_syms.txt:2492 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8004001c",
+      "kind": "RESET",
+      "new_name": "func_8004001C",
+      "old_names": [
+        "md_option_reset_8004001C"
+      ],
+      "glabel": "md_option_reset_8004001C",
+      "notes": []
+    },
+    {
+      "address": "0x80040068",
+      "kind": "RESET",
+      "new_name": "func_80040068",
+      "old_names": [
+        "md_option_reset_80040068"
+      ],
+      "glabel": "md_option_reset_80040068",
+      "notes": []
+    },
+    {
+      "address": "0x800400b0",
+      "kind": "RESET",
+      "new_name": "func_800400B0",
+      "old_names": [
+        "md_mode_set_800400B0",
+        "md_option_reset_800400B0"
+      ],
+      "glabel": "md_option_reset_800400B0",
+      "notes": []
+    },
+    {
+      "address": "0x800401cc",
+      "kind": "RESET",
+      "new_name": "func_800401CC",
+      "old_names": [
+        "PutShadowRmd"
+      ],
+      "glabel": "PutShadowRmd",
+      "notes": []
+    },
+    {
+      "address": "0x80040304",
+      "kind": "RESET",
+      "new_name": "func_80040304",
+      "old_names": [
+        "efc_rob_Init"
+      ],
+      "glabel": "efc_rob_Init",
+      "notes": []
+    },
+    {
+      "address": "0x800404d8",
+      "kind": "RESET",
+      "new_name": "func_800404D8",
+      "old_names": [
+        "saTan5TakeGetCnt"
+      ],
+      "glabel": "saTan5TakeGetCnt",
+      "notes": []
+    },
+    {
+      "address": "0x80040594",
+      "kind": "RESET",
+      "new_name": "func_80040594",
+      "old_names": [
+        "AllocRobRmd"
+      ],
+      "glabel": "AllocRobRmd",
+      "notes": []
+    },
+    {
+      "address": "0x800408f8",
+      "kind": "RESET",
+      "new_name": "func_800408F8",
+      "old_names": [
+        "rob_life_ctrl"
+      ],
+      "glabel": "rob_life_ctrl",
+      "notes": []
+    },
+    {
+      "address": "0x80040b44",
+      "kind": "RESET",
+      "new_name": "func_80040B44",
+      "old_names": [
+        "rob_calc_2d_position"
+      ],
+      "glabel": "rob_calc_2d_position",
+      "notes": []
+    },
+    {
+      "address": "0x80040cb8",
+      "kind": "RESET",
+      "new_name": "func_80040CB8",
+      "old_names": [
+        "audioDecBeginPut",
+        "audioDecBeginPut_80040CB8"
+      ],
+      "glabel": "func_80040CB8",
+      "notes": []
+    },
+    {
+      "address": "0x80041188",
+      "kind": "RESET",
+      "new_name": "func_80041188",
+      "old_names": [
+        "hirahira_w_ctrl"
+      ],
+      "glabel": "hirahira_w_ctrl",
+      "notes": []
+    },
+    {
+      "address": "0x80041398",
+      "kind": "RESET",
+      "new_name": "func_80041398",
+      "old_names": [
+        "gnd_load_tex"
+      ],
+      "glabel": "gnd_load_tex",
+      "notes": []
+    },
+    {
+      "address": "0x80041688",
+      "kind": "RESET",
+      "new_name": "func_80041688",
+      "old_names": [
+        "gnd_init_80041688",
+        "player_equipment_flag_init_80041688"
+      ],
+      "glabel": "gnd_init_80041688",
+      "notes": [
+        "'func_80041688' is not object-defined per build/bb2.map \u2014 named_syms.txt:2503 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80041ac8",
+      "kind": "RESET",
+      "new_name": "func_80041AC8",
+      "old_names": [
+        "InitHiraRmd_80041AC8"
+      ],
+      "glabel": "InitHiraRmd_80041AC8",
+      "notes": []
+    },
+    {
+      "address": "0x80041bf4",
+      "kind": "RESET",
+      "new_name": "func_80041BF4",
+      "old_names": [
+        "saTan4FireDisp"
+      ],
+      "glabel": "saTan4FireDisp",
+      "notes": []
+    },
+    {
+      "address": "0x80041eb0",
+      "kind": "RESET",
+      "new_name": "func_80041EB0",
+      "old_names": [
+        "decBs0"
+      ],
+      "glabel": "decBs0",
+      "notes": []
+    },
+    {
+      "address": "0x800421a4",
+      "kind": "RESET",
+      "new_name": "func_800421A4",
+      "old_names": [
+        "leaf_muki_awase_800421A4"
+      ],
+      "glabel": "leaf_muki_awase_800421A4",
+      "notes": []
+    },
+    {
+      "address": "0x800422bc",
+      "kind": "RESET",
+      "new_name": "func_800422BC",
+      "old_names": [
+        "gnd_land_hit_char_die_main"
+      ],
+      "glabel": "gnd_land_hit_char_die_main",
+      "notes": []
+    },
+    {
+      "address": "0x80042504",
+      "kind": "RESET",
+      "new_name": "func_80042504",
+      "old_names": [
+        "rob_life_ctrl_2"
+      ],
+      "glabel": "rob_life_ctrl_2",
+      "notes": []
+    },
+    {
+      "address": "0x80042684",
+      "kind": "RESET",
+      "new_name": "func_80042684",
+      "old_names": [
+        "mot_data_set"
+      ],
+      "glabel": "mot_data_set",
+      "notes": []
+    },
+    {
+      "address": "0x80042864",
+      "kind": "RESET",
+      "new_name": "func_80042864",
+      "old_names": [
+        "get_D_800F6650_80042864",
+        "rob_ScaleMarioInit"
+      ],
+      "glabel": "rob_ScaleMarioInit",
+      "notes": []
+    },
+    {
+      "address": "0x80042874",
+      "kind": "RESET",
+      "new_name": "func_80042874",
+      "old_names": [
+        "_SelectSection"
+      ],
+      "glabel": "_SelectSection",
+      "notes": []
+    },
+    {
+      "address": "0x80042a88",
+      "kind": "RESET",
+      "new_name": "func_80042A88",
+      "old_names": [
+        "replay_camera_rob_back_loose3"
+      ],
+      "glabel": "replay_camera_rob_back_loose3",
+      "notes": []
+    },
+    {
+      "address": "0x80042c80",
+      "kind": "RESET",
+      "new_name": "func_80042C80",
+      "old_names": [
+        "hirahira_w_ctrl_2"
+      ],
+      "glabel": "hirahira_w_ctrl_2",
+      "notes": []
+    },
+    {
+      "address": "0x800432a0",
+      "kind": "RESET",
+      "new_name": "func_800432A0",
+      "old_names": [
+        "videoDecCreate"
+      ],
+      "glabel": "videoDecCreate",
+      "notes": []
+    },
+    {
+      "address": "0x80043bd0",
+      "kind": "RESET",
+      "new_name": "func_80043BD0",
+      "old_names": [
+        "tslDrTex1Init3",
+        "tslDrTex1Init3_80043BD0"
+      ],
+      "glabel": "func_80043BD0",
+      "notes": []
+    },
+    {
+      "address": "0x80043c7c",
+      "kind": "RESET",
+      "new_name": "func_80043C7C",
+      "old_names": [
+        "gnd_set_fog",
+        "gnd_set_fog_80043C7C"
+      ],
+      "glabel": "func_80043C7C",
+      "notes": []
+    },
+    {
+      "address": "0x80043d34",
+      "kind": "RESET",
+      "new_name": "func_80043D34",
+      "old_names": [
+        "tslDrTex1Init4",
+        "tslDrTex1Init4_80043D34"
+      ],
+      "glabel": "func_80043D34",
+      "notes": []
+    },
+    {
+      "address": "0x80043de0",
+      "kind": "RESET",
+      "new_name": "func_80043DE0",
+      "old_names": [
+        "gnd_set_fog2",
+        "gnd_set_fog2_80043DE0"
+      ],
+      "glabel": "func_80043DE0",
+      "notes": []
+    },
+    {
+      "address": "0x8004428c",
+      "kind": "RESET",
+      "new_name": "func_8004428C",
+      "old_names": [
+        "hirahira_w_frie"
+      ],
+      "glabel": "hirahira_w_frie",
+      "notes": []
+    },
+    {
+      "address": "0x80044378",
+      "kind": "RESET",
+      "new_name": "func_80044378",
+      "old_names": [
+        "build_offset_table_80044378",
+        "calc_fc_frame"
+      ],
+      "glabel": "calc_fc_frame",
+      "notes": [
+        "'func_80044378' is not object-defined per build/bb2.map \u2014 named_syms.txt:2498 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800444bc",
+      "kind": "RESET",
+      "new_name": "func_800444BC",
+      "old_names": [
+        "disp_dispatch_via_D_800A378C_800444BC",
+        "saTanMainDispGnd_800444BC"
+      ],
+      "glabel": "saTanMainDispGnd_800444BC",
+      "notes": [
+        "'func_800444BC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2524 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800444e0",
+      "kind": "RESET",
+      "new_name": "func_800444E0",
+      "old_names": [
+        "leaf_muki_awase_800444E0"
+      ],
+      "glabel": "leaf_muki_awase_800444E0",
+      "notes": []
+    },
+    {
+      "address": "0x80044800",
+      "kind": "RESET",
+      "new_name": "func_80044800",
+      "old_names": [
+        "efc_rob_set_type_flash"
+      ],
+      "glabel": "efc_rob_set_type_flash",
+      "notes": []
+    },
+    {
+      "address": "0x80044ccc",
+      "kind": "RESET",
+      "new_name": "func_80044CCC",
+      "old_names": [
+        "suLeagueSystemInit2",
+        "suLeagueSystemInit2_80044CCC"
+      ],
+      "glabel": "func_80044CCC",
+      "notes": []
+    },
+    {
+      "address": "0x80044f80",
+      "kind": "RESET",
+      "new_name": "func_80044F80",
+      "old_names": [
+        "dispatch_via_4D_offset_80044F80",
+        "saTan2InfoInit_80044F80"
+      ],
+      "glabel": "saTan2InfoInit_80044F80",
+      "notes": [
+        "'func_80044F80' is not object-defined per build/bb2.map \u2014 named_syms.txt:2520 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80045230",
+      "kind": "RESET",
+      "new_name": "func_80045230",
+      "old_names": [
+        "saTan5TakeGetPos_80045230"
+      ],
+      "glabel": "saTan5TakeGetPos_80045230",
+      "notes": []
+    },
+    {
+      "address": "0x80045294",
+      "kind": "RESET",
+      "new_name": "func_80045294",
+      "old_names": [
+        "saTan0Init"
+      ],
+      "glabel": "saTan0Init",
+      "notes": []
+    },
+    {
+      "address": "0x80045510",
+      "kind": "RESET",
+      "new_name": "func_80045510",
+      "old_names": [
+        "saSeMain_80045510"
+      ],
+      "glabel": "saSeMain_80045510",
+      "notes": []
+    },
+    {
+      "address": "0x80045600",
+      "kind": "RESET",
+      "new_name": "func_80045600",
+      "old_names": [
+        "saSeMain_80045600"
+      ],
+      "glabel": "saSeMain_80045600",
+      "notes": []
+    },
+    {
+      "address": "0x80045694",
+      "kind": "RESET",
+      "new_name": "func_80045694",
+      "old_names": [
+        "saTan5TakeGetPos_80045694"
+      ],
+      "glabel": "saTan5TakeGetPos_80045694",
+      "notes": []
+    },
+    {
+      "address": "0x80045824",
+      "kind": "RESET",
+      "new_name": "func_80045824",
+      "old_names": [
+        "md_mtest_init"
+      ],
+      "glabel": "md_mtest_init",
+      "notes": []
+    },
+    {
+      "address": "0x80045a28",
+      "kind": "RESET",
+      "new_name": "func_80045A28",
+      "old_names": [
+        "tslFileClose"
+      ],
+      "glabel": "tslFileClose",
+      "notes": []
+    },
+    {
+      "address": "0x80045b68",
+      "kind": "RESET",
+      "new_name": "func_80045B68",
+      "old_names": [
+        "efc_rob_set_type_particle"
+      ],
+      "glabel": "efc_rob_set_type_particle",
+      "notes": []
+    },
+    {
+      "address": "0x80046020",
+      "kind": "RESET",
+      "new_name": "func_80046020",
+      "old_names": [
+        "display_setup_80046020",
+        "saTanMainDispGnd_80046020"
+      ],
+      "glabel": "saTanMainDispGnd_80046020",
+      "notes": [
+        "'func_80046020' is not object-defined per build/bb2.map \u2014 named_syms.txt:2525 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80046914",
+      "kind": "RESET",
+      "new_name": "func_80046914",
+      "old_names": [
+        "channel_helper_8_80046914",
+        "katinuki_game_get_katinuki_max_num_80046914"
+      ],
+      "glabel": "katinuki_game_get_katinuki_max_num_80046914",
+      "notes": [
+        "'func_80046914' is not object-defined per build/bb2.map \u2014 named_syms.txt:273 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80046934",
+      "kind": "RESET",
+      "new_name": "func_80046934",
+      "old_names": [
+        "channel_helper_9_80046934",
+        "katinuki_game_get_katinuki_max_num_80046934"
+      ],
+      "glabel": "katinuki_game_get_katinuki_max_num_80046934",
+      "notes": [
+        "'func_80046934' is not object-defined per build/bb2.map \u2014 named_syms.txt:274 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80046a60",
+      "kind": "RESET",
+      "new_name": "func_80046A60",
+      "old_names": [
+        "channel_helper_A_80046A60",
+        "katinuki_game_get_katinuki_max_num_80046A60"
+      ],
+      "glabel": "katinuki_game_get_katinuki_max_num_80046A60",
+      "notes": [
+        "'func_80046A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:275 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80046bf4",
+      "kind": "RESET",
+      "new_name": "func_80046BF4",
+      "old_names": [
+        "replay_camera_rob_back_win_near"
+      ],
+      "glabel": "func_80046BF4",
+      "notes": []
+    },
+    {
+      "address": "0x800470b0",
+      "kind": "RESET",
+      "new_name": "func_800470B0",
+      "old_names": [
+        "robtest_disp2"
+      ],
+      "glabel": "func_800470B0",
+      "notes": []
+    },
+    {
+      "address": "0x800475a4",
+      "kind": "RESET",
+      "new_name": "func_800475A4",
+      "old_names": [
+        "tanren_get_bamboo_anim_info"
+      ],
+      "glabel": "func_800475A4",
+      "notes": []
+    },
+    {
+      "address": "0x800477e8",
+      "kind": "RESET",
+      "new_name": "func_800477E8",
+      "old_names": [
+        "motion_CheckSituation"
+      ],
+      "glabel": "func_800477E8",
+      "notes": []
+    },
+    {
+      "address": "0x80047a90",
+      "kind": "RESET",
+      "new_name": "func_80047A90",
+      "old_names": [
+        "saEft03Start"
+      ],
+      "glabel": "func_80047A90",
+      "notes": []
+    },
+    {
+      "address": "0x80047ee8",
+      "kind": "RESET",
+      "new_name": "func_80047EE8",
+      "old_names": [
+        "AddTbpOfst_80047EE8"
+      ],
+      "glabel": "AddTbpOfst_80047EE8",
+      "notes": []
+    },
+    {
+      "address": "0x80047fbc",
+      "kind": "RESET",
+      "new_name": "func_80047FBC",
+      "old_names": [
+        "InitHiraRmd_80047FBC",
+        "efc_buki_draw_setup_80047FBC"
+      ],
+      "glabel": "InitHiraRmd_80047FBC",
+      "notes": []
+    },
+    {
+      "address": "0x800480c0",
+      "kind": "RESET",
+      "new_name": "func_800480C0",
+      "old_names": [
+        "InitHiraRmd_800480C0",
+        "efc_buki_draw_setup_6arg_800480C0"
+      ],
+      "glabel": "InitHiraRmd_800480C0",
+      "notes": []
+    },
+    {
+      "address": "0x800482c8",
+      "kind": "RESET",
+      "new_name": "func_800482C8",
+      "old_names": [
+        "efc_buki_draw_zanzou"
+      ],
+      "glabel": "efc_buki_draw_zanzou",
+      "notes": []
+    },
+    {
+      "address": "0x80048864",
+      "kind": "RESET",
+      "new_name": "func_80048864",
+      "old_names": [
+        "saTan4FireDisp_80048864"
+      ],
+      "glabel": "saTan4FireDisp_80048864",
+      "notes": []
+    },
+    {
+      "address": "0x80048ad0",
+      "kind": "RESET",
+      "new_name": "func_80048AD0",
+      "old_names": [
+        "bgm_sound_table_init_80048AD0",
+        "mario_getMarioVoiceData_80048AD0"
+      ],
+      "glabel": "mario_getMarioVoiceData_80048AD0",
+      "notes": [
+        "'func_80048AD0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2508 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80048b8c",
+      "kind": "RESET",
+      "new_name": "func_80048B8C",
+      "old_names": [
+        "saTan5GetTakeCutAnimType"
+      ],
+      "glabel": "saTan5GetTakeCutAnimType",
+      "notes": []
+    },
+    {
+      "address": "0x8004939c",
+      "kind": "RESET",
+      "new_name": "func_8004939C",
+      "old_names": [
+        "gnd_close_8004939C",
+        "sentinel_array_init_8004939C"
+      ],
+      "glabel": "gnd_close_8004939C",
+      "notes": [
+        "'func_8004939C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2502 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8004a940",
+      "kind": "RESET",
+      "new_name": "func_8004A940",
+      "old_names": [
+        "calc_loc_mat_fw_8004A940",
+        "stream_decode_via_8004A76C_8004A940"
+      ],
+      "glabel": "calc_loc_mat_fw_8004A940",
+      "notes": [
+        "'func_8004A940' is not object-defined per build/bb2.map \u2014 named_syms.txt:2530 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8004bcc0",
+      "kind": "RESET",
+      "new_name": "func_8004BCC0",
+      "old_names": [
+        "saTan2LineDraw"
+      ],
+      "glabel": "saTan2LineDraw",
+      "notes": []
+    },
+    {
+      "address": "0x80052a20",
+      "kind": "RESET",
+      "new_name": "func_80052A20",
+      "old_names": [
+        "game_2d_CheckLifeGaugeNoDisp"
+      ],
+      "glabel": "game_2d_CheckLifeGaugeNoDisp",
+      "notes": []
+    },
+    {
+      "address": "0x80052c10",
+      "kind": "RESET",
+      "new_name": "func_80052C10",
+      "old_names": [
+        "InitFadePanel"
+      ],
+      "glabel": "InitFadePanel",
+      "notes": []
+    },
+    {
+      "address": "0x80053614",
+      "kind": "RESET",
+      "new_name": "func_80053614",
+      "old_names": [
+        "camera_check_inside_screen_rob_dpos"
+      ],
+      "glabel": "camera_check_inside_screen_rob_dpos",
+      "notes": []
+    },
+    {
+      "address": "0x800545f4",
+      "kind": "RESET",
+      "new_name": "func_800545F4",
+      "old_names": [
+        "myRobGeneiOpen"
+      ],
+      "glabel": "myRobGeneiOpen",
+      "notes": []
+    },
+    {
+      "address": "0x800548dc",
+      "kind": "RESET",
+      "new_name": "func_800548DC",
+      "old_names": [
+        "katinuki_game_setData_800548DC",
+        "ui_stop_selection_800548DC"
+      ],
+      "glabel": "katinuki_game_setData_800548DC",
+      "notes": [
+        "'func_800548DC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2505 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8005509c",
+      "kind": "RESET",
+      "new_name": "func_8005509C",
+      "old_names": [
+        "practice_menu_clear_field414_8005509C",
+        "psyq_memset",
+        "psyq_memset_8005509C"
+      ],
+      "glabel": "func_8005509C",
+      "notes": []
+    },
+    {
+      "address": "0x80055138",
+      "kind": "RESET",
+      "new_name": "func_80055138",
+      "old_names": [
+        "single_game_SetStatusUpData"
+      ],
+      "glabel": "single_game_SetStatusUpData",
+      "notes": []
+    },
+    {
+      "address": "0x80055b60",
+      "kind": "RESET",
+      "new_name": "func_80055B60",
+      "old_names": [
+        "calc_loc_mat_fw_80055B60"
+      ],
+      "glabel": "calc_loc_mat_fw_80055B60",
+      "notes": []
+    },
+    {
+      "address": "0x80056fe8",
+      "kind": "RESET",
+      "new_name": "func_80056FE8",
+      "old_names": [
+        "ang_hosei_80056FE8",
+        "char_disp_offset_80056FE8"
+      ],
+      "glabel": "ang_hosei_80056FE8",
+      "notes": [
+        "'func_80056FE8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2497 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8005b50c",
+      "kind": "RESET",
+      "new_name": "func_8005B50C",
+      "old_names": [
+        "get_point_value"
+      ],
+      "glabel": "get_point_value",
+      "notes": []
+    },
+    {
+      "address": "0x8005b644",
+      "kind": "RESET",
+      "new_name": "func_8005B644",
+      "old_names": [
+        "GetAllocPacketSize"
+      ],
+      "glabel": "GetAllocPacketSize",
+      "notes": []
+    },
+    {
+      "address": "0x8005b98c",
+      "kind": "RESET",
+      "new_name": "func_8005B98C",
+      "old_names": [
+        "motion_LoadPreCalcData_8005B98C",
+        "saFidLoad_pair_8005B98C"
+      ],
+      "glabel": "motion_LoadPreCalcData_8005B98C",
+      "notes": [
+        "'func_8005B98C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2511 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8005be84",
+      "kind": "RESET",
+      "new_name": "func_8005BE84",
+      "old_names": [
+        "mario_getMarioVoiceData_8005BE84",
+        "mode_change_to_katinuki_8005BE84"
+      ],
+      "glabel": "mario_getMarioVoiceData_8005BE84",
+      "notes": [
+        "'func_8005BE84' is not object-defined per build/bb2.map \u2014 named_syms.txt:2509 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8005c074",
+      "kind": "RESET",
+      "new_name": "func_8005C074",
+      "old_names": [
+        "tslglobalmemfree_helper",
+        "tslglobalmemfree_helper_8005C074"
+      ],
+      "glabel": "func_8005C074",
+      "notes": []
+    },
+    {
+      "address": "0x8005c2a8",
+      "kind": "RESET",
+      "new_name": "func_8005C2A8",
+      "old_names": [
+        "tslGlobalMemFree_8005C2A8"
+      ],
+      "glabel": "tslGlobalMemFree_8005C2A8",
+      "notes": []
+    },
+    {
+      "address": "0x8005c4c0",
+      "kind": "RESET",
+      "new_name": "func_8005C4C0",
+      "old_names": [
+        "saFidLoad"
+      ],
+      "glabel": "saFidLoad",
+      "notes": []
+    },
+    {
+      "address": "0x8005c5a8",
+      "kind": "RESET",
+      "new_name": "func_8005C5A8",
+      "old_names": [
+        "tslglobalmemfree_helper",
+        "tslglobalmemfree_helper_8005C5A8"
+      ],
+      "glabel": "func_8005C5A8",
+      "notes": []
+    },
+    {
+      "address": "0x8005d554",
+      "kind": "RESET",
+      "new_name": "func_8005D554",
+      "old_names": [
+        "gnd_land_hit_char_tsuba"
+      ],
+      "glabel": "gnd_land_hit_char_tsuba",
+      "notes": []
+    },
+    {
+      "address": "0x80060c60",
+      "kind": "RESET",
+      "new_name": "func_80060C60",
+      "old_names": [
+        "saTan1GaugeInit"
+      ],
+      "glabel": "saTan1GaugeInit",
+      "notes": []
+    },
+    {
+      "address": "0x80060e04",
+      "kind": "RESET",
+      "new_name": "func_80060E04",
+      "old_names": [
+        "gnd_get_fog"
+      ],
+      "glabel": "gnd_get_fog",
+      "notes": []
+    },
+    {
+      "address": "0x80065800",
+      "kind": "RESET",
+      "new_name": "func_80065800",
+      "old_names": [
+        "motion_SetExMotion"
+      ],
+      "glabel": "motion_SetExMotion",
+      "notes": []
+    },
+    {
+      "address": "0x8006919c",
+      "kind": "RESET",
+      "new_name": "func_8006919C",
+      "old_names": [
+        "efc_rob_Close"
+      ],
+      "glabel": "efc_rob_Close",
+      "notes": []
+    },
+    {
+      "address": "0x8006a564",
+      "kind": "RESET",
+      "new_name": "func_8006A564",
+      "old_names": [
+        "saTan3GaugeMain_8006A564"
+      ],
+      "glabel": "saTan3GaugeMain_8006A564",
+      "notes": []
+    },
+    {
+      "address": "0x8006c1fc",
+      "kind": "RESET",
+      "new_name": "func_8006C1FC",
+      "old_names": [
+        "func_8006C168_wrapper_8006C1FC",
+        "saTan2InfoInit_8006C1FC"
+      ],
+      "glabel": "saTan2InfoInit_8006C1FC",
+      "notes": [
+        "'func_8006C1FC' is not object-defined per build/bb2.map \u2014 named_syms.txt:2521 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8006c21c",
+      "kind": "RESET",
+      "new_name": "func_8006C21C",
+      "old_names": [
+        "saTan4GaugeMain"
+      ],
+      "glabel": "saTan4GaugeMain",
+      "notes": []
+    },
+    {
+      "address": "0x8006d324",
+      "kind": "RESET",
+      "new_name": "func_8006D324",
+      "old_names": [
+        "cpu_reset_dir"
+      ],
+      "glabel": "cpu_reset_dir",
+      "notes": []
+    },
+    {
+      "address": "0x8006e480",
+      "kind": "RESET",
+      "new_name": "func_8006E480",
+      "old_names": [
+        "saMotionSet"
+      ],
+      "glabel": "saMotionSet",
+      "notes": []
+    },
+    {
+      "address": "0x8006ea28",
+      "kind": "RESET",
+      "new_name": "func_8006EA28",
+      "old_names": [
+        "efc_buki_ZanzouClose"
+      ],
+      "glabel": "efc_buki_ZanzouClose",
+      "notes": []
+    },
+    {
+      "address": "0x80070188",
+      "kind": "RESET",
+      "new_name": "func_80070188",
+      "old_names": [
+        "replay_camera_attack"
+      ],
+      "glabel": "replay_camera_attack",
+      "notes": []
+    },
+    {
+      "address": "0x80070f78",
+      "kind": "RESET",
+      "new_name": "func_80070F78",
+      "old_names": [
+        "motion_ShiftControl"
+      ],
+      "glabel": "motion_ShiftControl",
+      "notes": []
+    },
+    {
+      "address": "0x80073200",
+      "kind": "RESET",
+      "new_name": "func_80073200",
+      "old_names": [
+        "saTan3GaugeMain_80073200"
+      ],
+      "glabel": "saTan3GaugeMain_80073200",
+      "notes": []
+    },
+    {
+      "address": "0x800753d8",
+      "kind": "RESET",
+      "new_name": "func_800753D8",
+      "old_names": [
+        "saTan1GaugeMain"
+      ],
+      "glabel": "saTan1GaugeMain",
+      "notes": []
+    },
+    {
+      "address": "0x80077a04",
+      "kind": "RESET",
+      "new_name": "func_80077A04",
+      "old_names": [
+        "motion_state_reset_80077A04",
+        "saTanMainDispGnd_80077A04"
+      ],
+      "glabel": "saTanMainDispGnd_80077A04",
+      "notes": [
+        "'func_80077A04' is not object-defined per build/bb2.map \u2014 named_syms.txt:2526 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80077a60",
+      "kind": "RESET",
+      "new_name": "func_80077A60",
+      "old_names": [
+        "func_8006E068_wrapper_80077A60",
+        "saTan2InfoInit_80077A60"
+      ],
+      "glabel": "saTan2InfoInit_80077A60",
+      "notes": [
+        "'func_80077A60' is not object-defined per build/bb2.map \u2014 named_syms.txt:2522 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80077ac0",
+      "kind": "RESET",
+      "new_name": "func_80077AC0",
+      "old_names": [
+        "func_80077724_wrapper_80077AC0",
+        "saTan2InfoInit_80077AC0"
+      ],
+      "glabel": "saTan2InfoInit_80077AC0",
+      "notes": [
+        "'func_80077AC0' is not object-defined per build/bb2.map \u2014 named_syms.txt:2523 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80077b20",
+      "kind": "RESET",
+      "new_name": "func_80077B20",
+      "old_names": [
+        "gauge_flag_set_80077B20",
+        "saTan2GaugeInit_80077B20"
+      ],
+      "glabel": "saTan2GaugeInit_80077B20",
+      "notes": [
+        "'func_80077B20' is not object-defined per build/bb2.map \u2014 named_syms.txt:2518 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80077d00",
+      "kind": "RESET",
+      "new_name": "func_80077D00",
+      "old_names": [
+        "gauge_data_ptr_get_80077D00",
+        "saTan2GaugeInit_80077D00"
+      ],
+      "glabel": "saTan2GaugeInit_80077D00",
+      "notes": [
+        "'func_80077D00' is not object-defined per build/bb2.map \u2014 named_syms.txt:2519 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800784e4",
+      "kind": "RESET",
+      "new_name": "func_800784E4",
+      "old_names": [
+        "camera_get_rot_normal_rad"
+      ],
+      "glabel": "camera_get_rot_normal_rad",
+      "notes": []
+    },
+    {
+      "address": "0x80078d68",
+      "kind": "RESET",
+      "new_name": "func_80078D68",
+      "old_names": [
+        "pad_Init"
+      ],
+      "glabel": "pad_Init",
+      "notes": []
+    },
+    {
+      "address": "0x8007a5c4",
+      "kind": "RESET",
+      "new_name": "func_8007A5C4",
+      "old_names": [
+        "suDraw2DLib_8007A5C4"
+      ],
+      "glabel": "suDraw2DLib_8007A5C4",
+      "notes": [
+        "'func_8007A5C4' is not object-defined per build/bb2.map \u2014 named_syms.txt:259 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8007a62c",
+      "kind": "RESET",
+      "new_name": "func_8007A62C",
+      "old_names": [
+        "suDraw2DLib_8007A62C"
+      ],
+      "glabel": "suDraw2DLib_8007A62C",
+      "notes": [
+        "'func_8007A62C' is not object-defined per build/bb2.map \u2014 named_syms.txt:260 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8007a87c",
+      "kind": "RESET",
+      "new_name": "func_8007A87C",
+      "old_names": [
+        "ptr_load_kseg0_8007A87C",
+        "tslSmdSendVu1Code_8007A87C"
+      ],
+      "glabel": "tslSmdSendVu1Code_8007A87C",
+      "notes": [
+        "'func_8007A87C' is not object-defined per build/bb2.map \u2014 named_syms.txt:276 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8007a898",
+      "kind": "RESET",
+      "new_name": "func_8007A898",
+      "old_names": [
+        "is_ot_terminator_8007A898",
+        "tslSmdSendVu1Code_8007A898"
+      ],
+      "glabel": "tslSmdSendVu1Code_8007A898",
+      "notes": [
+        "'func_8007A898' is not object-defined per build/bb2.map \u2014 named_syms.txt:277 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8007dc68",
+      "kind": "RESET",
+      "new_name": "func_8007DC68",
+      "old_names": [
+        "gpu_vcount_init_8007DC68",
+        "motion_LoadPreCalcData_8007DC68"
+      ],
+      "glabel": "motion_LoadPreCalcData_8007DC68",
+      "notes": [
+        "'func_8007DC68' is not object-defined per build/bb2.map \u2014 named_syms.txt:2512 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8007ec5c",
+      "kind": "RESET",
+      "new_name": "func_8007EC5C",
+      "old_names": [
+        "calc_fc_frame_8007EC5C"
+      ],
+      "glabel": "calc_fc_frame_8007EC5C",
+      "notes": []
+    },
+    {
+      "address": "0x8007effc",
+      "kind": "RESET",
+      "new_name": "func_8007EFFC",
+      "old_names": [
+        "gte_set_proj_distance_8007EFFC",
+        "tslDmaDrawListDelAll"
+      ],
+      "glabel": "tslDmaDrawListDelAll",
+      "notes": []
+    },
+    {
+      "address": "0x8007f35c",
+      "kind": "RESET",
+      "new_name": "func_8007F35C",
+      "old_names": [
+        "motutil_GetWalkDir"
+      ],
+      "glabel": "motutil_GetWalkDir",
+      "notes": []
+    },
+    {
+      "address": "0x8007fd5c",
+      "kind": "RESET",
+      "new_name": "func_8007FD5C",
+      "old_names": [
+        "single_game_getEnemyCharId"
+      ],
+      "glabel": "single_game_getEnemyCharId",
+      "notes": []
+    },
+    {
+      "address": "0x80080014",
+      "kind": "RESET",
+      "new_name": "func_80080014",
+      "old_names": [
+        "bios_DeliverEvent_class3_evt20_80080014",
+        "motion_SavePreCalcData_80080014"
+      ],
+      "glabel": "motion_SavePreCalcData_80080014",
+      "notes": [
+        "'func_80080014' is not object-defined per build/bb2.map \u2014 named_syms.txt:2515 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x8008003c",
+      "kind": "RESET",
+      "new_name": "func_8008003C",
+      "old_names": [
+        "bios_DeliverEvent_class3_evt40_8008003C",
+        "motion_SavePreCalcData_8008003C"
+      ],
+      "glabel": "motion_SavePreCalcData_8008003C",
+      "notes": [
+        "'func_8008003C' is not object-defined per build/bb2.map \u2014 named_syms.txt:2516 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80080064",
+      "kind": "RESET",
+      "new_name": "func_80080064",
+      "old_names": [
+        "bios_DeliverEvent_class3_evt40_80080064",
+        "motion_SavePreCalcData_80080064"
+      ],
+      "glabel": "motion_SavePreCalcData_80080064",
+      "notes": [
+        "'func_80080064' is not object-defined per build/bb2.map \u2014 named_syms.txt:2517 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x800801e8",
+      "kind": "RESET",
+      "new_name": "func_800801E8",
+      "old_names": [
+        "Vu0SetLightColMatrix_800801E8",
+        "cpu_side_move_dir_4_wrapper_800801E8"
+      ],
+      "glabel": "Vu0SetLightColMatrix_800801E8",
+      "notes": [
+        "'func_800801E8' is not object-defined per build/bb2.map \u2014 named_syms.txt:2493 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80080208",
+      "kind": "RESET",
+      "new_name": "func_80080208",
+      "old_names": [
+        "Vu0SetLightColMatrix_80080208",
+        "marionation_Exec_wrapper_80080208"
+      ],
+      "glabel": "Vu0SetLightColMatrix_80080208",
+      "notes": [
+        "'func_80080208' is not object-defined per build/bb2.map \u2014 named_syms.txt:2494 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80080258",
+      "kind": "RESET",
+      "new_name": "func_80080258",
+      "old_names": [
+        "_DispCharacterName",
+        "_DispCharacterName_80080258",
+        "tslTm2_command_with_retry_80080258"
+      ],
+      "glabel": "func_80080258",
+      "notes": []
+    },
+    {
+      "address": "0x80080390",
+      "kind": "RESET",
+      "new_name": "func_80080390",
+      "old_names": [
+        "myRobGeneiDraw3",
+        "myRobGeneiDraw3_80080390",
+        "tslTm2_command_with_retry_no_arg3_80080390"
+      ],
+      "glabel": "func_80080390",
+      "notes": []
+    },
+    {
+      "address": "0x800804bc",
+      "kind": "RESET",
+      "new_name": "func_800804BC",
+      "old_names": [
+        "tslPolyF4Init"
+      ],
+      "glabel": "tslPolyF4Init",
+      "notes": []
+    },
+    {
+      "address": "0x80080640",
+      "kind": "RESET",
+      "new_name": "func_80080640",
+      "old_names": [
+        "Vu0SetLightColMatrix_80080640",
+        "cdrom_dma_idle_check_80080640"
+      ],
+      "glabel": "Vu0SetLightColMatrix_80080640",
+      "notes": [
+        "'func_80080640' is not object-defined per build/bb2.map \u2014 named_syms.txt:2495 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80080660",
+      "kind": "RESET",
+      "new_name": "func_80080660",
+      "old_names": [
+        "tslTmlGetHeda"
+      ],
+      "glabel": "tslTmlGetHeda",
+      "notes": []
+    },
+    {
+      "address": "0x80080684",
+      "kind": "RESET",
+      "new_name": "func_80080684",
+      "old_names": [
+        "Vu0SetLightColMatrix_80080684",
+        "saEft01Init_wrapper_80080684"
+      ],
+      "glabel": "Vu0SetLightColMatrix_80080684",
+      "notes": [
+        "'func_80080684' is not object-defined per build/bb2.map \u2014 named_syms.txt:2496 rewritten in place rather than deleted, so the symbol keeps a definition"
+      ]
+    },
+    {
+      "address": "0x80080828",
+      "kind": "RESET",
+      "new_name": "func_80080828",
+      "old_names": [
+        "tsltm2loadimage_helper",
+        "tsltm2loadimage_helper_80080828"
+      ],
+      "glabel": "func_80080828",
+      "notes": []
+    },
+    {
+      "address": "0x80080db0",
+      "kind": "RESET",
+      "new_name": "func_80080DB0",
+      "old_names": [
+        "cpu_side_move_dir_4"
+      ],
+      "glabel": "cpu_side_move_dir_4",
+      "notes": []
+    },
+    {
+      "address": "0x80081030",
+      "kind": "RESET",
+      "new_name": "func_80081030",
+      "old_names": [
+        "marionation_Exec"
+      ],
+      "glabel": "marionation_Exec",
+      "notes": []
+    },
+    {
+      "address": "0x800812fc",
+      "kind": "RESET",
+      "new_name": "func_800812FC",
+      "old_names": [
+        "tslTm2LoadImage"
+      ],
+      "glabel": "tslTm2LoadImage",
+      "notes": []
+    },
+    {
+      "address": "0x80081bb0",
+      "kind": "RESET",
+      "new_name": "func_80081BB0",
+      "old_names": [
+        "saEft01Init"
+      ],
+      "glabel": "saEft01Init",
+      "notes": []
+    },
+    {
+      "address": "0x80082000",
+      "kind": "RESET",
+      "new_name": "func_80082000",
+      "old_names": [
+        "tslTm2LoadImage_2"
+      ],
+      "glabel": "tslTm2LoadImage_2",
+      "notes": []
+    },
+    {
+      "address": "0x8008241c",
+      "kind": "RESET",
+      "new_name": "func_8008241C",
+      "old_names": [
+        "saEft00Add"
+      ],
+      "glabel": "saEft00Add",
+      "notes": []
+    },
+    {
+      "address": "0x80082a14",
+      "kind": "RESET",
+      "new_name": "func_80082A14",
+      "old_names": [
+        "damage_CalcHitDamage2"
+      ],
+      "glabel": "func_80082A14",
+      "notes": []
+    },
+    {
+      "address": "0x80082c3c",
+      "kind": "RESET",
+      "new_name": "func_80082C3C",
+      "old_names": [
+        "motion_make_table"
+      ],
+      "glabel": "motion_make_table",
+      "notes": []
+    },
+    {
+      "address": "0x800832a0",
+      "kind": "RESET",
+      "new_name": "func_800832A0",
+      "old_names": [
+        "disp_mario_jimaku"
+      ],
+      "glabel": "func_800832A0",
+      "notes": []
+    },
+    {
+      "address": "0x800833c8",
+      "kind": "RESET",
+      "new_name": "func_800833C8",
+      "old_names": [
+        "conv_matrix_rotation"
+      ],
+      "glabel": "conv_matrix_rotation",
+      "notes": []
+    },
+    {
+      "address": "0x800836b8",
+      "kind": "RESET",
+      "new_name": "func_800836B8",
+      "old_names": [
+        "md_gview_init"
+      ],
+      "glabel": "md_gview_init",
+      "notes": []
+    },
+    {
+      "address": "0x800836c8",
+      "kind": "RESET",
+      "new_name": "func_800836C8",
+      "old_names": [
+        "ang_hosei"
+      ],
+      "glabel": "ang_hosei",
+      "notes": []
+    },
+    {
+      "address": "0x80083794",
+      "kind": "RESET",
+      "new_name": "func_80083794",
+      "old_names": [
+        "motion_Open"
+      ],
+      "glabel": "motion_Open",
+      "notes": []
+    },
+    {
+      "address": "0x80083a48",
+      "kind": "RESET",
+      "new_name": "func_80083A48",
+      "old_names": [
+        "md_game_check_change_main_mode_default"
+      ],
+      "glabel": "func_80083A48",
+      "notes": []
+    },
+    {
+      "address": "0x80083c34",
+      "kind": "RESET",
+      "new_name": "func_80083C34",
+      "old_names": [
+        "saTan5TakeAnim2_2"
+      ],
+      "glabel": "saTan5TakeAnim2_2",
+      "notes": []
+    },
+    {
+      "address": "0x80083e9c",
+      "kind": "RESET",
+      "new_name": "func_80083E9C",
+      "old_names": [
+        "DispStuff"
+      ],
+      "glabel": "DispStuff",
+      "notes": []
+    },
+    {
+      "address": "0x80084974",
+      "kind": "RESET",
+      "new_name": "func_80084974",
+      "old_names": [
+        "saTan4GaugeInit"
+      ],
+      "glabel": "saTan4GaugeInit",
+      "notes": []
+    },
+    {
+      "address": "0x80084cc0",
+      "kind": "RESET",
+      "new_name": "func_80084CC0",
+      "old_names": [
+        "saTan0Main"
+      ],
+      "glabel": "saTan0Main",
+      "notes": []
+    },
+    {
+      "address": "0x80085544",
+      "kind": "RESET",
+      "new_name": "func_80085544",
+      "old_names": [
+        "SetBloodSpot"
+      ],
+      "glabel": "SetBloodSpot",
+      "notes": []
+    },
+    {
+      "address": "0x800858d0",
+      "kind": "RESET",
+      "new_name": "func_800858D0",
+      "old_names": [
+        "title_mv_exec2"
+      ],
+      "glabel": "title_mv_exec2",
+      "notes": []
+    },
+    {
+      "address": "0x800859f0",
+      "kind": "RESET",
+      "new_name": "func_800859F0",
+      "old_names": [
+        "tslglobalmemfree_helper",
+        "tslglobalmemfree_helper_800859F0"
+      ],
+      "glabel": "func_800859F0",
+      "notes": []
+    },
+    {
+      "address": "0x80085a40",
+      "kind": "RESET",
+      "new_name": "func_80085A40",
+      "old_names": [
+        "AllocBukiRmd"
+      ],
+      "glabel": "AllocBukiRmd",
+      "notes": []
+    },
+    {
+      "address": "0x80086130",
+      "kind": "RESET",
+      "new_name": "func_80086130",
+      "old_names": [
+        "action_check_defense",
+        "action_check_defense_80086130",
+        "char_store_pos_pair_80086130"
+      ],
+      "glabel": "func_80086130",
+      "notes": []
+    },
+    {
+      "address": "0x800861bc",
+      "kind": "RESET",
+      "new_name": "func_800861BC",
+      "old_names": [
+        "tslGlobalMemFree_800861BC"
+      ],
+      "glabel": "tslGlobalMemFree_800861BC",
+      "notes": []
+    },
+    {
+      "address": "0x800863dc",
+      "kind": "RESET",
+      "new_name": "func_800863DC",
+      "old_names": [
+        "action_CheckHitZangeki"
+      ],
+      "glabel": "action_CheckHitZangeki",
+      "notes": []
+    },
+    {
+      "address": "0x80086818",
+      "kind": "RESET",
+      "new_name": "func_80086818",
+      "old_names": [
+        "md_game_end"
+      ],
+      "glabel": "md_game_end",
+      "notes": []
+    },
+    {
+      "address": "0x80086bfc",
+      "kind": "RESET",
+      "new_name": "func_80086BFC",
+      "old_names": [
+        "disp_mario_jimaku2",
+        "disp_mario_jimaku2_80086BFC"
+      ],
+      "glabel": "func_80086BFC",
+      "notes": []
+    },
+    {
+      "address": "0x800871d4",
+      "kind": "RESET",
+      "new_name": "func_800871D4",
+      "old_names": [
+        "motutil_GetAngTableNum",
+        "motutil_GetAngTableNum_800871D4"
+      ],
+      "glabel": "func_800871D4",
+      "notes": []
+    },
+    {
+      "address": "0x80087e3c",
+      "kind": "RESET",
+      "new_name": "func_80087E3C",
+      "old_names": [
+        "AddTbpOfst"
+      ],
+      "glabel": "AddTbpOfst",
+      "notes": []
+    },
+    {
+      "address": "0x80087fe8",
+      "kind": "RESET",
+      "new_name": "func_80087FE8",
+      "old_names": [
+        "tslCDFileRead"
+      ],
+      "glabel": "tslCDFileRead",
+      "notes": []
+    },
+    {
+      "address": "0x80088088",
+      "kind": "RESET",
+      "new_name": "func_80088088",
+      "old_names": [
+        "coli_CheckBukiPreHit_80088088"
+      ],
+      "glabel": "coli_CheckBukiPreHit_80088088",
+      "notes": []
+    },
+    {
+      "address": "0x800880b8",
+      "kind": "RESET",
+      "new_name": "func_800880B8",
+      "old_names": [
+        "coli_CheckBukiPreHit_800880B8"
+      ],
+      "glabel": "coli_CheckBukiPreHit_800880B8",
+      "notes": []
+    },
+    {
+      "address": "0x800880e8",
+      "kind": "RESET",
+      "new_name": "func_800880E8",
+      "old_names": [
+        "saTan2Main"
+      ],
+      "glabel": "saTan2Main",
+      "notes": []
+    },
+    {
+      "address": "0x80088584",
+      "kind": "RESET",
+      "new_name": "func_80088584",
+      "old_names": [
+        "tslglobalmemfree_helper",
+        "tslglobalmemfree_helper_80088584"
+      ],
+      "glabel": "func_80088584",
+      "notes": []
+    },
+    {
+      "address": "0x800889d4",
+      "kind": "RESET",
+      "new_name": "func_800889D4",
+      "old_names": [
+        "DispUpdateStatusMessage"
+      ],
+      "glabel": "DispUpdateStatusMessage",
+      "notes": []
+    },
+    {
+      "address": "0x80088d0c",
+      "kind": "RESET",
+      "new_name": "func_80088D0C",
+      "old_names": [
+        "saTan0GaugeDraw"
+      ],
+      "glabel": "saTan0GaugeDraw",
+      "notes": []
+    },
+    {
+      "address": "0x800890d4",
+      "kind": "RESET",
+      "new_name": "func_800890D4",
+      "old_names": [
+        "saTan1SyuryoDraw"
+      ],
+      "glabel": "saTan1SyuryoDraw",
+      "notes": []
+    },
+    {
+      "address": "0x800893d8",
+      "kind": "RESET",
+      "new_name": "func_800893D8",
+      "old_names": [
+        "coli_HitPauseKatana"
+      ],
+      "glabel": "coli_HitPauseKatana",
+      "notes": []
+    },
+    {
+      "address": "0x800896a0",
+      "kind": "RESET",
+      "new_name": "func_800896A0",
+      "old_names": [
+        "exec_game"
+      ],
+      "glabel": "exec_game",
+      "notes": []
+    },
+    {
+      "address": "0x80089a48",
+      "kind": "RESET",
+      "new_name": "func_80089A48",
+      "old_names": [
+        "coli_HitPauseKatana_2"
+      ],
+      "glabel": "coli_HitPauseKatana_2",
+      "notes": []
+    },
+    {
+      "address": "0x80089d60",
+      "kind": "RESET",
+      "new_name": "func_80089D60",
+      "old_names": [
+        "saEft03Start2"
+      ],
+      "glabel": "saEft03Start2",
+      "notes": []
+    },
+    {
+      "address": "0x80089eb0",
+      "kind": "RESET",
+      "new_name": "func_80089EB0",
+      "old_names": [
+        "action_check_defense2",
+        "action_check_defense2_80089EB0"
+      ],
+      "glabel": "func_80089EB0",
+      "notes": []
+    },
+    {
+      "address": "0x8008a904",
+      "kind": "RESET",
+      "new_name": "func_8008A904",
+      "old_names": [
+        "coli_HitPauseKatana_3"
+      ],
+      "glabel": "func_8008A904",
+      "notes": []
+    },
+    {
+      "address": "0x8008a928",
+      "kind": "RESET",
+      "new_name": "func_8008A928",
+      "old_names": [
+        "md_game_check_change_main_mode_katinuki"
+      ],
+      "glabel": "md_game_check_change_main_mode_katinuki",
+      "notes": []
+    },
+    {
+      "address": "0x8008aac4",
+      "kind": "RESET",
+      "new_name": "func_8008AAC4",
+      "old_names": [
+        "CheckFadeEnd"
+      ],
+      "glabel": "CheckFadeEnd",
+      "notes": []
+    },
+    {
+      "address": "0x8008acd0",
+      "kind": "RESET",
+      "new_name": "func_8008ACD0",
+      "old_names": [
+        "coli_calc_motion2",
+        "coli_calc_motion2_8008ACD0"
+      ],
+      "glabel": "func_8008ACD0",
+      "notes": []
+    },
+    {
+      "address": "0x8008af58",
+      "kind": "RESET",
+      "new_name": "func_8008AF58",
+      "old_names": [
+        "ReturnVSMode"
+      ],
+      "glabel": "ReturnVSMode",
+      "notes": []
+    },
+    {
+      "address": "0x8008b488",
+      "kind": "RESET",
+      "new_name": "func_8008B488",
+      "old_names": [
+        "saTan1MainJump"
+      ],
+      "glabel": "saTan1MainJump",
+      "notes": []
+    },
+    {
+      "address": "0x8008bf04",
+      "kind": "RESET",
+      "new_name": "func_8008BF04",
+      "old_names": [
+        "cpu_side_move_dir_3"
+      ],
+      "glabel": "cpu_side_move_dir_3",
+      "notes": []
+    },
+    {
+      "address": "0x8008c1e8",
+      "kind": "RESET",
+      "new_name": "func_8008C1E8",
+      "old_names": [
+        "SetPacketData"
+      ],
+      "glabel": "SetPacketData",
+      "notes": []
+    }
+  ],
+  "rejects": [
+    "RESET row 'save_vc_ctrl' has unusable address '0x' \u2014 no reset target can be derived",
+    "0x800324d0: DROPPED \u2014 asm/funcs/func_800324D0.s already exists (head: 'glabel func_800324D0') while the live glabel is 'cpu_get_dist_2' \u2014 stale duplicate split artifact; resolve it before resetting"
+  ],
+  "preflight_errors": {},
+  "file_edits": {
+    "asm/6CAC.s": 539,
+    "asm/data/7D920.data.s": 1,
+    "asm/funcs/AddTbpOfst.s": 2,
+    "asm/funcs/AddTbpOfst_80047EE8.s": 3,
+    "asm/funcs/AllocBukiRmd.s": 6,
+    "asm/funcs/AllocRobRmd.s": 16,
+    "asm/funcs/CalcHiraNormal.s": 2,
+    "asm/funcs/CheckFadeEnd.s": 2,
+    "asm/funcs/DispHira.s": 5,
+    "asm/funcs/DispPracticeMenuTex_A.s": 2,
+    "asm/funcs/DispPracticeMenuTex_B.s": 3,
+    "asm/funcs/DispPracticeMenuTex_C.s": 4,
+    "asm/funcs/DispSamnailWindow.s": 5,
+    "asm/funcs/DispSchoolBG.s": 4,
+    "asm/funcs/DispSleepMenuTex.s": 3,
+    "asm/funcs/DispStuff.s": 5,
+    "asm/funcs/DispUpdateStatusMessage.s": 2,
+    "asm/funcs/EndADRSound.s": 2,
+    "asm/funcs/FadeOut_8003FFA8.s": 2,
+    "asm/funcs/FadeOut_8003FFC4.s": 2,
+    "asm/funcs/GetAllocPacketSize.s": 3,
+    "asm/funcs/InitFadePanel.s": 2,
+    "asm/funcs/InitHiraRmd_80041AC8.s": 3,
+    "asm/funcs/InitHiraRmd_80047FBC.s": 3,
+    "asm/funcs/InitHiraRmd_800480C0.s": 3,
+    "asm/funcs/LWCard_SetAccessData.s": 2,
+    "asm/funcs/Pad_Prs.s": 2,
+    "asm/funcs/PutRobShadow.s": 2,
+    "asm/funcs/PutShadowRmd.s": 2,
+    "asm/funcs/ReturnVSMode.s": 2,
+    "asm/funcs/SetBloodSpot.s": 2,
+    "asm/funcs/SetCurrentCursor.s": 3,
+    "asm/funcs/SetPacketData.s": 2,
+    "asm/funcs/Vu0SetLightColMatrix_800801E8.s": 3,
+    "asm/funcs/Vu0SetLightColMatrix_80080208.s": 3,
+    "asm/funcs/Vu0SetLightColMatrix_80080640.s": 2,
+    "asm/funcs/Vu0SetLightColMatrix_80080684.s": 3,
+    "asm/funcs/_SelectSection.s": 2,
+    "asm/funcs/_start.s": 1,
+    "asm/funcs/action_CheckHitZangeki.s": 3,
+    "asm/funcs/ang_hosei.s": 2,
+    "asm/funcs/ang_hosei_8003F62C.s": 6,
+    "asm/funcs/ang_hosei_80056FE8.s": 2,
+    "asm/funcs/ang_near_dif.s": 4,
+    "asm/funcs/calc_fc_frame.s": 2,
+    "asm/funcs/calc_fc_frame_800203B4.s": 2,
+    "asm/funcs/calc_fc_frame_8007EC5C.s": 2,
+    "asm/funcs/calc_loc_mat_fw.s": 6,
+    "asm/funcs/calc_loc_mat_fw_8004A940.s": 3,
+    "asm/funcs/calc_loc_mat_fw_80055B60.s": 6,
+    "asm/funcs/calc_teasi_loc_fw.s": 15,
+    "asm/funcs/camera_SetMatrix_8001DA8C.s": 2,
+    "asm/funcs/camera_SetMatrix_8001DBE4.s": 4,
+    "asm/funcs/camera_SetMatrix_8003E164.s": 4,
+    "asm/funcs/camera_check_inside_screen_rob_dpos.s": 2,
+    "asm/funcs/camera_get_rot_normal_rad.s": 2,
+    "asm/funcs/camera_set_target_zoom.s": 3,
+    "asm/funcs/camera_set_zoom.s": 5,
+    "asm/funcs/change_shadow_tex_reg.s": 2,
+    "asm/funcs/coli_CheckBukiPreHit_80088088.s": 3,
+    "asm/funcs/coli_CheckBukiPreHit_800880B8.s": 3,
+    "asm/funcs/coli_HitPauseKatana.s": 5,
+    "asm/funcs/coli_HitPauseKatana_2.s": 2,
+    "asm/funcs/coli_check_circle_hit_line.s": 2,
+    "asm/funcs/coli_hit_body_weapon.s": 2,
+    "asm/funcs/conv_matrix_rotation.s": 2,
+    "asm/funcs/cpu_check_move_dir_pattern_enemy_attack.s": 2,
+    "asm/funcs/cpu_check_run_attack.s": 2,
+    "asm/funcs/cpu_check_tubazeri.s": 3,
+    "asm/funcs/cpu_check_tubazeri_2.s": 3,
+    "asm/funcs/cpu_get_dist.s": 1,
+    "asm/funcs/cpu_get_move_pattern_table_number.s": 6,
+    "asm/funcs/cpu_reset_dir.s": 2,
+    "asm/funcs/cpu_set_move_command_and_dir.s": 1,
+    "asm/funcs/cpu_set_move_command_and_dir_for_no_action.s": 2,
+    "asm/funcs/cpu_set_move_command_and_dir_for_no_action_2.s": 8,
+    "asm/funcs/cpu_side_move_dir.s": 2,
+    "asm/funcs/cpu_side_move_dir_2.s": 8,
+    "asm/funcs/cpu_side_move_dir_3.s": 2,
+    "asm/funcs/cpu_side_move_dir_4.s": 3,
+    "asm/funcs/damage_DebugDisp.s": 2,
+    "asm/funcs/decBs0.s": 4,
+    "asm/funcs/efc_buki_ZanzouClose.s": 3,
+    "asm/funcs/efc_buki_draw_zanzou.s": 2,
+    "asm/funcs/efc_rob_Close.s": 3,
+    "asm/funcs/efc_rob_Init.s": 5,
+    "asm/funcs/efc_rob_set_type_flash.s": 3,
+    "asm/funcs/efc_rob_set_type_particle.s": 9,
+    "asm/funcs/exec_game.s": 2,
+    "asm/funcs/func_80016514.s": 3,
+    "asm/funcs/func_800165F8.s": 2,
+    "asm/funcs/func_80016918.s": 1,
+    "asm/funcs/func_80016A18.s": 1,
+    "asm/funcs/func_80016CF8.s": 1,
+    "asm/funcs/func_80016D78.s": 2,
+    "asm/funcs/func_80016E60.s": 2,
+    "asm/funcs/func_8001924C.s": 1,
+    "asm/funcs/func_8001A484.s": 1,
+    "asm/funcs/func_8001A820.s": 4,
+    "asm/funcs/func_8001B6F4.s": 2,
+    "asm/funcs/func_8001BAE4.s": 2,
+    "asm/funcs/func_8001BBD8.s": 2,
+    "asm/funcs/func_8001BE20.s": 2,
+    "asm/funcs/func_8001C51C.s": 2,
+    "asm/funcs/func_8001C8DC.s": 3,
+    "asm/funcs/func_8001E404.s": 6,
+    "asm/funcs/func_8001E6E4.s": 1,
+    "asm/funcs/func_8001E878.s": 4,
+    "asm/funcs/func_8001EA04.s": 2,
+    "asm/funcs/func_8001EFA0.s": 5,
+    "asm/funcs/func_8001F1C4.s": 2,
+    "asm/funcs/func_8002006C.s": 1,
+    "asm/funcs/func_800207C8.s": 3,
+    "asm/funcs/func_80021DB0.s": 2,
+    "asm/funcs/func_80022580.s": 2,
+    "asm/funcs/func_80022F34.s": 1,
+    "asm/funcs/func_8002304C.s": 2,
+    "asm/funcs/func_800233AC.s": 4,
+    "asm/funcs/func_80023E40.s": 1,
+    "asm/funcs/func_80023F08.s": 10,
+    "asm/funcs/func_80027A58.s": 1,
+    "asm/funcs/func_80029454.s": 4,
+    "asm/funcs/func_8002A458.s": 5,
+    "asm/funcs/func_8002C0DC.s": 2,
+    "asm/funcs/func_8002C61C.s": 7,
+    "asm/funcs/func_8002CA8C.s": 2,
+    "asm/funcs/func_8002F2D0.s": 3,
+    "asm/funcs/func_8002F770.s": 3,
+    "asm/funcs/func_800300B4.s": 1,
+    "asm/funcs/func_80030208.s": 1,
+    "asm/funcs/func_8003032C.s": 1,
+    "asm/funcs/func_80030900.s": 1,
+    "asm/funcs/func_80030A2C.s": 1,
+    "asm/funcs/func_80030BA8.s": 1,
+    "asm/funcs/func_80030D7C.s": 1,
+    "asm/funcs/func_80031B24.s": 3,
+    "asm/funcs/func_80033DF4.s": 1,
+    "asm/funcs/func_800342A0.s": 1,
+    "asm/funcs/func_80034708.s": 17,
+    "asm/funcs/func_80034F88.s": 1,
+    "asm/funcs/func_8003504C.s": 2,
+    "asm/funcs/func_80035438.s": 1,
+    "asm/funcs/func_80035828.s": 15,
+    "asm/funcs/func_80036FD4.s": 1,
+    "asm/funcs/func_80037110.s": 1,
+    "asm/funcs/func_800371F8.s": 1,
+    "asm/funcs/func_80037348.s": 2,
+    "asm/funcs/func_80037540.s": 1,
+    "asm/funcs/func_80038658.s": 1,
+    "asm/funcs/func_80038734.s": 1,
+    "asm/funcs/func_8003880C.s": 1,
+    "asm/funcs/func_80038988.s": 2,
+    "asm/funcs/func_800397D4.s": 4,
+    "asm/funcs/func_8003993C.s": 6,
+    "asm/funcs/func_8003A728.s": 5,
+    "asm/funcs/func_8003ACB8.s": 1,
+    "asm/funcs/func_8003AE5C.s": 1,
+    "asm/funcs/func_8003AF40.s": 1,
+    "asm/funcs/func_8003AFFC.s": 2,
+    "asm/funcs/func_8003B10C.s": 2,
+    "asm/funcs/func_8003B328.s": 1,
+    "asm/funcs/func_8003B3A4.s": 1,
+    "asm/funcs/func_8003B484.s": 1,
+    "asm/funcs/func_8003B4DC.s": 1,
+    "asm/funcs/func_8003B8E4.s": 2,
+    "asm/funcs/func_8003B9D0.s": 9,
+    "asm/funcs/func_8003BE10.s": 2,
+    "asm/funcs/func_8003C2C0.s": 1,
+    "asm/funcs/func_8003C9A4.s": 1,
+    "asm/funcs/func_8003CD10.s": 1,
+    "asm/funcs/func_8003CE18.s": 4,
+    "asm/funcs/func_8003CF84.s": 3,
+    "asm/funcs/func_8003D478.s": 1,
+    "asm/funcs/func_8003D7B4.s": 2,
+    "asm/funcs/func_8003E6A0.s": 1,
+    "asm/funcs/func_8003FA24.s": 3,
+    "asm/funcs/func_80040510.s": 6,
+    "asm/funcs/func_80040D48.s": 2,
+    "asm/funcs/func_80041988.s": 5,
+    "asm/funcs/func_8004211C.s": 1,
+    "asm/funcs/func_800421C8.s": 4,
+    "asm/funcs/func_80042E90.s": 6,
+    "asm/funcs/func_80042FA0.s": 4,
+    "asm/funcs/func_80043398.s": 1,
+    "asm/funcs/func_80043454.s": 10,
+    "asm/funcs/func_80044170.s": 1,
+    "asm/funcs/func_80044504.s": 2,
+    "asm/funcs/func_80044650.s": 1,
+    "asm/funcs/func_80044E74.s": 1,
+    "asm/funcs/func_800451A0.s": 1,
+    "asm/funcs/func_800453E0.s": 1,
+    "asm/funcs/func_80045878.s": 6,
+    "asm/funcs/func_80045A50.s": 1,
+    "asm/funcs/func_80045AA4.s": 1,
+    "asm/funcs/func_80046048.s": 1,
+    "asm/funcs/func_800460E4.s": 6,
+    "asm/funcs/func_800464C4.s": 2,
+    "asm/funcs/func_8004659C.s": 1,
+    "asm/funcs/func_800467B8.s": 4,
+    "asm/funcs/func_800468B0.s": 2,
+    "asm/funcs/func_800468DC.s": 1,
+    "asm/funcs/func_8004695C.s": 3,
+    "asm/funcs/func_800469A0.s": 1,
+    "asm/funcs/func_800469C4.s": 3,
+    "asm/funcs/func_80046AA0.s": 1,
+    "asm/funcs/func_80046B44.s": 1,
+    "asm/funcs/func_80046DA8.s": 1,
+    "asm/funcs/func_80046EA0.s": 2,
+    "asm/funcs/func_80047384.s": 3,
+    "asm/funcs/func_8004748C.s": 1,
+    "asm/funcs/func_80047510.s": 1,
+    "asm/funcs/func_80047530.s": 1,
+    "asm/funcs/func_80047550.s": 1,
+    "asm/funcs/func_800475A4.s": 2,
+    "asm/funcs/func_8004779C.s": 1,
+    "asm/funcs/func_80047BE0.s": 1,
+    "asm/funcs/func_800481E8.s": 1,
+    "asm/funcs/func_80048A7C.s": 1,
+    "asm/funcs/func_80048F58.s": 1,
+    "asm/funcs/func_800493E4.s": 2,
+    "asm/funcs/func_800494D4.s": 2,
+    "asm/funcs/func_80049584.s": 2,
+    "asm/funcs/func_80049718.s": 1,
+    "asm/funcs/func_80049A2C.s": 1,
+    "asm/funcs/func_80049C24.s": 5,
+    "asm/funcs/func_8004A4E0.s": 5,
+    "asm/funcs/func_8004C404.s": 1,
+    "asm/funcs/func_80054604.s": 3,
+    "asm/funcs/func_8005490C.s": 4,
+    "asm/funcs/func_80054F68.s": 1,
+    "asm/funcs/func_80056CB8.s": 3,
+    "asm/funcs/func_80057094.s": 2,
+    "asm/funcs/func_800571C0.s": 4,
+    "asm/funcs/func_80057CC8.s": 2,
+    "asm/funcs/func_80058580.s": 1,
+    "asm/funcs/func_8005B43C.s": 3,
+    "asm/funcs/func_8005B58C.s": 1,
+    "asm/funcs/func_8005B6AC.s": 1,
+    "asm/funcs/func_8005B7C4.s": 2,
+    "asm/funcs/func_8005B8B8.s": 3,
+    "asm/funcs/func_8005BA8C.s": 3,
+    "asm/funcs/func_8005BD30.s": 2,
+    "asm/funcs/func_8005BF78.s": 3,
+    "asm/funcs/func_8005C5A8.s": 1,
+    "asm/funcs/func_8005C614.s": 1,
+    "asm/funcs/func_8005C6D0.s": 2,
+    "asm/funcs/func_8005C8A8.s": 1,
+    "asm/funcs/func_8005D814.s": 1,
+    "asm/funcs/func_8005E098.s": 1,
+    "asm/funcs/func_8005E54C.s": 2,
+    "asm/funcs/func_8005F1C8.s": 2,
+    "asm/funcs/func_8005FC9C.s": 1,
+    "asm/funcs/func_800600C8.s": 1,
+    "asm/funcs/func_80060414.s": 1,
+    "asm/funcs/func_80060544.s": 1,
+    "asm/funcs/func_80060CB8.s": 1,
+    "asm/funcs/func_80061064.s": 1,
+    "asm/funcs/func_80061C00.s": 1,
+    "asm/funcs/func_80061D74.s": 1,
+    "asm/funcs/func_80061FAC.s": 1,
+    "asm/funcs/func_800644FC.s": 1,
+    "asm/funcs/func_800652F4.s": 1,
+    "asm/funcs/func_80065344.s": 1,
+    "asm/funcs/func_80065394.s": 1,
+    "asm/funcs/func_800653E4.s": 1,
+    "asm/funcs/func_80065434.s": 1,
+    "asm/funcs/func_80065484.s": 1,
+    "asm/funcs/func_80065540.s": 1,
+    "asm/funcs/func_80065590.s": 1,
+    "asm/funcs/func_800655E0.s": 1,
+    "asm/funcs/func_80065630.s": 1,
+    "asm/funcs/func_80065680.s": 2,
+    "asm/funcs/func_800656EC.s": 2,
+    "asm/funcs/func_80065760.s": 1,
+    "asm/funcs/func_800657B0.s": 1,
+    "asm/funcs/func_80067200.s": 1,
+    "asm/funcs/func_80068F70.s": 1,
+    "asm/funcs/func_80069A30.s": 1,
+    "asm/funcs/func_80069A8C.s": 1,
+    "asm/funcs/func_80069AE4.s": 1,
+    "asm/funcs/func_80069E18.s": 1,
+    "asm/funcs/func_80069F80.s": 1,
+    "asm/funcs/func_8006A1A0.s": 1,
+    "asm/funcs/func_8006A3CC.s": 1,
+    "asm/funcs/func_8006A494.s": 1,
+    "asm/funcs/func_8006A880.s": 10,
+    "asm/funcs/func_8006B120.s": 2,
+    "asm/funcs/func_8006BB68.s": 2,
+    "asm/funcs/func_8006BD28.s": 1,
+    "asm/funcs/func_8006CFBC.s": 1,
+    "asm/funcs/func_8006D338.s": 1,
+    "asm/funcs/func_8006D3DC.s": 1,
+    "asm/funcs/func_8006D808.s": 3,
+    "asm/funcs/func_8006DD94.s": 1,
+    "asm/funcs/func_8006E534.s": 1,
+    "asm/funcs/func_8006E8CC.s": 1,
+    "asm/funcs/func_8006F100.s": 1,
+    "asm/funcs/func_8006F97C.s": 5,
+    "asm/funcs/func_80070C70.s": 5,
+    "asm/funcs/func_800720FC.s": 3,
+    "asm/funcs/func_8007352C.s": 1,
+    "asm/funcs/func_80073C78.s": 1,
+    "asm/funcs/func_80074220.s": 1,
+    "asm/funcs/func_80074488.s": 1,
+    "asm/funcs/func_80074D2C.s": 1,
+    "asm/funcs/func_80074E08.s": 1,
+    "asm/funcs/func_800759D0.s": 3,
+    "asm/funcs/func_8007636C.s": 2,
+    "asm/funcs/func_80077374.s": 1,
+    "asm/funcs/func_80077B30.s": 2,
+    "asm/funcs/func_80077D94.s": 5,
+    "asm/funcs/func_80078654.s": 2,
+    "asm/funcs/func_8007CAC8.s": 1,
+    "asm/funcs/func_8007CE0C.s": 1,
+    "asm/funcs/func_8007D048.s": 1,
+    "asm/funcs/func_8007D3F8.s": 4,
+    "asm/funcs/func_8007D6D8.s": 2,
+    "asm/funcs/func_8007D9C4.s": 2,
+    "asm/funcs/func_8007DB20.s": 1,
+    "asm/funcs/func_8007DC9C.s": 2,
+    "asm/funcs/func_80080258.s": 3,
+    "asm/funcs/func_80080390.s": 3,
+    "asm/funcs/func_80080828.s": 1,
+    "asm/funcs/func_800819C4.s": 6,
+    "asm/funcs/func_800826CC.s": 3,
+    "asm/funcs/func_800827D0.s": 2,
+    "asm/funcs/func_80082A14.s": 1,
+    "asm/funcs/func_80083A18.s": 1,
+    "asm/funcs/func_80083A48.s": 1,
+    "asm/funcs/func_80084948.s": 1,
+    "asm/funcs/func_80085EE4.s": 1,
+    "asm/funcs/func_80085F98.s": 1,
+    "asm/funcs/func_80085FB8.s": 1,
+    "asm/funcs/func_80087770.s": 1,
+    "asm/funcs/func_80087DA0.s": 1,
+    "asm/funcs/func_800884C4.s": 1,
+    "asm/funcs/func_80088740.s": 1,
+    "asm/funcs/func_80088F9C.s": 4,
+    "asm/funcs/func_80089024.s": 3,
+    "asm/funcs/func_800899A8.s": 1,
+    "asm/funcs/func_80089A24.s": 1,
+    "asm/funcs/func_80089F3C.s": 2,
+    "asm/funcs/func_8008A904.s": 1,
+    "asm/funcs/func_8008AE24.s": 1,
+    "asm/funcs/func_8008C464.s": 2,
+    "asm/funcs/game_2d_CheckLifeGaugeNoDisp.s": 2,
+    "asm/funcs/game_Cleanup.s": 2,
+    "asm/funcs/game_FrameInit.s": 1,
+    "asm/funcs/game_FrameLoop.s": 2,
+    "asm/funcs/get_point_value.s": 3,
+    "asm/funcs/gnd_close_8001DB9C.s": 2,
+    "asm/funcs/gnd_close_8004939C.s": 2,
+    "asm/funcs/gnd_disp_loop_ctrl.s": 4,
+    "asm/funcs/gnd_get_fog.s": 2,
+    "asm/funcs/gnd_init_8001B294.s": 3,
+    "asm/funcs/gnd_init_80041688.s": 3,
+    "asm/funcs/gnd_land_hit_char_die_main.s": 2,
+    "asm/funcs/gnd_land_hit_char_tsuba.s": 2,
+    "asm/funcs/gnd_load_tex.s": 4,
+    "asm/funcs/gnd_open.s": 3,
+    "asm/funcs/hirahira_w_ctrl.s": 2,
+    "asm/funcs/hirahira_w_ctrl_2.s": 2,
+    "asm/funcs/hirahira_w_frie.s": 2,
+    "asm/funcs/katinuki_game_getMyWeaponId.s": 2,
+    "asm/funcs/katinuki_game_get_katinuki_max_num_80016868.s": 2,
+    "asm/funcs/katinuki_game_get_katinuki_max_num_800168D0.s": 2,
+    "asm/funcs/katinuki_game_get_katinuki_max_num_80046914.s": 2,
+    "asm/funcs/katinuki_game_get_katinuki_max_num_80046934.s": 2,
+    "asm/funcs/katinuki_game_get_katinuki_max_num_80046A60.s": 2,
+    "asm/funcs/katinuki_game_setData_8003D2C4.s": 2,
+    "asm/funcs/katinuki_game_setData_800548DC.s": 2,
+    "asm/funcs/kgm_clamp_patch_init.s": 2,
+    "asm/funcs/leaf_muki_awase_800421A4.s": 3,
+    "asm/funcs/leaf_muki_awase_800444E0.s": 2,
+    "asm/funcs/mario_getMarioVoiceData_8001B3C0.s": 2,
+    "asm/funcs/mario_getMarioVoiceData_8001C820.s": 2,
+    "asm/funcs/mario_getMarioVoiceData_80048AD0.s": 2,
+    "asm/funcs/mario_getMarioVoiceData_8005BE84.s": 4,
+    "asm/funcs/mario_test_Exec.s": 25,
+    "asm/funcs/marionation_Exec.s": 3,
+    "asm/funcs/marionation_camera_Exec.s": 4,
+    "asm/funcs/marionation_camera_GetMaxFrame.s": 3,
+    "asm/funcs/marionation_camera_Init_80036064.s": 3,
+    "asm/funcs/marionation_camera_Init_80037468.s": 4,
+    "asm/funcs/md_game_check_change_main_mode_katinuki.s": 7,
+    "asm/funcs/md_game_check_change_sub_mode.s": 5,
+    "asm/funcs/md_game_check_mode.s": 3,
+    "asm/funcs/md_game_end.s": 6,
+    "asm/funcs/md_game_rob_data_init.s": 7,
+    "asm/funcs/md_gview_init.s": 2,
+    "asm/funcs/md_mtest_init.s": 3,
+    "asm/funcs/md_option_reset_8004001C.s": 2,
+    "asm/funcs/md_option_reset_80040068.s": 2,
+    "asm/funcs/md_option_reset_800400B0.s": 2,
+    "asm/funcs/mk_g2l.s": 2,
+    "asm/funcs/mk_leaf_newpos.s": 3,
+    "asm/funcs/mot_data_set.s": 2,
+    "asm/funcs/motion_Close_8001D904.s": 3,
+    "asm/funcs/motion_Close_8001D998.s": 4,
+    "asm/funcs/motion_LoadPreCalcData_80037F08.s": 2,
+    "asm/funcs/motion_LoadPreCalcData_8005B98C.s": 4,
+    "asm/funcs/motion_LoadPreCalcData_8007DC68.s": 2,
+    "asm/funcs/motion_Open.s": 2,
+    "asm/funcs/motion_SavePreCalcData_8003A3F0.s": 2,
+    "asm/funcs/motion_SavePreCalcData_8003A574.s": 2,
+    "asm/funcs/motion_SavePreCalcData_80080014.s": 2,
+    "asm/funcs/motion_SavePreCalcData_8008003C.s": 2,
+    "asm/funcs/motion_SavePreCalcData_80080064.s": 2,
+    "asm/funcs/motion_SetExMotion.s": 3,
+    "asm/funcs/motion_SetMotion.s": 5,
+    "asm/funcs/motion_ShiftControl.s": 3,
+    "asm/funcs/motion_make_table.s": 4,
+    "asm/funcs/motion_shift_check_m_hit_stop.s": 2,
+    "asm/funcs/mottest_disp.s": 2,
+    "asm/funcs/motutil_GetWalkDir.s": 2,
+    "asm/funcs/myRobGeneiDraw2.s": 2,
+    "asm/funcs/myRobGeneiMove.s": 3,
+    "asm/funcs/myRobGeneiOpen.s": 2,
+    "asm/funcs/obj_ExecTask.s": 1,
+    "asm/funcs/obj_InitAll.s": 1,
+    "asm/funcs/obj_InitChars.s": 2,
+    "asm/funcs/obj_InitPair.s": 1,
+    "asm/funcs/obj_InitTask.s": 1,
+    "asm/funcs/obj_InitTaskCamera.s": 1,
+    "asm/funcs/obj_Reset.s": 1,
+    "asm/funcs/pad_ClearAppliBuffer.s": 3,
+    "asm/funcs/pad_FuncAnalog.s": 6,
+    "asm/funcs/pad_Init.s": 2,
+    "asm/funcs/pad_button_info_clear.s": 2,
+    "asm/funcs/pad_main_control.s": 2,
+    "asm/funcs/pad_press_control.s": 2,
+    "asm/funcs/replay_camera_attack.s": 3,
+    "asm/funcs/replay_camera_get_attack_number.s": 2,
+    "asm/funcs/replay_camera_rob_back_loose2.s": 3,
+    "asm/funcs/replay_camera_rob_back_loose3.s": 2,
+    "asm/funcs/rob_ScaleMarioInit.s": 2,
+    "asm/funcs/rob_calc_2d_position.s": 2,
+    "asm/funcs/rob_life_ctrl.s": 2,
+    "asm/funcs/rob_life_ctrl_2.s": 2,
+    "asm/funcs/saEft00Add.s": 14,
+    "asm/funcs/saEft01Init.s": 3,
+    "asm/funcs/saEft03Start2.s": 3,
+    "asm/funcs/saFidLoad.s": 5,
+    "asm/funcs/saMotionSet.s": 2,
+    "asm/funcs/saRobDraw.s": 4,
+    "asm/funcs/saSeInit.s": 4,
+    "asm/funcs/saSeInit_2.s": 2,
+    "asm/funcs/saSeMain_80045510.s": 3,
+    "asm/funcs/saSeMain_80045600.s": 3,
+    "asm/funcs/saTan0GaugeDraw.s": 2,
+    "asm/funcs/saTan0Init.s": 2,
+    "asm/funcs/saTan0KiWareMoveA.s": 5,
+    "asm/funcs/saTan0KiWareMoveB.s": 4,
+    "asm/funcs/saTan0Main.s": 2,
+    "asm/funcs/saTan1GaugeInit.s": 2,
+    "asm/funcs/saTan1GaugeMain.s": 4,
+    "asm/funcs/saTan1MainJump.s": 4,
+    "asm/funcs/saTan1SyuryoDraw.s": 2,
+    "asm/funcs/saTan2GaugeInit_80077B20.s": 2,
+    "asm/funcs/saTan2GaugeInit_80077D00.s": 2,
+    "asm/funcs/saTan2InfoInit_80044F80.s": 2,
+    "asm/funcs/saTan2InfoInit_8006C1FC.s": 2,
+    "asm/funcs/saTan2InfoInit_80077A60.s": 2,
+    "asm/funcs/saTan2InfoInit_80077AC0.s": 2,
+    "asm/funcs/saTan2KabutoWareMove.s": 2,
+    "asm/funcs/saTan2LineDraw.s": 2,
+    "asm/funcs/saTan2Main.s": 6,
+    "asm/funcs/saTan3GaugeMain_8006A564.s": 3,
+    "asm/funcs/saTan3GaugeMain_80073200.s": 5,
+    "asm/funcs/saTan3MainJump.s": 2,
+    "asm/funcs/saTan4FireDisp.s": 3,
+    "asm/funcs/saTan4FireDisp_80048864.s": 2,
+    "asm/funcs/saTan4GaugeInit.s": 3,
+    "asm/funcs/saTan4GaugeMain.s": 5,
+    "asm/funcs/saTan5GetTakeCutAnimType.s": 2,
+    "asm/funcs/saTan5TakeAnim2.s": 2,
+    "asm/funcs/saTan5TakeAnim2_2.s": 2,
+    "asm/funcs/saTan5TakeGetCnt.s": 2,
+    "asm/funcs/saTan5TakeGetPos_80045230.s": 3,
+    "asm/funcs/saTan5TakeGetPos_80045694.s": 2,
+    "asm/funcs/saTanMainDispGnd_800444BC.s": 2,
+    "asm/funcs/saTanMainDispGnd_80046020.s": 2,
+    "asm/funcs/saTanMainDispGnd_80077A04.s": 2,
+    "asm/funcs/se_data_set.s": 3,
+    "asm/funcs/single_game_CheckStatusUpDataTotalOver.s": 2,
+    "asm/funcs/single_game_SetAbilityData.s": 2,
+    "asm/funcs/single_game_SetStageId.s": 2,
+    "asm/funcs/single_game_SetStatusUpData.s": 2,
+    "asm/funcs/single_game_SetWazaData.s": 3,
+    "asm/funcs/single_game_VoiceContorol.s": 2,
+    "asm/funcs/single_game_getEnemyCharId.s": 2,
+    "asm/funcs/single_game_setModeRequest.s": 3,
+    "asm/funcs/special_camera_Exec.s": 15,
+    "asm/funcs/special_camera_Init.s": 6,
+    "asm/funcs/special_camera_check_pos_outside_ground_80035DC8.s": 2,
+    "asm/funcs/special_camera_check_pos_outside_ground_80036E34.s": 2,
+    "asm/funcs/special_camera_get_rot_dir.s": 2,
+    "asm/funcs/special_camera_set_win_cam.s": 20,
+    "asm/funcs/suDispMentalBar.s": 4,
+    "asm/funcs/suDraw2DLib_8007A5C4.s": 2,
+    "asm/funcs/suDraw2DLib_8007A62C.s": 2,
+    "asm/funcs/sys_VSync.s": 2,
+    "asm/funcs/title_mv_exec2.s": 4,
+    "asm/funcs/tslCDFileRead.s": 4,
+    "asm/funcs/tslDmaDrawListDelAll.s": 2,
+    "asm/funcs/tslFileClose.s": 4,
+    "asm/funcs/tslGlobalMemFree_8005C2A8.s": 4,
+    "asm/funcs/tslGlobalMemFree_800861BC.s": 2,
+    "asm/funcs/tslLineG5Init.s": 2,
+    "asm/funcs/tslPolyF4Init.s": 6,
+    "asm/funcs/tslPrintScreen.s": 4,
+    "asm/funcs/tslSmdSendVu1Code_8007A87C.s": 2,
+    "asm/funcs/tslSmdSendVu1Code_8007A898.s": 2,
+    "asm/funcs/tslTm2LoadImage.s": 4,
+    "asm/funcs/tslTm2LoadImage_2.s": 13,
+    "asm/funcs/tslTmlGetHeda.s": 2,
+    "asm/funcs/videoDecCreate.s": 2,
+    "asm/text1b.s": 29,
+    "asm/text2.s": 9,
+    "asmfix.txt": 28,
+    "include/code6cac.h": 6,
+    "include/m2c_context.h": 103,
+    "inline_asm_canonical.txt": 10,
+    "maspsx_label_nop_funcs.txt": 2,
+    "named_syms.txt": 234,
+    "regfix.txt": 1031,
+    "regfix_stage2.txt": 4,
+    "sdata_exclude.txt": 18,
+    "sdata_funcs.txt": 54,
+    "src/code6cac.c": 96,
+    "src/code6cac_b.c": 74,
+    "src/code6cac_b2_post.c": 28,
+    "src/code6cac_b2_pre.c": 7,
+    "src/code6cac_c.c": 11,
+    "src/code6cac_c2.c": 70,
+    "src/code6cac_c_ab.c": 22,
+    "src/code6cac_c_mid.c": 52,
+    "src/config.c": 18,
+    "src/display.c": 25,
+    "src/ings.c": 35,
+    "src/ings2.c": 13,
+    "src/main.c": 77,
+    "src/replay_camera_rob_back_loose2.c": 2,
+    "src/sound.c": 39,
+    "src/system.c": 64,
+    "src/text1a_c.c": 61,
+    "src/text1a_c2.c": 15,
+    "src/text1a_post.c": 23,
+    "src/text1a_pre.c": 41,
+    "src/text1b.c": 185,
+    "src/text1b_b.c": 35,
+    "undefined_syms_auto.txt": 26
+  },
+  "file_renames": [
+    [
+      "asm/funcs/AddTbpOfst.s",
+      "asm/funcs/func_80087E3C.s"
+    ],
+    [
+      "asm/funcs/AddTbpOfst_80047EE8.s",
+      "asm/funcs/func_80047EE8.s"
+    ],
+    [
+      "asm/funcs/AllocBukiRmd.s",
+      "asm/funcs/func_80085A40.s"
+    ],
+    [
+      "asm/funcs/AllocRobRmd.s",
+      "asm/funcs/func_80040594.s"
+    ],
+    [
+      "asm/funcs/CalcHiraNormal.s",
+      "asm/funcs/func_8003EB84.s"
+    ],
+    [
+      "asm/funcs/CheckFadeEnd.s",
+      "asm/funcs/func_8008AAC4.s"
+    ],
+    [
+      "asm/funcs/DispHira.s",
+      "asm/funcs/func_8003E6D8.s"
+    ],
+    [
+      "asm/funcs/DispPracticeMenuTex_A.s",
+      "asm/funcs/func_8001B748.s"
+    ],
+    [
+      "asm/funcs/DispPracticeMenuTex_B.s",
+      "asm/funcs/func_80020E74.s"
+    ],
+    [
+      "asm/funcs/DispPracticeMenuTex_C.s",
+      "asm/funcs/func_800290B8.s"
+    ],
+    [
+      "asm/funcs/DispSamnailWindow.s",
+      "asm/funcs/func_800344B4.s"
+    ],
+    [
+      "asm/funcs/DispSchoolBG.s",
+      "asm/funcs/func_8002EBDC.s"
+    ],
+    [
+      "asm/funcs/DispSleepMenuTex.s",
+      "asm/funcs/func_8003D52C.s"
+    ],
+    [
+      "asm/funcs/DispStuff.s",
+      "asm/funcs/func_80083E9C.s"
+    ],
+    [
+      "asm/funcs/DispUpdateStatusMessage.s",
+      "asm/funcs/func_800889D4.s"
+    ],
+    [
+      "asm/funcs/EndADRSound.s",
+      "asm/funcs/func_80020D38.s"
+    ],
+    [
+      "asm/funcs/FadeOut_8003FFA8.s",
+      "asm/funcs/func_8003FFA8.s"
+    ],
+    [
+      "asm/funcs/FadeOut_8003FFC4.s",
+      "asm/funcs/func_8003FFC4.s"
+    ],
+    [
+      "asm/funcs/GetAllocPacketSize.s",
+      "asm/funcs/func_8005B644.s"
+    ],
+    [
+      "asm/funcs/InitFadePanel.s",
+      "asm/funcs/func_80052C10.s"
+    ],
+    [
+      "asm/funcs/InitHiraRmd_80041AC8.s",
+      "asm/funcs/func_80041AC8.s"
+    ],
+    [
+      "asm/funcs/InitHiraRmd_80047FBC.s",
+      "asm/funcs/func_80047FBC.s"
+    ],
+    [
+      "asm/funcs/InitHiraRmd_800480C0.s",
+      "asm/funcs/func_800480C0.s"
+    ],
+    [
+      "asm/funcs/LWCard_SetAccessData.s",
+      "asm/funcs/func_8001BE08.s"
+    ],
+    [
+      "asm/funcs/Pad_Prs.s",
+      "asm/funcs/func_80032314.s"
+    ],
+    [
+      "asm/funcs/PutRobShadow.s",
+      "asm/funcs/func_8002C22C.s"
+    ],
+    [
+      "asm/funcs/PutShadowRmd.s",
+      "asm/funcs/func_800401CC.s"
+    ],
+    [
+      "asm/funcs/ReturnVSMode.s",
+      "asm/funcs/func_8008AF58.s"
+    ],
+    [
+      "asm/funcs/SetBloodSpot.s",
+      "asm/funcs/func_80085544.s"
+    ],
+    [
+      "asm/funcs/SetCurrentCursor.s",
+      "asm/funcs/func_8003C714.s"
+    ],
+    [
+      "asm/funcs/SetPacketData.s",
+      "asm/funcs/func_8008C1E8.s"
+    ],
+    [
+      "asm/funcs/Vu0SetLightColMatrix_800801E8.s",
+      "asm/funcs/func_800801E8.s"
+    ],
+    [
+      "asm/funcs/Vu0SetLightColMatrix_80080208.s",
+      "asm/funcs/func_80080208.s"
+    ],
+    [
+      "asm/funcs/Vu0SetLightColMatrix_80080640.s",
+      "asm/funcs/func_80080640.s"
+    ],
+    [
+      "asm/funcs/Vu0SetLightColMatrix_80080684.s",
+      "asm/funcs/func_80080684.s"
+    ],
+    [
+      "asm/funcs/_SelectSection.s",
+      "asm/funcs/func_80042874.s"
+    ],
+    [
+      "asm/funcs/action_CheckHitZangeki.s",
+      "asm/funcs/func_800863DC.s"
+    ],
+    [
+      "asm/funcs/ang_hosei.s",
+      "asm/funcs/func_800836C8.s"
+    ],
+    [
+      "asm/funcs/ang_hosei_8003F62C.s",
+      "asm/funcs/func_8003F62C.s"
+    ],
+    [
+      "asm/funcs/ang_hosei_80056FE8.s",
+      "asm/funcs/func_80056FE8.s"
+    ],
+    [
+      "asm/funcs/ang_near_dif.s",
+      "asm/funcs/func_8003F6D8.s"
+    ],
+    [
+      "asm/funcs/calc_fc_frame.s",
+      "asm/funcs/func_80044378.s"
+    ],
+    [
+      "asm/funcs/calc_fc_frame_800203B4.s",
+      "asm/funcs/func_800203B4.s"
+    ],
+    [
+      "asm/funcs/calc_fc_frame_8007EC5C.s",
+      "asm/funcs/func_8007EC5C.s"
+    ],
+    [
+      "asm/funcs/calc_loc_mat_fw.s",
+      "asm/funcs/func_8002AB08.s"
+    ],
+    [
+      "asm/funcs/calc_loc_mat_fw_8004A940.s",
+      "asm/funcs/func_8004A940.s"
+    ],
+    [
+      "asm/funcs/calc_loc_mat_fw_80055B60.s",
+      "asm/funcs/func_80055B60.s"
+    ],
+    [
+      "asm/funcs/calc_teasi_loc_fw.s",
+      "asm/funcs/func_80027AD8.s"
+    ],
+    [
+      "asm/funcs/camera_SetMatrix_8001DA8C.s",
+      "asm/funcs/func_8001DA8C.s"
+    ],
+    [
+      "asm/funcs/camera_SetMatrix_8001DBE4.s",
+      "asm/funcs/func_8001DBE4.s"
+    ],
+    [
+      "asm/funcs/camera_SetMatrix_8003E164.s",
+      "asm/funcs/func_8003E164.s"
+    ],
+    [
+      "asm/funcs/camera_check_inside_screen_rob_dpos.s",
+      "asm/funcs/func_80053614.s"
+    ],
+    [
+      "asm/funcs/camera_get_rot_normal_rad.s",
+      "asm/funcs/func_800784E4.s"
+    ],
+    [
+      "asm/funcs/camera_set_target_zoom.s",
+      "asm/funcs/func_8001CE60.s"
+    ],
+    [
+      "asm/funcs/camera_set_zoom.s",
+      "asm/funcs/func_800238C4.s"
+    ],
+    [
+      "asm/funcs/change_shadow_tex_reg.s",
+      "asm/funcs/func_8003D2F4.s"
+    ],
+    [
+      "asm/funcs/coli_CheckBukiPreHit_80088088.s",
+      "asm/funcs/func_80088088.s"
+    ],
+    [
+      "asm/funcs/coli_CheckBukiPreHit_800880B8.s",
+      "asm/funcs/func_800880B8.s"
+    ],
+    [
+      "asm/funcs/coli_HitPauseKatana.s",
+      "asm/funcs/func_800893D8.s"
+    ],
+    [
+      "asm/funcs/coli_HitPauseKatana_2.s",
+      "asm/funcs/func_80089A48.s"
+    ],
+    [
+      "asm/funcs/coli_check_circle_hit_line.s",
+      "asm/funcs/func_8002FDB0.s"
+    ],
+    [
+      "asm/funcs/coli_hit_body_weapon.s",
+      "asm/funcs/func_80030580.s"
+    ],
+    [
+      "asm/funcs/conv_matrix_rotation.s",
+      "asm/funcs/func_800833C8.s"
+    ],
+    [
+      "asm/funcs/cpu_check_move_dir_pattern_enemy_attack.s",
+      "asm/funcs/func_8001BC70.s"
+    ],
+    [
+      "asm/funcs/cpu_check_run_attack.s",
+      "asm/funcs/func_80018300.s"
+    ],
+    [
+      "asm/funcs/cpu_check_tubazeri.s",
+      "asm/funcs/func_8002FC80.s"
+    ],
+    [
+      "asm/funcs/cpu_check_tubazeri_2.s",
+      "asm/funcs/func_800307D0.s"
+    ],
+    [
+      "asm/funcs/cpu_get_move_pattern_table_number.s",
+      "asm/funcs/func_8001EA84.s"
+    ],
+    [
+      "asm/funcs/cpu_reset_dir.s",
+      "asm/funcs/func_8006D324.s"
+    ],
+    [
+      "asm/funcs/cpu_set_move_command_and_dir_for_no_action.s",
+      "asm/funcs/func_800338CC.s"
+    ],
+    [
+      "asm/funcs/cpu_set_move_command_and_dir_for_no_action_2.s",
+      "asm/funcs/main.s"
+    ],
+    [
+      "asm/funcs/cpu_side_move_dir.s",
+      "asm/funcs/func_80027640.s"
+    ],
+    [
+      "asm/funcs/cpu_side_move_dir_2.s",
+      "asm/funcs/func_8003C040.s"
+    ],
+    [
+      "asm/funcs/cpu_side_move_dir_3.s",
+      "asm/funcs/func_8008BF04.s"
+    ],
+    [
+      "asm/funcs/cpu_side_move_dir_4.s",
+      "asm/funcs/func_80080DB0.s"
+    ],
+    [
+      "asm/funcs/damage_DebugDisp.s",
+      "asm/funcs/func_8003800C.s"
+    ],
+    [
+      "asm/funcs/decBs0.s",
+      "asm/funcs/func_80041EB0.s"
+    ],
+    [
+      "asm/funcs/efc_buki_ZanzouClose.s",
+      "asm/funcs/func_8006EA28.s"
+    ],
+    [
+      "asm/funcs/efc_buki_draw_zanzou.s",
+      "asm/funcs/func_800482C8.s"
+    ],
+    [
+      "asm/funcs/efc_rob_Close.s",
+      "asm/funcs/func_8006919C.s"
+    ],
+    [
+      "asm/funcs/efc_rob_Init.s",
+      "asm/funcs/func_80040304.s"
+    ],
+    [
+      "asm/funcs/efc_rob_set_type_flash.s",
+      "asm/funcs/func_80044800.s"
+    ],
+    [
+      "asm/funcs/efc_rob_set_type_particle.s",
+      "asm/funcs/func_80045B68.s"
+    ],
+    [
+      "asm/funcs/exec_game.s",
+      "asm/funcs/func_800896A0.s"
+    ],
+    [
+      "asm/funcs/game_2d_CheckLifeGaugeNoDisp.s",
+      "asm/funcs/func_80052A20.s"
+    ],
+    [
+      "asm/funcs/get_point_value.s",
+      "asm/funcs/func_8005B50C.s"
+    ],
+    [
+      "asm/funcs/gnd_close_8001DB9C.s",
+      "asm/funcs/func_8001DB9C.s"
+    ],
+    [
+      "asm/funcs/gnd_close_8004939C.s",
+      "asm/funcs/func_8004939C.s"
+    ],
+    [
+      "asm/funcs/gnd_disp_loop_ctrl.s",
+      "asm/funcs/func_800174F4.s"
+    ],
+    [
+      "asm/funcs/gnd_get_fog.s",
+      "asm/funcs/func_80060E04.s"
+    ],
+    [
+      "asm/funcs/gnd_init_8001B294.s",
+      "asm/funcs/func_8001B294.s"
+    ],
+    [
+      "asm/funcs/gnd_init_80041688.s",
+      "asm/funcs/func_80041688.s"
+    ],
+    [
+      "asm/funcs/gnd_land_hit_char_die_main.s",
+      "asm/funcs/func_800422BC.s"
+    ],
+    [
+      "asm/funcs/gnd_land_hit_char_tsuba.s",
+      "asm/funcs/func_8005D554.s"
+    ],
+    [
+      "asm/funcs/gnd_load_tex.s",
+      "asm/funcs/func_80041398.s"
+    ],
+    [
+      "asm/funcs/gnd_open.s",
+      "asm/funcs/func_8003E22C.s"
+    ],
+    [
+      "asm/funcs/hirahira_w_ctrl.s",
+      "asm/funcs/func_80041188.s"
+    ],
+    [
+      "asm/funcs/hirahira_w_ctrl_2.s",
+      "asm/funcs/func_80042C80.s"
+    ],
+    [
+      "asm/funcs/hirahira_w_frie.s",
+      "asm/funcs/func_8004428C.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_getMyWeaponId.s",
+      "asm/funcs/func_80027334.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_get_katinuki_max_num_80016868.s",
+      "asm/funcs/func_80016868.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_get_katinuki_max_num_800168D0.s",
+      "asm/funcs/func_800168D0.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_get_katinuki_max_num_80046914.s",
+      "asm/funcs/func_80046914.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_get_katinuki_max_num_80046934.s",
+      "asm/funcs/func_80046934.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_get_katinuki_max_num_80046A60.s",
+      "asm/funcs/func_80046A60.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_setData_8003D2C4.s",
+      "asm/funcs/func_8003D2C4.s"
+    ],
+    [
+      "asm/funcs/katinuki_game_setData_800548DC.s",
+      "asm/funcs/func_800548DC.s"
+    ],
+    [
+      "asm/funcs/kgm_clamp_patch_init.s",
+      "asm/funcs/func_800167EC.s"
+    ],
+    [
+      "asm/funcs/leaf_muki_awase_800421A4.s",
+      "asm/funcs/func_800421A4.s"
+    ],
+    [
+      "asm/funcs/leaf_muki_awase_800444E0.s",
+      "asm/funcs/func_800444E0.s"
+    ],
+    [
+      "asm/funcs/mario_getMarioVoiceData_8001B3C0.s",
+      "asm/funcs/func_8001B3C0.s"
+    ],
+    [
+      "asm/funcs/mario_getMarioVoiceData_8001C820.s",
+      "asm/funcs/func_8001C820.s"
+    ],
+    [
+      "asm/funcs/mario_getMarioVoiceData_80048AD0.s",
+      "asm/funcs/func_80048AD0.s"
+    ],
+    [
+      "asm/funcs/mario_getMarioVoiceData_8005BE84.s",
+      "asm/funcs/func_8005BE84.s"
+    ],
+    [
+      "asm/funcs/mario_test_Exec.s",
+      "asm/funcs/func_8001DCB0.s"
+    ],
+    [
+      "asm/funcs/marionation_Exec.s",
+      "asm/funcs/func_80081030.s"
+    ],
+    [
+      "asm/funcs/marionation_camera_Exec.s",
+      "asm/funcs/func_80018094.s"
+    ],
+    [
+      "asm/funcs/marionation_camera_GetMaxFrame.s",
+      "asm/funcs/func_80037260.s"
+    ],
+    [
+      "asm/funcs/marionation_camera_Init_80036064.s",
+      "asm/funcs/func_80036064.s"
+    ],
+    [
+      "asm/funcs/marionation_camera_Init_80037468.s",
+      "asm/funcs/func_80037468.s"
+    ],
+    [
+      "asm/funcs/md_game_check_change_main_mode_katinuki.s",
+      "asm/funcs/func_8008A928.s"
+    ],
+    [
+      "asm/funcs/md_game_check_change_sub_mode.s",
+      "asm/funcs/func_8003BCB4.s"
+    ],
+    [
+      "asm/funcs/md_game_check_mode.s",
+      "asm/funcs/func_8003EDC0.s"
+    ],
+    [
+      "asm/funcs/md_game_end.s",
+      "asm/funcs/func_80086818.s"
+    ],
+    [
+      "asm/funcs/md_game_rob_data_init.s",
+      "asm/funcs/func_8001F2E4.s"
+    ],
+    [
+      "asm/funcs/md_gview_init.s",
+      "asm/funcs/func_800836B8.s"
+    ],
+    [
+      "asm/funcs/md_mtest_init.s",
+      "asm/funcs/func_80045824.s"
+    ],
+    [
+      "asm/funcs/md_option_reset_8004001C.s",
+      "asm/funcs/func_8004001C.s"
+    ],
+    [
+      "asm/funcs/md_option_reset_80040068.s",
+      "asm/funcs/func_80040068.s"
+    ],
+    [
+      "asm/funcs/md_option_reset_800400B0.s",
+      "asm/funcs/func_800400B0.s"
+    ],
+    [
+      "asm/funcs/mk_g2l.s",
+      "asm/funcs/func_800278C0.s"
+    ],
+    [
+      "asm/funcs/mk_leaf_newpos.s",
+      "asm/funcs/func_800335D8.s"
+    ],
+    [
+      "asm/funcs/mot_data_set.s",
+      "asm/funcs/func_80042684.s"
+    ],
+    [
+      "asm/funcs/motion_Close_8001D904.s",
+      "asm/funcs/func_8001D904.s"
+    ],
+    [
+      "asm/funcs/motion_Close_8001D998.s",
+      "asm/funcs/func_8001D998.s"
+    ],
+    [
+      "asm/funcs/motion_LoadPreCalcData_80037F08.s",
+      "asm/funcs/func_80037F08.s"
+    ],
+    [
+      "asm/funcs/motion_LoadPreCalcData_8005B98C.s",
+      "asm/funcs/func_8005B98C.s"
+    ],
+    [
+      "asm/funcs/motion_LoadPreCalcData_8007DC68.s",
+      "asm/funcs/func_8007DC68.s"
+    ],
+    [
+      "asm/funcs/motion_Open.s",
+      "asm/funcs/func_80083794.s"
+    ],
+    [
+      "asm/funcs/motion_SavePreCalcData_8003A3F0.s",
+      "asm/funcs/func_8003A3F0.s"
+    ],
+    [
+      "asm/funcs/motion_SavePreCalcData_8003A574.s",
+      "asm/funcs/func_8003A574.s"
+    ],
+    [
+      "asm/funcs/motion_SavePreCalcData_80080014.s",
+      "asm/funcs/func_80080014.s"
+    ],
+    [
+      "asm/funcs/motion_SavePreCalcData_8008003C.s",
+      "asm/funcs/func_8008003C.s"
+    ],
+    [
+      "asm/funcs/motion_SavePreCalcData_80080064.s",
+      "asm/funcs/func_80080064.s"
+    ],
+    [
+      "asm/funcs/motion_SetExMotion.s",
+      "asm/funcs/func_80065800.s"
+    ],
+    [
+      "asm/funcs/motion_SetMotion.s",
+      "asm/funcs/func_80038C70.s"
+    ],
+    [
+      "asm/funcs/motion_ShiftControl.s",
+      "asm/funcs/func_80070F78.s"
+    ],
+    [
+      "asm/funcs/motion_make_table.s",
+      "asm/funcs/func_80082C3C.s"
+    ],
+    [
+      "asm/funcs/motion_shift_check_m_hit_stop.s",
+      "asm/funcs/func_8003877C.s"
+    ],
+    [
+      "asm/funcs/mottest_disp.s",
+      "asm/funcs/func_80033BC0.s"
+    ],
+    [
+      "asm/funcs/motutil_GetWalkDir.s",
+      "asm/funcs/func_8007F35C.s"
+    ],
+    [
+      "asm/funcs/myRobGeneiDraw2.s",
+      "asm/funcs/func_800321E8.s"
+    ],
+    [
+      "asm/funcs/myRobGeneiMove.s",
+      "asm/funcs/func_8001B478.s"
+    ],
+    [
+      "asm/funcs/myRobGeneiOpen.s",
+      "asm/funcs/func_800545F4.s"
+    ],
+    [
+      "asm/funcs/pad_ClearAppliBuffer.s",
+      "asm/funcs/func_8003A5A0.s"
+    ],
+    [
+      "asm/funcs/pad_FuncAnalog.s",
+      "asm/funcs/func_800383A4.s"
+    ],
+    [
+      "asm/funcs/pad_Init.s",
+      "asm/funcs/func_80078D68.s"
+    ],
+    [
+      "asm/funcs/pad_button_info_clear.s",
+      "asm/funcs/func_80022568.s"
+    ],
+    [
+      "asm/funcs/pad_main_control.s",
+      "asm/funcs/func_8002E6B0.s"
+    ],
+    [
+      "asm/funcs/pad_press_control.s",
+      "asm/funcs/func_800375EC.s"
+    ],
+    [
+      "asm/funcs/replay_camera_attack.s",
+      "asm/funcs/func_80070188.s"
+    ],
+    [
+      "asm/funcs/replay_camera_get_attack_number.s",
+      "asm/funcs/func_8003E2D8.s"
+    ],
+    [
+      "asm/funcs/replay_camera_rob_back_loose2.s",
+      "asm/funcs/func_80035618.s"
+    ],
+    [
+      "asm/funcs/replay_camera_rob_back_loose3.s",
+      "asm/funcs/func_80042A88.s"
+    ],
+    [
+      "asm/funcs/rob_ScaleMarioInit.s",
+      "asm/funcs/func_80042864.s"
+    ],
+    [
+      "asm/funcs/rob_calc_2d_position.s",
+      "asm/funcs/func_80040B44.s"
+    ],
+    [
+      "asm/funcs/rob_life_ctrl.s",
+      "asm/funcs/func_800408F8.s"
+    ],
+    [
+      "asm/funcs/rob_life_ctrl_2.s",
+      "asm/funcs/func_80042504.s"
+    ],
+    [
+      "asm/funcs/saEft00Add.s",
+      "asm/funcs/func_8008241C.s"
+    ],
+    [
+      "asm/funcs/saEft01Init.s",
+      "asm/funcs/func_80081BB0.s"
+    ],
+    [
+      "asm/funcs/saEft03Start2.s",
+      "asm/funcs/func_80089D60.s"
+    ],
+    [
+      "asm/funcs/saFidLoad.s",
+      "asm/funcs/func_8005C4C0.s"
+    ],
+    [
+      "asm/funcs/saMotionSet.s",
+      "asm/funcs/func_8006E480.s"
+    ],
+    [
+      "asm/funcs/saRobDraw.s",
+      "asm/funcs/func_80035E38.s"
+    ],
+    [
+      "asm/funcs/saSeInit.s",
+      "asm/funcs/func_8002E838.s"
+    ],
+    [
+      "asm/funcs/saSeInit_2.s",
+      "asm/funcs/func_800393C8.s"
+    ],
+    [
+      "asm/funcs/saSeMain_80045510.s",
+      "asm/funcs/func_80045510.s"
+    ],
+    [
+      "asm/funcs/saSeMain_80045600.s",
+      "asm/funcs/func_80045600.s"
+    ],
+    [
+      "asm/funcs/saTan0GaugeDraw.s",
+      "asm/funcs/func_80088D0C.s"
+    ],
+    [
+      "asm/funcs/saTan0Init.s",
+      "asm/funcs/func_80045294.s"
+    ],
+    [
+      "asm/funcs/saTan0KiWareMoveA.s",
+      "asm/funcs/func_8002D780.s"
+    ],
+    [
+      "asm/funcs/saTan0KiWareMoveB.s",
+      "asm/funcs/func_8002DAD0.s"
+    ],
+    [
+      "asm/funcs/saTan0Main.s",
+      "asm/funcs/func_80084CC0.s"
+    ],
+    [
+      "asm/funcs/saTan1GaugeInit.s",
+      "asm/funcs/func_80060C60.s"
+    ],
+    [
+      "asm/funcs/saTan1GaugeMain.s",
+      "asm/funcs/func_800753D8.s"
+    ],
+    [
+      "asm/funcs/saTan1MainJump.s",
+      "asm/funcs/func_8008B488.s"
+    ],
+    [
+      "asm/funcs/saTan1SyuryoDraw.s",
+      "asm/funcs/func_800890D4.s"
+    ],
+    [
+      "asm/funcs/saTan2GaugeInit_80077B20.s",
+      "asm/funcs/func_80077B20.s"
+    ],
+    [
+      "asm/funcs/saTan2GaugeInit_80077D00.s",
+      "asm/funcs/func_80077D00.s"
+    ],
+    [
+      "asm/funcs/saTan2InfoInit_80044F80.s",
+      "asm/funcs/func_80044F80.s"
+    ],
+    [
+      "asm/funcs/saTan2InfoInit_8006C1FC.s",
+      "asm/funcs/func_8006C1FC.s"
+    ],
+    [
+      "asm/funcs/saTan2InfoInit_80077A60.s",
+      "asm/funcs/func_80077A60.s"
+    ],
+    [
+      "asm/funcs/saTan2InfoInit_80077AC0.s",
+      "asm/funcs/func_80077AC0.s"
+    ],
+    [
+      "asm/funcs/saTan2KabutoWareMove.s",
+      "asm/funcs/func_800283D0.s"
+    ],
+    [
+      "asm/funcs/saTan2LineDraw.s",
+      "asm/funcs/func_8004BCC0.s"
+    ],
+    [
+      "asm/funcs/saTan2Main.s",
+      "asm/funcs/func_800880E8.s"
+    ],
+    [
+      "asm/funcs/saTan3GaugeMain_8006A564.s",
+      "asm/funcs/func_8006A564.s"
+    ],
+    [
+      "asm/funcs/saTan3GaugeMain_80073200.s",
+      "asm/funcs/func_80073200.s"
+    ],
+    [
+      "asm/funcs/saTan3MainJump.s",
+      "asm/funcs/func_800288C8.s"
+    ],
+    [
+      "asm/funcs/saTan4FireDisp.s",
+      "asm/funcs/func_80041BF4.s"
+    ],
+    [
+      "asm/funcs/saTan4FireDisp_80048864.s",
+      "asm/funcs/func_80048864.s"
+    ],
+    [
+      "asm/funcs/saTan4GaugeInit.s",
+      "asm/funcs/func_80084974.s"
+    ],
+    [
+      "asm/funcs/saTan4GaugeMain.s",
+      "asm/funcs/func_8006C21C.s"
+    ],
+    [
+      "asm/funcs/saTan5GetTakeCutAnimType.s",
+      "asm/funcs/func_80048B8C.s"
+    ],
+    [
+      "asm/funcs/saTan5TakeAnim2.s",
+      "asm/funcs/func_8002D518.s"
+    ],
+    [
+      "asm/funcs/saTan5TakeAnim2_2.s",
+      "asm/funcs/func_80083C34.s"
+    ],
+    [
+      "asm/funcs/saTan5TakeGetCnt.s",
+      "asm/funcs/func_800404D8.s"
+    ],
+    [
+      "asm/funcs/saTan5TakeGetPos_80045230.s",
+      "asm/funcs/func_80045230.s"
+    ],
+    [
+      "asm/funcs/saTan5TakeGetPos_80045694.s",
+      "asm/funcs/func_80045694.s"
+    ],
+    [
+      "asm/funcs/saTanMainDispGnd_800444BC.s",
+      "asm/funcs/func_800444BC.s"
+    ],
+    [
+      "asm/funcs/saTanMainDispGnd_80046020.s",
+      "asm/funcs/func_80046020.s"
+    ],
+    [
+      "asm/funcs/saTanMainDispGnd_80077A04.s",
+      "asm/funcs/func_80077A04.s"
+    ],
+    [
+      "asm/funcs/se_data_set.s",
+      "asm/funcs/func_8001D790.s"
+    ],
+    [
+      "asm/funcs/single_game_CheckStatusUpDataTotalOver.s",
+      "asm/funcs/func_8001FBE8.s"
+    ],
+    [
+      "asm/funcs/single_game_SetAbilityData.s",
+      "asm/funcs/func_800204C0.s"
+    ],
+    [
+      "asm/funcs/single_game_SetStageId.s",
+      "asm/funcs/func_8003E2A0.s"
+    ],
+    [
+      "asm/funcs/single_game_SetStatusUpData.s",
+      "asm/funcs/func_80055138.s"
+    ],
+    [
+      "asm/funcs/single_game_SetWazaData.s",
+      "asm/funcs/func_80035280.s"
+    ],
+    [
+      "asm/funcs/single_game_VoiceContorol.s",
+      "asm/funcs/func_80019568.s"
+    ],
+    [
+      "asm/funcs/single_game_getEnemyCharId.s",
+      "asm/funcs/func_8007FD5C.s"
+    ],
+    [
+      "asm/funcs/single_game_setModeRequest.s",
+      "asm/funcs/func_800187F4.s"
+    ],
+    [
+      "asm/funcs/special_camera_Exec.s",
+      "asm/funcs/func_80036940.s"
+    ],
+    [
+      "asm/funcs/special_camera_Init.s",
+      "asm/funcs/func_8002CD58.s"
+    ],
+    [
+      "asm/funcs/special_camera_check_pos_outside_ground_80035DC8.s",
+      "asm/funcs/func_80035DC8.s"
+    ],
+    [
+      "asm/funcs/special_camera_check_pos_outside_ground_80036E34.s",
+      "asm/funcs/func_80036E34.s"
+    ],
+    [
+      "asm/funcs/special_camera_set_win_cam.s",
+      "asm/funcs/func_80036140.s"
+    ],
+    [
+      "asm/funcs/suDispMentalBar.s",
+      "asm/funcs/func_8003B5A4.s"
+    ],
+    [
+      "asm/funcs/suDraw2DLib_8007A5C4.s",
+      "asm/funcs/func_8007A5C4.s"
+    ],
+    [
+      "asm/funcs/suDraw2DLib_8007A62C.s",
+      "asm/funcs/func_8007A62C.s"
+    ],
+    [
+      "asm/funcs/title_mv_exec2.s",
+      "asm/funcs/func_800858D0.s"
+    ],
+    [
+      "asm/funcs/tslCDFileRead.s",
+      "asm/funcs/func_80087FE8.s"
+    ],
+    [
+      "asm/funcs/tslDmaDrawListDelAll.s",
+      "asm/funcs/func_8007EFFC.s"
+    ],
+    [
+      "asm/funcs/tslFileClose.s",
+      "asm/funcs/func_80045A28.s"
+    ],
+    [
+      "asm/funcs/tslGlobalMemFree_8005C2A8.s",
+      "asm/funcs/func_8005C2A8.s"
+    ],
+    [
+      "asm/funcs/tslGlobalMemFree_800861BC.s",
+      "asm/funcs/func_800861BC.s"
+    ],
+    [
+      "asm/funcs/tslLineG5Init.s",
+      "asm/funcs/func_8003DA8C.s"
+    ],
+    [
+      "asm/funcs/tslPolyF4Init.s",
+      "asm/funcs/func_800804BC.s"
+    ],
+    [
+      "asm/funcs/tslPrintScreen.s",
+      "asm/funcs/func_8003F824.s"
+    ],
+    [
+      "asm/funcs/tslSmdSendVu1Code_8007A87C.s",
+      "asm/funcs/func_8007A87C.s"
+    ],
+    [
+      "asm/funcs/tslSmdSendVu1Code_8007A898.s",
+      "asm/funcs/func_8007A898.s"
+    ],
+    [
+      "asm/funcs/tslTm2LoadImage.s",
+      "asm/funcs/func_800812FC.s"
+    ],
+    [
+      "asm/funcs/tslTm2LoadImage_2.s",
+      "asm/funcs/func_80082000.s"
+    ],
+    [
+      "asm/funcs/tslTmlGetHeda.s",
+      "asm/funcs/func_80080660.s"
+    ],
+    [
+      "asm/funcs/videoDecCreate.s",
+      "asm/funcs/func_800432A0.s"
+    ]
+  ],
+  "dir_renames": [
+    [
+      "memory/wip/AddTbpOfst_80047EE8",
+      "memory/wip/func_80047EE8"
+    ],
+    [
+      "memory/wip/DispPracticeMenuTex_A",
+      "memory/wip/func_8001B748"
+    ],
+    [
+      "memory/wip/SetPacketData",
+      "memory/wip/func_8008C1E8"
+    ],
+    [
+      "memory/wip/ang_hosei_80056FE8",
+      "memory/wip/func_80056FE8"
+    ],
+    [
+      "memory/wip/camera_set_zoom",
+      "memory/wip/func_800238C4"
+    ],
+    [
+      "memory/wip/cpu_check_tubazeri_2",
+      "memory/wip/func_800307D0"
+    ],
+    [
+      "memory/wip/cpu_side_move_dir_4",
+      "memory/wip/func_80080DB0"
+    ],
+    [
+      "memory/wip/damage_DebugDisp",
+      "memory/wip/func_8003800C"
+    ],
+    [
+      "memory/wip/decBs0",
+      "memory/wip/func_80041EB0"
+    ],
+    [
+      "memory/wip/exec_game",
+      "memory/wip/func_800896A0"
+    ],
+    [
+      "memory/wip/gnd_land_hit_char_tsuba",
+      "memory/wip/func_8005D554"
+    ],
+    [
+      "memory/wip/hirahira_w_ctrl",
+      "memory/wip/func_80041188"
+    ],
+    [
+      "memory/wip/hirahira_w_ctrl_2",
+      "memory/wip/func_80042C80"
+    ],
+    [
+      "memory/wip/kgm_clamp_patch_init",
+      "memory/wip/func_800167EC"
+    ],
+    [
+      "memory/wip/mario_getMarioVoiceData_8005BE84",
+      "memory/wip/func_8005BE84"
+    ],
+    [
+      "memory/wip/marionation_Exec",
+      "memory/wip/func_80081030"
+    ],
+    [
+      "memory/wip/mk_leaf_newpos",
+      "memory/wip/func_800335D8"
+    ],
+    [
+      "memory/wip/motion_SetMotion",
+      "memory/wip/func_80038C70"
+    ],
+    [
+      "memory/wip/myRobGeneiMove",
+      "memory/wip/func_8001B478"
+    ],
+    [
+      "memory/wip/rob_life_ctrl_2",
+      "memory/wip/func_80042504"
+    ],
+    [
+      "memory/wip/saTan2KabutoWareMove",
+      "memory/wip/func_800283D0"
+    ],
+    [
+      "memory/wip/saTan4FireDisp",
+      "memory/wip/func_80041BF4"
+    ],
+    [
+      "memory/wip/special_camera_Exec",
+      "memory/wip/func_80036940"
+    ],
+    [
+      "memory/wip/title_mv_exec2",
+      "memory/wip/func_800858D0"
+    ],
+    [
+      "memory/wip/tslGlobalMemFree_800861BC",
+      "memory/wip/func_800861BC"
+    ],
+    [
+      "memory/grind/AddTbpOfst_80047EE8",
+      "memory/grind/func_80047EE8"
+    ],
+    [
+      "memory/grind/InitFadePanel",
+      "memory/grind/func_80052C10"
+    ],
+    [
+      "memory/grind/InitHiraRmd_80047FBC",
+      "memory/grind/func_80047FBC"
+    ],
+    [
+      "memory/grind/PutRobShadow",
+      "memory/grind/func_8002C22C"
+    ],
+    [
+      "memory/grind/ang_hosei_80056FE8",
+      "memory/grind/func_80056FE8"
+    ],
+    [
+      "memory/grind/calc_loc_mat_fw",
+      "memory/grind/func_8002AB08"
+    ],
+    [
+      "memory/grind/calc_loc_mat_fw_8004A940",
+      "memory/grind/func_8004A940"
+    ],
+    [
+      "memory/grind/calc_loc_mat_fw_80055B60",
+      "memory/grind/func_80055B60"
+    ],
+    [
+      "memory/grind/calc_teasi_loc_fw",
+      "memory/grind/func_80027AD8"
+    ],
+    [
+      "memory/grind/camera_set_target_zoom",
+      "memory/grind/func_8001CE60"
+    ],
+    [
+      "memory/grind/cpu_check_run_attack",
+      "memory/grind/func_80018300"
+    ],
+    [
+      "memory/grind/cpu_check_tubazeri_2",
+      "memory/grind/func_800307D0"
+    ],
+    [
+      "memory/grind/cpu_side_move_dir_4",
+      "memory/grind/func_80080DB0"
+    ],
+    [
+      "memory/grind/damage_DebugDisp",
+      "memory/grind/func_8003800C"
+    ],
+    [
+      "memory/grind/efc_rob_set_type_particle",
+      "memory/grind/func_80045B68"
+    ],
+    [
+      "memory/grind/gnd_init_80041688",
+      "memory/grind/func_80041688"
+    ],
+    [
+      "memory/grind/marionation_Exec",
+      "memory/grind/func_80081030"
+    ],
+    [
+      "memory/grind/md_game_check_mode",
+      "memory/grind/func_8003EDC0"
+    ],
+    [
+      "memory/grind/motion_LoadPreCalcData_80037F08",
+      "memory/grind/func_80037F08"
+    ],
+    [
+      "memory/grind/motion_SetExMotion",
+      "memory/grind/func_80065800"
+    ],
+    [
+      "memory/grind/motion_SetMotion",
+      "memory/grind/func_80038C70"
+    ],
+    [
+      "memory/grind/motion_ShiftControl",
+      "memory/grind/func_80070F78"
+    ],
+    [
+      "memory/grind/myRobGeneiOpen",
+      "memory/grind/func_800545F4"
+    ],
+    [
+      "memory/grind/replay_camera_attack",
+      "memory/grind/func_80070188"
+    ],
+    [
+      "memory/grind/replay_camera_get_attack_number",
+      "memory/grind/func_8003E2D8"
+    ],
+    [
+      "memory/grind/saEft01Init",
+      "memory/grind/func_80081BB0"
+    ],
+    [
+      "memory/grind/saTan0KiWareMoveB",
+      "memory/grind/func_8002DAD0"
+    ],
+    [
+      "memory/grind/saTan1GaugeMain",
+      "memory/grind/func_800753D8"
+    ],
+    [
+      "memory/grind/saTan2LineDraw",
+      "memory/grind/func_8004BCC0"
+    ],
+    [
+      "memory/grind/saTan3GaugeMain_8006A564",
+      "memory/grind/func_8006A564"
+    ],
+    [
+      "memory/grind/saTan3GaugeMain_80073200",
+      "memory/grind/func_80073200"
+    ],
+    [
+      "memory/grind/saTan4GaugeMain",
+      "memory/grind/func_8006C21C"
+    ],
+    [
+      "memory/grind/single_game_SetStatusUpData",
+      "memory/grind/func_80055138"
+    ],
+    [
+      "memory/grind/single_game_getEnemyCharId",
+      "memory/grind/func_8007FD5C"
+    ],
+    [
+      "memory/grind/single_game_setModeRequest",
+      "memory/grind/func_800187F4"
+    ],
+    [
+      "memory/grind/tslGlobalMemFree_8005C2A8",
+      "memory/grind/func_8005C2A8"
+    ],
+    [
+      "memory/grind/tslTm2LoadImage",
+      "memory/grind/func_800812FC"
+    ]
+  ],
+  "symbol_deletions": [
+    {
+      "file": "named_syms.txt",
+      "line": 30,
+      "text": "psyq_memset_8003043C = 0x8003043C;  /* MISNAMED: not a memset; loops 12x writing -1 (s16) to D_80106A7A and 0xFF (u8) to D_80106A82 at stride 0x64 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 31,
+      "text": "psyq_memset_80038148 = 0x80038148;  /* MISNAMED: clears g_disp_state_buf (D_800F33D8, 512 bytes) \u2014 specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 32,
+      "text": "psyq_memset_8005509C = 0x8005509C;  /* MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) \u2014 not generic memset */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 185,
+      "text": "coli_CheckRobEnemy = 0x800167EC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 186,
+      "text": "efc_rob_ougi_control = 0x80017D84;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 187,
+      "text": "getScreenPosition = 0x80017FA0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 188,
+      "text": "suLeagueSystemInit = 0x8001BCF0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 189,
+      "text": "md_game_restart_init = 0x8001E6E4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 190,
+      "text": "hirahira_w_frie2 = 0x8001EEB4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 191,
+      "text": "title_mv_exec = 0x80021280;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 192,
+      "text": "tslDrTex1Init = 0x8002738C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 193,
+      "text": "_CardCheckPulled = 0x80027438;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 194,
+      "text": "motion_GameCalcMotion = 0x8002872C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 195,
+      "text": "myRobGeneiDraw = 0x80030900;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 196,
+      "text": "motion_shift_check_e_kawashi = 0x80030B10;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 197,
+      "text": "ki_attack_ougi = 0x80033498;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 198,
+      "text": "motutil_CheckKamaeReq = 0x80033D38;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 199,
+      "text": "robtest_disp = 0x800340A0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 200,
+      "text": "_GetBattleSwichData = 0x80034200;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 201,
+      "text": "tslDrTex1Init2 = 0x8003553C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 202,
+      "text": "mottest_rob_init = 0x80036FD4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 203,
+      "text": "_CardCheckPulled2 = 0x80037A20;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 204,
+      "text": "camera_SetMatrix = 0x80037F40;  /* MISNAMED: not a camera fn; see file_disc_checksum_copy_80037F40 in pass-5 replacement section */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 205,
+      "text": "damage_CalcHitDamage = 0x8003880C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 206,
+      "text": "md_menu_logo_exec = 0x8003AFFC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 207,
+      "text": "kgm_init_hitrect = 0x8003B10C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 208,
+      "text": "ReturnVTMenu = 0x8003D330;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 209,
+      "text": "_McAccessSection = 0x8003D39C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 210,
+      "text": "coli_calc_motion = 0x8003D888;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 211,
+      "text": "md_game_restart_init2 = 0x8003F6D8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 212,
+      "text": "audioDecBeginPut = 0x80040CB8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 213,
+      "text": "tslDrTex1Init3 = 0x80043BD0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 214,
+      "text": "gnd_set_fog = 0x80043C7C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 215,
+      "text": "tslDrTex1Init4 = 0x80043D34;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 216,
+      "text": "gnd_set_fog2 = 0x80043DE0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 217,
+      "text": "replay_camera_rob_back_win_near = 0x80046BF4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 218,
+      "text": "tanren_get_bamboo_anim_info = 0x800475A4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 219,
+      "text": "robtest_disp2 = 0x800470B0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 220,
+      "text": "motion_CheckSituation = 0x800477E8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 221,
+      "text": "saEft03Start = 0x80047A90;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 222,
+      "text": "_DispCharacterName = 0x80080258;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 223,
+      "text": "myRobGeneiDraw3 = 0x80080390;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 224,
+      "text": "damage_CalcHitDamage2 = 0x80082A14;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 225,
+      "text": "disp_mario_jimaku = 0x800832A0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 226,
+      "text": "md_game_check_change_main_mode_default = 0x80083A48;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 227,
+      "text": "action_check_defense = 0x80086130;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 228,
+      "text": "disp_mario_jimaku2 = 0x80086BFC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 229,
+      "text": "motutil_GetAngTableNum = 0x800871D4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 230,
+      "text": "action_check_defense2 = 0x80089EB0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 231,
+      "text": "coli_calc_motion2 = 0x8008ACD0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 234,
+      "text": "func_80019568 = 0x80019568;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 235,
+      "text": "func_800321E8 = 0x800321E8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 236,
+      "text": "func_800335D8 = 0x800335D8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 237,
+      "text": "func_80035280 = 0x80035280;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 238,
+      "text": "func_8003B5A4 = 0x8003B5A4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 239,
+      "text": "func_8003DA8C = 0x8003DA8C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 240,
+      "text": "func_8003F824 = 0x8003F824;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 241,
+      "text": "func_80041BF4 = 0x80041BF4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 242,
+      "text": "func_80041EB0 = 0x80041EB0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 243,
+      "text": "func_800422BC = 0x800422BC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 244,
+      "text": "func_80042874 = 0x80042874;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 245,
+      "text": "func_80042A88 = 0x80042A88;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 246,
+      "text": "func_800432A0 = 0x800432A0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 247,
+      "text": "func_800858D0 = 0x800858D0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 248,
+      "text": "func_800890D4 = 0x800890D4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 249,
+      "text": "func_80089D60 = 0x80089D60;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 250,
+      "text": "saTan0Init = 0x80045294;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 283,
+      "text": "ptr_load_kseg0_8007A87C       = 0x8007A87C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 284,
+      "text": "is_ot_terminator_8007A898     = 0x8007A898;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 285,
+      "text": "channel_helper_8_80046914     = 0x80046914;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 286,
+      "text": "channel_helper_9_80046934     = 0x80046934;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 287,
+      "text": "channel_helper_A_80046A60     = 0x80046A60;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 312,
+      "text": "char_motion_nibble_scan_80021280              = 0x80021280;  /* supersedes title_mv_exec (motion subsystem, not title screen) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 313,
+      "text": "tslTm2_command_with_retry_80080258            = 0x80080258;  /* supersedes _DispCharacterName (clearly a TIM/CD-load retry wrapper, not name display) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 314,
+      "text": "tslTm2_command_with_retry_no_arg3_80080390    = 0x80080390;  /* supersedes myRobGeneiDraw3 (2-arg twin of above; not draw) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 315,
+      "text": "char_store_pos_pair_80086130                  = 0x80086130;  /* supersedes action_check_defense (stores paired values into 16-byte slot records; not defense check) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 316,
+      "text": "spawn_hit_particle_80030900                   = 0x80030900;  /* parallel to myRobGeneiDraw (compatible; the \"afterimage\" might be one kind of hit particle this spawns) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 370,
+      "text": "memcard_event_init_800375EC                       = 0x800375EC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 374,
+      "text": "cdrom_stream_callback_80036064                    = 0x80036064;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 378,
+      "text": "bios_exec_wrapper_with_setup_80037468             = 0x80037468;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 382,
+      "text": "scene_teardown_80035DC8                           = 0x80035DC8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 386,
+      "text": "ndata_disc_read_scheduler_80036E34                = 0x80036E34;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 497,
+      "text": "gpu_EnableDisplay_80016868      = 0x80016868;  /* gpu_SetMode(1) wrapper */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 499,
+      "text": "gpu_DisableDisplay_800168D0     = 0x800168D0;  /* gpu_SetDispMask(1) wrapper */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 667,
+      "text": "suLeagueSystemInit_8001BCF0                      = 0x8001BCF0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 668,
+      "text": "md_game_restart_init_8001E6E4                    = 0x8001E6E4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 669,
+      "text": "hirahira_w_frie2_8001EEB4                        = 0x8001EEB4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 670,
+      "text": "title_mv_exec_80021280                           = 0x80021280;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 671,
+      "text": "tslDrTex1Init_8002738C                           = 0x8002738C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 672,
+      "text": "_CardCheckPulled_80027438                        = 0x80027438;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 673,
+      "text": "motion_GameCalcMotion_8002872C                   = 0x8002872C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 674,
+      "text": "myRobGeneiDraw_80030900                          = 0x80030900;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 675,
+      "text": "motion_shift_check_e_kawashi_80030B10            = 0x80030B10;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 676,
+      "text": "ki_attack_ougi_80033498                          = 0x80033498;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 677,
+      "text": "motutil_CheckKamaeReq_80033D38                   = 0x80033D38;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 678,
+      "text": "robtest_disp_800340A0                            = 0x800340A0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 679,
+      "text": "_GetBattleSwichData_80034200                     = 0x80034200;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 680,
+      "text": "tslDrTex1Init2_8003553C                          = 0x8003553C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 681,
+      "text": "mottest_rob_init_80036FD4                        = 0x80036FD4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 682,
+      "text": "_CardCheckPulled2_80037A20                       = 0x80037A20;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 683,
+      "text": "camera_SetMatrix_80037F40                        = 0x80037F40;  /* MISNAMED: not a camera fn; checksums g_file_disc_size (0x24 bytes) and copies Quad records */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 684,
+      "text": "damage_CalcHitDamage_8003880C                    = 0x8003880C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 685,
+      "text": "md_menu_logo_exec_8003AFFC                       = 0x8003AFFC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 686,
+      "text": "kgm_init_hitrect_8003B10C                        = 0x8003B10C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 687,
+      "text": "ReturnVTMenu_8003D330                            = 0x8003D330;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 688,
+      "text": "_McAccessSection_8003D39C                        = 0x8003D39C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 689,
+      "text": "coli_calc_motion_8003D888                        = 0x8003D888;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 690,
+      "text": "audioDecBeginPut_80040CB8                        = 0x80040CB8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 691,
+      "text": "tslDrTex1Init3_80043BD0                          = 0x80043BD0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 692,
+      "text": "gnd_set_fog_80043C7C                             = 0x80043C7C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 693,
+      "text": "tslDrTex1Init4_80043D34                          = 0x80043D34;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 694,
+      "text": "gnd_set_fog2_80043DE0                            = 0x80043DE0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 695,
+      "text": "suLeagueSystemInit2_80044CCC                     = 0x80044CCC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 696,
+      "text": "_DispCharacterName_80080258                      = 0x80080258;  /* legacy name; the canonical alias is tslTm2_command_with_retry_80080258 (already in named_syms; _DispCharacterName is a known misnomer documented in MISNOMERS.md) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 697,
+      "text": "myRobGeneiDraw3_80080390                         = 0x80080390;  /* legacy; canonical is tslTm2_command_with_retry_no_arg3_80080390 (misnomer) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 698,
+      "text": "action_check_defense_80086130                    = 0x80086130;  /* legacy; canonical is char_store_pos_pair_80086130 (misnomer) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 699,
+      "text": "disp_mario_jimaku2_80086BFC                      = 0x80086BFC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 700,
+      "text": "motutil_GetAngTableNum_800871D4                  = 0x800871D4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 701,
+      "text": "action_check_defense2_80089EB0                   = 0x80089EB0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 702,
+      "text": "coli_calc_motion2_8008ACD0                       = 0x8008ACD0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 1312,
+      "text": "coli_HitPauseKatana_3                                   = 0x8008A904;  /* coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 1564,
+      "text": "saTan2LinePrimInit                                      = 0x8002EA24;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 1767,
+      "text": "mode_handler_18_UnlockAnimDispatch                      = 0x8003C040;  /* dispatches unlock-anim based on g_practice_unlock_anim_id (6/7=P1, 8/9=P2) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 1784,
+      "text": "mode_handler_00_GameInit                                = 0x8001DCB0;  /* main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 1785,
+      "text": "mode_handler_07_SubModeTransition                       = 0x8003BCB4;  /* increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3135,
+      "text": "view_pos_init_from_obj_8001B3C0 = 0x8001B3C0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3136,
+      "text": "sound_dispatch_56_to_58_8001C820 = 0x8001C820;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3137,
+      "text": "display_framebuffer_dispatch_8001DBE4 = 0x8001DBE4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3138,
+      "text": "bios_FormatDevice_B_wrapper_80037F08 = 0x80037F08;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3139,
+      "text": "file_disc_checksum_copy_80037F40 = 0x80037F40;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3140,
+      "text": "set_event_flag_8003A3F0 = 0x8003A3F0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3141,
+      "text": "bios_FileRead_B_wrapper_8003A574 = 0x8003A574;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3142,
+      "text": "ground_load_with_cache_8003E164 = 0x8003E164;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3143,
+      "text": "bgm_sound_table_init_80048AD0 = 0x80048AD0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3144,
+      "text": "saFidLoad_pair_8005B98C = 0x8005B98C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3145,
+      "text": "mode_change_to_katinuki_8005BE84 = 0x8005BE84;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3146,
+      "text": "gpu_vcount_init_8007DC68 = 0x8007DC68;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3147,
+      "text": "bios_DeliverEvent_class3_evt20_80080014 = 0x80080014;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3148,
+      "text": "bios_DeliverEvent_class3_evt40_8008003C = 0x8008003C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3149,
+      "text": "bios_DeliverEvent_class3_evt40_80080064 = 0x80080064;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3150,
+      "text": "cpu_side_move_dir_4_wrapper_800801E8 = 0x800801E8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3151,
+      "text": "marionation_Exec_wrapper_80080208 = 0x80080208;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3152,
+      "text": "cdrom_dma_idle_check_80080640 = 0x80080640;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3153,
+      "text": "saEft01Init_wrapper_80080684 = 0x80080684;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3163,
+      "text": "apply_motion_matrix_800203B4 = 0x800203B4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3164,
+      "text": "gpu_dma_schedule_8002AB08 = 0x8002AB08;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3165,
+      "text": "gpu_LoadImage_wrapper_8003D2C4 = 0x8003D2C4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3166,
+      "text": "align_4byte_round_8003FFA8 = 0x8003FFA8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3167,
+      "text": "set_array_slot3_8003FFC4 = 0x8003FFC4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3168,
+      "text": "player_equipment_flag_init_80041688 = 0x80041688;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3169,
+      "text": "build_offset_table_80044378 = 0x80044378;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3170,
+      "text": "disp_dispatch_via_D_800A378C_800444BC = 0x800444BC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3171,
+      "text": "dispatch_via_4D_offset_80044F80 = 0x80044F80;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3172,
+      "text": "display_setup_80046020 = 0x80046020;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3173,
+      "text": "sentinel_array_init_8004939C = 0x8004939C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3174,
+      "text": "stream_decode_via_8004A76C_8004A940 = 0x8004A940;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3175,
+      "text": "ui_stop_selection_800548DC = 0x800548DC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3176,
+      "text": "char_disp_offset_80056FE8 = 0x80056FE8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3177,
+      "text": "func_8006C168_wrapper_8006C1FC = 0x8006C1FC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3178,
+      "text": "motion_state_reset_80077A04 = 0x80077A04;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3179,
+      "text": "func_8006E068_wrapper_80077A60 = 0x80077A60;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3180,
+      "text": "func_80077724_wrapper_80077AC0 = 0x80077AC0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3181,
+      "text": "gauge_flag_set_80077B20 = 0x80077B20;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3182,
+      "text": "gauge_data_ptr_get_80077D00 = 0x80077D00;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3187,
+      "text": "md_mode_set_800400B0 = 0x800400B0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3188,
+      "text": "efc_buki_draw_setup_80047FBC = 0x80047FBC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3189,
+      "text": "efc_buki_draw_setup_6arg_800480C0 = 0x800480C0;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3210,
+      "text": "record_array_sentinel_init_8003043C = 0x8003043C;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3220,
+      "text": "pad_clear_buffer_80038148 = 0x80038148;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3322,
+      "text": "suDispMentalBar_helper_8003B2C8 = 0x8003B2C8;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3323,
+      "text": "suDispMentalBar_helper_8003B3A4 = 0x8003B3A4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3324,
+      "text": "suDispMentalBar_helper_8003B4DC = 0x8003B4DC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3325,
+      "text": "tslLineG5Init_helper_8003DBE4 = 0x8003DBE4;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3326,
+      "text": "tslPrintScreen_helper_8003FA24 = 0x8003FA24;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3327,
+      "text": "tslPrintScreen_helper_8003FECC = 0x8003FECC;"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3438,
+      "text": "clear_disp_state_buf_80038148                = 0x80038148;  /* sole caller pad_FuncAnalog; 512-byte zero of g_disp_state_buf (also dual-role memcard payload \u2014 pass 4) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3439,
+      "text": "practice_menu_clear_field414_8005509C        = 0x8005509C;  /* clears 16 bytes at offset 0x414 of g_practice_menu_table[a0]; callers DispSamnailWindow + single_game_SetStatusUpData */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3521,
+      "text": "tsllineg5init_helper_8003DDF8                      = 0x8003DDF8;  /* first-pass subsystem tag (tsllineg5init); <-tslLineG5Init_helper_8003DBE4 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3527,
+      "text": "tslprintscreen_helper_8003FE40                     = 0x8003FE40;  /* first-pass subsystem tag (tslprintscreen); <-tslPrintScreen_helper_8003FA24 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3559,
+      "text": "tslglobalmemfree_helper_8005C074                   = 0x8005C074;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3560,
+      "text": "tslglobalmemfree_helper_8005C5A8                   = 0x8005C5A8;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3636,
+      "text": "tslglobalmemfree_helper_800859F0                   = 0x800859F0;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3640,
+      "text": "tslglobalmemfree_helper_80088584                   = 0x80088584;  /* first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3752,
+      "text": "tsltm2loadimage_helper_80080828                    = 0x80080828;  /* first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3862,
+      "text": "get_D_800F6650_80042864                                = 0x80042864;  /* getter: returns D_800F6650 (no calls/branches) */"
+    },
+    {
+      "file": "named_syms.txt",
+      "line": 3867,
+      "text": "gte_set_proj_distance_8007EFFC                         = 0x8007EFFC;  /* loads GTE control reg 26 (H = projection plane distance) */"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1504,
+      "text": "ReturnVTMenu = 0x8003D330;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1505,
+      "text": "_CardCheckPulled2 = 0x80037A20;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1511,
+      "text": "camera_SetMatrix = 0x80037F40;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1519,
+      "text": "func_80019568 = 0x80019568;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1520,
+      "text": "func_800321E8 = 0x800321E8;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1521,
+      "text": "func_800335D8 = 0x800335D8;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1522,
+      "text": "func_80035280 = 0x80035280;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1523,
+      "text": "func_8003B5A4 = 0x8003B5A4;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1524,
+      "text": "func_8003DA8C = 0x8003DA8C;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1525,
+      "text": "func_8003F824 = 0x8003F824;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1526,
+      "text": "func_80041BF4 = 0x80041BF4;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1527,
+      "text": "func_80041EB0 = 0x80041EB0;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1528,
+      "text": "func_800422BC = 0x800422BC;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1529,
+      "text": "func_80042874 = 0x80042874;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1530,
+      "text": "func_80042A88 = 0x80042A88;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1531,
+      "text": "func_800432A0 = 0x800432A0;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1532,
+      "text": "func_800858D0 = 0x800858D0;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1533,
+      "text": "func_800890D4 = 0x800890D4;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1534,
+      "text": "func_80089D60 = 0x80089D60;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1674,
+      "text": "getScreenPosition = 0x80017FA0;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1697,
+      "text": "kgm_init_hitrect = 0x8003B10C;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1701,
+      "text": "md_menu_logo_exec = 0x8003AFFC;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1703,
+      "text": "motion_GameCalcMotion = 0x8002872C;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1704,
+      "text": "mottest_rob_init = 0x80036FD4;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1705,
+      "text": "motutil_CheckKamaeReq = 0x80033D38;"
+    },
+    {
+      "file": "undefined_syms_auto.txt",
+      "line": 1709,
+      "text": "replay_camera_rob_back_win_near = 0x80046BF4;"
+    }
+  ],
+  "json_edits": {
+    "tools/prologue_config.json": [
+      "AddTbpOfst_80047EE8",
+      "marionation_Exec",
+      "hirahira_w_ctrl"
+    ],
+    "engine/queue.json": [
+      "saEft00Add -> func_8008241C",
+      "mario_getMarioVoiceData_80048AD0 -> func_80048AD0",
+      "suDispMentalBar -> func_8003B5A4",
+      "cpu_set_move_command_and_dir_for_no_action_2 -> main",
+      "PutShadowRmd -> func_800401CC",
+      "coli_check_circle_hit_line -> func_8002FDB0",
+      "pad_ClearAppliBuffer -> func_8003A5A0",
+      "_SelectSection -> func_80042874",
+      "motion_Open -> func_80083794",
+      "gnd_disp_loop_ctrl -> func_800174F4",
+      "Pad_Prs -> func_80032314",
+      "title_mv_exec2 -> func_800858D0",
+      "hirahira_w_ctrl -> func_80041188",
+      "cpu_check_tubazeri -> func_8002FC80",
+      "saTan4GaugeInit -> func_80084974",
+      "DispPracticeMenuTex_A -> func_8001B748",
+      "rob_calc_2d_position -> func_80040B44",
+      "calc_fc_frame_800203B4 -> func_800203B4",
+      "saTan5TakeAnim2 -> func_8002D518",
+      "SetCurrentCursor -> func_8003C714",
+      "SetPacketData -> func_8008C1E8",
+      "cpu_side_move_dir -> func_80027640",
+      "saSeInit -> func_8002E838",
+      "InitHiraRmd_800480C0 -> func_800480C0",
+      "tslGlobalMemFree_800861BC -> func_800861BC",
+      "coli_hit_body_weapon -> func_80030580",
+      "DispSleepMenuTex -> func_8003D52C",
+      "efc_rob_set_type_flash -> func_80044800",
+      "cpu_side_move_dir_3 -> func_8008BF04",
+      "saTan4FireDisp -> func_80041BF4",
+      "single_game_VoiceContorol -> func_80019568",
+      "saTan2KabutoWareMove -> func_800283D0",
+      "coli_HitPauseKatana_2 -> func_80089A48",
+      "camera_set_zoom -> func_800238C4",
+      "single_game_SetWazaData -> func_80035280",
+      "single_game_SetAbilityData -> func_800204C0",
+      "ang_near_dif -> func_8003F6D8",
+      "saTan0KiWareMoveA -> func_8002D780",
+      "marionation_Exec -> func_80081030",
+      "pad_main_control -> func_8002E6B0",
+      "saSeInit_2 -> func_800393C8",
+      "hirahira_w_ctrl_2 -> func_80042C80",
+      "tslPrintScreen -> func_8003F824",
+      "mk_leaf_newpos -> func_800335D8",
+      "gnd_land_hit_char_tsuba -> func_8005D554",
+      "saTan4FireDisp_80048864 -> func_80048864",
+      "DispSchoolBG -> func_8002EBDC",
+      "CalcHiraNormal -> func_8003EB84",
+      "marionation_camera_Exec -> func_80018094",
+      "exec_game -> func_800896A0",
+      "tslGlobalMemFree_8005C2A8 -> func_8005C2A8",
+      "saTan1GaugeMain -> func_800753D8",
+      "saTan3GaugeMain_8006A564 -> func_8006A564",
+      "saTan3GaugeMain_80073200 -> func_80073200",
+      "saTan0KiWareMoveB -> func_8002DAD0",
+      "DispUpdateStatusMessage -> func_800889D4",
+      "DispPracticeMenuTex_B -> func_80020E74",
+      "DispPracticeMenuTex_C -> func_800290B8",
+      "md_game_check_mode -> func_8003EDC0",
+      "replay_camera_get_attack_number -> func_8003E2D8",
+      "md_game_end -> func_80086818",
+      "PutRobShadow -> func_8002C22C",
+      "AllocBukiRmd -> func_80085A40",
+      "tslTm2LoadImage -> func_800812FC",
+      "action_CheckHitZangeki -> func_800863DC",
+      "special_camera_Exec -> func_80036940",
+      "single_game_CheckStatusUpDataTotalOver -> func_8001FBE8",
+      "DispHira -> func_8003E6D8",
+      "efc_rob_set_type_particle -> func_80045B68",
+      "cpu_check_run_attack -> func_80018300",
+      "md_game_rob_data_init -> func_8001F2E4",
+      "special_camera_Init -> func_8002CD58",
+      "saTan1MainJump -> func_8008B488",
+      "saTan3MainJump -> func_800288C8",
+      "mario_test_Exec -> func_8001DCB0",
+      "special_camera_set_win_cam -> func_80036140",
+      "single_game_SetStatusUpData -> func_80055138",
+      "calc_teasi_loc_fw -> func_80027AD8",
+      "camera_set_target_zoom -> func_8001CE60",
+      "saTan4GaugeMain -> func_8006C21C",
+      "single_game_setModeRequest -> func_800187F4",
+      "replay_camera_attack -> func_80070188",
+      "motion_ShiftControl -> func_80070F78",
+      "calc_loc_mat_fw_80055B60 -> func_80055B60",
+      "calc_loc_mat_fw -> func_8002AB08",
+      "motion_SetExMotion -> func_80065800",
+      "motion_SetMotion -> func_80038C70",
+      "InitHiraRmd_80047FBC -> func_80047FBC",
+      "cpu_side_move_dir_4 -> func_80080DB0",
+      "gnd_init_80041688 -> func_80041688",
+      "cpu_check_tubazeri_2 -> func_800307D0",
+      "damage_DebugDisp -> func_8003800C",
+      "ang_hosei_80056FE8 -> func_80056FE8",
+      "AddTbpOfst_80047EE8 -> func_80047EE8",
+      "saEft01Init -> func_80081BB0"
+    ]
+  },
+  "out_of_scope": [
+    "bb2.ld: names a FILE after 'replay_camera_rob_back_loose2' \u2014 the symbol is renamed but the file/object path is left alone (a source-file rename is a separate, owner-level decision)"
+  ]
+}
