@@ -15,9 +15,20 @@ actual bytes.
 from __future__ import annotations
 
 import re
+import subprocess
 
 from . import buildconfig as cfg
-from . import pipeline as P
+
+
+def _objdump(*args: str) -> str:
+    """objdump stdout, invoked as an argv list (no shell).
+
+    Object paths reach objdump verbatim, so an absolute path containing spaces
+    (this repo's own directory does) can't be word-split into a silently empty
+    symbol table — which surfaced as a misleading "<func> not found in <obj>".
+    """
+    return subprocess.run([cfg.OBJDUMP, *args],
+                          capture_output=True, text=True).stdout
 
 # objdump -t function line:  OFFSET <flags> F <section> SIZE NAME
 _SYMOFF_RE = re.compile(r"^([0-9a-fA-F]+)\s+\S.*\sF\s+\S+\s+([0-9a-fA-F]+)\s+(\S+)\s*$")
@@ -29,7 +40,7 @@ _BRANCH = re.compile(r"^(b|bal|beq|bne|blez|bgtz|bltz|bgez|beqz|bnez|j|jal|jr|ja
 def _o_func_table(o_path: str) -> dict[str, tuple[int, int]]:
     """name -> (offset, size) for functions in a .o; size recomputed from the
     next function's offset when the symbol size is 0 (maspsx omits .size)."""
-    out = P.sh(f"{cfg.OBJDUMP} -t {o_path}", capture_output=True, text=True).stdout
+    out = _objdump("-t", o_path)
     funcs = {}
     for line in out.splitlines():
         m = _SYMOFF_RE.match(line)
@@ -46,7 +57,7 @@ def _o_func_table(o_path: str) -> dict[str, tuple[int, int]]:
 
 
 def _section_size(o_path: str, section: str) -> int:
-    out = P.sh(f"{cfg.OBJDUMP} -h {o_path}", capture_output=True, text=True).stdout
+    out = _objdump("-h", o_path)
     for line in out.splitlines():
         parts = line.split()
         if len(parts) >= 3 and parts[1] == section:
@@ -62,9 +73,8 @@ def normalized_insns(o_path: str, func: str, mask: bool = True) -> list[str]:
     if func not in tbl:
         raise KeyError(f"{func} not found in {o_path}")
     off, size = tbl[func]
-    cmd = (f"{cfg.OBJDUMP} -dr --start-address={off} "
-           f"--stop-address={off + size} {o_path}")
-    out = P.sh(cmd, capture_output=True, text=True).stdout
+    out = _objdump("-dr", f"--start-address={off}",
+                   f"--stop-address={off + size}", o_path)
     insns = []
     for line in out.splitlines():
         m = _INSN_RE.match(line)
@@ -108,8 +118,8 @@ def func_byte_signature(o_path: str, func: str) -> str:
     if func not in tbl:
         raise KeyError(f"{func} not found in {o_path}")
     off, size = tbl[func]
-    out = P.sh(f"{cfg.OBJDUMP} -d --start-address={off} "
-               f"--stop-address={off + size} {o_path}", capture_output=True, text=True).stdout
+    out = _objdump("-d", f"--start-address={off}",
+                   f"--stop-address={off + size}", o_path)
     sig = []
     for line in out.splitlines():
         parts = line.split("\t")

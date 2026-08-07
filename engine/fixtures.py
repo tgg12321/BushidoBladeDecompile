@@ -21,7 +21,6 @@ import subprocess
 from pathlib import Path
 
 from . import buildconfig as cfg
-from . import pipeline as P
 from . import oracle as O
 
 # objdump -t line for a function:  VRAM <flags> F <section> SIZE NAME
@@ -35,7 +34,8 @@ def _func_table() -> dict[str, tuple[int, int]]:
     gap to the next function address when the symbol size is 0 (maspsx output
     does not always emit .size directives) so we never trust a bogus 0.
     """
-    out = P.sh(f"{cfg.OBJDUMP} -t build/bb2.elf", capture_output=True, text=True).stdout
+    out = subprocess.run([cfg.OBJDUMP, "-t", "build/bb2.elf"],
+                         capture_output=True, text=True).stdout
     funcs = {}
     for line in out.splitlines():
         m = _FUNC_RE.match(line)
@@ -59,7 +59,8 @@ def _file_index() -> dict[str, str]:
     """function name -> source file stem, derived from each object's symbols."""
     idx = {}
     for o in sorted(Path("build/src").glob("*.o")):
-        out = P.sh(f"{cfg.NM} {o}", capture_output=True, text=True).stdout
+        out = subprocess.run([cfg.NM, str(o)],
+                             capture_output=True, text=True).stdout
         for line in out.splitlines():
             parts = line.split()
             if len(parts) == 3 and parts[1] in ("t", "T"):

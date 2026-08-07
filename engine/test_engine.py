@@ -25,6 +25,7 @@ from pathlib import Path
 from engine import canonical, score, inlineasm, cheats, metrics, volatile_cheats
 from engine import queue as Q
 from engine import pipeline as P
+from engine import buildconfig as cfg
 
 _passed = _failed = _skipped = 0
 
@@ -1257,6 +1258,48 @@ def test_canonical_build() -> None:
     eq("scan_all: zero NO-TARGET", len(no_target), 0)
 
 
+def test_score_object_paths() -> None:
+    """score reads objects through an argv list, so an ABSOLUTE path whose
+    directory contains spaces (this repo's own path does) must give the same
+    answer as the relative path the engine normally passes. Under the old
+    shell-interpolated command the path word-split into an empty symbol table
+    and surfaced as a bogus '<func> not found in <obj>'."""
+    import shutil
+    objs = sorted(Path("build/src").glob("*.o"))
+    if not objs:
+        skip("score: absolute object path with spaces", "no build/src/*.o — run build first")
+        return
+    if shutil.which(cfg.OBJDUMP) is None:
+        skip("score: absolute object path with spaces", f"{cfg.OBJDUMP} not on PATH")
+        return
+    # objdump IS available, so any failure past here is a real regression —
+    # let it surface rather than degrading to a skip.
+    rel = None
+    for o in objs:
+        tbl = score._o_func_table(str(o))
+        if tbl:
+            rel = (o, tbl)
+            break
+    if rel is None:
+        skip("score: absolute object path with spaces", "no object with functions")
+        return
+    o, tbl_rel = rel
+    absolute = str(Path(o).resolve())
+    check("score: test path really contains a space (else this proves nothing)",
+          " " in absolute)
+    tbl_abs = score._o_func_table(absolute)
+    eq("score: _o_func_table(absolute with spaces) == relative", tbl_abs, tbl_rel)
+    func = sorted(tbl_rel)[0]
+    eq("score: normalized_insns(absolute) == normalized_insns(relative)",
+       score.normalized_insns(absolute, func), score.normalized_insns(str(o), func))
+    eq("score: func_byte_signature(absolute) == relative",
+       score.func_byte_signature(absolute, func), score.func_byte_signature(str(o), func))
+    check("score: signature is non-empty (an empty read would fake equality)",
+          len(score.func_byte_signature(absolute, func)) > 0)
+    eq("score: score_func(absolute, relative) == 0 (same object, either spelling)",
+       score.score_func(absolute, str(o), func)["score"], 0)
+
+
 def test_prologue_cheat() -> None:
     """prologue_fix is a TRACKED cheat (audit 2026-06-15): the cheat-invisible
     sandbox STRIPS it (empty / per-function-filtered configs) so the honest
@@ -1819,6 +1862,7 @@ def main() -> int:
     test_metrics()
     test_queue_reopen()
     test_canonical_build()
+    test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
     return 1 if _failed else 0
 

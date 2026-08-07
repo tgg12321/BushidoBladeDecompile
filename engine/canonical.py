@@ -73,7 +73,7 @@ def _func_table() -> dict:
     function start so its range is still bounded."""
     global _table_cache
     if _table_cache is None:
-        out = subprocess.run(["bash", "-c", f"{cfg.OBJDUMP} -t build/bb2.elf"],
+        out = subprocess.run([cfg.OBJDUMP, "-t", "build/bb2.elf"],
                              capture_output=True, text=True).stdout
         syms = {}
         for line in out.splitlines():
@@ -136,9 +136,9 @@ def definitive_insns(func: str):
     if func not in tbl:
         return None
     vram, size = tbl[func]
-    cmd = (f"{cfg.OBJDUMP} -d --start-address=0x{vram:08x} "
-           f"--stop-address=0x{vram + size:08x} build/bb2.elf")
-    out = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True).stdout
+    cmd = [cfg.OBJDUMP, "-d", f"--start-address=0x{vram:08x}",
+           f"--stop-address=0x{vram + size:08x}", "build/bb2.elf"]
+    out = subprocess.run(cmd, capture_output=True, text=True).stdout
     return _detect(out.splitlines())
 
 
@@ -272,7 +272,7 @@ def scan_all() -> list[dict]:
     objdump header) so internal `.L` labels can't fragment a function."""
     import bisect
     tbl = _func_table()
-    out = subprocess.run(["bash", "-c", f"{cfg.OBJDUMP} -d build/bb2.elf"],
+    out = subprocess.run([cfg.OBJDUMP, "-d", "build/bb2.elf"],
                          capture_output=True, text=True).stdout
     insns = []  # (addr, line) for every disassembled instruction
     for line in out.splitlines():
