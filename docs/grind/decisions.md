@@ -3778,3 +3778,37 @@ retire via ordinary COMPLETED-C). No later session converts these without a
 fresh owner ruling.
 
 [skip-park-src-guard]
+
+## 2026-08-07 — saEft00Add completion REVERTED (7b46c476); conflicting layer-2 verdicts adjudicated
+
+Two independent layer-2 reviews of saEft00Add returned OPPOSITE verdicts in
+crossed-message lanes: the grind1 lane's reviewer FAILED it (the two local
+pointer aliases at src/system.c:1100-1128 are LOAD-BEARING — honest score
+1 -> 5 without them — and un-annotated, so pointer-alias-fake-exception's
+prerequisites are unmet: no /* FAKE */ annotation, no exhaustion ledger; the
+same function reads the same global directly at line 1139). The lander
+lane's reviewer PASSED it — but its brief predated the FAIL report and never
+put the alias question to it. The INFORMED verdict governs: completion
+REVERTED, saEft00Add back at queue top as INCOMPLETE. The artifact half of
+the finding STANDS (distance-1 is a LO16 scorer artifact — the function's
+real residual is the alias question, not the addend). Honest path: attempt
+alias-free spellings of the 4-insn la-form gap; only on documented
+exhaustion may the sanctioned carve-out (annotate + ledger + dual review)
+apply.
+
+Also recorded: (a) the queue.json write race the lander reported was the
+ORCHESTRATOR's own `git checkout` acting on crossed information — one lane's
+queue-done was clobbered by a revert aimed at what was believed to be an
+improper write; closed by the lander's re-run. Lesson: with multiple lanes
+live, queue.json mutations get serialized through the orchestrator like
+build/. (b) queue regen re-adds any completed function whose recorded
+distance is nonzero-by-artifact — saEft00Add resurrected once before
+(2026-08-04) for this reason; the score.py LO16-addend masking fix (engine
+backlog) is the durable cure. (c) a7884c50 (func_80044CCC) carries a
+verdict conflict: its own lane's informed layer-2 PASSed it; the lander
+lane's reviewer FAILed it on a brief-framing artifact while conceding the
+committed rationale (angle matches math_Sin/Cos's s32 signature + the
+already-s32 radius) is the defensible story. A third informed review with
+BOTH framings adjudicates it.
+
+[skip-park-src-guard]
