@@ -3976,3 +3976,44 @@ blob unpinned; LIBCOMB-vs-SPU naming contradiction in named_syms.txt.
    reward hacks — the SOTN standard governs every item in flight (the
    D_800F1AEC application, the maintenance sweep, and any naming wave all
    land only behind full verify-oracle proof + fresh layer-2 review).
+
+## 2026-08-07 — D_800F1AEC grant OVERTURNED by layer-2 on application; ratification vacated on the merits
+
+The owner-ratified rule-spelling application (42a22084) was attempted in a
+grinder-quiet window: extern volatile + allowlist entry, full build proven
+BYTE-IDENTICAL to the oracle. The mandatory fresh layer-2 cheat-reviewer
+then FAILED the grant on findings that vacate its factual basis:
+
+1. **No verifiable IRQ writer.** "HandleSio" is a name for a code region,
+   not a function: asm/funcs/func_8008C464.s has a single glabel; the
+   cited stores (0x8008C83C/0x8008CE58/0x8008CF2C) sit in
+   EnterCriticalSection-wrapped case arms of a dispatcher called
+   SYNCHRONOUSLY from mainline code (code6cac_c_ab.c, code6cac_c_mid.c);
+   no SysSetCallback/InterruptCallback registration exists in-tree.
+2. **Prong 2 fails for THIS symbol.** D_800F1AEC's only read sites are
+   single-read guards. The IRQ-mutated loop bound is loop_flag[2] =
+   D_800F1AF4 (already granted) — attributing that shape to the base word
+   via pointer adjacency is the forbidden generalization pattern.
+3. **Byte-identity proves no codegen need** — volatile on AEC coerces
+   nothing and records nothing the codegen requires; under the rule's own
+   text that makes the qualifier decoration, not semantics.
+
+DISPOSITION (review-discipline: FAIL is never bypassed):
+- The declaration change + allowlist entry were REVERTED before commit.
+  D_800F1AEC stays plain extern s32; the 2026-08-06 delegated grant and
+  the 2026-08-07 ratification are VACATED. Re-grant requires an actual
+  qualifying read-site shape for D_800F1AEC itself plus a real, distinct,
+  registration-cited IRQ writer.
+- The uncontested parts landed separately (05d13f9a, reviewer-cleared):
+  the two redundant *(volatile s32 *)&D_800F1AF4 casts dropped; allowlist
+  LF-normalized. Oracle green.
+- SetPacketData (func_8008C1E8) keeps its honest floor without the
+  carve-out; its volatile-pointer spelling remains tracked INCOMPLETE debt.
+
+OPEN ITEM registered (owner-level, not acted on): the five 2026-07-10
+grants (D_800F1AF0/AF4/AF8/B00/B04) cite the same "HandleSio" attribution
+now shown unverifiable. They differ materially — their volatile is
+codegen-load-bearing (de-volatilizing broke byte-matched siblings) and
+their use-site shapes qualify per-symbol — but prong 1's ISR attribution
+deserves a dedicated re-verification pass before any future grant leans
+on it as precedent.
