@@ -249,6 +249,25 @@ Non-negotiables for the phase-2 tool:
 
 ---
 
+## Rulings that override the census: `action-overrides.csv`
+
+`function-names.csv` is **generated**, so a hand-edit to an `action` or
+`proposed_name` cell is silently reverted by the next `build_census.py` run.
+Rulings that differ from what the census derives therefore live in
+[`action-overrides.csv`](action-overrides.csv), which `tools/naming_wave.py`
+applies **on top of** the census at wave time. It is keyed by address, or by
+name for rows whose census address is unusable.
+
+**If you are regenerating the census, read that file first** — it is the only
+record of decisions the generator cannot re-derive, and a regen will not
+reproduce them. Current entries (owner-delegated rulings, 2026-08-07):
+`save_vc_ctrl` EXCLUDED from the wave, and the `gpu_EnableDisplay` /
+`gpu_DisableDisplay` pair re-classed from RESET to RENAME. Each row carries its
+own rationale. If `build_census.py` ever learns a rule directly, drop the
+corresponding row.
+
+---
+
 ## Regenerating the census
 
 ```bash

@@ -734,6 +734,39 @@ SYM_LINE = re.compile(r"^(\s*)([A-Za-z_]\w*)(\s*=\s*)(0x[0-9A-Fa-f]+)(\s*;)(.*)$
 MAP_DEF = re.compile(r"^\s+(0x[0-9a-f]+)\s+([A-Za-z_]\w*)\s*$")
 
 
+_MAP_CACHE: dict[str, str] | None = None
+_MAP_LOADED = False
+
+
+def map_freshness() -> tuple[bool, str]:
+    """Is build/bb2.map present and newer than every build input it describes?
+
+    This matters more than it looks. The map is what decides, for 48 of the
+    wave's addresses, whether a symbol-registry line may be DELETED or must be
+    rewritten in place — those addresses are resolved only by a linker-script
+    assignment, so deleting them breaks the link. A missing or stale map would
+    silently flip all 48 to "delete". The oracle-compiler migration rebuilds the
+    tree, so this check is the difference between using its map and last week's.
+    """
+    mp = ROOT / "build/bb2.map"
+    if not mp.exists():
+        return False, "build/bb2.map is MISSING — build once before running the wave"
+    mt = mp.stat().st_mtime
+    newest, newest_p = 0.0, ""
+    for pat_ in ("src/*.c", "include/*.h", "asm/funcs/*.s", "*.txt", "bb2.ld", "Makefile"):
+        for p in ROOT.glob(pat_):
+            try:
+                t = p.stat().st_mtime
+            except OSError:
+                continue
+            if t > newest:
+                newest, newest_p = t, str(p.relative_to(ROOT)).replace("\\", "/")
+    if newest > mt:
+        return False, (f"build/bb2.map is STALE — {newest_p} is newer than the map, "
+                       f"so its symbol table may not describe the current tree")
+    return True, "build/bb2.map is present and newer than every build input"
+
+
 def load_map_symbols() -> dict[str, str] | None:
     """Object-defined symbols from the last link map, or None if unavailable.
 
@@ -743,6 +776,10 @@ def load_map_symbols() -> dict[str, str] | None:
     would break the link, so the tool must know which target names an object
     actually defines before it drops anything.
     """
+    global _MAP_CACHE, _MAP_LOADED
+    if _MAP_LOADED:
+        return _MAP_CACHE
+    _MAP_LOADED = True
     mp = ROOT / "build/bb2.map"
     if not mp.exists():
         return None
@@ -751,7 +788,8 @@ def load_map_symbols() -> dict[str, str] | None:
         m = MAP_DEF.match(line)
         if m:
             syms.setdefault(m.group(2), m.group(1))
-    return syms or None
+    _MAP_CACHE = syms or None
+    return _MAP_CACHE
 
 
 def plan_symbol_file(wave: Wave, plan: Plan, p: Path, rel: str) -> None:
@@ -771,6 +809,12 @@ def plan_symbol_file(wave: Wave, plan: Plan, p: Path, rel: str) -> None:
     hits = 0
     comment_style = "/* %s */" if rel != "symbol_addrs.txt" else "// %s"
     mapsyms = load_map_symbols()
+    if mapsyms is None:
+        die("build/bb2.map yielded no symbols, so the tool cannot tell which "
+            "targets an object defines. Without it every retired alias line "
+            "would be deleted, breaking the link at each address that is "
+            "resolved ONLY by a linker-script assignment (48 of them in the "
+            "current full set). Build once, then re-run.")
 
     for i, line in enumerate(lines, 1):
         m = SYM_LINE.match(line)
@@ -832,6 +876,8 @@ def report(wave: Wave, plan: Plan, rejects: list[str], errors: dict[str, list[st
           f"({sum(1 for o in wave.ops if o.kind == 'RESET')} RESET, "
           f"{sum(1 for o in wave.ops if o.kind == 'RENAME')} RENAME)")
     print(f"  {len(wave.code_map)} identifiers remapped")
+    ok, why = map_freshness()
+    print(f"  link map: {'OK  ' if ok else 'STALE'} — {why}")
     print("=" * 78)
 
     if rejects:
@@ -893,6 +939,9 @@ def report(wave: Wave, plan: Plan, rejects: list[str], errors: dict[str, list[st
 
     manifest = {
         "mode": "apply" if apply else "dry-run",
+        "head": subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                               capture_output=True, text=True).stdout.strip(),
+        "link_map": {"fresh": map_freshness()[0], "detail": map_freshness()[1]},
         "ops": [
             {"address": o.address, "kind": o.kind, "new_name": o.new_name,
              "old_names": sorted(o.olds), "glabel": o.glabel, "notes": o.notes}
@@ -1044,6 +1093,8 @@ def main() -> int:
     ap.add_argument("--manifest", default=None, help="write the manifest JSON here")
     ap.add_argument("--allow-invalid", action="store_true",
                     help="proceed past unusable census rows instead of listing them loudly")
+    ap.add_argument("--stale-map-ok", action="store_true",
+                    help="proceed even if build/bb2.map looks older than the tree")
     ap.add_argument("--drop-failing", action="store_true",
                     help="exclude preflight-failing addresses instead of blocking the wave")
     ap.add_argument("--keep-reverse-aliases", action="store_true",
@@ -1096,6 +1147,13 @@ def main() -> int:
 
     if errors:
         die(f"{sum(len(v) for v in errors.values())} preflight error(s) — refusing to apply")
+    ok, why = map_freshness()
+    if not ok and not args.stale_map_ok:
+        die(why + ".\n  The map decides, per address, whether a symbol-registry line "
+            "may be deleted or must be rewritten in place; a stale one can silently "
+            "delete the only definition of a symbol. Rebuild, or pass --stale-map-ok "
+            "if you have independently confirmed the map still describes this tree.")
+
     conflicts = dirty_targets(plan)
     if conflicts:
         die("these files already have uncommitted changes AND are in this wave's "

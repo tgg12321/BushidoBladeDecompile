@@ -1,5 +1,10 @@
 {
   "mode": "dry-run",
+  "head": "d99ab6a6",
+  "link_map": {
+    "fresh": true,
+    "detail": "build/bb2.map is present and newer than every build input"
+  },
   "ops": [
     {
       "address": "0x800167ec",
@@ -6185,7 +6190,7 @@
     "tools/kengo_ref.py:L2: ['camera_SetMatrix', 'special_camera_Exec'] in prose/docstring \u2014 NOT rewritten",
     "tools/mar_apply_candidate.py:L2: ['marionation_Exec'] in prose/docstring \u2014 NOT rewritten",
     "tools/memory_check.py:L189: ['calc_fc_frame'] in prose/docstring \u2014 NOT rewritten",
-    "tools/naming_wave.py:L738: ['getScreenPosition'] in prose/docstring \u2014 NOT rewritten",
+    "tools/naming_wave.py:L771: ['getScreenPosition'] in prose/docstring \u2014 NOT rewritten",
     "tools/probe_func_labels.py:L2: ['SetPacketData', 'mk_leaf_newpos'] in prose/docstring \u2014 NOT rewritten",
     "tools/ra_solver/inverse.py:L2: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
     "tools/ra_solver/inverse.py:L304: ['camera_set_zoom'] in prose/docstring \u2014 NOT rewritten",
