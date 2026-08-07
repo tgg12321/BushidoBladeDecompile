@@ -35,12 +35,16 @@ error. So the burden of proof sits on the *name*, not on the doubt.
 
 ---
 
-## Phase 1 status: CENSUS ONLY
+## Campaign status
 
-This pass is **read-only with respect to the build**. No renames, no `src/` edits, no
-build-file edits were made. `function-names.csv` records recommendations; nothing has
-been acted on. The reset tooling is **phase 2** and is deliberately **not built yet** —
-see the cascade warning below for why it must be tooled rather than hand-applied.
+**Phase 1 — census (done).** Read-only with respect to the build: `function-names.csv`
+enumerates every function, attributes each name to a recorded evidence path, tiers it, and
+recommends KEEP / RESET / RENAME. Regenerable; it reads the tree rather than remembering it.
+
+**Phase 2 — the wave (in progress).** `tools/naming_wave.py` applies the RESET/RENAME rows
+across every surface where a name is a key. The single RENAME and 6 RESETs have landed. See
+"Wave progress" and the cascade warning below — the wave must be tooled and oracle-verified
+per batch, never hand-applied.
 
 ---
 
@@ -78,27 +82,30 @@ semantic claim** visible to a reader — because that is the claim that can misl
 
 ## Confidence tiers
 
+Counts below are **current** — the census is regenerable and reflects the tree as it stands,
+including whatever the phase-2 wave has already applied. See "Wave progress" below.
+
 | Tier | Count | Meaning | Default action |
 |---|---:|---|---|
-| **VERIFIED** | 9 | The name is **fact**: an in-binary string, a hardware-defined role, or a PsyQ syscall signature. | KEEP |
+| **VERIFIED** | 10 | The name is **fact**: an in-binary string, a hardware-defined role, or a PsyQ syscall signature. | KEEP |
 | **CORROBORATED** | 86 | Body behaviour and/or call graph affirmatively agrees with the name's claim, with a citation; no contradicting evidence. | KEEP |
 | **INFERRED** | 907 | Plausible from behaviour but unreviewed, or a generic/descriptive name whose claim is weak. **Not defended — just not contradicted.** | KEEP (review) |
-| **SUSPECT** | 311 | Kengo-derived provenance, **or** a recorded contradiction, **or** the claim conflicts with observed behaviour. | **RESET** |
-| **AUTO** | 123 | `func_80XXXXXX` / splat-generated. No claim, no risk. | KEEP |
+| **SUSPECT** | 304 | Kengo-derived provenance, **or** a recorded contradiction, **or** the claim conflicts with observed behaviour. | **RESET** |
+| **AUTO** | 129 | `func_80XXXXXX` / splat-generated. No claim, no risk. | KEEP |
 
 ### What earns VERIFIED
 
 Only three evidence kinds, all dispositive:
 
+- **Hardware-defined role (2).** `_start` at `0x800836EC` per the executable header, with
+  crt0 shape (BSS zero, `$sp`/`$gp`/`$fp` setup, `jal main`, `break 0, 1`); and `main`,
+  identified as the sole `jal` target of `_start` other than `bios_InitHeap`.
 - **In-binary self-identifying string (6).** The function loads a rodata string equal to
   its own name — PsyQ's debug/assert strings, embedded in the routine itself.
   `gpu_SetDispMask` loads `D_80015F04` = `"SetDispMask(%d)...\n"`. Also `gpu_DrawSync`,
   `gpu_LoadImage`, `gpu_StoreImage`, `gpu_ClearOTag`, `gpu_DrawOTag`.
 - **PsyQ syscall signature (2).** `EnterCriticalSection` / `ExitCriticalSection` — BIOS
   trampoline shape, syscalls #1/#2.
-- **Hardware-defined role (1).** `_start` — the PS-EXE entry point at `0x800836EC` per
-  the executable header, with crt0 shape (BSS zero, `$sp`/`$gp`/`$fp` setup, `jal main`,
-  `break 0, 1`).
 
 **VERIFIED outranks Kengo provenance.** Several of these names also appear in
 `kengo_matches.csv`; that only means Kengo reused the same PsyQ SDK name. In-binary fact
@@ -107,9 +114,9 @@ earlier draft let the SUSPECT rule silently overwrite VERIFIED rows.)
 
 ### What makes something SUSPECT
 
-311 rows, from three independent triggers:
+304 rows, from three independent triggers:
 
-- **Kengo-derived provenance (249).** The name traces to `kengo_matches.csv`, to
+- **Kengo-derived provenance (242).** The name traces to `kengo_matches.csv`, to
   `kengo_name_decisions.csv`, or to a Kengo-banded section of the
   `tools/rename_funcs.py` rename map. Per the owner directive this is *by itself*
   disqualifying, regardless of the match's stated confidence. Includes **disambiguated
@@ -134,14 +141,14 @@ Every non-AUTO name is attributed to a recorded evidence path:
 | Origin | Count | Tier it implies |
 |---|---:|---|
 | `naming-analyzer(proposals_resolved / proposals / residual_named)` | 860 | INFERRED, or CORROBORATED for `manual_re` + confidence=high |
-| `kengo-derived` (incl. PS2-only prefixes) | 262 | SUSPECT |
-| `splat-auto` | 123 | AUTO |
+| `kengo-derived` (incl. PS2-only prefixes) | 265 | SUSPECT |
+| `splat-auto` | 129 | AUTO |
 | `misname-flag` | 49 | SUSPECT |
 | `psyq-idiom-scan` (`known_psyq_stdlib.txt` body-shape match) | 39 | CORROBORATED |
 | `psyq-family-prefix` | 38 | INFERRED — prefix only |
 | `legacy-renamer-map(verified band)` | 29 | CORROBORATED |
 | `unattributed` | 16 | INFERRED — provenance unknown |
-| `in-binary-string` / `psyq-signature` / `hardware-role` | 9 | VERIFIED |
+| `in-binary-string` / `psyq-signature` / `hardware-role` | 10 | VERIFIED |
 
 Two deliberate judgements, both erring toward *less* confidence:
 
@@ -171,22 +178,30 @@ carry no contradiction, so they are INFERRED rather than SUSPECT.
 
 | Action | Rows |
 |---|---:|
-| KEEP | 1,125 |
-| **RESET** to `func_80XXXXXX` | **310** |
-| **RENAME** | **1** |
+| KEEP | 1,132 |
+| **RESET** to `func_80XXXXXX` | **304** |
+| **RENAME** | 0 — the one rename has landed |
 
-### The one RENAME
+### Wave progress
 
-`0x80017200` `cpu_set_move_command_and_dir_for_no_action_2` → **`main`**.
+The phase-2 wave has begun landing. Applied so far: the single **RENAME**, plus **6 RESETs**
+(AUTO 123 → 129). Because the census is regenerated from the tree, applied rows simply leave
+the reset set — the numbers above shrink as the wave proceeds, and a re-run is the progress
+report. Regenerate before quoting any figure.
 
-`asm/funcs/_start.s:42` is `jal 0x80017200`, and it is the crt0's only call other than
-`bios_InitHeap`. A crt0's final call is `main()`. The current name has no basis at all:
-`kengo_matches.csv` matched this address to `gnd_land_hit_char_tsuba` with
-`combined_score=0.00`, which is neither the applied name nor a usable signal.
+**The RENAME (applied):** `0x80017200`
+`cpu_set_move_command_and_dir_for_no_action_2` → **`main`**. `asm/funcs/_start.s` calls it and
+it is the crt0's only call other than `bios_InitHeap`; a crt0's final call is `main()`. The
+old name had no basis: `kengo_matches.csv` matched the address to `gnd_land_hit_char_tsuba`
+with `combined_score=0.00`, which is neither the applied name nor a usable signal. Compiling a
+function *literally named* `main` was the wave's highest-risk step — GCC's
+`expand_main_function()` injects `jal __main` in some configurations — so it was **measured,
+not assumed**: this cc1 emits byte-identical output under either name, zero `__main`
+references.
 
-### The reset set (310)
+### The reset set (304)
 
-All 311 SUSPECT rows minus the one promoted to RENAME. Resetting restores
+All remaining SUSPECT rows. Resetting restores
 `func_80XXXXXX` at the address and **deletes the semantic claim**, including its
 `named_syms.txt` alias lines. The evidence for each reset is in the row's `evidence`
 column; the misname-flag text should be **preserved as a comment** on the reset symbol
@@ -197,24 +212,24 @@ so the finding is not lost with the name.
 ## ⚠ The rename cascade — why phase 2 must be tooled, never hand-edited
 
 Function names are not cosmetic in this tree. They are **keys** into the build pipeline.
-A reset wave touching 310 names hits every one of these surfaces:
+A reset wave touching the remaining 304 rows (295 distinct names) hits every one of these surfaces:
 
 | Surface | SUSPECT names referenced | Why it breaks |
 |---|---:|---|
-| `named_syms.txt` | 191 | the alias registry itself |
-| `engine/queue.json` | 96 | the worklist keys on function name |
-| `regfix.txt` | 70 | **rules are keyed by function name** — a desync silently drops the rule |
-| **`sdata_funcs.txt`** | **54** | **GP-relative addressing breaks if these desync** (`tools/rename_funcs.py` documents this explicitly) |
-| `asmfix.txt` | 19 | as regfix |
-| `sdata_exclude.txt` | 18 | as sdata |
-| `inline_asm_canonical.txt` | 12 | canonical-asm authorizations are name-keyed; a desync un-authorizes a function |
-| `undefined_syms_auto.txt` | 10 | splat symbol resolution |
+| `named_syms.txt` | 187 | the alias registry itself |
+| `engine/queue.json` | 92 | the worklist keys on function name |
+| `regfix.txt` | 67 | **rules are keyed by function name** — a desync silently drops the rule |
+| **`sdata_funcs.txt`** | **51** | **GP-relative addressing breaks if these desync** (`tools/rename_funcs.py` documents this explicitly) |
+| `asmfix.txt` | 18 | as regfix |
+| `sdata_exclude.txt` | 17 | as sdata |
+| `inline_asm_canonical.txt` | 11 | canonical-asm authorizations are name-keyed; a desync un-authorizes a function |
+| `undefined_syms_auto.txt` | 9 | splat symbol resolution |
 | `maspsx_label_nop_funcs.txt`, `regfix_stage2.txt` | 3 each | pipeline gate lists |
 | `bb2.ld`, `volatile_extern_allowlist.txt` | 2 each | `bb2.ld` is **hand-maintained** — see below |
-| `src/*.c` | 251 | definitions and call sites |
-| `include/*.h` | 143 | declarations |
-| `asm/funcs/*.s` | 288 | `glabel` / `endlabel` — **and the filename must match the `INCLUDE_ASM` argument** |
-| `memory/` (729 files) | — | 227 `grind/` + 89 `wip/` per-function ledgers, directory-named by function |
+| `src/*.c` | 244 | definitions and call sites |
+| `include/*.h` | 139 | declarations |
+| `asm/funcs/*.s` | 281 | `glabel` / `endlabel` — **and the filename must match the `INCLUDE_ASM` argument** |
+| `memory/` (719 files) | — | 227 `grind/` + 89 `wip/` per-function ledgers, directory-named by function |
 
 Non-negotiables for the phase-2 tool:
 

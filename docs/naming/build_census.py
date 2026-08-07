@@ -414,6 +414,13 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     if nm in name_in_binary:
         origin, tier = "in-binary-string", "VERIFIED"
         ev.append(name_in_binary[nm])
+    elif nm == "main":
+        origin, tier = "hardware-role", "VERIFIED"
+        ev.append("the sole jal target of _start other than bios_InitHeap "
+                  "(asm/funcs/_start.s) — a crt0's final call is main(). Applied by the "
+                  "phase-2 naming wave; was cpu_set_move_command_and_dir_for_no_action_2. "
+                  "Naming it literally `main` is codegen-neutral under this cc1 (measured: "
+                  "no expand_main_function/__main injection)")
     elif nm == "_start":
         origin, tier = "hardware-role", "VERIFIED"
         ev.append("PS-EXE entry point 0x800836EC per AGENTS.md header; crt0 shape (BSS zero, $sp/$gp/$fp setup, jal main, break 0,1); canonical-asm authorized 2026-08-06")
@@ -572,7 +579,8 @@ by_name = {r["current_name"]: r for r in rows}
 for nm, ov in OVERRIDES.items():
     r = by_name.get(nm)
     if not r:
-        print("WARN override target missing:", nm, file=sys.stderr)
+        # Expected once the phase-2 wave has applied that row: the old name is gone.
+        print(f"note: override target '{nm}' no longer present (wave applied?)", file=sys.stderr)
         continue
     extra = ov.pop("extra", "")
     r.update(ov)
