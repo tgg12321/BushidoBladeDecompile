@@ -1,0 +1,17 @@
+# Addendum-wave address restriction for tools/naming_wave.py --only-file
+# (task #23, 2026-08-07). 12 RENAMEs + 1 RESET. Evidence:
+# docs/naming/libscan/ambiguous_resolutions.md + rename_manifest.csv notes.
+# Apply plan: docs/naming/ADDENDUM-APPLY-PLAN.md.
+0x80083A18   # sys_Shutdown alias      -> SsInit          (RESOLVED_RELOC_TARGET)
+0x80083B30   # spu_Reset alias         -> SsQuit          (RESOLVED_RELOC_TARGET)
+0x80084948   # saTan4GaugeInit_wrapper -> _SsSndPlay      (RESOLVED_LAYOUT)
+0x80084974   # func_80084974           -> _SsSeqPlay      (RELOC_CHAIN_ID; LIVE QUEUE ITEM)
+0x80085270   # spu_channel_reset alias -> _SsSndStop      (RELOC_CHAIN_ID)
+0x800853F4   # func_800853F4           -> SsSeqStop       (RELOC_CHAIN_ID; pure C, src/main.c:690)
+0x8008541C   # func_8008541C           -> SsSepStop       (RESOLVED_LAYOUT; pure C, src/main.c:694)
+0x80085F98   # obj_ResetReverbMode al. -> SsUtReverbOff   (RESOLVED_RELOC_TARGET)
+0x80085FB8   # mario_helper alias      -> SsUtReverbOn    (RESOLVED_RELOC_TARGET)
+0x800885AC   # spu_Init alias          -> SpuInit         (RESOLVED_RELOC_TARGET)
+0x8008AD64   # spu_TransferDirect_capped -> SpuRead       (RESOLVED_RELOC_TARGET)
+0x8008ADC4   # spu_TransferData_capped -> SpuWrite        (RESOLVED_RELOC_TARGET)
+0x800469A0   # _SpuCallback            -> RESET func_800469A0 (REJECTED_UNREACHABLE; reverses one fe40a52b row)
