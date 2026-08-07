@@ -1,0 +1,266 @@
+# MOVOVL.EXE PsyQ library symbol map (verbatim-matched modules)
+# vaddr           lib/module            symbol(s)
+0x801DA094 LIBC2/PRINTF           printf
+0x801DA0D0 LIBC2/PRNT             prnt
+0x801DA758 LIBC2/CTYPE            toupper
+0x801DA788 LIBC2/CTYPE            tolower
+0x801DA7B8 LIBC2/MEMCHR           memchr
+0x801DA808 LIBC2/PUTCHAR          putchar
+0x801DA8BC LIBAPI/A53             write
+0x801DA8CC LIBC2/STRLEN           strlen
+0x801DA8FC LIBPRESS/LIBPRESS      DecDCTReset
+0x801DA934 LIBPRESS/LIBPRESS      DecDCTGetEnv
+0x801DA9C0 LIBPRESS/LIBPRESS      DecDCTPutEnv
+0x801DAA5C LIBPRESS/LIBPRESS      DecDCTBufSize
+0x801DAA68 LIBPRESS/LIBPRESS      DecDCTin
+0x801DAAE4 LIBPRESS/LIBPRESS      DecDCTout
+0x801DAB04 LIBPRESS/LIBPRESS      DecDCTinSync
+0x801DAB40 LIBPRESS/LIBPRESS      DecDCToutSync
+0x801DAB7C LIBPRESS/LIBPRESS      DecDCTinCallback
+0x801DABA0 LIBPRESS/LIBPRESS      DecDCToutCallback
+0x801DABC4 LIBPRESS/LIBPRESS      MDEC_reset (static)
+0x801DACC0 LIBPRESS/LIBPRESS      MDEC_in (static)
+0x801DAD54 LIBPRESS/LIBPRESS      MDEC_out (static)
+0x801DADE4 LIBPRESS/LIBPRESS      MDEC_in_sync (static)
+0x801DAE7C LIBPRESS/LIBPRESS      MDEC_out_sync (static)
+0x801DAF14 LIBPRESS/LIBPRESS      MDEC_status (static)
+0x801DAF2C LIBPRESS/LIBPRESS      timeout (static)
+0x801DB060 LIBPRESS/VLC           DecDCTvlcSize
+0x801DB090 LIBPRESS/VLC           DecDCTvlc
+0x801DB3F4 LIBGPU/EXT             LoadTPage
+0x801DB4E0 LIBGPU/EXT             LoadClut
+0x801DB548 LIBGPU/EXT             LoadClut2
+0x801DB5B0 LIBGPU/EXT             SetDefDrawEnv
+0x801DB668 LIBGPU/EXT             SetDefDispEnv
+0x801DB6A4 LIBGPU/PRIM            GetTPage
+0x801DB6E0 LIBGPU/PRIM            GetClut
+0x801DB6F8 LIBGPU/PRIM            DumpTPage
+0x801DB758 LIBGPU/PRIM            DumpClut
+0x801DB798 LIBGPU/PRIM            NextPrim
+0x801DB7B4 LIBGPU/PRIM            IsEndPrim
+0x801DB7D0 LIBGPU/PRIM            AddPrim
+0x801DB80C LIBGPU/PRIM            AddPrims
+0x801DB848 LIBGPU/PRIM            CatPrim
+0x801DB86C LIBGPU/PRIM            TermPrim
+0x801DB884 LIBGPU/PRIM            SetSemiTrans
+0x801DB8AC LIBGPU/PRIM            SetShadeTex
+0x801DB8D4 LIBGPU/PRIM            SetPolyF3
+0x801DB8E8 LIBGPU/PRIM            SetPolyFT3
+0x801DB8FC LIBGPU/PRIM            SetPolyG3
+0x801DB910 LIBGPU/PRIM            SetPolyGT3
+0x801DB924 LIBGPU/PRIM            SetPolyF4
+0x801DB938 LIBGPU/PRIM            SetPolyFT4
+0x801DB94C LIBGPU/PRIM            SetPolyG4
+0x801DB960 LIBGPU/PRIM            SetPolyGT4
+0x801DB974 LIBGPU/PRIM            SetSprt8
+0x801DB988 LIBGPU/PRIM            SetSprt16
+0x801DB99C LIBGPU/PRIM            SetSprt
+0x801DB9B0 LIBGPU/PRIM            SetTile1
+0x801DB9C4 LIBGPU/PRIM            SetTile8
+0x801DB9D8 LIBGPU/PRIM            SetTile16
+0x801DB9EC LIBGPU/PRIM            SetTile
+0x801DBA00 LIBGPU/PRIM            SetLineF2
+0x801DBA14 LIBGPU/PRIM            SetLineG2
+0x801DBA28 LIBGPU/PRIM            SetLineF3
+0x801DBA48 LIBGPU/PRIM            SetLineG3
+0x801DBA68 LIBGPU/PRIM            SetLineF4
+0x801DBA88 LIBGPU/PRIM            SetLineG4
+0x801DBAA8 LIBGPU/PRIM            SetDrawTPage
+0x801DBAD4 LIBGPU/PRIM            SetDrawMove
+0x801DBB34 LIBGPU/PRIM            SetDrawLoad
+0x801DBBA0 LIBGPU/PRIM            MargePrim
+0x801DBBD8 LIBGPU/PRIM            DumpDrawEnv
+0x801DBCEC LIBGPU/PRIM            DumpDispEnv
+0x801DBD98 LIBGPU/SYS             ResetGraph
+0x801DBF1C LIBGPU/SYS             SetGraphReverse
+0x801DC030 LIBGPU/SYS             SetGraphDebug
+0x801DC094 LIBGPU/SYS             SetGraphQueue
+0x801DC140 LIBGPU/SYS             GetGraphType
+0x801DC150 LIBGPU/SYS             GetGraphDebug
+0x801DC160 LIBGPU/SYS             DrawSyncCallback
+0x801DC1BC LIBGPU/SYS             SetDispMask
+0x801DC258 LIBGPU/SYS             DrawSync
+0x801DC2C4 LIBGPU/SYS             checkRECT (static)
+0x801DC3EC LIBGPU/SYS             ClearImage
+0x801DC480 LIBGPU/SYS             ClearImage2
+0x801DC51C LIBGPU/SYS             LoadImage
+0x801DC580 LIBGPU/SYS             StoreImage
+0x801DC5E4 LIBGPU/SYS             MoveImage
+0x801DC6A8 LIBGPU/SYS             ClearOTag
+0x801DC760 LIBGPU/SYS             ClearOTagR
+0x801DC7F8 LIBGPU/SYS             DrawPrim
+0x801DC858 LIBGPU/SYS             DrawOTag
+0x801DC8CC LIBGPU/SYS             PutDrawEnv
+0x801DC9D0 LIBGPU/SYS             DrawOTagEnv
+0x801DCAEC LIBGPU/SYS             GetDrawEnv
+0x801DCB24 LIBGPU/SYS             PutDispEnv
+0x801DCFCC LIBGPU/SYS             GetDispEnv
+0x801DD004 LIBGPU/SYS             GetODE
+0x801DD034 LIBGPU/SYS             SetTexWindow
+0x801DD070 LIBGPU/SYS             SetDrawArea
+0x801DD0F4 LIBGPU/SYS             SetDrawOffset
+0x801DD138 LIBGPU/SYS             SetPriority
+0x801DD164 LIBGPU/SYS             SetDrawMode
+0x801DD1BC LIBGPU/SYS             SetDrawEnv
+0x801DD3D4 LIBGPU/SYS             SetDrawEnv2 (static)
+0x801DD664 LIBGPU/SYS             get_mode (static)
+0x801DD6BC LIBGPU/SYS             get_cs (static)
+0x801DD788 LIBGPU/SYS             get_ce (static)
+0x801DD854 LIBGPU/SYS             get_ofs (static)
+0x801DD898 LIBGPU/SYS             get_tw (static)
+0x801DD91C LIBGPU/SYS             get_dx (static)
+0x801DD9CC LIBGPU/SYS             _status (static)
+0x801DD9E4 LIBGPU/SYS             _otc (static)
+0x801DDACC LIBGPU/SYS             _clr (static)
+0x801DDD28 LIBGPU/SYS             _dws (static)
+0x801DDF64 LIBGPU/SYS             _drs (static)
+0x801DE1E8 LIBGPU/SYS             _ctl (static)
+0x801DE210 LIBGPU/SYS             _getctl (static)
+0x801DE224 LIBGPU/SYS             _cwb (static)
+0x801DE274 LIBGPU/SYS             _cwc (static)
+0x801DE2C0 LIBGPU/SYS             _param (static)
+0x801DE2F0 LIBGPU/SYS             _addque (static)
+0x801DE314 LIBGPU/SYS             _addque2 (static)
+0x801DE5F4 LIBGPU/SYS             _exeque (static)
+0x801DE8E0 LIBGPU/SYS             _reset (static)
+0x801DEA3C LIBGPU/SYS             _sync (static)
+0x801DEB84 LIBGPU/SYS             set_alarm (static)
+0x801DEBB8 LIBGPU/SYS             get_alarm (static)
+0x801DED24 LIBGPU/SYS             _version (static)
+0x801DEE00 LIBGPU/SYS             memset (static)
+0x801DEE2C LIBAPI/C73             GPU_cw
+0x801DEE3C LIBC2/MEMCPY           memcpy
+0x801DEE70 LIBCD/CDROM            StSetRing
+0x801DEEA0 LIBCD/EVENT            CdInit
+0x801DEF38 LIBCD/EVENT            def_cbsync (static)
+0x801DEF60 LIBCD/EVENT            def_cbready (static)
+0x801DEF88 LIBCD/EVENT            def_cbread (static)
+0x801DEFB0 LIBAPI/A07             DeliverEvent
+0x801DEFC0 LIBCD/SYS              CdStatus
+0x801DEFD0 LIBCD/SYS              CdMode
+0x801DEFE0 LIBCD/SYS              CdLastCom
+0x801DEFF0 LIBCD/SYS              CdLastPos
+0x801DF000 LIBCD/SYS              CdReset
+0x801DF06C LIBCD/SYS              CdFlush
+0x801DF08C LIBCD/SYS              CdSetDebug
+0x801DF0A4 LIBCD/SYS              CdComstr
+0x801DF0D8 LIBCD/SYS              CdIntstr
+0x801DF10C LIBCD/SYS              CdSync
+0x801DF12C LIBCD/SYS              CdReady
+0x801DF14C LIBCD/SYS              CdSyncCallback
+0x801DF164 LIBCD/SYS              CdReadyCallback
+0x801DF17C LIBCD/SYS              CdControl
+0x801DF2B4 LIBCD/SYS              CdControlF
+0x801DF3E0 LIBCD/SYS              CdControlB
+0x801DF524 LIBCD/SYS              CdMix
+0x801DF544 LIBCD/SYS              CdGetSector
+0x801DF564 LIBCD/SYS              CdGetSector2
+0x801DF584 LIBCD/SYS              CdDataCallback
+0x801DF5A8 LIBCD/SYS              CdDataSync
+0x801DF5C8 LIBCD/SYS              CdIntToPos
+0x801DF6CC LIBCD/SYS              CdPosToInt
+0x801DF74C LIBCD/BIOS             getintr (static)
+0x801DFCD4 LIBCD/BIOS             CD_sync
+0x801DFF54 LIBCD/BIOS             CD_ready
+0x801E0220 LIBCD/BIOS             CD_cw
+0x801E063C LIBCD/BIOS             CD_vol
+0x801E06C4 LIBCD/BIOS             CD_flush
+0x801E07A4 LIBCD/BIOS             CD_initvol
+0x801E0898 LIBCD/BIOS             CD_initintr
+0x801E08E8 LIBCD/BIOS             CD_init
+0x801E0AD4 LIBCD/BIOS             CD_datasync
+0x801E0C40 LIBCD/BIOS             CD_getsector
+0x801E0D40 LIBCD/BIOS             CD_getsector2
+0x801E0E30 LIBCD/BIOS             CD_set_test_parmnum
+0x801E0E40 LIBCD/BIOS             callback (static)
+0x801E0F24 LIBC2/PUTS             puts
+0x801E0F74 LIBCD/CDREAD           cb_read (static)
+0x801E1244 LIBCD/CDREAD           cb_data (static)
+0x801E1340 LIBCD/CDREAD           cd_read_retry (static)
+0x801E1554 LIBCD/CDREAD           CdReadBreak
+0x801E15F0 LIBCD/CDREAD           CdRead
+0x801E16F4 LIBCD/CDREAD           CdReadSync
+0x801E17C0 LIBCD/CDREAD           CdReadCallback
+0x801E17D8 LIBCD/CDREAD           CdReadMode
+0x801E17F0 LIBCD/CDREAD2          CdRead2
+0x801E1884 LIBCD/CDREAD2          StCdInterrupt2 (static)
+0x801E18A4 LIBCD/C_002            StClearRing
+0x801E1904 LIBCD/C_003            StUnSetRing
+0x801E1988 LIBAPI/A36             EnterCriticalSection
+0x801E1998 LIBAPI/A37             ExitCriticalSection
+0x801E19A8 LIBCD/C_004            data_ready_callback
+0x801E1A38 LIBCD/C_004            StGetBackloc
+0x801E1A98 LIBCD/C_005            StSetStream
+0x801E1B20 LIBCD/C_007            StFreeRing
+0x801E1BD8 LIBCD/C_008            init_ring_status
+0x801E1C14 LIBCD/C_009            StGetNext
+0x801E1CD8 LIBCD/C_010            StSetMask
+0x801E1CF8 LIBCD/C_011            StCdInterrupt
+0x801E2668 LIBCD/C_011            mem2mem (static)
+0x801E269C LIBCD/C_011            dma_execute (static)
+0x801E2858 LIBETC/PAD             PadInit
+0x801E28A8 LIBETC/PAD             PadRead
+0x801E28D0 LIBETC/PAD             PadStop
+0x801E28F0 LIBAPI/A22             PAD_dr
+0x801E2900 LIBAPI/A91             ChangeClearPAD
+0x801E2910 LIBAPI/PAD             SetInitPadFlag
+0x801E2920 LIBAPI/PAD             ReadInitPadFlag
+0x801E2930 LIBAPI/PAD             PAD_init
+0x801E29CC LIBAPI/PAD             InitPAD
+0x801E2A68 LIBAPI/PAD             StartPAD
+0x801E2A98 LIBAPI/PAD             StopPAD
+0x801E2AD0 LIBAPI/PAD             SetPatchPad (static)
+0x801E2B50 LIBAPI/PAD             RemovePatchPad (static)
+0x801E2B88 LIBAPI/PAD             _Pad1 (static)
+0x801E2BF0 LIBAPI/PAD             _IsVSync (static)
+0x801E2C30 LIBAPI/A18             InitPAD2
+0x801E2C40 LIBAPI/A19             StartPAD2
+0x801E2C50 LIBAPI/A20             StopPAD2
+0x801E2C60 LIBAPI/A21             PAD_init2
+0x801E2C70 LIBAPI/L02             SysEnqIntRP
+0x801E2C80 LIBAPI/L03             SysDeqIntRP
+0x801E2C90 LIBAPI/PATCH           EnablePAD
+0x801E2CA4 LIBAPI/PATCH           DisablePAD
+0x801E2CB8 LIBAPI/PATCH           _patch_pad
+0x801E2D20 LIBAPI/C68             FlushCache
+0x801E2D30 LIBAPI/SENDPAD         _SendPAD
+0x801E2D58 LIBAPI/SENDPAD         _send_pad
+0x801E2DF0 LIBAPI/CHCLRPAD        _remove_ChgclrPAD
+0x801E2E50 LIBETC/VSYNC           VSync
+0x801E2F98 LIBETC/VSYNC           v_wait (static)
+0x801E3034 LIBAPI/L10             ChangeClearRCnt
+0x801E3044 LIBETC/INTR            ResetCallback
+0x801E3074 LIBETC/INTR            InterruptCallback
+0x801E30A4 LIBETC/INTR            DMACallback
+0x801E30D4 LIBETC/INTR            VSyncCallback
+0x801E3108 LIBETC/INTR            VSyncCallbacks
+0x801E3138 LIBETC/INTR            StopCallback
+0x801E3168 LIBETC/INTR            RestartCallback
+0x801E3198 LIBETC/INTR            CheckCallback
+0x801E31A8 LIBETC/INTR            GetIntrMask
+0x801E31C0 LIBETC/INTR            SetIntrMask
+0x801E31DC LIBETC/INTR            startIntr (static)
+0x801E32B8 LIBETC/INTR            trapIntr (static)
+0x801E34A0 LIBETC/INTR            setIntr (static)
+0x801E35F4 LIBETC/INTR            stopIntr (static)
+0x801E36A0 LIBETC/INTR            restartIntr (static)
+0x801E3728 LIBETC/INTR            memclr (static)
+0x801E375C LIBAPI/C114            _96_remove
+0x801E3774 LIBAPI/A23             ReturnFromException
+0x801E3784 LIBAPI/A24             ResetEntryInt
+0x801E3794 LIBAPI/A25             HookEntryInt
+0x801E37A4 LIBC2/SETJMP           setjmp
+0x801E37E0 LIBC2/SETJMP           longjmp
+0x801E3824 LIBETC/INTR_VB         startIntrVSync
+0x801E387C LIBETC/INTR_VB         trapIntrVSync (static)
+0x801E38F4 LIBETC/INTR_VB         setIntrVSync (static)
+0x801E3920 LIBETC/INTR_VB         memclr (static)
+0x801E394C LIBETC/INTR_DMA        startIntrDMA
+0x801E399C LIBETC/INTR_DMA        trapIntrDMA (static)
+0x801E3B20 LIBETC/INTR_DMA        setIntrDMA (static)
+0x801E3BC8 LIBETC/INTR_DMA        memclr (static)
+0x801E3BF4 LIBETC/VMODE           SetVideoMode
+0x801E3C0C LIBETC/VMODE           GetVideoMode
+0x801E3C1C LIBDS/DSCB             DsSyncCallback
+0x801E3C30 LIBDS/DSCB             DsReadyCallback
+0x801E3C44 LIBDS/DSCB             DsDataCallback

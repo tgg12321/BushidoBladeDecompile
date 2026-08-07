@@ -1,0 +1,3 @@
+# Non-library spans in MOVOVL.EXE text image (game code + rodata/data)
+0x801D8800..0x801DA094     6292 bytes
+0x801E3C68..0x801F6800    76696 bytes
