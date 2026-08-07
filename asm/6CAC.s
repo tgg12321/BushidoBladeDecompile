@@ -19507,7 +19507,7 @@ glabel func_800290B8
     /* 19B30 80029330 21284002 */  addu       $a1, $s2, $zero
     /* 19B34 80029334 21302002 */  addu       $a2, $s1, $zero
     /* 19B38 80029338 00016726 */  addiu      $a3, $s3, 0x100
-    /* 19B3C 8002933C ACB9000C */  jal        pad_main_control
+    /* 19B3C 8002933C ACB9000C */  jal        func_8002E6B0
     /* 19B40 80029340 1800A8AF */   sw        $t0, 0x18($sp)
     /* 19B44 80029344 1800A88F */  lw         $t0, 0x18($sp)
     /* 19B48 80029348 1B004010 */  beqz       $v0, .L800293B8
@@ -25271,7 +25271,7 @@ glabel func_8002DE20
     /* 1EEAC 8002E6AC 00000000 */   nop
 endlabel func_8002DE20
 
-nonmatching pad_main_control, 0x188
+nonmatching func_8002E6B0, 0x188
 
 glabel func_8002E6B0
     /* 1EEB0 8002E6B0 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -36390,7 +36390,7 @@ glabel func_80037F40
     /* 28808 80038008 FC0020AD */   sw        $zero, 0xFC($t1)
 endlabel func_80037F40
 
-nonmatching damage_DebugDisp, 0x13C
+nonmatching func_8003800C, 0x13C
 
 glabel func_8003800C
     /* 2880C 8003800C 21488000 */  addu       $t1, $a0, $zero
@@ -36899,7 +36899,7 @@ glabel func_80038658
     /* 28EF0 800386F0 D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
     /* 28EF4 800386F4 0F80043C */  lui        $a0, %hi(D_800F34D8)
     /* 28EF8 800386F8 D8348424 */  addiu      $a0, $a0, %lo(D_800F34D8)
-    /* 28EFC 800386FC 03E0000C */  jal        damage_DebugDisp
+    /* 28EFC 800386FC 03E0000C */  jal        func_8003800C
     /* 28F00 80038700 00000000 */   nop
     /* 28F04 80038704 02004014 */  bnez       $v0, .L80038710
     /* 28F08 80038708 0F000224 */   addiu     $v0, $zero, 0xF
@@ -42485,7 +42485,7 @@ glabel change_shadow_tex_reg
     /* 2DB2C 8003D32C 00000000 */   nop
 endlabel change_shadow_tex_reg
 
-nonmatching ReturnVTMenu, 0x6C
+nonmatching func_8003D330, 0x6C
 
 glabel func_8003D330
     /* 2DB30 8003D330 00E1053C */  lui        $a1, (0xE100001F >> 16)

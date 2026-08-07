@@ -16,7 +16,7 @@ void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
 
-void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
+void func_80047EE8(s32 arg0, s32 arg1)
 {
     register s32 cached asm("$16");
     register s32 saved asm("$18");
@@ -1587,7 +1587,7 @@ s16 func_80054434(void) {
     return D_800A33F8;
 }
 INCLUDE_ASM("asm/funcs", func_80054440);
-INCLUDE_ASM("asm/funcs", myRobGeneiOpen);
+INCLUDE_ASM("asm/funcs", func_800545F4);
 INCLUDE_ASM("asm/funcs", func_80054604);
 extern s16 InfoPosYTbl1[];
 extern void func_80054604(s32, s32, s32, s32, s32, s32, s32);
@@ -3551,7 +3551,7 @@ extern s32 D_800A3420;
 extern s32 D_800A3424;
 extern s32 D_800A37D4;
 extern s32 D_800A3720;
-void gnd_get_fog(s32 arg0) {
+void func_80060E04(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }

@@ -7,7 +7,7 @@ sys_GameInit
 func_80016E60
 rng_SetSeed
 rng_Next
-cpu_set_move_command_and_dir_for_no_action_2
+main
 gnd_disp_loop_ctrl
 func_80017D84
 func_800198D0
@@ -42,7 +42,7 @@ func_80037B00
 func_80037B90
 func_80037C34
 func_80037D14
-damage_DebugDisp
+func_8003800C
 func_80038170
 pad_FuncAnalog
 func_80038658
@@ -174,7 +174,7 @@ func_80060A68
 func_80060B70
 saTan1GaugeInit
 func_80060CB8
-gnd_get_fog
+func_80060E04
 func_80060E38
 func_80061064
 game_Cleanup

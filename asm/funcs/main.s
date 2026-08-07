@@ -1,4 +1,4 @@
-glabel cpu_set_move_command_and_dir_for_no_action_2
+glabel main
     /* 7A00 80017200 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 7A04 80017204 2400BFAF */  sw         $ra, 0x24($sp)
     /* 7A08 80017208 2000B4AF */  sw         $s4, 0x20($sp)
@@ -50,7 +50,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7AB8 800172B8 0000428C */  lw         $v0, 0x0($v0)
     /* 7ABC 800172BC 800690AF */  sw         $s0, %gp_rel(D_800A374C)($gp)
     /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(D_800A38B4)($gp)
-    /* 7AC4 800172C4 8183010C */  jal        gnd_get_fog
+    /* 7AC4 800172C4 8183010C */  jal        func_80060E04
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
     /* 7ACC 800172CC BDF4000C */  jal        change_shadow_tex_reg
     /* 7AD0 800172D0 00000000 */   nop
@@ -83,7 +83,7 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7B38 80017338 00000000 */  nop
     /* 7B3C 8001733C 09F84000 */  jalr       $v0
     /* 7B40 80017340 00000000 */   nop
-    /* 7B44 80017344 CCF4000C */  jal        ReturnVTMenu
+    /* 7B44 80017344 CCF4000C */  jal        func_8003D330
     /* 7B48 80017348 00000000 */   nop
     /* 7B4C 8001734C 00F2043C */  lui        $a0, (0xF2000001 >> 16)
   .L80017350:
@@ -200,4 +200,4 @@ glabel cpu_set_move_command_and_dir_for_no_action_2
     /* 7CE8 800174E8 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 7CEC 800174EC 0800E003 */  jr         $ra
     /* 7CF0 800174F0 00000000 */   nop
-endlabel cpu_set_move_command_and_dir_for_no_action_2
+endlabel main

@@ -1,4 +1,4 @@
-glabel damage_DebugDisp
+glabel func_8003800C
     /* 2880C 8003800C 21488000 */  addu       $t1, $a0, $zero
     /* 28810 80038010 21300000 */  addu       $a2, $zero, $zero
     /* 28814 80038014 21402001 */  addu       $t0, $t1, $zero
@@ -86,4 +86,4 @@ glabel damage_DebugDisp
   .L80038140:
     /* 28940 80038140 0800E003 */  jr         $ra
     /* 28944 80038144 00000000 */   nop
-endlabel damage_DebugDisp
+endlabel func_8003800C

@@ -82,7 +82,28 @@ LIST_FILES = [
     "multu_funcs.txt",
     "multu_pad_funcs.txt",
     "volatile_extern_allowlist.txt",
+    # prologue_fix reads these two alongside prologue_config.json. They live
+    # under tools/ rather than the repo root, which is exactly why the first
+    # version of this tool missed them.
+    "tools/delay_slot_ra_funcs.txt",
+    "tools/frame_fix_funcs.txt",
 ]
+
+# Live tool/engine sources that gate BEHAVIOUR on a function name held in a
+# string literal. tools/prologue_fix.py's PROLOGUE_ACCEPT_ARG_REGS_FUNCS is the
+# proven case: renaming the function without renaming that set silently drops a
+# prologue reorder and drifts 19 bytes. Archived and vendored trees are excluded.
+PY_ROOTS = ["tools", "engine"]
+PY_EXCLUDE_PARTS = {"archive", "maspsx", "decomp-permuter", "gcc-2.7.2", ".venv",
+                    "__pycache__", "permuter"}
+# Provenance, not a gate. rename_funcs.py's map RECORDS which Kengo name was
+# applied to which address, and docs/naming/build_census.py reads it as an
+# evidence source — rewriting it would rewrite the census's own input and turn
+# every entry into a self-map. History stays history.
+PY_EXCLUDE_FILES = {"tools/rename_funcs.py", "tools/propose_function_names.py"}
+# A short string literal is an identifier or dict key; a long one is prose that
+# happens to cite a function. Only the former is a KEY worth rewriting.
+PY_KEYLIKE_MAXLEN = 60
 
 # Free-form build files edited by whole-word substitution on non-comment text.
 PLAIN_FILES = ["bb2.ld", "Makefile"]
@@ -136,6 +157,53 @@ def sub_c(pattern: re.Pattern, repl, text: str) -> tuple[str, int]:
     out.append(new)
     n += k
     return "".join(out), n
+
+
+def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
+    """Rewrite names inside SHORT string literals of Python source.
+
+    Tool source is code, not config, so this is deliberately narrow: only
+    string literals (never identifiers or comments), and only short ones, which
+    are keys rather than prose. Every long-string occurrence is returned as a
+    skip note so a name cited in an explanatory message is reported rather than
+    silently rewritten or silently ignored.
+    """
+    import io
+    import tokenize
+
+    skips: list[str] = []
+    try:
+        toks = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except Exception:
+        return text, 0, ["(unparseable — left untouched)"]
+
+    edits: list[tuple[tuple[int, int], tuple[int, int], str]] = []
+    n = 0
+    for tok in toks:
+        if tok.type != tokenize.STRING:
+            continue
+        s = tok.string
+        hits = pattern.findall(s)
+        if not hits:
+            continue
+        if len(s) > PY_KEYLIKE_MAXLEN or s.startswith(('"""', "'''", 'r"""', "r'''")):
+            skips.append(f"L{tok.start[0]}: {sorted(set(hits))} in prose/docstring — NOT rewritten")
+            continue
+        new, k = pattern.subn(repl, s)
+        if k:
+            edits.append((tok.start, tok.end, new))
+            n += k
+
+    if not edits:
+        return text, 0, skips
+
+    lines = text.split("\n")
+    for (sr, sc), (er, ec), new in reversed(edits):
+        if sr != er:
+            continue
+        line = lines[sr - 1]
+        lines[sr - 1] = line[:sc] + new + line[ec:]
+    return "\n".join(lines), n, skips
 
 
 def _path_guarded(pattern: re.Pattern) -> re.Pattern:
@@ -370,6 +438,20 @@ def _defined_in_src(name: str) -> bool:
 # ------------------------------------------------------------------ planner --
 
 
+_IGNORED_CACHE: dict[str, bool] = {}
+
+
+def git_ignored(rel: str) -> bool:
+    """Is this path gitignored? Such a file cannot be rolled back with git, so
+    the wave must not touch it — `include/m2c_context.h` is generated and
+    gitignored, and editing it left an unrevertable change during the pilot."""
+    if rel not in _IGNORED_CACHE:
+        r = subprocess.run(["git", "check-ignore", "-q", rel], cwd=ROOT,
+                           capture_output=True)
+        _IGNORED_CACHE[rel] = (r.returncode == 0)
+    return _IGNORED_CACHE[rel]
+
+
 class Plan:
     def __init__(self):
         self.file_edits: dict[str, tuple[str, int]] = {}   # relpath -> (new text, hits)
@@ -380,8 +462,14 @@ class Plan:
         self.out_of_scope: list[str] = []
 
     def note_edit(self, rel: str, new_text: str, hits: int, old_text: str):
-        if new_text != old_text:
-            self.file_edits[rel] = (new_text, hits)
+        if new_text == old_text:
+            return
+        if git_ignored(rel):
+            self.out_of_scope.append(
+                f"{rel}: gitignored (generated) — skipped, because an edit there "
+                f"could not be rolled back with git; regenerate it instead")
+            return
+        self.file_edits[rel] = (new_text, hits)
 
 
 def plan_wave(wave: Wave) -> Plan:
@@ -483,6 +571,23 @@ def plan_wave(wave: Wave) -> Plan:
                     lst[i] = wave.code_map[v]
         if changed:
             plan.json_edits[qrel] = (json.dumps(data, indent=2) + "\n", changed)
+
+    # --- live tool/engine source (name-keyed behaviour gates) -------------
+    for base in PY_ROOTS:
+        bp = ROOT / base
+        if not bp.exists():
+            continue
+        for p in sorted(bp.rglob("*.py")):
+            rel = str(p.relative_to(ROOT)).replace("\\", "/")
+            if PY_EXCLUDE_PARTS & set(p.parts) or rel in PY_EXCLUDE_FILES:
+                continue
+            t = read(p)
+            if not pat.search(t):
+                continue
+            new, n, skips = sub_py(pat, repl, t)
+            plan.note_edit(rel, new, n, t)
+            for s in skips:
+                plan.out_of_scope.append(f"{rel}:{s}")
 
     # --- per-function ledger directories ----------------------------------
     for base in LEDGER_DIRS:
@@ -782,6 +887,21 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
         p = ROOT / rel
         if p.exists():
             scan(rel, read(p), None)
+    # Name-keyed gates in live tool source: report a surviving SHORT string
+    # literal only — a name cited in prose is history and is expected to remain.
+    for base in PY_ROOTS:
+        bp = ROOT / base
+        if not bp.exists():
+            continue
+        for p in sorted(bp.rglob("*.py")):
+            rel = str(p.relative_to(ROOT)).replace("\\", "/")
+            if PY_EXCLUDE_PARTS & set(p.parts) or rel in PY_EXCLUDE_FILES:
+                continue
+            _, _, skips = sub_py(pat, lambda m: m.group(0), read(p))
+            leftover, _, _ = sub_py(pat, lambda m: "\x00", read(p))
+            if leftover != read(p):
+                for h in set(pat.findall(read(p))):
+                    out[h].append(str(p.relative_to(ROOT)))
     for base in LEDGER_DIRS:
         bp = ROOT / base
         if bp.exists():

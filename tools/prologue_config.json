@@ -1,5 +1,5 @@
 {
-  "AddTbpOfst_80047EE8": [
+  "func_80047EE8": [
     "addiu\t$sp, $sp, -0x48",
     "sw\t$s0, 0x38($sp)",
     "addu\t$s0, $a0, $zero",

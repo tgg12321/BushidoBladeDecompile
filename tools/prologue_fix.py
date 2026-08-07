@@ -53,7 +53,7 @@ PROLOGUE_TEMP_REGS = {'$v0', '$v1', '$at'}
 # function via PROLOGUE_ACCEPT_ARG_REGS_FUNCS.
 PROLOGUE_ARG_REGS = {'$a0', '$a1', '$a2', '$a3'}
 PROLOGUE_ACCEPT_ARG_REGS_FUNCS = {
-    'AddTbpOfst_80047EE8',
+    'func_80047EE8',
 }
 
 

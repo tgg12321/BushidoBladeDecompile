@@ -52,7 +52,7 @@
       "status": "active"
     },
     {
-      "func": "cpu_set_move_command_and_dir_for_no_action_2",
+      "func": "main",
       "file": "ings",
       "distance": 20,
       "verdict": "C",
@@ -826,7 +826,7 @@
       "prologue_fix": 1
     },
     {
-      "func": "pad_main_control",
+      "func": "func_8002E6B0",
       "file": "code6cac_b",
       "distance": 57,
       "verdict": "ASM-SUSPECT",
@@ -2209,7 +2209,7 @@
       "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
     },
     {
-      "func": "damage_DebugDisp",
+      "func": "func_8003800C",
       "file": "code6cac_c_mid",
       "distance": 9,
       "verdict": "C",
@@ -2417,7 +2417,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     },
     {
-      "func": "AddTbpOfst_80047EE8",
+      "func": "func_80047EE8",
       "file": "text1b",
       "distance": 16,
       "verdict": "C",

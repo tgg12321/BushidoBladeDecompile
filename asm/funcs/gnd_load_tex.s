@@ -7,8 +7,8 @@ glabel gnd_load_tex
     /* 31BAC 800413AC FF00A530 */  andi       $a1, $a1, 0xFF
     /* 31BB0 800413B0 FFFF063C */  lui        $a2, (0xFFFF0000 >> 16)
     /* 31BB4 800413B4 FFFF8430 */  andi       $a0, $a0, 0xFFFF
-    /* 31BB8 800413B8 0580023C */  lui        $v0, %hi(myRobGeneiOpen)
-    /* 31BBC 800413BC F445428C */  lw         $v0, %lo(myRobGeneiOpen)($v0)
+    /* 31BB8 800413B8 0580023C */  lui        $v0, %hi(func_800545F4)
+    /* 31BBC 800413BC F445428C */  lw         $v0, %lo(func_800545F4)($v0)
     /* 31BC0 800413C0 0580033C */  lui        $v1, %hi(D_800545FC)
     /* 31BC4 800413C4 FC45638C */  lw         $v1, %lo(D_800545FC)($v1)
     /* 31BC8 800413C8 24104700 */  and        $v0, $v0, $a3

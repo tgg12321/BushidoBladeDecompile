@@ -64,9 +64,9 @@ extern void func_800372C0(void);
 extern void motion_Open(void);
 extern void func_800789D8(u32);
 extern void bios_SetMem(s32);
-extern void gnd_get_fog(s32);
+extern void func_80060E04(s32);
 extern void change_shadow_tex_reg(void);
-extern void ReturnVTMenu(void);
+extern void func_8003D330(void);
 extern void single_game_VoiceContorol();
 extern u8 D_800A3768;
 extern u32 D_8008D090;
@@ -579,7 +579,7 @@ s32 rng_Next(void) {
     g_file_heap_base = seed;
     return seed & 0x7FFF;
 }
-void cpu_set_move_command_and_dir_for_no_action_2(void) {
+void main(void) {
     s32 idx;
     u8 *env;
     u8 *ot;
@@ -606,7 +606,7 @@ loop:
     func_8007B844(ot, 0x1008);
     D_800A374C = ot;
     D_800A38B4 = tbl[idx];
-    gnd_get_fog(idx);
+    func_80060E04(idx);
     change_shadow_tex_reg();
     single_game_VoiceContorol(voice);
     special_camera_Exec();
@@ -621,7 +621,7 @@ loop:
     }
 
     ((void (*)(void))(&D_8008D090)[D_800A3834])();
-    ReturnVTMenu();
+    func_8003D330();
 
     do {
         if (func_80078B04(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;

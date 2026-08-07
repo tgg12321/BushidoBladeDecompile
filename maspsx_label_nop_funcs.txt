@@ -15,6 +15,6 @@
 
 spu_DmaTransfer
 cdrom_DmaToRam
-gnd_get_fog
+func_80060E04
 AllocRobRmd
 func_80088740

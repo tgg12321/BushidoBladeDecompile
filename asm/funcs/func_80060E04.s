@@ -1,4 +1,4 @@
-glabel gnd_get_fog
+glabel func_80060E04
     /* 51604 80060E04 04008010 */  beqz       $a0, .L80060E18
     /* 51608 80060E08 00000000 */   nop
     /* 5160C 80060E0C 5803828F */  lw         $v0, %gp_rel(D_800A3424)($gp)
@@ -14,4 +14,4 @@ glabel gnd_get_fog
     /* 5162C 80060E2C 540682AF */  sw         $v0, %gp_rel(D_800A3720)($gp)
     /* 51630 80060E30 0800E003 */  jr         $ra
     /* 51634 80060E34 00000000 */   nop
-endlabel gnd_get_fog
+endlabel func_80060E04

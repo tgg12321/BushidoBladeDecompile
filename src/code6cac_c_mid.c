@@ -239,7 +239,7 @@ void func_80037F40(u8 *a0) {
 }
 typedef struct { s32 w0, w1, w2, w3; } CopyBlock;
 
-s32 damage_DebugDisp(s32 *arg0) {
+s32 func_8003800C(s32 *arg0) {
     u8 *base = (u8 *)arg0;
     s32 i;
     s32 *chkptr;
@@ -557,7 +557,7 @@ finish:
 }
 
 /* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
-extern s32 damage_DebugDisp(s32 *);
+extern s32 func_8003800C(s32 *);
 void func_80038658(void) {
     register s32 var_v1 asm("v1");
     register s32 var_v0 asm("v0");
@@ -599,7 +599,7 @@ block_6:
     }
     var_v0 = 5;
     D_800A379E = (s16)var_v0;
-    if (damage_DebugDisp(&D_800F34D8) != 0) {
+    if (func_8003800C(&D_800F34D8) != 0) {
         goto block_clear;
     }
     var_v0 = 0xF;

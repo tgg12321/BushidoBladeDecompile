@@ -134,18 +134,18 @@ motion_Close: subst ",8\(" ",0xc(" @ 16
 motion_Close: subst ",4\(" ",8(" @ 17
 motion_Close: subst ",0\(" ",4(" @ 18
 # damage_DebugDisp: swap j<->sum registers in inner loop body (TEXT 7-15)
-damage_DebugDisp: $4 <-> $5 @ 7-15
+func_8003800C: $4 <-> $5 @ 7-15
 # damage_DebugDisp: transform constants-before-moves at TEXT 55-59
 # Original: move,move,lui,lui,ori -> Target: lui,lui,ori,move,move
-damage_DebugDisp: subst "addu	\$4,\$9,\$zero" "lui $8,0x8000" @ 55
-damage_DebugDisp: subst "addu	\$6,\$4,\$zero" "lui $7,0x001f" @ 56
-damage_DebugDisp: subst "lui	\$8,.*" "ori $7,$7,0xffff" @ 57
-damage_DebugDisp: subst "lui	\$7,.*" "addu $4,$9,$zero" @ 58
-damage_DebugDisp: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
+func_8003800C: subst "addu	\$4,\$9,\$zero" "lui $8,0x8000" @ 55
+func_8003800C: subst "addu	\$6,\$4,\$zero" "lui $7,0x001f" @ 56
+func_8003800C: subst "lui	\$8,.*" "ori $7,$7,0xffff" @ 57
+func_8003800C: subst "lui	\$7,.*" "addu $4,$9,$zero" @ 58
+func_8003800C: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
 # damage_DebugDisp: insert nop for load delay at trailing word copy (TEXT 53)
-damage_DebugDisp: insert "nop" @ 53
+func_8003800C: insert "nop" @ 53
 # damage_DebugDisp: reorder sw before k=0 (post-insert TEXT 54-55)
-damage_DebugDisp: reorder 55,54 @ 54-55
+func_8003800C: reorder 55,54 @ 54-55
 
 # pad_ClearAppliBuffer: GCC uses $3(v1) for result, target uses $2(v0)
 pad_ClearAppliBuffer: subst "\$3," "$2," @ 42
@@ -1600,31 +1600,31 @@ func_8003DE14: reorder 24,22,23,34,25,26,27,28,29,30,31,32,33 @ 22-34
 # target_color chain: andi,sll before or
 func_8003DE14: reorder 41,42,40,43 @ 40-43
 
-cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
-cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
-cpu_set_move_command_and_dir_for_no_action_2: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
-cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 170
-cpu_set_move_command_and_dir_for_no_action_2: subst "nop" "addiu\t$5,$zero,4104" @ 147
-cpu_set_move_command_and_dir_for_no_action_2: insert "addiu\t$3,$3,-1" @ 83
-cpu_set_move_command_and_dir_for_no_action_2: insert "addu\t$6,$17,$zero" @ 22
-cpu_set_move_command_and_dir_for_no_action_2: insert "jal\tfunc_80016A8C" @ 22
-cpu_set_move_command_and_dir_for_no_action_2: insert_after "addu\t$5,$17,$zero" @ 171
-cpu_set_move_command_and_dir_for_no_action_2: subst "la\t\$3,D_800F7438" "addiu\t$5,$zero,4104\n.Linner:\n\tlw\t$2,%gp_rel(D_800A36AC)($gp)" @ 27
-cpu_set_move_command_and_dir_for_no_action_2: subst "lw\t\$2,%gp_rel\(D_800A36AC\)\(\$gp\)" "lui\t$3,%hi(D_800F7438)" @ 28
-cpu_set_move_command_and_dir_for_no_action_2: subst "addiu\t\$5,\$zero,4104" "addiu\t$3,$3,%lo(D_800F7438)" @ 29
-cpu_set_move_command_and_dir_for_no_action_2: subst "lui\t\$2" "lui\t$4" @ 104
-cpu_set_move_command_and_dir_for_no_action_2: subst "lui\t\$2" "lui\t$4" @ 109
-cpu_set_move_command_and_dir_for_no_action_2: subst "lw\t\$3,%gp_rel\(D_800A38B4\)\(\$gp\)" "ori\t$4,$4,0xcc00" @ 110
-cpu_set_move_command_and_dir_for_no_action_2: subst "ori\t\$2,\$2,0xcc00" "sll\t$2,$17,2" @ 111
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$3,\$3,\$2" "lw\t$3,%gp_rel(D_800A38B4)($gp)" @ 112
-cpu_set_move_command_and_dir_for_no_action_2: subst "sll\t\$2,\$17,2" "addu\t$2,$2,$20" @ 113
-cpu_set_move_command_and_dir_for_no_action_2: subst "addu\t\$2,\$2,\$20" "addu\t$3,$3,$4" @ 114
-cpu_set_move_command_and_dir_for_no_action_2: subst "\.L\d+" ".Linner" @ 146
-cpu_set_move_command_and_dir_for_no_action_2: subst "\.L\d+" ".Linner" @ 148
-cpu_set_move_command_and_dir_for_no_action_2: subst "\.L\d+" ".Linner" @ 161
-cpu_set_move_command_and_dir_for_no_action_2: subst "\.L\d+" ".Linner" @ 169
+main: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
+main: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
+main: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
+main: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
+main: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
+main: subst "nop" "addiu\t$5,$zero,4104" @ 170
+main: subst "nop" "addiu\t$5,$zero,4104" @ 147
+main: insert "addiu\t$3,$3,-1" @ 83
+main: insert "addu\t$6,$17,$zero" @ 22
+main: insert "jal\tfunc_80016A8C" @ 22
+main: insert_after "addu\t$5,$17,$zero" @ 171
+main: subst "la\t\$3,D_800F7438" "addiu\t$5,$zero,4104\n.Linner:\n\tlw\t$2,%gp_rel(D_800A36AC)($gp)" @ 27
+main: subst "lw\t\$2,%gp_rel\(D_800A36AC\)\(\$gp\)" "lui\t$3,%hi(D_800F7438)" @ 28
+main: subst "addiu\t\$5,\$zero,4104" "addiu\t$3,$3,%lo(D_800F7438)" @ 29
+main: subst "lui\t\$2" "lui\t$4" @ 104
+main: subst "lui\t\$2" "lui\t$4" @ 109
+main: subst "lw\t\$3,%gp_rel\(D_800A38B4\)\(\$gp\)" "ori\t$4,$4,0xcc00" @ 110
+main: subst "ori\t\$2,\$2,0xcc00" "sll\t$2,$17,2" @ 111
+main: subst "addu\t\$3,\$3,\$2" "lw\t$3,%gp_rel(D_800A38B4)($gp)" @ 112
+main: subst "sll\t\$2,\$17,2" "addu\t$2,$2,$20" @ 113
+main: subst "addu\t\$2,\$2,\$20" "addu\t$3,$3,$4" @ 114
+main: subst "\.L\d+" ".Linner" @ 146
+main: subst "\.L\d+" ".Linner" @ 148
+main: subst "\.L\d+" ".Linner" @ 161
+main: subst "\.L\d+" ".Linner" @ 169
 
 # conv_matrix_rotation multi-function stub (D_80083418 + D_8008359C)
 # D_80083418: IRQ handler -- s4/s5 swap, missing outer loop beqz, v0/v1 done section

@@ -122,7 +122,7 @@ glabel AllocRobRmd
     /* 30F54 80040754 3B000016 */  bnez       $s0, .L80040844
     /* 30F58 80040758 00000000 */   nop
     /* 30F5C 8004075C 21206002 */  addu       $a0, $s3, $zero
-    /* 30F60 80040760 BA1F010C */  jal        AddTbpOfst_80047EE8
+    /* 30F60 80040760 BA1F010C */  jal        func_80047EE8
     /* 30F64 80040764 21280000 */   addu      $a1, $zero, $zero
     /* 30F68 80040768 A8F8000C */  jal        single_game_SetStageId
     /* 30F6C 8004076C 00000000 */   nop

@@ -267,7 +267,7 @@ after_select:
         if (player >= 2) goto done_cases;
         if (player != 0) goto done_cases;
 
-        AddTbpOfst_80047EE8(sec, 0);
+        func_80047EE8(sec, 0);
         if (single_game_SetStageId() != 0) goto done_cases;
         videoDecCreate(((s16 *)a0)[10], 0, 0, -0x140, 0xE8);
         InitHiraRmd_800480C0(sec, 0, 0, 0, -0x140, 0xF0);
@@ -819,7 +819,7 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl  |  132i  |  x2 size collision */
 extern s32 *D_80015820[];
-extern s32 myRobGeneiOpen;
+extern s32 func_800545F4;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
@@ -830,7 +830,7 @@ void gnd_load_tex(s32 a0) {
     s32 a1 = (a0 >> 16) & 0xFF;
     s32 mask16 = (s32)0xFFFF0000;
     s32 a0lo = a0 & 0xFFFF;
-    s32 t3 = (myRobGeneiOpen & mask8) | a1;
+    s32 t3 = (func_800545F4 & mask8) | a1;
     s32 t2 = (D_800545F8 & mask16) | a0lo;
     s32 v1 = (D_800545FC & mask8) | a1;
     s32 a4 = (D_80054600 & mask16) | a0lo;

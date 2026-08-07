@@ -3,7 +3,7 @@
 # These symbols will NOT be converted to gp_rel in the listed function
 #
 func_80016E60: D_800A31DA, D_800A3770
-cpu_set_move_command_and_dir_for_no_action_2: D_800A31DA, D_800A3770
+main: D_800A31DA, D_800A3770
 func_80030D7C: D_800A38DC
 func_80031B24: g_disp_fade
 func_80034708: D_800A3690, D_800A36F9

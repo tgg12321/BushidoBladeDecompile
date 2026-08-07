@@ -220,7 +220,7 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         if (single_game_SetStageId() == 0) {
             InitHiraRmd_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
         } else {
-            AddTbpOfst_80047EE8(a3, i + 1);
+            func_80047EE8(a3, i + 1);
         }
         goto shift;
     case1:

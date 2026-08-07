@@ -1,4 +1,4 @@
-glabel AddTbpOfst_80047EE8
+glabel func_80047EE8
     /* 386E8 80047EE8 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 386EC 80047EEC 3800B0AF */  sw         $s0, 0x38($sp)
     /* 386F0 80047EF0 21808000 */  addu       $s0, $a0, $zero
@@ -54,4 +54,4 @@ glabel AddTbpOfst_80047EE8
     /* 387B0 80047FB0 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 387B4 80047FB4 0800E003 */  jr         $ra
     /* 387B8 80047FB8 00000000 */   nop
-endlabel AddTbpOfst_80047EE8
+endlabel func_80047EE8

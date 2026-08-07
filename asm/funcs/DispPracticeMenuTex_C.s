@@ -172,7 +172,7 @@ glabel DispPracticeMenuTex_C
     /* 19B30 80029330 21284002 */  addu       $a1, $s2, $zero
     /* 19B34 80029334 21302002 */  addu       $a2, $s1, $zero
     /* 19B38 80029338 00016726 */  addiu      $a3, $s3, 0x100
-    /* 19B3C 8002933C ACB9000C */  jal        pad_main_control
+    /* 19B3C 8002933C ACB9000C */  jal        func_8002E6B0
     /* 19B40 80029340 1800A8AF */   sw        $t0, 0x18($sp)
     /* 19B44 80029344 1800A88F */  lw         $t0, 0x18($sp)
     /* 19B48 80029348 1B004010 */  beqz       $v0, .L800293B8

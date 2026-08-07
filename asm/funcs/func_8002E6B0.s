@@ -1,4 +1,4 @@
-glabel pad_main_control
+glabel func_8002E6B0
     /* 1EEB0 8002E6B0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 1EEB4 8002E6B4 5555083C */  lui        $t0, (0x55555556 >> 16)
     /* 1EEB8 8002E6B8 56550835 */  ori        $t0, $t0, (0x55555556 & 0xFFFF)
@@ -98,4 +98,4 @@ glabel pad_main_control
     /* 1F02C 8002E82C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 1F030 8002E830 0800E003 */  jr         $ra
     /* 1F034 8002E834 00000000 */   nop
-endlabel pad_main_control
+endlabel func_8002E6B0
