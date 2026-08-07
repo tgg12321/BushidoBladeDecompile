@@ -31,10 +31,21 @@ entirely):
 
 Queue file: engine/queue.json (committed). Driven by `python3 -m engine.cli
 queue {next,done,park,status,regen}`.
+
+Concurrency: every mutator (mark_done / mark_parked / reopen / generate) runs
+its load-modify-save under an advisory lock (`engine/queue.json.lock`) and
+saves through an atomic write-then-rename with a content fingerprint check. A
+write that would clobber someone else's raises QueueConflict instead of
+silently winning — completions reported ok:true have vanished that way
+(2026-08-07, docs/grind/decisions.md). Reads (load / next_item / status) are
+unlocked; the atomic rename means they never see a partial file.
 """
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import json
+import os
 import re
 import time
 from collections import Counter
@@ -54,13 +65,84 @@ _AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL", "JTBL-INFRA"}
 _STATUS_RANK = {"active": 0, "authorize": 1, "parked": 2}
 
 
+class QueueConflict(RuntimeError):
+    """queue.json changed underneath a load-modify-save cycle.
+
+    Raised INSTEAD of overwriting: a silently-clobbered write is the failure
+    this guards (2026-08-07, docs/grind/decisions.md — a completion reported
+    ok:true and then vanished). Loud is the whole point.
+    """
+
+
+def _fingerprint() -> str:
+    """Content digest of queue.json ("" when absent). Content rather than mtime:
+    the file is small, and mtime resolution can hide a fast write."""
+    try:
+        return hashlib.sha1(Path(QUEUE_PATH).read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+@contextlib.contextmanager
+def _locked():
+    """Advisory exclusive lock over the whole load-modify-save cycle.
+
+    A sidecar lockfile (never queue.json itself, so the lock survives the
+    atomic replace in save()). fcntl under WSL/Linux, msvcrt on Windows; if
+    neither is importable the lock degrades to a no-op and the fingerprint
+    check in save() is the remaining protection.
+    """
+    lock_path = Path(str(QUEUE_PATH) + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(lock_path, "a+")
+    try:
+        try:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        except ImportError:
+            try:
+                import msvcrt
+                fh.seek(0)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_LOCK, 1)
+            except (ImportError, OSError):
+                pass
+        yield
+    finally:
+        try:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        except ImportError:
+            try:
+                import msvcrt
+                fh.seek(0)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+            except (ImportError, OSError):
+                pass
+        fh.close()
+
+
 def load() -> dict:
     p = Path(QUEUE_PATH)
     return json.loads(p.read_text()) if p.exists() else {"items": []}
 
 
-def save(q: dict) -> None:
-    Path(QUEUE_PATH).write_text(json.dumps(q, indent=2) + "\n")
+def save(q: dict, expect: str | None = None) -> None:
+    """Write queue.json atomically.
+
+    `expect` is the fingerprint read at the start of this load-modify-save
+    cycle. When supplied and the on-disk content no longer matches it, a writer
+    outside our lock (another tool, a `git checkout`) has intervened; raise
+    QueueConflict rather than dropping their write on the floor. The
+    write-then-rename means a reader never observes a half-written queue.
+    """
+    if expect is not None and _fingerprint() != expect:
+        raise QueueConflict(
+            f"{QUEUE_PATH} changed on disk during this update — refusing to "
+            f"overwrite. Re-read the queue and retry.")
+    p = Path(QUEUE_PATH)
+    tmp = p.with_name(p.name + f".tmp.{os.getpid()}")
+    tmp.write_text(json.dumps(q, indent=2) + "\n")
+    os.replace(tmp, p)
 
 
 def _rule_count(func: str) -> int:
@@ -145,6 +227,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     stripped == honest pure-C distance). `parked` statuses are preserved from
     the existing queue.
     `active`/`authorize` are recomputed. COMPLETED items are not in the queue."""
+    # Fingerprint BEFORE the (minutes-long) scan below. regen rebuilds from
+    # scratch, so it cannot merge a completion that lands mid-scan; if one
+    # does, the save conflicts loudly instead of resurrecting the item.
+    tok = _fingerprint()
     prev = {}
     if preserve and Path(QUEUE_PATH).exists():
         for it in load().get("items", []):
@@ -278,7 +364,8 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
     q = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
          "oracle_sha1": cfg.ORACLE_SHA1, "build_failures": failures, "items": items}
     q["counts"] = _counts(items)
-    save(q)
+    with _locked():
+        save(q, expect=tok)
     return q
 
 
@@ -406,10 +493,29 @@ def mark_done(func: str) -> dict:
         return {"ok": False, "func": func,
                 "reason": "current build/ SHA1 != oracle — run `verify-oracle`/`retire` first"}
     # Drop the item — queue presence = INCOMPLETE; completion removes it.
-    q["items"] = [it for it in q["items"] if it["func"] != func]
-    q["items"].sort(key=_sort_key)
-    q["counts"] = _counts(q["items"])
-    save(q)
+    # Re-read under the lock: the gate checks above are slow (O.verify), so the
+    # `q` loaded at entry may be stale. Dropping one func is idempotent, so
+    # re-applying it to the CURRENT queue preserves any completion or park a
+    # concurrent lane landed meanwhile instead of reverting it.
+    with _locked():
+        entry_count = len(q.get("items", []))
+        q = load()
+        tok = _fingerprint()
+        if entry_count and not q.get("items"):
+            # queue.json vanished (or was emptied) during the gate above, which
+            # runs O.verify and so is MINUTES wide. load() answers `{"items":
+            # []}` for a missing file and _fingerprint() answers "" for it, so
+            # the two agree and the save would go through — writing an EMPTY
+            # worklist and returning ok:true. That is the exact silent-loss
+            # shape this locking exists to prevent (layer-2 review 2026-08-07).
+            raise QueueConflict(
+                f"{QUEUE_PATH} is missing or empty but held {entry_count} "
+                f"item(s) when this `done {func}` started — refusing to write "
+                f"an empty worklist. Restore queue.json and retry.")
+        q["items"] = [it for it in q.get("items", []) if it["func"] != func]
+        q["items"].sort(key=_sort_key)
+        q["counts"] = _counts(q["items"])
+        save(q, expect=tok)
     completion_state = ("COMPLETED-INLINE-ASM-CANONICAL"
                         if func in cheats.canonical_asm_funcs()
                         else "COMPLETED-C")
@@ -424,16 +530,18 @@ def mark_done(func: str) -> dict:
 
 
 def mark_parked(func: str, reason: str = "") -> dict:
-    q = load()
-    if not any(it["func"] == func for it in q.get("items", [])):
-        return {"ok": False, "func": func, "reason": "not in queue"}
-    for it in q["items"]:
-        if it["func"] == func:
-            it["status"] = "parked"
-            it["park_reason"] = reason
-    q["items"].sort(key=_sort_key)
-    q["counts"] = _counts(q["items"])
-    save(q)
+    with _locked():
+        q = load()
+        tok = _fingerprint()
+        if not any(it["func"] == func for it in q.get("items", [])):
+            return {"ok": False, "func": func, "reason": "not in queue"}
+        for it in q["items"]:
+            if it["func"] == func:
+                it["status"] = "parked"
+                it["park_reason"] = reason
+        q["items"].sort(key=_sort_key)
+        q["counts"] = _counts(q["items"])
+        save(q, expect=tok)
     return {"ok": True, "func": func, "park_reason": reason}
 
 
@@ -444,18 +552,20 @@ def reopen(func: str, file: str, reason: str = "", origin: str = "regression") -
     `generate()`'s mechanical scan treats it as COMPLETED-C and can never
     re-derive it as outstanding on its own. `origin: "regression"` items are
     carried across regen the same way `parked` items are (see generate())."""
-    q = load()
-    items = q.setdefault("items", [])
-    if any(it["func"] == func for it in items):
-        return {"ok": False, "func": func, "reason": f"{func} already in queue"}
-    item = {"func": func, "file": file, "distance": 0, "verdict": "C",
-            "rules": 0, "status": "active", "origin": origin,
-            "reopen_reason": (reason or "")[:400]}
-    items.append(item)
-    items.sort(key=_sort_key)
-    q["items"] = items
-    q["counts"] = _counts(items)
-    save(q)
+    with _locked():
+        q = load()
+        tok = _fingerprint()
+        items = q.setdefault("items", [])
+        if any(it["func"] == func for it in items):
+            return {"ok": False, "func": func, "reason": f"{func} already in queue"}
+        item = {"func": func, "file": file, "distance": 0, "verdict": "C",
+                "rules": 0, "status": "active", "origin": origin,
+                "reopen_reason": (reason or "")[:400]}
+        items.append(item)
+        items.sort(key=_sort_key)
+        q["items"] = items
+        q["counts"] = _counts(items)
+        save(q, expect=tok)
     return {"ok": True, "func": func, "item": item}
 
 

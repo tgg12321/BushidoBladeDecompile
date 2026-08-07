@@ -159,3 +159,8 @@ metrics/*.html
 # grind permuter session runs it from the repo root it lands here (root). Always
 # a scratch artifact, never committed — tools/decomp-permuter has its own ignore.
 /nonmatchings/
+
+# queue.json write serialization (engine/queue.py): advisory lockfile + the
+# write-then-rename staging file. Runtime only, never committed.
+engine/queue.json.lock
+engine/queue.json.tmp.*

@@ -5,7 +5,23 @@ byte-correct) build AT THE OBJECT LEVEL — both are .o files, so relocations
 render identically and there are no false diffs from unresolved symbols. Control-
 flow targets (branch/jump destinations) are masked so the score is
 cascade-immune: removing an instruction shifts later addresses but not the
-normalized instruction form.
+normalized instruction form. SECTION-RELATIVE HI16/LO16 relocation addends are
+masked for the same reason: they are link-time-resolved offsets into this
+object's own .text/.rodata/.data, so cheat-stripping earlier code in the TU
+moves the referenced static and changes the addend without changing anything
+the compiler emitted for THIS function (the saEft00Add false-distance case,
+memory/sandbox-lo16-text-addend-false-distance.md).
+
+What that mask COSTS (measured 2026-08-07: 74 instructions in 27 functions,
+68 of them .rodata literal-pool loads, 6 .text `la`s of same-TU statics): at
+those sites the score no longer sees WHICH same-section referent is used, nor
+any source-level constant offset — a different literal-pool float, a different
+same-TU static's address, `&D_x[2]` vs `&D_x[3]`, all compare equal. That is
+inert for the regen / COMPLETED-C decision (both objects are built from the
+same C text there, so only layout can differ), but it is LIVE while iterating
+an edited src/<stem>.c against a stale build/src/<stem>.o. func_byte_signature
+/ is_redundant stay unmasked and the full-build SHA1 oracle is the actual match
+gate, so a masked false-zero cannot be committed — it can only waste a cycle.
 
 score = instruction edit-distance (Levenshtein DP); 0 == instruction-identical.
 This GUIDES the loop. verify-integrated (full-build SHA1) is the real match gate
@@ -33,8 +49,39 @@ def _objdump(*args: str) -> str:
 # objdump -t function line:  OFFSET <flags> F <section> SIZE NAME
 _SYMOFF_RE = re.compile(r"^([0-9a-fA-F]+)\s+\S.*\sF\s+\S+\s+([0-9a-fA-F]+)\s+(\S+)\s*$")
 # objdump -d instruction line:  "   <addr>:\t<bytes>\t<mnemonic>\t<operands>"
-_INSN_RE = re.compile(r"^\s*[0-9a-f]+:\t[0-9a-f ]+\t(\S+)\s*(.*)$")
+_INSN_RE = re.compile(r"^\s*([0-9a-f]+):\t[0-9a-f ]+\t(\S+)\s*(.*)$")
 _BRANCH = re.compile(r"^(b|bal|beq|bne|blez|bgtz|bltz|bgez|beqz|bnez|j|jal|jr|jalr)\b")
+
+# objdump -dr relocation line:  "\t\t\t<addr>: <TYPE>\t<symbol>"
+_RELOC_RE = re.compile(r"^\s+([0-9a-f]+):\s+(R_MIPS_\S+)\s+(\S+)\s*$")
+# Only these two carry a link-resolved addend in the instruction's immediate
+# field. R_MIPS_26 / R_MIPS_PC16 also occur against section symbols, but their
+# field is a control-flow target already masked by _BRANCH; R_MIPS_GPREL16
+# never occurs against a section symbol in this tree (measured 2026-08-07:
+# 2295/2295 named). Named-symbol HI16/LO16 are deliberately NOT masked — their
+# immediate is a source-level addend (`&sym + 2`), not a layout artifact.
+_SECTION_ADDEND_RELOCS = {"R_MIPS_HI16", "R_MIPS_LO16"}
+# leading signed immediate of an operand: "8132", "0x1fc4", "32(at)" -> "32"
+_IMM_RE = re.compile(r"^-?(?:0x[0-9a-fA-F]+|\d+)")
+
+
+def _mask_section_addend(ops: str, sym: str) -> str:
+    """Replace the immediate field of a section-relative reloc with `@<section>`.
+
+    `addiu a0,a0,8132` (R_MIPS_LO16 .text) -> `addiu a0,a0,@.text`
+    `lw v0,32(at)`     (R_MIPS_LO16 .text) -> `lw v0,@.text(at)`
+
+    The section name is KEPT in the token, so a reference that moves between
+    .text and .rodata still scores as a difference. Everything else about the
+    referent is erased: the offset identifies WHICH object in the section, so
+    two different .rodata literals or two different same-TU statics compare
+    equal here. See the module docstring for the bound on that cost.
+    """
+    parts = ops.split(",")
+    if parts and _IMM_RE.match(parts[-1]):
+        parts[-1] = _IMM_RE.sub("@" + sym, parts[-1], count=1)
+        return ",".join(parts)
+    return ops  # unexpected operand shape: leave it counting, don't hide it
 
 
 def _o_func_table(o_path: str) -> dict[str, tuple[int, int]]:
@@ -67,20 +114,30 @@ def _section_size(o_path: str, section: str) -> int:
 
 def normalized_insns(o_path: str, func: str, mask: bool = True) -> list[str]:
     """Normalized instruction strings for a function. mask=True masks
-    control-flow targets (cascade-immune, for scoring); mask=False keeps full
-    operands (for diff diagnosis)."""
+    control-flow targets AND section-relative HI16/LO16 relocation addends
+    (cascade-immune, for scoring); mask=False keeps full operands (for diff
+    diagnosis)."""
     tbl = _o_func_table(o_path)
     if func not in tbl:
         raise KeyError(f"{func} not found in {o_path}")
     off, size = tbl[func]
     out = _objdump("-dr", f"--start-address={off}",
                    f"--stop-address={off + size}", o_path)
-    insns = []
+    insns: list[list[str]] = []
+    at_addr: dict[str, int] = {}
     for line in out.splitlines():
         m = _INSN_RE.match(line)
         if not m:
-            continue  # labels, reloc lines, section headers
-        mn, ops = m.group(1), m.group(2).strip()
+            # A relocation line annotates the instruction ABOVE it, so it can
+            # only be applied once that instruction is already in `insns`.
+            r = _RELOC_RE.match(line) if mask else None
+            if (r and r.group(2) in _SECTION_ADDEND_RELOCS
+                    and r.group(3).startswith(".")):
+                i = at_addr.get(r.group(1))
+                if i is not None:
+                    insns[i][1] = _mask_section_addend(insns[i][1], r.group(3))
+            continue  # labels, other reloc lines, section headers
+        addr, mn, ops = m.group(1), m.group(2), m.group(3).strip()
         ops = re.split(r"\s+<", ops)[0]      # drop "<sym+0x..>" annotation
         ops = ops.split("#")[0].strip()       # drop trailing comment
         if mask and _BRANCH.match(mn):
@@ -88,8 +145,9 @@ def normalized_insns(o_path: str, func: str, mask: bool = True) -> list[str]:
             if parts:
                 parts[-1] = "@"               # mask control-flow target
             ops = ",".join(parts)
-        insns.append(f"{mn} {ops}".strip())
-    return insns
+        at_addr[addr] = len(insns)
+        insns.append([mn, ops])
+    return [f"{mn} {ops}".strip() for mn, ops in insns]
 
 
 def _levenshtein(a: list[str], b: list[str]) -> int:
@@ -138,7 +196,8 @@ def is_redundant(stripped_o: str, reference_o: str, func: str) -> bool:
 def score_func(cheat_disabled_o: str, reference_o: str, func: str) -> dict:
     """Edit-distance between the cheat-disabled function and the canonical
     (cheat-on) function. reference_o is build/src/<file>.o (byte-correct).
-    0 == instruction-identical (modulo masked control-flow targets)."""
+    0 == instruction-identical (modulo masked control-flow targets and
+    masked section-relative relocation addends)."""
     target = normalized_insns(reference_o, func)
     built = normalized_insns(cheat_disabled_o, func)
     return {"score": _levenshtein(target, built),

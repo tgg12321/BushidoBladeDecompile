@@ -151,6 +151,152 @@ def test_score() -> None:
         check(f"_BRANCH does NOT match {mn}", not score._BRANCH.match(mn))
 
 
+def _fake_objdump(body: str, func: str = "f", size: int = 0x100):
+    """Stand-in for score._objdump serving a one-function object.
+
+    `body` is the `objdump -dr` instruction/relocation block. Lets the masking
+    tests pin behaviour on exact objdump text without needing a built object.
+    """
+    def _run(*args: str) -> str:
+        if args[0] == "-t":
+            return f"00000000 g     F .text\t{size:08x} {func}\n"
+        if args[0] == "-h":
+            return f"  0 .text         {size:08x}  00000000  00000000  00000034  2**2\n"
+        return body
+    return _run
+
+
+@contextlib.contextmanager
+def _stub_objdump(body: str):
+    saved = score._objdump
+    score._objdump = _fake_objdump(body)
+    try:
+        yield
+    finally:
+        score._objdump = saved
+
+
+def _reloc(addr: str, typ: str, sym: str) -> str:
+    """Synthesize an `objdump -dr` relocation line (tab-indented, follows its
+    instruction)."""
+    return f"\t\t\t{addr}: {typ}\t{sym}"
+
+
+def test_score_section_addend_mask() -> None:
+    """Section-relative HI16/LO16 addends are link-resolved offsets into this
+    object's OWN .text/.rodata, so cheat-stripping earlier code in the TU moves
+    the referenced static and changes the addend with nothing about this
+    function's codegen having changed. Masking them removes the false +1 that
+    mis-ranked saEft00Add at the queue top and made `queue regen` resurrect its
+    completion (memory/sandbox-lo16-text-addend-false-distance.md).
+
+    Pinned BOTH ways: the artifact shape scores 0, and every genuinely
+    different immediate still scores nonzero."""
+    def obj(addend: str, sym: str = ".text", typ: str = "R_MIPS_LO16") -> str:
+        return "\n".join([
+            "00000000 <f>:",
+            _dline("   0", "3c040000", "lui", "a0,0x0"),
+            _reloc("0", "R_MIPS_HI16", sym),
+            _dline("   4", "24840000", "addiu", f"a0,a0,{addend}"),
+            _reloc("4", typ, sym),
+            _dline("   8", "03e00008", "jr", "ra"),
+        ])
+
+    # 1. THE ARTIFACT: identical instruction stream, addend shifted by the
+    #    0x9B0 layout delta cheat-stripping introduced. Must score 0.
+    with _stub_objdump(obj("5652")):
+        honest = score.normalized_insns("honest.o", "f")
+    with _stub_objdump(obj("8132")):
+        target = score.normalized_insns("target.o", "f")
+    eq("section-addend: la-form addend shift scores 0 (the saEft00Add artifact)",
+       score._levenshtein(target, honest), 0)
+    check("section-addend: the masked operand names its section",
+          any(op.endswith("@.text") for op in honest))
+
+    # 2. FALSE-NEGATIVE BOUND, part 1 — a plain immediate with NO relocation is
+    #    untouched. A wrong constant still counts.
+    def plain(imm: str) -> str:
+        return "\n".join([
+            "00000000 <f>:",
+            _dline("   0", "24840000", "addiu", f"a0,a0,{imm}"),
+            _dline("   4", "03e00008", "jr", "ra"),
+        ])
+    with _stub_objdump(plain("16")):
+        a = score.normalized_insns("a.o", "f")
+    with _stub_objdump(plain("24")):
+        b = score.normalized_insns("b.o", "f")
+    eq("section-addend: unrelocated immediate difference still scores 1",
+       score._levenshtein(a, b), 1)
+
+    # 3. FALSE-NEGATIVE BOUND, part 2 — a NAMED-symbol reloc carries a
+    #    source-level addend (`&sym + 2`), not a layout artifact. Not masked.
+    with _stub_objdump(obj("2", sym="g_thing")):
+        a = score.normalized_insns("a.o", "f")
+    with _stub_objdump(obj("4", sym="g_thing")):
+        b = score.normalized_insns("b.o", "f")
+    eq("section-addend: named-symbol addend difference still scores 1",
+       score._levenshtein(a, b), 1)
+
+    # 4. The masked token keeps the SECTION, so a reference that moves between
+    #    sections is still a difference.
+    with _stub_objdump(obj("100", sym=".text")):
+        a = score.normalized_insns("a.o", "f")
+    with _stub_objdump(obj("100", sym=".rodata")):
+        b = score.normalized_insns("b.o", "f")
+    eq("section-addend: .text vs .rodata reference still scores 2 (hi+lo)",
+       score._levenshtein(a, b), 2)
+
+    # 5. Reloc types whose field is NOT an addend are left to the existing
+    #    control-flow masking — R_MIPS_26 against .text is a jump target.
+    def jump(tgt: str) -> str:
+        return "\n".join([
+            "00000000 <f>:",
+            _dline("   0", "08000000", "j", f"{tgt} <f+0x{tgt}>"),
+            _reloc("0", "R_MIPS_26", ".text"),
+            _dline("   4", "00000000", "nop"),
+        ])
+    with _stub_objdump(jump("a8")):
+        a = score.normalized_insns("a.o", "f")
+    with _stub_objdump(jump("2c")):
+        b = score.normalized_insns("b.o", "f")
+    eq("section-addend: branch masking unchanged (j target still scores 0)",
+       score._levenshtein(a, b), 0)
+    eq("section-addend: j target masked with the control-flow token, not @.text",
+       a[0], "j @")
+
+    # 6. THE COST, pinned rather than merely described (layer-2 review
+    #    2026-08-07): the offset identifies WHICH object in the section, so two
+    #    different .rodata literal-pool loads compare equal. Inert for the
+    #    regen / COMPLETED-C decision (both objects come from the same C text —
+    #    only layout can differ), LIVE when scoring an edited .c against a
+    #    stale reference .o. func_byte_signature and the SHA1 oracle are
+    #    unmasked, so this costs a wasted cycle, never a false completion.
+    def pool_load(off: str) -> str:
+        return "\n".join([
+            "00000000 <f>:",
+            _dline("   0", "3c010000", "lui", "at,0x0"),
+            _reloc("0", "R_MIPS_HI16", ".rodata"),
+            _dline("   4", "8c220000", "lw", f"v0,{off}(at)"),
+            _reloc("4", "R_MIPS_LO16", ".rodata"),
+        ])
+    with _stub_objdump(pool_load("32")):
+        a = score.normalized_insns("a.o", "f")
+    with _stub_objdump(pool_load("124")):
+        b = score.normalized_insns("b.o", "f")
+    eq("section-addend: KNOWN COST — a different same-section referent "
+       "scores 0 (bounded to 74 sites; SHA1 oracle is the real gate)",
+       score._levenshtein(a, b), 0)
+
+    # 7. mask=False is the DIAGNOSIS path — it must still show the real addend,
+    #    or `diagnose` would report an empty diff for the artifact case.
+    with _stub_objdump(obj("5652")):
+        raw = score.normalized_insns("honest.o", "f", mask=False)
+    check("section-addend: mask=False keeps the literal addend for diagnosis",
+          any("5652" in op for op in raw))
+    check("section-addend: mask=False emits no @-token at all",
+          not any("@" in op for op in raw))
+
+
 # --------------------------------------------------------------------------
 # inlineasm — cheat-asm stripping (half of cheat-invisibility)
 # --------------------------------------------------------------------------
@@ -1839,9 +1985,139 @@ void j(void) {
           "s32 field;" in stripped5)
 
 
+def test_queue_write_serialization() -> None:
+    """A queue mutation must never SILENTLY lose a concurrent one.
+
+    Measured 2026-08-07 (docs/grind/decisions.md): a `queue done` reported
+    ok:true and was then clobbered, so the completion vanished with no error
+    anywhere. Contract now: mutators run their load-modify-save under an
+    advisory lock and save through an atomic write-then-rename guarded by a
+    content fingerprint. Interleaved writers are either serialized (both
+    survive) or fail LOUDLY with QueueConflict — never silently dropped."""
+    def seed(qp: Path, funcs) -> None:
+        items = [{"func": f, "file": "text1a_c", "distance": 1, "verdict": "C",
+                  "rules": 0, "status": "active"} for f in funcs]
+        qp.write_text(json.dumps({"items": items, "counts": {}}, indent=2) + "\n")
+
+    with tempfile.TemporaryDirectory() as td:
+        qp = Path(td) / "queue.json"
+        orig_path = Q.QUEUE_PATH
+        Q.QUEUE_PATH = str(qp)
+        try:
+            # --- 1. SERIALIZED: two sequential mutations both persist. This is
+            #        the shape the race destroyed (B's park ate A's completion).
+            seed(qp, ["func_A", "func_B", "func_C"])
+            Q.mark_parked("func_A", reason="lane A")
+            Q.mark_parked("func_B", reason="lane B")
+            by_func = {it["func"]: it for it in Q.load()["items"]}
+            eq("queue lock: lane A's park survived lane B's write",
+               by_func["func_A"]["status"], "parked")
+            eq("queue lock: lane B's park landed too",
+               by_func["func_B"]["status"], "parked")
+            eq("queue lock: untouched item intact",
+               by_func["func_C"]["status"], "active")
+
+            # --- 2. INTERLEAVED: writer A reads, writer B commits, then A
+            #        writes its STALE snapshot. A must be refused, not win.
+            seed(qp, ["func_A", "func_B"])
+            a_snapshot = Q.load()                    # writer A reads
+            a_token = Q._fingerprint()
+            Q.mark_parked("func_B", reason="writer B wins the race")   # B commits
+            a_snapshot["items"] = [it for it in a_snapshot["items"]
+                                   if it["func"] != "func_A"]          # A mutates
+            conflicted = False
+            try:
+                Q.save(a_snapshot, expect=a_token)                     # A writes
+            except Q.QueueConflict:
+                conflicted = True
+            check("queue lock: stale interleaved write raises QueueConflict",
+                  conflicted)
+            after = {it["func"]: it for it in Q.load()["items"]}
+            eq("queue lock: writer B's park was NOT silently clobbered",
+               after.get("func_B", {}).get("status"), "parked")
+            check("queue lock: writer A's stale drop did not take effect",
+                  "func_A" in after)
+
+            # --- 3. The fingerprint tracks CONTENT, so an unchanged file lets
+            #        the same cycle commit normally (no spurious conflicts).
+            seed(qp, ["func_A"])
+            tok = Q._fingerprint()
+            q = Q.load()
+            q["items"] = []
+            Q.save(q, expect=tok)
+            eq("queue lock: uncontended write commits", len(Q.load()["items"]), 0)
+
+            # --- 4. Back-compat: save() with no `expect` is unchecked, as
+            #        before. Callers that legitimately overwrite (test seeds,
+            #        `regen --no-preserve`) keep working.
+            Q.save({"items": [{"func": "func_Z", "file": "x", "distance": 0,
+                               "verdict": "C", "rules": 0, "status": "active"}]})
+            eq("queue lock: unchecked save still overwrites",
+               Q.load()["items"][0]["func"], "func_Z")
+
+            # --- 5. mark_done re-reads under the lock AFTER a minutes-long
+            #        gate (O.verify). If queue.json vanished meanwhile, load()
+            #        answers {"items": []} and _fingerprint() answers "" — they
+            #        AGREE, so the save would go through and write an empty
+            #        worklist with ok:true. Refuse loudly instead (layer-2
+            #        review 2026-08-07). Stub the gates so this stays pure
+            #        logic: the point is the write, not the completion bar.
+            seed(qp, ["func_A", "func_B"])
+            saved = (Q._rule_count, Q.cheats.func_prologue_count,
+                     Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
+                     Q.inlineasm.file_func_cheat_asm_count, Q.O.verify)
+            Q._rule_count = lambda f: 0
+            Q.cheats.func_prologue_count = lambda f: 0
+            Q.cheats.maspsx_gate_entries = lambda f: []
+            Q.cheats.canonical_asm_funcs = lambda: set()
+            Q.inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            # the "gate" deletes queue.json, standing in for a concurrent
+            # git checkout / stash landing during O.verify
+            def _verify_that_loses_the_file(rebuild=False):
+                qp.unlink()
+                return {"build_matches": True, "build_sha1": "deadbeef"}
+            Q.O.verify = _verify_that_loses_the_file
+            try:
+                vanished = False
+                try:
+                    Q.mark_done("func_A")
+                except Q.QueueConflict:
+                    vanished = True
+                check("queue lock: mark_done refuses to write an empty queue "
+                      "when queue.json vanishes mid-gate", vanished)
+                check("queue lock: no empty queue.json was written",
+                      not qp.exists())
+
+                # ...and the guard must NOT fire on the legitimate case it
+                # most resembles: completing the LAST item, which correctly
+                # leaves an empty queue. The check is on the RE-READ being
+                # empty, not on the post-drop result.
+                seed(qp, ["func_LAST"])
+                Q.O.verify = lambda rebuild=False: {"build_matches": True,
+                                                    "build_sha1": "deadbeef"}
+                r = Q.mark_done("func_LAST")
+                eq("queue lock: completing the LAST item still succeeds",
+                   r.get("ok"), True)
+                eq("queue lock: last completion empties the queue", Q.load()["items"], [])
+            finally:
+                (Q._rule_count, Q.cheats.func_prologue_count,
+                 Q.cheats.maspsx_gate_entries, Q.cheats.canonical_asm_funcs,
+                 Q.inlineasm.file_func_cheat_asm_count, Q.O.verify) = saved
+
+            # --- 6. Atomicity hygiene: the write-then-rename staging file is
+            #        never left behind (a reader must never find a partial
+            #        queue, and the tree must stay clean).
+            leftovers = sorted(p.name for p in Path(td).iterdir()
+                               if p.name.startswith("queue.json.tmp"))
+            eq("queue lock: no staging file left behind", leftovers, [])
+        finally:
+            Q.QUEUE_PATH = orig_path
+
+
 def main() -> int:
     test_canonical()
     test_score()
+    test_score_section_addend_mask()
     test_inlineasm()
     test_cheats()
     test_prologue_cheat()
@@ -1861,6 +2137,7 @@ def main() -> int:
     test_fake_annotated_lever_d_bypass()
     test_metrics()
     test_queue_reopen()
+    test_queue_write_serialization()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")
