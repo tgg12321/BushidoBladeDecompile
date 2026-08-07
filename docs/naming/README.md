@@ -1,68 +1,315 @@
-# Naming Proposal Database
+# Function naming — census, taxonomy, and reset policy
 
-Evidence-backed function-name proposals for the unnamed `func_XXXXXXXX`
-functions in Bushido Blade 2. The initial 1217-function analyzer pass has
-been fully resolved as of 2026-07-13 (see `proposals_audit_2026-07-13.md`);
-this dir stays as the analyzer's regenerable output for future passes and
-as the archive of applied/superseded proposals.
+This directory holds two related things:
 
-## Current state (2026-07-13)
+1. **The naming CENSUS** (`function-names.csv`) — one row per function in the binary,
+   recording what it is called today, **where that name came from**, how strong the
+   evidence is, and what should happen to it. This is the standing campaign, opened
+   2026-08-07. Described below.
+2. **The naming PROPOSAL database** — the older analyzer output that proposed names for
+   then-unnamed functions. Still live as an evidence source (the census cites it) and
+   documented in its own section at the end of this file.
+
+---
+
+## The owner directive (2026-08-07)
+
+> The existing names are **not trusted**. Kengo-based names previously misled agents
+> badly. **A false-positive name costs more than an auto name.** Names failing an
+> evidence bar will be **RESET** to `func_80XXXXXX` form.
+
+The reasoning: an auto name (`func_80017200`) makes no claim, so it cannot mislead. A
+wrong semantic name (`ang_hosei` on a file-I/O trampoline) actively sends the next agent
+down a false trail, and every downstream doc, ledger, and commit message inherits the
+error. So the burden of proof sits on the *name*, not on the doubt.
+
+**Confirmed misleads that motivated the campaign** (all reproduced in the census):
+
+| Name | What it actually is | Where recorded |
+|---|---|---|
+| `ang_hosei` | Marionation engine call, `break 0, 263` (0x107) — a **file-I/O trampoline**, not angle correction. Call sites `src/ings.c:141,143,170` pass file descriptors. | `inline_asm_canonical.txt:353`; `docs/grind/auth-packets-2026-08-06.md` batch 2 |
+| `game_2d_CheckLifeGaugeNoDisp` | A **LIBGTE 3×3 matrix × vector multiply** leaf (`ctc2`/`mvmva`/`swc2`) — not a UI predicate. Zero general-purpose computation. | `inline_asm_canonical.txt:346`; same auth packet |
+| `cpu_set_move_command_and_dir_for_no_action_2` | The **sole `jal` target of `_start`** (`asm/funcs/_start.s:42`). A crt0's final call is `main()`. | this census — see RENAME below |
+| `katinuki_game_get_katinuki_max_num_*` (5) | `gpu_EnableDisplay`, `gpu_DisableDisplay`, and three 1-line wrappers. Size-only Kengo matches. | `named_syms.txt:271-275`; `kengo_name_decisions.csv` |
+| `tslSmdSendVu1Code_*`, `Vu0SetLightColMatrix_*` | **VU0/VU1 are PS2-only.** These cannot name PS1 code at all. | `named_syms.txt:276,277,2493-2496` |
+
+---
+
+## Phase 1 status: CENSUS ONLY
+
+This pass is **read-only with respect to the build**. No renames, no `src/` edits, no
+build-file edits were made. `function-names.csv` records recommendations; nothing has
+been acted on. The reset tooling is **phase 2** and is deliberately **not built yet** —
+see the cascade warning below for why it must be tooled rather than hand-applied.
+
+---
+
+## The universe: what counts as a function
+
+**1,436 functions.** Derivation, because the number is quoted inconsistently elsewhere:
+
+| Source | Count | Note |
+|---|---|---|
+| `asm/funcs/*.s` files | 1,438 | splat's per-function split — the authoritative enumeration |
+| minus `D_8007E08C.s` | 1,437 | data-as-code blob, not a function |
+| minus 2 duplicate-name pairs | **1,436** | `cdrom_FramesToBcd.s` / `func_800806A4.s` and `stage_InitCollision.s` / `func_8003F274.s` are each two files carrying the **same** `glabel`. Stale split artifacts; worth cleaning up separately. |
+
+`AGENTS.md` says "1,410 functions identified by splat" — that figure is **stale**; the
+Makefile's own comment says 1,437. `engine/queue.json` is *not* a universe source: it
+lists only functions still carrying a cheat (incomplete-only).
+
+### A name lives in up to three layers
+
+This is the subtlety that makes a naive census wrong. A function can be called one thing
+by the linker and another thing by a human reader:
+
+1. **`glabel`** in `asm/funcs/<name>.s` — linker-authoritative.
+2. **The C definition** in `src/*.c` — what a reader of the source sees.
+3. **Alias registry lines** in `named_syms.txt` / `symbol_addrs.txt`, conventionally
+   suffixed `<name>_<ADDR>`.
+
+**961 functions whose `glabel` is still `func_XXXXXXXX` nevertheless carry a semantic
+alias** at the same address. A census keyed only on `glabel` would have mislabelled all
+961 as harmless AUTO. The census is therefore keyed on **address**, records all three
+layers (`glabel`, `current_name`, `aliases`, `name_layer`), and tiers the **strongest
+semantic claim** visible to a reader — because that is the claim that can mislead.
+
+---
+
+## Confidence tiers
+
+| Tier | Count | Meaning | Default action |
+|---|---:|---|---|
+| **VERIFIED** | 9 | The name is **fact**: an in-binary string, a hardware-defined role, or a PsyQ syscall signature. | KEEP |
+| **CORROBORATED** | 86 | Body behaviour and/or call graph affirmatively agrees with the name's claim, with a citation; no contradicting evidence. | KEEP |
+| **INFERRED** | 907 | Plausible from behaviour but unreviewed, or a generic/descriptive name whose claim is weak. **Not defended — just not contradicted.** | KEEP (review) |
+| **SUSPECT** | 311 | Kengo-derived provenance, **or** a recorded contradiction, **or** the claim conflicts with observed behaviour. | **RESET** |
+| **AUTO** | 123 | `func_80XXXXXX` / splat-generated. No claim, no risk. | KEEP |
+
+### What earns VERIFIED
+
+Only three evidence kinds, all dispositive:
+
+- **In-binary self-identifying string (6).** The function loads a rodata string equal to
+  its own name — PsyQ's debug/assert strings, embedded in the routine itself.
+  `gpu_SetDispMask` loads `D_80015F04` = `"SetDispMask(%d)...\n"`. Also `gpu_DrawSync`,
+  `gpu_LoadImage`, `gpu_StoreImage`, `gpu_ClearOTag`, `gpu_DrawOTag`.
+- **PsyQ syscall signature (2).** `EnterCriticalSection` / `ExitCriticalSection` — BIOS
+  trampoline shape, syscalls #1/#2.
+- **Hardware-defined role (1).** `_start` — the PS-EXE entry point at `0x800836EC` per
+  the executable header, with crt0 shape (BSS zero, `$sp`/`$gp`/`$fp` setup, `jal main`,
+  `break 0, 1`).
+
+**VERIFIED outranks Kengo provenance.** Several of these names also appear in
+`kengo_matches.csv`; that only means Kengo reused the same PsyQ SDK name. In-binary fact
+is not demotable by suspicion. (The census applies this precedence explicitly — an
+earlier draft let the SUSPECT rule silently overwrite VERIFIED rows.)
+
+### What makes something SUSPECT
+
+311 rows, from three independent triggers:
+
+- **Kengo-derived provenance (249).** The name traces to `kengo_matches.csv`, to
+  `kengo_name_decisions.csv`, or to a Kengo-banded section of the
+  `tools/rename_funcs.py` rename map. Per the owner directive this is *by itself*
+  disqualifying, regardless of the match's stated confidence. Includes **disambiguated
+  variants** (`foo_2`, `foo_3`, `fooB`, `Disp..._A`) — re-using one Kengo claim at a
+  second address is the single most common false-positive shape, per this directory's
+  own prior README.
+- **PS2-only symbol families (13).** `tsl*`, `su[A-Z]*`, `Vu0*`, `Vu1*` are Kengo/PS2
+  engine names. VU0/VU1 hardware does not exist on PS1, so these cannot be right.
+- **Recorded contradiction (49).** A `MISNAMED` / `wrong` flag in `named_syms.txt` or an
+  entry in `MISNOMERS.md` condemning that specific symbol.
+
+**A misname flag condemns only the symbol it is attached to.** Where the flag sits on a
+*sibling* alias, the currently-displayed name is frequently the **correction** that flag
+points to — e.g. `syscall_wrapper_break_800164F8` is flagged MISNAMED and
+`breakpoint_trap_loop` is its fix. Demoting the fix because of its own flag would be
+backwards. Those rows carry a `CONTEXT:` note instead of a demotion.
+
+### Origin taxonomy
+
+Every non-AUTO name is attributed to a recorded evidence path:
+
+| Origin | Count | Tier it implies |
+|---|---:|---|
+| `naming-analyzer(proposals_resolved / proposals / residual_named)` | 860 | INFERRED, or CORROBORATED for `manual_re` + confidence=high |
+| `kengo-derived` (incl. PS2-only prefixes) | 262 | SUSPECT |
+| `splat-auto` | 123 | AUTO |
+| `misname-flag` | 49 | SUSPECT |
+| `psyq-idiom-scan` (`known_psyq_stdlib.txt` body-shape match) | 39 | CORROBORATED |
+| `psyq-family-prefix` | 38 | INFERRED — prefix only |
+| `legacy-renamer-map(verified band)` | 29 | CORROBORATED |
+| `unattributed` | 16 | INFERRED — provenance unknown |
+| `in-binary-string` / `psyq-signature` / `hardware-role` | 9 | VERIFIED |
+
+Two deliberate judgements, both erring toward *less* confidence:
+
+- **A PsyQ family prefix alone does not corroborate anything.** `spu_WriteReg`,
+  `sys_VSync`, `gpu_SendPacket` assert a specific SDK entry point on the strength of
+  their own prefix. Those are INFERRED, not CORROBORATED. The exception is the
+  `cdrom_*` cluster, whose bodies were spot-checked against the
+  `g_cd_index_reg`/`g_cd_irq_reg`/`g_cd_dma_ctrl` register-pointer block
+  (`kengo-rename-audit-2026-07-13.md`, apply record).
+- **Recorded provenance outranks name shape.** Where an analyzer CSV records where a
+  name actually came from, that wins over what the name looks like — so a
+  `sys_`-prefixed name invented by the analyzer is attributed to the analyzer and
+  carries a note that its prefix asserts more than its evidence supports.
+
+The 16 **unattributed** names (`obj_Init*`, `seq_*`, `player_*`, `game_Frame*`,
+`game_Cleanup`, `debug_printf`) all entered in one commit — `4c7390cc`, 2026-04-10,
+"readability: rename 29 func_ functions to semantic names", Opus-authored, recording no
+per-function evidence. Notably the *GPU/BIOS* names from that same commit later proved
+VERIFIED by in-binary strings, which partially validates the pass's method; the
+`obj_`/`seq_`/`player_` names have no such confirmation. Per the standing
+`verify-opus-handoff-claims` directive these need independent re-derivation, but they
+carry no contradiction, so they are INFERRED rather than SUSPECT.
+
+---
+
+## Recommended actions
+
+| Action | Rows |
+|---|---:|
+| KEEP | 1,125 |
+| **RESET** to `func_80XXXXXX` | **310** |
+| **RENAME** | **1** |
+
+### The one RENAME
+
+`0x80017200` `cpu_set_move_command_and_dir_for_no_action_2` → **`main`**.
+
+`asm/funcs/_start.s:42` is `jal 0x80017200`, and it is the crt0's only call other than
+`bios_InitHeap`. A crt0's final call is `main()`. The current name has no basis at all:
+`kengo_matches.csv` matched this address to `gnd_land_hit_char_tsuba` with
+`combined_score=0.00`, which is neither the applied name nor a usable signal.
+
+### The reset set (310)
+
+All 311 SUSPECT rows minus the one promoted to RENAME. Resetting restores
+`func_80XXXXXX` at the address and **deletes the semantic claim**, including its
+`named_syms.txt` alias lines. The evidence for each reset is in the row's `evidence`
+column; the misname-flag text should be **preserved as a comment** on the reset symbol
+so the finding is not lost with the name.
+
+---
+
+## ⚠ The rename cascade — why phase 2 must be tooled, never hand-edited
+
+Function names are not cosmetic in this tree. They are **keys** into the build pipeline.
+A reset wave touching 310 names hits every one of these surfaces:
+
+| Surface | SUSPECT names referenced | Why it breaks |
+|---|---:|---|
+| `named_syms.txt` | 191 | the alias registry itself |
+| `engine/queue.json` | 96 | the worklist keys on function name |
+| `regfix.txt` | 70 | **rules are keyed by function name** — a desync silently drops the rule |
+| **`sdata_funcs.txt`** | **54** | **GP-relative addressing breaks if these desync** (`tools/rename_funcs.py` documents this explicitly) |
+| `asmfix.txt` | 19 | as regfix |
+| `sdata_exclude.txt` | 18 | as sdata |
+| `inline_asm_canonical.txt` | 12 | canonical-asm authorizations are name-keyed; a desync un-authorizes a function |
+| `undefined_syms_auto.txt` | 10 | splat symbol resolution |
+| `maspsx_label_nop_funcs.txt`, `regfix_stage2.txt` | 3 each | pipeline gate lists |
+| `bb2.ld`, `volatile_extern_allowlist.txt` | 2 each | `bb2.ld` is **hand-maintained** — see below |
+| `src/*.c` | 251 | definitions and call sites |
+| `include/*.h` | 143 | declarations |
+| `asm/funcs/*.s` | 288 | `glabel` / `endlabel` — **and the filename must match the `INCLUDE_ASM` argument** |
+| `memory/` (729 files) | — | 227 `grind/` + 89 `wip/` per-function ledgers, directory-named by function |
+
+Non-negotiables for the phase-2 tool:
+
+1. **Oracle verification on every batch.** A rename is symbol-level only, so the full
+   build+link SHA1 must still equal `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Any
+   drift means a surface was missed. Batch, verify, roll back on mismatch.
+2. **Never run `make setup`.** `bb2.ld` is hand-maintained (CLAUDE.md, `splat.yaml`).
+3. **LF line endings** on every build file touched.
+4. **`glabel` and the `.s` filename must move together** with the `INCLUDE_ASM`
+   argument, or the linker gets an undefined symbol. `tools/rename_funcs.py` renames
+   `jal` sites but **skips glabels** — a naive reuse of it will produce exactly this
+   break (the 2026-07-13 audit deleted 8 known-wrong entries from that map specifically
+   so a blind `--apply` could not reintroduce them).
+5. **Do not run it while the Grinder is running** — foreign dirt in the working tree
+   makes the driver's scope check discard sessions
+   ([[grinder-clobbers-uncommitted-edits]]).
+
+---
+
+## Regenerating the census
+
+```bash
+python3 docs/naming/build_census.py     # rewrites docs/naming/function-names.csv
+```
+
+Read-only; it writes exactly one file. Inputs: `asm/funcs/*.s`, `src/*.c`,
+`named_syms.txt`, `symbol_addrs.txt`, `kengo_matches.csv`, `kengo_name_decisions.csv`,
+`tools/rename_funcs.py`, `known_psyq_stdlib.txt`, `inline_asm_canonical.txt`,
+`engine/queue.json`, `disc/SLUS_006.63` (string extraction), the `docs/naming/*.csv`
+proposal tables, and `git log -S` for otherwise-unattributed names.
+
+### `function-names.csv` schema
+
+| Column | Meaning |
+|---|---|
+| `address` | `0x8XXXXXXX` — the primary key |
+| `current_name` | the strongest semantic name a reader sees |
+| `glabel` | the linker-authoritative symbol in `asm/funcs/` |
+| `name_layer` | which layer `current_name` came from |
+| `aliases` | all semantic aliases at this address |
+| `insns` | instruction count |
+| `src_location` | best-effort `src/<file>:<line>` (heuristic; may point at a declaration) |
+| `origin` | evidence path the name came from |
+| `tier` | VERIFIED / CORROBORATED / INFERRED / SUSPECT / AUTO |
+| `evidence` | short citation chain |
+| `action` | KEEP / RESET / RENAME |
+| `proposed_name` | for RENAME rows |
+| `queued` | function is still on `engine/queue.json` |
+
+---
+
+# Naming Proposal Database (pre-existing — retained)
+
+Evidence-backed function-name proposals for the unnamed `func_XXXXXXXX` functions. The
+initial 1217-function analyzer pass was fully resolved as of 2026-07-13 (see
+`proposals_audit_2026-07-13.md`); this dir stays as the analyzer's regenerable output for
+future passes and as the archive of applied/superseded proposals. **The census above now
+supersedes this as the primary naming worklist**, and cites these tables as an evidence
+source.
+
+## State as of 2026-07-13
 
 - **High confidence:** 0 pending (all 10 resolved).
 - **Medium confidence:** 0 pending (all 111 resolved).
-- **Low confidence still pending:** 23 (weak-evidence `_local_`/`_func_` stubs;
-  these need more caller context to firm up).
-- Full audit: `proposals_audit_2026-07-13.md`
-- Resolved rows: `proposals_resolved.csv`
+- **Low confidence still pending:** 23 (weak-evidence `_local_`/`_func_` stubs).
+- Full audit: `proposals_audit_2026-07-13.md`; resolved rows: `proposals_resolved.csv`.
 
 ## Files
 
-- `proposals.csv` -- canonical machine-readable proposal table
-  - one row per originally-unnamed function
-  - schema: address, current_name, proposed_name, confidence, evidence_summary, evidence_detail_file
-- `proposals_high_confidence.md` -- review table for `high`-tier proposals
-- `proposals_medium_confidence.md` -- review table for `medium`-tier proposals
-- `proposals_resolved.csv` -- rows that have already been applied (or applied under a different name)
-- `proposals_audit_2026-07-13.md` -- audit result: applied-as-proposed / applied-differently / still-pending counts
-- `psyq_library_matches.md` -- focused view on PsyQ stdlib / BIOS jumptable / syscall wrapper proposals
-- `subsystem_clusters.md` -- call-graph cluster analysis (which subsystem do unnamed funcs belong to)
-- `data_symbols_quick_wins.md` -- naming hints for `D_*` undefined symbols based on access pattern
-- `methodology.md` -- analyzer design + evidence kinds + scoring + known caveats
-- `evidence/<func_name>.md` -- per-function evidence detail file
+- `proposals.csv` — canonical machine-readable proposal table
+  (address, current_name, proposed_name, confidence, evidence_summary, evidence_detail_file)
+- `proposals_high_confidence.md` / `proposals_medium_confidence.md` — review tables
+- `proposals_resolved.csv` — rows already applied (or applied under a different name)
+- `proposals_audit_2026-07-13.md` — applied-as-proposed / applied-differently / pending counts
+- `psyq_library_matches.md` — PsyQ stdlib / BIOS jumptable / syscall wrapper proposals
+- `subsystem_clusters.md` — call-graph cluster analysis
+- `data_symbols_quick_wins.md` — naming hints for `D_*` symbols by access pattern
+- `methodology.md` — analyzer design, evidence kinds, scoring, caveats
+- `MISNOMERS.md` — names demonstrated wrong by body analysis
+- `LEGACY_RENAMER_AUDIT.md`, `kengo-rename-audit-2026-07-13.md` — rename-map audits
+- `evidence/<func_name>.md` — per-function evidence detail
 
-## How to apply a proposal
+## Regenerating the proposal tables
 
-Open `proposals_high_confidence.md` for the lowest-risk batch. For each row you want to apply:
-
-1. Read `evidence/<func>.md` to verify the evidence stands up.
-2. Spot-check the disassembly snippet matches the proposed semantics.
-3. Add `<proposed_name> = 0x<addr>;` to `named_syms.txt`.
-4. Grep and replace `func_XXXXXXXX` references throughout `src/*.c` with the new name.
-5. Verify: `& tools/wteng.ps1 main verify-oracle --rebuild` (in PowerShell). Expect SHA1 unchanged — a name change is symbol-level only. Do NOT run `make setup` — `bb2.ld` is hand-maintained (see CLAUDE.md).
-6. Commit one batch (e.g., all BIOS wrappers, all PsyQ memcpy/memset) at a time.
-
-The existing `tools/apply_kengo_names.py` knows how to apply Kengo-named proposals in lockstep (named_syms.txt + src/*.c). For BIOS / PsyQ / syscall proposals the asm rename lands via the linker's symbol table (both old and new names resolve to the same address); update `src/*.c` references so the C-level reader sees the new name. Do NOT touch `symbol_addrs.txt` or `undefined_syms_auto.txt` manually unless you know the splat tooling.
-
-## Regenerating
-
-```
+```bash
 python3 tools/propose_function_names.py            # rebuild proposals.csv + evidence/
 python3 tools/render_naming_docs.py                # rebuild markdown views
-python3 tools/diff_naming_proposals.py OLD.csv NEW.csv  # show diff vs prior run
+python3 tools/diff_naming_proposals.py OLD.csv NEW.csv
 ```
 
-Inputs the analyzer reads:
+## Standing caveats
 
-- `asm/funcs/*.s` -- raw function disassembly
-- `named_syms.txt`, `symbol_addrs.txt` -- already-named functions and globals
-- `kengo_matches.csv` -- Kengo PS2 cross-reference (from `tools/kengo_match.py`)
-- `kengo_name_decisions.csv` -- reviewed decisions to suppress demoted names
-- `known_psyq_stdlib.txt` -- existing PsyQ idiom scan
-- `undefined_syms_auto.txt` -- splat-auto-detected data symbols
-- `asm/data/*.rodata*.s` -- string constants for `string_adjacent` evidence
-
-## Important caveats
-
-- **Size-only Kengo matches were the #1 source of false-positive renames** in the prior pass (`katinuki_game_get_katinuki_max_num_*`, 5 functions). The analyzer downgrades these to `low` and address-suffixes them.
-- **Address-suffixed names indicate uncertainty.** A proposed `foo_8001ABCD` is the analyzer saying "this is the best candidate but I can't promise it's a true match." When applying, prefer dropping the suffix only AFTER body inspection confirms semantics.
-- **Per-function evidence files** are the single source of truth for why the proposal exists. Read them.
+- **Size-only Kengo matches were the #1 source of false-positive renames**
+  (`katinuki_game_get_katinuki_max_num_*`, 5 functions). The census now treats *all*
+  Kengo-derived names as SUSPECT.
+- **Address-suffixed names indicate uncertainty.** A proposed `foo_8001ABCD` means "best
+  candidate, not a promise." Drop the suffix only after body inspection.
+- **Per-function evidence files are the source of truth** for why a proposal exists.
