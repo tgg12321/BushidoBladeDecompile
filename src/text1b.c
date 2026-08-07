@@ -1465,7 +1465,7 @@ INCLUDE_ASM("asm/funcs", func_80052CD4);
 PAD_NOPS_3; /* padding after func_80052CD4 */
 INCLUDE_ASM("asm/funcs", func_80052D00);
 extern s32 func_80052754(s32, s32, s32);
-extern s32 func_80052D00();
+extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
 extern void func_80053E9C();
 extern u8 D_800EFA00;
@@ -1499,7 +1499,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3) {
     }
     func_80052D00(arg2, arg3);
 }
-extern s32 func_80052754(s32, s32, s32, s32);
+extern s32 func_80052754(s32, s32, s32);
 extern s32 func_80052D00(s32, s32);
 extern void func_80053754();
 extern void func_80053E9C();
@@ -1515,8 +1515,7 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (func_80052754(
             *(s32 *)((u8 *)D_800A33F4 + 0x18) - *(s32 *)((u8 *)D_800A33F4 + 0x8),
             *(s32 *)((u8 *)D_800A33F4 + 0x1C) - *(s32 *)((u8 *)D_800A33F4 + 0xC),
-            *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10),
-            *(s32 *)((u8 *)D_800A33F4 + 0x1C)) <= 0x9C3F) {
+            *(s32 *)((u8 *)D_800A33F4 + 0x20) - *(s32 *)((u8 *)D_800A33F4 + 0x10)) <= 0x9C3F) {
         p = (u8 *)D_800A33F4;
         hi0 = *(s32 *)(p + 0x18);
         a = *(s32 *)(p + 0x8);
@@ -1533,7 +1532,7 @@ void func_8005344C(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     }
     func_80052D00(arg2, arg3);
 }
-extern s32 func_80052D00();
+extern s32 func_80052D00(s32, s32);
 extern void func_80053E9C();
 extern u8 D_800EFA00;
 extern u8 D_800EF9F8;
@@ -2751,7 +2750,7 @@ void func_8005C650(s32 a0, s32 a1, s32 a2) {
 }
 INCLUDE_ASM("asm/funcs", func_8005C6D0);
 INCLUDE_ASM("asm/funcs", func_8005C8A8);
-extern s32 func_80073728();
+extern s32 func_80073728(s32, s32);
 extern s32 D_8009B2C8;
 extern s32 D_8009B340;
 extern s32 D_8009B358;
@@ -2788,7 +2787,7 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.zero10 = 0;
     s.one14 = 1;
     s.ret = arg0;
-    ret = func_80073728((GameObj *)(&s), 0);
+    ret = func_80073728((s32)(&s), 0);
     s.byte28 = 0;
     s.p0 = (void *)(((u8 *)(&D_8009B2C8) + stride) + 0xC);
     s.p1 = &D_8009B358;
@@ -2799,7 +2798,7 @@ void func_8005D46C(s32 arg0, s32 arg1) {
     s.zero10 = 0;
     s.one14 = 1;
     s.ret = ret;
-    func_80073728((GameObj *)(&s), 0);
+    func_80073728((s32)(&s), 0);
 }
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
@@ -2862,7 +2861,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.one14 = c1;
             s.ret = ret;
             s.zero1C = a2_offset;
-            ret = func_80073728((GameObj *)&s, 0);
+            ret = func_80073728((s32)&s, 0);
 
             s.byte28 = 0;
             s.c24 = c100;
@@ -2878,7 +2877,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.one14 = c1;
             s.ret = ret;
             s.zero1C = a2_offset;
-            ret = func_80073728((GameObj *)&s, 0);
+            ret = func_80073728((s32)&s, 0);
         } while (i < ((D_800A326C + 1) * 2));
     }
     D_800A326C += 1;
@@ -2927,11 +2926,11 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
         break;
     }
     s.ret = start;
-    ret = func_80073728((GameObj *)(&s), 0);
+    ret = func_80073728((s32)(&s), 0);
     s.p0 = (void *)((u8 *)(&D_8009B610) + (arg0 * 0xC));
     s.p1 = &D_8009B634;
     s.ret = ret;
-    func_80073728((GameObj *)(&s), 0);
+    func_80073728((s32)(&s), 0);
     return end - arg1;
 }
 extern u8 D_800A327C[8];
@@ -3235,7 +3234,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         c3 = (s32)(&D_8009B7D0);
         s.p_static = (s32 *)c3;
         s.pad0C = mid_off;
-        mid_off = func_80073728(&s, 0);
+        mid_off = func_80073728((s32)&s, 0);
     Skip:
         if (i != last) {
             s.arg1_field = prev;
