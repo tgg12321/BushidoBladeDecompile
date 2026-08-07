@@ -262,9 +262,20 @@ and `ori`-vs-`addu` differences, unrelated to any BB2 hook and present before
 this change. Dumps for functions in those two TUs are therefore not faithful to
 what the project actually builds; treat ra_solver evidence there as suspect
 until the two binaries are reconciled. All other 30 TUs agree byte-for-byte.
-Script: `tmp/sugg_fidelity.sh`. `local_extract.py` carries the pair in
-`UNFAITHFUL_STEMS` and warns on stderr when either is extracted, so the
-exclusion is visible at the point of use and not only here.
+Reproduce with `bash tools/wsl.sh 'bash tmp/sugg_fidelity.sh'` — it compiles
+every TU with both binaries and names the ones that differ. `local_extract.py`
+carries the pair in `UNFAITHFUL_STEMS` and warns on stderr when either is
+extracted, so the exclusion is visible at the point of use and not only here.
+
+**Open item, owner shelf (routed 2026-08-06).** This is solver infrastructure,
+not a decomp function, and reconciling the two cc1 binaries is deliberately NOT
+something to do unilaterally (rule 1 of [[no-compiler-divergence]]). It has a
+known consumer: **`saTan2KabutoWareMove` is an active work item in
+`code6cac_b`**, so the gap must be resolved before that function's next
+solver-driven session — any ra_solver evidence gathered for it today describes
+a compiler the project does not ship. `camera_set_zoom` and
+`DispPracticeMenuTex_A` are unaffected (both in `src/code6cac.c`, which is
+faithful).
 
 ### What this pass did NOT explain (2026-08-06)
 
