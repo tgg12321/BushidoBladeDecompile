@@ -3496,7 +3496,7 @@ main_work:
     D_800F1AF4 = r_arg1;
     D_800F1AF0 = (s32)arg0;
     s1 = 0;
-    if (*(volatile s32 *)&D_800F1AF4 == 0) goto return_val;
+    if (D_800F1AF4 == 0) goto return_val;
 
     {
         volatile s32 *loop_flag = flag;
@@ -3543,7 +3543,7 @@ inner_wait2:
         s1 = 0;
 
 loop_continue:
-        if (*(volatile s32 *)&D_800F1AF4 != 0) goto outer_top;
+        if (D_800F1AF4 != 0) goto outer_top;
     }
 
 return_val:
