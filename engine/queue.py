@@ -198,12 +198,19 @@ def _not_a_c_function(stem: str, func: str) -> bool:
             or func in inlineasm.symbol_marker_funcs(text))
 
 
-def _route(opcode_verdict: str, distance: int) -> str:
-    """(opcode verdict, honest pure-C distance) -> queue verdict."""
+def _route(func: str, opcode_verdict: str, distance: int) -> str:
+    """(opcode verdict, honest pure-C distance) -> queue verdict. Mirrors
+    canonical._verdict's structural tier EXACTLY: ASM-STRUCTURAL requires
+    BOTH distance > NEAR_CERTAIN_DISTANCE AND hand-coded corroboration
+    (2026-06-09 gate fix; distance alone is not evidence — the pre-fix
+    distance-only routing here kept resurrecting the audit-rejected
+    population after every regen)."""
     if opcode_verdict in ("ASM-WHOLE", "ASM-PARTIAL"):
         return opcode_verdict
     if distance > canonical.NEAR_CERTAIN_DISTANCE:
-        return "ASM-STRUCTURAL"
+        if canonical._hand_coded_tier(func) in ("STRONG", "POSSIBLE"):
+            return "ASM-STRUCTURAL"
+        return "ASM-SUSPECT"
     if distance > canonical.SUSPECT_DISTANCE:
         return "ASM-SUSPECT"
     return "C"
@@ -341,10 +348,10 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # disclaims (and that the owner overturned for 26 functions on
                 # 2026-08-01). Keep the distance for ORDERING, route on the
                 # opcode verdict alone.
-                verdict = _route(verdicts.get(func, "C"), 0)
+                verdict = _route(func, verdicts.get(func, "C"), 0)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             else:
-                verdict = _route(verdicts.get(func, "C"), dist)
+                verdict = _route(func, verdicts.get(func, "C"), dist)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             entry = {"func": func, "file": stem, "distance": dist,
                      "verdict": verdict, "rules": rules, "status": status}
