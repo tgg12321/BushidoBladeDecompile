@@ -1,3 +1,13 @@
+/* s3 (permuter, 2026-08-07) addendum: floor still 1. New structural law measured:
+ * the andi folds IFF the call block is fall-through-reachable on cse1 path;
+ * target CFG puts the call at a branch target (bne 0x44). jump1 canonicalizes
+ * every diamond spelling before cse1 into one of two stable forms — target
+ * layout WITH andi, or fall-through layout WITHOUT andi but a 2-insn CFG miss
+ * (rejected/andifree-fallthrough-wrong-cfg.c). Two fresh-seed campaigns dry:
+ * P1 andi-free chassis 64k iters (one cheat-flavored -30 find), m1 idx-reuse
+ * chassis 68k iters ZERO finds. Open crack for forensics: cse.c
+ * cse_end_of_basic_block follow_jumps/skip_blocks — can a cse path ever cross
+ * the 2-insn return-0 block into the branch target? See evidence.md s3. */
 /* func_80048AD0 — HONEST FLOOR: sandbox distance 1 (47/47 insns), re-confirmed
  * s2-permuter 2026-08-07. Sole residual: `andi $a0,$a0,0xff` in the
  * snd_LoadBgm jal delay slot where target has `nop` (caller-side truncation

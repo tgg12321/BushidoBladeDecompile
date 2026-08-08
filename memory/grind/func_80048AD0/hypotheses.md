@@ -96,3 +96,51 @@
 - probe: full 2x2 cast matrix compiled through the exact build pipeline (tmp/grind/func_80048AD0/s2/try_out.sh + probe_*.c)
 - result: call-only: andi remains (no CSE partner). compare-only and both: andi gone but the arg copy sources the QImode CSE temp, {$a0} lands on the dying temp, counter/delta flip to $a2/$a0 (7 reg diffs, permuter 35). Fold and pref-loss are coupled through the same temp. Both casts are also semantically redundant (lbu value < 0x100; u8 prototype already truncates) = F2 forbidden family — dead on measurement AND policy axes
 - verdict: KILLED
+
+## [s3] A source spelling exists whose CFG matches target AND whose call block sits on cse1's path (folding the andi)
+- mechanism: cse1 extends paths along fall-through and simple jumps; if any gating spelling keeps the call fall-through-reachable while final layout puts it at the bne target, both halves of the residual close at once
+- probe: 5-probe hand matrix (inverted gate / P1 block form / P2 goto-body / P6 goto-diamond / P8 dead-store-blocked diamond) through the exact workspace pipeline, plus the P8 .jump dump
+- result: the two properties are MUTUALLY EXCLUSIVE at the jump1 normal-form level — jump1 canonicalizes every diamond spelling BEFORE cse1 into either (target layout, call at branch target, no fold) or (fall-through call, return-0 at end, fold, 45/47 CFG miss); the dead-store blocker does not delay the inversion (jump1 handles intervening code; .jump dump proves it); block layout never changes after jump1
+- verdict: KILLED (for every spelling class measured; the cse.c skip_blocks read is the one unmeasured crack, assigned to forensics)
+
+## [s3] A same-bb producer of `sound` in the call block lets combine fold the truncation (LOG_LINK theory)
+- mechanism: combine needs an intra-bb def-use link to attempt simplify; a re-set of sound at the call-block head would provide it and nonzero_bits(P)=0xFF would fold the and
+- probe: p7_dupread_stmt_PROBEONLY.c (duplicate-read statement, banned family, mechanism probe only)
+- result: andi REMAINS — the fold is cse-path-based, not combine-based; also proves the banned argument form avoided the truncation at expand time rather than folding it
+- verdict: KILLED
+
+## [s3] The andi-free P1 basin can reach target CFG under permuter body mutation
+- mechanism: random mutation might discover an exit-form/gating respelling whose jump1 normal form is target layout while preserving the fold
+- probe: campaign tmp/perm_48AD0_p1 (base 460), 64,450 iterations, 28 min
+- result: one find, output-430-1 (constant-holder + do-while(0), -30, cheat-flavored, nowhere near 0); nothing else in ~18 quiet minutes
+- verdict: KILLED
+
+## [s3] The m1 idx-reuse basin (u8 sound, base 10) has a downhill neighbor splitting idx/counter registers
+- mechanism: some spelling might seat idx in $v0 while the counter keeps $a0 without forfeiting the dying-pseudo pref chain
+- probe: campaign tmp/perm_48AD0_m1, 68,142 iterations, 28 min
+- result: ZERO finds — no downhill neighbor at all
+- verdict: KILLED
+
+## [s3] A source spelling exists whose CFG matches target AND whose call block sits on cse1's path so the andi folds
+- mechanism: cse1 extends paths along fall-through and simple jumps; a gating spelling keeping the call fall-through-reachable while final layout puts it at the bne target would close both halves of the residual at once
+- probe: 5-probe hand matrix (inverted-gate, P1 block form, P2 goto-body, P6 goto-diamond, P8 dead-store-blocked diamond) through the exact workspace pipeline, plus the P8 -da .jump dump
+- result: Mutually exclusive at jump1's normal form: jump1 canonicalizes every diamond spelling BEFORE cse1 into either (target layout, call at branch target, andi stays) or (fall-through call, return-0 at end, andi folds, 45/47 CFG miss); the dead-store blocker does not delay the inversion (.jump dump proves jump1 handles intervening code); block layout never changes after jump1
+- verdict: KILLED
+
+## [s3] A same-bb producer of sound in the call block lets combine fold the truncation (LOG_LINK theory)
+- mechanism: combine needs an intra-bb def-use link to attempt simplification; a re-set of sound at the call-block head would provide it with nonzero_bits(P)=0xFF
+- probe: p7_dupread_stmt_PROBEONLY.c — duplicate-read statement at the call-block head (banned family, compiled strictly as a mechanism probe, never proposable)
+- result: andi remains — the fold is cse-path-based, not combine-based; also proves the layer-1-banned argument form avoided the truncation at EXPAND time (u8-typed argument expression) rather than folding it
+- verdict: KILLED
+
+## [s3] The andi-free P1 basin can reach target CFG under permuter body mutation
+- mechanism: random mutation might discover an exit-form/gating respelling whose jump1 normal form is target layout while preserving the fold
+- probe: campaign tmp/perm_48AD0_p1 (base 460, body-confined passes), 64,450 iterations / 28 min, wait+harvest --stop in-turn
+- result: one find: output-430-1, a new_var=0xFF constant-holder + do-while(0) wrap, -30, cheat-family flavored, nowhere near 0; no other novelty in ~18 quiet minutes
+- verdict: KILLED
+
+## [s3] The m1 idx-reuse basin (u8 sound, base 10) has a downhill neighbor splitting idx/counter registers
+- mechanism: some spelling might seat idx in $v0 while the counter keeps $a0 without forfeiting the dying-pseudo preference chain
+- probe: campaign tmp/perm_48AD0_m1, 68,142 iterations / 28 min, wait+harvest --stop in-turn
+- result: ZERO finds — no downhill neighbor at all; corroborates the s2 analytic kill of the fresh-counter {$a0}-pref lever
+- verdict: KILLED
