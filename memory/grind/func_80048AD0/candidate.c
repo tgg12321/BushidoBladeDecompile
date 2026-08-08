@@ -1,3 +1,12 @@
+/* s5 (forensics, 2026-08-07): floor still 1; body unchanged. Fresh-counter
+ * mechanism named: find_reg pass-0 regs_someone_prefers repulsion -- delta's
+ * full-pref {$a0} (set_preference on the one-insn addiu arg copy) excludes
+ * $a0 from the counter's pass-0 search; this body's reuse counter OWNS the
+ * {$a0} copy-pref instead, which is why it allocates like target. MEASURED:
+ * with ONLY the snd_LoadBgm extern corrected to the definition signature
+ * (src/sound.c:133 `s32 *snd_LoadBgm(s32)`), THIS body scores sandbox 0
+ * (47/47). That extern edit is the twice-refused (A) -- NOT applied here;
+ * ruling-request filed s5. See evidence.md s5 for the full theorem. */
 /* s4 (forensics, 2026-08-07): floor still 1; body unchanged. The s3 "cse1
  * path" law is RE-ATTRIBUTED: cse1's path DOES reach the truncation under
  * target layout (P8 .cse: "Processing block from 2 to 94") but cse never folds

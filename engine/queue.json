@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80048AD0",
-      "file": "text1b",
-      "distance": 19,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80021A98",
       "file": "code6cac",
       "distance": 20,
@@ -2461,17 +2453,26 @@
       "rules": 15,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
+      "func": "func_80048AD0",
+      "file": "text1b",
+      "distance": 19,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-07 \u2014 func_80048AD0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
     "total": 289,
-    "active": 254,
+    "active": 253,
     "by_status": {
-      "active": 254,
-      "parked": 35
+      "active": 253,
+      "parked": 36
     },
     "by_verdict": {
-      "C": 168,
+      "C": 167,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 47
     }

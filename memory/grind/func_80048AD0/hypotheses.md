@@ -193,3 +193,34 @@
 - probe: k1 (pre-gate copy) and k2 (call-block-head copy) through the exact workspace pipeline + full -da dump of k1
 - result: BOTH byte-identical to base (andi present, copy vanished): cse1 canon_reg rewrites the truncation operand back to sound's pseudo and deletes the dead copy before combine (k1 .cse); structurally unavoidable — the 0xFF record requires same-region placement, which is exactly what canon_reg reverts
 - verdict: KILLED
+
+
+## [s5] The fresh counter's $a2 landing is caused by find_reg pass-0 avoidance of delta's preferred reg, not by the counter failing to RECEIVE a pref
+- mechanism: set_preference (global.c:1671, one-level unwrap, copy=0 for PLUS) records full-pref {$4} on delta from the one-insn arg copy (set $4 (plus delta 1768)); delta conflicts with the counter across the loop; prune_preferences (global.c:915-929) IORs delta's pruned full prefs into regs_someone_prefers[counter]; find_reg pass 0 excludes someone_prefers + callee-saveds and SUCCEEDS at $6, so no later pass can hand the counter $4
+- probe: BB2_ALLOC_DEBUG + BB2_FINDREG_DEBUG(76) on b_fresh_counter.c (plain fresh-counter u8-sound shape) + verbatim global.c read (1440-1500, 1671-1758, 875-935)
+- result: FINDREGDBG conflicts {2,3,5,29}, someone_prefers {4}, pass0 lands $6; every other register identity already matches target (idx=$v0, sound=lbu->$a0 with no andi, p/q/consts/arg0 all correct)
+- verdict: CONFIRMED
+
+## [s5] The candidate chassis (s32 sound-reuse) wins counter=$a0 through find_reg pass 0 via an OWN copy-pref
+- mechanism: set_preference copy=1 on (set $4 (reg sound)) gives the reused counter hard_reg_copy_preferences {$4}; prune's exemption + find_reg preference pass take $4 before any avoidance applies; delta falls to $6 exactly as in target
+- probe: d_cand_reuse.c (candidate body, comments stripped) under BB2_ALLOC_DEBUG
+- result: pseudo 74 (sound/counter) -> hardreg 4 at ord=2 pri 13846; delta pseudo 77 -> hardreg 6
+- verdict: CONFIRMED
+
+## [s5] A post-loop-born pref carrier frees the fresh counter to take $a0 (causal isolation of the repulsion)
+- mechanism: snd_PlayBgm(p0 - base + 0x6E8) puts the {$4} pref on the post-loop minus temp, which does not conflict with the counter, emptying regs_someone_prefers[counter]
+- probe: e_arg_pminus.c under BB2_ALLOC_DEBUG + asm inspection
+- result: counter pseudo 76 -> hardreg 4 (target!), BUT the subu emits post-loop (target: pre-loop $a2 slot), p0+base live across the loop shift the 0xF/9 constants to $8/$9 -- wrong bytes; banked rejected/arg-p0-minus-base-postloop-subu.c
+- verdict: KILLED (as a route to 0; as a mechanism probe it CONFIRMS the repulsion theorem)
+
+## [s5] The u8-extern chassis is jointly inconsistent with the target bytes for every honest C source (repulsion theorem + s4 partition)
+- mechanism: honest sources need a truncation-free u8-typed argument at expand (s4) AND counter=$a0/delta=$a2; s5 proves the latter requires the counter to own a {$4} pref (impossible for a fresh counter -- s2 no-merge-site + s5 no-set_preference-path) or delta/the carrier to be pref-free or non-conflicting (killed: one-insn addiu form forces the pref; post-loop carriers emit wrong bytes)
+- probe: the b/c/d/e probe quartet + verbatim global.c; sandbox 0 counter-measurement below
+- result: with ONLY the extern corrected to the definition signature (src/sound.c:133 `s32 *snd_LoadBgm(s32)`) and the layer-2-confirmed candidate body unchanged, sandbox --disable all = 0 (47/47) -- first plain-spelling 0 ever measured; edit reverted, floor stays 1 under the standing (A) refusal
+- verdict: CONFIRMED
+
+## [s5] Prototype correction sanctionability cannot be self-classified (ruling question)
+- mechanism: header-type-correction-from-use-sites covers GLOBALS at a canonical extern, not function prototypes; the (A) refusal (f035516b reverted by a5b0b6a4, and the 18:29 layer-1 FAIL on the dup-read respelling) is standing and binding
+- probe: rule text + git archaeology (f035516b message contains the full definition-TU evidence and byte-neutrality verification)
+- result: outcome ruling-request with the new impossibility evidence; if refused again, the function is escalation-shaped with every honest axis measured dead (s2 permuter closure, s3 CFG law, s4 fold partition, s5 allocation theorem)
+- verdict: CONFIRMED (as the correct disposition)

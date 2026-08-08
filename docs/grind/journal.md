@@ -791,3 +791,4 @@
 - 2026-08-07 19:06 func_80048AD0 s2 [permuter] floor=1: Permuter sweep (46k iters, 2 campaigns) closes the andi-removal space: only routes to 0 are the banned decl-respelling and an F2-coupled compare-cast that forfeits the {$a0} pref; honest floor re-measured at 1
 - 2026-08-07 20:16 func_80048AD0 s3 [permuter] floor=1: s3 permuter: CFG/andi-fold coupling law measured (5 probes + .jump dump) — andi folds only when the call block is cse1-fall-through-reachable, target layout forbids it; two fresh-seed campaigns (P1 andi-free 64k iters, m1 idx-reuse 68k iters) both dry; floor holds at 1
 - 2026-08-07 20:39 func_80048AD0 s4 [forensics] floor=1: Forensics: andi-fold mechanism named verbatim — combine's label_tick-scoped nonzero_bits (not cse1 path reachability); carrier-copy family killed; full route partition now dead, function is rederive-then-escalation-shaped
+- 2026-08-07 21:12 func_80048AD0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.

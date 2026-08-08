@@ -177,3 +177,113 @@ sandbox --disable all = 1, 47/47; src restored to HEAD, tree clean).
 - [s4] Complete route partition under target layout, all dead: cse fold (measured), combine+reuse (label-blocked+poisoned), combine+single-set (RA loss), carrier copies (canon-reverted), expand-time u8 avoidance (banned/refused family)
 
 - [s4] Rederive sharpening: target's delay-slot nop + exact reuse-allocation registers mean the original source avoided emitting the truncation at EXPAND with an honestly-u8-typed argument value while getting the counter allocation from a shape OUTSIDE this chassis (the m1 u8-basin scored 10, so the difference is structural, not a retype)
+
+
+## s5 (forensics, 2026-08-07) — fresh-counter repulsion mechanism named verbatim; u8-extern chassis proven allocation-incapable; definition-matching extern measured sandbox 0
+
+Floor re-measured at 1 this session (candidate.c body applied to src/text1b.c,
+sandbox --disable all = 1, 47/47, cheat_asm_stripped 347). A second measurement
+(see below) reached sandbox 0 via the refused (A) declaration correction --
+performed as a MEASUREMENT ONLY and reverted; src/text1b.c restored to HEAD at
+session end, tree clean. Outcome is ruling-request, NOT candidate-ready.
+
+### The counter-repulsion theorem (the s2 fresh-counter kill, mechanism named)
+
+Target allocation: counter=$a0 (addu $a0,$zero,$zero AFTER the jal, nop in the
+delay slot), delta=$a2 (subu $a2,$v1,$v0 pre-loop, addiu $a0,$a2,0x6E8 at
+snd_PlayBgm), idx=$v0, sound=lbu straight into $a0, p=$v1, q=$a1, 0xF=$a3,
+9=$t0, arg0=$s0. In the plain honest shape (u8 sound, s32 idx, fresh s32
+counter -- probe b_fresh_counter.c, and identically the HEAD-body-minus-pins
+shape c_head_nopin.c), EVERYTHING matches target except counter/delta swapped
+to $a2/$a0. The exact decision chain, named from the instrumented cc1
+(BB2_ALLOC_DEBUG + BB2_FINDREG_DEBUG on pseudo 76) and verbatim source:
+
+1. set_preference (global.c:1671, called unconditionally from mark_reg_store
+   at global.c:1484 for every SET during the conflict scan) unwraps exactly
+   ONE expression level: for the arg insn (set $4 (plus delta 1768)) it
+   records hard_reg_preferences + hard_reg_full_preferences {$4} on DELTA
+   (copy=0 path, so NOT hard_reg_copy_preferences). Unavoidable for any
+   source whose post-loop arg insn is the one-insn addiu form target shows.
+2. delta conflicts with the counter (both pseudo live ranges span the loop:
+   delta subu-def pre-loop, arg-use post-loop; counter init-to-loop-end), so
+   prune_preferences (global.c:882) gathers delta's PRUNED full prefs into
+   regs_someone_prefers[counter] (global.c:915-929, CONFLICTP gate + IOR of
+   hard_reg_full_preferences). Delta's {$4} pref SURVIVES pruning: pruning
+   removes only hard_reg_conflicts + fixed regs (calls_crossed[delta]==0) +
+   non-preferred-class regs, and delta never hard-conflicts with $4 (born
+   after the snd_LoadBgm arg copy, dies IN the snd_PlayBgm arg-copy insn).
+3. find_reg pass 0 for the counter (FINDREGDBG: pass0_used = used plus
+   callee-saveds plus regs_someone_prefers plus conflicts {2,3,5,29}) skips
+   $4 (someone_prefers) and $2/$3/$5 (conflicts) and succeeds at $6 -- so the
+   later passes that WOULD allow $4 never run. Counter=$a2. Delta then takes
+   $4 by its own preference. Exactly the measured b/c swap.
+4. Corroboration 1 (d_cand_reuse.c = candidate chassis): the s32 sound-reuse
+   counter carries {$4} as a COPY pref (set_preference copy=1 on the arg copy
+   (set $4 sound)), so pass 0 takes $4 directly (ALLOCDBG pseudo 74 ->
+   hardreg 4) and delta falls to $6. The reuse construct wins the allocation
+   by OWNING the pref -- confirming the s1 mechanism end-to-end in the dumps.
+5. Corroboration 2 / causal proof (e_arg_pminus.c, snd_PlayBgm(p0 - base +
+   0x6E8)): the pref lands on the post-loop minus TEMP, which does NOT
+   conflict with the counter -> someone_prefers empty -> the fresh counter
+   DOES get $a0 (pseudo 76 -> hardreg 4). But the subu emits POST-loop
+   (target: pre-loop $a2 slot) and p0+base burn two loop-crossing regs
+   (constants shift to $8/$9). Wrong bytes; banked as
+   rejected/arg-p0-minus-base-postloop-subu.c. This isolates the repulsion as
+   THE cause of the swap and simultaneously kills the only honest
+   escape-shape family (pref-carrier born post-loop).
+
+THEOREM (chassis-level, all clauses measured or verbatim): with the u8
+prototype in place, any honest source in the current chassis must (i) name a
+counter with no {$a0} preference of its own (s2: no merge site exists for a
+fresh 0-born counter; s5: no set_preference path can give it one), and (ii)
+pass the snd_PlayBgm argument through a delta-valued pseudo that is live
+across the loop and prefers $4 (s5 items 1-2, plus the e-probe kill for
+post-loop carriers). Consequence: counter=$a0 + delta=$a2 is UNREACHABLE in
+the u8-extern chassis -- the swap is forced by find_reg pass 0. Coupled with
+the s4 partition (a u8-typed argument at expand is the only truncation-free
+route), the target bytes are jointly INCONSISTENT with the u8 extern for
+every honest C source. The original compile must have passed a word-typed
+argument: the reuse construct's copy-pref (or an equivalent word-typed value
+in $a0) with NO truncation emitted -- i.e., a non-u8 parameter type.
+
+### The declaration evidence (rediscovered independently this session)
+
+src/sound.c:133 DEFINES `s32 *snd_LoadBgm(s32 a0)` (in-tree since 2026-03-30,
+commit a65aa16a); src/sound.c:166 defines `void snd_PlayBgm(s32)`. The
+text1b.c/text1b_b.c externs (`extern s32 snd_LoadBgm(u8);` / `extern s32
+snd_PlayBgm(s32);`) contradict the definition TU in both parameter and return
+type -- hand-written scaffolding, not evidence about the original. Commit
+f035516b (2026-08-07 02:40) already made the definition-matching correction,
+byte-neutral against the oracle (HEAD's body passes a u8 local, so no
+conversion either way); it was reverted 6 minutes later in a5b0b6a4 (no
+rationale in the message) -- this is (part of) the "twice-refused (A)" the
+ledger inherits.
+
+### The decisive measurement (probe-only; reverted)
+
+With candidate.c's layer-2-confirmed body UNCHANGED and ONLY the extern
+corrected to the definition's signature (`extern s32 *snd_LoadBgm(s32);`):
+sandbox --disable all = 0, 47/47. Standalone cc1 corroboration
+(f_truedecl.c ALLOCDBG): every register identity matches target (counter=$a0
+via the reuse copy-pref, delta=$a2, idx=$v0, no truncation anywhere). The
+extern was then reverted; the honest floor under the standing refusal remains
+1. This is the first time distance 0 is reached with a PLAIN
+definition-matching spelling (the s2 permuter's score-0 find used
+`volatile int` -- a coercion spelling -- and was correctly rejected).
+
+### Why this is a ruling question, not a submission
+
+The (A) refusal is standing and layer-1 banned its respellings; the
+header-type-correction-from-use-sites rule sanctions type corrections at a
+canonical extern for GLOBALS, not function prototypes -- so the construct
+cannot be self-classified. NEW since both refusals: the s5 repulsion theorem
+(u8 extern inconsistent with target bytes for every honest source) and the
+plain-spelling sandbox-0 measurement. The precise question is in the outcome
+JSON. If the ruling upholds the refusal, the s4+s5 partitions together make
+the function escalation-shaped with every honest axis measured dead.
+
+- Artifacts: tmp/grind/func_80048AD0/s5/{apply_candidate.py, mkdumps_s5.sh,
+  run_de.sh, run_f.sh, a_m1.c/.s(+.allocdbg.txt, -da dumps),
+  b_fresh_counter.c/.s(+.allocdbg.txt, FINDREG dump in-session, -da dumps),
+  c_head_nopin.c/.s(+.allocdbg.txt, -da dumps), d_cand_reuse.c/.s,
+  e_arg_pminus.c/.s, f_truedecl.c/.s}.
