@@ -1,5 +1,40 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s4 (2026-08-08, permuter, git HEAD 8be92044)
+
+### H11 — the never-permuted stream51 chassis contains permuter-reachable legitimate levers the model scans could not see — CONFIRMED (floor 15 -> 12 stream-exact; two levers found and honest-verified)
+Statement: all four prior permuter runs (rounds 1, 2, 12, 13; ~125k iters)
+ran on the pre-stream51 chassis; the stream-exact body postdates them. A
+campaign from stream51 is a model-independent empirical search that can also
+reach pseudo-MERGING spellings (variable reuse), which the s0-s3 model
+vocabulary (prefs/conflicts/refs/livelen of a fixed graph) cannot express.
+Probe: three tools/permuter_campaign.py campaigns (~77k iters total, all
+harvest-stopped in-session), each novel find honest-measured via
+`sandbox --disable all` applied to src/display.c (then reverted).
+Result: TWO legitimate levers found and verified — L1 tx-reuse as dispatch
+discriminant (14/51), L2 hi-staged Y sign check (12/51 combined). The
+12-form is stream-exact AND ties the overall floor; it fixes X-join->$v0
+(the assignment T1 called impossible — T1's scope is the OLD graph only;
+pseudo-merging builds a new graph) and ylim-save->$a0. Residual: 5 roles
+(carrier a2->a3, xlim-save v1->a2, sxt(y) v1->a2, lo a0->v0, const v0->a0).
+Verdict: CONFIRMED.
+
+### H12 — the permuter can also close the remaining 5-role residual from the 12-form basin — KILLED (for random permutation of THIS chassis)
+Statement: with the closer 12-base, continued random search reaches further
+allocation flips.
+Probe: campaign 3 from the 12-form base (weighted 75), 8 jobs, ran to a full
+9-min zero-novel window (77k cumulative iters).
+Result: ZERO legitimate novel finds. The entire sub-basin is the UB
+dead-read-cross-arm family (stage x in one arm, read uninit in the other —
+rejected/ub-dead-read-cross-arm-family.c). Its diagnostic content: the
+missing conflict is a second x-carrying pseudo live ACROSS the dispatch
+branch; all measured legitimate spellings of that intent fail (dup-into-arms
+13, unconditional pre-dispatch copy 20/52-insns, split-assign inert 14).
+Random permutation of the 12-chassis is exhausted; the residual needs either
+a structurally different chassis seed or model re-extraction + backward
+solve on the NEW merged-pseudo graph (structural/forensics frontier).
+Verdict: KILLED.
+
 ## s3 (2026-08-08, structural, git HEAD bec399f1)
 
 ### H10 — a minimal atom set achieving the full 9/9 assignment exists at depth >= 4 and is spellable — KILLED (constructively: the unique minimal solution requires an unspellable atom AND byte-contradicted edges)
@@ -214,4 +249,16 @@ reaches the target allocation from the stream-exact body.
 - mechanism: Backward constraint-solve the ascending-scan allocation: walk the priority order and derive per pseudo which pref/conflict/hard-conflict edits make the target register the unique outcome, then Sim-verify, prove necessity (drop-one), non-substitutability (191-atom replacement scan), and exhaustively close cheaper completions (grant+pairs, grant+triples)
 - probe: tmp/grind/func_8007C7A0/s3/backward_solve.py + s3/grant_triples.py against tmp/ra_solver_work/func_8007C7A0.model.json via tools/ra_solver/simulate.Sim
 - result: Unique minimal solution found and Sim-verified 9/9 (first full hit ever in this model space): GRANT(hcdel 79~2) + S5 = {nopref 77, nopref 79, conf +78~83, conf +78~94, conf +78~92}. NOT spellable, twice over: (a) THEOREM T1 — hard_conf[79] contains reg 2 ($v0) and is invariant under the entire spellable vocabulary (find_reg excludes hard_conf in pass0, pass1, and the pref-upgrade filter; propagation only adds; no spellable atom touches hard_conflicts), so 79->$v0 is impossible at ANY depth and ANY order (0 violations in 4000 random depth-4..8 combos; S5 alone scores 8/9 with exactly 79 wrong, explaining every prior scan's 7/9 ceiling); (b) all three S5 conflict edges require hi (pseudo 78, $v1) live across insns ~9-16, contradicted by target's own bytes (r18 c7a0_v1_census: first $v1 def is insn 39) — the original compilation could not have had them either. Grant+pairs 0/18,336; grant+triples 0/1,161,280 (best 7/9); every S5 member drop-one-necessary with zero single-atom substitutes.
+- verdict: KILLED
+
+## [s4] The never-permuted stream51 chassis contains permuter-reachable legitimate levers the s0-s3 model scans could not see (pseudo-MERGING spellings are outside the model's perturbation vocabulary)
+- mechanism: Variable reuse merges the dispatch/staging value into an existing dead local's pseudo, changing the RTL pseudo GRAPH itself rather than prefs/conflicts of the fixed graph; all prior campaigns (rounds 1,2,12,13, ~125k iters) predate the stream51 body
+- probe: Three tools/permuter_campaign.py campaigns (~77k iters, all harvest-stopped in-session); every novel find honest-measured via sandbox --disable all on src/display.c, then reverted
+- result: L1 tx=(u32)(D_8009BE74-1) dispatch-discriminant reuse -> 14/51; +L2 hi=arg1 staged Y sign check -> 12/51 stream-exact. X-join now $v0, ylim-save now $a0. s32 holders fail (pkt=15 or breaks stream), pkt-staging fails (15), folded tail always +1. Residual 5 roles: carrier a2->a3, xlim-save v1->a2, sxt(y) v1->a2, lo a0->v0, const v0->a0
+- verdict: CONFIRMED
+
+## [s4] Continued random permutation from the 12-form basin closes the remaining 5-role residual
+- mechanism: Closer base gives the random search a better start toward further allocation flips
+- probe: Campaign 3 seeded from the 12-form (weighted 75), 8 jobs, run to a full 9-minute zero-novel window
+- result: Zero legitimate novel finds; the entire sub-basin is the UB dead-read-cross-arm family (stage x in one arm, read uninit in the other). Legit spellings of its intent all measured dead: dup-into-arms 13, unconditional pre-dispatch copy 20 (52 insns), split-assign inert 14
 - verdict: KILLED

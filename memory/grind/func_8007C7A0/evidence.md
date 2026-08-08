@@ -1,5 +1,66 @@
 # Evidence bank — func_8007C7A0
 
+## s4 (2026-08-08, permuter, git HEAD 8be92044) — pseudo-MERGING spellings escape the s3 closure; stream-exact floor 15 -> 12
+
+- **NEW BEST FORM: honest sandbox 12 at build_insns 51/51 (stream-exact).**
+  Two permuter-found levers, both semantically clean, applied to the stream51
+  chassis (which had NEVER been permuted — all four prior campaigns predate it):
+  L1 `tx = (u32)(D_8009BE74 - 1); if (tx >= 2U)` — the dead-after-join s16 tx
+  reused as the dispatch discriminant; L2 `hi = arg1; if (hi >= 0)` — the Y
+  sign check staged through hi (dead until its real def). Banked as
+  candidate.c (supersedes both the old 12/50 candidate and 15/51 stream51).
+  Measured at HEAD 8be92044 with 21 rules dropped + cheat-asm stripped.
+- **CONCEPTUAL RESULT — T1's scope boundary found, not its refutation.** The
+  12-form puts the X-join temp in $v0 — the exact assignment (79 -> $v0)
+  THEOREM T1 proved impossible. No contradiction: T1 quantified over pref/
+  conflict/refs/livelen perturbations of the FIXED 9-pseudo stream51 graph;
+  L1 merges the dispatch pseudo INTO tx's pseudo, building a DIFFERENT RTL
+  graph outside that vocabulary. Consequence for future sessions: model-space
+  closures (s0-s3) bound only the graph they were extracted from; every
+  distinct pseudo-merge spelling is a fresh graph needing fresh measurement.
+  The s3 byte-contradiction argument (78-live-early contradicted by target's
+  own stream) is untouched and still stands for the OLD graph's S5 edges.
+- **Lever specificity is extreme (all honest-measured this session):**
+  s32 holders do NOT reproduce L1 (pkt-dispatch = 15/51; pkt-dispatch with
+  hi-staging = 14/50 stream-break); L2 works ONLY through hi (pkt-staged Y
+  sign = 15/51); folded tail `return hi | (lo | C)` costs +1 in every
+  combination (15/51 both placements — reconfirms the round-16 named-tail
+  finding on the new chassis); lo split-assign in narrow arm inert (14);
+  95-3's constant-holder shift `tx = 10; hi <<= tx` inert (14); duplicated
+  `pkt = x` into both arms = 13/51; unconditional `lo = x` pre-dispatch =
+  20/52; lo-staged X sign check inert (12, coalesced).
+- **Remaining residual after s4: 5 register roles, 12 masked diffs:**
+  carrier(76) a2->a3, xlim-save(83) v1->a2, sxt(arg1)(92) v1->a2 (moved
+  a0->v1 vs stream51), lo(79) a0->v0, const(81) v0->a0. ylim-save(94)=$a0 and
+  X-join(77/tx)=$v0 are now CORRECT. Target's $a2 double-occupancy
+  (xlim-save + sxt(y)) with carrier pushed to $a3 is the surviving knot.
+- **Permuter basin evidence (3 campaigns, ~77k iters, 8 jobs, all
+  harvest-stopped):** c1 from stream51 base (weighted 105) yielded the two
+  levers within 15s-3min; c2 from the 14-form (weighted 85) yielded L2; c3
+  from the 12-form (weighted 75) ran 9+ min / 77k iters with ZERO novel
+  legitimate finds — every sub-75 find is the UB dead-read-cross-arm family
+  (rejected/ub-dead-read-cross-arm-family.c): stage x in one arm, read it
+  uninit in the other, making the staging pseudo live across the dispatch.
+  The legit spellings of that intent are all measured dead (13/20/14 above).
+  The 12-form's basin is DRY under random permutation; the residual knot
+  needs either a fresh structurally-different chassis or model re-extraction
+  on the NEW graph (forensics/structural frontier).
+- **Cheat-vet status of the two levers (for the eventual self-vet):** both are
+  live reads with full semantic equivalence (D in 0..255 => D-1 in [-1,254]
+  fits s16; hi==arg1 at the staged compare), no UB, no dead stores, natural
+  names (existing locals reused, no pad/dummy/new_var). Family: frozen-list
+  "variable reuse for codegen control" (SOTN-sanctioned); closest specific
+  rule is [[staged-value-reused-variable]] (SANCTIONED 2026-07-03, live code
+  only — but its text binds FAKE-annotation + lever-exhaustion to the
+  load-late scheduling case, not obviously to this RA-merge use). OPEN
+  QUESTION a future candidate-ready session must resolve (read the rule file
+  + defeat-licm-hoist-var-reuse before writing self_vet.md): whether L1/L2
+  need /* FAKE */ annotations under staged-value-reused-variable or pass as
+  plain variable-reuse. Both levers are permuter-found (checklist T4) — the
+  vet must argue semantic cleanliness on the merits, which this entry
+  documents. src/display.c REVERTED to HEAD after measurement (build gate:
+  the 21 regfix substs are calibrated to HEAD's shape).
+
 ## s3 (2026-08-08, structural, git HEAD bec399f1) — backward constraint solve: the allocation search is closed at ALL depths, not just depth 3
 
 - **The frontier's depth>=4 hypothesis is answered exactly.** Instead of
@@ -415,3 +476,15 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s3] Byte contradiction: the three required conflict edges 78~{83,94,92} need $v1's holder live across insns ~9-16, but target's first $v1 def is insn 39 (r18 c7a0_v1_census) — the Sony object's allocation is inconsistent with GCC 2.7.2 global.c's ascending-scan mechanism on ANY stream-exact input, supporting toolchain-revision divergence constructively (conditional only on model fidelity)
 
 - [s3] Floor stands at 12 (candidate.c; banked s2 measurement at ef16e11d — HEAD bec399f1 differs only by the s2 ledger commit; no src/ edits made this session)
+
+- [s4] NEW BEST FORM banked to memory/grind/func_8007C7A0/candidate.c: honest sandbox 12 at build 51/51 stream-exact (HEAD 8be92044, 21 rules dropped, cheat-asm stripped); supersedes both the 12/50 old candidate and 15/51 candidate_stream51
+
+- [s4] T1 scope boundary established: the s3 theorem correctly closes perturbations of the stream51 9-pseudo graph but does NOT bound pseudo-merging spellings, which build a different RTL graph; the 12-form's X-join=$v0 is the empirical proof. All s0-s3 model closures are per-graph, not per-function
+
+- [s4] Lever specificity: L1 works only through the s16 tx (s32 pkt = 15/51, or 14/50 stream-break with hi-staging); L2 works only through hi (pkt-staging = 15); folded tail return hi|(lo|C) costs +1 in every combination; constant-holder shift and lo split-assign inert
+
+- [s4] Permuter basin from the 12-form is DRY: 77k cumulative iters, final 9-min window zero novel; only remaining attractor is the forbidden UB dead-read-cross-arm family (banked to rejected/ub-dead-read-cross-arm-family.c) whose diagnostic content is 'second x-pseudo live across dispatch' - every legitimate spelling of that intent measured dead
+
+- [s4] Cheat-vet note for future candidate-ready: L1/L2 are live reads, semantically equivalent (D-1 in [-1,254] fits s16; hi==arg1 at staged compare), no UB, natural names, but permuter-found (T4) and family-wise sit between frozen-list variable-reuse and staged-value-reused-variable (FAKE-annotation question documented in evidence.md s4 entry - must be resolved against the rule files before any self-vet)
+
+- [s4] src/display.c reverted to HEAD after measurement (the 21 regfix substs are calibrated to HEAD's shape); tree clean except ledger + metrics

@@ -1,8 +1,8 @@
 {
  "func": "func_8007C7A0",
  "file": "display",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,18 +27,29 @@
    "floor": 12,
    "modality": "structural",
    "headline": "s3 structural: backward constraint solve finds the UNIQUE minimal 9/9 solution (hcdel 79~2 + 5 spellable atoms) and proves it unreachable \u2014 T1 theorem closes the spellable space at ALL depths; structu"
+  },
+  {
+   "session": 4,
+   "floor": 12,
+   "modality": "permuter",
+   "headline": "Permuter finds two clean variable-reuse levers on the never-permuted stream51 chassis: stream-exact floor 15 -> 12 (51/51), ties overall floor, and lands the X-join in $v0 - the assignment s3's T1 clo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The extracted RA model faithfully represents cc1's actual prefs/conflicts/hard-conflicts at current HEAD \u2014 T1's premise (hard_conf[79] contains 2) and the byte-contradiction argument inherit any extraction error",
-   "mechanism": "A forensics-modality session can dump the instrumented cc1's ALLOCDBG ground truth (tools/gcc-2.7.2/cc1 with BB2_*_DEBUG hooks, per instrumented-cc1-location memory) and field-by-field diff it against tmp/ra_solver_work/func_8007C7A0.model.json \u2014 hard_conflicts of pseudo 79 and the conflict rows of 78/83/92/94 are the load-bearing fields",
-   "next_probe": "Re-extract the model from a fresh instrumented-cc1 run on candidate_stream51.c; diff hard_conflicts and conflicts field-by-field vs the model JSON; any discrepancy on 79~$2 or the 78-row reopens the s3 closure, otherwise it is confirmed final"
+   "hypothesis": "Re-extract the RA model from the NEW 12-form (merged-pseudo) graph and rerun the s3 backward constraint solve: the remaining 5-role residual may now have a spellable minimal solution",
+   "mechanism": "The s0-s3 closures are void on the new graph; L1/L2 changed pseudo count, refs, and conflicts. The surviving knot is target's $a2 double-occupancy (xlim-save + sxt(y)) pushing carrier to $a3; the backward solver derives which atoms make that the unique ascending-scan outcome and whether any is spellable on THIS graph",
+   "next_probe": "Extract model from candidate.c body via the c7a0_model.sh/ra_solver tooling (structural modality); rerun backward_solve.py against the new model JSON; check spellability of any solution atoms; also verify the extraction against instrumented-cc1 ALLOCDBG ground truth (the s3 forensics frontier item, now doubly relevant)"
   },
   {
-   "hypothesis": "If the driver's ladder reaches escalation modality, the evidence package (s0-s3) is complete for the endgame-lock evaluation, now including a constructive proof that the target allocation cannot arise from GCC 2.7.2 global.c on any stream-exact input",
-   "mechanism": "Escalation is the driver/owner's call after the modality ladder; both AND-gates (scan_hand_coded STRONG signals; citable SOTN-master precedent) would need evaluation in that session",
-   "next_probe": "Driver-assigned; no session action until the ladder mandates it"
+   "hypothesis": "More pseudo-merging spellings exist beyond tx/hi reuse - the merge vocabulary (which dead local absorbs which compiler temp) is largely unexplored and provably escapes the model closures",
+   "mechanism": "Each distinct merge builds a fresh RTL graph; s4 tested only dispatch-into-tx, signcheck-into-hi/pkt/lo, x-into-pkt/lo variants. Unexplored: merges targeting the xlim-save/sxt(y) temps (blocked so far by the named-limit CSE wall - but the CSE behavior on the NEW graph is unmeasured), and reuse of x/arg0 post-death",
+   "next_probe": "On the 12-form chassis: re-measure the round-16/17 named-limit forms (s16 holder, raw-D not D-1) since all prior kills were per-chassis; sweep remaining dead-local x compiler-temp merge pairs by hand or directed PERM_VAR macros"
+  },
+  {
+   "hypothesis": "The twin func_8007C86C reproduces the 12-form with the same two levers (constant 0xE4000000 differs only)",
+   "mechanism": "Identical pattern, identical floor history, verbatim same library module",
+   "next_probe": "When the twin is dispatched: apply candidate.c with the constant swapped, expect 12 at 51/51; do not spend this function's sessions on it"
   }
  ],
  "judge_constraints": [],
