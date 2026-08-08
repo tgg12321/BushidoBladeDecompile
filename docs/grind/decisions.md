@@ -4153,3 +4153,7 @@ under delegation):**
 
 Until the owner answers, func_80036FD4 stays parked; bytes-proven status and
 the exact working diff are reproducible from the ledger.
+
+## 2026-08-08 01:05 — func_80021A98 — layer-1 review — **FAIL**
+
+Constructs C1-C3 are substantively legitimate under the current do-while-zero-exception.md and named-intermediate rules, but the self-vet's C1 family citation is mismatched (quoted text does not appear at the cited location) and must be fixed before acceptance.

@@ -30,13 +30,15 @@
  ],
  "judge_constraints": [
   "OUT OF SCOPE: candidates for func_80021A98 may only edit src/code6cac.c. Edits to include/code6cac.h are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: Citations check out (ad11a8c8, no-new-park-categories.md:170, decisions.md:4073-4075 all verified), but the session-8 arg1 cast-round-trip reuse is a GCC-internals-driven type-system workaround invented specifically to smuggle the previously-banked (header-edit) P11 lever past the new src-only scope constraint \u2014 it fails T2 and T3. Next action: Revert to the pre-session-8 HEAD form for the a1_val/arg1 and arg0/idx pieces (plain named locals, e.g. `u8 a1_val = ...;` and `s32 idx = a3*5*4;` or similar spec-natural spellings) and re-measure the honest floor without th"
+  "LAYER-1 CHEAT-REVIEWER FAIL: Citations check out (ad11a8c8, no-new-park-categories.md:170, decisions.md:4073-4075 all verified), but the session-8 arg1 cast-round-trip reuse is a GCC-internals-driven type-system workaround invented specifically to smuggle the previously-banked (header-edit) P11 lever past the new src-only scope constraint \u2014 it fails T2 and T3. Next action: Revert to the pre-session-8 HEAD form for the a1_val/arg1 and arg0/idx pieces (plain named locals, e.g. `u8 a1_val = ...;` and `s32 idx = a3*5*4;` or similar spec-natural spellings) and re-measure the honest floor without th",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Constructs C1-C3 are substantively legitimate under the current do-while-zero-exception.md and named-intermediate rules, but the self-vet's C1 family citation is mismatched (quoted text does not appear at the cited location) and must be fixed before acceptance. Next action: This is a documentation/citation defect, not a construct-legitimacy defect: do-while-zero-exception.md (verified, current, owner ruling 2026-07-06, FINAL) does independently sanction both C1 (named intermediates, listed explicitly in its ALLOWED clause) and C3 (do-while(0) for ANY codegen effect"
  ],
  "banned_constructs": [
   "`arg1 = (u8 *) *((u8 *) (v0_50 + 6)); ... *((s16 *) (s0 + 0x40)) = (s32) arg1;`",
-  "`arg0 = a3 << 2; arg0 += a3; arg0 <<= 2;` (dead-after-prologue parameter reused as the else-arm table index, split-init spelled)"
+  "`arg0 = a3 << 2; arg0 += a3; arg0 <<= 2;` (dead-after-prologue parameter reused as the else-arm table index, split-init spelled)",
+  "SANCTIONED-FAMILY-CLAIMS block, FAMILY: named intermediates / variable staging (C1)"
  ],
- "ladder_skip": 2,
+ "ladder_skip": 4,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-08T02:12:55.488941+00:00"
