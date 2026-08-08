@@ -122,7 +122,7 @@ before you write the outcome JSON. Template:
     SANCTIONED-FAMILY-CLAIMS: <"none", or one block per claimed family:>
       FAMILY: <name>
       SCOPE: "<the cited rule's scope sentence, quoted VERBATIM from the rule file>"
-      PRECEDENT: <SOTN evidence as file:line or commit hash — "same spirit" is not a citation>
+      PRECEDENT: <file:line or commit hash ONLY, e.g. `.claude/rules/no-new-park-categories.md:172` or `9420b811`. The validator is a regex: prose, dates, or file + §section-heading references are mechanically rejected — "same spirit" is not a citation>
     ANNOTATION-CONFORMANCE: <"n/a — no FAKE construct", or the exact /* FAKE: ... */
       line(s) you emitted, confirming they carry what+mechanism+lever-exhaustion>
 

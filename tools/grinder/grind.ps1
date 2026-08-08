@@ -758,6 +758,22 @@ while ($true) {
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
     $briefPath = Join-Path $GrindTmp "brief_$func.md"
     python tools/grinder/grindlib.py brief . $func $modality $outPath | Set-Content $briefPath -Encoding utf8
+    # Respawn feedback (2026-08-07 circuit-break class fix): a discarded session's
+    # validator reason is appended to the next brief. Without it, fresh sessions
+    # re-read the same ledger and deterministically repeat the same rejected
+    # output — two identical citation-format circuit-breaks on 2026-08-07
+    # (func_80048AD0 16:05, func_80021A98 22:31). Cleared on the first valid session.
+    if ($script:lastDiscardReason) {
+        Add-Content $briefPath -Encoding utf8 -Value @(
+            '',
+            '## PREVIOUS SESSION DISCARDED — FIX THIS FIRST',
+            'The previous session on this function was DISCARDED by the driver validator for the reason below. Your output will be discarded the same way unless you correct it:',
+            '',
+            ('> ' + $script:lastDiscardReason),
+            '',
+            'If this is a self_vet.md citation-format rejection: every PRECEDENT line must contain a literal file:line (e.g. `.claude/rules/no-new-park-categories.md:172`) or a 7-40 char commit hash. Prose descriptions, dates, or file + section-heading references are mechanically rejected regardless of merit.'
+        )
+    }
     # The annotation fix-up is ONE-SHOT: consume it once the brief has carried the
     # notice, so a discarded or failed fix-up session drops back onto the normal
     # ladder instead of pinning the function on comments forever.
@@ -784,6 +800,7 @@ while ($true) {
     $violations = @($dirty | Where-Object { $_ -notmatch $AllowedDirtyPattern })
     if ($violations.Count) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
+        $script:lastDiscardReason = "SCOPE VIOLATION: you edited files outside the allowed surface ($($violations -join ' | ')). Touch ONLY your function's src file, memory/grind/<func>/, and tmp/."
         git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null; git -C $Root clean -fd -- tmp 2>$null
         # ALSO purge untracked out-of-surface dirt: checkout only restores TRACKED
@@ -847,6 +864,7 @@ while ($true) {
             Copy-Item $outPath (Join-Path $GrindTmp "invalid_${func}_s${sessionN}_$(Get-Date -Format 'HHmmss').json") -ErrorAction SilentlyContinue
         }
         Log "${func}: INVALID session output ($invalidReason) — discarded, src reverted, respawning."
+        $script:lastDiscardReason = $invalidReason
         Revert-SessionEdits
         $script:consecutiveInvalid++
         if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
@@ -854,6 +872,7 @@ while ($true) {
     }
     $script:consecutiveInvalid = 0
     $script:spawnFails = 0
+    $script:lastDiscardReason = $null
 
     # 7) route by result
     switch ([string]$o.result) {
