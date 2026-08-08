@@ -4077,3 +4077,38 @@ RULING REQUEST on func_80021A98: is the arm-inconsistent operand order of the tw
 ## 2026-08-07 23:50 — func_80021A98 — layer-1 review — **FAIL**
 
 Citations check out (ad11a8c8, no-new-park-categories.md:170, decisions.md:4073-4075 all verified), but the session-8 arg1 cast-round-trip reuse is a GCC-internals-driven type-system workaround invented specifically to smuggle the previously-banked (header-edit) P11 lever past the new src-only scope constraint — it fails T2 and T3.
+
+## 2026-08-08 — func_80048AD0 — delegated owner ruling attempted; GRANT WITHHELD after layer-2 FAIL — escalation remains OPEN
+
+The owner delegated the three pending escalations to the operator's best
+judgment (2026-08-07: "follow your own best judgment with these three. But
+remember our standards. SOTN-level standards. No cheats or workarounds...
+true decompilation reflective of the canonical source code"). The operator
+drafted a GRANT (scoped 'definition-TU prototype correction' family) and,
+per review-discipline-before-commit ('No self-sanctioning rule docs'),
+submitted the draft to a fresh adversarial cheat-reviewer BEFORE committing.
+
+**Layer-2 verdict: FAIL.** Grounds (full JSON in the session record):
+(1) the draft's 'byte-level impossibility' prong is evidenced entirely in
+GCC register-allocation internals — no runtime-behavior difference between
+the prototypes is shown at any use site (6-test T3); (2) the extern
+correction is byte-neutral at the function's only live call site; its sole
+demonstrated effect is RA preference propagation when PAIRED with the
+counter-reuse construct — the two constructs justify each other circularly
+(T1); (3) the s32 -> s32* return-type change is a category
+header-type-correction-from-use-sites explicitly carves out to 'their own
+SOTN-evidence pathway', and no SOTN precedent was supplied (T5); (4) the
+21572e3b refusal ground 'byte-neutrality reads as inertness, not
+independent motivation' is NOT discharged by the s4/s5 theorems, which
+answer a different (narrower) question.
+
+**Disposition:** the GRANT is withheld; the FAIL is final under the
+project's own review discipline. func_80048AD0 stays PARKED on the open
+2026-08-07 escalation. Any future grant attempt must satisfy the
+reviewer's rework bar: (a) an independent RUNTIME-BEHAVIOR distinction
+between incumbent and corrected prototype at a use site; (b) genuine SOTN
+master-branch precedent for prototype-level (esp. scalar->pointer)
+corrections; (c) sandbox-0 demonstrated on an INDEPENDENTLY honest body,
+not the counter-reuse chassis; (d) review by an independent reviewer, not
+the proposal's author. Until then the existing frozen constraint stands:
+no further grind sessions, no respellings, no re-litigation of s2-s5.
