@@ -1,3 +1,14 @@
+/* s4 (forensics, 2026-08-07): floor still 1; body unchanged. The s3 "cse1
+ * path" law is RE-ATTRIBUTED: cse1's path DOES reach the truncation under
+ * target layout (P8 .cse: "Processing block from 2 to 94") but cse never folds
+ * it in any layout — the fold is COMBINE's, via nonzero_bits(sound)=0xFF, and
+ * combine.c:6887's fast path is label_tick-scoped: with `sound` multi-set (the
+ * counter reuse below), the fold needs load and truncation in one label region,
+ * which target layout forbids (call block at a branch target). The
+ * reg_nonzero_bits fallback is poisoned to full mask by the counter's own sets
+ * (combine.c:717-790). Single-set carriers (`bgm = sound;` as arg) are
+ * canon-reverted by cse1 before combine (rejected/carrier-copy-cse-canon-
+ * reverted.c). Full route partition (all dead) in evidence.md s4. */
 /* s3 (permuter, 2026-08-07) addendum: floor still 1. New structural law measured:
  * the andi folds IFF the call block is fall-through-reachable on cse1 path;
  * target CFG puts the call at a branch target (bne 0x44). jump1 canonicalizes

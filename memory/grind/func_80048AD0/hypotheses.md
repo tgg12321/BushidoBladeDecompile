@@ -144,3 +144,52 @@
 - probe: campaign tmp/perm_48AD0_m1, 68,142 iterations / 28 min, wait+harvest --stop in-turn
 - result: ZERO finds — no downhill neighbor at all; corroborates the s2 analytic kill of the fresh-counter {$a0}-pref lever
 - verdict: KILLED
+
+
+## [s4] cse1's path extension can cross the return-0 fall-through block into the conditional-branch target (the s3 frontier crack)
+- mechanism: cse.c cse_end_of_basic_block:8102-8148 follow_jumps arm — a SET/IF_THEN_ELSE jump whose target label has LABEL_NUSES==1 and is preceded by a BARRIER is followed TAKEN and the target block joins the cse path
+- probe: verbatim read of tools/gcc-2.7.2/cse.c:8007-8207 + region prints in the existing P8 .cse dump
+- result: ";; Processing block from 2 to 94" — one cse path spans the lbu, the compare branch, AND the call block containing the truncation, in target layout; yet the truncation survives cse1, so path reachability was never the gate
+- verdict: CONFIRMED
+
+## [s4] cse1 (or cse2) folds the call-site truncation when its path reaches it (the implicit premise of the s3 structural law)
+- mechanism: would require cse to eliminate zero_extend(subreg(sound)) via its hash/qty equivalences on the extended path
+- probe: P8 .cse/.cse2 (target layout) + freshly dumped P1 .cse/.combine (fall-through, andi-free layout)
+- result: truncation intact post-cse1/cse2 in BOTH layouts; even the andi-free P1 still carries it after cse1 — the fold happens at COMBINE (P1 .combine: truncation deleted, arg copy becomes plain a0=sound)
+- verdict: KILLED
+
+## [s4] The andi fold is combine's, gated by nonzero_bits' label_tick-scoped REG fast path (re-attribution of the s3 law)
+- mechanism: expand_compound_operation (combine.c:4778) -> simplify_and_const_int -> nonzero_bits(sound); REG case combine.c:6887 fast path needs reg_n_sets==1 OR same-label-region def; sound has 3 sets (load + counter init + increment), target layout interposes the call-block label; get_last_value fails the same test (10034); the reg_nonzero_bits fallback (6920) is recorded only for multi-set regs by ORing ALL set sources (717-790) and the increment poisons it to full mask
+- probe: verbatim combine.c read + P1/P8 .combine dumps + set-count greps (3 sets of reg74 in both streams)
+- result: explains every prior measurement — the s3 empirical law "folds iff call block fall-through-reachable" is exactly "no CODE_LABEL between def and truncation" = the label_tick disjunct; the counter-reuse construct that wins {$a0} is the same construct that poisons both label-independent routes
+- verdict: CONFIRMED
+
+## [s4] A single-set SImode carrier (`bgm = sound;` passed as the call argument) folds the andi under target layout via the reg_n_sets==1 fast path
+- mechanism: the carrier's reg_last_set_nonzero_bits would record 0xFF at copy time (same label region as the load, where sound's fast path still works), then be label-independent at the truncation; placement variants could bridge {$a0} to the counter via a REG_DEAD merge at the copy
+- probe: k1 (copy before the gate) and k2 (copy at call-block head) through the exact workspace pipeline + full -da dump of k1
+- result: BOTH byte-identical to base (andi present, copy vanished): cse1 records bgm==sound and canon_reg rewrites the truncation operand back to sound's pseudo, deleting the dead copy before combine ever sees it (k1 .cse proves it); the reversion is structurally unavoidable because the 0xFF record requires same-region placement, and same-region placement is what canon_reg reverts
+- verdict: KILLED
+
+## [s4] cse1's path extension can cross the return-0 fall-through block into the conditional-branch target (the s3 frontier crack)
+- mechanism: cse.c:8102-8148 follow_jumps arm: SET/IF_THEN_ELSE jump + LABEL_NUSES(target)==1 + target label preceded by a BARRIER is followed TAKEN
+- probe: verbatim read of tools/gcc-2.7.2/cse.c:8007-8207 + region prints in the P8 .cse dump
+- result: ';; Processing block from 2 to 94': one cse path spans lbu, compare, and the call block with the truncation under target layout — yet the truncation survives cse1, so path reachability was never the gate
+- verdict: CONFIRMED
+
+## [s4] cse1/cse2 fold the call-site truncation when their path reaches it (implicit premise of the s3 structural law)
+- mechanism: would need cse hash/qty equivalence elimination of zero_extend(subreg(sound)) on the extended path
+- probe: P8 .cse/.cse2 (target layout) + freshly dumped P1 .cse/.combine (andi-free layout)
+- result: truncation intact post-cse1/cse2 in BOTH layouts; in P1 it dies at COMBINE (.combine: truncation deleted, arg copy becomes plain a0=sound)
+- verdict: KILLED
+
+## [s4] The andi fold is combine's, gated by nonzero_bits' label_tick-scoped REG fast path
+- mechanism: expand_compound_operation (combine.c:4778) -> simplify_and_const_int -> nonzero_bits(sound); combine.c:6887 fast path needs reg_n_sets==1 OR same-label-region def; sound has 3 sets (load + counter init + increment); get_last_value fails the same test (10034); reg_nonzero_bits fallback (6920, recorded at 717-790 only for multi-set regs, ORing all set sources) is poisoned to full mask by the increment
+- probe: verbatim combine.c read + P1/P8 .combine dumps + set-count greps (3 sets of reg74 in both streams)
+- result: explains every prior measurement: the s3 law 'folds iff call block fall-through-reachable' is exactly 'no CODE_LABEL between def and truncation' = the label_tick disjunct; the counter reuse that wins {$a0} is the same construct that poisons both label-independent routes
+- verdict: CONFIRMED
+
+## [s4] A single-set SImode carrier (bgm = sound; passed as the call argument) folds the andi under target layout via the reg_n_sets==1 fast path
+- mechanism: carrier records reg_last_set_nonzero_bits=0xFF at copy time in the load's label region, then is label-independent at the truncation; REG_DEAD merge at the copy could bridge {$a0} to the counter
+- probe: k1 (pre-gate copy) and k2 (call-block-head copy) through the exact workspace pipeline + full -da dump of k1
+- result: BOTH byte-identical to base (andi present, copy vanished): cse1 canon_reg rewrites the truncation operand back to sound's pseudo and deletes the dead copy before combine (k1 .cse); structurally unavoidable — the 0xFF record requires same-region placement, which is exactly what canon_reg reverts
+- verdict: KILLED

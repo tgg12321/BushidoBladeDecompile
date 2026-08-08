@@ -1,8 +1,8 @@
 {
  "func": "func_80048AD0",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "permuter",
+ "session_count": 4,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,24 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "s3 permuter: CFG/andi-fold coupling law measured (5 probes + .jump dump) \u2014 andi folds only when the call block is cse1-fall-through-reachable, target layout forbids it; two fresh-seed campaigns (P1 an"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics: andi-fold mechanism named verbatim \u2014 combine's label_tick-scoped nonzero_bits (not cse1 path reachability); carrier-copy family killed; full route partition now dead, function is rederive-t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "cse1's path extension can never enter a conditional-branch target across the 2-insn return-0 fall-through block \u2014 OR it can under a condition this function could meet",
-   "mechanism": "cse.c cse_end_of_basic_block(insn, &val, follow_jumps, after_loop, skip_blocks): the skip_blocks parameter exists precisely to hop blocks that are 'only notes and jumps'; whether a block containing (set v0 0) qualifies, and whether the taken edge of a conditional branch is ever followed, decides if ANY pure-C spelling can fold the andi under target layout",
-   "next_probe": "forensics modality: read cse.c cse_end_of_basic_block + cse_main path-following logic verbatim (tools/gcc-2.7.2/cse.c); if provably closed, every fold route under target layout is dead and only expand-time routes (all banned/refused) remain \u2014 the function becomes escalation-shaped per the s2 frontier; if open, derive the qualifying block shape and spell it in C"
+   "hypothesis": "The original source reached the nop delay slot through a shape not derivable from the current chassis (rederive modality, inherited from s3 and sharpened by the s4 partition)",
+   "mechanism": "the original must have passed an honestly-u8-typed value at expand (no truncation emitted) AND won the counter/callee-save allocation via a structurally different body \u2014 the s4 partition proves no spelling of the CURRENT chassis can do both",
+   "next_probe": "m2c --valid-syntax on asm/funcs/func_80048AD0.s; rebuild the body from the m2c shape without reference to candidate.c; sweep u8-sound shapes with different counter/callee-save arrangements; sandbox"
   },
   {
-   "hypothesis": "the original source reached the nop delay slot through a shape not derivable from the current chassis (rederive modality)",
-   "mechanism": "m2c re-derivation from target asm unconstrained by the s1/s2/s3 bodies may expose a structurally different spelling with different expand-time typing (the truncation is emitted at expand from the u8 prototype against an s32 argument; a different original variable structure could have passed a u8-typed value honestly)",
-   "next_probe": "m2c --valid-syntax on asm/funcs/func_80048AD0.s; rebuild the body from the m2c shape without reference to candidate.c; sandbox"
-  },
-  {
-   "hypothesis": "if the cse.c read proves the fold impossible under target layout, every pure-C route is measured dead and the function is escalation-shaped",
-   "mechanism": "the residual would then be reachable only through the refused declaration edit or banned respellings \u2014 an owner-disposition question, which is the DRIVER's call via the modality ladder, not a session's",
-   "next_probe": "only after the forensics kill: driver assigns escalation modality; evaluate the endgame-lock AND-gates there"
+   "hypothesis": "If rederive comes back dry, every pure-C route is measured or verbatim-proven dead and the function is escalation-shaped",
+   "mechanism": "the s4 partition covers all fold passes (cse1/cse2/combine) and all expand-time avoidances; the residual is reachable only through the refused declaration edit or banned respellings \u2014 an owner-disposition question the DRIVER reaches via the modality ladder",
+   "next_probe": "only after a dry rederive session: driver assigns escalation modality; evaluate the endgame-lock AND-gates there (canonical-asm scan tier; cited SOTN precedent for any coercion family)"
   }
  ],
  "judge_constraints": [
