@@ -1,33 +1,35 @@
-/* func_80021A98 — SANDBOX-0 form, SRC-ONLY (session 8, structural).
- * 158/158, distance 0 measured 2026-08-07 with these exact edits in place in
- * src/code6cac.c and include/code6cac.h UNTOUCHED (arg1 keeps its
- * header-declared type u8 * — the prototype at include/code6cac.h:442 stays
- * `extern void func_80021A98(s32, u8 *, s32);`).
+/* func_80021A98 — SANDBOX-0 form v3, SRC-ONLY, NO banned constructs
+ * (session 9, permuter modality, 2026-08-08).
+ * 158/158, distance 0 measured with ONLY src/code6cac.c modified;
+ * include/code6cac.h untouched (arg1 stays u8 * per the header prototype).
  *
- * WHY THIS SUPERSEDES THE s2-s7 BANKED FORM: the driver's Judge constraint
- * (banked s7->s8) rules the include/code6cac.h:442 prototype edit
- * (u8* -> s32) OUT OF SCOPE — candidates may only edit src/code6cac.c. The
- * fix: keep arg1 as u8* and spell the P11 arg1-reuse lever with the two
- * casts the C type system requires for integer round-trip through a
- * pointer-typed variable:
- *     arg1 = (u8 *) *((u8 *) (v0_50 + 6));      // int-to-pointer, required
- *     *((s16 *) (s0 + 0x40)) = (s32) arg1;      // pointer-to-int, required
- * Both casts are 32-bit-to-32-bit (no width change, NOT F2); the RTL is
- * identical to the s32-typed spelling (same SImode pseudo, same $5
- * copy-preference from the prologue copy), so the register-allocation
- * mechanism is unchanged and sandbox measures 0 directly.
- *
- * Levers (all measured, sessions 2+8):
- *   +  arg0 = a3*5*4 reuse via split-init chain (dead param, $4 home-pref)
- *   +  s32 v1 with v1 <<= 2 per arm (in-place shift)
- *   +  arg1 (u8*, type unchanged) reused for the a1_val byte via casts
- *   +  byte-offset table casts *(s32*)((u8*)&D_801027B4 + arg0)
- *   +  mixed second-sum operand order (Judge PASS
- *      docs/grind/decisions.md:4073-4075, commit 9b326242)
- * Apply this body over func_80021A98 in src/code6cac.c to resume — NO
- * header edit needed or allowed. */
+ * WHY THIS SUPERSEDES THE s8 BANKED FORM: the driver BANNED both of s8's
+ * load-bearing levers (layer-1 FAIL):
+ *   - arg1 cast-round-trip reuse  (arg1 = (u8 *) *((u8 *)(v0_50 + 6)); ...)
+ *   - arg0 split-init dead-param index (arg0 = a3 << 2; arg0 += a3; ...)
+ * NEITHER appears in this form. This form was found by a directed permuter
+ * campaign seeded from plain HEAD (honest floor 20/158), decomposed by hand,
+ * and each piece measured individually in the engine sandbox:
+ *   HEAD 20 -> 11: else-arm second sum staged through a named intermediate
+ *       (new_var = (&D_801027B8)[idx] + v1; v0 = new_var;)  [FAKE-annotated;
+ *       named-intermediate/staging, ALLOWED per do-while-zero-exception.md:46]
+ *   11 -> 4: if-arm second store folded directly
+ *       (*(s32 *)(s0 + 0x58) = D_80102768 + v1;)  [plain natural code]
+ *   4 -> 0: single-level do-while(0) wrap on the s0+0x6A store
+ *       (do { *(s16 *)(s0+0x6A) = *(u8 *)a0_58; } while (0);)  [FAKE-annotated;
+ *       sanctioned for ANY codegen effect incl. RA, owner ruling 2026-07-06,
+ *       do-while-zero-exception.md:23, precedent cf3e6ce7]
+ * The raw permuter zero ALSO carried `if (1) { }` and `v1f == (new_var2 = 2)`
+ * — both cheat spellings, PROVEN SPURIOUS (sandbox 0 without them); rejected
+ * copy in rejected/permuter-raw-zero-if1-newvar2.c.
+ * No operand-order trick needed in this form (both second sums base-first);
+ * the s2 Judge-PASS mixed-order ruling is no longer load-bearing.
+ * The empty do { } while (0); at s0+0x60/0x61 is pre-existing HEAD state,
+ * unchanged. Apply this body over func_80021A98 in src/code6cac.c to resume.
+ */
 void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
     u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
+    s32 new_var;
     s32 a3;
     if ((*((s16 *) (s0 + 0x4C))) != 0) {
         a3 = *((s16 *) ((*((s32 *) s0)) + 0x4A));
@@ -37,24 +39,23 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
     *((s16 *) (s0 + 0x4C)) = 0;
     *((s32 *) (s0 + 0x50)) = (s32) arg1;
     {
-        s32 v1 = *((u16 *) (arg1 + 4));
+        u16 v1 = *((u16 *) (arg1 + 4));
         *((s16 *) (s0 + 0x5C)) = v1;
         if (arg2 != 0) {
-            s32 v0;
-            v1 <<= 2;
-            v0 = D_80102764 + v1;
+            s32 v0 = D_80102764 + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
-            v0 = *((u16 *) (v0 + 2)) + D_80102768;
-            *((s32 *) (s0 + 0x58)) = v0;
+            v1 = *((u16 *) (v0 + 2));
+            *((s32 *) (s0 + 0x58)) = D_80102768 + v1;
         } else {
-            s32 v0;
-            arg0 = a3 << 2;
-            arg0 += a3;
-            arg0 <<= 2;
-            v1 <<= 2;
-            v0 = *(s32 *)((u8 *)&D_801027B4 + arg0) + v1;
+            s32 idx = a3 * 5;
+            s32 v0 = (&D_801027B4)[idx] + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
-            v0 = *(s32 *)((u8 *)&D_801027B8 + arg0) + *((u16 *) (v0 + 2));
+            v1 = *((u16 *) (v0 + 2));
+            /* FAKE: staging the second table sum through a separate named
+             * local keeps its pseudo distinct from the v0 web, seating v1's
+             * web in $v1/$a0-order as in target (cluster-1 close-out). */
+            new_var = (&D_801027B8)[idx] + v1;
+            v0 = new_var;
             *((s32 *) (s0 + 0x58)) = v0;
         }
     }
@@ -66,7 +67,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         do { } while (0);
         *((u8 *) (s0 + 0x61)) = (u8) a3;
         {
-            arg1 = (u8 *) *((u8 *) (v0_50 + 6));
+            u8 a1_val = *((u8 *) (v0_50 + 6));
             *((s16 *) (s0 + 0x6C)) = old_kind;
             {
                 s32 v1_58 = *((s32 *) (s0 + 0x58));
@@ -75,8 +76,10 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 *((s16 *) (s0 + 0x7A)) = li1;
                 *((s32 *) (s0 + 0x7C)) = 0;
                 *((s16 *) (s0 + 0x46)) = 0;
-                *((s16 *) (s0 + 0x40)) = (s32) arg1;
-                *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58);
+                *((s16 *) (s0 + 0x40)) = a1_val;
+                /* FAKE: loop-note weighting seats a0_58 in $a0 and a1_val in
+                 * $a1 as in target (cluster-2 $4/$5 close-out). */
+                do { *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58); } while (0);
                 *((s16 *) (s0 + 0x6E)) = *((u8 *) (v1_58 + 2));
             }
         }

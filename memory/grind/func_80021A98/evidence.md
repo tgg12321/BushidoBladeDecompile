@@ -271,3 +271,61 @@ Regex-passing anchors for the split-init-accumulation sanction:
 
 Use this exact form in future self_vet.md PRECEDENT lines. (The driver
 now also feeds the discard reason into the respawned session's brief.)
+
+## Session 9 (permuter, 2026-08-08) — NEW sandbox-0 form WITHOUT the banned levers
+
+### Context
+The brief BANNED both load-bearing s8 levers (layer-1 FAIL): the arg1
+cast-round-trip reuse AND the arg0 split-init dead-param index. Mandated
+modality: permuter. All work this session is src/code6cac.c-only.
+
+### Honest floor re-baseline (banned levers removed, prescribed plain spellings)
+- Plain HEAD form (u8 a1_val local, s32 idx = a3*5 local): **20/158** (re-measured).
+- Partial stacks of the surviving s2 levers are WORSE than plain HEAD — all
+  three measured and KILLED as standalone spellings:
+  - s32 v1 in-place `<<= 2` + byte-offset casts + plain idx local (a3*5*4) + mixed order: **26/160**
+  - same but element-index idx (a3*5): **26/160**
+  - u16 v1 + inline-fold + mixed second-sum order only: **25/160**
+  (P4 and P12 only pay stacked on the banned arg0 lever; unstacked they cost
+  2 structural insns. Do not re-try them without a replacement index lever.)
+
+### Permuter campaigns (tools/permuter_campaign.py; workspace tmp/perm_21a98)
+Minimal single-function TU at offset 0; compile.sh mirrors the Makefile
+default pipeline incl. -mel, maspsx flags, multu_pad; validated base 158 =
+target 158 insns. Setup script (rerunnable): tmp/grind/func_80021A98/s2/perm/setup_ws.sh.
+- Campaign 1 `head-natural-s9` (base weighted 135): found output-70 in <60s —
+  else-arm second sum staged through a fresh named intermediate
+  (`new_var = (&D_801027B8)[idx] + v1; v0 = new_var;`). Honest sandbox: **20 -> 11** (158/158).
+- Campaign 2 `newvar70-s9` (reseeded from 70-form): found w40 (if-arm v0
+  staging) and w25 (+ if-arm store folded directly + `new_var2 = 0x7C`
+  constant-holder + `(unsigned char)` cast). Decomposed by hand: the CLEAN
+  subset alone (fold the if-arm store: `*(s32*)(s0+0x58) = D_80102768 + v1;`)
+  measured **11 -> 4** (158/158). The constant-holder and cast were never applied.
+- Campaign 3 `clean4-s9` (reseeded from the clean 4-form): found **output-0**
+  at ~8 min. Raw zero carried FOUR mutations; token-level diff + individual
+  sandbox measurement proved TWO are load-bearing and TWO are spurious:
+  - LOAD-BEARING: single-level `do { *(s16*)(s0+0x6A) = *(u8*)a0_58; } while (0);`
+    → **4 -> 0** alone on top of the clean 4-form.
+  - SPURIOUS (proven — sandbox 0 without them): `if (1) { }` (forbidden
+    catalog, verbatim) and `v1f == (new_var2 = 2)` (dead-store
+    constant-holder respelling). Raw output banked at
+    rejected/permuter-raw-zero-if1-newvar2.c; NEVER re-propose these.
+- All campaigns harvest+stopped (telemetry in metrics/events.jsonl); logs at
+  tmp/grind/func_80021A98/s2/perm/campaign-{1-2,3}.log, finds at
+  tmp/grind/func_80021A98/s2/perm/finds/.
+
+### FINAL: sandbox 0 (158/158) — v3 form, three constructs, all vetted
+1. named-intermediate staging (else-arm second sum) — FAKE-annotated;
+   ALLOWED family (do-while-zero-exception.md:46 / no-new-park-categories.md:189).
+2. if-arm folded store — plain natural code, no family needed.
+3. single-level do-while(0) on the s0+0x6A store — FAKE-annotated; sanctioned
+   for ANY codegen effect incl. RA by the FINAL owner ruling 2026-07-06
+   (do-while-zero-exception.md:23; precedents cf3e6ce7, marionation_Exec).
+No operand-order trick remains (both second sums base-first) — the s2
+Judge-PASS mixed-order ruling is no longer load-bearing. No header edit.
+Neither banned construct appears in any spelling. candidate.c re-banked (v3);
+self_vet.md rewritten for the new construct list. Outcome: candidate-ready.
+
+### Residual-4 diff map before the wrap (for posterity)
+Exactly cluster 2 as s1 mapped it: target `lw $a0,0x58($s0)` / `lbu $a1,6($v0)`
+vs ours $5/$4 — the a0_58/a1_val flip, closed by construct 3.
