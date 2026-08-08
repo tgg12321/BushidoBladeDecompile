@@ -1,16 +1,27 @@
-/* func_80048AD0 — SANDBOX DISTANCE 0 (measured s2, 2026-08-07) — 47/47 insns,
- * every opcode/operand/offset verified against asm/funcs/func_80048AD0.s
- * (disassembly diff: tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt).
+/* func_80048AD0 — HONEST FLOOR: sandbox distance 1 (47/47 insns), re-confirmed
+ * s2-permuter 2026-08-07. Sole residual: `andi $a0,$a0,0xff` in the
+ * snd_LoadBgm jal delay slot where target has `nop` (caller-side truncation
+ * of the s32 `sound` local against the u8 prototype in text1b.c).
  *
- * The s1 residual (andi $a0,$a0,0xff in the snd_LoadBgm jal delay slot, from
- * passing the s32 `sound` to the u8-prototyped snd_LoadBgm) is closed WITHOUT
- * any declaration edit — the reviewer's path (ii). The call argument is the
- * u8-typed table element read directly: `snd_LoadBgm((&D_80099BCC)[idx])`.
- * Being u8 → u8, no caller-side truncation is emitted (the lbu IS the
- * zero-extension); CSE folds this read into `sound`'s cached load pseudo, so
- * the emitted code has exactly ONE lbu and the argument copy still hands the
- * {$a0} preference to `sound` (the reused counter). Target delay slot: nop —
- * matched.
+ * THIS is the best NON-BANNED form. The previous candidate.c (sandbox 0 via
+ * `snd_LoadBgm((&D_80099BCC)[idx])` — duplicate-read call argument) was
+ * layer-1 FAILED as a respelling of the twice-refused declaration edit (A)
+ * and is BANNED for this function; it is preserved at
+ * rejected/layer1-fail-0807-1829.c. Do not re-propose it.
+ *
+ * s2-permuter closure of the andi-removal space (see evidence.md s2-permuter):
+ *   - decl mutations (u8 -> int / volatile int): banned (A)-respelling family.
+ *   - compare-site `(u8)sound == 0xFF` cast: folds the andi (CSE unifies the
+ *     call-site truncation with the compare temp; nonzero_bits folds it into
+ *     the lbu) BUT the arg copy then sources the QImode temp, not `sound`, so
+ *     the {$a0} copy-preference never reaches the reused counter: counter/delta
+ *     allocate $a2/$a0 (7 reg diffs, permuter 35). The fold and the pref-loss
+ *     are COUPLED through the same CSE temp. Also semantically redundant
+ *     (sound is lbu-loaded, always < 0x100) = F2 forbidden family anyway.
+ *   - call-site `(u8)sound` cast alone: andi REMAINS (no CSE partner) — and
+ *     is F2-redundant too.
+ *   - 46k random permuter iterations from this chassis surfaced NO other
+ *     andi-free spelling.
  *
  * Requires the surrounding declarations exactly as at HEAD (UNTOUCHED —
  * refused edit (A) is NOT re-filed):
@@ -37,7 +48,7 @@ s32 func_80048AD0(s32 arg0) {
     D_800A33E0 = arg0;
     sound = (&D_80099BCC)[idx];
     if (sound == 0xFF) return 0;
-    base = (u8 *)snd_LoadBgm((&D_80099BCC)[idx]);
+    base = (u8 *)snd_LoadBgm(sound);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
@@ -45,12 +56,10 @@ s32 func_80048AD0(s32 arg0) {
     /* FAKE: the record counter reuses `sound` rather than a fresh local.
        snd_LoadBgm's argument copy gives `sound` a hard-reg $a0 preference;
        global.c expand_preferences propagates it to the counter, which stops
-       prune_preferences making the counter yield $a0 to `delta` (delta gets
-       its own $a0 preference from `(set (reg a0) (plus (reg delta) 0x6E8))`
-       via set_preference's PLUS-first-operand rule). With a separate counter
-       the pair allocates $a2/$a0 instead of target's $a0/$a2. Measured
-       exhaustion: ~60 variants over 8 sweeps + 3 fresh kills in grind s1 —
-       see memory/grind/func_80048AD0/evidence.md. */
+       prune_preferences making the counter yield $a0 to `delta`. With a
+       separate counter the pair allocates $a2/$a0 instead of target's
+       $a0/$a2. Measured exhaustion: ~60 variants over 8 sweeps + kills in
+       grind s1/s2 — see memory/grind/func_80048AD0/evidence.md. */
     for (sound = 0; sound < 0x11; sound++) {
         *(s16 *)(q - 8 + sound * 0x68) = sound;
         *(s16 *)(q - 6 + sound * 0x68) = 9;

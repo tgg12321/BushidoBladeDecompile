@@ -215,6 +215,67 @@ an in-tree definition, or (iii) an owner ruling. (iii) is escalated and open.
   ordinary C; secondary cover: duplicate-read family, SOTN dra/42398.c precedent,
   with the arm-shape scope caveat flagged honestly for layer-1).
 
+## s2-permuter (2026-08-07) — post-layer-1-FAIL: floor back to 1; andi-removal space swept and closed at the permuter level
+
+Context: the prior s2 sandbox-0 candidate was layer-1 FAILED — construct 2
+(`snd_LoadBgm((&D_80099BCC)[idx])` duplicate-read call argument) ruled a
+respelling of the twice-refused declaration edit (A), and BANNED for this
+function under any spelling. The honest, non-banned floor is therefore the s1
+score-1 reuse form (`snd_LoadBgm(sound)`, single andi residual), re-applied to
+src/text1b.c this session and re-measured: **sandbox --disable all = 1, 47/47**.
+src/text1b.c restored to HEAD at session end (score-1 body ≠ target bytes;
+oracle stays green). candidate.c REWRITTEN to the score-1 form (the banned
+sandbox-0 body remains only in rejected/layer1-fail-0807-1829.c).
+
+- [s2p] Permuter workspace built at tmp/perm_48AD0 (base.c = score-1 form,
+  compile.sh mirrors current CC_FLAGS incl. -mel, clean single-function
+  target.o from prelude_r3k + asm/funcs/func_80048AD0.s). Validated: base
+  47/47 vs target with the single andi-vs-nop line as the only diff
+  (weighted base score 200).
+- [s2p] Campaign 1 (s2-score1-random, default passes): score-0 find in 89 s —
+  but the closing mutation was `extern s32 snd_LoadBgm(volatile int);`
+  (perm_randomize_external_type rewriting the PROTOTYPE). That is the
+  (A)-respelling family under yet another syntax (int + inert volatile
+  qualifier); body contained NO lever. Vetted and REJECTED
+  (rejected/permuter-volatile-int-prototype.c). Confirms the permuter finds
+  the decl route instantly — and nothing else at score 0 through it.
+- [s2p] Campaign 2 (s2-body-only): perm_randomize_external_type,
+  perm_randomize_function_type, perm_pad_var_decl zeroed in settings.toml so
+  the search is body-confined. One novel find at 141 s: compare-site cast
+  `if ((u8)sound == 0xFF)` scoring 35 = 7 pure register diffs, ZERO ins/del —
+  the andi is GONE but counter/delta allocate $a2/$a0 (separate-counter
+  allocation). Then NO further novelty in ~19 min / 46,258 total iterations;
+  harvested --stop per fresh-seed discipline.
+- [s2p] MECHANISM of the 35-find (the load-bearing s2 result): the compare
+  cast materializes a QImode truncation temp; CSE unifies the call-site
+  implicit (u8) truncation with it; `and P,0xff` folds away because P is
+  lbu-loaded (nonzero_bits=0xFF). But the snd_LoadBgm argument copy now
+  sources the TEMP, not `sound`'s pseudo, so {$a0} lands on the dying temp
+  and never reaches the reused counter. **The andi-fold and the pref-loss are
+  coupled through the same CSE temp** — a compare-site truncation cannot give
+  both the nop delay slot AND the counter=$a0 allocation.
+- [s2p] Hand-probe matrix completing the cast space (try_out.sh, all 47/47):
+  call-site `(u8)sound` alone → andi REMAINS (no CSE partner at the compare);
+  both casts → identical to compare-cast alone (7 reg diffs). Additionally
+  BOTH cast spellings are semantically redundant (lbu value < 0x100; the u8
+  prototype already truncates) = the "redundant width casts (F2)" FORBIDDEN
+  family — so this route is dead on both the measurement axis and the policy
+  axis. rejected/compare-cast-u8-pref-steal.c.
+- [s2p] Conclusion the next session inherits: every known andi-removal route
+  is now individually closed — (i) declaration edits: twice-refused + banned;
+  (ii) duplicate-read u8 argument: layer-1 banned; (iii) compare-site
+  truncation casts: pref-coupled AND F2; (iv) call-site cast: no effect;
+  (v) u8-typed locals/counters: killed by measurement (s1 matrix); (vi) 46k
+  random body-mutation iterations: no other spelling surfaced. The honest
+  floor stands at 1 pending either a genuinely new attack shape or owner
+  disposition; the ladder still has unspent modalities (forensics on WHY
+  cc1's expand emits the truncation before CSE and whether any statement
+  order changes CSE's temp choice; rederive; synthesis).
+- Artifacts: tmp/grind/func_80048AD0/s2/{campaign_log_tail.txt,
+  campaign_meta.json, find_score0_decl_cheat.c, find_score35_compare_cast.c,
+  probe_callcast.c, probe_bothcast.c, mk_target.sh, try_out.sh, diffcheck.sh}
+  + workspace tmp/perm_48AD0/.
+
 ## OPERATOR NOTE — 2026-08-07 circuit-break resolution (citation format)
 
 The 16:05 circuit-break was three consecutive self-vet rejections for ONE
@@ -234,3 +295,15 @@ inline-asm-policy.md as the discarded self-vets claimed):
   memory/grind/func_80048AD0/evidence.md:92
 
 Use this exact form in future self_vet.md PRECEDENT lines.
+
+- [s2] Honest non-banned floor re-established: s1 score-1 reuse body (snd_LoadBgm(sound)) applied to src/text1b.c measured sandbox --disable all = 1 (47/47) this session; src/text1b.c then restored to HEAD (score-1 body != target bytes; oracle stays green); candidate.c rewritten to the score-1 form
+
+- [s2] Permuter workspace tmp/perm_48AD0 built and validated: base.c = score-1 form, compile.sh mirrors current CC_FLAGS incl. -mel, clean single-function target.o; sole base diff = andi-vs-nop (weighted 200)
+
+- [s2] Campaign 1 score-0 find (89 s) was perm_randomize_external_type rewriting the prototype to 'volatile int' — the twice-refused/banned (A) family under new syntax; body carried no lever; rejected/permuter-volatile-int-prototype.c
+
+- [s2] Campaign 2 (body-confined passes) found only the compare-cast basin (141 s, score 35 = 7 pure reg diffs, zero ins/del), then nothing novel in ~19 min / 46k iterations; harvested --stop
+
+- [s2] Mechanism banked: the andi-fold requires a CSE truncation temp, and that same temp steals the {$a0} argument-copy preference from the reused counter — a compare-site truncation can never yield both the nop delay slot and counter=$a0
+
+- [s2] All known andi-removal routes now individually closed: decl edits (refused+banned), duplicate-read arg (banned), compare-site casts (pref-coupled + F2), call-site cast (no effect), u8 locals (s1 kills), 46k random body mutations (nothing else)

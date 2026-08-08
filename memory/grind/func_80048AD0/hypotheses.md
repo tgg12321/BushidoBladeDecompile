@@ -67,8 +67,32 @@
 - result: **sandbox 0, 47/47**, every opcode/operand/offset equal (tmp/grind/func_80048AD0/s2/sandbox0_disasm.txt); no declaration touched (refused (A) not re-filed)
 - verdict: CONFIRMED
 
+## [s2p] A permuter campaign seeded from the score-1 candidate can surface a counter/arg spelling neither hand-analysis covered (frontier item 3)
+- mechanism: weighted permuter metric has real gradient at score 1; random body mutation sweeps spellings outside the hand-enumerated k2..k7 / p1..p6 families
+- probe: two campaigns on tmp/perm_48AD0 (clean single-function target.o, base 200); campaign 1 default passes, campaign 2 with external/function-type and pad-var passes zeroed; 46k+ iterations total, harvested --stop per fresh-seed discipline
+- result: exactly TWO finds, both vetted as dead: (1) score 0 via `extern s32 snd_LoadBgm(volatile int);` — the banned (A)-respelling decl route, body unchanged; (2) score 35 via compare-site `(u8)sound == 0xFF` — andi folds but the {$a0} pref moves to the CSE truncation temp, counter/delta flip to $a2/$a0 (7 reg diffs), and the cast is F2-forbidden anyway. No third basin in ~19 quiet minutes.
+- verdict: KILLED (as a route to 0 from this chassis; the campaign itself was the measurement)
+
+## [s2p] A truncation cast (compare-site and/or call-site) can remove the andi while preserving the counter's {$a0} preference
+- mechanism: if the call-site truncation folds via CSE+nonzero_bits, the andi vanishes; the question was whether `sound`'s pseudo can stay the argument-copy source
+- probe: full 2x2 cast matrix through the workspace pipeline (try_out.sh): call-only, compare-only, both, neither
+- result: call-only → andi remains (no CSE partner); compare-only and both → andi gone but the arg copy sources the QImode temp, {$a0} lands on the dying temp, counter=$a2/delta=$a0 (7 reg diffs). The fold and the pref-loss are coupled through the same CSE temp. Both casts are also semantically redundant (lbu < 0x100, prototype already truncates) = F2 forbidden family.
+- verdict: KILLED
+
 ## [s1] Keeping sound u8 AND reusing it as the counter avoids the call-site andi at acceptable loop cost
 - mechanism: u8 var passed to u8 param needs no truncation; question was the QImode counter's SImode-consumer cost
 - probe: u8 sound reused as loop counter; sandbox
 - result: score 25 (55 insns): zero_extend at all five scaled store addresses, the stored value, and the compare; reuse strictly requires an s32 counter
+- verdict: KILLED
+
+## [s2] A permuter campaign seeded from the score-1 candidate can surface a counter/arg spelling neither hand-analysis covered
+- mechanism: weighted metric has real gradient at score 1; random body mutation reaches spellings outside the hand-enumerated families
+- probe: two campaigns on tmp/perm_48AD0 (clean single-function target.o, base score 200); campaign 2 with perm_randomize_external_type/perm_randomize_function_type/perm_pad_var_decl zeroed; wait+harvest --stop in-turn per fresh-seed discipline
+- result: exactly two finds in 46,258 iterations: score-0 via 'extern s32 snd_LoadBgm(volatile int);' (banned (A)-respelling decl mutation, body unchanged — rejected) and score-35 via compare-site (u8)sound cast (andi folds but 7 register diffs appear); no third basin in ~19 quiet minutes
+- verdict: KILLED
+
+## [s2] A truncation cast (compare-site and/or call-site) can remove the andi while preserving the reused counter's {$a0} preference
+- mechanism: CSE unifies the call-site implicit truncation with a compare-site (u8) temp and nonzero_bits folds the and into the lbu; question was whether sound's pseudo stays the argument-copy source
+- probe: full 2x2 cast matrix compiled through the exact build pipeline (tmp/grind/func_80048AD0/s2/try_out.sh + probe_*.c)
+- result: call-only: andi remains (no CSE partner). compare-only and both: andi gone but the arg copy sources the QImode CSE temp, {$a0} lands on the dying temp, counter/delta flip to $a2/$a0 (7 reg diffs, permuter 35). Fold and pref-loss are coupled through the same temp. Both casts are also semantically redundant (lbu value < 0x100; u8 prototype already truncates) = F2 forbidden family — dead on measurement AND policy axes
 - verdict: KILLED

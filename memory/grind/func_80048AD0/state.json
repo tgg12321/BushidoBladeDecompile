@@ -1,31 +1,37 @@
 {
  "func": "func_80048AD0",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
    "floor": 1,
    "modality": "recon",
    "headline": "Recon: honest floor established at 1 (was 19) via the layer-2-confirmed (B) reuse form without the refused decl edit; reuse-counter type matrix closed with two new kills"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter sweep (46k iters, 2 campaigns) closes the andi-removal space: only routes to 0 are the banned decl-respelling and an F2-coupled compare-cast that forfeits the {$a0} pref; honest floor re-meas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "expand_preferences pass order/direction determines whether ANY dying-pseudo/SET chain can hand {$a0} to a fresh post-call counter whose init is (set i (const 0))",
-   "mechanism": "global.c set_preference runs first (copy prefs), then expand_preferences merges via REG_DEAD links; a const-init insn has no dying pseudo, so the chain must enter through a different semantically-real init spelling \u2014 or is provably impossible",
-   "next_probe": "forensics: read tools/gcc-2.7.2/global.c expand_preferences loop; confirm direction with a -da greg dump of the score-1 form in tmp/grind/func_80048AD0/s2/"
+   "hypothesis": "cc1 forensics can locate a statement-order or temp-structure lever that makes CSE substitute sound's own pseudo (not a fresh QImode temp) as the a0 argument-copy source while still folding the truncation",
+   "mechanism": "the truncation is emitted at expand time from the u8 prototype (calls.c convert); whether the folded copy references P or a temp is decided by cse.c's equivalence-class representative choice \u2014 if any source shape makes P the representative, the pref lands on the counter AND the andi folds",
+   "next_probe": "forensics modality: -da cse/greg dumps of the score-1 form vs the compare-cast form in tmp/grind/func_80048AD0/s3/; read cse.c's canon/representative selection for (and (reg P) 0xff) when nonzero_bits folds it; enumerate compare/call statement orders that change the representative"
   },
   {
-   "hypothesis": "delta's {$a0} preference can be removed by an arg spelling for snd_PlayBgm that still emits addiu $a0,<delta>,0x6E8 but whose RTL first operand is not delta's pseudo at set_preference time",
-   "mechanism": "without delta in regs_someone_prefers[counter], prune_preferences stops making the counter avoid $a0 and it takes $a0 naturally; note p_end - base rewrite is DEAD (emits subu, and base is dead pre-loop in target)",
-   "next_probe": "enumerate arg spellings beyond the k2..k7 same-shape respellings; verify each still folds to a single addiu into $a0 before scoring"
+   "hypothesis": "the original source reached the nop delay slot through a shape not derivable from the current chassis (rederive modality)",
+   "mechanism": "m2c re-derivation from target asm unconstrained by the s1/s2 body may expose a structurally different spelling (e.g. different gating of the 0xFF check) with different CSE behavior",
+   "next_probe": "m2c --valid-syntax on asm/funcs/func_80048AD0.s; rebuild the body from the m2c shape without reference to candidate.c; sandbox"
   },
   {
-   "hypothesis": "a permuter campaign seeded from the score-1 candidate can surface a counter/arg spelling neither hand-analysis covered",
-   "mechanism": "weighted permuter metric has real gradient at score 1 (single-insn diff); PERM directives can sweep counter-init and call-arg forms",
-   "next_probe": "tools/permuter_campaign.py launch from candidate.c with a clean single-function target.o, wait + harvest --stop in-turn per fresh-seed discipline"
+   "hypothesis": "if forensics proves the u8-prototype truncation's CSE representative can never be P in any semantically-equal source, every pure-C route is measured dead and the function is escalation-shaped",
+   "mechanism": "the residual would then be reachable only through the refused declaration edit or banned respellings \u2014 an owner-disposition question, which is the DRIVER's call via the modality ladder, not this session's",
+   "next_probe": "only after the forensics kill: driver assigns escalation modality; evaluate the endgame-lock AND-gates there"
   }
  ],
  "judge_constraints": [
