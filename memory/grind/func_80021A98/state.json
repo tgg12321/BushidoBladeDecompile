@@ -1,0 +1,37 @@
+{
+ "func": "func_80021A98",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 20,
+   "modality": "recon",
+   "headline": "Recon complete: floor 20/158 is purely two RA permutation clusters (v1@$2-vs-$3 cascade ~16 insns; a0_58/a1_val $4-$5 tie 4 insns); zero structural diffs; 3 probes measured (2 byte-neutral, 1 worse)"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cluster 1 closes when v1 loses $2 to the table-pointer chain (H1, ~16 of 20)",
+   "mechanism": "GCC 2.7.2 global/local alloc priority between the multi-block v1 pseudo and arm-local table temps",
+   "next_probe": "Run the -da greg dump (register-alloc-pure-c Step-0) on the sandbox .i to read actual allocno priorities for v1 vs table temps, THEN steer: separate named local for the shifted index per arm (sanctioned named-intermediate order) so v1's pseudo dies early, or reuse-variable spelling on the table chain to lift its refs"
+  },
+  {
+   "hypothesis": "Cluster 2 closes by merging a0_58 and v1_58 into ONE reused variable loaded twice from s0+0x58 (H2, 4 of 20)",
+   "mechanism": "4-ref reused pseudo outranks a1_val in allocno priority, winning $4 as in target (variable-reuse family, SOTN-sanctioned)",
+   "next_probe": "p = *(s32*)(s0+0x58); ... *(u8*)p ...; p = *(s32*)(s0+0x58); *(u8*)(p+2) \u2014 verify insn count stays 158 and cluster-2 diff flips"
+  },
+  {
+   "hypothesis": "Else-arm idx register and addu operand orders are pure cascade of H1 (H3)",
+   "mechanism": "register identity, not C operand order, decides the emitted addu operand order",
+   "next_probe": "no separate probe \u2014 verify automatically when H1 lands"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-08T02:12:55.488941+00:00"
+}

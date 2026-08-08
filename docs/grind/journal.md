@@ -792,3 +792,4 @@
 - 2026-08-07 20:16 func_80048AD0 s3 [permuter] floor=1: s3 permuter: CFG/andi-fold coupling law measured (5 probes + .jump dump) — andi folds only when the call block is cse1-fall-through-reachable, target layout forbids it; two fresh-seed campaigns (P1 andi-free 64k iters, m1 idx-reuse 68k iters) both dry; floor holds at 1
 - 2026-08-07 20:39 func_80048AD0 s4 [forensics] floor=1: Forensics: andi-fold mechanism named verbatim — combine's label_tick-scoped nonzero_bits (not cse1 path reachability); carrier-copy family killed; full route partition now dead, function is rederive-then-escalation-shaped
 - 2026-08-07 21:12 func_80048AD0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
+- 2026-08-07 21:26 func_80021A98 s1 [recon] floor=20: Recon complete: floor 20/158 is purely two RA permutation clusters (v1@$2-vs-$3 cascade ~16 insns; a0_58/a1_val $4-$5 tie 4 insns); zero structural diffs; 3 probes measured (2 byte-neutral, 1 worse)
