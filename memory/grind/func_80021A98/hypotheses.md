@@ -1,5 +1,20 @@
 # Hypothesis ledger — func_80021A98
 
+## Status after session 5 (structural): CANDIDATE-READY (3rd consecutive re-affirmation)
+Sessions 4 and 5 (both dispatched on the stale s1-only digest) each found src
+rolled back, re-applied the banked candidate verbatim, and re-measured sandbox 0
+(158/158). No new hypotheses; nothing open. The only blocker is pipeline-side:
+the uncommitted ledger keeps regenerating the stale digest.
+
+## Status after session 3 (structural): CANDIDATE-READY
+The s2 classification question (H5) was ruled by the Judge: PASS — mixed
+2-operand-sum operand order is ordinary spelling (docs/grind/decisions.md:4073,
+commit 9b326242). Session 3 re-applied the banked zero form to src +
+include/code6cac.h, re-measured sandbox 0 (158/158), wrote self_vet.md, and
+returned candidate-ready. No open hypotheses. Fallback frontier (only if the
+full-candidate review bounces): H5 options 2 (someone_prefers route for the
+transposed-sw/lhu score-2 state) and 3 (permuter sweep from both score-2 seeds).
+
 ## Frontier (after session 2, structural — floor 2/158)
 
 ### H5 — the last 2 insns: second-sum addu operand order vs the pref-3 delivery

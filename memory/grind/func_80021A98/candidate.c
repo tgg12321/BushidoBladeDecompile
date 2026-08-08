@@ -14,7 +14,12 @@
  * GCC-internals justification for an operand-order choice in a commutative
  * `+` — possibly inside the or-tree-shape-shift forbidden family, possibly
  * ordinary expression spelling (2-operand sum; both orders appear all over
- * this file).  Awaiting owner ruling; see outcome JSON s2.
+ * this file).  RESOLVED: Judge ruled PASS 2026-08-07 22:21
+ * (docs/grind/decisions.md:4073-4075, commit 9b326242) — ordinary expression
+ * spelling, outside or-tree-shape-shift (scoped to 3+-operand chains), no FAKE
+ * annotation required.  Session 3 re-applied this body + the header prototype
+ * to src and re-measured sandbox 0 (158/158); self_vet.md written;
+ * candidate-ready returned.
  * Levers landed this session (all measured, in order):
  *   +  arg0 = a3*5*4 reuse (dead param, $4 home-pref)      20 -> 15
  *   +  s32 v1 with v1 <<= 2 per arm (in-place shift)       15 -> 12 (stacked)

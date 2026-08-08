@@ -121,8 +121,78 @@ may fall under the or-tree-shape-shift forbidden family (operand reordering in
 associative+commutative expressions) — or may be ordinary 2-operand-sum spelling (both orders
 appear naturally throughout src).  Bytes are PROVEN; only the construct's classification is open.
 
+## Session 3 (structural, 2026-08-07) — candidate-ready
+
+- The s2 ruling-request was ANSWERED: Judge PASS, 2026-08-07 22:21
+  (docs/grind/decisions.md:4073-4075, committed 9b326242). The mixed 2-operand-sum
+  operand order is ordinary expression spelling; or-tree-shape-shift is scoped to
+  3+-operand associative chains; no FAKE annotation required. The ruling also
+  independently re-verified sandbox 0 at the time it was made.
+- Session 3 found src/code6cac.c ROLLED BACK to the pre-s2 form (the driver
+  discards src edits on non-candidate-ready outcomes; only memory/ was committed).
+  Re-applied the banked candidate.c body + the include/code6cac.h:442 prototype
+  (u8* -> s32) exactly as banked.
+- `sandbox func_80021A98 --disable all` THIS session: **score 0, 158/158,
+  19 rules dropped, cheat_asm_stripped 139** — distance 0 proven live in src.
+- self_vet.md written (6-test vet per construct + 3 sanctioned-family claims with
+  verbatim scope quotes and file:line precedents). Outcome: candidate-ready.
+
+## Session 4 (structural, 2026-08-07) — candidate-ready re-affirmed
+
+- Dispatched on a STALE digest (showed only s1 state — the s2/s3 ledger updates
+  were uncommitted, per the known grinder-stale-digest-uncommitted-ledger
+  failure mode). No re-derivation was needed: the ledger carried everything.
+- Found src/code6cac.c + include/code6cac.h rolled back to the pre-s2 form
+  again. Re-applied the banked candidate.c body verbatim (arg1 param u8*->s32
+  in both the src signature and the header prototype at include/code6cac.h:442,
+  arg0 split-init reuse, s32 v1 in-place shifts, byte-offset table casts,
+  mixed second-sum operand order per the Judge-PASSed ruling
+  docs/grind/decisions.md:4073-4075 / commit 9b326242).
+- `sandbox func_80021A98 --disable all` THIS session: **score 0, 158/158,
+  19 rules dropped, cheat_asm_stripped 139** — distance 0 proven live in src.
+- self_vet.md re-verified against the live diff (identical constructs) and
+  annotated. Outcome: candidate-ready.
+
+## Session 5 (structural, 2026-08-07) — candidate-ready re-affirmed again
+
+- Dispatched on the SAME stale s1-only digest (s2–s4 ledger updates still
+  uncommitted — grinder-stale-digest-uncommitted-ledger failure mode). The
+  on-disk ledger carried everything; zero re-derivation performed.
+- Found src/code6cac.c + include/code6cac.h rolled back to the pre-s2 form a
+  third time. Re-applied the banked candidate.c body verbatim: arg1 param
+  u8* -> s32 (src signature + include/code6cac.h:442 prototype) reused for the
+  a1_val byte, arg0 split-init reuse for the else-arm index, s32 v1 with
+  in-place `v1 <<= 2` per arm, byte-offset table casts, mixed second-sum
+  operand order per the Judge-PASSed ruling (docs/grind/decisions.md:4073-4075,
+  commit 9b326242).
+- `sandbox func_80021A98 --disable all` THIS session: **score 0, 158/158,
+  19 rules dropped, cheat_asm_stripped 139** — distance 0 proven live in src.
+- self_vet.md re-verified against the live diff (identical constructs) and its
+  header updated. Outcome: candidate-ready.
+- OPERATOR NOTE: this is the THIRD consecutive candidate-ready on an identical
+  banked form. The stale-digest loop persists because memory/grind/func_80021A98/
+  is dirty-uncommitted; committing the ledger (or accepting the candidate)
+  breaks the loop.
+
 ### Artifacts (tmp/grind/func_80021A98/s2/)
 - greg_dump.sh - regenerates .i + cc1 -da + extracts func.greg/func.lreg (rerunnable)
 - func.greg, func.lreg - RTL dumps (score-2 form)
 - allocdbg.txt (ALLOCDBG priority table), findreg94.txt (FINDREGDBG for v1)
 - show_diff.py - prints only true-mismatch lines from the s1 differ
+
+## OPERATOR NOTE — 2026-08-07 22:31 circuit-break resolution (citation format)
+
+Three sessions were discarded for one mechanical reason: self_vet.md
+PRECEDENT lines must match the validator regex (grindlib.py:54) —
+`file.ext:LINE` or a 7-40 hex commit hash. A prose reference to
+memory/feedback/split-init-accumulation-sanctioned.md (a user-memory
+file outside the repo) can never satisfy it.
+
+Regex-passing anchors for the split-init-accumulation sanction:
+- ad11a8c8 — "Match: func_80049C24 (text1b.c) — COMPLETED-C, retires 10
+  rules (USER-SANCTIONED split-init)" — the sanction's landing commit.
+- The 22:21 Judge PASS ruling on this very function cites split-init as
+  a sanctioned class: docs/grind/decisions.md:4075
+
+Use this exact form in future self_vet.md PRECEDENT lines. (The driver
+now also feeds the discard reason into the respawned session's brief.)
