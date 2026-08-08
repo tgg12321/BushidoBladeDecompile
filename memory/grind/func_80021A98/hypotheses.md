@@ -1,5 +1,27 @@
 # Hypothesis ledger — func_80021A98
 
+## Status after synthesis session (2026-08-08): CANDIDATE-READY (v6 — banned construct deleted, direct fold reaches 0)
+The layer-1 ban of the else-arm pass-through local was resolved by layer-1's
+own branch (a): the construct is GONE. The else-arm second table sum is now
+assigned straight into the s0+0x58 field (direct folded store, mirror of the
+already-legitimate if-arm fold). Measured this session: plain baseline 20 →
+fold both arms + 0x6A wrap = 0 → li1 deleted = 0 → final v6 = 0 (158/158).
+The empty do-while(0) re-measured LOAD-BEARING in the v6 context (removal
+0→2) and stays with its FAKE annotation. Constructs: two plain folded stores
+(no family needed) + two FAKE-annotated do-while(0) devices (sanctioned
+family, do-while-zero-exception.md:23, cf3e6ce7). Vet passes
+`grindlib.py selfvet` (exit 0, run live). No open hypotheses.
+FRONTIER RESET (strongest fallbacks if v6 ever bounces):
+1. If CC (0x6A wrap) is ever refused: the cluster-2 residual is exactly the
+   4-insn a0_58/a1_val $4/$5 flip (s1 diff map); the only unexplored
+   unbanned axis is the H5-option-2 someone_prefers route (make an allocno
+   conflicting with a1_val carry pref 4/5).
+2. If CD (empty wrap) is ever refused: rejected/empty-dowhile0-removed-score2.c
+   holds the 2-insn residual; no unbanned lever known — would need a fresh
+   forensics pass on the 0x60/0x61 seating.
+3. If CB is ever challenged: it is plain natural code (mirror of CA); the
+   correct response is a ruling-request, not a respelling.
+
 ## Status after session 13 (forensics, 2026-08-08): CANDIDATE-READY (v3, citation fixed as layer-1 prescribed)
 Session 12's candidate-ready cleared the driver validator and FAILed layer-1
 on exactly one ground: the C1 family SCOPE quote was cited to the wrong file

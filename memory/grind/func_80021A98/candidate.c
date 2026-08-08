@@ -1,40 +1,43 @@
-/* func_80021A98 — SANDBOX-0 form v5, SRC-ONLY, annotation-fix session
- * (grind session 2, annotation-fix modality, 2026-08-08).
- * 158/158, distance 0 measured with ONLY src/code6cac.c modified;
- * include/code6cac.h untouched (arg1 stays u8 * per the header prototype).
+/* func_80021A98 — SANDBOX-0 form v6, SRC-ONLY (grind session 2, synthesis
+ * modality, 2026-08-08). 158/158, distance 0 measured with ONLY
+ * src/code6cac.c modified; include/code6cac.h untouched.
  *
- * WHAT CHANGED vs the v4/judge-reviewed form (the Judge accepted the v4 diff
- * and FAILed only on comments/dead-device hygiene at the two PRE-EXISTING
- * sites; this form executes that fix-up notice exactly):
- *   1. The `s32 li1 = 1;` constant-holder was REMOVED (the s0+0x7A store is
- *      now `= 1;` directly). Measured: sandbox stays 0 without it, so per
- *      the notice's preferred branch the device was not load-bearing and is
- *      deleted permanently. Do NOT reintroduce it.
- *   2. The empty `do { } while (0);` between the s0+0x60/0x61 byte stores
- *      measured LOAD-BEARING: removing it moves sandbox 0 -> 2 (probe banked
- *      in rejected/empty-dowhile0-removed-score2.c). Per the notice's
- *      alternate branch it is retained and now carries the mandatory inline
- *      /* FAKE: observed effect */-style annotation at the construct site.
- *   3. The C3 wrap's FAKE annotation was reworded (comment-only,
- *      bytes-neutral) so the self-vet can quote it without colliding with
- *      the driver's banned-wording tripwire; same observed effect stated.
- * All code lines are otherwise the v4 diff verbatim.
+ * WHAT CHANGED vs the v5/judge-reviewed lineage: the layer-1 ban of the
+ * else-arm pass-through local (the v3/v4/v5 "C1" construct, now on the
+ * function's banned list verbatim) is resolved by DELETING the construct
+ * entirely, exactly as the layer-1 ruling's next-action branch (a)
+ * prescribed: the else-arm's second table sum is now assigned STRAIGHT into
+ * the s0+0x58 field — `*(s32*)(s0+0x58) = (&D_801027B8)[idx] + v1;` —
+ * mirroring the if-arm's already-legitimate folded store. No staging local,
+ * no intermediate of any kind. Measured this session:
+ *   - plain rolled-back HEAD form:                       20/158
+ *   - + fold BOTH arm stores + do-while(0) wrap on 0x6A:  0/158
+ *   - + delete the li1 constant-holder (store `= 1;`):    0/158 (kept out
+ *     permanently per the Judge notice's preferred branch)
+ *   - empty do-while(0) removed as a probe:               2/158 (LOAD-BEARING
+ *     in the v6 context too; restored with its FAKE annotation)
+ *   - final v6 state:                                     0/158
+ * So the direct fold carries the entire role the banned pass-through played
+ * (keeping the second-sum pseudo out of the v0 web, seating v1's web in
+ * $3/$2 order), while being plain natural code — same shape as the if-arm.
  *
- * Construct provenance (unchanged from v3/v4): HEAD 20 -> 11 named
- * intermediate in the alternate arm; 11 -> 4 folded first-arm store;
- * 4 -> 0 do-while(0) wrap on the s0+0x6A store. Raw permuter zero also
- * carried `if (1) { }` + a fresh constant-holder — both proven spurious,
- * banked in rejected/permuter-raw-zero-if1-newvar2.c.
+ * Remaining match devices (both FAKE-annotated at site, both inside the
+ * sanctioned do-while(0) family, do-while-zero-exception.md:23, owner ruling
+ * 2026-07-06, precedent cf3e6ce7):
+ *   1. empty do-while(0) between the s0+0x60/0x61 byte stores (removal
+ *      measured 0 -> 2 this session).
+ *   2. single-level do-while(0) wrap on the s0+0x6A store (cluster-2 $4/$5
+ *      seating; without it the residual is exactly the 4-insn a0_58/a1_val
+ *      flip of the s1 diff map).
  *
- * Self-vet: memory/grind/func_80021A98/self_vet.md (session-2 rewrite;
- * passes `python tools/grinder/grindlib.py selfvet . func_80021A98`
- * verified live this session — the prior vet's C1 family-claim wording and
- * its process-meta paragraph are on the banned list and must not be
- * restored).
+ * Self-vet: memory/grind/func_80021A98/self_vet.md — rewritten for the v6
+ * construct list (CA/CB folded stores, CC wrap, CD empty wrap, li1 deletion);
+ * passes `python3 tools/grinder/grindlib.py selfvet . func_80021A98`
+ * (exit 0, verified live this session). No banned construct appears in the
+ * diff OR the vet in any spelling.
  */
 void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
     u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
-    s32 new_var;
     s32 a3;
     if ((*((s16 *) (s0 + 0x4C))) != 0) {
         a3 = *((s16 *) ((*((s32 *) s0)) + 0x4A));
@@ -56,13 +59,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
             s32 v0 = (&D_801027B4)[idx] + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
             v1 = *((u16 *) (v0 + 2));
-            /* FAKE: routing the second table sum through its own
-             * separately-declared local keeps its pseudo distinct from the
-             * v0 web, seating v1's web in $3/$2 order as in target
-             * (cluster-1 close-out). */
-            new_var = (&D_801027B8)[idx] + v1;
-            v0 = new_var;
-            *((s32 *) (s0 + 0x58)) = v0;
+            *((s32 *) (s0 + 0x58)) = (&D_801027B8)[idx] + v1;
         }
     }
     {

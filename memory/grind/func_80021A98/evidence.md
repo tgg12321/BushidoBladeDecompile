@@ -525,3 +525,63 @@ wording.
 State at session end: src/code6cac.c carries the v5 candidate (= v4 code with
 li1 deleted + annotations conforming), sandbox distance 0, src-only diff.
 Outcome: candidate-ready.
+
+## Session 2 (synthesis modality, 2026-08-08) — v6: banned pass-through DELETED, direct fold reaches 0
+
+### Context
+The brief's latest layer-1 FAIL banned the v3/v4/v5 "C1" construct outright
+(the else-arm pass-through local for the second table sum) and prescribed
+branch (a): remove it entirely and find a different, previously-unbanned
+lever for cluster-1's register seating. Synthesis mandate: merge the ledger
+into the best attack. src was found rolled back to the plain 20-floor form
+(unfolded arm stores, no 0x6A wrap, and with BOTH pre-existing devices
+restored — including the li1 constant-holder that v5 had permanently
+deleted).
+
+### The synthesis insight (measured, it works)
+The banned pass-through's ONLY role (per the s9/s13 forensics) was keeping
+the else-arm second-sum pseudo out of the v0 web. A DIRECT folded store does
+the same thing with no local at all:
+`*(s32*)(s0+0x58) = (&D_801027B8)[idx] + v1;` — the exact mirror of the
+if-arm folded store that layer-1 already ruled plain natural code (C2). The
+sum goes into a fresh expression temp, is stored, and dies; v0 never touches
+it. Same pseudo-isolation, zero staging, symmetric arms.
+
+### Measurements (all sandbox --disable all; log: tmp/grind/func_80021A98/s2b/measurements.md)
+1. Rolled-back baseline: **20/158** (re-confirmed).
+2. Fold if-arm store + fold else-arm store (direct) + do-while(0) wrap on the
+   s0+0x6A store: **0/158**.
+3. li1 constant-holder deleted (s0+0x7A spelled `= 1;`): **0** — re-confirmed
+   not load-bearing in the v6 context; deleted permanently again per the
+   Judge notice's preferred branch.
+4. Empty do-while(0) removal probe: **2** — still load-bearing in the v6
+   context (same 0→2 as the v4-context measurement). Restored with its FAKE
+   annotation (rejected/empty-dowhile0-removed-score2.c still covers this
+   probe class).
+5. Final v6 state (both FAKE annotations in place): **0/158**, 19 rules
+   dropped, cheat_asm_stripped 139 — distance 0 proven live in src.
+
+### v6 construct list (what the diff contains)
+- CA: if-arm folded store `*(s32*)(s0+0x58) = D_80102768 + v1;` — plain code
+  (unchanged from v3-v5, layer-1-ruled legitimate).
+- CB: else-arm folded store `*(s32*)(s0+0x58) = (&D_801027B8)[idx] + v1;` —
+  plain code, NEW this session, replaces the banned pass-through.
+- CC: FAKE-annotated do-while(0) wrap on the 0x6A store (cluster-2 seating;
+  sanctioned family, do-while-zero-exception.md:23, precedent cf3e6ce7).
+- CD: FAKE-annotated empty do-while(0) between the 0x60/0x61 stores
+  (pre-existing, load-bearing, same family).
+- li1 deletion (hygiene, score-neutral).
+No banned construct appears in any spelling; no header edit; no operand-order
+trick (both second sums spelled base-last identically? — note: both arms are
+spelled sum-into-store with the base first, symmetric; the s2 mixed-order
+ruling is not load-bearing in v6).
+
+### Vet
+self_vet.md rewritten for the v6 construct list; banned-term audit done by
+running the driver's own validator:
+`python3 tools/grinder/grindlib.py selfvet . func_80021A98` → exit 0 (PASS),
+verified live this session. The vet does not quote or describe any banned
+form (per the s11-s13 lessons); the two FAKE annotations are quoted verbatim
+(both validator-proven wordings from v5).
+
+Outcome: candidate-ready.

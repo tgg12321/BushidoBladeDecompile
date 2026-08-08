@@ -2322,15 +2322,13 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
             s32 v0 = D_80102764 + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
             v1 = *((u16 *) (v0 + 2));
-            v0 = D_80102768 + v1;
-            *((s32 *) (s0 + 0x58)) = v0;
+            *((s32 *) (s0 + 0x58)) = D_80102768 + v1;
         } else {
             s32 idx = a3 * 5;
             s32 v0 = (&D_801027B4)[idx] + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
             v1 = *((u16 *) (v0 + 2));
-            v0 = (&D_801027B8)[idx] + v1;
-            *((s32 *) (s0 + 0x58)) = v0;
+            *((s32 *) (s0 + 0x58)) = (&D_801027B8)[idx] + v1;
         }
     }
     {
@@ -2338,6 +2336,11 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         u16 old_kind = *((u16 *) (s0 + 0x6A));
         s32 a0_58 = *((s32 *) (s0 + 0x58));
         *((u8 *) (s0 + 0x60)) = (u8) arg2;
+        /* FAKE: load-bearing match device — removing this empty do-while(0)
+         * moves the sandbox score 0 -> 2 (measured 2026-08-08); mechanism:
+         * the sanctioned do-while(0) wrap's codegen effect on the seating
+         * of the surrounding byte stores (do-while-zero-exception.md,
+         * owner ruling 2026-07-06). */
         do { } while (0);
         *((u8 *) (s0 + 0x61)) = (u8) a3;
         {
@@ -2345,13 +2348,15 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
             *((s16 *) (s0 + 0x6C)) = old_kind;
             {
                 s32 v1_58 = *((s32 *) (s0 + 0x58));
-                s32 li1 = 1;
                 *((s16 *) (s0 + 0x42)) = 0;
-                *((s16 *) (s0 + 0x7A)) = li1;
+                *((s16 *) (s0 + 0x7A)) = 1;
                 *((s32 *) (s0 + 0x7C)) = 0;
                 *((s16 *) (s0 + 0x46)) = 0;
                 *((s16 *) (s0 + 0x40)) = a1_val;
-                *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58);
+                /* FAKE: the do-while(0) wrap's weighting seats a0_58 in $a0
+                 * and a1_val in $a1 as in target (cluster-2 $4/$5
+                 * close-out). */
+                do { *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58); } while (0);
                 *((s16 *) (s0 + 0x6E)) = *((u8 *) (v1_58 + 2));
             }
         }
