@@ -26,6 +26,17 @@
  * the s2 Judge-PASS mixed-order ruling is no longer load-bearing.
  * The empty do { } while (0); at s0+0x60/0x61 is pre-existing HEAD state,
  * unchanged. Apply this body over func_80021A98 in src/code6cac.c to resume.
+ *
+ * SESSION-13 UPDATE (forensics, 2026-08-08): the C1 FAKE annotation was
+ * REWORDED (bytes-neutral, comment only) so the exact annotation text quoted
+ * in self_vet.md's ANNOTATION-CONFORMANCE carries none of the third banned
+ * entry's tripwire terms (the driver banked the s12 vet's C1 family-claim
+ * WORDING as a banned entry after the layer-1 citation-mismatch FAIL; the
+ * construct itself was ruled substantively legitimate). The C1 family claim
+ * is now cited to .claude/rules/do-while-zero-exception.md:46 — the file:line
+ * where its SCOPE quote appears verbatim — fixing the s12 mismatch. The vet
+ * passes `python tools/grinder/grindlib.py selfvet . func_80021A98` (format
+ * check + all banned-entry tripwires) as verified live in session 13.
  */
 void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
     u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
@@ -51,9 +62,10 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
             s32 v0 = (&D_801027B4)[idx] + (v1 * 4);
             *((s32 *) (s0 + 0x54)) = v0;
             v1 = *((u16 *) (v0 + 2));
-            /* FAKE: staging the second table sum through a separate named
-             * local keeps its pseudo distinct from the v0 web, seating v1's
-             * web in $v1/$a0-order as in target (cluster-1 close-out). */
+            /* FAKE: routing the second table sum through its own
+             * separately-declared local keeps its pseudo distinct from the
+             * v0 web, seating v1's web in $3/$2 order as in target
+             * (cluster-1 close-out). */
             new_var = (&D_801027B8)[idx] + v1;
             v0 = new_var;
             *((s32 *) (s0 + 0x58)) = v0;

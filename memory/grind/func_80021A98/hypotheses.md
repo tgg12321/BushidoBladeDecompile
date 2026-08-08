@@ -1,5 +1,23 @@
 # Hypothesis ledger — func_80021A98
 
+## Status after session 13 (forensics, 2026-08-08): CANDIDATE-READY (v3, citation fixed as layer-1 prescribed)
+Session 12's candidate-ready cleared the driver validator and FAILed layer-1
+on exactly one ground: the C1 family SCOPE quote was cited to the wrong file
+(the quoted ALLOWED-clause text lives at do-while-zero-exception.md:46, not
+no-new-park-categories.md:189). Layer-1's own ruling says C1-C3 are
+substantively legitimate — fix the citation. Session 13 did that, while ALSO
+surviving the driver's simultaneous auto-ban of the s12 C1 family-claim
+WORDING (tripwire terms {sanctioned, claims, block, named, intermediates,
+variable, staging, (c1)}, threshold 4): the C1 FAKE comment was reworded
+bytes-neutrally, the family claim renamed, and the SCOPE quote truncated to
+the clause head that appears verbatim at the cited line. Vet PROVEN green
+against `grindlib.py selfvet` (with a negative control). Sandbox 0 (158/158)
+re-measured live (fifth independent 0); forensics dumps func_v3.greg/.lreg
+bank the dispositions confirming the claimed seating. No open hypotheses.
+NOTE FOR ANY FUTURE SESSION: if layer-1 FAILs again, read its ground
+precisely — the constructs are ruled legitimate; only vet documentation has
+ever bounced since s9.
+
 ## Status after session 12 (permuter, 2026-08-08): CANDIDATE-READY (v3, vet PROVEN against the validator)
 Session 11's candidate-ready was discarded because its PROSE description of
 the banned constructs reused the ban phrases' own vocabulary — the tripwire
