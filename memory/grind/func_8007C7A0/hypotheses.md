@@ -1,5 +1,35 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s3 (2026-08-08, structural, git HEAD bec399f1)
+
+### H10 — a minimal atom set achieving the full 9/9 assignment exists at depth >= 4 and is spellable — KILLED (constructively: the unique minimal solution requires an unspellable atom AND byte-contradicted edges)
+Statement: depth <= 3 was exhausted (0 hits); rather than brute-forcing depth
+4+, constraint-solve BACKWARD from the target assignment for the minimal
+perturbation sets that make it the unique ascending-scan outcome, then check
+each member's spellability (the s2 frontier's stated next probe).
+Probe: tmp/grind/func_8007C7A0/s3/backward_solve.py (backward derivation +
+Sim verification + drop-one necessity + 191-atom substitution scan + random
+depth-4..8 T1 spot-check + exhaustive grant+pairs) and s3/grant_triples.py
+(exhaustive grant+triples, 1,161,280 combos).
+Result: the unique minimal full-target solution is GRANT(hcdel 79~2) + S5 =
+{nopref 77, nopref 79, conf +78~83, conf +78~94, conf +78~92} — 9/9
+Sim-verified, first full hit ever found. It is NOT spellable, twice over:
+(a) THEOREM T1 — hard_conf[79] ∋ 2 is invariant under the entire spellable
+vocabulary at any depth and any order (find_reg excludes hard_conf in both
+passes and the pref-upgrade filter; propagation only adds; no spellable atom
+touches hard_conflicts), so 79 -> $v0 and hence 9/9 is impossible spellably,
+period (0 violations in 4000 random depth-4..8 combos; explains every prior
+scan's 7/9 ceiling — S5 alone scores 8/9 with exactly 79 wrong);
+(b) all three S5 conflict edges require hi ($v1 holder, pseudo 78) live
+across insns ~9-16, contradicted by target's own stream (r18 c7a0_v1_census:
+first $v1 def at insn 39) — the ORIGINAL compilation could not have had them
+either. Grant+pairs 0/18,336 and grant+triples 0/1,161,280 close all cheaper
+completions; drop-one and substitution scans prove each S5 member necessary
+and non-substitutable. CONSEQUENCE: the structural modality is exhausted —
+the target allocation is inconsistent with GCC 2.7.2 global.c's mechanism on
+ANY stream-exact input, conditional only on model fidelity (the forensics
+frontier). Verdict: KILLED.
+
 ## s2 (2026-08-08, structural, git HEAD ef16e11d)
 
 ### H6 — a pairwise (2-atom) pref/conflict model perturbation reaches the full target assignment — KILLED
@@ -178,4 +208,10 @@ reaches the target allocation from the stream-exact body.
 - mechanism: target's X-clamp routes all three arms through a $v0 join temp then copies into the param/carrier home - the classic lowering of x = x<0 ? 0 : x>lim-1 ? lim-1 : x reassigning the param
 - probe: symmetric nested ternaries on both axes, s32 params, honest sandbox
 - result: sandbox 29, build_insns 31 (20 short): GCC 2.7.2 folds the nested ternary into a compact form (single shared lim-1, no saves, no carrier)
+- verdict: KILLED
+
+## [s3] A minimal atom set achieving the full 9/9 target assignment exists at depth >= 4 and is spellable (the s2 frontier's stated next probe)
+- mechanism: Backward constraint-solve the ascending-scan allocation: walk the priority order and derive per pseudo which pref/conflict/hard-conflict edits make the target register the unique outcome, then Sim-verify, prove necessity (drop-one), non-substitutability (191-atom replacement scan), and exhaustively close cheaper completions (grant+pairs, grant+triples)
+- probe: tmp/grind/func_8007C7A0/s3/backward_solve.py + s3/grant_triples.py against tmp/ra_solver_work/func_8007C7A0.model.json via tools/ra_solver/simulate.Sim
+- result: Unique minimal solution found and Sim-verified 9/9 (first full hit ever in this model space): GRANT(hcdel 79~2) + S5 = {nopref 77, nopref 79, conf +78~83, conf +78~94, conf +78~92}. NOT spellable, twice over: (a) THEOREM T1 — hard_conf[79] contains reg 2 ($v0) and is invariant under the entire spellable vocabulary (find_reg excludes hard_conf in pass0, pass1, and the pref-upgrade filter; propagation only adds; no spellable atom touches hard_conflicts), so 79->$v0 is impossible at ANY depth and ANY order (0 violations in 4000 random depth-4..8 combos; S5 alone scores 8/9 with exactly 79 wrong, explaining every prior scan's 7/9 ceiling); (b) all three S5 conflict edges require hi (pseudo 78, $v1) live across insns ~9-16, contradicted by target's own bytes (r18 c7a0_v1_census: first $v1 def is insn 39) — the original compilation could not have had them either. Grant+pairs 0/18,336; grant+triples 0/1,161,280 (best 7/9); every S5 member drop-one-necessary with zero single-atom substitutes.
 - verdict: KILLED

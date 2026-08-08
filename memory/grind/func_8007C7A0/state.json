@@ -1,7 +1,7 @@
 {
  "func": "func_8007C7A0",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,24 @@
    "floor": 12,
    "modality": "structural",
    "headline": "s2 structural: RA model closed to depth-3 (0 hits in 37k any-atom pairs + 1.16M spellable triples), sibling census negative, both wide-param spelling families killed (25/44, 29/31); floor holds at 12"
+  },
+  {
+   "session": 3,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "s3 structural: backward constraint solve finds the UNIQUE minimal 9/9 solution (hcdel 79~2 + 5 spellable atoms) and proves it unreachable \u2014 T1 theorem closes the spellable space at ALL depths; structu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The extracted RA model (tmp/ra_solver_work/func_8007C7A0.model.json) faithfully represents cc1's actual prefs/conflicts at current HEAD - if any edge is mis-extracted, all closure conclusions inherit the error",
-   "mechanism": "the s0/s1/s2 scans simulate the MODEL; a forensics-modality session can dump the instrumented cc1's ALLOCDBG ground truth (tools/gcc-2.7.2/cc1 with BB2_*_DEBUG hooks, per instrumented-cc1-location memory) and diff it against the model file",
-   "next_probe": "re-extract the model from a fresh instrumented-cc1 run on candidate_stream51.c and field-by-field diff vs the model JSON; any discrepancy reopens the corresponding scan"
+   "hypothesis": "The extracted RA model faithfully represents cc1's actual prefs/conflicts/hard-conflicts at current HEAD \u2014 T1's premise (hard_conf[79] contains 2) and the byte-contradiction argument inherit any extraction error",
+   "mechanism": "A forensics-modality session can dump the instrumented cc1's ALLOCDBG ground truth (tools/gcc-2.7.2/cc1 with BB2_*_DEBUG hooks, per instrumented-cc1-location memory) and field-by-field diff it against tmp/ra_solver_work/func_8007C7A0.model.json \u2014 hard_conflicts of pseudo 79 and the conflict rows of 78/83/92/94 are the load-bearing fields",
+   "next_probe": "Re-extract the model from a fresh instrumented-cc1 run on candidate_stream51.c; diff hard_conflicts and conflicts field-by-field vs the model JSON; any discrepancy on 79~$2 or the 78-row reopens the s3 closure, otherwise it is confirmed final"
   },
   {
-   "hypothesis": "A minimal atom set achieving the full 9/9 assignment exists at depth >= 4 and is spellable",
-   "mechanism": "depth <= 3 is exhausted (0 hits); rather than brute-forcing depth 4+ (10^8+ combos), constraint-solve BACKWARD from the target assignment for the minimal perturbation sets that make it feasible, then check each member's spellability",
-   "next_probe": "write a solver that asks which conflict-edge/pref changes make the target assignment the unique ascending-scan outcome, enumerate minimal solutions, test spellability of each"
-  },
-  {
-   "hypothesis": "If the driver's ladder reaches escalation modality, the evidence package (s0-s2: atoms, pairs, spellable triples, orders, retry, cc1psx, TU, K&R, flags, signatures, wide-param spellings, sibling census) is complete for the endgame-lock evaluation",
-   "mechanism": "escalation is the driver/owner's call after the modality ladder; both AND-gates (scan_hand_coded STRONG signals; citable SOTN-master precedent) would need evaluation in that session",
-   "next_probe": "driver-assigned; no session action until the ladder mandates it"
+   "hypothesis": "If the driver's ladder reaches escalation modality, the evidence package (s0-s3) is complete for the endgame-lock evaluation, now including a constructive proof that the target allocation cannot arise from GCC 2.7.2 global.c on any stream-exact input",
+   "mechanism": "Escalation is the driver/owner's call after the modality ladder; both AND-gates (scan_hand_coded STRONG signals; citable SOTN-master precedent) would need evaluation in that session",
+   "next_probe": "Driver-assigned; no session action until the ladder mandates it"
   }
  ],
  "judge_constraints": [],

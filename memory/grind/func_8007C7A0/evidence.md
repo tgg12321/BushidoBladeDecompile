@@ -1,5 +1,60 @@
 # Evidence bank — func_8007C7A0
 
+## s3 (2026-08-08, structural, git HEAD bec399f1) — backward constraint solve: the allocation search is closed at ALL depths, not just depth 3
+
+- **The frontier's depth>=4 hypothesis is answered exactly.** Instead of
+  brute-forcing depth 4+ forward (10^8+ combos), s3 walked the ascending-scan
+  allocation BACKWARD through the priority order and derived, per pseudo,
+  which model edits make the target register the unique outcome
+  (tmp/grind/func_8007C7A0/s3/backward_solve.py). The derivation found the
+  FIRST full 9/9 solution ever seen in this model space, and it is unique in
+  structure: **GRANT (hcdel 79~2, a hard-conflict removal) + S5 = {nopref 77,
+  nopref 79, conf +78~83, conf +78~94, conf +78~92}** — Sim-verified 9/9
+  (backward_solve.out part C).
+- **THEOREM T1 (depth-independent, order-independent): the full target is
+  unreachable in the ENTIRE spellable perturbation space at ANY depth.**
+  Mechanism: the extracted model has hard_conf[79] ∋ reg 2 ($v0), and target
+  needs 79 -> $v0. find_reg excludes FIXED ∪ hard_conf[a] in pass 0, pass 1,
+  AND the pref-upgrade filter (u1 ⊇ hard_conf); post-assign propagation only
+  ever ADDS to hard_conf; and no atom in the spellable vocabulary (nrefs,
+  livelen, ±pseudo-conflict, nopref) touches hard_conflicts. So 79 -> 2 is
+  impossible regardless of atom count or allocation order. Empirical
+  spot-check: 4000 random depth-4..8 spellable combos, 0 violations
+  (backward_solve.out part B). This retroactively explains every prior scan's
+  ceiling: s0 singles / s2 pairs / s2 triples all capped at 7/9 with 79 (or
+  {79,92,83}) wrong, and S5 alone (no grant) scores exactly 8/9 with only 79
+  wrong (part C2).
+- **Necessity + minimality of the solution family (Sim-proven):** drop-one on
+  S5 (grant kept) — all five drops lose the target (part D); substitution scan
+  — for each dropped member, NONE of the other 191 spellable atoms restores
+  9/9 (part E); exhaustive spellable PAIRS on top of the grant — 18,336
+  combos, 0 hits, best 6/9 (part F); exhaustive spellable TRIPLES on top of
+  the grant — 1,161,280 combos, **0 hits, best 7/9**, and every best triple is
+  a subset of S5's neighborhood (s3/grant_triples.out). So even granting the
+  unspellable hard-conflict removal for free, no completion of depth <= 3
+  exists, each S5 member is individually necessary with no single-atom
+  substitute, and the minimal completion is S5 itself at depth 5.
+- **The S5 conflict edges are contradicted by the target's own bytes.** All
+  three added edges (78~83, 78~94, 78~92) require pseudo 78 (hi, the $v1
+  holder) to be live across the limit-save/sign-extend region (insns ~9-16).
+  r18's c7a0_v1_census proved from target's stream that the first $v1 def is
+  insn 39 and no register but a0/a1/a2/a3/sp/v0 is written before it — so the
+  ORIGINAL compilation cannot have had these conflicts either. Combined with
+  T1: the target assignment is inconsistent with GCC 2.7.2 global.c's
+  ascending-scan mechanism on ANY stream-exact input, spellable or not. The
+  Sony object's allocation did not come from this allocator state — the
+  toolchain-revision-divergence reading is now supported by a constructive
+  proof, conditional only on model fidelity (the remaining forensics frontier).
+- **Consequence for the structural modality: it is EXHAUSTED.** No C spelling
+  of the stream-exact body can reach the target allocation, at any
+  perturbation depth. Floor stands at 12 (candidate.c, re-confirmed s2 at
+  ef16e11d; no src edits this session — HEAD bec399f1 differs from ef16e11d
+  only by the s2 ledger commit, so the banked floor measurement stands).
+  Remaining frontiers are non-structural: (1) forensics — instrumented-cc1
+  ALLOCDBG ground-truth diff against the model (if hard_conf[79] ∋ 2 or any
+  conflict edge is mis-extracted, T1's premise changes and the scans reopen);
+  (2) the driver's ladder (rederive / synthesis / escalation).
+
 ## s2 (2026-08-08, structural, git HEAD ef16e11d) — model closure to depth 3 + sibling census + two spelling kills
 
 - **Pairwise atom scan (frontier probe 1) — ZERO full-target hits.**
@@ -348,3 +403,15 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s2] The 51-insn stream is reachable ONLY from the s16-param spelling class: both wide-param families structurally shorten the stream (44 and 31 insns) by losing the promotion-pattern artifacts (double decrement, raw-limit saves, carrier copy)
 
 - [s2] src/display.c reverted to HEAD after measurements; floor re-confirmed 12 (candidate.c) at HEAD ef16e11d
+
+- [s3] First-ever full 9/9 model solution: hcdel 79~2 + nopref 77 + nopref 79 + conf +78~83 + conf +78~94 + conf +78~92 (Sim-verified; backward_solve.out part C)
+
+- [s3] THEOREM T1: 79 -> $v0 is impossible under any spellable atom set of any depth/order because hard_conf[79] contains 2 and hard conflicts are excluded in both find_reg passes and the pref-upgrade filter, only ever grow, and are untouched by the spellable vocabulary — the full-target search over C spellings of the stream-exact body is closed at ALL depths, not just depth 3
+
+- [s3] S5 alone (no grant) = 8/9 with exactly pseudo 79 wrong — retroactively explains the 7/9 ceiling of every prior scan (s0 singles, s2 pairs, s2 spellable triples)
+
+- [s3] Exhaustive closure with the unspellable atom GRANTED free: pairs 0/18,336 (best 6/9), triples 0/1,161,280 (best 7/9, all in S5's neighborhood) — minimal completion is S5 itself at depth 5; each member drop-one necessary and non-substitutable against all 191 other spellable atoms
+
+- [s3] Byte contradiction: the three required conflict edges 78~{83,94,92} need $v1's holder live across insns ~9-16, but target's first $v1 def is insn 39 (r18 c7a0_v1_census) — the Sony object's allocation is inconsistent with GCC 2.7.2 global.c's ascending-scan mechanism on ANY stream-exact input, supporting toolchain-revision divergence constructively (conditional only on model fidelity)
+
+- [s3] Floor stands at 12 (candidate.c; banked s2 measurement at ef16e11d — HEAD bec399f1 differs only by the s2 ledger commit; no src/ edits made this session)
