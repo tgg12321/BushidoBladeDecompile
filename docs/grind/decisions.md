@@ -4112,3 +4112,44 @@ corrections; (c) sandbox-0 demonstrated on an INDEPENDENTLY honest body,
 not the counter-reuse chassis; (d) review by an independent reviewer, not
 the proposal's author. Until then the existing frozen constraint stands:
 no further grind sessions, no respellings, no re-litigation of s2-s5.
+
+## 2026-08-08 — func_80036FD4 — integration handoff EXECUTED: bytes PROVEN (full-build SHA1 green with all 8 rules deleted); layer-2 FAIL on the probe spelling; NEEDS_USER filed — reverted, escalation stays OPEN
+
+Executed under the 2026-08-07 owner delegation, per the 2026-07-29 packet's
+operator steps. Results:
+
+1. **The link-identity claim is now PROVEN by measurement.** With the banked
+   candidate spliced (post-wave identifier mapping only) and `retire` deleting
+   all 8 regfix rules, the FULL BUILD SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+   The residual sandbox 2 is confirmed addend-class (objdump -dr verified).
+   func_80036FD4's bytes are reachable from pure C with zero rules.
+2. **Fresh layer-2 cheat-reviewer: FAIL** on `(ReplayCamRec *)&D_80101E60` as
+   spliced — missing mandatory /* FAKE */ annotation
+   (pointer-alias-fake-exception.md strict prerequisite); the ledger's own
+   'CLEANUP STILL OWED' clean-form gate was skipped; the record-merge is
+   centrally justified by the sched.c true_dependence mechanism (6-test T3);
+   cross-file record evidence partially weaker than claimed.
+3. **Clean form measured and blocked tree-wide:** D_80101E70 is
+   `extern volatile s32` in code6cac_b2_pre.c vs plain s32 in 6 TUs;
+   D_80101E74 is s16 in 5 TUs vs s32 in 1. A shared header record cannot
+   satisfy these without width/qualifier cures that are themselves gated
+   (header-type-correction-from-use-sites excludes width flips). TU-scoped
+   form would rewrite ~28 sites across ~8 COMPLETED-C functions in b2_post
+   whose codegen depends on distinct-symbol non-dependence.
+4. Working tree reverted to HEAD (old body + 8 rules restored). Oracle green.
+
+**NEEDS_USER (per review-discipline hard rule 1 — not self-resolvable even
+under delegation):**
+(a) Is merging previously-distinct splat per-word symbols into ONE C record —
+    where the merge's necessary effect is manufacturing a scheduler memory
+    dependence that produces target's schedule — in-scope for the
+    pointer-alias / object-model-correction doctrine, given the cross-file
+    evidence that at least the E6C/E70 pair is one object?
+(b) If yes, which form: (i) FAKE-annotated local cast alias (smallest diff,
+    needs the annotation + this scope ruling); (ii) TU-scoped header record +
+    ~28-site conversion, full-build-measured (risk: perturbs ~8 completed
+    functions); (iii) tree-wide unification (blocked until the E70 volatile /
+    E74 width contradictions get their own rulings)?
+
+Until the owner answers, func_80036FD4 stays parked; bytes-proven status and
+the exact working diff are reproducible from the ledger.

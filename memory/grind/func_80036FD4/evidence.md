@@ -273,3 +273,38 @@ owner-scope. It does not change this function's score.
 - [s2] [s2] Record layout recovered from use sites, independent of codegen: +0x00 s16 (D_80101E60), +0x02 s16 (E62), +0x04 s16 (E64), +0x06 unknown s16, +0x08 s16 (E68), +0x0A s16 (E6A), +0x0C 8-byte pair (E6C/E70), +0x14 s32 (E74). Justification: this function passes `(u8 *)&D_80101E62 - 0xA` (== 0x80101E58) to tslPolyF4Init as a struct pointer; code6cac_b2_post.c:277 passes &D_80101E6C to cdrom_BcdToFrames/cdrom_FramesToBcd as one 8-byte buffer; target's own call passes &SpecialCam + i*8, making SpecialCam an array of that same 8-byte record.
 
 - [s2] [s2] The body carries zero cheats: no register pins, no __asm__, no volatile, no alias rename, no dead store, no do-while(0). s1's `asm volatile("" ::: "memory")` barrier is gone and was not replaced. The one construct needing a layer-2 ruling is the `(ReplayCamRec *)&D_80101E60` typed re-view (pointer-alias family), which is a probe spelling the header-declaration cleanup removes.
+
+## OPERATOR — 2026-08-08 integration-handoff execution round (bytes PROVEN, then layer-2 FAIL; reverted)
+
+Executed per the 2026-07-29 escalation's operator steps under owner
+delegation (2026-08-07):
+
+1. Candidate spliced into src/code6cac_b2_post.c with post-wave identifier
+   mapping (cdrom_BcdToFrames->CdPosToInt, tslPolyF4Init->CdControlB,
+   array-decay s0 init) — structure exactly as banked.
+2. sandbox --disable all: score 2, 79/79, 8 rules dropped (matches ledger).
+3. **retire func_80036FD4: SHA1 == 62efab4f... FULL-BUILD GREEN with all 8
+   rules deleted. The link-identity claim is now PROVEN by measurement**
+   (previously arithmetic-only). The residual 2 is confirmed addend-class
+   (objdump -dr verified by the layer-2 reviewer).
+4. Fresh layer-2 cheat-reviewer: **FAIL** on `(ReplayCamRec *)&D_80101E60`
+   as spliced — (a) missing the mandatory /* FAKE */ annotation required by
+   pointer-alias-fake-exception.md; (b) the ledger's own "CLEANUP STILL
+   OWED" gate (header-record clean form) was skipped; (c) the record-merge
+   is centrally justified by the sched.c true_dependence mechanism (6-test
+   T3); (d) cross-file record evidence judged weaker than claimed (s0-0xA
+   = 0x80101E58, not the record base; only the E6C/E70 pair sub-object is
+   independently attested).
+5. Clean-form feasibility MEASURED and blocked tree-wide: D_80101E70 is
+   `extern volatile s32` in code6cac_b2_pre.c but plain s32 in 6 other TUs;
+   D_80101E74 is s16 in 5 TUs / s32 in 1 — a shared record cannot satisfy
+   both (width cures are themselves gated on the SOTN-evidence pathway).
+   TU-scoped form would rewrite ~28 use sites across ~8 completed functions
+   in b2_post whose codegen depends on distinct-symbol non-dependence (the
+   candidate's own sched2 mechanism cuts both ways).
+6. Working tree reverted to HEAD (old body + 8 rules restored); oracle
+   green in committed state. NEEDS_USER question filed in decisions.md —
+   per review-discipline hard rule 1, not self-resolvable under delegation.
+
+Constraint for future sessions: do NOT re-splice the probe spelling; the
+open question is representation policy, not bytes. Bytes are proven.
