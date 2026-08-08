@@ -1,5 +1,51 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s2 (2026-08-08, structural, git HEAD ef16e11d)
+
+### H6 — a pairwise (2-atom) pref/conflict model perturbation reaches the full target assignment — KILLED
+Statement: s0 scanned single atoms only; pairwise changes to the pref/conflict
+graph were the last unexplored model space for the stream-exact body.
+Probe: tmp/grind/func_8007C7A0/s2/pair_scan.py — all C(273,2)=37,128 atom
+pairs simulated against the FULL 9-pseudo target assignment.
+Result: 0 hits; best 7/9 requires pref 76->r3 AND pref 78->r3, both hard-reg
+preferences a 2-param leaf cannot surface (s0 mechanism), and still leaves
+tx/lo wrong. Extended to SPELLABLE-only vocabulary (192 atoms: refs/livelen/
+±conflict/nopref) at depths 2 AND 3 exhaustively (18,336 + 1,161,280 combos):
+0 hits, best 7/9. The allocation model is closed through every spellable
+perturbation of size <= 3. Files: s2/pair_scan.{py,out},
+s2/spellable_scan.{py,out}.
+
+### H7 — a COMPLETED-C sibling with an analogous raw-halfword carrier copy evidences a reachable spelling family — KILLED (census complete, evidence negative)
+Statement: verbatim-Sony module siblings (or any COMPLETED-C function with a
+`move $a3,$a0` carrier prologue) would show how target-style allocations were
+reached in pure C, or show the module uniformly carries debt.
+Probe: mapped all census LIBGPU/SYS members to queue/completion states;
+grepped asm/funcs repo-wide for the carrier-copy first insn; read the C of
+both COMPLETED-C achievers (CdRead, _SsVmVSetUp).
+Result: NO COMPLETED-C module member has the carrier-copy prologue — the only
+two carriers in the module are the unmatched twins (func_8007C7A0/C86C, both
+dist 20); five display.c neighbors incl. the 0xE2000000 builder are
+COMPLETED-C without the pattern. The repo-wide achievers are model-consistent:
+CdRead's $a2 holds a live 3rd param; _SsVmVSetUp's carrier conflicts with an
+$a2-resident table value (insns 34-48), so ascending scan lands $a3 with no
+special mechanism. No transferable spelling family exists in the corpus.
+
+### H8 — the _SsVmVSetUp spelling (s32 params + narrow s16/u16 view locals, raw-param read in the in-range arm) reproduces the carrier=$a3 allocation — KILLED
+Probe: applied the adapted spelling to src/display.c, honest sandbox.
+Result: sandbox 25, build 44 (7 short). The clamp-result local coalesces into
+$a0 (copy `cx = arg0` + arg0 dead after), so NO carrier move is emitted, and
+the s16-param class's double lim-1 decrement + raw-limit saves are CSE-folded
+away. Wide params cannot produce the 51-insn stream. rejected/
+s32-params-narrow-view-locals.c.
+
+### H9 — CLAMP-macro ternaries reassigning the params (SOTN CLAMP shape on BB2 globals) produce target's three-arm $v0 join + param-home copy — KILLED
+Probe: `arg0 = (x<0) ? 0 : ((D-1<x) ? D-1 : arg0);` symmetric on both axes,
+s32 params, honest sandbox.
+Result: sandbox 29, build 31 (20 short) — GCC 2.7.2 folds the nested ternary
+into a compact form (single shared lim-1, no saves, no carrier). The
+if/else-nested s16-param spelling remains the only stream-exact class.
+rejected/s32-params-clamp-macro-ternary.c.
+
 ## s1 (2026-08-08, recon, git HEAD fb7bfa90)
 
 ### H1 — K&R (old-style) parameter definition changes entry RTL — KILLED
@@ -108,4 +154,28 @@ reaches the target allocation from the stream-exact body.
 - mechanism: opt-level-dependent RA differences (never a fix path; flags frozen 2026-05-20)
 - probe: flag_probe.sh: -O1/-O2/-O3, +/-fno-defer-pop, +/-fcaller-saves, +/-fno-schedule-insns on the mini TU
 - result: all configs emit identical roles (carrier=$a2, limsave=$v1); allocation invariant across every config our cc1 offers
+- verdict: KILLED
+
+## [s2] A pairwise (2-atom) pref/conflict model perturbation reaches the full target assignment
+- mechanism: s0 scanned single atoms only; pairwise pref/conflict-graph changes were the last unexplored model space for the stream-exact body
+- probe: tmp/grind/func_8007C7A0/s2/pair_scan.py: all C(273,2)=37,128 atom pairs simulated against the full 9-pseudo target assignment; then spellable-only vocabulary (192 atoms) exhaustively at depths 2 and 3 (18,336 + 1,161,280 combos) via s2/spellable_scan.py
+- result: 0 full-target hits at every depth; best 7/9 requires two hard-register preferences (pref 76->r3 + pref 78->r3) that a 2-param leaf cannot surface, and still leaves tx/lo wrong; spellable-only best is also 7/9 with two of {79,92,83} always wrong
+- verdict: KILLED
+
+## [s2] A COMPLETED-C sibling with an analogous raw-halfword carrier copy evidences a reachable pure-C spelling family for carrier=$a3
+- mechanism: same library build / same compiler era; a matched module member with the move $a3,$a0 prologue would be direct evidence of a reachable spelling; uniform module debt would support the toolchain-revision-divergence reading
+- probe: mapped all census LIBGPU/SYS members (manifest_report.md:100-122) to queue/completion states; repo-wide grep of asm/funcs for the carrier-copy first insn; read the C of both COMPLETED-C achievers (CdRead src/system.c:1188, _SsVmVSetUp src/main.c:1262)
+- result: No COMPLETED-C module member has the carrier-copy prologue - the only two carriers in the module ARE the unmatched twins; five display.c neighbors incl. the 0xE2000000 builder func_8007C97C are COMPLETED-C without it. Repo-wide achievers are model-consistent: CdRead's $a2 holds a live 3rd param; _SsVmVSetUp's carrier conflicts with an $a2-resident table value (insns 34-48), so ascending scan lands $a3 with no special mechanism. Nothing transfers.
+- verdict: KILLED
+
+## [s2] The _SsVmVSetUp spelling (s32 params + narrow s16 view locals, in-range clamp arm reading the RAW param) reproduces the carrier=$a3 allocation
+- mechanism: wide param stays a genuinely multi-use raw pseudo (feeds the sign-extend AND the in-range read), copy-preferenced to the clamp result - a different pref/conflict graph than the s16-param class
+- probe: applied the adapted spelling to src/display.c, honest sandbox
+- result: sandbox 25, build_insns 44 (7 short): the clamp result coalesces into $a0 so no carrier move is emitted, and the s16-param class's double lim-1 decrement + raw-limit saves are CSE-folded away; wide params cannot produce the 51-insn stream
+- verdict: KILLED
+
+## [s2] CLAMP-macro ternaries reassigning the params (SOTN CLAMP shape on BB2's halfword globals) produce target's three-arm $v0 join + param-home copy
+- mechanism: target's X-clamp routes all three arms through a $v0 join temp then copies into the param/carrier home - the classic lowering of x = x<0 ? 0 : x>lim-1 ? lim-1 : x reassigning the param
+- probe: symmetric nested ternaries on both axes, s32 params, honest sandbox
+- result: sandbox 29, build_insns 31 (20 short): GCC 2.7.2 folds the nested ternary into a compact form (single shared lim-1, no saves, no carrier)
 - verdict: KILLED

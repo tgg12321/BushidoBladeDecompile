@@ -1,5 +1,71 @@
 # Evidence bank — func_8007C7A0
 
+## s2 (2026-08-08, structural, git HEAD ef16e11d) — model closure to depth 3 + sibling census + two spelling kills
+
+- **Pairwise atom scan (frontier probe 1) — ZERO full-target hits.**
+  `tmp/grind/func_8007C7A0/s2/pair_scan.py` extended the s0 single-atom scan
+  to ALL C(273,2) = 37,128 pairs of model perturbations (refs/livelen/pref/
+  nopref/±conflict/hard-conflict-removal atoms over the 9 pseudos), checking
+  the FULL target assignment {77:v0, 78:v1, 79:v0, 83:a2, 94:a0, 81:a0,
+  92:a2, 74:a1, 76:a3}. Result: **0 hits; best 7/9**, and the sole best pair
+  is `pref 76->r3 + pref 78->r3` — BOTH atoms are hard-register preferences
+  ($v1-class) that s0 already proved unspellable in a 2-param leaf (and even
+  that pair leaves tx/lo wrong). Output: s2/pair_scan.out.
+- **Spellable-only closure to TRIPLES — ZERO full-target hits.**
+  `s2/spellable_scan.py` restricted the vocabulary to the 192 atoms a C
+  spelling can actually influence (nrefs, livelen, ±conflict edges, pref
+  removal; hard-reg prefs and hard-conflict removals excluded by the s0
+  mechanism argument) and exhaustively ran all 18,336 pairs AND all
+  1,161,280 triples. Result: **0 full-target hits at both depths; best
+  7/9** (e.g. `nopref 77 + conf +78~83 + conf +79~92`), always with two of
+  {79, 92, 83} wrong. The stream-exact body's allocation model is now closed
+  through EVERY spellable perturbation of size <= 3 — on top of s1's full
+  order-space zero and s0's single-atom scan. Output: s2/spellable_scan.out.
+- **Census-sibling probe (frontier probe 2) — no transferable evidence;
+  module carries the debt exactly on the twin pair.** Census manifest
+  (docs/naming/libscan/manifest_report.md:100-122): LIBGPU/SYS members are
+  ResetGraph, DrawPrim, MoveImage, PutDispEnv, func_8007C7A0/C86C/CBB0/CE0C/
+  D048/D3F8/D6D8/DC9C. Queue state: 8 still INCOMPLETE (incl. the twin pair
+  at dist 20), while display.c neighbors func_8007C4B8/C748/C938/C97C/CA00
+  (incl. the 0xE2000000 packet builder func_8007C97C) are COMPLETED-C with
+  zero rules. **No COMPLETED-C module member has the raw-halfword
+  carrier-copy prologue** — the only two carriers of the `move $a3,$a0`
+  pattern in the module ARE the unmatched twins. So the module is neither
+  uniformly matched nor uniformly debt-laden; the carrier-copy allocation is
+  precisely where the divergence concentrates.
+- **Repo-wide carrier-copy census: the $a3 achievers are model-consistent,
+  not counter-evidence.** grep over asm/funcs for `addu $a3,$a0,$zero`
+  first-insn carriers: the two COMPLETED-C achievers are CdRead
+  (src/system.c:1188, 3-param — $a2 is a live param, so ascending scan lands
+  $a3 trivially) and _SsVmVSetUp (src/main.c:1262, 2-param `s32 a0,a1` +
+  narrow view locals `u16 a0h; s16 a1h`) — but _SsVmVSetUp's carrier lives
+  nearly the whole 54-insn function and conflicts with $v0/$v1/$a0/$a1 uses
+  AND the $a2-resident table value (insns 34-48), so $a3 is the FIRST
+  non-conflicting register; standard ascending scan, no special mechanism.
+  Neither allocation transfers to a leaf whose carrier's conflict set leaves
+  $a2 free.
+- **Two NEW spelling families measured and killed (see rejected/):**
+  (a) `s32` params + named `s16` view locals + in-range arm reading the RAW
+  param (the _SsVmVSetUp spelling adapted): sandbox 25, build 44 — the clamp
+  result coalesces into $a0, the carrier vanishes, and the s16-param
+  double-decrement + raw-limit-save artifacts disappear (CSE folds `D-1` to
+  one addiu). (b) `s32` params + CLAMP-macro ternaries reassigning the
+  params (the SOTN CLAMP shape on BB2 globals — motivated by target's
+  three-arm $v0 join + `move $a3,$v0` copy): sandbox 29, build 31 — GCC
+  2.7.2 folds nested ternaries drastically. **Conclusion: the 51-insn stream
+  is reachable ONLY from the s16-param spelling class** (wide-param
+  families are structurally short), and within that class the allocation
+  model is closed to depth 3.
+- **Cumulative picture after s2:** stream solved (51/51, s16-param class
+  only); allocation measured unreachable via: single atoms (s0), atom PAIRS
+  any-family (s2), spellable triples (s2), all 362,880 orders (s1), retry
+  path (s0), cc1psx identity (s0), TU context (s1), K&R (s1), opt flags
+  (s1), wider signatures (r18), join temps (r18), and now both wide-param
+  spelling families (s2). The toolchain-revision-divergence reading
+  strengthens; remaining untried modalities are the driver's ladder
+  (forensics / rederive / synthesis / escalation), not further structural
+  spellings of the stream-exact class.
+
 ## s1 (2026-08-08, recon, git HEAD fb7bfa90) — Sony-provenance recon + model closure
 
 - **Provenance (from the driver brief, census 2026-07-09):** func_8007C7A0 is
@@ -270,3 +336,15 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s1] Order-space exhaustively closed: 0/362880 orders reach target assignment; combined with s0's 273-atom scan (3 hits, all unspellable in a 2-param leaf), retry-never-fires, and cc1psx byte-identity, no axis our toolchain exposes reaches the target allocation from the stream-exact body
 
 - [s1] Opt-level diagnostic: register roles invariant across -O1/-O2/-O3 and scheduling/caller-saves/defer-pop toggles
+
+- [s2] Model closure: 0 full-target hits across 37,128 any-atom pairs, 18,336 spellable pairs, and 1,161,280 spellable triples; combined with s1's 0/362,880 orders and s0's 273-atom scan, the stream-exact body's allocation is unreachable through every spellable model perturbation of size <= 3
+
+- [s2] Best achievable at any scanned depth is 7/9, always pinned by hard-register preferences ($v1/$a2-class) that set_preference cannot fire for in a 2-param leaf
+
+- [s2] Census: LIBGPU/SYS module is neither uniformly matched nor uniformly debt-laden - 8 members INCOMPLETE, 5+ display.c neighbors COMPLETED-C; the carrier-copy pattern concentrates exactly on the unmatched twin pair (func_8007C7A0/func_8007C86C)
+
+- [s2] Repo-wide: the only COMPLETED-C functions opening with addu $a3,$a0,$zero (CdRead, _SsVmVSetUp) get $a3 through ordinary ascending-scan conflict pressure (occupied $a2), not through any transferable spelling mechanism
+
+- [s2] The 51-insn stream is reachable ONLY from the s16-param spelling class: both wide-param families structurally shorten the stream (44 and 31 insns) by losing the promotion-pattern artifacts (double decrement, raw-limit saves, carrier copy)
+
+- [s2] src/display.c reverted to HEAD after measurements; floor re-confirmed 12 (candidate.c) at HEAD ef16e11d
