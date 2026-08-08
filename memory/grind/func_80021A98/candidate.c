@@ -1,10 +1,29 @@
-/* func_80021A98 — best known form after session 1 (recon).
- * Honest floor: sandbox --disable all = 20 / 158 (unchanged from inherited baseline).
- * This is byte-identical to the pre-session form except the second u16 table read
- * is folded inline (P1, measured byte-neutral, matches the m2c reference shape).
- * The whole distance is two RA permutation clusters — see evidence.md/hypotheses.md.
- * Apply this body over func_80021A98 in src/code6cac.c to resume. */
-void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
+/* func_80021A98 — SANDBOX-0 form (session 2, structural). 158/158, distance 0
+ * measured this session with these exact edits in place in src/code6cac.c.
+ * ALSO REQUIRED: include/code6cac.h:442 prototype changed to
+ *   extern void func_80021A98(s32, s32, s32);   (arg1 u8* -> s32)
+ * OPEN CLASSIFICATION QUESTION (why session 2 returned ruling-request instead
+ * of candidate-ready): the closing lever spells the two second-table sums with
+ * INCONSISTENT operand order between the arms —
+ *   if-arm : v0 = *(u16*)(v0+2) + D_80102768;            (offset + base)
+ *   else   : v0 = *(s32*)(...+arg0) + *(u16*)(v0+2);     (base + offset)
+ * Both-base-first measures 6 (v1 lands $5); both-offset-first measures 2
+ * (both addus emit operand-swapped); ONLY the mixed arrangement measures 0.
+ * The derivation referenced global.c set_preference/expand_preferences
+ * (first-PLUS-operand hard-reg preference feeding the v1/v0 web), which is a
+ * GCC-internals justification for an operand-order choice in a commutative
+ * `+` — possibly inside the or-tree-shape-shift forbidden family, possibly
+ * ordinary expression spelling (2-operand sum; both orders appear all over
+ * this file).  Awaiting owner ruling; see outcome JSON s2.
+ * Levers landed this session (all measured, in order):
+ *   +  arg0 = a3*5*4 reuse (dead param, $4 home-pref)      20 -> 15
+ *   +  s32 v1 with v1 <<= 2 per arm (in-place shift)       15 -> 12 (stacked)
+ *   +  split-init arg0 chain (arg0=a3<<2; arg0+=a3; ...)   12 -> 10
+ *   +  arg1 param s32 + reuse for the a1_val byte          10 -> 6
+ *   +  mixed operand order on the second-table sums         6 -> 0
+ * Apply this body over func_80021A98 in src/code6cac.c (+ the header decl)
+ * to resume. */
+void func_80021A98(s32 arg0, s32 arg1, s32 arg2) {
     u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
     s32 a3;
     if ((*((s16 *) (s0 + 0x4C))) != 0) {
@@ -13,20 +32,26 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         a3 = *((s16 *) (s0 + 0x4A));
     }
     *((s16 *) (s0 + 0x4C)) = 0;
-    *((s32 *) (s0 + 0x50)) = (s32) arg1;
+    *((s32 *) (s0 + 0x50)) = arg1;
     {
-        u16 v1 = *((u16 *) (arg1 + 4));
+        s32 v1 = *((u16 *) (arg1 + 4));
         *((s16 *) (s0 + 0x5C)) = v1;
         if (arg2 != 0) {
-            s32 v0 = D_80102764 + (v1 * 4);
+            s32 v0;
+            v1 <<= 2;
+            v0 = D_80102764 + v1;
             *((s32 *) (s0 + 0x54)) = v0;
-            v0 = D_80102768 + *((u16 *) (v0 + 2));
+            v0 = *((u16 *) (v0 + 2)) + D_80102768;
             *((s32 *) (s0 + 0x58)) = v0;
         } else {
-            s32 idx = a3 * 5;
-            s32 v0 = (&D_801027B4)[idx] + (v1 * 4);
+            s32 v0;
+            arg0 = a3 << 2;
+            arg0 += a3;
+            arg0 <<= 2;
+            v1 <<= 2;
+            v0 = *(s32 *)((u8 *)&D_801027B4 + arg0) + v1;
             *((s32 *) (s0 + 0x54)) = v0;
-            v0 = (&D_801027B8)[idx] + *((u16 *) (v0 + 2));
+            v0 = *(s32 *)((u8 *)&D_801027B8 + arg0) + *((u16 *) (v0 + 2));
             *((s32 *) (s0 + 0x58)) = v0;
         }
     }
@@ -38,7 +63,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
         do { } while (0);
         *((u8 *) (s0 + 0x61)) = (u8) a3;
         {
-            u8 a1_val = *((u8 *) (v0_50 + 6));
+            arg1 = *((u8 *) (v0_50 + 6));
             *((s16 *) (s0 + 0x6C)) = old_kind;
             {
                 s32 v1_58 = *((s32 *) (s0 + 0x58));
@@ -47,7 +72,7 @@ void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
                 *((s16 *) (s0 + 0x7A)) = li1;
                 *((s32 *) (s0 + 0x7C)) = 0;
                 *((s16 *) (s0 + 0x46)) = 0;
-                *((s16 *) (s0 + 0x40)) = a1_val;
+                *((s16 *) (s0 + 0x40)) = arg1;
                 *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58);
                 *((s16 *) (s0 + 0x6E)) = *((u8 *) (v1_58 + 2));
             }

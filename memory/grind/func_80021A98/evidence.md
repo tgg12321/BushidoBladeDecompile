@@ -52,3 +52,77 @@ After normalizing objdump aliases (li = addiu $N,$0,K; move = addu; jal reloc), 
 - [s1] m2c 3-arg call func_800324D0(s0, a1_val, a3) is SPURIOUS — target asm sets only $a0 before jal; real call is 1-arg as in our C
 
 - [s1] no sibling/duplicate analog: D_80102764/D_801027B4 idiom unique to this function; tmp/duplicates_leads.txt has no entry
+
+## Session 2 (structural, 2026-08-07)
+
+### Floor: 20 -> 2 (158/158 insns). Five stacked pure-C levers, all measured individually.
+
+| # | lever | score |
+|---|---|---|
+| P4 | s32 v1 + `v1 <<= 2` per arm (in-place shift, removes the sll local temp) | 26 alone (polluted), 12 stacked |
+| P9 | `arg0 = a3*5` dead-param reuse for the else-arm index | 20 -> 15 (first lever landed) |
+| P9b | split-init chain `arg0=a3<<2; arg0+=a3; arg0<<=2` (kills the a3<<2 temp) | 12 -> 10 |
+| P11 | arg1 param retyped s32 + reused for the a1_val byte (`arg1 = *(u8*)(v0_50+6)`) | 10 -> 6. REQUIRES include/code6cac.h:442 -> (s32,s32,s32) |
+| P12 | operand flip `*(u16*)(v0+2) + BASE` in both arms' second sum | 6 -> 2 |
+
+### The mechanism map (from cc1 -da greg/lreg dumps + instrumented-cc1 ALLOCDBG/FINDREGDBG; artifacts in tmp/grind/func_80021A98/s2/)
+- Pseudo roles (baseline numbering): 94 = v1 (HImode u16 var), 95/106 = v0 if/else, 98 = sll temp,
+  99/102 = table base values (if-arm), 75 = s0, 85 = a3, 72/73/74 = args.
+- **Cluster-1 root cause:** with `u16 v1` and `(v1*4)`, the shift result is a SEPARATE block-local
+  temp; local-alloc (runs BEFORE global) gives it $2 (highest qty priority, len 1), which pushes the
+  base loads to $3 and leaves v1 free to take $2 globally.  Writing the shift in place
+  (`s32 v1; v1 <<= 2`) deletes that temp; base loads then take $2 and v1 is pushed off $2.
+- **local-alloc priority formula** (local-alloc.c qty_compare): pri = floor_log2(n_refs) * n_refs *
+  size / (death - birth), computed on POST-sched1 suids, so source statement order barely moves it
+  (explains P3's null result).  Copy-suggested qtys allocate first, then priority order; ties break
+  by qty birth order.
+- **Cluster-2 root cause:** a1_val [60..68] pri 1*2/8 = 0.25 beats a0_58 [57..69] 1*2/12 = 0.167, so
+  a1_val picked $4 first and a0_58 fell to $5.  FIXED by removing a1_val from local-alloc entirely:
+  retype arg1 to s32 and reuse it for the byte (`arg1 = *(u8*)(v0_50+6)`) - arg1's pseudo is GLOBAL
+  (prologue copy from $5) with copy-pref 5, so it takes $5 (target) and a0_58 gets $4 (target).
+- **Else-arm index chain** must be the REUSED arg0 param (dead after the prologue, home-copy
+  preference $4): `arg0 = a3*5*4` gives the whole sll/addu/sll chain $4 as in target; the split-init
+  spelling keeps every intermediate in arg0's pseudo (no $2 temp).  a3 then loses $4 to the conflict
+  and correctly falls to $7 (its $2..$6 are all blocked: v0-web, arg1, arg0-idx, arg2).
+- **Preference inheritance (the v1=$5 trap):** global.c expand_preferences merges hard-reg
+  preferences between an insn's SET_DEST pseudo and any REG_DEAD pseudo on that insn when they do
+  NOT conflict.  v1's birth insn (lhu) carries arg1's REG_DEAD, so v1 inherits arg1's home pref $5,
+  and find_reg's preference override sends v1 to $5 even though $3 is free.  find_reg tries own
+  copy-prefs then own full prefs, scanning ASCENDING - a pref set {3,5} resolves to $3.  P12
+  exploits this: spelling the second table sum with the u16 read as the FIRST operand of PLUS makes
+  set_preference (which reads only XEXP(src,0)) record the lhu temp's local-allocated $3 as a pref
+  on the v0 web, which the REG_DEAD merge at v1's death propagates to v1 -> v1 = $3.
+- **The last 2 insns (score 2):** GCC 2.7.2 does NOT canonicalize reg-reg PLUS operand order; the
+  emitted addu operand order follows the source.  So the SAME spelling that delivers pref-3 also
+  flips `addu $v0,$v0,$v1` (target, base first, lines 38/53) into `addu $2,$3,$2` (ours).
+  All registers are correct; only these two operand orders differ.
+- **Order-preserving variants measured:** sw-first + no flip = 6 (v1 = $5);
+  lhu-first + no flip = 2 with the sw/lhu PAIR transposed instead (target: sw@25 lhu@26; the
+  scheduler cannot reorder them - mutually-aliasing mems, emitted order = source order; lhu-first
+  source makes arg1 die on the mem-dest sw, which expand_preferences skips, killing the pref without
+  P12).  Two distinct score-2 states exist: (a) order-correct/operand-flipped [BANKED as candidate],
+  (b) operand-correct/sw-lhu-transposed.
+- cc1 stderr on this file ("conflicting types", "parse error before GameObj") is pre-existing and
+  non-fatal (parser recovers; the build tolerates it).  A pipe through `head` SIGPIPE-kills cc1 -
+  redirect stderr to a file instead.
+- Instrumented cc1 = tools/gcc-2.7.2/cc1 (env BB2_ALLOC_DEBUG=1, BB2_FINDREG_DEBUG=<pseudo>,
+  stderr to file); build/cc1 has NO hooks (confirmed via strings).
+
+### FINAL: sandbox distance 0 (158/158) — P13 mixed operand order
+After banking the score-2 form, flipping ONLY the else-arm's second sum back to base-first
+(if-arm stays `*(u16*)(v0+2) + D_80102768`, else-arm `*(s32*)((u8*)&D_801027B8+arg0) + *(u16*)(v0+2)`)
+measured **sandbox 0**.  The three arrangements: base-first/base-first = 6 (v1=$5),
+offset-first/offset-first = 2 (both addus operand-swapped), MIXED = 0.  Note the if-arm addu EMITS
+base-first despite its offset-first spelling (an expand/combine-level swap not fully explained —
+the pref-3 delivery theory is validated only for the register outcome, not the emission order).
+Session returned RULING-REQUEST, not candidate-ready: the mixed operand order is justified by
+set_preference mechanics (GCC-internals, T3 signal) and the arms are spelled inconsistently, so it
+may fall under the or-tree-shape-shift forbidden family (operand reordering in
+associative+commutative expressions) — or may be ordinary 2-operand-sum spelling (both orders
+appear naturally throughout src).  Bytes are PROVEN; only the construct's classification is open.
+
+### Artifacts (tmp/grind/func_80021A98/s2/)
+- greg_dump.sh - regenerates .i + cc1 -da + extracts func.greg/func.lreg (rerunnable)
+- func.greg, func.lreg - RTL dumps (score-2 form)
+- allocdbg.txt (ALLOCDBG priority table), findreg94.txt (FINDREGDBG for v1)
+- show_diff.py - prints only true-mismatch lines from the s1 differ
