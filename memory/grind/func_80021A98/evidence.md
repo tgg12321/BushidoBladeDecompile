@@ -174,6 +174,52 @@ appear naturally throughout src).  Bytes are PROVEN; only the construct's classi
   is dirty-uncommitted; committing the ledger (or accepting the candidate)
   breaks the loop.
 
+## Session 6 (structural, 2026-08-07) — candidate-ready re-affirmed (4th)
+
+- Dispatched on the SAME stale s1-only digest (grinder-stale-digest-uncommitted-
+  ledger failure mode; s2–s5 ledger updates still uncommitted). Zero
+  re-derivation — the on-disk ledger carried everything.
+- Found src/code6cac.c + include/code6cac.h rolled back to the pre-s2 form a
+  FOURTH time. Re-applied the banked candidate.c body verbatim via 5 targeted
+  edits: arg1 param u8* -> s32 (src signature + include/code6cac.h:442
+  prototype) reused for the a1_val byte, arg0 split-init reuse for the else-arm
+  index, s32 v1 with in-place `v1 <<= 2` per arm, byte-offset table casts,
+  mixed second-sum operand order per the Judge-PASSed ruling
+  (docs/grind/decisions.md:4073-4075, commit 9b326242).
+- `sandbox func_80021A98 --disable all` THIS session: **score 0, 158/158,
+  19 rules dropped, cheat_asm_stripped 139** — distance 0 proven live in src.
+- self_vet.md FIXED per the 22:31 OPERATOR NOTE: the split-init family
+  PRECEDENT line was still the prose reference to the user-memory file (the
+  exact citation-format discard cause — no file.ext:LINE / hex-hash match for
+  grindlib.py:54's regex). Replaced with the prescribed anchor `ad11a8c8` +
+  docs/grind/decisions.md:4075. All three family PRECEDENT lines now carry
+  regex-passing citations. Outcome: candidate-ready.
+
+## Session 7 (structural, 2026-08-07) — candidate-ready re-affirmed (5th)
+
+- Dispatched on the SAME stale s1-only digest (grinder-stale-digest-uncommitted-
+  ledger failure mode; s2–s6 ledger updates still uncommitted per git status).
+  Zero re-derivation — the on-disk ledger carried everything.
+- Found src/code6cac.c + include/code6cac.h rolled back to the pre-s2 form a
+  FIFTH time. Re-applied the banked candidate.c body verbatim via 5 targeted
+  edits: arg1 param u8* -> s32 (src signature + include/code6cac.h:442
+  prototype) reused for the a1_val byte, arg0 split-init reuse for the else-arm
+  index, s32 v1 with in-place `v1 <<= 2` per arm, byte-offset table casts,
+  mixed second-sum operand order per the Judge-PASSed ruling
+  (docs/grind/decisions.md:4073-4075, commit 9b326242).
+- `sandbox func_80021A98 --disable all` THIS session: **score 0, 158/158,
+  19 rules dropped, cheat_asm_stripped 139** — distance 0 proven live in src.
+- self_vet.md re-verified against the live diff (identical constructs; all
+  three PRECEDENT lines already carry the regex-passing citations from the
+  s6 fix — ad11a8c8, .claude/rules/no-new-park-categories.md:170,
+  docs/grind/decisions.md:4073-4075). Header updated to note the 5th
+  re-affirmation. Outcome: candidate-ready.
+- OPERATOR NOTE: FIFTH consecutive candidate-ready on the identical banked
+  form, and the first since the s6 citation-format fix landed in self_vet.md.
+  If THIS session is also discarded, the discard reason fed back into the next
+  brief (per commit bb6ac932) is the thing to read first — the ledger and vet
+  are internally complete.
+
 ### Artifacts (tmp/grind/func_80021A98/s2/)
 - greg_dump.sh - regenerates .i + cc1 -da + extracts func.greg/func.lreg (rerunnable)
 - func.greg, func.lreg - RTL dumps (score-2 form)

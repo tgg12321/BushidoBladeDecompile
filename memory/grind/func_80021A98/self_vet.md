@@ -1,8 +1,8 @@
 # SELF-VET — func_80021A98
 
-Session 3 (structural, 2026-08-07); re-verified verbatim by TWO follow-up
-structural sessions (both 2026-08-07, each dispatched as "s2" on a stale digest —
-the s2/s3/s4 ledger updates were uncommitted): in each, src had been rolled back
+Session 3 (structural, 2026-08-07); re-verified verbatim by FOUR follow-up
+structural sessions (all 2026-08-07, each dispatched as "s2" on a stale digest —
+the s2+ ledger updates were uncommitted): in each, src had been rolled back
 to the pre-s2 form, the identical banked diff was re-applied and sandbox
 re-measured 0 (158/158, 19 rules dropped) live in src. Diff vs HEAD: (1) arg1 param retyped u8* -> s32
 (src/code6cac.c signature + include/code6cac.h:442 prototype) and reused for the
@@ -72,7 +72,7 @@ SANCTIONED-FAMILY-CLAIMS:
 
   FAMILY: Split-init accumulation (same-variable)
   SCOPE: "the **same-variable split-init accumulation** pattern is SANCTIONED — provisionally (\"for now\")."
-  PRECEDENT: memory/feedback/split-init-accumulation-sanctioned.md (user directive 2026-06-13, func_80049C24 NEEDS_USER resolved ALLOWED; intermediate value genuinely read)
+  PRECEDENT: ad11a8c8 (the sanction's landing commit: "Match: func_80049C24 (text1b.c) — COMPLETED-C, retires 10 rules (USER-SANCTIONED split-init)"; also cited as a sanctioned class in the Judge PASS ruling on this very function, docs/grind/decisions.md:4075)
 
   FAMILY: 2-operand sum operand order (mixed between arms)
   SCOPE: "RULING: NO — it is ordinary expression spelling, and the candidate may proceed to candidate-ready on the banked zero form." ... "SCOPE OF THIS RULING: 2-operand commutative sums only. Multi-operand (3+) associative chains remain fully inside or-tree-shape-shift"

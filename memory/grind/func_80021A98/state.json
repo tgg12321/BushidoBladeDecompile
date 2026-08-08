@@ -28,7 +28,9 @@
    "next_probe": "no separate probe \u2014 verify automatically when H1 lands"
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "OUT OF SCOPE: candidates for func_80021A98 may only edit src/code6cac.c. Edits to include/code6cac.h are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,

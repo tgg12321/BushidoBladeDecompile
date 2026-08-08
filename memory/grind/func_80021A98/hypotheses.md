@@ -1,5 +1,19 @@
 # Hypothesis ledger — func_80021A98
 
+## Status after session 7 (structural): CANDIDATE-READY (5th consecutive re-affirmation)
+Same stale-digest respawn; src rolled back a fifth time; banked candidate
+re-applied verbatim; sandbox 0 (158/158) re-measured live. self_vet.md already
+carried the regex-passing PRECEDENT citations from the s6 fix — no vet changes
+needed beyond the re-affirmation header. No open hypotheses.
+
+## Status after session 6 (structural): CANDIDATE-READY (4th consecutive re-affirmation)
+Same stale-digest respawn; src rolled back again; banked candidate re-applied
+verbatim; sandbox 0 (158/158) re-measured live. NEW this session: self_vet.md's
+split-init PRECEDENT line was upgraded to the regex-passing anchor ad11a8c8 per
+the 22:31 operator note — the prior sessions' vet still carried the prose
+citation that the validator mechanically rejects, which is the likely reason
+the candidate-ready outcomes kept being discarded. No open hypotheses.
+
 ## Status after session 5 (structural): CANDIDATE-READY (3rd consecutive re-affirmation)
 Sessions 4 and 5 (both dispatched on the stale s1-only digest) each found src
 rolled back, re-applied the banked candidate verbatim, and re-measured sandbox 0
