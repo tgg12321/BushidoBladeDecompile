@@ -1,0 +1,43 @@
+{
+ "func": "func_8007C7A0",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 12,
+   "modality": "recon",
+   "headline": "Recon: floors re-confirmed at HEAD (12/candidate, 15/stream-exact); FIVE axes killed with measurements \u2014 K&R params inert, SOTN reference is a different library build (constant clamps vs BB2's global "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A 2-atom (pairwise) pref/conflict model perturbation reaches the full target assignment AND corresponds to a spellable pure-C construct",
+   "mechanism": "s0 scanned single atoms only (3 hits, all needing unreachable hard regs); s1 closed pure order shifts; pairwise pref/conflict changes are the only unexplored model space (~273^2 combos, simulable in minutes with order_scan.py-style harness)",
+   "next_probe": "extend tmp/c7a0_a2_scan.py to atom PAIRS checking full-target reachability; for any hit, assess C-spellability before writing any C"
+  },
+  {
+   "hypothesis": "Already-matched verbatim-Sony LIBGPU SYS module siblings (e.g. the 0xE2000000 packet builder preceding this function, and other census module members) reveal how/whether target-style allocations were reached in pure C",
+   "mechanism": "same library build, same compiler era; a COMPLETED-C sibling with an analogous raw-halfword carrier copy would be direct evidence of a reachable spelling family \u2014 or their completion states may show the module carries regfix debt uniformly, supporting the toolchain-revision-divergence reading",
+   "next_probe": "map the census module members to queue/completion states; diff the C of any COMPLETED-C member with a carrier-copy prologue against stream51"
+  },
+  {
+   "hypothesis": "If both frontier probes come back empty, the pure-C evidence package is complete (atoms, orders, retry, cc1psx, TU, K&R, flags all measured dead) for the driver's escalation modality",
+   "mechanism": "endgame-lock disposition is the driver/owner's call after the modality ladder; a session must not self-declare exhaustion outside escalation modality",
+   "next_probe": "driver-assigned; no session action until the ladder mandates it"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-08T07:02:51.809886+00:00"
+}
