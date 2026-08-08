@@ -1,34 +1,32 @@
-/* func_80021A98 — SANDBOX-0 form (session 2, structural). 158/158, distance 0
- * measured this session with these exact edits in place in src/code6cac.c.
- * ALSO REQUIRED: include/code6cac.h:442 prototype changed to
- *   extern void func_80021A98(s32, s32, s32);   (arg1 u8* -> s32)
- * OPEN CLASSIFICATION QUESTION (why session 2 returned ruling-request instead
- * of candidate-ready): the closing lever spells the two second-table sums with
- * INCONSISTENT operand order between the arms —
- *   if-arm : v0 = *(u16*)(v0+2) + D_80102768;            (offset + base)
- *   else   : v0 = *(s32*)(...+arg0) + *(u16*)(v0+2);     (base + offset)
- * Both-base-first measures 6 (v1 lands $5); both-offset-first measures 2
- * (both addus emit operand-swapped); ONLY the mixed arrangement measures 0.
- * The derivation referenced global.c set_preference/expand_preferences
- * (first-PLUS-operand hard-reg preference feeding the v1/v0 web), which is a
- * GCC-internals justification for an operand-order choice in a commutative
- * `+` — possibly inside the or-tree-shape-shift forbidden family, possibly
- * ordinary expression spelling (2-operand sum; both orders appear all over
- * this file).  RESOLVED: Judge ruled PASS 2026-08-07 22:21
- * (docs/grind/decisions.md:4073-4075, commit 9b326242) — ordinary expression
- * spelling, outside or-tree-shape-shift (scoped to 3+-operand chains), no FAKE
- * annotation required.  Session 3 re-applied this body + the header prototype
- * to src and re-measured sandbox 0 (158/158); self_vet.md written;
- * candidate-ready returned.
- * Levers landed this session (all measured, in order):
- *   +  arg0 = a3*5*4 reuse (dead param, $4 home-pref)      20 -> 15
- *   +  s32 v1 with v1 <<= 2 per arm (in-place shift)       15 -> 12 (stacked)
- *   +  split-init arg0 chain (arg0=a3<<2; arg0+=a3; ...)   12 -> 10
- *   +  arg1 param s32 + reuse for the a1_val byte          10 -> 6
- *   +  mixed operand order on the second-table sums         6 -> 0
- * Apply this body over func_80021A98 in src/code6cac.c (+ the header decl)
- * to resume. */
-void func_80021A98(s32 arg0, s32 arg1, s32 arg2) {
+/* func_80021A98 — SANDBOX-0 form, SRC-ONLY (session 8, structural).
+ * 158/158, distance 0 measured 2026-08-07 with these exact edits in place in
+ * src/code6cac.c and include/code6cac.h UNTOUCHED (arg1 keeps its
+ * header-declared type u8 * — the prototype at include/code6cac.h:442 stays
+ * `extern void func_80021A98(s32, u8 *, s32);`).
+ *
+ * WHY THIS SUPERSEDES THE s2-s7 BANKED FORM: the driver's Judge constraint
+ * (banked s7->s8) rules the include/code6cac.h:442 prototype edit
+ * (u8* -> s32) OUT OF SCOPE — candidates may only edit src/code6cac.c. The
+ * fix: keep arg1 as u8* and spell the P11 arg1-reuse lever with the two
+ * casts the C type system requires for integer round-trip through a
+ * pointer-typed variable:
+ *     arg1 = (u8 *) *((u8 *) (v0_50 + 6));      // int-to-pointer, required
+ *     *((s16 *) (s0 + 0x40)) = (s32) arg1;      // pointer-to-int, required
+ * Both casts are 32-bit-to-32-bit (no width change, NOT F2); the RTL is
+ * identical to the s32-typed spelling (same SImode pseudo, same $5
+ * copy-preference from the prologue copy), so the register-allocation
+ * mechanism is unchanged and sandbox measures 0 directly.
+ *
+ * Levers (all measured, sessions 2+8):
+ *   +  arg0 = a3*5*4 reuse via split-init chain (dead param, $4 home-pref)
+ *   +  s32 v1 with v1 <<= 2 per arm (in-place shift)
+ *   +  arg1 (u8*, type unchanged) reused for the a1_val byte via casts
+ *   +  byte-offset table casts *(s32*)((u8*)&D_801027B4 + arg0)
+ *   +  mixed second-sum operand order (Judge PASS
+ *      docs/grind/decisions.md:4073-4075, commit 9b326242)
+ * Apply this body over func_80021A98 in src/code6cac.c to resume — NO
+ * header edit needed or allowed. */
+void func_80021A98(s32 arg0, u8 *arg1, s32 arg2) {
     u8 *s0 = ((u8 *) (&D_80101EC8)) + (arg0 * 1100);
     s32 a3;
     if ((*((s16 *) (s0 + 0x4C))) != 0) {
@@ -37,7 +35,7 @@ void func_80021A98(s32 arg0, s32 arg1, s32 arg2) {
         a3 = *((s16 *) (s0 + 0x4A));
     }
     *((s16 *) (s0 + 0x4C)) = 0;
-    *((s32 *) (s0 + 0x50)) = arg1;
+    *((s32 *) (s0 + 0x50)) = (s32) arg1;
     {
         s32 v1 = *((u16 *) (arg1 + 4));
         *((s16 *) (s0 + 0x5C)) = v1;
@@ -68,7 +66,7 @@ void func_80021A98(s32 arg0, s32 arg1, s32 arg2) {
         do { } while (0);
         *((u8 *) (s0 + 0x61)) = (u8) a3;
         {
-            arg1 = *((u8 *) (v0_50 + 6));
+            arg1 = (u8 *) *((u8 *) (v0_50 + 6));
             *((s16 *) (s0 + 0x6C)) = old_kind;
             {
                 s32 v1_58 = *((s32 *) (s0 + 0x58));
@@ -77,7 +75,7 @@ void func_80021A98(s32 arg0, s32 arg1, s32 arg2) {
                 *((s16 *) (s0 + 0x7A)) = li1;
                 *((s32 *) (s0 + 0x7C)) = 0;
                 *((s16 *) (s0 + 0x46)) = 0;
-                *((s16 *) (s0 + 0x40)) = arg1;
+                *((s16 *) (s0 + 0x40)) = (s32) arg1;
                 *((s16 *) (s0 + 0x6A)) = *((u8 *) a0_58);
                 *((s16 *) (s0 + 0x6E)) = *((u8 *) (v1_58 + 2));
             }

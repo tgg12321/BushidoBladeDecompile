@@ -1,5 +1,17 @@
 # Hypothesis ledger — func_80021A98
 
+## Status after session 8 (structural): CANDIDATE-READY — SRC-ONLY form
+The driver's new out-of-scope constraint (no include/code6cac.h edits) was
+resolved THIS session, not escalated: H6 "the P11 arg1-reuse mechanism is
+type-independent (SImode pseudo + $5 copy-pref survive u8* typing with
+required int<->pointer casts)" — CONFIRMED, sandbox 0 (158/158) measured with
+ONLY src/code6cac.c modified and the header byte-identical to HEAD. The s2–s7
+form (header prototype u8* -> s32) is SUPERSEDED and must not be re-proposed.
+candidate.c and self_vet.md re-banked for the src-only spelling. No open
+hypotheses. Fallback frontier if the cast spelling is ever ruled unacceptable:
+H5 options 2 (someone_prefers route for the transposed-sw/lhu score-2 state)
+and 3 (permuter sweep from both score-2 seeds).
+
 ## Status after session 7 (structural): CANDIDATE-READY (5th consecutive re-affirmation)
 Same stale-digest respawn; src rolled back a fifth time; banked candidate
 re-applied verbatim; sandbox 0 (158/158) re-measured live. self_vet.md already

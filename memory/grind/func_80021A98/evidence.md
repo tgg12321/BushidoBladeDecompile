@@ -220,6 +220,35 @@ appear naturally throughout src).  Bytes are PROVEN; only the construct's classi
   brief (per commit bb6ac932) is the thing to read first — the ledger and vet
   are internally complete.
 
+## Session 8 (structural, 2026-08-07) — SRC-ONLY sandbox-0 form (header constraint resolved)
+
+- NEW BINDING CONSTRAINT in this session's brief: the driver ruled the
+  include/code6cac.h edit OUT OF SCOPE — candidates for func_80021A98 may only
+  edit src/code6cac.c; the u8* -> s32 prototype change at include/code6cac.h:442
+  can never be accepted. This invalidated the s2–s7 banked form AS SPELLED
+  (it required the header edit for the P11 arg1-reuse lever).
+- RESOLUTION (measured this session): arg1 KEEPS its header type `u8 *` in the
+  src signature (header untouched), and the P11 reuse is spelled with the two
+  semantically-required 32-bit int<->pointer conversion casts:
+  `arg1 = (u8 *) *((u8 *) (v0_50 + 6));` and
+  `*((s16 *)(s0 + 0x40)) = (s32) arg1;`. Rationale: RA operates on RTL modes,
+  not C types — the arg1 pseudo is SImode either way, its GLOBAL status and $5
+  prologue copy-preference (the actual P11 mechanism) are type-independent, and
+  the casts emit zero instructions (no width change). All other levers
+  unchanged from the banked form (arg0 split-init reuse, s32 v1 in-place
+  shifts, byte-offset table casts, Judge-PASSed mixed second-sum operand
+  order).
+- `sandbox func_80021A98 --disable all` THIS session with ONLY src/code6cac.c
+  modified: **score 0, 158/158, 19 rules dropped, cheat_asm_stripped 139** —
+  the src-only form is byte-proven; the out-of-scope constraint is fully
+  satisfied (no OWNER-ESCALATION for scope_allow.txt needed).
+- candidate.c re-banked with the src-only body (supersedes the s2 form —
+  header note updated to say NO header edit needed or allowed). self_vet.md
+  rewritten for the new construct list (casts vetted: not F2 — no width
+  change, mandatory for the assignment to compile; not volatile-coercion — no
+  volatile anywhere). All PRECEDENT lines keep the regex-passing citations
+  from the s6 fix. Outcome: candidate-ready.
+
 ### Artifacts (tmp/grind/func_80021A98/s2/)
 - greg_dump.sh - regenerates .i + cc1 -da + extracts func.greg/func.lreg (rerunnable)
 - func.greg, func.lreg - RTL dumps (score-2 form)

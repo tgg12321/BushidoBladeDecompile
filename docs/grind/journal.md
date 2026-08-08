@@ -794,3 +794,4 @@
 - 2026-08-07 21:12 func_80048AD0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-07 21:26 func_80021A98 s1 [recon] floor=20: Recon complete: floor 20/158 is purely two RA permutation clusters (v1@$2-vs-$3 cascade ~16 insns; a0_58/a1_val $4-$5 tie 4 insns); zero structural diffs; 3 probes measured (2 byte-neutral, 1 worse)
 - 2026-08-07 22:31 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_80021A98
+- 2026-08-07 23:50 func_80021A98: LAYER-1 FAILED a sandbox-0 candidate — Citations check out (ad11a8c8, no-new-park-categories.md:170, decisions.md:4073-4075 all verified), but the session-8 arg1 cast-round-trip reuse is a GCC-internals-driven type-system workaround invented specifically to smuggle the previously-banked (header-edit) P11 lever past the new src-only scope constraint — it fails T2 and T3.
