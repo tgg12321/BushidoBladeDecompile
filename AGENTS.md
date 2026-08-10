@@ -33,7 +33,7 @@ Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting ga
 - Stack: `0x801FFFF0`, GP: `0x800A30CC`
 - Text+data size: `0x93800` (604,160 bytes), loads at file offset `0x800`
 - Code ends ~`0x8008D070`, data/tables from ~`0x8008D080` to `0x800A3800`
-- 1,436 functions identified by splat (per the naming census, `docs/naming/README.md`: 1,438 `asm/funcs/*.s` files, minus the `D_8007E08C` data-as-code blob, minus two duplicate-glabel pairs)
+- 1,429 unique functions identified by splat (per the naming census, `docs/naming/README.md`, corrected by the 2026-08-07 duplicate survey: 1,437 `asm/funcs/*.s` files, minus the `D_8007E08C` data-as-code blob, minus 7 stale duplicate-address pairs — 2 same-glabel pairs plus 5 same-address pairs invisible to glabel scans; see `docs/TASK19-PROTO-ANALYSIS.md`)
 
 **Overlay EXE:** `disc/STR/MOVOVL.EXE` (122,880 bytes) — FMV/MDEC playback overlay
 - Loads at `0x801D8800`, entry `0x801DA084` — no overlap with main EXE
