@@ -14,7 +14,7 @@ glabel func_8005BE84
     /* 4C6B4 8005BEB4 00000000 */  nop
     /* 4C6B8 8005BEB8 17004004 */  bltz       $v0, .L8005BF18
     /* 4C6BC 8005BEBC 40801000 */   sll       $s0, $s0, 1
-    /* 4C6C0 8005BEC0 E617020C */  jal        func_80085F98
+    /* 4C6C0 8005BEC0 E617020C */  jal        SsUtReverbOff
     /* 4C6C4 8005BEC4 00000000 */   nop
     /* 4C6C8 8005BEC8 B917020C */  jal        SsUtSetReverbType
     /* 4C6CC 8005BECC 21200000 */   addu      $a0, $zero, $zero
@@ -32,7 +32,7 @@ glabel func_8005BE84
     /* 4C6FC 8005BEFC 03240400 */  sra        $a0, $a0, 16
     /* 4C700 8005BF00 9317020C */  jal        SsUtSetReverbDepth
     /* 4C704 8005BF04 21288000 */   addu      $a1, $a0, $zero
-    /* 4C708 8005BF08 EE17020C */  jal        func_80085FB8
+    /* 4C708 8005BF08 EE17020C */  jal        SsUtReverbOn
     /* 4C70C 8005BF0C 00000000 */   nop
     /* 4C710 8005BF10 C86F0108 */  j          .L8005BF20
     /* 4C714 8005BF14 00141100 */   sll       $v0, $s1, 16

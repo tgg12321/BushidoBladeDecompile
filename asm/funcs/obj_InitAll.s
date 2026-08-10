@@ -6,7 +6,7 @@ glabel obj_InitAll
     /* 4BF3C 8005B73C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 4BF40 8005B740 3416020C */  jal        func_800858D0
     /* 4BF44 8005B744 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 4BF48 8005B748 E617020C */  jal        func_80085F98
+    /* 4BF48 8005B748 E617020C */  jal        SsUtReverbOff
     /* 4BF4C 8005B74C 01001024 */   addiu     $s0, $zero, 0x1
     /* 4BF50 8005B750 B917020C */  jal        SsUtSetReverbType
     /* 4BF54 8005B754 21200000 */   addu      $a0, $zero, $zero

@@ -1,4 +1,4 @@
-glabel func_80085FB8
+glabel SsUtReverbOn
     /* 767B8 80085FB8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 767BC 80085FBC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 767C0 80085FC0 5827020C */  jal        SpuSetReverb
@@ -99,4 +99,4 @@ glabel func_80085FB8
     /* 76924 80086124 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 76928 80086128 0800E003 */  jr         $ra
     /* 7692C 8008612C 00000000 */   nop
-endlabel func_80085FB8
+endlabel SsUtReverbOn

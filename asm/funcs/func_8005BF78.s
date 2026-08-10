@@ -25,7 +25,7 @@ glabel func_8005BF78
     /* 4C7D4 8005BFD4 0000028E */  lw         $v0, 0x0($s0)
     /* 4C7D8 8005BFD8 00000000 */  nop
     /* 4C7DC 8005BFDC 0C00458C */  lw         $a1, 0xC($v0)
-    /* 4C7E0 8005BFE0 592B020C */  jal        func_8008AD64
+    /* 4C7E0 8005BFE0 592B020C */  jal        SpuRead
     /* 4C7E4 8005BFE4 21208002 */   addu      $a0, $s4, $zero
     /* 4C7E8 8005BFE8 AC2B020C */  jal        SpuIsTransferCompleted
     /* 4C7EC 8005BFEC 01000424 */   addiu     $a0, $zero, 0x1
@@ -34,7 +34,7 @@ glabel func_8005BF78
     /* 4C7F8 8005BFF8 0000028E */  lw         $v0, 0x0($s0)
     /* 4C7FC 8005BFFC 00000000 */  nop
     /* 4C800 8005C000 0C00458C */  lw         $a1, 0xC($v0)
-    /* 4C804 8005C004 712B020C */  jal        func_8008ADC4
+    /* 4C804 8005C004 712B020C */  jal        SpuWrite
     /* 4C808 8005C008 21208002 */   addu      $a0, $s4, $zero
     /* 4C80C 8005C00C AC2B020C */  jal        SpuIsTransferCompleted
     /* 4C810 8005C010 01000424 */   addiu     $a0, $zero, 0x1

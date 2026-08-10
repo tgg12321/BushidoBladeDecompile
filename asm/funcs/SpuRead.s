@@ -1,4 +1,4 @@
-glabel func_8008AD64
+glabel SpuRead
     /* 7B564 8008AD64 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 7B568 8008AD68 1000B0AF */  sw         $s0, 0x10($sp)
     /* 7B56C 8008AD6C 2180A000 */  addu       $s0, $a1, $zero
@@ -25,4 +25,4 @@ glabel func_8008AD64
     /* 7B5B8 8008ADB8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7B5BC 8008ADBC 0800E003 */  jr         $ra
     /* 7B5C0 8008ADC0 00000000 */   nop
-endlabel func_8008AD64
+endlabel SpuRead

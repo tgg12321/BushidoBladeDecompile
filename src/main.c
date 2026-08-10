@@ -8,7 +8,7 @@
 extern void SpuSetReverb(s32);
 extern void spu_InitEx(s32);
 extern s32 SpuIsTransferCompleted(s32);
-extern void func_80084974(s16, s16);
+extern void _SsSeqPlay(s16, s16);
 extern s16 func_800880E8(u8 *, s16, s16, u32);
 extern s32 func_80089A48(s32, u32, s32, s32);
 
@@ -223,7 +223,7 @@ void func_80084500(s16 arg0, s16 arg1);     /* _SsSndDecrescendo */
 void _SsSndTempo(s16 a0, s16 a1);         /* _SsSndTempo */
 void spu_SetMotionState(s16 a0, s16 a1);    /* _SsSndPause */
 void spu_SetMotionActive(s32 a0, s16 a1);   /* _SsSndReplay */
-void func_80085270(s16 a0, s16 a1);         /* _SsSndStop */
+void _SsSndStop(s16 a0, s16 a1);         /* _SsSndStop */
 
 void SsStart(void) {
     func_80083C34(1);
@@ -288,7 +288,7 @@ static void SsSeqCalledTbyT(void) {
                         spu_SetMotionActive((s16)i, j);
                     }
                     if (SS_SCORE_FLAG(i, j) & 4) {
-                        func_80085270(i, j);
+                        _SsSndStop(i, j);
                         SS_SCORE_FLAG(i, j) = 0;
                     }
                 }
@@ -314,10 +314,10 @@ void spu_SetMotionState(s16 a0, s16 a1) {
 }
 
 void spu_SetMotionCallback(s16 a0, s16 a1) {
-    func_80084974(a0, a1);
+    _SsSeqPlay(a0, a1);
 }
 
-void func_80084974(s16 a0, s16 a1) {
+void _SsSeqPlay(s16 a0, s16 a1) {
     u8 *base;
     s32 gauge;
     s32 diff;
@@ -636,7 +636,7 @@ void spu_SetMotionActive(s32 a0, s16 a1) {
    hunt 2026-07-10: bit-verbatim vs the Jun-06-1997 4.0 build, 118 words);
    C ref: sotn-decomp src/main/psxsdk/libsnd/stop.c (interim 4.0 build adds
    the ~0x400 flag clear + NotifyChannel/ResetCounter pair). */
-void func_80085270(s16 a0, s16 a1) {
+void _SsSndStop(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -687,12 +687,12 @@ void func_80085270(s16 a0, s16 a1) {
     *(s16*)(p + 0x5E) = 0x7F;
 }
 
-void func_800853F4(s16 a0) {
-    func_80085270(a0, 0);
+void SsSeqStop(s16 a0) {
+    _SsSndStop(a0, 0);
 }
 
-void func_8008541C(s16 a0, s16 a1) {
-    func_80085270(a0, a1);
+void SsSepStop(s16 a0, s16 a1) {
+    _SsSndStop(a0, a1);
 }
 /* PsyQ LIBSND ssvol: SsSetSerialVol — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/scssvol.c.
@@ -956,7 +956,7 @@ s16 SsUtGetReverbType(void) {
     return *(s16 *)&D_800F5754;
 }
 
-void func_80085F98(void) {
+void SsUtReverbOff(void) {
     SpuSetReverb(0);
 }
 
@@ -964,7 +964,7 @@ extern s16 D_80102A78[];
 extern s16 D_80102A7A[];
 extern u8 D_800F65E0[];
 
-void func_80085FB8(void) {
+void SsUtReverbOn(void) {
     SpuSetReverb(1);
 }
 
@@ -1524,7 +1524,7 @@ extern u8 g_snd_ch_status[];
 extern s32 g_snd_ch_addr[];
 extern s32 D_801077C8[];
 extern s32 SpuSetTransferStartAddr(s32);
-extern s32 func_8008ADC4(s32, s32);
+extern s32 SpuWrite(s32, s32);
 s16 SsVabTransBody(s32 a0, s16 a1) {
     if ((u16)a1 >= 0x11) {
         _spu_setInTransfer(0);
@@ -1538,7 +1538,7 @@ s16 SsVabTransBody(s32 a0, s16 a1) {
         s32 s0 = g_snd_ch_addr[a1];
         SpuSetTransferMode(0);
         SpuSetTransferStartAddr(s0);
-        func_8008ADC4(a0, D_801077C8[a1]);
+        SpuWrite(a0, D_801077C8[a1]);
         g_snd_ch_status[a1] = 1;
     }
     return a1;
@@ -1548,7 +1548,7 @@ s16 SsVabTransCompleted(s16 a0) {
     return SpuIsTransferCompleted(a0);
 }
 
-void spu_Init(void) {
+void SpuInit(void) {
     spu_InitEx(0);
 }
 
@@ -2730,7 +2730,7 @@ ret3:
 ret1:
     return 1;
 }
-s32 func_8008AD64(s32 a0, s32 a1) {
+s32 SpuRead(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }
@@ -2740,7 +2740,7 @@ s32 func_8008AD64(s32 a0, s32 a1) {
     }
     return a1;
 }
-s32 func_8008ADC4(s32 a0, s32 a1) {
+s32 SpuWrite(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }

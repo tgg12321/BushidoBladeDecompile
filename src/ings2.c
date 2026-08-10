@@ -3,7 +3,7 @@
 #include "system.h"
 
 /* Forward declarations */
-extern void spu_Init(void);
+extern void SpuInit(void);
 extern void _SsInit(void);
 extern void SpuQuit(void);
 
@@ -738,9 +738,9 @@ void SsEnd(void) {
     D_800A26DE = 0x7F;
 }
 
-void sys_Shutdown(void) {
+void SsInit(void) {
     ResetCallback();
-    spu_Init();
+    SpuInit();
     _SsInit();
 }
 
@@ -783,7 +783,7 @@ void _SsInit(void) {
     D_800FF630 = 0;
 }
 
-void spu_Reset(void) {
+void SsQuit(void) {
     SpuQuit();
 }
 

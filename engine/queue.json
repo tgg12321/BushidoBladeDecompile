@@ -312,7 +312,7 @@
       "status": "active"
     },
     {
-      "func": "func_80084974",
+      "func": "_SsSeqPlay",
       "file": "main",
       "distance": 28,
       "verdict": "C",

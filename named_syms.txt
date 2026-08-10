@@ -477,9 +477,9 @@ bios_FileRead_8008387C          = 0x8008387C;  /* chunked reader wrapping bios_F
 bios_FileReadRaw_8008393C       = 0x8008393C;  /* 6-insn raw BIOS file-read trap */
 /* Interrupt processing + shutdown (2) */
 /* RENAME 0x80083954: retired name 'irq_ProcessPending_80083954' — preserved note: critsec + alarm/IRQ state-machine processing (was proposed as kernel_alarm_cancel in batch 6) */
-sys_Shutdown_80083A18           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state cleanup */
+SsInit           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state cleanup */
 /* SPU (2) */
-spu_Reset_80083B30              = 0x80083B30;  /* 8-insn wrapper around func_800892F8 */
+/* RENAME 0x80083B30: retired name 'spu_Reset_80083B30' — preserved note: 8-insn wrapper around func_800892F8 */
 /* RENAME 0x80083B50: retired name 'spu_SetVolume_80083B50' — preserved note: 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
 
 /* === Data names landed by the ings2.c cluster audit (5) === */
@@ -533,7 +533,7 @@ rcos                                = 0x8007DFEC;
 /* Memcard (3) */
 SsSetReservedVoice                         = 0x80087F34;
 /* SPU (1) */
-spu_Init_800885AC                                = 0x800885AC;
+SpuInit                                = 0x800885AC;
 /* Kengo CPU/camera misc (6) */
 cpu_get_dist_8003032C                            = 0x8003032C;
 cpu_set_move_command_and_dir_80030A2C            = 0x80030A2C;
@@ -863,7 +863,7 @@ efc_init_phase2_randomize_80067D14                      = 0x80067D14;  /* effect
 /* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
 _SsReadDeltaValue                       = 0x80085064;  /* SEQ delta-time decoder: 7-bit varint -> ch[0x88] */
 _SsSndNextSep                         = 0x80085114;  /* per-channel state-init in g_seq_bank_table */
-spu_channel_reset_80085270                              = 0x80085270;  /* single SPU channel reset (calls spu_NotifyChannel + spu_ResetCounter) */
+/* RENAME 0x80085270: retired name 'spu_channel_reset_80085270' — preserved note: single SPU channel reset (calls spu_NotifyChannel + spu_ResetCounter) */
 /* HUD / display (5) */
 disp_init_for_mode_80077820                             = 0x80077820;  /* loads config + disp_SetFramebufferMode + clears g_satan2_gauge_state */
 disp_apply_config_with_state_80077984                   = 0x80077984;  /* config + disp_SetFramebufferMode tail (sibling of disp_init_for_mode) */
@@ -1152,8 +1152,8 @@ gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks
 snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks snd_GetSeId() list, zeroes +2 of each 0x10-byte entry until terminator */
 /* RENAME 0x8007B244: retired name 'gpu_DrawSyncCallback' — preserved note: PSX libgpu DrawSyncCallback: saves old g_gpu_draw_mode (= prev callback), sets new, returns old; debug-traces "DrawSyncCallback(%08x)" */
 /* RENAME 0x80087F64: retired name 'snd_ChannelDmaFlush' — preserved note: if g_snd_ch_status[idx]==1: spu_DmaTransfer(g_snd_ch_addr[idx]), clear status, decrement g_snd_ch_count */
-spu_TransferDirect_capped                               = 0x8008AD64;  /* spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
-spu_TransferData_capped                                 = 0x8008ADC4;  /* spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+/* RENAME 0x8008AD64: retired name 'spu_TransferDirect_capped' — preserved note: spu_TransferDirect(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
+/* RENAME 0x8008ADC4: retired name 'spu_TransferData_capped' — preserved note: spu_TransferData(a0, min(a1, 0x7EFF0)) + clears g_spu_busy if !init */
 /* RESET 0x8008A904: retired name 'coli_HitPauseKatana_3' — preserved note: coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
 
 /* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
@@ -3093,7 +3093,6 @@ se_ResetChannels_8005BDF0 = 0x8005BDF0;
 gnd_draw_texpage_2poly_8005D46C = 0x8005D46C;
 gnd_render_affine_texpage_8005E54C = 0x8005E54C;
 gnd_draw_single_texpage_80060414 = 0x80060414;
-obj_ResetReverbMode_80085F98 = 0x80085F98;
 
 /* === Medium-tier sole_caller_path helpers (2026-05-18) === */
 /* sole_caller_path proposals: function X is called ONLY by Y, so */
@@ -3410,7 +3409,7 @@ gpu_helper_8007DB20                                = 0x8007DB20;  /* first-pass 
 /* RENAME 0x8007FBBC: retired name 'md_game_helper_8007FBBC' — preserved note: first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
 /* RENAME 0x800826CC: retired name 'special_camera_helper_800826CC' — preserved note: first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
 /* RESET 0x800859F0: retired name 'tslglobalmemfree_helper_800859F0' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
-mario_helper_80085FB8                              = 0x80085FB8;  /* first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
+/* RENAME 0x80085FB8: retired name 'mario_helper_80085FB8' — preserved note: first-pass subsystem tag (mario); <-mario_getMarioVoiceData_8005BE84 */
 dispstuff_helper_80087770                          = 0x80087770;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 dispstuff_helper_80087CAC                          = 0x80087CAC;  /* first-pass subsystem tag (dispstuff); <-DispStuff_helper_800841E0;<-DispStuff_helper_80084500 */
 /* RESET 0x80088584: retired name 'tslglobalmemfree_helper_80088584' — preserved note: first-pass subsystem tag (tslglobalmemfree); <-tslGlobalMemFree_8005C2A8 */
@@ -3615,7 +3614,7 @@ battle_switch_reinit_800342A0                          = 0x800342A0;  /* on batt
 check_dodge_kawashi_80030BA8                           = 0x80030BA8;  /* scan 12-entry table D_80106A7A (stride0x64) for in-range valid object near fighter; trigger motion_shift_check_e_kawashi dodge + event dispatch */
 special_camera_check_pos_outside_ground_wrap_800451A0  = 0x800451A0;  /* thin wrapper: calls special_camera_check_pos_outside_ground_80036E34 */
 title_mv_exec2_wrapper_8005B58C                        = 0x8005B58C;  /* thin pass-through wrapper for title_mv_exec2 */
-saTan4GaugeInit_wrapper_80084948                       = 0x80084948;  /* thin pass-through wrapper for saTan4GaugeInit */
+_SsSndPlay                       = 0x80084948;  /* thin pass-through wrapper for saTan4GaugeInit */
 _SpuDataCallback                 = 0x800892D4;  /* thin pass-through wrapper for irq_AcknowledgeVblank */
 /* RENAME 0x80089A24: retired name 'coli_HitPauseKatana_2_wrapper_80089A24' — preserved note: thin pass-through wrapper for coli_HitPauseKatana_2 */
 efc_spawn_80066EC0                                     = 0x80066EC0;  /* effect-spawn wrapper: calls efc_gen_rand_particles(?,?,?) */

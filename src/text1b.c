@@ -1981,11 +1981,11 @@ extern s32 D_800EFC38;
 extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
 extern s32 SsSetReservedVoice(s32);
-extern s32 sys_Shutdown(void);
+extern s32 SsInit(void);
 extern s32 func_800858D0(s32);
 extern s32 SsUtSetReverbDepth(s32, s32);
 extern s32 SsUtSetReverbType(s32);
-extern s32 func_80085F98(void);
+extern s32 SsUtReverbOff(void);
 void func_8005B43C(void) {
     s32 *p1;
     s32 *p2;
@@ -2003,9 +2003,9 @@ void func_8005B43C(void) {
         i += 1;
         p2 += 1;
     } while (i < 0x10);
-    sys_Shutdown();
+    SsInit();
     func_800858D0(0);
-    func_80085F98();
+    SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
     SsSetReservedVoice(0);
@@ -2027,11 +2027,11 @@ void func_8005B43C(void) {
     D_800A3400 = 0;
 }
 void func_800858D0(s32);
-void func_80085F98(void);
+void SsUtReverbOff(void);
 void SsUtSetReverbType(s32);
 void SsUtSetReverbDepth(s32, s32);
 void SsEnd(void);
-void spu_Reset(void);
+void SsQuit(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
 extern s32 D_800A3408;
@@ -2040,11 +2040,11 @@ void func_8005B50C(void) {
     s32 *a0;
     s32 *v1;
     func_800858D0(0);
-    func_80085F98();
+    SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
     SsEnd();
-    spu_Reset();
+    SsQuit();
     i = 0;
     a0 = D_800EFB38;
     v1 = D_800EFC38;
@@ -2371,7 +2371,7 @@ void func_8005B6FC(void) {
     D_800EFB3C = 0;
 }
 void func_800858D0(s32);
-void func_80085F98(void);
+void SsUtReverbOff(void);
 void SsUtSetReverbType(s32);
 void SsUtSetReverbDepth(s32, s32);
 void SsVabClose(s16);
@@ -2384,7 +2384,7 @@ void obj_InitAll(void) {
     s32 *s2;
     s32 *s1;
     func_800858D0(0);
-    func_80085F98();
+    SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
     s2 = D_800EFB3C;
@@ -2602,10 +2602,10 @@ void func_8005BDF0(void) {
 }
 extern s16 D_8009AD1C[][2];
 extern s32 func_800858D0(s32);
-extern s32 func_80085F98();
+extern s32 SsUtReverbOff();
 extern s32 SsUtSetReverbType(s16);
 extern s32 SsUtSetReverbDepth(s16, s16);
-extern s32 func_80085FB8();
+extern s32 SsUtReverbOn();
 extern s32 SpuClearReverbWorkArea(s16);
 s32 func_8005BE84(s32 arg0)
 {
@@ -2620,14 +2620,14 @@ s32 func_8005BE84(s32 arg0)
   doubled = arg0 << 1;
   if (*p >= 0)
   {
-    func_80085F98();
+    SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
     result = SsUtSetReverbType(*p);
     SpuClearReverbWorkArea(*p);
     temp_a0 = doubled + 1;
     SsUtSetReverbDepth(temp_a0, temp_a0);
-    func_80085FB8();
+    SsUtReverbOn();
   }
   else
   {
@@ -2636,20 +2636,20 @@ s32 func_8005BE84(s32 arg0)
   return (s16) result;
 }
 void func_800858D0(s32);
-void func_80085F98(void);
+void SsUtReverbOff(void);
 void SsUtSetReverbType(s32);
 void SsUtSetReverbDepth(s32, s32);
 void obj_Reset(void) {
     func_800858D0(0);
-    func_80085F98();
+    SsUtReverbOff();
     SsUtSetReverbType(0);
     SsUtSetReverbDepth(0, 0);
 }
 extern s32 SsVabClose();
 extern s32 SsVabFakeBody();
 extern s32 SsVabFakeHead();
-extern s32 func_8008AD64();
-extern s32 func_8008ADC4();
+extern s32 SpuRead();
+extern s32 SpuWrite();
 extern s32 SpuSetTransferStartAddr();
 extern s32 SpuIsTransferCompleted();
 extern void func_800858D0(s32);
@@ -2659,10 +2659,10 @@ s32 func_8005BF78(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     func_800858D0(0);
     SsVabClose((s16) arg1);
     SpuSetTransferStartAddr(arg3);
-    func_8008AD64(arg0, D_800EFC38[arg1][3]);
+    SpuRead(arg0, D_800EFC38[arg1][3]);
     SpuIsTransferCompleted(1);
     SpuSetTransferStartAddr(arg2);
-    func_8008ADC4(arg0, D_800EFC38[arg1][3]);
+    SpuWrite(arg0, D_800EFC38[arg1][3]);
     SpuIsTransferCompleted(1);
     SsVabFakeHead(D_800EFC38[arg1][1], (s16) arg1, arg2);
     SsVabFakeBody((s16) arg1);

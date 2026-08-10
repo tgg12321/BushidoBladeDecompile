@@ -27,7 +27,7 @@ glabel SsVabTransBody
     /* 78D28 80088528 1080013C */  lui        $at, %hi(D_801077C8)
     /* 78D2C 8008852C 21083100 */  addu       $at, $at, $s1
     /* 78D30 80088530 C877258C */  lw         $a1, %lo(D_801077C8)($at)
-    /* 78D34 80088534 712B020C */  jal        func_8008ADC4
+    /* 78D34 80088534 712B020C */  jal        SpuWrite
     /* 78D38 80088538 21206002 */   addu      $a0, $s3, $zero
     /* 78D3C 8008853C 21104002 */  addu       $v0, $s2, $zero
     /* 78D40 80088540 01000324 */  addiu      $v1, $zero, 0x1

@@ -1,4 +1,4 @@
-glabel func_80084974
+glabel _SsSeqPlay
     /* 75174 80084974 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 75178 80084978 003C0400 */  sll        $a3, $a0, 16
     /* 7517C 8008497C 83230700 */  sra        $a0, $a3, 14
@@ -71,4 +71,4 @@ glabel func_80084974
     /* 75270 80084A70 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 75274 80084A74 0800E003 */  jr         $ra
     /* 75278 80084A78 00000000 */   nop
-endlabel func_80084974
+endlabel _SsSeqPlay

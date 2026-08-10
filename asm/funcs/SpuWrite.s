@@ -1,4 +1,4 @@
-glabel func_8008ADC4
+glabel SpuWrite
     /* 7B5C4 8008ADC4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 7B5C8 8008ADC8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 7B5CC 8008ADCC 2180A000 */  addu       $s0, $a1, $zero
@@ -25,4 +25,4 @@ glabel func_8008ADC4
     /* 7B618 8008AE18 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7B61C 8008AE1C 0800E003 */  jr         $ra
     /* 7B620 8008AE20 00000000 */   nop
-endlabel func_8008ADC4
+endlabel SpuWrite

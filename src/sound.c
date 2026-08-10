@@ -190,7 +190,7 @@ void snd_LoadSe(s32 a0) {
     func_80045694(9, snd_SeNullCallback);
 }
 
-void _SpuCallback(s32 a0) {
+void func_800469A0(s32 a0) {
     func_80045510(9, a0);
 }
 
