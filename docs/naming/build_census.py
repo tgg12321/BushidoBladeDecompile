@@ -709,6 +709,25 @@ for r in rows:
     if a in BIOS_INDEX:
         r["evidence"] = (r["evidence"] + "; " + BIOS_INDEX[a])[:1200]
 
+# The full BIOS jumptable decode — the second census evidence tier, promoted
+# 2026-08-07 from tmp/bios_decode (method: docs/naming/bios_decode/README.md).
+# Evidence-append ONLY: it corroborates or cross-checks, it never changes an
+# action or tier on its own. The two hand-written BIOS_INDEX entries above
+# carry richer prose and take precedence.
+_bd = J("docs", "naming", "bios_decode", "bios_names.csv")
+if os.path.exists(_bd):
+    with open(_bd, newline="", encoding="utf-8", errors="replace") as fh:
+        _bios_rows = {(r2.get("addr") or "").upper().replace("0X", ""): r2
+                      for r2 in csv.DictReader(fh)}
+    for r in rows:
+        a = r["address"].upper().replace("0X", "")
+        br = _bios_rows.get(a)
+        if br and a not in BIOS_INDEX:
+            r["evidence"] = (r["evidence"] +
+                             "; BIOS jumptable cross-check (%s): %s:%s -> %s"
+                             % (br.get("status", ""), br.get("table", ""),
+                                br.get("index", ""), br.get("spec_name", "")))[:1200]
+
 # ---------------------------------------------------------------- targeted overrides
 OVERRIDES = {
     "cpu_set_move_command_and_dir_for_no_action_2": dict(
@@ -721,6 +740,9 @@ OVERRIDES = {
     "game_2d_CheckLifeGaugeNoDisp": dict(
         tier="SUSPECT", origin="kengo-derived", action="RESET",
         extra="CONFIRMED MISLEAD (owner): LIBGTE 3x3 matrix-vector multiply leaf (ctc2/mvmva/swc2), not a UI predicate. inline_asm_canonical.txt:346 + auth-packets-2026-08-06.md batch 2."),
+    "_SpuCallback": dict(
+        tier="SUSPECT", origin="libscan-rejected", action="RESET",
+        extra="DEMOTED RENAME (addendum 2026-08-07): the fe40a52b wave applied _SpuCallback from the LIBSPU/S_CB island placement at 0x800469A0, but the placement fails reachability (zero j/jal callers, zero word-sized data refs to 0x800469A0 in the whole image) and the body calls func_80045510 (game text, arg 9), not InterruptCallback as S_CB's sole external ref requires. It is a dead game one-liner byte-identical to the Sony stub. docs/naming/libscan/ambiguous_resolutions.md; tools/libscan/manifest.py filter 1 reproduces the rejection mechanically. RESET to func_800469A0."),
 }
 by_name = {r["current_name"]: r for r in rows}
 for nm, ov in OVERRIDES.items():

@@ -43,6 +43,38 @@ start *and* an XDEF address:
 | `MODULE_LOCAL_STATIC` | **no** | the OBJ entry is a *local*, not an XDEF. A module-local static name is not an exported claim, so per `names-require-evidence` nothing is proposed; the local name is recorded as a note |
 | `AMBIGUOUS` | **no** | two code-identical modules match here, or one module matched two addresses — the bytes do not pick a name |
 | `IN_SPAN_NO_SYMBOL` | **no** | inside a matched module with no OBJ symbol at its entry |
+| `RESOLVED_RELOC_TARGET` | yes | was AMBIGUOUS; resolved by the reloc-target consistency filter (below) |
+
+**4. Acceptance filters (added 2026-08-07** after the ambiguous-tie post-mortem,
+`docs/naming/libscan/ambiguous_resolutions.md`):
+
+- **Reachability.** A module is only pulled into a link because something references a
+  symbol it defines. A placement with zero j/jal callers and zero word-sized data refs to
+  any of its exported addresses (from outside its own span) is game code that happens to
+  byte-match a tiny library stub. Rejection applies only OUTSIDE the main verbatim block
+  (inside it, contiguity corroborates and lui/addiu-materialized pointers — invisible to
+  the word scan — could cause false rejections). Kills LIBSPU/S_CB @0x800469A0 and
+  LIBGS/GS_008/GS_009 @0x80046B20.
+- **Reloc-target consistency.** A REL26 reloc names the external symbol a module calls;
+  the placed code's actual `jal` target is in the EXE; the callee is usually itself an
+  independently placed XDEF. A tie is resolved when exactly one candidate's verifiable
+  callees all land on their placed addresses. Resolves all seven 2026-08-07 module ties
+  mechanically (SsInit, SsQuit, SsUtReverbOff/On, SpuInit, SpuRead/Write); the PLAY
+  double placement stays undecided (its callee `_SsSeqPlay` is in the non-verbatim
+  MIDIREAD module) and rests on the documented layout argument.
+
+  The filter log is written to `reloc_checks.txt` in the output directory.
+
+Additional env overrides: `BB2_EXE` (path to `SLUS_006.63`, default `disc/`),
+`LIBSCAN_OUT` (redirect writes for sandbox/verification runs; committed inputs are still
+read from `docs/naming/libscan/`).
+
+The committed `rename_manifest.csv` additionally carries hand-annotated addendum classes
+(2026-08-07, evidence in `docs/naming/libscan/ambiguous_resolutions.md`):
+`RESOLVED_LAYOUT` (tie decided by module-span layout — the PLAY double placement),
+`RELOC_CHAIN_ID` with `evidence=libscan-reloc` (identity derived from a placed module's
+reloc/XDEF table for a module that is NOT itself byte-verbatim — `_SsSeqPlay`,
+`_SsSndStop`, `SsSeqStop`), and `REJECTED_UNREACHABLE` (placement demoted by filter 1).
 
 **Known limitation — mid-function XDEFs.** Nine XDEFs land *inside* an existing function
 rather than at its start. These are not scan errors: they are second exported entry points in

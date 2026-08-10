@@ -41,10 +41,15 @@ error. So the burden of proof sits on the *name*, not on the doubt.
 enumerates every function, attributes each name to a recorded evidence path, tiers it, and
 recommends KEEP / RESET / RENAME. Regenerable; it reads the tree rather than remembering it.
 
-**Phase 2 — the wave (in progress).** `tools/naming_wave.py` applies the RESET/RENAME rows
-across every surface where a name is a key. The single RENAME and 6 RESETs have landed. See
-"Wave progress" and the cascade warning below — the wave must be tooled and oracle-verified
-per batch, never hand-applied.
+**Phase 2 — the waves (reset wave + libscan wave LANDED; addendum PREPARED).**
+`tools/naming_wave.py` applies the RESET/RENAME rows across every surface where a name is
+a key, oracle-verified per batch, never hand-applied. Applied so far:
+
+| Wave | Commit | What landed |
+|---|---|---|
+| phase-2 reset wave | `2651e2e5` (2026-08-07) | **300 RESET + 2 RENAME** (`main`, `gpu_EnableDisplay`/`gpu_DisableDisplay` family) — the SUSPECT/Kengo purge, byte-neutral |
+| libscan wave | `fe40a52b` (2026-08-07) | **334 evidence-backed renames** from the PsyQ bit-verbatim library scan: 51 hard misnames corrected, 182 alias fixes, 73 fills, 28 style rows to bare Sony names (owner ruling). Census gained the `libscan-verbatim` -> VERIFIED tier |
+| **addendum wave** | *prepared, not yet applied* | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`); apply plan: `docs/naming/ADDENDUM-APPLY-PLAN.md` |
 
 ---
 
@@ -85,17 +90,37 @@ semantic claim** visible to a reader — because that is the claim that can misl
 Counts below are **current** — the census is regenerable and reflects the tree as it stands,
 including whatever the phase-2 wave has already applied. See "Wave progress" below.
 
-| Tier | Count | Meaning | Default action |
+| Tier | Count (pre-wave) | Meaning | Default action |
 |---|---:|---|---|
-| **VERIFIED** | 10 | The name is **fact**: an in-binary string, a hardware-defined role, or a PsyQ syscall signature. | KEEP |
+| **VERIFIED** | 10 (now ~350: libscan) | The name is **fact**: a bit-verbatim PsyQ module XDEF (`libscan-verbatim`), an in-binary string, a hardware-defined role, or a PsyQ syscall signature. | KEEP |
 | **CORROBORATED** | 86 | Body behaviour and/or call graph affirmatively agrees with the name's claim, with a citation; no contradicting evidence. | KEEP |
 | **INFERRED** | 907 | Plausible from behaviour but unreviewed, or a generic/descriptive name whose claim is weak. **Not defended — just not contradicted.** | KEEP (review) |
-| **SUSPECT** | 304 | Kengo-derived provenance, **or** a recorded contradiction, **or** the claim conflicts with observed behaviour. | **RESET** |
+| **SUSPECT** | 304 | Kengo-derived provenance, **or** a recorded contradiction, **or** the claim conflicts with observed behaviour. | **RESET** (applied by the reset wave) |
 | **AUTO** | 129 | `func_80XXXXXX` / splat-generated. No claim, no risk. | KEEP |
+
+The counts are the 2026-08-07 **pre-wave** census snapshot, kept as the campaign record;
+the census is regenerable and self-heals after each wave — **regenerate before quoting**.
 
 ### What earns VERIFIED
 
-Only three evidence kinds, all dispositive:
+**The libscan chain (added 2026-08-07, now the largest VERIFIED source).** A PsyQ 4.0
+`.LIB` module whose entire `.text` is bit-identical to a span of the shipped EXE (reloc
+fields masked) carries Sony's own `XDEF` records; `module_placement_vaddr + xdef_offset`
+is the exported symbol's BB2 address. Dispositive byte evidence, not inference. Method +
+artifacts: `tools/libscan/` + `docs/naming/libscan/` (the manifest makes every claim
+auditable). Two acceptance filters (reachability, reloc-target consistency) were added
+after the ambiguous-tie post-mortem — `docs/naming/libscan/ambiguous_resolutions.md`.
+
+**A second, independent chain — the BIOS jumptable decode** (`docs/naming/bios_decode/`,
+promoted 2026-08-07): a BIOS trampoline's `$t1` index against the A0/B0/C0 jumptable is
+machine fact; `build_census.py` appends it as a cross-check evidence line. It corrected
+`FlushCache`/`WaitEvent`/`DelDrv` in the wave and **retired the old 27-item `bios_local`
+proximity heuristic (26/27 wrong — nothing may cite it)**.
+
+(The MOVOVL.EXE overlay scan is archived at `docs/naming/movovl_scan/` — 91.2% verbatim
+Sony library text; a 264-symbol overlay map if the overlay is ever decompiled.)
+
+The three original (pre-libscan) evidence kinds, all dispositive:
 
 - **Hardware-defined role (2).** `_start` at `0x800836EC` per the executable header, with
   crt0 shape (BSS zero, `$sp`/`$gp`/`$fp` setup, `jal main`, `break 0, 1`); and `main`,
@@ -176,18 +201,17 @@ carry no contradiction, so they are INFERRED rather than SUSPECT.
 
 ## Recommended actions
 
-| Action | Rows |
-|---|---:|
-| KEEP | 1,132 |
-| **RESET** to `func_80XXXXXX` | **304** |
-| **RENAME** | 0 — the one rename has landed |
+Historical (pre-wave) totals: KEEP 1,132 / RESET 304 / RENAME 1. **Both waves have
+landed** (see the wave table above), so a fresh census run reports the residue, not these
+numbers. Outstanding as of 2026-08-07: the **addendum wave** (12 RENAMEs + 1 RESET,
+prepared — `docs/naming/ADDENDUM-APPLY-PLAN.md`) and the 9 mid-function XDEF splat
+boundary fixes (`docs/naming/libscan/boundary_fixes.md`, apply-time work, owner-gated
+sequencing in the same plan).
 
 ### Wave progress
 
-The phase-2 wave has begun landing. Applied so far: the single **RENAME**, plus **6 RESETs**
-(AUTO 123 → 129). Because the census is regenerated from the tree, applied rows simply leave
-the reset set — the numbers above shrink as the wave proceeds, and a re-run is the progress
-report. Regenerate before quoting any figure.
+Because the census is regenerated from the tree, applied rows simply leave the action
+set — a re-run is the progress report. Regenerate before quoting any figure.
 
 **The RENAME (applied):** `0x80017200`
 `cpu_set_move_command_and_dir_for_no_action_2` → **`main`**. `asm/funcs/_start.s` calls it and
@@ -199,13 +223,13 @@ function *literally named* `main` was the wave's highest-risk step — GCC's
 not assumed**: this cc1 emits byte-identical output under either name, zero `__main`
 references.
 
-### The reset set (304)
+### The reset set (304) — APPLIED (`2651e2e5`)
 
-All remaining SUSPECT rows. Resetting restores
-`func_80XXXXXX` at the address and **deletes the semantic claim**, including its
-`named_syms.txt` alias lines. The evidence for each reset is in the row's `evidence`
-column; the misname-flag text should be **preserved as a comment** on the reset symbol
-so the finding is not lost with the name.
+Was: all remaining SUSPECT rows. Resetting restores `func_80XXXXXX` at the address and
+**deletes the semantic claim**, including its `named_syms.txt` alias lines; misname-flag
+text is **preserved as a comment** on the reset symbol so the finding is not lost with
+the name (the applied wave did this — see the `/* RENAME 0x…: retired name … */`
+comments in `named_syms.txt`).
 
 ---
 
