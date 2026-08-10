@@ -1,5 +1,30 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s13 (2026-08-10, structural, driver session 8, git HEAD 4bc9eb3a)
+
+### H26 — a structural spelling on an axis never measured on the 5-chassis (named limit, sequential ifs, do-while(0) wrap, compare operand order, clamp statement order) beats floor 5 or materializes the join legitimately — KILLED (six measurements; 19 total spellings now dead on this chassis)
+Statement: s7+s12 spent the clamp-arm-dataflow and view-local axes, but
+five structural axes named by the codegen-technique catalog were never
+measured on THIS chassis: named-limit locals (s5's kill was 12-form-only
+and per-chassis relativity is twice-proven), sequential unchained ifs,
+the sanctioned do-while(0) wrapper (both plain and break forms),
+compare operand order, and clamp statement order.
+Probe: baseline re-confirm at HEAD 4bc9eb3a (5 @ 50), then six spellings,
+each honest-sandboxed in display.c context on the fixed floor-5 chassis
+(tmp/grind/func_8007C7A0/s8/structural_s13_measurements.md).
+Result: Q1 named-limit 16 @ 51 (only legitimate spelling ever to reach
+the 51-insn count — but the stream breaks; both named-limit failure
+modes now measured: CSE tie on the 12-form, allocation break here);
+Q2 sequential ifs 28 @ 49; Q3 do-while(0) plain wrap 5 @ 50 INERT (the
+wrapper's reorg.c mechanism is orthogonal to a COND_EXPR join residual);
+Q4 do-while(0) break-form 9 @ 50; Q5 reversed compare operand order
+5 @ 50 INERT (canonicalized identically); Q6 Y-before-X clamp order
+19 @ 50. Verdict: KILLED. Floor holds at 5. The structural modality is
+now measured dead across 19 spellings spanning every catalog axis for
+this shape; frontier unchanged — permuter-from-5 (single unspent
+Judge-listed axis), then the ruling-request resubmission with the
+completed packet.
+
 ## s12 (2026-08-10, structural, driver session 7, git HEAD f41b06e5)
 
 ### H25 — a structural spelling of the X clamp outside the banned family (view-local indirection, chain flattening, width change, sub-word read) reaches the join temp or beats floor 5 — KILLED (five measurements; the family boundary is now mechanistically exact)
@@ -534,4 +559,10 @@ reaches the target allocation from the stream-exact body.
 - mechanism: Target's own bytes split each clamp axis into a compare-view register and a home register (X: sign-extended $a0 vs raw $a3; Y: $a2 vs $a1); an explicit C view local reproducing that split was the one structural idea never measured on the 5-chassis, and could in principle materialize the join without any writeback construct
 - probe: Baseline re-confirm at HEAD f41b06e5 (sandbox --disable all = 5 @ 50/51), then five spellings honest-measured in display.c context on the fixed floor-5 chassis: P1 s16 view + three statement arms with real pass-through copy; P2 s16 view ternary keeping the else-arm read of the assignment target; P3 flat else-if chain; P4 s32 wide view; P5 sub-word *(s16*)&arg0 view. Log: tmp/grind/func_8007C7A0/s7/structural_s12_measurements.md
 - result: P1 5@50 (view coalesces, pass-through elided — synonym of the clean form); P2 5@50 — decisive: with conditions reading the view local the join does NOT materialize even though the innermost else still reads the target; P3 9@50; P4 13@49 (wide copy IS the sign-extension, sll/sra folds); P5 14@54 (&arg0 forces a stack home; target's 16-byte frame is phantom). New measured mechanism fact: GCC 2.7.2's COND_EXPR expansion spills to the join temp ONLY when the assignment target is read in the condition position — exactly the banned spelling, nothing adjacent
+- verdict: KILLED
+
+## [s8] A structural spelling on an axis never measured on the 5-chassis (named limit, sequential ifs, do-while(0) wrap, compare operand order, clamp statement order) beats floor 5 or materializes the three-arm $v0 join legitimately
+- mechanism: Five catalog-named structural axes had no 5-chassis measurement: named-limit locals (s5's kill was 12-form-only and per-chassis relativity of kills is twice-proven), sequential unchained ifs, the sanctioned do-while(0) wrapper in both plain and break forms, compare operand order, and clamp statement order. Any of them could in principle perturb the COND_EXPR expansion or allocation enough to reach the target's 51-insn join shape without the banned writeback dataflow.
+- probe: Baseline re-confirmed at HEAD 4bc9eb3a (candidate.c applied to src/display.c: sandbox --disable all = 5 @ build 50, target 51, 21 rules dropped, cheat-asm stripped 153); then six spellings, one region varied per probe, each honest-sandboxed in display.c context; src/display.c reverted to HEAD afterward. Log: tmp/grind/func_8007C7A0/s8/structural_s13_measurements.md
+- result: Q1 named-limit local 16 @ 51 (the only legitimate spelling ever to reach the target's 51-insn count, but the hoisted xlim pseudo wrecks both clamp regions' stream — both named-limit failure modes now measured: CSE tie on the 12-form, allocation break on the 5-chassis); Q2 sequential ifs 28 @ 49 (GCC folds the re-tested range); Q3 do-while(0) plain wrap 5 @ 50 INERT (the wrapper's NOTE_INSN_LOOP_BEG/reorg.c mechanism is orthogonal to a COND_EXPR join residual — no delay-slot/invert-jump diff exists for it to act on); Q4 do-while(0) break-form 9 @ 50 (break label restructures arms like the flat else-if); Q5 reversed compare operand order 5 @ 50 INERT (GCC 2.7.2 canonicalizes identically — zero gradient on this axis); Q6 Y-before-X clamp order 19 @ 50 (target's X-first statement order is load-bearing)
 - verdict: KILLED

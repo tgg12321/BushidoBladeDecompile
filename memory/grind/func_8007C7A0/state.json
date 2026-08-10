@@ -1,7 +1,7 @@
 {
  "func": "func_8007C7A0",
  "file": "display",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -51,22 +51,28 @@
    "floor": 5,
    "modality": "structural",
    "headline": "Structural axis on the 5-chassis spent: 5 new spellings killed with measurements; P2 proves the join temp requires the assignment target read in the CONDITION position (no view-variable escape), so th"
+  },
+  {
+   "session": 8,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Structural s13: six more spellings measured on the 5-chassis (named-limit 16@51, sequential-ifs 28@49, do-while(0) wrap inert 5@50, break-form 9@50, compare-order inert 5@50, clamp-order-swap 19@50) \u2014"
   }
  ],
  "frontier": [
   {
    "hypothesis": "Permuter-from-5-form finds a legitimately-spelled join dataflow (the single unspent Judge-mandated axis)",
-   "mechanism": "Random + directed permutation from the 5-form basin is the only search mode never run on this chassis; every conceived spelling is now measured dead (s7's 8 + s12's 5), but the permuter can reach unconceived ones. Any in-family 0 gets banked to rejected/, never submitted \u2014 the campaign's value is either a genuinely novel legitimate dataflow or the completed exhaustion record",
+   "mechanism": "Random + directed permutation from the 5-form basin is the only search mode never run on this chassis; every conceived spelling is now measured dead (s7's 8 + s12's 5 + s13's 6 = 19), but the permuter can reach unconceived ones. Any in-family 0 gets banked to rejected/, never submitted \u2014 the campaign's value is either a genuinely novel legitimate dataflow or the completed exhaustion record.",
    "next_probe": "tools/permuter_campaign.py seeded from memory/grind/func_8007C7A0/candidate.c in a fresh workspace; re-measure every novel find honestly in display.c context (s5 TU-sensitivity warning applies); run to the fresh-seed stopping rule; vet finds against the banned family before belief"
   },
   {
    "hypothesis": "Ruling-request resubmission with the completed exhaustion packet (only AFTER the permuter axis is spent \u2014 the Judge constraint is explicit)",
-   "mechanism": "All Judge-listed axes will then be demonstrably spent: census negative (s8), two-var-dataflow (s8), synthesis (s11), structural view-split closure (s12), permuter-from-5 (next). The s12 P2 mechanism fact sharpens the packet: the ONLY C spelling reaching the bytes is the published-reference ternary with the target self-read in condition position \u2014 there are no legitimate neighbors",
+   "mechanism": "All Judge-listed axes will then be demonstrably spent: census negative (s8), two-var-dataflow (s8), synthesis (s11), structural closure (s12+s13, 19 spellings), permuter-from-5 (next). The packet's sharpest facts: the ONLY C spelling reaching the bytes is the published-reference ternary with the target self-read in condition position (s12 P2), and the best legitimate spelling reaching the 51-insn count loses 16-to-5 against the floor (s13 Q1).",
    "next_probe": "Emit ruling-request asking precisely: does the owner accept the published PsyQ get_cs reference text with transliterated limits (which produces the join-temp writeback naturally) as the original source, or is the function owner-accepted-incomplete at floor 5?"
   },
   {
    "hypothesis": "Twin func_8007C86C reproduces the same floor-5 chassis and the same family ban (constant 0xE4000000)",
-   "mechanism": "Identical pattern, verbatim same library module; check the twin's own wide-arm mask in its target bytes before assuming symmetry",
+   "mechanism": "Identical pattern, verbatim same library module; check the twin's own wide-arm mask in its target bytes before assuming symmetry.",
    "next_probe": "When the twin is dispatched: apply candidate.c with the constant swapped; do not spend this function's sessions on it"
   }
  ],

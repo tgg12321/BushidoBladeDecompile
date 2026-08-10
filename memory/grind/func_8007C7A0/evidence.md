@@ -1,5 +1,59 @@
 # Evidence bank — func_8007C7A0
 
+## s13 (2026-08-10, STRUCTURAL, driver session 8, git HEAD 4bc9eb3a) — six more structural spellings measured (4 kills, 2 inert synonyms); the 5-chassis structural axis is now dead across 19 spellings; floor holds at 5
+
+- **Baseline re-proven at HEAD 4bc9eb3a.** candidate.c applied to
+  src/display.c: sandbox --disable all = 5, target 51, build 50, 21 rules
+  dropped, cheat-asm stripped 153. Same numbers as s11/s12.
+- **Six spellings measured, one region varied per probe, honest sandbox in
+  display.c context** (tmp/grind/func_8007C7A0/s8/structural_s13_measurements.md):
+  - Q1 named-limit local ON THE 5-CHASSIS (`s16 xlim = D_8009BE78 - 1;`
+    hoisted, X clamp through xlim): **16 @ 51** — KILLED. Notable: it reaches
+    the target insn COUNT (51, the only probe ever to do so besides the
+    banned family) but wrecks the stream — the hoisted xlim pseudo
+    restructures both clamp regions' allocation. The s5 named-limit kill was
+    measured only on the 12-form (CSE tie); this closes the axis on the
+    5-chassis in a different failure mode. rejected/named-limit-local-5chassis.c.
+  - Q2 sequential unchained ifs (zero-clamp then independent upper re-test):
+    **28 @ 49** — KILLED; GCC folds the re-tested range, two insns short.
+    rejected/sequential-ifs-x-clamp.c.
+  - Q3 do-while(0) plain wrap around the verbatim nested-if X clamp:
+    **5 @ 50** — INERT, byte-score-identical to baseline. The sanctioned
+    wrapper's mechanism (NOTE_INSN_LOOP_BEG → LABEL_OUTSIDE_LOOP_P →
+    reorg.c relax_delay_slots suppression) has no diff to act on here: the
+    residual is a missing COND_EXPR join insn, not a delay-slot/invert-jump
+    artifact. Measured as a mechanism probe only; never a submission
+    candidate (its prerequisites would not be met and its mechanism is
+    orthogonal).
+  - Q4 do-while(0) break-form (negative arm breaks out): **9 @ 50** — KILLED;
+    the break-target label restructures the arms like the flat else-if
+    (s12 P3 = 9). rejected/dowhile0-break-form-x-clamp.c (documents both
+    do-while variants).
+  - Q5 compare operand order reversed (`arg0 > (D_8009BE78 - 1)`): **5 @ 50**
+    — INERT; GCC 2.7.2 canonicalizes to the identical slt form. The
+    compare-operand-order axis has zero gradient on this function.
+  - Q6 clamp statement order swapped (full Y clamp before X clamp):
+    **19 @ 50** — KILLED; target's X-first order is load-bearing (limit
+    loads and Y placement all shift). rejected/clamp-order-swap-y-first.c.
+- **Interpretation.** With s7 (8 spellings), s12 (5), and this session (6),
+  19 distinct structural spellings of the 5-chassis are measured dead across
+  every structural axis the codegen-technique catalog names for this shape:
+  clamp-arm dataflow, view locals (s16/s32/sub-word), chain shape (nested /
+  flat / sequential / break-form), wrapper (do-while(0) both forms), named
+  limits (now BOTH chassis), compare operand order, and clamp statement
+  order. None materializes the three-arm $v0 join + `move a3,v0` writeback
+  legitimately; the s12 P2 mechanism fact (join requires the assignment
+  target read in the CONDITION position — the banned spelling exactly)
+  survives six more attempts to falsify it. The structural modality has
+  nothing left to measure on this function.
+- **Disposition.** Floor 5 unchanged. src/display.c reverted to HEAD after
+  measurement; candidate.c unchanged (still the floor-5 body). Frontier
+  unchanged and sharpened: permuter-from-5 is the single unspent
+  Judge-listed axis; after it, the ruling-request resubmission with the
+  completed exhaustion packet (this session's Q1 16@51 measurement belongs
+  in that packet — it is the closest any legitimate spelling has come to
+  the target's 51-insn shape, and it still loses by 11).
+
 ## s12 (2026-08-10, STRUCTURAL, driver session 7, git HEAD f41b06e5) — the structural axis on the 5-chassis is spent; the join's trigger condition is now mechanistically exact; floor holds at 5
 
 - **Baseline re-proven.** candidate.c applied to src/display.c at HEAD
@@ -971,3 +1025,13 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s7] Flat else-if chain restructures the branch region (9@50) — the nested-if shape is load-bearing
 
 - [s7] src/display.c reverted to HEAD after measurement; candidate.c unchanged (floor-5 body); two new rejected/ banks: view-var-condition-indirection.c, wide-and-subword-view-locals.c
+
+- [s8] Floor 5 re-proven at HEAD 4bc9eb3a this session: sandbox --disable all = 5, target 51, build 50, rules_dropped 21, cheat_asm_stripped 153 (candidate.c body, applied then reverted)
+
+- [s8] 19 distinct structural spellings of the 5-chassis are now measured dead across every catalog axis for this shape: clamp-arm dataflow (s7, 8 spellings), view locals s16/s32/sub-word + chain shape (s12, 5), and named limits / sequential ifs / do-while(0) both forms / compare order / clamp order (s13, 6)
+
+- [s8] Q1's 16@51 is the closest any legitimate spelling has come to the target's 51-insn shape and it still loses by 11 — this measurement belongs in the eventual ruling-request exhaustion packet
+
+- [s8] The s12 P2 mechanism fact (the join temp materializes only when the assignment target is read in the CONDITION position, i.e. exactly the banned spelling) survives six more falsification attempts
+
+- [s8] src/display.c reverted to git HEAD after all measurements; candidate.c unchanged (floor-5 body); four new rejected/ forms banked: named-limit-local-5chassis.c, sequential-ifs-x-clamp.c, dowhile0-break-form-x-clamp.c, clamp-order-swap-y-first.c
