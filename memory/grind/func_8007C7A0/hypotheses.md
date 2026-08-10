@@ -1,5 +1,34 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s12 (2026-08-10, structural, driver session 7, git HEAD f41b06e5)
+
+### H25 — a structural spelling of the X clamp outside the banned family (view-local indirection, chain flattening, width change, sub-word read) reaches the join temp or beats floor 5 — KILLED (five measurements; the family boundary is now mechanistically exact)
+Statement: the s7 X-clamp sweep held the rest of the chassis fixed and
+covered 8 spellings, but never tried routing the clamp's COMPARE READS
+through a distinct view local (the two-register compare-view/home split
+that target's own Y clamp exhibits), nor the flat else-if chain, nor a
+wide/sub-word view. One of these could materialize the three-arm $v0
+join + `move a3,v0` writeback without any banned writeback construct.
+Probe: baseline re-confirm then five spellings, each honest-sandboxed in
+display.c context on the floor-5 chassis
+(tmp/grind/func_8007C7A0/s7/structural_s12_measurements.md):
+P1 s16 view + statement arms (real pass-through `arg0 = x;`), P2 s16
+view + ternary with else-arm read of the assignment target, P3 flat
+else-if chain, P4 s32 wide view, P5 `*(s16 *)&arg0` sub-word view.
+Result: P0 baseline 5@50 (re-proven at HEAD f41b06e5); P1 5@50 (view
+coalesces, pass-through elided — synonym of the clean form); P2 5@50 —
+THE DECISIVE KILL: with the self-read still in the innermost else but
+the conditions reading the view local, the join does NOT materialize;
+P3 9@50; P4 13@49; P5 14@54. NEW MECHANISM FACT (measured): GCC 2.7.2's
+COND_EXPR expansion materializes the join temp ONLY when the assignment
+target is read in the CONDITION position — the exact banned-ternary
+spelling — not from an else-arm target read. Consequence: there is no
+"conditions read a copy" escape; the 0-reaching spelling space remains
+exactly the banned family with no new members. Structural axis on the
+5-chassis is spent. Verdict: KILLED. Floor holds at 5. Frontier
+unchanged: permuter-from-5 (the single unspent Judge-listed axis), then
+the ruling-request resubmission with the completed packet.
+
 ## s11 (2026-08-10, synthesis, driver session 6 respawn, git HEAD 69750c7c)
 
 ### H24 — the s7 floor-5 form still measures 5 at current HEAD (post-ternary-ban), so the honest floor survives the reverts and re-bans intact — CONFIRMED
@@ -500,3 +529,9 @@ reaches the target allocation from the stream-exact body.
 - probe: Applied the recovered body to src/display.c, ran sandbox func_8007C7A0 --disable all at HEAD 69750c7c, reverted src/display.c after measurement
 - result: score 5, target_insns 51, build_insns 50, rules_dropped 21, cheat_asm_stripped 153 (artifact tmp/grind/func_8007C7A0/s6/sandbox_floor5_synthesis.json)
 - verdict: CONFIRMED
+
+## [s7] A structural spelling of the X clamp outside the banned family (view-local indirection of the compare reads, flat else-if chain, wide s32 view, sanctioned sub-word *(s16*)& view) reaches the three-arm $v0 join + move a3,v0 writeback or beats floor 5
+- mechanism: Target's own bytes split each clamp axis into a compare-view register and a home register (X: sign-extended $a0 vs raw $a3; Y: $a2 vs $a1); an explicit C view local reproducing that split was the one structural idea never measured on the 5-chassis, and could in principle materialize the join without any writeback construct
+- probe: Baseline re-confirm at HEAD f41b06e5 (sandbox --disable all = 5 @ 50/51), then five spellings honest-measured in display.c context on the fixed floor-5 chassis: P1 s16 view + three statement arms with real pass-through copy; P2 s16 view ternary keeping the else-arm read of the assignment target; P3 flat else-if chain; P4 s32 wide view; P5 sub-word *(s16*)&arg0 view. Log: tmp/grind/func_8007C7A0/s7/structural_s12_measurements.md
+- result: P1 5@50 (view coalesces, pass-through elided — synonym of the clean form); P2 5@50 — decisive: with conditions reading the view local the join does NOT materialize even though the innermost else still reads the target; P3 9@50; P4 13@49 (wide copy IS the sign-extension, sll/sra folds); P5 14@54 (&arg0 forces a stack home; target's 16-byte frame is phantom). New measured mechanism fact: GCC 2.7.2's COND_EXPR expansion spills to the join temp ONLY when the assignment target is read in the condition position — exactly the banned spelling, nothing adjacent
+- verdict: KILLED

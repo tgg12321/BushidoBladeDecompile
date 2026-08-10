@@ -1,8 +1,8 @@
 {
  "func": "func_8007C7A0",
  "file": "display",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -45,23 +45,29 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "Synthesis: floor 5 re-proven at HEAD; poisoned candidate.c (banned ternary) replaced with the legitimate s7 form; frontier reset to the one unspent Judge axis (permuter-from-5), then ruling resubmissi"
+  },
+  {
+   "session": 7,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Structural axis on the 5-chassis spent: 5 new spellings killed with measurements; P2 proves the join temp requires the assignment target read in the CONDITION position (no view-variable escape), so th"
   }
  ],
  "frontier": [
   {
    "hypothesis": "Permuter-from-5-form finds a legitimately-spelled join dataflow (the single unspent Judge-mandated axis)",
-   "mechanism": "Random + directed permutation from the 5-form basin is the only search mode never run on this chassis; every conceived spelling is measured dead, but the permuter can reach unconceived ones. Any in-family 0 it finds gets banked to rejected/, never submitted - the campaign's value is either a genuinely novel legitimate dataflow or the completed exhaustion record.",
-   "next_probe": "tools/permuter_campaign.py seeded from candidate.c in a fresh workspace; re-measure every novel find in display.c context (s5 TU-sensitivity warning applies); run to the fresh-seed stopping rule; vet finds against the banned family before belief."
+   "mechanism": "Random + directed permutation from the 5-form basin is the only search mode never run on this chassis; every conceived spelling is now measured dead (s7's 8 + s12's 5), but the permuter can reach unconceived ones. Any in-family 0 gets banked to rejected/, never submitted \u2014 the campaign's value is either a genuinely novel legitimate dataflow or the completed exhaustion record",
+   "next_probe": "tools/permuter_campaign.py seeded from memory/grind/func_8007C7A0/candidate.c in a fresh workspace; re-measure every novel find honestly in display.c context (s5 TU-sensitivity warning applies); run to the fresh-seed stopping rule; vet finds against the banned family before belief"
   },
   {
-   "hypothesis": "Ruling-request resubmission with the completed exhaustion packet (only AFTER the permuter axis is spent - the Judge constraint is explicit)",
-   "mechanism": "All Judge-listed axes will then be demonstrably spent: census negative (s8), two-var-dataflow (s8), synthesis (s11), permuter-from-5 basin (next session), plus the s7 uniqueness campaign and s8 published-reference provenance with cc1psx cross-check.",
+   "hypothesis": "Ruling-request resubmission with the completed exhaustion packet (only AFTER the permuter axis is spent \u2014 the Judge constraint is explicit)",
+   "mechanism": "All Judge-listed axes will then be demonstrably spent: census negative (s8), two-var-dataflow (s8), synthesis (s11), structural view-split closure (s12), permuter-from-5 (next). The s12 P2 mechanism fact sharpens the packet: the ONLY C spelling reaching the bytes is the published-reference ternary with the target self-read in condition position \u2014 there are no legitimate neighbors",
    "next_probe": "Emit ruling-request asking precisely: does the owner accept the published PsyQ get_cs reference text with transliterated limits (which produces the join-temp writeback naturally) as the original source, or is the function owner-accepted-incomplete at floor 5?"
   },
   {
    "hypothesis": "Twin func_8007C86C reproduces the same floor-5 chassis and the same family ban (constant 0xE4000000)",
-   "mechanism": "Identical pattern, verbatim same library module; check the twin's own wide-arm mask in its target bytes before assuming symmetry.",
-   "next_probe": "When the twin is dispatched: apply candidate.c with the constant swapped; do not spend this function's sessions on it."
+   "mechanism": "Identical pattern, verbatim same library module; check the twin's own wide-arm mask in its target bytes before assuming symmetry",
+   "next_probe": "When the twin is dispatched: apply candidate.c with the constant swapped; do not spend this function's sessions on it"
   }
  ],
  "judge_constraints": [

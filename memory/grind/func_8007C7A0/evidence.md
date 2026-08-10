@@ -1,5 +1,44 @@
 # Evidence bank — func_8007C7A0
 
+## s12 (2026-08-10, STRUCTURAL, driver session 7, git HEAD f41b06e5) — the structural axis on the 5-chassis is spent; the join's trigger condition is now mechanistically exact; floor holds at 5
+
+- **Baseline re-proven.** candidate.c applied to src/display.c at HEAD
+  f41b06e5: sandbox --disable all = 5, target 51, build 50, 21 rules
+  dropped, cheat-asm stripped 153. Same numbers as s11.
+- **Five structural spellings measured, all kills**
+  (tmp/grind/func_8007C7A0/s7/structural_s12_measurements.md): the sweep
+  targeted the one structural idea never measured on this chassis — target's
+  own bytes split each axis into a COMPARE VIEW register and a HOME register
+  (X: sign-extended $a0 vs raw $a3; Y: $a2 vs $a1), so the probes gave the
+  X clamp an explicit view local and varied its width/access, plus the flat
+  chain shape. P1 s16 view + statement arms + real pass-through copy: 5@50
+  (view coalesces into arg0, pass-through elided — exact synonym of the
+  clean 5-form). P2 s16 view + ternary keeping the else-arm read of the
+  assignment target: 5@50. P3 flat else-if chain: 9@50. P4 s32 wide view:
+  13@49 (the wide copy IS the sign-extension; explicit sll/sra folds).
+  P5 sub-word `*(s16 *)&arg0` view (sanctioned family): 14@54 (&arg0
+  forces a stack home; target's 16-byte frame is phantom, storeless).
+- **The P2 mechanism fact (new, measured).** The banned published-ternary
+  0-form reads the assignment target in the conditions AND the innermost
+  else. P2 keeps the else-arm target read but moves the condition reads to
+  the view local — and the three-arm $v0 join + `move a3,v0` writeback does
+  NOT materialize (identical score/insn-count to the clean baseline; not
+  objdump-diffed, score+count parity only). So GCC 2.7.2's COND_EXPR
+  expansion spills to the join temp only when the assignment TARGET is
+  read in the CONDITION position — precisely the banned spelling and
+  nothing adjacent to it. There is no view-variable escape hatch, and
+  equally no new banned-family member: the boundary between "clean forms
+  that fold to 50 insns" and "the banned self-read ternary/writeback
+  family that reaches 51" is exact and closed.
+- **Disposition.** Floor 5 unchanged. Structural modality on the 5-chassis
+  is now demonstrably spent (s7's 8 spellings + s12's 5). The single
+  unspent Judge-listed axis remains permuter-from-5; after it, the
+  ruling-request resubmission with the completed exhaustion packet (the
+  s12 kills belong in that packet — they close the "did you try the
+  two-register view split the target's own Y side shows?" question).
+  src/display.c reverted to HEAD after measurement; candidate.c unchanged
+  (still the floor-5 body).
+
 ## s11 (2026-08-10, SYNTHESIS, driver session 6 respawn, git HEAD 69750c7c) — full-ledger merge after the ternary-family layer-1 FAIL; floor 5 re-proven at HEAD; candidate.c de-poisoned; frontier reset to the one unspent Judge axis
 
 - **Context.** The driver banked the layer-1 FAIL on the s8-s10 ternary
@@ -922,3 +961,13 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s6] Ruling packet is fully evidenced in the ledger once the permuter axis is spent: census negative + two-var-dataflow measurements + eight-spelling uniqueness + published-Sony-text provenance with cc1psx instruction-identity + the permuter-from-5 basin record.
 
 - [s6] Process warnings banked: no vet-wording arms race (s9/s10 token-scrubbing is itself banned); m1's byte-proven 0 is not a submission path; driver briefs number every respawn 'session 6' while ledger-internal numbering is s0-s11, scratch stays tmp/grind/func_8007C7A0/s6/.
+
+- [s7] Floor 5 re-proven THIS session at HEAD f41b06e5: candidate.c body in display.c context, sandbox --disable all = 5, target 51, build 50, rules_dropped 21, cheat_asm_stripped 153
+
+- [s7] The 0-reaching spelling space is closed exactly at the previously-banned family: view-variable indirection of the ternary's condition reads kills the join (P2, 5@50), so there is no 'conditions read a copy' escape spelling and also no new banned-family member
+
+- [s7] The two-register compare-view/home split visible in target's own Y clamp does NOT transfer to C view locals on the X side: s16 view coalesces (5@50), s32 view collapses the sign-extension (13@49), sub-word view forces a stack home (14@54)
+
+- [s7] Flat else-if chain restructures the branch region (9@50) — the nested-if shape is load-bearing
+
+- [s7] src/display.c reverted to HEAD after measurement; candidate.c unchanged (floor-5 body); two new rejected/ banks: view-var-condition-indirection.c, wide-and-subword-view-locals.c
