@@ -87,3 +87,21 @@ exactly as the main EXE matches `62efab4f…`.
   attributed to C sub-TUs.
 - The m2c drafts in `movovl/src/draft/` are NOT wired into any build and
   must not be until the all-asm build byte-matches.
+
+## First all-asm build attempt — 2026-08-10 (RED, diagnosed, not yet matched)
+
+`movovl/Makefile` landed (standalone `make -C movovl`; asm→ld→objcopy;
+`sha1sum -c movovl.sha1` gate; the .header section is linked so objcopy
+yields the full file — `tools/make_psexe.py` is NOT needed).
+
+Result: **124,944 bytes vs 124,928 (16 extra), first divergence at ROM
+0x88D** — the jumptable-alignment loose end splat flagged at 0x88C. Every
+jumptable pointer reads +4 vs original (0x801DA130→...34), i.e. FOUR 4-byte
+paddings are inserted in early .text/.rodata, shifting all downstream vrams.
+Next debug step: diff `build/movovl.map` against the scan's placements.json
+to locate the four insertion points (likely per-object section alignment —
+ld SUBALIGN(2) vs 8-byte-aligned object sections, or `.align` directives at
+module boundaries). The venv splat import fix (n64img, pygfxd, crunch64) is
+done — splat 0.41.0 imports clean for future re-splits.
+
+The overlay remains a scaffold: no completion claims, drafts stay unwired.
