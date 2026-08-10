@@ -1,0 +1,5 @@
+# The overlay binary is a disc asset — not committed (same policy as disc/).
+# Apply-time sessions copy it from disc/STR/MOVOVL.EXE (SHA1
+# a1307dbebefca0b057e02509207d00f6225e13e4, 124,928 bytes).
+MOVOVL.EXE
+build/

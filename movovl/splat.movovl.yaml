@@ -1,0 +1,116 @@
+# splat config for MOVOVL.EXE — the FMV/MDEC playback overlay (SLUS-00663).
+# Parallel scaffolding to the main-EXE splat.yaml; nothing here touches the
+# main build. Run from the repo root:  python -m splat split movovl/splat.movovl.yaml
+# The binary movovl/MOVOVL.EXE is gitignored — copy it from disc/STR/MOVOVL.EXE.
+name: Bushido Blade 2 (USA) MOVOVL.EXE overlay
+sha1: a1307dbebefca0b057e02509207d00f6225e13e4
+options:
+  basename: movovl
+  target_path: MOVOVL.EXE
+  elf_path: build/movovl.elf
+  base_path: .   # relative to this yaml -> movovl/
+  platform: psx
+  compiler: PSYQ
+
+  asm_path: asm
+  src_path: src
+  build_path: build
+
+  ld_script_path: movovl.ld
+
+  find_file_boundaries: False
+  gp_value: 0x801F65D0
+
+  o_as_suffix: True
+  use_legacy_include_asm: False
+
+  section_order: [".rodata", ".text", ".data", ".bss"]
+  auto_link_sections: [".data", ".rodata", ".bss"]
+
+  symbol_addrs_path:
+    - symbol_addrs.movovl.txt
+
+  undefined_funcs_auto_path: undefined_funcs_auto.movovl.txt
+  undefined_syms_auto_path: undefined_syms_auto.movovl.txt
+
+  subalign: 2
+
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+
+segments:
+  - name: header
+    type: header
+    start: 0x0
+
+  - name: movovl
+    type: code
+    start: 0x800
+    vram: 0x801D8800
+    subsegments:
+      - [0x800, rodata, rodata_800]      # strings/constants before .text (PsyQ order)
+      - [0x119C, asm, game]               # game code: 0x801D919C..0x801DA094 (16 funcs)
+      - [0x2094, asm, libc2_printf]
+      - [0x20D0, asm, libc2_prnt]
+      - [0x2758, asm, libc2_ctype]
+      - [0x27B8, asm, libc2_memchr]
+      - [0x2808, asm, libc2_putchar]
+      - [0x28BC, asm, libapi_a53]
+      - [0x28CC, asm, libc2_strlen]
+      - [0x28FC, asm, libpress_libpress]
+      - [0x305C, asm, libpress_vlc]
+      - [0x33F4, asm, libgpu_ext]
+      - [0x36A4, asm, libgpu_prim]
+      - [0x3D98, asm, libgpu_sys]
+      - [0x6E2C, asm, libapi_c73]
+      - [0x6E3C, asm, libc2_memcpy]
+      - [0x6E70, asm, libcd_cdrom]
+      - [0x6EA0, asm, libcd_event]
+      - [0x6FB0, asm, libapi_a07]
+      - [0x6FC0, asm, libcd_sys]
+      - [0x774C, asm, libcd_bios]
+      - [0x8F24, asm, libc2_puts]
+      - [0x8F74, asm, libcd_cdread]
+      - [0x97F0, asm, libcd_cdread2]
+      - [0x98A4, asm, libcd_c_002]
+      - [0x9904, asm, libcd_c_003]
+      - [0x9988, asm, libapi_a36]
+      - [0x9998, asm, libapi_a37]
+      - [0x99A8, asm, libcd_c_004]
+      - [0x9A98, asm, libcd_c_005]
+      - [0x9B20, asm, libcd_c_007]
+      - [0x9BD8, asm, libcd_c_008]
+      - [0x9C14, asm, libcd_c_009]
+      - [0x9CD8, asm, libcd_c_010]
+      - [0x9CF8, asm, libcd_c_011]
+      - [0xA858, asm, libetc_pad]
+      - [0xA8F0, asm, libapi_a22]
+      - [0xA900, asm, libapi_a91]
+      - [0xA910, asm, libapi_pad]
+      - [0xAC30, asm, libapi_a18]
+      - [0xAC40, asm, libapi_a19]
+      - [0xAC50, asm, libapi_a20]
+      - [0xAC60, asm, libapi_a21]
+      - [0xAC70, asm, libapi_l02]
+      - [0xAC80, asm, libapi_l03]
+      - [0xAC90, asm, libapi_patch]
+      - [0xAD20, asm, libapi_c68]
+      - [0xAD30, asm, libapi_sendpad]
+      - [0xADF0, asm, libapi_chclrpad]
+      - [0xAE50, asm, libetc_vsync]
+      - [0xB034, asm, libapi_l10]
+      - [0xB044, asm, libetc_intr]
+      - [0xB754, asm, libapi_c114]
+      - [0xB774, asm, libapi_a23]
+      - [0xB784, asm, libapi_a24]
+      - [0xB794, asm, libapi_a25]
+      - [0xB7A4, asm, libc2_setjmp]
+      - [0xB824, asm, libetc_intr_vb]
+      - [0xB94C, asm, libetc_intr_dma]
+      - [0xBBF4, asm, libetc_vmode]
+      - [0xBC1C, asm, libds_dscb]
+      - [0xBC68, data, data_C268]         # lib .rodata/.data tail (VLC tables, strings, sdata)
+
+  - [0x1E800]
