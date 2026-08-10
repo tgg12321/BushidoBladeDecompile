@@ -1,53 +1,54 @@
-/* func_8007C7A0 — BEST KNOWN FORM (s4, 2026-08-08): sandbox --disable all == 12,
- * build_insns 51/51 STREAM-EXACT.
+/* func_8007C7A0 — MATCHED FORM (s6, 2026-08-10): sandbox --disable all == 0,
+ * build_insns 51/51, 21 rules dropped, cheat-asm stripped. THIS IS THE BODY
+ * IN src/display.c AS OF THE s6 SESSION (candidate-ready).
  *
- * This supersedes BOTH prior banked forms:
- *   - old candidate.c        (12, build 50 — non-stream-exact, park insn missing)
- *   - candidate_stream51.c   (15, build 51 — stream-exact)
- * This form is simultaneously stream-exact AND at the overall floor: every one
- * of the 51 instructions matches target in opcode/operand-shape/order; the 12
- * masked-Levenshtein diffs are pure register renames on 5 roles:
- *   carrier(x)     a2 -> a3   (pseudo 76)
- *   xlim-save      v1 -> a2   (pseudo 83)
- *   sxt(arg1)      v1 -> a2   (pseudo 92)
- *   lo             a0 -> v0   (pseudo 79)
- *   const 0xE300   v0 -> a0   (pseudo 81)
- * Roles ALREADY CORRECT in this form (new vs stream51): X-join temp tx -> $v0
- * (the assignment s3's T1 declared unreachable — see below), ylim-save -> $a0.
+ * THE BREAKTHROUGH (forensics session): the entire 5-role residual knot of the
+ * 12-form chassis dissolved once the tail was restructured to PER-ARM RETURNS
+ * with per-arm block-scoped hi/lo locals and split-init statement style.
+ * Root-cause chain, ground-truthed with the instrumented cc1
+ * (ALLOCDBG/QTYDBG/greg/lreg dumps, tmp/grind/func_8007C7A0/s6/):
  *
- * THE TWO LEVERS (both permuter-found s4, both semantically clean, both from
- * the frozen-list "variable reuse for codegen control" family — SOTN-sanctioned;
- * see the s4 evidence.md entry for the full cheat-vet discussion + the open
- * FAKE-annotation question that must be resolved before any candidate-ready):
- *   L1: tx (dead after `x = tx;`) reused as the dispatch discriminant:
- *       `tx = (u32)(D_8009BE74 - 1); ... if (tx >= 2U)`.
- *       Merging the dispatch pseudo into s16 tx changes the RTL pseudo GRAPH
- *       (not just prefs/conflicts of the old graph) -> X-join lands $v0.
- *       Equivalence: D in 0..255 => D-1 in [-1,254], all representable in s16;
- *       (u32)tx >= 2U identical to (u32)(D-1) >= 2U for every value.
- *       s32 holders (pkt) do NOT work: pkt-dispatch = 15, or breaks stream (50).
- *   L2: Y sign check staged through hi (dead until its real def):
- *       `hi = arg1; if (hi >= 0)` -> ylim-save lands $a0. Staging through pkt
- *       instead = 15; hi is load-bearing.
- * IMPORTANT: T1 (s3) is NOT refuted — it correctly closed perturbations of the
- * stream51 9-pseudo graph, but pseudo-MERGING spellings build a different graph
- * outside its vocabulary. The s3 closure does not bound this spelling class.
+ * 1. In every shared-tail spelling, the 0xE3000000 constant-holder pseudo is a
+ *    single-block qty in the join block; local-alloc's ascending scan hands it
+ *    $v0 (nothing hard is live there), and global.c's conflict walk then
+ *    records hard_conf[lo] ∋ $v0 — the exact hard conflict s3's THEOREM T1
+ *    measured (hard_conf[79] ∋ 2). lo can never take $v0 on ANY shared-tail
+ *    graph. T1 was correct but its premise is a property of the SHARED-TAIL
+ *    chassis class, not of the function.
+ * 2. The 12-form additionally fused sxt(y) and the hi-mask into one pseudo
+ *    (hi staging, L2), whose target registers differ ($a2 vs $v1) — GCC 2.7.2
+ *    never splits live ranges, so the 12-form could NEVER byte-match. Its
+ *    floor 12 was a masked-metric local optimum on a dead-end chassis.
+ * 3. Per-arm returns make lo/hi/const per-arm block-locals: lo dies in the
+ *    return-value insn (dest = hard $2) so the sugg pass pins lo→$v0; hi takes
+ *    $v1; const then finds 2,3 busy and lands $a0 — the target trio. jump2
+ *    cross-jumps the two identical lui/or/or tails into one (51 insns), and
+ *    reorg fills the dispatch delay slot with the narrow arm's first insn
+ *    (andi $v1,$a1,0xFFF) — exactly target's stream.
+ * 4. With the arm expressions per-arm, the carrier/xlim/sxt knot ALSO
+ *    dissolves: the arm-locals occupy $v0/$v1/$a0 inside both arms, so the
+ *    carrier (live across the arms) conflicts with hard 2,3,4 and ascending
+ *    scan lands it $a3; xlim-save→$a2, sxt(y)→$a2, ylim-save→$a0, sxt(x)→$a0
+ *    all fall out naturally (ground truth: s6/c7a0_p3.model.json, sim 10/10).
+ * 5. Dispatch sense: `if ((u32)(D_8009BE74-1) < 2U) { narrow } else { wide }`
+ *    emits sltiu + bnez→narrow-label with the wide arm inline — target's
+ *    layout. (The >=2U/wide-first spelling emits beq with arms swapped: 7.)
  *
- * Verify after applying to src/display.c (replace the whole body):
- *   & tools/wteng.ps1 main sandbox func_8007C7A0 --disable all   # expect 12, 51/51
+ * No FAKE annotations: every statement maps to emitted instructions; no dead
+ * stores, no UB, no reuse levers needed (the s4 L1 tx-dispatch-reuse and L2
+ * hi-staging levers are GONE — they were metric-trap artifacts of the
+ * shared-tail chassis).
  *
- * Twin: func_8007C86C (0xE4000000) — same levers should transfer; unverified.
- * Provenance: PsyQ 4.0 LIBGPU SYS: get_cs (static) — verbatim-linked Sony object
- * (census 2026-07-09); ground-up C (no published reference matches this build).
+ * Twin: func_8007C86C — same body with 0xE4000000; expect the same 0.
  */
 
+/* PsyQ 4.0 LIBGPU SYS: get_cs (static) — verbatim-linked Sony object
+ * (census 2026-07-09); C ref: ground-up reconstruction (no published
+ * reference matches this library build). */
 s32 func_8007C7A0(s16 arg0, s16 arg1)
 {
     s16 x = arg0;
     s16 tx;
-    s32 hi;
-    s32 lo;
-    s32 pkt;
 
     if (arg0 >= 0) {
         if ((D_8009BE78 - 1) < arg0) {
@@ -60,8 +61,7 @@ s32 func_8007C7A0(s16 arg0, s16 arg1)
     }
     x = tx;
 
-    hi = arg1;
-    if (hi >= 0) {
+    if (arg1 >= 0) {
         if ((D_8009BE7A - 1) < arg1) {
             arg1 = D_8009BE7A - 1;
         }
@@ -69,16 +69,19 @@ s32 func_8007C7A0(s16 arg0, s16 arg1)
         arg1 = 0;
     }
 
-    tx = (u32)(D_8009BE74 - 1);
-    hi = arg1 & 0xFFF;
-    if (tx >= 2U) {
-        hi = arg1 & 0x3FF;
-        hi = hi << 10;
-        lo = x & 0x3FF;
-    } else {
+    if ((u32)(D_8009BE74 - 1) < 2U) {
+        s32 hi = arg1 & 0xFFF;
+        s32 lo;
         hi = hi << 12;
         lo = x & 0xFFF;
+        lo = lo | 0xE3000000;
+        return hi | lo;
+    } else {
+        s32 hi = arg1 & 0x3FF;
+        s32 lo;
+        hi = hi << 10;
+        lo = x & 0x3FF;
+        lo = lo | 0xE3000000;
+        return hi | lo;
     }
-    pkt = lo | 0xE3000000;
-    return hi | pkt;
 }

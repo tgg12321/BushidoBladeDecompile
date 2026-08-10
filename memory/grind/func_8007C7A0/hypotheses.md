@@ -1,5 +1,46 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s6 (2026-08-10, forensics, git HEAD 4a714cd6)
+
+### H15 — the extracted RA model is faithful on the 12-form graph, and its hard-conflict structure explains the residual (forensics fidelity check) — CONFIRMED
+Statement: s3's T1 theorem was conditional on model fidelity; extract the
+model from the CURRENT 12-form graph with the instrumented cc1 and verify the
+sim reproduces the real dispositions, then locate the physical origin of
+hard_conf[lo] ∋ $v0.
+Probe: tools/ra_solver/extract.py + simulate.py + local_extract.py on the
+12-form body in display.c context; lreg/greg RTL segment reads; global.c
+source read (conflict-walk ordering, mark_reg_death before mark_reg_store).
+Result: sim 10/10 exact. hard_conf[79]∋2 reproduces on the new graph, and its
+physical origin is the tail block's const/pkt local qty taking $v0 (QTYDBG
+ground truth: pkt 80 sugg→$2 on the 12-form; const 115 main→$2 on the
+accumulation variant). The conflict is a SHARED-TAIL CHASSIS artifact:
+local-alloc cannot see the unallocated global pseudos lo/hi, so the ascending
+scan always parks the const family in $v0, which then hard-blocks lo. T1 stands
+for its graph class but bounds nothing outside it. Verdict: CONFIRMED.
+
+### H16 — the 12-form chassis cannot byte-match at any allocation (pseudo-78 split-role theorem) — CONFIRMED (chassis abandoned)
+Statement: the 12-form's hi pseudo (78) covers two target roles with different
+registers: sxt(y) (sra dest, target $a2) and the mask/shift chain (target $v1).
+Probe: lreg RTL (insn 68: sra dest IS reg/v 78) + target stream registers.
+Result: GCC 2.7.2 has no live-range splitting, so no register assignment of
+the 12-form graph reproduces the bytes; floor 12 was a masked-metric local
+optimum on a dead-end chassis. The L2 hi-staging lever (s4) created the fusion.
+Verdict: CONFIRMED — the endgame chassis must keep sxt(y) anonymous.
+
+### H17 — per-arm returns (SOTN get_cs shape) make the tail values block-local, and local-alloc's sugg/main passes then produce the target register plan — CONFIRMED (sandbox 0)
+Statement: with each dispatch arm ending in its own return of a per-arm-computed
+packed expression, lo dies in the hard-$2 return insn (sugg pins lo→$v0), hi
+takes $v1, const lands $a0; cross-jump re-merges the identical tails and reorg
+fills the dispatch delay slot from the narrow arm — reproducing target's
+stream AND allocation; the arm-locals' hard-reg occupation also pushes the
+carrier to $a3 and the clamp roles to $a2/$a2/$a0/$a0.
+Probe: staged sandbox measurements 13 → 14/53 → 7/51 → 0/51 (see evidence.md
+s6 for each step); models c7a0_p2/p3/matched0.model.json.
+Result: sandbox 0 at build 51/51 with 21 rules dropped, achieved with a body
+containing NO levers, NO staging, NO reuse — plain per-arm-return C. Both s4
+permuter levers proved non-load-bearing on this chassis and were removed.
+Verdict: CONFIRMED.
+
 ## s5 (2026-08-10, permuter, git HEAD dd31dc1f)
 
 ### H13 -- the never-permuted c5 lim-both chassis (carrier=$a3, xlim-save=$a2 via two-limit variable reuse) contains permuter-reachable levers that fix the remaining roles -- KILLED

@@ -1,5 +1,74 @@
 # Evidence bank — func_8007C7A0
 
+## s6 (2026-08-10, forensics, git HEAD 4a714cd6) — MATCHED: sandbox 0, 51/51. The per-arm-return chassis dissolves the whole residual; T1's premise identified as a shared-tail-chassis artifact
+
+- **SANDBOX DISTANCE 0 THIS SESSION** (`sandbox func_8007C7A0 --disable all` =
+  0, build 51/51, 21 rules dropped, cheat-asm stripped 153), with the final
+  body IN PLACE in src/display.c. candidate.c = that body verbatim. The form
+  is strictly MORE natural than every prior floor form: no reuse levers (s4's
+  L1/L2 are gone), no staging, no named-limit tricks — clamp both params,
+  then per-arm returns with per-arm block-scoped hi/lo and
+  statement-per-instruction style. Outcome: candidate-ready.
+- **Forensic root cause of the five-session knot (ground truth:
+  instrumented cc1, QTYDBG + greg/lreg + models in tmp/grind/func_8007C7A0/s6/,
+  sim fidelity 10/10 on the 12-form model):**
+  1. **T1's hard_conf[79]∋$v0 premise is a CHASSIS property, not a function
+     property.** In every shared-tail spelling, the 0xE3000000 const holder
+     (12-form pseudo 115) or the or-dest pkt qty (pseudo 80) is a single-block
+     qty in the join block; local-alloc's ascending scan / sugg pass hands it
+     $v0 (global pseudos lo/hi are invisible to local-alloc), and global.c's
+     conflict walk (mark_reg_store AFTER mark_reg_death, global.c:766-777)
+     then records hard 2 into lo's conflict set. lo→$v0 is impossible on ANY
+     shared-tail graph — this, not toolchain divergence, is what s0-s3
+     measured. The toolchain-revision-divergence reading is DEAD: our frozen
+     cc1 produces the exact bytes.
+  2. **The 12-form chassis was byte-match-IMPOSSIBLE outright:** its pseudo 78
+     (hi) fused sxt(y) (target $a2, the sra dest at lreg insn 68) with the
+     mask/shift chain (target $v1). GCC 2.7.2 never splits live ranges, so no
+     allocation of that graph reaches the bytes. Floor 12 was a masked-metric
+     local optimum on a dead-end chassis — the masked-Levenshtein gradient
+     actively TRAPPED five sessions there.
+  3. **Per-arm returns fix everything simultaneously.** Each arm's hi/lo/const
+     are block-local; lo dies in the return or whose dest is hard $2, so the
+     local sugg pass pins lo→$v0; hi→$v1; const then finds 2,3 busy → $a0
+     (the exact target trio). jump2 cross-jumps the identical lui/or/or tails
+     back into one shared tail (51 insns) and reorg fills the dispatch delay
+     slot with the (branch-taken) narrow arm's first insn andi $v1,$a1,0xFFF —
+     reproducing target's stream 1:1. The arm-locals occupying $v0/$v1/$a0
+     across both arms also give the carrier hard conflicts {2,3,4} → ascending
+     scan lands carrier=$a3, and xlim-save=$a2, sxt(y)=$a2, ylim-save=$a0,
+     sxt(x)=$a0, tx=$v0, arg1=$a1 all fall out naturally (models:
+     c7a0_p3.model.json = 7-form, c7a0_matched0.model.json = 0-form).
+  4. **Dispatch sense:** `if ((u32)(D_8009BE74-1) < 2U) { narrow } else
+     { wide }` emits sltiu + bnez→narrow with wide inline (target layout).
+     The wide-first `>= 2U` spelling emits beq with arms swapped = 7. The old
+     "dispatch branch sense inverted = 17" kill was chassis-relative.
+- **Measured steps this session (all honest sandbox, display.c context):**
+  12-form + `lo |= C; return hi | lo;` = 13/51; + named pkt result = 13/51
+  (combine folds the return copy; const qty still takes $v0 —
+  rejected/shared-tail-lo-accumulation.c). Per-arm returns keeping global-hi
+  staging = 14/53 (narrow sll sinks into the jump delay slot, asymmetric
+  const regs defeat cross-jump — rejected/per-arm-return-hi-global-staged.c)
+  but FIRST form ever with carrier=$a3+xlim=$a2+lo=$v0 clean. Fully per-arm
+  masks + un-staged Y sign check = 7/51 (all 9 global roles correct; only the
+  arm layout swapped). Dispatch sense flip = 0/51. Cleanup (drop unused
+  hi/lo/pkt decls, drop tx-dispatch-reuse for the inline `(u32)(D-1) < 2U`
+  expression, natural names) = 0/51 CONFIRMED — neither s4 lever was
+  load-bearing on this chassis.
+- **Self-vet written** (self_vet.md): no FAKE constructs; families claimed:
+  split-init accumulation (precedent ad11a8c8) for the def-then-modify
+  statements, named-intermediate declaration order
+  (no-new-park-categories.md:189) for the tx/x clamp pair. Everything else is
+  plain C; every statement maps to an emitted instruction.
+- **Twin func_8007C86C:** apply the same body with 0xE4000000 (and its own
+  limit globals if they differ) — expect 0/51. Do NOT re-grind it from the
+  12-form chassis.
+- **Integration handoff for the operator/driver:** 21 regfix rules at
+  regfix.txt:3050-3071 still exist and are calibrated to the OLD HEAD shape;
+  with the new C in place the tree needs `retire func_8007C7A0` (rule drop +
+  oracle verify) before `queue done`. src/display.c deliberately LEFT EDITED
+  (candidate-ready contract).
+
 ## s5 (2026-08-10, permuter, git HEAD dd31dc1f) -- the named-limit CSE wall is PER-CHASSIS and falls on the 12-form; carrier->$a3 reached in pure C for the first time, but as a structure trade; floor holds 12
 
 - **FLOOR UNCHANGED: 12 (candidate.c, stream-exact 51/51), re-confirmed at HEAD
