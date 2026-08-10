@@ -1,5 +1,83 @@
 # Evidence bank — func_8007C7A0
 
+## s11 (2026-08-10, SYNTHESIS, driver session 6 respawn, git HEAD 69750c7c) — full-ledger merge after the ternary-family layer-1 FAIL; floor 5 re-proven at HEAD; candidate.c de-poisoned; frontier reset to the one unspent Judge axis
+
+- **Context.** The driver banked the layer-1 FAIL on the s8-s10 ternary
+  reference form (commit 69750c7c) and dispatched this session in synthesis
+  modality with the ternary clamp family, the x/tx alias pair, and the
+  s9/s10 vet-token-scrubbing approach all BANNED. This session's job:
+  re-read the entire ledger, merge, reset the frontier. No new spelling
+  probes were attempted — the ledger already contains the measurements that
+  close the spelling space (below), and re-proposing any respelling of the
+  banned dataflow is exactly what the ban forbids.
+- **FLOOR 5 RE-PROVEN AT HEAD 69750c7c THIS SESSION** (`sandbox
+  func_8007C7A0 --disable all` = 5, target 51, build 50, rules_dropped 21,
+  cheat_asm_stripped 153 — artifact
+  tmp/grind/func_8007C7A0/s6/sandbox_floor5_synthesis.json). The measured
+  form is the s7 param-reassign + per-arm-return body, recovered from git
+  (`git show 50217010:memory/grind/func_8007C7A0/candidate.c`), applied to
+  src/display.c, measured, then REVERTED (src/display.c is back at HEAD;
+  the 21 regfix rules stay calibrated to HEAD's shape).
+- **candidate.c WAS POISONED and is now fixed.** Since s8 it held the
+  ternary reference form — which is now BANNED — while every session brief
+  says "apply candidate.c to src/display.c as your starting point." A next
+  session following that instruction would have re-applied a banned form
+  verbatim. candidate.c is re-banked to the s7 floor-5 form with a header
+  that names all three banned 0-forms and their rejected/ files. The
+  ternary text remains banked at rejected/ternary-clamp-family.c.
+- **THE SYNTHESIS PICTURE (merged from s6-s10; nothing here is new
+  measurement, it is the ledger's own facts assembled):**
+  1. The clean-C floor is 5 and the entire residual is ONE dataflow: the
+     X-clamp three-arm join temp ($v0) + writeback copy (`move a3,v0`).
+     47/51 insns match 1:1 on the s6/s7 chassis (s7/target_51.s vs
+     s7/ours_5form_50.s).
+  2. Three independent routes reached sandbox 0 — x/tx alias+writeback
+     (s6), temp->param writeback m1 (s8), published-SOTN ternary self-read
+     (s8-s10) — and all three are layer-1-ruled spellings of the same
+     join-temp-writeback family. The s7 eight-spelling campaign plus s8's
+     m1/m2 measured that NO other C dataflow materializes the join: direct
+     forms fold (safe_from_p), copy-preference coalesces save-copies,
+     self-assigns are elided. Conclusion the next sessions must inherit:
+     ANY form that scores 0 on this function will be a respelling of the
+     banned family; the honest reachable-without-a-ruling floor is 5.
+  3. The Judge's own constraint enumerates the exhaustion axes required
+     before a ruling-request may resubmit: (a) community-precedent census —
+     DONE s8, NEGATIVE (zero instances in the SOTN tree + 1,751 decomp.me
+     scratches); (b) the s7-named two-variable-dataflow frontier — DONE s8
+     (m1 = 0 byte-proven but in-family; m2 = 11); (c) synthesis — DONE,
+     this session; (d) **permuter-from-5-form — NOT YET RUN. This is the
+     single unspent axis** and the mandated next modality.
+  4. What a permuter-from-5 campaign is actually for: not a 0 (any 0 it
+     finds will be in-family and must be banked to rejected/, not
+     submitted) but the DUE-DILIGENCE record — either it surfaces a
+     legitimately-spelled join dataflow nobody has conceived (the only
+     event that would change the picture), or its dry basin completes the
+     exhaustion packet for the ruling resubmission.
+  5. The ruling packet, when the time comes, is already fully evidenced in
+     this ledger: census negative (s8), two-var-dataflow measurements (s8),
+     the eight-spelling uniqueness campaign (s7), the published-Sony-text
+     provenance + cc1psx instruction-identity cross-check (s8), and the
+     permuter-from-5 basin (next session). The precise owner question to
+     ask THEN: the published PsyQ get_cs source (sotn-decomp
+     psxsdk/libgpu/sys.c) produces the join naturally from its CLAMP
+     ternary; BB2's build differs only in limits (globals vs constants);
+     does the owner accept the reference text with transliterated limits as
+     the original source (COMPLETED-C), or is the function
+     owner-accepted-incomplete at floor 5? Do NOT resubmit before the
+     permuter axis is spent — the Judge constraint is explicit.
+- **Process warnings for future sessions (do not repeat):** (a) do not
+  re-run the vet-wording arms race (s9/s10 token-scrubbing is itself
+  banned); (b) do not treat m1's byte-proven 0 as a submission path — its
+  rejected/ file says superseded, but under the current rulings it is
+  in-family; (c) session numbering: driver briefs say "session 6" for
+  every respawn while the ledger's internal numbering is s0-s11 — scratch
+  space stays tmp/grind/func_8007C7A0/s6/ per the brief.
+- **Twin func_8007C86C guidance unchanged:** same pattern, constant
+  0xE4000000; check the twin's own wide-arm mask in ITS target bytes; do
+  not spend this function's sessions on it. NOTE: the twin's floor-5-
+  equivalent chassis is this candidate.c with the constant swapped; the
+  same family ban will presumably bind there too.
+
 ## s10 (2026-08-10, rederive, driver session 6 respawn, git HEAD 50217010) — sandbox 0 RE-PROVEN a third session running; the s9 discard was AGAIN a vet-wording false positive, now token-scrubbed
 
 - **Context:** s9 re-proved the s8 byte-exact reference body (sandbox 0) but
@@ -832,3 +910,15 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s5] Campaign artifact trail: base 845, 23k iters, finds 95 (=floor in disguise) and 65 (forbidden UB family, banked with full rationale to rejected/permuter-find65-lim-dead-read-narrow-arm.c)
 
 - [s5] tmp/grind/func_8007C7A0/s5 contained artifacts of a previously discarded s5 attempt (v01/v07/v11/v14, unrecorded); this session's measurements are independent
+
+- [s6] Floor 5 re-proven at HEAD 69750c7c this session with the s7 param-reassign + per-arm-return body; src/display.c reverted after measurement (working tree clean for this function).
+
+- [s6] candidate.c was POISONED: since s8 it held the ternary reference form that layer-1 has now banned, while every session brief instructs applying candidate.c as the starting point. Re-banked to the floor-5 form with a header naming all three banned 0-forms and their rejected/ files; ternary text remains at rejected/ternary-clamp-family.c.
+
+- [s6] Synthesis of s6-s10: three independent sandbox-0 routes exist (x/tx alias+writeback s6; temp-to-param writeback m1 s8; published-SOTN ternary s8-s10) and all are layer-1-ruled spellings of the same join-temp-writeback family. s7's eight-spelling campaign plus s8's m1/m2 measured that no other C dataflow materializes the join. Therefore any future 0-form will be in-family; the honest reachable-without-a-ruling floor is 5.
+
+- [s6] Judge-mandated exhaustion axes status: community-precedent census DONE s8 (negative in SOTN tree + 1,751 decomp.me scratches); two-variable-dataflow frontier DONE s8 (m1=0 byte-proven but in-family, m2=11); synthesis DONE this session; permuter-from-5-form NOT YET RUN - the single unspent axis and the mandated next modality.
+
+- [s6] Ruling packet is fully evidenced in the ledger once the permuter axis is spent: census negative + two-var-dataflow measurements + eight-spelling uniqueness + published-Sony-text provenance with cc1psx instruction-identity + the permuter-from-5 basin record.
+
+- [s6] Process warnings banked: no vet-wording arms race (s9/s10 token-scrubbing is itself banned); m1's byte-proven 0 is not a submission path; driver briefs number every respawn 'session 6' while ledger-internal numbering is s0-s11, scratch stays tmp/grind/func_8007C7A0/s6/.

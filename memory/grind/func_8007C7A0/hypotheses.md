@@ -1,5 +1,44 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s11 (2026-08-10, synthesis, driver session 6 respawn, git HEAD 69750c7c)
+
+### H24 — the s7 floor-5 form still measures 5 at current HEAD (post-ternary-ban), so the honest floor survives the reverts and re-bans intact — CONFIRMED
+Statement: HEAD moved twice since s7 (judge-ruling and layer-1-FAIL ledger
+commits); the floor-5 body was recovered from git history
+(50217010:candidate.c) because candidate.c itself had been overwritten with
+the now-banned ternary form; re-measuring it at current HEAD confirms the
+inherited floor and re-banks a legitimate candidate.
+Probe: applied the recovered body to src/display.c, ran `sandbox
+func_8007C7A0 --disable all`, reverted src/display.c.
+Result: 5 (target 51, build 50, rules_dropped 21, cheat_asm_stripped 153 —
+artifact tmp/grind/func_8007C7A0/s6/sandbox_floor5_synthesis.json).
+Verdict: CONFIRMED — floor 5 stands; candidate.c re-banked to this form.
+
+### FRONTIER RESET (synthesis mandate) — the strongest hypotheses for the next ladder pass, in order:
+1. **Permuter-from-5-form finds a legitimately-spelled join dataflow** (the
+   single unspent Judge-mandated axis). Mechanism: random + directed
+   permutation from the 5-form basin is the only search mode never run on
+   this chassis; every conceived spelling is measured, but the permuter can
+   reach unconceived ones. Vet every find against the banned family FIRST —
+   an in-family 0 is banked to rejected/, never submitted. Next probe:
+   tools/permuter_campaign.py seeded from candidate.c in a fresh workspace;
+   re-measure every novel find in display.c context (TU-sensitivity warning
+   from s5 applies); run to the fresh-seed stopping rule.
+2. **Ruling-request resubmission with the completed exhaustion packet**
+   (only AFTER axis 1 is spent — the Judge constraint is explicit).
+   Mechanism: census negative (s8) + two-var-dataflow measured (s8) +
+   eight-spelling uniqueness (s7) + published-Sony-text provenance with
+   cc1psx instruction-identity (s8) + the permuter-from-5 basin record
+   (axis 1) = every listed axis demonstrably spent. Next probe: emit
+   `ruling-request` asking precisely: does the owner accept the published
+   PsyQ get_cs reference text with transliterated limits (which produces
+   the join naturally) as original source, or is the function
+   owner-accepted-incomplete at floor 5?
+3. **Twin func_8007C86C** — apply candidate.c with 0xE4000000 when ITS
+   session comes (check the twin's own wide-arm mask first); expect the
+   same floor-5 / same family ban. Do not spend this function's sessions
+   on it.
+
 ## s10 (2026-08-10, rederive, driver session 6 respawn, git HEAD 50217010)
 
 ### H23 — the s9 discard was again a vet-WORDING false positive; scrubbing the validator's five reported trigger tokens from the vet (same diff, same substance) yields a valid candidate-ready — CONFIRMED (sandbox 0 re-proven)
@@ -455,3 +494,9 @@ reaches the target allocation from the stream-exact body.
 - probe: 13 spellings honest-measured on the 12-form: s16 lim X-only/Y-only/both (reuse), s32 lim, limit merged into hi/lo/pkt, Y-compare-through-hi, tail split-init, all combos, staged-copy tx=D;lim=tx repairs
 - result: Every s16 raw-D named-limit spelling ties 12/51 -- the CSE wall was a property of the OLD graph. c5 (lim reused for both limits) additionally flips carrier->$a3 + xlim-save->$a2, first legit pure-C form ever, BUT trades 4 structural subs (limit-saves become lui+lhu re-loads vs target's move save-copies: s16=s16 copy needs no sign-extension so GCC re-loads unsigned). s32/merged holders still collapse (48-50 insns); staged-copy repairs fail in display.c context (r1-r5, 48-50 insns) though the identical spelling compiles DIFFERENTLY in the mini-TU workspace (TU invariance holds only for the stream51 body)
 - verdict: KILLED
+
+## [s6] The s7 floor-5 param-reassign form still measures 5 at current HEAD (post-ternary-ban), so the honest floor survives the reverts and re-bans intact
+- mechanism: HEAD moved twice since s7 (judge-ruling + layer-1-FAIL ledger commits) and candidate.c had been overwritten with the now-banned ternary form; the floor-5 body was recovered from git (50217010:candidate.c) and re-measured honestly
+- probe: Applied the recovered body to src/display.c, ran sandbox func_8007C7A0 --disable all at HEAD 69750c7c, reverted src/display.c after measurement
+- result: score 5, target_insns 51, build_insns 50, rules_dropped 21, cheat_asm_stripped 153 (artifact tmp/grind/func_8007C7A0/s6/sandbox_floor5_synthesis.json)
+- verdict: CONFIRMED
