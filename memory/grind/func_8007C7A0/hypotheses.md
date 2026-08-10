@@ -1,5 +1,22 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s14 (2026-08-10, permuter, driver session 9, git HEAD 94945475)
+
+### H27 — random+directed permutation from the 5-form basin reaches a legitimately-spelled join dataflow (an unconceived spelling outside the banned family) or beats floor 5 — KILLED (two fresh basins, ~118k iters, zero sub-floor finds; both novel attractors measured dead/inert)
+Statement: every conceived spelling is measured dead (s7's 8 + s12's 5 +
+s13's 6), but the permuter can reach unconceived ones; the Judge listed
+permuter-from-5 as the single unspent axis.
+Probe: campaign 1 random from candidate.c (ws permuter/c7a0_s9_from5,
+8 jobs, stop-on-zero, ~50 min / 73k iters); campaign 2 directed
+cross-product (3 X-clamp shapes x 2 tail forms, PERM_RANDOMIZE; ws
+permuter/c7a0_s9_directed, ~25 min / 45k iters); both harvest-stopped at
+the fresh-seed window; the two novel attractor spellings re-measured
+honestly in display.c context.
+Result: no find below weighted 450/500 in either basin (base ~700); zero
+sandbox-0 forms; in-arm staged limit temp = 5 @ 50 INERT; hoisted
+cond+limit pair = 19 @ 49 KILLED. Verdict: KILLED. The permuter axis is
+spent; the exhaustion packet is complete; frontier advances to the
+ruling-request resubmission (this session's outcome).
 ## s13 (2026-08-10, structural, driver session 8, git HEAD 4bc9eb3a)
 
 ### H26 — a structural spelling on an axis never measured on the 5-chassis (named limit, sequential ifs, do-while(0) wrap, compare operand order, clamp statement order) beats floor 5 or materializes the join legitimately — KILLED (six measurements; 19 total spellings now dead on this chassis)

@@ -1,5 +1,59 @@
 # Evidence bank — func_8007C7A0
 
+## s14 (2026-08-10, PERMUTER, driver session 9, git HEAD 94945475) — the permuter-from-5 axis is SPENT: two fresh basins (random + directed) drained with zero sub-floor finds; both novel attractor spellings measured honestly (one inert, one killed); floor holds at 5; every Judge-listed axis is now demonstrably exhausted
+
+- **Baseline re-proven at HEAD 94945475.** candidate.c applied to
+  src/display.c: sandbox --disable all = 5, target 51, build 50, 21 rules
+  dropped, cheat-asm stripped 153. Same numbers as s11/s12/s13.
+- **Campaign 1 — RANDOM from the 5-form basin** (ws permuter/c7a0_s9_from5,
+  fresh workspace seeded verbatim from candidate.c, 8 jobs, --stop-on-zero,
+  ~50 min / 73k+ iterations, harvest-stopped in-session): ~40 output finds,
+  ALL in the weighted 450-705 band (base ~700+; the permuter metric prices
+  the 5-form's masked join diffs heavily). Lowest find 450 landed in the
+  first ~20 min; NOTHING below it for the remaining ~30 min — the basin
+  drained exactly per the s5 precedent ("drains back to the known floor").
+  Zero sandbox-0 finds, zero banned-family forms surfaced (the random pass
+  never reached the self-read-in-condition ternary — consistent with s12 P2:
+  that spelling is an isolated point, not a gradient the hill-climber can
+  descend into).
+- **Campaign 2 — DIRECTED cross-product chassis** (ws
+  permuter/c7a0_s9_directed, PERM_GENERAL over 3 X-clamp shapes x per-arm
+  returns vs shared-goto-end tail [mixed exits sanctioned], PERM_RANDOMIZE
+  re-enabling random around the directed seeds; 8 jobs, ~25 min / 45k+
+  iterations, harvest-stopped in-session): same attractor class — lowest
+  find 500, all finds 500-655. No sub-500 novelty at the fresh-seed window;
+  stopped per the rule. Artifacts: tmp/grind/func_8007C7A0/s9/ (both
+  campaign logs + metas, best-find sources, the directed PERM base).
+- **Attractor spelling 1 measured honestly — in-arm staged limit temp**
+  (`s16 t; ... { t = D_8009BE78 - 1; arg0 = t; }` — the 450/505 class):
+  **5 @ 50 — INERT**, byte-score-identical to baseline; the temp coalesces
+  into arg0 and no join materializes. Distinct from s13 Q1's hoisted
+  named-limit (16 @ 51) and NOT in the banned family (holds the LIMIT in
+  one arm, never the cross-arm clamp result).
+  rejected/in-arm-staged-limit-inert.c.
+- **Attractor spelling 2 measured honestly — hoisted cond+limit pair**
+  (`cnd = (lim-1) < arg0; lim2 = lim-1; if (cnd) arg0 = lim2;` — the
+  directed campaign's best, weighted 500): **19 @ 49 — KILLED**; GCC folds
+  the materialized boolean into the branch and drops an insn. The permuter
+  metric rewarded the named intermediates; the honest distance is 14 worse.
+  rejected/hoisted-cond-limit-pair.c.
+- **Interpretation.** The one Judge-mandated axis never run on this chassis
+  is now run and spent: ~118k iterations across two structurally distinct
+  fresh basins found NO legitimately-spelled dataflow that materializes the
+  three-arm $v0 join + `move a3,v0` writeback, and no sandbox improvement
+  below 5. Combined with the ledger's 19 measured-dead structural spellings
+  (s7+s12+s13), the s12 P2 mechanism theorem (the join materializes ONLY
+  when the assignment target is read in the CONDITION position — exactly
+  the banned ternary spelling), and s13 Q1 (the only legitimate 51-insn
+  spelling loses 16-to-5), the exhaustion packet the Judge asked for is
+  COMPLETE. Per the Judge's explicit sequencing constraint ("only when
+  those are demonstrably spent may a ruling request resubmit"), this
+  session's outcome is the ruling-request resubmission.
+- **Disposition.** Floor 5 unchanged. src/display.c reverted to HEAD after
+  measurement (21 rules stay calibrated); candidate.c unchanged (still the
+  legitimate floor-5 body). Both campaigns harvest-stopped before session
+  end; telemetry in metrics/events.jsonl.
+
 ## s13 (2026-08-10, STRUCTURAL, driver session 8, git HEAD 4bc9eb3a) — six more structural spellings measured (4 kills, 2 inert synonyms); the 5-chassis structural axis is now dead across 19 spellings; floor holds at 5
 
 - **Baseline re-proven at HEAD 4bc9eb3a.** candidate.c applied to

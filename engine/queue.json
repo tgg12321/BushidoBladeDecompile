@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007C7A0",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "active"
-    },
-    {
       "func": "func_8007C86C",
       "file": "display",
       "distance": 20,
@@ -2454,17 +2446,26 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-07 \u2014 func_80048AD0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
+    },
+    {
+      "func": "func_8007C7A0",
+      "file": "display",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 21,
+      "status": "parked",
+      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-10 \u2014 func_8007C7A0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
     "total": 288,
-    "active": 252,
+    "active": 251,
     "by_status": {
-      "active": 252,
-      "parked": 36
+      "active": 251,
+      "parked": 37
     },
     "by_verdict": {
-      "C": 166,
+      "C": 165,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 47
     }
