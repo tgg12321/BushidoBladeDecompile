@@ -4177,3 +4177,35 @@ func_80021A98 v6 candidate is legitimate pure C. The diff contains four construc
 ## 2026-08-10 14:36 — func_8007C7A0 — layer-1 review — **FAIL**
 
 The x/tx param-alias-and-writeback pair is the project's own previously-banned param-local-alias cheat, reintroduced under a mismatched sanctioned-family citation with no FAKE annotation and no dossier.
+
+## 2026-08-10 — func_80048AD0 — v2 grant re-draft FAILED fresh layer-2; delegation CLOSED — escalation returns to the owner IN PERSON
+
+Following the 2026-08-08 WITHHELD entry, the operator assembled new evidence
+(SOTN master-branch precedent research, verified against a local clone —
+memory/reference/sotn-prototype-struct-precedent-2026-08-10.md — plus the
+use-site pointer cast at src/text1b.c:619) and re-drafted the grant as a
+narrowed single-instance ruling (no family, no snd_PlayBgm pre-auth). A
+FRESH adversarial reviewer FAILed v2 on direct inspection:
+
+1. **E2 (use-site semantics) collapsed:** the `(u8 *)` cast survives under
+   BOTH prototypes (int->pointer becomes pointer->pointer), so the use site
+   does not positively require the corrected return type — prong (d) of
+   header-type-correction-from-use-sites, applied honestly, rejects it.
+2. **E1 (SOTN norm) is directionally inverted:** SOTN's verified practice is
+   KEEPING an annotated wrong prototype because bytes demand the wrong one;
+   no precedent exists for CHANGING a prototype the bytes reject on
+   RA-impossibility grounds. The claimed shape-precedent (func_us_801C6040)
+   is unannotated cross-TU drift, not sanctioned methodology. (The research
+   memory has been corrected accordingly.)
+3. Grounds 2 and 4 of the original FAIL (construct circularity;
+   behavioral inertness at the call site) survive v2's reframing.
+
+**Disposition:** per the reviewer's next_action and the operator's own
+judgment, NO v3 will be drafted under delegation. The question is now
+squarely: *does the owner, in person, extend policy to sanction a
+definition-TU prototype correction motivated by byte-level RA impossibility,
+overriding three adversarial refusals?* Until an in-person owner ruling
+lands in this file, func_80048AD0 remains PARKED with the existing frozen
+constraints. The v3 bar, if ever attempted: sandbox 0 on a body independent
+of the counter-reuse construct, a use-site fact that survives inspection,
+and a genuine annotated SOTN precedent for the correction direction.
