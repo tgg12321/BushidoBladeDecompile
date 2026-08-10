@@ -308,3 +308,34 @@ delegation (2026-08-07):
 
 Constraint for future sessions: do NOT re-splice the probe spelling; the
 open question is representation policy, not bytes. Bytes are proven.
+
+## OPERATOR — 2026-08-10 clean-form round (record form ALSO byte-proven; layer-2 FAIL stands; reverted)
+
+Executed the 2026-08-08 reviewer's prescribed clean form under the owner's
+2026-08-10 "go ahead with your recommendations" directive:
+
+1. Header record landed (CamPair + ReplayCamRec, extern ReplayCamRec
+   D_80101E60 replacing six per-word externs), whole-TU conversion to
+   member accesses (10 functions), func_80036FD4 rewritten with plain
+   `ReplayCamRec *rec = &D_80101E60;` (no cast), barrier deleted.
+2. sandbox --disable all: score 8, 79/79 — ALL EIGHT verified as
+   %lo(D_80101E60+N) addend words (s0-init +2, pair +12/+16, four tail
+   halfwords, unk14). Instruction stream 1:1 with target in opcode+register.
+3. **retire: 8 rules deleted, FULL-BUILD SHA1 == oracle. The clean record
+   form is byte-true for the whole image — including all ~8 other completed
+   functions in the TU under their member-access respellings.**
+4. Fresh layer-2: FAIL. Grounds: (a) the 2026-08-08 NEEDS_USER has no
+   owner-ruling ARTIFACT in the repo (agent-asserted delegation not
+   credited); (b) `idx = rec->unk00;` read-back is GCC-internals-only
+   (INSN_LUID tie-break) and unannotated; (c) the full-span record
+   (unk00..unk0A bundling) is mechanism-justified — independent cross-file
+   evidence covers only the 8-byte pair; (d) missing /* FAKE */ annotations
+   that every possibly-applicable sanctioned family requires.
+5. Tree reverted to HEAD (old body + 8 rules restored). Oracle green.
+
+For the next submission (reviewer's bar): recorded in-person owner ruling
+on the two 2026-08-08 questions; FAKE annotations at the record decl and
+the idx read-back naming the sched.c mechanisms; independent evidence (or a
+narrowed span) for bundling unk00-unk0A. BYTES ARE PROVEN TWICE (cast form
+2026-08-08, record form 2026-08-10) — everything remaining is
+representation policy.

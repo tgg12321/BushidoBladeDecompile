@@ -4209,3 +4209,39 @@ lands in this file, func_80048AD0 remains PARKED with the existing frozen
 constraints. The v3 bar, if ever attempted: sandbox 0 on a body independent
 of the counter-reuse construct, a use-site fact that survives inspection,
 and a genuine annotated SOTN precedent for the correction direction.
+
+## 2026-08-10 — func_80036FD4 — CLEAN RECORD FORM ALSO BYTE-PROVEN (second full-build green); layer-2 FAIL stands on annotation/span/ruling grounds — awaiting in-person owner ruling
+
+Under the owner's 2026-08-10 directive ("go ahead with your
+recommendations" — the operator's evaluation recommended attempting the
+TU-scoped record clean form, with the annotated cast as fallback), the
+2026-08-08 reviewer's prescribed clean form was executed: header-level
+CamPair/ReplayCamRec, extern ReplayCamRec D_80101E60 replacing six
+per-word externs, whole-TU member-access conversion (10 functions),
+func_80036FD4 rewritten with plain address-of (NO cast), barrier deleted.
+
+**Measurements:** sandbox 8/79-79 — all eight verified as
+%lo(D_80101E60+N) addend words, instruction stream 1:1 with target;
+retire deleted the 8 rules and the FULL BUILD SHA1 == oracle. The record
+form is byte-true for the whole image, including every other completed
+function in the TU under member-access respelling. Bytes for this
+function are now proven under BOTH representations (cast 2026-08-08,
+record 2026-08-10).
+
+**Fresh layer-2: FAIL.** (a) the 2026-08-08 NEEDS_USER has no owner-ruling
+artifact in the repo — the reviewer explicitly declines to credit
+agent-relayed delegation for a recorded NEEDS_USER; (b) the
+idx = rec->unk00; read-back is a GCC-internals INSN_LUID lever needing
+a /* FAKE */ annotation under any applicable family; (c) independent
+cross-file evidence supports only the 8-byte pair as one object — the
+unk00..unk0A bundling rests on the sched.c dependence mechanism; (d) no
+FAKE annotations present. Tree reverted to HEAD; oracle green; the 8
+rules remain (function stays INCOMPLETE/parked).
+
+**WHAT THE OWNER MUST DECIDE (in person, recorded here):** the two open
+2026-08-08 questions — (a) is the per-word-symbol->record merge in-scope
+when its necessary effect is manufacturing the scheduler dependence;
+(b) if yes, which form (annotated cast / TU-scoped record / tree-wide).
+If granted: add the FAKE annotations the reviewer specified, and either
+supply independent evidence for the full-span record or narrow it.
+Everything else is done and proven.
