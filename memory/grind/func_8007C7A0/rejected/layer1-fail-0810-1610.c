@@ -1,0 +1,3717 @@
+#include "common.h"
+#include "include_asm.h"
+#include "gpu.h"
+#include "psx.h"
+
+/* Padding NOP macro - emits NOP instructions between functions to match original layout */
+#define PAD_NOPS_1 __asm__(".section .text\n    nop\n")
+#define PAD_NOPS_2 __asm__(".section .text\n    nop\n    nop\n")
+#define PAD_NOPS_3 __asm__(".section .text\n    nop\n    nop\n    nop\n")
+
+
+/* Forward declarations */
+extern s32 VSync(s32);
+extern s32 memcpy(s32, void *, s32);
+extern void DeliverEvent(s32, s32);
+
+/* Externs for globals */
+extern volatile u32 *g_gpu_stat_reg;
+extern volatile u32 *g_gpu_data_reg;
+extern u32 *g_gpu_dma_madr;
+extern u32 *g_gpu_dma_bcr;
+extern volatile u32 *g_gpu_dma_chcr;
+extern u8 g_gpu_color_table[];
+extern u8 g_gpu_draw_env;
+extern u8 g_gpu_disp_env;
+extern u8 D_8009BE74;
+extern s16 D_8009BE78;
+extern s16 D_8009BE7A;
+extern s32 g_gpu_vcount;
+extern s32 g_gpu_draw_count;
+extern u32 g_str_drawotag;
+extern u32 g_str_drawsync;
+extern u32 D_80015EE8;
+extern u32 D_80015FDC;
+extern u32 g_gpu_draw_mode;
+
+extern u32 g_str_setdispmask;
+extern u32 g_str_clearimage;
+extern u8 D_80015F2C;
+extern u8 D_80015F38;
+extern u8 D_80015F4C;
+
+/* --- Functions 0x8007B244 - 0x8007FF7C (text2 segment) --- */
+
+u32 DrawSyncCallback(s32 a0) {
+    u32 old;
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015EE8, a0);
+    }
+    old = g_gpu_draw_mode;
+    g_gpu_draw_mode = a0;
+    return old;
+}
+/* PsyQ LIBGPU sys.c models the GPU state block rooted at g_gpu_type as one
+   static struct (C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c) — gpu.c's
+   gpu_SetMode already clears the whole 0x80-byte object and initializes
+   draw_env/disp_env through the same base. */
+typedef struct {
+    u8 type;           /* +0x00 g_gpu_type */
+    u8 interlace;      /* +0x01 g_gpu_interlace */
+    u8 debug_level;    /* +0x02 g_gpu_debug_level */
+    u8 dither;         /* +0x03 g_gpu_dither */
+    s16 disp_x;        /* +0x04 g_gpu_disp_x */
+    s16 disp_y;        /* +0x06 g_gpu_disp_y */
+    u8 unk8[4];        /* +0x08 */
+    u32 draw_mode;     /* +0x0C g_gpu_draw_mode */
+    u8 draw_env[0x5C]; /* +0x10 g_gpu_draw_env */
+    u8 disp_env[0x14]; /* +0x6C g_gpu_disp_env */
+} GpuCtx;              /* size 0x80 */
+
+void SetDispMask(s32 a0) {
+    u8 *p = &((GpuCtx *)&g_gpu_type)->debug_level;
+    if (*p >= 2) {
+        g_gpu_debug_func(&g_str_setdispmask, a0);
+    }
+    if (!a0) {
+        bb2_memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
+    }
+    {
+        u32 cmd = GP1_DISP_ENABLE;
+        u32 *v0 = g_gpu_dev_table;
+        if (a0) {
+            cmd = 0x03000000;
+        }
+        ((void (*)(u32))v0[4])(cmd);
+    }
+}
+void DrawSync(s32 a0) {
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&g_str_drawsync, a0);
+    }
+    {
+        u32 *v0 = g_gpu_dev_table;
+        ((void (*)(s32))v0[15])(a0);
+    }
+}
+void func_8007B3A8(u8 *str, s16 *rect) {
+    s16 w, x, y, h;
+    if (g_gpu_debug_level == 1) goto level_1;
+    if (g_gpu_debug_level == 2) goto level_2;
+    goto end;
+level_1:
+    w = rect[2];
+    if (w > D_8009BE78) goto bad;
+    x = rect[0];
+    if (w + x > D_8009BE78) goto bad;
+    y = rect[1];
+    if (y > D_8009BE7A) goto bad;
+    h = rect[3];
+    if (y + h > D_8009BE7A) goto bad;
+    if (w <= 0) goto bad;
+    if (x < 0) goto bad;
+    if (y < 0) goto bad;
+    if (h > 0) goto end;
+bad:
+    g_gpu_debug_func(&D_80015F2C, str);
+    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    goto end;
+level_2:
+    g_gpu_debug_func(&D_80015F4C, str);
+    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+end:
+    ;
+}
+extern u8 g_str_clearimage;
+extern s32 g_gpu_dev_table;
+extern void func_8007B3A8(u8 *, s16 *);
+
+void ClearImage(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+    s32 *p;
+    void (*fn)();
+    func_8007B3A8(&g_str_clearimage, arg0);
+    p = (s32 *)g_gpu_dev_table;
+    fn = (void (*)())p[2];
+    fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
+}
+void ClearImage2(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+    s32 *p;
+    void (*fn)();
+    u32 hi, lo;
+    func_8007B3A8(&g_str_clearimage, arg0);
+    hi = (u32)arg3 << 16;
+    lo = ((u32)arg2 << 8) | 0x80000000;
+    p = (s32 *)g_gpu_dev_table;
+    fn = (void (*)())p[2];
+    fn(p[3], arg0, 8, (hi | lo) | (u32)arg1);
+}
+extern u32 g_str_loadimage;
+
+void LoadImage(s32 a0, s32 a1) {
+    u32 *v0;
+    func_8007B3A8(&g_str_loadimage, a0);
+    v0 = g_gpu_dev_table;
+    ((void (*)(u32, s32, s32, s32))v0[2])(v0[8], a0, 8, a1);
+}
+extern u32 g_str_storeimage;
+
+void StoreImage(s32 a0, s32 a1) {
+    u32 *v0;
+    func_8007B3A8(&g_str_storeimage, a0);
+    v0 = g_gpu_dev_table;
+    ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
+}
+extern u8 D_80015F74;
+extern s32 D_8009BF24;
+extern s32 D_8009BF28;
+extern s32 D_8009BF2C;
+
+s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
+    s32 *p;
+    s32 (*fn)();
+    s32 packed;
+    s32 *bf24;
+
+    func_8007B3A8(&D_80015F74, (s32)arg0);
+    if (((s16 *)arg0)[2] == 0) {
+        return -1;
+    }
+    if (((s16 *)arg0)[3] == 0) {
+        return -1;
+    }
+    packed = ((s32)arg2 << 16) | ((u32)arg1 & 0xFFFF);
+    bf24 = &D_8009BF24;
+    *bf24 = arg0[0];
+    D_8009BF28 = packed;
+    D_8009BF2C = arg0[1];
+    p = (s32 *)g_gpu_dev_table;
+    fn = (s32 (*)())p[2];
+    return fn(p[6], (s32)bf24 - 8, 0x14, 0);
+}
+extern u32 g_str_clearotag;
+extern u32 g_gpu_ot_end;
+
+u32 *ClearOTag(u32 *a0, s32 a1) {
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&g_str_clearotag, a0, a1);
+    }
+    a1--;
+    if (a1) {
+        u32 mask = 0xFFFFFF;
+        u32 himask = 0xFF000000;
+        do {
+            u32 *next;
+            a1--;
+            next = a0 + 1;
+            ((u8 *)a0)[3] = 0;
+            *a0 = (*a0 & himask) | ((u32)next & mask);
+            a0 = next;
+        } while (a1);
+    }
+    *a0 = (u32)&g_gpu_ot_end & 0xFFFFFF;
+    return a0;
+}
+extern u32 D_80015F98;
+
+u32 *ClearOTagR(u32 *ot, s32 n) {
+    u32 *new_var;
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&D_80015F98, ot, n);
+        new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
+    }
+    {
+        u32 *v0 = g_gpu_dev_table;
+        ((void (*)(u32 *, s32))v0[11])(ot, n);
+    }
+    new_var = ot;
+    *new_var = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
+    return new_var;
+}
+void DrawPrim(u8 *a0) {
+    u32 *dev = g_gpu_dev_table;
+    u32 size = a0[3];
+    ((void (*)(s32))dev[15])(0);
+    dev = g_gpu_dev_table;
+    ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
+}
+void DrawOTag(s32 a0) {
+    if (g_gpu_debug_level >= 2) {
+        g_gpu_debug_func(&g_str_drawotag, a0);
+    }
+    {
+        u32 *v0 = g_gpu_dev_table;
+        ((void (*)(u32, s32, s32, s32))v0[2])(v0[6], a0, 0, 0);
+    }
+}
+extern u32 g_str_putdrawenv;
+extern s32 func_8007C4B8(s32 *, s32 *);
+
+typedef struct { s32 a, b, c, d; } _drawenv_q;
+typedef struct { s32 a, b, c; } _drawenv_t;
+
+s32 *PutDrawEnv(s32 *arg0) {
+    s32 *p;
+    u32 *dev;
+    _drawenv_q *src;
+    _drawenv_q *dst;
+    _drawenv_q *end;
+    u8 *base = &g_gpu_debug_level;
+
+    if (*base >= 2) {
+        g_gpu_debug_func(&g_str_putdrawenv, arg0);
+    }
+    p = arg0 + 7;
+    func_8007C4B8(p, arg0);
+    arg0[7] |= 0xFFFFFF;
+    dev = g_gpu_dev_table;
+    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
+
+    dst = (_drawenv_q *)(base + 0xE);
+    src = (_drawenv_q *)arg0;
+    end = (_drawenv_q *)(arg0 + 0x14);
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != end);
+    *(_drawenv_t *)dst = *(_drawenv_t *)src;
+    return arg0;
+}
+void DrawOTagEnv(s32 arg0, s32 *arg1) {
+    s32 *p;
+    u32 *dev;
+    _drawenv_q *src;
+    _drawenv_q *dst;
+    _drawenv_q *end;
+    u8 *base = &g_gpu_debug_level;
+
+    if (*base >= 2) {
+        g_gpu_debug_func(&D_80015FDC, arg0, arg1);
+    }
+    p = arg1 + 7;
+    func_8007C4B8(p, arg1);
+    arg1[7] = (arg1[7] & 0xFF000000) | (arg0 & 0xFFFFFF);
+    dev = g_gpu_dev_table;
+    ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
+
+    dst = (_drawenv_q *)(base + 0xE);
+    src = (_drawenv_q *)arg1;
+    end = (_drawenv_q *)(arg1 + 0x14);
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != end);
+    *(_drawenv_t *)dst = *(_drawenv_t *)src;
+}
+s32 GetDrawEnv(s32 a0) {
+    memcpy(a0, &g_gpu_draw_env, 0x5C);
+    return a0;
+}
+INCLUDE_ASM("asm/funcs", PutDispEnv);
+s32 GetDispEnv(s32 a0) {
+    memcpy(a0, &g_gpu_disp_env, 0x14);
+    return a0;
+}
+u32 GetODE(void) {
+    s32 (*func)(void) = ((s32 (**)(void))g_gpu_dev_table)[0xE];
+    return (u32)func() >> 31;
+}
+void SetTexWindow(u8 *a0, s32 a1) {
+    a0[3] = 2;
+    *(u32 *)(a0 + 4) = func_8007C97C(a1);
+    *(u32 *)(a0 + 8) = 0;
+}
+void SetDrawArea(u8 *a0, s16 *a1) {
+    a0[3] = 2;
+    *(u32 *)(a0 + 4) = func_8007C7A0(a1[0], a1[1]);
+    *(u32 *)(a0 + 8) = func_8007C86C((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
+}
+void SetDrawOffset(u8 *a0, s16 *a1) {
+    a0[3] = 2;
+    *(u32 *)(a0 + 4) = func_8007C938(a1[0], a1[1]);
+    *(u32 *)(a0 + 8) = 0;
+}
+void SetPriority(u8 *a0, s32 a1, s32 a2) {
+    u32 v0;
+    a0[3] = 2;
+    v0 = 0xE6000000;
+    if (a1) {
+        v0 = 0xE6000002;
+    }
+    if (a2) {
+        v0 |= 1;
+    }
+    *(u32 *)(a0 + 4) = v0;
+    *(u32 *)(a0 + 8) = 0;
+}
+void SetDrawMode(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
+    a0[3] = 2;
+    *(u32 *)(a0 + 4) = func_8007C748(a1, a2, a3);
+    *(u32 *)(a0 + 8) = func_8007C97C(a4);
+}
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+    s16 u;
+    s16 v;
+    u8 pad12[4];
+    s16 ax;
+    s16 ay;
+    u16 cx;
+    u16 cy;
+    u8 flag;
+    u8 r;
+    u8 g;
+    u8 b;
+} Rect;
+void SetDrawEnv(s32 *out, Rect *r)
+{
+  s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
+                   (decisions.md 10:35), tombstone narrowed to sanction a
+                   single forward-order param alias under
+                   pointer-alias-fake-exception for the twins func_8007C2A0
+                   / func_8007C4B8. cc1 combine's single-use entry-copy
+                   merge relocates arg0's `move s1,a0` past arg1's
+                   `move s0,a1`, flipping the prologue save+def pair
+                   emit order to match target (s0-pair first). Per-function
+                   exhaustion measured s1 (grind ledger): arg1-alias (=4,
+                   pair unchanged), K&R decl-block reversal (=4),
+                   do-while(0) entry wrap (=4, byte-neutral), var_a3
+                   init-at-decl (=26), var_a3 hoist-early (=26). Twin
+                   func_8007C4B8 final PASS 2026-07-19 (decisions.md). */
+  u16 buf[4];
+  s16 var_v0;
+  s16 var_v0_2;
+  s16 new_var;
+  s32 var_a3;
+  o[1] = func_8007C7A0(r->x, r->y);
+  o[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  o[3] = func_8007C938(r->u, r->v);
+  o[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  o[5] = func_8007C97C(((u8 *) r) + 12);
+  o[6] = (s32) 0xE6000000;
+  var_a3 = 7;
+  if (r->flag != 0)
+  {
+    buf[0] = (u16) r->x;
+    buf[1] = (u16) r->y;
+    new_var = (s16) r->w;
+    buf[2] = (u16) r->w;
+    buf[3] = (u16) r->h;
+    if (new_var >= 0)
+    {
+      if ((D_8009BE78 - 1) < new_var)
+      {
+        var_v0 = D_8009BE78 - 1;
+      }
+      else
+      {
+        var_v0 = new_var;
+      }
+    }
+    else
+    {
+      var_v0 = 0;
+    }
+    buf[2] = (u16) var_v0;
+    if (((s16) buf[3]) >= 0)
+    {
+      if ((D_8009BE7A - 1) < ((s16) buf[3]))
+      {
+        var_v0_2 = D_8009BE7A - 1;
+      }
+      else
+      {
+        var_v0_2 = (s16) buf[3];
+      }
+    }
+    else
+    {
+      var_v0_2 = 0;
+    }
+    buf[3] = (u16) var_v0_2;
+    buf[0] -= (u16) r->u;
+    buf[1] -= (u16) r->v;
+    o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+    o[var_a3++] = ((u32 *) buf)[0];
+    o[var_a3++] = ((u32 *) buf)[1];
+    buf[0] += (u16) r->u;
+    buf[1] += (u16) r->v;
+  }
+  *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
+}
+void func_8007C4B8(s32 *out, Rect *r)
+{
+  s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
+                   (decisions.md 10:35), tombstone narrowed to sanction a
+                   single forward-order param alias under
+                   pointer-alias-fake-exception for the twins func_8007C2A0
+                   / func_8007C4B8. cc1 combine's single-use entry-copy
+                   merge relocates arg0's `move s1,a0` past arg1's
+                   `move s0,a1`, flipping the prologue save+def pair
+                   emit order to match target (s0-pair first). Structural
+                   exhaustion measured s2: K&R decl-block reversal (=4),
+                   do-while(0) entry wrap (=27), var_a3 init-at-decl (=35),
+                   var_a3 hoist-early (=35, s3); arg1-alias (=4, s3, pair
+                   unchanged). Twin verified byte-exact on hirahira_w_frie
+                   (src/text1a_c.c:955, sandbox 0, 2026-07-17 11:25). */
+  u16 buf[4];
+  s16 var_v0;
+  s16 var_v0_2;
+  s16 new_var;
+  s32 var_a3;
+  o[1] = func_8007C7A0(r->x, r->y);
+  o[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  o[3] = func_8007C938(r->u, r->v);
+  o[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  o[5] = func_8007C97C(((u8 *) r) + 12);
+  o[6] = (s32) 0xE6000000;
+  var_a3 = 7;
+  if (r->flag != 0)
+  {
+    buf[0] = (u16) r->x;
+    buf[1] = (u16) r->y;
+    new_var = (s16) r->w;
+    buf[2] = (u16) r->w;
+    buf[3] = (u16) r->h;
+    if (new_var >= 0)
+    {
+      if ((D_8009BE78 - 1) < new_var)
+      {
+        var_v0 = D_8009BE78 - 1;
+      }
+      else
+      {
+        var_v0 = new_var;
+      }
+    }
+    else
+    {
+      var_v0 = 0;
+    }
+    buf[2] = (u16) var_v0;
+    if (((s16) buf[3]) >= 0)
+    {
+      if ((D_8009BE7A - 1) < ((s16) buf[3]))
+      {
+        var_v0_2 = D_8009BE7A - 1;
+      }
+      else
+      {
+        var_v0_2 = (s16) buf[3];
+      }
+    }
+    else
+    {
+      var_v0_2 = 0;
+    }
+    buf[3] = (u16) var_v0_2;
+    if ((buf[0] & 0x3F) || (buf[2] & 0x3F))
+    {
+      buf[0] -= (u16) r->u;
+      buf[1] -= (u16) r->v;
+      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x60000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+      o[var_a3++] = ((u32 *) buf)[0];
+      o[var_a3++] = ((u32 *) buf)[1];
+      buf[0] += (u16) r->u;
+      buf[1] += (u16) r->v;
+    }
+    else
+    {
+      o[var_a3++] = ((((*(((u8 *) r) + 27)) << 16) | 0x02000000) | ((*(((u8 *) r) + 26)) << 8)) | (*(((u8 *) r) + 25));
+      o[var_a3++] = ((u32 *) buf)[0];
+      o[var_a3++] = ((u32 *) buf)[1];
+    }
+  }
+  *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
+}
+s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
+    s32 var_v1;
+    s32 var_v0;
+
+    if ((u32) (D_8009BE74 - 1) < 2U) {
+        var_v1 = 0xE1000000;
+        if (arg1 != 0) {
+            var_v1 = 0xE1000800;
+        }
+        if (arg0 != 0) {
+            var_v0 = (arg2 & 0x27FF) | 0x1000;
+        } else {
+            var_v0 = arg2 & 0x27FF;
+        }
+    } else {
+        var_v1 = 0xE1000000;
+        if (arg1 != 0) {
+            var_v1 = 0xE1000200;
+        }
+        var_v0 = arg2 & 0x9FF;
+        if (arg0 != 0) {
+            var_v0 |= 0x400;
+        }
+    }
+    return var_v1 | var_v0;
+}
+/* PsyQ 4.0 LIBGPU SYS: get_cs (static) — verbatim-linked Sony object
+ * (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libgpu/sys.c
+ * get_cs (CLAMP house style), transliterated only in the limits: this
+ * library build clamps against the halfword globals D_8009BE78/D_8009BE7A
+ * and dispatches on the D_8009BE74 range check (SOTN's build uses constant
+ * limits + a boolean global). */
+s32 func_8007C7A0(s16 x, s16 y)
+{
+    x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
+    y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
+    if ((u32)(D_8009BE74 - 1) < 2U) {
+        return 0xE3000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
+    } else {
+        return 0xE3000000 | ((y & 0x3FF) << 10) | (x & 0x3FF);
+    }
+}
+s32 func_8007C86C(s16 arg0, s16 arg1)
+{
+    s16 var_a1;
+    s16 var_v0_2;
+    int new_var;
+    s32 var_v0;
+    int new_var2;
+    s32 var_v1;
+
+    new_var = arg0 >= 0;
+    if (new_var) {
+        if ((D_8009BE78 - 1) < arg0) {
+            var_v0_2 = D_8009BE78 - 1;
+        } else {
+            var_v0_2 = arg0;
+        }
+    } else {
+        var_v0_2 = 0;
+        var_a1 = arg1;
+    }
+    if (var_a1 >= 0) {
+        if ((D_8009BE7A - 1) < var_a1) {
+            var_a1 = D_8009BE7A - 1;
+        }
+    } else {
+        var_a1 = 0;
+    }
+    var_a1 = var_a1 & 0xFFF;
+    if (((u32)(D_8009BE74 - 1)) >= 2U) {
+        new_var2 = var_v0_2;
+        if (!D_8009BE7A) { }
+        var_v1 = var_a1 & 0x3FF;
+        var_v1 = var_v1 << 0xA;
+        var_v0 = new_var2 & 0x3FF;
+    } else {
+        var_v1 = (var_a1 << 1) << 11;
+        var_v0 = new_var2 & 0xFFF;
+    }
+    new_var2 = 0xE4000000;
+    return var_v1 | (var_v0 | new_var2);
+}
+extern u8 g_gpu_type;
+s32 func_8007C938(s32 arg0, s32 arg1) {
+    s32 var_v0;
+    s32 var_v1;
+    int new_var2;
+    var_v1 = arg1 & 0xFFF;
+    new_var2 = arg0;
+    if ((u32) (g_gpu_type - 1) >= 2U) {
+        var_v1 = arg1 & 0x7FF;
+        var_v1 = var_v1 << 0xB;
+        var_v0 = new_var2 & 0x7FF;
+    } else {
+        var_v1 = var_v1 << 0xC;
+        var_v0 = new_var2 & 0xFFF;
+    }
+    new_var2 = 0xE5000000;
+    return var_v1 | (var_v0 | new_var2);
+}
+s32 func_8007C97C(u8 *arg0) {
+    if (arg0 != 0) {
+        u32 tmp[4]; /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
+                       dead-vars-local-array carve-out 2026-07-01) */
+        u8 r, b1;
+        s32 g, b2;
+        u32 b15, re2, ret;
+        r = arg0[0] >> 3;
+        tmp[0] = r;
+        g = ((-*(s16 *)(arg0 + 4)) & 0xFF) >> 3;
+        tmp[2] = g;
+        b1 = arg0[2] >> 3;
+        tmp[1] = b1;
+        b15 = (u32)b1 << 0xF;
+        b2 = ((-*(s16 *)(arg0 + 6)) & 0xFF) >> 3;
+        re2 = ((u32)r << 0xA) | 0xE2000000u;
+        ret = b15 | re2 | ((u32)b2 << 5) | (u32)g;
+        tmp[3] = b2;
+        return ret;
+    }
+    return 0;
+}
+extern u8 D_8009BE74;
+extern u8 D_8009BE77;
+s32 func_8007CA00(s16 *arg0) {
+    s32 v1, a, t;
+    switch (D_8009BE74) {
+    case 1:
+        if (D_8009BE77 != 0) {
+            t = 0x400;
+            v1 = arg0[2];
+            a = arg0[0];
+        sub:
+            t = t - v1;
+            return t - a;
+        }
+        t = arg0[0];
+        goto ret;
+    case 2:
+        if (0 != D_8009BE77) {
+            v1 = ((s16)(*((u16 *)(arg0 + 2)))) / 2;
+            a = arg0[0];
+            /* FAKE: wrap keeps the 0x400 load below the div chain so it
+               fills the jump delay slot instead of hoisting to block top */
+            do { t = 0x400; } while (0);
+            goto sub;
+        }
+        t = ((s32)((s16)(*((u16 *)arg0)))) / 2;
+        goto ret;
+    default:
+        t = arg0[0];
+    ret:
+        return t;
+    }
+}
+u32 func_8007CAB0(void) {
+    return *g_gpu_stat_reg;
+}
+extern s32 func_8007DC68();
+extern s32 func_8007DC9C();
+extern volatile s32 *D_8009BF58;
+extern volatile s32 *D_8009BF5C;
+extern volatile s32 *D_8009BF60;
+extern volatile s32 *D_8009BF64;
+s32 func_8007CAC8(s32 arg0, s32 arg1) {
+    *D_8009BF64 |= 0x08000000;
+    *D_8009BF60 = 0;
+    *D_8009BF58 = (arg0 - 4) + (arg1 * 4);
+    *D_8009BF5C = arg1;
+    *D_8009BF60 = 0x11000002;
+    func_8007DC68();
+    if (*D_8009BF60 & 0x01000000) {
+        do {
+            if (func_8007DC9C() != 0) {
+                return -1;
+            }
+        } while (*D_8009BF60 & 0x01000000);
+    }
+    return arg1;
+}
+INCLUDE_ASM("asm/funcs", func_8007CBB0);
+typedef struct {
+    s32 unk0;
+    s16 x;
+    s16 y;
+} _GpuChunkHdr_CE0C;
+
+s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
+    register s32 var_s5 asm("s5");
+    s16 coord;
+    s32 half_size;
+    s32 big_size;
+    s32 remainder;
+    s32 v1_tmp;
+    u16 a0_tmp;
+    s32 v0_ext;
+
+    func_8007DC68();
+
+    coord = (v1_tmp = arg0->x);
+    var_s5 = 0;
+    __asm__ volatile("" : "=r"(var_s5) : "0"(var_s5));
+    if (coord < 0) goto x_neg;
+    if (D_8009BE78 < coord) {
+        v1_tmp = D_8009BE78;
+    }
+    goto x_done;
+x_neg:
+    v1_tmp = 0;
+x_done:
+    arg0->x = (s16)v1_tmp;
+
+    coord = arg0->y;
+    if (coord < 0) goto y_neg;
+    a0_tmp = coord;
+    v0_ext = a0_tmp << 16;
+    if (D_8009BE7A < coord) {
+        a0_tmp = D_8009BE7A;
+        goto y_block_8;
+    }
+    goto y_done;
+y_neg:
+    a0_tmp = 0;
+y_block_8:
+    v0_ext = a0_tmp << 16;
+y_done:
+    arg0->y = (s16)a0_tmp;
+
+    {
+        s32 y_ext = v0_ext >> 16;
+        s32 prod = (s32)arg0->x * y_ext + 1;
+        s32 rounded = prod + ((u32)prod >> 31);
+        half_size = rounded >> 1;
+        big_size = rounded >> 5;
+    }
+
+    if (half_size <= 0) {
+        return -1;
+    }
+
+    remainder = half_size - big_size * 16;
+
+    if (!((*g_gpu_stat_reg) & 0x04000000)) {
+        do {
+            if (func_8007DC9C((u32 *)0xA0000000) != 0) {
+                return -1;
+            }
+        } while (!((*g_gpu_stat_reg) & 0x04000000));
+    }
+
+    *g_gpu_stat_reg = 0x04000000;
+    *g_gpu_data_reg = 0x01000000;
+    *g_gpu_data_reg = (var_s5 != 0) ? 0xB0000000 : 0xA0000000;
+    *g_gpu_data_reg = arg0->unk0;
+    *g_gpu_data_reg = *(s32 *)&arg0->x;
+
+    while (--remainder != -1) {
+        *g_gpu_data_reg = *arg1++;
+    }
+
+    if (big_size != 0) {
+        *g_gpu_stat_reg = 0x04000002;
+        *g_gpu_dma_madr = (u32)arg1;
+        *g_gpu_dma_bcr = (big_size << 16) | 0x10;
+        *g_gpu_dma_chcr = 0x01000201;
+    }
+
+    return 0;
+}
+
+INCLUDE_ASM("asm/funcs", func_8007D048);
+void func_8007D2CC(u32 a0) {
+    *g_gpu_stat_reg = a0;
+    g_gpu_color_table[a0 >> 24] = a0;
+}
+u32 func_8007D2F4(s32 a0) {
+    return g_gpu_color_table[a0];
+}
+s32 gpu_SendData(u32 *a0, s32 a1) {
+    s32 i;
+    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR;
+    for (i = a1 - 1; i != -1; i--) {
+        *(volatile u32 *)g_gpu_data_reg = *a0++;
+    }
+    return 0;
+}
+void gpu_StartDmaList(u32 a0) {
+    *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
+    *(volatile u32 *)g_gpu_dma_madr = a0;
+    *(volatile u32 *)g_gpu_dma_bcr = 0;
+    *(volatile u32 *)g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
+}
+u32 gpu_GetInfo(u32 a0) {
+    *g_gpu_stat_reg = a0 | GP1_GPU_INFO;
+    return *g_gpu_data_reg & OT_ADDR_MASK;
+}
+void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
+    func_8007D3F8(a0, a1, 0, a2);
+}
+extern s32 *D_8009BF48;
+extern s32 D_8009BF78;
+extern s32 D_8009BF7C;
+extern s32 func_8007DC68();
+
+void func_8007D6D8();                           /* extern */
+s32 func_8007DC9C();                                /* extern */
+s32 DMACallback(s32, s32 (*)()); /* extern */
+s32 SetIntrMask(s32);                         /* extern */
+extern u8 D_8009BE75;
+extern s32 D_8009BE7C;
+extern s32 D_8009BE80;
+extern s32 *D_8009BF54;
+extern s32 (*D_8009BF68)(s32 *, s32);
+extern s32 *D_8009BF6C;
+extern s32 D_8009BF70;
+extern s32 D_8009BF80;
+extern s32 D_80103680;
+extern s32 D_80103684;
+extern s32 D_80103688;
+extern s32 D_8010368C;
+
+s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
+    s32 *var_a3;
+    s32 temp_a0;
+    s32 temp_a1;
+    s32 var_a2;
+    s32 var_v0;
+    s32 var_v0_2;
+
+    func_8007DC68();
+    goto check_top;
+err_loop:
+    if (func_8007DC9C() != 0) {
+        return -1;
+    }
+    func_8007D6D8();
+check_top:
+    if (((D_8009BF78 + 1) & 0x3F) == D_8009BF7C) {
+        goto err_loop;
+    }
+    {
+        D_8009BF80 = SetIntrMask(0);
+        D_8009BE7C = 1;
+        if ((D_8009BE75 == 0) || ((D_8009BF78 == D_8009BF7C) && !(*D_8009BF54 & 0x01000000) && (D_8009BE80 == 0))) {
+            do {
+            } while (!(*D_8009BF48 & 0x04000000));
+            arg0(arg1, arg3);
+            D_8009BF68 = arg0;
+            D_8009BF6C = arg1;
+            D_8009BF70 = arg3;
+            SetIntrMask(D_8009BF80);
+            return 0;
+        }
+        DMACallback(2, func_8007D6D8);
+        var_a2 = 0;
+        if (arg2 != 0) {
+            s32 v_shift;
+            var_a3 = arg1;
+            var_v0_2 = arg2;
+loop_13:
+            if (var_v0_2 < 0) {
+                var_v0_2 += 3;
+            }
+            v_shift = var_v0_2 >> 2;
+            temp_a0 = var_a2 * 4;
+            if (var_a2 < v_shift) {
+                temp_a1 = *var_a3;
+                var_a3 += 1;
+                var_a2 += 1;
+                *(s32 *)(temp_a0 + ((D_8009BF78 * 0x60) + (s32)&D_8010368C)) = temp_a1;
+                var_v0_2 = arg2;
+                goto loop_13;
+            }
+            *(s32 **)((s32)&D_80103684 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = (s32 *)((*(volatile s32 *)&D_8009BF78 * 0x60) + (s32)&D_8010368C);
+        } else {
+            *(s32 **)((s32)&D_80103684 + (D_8009BF78 * 0x60)) = arg1;
+        }
+        *(s32 *)((s32)&D_80103688 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg3;
+        *(s32 (**)(s32 *, s32))((s32)&D_80103680 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg0;
+        D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
+        SetIntrMask(D_8009BF80);
+        func_8007D6D8();
+        var_v0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
+        return var_v0;
+    }
+}
+INCLUDE_ASM("asm/funcs", func_8007D6D8);
+extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
+extern s32 SetIntrMask(s32);
+extern s32 func_8007DE08(s32);
+extern volatile s32 *D_8009BF48;
+extern s32 *D_8009BF54;
+extern volatile s32 D_8009BF7C;
+extern s32 D_8009BF78;
+extern s32 D_8009BF88;
+extern u8 D_800F189C[];
+extern u8 D_80103680[];
+extern s32 g_str_gpu_timeout;
+extern s32 D_80016044;
+extern u32 *g_gpu_dma_madr;
+extern volatile int *D_8009BF64;
+extern s32 D_8009BF68[];
+extern s32 D_8009BF6C;
+extern s32 D_8009BF70;
+extern s32 printf();
+s32 func_8007D9C4(s32 arg0) {
+    D_8009BF88 = SetIntrMask(0);
+    D_8009BF7C = 0;
+    D_8009BF78 = D_8009BF7C;
+    switch (arg0 & 7) {
+    case 5:
+    case 0:
+        *D_8009BF54 = 0x401;
+        *D_8009BF64 |= 0x800;
+        *D_8009BF48 = 0;
+        bb2_memset(D_800F189C, 0, 0x100);
+        bb2_memset(D_80103680, 0, 0x1800);
+        break;
+    case 1:
+    case 3:
+        *D_8009BF54 = 0x401;
+        *D_8009BF64 |= 0x800;
+        *D_8009BF48 = 0x02000000;
+        *D_8009BF48 = 0x01000000;
+        break;
+    }
+    SetIntrMask(D_8009BF88);
+    if (arg0 & 7) {
+        return 0;
+    }
+    return func_8007DE08(arg0);
+}
+extern void func_8007D6D8();
+s32 func_8007DB20(s32 arg0) {
+    s32 temp_s0;
+    s32 ret;
+
+    if (arg0 == 0) {
+        func_8007DC68();
+        while (D_8009BF78 != D_8009BF7C) {
+            func_8007D6D8();
+            if (func_8007DC9C() != 0) return -1;
+        }
+        while ((*g_gpu_dma_chcr & 0x01000000) || !(*g_gpu_stat_reg & 0x04000000)) {
+            if (func_8007DC9C() != 0) return -1;
+        }
+        return 0;
+    }
+    temp_s0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
+    if (temp_s0 != 0) {
+        func_8007D6D8();
+    }
+    if (!(*g_gpu_dma_chcr & 0x01000000) && (*g_gpu_stat_reg & 0x04000000)) {
+        ret = temp_s0;
+    } else {
+        if (temp_s0 != 0) {
+            ret = temp_s0;
+        } else {
+            return 1;
+        }
+    }
+    return ret;
+}
+void func_8007DC68(void) {
+    g_gpu_vcount = VSync(-1) + 0xF0;
+    g_gpu_draw_count = 0;
+}
+s32 func_8007DC9C(void) {
+    volatile s32 *new_var2;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 new_var;
+    new_var2 = &D_8009BF7C;
+    if ((g_gpu_vcount < VSync(-1)) || ((temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, (temp_v1 > 0xF0000) != 0))) {
+        new_var = *g_gpu_stat_reg;
+        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        (void)new_var;
+        printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
+        temp_v0 = SetIntrMask(0);
+        D_8009BF7C = 0;
+        D_8009BF88 = temp_v0;
+        D_8009BF78 = *new_var2;
+        *g_gpu_dma_chcr = 0x401;
+        *D_8009BF64 |= 0x800;
+        *g_gpu_stat_reg = 0x02000000;
+        *g_gpu_stat_reg = 0x01000000;
+        SetIntrMask(D_8009BF88);
+        return -1;
+    }
+    return 0;
+}s32 func_8007DE08(s32 arg0) {
+    *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
+    if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {
+        *(volatile s32 *)g_gpu_data_reg = (*(volatile s32 *)g_gpu_stat_reg & 0x3FFF) | 0xE1001000;
+        (void)*(volatile s32 *)g_gpu_data_reg;
+        if (!(*(volatile s32 *)g_gpu_stat_reg & 0x1000)) {
+            return 0;
+        }
+        if (!(arg0 & 8)) {
+            return 1;
+        }
+        *(volatile s32 *)g_gpu_stat_reg = 0x20000504;
+        return 2;
+    }
+    if (!(arg0 & 8)) {
+        return 3;
+    }
+    *(volatile s32 *)g_gpu_stat_reg = 0x09000001;
+    return 4;
+}
+void bb2_memset(u8 *a0, u8 a1, s32 a2) {
+    s32 i;
+    for (i = a2 - 1; i != -1; i--) {
+        *a0++ = a1;
+    }
+}
+__asm__(
+    ".set noreorder\n"
+    ".set noat\n"
+    "glabel GPU_cw\n"
+    "    addiu $t2, $zero, 0xA0\n"
+    "    jr    $t2\n"
+    "    addiu $t1, $zero, 0x49\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* 1 NOP after bios_GPU_cw */
+extern s32 sin_1(s32);
+s32 rsin(s32 a0) {
+    s32 v;
+    if (a0 < 0) {
+        v = sin_1((-a0) & 0xFFF);
+        return -v;
+    }
+    return sin_1(a0 & 0xFFF);
+}
+extern s16 g_sin_lut_q1[];
+extern s16 g_sin_lut_q3[];
+extern s16 g_cos_lut_q2[];
+extern s16 g_cos_lut_q4[];
+
+s32 sin_1(s32 a0) {
+    if (a0 < 0x801) {
+        if (a0 < 0x401) {
+            return g_sin_lut_q1[a0];
+        }
+        return g_sin_lut_q1[0x800 - a0];
+    }
+    if (a0 < 0xC01) {
+        return -g_sin_lut_q3[a0];
+    }
+    return -g_sin_lut_q1[0x1000 - a0];
+}
+s32 rcos(s32 a0) {
+    if (a0 < 0) {
+        a0 = -a0;
+    }
+    a0 = a0 & 0xFFF;
+    if (a0 < 0x801) {
+        if (a0 < 0x401) {
+            return g_sin_lut_q1[0x400 - a0];
+        }
+        return -g_cos_lut_q2[a0];
+    }
+    if (a0 < 0xC01) {
+        return -g_sin_lut_q1[0xC00 - a0];
+    }
+    return g_cos_lut_q4[a0];
+}
+
+/* Data blob D_8007E08C between math_Cos and func_8007E094 */
+__asm__(
+    ".section .text\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .include \"asm/funcs/D_8007E08C.s\"\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "glabel InitGeom\n"
+    "    lui    $at, %hi(g_gte_saved_ra)\n"
+    "    sw     $ra, %lo(g_gte_saved_ra)($at)\n"
+    "    jal    _patch_gte\n"
+    "    nop\n"
+    "    lui    $ra, %hi(g_gte_saved_ra)\n"
+    "    lw     $ra, %lo(g_gte_saved_ra)($ra)\n"
+    "    nop\n"
+    "    mfc0   $v0, $12\n"
+    "    lui    $v1, 0x4000\n"
+    "    or     $v0, $v0, $v1\n"
+    "    mtc0   $v0, $12\n"
+    "    nop\n"
+    "    addiu  $t0, $zero, 0x155\n"
+    "    ctc2   $t0, $29\n"
+    "    nop\n"
+    "    addiu  $t0, $zero, 0x100\n"
+    "    ctc2   $t0, $30\n"
+    "    nop\n"
+    "    addiu  $t0, $zero, 0x3E8\n"
+    "    ctc2   $t0, $26\n"
+    "    nop\n"
+    "    addiu  $t0, $zero, -0x1062\n"
+    "    ctc2   $t0, $27\n"
+    "    nop\n"
+    "    lui    $t0, 0x0140\n"
+    "    ctc2   $t0, $28\n"
+    "    nop\n"
+    "    ctc2   $zero, $24\n"
+    "    ctc2   $zero, $25\n"
+    "    nop\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007E094 */
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "glabel SquareRoot0\n"
+    "    mtc2   $a0, $30\n"
+    "    nop\n"
+    "    nop\n"
+    "    mfc2   $v0, $31\n"
+    "    addiu  $at, $zero, 0x20\n"
+    "    beq    $v0, $at, .L8007E198\n"
+    "    nop\n"
+    "    andi   $t0, $v0, 0x1\n"
+    "    addiu  $t2, $zero, -0x2\n"
+    "    and    $t2, $v0, $t2\n"
+    "    addiu  $t1, $zero, 0x1F\n"
+    "    sub    $t1, $t1, $t2\n"
+    "    sra    $t1, $t1, 1\n"
+    "    addi   $t3, $t2, -0x18\n"
+    "    bltz   $t3, .L8007E164\n"
+    "    nop\n"
+    "    sllv   $t4, $a0, $t3\n"
+    "    b      .L8007E170\n"
+    ".L8007E164:\n"
+    "    addiu  $t3, $zero, 0x18\n"
+    "    sub    $t3, $t3, $t2\n"
+    "    srav   $t4, $a0, $t3\n"
+    ".L8007E170:\n"
+    "    addi   $t4, $t4, -0x40\n"
+    "    sll    $t4, $t4, 1\n"
+    "    lui    $t5, %hi(g_gte_sqrt_table)\n"
+    "    addu   $t5, $t5, $t4\n"
+    "    lh     $t5, %lo(g_gte_sqrt_table)($t5)\n"
+    "    nop\n"
+    "    sllv   $t5, $t5, $t1\n"
+    "    srl    $v0, $t5, 12\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".L8007E198:\n"
+    "    jr     $ra\n"
+    "    addiu  $v0, $zero, 0x0\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+PAD_NOPS_3; /* 3 NOPs after func_8007E11C */
+/* func_8007E1AC = LIBGTE MSC06 LoadAverage12 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Hand-written GTE asm; disassembler tags every
+ * cop2 op "handwritten instruction". No pure-C form (mtc2/lwc2/gpf/gpl/mfc2/
+ * swc2 have no C analog). Canonical-body authorization 2026-07-11 per
+ * canonical-asm-retirement (STRONG cluster corroboration: sibling
+ * calc_fc_frame_8007EC5C ASM-WHOLE, func_8007E8AC canonical-body). */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel LoadAverage12\n"
+    "    mtc2   $a2, $8\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4B98003D\n"    /* gpf 1 */
+    "    mfc2   $v0, $31\n"
+    "    mtc2   $a3, $8\n"
+    "    lwc2   $9, 0($a1)\n"
+    "    lwc2   $10, 4($a1)\n"
+    "    lwc2   $11, 8($a1)\n"
+    "    nop\n"
+    "    .word  0x4BA8003E\n"    /* gpl 1 */
+    "    lw     $t0, 16($sp)\n"
+    "    nop\n"
+    "    swc2   $9, 0($t0)\n"
+    "    swc2   $10, 4($t0)\n"
+    "    swc2   $11, 8($t0)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel LoadAverage12\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007E1FC = LIBGTE MSC06 LoadAverage0 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Twin of func_8007E1AC differing only in the
+ * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical-body
+ * authorization 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel LoadAverage0\n"
+    "    mtc2   $a2, $8\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4B90003D\n"    /* gpf 0 */
+    "    mfc2   $v0, $31\n"
+    "    mtc2   $a3, $8\n"
+    "    lwc2   $9, 0($a1)\n"
+    "    lwc2   $10, 4($a1)\n"
+    "    lwc2   $11, 8($a1)\n"
+    "    nop\n"
+    "    .word  0x4BA0003E\n"    /* gpl 0 */
+    "    lw     $t0, 16($sp)\n"
+    "    nop\n"
+    "    swc2   $9, 0($t0)\n"
+    "    swc2   $10, 4($t0)\n"
+    "    swc2   $11, 8($t0)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel LoadAverage0\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+s32 LoadAverageShort12(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
+    s32 v0;
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
+    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
+    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B98003D");             /* gpf 1 */
+    __asm__ volatile (".word 0x8CA80000" :: "r"(a1));  /* lw $t0, 0($a1) */
+    __asm__ volatile (".word 0x8CAA0004" :: "r"(a1));  /* lw $t2, 4($a1) */
+    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4BA8003E");             /* gpl 1 */
+    __asm__ volatile (".word 0x48084800");             /* mfc2 $t0, $9 */
+    __asm__ volatile (".word 0x48095000");             /* mfc2 $t1, $10 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x00094C00");             /* sll $t1, $t1, 16 */
+    __asm__ volatile (".word 0x01094025");             /* or $t0, $t0, $t1 */
+    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
+    __asm__ volatile (".word 0x480A5800");             /* mfc2 $t2, $11 */
+    __asm__ volatile (".word 0xADA80000");             /* sw $t0, 0($t5) */
+    __asm__ volatile (".word 0xADAA0004");             /* sw $t2, 4($t5) */
+    (void)out;
+    return v0;
+}
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+s32 LoadAverageShort0(s32 *a0, s32 *a1, s32 a2, s32 a3, s32 *out) {
+    s32 v0;
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C8A0004" :: "r"(a0));  /* lw $t2, 4($a0) */
+    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
+    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
+    __asm__ volatile (".word 0x8CA80000" :: "r"(a1));  /* lw $t0, 0($a1) */
+    __asm__ volatile (".word 0x8CAA0004" :: "r"(a1));  /* lw $t2, 4($a1) */
+    __asm__ volatile (".word 0x00084C03");             /* sra $t1, $t0, 16 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x314AFFFF");             /* andi $t2, $t2, 0xFFFF */
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
+    __asm__ volatile (".word 0x48084800");             /* mfc2 $t0, $9 */
+    __asm__ volatile (".word 0x48095000");             /* mfc2 $t1, $10 */
+    __asm__ volatile (".word 0x3108FFFF");             /* andi $t0, $t0, 0xFFFF */
+    __asm__ volatile (".word 0x00094C00");             /* sll $t1, $t1, 16 */
+    __asm__ volatile (".word 0x01094025");             /* or $t0, $t0, $t1 */
+    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
+    __asm__ volatile (".word 0x480A5800");             /* mfc2 $t2, $11 */
+    __asm__ volatile (".word 0xADA80000");             /* sw $t0, 0($t5) */
+    __asm__ volatile (".word 0xADAA0004");             /* sw $t2, 4($t5) */
+    (void)out;
+    return v0;
+}
+s32 LoadAverageByte(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
+    s32 v0;
+    __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
+    __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
+    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
+    __asm__ volatile (".word 0x90A80000" :: "r"(a1));  /* lbu $t0, 0($a1) */
+    __asm__ volatile (".word 0x90A90001" :: "r"(a1));  /* lbu $t1, 1($a1) */
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x240B000C");             /* addiu $t3, $zero, 0xC */
+    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
+    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
+    __asm__ volatile (".word 0x4808C800");             /* mfc2 $t0, $25 */
+    __asm__ volatile (".word 0x4809D000");             /* mfc2 $t1, $26 */
+    __asm__ volatile (".word 0x01684007");             /* srav $t0, $t0, $t3 */
+    __asm__ volatile (".word 0x01694807");             /* srav $t1, $t1, $t3 */
+    __asm__ volatile (".word 0xA1A80000");             /* sb $t0, 0($t5) */
+    __asm__ volatile (".word 0xA1A90001");             /* sb $t1, 1($t5) */
+    (void)out;
+    return v0;
+}
+s32 LoadAverageCol(u8 *a0, u8 *a1, s32 a2, s32 a3, u8 *out) {
+    s32 v0;
+    __asm__ volatile (".word 0x90880000" :: "r"(a0));  /* lbu $t0, 0($a0) */
+    __asm__ volatile (".word 0x90890001" :: "r"(a0));  /* lbu $t1, 1($a0) */
+    __asm__ volatile (".word 0x908A0002" :: "r"(a0));  /* lbu $t2, 2($a0) */
+    __asm__ volatile (".word 0x48864000" :: "r"(a2));  /* mtc2 $a2, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B90003D");             /* gpf 0 */
+    __asm__ volatile (".word 0x90A80000" :: "r"(a1));  /* lbu $t0, 0($a1) */
+    __asm__ volatile (".word 0x90A90001" :: "r"(a1));  /* lbu $t1, 1($a1) */
+    __asm__ volatile (".word 0x90AA0002" :: "r"(a1));  /* lbu $t2, 2($a1) */
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile (".word 0x48884800");             /* mtc2 $t0, $9 */
+    __asm__ volatile (".word 0x48895000");             /* mtc2 $t1, $10 */
+    __asm__ volatile (".word 0x488A5800");             /* mtc2 $t2, $11 */
+    __asm__ volatile (".word 0x240B000C");             /* addiu $t3, $zero, 0xC */
+    __asm__ volatile (".word 0x4BA0003E");             /* gpl 0 */
+    __asm__ volatile (".word 0x8FAD0010");             /* lw $t5, 0x10($sp) */
+    __asm__ volatile (".word 0x4808C800");             /* mfc2 $t0, $25 */
+    __asm__ volatile (".word 0x4809D000");             /* mfc2 $t1, $26 */
+    __asm__ volatile (".word 0x480AD800");             /* mfc2 $t2, $27 */
+    __asm__ volatile (".word 0x01684007");             /* srav $t0, $t0, $t3 */
+    __asm__ volatile (".word 0x01694807");             /* srav $t1, $t1, $t3 */
+    __asm__ volatile (".word 0x016A5007");             /* srav $t2, $t2, $t3 */
+    __asm__ volatile (".word 0xA1A80000");             /* sb $t0, 0($t5) */
+    __asm__ volatile (".word 0xA1A90001");             /* sb $t1, 1($t5) */
+    __asm__ volatile (".word 0xA1AA0002");             /* sb $t2, 2($t5) */
+    (void)out;
+    return v0;
+}
+PAD_NOPS_1; /* 1 NOP after func_8007E1AC */
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "glabel SquareRoot12\n"
+    "    mtc2   $a0, $30\n"
+    "    nop\n"
+    "    nop\n"
+    "    mfc2   $v0, $31\n"
+    "    addiu  $at, $zero, 0x20\n"
+    "    beq    $v0, $at, .L8007E4C8\n"
+    "    nop\n"
+    "    andi   $t0, $v0, 0x1\n"
+    "    addiu  $t2, $zero, -0x2\n"
+    "    and    $t2, $v0, $t2\n"
+    "    addiu  $t1, $zero, 0x13\n"
+    "    sub    $t1, $t1, $t2\n"
+    "    sra    $t1, $t1, 1\n"
+    "    addi   $t3, $t2, -0x18\n"
+    "    bltz   $t3, .L8007E484\n"
+    "    nop\n"
+    "    sllv   $t4, $a0, $t3\n"
+    "    b      .L8007E490\n"
+    ".L8007E484:\n"
+    "    addiu  $t3, $zero, 0x18\n"
+    "    sub    $t3, $t3, $t2\n"
+    "    srav   $t4, $a0, $t3\n"
+    ".L8007E490:\n"
+    "    addi   $t4, $t4, -0x40\n"
+    "    sll    $t4, $t4, 1\n"
+    "    lui    $t5, %hi(g_gte_sqrt_table)\n"
+    "    addu   $t5, $t5, $t4\n"
+    "    lh     $t5, %lo(g_gte_sqrt_table)($t5)\n"
+    "    nop\n"
+    "    bltz   $t1, .L8007E4BC\n"
+    "    nop\n"
+    "    sllv   $v0, $t5, $t1\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".L8007E4BC:\n"
+    "    neg    $t1, $t1\n"
+    "    jr     $ra\n"
+    "    srlv   $v0, $t5, $t1\n"
+    ".L8007E4C8:\n"
+    "    jr     $ra\n"
+    "    addiu  $v0, $zero, 0x0\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+PAD_NOPS_3; /* 3 NOPs after func_8007E43C */
+/* func_8007E4DC = LIBGTE MTX_000 MulMatrix0 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). 3x3-mvmva matrix transform sibling of
+ * calc_fc_frame_8007EC5C (ASM-WHOLE 2026-05-31). All the same hand-coded
+ * signals: splat-tagged every cop2 op "handwritten instruction", hardcoded
+ * `swc2 $11, 16($a2)` source reg, hand-scheduled cycle-N+1-mfc2 during
+ * cycle-N-mvmva latency, per-cycle `lui $at, 0xFFFF` re-materialization,
+ * addu $v0,$a2 pass-through-at-end. Canonical-body 2026-07-11 per gte-3x3
+ * (archived) explicit sibling-follow directive. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel MulMatrix0\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a2)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a2)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a2)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a2)\n"
+    "    swc2   $11, 16($a2)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel MulMatrix0\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* 1 NOP after func_8007E4DC */
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "glabel CompMatrix\n"
+    "    lw $t0, 0($a0)\n"
+    "    lw $t1, 4($a0)\n"
+    "    lw $t2, 8($a0)\n"
+    "    lw $t3, 12($a0)\n"
+    "    lw $t4, 16($a0)\n"
+    "    ctc2 $t0, $0\n"
+    "    ctc2 $t1, $1\n"
+    "    ctc2 $t2, $2\n"
+    "    ctc2 $t3, $3\n"
+    "    ctc2 $t4, $4\n"
+    "    lhu $t0, 0($a1)\n"
+    "    lw $t1, 4($a1)\n"
+    "    lw $t2, 12($a1)\n"
+    "    lui $at, (0xFFFF0000 >> 16)\n"
+    "    and $t1, $t1, $at\n"
+    "    or $t0, $t0, $t1\n"
+    "    mtc2 $t0, $0\n"
+    "    mtc2 $t2, $1\n"
+    "    nop\n"
+    "    mvmva 1, 0, 0, 3, 0\n"
+    "    lhu $t0, 2($a1)\n"
+    "    lw $t1, 8($a1)\n"
+    "    lh $t2, 14($a1)\n"
+    "    sll $t1, $t1, 16\n"
+    "    or $t0, $t0, $t1\n"
+    "    mfc2 $t3, $9\n"
+    "    mfc2 $t4, $10\n"
+    "    mfc2 $t5, $11\n"
+    "    mtc2 $t0, $0\n"
+    "    mtc2 $t2, $1\n"
+    "    nop\n"
+    "    mvmva 1, 0, 0, 3, 0\n"
+    "    lhu $t0, 4($a1)\n"
+    "    lw $t1, 8($a1)\n"
+    "    lw $t2, 16($a1)\n"
+    "    lui $at, (0xFFFF0000 >> 16)\n"
+    "    and $t1, $t1, $at\n"
+    "    or $t0, $t0, $t1\n"
+    "    mfc2 $t6, $9\n"
+    "    mfc2 $t7, $10\n"
+    "    mfc2 $t8, $11\n"
+    "    mtc2 $t0, $0\n"
+    "    mtc2 $t2, $1\n"
+    "    nop\n"
+    "    mvmva 1, 0, 0, 3, 0\n"
+    "    andi $t3, $t3, 0xFFFF\n"
+    "    sll $t6, $t6, 16\n"
+    "    or $t6, $t6, $t3\n"
+    "    sw $t6, 0($a2)\n"
+    "    andi $t5, $t5, 0xFFFF\n"
+    "    sll $t8, $t8, 16\n"
+    "    or $t8, $t8, $t5\n"
+    "    sw $t8, 12($a2)\n"
+    "    mfc2 $t0, $9\n"
+    "    mfc2 $t1, $10\n"
+    "    swc2 $11, 16($a2)\n"
+    "    lhu $t5, 20($a1)\n"
+    "    lw $t6, 24($a1)\n"
+    "    lw $t2, 28($a1)\n"
+    "    sll $t6, $t6, 16\n"
+    "    or $t5, $t5, $t6\n"
+    "    mtc2 $t5, $0\n"
+    "    mtc2 $t2, $1\n"
+    "    nop\n"
+    "    mvmva 1, 0, 0, 3, 0\n"
+    "    sll $t4, $t4, 16\n"
+    "    andi $t0, $t0, 0xFFFF\n"
+    "    or $t0, $t0, $t4\n"
+    "    sw $t0, 4($a2)\n"
+    "    andi $t7, $t7, 0xFFFF\n"
+    "    sll $t1, $t1, 16\n"
+    "    or $t1, $t1, $t7\n"
+    "    sw $t1, 8($a2)\n"
+    "    mfc2 $t0, $25\n"
+    "    mfc2 $t1, $26\n"
+    "    mfc2 $t2, $27\n"
+    "    lw $t3, 20($a0)\n"
+    "    lw $t4, 24($a0)\n"
+    "    lw $t5, 28($a0)\n"
+    "    add $t0, $t0, $t3\n"
+    "    add $t1, $t1, $t4\n"
+    "    add $t2, $t2, $t5\n"
+    "    sw $t0, 20($a2)\n"
+    "    sw $t1, 24($a2)\n"
+    "    sw $t2, 28($a2)\n"
+    "    addu $v0, $a2, $zero\n"
+    "    jr $ra\n"
+    "    nop\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+/* func_8007E74C = LIBGTE MTX_004 ApplyMatrixLV â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Local-vector transform with pre-scaling via sign-
+ * split (hi=x>>15, lo=x&0x7FFF), two mvmva cycles (hi 0,0,3,3,0 then lo
+ * 1,0,3,3,0), post-scale hi result by 8 via signed <<3, sum + store. Hand-
+ * coded evidence: uses the archived dead-branch-scheduling insert_after
+ * `sra $tN,$tM,15` idiom (bytes came from regfix rule text, not compilation)
+ * + subst jâ†’b branch-family rewrites. No compiled C reaches these bytes
+ * under the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13
+ * regfix rules retired alongside. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ApplyMatrixLV\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t1, 4($a0)\n"
+    "    lw         $t2, 8($a0)\n"
+    "    lw         $t3, 12($a0)\n"
+    "    lw         $t4, 16($a0)\n"
+    "    ctc2       $t0, $0\n"
+    "    ctc2       $t1, $1\n"
+    "    ctc2       $t2, $2\n"
+    "    ctc2       $t3, $3\n"
+    "    ctc2       $t4, $4\n"
+    "    lw         $t0, 0($a1)\n"
+    "    lw         $t1, 4($a1)\n"
+    "    lw         $t2, 8($a1)\n"
+    "    bgez       $t0, .L8007E7A4\n"
+    "     sra       $t3, $t0, 15\n"
+    "    negu       $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    "    negu       $t3, $t3\n"
+    "    b          .L8007E7A8\n"
+    "     negu      $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    ".L8007E7A4:\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    ".L8007E7A8:\n"
+    "    bgez       $t1, .L8007E7CC\n"
+    "     sra       $t4, $t1, 15\n"
+    "    negu       $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    "    negu       $t4, $t4\n"
+    "    b          .L8007E7D0\n"
+    "     negu      $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    ".L8007E7CC:\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    ".L8007E7D0:\n"
+    "    bgez       $t2, .L8007E7F4\n"
+    "     sra       $t5, $t2, 15\n"
+    "    negu       $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    "    negu       $t5, $t5\n"
+    "    b          .L8007E7F8\n"
+    "     negu      $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    ".L8007E7F4:\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    ".L8007E7F8:\n"
+    "    mtc2       $t3, $9\n"
+    "    mtc2       $t4, $10\n"
+    "    mtc2       $t5, $11\n"
+    "    nop\n"
+    "    mvmva      0, 0, 3, 3, 0\n"
+    "    mfc2       $t3, $25\n"
+    "    mfc2       $t4, $26\n"
+    "    mfc2       $t5, $27\n"
+    "    mtc2       $t0, $9\n"
+    "    mtc2       $t1, $10\n"
+    "    mtc2       $t2, $11\n"
+    "    nop\n"
+    "    mvmva      1, 0, 3, 3, 0\n"
+    "    bgez       $t3, .L8007E844\n"
+    "     nop\n"
+    "    negu       $t3, $t3\n"
+    "    sll        $t3, $t3, 3\n"
+    "    b          .L8007E848\n"
+    "     negu      $t3, $t3\n"
+    ".L8007E844:\n"
+    "    sll        $t3, $t3, 3\n"
+    ".L8007E848:\n"
+    "    bgez       $t4, .L8007E860\n"
+    "     nop\n"
+    "    negu       $t4, $t4\n"
+    "    sll        $t4, $t4, 3\n"
+    "    b          .L8007E864\n"
+    "     negu      $t4, $t4\n"
+    ".L8007E860:\n"
+    "    sll        $t4, $t4, 3\n"
+    ".L8007E864:\n"
+    "    bgez       $t5, .L8007E87C\n"
+    "     nop\n"
+    "    negu       $t5, $t5\n"
+    "    sll        $t5, $t5, 3\n"
+    "    b          .L8007E880\n"
+    "     negu      $t5, $t5\n"
+    ".L8007E87C:\n"
+    "    sll        $t5, $t5, 3\n"
+    ".L8007E880:\n"
+    "    mfc2       $t0, $25\n"
+    "    mfc2       $t1, $26\n"
+    "    mfc2       $t2, $27\n"
+    "    addu       $t0, $t0, $t3\n"
+    "    addu       $t1, $t1, $t4\n"
+    "    addu       $t2, $t2, $t5\n"
+    "    sw         $t0, 0($a2)\n"
+    "    sw         $t1, 4($a2)\n"
+    "    sw         $t2, 8($a2)\n"
+    "    jr         $ra\n"
+    "     addu      $v0, $a2, $zero\n"
+    "endlabel ApplyMatrixLV\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007E8AC â€” hand-written GTE mvmva vector-transform wrapper
+ * (8007Exxx hand-asm cluster, sibling of calc_fc_frame_8007EC5C, ASM-WHOLE
+ * authorized 2026-05-31; this sibling user-authorized 2026-06-11 per
+ * gte-3x3 / canonical-asm-authorization-recipe). Hand-coded evidence: the
+ * lw encodings target $t0/$t1 (unreachable from compiled C without
+ * forbidden pins), hand-placed GTE load-delay nop, return-pinned-at-end
+ * addu $v0,$a2 pass-through, unfilled jr delay slot. cop2 ops splat-tagged
+ * "handwritten instruction". */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ApplyRotMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t1, $1\n"
+    "    nop\n"
+    "    mvmva  1, 0, 0, 3, 0\n"
+    "    swc2   $9, 0($a1)\n"
+    "    swc2   $10, 4($a1)\n"
+    "    swc2   $11, 8($a1)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007E8DC = LIBGTE MTX_00A ScaleMatrixL â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). In-place Q12 fixed-point column scale of a 3x3
+ * matrix by 3 scalars (columns 0,1,2 x scalars *arg1[0/1/2]). Splat tags the
+ * body handwritten; hardcoded $t0..$t5 packed register cadence + hand-scheduled
+ * multu/mflo pairing + sw in jr delay slot are hand-coded signatures. Sibling
+ * of func_8007EDBC (canonical-body 2026-05-21 per packed-multiply-cluster).
+ * Canonical-body 2026-07-11 with the 1 fill_delay regfix rule stripped. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ScaleMatrixL\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t3, 0($a1)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t4, 4($a1)\n"
+    "    lw         $t5, 8($a1)\n"
+    "    lw         $t0, 4($a0)\n"
+    "    addu       $v0, $a0, $zero\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t3\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 0($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 8($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 4($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t4\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 12($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 8($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 16($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t5\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 12($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    jr         $ra\n"
+    "    sw         $t1, 16($a0)\n"
+    "endlabel ScaleMatrixL\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_3; /* 3 NOPs after func_8007E8DC */
+/* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ
+ * 4.0 object (census 2026-07-09). Sibling of ApplyMatrixLV (func_8007E74C):
+ * sign-splits input vec into hi/lo halves (arithmetic split), runs mvmva
+ * twice (hi 0,0,3,3,0 then lo 1,0,3,3,0), post-scales hi by <<3 with signed
+ * preservation, sums and stores. Uses archived dead-branch-scheduling regfix
+ * cheats + inline-move-aliasing + register asm pins. No pure-C form under
+ * the 2026-05-31 cheat catalog. Canonical-body 2026-07-11; all 13 regfix
+ * rules retired alongside. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ApplyRotMatrixLV\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t1, 4($a0)\n"
+    "    lw         $t2, 8($a0)\n"
+    "    bgez       $t0, .L8007EA3C\n"
+    "    sra       $t3, $t0, 15\n"
+    "    negu       $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    "    negu       $t3, $t3\n"
+    "    b          .L8007EA40\n"
+    "    negu      $t0, $t0\n"
+    "    sra        $t3, $t0, 15\n"
+    ".L8007EA3C:\n"
+    "    andi       $t0, $t0, 0x7FFF\n"
+    ".L8007EA40:\n"
+    "    bgez       $t1, .L8007EA64\n"
+    "    sra       $t4, $t1, 15\n"
+    "    negu       $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    "    negu       $t4, $t4\n"
+    "    b          .L8007EA68\n"
+    "    negu      $t1, $t1\n"
+    "    sra        $t4, $t1, 15\n"
+    ".L8007EA64:\n"
+    "    andi       $t1, $t1, 0x7FFF\n"
+    ".L8007EA68:\n"
+    "    bgez       $t2, .L8007EA8C\n"
+    "    sra       $t5, $t2, 15\n"
+    "    negu       $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    "    negu       $t5, $t5\n"
+    "    b          .L8007EA90\n"
+    "    negu      $t2, $t2\n"
+    "    sra        $t5, $t2, 15\n"
+    ".L8007EA8C:\n"
+    "    andi       $t2, $t2, 0x7FFF\n"
+    ".L8007EA90:\n"
+    "    mtc2       $t3, $9\n"
+    "    mtc2       $t4, $10\n"
+    "    mtc2       $t5, $11\n"
+    "    nop\n"
+    "    mvmva      0, 0, 3, 3, 0\n"
+    "    mfc2       $t3, $25\n"
+    "    mfc2       $t4, $26\n"
+    "    mfc2       $t5, $27\n"
+    "    mtc2       $t0, $9\n"
+    "    mtc2       $t1, $10\n"
+    "    mtc2       $t2, $11\n"
+    "    nop\n"
+    "    mvmva      1, 0, 3, 3, 0\n"
+    "    bgez       $t3, .L8007EADC\n"
+    "    nop\n"
+    "    negu       $t3, $t3\n"
+    "    sll        $t3, $t3, 3\n"
+    "    b          .L8007EAE0\n"
+    "    negu      $t3, $t3\n"
+    ".L8007EADC:\n"
+    "    sll        $t3, $t3, 3\n"
+    ".L8007EAE0:\n"
+    "    bgez       $t4, .L8007EAF8\n"
+    "    nop\n"
+    "    negu       $t4, $t4\n"
+    "    sll        $t4, $t4, 3\n"
+    "    b          .L8007EAFC\n"
+    "    negu      $t4, $t4\n"
+    ".L8007EAF8:\n"
+    "    sll        $t4, $t4, 3\n"
+    ".L8007EAFC:\n"
+    "    bgez       $t5, .L8007EB14\n"
+    "    nop\n"
+    "    negu       $t5, $t5\n"
+    "    sll        $t5, $t5, 3\n"
+    "    b          .L8007EB18\n"
+    "    negu      $t5, $t5\n"
+    ".L8007EB14:\n"
+    "    sll        $t5, $t5, 3\n"
+    ".L8007EB18:\n"
+    "    mfc2       $t0, $25\n"
+    "    mfc2       $t1, $26\n"
+    "    mfc2       $t2, $27\n"
+    "    addu       $t0, $t0, $t3\n"
+    "    addu       $t1, $t1, $t4\n"
+    "    addu       $t2, $t2, $t5\n"
+    "    sw         $t0, 0($a1)\n"
+    "    sw         $t1, 4($a1)\n"
+    "    sw         $t2, 8($a1)\n"
+    "    jr         $ra\n"
+    "    addu      $v0, $a1, $zero\n"
+    "endlabel ApplyRotMatrixLV\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007EA0C */
+/* func_8007EB4C = LIBGTE MTX_03 MulMatrix â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). In-place variant of the same 3-cycle mvmva
+ * transform as func_8007E4DC / calc_fc_frame_8007EC5C: reads matrix + vec
+ * from $a0 (out doubles as matrix-input buffer), writes result back to $a0.
+ * archived gte-3x3.md explicitly names this as cluster sibling. All the
+ * calc_fc_frame hand-coded signals hold. Canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel MulMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a0)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a0)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a0)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a0)\n"
+    "    swc2   $11, 16($a0)\n"
+    "    addu   $v0, $a0, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel MulMatrix\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* 1 NOP after func_8007EB4C */
+/* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.
+ * Authorized 2026-05-31 as COMPLETED-INLINE-ASM-CANONICAL -- see
+ * inline_asm_canonical.txt for justification. Disassembler annotates
+ * every cop2 op as a handwritten instruction; final swc2 $11 uses a
+ * hardcoded source reg; mvmva/mfc2/mtc2/nop pipeline is hand-scheduled
+ * (cycle N+1 setup interleaves with cycle N latency); per-cycle lui $at
+ * re-materialization is a hand-coded choice. No pure-C form reaches
+ * these bytes under the 2026-05-31 cheat catalog. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel MulMatrix2\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lhu    $t0, 0($a1)\n"
+    "    lw     $t1, 4($a1)\n"
+    "    lw     $t2, 12($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 2($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lh     $t2, 14($a1)\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t3, $9\n"
+    "    mfc2   $t4, $10\n"
+    "    mfc2   $t5, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    lhu    $t0, 4($a1)\n"
+    "    lw     $t1, 8($a1)\n"
+    "    lw     $t2, 16($a1)\n"
+    "    lui    $at, 0xFFFF\n"
+    "    and    $t1, $t1, $at\n"
+    "    or     $t0, $t0, $t1\n"
+    "    mfc2   $t6, $9\n"
+    "    mfc2   $t7, $10\n"
+    "    mfc2   $t8, $11\n"
+    "    mtc2   $t0, $0\n"
+    "    mtc2   $t2, $1\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    andi   $t3, $t3, 0xFFFF\n"
+    "    sll    $t6, $t6, 16\n"
+    "    or     $t6, $t6, $t3\n"
+    "    sw     $t6, 0($a1)\n"
+    "    andi   $t5, $t5, 0xFFFF\n"
+    "    sll    $t8, $t8, 16\n"
+    "    or     $t8, $t8, $t5\n"
+    "    sw     $t8, 12($a1)\n"
+    "    mfc2   $t0, $9\n"
+    "    mfc2   $t1, $10\n"
+    "    andi   $t0, $t0, 0xFFFF\n"
+    "    sll    $t4, $t4, 16\n"
+    "    or     $t0, $t0, $t4\n"
+    "    sw     $t0, 4($a1)\n"
+    "    andi   $t7, $t7, 0xFFFF\n"
+    "    sll    $t1, $t1, 16\n"
+    "    or     $t1, $t1, $t7\n"
+    "    sw     $t1, 8($a1)\n"
+    "    swc2   $11, 16($a1)\n"
+    "    addu   $v0, $a1, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel MulMatrix2\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_1; /* 1 NOP after calc_fc_frame_8007EC5C */
+/* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Loads a 3x3 R matrix (5 packed s32 words) into
+ * cop2 controls 0-4, transforms *a1 vec by RT matrix (mvmva 1,0,0,3,0),
+ * writes result to *a2. Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ApplyMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    lwc2   $0, 0($a1)\n"
+    "    lwc2   $1, 4($a1)\n"
+    "    nop\n"
+    "    .word  0x4A486012\n"    /* mvmva 1, 0, 0, 3, 0 */
+    "    swc2   $25, 0($a2)\n"
+    "    swc2   $26, 4($a2)\n"
+    "    swc2   $27, 8($a2)\n"
+    "    addu   $v0, $a2, $zero\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    "endlabel ApplyMatrix\n"
+);
+
+/* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed
+ * fixed-point multiply -- 3x3-matrix column scale: 9 packed s16 values each
+ * x coef[k%3] from arg1, >>12 Q12, repacked in place).
+ * Hand-coded, NOT compiled C:
+ *  - Leading `andi $t1,$t0,0xFFFF` before `sll 16; sra 16` is a REDUNDANT mask
+ *    (the sll discards exactly the masked bits). GCC combine (combine.c:1458
+ *    added_sets_2) elides a single-use redundant mask and keeps the 2nd-use
+ *    insn for a multi-use one, so no pure-C form emits this andi without a
+ *    stray instruction the target lacks (verified ~38 C forms).
+ *  - cc1psx (Sony GCC 2.7.2.SN.1) is byte-identical to our fork here (both
+ *    elide it) -- so the original was not compiled from C.
+ *  - Cluster: sibling func_8007E8DC (jaccard=0.58) is inline asm; the 8007Exxx
+ *    /8007Fxxx display.c region is documented hand-coded asm.
+ * User-authorized 2026-05-21 (cc1psx-proof + combine.c + cluster).
+ */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel ScaleMatrix\n"
+    "    lw         $t0, 0($a0)\n"
+    "    lw         $t3, 0($a1)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    lw         $t4, 4($a1)\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t5, 8($a1)\n"
+    "    lw         $t0, 4($a0)\n"
+    "    addu       $v0, $a0, $zero\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 0($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 8($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t3\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 4($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t4\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 12($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t5\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 8($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t3\n"
+    "    sra        $t2, $t0, 16\n"
+    "    lw         $t0, 16($a0)\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    andi       $t1, $t1, 0xFFFF\n"
+    "    multu      $t2, $t4\n"
+    "    mflo       $t2\n"
+    "    sra        $t2, $t2, 12\n"
+    "    sll        $t2, $t2, 16\n"
+    "    or         $t1, $t1, $t2\n"
+    "    sw         $t1, 12($a0)\n"
+    "    andi       $t1, $t0, 0xFFFF\n"
+    "    sll        $t1, $t1, 16\n"
+    "    sra        $t1, $t1, 16\n"
+    "    multu      $t1, $t5\n"
+    "    mflo       $t1\n"
+    "    sra        $t1, $t1, 12\n"
+    "    jr         $ra\n"
+    "     sw        $t1, 16($a0)\n"
+    "endlabel ScaleMatrix\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_3; /* 3 NOPs after func_8007EDBC */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel SetRotMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $0\n"
+    "    ctc2   $t1, $1\n"
+    "    ctc2   $t2, $2\n"
+    "    ctc2   $t3, $3\n"
+    "    ctc2   $t4, $4\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel gte_SetColorMatrix\n"
+    "    lw     $t0, 0($a0)\n"
+    "    lw     $t1, 4($a0)\n"
+    "    lw     $t2, 8($a0)\n"
+    "    lw     $t3, 12($a0)\n"
+    "    lw     $t4, 16($a0)\n"
+    "    ctc2   $t0, $16\n"
+    "    ctc2   $t1, $17\n"
+    "    ctc2   $t2, $18\n"
+    "    ctc2   $t3, $19\n"
+    "    ctc2   $t4, $20\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel SetTransMatrix\n"
+    "    lw     $t0, 20($a0)\n"
+    "    lw     $t1, 24($a0)\n"
+    "    lw     $t2, 28($a0)\n"
+    "    ctc2   $t0, $5\n"
+    "    ctc2   $t1, $6\n"
+    "    ctc2   $t2, $7\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel ReadSZfifo3\n"
+    "    swc2   $17, 0($a0)\n"
+    "    swc2   $18, 0($a1)\n"
+    "    swc2   $19, 0($a2)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_3; /* 3 NOPs after gte_GetScreenXY */
+s32 ReadGeomScreen(void) { s32 ret; __asm__ volatile (".word 0x4842D000" : "=r" (ret)); return ret; }
+PAD_NOPS_1; /* 1 NOP after gte_GetH */
+void SetBackColor(s32 a0, s32 a1, s32 a2) {
+    a0 <<= 4;
+    a1 <<= 4;
+    a2 <<= 4;
+    __asm__ volatile (".word 0x48C46800" :: "r"(a0));  /* ctc2 $a0, $13 */
+    __asm__ volatile (".word 0x48C57000" :: "r"(a1));  /* ctc2 $a1, $14 */
+    __asm__ volatile (".word 0x48C67800" :: "r"(a2));  /* ctc2 $a2, $15 */
+}
+void SetFarColor(s32 a0, s32 a1, s32 a2) {
+    a0 <<= 4;
+    a1 <<= 4;
+    a2 <<= 4;
+    __asm__ volatile (".word 0x48C4A800" :: "r"(a0));  /* ctc2 $a0, $21 */
+    __asm__ volatile (".word 0x48C5B000" :: "r"(a1));  /* ctc2 $a1, $22 */
+    __asm__ volatile (".word 0x48C6B800" :: "r"(a2));  /* ctc2 $a2, $23 */
+}
+void SetGeomOffset(s32 a0, s32 a1) {
+    a0 <<= 16;
+    a1 <<= 16;
+    __asm__ volatile (".word 0x48C4C000" :: "r"(a0));  /* ctc2 $a0, $24 */
+    __asm__ volatile (".word 0x48C5C800" :: "r"(a1));  /* ctc2 $a1, $25 */
+}
+PAD_NOPS_2; /* 2 NOPs after gte_SetScreenOffset */
+void SetGeomScreen(s32 a0) {
+    __asm__ volatile (".word 0x48C4D000" :: "r"(a0));  /* ctc2 $a0, $26 */
+}
+PAD_NOPS_1; /* 1 NOP after tslDmaDrawListDelAll */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel LightColor\n"
+    "    lwc2   $9,  0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    .word  0x4A4DA412\n"          /* mvmva 1,2,3,1,1 */
+    "    swc2   $9,  0($a1)\n"
+    "    swc2   $10, 4($a1)\n"
+    "    swc2   $11, 8($a1)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel DpqColorLight\n"
+    "    lwc2   $9,  0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    lwc2   $6,  0($a1)\n"
+    "    mtc2   $a2, $8\n"
+    "    nop\n"
+    "    .word  0x4A680029\n"          /* dpcl */
+    "    swc2   $22, 0($a3)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+void DpqColor3(s32 *a0, s32 *a1, s32 *a2, s32 a3, s32 *o0, s32 *o1, s32 *o2) {
+    __asm__ volatile (".word 0xC8940000" :: "r"(a0));  /* lwc2 $20, 0($a0) */
+    __asm__ volatile (".word 0xC8B50000" :: "r"(a1));  /* lwc2 $21, 0($a1) */
+    __asm__ volatile (".word 0xC8D60000" :: "r"(a2));  /* lwc2 $22, 0($a2) */
+    __asm__ volatile (".word 0xC8C60000" :: "r"(a2));  /* lwc2 $6,  0($a2) */
+    __asm__ volatile (".word 0x48874000" :: "r"(a3));  /* mtc2 $a3, $8 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4AF8002A");             /* dpct */
+    __asm__ volatile (".word 0x8FA80010");             /* lw $t0, 0x10($sp) */
+    __asm__ volatile (".word 0x8FA90014");             /* lw $t1, 0x14($sp) */
+    __asm__ volatile (".word 0x8FAA0018");             /* lw $t2, 0x18($sp) */
+    __asm__ volatile (".word 0xE9140000");             /* swc2 $20, 0($t0) */
+    __asm__ volatile (".word 0xE9350000");             /* swc2 $21, 0($t1) */
+    __asm__ volatile (".word 0xE9560000");             /* swc2 $22, 0($t2) */
+    (void)o0; (void)o1; (void)o2;
+}
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel Intpl\n"
+    "    lwc2   $9,  0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    mtc2   $a1, $8\n"
+    "    nop\n"
+    "    .word  0x4A980011\n"          /* intpl */
+    "    swc2   $22, 0($a2)\n"
+    "    jr     $ra\n"
+    "    nop\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+/* func_8007F0BC / func_8007F0E4 â€” hand-written GTE sqr leaf wrappers
+ * (8007Fxxx cluster, same shape as user-authorized func_8007E8AC
+ * f980d67b): lwc2 x3 -> GTE delay nop -> sqr -> swc2 x3 -> jr with
+ * hand-pinned `addu $v0,$a1,$zero` return in the delay slot. The return
+ * pin is unreachable from compiled C (local-alloc copy-suggestion scan is
+ * ascending, so the arg copy always wins the qty and the return copy
+ * materializes at function head â€” measured across volatile/return-local
+ * variants; the fill_delay regfix rules bridged exactly this). swc2 ops
+ * splat-tagged "handwritten instruction". User authorized 2026-06-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel Square12\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    sqr    1\n"
+    "    swc2   $25, 0($a1)\n"
+    "    swc2   $26, 4($a1)\n"
+    "    swc2   $27, 8($a1)\n"
+    "    jr     $ra\n"
+    "    addu   $v0, $a1, $zero\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel Square0\n"
+    "    lwc2   $9, 0($a0)\n"
+    "    lwc2   $10, 4($a0)\n"
+    "    lwc2   $11, 8($a0)\n"
+    "    nop\n"
+    "    sqr    0\n"
+    "    swc2   $25, 0($a1)\n"
+    "    swc2   $26, 4($a1)\n"
+    "    swc2   $27, 8($a1)\n"
+    "    jr     $ra\n"
+    "    addu   $v0, $a1, $zero\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+s32 AverageZ3(s32 a0, s32 a1, s32 a2) {
+    s32 v0;
+    __asm__ volatile (".word 0x48848800" :: "r"(a0));  /* mtc2 $a0, $17 */
+    __asm__ volatile (".word 0x48859000" :: "r"(a1));  /* mtc2 $a1, $18 */
+    __asm__ volatile (".word 0x48869800" :: "r"(a2));  /* mtc2 $a2, $19 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B58002D");              /* avsz3 */
+    __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
+    return v0;
+}
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+s32 AverageZ4(s32 a0, s32 a1, s32 a2, s32 a3) {
+    s32 v0;
+    __asm__ volatile (".word 0x48848000" :: "r"(a0));  /* mtc2 $a0, $16 */
+    __asm__ volatile (".word 0x48858800" :: "r"(a1));  /* mtc2 $a1, $17 */
+    __asm__ volatile (".word 0x48869000" :: "r"(a2));  /* mtc2 $a2, $18 */
+    __asm__ volatile (".word 0x48879800" :: "r"(a3));  /* mtc2 $a3, $19 */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B68002E");              /* avsz4 */
+    __asm__ volatile (".word 0x48023800" : "=r"(v0));  /* mfc2 $v0, $7 */
+    return v0;
+}
+void OuterProduct12(s32 *a0, s16 *a1, s32 *a2) {
+    __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
+    __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
+    __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C890004" :: "r"(a0));  /* lw $t1, 4($a0) */
+    __asm__ volatile (".word 0x8C8A0008" :: "r"(a0));  /* lw $t2, 8($a0) */
+    __asm__ volatile (".word 0x48C80000");             /* ctc2 $t0, $0 */
+    __asm__ volatile (".word 0x48C91000");             /* ctc2 $t1, $2 */
+    __asm__ volatile (".word 0x48CA2000");             /* ctc2 $t2, $4 */
+    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
+    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9,  0($a1) */
+    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B78000C");             /* op 1 */
+    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 $25, 0($a2) */
+    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 $26, 4($a2) */
+    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 $27, 8($a2) */
+    __asm__ volatile (".word 0x48CD0000");             /* ctc2 $t5, $0 */
+    __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
+    __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
+}
+void OuterProduct0(s32 *a0, s16 *a1, s32 *a2) {
+    __asm__ volatile (".word 0x484D0000");             /* cfc2 $t5, $0 */
+    __asm__ volatile (".word 0x484E1000");             /* cfc2 $t6, $2 */
+    __asm__ volatile (".word 0x484F2000");             /* cfc2 $t7, $4 */
+    __asm__ volatile (".word 0x8C880000" :: "r"(a0));  /* lw $t0, 0($a0) */
+    __asm__ volatile (".word 0x8C890004" :: "r"(a0));  /* lw $t1, 4($a0) */
+    __asm__ volatile (".word 0x8C8A0008" :: "r"(a0));  /* lw $t2, 8($a0) */
+    __asm__ volatile (".word 0x48C80000");             /* ctc2 $t0, $0 */
+    __asm__ volatile (".word 0x48C91000");             /* ctc2 $t1, $2 */
+    __asm__ volatile (".word 0x48CA2000");             /* ctc2 $t2, $4 */
+    __asm__ volatile (".word 0xC8AB0008" :: "r"(a1));  /* lwc2 $11, 8($a1) */
+    __asm__ volatile (".word 0xC8A90000" :: "r"(a1));  /* lwc2 $9,  0($a1) */
+    __asm__ volatile (".word 0xC8AA0004" :: "r"(a1));  /* lwc2 $10, 4($a1) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4B70000C");             /* op 0 */
+    __asm__ volatile (".word 0xE8D90000" :: "r"(a2));  /* swc2 $25, 0($a2) */
+    __asm__ volatile (".word 0xE8DA0004" :: "r"(a2));  /* swc2 $26, 4($a2) */
+    __asm__ volatile (".word 0xE8DB0008" :: "r"(a2));  /* swc2 $27, 8($a2) */
+    __asm__ volatile (".word 0x48CD0000");             /* ctc2 $t5, $0 */
+    __asm__ volatile (".word 0x48CE1000");             /* ctc2 $t6, $2 */
+    __asm__ volatile (".word 0x48CF2000");             /* ctc2 $t7, $4 */
+}
+s32 Lzc(s32 a0) {
+    s32 v0;
+    __asm__ volatile (".word 0x4884F000" :: "r"(a0));  /* mtc2 $a0, $30 */
+    __asm__ volatile ("nop");
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4802F800" : "=r"(v0));  /* mfc2 $v0, $31 */
+    return v0;
+}
+PAD_NOPS_1; /* 1 NOP after func_8007F200 */
+s32 RotTransPers(s32 *a0, s32 *a1, s32 *a2, s32 *a3) {
+    s32 v1;
+    s32 v0;
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A180001");              /* rtps */
+    __asm__ volatile (".word 0xE8AE0000" :: "r"(a1));  /* swc2 $14, 0($a1) */
+    __asm__ volatile (".word 0xE8C80000" :: "r"(a2));  /* swc2 $8, 0($a2) */
+    __asm__ volatile (".word 0x4843F800" : "=r"(v1));  /* cfc2 $v1, $31 */
+    __asm__ volatile (".word 0x48029800" : "=r"(v0));  /* mfc2 $v0, $19 */
+    *a3 = v1;
+    return v0 >> 2;
+}
+PAD_NOPS_1; /* 1 NOP after func_8007F21C */
+/* func_8007F24C = LIBGTE SMP_03 RotTransPers3 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Triple perspective transform: lwc2 3 SXY0/SXY1/SXY2
+ * pairs from *a0/*a1/*a2 -> rtpt -> swc2 SZ/SXY0/SXY1/SXY2 to *a3 & sp-loaded
+ * pointers -> cfc2 FLAG to *(sp+0x1C) -> return mfc2 SZ3 >> 2 (folded into jr
+ * delay slot). Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel RotTransPers3\n"
+    "    lwc2   $0, 0($a0)\n"
+    "    lwc2   $1, 4($a0)\n"
+    "    lwc2   $2, 0($a1)\n"
+    "    lwc2   $3, 4($a1)\n"
+    "    lwc2   $4, 0($a2)\n"
+    "    lwc2   $5, 4($a2)\n"
+    "    nop\n"
+    "    rtpt\n"
+    "    lw     $t0, 16($sp)\n"
+    "    lw     $t1, 20($sp)\n"
+    "    lw     $t2, 24($sp)\n"
+    "    lw     $t3, 28($sp)\n"
+    "    swc2   $12, 0($a3)\n"
+    "    swc2   $13, 0($t0)\n"
+    "    swc2   $14, 0($t1)\n"
+    "    swc2   $8, 0($t2)\n"
+    "    cfc2   $v1, $31\n"
+    "    mfc2   $v0, $19\n"
+    "    sw     $v1, 0($t3)\n"
+    "    jr     $ra\n"
+    "    sra    $v0, $v0, 2\n"
+    "endlabel RotTransPers3\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+    ".set reorder\n"
+    ".set at\n"
+);
+PAD_NOPS_3; /* 3 NOPs after func_8007F24C */
+void RotTrans(s32 *a0, s32 *a1, s32 *a2) {
+    s32 v0;
+    __asm__ volatile (".word 0xC8800000" :: "r"(a0));  /* lwc2 $0, 0($a0) */
+    __asm__ volatile (".word 0xC8810004" :: "r"(a0));  /* lwc2 $1, 4($a0) */
+    __asm__ volatile ("nop");
+    __asm__ volatile (".word 0x4A480012");              /* mvmva 1,0,0,0,0 */
+    __asm__ volatile (".word 0xE8B90000" :: "r"(a1));  /* swc2 $25, 0($a1) */
+    __asm__ volatile (".word 0xE8BA0004" :: "r"(a1));  /* swc2 $26, 4($a1) */
+    __asm__ volatile (".word 0xE8BB0008" :: "r"(a1));  /* swc2 $27, 8($a1) */
+    __asm__ volatile (".word 0x4842F800" : "=r"(v0));  /* cfc2 $v0, $31 */
+    *a2 = v0;
+}
+PAD_NOPS_2; /* 2 NOPs after func_8007F2AC */
+/* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0
+ * object (census 2026-07-09). Triple perspective transform PLUS a 4th vertex
+ * via rtps: rtpt on 3 SXY pairs, then rtps on the 4th (*a3). Combined FLAGs
+ * OR'd; returns SZ3 >> 2. Hand-written GTE asm; canonical-body 2026-07-11. */
+__asm__(
+    ".set\tnoat\n"
+    ".set\tnoreorder\n"
+    ".set noat\n"
+    ".set noreorder\n"
+    "glabel RotTransPers4\n"
+    "    lwc2   $0, 0($a0)\n"
+    "    lwc2   $1, 4($a0)\n"
+    "    lwc2   $2, 0($a1)\n"
+    "    lwc2   $3, 4($a1)\n"
+    "    lwc2   $4, 0($a2)\n"
+    "    lwc2   $5, 4($a2)\n"
+    "    nop\n"
+    "    rtpt\n"
+    "    lw     $t0, 16($sp)\n"
+    "    lw     $t1, 20($sp)\n"
+    "    lw     $t2, 24($sp)\n"
+    "    swc2   $12, 0($t0)\n"
+    "    swc2   $13, 0($t1)\n"
+    "    swc2   $14, 0($t2)\n"
+    "    cfc2   $v1, $31\n"
+    "    lwc2   $0, 0($a3)\n"
+    "    lwc2   $1, 4($a3)\n"
+    "    nop\n"
+    "    rtps\n"
+    "    lw     $t0, 28($sp)\n"
+    "    lw     $t1, 32($sp)\n"
+    "    lw     $t2, 36($sp)\n"
+    "    swc2   $14, 0($t0)\n"
+    "    swc2   $8, 0($t1)\n"
+    "    cfc2   $t0, $31\n"
+    "    mfc2   $v0, $19\n"
+    "    or     $t0, $t0, $v1\n"
+    "    sw     $t0, 0($t2)\n"
+    "    jr     $ra\n"
+    "    sra    $v0, $v0, 2\n"
+    "endlabel RotTransPers4\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007F2DC */
+/* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.
+ * Cluster sibling of func_8007F5EC (jaccard=0.68): same 3-axis Euler
+ * rotation skeleton, different rotation-matrix coefficient signs
+ * and different output-byte layout. 163 insns, zero spills, three
+ * INT_MIN-guard idioms in succession. Scanner STRONG 3/5 (S2+S3+S5);
+ * manual review confirmed hand-coded. Same cluster authorization
+ * scope per memory/feedback_hand_coded_asm_recognition.md. 2026-05-13. */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel RotMatrix\n"
+    "    lh         $t7, 0($a0)\n"
+    "    addu       $v0, $a1, $zero\n"
+    "    bgez       $t7, .L8007F3A0\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F378\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F378:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t8, $t8, 16\n"
+    "    negu       $t3, $t8\n"
+    "    j          .L8007F3C0\n"
+    "     sra       $t0, $t9, 16\n"
+    ".L8007F3A0:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t3, $t8, 16\n"
+    "    sra        $t0, $t9, 16\n"
+    ".L8007F3C0:\n"
+    "    lh         $t7, 2($a0)\n"
+    "    nop\n"
+    "    bgez       $t7, .L8007F404\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F3DC\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F3DC:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t4, $t9, 16\n"
+    "    sra        $t4, $t4, 16\n"
+    "    negu       $t6, $t4\n"
+    "    j          .L8007F428\n"
+    "     sra       $t1, $t9, 16\n"
+    ".L8007F404:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t6, $t6, 16\n"
+    "    negu       $t4, $t6\n"
+    "    sra        $t1, $t9, 16\n"
+    ".L8007F428:\n"
+    "    multu      $t1, $t3\n"
+    "    lh         $t7, 4($a0)\n"
+    "    sh         $t6, 4($a1)\n"
+    "    mflo       $t8\n"
+    "    negu       $t9, $t8\n"
+    "    sra        $t6, $t9, 12\n"
+    "    multu      $t1, $t0\n"
+    "    sh         $t6, 10($a1)\n"
+    "    bgez       $t7, .L8007F490\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    mflo       $t8\n"
+    "    sra        $t6, $t8, 12\n"
+    "    sh         $t6, 16($a1)\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F468\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F468:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t8, $t8, 16\n"
+    "    negu       $t5, $t8\n"
+    "    j          .L8007F4BC\n"
+    "     sra       $t2, $t9, 16\n"
+    ".L8007F490:\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    sh         $t6, 16($a1)\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t5, $t8, 16\n"
+    "    sra        $t2, $t9, 16\n"
+    ".L8007F4BC:\n"
+    "    multu      $t2, $t1\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    sh         $t6, 0($a1)\n"
+    "    multu      $t5, $t1\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    negu       $t6, $t7\n"
+    "    sra        $t7, $t6, 12\n"
+    "    multu      $t2, $t4\n"
+    "    sh         $t7, 2($a1)\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t8, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t3\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t5, $t0\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t9, $t7, 12\n"
+    "    subu       $t7, $t9, $t6\n"
+    "    multu      $t8, $t0\n"
+    "    sh         $t7, 6($a1)\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t7, $t6, 12\n"
+    "    nop\n"
+    "    multu      $t5, $t3\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t9, $t6, 12\n"
+    "    addu       $t6, $t9, $t7\n"
+    "    multu      $t5, $t4\n"
+    "    sh         $t6, 12($a1)\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t8, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t3\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t2, $t0\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t9, $t7, 12\n"
+    "    addu       $t7, $t9, $t6\n"
+    "    multu      $t8, $t0\n"
+    "    sh         $t7, 8($a1)\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t7, $t6, 12\n"
+    "    nop\n"
+    "    multu      $t2, $t3\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t9, $t6, 12\n"
+    "    subu       $t6, $t9, $t7\n"
+    "    sh         $t6, 14($a1)\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    "endlabel RotMatrix\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_1; /* 1 NOP after motutil_GetWalkDir */
+/* func_8007F5EC: hand-coded asm in original PSY-Q source.
+ * 3-axis Euler rotation: reads X/Y/Z angles from arg0 (s16[3]),
+ * looks up cos/sin for each, applies a 9-element 3D rotation chain
+ * to arg1[0..0x10]. Manual signal review 2026-05-13 (scanner 3/5
+ * but verified hand-coded): three INT_MIN-guard idioms, 163 insns
+ * with zero spills despite 10+ live registers, hand-scheduled
+ * multu/mflo where a 3-cycle gap holds a bgez+andi pair in the
+ * pipeline stall window. Same cluster authorization scope as
+ * func_8007F87C per memory/feedback_hand_coded_asm_recognition.md. */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel RotMatrixZYX\n"
+    "    lh         $t7, 0($a0)\n"
+    "    addu       $v0, $a1, $zero\n"
+    "    bgez       $t7, .L8007F630\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F608\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F608:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t6, $t6, 16\n"
+    "    negu       $t3, $t6\n"
+    "    j          .L8007F650\n"
+    "     sra       $t0, $t9, 16\n"
+    ".L8007F630:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t3, $t8, 16\n"
+    "    sra        $t0, $t9, 16\n"
+    ".L8007F650:\n"
+    "    lh         $t7, 2($a0)\n"
+    "    nop\n"
+    "    bgez       $t7, .L8007F694\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F66C\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F66C:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t6, $t6, 16\n"
+    "    negu       $t4, $t6\n"
+    "    j          .L8007F6B8\n"
+    "     sra       $t1, $t9, 16\n"
+    ".L8007F694:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t4, $t6, 16\n"
+    "    negu       $t6, $t4\n"
+    "    sra        $t1, $t9, 16\n"
+    ".L8007F6B8:\n"
+    "    multu      $t3, $t1\n"
+    "    lh         $t7, 4($a0)\n"
+    "    sh         $t6, 12($a1)\n"
+    "    mflo       $t8\n"
+    "    sra        $t6, $t8, 12\n"
+    "    nop\n"
+    "    multu      $t0, $t1\n"
+    "    sh         $t6, 14($a1)\n"
+    "    bgez       $t7, .L8007F720\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    mflo       $t8\n"
+    "    sra        $t6, $t8, 12\n"
+    "    sh         $t6, 16($a1)\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F6F8\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F6F8:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t8, $t8, 16\n"
+    "    negu       $t5, $t8\n"
+    "    j          .L8007F74C\n"
+    "     sra       $t2, $t9, 16\n"
+    ".L8007F720:\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    sh         $t6, 16($a1)\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t5, $t8, 16\n"
+    "    sra        $t2, $t9, 16\n"
+    ".L8007F74C:\n"
+    "    multu      $t1, $t2\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    sh         $t6, 0($a1)\n"
+    "    multu      $t5, $t1\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t3, $t4\n"
+    "    sh         $t6, 6($a1)\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t8, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t2\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t5, $t0\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t9, $t7, 12\n"
+    "    subu       $t7, $t6, $t9\n"
+    "    multu      $t0, $t2\n"
+    "    sh         $t7, 2($a1)\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t7, $t6, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t9, $t6, 12\n"
+    "    addu       $t6, $t9, $t7\n"
+    "    multu      $t4, $t0\n"
+    "    sh         $t6, 8($a1)\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t8, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t2\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t6, $t7, 12\n"
+    "    nop\n"
+    "    multu      $t3, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t7\n"
+    "    sra        $t9, $t7, 12\n"
+    "    addu       $t7, $t6, $t9\n"
+    "    multu      $t3, $t2\n"
+    "    sh         $t7, 4($a1)\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t7, $t6, 12\n"
+    "    nop\n"
+    "    multu      $t8, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t6\n"
+    "    sra        $t9, $t6, 12\n"
+    "    subu       $t6, $t9, $t7\n"
+    "    sh         $t6, 10($a1)\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    "endlabel RotMatrixZYX\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_1; /* 1 NOP after func_8007F5EC */
+/* func_8007F87C: hand-coded asm in original PSY-Q source.
+ * Evidence for the hand-coded classification (see
+ * memory/feedback_hand_coded_asm_recognition.md):
+ *   - Uniform 2-cycle multu/mflo pacing on EVERY mult/mflo pair
+ *   - Front-loaded loads (6 args loaded interleaved with first 2 multus)
+ *   - Tight register packing across 75-instruction kernel, no spills
+ *   - INT_MIN-guard idiom: empty `if (a<0){}` body at .L8007F898
+ *   - Cluster behavior: motutil_GetWalkDir, func_8007F5EC, func_8007FA1C,
+ *     func_8007FBBC share the same skeletal shape.
+ * User-authorized 2026-05-13 for this cluster. */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel RotMatrixX\n"
+    "    addu       $t7, $a0, $zero\n"
+    "    addu       $v0, $a1, $zero\n"
+    "    bgez       $t7, .L8007F8C0\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007F898\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007F898:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t6, $t6, 16\n"
+    "    negu       $t1, $t6\n"
+    "    j          .L8007F8E0\n"
+    "     sra       $t0, $t9, 16\n"
+    ".L8007F8C0:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t1, $t8, 16\n"
+    "    sra        $t0, $t9, 16\n"
+    ".L8007F8E0:\n"
+    "    lh         $t2, 6($a1)\n"
+    "    lh         $t5, 12($a1)\n"
+    "    multu      $t0, $t2\n"
+    "    lh         $t3, 8($a1)\n"
+    "    lh         $t6, 14($a1)\n"
+    "    mflo       $t8\n"
+    "    lh         $t4, 10($a1)\n"
+    "    lh         $t7, 16($a1)\n"
+    "    multu      $t1, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t3\n"
+    "    sh         $t8, 6($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t4\n"
+    "    sh         $t8, 8($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t2\n"
+    "    sh         $t8, 10($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t3\n"
+    "    sh         $t8, 12($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t4\n"
+    "    sh         $t8, 14($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    sh         $t8, 16($a1)\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    "endlabel RotMatrixX\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007F87C */
+/* func_8007FA1C: hand-coded asm in original PSY-Q source.
+ * Sibling of func_8007F87C with mirrored sin negation and offsets
+ * shifted to 0..0x10 (vs 6..0x10 for func_8007F87C). All 5 strong
+ * signals confirmed (uniform multu pacing, front-loaded loads, tight
+ * register packing, INT_MIN-guard idiom at .L8007FA38, cluster). Same
+ * authorization scope per memory/feedback_hand_coded_asm_recognition.md
+ * and commit 39e9bf0. */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel RotMatrixY\n"
+    "    addu       $t7, $a0, $zero\n"
+    "    addu       $v0, $a1, $zero\n"
+    "    bgez       $t7, .L8007FA5C\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007FA38\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007FA38:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t1, $t6, 16\n"
+    "    j          .L8007FA80\n"
+    "     sra       $t0, $t9, 16\n"
+    ".L8007FA5C:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t7, $t8, 16\n"
+    "    negu       $t1, $t7\n"
+    "    sra        $t0, $t9, 16\n"
+    ".L8007FA80:\n"
+    "    lh         $t2, 0($a1)\n"
+    "    lh         $t5, 12($a1)\n"
+    "    multu      $t0, $t2\n"
+    "    lh         $t3, 2($a1)\n"
+    "    lh         $t6, 14($a1)\n"
+    "    mflo       $t8\n"
+    "    lh         $t4, 4($a1)\n"
+    "    lh         $t7, 16($a1)\n"
+    "    multu      $t1, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t3\n"
+    "    sh         $t8, 0($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t4\n"
+    "    sh         $t8, 2($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t2\n"
+    "    sh         $t8, 4($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t3\n"
+    "    sh         $t8, 12($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t4\n"
+    "    sh         $t8, 14($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    sh         $t8, 16($a1)\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    "endlabel RotMatrixY\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007FA1C */
+/* func_8007FBBC: hand-coded asm in original PSY-Q source.
+ * Cluster sibling of func_8007F87C (jaccard=1.00 â€” structurally
+ * identical, just different stride offsets 0..0xA). All 5 strong
+ * signals confirmed by scan_hand_coded: uniform 2-cycle multu pacing,
+ * empty-body INT_MIN-guard branch, 0 spills in 102 insns, 6-load burst
+ * at insn 25, cluster sibling of two already-authorized functions.
+ * Same authorization scope per memory/feedback_hand_coded_asm_recognition.md. */
+__asm__(
+    ".section .text\n"
+    ".set\tnoreorder\n"
+    ".set\tnoat\n"
+    "glabel RotMatrixZ\n"
+    "    addu       $t7, $a0, $zero\n"
+    "    addu       $v0, $a1, $zero\n"
+    "    bgez       $t7, .L8007FC00\n"
+    "     andi      $t9, $t7, 0xFFF\n"
+    "    negu       $t7, $t7\n"
+    "    bgez       $t7, .L8007FBD8\n"
+    "     andi      $t7, $t7, 0xFFF\n"
+    ".L8007FBD8:\n"
+    "    sll        $t8, $t7, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t6, $t9, 16\n"
+    "    sra        $t6, $t6, 16\n"
+    "    negu       $t1, $t6\n"
+    "    j          .L8007FC20\n"
+    "     sra       $t0, $t9, 16\n"
+    ".L8007FC00:\n"
+    "    sll        $t8, $t9, 2\n"
+    "    lui        $t9, %hi(D_8009C928)\n"
+    "    addu       $t9, $t9, $t8\n"
+    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    nop\n"
+    "    sll        $t8, $t9, 16\n"
+    "    sra        $t1, $t8, 16\n"
+    "    sra        $t0, $t9, 16\n"
+    ".L8007FC20:\n"
+    "    lh         $t2, 0($a1)\n"
+    "    lh         $t5, 6($a1)\n"
+    "    multu      $t0, $t2\n"
+    "    lh         $t3, 2($a1)\n"
+    "    lh         $t6, 8($a1)\n"
+    "    mflo       $t8\n"
+    "    lh         $t4, 4($a1)\n"
+    "    lh         $t7, 10($a1)\n"
+    "    multu      $t1, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t3\n"
+    "    sh         $t8, 0($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t0, $t4\n"
+    "    sh         $t8, 2($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t1, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    subu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t2\n"
+    "    sh         $t8, 4($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t5\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t3\n"
+    "    sh         $t8, 6($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t6\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    multu      $t1, $t4\n"
+    "    sh         $t8, 8($a1)\n"
+    "    nop\n"
+    "    mflo       $t8\n"
+    "    nop\n"
+    "    nop\n"
+    "    multu      $t0, $t7\n"
+    "    nop\n"
+    "    nop\n"
+    "    mflo       $t9\n"
+    "    addu       $t9, $t8, $t9\n"
+    "    sra        $t8, $t9, 12\n"
+    "    sh         $t8, 10($a1)\n"
+    "    jr         $ra\n"
+    "     nop\n"
+    "endlabel RotMatrixZ\n"
+    ".set\treorder\n"
+    ".set\tat\n"
+);
+PAD_NOPS_2; /* 2 NOPs after func_8007FBBC */
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef volatile u8 vu8;
+typedef volatile s8 vs8;
+typedef volatile u16 vu16;
+typedef volatile s16 vs16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+#define NULL ((void *)0)
+
+typedef struct Vec2s16 { s16 x; s16 y; } Vec2s16;
+typedef struct Vec3s16 { s16 x; s16 y; s16 z; } Vec3s16;
+typedef struct Vec3s32 { s32 x; s32 y; s32 z; } Vec3s32;
+typedef struct Vec3 { s32 vx, vy, vz, pad; } Vec3;
+typedef struct VECTOR  { s32 vx, vy, vz, pad; } VECTOR;
+typedef struct SVECTOR { s16 vx, vy, vz, pad; } SVECTOR;
+typedef struct CVECTOR { u8 r, g, b, cd; } CVECTOR;
+typedef struct DVECTOR { s16 vx, vy; } DVECTOR;
+typedef struct MATRIX  { s16 m[3][3]; u16 pad; s32 t[3]; } MATRIX;
+
+/* GameObj: 0x100-byte polymorphic struct used across ~340 functions. The
+ * field layout is the union of all observed accesses; m2c picks the type
+ * that best fits each access site. Mirroring smart_match.py's layout. */
+typedef struct GameObj {
+    u8 field_00; u8 field_01; s16 field_02;
+    s16 field_04; s16 field_06; s16 field_08; s16 field_0A;
+    s16 field_0C; s16 field_0E; s16 field_10; s16 field_12;
+    s16 field_14; s16 field_16; s32 field_18; s32 field_1C;
+    s32 field_20; s32 field_24; s32 field_28; s32 field_2C;
+    s16 field_30; s16 field_32; s16 field_34; s16 field_36;
+    s16 field_38; s16 field_3A; s16 field_3C; s16 field_3E;
+    s16 field_40; s16 field_42; s32 field_44; s32 field_48;
+    s32 field_4C; s32 field_50; s16 field_54; s16 field_56;
+    s32 field_58; s16 field_5C; s16 field_5E; s32 field_60;
+    s32 field_64; s32 field_68; s32 field_6C; s32 field_70;
+    s32 field_74; s32 field_78; s32 field_7C; s32 field_80;
+    s16 field_84; s16 field_86; s16 field_88; s16 field_8A;
+    s32 field_8C; s32 field_90; s32 field_94; s32 field_98;
+    s32 field_9C; s32 field_A0; s32 field_A4; s32 field_A8;
+    s32 field_AC; s32 field_B0; s32 field_B4; s32 field_B8;
+    s32 field_BC; s32 field_C0; s32 field_C4; s32 field_C8;
+    s32 field_CC; s32 field_D0; s32 field_D4; s32 field_D8;
+    s32 field_DC; s32 field_E0; s32 field_E4; s32 field_E8;
+    s32 field_EC; s32 field_F0; s32 field_F4; s16 field_F8;
+    s16 field_FA; s32 field_FC;
+} GameObj;
+extern s16 D_800A0928[];
+
+/* PsyQ LIBGTE ratan: ratan2 â€” verbatim-linked Sony object (census
+   2026-07-09); C ref: sotn-decomp psxsdk (table-lookup atan2) */
+s32 ratan2(s32 arg0, s32 arg1) {
+    s32 var_v1;
+    s32 var_a0;
+    s32 var_a1;
+    s32 var_a2;
+    s32 var_a3;
+    s32 idx;
+
+    var_a0 = arg0;
+    var_a1 = arg1;
+    var_a2 = 0;
+    var_a3 = 0;
+    if (var_a1 < 0) {
+        var_a2 = 1;
+        var_a1 = -var_a1;
+    }
+    if (var_a0 < 0) {
+        var_a3 = 1;
+        var_a0 = -var_a0;
+    }
+    if (var_a1 == 0 && var_a0 == 0) {
+        return 0;
+    }
+    if (var_a0 < var_a1) {
+        if (var_a0 & 0x7FE00000) {
+            idx = var_a0 / (var_a1 >> 0xA);
+        } else {
+            idx = (var_a0 << 0xA) / var_a1;
+        }
+        var_v1 = D_800A0928[idx];
+    } else {
+        if (var_a1 & 0x7FE00000) {
+            idx = var_a1 / (var_a0 >> 0xA);
+        } else {
+            idx = (var_a1 << 0xA) / var_a0;
+        }
+        var_v1 = 0x400 - D_800A0928[idx];
+    }
+    if (var_a2 != 0) {
+        var_v1 = 0x800 - var_v1;
+    }
+    if (var_a3 != 0) {
+        var_v1 = -var_v1;
+    }
+    return var_v1;
+}
+__asm__(
+    ".section .text\n"
+    "    .set\tnoat\n"
+    "    .set\tnoreorder\n"
+    "    .set noat\n"
+    "    .set noreorder\n"
+    "glabel _patch_gte\n"
+    "    lui $at, %hi(D_800A3658)\n"
+    "    sw $ra, %lo(D_800A3658)($at)\n"
+    "    jal EnterCriticalSection\n"
+    "    nop\n"
+    "    addiu $t2, $zero, 0xB0\n"
+    "    jalr $t2\n"
+    "    addiu $t1, $zero, 0x56\n"
+    "    lui $t2, %hi(D_8007FF44)\n"
+    "    lui $t1, %hi(CdInit)\n"
+    "    lw $v0, 24($v0)\n"
+    "    addiu $t2, $t2, %lo(D_8007FF44)\n"
+    "    addiu $t1, $t1, %lo(CdInit)\n"
+    ".L8007FF0C:\n"
+    "    lw $v1, 0($t2)\n"
+    "    addiu $t2, $t2, 0x4\n"
+    "    addiu $v0, $v0, 0x4\n"
+    "    bne $t2, $t1, .L8007FF0C\n"
+    "    sw $v1, -4($v0)\n"
+    "    jal FlushCache\n"
+    "    nop\n"
+    "    jal ExitCriticalSection\n"
+    "    nop\n"
+    "    lui $ra, %hi(D_800A3658)\n"
+    "    lw $ra, %lo(D_800A3658)($ra)\n"
+    "    nop\n"
+    "    jr $ra\n"
+    "    nop\n"
+    ".globl D_8007FF44\n"
+    "D_8007FF44:\n"
+    "    nop\n"
+    "    nop\n"
+    "    addiu $k0, $zero, 0x100\n"
+    "    lw $k0, 8($k0)\n"
+    "    nop\n"
+    "    lw $k0, 0($k0)\n"
+    "    nop\n"
+    "    addi $k0, $k0, 0x8\n"
+    "    sw $at, 4($k0)\n"
+    "    sw $v0, 8($k0)\n"
+    "    sw $v1, 12($k0)\n"
+    "    sw $ra, 124($k0)\n"
+    "    .word 0x40026800\n"
+    "    .set\treorder\n"
+    "    .set\tat\n"
+    "    .set reorder\n"
+    "    .set at\n"
+);
+PAD_NOPS_1; /* 1 NOP after func_8007FEDC */
+extern s32 CdReset(s32);
+extern s32 CdSyncCallback(s32);
+extern s32 CdReadCallback(s32);
+extern s32 CdReadMode(s32);
+extern s32 D_80080014;
+extern s32 D_8008003C;
+extern s32 D_80080064;
+extern u32 g_str_cdinit_fail;
+
+s32 CdInit(void) {
+    s32 retries = 4;
+loop:
+    if (CdReset(1) != 1) {
+        retries--;
+        if (retries != -1) goto loop;
+        printf(&g_str_cdinit_fail);
+        return 0;
+    }
+    CdSyncCallback((s32)&D_80080014);
+    CdReadyCallback((s32)&D_8008003C);
+    CdReadCallback((s32)&D_80080064);
+    CdReadMode(0);
+    return 1;
+}
+
+void func_80080014(void) {
+    DeliverEvent(0xF0000003, 0x20);
+}
+
+void func_8008003C(void) {
+    DeliverEvent(0xF0000003, 0x40);
+}
+
+void func_80080064(void) {
+    DeliverEvent(0xF0000003, 0x40);
+}
