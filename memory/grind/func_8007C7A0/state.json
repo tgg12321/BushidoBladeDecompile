@@ -59,7 +59,8 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The x/tx param-alias-and-writeback pair is the project's own previously-banned param-local-alias cheat, reintroduced under a mismatched sanctioned-family citation with no FAKE annotation and no dossier. Next action: Revert to per-arm-return chassis WITHOUT the x/tx alias hop: replace `s16 x = arg0; s16 tx; ...; x = tx;` with clamping directly into a single local (e.g. compute the X-clamp result directly into one variable used by both return arms, no predeclared param alias, no writeback copy) and re-measure honestly in display.c context. If the direct-clamp form re"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The x/tx param-alias-and-writeback pair is the project's own previously-banned param-local-alias cheat, reintroduced under a mismatched sanctioned-family citation with no FAKE annotation and no dossier. Next action: Revert to per-arm-return chassis WITHOUT the x/tx alias hop: replace `s16 x = arg0; s16 tx; ...; x = tx;` with clamping directly into a single local (e.g. compute the X-clamp result directly into one variable used by both return arms, no predeclared param alias, no writeback copy) and re-measure honestly in display.c context. If the direct-clamp form re",
+  "Continue at floor 5 without any respelling of the x/tx live-writeback family (layer-1 ban stands): run permuter-from-5-form, synthesis, the s7-named two-variable-dataflow frontier, and a community-precedent census for the clamp-temp-writeback idiom; only when those are demonstrably spent may a ruling request resubmit for owner escalation with the completed packet."
  ],
  "banned_constructs": [
   "`s16 x = arg0; s16 tx; ... tx = <clamp arms, one of which reads `x`> ...; x = tx;`",

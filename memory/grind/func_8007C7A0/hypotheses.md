@@ -1,5 +1,28 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s7 (2026-08-10, rederive, git HEAD b7a58594)
+
+### H18 — the s6 per-arm-return chassis reaches 0 with a direct (alias-free) X clamp — KILLED (floor lands at 5; the join temp is the unique residual)
+Statement: the layer-1 FAIL's prescribed next action — replace the banned
+`s16 x = arg0; s16 tx; ...; x = tx;` pair with a clamp computed directly
+into a single variable on the otherwise-vindicated s6 chassis — reaches
+sandbox 0, or close enough to iterate to 0 with clean spellings.
+Probe: eight X-clamp spellings honest-measured in display.c context
+(s7/measurements.md): direct three-arm local, live-init two-arm local,
+live-init self-read ternary, param-reassign if-form, param-reassign ternary,
+two-var save without writeback, sanctioned in-range self-assign, K&R.
+Result: best 5 (three spellings tie), from the inherited 12 — but NOT 0.
+47/51 insns match 1:1; the entire residual is the X-arm join-temp region
+(target: three arms into $v0 + `move a3,v0` writeback; ours: arms into $a3
+directly, one insn fewer). Every mechanism that could materialize the join
+from clean C measured dead: COND_EXPR expansion folds into the assignment
+target (arm reads pass safe_from_p — ternaries 5/9), copy-preference
+coalesces the two-var save (12), self-assigns are elided (5, inert), K&R
+entry RTL is identical (5). The banned construct's writeback into a
+live-initialized variable is the unique measured C dataflow producing the
+join. Verdict: KILLED (as stated); floor improved 12 -> 5; disposition
+escalated to ruling-request.
+
 ## s6 (2026-08-10, forensics, git HEAD 4a714cd6)
 
 ### H15 — the extracted RA model is faithful on the 12-form graph, and its hard-conflict structure explains the residual (forensics fidelity check) — CONFIRMED

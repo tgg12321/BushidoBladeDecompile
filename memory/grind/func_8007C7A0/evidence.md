@@ -1,5 +1,57 @@
 # Evidence bank — func_8007C7A0
 
+## s7 (2026-08-10, rederive, git HEAD b7a58594) — honest floor 12 -> 5 with clean C; the last insn is proven to REQUIRE the banned join-temp writeback; ruling requested
+
+- **Context:** the s6 candidate (sandbox 0) was FAILED by the layer-1
+  cheat-reviewer on the `s16 x = arg0; s16 tx; ...; x = tx;`
+  param-alias-and-writeback pair, now BANNED by the driver (along with the
+  'named-intermediate declaration order' citation used to cover it). This
+  session executed the reviewer's prescribed next action: per-arm-return
+  chassis WITH the X clamp computed directly into one variable, measured
+  honestly in display.c context.
+- **NEW HONEST FLOOR: 5 (build 50/51), from 12.** Best form = param-reassign
+  clamps symmetric on both axes (X spelled exactly like the Y clamp that
+  already matched) + the s6 per-arm-return tail, banked as candidate.c. The
+  s6 chassis itself is fully vindicated: 47/51 instructions match 1:1
+  (prologue, both limit loads, full Y clamp, dispatch, both mask arms,
+  cross-jumped tail, all delay-slot fills). The ENTIRE residual is the
+  X-clamp arm region.
+- **Eight X-clamp spellings measured this session**
+  (tmp/grind/func_8007C7A0/s7/measurements.md — scores 12/5/5/5/9/12/5/5):
+  three-arm direct local (12), live-init two-arm local (5), live-init
+  self-read ternary (5), param-reassign if-form (5, candidate), param-reassign
+  ternary (9), two-var save cx/x without writeback (12 —
+  rejected/two-var-save-cx-no-writeback.c), in-range self-assign
+  `arg0 = arg0;` (5, ELIDED — the sanctioned dead-store family is inert
+  here), K&R old-style definition (5, byte-identical — s1's H1 re-killed on
+  this chassis).
+- **The missing instruction is structurally identified** (side-by-side in
+  s7/target_51.s vs s7/ours_5form_50.s): target routes all three X arms
+  through a $v0 JOIN TEMP (`addiu v0,a2,-1` in the bnez delay slot /
+  `move v0,a3` / `move v0,zero`) then copies home `move a3,v0`; every clean
+  spelling collapses the join — GCC 2.7.2's expand assigns clamp arms
+  directly into the target variable's pseudo ($a3), one insn fewer, branch
+  sense inverted, Y-sll duplicated into the freed delay slot. Mechanism
+  evidence: ternary targets fold because a read inside an arm does not fail
+  safe_from_p; the two-var save coalesces because `cx = x` is a
+  copy-preference, not a conflict; self-assigns are elided before RTL. The
+  join survives ONLY when a distinct source temp is written back into a
+  live-initialized variable — i.e. the banned construct is (as far as this
+  session could measure) the UNIQUE C dataflow reaching the bytes.
+- **Disposition: ruling-request.** No sanctioned family covers the join-temp
+  writeback (named-intermediate declaration order was ruled MISMATCHED by
+  layer-1; dead-store/self-assign measured inert; variable-reuse does not
+  apply — tx is live). Per the first-reach rule the correct outcome is a
+  ruling, not a submission. src/display.c REVERTED to HEAD after measurement
+  (build gate: the 21 regfix substs are calibrated to HEAD's shape).
+- **For the next session if the ruling sanctions nothing:** the frontier is
+  spellings that make the writeback copy survive WITHOUT a source temp —
+  e.g. forms where the clamp result genuinely lives in $v0 and is copied to
+  $a3 because $v0 is demanded by the dispatch lbu chain (requires the result
+  pseudo to die before the lbu and a second pseudo to carry it — but GCC
+  never splits live ranges, so this needs a real two-variable dataflow a
+  human would write; none found this session).
+
 ## s6 (2026-08-10, forensics, git HEAD 4a714cd6) — MATCHED: sandbox 0, 51/51. The per-arm-return chassis dissolves the whole residual; T1's premise identified as a shared-tail-chassis artifact
 
 - **SANDBOX DISTANCE 0 THIS SESSION** (`sandbox func_8007C7A0 --disable all` =
