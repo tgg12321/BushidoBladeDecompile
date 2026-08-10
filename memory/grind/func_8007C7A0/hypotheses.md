@@ -1,5 +1,45 @@
 # Hypothesis ledger — func_8007C7A0
 
+## s5 (2026-08-10, permuter, git HEAD dd31dc1f)
+
+### H13 -- the never-permuted c5 lim-both chassis (carrier=$a3, xlim-save=$a2 via two-limit variable reuse) contains permuter-reachable levers that fix the remaining roles -- KILLED
+Statement: c5 flips the two knot roles the model closures called unreachable
+(via a NEW graph: lim's multi-use pseudo claims $a2 before the carrier);
+random permutation from this never-searched basin may fix the residual
+(ylim-save, sxt(y), lo, const) without re-breaking the flipped roles.
+Probe: campaign permuter/c7a0_s5_c5lim (8 jobs, ~23k iters, one full
+zero-novel window after the last find, harvest-stopped). Every candidate find
+re-measured honestly via tmp/c7a0_batch.sh in display.c context (MANDATORY:
+the mini-TU workspace compiles lim-family spellings DIFFERENTLY -- TU
+invariance holds only for the stream51 body).
+Result: the basin DRAINS to the known floor. Base 845 weighted (c5's lhu
+re-load structure is priced ~100/insn); best legitimate find 95 = 19x5
+renames, and its display.c re-measure is linediff 20, 2/9 -- worse than the
+floor's 19. The only sub-75 find (65 weighted, linediff 18, 5/9 in real
+context) is the ub-dead-read-cross-arm family spelled through lim (narrow arm
+reads lim for x; UB when both args negative) + a named-boolean intermediate --
+FORBIDDEN, banked to rejected/permuter-find65-lim-dead-read-narrow-arm.c.
+Verdict: KILLED.
+
+### H14 -- the round-16/17 named-limit CSE kills are chassis-invariant (naming a limit always collapses the stream) -- KILLED (the wall is per-chassis; it falls on the 12-form)
+Statement: rounds 16/17 measured every named-limit local collapsing the
+stream via CSE of `limit - 1` (46-50 insns) on the stream51 chassis; the
+frontier required re-measurement on the 12-form's merged-pseudo graph.
+Probe: 13 spellings x honest sandbox/fdiff: fresh s16 lim X-only / Y-only /
+both-axes reuse, s32 lim, limit merged into hi/lo/pkt, Y-compare-through-hi,
+tail split-init, all combos.
+Result: EVERY s16 raw-D named-limit spelling ties the floor at 12 with 51
+insns on the new chassis (v1, v9, c5, c1-c5 combos, p5) -- zero CSE collapse.
+s32 holders and merges into live-later locals still collapse (v2-v5, v8:
+49-50 insns). NEW MECHANISM FINDING: c5 (lim reused for BOTH limits) flips
+carrier->$a3 + xlim-save->$a2 -- the first legitimate pure-C form ever to do
+so -- but trades 4 structural subs (limit-saves become lui+lhu re-loads
+instead of target's move save-copies, because s16=s16 assignment needs no
+sign extension). Same masked score 12, NOT stream-exact. The staged-copy
+repair (tx=D; lim=tx) fails in display.c context (48-50 insns, r1-r5).
+Verdict: KILLED (as stated); the per-chassis relativity of ALL prior
+spelling kills is now twice-demonstrated (T1 scope, CSE wall).
+
 ## s4 (2026-08-08, permuter, git HEAD 8be92044)
 
 ### H11 — the never-permuted stream51 chassis contains permuter-reachable legitimate levers the model scans could not see — CONFIRMED (floor 15 -> 12 stream-exact; two levers found and honest-verified)
@@ -261,4 +301,16 @@ reaches the target allocation from the stream-exact body.
 - mechanism: Closer base gives the random search a better start toward further allocation flips
 - probe: Campaign 3 seeded from the 12-form (weighted 75), 8 jobs, run to a full 9-minute zero-novel window
 - result: Zero legitimate novel finds; the entire sub-basin is the UB dead-read-cross-arm family (stage x in one arm, read uninit in the other). Legit spellings of its intent all measured dead: dup-into-arms 13, unconditional pre-dispatch copy 20 (52 insns), split-assign inert 14
+- verdict: KILLED
+
+## [s5] The never-permuted c5 lim-both chassis (carrier=$a3 via two-limit variable reuse) contains permuter-reachable levers fixing the remaining roles
+- mechanism: lim's multi-use pseudo (2 defs + 4 uses spanning both clamps) allocates before the carrier and claims $a2, pushing carrier to $a3 by exclusion -- a NEW RTL graph outside every s0-s3 closure; random search from this basin could fix ylim-save/sxt(y)/lo/const without re-breaking the flip
+- probe: tools/permuter_campaign.py ws permuter/c7a0_s5_c5lim seeded from c5, 8 jobs, ~23k iters, one full zero-novel window, harvest-stopped; every find re-measured honestly in display.c context via tmp/c7a0_batch.sh
+- result: Basin drains to the known floor: base 845 weighted (c5's lhu re-load structure priced heavily), best legit find 95 = 19 renames x5 whose display.c re-measure is linediff 20 roles 2/9 (worse than floor 19); sole sub-75 find (65 weighted, linediff 18, 5/9) is the ub-dead-read-cross-arm family through lim + a named-boolean -- forbidden, banked to rejected/
+- verdict: KILLED
+
+## [s5] The round-16/17 named-limit CSE kills are chassis-invariant (naming a limit always collapses the stream)
+- mechanism: Rounds 16/17 measured named limits collapsing the stream to 46-50 insns via CSE of limit-1 on the stream51 chassis; the s4 frontier mandated re-measurement on the 12-form merged-pseudo graph since all closures are per-graph
+- probe: 13 spellings honest-measured on the 12-form: s16 lim X-only/Y-only/both (reuse), s32 lim, limit merged into hi/lo/pkt, Y-compare-through-hi, tail split-init, all combos, staged-copy tx=D;lim=tx repairs
+- result: Every s16 raw-D named-limit spelling ties 12/51 -- the CSE wall was a property of the OLD graph. c5 (lim reused for both limits) additionally flips carrier->$a3 + xlim-save->$a2, first legit pure-C form ever, BUT trades 4 structural subs (limit-saves become lui+lhu re-loads vs target's move save-copies: s16=s16 copy needs no sign-extension so GCC re-loads unsigned). s32/merged holders still collapse (48-50 insns); staged-copy repairs fail in display.c context (r1-r5, 48-50 insns) though the identical spelling compiles DIFFERENTLY in the mini-TU workspace (TU invariance holds only for the stream51 body)
 - verdict: KILLED

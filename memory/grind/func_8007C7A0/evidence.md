@@ -1,5 +1,78 @@
 # Evidence bank — func_8007C7A0
 
+## s5 (2026-08-10, permuter, git HEAD dd31dc1f) -- the named-limit CSE wall is PER-CHASSIS and falls on the 12-form; carrier->$a3 reached in pure C for the first time, but as a structure trade; floor holds 12
+
+- **FLOOR UNCHANGED: 12 (candidate.c, stream-exact 51/51), re-confirmed at HEAD
+  dd31dc1f this session** (sandbox --disable all = 12, build 51/51, 21 rules
+  dropped, cheat-asm stripped). candidate.c is unchanged as the best form.
+- **The round-16/17 named-limit kills DO NOT reproduce on the 12-form chassis.**
+  Every s16 raw-D named-limit spelling now TIES the floor at 12 with 51 insns:
+  fresh `s16 lim = D_8009BE78` X-only (v1) = 12/51; Y-only (v9) = 12/51;
+  `lim` REUSED for both limits (c5) = 12/51; + Y-compare-through-hi (p5/c1),
+  tail split-init `pkt = C; pkt |= lo` (v7/c2/c3), and all combos (c4) = 12/51.
+  On the old stream51 chassis these scored 46-50 insns (CSE collapse). The CSE
+  wall was a property of the OLD graph, not of the function. s32 raw-D holders
+  still die (v2 = 20/49, CSE folds), as do merges of the limit into live-later
+  locals hi/lo/pkt (v3 22/49, v4 23/49, v5 20/49, v8 19/50).
+- **FIRST legitimate pure-C form ever to land carrier=$a3 + xlim-save=$a2:
+  c5_lim_both** (`s16 lim` assigned D_8009BE78 in the X clamp, D_8009BE7A in
+  the Y clamp -- plain sanctioned variable reuse, live reads only). Its lim
+  pseudo (2 defs + 4 uses spanning both clamps) allocates BEFORE the carrier
+  and takes $a2, pushing the carrier to $a3 by exclusion -- the mechanism s0-s3
+  proved unreachable on the fixed stream51 graph, reached here by graph change.
+  BUT it is a structure TRADE, not a win: masked score stays 12 / linediff 19
+  because both limit-saves materialize as `lui+lhu` RE-LOADS instead of
+  target's `move aN,v0` save-copies (4 structural subs), while 5 rename roles
+  become correct. The s16->s16 copy `lim = D_x` needs no sign extension, so
+  GCC re-loads unsigned rather than copying the signed lh the compare uses.
+  Single-axis lim (v1/v9) keeps the lhu on that axis only and the carrier
+  stays $a2 (short lim range = low priority, carrier allocates first).
+- **The staged-copy escape (`tx = D_8009BE78; lim = tx;` -- load into tx,
+  save-copy into lim, mirroring target's lh v0 / move a2,v0) FAILS in the
+  display.c context:** r1 (X only) = 50 insns; r2-r5 (both axes, save in
+  lim/hi/pkt/lo) = 48-50 insns -- GCC coalesces the copy or restructures.
+  NOTE: the SAME spelling in the mini-TU permuter workspace compiles
+  DIFFERENTLY (the s1 TU-invariance proof covered only the stream51 body;
+  lim-family spellings are TU-sensitive). Every permuter find from this
+  workspace must be re-measured in display.c context before belief.
+- **Campaign (tools/permuter_campaign.py, ws permuter/c7a0_s5_c5lim, seeded
+  from c5, 8 jobs, ~23k iters, harvest-stopped in-session):** base weighted 845
+  (the permuter metric prices c5's 4 structural subs heavily). The basin
+  DRAINS BACK to the known floor: best legitimate find 95 weighted = 19
+  renames x5 (find95-1 re-measured in display.c context: linediff 20, 2/9 --
+  WORSE than the floor). The only sub-75 find, output-65-1 (weighted 65,
+  display.c linediff 18, 5/9), is FORBIDDEN twice over -- narrow arm reads
+  `lim` for `x` (semantic bug + UB on the both-negative path; the
+  ub-dead-read-cross-arm family through lim) + a `new_var = hi >= 0` named
+  boolean. Banked: rejected/permuter-find65-lim-dead-read-narrow-arm.c.
+  Its diagnostic confirms s4: the missing conflict is a second x-carrying
+  pseudo live across the dispatch; legit spellings re-measured dead again
+  (lim=x dup into both arms = linediff 21 with limsaves cascading to v1;
+  unconditional pre-dispatch lim=x = 52 insns).
+- **Other kills this session (12-form chassis):** wide-arm mask re-read
+  `hi = hi & 0x3FF` (q1) = linediff 20; lo merged into tx (q3/q4) = 53 insns
+  (s16 tx forces re-extension of the mask value); sxt(y) merged into lim via
+  post-clamp `lim = arg1` + mask reads through lim (p6/p7) = 52 insns (+1 for
+  the extra copy) though it DOES land sxt(y)=$a2 and const=$a0 -- the roles
+  are individually movable but so far never for free.
+- **Residual picture after s5:** target's allocation needs BOTH (a) a
+  high-priority multi-use limit pseudo claiming $a2 early (c5 has it, via
+  reuse) AND (b) limit-saves that are COPIES of the signed compare load, not
+  re-loads (the 12-form has it, via inline D-1). No measured spelling has
+  both simultaneously; they are in tension because naming the limit (a)
+  changes the load structure away from (b). The two open mechanical routes:
+  a spelling where `lim` is copied FROM the loaded compare value without CSE
+  folding the two D-1 computations (all direct attempts coalesce), or model
+  re-extraction + backward solve on the c5 graph (structural modality) to
+  learn which conflicts/prefs the c5 chassis still lacks.
+- **Housekeeping:** tmp/grind/func_8007C7A0/s5/ contained artifacts of a
+  previously DISCARDED s5 attempt (v01/v07/v11/v14, sweep.sh -- no ledger
+  entry exists for them; results unknown). This session's files are the
+  mk*/swap.py generated set + sweep1.log + campaign_c5lim.log; measurements
+  here stand on their own. src/display.c reverted to HEAD after measurement
+  (build gate: the 21 regfix substs are calibrated to HEAD's shape).
+
+
 ## s4 (2026-08-08, permuter, git HEAD 8be92044) — pseudo-MERGING spellings escape the s3 closure; stream-exact floor 15 -> 12
 
 - **NEW BEST FORM: honest sandbox 12 at build_insns 51/51 (stream-exact).**
@@ -488,3 +561,19 @@ disposition decision. Tooling: `tmp/c7a0_apply.py`, `c7a0_batch.sh` +
 - [s4] Cheat-vet note for future candidate-ready: L1/L2 are live reads, semantically equivalent (D-1 in [-1,254] fits s16; hi==arg1 at staged compare), no UB, natural names, but permuter-found (T4) and family-wise sit between frozen-list variable-reuse and staged-value-reused-variable (FAKE-annotation question documented in evidence.md s4 entry - must be resolved against the rule files before any self-vet)
 
 - [s4] src/display.c reverted to HEAD after measurement (the 21 regfix substs are calibrated to HEAD's shape); tree clean except ledger + metrics
+
+- [s5] Floor re-confirmed 12 (candidate.c, stream-exact 51/51) at HEAD dd31dc1f; candidate.c unchanged as best form; src/display.c reverted to HEAD after measurement
+
+- [s5] 13 named-limit spellings tie 12/51 on the 12-form chassis (v1/v9/c5/c1-c5/p5/v6/v7); s32 and hi/lo/pkt-merged holders still collapse the stream (v2-v5, v8: 49-50 insns) -- all prior spelling kills are per-chassis, twice-demonstrated (T1 scope, CSE wall)
+
+- [s5] c5_lim_both mechanism: lim claims $a2 before the carrier (priority via 6 refs across both clamps) -> carrier=$a3 by exclusion; masked 12 but NOT stream-exact (4 lui+lhu re-load subs replace target's move save-copies)
+
+- [s5] Single-axis lim keeps carrier=$a2 (short range = low priority): the flip REQUIRES the pseudo spanning both clamps
+
+- [s5] Staged-copy lim=tx repair of the re-load fails in display.c (48-50 insns, GCC coalesces); the SAME spelling diverges in the mini-TU permuter workspace -- lim-family finds MUST be re-measured in display.c context
+
+- [s5] Roles individually movable but never free: sxt(y)->$a2+const->$a0 via post-clamp lim=arg1 costs +1 insn (p6/p7=52); lo->$v0 via tx merge costs re-extension (q3/q4=53); lim=x dup-into-arms lands carrier+sxt but cascades limsaves to v1 (linediff 21)
+
+- [s5] Campaign artifact trail: base 845, 23k iters, finds 95 (=floor in disguise) and 65 (forbidden UB family, banked with full rationale to rejected/permuter-find65-lim-dead-read-narrow-arm.c)
+
+- [s5] tmp/grind/func_8007C7A0/s5 contained artifacts of a previously discarded s5 attempt (v01/v07/v11/v14, unrecorded); this session's measurements are independent

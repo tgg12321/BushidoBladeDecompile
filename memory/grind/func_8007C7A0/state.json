@@ -1,7 +1,7 @@
 {
  "func": "func_8007C7A0",
  "file": "display",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,21 +33,27 @@
    "floor": 12,
    "modality": "permuter",
    "headline": "Permuter finds two clean variable-reuse levers on the never-permuted stream51 chassis: stream-exact floor 15 -> 12 (51/51), ties overall floor, and lands the X-join in $v0 - the assignment s3's T1 clo"
+  },
+  {
+   "session": 5,
+   "floor": 12,
+   "modality": "permuter",
+   "headline": "s5 permuter: named-limit CSE wall proven per-chassis (13 spellings tie 12/51 on the 12-form); c5 two-limit reuse is the first legit C to land carrier=$a3+xlim-save=$a2 (structure trade, not a win); c5"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-extract the RA model from the NEW 12-form (merged-pseudo) graph and rerun the s3 backward constraint solve: the remaining 5-role residual may now have a spellable minimal solution",
-   "mechanism": "The s0-s3 closures are void on the new graph; L1/L2 changed pseudo count, refs, and conflicts. The surviving knot is target's $a2 double-occupancy (xlim-save + sxt(y)) pushing carrier to $a3; the backward solver derives which atoms make that the unique ascending-scan outcome and whether any is spellable on THIS graph",
-   "next_probe": "Extract model from candidate.c body via the c7a0_model.sh/ra_solver tooling (structural modality); rerun backward_solve.py against the new model JSON; check spellability of any solution atoms; also verify the extraction against instrumented-cc1 ALLOCDBG ground truth (the s3 forensics frontier item, now doubly relevant)"
+   "hypothesis": "A spelling exists where lim spans both clamps (high-priority $a2 claim) AND the limit-saves materialize as move save-copies of the signed compare load rather than lhu re-loads",
+   "mechanism": "Target needs both properties simultaneously; they are in tension because s16=s16 assignment sidesteps sign-extension so GCC re-loads unsigned instead of copying. The copy survives only if the saved value is DEMANDED in a form the lh already produces",
+   "next_probe": "Sweep spellings that force the save to read the compare's value: u16 lim (lhu is then the natural single load -- check target's load opcode first), s32 lim with the compare spelled to defeat the v2 CSE fold, lim = (s16)(tx) width-cast variants, or directed PERM_VAR macros over the c5 chassis restricted to save-site spellings; re-measure in display.c context ONLY"
   },
   {
-   "hypothesis": "More pseudo-merging spellings exist beyond tx/hi reuse - the merge vocabulary (which dead local absorbs which compiler temp) is largely unexplored and provably escapes the model closures",
-   "mechanism": "Each distinct merge builds a fresh RTL graph; s4 tested only dispatch-into-tx, signcheck-into-hi/pkt/lo, x-into-pkt/lo variants. Unexplored: merges targeting the xlim-save/sxt(y) temps (blocked so far by the named-limit CSE wall - but the CSE behavior on the NEW graph is unmeasured), and reuse of x/arg0 post-death",
-   "next_probe": "On the 12-form chassis: re-measure the round-16/17 named-limit forms (s16 holder, raw-D not D-1) since all prior kills were per-chassis; sweep remaining dead-local x compiler-temp merge pairs by hand or directed PERM_VAR macros"
+   "hypothesis": "Model re-extraction + backward constraint solve on the C5 GRAPH (not stream51) finds a spellable completion for the 4 remaining roles",
+   "mechanism": "s0-s3 closures are void on the c5 graph (different pseudo set: lim spans both clamps, carrier already $a3). The backward solver can derive which conflicts/prefs make ylim-save=$a0 + sxt(y)=$a2 + lo=$v0 + const=$a0 the unique ascending-scan outcome and whether any atom is spellable on THIS graph",
+   "next_probe": "structural modality: c7a0_model.sh on the c5 body, rerun s3/backward_solve.py against the new model JSON; also resolves whether the lhu re-load structure is even compatible with the target roles or the c5 route is a dead end wholesale"
   },
   {
-   "hypothesis": "The twin func_8007C86C reproduces the 12-form with the same two levers (constant 0xE4000000 differs only)",
+   "hypothesis": "The twin func_8007C86C reproduces the 12-form floor with the same levers (constant 0xE4000000 differs only)",
    "mechanism": "Identical pattern, identical floor history, verbatim same library module",
    "next_probe": "When the twin is dispatched: apply candidate.c with the constant swapped, expect 12 at 51/51; do not spend this function's sessions on it"
   }
