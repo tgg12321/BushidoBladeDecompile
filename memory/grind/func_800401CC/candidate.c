@@ -1,13 +1,24 @@
 /*
- * STATUS (session 3, 2026-08-11): RULING-REQUEST PENDING on the u-staging
- * below (is it inside the func-specific ban's "any spelling" scope, or a
- * distinct sanctioned staged-value-reused-variable instance like the
- * layer-1-approved v-staging?). Session 3's campaigns measured the
- * natural-spelling space empty (see hypotheses.md H8/K9) — this form or a
- * ban extension are the only outcomes. Do not submit candidate-ready from
- * this file until the ruling lands; if sanctioned, keep the banned holder's
- * name and the low-mask hex literal out of self_vet.md (validator
- * token-matches them even in prose).
+ * STATUS (session s5, 2026-08-11): SANDBOX 0/78 RE-VERIFIED (4th time),
+ * form applied in src/text1a_pre.c — but candidate-ready is MECHANICALLY
+ * UNREACHABLE until state.json banned_constructs[1] is removed by the
+ * operator: that ban entry ("Annotation-conformance claim ...") token-matches
+ * {annotation, conformance, claim, fake} at threshold 2, and the mandatory
+ * vet template headers alone supply >= 2 hits, so EVERY format-valid vet is
+ * auto-discarded (proof: tmp/grind/func_800401CC/s5/deadlock_proof.log, run
+ * with the driver's own grindlib.py selfvet CLI). s5 outcome = ruling-request
+ * asking for that entry's removal; ban #1 (invented holder local) stays and
+ * is not contested. The C itself already carries judge PASS d8c4b01f.
+ *
+ * STATUS (session s4, 2026-08-11): RULING LANDED — PASS (judge ruling commit
+ * d8c4b01f, docs/grind/decisions.md 2026-08-11 06:25): the u-staging is a
+ * DISTINCT SANCTIONED INSTANCE of staged-value-reused-variable (borrowed
+ * pre-existing variable), not a respelling of the banned invented-holder.
+ * This form was applied to src/text1a_pre.c in s4, sandbox 0/78 re-verified,
+ * self_vet.md filed describing constructs by role (per the ruling's process
+ * answer: no banned holder name / low-mask hex literal in the vet), and
+ * candidate-ready submitted — then DISCARDED by the driver's banned-construct
+ * token matcher (see s5 STATUS above; the vet text, not the C, tripped it).
  *
  * CANDIDATE — func_800401CC (src/text1a_pre.c), session s2-permuter, 2026-08-11.
  * SANDBOX 0/78 THIS SESSION (verified twice, annotations in place). Form is

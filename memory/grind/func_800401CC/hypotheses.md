@@ -159,7 +159,7 @@
   = 2, v-middle = 2, ot-before-pkt = 2. sched1 re-packs the cluster
   identically regardless of source order of the three sets. Dead.
 
-### FRONTIER
+### FRONTIER (resolved in s4)
 - The ONLY open item is a CLASSIFICATION, not a measurement: is the low mask
   staged through the pre-existing dead-after-call texture-U local (widened
   s32; staged-value-reused-variable family; symmetric twin of the layer-1-
@@ -173,3 +173,50 @@
   axes are s1-F1 (honest 4th-ref lift of the low mask's refs count) and
   s1-F2 (sched.c chain-length flip via BB2_SCHED_DEBUG instrumentation) from
   the floor-7 chassis.
+
+## Session s4 (permuter, 2026-08-11) — ruling PASS applied; candidate-ready
+
+### CONFIRMED
+- **H9: the sanctioned dual-staged form reproduces sandbox 0 when re-applied
+  from candidate.c.** Probe: applied candidate.c body verbatim to
+  src/text1a_pre.c (session-start src was the pre-grind 20-form again);
+  sandbox --disable all = 0/78. CONFIRMED — third independent 0
+  verification of this form (twice in s2-permuter, once in s4).
+
+### FRONTIER
+- (empty — candidate-ready submitted with the judge-ruling-PASS form and a
+  by-role self_vet.md. If the driver's byte verification or the FINAL CALL
+  review bounces it, the bounce reason is the new frontier; the measurement
+  space itself is closed: H8 stands, every natural spelling is measured
+  broken, and the only admissible closing form is the one submitted.)
+
+## Session s5 (permuter, 2026-08-11) — vet-gate deadlock proven; ruling-request
+
+### CONFIRMED
+- **H10: candidate-ready is mechanically unreachable while state.json
+  banned_constructs[1] exists — for ANY vet, independent of the C.**
+  Mechanism: validate_self_vet (grindlib.py:44-47) requires the literal
+  headers `SANCTIONED-FAMILY-CLAIMS:` / `ANNOTATION-CONFORMANCE:`;
+  check_banned_constructs (grindlib.py:126-147) reduces ban #2 to tokens
+  {annotation, conformance, claim, fake} with pass threshold 2 and matches
+  substrings over the whole vet — the mandatory headers alone supply >= 2
+  hits. Probe: ran the driver's own `grindlib.py selfvet` CLI on (a) the
+  honest s4 vet and (b) a minimal maximally-sanitized template-conformant
+  vet; both exit 1 with the identical banned-construct message
+  (tmp/grind/func_800401CC/s5/deadlock_proof.log). CONFIRMED — the format
+  validator and the ban tripwire have a non-empty forced intersection.
+- **H9 re-confirmed: the sanctioned dual-staged form reproduces sandbox 0
+  when re-applied from candidate.c.** Fourth independent 0/78 this session;
+  edits left in place in src/text1a_pre.c.
+
+### FRONTIER (for the session after the ruling)
+- Ban entry #2 removed by operator/owner (the s5 ruling-request asks exactly
+  this; ban #1 — the invented holder local — stays): re-apply candidate.c if
+  src has been reverted again, sandbox (expect 0/78), restore/keep the s4
+  by-role self_vet.md (already on disk; its only ban-#1 token hit is the
+  file stem, 1 < 2 threshold — verified passing once ban #2 is gone), and
+  submit candidate-ready. No measurement work remains; H8 stands.
+- If the ruling instead extends the ban to the u-staging itself (reversing
+  d8c4b01f): the remaining unexplored axes are s1-F1 (honest 4th-ref lift
+  of the low mask's refs count) and s1-F2 (sched.c chain-length flip via
+  BB2_SCHED_DEBUG) from the floor-7 chassis — both still untried.

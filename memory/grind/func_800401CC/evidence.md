@@ -229,3 +229,93 @@ in the canonical floor-7 form:
       resolve a classification question.
 - Artifacts: tmp/grind/func_800401CC/s2/{build_target.sh,setup_ws7.sh,
   perm_ws/campaign.log,perm_ws/output-{0,40,60}-1/,perm_ws7/campaign.log}.
+
+## Session s4 (permuter, 2026-08-11) — ruling landed PASS; candidate-ready
+
+- Session-start state: src reverted to the pre-grind 20-form again (as in
+  every prior session). The task-brief digest was stale (showed only s1),
+  but the on-disk ledger + the judge-ruling commit d8c4b01f superseded it.
+- The session-3 ruling-request was ANSWERED before this session: judge ruling
+  2026-08-11 06:25 (docs/grind/decisions.md, commit d8c4b01f) = PASS —
+  "DISTINCT SANCTIONED INSTANCE — form admissible". The u-staging (low-mask
+  staged through the pre-existing texture-U local) is staged-value-reused-
+  variable, NOT a respelling of the banned invented-holder; the ban stands
+  only for newly-invented holder locals. The ruling also answered the process
+  question: the vet must describe the staging by role, without the banned
+  local's name or the low-mask hex literal (the token-matcher cannot tell
+  mention from use); by-role description is accurate, not evasion.
+- Action taken per the session-3 frontier instruction ("do NOT re-measure —
+  apply candidate.c, candidate-ready"): applied candidate.c's function body
+  verbatim (both FAKE annotations included verbatim as the ruling requires)
+  to src/text1a_pre.c. sandbox --disable all = 0/78 THIS session (3 rules
+  dropped, 4 foreign cheat-asm stripped — same counts as every session).
+- self_vet.md rewritten for the full candidate diff: six tests answered per
+  construct, family claim staged-value-reused-variable with verbatim scope
+  sentence (rule frontmatter description) + precedent
+  .claude/rules/staged-value-reused-variable.md:46, both FAKE annotations
+  quoted, all descriptions by role, banned tokens absent.
+- No permuter campaign launched: the mandated-modality work (directed
+  permuter) was already completed in session 3 (two campaigns, harvested +
+  stopped, natural-spelling space measured empty — H8). Re-running dead
+  campaigns would re-measure banked kills; the ruling made the remaining
+  step purely mechanical application + vet.
+- Outcome: candidate-ready (sandbox 0 in place in src). Driver to re-verify
+  bytes + layer-1 + Judge FINAL CALL.
+- [s4 POSTSCRIPT, recorded by s5] The s4 candidate-ready was DISCARDED by the
+  driver validator: check_banned_constructs (tools/grinder/grindlib.py:126)
+  matched ban entry #2 ("Annotation-conformance claim ('One FAKE construct')",
+  state.json banned_constructs[1]) against the vet on the tokens
+  {annotation, conformance, claim, fake} at threshold 2.
+
+## Session s5 (permuter, 2026-08-11) — vet-gate deadlock PROVEN; ruling-request
+
+- Session-start state: src reverted to the pre-grind 20-form again. Re-applied
+  candidate.c body verbatim; `sandbox --disable all` = **0/78** (3 rules
+  dropped, 4 foreign cheat-asm stripped — same counts as every session).
+  FOURTH independent 0-verification of the judge-PASS form. Edits left in
+  place in src/text1a_pre.c.
+- Root cause of the s4 discard, from the driver source (read this session):
+  - `validate_self_vet` (grindlib.py:44-47) REQUIRES the literal headers
+    `SANCTIONED-FAMILY-CLAIMS:` and `ANNOTATION-CONFORMANCE:` in every vet —
+    a vet without them is rejected as format-invalid.
+  - `check_banned_constructs` (grindlib.py:126-147) reduces ban entry #2 to
+    significant terms {annotation, conformance, claim, fake} (the words
+    "one" and "construct" are dropped as short/stop words) and rejects any
+    vet containing >= max(2, len/2) = 2 of them as case-insensitive
+    substrings ANYWHERE in the file — including inside the mandatory
+    headers themselves ("ANNOTATION-CONFORMANCE:" alone = 2 hits;
+    "SANCTIONED-FAMILY-CLAIMS:" adds "claim" via substring; any FAKE
+    annotation quote adds "fake").
+  - Consequence: EVERY vet that passes the format validator fails the ban
+    check. candidate-ready is mechanically unreachable for this function
+    while banned_constructs[1] exists — independent of the C, which the
+    Judge already ruled PASS (d8c4b01f).
+- MECHANICAL PROOF (tmp/grind/func_800401CC/s5/prove_deadlock.py, output in
+  deadlock_proof.log): ran the driver's own `grindlib.py selfvet` CLI twice —
+  (1) on the honest s4 vet: exit 1, banned-construct message; (2) on a
+  minimal maximally-sanitized template-conformant vet whose body avoids
+  every avoidable token: exit 1, SAME message (the required headers alone
+  trip it). Real vet restored byte-identical afterward.
+- Classification of ban entry #2: it was never a C construct. The layer-1
+  FAIL (banked e6c1114e) banned two things: (a) the invented lowmask holder
+  local — a real construct, correctly banned, NOT contested, and absent from
+  the candidate; (b) the FAILed vet's annotation-count CLAIM TEXT (it said
+  one FAKE construct when the diff's family required a second annotation) —
+  a defect of that session's PAPERWORK, which entered banned_constructs as
+  if it were a construct. The judge's own subsequent constraint ("both FAKE
+  annotations shipped verbatim ... write self_vet.md describing constructs
+  by role") is unsatisfiable while (b) remains in the token list.
+- Resolution requested (ruling-request outcome): operator/owner removes
+  banned_constructs[1] from memory/grind/func_800401CC/state.json (driver
+  state — outside this session's allowed surface, and self-editing it would
+  be self-approval). Ban #1 (invented holder local) must STAY. After
+  removal, the next session re-applies candidate.c (or finds src already
+  applied), re-verifies sandbox 0, and submits candidate-ready with the s4
+  by-role vet, which passes ban #1's token check (verified: its only hit is
+  "text1a_pre" — 1 < 2 threshold).
+- Permuter-modality note: no campaign launched — the directed-permuter axis
+  was exhausted and banked in session 3 (H8: two campaigns, 24k+ iterations,
+  natural-spelling space measured empty; frontier instruction "do NOT
+  re-measure"). This session's measurable work was the sandbox-0
+  re-verification and the vet-gate proof, both artifact-backed.
+- Artifacts: tmp/grind/func_800401CC/s5/{prove_deadlock.py,deadlock_proof.log}.
