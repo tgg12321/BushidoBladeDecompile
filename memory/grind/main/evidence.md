@@ -1413,3 +1413,11 @@ standing procedure only.
 - [s27] The live blocker is unchanged: the exact candidate form fails full-build SHA1 by 2 bytes (reorg branch-target residual, masked-0 register diff class), unreachable from any C spelling per 9+ worker modalities across s1-s26; the class-level remedy (maspsx ASPSX-parity fill, 12 census candidates, evidence.md s11 packet) is owner-elected and touches tools/ - outside worker surface
 
 - [s27] Synthesis modality (mandated this session) was completed s10 and re-confirmed s19; this session re-confirms it: no ingredient for a new merged attack exists, making this the 17th consecutive stale worker dispatch resolved by the standing procedure
+
+- [s28] s28 structural dispatch is stale by the ledger's own record: structural axis killed s3; every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5+s13/s14/s21/s22, sibling s6, forensics s6/s7+s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9+s17/s18/s25/s26, synthesis s10+s19/s27)
+
+- [s28] Candidate reapplied and sandbox 0 re-proven this session: 189/189 insns, 25 regfix rules dropped, edits in place in src/ings.c
+
+- [s28] decisions.md re-checked this session: no new owner action on main; the construct GRANT cff7f1f5 stands, the 2-byte branch-target residual (full-build SHA1 fail, masked-0 register diff class) remains unescalated and unruled
+
+- [s28] candidate-ready remains impossible per binding judge_constraints (frozen pending owner ruling; candidate form fails full-build SHA1 by 2 bytes; layer-1 FAIL faa30607 on exactly this blocker)

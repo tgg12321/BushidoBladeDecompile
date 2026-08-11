@@ -664,3 +664,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: python tmp/grind/main/s14/apply.py (main lines 582..673 replaced with 102 candidate lines), then & tools/wteng.ps1 main sandbox main --disable all
 - result: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 (all in OTHER ings.c functions) - 28th consecutive sandbox-0 proof
 - verdict: CONFIRMED
+
+## [s28] A new owner ruling in docs/grind/decisions.md has unblocked main since s27
+- mechanism: The owner rules asynchronously; each session must re-check before assuming the frontier is unchanged
+- probe: tail docs/grind/decisions.md and scan entries after the 2026-08-11 13:49 main layer-1 FAIL
+- result: No new main entry. Latest remain: layer-1 FAIL 13:49 (candidate 2 bytes off oracle, branch-target residual) and GRANT cff7f1f5 (construct family granted with FAKE-annotation condition). No residual escalation filed, no unpark.
+- verdict: KILLED
+
+## [s28] The candidate form still proves sandbox 0 on current main after the 28th driver revert
+- mechanism: Driver discards uncommitted src edits at session end; only reapplying from memory/grind/main/candidate.c and re-measuring proves the floor is real
+- probe: python tmp/grind/main/s14/apply.py (lines 582..673 replaced with 102 candidate lines), then sandbox main --disable all
+- result: score=0, 189/189 insns, scorable, rules_dropped=25, cheat_asm_stripped=68 (other ings.c functions). 29th consecutive sandbox-0 proof.
+- verdict: CONFIRMED
