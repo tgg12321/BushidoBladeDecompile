@@ -826,3 +826,4 @@
 - 2026-08-11 07:02 func_800401CC s2 [forensics] floor=2: Forensics: divergence mechanism named end-to-end (sched1 adjust_priority birthing-boost asymmetry + LUID-preserved chain order); both residual classes proven structurally locked for every admissible spelling; admissible score-2 v-staged chassis re-verified and left applied in src
 - 2026-08-11 07:17 func_800401CC COMPLETED-C after 3 sessions.
 - 2026-08-11 07:29 func_80075670 COMPLETED-C after 1 sessions.
+- 2026-08-11 07:40 func_8001E6E4 s1 [recon] floor=19: Recon: floor 19 in place on main; gap = single 8-byte phantom frame slot; prior 'GCC DCEs unused arrays' claim disproven (sandbox-strip artifact); 3 honest frame producers measured dead; frontier = -da temp census + sibling/callee struct evidence + Kengo cross-ref
