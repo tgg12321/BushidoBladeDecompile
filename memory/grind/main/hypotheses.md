@@ -676,3 +676,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: python tmp/grind/main/s14/apply.py (lines 582..673 replaced with 102 candidate lines), then sandbox main --disable all
 - result: score=0, 189/189 insns, scorable, rules_dropped=25, cheat_asm_stripped=68 (other ings.c functions). 29th consecutive sandbox-0 proof.
 - verdict: CONFIRMED
+
+## [s29] The structural axis for main still contains an unmeasured lever this session could probe
+- mechanism: Ledger: structural killed s3; sessions s10-s28 unanimously confirm no measurable probe remains for any non-escalation worker modality
+- probe: Ledger digest review + decisions.md re-check (4524 lines, unchanged since s28: GRANT cff7f1f5, construct escalation at :4477, layer-1 FAIL at :4522, residual escalation absent)
+- result: No new lever exists; the only remaining action is the escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual
+- verdict: KILLED
+
+## [s29] memory/grind/main/candidate.c still reaches sandbox 0 when reapplied to the reverted src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so the floor must be re-proven each session
+- probe: python3 tmp/grind/main/s14/apply.py (replaced src/ings.c lines 582..673 with the 102 candidate lines), then sandbox main --disable all
+- result: score 0, 189/189 insns, scorable, 25 rules dropped, 68 cheat-asm lines stripped - 30th consecutive sandbox-0 re-proof
+- verdict: CONFIRMED

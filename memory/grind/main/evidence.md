@@ -1421,3 +1421,16 @@ standing procedure only.
 - [s28] decisions.md re-checked this session: no new owner action on main; the construct GRANT cff7f1f5 stands, the 2-byte branch-target residual (full-build SHA1 fail, masked-0 register diff class) remains unescalated and unruled
 
 - [s28] candidate-ready remains impossible per binding judge_constraints (frozen pending owner ruling; candidate form fails full-build SHA1 by 2 bytes; layer-1 FAIL faa30607 on exactly this blocker)
+
+## s29 (2026-08-11, structural — 19th consecutive stale worker dispatch)
+Structural axis killed s3; standing procedure only. Reapplied candidate via tmp/grind/main/s14/apply.py (lines 582..673 -> 102 candidate lines), sandbox main --disable all = 0 (30th consecutive, 189/189, 25 rules dropped, 68 cheat-asm stripped). decisions.md unchanged (4524 lines): construct GRANT cff7f1f5 + construct OWNER-ESCALATION at :4477 + layer-1 FAIL at :4522 all present; the NEW 2-byte branch-target-residual OWNER-ESCALATION is still UNFILED. Frontier unchanged: only an escalation-modality session filing that entry advances this function.
+
+- [s29] src/ings.c had reverted to pre-grind state again (29th driver revert); apply.py restored the candidate cleanly
+
+- [s29] sandbox main --disable all THIS session: score 0, target_insns 189, build_insns 189, rules_dropped 25, cheat_asm_stripped 68 (tmp/sandbox/main/ings.o, copy banked at tmp/grind/main/s29/sandbox0_ings.o)
+
+- [s29] docs/grind/decisions.md is 4524 lines, unchanged: owner GRANT cff7f1f5 (chained same-variable accumulation family) at :4438, construct OWNER-ESCALATION at :4477 (do not re-escalate), layer-1 FAIL faa30607 at :4522; NO entry yet for the 2-byte branch-target residual
+
+- [s29] Judge constraints remain binding: candidate-ready is impossible (candidate fails full-build SHA1 by the 2-byte reorg branch-target residual; driver byte re-verify would discard it); function frozen pending owner ruling path
+
+- [s29] s29 entry appended to memory/grind/main/evidence.md; candidate.c unchanged in the ledger
