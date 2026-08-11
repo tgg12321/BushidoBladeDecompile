@@ -42,7 +42,7 @@ Matching decompilation of **Bushido Blade 2** (SLUS-00663) — a PS1 fighting ga
 
 ## Splat configuration
 
-The binary is split using [splat](https://github.com/ethteck/splat) v0.39.0 via `splat.yaml`. Re-run via:
+The binary is split using [splat](https://github.com/ethteck/splat) v0.41.0 via `splat.yaml`. Re-run via:
 
 ```bash
 python -m splat split splat.yaml
