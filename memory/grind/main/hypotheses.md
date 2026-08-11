@@ -520,3 +520,21 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: None launched this session — launching one would re-measure a dead axis against the fresh-seed discipline; s5's zero-gradient measurement re-cited instead
 - result: Axis remains KILLED: no campaign can see the residual and no proposal could address a non-construct; standing procedure executed instead (reapply, sandbox 0, decisions.md check)
 - verdict: KILLED
+
+## [s15] The forensics axis for main still has an unnamed compiler-pass divergence worth dumping
+- mechanism: Instrumented cc1 RTL/ALLOCDBG dumps could only re-derive what s1/s6 already banked: the fold is combine.c:8196 (ashift/plus distribution) gated by combine.c:1836 reg_referenced_p, and the remaining 2-byte residual is two reorg-retargeted branch TARGETS at words [165]/[173] — a linker/reorg artifact, not a pass decision reachable from C
+- probe: Ledger check against s6/s7 kill records before any dump run
+- result: No new dump justified; axis confirmed dead — this session executed the post-s11 standing procedure only
+- verdict: KILLED
+
+## [s15] The owner-granted candidate still reaches masked sandbox 0 when reapplied to a pre-grind src/ings.c
+- mechanism: Driver reverts uncommitted src edits at session end; tmp/grind/main/s14/apply.py re-applies the 4 coordinated edits (two callee signature widenings, main body replacement with the FAKE-annotated chained accumulation under grant cff7f1f5)
+- probe: python3 tmp/grind/main/s14/apply.py; & tools/wteng.ps1 main sandbox main --disable all
+- result: score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions) — 16th consecutive re-proof
+- verdict: CONFIRMED
+
+## [s15] The owner has ruled on the 2-byte branch-target residual since s14
+- mechanism: A new decisions.md entry naming main would change the frontier (either the class-level maspsx ASPSX-parity fill remedy or the pre-decided REFUSED disposition)
+- probe: Re-read docs/grind/decisions.md headers and all entries after line 4494
+- result: No new entry for main; GRANT cff7f1f5 (line 4438) and the resolved pre-grant ESCALATE packet (line 4477) are unchanged; post-s14 entries concern func_80047A90 / func_800401CC / func_80075670 only
+- verdict: KILLED
