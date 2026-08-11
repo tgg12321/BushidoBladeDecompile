@@ -688,3 +688,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: python3 tmp/grind/main/s14/apply.py (replaced src/ings.c lines 582..673 with the 102 candidate lines), then sandbox main --disable all
 - result: score 0, 189/189 insns, scorable, 25 rules dropped, 68 cheat-asm lines stripped - 30th consecutive sandbox-0 re-proof
 - verdict: CONFIRMED
+
+## [s30] The standing frontier still holds: no measurable probe remains for a non-escalation worker session on main; the permuter axis in particular stays dead (killed s4/s5, re-confirmed by every dispatch since)
+- mechanism: Every worker modality carries a measured kill (structural s3, permuter s4/s5, forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19); the 2-byte residual is reorg branch TARGETS, not a C construct, so no permuter chassis can reach it; layer-1 FAIL faa30607 and the judge_constraints ban candidate-ready outright
+- probe: Ran the standing procedure: reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (lines 582..673 replaced with 102 candidate lines), re-measured sandbox main --disable all, grepped docs/grind/decisions.md (4524 lines, tail inspected) for any new owner ruling naming main
+- result: sandbox score 0, 189/189 target insns, 25 rules dropped, 68 cheat-asm lines stripped (31st consecutive sandbox-0 re-proof); decisions.md unchanged for main since the 2026-08-11 13:49 layer-1 FAIL entry - no owner ruling on the branch-target residual, no maspsx ASPSX-parity election
+- verdict: CONFIRMED

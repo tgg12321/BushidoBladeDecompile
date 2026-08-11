@@ -1434,3 +1434,13 @@ Structural axis killed s3; standing procedure only. Reapplied candidate via tmp/
 - [s29] Judge constraints remain binding: candidate-ready is impossible (candidate fails full-build SHA1 by the 2-byte reorg branch-target residual; driver byte re-verify would discard it); function frozen pending owner ruling path
 
 - [s29] s29 entry appended to memory/grind/main/evidence.md; candidate.c unchanged in the ledger
+
+- [s30] src/ings.c had reverted to pre-grind state again (30th driver revert); apply.py reapplied the candidate cleanly - the revert-between-sessions mechanism from the frontier remains accurate
+
+- [s30] sandbox main --disable all THIS session: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 (log: tmp/grind/main/s30/sandbox_zero.log)
+
+- [s30] docs/grind/decisions.md line 4477 is still the construct escalation (GRANT cff7f1f5 lineage, 'awaiting owner ruling' on the chained same-variable accumulation family); NO entry exists for the 2-byte branch-target residual - the NEW OWNER-ESCALATION the frontier mandates remains unfiled and is reserved for an escalation-modality dispatch per the driver's ladder
+
+- [s30] No candidate-ready is possible: judge_constraints carry the live 'candidate form failed full-build SHA1 on main (masked-0 register diff class)' ban plus the 2026-08-11 13:49 layer-1 FAIL; the sandbox 0 is masked-register-class 0, true bytes remain 2 off (reorg branch targets)
+
+- [s30] No new permuter campaign was launched: the ledger's kill record (s4/s5, ~exhaustive chassis space) plus the residual's nature (branch TARGETS emitted by reorg, unreachable from C spelling per 9+ modalities across 20 sessions) means any campaign would re-measure a dead axis, which the brief forbids
