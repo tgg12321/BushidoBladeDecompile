@@ -174,3 +174,40 @@ candidate to dump alongside the -da census.
 - probe: tmp/grind/func_8001E6E4/s3/probe_ps_array.py cc1 .frame gradient + emitted-asm inspection
 - result: vars=80 / frame 112 reached (first honest spelling to hit target frame size) BUT the array stays memory-resident: sw $4,16($sp) / sw $2,20($sp) / lw $4,16($sp) materialize and regs drop 4/0 -> 3/0 (save block at wrong offsets). Not codegen-neutral
 - verdict: KILLED
+
+## [s4] Random/directed permuter search finds an honest vars=80 frame producer (permuter modality over the closed structural space)
+- mechanism: permuter mutation classes (temp_for_expr, reorder, ins_block, type-randomize, struct_ref, ...) explore spellings beyond the 19 hand forms; --stack-diffs scorer makes the +8 shift visible; any score-0 without dead/volatile constructs would be an honest producer
+- probe: 3 campaigns (tmp/grind/func_8001E6E4/s4/perm, telemetry in metrics/events.jsonl): default weights -> score-0 at iter 461; perm_pad_var_decl=0 reseed; wp-chassis reseed, 43k+ iters
+- result: the ONLY score-0 basin is `volatile unsigned short pad;` (unwritten volatile dead scalar, forbidden family — rejected per policy, banked at rejected/permuter-volatile-dead-scalar.c). Written-volatile variant reaches vars=80 but materializes its store (score 100). Non-volatile dead scalars/pointers do NOT move the frame (vars=72). No honest vars=80 form exists in the mutation-reachable space
+- verdict: KILLED
+
+## [s4] A staged work-pointer (`wp = &local;` mid-block, first call via wp) closes the residual non-shift codegen divergence at zero cost (permuter output-140, DISCOVERED not searched-for)
+- mechanism: the named pointer intermediate makes GCC stage &local into callee-save $s0 (addiu s0,sp,N in the former nop slot) and use `move a0,s0` for the first call — the shape target has, and the shape the real 112-frame build already produced naturally; at 104 the honest build previously emitted nop + 2x addiu a0,sp,16 instead
+- probe: asm diff find-vs-base-vs-target (s4/asmdiff.sh); byte-equality probe with pre_pad at frame 112 (s4/test_wp_prepad.sh); engine sandbox on src with wp applied
+- result: honest build now 71/71 with EXACTLY the 19-insn +8 sp shift and zero structural divergence; with pre_pad: byte-identical (diff 0) — oracle-safe; sandbox --disable all = 19 (metric unchanged, gap now purely the phantom slot). Banked into src + candidate.c
+- verdict: CONFIRMED
+
+## Frontier after s4
+H1 forensics ONLY, unchanged but sharpened: the honest gap is now a pure
+phantom-slot problem on an otherwise byte-perfect body (wp chassis). The -da
+greg/expansion census should also explain the now-measured frame-coupled
+scheduling flip (at vars=80 GCC naturally stages &local into $s0; at vars=72
+it emits per-call addiu + leaves a nop) — the same mechanism that sizes the
+frame likely gates that staging, so the producer census has a second
+observable to match. Local-declaration space is now TRIPLY dead (19 hand
+forms + 43k permuter iterations + the volatile-only-zero measurement).
+Sibling func_8001E404 note: the wp staging discovery plausibly transfers to
+its honest form (same idiom) — worth one frame-gradient probe in its next
+session, but NOT from this function's budget.
+
+## [s4] Random/directed permuter search over the honest form finds an honest vars=80 frame producer beyond the 19 hand-swept structural spellings
+- mechanism: permuter mutation classes (temp_for_expr, reorders, ins_block, type randomization, struct_ref, ...) with the --stack-diffs scorer making the +8 sp shift visible; stop-on-zero
+- probe: 3 campaigns in tmp/grind/func_8001E6E4/s4/perm (telemetry in metrics/events.jsonl): default weights; perm_pad_var_decl weight-zeroed; reseed from the wp chassis — 43k+ iterations on the final seed
+- result: Only score-0 basin: `volatile unsigned short pad;` — unwritten volatile dead scalar, forbidden family (unused-local frame coercion via volatile-typed scalar), rejected without submission, banked at memory/grind/func_8001E6E4/rejected/permuter-volatile-dead-scalar.c. New mechanical facts: GCC 2.7.2 gives an UNWRITTEN volatile scalar a stack home at zero byte cost (the only inert vars=80 local spelling); non-volatile dead scalars/pointers leave vars=72; a WRITTEN volatile reaches vars=80 but materializes its store (score 100). No honest vars=80 form exists in the mutation-reachable local-declaration space
+- verdict: KILLED
+
+## [s4] A staged work-pointer (CamWork *wp; wp = &local; between the rx and ry stores; first call takes (s32 *)wp) closes the residual non-shift codegen divergence at zero cost
+- mechanism: the genuinely-used named pointer intermediate (sanctioned named-intermediate family) makes GCC stage &local into callee-save $s0 in the former nop slot (addiu s0,sp,16) and emit move a0,s0 for the first call — the exact shape the target has and the real frame-112 build already produced naturally
+- probe: permuter find output-140 vetted, asm-diffed vs base and target (s4/asmdiff.sh), byte-equality probe with pre_pad at frame 112 (s4/test_wp_prepad.sh), applied to src/code6cac.c, engine sandbox --disable all
+- result: honest 104-frame build is now codegen-structurally IDENTICAL to target: 71/71 insns, remaining diff = exactly the 19-insn uniform +8 sp shift, nothing else. With pre_pad (frame 112): byte-identical, diff 0 — oracle-safe. Sandbox = 19 (metric unchanged; the honest gap is now purely the phantom slot). Banked into src + candidate.c
+- verdict: CONFIRMED

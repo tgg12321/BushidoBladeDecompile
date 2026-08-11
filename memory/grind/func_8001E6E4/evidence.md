@@ -244,3 +244,80 @@ resolved here (out of this worker's assigned scope).
 - [s3] Table-row extent: rows are >=0x40 (sibling reads +0x30/+0x38; both write +0x20..0x2B via func_8001A538), grounding CamWork's 72-byte tail as row-shape - the missing 8 bytes are NOT part of the row type from any observed access
 
 - [s3] src/code6cac.c restored byte-identical after probes (git status clean); candidate.c p0 form (floor 19) unchanged as banked best
+
+## Session 4 (grinder, permuter, 2026-08-11)
+
+- **Workspace** (tmp/grind/func_8001E6E4/s4/perm/): full-TU base.c
+  (preprocessed src/code6cac.c, pre_pad removed = honest form, plus a
+  `typedef struct GameObj GameObj;` prepend for pycparser), compile.sh =
+  Makefile-mirror pipeline (CC_FLAGS incl. -mel, prologue_fix, full
+  MASPSX_FLAGS, multu_pad, NO regfix/asmfix), per-function extraction,
+  target.o from asm/funcs/func_8001E6E4.s at offset 0. Validated: 71/71
+  insns; honest base raw diff vs target = 21 pairs (18 pure sp-shift + 3
+  structural — see wp finding below); campaigns via permuter_campaign.py
+  with --stack-diffs (default) + --stop-on-zero.
+- **Campaign 1 (s4-honest-random, default weights): score-0 at iteration
+  461 = `volatile unsigned short pad;` — REJECTED per policy, never
+  submitted** (forbidden family: unused-local frame coercion via
+  volatile-typed scalar; banked at
+  rejected/permuter-volatile-dead-scalar.c with full analysis). The
+  permuter ships `perm_pad_var_decl`, a mutation whose docstring says it
+  inserts unused variables "to adjust stack offsets" — a cheat generator
+  under project policy; weight-zeroed for all later campaigns.
+- **NEW MECHANICAL FACT (refines s1's phantom-frame note):** GCC 2.7.2
+  gives an UNWRITTEN `volatile` scalar local an unconditional stack home
+  (frame gradient: vars=80/frame 112, zero emitted instructions — the only
+  zero-byte-cost vars=80 spelling found). Non-volatile DEAD scalars and
+  pointers (`CamWork *new_var;`, `s32 *new_var;`) do NOT move the frame
+  (vars=72 measured) — unused non-volatile scalars get no stack home
+  (contrast: unused ARRAYS do, s1). A WRITTEN volatile short
+  (`s2[new_var3 = 0]`, find output-100) reaches vars=80 but materializes
+  the volatile store — permuter score 100, not codegen-neutral. So within
+  the local-declaration space the ONLY inert vars=80 producer is the
+  volatile dead scalar = a forbidden-family construct. Honest producers do
+  not exist in this space — consistent with s2/s3's 19 dead spellings.
+- **WP FINDING (permuter output-140, HONEST, banked into src +
+  candidate.c): a staged work-pointer removes ALL residual structural
+  divergence.** `CamWork *wp;` declared before `local`, `wp = &local;`
+  placed between the rx and ry stores, first call takes `(s32 *)wp`.
+  Effect at honest frame 104: GCC stages &local into callee-save $s0 in
+  the former nop slot (`addiu s0,sp,16` where our build had `nop`) and
+  emits `move a0,s0` for the first call's a0 setup (our build had two
+  `addiu a0,sp,16`) — exactly target's shape; the remaining diff vs
+  target is EXACTLY the 19-insn uniform +8 sp shift, nothing else.
+  At frame 112 (pre_pad in place): BYTE-IDENTICAL to target — 71/71,
+  diff 0, via the full pipeline (tmp/grind/func_8001E6E4/s4/
+  test_wp_prepad.sh) — i.e. oracle-safe; the real build already emitted
+  this staging naturally at 112, wp makes the honest 104 build emit it
+  too. Applied to src/code6cac.c; engine sandbox --disable all = 19
+  (unchanged number — the engine metric counted 19 before and after —
+  but the honest gap is now PURELY the phantom 8 bytes). wp is a
+  genuinely-used named pointer intermediate (sanctioned
+  named-intermediate family); assignment placement is load-bearing.
+- **Random-mutation space measured DEAD for honest frame producers:**
+  3 seeds (honest base with default weights; honest base with
+  perm_pad_var_decl=0; wp chassis with perm_pad_var_decl=0), 43k+
+  iterations on the wp chassis alone, 8 jobs. Every frame-moving find
+  was a volatile spelling; no mutation class (temp_for_expr, reorders,
+  ins_block, type randomization, struct_ref, condition, expand_expr,
+  add_sub, ...) produced an honest vars=80. Campaigns harvested +
+  stopped with telemetry (metrics/events.jsonl).
+- **Interpretation for H1:** the frame-112 producer is NOT any local
+  declaration/spelling effect reachable by mutation of this function
+  body. The s1-s3 conclusion stands strengthened: only an
+  expansion-time temp / unallocated-pseudo mechanism (forensics -da
+  census) can ground the 8 bytes honestly.
+- src/code6cac.c left with pre_pad + wp form (byte-identical real build,
+  sandbox 19); candidate.c updated to match; git tree otherwise clean.
+
+- [s4] GCC 2.7.2 allocates a frame slot for an UNWRITTEN volatile scalar local at zero instruction cost (vars 72->80) — the only codegen-inert vars=80 local-declaration spelling; it is a forbidden-family cheat, so the local-declaration space contains NO honest producer
+
+- [s4] Non-volatile dead scalar/pointer locals do NOT move the frame in GCC 2.7.2 (vars=72 measured for CamWork*/s32* dead decls) — refines s1's unused-ARRAY finding; scalars and arrays behave differently
+
+- [s4] The permuter's perm_pad_var_decl mutation is a purpose-built stack-offset padder (its docstring says so) — a cheat generator under project policy; weight-zero it in settings.toml for any BB2 campaign on a frame-gap function
+
+- [s4] wp staged-pointer form: honest build divergence vs target is now EXACTLY the 19-insn +8 sp shift (previously 18 shift + nop + 2x addiu a0,sp,16 structural); with pre_pad at 112 the form is byte-identical via the full pipeline — the frame size itself gates the $s0 staging/scheduling (vars=80 stages naturally, vars=72 does not, wp forces parity)
+
+- [s4] 43k+ permuter iterations across 3 seeds (8 jobs, stack-diffs scorer, stop-on-zero) found no honest vars=80 producer — the phantom-slot producer is not mutation-reachable from the function body; H1 forensics (-da expansion-temp census) remains the only live axis
+
+- [s4] Full-TU permuter workspace recipe for code6cac functions banked (s4/setup.sh): preprocessed TU + GameObj opaque typedef for pycparser, Makefile-mirror compile.sh with -mel, per-function extraction, offset-0 target.o

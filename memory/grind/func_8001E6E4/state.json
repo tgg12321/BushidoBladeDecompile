@@ -1,8 +1,8 @@
 {
  "func": "func_8001E6E4",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,13 +27,19 @@
    "floor": 19,
    "modality": "structural",
    "headline": "Structural s3: H2 callee-evidence and H3 Kengo axes both measured DEAD; last unswept honest 8-byte spelling (used ps[2] pointer array) reaches vars=80 but materializes stores - frontier collapses to H"
+  },
+  {
+   "session": 4,
+   "floor": 19,
+   "modality": "permuter",
+   "headline": "Permuter: only zero basin is the forbidden volatile-dead-scalar (rejected per policy); honest wp staged-pointer chassis discovered and banked \u2014 residual gap is now PURELY the 8-byte phantom slot (byte"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some C shape forces an 8-byte expansion-time stack temp or unallocated pseudo pair that alter_reg pays off (the target's producer) - now the ONLY live axis",
-   "mechanism": "phantom-slot-frame-lever: get_frame_size counts temps/slots no insn touches; producers are toolchain-mechanical, enumerable from -da dumps + function.c assign_stack_local/assign_stack_temp call sites",
-   "next_probe": "forensics modality: compile the honest form with -da, enumerate every pseudo in the greg dump (confirm none unallocated) and every assign_stack_temp/assign_stack_local site; screen aggregate-temp-forcing C shapes with the frame gradient; dump the sibling func_8001E404's struct-copy arm (local = *(CamBuf *)s2) as the one named aggregate-temp producer candidate. Structural spellings (19 forms) and both external evidence axes (callees, Kengo) are measured dead - do not revisit"
+   "hypothesis": "Some C shape forces an 8-byte expansion-time stack temp / unallocated pseudo pair that alter_reg pays off (the target's frame producer) \u2014 the ONLY live axis",
+   "mechanism": "phantom-slot-frame-lever: get_frame_size counts temps/slots no insn touches; producers are enumerable from -da dumps + function.c assign_stack_local/assign_stack_temp call sites",
+   "next_probe": "forensics modality on the WP CHASSIS (now in src): -da census of every pseudo in the greg dump + every assign_stack_temp/assign_stack_local site; the census has a NEW second observable to match \u2014 whatever sizes the frame to 112 also flips the &local-into-$s0 staging that s4 measured (natural at vars=80, absent at vars=72); dump the sibling func_8001E404 struct-copy arm as the named aggregate-temp candidate"
   }
  ],
  "judge_constraints": [],
