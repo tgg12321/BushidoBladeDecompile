@@ -568,3 +568,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Standing procedure: reapply memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (src had been reverted an 18th time), re-run sandbox main --disable all, re-scan docs/grind/decisions.md for new owner action on main
 - result: Sandbox score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions) — 19th consecutive sandbox-0 re-proof; decisions.md byte-identical to s17's read (4521 lines, zero new headings): GRANT cff7f1f5 on file, no entry yet covers the branch-target residual
 - verdict: CONFIRMED
+
+## [s19] The s10 synthesis (consolidated escalation packet, evidence.md s11) is still the best merged attack and needs no revision
+- mechanism: Sessions s11-s18 produced zero new measurements (reproofs only), so there is nothing new to merge; the residual is still the 2 true-byte branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3, re-confirmed by s6 forensics as >=3 cooperating self-healing reorg devices), masked by score.py branch-target masking but real in full-build SHA1
+- probe: Re-read decisions.md for new owner action (git show cff7f1f5 confirms line 4438 is the SAME grant known since s9, not news); re-ran the standing reproof: apply.py + sandbox main --disable all
+- result: sandbox score 0, 189/189 insns, 25 rules dropped, 68 cheat-asm stripped (other ings.c functions) — 20th consecutive; no new decisions.md entry covers the branch-target residual
+- verdict: CONFIRMED

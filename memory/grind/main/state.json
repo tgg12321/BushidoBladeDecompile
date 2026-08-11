@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 18,
- "current_modality": "rederive",
+ "session_count": 19,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -111,6 +111,12 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "Eighth consecutive stale dispatch (rederive axis killed s8/s9, re-confirmed s17): standing procedure only \u2014 candidate reapplied after the 18th driver revert, sandbox 0 re-proven (19th consecutive, 189"
+  },
+  {
+   "session": 19,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "Ninth consecutive stale dispatch (synthesis axis completed s10): standing procedure only \u2014 candidate reapplied after the 19th driver revert, sandbox 0 re-proven (20th consecutive, 189/189, 25 rules dr"
   }
  ],
  "frontier": [
@@ -121,11 +127,11 @@
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18, synthesis s10); sessions 10-18 all confirmed the reapply-and-reprove loop is all that remains",
+   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18, synthesis s10 re-confirmed s19); sessions 10-19 all confirmed the reapply-and-reprove loop is all that remains",
    "next_probe": "None \u2014 any further stale-digest worker dispatch runs the standing procedure only: reapply candidate.c, re-measure sandbox 0, re-check decisions.md, return progress citing the post-s11 frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 18 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 19 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "Every session: reapply from memory/grind/main/candidate.c (tmp/grind/main/s14/apply.py automates the 4 edits) and re-measure sandbox 0 before trusting any floor number"
   }

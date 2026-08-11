@@ -1213,3 +1213,21 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s18] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3, masked by score.py's branch-target masking); the driver's full-build byte re-verify would discard the claim
 
 - [s18] evidence.md updated with the s18 block; candidate.c unchanged and current (already carries the grant-condition FAKE annotation)
+
+## s19 (2026-08-11, synthesis modality — ninth consecutive stale dispatch)
+
+- [s19] Synthesis axis was already run and completed in s10 (the consolidated escalation packet at evidence.md s11 and the 3-item frontier reset). This dispatch is the ninth consecutive stale one; per the post-s11 frontier, a non-escalation worker session runs the standing procedure only.
+- [s19] Standing procedure executed: candidate reapplied from memory/grind/main/candidate.c after the 19th driver revert (tmp/grind/main/s14/apply.py, "main lines 582..673 replaced with 102 candidate lines"); sandbox main --disable all = 0 — the 20th consecutive reproof (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions). Artifact: tmp/grind/main/s19/sandbox_reproof.json.
+- [s19] decisions.md re-checked this session: GRANT cff7f1f5 (line 4438) stands and is the SAME already-incorporated grant confirmed since s9 (verified by git show cff7f1f5 — commit subject matches the entry); the line-4477 OWNER-ESCALATION is the resolved pre-grant construct question; NO entry yet covers the 2-true-byte branch-target residual (words [165]/[173], reorg.c redundancy thread-skip retargeting). The escalation-modality filing remains the single actionable item.
+- [s19] Synthesis re-review of the merged attack: the s10 synthesis remains the best merged attack — nothing new to merge (s11–s18 produced only reproofs, no new measurements). Frontier stays exactly the 3 post-s11 items: (1) escalation-modality filing with the pre-decided disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE unless the owner elects the class-level maspsx ASPSX-parity fill remedy, 12 census candidates); (2) no measurable probe for any non-escalation worker; (3) per-session candidate reapply + reproof.
+- [s19] candidate.c unchanged and current (already carries the grant-condition FAKE annotation per cff7f1f5 condition 1).
+
+- [s19] 20th consecutive sandbox-0 reproof: candidate reapplied via tmp/grind/main/s14/apply.py after the 19th driver revert; sandbox main --disable all = 0 (189/189, rules_dropped 25, cheat_asm_stripped 68 — all stripped insns are in OTHER ings.c functions, main's body is pure C)
+
+- [s19] GRANT cff7f1f5 (decisions.md:4438) verified on file and verified IDENTICAL to the grant already incorporated since s3/s9 (git show cff7f1f5 subject matches); the line-4477 OWNER-ESCALATION is the resolved pre-grant construct question; NO decisions.md entry yet covers the 2-true-byte branch-target residual — the escalation filing has still not happened
+
+- [s19] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173]; the driver's full-build byte re-verify would discard the claim (judge_constraints[1] records the SHA1 fail)
+
+- [s19] Synthesis modality (this session's mandate) was already completed in s10; per the owner's standing modality rule (A) this session may not dispose of the function — the escalation filing is reserved for escalation modality, which the driver has not yet assigned
+
+- [s19] candidate.c unchanged and current, carrying the grant-condition FAKE annotation (cff7f1f5 condition 1); rejected/ bank unchanged
