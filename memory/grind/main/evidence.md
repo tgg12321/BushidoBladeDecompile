@@ -1019,3 +1019,42 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s11] candidate-ready remains impossible for any worker session: masked sandbox is 0 but true bytes are 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
 
 - [s11] evidence.md updated with the s12 block; frontier unchanged from post-s11 (single actionable item: escalation filing, escalation modality only)
+
+- [s13 / driver-session-12, structural stale-dispatch] The driver dispatched
+  structural modality AGAIN (second consecutive stale dispatch of an axis killed
+  in s3; the post-s11 frontier predicted exactly this). Per the standing
+  procedure the session ran ONLY the reapply-and-reprove loop: candidate
+  reapplied from memory/grind/main/candidate.c after the TWELFTH driver revert
+  (all 4 coordinated edits: the two callee signature widenings at ings.c:311/441
+  — func_80016A8C to (u8*,u8*,s32), func_80016E60 to (u8*,s32) — the widened
+  main call sites, the named-cnt tbl[idx] load in the 0xFFFECC00 block, and the
+  owner-granted FAKE-annotated chained same-variable accumulation, grant
+  cff7f1f5); sandbox main --disable all = 0 (189/189 insns, 25 rules dropped,
+  68 cheat-asm lines stripped) — the THIRTEENTH consecutive sandbox-0 re-proof.
+  Artifact: tmp/grind/main/s12/sandbox_reproof.json.
+- [s13] decisions.md re-checked this session (grep): GRANT at line 4438 and the
+  RESOLVED pre-grant escalation at line 4473 remain the only main-scoped
+  entries; NO OWNER-ESCALATION entry yet covers the 2-byte branch-target
+  residual. Filing it remains exclusively the escalation-modality session's job
+  with the pre-decided wording (both endgame-lock gates measured FAILED: gate 1
+  scan_hand_coded tier LOW 0/8 in s8; gate 2 moot — the residual is two
+  reorg-retargeted branch TARGETS, not a C construct) per evidence.md s11.
+- [s13] No structural probe was run and none exists: the structural axis
+  carries the s3 measured kill (three-leg mechanism proof: reorg.c read +
+  DBRDBG trace + cc1psx counter-exhibit; the residual is pipeline-behavioral,
+  not C-reachable). candidate-ready remains impossible for any worker session
+  (masked sandbox 0, true bytes 2 off at branch-target words [165]/[173]; the
+  driver's full-build byte re-verify would discard it). Frontier unchanged from
+  post-s11.
+
+- [s12] src/ings.c was reverted to pre-grind for the TWELFTH time; candidate reapplied from memory/grind/main/candidate.c (all 4 coordinated edits incl. the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5)
+
+- [s12] sandbox main --disable all = 0 this session (189/189 insns, 25 regfix rules dropped, 68 cheat-asm stripped) — THIRTEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s12/sandbox_reproof.json
+
+- [s12] No structural probe was run and none exists: the structural axis carries the s3 measured kill (three-leg mechanism proof; the 2-byte residual is two reorg-retargeted branch TARGETS — pipeline-behavioral, not C-reachable)
+
+- [s12] decisions.md re-checked: GRANT on file, pre-grant escalation resolved, NO entry yet covers the branch-target residual — the escalation-modality session must file it with the pre-decided wording (gate 1 scan LOW 0/8 s8; gate 2 moot, residual is not a C construct)
+
+- [s12] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
+
+- [s12] evidence.md updated with the s13 block; frontier unchanged from post-s11
