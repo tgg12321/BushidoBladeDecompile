@@ -1349,3 +1349,23 @@ standing procedure only.
 - [s22] No permuter campaign launched: the frontier prohibits re-measuring the dead permuter axis (killed s4/s5, ~182k+ iterations historically; re-confirmed s13/s14/s21), and the residual class (reorg branch targets, masked-0) is outside what permuter search over C forms can reach
 
 - [s22] Construct question stays closed by GRANT cff7f1f5 - not re-escalated per the brief's binding instruction
+
+## s23 (2026-08-11, forensics modality — thirteenth consecutive stale worker dispatch)
+
+- [s23] Forensics axis remains KILLED (s6/s7, re-confirmed s15/s16): no new cc1 dump work performed — the frontier prohibits re-measuring dead axes, and the residual (2-byte reorg branch-TARGET class, masked-0 register diff) is already fully forensically characterized; no instrumented-cc1 probe exists that could change the disposition
+
+- [s23] Standing procedure executed: candidate reapplied to src/ings.c via tmp/grind/main/s14/apply.py after the 23rd driver revert; sandbox main --disable all = 0 THIS session (24th consecutive re-proof): 189/189, rules_dropped=25, cheat_asm_stripped=68 (tmp/grind/main/s23/sandbox_reproof.log)
+
+- [s23] decisions.md re-checked (now 4524 lines): NO new owner action since the 2026-08-11 13:49 layer-1 FAIL banked at faa30607; the only OWNER-ESCALATION entry naming main (line 4477) is the OLD construct question, RESOLVED by GRANT cff7f1f5 — the NEW escalation for the 2-byte branch-target residual remains UNFILED, so owner-gated is not yet available to a worker session
+
+- [s23] Construct question stays closed by GRANT cff7f1f5 — not re-escalated per the briefs binding instruction; candidate-ready remains barred by the live judge_constraint (full-build SHA1 fails by 2 bytes, branch-target residual)
+
+- [s23] sandbox main --disable all = 0 THIS session (24th consecutive): 189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions (tmp/grind/main/s23/sandbox_reproof.log)
+
+- [s23] src/ings.c carries the candidate form (23rd revert-reapply cycle; apply.py reported main lines 582..673 replaced with 102 candidate lines)
+
+- [s23] decisions.md re-checked (4524 lines): the only OWNER-ESCALATION naming main (line 4477) is the OLD construct question, RESOLVED by GRANT cff7f1f5; the NEW escalation for the 2-byte branch-target residual is UNFILED - owner-gated is therefore not yet available to a worker session per the brief (entry must pre-exist or be filed by an escalation-modality session)
+
+- [s23] candidate-ready remains barred by the live judge_constraint: candidate form fails full-build SHA1 by 2 bytes (reorg branch-target residual), unreachable from any C spelling per 9+ worker modalities across 20+ sessions
+
+- [s23] Construct question NOT re-escalated per the brief's binding instruction (closed by GRANT cff7f1f5)

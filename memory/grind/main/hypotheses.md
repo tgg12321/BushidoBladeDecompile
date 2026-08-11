@@ -598,3 +598,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; ran sandbox main --disable all; re-checked docs/grind/decisions.md (4524 lines) for any new owner ruling
 - result: sandbox score 0, 189/189 insns, 25 rules dropped, 68 cheat-asm stripped (other ings.c functions); last main entry in decisions.md is still the 13:49 layer-1 FAIL - no owner ruling on the residual, no election of the maspsx ASPSX-parity remedy; GRANT cff7f1f5 (construct question) unchanged
 - verdict: CONFIRMED
+
+## [s23] The forensics axis holds a live probe for the 2-byte branch-target residual
+- mechanism: Frontier: forensics killed s6/s7 and re-confirmed s15/s16; the residual is reorg branch TARGETS (masked-0 register diff class), fully characterized - no instrumented-cc1 dump can change the disposition
+- probe: None run - the ledger frontier prohibits re-measuring dead axes; verified the frontier still stands by re-checking decisions.md (4524 lines) for any new owner action: none since the 13:49 layer-1 FAIL (faa30607)
+- result: No new lever exists on the forensics axis; standing procedure executed instead per frontier next_probe
+- verdict: KILLED
+
+## [s23] The candidate form still reaches sandbox 0 on the current tree after the 23rd driver revert
+- mechanism: Driver discards uncommitted src edits between sessions; only the ledger persists, so the floor must be re-proven each session
+- probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; ran sandbox main --disable all
+- result: score=0, 189/189 insns, rules_dropped=25, cheat_asm_stripped=68 (tmp/grind/main/s23/sandbox_reproof.log) - 24th consecutive re-proof
+- verdict: CONFIRMED
