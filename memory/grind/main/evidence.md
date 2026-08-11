@@ -636,3 +636,76 @@ trace, knob-ON); ings_abl3.s (traced compile asm); cmp_vs_target.py
 - [s6] instrument caveat: the scratch cc1 rebuilt from the instrumented root tree drifts from pipeline build/cc1 by 1 insn OUTSIDE main (0x1118 addiu vs ori, func_800174F4 region) even knob-OFF; main's bytes are identical between the two compilers so all main conclusions stand
 
 - [s6] the cc1 diagnostic 'too few arguments to function func_80019568' at src/ings.c:474 is pre-existing and non-fatal (present in the daily pipeline; cc1 emits the full file)
+
+## Session 8 (dispatched as "session 7, forensics" by a STALE digest; the
+ledger already carried the s7 forensics session, so this session is numbered
+8; artifacts live in tmp/grind/main/s7/ per the dispatch brief — 2026-08-11)
+
+### Session-start invariant (seventh occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — seventh driver revert.
+  Reapplied all four candidate.c edits via targeted Edits; sandbox main
+  --disable all = **0** (189/189, 25 rules dropped, 68 cheat-asm insns
+  stripped from OTHER ings.c functions) re-measured THIS session.
+  candidate.c stays authoritative.
+
+### Why this session did NOT run another reorg counterfactual
+The dispatch digest was stale (it believed s6 was the last session and
+forensics untried). The ledger's s7 already ran the forensics modality to a
+measured conclusion (3-point counterfactual ablation grid; frontier binds:
+"no further reorg-ablation forensics is informative on main — next probe:
+none"). Re-running would re-run banked evidence. The digest's two judge
+constraints are ALSO both stale (family freeze resolved by GRANT cff7f1f5;
+"reg-alloc gap" disproven in s3 — zero register diffs). This session instead
+executed the ONE new measurement the eventual escalation packet requires
+and no session had run.
+
+### MEASURED — endgame-lock gate 1 (canonical-asm) FAILS on main:
+scan_hand_coded tier=LOW, score 0/8
+`python3 tools/scan_hand_coded.py --single main` (first run ever on main;
+artifact tmp/grind/main/s7/scan_hand_coded_main.txt):
+  HAND_CODED: tier=LOW  score=0/8  (main, 189 insns)
+  — S1 multu pacing: absent (0 pairs); S2 empty branch: absent; S3 no
+  spills: fails (6 spills, 10 regs); S4 front loads: absent (max burst 3);
+  S5 cluster: no high-similarity siblings; S6 BIOS jumptable: absent;
+  S7 unsaved $sN: all callee-saves properly saved; S8 redundant mask: absent.
+The owner's standing auto-ruling (2026-07-27) requires STRONG tier with
+S1/S2/S6 signals for the canonical-asm gate; main measures LOW 0/8 — a
+measured NEGATIVE, i.e. a FAILED gate, not an open question. This is
+consistent with everything known: main is compiled C (our C reproduces
+187/189 words; cc1psx on the same C emits the original single-label form).
+- Gate 2 (cited SOTN-master precedent for a coercion family) needs no new
+  measurement: the residual is not a C construct at all — s3 proved no
+  pure-C spelling reaches the 2 branch targets under the frozen pipeline
+  (7 escape hatches enumerated dead), so there is no construct for which a
+  precedent could be cited. Both endgame-lock AND-gates therefore fail on
+  the current evidence; per the standing auto-ruling the escalation entry
+  (when the driver assigns escalation modality) should be titled RESOLVED
+  BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE —
+  unless the owner instead elects the class-level pipeline remedy the s3-s7
+  packet documents (maspsx ASPSX-parity fill, whole-corpus blast radius,
+  12 candidate functions).
+- decisions.md re-checked this session: the only main OWNER-ESCALATION
+  entry (line ~4477) is still the pre-grant accumulation-family question,
+  resolved by the in-person GRANT cff7f1f5. NO entry covers the 2-byte
+  residual; filing it remains the escalation-modality session's job.
+
+### Artifacts (tmp/grind/main/s7/)
+scan_hand_coded_main.txt (gate-1 scan output, tier=LOW 0/8).
+
+- [s8] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured with the full candidate reapplied after the SEVENTH driver revert
+- [s8] endgame-lock gate 1 measured FAILED: scan_hand_coded --single main = tier LOW, score 0/8, zero S1/S2/S6 signals (first run on main; the escalation packet's gate evaluation is now fully measured, not asserted)
+- [s8] gate 2 needs no census: the residual is not a C construct (s3 — no pure-C spelling reaches the 2 branch targets), so no coercion-family precedent question exists; both AND-gates fail → standing auto-ruling pre-decides REFUSED / OWNER-ACCEPTED INCOMPLETE unless the owner elects the class-level pipeline remedy
+- [s8] stale-digest re-dispatch of an already-run modality is now a 3x pattern (s5 permuter, s6 permuter, s8 forensics); the digest's judge constraints were stale both times re-checked
+
+- [s7] This dispatch was a stale digest (3rd occurrence of the pattern): it mandated 'session 7, forensics' but the ledger already carried the s7 forensics session whose frontier binds 'no further reorg-ablation forensics is informative on main — next probe: none'; this session is ledger-session 8 and did NOT re-run banked counterfactuals
+
+- [s7] Both digest judge constraints are stale: the family freeze was resolved by the in-person owner GRANT (decisions.md '2026-08-11 — OWNER RULING (in person) — main', commit cff7f1f5), and the 'reg-alloc gap' classification was disproven in ledger s3 (zero register diffs; the residual is 2 branch TARGETS, a masked class, caused by reorg's redundancy thread-skip)
+
+- [s7] Endgame-lock gate 1 (canonical-asm) measured FAILED: scan_hand_coded --single main = tier LOW, score 0/8, no S1/S2/S6 signals; gate 2 (SOTN-precedent coercion family) is moot/FAILED because the residual is not a C construct at all (s3: no pure-C spelling reaches the 2 branch targets; 7 escape hatches enumerated dead) — both AND-gates fail, so per the 2026-07-27 standing auto-ruling the eventual escalation entry is pre-decided RESOLVED BY STANDING RULING: REFUSED / OWNER-ACCEPTED INCOMPLETE, unless the owner instead elects the class-level maspsx ASPSX-parity remedy documented in the s3-s7 packet (12 candidate functions, whole-corpus blast radius)
+
+- [s7] decisions.md re-checked: the only main OWNER-ESCALATION entry (line ~4477) is the pre-grant accumulation-family question resolved by grant cff7f1f5; NO entry covers the 2-byte branch-target residual — filing it remains the escalation-modality session's job (this session's mandated modality was forensics, so it may not dispose of the function)
+
+- [s7] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation) reapplied in src/ings.c after the seventh driver revert
+
+- [s7] SIX worker modalities/axes now measured dead against the 2-byte residual: spelling (s1/s2), structural/analytic (s3, three-way proof), permuter (s5, scorer blind), cheap sibling confirmation (s6), forensic counterfactual (s7, 3-point ablation grid), canonical-asm gate (s8, scan LOW 0/8); nothing measurable remains for any non-escalation worker session

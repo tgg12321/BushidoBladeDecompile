@@ -320,3 +320,54 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Grep for candidate signatures before any measurement
 - result: Reverted for the SIXTH time; reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session
 - verdict: KILLED
+
+## [s8] main carries hand-coded-asm signals strong enough to open the canonical-asm endgame-lock gate (gate 1 of the owner's 2026-07-27 standing auto-ruling)
+- mechanism: if scan_hand_coded returned STRONG tier with S1/S2/S6 signals, the eventual escalation could file a pending OWNER-ESCALATION for canonical-asm sign-off instead of the pre-decided REFUSED disposition
+- probe: python3 tools/scan_hand_coded.py --single main (first run ever on main; artifact tmp/grind/main/s7/scan_hand_coded_main.txt)
+- result: tier=LOW, score 0/8 — zero signals on all eight tests (0 multu pairs, no empty branches, 6 spills/10 regs, max load burst 3, no similar siblings, no BIOS jumptable, all callee-saves saved, no redundant masks); consistent with s3's proof that main is compiled C (187/189 words from our C; cc1psx counter-exhibit)
+- verdict: KILLED (gate 1 measured FAILED; combined with gate 2 being moot — the residual is not a C construct, so no coercion-family precedent question exists — both AND-gates fail and the standing auto-ruling pre-decides the escalation disposition)
+
+## [s8] src/ings.c still carries the candidate form at session start
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep for candidate signatures before any measurement
+- result: reverted for the SEVENTH time; reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session
+- verdict: KILLED
+
+## Live frontier (post-s8)
+1. The 2-byte branch-target residual remains closable only by owner-surface
+   means; the escalation-modality session FILES the OWNER-ESCALATION entry.
+   The endgame-lock gate evaluation is now FULLY MEASURED: gate 1
+   (canonical-asm) = scan_hand_coded tier LOW 0/8 (s8, FAILED); gate 2
+   (SOTN-precedent coercion family) = moot/FAILED (the residual is not a C
+   construct — s3). Per the standing auto-ruling (2026-07-27) the entry
+   should be titled RESOLVED BY STANDING RULING: REFUSED / OWNER-ACCEPTED
+   INCOMPLETE — citing evidence.md s3-s8, the s3 three-way mechanism proof
+   (dbr_trace.txt, main_psx.s), the s4 census, the s6 sibling
+   disqualification (cmp_352C.txt, cmp_DC9C.txt), the s7 counterfactual
+   grid (cmp_vs_target.py output, dbr_trace_abl.txt, blast_radius2.diff),
+   and the s8 gate-1 scan (scan_hand_coded_main.txt) — while noting the
+   owner MAY instead elect the class-level maspsx ASPSX-parity remedy
+   (12 candidate functions, whole-corpus blast radius) documented in the
+   packet. SIX worker modalities/axes measured dead: spelling s1/s2,
+   structural s3, permuter s5, sibling-probe s6, forensic counterfactual
+   s7, canonical-asm gate s8.
+2. NOTHING measurable remains for a non-escalation worker session on main:
+   permuter (s5 blind), sibling probes (s6), reorg counterfactuals (s7),
+   gate scans (s8) are all banked. A further stale-digest dispatch of any
+   worker modality should reapply the candidate, re-measure sandbox 0,
+   verify decisions.md still lacks a residual-covering entry, and return
+   progress citing this frontier — do NOT invent new probes on dead axes.
+3. Session-start invariant STILL required (7 reverts now): reapply from
+   candidate.c, re-measure sandbox 0 before any other work.
+
+## [s7] main carries hand-coded-asm signals strong enough to open the canonical-asm endgame-lock gate (gate 1 of the owner's 2026-07-27 standing auto-ruling)
+- mechanism: STRONG scan_hand_coded tier with S1/S2/S6 signals would let the eventual escalation file a pending OWNER-ESCALATION for canonical-asm sign-off instead of the pre-decided REFUSED disposition
+- probe: python3 tools/scan_hand_coded.py --single main (first run ever on main); artifact tmp/grind/main/s7/scan_hand_coded_main.txt
+- result: tier=LOW, score 0/8 — zero signals on all eight tests (0 multu pairs, no empty branches, 6 spills/10 distinct regs, max load burst 3, no high-similarity siblings, no BIOS jumptable, all callee-saves saved, no redundant masks); consistent with s3's proof main is compiled C (187/189 words from our C, cc1psx counter-exhibit)
+- verdict: KILLED
+
+## [s7] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
+- result: reverted for the SEVENTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
+- verdict: KILLED
