@@ -9,7 +9,14 @@
  * pre_pad in place (frame 112) the form is BYTE-IDENTICAL to target
  * (verified via the full Makefile-mirror pipeline, 71/71 insns, diff 0).
  * wp is a genuinely-used named pointer intermediate (sanctioned family);
- * its assignment placement between the rx and ry stores is load-bearing. */
+ * its assignment placement between the rx and ry stores is load-bearing.
+ * s5: HEAD did not carry the wp edit (HEAD sandbox 21); this form was
+ * re-applied to src/code6cac.c and re-measured at sandbox --disable all = 19,
+ * and left in src. s5 also measured a strictly closer HONEST form by raw
+ * objdump diff (first-declared 8-byte staging object: 14 differing insn pairs
+ * vs this form's 19, full target frame layout reproduced) - but it WRITES the
+ * phantom region the target never touches, so it is banked as rejected
+ * (rejected/s5-first-declared-staging-object.c), not promoted here. */
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;

@@ -321,3 +321,95 @@ resolved here (out of this worker's assigned scope).
 - [s4] 43k+ permuter iterations across 3 seeds (8 jobs, stack-diffs scorer, stop-on-zero) found no honest vars=80 producer — the phantom-slot producer is not mutation-reachable from the function body; H1 forensics (-da expansion-temp census) remains the only live axis
 
 - [s4] Full-TU permuter workspace recipe for code6cac functions banked (s4/setup.sh): preprocessed TU + GameObj opaque typedef for pycparser, Makefile-mirror compile.sh with -mel, per-function extraction, offset-0 target.o
+
+## Session 5 (grinder, permuter, 2026-08-11)
+
+- **THE FRAME CONSTRAINT IS TWO-SIDED, and only s5 measured the second side.**
+  Every prior session tracked one observable - `vars=80` / frame 112. That is
+  NOT sufficient. The target additionally puts `CamWork local` at **sp+0x18**
+  (callee-saves at 0x60-0x6C), i.e. the 8 phantom bytes sit BELOW `local`.
+  Four different constructs reach vars=80 while leaving `local` at sp+0x10 and
+  are therefore 9-21 insn pairs off target regardless of frame size. The new
+  screening instrument reports BOTH observables (cc1 .frame line + objdump
+  diff-line count vs target): `tmp/grind/func_8001E6E4/s5/screen.py` (11
+  variants, sources + dumps banked as `v_<name>.c` / `v_<name>.dump`).
+- **MECHANISM (measured, kills H1): GCC 2.7.2 hands out the vars area in
+  ALLOCATION ORDER, lowest sp offset first, and the outer block's declared
+  locals are allocated before any statement is expanded.** Controls:
+  `arr_first_dead` (dead `s32 t[2]` declared FIRST = the committed pre_pad
+  shape) -> frame 112, 71 insns, **objdump diff 0**; `arr_last_dead` (same dead
+  array declared LAST) -> frame 112 but `local` unmoved at sp+0x10, 9 differing
+  pairs; `scope_pair` (8-byte aggregate in a disjoint inner block) -> its slot
+  lands at **sp+0x58**, above `local`. Therefore ANY object created after the
+  outer-block declarations - inner-scope local, expansion-time aggregate temp,
+  reload/alter_reg spill slot - grows the frame at the TOP and can never push
+  `local` up. **H1 (the -da expansion-temp / unallocated-pseudo census, the
+  ledger's sole live axis since s1) is dead on structural grounds: no
+  expansion-temp mechanism can produce the target layout.**
+- **What the target layout therefore requires:** an object DECLARED BEFORE the
+  work buffer, 8 bytes wide, emitting ZERO instructions. Across s1-s5 exactly
+  three constructs in GCC 2.7.2 satisfy "8 bytes, zero instructions": an unused
+  local array (forbidden family), an unwritten `volatile` scalar (forbidden
+  family, s4), and widening the declared TYPE of the work buffer itself so its
+  leading 8 bytes are simply untouched (the s1 `pad_lead` form - mechanically
+  perfect, cheat-reviewer FAILed for want of evidence about what those bytes
+  are). Every genuinely-used 8-byte first-declared object emits memory traffic.
+- **Best honest form by raw diff this session (still not a match):**
+  `pair_first` / `arr_first_used` - a first-declared genuinely-used 8-byte
+  object (struct or 2-word array) staged into `local.vx/vy`. Frame 112, `local`
+  at 0x18, saves at 0x60-0x6C, 71 insns, **14 differing insn pairs vs target
+  (the honest wp chassis is 19)** - the whole +8 shift is gone; what remains is
+  the staging traffic itself (2 stores + 1 reload replacing target's 2
+  scheduling nops and one lui/lw pair) plus a 3-insn s0/s1/a0 staging order
+  rotation. Banked at rejected/s5-first-declared-staging-object.c. It is not a
+  candidate: target never touches sp+0x10..0x17, so any construct that WRITES
+  there diverges by construction.
+- **Two fresh-seed permuter campaigns on these NEW chassis (s4 only ever seeded
+  the honest base and the wp chassis).** Workspaces
+  tmp/grind/func_8001E6E4/s5/perm_pairfirst and .../perm_arrfirst (base.c,
+  compile.sh, target.o, settings.toml with `perm_pad_var_decl = 0.0` +
+  `perm_inline = 0.0`; telemetry in metrics/events.jsonl).
+  * s5-pair-first: base score 1156, ~25 min, 462+ outputs, best score **16** -
+    and that find is SEMANTICALLY INVALID: the permuter repointed `wp` at `q`
+    (`wp = &q; local.vx = (*wp).a;`) so the first callee receives the wrong
+    buffer. No honest sub-100 basin. Harvested + stopped.
+  * s5-arr-first-used: base score 1156, 40409 iterations / ~18 min, best score
+    **108, flat across both 9-minute windows**. Harvested + stopped.
+  Combined with s4's 43k iterations this closes random search from four
+  distinct seeds.
+- **Sibling / third-party evidence re-checked and still negative:** sibling
+  func_8001E404 has the identical frame (0x70, locals from 0x18, saves
+  0x60-0x68) and likewise never touches sp+0x10..0x17 - corroborating a shared
+  wider type but supplying no field semantics. The only other callers of
+  func_8001A538 / func_80046BF4 are func_8001A820 (frame 0x80; its sp+0x10 slot
+  is an ordinary 4-byte spill of a func_80053614 return value - unrelated) and
+  func_8003C9A4 / func_8003CD10 (frame 0x18, args-area only). No function in
+  the tree writes an 8-byte lead before a camera work buffer.
+- src/code6cac.c: HEAD did NOT carry s4's `wp` edit (HEAD sandbox = 21); the
+  banked candidate.c form was re-applied this session and re-measured at
+  **sandbox --disable all = 19**. Left in src as the session's final state.
+
+- [s5] Reaching vars=80 is necessary but NOT sufficient: the target also needs `local` at sp+0x18. Measured constructs that hit vars=80 with `local` still at sp+0x10: dead array declared last (9 pairs off), inner-scope aggregate (21 pairs off), aggregate copy temps (frame 112/120, +5 insns)
+- [s5] GCC 2.7.2 allocates frame slots in declaration/allocation order, lowest sp offset first, outer-block decls before any statement expansion - so expansion temps, inner-scope locals and spill slots all land ABOVE the first-declared aggregate and can never shift it up. H1 (expansion-temp census) is structurally impossible, not merely unfound
+- [s5] The target layout requires an 8-byte object DECLARED BEFORE the work buffer that emits ZERO instructions; the only three such constructs in GCC 2.7.2 are unused array (forbidden), unwritten volatile scalar (forbidden), and a wider declared type for the buffer itself (s1 pad_lead, FAILed for lack of evidence)
+- [s5] First-declared genuinely-used 8-byte object (Pair2 / s32 t[2] staged into local.vx/vy) is the closest honest form ever measured on this function: frame 112, local at 0x18, 71 insns, 14 differing insn pairs (vs 19 for the wp chassis) - divergence is exactly the staging traffic into sp+0x10/0x14, which target never writes
+- [s5] Two fresh-seed campaigns on the new first-declared chassis: s5-pair-first best 16 but semantically invalid (wp repointed at q, wrong buffer passed); s5-arr-first-used 40409 iters best 108 flat. Random search now closed from four distinct seeds (s4: 2, s5: 2)
+- [s5] Sibling func_8001E404 has the identical frame and identical untouched sp+0x10..0x17 region; func_8001A820's sp+0x10 is an unrelated 4-byte spill - no in-tree function writes an 8-byte lead before a camera work buffer
+
+- [s5] The frame constraint is TWO-SIDED and only s5 measured the second side: vars=80 / frame 112 is necessary but NOT sufficient — the target also puts CamWork local at sp+0x18 with callee-saves at 0x60-0x6C. Four separate constructs reach vars=80 while leaving local at sp+0x10 and are 9-21 insn pairs off target regardless of frame size.
+
+- [s5] GCC 2.7.2 hands out the vars area in allocation order, lowest sp offset first, and expands the outer block's declared locals before any statement — measured via arr_first_dead (declared FIRST -> objdump diff 0) vs arr_last_dead (declared LAST -> vars=80 but local unmoved, 9 pairs off) and scope_pair (inner-block aggregate allocated at sp+0x58).
+
+- [s5] Therefore the target's layout requires an 8-byte object DECLARED BEFORE the work buffer that emits ZERO instructions. Across s1-s5 exactly three GCC 2.7.2 constructs satisfy that: unused local array (forbidden family), unwritten volatile scalar (forbidden family, s4), and a wider declared TYPE for the work buffer itself whose leading 8 bytes are simply never touched (the s1 pad_lead form — mechanically byte-perfect, cheat-reviewer FAILed only for want of evidence about what those bytes are).
+
+- [s5] Closest honest form ever measured: first-declared genuinely-used 8-byte object (Pair2 / s32 t[2]) staged into local.vx/vy — frame 112, buffer at 0x18, 71 insns, 14 differing insn pairs vs the wp chassis's 19; rejected because it writes the phantom region target never touches.
+
+- [s5] Random permuter search is now closed from FOUR distinct seeds (s4: honest base + wp chassis, 43k iters; s5: pair_first + arr_first_used, ~14k and 40409 iters). Both s5 campaigns harvested and STOPPED with telemetry in metrics/events.jsonl; no campaign outlives the session.
+
+- [s5] Permuter finds must be semantically vetted, not just scored: s5's best find (score 16) repointed wp at q so the first callee would receive the wrong buffer — a scorer improvement that is not a program.
+
+- [s5] Sibling/third-party evidence still negative: func_8001E404 has the identical frame (0x70, locals from 0x18, saves 0x60-0x68) and also never touches sp+0x10..0x17; func_8001A820's sp+0x10 is an unrelated 4-byte spill of a func_80053614 return; func_8003C9A4/func_8003CD10 have 0x18 frames (args only). No in-tree function writes an 8-byte lead before a camera work buffer.
+
+- [s5] HEAD did NOT carry s4's wp edit (HEAD sandbox --disable all = 21). The banked candidate.c form was re-applied to src/code6cac.c this session and re-measured at 19; left in src as the session's final state.
+
+- [s5] New reusable instrument: tmp/grind/func_8001E6E4/s5/screen.py splices any variant body into the s4 permuter TU, runs the Makefile-mirror pipeline and reports frame line + insn count + objdump diff-line count in one line per variant. NB it must pass REPO-RELATIVE paths to compile.sh and prepend .venv/bin to PATH — absolute paths containing spaces silently yield an empty .o.

@@ -1,7 +1,7 @@
 {
  "func": "func_8001E6E4",
  "file": "code6cac",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,13 +33,29 @@
    "floor": 19,
    "modality": "permuter",
    "headline": "Permuter: only zero basin is the forbidden volatile-dead-scalar (rejected per policy); honest wp staged-pointer chassis discovered and banked \u2014 residual gap is now PURELY the 8-byte phantom slot (byte"
+  },
+  {
+   "session": 5,
+   "floor": 19,
+   "modality": "permuter",
+   "headline": "Permuter s5: H1 (expansion-temp census) KILLED on structural grounds \u2014 GCC 2.7.2 allocates frame slots in declaration order, so no temp/spill/inner-scope object can ever sit BELOW the work buffer; two"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some C shape forces an 8-byte expansion-time stack temp / unallocated pseudo pair that alter_reg pays off (the target's frame producer) \u2014 the ONLY live axis",
-   "mechanism": "phantom-slot-frame-lever: get_frame_size counts temps/slots no insn touches; producers are enumerable from -da dumps + function.c assign_stack_local/assign_stack_temp call sites",
-   "next_probe": "forensics modality on the WP CHASSIS (now in src): -da census of every pseudo in the greg dump + every assign_stack_temp/assign_stack_local site; the census has a NEW second observable to match \u2014 whatever sizes the frame to 112 also flips the &local-into-$s0 staging that s4 measured (natural at vars=80, absent at vars=72); dump the sibling func_8001E404 struct-copy arm as the named aggregate-temp candidate"
+   "hypothesis": "The work buffer's original declared TYPE is wider by 8 leading bytes (the s1 pad_lead shape) and some OTHER function in the binary writes those leading fields, which would name them and satisfy the pad_lead rejection's explicit reopen condition",
+   "mechanism": "a first-declared wider aggregate is the only zero-instruction, allocated-before-the-buffer construct GCC 2.7.2 offers that is not a forbidden family; the block is evidence, not mechanism",
+   "next_probe": "binary-wide census BY IDIOM rather than by callee identity (s5 only checked the 4 in-tree callers of func_8001A538/func_80046BF4): scan asm/funcs for functions whose frame stages a local buffer and passes (&pos,&rot,dist)-shaped args, and look for one that WRITES its buffer's leading 8 bytes"
+  },
+  {
+   "hypothesis": "A persisted (.data/.bss) instance of the same camera record exists whose first 8 bytes are written somewhere, giving the leading fields externally-verifiable semantics",
+   "mechanism": "same evidence gate as above, sourced from static data rather than from another stack frame",
+   "next_probe": "trace the D_800F5328 / D_800F6608 row type (writers beyond func_8001B3C0) and D_800A36B4's pointee for a record whose layout puts vx 8 bytes in; a negative result is a FAILED gate, not an open question"
+  },
+  {
+   "hypothesis": "Nothing honest remains and the function is an owner-escalation candidate (both endgame-lock gates fail)",
+   "mechanism": "mechanical space is closed (structural 19 forms, mutation space 4 seeds, expansion temps structurally impossible); only the evidence gate is open",
+   "next_probe": "if the two censuses above come back negative, the driver's next exhaustion call should route to escalation modality; scan_hand_coded has not been run on this function and would need a STRONG S1/S2/S6 tier to open the canonical-asm gate"
   }
  ],
  "judge_constraints": [],

@@ -211,3 +211,51 @@ session, but NOT from this function's budget.
 - probe: permuter find output-140 vetted, asm-diffed vs base and target (s4/asmdiff.sh), byte-equality probe with pre_pad at frame 112 (s4/test_wp_prepad.sh), applied to src/code6cac.c, engine sandbox --disable all
 - result: honest 104-frame build is now codegen-structurally IDENTICAL to target: 71/71 insns, remaining diff = exactly the 19-insn uniform +8 sp shift, nothing else. With pre_pad (frame 112): byte-identical, diff 0 — oracle-safe. Sandbox = 19 (metric unchanged; the honest gap is now purely the phantom slot). Banked into src + candidate.c
 - verdict: CONFIRMED
+
+## [s5] H1: some expansion-time temp / unallocated pseudo (aggregate temp, spill slot, inner-scope object) supplies the target's 8 phantom bytes
+- mechanism: phantom-slot-frame-lever - get_frame_size counts slots no insn touches; assign_stack_temp / reload alter_reg produce them
+- probe: 11-variant frame+diff screen (tmp/grind/func_8001E6E4/s5/screen.py) reporting BOTH the cc1 .frame line and the objdump diff-line count vs target, incl. the decisive controls arr_first_dead (dead array declared FIRST) vs arr_last_dead (declared LAST) and scope_pair (inner-block aggregate)
+- result: STRUCTURALLY IMPOSSIBLE. GCC 2.7.2 hands out the vars area lowest-offset-first in allocation order, and the outer block's declared locals are allocated before any statement is expanded, so every expansion temp / inner-scope local / spill slot lands ABOVE `local` (measured: scope_pair's q at sp+0x58; arr_last_dead reaches vars=80 with `local` still at sp+0x10 and 9 differing insn pairs). The target needs the 8 bytes BELOW `local` (buffer at sp+0x18). No expansion-temp mechanism can produce that layout - the -da census cannot succeed and should not be run
+- verdict: KILLED
+
+## [s5] A genuinely-used 8-byte object DECLARED FIRST reproduces the full target frame layout at acceptable codegen cost
+- mechanism: declaration order controls slot order (first-declared = lowest offset), so a first-declared 8-byte object reserves exactly the phantom region and pushes the work buffer to sp+0x18
+- probe: pair_first (Pair2 staged into local.vx/vy), arr_first_used (s32 t[2] same role), rot4_first (Rot4 aggregate copy) screened, then two fresh-seed permuter campaigns (s5-pair-first ~25 min / s5-arr-first-used 40409 iters, perm_pad_var_decl weight-zeroed, --stack-diffs, --stop-on-zero)
+- result: layout REPRODUCED exactly (frame 112, buffer at 0x18, saves 0x60-0x6C, 71 insns) and the raw diff drops to 14 insn pairs - the best honest form ever measured here (wp chassis is 19) - but the staging writes into sp+0x10/0x14 are themselves the divergence, and target never touches that region. Campaigns found no honest score-0: best 16 (semantically invalid - permuter repointed wp at q, passing the wrong buffer to func_80046BF4) and best 108 flat. Banked rejected/s5-first-declared-staging-object.c
+- verdict: KILLED
+
+## Frontier after s5
+The mechanical question is now CLOSED and the residual is purely an EVIDENCE
+question. Proven this session: the target's layout requires an 8-byte object
+declared BEFORE the work buffer that emits zero instructions, and GCC 2.7.2
+offers exactly three such constructs - unused local array (forbidden family),
+unwritten volatile scalar (forbidden family, s4), and a WIDER DECLARED TYPE for
+the work buffer whose leading 8 bytes this function simply never touches (the
+s1 `pad_lead` form: mechanically byte-perfect, cheat-reviewer FAILed only for
+want of evidence about what those bytes are). Every other axis is measured
+dead: structural spelling (19 forms, s1-s3), local-declaration mutation space
+(s4: 43k iters), expansion temps (s5: structurally impossible), callee-type
+evidence (s3), Kengo (s3), random permuter from four distinct seeds (s4+s5).
+Remaining live axis - EVIDENCE for the wider buffer type, from sources not yet
+tried: (a) a binary-wide FRAME/IDIOM census for other functions that build a
+camera-style work buffer and DO write its leading 8 bytes (s5 only checked the
+4 in-tree callers of the two camera callees; the search should be by frame
+shape and by the pass-(&pos,&rot,dist) idiom, not by callee identity); (b) the
+.data/.bss camera work areas (the D_800F5328 / D_800F6608 row type and
+D_800A36B4's pointee) for a PERSISTED instance of the same record whose first 8
+bytes are written by some function - that would name the fields and satisfy the
+pad_lead rejection's explicit reopen condition. If that census comes back
+negative it is a FAILED gate, and the function becomes an owner-escalation
+candidate once the driver declares exhaustion.
+
+## [s5] H1: some expansion-time temp / unallocated pseudo (aggregate temp, reload spill slot, inner-scope object) supplies the target's 8 phantom bytes — the ledger's sole live axis since s1
+- mechanism: phantom-slot-frame-lever: get_frame_size counts slots no insn touches; assign_stack_temp / reload alter_reg produce them
+- probe: 11-variant screen (tmp/grind/func_8001E6E4/s5/screen.py) reporting BOTH observables — the cc1 .frame line AND the objdump diff-line count vs target — with the decisive controls arr_first_dead (dead s32 t[2] declared FIRST = pre_pad shape) vs arr_last_dead (same array declared LAST) and scope_pair (8-byte aggregate in a disjoint inner block)
+- result: Structurally impossible. arr_first_dead: frame 112, 71 insns, objdump diff 0. arr_last_dead: frame 112 (vars=80!) but `local` stays at sp+0x10 -> 9 differing insn pairs. scope_pair: its 8 bytes land at sp+0x58, above `local`. agg_rot4/agg_vec3 aggregate temps: frame 112/120 with `local` unmoved and +5 insns. GCC 2.7.2 hands out the vars area lowest-offset-first in allocation order and expands the outer block's declared locals before any statement, so every expansion temp / inner-scope local / spill slot lands ABOVE `local` and grows the frame at the TOP. The target needs the 8 bytes BELOW `local` (buffer at sp+0x18). The -da expansion-temp census cannot succeed and should not be run.
+- verdict: KILLED
+
+## [s5] A genuinely-used 8-byte object DECLARED FIRST reproduces the full target frame layout at acceptable codegen cost (the corollary chassis the mechanism finding suggests)
+- mechanism: declaration order controls slot order (first-declared = lowest sp offset), so a first-declared 8-byte object reserves exactly the phantom region and pushes the work buffer to sp+0x18
+- probe: pair_first (Pair2 staged into local.vx/vy), arr_first_used (s32 t[2] in the same role) and rot4_first (Rot4 aggregate copy) screened; then two fresh-seed permuter campaigns with perm_pad_var_decl weight-zeroed, --stack-diffs, --stop-on-zero: s5-pair-first (~25 min, 462+ outputs) and s5-arr-first-used (40409 iterations, ~18 min across two 9-minute windows)
+- result: Layout reproduced exactly — frame 112, buffer at sp+0x18, saves at 0x60-0x6C, 71 insns — and the raw diff drops to 14 differing insn pairs, the closest honest form ever measured on this function (the banked wp chassis is 19). But the staging writes into sp+0x10/0x14 ARE the divergence (target never touches that region; it has 2 scheduling nops and a lui/lw pair there instead), so the family cannot close by construction. Campaigns found no honest score-0: best 16 is semantically INVALID (the permuter repointed `wp` at `q`, so func_80046BF4 would receive the wrong buffer) and the second campaign sat flat at 108. Banked rejected/s5-first-declared-staging-object.c
+- verdict: KILLED
