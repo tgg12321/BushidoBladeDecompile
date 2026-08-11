@@ -230,3 +230,50 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
 - result: reverted AGAIN (4th occurrence): 1-arg call sites, inline threshold, no annotation; reapplied all 4 edits from candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
 - verdict: KILLED
+
+## [s6] a sibling from the s4 rule-carrying candidate list can be mechanism-confirmed cheaply (bytesig diff + DBRDBG on its loop head) to upgrade main's packet to an N-function mechanism-proven class
+- mechanism: assumed the siblings sit near byte-convergence like main (where only the 2 branch targets differed), so a local diff + trace would attribute their label rules to the reorg redundancy thread-skip
+- probe: sandbox --disable all + exact-byte diff (tmp/grind/main/s5/sibling_cmp.py) on both frontier-named candidates; regfix rule-kind read; corpus insert_label census
+- result: func_8007DC9C floor 9 (90/91) with rules of a DIFFERENT class (la+lw load-split insert_after regfix.txt:2571, register substs, reorder — no label device; geometry hit incidental); func_8007352C floor 54 (129/127) with 117 unmasked word diffs and a whole-body callee-save rotation from insn 1 — the insert_label @105 site cannot be locally attributed until that function's own RA converges; insert_label device census = 9 functions / 11 rules, and func_8001F938's 2026-07-23 escalation shows the device serving a different mechanism (combine dual-load reconstruction), so device presence alone is not mechanism evidence
+- verdict: KILLED (sibling confirmation is a full grind of the sibling, not a cheap probe; main's packet stands on its own three-way proof + the geometry census as shape-level class evidence)
+
+## [s6] src/ings.c still carries the candidate form at session start
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep for candidate signatures before any measurement
+- result: reverted AGAIN (5th occurrence); reapplied all 4 edits from candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session
+- verdict: KILLED
+
+## Live frontier (post-s6)
+1. main's disposition is unchanged: the 2-byte branch-target residual is
+   closable only by owner-surface means (label regfix rules = cheat debt,
+   maspsx ASPSX-parity fill = owner sign-off, reorg patch = forbidden).
+   FOUR worker findings now bound the space: spelling dead (s1/s2),
+   structural/analytic dead with three-way proof (s3), permuter blind (s5),
+   cheap sibling confirmation impossible (s6). The driver should route main
+   to escalation modality; NO open OWNER-ESCALATION currently covers this
+   residual (the 2026-08-11 entry was the accumulation-family question,
+   resolved by the in-person GRANT cff7f1f5) — the escalation session must
+   FILE the entry, citing evidence.md s3/s4/s5/s6, dbr_trace.txt,
+   main_psx.s, the census artifacts, and the s6 sibling-qualification
+   artifacts (tmp/grind/main/s5/cmp_352C.txt, cmp_DC9C.txt).
+2. Do NOT dispatch permuter on main again (s5 measured the tool blind), and
+   do NOT budget a "quick sibling confirmation" (s6 measured both named
+   candidates far from convergence; func_8007DC9C is a different divergence
+   class entirely). If the owner wants the class mechanism-proven on a
+   second function, that is func_8007352C's own grind when it reaches the
+   queue top.
+3. Session-start invariant STILL required: src/ings.c reverted for the 5th
+   time before this session; always reapply from candidate.c and re-measure
+   sandbox 0 before any other work.
+
+## [s5] A sibling from the s4 rule-carrying candidate list (func_8007352C or func_8007DC9C) can be mechanism-confirmed cheaply by the s3 method to upgrade main's owner packet to an N-function mechanism-proven class
+- mechanism: assumed the siblings sit near byte-convergence like main (only branch targets off), so a local bytesig diff + DBRDBG trace would attribute their label/retarget regfix rules to reorg.c's redundancy thread-skip
+- probe: sandbox --disable all on both + exact-byte diff via tmp/grind/main/s5/sibling_cmp.py (engine func_byte_signature, rules-on build obj vs cheat-free sandbox obj) + regfix rule-kind reads + corpus-wide insert_label census
+- result: func_8007DC9C: floor 9 (90/91), rules regfix.txt:2570-2575 are a la+lw load-split insert_after (the missing insn) + register substs + reorder — NOT the synthetic-label+retarget device; its two-label census hit is incidental geometry. func_8007352C: floor 54 (129/127), 117 unmasked word diffs with a whole-body callee-save rotation starting at insn 1 — the insert_label @105 / beq-retarget @45 site cannot be locally attributed until that function's own RA converges. insert_label census: 9 functions / 11 rules corpus-wide, and func_8001F938's 2026-07-23 OWNER-ESCALATION shows the device serving a DIFFERENT mechanism (combine dual-load reconstruction), so device presence alone is shape evidence, not mechanism proof
+- verdict: KILLED
+
+## [s5] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep src/ings.c for the candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
+- result: reverted for the FIFTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
+- verdict: KILLED

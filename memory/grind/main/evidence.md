@@ -439,3 +439,101 @@ permuter_base.c (the standalone workspace source), permuter_compile.sh
 - [s4] campaign hygiene: launched and harvested --stop within the session, telemetry in metrics/events.jsonl (label perm_main_s4, base_score 0, finds 0, stop_reason recorded), no orphan processes
 
 - [s4] src/ings.c regression is now a 4x-recurring driver behavior; the session-start reapply-from-candidate.c invariant remains load-bearing
+
+## Session 6 (dispatched as "session 5, permuter" by a stale digest; the ledger
+already carried s5's permuter kill, so this session is numbered 6 — 2026-08-11)
+
+### Session-start invariant (fifth occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — fifth driver revert. Reapplied
+  all four candidate.c edits via targeted Edits; sandbox main --disable all =
+  **0** (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER
+  ings.c functions) re-measured THIS session. candidate.c stays authoritative.
+
+### Why this session did NOT run a permuter campaign
+The dispatch digest was stale (it believed s4 was the last session and
+permuter untried). The ledger's s5 already MEASURED the permuter modality
+blind on main (campaign base score 0 while true bytes are 2 off; telemetry
+banked, label perm_main_s4) and the post-s5 frontier binds: "Do NOT dispatch
+permuter on main again." Re-running it would re-run banked evidence. This
+session instead executed the frontier's prescribed next probe: qualify the
+sibling-confirmation candidates.
+
+### Decisions.md state check (relevant to the digest's stale constraints)
+- The "function frozen pending owner ruling" constraint in the digest is
+  RESOLVED: decisions.md carries the in-person owner GRANT of the chained
+  same-variable accumulation family (entry "2026-08-11 — OWNER RULING (in
+  person) — main (ings.c): chained same-variable accumulation GRANTED",
+  4 binding conditions; commit cff7f1f5). The 2026-08-11 main
+  OWNER-ESCALATION entry (line ~4477) is the pre-grant family question and
+  is resolved BY that grant — there is currently NO open escalation entry
+  covering the 2-byte branch-target residual / ASPSX-retarget class. An
+  escalation-modality session still needs to FILE that entry.
+
+### MEASURED — both named sibling-confirmation candidates are NOT cheap
+probes (frontier item 2 correction)
+The post-s5 frontier hoped a worker session could confirm the reorg
+redundancy-thread-skip mechanism on a sibling "by the s3 method (bytesig
+diff + DBRDBG trace)". Measured this session (artifacts
+tmp/grind/main/s5/sibling_cmp.py, cmp_352C.txt, cmp_DC9C.txt):
+- **func_8007DC9C** (4 rules, src/display.c): sandbox --disable all = 9,
+  build 90 vs target 91. Its rules are regfix.txt:2570-2575 — a
+  la+lw load-split `insert_after` (the missing 91st insn), two register
+  substs, and a 4-insn `reorder`. NONE is the synthetic-label+retarget
+  device; its two-label census hit is incidental geometry. Its byte diff is
+  an alignment cascade from the missing load-split insn plus arg-register
+  scheduling diffs — a DIFFERENT divergence class. KILLED as a
+  retarget-class confirmation target.
+- **func_8007352C** (11 rules, src/text1b.c): sandbox --disable all = 54,
+  build 129 vs target 127, and the unmasked byte diff shows **117 word
+  diffs starting at insn 1** — a whole-body callee-save rotation
+  (ref s4/s7/s3/s1... vs ours s2/s6/s1...) plus an unfilled delay-slot nop
+  at idx 20 (target drains `andi $30,$2,0xffff` into it, regfix @20) and
+  2 extra insns. The label-device site (insert_label @105 + beq retarget
+  @45, regfix.txt:2899-2900) is buried under the RA divergence: the s3
+  method (local byte convergence + DBRDBG on the loop head) is meaningless
+  until that function's own grind converges its registers. Sibling
+  confirmation = that function's own multi-session grind, NOT a cheap
+  add-on to main's packet. KILLED as a cheap probe.
+- **insert_label device census** (grep regfix.txt/asmfix.txt): the
+  synthetic-label device appears in **9 functions / 11 rules**:
+  func_8001F938, func_800644FC, MoveImage, func_80074B18, func_8007352C,
+  func_80048864 (x2), func_800770B8, func_8005D554, func_8007D3F8 (x2).
+  COUNTER-EXHIBIT: func_8001F938's own OWNER-ESCALATION (decisions.md
+  2026-07-23) shows its insert_label serves a DIFFERENT mechanism (combine
+  dual-load block reconstruction, .L8001FA60) — so carrying the device is
+  NOT evidence of the reorg-retarget mechanism by itself. The s4 census
+  claim "func_8007352C = second confirmed exemplar" stands as SHAPE
+  evidence only (device + two-label geometry co-occurrence); mechanism
+  proof for any sibling still requires that sibling's convergence first.
+
+### Packet implication (for the eventual escalation-modality session)
+main's owner packet should stand on: (a) main's own three-way mechanism
+proof (reorg.c read + DBRDBG trace + cc1psx counter-exhibit, s3), (b) the
+s4 geometry census (138 sites / 96 functions, 84 rule-free = precondition-
+gated), (c) the s6 finding that per-sibling mechanism confirmation is a
+full grind of that sibling (not deferrable-cheap), with func_8007352C the
+best eventual candidate (device + geometry) and func_8007DC9C excluded
+(different class). Do not promise an "N-function mechanism-proven class"
+the packet cannot cheaply deliver.
+
+- [s6] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured with the full candidate reapplied after the FIFTH driver revert
+- [s6] permuter modality NOT re-run: s5's blindness measurement + post-s5 frontier bind; stale digest re-dispatched an already-killed modality
+- [s6] no open OWNER-ESCALATION covers the 2-byte residual (the 2026-08-11 entry was the family question, resolved by the in-person GRANT); escalation modality must file a fresh entry
+- [s6] sibling qualification measured: func_8007DC9C floor 9, rules are load-split/reg-subst/reorder — NOT the retarget class; func_8007352C floor 54 with whole-body RA rotation from insn 1 — device site unreachable until its own grind; insert_label device spans 9 functions and (per func_8001F938's escalation) serves multiple distinct mechanisms, so device-sharing is shape evidence only
+
+- [s5] sandbox main --disable all = 0 (189/189, 25 rules dropped) measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) in place in src/ings.c
+
+- [s5] permuter was NOT re-run: the dispatch digest was stale (believed s4 was last); ledger s5 already measured the permuter blind on main (campaign base score 0 while true bytes are 2 off, telemetry banked) and the post-s5 frontier binds 'Do NOT dispatch permuter on main again' — re-running would re-run banked evidence
+
+- [s5] the digest's judge constraints are stale: the family freeze was resolved by the in-person owner GRANT (decisions.md '2026-08-11 — OWNER RULING (in person) — main', commit cff7f1f5) and the 'reg-alloc gap' classification was disproven in ledger s3 (zero register diffs; residual = 2 branch TARGETS, reorg redundancy thread-skip)
+
+- [s5] NO open OWNER-ESCALATION covers the 2-byte residual: the 2026-08-11 main escalation entry was the accumulation-family question and is resolved by the grant; an escalation-modality session must FILE a fresh entry for the ASPSX-retarget disposition
+
+- [s5] func_8007DC9C honest floor 9 (90/91) with rules of a different class (load-split insert_after + reg substs + reorder) — excluded from the retarget-class candidate list
+
+- [s5] func_8007352C honest floor 54 (129/127) with 117 unmasked word diffs and whole-body callee-save rotation from insn 1 — its label device is unattributable until its own grind converges; sibling mechanism confirmation is a full grind, not a cheap probe
+
+- [s5] insert_label device census: 9 functions / 11 rules (func_8001F938, func_800644FC, MoveImage, func_80074B18, func_8007352C, func_80048864 x2, func_800770B8, func_8005D554, func_8007D3F8 x2); func_8001F938's escalation proves the device serves multiple distinct mechanisms
+
+- [s5] worker findings now bounding main: spelling dead (s1/s2), structural/analytic dead with three-way proof (s3), permuter blind (s5), cheap sibling confirmation impossible (s6)

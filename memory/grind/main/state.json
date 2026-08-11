@@ -1,7 +1,7 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "Permuter modality measured BLIND on main (campaign base score 0 while true bytes are 2 off) \u2014 third worker modality killed against the branch-target residual; disposition question unchanged"
+  },
+  {
+   "session": 5,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "Stale digest re-dispatched the already-killed permuter modality; session instead re-proved sandbox 0 after the 5th src revert and KILLED the cheap-sibling-confirmation frontier probe with measurements"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "main's disposition is an owner/pipeline question; the packet now carries three dead worker modalities plus the s4 class census (138 sites / 96 functions, 12 rule-carrying candidates)",
-   "mechanism": "all C-side escapes measured dead (s3 three-way proof); permuter measurably blind (s5); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope",
-   "next_probe": "escalation-modality session files the OWNER-ESCALATION citing evidence.md s3+s4+s5, dbr_trace.txt, main_psx.s, the census artifacts, and the s5 permuter-blindness harvest; no further spelling, RA, or permuter grinding on main"
+   "hypothesis": "main's 2-byte branch-target residual is closable only by owner-surface means; the disposition needs an escalation-modality session to FILE the OWNER-ESCALATION entry (none currently covers this residual)",
+   "mechanism": "reorg.c fill_slots_from_thread redundancy thread-skip (three-way proven s3) vs ASPSX fill-iff-retarget; all four worker modalities measured dead (s1/s2 spelling, s3 structural, s5 permuter, s6 sibling-probe)",
+   "next_probe": "escalation modality: file the entry citing evidence.md s3-s6, tmp/grind/main/s2/dbr_trace.txt + main_psx.s, the s3/s4 census artifacts, and tmp/grind/main/s5/cmp_352C.txt + cmp_DC9C.txt; evaluate the endgame-lock AND-gates honestly (scan_hand_coded tier; the maspsx ASPSX-parity-fill option is an owner-surface pipeline question affecting the whole 12-candidate class)"
   },
   {
-   "hypothesis": "func_8007352C (or func_8007DC9C) diverges by the SAME reorg redundancy thread-skip mechanism",
-   "mechanism": "same signature geometry + synthetic-label/retarget regfix device (regfix.txt:2899-2900 vs main's 1559+1569-1572); per-function confirmation needs the s3 method (exact-byte diff + DBRDBG trace on its loop head)",
-   "next_probe": "if a worker session fires on main before escalation modality, spend it confirming one sibling instead of re-grinding main \u2014 each confirmed sibling upgrades the owner packet to an N-function mechanism-proven class"
+   "hypothesis": "func_8007352C remains the best eventual second exemplar of the retarget class (device + geometry co-occurrence), but only via its own queue-top grind",
+   "mechanism": "its insert_label @105 + beq retarget @45 match main's device shape, but 54 honest distance / whole-body RA rotation must close before the label site is attributable",
+   "next_probe": "none for main sessions \u2014 leave to func_8007352C's own ledger when it reaches the queue top; do not spend main sessions on it (func_8007DC9C is excluded from the class candidate list \u2014 different divergence class)"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (recurring driver behavior, 4 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (5 occurrences)",
    "mechanism": "driver discards uncommitted src edits at session end; only the ledger persists",
-   "next_probe": "every session: grep src/ings.c for the candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) and reapply from memory/grind/main/candidate.c before trusting any floor number"
+   "next_probe": "every session: grep src/ings.c for the candidate signatures and reapply from memory/grind/main/candidate.c before trusting any floor number"
   }
  ],
  "judge_constraints": [
