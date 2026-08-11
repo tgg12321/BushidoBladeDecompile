@@ -1714,6 +1714,14 @@ s32 _spu_init(s32 a0) {
     return 0;
 }
 INCLUDE_ASM("asm/funcs", func_800889D4);
+/* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
+   points that splat merged into func_800889D4. Split out 2026-08-10
+   (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
+   their former host, in address order, so the link order reproduces the
+   original byte layout. _spu_FiDMA.s also keeps the `alabel D_80088BA0` that
+   marks its entry — that address is referenced as data elsewhere. */
+INCLUDE_ASM("asm/funcs", _spu_FiDMA);
+INCLUDE_ASM("asm/funcs", _spu_Fr_);
 /* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
