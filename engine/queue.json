@@ -2444,15 +2444,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (sibling); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_80036FD4",
-      "file": "code6cac_b2_post",
-      "distance": 17,
-      "verdict": "C",
-      "rules": 8,
-      "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '## 2026-07-29 \u2014 func_80036FD4 \u2014 OWNER-ESCALATION \u2014 INTEGRATION HANDOFF (not an endgame lock)'"
-    },
-    {
       "func": "func_8002EA24",
       "file": "code6cac_b",
       "distance": 18,
@@ -2490,11 +2481,11 @@
     }
   ],
   "counts": {
-    "total": 292,
+    "total": 291,
     "active": 255,
     "by_status": {
       "active": 255,
-      "parked": 37
+      "parked": 36
     },
     "by_verdict": {
       "C": 169,

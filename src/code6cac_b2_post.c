@@ -42,7 +42,6 @@ extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
 extern void obj_InitAll(void);
 extern void func_80077820(s32);
-extern s32 D_80101E70;
 extern s32 D_800A3894;
 extern u8 D_80102781;
 
@@ -70,7 +69,6 @@ extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
 extern s32 ratan2(s32, s32);
-extern s32 D_80101E74;
 
 extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
@@ -190,7 +188,7 @@ void func_80035FE0(void) {
     CdInit();
     CdSetDebug(0);
     func_80035F30(0, 0, 0, 0);
-    D_80101E62[0] = 0;
+    D_80101E60.unk02 = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
     }
@@ -238,25 +236,24 @@ void func_80036940(void);
 INCLUDE_ASM("asm/funcs", func_80036940);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Exec  |  274i */
 s32 func_80036D88(void) {
-    return D_80101E62[0] == 0;
+    return D_80101E60.unk02 == 0;
 }
 s32 replay_camera_Init(s32 a0, s32 a1) {
-    struct CamPair { s32 w0; s32 w1; };
     extern u8 SpecialCam;
     s32 sval;
     s32 reloaded;
 
-    if (D_80101E62[0] != 0) {
+    if (D_80101E60.unk02 != 0) {
         return 0;
     }
 
     sval = ((s32)(a0 << 16)) >> 13;
-    D_80101E60 = a0;
-    *(struct CamPair *)&D_80101E6C = *(struct CamPair *)((u8 *)&SpecialCam + sval);
+    D_80101E60.unk00 = a0;
+    D_80101E60.pair = *(CamPair *)((u8 *)&SpecialCam + sval);
     D_80101E7C = a1;
-    D_80101E68 = 0;
-    D_80101E62[0] = 2;
-    reloaded = D_80101E70;
+    D_80101E60.unk08 = 0;
+    D_80101E60.unk02 = 2;
+    reloaded = D_80101E60.pair.b;
     D_80101E9E = 0;
     D_80101E78 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
@@ -266,7 +263,7 @@ s32 func_80036E34(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (replay_camera_Init(arg0, arg1) == 0) {
         return 0;
     }
-    CdIntToPos(CdPosToInt((s32)&D_80101E6C) + arg2, (s32)&D_80101E6C);
+    CdIntToPos(CdPosToInt((s32)&D_80101E60.pair) + arg2, (s32)&D_80101E60.pair);
     D_80101E78 = arg3;
     return 1;
 }
@@ -278,8 +275,8 @@ void game_FrameInit(void) {
     func_80035F30(0, 0, 0, 0);
     CdFlush();
     CdControlF(9, 0);
-    D_80101E68 = 1;
-    D_80101E62[0] = 0xB;
+    D_80101E60.unk08 = 1;
+    D_80101E60.unk02 = 0xB;
     D_80101E5C = 0;
 }
 u32 func_80036F28(s32 arg0) {
@@ -306,7 +303,7 @@ void game_FrameLoop(void) {
 }
 extern void CdControlB(s32, u8 *, s32);
 s32 func_80036FD4(s32 arg0, s32 arg1) {
-    s16 *s0 = D_80101E62;
+    s16 *s0 = &D_80101E60.unk02;
 
     if (*s0 != 0) {
         return 0;
@@ -314,18 +311,29 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
 
     {
         extern u8 SpecialCam;
-        s32 *entry = (s32 *)(&SpecialCam + ((arg0 << 16) >> 13));
+        ReplayCamRec *rec = &D_80101E60;
+        s32 idx;
+        u8 *cam;
+        CamPair *entry;
 
-        D_80101E60 = arg0;
-        D_80101E6C = entry[0];
-        D_80101E70 = entry[1];
+        rec->unk00 = arg0;
+        /* FAKE: reading the index back out of the record (instead of reusing
+         * arg0) exists to win a scheduler tie-break, not to compute anything
+         * new.  sched.c rank_for_schedule() breaks equal-priority ties on
+         * INSN_LUID, i.e. on original RTL order, so splitting the sign-extend
+         * (this read-back -> sll16/sra16) from the scaling (idx * 8 -> sll3,
+         * which combine fuses back into the sra as sra13 AT THE sll3's
+         * position) and materialising the table base BETWEEN them is what puts
+         * the three insns in target's sll / lui+addiu / sra order. */
+        idx = rec->unk00;
+        cam = &SpecialCam;
+        entry = (CamPair *)(cam + idx * 8);
+        rec->pair = *entry;
     }
-
-    asm volatile("" ::: "memory");
 
     {
         extern u8 SpecialCam;
-        D_80101E74 = CdPosToInt((s32)(&SpecialCam + D_80101E60 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60 << 3)) >> 11) - 0x96;
+        D_80101E60.unk14 = CdPosToInt((s32)(&SpecialCam + D_80101E60.unk00 * 8)) + (*(u32 *)((u8 *)&D_8008EC38 + (D_80101E60.unk00 << 3)) >> 11) - 0x96;
     }
 
     if (arg1 < 0) {
@@ -340,10 +348,10 @@ s32 func_80036FD4(s32 arg0, s32 arg1) {
         D_80101E90 = 0xC8;
     }
 
-    D_80101E64 = 0;
-    D_80101E68 = 0;
-    D_80101E6A = 0;
-    D_80101E62[0] = 0x10;
+    D_80101E60.unk04 = 0;
+    D_80101E60.unk08 = 0;
+    D_80101E60.unk0A = 0;
+    D_80101E60.unk02 = 0x10;
 
     return 1;
 }
@@ -354,8 +362,8 @@ s32 func_80037110(s32 arg0) {
     v0 = func_80036FD4(v0, s0[1]);
     if (v0 != 0) {
         if (*(s32 *)(s0 + 4) != -1) {
-            v0 = CdPosToInt((s32)&SpecialCam + (s32)D_80101E60 * 8);
-            D_80101E74 = v0 + *(s32 *)(s0 + 4);
+            v0 = CdPosToInt((s32)&SpecialCam + (s32)D_80101E60.unk00 * 8);
+            D_80101E60.unk14 = v0 + *(s32 *)(s0 + 4);
         }
         return 1;
     }
@@ -365,39 +373,39 @@ s32 func_80037110(s32 arg0) {
 s32 func_800371AC(void) {
     s32 ret = ((s32 (*)())func_80037110)();
     if (ret) {
-        D_80101E64 = 1;
+        D_80101E60.unk04 = 1;
         return 1;
     }
     return 0;
 }
 void func_800371E8(s16 arg0) {
-    D_80101E6A = arg0;
+    D_80101E60.unk0A = arg0;
 }
 s32 func_800371F8(void) {
     extern s32 func_80036FD4();
 
     if (func_80036FD4() != 0) {
-        D_80101E64 = 1;
+        D_80101E60.unk04 = 1;
         return 1;
     }
     return 0;
 }
 void func_80037234(void) {
-    D_80101E64 = 0;
-    D_80101E68 = 1;
+    D_80101E60.unk04 = 0;
+    D_80101E60.unk08 = 1;
 }
 void func_80037250(void) {
-    D_80101E64 = 0;
+    D_80101E60.unk04 = 0;
 }
 void func_80037260(void) {
-    while (D_80101E62[0] != 0x16) {
+    while (D_80101E60.unk02 != 0x16) {
         func_8003AA48();
         func_80036940();
         VSync(2);
     }
 }
 void func_800372C0(void) {
-    if (D_80101E62[0] != 0) {
+    if (D_80101E60.unk02 != 0) {
         game_FrameInit();
     }
     game_FrameLoop();

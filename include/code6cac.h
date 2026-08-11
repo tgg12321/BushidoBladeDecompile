@@ -276,13 +276,49 @@ extern u8 D_80101BF0;
 extern s16 D_80101E00;
 extern u8 D_80101E59;
 extern s32 D_80101E5C;
-extern s16 D_80101E60;
-extern s16 D_80101E62[];
-extern s16 D_80101E64;
-extern s16 D_80101E66;
-extern s16 D_80101E68;
-extern s16 D_80101E6A;
-extern s32 D_80101E6C;
+typedef struct {
+    s32 a;
+    s32 b;
+} CamPair;
+
+/* FAKE structure (owner ruling 2026-08-10, docs/grind/decisions.md).
+ *
+ * The replay/special-camera words at 0x80101E60..0x80101E77 are declared as ONE
+ * record rather than eight per-word symbols.  What the bundling buys is a
+ * memory dependence: cc1's scheduler asks true_dependence() ->
+ * memrefs_conflict_p(), where SIZE_FOR_MODE(BLKmode) == 0 makes the aggregate
+ * store at `pair` conflict with the halfword load at `unk00` ONLY when the two
+ * share a base symbol_ref.  With distinct per-word symbols no dependence can
+ * exist at any record shape, and sched2 sinks the block move past the load.
+ *
+ * Honest evidence split:
+ *   - The 8-byte `pair` is independently evidenced as one object by the table
+ *     it is copied from: the source is indexed `&SpecialCam + i*8` and copied
+ *     as a whole CamPair aggregate (replay_camera_Init and func_80036FD4), so
+ *     the table is an array of this same 8-byte record.
+ *   - The CdPosToInt/CdIntToPos call chain evidences ONLY `pair.a`:
+ *     CdIntToPos (src/system.c) writes just p[0..2], three bytes of the first
+ *     word.  Those calls say nothing about `pair.b` (0x80101E70).
+ *   - The pointer func_80036FD4 hands onward has base 0x80101E58 — 8 bytes
+ *     BEFORE this record.  It addresses preceding globals, is outside the
+ *     record, and is NOT evidence for the record's interior layout.
+ *   - The FULL-SPAN bundling (unk00..unk0A into the same object as `pair`)
+ *     rests ONLY on the scheduler-dependence mechanism above.  It is covered
+ *     by the owner grant as annotated FAKE structure and is NOT claimed as the
+ *     proven original object layout.
+ */
+typedef struct {
+    s16 unk00; /* 0x80101E60 */
+    s16 unk02; /* 0x80101E62 */
+    s16 unk04; /* 0x80101E64 */
+    s16 unk06; /* 0x80101E66 */
+    s16 unk08; /* 0x80101E68 */
+    s16 unk0A; /* 0x80101E6A */
+    CamPair pair; /* 0x80101E6C .. 0x80101E73 */
+    s32 unk14; /* 0x80101E74 */
+} ReplayCamRec;
+
+extern ReplayCamRec D_80101E60;
 extern s32 D_80101E78;
 extern s32 D_80101E7C;
 extern s32 D_80101E80;
