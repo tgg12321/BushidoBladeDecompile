@@ -4435,6 +4435,41 @@ remain INCOMPLETE pure-C work with canonical mvmva islands permitted; the
 injection .words must be re-derived as C when each reaches the queue top.
 The same bar governs the other 16 ASM-PARTIAL functions with GTE-shaped asm.
 
+## 2026-08-11 — OWNER RULING (in person) — main (ings.c): chained same-variable accumulation GRANTED as a sanctioned family extension
+
+**Owner-ruling artifact.** The owner (Trenton), in the 2026-08-11 coordinator
+session, reviewed the Judge's ESCALATE packet (decisions.md 2026-08-11, the
+`main` OWNER-ESCALATION entry) and the coordinator's recommendation, and
+ruled: **GRANTED.** The chained same-variable accumulation —
+`s32 lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80;` —
+is sanctioned as an extension of the 2026-06-13 split-init-accumulation
+family: chained staged computation of RELATED values through ONE live
+variable, each intermediate read by the next statement, zero dead code,
+byte-materializing via combine's 2->2 split gate
+(combine.c:1836 reg_referenced_p guard, verified by the Judge).
+
+Basis: the target bytes themselves carry the UNFOLDED chain
+(addiu -1; sll 8; addiu 0x80 — asm/funcs/main.s 0x7B58-0x7B6C), and the
+session measured that every fresh-variable spelling folds — so the stepwise
+spelling plausibly reconstructs the original source shape rather than
+bolting a trick onto it. The construct is live, human-writable C computing
+the real semantic threshold (n-1)*256+128.
+
+Conditions BINDING on the merge:
+1. `/* FAKE: same-pseudo chain blocks combine's 2->2 split gate
+   (reg_referenced_p) — fresh-variable spellings fold to sll;addiu -128 */`
+   annotation at the site (wording to that effect; must name the mechanism).
+2. The family gets a proper .claude/rules/ doc registered via the
+   independent-review path (cheat-reviewer on the rule doc, NOT shipped in
+   the match commit), per the 2026-07-01 family-addition precedent.
+3. Fresh layer-2 review of the final diff before queue done (standard).
+4. Scope: chained accumulation of RELATED staged values through one live
+   variable with every intermediate consumed. Dead stores, invented holder
+   locals, and unrelated-value reuse remain outside this grant.
+
+The function is REOPENED (queue reopen); the grinder closes it next session
+per the Judge's packet (bytes already proven: sandbox 0, 189/189, 25 rules).
+
 ## 2026-08-11 01:33 — main — ruling: main (src/ings.c) reaches sandbox 0 (189/189, all 25 regfix rules droppable) wit — **ESCALATE**
 
 RULING: the chained same-variable accumulation is NOT covered by the sanctioned split-init-accumulation family, and granting it is above the Judge's authority — this is an owner-ruling question by the sanctioning memory's own text. THE CONSTRUCT: main's poll-loop threshold spelled as 's32 lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80; if (cnt >= lim) break;' — plain live C computing the real semantic threshold (n-1)*256+128; no dead stores, no volatile, no pins, no asm; a human could write stepwise computation. Its spelling, however, exists to steer GCC: routing the whole chain through ONE pseudo makes try_combine's 2->2 split gate (combine.c:1836, '&& ! reg_referenced_p (i2dest, newpat)' — I read the guard myself, citation exact) refuse the ashift/plus distribution (combine.c:8196, also verified), keeping the target's 'addiu -1; sll 8; addiu 0x80' unfolded where any fresh-variable spelling folds to 'sll; addiu -128' (measured, hypotheses.md H5). WHY NOT SANCTIONED AS-IS: the split-init-accumulation memory (user 2026-06-13, precedent ad11a8c8/func_80049C24) scopes itself to 'split a real a+b into init + += on the same var, combine folds it back' — ONE step, byte-NEUTRAL (a pure refs-count RA lift), and it warns 'Do NOT over-generalize ... New adjacent spellings still need their own user ruling.' This form differs on both scoped axes: a 3-step chain, and byte-MATERIALIZING (combine does NOT fold it back — blocking the fold IS the effect). The frozen SOTN list's 'Variable reuse for codegen control' covers 'reusing one C variable for two unrelated values to influence loop-invariant detection or RA'; this is related staged values steering COMBINE — a different mechanism outside the frozen scope. First reach of an unsanctioned family cannot be granted here; per the memory's own routing it needs its own user ruling. WHY ESCALATE, NOT FAIL: I am certain about the work, not uncertain about the construct. Verified by me: sandbox main --disable all = 0 (189/189 insns, all 25 regfix rules dropped; the 68 stripped cheat-asm insns are in OTHER ings.c functions — main's body is pure C); target asm/funcs/main.s 0x7B58-0x7B6C shows the exact unfolded chain; src/ings.c:626-634 carries the candidate form; both cited GCC lines match. The session did everything right: pinned the mechanism by reading combine.c rather than guessing, killed the alternatives with measurements (fresh-variable splits fold — H5; lim-before-GetRCnt regresses to 7 — H4; a live second use of (x-1) is byte-IMPOSSIBLE because every free slot in the target loop is a literal nop — s2 byte-budget audit), and declined to self-sanction, filing this ruling request instead of a candidate-ready. OWNER QUESTION: do you extend the 2026-06-13 split-init-accumulation sanction (or grant a sibling family) to cover chained same-variable accumulation of related staged values whose effect is byte-materializing combine-steering — pure live C, each intermediate read by the next statement, no dead code? If GRANTED: main closes to COMPLETED-C next session (bytes already proven; recommend requiring a /* FAKE: same-pseudo chain blocks combine split gate */ annotation and a proper .claude/rules/ doc registered via the independent-review path, consistent with the 2026-07-01 family additions). If REFUSED: honest disclosure — the remaining search axes are thin but not zero: (a) the minimal 3-statement variant is the SAME family (same ruling applies), (b) cross-BB shapes that linearize back via jump2/reorg are unexplored with no concrete form yet, (c) directed permuter over poll-loop spellings excluding same-pseudo accumulation has not been run. Multi-use forms are byte-impossible per the nop-slot audit, so the space genuinely narrows toward this family.
