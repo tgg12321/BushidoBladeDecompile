@@ -1,0 +1,38 @@
+{
+ "func": "func_8007C86C",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 12,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "Recon: floor 12 -> 5 by transferring the twin get_cs chassis (constant swapped); residual proven byte-identical to func_8007C7A0's banned join-temp-writeback family, so disposition is coupled to that "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The owner's ruling on func_8007C7A0's escalation resolves this twin identically (accepted spelling -> candidate-ready path here; refused -> owner-accepted incomplete at floor 5)",
+   "mechanism": "Twin-equivalence: same Sony module, byte-identical residual, same banned-family closure; the sibling's exhaustion packet transfers verbatim",
+   "next_probe": "Check docs/grind/decisions.md for the C7A0 owner ruling; if resolved, mirror the disposition on this function (including filing this function's own decisions.md entry citing twin-equivalence plus this session's s1 byte proof); if the driver requires a per-function packet first, file it from the sibling's evidence rather than re-deriving"
+  },
+  {
+   "hypothesis": "If a per-function exhaustion demonstration is demanded before escalation, a minimal spot-check suffices (the full sweep is already dead on the shared chassis)",
+   "mechanism": "The chassis and residual are proven identical from bytes, so the sibling's 19 structural kills + permuter drain apply; at most 2-3 representative spellings need re-measurement on this function to certify lock-step",
+   "next_probe": "Re-measure the sibling's Q1 named-limit (expect ~16 @ 51) and one join-temp legitimate near-miss on this function; identical numbers certify the transfer without a full re-derivation"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-11T04:26:33.517367+00:00"
+}
