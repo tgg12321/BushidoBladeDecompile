@@ -88,7 +88,45 @@ exactly as the main EXE matches `62efab4f…`.
 - The m2c drafts in `movovl/src/draft/` are NOT wired into any build and
   must not be until the all-asm build byte-matches.
 
-## First all-asm build attempt — 2026-08-10 (RED, diagnosed, not yet matched)
+## STATUS 2026-08-10 — all-asm overlay build is GREEN (byte-matching)
+
+`make -C movovl check` passes:
+
+```
+SHA1(movovl/build/MOVOVL.EXE) = a1307dbebefca0b057e02509207d00f6225e13e4   (124,928 bytes)
+```
+
+identical to `disc/STR/MOVOVL.EXE`. The overlay now has its own oracle, so the
+16 game functions in `asm/game.s` can be converted to C one at a time against a
+verifying build (steps 5/6 below).
+
+**Root cause of the earlier +16 bytes:** three splat-generated `. = ALIGN(., 16)`
+statements inside the `.movovl` output section of `movovl/movovl.ld` — at the end
+of the rodata, text and data sub-runs. The original overlay's sub-sections are only
+4-byte aligned, so each ALIGN(16) injected padding the original does not have:
+
+| Sub-run | ends at | ALIGN(16) pushed to | pad |
+|---|---|---|---|
+| rodata (`rodata_800`) | `0x801D919C` | `0x801D91A0` | +4 |
+| text (through `libds_dscb`) | `0x801E3C6C` | `0x801E3C70` | +4 |
+| data (`data_C268`) | `0x801F6808` | `0x801F6810` | +8 |
+
+The first pad shifted the whole `.text` run by +4, which is why every jumptable
+pointer in `rodata_800` read +4 and the first byte divergence landed at ROM `0x88D`
+(inside `jtbl_801D888C`). Fix: those three statements are now `. = ALIGN(., 4)`
+(a no-op at the real boundaries) — commit `movovl: fix +16-byte overlay …`.
+The `__romPos`/BSS `ALIGN(…, 16)` statements outside the loaded runs were left
+alone; they do not affect the image.
+
+**`movovl/movovl.ld` is now HAND-MAINTAINED** — same lesson as `bb2.ld`. Re-running
+splat regenerates it with `ALIGN(., 16)` and re-breaks the match; after any re-split,
+re-apply the three ALIGN(4) edits.
+
+Diagnostic used: `tmp/movovl_map_diff.py` (compares `movovl/build/movovl.map`
+symbol addresses against `movovl/symbol_addrs.movovl.txt` and reports delta
+transitions plus inter-section gaps). `tmp/` is gitignored; re-create as needed.
+
+## First all-asm build attempt — 2026-08-10 (RED, diagnosed — superseded by the above)
 
 `movovl/Makefile` landed (standalone `make -C movovl`; asm→ld→objcopy;
 `sha1sum -c movovl.sha1` gate; the .header section is linked so objcopy

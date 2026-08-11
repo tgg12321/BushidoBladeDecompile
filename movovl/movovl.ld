@@ -83,7 +83,7 @@ SECTIONS
         build/asm/libetc_intr_dma.o(.rodata);
         build/asm/libetc_vmode.o(.rodata);
         build/asm/libds_dscb.o(.rodata);
-        . = ALIGN(., 16);
+        . = ALIGN(., 4);
         movovl_RODATA_END = .;
         movovl_RODATA_SIZE = ABSOLUTE(movovl_RODATA_END - movovl_RODATA_START);
         movovl_TEXT_START = .;
@@ -147,7 +147,7 @@ SECTIONS
         build/asm/libetc_intr_dma.o(.text);
         build/asm/libetc_vmode.o(.text);
         build/asm/libds_dscb.o(.text);
-        . = ALIGN(., 16);
+        . = ALIGN(., 4);
         movovl_TEXT_END = .;
         movovl_TEXT_SIZE = ABSOLUTE(movovl_TEXT_END - movovl_TEXT_START);
         movovl_DATA_START = .;
@@ -213,7 +213,7 @@ SECTIONS
         build/asm/libetc_vmode.o(.data);
         build/asm/libds_dscb.o(.data);
         build/asm/data/data_C268.data.o(.data);
-        . = ALIGN(., 16);
+        . = ALIGN(., 4);
         movovl_DATA_END = .;
         movovl_DATA_SIZE = ABSOLUTE(movovl_DATA_END - movovl_DATA_START);
         movovl_BSS_START = .;
