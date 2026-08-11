@@ -220,3 +220,23 @@
   d8c4b01f): the remaining unexplored axes are s1-F1 (honest 4th-ref lift
   of the low mask's refs count) and s1-F2 (sched.c chain-length flip via
   BB2_SCHED_DEBUG) from the floor-7 chassis — both still untried.
+
+## Session s6 (permuter, 2026-08-11) — deadlock cleared; candidate-ready
+
+### CONFIRMED
+- **H11: with banned_constructs[1] removed per the granted fe308e0b ruling,
+  the s4 by-role vet passes the driver's full selfvet gate.** Probe: executed
+  the granted removal in state.json (ban #0 untouched), ran
+  `grindlib.py selfvet . func_800401CC` — exit 0 (both format validation and
+  banned-construct check). Artifact:
+  tmp/grind/func_800401CC/s6/selfvet_pass.log. CONFIRMED — H10's forced
+  intersection is dissolved exactly as predicted; candidate-ready is
+  mechanically reachable.
+- **H9 re-confirmed (fifth time): candidate.c reproduces sandbox 0/78 when
+  re-applied.** Edits in place in src/text1a_pre.c.
+
+### FRONTIER
+- (empty — candidate-ready submitted with the judge-PASS form, the s4 by-role
+  vet, and the vet gate proven passing by the driver's own CLI. If the
+  driver's byte verification or the FINAL CALL bounces it, the bounce reason
+  is the new frontier; the measurement space is closed per H8.)

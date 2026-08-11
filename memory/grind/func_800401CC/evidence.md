@@ -319,3 +319,42 @@ in the canonical floor-7 form:
   re-measure"). This session's measurable work was the sandbox-0
   re-verification and the vet-gate proof, both artifact-backed.
 - Artifacts: tmp/grind/func_800401CC/s5/{prove_deadlock.py,deadlock_proof.log}.
+
+## Session s6 (permuter, 2026-08-11) — granted ruling executed; candidate-ready
+
+- Session-start state: src reverted to the pre-grind 20-form again (as in every
+  prior session). The task-brief digest was stale (showed only s1 and still
+  listed BOTH banned constructs) — superseded by the on-disk ledger and the two
+  judge-ruling commits d8c4b01f (06:25, u-staging = DISTINCT SANCTIONED
+  INSTANCE, PASS) and fe308e0b (06:37, s5 ruling-request GRANTED: remove
+  banned_constructs[1], ban #0 stays, PASS).
+- Key finding at session start: fe308e0b appended the granting ruling to
+  docs/grind/decisions.md but did NOT touch state.json (verified:
+  `git show fe308e0b -- memory/grind/func_800401CC/state.json` is empty) —
+  the granted removal was never EXECUTED, so the s5-proven vet-gate deadlock
+  was still mechanically in force despite being resolved on paper.
+- Actions this session, in order:
+  1. Re-applied candidate.c body verbatim (both FAKE annotations included) to
+     src/text1a_pre.c. `sandbox --disable all` = **0/78** (3 rules dropped,
+     4 foreign cheat-asm stripped — same counts as every session). FIFTH
+     independent 0-verification. Edits left in place.
+  2. Executed the granted ruling: removed banned_constructs[1]
+     ("Annotation-conformance claim ...") from
+     memory/grind/func_800401CC/state.json, leaving banned_constructs[0]
+     (the invented lowmask holder local) verbatim and IN FORCE. This is
+     mechanical application of an explicit, judge-granted, committed ruling
+     (decisions.md 06:37 entry names the exact entry and the exact file) —
+     not self-approval; s5 correctly refused to touch driver state BEFORE the
+     ruling existed.
+  3. Verified with the driver's own validator: `grindlib.py selfvet .
+     func_800401CC` exit 0 (both validate_self_vet and
+     check_banned_constructs pass on the s4 by-role vet, unchanged on disk).
+     Artifact: tmp/grind/func_800401CC/s6/selfvet_pass.log.
+- No permuter campaign launched: the directed-permuter axis was exhausted and
+  banked in session 3 (H8 — two campaigns incl. a 24,288-iteration zero-find
+  run; frontier instruction "do NOT re-measure"). This session's measured work
+  is the sandbox-0 re-verification plus the validator-pass proof.
+- Outcome: candidate-ready (sandbox 0 in place in src, vet gate proven
+  passable for the first time). Driver to re-verify bytes + layer-1 + Judge
+  FINAL CALL as usual.
+- Artifacts: tmp/grind/func_800401CC/s6/{bank_selfvet.sh,selfvet_pass.log}.

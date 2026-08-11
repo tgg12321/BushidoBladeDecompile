@@ -1,4 +1,13 @@
 /*
+ * STATUS (session s6, 2026-08-11): DEADLOCK CLEARED — the fe308e0b ruling
+ * (decisions.md 06:37, GRANTED) directed removal of state.json
+ * banned_constructs[1]; s6 found the removal had never been executed (the
+ * ruling commit only appended decisions.md), executed it (ban #0, the
+ * invented holder local, stays verbatim), and verified with the driver's own
+ * `grindlib.py selfvet` CLI: exit 0 on the s4 by-role vet. sandbox 0/78
+ * re-verified (5th time), form applied in src/text1a_pre.c, candidate-ready
+ * submitted. Artifacts: tmp/grind/func_800401CC/s6/selfvet_pass.log.
+ *
  * STATUS (session s5, 2026-08-11): SANDBOX 0/78 RE-VERIFIED (4th time),
  * form applied in src/text1a_pre.c — but candidate-ready is MECHANICALLY
  * UNREACHABLE until state.json banned_constructs[1] is removed by the
