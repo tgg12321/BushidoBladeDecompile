@@ -1,31 +1,37 @@
 {
  "func": "func_8003B9D0",
  "file": "code6cac_c2",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 21,
    "modality": "recon",
    "headline": "Recon: floor 21 mapped to exactly two regions (symbol-fold on +0x44C displaced accesses; 2 missing full reloads of D_800A3878[3] = the whole 178-vs-185 shortfall); 3 spelling axes KILLED, region-B mec"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Floor 21 -> 6: region B (the entire 7-insn shortfall) CLOSED by if/else argument init, and all three cheat-asm constructs deleted; residual is region A only (3 sites x 2 insns), whose cse fold mechani"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The original C performs a store THROUGH A POINTER between the flag reads, which invalidates every MEM (including the D_800A3878 symbol load) and produces target's three full reloads -- closing the entire 7-insn shortfall.",
-   "mechanism": "cc1 CSE/alias: an unknown-address store kills all cached MEM values, whereas a named-symbol store kills only same-symbol MEMs (measured this session: the named-symbol store recovered the lbu reload but not the lw).",
-   "next_probe": "Enumerate the stores the function ALREADY performs that can legitimately be spelled as pointer stores (e.g. the D_800A390F write, the eda/q writes of the preceding block), place each between the two flag ifs, and measure sandbox + diff for a 3-reload shape. Never invent a store -- an added one is a dead-store cheat."
+   "hypothesis": "Region A closes iff the base pseudo's cse quantity carries NO constant, or carries one whose RTX code is REG or a bare PLUS -- because cse.c:5171-5176 is the only guard that skips the substitution. A `(const (plus sym K))` does NOT qualify (that is what `eda + 0x226` canonicalises to, which is exactly why session-1 K1 and its post-region-B re-measure both folded).",
+   "mechanism": "fold_rtx's fast path for REG operands substitutes qty_const only when `GET_CODE (qty_const[...]) != REG && GET_CODE (qty_const[...]) != PLUS` (cse.c:5171-5176); qty_const is populated when a CONSTANT_P value enters the register's equivalence class (cse.c:1377-1397).",
+   "next_probe": "Find a MATCHED sibling that already emits register+displacement addressing off a symbol base and read what its base pseudo's quantity looks like. Cheap locator: `grep -l '[0-9]\\+(\\$s[0-9])' asm/funcs/*.s` intersected with the zero-rule / non-queued function set, then `-da` that sibling's TU and compare its `.cse` around the base pseudo with func_8003B9D0's insn 89. The sibling's C spelling is the answer; do not guess it."
   },
   {
-   "hypothesis": "If no honest pointer-store placement yields three full reloads, the original reads were volatile-qualified.",
-   "mechanism": "Volatile MEMs are never CSE'd, which reproduces target's per-site reload exactly; but this is gated by [[legitimate-volatile-interrupt-touched]]'s two-prong test, not freely available.",
-   "next_probe": "Census every writer of D_800A3878 across src/ and asm/funcs/ and classify whether any is reached from an IRQ/callback handler. A negative census CLOSES this axis (a failed gate, not an open question); a positive one is a ruling-request, not a self-approval."
+   "hypothesis": "A small standalone reproduction will find the pointer-initialisation spelling that keeps `(mem (plus (reg) (const_int 1100)))` far faster than sandbox round-trips on the real file.",
+   "mechanism": "Region A is entirely local to one cse decision about one pseudo, so it reproduces in a ~40-line TU; the gradient is readable directly in the `-da` `.cse` dump (folded vs unfolded MEM) with no scoring needed.",
+   "next_probe": "Build tmp/grind/func_8003B9D0/s3/mini.c containing only the qf & 0x30 block's shape against a dummy extern s16 symbol, compile with the exact build flags plus `-da`, and sweep pointer-initialisation spellings, checking each `.cse` dump for whether insn N keeps `(mem:HI (plus (reg) (const_int 1100)))`. Port back only a spelling that keeps it, then re-measure with sandbox. Note regions A and B are NOT coupled (K7), so a region-A change can be evaluated on its own."
   },
   {
-   "hypothesis": "Region A's fold is performed by a specific cc1 pass whose guard condition names the property the base pseudo must lack; the C-spelling axis is dead (K1/K2) so the next step is forensic.",
-   "mechanism": "Symbol substitution into a displaced MEM address happens in cse1 or combine; reading the per-pass RTL tells us which, and what stops it.",
-   "next_probe": "Run `cc1 <build flags> -da` on the preprocessed TU into tmp/grind/func_8003B9D0/s2/, diff the .cse1 vs .combine dumps around the three +0x44C MEMs. Re-measure region A after any region-B change first -- $s0 liveness couples the two regions."
+   "hypothesis": "func_8003AFFC takes the D_800A3878 object pointer as an argument, and our zero-argument call is a decompilation error rather than a codegen choice.",
+   "mechanism": "m2c infers the signature from $a0 being live and unreloaded across the call (tgt[48] sets it, tgt[68] is the jal); a genuine void-argument callee would not require that liveness.",
+   "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it actually consumes $a0. If it does, correct the prototype and the call site (there are currently three duplicate `extern void func_8003AFFC(void);` declarations in src/code6cac_c2.c, at lines 73, 74 and 171, which should be reconciled to one) and re-measure. Expect byte-neutrality here; the value is correctness of the decompilation and of func_8003AFFC's own future grind."
   }
  ],
  "judge_constraints": [],

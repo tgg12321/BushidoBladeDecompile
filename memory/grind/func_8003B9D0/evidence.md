@@ -103,3 +103,115 @@ That is the entire 178-vs-185 shortfall.
 - [s1] diagnose's 'LARGE / 31 differing insns' classification is coarse/misleading for this function -- the true normalized diff is the two tight regions above.
 
 - [s1] src/code6cac_c2.c was restored to HEAD at end of session (git status clean apart from metrics/events.jsonl and the new memory/grind/func_8003B9D0/ ledger).
+
+## Session 2 (structural, 2026-08-11)
+
+### Floor
+- **sandbox --disable all: 6** (target_insns 185, build_insns 188), down from
+  session 1's 21. Measured THIS session with the candidate applied to
+  `src/code6cac_c2.c`; re-measured a second time after all probes were reverted,
+  same result (6 / 188 / rules_dropped 1).
+- The function's THREE cheat-asm constructs from session-1 HEAD are GONE: the
+  `__asm__ __volatile__("" : "=r"(eda) : "0"(eda))` identity-reload barrier and
+  both `__asm__ __volatile__("" ::: "memory")` scheduling barriers are deleted and
+  are no longer needed — the honest `if/else` C reproduces what they were faking.
+  The one regfix rule (`func_8003B9D0: fill_delay @ 49 <- 52`, regfix.txt:1116)
+  is untouched (grind sessions may not edit regfix.txt) and is still counted by
+  `rules_dropped: 1` in the sandbox output.
+
+### REGION B IS CLOSED
+The whole 7-instruction shortfall closed by spelling the two flag-selected
+argument initialisations as `if/else` rather than "init to -1, then conditionally
+overwrite". See hypotheses.md H1 for the mechanism (cse_end_of_basic_block's
+follow-jumps/skip-blocks extension at cse.c:8102-8184). Session-1 frontier items
+F1 (intervening pointer store) and F2 (volatile-qualified reads) are both moot —
+region B needed neither, so the volatile census that F2 asked for does not need to
+be run for region B.
+
+### The residual is now REGION A ONLY — three sites, 2 insns vs 1
+Normalized diff (`tmp/grind/func_8003B9D0/s2/region_a_diff_floor6.txt`):
+58 equal head insns, then exactly three isolated replacements, then a 113-insn
+byte-equal tail.
+```
+  mine 58 lui s2,0x0 / 59 lh s2,1100(s2)   | tgt 58  lh s2,1100(s0)
+  mine 68 lui at,0x0 / 69 sh v0,1100(at)   | tgt 67  sh v0,1100(s0)
+  mine 73 lui at,0x0 / 74 sh s2,1100(at)   | tgt 71  sh s2,1100(s0)
+```
+Both builds materialise the base identically — `lui s0` / `addiu s0` at insns
+55-56 (byte-equal) — and both use `0($s0)` for the zero-offset accesses. The ONLY
+difference is that ours re-materialises the symbol for the `+0x44C` displacement.
+
+### Mechanism for region A, read out of the frozen compiler source
+- `fold_rtx`'s MEM case calls `find_best_addr` (cse.c:5029-5034).
+- `find_best_addr` returns early only for frame/arg-pointer addresses and
+  `CONSTANT_ADDRESS_P` (cse.c:2646-2657). For any address that is **not** a bare
+  REG it then does `validate_change (insn, loc, fold_rtx (addr, insn), 0)`
+  (cse.c:2659-2663) — **unconditionally, with no cost test.**
+- `fold_rtx` substitutes a register operand's `qty_const`, but ONLY when that
+  `qty_const` is neither `REG` nor a bare `PLUS` (cse.c:5171-5176).
+- `qty_const` is recorded when a constant enters the register's equivalence class
+  (cse.c:1377-1397).
+- The `.cse` dump matches exactly: insn 89 `(set (reg/v:SI 94) (symbol_ref "D_80101EDA"))`
+  + `REG_EQUAL` note; insn 92 `(mem:HI (reg 94))` survives (addr IS a REG, so the
+  fold branch at cse.c:2661 is skipped); insn 97 becomes
+  `(mem/s:HI (const:SI (plus:SI (symbol_ref "D_80101EDA") (const_int 1100))))`.
+
+Consequences (all now settled, do not re-derive):
+1. There is no cost-based route to suppress the fold — it is not a cost decision.
+2. Volatile cannot suppress it either: the fold at cse.c:2661 runs BEFORE the
+   `addr_volatile` bail-out at cse.c:2668-2675. The volatile axis is dead for
+   region A on mechanism grounds, independent of any policy gate.
+3. A cse basic-block boundary between the base definition and the first displaced
+   use is geometrically impossible: in target the `la` is at tgt[55..56] and the
+   first displaced use at tgt[58], with only `lh s1,0(s0)` in between.
+4. GCC 2.7.2 has no pass that hoists a repeated symbolic address into a shared
+   base register, so target's `la` + register-displacement shape can ONLY come
+   from a pointer variable in the C source (proved by the plain-globals probe).
+
+### Probes measured this session
+| Form | sandbox | build_insns | Verdict |
+|---|---|---|---|
+| candidate (`if/else` region-B form) | **6** | 188 | current floor |
+| two independent pointers (`eda` @ D_80101EDA, `edb` @ D_80102326, all offset 0) | 17 | 189 | KILLED (K4) |
+| no pointer variable, six plain global accesses (the m2c shape) | 23 | 187 | KILLED (K5) |
+
+### Facts worth not re-deriving
+- m2c reconstructs the block as `D_80101EDA.unk0` / `D_80101EDA.unk44C`, but m2c
+  renders any register-based struct access as `SYM.unkNNN` regardless of whether
+  the C used a pointer — so that rendering is NOT evidence for the plain-global
+  spelling (measured 23, K5).
+- m2c also infers `func_8003AFFC(D_800A3878)`: `$a0` holds the `D_800A3878` object
+  pointer live from tgt[48] through the `jal` at tgt[68] with no reload. Our C
+  calls it with no arguments. Byte-neutral here, but it is a real semantic
+  discrepancy in the decompilation and is recorded as frontier F3.
+- `cheat_asm_stripped: 69` in the sandbox output is FILE-wide (other functions in
+  code6cac_c2.c), not this function — func_8003B9D0's own body now has zero
+  `__asm__`.
+
+- [s2] [s2] sandbox --disable all == 6 (target_insns 185, build_insns 188), down from session 1's 21. Measured twice this session: once on applying candidate.c to src/code6cac_c2.c, and again after all probes were reverted.
+
+- [s2] [s2] The candidate carries ZERO cheat-asm for this function. Session-1 HEAD's identity-reload barrier `__asm__ __volatile__("" : "=r"(eda) : "0"(eda))` and both `__asm__ __volatile__("" ::: "memory")` scheduling barriers are deleted and no longer needed -- the honest if/else C reproduces what they were faking. The one regfix rule (func_8003B9D0: fill_delay @ 49 <- 52, regfix.txt:1116) is untouched, as grind sessions may not edit regfix.txt; it is what `rules_dropped: 1` reports.
+
+- [s2] [s2] REGION B IS CLOSED. The whole 7-instruction shortfall came from cc1 CSE-ing the ((u8 *)D_800A3878)[3] reload across all three flag tests; the if/else spelling of the two argument initialisations ends the CSE basic block at each join and restores target's three full lui/lw/nop/lbu/nop reloads (tgt[72..77] / tgt[82..87] / tgt[92..96]).
+
+- [s2] [s2] The residual is REGION A ONLY -- three isolated sites, ours 2 insns vs target's 1: mine[58] lui s2 / mine[59] lh s2,1100(s2) vs tgt[58] lh s2,1100(s0); mine[68..69] vs tgt[67] sh v0,1100(s0); mine[73..74] vs tgt[71] sh s2,1100(s0). Everything else is byte-equal (58 head + 113 tail).
+
+- [s2] [s2] Both builds materialise the base IDENTICALLY -- `lui s0` / `addiu s0` at insns 55-56 are byte-equal -- and both use `0($s0)` for the zero-offset accesses. The only divergence is that ours re-materialises the symbol for the +0x44C displacement.
+
+- [s2] [s2] Region A mechanism, read out of the frozen compiler source and confirmed in the .cse dump: fold_rtx's MEM case calls find_best_addr (cse.c:5029-5034); find_best_addr returns early only for frame/arg-pointer addresses and CONSTANT_ADDRESS_P (cse.c:2646-2657) and otherwise folds any non-REG address unconditionally with no cost test (cse.c:2659-2663); fold_rtx substitutes the base register's qty_const only when that qty_const is neither REG nor a bare PLUS (cse.c:5171-5176). `.cse` insn 89 sets qty_const from `(set (reg/v:SI 94) (symbol_ref "D_80101EDA"))`; insn 92 survives as `(mem:HI (reg 94))`; insn 97 becomes `(mem/s:HI (const:SI (plus:SI (symbol_ref "D_80101EDA") (const_int 1100))))`.
+
+- [s2] [s2] CLOSED AXIS -- cost. The region-A fold is not a cost decision (no ADDRESS_COST or rtx_cost test guards it), so no spelling that makes the symbolic form 'look more expensive' can suppress it.
+
+- [s2] [s2] CLOSED AXIS -- volatile. The fold at cse.c:2661 executes BEFORE find_best_addr's addr_volatile bail-out at cse.c:2668-2675, so volatile-qualifying the base pointer or the accesses cannot suppress it. Region A's volatile axis is dead on mechanism grounds, independently of the [[legitimate-volatile-interrupt-touched]] two-prong policy gate.
+
+- [s2] [s2] CLOSED AXIS -- cse basic-block boundary. In target the base materialisation (tgt[55..56]) and the first displaced use (tgt[58]) are separated only by `lh s1,0(s0)`, so no boundary can exist there. 'Separate the pointer definition from the displaced access by control flow' is geometrically impossible, not merely unmeasured.
+
+- [s2] [s2] CLOSED AXIS -- shared-base creation by the compiler. With no pointer variable in the C, cc1 emits six independent lui/%lo pairs and never creates a shared base register (measured 23). GCC 2.7.2 has no pass that hoists a repeated symbolic address into a pseudo, so target's `la` + register-displacement shape can only originate from a pointer variable in the source.
+
+- [s2] [s2] m2c infers `func_8003AFFC(D_800A3878)`: $a0 holds the D_800A3878 object pointer live from tgt[48] through the `jal` at tgt[68] with no reload. Our C calls it with no arguments. Byte-neutral for this function at the current floor, but it is a genuine semantic discrepancy in the decompilation and should be revisited when func_8003AFFC itself is worked.
+
+- [s2] [s2] `cheat_asm_stripped: 69` in the sandbox output is FILE-wide (other functions in code6cac_c2.c), not this function -- func_8003B9D0's own candidate body contains zero `__asm__`.
+
+- [s2] [s2] src/code6cac_c2.c was restored to HEAD at end of session; the improved form lives in memory/grind/func_8003B9D0/candidate.c. Working tree carries only the ledger updates and metrics/events.jsonl.
+
+- [s2] [s2] PROVENANCE: an earlier session-2 attempt was discarded by the driver for never writing its outcome JSON, but left candidate.c and two rejected/ forms on disk uncommitted. This session re-applied and independently re-measured that candidate before continuing, so the floor-6 claim rests on a measurement taken this session.

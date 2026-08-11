@@ -1,15 +1,47 @@
-/* candidate.c — func_8003B9D0 — best form after session 1 (recon).
+/* candidate.c — func_8003B9D0 — best form after session 2 (structural).
  *
- * FLOOR: sandbox --disable all == 21 (build_insns 178 vs target 185).
- * This is the UNCHANGED HEAD form of src/code6cac_c2.c:183-249. No probe this
- * session improved on it, so it is banked verbatim as the baseline to resume from.
+ * FLOOR: sandbox --disable all == 6  (build_insns 188 vs target 185).
+ * Session 1 floor was 21 (build_insns 178).  This form CLOSES REGION B
+ * entirely — the normalized diff is now 58 equal head insns, three isolated
+ * 2-insn-vs-1-insn replacements (region A), and a 113-insn byte-equal tail.
  *
- * NOTE FOR THE NEXT SESSION: the three __asm__ constructs below are CHEAT-ASM and
- * are stripped by the sandbox before scoring (they cannot and do not move the 21).
- * They are shown here only because they mark exactly where the two residual regions
- * are — the identity-reload barrier on `eda` marks region A, the two memory barriers
- * mark region B. A COMPLETED-C form must delete all three AND the regfix rule
- * `func_8003B9D0: fill_delay @ 49 <- 52`.
+ * It also carries ZERO cheat-asm: the session-1 HEAD's identity-reload barrier
+ * on `eda` and the two `__asm__ __volatile__("" ::: "memory")` barriers are all
+ * DELETED and are no longer needed — the honest C below reproduces what they
+ * were faking.  (The regfix rule `func_8003B9D0: fill_delay @ 49 <- 52`,
+ * regfix.txt:1116, is untouched; grind sessions may not edit regfix.txt.)
+ *
+ * THE ONE CHANGE THAT DID IT (region B, the whole 7-insn shortfall):
+ *   writing the two flag-selected argument initialisations as if/ELSE
+ *
+ *       if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA; else a3_arg = -1;
+ *
+ *   instead of the "init to -1, then conditionally overwrite" form
+ *
+ *       a3_arg = -1;
+ *       if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA;
+ *
+ *   Mechanism (measured, see hypotheses.md H1): an `else` arm makes GCC emit a
+ *   jump around it, so the join label is preceded by a BARRIER and by a real
+ *   arm block.  cse.c's `cse_end_of_basic_block` (tools/gcc-2.7.2/cse.c:8039)
+ *   ends a CSE basic block at every CODE_LABEL, and only extends past one via
+ *   the follow-jumps / skip-blocks branch at :8102-8184.  The plain-`if` form
+ *   satisfies that extension (AROUND status), so one CSE table spanned all
+ *   three flag reads and cc1 emitted the lui/lw/lbu block ONCE.  The if/else
+ *   form ends the block at each join, so each read gets a fresh CSE table and
+ *   cc1 re-emits the full lui/lw/nop/lbu/nop reload — exactly target's
+ *   tgt[72..77] / tgt[82..87] / tgt[92..96].
+ *
+ *   Both forms are ordinary, semantically identical C that a human writes
+ *   without thinking about the compiler; the if/else is if anything the more
+ *   natural spelling of "this argument is either the global or -1".  Nothing
+ *   here is dead, nothing is unused, nothing exists only to steer codegen.
+ *
+ * WHAT REMAINS (region A, score 6 = 3 sites x 2):
+ *   ours   `lui $x,%hi(D_80101EDA+0x44C) / lh|sh $r,%lo(...)($x)`   (2 insns)
+ *   target `lh|sh $r, 0x44C($s0)`                                   (1 insn)
+ *   at the three `eda[0x226]` sites.  See hypotheses.md F1 for the exact cc1
+ *   guard (`find_best_addr`, cse.c:2663) and the next probe.
  */
 
 void func_8003B9D0(void) {
@@ -40,7 +72,6 @@ void func_8003B9D0(void) {
         u8 qf = q[3];
         if (qf & 0x30) {
             s16 *eda = &D_80101EDA;
-            __asm__ __volatile__("" : "=r"(eda) : "0"(eda));   /* CHEAT — region A marker */
             saved_first = eda[0];
             saved_44c = eda[0x226];
             if (qf & 0x10) eda[0] = 0x32;
@@ -50,12 +81,8 @@ void func_8003B9D0(void) {
             eda[0x226] = saved_44c;
         }
     }
-    a3_arg = -1;
-    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA;
-    __asm__ __volatile__("" ::: "memory");                     /* CHEAT — region B marker */
-    a0_arg = -1;
-    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326;
-    __asm__ __volatile__("" ::: "memory");                     /* CHEAT — region B marker */
+    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA; else a3_arg = -1;
+    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326; else a0_arg = -1;
     p = (u8 *)D_800A3878;
     flags = p[3];
     if (flags & 0x10) a3_arg = 0x32;
