@@ -253,3 +253,68 @@ skipped a2 AND a3) / permuter from the 6-base.
 - [s3] flow.c loop_depth ref-weighting via SELECTIVE do-while(0) wrap is a measured +1-weighted-ref lever per wrapped statement - lifts one pseudo without touching others; wrapping multiple statements lifts all of them (18)
 
 - [s3] s2's re-built nested.greg shows pseudo 72 -> a2, i.e. it did NOT reproduce s1-H2's counter->t0 dispositions - the H2 form's a2/a3 blocker identity is unrecovered and is the key forensic lead for loop-1
+
+## Session 4 (2026-08-11, permuter) — floor 6 (unchanged); two campaigns dry
+
+### THIRD stale-src occurrence
+src/sound.c AGAIN carried the old 10-pin body at session start (third
+occurrence of [[grinder-stale-digest-uncommitted-ledger]]). Re-applied
+candidate.c, sandbox verified 6 (84/84) before any work. Any future session:
+diff src against candidate.c FIRST.
+
+### Campaign 1 — "loop1-directed" (array-index chassis, the 6-floor base)
+Workspace: import.py run from tools/decomp-permuter (clean single-function
+target.o at offset 0; base score 50 = the permuter-metric image of the
+sandbox-6 form). base.c = candidate form with PERM_RANDOMIZE scoped to
+loop 1 ONLY (loop 2 locked — it is byte-exact) + PERM_GENERAL over four
+loop-1 spellings: direct array-index (candidate), named-t index split
+(`t = D_800EF558[i] & 0xFFF`), named-t value split
+(`t = (s32)Judge[...]`), and while-form. Result: **61,683 iterations,
+ZERO finds** — not even a score-equal sibling. The array-index basin's
+neighborhood contains nothing below 50 under random + directed mutation.
+Log: tmp/grind/func_80047A90/s4/campaign1_loop1-directed.log.
+
+### Campaign 2 — "loop1-ptrwalk" (pointer-walk chassis, untested with locked loop-2)
+base.c = same locked loop-2, loop 1 rewritten as source-level pointer walk
+(p558/p59C walking pointers), PERM_GENERAL over do-while/for/inc-order
+variants, PERM_RANDOMIZE scoped to loop 1. Base score 110. Result: **64,848
+iterations, 7 finds, best = 50** — the permuter hill-climbed BACK to the
+known floor-6 attractor: its 50-find is the do-while pointer walk with a
+hand-hoisted judge base (`s16 *new_var = Judge;` — permuter-introduced
+temp), i.e. a THIRD structurally distinct spelling landing in the exact
+same score-50 attractor. Nothing sub-50 in either chassis (~127k total
+iterations). Logs/finds: tmp/grind/func_80047A90/s4/
+campaign2_loop1-ptrwalk.log + find50_ptrwalk_hoisted_judge.c +
+chassis2_base.c.
+
+### What s4 adds to the picture
+1. The 6-floor attractor is WIDE: array-index for-form, named-split
+   variants, pointer-walk do-while, and hoisted-judge-base pointer-walk all
+   score identically (50 permuter / 6 sandbox class). The permuter cannot
+   distinguish them — consistent with s2/s3's conclusion that the residue
+   is a pure find_reg outcome insensitive to every source-reachable
+   priority/spelling lever.
+2. Random mutation over the loop-1 region (statement reorders, temp
+   introduction, form flips — 127k iters across two seeds) finds NO
+   construction that flips i->t0/judge->a2. The permuter axis on loop-1
+   spellings is now measured DRY, matching the structural-axis closure.
+3. Fresh-seed discipline held: each chassis got ~25-30 min; both harvested
+   and stopped in-session; 0-find harvest recorded as telemetry.
+
+### Artifacts (tmp/grind/func_80047A90/s4/)
+- setup_ws.sh — workspace import script (run from tools/decomp-permuter to
+  avoid the root-nonmatchings scope break)
+- campaign1_loop1-directed.log / campaign2_loop1-ptrwalk.log
+- chassis2_base.c — the PERM-annotated pointer-walk seed
+- find50_ptrwalk_hoisted_judge.c — campaign 2's best find (score 50,
+  re-find of the floor attractor via hoisted judge base)
+
+- [s4] THIRD stale-src occurrence: src/sound.c again carried the old 10-pin body at session start; re-applied candidate.c and sandbox-verified 6 (84/84) before working - future sessions must diff src vs candidate.c first
+
+- [s4] Floor 6 verified on main src/sound.c this session (score 6, 84/84 insns, 0 rules; sandbox output tmp/sandbox/func_80047A90/sound.o)
+
+- [s4] The 6-floor attractor is WIDE: array-index for-form, named-split variants, pointer-walk do-while, and hoisted-judge-base pointer-walk all score identically (permuter 50) - the loop-1 residue is insensitive to every source-reachable spelling, consistent with s2/s3 structural closure
+
+- [s4] ~127k permuter iterations across two structurally distinct chassis with randomization scoped to loop 1 produced no sub-floor find - the permuter modality on this residue is exhausted with telemetry banked (permuter-launch/permuter-harvest events in metrics/events.jsonl)
+
+- [s4] Workspace discipline held: import.py run from tools/decomp-permuter (no root nonmatchings/ dirt); both campaigns harvested --stop in-session; no campaign outlived the session

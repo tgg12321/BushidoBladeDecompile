@@ -272,3 +272,37 @@ spellings). Fresh-seed discipline per [[permuter-fresh-seed-discipline]].
 - probe: arithmetic derivation from final6.lreg (banked in evidence.md s3)
 - result: no defensible construction reaches .56; loop-1 closed to priority + decl-order + type-narrowing + ref-weight = the entire structural modality
 - verdict: KILLED
+
+## [s4] A permuter campaign from the 6-floor base finds the loop-1 construction closed-form analysis missed (frontier F2)
+- mechanism: pure 2-cycle rename residual, tiny space; random + directed PERM sweep over loop-1 counter/judge-base spellings might reach a find_reg state analysis missed
+- probe: two campaigns, clean single-function target.o at offset 0, fresh-seed discipline. Campaign 1: array-index chassis (6-floor base), PERM_RANDOMIZE scoped to loop 1 + PERM_GENERAL over 4 spellings (direct index / named-t index split / named-t value split / while-form) — 61,683 iters, 0 finds. Campaign 2: pointer-walk chassis (same locked loop-2), PERM_GENERAL over do-while/for/inc-order — 64,848 iters, 7 finds, best = 50 = re-find of the floor-6 attractor via permuter-introduced hoisted judge base (new_var = Judge)
+- result: ~127k iterations across two structurally distinct chassis, nothing below the floor attractor; three distinct spellings (array-index, ptrwalk, ptrwalk+hoisted-base) all land in the SAME score-50 attractor
+- verdict: KILLED (the permuter axis on loop-1 spellings is dry; residue is find_reg-internal, insensitive to source spelling)
+
+## Live frontier (for session 5)
+
+### F1 (primary, unchanged): loop-1 i↔judge needs FORENSICS — the only unmeasured axis left
+The 6-slot residue survives: structural (s2+s3), decl-order (s3), type-narrowing (s3),
+ref-weighting (s3), and now permuter random+directed over both loop-1 geometries (s4).
+Probes, in order:
+  (a) BB2_ALLOC_DEBUG (instrumented cc1 at tools/gcc-2.7.2/cc1 — NOT build/cc1, per
+      [[instrumented-cc1-location]]) trace of find_reg for i's pseudo (81 in final6
+      dumps) in the 6-form: is a preference/prefclass/regs_someone_prefers term
+      steerable by ANY reachable source state, or is the a2 choice unconditional?
+  (b) Rebuild s1's EXACT H2 form (both loops for-form, s1 init order — the one build
+      where loop-1 counter -> t0 EXACT). s2's re-build did NOT reproduce it (72->a2);
+      the flip condition between the two nested builds is the missing datum. Dump
+      lreg/greg, identify what held a2/a3 during loop 1, then hunt a
+      goto-form-loop-2-compatible spelling reproducing that holder.
+  (c) local_alloc giv-status flip (139/140 local in one dump vs global in another) —
+      what flips it, can i be made local-alloc'd so global.c never places it?
+
+### F2 (exhausted axes — do NOT re-run): structural/priority (s2+s3), decl order (s3),
+type narrowing (s3), ref-weight wraps (s3), permuter loop-1 spellings both geometries
+(s4, ~127k iters). Rejected bank + kills cover all of them with measurements.
+
+## [s4] A permuter campaign from the 6-floor base finds the loop-1 i->t0/judge->a2 construction that closed-form structural analysis missed
+- mechanism: pure 2-cycle rename residual, tiny space; random mutation + directed PERM_GENERAL over loop-1 counter/judge-base spellings might reach a find_reg state analysis missed
+- probe: Campaign 1 'loop1-directed': clean single-function target.o at offset 0, base = the sandbox-6 candidate (permuter base score 50), PERM_RANDOMIZE scoped to loop 1 + PERM_GENERAL over 4 spellings (direct array-index / named-t index split / named-t value split / while-form) - 61,683 iters. Campaign 2 'loop1-ptrwalk': same locked loop-2, loop 1 as source pointer-walk, PERM_GENERAL over do-while/for/inc-order variants - 64,848 iters. Both harvested + stopped in-session per fresh-seed discipline.
+- result: Campaign 1: ZERO finds. Campaign 2: 7 finds, best = 50 = a re-find of the known floor-6 attractor (do-while pointer walk with permuter-introduced hoisted judge base 'new_var = Judge'). Nothing below 50 in either chassis; three structurally distinct loop-1 spellings all land in the identical score-50 attractor.
+- verdict: KILLED

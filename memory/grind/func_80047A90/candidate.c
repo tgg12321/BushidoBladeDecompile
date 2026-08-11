@@ -1,4 +1,11 @@
 /* func_80047A90 — BEST FORM, session 3 (structural), honest sandbox floor 6 (down from 8).
+ * Session 4 (permuter) re-verified floor 6 and left this form UNCHANGED: two
+ * campaigns (~127k iters, array-index chassis + pointer-walk chassis, random +
+ * directed PERM over loop-1 spellings) found nothing below the floor attractor —
+ * three distinct loop-1 spellings all score identically. The residue is
+ * find_reg-internal; next axis is forensics (see hypotheses.md s5 frontier).
+ * NB: s4 was the THIRD session to find src/sound.c stale (old 10-pin body) —
+ * always diff src against this file first.
  *
  * THIS FORM IS APPLIED IN src/sound.c (pure C, zero pins, zero rules).
  *
