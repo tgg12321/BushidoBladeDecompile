@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 20,
- "current_modality": "structural",
+ "session_count": 21,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -123,23 +123,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Tenth consecutive stale worker dispatch (structural axis killed s3): standing procedure only \u2014 candidate reapplied after the 20th driver revert, sandbox 0 re-proven (21st consecutive, 189/189, 25 rule"
+  },
+  {
+   "session": 21,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "Eleventh stale worker dispatch (permuter axis dead s4/s5): standing procedure only - candidate reapplied after the 21st driver revert, sandbox 0 re-proven (22nd consecutive, 189/189, 25 rules dropped)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Escalation modality files the OWNER-ESCALATION entry with the pre-decided disposition \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE \u2014 unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates)",
-   "mechanism": "Both endgame-lock AND-gates measured FAILED (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot \u2014 the residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a C construct); construct question fully resolved by GRANT cff7f1f5; consolidated packet is evidence.md s11",
-   "next_probe": "Escalation modality ONLY: file the entry in docs/grind/decisions.md citing evidence.md s11, note GRANT cff7f1f5 resolved the only construct question, return owner-gated"
+   "hypothesis": "The ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual (construct question closed by GRANT cff7f1f5 - do not re-escalate it)",
+   "mechanism": "Both endgame-lock AND-gates measured FAILED (scan_hand_coded LOW 0/8 s8; residual is reorg branch TARGETS, not a C construct); pre-decided disposition per standing ruling 2026-07-27: REFUSED / OWNER-ACCEPTED INCOMPLETE - unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11 packet)",
+   "next_probe": "Escalation modality ONLY: file the entry in docs/grind/decisions.md citing evidence.md s11 + GRANT cff7f1f5 + layer-1 FAIL faa30607, then return owner-gated. If the owner elects the maspsx remedy and grants it, the close must also satisfy the GRANT's binding conditions (FAKE annotation present, family rules-doc via independent-review path, fresh layer-2)"
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18, synthesis s10 re-confirmed s19); sessions 10-20 all confirmed the reapply-and-reprove loop is all that remains",
-   "next_probe": "None \u2014 any further stale-digest worker dispatch runs the standing procedure only: reapply candidate.c, re-measure sandbox 0, re-check decisions.md, return progress citing the post-s11 frontier"
+   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18, synthesis s10 re-confirmed s19); sessions 10-21 all confirm the reapply-and-reprove loop is all that remains",
+   "next_probe": "None - any further stale worker dispatch runs the standing procedure only: reapply candidate.c (tmp/grind/main/s14/apply.py), re-measure sandbox 0, re-check decisions.md, return progress citing this frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 20 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 21 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
-   "next_probe": "Every session: reapply from memory/grind/main/candidate.c (tmp/grind/main/s14/apply.py automates the 4 edits) and re-measure sandbox 0 before trusting any floor number"
+   "next_probe": "Every session: reapply from memory/grind/main/candidate.c and re-measure sandbox 0 before trusting any floor number"
   }
  ],
  "judge_constraints": [

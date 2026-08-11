@@ -1281,3 +1281,55 @@ tmp/grind/main/s21/chained-accumulation-rule-draft.md — a grind session may no
 edit .claude/rules/, so registration is an operator step after cheat-reviewer
 review of the doc. Condition 3 (fresh layer-2 on the final diff before queue
 done) is the driver's standard gate.
+
+## s21 (2026-08-11, permuter modality) — standing procedure; post-GRANT / post-layer-1-FAIL state recorded
+
+Eleventh consecutive stale worker dispatch (permuter axis killed s4/s5, re-confirmed
+s13/s14). Standing procedure executed: candidate reapplied after the 21st driver
+revert via tmp/grind/main/s14/apply.py; sandbox 0 re-proven (22nd consecutive,
+189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions).
+Artifact: tmp/grind/main/s21/sandbox.json.
+
+NEW ledger-relevant events since s20, verified in docs/grind/decisions.md this session:
+
+1. **Owner GRANT (2026-08-11, in person, commit-ref cff7f1f5, decisions.md ~line 4438):**
+   the chained same-variable accumulation (`s32 lim = D_800A36F1; lim = lim - 1;
+   lim = lim << 8; lim = lim + 0x80;`) is GRANTED as a sanctioned extension of the
+   2026-06-13 split-init-accumulation family, with binding conditions: (a) the
+   /* FAKE: same-pseudo chain blocks combine's 2->2 split gate (reg_referenced_p) */
+   annotation at the site, (b) a .claude/rules/ family doc registered via the
+   independent-review path (NOT in the match commit), (c) fresh layer-2 review before
+   queue done. The 2026-08-11 OWNER-ESCALATION at decisions.md line 4477 (construct
+   question) is therefore RESOLVED; the function was reopened.
+
+2. **Layer-1 FAIL (2026-08-11 13:49, banked at commit faa30607, decisions.md ~line 4522):**
+   the construct is legitimate under the grant, but the candidate does NOT reach the
+   oracle — a live judge_constraint records that this exact form FAILS full-build SHA1
+   by 2 bytes (the two reorg-retargeted branch TARGETS at words [165]/[173], masked to
+   0 by the sandbox's branch-target masking). The layer-1 reviewer's ruling matches the
+   ledger's own post-s11 frontier: that residual is not a C construct and is unreachable
+   from any C spelling under the frozen pipeline (9+ worker modalities, s1–s20).
+
+CONSEQUENCE for the frontier (unchanged in substance, updated in citation): the ONLY
+remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION
+entry for the 2-byte branch-target residual — the construct question is now closed by
+GRANT cff7f1f5 and must NOT be re-escalated. Pre-decided disposition per the standing
+2026-07-27 ruling: REFUSED / OWNER-ACCEPTED INCOMPLETE — unless the owner elects the
+class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11
+packet). Worker sessions (this one included) may not file it: modality gate per the
+owner's standing auto-ruling (A).
+
+No permuter campaign was launched: the residual lives in reorg-retargeted branch
+TARGET words, which no C-spelling mutation can move (measured kill s4/s5, ~axis dead);
+re-measuring a dead axis is prohibited by the frontier. 0 new probes, 0 new kills —
+standing procedure only.
+
+- [s21] sandbox main --disable all = 0 this session (22nd consecutive re-proof): 189/189 insns, 25 rules dropped, 68 cheat-asm stripped from other ings.c functions (tmp/grind/main/s21/sandbox.json)
+
+- [s21] Owner GRANT cff7f1f5 (2026-08-11, in person, decisions.md ~line 4438): chained same-variable accumulation sanctioned as split-init-accumulation extension with binding conditions (FAKE annotation, rules-doc via independent review, fresh layer-2) - the 2026-08-11 line-4477 OWNER-ESCALATION (construct question) is RESOLVED and must not be re-escalated
+
+- [s21] Layer-1 FAIL 2026-08-11 13:49 (banked faa30607, decisions.md ~line 4522): construct legitimate under the grant, but candidate FAILS full-build SHA1 by 2 bytes - the reorg-retargeted branch targets at words [165]/[173], masked to 0 by the sandbox metric; matches the ledger's post-s11 frontier that the residual is unreachable from any C spelling
+
+- [s21] src/ings.c carries the candidate form (reapplied this session); 21 occurrences now of the revert-reapply cycle
+
+- [s21] s21 ledger entry appended to memory/grind/main/evidence.md documenting the GRANT + layer-1 FAIL and the updated escalation prescription

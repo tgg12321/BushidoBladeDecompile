@@ -580,3 +580,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (verified the /* FAKE */ annotation opener is intact — an earlier grep rendering suggested corruption; raw byte dump shows correct /*); ran sandbox main --disable all; re-read decisions.md entries at lines ~4440-4492
 - result: sandbox = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from other ings.c functions); grant standing, annotation present, no new owner action since the grant; frontier unchanged
 - verdict: CONFIRMED
+
+## [s21] The candidate form still reaches sandbox 0 on current HEAD after the 21st driver revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so every session must reapply memory/grind/main/candidate.c (tmp/grind/main/s14/apply.py) and re-measure before trusting any floor number
+- probe: apply.py reapplied the 4 edits; `sandbox main --disable all` run this session
+- result: score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in OTHER ings.c functions) - tmp/grind/main/s21/sandbox.json
+- verdict: CONFIRMED
+
+## [s21] No permuter probe remains for the actual blocker (the 2-byte residual), so launching a campaign this session would re-measure a dead axis
+- mechanism: The residual is two reorg-retargeted branch TARGET words ([165]/[173]) masked by the sandbox metric - not a C construct; permuter mutates C spellings only. Axis killed s4/s5, re-confirmed s13/s14; frontier prohibits re-measuring dead axes
+- probe: Ledger frontier + decisions.md re-checked this session (GRANT cff7f1f5 at ~line 4438, layer-1 FAIL at ~line 4522 confirm the residual is the sole blocker and is non-C)
+- result: No campaign launched; 0-probe standing-procedure session per the post-s11 frontier prescription
+- verdict: CONFIRMED
