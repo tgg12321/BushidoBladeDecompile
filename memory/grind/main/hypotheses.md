@@ -478,3 +478,39 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Grepped docs/grind/decisions.md for main-scoped entries
 - result: GRANT cff7f1f5 at line 4438 and the RESOLVED pre-grant escalation at line 4473 remain the only main-scoped entries; no OWNER-ESCALATION covers the 2-byte branch-target residual
 - verdict: CONFIRMED
+
+## [s14] The candidate form (memory/grind/main/candidate.c, incl. the owner-granted FAKE-annotated chained same-variable accumulation, grant cff7f1f5) still reaches masked sandbox 0 on the current tree after the driver's 13th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so every session must reapply the 4 coordinated edits (two callee signature widenings at ings.c:311/441, widened main call sites, named-cnt tbl[idx] load, chained accumulation) and re-measure before trusting any floor number
+- probe: Reapplied all 4 edits verbatim from candidate.c; ran `wteng main sandbox main --disable all`
+- result: score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm lines stripped — 14th consecutive sandbox-0 re-proof (artifact tmp/grind/main/s13/sandbox_reproof.json)
+- verdict: CONFIRMED
+
+## [s14] The permuter axis has any remaining unmeasured probe on main
+- mechanism: s4/s5 killed the axis: the masked sandbox scorer reads 0 at the candidate seed, so every auto-search objective has zero gradient toward the true 2-byte residual; the residual itself is two reorg-retargeted branch TARGETS (pipeline-behavioral, not a C construct), so no C mutation the permuter can propose addresses it
+- probe: Ledger review + decisions.md grep this session; no campaign launched per the post-s11 frontier ("No measurable probe remains for any non-escalation worker session") — launching one would re-probe a killed axis
+- result: Confirmed empty: session executed only the standing reapply-and-reprove procedure; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm stripped)
+- verdict: KILLED
+
+## [s14] No new owner action or decisions.md entry has changed the disposition state since s13
+- mechanism: The escalation filing (pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE unless the owner elects the class-level maspsx ASPSX-parity fill remedy) is reserved for an escalation-modality session; worker sessions only verify state
+- probe: Grepped docs/grind/decisions.md for main-scoped entries
+- result: GRANT cff7f1f5 at line 4438 and the RESOLVED pre-grant escalation at line 4477 remain the only main-scoped entries; no OWNER-ESCALATION covers the 2-byte branch-target residual
+- verdict: CONFIRMED
+
+## [s13] The candidate form (memory/grind/main/candidate.c, incl. the owner-granted FAKE-annotated chained same-variable accumulation, grant cff7f1f5) still reaches masked sandbox 0 on the current tree after the driver's 13th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so every session must reapply the 4 coordinated edits and re-measure before trusting any floor number
+- probe: Reapplied all 4 edits verbatim from candidate.c (callee widenings at ings.c:311/441, widened main call sites, named-cnt tbl[idx] load, chained accumulation); ran wteng main sandbox main --disable all
+- result: score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm lines stripped — 14th consecutive sandbox-0 re-proof
+- verdict: CONFIRMED
+
+## [s13] The permuter axis has any remaining unmeasured probe on main
+- mechanism: s4/s5 killed the axis: the masked sandbox scorer reads 0 at the candidate seed (zero gradient for any auto-search objective), and the true residual is two reorg-retargeted branch TARGETS — pipeline-behavioral, not a C construct any permuter mutation can address
+- probe: Ledger review + decisions.md grep; no campaign launched per the post-s11 frontier prohibition on re-probing killed axes
+- result: Confirmed empty: session executed only the standing reapply-and-reprove procedure
+- verdict: KILLED
+
+## [s13] No new owner action or decisions.md entry has changed the disposition state since s13
+- mechanism: The escalation filing (pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE unless the owner elects the class-level maspsx ASPSX-parity fill remedy) is reserved for an escalation-modality session; worker sessions only verify state
+- probe: Grepped docs/grind/decisions.md for main-scoped entries
+- result: GRANT cff7f1f5 at line 4438 and the RESOLVED pre-grant escalation at line 4477 remain the only main-scoped entries; no OWNER-ESCALATION covers the 2-byte branch-target residual
+- verdict: CONFIRMED

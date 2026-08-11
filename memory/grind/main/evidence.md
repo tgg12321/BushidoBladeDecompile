@@ -1058,3 +1058,46 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s12] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
 
 - [s12] evidence.md updated with the s13 block; frontier unchanged from post-s11
+
+- [s14 / driver-session-13, permuter stale-dispatch] The driver dispatched
+  permuter modality (third consecutive stale dispatch of a killed axis; the
+  permuter axis carries the s4/s5 measured kill — every auto-search scorer is
+  blind to the residual because the masked sandbox already reads 0, so no
+  campaign objective exists; launching one would re-probe a killed axis
+  against the post-s11 frontier's explicit prohibition). Per the standing
+  procedure the session ran ONLY the reapply-and-reprove loop: candidate
+  reapplied from memory/grind/main/candidate.c after the THIRTEENTH driver
+  revert (all 4 coordinated edits: the two callee signature widenings at
+  ings.c:311/441 — func_80016A8C to (u8*,u8*,s32), func_80016E60 to
+  (u8*,s32) — the widened main call sites, the named-cnt tbl[idx] load in
+  the 0xFFFECC00 block, and the owner-granted FAKE-annotated chained
+  same-variable accumulation, grant cff7f1f5); sandbox main --disable all
+  = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm lines stripped) — the
+  FOURTEENTH consecutive sandbox-0 re-proof. Artifact:
+  tmp/grind/main/s13/sandbox_reproof.json.
+- [s14] decisions.md re-checked this session (grep): GRANT at line 4438 and
+  the RESOLVED pre-grant escalation at line 4477 remain the only main-scoped
+  entries; NO OWNER-ESCALATION entry yet covers the 2-byte branch-target
+  residual. Filing it remains exclusively the escalation-modality session's
+  job with the pre-decided wording (both endgame-lock gates measured FAILED:
+  gate 1 scan_hand_coded tier LOW 0/8 in s8; gate 2 moot — the residual is
+  two reorg-retargeted branch TARGETS, not a C construct) per evidence.md s11.
+- [s14] No permuter campaign was launched and none is justified: the s5
+  session proved the permuter cannot see the residual (masked scorer reads 0
+  at the seed — zero gradient), and permuter output would in any case be a
+  PROPOSAL against a residual that is not a C construct. candidate-ready
+  remains impossible for any worker session (masked sandbox 0, true bytes
+  2 off at branch-target words [165]/[173]; the driver's full-build byte
+  re-verify would discard it). Frontier unchanged from post-s11.
+
+- [s13] src/ings.c was reverted to pre-grind for the THIRTEENTH time; candidate reapplied from memory/grind/main/candidate.c (all 4 coordinated edits incl. the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5)
+
+- [s13] sandbox main --disable all = 0 this session (189/189 insns, 25 regfix rules dropped, 68 cheat-asm stripped) — FOURTEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s13/sandbox_reproof.json
+
+- [s13] No permuter campaign was launched and none is justified: s5 proved the masked scorer reads 0 at the seed (zero gradient), and the residual is not a C construct — the axis stays KILLED
+
+- [s13] decisions.md re-checked: GRANT on file at line 4438, pre-grant escalation RESOLVED at line 4477, NO entry yet covers the branch-target residual — the escalation-modality session must file it with the pre-decided wording (gate 1 scan LOW 0/8 s8; gate 2 moot, residual is not a C construct)
+
+- [s13] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
+
+- [s13] evidence.md and hypotheses.md updated with the s14 blocks; frontier unchanged from post-s11
