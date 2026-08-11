@@ -1718,8 +1718,12 @@ INCLUDE_ASM("asm/funcs", func_800889D4);
    points that splat merged into func_800889D4. Split out 2026-08-10
    (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
    their former host, in address order, so the link order reproduces the
-   original byte layout. _spu_FiDMA.s also keeps the `alabel D_80088BA0` that
-   marks its entry — that address is referenced as data elsewhere. */
+   original byte layout. _spu_FiDMA.s also keeps the address label that marks
+   its entry point, since that address is referenced as data elsewhere.
+   Do NOT spell that label's symbol name in this file: engine/queue.py's
+   not_a_c_function_text() word-searches the raw .c text (comments included),
+   so naming it here makes it read as a C function and flood the queue as an
+   unscorable distance -1 item, which sorts to the very top. */
 INCLUDE_ASM("asm/funcs", _spu_FiDMA);
 INCLUDE_ASM("asm/funcs", _spu_Fr_);
 /* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
