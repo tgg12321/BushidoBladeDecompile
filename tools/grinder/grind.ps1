@@ -672,6 +672,13 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
             param($Task, $RoleFile, $Model, $Sid, $Cwd, $AgentLog, $Func)
             Set-Location $Cwd
             $env:CLAUDE_SESSION_ID = $Sid
+            # 1-HOUR prompt-cache TTL (2026-08-11 token audit): grind sessions
+            # pause >5min inside builds/permuter waits, and the 5m TTL expiry
+            # forced 4-5 full-context recaches per session (~500-620k
+            # cache-write tokens, ~35-40% of session cost). The 2x write
+            # premium pays for itself by the third avoided rewrite. No-op on
+            # auth modes that already get 1h.
+            $env:ENABLE_PROMPT_CACHING_1H = '1'
             # Arms the grind_check.sh Stop-gate for THIS session only: the hook
             # no-ops unless GRIND_FUNC is set, so interactive/operator sessions
             # and this session's own subagents (Stop-only wiring) are unaffected.
