@@ -4522,3 +4522,38 @@ The candidate is legitimate pure C. The only technique in play is splitting one 
 ## 2026-08-11 13:49 — main — layer-1 review — **FAIL**
 
 The FAKE-annotated chained-accumulation construct itself is a legitimately granted family (owner ruling cff7f1f5), but the candidate does not actually reach the oracle: the ledger's own state carries a live, unresolved judge_constraint that this exact candidate form FAILS full-build SHA1 by 2 bytes (branch-target residual), and 9+ worker modalities across 20 sessions concluded that residual is unreachable from any C spelling under the frozen pipeline. The self-vet is silent about this and presents only the construct-legitimacy question, which is not the actual blocker.
+
+## 2026-08-11 — main — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (operator-filed, owner present)
+
+**Operator-filed (2026-08-11, owner Trenton present and directing)** after the driver burned
+22 consecutive stale worker dispatches (s11–s32) with no path to a disposition: the ledger's
+escalation trigger never fired because the honest floor sat flat at 0 (sandbox 189/189, all
+25 regfix rules dropped) while the full-build SHA1 stayed 2 bytes off the oracle — a
+scorer-invisible reorg branch-target residual (masked class), outside `_exhaustion_ready`'s
+floor>0 precondition. That driver defect is fixed in the same change-set as this filing.
+
+Endgame-lock species per the 2026-07-20 policy, both AND-gates measured FAILED on ledger
+evidence (memory/grind/main/evidence.md s11 synthesis packet):
+
+- **Gate 1 (canonical-asm):** `scan_hand_coded --single main` = **LOW 0/8** (s7) — the
+  residual is an ordinary GCC/ASPSX reorg artifact (two unfilled loop branch targets
+  retargeted by the redundant_insn thread-skip), not a hand-coded signature. Refuse asm.
+- **Gate 2 (coercion family):** no SOTN-master precedent exists for the residual axis — it
+  is not a C construct at all; 9+ worker modalities across 32 sessions measured it
+  unreachable from any C spelling under the frozen pipeline (structural s3, permuter s4/s5,
+  forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19). Refuse.
+
+The chained same-variable accumulation construct itself was separately GRANTED (owner ruling
+cff7f1f5) and is not at issue; layer-1 FAIL 2026-08-11 13:49 correctly rejected the candidate
+on the unreached oracle, not the construct.
+
+Per the owner's STANDING AUTO-RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md):
+option (b) applies — **REFUSED / OWNER-ACCEPTED INCOMPLETE**. The 25 regfix/asmfix rules are
+retained to hold the byte-match (NOT sanctioned, only retained); `main` is parked terminally
+out of the active grind, eligible for re-attempt if a genuine pure-C lever emerges. The
+sandbox-0 candidate is preserved in memory/grind/main/ (candidate.c + apply.py).
+
+**Recorded option, not pending:** the s11 packet identifies a class-level remedy — a maspsx
+ASPSX-parity branch-target fill (12 census candidates, 138 sites/96 funcs) — which the owner
+may elect later; it is a pipeline change and is NOT adopted by this entry (no-compiler-
+divergence default). No owner action is pending.
