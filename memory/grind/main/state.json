@@ -1,0 +1,37 @@
+{
+ "func": "main",
+ "file": "ings",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "recon: floor 20 -> 2 via two pure-C structural wins (3-arg/2-arg call arities + named tbl[idx] load); last cluster = combine.c:8196 shift-plus distribution, mechanism pinned"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "a C form giving the (D_800A36F1 - 1) value a second genuine byte-free use blocks the combine distribution and keeps addiu -1",
+   "mechanism": "try_combine keeps i2 when its dest does not die at i3 (added_sets_2 forces an unrecognizable PARALLEL), leaving the addiu/sll/addiu chain unfolded",
+   "next_probe": "sweep candidate forms in the micro-harness (bash tools/wsl.sh 'bash tmp/grind/main/s1/foldtest.sh <variant.c>'; seconds per variant, check .s for addiu -1 and no extra insns) before touching src"
+  },
+  {
+   "hypothesis": "the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) can log which try_combine precondition fires for this chain, exposing the cheapest legitimately-violable one",
+   "mechanism": "BB2_*_DEBUG combine tracing on the micro-case",
+   "next_probe": "trace, then derive the C form backward from the precondition"
+  },
+  {
+   "hypothesis": "directed permuter over the poll-loop statement forms finds the unfolding spelling",
+   "mechanism": "PERM_* sweep with a clean single-function target.o (offset-0 per difficult-is-not-impossible section 3)",
+   "next_probe": "only after 1+2 come up dry; vet any closing form against the cheat checklist (D_800A36F1 volatile coercion is NOT evidenced - two-prong IRQ gate unmet)"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-11T05:13:15.558607+00:00"
+}
