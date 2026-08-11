@@ -537,3 +537,102 @@ the packet cannot cheaply deliver.
 - [s5] insert_label device census: 9 functions / 11 rules (func_8001F938, func_800644FC, MoveImage, func_80074B18, func_8007352C, func_80048864 x2, func_800770B8, func_8005D554, func_8007D3F8 x2); func_8001F938's escalation proves the device serves multiple distinct mechanisms
 
 - [s5] worker findings now bounding main: spelling dead (s1/s2), structural/analytic dead with three-way proof (s3), permuter blind (s5), cheap sibling confirmation impossible (s6)
+
+## Session 7 (forensics, 2026-08-11 — dispatched as "session 6, forensics";
+the ledger already carried s6, so this session is numbered 7; artifacts live
+in tmp/grind/main/s6/ per the dispatch brief)
+
+### Session-start invariant (sixth occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — sixth driver revert. Reapplied
+  all four candidate.c edits via targeted Edits; sandbox main --disable all =
+  **0** (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER
+  ings.c functions) re-measured THIS session. candidate.c stays authoritative.
+
+### The forensics probe this session ran (new — not a re-derivation)
+The one instrumented-cc1 measurement the s3 three-way proof did NOT include:
+a **counterfactual ablation** — neuter the s3-named reorg decision in a
+SCRATCH cc1 (full copy of tools/gcc-2.7.2 under tmp/grind/main/s6/gcc-ablate,
+cp -a to preserve timestamps so make only rebuilds reorg.o; env knob
+BB2_NO_REDUND_SKIP; the pipeline compiler untouched) and measure whether
+main's bytes become 189/189 exact INCLUDING the two branch targets. Compile
+mirror = the s5 cheat-free pipeline (cpp | scratch-cc1 -mel flags |
+prologue_fix | maspsx | as), byte-compare via engine func_byte_signature
+against build/src/ings.o (canonical rules-on bytes).
+
+### MEASURED — the retarget is MULTI-SITE and SELF-HEALING; no single reorg
+clause's removal yields target bytes (counterfactual grid, 3 points)
+- Baseline re-proven unmasked TODAY: control (pipeline build/cc1, cheat-free)
+  vs target = exactly the known 2 diffs — [165] bne v1,v0 → dd0 (target dcc),
+  [173] bnez v0 → dd0 (target dcc). Target's OWN geometry at [169] beqz v0 is
+  → dd0 (post-li) — i.e. the target MIXES pre-li and post-li targets among
+  the loop-tail branches, and control already gets [169] right.
+- Knob v1 (gate ONLY the s3-named pretend-path, reorg.c:3433 !own_thread
+  branch): **zero byte change** (knob-ON md5 == knob-OFF). Mechanism, from
+  the DBRDBG+redirect trace (tmp/grind/main/s6/dbr_trace_abl.txt; scratch
+  cc1 given an added reorg_redirect_jump trace): with the pretend disabled,
+  the li a1,0x1008 becomes a GENUINE eligible fill for jumps 391/418
+  ("thr WINNER insn=391 trial=80", setsopp=0 in this context) — reorg fills
+  the slot with a COPY of the li and legitimately retargets past it
+  (redirect jump=391 -> label=510), then relax_delay_slots' UNGATED
+  redundancy strip (reorg.c:3956 "first insn in the delay slot is redundant
+  with some previous insn → delete_from_delay_slot") removes the li copy,
+  leaving the branch unfilled-but-retargeted — byte-identical to the
+  pretend-path outcome. The transform reaches the same fixpoint by a
+  DIFFERENT route: it is self-healing, not single-clause.
+- Knob v2 (gate 3433 + the filled-all-slots skip loop reorg.c:3530-3536 +
+  relax_delay_slots' retarget-past-redundant reorg.c:3992-4006): **worse —
+  3 diffs**: [165]/[173] STILL → dd0, and [169] beqz (which target wants on
+  dd0 and control matches) flips to dcc. One of the newly gated sites was
+  load-bearing for the CORRECT [169] post-li target.
+- Conclusion for the disposition packet: the two residual branch targets are
+  enforced by AT LEAST three cooperating reorg devices (fill_slots_from_
+  thread's redundancy pretend-path :3433, its genuine-fill WINNER path with
+  relax's :3956 strip as cleanup, relax's :3992 retarget-past-redundant),
+  and partial ablation degrades OTHER, currently-correct branch targets.
+  There is no "one clause" whose ASPSX-parity removal reproduces the target;
+  a real pipeline remedy would have to implement ASPSX's actual fill
+  algorithm (fill-iff-retarget from scratch, e.g. -fno-delayed-branch +
+  maspsx-side filling) with whole-corpus blast radius — exactly the
+  owner-surface scale s3 already asserted. The counterfactual measurement
+  UPGRADES that assertion from analytic to measured.
+- Fidelity caveat (banked for future instrument use): the scratch cc1
+  (rebuilt from the instrumented root tree) differs from pipeline build/cc1
+  by ONE insn outside main even with the knob OFF — 0x1118 addiu s1,v0,4
+  (pipeline) vs ori s1,v0,0x4 (scratch), in the func_800174F4 region. main's
+  own bytes are identical between the two compilers, so all main conclusions
+  stand; but the instrumented root tree is NOT byte-faithful file-wide, and
+  any future forensics on OTHER ings.c functions must re-verify locally.
+- Also banked: the "too few arguments to function `func_80019568`" cc1
+  diagnostic at src/ings.c:474 (0-arg call vs the s32-prototype at line 55)
+  is PRE-EXISTING, non-fatal, and present in the daily pipeline too — cc1
+  continues and emits the full file; do not mistake it for a broken mirror.
+
+### Artifacts (tmp/grind/main/s6/)
+ablate_build.sh / ablate_patch2.sh / ablate_patch3.sh (scratch-cc1 build +
+knob patches; gcc-ablate/ is the live scratch tree, reorg.c carries the
+knob + redirect trace); ablate_measure.sh / ablate_measure2.sh (pipeline
+mirror); ings.i (preprocessed candidate, current tree); ings_ctl.o /
+ings_off.o / ings_abl.o / ings_abl2.o (+ ctl.dis/abl.dis/abl2.dis,
+blast_radius.diff/blast_radius2.diff); dbr_trace_abl.txt (DBRDBG + redirect
+trace, knob-ON); ings_abl3.s (traced compile asm); cmp_vs_target.py
+(unmasked byte-compare vs build/src/ings.o).
+
+- [s7] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured with the full candidate reapplied after the SIXTH driver revert
+- [s7] counterfactual ablation measured: gating reorg.c:3433 alone = zero byte change (genuine-fill WINNER route + relax :3956 strip reproduces the same bytes); gating 3433+3530+3992 = WORSE (breaks the correct [169] beqz post-li target); no single-clause ASPSX-parity removal exists
+- [s7] target's loop-tail geometry MIXES pre-li and post-li targets ([165] dcc, [169] dd0, [173] dcc) — any pipeline remedy must reproduce ASPSX's actual per-branch fill algorithm, not suppress a reorg clause
+- [s7] scratch instrumented-tree cc1 has a 1-insn drift vs pipeline build/cc1 OUTSIDE main (0x1118 addiu vs ori, func_800174F4 region); main bytes identical — file-wide byte-fidelity of the instrumented tree is NOT guaranteed
+
+- [s6] sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) reapplied after the 6th driver revert
+
+- [s6] control (pipeline build/cc1, cheat-free mirror) vs canonical target bytes re-proven unmasked today: exactly 2 diffs — [165] bne v1,v0 -> dd0 (target dcc), [173] bnez v0 -> dd0 (target dcc)
+
+- [s6] counterfactual grid: knob v1 (gate reorg.c:3433 only) = byte-identical to control (self-healing via genuine-fill WINNER path + relax :3956 strip); knob v2 (gate 3433+3530+3992) = 3 diffs, breaking the previously-correct [169] beqz post-li target
+
+- [s6] the retarget of the two unfilled loop branches is enforced by at least three cooperating reorg devices: fill_slots_from_thread's pretend-path (:3433), its genuine-fill route with relax's :3956 strip as cleanup, and relax_delay_slots' retarget-past-redundant (:3992-4006)
+
+- [s6] packet implication: the hypothetical maspsx ASPSX-parity remedy is a full fill-algorithm reimplementation (fill-iff-retarget from scratch), not a clause suppression — owner surface with whole-corpus blast radius, exactly as s3 asserted, now measured
+
+- [s6] instrument caveat: the scratch cc1 rebuilt from the instrumented root tree drifts from pipeline build/cc1 by 1 insn OUTSIDE main (0x1118 addiu vs ori, func_800174F4 region) even knob-OFF; main's bytes are identical between the two compilers so all main conclusions stand
+
+- [s6] the cc1 diagnostic 'too few arguments to function func_80019568' at src/ings.c:474 is pre-existing and non-fatal (present in the daily pipeline; cc1 emits the full file)

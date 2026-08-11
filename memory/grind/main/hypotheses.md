@@ -277,3 +277,46 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: grep src/ings.c for the candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
 - result: reverted for the FIFTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
 - verdict: KILLED
+
+## [s7] the 2-byte residual is attributable to the SINGLE reorg decision s3 named (fill_slots_from_thread's redundancy pretend-path, reorg.c:3433), so ablating that one clause in a scratch cc1 reproduces target bytes (counterfactual completeness of the s3 proof)
+- mechanism: if reorg.c:3433's !own_thread pretend-path were the sole cause, disabling it would leave jumps 391/418 on the pre-li label and yield 189/189 exact bytes including branch targets
+- probe: scratch cc1 (full cp -a of tools/gcc-2.7.2 to tmp/grind/main/s6/gcc-ablate, env knob BB2_NO_REDUND_SKIP, pipeline compiler untouched); cheat-free pipeline mirror; unmasked byte-compare vs build/src/ings.o; DBRDBG + added reorg_redirect_jump trace
+- result: KILLED in an evidence-UPGRADING way — gating 3433 alone changes ZERO bytes: with the pretend disabled the li becomes a genuinely eligible fill ("thr WINNER insn=391 trial=80"), reorg fills + legitimately retargets, then relax_delay_slots' ungated :3956 redundancy strip deletes the li copy from the slot, reaching the SAME final bytes by a different route; gating 3433+3530+3992 together is WORSE (3 diffs — it flips [169] beqz, which target wants on the post-li label and control matches). The retarget is multi-site and self-healing; no single-clause ASPSX-parity removal exists. Any pipeline remedy must implement ASPSX's actual fill algorithm (owner surface, whole-corpus blast radius) — the s3 disposition stands, now measured rather than analytic
+- verdict: KILLED
+
+## [s7] src/ings.c still carries the candidate form at session start
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep for candidate signatures before any measurement
+- result: reverted AGAIN (6th occurrence); reapplied all 4 edits from candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session
+- verdict: KILLED
+
+## Live frontier (post-s7)
+1. UNCHANGED disposition, STRONGER packet: the 2-byte branch-target residual
+   is closable only by owner-surface means. The escalation-modality session
+   now additionally cites the s7 counterfactual grid (tmp/grind/main/s6/:
+   cmp_vs_target.py output, dbr_trace_abl.txt, blast_radius2.diff) proving
+   no single reorg clause's removal reproduces target — the hypothetical
+   maspsx ASPSX-parity remedy is a full fill-algorithm reimplementation,
+   not a clause suppression. FIVE worker modalities now measured dead:
+   spelling (s1/s2), structural/analytic (s3), permuter (s5), cheap sibling
+   confirmation (s6), forensic counterfactual (s7).
+2. Do NOT re-run: permuter (s5 blind), sibling probes (s6), single-clause
+   reorg ablations (s7 — the grid is measured; a 4th knob on :3956 would
+   leave the li copy IN the slot, a byte-visible regression, predicted dead).
+3. Session-start invariant STILL required (6 reverts now): reapply from
+   candidate.c, re-measure sandbox 0 before any other work.
+4. Instrument caveat for future forensics on OTHER ings.c functions: the
+   instrumented root gcc tree is not byte-faithful file-wide (1-insn
+   addiu/ori drift at 0x1118, func_800174F4 region); verify locally first.
+
+## [s6] The residual is attributable to the single reorg decision s3 named (fill_slots_from_thread redundancy pretend-path, reorg.c:3433), so ablating that clause in a scratch cc1 reproduces target bytes
+- mechanism: If :3433's !own_thread pretend-path were the sole cause, disabling it would leave jumps 391/418 on the pre-li label -> 189/189 exact including branch targets
+- probe: Scratch cc1 (cp -a of tools/gcc-2.7.2 to tmp/grind/main/s6/gcc-ablate, env knob BB2_NO_REDUND_SKIP, pipeline compiler untouched); cheat-free pipeline mirror; unmasked byte-compare vs build/src/ings.o; DBRDBG + added reorg_redirect_jump trace
+- result: Gating :3433 alone = ZERO byte change: the li becomes a genuinely eligible fill (trace: thr WINNER insn=391 trial=80), reorg fills + legitimately retargets, then relax_delay_slots' ungated :3956 redundancy strip deletes the li copy — same final bytes by a different route. Gating :3433 + :3530 + :3992 = WORSE (3 diffs): flips [169] beqz, which target wants on the post-li label and control already matches. Target's own loop-tail geometry MIXES pre-li and post-li targets ([165] dcc, [169] dd0, [173] dcc).
+- verdict: KILLED
+
+## [s6] src/ings.c still carries the candidate form at session start
+- mechanism: Driver end-of-session handling discards uncommitted src edits
+- probe: Grep for candidate signatures before any measurement
+- result: Reverted for the SIXTH time; reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session
+- verdict: KILLED

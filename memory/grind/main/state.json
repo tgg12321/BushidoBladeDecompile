@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "Stale digest re-dispatched the already-killed permuter modality; session instead re-proved sandbox 0 after the 5th src revert and KILLED the cheap-sibling-confirmation frontier probe with measurements"
+  },
+  {
+   "session": 6,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Forensics counterfactual: the 2-byte branch-target residual is enforced by >=3 cooperating, self-healing reorg devices \u2014 no single-clause ablation reproduces target; the s3 owner-surface disposition i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "main's 2-byte branch-target residual is closable only by owner-surface means; the disposition needs an escalation-modality session to FILE the OWNER-ESCALATION entry (none currently covers this residual)",
-   "mechanism": "reorg.c fill_slots_from_thread redundancy thread-skip (three-way proven s3) vs ASPSX fill-iff-retarget; all four worker modalities measured dead (s1/s2 spelling, s3 structural, s5 permuter, s6 sibling-probe)",
-   "next_probe": "escalation modality: file the entry citing evidence.md s3-s6, tmp/grind/main/s2/dbr_trace.txt + main_psx.s, the s3/s4 census artifacts, and tmp/grind/main/s5/cmp_352C.txt + cmp_DC9C.txt; evaluate the endgame-lock AND-gates honestly (scan_hand_coded tier; the maspsx ASPSX-parity-fill option is an owner-surface pipeline question affecting the whole 12-candidate class)"
+   "hypothesis": "main's 2-byte branch-target residual is closable only by owner-surface means; an escalation-modality session must FILE the OWNER-ESCALATION entry (none currently covers this residual)",
+   "mechanism": "reorg's multi-site self-healing redundancy machinery (s7 measured) vs ASPSX fill-iff-retarget; FIVE worker modalities measured dead: spelling s1/s2, structural s3, permuter s5, sibling-probe s6, forensic counterfactual s7",
+   "next_probe": "escalation modality: file the entry citing evidence.md s3-s7, tmp/grind/main/s2/dbr_trace.txt + main_psx.s, the s3/s4 census artifacts, tmp/grind/main/s5/cmp_352C.txt + cmp_DC9C.txt, and the s7 counterfactual grid (tmp/grind/main/s6/cmp_vs_target.py output, dbr_trace_abl.txt, blast_radius2.diff); evaluate the endgame-lock AND-gates honestly"
   },
   {
-   "hypothesis": "func_8007352C remains the best eventual second exemplar of the retarget class (device + geometry co-occurrence), but only via its own queue-top grind",
-   "mechanism": "its insert_label @105 + beq retarget @45 match main's device shape, but 54 honest distance / whole-body RA rotation must close before the label site is attributable",
-   "next_probe": "none for main sessions \u2014 leave to func_8007352C's own ledger when it reaches the queue top; do not spend main sessions on it (func_8007DC9C is excluded from the class candidate list \u2014 different divergence class)"
+   "hypothesis": "no further reorg-ablation forensics is informative on main",
+   "mechanism": "the grid is measured: single-clause = no-op (self-healing), 3-clause = regression; a 4th knob on :3956 would leave the li copy in the slot (byte-visible, predicted dead)",
+   "next_probe": "none \u2014 do not spend further sessions on reorg counterfactuals for main"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (5 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (6 occurrences)",
    "mechanism": "driver discards uncommitted src edits at session end; only the ledger persists",
-   "next_probe": "every session: grep src/ings.c for the candidate signatures and reapply from memory/grind/main/candidate.c before trusting any floor number"
+   "next_probe": "every session: reapply from memory/grind/main/candidate.c and re-measure sandbox 0 before trusting any floor number"
   }
  ],
  "judge_constraints": [
