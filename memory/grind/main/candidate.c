@@ -27,13 +27,19 @@
  *      (tmp/grind/main/s2/foldM4.c/.s) then whole-file sandbox = 0.
  *      Every statement is live (each value read by the next); no dead
  *      stores, no volatile, no pins.
- * POLICY STATUS: ruling-request pending. The spelling is same-variable
- * split-init accumulation, but the sanctioned precedent (user 2026-06-13,
- * commit ad11a8c8, func_80049C24) scopes to "split a real a+b into init +
- * += on the same var, combine folds it back" (byte-NEUTRAL refs-lift);
- * this form is a 3-step chain whose effect is byte-MATERIALIZING (combine
- * does NOT fold back). The sanctioning memory says adjacent spellings need
- * their own user ruling — asked via the s2 outcome's ruling_question.
+ * POLICY STATUS (updated s3, 2026-08-11): chained accumulation GRANTED by
+ * owner ruling (commit cff7f1f5, split-init family extension, 4 binding
+ * conditions — FAKE annotation now in the body below per condition 1).
+ * BYTE STATUS (s3, measured): masked sandbox = 0, but TRUE bytes are 2 off
+ * — the targets of `bne`(D_800A38DC!=2) and `bnez`(D_800A3713!=0) resolve
+ * to .L8001727C (past the loop-head li a1,0x1008) where target has
+ * .L80017278 (at the li). Mechanism proven (evidence.md s3): our cc1's
+ * reorg redundancy thread-skip (reorg.c:3433/1987/3685) retargets the two
+ * unfilled branches because a1=4104 sits in the first bne's delay slot;
+ * ASPSX (original pipeline) only retargeted branches it filled. cc1psx on
+ * THIS exact C emits the original single-label form — this C is the
+ * original shape; no pure-C spelling closes the last 2 bytes under the
+ * frozen pipeline. Do NOT grind further spellings of the loop tail.
  */
 void main(void) {
     s32 idx;
@@ -81,6 +87,10 @@ loop:
 
     do {
         s32 cnt = GetRCnt(0xF2000001u);
+        /* FAKE: same-pseudo chain blocks combine's 2->2 split gate
+           (combine.c:1836 reg_referenced_p) — fresh-variable spellings fold
+           to sll;addiu -128. Owner grant 2026-08-11 (docs/grind/decisions.md,
+           split-init-accumulation family extension). */
         s32 lim = D_800A36F1;
         lim = lim - 1;
         lim = lim << 8;

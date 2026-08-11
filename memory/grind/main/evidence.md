@@ -189,3 +189,123 @@ in other ings.c functions still stripped — main's own body is pure C).
   fold-blocking shape (multi-use is byte-impossible per the s2 nop-slot
   audit: every free slot in the target loop is a literal nop, so any extra
   live insn mismatches).
+
+## Session 3 (structural, 2026-08-11 — dispatched as "session 2" by a stale
+digest; the ledger already carried s2, so this session is numbered 3)
+
+### Post-grant timeline this session inherited
+- Owner GRANTED the chained-accumulation family (commit cff7f1f5, 4 binding
+  conditions incl. the /* FAKE */ annotation, rule-doc via independent
+  review, fresh layer-2 before queue done). Function reopened.
+- A candidate-ready then FAILED the driver's full-build SHA1 check; the
+  driver banked the constraint "masked-0 register diff class — reg-alloc
+  gap is real". THAT CLASSIFICATION IS WRONG — see below.
+
+### MEASURED: the byte gap is 2 BRANCH TARGETS, not registers
+Reapplied candidate.c to src/ings.c (4 edits + FAKE annotation). sandbox
+--disable all = 0 (masked), AND --keep-cheat-asm variant also 0 — the gap is
+invisible to the masked metric in both contexts. Exact-byte comparison
+(engine func_byte_signature, build/src/ings.o vs tmp/sandbox/main/ings.o,
+tmp/grind/main/s2/bytesig_cmp.py): 187/189 words identical; the ONLY diffs:
+  [165] ref bne v1,v0,0xdcc  | ours bne v1,v0,0xdd0   (if D_800A38DC != 2)
+  [173] ref bnez v0,0xdcc    | ours bnez v0,0xdd0     (if D_800A3713 != 0)
+Branch TARGETS are a masked class in engine/score.py — hence sandbox 0.
+0xdcc = .L80017278 (AT the loop-head li a1,0x1008); 0xdd0 = .L8001727C
+(after it). No register differs anywhere. The s1 note "label rules @146-169
+byte-solved" was masked-blind; those rules were patching exactly these two
+targets.
+
+### Mechanism (pinned by code read + instrumented DBRDBG trace + cc1psx
+counter-exhibit — all three agree)
+- Target loop-head geometry: entry falls through `li a1,0x1008` into the
+  loop; back-edge branches split two ways — branches whose delay slot got
+  FILLED (bne D_800A3834 + li-dup, bnez voice + lui, beqz D_800A3713 +
+  addiu, j + li-dup) enter at .L8001727C (past the li); the two UNFILLED
+  (nop-delay) branches enter at .L80017278 (executing the li).
+- Our cc1 (vanilla 2.7.2 dbr/reorg.c) reproduces every FILL exactly
+  (DBRDBG trace tmp/grind/main/s2/dbr_trace.txt: jump 363 steals insn 80
+  li→delay + retarget; 369 fills lui from fall-through thread; 380 addiu;
+  431 steals li; 391/418 unfillable — 391's trial=80 even shows setsopp=1,
+  a1 needed on its fall-through), BUT reorg ADDITIONALLY retargets the two
+  unfilled branches: fill_slots_from_thread's redundancy clause
+  (reorg.c:3433 `if (prior_insn = redundant_insn (trial, insn, delay_list))
+  ... new_thread = next_active_insn (trial)`) finds a1=4104 already in
+  branch 363's delay slot along 391/418's backward path (redundant_insn,
+  reorg.c:1987: backward scan stops only at CODE_LABEL or CALL SEQUENCE;
+  neither exists between 363 and 391/418 in the target bytes), pretends the
+  li executed, advances new_thread past insn 80, and the function tail
+  (reorg.c:~3685 `if (new_thread != thread) ... reorg_redirect_jump`)
+  redirects UNCONDITIONALLY — no slots need be filled. Both branches land
+  on the post-li label 510 (.L128); the pre-li label 54 loses all referents
+  and is deleted (NOTE_INSN_DELETED_LABEL in ings.i.dbr).
+- cc1psx COUNTER-EXHIBIT (tools/cc1psx_wrapper.sh on the SAME ings.i,
+  tmp/grind/main/s2/main_psx.s): cc1psx emits ONE label $L102 BEFORE the
+  li with ALL SEVEN loop branches targeting it and ZERO delay-slot
+  processing (plain reorder-mode asm — cc1psx did not run a dbr pass; ASPSX
+  did the filling at assembly time). The original bytes are therefore
+  ASPSX's fill behavior on single-label input: retarget IFF filled, leave
+  unfilled branches on the original label. Our candidate C is (modulo
+  spelling) THE original shape — the divergence is pipeline-behavioral
+  (cc1-dbr's redundancy thread-skip does not exist in ASPSX), not C-shape.
+
+### Why no pure-C spelling can close these 2 bytes under the current
+pipeline (analytic kill, each escape enumerated)
+redundant_insn can only fail to fire if its backward scan from the branch
+stops or misses. All escape hatches, checked:
+1. CODE_LABEL between 363 and 391 — needs a live label there; every
+   legitimate referent (a real goto/branch or jump table) is byte-visible,
+   and no target byte branches into 0x7C68-0x7C90. Byte-free label sources
+   (`&&label` FORCED_LABEL, dead `goto` label) are the forbidden dead-goto
+   label-pad family. DEAD.
+2. CALL between — byte-visible (no jal there). DEAD.
+3. An a1 write/clobber between — byte-visible. DEAD.
+4. Making 363's delay NOT contain li a1 — target bytes demand it. DEAD.
+5. Making the li not be the first active insn of the thread — byte order
+   fixed (li@0xdcc, lw@0xdd0). DEAD.
+6. Two-C-label source (`loop:`/`loop2:` with li between): cc1psx exhibit
+   shows the original had ONE label; and under our GCC the loop2-entering
+   paths leave the arg pseudo live around the back edge → callee-saved reg
+   + `move a1,sX` at the call (extra insn, wrong bytes); per-path re-sets
+   before the gotos invert branch senses / add insns. DEAD.
+7. A same-bytes different-RTL delay insn (so rtx_equal_p fails) — the only
+   RTL emitting `addiu $5,$0,0x1008` is (set (reg 5) (const_int 4104));
+   fills copy insn 80's own pattern. DEAD.
+Fill-order escapes: fill_eager processes jumps in stream order (363 first,
+always); fill_simple never fills 391/418 (their slots are nop in target,
+and a fill would be byte-visible anyway). DEAD.
+
+### Disposition implications (for the driver/owner — NOT actioned this
+session; structural modality)
+- The two residual insns are closable ONLY by (a) the two label regfix
+  rules (cheat debt, must retire), (b) a pipeline-level mechanism change
+  (e.g. per-file -fno-delayed-branch + maspsx doing ASPSX-style fills —
+  forbidden surface: compiler-flags-canonical + whole-file blast radius on
+  every other ings.c function's delay slots, and maspsx does not implement
+  fill+retarget), or (c) an SN-cc1psx-parity patch to reorg.c — forbidden
+  by no-compiler-divergence. None is a this-session C edit.
+- This is NOT an exhausted-function claim (modality ladder continues; the
+  driver owns that call). It IS a measured kill of the entire
+  "current-shape pure-C spelling" axis for the final 2 bytes, with the
+  strongest evidence tier available (GCC source + instrumented trace +
+  original-compiler counter-exhibit on identical input).
+
+### Artifacts (tmp/grind/main/s2/)
+bytesig_cmp.py, ctx_dump.py (exact-byte diff tools); ings.i (preprocessed
+candidate); ings.s / main_ours.s (our cc1 .s); ings.i.dbr + full -da dumps
+(label 54 deletion visible); dbrtrace.sh + dbr_trace.txt (instrumented
+DBRDBG fill/redundancy trace); psxtest.sh + ings_psx.s / main_psx.s
+(cc1psx counter-exhibit); mk_s.sh, insp.sh (repro harness).
+
+- [s2] owner grant cff7f1f5 (chained accumulation, 4 conditions) is live; candidate reapplied to src/ings.c with the FAKE annotation; sandbox main --disable all = 0 (189/189, 25 rules dropped) reproduced this session, and also 0 with --keep-cheat-asm (retire context)
+
+- [s2] the banked judge constraint 'masked-0 register diff class - reg-alloc gap is real' is factually wrong: the unmasked byte diff contains zero register differences; it is 2 branch targets (a masked class); future sessions must not grind RA levers on it
+
+- [s2] s1's 'label rules @146-169 byte-solved' claim was masked-score-blind; those regfix rules patch exactly these two branch targets
+
+- [s2] target loop-head geometry: entry falls through li a1,0x1008 (.L80017278 at 0xdcc); filled-delay back edges (bne D_800A3834+li dup, bnez voice+lui, beqz D_800A3713+addiu, j+li dup) enter at .L8001727C (0xdd0); the two nop-delay branches enter at .L80017278 - our build matches all fills and both nop delays, only the two targets differ
+
+- [s2] our reorg's fills are byte-perfect per the DBRDBG trace (jump 363 steals the li, 369 fills lui from the fall-through thread, 380 addiu, 431 steals li; 391's trial of the li even shows setsopp=1); the divergence is solely the redundancy thread-skip redirect of unfilled 391/418, after which the pre-li label is deleted (NOTE_INSN_DELETED_LABEL in ings.i.dbr)
+
+- [s2] closing the last 2 bytes requires one of: the two label regfix rules (cheat debt), a maspsx/pipeline mechanism change (owner surface, whole-file blast radius), or an SN-parity reorg patch (forbidden, no-compiler-divergence) - none is a worker C edit
+
+- [s2] src/ings.c currently carries the full candidate (4 edits + FAKE annotation), matching memory/grind/main/candidate.c

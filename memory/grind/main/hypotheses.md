@@ -90,15 +90,86 @@
 - result: no free slot exists; multi-use forms are byte-impossible for THIS loop
 - verdict: KILLED
 
-## Live frontier (post-s2)
+## Live frontier (post-s2) — SUPERSEDED by s3; kept for history
 1. OWNER RULING pending on the chained-accumulation spelling (see s2 outcome
-   ruling_question). If sanctioned -> next session: reapply (or verify still
-   applied) src state from candidate.c, sandbox 0, write self_vet.md citing
-   the new ruling, return candidate-ready.
-2. If REFUSED -> the only remaining structural axes: (a) minimal 3-statement
-   variant (same family, likely same ruling), (b) cross-BB shapes that
-   linearize back to the single-BB target layout via jump2/reorg (unexplored,
-   no concrete form yet), (c) directed permuter over poll-loop spellings
-   EXCLUDING same-pseudo accumulation.
+   ruling_question). [RESOLVED: GRANTED, commit cff7f1f5, 4 conditions.]
+2. If REFUSED -> ... [moot]
 3. Session-start check: verify src/ings.c matches candidate.c before trusting
-   the digest floor (s1 src edits were discarded once already).
+   the digest floor (s1 src edits were discarded once already). [STILL TRUE —
+   s3 found src reverted again and reapplied from candidate.c.]
+
+## [s3] the post-grant byte-fail is a register-allocation gap in main
+- mechanism: (driver's classification "masked-0 register diff class")
+- probe: exact-byte diff via engine func_byte_signature (build/src/ings.o vs
+  tmp/sandbox/main/ings.o), full unmasked operands, index-aligned
+- result: 187/189 words identical, ZERO register diffs; the only diffs are
+  the TARGETS of two branches (bne D_800A38DC and bnez D_800A3713: target
+  0xdcc=.L80017278 vs ours 0xdd0=.L8001727C) — a masked class in score.py
+- verdict: KILLED (misclassification; it is a branch-target/label gap)
+
+## [s3] our reorg can be made to leave the two unfilled loop branches on the
+pre-li label (.L80017278) by some C spelling
+- mechanism: reorg.c fill_slots_from_thread redundancy clause (3433):
+  redundant_insn finds a1=4104 in branch 363's delay slot along the backward
+  path from 391/418 (scan stops only at CODE_LABEL/CALL — none exist in the
+  fixed bytes between), advances new_thread past insn 80, and the tail
+  redirect (new_thread != thread) fires with ZERO slots filled
+- probe: reorg.c read (1987-2100, 3400-3480, 3660-3710) + instrumented
+  BB2_DBR_DEBUG trace (tmp/grind/main/s2/dbr_trace.txt) + escape-hatch
+  enumeration (7 hatches, each byte-visible or a forbidden family — see
+  evidence.md s3)
+- result: every C-side escape is byte-visible or forbidden (dead-goto
+  label-pad / forced-label family); the transform is forced by the other
+  187 bytes being correct
+- verdict: KILLED (no pure-C spelling avoids the thread-skip under our cc1)
+
+## [s3] the candidate C is the ORIGINAL source shape; the residue is
+pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
+- mechanism: cc1psx (GCC 2.7.2.SN.1, the original compiler) run on the SAME
+  preprocessed candidate (tools/cc1psx_wrapper.sh < ings.i)
+- probe: tmp/grind/main/s2/main_psx.s — cc1psx emits ONE label $L102 BEFORE
+  li a1,0x1008 with ALL loop branches targeting it, zero delay processing;
+  ASPSX then filled slots and retargeted exactly the fillable four,
+  producing the target's mixed .L78/.L7C pattern
+- result: original pipeline reproduces target from our C; ours diverges only
+  in dbr's extra legal optimization
+- verdict: CONFIRMED
+
+## Live frontier (post-s3)
+1. The function's remaining 2 bytes are NOT C-reachable under the frozen
+   pipeline (measured + code-proven + cc1psx-corroborated). The remaining
+   modality ladder should treat "find another C spelling for the loop tail"
+   as a dead axis; do NOT re-derive it. Any next probe should target the
+   DISPOSITION, not the spelling:
+   - verify whether ANY other function in the corpus shares this
+     ASPSX-retarget signature (two same-address labels, unfilled branches on
+     the earlier one) — if yes it is a class, strengthening an eventual
+     owner packet;
+   - the endgame surfaces (label regfix rules / maspsx feature / reorg
+     patch) are ALL outside worker scope: regfix untouchable, maspsx global
+     behavior needs owner sign-off (maspsx-noreorder-stripping precedent),
+     reorg patch forbidden (no-compiler-divergence).
+2. The granted FAKE-annotated chained accumulation + all four s1/s2 edits
+   remain correct and necessary; keep candidate.c authoritative and verify
+   src matches it at session start.
+3. Driver constraint to fix: the "reg-alloc gap" wording in the banked
+   judge constraint is factually wrong (zero register diffs); sessions
+   should not grind RA levers on it.
+
+## [s2] the post-grant byte-fail is a register-allocation gap in main (driver's 'masked-0 register diff class' constraint)
+- mechanism: assumed RA divergence hidden by the masked score
+- probe: exact-byte diff via engine func_byte_signature + unmasked normalized_insns (build/src/ings.o vs tmp/sandbox/main/ings.o), tmp/grind/main/s2/bytesig_cmp.py
+- result: 187/189 words identical, ZERO register diffs; only diffs are the TARGETS of bne(D_800A38DC!=2) and bnez(D_800A3713!=0): 0xdcc (.L80017278, at the loop-head li a1,0x1008) in target vs 0xdd0 (.L8001727C, past it) in ours — branch targets are a masked class in engine/score.py, hence sandbox 0 in BOTH --disable all and --keep-cheat-asm contexts
+- verdict: KILLED
+
+## [s2] some pure-C spelling keeps the two unfilled loop branches on the pre-li label under our cc1
+- mechanism: reorg.c fill_slots_from_thread redundancy clause: redundant_insn (reorg.c:1987, backward scan stops only at CODE_LABEL or CALL SEQUENCE) finds a1=4104 in the first bne's delay slot along the two branches' path, new_thread advances past the li (reorg.c:3433), and the tail redirect fires with zero slots filled (reorg.c:~3685, unconditional on new_thread != thread)
+- probe: reorg.c source read + instrumented BB2_DBR_DEBUG trace (tmp/grind/main/s2/dbr_trace.txt: fills for jumps 363/369/380/431 match target exactly; 391/418 unfillable yet redirected) + enumeration of all 7 escape hatches
+- result: every escape is byte-visible (intervening label/call/a1-write, li not first, delay content) or a forbidden family (forced-label &&/dead-goto label-pad); two-C-label source killed by cc1psx exhibit + back-edge liveness forcing a callee-saved reg and extra move; the transform is forced whenever the other 187 bytes are correct
+- verdict: KILLED
+
+## [s2] the candidate C is the original source shape; the 2-byte residue is pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
+- mechanism: original pipeline = cc1psx (no dbr pass, plain reorder asm, one loop label) + ASPSX assembly-time delay filling that retargets ONLY branches it fills, leaving the two unfilled branches on the original label
+- probe: tools/cc1psx_wrapper.sh on the identical preprocessed candidate (tmp/grind/main/s2/ings.i -> main_psx.s)
+- result: cc1psx emits ONE label $L102 BEFORE li a1,0x1008 with ALL seven loop branches targeting it and zero delay-slot processing — ASPSX's documented fill behavior on that input produces exactly the target's mixed .L78/.L7C pattern
+- verdict: CONFIRMED

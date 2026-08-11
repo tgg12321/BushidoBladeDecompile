@@ -1,31 +1,37 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 2,
    "modality": "recon",
    "headline": "recon: floor 20 -> 2 via two pure-C structural wins (3-arg/2-arg call arities + named tbl[idx] load); last cluster = combine.c:8196 shift-plus distribution, mechanism pinned"
+  },
+  {
+   "session": 2,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "byte-fail root cause reclassified and closed as a mechanism: NOT reg-alloc \u2014 2 branch TARGETS at the loop head (masked class); our reorg's redundant_insn thread-skip retargets the two unfilled loop br"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "a C form giving the (D_800A36F1 - 1) value a second genuine byte-free use blocks the combine distribution and keeps addiu -1",
-   "mechanism": "try_combine keeps i2 when its dest does not die at i3 (added_sets_2 forces an unrecognizable PARALLEL), leaving the addiu/sll/addiu chain unfolded",
-   "next_probe": "sweep candidate forms in the micro-harness (bash tools/wsl.sh 'bash tmp/grind/main/s1/foldtest.sh <variant.c>'; seconds per variant, check .s for addiu -1 and no extra insns) before touching src"
+   "hypothesis": "the ASPSX-retarget signature (unfilled branches kept on a pre-insn label our reorg deletes) is a CLASS shared by other queue functions",
+   "mechanism": "same reorg.c redundancy thread-skip vs ASPSX fill-iff-retarget gap",
+   "next_probe": "scan other functions' regfix label rules for two-labels-4-bytes-apart loop heads with mixed branch targets; each hit strengthens an owner-level disposition packet for the class"
   },
   {
-   "hypothesis": "the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) can log which try_combine precondition fires for this chain, exposing the cheapest legitimately-violable one",
-   "mechanism": "BB2_*_DEBUG combine tracing on the micro-case",
-   "next_probe": "trace, then derive the C form backward from the precondition"
+   "hypothesis": "the function's disposition is now an owner/pipeline question, not a spelling search",
+   "mechanism": "all C-side escapes measured/proven dead (evidence.md s3, 7 hatches); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope",
+   "next_probe": "driver should route to escalation modality per its ladder; the packet should cite evidence.md s3, dbr_trace.txt, and main_psx.s as the three-way mechanism proof; do NOT re-grind loop-tail spellings or RA levers"
   },
   {
-   "hypothesis": "directed permuter over the poll-loop statement forms finds the unfolding spelling",
-   "mechanism": "PERM_* sweep with a clean single-function target.o (offset-0 per difficult-is-not-impossible section 3)",
-   "next_probe": "only after 1+2 come up dry; vet any closing form against the cheat checklist (D_800A36F1 volatile coercion is NOT evidenced - two-prong IRQ gate unmet)"
+   "hypothesis": "src state keeps regressing to pre-grind between sessions",
+   "mechanism": "driver discards uncommitted src edits (observed after s1 and again before s3)",
+   "next_probe": "session-start invariant: verify src/ings.c against candidate.c (poll loop chain + 3-arg/2-arg signatures + named tbl[idx] load) before trusting any digest floor"
   }
  ],
  "judge_constraints": [
