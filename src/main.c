@@ -317,51 +317,39 @@ void spu_SetMotionCallback(s16 a0, s16 a1) {
     _SsSeqPlay(a0, a1);
 }
 
+/* PsyQ LIBSND/MIDIREAD: _SsSeqPlay — census-matched Sony library object.
+ * Body: the published psxsdk reference control flow (sotn-decomp
+ * src/main/psxsdk/libsnd/seqread.c _SsSeqPlay) with BB2's byte-offset
+ * record layout (D_80106F28 table, 0xB0 stride; delta +0x90, unk70 +0x54,
+ * unk6E +0x52; _SsGetSeqData == func_80084CC0). Adopted per the
+ * reference-adoption path because it measures 0 (2026-08-11 campaign;
+ * the prior goto-loop spelling needed 15 regfix rules the nested
+ * do/while + if/else-if ladder makes unnecessary). */
 void _SsSeqPlay(s16 a0, s16 a1) {
     u8 *base;
-    s32 gauge;
-    s32 diff;
-    s32 accum;
-    s32 result;
+    s32 var_s0;
 
     base = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0);
-    gauge = *(s32 *)(base + 0x90);
-    diff = gauge - *(s16 *)(base + 0x54);
-    if (diff > 0) {
-        s16 timer = *(s16 *)(base + 0x52);
-        if (timer > 0) {
-            *(s16 *)(base + 0x52) = timer - 1;
-            return;
-        }
-        if (timer == 0) {
+
+    if (*(s32 *)(base + 0x90) - *(s16 *)(base + 0x54) > 0) {
+        if (*(s16 *)(base + 0x52) > 0) {
+            (*(s16 *)(base + 0x52))--;
+        } else if (*(s16 *)(base + 0x52) == 0) {
             *(s16 *)(base + 0x52) = *(s16 *)(base + 0x54);
-            result = *(s32 *)(base + 0x90) - 1;
-            goto store_result;
+            (*(s32 *)(base + 0x90))--;
+        } else {
+            *(s32 *)(base + 0x90) -= *(s16 *)(base + 0x54);
         }
-        *(s32 *)(base + 0x90) = diff;
-        return;
+    } else if (*(s32 *)(base + 0x90) <= *(s16 *)(base + 0x54)) {
+        var_s0 = *(s32 *)(base + 0x90);
+        do {
+            do {
+                func_80084CC0(a0, a1);
+            } while (*(s32 *)(base + 0x90) == 0);
+            var_s0 += *(s32 *)(base + 0x90);
+        } while (var_s0 < *(s16 *)(base + 0x54));
+        *(s32 *)(base + 0x90) = var_s0 - *(s16 *)(base + 0x54);
     }
-    if (*(s16 *)(base + 0x54) < gauge) {
-        return;
-    }
-    accum = gauge;
-    {
-        s32 sa0 = a0 << 16;
-        s32 sa1 = a1 << 16;
-    loop:
-        func_80084CC0(sa0 >> 16, sa1 >> 16);
-        gauge = *(s32 *)(base + 0x90);
-        if (gauge == 0) {
-            goto loop;
-        }
-        accum += gauge;
-        if (accum < *(s16 *)(base + 0x54)) {
-            goto loop;
-        }
-        result = accum - *(s16 *)(base + 0x54);
-    }
-store_result:
-    *(s32 *)(base + 0x90) = result;
 }
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 void func_80084A7C(s16 a0, s16 a1) {
