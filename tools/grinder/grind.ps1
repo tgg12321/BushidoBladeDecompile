@@ -543,6 +543,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         # worktree FROM the index, so staged telemetry survives the revert
         git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
+        Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/ (2026-08-11: stale red build/ here false-tripped the post-session circuit-break)
         python tools/grinder/grindlib.py constrain . $func "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" | Out-Null
         git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
         git -C $Root commit -m "grind: $func byte-fail constraint banked [skip-park-src-guard]" 2>$null | Out-Null
@@ -951,9 +952,18 @@ while ($true) {
     }
     # spec: oracle checked around every session — src is reverted (or merged) by
     # this point, so any red here means real corruption -> stop, don't limp.
+    # A red from STALE build/ artifacts (e.g. a failed retire's leftovers) is
+    # not corruption: retry once with a clean rebuild before circuit-breaking
+    # (2026-08-11 false-trip). A --rebuild red is real -> break as before.
     if (-not (Test-OracleGreen)) {
-        Attribute-RedBuild 'post-session'
-        Circuit-Break "oracle not green after session on $func"
+        Log "post-session oracle red — retrying with clean rebuild before circuit-break."
+        Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Attribute-RedBuild 'post-session'
+            Circuit-Break "oracle not green after session on $func"
+        } else {
+            Log "post-session oracle green after clean rebuild (stale artifacts) — continuing."
+        }
     }
     if ($Once) { break }
 }
