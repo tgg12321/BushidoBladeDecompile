@@ -376,3 +376,56 @@ bss_lead_census.py, hole_census.py) apply unchanged to all three.
 - probe: Source read of assign_stack_local (tools/gcc-2.7.2/function.c:669-742) plus the MIPS frame macros (mips.h:1082 BIGGEST_ALIGNMENT=64, :1645 FRAME_GROWS_DOWNWARD commented out, :1651 STARTING_FRAME_OFFSET) and the one frame-equation term s6's partition omitted (mips.c:4531, pretend_args_size).
 - result: IMPOSSIBLE BY CONSTRUCTION. With FRAME_GROWS_DOWNWARD undefined the allocator does `frame_offset = CEIL_ROUND (frame_offset, alignment); ... frame_offset += size;`, frame_offset starts at 0, and CEIL_ROUND(0, A) == 0 for every power-of-two A - including the BLKmode case where alignment = BIGGEST_ALIGNMENT/8 = 8. The first-allocated slot therefore ALWAYS lands at vars offset 0 whatever its type, size or alignment. The bigend_correction branch requires BYTES_BIG_ENDIAN (this build is -mel) and in any case shifts only WITHIN an allocated slot, never its base. Separately, mips.c:4531's MIPS_STACK_ALIGN(current_function_pretend_args_size) is guarded by `ABI_64BIT && mips_isa >= 3` and is identically zero on o32 (same guard in INITIAL_ELIMINATION_OFFSET, mips.h:1758), so varargs / pretend-args cannot shift the buffer either.
 - verdict: KILLED
+
+## [s8 — escalation/disposition] Endgame-lock gate (1): func_8001E6E4 carries STRONG hand-coded-asm signals, making authorized canonical inline asm the correct disposition.
+- mechanism: `.claude/rules/endgame-lock-disposition.md` gate (1) admits canonical asm only on a STRONG `scan_hand_coded` tier, which requires S1 (multu pacing), S2 (empty-body branch) or S6 (BIOS jumptable) — the signals that only hand-written asm produces. s6 noted the tier in passing; the escalation session must re-run it as first-hand evidence.
+- probe: `python3 tools/scan_hand_coded.py --single func_8001E6E4`, banked verbatim at tmp/grind/func_8001E6E4/s8/scan_hand_coded.txt.
+- result: FAILED GATE. `tier=LOW score=0/8`, reason "no strong hand-coded indicators". All eight signals are absent: S1 0 multu/mflo pairs, S2 no empty-body branches, S3 71 insns with 8 spills over 8 distinct regs (ordinary allocator output), S4 max load burst 3 in any 8-insn window, S5 no high-similarity siblings (jaccard < 0.5), S6 no BIOS jumptable call pattern, S7 every callee-save use has its $sp save, S8 no redundant mask-before-shift. This is ordinary compiled C; asm is refused.
+- verdict: KILLED
+
+## [s8 — escalation/disposition] Endgame-lock gate (2): the closing construct (an UNWRITTEN leading local array / struct lead reserving 8 frame bytes) falls under the sanctioned written-never-read local-array carve-out, so an in-hand SOTN-master precedent exists for it.
+- mechanism: The frozen SOTN list does sanction a dead local array; if the carve-out's scope covers an unwritten one, the mechanically byte-perfect pad_lead form becomes a sanctioned family rather than a cheat, and the function closes.
+- probe: Read the carve-out's scope sentence verbatim from `.claude/rules/no-new-park-categories.md:255-262` and test its precondition against the measured target bytes for sp+0x10..0x17.
+- result: FAILED GATE, and failed on the carve-out's OWN stated precondition rather than by interpretation. Verbatim scope: "sanctioned ONLY when the target bytes contain the corresponding dead stores (oracle-enforced), written (not merely declared), exhaustion-documented, FAKE-annotated, dual-reviewed. SOTN evidence: `u8 sp70[4]` written 4x/read 0x in two matched dra-core functions (62DEC.c), `s16 z[5]` x2, annotated `volatile u32 pad[4]; // FAKE`. The unwritten-array and `(void)&local` forms remain forbidden." The target contains NO stores in sp+0x10..0x17 — that untouched-ness IS the defect — so the precondition is measured false and the cited SOTN evidence is precedent for the OPPOSITE shape. The written variant is not an escape: s5 measured it (rejected/s5-first-declared-staging-object.c) and it writes the region the target never touches. No SOTN-master citation exists for an unwritten leading pad.
+- verdict: KILLED
+
+## [s8 — escalation/disposition] The honest floor is still 19 and the residual is still purely the +8 sp shift (re-measurement, not inheritance).
+- mechanism: A disposition entry must rest on a measurement taken THIS session, not on an inherited number; and `build_insns == target_insns` is what distinguishes "frame-geometry residual" from "codegen residual".
+- probe: Applied candidate.c's `wp` staging chassis to src/code6cac.c, ran `tools/wteng.ps1 main sandbox func_8001E6E4 --disable all`, then reverted src/code6cac.c to the HEAD form (so the driver's terminal-park commit sees a clean tree — a src-dirty `park:` commit trips park_src_guard and deadlocks the driver). Banked at tmp/grind/func_8001E6E4/s8/floor_remeasure.txt.
+- result: score 19, target_insns 71, build_insns 71, rules_dropped 0, cheat_asm_stripped 139. Floor FLAT at 19 for the 8th consecutive session, and instruction-count parity confirms all 19 differing pairs are the uniform +8 $sp-offset shift.
+- verdict: CONFIRMED
+
+## Frontier after s8 (terminal)
+DISPOSITION REACHED. Both endgame-lock AND-gates FAIL — gate (1) scan_hand_coded tier=LOW
+0/8 (measured s8), gate (2) the unwritten leading pad is explicitly excluded by the
+written-never-read carve-out's own scope sentence and has no SOTN-master citation (s8),
+after the evidence gate already failed on four independent paths (s3/s5 callee identity,
+s6 binary-wide stack-record idiom, s7 persisted .bss instance, s7 binary-wide frame-hole
+census). Per the owner's standing auto-ruling (2026-07-27) the disposition is REFUSED /
+OWNER-ACCEPTED INCOMPLETE, filed at docs/grind/decisions.md (entry
+"## 2026-08-11 — func_8001E6E4 — OWNER-ESCALATION — RESOLVED BY STANDING RULING
+(2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"). Nothing is pending on the owner; the
+driver parks the function terminally and the queue advances. The byte-match on main is held
+by `s32 pre_pad[2];` in src/code6cac.c (0 regfix/asmfix rules) — retained, NOT sanctioned.
+The same disposition is recommended for the two family members `func_8001E404` (identical
+8-byte hole, same file) and `func_8003CF84` (src/code6cac_c2.c:862, 16-byte hole,
+`volatile s32 pad[4]` + `volatile s32 pad2[2]`), confirmable in one measurement each via
+s7/hole_census.py + s6/fdbg.sh rather than another six-modality grind.
+
+## [s8] Endgame-lock gate (1): func_8001E6E4 carries STRONG hand-coded-asm signals, making authorized canonical inline asm the correct disposition.
+- mechanism: endgame-lock-disposition.md gate (1) admits canonical asm only on a STRONG scan_hand_coded tier, which requires S1 (multu pacing), S2 (empty-body branch) or S6 (BIOS jumptable) - the signals only hand-written asm produces.
+- probe: python3 tools/scan_hand_coded.py --single func_8001E6E4, banked verbatim at tmp/grind/func_8001E6E4/s8/scan_hand_coded.txt
+- result: FAILED GATE. tier=LOW score=0/8, 'no strong hand-coded indicators'. All eight signals absent: S1 0 multu/mflo pairs; S2 no empty-body branches; S3 71 insns / 8 spills / 8 distinct regs (ordinary allocator output); S4 max load burst 3 per 8-insn window; S5 no high-similarity siblings (jaccard < 0.5); S6 no BIOS jumptable pattern; S7 every callee-save use has its $sp save; S8 no redundant mask-before-shift. Ordinary compiled C; asm refused.
+- verdict: KILLED
+
+## [s8] Endgame-lock gate (2): the only mechanically-viable closing construct - an UNWRITTEN leading local array / struct lead reserving 8 frame bytes - falls under the sanctioned written-never-read local-array carve-out, so an in-hand SOTN-master precedent exists for it.
+- mechanism: The frozen SOTN list does sanction a dead local array; if its scope covers an unwritten one, the mechanically byte-perfect pad_lead form becomes a sanctioned family rather than a cheat and the function closes.
+- probe: Read the carve-out's scope sentence verbatim from .claude/rules/no-new-park-categories.md:255-262 and test its precondition against the measured target bytes for sp+0x10..0x17.
+- result: FAILED GATE, on the carve-out's OWN stated precondition rather than by interpretation. Verbatim: 'sanctioned ONLY when the target bytes contain the corresponding dead stores (oracle-enforced), written (not merely declared), exhaustion-documented, FAKE-annotated, dual-reviewed. SOTN evidence: u8 sp70[4] written 4x/read 0x in two matched dra-core functions (62DEC.c) ... The unwritten-array and (void)&local forms remain forbidden.' The target contains NO stores in sp+0x10..0x17 - that untouched-ness IS the defect - so the precondition is measured false and the cited SOTN evidence is precedent for the opposite shape. The written variant is not an escape: s5 measured it (rejected/s5-first-declared-staging-object.c) and it writes the region the target never touches. No SOTN-master citation exists for an unwritten leading pad.
+- verdict: KILLED
+
+## [s8] The honest floor is still 19 and the residual is still purely the uniform +8 sp shift (re-measured this session, not inherited).
+- mechanism: A disposition entry must rest on a measurement taken THIS session; and build_insns == target_insns is what distinguishes a frame-geometry residual from a codegen residual.
+- probe: Applied candidate.c's wp staging chassis to src/code6cac.c, ran tools/wteng.ps1 main sandbox func_8001E6E4 --disable all, then reverted src to the HEAD form. Banked at tmp/grind/func_8001E6E4/s8/floor_remeasure.txt.
+- result: score 19, target_insns 71, build_insns 71, rules_dropped 0, cheat_asm_stripped 139. Floor FLAT at 19 for the 8th consecutive session; instruction-count parity confirms all 19 differing pairs are the uniform +8 $sp-offset shift.
+- verdict: CONFIRMED

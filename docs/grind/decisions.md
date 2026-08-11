@@ -4557,3 +4557,93 @@ sandbox-0 candidate is preserved in memory/grind/main/ (candidate.c + apply.py).
 ASPSX-parity branch-target fill (12 census candidates, 138 sites/96 funcs) — which the owner
 may elect later; it is a pipeline change and is NOT adopted by this entry (no-compiler-
 divergence default). No owner action is pending.
+
+## 2026-08-11 — func_8001E6E4 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Function:** `func_8001E6E4` (src/code6cac.c:1462), queue verdict C, 0 regfix/asmfix rules.
+**Exhaustion:** 8 grind sessions, 6 distinct modalities (recon s1, structural s2/s3,
+permuter s4/s5, forensics s6/s7, escalation s8), ~100k permuter iterations across four
+fresh seeds, 19 measured structural spellings. Honest floor FLAT at 19 in every session
+(re-measured this session at `sandbox func_8001E6E4 --disable all` = 19, 71/71 insns,
+build_insns == target_insns).
+
+**What the residual is.** Not a codegen difference. With the banked `wp` staging chassis
+(memory/grind/func_8001E6E4/candidate.c) the honest build is instruction-for-instruction
+identical to target; every one of the 19 differing pairs is the SAME uniform +8 shift of
+`$sp`-relative offsets. The target frame is 0x70 with the camera work buffer at `sp+0x18`
+and `sp+0x10..0x17` allocated but NEVER touched by any instruction; the honest build gets
+frame 0x68 with the buffer at `sp+0x10`. The whole function turns on reserving 8 leading
+frame bytes that no instruction reads or writes.
+
+**Why no pure-C lever remains (white-box, not by exhaustion of imagination).** The frame
+equation is partitioned with every term audited:
+- *vars, declaration order:* GCC 2.7.2 allocates frame slots in declaration order and
+  `assign_stack_local` (tools/gcc-2.7.2/function.c:669-742) does
+  `frame_offset = CEIL_ROUND(frame_offset, alignment)` with `frame_offset` starting at 0
+  and `FRAME_GROWS_DOWNWARD` undefined on MIPS — `CEIL_ROUND(0, A) == 0` for every
+  power-of-two A, so the FIRST slot always lands at vars offset 0 regardless of type, size
+  or alignment. No declared-type/alignment property can pad beneath it (s7).
+- *pre-declaration window:* provably empty on MIPS o32. `assign_parms` can never call
+  `assign_stack_local` here (function.c:3489-3500 keeps `stack_parm` non-null whenever
+  `REG_PARM_STACK_SPACE(fndecl) > 0`, and mips.h:1822 makes that unconditionally 16); the
+  only genuinely pre-body allocator is the GNU static-chain slot (function.c:5036, nested
+  functions only, Pmode=4, followed unconditionally by an `emit_move_insn`). Measured with
+  an instrumented cc1 (`BB2_FRAME_DEBUG=1`) over a 10-shape parameter probe TU (s6).
+- *args partition:* `args=24 / vars=72` DOES reproduce the target geometry, but every route
+  to `args_size > 16` (5th scalar arg, 8-byte-aligned arg past `$a3`, struct-return hidden
+  pointer) materializes a store into `sp+0x10..0x17` — measured, and the target provably
+  stores nothing there (s6).
+- *expansion-time objects:* every temp/spill/inner-scope object grows the frame at the TOP,
+  never below the first declared slot (s5, `put_reg_into_stack` measured at frame_offset
+  72→74→76).
+- *pretend_args_size:* mips.c:4531 is guarded by `ABI_64BIT && mips_isa >= 3`, identically
+  zero on o32 (s7).
+So the 8 bytes can ONLY come from an object declared before the buffer — i.e. a leading
+dead array/struct lead. That form is mechanically byte-perfect and was FAILed for want of
+evidence, and the evidence gate has now failed on FOUR independent paths: callee identity
+(s3/s5), binary-wide stack-record idiom census (s6, 52 records / 14 exact-shape, none
+feeding the camera consumers), persisted `.bss` instance (s7 — the 8 bytes below BOTH
+camera rows `D_800F5328` / `D_800F6608` are never touched anywhere in the binary, which
+CONTRADICTS a wider record), and a binary-wide frame-hole census (s7 — exactly four
+functions in 1434 have the shape: `sprintf` (PsyQ varargs, not in src) plus the three
+affected game functions themselves; no in-tree honest precedent exists to copy).
+
+**Gate (1) — canonical asm: FAIL.** `python3 tools/scan_hand_coded.py --single func_8001E6E4`
+re-run this session: `tier=LOW score=0/8`, "no strong hand-coded indicators"; S1 (multu
+pacing), S2 (empty branch) and S6 (BIOS jumptable) — the only signals that can carry a
+STRONG tier — are all absent. This is ordinary compiled C, not hand-written asm.
+
+**Gate (2) — coercion/spelling family with a citable SOTN-master precedent: FAIL.** The only
+mechanically-viable construct is an UNWRITTEN leading local array / struct lead. The nearest
+sanctioned family is the written-never-read local array carve-out, whose scope sentence is
+explicit (.claude/rules/no-new-park-categories.md:255-262): "sanctioned ONLY when the target
+bytes contain the corresponding dead stores (oracle-enforced), written (not merely declared)
+... The unwritten-array and `(void)&local` forms remain forbidden." The target bytes here
+contain NO stores at all in `sp+0x10..0x17` — the defining property of this function — so
+the carve-out's own precondition is measured false, and the SOTN evidence behind it
+(`u8 sp70[4]` written 4×/read 0× in 62DEC.c) is precedent for the opposite shape. Making the
+array written is not available either: s5 measured that form (`rejected/s5-first-declared-
+staging-object.c`) — it reproduces the full target frame layout but WRITES the region the
+target never touches. No in-hand SOTN-master citation exists for an unwritten leading pad.
+
+**What holds the byte-match today.** No regfix/asmfix rule (0 of each). The committed
+`src/code6cac.c` body carries `s32 pre_pad[2];` declared first — the unwritten-local-array
+frame coercion named in the forbidden-family catalog. It is RETAINED (not sanctioned) so the
+oracle stays green; it is the cheat that this escalation refuses to legitimize.
+
+**Disposition.** Both endgame-lock AND-gates FAIL, so the owner's standing auto-ruling
+(2026-07-27, .claude/rules/endgame-lock-disposition.md) pre-decides it: **REFUSED /
+OWNER-ACCEPTED INCOMPLETE**. `func_8001E6E4` is parked terminally out of the active grind,
+eligible for re-attempt if a genuine pure-C lever ever emerges. **Nothing is pending on the
+owner.**
+
+**Scope note — this disposition covers a family of THREE, not one.** s7's binary-wide hole
+census found the untouched-leading-frame-hole shape in exactly three game functions:
+`func_8001E6E4` and its sibling `func_8001E404` (same file, same 0x70 frame, same 8-byte
+hole, same committed `pre_pad` construct — every s4-s7 instrument transfers unchanged), and
+`func_8003CF84` (src/code6cac_c2.c:862, queue distance 28, 0 rules, 16-byte hole at
+`sp+0x10..0x1F`, solved in-tree with the identical forbidden construct `volatile s32 pad[4];`
+plus `volatile s32 pad2[2];`). When either reaches the queue top, one measurement — the s7
+`hole_census.py` row plus the s6 `fdbg.sh` frame gradient on its honest form — confirms it is
+the same single-phantom-region defect before any spelling work is spent, and it should take
+this same disposition rather than re-grinding six modalities.

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001E6E4",
-      "file": "code6cac",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8002FDB0",
       "file": "code6cac_b",
       "distance": 21,
@@ -2422,18 +2414,27 @@
       "rules": 25,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry"
+    },
+    {
+      "func": "func_8001E6E4",
+      "file": "code6cac",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: '## 2026-08-11 - func_8001E6E4 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     }
   ],
   "counts": {
     "total": 284,
-    "active": 248,
+    "active": 247,
     "by_status": {
-      "active": 248,
-      "parked": 36
+      "active": 247,
+      "parked": 37
     },
     "by_verdict": {
-      "C": 163,
       "ASM-PARTIAL": 38,
+      "C": 162,
       "ASM-SUSPECT": 47
     }
   }

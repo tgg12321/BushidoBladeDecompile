@@ -634,3 +634,50 @@ resolved here (out of this worker's assigned scope).
 - [s7] [s7] Floor re-measured with the banked candidate re-applied to src/code6cac.c (HEAD again lacked the wp edit): sandbox --disable all = 19, build_insns == target_insns == 71, 139 cheat-asm constructs stripped file-wide. Left in src as the session's final state.
 
 - [s7] [s7] Symbol-level check corroborating the census: no splat symbol exists at D_800F5320/5324 or D_800F6600/6604, and no reference to any address in 0x800F52E0-0x800F5327 or 0x800F65FA-0x800F6607 appears in asm/funcs, src/*.c or include/*.h.
+
+## s8 (escalation / disposition)
+- Floor re-measured THIS session at 19 with the banked `wp` chassis applied:
+  target_insns 71 == build_insns 71, rules_dropped 0, cheat_asm_stripped 139
+  (tmp/grind/func_8001E6E4/s8/floor_remeasure.txt). Instruction-count parity is
+  the proof that the entire residual is the uniform +8 `$sp`-offset shift — a
+  frame-geometry residual, not a codegen one. src/code6cac.c was reverted to the
+  HEAD form after measuring, deliberately: a `park:` commit touching src trips
+  `park_src_guard`, and leftover src dirt has previously deadlocked the driver's
+  scope check ([[grinder-park-queue-dirt-deadlock]]).
+- Endgame-lock gate (1) is a FIRST-HAND FAIL: `scan_hand_coded --single
+  func_8001E6E4` = `tier=LOW score=0/8`, "no strong hand-coded indicators", all
+  eight signals absent including the three (S1/S2/S6) that can carry STRONG
+  (tmp/grind/func_8001E6E4/s8/scan_hand_coded.txt). Canonical asm is refused.
+- Endgame-lock gate (2) is a FAIL on the sanctioned family's OWN precondition,
+  not on interpretation. `.claude/rules/no-new-park-categories.md:255-262`
+  sanctions a dead local array "ONLY when the target bytes contain the
+  corresponding dead stores (oracle-enforced), written (not merely declared) ...
+  The unwritten-array and `(void)&local` forms remain forbidden." The target has
+  NO stores in sp+0x10..0x17 — the untouched-ness IS this function's defect — so
+  the precondition is measured false, and the carve-out's SOTN evidence
+  (`u8 sp70[4]` written 4x/read 0x, 62DEC.c) is precedent for the opposite shape.
+  The written variant was already measured and rejected in s5.
+- What holds the byte-match on main: ZERO regfix/asmfix rules; the committed
+  `src/code6cac.c` body carries `s32 pre_pad[2];` declared first — the
+  unwritten-local-array frame coercion from the forbidden-family catalog. It is
+  RETAINED so the oracle stays green, and is exactly the construct this
+  escalation refuses to legitimize.
+- Disposition filed: docs/grind/decisions.md, entry "## 2026-08-11 —
+  func_8001E6E4 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27):
+  REFUSED / OWNER-ACCEPTED INCOMPLETE". Terminal; nothing pending on the owner.
+
+- [s8] Gate (1) measured first-hand this session: scan_hand_coded --single func_8001E6E4 = tier=LOW score=0/8, all eight signals absent including S1/S2/S6 (the only ones that can carry STRONG). Canonical-asm disposition refused.
+
+- [s8] Gate (2) fails on the sanctioned family's own precondition: .claude/rules/no-new-park-categories.md:255-262 sanctions a dead local array ONLY when the target bytes contain the corresponding dead stores, 'written (not merely declared)', and states 'The unwritten-array and (void)&local forms remain forbidden.' The target has zero stores in sp+0x10..0x17.
+
+- [s8] Honest floor re-measured at 19 with target_insns == build_insns == 71 and rules_dropped 0 - the residual is a frame-geometry residual (uniform +8 $sp shift), not a codegen residual.
+
+- [s8] What holds the byte-match on main: ZERO regfix/asmfix rules; the committed src/code6cac.c body carries `s32 pre_pad[2];` declared first - the unwritten-local-array frame coercion from the forbidden-family catalog, RETAINED (not sanctioned) so the oracle stays green.
+
+- [s8] The pure-C closure is white-box at every level (s5-s7, unchanged): first frame slot always lands at vars offset 0 (assign_stack_local CEIL_ROUND(0,A)==0, FRAME_GROWS_DOWNWARD undefined on MIPS); the pre-declaration allocation window is provably empty on o32 (assign_parms cannot call assign_stack_local when REG_PARM_STACK_SPACE=16); the args=24 partition reproduces the geometry but always materializes a store into sp+0x10..0x17; expansion-time objects grow the frame at the top; pretend_args_size is n64-only hence zero.
+
+- [s8] The evidence gate for the pad_lead form has now failed on FOUR independent paths: callee identity (s3/s5), binary-wide stack-record idiom census (s6), persisted .bss instance (s7 - the 8 bytes below both camera rows are never touched anywhere in the binary, which contradicts a wider record), and the binary-wide frame-hole census (s7 - only sprintf plus the three affected game functions have the shape; no in-tree honest precedent to copy).
+
+- [s8] src/code6cac.c was deliberately left at the HEAD form after measuring: a `park:` commit touching src trips park_src_guard and leftover src dirt has previously deadlocked the driver's scope check. The tree is clean apart from metrics/events.jsonl.
+
+- [s8] Disposition filed by this session at docs/grind/decisions.md: '## 2026-08-11 - func_8001E6E4 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. Terminal - nothing is pending on the owner.

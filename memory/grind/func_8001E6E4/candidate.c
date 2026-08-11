@@ -32,7 +32,20 @@
  * term (pretend_args_size, mips.c:4531) is n64-only hence zero on o32. It also
  * ran the last evidence probe: the 8 bytes below BOTH persisted camera rows are
  * never touched anywhere in the binary, and no function in the 1434-function
- * binary produces an untouched leading frame hole from honest C. */
+ * binary produces an untouched leading frame hole from honest C.
+ * s8 (escalation/disposition): this remains the best banked form and is the
+ * TERMINAL one. Re-applied to src/code6cac.c and re-measured at sandbox
+ * --disable all = 19 (71/71 insns, rules_dropped 0), then src was REVERTED to
+ * the HEAD form on purpose - the driver's terminal-park commit must see a clean
+ * tree (a park: commit touching src trips park_src_guard). Both endgame-lock
+ * gates FAIL: scan_hand_coded tier=LOW 0/8, and the only mechanically-viable
+ * construct (an UNWRITTEN leading pad) is explicitly excluded by the
+ * written-never-read local-array carve-out's own scope sentence
+ * (.claude/rules/no-new-park-categories.md:255-262), with no SOTN-master
+ * citation available. Disposition filed in docs/grind/decisions.md as
+ * REFUSED / OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27). Re-attempt
+ * only if a genuine pure-C lever for reserving untouched leading frame bytes
+ * ever emerges; this form is then the chassis to start from. */
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;
