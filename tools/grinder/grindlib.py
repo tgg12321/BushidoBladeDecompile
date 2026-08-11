@@ -400,14 +400,25 @@ def validate_outcome(o, modality, root, func=None):
 # least this many DISTINCT modalities (real multi-modality exhaustion, not a
 # premature give-up while the floor is still moving), assign_modality forces the
 # `escalation` modality: file the OWNER-ESCALATION + return owner-gated.
+#
+# Flat at ZERO also escalates (2026-08-11): `main` sat at sandbox floor 0 with a
+# scorer-invisible 2-byte reorg branch-target residual (full-build SHA1 off, so
+# candidate-ready was unreachable) and the old `floor > 0` precondition kept the
+# trigger dark — 22 stale worker dispatches looped with no path to a disposition.
+# A genuinely-matching function completes and leaves the queue within a session
+# or two of hitting 0; anything still being dispatched after a flat-0 window this
+# long is stuck (byte residual, judge freeze, respell deadlock) and must reach a
+# disposition the same way a flat-positive floor does.
 ESCALATION_FLAT_SESSIONS = 8
 ESCALATION_MIN_MODALITIES = 4
 
 
 def _exhaustion_ready(state):
-    """True when the honest floor is stuck > 0 across a long, modality-diverse
-    run — the signal that pure-C levers are genuinely exhausted and the function
-    should be dispositioned, not ground further."""
+    """True when the honest floor is stuck — flat across a long, modality-diverse
+    run — the signal that the ladder is exhausted and the function should be
+    dispositioned, not ground further. Flat at 0 counts: a function still being
+    dispatched many sessions after reaching floor 0 is blocked from completion
+    by something the scorer can't see (byte residual, freeze), not matching."""
     if not state:
         return False
     hist = state.get("floor_history", [])
@@ -421,8 +432,6 @@ def _exhaustion_ready(state):
     if any(not isinstance(f, int) for f in floors):
         return False
     top = floors[0]
-    if top <= 0:                           # already matched → never escalate
-        return False
     if any(f != top for f in floors):      # floor still moving → keep grinding
         return False
     mods = {e.get("modality") for e in window}
@@ -575,8 +584,11 @@ MODALITY_PLAYBOOK = {
                        "say so in `evidence` and return progress, and the ladder resumes."),
     "escalation": ("DISPOSITION SESSION — the honest floor has been FLAT across many "
                    "sessions and >=4 distinct modalities, so the driver has determined the "
-                   "pure-C levers are exhausted. Your job THIS session is to REACH A "
-                   "DISPOSITION, not to grind another variant. Valid outcomes: (1) if you "
+                   "pure-C levers are exhausted. (A floor FLAT AT 0 lands here too: it means "
+                   "sandbox 0 but completion is blocked by something the scorer can't see — "
+                   "a full-build byte residual, a judge freeze, a respell deadlock; the "
+                   "ledger's judge_constraints say which.) Your job THIS session is to REACH "
+                   "A DISPOSITION, not to grind another variant. Valid outcomes: (1) if you "
                    "find a genuinely un-tried lever that DROPS the floor, use it — return "
                    "candidate-ready (if it hits 0) or progress WITH THE LOWER FLOOR (this "
                    "resets the exhaustion counter). (2) Otherwise evaluate the two "

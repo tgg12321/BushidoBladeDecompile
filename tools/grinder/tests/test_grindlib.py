@@ -148,6 +148,43 @@ class TestApplyAndLadder(unittest.TestCase):
         self.assertIn("do-while(0) RA-weighting rejected", st["judge_constraints"])
 
 
+class TestExhaustionEscalation(unittest.TestCase):
+    MODS = ["structural", "permuter", "forensics", "rederive"]
+
+    def hist(self, floors, mods=None):
+        mods = mods or self.MODS
+        return {"floor_history": [
+            {"session": i + 1, "floor": f, "modality": mods[i % len(mods)]}
+            for i, f in enumerate(floors)]}
+
+    def test_flat_positive_floor_escalates(self):
+        st = self.hist([3] * G.ESCALATION_FLAT_SESSIONS)
+        self.assertEqual(G.assign_modality(8, st), "escalation")
+
+    def test_flat_zero_floor_escalates(self):
+        # 2026-08-11 `main` regression: sandbox floor 0 but a scorer-invisible
+        # 2-byte residual blocked completion — flat 0 must escalate, not loop.
+        st = self.hist([0] * G.ESCALATION_FLAT_SESSIONS)
+        self.assertEqual(G.assign_modality(8, st), "escalation")
+
+    def test_moving_floor_keeps_grinding(self):
+        st = self.hist([5, 5, 5, 5, 5, 5, 5, 4])
+        self.assertNotEqual(G.assign_modality(8, st), "escalation")
+
+    def test_short_history_keeps_grinding(self):
+        st = self.hist([0] * (G.ESCALATION_FLAT_SESSIONS - 1))
+        self.assertNotEqual(G.assign_modality(7, st), "escalation")
+
+    def test_few_modalities_keeps_grinding(self):
+        st = self.hist([0] * G.ESCALATION_FLAT_SESSIONS,
+                       mods=["structural", "permuter"])
+        self.assertNotEqual(G.assign_modality(8, st), "escalation")
+
+    def test_non_int_floor_never_escalates(self):
+        st = self.hist(["loop body solved"] + [0] * (G.ESCALATION_FLAT_SESSIONS - 1))
+        self.assertNotEqual(G.assign_modality(8, st), "escalation")
+
+
 class TestBriefAndWip(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
