@@ -215,3 +215,119 @@ Consequences (all now settled, do not re-derive):
 - [s2] [s2] src/code6cac_c2.c was restored to HEAD at end of session; the improved form lives in memory/grind/func_8003B9D0/candidate.c. Working tree carries only the ledger updates and metrics/events.jsonl.
 
 - [s2] [s2] PROVENANCE: an earlier session-2 attempt was discarded by the driver for never writing its outcome JSON, but left candidate.c and two rejected/ forms on disk uncommitted. This session re-applied and independently re-measured that candidate before continuing, so the floor-6 claim rests on a measurement taken this session.
+
+
+## Session 3 (structural, 2026-08-11)
+
+### Floor
+- **sandbox --disable all: 6** (target_insns 185, build_insns 188) - UNCHANGED.
+  Re-measured this session with `candidate.c` applied to `src/code6cac_c2.c`
+  before any probing; `src/` was restored to HEAD at the end of the session.
+
+### THE BIG FINDING - region A IS closable; the first form that closes it
+`memory/grind/func_8003B9D0/rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c`
+scores **11 with build_insns 185 == target_insns 185**, and objdump of
+`tmp/sandbox/func_8003B9D0/code6cac_c2.o` shows target's exact region-A shape at
+all three sites:
+```
+lh  s1,1100(s2)     sh  v0,1100(s2)     sh  s1,1100(s2)
+```
+Both ingredients are required (measured separately - see hypotheses H3):
+1. the pointer `eda` is assigned BEFORE the `((u8*)D_800A3878)[3] & 0x80` test,
+   so its definition sits in an EARLIER cse basic block than the displaced uses; and
+2. that test is spelled `if (...) { ... } else { magic = 0x80190800; }` - the
+   `else` arm is what ENDS the cse basic block (the arm ends in an unconditional
+   jump + BARRIER, so `cse_end_of_basic_block` cannot AROUND-extend past the join
+   label, cse.c:8102-8184).  With the same hoist but the test left as a plain
+   `if`, the fold comes straight back (measured 10 / build_insns 187 - which
+   reproduces AND explains session-2's K6 number).
+
+### Why it still scores 11 instead of 0 - exactly two residual clusters
+Normalized diff (185 vs 185, **128-insn byte-equal tail**):
+- **magic placement, ~7 points.**  Target materialises `magic = 0x80190800` in
+  the PROLOGUE - tgt[1..3] `sw s3,44(sp)` / `lui s3,0x8019` / `ori s3,s3,0x800` -
+  so the original C initialises `magic` before everything and the 0x80 test only
+  OVERWRITES it, i.e. a PLAIN `if`.  The if/else needed for ingredient 2 sinks
+  the lui/ori into the else arm (mine[47..48]) and adds the `j` around it
+  (mine[45]).
+- **`la` placement, ~4 points.**  Target materialises the base INSIDE the
+  `qf & 0x30` block (tgt[55..56]); ingredient 1 forces it to mine[38..39], where
+  cc1's scheduler drops it into the load-delay slot target leaves as a `nop`
+  (tgt[40]).
+
+Those two costs are exactly the price of the boundary, and they are what the next
+session has to buy more cheaply.  **Region A itself is no longer the open
+problem - its placement side-effects are.**
+
+### The proven-spelling sibling census (new tool)
+`tmp/grind/func_8003B9D0/s3/find_sibling.py` scans every `asm/funcs/*.s` for a
+symbol address materialised into a register (`lui %hi` + `addiu %lo`) that is
+then used with a NON-ZERO displacement, and intersects with the unqueued +
+ruleless (= MATCHED) set.  **60 functions have the shape; 30 of them are
+matched.**  The closest analogue is `func_8002BC68` (`src/code6cac_b.c:745`),
+which uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8:
+```c
+t2_base = &D_80101EC8;
+t3_base = t2_base + 0x44C;
+...
+*((s32 *) (t2_base + 0x134)) = ...;      /* emits sw $x,308($base) - NOT folded */
+```
+Its pointer is defined at the top of the function and its uses come after a large
+if/else diamond - i.e. it is an instance of the SAME cse-boundary mechanism, not
+a different C spelling.  This kills the "there is a magic pointer spelling"
+theory outright.
+
+### Mini-TU sweep (the cheap gradient - region A reproduces in ~20 lines)
+`tmp/grind/func_8003B9D0/s3/mini_*.c` + `sweep.sh` (cpp -> cc1 with the exact
+build flags -> count `%lo(D_80101EDA+1100)` folds vs `1100($reg)`).  Every
+SPELLING variant folds; only the GEOMETRY variant does not:
+
+| variant | fold? |
+|---|---|
+| `s16 *eda = &D_80101EDA;` + `eda[0x226]` (candidate shape) | folded |
+| `s16 *far = eda + 0x226;` (K1 shape) | folded |
+| struct pointer `T *t` with the member at +1100 | folded |
+| pointer declared at function top, assigned in the block | folded |
+| `s32 i = 0x226; eda[i]` | folded |
+| `*(s16 *)((u8 *)eda + 0x44C)` byte-cast | folded |
+| `u8 *` base + byte displacement (the func_8002BC68 spelling) | folded |
+| `u8 *` base + derived `u8 *edf = eda + 0x44C` | folded |
+| pointer defined before the block, uses after a CALL | folded |
+| pointer defined before the block, no diamond | folded |
+| **pointer defined before an if/ELSE diamond, uses after** | **NOT folded - `1100($17)`** |
+| (control) base arrives as a function PARAMETER | not folded |
+
+So the fold is decided by ONE thing only: whether the base pseudo still carries a
+`qty_const` in the cse basic block where the displaced MEM lives.  No respelling
+of the ACCESS changes that; only a cse basic-block boundary between the
+definition and the use does.
+
+- [s3] sandbox --disable all == 6 re-measured this session on candidate.c applied to src/code6cac_c2.c (target 185, build 188, rules_dropped 1); src restored to HEAD at end of session.
+
+- [s3] REGION A IS CLOSABLE IN PURE C. Measured form (rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c): sandbox 11, build_insns 185 == target 185, and objdump shows target's exact shape `lh s1,1100(s2)` / `sh v0,1100(s2)` / `sh s1,1100(s2)` at all three displaced sites. Two required ingredients: (1) `eda` assigned BEFORE the 0x80 test, (2) that test spelled as if/ELSE. Neither alone works.
+
+- [s3] The if/ELSE is load-bearing, not incidental: the same hoist with the 0x80 test left as a plain `if` measures 10 / build_insns 187 and region A folds again. This reproduces and EXPLAINS session-2's K6 number (10) -- K6 failed because it lacked the boundary, not because hoisting the pointer is inherently wrong.
+
+- [s3] The residual 11 of the region-A-closing form is exactly two placement clusters and NOTHING else (128-insn byte-equal tail): ~7 points because target materialises `magic = 0x80190800` in the PROLOGUE (tgt[1..3] sw s3,44(sp) / lui s3,0x8019 / ori s3,s3,0x800), which means the original C used a PLAIN `if` there and the if/ELSE sinks the constant into the else arm plus a `j`; and ~4 points because target materialises the base INSIDE the qf&0x30 block (tgt[55..56]) while the hoist puts it at mine[38..39], filling the load-delay slot target leaves as a nop (tgt[40]).
+
+- [s3] SIBLING CENSUS (tmp/grind/func_8003B9D0/s3/find_sibling.py): 60 functions in asm/funcs emit symbol-base + non-zero-displacement addressing; 30 of them are MATCHED (unqueued and ruleless). The closest analogue, func_8002BC68 (src/code6cac_b.c:745), uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8 via `u8 *t2_base = &D_80101EC8; *((s32 *)(t2_base + 0x134))` -- and its pointer is defined before a large if/else diamond. It is an instance of the same cse-boundary mechanism, NOT a different access spelling. There is no spelling to copy.
+
+- [s3] MINI-TU REPRODUCTION (tmp/grind/func_8003B9D0/s3/mini_*.c + sweep.sh, cpp -> cc1 with exact build flags): region A reproduces in a ~20-line TU, so the gradient is readable without sandbox round-trips. Ten access/declaration spellings ALL fold (array index, derived pointer, struct member, u8* + byte offset, byte-cast, index variable, declaration-order, intervening call, plain hoist); only the if/ELSE-diamond geometry does not fold, and the function-parameter control also does not fold. CLOSED AXIS: no respelling of the ACCESS or of the pointer's TYPE can suppress the fold.
+
+- [s3] sandbox --disable all == 6 re-measured this session with candidate.c applied to src/code6cac_c2.c (target_insns 185, build_insns 188, rules_dropped 1). src/ was restored to HEAD at end of session; the working tree carries only the ledger updates, the new rejected/ form and metrics/events.jsonl.
+
+- [s3] REGION A IS CLOSABLE IN PURE C. The banked form rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c measures sandbox 11 with build_insns 185 == target_insns 185, and objdump of tmp/sandbox/func_8003B9D0/code6cac_c2.o shows target's exact shape at all three displaced sites: lh s1,1100(s2) / sh v0,1100(s2) / sh s1,1100(s2).
+
+- [s3] Two ingredients are BOTH required for that closure: (1) `eda` assigned BEFORE the ((u8*)D_800A3878)[3] & 0x80 test, so its definition is in an earlier cse basic block than the displaced uses; (2) that test spelled as if/ELSE, whose arm ends in an unconditional jump + BARRIER so cse_end_of_basic_block cannot AROUND-extend past the join label. With the hoist but a plain `if`, the fold returns (measured 10 / build_insns 187) -- which reproduces and explains session-2's K6 number.
+
+- [s3] The residual 11 of that form is exactly two placement clusters and nothing else (128-insn byte-equal tail): ~7 points because target materialises `magic = 0x80190800` in the PROLOGUE (tgt[1..3] sw s3,44(sp) / lui s3,0x8019 / ori s3,s3,0x800), proving the original C used a PLAIN `if` there while the if/ELSE sinks the lui/ori into the else arm plus a `j`; and ~4 points because target materialises the base INSIDE the qf&0x30 block (tgt[55..56]) while the hoist puts it at mine[38..39], filling the load-delay slot target leaves as a nop (tgt[40]).
+
+- [s3] CLOSED AXIS -- access spelling and pointer type. Ten spellings measured in the mini TU (array index, derived pointer, struct member, u8* + byte offset, byte-cast, index-in-a-local, declaration-order, intervening call, plain hoist, plus the K1 shape) ALL fold. The lever is geometry only.
+
+- [s3] CLOSED AXIS -- copy a matched sibling. 60 functions in asm/funcs emit symbol-base + non-zero-displacement addressing and 30 of them are matched (unqueued and ruleless), but the closest analogue func_8002BC68 (src/code6cac_b.c:745, SAME 0x44C displacement off the neighbouring symbol D_80101EC8) owes its shape to the same cse-boundary geometry, not to a special spelling.
+
+- [s3] NEW REUSABLE INSTRUMENT -- region A reproduces in a ~20-line TU (tmp/grind/func_8003B9D0/s3/mini_*.c + sweep.sh), so the fold gradient is readable directly from cc1 output in seconds instead of via sandbox round-trips. Any future boundary candidate should be screened there first.
+
+- [s3] NEW REUSABLE TOOL -- tmp/grind/func_8003B9D0/s3/find_sibling.py (symbol-base + non-zero-displacement census across asm/funcs, filtered to the matched set). Generally useful for locating proven-spelling siblings for any addressing-shape residual.
+
+- [s3] The three cheat-asm constructs deleted in session 2 stayed deleted; no __asm__ and no new construct of any kind was introduced this session. src/code6cac_c2.c is byte-identical to HEAD.

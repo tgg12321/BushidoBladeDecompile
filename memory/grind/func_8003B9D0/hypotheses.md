@@ -260,3 +260,121 @@
 - probe: The hoist-out-of-the-qf-block form was measured (sandbox 6 -> 10, build_insns 188 -> 187, banked at rejected/eda-hoisted-out-of-qf-block.c: the `if (qf & 0x30)` branch is AROUND-extended so no boundary is created, and the la moves out of the if-body). This session closed the axis on geometry instead of on one more probe: read the target instruction stream around the base materialisation.
 - result: KILLED ON MECHANISM. In target the base is materialised at tgt[55..56] (`lui s0` / `addiu s0`) and the FIRST displaced use is tgt[58], with only `lh s1,0(s0)` (tgt[57]) in between -- no branch, no label, no call. A cse basic-block boundary between the definition and the first displaced use is geometrically impossible in target's own output, so no C spelling that separates them by control flow can be right. Any future probe of that shape is dead before it is written.
 - verdict: KILLED
+
+## SESSION 3 (structural, 2026-08-11)
+
+### CONFIRMED
+
+- **H3 - Region A's fold is suppressed by, and ONLY by, a cse basic-block
+  boundary between the base pointer's definition and its displaced use; an
+  if/ELSE join label creates such a boundary and a plain `if` does not.**
+  Mechanism: `find_best_addr` folds `(plus (reg) (const_int 1100))` whenever the
+  base pseudo carries a `qty_const` (session-2 H2).  `cse_end_of_basic_block`
+  (cse.c:8039) resets the quantity tables at every CODE_LABEL it cannot extend
+  past; the plain-`if` join is AROUND-extended (cse.c:8102-8184), but an if/ELSE
+  arm ends in an unconditional jump + BARRIER, so its join label is a real
+  boundary and the base pseudo enters the next block with no constant.
+  Probe: (a) a 12-variant mini-TU sweep (`tmp/grind/func_8003B9D0/s3/`), (b) the
+  real function with `eda` assigned before the 0x80 test and that test spelled
+  if/ELSE.
+  Result: sandbox **11, build_insns 185 == target 185**; objdump shows target's
+  exact `lh s1,1100(s2)` / `sh v0,1100(s2)` / `sh s1,1100(s2)`; the normalized
+  diff is a 128-insn byte-equal tail plus two placement clusters.  With the plain
+  `if` restored the fold returns (10 / 187).
+  **CONFIRMED.  Region A is closable in pure C.**
+  Form banked: `rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c`.
+
+### KILLED
+
+- **K8 - "Some SPELLING of the displaced access, or of the base pointer's type,
+  keeps the register+displacement addressing."**  Probes (mini TU, exact build
+  flags, `%lo(D_80101EDA+1100)` vs `1100($reg)` in the cc1 output): s16* array
+  index; derived pointer `eda + 0x226`; struct pointer with the member at +1100;
+  `u8 *` base with the displacement in bytes inside the cast (the func_8002BC68
+  spelling); `u8 *` base plus a derived `u8 *edf = eda + 0x44C`; byte-cast
+  `*(s16 *)((u8 *)eda + 0x44C)`; index held in a local `s32 i = 0x226`; pointer
+  declared at function top and assigned inside the block; pointer defined before
+  the block with an intervening CALL; pointer defined before the block with no
+  diamond.  **All ten fold.**  Only the if/ELSE-diamond geometry (and the
+  function-parameter control) does not.
+  **KILLED - the access-spelling and pointer-type axes are closed; the lever is
+  geometry, and only geometry.**
+
+- **K9 - "The MATCHED siblings that emit symbol-base + non-zero-displacement
+  addressing use a different C spelling we can copy."**  Probe: new census tool
+  `tmp/grind/func_8003B9D0/s3/find_sibling.py` over all `asm/funcs/*.s`,
+  intersected with the unqueued + ruleless set -> 60 functions with the shape, 30
+  matched.  Read the closest analogue, `func_8002BC68` (`src/code6cac_b.c:745`),
+  which uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8.
+  Result: its spelling is the ordinary `u8 *t2_base = &D_80101EC8;` +
+  `*((s32 *)(t2_base + 0x134))`, and that spelling FOLDS in our mini TU; what
+  makes it survive there is that the pointer is defined at the top of the
+  function and its uses come after a large if/else diamond - the SAME
+  cse-boundary mechanism as H3.  **KILLED - there is no spelling to copy.**
+
+### LIVE FRONTIER (for the next session)
+
+- **F1 (the whole remaining problem - buy the boundary more cheaply).**  The
+  region-A-closing form costs ~7 points on `magic` placement because the only
+  available if/ELSE is the `((u8*)D_800A3878)[3] & 0x80` test, and moving
+  `magic = 0x80190800` into an else arm contradicts target's prologue
+  materialisation (tgt[1..3]).  What is needed is a cse basic-block boundary
+  between `eda`'s definition and the `qf & 0x30` block that does NOT relocate
+  `magic`.  Next probe: read `cse_end_of_basic_block` (cse.c:8039-8184) and
+  enumerate EVERY condition that ends a block or refuses the AROUND extension -
+  in particular `LABEL_NUSES (JUMP_LABEL (p)) != 1` (a join label targeted by TWO
+  jumps, which is exactly what a short-circuit `&&` / `||` condition produces)
+  and the `PATH_SIZE` cap on how many jumps a single extended block may follow.
+  Then look for a statement in insns 3..54 whose target bytes are consistent with
+  spelling it as a two-branch condition.  This is a search over a SMALL,
+  enumerable space, and every candidate is testable in the mini TU first.
+
+- **F2 (the other ~4 points - `la` placement).**  Even with a free boundary the
+  base is materialised at mine[38..39] instead of target's tgt[55..56], because
+  the pointer's assignment statement must precede the boundary.  Next probe: for
+  each boundary form F1 finds, check the `la` position in the normalized diff
+  BEFORE scoring - the winning form is one whose boundary sits as late as
+  possible, so that `eda`'s assignment can also sit late (ideally immediately
+  before the `qf & 0x30` test).
+
+- **F3 (unchanged, orthogonal).**  m2c infers `func_8003AFFC(D_800A3878)`; our C
+  calls it with no arguments, and `src/code6cac_c2.c` carries three duplicate
+  `extern void func_8003AFFC(void);` declarations (lines 73, 74, 171) that should
+  be reconciled to one.  Byte-neutral here; it is about correctness of the
+  decompilation and about func_8003AFFC's own future grind.
+
+## [s3] Region A's symbol fold is suppressed by, and only by, a cse basic-block boundary between the base pointer's definition and its displaced use; an if/ELSE join label creates such a boundary and a plain `if` does not.
+- mechanism: find_best_addr folds (plus (reg) (const_int 1100)) whenever the base pseudo carries a qty_const (session-2 H2). cse_end_of_basic_block (cse.c:8039) resets the quantity tables at every CODE_LABEL it cannot extend past; a plain-if join is AROUND-extended (cse.c:8102-8184), but an if/ELSE arm ends in an unconditional jump + BARRIER so the join label is a real boundary and the base pseudo enters the next block with no constant.
+- probe: 12-variant mini-TU sweep (tmp/grind/func_8003B9D0/s3/mini_*.c + sweep.sh, cpp -> cc1 with the exact build flags), then the real function with `eda` assigned before the 0x80 test and that test spelled if/ELSE; sandbox --disable all + objdump + normalized diff.
+- result: sandbox 11 with build_insns 185 == target_insns 185; objdump shows target's exact region-A shape at all three sites (lh s1,1100(s2) / sh v0,1100(s2) / sh s1,1100(s2)); the normalized diff is a 128-insn byte-equal tail plus exactly two placement clusters (magic ~7 points, la ~4 points). Restoring the plain `if` brings the fold straight back (10 / build_insns 187), which also explains session-2's K6 number. Region A is closable in pure C; the open problem is now buying the boundary without paying for magic and la placement.
+- verdict: CONFIRMED
+
+## [s3] Some spelling of the displaced access, or of the base pointer's type, keeps target's register+displacement addressing.
+- mechanism: If the fold were driven by the shape of the address expression rather than by the base pseudo's cse quantity, a different access spelling (byte offset, struct member, derived pointer, index variable) would avoid it.
+- probe: Ten spellings compiled in a ~20-line mini TU with the exact build flags and checked for `%lo(D_80101EDA+1100)` vs `1100($reg)`: s16* array index; derived `eda + 0x226`; struct pointer with the member at +1100; declaration at function top with assignment inside the block; `s32 i = 0x226; eda[i]`; byte-cast `*(s16 *)((u8 *)eda + 0x44C)`; `u8 *` base with byte displacement (the func_8002BC68 spelling); `u8 *` base plus a derived `u8 *edf = eda + 0x44C`; pointer defined before the block with an intervening call; pointer defined before the block with no diamond.
+- result: ALL TEN FOLD. Only the if/ELSE-diamond geometry avoids the fold (and the function-parameter control, which is not an available shape here). The access-spelling and pointer-type axes are closed.
+- verdict: KILLED
+
+## [s3] The 30 MATCHED sibling functions that emit symbol-base + non-zero-displacement addressing use a C spelling we can copy.
+- mechanism: If a proven spelling existed, porting it would close region A directly.
+- probe: Wrote tmp/grind/func_8003B9D0/s3/find_sibling.py, which scans every asm/funcs/*.s for `lui %hi(SYM)` + `addiu %lo(SYM)` into a register followed by a non-zero-displacement load/store off that register, and intersects the hits with the unqueued + ruleless (MATCHED) set: 60 functions have the shape, 30 are matched. Read the closest analogue, func_8002BC68 (src/code6cac_b.c:745), which uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8.
+- result: The sibling's spelling is the ordinary `u8 *t2_base = &D_80101EC8;` + `*((s32 *)(t2_base + 0x134))`, which FOLDS in our mini TU. What makes it survive in that function is that the pointer is defined at the top and the uses come after a large if/else diamond -- the same cse-boundary mechanism as H3, not a different spelling. There is no spelling to copy.
+- verdict: KILLED
+
+## [s3] Region A's symbol fold is suppressed by, and ONLY by, a cse basic-block boundary between the base pointer's definition and its displaced use; an if/ELSE join label creates such a boundary and a plain `if` does not.
+- mechanism: find_best_addr folds (plus (reg) (const_int 1100)) into (const (plus sym 1100)) whenever the base pseudo carries a qty_const (session-2 H2, cse.c:2659-2663 + 5171-5176). cse_end_of_basic_block (cse.c:8039) resets the quantity tables at every CODE_LABEL it cannot extend past; a plain-if join is AROUND-extended (cse.c:8102-8184), but an if/ELSE arm ends in an unconditional jump + BARRIER, so its join label is a real boundary and the base pseudo enters the next block with no constant.
+- probe: 12-variant mini-TU sweep (tmp/grind/func_8003B9D0/s3/mini_*.c + sweep.sh: cpp -> cc1 with the exact build flags, counting %lo(D_80101EDA+1100) folds vs 1100($reg)), then the real function with `eda` assigned before the ((u8*)D_800A3878)[3] & 0x80 test and that test spelled if/ELSE; sandbox --disable all + objdump of the sandbox .o + the session-1 normalized-insn diff.
+- result: sandbox 11 with build_insns 185 == target_insns 185; objdump shows target's exact region-A shape at all three sites (lh s1,1100(s2) / sh v0,1100(s2) / sh s1,1100(s2)); the normalized diff collapses to a 128-insn byte-equal tail plus exactly two placement clusters (magic ~7 points, la ~4 points). Restoring the plain `if` brings the fold straight back (10 / build_insns 187), which also reproduces and explains session-2's K6 number.
+- verdict: CONFIRMED
+
+## [s3] Some spelling of the displaced access, or of the base pointer's type, keeps target's register+displacement addressing.
+- mechanism: If the fold were driven by the shape of the address expression rather than by the base pseudo's cse quantity, a different access spelling (byte offset, struct member, derived pointer, index variable) would avoid it.
+- probe: Ten spellings compiled in a ~20-line mini TU with the exact build flags and checked for %lo(D_80101EDA+1100) vs 1100($reg): s16* array index; derived `eda + 0x226`; struct pointer with the member at +1100; declaration at function top with assignment inside the block; `s32 i = 0x226; eda[i]`; byte-cast `*(s16 *)((u8 *)eda + 0x44C)`; u8* base with byte displacement (the func_8002BC68 spelling); u8* base plus a derived `u8 *edf = eda + 0x44C`; pointer defined before the block with an intervening call; pointer defined before the block with no diamond.
+- result: ALL TEN FOLD. Only the if/ELSE-diamond geometry avoids the fold (and the function-parameter control, which is not an available shape here). The access-spelling and pointer-type axes are closed.
+- verdict: KILLED
+
+## [s3] The MATCHED sibling functions that emit symbol-base + non-zero-displacement addressing use a C spelling we can copy.
+- mechanism: If a proven spelling existed in the matched corpus, porting it would close region A directly.
+- probe: Wrote tmp/grind/func_8003B9D0/s3/find_sibling.py, which scans every asm/funcs/*.s for `lui %hi(SYM)` + `addiu %lo(SYM)` into a register followed by a non-zero-displacement load/store off that register, and intersects the hits with the unqueued + ruleless (MATCHED) set: 60 functions have the shape, 30 are matched. Read the closest analogue, func_8002BC68 (src/code6cac_b.c:745), which uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8.
+- result: The sibling's spelling is the ordinary `u8 *t2_base = &D_80101EC8;` + `*((s32 *)(t2_base + 0x134))`, which FOLDS in our mini TU. What makes it survive in that function is that its pointer is defined at the top and its uses come after a large if/else diamond -- the same cse-boundary mechanism as H3, not a different spelling. There is no spelling to copy.
+- verdict: KILLED

@@ -1,7 +1,7 @@
 {
  "func": "func_8003B9D0",
  "file": "code6cac_c2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 6,
    "modality": "structural",
    "headline": "Floor 21 -> 6: region B (the entire 7-insn shortfall) CLOSED by if/else argument init, and all three cheat-asm constructs deleted; residual is region A only (3 sites x 2 insns), whose cse fold mechani"
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Region A is PROVEN closable in pure C (target's lh/sh $r,1100($base) at all three sites, build_insns 185 == target 185) via a cse basic-block boundary between the pointer's definition and its displace"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Region A closes iff the base pseudo's cse quantity carries NO constant, or carries one whose RTX code is REG or a bare PLUS -- because cse.c:5171-5176 is the only guard that skips the substitution. A `(const (plus sym K))` does NOT qualify (that is what `eda + 0x226` canonicalises to, which is exactly why session-1 K1 and its post-region-B re-measure both folded).",
-   "mechanism": "fold_rtx's fast path for REG operands substitutes qty_const only when `GET_CODE (qty_const[...]) != REG && GET_CODE (qty_const[...]) != PLUS` (cse.c:5171-5176); qty_const is populated when a CONSTANT_P value enters the register's equivalence class (cse.c:1377-1397).",
-   "next_probe": "Find a MATCHED sibling that already emits register+displacement addressing off a symbol base and read what its base pseudo's quantity looks like. Cheap locator: `grep -l '[0-9]\\+(\\$s[0-9])' asm/funcs/*.s` intersected with the zero-rule / non-queued function set, then `-da` that sibling's TU and compare its `.cse` around the base pseudo with func_8003B9D0's insn 89. The sibling's C spelling is the answer; do not guess it."
+   "hypothesis": "A cse basic-block boundary can be placed between `eda`'s definition and the `qf & 0x30` block WITHOUT relocating `magic = 0x80190800` out of the prologue, closing region A for less than the 11 the if/ELSE form costs.",
+   "mechanism": "cse_end_of_basic_block (cse.c:8039-8184) ends a block at any CODE_LABEL it cannot AROUND-extend past. The if/ELSE barrier is only ONE such condition; the extension is also refused when LABEL_NUSES (JUMP_LABEL (p)) != 1 -- i.e. a join label targeted by TWO jumps, which is exactly what a short-circuit `&&` / `||` condition emits -- and the extended block is additionally capped by PATH_SIZE followed jumps.",
+   "next_probe": "Read cse.c:8039-8184 and enumerate every block-ending / extension-refusing condition. For each, find whether any statement in target insns 3..54 is byte-consistent with a spelling that produces it (a two-branch compound condition is the prime candidate). Screen each candidate in the mini TU first (tmp/grind/func_8003B9D0/s3/, ~2 seconds per variant, look for `1100($reg)` instead of `%lo(D_80101EDA+1100)`), and only then port it to src and sandbox."
   },
   {
-   "hypothesis": "A small standalone reproduction will find the pointer-initialisation spelling that keeps `(mem (plus (reg) (const_int 1100)))` far faster than sandbox round-trips on the real file.",
-   "mechanism": "Region A is entirely local to one cse decision about one pseudo, so it reproduces in a ~40-line TU; the gradient is readable directly in the `-da` `.cse` dump (folded vs unfolded MEM) with no scoring needed.",
-   "next_probe": "Build tmp/grind/func_8003B9D0/s3/mini.c containing only the qf & 0x30 block's shape against a dummy extern s16 symbol, compile with the exact build flags plus `-da`, and sweep pointer-initialisation spellings, checking each `.cse` dump for whether insn N keeps `(mem:HI (plus (reg) (const_int 1100)))`. Port back only a spelling that keeps it, then re-measure with sandbox. Note regions A and B are NOT coupled (K7), so a region-A change can be evaluated on its own."
+   "hypothesis": "The remaining ~4 points of the closing form (the `la` at mine[38..39] instead of target's tgt[55..56]) close if the boundary sits late enough that `eda`'s assignment can also sit late -- immediately before the `qf & 0x30` test.",
+   "mechanism": "cc1 emits the pointer's set where the C statement is, and the first scheduler then drops it into the nearest load-delay slot; the assignment must precede the boundary, so the boundary's position directly bounds the `la`'s position.",
+   "next_probe": "For every boundary form F1 turns up, run the session-1 normalized diff (tmp/grind/func_8003B9D0/s1/diff.py) and read the `la` position BEFORE judging the score -- prefer the form whose boundary is latest. Note the two regions are independent (session-2 K7), so region A can be evaluated on its own."
   },
   {
    "hypothesis": "func_8003AFFC takes the D_800A3878 object pointer as an argument, and our zero-argument call is a decompilation error rather than a codegen choice.",
    "mechanism": "m2c infers the signature from $a0 being live and unreloaded across the call (tgt[48] sets it, tgt[68] is the jal); a genuine void-argument callee would not require that liveness.",
-   "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it actually consumes $a0. If it does, correct the prototype and the call site (there are currently three duplicate `extern void func_8003AFFC(void);` declarations in src/code6cac_c2.c, at lines 73, 74 and 171, which should be reconciled to one) and re-measure. Expect byte-neutrality here; the value is correctness of the decompilation and of func_8003AFFC's own future grind."
+   "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it actually consumes $a0. If it does, correct the prototype and the call site (src/code6cac_c2.c carries three duplicate `extern void func_8003AFFC(void);` declarations, at lines 73, 74 and 171, which should be reconciled to one) and re-measure. Expect byte-neutrality; the value is correctness of the decompilation and of func_8003AFFC's own future grind."
   }
  ],
  "judge_constraints": [],

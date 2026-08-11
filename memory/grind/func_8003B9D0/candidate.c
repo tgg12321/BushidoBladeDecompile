@@ -42,6 +42,21 @@
  *   target `lh|sh $r, 0x44C($s0)`                                   (1 insn)
  *   at the three `eda[0x226]` sites.  See hypotheses.md F1 for the exact cc1
  *   guard (`find_best_addr`, cse.c:2663) and the next probe.
+ *
+ * SESSION-3 NOTE (2026-08-11) — this body is UNCHANGED and still the floor
+ *   (sandbox --disable all == 6, re-measured session 3), but region A is no
+ *   longer a mystery: it CLOSES (target's `lh/sh $r,1100($base)` at all three
+ *   sites, build_insns 185 == target 185) as soon as a cse basic-block boundary
+ *   separates `eda`'s definition from its displaced uses — see
+ *   rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c,
+ *   which scores 11 only because the boundary it uses (spelling the 0x80 test
+ *   as if/ELSE) relocates `magic = 0x80190800` out of the prologue (~7 pts) and
+ *   forces the `la` out of the qf-block (~4 pts).  Ten access/type spellings
+ *   were measured and ALL fold (hypotheses.md K8), and the 30 matched siblings
+ *   with this addressing shape use no special spelling either (K9) — so do NOT
+ *   spend another session respelling the access.  The open problem is a CHEAPER
+ *   BOUNDARY; hypotheses.md session-3 F1 names the exact cse.c conditions to
+ *   enumerate.
  */
 
 void func_8003B9D0(void) {
