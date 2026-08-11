@@ -29,7 +29,8 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The v = 0xFF000000 staged-reuse is properly annotated and evidenced, but the newly-introduced `lowmask` constant-holder local is mislabeled under the wrong sanctioned family to dodge the FAKE-annotation requirement its actual family (constant-holder / dead-scalar RA-bias local) demands. Next action: Do not commit as-is. Re-cite lowmask under [[named-local-fake-exception]] (constant-holder / dead-scalar RA-bias family) instead of 'named-intermediate declaration order', and add a proper `/* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: <hypotheses.md K"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The v = 0xFF000000 staged-reuse is properly annotated and evidenced, but the newly-introduced `lowmask` constant-holder local is mislabeled under the wrong sanctioned family to dodge the FAKE-annotation requirement its actual family (constant-holder / dead-scalar RA-bias local) demands. Next action: Do not commit as-is. Re-cite lowmask under [[named-local-fake-exception]] (constant-holder / dead-scalar RA-bias family) instead of 'named-intermediate declaration order', and add a proper `/* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: <hypotheses.md K",
+  "The u-staging is admissible ONLY in the borrowed-pre-existing-variable form with both FAKE annotations shipped verbatim; the ban on any NEWLY-INVENTED holder local for the low mask (lowmask/new_var or any fresh scalar, any name/type) remains in force; write self_vet.md describing constructs by role without the banned holder's name or the mask hex literal."
  ],
  "banned_constructs": [
   "s32 lowmask; lowmask = 0xFFFFFF; (src/text1a_pre.c:51,73, used at :81-82)",

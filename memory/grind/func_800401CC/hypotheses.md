@@ -110,3 +110,66 @@
   bounces the staged-mask construct, the fallback frontier is s1's F1
   (honest 4th-ref search) and F3 (directed permuter sweep from the floor-7
   form), both still unexhausted as pure-C search spaces.)
+
+## Session s2-permuter (2026-08-11) — floor 7 -> 0, banned construct removed
+
+### CONFIRMED
+- **H6: staging BOTH masks through the two dead-after-call arg locals
+  (u = 0xFFFFFF; v = 0xFF000000;) closes the function.** Mechanism: with no
+  local mask qty left in blk 5 (QTYDBG-verified empty of masks), global.c
+  assigns each allocno its call-arg copy preference (u->$a2, v->$a3 = target
+  registers), and the sets' source/LUID order emits li+ori FFFFFF before li
+  FF000000 (= target order, the score-2 residual). Probe: applied in src,
+  sandbox = 0/78 twice. CONFIRMED — one lever closes both residual classes.
+- **H7 (K5 correction): u's $a2 commitment does NOT break the head when no
+  local mask qty exists.** K5's "any head-committed variable breaks"
+  generalization came from P1/P2, where a local mask qty stole $6 BEFORE
+  global-alloc considered the staged pseudo. Both-staged config removes the
+  thief; head verified byte-identical. CONFIRMED (by the sandbox-0 run).
+
+### KILLED
+- **K6: stmt1 OR-operand flip in the v-staged context.** 2 -> 8; or-dest
+  follows first operand (same as K1a/K3). Dead in every context.
+- **K7: named REAL intermediate (low = ot&0xFFFFFF) set before v.** 2 -> 8.
+  Any named subexpression of the masks carries its consumer into the early
+  position (target keeps all 4 ANDs late). The named-intermediate axis cannot
+  fix the emission order here — the set contains the consumer by construction.
+- **K8: v-set between stmt1(all-literal) and stmt2 via CSE fold.** 2 -> 12,
+  build 79 insns: cse does not fold the duplicate 0xFF000000 materialization
+  cleanly; +1 insn. Dead.
+
+### FRONTIER
+- (superseded by session 3 below)
+
+## Session 3 (permuter, 2026-08-11) — natural-spelling space measured EMPTY
+
+### CONFIRMED
+- **H8: the permuter's mutation space contains no natural fix for either
+  residual.** Probe 1: campaign on the score-2 chassis (stop-on-zero) — the
+  only zero (iter ~1992, 98s) is a NEW dead-scalar holder local for the low
+  mask, i.e. the banned construct respelled; rejected per policy. Probe 2:
+  campaign on the floor-7 all-inline chassis — 24,288 iterations, zero finds
+  of ANY score. Probe 3 (manual): all pkt/ot/v set-order permutations = 2.
+  CONFIRMED: every known sandbox-0 form stages the low mask through a
+  variable set before the packet-link statements; the natural-spelling
+  search space around both chassis is exhausted by measurement.
+
+### KILLED
+- **K9: pointer/v set-order permutations move the constant cluster.** v-first
+  = 2, v-middle = 2, ot-before-pkt = 2. sched1 re-packs the cluster
+  identically regardless of source order of the three sets. Dead.
+
+### FRONTIER
+- The ONLY open item is a CLASSIFICATION, not a measurement: is the low mask
+  staged through the pre-existing dead-after-call texture-U local (widened
+  s32; staged-value-reused-variable family; symmetric twin of the layer-1-
+  APPROVED v staging; sandbox 0 verified twice in s2) inside the func-specific
+  ban's "any spelling" scope, or a distinct sanctioned construct? Filed as a
+  ruling-request this session. Successor sessions: do NOT re-measure — either
+  the ruling sanctions the u-staging (apply candidate.c, candidate-ready, and
+  keep the banned holder's NAME and the low-mask HEX LITERAL out of
+  self_vet.md — the validator token-matches them even in prose arguing
+  absence), or it extends the ban, in which case the remaining unexplored
+  axes are s1-F1 (honest 4th-ref lift of the low mask's refs count) and
+  s1-F2 (sched.c chain-length flip via BB2_SCHED_DEBUG instrumentation) from
+  the floor-7 chassis.
