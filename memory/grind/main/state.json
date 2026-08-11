@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,21 +21,27 @@
    "floor": 0,
    "modality": "structural",
    "headline": "sandbox 0 re-proven after 3rd src revert; ASPSX-retarget census: 138 sites/96 funcs, 12 rule-carrying class candidates, func_8007352C confirmed as second synthetic-label+retarget regfix exemplar"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "permuter",
+   "headline": "Permuter modality measured BLIND on main (campaign base score 0 while true bytes are 2 off) \u2014 third worker modality killed against the branch-target residual; disposition question unchanged"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "main's disposition is an owner/pipeline question (escalation modality), and the packet is now class-level",
-   "mechanism": "all C-side escapes measured dead (s3, 7 hatches, three-way proof: reorg.c read + DBRDBG trace + cc1psx counter-exhibit); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope; s4 census gives 12 candidate class members",
-   "next_probe": "escalation-modality session files the OWNER-ESCALATION citing evidence.md s3+s4, dbr_trace.txt, main_psx.s, and the census artifacts; no further spelling or RA grinding on main"
+   "hypothesis": "main's disposition is an owner/pipeline question; the packet now carries three dead worker modalities plus the s4 class census (138 sites / 96 functions, 12 rule-carrying candidates)",
+   "mechanism": "all C-side escapes measured dead (s3 three-way proof); permuter measurably blind (s5); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope",
+   "next_probe": "escalation-modality session files the OWNER-ESCALATION citing evidence.md s3+s4+s5, dbr_trace.txt, main_psx.s, the census artifacts, and the s5 permuter-blindness harvest; no further spelling, RA, or permuter grinding on main"
   },
   {
    "hypothesis": "func_8007352C (or func_8007DC9C) diverges by the SAME reorg redundancy thread-skip mechanism",
-   "mechanism": "same signature geometry + synthetic-label/retarget regfix device; per-function confirmation needs the s3 method (exact-byte diff + DBRDBG trace on its loop head)",
-   "next_probe": "if a worker session fires on main before escalation modality, spend it confirming one sibling instead of re-grinding main - each confirmed sibling upgrades the owner packet to an N-function mechanism-proven class"
+   "mechanism": "same signature geometry + synthetic-label/retarget regfix device (regfix.txt:2899-2900 vs main's 1559+1569-1572); per-function confirmation needs the s3 method (exact-byte diff + DBRDBG trace on its loop head)",
+   "next_probe": "if a worker session fires on main before escalation modality, spend it confirming one sibling instead of re-grinding main \u2014 each confirmed sibling upgrades the owner packet to an N-function mechanism-proven class"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (recurring driver behavior)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (recurring driver behavior, 4 occurrences)",
    "mechanism": "driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "every session: grep src/ings.c for the candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) and reapply from memory/grind/main/candidate.c before trusting any floor number"
   }

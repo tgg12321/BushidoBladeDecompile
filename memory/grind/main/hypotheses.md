@@ -174,19 +174,24 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - result: 138 sites / 96 functions have the geometry; 84 of 96 are matched with ZERO rules (the redundancy-skip precondition is what gates divergence, not the geometry); 12 still carry rules (CD_datasync, CD_ready, CD_sync, func_80022F34, func_80023648, func_800238C4, func_800335D8, func_80038170, func_8007352C, func_8007526C, func_8007DC9C, main); func_8007352C carries the SAME synthetic-label+branch-retarget regfix device as main (insert_label .LCF352C_t @105 + beq retarget, regfix.txt:2899-2900)
 - verdict: CONFIRMED (it is a class; owner disposition packet should cover the 12 candidates, with per-function mechanism confirmation still owed for the 11 others)
 
-## Live frontier (post-s4)
-1. Unchanged from post-s3: main's last 2 bytes are not C-reachable under the
-   frozen pipeline; the disposition is an owner/driver question. The class
-   census (s4) strengthens the packet: cite evidence.md s3 (three-way
-   mechanism proof) + s4 (138-site/96-function census, 12 rule-carrying
-   candidates, func_8007352C as second shape exemplar).
-2. Next probe if another worker session fires before escalation modality:
+## Live frontier (post-s5)
+1. Unchanged from post-s3/s4: main's last 2 bytes are not C-reachable under
+   the frozen pipeline; the disposition is an owner/driver question. The
+   packet now carries THREE dead worker modalities (spelling s1/s2,
+   structural/analytic s3 with three-way proof, permuter s5 measured BLIND —
+   scorer masks the residual class) plus the s4 class census (138 sites /
+   96 functions, 12 rule-carrying candidates, func_8007352C second shape
+   exemplar). The driver should route main to escalation modality.
+2. Do NOT dispatch permuter on main again: s5 measured the tool blind
+   (base score 0 vs true bytes 2 off). No chassis, PERM macro set, or seed
+   discipline changes what the scorer can see.
+3. Next probe if another worker session fires before escalation modality:
    confirm the mechanism on ONE other rule-carrying candidate (best:
    func_8007352C — smallest overlap of other rule kinds around its
    insert_label; or func_8007DC9C at only 4 rules) by the s3 method
    (bytesig diff + DBRDBG trace). Each confirmed sibling upgrades the
    packet from "main + shape-match" to "N-function mechanism-proven class".
-3. Session-start invariant STILL required: src/ings.c reverted for the 3rd
+4. Session-start invariant STILL required: src/ings.c reverted for the 4th
    time before this session; always reapply from candidate.c and re-measure
    sandbox 0 before any other work.
 
@@ -202,8 +207,26 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - result: 138 signature sites across 96 distinct functions; 84/96 are matched with ZERO regfix rules (geometry alone does not force divergence - the redundant_insn precondition gates it); 12 functions still carry rules: CD_datasync(15), CD_ready(42), CD_sync(5), func_80022F34(11), func_80023648(30), func_800238C4(47), func_800335D8(41), func_80038170(1), func_8007352C(11), func_8007526C(14), func_8007DC9C(4), main(25); func_8007352C carries the identical synthetic-label+branch-retarget regfix device (insert_label .LCF352C_t @105 + beq retarget, regfix.txt:2899-2900) that main uses (.Linner injection regfix.txt:1559 + retargets 1569-1572)
 - verdict: CONFIRMED
 
+## [s5] a directed permuter campaign can adversarially stress the s3 analytic kill (find a pure-C form whose TRUE bytes close the 2-branch-target residual, or corroborate the kill with a 0-find harvest)
+- mechanism: decomp-permuter mutates the candidate C and scores against a single-function target.o; meaningful only if its scorer can SEE the residual class
+- probe: hand-built workspace tmp/perm_main_s4 (base = full candidate, compile.sh mirrors current -mel pipeline, target.o from asm/funcs/main.s + prelude, both 189 insns); tools/permuter_campaign.py launch --stop-on-zero
+- result: [main] base score = 0 — the permuter's scorer normalizes branch targets (same masked class as engine/score.py); the campaign exited at launch; the entire score-0 basin includes wrong-target forms, so the tool can neither find a closing form nor distinguish one
+- verdict: KILLED (the permuter modality is measurably BLIND on main; no chassis/seed/macro variation changes what the scorer can see — do not dispatch permuter on main again)
+
 ## [s3] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
 - mechanism: driver end-of-session handling discards uncommitted src edits
 - probe: grep for the candidate signatures (3-arg call, chained lim, FAKE annotation) before any measurement
 - result: reverted AGAIN (3rd occurrence): 1-arg call sites, inline threshold, no annotation; reapplied all 4 edits from candidate.c and re-measured sandbox --disable all = 0 (189/189, 25 rules dropped) this session
+- verdict: KILLED
+
+## [s4] A directed permuter campaign can adversarially stress the s3 analytic kill: either find a pure-C form whose TRUE bytes close the 2-branch-target residual, or corroborate the kill with a 0-find fresh-seed harvest
+- mechanism: decomp-permuter mutates the candidate C and scores against a single-function target.o built from asm/funcs/main.s + prelude; the probe is only meaningful if the permuter's scorer can SEE the residual class (the two branch targets at the loop head)
+- probe: Hand-built workspace tmp/perm_main_s4 (standalone base.c = full candidate incl. widened signatures; compile.sh mirrors the CURRENT Makefile pipeline for ings.c incl. -mel; both sides 189 insns); launched via tools/permuter_campaign.py launch --func main --stop-on-zero; harvested --stop with telemetry
+- result: [main] base score = 0 at launch — the permuter scorer normalizes branch targets (same masked class as engine/score.py), so the base candidate scores 0 while its true bytes are 2 off; the campaign exited immediately; entire score-0 basin includes wrong-target forms; telemetry banked (permuter-harvest event, label perm_main_s4, base_score 0, finds 0)
+- verdict: KILLED
+
+## [s4] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
+- result: reverted AGAIN (4th occurrence): 1-arg call sites, inline threshold, no annotation; reapplied all 4 edits from candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
 - verdict: KILLED

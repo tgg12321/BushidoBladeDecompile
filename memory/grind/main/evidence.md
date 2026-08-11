@@ -372,3 +372,70 @@ tmp/grind/main/s3/retarget_hits.txt.
 - [s3] main's remaining 2 bytes stay closable only by owner-surface means (label regfix rules = cheat debt, maspsx ASPSX-parity fill = owner sign-off, reorg patch = forbidden); per ledger s3 this is a disposition question - the driver should route to escalation modality; this session's census upgrades that packet from one-off to class-level
 
 - [s3] src regression is now a 3x-recurring hazard; the session-start invariant (verify src/ings.c against candidate.c, reapply, re-measure) is banked in the ledger frontier
+
+## Session 5 (permuter, 2026-08-11 — dispatched as "session 4" by the digest;
+the ledger already carried s4, so this session is numbered 5)
+
+### Session-start invariant (fourth occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — fourth driver revert.
+  Reapplied all four candidate.c edits via targeted Edits; sandbox main
+  --disable all = **0** (189/189, 25 rules dropped, 68 cheat-asm insns
+  stripped from OTHER ings.c functions) re-measured THIS session. The
+  invariant holds; candidate.c stays authoritative.
+
+### MEASURED KILL — the permuter modality is BLIND on main (base score 0)
+Mandated modality this session was permuter. The only non-re-derivation
+value a permuter campaign could add: an adversarial empirical stress of the
+s3 analytic kill ("no pure-C spelling closes the last 2 bytes"), IF the
+permuter's scorer could see the residual. Measured answer: it cannot.
+- Workspace hand-built at tmp/perm_main_s4/ (import.py avoided per the
+  root-nonmatchings scope hazard): minimal standalone base.c carrying the
+  full candidate body (verbatim from candidate.c incl. both widened extern
+  signatures), compile.sh mirroring the CURRENT Makefile pipeline for
+  ings.c (cc1 CC_FLAGS **including -mel** | prologue_fix | maspsx
+  MASPSX_FLAGS | as; regfix/asmfix deliberately excluded — cheat-free
+  compile), target.o assembled from asm/funcs/main.s + the standard
+  workspace prelude. Both sides 189 insns.
+- Launch via tools/permuter_campaign.py (owner-directive telemetry path):
+  **[main] base score = 0** — the campaign exited at launch (--stop-on-zero)
+  because the BASE already scores 0 while its TRUE bytes are 2 off (the two
+  branch targets, re-proven this session via the sandbox run). Iteration 2
+  produced a mutated form also scoring 0 (finds_total 0 novel).
+- Mechanism: decomp-permuter's scorer normalizes branch targets the same
+  way engine/score.py does — the sole residual class on main is masked in
+  BOTH metrics. The permuter therefore cannot distinguish the candidate
+  from the target, cannot find a "closer" form, and cannot serve as an
+  empirical stress of the s3 kill: its entire score-0 basin includes
+  wrong-target forms. Any future permuter session on main is measurably
+  pointless regardless of chassis, macros, or seed count.
+- Telemetry banked via harvest --stop (metrics/events.jsonl
+  permuter-harvest event, label perm_main_s4, base_score 0, stop_reason
+  recorded). No orphan processes (pid dead at harvest, procs_killed 0).
+- Modality-ladder implication for the driver: spelling (s1/s2), structural
+  (s3 analytic enumeration + cc1psx counter-exhibit), and now permuter are
+  ALL measured dead against the 2-byte residual; the disposition remains
+  the class-level owner/pipeline question banked in s3/s4 (label regfix
+  rules, maspsx ASPSX-parity fill, or reorg patch — all outside worker
+  scope). Next non-escalation session should confirm a sibling
+  (func_8007352C or func_8007DC9C) per the s4 frontier, NOT re-touch main.
+
+### Artifacts (tmp/grind/main/s4/ — dir name follows the dispatch brief;
+this is ledger-session 5)
+permuter_campaign.log (launch log showing "[main] base score = 0"),
+permuter_base.c (the standalone workspace source), permuter_compile.sh
+(the -mel-current pipeline mirror); live workspace at tmp/perm_main_s4/.
+
+- [s5] permuter modality KILLED on main: campaign base score = 0 while true bytes are 2 off — decomp-permuter's scorer masks branch targets (same masked class as engine/score.py), so the sole residual is invisible to it; no campaign on main can ever measure progress
+- [s5] src regression recurred (4th time); candidate reapplied from candidate.c, sandbox --disable all = 0 (189/189, 25 rules dropped) re-measured this session
+- [s5] three worker modalities now measured dead against the 2-byte residual (spelling, structural/analytic, permuter); disposition question unchanged from s3/s4 — owner-surface only
+
+- [s4] sandbox main --disable all = 0 (189/189 insns, 25 rules dropped) re-measured this session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) in place in src/ings.c
+
+- [s4] permuter base score = 0 on a correct, current-pipeline workspace (cc1 -mel | prologue_fix | maspsx | as; regfix/asmfix excluded; target.o from asm/funcs/main.s at offset 0; 189 vs 189 insns) — decomp-permuter's scorer masks branch targets, making main's sole residual invisible to it
+
+- [s4] three worker modalities now measured dead against the 2-byte residual: spelling (s1/s2), structural/analytic (s3: reorg.c read + DBRDBG trace + cc1psx counter-exhibit, 7 escape hatches enumerated dead), permuter (s5: scorer blind); the residual is closable only by owner-surface means (label regfix rules = cheat debt, maspsx ASPSX-parity fill = owner sign-off, reorg patch = forbidden by no-compiler-divergence)
+
+- [s4] campaign hygiene: launched and harvested --stop within the session, telemetry in metrics/events.jsonl (label perm_main_s4, base_score 0, finds 0, stop_reason recorded), no orphan processes
+
+- [s4] src/ings.c regression is now a 4x-recurring driver behavior; the session-start reapply-from-candidate.c invariant remains load-bearing
