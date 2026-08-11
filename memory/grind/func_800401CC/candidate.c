@@ -1,80 +1,60 @@
 /*
- * STATUS (session s6, 2026-08-11): DEADLOCK CLEARED — the fe308e0b ruling
- * (decisions.md 06:37, GRANTED) directed removal of state.json
- * banned_constructs[1]; s6 found the removal had never been executed (the
- * ruling commit only appended decisions.md), executed it (ban #0, the
- * invented holder local, stays verbatim), and verified with the driver's own
- * `grindlib.py selfvet` CLI: exit 0 on the s4 by-role vet. sandbox 0/78
- * re-verified (5th time), form applied in src/text1a_pre.c, candidate-ready
- * submitted. Artifacts: tmp/grind/func_800401CC/s6/selfvet_pass.log.
+ * CANDIDATE — func_800401CC (src/text1a_pre.c), session s7 (forensics,
+ * 2026-08-11). SANDBOX 2/78, verified this session, form APPLIED in
+ * src/text1a_pre.c.
  *
- * STATUS (session s5, 2026-08-11): SANDBOX 0/78 RE-VERIFIED (4th time),
- * form applied in src/text1a_pre.c — but candidate-ready is MECHANICALLY
- * UNREACHABLE until state.json banned_constructs[1] is removed by the
- * operator: that ban entry ("Annotation-conformance claim ...") token-matches
- * {annotation, conformance, claim, fake} at threshold 2, and the mandatory
- * vet template headers alone supply >= 2 hits, so EVERY format-valid vet is
- * auto-discarded (proof: tmp/grind/func_800401CC/s5/deadlock_proof.log, run
- * with the driver's own grindlib.py selfvet CLI). s5 outcome = ruling-request
- * asking for that entry's removal; ban #1 (invented holder local) stays and
- * is not contested. The C itself already carries judge PASS d8c4b01f.
+ * STATUS: this is the BEST ADMISSIBLE form under the current bans. The
+ * previous candidate (both masks staged through the two dead-after-call
+ * texture-coordinate locals; sandbox 0/78, five independent verifications)
+ * was BANNED by the latest layer-1 ruling as a respelling of the invented
+ * constant-holder cheat; it is preserved verbatim in
+ * rejected/banned-dual-staged-sandbox0.c. The same ruling directed reverting
+ * to THIS score-2 v-staged-only chassis (its v-staging was ruled "properly
+ * annotated and evidenced" by the first layer-1 review), and also banned
+ * citing the staged-value-reused-variable family for any dual-mask staging.
  *
- * STATUS (session s4, 2026-08-11): RULING LANDED — PASS (judge ruling commit
- * d8c4b01f, docs/grind/decisions.md 2026-08-11 06:25): the u-staging is a
- * DISTINCT SANCTIONED INSTANCE of staged-value-reused-variable (borrowed
- * pre-existing variable), not a respelling of the banned invented-holder.
- * This form was applied to src/text1a_pre.c in s4, sandbox 0/78 re-verified,
- * self_vet.md filed describing constructs by role (per the ruling's process
- * answer: no banned holder name / low-mask hex literal in the vet), and
- * candidate-ready submitted — then DISCARDED by the driver's banned-construct
- * token matcher (see s5 STATUS above; the vet text, not the C, tripped it).
+ * The 2 remaining diffs are the tail constant-load emission order only:
+ *   ours:   li $7,0xff000000 ; li $6,0xff0000 ; ori $6,$6,0xffff
+ *   target: li $6,0xff0000 ; ori $6,$6,0xffff ; li $7,0xff000000
+ * All registers, all other instructions byte-identical.
  *
- * CANDIDATE — func_800401CC (src/text1a_pre.c), session s2-permuter, 2026-08-11.
- * SANDBOX 0/78 THIS SESSION (verified twice, annotations in place). Form is
- * APPLIED in src/text1a_pre.c. Supersedes the layer-1-FAILed lowmask form
- * (rejected/layer1-fail-0811-0533.c): the banned constant-holder local is GONE.
+ * s7 FORENSIC RESULT (instrumented cc1, artifacts in
+ * tmp/grind/func_800401CC/s2/forensics/): the residual is STRUCTURALLY
+ * LOCKED for every admissible spelling. Named mechanism chain:
  *
- * The closing structure (vs the pre-grind 20-form):
- *  1. Staging-local removal + store-last order (s1 wins, unchanged).
- *  2. BOTH tail masks staged through the two EXISTING dead-after-call texture
- *     coordinate locals, in source order:
- *         u = 0xFFFFFF;      (u's allocno: $a2 copy-pref from the (s16)u call arg)
- *         v = 0xFF000000;    (v's allocno: $a3 copy-pref from the (s16)v call arg)
- *     Both u and v are widened s16 -> s32 to hold the masks (head bytes
- *     unchanged: lhu loads + (s16) call casts identical — verified byte-level).
- *     Both staged values are LIVE: each mask is read by both packet-link
- *     statements. Zero dead code.
- *
- * Why this closes the $6/$7 mask swap AND the li emission order in one move:
- *  - With both masks staged through multi-block (global-alloc'd) pseudos, the
- *    tail's local-alloc qty pool contains NO mask qty at all (QTYDBG verified:
- *    blk=5 pool is only the pointer/word temps, $2-$5). qty_compare_1 never
- *    gets to misassign $6 — the whole s1 priority-vs-lifetime wall is bypassed.
- *  - global.c gives each allocno its call-arg copy preference: u -> $6/a2,
- *    v -> $7/a3. Exactly target's mask registers.
- *  - The two explicit sets sit in source/LUID order u-first, so the li+ori
- *    0xFFFFFF cluster is emitted before the li 0xFF000000 — target insn order
- *    (this was the last 2-insn residual of the score-2 single-staged form).
- *  - Post-call cluster in the built object: lui a2,0xff / ori a2,a2,0xffff /
- *    lui a3,0xff00 — byte-identical to target, all registers correct.
- *
- * Family: staged-value-reused-variable (SANCTIONED 2026-07-03), one instance
- * per mask, both FAKE-annotated in src with what/mechanism/lever-exhaustion.
- * The prior layer-1 review explicitly ruled the v-staging "properly annotated
- * and evidenced"; the u-staging is the symmetric twin (same liveness argument,
- * same family, $a2 instead of $a3). The banned lowmask constant-holder is not
- * present in any spelling.
- *
- * Session kill trail (this session): A1-flip (stmt1 OR-operand flip in the
- * v-staged context) = 8; A2 (named intermediate low = ot&0xFFFFFF set first)
- * = 8 (hoists the ot load, target keeps the ANDs late); A6 (v-set between
- * stmt1-literal and stmt2) = 12 with +1 insn (CSE does not fold the second
- * 0xFF000000 materialization cleanly). All banked in rejected/.
+ * 1. GCC 2.7.2 sched1 is a REVERSE list scheduler. When a scheduled insn
+ *    frees a producer, adjust_priority (sched.c:2543) boosts the producer to
+ *    LAUNCH_PRIORITY (0x7f000001) iff birthing_insn_p (sched.c:2504) — i.e.
+ *    single-set REG dest (reg_n_sets==1). Boosted insns are picked earlier
+ *    in reverse time = placed LATER (adjacent to consumers); unboosted
+ *    constants sink to the block head.
+ * 2. A 2-insn MIPS constant (lui+ori) is split by sched1's try_split into
+ *    TWO sets of ONE pseudo -> reg_n_sets==2 -> NEVER boosted. A 1-insn
+ *    block-local constant is ALWAYS boosted when freed. This asymmetry is
+ *    invariant over all block-local spellings.
+ * 3. Floor-7 (all-inline) chassis: high-mask li boosted, low-mask pair not
+ *    -> pair born 4 luids earlier (birth 18 vs 22, deaths 48/46) ->
+ *    qty_compare_1 (local-alloc.c:1660) priority 12/24 vs 12/30 -> high
+ *    mask allocated first -> takes $6 (target: low mask in $6). Locked.
+ * 4. THIS score-2 chassis: v is a multi-set global-alloc'd pseudo (head set
+ *    + tail set) -> its li is unboosted (ADJPRI birth=0, measured); the
+ *    low-mask pair is unboosted too -> all tie at priority 1 -> the
+ *    rank_for_schedule LUID tiebreak (sched.c:2461) preserves RTL chain
+ *    order -> v's set (which must dominate stmt1, since stmt1 reads v)
+ *    always precedes stmt1's inline low-mask materialization -> li $7
+ *    always emitted first. sched2 cannot fix it (adjust_priority is a no-op
+ *    after reload). Locked for every source order (confirms K9 with
+ *    mechanism).
+ * 5. Corollary: the target byte order (low-mask pair BEFORE the high-mask
+ *    li, with registers $6/$7 as in target) is reachable ONLY when BOTH
+ *    masks live in multi-block (global-alloc'd) pseudos whose explicit sets
+ *    control chain order — i.e. exactly the banned dual-staged shape. Every
+ *    other axis is measured or analytically dead (H8, H12-H14, K1-K9).
  */
 void func_800401CC(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     u16 *tbl;
-    s32 u;
+    s16 u;
     s32 v;
     s32 *pkt;
     s32 *ot;
@@ -99,24 +79,18 @@ void func_800401CC(s32 a0, s32 a1, s32 a2) {
         SetDrawMove((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
         pkt = (s32 *)D_800A3378;
         ot = (s32 *)D_800A378C;
-        /* FAKE: OT pointer-field mask staged through the dead u-coord local (its
-           value was consumed by the draw call above; the mask is read by both
+        /* FAKE: OT-code mask staged through the dead v-coord local (its value
+           was consumed by the draw call above; the mask is read by both
            packet-link statements below), mechanism: global.c allocno call-arg
-           copy preference ($a2 from the pre-call (s16)u arg copy) places the
-           multi-set pseudo at $a2 with no local-alloc mask qty left to contest
-           it, and the explicit set's LUID position restores the target li+ori
-           emission order, lever-exhaustion: memory/grind/func_800401CC/
-           hypotheses.md K1-K4 + P1/P2 + s2-permuter A-probes (all natural
-           spellings measured broken) */
-        u = 0xFFFFFF;
-        /* FAKE: OT-code mask staged through the dead v-coord local (same
-           liveness argument as u above), mechanism: global.c allocno call-arg
            copy preference ($a3 from the pre-call (s16)v arg copy) keeps the
-           multi-set pseudo at $a3, removing 0xFF000000 from the local-alloc
-           qty pool, lever-exhaustion: same ledger sections as u */
+           multi-set pseudo at $a3, removing the high mask from the local-alloc
+           qty pool, lever-exhaustion: memory/grind/func_800401CC/hypotheses.md
+           K1-K4 + P1/P2 + s2-permuter A-probes + s7 forensic proof (sched.c
+           adjust_priority birthing-boost asymmetry locks every block-local
+           spelling) */
         v = 0xFF000000;
-        *pkt = (*pkt & v) | (ot[0x3FFC / 4] & u);
-        ot[0x3FFC / 4] = (ot[0x3FFC / 4] & v) | ((s32)pkt & u);
+        *pkt = (*pkt & v) | (ot[0x3FFC / 4] & 0xFFFFFF);
+        ot[0x3FFC / 4] = (ot[0x3FFC / 4] & v) | ((s32)pkt & 0xFFFFFF);
         D_800A3378 = (s32)(pkt + 6);
     }
 }

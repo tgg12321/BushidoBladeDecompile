@@ -358,3 +358,80 @@ in the canonical floor-7 form:
   passable for the first time). Driver to re-verify bytes + layer-1 + Judge
   FINAL CALL as usual.
 - Artifacts: tmp/grind/func_800401CC/s6/{bank_selfvet.sh,selfvet_pass.log}.
+
+## Session s7 (forensics, 2026-08-11) — divergence mechanism NAMED end-to-end
+
+- Session-start state: src reverted to the pre-grind 20-form again. The task
+  brief carried NEW binding layer-1 rulings superseding s4/s6: the dual-staged
+  sandbox-0 form (both masks through the dead texture-coord locals) is BANNED
+  as a respelling of the invented constant-holder; the two judge-ruling
+  commits d8c4b01f/fe308e0b are themselves banned as self-authored; citing
+  staged-value-reused-variable for the dual-mask staging is banned; the
+  directed revert target is the score-2 v-staged-only chassis "or further".
+  The banned form is preserved in rejected/banned-dual-staged-sandbox0.c;
+  candidate.c now holds the admissible score-2 form (APPLIED in src,
+  sandbox 2/78 measured this session; floor-7 all-inline chassis also
+  re-measured 7/78 first).
+- FORENSIC RESULT 1 — the $6/$7 mask swap in the floor-7 chassis is caused by
+  sched1's adjust_priority birthing-insn launch boost (sched.c:2543,
+  birthing_insn_p sched.c:2504), NOT by chain-length INSN_PRIORITY as s1
+  modeled. Measured: all three tail constant insns tie at computed priority 1
+  (PRIODBG); GCC 2.7.2's sched1 is a REVERSE list scheduler; when an insn is
+  scheduled its freed producers get INSN_PRIORITY = LAUNCH_PRIORITY
+  (0x7f000001) iff birthing_insn_p — single-set REG dest (reg_n_sets==1) live
+  at the scan point. The 1-insn high-mask li (insn 151, reg115, n_sets=1) is
+  boosted (ADJPRI birth=1, measured); the low-mask lui+ori pair (insns
+  185/186, BOTH setting reg118 after sched1's try_split, n_sets=2) can NEVER
+  be boosted (ADJPRI birth=0, measured). Boosted insns are picked early in
+  reverse time = placed adjacent to consumers; unboosted constants sink to
+  the block head. Hence low-mask pair born luid 18, high-mask li luid 22,
+  deaths 48/46 -> qty_compare_1 (local-alloc.c:1660) priorities 12/30 vs
+  12/24 -> high mask allocated first -> $6. Full launch trace in
+  solo.i.sched (block 5, T-10..T-18) + sched_debug.err.
+- FORENSIC RESULT 2 — the boost asymmetry is INVARIANT over all block-local
+  spellings: any MIPS 2-insn constant splits into two sets of one pseudo
+  (unboostable), any block-local 1-insn constant with uses is always boosted
+  when freed (its consumers are always scheduled). Therefore the >=4-luid
+  birth gap in the high mask's favor cannot be flipped block-locally; the
+  needed condition (high mask born >=4 luids EARLIER than the pair) is
+  unreachable. This is the mechanism behind H8's 24,288-iteration permuter
+  zero-find. Death-side manipulation alone is insufficient (swing 2 < gap 4;
+  confirms K2 analytically).
+- FORENSIC RESULT 3 — the score-2 chassis order residual is equally locked:
+  v's tail li is unboosted (multi-set global pseudo, ADJPRI birth=0,
+  measured), the low-mask pair is unboosted, all tie at priority 1, and
+  rank_for_schedule's LUID tiebreak (sched.c:2461-2464) preserves RTL chain
+  order through sched1 AND sched2 (adjust_priority is an explicit no-op
+  after reload, sched.c:2547-2549). Since stmt1 reads v, v's set dominates
+  stmt1, and the inline low mask materializes at stmt1 -> the high-mask li
+  always precedes the pair in chain order -> emitted first -> the 2 diffs.
+  No source statement order can change this (mechanism behind K9). QTYDBG
+  confirms the chassis' register correctness: blk=5 has ONE mask qty
+  (reg118 -> $6 = target) and v global-alloc'd to $7 = target.
+- COROLLARY (the wall, stated precisely): target's byte order (pair first,
+  li second, regs $6/$6/$7) requires BOTH mask constants to sit in
+  multi-block global-alloc'd pseudos whose explicit set statements control
+  chain order. That is exactly the banned dual-staged shape and nothing
+  else reaches it: block-local spellings fail RESULT 2, single-staged
+  spellings fail RESULT 3, operand flips break or-dest structure (K3/K6),
+  named intermediates carry their consumers (K7), between-statement sets
+  fail CSE folding (K8). Every measurement axis is now closed with a named
+  mechanism; what remains is a CLASSIFICATION/POLICY question (is the
+  dual-variable shape admissible), which measurement cannot answer.
+- Artifacts: tmp/grind/func_800401CC/s2/forensics/{dump_sched.sh,dump2.sh,
+  solo.i,solo.s,solo.err,solo_da.err,solo.i.sched (launch trace),
+  solo.i.combine,solo.i.cse2 (pre-sched chain order),sched_debug.err
+  (ADJPRI boost proof),solo2.i,solo2.s,solo2.err (score-2 chassis proof),
+  full.i,full2.i + remaining -da dump set}.
+
+- [s2] Floor-7 all-inline chassis re-verified sandbox 7/78, then admissible score-2 v-staged chassis applied and verified sandbox 2/78 (3 rules dropped, 4 foreign cheat-asm stripped, same counts as every session); score-2 form left applied in src/text1a_pre.c with its layer-1-approved FAKE annotation
+
+- [s2] sched1 computed priorities of the three tail constant insns all tie at 1; the decisive ordering comes from adjust_priority's LAUNCH_PRIORITY boost (0x7f000001), granted only to birthing insns (reg_n_sets==1 single-set dest): measured ADJPRI insn=151 birth=1 vs insns 185/186 birth=0
+
+- [s2] sched1 splits the 0xFFFFFF movsi into lui+ori sharing one pseudo BETWEEN combine and scheduling (combine dump still has single insn 156; sched dump has 185/186), which is what makes the pair permanently unboostable
+
+- [s2] Corollary banked: target's byte order + register assignment is reachable ONLY when both masks live in multi-block global-alloc'd pseudos with explicit set statements (the banned dual-staged shape); block-local spellings fail the boost asymmetry, single-staged spellings fail LUID chain-order dominance, operand flips/named intermediates/between-statement sets fail K3/K6/K7/K8
+
+- [s2] Banned dual-staged sandbox-0 form preserved in memory/grind/func_800401CC/rejected/banned-dual-staged-sandbox0.c; candidate.c now holds the admissible score-2 chassis with the full s7 mechanism writeup in its header
+
+- [s2] Ledger updated: evidence.md s7 section (3 forensic results + corollary), hypotheses.md H12/H13 CONFIRMED, K10/K11 KILLED, frontier restated as classification-not-measurement

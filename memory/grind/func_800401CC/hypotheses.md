@@ -240,3 +240,79 @@
   vet, and the vet gate proven passing by the driver's own CLI. If the
   driver's byte verification or the FINAL CALL bounces it, the bounce reason
   is the new frontier; the measurement space is closed per H8.)
+
+## Session s7 (forensics, 2026-08-11) — mechanism named; residual axes closed
+
+### CONFIRMED
+- **H12: the $6/$7 mask swap is caused by sched1's adjust_priority
+  birthing-insn launch boost, not by chain-length priority.** Mechanism:
+  reverse list scheduler; freed producers boosted to LAUNCH_PRIORITY
+  (0x7f000001) iff birthing_insn_p (single-set REG dest, reg_n_sets==1);
+  the 1-insn high-mask li qualifies, the lui+ori low-mask pair (2 sets of
+  one pseudo after sched1 try_split) never can. Boosted -> placed adjacent
+  to consumers; unboosted -> sinks to block head -> low mask born 4 luids
+  early -> longer qty length -> loses qty_compare_1 -> high mask takes $6.
+  Probe: BB2_PRIO/RANK/SCHED_DEBUG + -da on the floor-7 chassis; ADJPRI
+  lines show insn 151 birth=1 (boosted), insns 185/186 birth=0 (never).
+  CONFIRMED (supersedes s1's "sched1 chain-length hoist" model — computed
+  priorities all tie at 1).
+- **H13: the score-2 chassis' 2-diff emission-order residual is structurally
+  locked.** Mechanism: v's li unboosted (multi-set pseudo), pair unboosted,
+  priority tie -> rank_for_schedule LUID tiebreak preserves chain order
+  through sched1 and sched2 (adjust_priority no-op after reload); v's set
+  dominates stmt1 (stmt1 reads v) while the inline low mask materializes AT
+  stmt1 -> high-mask li always first. Probe: dump2.sh on the applied score-2
+  form (sandbox 2 re-verified). CONFIRMED — gives K9 its mechanism; kills
+  all statement-order probes permanently.
+
+### KILLED
+- **K10 (was frontier F2): flip sched1's constant birth order block-locally.**
+  Impossible by H12's asymmetry: a block-local 1-insn constant is ALWAYS
+  boosted when freed, a 2-insn pair NEVER — the birth gap's sign is
+  invariant over every block-local spelling. Death-side swings max out at 2
+  luids < the 4-luid gap (confirms K2). Analytic kill grounded in measured
+  boost behavior.
+- **K11 (was frontier F1): honest refs-lift (refs(low mask) 4, or
+  refs(high mask) 2).** No site exists: the tail block is branchless, so
+  duplicated-statement-into-arms has no arms to target; the only upstream
+  branch (a0 diamond) is pre-call, and a mask consumed there is live across
+  the call -> callee-save/spill -> head breakage (P1/P2 shape). Any other
+  4th ref adds an insn = new bytes. Structural kill.
+
+### FRONTIER
+- All measurement axes are closed with named mechanisms (H8 + H12/H13 +
+  K1-K11): target's bytes are reachable ONLY via the dual-variable shape
+  (both masks in multi-block pseudos with explicit sets), which the latest
+  layer-1 ruling BANNED for this function in any spelling, while the score-2
+  chassis (v-staged only, layer-1-approved, applied in src) is provably
+  capped at 2. What remains is a classification/policy decision, not a
+  measurement: either the owner sanctions the dual-variable shape (the s7
+  corollary is direct evidence it was the ORIGINAL source shape — no other
+  C reaches the bytes under the frozen toolchain), or the function is
+  disposed per the endgame-lock policy. Successor sessions should NOT
+  re-probe spellings; if the driver mandates escalation modality, evaluate
+  the two endgame AND-gates against this ledger.
+
+## [s2] The $6/$7 mask-constant swap in the floor-7 chassis is caused by sched1's adjust_priority birthing-insn launch boost, not by chain-length INSN_PRIORITY as s1 modeled
+- mechanism: GCC 2.7.2 sched1 is a reverse list scheduler; computed priorities of all three tail constant insns tie at 1 (PRIODBG); when an insn is scheduled, freed producers are boosted to LAUNCH_PRIORITY 0x7f000001 iff birthing_insn_p (sched.c:2504: single-set REG dest, reg_n_sets==1). The 1-insn high-mask li (reg_n_sets=1) is boosted; the lui+ori low-mask pair (two sets of one pseudo after sched1 try_split, reg_n_sets=2) never can be. Boosted insns place adjacent to consumers, unboosted constants sink to the block head: low mask born luid 18 vs 22, deaths 48/46, so qty_compare_1 (local-alloc.c:1660) priority 12/30 loses to 12/24 and the high mask takes $6
+- probe: BB2_PRIO_DEBUG/BB2_RANK_DEBUG/BB2_SCHED_DEBUG + -da on the instrumented tools/gcc-2.7.2/cc1 over the floor-7 chassis (sandbox 7 re-verified first); ADJPRI trace shows insn 151 birth=1 boosted, insns 185/186 birth=0 never boosted; full launch trace in solo.i.sched block 5
+- result: Mechanism measured and named at file:line granularity; supersedes the s1 chain-length model
+- verdict: CONFIRMED
+
+## [s2] The score-2 chassis' 2-diff constant emission order is structurally locked for every source statement order
+- mechanism: v's tail li is unboosted (multi-set global pseudo, ADJPRI birth=0 measured), the low-mask pair is unboosted, all tie at priority 1; rank_for_schedule's LUID tiebreak (sched.c:2461) preserves RTL chain order through sched1 and sched2 (adjust_priority is a no-op after reload); v's set must dominate stmt1 (stmt1 reads v) while the inline low mask materializes at stmt1, so the high-mask li always precedes the pair
+- probe: dump2.sh forensic run on the applied score-2 form; QTYDBG confirms register correctness (single mask qty reg118 got $6 = target, v global at $7 = target); sandbox = 2 re-verified with edits at rest
+- result: K9's measured invariance now has its mechanism; statement-order axis permanently dead
+- verdict: CONFIRMED
+
+## [s2] Frontier F2 (flip sched1's constant birth order block-locally) is impossible
+- mechanism: The boost asymmetry is invariant: any block-local 1-insn constant with uses is always boosted when freed, any MIPS 2-insn constant splits into two sets of one pseudo and is unboostable; the required >=4-luid birth flip is unreachable, and death-side swings max out at 2 luids
+- probe: Analytic closure grounded in the measured ADJPRI behavior + qty length arithmetic (births 18/22, deaths 48/46)
+- result: Explains H8's 24,288-iteration permuter zero-find; block-local axis closed
+- verdict: KILLED
+
+## [s2] Frontier F1 (honest refs-lift: refs(low mask) to 4 or refs(high mask) to 2) has no site in this function
+- mechanism: The tail block is branchless so duplicated-statement-into-arms has no arms to target; the only branch (a0 diamond) is pre-call and a mask consumed there is live across the call, forcing callee-save/spill head breakage (P1/P2 shape); any other added ref adds an insn = new bytes
+- probe: Structural analysis against the measured block layout (solo.i.sched basic blocks) and the banked P1/P2 head-breakage measurements
+- result: refs-lift axis closed
+- verdict: KILLED
