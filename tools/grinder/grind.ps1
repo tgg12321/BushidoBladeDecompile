@@ -20,7 +20,7 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    [string]$Model = 'claude-fable-5[1m]',
+    [string]$Model = 'claude-opus-5[1m]',
     [string]$JudgeModel = 'claude-fable-5[1m]',
     # Layer-1 (the pre-Judge cheat-reviewer gate) runs on the model the agent
     # definition declares — it is a high-volume, cheap gate whose job is to bounce
