@@ -1,0 +1,37 @@
+{
+ "func": "func_8002FDB0",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "Honest floor 21 -> 0 (90/90 insns byte-exact, 0 rules, 0 pins): the GTE tail is verbatim PsyQ libgte inline-macro text, reconstructed as three canonical GTE islands \u2014 blocked only by the inline_asm_ca"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Authorizing func_8002FDB0 in inline_asm_canonical.txt closes it as COMPLETED-INLINE-ASM-CANONICAL with zero rules and a green oracle.",
+   "mechanism": "The bytes are already proven at honest distance 0; the only gate left is the authorization list, which the queue-done gate consults to distinguish canonical islands from cheat-asm.",
+   "next_probe": "Operator: fresh layer-2 cheat-reviewer on the src/code6cac_b.c diff, then add the func_8002FDB0 line to inline_asm_canonical.txt in the style of line 263, then `verify-oracle --rebuild` and `queue done func_8002FDB0`."
+  },
+  {
+   "hypothesis": "If the owner instead rules the SDK macro scaffolding inadmissible, func_8002FDB0 has no admissible closing form at all and the ruling itself is the disposition.",
+   "mechanism": "The head is already pure-C byte-exact, so every remaining instruction is either a cop2 op or the SDK macro's own `move $12,%0` / `lw $13,0($12)` preamble; neither is reachable from C.",
+   "next_probe": "Record the refusal in the same docs/grind/decisions.md entry and apply it to the whole code6cac cluster rather than re-grinding each member."
+  },
+  {
+   "hypothesis": "The island reconstruction generalizes to the sibling cluster in code6cac_b.c / code6cac.c, retiring their pins and move-aliasing blocks en masse.",
+   "mechanism": "Those functions carry the identical spelling (register asm(\"$12\") pins, `move %0,%1` copies, per-instruction cop2 blocks) around the same PsyQ macro sequences, so the same one-island-per-macro rewrite should reproduce their bytes the same way.",
+   "next_probe": "After the ruling, take one sibling (e.g. the function at code6cac_b.c:1452), apply the candidate.c recipe, and measure sandbox --disable all before and after."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-11T20:58:22.186095+00:00"
+}

@@ -4647,3 +4647,75 @@ plus `volatile s32 pad2[2];`). When either reaches the queue top, one measuremen
 `hole_census.py` row plus the s6 `fdbg.sh` frame gradient on its honest form — confirms it is
 the same single-phantom-region defect before any spelling work is spent, and it should take
 this same disposition rather than re-grinding six modalities.
+
+
+## 2026-08-11 — func_8002FDB0 — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven; blocked only by `inline_asm_canonical.txt`)**
+
+**This is NOT an endgame lock and NOT an exhaustion claim.** The function's target bytes are
+reproduced exactly, in one session, with zero regfix/asmfix rules, zero register pins, zero
+`move %0,%1` aliasing blocks, and zero scheduling barriers. The only thing standing between
+this and a completed queue item is an authorization line in a file a grind session may not
+touch.
+
+**Measurement.** `sandbox func_8002FDB0 --disable all` (cheat-asm stripped, the honest metric):
+**21 → 0**, `build_insns 90 == target_insns 90`. An instruction-by-instruction objdump of
+`tmp/sandbox/func_8002FDB0/code6cac_b.o` against `asm/funcs/func_8002FDB0.s` shows all 90
+instructions identical. The incoming `src/code6cac_b.c` body reached the same bytes only with
+cheat-asm kept (`--keep-cheat-asm` scored 0 at session start, `--disable all` scored 21) — i.e.
+the entire debt was the FORM, and this session replaced that form rather than the logic.
+
+**What the function is.** `s32 func_8002FDB0(s32 *arg0)` computes two difference vectors into
+PS1 scratchpad (six `SCR[dst] = SCR[a+stride] - SCR[b+stride]` blocks, `stride = arg0->[2] * 264`),
+loads one as the GTE rotation matrix and the other as IR1-IR3, runs the GTE `OP` outer-product
+command, stores MAC1-MAC3 to `SCR[0x380]`, and returns `0 < SCR[0x384]`.
+
+**Why authorization is needed.** The 22-instruction GTE tail (target insns 68-89) is the verbatim
+expansion of four PsyQ libgte `inline_c.h` inline macros — `gte_SetRotMatrix`, `gte_ldlvl`,
+`gte_op0`, `gte_stlvnl`. Those SDK macro bodies hardcode `$12`-`$15` and open with `move $12, %0`,
+so the reconstructed form is three multi-instruction canonical GTE islands, and the finished state
+is COMPLETED-INLINE-ASM-CANONICAL rather than COMPLETED-C.
+`tools/audit_asm_cheats.py --func func_8002FDB0` accordingly reports
+`UNAUTHORIZED: ... multi-insn __asm__ block in code6cac_b.c:1923 (7 insns) containing
+non-§6.1-whitelisted instructions`.
+
+**Evidence the tail is SDK macro text, not compiler output** (four independent signals, all in
+the target bytes, none of them a GCC-internals argument):
+1. Three redundant `lui $a1,0x1F80 ; ori $a1,$a1,0x3X0 ; addu $t4,$a1,$zero` sequences. GCC does
+   not materialize a constant into one register and then copy it to a second register that has no
+   other consumer; the copy is the macro's own `move $12, %0`.
+2. A fixed `$12/$13/$14/$15` footprint repeated identically across all three islands, under no
+   register pressure that would force it.
+3. Two unfilled `nop`s (the cop2 `lwc2` load delay) between the `lwc2` triple and the `OP`
+   command — a scheduler would have filled or dropped them.
+4. The three sequences are instruction-for-instruction the published PsyQ `inline_c.h` bodies for
+   `SetRotMatrix` / `ldlvl` / `stlvnl`.
+
+**Precedent for the exact shape.** `inline_asm_canonical.txt:263` — `func_800274BC`, the SAME
+source file, owner-authorized 2026-06-10: a canonical GTE island that likewise carries its
+original island's GPR scaffolding (`addu $t4, %1, $zero`) inside one multi-instruction `__asm__`
+block alongside `mtc2`/`swc2`.
+
+**The pure-C question, answered.** The head (63 instructions: stride computation plus all six
+subtract/store blocks) IS ordinary pure C and matches byte-exactly with no coercion — including
+the first island's `lui/ori` scheduling into the sixth block's load-delay slot, which the incoming
+form had needed an `__asm__ volatile("" ::: "$5")` barrier to force. The tail cannot be pure C:
+no C expression makes GCC materialize a constant into one register and then copy it to a second
+with no consumer, and `ctc2`/`lwc2`/`swc2`/`cop2` have no C form at all. So the choice is
+canonical-asm authorization or nothing; there is no third form to keep grinding for.
+
+**Operator steps to close this out.**
+1. Fresh layer-2 `cheat-reviewer` on the `src/code6cac_b.c` diff for `func_8002FDB0`
+   (self-vet at `memory/grind/func_8002FDB0/self_vet.md`; best form also saved at
+   `memory/grind/func_8002FDB0/candidate.c`).
+2. If PASS: add a `func_8002FDB0` line to `inline_asm_canonical.txt` in the style of the
+   `func_800274BC` entry at line 263, naming the three PsyQ macro islands and this entry.
+3. `engine verify-oracle --rebuild` (full-build SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`).
+4. `queue done func_8002FDB0`, then `python3 tools/check_completion_integrity.py`.
+
+**Follow-on worth taking after the ruling.** `src/code6cac_b.c` and `src/code6cac.c` carry a
+sizeable cluster of sibling functions built from the same pin + `move %0,%1` +
+per-instruction-cop2 spelling (`code6cac_b.c:1452`, `:1651`, `:1726`; `code6cac.c:1960`, `:2025`,
+`:2066`, among others). If this island reconstruction is accepted, the same rewrite very likely
+retires the whole cluster; the recipe is in the header comment of
+`memory/grind/func_8002FDB0/candidate.c`. If instead the owner rules the SDK scaffolding
+inadmissible, that ruling should be recorded here too, because it decides the same cluster.
