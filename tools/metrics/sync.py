@@ -207,8 +207,12 @@ def correct_run_costs(conn):
 # ---------------------------------------------------------------------------
 def parse_transcript(path, is_subagent, parent_run_id):
     """Roll one .jsonl transcript into a run dict (+ per-message timeline + markers)."""
+    # Subagent stems are NOT globally unique: a named agent continued across
+    # sessions leaves same-stem transcript chunks under multiple parents, which
+    # violated agent_runs_pkey. Parent-qualify subagent run_ids.
+    run_id = f"{parent_run_id}:{path.stem}" if is_subagent else path.stem
     run = {
-        "run_id": path.stem, "parent_run_id": parent_run_id,
+        "run_id": run_id, "parent_run_id": parent_run_id,
         "is_subagent": is_subagent, "model": None, "branch": None, "cwd": None,
         "started_at": None, "ended_at": None, "api_ms": 0,
         "in": 0, "out": 0, "cr": 0, "cc": 0, "messages": 0,
