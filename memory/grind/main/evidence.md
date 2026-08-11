@@ -1333,3 +1333,19 @@ standing procedure only.
 - [s21] src/ings.c carries the candidate form (reapplied this session); 21 occurrences now of the revert-reapply cycle
 
 - [s21] s21 ledger entry appended to memory/grind/main/evidence.md documenting the GRANT + layer-1 FAIL and the updated escalation prescription
+
+- [s22] Twelfth consecutive stale worker dispatch (permuter axis dead s4/s5, re-confirmed s13/s14/s21): standing procedure only. Candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py after the 22nd driver revert; sandbox main --disable all = 0 this session (23rd consecutive re-proof): 189/189 insns, 25 rules dropped, 68 cheat-asm stripped from other ings.c functions (tmp/grind/main/s22/sandbox_reproof.log)
+
+- [s22] decisions.md re-checked (4524 lines, last main entry = layer-1 FAIL 2026-08-11 13:49): NO new owner ruling on the 2-byte branch-target residual and NO election of the class-level maspsx ASPSX-parity fill remedy (evidence.md s11 packet). The construct question remains RESOLVED by GRANT cff7f1f5 - not re-escalated. The NEW OWNER-ESCALATION for the residual remains unfiled; per the standing auto-ruling (2026-07-27) part (A), only an escalation-modality session may file it, and this session's mandated modality is permuter. No permuter campaign launched: the frontier prohibits re-measuring the dead permuter axis, and the layer-1 FAIL 13:49 independently confirms no C spelling reaches the oracle (residual is reorg branch TARGETS, masked to 0 by the sandbox metric - not reachable by permuter search over C forms).
+
+- [s22] src/ings.c carries the candidate form (reapplied this session); 22 occurrences now of the revert-reapply cycle
+
+- [s22] sandbox main --disable all = 0 this session (23rd consecutive re-proof): 189/189, rules_dropped=25, cheat_asm_stripped=68 (tmp/grind/main/s22/sandbox_reproof.log)
+
+- [s22] src/ings.c carries the candidate form (reapplied this session; 22nd revert-reapply cycle)
+
+- [s22] decisions.md re-checked: NO new owner action since the 2026-08-11 13:49 layer-1 FAIL; the NEW OWNER-ESCALATION for the 2-byte branch-target residual remains unfiled
+
+- [s22] No permuter campaign launched: the frontier prohibits re-measuring the dead permuter axis (killed s4/s5, ~182k+ iterations historically; re-confirmed s13/s14/s21), and the residual class (reorg branch targets, masked-0) is outside what permuter search over C forms can reach
+
+- [s22] Construct question stays closed by GRANT cff7f1f5 - not re-escalated per the brief's binding instruction

@@ -592,3 +592,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Ledger frontier + decisions.md re-checked this session (GRANT cff7f1f5 at ~line 4438, layer-1 FAIL at ~line 4522 confirm the residual is the sole blocker and is non-C)
 - result: No campaign launched; 0-probe standing-procedure session per the post-s11 frontier prescription
 - verdict: CONFIRMED
+
+## [s22] The standing frontier still holds: no measurable probe remains for a non-escalation worker session on main; the permuter axis (this session's mandate) stays dead
+- mechanism: Permuter searches over C spellings; the residual is 2 bytes of reorg-retargeted branch TARGETS (words [165]/[173]) that the sandbox metric masks to 0 and that no C spelling reaches under the frozen pipeline (unanimous s9/s11-s21, independently confirmed by the 2026-08-11 13:49 layer-1 FAIL banked at faa30607)
+- probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; ran sandbox main --disable all; re-checked docs/grind/decisions.md (4524 lines) for any new owner ruling
+- result: sandbox score 0, 189/189 insns, 25 rules dropped, 68 cheat-asm stripped (other ings.c functions); last main entry in decisions.md is still the 13:49 layer-1 FAIL - no owner ruling on the residual, no election of the maspsx ASPSX-parity remedy; GRANT cff7f1f5 (construct question) unchanged
+- verdict: CONFIRMED
