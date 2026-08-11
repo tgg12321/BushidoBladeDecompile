@@ -1,7 +1,7 @@
 {
  "func": "func_8001E6E4",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,19 @@
    "floor": 19,
    "modality": "structural",
    "headline": "Structural modality measured DEAD: 15 honest spellings (named intermediates, second handles, guard re-association, declaration order/granularity, split-init, ternary, register class) ALL hold vars=72 "
+  },
+  {
+   "session": 3,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "Structural s3: H2 callee-evidence and H3 Kengo axes both measured DEAD; last unswept honest 8-byte spelling (used ps[2] pointer array) reaches vars=80 but materializes stores - frontier collapses to H"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some C shape forces an 8-byte expansion-time stack temp or unallocated pseudo pair that alter_reg pays off (the target's producer)",
-   "mechanism": "phantom-slot-frame-lever: get_frame_size counts temps/slots no insn touches; producers are toolchain-mechanical, enumerable from -da dumps + function.c assign_stack_local call sites",
-   "next_probe": "forensics: compile honest form with -da, enumerate every pseudo in the greg dump (confirm none unallocated) and every assign_stack_temp/assign_stack_local call, then census aggregate-temp-forcing C shapes with the frame probe; structural blind-spelling is exhausted (s1: 3 forms, s2: 15 forms) - do not re-sweep"
-  },
-  {
-   "hypothesis": "The three callees' real argument types reveal a genuine camera struct whose vx sits 8 bytes in - converting the mechanically-proven struct-lead layout from cheat to evidence-grounded",
-   "mechanism": "the pad_lead rejection explicitly left this open: do not re-propose without NEW evidence (the true shared struct with externally-verifiable field semantics)",
-   "next_probe": "read func_80046BF4 / func_8001A538 (MATRIX precedent, commit 7f37c94c) / func_80061064 bodies+callers for the true aggregate extent; probe sibling func_8001E404 jointly (identical +8 gap, any finding transfers)"
-  },
-  {
-   "hypothesis": "Kengo (PS2 successor, partial source) shows the original local declarations for this camera-exec idiom, naming the real leading 8 bytes",
-   "mechanism": "file carries kengo:MED annotation (src/code6cac.c:1374) adjacent to the sibling pair; Lightweight reused the Marionation engine",
-   "next_probe": "search the Kengo source tree for the camera work-buffer exec pattern feeding (&pos, &rot, dist) to three callees; check slog-kengo-dead-end memory first for scope limits"
+   "hypothesis": "Some C shape forces an 8-byte expansion-time stack temp or unallocated pseudo pair that alter_reg pays off (the target's producer) - now the ONLY live axis",
+   "mechanism": "phantom-slot-frame-lever: get_frame_size counts temps/slots no insn touches; producers are toolchain-mechanical, enumerable from -da dumps + function.c assign_stack_local/assign_stack_temp call sites",
+   "next_probe": "forensics modality: compile the honest form with -da, enumerate every pseudo in the greg dump (confirm none unallocated) and every assign_stack_temp/assign_stack_local site; screen aggregate-temp-forcing C shapes with the frame gradient; dump the sibling func_8001E404's struct-copy arm (local = *(CamBuf *)s2) as the one named aggregate-temp producer candidate. Structural spellings (19 forms) and both external evidence axes (callees, Kengo) are measured dead - do not revisit"
   }
  ],
  "judge_constraints": [],

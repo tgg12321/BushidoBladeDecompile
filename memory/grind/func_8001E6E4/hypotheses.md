@@ -127,3 +127,50 @@ externally.
 - probe: frame gradient on B12/B12b separate-locals (diagnostic-only measurement - dead tail never a candidate) and B3 reversed declaration order
 - result: ALL vars=72; GCC 2.7.2 packs these locals with zero inter-local padding (16+8+4+44 = 72 exactly)
 - verdict: KILLED
+
+## [s3] H2: the three callees' real argument types reveal a genuine camera struct whose vx sits 8 bytes in
+- mechanism: evidence-grounding the mechanically-proven struct-lead layout (the pad_lead rejection's explicit reopen condition)
+- probe: read all three callee bodies + the table writer + caller census (src/sound.c:274, src/code6cac.c:687, src/text1b.c:3638, src/code6cac.c:796)
+- result: func_80046BF4 takes discrete (s32 *pos, u16 *rot, s32 dist); func_8001A538 reads its arg0 with vx at OFFSET 0 (0x0/4/8, 0x10/12/14, 0x18) — affirmatively contradicts leading fields; func_80061064 is void(void) and ignores its args; func_8001B3C0 writes the table head as bare word globals; func_8001E6E4 has no in-tree C callers
+- verdict: KILLED
+
+## [s3] H3: Kengo source shows the original local declarations for this camera-exec idiom
+- mechanism: Marionation engine reuse; the file's kengo:MED annotation adjacent to the pair
+- probe: Kengo/ tree census + disassembly of mario_test_Exec (0x135a90), marionation_camera_Exec (0x135560), mottest_camera_control (0x11a500) — artifacts in tmp/grind/func_8001E6E4/s3/
+- result: no Kengo C source or C-locals debug info exists in-repo (kengo_debug_full.txt is .dsm/.vsm line info only); the annotated mario_test_Exec is a Pad_Rpt/fnt_print debug menu (false lead); the PS2 camera layer was rewritten (float/VU0/global-based, no-arg helpers) — the PS1 local work-buffer idiom does not survive
+- verdict: KILLED
+
+## [s3] A genuinely-used pointer-array local (s32 *ps[2] feeding the three calls) reserves the 8 phantom bytes at zero codegen cost
+- mechanism: GCC 2.7.2 allocates local arrays in the frame; array uses might CSE into registers leaving only the slot
+- probe: tmp/grind/func_8001E6E4/s3/probe_ps_array.py frame gradient + emitted-asm inspection (variant_ps_array.s)
+- result: vars=80 / frame 112 reached (first honest spelling to do so) BUT the array stays memory-resident: sw $4,16($sp) / sw $2,20($sp) / lw $4,16($sp) materialize and regs drop 4/0 -> 3/0 (callee-save s2 freed, saves land at wrong offsets). Not codegen-neutral
+- verdict: KILLED
+
+## Frontier after s3
+H1 forensics ONLY: -da greg/combine dump census (enumerate every pseudo +
+confirm none unallocated; census assign_stack_local / assign_stack_temp call
+sites; then aggregate-temp-forcing C shapes screened with the frame gradient).
+Structural spelling space is closed (19 forms across s1/s2/s3: every honest
+addressable-8-byte local costs instructions, every register-allocatable
+spelling stays vars=72). Both external evidence axes (callee types, Kengo) are
+measured dead. The sibling func_8001E404's struct-copy arm
+(`local = *(CamBuf *)s2;`) remains the one named aggregate-temp producer
+candidate to dump alongside the -da census.
+
+## [s3] The three callees' real argument types reveal a genuine camera struct whose vx sits 8 bytes in (H2, the pad_lead rejection's reopen condition)
+- mechanism: evidence-grounding the mechanically-proven struct-lead layout via externally-verifiable field semantics
+- probe: read all three callee bodies + table writer + caller census: src/sound.c:274, src/code6cac.c:687, src/text1b.c:3638, src/code6cac.c:796
+- result: func_80046BF4 takes discrete (s32 *pos, u16 *rot, s32 dist); func_8001A538 reads arg0 with vx at OFFSET 0 (0x0/4/8, 0x10/12/14, 0x18) - affirmatively contradicts leading fields; func_80061064 is void(void) ignoring its args; func_8001B3C0 writes the table head as bare word globals; no in-tree C callers of func_8001E6E4
+- verdict: KILLED
+
+## [s3] Kengo source shows the original local declarations for this camera-exec idiom (H3)
+- mechanism: Marionation engine reuse; kengo:MED nm_mario_test/mario_test_Exec annotation at src/code6cac.c:1374
+- probe: Kengo/ tree census + disassembly of mario_test_Exec, marionation_camera_Exec, mottest_camera_control (artifacts in tmp/grind/func_8001E6E4/s3/)
+- result: no Kengo C source or C-locals debug info exists in-repo (kengo_debug_full.txt is .dsm/.vsm asm line info only); the annotated mario_test_Exec is a Pad_Rpt/fnt_print debug menu (false lead); the PS2 camera layer was rewritten float/VU0/global-based with no-arg helpers - the PS1 local work-buffer idiom does not survive
+- verdict: KILLED
+
+## [s3] A genuinely-used pointer-array local (s32 *ps[2] feeding the three calls) reserves the 8 phantom bytes at zero codegen cost - the one honest addressable-8-byte spelling s1/s2 never swept
+- mechanism: GCC 2.7.2 allocates local arrays in the frame; array element uses might CSE into registers leaving only the slot
+- probe: tmp/grind/func_8001E6E4/s3/probe_ps_array.py cc1 .frame gradient + emitted-asm inspection
+- result: vars=80 / frame 112 reached (first honest spelling to hit target frame size) BUT the array stays memory-resident: sw $4,16($sp) / sw $2,20($sp) / lw $4,16($sp) materialize and regs drop 4/0 -> 3/0 (save block at wrong offsets). Not codegen-neutral
+- verdict: KILLED

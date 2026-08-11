@@ -162,3 +162,85 @@ resolved here (out of this worker's assigned scope).
 - [s2] args=24 alternative for target frame 112 ruled out by elimination: a >4-arg call would store into sp+0x10..0x17 which target never touches, so target is vars=80 and the producer is vars-side
 
 - [s2] src/code6cac.c left byte-identical to HEAD (sweep harness restored it; git diff clean); candidate.c p0 form (floor 19) unchanged as banked best
+
+## Session 3 (grinder, structural, 2026-08-11)
+
+- **H2 (callee-type / true-camera-struct evidence) is DEAD — the callees
+  affirmatively contradict a struct with 8 leading bytes.** All three callee
+  bodies read this session:
+  - `func_80046BF4(s32 *a0, u16 *a1, s32 a2)` (src/sound.c:274, matched) takes
+    DISCRETE pos-pointer / rot-pointer / dist args; it reads exactly a0[0..2]
+    (via walking `s32 *ap`) and a1[0], a1[1], a1[2] — no aggregate view, no
+    negative offsets, nothing before the passed base.
+  - `func_8001A538(s32 *arg0, s32 *arg1)` (src/code6cac.c:687, matched) reads
+    arg0 at offsets 0x0/0x4/0x8 (pos), 0x10/0x12/0x14 (s16 rot), 0x18
+    (arg0[6] = dist) — i.e. it treats the passed pointer as a base with **vx at
+    offset 0**. If the original struct had 8 leading bytes before vx, this
+    callee's own layout would not show vx at +0 of its arg. No leading fields
+    exist from the callee's perspective.
+  - `func_80061064` is defined `void func_80061064(void)` (src/text1b.c:3638,
+    matched) — it IGNORES its arguments entirely (iterates D_800F1150 flags);
+    the caller-side args are vestigial. Zero struct evidence.
+  - The table writer `func_8001B3C0` (src/code6cac.c:796) writes
+    D_800F5328/D_800F532C/D_800F5330 as individual bare word globals copied
+    from a0+0x180/0x184/0x188 — no struct type, consistent with s1's
+    bare-extern finding.
+  - `func_8001E6E4` has NO in-tree C callers (asm-only callers); no caller-side
+    aggregate evidence source exists.
+  Conclusion: the pad_lead rejection's "NEW evidence" condition is not just
+  unmet — the reachable evidence points the other way. Do not revisit the
+  struct-lead layout on the evidence path; only a forensic (H1) producer can
+  ground the 8 bytes.
+- **H3 (Kengo cross-reference) is DEAD as an evidence source.** There is NO
+  Kengo source tree in-repo — Kengo/ holds ELF symbol dumps + an asm-only
+  line-info dump (kengo_debug_full.txt covers only .dsm/.vsm hand-asm files;
+  zero C-local/stab info). Disassembly probes (artifacts in
+  tmp/grind/func_8001E6E4/s3/): the region's `kengo:MED
+  nm_mario_test/mario_test_Exec` annotation (src/code6cac.c:1374) is a
+  Pad_Rpt/fnt_print DEBUG MENU function, not the camera pair — the annotation
+  is a false lead for structure. The real PS2 camera layer
+  (`marionation_camera_Exec` @0x135560, `mottest/robtest/tanren_camera_control`
+  families) was REWRITTEN for PS2: floats + sceVu0 matrix calls + gp-relative
+  global camera structs + no-arg helper calls; the PS1 "fill local
+  pos/rot/dist work buffer from table row, pass (&pos,&rot,dist) to three
+  callees" idiom does not survive anywhere reachable. Kengo cannot reveal the
+  original BB2 local declarations for this pair.
+- **New structural spelling measured and KILLED — genuinely-used pointer-array
+  local `s32 *ps[2]` (the one honest addressable-8-byte shape the s1/s2 sweeps
+  did not cover).** Declared before the struct, ps[0]=&local, ps[1]=s2+0x20,
+  both consumed by the three calls. Frame gradient: **vars=80, frame 112 — the
+  first honest spelling to reach the target frame size** — BUT GCC 2.7.2 keeps
+  the array in memory (no scalarization): emits `sw $4,16($sp)` /
+  `sw $2,20($sp)` / `lw $4,16($sp)` AND drops a callee-save (regs 4/0 → 3/0,
+  s2's pointer now lives in the frame), so total frame is 80+12+16=108→112 by
+  alignment with the save block at the WRONG offsets. Not codegen-neutral;
+  rejected form banked at rejected/ptr-array-ps2-materializes-stores.c.
+  Probe harness: tmp/grind/func_8001E6E4/s3/probe_ps_array.py; asm:
+  variant_ps_array.s. This closes the structural spelling space: every honest
+  addressable-8-byte local costs instructions; every register-allocatable
+  spelling stays vars=72.
+- **Table-row extent side-note (evidence-grounding for the EXISTING CamWork
+  tail, not the lead):** the sibling reads row+0x30/+0x38 (func_8003F3D4) and
+  both functions write row+0x20..0x2B via func_8001A538 — the row type extends
+  to ≥0x40 and CamWork's 72-byte total mirrors the row stride, so pad2[11] is
+  row-shape-grounded. The missing 8 bytes are NOT part of the row type from
+  any observed access.
+- **Frontier after s3: H1 forensics ONLY.** -da greg/combine dump census of
+  every pseudo + assign_stack_local/assign_stack_temp call sites, per the s1
+  probe spec. Structural (s1: 3, s2: 15, s3: 1 forms) and both external
+  evidence axes (callees, Kengo) are measured dead. Next session should run
+  the forensics modality; nothing else remains on this function's map.
+
+- [s3] func_8001A538 (matched, src/code6cac.c:687) reads its arg0 at offsets 0x0/0x4/0x8 (pos), 0x10/0x12/0x14 (s16 rot), 0x18 (dist) - the passed pointer IS the struct base with vx at +0; no leading fields exist from the callee's view
+
+- [s3] func_80046BF4 (matched, src/sound.c:274) takes discrete (s32 *pos, u16 *rot, s32 dist) pointers and reads exactly 3 words / 3 halfwords from them - no aggregate view
+
+- [s3] func_80061064 (matched, src/text1b.c:3638) is defined void(void) and ignores the two args the camera pair passes - they are vestigial; zero struct evidence
+
+- [s3] The kengo:MED annotation for this region (mario_test_Exec) is a false structural lead: it is a debug-menu function; Kengo's actual camera layer (marionation_camera_Exec, *_camera_control) was rewritten for PS2 (float/sceVu0/gp-global, no-arg helpers) and cannot reveal BB2's local declarations
+
+- [s3] s32 *ps[2] genuinely-used pointer-array spelling: vars=80/frame 112 but +3 memory ops and one fewer callee-save (regs 3/0) - structural spelling space now closed at 19 measured forms (s1:3, s2:15, s3:1): every honest addressable-8-byte local costs instructions, every register-allocatable spelling stays vars=72
+
+- [s3] Table-row extent: rows are >=0x40 (sibling reads +0x30/+0x38; both write +0x20..0x2B via func_8001A538), grounding CamWork's 72-byte tail as row-shape - the missing 8 bytes are NOT part of the row type from any observed access
+
+- [s3] src/code6cac.c restored byte-identical after probes (git status clean); candidate.c p0 form (floor 19) unchanged as banked best
