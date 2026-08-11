@@ -1,63 +1,48 @@
 /*
- * CANDIDATE — func_800401CC (src/text1a_pre.c), session s7 (forensics,
- * 2026-08-11). SANDBOX 2/78, verified this session, form APPLIED in
- * src/text1a_pre.c.
+ * CANDIDATE — func_800401CC (src/text1a_pre.c), session s8 (forensics,
+ * 2026-08-11; driver session 3). SANDBOX 0/78, verified this session,
+ * form APPLIED in src/text1a_pre.c.
  *
- * STATUS: this is the BEST ADMISSIBLE form under the current bans. The
- * previous candidate (both masks staged through the two dead-after-call
- * texture-coordinate locals; sandbox 0/78, five independent verifications)
- * was BANNED by the latest layer-1 ruling as a respelling of the invented
- * constant-holder cheat; it is preserved verbatim in
- * rejected/banned-dual-staged-sandbox0.c. The same ruling directed reverting
- * to THIS score-2 v-staged-only chassis (its v-staging was ruled "properly
- * annotated and evidenced" by the first layer-1 review), and also banned
- * citing the staged-value-reused-variable family for any dual-mask staging.
+ * THE CLOSING FORM IS THE OTag BITFIELD SPELLING — no staged variables,
+ * no FAKE annotations, no mask literals anywhere in the function. The
+ * packet-link statements are written exactly like the PsyQ SDK's addPrim
+ * macro (P_TAG bitfield struct access), using the project's existing
+ * sanctioned OTag type (include/gpu.h; user-sanctioned 2026-06-11 when it
+ * closed ot_Insert/ot_Link in gpu.c — see
+ * .claude/rules/bitfield-direction-divergence.md, confirmed-case section,
+ * and src/gpu.c AddPrim which is this exact two-statement idiom).
  *
- * The 2 remaining diffs are the tail constant-load emission order only:
- *   ours:   li $7,0xff000000 ; li $6,0xff0000 ; ori $6,$6,0xffff
- *   target: li $6,0xff0000 ; ori $6,$6,0xffff ; li $7,0xff000000
- * All registers, all other instructions byte-identical.
+ * Requires `#include "gpu.h"` in src/text1a_pre.c (added this session).
  *
- * s7 FORENSIC RESULT (instrumented cc1, artifacts in
- * tmp/grind/func_800401CC/s2/forensics/): the residual is STRUCTURALLY
- * LOCKED for every admissible spelling. Named mechanism chain:
+ * WHY IT CLOSES (s8 forensic dump, tmp/grind/func_800401CC/s3/):
+ * expmed's bitfield insert/extract expansion materializes the two field
+ * masks pre-combine with DIFFERENT reference counts than any
+ * mask-arithmetic spelling can produce:
+ *   QTYDBG blk=5: low-mask qty reg1=117 birth=18 death=48 refs=4 got=$6
+ *                 high-mask qty reg1=121 birth=28 death=46 refs=3 got=$7
+ * refs=4 vs refs=3 flips qty_compare_1 (local-alloc.c:1660): low mask
+ * priority floor_log2(4)*4*4/30 = 32/30 beats high mask 12/18 -> low mask
+ * allocated FIRST -> takes $6, high mask takes $7 (both = target). This is
+ * exactly the honest refs-lift that s1's frontier F1 asked for and that
+ * s7's K11 declared site-less — K11 only considered adding a ref via a
+ * duplicated STATEMENT (new bytes); the bitfield expansion adds the 4th
+ * ref inside the expansion itself and combine folds to the same 78 insns.
+ * The high mask is also born LATER (28 vs 22 in the literal form), so the
+ * emission order (lui+ori low mask first, then the 1-insn high mask li)
+ * matches target too — both residual classes close at once. The s7
+ * corollary ("only the banned dual-staged shape reaches the bytes") was
+ * scoped to mask-ARITHMETIC spellings and is superseded by this form.
  *
- * 1. GCC 2.7.2 sched1 is a REVERSE list scheduler. When a scheduled insn
- *    frees a producer, adjust_priority (sched.c:2543) boosts the producer to
- *    LAUNCH_PRIORITY (0x7f000001) iff birthing_insn_p (sched.c:2504) — i.e.
- *    single-set REG dest (reg_n_sets==1). Boosted insns are picked earlier
- *    in reverse time = placed LATER (adjacent to consumers); unboosted
- *    constants sink to the block head.
- * 2. A 2-insn MIPS constant (lui+ori) is split by sched1's try_split into
- *    TWO sets of ONE pseudo -> reg_n_sets==2 -> NEVER boosted. A 1-insn
- *    block-local constant is ALWAYS boosted when freed. This asymmetry is
- *    invariant over all block-local spellings.
- * 3. Floor-7 (all-inline) chassis: high-mask li boosted, low-mask pair not
- *    -> pair born 4 luids earlier (birth 18 vs 22, deaths 48/46) ->
- *    qty_compare_1 (local-alloc.c:1660) priority 12/24 vs 12/30 -> high
- *    mask allocated first -> takes $6 (target: low mask in $6). Locked.
- * 4. THIS score-2 chassis: v is a multi-set global-alloc'd pseudo (head set
- *    + tail set) -> its li is unboosted (ADJPRI birth=0, measured); the
- *    low-mask pair is unboosted too -> all tie at priority 1 -> the
- *    rank_for_schedule LUID tiebreak (sched.c:2461) preserves RTL chain
- *    order -> v's set (which must dominate stmt1, since stmt1 reads v)
- *    always precedes stmt1's inline low-mask materialization -> li $7
- *    always emitted first. sched2 cannot fix it (adjust_priority is a no-op
- *    after reload). Locked for every source order (confirms K9 with
- *    mechanism).
- * 5. Corollary: the target byte order (low-mask pair BEFORE the high-mask
- *    li, with registers $6/$7 as in target) is reachable ONLY when BOTH
- *    masks live in multi-block (global-alloc'd) pseudos whose explicit sets
- *    control chain order — i.e. exactly the banned dual-staged shape. Every
- *    other axis is measured or analytically dead (H8, H12-H14, K1-K9).
+ * Byte-level proof: tmp/grind/func_800401CC/s3/sandbox_disasm.txt
+ * (sandbox object tail: lui a2,0xff; ori a2,ffff; lui a3,0xff00; 4 ands
+ * on a2/a3; or-dests and sw placement all target-identical).
  */
 void func_800401CC(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     u16 *tbl;
-    s16 u;
-    s32 v;
-    s32 *pkt;
-    s32 *ot;
+    s16 u, v;
+    OTag *pkt;
+    OTag *ot;
 
     a2 = D_800A36AC & 1;
     if (a2 != D_800A3234) {
@@ -77,20 +62,10 @@ void func_800401CC(s32 a0, s32 a1, s32 a2) {
             u = u + 0x80;
         }
         SetDrawMove((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
-        pkt = (s32 *)D_800A3378;
-        ot = (s32 *)D_800A378C;
-        /* FAKE: OT-code mask staged through the dead v-coord local (its value
-           was consumed by the draw call above; the mask is read by both
-           packet-link statements below), mechanism: global.c allocno call-arg
-           copy preference ($a3 from the pre-call (s16)v arg copy) keeps the
-           multi-set pseudo at $a3, removing the high mask from the local-alloc
-           qty pool, lever-exhaustion: memory/grind/func_800401CC/hypotheses.md
-           K1-K4 + P1/P2 + s2-permuter A-probes + s7 forensic proof (sched.c
-           adjust_priority birthing-boost asymmetry locks every block-local
-           spelling) */
-        v = 0xFF000000;
-        *pkt = (*pkt & v) | (ot[0x3FFC / 4] & 0xFFFFFF);
-        ot[0x3FFC / 4] = (ot[0x3FFC / 4] & v) | ((s32)pkt & 0xFFFFFF);
+        pkt = (OTag *)D_800A3378;
+        ot = (OTag *)D_800A378C;
+        pkt->addr = ot[0x3FFC / 4].addr;
+        ot[0x3FFC / 4].addr = (u32)pkt;
         D_800A3378 = (s32)(pkt + 6);
     }
 }

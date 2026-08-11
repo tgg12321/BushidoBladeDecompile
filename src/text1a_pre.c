@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
+#include "gpu.h"
 
 
 extern s16 D_800EED10[];
@@ -43,20 +44,17 @@ extern void SetDrawMove(s32, s16 *, s32, s32);
 
 void func_800401CC(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
-    s32 v0;
     u16 *tbl;
     s16 u, v;
-    s32 *pkt;
-    s32 *ot;
+    OTag *pkt;
+    OTag *ot;
 
-    v0 = D_800A36AC;
-    a2 = v0 & 1;
+    a2 = D_800A36AC & 1;
     if (a2 != D_800A3234) {
         D_800A3378 = (s32)(&D_800A9830 + a2 * 240);
         D_800A3234 = a2;
     }
-    v0 = D_800A3234;
-    if ((s32 *)D_800A3378 != (s32 *)(&D_800A9920 + v0 * 240)) {
+    if ((s32 *)D_800A3378 != (s32 *)(&D_800A9920 + D_800A3234 * 240)) {
         tbl = &D_80094AF4 + a1 * 6;
         buf[0] = *tbl++;
         buf[1] = *tbl++;
@@ -69,11 +67,11 @@ void func_800401CC(s32 a0, s32 a1, s32 a2) {
             u = u + 0x80;
         }
         SetDrawMove((s32)(s32 *)D_800A3378, buf, (s16)u, (s16)v);
-        pkt = (s32 *)D_800A3378;
-        ot = (s32 *)D_800A378C;
-        *pkt = (*pkt & 0xFF000000) | (ot[0x3FFC / 4] & 0xFFFFFF);
+        pkt = (OTag *)D_800A3378;
+        ot = (OTag *)D_800A378C;
+        pkt->addr = ot[0x3FFC / 4].addr;
+        ot[0x3FFC / 4].addr = (u32)pkt;
         D_800A3378 = (s32)(pkt + 6);
-        ot[0x3FFC / 4] = (ot[0x3FFC / 4] & 0xFF000000) | ((s32)pkt & 0xFFFFFF);
     }
 }
 void func_80040304(s32 a0, s32 a1) {

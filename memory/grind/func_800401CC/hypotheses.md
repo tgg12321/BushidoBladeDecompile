@@ -314,5 +314,36 @@
 ## [s2] Frontier F1 (honest refs-lift: refs(low mask) to 4 or refs(high mask) to 2) has no site in this function
 - mechanism: The tail block is branchless so duplicated-statement-into-arms has no arms to target; the only branch (a0 diamond) is pre-call and a mask consumed there is live across the call, forcing callee-save/spill head breakage (P1/P2 shape); any other added ref adds an insn = new bytes
 - probe: Structural analysis against the measured block layout (solo.i.sched basic blocks) and the banked P1/P2 head-breakage measurements
-- result: refs-lift axis closed
-- verdict: KILLED
+- result: refs-lift axis closed — CORRECTED by s8: the kill's scope was
+  statement-level ref sources only; expmed's bitfield expansion supplies the
+  4th ref inside the expansion, byte-neutrally (see H14)
+- verdict: KILLED (statement-level only; superseded for the function by H14)
+
+## Session s8 (forensics, 2026-08-11; driver session 3) — bitfield spelling closes 0/78
+
+### CONFIRMED
+- **H14: the OTag bitfield spelling (PsyQ addPrim idiom) closes the function
+  at sandbox 0/78 with ordinary semantic C — no staging, no holders, no
+  annotations, no mask literals.** Mechanism: expmed's bitfield
+  insert/extract expansion materializes the field masks pre-combine with
+  refs(low mask)=4 vs refs(high mask)=3 (QTYDBG measured), flipping
+  qty_compare_1 so the low mask is allocated first and takes $6, the high
+  mask $7 (both target); the high mask is also born later (28 vs 22), so
+  the constant emission order (pair first, li second) matches target too.
+  One spelling closes both residual classes. Probe: tail rewritten as
+  `pkt->addr = ot[0x3FFC/4].addr; ot[0x3FFC/4].addr = (u32)pkt;` with
+  `OTag *pkt, *ot` (include/gpu.h project type; same spelling that closed
+  ot_Insert/ot_Link 2026-06-11, src/gpu.c AddPrim). sandbox 0/78 verified
+  twice this session (fresh edit + edits at rest); sandbox-object disasm
+  byte-identical to target tail. CONFIRMED.
+- Consequence: the s7 corollary ("target bytes reachable ONLY via the banned
+  dual-staged shape") is SUPERSEDED — it quantified over mask-arithmetic
+  spellings only. K11 corrected (statement-level scope). The banned
+  constructs stay banned and are NOT needed by the closing form.
+
+### FRONTIER
+- (empty — candidate-ready submitted with the natural bitfield form. If the
+  driver's byte verification or layer-1/Judge bounces it, the bounce reason
+  is the new frontier; note this form needs NO family carve-outs — it is
+  ordinary program logic using an existing sanctioned project type, so any
+  bounce would be on grounds not yet seen in this function's history.)

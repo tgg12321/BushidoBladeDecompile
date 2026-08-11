@@ -435,3 +435,48 @@ in the canonical floor-7 form:
 - [s2] Banned dual-staged sandbox-0 form preserved in memory/grind/func_800401CC/rejected/banned-dual-staged-sandbox0.c; candidate.c now holds the admissible score-2 chassis with the full s7 mechanism writeup in its header
 
 - [s2] Ledger updated: evidence.md s7 section (3 forensic results + corollary), hypotheses.md H12/H13 CONFIRMED, K10/K11 KILLED, frontier restated as classification-not-measurement
+
+## Session s8 (forensics, 2026-08-11; driver session 3) — OTag BITFIELD SPELLING = SANDBOX 0/78, no staged variables, no annotations
+
+- Session-start state: src back at the pre-grind 20-form as in every prior
+  session; the brief carried the full ban list (dual-staged form, any invented
+  holder local, the staged-family citation, the two self-authored ruling
+  commits) and directed forensics modality.
+- THE FIND: the function's two packet-link statements are the classic PsyQ
+  addPrim idiom (`p->addr = ot->addr; ot->addr = (u32)p;` on the P_TAG
+  bitfield struct). The project already ships the sanctioned type for exactly
+  this — `OTag` in include/gpu.h (user-sanctioned 2026-06-11, closed
+  ot_Insert/ot_Link in gpu.c; src/gpu.c AddPrim is the identical
+  two-statement shape). NO prior session had tried the bitfield spelling:
+  every probe in K1-K11/H8 was a mask-ARITHMETIC spelling. Rewrote the tail
+  as `pkt->addr = ot[0x3FFC/4].addr; ot[0x3FFC/4].addr = (u32)pkt;` on the
+  floor-7 chassis (inline reads + store-last), added `#include "gpu.h"`,
+  changed pkt/ot to `OTag *` (the 0x3FFC displacement stays inside the
+  loads via the array index; `pkt + 6` = +24 bytes, unchanged).
+  `sandbox --disable all` = **0/78** first try (3 rules dropped, 4 foreign
+  cheat-asm stripped — same counts as every session). Re-verified with edits
+  at rest at session end. The form contains no dead code, no staging, no
+  mask literals, no annotations — it is ordinary semantic C.
+- MECHANISM (instrumented-cc1 QTYDBG, tmp/grind/func_800401CC/s3/): expmed's
+  bitfield insert/extract expansion materializes the field masks pre-combine
+  with an extra low-mask reference no mask-arithmetic spelling can produce
+  byte-neutrally:
+    blk=5: low mask  reg1=117 birth=18 death=48 refs=4 got=$6  (target)
+           high mask reg1=121 birth=28 death=46 refs=3 got=$7  (target)
+  refs 4-vs-3 flips qty_compare_1 (priority 32/30 vs 12/18) -> low mask
+  allocated first -> $6. High mask also born LATER (28 vs the literal form's
+  22), so the emission order matches too (lui+ori pair first, 1-insn li
+  second). ONE natural spelling closes BOTH residual classes. This is the
+  honest F1 refs-lift s7's K11 declared site-less — K11's scope error was
+  considering only duplicated STATEMENTS as ref sources; the expansion adds
+  the 4th ref internally and combine folds to the same 78 insns.
+- The s7 COROLLARY IS SUPERSEDED (scope error, not measurement error): "only
+  the dual-staged shape reaches the bytes" quantified over mask-arithmetic
+  spellings only. The bitfield spelling reaches the bytes naturally, is the
+  probable ORIGINAL source form (SDK macro addPrim / SDK struct access), and
+  moots the entire staging/holder debate for this function: the banned
+  constructs remain banned and are simply not needed.
+- Byte proof artifacts: sandbox object disasm tail byte-identical to
+  asm/funcs target (registers a2/a3, cluster order, or-dests, sw placement).
+- Artifacts: tmp/grind/func_800401CC/s3/{dump.sh,full.i,solo.i,solo.s,
+  solo.err,sandbox_disasm.txt}.

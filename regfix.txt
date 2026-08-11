@@ -6,9 +6,6 @@
 # cdrom_FramesToBcd: GCC picks t2 ($10) for mfhi temp, target uses t3 ($11)
 
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
-func_800401CC: $2 <-> $3 @ 1-5
-func_800401CC: $2 <-> $3 @ 14-21
-func_800401CC: $6 <-> $7 @ 51-68
 
 # gnd_disp_loop_ctrl: switch variable in v1 ($3) instead of a1 ($5)
 func_800174F4: $3 <-> $5 @ 27-41
