@@ -259,3 +259,58 @@ candidate once the driver declares exhaustion.
 - probe: pair_first (Pair2 staged into local.vx/vy), arr_first_used (s32 t[2] in the same role) and rot4_first (Rot4 aggregate copy) screened; then two fresh-seed permuter campaigns with perm_pad_var_decl weight-zeroed, --stack-diffs, --stop-on-zero: s5-pair-first (~25 min, 462+ outputs) and s5-arr-first-used (40409 iterations, ~18 min across two 9-minute windows)
 - result: Layout reproduced exactly — frame 112, buffer at sp+0x18, saves at 0x60-0x6C, 71 insns — and the raw diff drops to 14 differing insn pairs, the closest honest form ever measured on this function (the banked wp chassis is 19). But the staging writes into sp+0x10/0x14 ARE the divergence (target never touches that region; it has 2 scheduling nops and a lui/lw pair there instead), so the family cannot close by construction. Campaigns found no honest score-0: best 16 is semantically INVALID (the permuter repointed `wp` at `q`, so func_80046BF4 would receive the wrong buffer) and the second campaign sat flat at 108. Banked rejected/s5-first-declared-staging-object.c
 - verdict: KILLED
+
+## [s6] H-F1: an allocation entry point OTHER than a declaration (a parameter shape, the static chain, a nonlocal-goto slot) can place 8 bytes in the vars area BELOW the work buffer
+- mechanism: assign_stack_local is called from several places besides expand_decl; anything running inside expand_function_start (assign_parms, the static chain) allocates before the outer block's declarations and would therefore land at vars offset 0 - the one window s5's black-box sweep could not see
+- probe: source census of every assign_stack_local/assign_stack_temp call site in tools/gcc-2.7.2, plus a 10-function instrumented-cc1 probe TU (tmp/grind/func_8001E6E4/s6/prealloc_probe.c, run via s6/run_probe.sh with BB2_FRAME_DEBUG=1) reporting the FRAMEDBG slot census, the .frame line and the insn count for each parameter/call shape
+- result: EMPTY WINDOW. assign_parms can never call assign_stack_local on this target because REG_PARM_STACK_SPACE(fndecl)=16>0 keeps stack_parm non-null (function.c:3489-3500, mips.h:1822); measured, no parameter shape moves vars at all (p_parm_int_addr / p_parm_struct8_unused / p_parm_struct8_used / p_parm_double_unused all vars=72 with the single size=72 slot). An addressable sub-word parm does get a slot but via put_reg_into_stack during expansion, landing ABOVE the buffer (HImode size=2 at frame_offset 72->74, buffer unmoved). The static-chain slot (function.c:5036) is the only genuinely pre-body allocator and needs GNU nested functions, is 4 bytes, and emits a store; nonlocal-goto (stmt.c:669) and __builtin_apply (expr.c:8208) likewise. The 8 bytes can ONLY come from a declaration preceding the buffer - s5's law is now a white-box proof
+- verdict: KILLED
+
+## [s6] H-F2: the target frame is args=24 / vars=72 (the buffer sitting at the outgoing-args boundary), so there is no phantom slot to reproduce at all
+- mechanism: the local base is STARTING_FRAME_OFFSET = current_function_outgoing_args_size (mips.h:1651), so a 17-24 byte outgoing arg block puts the work buffer at sp+0x18 with an ordinary 72-byte vars area; s2 had dismissed this partition by elimination only
+- probe: instrumented-cc1 probes p_call5 (5-word outgoing call) and p_structret (struct-returning callee whose hidden pointer shifts the arg list), reading .frame + emitted asm
+- result: the partition is REAL and reproduces the target's geometry (p_call5: vars=72, args=24, buffer at sp+24; p_structret: vars=80, args=24) - the only mechanism ever measured that moves the buffer up without allocating anything below it - but the stack argument word is always materialized: sw $5,16($sp) (here even in the jal delay slot). Every route to args_size>16 writes into sp+0x10..0x17, and the target provably touches nothing there. Killed by measurement rather than by argument
+- verdict: KILLED
+
+## [s6] H-F3: some function in the binary WRITES an 8-byte lead before a camera-style work buffer, naming the leading fields and satisfying the pad_lead rejection's reopen condition (s5 frontier probe (a), by idiom rather than by callee identity)
+- mechanism: the pad_lead form is mechanically byte-perfect and was FAILed only for want of evidence about what the leading 8 bytes are; an in-binary instance of the same record with its lead written would supply exactly that evidence
+- probe: tmp/grind/func_8001E6E4/s6/lead_census.py over all 1434 asm/funcs/*.s - per-function sp-store offsets, addiu-$sp record bases and jal targets; filters for (A) the 0x10/0x14 + 0x18/0x1c/0x20 shape, (D) address-taken records with >=5 consecutive stored words, (E) written lead at K + pointer handed at K+8, (F) both &rec and &rec+8 taken. Output banked at s6/lead_census.txt
+- result: 52 address-taken multi-word stack records; 14 with the exact written-lead + pointer-at-base+8 shape; NONE of the 14 passes that pointer to func_8001A538 or func_80046BF4. The closest analogues (func_80061C00 / func_80061D74) drive RotMatrix/RotTrans/SetRotMatrix/SetTransMatrix - the ordinary PsyQ SVECTOR-plus-record adjacent-locals idiom, two independent locals, not one wider type with named leading fields. FAILED gate, matching s5's negative by-callee census
+- verdict: KILLED
+
+## Frontier after s6
+The mechanical space is closed at the compiler-entry-point level: the target's
+layout requires an 8-byte object DECLARED BEFORE the work buffer that emits
+zero instructions (only three such constructs exist in GCC 2.7.2 - unused local
+array and unwritten volatile scalar, both forbidden families, and the wider
+declared buffer type = the evidence-gated s1 pad_lead form), and the only
+alternative partition (args=24) is measured to require a store the target does
+not have. Both external evidence searches for the wider type are now negative:
+by callee identity (s5) and by binary-wide idiom (s6). One evidence probe from
+s5's frontier remains UNRUN: the persisted (.data/.bss) instance search - trace
+the D_800F5328 / D_800F6608 row type and D_800A36B4's pointee for a static
+record whose first 8 bytes are written by some function. If that also comes
+back negative, every sanctioned axis on this function is measured dead and the
+function is an owner-escalation candidate: endgame-lock gate (1) is already a
+documented FAIL (scan_hand_coded tier=LOW, 0/8, S1/S2/S6 absent, measured s6),
+and gate (2) has no citable SOTN-master precedent for an invented struct lead,
+so the owner's standing ruling (2026-07-27) would resolve it as REFUSED /
+OWNER-ACCEPTED INCOMPLETE.
+
+## [s6] An allocation entry point OTHER than a declaration (a parameter shape, the static chain, a nonlocal-goto slot) can place 8 bytes in the vars area BELOW the work buffer.
+- mechanism: assign_stack_local is called from several places besides expand_decl; anything running inside expand_function_start (assign_parms, the static-chain slot) allocates before the outer block's declarations and would land at vars offset 0 - the one window s5's black-box sweep could not see.
+- probe: Source census of every assign_stack_local/assign_stack_temp call site in tools/gcc-2.7.2, plus a 10-function instrumented-cc1 probe TU (tmp/grind/func_8001E6E4/s6/prealloc_probe.c via s6/run_probe.sh, BB2_FRAME_DEBUG=1) reporting the FRAMEDBG slot census + .frame line + insn count for each parameter/call shape.
+- result: EMPTY WINDOW. assign_parms can never call assign_stack_local on this target: function.c:3489-3500 keeps stack_parm non-null whenever REG_PARM_STACK_SPACE(fndecl)>0, and mips.h:1822 makes that 16 unconditionally. Measured - p_parm_int_addr, p_parm_struct8_unused, p_parm_struct8_used, p_parm_double_unused all report vars=72 with the single ctx=stack_temp size=72 slot. An addressable sub-word parm does get a slot, but via put_reg_into_stack DURING expansion: ctx=put_reg_into_stack HImode size=2 at frame_offset 72->74 (and 74->76), i.e. ABOVE the buffer, which stays at the base. The only genuinely pre-body allocator is the static-chain slot (function.c:5036, 'Do this first, so it gets the first stack slot offset') - GNU nested functions only, Pmode=4 bytes, followed unconditionally by emit_move_insn. stmt.c:669 (nonlocal goto) and expr.c:8208 (__builtin_apply) likewise. So the 8 bytes can only come from a declaration preceding the buffer; s5's black-box law is now a white-box proof, and the entire 'maybe the original signature/prototype was different' family (extra params, aggregate params, doubles, varargs, struct-returning calls, extra call args) dies in one pass.
+- verdict: KILLED
+
+## [s6] The target frame is args=24 / vars=72 - the work buffer sitting at the outgoing-args boundary - so there is no phantom vars slot to reproduce at all.
+- mechanism: The local base is STARTING_FRAME_OFFSET = current_function_outgoing_args_size (mips.h:1651), so a 17-24 byte outgoing argument block places the buffer at sp+0x18 with an ordinary 72-byte vars area. Session 2 dismissed this partition by elimination only, never by measurement.
+- probe: Instrumented-cc1 probes p_call5 (a 5-word outgoing call) and p_structret (a struct-returning callee whose hidden pointer shifts the arg list), reading the .frame line and the emitted asm.
+- result: The partition is REAL and reproduces the target geometry - p_call5: vars=72, args=24, buffer at sp+24; p_structret: vars=80, args=24 - the only mechanism ever measured on this function that moves the buffer up without allocating anything below it. But the stack argument word is always materialized: sw $5,16($sp) (here even filling the jal delay slot). Every route to args_size>16 (5th scalar arg, 8-byte-aligned arg forced past $a3, struct-return hidden pointer) writes into sp+0x10..0x17, and the target provably touches nothing there. Elimination argument upgraded to a measurement.
+- verdict: KILLED
+
+## [s6] Some function in the binary WRITES an 8-byte lead before a camera-style work buffer, naming the leading fields and satisfying the pad_lead rejection's explicit reopen condition (s5 frontier probe (a): search by idiom, not by callee identity).
+- mechanism: The pad_lead form is mechanically byte-perfect and was FAILed only for want of evidence about what the leading 8 bytes are; an in-binary instance of the same record with its lead written would supply exactly that evidence.
+- probe: tmp/grind/func_8001E6E4/s6/lead_census.py over all 1434 asm/funcs/*.s - per-function sp-relative store offsets, addiu-$sp address-taken record bases, and jal targets; filters (A) stores at 0x10/0x14 plus a triple at 0x18/0x1c/0x20, (D) address-taken records with >=5 consecutive stored words, (E) written lead at K plus pointer handed at K+8, (F) both &rec and &rec+8 taken. Full output banked at s6/lead_census.txt.
+- result: 52 address-taken multi-word stack records; 14 with the exact written-lead + pointer-handed-at-base+8 shape; NONE of the 14 passes that pointer to func_8001A538 or func_80046BF4 (the camera consumers). The closest analogues, func_80061C00 and func_80061D74, drive RotMatrix/RotTrans/SetRotMatrix/SetTransMatrix - the ordinary PsyQ SVECTOR(8B)-plus-record adjacent-locals idiom, i.e. two INDEPENDENT locals, not one wider type with named leading fields. A FAILED gate, matching s5's negative by-callee census.
+- verdict: KILLED

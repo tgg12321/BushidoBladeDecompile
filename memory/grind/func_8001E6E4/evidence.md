@@ -413,3 +413,134 @@ resolved here (out of this worker's assigned scope).
 - [s5] HEAD did NOT carry s4's wp edit (HEAD sandbox --disable all = 21). The banked candidate.c form was re-applied to src/code6cac.c this session and re-measured at 19; left in src as the session's final state.
 
 - [s5] New reusable instrument: tmp/grind/func_8001E6E4/s5/screen.py splices any variant body into the s4 permuter TU, runs the Makefile-mirror pipeline and reports frame line + insn count + objdump diff-line count in one line per variant. NB it must pass REPO-RELATIVE paths to compile.sh and prepend .venv/bin to PATH — absolute paths containing spaces silently yield an empty .o.
+
+## Session 6 (grinder, forensics, 2026-08-11)
+
+- **Instrument used: the instrumented cc1 (`tools/gcc-2.7.2/cc1`, NOT
+  `build/cc1`) with `BB2_FRAME_DEBUG=1`.** Its hook in `assign_stack_local`
+  (tools/gcc-2.7.2/function.c:731-742) prints one
+  `FRAMEDBG func=... ctx=... mode=... size=... frame_offset=...` line per
+  frame-slot allocation, with a context tag naming the caller. Wrappers banked:
+  `tmp/grind/func_8001E6E4/s6/fdbg.sh` (census for one function of a
+  preprocessed TU) and `s6/run_probe.sh` (census + per-function insn count +
+  `.frame` line for a whole probe TU). NB cc1 does NOT run cpp - a probe TU
+  must be preprocessed first or every comment is a parse error.
+- **Census of the honest (wp-chassis) form**: exactly ONE real allocation,
+  `ctx=stack_temp mode=BLKmode size=72 frame_offset=0->72`, then
+  `ctx=round_frame size=0`. So `CamWork local` is allocated through
+  `assign_stack_temp` (expand_decl's path for a BLKmode local), it is the
+  FIRST slot handed out, and nothing whatsoever precedes it. `.frame` =
+  vars 72 / regs 4-0 / args 16 / extra 0 -> 104.
+- **THE FRAME EQUATION IS NOW FULLY PARTITIONED** (mips.c compute_frame_size,
+  line 4444ff): `total = args_size + var_size + gp_reg_rounded + fp_reg_size +
+  extra_size`, where `extra_size = MIPS_STACK_ALIGN(TARGET_ABICALLS ?
+  UNITS_PER_WORD : 0)` = **0 for this build** (no -mabicalls), `fp_reg_size` =
+  0, `gp_reg_rounded` = 16 (s0/s1/s2/ra, matching target's saves at
+  0x60-0x6C), and the local base is `STARTING_FRAME_OFFSET` =
+  `current_function_outgoing_args_size` (mips.h:1651). Target's frame 112 with
+  the buffer at sp+0x18 therefore admits EXACTLY TWO partitions:
+  (A) args=24, vars=72 - the buffer sits at the args boundary and there is no
+  phantom slot at all; (B) args=16, vars=80 - 8 bytes of vars allocated before
+  the buffer.
+- **Partition (A) is now KILLED BY MEASUREMENT, not by elimination** (s2 had
+  only an argument). Probe `p_call5` (a 5-word outgoing call): `.frame` =
+  vars 72 / args 24 / frame 104, and the local really does move to sp+0x18 -
+  the ONLY mechanism ever measured on this function that moves the work buffer
+  up without allocating anything below it - but the 5th argument word is
+  materialized as `sw $5,16($sp)` (it even lands in the jal delay slot). Every
+  route to args_size>16 (a 5th scalar arg, an 8-byte-aligned arg forced past
+  $a3, a struct-returning callee's hidden pointer shifting the list - probe
+  `p_structret`: vars 80 / args 24) writes at least one word into
+  sp+0x10..0x17. The target touches nothing in that region, so args=24 is
+  dead, definitively.
+- **Partition (B): the pre-declaration allocation window on MIPS o32 is
+  PROVABLY EMPTY.** Source census of every `assign_stack_local` /
+  `assign_stack_temp` call site reachable before the first `expand_decl`:
+  * `assign_parms` (function.c:3605 `assign_parms_blk`, :3888
+    `assign_parms_reg`) can only fire when `stack_parm == 0`, and
+    function.c:3489-3500 keeps `stack_parm` non-null whenever
+    `REG_PARM_STACK_SPACE (fndecl) > 0` - which on this target is ALWAYS
+    (mips.h:1822, `MAX_ARGS_IN_REGISTERS*UNITS_PER_WORD - FIRST_PARM_OFFSET`
+    = 16). Measured: probes `p_parm_int_addr`, `p_parm_struct8_unused`,
+    `p_parm_struct8_used`, `p_parm_double_unused` ALL report vars=72 with a
+    single size=72 slot - no parameter shape (extra params, by-value
+    aggregates, doubles, addressable ints) allocates ANY vars byte.
+  * A promoted sub-word parameter whose address is taken DOES get a vars slot,
+    but through `put_reg_into_stack` DURING expansion, i.e. AFTER the decls:
+    measured `p_parm_short_addr` / `p_parm_2short_addr` /
+    `p_parm_short_addr_dead` -> `ctx=put_reg_into_stack mode=HImode size=2` at
+    frame_offset 72->74 (and 74->76); vars rounds to 80 but the 72-byte buffer
+    STAYS at the base. Same "grows at the top" law s5 measured for expansion
+    temps, now confirmed at the compiler-entry-point level.
+  * The only allocator in `expand_function_start` that runs before the body is
+    the static-chain slot (function.c:5036-5045, comment verbatim: "If function
+    gets a static chain arg, store it in the stack frame. Do this first, so it
+    gets the first stack slot offset."). It needs `current_function_needs_context`
+    (a GNU nested function referencing this frame), is Pmode = 4 bytes not 8,
+    and is followed unconditionally by `emit_move_insn (last_ptr,
+    static_chain_incoming_rtx)` - a store. Dead on all three counts.
+  * stmt.c:669 (nonlocal-goto handler slot) likewise needs nested functions and
+    emits `emit_stack_save`; expr.c:8208/8275 are `__builtin_apply`;
+    explow.c:879 is the alloca/VLA save (and per mips.c's own frame diagram
+    alloca space DOES sit below the locals - but it is a runtime `sp`
+    adjustment, incompatible with the target's fixed-offset addressing).
+  Conclusion: the 8 bytes can only come from a DECLARATION preceding the work
+  buffer. s5's black-box law is now a white-box proof, and the whole "maybe the
+  original prototype/signature was different" family - extra parameters,
+  aggregate parameters, doubles, varargs, struct-returning calls, extra call
+  arguments - is measured dead in one pass.
+- **s5's frontier probe (a) RUN AND NEGATIVE: binary-wide census by IDIOM.**
+  `tmp/grind/func_8001E6E4/s6/lead_census.py` scans all 1434 `asm/funcs/*.s`,
+  collecting each function's sp-relative store offsets, `addiu $r,$sp,K`
+  address-taken record bases, and jal targets (full output
+  `s6/lead_census.txt`). Results: 52 functions take the address of a stack
+  record with >=5 consecutive stored words at that base; **14** exhibit the
+  exact pad_lead shape (stores at K and K+4 = a WRITTEN 8-byte lead, plus a
+  triple stored at K+8/K+0xc/K+0x10 whose address K+8 is handed to a callee);
+  and **NONE of those 14 hands the pointer to func_8001A538 or func_80046BF4**
+  (the camera consumers). The nearest analogues, func_80061C00 / func_80061D74,
+  feed `RotMatrix` / `RotTrans` / `SetRotMatrix` / `SetTransMatrix` - i.e. the
+  ordinary PsyQ `SVECTOR` (8 bytes) + record adjacent-locals idiom, two
+  INDEPENDENT locals, not one wider record with named leading fields. The
+  pad_lead rejection's reopen condition therefore fails on the by-idiom search
+  exactly as it failed on s5's by-callee search: a FAILED gate, not an open
+  question.
+- **Canonical-asm gate measured for the first time on this function:**
+  `python3 tools/scan_hand_coded.py --single func_8001E6E4` ->
+  `HAND_CODED: tier=LOW score=0/8`, with S1/S2/S6 (the three signals the
+  endgame-lock gate requires) all absent.
+- src/code6cac.c: HEAD again did NOT carry the wp edit; the banked candidate.c
+  form was re-applied and re-measured this session at **sandbox --disable all =
+  19** (71/71 insns, 139 cheat-asm constructs stripped file-wide), and left in
+  src as the session's final state.
+
+- [s6] The instrumented cc1's BB2_FRAME_DEBUG hook lives in assign_stack_local (function.c:731) and tags each slot with a context (stack_temp / put_reg_into_stack / assign_parms_reg / assign_parms_blk / round_frame); wrappers banked at tmp/grind/func_8001E6E4/s6/fdbg.sh and run_probe.sh. cc1 does not run cpp - preprocess probe TUs first.
+- [s6] Honest-form census: exactly ONE allocation, ctx=stack_temp BLKmode size=72 at frame_offset 0 (CamWork local goes through assign_stack_temp, expand_decl's BLKmode path) - nothing precedes it.
+- [s6] Frame equation partitioned from mips.c compute_frame_size: extra_size is 0 without -mabicalls, fp=0, gp_rounded=16, and the local base is STARTING_FRAME_OFFSET = current_function_outgoing_args_size (mips.h:1651). Target 112 with the buffer at 0x18 admits only (args=24,vars=72) or (args=16,vars=80).
+- [s6] args=24 partition KILLED BY MEASUREMENT (previously only an elimination argument): probe p_call5 reaches vars=72/args=24 and DOES place the local at sp+0x18, but the 5th argument word is materialized as sw $5,16($sp); every route to args>16 (5th scalar, 8-byte-aligned arg past $a3, struct-return hidden pointer - probe p_structret vars=80/args=24) writes into sp+0x10..0x17, which the target never touches.
+- [s6] The pre-declaration allocation window is provably EMPTY on MIPS o32: assign_parms can never call assign_stack_local because REG_PARM_STACK_SPACE(fndecl)=16>0 keeps stack_parm non-null (function.c:3489-3500, mips.h:1822) - measured over int/aggregate/double/addressable parameter shapes, all vars=72.
+- [s6] An addressable sub-word parameter gets its slot from put_reg_into_stack DURING expansion (measured HImode size=2 at frame_offset 72->74), i.e. ABOVE the first local - the same grows-at-the-top law s5 measured for expansion temps, now confirmed at the entry-point level.
+- [s6] The only pre-body allocator in expand_function_start is the static-chain slot (function.c:5036, "Do this first, so it gets the first stack slot offset") - GNU nested functions only, Pmode=4 bytes, and followed unconditionally by a store. Dead on all three counts.
+- [s6] Binary-wide idiom census (1434 funcs, s6/lead_census.py + .txt): 52 address-taken stack records with >=5 consecutive stored words; 14 with the exact pad_lead shape (written 8-byte lead + pointer handed at base+8); ZERO of them hand that pointer to func_8001A538/func_80046BF4. The closest analogues (func_80061C00/func_80061D74) are the ordinary PsyQ SVECTOR+record adjacent-locals idiom - two independent locals, not a wider type. The pad_lead reopen condition FAILS on the by-idiom search too.
+- [s6] scan_hand_coded --single func_8001E6E4 = tier LOW, score 0/8, S1/S2/S6 all absent - endgame-lock gate (1) (canonical-asm) is a documented FAIL for this function.
+- [s6] Floor re-measured this session with the banked candidate applied: sandbox --disable all = 19, 71/71 insns.
+
+- [s6] The instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1); its BB2_FRAME_DEBUG hook sits in assign_stack_local (function.c:731-742) and tags every slot with a context: stack_temp / put_reg_into_stack / assign_parms_reg / assign_parms_blk / round_frame. Wrappers banked at tmp/grind/func_8001E6E4/s6/fdbg.sh and s6/run_probe.sh. cc1 does not run cpp - probe TUs must be preprocessed or every comment is a parse error.
+
+- [s6] Census of the honest wp-chassis form: exactly ONE real allocation, ctx=stack_temp mode=BLKmode size=72 frame_offset 0->72 (CamWork local goes through assign_stack_temp, expand_decl's BLKmode path), then ctx=round_frame size=0. Nothing precedes it. .frame = vars 72 / regs 4-0 / args 16 / extra 0 -> 104.
+
+- [s6] Frame equation partitioned from mips.c compute_frame_size (line 4444ff): total = args_size + var_size + gp_reg_rounded + fp_reg_size + extra_size, with extra_size = MIPS_STACK_ALIGN(TARGET_ABICALLS ? UNITS_PER_WORD : 0) = 0 for this build, fp_reg_size = 0, gp_reg_rounded = 16 (s0/s1/s2/ra = target's saves at 0x60-0x6C), and local base = STARTING_FRAME_OFFSET = current_function_outgoing_args_size (mips.h:1651). Target frame 112 with the buffer at sp+0x18 admits exactly two partitions: (args=24, vars=72) or (args=16, vars=80).
+
+- [s6] args=24 is dead by measurement: p_call5 reaches vars=72/args=24 and does move the local to sp+0x18, but emits sw $5,16($sp); p_structret (struct-returning callee) reaches vars=80/args=24 the same way. Any args_size>16 writes into sp+0x10..0x17, a region the target never touches.
+
+- [s6] The pre-declaration allocation window is provably empty on MIPS o32: assign_parms can never call assign_stack_local because REG_PARM_STACK_SPACE(fndecl)=16>0 keeps stack_parm non-null (function.c:3489-3500 + mips.h:1822). Measured across int / by-value-aggregate / double / addressable-int parameter shapes: all vars=72.
+
+- [s6] An addressable sub-word (promoted-mode) parameter does get a vars slot, but from put_reg_into_stack during expansion - measured HImode size=2 at frame_offset 72->74 - i.e. ABOVE the first local, which never moves. Same grows-at-the-top law s5 measured for expansion temps, now confirmed at the compiler entry point.
+
+- [s6] The only allocator in expand_function_start that precedes the body is the static-chain slot (function.c:5036-5045, comment: 'Do this first, so it gets the first stack slot offset'): GNU nested functions only, Pmode = 4 bytes not 8, and followed unconditionally by emit_move_insn - dead on all three counts. stmt.c:669 (nonlocal goto) needs nested functions too; expr.c:8208/8275 are __builtin_apply; explow.c:879 is the alloca/VLA save, which is a runtime sp adjustment incompatible with the target's fixed-offset addressing.
+
+- [s6] Binary-wide idiom census (1434 asm/funcs scanned, s6/lead_census.py, output s6/lead_census.txt): 52 address-taken stack records with >=5 consecutive stored words; 14 with the exact pad_lead shape (written 8-byte lead plus pointer handed at base+8); zero of them hand that pointer to func_8001A538 or func_80046BF4. Closest analogues func_80061C00/func_80061D74 are the ordinary PsyQ SVECTOR+record adjacent-locals idiom.
+
+- [s6] tools/scan_hand_coded.py --single func_8001E6E4 = tier LOW, score 0/8, with S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) all absent - endgame-lock gate (1), canonical-asm authorization, is a documented FAIL for this function whenever the driver declares exhaustion.
+
+- [s6] HEAD again did not carry the wp edit; the banked candidate.c form was re-applied to src/code6cac.c and re-measured this session at sandbox --disable all = 19, build_insns == target_insns == 71, 139 cheat-asm constructs stripped file-wide. Left in src as the session's final state.

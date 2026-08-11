@@ -16,7 +16,13 @@
  * objdump diff (first-declared 8-byte staging object: 14 differing insn pairs
  * vs this form's 19, full target frame layout reproduced) - but it WRITES the
  * phantom region the target never touches, so it is banked as rejected
- * (rejected/s5-first-declared-staging-object.c), not promoted here. */
+ * (rejected/s5-first-declared-staging-object.c), not promoted here.
+ * s6 (forensics): unchanged as the best banked form; HEAD again lacked the wp
+ * edit, so this form was re-applied to src/code6cac.c and re-measured at
+ * sandbox --disable all = 19 (71/71 insns). s6 closed the mechanical question
+ * at the compiler-entry-point level (instrumented cc1 BB2_FRAME_DEBUG census):
+ * the pre-declaration frame-allocation window is empty on MIPS o32, and the
+ * args=24 partition is measured to require a store the target lacks. */
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;

@@ -1,8 +1,8 @@
 {
  "func": "func_8001E6E4",
  "file": "code6cac",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -39,23 +39,29 @@
    "floor": 19,
    "modality": "permuter",
    "headline": "Permuter s5: H1 (expansion-temp census) KILLED on structural grounds \u2014 GCC 2.7.2 allocates frame slots in declaration order, so no temp/spill/inner-scope object can ever sit BELOW the work buffer; two"
+  },
+  {
+   "session": 6,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "Forensics closed the frame question at the compiler-entry-point level: the pre-declaration allocation window is provably empty on MIPS o32, the args=24 partition is measured to require a store the tar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The work buffer's original declared TYPE is wider by 8 leading bytes (the s1 pad_lead shape) and some OTHER function in the binary writes those leading fields, which would name them and satisfy the pad_lead rejection's explicit reopen condition",
-   "mechanism": "a first-declared wider aggregate is the only zero-instruction, allocated-before-the-buffer construct GCC 2.7.2 offers that is not a forbidden family; the block is evidence, not mechanism",
-   "next_probe": "binary-wide census BY IDIOM rather than by callee identity (s5 only checked the 4 in-tree callers of func_8001A538/func_80046BF4): scan asm/funcs for functions whose frame stages a local buffer and passes (&pos,&rot,dist)-shaped args, and look for one that WRITES its buffer's leading 8 bytes"
+   "hypothesis": "A persisted (.data/.bss) instance of the same camera record exists whose first 8 bytes are written somewhere, giving the leading fields externally-verifiable semantics and satisfying the pad_lead rejection's reopen condition.",
+   "mechanism": "Same evidence gate as the (now negative) stack-idiom census, sourced from static data rather than from another stack frame; this is the last of s5's two frontier evidence probes and the only one still unrun.",
+   "next_probe": "Trace the D_800F5328 / D_800F6608 row type (writers beyond func_8001B3C0) and D_800A36B4's pointee for a static record whose layout puts vx 8 bytes in - e.g. scan asm/funcs for %lo(D_800F53xx)/%lo(D_800F66xx) stores at row-8/row-4 offsets and for base-register stores into the two rows' leading words. A negative result is a FAILED gate, not an open question."
   },
   {
-   "hypothesis": "A persisted (.data/.bss) instance of the same camera record exists whose first 8 bytes are written somewhere, giving the leading fields externally-verifiable semantics",
-   "mechanism": "same evidence gate as above, sourced from static data rather than from another stack frame",
-   "next_probe": "trace the D_800F5328 / D_800F6608 row type (writers beyond func_8001B3C0) and D_800A36B4's pointee for a record whose layout puts vx 8 bytes in; a negative result is a FAILED gate, not an open question"
+   "hypothesis": "Nothing honest remains and the function is an owner-escalation candidate (both endgame-lock gates fail).",
+   "mechanism": "Mechanical space is now closed at the compiler-entry-point level (frame equation partitioned, pre-declaration window provably empty, args=24 measured store-costly, structural spelling space 19 forms, mutation space 4 seeds); only the last evidence probe above is open.",
+   "next_probe": "If the .data/.bss census comes back negative, the driver's next exhaustion call should route to escalation modality; gate (1) is already measured FAIL (scan_hand_coded tier=LOW 0/8, S1/S2/S6 absent) and gate (2) has no citable SOTN-master precedent for an invented struct lead, so the owner's standing ruling (2026-07-27) resolves it as REFUSED / OWNER-ACCEPTED INCOMPLETE."
   },
   {
-   "hypothesis": "Nothing honest remains and the function is an owner-escalation candidate (both endgame-lock gates fail)",
-   "mechanism": "mechanical space is closed (structural 19 forms, mutation space 4 seeds, expansion temps structurally impossible); only the evidence gate is open",
-   "next_probe": "if the two censuses above come back negative, the driver's next exhaustion call should route to escalation modality; scan_hand_coded has not been run on this function and would need a STRONG S1/S2/S6 tier to open the canonical-asm gate"
+   "hypothesis": "The wp staging discovery and this session's frame partition transfer wholesale to sibling func_8001E404 (identical idiom, identical 0x70 frame with locals from 0x18 and the same untouched sp+0x10..0x17 region).",
+   "mechanism": "Same file, same CamBuf/CamWork idiom, same committed pre_pad cheat; whatever grounds one grounds the other, and the s6 instruments (fdbg.sh, run_probe.sh, lead_census.py) apply unchanged.",
+   "next_probe": "When the sibling reaches the top of the queue, run fdbg.sh on its honest form first - one census answers whether its residual is the same single phantom-slot problem before any spelling work is spent."
   }
  ],
  "judge_constraints": [],
