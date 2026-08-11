@@ -1,7 +1,7 @@
 {
  "func": "func_8001E6E4",
  "file": "code6cac",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 19,
    "modality": "forensics",
    "headline": "Forensics closed the frame question at the compiler-entry-point level: the pre-declaration allocation window is provably empty on MIPS o32, the args=24 partition is measured to require a store the tar"
+  },
+  {
+   "session": 7,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "Forensics s7: last evidence axis (persisted .bss instance) KILLED and contradictory; alignment-before-first-slot and pretend_args_size closed white-box; binary-wide census finds NO honest in-tree prec"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A persisted (.data/.bss) instance of the same camera record exists whose first 8 bytes are written somewhere, giving the leading fields externally-verifiable semantics and satisfying the pad_lead rejection's reopen condition.",
-   "mechanism": "Same evidence gate as the (now negative) stack-idiom census, sourced from static data rather than from another stack frame; this is the last of s5's two frontier evidence probes and the only one still unrun.",
-   "next_probe": "Trace the D_800F5328 / D_800F6608 row type (writers beyond func_8001B3C0) and D_800A36B4's pointee for a static record whose layout puts vx 8 bytes in - e.g. scan asm/funcs for %lo(D_800F53xx)/%lo(D_800F66xx) stores at row-8/row-4 offsets and for base-register stores into the two rows' leading words. A negative result is a FAILED gate, not an open question."
+   "hypothesis": "Nothing honest remains on this function and the exhaustion call now belongs to the driver: every mechanical axis is closed white-box and every evidence axis is measured negative, so the correct next modality is `escalation`, not another probe modality.",
+   "mechanism": "Frame equation partitioned with EVERY term audited (args / vars / gp / fp / extra / pretend); args=24 measured to require a store the target lacks (s6); pre-declaration allocation window provably empty (s6); alignment can never pad before the first slot (s7); expansion-time objects grow the frame at the top (s5); structural spelling space 19 measured forms (s1-s3); mutation space four permuter seeds / ~100k iterations (s4-s5); evidence gate for the only mechanically-perfect form failed on three independent paths (s3/s5, s6, s7).",
+   "next_probe": "Driver: assign `escalation`. Endgame-lock gate (1) is a documented FAIL (scan_hand_coded --single func_8001E6E4 = tier LOW 0/8, S1/S2/S6 absent, measured s6) and gate (2) has no citable SOTN-master precedent for an invented struct lead, so the owner's standing ruling (2026-07-27) resolves it as REFUSED / OWNER-ACCEPTED INCOMPLETE. If instead another grinding modality is assigned, note that no session has a live hypothesis to spend it on - the ledger's frontier is empty by measurement, not by neglect."
   },
   {
-   "hypothesis": "Nothing honest remains and the function is an owner-escalation candidate (both endgame-lock gates fail).",
-   "mechanism": "Mechanical space is now closed at the compiler-entry-point level (frame equation partitioned, pre-declaration window provably empty, args=24 measured store-costly, structural spelling space 19 forms, mutation space 4 seeds); only the last evidence probe above is open.",
-   "next_probe": "If the .data/.bss census comes back negative, the driver's next exhaustion call should route to escalation modality; gate (1) is already measured FAIL (scan_hand_coded tier=LOW 0/8, S1/S2/S6 absent) and gate (2) has no citable SOTN-master precedent for an invented struct lead, so the owner's standing ruling (2026-07-27) resolves it as REFUSED / OWNER-ACCEPTED INCOMPLETE."
+   "hypothesis": "The disposition for this function should cover THREE functions, not two: func_8003CF84 is the same defect with a 16-byte lead.",
+   "mechanism": "s7's binary-wide hole census shows the untouched-leading-frame-hole shape occurs in exactly four functions, three of which are game code (the two camera siblings plus func_8003CF84); func_8003CF84's committed C solves it with `volatile s32 pad[4];` declared first (plus `volatile s32 pad2[2];`), the identical forbidden construct the camera pair uses as pre_pad.",
+   "next_probe": "When func_8003CF84 (queue, distance 28) reaches the top, run s7/hole_census.py's row for it and the s6 fdbg.sh census on its honest form FIRST - one measurement confirms it is the same single-phantom-region problem before any spelling work is spent, and its owner disposition should be decided jointly with the camera pair."
   },
   {
-   "hypothesis": "The wp staging discovery and this session's frame partition transfer wholesale to sibling func_8001E404 (identical idiom, identical 0x70 frame with locals from 0x18 and the same untouched sp+0x10..0x17 region).",
-   "mechanism": "Same file, same CamBuf/CamWork idiom, same committed pre_pad cheat; whatever grounds one grounds the other, and the s6 instruments (fdbg.sh, run_probe.sh, lead_census.py) apply unchanged.",
-   "next_probe": "When the sibling reaches the top of the queue, run fdbg.sh on its honest form first - one census answers whether its residual is the same single phantom-slot problem before any spelling work is spent."
+   "hypothesis": "The sibling func_8001E404 is closed by whatever closes this one, and every s4-s7 instrument transfers to it unchanged.",
+   "mechanism": "Identical idiom, identical 0x70 frame with locals from 0x18, identical untouched sp+0x10..0x17 region, identical committed pre_pad cheat, same file.",
+   "next_probe": "When the sibling reaches the top of the queue, apply the s4 `wp` staging chassis to its honest form and run the frame gradient once - if its residual also collapses to the pure +8 sp shift, the two functions are provably one problem and should be dispositioned together."
   }
  ],
  "judge_constraints": [],

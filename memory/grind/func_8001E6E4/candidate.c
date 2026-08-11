@@ -22,7 +22,17 @@
  * sandbox --disable all = 19 (71/71 insns). s6 closed the mechanical question
  * at the compiler-entry-point level (instrumented cc1 BB2_FRAME_DEBUG census):
  * the pre-declaration frame-allocation window is empty on MIPS o32, and the
- * args=24 partition is measured to require a store the target lacks. */
+ * args=24 partition is measured to require a store the target lacks.
+ * s7 (forensics): still the best banked form, unchanged; HEAD once more lacked
+ * the wp edit, so this form was re-applied to src/code6cac.c and re-measured at
+ * sandbox --disable all = 19 (71/71 insns). s7 closed the two remaining gaps in
+ * the closure argument: alignment can never pad before the FIRST frame slot
+ * (assign_stack_local does CEIL_ROUND(frame_offset=0, alignment) == 0 with
+ * FRAME_GROWS_DOWNWARD undefined on MIPS), and the last unaudited frame-equation
+ * term (pretend_args_size, mips.c:4531) is n64-only hence zero on o32. It also
+ * ran the last evidence probe: the 8 bytes below BOTH persisted camera rows are
+ * never touched anywhere in the binary, and no function in the 1434-function
+ * binary produces an untouched leading frame hole from honest C. */
 typedef struct {
     s32 vx, vy, vz;
     s32 pad0;

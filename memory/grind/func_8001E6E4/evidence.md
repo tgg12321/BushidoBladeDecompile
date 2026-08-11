@@ -544,3 +544,93 @@ resolved here (out of this worker's assigned scope).
 - [s6] tools/scan_hand_coded.py --single func_8001E6E4 = tier LOW, score 0/8, with S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) all absent - endgame-lock gate (1), canonical-asm authorization, is a documented FAIL for this function whenever the driver declares exhaustion.
 
 - [s6] HEAD again did not carry the wp edit; the banked candidate.c form was re-applied to src/code6cac.c and re-measured this session at sandbox --disable all = 19, build_insns == target_insns == 71, 139 cheat-asm constructs stripped file-wide. Left in src as the session's final state.
+
+## Session 7 (grinder, forensics, 2026-08-11)
+
+- **s5/s6's LAST unrun frontier probe is RUN and NEGATIVE — and it points the
+  other way.** Probe: `tmp/grind/func_8001E6E4/s7/bss_lead_census.py` (output
+  `s7/bss_lead_census.txt`). It emulates the `%hi/%lo` address-materialization
+  idiom across all 1434 `asm/funcs/*.s` (symbol grep alone is insufficient —
+  base-register stores are invisible to `%lo(SYM)` grep, see
+  [[base-register-store-invisible-to-symbol-grep]]), resolving every
+  `lui/addiu %hi+%lo` + `lw/sw/lh/sh/lb/sb N($r)` pair to an effective address,
+  and reports every access landing in a window around the two persisted camera
+  rows. Result: **`0x800F5320` / `0x800F5324` and `0x800F6600` / `0x800F6604`
+  (the 8 bytes immediately BELOW each row base) are NEVER TOUCHED by any
+  instruction in the binary.** Both persisted records begin exactly at the base
+  this function uses. Worse for the lead hypothesis, the persisted instance's
+  own access pattern MIRRORS the local's with vx at offset 0:
+  D_800F6608(+0) / 660C(+4) / 6610(+8) = vx,vy,vz; 6618/661A/661C(+0x10,+0x12,
+  +0x14) = rx,ry,rz; 6620(+0x18) = dist — the same field geometry
+  func_8001A538 exhibits from the callee side (s3). The nearest lower symbol,
+  D_800F65F8/65F9, is a byte-flag pair 0x10 below with 0x65FA..0x6607 wholly
+  untouched, i.e. a distinct object, not a lead. **The pad_lead rejection's
+  reopen condition has now failed on all three independent evidence paths:
+  by callee identity (s3/s5), by binary-wide stack idiom (s6), and by persisted
+  .bss instance (s7).** This is a FAILED gate, not an open question.
+- **NEW: binary-wide census of the DEFECT ITSELF (probe H-F5,
+  `s7/hole_census.py`, output `s7/hole_census.txt`).** For every function with
+  a `jal` and a frame >= 0x20, it parses the prologue frame size, every
+  sp-relative memory offset, every `addiu $r,$sp,K` record base, and the
+  callee-save block, then reports an untouched leading vars hole (>= 8 bytes
+  between the 0x10 args boundary and the lowest touched vars offset). Across
+  all 1434 functions there are exactly **FOUR**: `sprintf` (PsyQ library,
+  varargs, 512-byte internal buffer — not in src), **`func_8003CF84`**
+  (16-byte hole at sp+0x10..0x1F, frame 0x48), and the two camera siblings
+  `func_8001E6E4` / `func_8001E404` (8-byte hole, frame 0x70). So:
+  * There is **NO in-tree function that produces an untouched leading frame
+    hole from honest C** — no precedent to copy exists anywhere in the binary.
+  * **`func_8003CF84` (src/code6cac_c2.c:862, queue distance 28, 0 rules) is a
+    THIRD member of this exact family** and its committed C solves it with the
+    same forbidden construct: `volatile s32 pad[4];` declared first (the 16-byte
+    hole) plus `volatile s32 pad2[2];` (a second untouched region at 0x2C).
+    Whatever disposition this pair gets should cover all three; grinding
+    func_8003CF84 independently will rediscover exactly this wall.
+- **The frame equation is now closed with EVERY term checked (the one term s6's
+  partition omitted).** `mips.c:4531` adds
+  `MIPS_STACK_ALIGN (current_function_pretend_args_size)` to `total_size` —
+  but only under `if (ABI_64BIT && mips_isa >= 3)`, i.e. n64 only; this build is
+  o32, so the term is identically zero (and `INITIAL_ELIMINATION_OFFSET`,
+  mips.h:1758, subtracts it under the same guard). Varargs / pretend-args is
+  therefore not a route to shifting the work buffer either.
+- **NEW named-mechanism kill: alignment padding can never precede the first
+  frame slot.** Read of `assign_stack_local` (`tools/gcc-2.7.2/function.c:669-742`):
+  `FRAME_GROWS_DOWNWARD` is NOT defined for MIPS (mips.h:1645 has it commented
+  out), so the allocator does `frame_offset = CEIL_ROUND (frame_offset,
+  alignment)` and then `frame_offset += size`. `frame_offset` starts at 0, and
+  `CEIL_ROUND(0, A) == 0` for every power-of-two A — including the BLKmode case
+  where `alignment = BIGGEST_ALIGNMENT/8 = 8` (mips.h:1082). **The
+  first-allocated slot therefore ALWAYS lands at vars offset 0 regardless of its
+  type, size or alignment**, and no declared-type / alignment trick (a `double`
+  or `long long` member, an aligned aggregate, a wider first local) can open a
+  gap beneath it. The `bigend_correction` branch is also inert here (it needs
+  `BYTES_BIG_ENDIAN`, and this build is `-mel`; it also only shifts WITHIN an
+  allocated slot, never the slot's base). This kills the last untested member of
+  the "make the buffer land higher" family.
+- **Floor re-measured this session.** HEAD again did not carry the `wp` edit
+  (the ledger's banked candidate is re-applied every session and never
+  committed): re-applied to src/code6cac.c and measured
+  **sandbox --disable all = 19**, target_insns == build_insns == 71, 139
+  cheat-asm constructs stripped file-wide. Left in src as the session's final
+  state.
+
+- [s7] Persisted-instance census (s7/bss_lead_census.py, %hi/%lo effective-address emulation over all 1434 asm/funcs): the 8 bytes below BOTH camera row bases (0x800F5320/24 and 0x800F6600/04) are never touched by any instruction in the binary, and the persisted rows' own field geometry (base+0/+4/+8 = vx,vy,vz; +0x10/+0x12/+0x14 = rx,ry,rz; +0x18 = dist) mirrors the local with vx at offset 0. The pad_lead reopen condition has now failed on all three evidence paths: callee identity (s3/s5), stack idiom (s6), persisted .bss instance (s7).
+- [s7] Binary-wide census of the DEFECT (s7/hole_census.py): exactly four functions in 1434 have a >=8-byte untouched leading vars hole - sprintf (PsyQ varargs library), func_8003CF84 (16-byte hole, solved in-tree with `volatile s32 pad[4]` + `volatile s32 pad2[2]`, queue distance 28), and the two camera siblings. No in-tree function produces such a hole from honest C, so no copyable precedent exists anywhere in the binary.
+- [s7] func_8003CF84 (src/code6cac_c2.c:862) is a THIRD member of this exact phantom-lead family, currently carrying the same forbidden unwritten-volatile-array construct - any disposition for the camera pair should cover it too.
+- [s7] The one frame-equation term s6 omitted is measured dead: mips.c:4531 adds MIPS_STACK_ALIGN(current_function_pretend_args_size) only under `if (ABI_64BIT && mips_isa >= 3)`, so it is identically zero on o32 (same guard in INITIAL_ELIMINATION_OFFSET, mips.h:1758). Varargs/pretend-args cannot shift the work buffer.
+- [s7] Alignment can NEVER pad before the first frame slot: FRAME_GROWS_DOWNWARD is undefined for MIPS (mips.h:1645), assign_stack_local (function.c:669-742) does frame_offset = CEIL_ROUND(frame_offset, alignment) with frame_offset starting at 0, and CEIL_ROUND(0,A)==0 for every power-of-two A (BLKmode uses BIGGEST_ALIGNMENT/8 = 8, mips.h:1082). So the first-allocated slot always lands at vars offset 0 whatever its type/size/alignment, and the bigend_correction branch is inert under -mel (and only shifts within a slot). No declared-type or alignment trick can open a gap beneath the work buffer.
+- [s7] Floor re-measured with the banked candidate re-applied: sandbox --disable all = 19, build_insns == target_insns == 71.
+
+- [s7] [s7] Persisted-instance census (s7/bss_lead_census.py, %hi/%lo effective-address emulation over all 1434 asm/funcs): the 8 bytes below BOTH camera row bases (0x800F5320/24 and 0x800F6600/04) are never touched by any instruction in the binary, and the persisted rows' own geometry mirrors the local with vx at offset 0 (base+0/+4/+8 = vx,vy,vz; +0x10/+0x12/+0x14 = rx,ry,rz; +0x18 = dist). The pad_lead reopen condition has now failed on all three evidence paths: callee identity (s3/s5), stack idiom (s6), persisted .bss instance (s7).
+
+- [s7] [s7] Binary-wide census of the DEFECT (s7/hole_census.py): exactly four functions in 1434 have a >=8-byte untouched leading vars hole - sprintf (PsyQ varargs library, not in src), func_8003CF84 (16-byte hole, solved in-tree with `volatile s32 pad[4]` + `volatile s32 pad2[2]`, queue distance 28), and the two camera siblings. No in-tree function produces such a hole from honest C, so no copyable precedent exists anywhere in the binary.
+
+- [s7] [s7] func_8003CF84 (src/code6cac_c2.c:862, queue distance 28, 0 rules) is a THIRD member of this exact phantom-lead family, carrying the same forbidden unwritten-volatile-array construct - any disposition for the camera pair should cover it too, and grinding it independently will rediscover exactly this wall.
+
+- [s7] [s7] The one frame-equation term s6 omitted is measured dead: mips.c:4531 adds MIPS_STACK_ALIGN(current_function_pretend_args_size) to total_size only under `if (ABI_64BIT && mips_isa >= 3)`, so it is identically zero on o32 (same guard in INITIAL_ELIMINATION_OFFSET, mips.h:1758). Varargs / pretend-args cannot shift the work buffer.
+
+- [s7] [s7] Alignment can NEVER pad before the first frame slot: FRAME_GROWS_DOWNWARD is undefined for MIPS (mips.h:1645), assign_stack_local (function.c:669-742) does frame_offset = CEIL_ROUND(frame_offset, alignment) with frame_offset starting at 0, and CEIL_ROUND(0,A) == 0 for every power-of-two A (BLKmode uses BIGGEST_ALIGNMENT/8 = 8, mips.h:1082). The first-allocated slot always lands at vars offset 0 whatever its type/size/alignment; bigend_correction is inert under -mel and only shifts within a slot. No declared-type or alignment trick can open a gap beneath the work buffer.
+
+- [s7] [s7] Floor re-measured with the banked candidate re-applied to src/code6cac.c (HEAD again lacked the wp edit): sandbox --disable all = 19, build_insns == target_insns == 71, 139 cheat-asm constructs stripped file-wide. Left in src as the session's final state.
+
+- [s7] [s7] Symbol-level check corroborating the census: no splat symbol exists at D_800F5320/5324 or D_800F6600/6604, and no reference to any address in 0x800F52E0-0x800F5327 or 0x800F65FA-0x800F6607 appears in asm/funcs, src/*.c or include/*.h.
