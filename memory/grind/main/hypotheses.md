@@ -421,3 +421,42 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied the full candidate (4 edits incl. the owner-granted FAKE-annotated chained accumulation) after the ninth driver revert; ran sandbox main --disable all; re-grepped docs/grind/decisions.md for main entries
 - result: sandbox = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped — all in other ings.c functions); grant entry present at ~line 4438 (GRANTED, function REOPENED, 4 binding conditions); still no OWNER-ESCALATION entry covering the branch-target residual (the ~4477 entry is the pre-grant family question the grant resolved)
 - verdict: CONFIRMED
+
+## [s11] Synthesis: the ledger's nine sessions merge into a single coherent account with no internal contradictions and no unprobed worker axis
+- mechanism: synthesis modality — full re-read of evidence.md + hypotheses.md + rejected/ + candidate.c, cross-checked against live state (src/ings.c, decisions.md, sandbox)
+- probe: reapplied candidate.c after the 10th driver revert; sandbox main --disable all = 0 (189/189, 25 rules dropped; tmp/grind/main/s10/sandbox_reproof.json); decisions.md re-checked (grant cff7f1f5 at line 4438; no residual-covering escalation entry — line 4477 is the resolved pre-grant family question); verified the seven modality kills (s1-s9) are each backed by banked artifacts and none conflicts with another
+- result: the account is consistent and complete — candidate C = original source shape (cc1psx exhibit), residual = 2 branch-displacement words produced by reorg's multi-site self-healing redundancy machinery (s7 grid), unreachable from any C spelling (s3 enumeration, s9 rederive), invisible to every auto-search scorer (s5), with both endgame-lock gates measured failed (s8 + s3); the merged packet statement is written self-contained in evidence.md s11
+- verdict: CONFIRMED
+
+## Live frontier (post-s11 — SYNTHESIS RESET; supersedes all earlier frontiers)
+1. **File the OWNER-ESCALATION (escalation modality ONLY).** Both endgame-lock
+   AND-gates are measured FAILED (gate 1: scan_hand_coded LOW 0/8, s8;
+   gate 2: moot — the residual is not a C construct, s3), so per the
+   2026-07-27 standing auto-ruling the entry is pre-decided: title it
+   "OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+   OWNER-ACCEPTED INCOMPLETE", state both gates' evidence, note the owner
+   GRANT cff7f1f5 already resolved the only construct question, and present
+   the owner's optional alternative: the class-level maspsx ASPSX-parity
+   fill remedy (full fill-algorithm reimplementation, whole-corpus blast
+   radius, 12 census candidates — mechanism proven on main only). Cite the
+   consolidated packet in evidence.md s11 (it carries the full artifact
+   list). Return owner-gated with escalation_ref naming the entry.
+2. **Any non-escalation worker dispatch (stale digest): run the standing
+   procedure only.** Reapply memory/grind/main/candidate.c (4 edits; grep
+   for "func_80016A8C((u8 *)0x80118800, env, idx)", "lim = lim - 1", the
+   FAKE annotation, "func_80016E60(env, idx)"), re-measure sandbox 0,
+   re-check decisions.md for a residual-covering entry, return progress
+   citing this frontier. Do NOT re-probe any axis: spelling, structural,
+   permuter, sibling, forensics, gate-scan, rederive all carry measured
+   kills (s1-s9). candidate-ready is impossible (true bytes 2 off; driver
+   byte re-verify would discard it).
+3. **Session-start invariant (10 reverts and counting):** the driver
+   discards uncommitted src edits every session; only the ledger persists.
+   candidate.c is authoritative; never trust the digest floor without the
+   reapply-and-reprove step.
+
+## [s10] The ledger's nine sessions merge into a single coherent account with no internal contradictions and no unprobed worker axis
+- mechanism: Synthesis modality: full re-read of evidence.md + hypotheses.md + rejected/ + candidate.c cross-checked against live state (src/ings.c, decisions.md, sandbox). Candidate C = original source shape (s3 cc1psx counter-exhibit); residual = 2 branch-displacement words ([165]/[173], .L8001727C vs .L80017278) produced by reorg's multi-site self-healing redundancy machinery (s7 counterfactual grid); unreachable from any C spelling (s3 seven-hatch enumeration, s9 rederive kill); invisible to every auto-search scorer (s5 permuter blind); both endgame-lock AND-gates measured FAILED (s8 scan LOW 0/8; gate 2 moot since the residual is not a C construct)
+- probe: Reapplied candidate.c after the 10th driver revert; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions); decisions.md re-checked (grant cff7f1f5 at line 4438; no residual-covering escalation entry — line 4477 is the resolved pre-grant family question); verified each of the seven modality kills is backed by banked artifacts and none conflicts with another
+- result: Account consistent and complete; merged packet statement written self-contained in evidence.md s11 with the full artifact citation list; frontier reset in hypotheses.md post-s11
+- verdict: CONFIRMED

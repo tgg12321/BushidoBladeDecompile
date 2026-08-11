@@ -868,3 +868,123 @@ this session did exactly that and did NOT re-run any dead axis.
 - [s9] The digest's 'masked-0 register diff class' constraint wording is disproven (ledger s3): zero register diffs; the residual is branch-target-only
 
 - [s9] decisions.md still lacks an OWNER-ESCALATION entry covering the residual — filing it is the escalation-modality session's mandated job, with the pre-decided disposition wording in the frontier, unless the owner elects the class-level maspsx ASPSX-parity remedy (12 candidate functions, s3/s4 census)
+
+## Session 11 (SYNTHESIS, 2026-08-11 — dispatched as "session 10, synthesis";
+scratch tmp/grind/main/s10/ per the dispatch brief)
+
+### Session-start invariant (TENTH occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation). Reapplied all four candidate.c
+  edits via targeted Edits; sandbox main --disable all = **0** (189/189,
+  25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions)
+  re-measured THIS session (artifact tmp/grind/main/s10/sandbox_reproof.json
+  — the ELEVENTH consecutive re-proof). decisions.md re-checked: GRANT
+  cff7f1f5 on file at line 4438; the only main OWNER-ESCALATION entry (line
+  4477) is still the pre-grant family question the grant resolved — NO entry
+  covers the 2-byte branch-target residual.
+
+### THE SYNTHESIS — the merged, self-contained statement of main's state
+This section is deliberately complete on its own so the escalation-modality
+session (and the owner) can work from it without re-reading nine sessions.
+
+**What main IS.** src/ings.c `main` — 189 instructions, verdict C, the PS1
+game's top-level frame loop. The pure-C candidate (memory/grind/main/
+candidate.c, four coordinated edits vs the pre-grind tree) reaches masked
+sandbox 0 AND true-byte 187/189. The two differing words are NOT
+instructions of the function's logic — they are the 16-bit branch
+displacements of two loop-tail branches (word [165] `bne v1,v0` encoded
+1462ff79 vs target 1462ff78; word [173] `bnez v0` encoded 1440ff71 vs
+target 1440ff70): our build targets .L8001727C (past the loop-head
+`li a1,0x1008`), target wants .L80017278 (at it). Zero register diffs,
+zero opcode diffs, zero ordering diffs.
+
+**Why the residual exists (mechanism, three independent proof legs, s3).**
+(1) GCC source read: our cc1's reorg.c fill_slots_from_thread redundancy
+clause (:3433, via redundant_insn :1987 and the unconditional tail redirect
+:~3685) finds a1=4104 already in the first bne's delay slot along the two
+unfilled branches' backward threads, pretends the li executed, and retargets
+them past it. (2) Instrumented DBRDBG trace (tmp/grind/main/s2/
+dbr_trace.txt): every delay-slot FILL matches target exactly; only the
+redundancy thread-skip on unfilled jumps 391/418 diverges. (3) cc1psx
+counter-exhibit (tmp/grind/main/s2/main_psx.s): the ORIGINAL compiler, on
+our EXACT preprocessed C, emits ONE loop label with all seven branches on
+it and no delay processing — ASPSX did the filling at assembly time and
+retargeted ONLY branches it filled. Our candidate C is therefore the
+original source shape; the residual is pipeline-behavioral (cc1-dbr vs
+ASPSX), not a C-shape deficit.
+
+**Why no worker session can close it (seven measured kills, s1-s9).**
+- Spelling (s1/s2): all fold-cluster and ordering clusters closed to
+  sandbox 0; the s3 escape-hatch enumeration killed all 7 C-side routes to
+  the branch targets (each byte-visible or a forbidden family).
+- Structural/analytic (s3): the three-way mechanism proof above.
+- Permuter (s5): measurably BLIND — campaign base score 0 while true bytes
+  are 2 off; the scorer masks branch targets exactly like engine/score.py.
+- Sibling confirmation (s6): both named candidates measured far from
+  convergence (func_8007DC9C floor 9, different rule class entirely;
+  func_8007352C floor 54, whole-body RA rotation) — not a cheap probe.
+- Forensic counterfactual (s7): the retarget is enforced by >=3 cooperating
+  self-healing reorg devices (:3433 pretend-path, genuine-fill WINNER path
+  + relax :3956 strip, relax :3992 retarget-past-redundant); gating :3433
+  alone changes ZERO bytes, gating three sites together makes it WORSE
+  (breaks the correct [169] beqz). No single-clause remedy exists.
+- Canonical-asm gate (s8): scan_hand_coded tier LOW 0/8 — gate 1 of the
+  2026-07-27 endgame-lock standing ruling is measured FAILED.
+- Rederive (s9): fresh m2c reconstruction converges structurally to the
+  candidate; the one new shape (nested-if tail) compiles byte-identical
+  INCLUDING the identical residual. Corpus/Kengo transplant moot (cc1psx
+  provenance is strictly stronger).
+
+**Policy state.** The chained same-variable accumulation in the poll loop
+is OWNER-GRANTED (commit cff7f1f5, split-init-accumulation family
+extension, 4 binding conditions; the required /* FAKE */ annotation is in
+the applied body). The digest's judge constraints are both STALE: the
+family freeze was lifted by that grant, and the "masked-0 register diff
+class / reg-alloc gap" classification was disproven in s3 (zero register
+diffs). candidate-ready is impossible for ANY worker session: the driver's
+full-build byte re-verify sees the 2-word residual that the masked sandbox
+cannot.
+
+**The two dispositions the owner can choose between (escalation packet).**
+(a) Per the 2026-07-27 standing auto-ruling: both endgame-lock AND-gates
+are measured FAILED (gate 1 scan LOW 0/8 s8; gate 2 moot — the residual is
+not a C construct, so no coercion-family precedent question exists), so the
+entry is pre-decided **RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE** — terminal, nothing pending on the owner.
+(b) The owner may instead elect the CLASS-LEVEL pipeline remedy the s4/s6/
+s7 evidence documents: a maspsx ASPSX-parity fill mode (fill-iff-retarget
+reimplemented from scratch — NOT a reorg clause suppression, s7 measured
+that dead). Blast radius: whole corpus; candidate beneficiaries: the 12
+rule-carrying functions from the s4 census (CD_datasync, CD_ready, CD_sync,
+func_80022F34, func_80023648, func_800238C4, func_800335D8, func_80038170,
+func_8007352C, func_8007526C, func_8007DC9C, main), with mechanism proven
+only on main (s6: per-sibling confirmation requires each sibling's own
+grind). Full citation list for the entry: evidence.md s3-s11;
+tmp/grind/main/s2/ (dbr_trace.txt, main_psx.s, bytesig_cmp.py);
+tmp/grind/main/s3/ (census scanner + hits); tmp/grind/main/s5/
+(cmp_352C.txt, cmp_DC9C.txt); tmp/grind/main/s6/ (counterfactual grid,
+dbr_trace_abl.txt, blast_radius2.diff); tmp/grind/main/s7/
+(scan_hand_coded_main.txt); tmp/grind/main/s8/ (m2c_main.c, ings_cand.o,
+ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
+(sandbox_reproof.json).
+
+- [s11] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured
+  after the TENTH driver revert; artifact tmp/grind/main/s10/sandbox_reproof.json
+- [s11] synthesis modality complete: the ledger is consolidated into the single
+  self-contained packet statement above; the frontier is RESET to exactly one
+  actionable item (escalation filing) plus the standing reapply invariant
+- [s11] no new probes were run and none exist to run: every worker modality
+  carries a measured kill (s1-s9); this session confirms the s10 finding that
+  the reapply-and-reprove loop is the only remaining worker procedure
+
+- [s10] sandbox main --disable all = 0 (189/189 insns, 25 rules dropped) re-measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) reapplied in src/ings.c after the TENTH driver revert (tmp/grind/main/s10/sandbox_reproof.json — eleventh consecutive re-proof)
+
+- [s10] decisions.md re-checked: GRANT cff7f1f5 on file (line 4438, 4 binding conditions, function REOPENED); NO OWNER-ESCALATION entry covers the 2-byte branch-target residual (line 4477 is the pre-grant accumulation-family question the grant resolved); filing remains the escalation-modality session's job
+
+- [s10] The digest's judge constraints remain stale on both points: the family freeze was lifted by the grant, and the 'masked-0 register diff class' claim was disproven in s3 (zero register diffs; the residual is 2 branch TARGETS — reorg redundancy thread-skip vs ASPSX fill-iff-retarget)
+
+- [s10] Synthesis packet written to evidence.md s11: a self-contained owner-facing statement covering the three-leg mechanism proof (reorg.c read + DBRDBG trace + cc1psx counter-exhibit), all seven worker-modality kills (spelling s1/s2, structural s3, permuter s5, sibling s6, forensics s7, gate-scan s8, rederive s9), the policy state, and the two dispositions (pre-decided REFUSED vs class-level maspsx ASPSX-parity remedy, 12 census candidates)
+
+- [s10] Frontier RESET (hypotheses.md post-s11) to one actionable item (escalation filing with pre-decided wording) + the standing reapply procedure for stale-digest worker dispatches + the 10x-recurring revert invariant
+
+- [s10] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (words [165]/[173]); the driver's byte re-verify would discard it
