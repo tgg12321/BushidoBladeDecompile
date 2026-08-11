@@ -144,6 +144,63 @@ After all splits: regenerate the census (the universe changed); optionally re-ru
 `tools/libscan/manifest.py` **deliberately** (it will reclassify the nine as CONFIRM and
 lose the pre-fix record — the committed snapshot + boundary_fixes.md are the history).
 
+### APPLY-TIME RE-VERIFICATION (2026-08-10) — Part B is 5/9 OBSOLETE, 4/9 BLOCKED
+
+A main-tree session took Part B up and re-verified every row against HEAD before
+editing. **No split was applied.** The plan above was written 2026-08-07 against a
+tree that has since moved; its per-split procedure is now actively unsafe for five
+of the nine XDEFs. Findings:
+
+**The decisive test** is not the `boundary_fixes.md` host span but whether
+`asm/funcs/<host>.s` is a *build input at all*. It is one only if some `src/*.c`
+carries `INCLUDE_ASM("asm/funcs", <host>)` — the Makefile does NOT wildcard
+`asm/funcs/` (`LINKED_ASM_FUNCS := save_vc_ctrl` is the sole opt-in). Measured at
+HEAD (208 INCLUDE_ASM hosts total):
+
+| host | INCLUDE_ASM? | XDEFs | status |
+|---|---|---|---|
+| `FlushCache` | **no** | `_SendPAD` | obsolete — see below |
+| `SsStart` | **no** | `SsStart2`, `SsSeqCalledTbyT` | obsolete — already C |
+| `SpuSetCommonAttr` | **no** | `SpuRGetAllKeysStatus` | obsolete — already C |
+| `setjmp` | **no** | `longjmp` | owner-gated (unchanged) |
+| `func_80086818` | yes | `note2pitch` | genuine, blocked |
+| `func_800889D4` | yes | `_spu_FiDMA`, `_spu_Fr_` | genuine, blocked |
+| `func_8008B488` | yes | `_spu_2pitch` | genuine, blocked |
+
+**Obsolete (5 XDEFs).** These hosts are no longer asm at all — their bytes come from
+compiled C (or, for `FlushCache`, a whole-body canonical `__asm__`), so their
+`asm/funcs/*.s` files are reference-only leftovers that no longer feed the build.
+Three of the XDEFs already exist as correctly-named C functions:
+`SsStart2` (`src/main.c:232`, static), `SsSeqCalledTbyT` (same TU, decompiled with
+`SsStart`), `SpuRGetAllKeysStatus` (`src/main.c:3006`, static). For these, **step 3
+of the per-split procedure — "add an INCLUDE_ASM line for the new function" — would
+duplicate already-compiled code and break the link.** Do not run it.
+
+**`_SendPAD` is additionally owner-gated, which the plan missed.** `FlushCache` holds
+an `inline_asm_canonical.txt` authorization (line 63) whose justification is
+*specifically* the dual-block shape: "the tail is unreachable from the `jr`, so this
+cannot be expressed in C." All 14 words are emitted by a single whole-body `__asm__`
+under one `glabel FlushCache` / `endlabel FlushCache` in `src/text1b_b.c:1736`.
+Splitting `_SendPAD` out means splitting that authorized block in two, so the
+authorization must be RE-DERIVED for both halves — exactly the reasoning that made
+`setjmp`/`longjmp` owner-gated in step 5. Treat `FlushCache` the same way.
+
+**Blocked (4 XDEFs).** `note2pitch`, `_spu_FiDMA`, `_spu_Fr_`, `_spu_2pitch` are the
+only genuine build-input splits left, and all three hosts are live `active` queue
+items (distances 249 / 206 / 423 at the time of writing). The plan's own step 4
+requires `queue regen` afterwards; that session was under a standing instruction not
+to run `queue regen` or perturb live queue state, and the Grinder was due to launch
+immediately after. Applying a split without the regen leaves the host's queued
+distance describing a span it no longer owns — a stale-digest hazard for the next
+grind ([[grinder-stale-digest-uncommitted-ledger]]). These need a genuinely
+Grinder-quiet window with regen permitted; they are a scope call for the owner, not
+something to force through.
+
+**Net:** Part B's remaining actionable work is 4 XDEFs across 3 queued hosts, plus
+two owner-gated authorization re-derivations (`longjmp` out of `setjmp`, `_SendPAD`
+out of `FlushCache`). The other three rows should be struck — the boundary they
+describe has already been fixed by decompilation rather than by re-splitting.
+
 ## Part C — optional, owner-choice
 
 - **Data names** `D_800A2D14` -> `_spu_transferCallback`, `D_800A2D10` ->
