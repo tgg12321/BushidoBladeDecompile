@@ -19,14 +19,9 @@
  ],
  "frontier": [
   {
-   "hypothesis": "The owner's ruling on func_8007C7A0's escalation resolves this twin identically (accepted spelling -> candidate-ready path here; refused -> owner-accepted incomplete at floor 5)",
-   "mechanism": "Twin-equivalence: same Sony module, byte-identical residual, same banned-family closure; the sibling's exhaustion packet transfers verbatim",
-   "next_probe": "Check docs/grind/decisions.md for the C7A0 owner ruling; if resolved, mirror the disposition on this function (including filing this function's own decisions.md entry citing twin-equivalence plus this session's s1 byte proof); if the driver requires a per-function packet first, file it from the sibling's evidence rather than re-deriving"
-  },
-  {
-   "hypothesis": "If a per-function exhaustion demonstration is demanded before escalation, a minimal spot-check suffices (the full sweep is already dead on the shared chassis)",
-   "mechanism": "The chassis and residual are proven identical from bytes, so the sibling's 19 structural kills + permuter drain apply; at most 2-3 representative spellings need re-measurement on this function to certify lock-step",
-   "next_probe": "Re-measure the sibling's Q1 named-limit (expect ~16 @ 51) and one join-temp legitimate near-miss on this function; identical numbers certify the transfer without a full re-derivation"
+   "hypothesis": "RESOLVED 2026-08-10 by owner ruling — no frontier remains. The owner lifted the layer-1 ternary-family ban for func_8007C7A0 and this twin ONLY (docs/grind/decisions.md, '2026-08-10 OWNER RULING (in person)'); the ternary clamp body was merged and measures 0.",
+   "mechanism": "Ruling condition 4 required INDEPENDENT measurement, so the packet constant (0xE4000000), both limits, the dispatch, and both arms' masks/shifts were read off asm/funcs/func_8007C86C.s rather than inherited from the sibling — see the evidence.md '2026-08-10 owner ruling — RESOLVED' section for the cited target lines.",
+   "next_probe": "None. sandbox --disable all = 0 (51/51); retire dropped all 21 regfix rules with full-build SHA1 == oracle. Remaining steps belong to the coordinator, not a grind session: ruling condition 3 (fresh independent adversarial layer-2 review of the final diff) then queue done."
   }
  ],
  "judge_constraints": [],

@@ -311,3 +311,37 @@ Sibling: `memory/wip/func_8007C7A0/` — identical pattern and floor.
 - [s1] src/display.c reverted to HEAD after measurement — the 21 regfix rules stay calibrated to HEAD's emission shape; applying the candidate without retiring them breaks the oracle
 
 - [s1] Published SOTN get_cs/get_ce reference NOT re-measured here: measured on the sibling, it is a different library build (constant clamps vs BB2's halfword globals) and loses
+
+## 2026-08-10 owner ruling — RESOLVED (no new grind session)
+
+- [ruling] docs/grind/decisions.md, "2026-08-10 — OWNER RULING (in person) —
+  func_8007C7A0 + twin func_8007C86C: ternary clamp ban LIFTED": the layer-1
+  ternary-family ban is lifted for func_8007C7A0 and this twin ONLY, as a
+  single-instance grant on provenance-plus-measurement grounds. It creates no
+  family; the join-temp-writeback ban stays in force everywhere else.
+- [ruling condition 4] This function's body was measured INDEPENDENTLY rather
+  than assumed symmetric with the sibling. Constants and arm shapes were read
+  off asm/funcs/func_8007C86C.s directly:
+    * packet constant 0xE4000000 — line 53, `lui $a0, (0xE4000000 >> 16)` @ 8007C920
+    * x limit D_8009BE78 (signed halfword) — lines 7-8, `lh %lo(D_8009BE78)` @ 8007C884
+    * y limit D_8009BE7A (signed halfword) — lines 25-26, `lh %lo(D_8009BE7A)` @ 8007C8C4
+    * dispatch D_8009BE74 (unsigned byte), `addiu -1` + `sltiu $v0,$v0,0x2`
+      — lines 38-42 @ 8007C8F0..8007C8FC; `bnez` taken for the <2U arm
+    * <2U arm: `andi $v1,$a1,0xFFF` (delay slot, line 44 @ 8007C904) +
+      `sll $v1,$v1,12` (line 50) + `andi $v0,$a3,0xFFF` (line 51)
+      => (y & 0xFFF) << 12 | (x & 0xFFF)
+    * else arm: `andi $v1,$a1,0x3FF` (line 45) + `sll $v1,$v1,10` (line 46) +
+      `andi $v0,$a3,0x3FF` (line 48)
+      => (y & 0x3FF) << 10 | (x & 0x3FF)
+  The masks and shifts do coincide with func_8007C7A0's; that is now a
+  verified fact about this function's bytes, not an inherited assumption. Only
+  the packet constant differs (0xE4000000 vs 0xE3000000).
+- [merge] `sandbox func_8007C86C --disable all` = **0**, target_insns 51,
+  build_insns 51, rules_dropped 21, cheat_asm_stripped 152 (this differs from
+  the s1 recon number 5 @ 50 because s1 measured the sibling's floor-5 chassis,
+  not the ternary body merged here).
+- [merge] `retire func_8007C86C` dropped all 21 regfix.txt rules; full build
+  SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa (== oracle).
+- [status] Merged UNCOMMITTED in the working tree pending ruling condition 3
+  (fresh independent adversarial layer-2 review of the final diff, author's
+  verdict not credited) and `queue done`, both run by the coordinator.

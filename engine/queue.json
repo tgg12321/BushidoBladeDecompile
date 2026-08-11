@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8007C86C",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "active"
-    },
-    {
       "func": "main",
       "file": "ings",
       "distance": 20,
@@ -2469,26 +2461,17 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, in-person 2026-08-10): prototype-correction grant refused x3; RA artifact + no SOTN precedent for the correction direction; pins at text1b.c:606-609 held solely for the oracle"
-    },
-    {
-      "func": "func_8007C7A0",
-      "file": "display",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 21,
-      "status": "parked",
-      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-10 \u2014 func_8007C7A0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
-    "total": 291,
-    "active": 255,
+    "total": 289,
+    "active": 254,
     "by_status": {
-      "active": 255,
-      "parked": 36
+      "active": 254,
+      "parked": 35
     },
     "by_verdict": {
-      "C": 169,
+      "C": 168,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 47
     }

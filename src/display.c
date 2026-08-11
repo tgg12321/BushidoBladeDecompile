@@ -554,87 +554,42 @@ s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
     }
     return var_v1 | var_v0;
 }
-s32 func_8007C7A0(s16 arg0, s16 arg1)
+/* PsyQ libgpu get_cs (verbatim-linked Sony object, census 2026-07-09).
+ * Body: the published psxsdk clamp idiom (sotn-decomp
+ * src/main/psxsdk/libgpu/sys.c house style) with THIS library build's limits
+ * and dispatch — clamping both axes against the halfword globals
+ * D_8009BE78/D_8009BE7A and dispatching on the D_8009BE74 range check.
+ * It is NOT SOTN's get_cs verbatim: that build clamps against constants and
+ * dispatches on a boolean global (different library build, per ledger H2).
+ * Adopted under the 2026-08-10 owner ruling because it uniquely measures
+ * 0/51. */
+s32 func_8007C7A0(s16 x, s16 y)
 {
-    s16 var_a1;
-    s16 var_v0_2;
-    int new_var;
-    s32 var_v0;
-    int new_var2;
-    s32 var_v1;
-
-    new_var = arg0 >= 0;
-    if (new_var) {
-        if ((D_8009BE78 - 1) < arg0) {
-            var_v0_2 = D_8009BE78 - 1;
-        } else {
-            var_v0_2 = arg0;
-        }
+    x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
+    y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
+    if ((u32)(D_8009BE74 - 1) < 2U) {
+        return 0xE3000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
     } else {
-        var_v0_2 = 0;
-        var_a1 = arg1;
+        return 0xE3000000 | ((y & 0x3FF) << 10) | (x & 0x3FF);
     }
-    if (var_a1 >= 0) {
-        if ((D_8009BE7A - 1) < var_a1) {
-            var_a1 = D_8009BE7A - 1;
-        }
-    } else {
-        var_a1 = 0;
-    }
-    var_a1 = var_a1 & 0xFFF;
-    if (((u32)(D_8009BE74 - 1)) >= 2U) {
-        new_var2 = var_v0_2;
-        if (!D_8009BE7A) { }
-        var_v1 = var_a1 & 0x3FF;
-        var_v1 = var_v1 << 0xA;
-        var_v0 = new_var2 & 0x3FF;
-    } else {
-        var_v1 = (var_a1 << 1) << 11;
-        var_v0 = new_var2 & 0xFFF;
-    }
-    new_var2 = 0xE3000000;
-    return var_v1 | (var_v0 | new_var2);
 }
-s32 func_8007C86C(s16 arg0, s16 arg1)
+/* PsyQ libgpu get_ce, the get_cs twin (verbatim-linked Sony object, census
+ * 2026-07-09). Same published psxsdk clamp idiom as func_8007C7A0 above, with
+ * the packet constant 0xE4000000; the limits (D_8009BE78/D_8009BE7A), the
+ * dispatch (D_8009BE74 range check) and both arms' masks/shifts were read off
+ * THIS function's own target bytes (asm/funcs/func_8007C86C.s), not assumed
+ * symmetric. Not SOTN's get_ce verbatim — different library build, per ledger
+ * H2. Adopted under the 2026-08-10 owner ruling because it uniquely measures
+ * 0/51. */
+s32 func_8007C86C(s16 x, s16 y)
 {
-    s16 var_a1;
-    s16 var_v0_2;
-    int new_var;
-    s32 var_v0;
-    int new_var2;
-    s32 var_v1;
-
-    new_var = arg0 >= 0;
-    if (new_var) {
-        if ((D_8009BE78 - 1) < arg0) {
-            var_v0_2 = D_8009BE78 - 1;
-        } else {
-            var_v0_2 = arg0;
-        }
+    x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
+    y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
+    if ((u32)(D_8009BE74 - 1) < 2U) {
+        return 0xE4000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
     } else {
-        var_v0_2 = 0;
-        var_a1 = arg1;
+        return 0xE4000000 | ((y & 0x3FF) << 10) | (x & 0x3FF);
     }
-    if (var_a1 >= 0) {
-        if ((D_8009BE7A - 1) < var_a1) {
-            var_a1 = D_8009BE7A - 1;
-        }
-    } else {
-        var_a1 = 0;
-    }
-    var_a1 = var_a1 & 0xFFF;
-    if (((u32)(D_8009BE74 - 1)) >= 2U) {
-        new_var2 = var_v0_2;
-        if (!D_8009BE7A) { }
-        var_v1 = var_a1 & 0x3FF;
-        var_v1 = var_v1 << 0xA;
-        var_v0 = new_var2 & 0x3FF;
-    } else {
-        var_v1 = (var_a1 << 1) << 11;
-        var_v0 = new_var2 & 0xFFF;
-    }
-    new_var2 = 0xE4000000;
-    return var_v1 | (var_v0 | new_var2);
 }
 extern u8 g_gpu_type;
 s32 func_8007C938(s32 arg0, s32 arg1) {
