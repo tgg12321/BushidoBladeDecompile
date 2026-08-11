@@ -306,3 +306,31 @@ type narrowing (s3), ref-weight wraps (s3), permuter loop-1 spellings both geome
 - probe: Campaign 1 'loop1-directed': clean single-function target.o at offset 0, base = the sandbox-6 candidate (permuter base score 50), PERM_RANDOMIZE scoped to loop 1 + PERM_GENERAL over 4 spellings (direct array-index / named-t index split / named-t value split / while-form) - 61,683 iters. Campaign 2 'loop1-ptrwalk': same locked loop-2, loop 1 as source pointer-walk, PERM_GENERAL over do-while/for/inc-order variants - 64,848 iters. Both harvested + stopped in-session per fresh-seed discipline.
 - result: Campaign 1: ZERO finds. Campaign 2: 7 finds, best = 50 = a re-find of the known floor-6 attractor (do-while pointer walk with permuter-introduced hoisted judge base 'new_var = Judge'). Nothing below 50 in either chassis; three structurally distinct loop-1 spellings all land in the identical score-50 attractor.
 - verdict: KILLED
+
+## [s5] Unlocking loop 2 / the whole function for the permuter reaches a source state that flips loop-1's i->t0/judge->a2 (the scope s4 never mutated)
+- mechanism: judge's LICM pseudo lives 48 insns spanning the loop-2 init region, so loop-2/init mutations can alter its conflict/live picture where loop-1-scoped mutation (s4) could not; whole-function randomization additionally allows cross-region interactions (decl/temp introduction, statement migration)
+- probe: campaign s5A — loop 1 locked byte-correct, PERM_RANDOMIZE over loop-2+init with PERM_GENERAL over 4 loop-2 macro-spellings (wrap+dup goto / no-dup goto / k-last goto / nested-for), 26,838 iters; campaign s5B — entire body in PERM_RANDOMIZE from the 6-floor candidate, 27,904 iters; both base 50, fresh-seed discipline, harvested --stop in-session
+- result: ZERO finds in both (not even score-equal siblings); combined with s4 the permuter has now mutated every region of the function (~182k iters total) and only ever lands in the score-50 attractor
+- verdict: KILLED (the permuter modality is exhausted across ALL scopes and chassis; the residue is find_reg-internal)
+
+## Live frontier (for session 6)
+
+### F1 (primary, unchanged from s4/s5): loop-1 i↔judge needs FORENSICS — the only unmeasured axis
+Axes now measured dead: structural/priority (s2), decl-order (s3), type-narrowing (s3),
+ref-weighting (s3), permuter loop-1-scoped both geometries (s4, ~127k), permuter
+loop-2-scoped + whole-function (s5, ~55k). Probes, in order:
+  (a) BB2_ALLOC_DEBUG (instrumented cc1 at tools/gcc-2.7.2/cc1 — NOT build/cc1, per
+      [[instrumented-cc1-location]]) trace of find_reg for i's pseudo (81 in final6
+      dumps) in the 6-form: is any preference/prefclass/regs_someone_prefers term
+      steerable by ANY reachable source state, or is the a2 choice unconditional?
+  (b) Rebuild s1's EXACT H2 form (both loops for-form, s1 init order — the one build
+      where loop-1 counter -> t0 EXACT). s2's re-build did NOT reproduce it (72->a2);
+      identify the flip condition, then hunt a goto-form-loop-2-compatible spelling.
+  (c) local_alloc giv-status flip (139/140 local vs global across banked dumps) —
+      can i be made local-alloc'd so global.c never places it?
+
+## [s5] Unlocking loop 2 / the whole function for the permuter reaches a source state that flips loop-1's i->t0/judge->a2 (the scope s4's loop-1-locked campaigns never mutated)
+- mechanism: judge's LICM pseudo lives 48 insns spanning the loop-2 init region, so loop-2/init mutations can alter its conflict/live picture where loop-1-scoped mutation could not; whole-function randomization additionally allows cross-region interactions
+- probe: Campaign s5A: loop 1 locked byte-correct, PERM_RANDOMIZE over loop-2+init with PERM_GENERAL over 4 loop-2 macro-spellings (wrap+dup goto / no-dup goto / k-last goto / nested-for), 26,838 iters. Campaign s5B: entire body in PERM_RANDOMIZE from the 6-floor candidate, 27,904 iters. Both base score 50, fresh-seed discipline (~38 min each, 3 wait windows), harvested --stop in-session with telemetry
+- result: ZERO finds in both campaigns - not even score-equal siblings; only attractor ever reached across s4+s5 (~182k iters, every function region mutated) is score 50 = sandbox 6
+- verdict: KILLED

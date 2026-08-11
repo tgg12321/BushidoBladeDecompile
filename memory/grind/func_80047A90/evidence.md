@@ -318,3 +318,69 @@ chassis2_base.c.
 - [s4] ~127k permuter iterations across two structurally distinct chassis with randomization scoped to loop 1 produced no sub-floor find - the permuter modality on this residue is exhausted with telemetry banked (permuter-launch/permuter-harvest events in metrics/events.jsonl)
 
 - [s4] Workspace discipline held: import.py run from tools/decomp-permuter (no root nonmatchings/ dirt); both campaigns harvested --stop in-session; no campaign outlived the session
+
+## Session 5 (2026-08-11, permuter) — floor 6 (unchanged); permuter modality now FULLY dry
+
+### FOURTH stale-src occurrence
+src/sound.c again carried the old 10-pin body at session start (fourth
+occurrence of [[grinder-stale-digest-uncommitted-ledger]]). Re-applied
+candidate.c via tmp/grind/func_80047A90/s5/apply_candidate.py, sandbox
+verified 6 (84/84, 0 rules) before any work.
+
+### The two NEW permuter surfaces (the inverse of s4's scoping) — both dry
+s4 permuted loop-1 spellings with loop 2 LOCKED. s5 covered the remaining
+scope space:
+- **Campaign s5A "loop2-unlocked"**: loop 1 locked as the byte-correct
+  array-index for-form; PERM_RANDOMIZE scoped to the loop-2 + init region
+  with PERM_GENERAL over four loop-2 macro-spellings (candidate goto-form
+  with wrap+dup / goto-form no-dup shared-tail / k-last no-wrap variant /
+  full nested-for). This directly serves frontier (b): hunting a loop-2
+  spelling whose pseudo landscape flips loop-1's i/judge allocation (judge
+  lives across the loop-2 init, so loop-2 mutations CAN touch its conflict
+  picture). Result: **26,838 iterations, ZERO finds** — nothing ≤ base 50.
+- **Campaign s5B "wholefunc"**: entire function body inside PERM_RANDOMIZE
+  from the 6-floor candidate (both loops + inits + tail mutable at once —
+  the only scope never randomized before). Result: **27,904 iterations,
+  ZERO finds.**
+Base score 50 in both = the floor-6 attractor image (seeds compile to the
+candidate bytes). Fresh-seed discipline held: each seed ran ~38 min
+(3 wait windows), harvested --stop in-session, telemetry in
+metrics/events.jsonl (permuter-launch/permuter-harvest, labels
+s5A-loop2-unlocked / s5B-wholefunc).
+
+### What s5 adds
+1. Combined with s4 (~127k iters, loop-1-scoped, two chassis), the permuter
+   has now mutated EVERY region of the function (loop 1 alone, loop 2 +
+   init alone, whole function) from structurally distinct seeds — ~182k
+   total iterations, and the ONLY attractor ever reached is score 50
+   (= sandbox 6). Zero sub-floor finds, zero score-equal siblings this
+   session. The permuter modality on this function is exhausted, full stop.
+2. Notable: even with loop-2 mutations allowed (which change judge's
+   conflict environment — the one thing s4's scoping could not touch), no
+   randomized form beat 50. This strengthens s2/s3's conclusion that the
+   i↔judge residue is find_reg-internal and insensitive to ANY reachable
+   source state in these geometries — the forensics frontier (instrumented
+   cc1 BB2_ALLOC_DEBUG trace of find_reg for i's pseudo) is the only
+   remaining axis, unchanged from the s4 frontier.
+
+### Artifacts (tmp/grind/func_80047A90/s5/)
+- apply_candidate.py — the candidate→src splice tool (reusable next session)
+- s5A_base_loop2-unlocked.c / s5B_base_wholefunc.c — the two campaign seeds
+- s5A_campaign_tail.log / s5B_campaign_tail.log — permuter log tails
+- s5A_campaign_meta.json / s5B_campaign_meta.json — launch/harvest metadata
+
+- [s5] FOURTH stale-src occurrence; re-applied candidate.c, verified floor 6 (84/84) before working
+- [s5] Campaigns s5A (loop2+init unlocked, loop1 locked; 26,838 iters) and s5B (whole function unlocked; 27,904 iters) both ZERO finds from base 50 — permuter scope space now fully covered across s4+s5 (~182k iters), modality exhausted
+- [s5] Loop-2-region mutation cannot flip the loop-1 i↔judge cycle either — judge's cross-region live range gave loop-2 mutations a theoretical handle on its conflicts, measured dead
+
+- [s5] FOURTH stale-src occurrence: src/sound.c carried the old 10-pin body at session start; re-applied candidate.c (tmp/grind/func_80047A90/s5/apply_candidate.py), sandbox verified 6 (84/84 insns, 0 rules) before any work
+
+- [s5] Campaign s5A (label s5A-loop2-unlocked): 26,838 iterations, 0 finds, base 50 - loop-2-region mutation cannot flip the loop-1 i<->judge cycle despite judge's cross-region live range giving it a theoretical handle
+
+- [s5] Campaign s5B (label s5B-wholefunc): 27,904 iterations, 0 finds, base 50 - whole-function randomization from the 6-floor candidate is dry
+
+- [s5] Permuter modality is now exhausted for this function: s4 covered loop-1-scoped mutation in two geometries (~127k iters), s5 covered loop-2-scoped and whole-function (~55k iters); zero sub-floor finds anywhere
+
+- [s5] Floor 6 = exactly the loop-1 2-cycle (i pseudo a2-vs-t0, judge base a3-vs-a2, slots 1,2,3,12,14,27), unchanged since s3; all other 78 slots byte-match
+
+- [s5] Telemetry banked in metrics/events.jsonl (permuter-launch/permuter-harvest x2 each); both campaigns stopped in-session, no orphans (procs_killed 7 each)

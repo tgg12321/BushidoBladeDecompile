@@ -1,7 +1,7 @@
 {
  "func": "func_80047A90",
  "file": "sound",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,12 +27,18 @@
    "floor": 6,
    "modality": "permuter",
    "headline": "Permuter s4: floor holds at 6 - two fresh-seed campaigns (~127k iters, array-index + pointer-walk chassis, directed PERM over loop-1 spellings) found nothing sub-floor; permuter axis on loop-1 is meas"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "permuter",
+   "headline": "Permuter s5: floor holds at 6 - the two never-mutated scopes (loop-2+init unlocked, whole-function) both ran dry (~55k iters, zero finds); permuter modality now exhausted across ALL regions and chassi"
   }
  ],
  "frontier": [
   {
    "hypothesis": "find_reg's hard-reg walk for i's pseudo (81) contains a preference/prefclass/regs_someone_prefers term that some reachable source state steers to skip a2/a3",
-   "mechanism": "global.c find_reg internals beyond allocno_compare priority - the only unmeasured axis after structural (s2+s3), decl-order/type/ref-weight (s3), and permuter spellings (s4) all killed",
+   "mechanism": "global.c find_reg internals beyond allocno_compare priority - the only unmeasured axis after structural (s2+s3), decl-order/type/ref-weight (s3), and permuter over every scope (s4+s5) all killed",
    "next_probe": "BB2_ALLOC_DEBUG trace with the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) of find_reg for pseudo 81 in the 6-form; determine whether the a2 choice is conditional on ANY input state"
   },
   {

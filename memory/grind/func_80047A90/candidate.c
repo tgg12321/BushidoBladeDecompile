@@ -4,8 +4,15 @@
  * directed PERM over loop-1 spellings) found nothing below the floor attractor —
  * three distinct loop-1 spellings all score identically. The residue is
  * find_reg-internal; next axis is forensics (see hypotheses.md s5 frontier).
- * NB: s4 was the THIRD session to find src/sound.c stale (old 10-pin body) —
- * always diff src against this file first.
+ * Session 5 (permuter) re-verified floor 6 and left this form UNCHANGED: two
+ * further campaigns (s5A loop-2+init unlocked with loop 1 locked, 26,838 iters;
+ * s5B whole-function randomization, 27,904 iters) found ZERO sub-floor forms —
+ * the permuter has now mutated every region of the function across s4+s5
+ * (~182k iters) and only ever reaches the score-50 attractor. Permuter modality
+ * exhausted; the remaining axis is forensics (BB2_ALLOC_DEBUG find_reg trace).
+ * NB: s5 was the FOURTH session to find src/sound.c stale (old 10-pin body) —
+ * always diff src against this file first (tmp/grind/func_80047A90/s5/
+ * apply_candidate.py re-applies it).
  *
  * THIS FORM IS APPLIED IN src/sound.c (pure C, zero pins, zero rules).
  *
