@@ -628,3 +628,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied candidate.c, re-measured sandbox, re-read decisions.md lines 4438-4524
 - result: Confirmed: sandbox 0 (26th consecutive), grant cff7f1f5 present with binding conditions, layer-1 FAIL faa30607 unchanged, no residual escalation entry filed yet
 - verdict: CONFIRMED
+
+## [s26] The rederive axis holds a live probe for main this session
+- mechanism: Rederive was killed s8/s9 (fresh m2c, decomp.me corpus, sibling/Kengo transplant all measured dead) and re-confirmed s17/s18/s25; the ledger's unanimous frontier states no measurable probe remains for any non-escalation worker session
+- probe: Ledger frontier + decisions.md re-checked this session; no new rederive probe exists, so none was run - standing procedure executed instead
+- result: No live rederive probe; standing procedure completed: candidate reapplied via tmp/grind/main/s14/apply.py, sandbox main --disable all = 0 (189/189, scorable, 25 regfix rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions)
+- verdict: KILLED
+
+## [s26] The candidate form still reaches sandbox 0 on the current tree after the driver's 26th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so the floor must be re-proven from memory/grind/main/candidate.c each session before any floor number is trusted
+- probe: python tmp/grind/main/s14/apply.py (main lines 582..673 replaced with 102 candidate lines), then & tools/wteng.ps1 main sandbox main --disable all
+- result: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 - 27th consecutive sandbox-0 proof (artifact tmp/grind/main/s26/sandbox_s26.json)
+- verdict: CONFIRMED

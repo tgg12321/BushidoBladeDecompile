@@ -1397,3 +1397,11 @@ standing procedure only.
 - [s25] decisions.md state re-verified: 2026-08-11 GRANT cff7f1f5 sanctions the chained same-variable accumulation family with binding conditions (FAKE annotation, family rules-doc via independent-review path, fresh layer-2); the 2026-08-11 13:49 layer-1 FAIL on the 2-byte branch-target residual is the live blocker; NO OWNER-ESCALATION for the residual exists yet (line 4477 entry is the construct-family escalation, resolved by the grant)
 
 - [s25] candidate-ready remains banned per judge_constraints (candidate form fails full-build SHA1 by 2 bytes, masked-0 register diff class) - not claimed this session despite sandbox 0
+
+- [s26] s26 (rederive, 16th consecutive stale worker dispatch): standing procedure executed exactly as the frontier prescribes - candidate reapplied from memory/grind/main/candidate.c, sandbox 0 re-proven (189/189, 25 rules droppable), edits left in place in src/ings.c.
+
+- [s26] decisions.md state re-verified this session: (1) owner GRANT cff7f1f5 (2026-08-11, line 4438) sanctions the chained same-variable accumulation family with binding conditions (FAKE annotation, family rules-doc via independent-review path, fresh layer-2); (2) the 2026-08-11 13:49 layer-1 FAIL (line 4522) rules the construct legitimate but the candidate blocked by the live judge_constraint that this exact form fails full-build SHA1 by 2 bytes (branch-target residual); (3) NO owner-escalation entry for the 2-byte branch-target residual exists yet - the resolved 2026-08-11 escalation (line 4477) covered only the construct question, which the GRANT closed.
+
+- [s26] candidate-ready remains impossible per the standing judge_constraints: the driver's byte re-verify would discard it (masked-0 register diff class / 2-byte branch-target residual), and the layer-1 FAIL is explicit that construct legitimacy is not the blocker.
+
+- [s26] Modality note for the driver: sessions s11-s26 (16 consecutive) have all been non-escalation worker modalities; every worker axis carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14/s21/s22, sibling s6, forensics s6/s7 re-confirmed s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18/s25, synthesis s10 re-confirmed s19). Only an escalation-modality dispatch can execute the frontier's sole remaining action.
