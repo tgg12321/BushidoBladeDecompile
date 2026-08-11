@@ -1,0 +1,37 @@
+{
+ "func": "func_8003B9D0",
+ "file": "code6cac_c2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 21,
+   "modality": "recon",
+   "headline": "Recon: floor 21 mapped to exactly two regions (symbol-fold on +0x44C displaced accesses; 2 missing full reloads of D_800A3878[3] = the whole 178-vs-185 shortfall); 3 spelling axes KILLED, region-B mec"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The original C performs a store THROUGH A POINTER between the flag reads, which invalidates every MEM (including the D_800A3878 symbol load) and produces target's three full reloads -- closing the entire 7-insn shortfall.",
+   "mechanism": "cc1 CSE/alias: an unknown-address store kills all cached MEM values, whereas a named-symbol store kills only same-symbol MEMs (measured this session: the named-symbol store recovered the lbu reload but not the lw).",
+   "next_probe": "Enumerate the stores the function ALREADY performs that can legitimately be spelled as pointer stores (e.g. the D_800A390F write, the eda/q writes of the preceding block), place each between the two flag ifs, and measure sandbox + diff for a 3-reload shape. Never invent a store -- an added one is a dead-store cheat."
+  },
+  {
+   "hypothesis": "If no honest pointer-store placement yields three full reloads, the original reads were volatile-qualified.",
+   "mechanism": "Volatile MEMs are never CSE'd, which reproduces target's per-site reload exactly; but this is gated by [[legitimate-volatile-interrupt-touched]]'s two-prong test, not freely available.",
+   "next_probe": "Census every writer of D_800A3878 across src/ and asm/funcs/ and classify whether any is reached from an IRQ/callback handler. A negative census CLOSES this axis (a failed gate, not an open question); a positive one is a ruling-request, not a self-approval."
+  },
+  {
+   "hypothesis": "Region A's fold is performed by a specific cc1 pass whose guard condition names the property the base pseudo must lack; the C-spelling axis is dead (K1/K2) so the next step is forensic.",
+   "mechanism": "Symbol substitution into a displaced MEM address happens in cse1 or combine; reading the per-pass RTL tells us which, and what stops it.",
+   "next_probe": "Run `cc1 <build flags> -da` on the preprocessed TU into tmp/grind/func_8003B9D0/s2/, diff the .cse1 vs .combine dumps around the three +0x44C MEMs. Re-measure region A after any region-B change first -- $s0 liveness couples the two regions."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-11T21:10:24.070440+00:00"
+}
