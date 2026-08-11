@@ -816,3 +816,55 @@ ings_nestedif.o (nested-if variant object — identical residual).
 - [s8] SEVEN worker modalities/axes now measured dead against the 2-byte residual: spelling s1/s2, structural/analytic s3 (three-way proof), permuter s5 (scorer blind), cheap sibling confirmation s6, forensic counterfactual s7 (3-point ablation grid), canonical-asm gate s8 (scan_hand_coded LOW 0/8), rederive s9 (this session) — the modality ladder is fully spent
 
 - [s8] The digest's judge constraints remain stale: the family freeze was resolved by the in-person owner GRANT (decisions.md 2026-08-11, commit cff7f1f5) and the 'masked-0 register diff class' classification was disproven in ledger s3 (zero register diffs; the residual is 2 branch TARGETS caused by reorg's redundancy thread-skip)
+
+## s10 (dispatch session 9, scratch tmp/grind/main/s9/, modality rederive — stale re-dispatch)
+
+### What this session was and what it did
+The driver dispatched rederive AGAIN despite the ledger's s9 entries recording
+the rederive modality as measured DEAD (m2c reconstruction structurally
+converges to the candidate; the nested-if tail — the only new shape — compiles
+byte-identical including the identical 2-word branch-target residual). Per the
+frontier's explicit prescription for any further worker dispatch ("reapply
+candidate.c, re-measure sandbox 0, re-check decisions.md, and return progress"),
+this session did exactly that and did NOT re-run any dead axis.
+
+- [s10] src/ings.c found reverted to pre-grind for the NINTH time; the full
+  candidate (all 4 coordinated edits, including the owner-granted FAKE-annotated
+  chained accumulation) was reapplied from memory/grind/main/candidate.c.
+- [s10] sandbox main --disable all = 0 re-measured THIS session: 189/189 insns,
+  all 25 regfix rules dropped, 68 cheat-asm insns stripped (all in OTHER ings.c
+  functions — main's body is pure C). Artifact:
+  tmp/grind/main/s9/sandbox_reproof.json.
+- [s10] decisions.md re-checked THIS session: the in-person owner GRANT
+  (2026-08-11, commit cff7f1f5 — chained same-variable accumulation sanctioned
+  as a split-init-accumulation family extension, 4 binding conditions, function
+  REOPENED) is on file at ~line 4438. There is still NO OWNER-ESCALATION entry
+  covering the 2-byte branch-target residual: the only main escalation entry
+  (~line 4477) is the pre-grant accumulation-family question, which the grant
+  resolved. Filing the residual escalation remains the escalation-modality
+  session's job; this session's modality was rederive, so it may not dispose of
+  the function.
+- [s10] The digest's judge-constraint block remains stale on both points (as s9
+  already recorded): the family freeze was lifted by the grant, and the
+  "masked-0 register diff class" claim was disproven in s3 (zero register
+  diffs; the residual is 2 branch TARGETS — reorg redundancy thread-skip vs
+  ASPSX fill-iff-retarget).
+- [s10] candidate-ready remains impossible for any worker session: masked
+  sandbox is 0 but TRUE bytes are 2 off (words [165]/[173], branch targets
+  .L8001727C vs .L80017278); the driver's byte re-verify would discard it.
+  The residual is not a C construct (s3 three-way proof; s7 counterfactual
+  grid; s9 rederive kill). The ONLY remaining dispatch that can advance main
+  is the escalation modality, which files the OWNER-ESCALATION entry per the
+  frontier's pre-decided wording — unless the owner first elects the
+  class-level maspsx ASPSX-parity remedy (12 candidate functions, s3/s4
+  census).
+
+- [s9] sandbox main --disable all = 0 measured THIS session with the full candidate in place in src/ings.c (tmp/grind/main/s9/sandbox_reproof.json) — tenth consecutive re-proof across sessions
+
+- [s9] The in-person owner GRANT (decisions.md 2026-08-11, commit cff7f1f5) sanctions the chained same-variable accumulation as a split-init-accumulation family extension; the FAKE annotation required by grant condition 1 is present in the applied body; the digest's 'function frozen pending owner ruling' judge constraint is STALE
+
+- [s9] candidate-ready remains impossible for any worker session: masked sandbox is 0 but TRUE bytes are 2 off (words [165]/[173], branch targets .L8001727C vs target's .L80017278) — the driver's byte re-verify would discard it; the residual is enforced by reorg's multi-site self-healing redundancy machinery (s7 counterfactual grid) and is not reachable from any C spelling (s3 cc1psx counter-exhibit, s9 rederive kill)
+
+- [s9] The digest's 'masked-0 register diff class' constraint wording is disproven (ledger s3): zero register diffs; the residual is branch-target-only
+
+- [s9] decisions.md still lacks an OWNER-ESCALATION entry covering the residual — filing it is the escalation-modality session's mandated job, with the pre-decided disposition wording in the frontier, unless the owner elects the class-level maspsx ASPSX-parity remedy (12 candidate functions, s3/s4 census)

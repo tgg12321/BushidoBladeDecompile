@@ -415,3 +415,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
 - result: Reverted for the EIGHTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured twice this session (after reapply, and after restoring the candidate tail post-probe)
 - verdict: KILLED
+
+## [s9] Any non-escalation worker dispatch on main can only reapply candidate.c, re-prove sandbox 0, and re-check decisions.md — no measurable probe remains in any worker modality
+- mechanism: All seven worker modalities/axes carry measured kills (spelling s1/s2, structural s3, permuter s5, sibling s6, forensics s7, gate-scan s8, rederive s9); the 2-byte residual is 2 branch TARGETS produced by our reorg's redundancy thread-skip vs ASPSX's fill-iff-retarget — not a C construct, so no C-side modality can move it
+- probe: Reapplied the full candidate (4 edits incl. the owner-granted FAKE-annotated chained accumulation) after the ninth driver revert; ran sandbox main --disable all; re-grepped docs/grind/decisions.md for main entries
+- result: sandbox = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped — all in other ings.c functions); grant entry present at ~line 4438 (GRANTED, function REOPENED, 4 binding conditions); still no OWNER-ESCALATION entry covering the branch-target residual (the ~4477 entry is the pre-grant family question the grant resolved)
+- verdict: CONFIRMED
