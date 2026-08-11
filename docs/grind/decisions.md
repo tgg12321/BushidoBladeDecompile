@@ -4385,6 +4385,56 @@ Conditions BINDING on the merge (failure of any voids the grant):
    banned_constructs[5]) STANDS regardless of this grant; this ruling does not
    launder it, and it is to be memorialized in the project's rules.
 
+## 2026-08-11 — OWNER RULING (in person) — func_80052930: canonical-asm AUTHORIZED (gte-3x3 cluster completion)
+
+**Owner-ruling artifact.** The owner (Trenton), in the 2026-08-11 coordinator
+session, reviewed the canonical-sweep decision packet
+(docs/campaigns/2026-08-11/canonical-sweep-packet.md, Class A) and authorized
+func_80052930 (src/text1b.c, 60 insns, 26 cop2) as
+COMPLETED-INLINE-ASM-CANONICAL. Basis: it is the last unauthorized member of
+the contiguous text1b.c LIBGTE leaf run (func_80052720..func_80052B7C, eight
+members already in inline_asm_canonical.txt, four owner-authorized
+2026-08-06); it carries the exact hand-written signatures of that ruling
+(hand-held lui $t9 0xFFFF0000 mask register reused across packing;
+mfc2-during-mvmva-latency interleave; store in the jr delay slot / reorg.c
+ASM_INPUT); and it passes the gte-wrapper boundary test (every non-cop2 insn
+is load/pack/drain packaging, zero general-purpose computation on GTE
+outputs). Stated honestly: the scanner tier is LOW (S1/S2/S6 did not fire) —
+the authorization rests on cluster membership + idiom signatures, the same
+basis as the 2026-08-06 siblings, for consistency of the cluster ruling.
+CONDITIONS: the current src body (the archived-FORBIDDEN gte-3x3 pin recipe —
+11 register-asm pins + hardcoded-$N __asm__) must be REPLACED with the
+whole-body __asm__("glabel …") form per canonical-asm-authorization-recipe,
+including the .L label-shift cascade check for later text1b.c functions;
+fresh layer-2 review before queue done.
+
+## 2026-08-11 — OWNER RULING (in person) — raw `.word` cop2 spellings: canonical iff cop2-INTERNAL; GPR-carrying or non-cop2 = injection
+
+**Owner-ruling artifact.** The owner (Trenton), in the 2026-08-11 coordinator
+session, settled the cross-cutting policy question from the canonical-sweep
+packet. Ruling, by opcode class:
+1. A raw `.word` that decodes to a cop2-INTERNAL GTE operation (co-bit set:
+   mvmva, sqr, avsz3/4, nclip, rtpt, …— ops with NO general-purpose-register
+   field, whose mnemonics the assembler may lack) is CANONICAL inline asm in
+   kind, in authorized and unauthorized bodies alike. Precedent:
+   func_80052754's .word sqr (accepted 2026-06).
+2. A raw `.word` that decodes to an op WITH a GPR operand (mfc2/mtc2/
+   cfc2/ctc2/lwc2/swc2 — all have real mnemonics that take %N constraints)
+   hardcodes a register choice GCC should be making: NOT canonical in an
+   unauthorized body; the clean island form is the mnemonic with %N
+   constraints. 3. A raw `.word` that decodes to a NON-cop2 opcode
+   (lw/move/nop/…) is the classic inline-asm-injection cheat outright.
+This is the existing inline-cop2 policy stated at the .word level — no new
+carve-out category is created.
+FIRST APPLICATION (audit run 2026-08-11, tmp/word_audit.py, results archived
+in docs/campaigns/2026-08-11/word-audit.txt): src/code6cac.c carries 39 raw
+.words — 3 canonical (mvmva), 17 cop2-move with hardcoded GPRs, 6 lwc2/swc2
+with hardcoded bases, and 13 NON-cop2 (raw lw/move/nop encodings) inside
+func_80018094's region. B3 (func_80018300) and B4 (func_80018094) therefore
+remain INCOMPLETE pure-C work with canonical mvmva islands permitted; the
+injection .words must be re-derived as C when each reaches the queue top.
+The same bar governs the other 16 ASM-PARTIAL functions with GTE-shaped asm.
+
 ## 2026-08-11 01:33 — main — ruling: main (src/ings.c) reaches sandbox 0 (189/189, all 25 regfix rules droppable) wit — **ESCALATE**
 
 RULING: the chained same-variable accumulation is NOT covered by the sanctioned split-init-accumulation family, and granting it is above the Judge's authority — this is an owner-ruling question by the sanctioning memory's own text. THE CONSTRUCT: main's poll-loop threshold spelled as 's32 lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80; if (cnt >= lim) break;' — plain live C computing the real semantic threshold (n-1)*256+128; no dead stores, no volatile, no pins, no asm; a human could write stepwise computation. Its spelling, however, exists to steer GCC: routing the whole chain through ONE pseudo makes try_combine's 2->2 split gate (combine.c:1836, '&& ! reg_referenced_p (i2dest, newpat)' — I read the guard myself, citation exact) refuse the ashift/plus distribution (combine.c:8196, also verified), keeping the target's 'addiu -1; sll 8; addiu 0x80' unfolded where any fresh-variable spelling folds to 'sll; addiu -128' (measured, hypotheses.md H5). WHY NOT SANCTIONED AS-IS: the split-init-accumulation memory (user 2026-06-13, precedent ad11a8c8/func_80049C24) scopes itself to 'split a real a+b into init + += on the same var, combine folds it back' — ONE step, byte-NEUTRAL (a pure refs-count RA lift), and it warns 'Do NOT over-generalize ... New adjacent spellings still need their own user ruling.' This form differs on both scoped axes: a 3-step chain, and byte-MATERIALIZING (combine does NOT fold it back — blocking the fold IS the effect). The frozen SOTN list's 'Variable reuse for codegen control' covers 'reusing one C variable for two unrelated values to influence loop-invariant detection or RA'; this is related staged values steering COMBINE — a different mechanism outside the frozen scope. First reach of an unsanctioned family cannot be granted here; per the memory's own routing it needs its own user ruling. WHY ESCALATE, NOT FAIL: I am certain about the work, not uncertain about the construct. Verified by me: sandbox main --disable all = 0 (189/189 insns, all 25 regfix rules dropped; the 68 stripped cheat-asm insns are in OTHER ings.c functions — main's body is pure C); target asm/funcs/main.s 0x7B58-0x7B6C shows the exact unfolded chain; src/ings.c:626-634 carries the candidate form; both cited GCC lines match. The session did everything right: pinned the mechanism by reading combine.c rather than guessing, killed the alternatives with measurements (fresh-variable splits fold — H5; lim-before-GetRCnt regresses to 7 — H4; a live second use of (x-1) is byte-IMPOSSIBLE because every free slot in the target loop is a literal nop — s2 byte-budget audit), and declined to self-sanction, filing this ruling request instead of a candidate-ready. OWNER QUESTION: do you extend the 2026-06-13 split-init-accumulation sanction (or grant a sibling family) to cover chained same-variable accumulation of related staged values whose effect is byte-materializing combine-steering — pure live C, each intermediate read by the next statement, no dead code? If GRANTED: main closes to COMPLETED-C next session (bytes already proven; recommend requiring a /* FAKE: same-pseudo chain blocks combine split gate */ annotation and a proper .claude/rules/ doc registered via the independent-review path, consistent with the 2026-07-01 family additions). If REFUSED: honest disclosure — the remaining search axes are thin but not zero: (a) the minimal 3-statement variant is the SAME family (same ruling applies), (b) cross-BB shapes that linearize back via jump2/reorg are unexplored with no concrete form yet, (c) directed permuter over poll-loop spellings excluding same-pseudo accumulation has not been run. Multi-use forms are byte-impossible per the nop-slot audit, so the space genuinely narrows toward this family.

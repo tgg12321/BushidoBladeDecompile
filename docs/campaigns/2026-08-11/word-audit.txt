@@ -1,0 +1,41 @@
+=== src/code6cac.c: 39 .word(s)
+   summary: {'NON-COP2': 13, 'COP2-MOVE-GPR': 17, 'SWC2': 4, 'LWC2': 2, 'COP2-INTERNAL': 3}
+   L  237   0x00000000 NON-COP2       opcode 0x00
+   L  238   0x00C06021 NON-COP2       opcode 0x00
+   L  239   0x8D8D0000 NON-COP2       opcode 0x23
+   L  240   0x8D8E0004 NON-COP2       opcode 0x23
+   L  241   0x48CD0000 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  242   0x48CE0800 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  243   0x8D8D0008 NON-COP2       opcode 0x23
+   L  244   0x8D8E000C NON-COP2       opcode 0x23
+   L  245   0x8D8F0010 NON-COP2       opcode 0x23
+   L  246   0x48CD1000 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  247   0x48CE1800 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  248   0x48CF2000 COP2-MOVE-GPR  ctc2 $r15 (GPR hardcoded in .word)
+   L  253   0x8E060004 NON-COP2       opcode 0x23
+   L  254   0x00000000 NON-COP2       opcode 0x00
+   L  255   0x00C06021 NON-COP2       opcode 0x00
+   L  256   0x8D8D0014 NON-COP2       opcode 0x23
+   L  257   0x8D8E0018 NON-COP2       opcode 0x23
+   L  258   0x48CD2800 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  259   0x8D8F001C NON-COP2       opcode 0x23
+   L  260   0x48CE3000 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  261   0x48CF3800 COP2-MOVE-GPR  ctc2 $r15 (GPR hardcoded in .word)
+   L  300   0x488CF000 COP2-MOVE-GPR  mtc2 $r12 (GPR hardcoded in .word)
+   L  306   0xE99F0000 SWC2           GPR base $12 hardcoded
+   L  382   0x48CD0000 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  383   0x48CE0800 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  387   0x48CD1000 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  388   0x48CE1800 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  389   0x48CF2000 COP2-MOVE-GPR  ctc2 $r15 (GPR hardcoded in .word)
+   L  396   0x48CD2800 COP2-MOVE-GPR  ctc2 $r13 (GPR hardcoded in .word)
+   L  398   0x48CE3000 COP2-MOVE-GPR  ctc2 $r14 (GPR hardcoded in .word)
+   L  399   0x48CF3800 COP2-MOVE-GPR  ctc2 $r15 (GPR hardcoded in .word)
+   L  410   0xC9800000 LWC2           GPR base $12 hardcoded
+   L  411   0xC9810004 LWC2           GPR base $12 hardcoded
+   L  414   0x4A480012 COP2-INTERNAL  mvmva
+   L  416   0xE9990000 SWC2           GPR base $12 hardcoded
+   L  417   0xE99A0004 SWC2           GPR base $12 hardcoded
+   L  418   0xE99B0008 SWC2           GPR base $12 hardcoded
+   L 1994   0x4A486012 COP2-INTERNAL  mvmva
+   L 2060   0x4A486012 COP2-INTERNAL  mvmva
