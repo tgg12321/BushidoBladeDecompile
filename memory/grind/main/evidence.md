@@ -1369,3 +1369,15 @@ standing procedure only.
 - [s23] candidate-ready remains barred by the live judge_constraint: candidate form fails full-build SHA1 by 2 bytes (reorg branch-target residual), unreachable from any C spelling per 9+ worker modalities across 20+ sessions
 
 - [s23] Construct question NOT re-escalated per the brief's binding instruction (closed by GRANT cff7f1f5)
+
+- [s24] Sandbox 0 re-proven this session (s24): score 0, target_insns 189, build_insns 189, rules_dropped 25, cheat_asm_stripped 68 - log at tmp/grind/main/s24/sandbox_s24.log
+
+- [s24] src/ings.c had reverted to pre-grind for the 24th time; reapply via tmp/grind/main/s14/apply.py restored the candidate exactly (main lines 582..673 -> 102 candidate lines + func_80016A8C/func_80016E60 signature widenings)
+
+- [s24] docs/grind/decisions.md line 4477: 2026-08-11 main OWNER-ESCALATION covers ONLY the chained same-variable accumulation construct family question, which the frontier records as closed by GRANT cff7f1f5; it is NOT the pending 2-byte-residual escalation and must not be cited as such
+
+- [s24] docs/grind/decisions.md 2026-08-11 13:49 layer-1 FAIL on main: construct family legitimately granted, but candidate fails full-build SHA1 by 2 bytes (branch-target residual) - the actual blocker, unchanged
+
+- [s24] Forensics axis remains dead: s6/s7 instrumented-cc1 work already named the divergence (reorg branch targets, a maspsx/ASPSX-parity fill class issue, evidence.md s11 packet - 12 census candidates), re-confirmed s15/s16/s23; no dump this session could add information, so none was re-run per the ledger's explicit 'next probe: None' prescription
+
+- [s24] memory/grind/main/candidate.c unchanged and remains the best (and byte-frontier) form; no new rejected forms

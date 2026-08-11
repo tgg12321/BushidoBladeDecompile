@@ -610,3 +610,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; ran sandbox main --disable all
 - result: score=0, 189/189 insns, rules_dropped=25, cheat_asm_stripped=68 (tmp/grind/main/s23/sandbox_reproof.log) - 24th consecutive re-proof
 - verdict: CONFIRMED
+
+## [s24] The standing frontier still holds: no measurable probe remains for any non-escalation worker session on main; the only remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual
+- mechanism: Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5+s13/s14/s21/s22, sibling s6, forensics s6/s7+s15/s16/s23, gate-scan s7/s8, rederive s8/s9+s17/s18, synthesis s10+s19); the residual is reorg branch TARGETS, not any C construct, so no forensics dump can name a new lever - the axis was already fully spent in s6/s7 with the instrumented cc1
+- probe: Standing procedure executed: candidate reapplied via tmp/grind/main/s14/apply.py (main lines 582..673 replaced, 102 candidate lines, both callee signatures widened), sandbox main --disable all re-measured, docs/grind/decisions.md re-grepped for main entries
+- result: sandbox score 0, 189/189 target insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in OTHER ings.c functions) - 25th consecutive sandbox 0. decisions.md: the 2026-08-11 main entry (line 4477) is the CONSTRUCT escalation (closed by GRANT cff7f1f5 - not re-escalated); the 2026-08-11 13:49 layer-1 FAIL (banked faa30607) confirms the live blocker is the 2-byte branch-target SHA1 residual; NO owner ruling on the residual and NO new residual escalation entry exists yet
+- verdict: CONFIRMED
