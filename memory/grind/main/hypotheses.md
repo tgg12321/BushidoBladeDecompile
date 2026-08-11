@@ -371,3 +371,47 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
 - result: reverted for the SEVENTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured this session
 - verdict: KILLED
+
+## [s9] a fresh independent re-derivation (m2c / corpus / sibling transplant) can produce a structurally different C shape whose TRUE bytes close the 2-branch-target residual
+- mechanism: if the original source had a structurally different tail (nested ifs, different label structure), a fresh derivation unbiased by the candidate might reach different jump-optimizer/reorg input and avoid the redundancy thread-skip retarget
+- probe: (1) fresh m2c decompile of asm/funcs/main.s (tmp/grind/main/s8/m2c_main.c); (2) the one structurally-new shape it offered — the nested-if tail — transcribed into src/ings.c (single label, semantically equal, granted accumulation kept) and measured: sandbox --disable all + UNMASKED byte-compare vs build/src/ings.o (tmp/grind/main/s8/cmp_unmasked.py, objects ings_cand.o / ings_nestedif.o)
+- result: m2c's reconstruction is structurally the candidate; its only deltas are the two-label form (already killed by s3 escape hatch #6 + cc1psx one-label exhibit) and the nested-if tail. The nested-if tail = sandbox 0 AND byte-identical unmasked output including the identical residual ([165] 1462ff79 vs ref ...78, [173] 1440ff71 vs ref ...70, [169] correct) — GCC canonicalizes both tail shapes to the same RTL and reorg reaches the same retarget fixpoint. Corpus/Kengo transplant moot by provenance (cc1psx already reproduces the original form from our C — no corpus hit can beat the original compiler as evidence of original shape)
+- verdict: KILLED
+
+## [s9] src/ings.c still carries the candidate form at session start
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep for candidate signatures before any measurement
+- result: reverted for the EIGHTH time; reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured this session (twice: after reapply, and after restoring the candidate tail post-probe)
+- verdict: KILLED
+
+## Live frontier (post-s9)
+1. The modality ladder is now FULLY measured dead on the 2-byte residual:
+   spelling s1/s2, structural s3 (three-way proof), permuter s5 (blind),
+   sibling-probe s6, forensic counterfactual s7, canonical-asm gate s8
+   (scan LOW 0/8), rederive s9 (m2c shape = candidate; nested-if variant
+   byte-identical). The ONLY remaining action is the escalation-modality
+   session filing the OWNER-ESCALATION entry — both endgame-lock AND-gates
+   measured failed, so per the 2026-07-27 standing auto-ruling it is
+   pre-decided RESOLVED BY STANDING RULING: REFUSED / OWNER-ACCEPTED
+   INCOMPLETE, unless the owner elects the class-level maspsx ASPSX-parity
+   remedy (12 candidates, whole-corpus blast radius) the s3-s7 packet
+   documents.
+2. NOTHING measurable remains for any non-escalation worker session. A
+   further worker dispatch of ANY modality should: reapply candidate.c,
+   re-measure sandbox 0, re-check decisions.md, return progress citing this
+   frontier. Do not invent probes on dead axes; do not re-transcribe m2c
+   variants (s9 measured shape convergence).
+3. Session-start invariant STILL required (8 reverts now): reapply from
+   candidate.c, re-measure sandbox 0 before any other work.
+
+## [s8] A fresh independent re-derivation (m2c / decomp.me corpus / Kengo transplant) can produce a structurally different C shape whose TRUE bytes close the 2-branch-target residual
+- mechanism: If the original source had a structurally different loop tail (nested ifs, different label structure), a derivation unbiased by the candidate might feed different input to jump-opt/reorg and avoid the redundancy thread-skip retarget of the two unfilled loop branches
+- probe: Fresh m2c decompile of asm/funcs/main.s (tmp/grind/main/s8/m2c_main.c); its one structurally-new shape — the nested-if tail — transcribed into src/ings.c (single label, semantically equal, granted FAKE accumulation kept), then sandbox --disable all + UNMASKED byte-compare vs build/src/ings.o (tmp/grind/main/s8/cmp_unmasked.py; objects ings_cand.o / ings_nestedif.o)
+- result: m2c's reconstruction is structurally the candidate; its only deltas are the two-label form (already killed by s3 escape hatch #6 + the cc1psx one-label counter-exhibit) and the nested-if tail. The nested-if tail scored sandbox 0 AND produced byte-identical unmasked output including the identical residual ([165] 1462ff79 vs ref 1462ff78, [173] 1440ff71 vs ref 1440ff70, [169] correct) — GCC 2.7.2 canonicalizes both tail shapes to the same RTL and reorg reaches the same retarget fixpoint. Corpus/Kengo transplant moot by provenance: the s3 cc1psx counter-exhibit (original compiler reproduces the original single-label form from our exact C) is strictly stronger evidence of original shape than any corpus hit
+- verdict: KILLED
+
+## [s8] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
+- mechanism: Driver end-of-session handling discards uncommitted src edits
+- probe: Grep src/ings.c for candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) before any measurement
+- result: Reverted for the EIGHTH time (1-arg call sites, inline threshold expression, no FAKE annotation); reapplied all 4 edits from memory/grind/main/candidate.c; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) re-measured twice this session (after reapply, and after restoring the candidate tail post-probe)
+- verdict: KILLED

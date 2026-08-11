@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 0,
    "modality": "forensics",
    "headline": "Stale digest re-dispatched already-run forensics; session instead measured endgame-lock gate 1: scan_hand_coded on main = tier LOW 0/8 (canonical-asm gate FAILED) \u2014 the escalation packet's gate evalua"
+  },
+  {
+   "session": 8,
+   "floor": 0,
+   "modality": "rederive",
+   "headline": "Rederive modality measured DEAD: fresh m2c reconstruction is structurally the candidate, and its one new shape (nested-if tail) compiles byte-identical including the identical 2-branch-target residual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "main's 2-byte branch-target residual is closable only by owner-surface means; the escalation-modality session FILES the OWNER-ESCALATION entry, whose endgame-lock gate evaluation is now fully measured (gate 1: scan LOW 0/8 s8; gate 2: moot, residual is not a C construct s3) \u2014 pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing auto-ruling, with the class-level maspsx ASPSX-parity remedy (12 candidates) noted as the owner's alternative election",
-   "mechanism": "reorg's multi-site self-healing redundancy machinery (s7 measured) vs ASPSX fill-iff-retarget; both endgame-lock AND-gates measured failed",
-   "next_probe": "escalation modality only: file the entry citing evidence.md s3-s8, tmp/grind/main/s2/dbr_trace.txt + main_psx.s, the s3/s4 census artifacts, tmp/grind/main/s5/cmp_352C.txt + cmp_DC9C.txt, the s7 counterfactual grid (tmp/grind/main/s6/cmp_vs_target.py output, dbr_trace_abl.txt, blast_radius2.diff), and the s8 gate-1 scan (tmp/grind/main/s7/scan_hand_coded_main.txt)"
+   "hypothesis": "main's 2-byte branch-target residual is closable only by owner-surface means; the escalation-modality session FILES the OWNER-ESCALATION entry, pre-decided RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (both endgame-lock AND-gates measured failed: gate 1 scan LOW 0/8 in s8; gate 2 moot \u2014 the residual is not a C construct, s3), unless the owner elects the class-level maspsx ASPSX-parity remedy (12 candidate functions)",
+   "mechanism": "reorg's multi-site self-healing redundancy machinery (s7 counterfactual grid) vs ASPSX fill-iff-retarget; every worker modality now carries a measured kill (s1-s9)",
+   "next_probe": "Escalation modality ONLY: file the entry citing evidence.md s3-s9, tmp/grind/main/s2/dbr_trace.txt + main_psx.s, the s3/s4 census artifacts, tmp/grind/main/s5/cmp_352C.txt + cmp_DC9C.txt, the s7 counterfactual grid (tmp/grind/main/s6/), the s8 gate-1 scan (tmp/grind/main/s7/scan_hand_coded_main.txt), and the s9 rederive kill (tmp/grind/main/s8/m2c_main.c + ings_nestedif.o byte-identity)"
   },
   {
-   "hypothesis": "no measurable probe remains for a non-escalation worker session on main",
-   "mechanism": "permuter blind (s5), siblings not cheap (s6), reorg counterfactual grid complete (s7), gate scans done (s8)",
-   "next_probe": "none \u2014 a further stale-digest worker dispatch should only reapply candidate.c, re-measure sandbox 0, re-check decisions.md, and return progress citing the post-s8 frontier"
+   "hypothesis": "No measurable probe remains for any non-escalation worker session on main \u2014 now including rederive",
+   "mechanism": "permuter blind (s5), siblings not cheap (s6), reorg counterfactual grid complete (s7), gate scans done (s8), rederive shape-convergence measured (s9: m2c = candidate; nested-if byte-identical)",
+   "next_probe": "None \u2014 any further worker dispatch should only reapply candidate.c, re-measure sandbox 0, re-check decisions.md, and return progress citing the post-s9 frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (7 occurrences)",
-   "mechanism": "driver discards uncommitted src edits at session end; only the ledger persists",
-   "next_probe": "every session: reapply from memory/grind/main/candidate.c and re-measure sandbox 0 before trusting any floor number"
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (8 occurrences)",
+   "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
+   "next_probe": "Every session: reapply from memory/grind/main/candidate.c and re-measure sandbox 0 before trusting any floor number"
   }
  ],
  "judge_constraints": [

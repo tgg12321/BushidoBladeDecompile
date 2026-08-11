@@ -709,3 +709,110 @@ scan_hand_coded_main.txt (gate-1 scan output, tier=LOW 0/8).
 - [s7] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation) reapplied in src/ings.c after the seventh driver revert
 
 - [s7] SIX worker modalities/axes now measured dead against the 2-byte residual: spelling (s1/s2), structural/analytic (s3, three-way proof), permuter (s5, scorer blind), cheap sibling confirmation (s6), forensic counterfactual (s7, 3-point ablation grid), canonical-asm gate (s8, scan LOW 0/8); nothing measurable remains for any non-escalation worker session
+
+## Session 9 (rederive, 2026-08-11 — dispatched as "session 8, rederive";
+the ledger already carried 8 sessions, so this session is numbered 9;
+artifacts live in tmp/grind/main/s8/ per the dispatch brief)
+
+### Session-start invariant (eighth occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — eighth driver revert.
+  Reapplied all four candidate.c edits via targeted Edits; sandbox main
+  --disable all = **0** (189/189, 25 rules dropped, 68 cheat-asm insns
+  stripped from OTHER ings.c functions) re-measured THIS session.
+  candidate.c stays authoritative.
+
+### Why this session ran real rederive probes (digest NOT stale this time)
+The dispatch digest was current (post-s8 frontier included) and the mandated
+modality — rederive — is the ONE worker modality with no measurement in the
+floor history (recon s1, structural s2/s3, permuter s4/s5, forensics s6/s7,
+gate-scan s8). The post-s8 frontier says "no measurable probe remains", but
+that claim was itself unmeasured for the rederive axis: no session had ever
+produced a fresh independent derivation and byte-compared it. This session
+closed that gap so the modality ladder's rederive rung is measured, not
+asserted.
+
+### Probe 1 — fresh m2c decompile of the target asm (artifact
+tmp/grind/main/s8/m2c_main.c)
+`python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c
+asm/funcs/main.s`. Findings:
+- m2c's reconstruction is STRUCTURALLY THE CANDIDATE: same call sequence,
+  same poll loop (naive folded threshold `((D_800A36F1-1)<<8)+0x80` — the
+  spelling s1 measured folding to sll;addiu -128), same inline 0xFFFECC00
+  subtraction, same dispatch-table call, same u8 decrement tail.
+- The ONLY structural deltas m2c offers: (a) it emits TWO adjacent loop
+  labels `loop_1:`/`loop_2:` — a faithful rendering of the target's
+  pre-li/post-li two-target split, i.e. exactly the two-label C source
+  already killed by s3 escape hatch #6 (back-edge liveness forces a
+  callee-saved reg + extra move under our GCC; cc1psx exhibit proves the
+  original had ONE label); (b) a NESTED-IF tail (&&-joined guard + nested
+  conditions) where the candidate uses a flat goto chain.
+- Corpus/Kengo transplant angle: moot by provenance — the s3 cc1psx
+  counter-exhibit already proves the candidate IS the original source shape
+  (the original compiler emits the original single-label form from our
+  exact C). No external corpus hit can carry stronger evidence than the
+  original compiler reproducing the original bytes from our source. Not
+  probed further; analytic skip.
+
+### Probe 2 — MEASURED: the m2c nested-if tail produces BYTE-IDENTICAL
+output including the identical 2-byte residual
+Transcribed m2c's nested-if tail into src/ings.c (single label, semantically
+equal: `if ((D_800A3834 == 1) && (voice == 0)) { if (!(D_80102794 &
+0x08000800u)) { if (D_800A38DC == 2) { if (D_800A3713 != 0) { D_800A3713--;
+if (D_800A3713 == 0) goto call_func; } } goto loop; } call_func:
+func_80016E60(env, idx); } goto loop;`), keeping the granted chained
+accumulation. Measured:
+- sandbox --disable all = 0 (189/189, 25 rules dropped) — same masked score.
+- UNMASKED byte-compare (tmp/grind/main/s8/cmp_unmasked.py, engine
+  func_byte_signature vs build/src/ings.o): the encoded words differ from
+  target in EXACTLY the same two places as the flat-chain candidate —
+  [165] 1462ff79 vs ref 1462ff78, [173] 1440ff71 vs ref 1440ff70 — and
+  [169] beqz matches. Every other word identical (the 16-line diff output
+  is the sandbox object's constant 0x14 section-offset drift in j-target /
+  address rendering; encoded relative branches identical).
+- Objects banked: tmp/grind/main/s8/ings_cand.o (flat-chain baseline),
+  ings_nestedif.o (variant) — bit-identical residual class.
+- Conclusion: GCC 2.7.2 canonicalizes the flat goto chain and the nested-if
+  tail to the SAME RTL; jump optimization + reorg reach the same fixpoint,
+  including the same redundancy thread-skip retarget. Structural variation
+  of the tail region (where the two residual branches live) does not move
+  the residual by even one bit. The rederive modality is now MEASURED dead,
+  completing the ladder: every worker modality (spelling, structural,
+  permuter, sibling-probe, forensics, gate-scan, rederive) has a measured
+  kill against the 2-byte residual.
+- Note: the nested-if form is NOT saved to rejected/ — it is not disproven
+  (it is byte-identical to the candidate); candidate.c stays authoritative
+  as the flat-chain form matching the s3 cc1psx exhibit input. src/ings.c
+  was restored to the candidate form and sandbox 0 re-measured after the
+  probe.
+
+### decisions.md re-checked this session
+Still NO OWNER-ESCALATION entry covering the 2-byte branch-target residual
+(the only main entry, line ~4477, is the pre-grant accumulation-family
+question resolved by GRANT cff7f1f5). Filing remains the
+escalation-modality session's job; this session's modality was rederive,
+so it may not dispose of the function.
+
+### Artifacts (tmp/grind/main/s8/)
+m2c_main.c (fresh m2c decompile), m2c_main.err, cmp_unmasked.py (unmasked
+byte-compare tool, argv-driven), ings_cand.o (flat-chain baseline object),
+ings_nestedif.o (nested-if variant object — identical residual).
+
+- [s9] sandbox main --disable all = 0 (189/189, 25 rules dropped) re-measured with the full candidate reapplied after the EIGHTH driver revert
+- [s9] rederive modality measured DEAD: fresh m2c reconstruction is structurally the candidate (its only deltas: the s3-killed two-label form, and a nested-if tail); the nested-if tail transcribed + measured = byte-identical output including the identical [165]/[173] residual (ff79/ff71 vs ref ff78/ff70); GCC canonicalizes both tail shapes to the same RTL
+- [s9] corpus/Kengo transplant analytically moot: the s3 cc1psx counter-exhibit (original compiler reproduces original single-label form from our C) is strictly stronger provenance than any corpus hit
+- [s9] SEVEN worker modalities/axes now measured dead against the 2-byte residual: spelling s1/s2, structural s3, permuter s5, sibling-probe s6, forensics s7, canonical-asm gate s8, rederive s9 — the modality ladder is fully spent; only the escalation-modality filing remains
+
+- [s8] sandbox main --disable all = 0 (189/189 insns, 25 rules dropped) measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) in place in src/ings.c — re-proven both after the 8th-revert reapply and after the probe was reverted to candidate form
+
+- [s8] Fresh m2c decompile (tools/m2c/m2c.py --valid-syntax on asm/funcs/main.s) reconstructs main as structurally the candidate: same call sequence, same poll loop (with the naive threshold spelling s1 already measured folding), same 0xFFFECC00 block, same dispatch call; it renders the target's pre-li/post-li split as TWO adjacent loop labels — the two-label C form s3 already killed (extra move insn under our GCC; cc1psx proves the original had ONE label)
+
+- [s8] The m2c nested-if tail variant (the only structurally new shape) measured: sandbox 0 and UNMASKED byte-identical to the flat-chain candidate including the identical 2-word residual — [165] 1462ff79 vs ref 1462ff78, [173] 1440ff71 vs ref 1440ff70, [169] beqz correct; structural variation of the tail region does not move the residual by one bit
+
+- [s8] Corpus/Kengo transplant probes are analytically moot: cc1psx reproducing the original single-label form from our exact C (s3 counter-exhibit) is stronger provenance than any external corpus match could provide
+
+- [s8] decisions.md re-checked: still NO OWNER-ESCALATION entry covering the 2-byte branch-target residual (the only main entry at ~4477 is the pre-grant accumulation-family question resolved by GRANT cff7f1f5); filing remains the escalation-modality session's job
+
+- [s8] SEVEN worker modalities/axes now measured dead against the 2-byte residual: spelling s1/s2, structural/analytic s3 (three-way proof), permuter s5 (scorer blind), cheap sibling confirmation s6, forensic counterfactual s7 (3-point ablation grid), canonical-asm gate s8 (scan_hand_coded LOW 0/8), rederive s9 (this session) — the modality ladder is fully spent
+
+- [s8] The digest's judge constraints remain stale: the family freeze was resolved by the in-person owner GRANT (decisions.md 2026-08-11, commit cff7f1f5) and the 'masked-0 register diff class' classification was disproven in ledger s3 (zero register diffs; the residual is 2 branch TARGETS caused by reorg's redundancy thread-skip)
