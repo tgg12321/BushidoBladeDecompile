@@ -538,3 +538,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Re-read docs/grind/decisions.md headers and all entries after line 4494
 - result: No new entry for main; GRANT cff7f1f5 (line 4438) and the resolved pre-grant ESCALATE packet (line 4477) are unchanged; post-s14 entries concern func_80047A90 / func_800401CC / func_80075670 only
 - verdict: KILLED
+
+## [s16] A further forensics run (RTL/ALLOCDBG/GREG dumps) could advance the frontier on main
+- mechanism: The divergence is already fully named from s1/s6 dumps: combine.c:8196 ashift/plus distribution gated by the combine.c:1836 reg_referenced_p 2->2 split guard (solved by the owner-granted chained accumulation), and the remaining 2-byte residual is two reorg.c redundancy-thread-skip retargeted branch TARGETS at words [165]/[173] — a branch-label placement artifact of the frozen pipeline, not a compiler-pass decision any new dump could change
+- probe: Ledger cross-check (evidence.md s6/s7/s15) plus this session's re-verification that the candidate still measures sandbox 0 with the residual unchanged in kind
+- result: No forensics target exists; the axis kill from s6/s7 stands unrefuted for the third consecutive forensics dispatch
+- verdict: KILLED
+
+## [s16] The banked candidate still measures honest sandbox distance 0 on the current tree after the driver's 16th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so the floor must be re-proven each session from memory/grind/main/candidate.c
+- probe: Reapplied via tmp/grind/main/s14/apply.py (all 4 coordinated edits verified: widened prototypes at src/ings.c:311 and :441, main body, FAKE-annotated chained accumulation per grant cff7f1f5), then `sandbox main --disable all`
+- result: score 0, 189/189 target insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions) — seventeenth consecutive sandbox-0 re-proof
+- verdict: CONFIRMED

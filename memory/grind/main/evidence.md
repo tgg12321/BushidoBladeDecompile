@@ -1145,3 +1145,25 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s15] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] — the driver's full-build byte re-verify would discard the claim
 
 - [s15] evidence.md updated with the s15 block; frontier unchanged from post-s11
+
+## Session 16 (forensics - sixth consecutive stale dispatch, 2026-08-11)
+
+- [s16] Mandated modality forensics - axis KILLED s6/s7 and re-confirmed s15 (the divergence is already fully named: combine.c:8196 ashift/plus distribution gated by the combine.c:1836 reg_referenced_p 2->2 split guard, dumps banked s1/s6; the 2-byte residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a compiler-pass question any further dump could advance). No new forensics run; per the post-s11 frontier this session executed the standing procedure ONLY.
+
+- [s16] src/ings.c was reverted to pre-grind for the SIXTEENTH time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (all 4 coordinated edits verified in place: both widened prototypes at lines 311/441, the main body, and the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5).
+
+- [s16] sandbox main --disable all = 0 THIS session (score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped - all in OTHER ings.c functions) - SEVENTEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s16/sandbox_reproof.txt.
+
+- [s16] decisions.md re-checked through line 4520 (grew by 2 lines since s15's read through 4518): the only new content is a Judge PASS entry for a src/text1b.c function (block-local var split, register-alloc-pure-c Lever A) - NOT main. Construct GRANT cff7f1f5 remains on file at line 4438; the line-4477 OWNER-ESCALATION remains the RESOLVED pre-grant construct question; NO entry yet covers the 2-byte branch-target residual. Filing the pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE entry (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot - residual is not a C construct) remains exclusively the escalation-modality session's job per evidence.md s11.
+
+- [s16] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim. Frontier unchanged from post-s11. Any further worker dispatch in any modality should run only this standing procedure.
+
+- [s16] src/ings.c had been reverted to pre-grind for the sixteenth time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py and all 4 coordinated edits verified in place
+
+- [s16] sandbox main --disable all = 0 this session (189/189 insns, 25 rules dropped, 68 cheat-asm stripped) — artifact tmp/grind/main/s16/sandbox_reproof.txt
+
+- [s16] decisions.md re-checked through line 4520 (2 lines added since s15's read through 4518): the only new content is a Judge PASS for a src/text1b.c function, not main; GRANT cff7f1f5 remains at line 4438; no entry yet covers the 2-byte branch-target residual
+
+- [s16] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim
+
+- [s16] evidence.md updated with the s16 block; candidate.c unchanged and current; frontier unchanged from post-s11

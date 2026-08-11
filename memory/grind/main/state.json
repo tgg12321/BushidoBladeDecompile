@@ -1,7 +1,7 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -93,6 +93,12 @@
    "floor": 0,
    "modality": "forensics",
    "headline": "Fifth consecutive stale dispatch (forensics axis killed s6/s7): standing procedure only \u2014 candidate reapplied after the 15th driver revert, sandbox 0 re-proven (16th consecutive, 189/189, 25 rules dro"
+  },
+  {
+   "session": 16,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Sixth consecutive stale dispatch (forensics axis killed s6/s7, re-confirmed s15): standing procedure only \u2014 candidate reapplied after the 16th driver revert, sandbox 0 re-proven (17th consecutive, 189"
   }
  ],
  "frontier": [
@@ -103,11 +109,11 @@
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15, gate-scan s7/s8, rederive s8/s9, synthesis s10); sessions 10-15 all confirmed the reapply-and-reprove loop is all that remains",
+   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15 and s16, gate-scan s7/s8, rederive s8/s9, synthesis s10); sessions 10-16 all confirmed the reapply-and-reprove loop is all that remains",
    "next_probe": "None \u2014 any further stale-digest worker dispatch runs the standing procedure only: reapply candidate.c, re-measure sandbox 0, re-check decisions.md, return progress citing the post-s11 frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 15 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 16 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "Every session: reapply from memory/grind/main/candidate.c (tmp/grind/main/s14/apply.py automates the 4 edits) and re-measure sandbox 0 before trusting any floor number"
   }
