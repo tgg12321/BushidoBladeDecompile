@@ -1167,3 +1167,25 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s16] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim
 
 - [s16] evidence.md updated with the s16 block; candidate.c unchanged and current; frontier unchanged from post-s11
+
+## Session 17 (rederive - seventh consecutive stale dispatch, 2026-08-11)
+
+- [s17] Mandated modality rederive - axis KILLED s8/s9 (fresh m2c re-derivation, decomp.me corpus scrape, and sibling/Kengo transplant were all measured dead there; the current candidate IS the proven original shape - cc1psx on this exact C emits the original single-label loop tail, evidence.md s3 - so a "structurally different C shape" is by construction a step AWAY from the answer). No new rederive work; per the post-s11 frontier this session executed the standing procedure ONLY.
+
+- [s17] src/ings.c was reverted to pre-grind for the SEVENTEENTH time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py and all 4 coordinated edits verified in place (widened prototypes at lines 311/441, main body, owner-granted FAKE-annotated chained accumulation, grant cff7f1f5).
+
+- [s17] sandbox main --disable all = 0 THIS session (score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped - all in OTHER ings.c functions) - EIGHTEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s17/sandbox_reproof.txt.
+
+- [s17] decisions.md re-checked through line 4521 (grew by 1 line since s16's read through 4520; note: piped Measure-Object -Line undercounts this file - it skips blank lines - use (Get-Content -Raw).Split-count, which gives 4521): lines 4494-4521 contain only entries for func_80047A90 (final PASS), func_800401CC (layer-1 FAIL / two rulings / layer-1 FAIL / final PASS via OTag bitfield spelling), and func_80075670 (final PASS) - NONE concern main. Construct GRANT cff7f1f5 remains on file at line 4438; the line-4477 OWNER-ESCALATION remains the RESOLVED pre-grant construct question; NO entry yet covers the 2-byte branch-target residual. Filing the pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE entry (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot - residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a C construct) remains exclusively the escalation-modality session's job per evidence.md s11.
+
+- [s17] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim. Frontier unchanged from post-s11. Any further worker dispatch in any modality should run only this standing procedure.
+
+- [s17] src/ings.c reverted to pre-grind for the 17th time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; all 4 coordinated edits verified in place (widened prototypes lines 311/441, main body, owner-granted FAKE-annotated chained accumulation per grant cff7f1f5)
+
+- [s17] sandbox main --disable all = 0 THIS session — 18th consecutive re-proof: score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions); artifact tmp/grind/main/s17/sandbox_reproof.txt
+
+- [s17] decisions.md re-checked through line 4521: no owner action on main since s16; construct GRANT cff7f1f5 on file at line 4438; line-4477 OWNER-ESCALATION is the resolved pre-grant construct question; NO entry yet covers the 2-byte branch-target residual
+
+- [s17] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim
+
+- [s17] evidence.md updated with the s17 block; candidate.c unchanged and current; frontier unchanged from post-s11

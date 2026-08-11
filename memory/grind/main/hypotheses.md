@@ -550,3 +550,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied via tmp/grind/main/s14/apply.py (all 4 coordinated edits verified: widened prototypes at src/ings.c:311 and :441, main body, FAKE-annotated chained accumulation per grant cff7f1f5), then `sandbox main --disable all`
 - result: score 0, 189/189 target insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions) — seventeenth consecutive sandbox-0 re-proof
 - verdict: CONFIRMED
+
+## [s17] A structurally different C shape (rederive modality) could advance main
+- mechanism: Rederive was killed s8/s9: m2c re-derivation, decomp.me corpus, and sibling/Kengo transplant all measured dead; cc1psx on the CURRENT candidate emits the original single-label loop tail (evidence.md s3), proving this C is the original shape — any different shape moves away from the answer
+- probe: No new probe run (running one would re-measure a banked kill); ledger cross-checked instead
+- result: Kill stands; standing procedure executed: apply.py reapplied all 4 edits, sandbox main --disable all = 0 (189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped in other ings.c functions)
+- verdict: KILLED
+
+## [s17] The owner may have acted on main since s16 (new ruling/escalation entry in decisions.md)
+- mechanism: decisions.md is append-only; s16 read through line 4520
+- probe: Re-read decisions.md tail (true line count 4521 via raw split; piped Measure-Object -Line undercounts by skipping blanks)
+- result: Growth since s16 is 1 line; lines 4494-4521 concern only func_80047A90, func_800401CC, and func_80075670 — none concern main. GRANT cff7f1f5 remains at line 4438; no entry yet covers the 2-byte branch-target residual
+- verdict: KILLED
