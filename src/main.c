@@ -3085,6 +3085,11 @@ void SpuGetAllKeysStatus(u8 *status) {
 }
 INCLUDE_ASM("asm/funcs", func_8008B488);
 /* kengo:MED  |  sa_tan1/saTan1MainJump  |  413i  |  -10 */
+/* PsyQ LIBSPU S_N2P: _spu_2pitch — a second exported entry point that splat
+   merged into func_8008B488. Split out 2026-08-10 (docs/naming/libscan/
+   boundary_fixes.md); must stay immediately after its former host so the
+   link order reproduces the original byte layout. */
+INCLUDE_ASM("asm/funcs", _spu_2pitch);
 s32 _spu_note2pitch(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     volatile s32 sp0;
     volatile s32 sp4;

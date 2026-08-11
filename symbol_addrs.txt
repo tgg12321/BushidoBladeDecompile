@@ -253,3 +253,4 @@ _start = 0x800836EC; // PS-EXE entry point / crt0 (split out of asm/funcs/ang_ho
 note2pitch = 0x80086B38; // type:func (XDEF split out of func_80086818 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat
 _spu_FiDMA = 0x80088BA0; // type:func (XDEF split out of func_800889D4 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat
 _spu_Fr_ = 0x80088C60; // type:func (XDEF split out of func_800889D4 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat
+_spu_2pitch = 0x8008BA94; // type:func (XDEF split out of func_8008B488 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat
