@@ -1189,3 +1189,27 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s17] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim
 
 - [s17] evidence.md updated with the s17 block; candidate.c unchanged and current; frontier unchanged from post-s11
+
+## Session 18 (rederive - eighth consecutive stale dispatch, 2026-08-11)
+
+- [s18] Mandated modality rederive - axis KILLED s8/s9 and re-confirmed s17 (fresh m2c re-derivation, decomp.me corpus scrape, and sibling/Kengo transplant all measured dead; the current candidate IS the proven original shape - cc1psx on this exact C emits the original single-label loop tail, evidence.md s3 - so any "structurally different C shape" is by construction a step AWAY from the answer). No new rederive work; per the post-s11 frontier this session executed the standing procedure ONLY.
+
+- [s18] src/ings.c had been reverted to pre-grind for the EIGHTEENTH time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py and all 4 coordinated edits verified in place (widened prototypes at lines 311/441, main body, owner-granted FAKE-annotated chained accumulation per grant cff7f1f5).
+
+- [s18] sandbox main --disable all = 0 THIS session (score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped - all in OTHER ings.c functions) - NINETEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s18/sandbox_reproof.txt.
+
+- [s18] decisions.md re-checked: file is byte-identical to s17's read (4521 lines via the raw split count, zero new headings after line 4520). Construct GRANT cff7f1f5 remains on file at line 4438; the line-4477 OWNER-ESCALATION remains the RESOLVED pre-grant construct question; NO entry yet covers the 2-byte branch-target residual. Filing the pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE entry (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot - residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a C construct) remains exclusively the escalation-modality session's job per evidence.md s11.
+
+- [s18] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3); the driver's full-build byte re-verify would discard the claim. Frontier unchanged from post-s11. Any further worker dispatch in any modality should run only this standing procedure.
+
+- [s18] evidence.md updated with the s18 block; candidate.c unchanged and current (already carries the grant-condition FAKE annotation); frontier unchanged from post-s11.
+
+- [s18] src/ings.c had reverted to pre-grind for the 18th time (lim-chain grep count 0 before apply); all 4 coordinated candidate edits re-verified in place after apply.py: widened prototypes at lines 311/441, main body, owner-granted FAKE-annotated chained accumulation (grant cff7f1f5)
+
+- [s18] sandbox main --disable all = 0 THIS session (189/189, 25 rules droppable, 68 cheat-asm stripped) — artifact tmp/grind/main/s18/sandbox_reproof.txt
+
+- [s18] decisions.md re-checked: byte-identical to s17's read (4521 raw-split lines, no headings after line 4520); construct GRANT cff7f1f5 at line 4438 stands; line-4477 OWNER-ESCALATION remains the resolved pre-grant construct question; NO entry covers the 2-byte branch-target residual
+
+- [s18] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173] (reorg.c redundancy thread-skip retargeting, proven s3, masked by score.py's branch-target masking); the driver's full-build byte re-verify would discard the claim
+
+- [s18] evidence.md updated with the s18 block; candidate.c unchanged and current (already carries the grant-condition FAKE annotation)

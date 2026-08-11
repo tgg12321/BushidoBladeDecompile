@@ -1,7 +1,7 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -105,21 +105,27 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "Seventh consecutive stale dispatch (rederive axis killed s8/s9): standing procedure only \u2014 candidate reapplied after the 17th driver revert, sandbox 0 re-proven (18th consecutive, 189/189, 25 rules dr"
+  },
+  {
+   "session": 18,
+   "floor": 0,
+   "modality": "rederive",
+   "headline": "Eighth consecutive stale dispatch (rederive axis killed s8/s9, re-confirmed s17): standing procedure only \u2014 candidate reapplied after the 18th driver revert, sandbox 0 re-proven (19th consecutive, 189"
   }
  ],
  "frontier": [
   {
    "hypothesis": "Escalation modality files the OWNER-ESCALATION entry with the pre-decided disposition: RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE \u2014 unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates)",
-   "mechanism": "Both endgame-lock AND-gates measured FAILED (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot \u2014 the residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a C construct); the consolidated packet is evidence.md s11",
+   "mechanism": "Both endgame-lock AND-gates measured FAILED (gate 1: scan_hand_coded tier LOW 0/8, s8; gate 2: moot \u2014 the residual is two reorg-retargeted branch TARGETS at words [165]/[173], not a C construct); construct question fully resolved by GRANT cff7f1f5; consolidated packet is evidence.md s11",
    "next_probe": "Escalation modality ONLY: file the entry in docs/grind/decisions.md citing evidence.md s11, note GRANT cff7f1f5 resolved the only construct question, return owner-gated"
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17, synthesis s10); sessions 10-17 all confirmed the reapply-and-reprove loop is all that remains",
+   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14, sibling s6, forensics s6/s7 re-confirmed s15/s16, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18, synthesis s10); sessions 10-18 all confirmed the reapply-and-reprove loop is all that remains",
    "next_probe": "None \u2014 any further stale-digest worker dispatch runs the standing procedure only: reapply candidate.c, re-measure sandbox 0, re-check decisions.md, return progress citing the post-s11 frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 17 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 18 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "Every session: reapply from memory/grind/main/candidate.c (tmp/grind/main/s14/apply.py automates the 4 edits) and re-measure sandbox 0 before trusting any floor number"
   }

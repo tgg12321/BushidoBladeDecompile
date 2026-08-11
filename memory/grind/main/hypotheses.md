@@ -562,3 +562,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Re-read decisions.md tail (true line count 4521 via raw split; piped Measure-Object -Line undercounts by skipping blanks)
 - result: Growth since s16 is 1 line; lines 4494-4521 concern only func_80047A90, func_800401CC, and func_80075670 — none concern main. GRANT cff7f1f5 remains at line 4438; no entry yet covers the 2-byte branch-target residual
 - verdict: KILLED
+
+## [s18] The post-s11 frontier is unchanged: no measurable probe exists for a rederive (or any non-escalation) worker session on main
+- mechanism: Rederive axis measured dead s8/s9 (m2c re-derivation, decomp.me corpus, Kengo transplant) and the candidate IS the proven original shape (cc1psx on this exact C emits the original single-label loop tail, evidence.md s3), so a structurally different C shape is by construction a step away from the answer; the only residual is two reorg.c-retargeted branch TARGET words [165]/[173], a frozen-pipeline (maspsx ASPSX-parity) question, not a C question
+- probe: Standing procedure: reapply memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (src had been reverted an 18th time), re-run sandbox main --disable all, re-scan docs/grind/decisions.md for new owner action on main
+- result: Sandbox score 0, 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in other ings.c functions) — 19th consecutive sandbox-0 re-proof; decisions.md byte-identical to s17's read (4521 lines, zero new headings): GRANT cff7f1f5 on file, no entry yet covers the branch-target residual
+- verdict: CONFIRMED
