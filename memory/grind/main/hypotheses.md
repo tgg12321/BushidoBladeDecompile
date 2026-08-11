@@ -616,3 +616,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Standing procedure executed: candidate reapplied via tmp/grind/main/s14/apply.py (main lines 582..673 replaced, 102 candidate lines, both callee signatures widened), sandbox main --disable all re-measured, docs/grind/decisions.md re-grepped for main entries
 - result: sandbox score 0, 189/189 target insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in OTHER ings.c functions) - 25th consecutive sandbox 0. decisions.md: the 2026-08-11 main entry (line 4477) is the CONSTRUCT escalation (closed by GRANT cff7f1f5 - not re-escalated); the 2026-08-11 13:49 layer-1 FAIL (banked faa30607) confirms the live blocker is the 2-byte branch-target SHA1 residual; NO owner ruling on the residual and NO new residual escalation entry exists yet
 - verdict: CONFIRMED
+
+## [s25] The rederive axis could still contribute a new probe against the 2-byte branch-target residual
+- mechanism: Rederive produces alternative C shapes (m2c, decomp.me corpus, sibling transplant); but the residual is reorg branch TARGETS under the frozen maspsx/ASPSX-parity fill class (evidence.md s11 packet), not a C-shape divergence - s8/s9 measured every structurally different shape as strictly worse, re-confirmed s17/s18
+- probe: Ledger re-check + candidate reapply (tmp/grind/main/s14/apply.py) + sandbox re-measure this session; no fresh rederive probe exists per the frontier's explicit 'next probe: None'
+- result: Sandbox 0 re-proven (score 0, 189/189 insns, rules_dropped 25, cheat_asm_stripped 68 in other ings.c functions); no C-shape lever can move a branch-target residual, so rederive stays dead
+- verdict: KILLED
+
+## [s25] The standing procedure remains the correct and only action for a non-escalation worker session on main
+- mechanism: Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5/s13/s14/s21/s22, sibling s6, forensics s6/s7/s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9/s17/s18/s25, synthesis s10/s19); the construct question is closed by GRANT cff7f1f5; the live blocker is the layer-1 FAIL (2026-08-11 13:49) on the 2-byte full-build SHA1 branch-target residual, which only the escalation-modality session (filing the NEW OWNER-ESCALATION) or an owner election of the maspsx ASPSX-parity fill remedy can resolve
+- probe: Reapplied candidate.c, re-measured sandbox, re-read decisions.md lines 4438-4524
+- result: Confirmed: sandbox 0 (26th consecutive), grant cff7f1f5 present with binding conditions, layer-1 FAIL faa30607 unchanged, no residual escalation entry filed yet
+- verdict: CONFIRMED

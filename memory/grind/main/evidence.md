@@ -1381,3 +1381,19 @@ standing procedure only.
 - [s24] Forensics axis remains dead: s6/s7 instrumented-cc1 work already named the divergence (reorg branch targets, a maspsx/ASPSX-parity fill class issue, evidence.md s11 packet - 12 census candidates), re-confirmed s15/s16/s23; no dump this session could add information, so none was re-run per the ledger's explicit 'next probe: None' prescription
 
 - [s24] memory/grind/main/candidate.c unchanged and remains the best (and byte-frontier) form; no new rejected forms
+
+- [s25] Sandbox 0 re-proven this session (s25, rederive stale dispatch): score 0, target_insns 189, build_insns 189, rules_dropped 25, cheat_asm_stripped 68 - log at tmp/grind/main/s25/sandbox.log
+
+- [s25] src/ings.c had reverted to pre-grind for the 25th time; reapply via tmp/grind/main/s14/apply.py restored the candidate exactly (main lines 582..673 -> 102 candidate lines + func_80016A8C/func_80016E60 signature widenings)
+
+- [s25] decisions.md re-checked this session: no NEW escalation entry for the 2-byte branch-target residual exists yet (line 4477 entry remains the construct-family escalation, closed by GRANT cff7f1f5; layer-1 FAIL 2026-08-11 13:49 on the residual remains the live blocker). Rederive axis stays dead per s8/s9/s17/s18 - no fresh m2c/corpus/sibling probe could address a reorg branch-TARGET residual that is not a C-shape question, so none was run per the ledger's explicit 'next probe: None' prescription
+
+- [s25] memory/grind/main/candidate.c unchanged and remains the best (and byte-frontier) form; no new rejected forms
+
+- [s25] src/ings.c had reverted to pre-grind for the 25th time; tmp/grind/main/s14/apply.py restored the candidate exactly (main lines 582..673 -> 102 candidate lines + func_80016A8C/func_80016E60 signature widenings)
+
+- [s25] sandbox main --disable all THIS session: score 0, target_insns 189, build_insns 189, rules_dropped 25, cheat_asm_stripped 68 (all cheat-asm is in OTHER ings.c functions) - tmp/grind/main/s25/sandbox.log
+
+- [s25] decisions.md state re-verified: 2026-08-11 GRANT cff7f1f5 sanctions the chained same-variable accumulation family with binding conditions (FAKE annotation, family rules-doc via independent-review path, fresh layer-2); the 2026-08-11 13:49 layer-1 FAIL on the 2-byte branch-target residual is the live blocker; NO OWNER-ESCALATION for the residual exists yet (line 4477 entry is the construct-family escalation, resolved by the grant)
+
+- [s25] candidate-ready remains banned per judge_constraints (candidate form fails full-build SHA1 by 2 bytes, masked-0 register diff class) - not claimed this session despite sandbox 0
