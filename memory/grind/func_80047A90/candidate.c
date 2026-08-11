@@ -1,23 +1,30 @@
-/* func_80047A90 — BEST FORM, session 2 (structural), honest sandbox floor 8 (down from 14).
+/* func_80047A90 — BEST FORM, session 3 (structural), honest sandbox floor 6 (down from 8).
  *
  * THIS FORM IS APPLIED IN src/sound.c (pure C, zero pins, zero rules).
  *
- * Session-2 change vs the s1 14-form: the inner-loop tail (pa1++; a3 += 4; pa2++;)
- * is duplicated into BOTH arms of the if (k == 8) — the sanctioned
- * duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md,
- * owner rulings 2026-07-01 + 2026-08-06 control-transfer-tail clarification;
- * FAKE-annotated in src). Effect (measured, final8.lreg):
- *   pa1 7->9 refs (prio .794), pa2 4->6 (.375), a3off 4->6 (.364), k live 36->40 (.25)
- *   => allocation order pa1(a1) pa2(a2) a3off(a3) ... k(t0): loop 2 registers ALL
- *   land on target, including the delay-slot addiu a2,a2,4. Cross-jump re-merges the
- *   duplicate byte-neutrally: 84/84 insns, loop-2 body byte-identical to target.
+ * Session-3 change vs the s2 8-form: the loop-2 init is now K-FIRST source order
+ * (k = 1; pt2; pt1;) — matching target's emission order at insns 30-33 — with
+ * `k = 1;` wrapped in a single-level do { } while (0). Family:
+ * .claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06: sanctioned
+ * pure-C match device for ANY codegen effect incl. register allocation; inline
+ * FAKE annotation mandatory — present in src). Mechanism (measured, final6.lreg):
+ * flow.c counts refs weighted by loop_depth, so the wrap's loop notes give the
+ * k = 1 set weight 2 => k 5->6 weighted refs, prio 2*6/42 = .286 — above
+ * pt1 (5/40 = .25) and pt2 (5/41 = .244), below a3off (6/33 = .364). Allocation
+ * order stays pa1(a1) pa2(a2) a3off(a3) k(t0) pt1(t1) pt2(t2) while the emitted
+ * init order becomes k=1 FIRST then the lui/addiu/addiu pt2/pt1 triple = target.
+ * Without the wrap, k-first order = 18 (k drops to .233, pt1 steals t0 — measured
+ * s2 and re-derived s3); with it both 30-33 slots close: 8 -> 6.
  *
- * Remaining 8 = (a) loop-1 2-cycle i<->judge, 6 slots: i(a2 vs t0), judge-base(a3 vs a2);
- *               (b) loop-2 init order, 2 slots: target emits k=1 BEFORE the pt2 lui pair
- *                   (insns 30-33), we emit it after (source order pt2;pt1;k=1 is
- *                   register-load-bearing: k-first=18, k-middle=15 measured s2).
- * See evidence.md s2 for why (a) is closed to every priority-family spelling and what
- * the s3 frontier is (forensics on find_reg order / permuter sweep / k=1 scheduling).
+ * Remaining 6 = the loop-1 2-cycle ONLY: i (pseudo 81: 7 refs/25 live -> a2,
+ * wants t0) <-> judge LICM base (pseudo 94: 3/48 -> a3, wants a2), slots
+ * 1,2,3,12,14,27. This residue is closed to the ENTIRE structural/priority axis:
+ * s2 killed every separate-counter and merged-counter spelling; s3 additionally
+ * killed declaration order (fully reversed = no change) and derived that a
+ * wrap-weighted a2-blocker needs 6-9 nesting levels (unjustifiable under the
+ * nested-wrap documentation duty). Next frontier is forensics: find_reg's
+ * hard-reg walk for pseudo 81 (why does target's compile skip a2/a3?), the
+ * local_alloc giv-status flip, and a permuter sweep from this 6-floor base.
  */
 void func_80047A90(void) {
     s32 i;
@@ -37,9 +44,13 @@ void func_80047A90(void) {
         D_800EF558[i] += 0x12;
     }
 
+    do {
+        /* FAKE: loop-note ref weighting keeps k in $t0 while k=1 is
+         * emitted before the pt2/pt1 lui pair, matching target order */
+        k = 1;
+    } while (0);
     pt2 = D_800EF59C;
     pt1 = D_800EF59C + 0x11;
-    k = 1;
   outer_loop:
     pa1 = pt1;
     a3 = 0;

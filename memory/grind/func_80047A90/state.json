@@ -1,7 +1,7 @@
 {
  "func": "func_80047A90",
  "file": "sound",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,22 +15,28 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Structural s2: floor 14 -> 8 - loop-2 register cycle closed via sanctioned duplicated-statement-into-arms ref-lift (byte-neutral, FAKE-annotated); loop-1 i<->judge cycle proven closed to ALL priority "
+  },
+  {
+   "session": 3,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Structural s3: floor 8 -> 6 - k=1-emission-order residue closed via k-first order + sanctioned single-level do-while(0) ref-weight wrap on k=1; remaining 6 = loop-1 i<->judge cycle only, now closed to"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Loop-1's i->t0 comes from a non-priority mechanism visible in find_reg's hard-reg walk (preference/prefclass term) or from i being local-alloc'd under some block structure",
-   "mechanism": "global.c find_reg internals beyond allocno_compare; local_alloc took the loop-1 givs in one measured form (139/140 local) but not another (138/139 global) - the flip condition is unknown and may extend to the counter",
-   "next_probe": "BB2_ALLOC_DEBUG (instrumented cc1, tools/gcc-2.7.2/cc1) trace of find_reg for pseudo 72 in the 8-form; diff the local/global giv status across banked dumps final8 vs nested/nested2"
+   "hypothesis": "Loop-1's i->t0/judge->a2 comes from a find_reg preference/prefclass term or a different allocation-order state reachable from some source form",
+   "mechanism": "global.c find_reg internals beyond allocno_compare priority; no constructible conflicting pseudo blocks a2/a3 (s2+s3 closed the whole structural axis)",
+   "next_probe": "BB2_ALLOC_DEBUG (instrumented cc1, tools/gcc-2.7.2/cc1) trace of find_reg for i's pseudo (81 in final6 dumps) in the 6-form"
   },
   {
-   "hypothesis": "The k=1-first emission at insn 30 falls out of sched1 once loop-1 registers close, or reveals a different loop-2 preheader block layout in the original",
-   "mechanism": "sched.c INSN_PRIORITY/dependence ordering in the preheader block; register assignment changes the dependence picture at the loop-1/loop-2 boundary",
-   "next_probe": "tools/sched_solver on the loop-2 init block of the 8-form vs target order (sched-solver models 2.7.2 sched.c exactly per its campaign memory)"
+   "hypothesis": "s1-H2's full-nested-for build (loop-1 counter -> t0 EXACT) contained the a2/a3 blocker identity; s2's nested re-build did not reproduce it (72 -> a2)",
+   "mechanism": "unknown - the flip condition between the two nested builds (init order? decl order?) is the missing datum",
+   "next_probe": "rebuild s1's EXACT H2 form (both loops for-form, s1 init order), dump lreg/greg, identify what held a2/a3 during loop 1, then hunt a goto-form-loop-2-compatible spelling reproducing it"
   },
   {
-   "hypothesis": "A permuter campaign from the 8-floor base finds the loop-1 a2-blocker construction that closed-form analysis missed",
-   "mechanism": "pure-rename residual, tiny search space; PERM sweep over loop-1 counter/giv spellings and init placements",
+   "hypothesis": "A permuter campaign from the 6-floor base finds the loop-1 construction closed-form analysis missed",
+   "mechanism": "pure 2-cycle rename residual, tiny space; PERM sweep over loop-1 counter/judge-base spellings",
    "next_probe": "clean single-function target.o at offset 0, seed = candidate.c, fresh-seed stopping discipline"
   }
  ],

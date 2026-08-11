@@ -178,3 +178,97 @@ may find the a2-blocker construction analysis missed. Fresh-seed discipline per
 - probe: final8.lreg conflict analysis + k-first(18)/k-middle(15)/outer-head-order(17,18) probes + both merged forms' greg dispositions
 - result: no a2-blocker is constructible; the 6-slot i<->judge residue is closed to the entire priority axis
 - verdict: KILLED
+
+## [s3] The k=1-vs-lui emission-order residue (slots 30-33) closes via k-first source order + do{}while(0) wrap on `k = 1;` alone
+- mechanism: flow.c weights reg refs by loop_depth, so the wrap's loop notes give k's init
+  set weight 2 → k 6 weighted refs/42 live, prio .286 — restored above pt1 (.25)/pt2 (.244)
+  which plain k-first order had put above k (.233); allocation order stays all-target while
+  the emitted init order becomes k=1 first, matching target insns 30-33. Sanctioned family
+  do-while-zero-exception (owner 2026-07-06 final: ANY codegen effect incl. RA; single-level,
+  FAKE-annotated in src)
+- probe: sandbox + slot diff + final6.lreg on the wrapped k-first form
+- result: 8 → 6; slots 30-33 byte-match; remaining 6 = loop-1 i↔judge only
+- verdict: CONFIRMED
+
+## [s3] k-first order via ref-SHAVING (pt3 = pa1 + 0x11 to sink pt1) keeps registers
+- mechanism: hoped sinking pt1 to 4 refs (.195) would let k (.233) keep t0 in k-first order
+- probe: sandbox on the 8-form with k-first + pt3-from-pa1
+- result: 18 — pt2 (5/41, .244; its 5th ref is the CSE addiu pt1,pt2,0x44 derivation,
+  unshavable without breaking the target's derived-pt1 byte) allocates before k, steals t0
+- verdict: KILLED (rejected/kfirst-pt3-from-pa1-pt2-steals-t0.c)
+
+## [s3] Wrapping the whole init triple in do{}while(0) flips the emission order without breaking registers
+- mechanism: hoped the note boundary alone reorders; actually loop_depth weighting hits all
+  three inits (+1 weighted ref each), lifting pt1/pt2 out of the window
+- probe: sandbox on the 8-form (k-last) with the triple wrapped
+- result: 18 — loop-2 register set broken wholesale; the lever must be single-statement
+- verdict: KILLED (rejected/dowhile-wrap-full-init-triple-overweights-all.c)
+
+## [s3] Declaration order (pseudo numbering) affects allocation
+- probe: full reversal of the 11 local declarations on the 8-form
+- result: 8, identical outcome — all priorities distinct, no ties for numbering to break
+- verdict: KILLED
+
+## [s3] The ref-weight wrap lever can build a loop-1 a2-blocker
+- mechanism: a blocker must conflict with i AND exceed prio .56; judge (3/48) needs ~7-deep
+  nesting, hand-hoisted jb (~/28) ~6-deep (and would steal a1 from giv139 first), hoisted
+  a3off/pa2 (~/60) 6-deep (pa2 early-init also emits an extra lui = wrong bytes). Nested
+  wraps have zero SOTN precedent and carry the rule's extra documentation duty — 6-9 levels
+  indefensible
+- probe: arithmetic derivation from final6.lreg numbers (banked in evidence.md)
+- result: no defensible wrap construction reaches .56
+- verdict: KILLED (loop-1 now closed to priority + decl-order + type-narrowing + ref-weight
+  axes — the ENTIRE structural modality)
+
+## Live frontier (for session 4)
+
+### F1 (primary): loop-1 i↔judge needs a NON-structural mechanism — forensics modality
+Unchanged from s2 but sharpened: the 6-form's wrong set is exactly i (7/25 .56 → a2, wants
+t0) and judge (3/48 .0625 → a3, wants a2). For target's outcome, find_reg(i) must skip BOTH
+a2 and a3. No constructible conflicting pseudo blocks them (s2+s3). Probes:
+  (a) BB2_ALLOC_DEBUG (instrumented cc1, tools/gcc-2.7.2/cc1 per
+      [[instrumented-cc1-location]]) trace of find_reg for i's pseudo in the 6-form —
+      is there a preference/prefclass/regs_someone_prefers term that any state can steer?
+  (b) The s1 H2 full-nested-for probe had loop-1 counter → t0 EXACTLY (incl. judge → a2?)
+      — but s2's re-built nested.greg shows 72 → a2, i.e. the re-build did NOT reproduce
+      H2's dispositions. Rebuild s1's EXACT H2 form (both loops for-form, s1 init order),
+      dump lreg/greg, and identify what allocated a2/a3 before the counter there. That
+      identity is the missing blocker — then find a goto-form-loop-2-compatible spelling
+      that reproduces it.
+  (c) local_alloc giv-status flip (139/140 local in one dump vs global in another) —
+      what flips it, can i be made local-alloc'd?
+
+### F2: permuter campaign from the 6-floor base
+Space is a single 2-cycle. Clean single-function target.o at offset 0, seed = candidate.c,
+PERM sweep over loop-1 spellings (counter forms, array-index vs pointer hybrid, judge-base
+spellings). Fresh-seed discipline per [[permuter-fresh-seed-discipline]].
+
+## [s3] The k=1-vs-lui emission-order residue (slots 30-33) closes via k-first source order with do{}while(0) wrapped around `k = 1;` alone
+- mechanism: flow.c weights reg refs by loop_depth; the wrap's loop notes give k's init set weight 2 -> k 6 weighted refs/42 live, prio .286, restored above pt1 (.25)/pt2 (.244) which plain k-first had inverted, below a3off (.364) - allocation stays all-target while emitted order becomes k=1 first. Sanctioned family do-while-zero-exception (owner 2026-07-06 final: ANY codegen effect incl. RA), FAKE-annotated in src
+- probe: sandbox + slot diff + final6.lreg on the wrapped k-first form
+- result: 8 -> 6; slots 30-33 byte-match; 84/84 insns; remaining 6 = exactly loop-1 slots 1,2,3,12,14,27
+- verdict: CONFIRMED
+
+## [s3] k-first order can keep registers by ref-SHAVING instead (pt3 = pa1 + 0x11 to sink pt1)
+- mechanism: sinking pt1 to 4 refs (.195) should let k (.233) keep t0; but pt2's 5th ref (the CSE'd addiu pt1,pt2,0x44 derivation) is unshavable, leaving pt2 at .244 above k
+- probe: sandbox on 8-form with k-first + pt3-from-pa1
+- result: 18 - pt2 steals t0
+- verdict: KILLED
+
+## [s3] Wrapping the whole init triple in do{}while(0) flips emission order without breaking registers
+- mechanism: loop_depth weighting hits ALL THREE init refs (+1 each), lifting pt1/pt2 out of the priority window - the lever must be single-statement-selective
+- probe: sandbox on 8-form (k-last) with the triple wrapped
+- result: 18 - loop-2 register set broken wholesale
+- verdict: KILLED
+
+## [s3] Declaration order (pseudo numbering) affects allocation
+- mechanism: qsort tie-breaking by allocno number could matter if priorities tied
+- probe: full reversal of the 11 local declarations on the 8-form
+- result: 8, identical outcome - all priorities distinct, no ties
+- verdict: KILLED
+
+## [s3] The ref-weight wrap lever can build a loop-1 a2-blocker (closing the i<->judge cycle structurally)
+- mechanism: a blocker must conflict with i AND exceed prio .56: judge (3/48) needs ~7-deep nesting, hand-hoisted jb ~6-deep (and would steal a1 from giv139 first), hoisted a3off/pa2 6-deep (pa2 early-init also emits an extra lui = wrong bytes); nested wraps have zero SOTN precedent and 6-9 levels is indefensible under the rule's nested-wrap documentation duty
+- probe: arithmetic derivation from final6.lreg (banked in evidence.md s3)
+- result: no defensible construction reaches .56; loop-1 closed to priority + decl-order + type-narrowing + ref-weight = the entire structural modality
+- verdict: KILLED

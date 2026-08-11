@@ -816,3 +816,4 @@
 - 2026-08-11 01:33 main JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-11 01:48 func_80047A90 s1 [recon] floor=14: Recon: pins removed, honest floor 20 -> 14; structure fully explained (loop1 = for/array-index via loop.c givs, loop2 = goto-form pointer walk); remaining 14 = two register 2-cycles with measured allocno-priority mechanism
 - 2026-08-11 02:17 func_80047A90 s2 [structural] floor=8: Structural s2: floor 14 -> 8 - loop-2 register cycle closed via sanctioned duplicated-statement-into-arms ref-lift (byte-neutral, FAKE-annotated); loop-1 i<->judge cycle proven closed to ALL priority spellings, needs forensics
+- 2026-08-11 02:31 func_80047A90 s3 [structural] floor=6: Structural s3: floor 8 -> 6 - k=1-emission-order residue closed via k-first order + sanctioned single-level do-while(0) ref-weight wrap on k=1; remaining 6 = loop-1 i<->judge cycle only, now closed to the ENTIRE structural axis

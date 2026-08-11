@@ -167,3 +167,89 @@ Target's t0-shared counters suggest merging, but measured:
 - [s2] k-first source order = 18, k-middle = 15 on the 8-form (s1's 21/18 were pre-dup): the k=1-before-lui target order cannot be bought with source order without breaking registers
 
 - [s2] outer-loop-head statement order changes emitted insn order 1:1 (probes 17/18); sched1 does not restore source-order deviations at either init site
+
+## Session 3 (2026-08-11, structural) — floor 8 → 6
+
+### AGAIN: src/sound.c was stale at session start (second occurrence)
+src carried the OLD 10-pin merged-counter body (sandbox 8 only after re-applying
+candidate.c). Same [[grinder-stale-digest-uncommitted-ledger]] shape as s2 —
+any future session MUST diff src against candidate.c before trusting the floor.
+
+### The 8→6 lever: k-first init order + do{}while(0) wrap on `k = 1;` alone
+Target emits `addiu t0,zero,1` FIRST at insn 30, before the pt2/pt1 lui triple.
+Plain k-first source order = 18 (s2: k drops to 5/43 = .233, below pt1 .25 and
+pt2 .244 → pt1 steals t0). The fix: k-first order WITH `do { k = 1; } while (0);`
+— flow.c counts reg refs weighted by loop_depth, so the wrap's loop notes give
+the k=1 set weight 2. Measured (final6.lreg, decl-order-dependent pseudo ids):
+  k (80): 6 weighted refs / 42 live → prio 2*6/42 = .286
+  window check: above pt1 (75: 5/40 = .25) and pt2 (76: 5/41 = .244),
+  below a3off (79: 6/33 = .364) → allocation order unchanged:
+  pa1(a1) pa2(a2) a3off(a3) k(t0) pt1(t1) pt2(t2) pt3(t3) — all target —
+  while the EMITTED order becomes k=1 first = target insns 30-33 exactly.
+Family: .claude/rules/do-while-zero-exception.md — owner ruling 2026-07-06
+(final): sanctioned pure-C match device for ANY codegen effect incl. register
+allocation; single-level wrap, no exhaustion gate; inline FAKE annotation
+mandatory and present in src. Precedent: marionation_Exec RA-weighting wraps
+(the case that prompted the ruling) + cpu_check_same_dir_timer cf3e6ce7.
+
+### Slot diff of the 6-form (tmp/grind/func_80047A90/s3/build.txt vs target.txt)
+Remaining 6 = EXACTLY the loop-1 2-cycle, slots 1,2,3,12,14,27:
+  i → a2 [wants t0] (slots 1, 14, 27); judge base → a3 [wants a2] (2, 3, 12).
+Slots 30-33 (k=1/lui order) now MATCH. All 84 insns present, no nops/reorders.
+
+### s3 kills (measured)
+1. **k-first + pt3 = pa1 + 0x11** (pt1 shaved to 4 refs) = 18. pt2 (.244, its
+   5th ref is the CSE'd addiu pt1,pt2,0x44 derivation — unshavable) still
+   allocates before k and steals t0. k-first via ref-SHAVING is closed; the
+   ref-WEIGHT wrap is the only working spelling.
+2. **do{}while(0) around the whole init triple** (k-last) = 18. The weighting
+   hits all three inits (+1 each), lifting pt1/pt2 out of the window. The
+   lever must be selective (single statement).
+3. **Declaration order fully reversed** = 8, byte-identical outcome. Pseudo
+   numbering is allocation-neutral here (all priorities distinct, no ties);
+   the decl-order structural lever is dead for this function.
+
+### Loop-1 residue: wrap-lever arithmetic also closed (derivation, banked)
+The new ref-weight lever CANNOT build a loop-1 a2-blocker either: a blocker
+must CONFLICT with i (live inside loop 1) and allocate before it (prio > .56).
+  - judge base (3/48): needs weighted refs ≥ 10 → ~7-deep nesting.
+  - hand-hoisted jb (live ~28-30): needs refs 8 → ~6-deep nesting, AND would
+    allocate before giv139 (.64) risking a1 theft.
+  - hoisted-early a3off/pa2 (live ~60): need refs ≥ 12 → 6-deep nesting; pa2
+    early-init also emits an extra lui (wrong bytes).
+Nested wraps carry the single-level-insufficient documentation duty and no
+SOTN precedent exists for ANY nested form (rule §prereq 3) — 6-9 levels is
+far outside defensible use. Loop-1 is therefore closed to the structural axis
+ENTIRELY (priority spellings s2 + decl order, type narrowing [slti requires
+signed s32; u32→sltiu, s8/s16→extends, all wrong bytes], and ref-weighting s3).
+Frontier stays forensics (find_reg walk for i's pseudo; why target's compile
+skipped a2 AND a3) / permuter from the 6-base.
+
+### Artifacts (tmp/grind/func_80047A90/s3/)
+- diff.sh / greg.sh — s3 copies of the s2 tooling (diff.sh's awk equality test
+  is format-broken — target aliases vs objdump raw — read the columns manually)
+- build.txt / target.txt — instruction columns for the 6-form
+- final6.lreg / final6.greg — refs/live + dispositions for the 6-form
+  (pseudo map: 72 pt3, 73 pa2, 74 pa1, 75 pt1, 76 pt2, 77 a0t, 78 v1,
+   79 a3off, 80 k, 81 i, 94 judge, 138/139 givs — REVERSED-decl build;
+   the shipped candidate restored natural decl order, measured identical)
+- sound.i + all -da stage dumps (rtl/loop/cse/flow/combine/sched/jump2/dbr)
+  for the 6-form — NB sound.i.loop shows the k=1 wrap's loop notes
+
+- [s3] Floor 6 verified on main src/sound.c (84/84): remaining = ONLY the loop-1
+  i↔judge 2-cycle (6 slots); the k=1-emission-order residue is CLOSED
+- [s3] flow.c loop_depth ref-weighting via selective do-while(0) wrap is a
+  measured, controllable +1-weighted-ref lever per wrapped statement — the
+  first tool this grind has that lifts ONE pseudo without touching others
+- [s3] k-first + wrap closes 30-33; plain k-first 18, triple-wrap 18,
+  decl-order neutral, pt3-from-pa1 18 — all banked as rejected/kills
+
+- [s3] src/sound.c was stale at session start AGAIN (old 10-pin body; second occurrence of grinder-stale-digest-uncommitted-ledger shape) - re-applied candidate.c, verified 8 before working
+
+- [s3] Floor 6 verified on main src/sound.c this session (84/84 insns): remaining = ONLY loop-1 i(a2 vs t0)/judge(a3 vs a2) at slots 1,2,3,12,14,27; the 30-33 k=1/lui order slots now MATCH
+
+- [s3] final6.lreg banked: k 6 weighted refs/42 .286 (the wrap's +1), pt1 5/40 .25, pt2 5/41 .244, a3off 6/33 .364, pa1 9/34, pa2 6/32, i 7/25 .56 -> a2, judge 3/48 .0625 -> a3; dispositions confirm all loop-2 + init pseudos on target regs
+
+- [s3] flow.c loop_depth ref-weighting via SELECTIVE do-while(0) wrap is a measured +1-weighted-ref lever per wrapped statement - lifts one pseudo without touching others; wrapping multiple statements lifts all of them (18)
+
+- [s3] s2's re-built nested.greg shows pseudo 72 -> a2, i.e. it did NOT reproduce s1-H2's counter->t0 dispositions - the H2 form's a2/a3 blocker identity is unrecovered and is the key forensic lead for loop-1
