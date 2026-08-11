@@ -825,3 +825,4 @@
 - 2026-08-11 06:44 func_800401CC: LAYER-1 FAILED a sandbox-0 candidate — The u/v mask-staging is the previously-rejected invented constant-holder cheat (rejected/permuter-newvar-holder.c) respelled through pre-existing dead locals, mislabeled as staged-value-reused-variable to dodge the ban; the self-authored 'judge rulings' that unblocked it show no evidence of genuine independent/owner review.
 - 2026-08-11 07:02 func_800401CC s2 [forensics] floor=2: Forensics: divergence mechanism named end-to-end (sched1 adjust_priority birthing-boost asymmetry + LUID-preserved chain order); both residual classes proven structurally locked for every admissible spelling; admissible score-2 v-staged chassis re-verified and left applied in src
 - 2026-08-11 07:17 func_800401CC COMPLETED-C after 3 sessions.
+- 2026-08-11 07:29 func_80075670 COMPLETED-C after 1 sessions.
