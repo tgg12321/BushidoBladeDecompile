@@ -713,14 +713,6 @@
       "status": "active"
     },
     {
-      "func": "func_80052930",
-      "file": "text1b",
-      "distance": 51,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800204C0",
       "file": "code6cac",
       "distance": 52,
@@ -2433,15 +2425,15 @@
     }
   ],
   "counts": {
-    "total": 285,
-    "active": 249,
+    "total": 284,
+    "active": 248,
     "by_status": {
-      "active": 249,
+      "active": 248,
       "parked": 36
     },
     "by_verdict": {
       "C": 163,
-      "ASM-PARTIAL": 39,
+      "ASM-PARTIAL": 38,
       "ASM-SUSPECT": 47
     }
   }

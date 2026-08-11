@@ -1368,78 +1368,19 @@ INCLUDE_ASM("asm/funcs", func_80052720);
 INCLUDE_ASM("asm/funcs", func_80052754);
 INCLUDE_ASM("asm/funcs", func_80052788);
 INCLUDE_ASM("asm/funcs", func_800527FC);
-void func_80052930(s32 *mat, s32 *vec, s16 *out) {
-    register s32 t0 asm("$8");
-    register s32 t1 asm("$9");
-    register s32 t2 asm("$10");
-    register s32 t3 asm("$11");
-    register s32 t4 asm("$12");
-    register s32 t5 asm("$13");
-    register s32 t6 asm("$14");
-    register s32 t7 asm("$15");
-    register u32 mask asm("$25");
-    register s32 v0 asm("$2");
-    register s32 v1 asm("$3");
-    t0 = mat[0];
-    t1 = mat[1];
-    t2 = mat[2];
-    t3 = mat[3];
-    t4 = mat[4];
-    __asm__ volatile ("lui %0, 0xFFFF" : "=r"(mask));
-    __asm__ volatile ("ctc2 %0, $0" :: "r"(t0));
-    __asm__ volatile ("ctc2 %0, $1" :: "r"(t1));
-    __asm__ volatile ("ctc2 %0, $2" :: "r"(t2));
-    __asm__ volatile ("ctc2 %0, $3" :: "r"(t3));
-    __asm__ volatile ("ctc2 %0, $4" :: "r"(t4));
-    __asm__ volatile ("ctc2 $zero, $5");
-    __asm__ volatile ("ctc2 $zero, $6");
-    __asm__ volatile ("ctc2 $zero, $7");
-    t0 = vec[0];
-    t1 = vec[1];
-    t2 = vec[2];
-    t3 = vec[3];
-    t4 = vec[4];
-    t5 = t1 & mask;
-    t6 = t0 & 0xFFFF;
-    t5 = t5 | t6;
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(t5));
-    t6 = t3 & 0xFFFF;
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(t6));
-    v0 = t2 << 16;
-    __asm__ volatile ("nop");
-    __asm__ volatile (".word 0x4A480012");
-    v1 = ((u32)t0) >> 16;
-    v0 = v0 | v1;
-    v1 = ((u32)t3) >> 16;
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(v0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(v1));
-    out[0] = (s16)t5;
-    out[3] = (s16)t6;
-    out[6] = (s16)t7;
-    __asm__ volatile (".word 0x4A480012");
-    v0 = t2 & mask;
-    v1 = t1 & 0xFFFF;
-    v0 = v0 | v1;
-    v1 = t4 & 0xFFFF;
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    __asm__ volatile ("mtc2 %0, $0" :: "r"(v0));
-    __asm__ volatile ("mtc2 %0, $1" :: "r"(v1));
-    out[1] = (s16)t5;
-    out[4] = (s16)t6;
-    out[7] = (s16)t7;
-    __asm__ volatile (".word 0x4A480012");
-    __asm__ volatile ("mfc2 %0, $9" : "=r"(t5));
-    __asm__ volatile ("mfc2 %0, $10" : "=r"(t6));
-    __asm__ volatile ("mfc2 %0, $11" : "=r"(t7));
-    out[2] = (s16)t5;
-    out[5] = (s16)t6;
-    out[8] = (s16)t7;
-}
+/* func_80052930: LIBGTE 3x3-mvmva matrix x s16-packed-vector transform leaf.
+ * 5x lw <- *a0 -> ctc2 $0-$4 (packed R matrix) + ctc2 $zero to $5-$7 (zero
+ * translation), 5x lw <- *a1 packed to s16 pairs via a hand-held
+ * `lui $t9,0xFFFF` mask, three mvmva 1,0,0,0,0 cycles whose packing for cycle
+ * N+1 is computed inside cycle N's GTE latency window, mfc2 $9/$10/$11 drained
+ * between, 9x sh to *a2 with the last IN the jr-ra delay slot (0x80052A1C).
+ * Zero general-purpose computation on the mfc2 outputs. GCC 2.7.2 cannot fill
+ * a delay slot with asm (reorg.c stop_search_p halts at ASM_INPUT) and the
+ * per-cycle mask re-materialization + latency interleave are hand-scheduling,
+ * so the bytes are unreachable from any C. Last member of the text1b.c LIBGTE
+ * leaf run (siblings func_80052A20/A88/B00/B44/B7C, authorized 2026-08-06).
+ * Canonical-asm; see inline_asm_canonical.txt. Owner-authorized 2026-08-11. */
+INCLUDE_ASM("asm/funcs", func_80052930);
 INCLUDE_ASM("asm/funcs", func_80052A20);
 INCLUDE_ASM("asm/funcs", func_80052A88);
 INCLUDE_ASM("asm/funcs", func_80052B00);
