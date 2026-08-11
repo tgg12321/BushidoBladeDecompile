@@ -815,3 +815,4 @@
 - 2026-08-11 00:32 main s1 [recon] floor=2: recon: floor 20 -> 2 via two pure-C structural wins (3-arg/2-arg call arities + named tbl[idx] load); last cluster = combine.c:8196 shift-plus distribution, mechanism pinned
 - 2026-08-11 01:33 main JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-11 01:48 func_80047A90 s1 [recon] floor=14: Recon: pins removed, honest floor 20 -> 14; structure fully explained (loop1 = for/array-index via loop.c givs, loop2 = goto-form pointer walk); remaining 14 = two register 2-cycles with measured allocno-priority mechanism
+- 2026-08-11 02:17 func_80047A90 s2 [structural] floor=8: Structural s2: floor 14 -> 8 - loop-2 register cycle closed via sanctioned duplicated-statement-into-arms ref-lift (byte-neutral, FAKE-annotated); loop-1 i<->judge cycle proven closed to ALL priority spellings, needs forensics

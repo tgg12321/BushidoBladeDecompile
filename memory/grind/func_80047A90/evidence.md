@@ -86,3 +86,84 @@ score counts these as the same masked slots (14 is all registers).
 - [s1] Loop 2 emitted constants (0x7D0, 0x66666667, 8) prove no loop notes -> goto-form source; do-while would also get loop notes (KILLED family)
 
 - [s1] Target insn order at loop-2 init is k-first (insn 30) but source k-first gives wrong registers (21) - insn order likely falls out of sched1 once registers close; do not chase it first
+
+## Session 2 (2026-08-11, structural) — floor 14 → 8
+
+### IMPORTANT: s1's src edits were never committed — session started at src=pinned form (20)
+The s1 ledger was committed but src/sound.c still carried the OLD pinned body. First action
+was re-applying candidate.c (verified 14). If a future session sees a floor mismatch vs the
+ledger, check src against candidate.c FIRST ([[grinder-stale-digest-uncommitted-ledger]] shape).
+
+### The 14→8 lever: duplicated-statement-into-arms on the inner-loop tail (SANCTIONED family)
+`pa1++; a3 += 4; pa2++;` duplicated into BOTH arms of `if (k == 8)` (else-arm added).
+Cross-jump re-merges byte-neutrally: 84/84 insns, loop-2 slots 34-74 byte-identical to
+target INCLUDING the delay-slot `addiu a2,a2,4` at 69. Mechanism: reg_n_refs counted by
+flow BEFORE global alloc; jump2's merge happens AFTER. Measured lift (final8.lreg):
+  pa1 7->9 refs/34 (prio 3*9/34=.794), pa2 4->6/32 (.375), a3off 4->6/33 (.364),
+  k 5 refs/live 36->40 (.25), pt1 5/41 (.244), pt2 5/42 (.238), pt3 2/31 (.065)
+Allocation order becomes pa1(a1) -> pa2(a2) -> a3off(a3) -> k(t0: a0 blocked by
+a0temp-local, a1/a2/a3 blocked by conflicts) -> pt1(t1) -> pt2(t2) -> pt3(t3). Entire
+loop-2 cycle CLOSED. Family: .claude/rules/duplicated-statement-into-arms.md (owner
+2026-07-01; the 2026-08-06 clarification explicitly covers multi-statement tails near
+control transfers). FAKE annotation present in src. Prereqs status: byte-neutrality
+MEASURED; exhaustion = s1's full spelling/order sweep + this session's kills; layer-1/2
+review pending at candidate time.
+
+### Remaining 8 = two independent residues
+(a) 6 slots, loop-1 2-cycle: i->a2 [wants t0], judge-base->a3 [wants a2] (slots 1,2,3,12,14,27).
+(b) 2 slots, loop-2 init order (slots 30-33 region): target emits `addiu t0,zero,1` (k=1)
+    BEFORE the pt2 lui/addiu/addiu-t1 triple; we emit it after. Source order is
+    register-load-bearing: k-first = 18, k-middle = 15 (remeasured s2 on the 8-form;
+    s1's 21/18 were the pre-dup landscape). Hoisting pt2/pt1 init before loop 1 would fix
+    priorities but emits the lui pair in the entry block = wrong bytes.
+
+### Loop-1 mechanics now FULLY measured (final8.lreg/greg)
+- i = pseudo 72: 7/25 -> a2. prio .56, allocates FIRST among the wrong-reg set.
+- judge LICM pseudo 94: 3 refs/48 live -> a3. prio 1*3/48=.0625, allocates LAST.
+- Loop-1 givs (138: 11/23 prio 1.43 -> a0; 139: 7/22 .64 -> a1) allocate BEFORE i.
+- judge does NOT conflict with a3off (both landed a3) => its 48-count does not extend into
+  the inner loop; its ONLY blocking conflict for a2 is i itself. Fix i->t0 and judge->a2
+  follows automatically.
+- i->t0 requires a2 (and a3) blocked at i's find_reg walk (REG_ALLOC_ORDER hits a2 first).
+  The only loop-1-resident pseudos are i, judge (.0625 - unliftable: 1 use inherent),
+  givs (a0/a1), block temps (v0/v1). NO source-controllable a2-blocker exists in any
+  separate-counter spelling - probed/derived three ways this session.
+
+### Merged-counter family: KILLED by ref arithmetic (do not re-propose priority spellings)
+Target's t0-shared counters suggest merging, but measured:
+- merged for-form: 12 refs/61-68 -> tier-3 prio .53-.59 -> allocates first -> a2
+  (s1's 17; s2 dispositions confirmed i->a2, a3off->t0, pa2->a3, judge->a3).
+- merged do-while pointer-walk (jb/p558/p59C source vars): 9 refs/65 -> .415, still above
+  pa2 .375/a3off .364 -> k->a2, a3off->t0, jb->a3: sandbox 17
+  (rejected/merged-dowhile-ptrwalk-9ref-counter.c).
+- The window a merged counter must hit is (.244 pt1, .364 a3off) => 8 refs at live>=66.
+  Merged ref FLOOR is 9 (loop1: init+inc+test=4 all byte-required; loop2:
+  reinit+==8+inc+test=5). No byte-preserving spelling removes a ref; live extension to
+  >=74 for the 9-ref path needs k live into the 10-insn tail block = dead read = forbidden.
+- Hand-hoisted jb gets live 48 (like the LICM pseudo) -> conflicts pa2 in merged forms.
+- Lifting pa2/a3off to tier-3 (8+ refs) needs a second duplication surface: the a0<0
+  diamond is NOT byte-neutral (24 w/ 81 insns - rejected/full-tail-dup-into-diamond-arms.c).
+  pa2/a3off have no other duplicable statement (each has exactly one inc + one use).
+
+### Order probes measured s2 (all KILLED)
+- outer-head `pa1; pa2; a3=0; pt3` = 17; `pa1; pa2; pt3; a3=0` = 18 (statement order at
+  the loop head changes EMITTED insn order, not just live lengths - sched does not restore it).
+- loop-2 init `k;pt2;pt1` = 18, `pt2;k;pt1` = 15 (on the 8-form).
+
+### Artifacts (tmp/grind/func_80047A90/s2/)
+- greg.sh / diff.sh - s2 dump + diff tooling (greg.sh compiles CURRENT src/sound.c)
+- final8.lreg / final8.greg - refs/live + dispositions for the FLOOR-8 form (numbers above)
+- nested.lreg/.greg, nested2.lreg/.greg - nested-for forensic dumps (separate + merged counters)
+- build.txt / target.txt - instruction columns for the diff
+
+- [s2] s1's src edits were never committed: session opened with src at the OLD pinned form (sandbox 20, 30 cheat-asm insns); re-applied candidate.c to get the documented 14 before working
+
+- [s2] Floor 8 verified this session on main src/sound.c (84/84 insns): remaining = 6-slot loop-1 cycle (i a2-vs-t0, judge a3-vs-a2 at slots 1,2,3,12,14,27) + 2-slot k=1-vs-lui emission order (slots 30-33)
+
+- [s2] final8.lreg (banked): pa1 9/34 .794, pa2 6/32 .375, a3off 6/33 .364, k 5/40 .25, pt1 5/41 .244, pt2 5/42 .238, i 7/25 .56, judge 3/48 .0625, givs 11/23 and 7/22
+
+- [s2] judge landed a3 while a3off also holds a3 => judge's 48-insn live count does NOT reach the inner loop; its only a2-conflict is i itself - fix i->t0 and judge->a2 follows free
+
+- [s2] k-first source order = 18, k-middle = 15 on the 8-form (s1's 21/18 were pre-dup): the k=1-before-lui target order cannot be bought with source order without breaking registers
+
+- [s2] outer-loop-head statement order changes emitted insn order 1:1 (probes 17/18); sched1 does not restore source-order deviations at either init site

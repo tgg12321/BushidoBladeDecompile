@@ -1,31 +1,37 @@
 {
  "func": "func_80047A90",
  "file": "sound",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 14,
    "modality": "recon",
    "headline": "Recon: pins removed, honest floor 20 -> 14; structure fully explained (loop1 = for/array-index via loop.c givs, loop2 = goto-form pointer walk); remaining 14 = two register 2-cycles with measured allo"
+  },
+  {
+   "session": 2,
+   "floor": 8,
+   "modality": "structural",
+   "headline": "Structural s2: floor 14 -> 8 - loop-2 register cycle closed via sanctioned duplicated-statement-into-arms ref-lift (byte-neutral, FAKE-annotated); loop-1 i<->judge cycle proven closed to ALL priority "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Loop-2 k<->a3off swap closes by shaving k's priority margin (.278 vs .276): one fewer counted ref or ~2 more live insns on k flips the alloc order",
-   "mechanism": "global.c allocno_compare; k needs to allocate AFTER a3off, then k's conflict set (a0temp/pa1/pa2/a3off) forces it into t0 = target",
-   "next_probe": "spelling sweep on k's tail ops (k++ placement, k+=1, test k<9 vs k!=9, s16 k) measuring lreg refs/live each time; verify with greg.sh dispositions before sandboxing"
+   "hypothesis": "Loop-1's i->t0 comes from a non-priority mechanism visible in find_reg's hard-reg walk (preference/prefclass term) or from i being local-alloc'd under some block structure",
+   "mechanism": "global.c find_reg internals beyond allocno_compare; local_alloc took the loop-1 givs in one measured form (139/140 local) but not another (138/139 global) - the flip condition is unknown and may extend to the counter",
+   "next_probe": "BB2_ALLOC_DEBUG (instrumented cc1, tools/gcc-2.7.2/cc1) trace of find_reg for pseudo 72 in the 8-form; diff the local/global giv status across banked dumps final8 vs nested/nested2"
   },
   {
-   "hypothesis": "Loop-1 i->t0/judge->a2 needs the merged counter (conflict with loop-2 a2/a3 holders) with total counted refs <=7 so prio .222 sits below pa2 .286 and a3off .276",
-   "mechanism": "floor_log2(7)=2 vs floor_log2(8+)=3; judge-base (.12) then allocates after i and shares a2 with pa2 (disjoint live ranges) = target",
-   "next_probe": "rebuild merged form, dump lreg FIRST (session 1 never measured merged refs - guessing wasted a probe), then tune ++/test spellings to hit <=7 refs"
+   "hypothesis": "The k=1-first emission at insn 30 falls out of sched1 once loop-1 registers close, or reveals a different loop-2 preheader block layout in the original",
+   "mechanism": "sched.c INSN_PRIORITY/dependence ordering in the preheader block; register assignment changes the dependence picture at the loop-1/loop-2 boundary",
+   "next_probe": "tools/sched_solver on the loop-2 init block of the 8-form vs target order (sched-solver models 2.7.2 sched.c exactly per its campaign memory)"
   },
   {
-   "hypothesis": "If manual priority tuning stalls, the remaining space is small enough for a directed permuter campaign from the 14-floor base",
-   "mechanism": "pure-rename residual; permuter sweeps statement order/spellings mechanically",
-   "next_probe": "clean single-function target.o (offset 0), seed = candidate.c, PERM sweep on init order + counter spellings, fresh-seed discipline"
+   "hypothesis": "A permuter campaign from the 8-floor base finds the loop-1 a2-blocker construction that closed-form analysis missed",
+   "mechanism": "pure-rename residual, tiny search space; PERM sweep over loop-1 counter/giv spellings and init placements",
+   "next_probe": "clean single-function target.o at offset 0, seed = candidate.c, fresh-seed stopping discipline"
   }
  ],
  "judge_constraints": [],

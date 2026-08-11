@@ -1,25 +1,23 @@
-/* func_80047A90 — BEST FORM, session 1 (recon), honest sandbox floor 14 (down from 20).
+/* func_80047A90 — BEST FORM, session 2 (structural), honest sandbox floor 8 (down from 14).
  *
- * THIS FORM IS ALREADY APPLIED IN src/sound.c (pure C, zero pins, zero rules).
- * The old pinned version (register asm("$N") ×10) was removed this session —
- * it was cheat-asm; sandbox strips it, so it never counted.
+ * THIS FORM IS APPLIED IN src/sound.c (pure C, zero pins, zero rules).
  *
- * Structure facts (all measured this session, see evidence.md):
- *  - Loop 1 MUST be a real for-loop with array indexing: loop.c then LICM-hoists
- *    the Judge base and strength-reduces D_800EF558[i]/D_800EF59C[i] into
- *    walking-pointer givs — this reproduces target's loop-1 shape exactly.
- *  - Loop 2 MUST be goto-form (no loop notes): a real for/do-while loop gets
- *    LICM of 0x7D0 / 0x66666667 / 8 constants out of the loop; target keeps
- *    them inline. Source-level pointer walk (pa1/pa2/pt1/pt2/pt3) is required.
- *  - Statement order "pt2; pt1; k = 1;" (counter init LAST) is load-bearing:
- *    it lengthens pt1/pt2 live ranges, sinking their allocno priority below
- *    a3off's, which lands pt1->t1, pt2->t2, pt3->t3, pa1->a1, pa2->a2 (all
- *    target). Other orders measured: k-first = 21, k-middle = 18.
+ * Session-2 change vs the s1 14-form: the inner-loop tail (pa1++; a3 += 4; pa2++;)
+ * is duplicated into BOTH arms of the if (k == 8) — the sanctioned
+ * duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md,
+ * owner rulings 2026-07-01 + 2026-08-06 control-transfer-tail clarification;
+ * FAKE-annotated in src). Effect (measured, final8.lreg):
+ *   pa1 7->9 refs (prio .794), pa2 4->6 (.375), a3off 4->6 (.364), k live 36->40 (.25)
+ *   => allocation order pa1(a1) pa2(a2) a3off(a3) ... k(t0): loop 2 registers ALL
+ *   land on target, including the delay-slot addiu a2,a2,4. Cross-jump re-merges the
+ *   duplicate byte-neutrally: 84/84 insns, loop-2 body byte-identical to target.
  *
- * Remaining 14 diff = two 2-cycles:
- *   loop1: i(a2 vs t0) x judge-base(a3 vs a2)
- *   loop2: k(a3 vs t0) x a3off(t0 vs a3)
- * See hypotheses.md H-NEXT for the priority-arithmetic path to close both.
+ * Remaining 8 = (a) loop-1 2-cycle i<->judge, 6 slots: i(a2 vs t0), judge-base(a3 vs a2);
+ *               (b) loop-2 init order, 2 slots: target emits k=1 BEFORE the pt2 lui pair
+ *                   (insns 30-33), we emit it after (source order pt2;pt1;k=1 is
+ *                   register-load-bearing: k-first=18, k-middle=15 measured s2).
+ * See evidence.md s2 for why (a) is closed to every priority-family spelling and what
+ * the s3 frontier is (forensics on find_reg order / permuter sweep / k=1 scheduling).
  */
 void func_80047A90(void) {
     s32 i;
@@ -57,10 +55,16 @@ void func_80047A90(void) {
     *pa1 += v1;
     if (k == 8) {
         *(s32 *)((s8 *)g_snd_fade_curve + a3) = v1;
+        pa1++;
+        a3 += 4;
+        pa2++;
+    } else {
+        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
+         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3, k->$t0 */
+        pa1++;
+        a3 += 4;
+        pa2++;
     }
-    pa1++;
-    a3 += 4;
-    pa2++;
     if ((s32)pa1 < (s32)pt3)
         goto inner_loop;
     pt2 += 0x11;
