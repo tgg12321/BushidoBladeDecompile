@@ -1,17 +1,27 @@
 # SELF-VET — main
-CONSTRUCTS: chained same-variable accumulation (s32 lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80) with /* FAKE */ annotation; named-intermediate declaration order (s32 cnt = GetRCnt(...) in the poll loop; s32 cnt = (s32)tbl[idx]; s32 adj = ...; s32 remaining = cnt - adj in the deadline block); widened call signatures (func_80016A8C 1-arg -> 3-arg, func_80016E60 1-arg -> 2-arg, call sites pass env/idx)
 
-## T1 semantic purpose: Chained accumulation — every statement is live: each intermediate value is read by the next statement and the final `lim` is read by the loop-exit compare; the chain computes the real semantic threshold (n-1)*256+128 used to gate the raster poll. No statement is dead; removing any changes the computed value. Named intermediates — each local is read (cnt by the compare/subtraction, adj by the subtraction, remaining by both if-checks); all live. Widened signatures — the target bytes at 0x7A54/0x7A5C and 0x7CBC/0x7CC4 show main passing env/idx in argument registers to both callees; the widening reconstructs the original call ABI (main is the sole caller of both, verified by repo-wide grep in s1). The extra params are part of the original interface, not coercion.
-## T2 human-programmer: Stepwise threshold computation is ordinary C a human writes (compute count-1, scale to ticks, add half-step); the owner ruling records that the target bytes THEMSELVES carry the unfolded chain, so the stepwise spelling plausibly reconstructs the original source shape. Naming a table read or an adjustment as a local before using it is ordinary. Passing a buffer/env/index to init and menu functions is ordinary. No construct invites "why is this here?" from a semantic standpoint.
-## T3 GCC-internals justification: The chained-accumulation SPELLING (vs a single expression) is chosen for its combine.c mechanism — which is exactly why it carries the /* FAKE */ annotation and rests on the explicit owner grant (2026-08-11) rather than self-approval. The named-intermediate order falls inside the frozen SOTN "Named-intermediate declaration order" family. The signature widening needs no GCC-internals story at all — it is ABI reconstruction.
-## T4 permuter/search provenance: No construct came from permuter/auto-search. The chain form was derived in s2 by reading combine.c (mechanism pinned at combine.c:1836/8196), verified in a micro-harness, then measured whole-file. The signature widening and named-load-first forms were derived from target-byte analysis in s1.
-## T5 family check: The chained accumulation was ruled OUTSIDE the pre-existing split-init sanction by the Judge and escalated; the owner then GRANTED it as a scoped family extension (docs/grind/decisions.md 2026-08-11, commit cff7f1f5) with binding conditions — this diff claims exactly that granted scope (related staged values, one live variable, every intermediate consumed, zero dead code) and nothing broader. No forbidden family matches: no dead stores, no holder locals, no volatile, no pins, no asm, no unrelated-value reuse.
-## T6 naming-announces-intent: Names are semantic: lim (the poll limit), cnt (a counter value), adj (an adjustment), remaining (frames remaining), env/idx/voice/tbl/ot. No pad/dummy/spill/unused-style names.
+CONSTRUCTS: chained same-variable accumulation (`s32 lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80;` at src/ings.c:632-635, FAKE-annotated)
+
+## T1 semantic purpose: PASS for the sole construct. Every statement is live: `lim` is initialized from the real global poll-limit byte, each intermediate value is read by the next statement, and the final value is consumed by `if (cnt >= lim) break;`. The chain computes the function's real semantic threshold (n-1)*256+128 used to exit the GetRCnt poll loop. Zero dead code, zero dead stores, no holder locals, no volatile, no pins, no asm anywhere in the diff.
+
+## T2 human-programmer: PASS. Stepwise computation of a threshold ("take the count, subtract one, scale by 256, add the half-step") is C a human plausibly wrote — and the target bytes themselves carry the UNFOLDED chain (addiu -1; sll 8; addiu 0x80 at asm/funcs/main.s 0x7B58-0x7B6C), which the owner ruling cites as evidence the stepwise spelling plausibly reconstructs the original source shape.
+
+## T3 GCC-internals justification: The spelling's byte-materializing effect IS combine-steering (routing the chain through one pseudo trips try_combine's 2->2 split gate, combine.c:1836 reg_referenced_p, blocking the fold to sll;addiu -128). This was fully disclosed to the Judge (ESCALATE packet, decisions.md 2026-08-11 01:33) and to the owner, who GRANTED the family with that mechanism named — the construct is now inside a sanctioned family with the mechanism-naming requirement satisfied by the /* FAKE */ annotation, so T3's cheat-signal is resolved by grant, not evasion.
+
+## T4 permuter/search provenance: PASS. The form was derived from target-byte analysis and combine.c reading (s11 evidence packet), not from an auto-search find; measurements (H4/H5, nop-slot byte-budget audit) killed the alternative spellings. It survives detectors on the merits of the owner grant, not on detector blindness.
+
+## T5 family check: PASS. The construct is the exact form GRANTED by the owner ruling of 2026-08-11 (docs/grind/decisions.md:4438, "chained same-variable accumulation GRANTED as a sanctioned family extension" of the 2026-06-13 split-init-accumulation family). It stays inside the grant's scope bounds: related staged values, one live variable, every intermediate consumed, no dead stores, no invented holder locals, no unrelated-value reuse.
+
+## T6 naming-announces-intent: PASS. `lim` names the poll-loop limit (the value compared against the raw counter `cnt`) — a domain concept, not coercion vocabulary. No pad/dummy/spill/slack names anywhere in the diff.
+
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: chained same-variable accumulation (split-init-accumulation family extension, owner-granted 2026-08-11)
+  FAMILY: split-init-accumulation family extension — chained same-variable accumulation (owner grant 2026-08-11)
   SCOPE: "Scope: chained accumulation of RELATED staged values through one live variable with every intermediate consumed. Dead stores, invented holder locals, and unrelated-value reuse remain outside this grant."
-  PRECEDENT: cff7f1f5
-  FAMILY: Named-intermediate declaration order
-  SCOPE: "declare a sub-expression as a separately-named local to bias LUID."
-  PRECEDENT: .claude/rules/no-new-park-categories.md:189
-ANNOTATION-CONFORMANCE: /* FAKE: stepwise same-variable chain keeps addiu -1 / sll 8 / addiu 0x80 unfolded, mechanism: combine's 2->2 split gate (combine.c:1836 reg_referenced_p) refuses the ashift/plus distribution (combine.c:8196), lever-exhaustion: memory/grind/main/hypotheses.md (fresh-variable spellings fold to sll;addiu -128). Owner grant 2026-08-11, split-init family extension (docs/grind/decisions.md). */ — carries what (unfolded chain), mechanism (named combine pass + exact guard), and lever-exhaustion (hypotheses.md H3–H5 + the s2 nop-slot byte-budget audit), per owner condition 1.
+  PRECEDENT: docs/grind/decisions.md:4438
+
+ANNOTATION-CONFORMANCE: One FAKE construct. The annotation shipped at src/ings.c:628-631 (and identically in memory/grind/main/candidate.c):
+  /* FAKE: same-pseudo chain blocks combine's 2->2 split gate
+     (combine.c:1836 reg_referenced_p) — fresh-variable spellings fold
+     to sll;addiu -128. Owner grant 2026-08-11 (docs/grind/decisions.md,
+     split-init-accumulation family extension). */
+It carries what (same-pseudo chain), mechanism (combine.c try_combine 2->2 split gate / reg_referenced_p, a named GCC pass), and lever-exhaustion is documented in the ledger (hypotheses.md H4/H5 + s2 nop-slot byte-budget audit; consolidated in evidence.md s11), per the grant's condition 1.

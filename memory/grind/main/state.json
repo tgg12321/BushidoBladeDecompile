@@ -144,10 +144,14 @@
  ],
  "judge_constraints": [
   "Function frozen pending owner ruling on the chained same-variable accumulation family; do not commit the candidate, respell the construct, or return candidate-ready until the owner rules. If granted, add the FAKE annotation as a condition of the grant before candidate-ready.",
-  "candidate form failed full-build SHA1 on main (masked-0 register diff class) \u2014 reg-alloc gap is real"
+  "candidate form failed full-build SHA1 on main (masked-0 register diff class) \u2014 reg-alloc gap is real",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The FAKE-annotated chained-accumulation construct itself is a legitimately granted family (owner ruling cff7f1f5), but the candidate does not actually reach the oracle: the ledger's own state carries a live, unresolved judge_constraint that this exact candidate form FAILS full-build SHA1 by 2 bytes (branch-target residual), and 9+ worker modalities across 20 sessions concluded that residual is unreachable from any C spelling under the frozen pipeline. The self-vet is silent about this and presents only the construct-legitimacy question, which is not the actual bloc"
  ],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "banned_constructs": [
+  "Submitting this diff for COMPLETED-C / queue-done commit while state.json judge_constraints still lists: \"candidate form failed full-build SHA1 on main (masked-0 register diff class) - reg-alloc gap is real\"",
+  "Ledger's own standing frontier (hypotheses.md, post-s9/s11 through s20, unanimous): 'candidate-ready is impossible (true bytes 2 off; driver byte re-verify would discard it)' and 'NOTHING measurable remains for a non-escalation worker session... The ONLY remaining action is the escalation-modality session filing the OWNER-ESCALATION entry... pre-decided RESOLVED BY STANDING RULING: REFUSED / OWNER"
+ ],
+ "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-11T05:13:15.558607+00:00"

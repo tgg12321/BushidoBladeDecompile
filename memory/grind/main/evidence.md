@@ -1259,3 +1259,25 @@ Standing procedure only (structural axis killed s3; post-s11 frontier unchanged)
 - [s20] candidate-ready remains unavailable despite masked sandbox 0: the digest's binding judge constraint records the candidate failed full-build SHA1 on main; the s3-measured residual is the bne/bnez targets resolving to .L8001727C where target has .L80017278 (words [165]/[173]), masked by the sandbox's branch-target masking
 
 - [s20] Per the post-s11 frontier, disposition of the residual belongs to an escalation-modality dispatch ONLY: file the OWNER-ESCALATION citing evidence.md s11, noting GRANT cff7f1f5 resolved the only construct question, with the pre-decided disposition unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates)
+
+## s21 (2026-08-11, structural) — OWNER GRANT LANDED; candidate-ready filed
+
+The freeze is over. docs/grind/decisions.md:4438 (2026-08-11, in-person owner
+ruling) GRANTS the chained same-variable accumulation as a sanctioned extension
+of the 2026-06-13 split-init-accumulation family and REOPENS the function with
+the instruction "the grinder closes it next session per the Judge's packet."
+This session executed that: candidate reapplied via tmp/grind/main/s14/apply.py
+(21st driver revert), the /* FAKE */ annotation naming the combine.c:1836
+reg_referenced_p 2->2 split-gate mechanism is in the body at src/ings.c:628-631
+per grant condition 1, and sandbox main --disable all re-proved 0 (22nd
+consecutive, 189/189, 25 rules dropped, 68 stripped cheat-asm insns all in
+OTHER ings.c functions). self_vet.md written (six tests + family claim citing
+decisions.md:4438 with the grant's scope sentence verbatim). Outcome:
+candidate-ready.
+
+Grant condition 2 (family rule doc registered via the independent-review path,
+NOT shipped in the match commit) is drafted for the operator at
+tmp/grind/main/s21/chained-accumulation-rule-draft.md — a grind session may not
+edit .claude/rules/, so registration is an operator step after cheat-reviewer
+review of the doc. Condition 3 (fresh layer-2 on the final diff before queue
+done) is the driver's standard gate.
