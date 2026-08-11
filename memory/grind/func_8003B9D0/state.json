@@ -1,7 +1,7 @@
 {
  "func": "func_8003B9D0",
  "file": "code6cac_c2",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Forensics named region A exactly: the fold is cse2's find_best_addr, enabled by delete_dead_from_cse (cse.c:8683) deleting the derived-address set after cse1 on a whole-function refcount of 0 - and se"
+  },
+  {
+   "session": 5,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Forensics: region A's fold is a find_best_addr COST/LOOKUP decision (reg+disp costs 1, sym+K costs 2 on MIPS) performed by cse1 for the candidate body -- correcting s4's cse2/delete_dead_from_cse stor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's register+displacement shape can be reached legally if some pseudo set to `(plus (reg eda) 1100)` survives delete_dead_from_cse for an HONEST reason - i.e. it is referenced elsewhere in the function because a programmer genuinely needed it there, not because it was reused to steer cse.",
-   "mechanism": "delete_dead_from_cse deletes a set only when the destination pseudo's whole-function reference count is zero (cse.c:8731-8734). Any second genuine reference - a later reassignment that is really used, or a use of the pointer as a value rather than as an address - keeps the count non-zero, so the set survives into cse2 and the cheap register+displacement address is retained at all three sites.",
-   "next_probe": "The +0x44C halfword is read AGAIN later in the same function: `if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326;` and D_80102326 == &eda[0x226]. Enumerate honest C shapes in which one pointer genuinely serves both that later read and the block's save/restore. The obstacle is liveness: a pointer assigned only inside `if (qf & 0x30)` and read afterwards is undefined behaviour (that is why permuter output-200-1 was rejected), so measure the function-scope variant that assigns it unconditionally BEFORE the block, and read the `la` position in the normalized diff before scoring. Note K4 (two independent pointers, ALL accesses at offset 0) measured 17, but that is a different shape from one base plus one derived pointer both genuinely used."
+   "hypothesis": "Route (A) is not yet fully searched: a SECOND, BYTE-PRODUCING use of the +0x44C address INSIDE the qf&0x30 block would keep the address pseudo's reference count non-zero while the same cse table is still live, which is the only way to close region A that is not dead-in-output codegen steering.",
+   "mechanism": "delete_dead_from_cse deletes an address SET only when its destination pseudo's whole-function reference count is zero (cse.c:8730-8734); a use inside the block keeps the count non-zero AND keeps the expression in the same cse basic block's hash table, so find_best_addr's ADDRESS_COST comparison (cse.c:2698-2739) restores register+displacement at all three sites. K14 showed a use in a LATER cse block does not work.",
+   "next_probe": "Re-read asm/funcs/func_8003B9D0.s 0x8003BAAC-0x8003BAEC asking only one question: does any instruction target actually emits in that window consume the +0x44C ADDRESS as a value? In particular check the jal func_8003AFFC argument setup (m2c infers func_8003AFFC(D_800A3878), so $a0 is the OTHER object -- but confirm no second argument register is set from $s0+0x44C) and the two 0x32 stores. If nothing there consumes the address as a value, route (A) is empty of honest forms and the function's whole remaining problem is route (B)'s placements."
   },
   {
-   "hypothesis": "If no honest second-reference form exists, the cheapest known LEGAL closure of region A is session-3's if/ELSE diamond, and the remaining work is buying back the two placements it costs.",
-   "mechanism": "An if/ELSE arm ends in an unconditional jump + BARRIER, so cse_end_of_basic_block (cse.c:8039-8184) cannot AROUND-extend past the join label and the base pseudo enters the next block with no qty_const - the fold cannot fire in cse2 regardless of what delete_dead_from_cse did.",
-   "next_probe": "Re-open rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c (measured 11 with build_insns 185 == target 185 and target's exact region-A bytes). Its whole residual is two placement clusters: `magic = 0x80190800` sinks out of the prologue into the else arm (~7) and the `la` moves from inside the `qf & 0x30` block to mine[38..39] (~4). Attack the placements, not region A - e.g. find a spelling of the 0x80 test that yields the boundary while leaving `magic`'s initialisation unconditional at the top."
+   "hypothesis": "If route (A) is empty, the cheapest LEGAL closure of region A remains session-3's if/ELSE diamond (measured 11, build_insns 185 == target 185, target's exact region-A bytes), and the entire remaining work is buying back its two placement clusters.",
+   "mechanism": "An if/ELSE arm ends in an unconditional jump + BARRIER, so cse_end_of_basic_block (cse.c:8039-8184) cannot AROUND-extend past the join label and eda enters the next block with no qty_const -- the fold cannot fire regardless of the hash table. The price is that magic = 0x80190800 sinks out of the prologue into the else arm (~7) and the la moves from inside the qf&0x30 block to mine[38..39] (~4).",
+   "next_probe": "Note first that magic's placement is a FRONT-END consequence of the if/else (target's tgt[1..3] lui/ori in the prologue proves the original used a plain if there), so it cannot be bought back while the boundary comes from THAT if. The probe is therefore to find a different statement between the pointer's assignment and the qf&0x30 block that can honestly carry a two-arm shape -- and, per session-4 K11, without introducing a multi-use join label, since all 13 labels in target appear exactly twice."
   },
   {
-   "hypothesis": "Orthogonal and byte-neutral: our prototype for func_8003AFFC is wrong and src/code6cac_c2.c carries duplicate declarations of it.",
-   "mechanism": "m2c infers `func_8003AFFC(D_800A3878)` - $a0 holds the object pointer live from tgt[48] through the jal at tgt[68] with no reload - while our C calls it with no arguments.",
-   "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it consumes $a0; if it does, reconcile the three duplicate `extern void func_8003AFFC(void);` declarations (src/code6cac_c2.c lines 73, 74, 171) to one correct prototype and re-measure. Expect byte-neutrality here; the value is correctness of the decompilation and of func_8003AFFC's own future grind."
+   "hypothesis": "Orthogonal, byte-neutral, unchanged from s2/s3/s4: our prototype for func_8003AFFC is wrong and src/code6cac_c2.c carries duplicate declarations of it.",
+   "mechanism": "m2c infers func_8003AFFC(D_800A3878) -- $a0 holds the object pointer live from tgt[48] through the jal at tgt[68] with no reload -- while our C calls it with no arguments.",
+   "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it consumes $a0; if it does, reconcile the three duplicate `extern void func_8003AFFC(void);` declarations (src/code6cac_c2.c lines 73, 74, 171) to one correct prototype and re-measure. Expect byte-neutrality; the value is correctness of the decompilation and of func_8003AFFC's own future grind. This also feeds frontier item 1, since it settles what $a0 carries at the call."
   }
  ],
  "judge_constraints": [

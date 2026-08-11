@@ -32,20 +32,30 @@
  *
  * WHAT IS LEFT (the 6 points) — REGION A, three `+0x44C` sites where we emit
  * `lui $x,%hi(D_80101EDA+1100)` + `lh|sh $r,%lo(...)($x)` and target emits
- * `lh|sh $r,1100($s0)`.  Named exactly, in hypotheses.md H5:
- *   * the fold is performed by **cse2** (the SECOND cse pass, toplev.c:2926),
- *     in `find_best_addr` (cse.c:2659-2663) via `fold_rtx`'s substitution of
- *     the base pseudo's `qty_const` (cse.c:5171-5179);
- *   * cse1 does NOT fold it — at `.cse` all three sites are still
- *     `(mem (plus (reg eda) (const_int 1100)))`;
- *   * what decides cse2's behaviour is whether an insn setting a pseudo to
- *     `(plus (reg eda) 1100)` still EXISTS when cse2 runs, and that is decided
- *     by `delete_dead_from_cse` (cse.c:8683, called at toplev.c:2867 right
- *     after cse1) which deletes a SET whose destination pseudo has a
- *     WHOLE-FUNCTION reference count of zero.
- * So any dedicated pointer local for the far address is propagated into the
- * MEMs by cse1, drops to refcount 0, is deleted, and the fold comes back —
- * which is why every dedicated-pointer variant measures 188/6.
+ * `lh|sh $r,1100($s0)`.  Named exactly, in hypotheses.md H6 (which CORRECTS
+ * the earlier H5 — H5 described only the derived-pointer variants):
+ *   * FOR THIS BODY the fold is performed by **cse1**.  The `.rtl` dump has no
+ *     address pseudo at all (all three sites are
+ *     `(mem/s:HI (plus:SI (reg/v:SI 94) (const_int 1100)))`, insns 97/120/130)
+ *     and `.cse` already shows them folded to
+ *     `(const (plus (symbol_ref "D_80101EDA") 1100))`.  `delete_dead_from_cse`
+ *     plays no part here — there is nothing to delete.
+ *   * `find_best_addr` (cse.c:2621) folds any non-REG address unconditionally
+ *     (cse.c:2663-2665) via `fold_rtx`'s `qty_const` substitution
+ *     (cse.c:5170-5180), and THEN looks the folded address up (cse.c:2680) and
+ *     replaces it with the equivalence-class member of lowest `ADDRESS_COST`,
+ *     tie-broken by highest `rtx_cost` (cse.c:2698-2739).  On MIPS
+ *     (`mips.h:2897` + `mips_address_cost`) `(plus reg small_int)` costs 1 and
+ *     `(const (plus symbol_ref small_int))` costs 2, so register+displacement
+ *     is STRICTLY CHEAPER and is RESTORED whenever it is in the cse hash table.
+ *     The fold is a LOOKUP MISS, not a one-way transform.
+ *   * A dedicated pointer local puts the expression in the table, so cse1 does
+ *     restore register+displacement — but that drops the pointer's
+ *     whole-function reference count to 0, `delete_dead_from_cse` (cse.c:8683,
+ *     toplev.c:2867) deletes the set, and cse2 re-folds with an empty table.
+ *     That is why every dedicated-pointer variant measures 188/6.
+ *   * The banned `p`-reuse worked only because `p` is assigned again later, so
+ *     the set survives — and it emits no bytes, which is the cheat.
  *
  * Region B's if/else spelling is unchanged from session 2.
  */

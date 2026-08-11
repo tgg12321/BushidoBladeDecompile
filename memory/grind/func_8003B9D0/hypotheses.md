@@ -582,3 +582,120 @@
 - probe: Re-dumped the FULL mnemonic listing of func_8003B9D0 from the session-4 variant objects (tmp/grind/func_8003B9D0/s4b/dumpfn.sh over tmp/grind/func_8003B9D0/s4/sw3/*.o) instead of counting `1100($reg)` occurrences in objdump text as sweep2.py/sweep3.py did.
 - result: RETRACTED. Both dedicated-pointer variants (function-scope `s16 *far` read-only; `s16 *far` used at all three sites) FOLD at all three sites - `lui s2,0x0 / lh s2,1100(s2)`, `lui at,0x0 / sh v0,1100(at)`, `lui at,0x0 / sh s2,1100(at)` - so their 188 insns are simply the 185 baseline plus the 3 folds. The session-4 detector was invalid because an unrelocated `%lo(D_80101EDA+1100)($reg)` access prints identically to a register+displacement access in an UNLINKED objdump; the distinguishing feature is the preceding `lui`. H5 explains why every dedicated-pointer spelling must fold, so the axis is now closed on mechanism and needs no further variants. Session-1 K1's original diagnosis stands.
 - verdict: KILLED
+
+## SESSION 5 (forensics, 2026-08-11)
+
+### CONFIRMED
+
+- **H6 — Region A's fold is a COST/LOOKUP decision inside `find_best_addr`, not a
+  one-way transform, and one rule explains every variant measured in sessions 1-5.**
+  `find_best_addr` (cse.c:2621) folds any non-REG address unconditionally
+  (cse.c:2663-2665) via `fold_rtx`'s `qty_const` substitution (cse.c:5170-5180), THEN
+  looks the folded address up (cse.c:2680) and, under `ADDRESS_COST`, replaces it with
+  the equivalence-class member of lowest `ADDRESS_COST`, tie-broken by highest
+  `rtx_cost` (cse.c:2698-2739).  On MIPS (`mips.h:2897` +
+  `mips_address_cost`): `(plus (reg) (const_int 1100))` costs 1, a bare `(reg)` costs
+  1, and `(const (plus (symbol_ref) (const_int 1100)))` costs 2 for a non-small-data
+  symbol under `-G0`.  Register+displacement is therefore STRICTLY CHEAPER and IS
+  restored whenever that expression is in the cse hash table.  Region A folds only
+  because nothing in the honest C ever puts it there.
+  Probe: read the frozen compiler source at the cited lines, and a fresh per-pass
+  `-da` dump of the floor-6 candidate body
+  (`tmp/grind/func_8003B9D0/s5/da_base/tu.i.{rtl,cse,cse2,flow,combine,dbr}`,
+  derived from `s4/sw3/B_fnscope_far_read.i` so the flags and TU context are provably
+  identical to the s4b dumps).
+  Result: for the candidate the fold is done by **cse1** — `.rtl` has no address
+  pseudo at all (`(mem/s:HI (plus:SI (reg/v:SI 94) (const_int 1100)))` at insns
+  97/120/130) and `.cse` already shows all three sites folded to
+  `(const (plus (symbol_ref "D_80101EDA") 1100))`.  **CONFIRMED**, and it CORRECTS
+  session-4-forensics H5, which described only the two derived-pointer variants.
+
+### KILLED
+
+- **K14 — "One pointer that genuinely serves both the `qf & 0x30` save/restore block
+  and the two later reads of the same object gives the address pseudo an HONEST
+  non-zero whole-function reference count, so its set survives
+  `delete_dead_from_cse` and region A closes."**  (This is session-4-forensics
+  frontier F1, written out in the only non-UB spelling: `s16 *eda` at function scope,
+  assigned unconditionally at the top; `a3_arg = eda[0];` and `a0_arg = eda[0x226];`
+  for the later reads, legitimate because `D_80102326 == &D_80101EDA[0x226]`.)
+  Result: **sandbox 16, build_insns 186** versus the floor of 6.  objdump shows the
+  three IN-BLOCK sites still folded (`lui` + `1100($reg)`) and `lh a0,1100(s2)` at the
+  LATER read — target's shape appearing at the one site target does not want it.
+  **KILLED**, and it sharpens the requirement: a non-zero whole-function reference
+  count is NOT sufficient; the reference must keep the address expression in the cse
+  HASH TABLE at the point the displaced MEM is processed.  The later read sits past
+  the region-B `if/else` join labels, which end the cse basic block, so there `eda`
+  has no `qty_const` at all.
+  Form banked: `rejected/fnscope-shared-eda-pointer-later-reads.c`.
+
+- **K15 — "Some other cse machinery (related-value chains) could give a plain global
+  access a shared base register."**  `use_related_value` (cse.c:1781) is called from
+  exactly ONE place, cse.c:6535, and only for a SET's SOURCE constant — never for a
+  MEM address; and `find_best_addr` returns immediately for `CONSTANT_ADDRESS_P`
+  addresses (cse.c:2656).  **KILLED on mechanism**, and it is the mechanism proof of
+  session-2's empirical K5.
+
+### LIVE FRONTIER (for the next session)
+
+- **F1 (the whole remaining 6 points).**  The requirement is now exact: at the cse
+  pass that first processes a `+0x44C` MEM, either `(plus (reg eda) (const_int 1100))`
+  is in the cse hash table, or `eda` carries no `qty_const`.  Route (A) needs an
+  address-valued SET whose destination pseudo is referenced again while the SAME cse
+  table is live (not merely somewhere in the function — K14).  Every construct that
+  achieves this so far emits no bytes of its own, which is what layer 1 FAILed.  The
+  un-searched corner of route (A) is a SECOND, byte-producing use of the same address
+  INSIDE the `qf & 0x30` block: enumerate whether any statement target actually
+  performs in insns tgt[55..75] can be spelled so that the far address is a value
+  rather than only an address.  Next probe: read `asm/funcs/func_8003B9D0.s`
+  0x8003BAAC-0x8003BAEC again with that question specifically, and check whether the
+  `jal func_8003AFFC` argument (m2c infers `func_8003AFFC(D_800A3878)`, frontier F3)
+  or the `0x32` stores can carry it.
+- **F2 (route B, already priced).**  Session-3's if/ELSE diamond gives the cse
+  basic-block boundary and closes region A at build_insns 185 == target, but relocates
+  `magic` out of the prologue (~7) and the `la` out of the `qf & 0x30` block (~4), for
+  11.  Note the two routes are now known to be exhaustive for `find_best_addr`, so if
+  F1's byte-producing corner is empty, the remaining work is entirely "buy back the
+  `magic` and `la` placements of the diamond" — and `magic`'s placement is a FRONT-END
+  consequence of the if/else, not a pass decision, so it cannot be bought while the
+  boundary comes from that particular `if`.
+- **F3 (orthogonal, unchanged, byte-neutral).**  m2c infers
+  `func_8003AFFC(D_800A3878)` while our C calls it with no arguments, and
+  `src/code6cac_c2.c` carries three duplicate `extern void func_8003AFFC(void);`
+  declarations (lines 73, 74, 171).
+
+## [s5] Region A's fold is a cost/lookup decision inside find_best_addr, not a one-way transform; and for the floor-6 candidate body it is performed by cse1, not cse2.
+- mechanism: find_best_addr (cse.c:2621) folds any non-REG address unconditionally (cse.c:2663-2665) by substituting the base pseudo's qty_const in fold_rtx (cse.c:5170-5180), then looks the folded address up (cse.c:2680) and replaces it with the equivalence-class member of lowest ADDRESS_COST, tie-broken by highest rtx_cost (cse.c:2698-2739). On MIPS (mips.h:2897 ADDRESS_COST(A) = REG_P(A) ? 1 : mips_address_cost(A), plus mips_address_cost in mips.c) a (plus reg small_int) address costs 1, a bare reg costs 1, and a (const (plus symbol_ref small_int)) address costs 2 for a non-small-data symbol under -G0. So register+displacement is strictly cheaper and IS restored whenever that expression is in the cse hash table; region A folds only because nothing in the honest C puts it there.
+- probe: Read the frozen compiler source at the cited lines and produced a fresh per-pass -da dump of the floor-6 candidate body (tmp/grind/func_8003B9D0/s5/da_base/, derived from s4/sw3/B_fnscope_far_read.i by editing the pointer out so cc1 flags and TU context are provably identical to the s4b dumps).
+- result: The baseline .rtl contains NO address pseudo -- all three sites are (mem/s:HI (plus:SI (reg/v:SI 94) (const_int 1100))) at insns 97/120/130 -- and .cse already shows all three folded to (const (plus (symbol_ref "D_80101EDA") 1100)); .cse2/.flow/.combine/.dbr are unchanged. So delete_dead_from_cse is irrelevant for the candidate and session-4-forensics H5 described only the two derived-pointer variants. The unified rule now explains baseline (188/6), every dedicated-pointer spelling (188/6), the banned p-reuse (185/0) and the boundary forms in one sentence.
+- verdict: CONFIRMED
+
+## [s5] One pointer that genuinely serves both the qf&0x30 save/restore block and the two later reads of the same object gives the address pseudo an honest non-zero whole-function reference count, so its set survives delete_dead_from_cse and region A closes.
+- mechanism: delete_dead_from_cse (cse.c:8683) deletes a single-SET insn only when the destination pseudo's WHOLE-FUNCTION reference count is zero (cse.c:8730-8734), so any genuine later reference should keep the derived-address set alive into the pass that folds.
+- probe: s16 *eda declared at FUNCTION scope and assigned unconditionally at the top (the block-scoped variant is undefined behaviour, which is why permuter output-200-1 was rejected), used by the qf&0x30 block and by the two later reads spelled a3_arg = eda[0] and a0_arg = eda[0x226] -- legitimate because D_80102326 == &D_80101EDA[0x226]. Measured with sandbox --disable all plus an objdump of the sandbox object.
+- result: sandbox 16, build_insns 186, versus the floor of 6. The three IN-BLOCK displaced sites still FOLD (lui s1,0x0 / lh s1,1100(s1); lui at,0x0 / sh v0,1100(at); lui at,0x0 / sh s1,1100(at)) while the LATER read comes out as lh a0,1100(s2) -- register+displacement at the one site where target re-materialises lui %hi(D_80102326). A non-zero whole-function reference count is NOT sufficient: the reference must keep the address expression in the cse HASH TABLE at the point the displaced MEM is processed, and the later read sits past the region-B if/else join labels where eda has no qty_const. Hoisting also moves the la out of target's position. Banked at rejected/fnscope-shared-eda-pointer-later-reads.c.
+- verdict: KILLED
+
+## [s5] Some other cse machinery (the related-value chains built at cse.c:1403-1431) could give a plain global access a shared base register, i.e. session-2's K5 might be spelling-dependent.
+- mechanism: insert() links a CONST with a symbolic term into a circular related_value chain, and use_related_value can turn a symbolic constant into (plus (reg holding the symbol) offset) -- which is exactly target's shape.
+- probe: Traced every reference to related_value in cse.c and every call site of use_related_value.
+- result: use_related_value (cse.c:1781) is called from exactly ONE place, cse.c:6535, and only for a SET's SOURCE constant -- never for a MEM address. find_best_addr additionally returns immediately for CONSTANT_ADDRESS_P addresses (cse.c:2656). So a plain global access can never acquire a shared base register, whatever else the function holds in registers. This is the mechanism proof of session-2's empirical K5 (measured 23).
+- verdict: KILLED
+
+## [s5] Region A's symbol fold is a cost/lookup decision inside find_best_addr, not a one-way transform; and for the floor-6 candidate body it is performed by cse1, not cse2, with delete_dead_from_cse playing no part.
+- mechanism: find_best_addr (cse.c:2621) folds any non-REG address unconditionally (cse.c:2663-2665) by substituting the base pseudo's qty_const in fold_rtx (cse.c:5170-5180), then looks the folded address up (cse.c:2680) and replaces it with the equivalence-class member of lowest ADDRESS_COST, tie-broken by highest rtx_cost (cse.c:2698-2739). On MIPS (mips.h:2897 ADDRESS_COST(A) = REG_P(A) ? 1 : mips_address_cost(A), plus mips_address_cost in config/mips/mips.c) a (plus reg small_int) address costs 1, a bare reg costs 1, and a (const (plus symbol_ref small_int)) address costs 2 for a non-small-data symbol under -G0. Register+displacement is therefore strictly cheaper and IS restored whenever that expression sits in the cse hash table; region A folds only because nothing in the honest C ever puts it there.
+- probe: Read the frozen compiler source at the cited lines (cse.c find_best_addr / fold_rtx / delete_dead_from_cse / use_related_value; mips.h ADDRESS_COST; mips.c mips_address_cost) and produced a fresh per-pass cc1 -da dump of the floor-6 candidate body at tmp/grind/func_8003B9D0/s5/da_base/, derived from s4/sw3/B_fnscope_far_read.i by editing the pointer out so the cc1 flags and TU context are provably identical to the s4b dumps.
+- result: The baseline .rtl contains NO address pseudo at all -- all three +0x44C sites are (mem/s:HI (plus:SI (reg/v:SI 94) (const_int 1100))) at insns 97/120/130 -- and .cse already shows all three folded to (mem/s:HI (const:SI (plus:SI (symbol_ref "D_80101EDA") (const_int 1100)))); .cse2/.flow/.combine/.dbr leave them unchanged. So session-4-forensics H5 (cse1 does not fold; delete_dead_from_cse deletes the address set; cse2 folds) describes only the two derived-pointer variants B and C and is wrong for the actual candidate. The corrected rule explains every variant measured in sessions 1-5 in one sentence.
+- verdict: CONFIRMED
+
+## [s5] One pointer that genuinely serves both the qf&0x30 save/restore block and the two later reads of the same object gives the derived-address pseudo an HONEST non-zero whole-function reference count, so its set survives delete_dead_from_cse and region A closes. (This is the session-4-forensics F1 frontier item.)
+- mechanism: delete_dead_from_cse (cse.c:8683, called at toplev.c:2867) deletes a single-SET insn only when its destination pseudo's WHOLE-FUNCTION reference count is zero (cse.c:8730-8734; the only other escapes are a non-pseudo destination and side_effects_p). A genuine later reference should therefore keep the derived-address set alive into the pass that folds. The function really does read the same halfword again later, since D_80102326 == &D_80101EDA[0x226].
+- probe: s16 *eda declared at FUNCTION scope and assigned unconditionally at the top of the function (the block-scoped variant is undefined behaviour, which is exactly why permuter output-200-1 was rejected in session 4), used by the qf&0x30 block and by the two later reads spelled a3_arg = eda[0]; and a0_arg = eda[0x226];. Measured with sandbox func_8003B9D0 --disable all plus a mnemonic objdump of tmp/sandbox/func_8003B9D0/code6cac_c2.o.
+- result: sandbox 16, build_insns 186, versus the floor of 6. The three IN-BLOCK displaced sites still FOLD (lui s1,0x0 / lh s1,1100(s1); lui at,0x0 / sh v0,1100(at); lui at,0x0 / sh s1,1100(at)) while the LATER read comes out as lh a0,1100(s2) -- target's register+displacement shape appearing at the one site where target re-materialises lui %hi(D_80102326). A non-zero whole-function reference count is NOT sufficient: the reference must keep the address expression in the cse HASH TABLE at the point the displaced MEM is processed, and the later read sits past the region-B if/else join labels where eda carries no qty_const at all. Hoisting also moves the la out of target's position (tgt[55..56]) and turns the two later symbol loads into pointer loads. Banked at rejected/fnscope-shared-eda-pointer-later-reads.c.
+- verdict: KILLED
+
+## [s5] Some other cse machinery -- the related-value chains built when a symbolic CONST is inserted (cse.c:1403-1431) -- could give a plain global access a shared base register, so session-2's K5 might have been spelling-dependent rather than structural.
+- mechanism: insert() links a CONST carrying a symbolic term into a circular related_value chain, and use_related_value can turn a symbolic constant into (plus (reg holding the bare symbol) offset) -- which is literally target's shape. If that machinery reached MEM addresses, a plain D_80102326 access could reuse the D_80101EDA base register.
+- probe: Traced every reference to related_value in tools/gcc-2.7.2/cse.c and every call site of use_related_value.
+- result: use_related_value (cse.c:1781) is called from exactly ONE place, cse.c:6535, and only for a SET's SOURCE constant -- never for a MEM address. find_best_addr additionally returns immediately for CONSTANT_ADDRESS_P addresses (cse.c:2656). A plain global access therefore can never acquire a shared base register, whatever else the function holds in registers. This is the mechanism proof of session-2's empirical K5 (measured 23) and closes that axis permanently.
+- verdict: KILLED
