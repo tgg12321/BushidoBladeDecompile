@@ -1,0 +1,37 @@
+{
+ "func": "func_800401CC",
+ "file": "text1a_pre",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 7,
+   "modality": "recon",
+   "headline": "Recon s1: floor 20 -> 7 (staging-local removal + store-last order); remaining 7 is a fully-characterized $6/$7 mask-constant local-alloc swap with QTYDBG measurements banked"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A natural spelling lifting refs(0xFFFFFF) to 4 (or dropping refs(0xFF000000) to 2) flips the local-alloc order and closes the last 7",
+   "mechanism": "qty_compare_1 priority floor_log2(refs)*refs*size/length: refs=4 vs 3 dominates the 2-luid length deficit",
+   "next_probe": "Search honest 4th-ref shapes first; duplicated-statement-into-arms (sanctioned, FAKE-annotated, byte-neutrality-proof) only as last resort"
+  },
+  {
+   "hypothesis": "Making sched1 emit the FF000000 li before the FFFFFF li+ori flips the birth gap and FFFFFF wins on length",
+   "mechanism": "sched1 chain-length INSN_PRIORITY currently always hoists the 2-insn FFFFFF chain first",
+   "next_probe": "Read sched.c priority computation; use BB2_SCHED_DEBUG hooks; find a spelling lengthening FF000000's dep chain without new bytes"
+  },
+  {
+   "hypothesis": "Directed permuter sweep of tail spellings finds the closing form",
+   "mechanism": "Pure reg-diff gradient, tiny search space",
+   "next_probe": "Build clean single-function target.o from asm/funcs/func_800401CC.s per difficult-is-not-impossible section 3; seed from floor-7 candidate; vet any find against the cheat checklist"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-11T09:49:46.198734+00:00"
+}

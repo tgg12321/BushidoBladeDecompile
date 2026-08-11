@@ -820,3 +820,4 @@
 - 2026-08-11 03:36 func_80047A90 s4 [permuter] floor=6: Permuter s4: floor holds at 6 - two fresh-seed campaigns (~127k iters, array-index + pointer-walk chassis, directed PERM over loop-1 spellings) found nothing sub-floor; permuter axis on loop-1 is measured DRY, frontier is forensics
 - 2026-08-11 04:21 func_80047A90 s5 [permuter] floor=6: Permuter s5: floor holds at 6 - the two never-mutated scopes (loop-2+init unlocked, whole-function) both ran dry (~55k iters, zero finds); permuter modality now exhausted across ALL regions and chassis (~182k iters s4+s5); forensics (find_reg trace) is the only remaining axis
 - 2026-08-11 04:49 func_80047A90 COMPLETED-C after 6 sessions.
+- 2026-08-11 05:14 func_800401CC s1 [recon] floor=7: Recon s1: floor 20 -> 7 (staging-local removal + store-last order); remaining 7 is a fully-characterized $6/$7 mask-constant local-alloc swap with QTYDBG measurements banked
