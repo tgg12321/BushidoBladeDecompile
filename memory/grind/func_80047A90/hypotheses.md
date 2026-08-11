@@ -334,3 +334,20 @@ loop-2-scoped + whole-function (s5, ~55k). Probes, in order:
 - probe: Campaign s5A: loop 1 locked byte-correct, PERM_RANDOMIZE over loop-2+init with PERM_GENERAL over 4 loop-2 macro-spellings (wrap+dup goto / no-dup goto / k-last goto / nested-for), 26,838 iters. Campaign s5B: entire body in PERM_RANDOMIZE from the 6-floor candidate, 27,904 iters. Both base score 50, fresh-seed discipline (~38 min each, 3 wait windows), harvested --stop in-session with telemetry
 - result: ZERO finds in both campaigns - not even score-equal siblings; only attractor ever reached across s4+s5 (~182k iters, every function region mutated) is score 50 = sandbox 6
 - verdict: KILLED
+
+## [s6] find_reg's walk for i contains a steerable preference/prefclass term (frontier a)
+- mechanism: global.c find_reg pass-0 exclusion = conflicts ∪ regs_someone_prefers ∪ ~used_so_far; prefs override the walk only via own copy/full prefs
+- probe: BB2_FINDREG_DEBUG=72 + BB2_ALLOC_DEBUG on the 6-form; source read of set_preference/prune_preferences
+- result: all pref sets EMPTY and structurally unfillable (judge's only set is a symbol_ref move which set_preference ignores; i's sets are const/self-plus); walk is ascending (no MIPS REG_ALLOC_ORDER) → a2 unconditional in separate-counter landscapes
+- verdict: KILLED (as a separate-counter lever; became the derivation key for the merged geometry)
+
+## [s6] s1-H2's nested-for build had a recoverable a2/a3 blocker for loop-1 counter (frontier b)
+- probe: rebuilt 4 nested-for spellings (array-index, i-as-inner-counter, row-pointers, all-pointer-for) with ALLOCDBG
+- result: i→a2 in all four; H2's counter→t0 claim not reproducible anywhere
+- verdict: KILLED (presumed s1 misread)
+
+## [s6] Merged counter reaches $t0 when pa2/a3off are wrap-lifted above it and loop 1 is note-free (the closing hypothesis)
+- mechanism: merged i conflicts pa2/a3off/pt1 → once they allocate first the walk forces t0; jb (2 refs, last) shares a2 with pa2; i must stay at 9 unweighted refs (goto loop 1) and below a3off's lifted .424
+- probe: m1 (for-form loop 1: i 12 refs .537 → a2, KILLED sub-variant); m2 (goto loop 1: i→t0 ✓ but pt1/pt2 swap, 8); m3 (+pt3 wrap: 0)
+- result: sandbox 0, 84/84, twice; full column diff clean
+- verdict: CONFIRMED (MATCH)

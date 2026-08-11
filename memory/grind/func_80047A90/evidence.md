@@ -384,3 +384,75 @@ s5A-loop2-unlocked / s5B-wholefunc).
 - [s5] Floor 6 = exactly the loop-1 2-cycle (i pseudo a2-vs-t0, judge base a3-vs-a2, slots 1,2,3,12,14,27), unchanged since s3; all other 78 slots byte-match
 
 - [s5] Telemetry banked in metrics/events.jsonl (permuter-launch/permuter-harvest x2 each); both campaigns stopped in-session, no orphans (procs_killed 7 each)
+
+## Session 6 (2026-08-11, forensics) — floor 6 → 0 (MATCH, sandbox 0 twice)
+
+### FIFTH stale-src occurrence
+src/sound.c again carried the old 10-pin body at session start; re-applied
+candidate.c (s5 apply script), sandbox verified 6 (84/84) before working.
+
+### Forensic finding 1: i→a2 is UNCONDITIONAL in every separate-counter landscape
+FINDREGDBG (instrumented cc1, tools/gcc-2.7.2/cc1; BB2_FINDREG_DEBUG=<pseudo> +
+BB2_ALLOC_DEBUG) on the 6-form: find_reg(i=72) sees conflicts {2,3,4,5,29},
+someone_prefers EMPTY, own copy/full prefs EMPTY → ascending first-free walk
+(MIPS has NO REG_ALLOC_ORDER) → $a2. Source-level closure of the mechanism:
+- regs_someone_prefers[i] = union of hard_reg_full_preferences of LATER-allocated
+  CONFLICTING allocnos (prune_preferences, global.c:882). Only the judge base
+  conflicts with i among globals.
+- judge's only set is (set (reg) (symbol_ref "Judge")): set_preference
+  (global.c:1671) requires a REG (or unwrappable first-operand REG) on the other
+  side — a symbol_ref src returns without effect. Judge can NEVER acquire prefs.
+- i's own sets ((set i (const 0)), (set i (plus i 1))) likewise give no prefs.
+So no reachable source state masks $a2/$a3 for i or pref-steers i to $t0 while i
+is a loop-1-only counter. The entire s2–s5 wall is this one theorem, now proven
+from the compiler source + measured.
+
+### Forensic finding 2: s1-H2 "counter→t0" not reproducible — presumed misread
+Four nested-for rebuilds (h2a array-index, h2b i-reused-as-inner-counter,
+h2c row-pointers, h2d all-pointer-for-form) ALL show i→a2 (dumps banked).
+Frontier lead (b) is closed as unreliable; no further chasing.
+
+### The closing geometry (derived from finding 1, NOT from search)
+A counter SHARED by both loops conflicts with pa2/a3off/pt1 (it lives through
+loop 2), so once pa1→a1, pa2→a2, a3off→a3 allocate first, the WALK ITSELF forces
+i→$t0 — and jb (loop-1 judge base, 2 refs, allocates last) lands $a2 sharing
+with loop-2-only pa2 (they don't conflict in THIS form; the s2 rejected merged
+form had jb-pa2 conflict — the difference is form-dependent liveness, jb 2/48
+here vs 3/48 there). Requirements, each measured:
+1. NOTE-FREE loop 1 (goto-form source pointer walk p558/p59C + hand-hoisted jb):
+   i's refs stay UNWEIGHTED at 9 (4+5). For-form loop 1 weights them to 12 →
+   pri .537 → i allocates before pa2 → a2 (m1 dump). Goto pointer-walk loop 1 is
+   byte-identical to the for-form giv output (s1 structural fact).
+2. Wraps on `a3 = 0;` and `pa2 = pt2;` lift them to 7 weighted refs
+   (.424/.4375), above merged-i's .403 — without them pa2 .375/a3off .364 sit
+   BELOW i .403-.415 (the exact s2 kill of the merged family).
+3. The pa2 wrap's weighted pt2-use lifts pt2 to 6/41=.293 above pt1 5/40=.25 →
+   pt1/pt2 SWAP (t1/t2), sandbox 8 (m2 dump + slot diff). Third wrap on
+   `pt3 = pt1 + 0x11;` lifts pt1 to 6/40=.300 → order restored → sandbox 0.
+4. i=1-first reinit order matches target slots 30-33 NATURALLY in the merged
+   form (no k=1 wrap needed — the s3 wrap was a separate-k artifact).
+Final ALLOCDBG order: pa1 .794(a1), pa2 .4375(a2), a3off .424(a3), i .403(t0),
+p59C(a1), pt1 .300(t1), pt2 .293(t2), pt3(t3), jb(a2). All target.
+
+### Verification
+- sandbox 0 twice (m3 bare + final annotated form in src), 84/84, 0 rules.
+- Full 84-instruction column diff against s3 target.txt: 1:1 including
+  registers (li/move = assembler aliases of addiu/addu).
+- Constructs: 3 single-level do{}while(0) wraps + dup-arms tail, all
+  FAKE-annotated; self_vet.md written (families: do-while-zero-exception
+  cf3e6ce7, duplicated-statement-into-arms, variable-reuse).
+
+### Artifacts (tmp/grind/func_80047A90/s6/)
+- dump.sh — ALLOCDBG/FINDREGDBG dump harness (usage: dump.sh <tag> [pseudo])
+- apply_body.py — body splice tool
+- base6/i72/j94 — 6-form traces (the unconditional-a2 proof)
+- h2a-h2d — nested-for rebuild traces (finding 2)
+- m1/m2/m3 — the derivation chain (merged+wraps for-form 12-ref fail →
+  goto-form 9-ref pt-swap 8 → +pt3 wrap = 0)
+- m3_build.txt — the 84-insn build column diffed vs target
+- final_body.c / cand_header.txt — the shipped form
+
+- [s6] FIFTH stale-src occurrence; re-applied candidate, verified 6 before working
+- [s6] find_reg(i)→a2 proven UNCONDITIONAL for separate-counter landscapes (conflicts+prefs closure from global.c source + FINDREGDBG); the s2-s5 wall explained
+- [s6] s1-H2 counter→t0 unreproducible in 4 spellings — closed as misread
+- [s6] MATCH: merged counter + note-free goto loop 1 + 3 single-level wraps + s2 dup-arms = sandbox 0, 84/84, verified twice + full column diff

@@ -819,59 +819,74 @@ loop3:
 }
 
 void func_80047A90(void) {
-    register s32 i asm("$8");
-    register s32 *p558 asm("$4");
-    register s32 *p59C asm("$5");
-    register s16 *pJudge asm("$6");
-    register s32 *pt2 asm("$10");
-    register s32 *pt1 asm("$9");
-    register s32 *pa1 asm("$5");
-    register s32 a3 asm("$7");
-    register s32 *pa2 asm("$6");
-    register s32 *pt3 asm("$11");
+    s32 i;
+    s32 a3;
     s32 v1;
     s32 a0;
+    s16 *jb;
+    s32 *p558;
+    s32 *p59C;
+    s32 *pt2;
+    s32 *pt1;
+    s32 *pa1;
+    s32 *pa2;
+    s32 *pt3;
     s32 *temp;
 
     i = 0;
-    pJudge = Judge;
+    jb = Judge;
     p558 = D_800EF558;
     p59C = D_800EF59C;
-    do {
-        i++;
-        *p59C = ((s32)pJudge[*p558 & 0xFFF] * 0x271) >> 10;
-        p59C++;
-        *p558 += 0x12;
-        p558++;
-    } while (i < 0x11);
+  loop1:
+    i++;
+    *p59C = ((s32)jb[*p558 & 0xFFF] * 0x271) >> 10;
+    p59C++;
+    *p558 += 0x12;
+    p558++;
+    if (i < 0x11)
+        goto loop1;
 
     i = 1;
     pt2 = D_800EF59C;
     pt1 = D_800EF59C + 0x11;
   outer_loop:
     pa1 = pt1;
-    a3 = 0;
-    pa2 = pt2;
-    pt3 = pt1 + 0x11;
+    do {
+        /* FAKE: loop-note ref weighting lifts a3's allocno priority above
+         * the shared counter i, seating a3 in $a3 and i in $t0 */
+        a3 = 0;
+    } while (0);
+    do {
+        /* FAKE: loop-note ref weighting lifts pa2 above the shared counter
+         * i, seating pa2 in $a2 (shared with the loop-1 Judge base) */
+        pa2 = pt2;
+    } while (0);
+    do {
+        /* FAKE: loop-note ref weighting keeps pt1 ahead of pt2 in
+         * allocation order (pt1->$t1, pt2->$t2) after the pa2 wrap's
+         * weighted pt2 use lifted pt2 */
+        pt3 = pt1 + 0x11;
+    } while (0);
   inner_loop:
-    {
-        s32 v0 = *pa1;
-        v1 = *pa2;
-        v0 -= v1;
-        a0 = 0x7D0 - v0;
-        if (a0 < 0) {
-            v1 = (a0 + 0xF) >> 4;
-        } else {
-            v1 = a0 / 10;
-        }
+    a0 = 0x7D0 - (*pa1 - *pa2);
+    if (a0 < 0) {
+        v1 = (a0 + 0xF) >> 4;
+    } else {
+        v1 = a0 / 10;
     }
     *pa1 += v1;
     if (i == 8) {
         *(s32 *)((s8 *)g_snd_fade_curve + a3) = v1;
+        pa1++;
+        a3 += 4;
+        pa2++;
+    } else {
+        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges,
+         * byte-neutral); reg_n_refs lift lands pa2->$a2, a3->$a3 */
+        pa1++;
+        a3 += 4;
+        pa2++;
     }
-    pa1++;
-    a3 += 4;
-    pa2++;
     if ((s32)pa1 < (s32)pt3)
         goto inner_loop;
     pt2 += 0x11;
