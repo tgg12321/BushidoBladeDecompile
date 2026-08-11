@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 31,
- "current_modality": "permuter",
+ "session_count": 32,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -189,6 +189,12 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "Twenty-first consecutive stale worker dispatch (permuter axis dead s4/s5): standing procedure only - candidate reapplied after the 31st driver revert, sandbox 0 re-proven (32nd consecutive, 189/189, 2"
+  },
+  {
+   "session": 32,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Twenty-second consecutive stale worker dispatch (forensics axis killed s6/s7, re-confirmed s15/s16/s23/s24): standing procedure only - candidate reapplied after the 32nd driver revert, sandbox 0 re-pr"
   }
  ],
  "frontier": [
@@ -199,11 +205,11 @@
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (structural s3, permuter s4/s5, forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19); sessions 10-31 all confirm the reapply-and-reprove loop is all that remains",
+   "mechanism": "Every worker modality carries a measured kill (structural s3, permuter s4/s5, forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19); sessions 10-32 all confirm the reapply-and-reprove loop is all that remains",
    "next_probe": "None - any further stale worker dispatch runs the standing procedure only: reapply candidate.c (tmp/grind/main/s14/apply.py), re-measure sandbox 0, re-check decisions.md, return progress citing this frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 31 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 32 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "Every session: reapply from memory/grind/main/candidate.c (or apply.py) and re-measure sandbox 0 before trusting any floor number"
   }

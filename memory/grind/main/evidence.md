@@ -1454,3 +1454,11 @@ Structural axis killed s3; standing procedure only. Reapplied candidate via tmp/
 - [s31] No permuter campaign launched: the permuter axis is a banked kill (s4/s5) and the frontier explicitly prescribes the standing procedure only for stale dispatches; re-running a measured-dead axis would spend tokens re-proving a ledgered result (same disposition as s30's identical permuter dispatch).
 
 - [s31] candidate.c and the rejected/ bank are unchanged and remain valid; src/ings.c currently carries the candidate form (sandbox-0-proven this session).
+
+- [s32] src/ings.c had reverted to pre-grind state again (32nd driver revert); apply.py restored the candidate cleanly, confirming the ledger's persistence model still holds
+
+- [s32] sandbox main --disable all with the candidate in place: score 0, 25 regfix rules droppable, 68 stripped cheat-asm insns all belonging to OTHER ings.c functions - main's body remains pure C with no pins, no volatile, no asm
+
+- [s32] decisions.md audit this session: last entries touching main are the 2026-08-11 in-person GRANT cff7f1f5 (chained same-variable accumulation sanctioned as family extension), the judge ESCALATE + OWNER-ESCALATION at line 4477 (construct question, now moot per the grant), and the 2026-08-11 13:49 layer-1 FAIL whose stated blocker is the live judge_constraint that this candidate form fails full-build SHA1 by 2 bytes (branch-target residual). No entry addresses or files the residual escalation
+
+- [s32] Therefore the ledger frontier is unchanged: the ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte residual, with the pre-decided disposition REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing ruling (both endgame-lock AND-gates measured FAILED: scan_hand_coded LOW 0/8 in s8; residual is reorg branch targets, not a C construct), unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11 packet)

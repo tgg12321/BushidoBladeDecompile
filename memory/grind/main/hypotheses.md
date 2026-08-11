@@ -706,3 +706,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Grepped decisions.md for all main entries and read the file tail (ends line 4524)
 - result: Last main-relevant entries unchanged from s30: construct escalation at 4477, layer-1 FAIL at 4522. No residual escalation exists; nothing new is pending on the owner
 - verdict: CONFIRMED
+
+## [s32] The forensics axis on main still has no measurable probe remaining; a forensics dispatch can only run the standing reapply-and-reprove procedure
+- mechanism: Forensics was killed with cc1 RTL/ALLOCDBG dumps in s6/s7 and re-confirmed s15/s16/s23; the residual is 2 bytes of reorg branch TARGETS in the full-build link, not a register-allocation or scheduling decision reachable from any C spelling, so no cc1 dump can name a new divergence
+- probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (lines 582..673, 102 candidate lines); ran sandbox main --disable all: score 0, rules_dropped 25, cheat_asm_stripped 68 (log: tmp/grind/main/s32/sandbox0.log); grepped docs/grind/decisions.md for any ruling on main newer than s31
+- result: Sandbox 0 confirmed for the 33rd consecutive session with zero cheat surface in main's body; decisions.md unchanged: GRANT cff7f1f5 (line 4438) covers the construct, the OWNER-ESCALATION at line 4477 is the construct escalation (resolved by the grant), the 2026-08-11 13:49 layer-1 FAIL stands, and NO escalation entry for the 2-byte branch-target residual exists yet
+- verdict: CONFIRMED
