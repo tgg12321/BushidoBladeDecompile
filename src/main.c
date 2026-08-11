@@ -1107,6 +1107,11 @@ INCLUDE_ASM("asm/funcs", func_800863DC);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
 INCLUDE_ASM("asm/funcs", func_80086818);
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
+/* PsyQ LIBSND VM_N2P: note2pitch — a second exported entry point that splat
+   merged into func_80086818. Split out 2026-08-10 (docs/naming/libscan/
+   boundary_fixes.md); must stay immediately after its former host so the
+   link order reproduces the original byte layout. */
+INCLUDE_ASM("asm/funcs", note2pitch);
 extern u8 D_801027F7;
 extern u8 D_801027FC;
 extern u16 D_800A26E4[];

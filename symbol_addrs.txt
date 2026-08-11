@@ -250,3 +250,4 @@ videoDec = 0x800F0D80;
 MarioCam_str = 0x800F19D0;
 selCharaID = 0x80102092;
 _start = 0x800836EC; // PS-EXE entry point / crt0 (split out of asm/funcs/ang_hosei.s 2026-08-06); documentation only — bb2.ld is hand-maintained, do not re-run splat
+note2pitch = 0x80086B38; // type:func (XDEF split out of func_80086818 2026-08-10; boundary_fixes.md) — documentation only, bb2.ld is hand-maintained, do not re-run splat
