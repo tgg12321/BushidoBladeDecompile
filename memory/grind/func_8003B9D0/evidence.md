@@ -438,3 +438,141 @@ Integration state unchanged: `regfix.txt:1116` still carries
 `func_8003B9D0: fill_delay @ 49 <- 52`, which the sandbox drops. Retiring it +
 a full-build SHA1 verify is an operator step (grind sessions may not edit
 regfix.txt).
+
+## SESSION 4-FORENSICS (2026-08-11) — the region-A fold is named, and session-4's K10 is RETRACTED
+
+### Starting state and floor
+The layer-1 cheat-reviewer FAILED the previous session's D3 construct
+(`p = (u8 *)&eda[0x226]; saved_44c = *(s16 *)p;`) and the driver BANNED it.
+This session started from candidate-minus-D3 (keep D1 = the three cheat-asm
+deletions, keep D2 = the if/else region-B form) applied to
+`src/code6cac_c2.c` and measured `sandbox func_8003B9D0 --disable all`:
+
+    score 6, target_insns 185, build_insns 188, rules_dropped 1,
+    strip_cheat_asm true
+
+So the honest LEGAL floor is **6**, unchanged from sessions 2/3. `src/` was
+restored to HEAD at end of session; the legal body is `candidate.c` and the
+banned body is `rejected/p-staging-layer1-cheat-banned.c`.
+
+### RETRACTION — session 4's K10 rested on a broken detector
+Session 4's sweep scripts (`tmp/grind/func_8003B9D0/s4/sweep2.py`,
+`sweep3.py`) classified a site as "unfolded register+displacement" by counting
+`1100\(s?[0-9a-z]+\)` in `objdump -d` of an UNLINKED `.o`.  That regex cannot
+distinguish the two forms: an unrelocated `lh $2,%lo(D_80101EDA+1100)($2)`
+prints as `lh s2,1100(s2)` exactly like the wanted `lh s2,1100(s0)`.  The
+distinguishing feature is the PRECEDING `lui`, which the regex never looked at.
+
+Re-dumped this session with `tmp/grind/func_8003B9D0/s4b/dumpfn.sh` (full
+mnemonic listing of the function):
+  * `B_fnscope_far_read` (dedicated function-scope `s16 *far`, read only):
+    **188 insns, ALL THREE SITES FOLDED** — `lui s2,0x0 / lh s2,1100(s2)`,
+    `lui at,0x0 / sh v0,1100(at)`, `lui at,0x0 / sh s2,1100(at)`.
+  * `A_fnscope_far_all3` (dedicated `s16 *far` used at all three sites):
+    **188 insns, ALL THREE SITES FOLDED** — byte-identical region to B.
+  * `C_p_reuse` (the banned D3 form): 185 insns, all three sites
+    `1100($s0)` with no `lui`.
+
+So the dedicated-pointer variants do NOT "suppress the fold at a 3-instruction
+cost"; they simply fold, exactly like the plain `eda[0x226]` baseline, and the
+188 is the baseline 185 + 3 folds.  Session-1 K1's original diagnosis was
+right; session-4's "correction" of it was the artefact.
+**Generalisable tooling lesson: never test for a %lo symbol fold by looking at
+the displacement in an unlinked object — look for the `lui`, or read the `.s`.**
+
+### THE PASS AND THE DECISION (the mandate of this modality)
+Per-pass RTL dumps for B (folds) and C (does not) were produced with the exact
+build flags plus `-da` (`tmp/grind/func_8003B9D0/s4b/da_B_fnscope_far_read/`,
+`.../da_C_p_reuse/`) and compared with `firstdiv.py` (normalises pseudo numbers
+and insn UIDs so pure renumbering is not a difference):
+
+    rtl SAME | jump SAME | cse DIVERGE | loop DIVERGE | cse2 DIVERGE | ...
+
+1. **The initial RTL of B and C is IDENTICAL modulo pseudo numbering.**  Both
+   emit `(set (reg/v P) (plus (reg/v eda) (const_int 1100)))` followed by
+   `(mem:HI (reg/v P))`.  The C-source difference (dedicated local vs reuse of
+   the existing `u8 *p`) is invisible to the front end.
+2. **cse1 does NOT fold, in either variant.**  In `.cse` all three sites are
+   `(mem (plus (reg eda) (const_int 1100)))` in B and in C.  The one and only
+   difference at `.cse` is that C still contains
+   `(insn 97 (set (reg/v 78) (plus (reg/v 94) (const_int 1100)))
+        (expr_list:REG_EQUAL (const:SI (plus (symbol_ref "D_80101EDA") 1100))))`
+   while B does not.
+3. **`loop` changes nothing** for either variant (`.loop` == `.cse` at these
+   sites).
+4. **cse2 (the SECOND cse pass, toplev.c:2926) performs the fold.**  At `.cse2`
+   B's three sites have become
+   `(mem (const (plus (symbol_ref "D_80101EDA") (const_int 1100))))`
+   while C's are still `(mem (plus (reg 94) (const_int 1100)))`.  Nothing after
+   cse2 (flow / combine / sched / lreg / greg / jump2 / sched2 / dbr) changes
+   either shape — `.dbr` still shows `(mem (const (plus sym 1100)))` for B and
+   `(mem (plus (reg 16 s0) 1100))` for C.
+5. **What decides cse2's behaviour is whether insn 97 still exists**, and that
+   is decided by **`delete_dead_from_cse` (cse.c:8683), called at toplev.c:2867
+   immediately after cse1 and NOT after cse2.**  It builds a WHOLE-FUNCTION
+   reference count (`count_reg_usage`, cse.c:8595) and deletes any single-SET
+   insn whose destination pseudo has `counts[REGNO] == 0` (cse.c:8731-8734).
+   * In B, cse1 substituted `far`'s value into all three MEMs, `far`'s count
+     fell to 0, the set was deleted, and cse2 therefore saw a bare
+     `(plus (reg eda) 1100)` with no equivalence class — `find_best_addr`
+     (cse.c:2659-2663) folded it unconditionally through `fold_rtx`'s
+     `qty_const` substitution (cse.c:5171-5179).
+   * In C the destination is `p`, which is ASSIGNED AGAIN later in the function
+     (`p = (u8 *)D_800A3878;`) and read there, so its whole-function count is
+     non-zero, the dead set survives cse1, and in cse2 it re-establishes the
+     equivalence that keeps the cheap register+displacement address at all
+     three sites.
+6. **The surviving insn emits no bytes.**  `flow` deletes it (the `const_int
+   1100` count in C's dumps goes 5 -> 3 between `.cse2` and `.flow`), and it is
+   absent from `.dbr`.  So the banned construct is, mechanically, "dead in the
+   emitted output but its existence in source changed the codegen decisions
+   upstream of DCE" — the policy's own definition of a cheat-by-spelling
+   (.claude/rules/no-new-park-categories.md).  The layer-1 FAIL is confirmed on
+   mechanism, not merely on style.
+
+### What this closes and what it opens
+CLOSED: "a dedicated pointer local for the derived address" — every spelling of
+it (block scope, function scope, read-only, all-three-sites, `u8 *` + cast) is
+dead for the same reason, and the reason is now known rather than measured
+one variant at a time: cse1 propagates it, `delete_dead_from_cse` deletes it,
+cse2 folds.  No further dedicated-pointer variants need to be measured.
+
+OPEN (see hypotheses.md F1/F2): target's shape requires ONE of
+  (a) a pseudo holding `(plus eda 1100)` whose whole-function reference count
+      is non-zero for a reason a programmer would write — i.e. genuinely
+      multi-assigned or used as a value, not as an address (this is the
+      "variable reuse for codegen control" family, and the one instance tried
+      so far was FAILed at layer 1); or
+  (b) a cse2 basic-block boundary between `eda`'s definition and the displaced
+      uses (session-3's if/ELSE diamond: measured 11, costs `magic` and `la`
+      placement); or
+  (c) some construct that removes `eda`'s `qty_const` in cse2 without moving
+      its `la` — no candidate identified yet.
+
+- [s4-forensics] LEGAL floor re-measured this session: sandbox --disable all == 6 (target 185, build 188, rules_dropped 1) with candidate-minus-D3 in src/code6cac_c2.c. src restored to HEAD at end of session.
+
+- [s4-forensics] RETRACTION of session-4 K10: the sweep2/sweep3 fold detector counted `1100($reg)` in an UNLINKED objdump, which is identical text for a folded `%lo(D_80101EDA+1100)($reg)` access and an unfolded register+displacement access. Re-dumping the full mnemonic listing shows BOTH dedicated-pointer variants (function-scope `s16 *far` read-only, and `s16 *far` used at all three sites) FOLD at all three sites and are 188 insns = 185 + 3 folds. Dedicated pointers never suppressed the fold; session-1 K1's original diagnosis was correct.
+
+- [s4-forensics] THE FOLD IS PERFORMED BY cse2, NOT cse1. Per-pass `-da` dumps (tmp/grind/func_8003B9D0/s4b/da_*/): `.rtl` and `.jump` are identical between the folding and non-folding variants modulo pseudo numbering; `.cse` and `.loop` leave all three sites as `(mem (plus (reg eda) (const_int 1100)))` in BOTH; `.cse2` is where the folding variant becomes `(mem (const (plus (symbol_ref "D_80101EDA") (const_int 1100))))`; every later pass preserves whichever shape cse2 left.
+
+- [s4-forensics] THE DECIDING DECISION IS `delete_dead_from_cse` (cse.c:8683, called from toplev.c:2867 right after cse1 and NOT after cse2). It builds a WHOLE-FUNCTION reference count via count_reg_usage (cse.c:8595) and deletes any single-SET insn whose destination pseudo has count 0 (cse.c:8731-8734). cse1 propagates the derived-address pointer into the three MEMs; a DEDICATED pointer then has count 0 and its set is deleted, so cse2 sees a bare (plus (reg) 1100) with no equivalence class and folds it via find_best_addr (cse.c:2659-2663) + fold_rtx's qty_const substitution (cse.c:5171-5179). A pointer that is ASSIGNED AGAIN later in the function keeps a non-zero count, its dead set survives into cse2, and the cheap register+displacement address is retained at all three sites.
+
+- [s4-forensics] The insn that does the work emits NO BYTES: it is deleted by `flow` (const_int 1100 occurrences go 5 -> 3 between .cse2 and .flow) and is absent from .dbr. So the banned D3 construct is mechanically "dead in the emitted output, but its existence in source changed codegen upstream of DCE" -- the policy's own definition of a cheat-by-spelling. The layer-1 FAIL is confirmed on mechanism.
+
+- [s4-forensics] TOOLING LESSON (generalises beyond this function): never test for a %lo symbol fold by looking at the displacement in an UNLINKED objdump -- the addend prints identically for the folded and unfolded forms. Test for the preceding `lui`, or read the cc1 `.s` output.
+
+- [s4] LEGAL floor re-measured this session: `sandbox func_8003B9D0 --disable all` == 6 (target_insns 185, build_insns 188, rules_dropped 1, strip_cheat_asm true) with candidate-minus-D3 applied to src/code6cac_c2.c. src/ was restored to HEAD at end of session; the working tree carries only the ledger updates, the new rejected/ form and metrics/events.jsonl.
+
+- [s4] The banned D3 body is preserved verbatim at memory/grind/func_8003B9D0/rejected/p-staging-layer1-cheat-banned.c; candidate.c is now the D3-free floor-6 body (zero __asm__, region B still closed by the session-2 if/else form); self_vet.md has been voided so its D3 claims cannot be reused.
+
+- [s4] THE PASS: region A's fold is done by cse2 (the second cse pass, toplev.c:2926). cse1 leaves all three +0x44C sites as `(mem (plus (reg eda) (const_int 1100)))` in BOTH a folding and a non-folding variant; the `loop` pass changes nothing; the fold first appears in `.cse2` and no later pass alters it.
+
+- [s4] THE DECISION: delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8683), called at toplev.c:2867 right after cse1 and NOT after cse2, deletes any single-SET insn whose destination pseudo has a WHOLE-FUNCTION reference count of zero (count_reg_usage, cse.c:8595; test at cse.c:8731-8734). That deletion is what removes the derived-address set and hands cse2 an address with no equivalence class, which find_best_addr (cse.c:2659-2663) then folds unconditionally by substituting the base pseudo's qty_const in fold_rtx (cse.c:5171-5179).
+
+- [s4] The insn that decides the outcome emits NO BYTES: in the non-folding variant it is deleted by `flow` (const_int 1100 occurrences drop 5 -> 3 between .cse2 and .flow) and is absent from .dbr. The banned construct therefore matches the policy's own definition of a cheat-by-spelling - dead in the emitted output, but its existence in source changed codegen upstream of DCE - so the layer-1 FAIL is confirmed on mechanism, not merely on style.
+
+- [s4] CLOSED AXIS (on mechanism, not one probe at a time): a dedicated pointer local for the derived address, in ANY spelling (block scope, function scope, read-only, used at all three sites, u8* + cast, init-at-declaration). cse1 propagates it, delete_dead_from_cse deletes it, cse2 folds. No further dedicated-pointer variant needs to be measured.
+
+- [s4] TOOLING LESSON, generalises beyond this function: never test for a %lo symbol fold by looking at the displacement in an UNLINKED objdump - the addend prints identically for the folded and unfolded forms. Test for the preceding `lui`, or read the cc1 `.s`. This artefact is what produced session-4's false K10.
+
+- [s4] New reusable instruments: s4b/dumpfn.sh (function-scoped mnemonic listing from a .o), s4b/dump.sh (per-variant -da dumps with the exact build flags), s4b/firstdiv.py (first-diverging-pass finder with pseudo/UID normalisation - directly reusable for any two-variant codegen forensic), s4b/sites.sh + loopchk.sh + allpass.sh + trace1100.py (per-pass extraction of specific insns).

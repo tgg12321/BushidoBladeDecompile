@@ -467,3 +467,118 @@
 - probe: Two concurrent 12-job campaigns via tools/permuter_campaign.py -- wsA from the floor-6 candidate (base score 330), wsB from the diamond form (base score 748).
 - result: wsA reached 200 within ~5 minutes / ~2k iterations and that find carried the region-A closing signal; wsB ran ~21 minutes / ~30k iterations and never beat 578. Both harvested and stopped in-session. The shortest-permuter-diff chassis, not the structurally-closest-looking one, was the productive seed.
 - verdict: KILLED
+
+## SESSION 4-FORENSICS (2026-08-11)
+
+### CONFIRMED
+
+- **H5 — Region A's symbol fold is performed by cse2 (the SECOND cse pass),
+  and whether it fires is decided by `delete_dead_from_cse`'s WHOLE-FUNCTION
+  reference count on the pseudo that holds the derived address.**
+  Mechanism, end to end:
+  1. The front end always emits `(set (reg P) (plus (reg eda) (const_int
+     1100)))` + `(mem (reg P))` for any derived-address spelling; `.rtl` and
+     `.jump` are identical between the folding and non-folding variants modulo
+     pseudo numbering.
+  2. cse1 substitutes P's value into the MEMs, leaving
+     `(mem (plus (reg eda) 1100))` at all three sites — **cse1 does NOT fold**.
+  3. `delete_dead_from_cse` (cse.c:8683) then runs at toplev.c:2867, builds a
+     whole-function reference count with `count_reg_usage` (cse.c:8595) and
+     deletes any single-SET insn whose destination pseudo has count 0
+     (cse.c:8731-8734).  A DEDICATED pointer's count is now 0 -> its set is
+     deleted.  A pointer that is assigned again elsewhere in the function keeps
+     a non-zero count -> its (dead) set survives.
+  4. cse2 (toplev.c:2926) then runs `find_best_addr` on each MEM address.  With
+     the set gone there is no equivalence class for `(plus (reg eda) 1100)`, so
+     the unconditional non-REG address fold at cse.c:2659-2663 substitutes
+     `eda`'s `qty_const` (cse.c:5171-5179) and the address becomes
+     `(const (plus (symbol_ref "D_80101EDA") (const_int 1100)))`.  With the set
+     present, the register+displacement form is retained.
+  5. Every pass after cse2 preserves whichever shape cse2 produced (checked
+     through flow / combine / sched / lreg / greg / jump2 / sched2 / dbr).
+  6. The surviving set itself emits no bytes — `flow` deletes it.
+  Probe: `-da` per-pass RTL dumps of two full-TU variants with the exact build
+  flags, compared pass by pass with pseudo/UID normalisation
+  (`tmp/grind/func_8003B9D0/s4b/firstdiv.py`, `sites.sh`, `loopchk.sh`,
+  `trace1100.py`); plus the frozen compiler source at the cited lines.
+  Result: first structural divergence at `.cse`, the only difference being the
+  presence of the address set; fold appears at `.cse2`; nothing later changes
+  it.  **CONFIRMED.**
+  Corollary for policy: the banned D3 construct works precisely by keeping a
+  dead insn alive to steer a later pass, and that insn never reaches the
+  output — which is the policy's definition of a cheat-by-spelling.  The
+  layer-1 FAIL is confirmed on mechanism.
+
+### KILLED / RETRACTED
+
+- **K13 (RETRACTS session-4 K10) — "A dedicated pointer local for the displaced
+  address suppresses the cse fold but costs 3 extra instructions."**
+  Session-4's evidence for that was a detector artefact: `sweep2.py` /
+  `sweep3.py` counted `1100\(reg\)` in `objdump -d` of an UNLINKED object, and
+  a folded `%lo(D_80101EDA+1100)($reg)` access prints EXACTLY the same way as
+  the wanted register+displacement access.  Re-dumping the full mnemonic
+  listing of the function (`s4b/dumpfn.sh`) shows both dedicated-pointer
+  variants FOLD at all three sites (`lui s2 / lh s2,1100(s2)`,
+  `lui at / sh v0,1100(at)`, `lui at / sh s2,1100(at)`), i.e. 188 = 185 + 3
+  folds.  **The dedicated-pointer axis is dead because it FOLDS, not because it
+  is 3 instructions too long**, and H5 explains why every spelling of it must
+  fold.  Session-1 K1's original diagnosis stands; do not re-measure any
+  dedicated-pointer variant.
+
+### LIVE FRONTIER (for the next session)
+
+- **F1 (the whole remaining 6 points).**  H5 gives the exact requirement: at
+  cse2 the address `(plus (reg eda) 1100)` must either (i) still have a live
+  equivalence class — i.e. some pseudo set to that value must have survived
+  `delete_dead_from_cse`, which requires that pseudo to be referenced elsewhere
+  in the function for a reason a programmer would write — or (ii) `eda`'s
+  quantity must carry no `qty_const` at that point.  Next probe: enumerate the
+  function's OTHER references to the same halfword.  `D_80102326` (== the
+  +0x44C halfword) is read again later at
+  `if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326;`.  A pointer that
+  genuinely serves both that later read and the block's save/restore would have
+  a non-zero whole-function count for an honest reason.  The obstacle is
+  liveness: the block-scoped assignment is conditional, so a pointer assigned
+  only inside `if (qf & 0x30)` and read afterwards is undefined behaviour
+  (that is exactly why permuter output-200-1 was rejected).  Measure the
+  function-scope variant that assigns it unconditionally BEFORE the block and
+  check where the `la` lands; note K4 (two independent pointers, both at
+  offset 0) measured 17, but that variant made every access offset-0, which is
+  a different shape from "one base + one derived pointer both genuinely used".
+
+- **F2 (the alternative, already priced).**  Session-3's if/ELSE diamond gives
+  a cse basic-block boundary and closes region A at build_insns 185 == target,
+  but relocates `magic` out of the prologue (~7) and the `la` out of the
+  `qf & 0x30` block (~4) for a total of 11.  H5 says the boundary is not the
+  only route, so F1 should be exhausted before returning to it; but if F1's
+  honest forms all fail, the cheapest known legal form is this one and the
+  remaining work is buying the two placements back.
+
+- **F3 (unchanged, orthogonal, byte-neutral).**  m2c infers
+  `func_8003AFFC(D_800A3878)` while our C calls it with no arguments, and
+  `src/code6cac_c2.c` carries three duplicate `extern void
+  func_8003AFFC(void);` declarations (lines 73, 74, 171).
+
+## [s4-forensics] Region A's symbol fold is performed by cse2, and whether it fires is decided by delete_dead_from_cse's whole-function reference count on the pseudo holding the derived address.
+- mechanism: The front end always emits `(set (reg P) (plus (reg eda) 1100))` + `(mem (reg P))`. cse1 substitutes P into the MEMs and does NOT fold. delete_dead_from_cse (cse.c:8683, called at toplev.c:2867 right after cse1, not after cse2) counts references over the WHOLE function (count_reg_usage, cse.c:8595) and deletes any single-SET insn whose destination pseudo has count 0 (cse.c:8731-8734). A dedicated pointer's count is 0 there, so its set is deleted and cse2 sees a bare (plus (reg) 1100) with no equivalence class; find_best_addr's unconditional non-REG address fold (cse.c:2659-2663) then substitutes eda's qty_const (cse.c:5171-5179) and produces (const (plus sym 1100)). A pointer reassigned later in the function keeps count != 0, its dead set survives, and cse2 keeps register+displacement. Every pass after cse2 preserves the shape; flow deletes the surviving set so it emits no bytes.
+- probe: Per-pass `-da` RTL dumps of two full-TU variants compiled with the exact build flags (tmp/grind/func_8003B9D0/s4b/da_B_fnscope_far_read/, da_C_p_reuse/), compared pass by pass with pseudo-number and insn-UID normalisation (firstdiv.py) plus targeted extraction of the three access insns at every pass (sites.sh, loopchk.sh, allpass.sh, trace1100.py); cross-read against the frozen compiler source.
+- result: rtl SAME, jump SAME, first divergence at .cse and it is ONLY the presence of `(insn 97 (set (reg 78) (plus (reg 94) 1100)) REG_EQUAL const(sym+1100))`; .loop unchanged; .cse2 is where the folding variant's three sites become (mem (const (plus sym 1100))) while the non-folding variant keeps (mem (plus (reg) 1100)); .dbr still shows both shapes unchanged. Confirms the pass, the decision, and that the enabling insn emits no bytes.
+- verdict: CONFIRMED
+
+## [s4-forensics] A dedicated pointer local for the displaced address suppresses the cse fold but costs 3 extra instructions (session-4 K10).
+- mechanism: Claimed that fold suppression and instruction count were independent effects, so a dedicated local unfolded the three sites yet paid 3 insns for an extra live pointer.
+- probe: Re-dumped the full mnemonic listing of func_8003B9D0 from the session-4 variant objects (tmp/grind/func_8003B9D0/s4b/dumpfn.sh over s4/sw3/*.o) instead of counting `1100($reg)` occurrences in objdump text.
+- result: RETRACTED. Both dedicated-pointer variants (function-scope `s16 *far` read-only, and `s16 *far` used at all three sites) FOLD at all three sites -- `lui s2,0x0 / lh s2,1100(s2)`, `lui at,0x0 / sh v0,1100(at)`, `lui at,0x0 / sh s2,1100(at)` -- so their 188 insns are just the 185 baseline plus the 3 folds. The original detector was invalid because an unrelocated `%lo(SYM+1100)($reg)` prints identically to a register+displacement access in an unlinked objdump. H5 explains why every dedicated-pointer spelling must fold; the axis is closed on mechanism and needs no further variants.
+- verdict: KILLED
+
+## [s4] Region A's symbol fold is performed by cse2 (the SECOND cse pass), not cse1, and whether it fires is decided by delete_dead_from_cse's WHOLE-FUNCTION reference count on the pseudo that holds the derived +0x44C address.
+- mechanism: The front end always emits `(set (reg P) (plus (reg eda) (const_int 1100)))` + `(mem (reg P))` for any derived-address spelling, so .rtl/.jump are identical between folding and non-folding variants modulo pseudo numbering. cse1 substitutes P's value into the three MEMs and leaves `(mem (plus (reg eda) 1100))` - it does NOT fold. delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8683), called at toplev.c:2867 immediately after cse1 and NOT after cse2, builds a whole-function reference count with count_reg_usage (cse.c:8595) and deletes any single-SET insn whose destination pseudo has counts[REGNO]==0 (cse.c:8731-8734). A DEDICATED pointer's count is 0 after cse1's substitutions, so its set is deleted; cse2 then sees a bare non-REG address with no equivalence class and find_best_addr's unconditional fold (cse.c:2659-2663) substitutes eda's qty_const via fold_rtx (cse.c:5171-5179), producing `(const (plus (symbol_ref "D_80101EDA") (const_int 1100)))`. A pointer that is ASSIGNED AGAIN later in the function keeps a non-zero count, its (dead) set survives into cse2, and the cheap register+displacement address is retained at all three sites. Every pass after cse2 preserves the shape, and `flow` deletes the surviving set so it emits no bytes.
+- probe: Compiled two full-TU variants with the exact Makefile cc1 flags plus -da (tmp/grind/func_8003B9D0/s4b/dump.sh): B = dedicated function-scope `s16 *far` (folds, 188 insns), C = the banned p-reuse form (does not fold, 185 insns). Compared every pass dump with pseudo-number and insn-UID normalisation (firstdiv.py) and extracted the three access insns at each pass (loopchk.sh, allpass.sh, sites.sh, trace1100.py). Cross-read the frozen compiler source at cse.c:2646-2700, 5160-5190, 8595-8740 and toplev.c:2846-2926.
+- result: rtl SAME, jump SAME; first divergence at .cse and the ONLY difference is the presence of `(insn 97 (set (reg/v 78) (plus (reg/v 94) (const_int 1100))) REG_EQUAL (const (plus (symbol_ref "D_80101EDA") 1100)))` in C; .loop identical to .cse in both; .cse2 is where B's three sites become `(mem (const (plus sym 1100)))` while C's stay `(mem (plus (reg 94) 1100))`; .flow/.combine/.sched/.lreg/.greg/.jump2/.sched2/.dbr all preserve whichever shape cse2 left. C's enabling insn is gone by .flow (const_int 1100 occurrences 5 -> 3) and absent from .dbr, i.e. it emits no bytes.
+- verdict: CONFIRMED
+
+## [s4] (RETRACTION of session-4 K10) A dedicated pointer local for the displaced address suppresses the cse fold but costs 3 extra instructions.
+- mechanism: Session 4 claimed fold-suppression and instruction count were independent effects, so a dedicated local unfolded all three sites yet paid 3 insns for an extra live pointer across func_8003AFFC().
+- probe: Re-dumped the FULL mnemonic listing of func_8003B9D0 from the session-4 variant objects (tmp/grind/func_8003B9D0/s4b/dumpfn.sh over tmp/grind/func_8003B9D0/s4/sw3/*.o) instead of counting `1100($reg)` occurrences in objdump text as sweep2.py/sweep3.py did.
+- result: RETRACTED. Both dedicated-pointer variants (function-scope `s16 *far` read-only; `s16 *far` used at all three sites) FOLD at all three sites - `lui s2,0x0 / lh s2,1100(s2)`, `lui at,0x0 / sh v0,1100(at)`, `lui at,0x0 / sh s2,1100(at)` - so their 188 insns are simply the 185 baseline plus the 3 folds. The session-4 detector was invalid because an unrelocated `%lo(D_80101EDA+1100)($reg)` access prints identically to a register+displacement access in an UNLINKED objdump; the distinguishing feature is the preceding `lui`. H5 explains why every dedicated-pointer spelling must fold, so the axis is now closed on mechanism and needs no further variants. Session-1 K1's original diagnosis stands.
+- verdict: KILLED
