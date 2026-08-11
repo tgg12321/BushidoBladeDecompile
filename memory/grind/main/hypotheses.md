@@ -460,3 +460,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Reapplied candidate.c after the 10th driver revert; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions); decisions.md re-checked (grant cff7f1f5 at line 4438; no residual-covering escalation entry — line 4477 is the resolved pre-grant family question); verified each of the seven modality kills is backed by banked artifacts and none conflicts with another
 - result: Account consistent and complete; merged packet statement written self-contained in evidence.md s11 with the full artifact citation list; frontier reset in hypotheses.md post-s11
 - verdict: CONFIRMED
+
+## [s11] The structural axis has any remaining unmeasured probe on main
+- mechanism: s3 killed the axis: the 2-byte residual is reorg redundancy thread-skip branch retargeting (reorg.c:3433/1987/3685) vs ASPSX fill-iff-retarget — pipeline-behavioral, not reachable from any C spelling; s6 counterfactual grid showed >=3 cooperating self-healing devices; s8 rederive confirmed the candidate IS the original shape (cc1psx emits the single-label form on this exact C)
+- probe: Ledger review + decisions.md grep this session; no probe exists to run per the post-s11 frontier ('No measurable probe remains for any non-escalation worker session')
+- result: Confirmed empty: session executed only the standing reapply-and-reprove procedure; sandbox main --disable all = 0 (189/189, 25 rules dropped, 68 cheat-asm stripped)
+- verdict: KILLED

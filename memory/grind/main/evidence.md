@@ -988,3 +988,34 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s10] Frontier RESET (hypotheses.md post-s11) to one actionable item (escalation filing with pre-decided wording) + the standing reapply procedure for stale-digest worker dispatches + the 10x-recurring revert invariant
 
 - [s10] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (words [165]/[173]); the driver's byte re-verify would discard it
+
+- [s12 / driver-session-11, structural stale-dispatch] The driver dispatched
+  structural modality again despite its s3 kill — a stale-digest dispatch, as the
+  post-s11 frontier predicted. Per the standing procedure the session ran ONLY the
+  reapply-and-reprove loop: candidate reapplied from memory/grind/main/candidate.c
+  after the ELEVENTH driver revert (all 4 coordinated edits: two callee signature
+  widenings at ings.c:311/441, the widened main call sites, the named tbl[idx]
+  load in the 0xFFFECC00 block, and the owner-granted FAKE-annotated chained
+  accumulation, grant cff7f1f5); sandbox main --disable all = 0 (189/189 insns,
+  25 rules dropped, 68 cheat-asm lines stripped) — the TWELFTH consecutive
+  sandbox-0 re-proof. Artifact: tmp/grind/main/s11/sandbox_reproof.json.
+- [s12] decisions.md re-checked this session (grep): the GRANT entry and the
+  resolved pre-grant escalation at line 4477 are the only main-scoped entries; NO
+  OWNER-ESCALATION entry yet covers the 2-byte branch-target residual. Filing it
+  remains exclusively the escalation-modality session's job per the standing
+  auto-ruling wording pinned in evidence.md s11 (pre-decided REFUSED /
+  OWNER-ACCEPTED INCOMPLETE unless the owner elects the class-level maspsx
+  ASPSX-parity remedy).
+- [s12] No structural probe was run and none exists: the structural axis carries
+  the s3 measured kill (three-leg mechanism proof; residual is pipeline-behavioral,
+  not C-reachable). The frontier is unchanged from post-s11.
+
+- [s11] src/ings.c was reverted to pre-grind for the ELEVENTH time; candidate reapplied from memory/grind/main/candidate.c (all 4 coordinated edits incl. the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5)
+
+- [s11] sandbox main --disable all = 0 this session (189/189 insns, 25 regfix rules dropped) — TWELFTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s11/sandbox_reproof.json
+
+- [s11] decisions.md re-checked: GRANT cff7f1f5 on file; line-4477 entry is the RESOLVED pre-grant accumulation question; NO entry yet covers the 2-byte branch-target residual — the escalation-modality session must file it with the pre-decided wording (both endgame-lock gates measured FAILED: gate 1 scan LOW 0/8 s8, gate 2 moot since the residual is not a C construct)
+
+- [s11] candidate-ready remains impossible for any worker session: masked sandbox is 0 but true bytes are 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
+
+- [s11] evidence.md updated with the s12 block; frontier unchanged from post-s11 (single actionable item: escalation filing, escalation modality only)
