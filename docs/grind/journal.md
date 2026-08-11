@@ -827,3 +827,4 @@
 - 2026-08-11 07:17 func_800401CC COMPLETED-C after 3 sessions.
 - 2026-08-11 07:29 func_80075670 COMPLETED-C after 1 sessions.
 - 2026-08-11 07:40 func_8001E6E4 s1 [recon] floor=19: Recon: floor 19 in place on main; gap = single 8-byte phantom frame slot; prior 'GCC DCEs unused arrays' claim disproven (sandbox-strip artifact); 3 honest frame producers measured dead; frontier = -da temp census + sibling/callee struct evidence + Kengo cross-ref
+- 2026-08-11 07:50 func_8001E6E4 s2 [structural] floor=19: Structural modality measured DEAD: 15 honest spellings (named intermediates, second handles, guard re-association, declaration order/granularity, split-init, ternary, register class) ALL hold vars=72 - the 8-byte phantom producer is not reachable by structural respelling; frontier stays -da forensics + callee/Kengo evidence

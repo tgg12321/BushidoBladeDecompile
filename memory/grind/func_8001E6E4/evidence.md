@@ -117,3 +117,48 @@ resolved here (out of this worker's assigned scope).
 - [s1] Table-type lead DEAD: D_800F5328/D_800F6608 are bare extern s32 (include/code6cac.h:236,249), no revealing struct type in-tree; no duplicate-scan leads
 
 - [s1] m2c reference shape: flat locals, temp_a2 dist (store+pass), temp_s0 = s2+0x20; suggests named-dist original which is frame-neutral (probe 4)
+
+## Session 2 (grinder, structural, 2026-08-11)
+
+- **Structural modality measured DEAD: 15 honest semantic-preserving spellings,
+  ALL vars=72 (frame 104).** Instrument: `tmp/frame_probe.sh` (cc1 `.frame`
+  gradient), harnesses `tmp/grind/func_8001E6E4/s2/sweep.py` + `sweep2.py`,
+  raw results in `sweep_results.txt` + `sweep2_results.txt`. Variants swept:
+  honest baseline; select-pointer named intermediate (`sel` copied to `s2`
+  after the join — the combine-orphan-USE candidate shape); sel used for all
+  loads with late `s2` bind; second `u8 *base` handle for the halfword reads;
+  named `out` intermediate for the final global store; two-sided compare
+  re-association (`arg0 < 0x555 || arg0 >= 0xAAB`); p0/p20 pointers declared
+  at function top; named `u32 range` guard intermediate; reversed declaration
+  order (pointer before aggregate); split-init accumulation on dist
+  (`local.dist = load; local.dist += G;`); ternary select; separate locals
+  (pos/rot/dist/tail structs — declaration granularity, both declaration
+  orders; diagnostic-only, dead `tail` never a candidate); `u8 *` as primary
+  handle; `register` storage class on s2. NONE moved `vars` off 72.
+- **Interpretation.** No named-intermediate / copy-coalesce / declaration-order
+  / granularity / handle-type / guard-respelling shape orphans a pseudo in this
+  function: every pseudo in every spelling is either consumed (guard chain:
+  addiu→sltiu→bnez all survive in target bytes, so the guard is NOT the
+  producer) or fully register-allocated. Separate-locals packing has no
+  per-local padding (16+8+4+44 packs to exactly 72), so declaration
+  granularity cannot supply the 8 leading bytes either.
+- **Args-area alternative ruled out by elimination (recorded reasoning, no new
+  measurement):** target frame 112 could in principle be vars=72+args=24, but
+  args=24 requires a >4-arg call, which would emit an arg store into
+  sp+0x10..0x17 — and the target has zero touches there. So target is
+  vars=80, and the producer is vars-side, as H1 states.
+- **Frontier unchanged**: H1 (-da greg/combine dump forensics to find which
+  expansion temp / unallocated pseudo cc1psx's input shape created), H2
+  (callee real argument types → true camera struct evidence), H3 (Kengo
+  source cross-reference). Structural blind-spelling search on this function
+  is exhausted — do not re-sweep spellings of these families.
+
+- [s2] 15 structural spellings swept with the cc1 .frame gradient; every one reports vars=72 regs=4/0 args=16 (frame 104) - raw lines in tmp/grind/func_8001E6E4/s2/sweep_results.txt and sweep2_results.txt
+
+- [s2] Target guard chain (addiu a0,-0x555; sltiu; bnez) survives in target bytes, so the phantom producer is NOT the guard pseudo chain; any orphan must come from elsewhere
+
+- [s2] Separate-locals declaration granularity is frame-neutral: pos(16)+rot(8)+dist(4)+tail(44) packs to exactly 72 with no per-local padding in GCC 2.7.2
+
+- [s2] args=24 alternative for target frame 112 ruled out by elimination: a >4-arg call would store into sp+0x10..0x17 which target never touches, so target is vars=80 and the producer is vars-side
+
+- [s2] src/code6cac.c left byte-identical to HEAD (sweep harness restored it; git diff clean); candidate.c p0 form (floor 19) unchanged as banked best
