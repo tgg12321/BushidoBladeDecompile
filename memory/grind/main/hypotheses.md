@@ -77,3 +77,28 @@
 - probe: micro-harness tmp/grind/main/s1/fold.c with cc1 -da: -128 first appears in fold.c.combine (cse dump still has -1); whole-file sandbox unchanged at 2 with split form
 - result: fold is RTL combine.c:8196 (ashift (plus foo C) N) -> (plus (ashift foo N) C<<N), unconditional for CONST_INT; splitting is byte-neutral
 - verdict: KILLED
+
+## [s2] chained same-variable accumulation (lim = D_800A36F1; lim = lim - 1; lim = lim << 8; lim = lim + 0x80) keeps the addiu -1 / sll / addiu 0x80 chain unfolded
+- mechanism: one pseudo for the whole chain -> try_combine's 2->2 split gate combine.c:1836 (! reg_referenced_p (i2dest, newpat)) refuses every fold attempt (2-insn and 3-insn); distribution at combine.c:8196 never reaches the stream
+- probe: micro-harness tmp/grind/main/s2/foldM4.c (.s shows addiu -1 kept), then whole-file sandbox --disable all
+- result: score 2 -> 0 (189/189, 25 rules dropped) with edits in place in src/ings.c
+- verdict: CONFIRMED (bytes); POLICY PENDING (ruling-request s2 — adjacent spelling of split-init-accumulation, byte-materializing vs the sanctioned byte-neutral precedent ad11a8c8)
+
+## [s2] a live second use of the (x-1) value can close the cluster
+- mechanism: added_sets_2 multi-use block
+- probe: byte-budget audit of target loop bytes (asm/funcs/main.s 0x7B50-0x7B84): every free slot is a literal nop (0x7B5C, 0x7B74, 0x7B7C); any extra live insn is a byte mismatch
+- result: no free slot exists; multi-use forms are byte-impossible for THIS loop
+- verdict: KILLED
+
+## Live frontier (post-s2)
+1. OWNER RULING pending on the chained-accumulation spelling (see s2 outcome
+   ruling_question). If sanctioned -> next session: reapply (or verify still
+   applied) src state from candidate.c, sandbox 0, write self_vet.md citing
+   the new ruling, return candidate-ready.
+2. If REFUSED -> the only remaining structural axes: (a) minimal 3-statement
+   variant (same family, likely same ruling), (b) cross-BB shapes that
+   linearize back to the single-BB target layout via jump2/reorg (unexplored,
+   no concrete form yet), (c) directed permuter over poll-loop spellings
+   EXCLUDING same-pseudo accumulation.
+3. Session-start check: verify src/ings.c matches candidate.c before trusting
+   the digest floor (s1 src edits were discarded once already).

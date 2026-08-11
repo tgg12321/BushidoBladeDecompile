@@ -813,3 +813,4 @@
 - 2026-08-10 17:32 func_8007C7A0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-10 23:32 func_8007C86C s1 [recon] floor=5: Recon: floor 12 -> 5 by transferring the twin get_cs chassis (constant swapped); residual proven byte-identical to func_8007C7A0's banned join-temp-writeback family, so disposition is coupled to that pending owner ruling
 - 2026-08-11 00:32 main s1 [recon] floor=2: recon: floor 20 -> 2 via two pure-C structural wins (3-arg/2-arg call arities + named tbl[idx] load); last cluster = combine.c:8196 shift-plus distribution, mechanism pinned
+- 2026-08-11 01:33 main JUDGE ESCALATE (ruling request) — parked pending owner ruling.

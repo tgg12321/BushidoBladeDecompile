@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "main",
-      "file": "ings",
-      "distance": 20,
-      "verdict": "C",
-      "rules": 25,
-      "status": "active"
-    },
-    {
       "func": "func_80047A90",
       "file": "sound",
       "distance": 20,
@@ -2453,17 +2445,26 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, in-person 2026-08-10): prototype-correction grant refused x3; RA artifact + no SOTN precedent for the correction direction; pins at text1b.c:606-609 held solely for the oracle"
+    },
+    {
+      "func": "main",
+      "file": "ings",
+      "distance": 20,
+      "verdict": "C",
+      "rules": 25,
+      "status": "parked",
+      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-11 \u2014 main \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
     "total": 288,
-    "active": 253,
+    "active": 252,
     "by_status": {
-      "active": 253,
-      "parked": 35
+      "active": 252,
+      "parked": 36
     },
     "by_verdict": {
-      "C": 167,
+      "C": 166,
       "ASM-PARTIAL": 39,
       "ASM-SUSPECT": 47
     }

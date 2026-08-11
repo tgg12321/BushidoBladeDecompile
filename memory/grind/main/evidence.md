@@ -109,3 +109,83 @@ is the natural reading; either spelling scores 2.)
 - [s1] rules map: @20-22+@167-171 arities (solved), @27-29+labels @146-169 loop-head li a1 (solved), @104-114 0xFFFECC00 (solved), @83-84 fold cluster (open) - all 25 rules retirable once fold closes
 
 - [s1] regression guard: func_80016A8C/func_80016E60 signature widenings are load-bearing; sole callers are in main (repo grep), unused params emit no code
+
+## Session 2 (structural, 2026-08-11)
+
+### Session-start state correction
+- The s1 SRC edits were NOT in the tree at session start (sandbox scored 20,
+  build 185/189, arities back to 1-arg). Only the ledger was committed
+  (623155a0); the driver evidently discarded the uncommitted src edits.
+  Reapplied all four s1 edits from candidate.c → sandbox 2 (188/189)
+  confirmed. NEXT SESSIONS: always verify src against candidate.c before
+  trusting the digest floor.
+
+### CONFIRMED win 3 — chained same-variable accumulation closes the fold
+cluster (floor 2 → 0)
+The form (applied in src/ings.c poll loop):
+```c
+s32 cnt = GetRCnt(0xF2000001u);
+s32 lim = D_800A36F1;
+lim = lim - 1;
+lim = lim << 8;
+lim = lim + 0x80;
+if (cnt >= lim) break;
+```
+Measured: micro-harness (tmp/grind/main/s2/foldM4.c → foldM4.s) emits
+`lbu; addiu -1; sll 8; addiu 0x80; slt` exactly; whole-file sandbox
+--disable all = **0** (189/189 insns, 25 rules dropped, 68 cheat-asm insns
+in other ings.c functions still stripped — main's own body is pure C).
+
+### Mechanism (pinned in tools/gcc-2.7.2/combine.c — read, not guessed)
+- The fold everyone fights is the ashift/plus distribution at combine.c:8196
+  (unconditional in simplify_shift_const) — but the distribution only reaches
+  the insn stream via try_combine, and its unrecognizable 2-operand result
+  (set r (plus (ashift r 8) -256)) must pass the 2->2 SPLIT gate at
+  combine.c:1821-1836. The last guard there is
+  `&& ! reg_referenced_p (i2dest, newpat)` ("We can't overwrite I2DEST if
+  its value is still used by NEWPAT").
+- When the WHOLE chain accumulates through ONE C variable (one pseudo,
+  GCC 2.7.2 has no SSA), every combine attempt's newpat still contains that
+  pseudo as the chain root, so the split is refused at every level:
+  - 2-insn (addiu-1 → sll): newpat = (set rL (plus (ashift rL 8) -256)),
+    i2dest = rL, rL referenced → refused.
+  - 3-insn (addiu-1, sll, addiu-0x80): newpat = (set rL (plus (ashift rL 8)
+    -128)), i2dest = rL (the self-referencing sll) → refused. added_sets_1/2
+    both 0 (each value dies at/is set by the next insn), so no PARALLEL path.
+  - (sll → addiu 0x80) 2-insn alone re-splits into the same two insns —
+    byte-neutral either way.
+- Corollary measured constraints (analysis, from the same code read):
+  - The lbu MUST share the pseudo. `s32 lim = D_800A36F1 - 1;` (fresh
+    subexpr temp for the load) leaves newpat referencing only the temp,
+    i2dest (lim) is substituted away → split proceeds → folds. This is
+    why every s1 statement-split (fresh named intermediates) failed (H5).
+  - Minimal blocking form is 3 statements (`lim = D_800A36F1; lim = lim - 1;
+    lim = lim << 8;` + `cnt >= lim + 0x80` in the compare) — analyzed but
+    NOT measured; the measured-0 form is the 4-statement chain.
+- Secondary finding from the same read: can_combine_p refuses combining
+  across a CALL_INSN (combine.c:929, `INSN_CUID (insn) < last_call_cuid &&
+  ! CONSTANT_P (src)`) — unusable here (no call sits between addiu and sll
+  in target bytes) but bankable for other functions.
+
+### Policy status — WHY THIS IS A RULING-REQUEST, NOT candidate-ready
+- Every statement in the form is live (each value read by the next); no dead
+  stores, no volatile, no pins, no asm. Detectors have nothing to flag.
+- But the operative family is same-variable reuse steering COMBINE with a
+  byte-MATERIALIZING effect. Nearest sanctions:
+  - split-init-accumulation (user 2026-06-13, commit ad11a8c8): scope
+    sentence "This sanctions the specific shape above (split a real `a+b`
+    into init + `+=` on the same var, combine folds it back)" — byte-NEUTRAL
+    refs-lift, single step. Ours: 3-step chain, combine does NOT fold back.
+    The memory adds: "New *adjacent* spellings still need their own user
+    ruling."
+  - "Variable reuse for codegen control" (frozen SOTN list): scope "reusing
+    one C variable for two unrelated values to influence loop-invariant
+    detection or RA" — ours is related staged values steering combine.
+- No frozen family covers the construct verbatim → per the standing prime
+  directive (first reach of an unsanctioned family = ruling request), s2
+  returns ruling-request with bytes proven. If the owner sanctions it, the
+  next session submits candidate-ready with the self-vet citing the new
+  ruling; if refused, the frontier reverts to finding a different
+  fold-blocking shape (multi-use is byte-impossible per the s2 nop-slot
+  audit: every free slot in the target loop is a literal nop, so any extra
+  live insn mismatches).

@@ -1,14 +1,39 @@
-/* candidate — main (src/ings.c) — session 1 end state, sandbox floor 2.
- * ALREADY APPLIED to src/ings.c. Three coordinated edits vs the pre-session
- * tree (do not revert):
- *   1. line ~311: void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {   (was 1-arg)
- *   2. line ~441: void func_80016E60(u8 *arg0, s32 arg1) {             (was 1-arg)
- *      (unused extra params; main is the only caller of both — verified.
- *       Target bytes show main passing env/idx in a1/a2 resp. a1.)
- *   3. main body below.
- * Remaining diff vs target (score 2): our build folds ((D_800A36F1-1)<<8)+0x80
- * to (x<<8)-128 in RTL combine (combine.c:8196); target keeps addiu -1 + addiu
- * 0x80. See hypotheses.md frontier.
+/* candidate — main (src/ings.c) — session 2 end state, SANDBOX DISTANCE 0
+ * (189/189 insns, all 25 regfix rules dropped, measured 2026-08-11 s2).
+ * APPLIED to src/ings.c. Four coordinated edits vs the pre-grind tree:
+ *   1. line ~311: void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {  (was 1-arg)
+ *   2. line ~441: void func_80016E60(u8 *arg0, s32 arg1) {            (was 1-arg)
+ *      (unused extra params; main is the only caller of both — verified by
+ *       repo-wide grep in s1. Target bytes show main passing env/idx in
+ *       a1/a2 resp. a1. The widening reproduces the original call ABI.)
+ *   3. main body below (named tbl[idx] load first in the 0xFFFECC00 block).
+ *   4. THE s2 CLOSER — poll-loop threshold as chained same-variable
+ *      accumulation:
+ *          s32 lim = D_800A36F1;
+ *          lim = lim - 1;
+ *          lim = lim << 8;
+ *          lim = lim + 0x80;
+ *      Mechanism (pinned in GCC source): every statement re-uses ONE pseudo,
+ *      so when try_combine merges the addiu(-1) into the sll and the
+ *      distribution (combine.c:8196) produces
+ *      (set rLIM (plus (ashift rLIM 8) -256)), the 2->2 split that would
+ *      accept the fold is REFUSED by the guard at combine.c:1836
+ *      ("We can't overwrite I2DEST if its value is still used by NEWPAT"
+ *      — reg_referenced_p (i2dest, newpat) is true because the chain root
+ *      is the same pseudo). The 3-insn path (addiu,sll,addiu 0x80) is
+ *      blocked by the same guard (i2dest = rLIM self-referencing sll).
+ *      Result: the chain stays unfolded — lbu; addiu -1; sll 8; addiu 0x80;
+ *      slt — exactly the target bytes. Verified in micro-harness
+ *      (tmp/grind/main/s2/foldM4.c/.s) then whole-file sandbox = 0.
+ *      Every statement is live (each value read by the next); no dead
+ *      stores, no volatile, no pins.
+ * POLICY STATUS: ruling-request pending. The spelling is same-variable
+ * split-init accumulation, but the sanctioned precedent (user 2026-06-13,
+ * commit ad11a8c8, func_80049C24) scopes to "split a real a+b into init +
+ * += on the same var, combine folds it back" (byte-NEUTRAL refs-lift);
+ * this form is a 3-step chain whose effect is byte-MATERIALIZING (combine
+ * does NOT fold back). The sanctioning memory says adjacent spellings need
+ * their own user ruling — asked via the s2 outcome's ruling_question.
  */
 void main(void) {
     s32 idx;
@@ -56,8 +81,11 @@ loop:
 
     do {
         s32 cnt = GetRCnt(0xF2000001u);
-        s32 lim = D_800A36F1 - 1;
-        if (cnt >= (lim << 8) + 0x80) break;
+        s32 lim = D_800A36F1;
+        lim = lim - 1;
+        lim = lim << 8;
+        lim = lim + 0x80;
+        if (cnt >= lim) break;
         rand();
     } while (1);
 
