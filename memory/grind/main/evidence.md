@@ -1444,3 +1444,13 @@ Structural axis killed s3; standing procedure only. Reapplied candidate via tmp/
 - [s30] No candidate-ready is possible: judge_constraints carry the live 'candidate form failed full-build SHA1 on main (masked-0 register diff class)' ban plus the 2026-08-11 13:49 layer-1 FAIL; the sandbox 0 is masked-register-class 0, true bytes remain 2 off (reorg branch targets)
 
 - [s30] No new permuter campaign was launched: the ledger's kill record (s4/s5, ~exhaustive chassis space) plus the residual's nature (branch TARGETS emitted by reorg, unreachable from C spelling per 9+ modalities across 20 sessions) means any campaign would re-measure a dead axis, which the brief forbids
+
+- [s31] s31 (permuter modality) is the 21st consecutive stale worker dispatch: every worker modality carries a measured kill (structural s3, permuter s4/s5 ~182k iterations, forensics s6/s7/s15/s16/s23, rederive s8/s9/s17/s18/s25, synthesis s10/s19); per the ledger frontier the ONLY valid action for a non-escalation session is the standing procedure, executed here.
+
+- [s31] Candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py; sandbox main --disable all = 0 (189/189, 25 regfix rules droppable, 68 stripped cheat-asm insns belong to other ings.c functions). Log: tmp/grind/main/s31/sandbox_0.json.
+
+- [s31] decisions.md re-checked (ends line 4524): no new owner ruling since s30. The 2026-08-11 13:49 layer-1 FAIL stands - the granted chained-accumulation construct is legitimate but the candidate fails full-build SHA1 by 2 bytes (reorg branch-target residual) that 9+ modalities across 20 sessions measured unreachable from any C spelling under the frozen pipeline.
+
+- [s31] No permuter campaign launched: the permuter axis is a banked kill (s4/s5) and the frontier explicitly prescribes the standing procedure only for stale dispatches; re-running a measured-dead axis would spend tokens re-proving a ledgered result (same disposition as s30's identical permuter dispatch).
+
+- [s31] candidate.c and the rejected/ bank are unchanged and remain valid; src/ings.c currently carries the candidate form (sandbox-0-proven this session).

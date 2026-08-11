@@ -694,3 +694,15 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Ran the standing procedure: reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (lines 582..673 replaced with 102 candidate lines), re-measured sandbox main --disable all, grepped docs/grind/decisions.md (4524 lines, tail inspected) for any new owner ruling naming main
 - result: sandbox score 0, 189/189 target insns, 25 rules dropped, 68 cheat-asm lines stripped (31st consecutive sandbox-0 re-proof); decisions.md unchanged for main since the 2026-08-11 13:49 layer-1 FAIL entry - no owner ruling on the branch-target residual, no maspsx ASPSX-parity election
 - verdict: CONFIRMED
+
+## [s31] The banked candidate form still reaches sandbox 0 on current HEAD after the 31st driver revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so every session must reapply memory/grind/main/candidate.c (via tmp/grind/main/s14/apply.py) and re-measure before trusting any floor number
+- probe: Ran apply.py (main lines 582..673 replaced with 102 candidate lines), then `& tools/wteng.ps1 main sandbox main --disable all`
+- result: score 0, 189/189 insns, rules_dropped 25, cheat_asm_stripped 68 (all in OTHER ings.c functions; main's body is pure C) - 32nd consecutive sandbox-0 proof
+- verdict: CONFIRMED
+
+## [s31] No new owner ruling on main has landed since s30, and the frontier-prescribed OWNER-ESCALATION for the 2-byte branch-target residual is still unfiled
+- mechanism: decisions.md is the owner's audit surface; the 4477 entry is the CONSTRUCT escalation (already resolved by GRANT cff7f1f5), not the residual one; the 4522 layer-1 FAIL (2026-08-11 13:49) confirms the residual is the actual blocker
+- probe: Grepped decisions.md for all main entries and read the file tail (ends line 4524)
+- result: Last main-relevant entries unchanged from s30: construct escalation at 4477, layer-1 FAIL at 4522. No residual escalation exists; nothing new is pending on the owner
+- verdict: CONFIRMED
