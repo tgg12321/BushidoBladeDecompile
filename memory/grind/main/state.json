@@ -1,8 +1,8 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 26,
- "current_modality": "rederive",
+ "session_count": 27,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -159,21 +159,27 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "Sixteenth consecutive stale worker dispatch (rederive axis killed s8/s9, re-confirmed s17/s18/s25): standing procedure only - candidate reapplied after the 26th driver revert, sandbox 0 re-proven (27t"
+  },
+  {
+   "session": 27,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "Seventeenth consecutive stale worker dispatch (synthesis axis completed s10, re-confirmed s19): standing procedure only - candidate reapplied after the 27th driver revert, sandbox 0 re-proven (28th co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual (construct question closed by GRANT cff7f1f5 - do not re-escalate it)",
+   "hypothesis": "The ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual (construct question closed by GRANT cff7f1f5 - do not re-escalate it; the decisions.md:4477 entry is the construct escalation, not the residual one)",
    "mechanism": "Both endgame-lock AND-gates measured FAILED (scan_hand_coded LOW 0/8 s8; residual is reorg branch TARGETS, not a C construct); pre-decided disposition per standing ruling 2026-07-27: REFUSED / OWNER-ACCEPTED INCOMPLETE - unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates, evidence.md s11 packet)",
    "next_probe": "Escalation modality ONLY: file the entry in docs/grind/decisions.md citing evidence.md s11 + GRANT cff7f1f5 + layer-1 FAIL faa30607, then return owner-gated. If the owner elects the maspsx remedy, the close must also satisfy the GRANT's binding conditions (FAKE annotation present, family rules-doc via independent-review path, fresh layer-2)"
   },
   {
    "hypothesis": "No measurable probe remains for any non-escalation worker session on main",
-   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14/s21/s22, sibling s6, forensics s6/s7 re-confirmed s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18/s25/s26, synthesis s10 re-confirmed s19); sessions 10-26 all confirm the reapply-and-reprove loop is all that remains",
+   "mechanism": "Every worker modality carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14/s21/s22, sibling s6, forensics s6/s7 re-confirmed s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18/s25/s26, synthesis s10 re-confirmed s19/s27); sessions 10-27 all confirm the reapply-and-reprove loop is all that remains",
    "next_probe": "None - any further stale worker dispatch runs the standing procedure only: reapply candidate.c (tmp/grind/main/s14/apply.py), re-measure sandbox 0, re-check decisions.md, return progress citing this frontier"
   },
   {
-   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 26 occurrences)",
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (now 27 occurrences)",
    "mechanism": "Driver discards uncommitted src edits at session end; only the ledger persists",
    "next_probe": "Every session: reapply from memory/grind/main/candidate.c and re-measure sandbox 0 before trusting any floor number"
   }

@@ -1405,3 +1405,11 @@ standing procedure only.
 - [s26] candidate-ready remains impossible per the standing judge_constraints: the driver's byte re-verify would discard it (masked-0 register diff class / 2-byte branch-target residual), and the layer-1 FAIL is explicit that construct legitimacy is not the blocker.
 
 - [s26] Modality note for the driver: sessions s11-s26 (16 consecutive) have all been non-escalation worker modalities; every worker axis carries a measured kill (spelling s1/s2, structural s3, permuter s4/s5 re-confirmed s13/s14/s21/s22, sibling s6, forensics s6/s7 re-confirmed s15/s16/s23/s24, gate-scan s7/s8, rederive s8/s9 re-confirmed s17/s18/s25, synthesis s10 re-confirmed s19). Only an escalation-modality dispatch can execute the frontier's sole remaining action.
+
+- [s27] sandbox main --disable all = 0 this session (189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) - tmp/grind/main/s27/sandbox_s27.log, 28th consecutive sandbox-0 proof
+
+- [s27] decisions.md (4524 lines) re-checked to EOF: the 2026-08-11 main entry at line 4477 is the CONSTRUCT escalation, resolved by GRANT cff7f1f5 (the 2026-08-11 13:49 layer-1 FAIL explicitly calls the chained-accumulation family 'legitimately granted'); NO owner action since that FAIL and NO OWNER-ESCALATION entry for the 2-byte branch-target residual exists yet
+
+- [s27] The live blocker is unchanged: the exact candidate form fails full-build SHA1 by 2 bytes (reorg branch-target residual, masked-0 register diff class), unreachable from any C spelling per 9+ worker modalities across s1-s26; the class-level remedy (maspsx ASPSX-parity fill, 12 census candidates, evidence.md s11 packet) is owner-elected and touches tools/ - outside worker surface
+
+- [s27] Synthesis modality (mandated this session) was completed s10 and re-confirmed s19; this session re-confirms it: no ingredient for a new merged attack exists, making this the 17th consecutive stale worker dispatch resolved by the standing procedure

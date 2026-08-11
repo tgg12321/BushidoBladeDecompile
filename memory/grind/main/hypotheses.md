@@ -640,3 +640,27 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: python tmp/grind/main/s14/apply.py (main lines 582..673 replaced with 102 candidate lines), then & tools/wteng.ps1 main sandbox main --disable all
 - result: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 - 27th consecutive sandbox-0 proof (artifact tmp/grind/main/s26/sandbox_s26.json)
 - verdict: CONFIRMED
+
+## [s27] The synthesis axis holds a live merged attack for main this session
+- mechanism: Synthesis was completed s10 (consolidated s1-s9, named the frontier) and re-confirmed s19; the mandate is to merge ledger findings into a stronger attack, but every ingredient a merge could draw on is itself measured dead: the residual is 2 bytes of reorg branch TARGETS (masked-0 register diff class), not a C-shape or C-construct divergence, and the construct question is closed by GRANT cff7f1f5
+- probe: Re-read the ledger frontier + decisions.md tail (lines 4470-4524) this session; no new owner action since the 2026-08-11 13:49 layer-1 FAIL (faa30607); no ingredient exists for a new merged attack, so none was fabricated - standing procedure executed instead
+- result: Synthesis stays dead (17th consecutive stale worker dispatch). The frontier is unchanged and unanimous: the ONLY remaining action is an escalation-modality session filing the NEW OWNER-ESCALATION for the 2-byte branch-target residual; the 2026-08-11 entry at decisions.md:4477 is the CONSTRUCT escalation (resolved by GRANT cff7f1f5 - today's 13:49 layer-1 FAIL itself acknowledges the family as "legitimately granted"), so it does NOT cover the residual and cannot be cited as the live park
+- verdict: KILLED
+
+## [s27] The candidate form still reaches sandbox 0 on the current tree after the driver's 27th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so the floor must be re-proven from memory/grind/main/candidate.c each session before any floor number is trusted
+- probe: python tmp/grind/main/s14/apply.py (main lines 582..673 replaced with 102 candidate lines), then & tools/wteng.ps1 main sandbox main --disable all
+- result: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 (all in OTHER ings.c functions) - 28th consecutive sandbox-0 proof (artifact tmp/grind/main/s27/sandbox_s27.log)
+- verdict: CONFIRMED
+
+## [s27] The synthesis axis holds a live merged attack for main this session
+- mechanism: Synthesis completed s10 and re-confirmed s19; every ingredient a merge could draw on is measured dead - the residual is 2 bytes of reorg branch TARGETS (masked-0 register diff class), not a C-shape or C-construct divergence, and the construct question is closed by GRANT cff7f1f5
+- probe: Re-read ledger frontier + decisions.md lines 4470-4524; no new owner action since the 2026-08-11 13:49 layer-1 FAIL (faa30607); no ingredient for a new merged attack exists, so standing procedure executed instead
+- result: Synthesis stays dead (17th consecutive stale dispatch). Frontier unchanged and unanimous: only an escalation-modality session filing the NEW residual OWNER-ESCALATION remains. The decisions.md:4477 entry is the CONSTRUCT escalation (resolved by GRANT cff7f1f5, acknowledged by the 13:49 FAIL itself) and does not cover the residual
+- verdict: KILLED
+
+## [s27] The candidate form still reaches sandbox 0 on the current tree after the driver's 27th revert of src/ings.c
+- mechanism: Driver discards uncommitted src edits at session end; only the ledger persists, so the floor must be re-proven from memory/grind/main/candidate.c each session
+- probe: python tmp/grind/main/s14/apply.py (main lines 582..673 replaced with 102 candidate lines), then & tools/wteng.ps1 main sandbox main --disable all
+- result: score 0, target_insns 189, build_insns 189, scorable true, rules_dropped 25, cheat_asm_stripped 68 (all in OTHER ings.c functions) - 28th consecutive sandbox-0 proof
+- verdict: CONFIRMED
