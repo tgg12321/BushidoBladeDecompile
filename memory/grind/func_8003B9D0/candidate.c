@@ -1,62 +1,53 @@
-/* candidate.c — func_8003B9D0 — best form after session 2 (structural).
+/* candidate.c — func_8003B9D0 — session 4 (permuter).  HONEST DISTANCE 0.
  *
- * FLOOR: sandbox --disable all == 6  (build_insns 188 vs target 185).
- * Session 1 floor was 21 (build_insns 178).  This form CLOSES REGION B
- * entirely — the normalized diff is now 58 equal head insns, three isolated
- * 2-insn-vs-1-insn replacements (region A), and a 113-insn byte-equal tail.
+ * FLOOR: `sandbox func_8003B9D0 --disable all` == **0**
+ *        (target_insns 185, build_insns 185, rules_dropped 1, cheat-asm
+ *        stripping ON), measured this session with this body in
+ *        src/code6cac_c2.c.  Session-3 floor was 6; sessions 1/2/3 were
+ *        21 -> 6 -> 6.
  *
- * It also carries ZERO cheat-asm: the session-1 HEAD's identity-reload barrier
- * on `eda` and the two `__asm__ __volatile__("" ::: "memory")` barriers are all
- * DELETED and are no longer needed — the honest C below reproduces what they
- * were faking.  (The regfix rule `func_8003B9D0: fill_delay @ 49 <- 52`,
- * regfix.txt:1116, is untouched; grind sessions may not edit regfix.txt.)
+ * The function's body carries ZERO cheat-asm (session 2 deleted the three
+ * `__asm__` constructs and they stayed deleted).  ONE regfix rule still exists
+ * in regfix.txt for this function (`func_8003B9D0: fill_delay @ 49 <- 52`,
+ * regfix.txt:1116); grind sessions may not touch regfix.txt, and the sandbox
+ * drops it (rules_dropped 1) — so the 0 above is the honest, cheat-free
+ * distance and the rule is now dead weight for the operator to retire.
  *
- * THE ONE CHANGE THAT DID IT (region B, the whole 7-insn shortfall):
- *   writing the two flag-selected argument initialisations as if/ELSE
+ * WHAT CLOSED REGION A (the last 6 points, three `+0x44C` sites where ours
+ * emitted `lui $x,%hi(D_80101EDA+1100)` + `lh|sh $r,%lo(...)($x)` and target
+ * emits `lh|sh $r,1100($s0)`):
  *
- *       if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA; else a3_arg = -1;
+ *     p = (u8 *)&eda[0x226];        <- the far halfword's address staged in the
+ *     saved_44c = *(s16 *)p;           function's existing scratch pointer
  *
- *   instead of the "init to -1, then conditionally overwrite" form
+ * instead of `saved_44c = eda[0x226];`.  With that ONE statement pair, all
+ * THREE displaced sites (the read and both `sh`s, which still spell
+ * `eda[0x226]`) keep target's register+displacement addressing, and
+ * build_insns drops 188 -> 185 == target.
  *
- *       a3_arg = -1;
- *       if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA;
+ * Provenance: the shape came out of the session-4 permuter campaign on the
+ * floor-6 chassis (tmp/grind/func_8003B9D0/s4/wsA, output-200-2, permuter
+ * score 330 -> 200); it was a PROPOSAL — the permuter's own form read a BYTE
+ * through `p` (semantically wrong) and its sibling output-200-1 was outright
+ * UB (uninitialised `eda`).  The halfword-correct form above was derived from
+ * it and re-measured (tmp/grind/func_8003B9D0/s4/sweep2.py, sweep3.py).
  *
- *   Mechanism (measured, see hypotheses.md H1): an `else` arm makes GCC emit a
- *   jump around it, so the join label is preceded by a BARRIER and by a real
- *   arm block.  cse.c's `cse_end_of_basic_block` (tools/gcc-2.7.2/cse.c:8039)
- *   ends a CSE basic block at every CODE_LABEL, and only extends past one via
- *   the follow-jumps / skip-blocks branch at :8102-8184.  The plain-`if` form
- *   satisfies that extension (AROUND status), so one CSE table spanned all
- *   three flag reads and cc1 emitted the lui/lw/lbu block ONCE.  The if/else
- *   form ends the block at each join, so each read gets a fresh CSE table and
- *   cc1 re-emits the full lui/lw/nop/lbu/nop reload — exactly target's
- *   tgt[72..77] / tgt[82..87] / tgt[92..96].
+ * Mechanism: cse's `find_best_addr` folds any non-REG address unconditionally
+ * (cse.c:2663) by substituting the base pseudo's `qty_const` in `fold_rtx`
+ * (cse.c:5171-5176).  Staging the derived address through the longer-lived
+ * scratch pointer keeps `(plus (reg eda) 1100)` alive as a register-equivalent
+ * value, and the fold no longer materialises the symbol at any of the three
+ * sites.  A DEDICATED pointer local does not do it: a block-scope `s16 *far`
+ * (init-at-decl, split decl/assign, assigned before or after the zero-offset
+ * read, `u8 *` + cast) all still fold or cost 3 extra insns — see
+ * hypotheses.md session-4 K10/H4 for the measured table.
  *
- *   Both forms are ordinary, semantically identical C that a human writes
- *   without thinking about the compiler; the if/else is if anything the more
- *   natural spelling of "this argument is either the global or -1".  Nothing
- *   here is dead, nothing is unused, nothing exists only to steer codegen.
+ * The construct is `/* FAKE *\/`-annotated in src (sanctioned family: variable
+ * reuse for codegen control, .claude/rules/no-new-park-categories.md:170); the
+ * self-vet is memory/grind/func_8003B9D0/self_vet.md.
  *
- * WHAT REMAINS (region A, score 6 = 3 sites x 2):
- *   ours   `lui $x,%hi(D_80101EDA+0x44C) / lh|sh $r,%lo(...)($x)`   (2 insns)
- *   target `lh|sh $r, 0x44C($s0)`                                   (1 insn)
- *   at the three `eda[0x226]` sites.  See hypotheses.md F1 for the exact cc1
- *   guard (`find_best_addr`, cse.c:2663) and the next probe.
- *
- * SESSION-3 NOTE (2026-08-11) — this body is UNCHANGED and still the floor
- *   (sandbox --disable all == 6, re-measured session 3), but region A is no
- *   longer a mystery: it CLOSES (target's `lh/sh $r,1100($base)` at all three
- *   sites, build_insns 185 == target 185) as soon as a cse basic-block boundary
- *   separates `eda`'s definition from its displaced uses — see
- *   rejected/cse-boundary-diamond-closes-region-a-but-moves-magic-and-la.c,
- *   which scores 11 only because the boundary it uses (spelling the 0x80 test
- *   as if/ELSE) relocates `magic = 0x80190800` out of the prologue (~7 pts) and
- *   forces the `la` out of the qf-block (~4 pts).  Ten access/type spellings
- *   were measured and ALL fold (hypotheses.md K8), and the 30 matched siblings
- *   with this addressing shape use no special spelling either (K9) — so do NOT
- *   spend another session respelling the access.  The open problem is a CHEAPER
- *   BOUNDARY; hypotheses.md session-3 F1 names the exact cse.c conditions to
- *   enumerate.
+ * Region B (the earlier 7-insn shortfall) is closed by the session-2 if/else
+ * spelling of the two flag-selected argument initialisations, unchanged here.
  */
 
 void func_8003B9D0(void) {
@@ -88,7 +79,15 @@ void func_8003B9D0(void) {
         if (qf & 0x30) {
             s16 *eda = &D_80101EDA;
             saved_first = eda[0];
-            saved_44c = eda[0x226];
+            /* FAKE: the +0x44C halfword is reached through the scratch pointer
+               already declared above instead of directly as eda[0x226];
+               mechanism: cse.c find_best_addr's unconditional address fold
+               (cse.c:2663) substituting the base pseudo's qty_const in fold_rtx
+               (cse.c:5171-5176), which the staged pointer defeats;
+               lever-exhaustion: memory/grind/func_8003B9D0/hypotheses.md
+               K1/K2/K5/K8/K9 (10 access/type spellings + 30-sibling census). */
+            p = (u8 *)&eda[0x226];
+            saved_44c = *(s16 *)p;
             if (qf & 0x10) eda[0] = 0x32;
             if (q[3] & 0x20) eda[0x226] = 0x32;
             func_8003AFFC();

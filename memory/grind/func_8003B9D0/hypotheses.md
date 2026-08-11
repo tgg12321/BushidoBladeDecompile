@@ -378,3 +378,92 @@
 - probe: Wrote tmp/grind/func_8003B9D0/s3/find_sibling.py, which scans every asm/funcs/*.s for `lui %hi(SYM)` + `addiu %lo(SYM)` into a register followed by a non-zero-displacement load/store off that register, and intersects the hits with the unqueued + ruleless (MATCHED) set: 60 functions have the shape, 30 are matched. Read the closest analogue, func_8002BC68 (src/code6cac_b.c:745), which uses the SAME 0x44C displacement off the neighbouring symbol D_80101EC8.
 - result: The sibling's spelling is the ordinary `u8 *t2_base = &D_80101EC8;` + `*((s32 *)(t2_base + 0x134))`, which FOLDS in our mini TU. What makes it survive in that function is that its pointer is defined at the top and its uses come after a large if/else diamond -- the same cse-boundary mechanism as H3, not a different spelling. There is no spelling to copy.
 - verdict: KILLED
+
+## SESSION 4 (permuter, 2026-08-11)
+
+### CONFIRMED
+
+- **H4 - Staging the +0x44C address through the function's EXISTING `u8 *p`
+  scratch local closes region A at target's instruction count.**
+  Form: `p = (u8 *)&eda[0x226]; saved_44c = *(s16 *)p;` replacing
+  `saved_44c = eda[0x226];` (the two `sh` sites keep spelling `eda[0x226]`).
+  Mechanism: cse's `find_best_addr` folds any non-REG address unconditionally
+  (cse.c:2663) by substituting the base pseudo's `qty_const` in `fold_rtx`
+  (cse.c:5171-5176); staging the derived address through a pointer that is
+  live beyond the block keeps `(plus (reg eda) 1100)` as a register-equivalent
+  value and the symbol is never materialised at any of the three sites.
+  Probe: full-TU compile with the exact Makefile flags
+  (tmp/grind/func_8003B9D0/s4/sweep2.py, sweep3.py) + `sandbox --disable all`.
+  Result: three `1100($s0)` sites (target's exact shape), the `la` inside the
+  `qf & 0x30` block as in target, `magic` still in the prologue,
+  build_insns 188 -> 185 == target_insns, **sandbox 6 -> 0**.
+  **CONFIRMED.**  Form banked: `candidate.c`.  Vet: `self_vet.md`.
+
+### KILLED
+
+- **K10 - "A dedicated pointer local for the displaced address is the clean
+  way to spell it."**  Six dedicated-pointer variants measured (block-scope
+  split decl/assign; block-scope init-at-decl; assigned before the zero-offset
+  read; `u8 *` base + `(s16 *)` cast; function-scope with all three accesses
+  through it; function-scope read-only).  ALL SIX suppress the cse fold (3
+  register+displacement sites, i.e. K1's fold diagnosis was wrong), but ALL SIX
+  compile to 188 insns vs target 185 and sandbox at 6.  A fresh dedicated
+  pointer costs an extra live pointer across `func_8003AFFC()` plus address
+  bookkeeping.  **KILLED** — banked at
+  `rejected/dedicated-far-pointer-locals-all-cost-3-insns.c`.
+
+- **K11 - "A join label with `LABEL_NUSES != 1` (from a short-circuit `&&` /
+  `||`) is the cheap cse basic-block boundary session-3 F1 asked for."**
+  Probe: counted every label reference in `asm/funcs/func_8003B9D0.s`.
+  Result: all 13 `.L8003B*` labels appear exactly twice — one definition, one
+  use.  Target's control flow contains no multi-use join label at all, so no
+  such boundary exists in the original and any form creating one emits control
+  flow target does not have.  **KILLED**, and moot: region A closed with NO
+  boundary (the `la` sits in target's own position inside the `qf & 0x30`
+  block), which also retires the whole "buy the boundary more cheaply" frontier.
+
+- **K12 - "The region-A-closing if/ELSE chassis is the better permuter
+  basin."**  Probe: two concurrent campaigns, 12 jobs each — wsA on the floor-6
+  candidate (base score 330) and wsB on the session-3 diamond form (base 748).
+  Result: wsA found score 200 within ~5 minutes (~2k iterations) and that find
+  carried the closing signal; wsB ran ~21 minutes / ~30k iterations and never
+  beat 578.  **KILLED** — start from the shortest-diff chassis, not from the
+  structurally-closest-looking one.
+
+### LIVE FRONTIER (for the operator / next session)
+
+- **F1 (integration, not matching).**  regfix.txt:1116 still carries
+  `func_8003B9D0: fill_delay @ 49 <- 52`.  The honest sandbox (rule dropped)
+  is 0, so the rule is dead weight; retiring it + a full-build SHA1 verify is
+  an operator step (grind sessions may not edit regfix.txt).
+
+- **F2 (orthogonal, unchanged from s2/s3).**  m2c infers
+  `func_8003AFFC(D_800A3878)` — `$a0` holds the object pointer live from
+  tgt[48] through the `jal` at tgt[68] — while our C calls it with no
+  arguments, and `src/code6cac_c2.c` carries three duplicate
+  `extern void func_8003AFFC(void);` declarations (lines 73, 74, 171).
+  Byte-neutral here; it matters for `func_8003AFFC`'s own grind.
+
+## [s4] Staging the +0x44C halfword's address through the function's existing `u8 *p` scratch local closes region A at target's instruction count.
+- mechanism: cse's find_best_addr folds any non-REG address unconditionally (cse.c:2663) by substituting the base pseudo's qty_const in fold_rtx (cse.c:5171-5176). Staging the derived address through a pointer local that is live beyond the block keeps (plus (reg eda) 1100) as a register-equivalent value, so the symbol is never materialised at any of the three displaced sites -- and, unlike a fresh dedicated pointer, it costs no extra live pointer across the call.
+- probe: Derived from permuter find wsA/output-200-2 (score 330 -> 200), corrected from its byte read to the halfword the target performs; compiled through the full-TU pipeline with the exact Makefile flags (tmp/grind/func_8003B9D0/s4/sweep2.py, sweep3.py) and measured with `sandbox func_8003B9D0 --disable all`.
+- result: three `1100($s0)` sites (target's exact region-A shape), the `la` inside the qf&0x30 block as in target, `magic` still materialised in the prologue, build_insns 188 -> 185 == target_insns 185, sandbox 6 -> 0. FAKE-annotated in src; sanctioned family = variable reuse for codegen control.
+- verdict: CONFIRMED
+
+## [s4] A dedicated pointer local for the displaced address is the clean way to spell it.
+- mechanism: If the fold were the only obstacle, any derived-address local that suppresses it should also reach target's bytes.
+- probe: Six dedicated-pointer variants compiled on the full TU: block-scope split decl/assign; block-scope init-at-declaration; assigned before the zero-offset read; `u8 *` base with a `(s16 *)` cast; function-scope with all three accesses through it; function-scope read-only.
+- result: All six DO suppress the fold (3 register+displacement sites each), but all six compile to 188 insns vs target 185 and sandbox at 6. Fold suppression and instruction count are independent effects; session-1 K1 failed on LENGTH, not on the fold as recorded.
+- verdict: KILLED
+
+## [s4] A join label with LABEL_NUSES != 1 (from a short-circuit && / ||) is the cheap cse basic-block boundary session-3 F1 asked for.
+- mechanism: cse_end_of_basic_block refuses the AROUND extension when LABEL_NUSES (JUMP_LABEL (p)) != 1 (cse.c:8106), so a join label targeted by two jumps would end the block and strip the base pseudo's constant.
+- probe: Counted every label reference in asm/funcs/func_8003B9D0.s.
+- result: All 13 .L8003B* labels appear exactly twice -- one definition plus one use -- so target's control flow has no multi-use join label anywhere. No such boundary exists in the original, and any form creating one emits control flow target does not have. Moot as well: region A closed with no boundary at all.
+- verdict: KILLED
+
+## [s4] The session-3 region-A-closing if/ELSE form is the better permuter chassis.
+- mechanism: It already matches target's instruction count (185) with only placement diffs, so it should be the closer basin.
+- probe: Two concurrent 12-job campaigns via tools/permuter_campaign.py -- wsA from the floor-6 candidate (base score 330), wsB from the diamond form (base score 748).
+- result: wsA reached 200 within ~5 minutes / ~2k iterations and that find carried the region-A closing signal; wsB ran ~21 minutes / ~30k iterations and never beat 578. Both harvested and stopped in-session. The shortest-permuter-diff chassis, not the structurally-closest-looking one, was the productive seed.
+- verdict: KILLED

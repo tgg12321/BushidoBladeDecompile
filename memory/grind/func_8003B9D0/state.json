@@ -40,9 +40,14 @@
    "next_probe": "Read asm/funcs/func_8003AFFC.s to see whether it actually consumes $a0. If it does, correct the prototype and the call site (src/code6cac_c2.c carries three duplicate `extern void func_8003AFFC(void);` declarations, at lines 73, 74 and 171, which should be reconciled to one) and re-measure. Expect byte-neutrality; the value is correctness of the decompilation and of func_8003AFFC's own future grind."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: D1 (asm-barrier deletion) and D2 (if/else region-B form) are clean; D3 (staging the +0x44C address through the reused scratch pointer `p`) is a GCC-internals-driven respelling of the exact cse fold the deleted asm barrier was already defeating, self-admittedly not something a programmer would write, and is only reachable by exhaustively searching spellings until one hits the target byte count -- FAIL. Next action: Revert D3 only (keep D1 and D2, which are clean and independently close region B / remove the two cheat-asm barriers). Region A is confirmed closable at "
+ ],
+ "banned_constructs": [
+  "p = (u8 *)&eda[0x226]; saved_44c = *(s16 *)p;  (replacing saved_44c = eda[0x226];), src/code6cac_c2.c ~line 89-90",
+  "SANCTIONED-FAMILY-CLAIMS: 'Variable reuse for codegen control' and 'C-level pointer aliases to globals' cited to justify D3"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-11T21:10:24.070440+00:00"

@@ -331,3 +331,110 @@ definition and the use does.
 - [s3] NEW REUSABLE TOOL -- tmp/grind/func_8003B9D0/s3/find_sibling.py (symbol-base + non-zero-displacement census across asm/funcs, filtered to the matched set). Generally useful for locating proven-spelling siblings for any addressing-shape residual.
 
 - [s3] The three cheat-asm constructs deleted in session 2 stayed deleted; no __asm__ and no new construct of any kind was introduced this session. src/code6cac_c2.c is byte-identical to HEAD.
+
+
+## Session 4 (permuter, 2026-08-11)
+
+### FLOOR: 0 — the honest pure-C distance is CLOSED
+`sandbox func_8003B9D0 --disable all` == **0** (target_insns 185,
+build_insns 185, rules_dropped 1, cheat-asm stripping on), measured this
+session with the body in `memory/grind/func_8003B9D0/candidate.c` applied to
+`src/code6cac_c2.c`.  Session floors: s1 21 -> s2 6 -> s3 6 -> **s4 0**.
+
+### What closed region A
+One statement pair, replacing `saved_44c = eda[0x226];`:
+
+```c
+p = (u8 *)&eda[0x226];      /* the function's existing u8 * scratch local */
+saved_44c = *(s16 *)p;
+```
+
+With that, ALL THREE displaced sites keep target's register+displacement
+addressing (`lh s2,1100(s0)` / `sh v0,1100(s0)` / `sh s2,1100(s0)` — the two
+stores still spell `eda[0x226]`), the `la` stays INSIDE the `qf & 0x30` block
+where target puts it (tgt[55..56]), `magic` stays in the prologue, and
+build_insns drops 188 -> 185 == target.  The construct is `/* FAKE */`-
+annotated; the vet is `memory/grind/func_8003B9D0/self_vet.md`.
+
+### Provenance (permuter finds are PROPOSALS)
+Two campaigns ran from two chassis:
+  * wsA = the floor-6 candidate (permuter base score 330), and
+  * wsB = the session-3 region-A-closing if/ELSE form (base score 748).
+wsA produced `output-200-1` and `output-200-2` (score 330 -> 200) within ~5
+minutes; both were REJECTED as submitted forms — `output-200-1` moved
+`eda = &D_80101EDA;` to AFTER the block (uninitialised read = UB) and
+`output-200-2` read a BYTE through `p` (`saved_44c = *p;`) where target does
+`lh`.  Their shared, extractable signal was that routing the far address
+through `p` unfolds region A.  The halfword-correct derivation was written by
+hand and re-measured on the real pipeline.  wsB produced nothing better than
+578 (base 748) in ~21 minutes and was harvested + stopped; the region-A-closing
+diamond chassis is a WORSE permuter basin than the floor-6 chassis.
+
+### Fold-suppression and instruction count are TWO separate effects
+Measured over 13 spellings this session (full-TU compile, exact Makefile
+flags; `tmp/grind/func_8003B9D0/s4/sweep2.py`, `sweep3.py`):
+  * ANY derived-address pointer local suppresses the cse symbol fold — all
+    three sites come out as `1100($base)` — including a block-scope
+    `s16 *far`, an init-at-declaration `s16 *far = &eda[0x226];`, a
+    `u8 *far` + `(s16 *)` cast, and a function-scope `s16 *far`.
+  * But every DEDICATED local costs 3 extra instructions (188 vs target 185)
+    and sandboxes at 6, no better than the session-3 floor.
+  * ONLY staging the address through the function's already-live `u8 *p`
+    scratch local reaches 185 == target and sandbox 0.
+This corrects the session-1 K1 reading: K1's `s16 *eda_alt = eda + 0x226;`
+did not fail because the fold survived, it failed on instruction count.
+
+### The session-3 F1 lever is dead on target's own evidence
+Session 3 proposed hunting for a cse basic-block boundary produced by a join
+label with `LABEL_NUSES != 1` (a short-circuit `&&`/`||`).  Counting every
+label reference in `asm/funcs/func_8003B9D0.s`: all 13 labels appear exactly
+twice (one definition + one use), so target has NO multi-use join label
+anywhere.  Any form introducing one emits control flow target does not have.
+KILLED — and moot, since region A closed without any boundary at all.
+
+- [s4] sandbox --disable all == 0 (target_insns 185, build_insns 185, rules_dropped 1, cheat_asm_stripped 69 file-wide, zero __asm__ in this function's body). Floor history 21 -> 6 -> 6 -> 0.
+
+- [s4] REGION A CLOSED by staging the +0x44C address through the function's existing `u8 *p` scratch local (`p = (u8 *)&eda[0x226]; saved_44c = *(s16 *)p;`) in place of `saved_44c = eda[0x226];`. All three displaced sites keep target's `1100($s0)` addressing, the `la` stays inside the qf&0x30 block, `magic` stays in the prologue, and build_insns goes 188 -> 185 == target. FAKE-annotated in src; sanctioned family = variable reuse for codegen control (.claude/rules/no-new-park-categories.md:170).
+
+- [s4] Fold suppression and instruction count are INDEPENDENT effects. Thirteen spellings measured on the full-TU pipeline: every derived-address pointer local (block-scope split decl/assign, init-at-decl, assign-before-the-zero-read, u8* + cast, function-scope) suppresses the cse fold and yields 3 register+displacement sites, but all of them compile to 188 insns and sandbox 6. Only reuse of the already-live scratch pointer reaches 185/0. This corrects session-1 K1's diagnosis: K1 failed on length, not on the fold.
+
+- [s4] Target has NO multi-use join label: every one of the 13 `.L8003B*` labels in asm/funcs/func_8003B9D0.s appears exactly twice (definition + single use), so `LABEL_NUSES != 1` (the short-circuit `&&`/`||` boundary the session-3 frontier proposed) cannot exist in the original control flow. That frontier item is KILLED, and moot: region A closed with no cse basic-block boundary at all, with the `la` in target's own position.
+
+- [s4] The permuter campaign on the region-A-closing if/ELSE chassis (wsB, base score 748) is a strictly WORSE basin than the floor-6 chassis (wsA, base 330): ~21 minutes and ~30k iterations produced nothing better than 578. Harvested and stopped. Both campaigns are stopped; no campaign outlived the session.
+
+- [s4] Both permuter finds were rejected AS WRITTEN and re-derived by hand: output-200-1 relocated `eda = &D_80101EDA;` to after its uses (undefined behaviour) and output-200-2 read a byte where target reads a halfword. The usable signal was the p-staging shape, not either form.
+
+- [s4] REMAINING FOR THE OPERATOR (integration, not a matching problem): regfix.txt:1116 still carries `func_8003B9D0: fill_delay @ 49 <- 52`. The sandbox drops it (rules_dropped 1) and still scores 0, so it is now dead weight; retiring it is a regfix.txt edit, which grind sessions may not make.
+
+## SESSION 4 RE-RUN (permuter modality, 2026-08-11) — validator bounce, re-verified
+
+The first session-4 attempt was DISCARDED by the driver validator on a
+MECHANICAL self-vet defect, not on its work: `grindlib._FAMILY_BLOCK`
+(`^\s*FAMILY\s*:`) matched a wrapped prose line inside the T5 answer
+("It is NOT any forbidden\nfamily: no register pin, ..."), so the file was read
+as claiming THREE sanctioned families while quoting only two SCOPE sentences.
+The lesson generalises: in self_vet.md never let a line begin with `FAMILY:`,
+`SCOPE:` or `PRECEDENT:` unless it IS one of those fields — the validator is a
+line-anchored regex and prose wrapping can forge a field.
+
+This session restored `memory/grind/func_8003B9D0/candidate.c` into
+`src/code6cac_c2.c` (HEAD still carried the three cheat-asm constructs and the
+`x = -1; if (...)` region-B form — the discarded session's src edits had been
+reverted) and INDEPENDENTLY RE-MEASURED it:
+
+    sandbox func_8003B9D0 --disable all
+    -> score 0, target_insns 185, build_insns 185, rules_dropped 1,
+       strip_cheat_asm true, cheat_asm_stripped 69 (all in OTHER functions of
+       the TU; func_8003B9D0's own body carries zero cheat-asm)
+
+So the honest, cheat-free distance is 0 with the candidate body in place, and
+the H4 finding is now confirmed by two independent measurements taken in
+separate sessions. `self_vet.md` was rewritten (same substance, prose rewrapped
+so no forged field lines remain, second family's SCOPE sentence quoted verbatim
+from `.claude/rules/pointer-alias-fake-exception.md:13`) and now passes
+`grindlib.validate_self_vet` -> `(True, '')`.
+
+Integration state unchanged: `regfix.txt:1116` still carries
+`func_8003B9D0: fill_delay @ 49 <- 52`, which the sandbox drops. Retiring it +
+a full-build SHA1 verify is an operator step (grind sessions may not edit
+regfix.txt).

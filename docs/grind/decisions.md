@@ -4719,3 +4719,7 @@ per-instruction-cop2 spelling (`code6cac_b.c:1452`, `:1651`, `:1726`; `code6cac.
 retires the whole cluster; the recipe is in the header comment of
 `memory/grind/func_8002FDB0/candidate.c`. If instead the owner rules the SDK scaffolding
 inadmissible, that ruling should be recorded here too, because it decides the same cluster.
+
+## 2026-08-11 18:06 — func_8003B9D0 — layer-1 review — **FAIL**
+
+D1 (asm-barrier deletion) and D2 (if/else region-B form) are clean; D3 (staging the +0x44C address through the reused scratch pointer `p`) is a GCC-internals-driven respelling of the exact cse fold the deleted asm barrier was already defeating, self-admittedly not something a programmer would write, and is only reachable by exhaustively searching spellings until one hits the target byte count -- FAIL.
