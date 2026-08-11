@@ -514,3 +514,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Grepped docs/grind/decisions.md for main-scoped entries
 - result: GRANT cff7f1f5 at line 4438 and the RESOLVED pre-grant escalation at line 4477 remain the only main-scoped entries; no OWNER-ESCALATION covers the 2-byte branch-target residual
 - verdict: CONFIRMED
+
+## [s14] A permuter campaign on main could surface a spelling that closes the 2-byte branch-target residual
+- mechanism: The residual is two reorg-retargeted unfilled-branch TARGETS (words [165]/[173], reorg.c:3433/1987/3685 thread-skip), not a C construct; the masked sandbox scorer reads 0 at the seed, so any campaign has zero gradient (proven s5)
+- probe: None launched this session — launching one would re-measure a dead axis against the fresh-seed discipline; s5's zero-gradient measurement re-cited instead
+- result: Axis remains KILLED: no campaign can see the residual and no proposal could address a non-construct; standing procedure executed instead (reapply, sandbox 0, decisions.md check)
+- verdict: KILLED

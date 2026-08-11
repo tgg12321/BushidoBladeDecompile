@@ -1101,3 +1101,25 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s13] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off (branch-target words [165]/[173]); the driver's full-build byte re-verify would discard it
 
 - [s13] evidence.md and hypotheses.md updated with the s14 blocks; frontier unchanged from post-s11
+
+## s14 (driver session 14, scratch tmp/grind/main/s14/ — note: the s13 session labeled its final blocks "[s14]" above; this section is the actual session-14 record, 2026-08-11)
+
+- [s14] src/ings.c was reverted to pre-grind for the FOURTEENTH time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (all 4 coordinated edits incl. the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5).
+
+- [s14] sandbox main --disable all = 0 this session (189/189 insns, 25 regfix rules dropped, 68 cheat-asm stripped in other ings.c functions) — FIFTEENTH consecutive sandbox-0 re-proof; artifact tmp/grind/main/s14/sandbox_reproof.json.
+
+- [s14] No permuter campaign was launched and none is justified (mandated modality permuter, axis KILLED s4/s5): s5 proved the masked scorer reads 0 at the seed — zero gradient for any campaign — and the 2-byte residual is two reorg-retargeted branch TARGETS (words [165]/[173]), not a C construct a permuter proposal could address. FOURTH consecutive stale dispatch.
+
+- [s14] decisions.md re-checked this session: the construct GRANT is on file (cff7f1f5); the line-4477 OWNER-ESCALATION is the RESOLVED pre-grant construct question ("awaiting owner ruling" header is stale — the grant answered it); NO entry yet covers the 2-byte branch-target residual. Filing it remains exclusively the escalation-modality session's job with the pre-decided wording (gate 1 scan_hand_coded tier LOW 0/8 s8; gate 2 moot — residual is not a C construct) per evidence.md s11.
+
+- [s14] candidate-ready remains impossible for any worker session: masked sandbox 0 but true bytes 2 off; the driver's full-build byte re-verify would discard it. Frontier unchanged from post-s11. Any further worker dispatch in any modality should run only this standing procedure.
+
+- [s14] src/ings.c reverted to pre-grind for the 14th time; candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (all 4 coordinated edits incl. the owner-granted FAKE-annotated chained accumulation, grant cff7f1f5)
+
+- [s14] sandbox main --disable all = 0 THIS session: 189/189 insns, 25 regfix rules dropped, 68 cheat-asm insns stripped (all in OTHER ings.c functions) — 15th consecutive sandbox-0 re-proof; artifact tmp/grind/main/s14/sandbox_reproof.json
+
+- [s14] decisions.md re-checked: construct GRANT cff7f1f5 on file; the line-4477 OWNER-ESCALATION is the RESOLVED pre-grant construct question (its 'awaiting owner ruling' header is stale — the grant answered it); NO entry yet covers the 2-byte branch-target residual, so the pre-decided REFUSED / OWNER-ACCEPTED INCOMPLETE filing remains exclusively the escalation-modality session's job
+
+- [s14] candidate-ready remains impossible for any worker session: masked sandbox 0 but TRUE bytes 2 off at branch-target words [165]/[173]; the driver's full-build byte re-verify would discard a candidate-ready claim
+
+- [s14] evidence.md updated with the disambiguated s14 block (the s13 session had labeled its final blocks '[s14]'; the new section header notes this)
