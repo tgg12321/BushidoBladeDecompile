@@ -4274,3 +4274,113 @@ RULING REQUEST for func_8007C7A0 — verdict ESCALATE: the work is sound and com
 The candidate C is preserved at `memory/grind/func_8007C7A0/candidate.c`; main is back at
 HEAD. Owner action: rule on the question above, then unpark via
 `& tools/wteng.ps1 main queue regen` (or reopen the item) so the grind resumes.
+
+## 2026-08-10 — OWNER RULING (in person) — func_80036FD4 record merge: GRANTED, form (ii)
+
+**Owner-ruling artifact.** The owner (Trenton), in the 2026-08-10 coordinator
+session, reviewed the full evidence dossier — both byte-proofs (cast form
+2026-08-08, clean record form 2026-08-10), all four surviving layer-2 FAIL
+grounds, and the SOTN precedent research — and ruled in person, adopting the
+coordinator's recommendation: **the per-word-symbol -> record merge is GRANTED
+under the object-model-correction doctrine, in form (ii)** — the TU-scoped
+header record (CamPair/ReplayCamRec in include/code6cac.h, `extern ReplayCamRec
+D_80101E60` replacing the six per-word externs, whole-TU member-access
+conversion, plain address-of in the function body, barrier deleted) — i.e. the
+exact clean form byte-proven on 2026-08-10 (decisions.md:4213).
+
+This answers the two open 2026-08-08 questions: (a) YES, the merge is in scope
+even though its necessary effect is manufacturing the scheduler dependence,
+because it also carries independent object evidence and on-point ecosystem
+precedent (SOTN: per-word D_->struct merges "standard, encouraged, ongoing");
+(b) form (ii), per the same research (local cast re-views are tolerated
+waypoints, not end states). Form (iii) stays blocked pending the D_80101E70
+volatile and D_80101E74 width contradictions.
+
+Conditions BINDING on the merge:
+1. `/* FAKE */` annotation at the `idx = rec->unk00;` read-back, naming the
+   sched.c rank_for_schedule INSN_LUID tiebreak it exists to win.
+2. `/* FAKE */` annotation at the record declaration, naming
+   true_dependence/memrefs_conflict_p (SIZE_FOR_MODE(BLKmode)==0 shared-base
+   dependence), and stating HONESTLY that independent object evidence covers
+   the 8-byte pair (code6cac_b2_post.c CdPosToInt 8-byte buffer;
+   `&SpecialCam + i*8` array stride) and the interior struct pointer passed to
+   tslPolyF4Init, while the full-span bundling (unk00..unk0A) rests on the
+   scheduler dependence mechanism and is covered by this grant as annotated
+   FAKE structure — NOT claimed as proven original object layout.
+3. Fresh independent adversarial layer-2 review of the final diff (author's
+   verdict not credited) before `queue done`.
+
+This entry is the owner-ruling artifact the 2026-08-10 layer-2 FAIL ground (a)
+demanded; grounds (b)/(d) are discharged by conditions 1-2; ground (c) by the
+honesty requirement in condition 2.
+
+## 2026-08-10 — func_80048AD0 — OWNER-ESCALATION — RESOLVED (in person): REFUSED / OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27)
+
+The owner (Trenton), in the 2026-08-10 coordinator session, adopted the
+coordinator's recommendation to REFUSE the snd_LoadBgm definition-TU prototype
+correction, closing the escalation. Grounds, mirroring the standing
+endgame-lock gates:
+- Gate (1) FAIL: the byte-level impossibility is evidenced entirely in GCC
+  register-allocation internals — by the endgame rule's own text, ordinary
+  compiler output, not a hand-coded signature; canonical-asm is unavailable.
+- Gate (2) FAIL: no SOTN-master precedent exists for the correction DIRECTION.
+  memory/reference/sotn-prototype-struct-precedent-2026-08-10.md verified
+  SOTN's norm is KEEPING an annotated wrong prototype when bytes demand it;
+  changing one on RA-impossibility grounds is its inverse. The v2 review
+  additionally collapsed the use-site prong: the `(u8 *)` cast at
+  src/text1b.c:619 survives under BOTH prototypes.
+
+Disposition: the four register pins at src/text1b.c:606-609 STAY on main
+solely to hold the oracle; they are NOT sanctioned as a technique; the function
+is INCOMPLETE-owner-accepted, parked out of the active grind, eligible for
+re-attempt only if the recorded v3 bar is met (independent-body sandbox-0 +
+inspection-surviving use-site fact + genuine annotated SOTN precedent for the
+correction direction). The 2026-08-10 frozen constraints remain in force.
+
+## 2026-08-10 — OWNER RULING (in person) — func_8007C7A0 + twin func_8007C86C: ternary clamp ban LIFTED, single-instance, conditions binding
+
+**Owner-ruling artifact.** The owner (Trenton), in the 2026-08-10 coordinator
+session, reviewed the Judge's ESCALATE packet (2026-08-10 17:31) together with
+the coordinator's independent dossier — including two corrections to the
+packet: the "65 prior functions" figure is unverified (the enumerable
+psxsdk-body-adoption precedent is ~35-40 functions across the `closer: adopt
+PsyQ library sources` commits, 89c0c010..d2e55756), and the asmfix-side 65
+canonical-extraction functions are a DIFFERENT set already ruled infrastructure
+debt (2026-08-06) whose weight this grant does not borrow — and the s1 H2
+finding that SOTN's get_cs is a structurally different library build. Ruling,
+adopting the coordinator's recommendation: **the layer-1 ternary-family ban is
+LIFTED for func_8007C7A0 and its twin func_8007C86C ONLY** — a single-instance
+grant on provenance-plus-measurement grounds, NOT a new sanctioned family.
+
+Basis: (i) the function is a verbatim-linked Sony libgpu object (census
+2026-07-09) and the nested self-read clamp ternary is the published psxsdk
+idiom for this routine; (ii) the exhaustion record is Judge-verified genuine
+(19 spellings each honestly measured; census negative across the SOTN tree and
+1,751 matched gcc-2.7.2 decomp.me scratches; ~118k permuter iterations, zero
+sub-floor finds) — the 0-reaching spelling space is exactly this family;
+(iii) the controlling "reference C is a lead, not the answer — measure it"
+standard (088c26c4) is satisfied here: the idiom uniquely measures 0/51,
+unlike the saEft01Init counterexample (35 vs floor 7).
+
+Conditions BINDING on the merge (failure of any voids the grant):
+1. The provenance comment must be HONEST per H2: the merged text is the psxsdk
+   clamp idiom with THIS build's limits and dispatch — NOT SOTN's get_cs
+   verbatim. "Verbatim Sony reference" phrasing is specifically disallowed.
+2. self_vet.md must be rewritten honestly BEFORE merge: T3 must state plainly
+   that the byte-forcing mechanism is GCC 2.7.2 COND_EXPR expansion spilling to
+   the join temp when the assignment target is read in condition position (s12
+   P2), and that the spelling is retained because it is the published idiom AND
+   uniquely measures 0. The current evasively-reworded vet cannot be the vet of
+   record.
+3. Fresh independent adversarial layer-2 review of each final diff (author's
+   verdict not credited) before `queue done`.
+4. The twin func_8007C86C gets the analogous body measured INDEPENDENTLY
+   (0xE4000000 constant; verify the wide-arm mask/shift against ITS target
+   bytes — symmetry is not assumed; the s1 recon proof of the shared residual
+   family is corroborating, not substituting, evidence).
+5. The join-temp-writeback ban REMAINS IN FORCE for game code and every other
+   function; this entry creates no family and adds nothing to the frozen
+   SOTN-accepted list in .claude/rules/no-new-park-categories.md.
+6. The s9/s10 self-vet rewording misconduct finding (state.json
+   banned_constructs[5]) STANDS regardless of this grant; this ruling does not
+   launder it, and it is to be memorialized in the project's rules.
