@@ -1231,3 +1231,31 @@ ings_nestedif.o, cmp_unmasked.py); tmp/grind/main/s9/ + s10/
 - [s19] Synthesis modality (this session's mandate) was already completed in s10; per the owner's standing modality rule (A) this session may not dispose of the function — the escalation filing is reserved for escalation modality, which the driver has not yet assigned
 
 - [s19] candidate.c unchanged and current, carrying the grant-condition FAKE annotation (cff7f1f5 condition 1); rejected/ bank unchanged
+
+## s20 (2026-08-11, structural — tenth consecutive stale dispatch)
+Standing procedure only (structural axis killed s3; post-s11 frontier unchanged).
+- Candidate reapplied from memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py
+  after the 20th driver revert; sandbox main --disable all = 0 re-proven (21st
+  consecutive, 189/189, 25 rules dropped, 68 cheat-asm insns stripped from OTHER
+  ings.c functions). Artifact: tmp/grind/main/s20/sandbox.json.
+- decisions.md re-checked: the owner GRANT of the chained same-variable accumulation
+  family stands (cff7f1f5 ruling text at decisions.md ~4440-4471, function REOPENED);
+  the /* FAKE */ annotation required by grant condition 1 is present in candidate.c
+  (line ~90) and in the applied src/ings.c body. Grant condition 2 (the family's
+  .claude/rules/ doc via the independent-review path) is an OPERATOR step — grind
+  sessions may not touch .claude/rules/.
+- The residual remains the s3-measured TRUE-byte gap: two reorg-retargeted branch
+  TARGETS at words [165]/[173] (.L8001727C vs .L80017278), masked by the sandbox's
+  branch-target masking; not a C construct (evidence.md s11 packet). Per the frontier,
+  ONLY an escalation-modality dispatch files the OWNER-ESCALATION entry (pre-decided
+  disposition unless the owner elects the class-level maspsx ASPSX-parity fill remedy,
+  12 census candidates). candidate-ready remains unavailable: the digest's binding
+  constraint records the candidate failed full-build SHA1 on main (masked-0 class).
+
+- [s20] 21st consecutive sandbox 0 on the s2 candidate form (189/189, all 25 regfix rules droppable) — artifact tmp/grind/main/s20/sandbox.json
+
+- [s20] Owner GRANT cff7f1f5 (decisions.md ~4440-4471) sanctions the chained same-variable accumulation as a split-init-accumulation family extension; condition 1 (FAKE annotation naming the combine.c:1836 reg_referenced_p mechanism) is satisfied in candidate.c and the applied src body; condition 2 (.claude/rules/ family doc via independent review) is an operator step outside grind-session surfaces
+
+- [s20] candidate-ready remains unavailable despite masked sandbox 0: the digest's binding judge constraint records the candidate failed full-build SHA1 on main; the s3-measured residual is the bne/bnez targets resolving to .L8001727C where target has .L80017278 (words [165]/[173]), masked by the sandbox's branch-target masking
+
+- [s20] Per the post-s11 frontier, disposition of the residual belongs to an escalation-modality dispatch ONLY: file the OWNER-ESCALATION citing evidence.md s11, noting GRANT cff7f1f5 resolved the only construct question, with the pre-decided disposition unless the owner elects the class-level maspsx ASPSX-parity fill remedy (12 census candidates)

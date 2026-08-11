@@ -574,3 +574,9 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - probe: Re-read decisions.md for new owner action (git show cff7f1f5 confirms line 4438 is the SAME grant known since s9, not news); re-ran the standing reproof: apply.py + sandbox main --disable all
 - result: sandbox score 0, 189/189 insns, 25 rules dropped, 68 cheat-asm stripped (other ings.c functions) — 20th consecutive; no new decisions.md entry covers the branch-target residual
 - verdict: CONFIRMED
+
+## [s20] The post-s11 frontier is unchanged: no measurable structural probe remains for main, and the standing procedure (reapply + re-prove sandbox 0 + re-check decisions.md) is the only valid worker-session action
+- mechanism: Structural axis measured dead in s3; the sole open construct question (chained same-variable accumulation) was GRANTED by owner ruling cff7f1f5 (decisions.md ~4440-4471, function REOPENED with 4 binding conditions); the remaining TRUE-byte gap is two reorg-retargeted branch TARGETS at words [165]/[173] (reorg.c thread-skip vs ASPSX fill behavior), which is a pipeline divergence, not a C construct — no C spelling can move it
+- probe: Reapplied memory/grind/main/candidate.c via tmp/grind/main/s14/apply.py (verified the /* FAKE */ annotation opener is intact — an earlier grep rendering suggested corruption; raw byte dump shows correct /*); ran sandbox main --disable all; re-read decisions.md entries at lines ~4440-4492
+- result: sandbox = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from other ings.c functions); grant standing, annotation present, no new owner action since the grant; frontier unchanged
+- verdict: CONFIRMED
