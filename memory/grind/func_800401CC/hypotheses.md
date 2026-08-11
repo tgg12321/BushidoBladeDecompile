@@ -78,3 +78,35 @@
 - probe: OR-operand flips (stmt1, stmt2), single and dual named mask locals init FFFFFF-first, v0-splits early/late; QTYDBG on instrumented cc1 for each
 - result: Assignment never flipped; QTYDBG shows qty_compare_1 priority = floor_log2(refs)*refs*size/length, FF000000 always ~2 luids shorter-lived (FFFFFF li+ori born 4 luids earlier by sched1 chain priority, ANDs re-packed adjacent), so FF000000 always allocated first and takes $6. stmt2 flip also breaks structure (or-dest reg) proving original operand order is ot-first
 - verdict: KILLED
+
+## Session 2 (structural, 2026-08-11) — floor 7 → 0
+
+### CONFIRMED
+- **H3 (from F1-adjacent): removing FF000000 from the local qty pool flips the
+  remaining allocation.** Mechanism: with only ONE mask qty in block 5,
+  qty_compare_1 ordering is moot; the FFFFFF qty takes the first free ascending
+  reg = $6 (target). Probe: any spelling holding 0xFF000000 in a multi-block
+  (global-alloc'd) variable. Result: P2/P3 both show FFFFFF→$6. CONFIRMED.
+- **H4: the FF000000 holder lands $7 iff it has no other hard-reg commitment.**
+  Mechanism: global.c allocno with tail-only range conflicts $2-$6 (local
+  qtys), $7 free; the pre-existing $a3 call-arg copy preference of `v` points
+  at $7 anyway. Probe: v = 0xFF000000 (v widened s32). Result: score 7 → 2,
+  head byte-identical. CONFIRMED — this is the closing lever.
+- **H5: constant-load emission order is source-set-order-biased when the
+  holders are explicit sets.** Probe: lowmask = 0xFFFFFF; set before v's set.
+  Result: 2 → 0. CONFIRMED (measured; sched internals not fully instrumented).
+
+### KILLED
+- **K5: param a2 as mask holder (either mask).** a2's pseudo spans head+tail;
+  global-alloc must give both ranges ONE reg; local-alloc runs first and a
+  local mask qty always takes $6 before a2's preference is considered → a2
+  lands $7 → head parity cluster breaks (4 diffs). P1 score 12, P2 score 7.
+  Generalizes: ANY head-register-committed variable (a1/tbl/u) has the same
+  bind; only a variable whose existing hard-reg home IS $7 escapes — that is
+  exactly `v`.
+
+### FRONTIER
+- (empty — sandbox 0 reached; candidate-ready submitted s2. If the Judge
+  bounces the staged-mask construct, the fallback frontier is s1's F1
+  (honest 4th-ref search) and F3 (directed permuter sweep from the floor-7
+  form), both still unexhausted as pure-C search spaces.)

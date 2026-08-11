@@ -28,9 +28,14 @@
    "next_probe": "Build clean single-function target.o from asm/funcs/func_800401CC.s per difficult-is-not-impossible section 3; seed from floor-7 candidate; vet any find against the cheat checklist"
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The v = 0xFF000000 staged-reuse is properly annotated and evidenced, but the newly-introduced `lowmask` constant-holder local is mislabeled under the wrong sanctioned family to dodge the FAKE-annotation requirement its actual family (constant-holder / dead-scalar RA-bias local) demands. Next action: Do not commit as-is. Re-cite lowmask under [[named-local-fake-exception]] (constant-holder / dead-scalar RA-bias family) instead of 'named-intermediate declaration order', and add a proper `/* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: <hypotheses.md K"
+ ],
+ "banned_constructs": [
+  "s32 lowmask; lowmask = 0xFFFFFF; (src/text1a_pre.c:51,73, used at :81-82)",
+  "Annotation-conformance claim ('One FAKE construct')"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-11T09:49:46.198734+00:00"

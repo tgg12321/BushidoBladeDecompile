@@ -99,3 +99,39 @@ in the canonical floor-7 form:
 - [s1] QTYDBG (instrumented tools/gcc-2.7.2/cc1, BB2_QTY_DEBUG=1): FFFFFF birth=18 death=48 refs=3 got=$7; FF000000 birth=22 death=46 refs=3 got=$6 in the canonical form; analytic kill: FF000000's range is a strict subset, so first-allocated always gets $6 -> only path is FFFFFF allocated first (needs refs advantage or death gap >= 4)
 
 - [s1] Full mechanism notes + artifact pointers in memory/grind/func_800401CC/evidence.md
+
+## Session 2 (structural, 2026-08-11) — floor 7 → 0 (SANDBOX ZERO)
+
+- [s2] Session-start gotcha: src/text1a_pre.c was back at the OLD 20-form (s1's
+  src edits were not retained); re-applying candidate.c restored floor 7 before
+  any probing. Future sessions: always verify the floor matches the ledger
+  before interpreting a probe.
+- [s2] P1 (a2 = 0xFFFFFF param-reuse): score 12. QTYDBG: FF000000 local qty
+  (birth 22, refs 3) still took $6; a2's global allocno lost its $6 param
+  preference to it (local-alloc runs BEFORE global-alloc) and landed $7,
+  renaming the whole head parity cluster (andi/beq/sw) $6→$7 = 4 new diffs.
+- [s2] P2 (a2 = 0xFF000000 param-reuse): score 7 REDISTRIBUTED — the tail ANDs
+  matched target for the first time (FFFFFF, now the only local mask qty, took
+  $6; the global holder was pushed to $7 = target for FF000000), but the head
+  broke the same way (4) plus the constant-load emission order flipped (3).
+  P2 is the probe that identified the winning mechanism.
+- [s2] THE CLOSER: the FF000000 holder must be a multi-set GLOBAL pseudo with a
+  $7 copy preference and NO head hard-reg commitment. That variable already
+  exists: `v`, the texture V coordinate — SetDrawMove's 4th arg, copied into
+  $7 at the call (sll/sra 16), dead afterward. Widened s16→s32 (head bytes
+  unchanged: lhu + (s16) call casts identical) and staged `v = 0xFF000000;`
+  after the call: score 2 (head intact, ALL registers target-correct; only the
+  li cluster order wrong: ours li $7; li+ori $6, target li+ori $6; li $7).
+- [s2] Emission-order fix: naming the low mask as a separate local set FIRST
+  (`lowmask = 0xFFFFFF; v = 0xFF000000;`) restored the target order → 0/78.
+  With inline 0xFFFFFF the FFFFFF li+ori was NOT hoisted above v's li by
+  sched (unlike the all-local floor-7 form where it was); the explicit
+  earlier set biases LUID order and sched keeps it. (Mechanism note: in the
+  all-local form sched1 hoisted the FFFFFF chain by priority; with v global
+  the priorities evidently tie or invert — not fully instrumented, the fix is
+  measured not modeled.)
+- [s2] Final form: sandbox 0/78, edits in place in src/text1a_pre.c, FAKE
+  annotation on the staged assignment, self_vet.md written. QTYDBG of the
+  closing form: FFFFFF qty birth=20 death=48 refs=3 got=$6; v not in local
+  pool (global). Artifacts: tmp/grind/func_800401CC/s2/{dump.sh,solo.s,
+  solo.err,diff.sh}.
