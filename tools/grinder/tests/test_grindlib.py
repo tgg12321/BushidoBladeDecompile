@@ -314,6 +314,31 @@ class TestBannedConstructs(unittest.TestCase):
         st = G.load_state(self.root, "func_X")
         self.assertEqual(st["banned_constructs"], ["dead conditional store"])
 
+    def test_paperwork_prose_ban_is_refused(self):
+        # The func_800401CC deadlock (2026-08-11): a layer-1 evidence[].construct
+        # field carried prose about the vet's PAPERWORK; banking it made every
+        # format-valid vet auto-discard (the mandatory ANNOTATION-CONFORMANCE:
+        # line alone supplied the 2 matching terms). Such entries must be refused.
+        banked = G.add_banned_construct(
+            self.root, "func_X", "Annotation-conformance claim ('One FAKE construct')")
+        self.assertFalse(banked)
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(st.get("banned_constructs") or [], [])
+        # and a genuine construct ban is still accepted
+        self.assertTrue(G.add_banned_construct(self.root, "func_X", "dead conditional store"))
+
+    def test_template_collision_examples(self):
+        # Bans built from checklist-heading vocabulary would trip every vet.
+        for prose in ("sanctioned family claims mismatch",
+                      "GCC-internals justification invoked for the construct",
+                      "T4 permuter provenance concealed"):
+            self.assertFalse(G.add_banned_construct(self.root, "func_X", prose), prose)
+        # Real construct descriptions survive.
+        for real in ("unused local array frame coercion",
+                     "register asm pin on the loop counter",
+                     "volatile cast on game-state global D_80101E70"):
+            self.assertTrue(G.add_banned_construct(self.root, "func_X", real), real)
+
 
 class TestModalityRouting(unittest.TestCase):
     def setUp(self):

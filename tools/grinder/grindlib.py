@@ -123,6 +123,33 @@ def _significant_terms(text):
             if w not in stop]
 
 
+def _ban_trips(ban_text, vet_text):
+    """The tripwire match: enough of the ban's content words appear in the vet."""
+    terms = _significant_terms(ban_text)
+    if len(terms) < 2:
+        return False, []
+    hits = [t for t in terms if t in vet_text]
+    return len(hits) >= max(2, int(len(terms) * 0.5)), hits
+
+
+# Minimal text every FORMAT-VALID self-vet must contain, by _SELF_VET_REQUIRED's
+# own demands plus the checklist's standard heading vocabulary. A ban whose
+# significant terms trip on THIS template would auto-discard every valid vet a
+# session could possibly write — a deadlock, not a tripwire. That happens when
+# a layer-1 reviewer's evidence[].construct field carried prose about the vet's
+# PAPERWORK rather than a C construct (func_800401CC, 2026-08-11: the banked
+# phrase "Annotation-conformance claim ('One FAKE construct')" collided with
+# the mandatory `ANNOTATION-CONFORMANCE:` line and every vet auto-discarded
+# until a Judge removed the entry). add_banned_construct refuses such entries.
+_VET_TEMPLATE_MIN = (
+    "constructs: "
+    "t1 semantic purpose t2 human-programmer t3 gcc-internals justification "
+    "t4 permuter/search provenance t5 family check t6 naming-announces-intent "
+    "sanctioned-family-claims: none "
+    "annotation-conformance: n/a - no fake construct"
+)
+
+
 def check_banned_constructs(root, func):
     """Return (ok, reason). A candidate whose self-vet re-declares a construct
     the Judge already banned for this function is rejected before the Judge sees
@@ -135,11 +162,8 @@ def check_banned_constructs(root, func):
     if not vet:
         return True, ""
     for b in banned:
-        terms = _significant_terms(b)
-        if len(terms) < 2:
-            continue
-        hits = [t for t in terms if t in vet]
-        if len(hits) >= max(2, int(len(terms) * 0.5)):
+        tripped, hits = _ban_trips(b, vet)
+        if tripped:
             return False, (f"self-vet re-declares a BANNED construct for {func}: {b!r} "
                            f"(matched on {', '.join(hits[:5])}). A banned construct "
                            "respelled is the same construct — change the attack, not the "
@@ -148,11 +172,22 @@ def check_banned_constructs(root, func):
 
 
 def add_banned_construct(root, func, text):
+    """Bank a Judge/layer-1 banned construct. Returns True if banked.
+
+    REFUSES (returns False) an entry that would trip on the minimal valid-vet
+    template: such an entry describes vet paperwork or review process, not a C
+    construct, and banking it deadlocks the function (every format-valid vet
+    auto-discards). The reviewer's finding still lives in judge_constraints —
+    only the mechanical tripwire is refused."""
+    tripped, hits = _ban_trips(text, _VET_TEMPLATE_MIN)
+    if tripped:
+        return False
     st = load_state(root, func)
     st.setdefault("banned_constructs", [])
     if text and text not in st["banned_constructs"]:
         st["banned_constructs"].append(text)
     save_state(root, func, st)
+    return True
 
 
 def set_pending_fixup(root, func, kind, detail):
@@ -677,7 +712,10 @@ def build_brief(root, func, modality, outcome_path):
     rejected = sorted(os.listdir(os.path.join(d, "rejected"))) if os.path.isdir(
         os.path.join(d, "rejected")) else []
     floors = "\n".join(f"  s{e['session']:>2} [{e['modality']}] floor={e['floor']}  {e['headline']}"
-                       for e in st["floor_history"][-15:]) or "  (none yet)"
+                       for e in st["floor_history"][-8:]) or "  (none yet)"
+    if len(st["floor_history"]) > 8:
+        floors = (f"  (earlier sessions s1..s{st['floor_history'][-8]['session'] - 1} "
+                  "are in the ledger files below)\n") + floors
     frontier = "\n".join(f"  - {f['hypothesis']}\n    mechanism: {f['mechanism']}\n"
                          f"    next probe: {f['next_probe']}"
                          for f in st["frontier"]) or "  (empty — build one)"
@@ -724,7 +762,7 @@ Live frontier:
 Judge constraints (BINDING — forms/techniques already ruled out):
 {constraints}
 
-Rejected forms bank (do NOT re-propose): {', '.join(rejected) or '(empty)'}
+Rejected forms bank (do NOT re-propose; full list in memory/grind/{func}/rejected/): {(f"{len(rejected)} total, newest: " + ', '.join(rejected[-12:])) if len(rejected) > 12 else (', '.join(rejected) or '(empty)')}
 
 READ before working: memory/grind/{func}/evidence.md, memory/grind/{func}/hypotheses.md,
 memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting point).
@@ -827,7 +865,9 @@ if __name__ == "__main__":
             print(why)
             sys.exit(1)
     elif cmd == "ban":
-        add_banned_construct(sys.argv[2], sys.argv[3], sys.argv[4])
+        if not add_banned_construct(sys.argv[2], sys.argv[3], sys.argv[4]):
+            print("ban REFUSED (template collision — reviewer prose, not a C "
+                  "construct; finding stays in judge_constraints only)")
     elif cmd == "advance-modality":
         print(advance_modality(sys.argv[2], sys.argv[3]))
     elif cmd == "fixup":
