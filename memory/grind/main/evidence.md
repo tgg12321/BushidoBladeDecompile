@@ -309,3 +309,66 @@ DBRDBG fill/redundancy trace); psxtest.sh + ings_psx.s / main_psx.s
 - [s2] closing the last 2 bytes requires one of: the two label regfix rules (cheat debt), a maspsx/pipeline mechanism change (owner surface, whole-file blast radius), or an SN-parity reorg patch (forbidden, no-compiler-divergence) - none is a worker C edit
 
 - [s2] src/ings.c currently carries the full candidate (4 edits + FAKE annotation), matching memory/grind/main/candidate.c
+
+## Session 4 (structural, 2026-08-11 — dispatched as "session 3" by the digest;
+the ledger already carried s3, so this session is numbered 4)
+
+### Session-start invariant (third occurrence of the regression)
+- src/ings.c was AGAIN reverted to pre-grind (1-arg call sites, inline
+  threshold expression, no FAKE annotation) — third driver revert (after s1
+  and before s3). Reapplied all four candidate.c edits via targeted Edits;
+  sandbox main --disable all = **0** (189/189, 25 rules dropped, 68 cheat-asm
+  insns stripped from OTHER ings.c functions) re-measured THIS session.
+  The invariant "verify src against candidate.c at session start" remains
+  load-bearing; candidate.c stays authoritative.
+
+### CONFIRMED — the ASPSX-retarget signature is a CORPUS-WIDE CLASS
+Probe prescribed by the s3 frontier: scan all asm/funcs/*.s for the
+signature (two labels 4 bytes apart, both branch-targeted, >=1 branch with a
+nop delay slot on the EARLIER label + >=1 filled-delay branch on the LATER
+one). Scanner: tmp/grind/main/s3/scan_retarget.py; raw hits:
+tmp/grind/main/s3/retarget_hits.txt.
+- **138 signature sites across 96 distinct functions** (main included:
+  .L80017278/.L8001727C, 2 nop-delay + 4 filled — the known case).
+- **84 of the 96 functions carry ZERO regfix rules** (already matched). This
+  is important nuance: the target-byte geometry alone does NOT force our
+  cc1 to diverge — reorg's redundancy thread-skip only fires when
+  redundant_insn's precondition holds (the delayed insn is redundant along
+  the unfilled branch's backward thread with no intervening CODE_LABEL/CALL).
+  In the 84 matched functions that precondition evidently fails, so our
+  reorg leaves the unfilled branches on the early label and matches.
+- **12 hit functions still carry regfix rules**: CD_datasync(15),
+  CD_ready(42), CD_sync(5), func_80022F34(11), func_80023648(30),
+  func_800238C4(47), func_800335D8(41), func_80038170(1), func_8007352C(11),
+  func_8007526C(14), func_8007DC9C(4), main(25). Whether each residual is
+  THIS mechanism needs per-function bytework, but these are the class
+  candidates. (xref script: tmp/grind/main/s3/xref_regfix.sh; rule-kind
+  summary: tmp/grind/main/s3/rule_kinds.sh.)
+- **Second confirmed exemplar of the regfix SHAPE**: func_8007352C carries
+  `insert_label ".LCF352C_t:" @ 105` + `subst "beq $2,$0,.L\d+" ->
+  ".LCF352C_t"` (regfix.txt:2899-2900) — the same synthetic-label +
+  branch-retarget device main uses (regfix.txt:1559 injects ".Linner:" via
+  the @27 subst; :1569-1572 retarget four branches to it). The device
+  exists precisely because cc1's emitted label set lacks a label at the
+  byte position the target branch needs — the exact deficit the s3
+  mechanism (reorg redundancy thread-skip deleting/merging the pre-insn
+  label) produces.
+- Packet value: main's three-way mechanism proof (evidence.md s3:
+  reorg.c read + DBRDBG trace + cc1psx counter-exhibit) plus this census
+  gives the owner a CLASS-level disposition question (12 candidate
+  functions, 2 confirmed shape-exemplars), not a one-off. Any pipeline-level
+  remedy (e.g. a maspsx ASPSX-parity fill mode, owner-surface only) would
+  be evaluated against all 12, not just main.
+
+- [s4] src regression recurred (3rd time); candidate reapplied, sandbox 0 re-measured this session
+- [s4] ASPSX-retarget signature census: 138 sites / 96 functions; 84 matched with zero rules (precondition-gated, geometry alone is not divergence); 12 rule-carrying candidates incl. main; func_8007352C is a second confirmed synthetic-label+retarget regfix exemplar (regfix.txt:2899-2900 vs main's 1559+1569-1572)
+
+- [s3] sandbox main --disable all = 0 (189/189 insns, 25 rules dropped, 68 cheat-asm insns stripped from OTHER ings.c functions) measured THIS session with the full candidate (4 edits + owner-granted FAKE-annotated chained accumulation, grant cff7f1f5) in place in src/ings.c
+
+- [s3] the digest's judge constraints are BOTH stale: the family freeze was resolved by the in-person owner GRANT (docs/grind/decisions.md 2026-08-11 'chained same-variable accumulation GRANTED', commit cff7f1f5), and the 'reg-alloc gap' byte-fail classification was disproven by ledger s3 (zero register diffs; the residual is 2 branch TARGETS, a masked class, caused by reorg's redundancy thread-skip - do not grind RA levers)
+
+- [s3] ASPSX-retarget census (s4): 138 sites / 96 functions corpus-wide; 84 matched with zero rules proves the geometry is precondition-gated, not auto-divergent; 12 rule-carrying candidates named in the ledger; func_8007352C is a mechanism-shape twin of main's label rules
+
+- [s3] main's remaining 2 bytes stay closable only by owner-surface means (label regfix rules = cheat debt, maspsx ASPSX-parity fill = owner sign-off, reorg patch = forbidden); per ledger s3 this is a disposition question - the driver should route to escalation modality; this session's census upgrades that packet from one-off to class-level
+
+- [s3] src regression is now a 3x-recurring hazard; the session-start invariant (verify src/ings.c against candidate.c, reapply, re-measure) is banked in the ledger frontier

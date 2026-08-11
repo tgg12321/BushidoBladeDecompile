@@ -168,8 +168,42 @@ pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - result: every escape is byte-visible (intervening label/call/a1-write, li not first, delay content) or a forbidden family (forced-label &&/dead-goto label-pad); two-C-label source killed by cc1psx exhibit + back-edge liveness forcing a callee-saved reg and extra move; the transform is forced whenever the other 187 bytes are correct
 - verdict: KILLED
 
+## [s4] the ASPSX-retarget signature is a class shared by other queue functions (s3 frontier probe 1)
+- mechanism: same reorg.c fill_slots_from_thread redundancy thread-skip vs ASPSX fill-iff-retarget gap; in target bytes the geometry reads as two labels 4 bytes apart with nop-delay branches on the earlier and filled-delay branches on the later
+- probe: corpus scanner tmp/grind/main/s3/scan_retarget.py over all 1437 asm/funcs/*.s + regfix cross-reference (xref_regfix.sh, rule_kinds.sh)
+- result: 138 sites / 96 functions have the geometry; 84 of 96 are matched with ZERO rules (the redundancy-skip precondition is what gates divergence, not the geometry); 12 still carry rules (CD_datasync, CD_ready, CD_sync, func_80022F34, func_80023648, func_800238C4, func_800335D8, func_80038170, func_8007352C, func_8007526C, func_8007DC9C, main); func_8007352C carries the SAME synthetic-label+branch-retarget regfix device as main (insert_label .LCF352C_t @105 + beq retarget, regfix.txt:2899-2900)
+- verdict: CONFIRMED (it is a class; owner disposition packet should cover the 12 candidates, with per-function mechanism confirmation still owed for the 11 others)
+
+## Live frontier (post-s4)
+1. Unchanged from post-s3: main's last 2 bytes are not C-reachable under the
+   frozen pipeline; the disposition is an owner/driver question. The class
+   census (s4) strengthens the packet: cite evidence.md s3 (three-way
+   mechanism proof) + s4 (138-site/96-function census, 12 rule-carrying
+   candidates, func_8007352C as second shape exemplar).
+2. Next probe if another worker session fires before escalation modality:
+   confirm the mechanism on ONE other rule-carrying candidate (best:
+   func_8007352C — smallest overlap of other rule kinds around its
+   insert_label; or func_8007DC9C at only 4 rules) by the s3 method
+   (bytesig diff + DBRDBG trace). Each confirmed sibling upgrades the
+   packet from "main + shape-match" to "N-function mechanism-proven class".
+3. Session-start invariant STILL required: src/ings.c reverted for the 3rd
+   time before this session; always reapply from candidate.c and re-measure
+   sandbox 0 before any other work.
+
 ## [s2] the candidate C is the original source shape; the 2-byte residue is pipeline-behavioral (ASPSX fill-iff-retarget vs cc1-dbr redundancy skip)
 - mechanism: original pipeline = cc1psx (no dbr pass, plain reorder asm, one loop label) + ASPSX assembly-time delay filling that retargets ONLY branches it fills, leaving the two unfilled branches on the original label
 - probe: tools/cc1psx_wrapper.sh on the identical preprocessed candidate (tmp/grind/main/s2/ings.i -> main_psx.s)
 - result: cc1psx emits ONE label $L102 BEFORE li a1,0x1008 with ALL seven loop branches targeting it and zero delay-slot processing — ASPSX's documented fill behavior on that input produces exactly the target's mixed .L78/.L7C pattern
 - verdict: CONFIRMED
+
+## [s3] The ASPSX-retarget signature (two labels 4 bytes apart at a loop head, unfilled branches on the earlier label, filled branches on the later) is a class shared by other corpus functions, not a main-only quirk
+- mechanism: reorg.c fill_slots_from_thread redundancy thread-skip (redundant_insn finds the delayed insn along the unfilled branch's backward thread and retargets it) vs ASPSX's fill-iff-retarget behavior; the geometry appears in target bytes wherever ASPSX left unfilled branches on the original label
+- probe: corpus scanner tmp/grind/main/s3/scan_retarget.py over all asm/funcs/*.s + regfix cross-reference (xref_regfix.sh, rule_kinds.sh)
+- result: 138 signature sites across 96 distinct functions; 84/96 are matched with ZERO regfix rules (geometry alone does not force divergence - the redundant_insn precondition gates it); 12 functions still carry rules: CD_datasync(15), CD_ready(42), CD_sync(5), func_80022F34(11), func_80023648(30), func_800238C4(47), func_800335D8(41), func_80038170(1), func_8007352C(11), func_8007526C(14), func_8007DC9C(4), main(25); func_8007352C carries the identical synthetic-label+branch-retarget regfix device (insert_label .LCF352C_t @105 + beq retarget, regfix.txt:2899-2900) that main uses (.Linner injection regfix.txt:1559 + retargets 1569-1572)
+- verdict: CONFIRMED
+
+## [s3] src/ings.c still carries the candidate form at session start (digest floor trustworthy)
+- mechanism: driver end-of-session handling discards uncommitted src edits
+- probe: grep for the candidate signatures (3-arg call, chained lim, FAKE annotation) before any measurement
+- result: reverted AGAIN (3rd occurrence): 1-arg call sites, inline threshold, no annotation; reapplied all 4 edits from candidate.c and re-measured sandbox --disable all = 0 (189/189, 25 rules dropped) this session
+- verdict: KILLED

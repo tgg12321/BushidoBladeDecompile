@@ -1,7 +1,7 @@
 {
  "func": "main",
  "file": "ings",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "byte-fail root cause reclassified and closed as a mechanism: NOT reg-alloc \u2014 2 branch TARGETS at the loop head (masked class); our reorg's redundant_insn thread-skip retargets the two unfilled loop br"
+  },
+  {
+   "session": 3,
+   "floor": 0,
+   "modality": "structural",
+   "headline": "sandbox 0 re-proven after 3rd src revert; ASPSX-retarget census: 138 sites/96 funcs, 12 rule-carrying class candidates, func_8007352C confirmed as second synthetic-label+retarget regfix exemplar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "the ASPSX-retarget signature (unfilled branches kept on a pre-insn label our reorg deletes) is a CLASS shared by other queue functions",
-   "mechanism": "same reorg.c redundancy thread-skip vs ASPSX fill-iff-retarget gap",
-   "next_probe": "scan other functions' regfix label rules for two-labels-4-bytes-apart loop heads with mixed branch targets; each hit strengthens an owner-level disposition packet for the class"
+   "hypothesis": "main's disposition is an owner/pipeline question (escalation modality), and the packet is now class-level",
+   "mechanism": "all C-side escapes measured dead (s3, 7 hatches, three-way proof: reorg.c read + DBRDBG trace + cc1psx counter-exhibit); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope; s4 census gives 12 candidate class members",
+   "next_probe": "escalation-modality session files the OWNER-ESCALATION citing evidence.md s3+s4, dbr_trace.txt, main_psx.s, and the census artifacts; no further spelling or RA grinding on main"
   },
   {
-   "hypothesis": "the function's disposition is now an owner/pipeline question, not a spelling search",
-   "mechanism": "all C-side escapes measured/proven dead (evidence.md s3, 7 hatches); remaining surfaces (label regfix rules, maspsx global behavior, reorg parity patch) are outside worker scope",
-   "next_probe": "driver should route to escalation modality per its ladder; the packet should cite evidence.md s3, dbr_trace.txt, and main_psx.s as the three-way mechanism proof; do NOT re-grind loop-tail spellings or RA levers"
+   "hypothesis": "func_8007352C (or func_8007DC9C) diverges by the SAME reorg redundancy thread-skip mechanism",
+   "mechanism": "same signature geometry + synthetic-label/retarget regfix device; per-function confirmation needs the s3 method (exact-byte diff + DBRDBG trace on its loop head)",
+   "next_probe": "if a worker session fires on main before escalation modality, spend it confirming one sibling instead of re-grinding main - each confirmed sibling upgrades the owner packet to an N-function mechanism-proven class"
   },
   {
-   "hypothesis": "src state keeps regressing to pre-grind between sessions",
-   "mechanism": "driver discards uncommitted src edits (observed after s1 and again before s3)",
-   "next_probe": "session-start invariant: verify src/ings.c against candidate.c (poll loop chain + 3-arg/2-arg signatures + named tbl[idx] load) before trusting any digest floor"
+   "hypothesis": "src/ings.c reverts to pre-grind between sessions (recurring driver behavior)",
+   "mechanism": "driver discards uncommitted src edits at session end; only the ledger persists",
+   "next_probe": "every session: grep src/ings.c for the candidate signatures (3-arg func_80016A8C call, chained lim, FAKE annotation) and reapply from memory/grind/main/candidate.c before trusting any floor number"
   }
  ],
  "judge_constraints": [
