@@ -456,3 +456,241 @@ form is preserved beside it as `candidate_policy_clean_17.c`.
 - [s3] [s3] OPEN POLICY QUESTION recorded and NOT self-answered: the 16-point form contains `p = (void (**)(void))D_800A2668; if (p != 0) { ... p = &D_8008D070; ... }`. 'Variable reuse for codegen control' is on the frozen SOTN-sanctioned list (.claude/rules/no-new-park-categories.md, SOTN-accepted techniques) and the guard test is a real, semantically required test the target performs; against that, holding an s32 flag in a function-pointer-pointer has no observable effect (T1), no human would write the cast (T2), and the mechanism is stated purely in terms of global.c's allocno tie-break (T3). No /* FAKE */ annotation, no lever-exhaustion citation, not submitted.
 
 - [s3] [s3] Tree state: src/ings2.c is reverted to HEAD (every sweep restores it in a finally: block), so build/src/ings2.o remains a valid target reference. The 16-scoring form is banked in memory/grind/motion_Close/candidate.c with a loud not-policy-vetted header; the best policy-clean form (17) is preserved beside it as memory/grind/motion_Close/candidate_policy_clean_17.c so a session can fall back if the ruling goes against the reuse.
+
+## Session 4 (permuter, 2026-08-11)
+
+### THE HEADLINE: floor 16 is now reachable in the POLICY-CLEAN family
+Session 3 reached 16 only through a construct it could not classify (the
+D_800A2668 guard value carried in `p` via a function-pointer-pointer cast, to
+manufacture an exact allocno priority TIE that declaration order then broke).
+Session 4 reaches the same 16 with a strict priority WIN and no type punning:
+
+    /* FAKE: loop-note reference weighting seats p in $s0 ... */
+    do { p = &D_8008D070; } while (0);
+
+**Mechanism, measured with the instrumented cc1 (BB2_ALLOC_DEBUG=1).** flow.c
+weights REG_N_REFS by loop depth; the NOTE_INSN_LOOP_BEG/END pair the wrap
+emits makes its body depth 1, so the `p` reference inside it counts twice.
+`p`'s live_length does not change (the wrapped statement is where `p` was
+already born), so global.c's `floor_log2(n_refs)*n_refs/live_length` moves
+`p` from 7/7 = 20000 to 8/7 = 34285, overtaking count's unchanged 8/8 = 30000.
+The role split becomes a plain priority win — no tie, no declaration-order
+dependence (the form scores 16 with either declaration order: sweep5 d0/d2).
+
+This is exactly frontier F4's probe 2 ("any form where p reaches parity
+WITHOUT holding the guard leaves the guard load in a caller-saved temp"), and
+it is CONFIRMED: the guard load stays in `$v0`, the prologue is not made worse
+to pay for the flip, and the loop body carries the target's registers exactly.
+
+### Provenance: this is a genuine permuter find, re-measured
+`tools/permuter_campaign.py` campaign on the policy-clean 17-point chassis
+(`tmp/grind/motion_Close/s4/wsA`, base score 468) returned `output-463-1`:
+`do { count = ...; p = ...; } while (0);` around the two initialisers. The
+permuter's weighted score is not the engine distance, so every proposal was
+re-measured with `sandbox motion_Close --disable all`: that form scores **16**
+(sweep4.log, `a1_dw0_inits`). The follow-up sweep minimised it to a
+single-statement wrap around `p = &D_8008D070;` alone — same score, smallest
+device (sweep5.log, `d4_dw0_p_only`), which is what `candidate.c` now holds.
+
+### The workspace had to be hand-built (reusable recipe)
+`asm/funcs/motion_Close.s` does not exist (the function is C-routed), so the
+usual `import.py` / `mar_perm_workspace.sh` path cannot produce a `target.o`.
+`tmp/grind/motion_Close/s4/target.s` is a hand transcription of
+`objdump -dr build/src/ings2.o` over the motion_Close region, and
+`setup.sh` VERIFIES it byte-for-byte (32 normalized lines incl. relocations)
+against that region before building the workspace. `compile.sh` is the honest
+pipeline (cc1 `-mel` + prologue_fix + maspsx + multu_pad, no regfix/asmfix),
+i.e. the same cheat-invisible view the sandbox scores. A minimal 5-declaration
+TU reproduces the full-file codegen exactly (25 insns, same sequence), so the
+permuter did not have to chew on all 814 lines of ings2.c.
+
+### Three campaigns, and what each one bought
+- **wsA** (policy-clean 17 chassis, base 468, ~11k iterations): the a1 find
+  above (463) plus one sub-base junk find (453) that deletes
+  `count = (s32)&D_00000000;` entirely and reads `count` uninitialised —
+  banked as `rejected/permuter-uninit-count-semantic-break.c`.
+- **wsB** (session-3 role-flipped 16 chassis, base **835**, ~4k iterations,
+  61 outputs): its best find, 468, is the *clean* chassis' base score — the
+  mutations that improve the tie-pun form are the ones that DELETE the pun
+  (the best output keeps only an rvalue cast inside the comparison). The
+  role-flip basin drains back into the clean family; it is not a separate
+  basin worth re-seeding. NB the permuter's weighted metric ranks the two
+  chassis in the OPPOSITE order to the engine (835 vs 468 for sandbox 16 vs
+  17), because reorderings cost 60 and ins/del cost 100 — do not use permuter
+  score as a proxy for engine distance on this function.
+- **wsC** (the new clean do-while(0) 16 chassis, base 463): launched and ran,
+  produced no output before the WSL drvfs mount failed (below).
+
+### The 16-point residual, re-attributed
+    frame size + save/restore offsets + save order   ~8   dead by H1
+    guard temp $v0 vs $t0 (the load AND the jalr reg)  2   OPEN, never probed
+    beqz delay slot (target nop vs our sw s0,16)       2   hand-asm signal S-b
+    materialisation order (count-pair before p-pair)   2   the F4 bind
+    inner-guard / positional remainder                 2
+
+The `$v0`-vs-`$t0` bucket is now the largest never-probed item: local-alloc
+picks the caller-saved temp for both the guard load and the jalr target, and
+no session has yet read the `.lreg` dump for it.
+
+### The bind survives the change of mechanism
+Assigning `p` before `count` still inverts everything: p's live_length grows
+7 -> 8 (34285 -> 30000) and count's shrinks 8 -> 7 (30000 -> 38571), count
+retakes `$s0`, score 20. Measured in both declaration orders (sweep5
+`d1_dw0_pfirst`, `d3_dw0_pdecl_pfirst`); banked as
+`rejected/dw0-pfirst-order-inverts-priority.c`. Nesting the wrap (`d5`) lifts
+BOTH allocnos (p 9/7 = 38571, count 10/8 = 37500) and leaves the score at 16,
+so nesting buys nothing here and prerequisite 3 of the do-while(0) rule never
+needs to be invoked.
+
+### Other measured forms this session (all 16 or worse)
+Score 16: `d0` (wrap both inits), `d2` (wrap both inits, p declared first),
+`d4` (wrap p's init only — the candidate), `d5` (nested wrap), `d9` (f hoisted
+out of the loop), `d10` (plain `while` loop), `d11` (`(*p++)()`),
+`b3` (role-flip chassis + trailing empty wrap), `c2` (guard read through a
+`p`-typed pointer to D_800A2668 — still a type pun, no better than `d4`).
+Score 17: `a2` (wrap count's init only), `a3`/`d7` (wrap the whole guard body —
+lifts both allocnos equally), `a4` (trailing empty wrap), `b1` (wrap the inits
+in the role-flip chassis — the wrap and the pun fight each other),
+`d6` (wrap + `break` on the inner guard). Score 19: `d8` (guard duplicated so
+the inits sit in their own wrap — 27 insns). Score 20: `d1`, `d3` (p first),
+`c1` (both inits hoisted above the D_800A2668 guard).
+
+### POLICY: the session-3 open question is now MOOT for reaching 16
+`.claude/rules/do-while-zero-exception.md:23-24` (owner ruling 2026-07-06,
+verbatim): "**`do { <any body> } while (0);` — including empty bodies — is a
+sanctioned pure-C match device for ANY codegen effect, including register
+allocation.**" Prerequisite 1 (inline FAKE annotation naming the observed
+effect) is satisfied in `candidate.c`; prerequisite 2 explicitly does not gate
+single-level wraps; prerequisite 3 (nesting justification) does not apply.
+Precedent: the same file's confirmed marionation_Exec application
+(`.claude/rules/do-while-zero-exception.md:99`). So no future session needs an
+owner ruling on the s3 type-pun in order to work the 16-point family — the s3
+form is retained only as `candidate_s3_tiepun_16.c`, as evidence about the
+tie-break mechanism, and should not be built on.
+
+### H1 is untouched and still caps the function
+No form in any of these families can reach distance 0: REG_PARM_STACK_SPACE=16
+forces frame >= 32 for any pure-C body containing a call, against the target's
+16-byte frame with a zero outgoing-arg area. Nothing this session changes that,
+and no `candidate-ready` was claimed.
+
+### Session-4 artifacts
+- `tmp/grind/motion_Close/s4/target.s` + `setup.sh` — the hand-built,
+  byte-verified permuter target and workspace builder (reusable for any
+  C-routed function with no `asm/funcs/*.s`).
+- `tmp/grind/motion_Close/s4/wsA|wsB|wsC/` — the three campaign workspaces
+  (base.c, compile.sh, target.o, campaign.log, output-*).
+- `tmp/grind/motion_Close/s4/sweep4.py` + `sweep4.log` — sandbox + allocno
+  re-measurement of the permuter proposals (found the clean 16).
+- `tmp/grind/motion_Close/s4/sweep5.py` + `sweep5.log` — 12-form follow-up
+  sweep that minimised the device and re-killed the p-first order.
+
+### Tree state at end of session 4
+`src/ings2.c` is reverted to HEAD (both sweeps restore it in a `finally:`
+block; `git status` shows only `metrics/events.jsonl`), so
+`build/src/ings2.o` remains a valid target reference.
+
+### INFRASTRUCTURE INCIDENT (not a finding, but the next session should know)
+Late in the session the WSL `drvfs` mount of `/mnt/c` began returning
+`OSError: [Errno 5] Input/output error` under the load of three concurrent
+6/5/5-job campaigns, which killed all three permuter processes and then took
+the whole WSL service down (`wsl --shutdown` hung; subsequent `wsl`
+invocations return `Wsl/Service/E_UNEXPECTED`). No campaign outlived the
+session — they were killed by the failure, not left simmering. **Correction to the first
+draft of this note:** the `harvest --stop` telemetry WAS written after all —
+`tools/permuter_campaign.py` runs fine under Windows Python (it only needs the
+workspace directories), so all three campaigns were harvested from there and
+then cleared with `deactivate-all`. That harvest is what surfaced the 383 find
+recorded below, so it was worth doing rather than skipping. Two Windows-side
+caveats for the next session: `harvest --stop` reports `stopped: false /
+procs_killed: 0` because it cannot signal a Linux pid (the processes were
+already dead — `pid_alive_at_harvest: false`), which leaves the registry entry
+`active`, so follow it with `deactivate-all`; and `status` crashes outright on
+Windows (`os.kill(pid, 0)` on a Linux pid raises `WinError 5`). Practical
+lesson on the mount: do not run three campaigns at 5-6 jobs each against
+`/mnt/c` simultaneously on this machine.
+
+- [s4] New POLICY-CLEAN floor-16 form: a single-level `do { p = &D_8008D070; } while (0);` wrap (FAKE-annotated) reaches the target's $s0=p / $s1=count role split by a STRICT allocno priority win — p 8 refs / live_length 7 = 34285 vs count 8/8 = 30000 — instead of session 3's manufactured tie. flow.c's loop-depth weighting of REG_N_REFS counts the wrapped reference twice without lengthening p's live range. Measured with sandbox (16) and the instrumented cc1 (BB2_ALLOC_DEBUG=1); scores 16 in BOTH declaration orders, so unlike the s3 form it does not depend on the allocno tie-break.
+
+- [s4] Frontier F4 probe 2 is CONFIRMED: reaching p's priority without making p hold the guard leaves the guard load in a caller-saved temp ($v0), so the prologue is not degraded to pay for the role flip (session 3's form dragged the guard load into callee-saved $s0 and paid `sw s0` + `sw s1` in the beqz delay slot). Same score, strictly better structure and no unclassified construct.
+
+- [s4] The session-3 OPEN POLICY QUESTION (is `p = (void (**)(void))D_800A2668;` variable-reuse or coercion?) is MOOT for reaching floor 16: the do-while(0) route gets there with a construct whose sanction is explicit — `.claude/rules/do-while-zero-exception.md:23-24` sanctions `do { <any body> } while (0);` for ANY codegen effect including register allocation, single-level wraps are not exhaustion-gated, and the inline FAKE annotation is present. No ruling needs to be sought before working this family.
+
+- [s4] Permuter provenance: the lever came from campaign wsA (policy-clean 17 chassis, base score 468, ~11k iterations) as output-463-1 (`do { count = ...; p = ...; } while (0);`), then was minimised by sweep5 to the single-statement wrap. The campaign's only other sub-base find (453) deletes count's initialiser and reads count uninitialised — semantically broken, banked as rejected/permuter-uninit-count-semantic-break.c. Permuter finds on this function are PROPOSALS; its weighted score even ranks the two chassis opposite to the engine (835 vs 468 for sandbox 16 vs 17).
+
+- [s4] Campaign wsB (seeded from the s3 role-flipped tie-pun form, base 835, ~4k iterations, 61 outputs) converged back to the clean family: its best output (468) is the clean chassis' BASE score and its mutations delete the pun. The tie-pun form is not a distinct basin worth re-seeding.
+
+- [s4] The order/roles bind survives the change of mechanism: with the do-while(0) win in place, assigning p before count still grows p's live_length 7->8 (34285->30000) and shrinks count's 8->7 (30000->38571), count retakes $s0 and the score returns to 20 — measured in both declaration orders (sweep5 d1/d3). Closing the 2-point materialisation-order bucket needs p at ~11 weighted refs against count's 38571, or F4b's lengthen-count-without-referencing-count.
+
+- [s4] Nesting the wrap is inert here: `do { do { ... } while (0); } while (0);` lifts BOTH allocnos (p 9/7 = 38571, count 10/8 = 37500) and leaves the score at 16, so the do-while(0) rule's prerequisite-3 (nested-wrap justification) never needs to be invoked on this function.
+
+- [s4] 23 further forms measured this session (sweep4 11, sweep5 12), disjoint from the 45 banked in s1-s3. Nothing beat 16. The residual re-attributes as: frame/save-restore ~8 (dead by H1), guard temp $v0-vs-$t0 2 (OPEN — the largest never-probed bucket; no session has read the .lreg local-alloc dump for it), beqz delay slot 2 (hand-asm signal S-b), materialisation order 2 (the F4 bind), positional remainder 2.
+
+- [s4] A permuter workspace CAN be built for a C-routed function with no asm/funcs/*.s: transcribe the target region from `objdump -dr build/src/<file>.o`, assemble it, and verify the normalized disassembly (including relocation lines) against that region before use. tmp/grind/motion_Close/s4/{target.s,setup.sh} do exactly this and are reusable. A minimal 5-declaration TU reproduced ings2.c's full-file codegen for this function exactly, so the permuter did not have to process the whole 814-line file.
+
+- [s4] INFRASTRUCTURE: three concurrent campaigns (6+5+5 jobs) against /mnt/c broke the WSL drvfs mount (Errno 5) and then the WSL service itself (Wsl/Service/E_UNEXPECTED). All three campaigns died with it — none outlived the session — but harvest --stop telemetry could not be written, so tmp/permuter_campaigns.json holds three unharvested launches for an operator to clear.
+
+### LATE FIND, UNMEASURED — the end-of-session harvest surfaced a 383
+The `harvest --stop` telemetry (run from Windows Python after WSL died) shows
+campaign wsA also produced **`output-383-1` at 754 s** — permuter weighted
+score 383 against that workspace's base of 468, a much larger drop than the
+463 find that produced this session's candidate. It appeared after the last
+directory listing of the session and could NOT be re-measured with the engine
+sandbox, because by then the WSL drvfs mount and then the WSL service itself
+had failed (see the infrastructure note above). It is banked verbatim as
+`memory/grind/motion_Close/unmeasured_lead_s4_383.c` and is the FIRST thing
+session 5 should measure.
+
+Its two constructs, and why they must be measured separately:
+1. `count = D_800A2668 != 0;` — the guard staged into `count`, which is then
+   overwritten with the table length inside the branch. Same idea as session
+   3's guard carry but through the s32 local rather than a type-punned
+   function-pointer-pointer, so it carries no cast and sits inside the frozen
+   "variable reuse for codegen control" family. It also composes with this
+   session's do-while(0) wrap, which neither the permuter nor this session
+   tried in combination.
+2. `D_800A2668++; D_800A2668--;` — a redundant RMW pair on the guard global.
+   This is a FIRST REACH of a family nothing in the frozen list covers. If GCC
+   folds the pair (likely — two adjacent RMWs on the same non-volatile location
+   with nothing between them), it emits no bytes and its only function is to
+   move GCC's analysis: checklist T1 and T2 both fail and it is a coercion by
+   any spelling. If it does NOT fold, it stores to a global the target never
+   stores to, i.e. a behavioural difference rather than a match. Either way it
+   is not submittable as-is; if it proves load-bearing the correct outcome is
+   `ruling-request`, never self-approval.
+
+Also from the final harvest: wsA ran 754+ s and produced 3 novel finds
+(468/453/383); wsB ran ~320 s to 3 novel finds, all in the 807-833 band, i.e.
+still far above the clean chassis' 468 base — reinforcing that the s3 tie-pun
+basin is the wrong place to search; wsC ran 892 s / 1043 iterations from base
+463 with **zero** finds, which is the clean do-while(0) chassis' own basin
+reporting empty (a valid negative: the immediate neighbourhood of the floor-16
+candidate holds nothing better under random mutation).
+
+- [s4] LATE UNMEASURED LEAD: campaign wsA's best find is output-383-1 (permuter 383 vs base 468, at 754 s), surfaced only by the end-of-session harvest telemetry and never re-measured with the sandbox because WSL had died. Banked as memory/grind/motion_Close/unmeasured_lead_s4_383.c. It combines (a) `count = D_800A2668 != 0;` guard staging through the s32 local — a cast-free relative of session 3's guard carry, inside the sanctioned variable-reuse family, and untried in combination with the do-while(0) wrap — and (b) `D_800A2668++; D_800A2668--;`, a redundant RMW pair on the guard global that is a first reach of an uncovered family and fails T1/T2 if it folds (and diverges behaviourally if it does not). Session 5 must measure the two constructs SEPARATELY and must not submit (b) without a ruling.
+
+- [s4] Campaign wsC (the clean do-while(0) floor-16 chassis, base 463) ran 892 s / 1043 iterations and produced ZERO finds — a valid negative: the immediate random-mutation neighbourhood of the new candidate holds nothing better. wsB's three finds all sat in the 807-833 band against the clean chassis' 468 base, confirming the s3 tie-pun basin is the wrong place to search.
+
+- [s4] New POLICY-CLEAN floor-16 form banked as memory/grind/motion_Close/candidate.c: `do { p = &D_8008D070; } while (0);` with an inline FAKE annotation. Score 16, build_insns 25 vs target 26, measured twice (sweep4 a1 variant, sweep5 d4).
+
+- [s4] Instrumented-cc1 table for the candidate (BB2_ALLOC_DEBUG=1): p n_refs=8 live_length=7 pri=34285 -> $16; count n_refs=8 live_length=8 pri=30000 -> $17. A strict win, not a tie — the form scores 16 with either declaration order, so it does not use global.c's allocno-number tie-break at all.
+
+- [s4] Session 3's OPEN POLICY QUESTION (is `p = (void (**)(void))D_800A2668;` sanctioned variable reuse or a coercion?) is MOOT for reaching floor 16 and no ruling need be sought before working this family. The s3 form is preserved as memory/grind/motion_Close/candidate_s3_tiepun_16.c for its evidence about the tie-break and should not be built on.
+
+- [s4] Policy basis, quoted verbatim from .claude/rules/do-while-zero-exception.md:23-24: "**`do { <any body> } while (0);` — including empty bodies — is a sanctioned pure-C match device for ANY codegen effect, including register allocation.**" Prerequisite 1 (inline FAKE annotation naming the observed effect) satisfied; prerequisite 2 explicitly does not gate single-level wraps; prerequisite 3 not applicable (single level). Precedent: the same file's confirmed marionation_Exec RA-weighting application at line 99.
+
+- [s4] 16-point residual re-attribution: frame size + save/restore offsets + save order ~8 (dead by H1); guard temp $v0 vs $t0 for both the load and the jalr register 2 (OPEN — the largest never-probed bucket, no session has read the .lreg local-alloc dump for it); beqz delay slot 2 (hand-asm signal S-b); materialisation order count-pair-before-p-pair 2 (the F4 bind); inner-guard/positional remainder 2.
+
+- [s4] 23 further forms measured this session (sweep4 11, sweep5 12), disjoint from the 45 banked in s1-s3. Nothing beat 16. Also 16: wrap both inits (either declaration order), nested wrap, f hoisted out of the loop, plain `while` loop, `(*p++)()`, role-flip chassis + trailing empty wrap, guard read through a p-typed pointer. 17: wrap count's init only, wrap the whole guard body, trailing empty wrap, wrap inside the role-flip chassis, wrap + break on the inner guard. 19: guard duplicated so the inits sit in their own wrap (27 insns). 20: p assigned first (both declaration orders), both inits hoisted above the D_800A2668 guard.
+
+- [s4] H1 is untouched and still caps the function: REG_PARM_STACK_SPACE=16 forces frame >= 16+12 = 28 -> 32 for any pure-C body containing a call, versus the target's 16-byte frame with a zero outgoing-arg area. No form in any family measured so far can reach distance 0, and no candidate-ready was claimed.
+
+- [s4] Permuter workspaces for C-routed functions: transcribe the target region from `objdump -dr build/src/<file>.o`, assemble, and verify the normalized disassembly INCLUDING relocation lines against that region before use (tmp/grind/motion_Close/s4/target.s + setup.sh do this and are reusable). Branch-target text differs between an offset-0 object and the real one even when the encodings are identical, so compare encodings, not mnemonic operands.
+
+- [s4] src/ings2.c is reverted to HEAD (both sweeps restore it in a finally: block); `git status` shows only metrics/events.jsonl, so build/src/ings2.o remains a valid target reference for the next session.
+
+- [s4] LATE UNMEASURED LEAD (top of the frontier): the end-of-session harvest telemetry shows campaign wsA also produced output-383-1 at 754 s — permuter weighted score 383 against base 468, a much larger drop than the 463 find that produced this session's candidate. It appeared after the last directory listing and could NOT be re-measured with the sandbox because WSL had already failed. Banked verbatim as memory/grind/motion_Close/unmeasured_lead_s4_383.c with a full policy warning: it combines cast-free guard staging through `count` (sanctioned variable-reuse family, and untried in combination with the do-while(0) wrap) with `D_800A2668++; D_800A2668--;`, a first reach of an uncovered family that fails T1/T2 if it folds and diverges behaviourally if it does not. Session 5 must measure the two constructs separately and must not submit the second without a ruling.
+
+- [s4] Final harvest numbers: wsA 754+ s, 3 novel finds (468/453/383); wsB ~320 s, 3 novel finds all in the 807-833 band — far above the clean chassis' 468 base, reinforcing that the s3 tie-pun basin is the wrong place to search; wsC 892 s / 1043 iterations from base 463 with ZERO finds, a valid negative saying the immediate random-mutation neighbourhood of the new floor-16 candidate holds nothing better.
+
+- [s4] INFRASTRUCTURE INCIDENT: three concurrent campaigns (6+5+5 jobs) against /mnt/c broke the WSL drvfs mount (OSError Errno 5), which killed all three permuter processes and then wedged the WSL service itself (`wsl --shutdown` hung; later `wsl` calls return Wsl/Service/E_UNEXPECTED). No campaign outlived the session — they were killed by the failure, not left simmering — and all three WERE harvested and deactivated before the session ended, from Windows Python (tools/permuter_campaign.py needs only the workspace directories). That harvest is what surfaced the 383 find. Windows-side caveats for the next session: `harvest --stop` reports stopped:false / procs_killed:0 because it cannot signal a Linux pid (the processes were already dead, pid_alive_at_harvest:false), so the registry entry stays `active` and must be cleared with `deactivate-all`; and `status` crashes on Windows (os.kill(pid,0) raises WinError 5). WSL itself is left wedged and likely needs a host reboot. Do not run three campaigns at 5-6 jobs each against /mnt/c simultaneously on this machine.

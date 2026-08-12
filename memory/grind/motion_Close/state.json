@@ -1,8 +1,8 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 16,
    "modality": "structural",
    "headline": "Session 2's H3 kill is FALSIFIED: global.c breaks an exact allocno priority TIE by declaration order, the target's $s0=p/$s1=count roles ARE C-reachable, floor 17->16, and hand-asm signal S-c is retra"
+  },
+  {
+   "session": 4,
+   "floor": 16,
+   "modality": "permuter",
+   "headline": "Permuter found a POLICY-CLEAN route to floor 16: a single-level FAKE-annotated do{p=&D_8008D070;}while(0) wrap wins $s0 for p by a strict allocno priority margin (loop-depth ref weighting, 34285 vs 30"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F4 - a reference can be added to `p` that reaches priority PARITY with count without extending p's live range, giving the role flip without dragging the guard load into a callee-saved register.",
-   "mechanism": "Priority is floor_log2(n_refs)*n_refs/live_length, and flow.c weights REG_N_REFS by loop depth, so a reference INSIDE p's existing live range (especially inside the loop, worth 2) raises n_refs without raising live_length and is worth strictly more than one that extends the range. Session 2 declared any extra p reference forbidden on the grounds that it must be byte-free; session 3 changes the size of the ask, because the tie-break needs only PARITY, not dominance - p needs 9 refs against count's 8, not a wide margin. The 16-point form buys parity by carrying the guard in p, which costs the prologue (p is callee-saved, so the guard load lands in $s0 and forces sw s0 above it plus sw s1 into the beqz delay slot); any parity source that leaves the guard in a caller-saved temp should be worth more than the 1 point currently gained.",
-   "next_probe": "Sweep in-loop forms that reference p a second time in a byte-neutral way (a second read of *p that CSE folds, a p-relative address reused by the call setup, walking a second same-base pointer that jump2/CSE re-merges) and read the allocno table per form with BB2_ALLOC_DEBUG=1; any form that reaches p n_refs>=8 with live_length<=8 while count stays 8/8 wins $s0 by declaration order. Note the ruling question above: if the only parity sources are byte-free constructs, emit ruling-request rather than a submission."
+   "hypothesis": "F6 (NEW, UNMEASURED LEAD - do this FIRST) - campaign wsA's best find, output-383-1 (permuter 383 vs base 468), may be a sub-16 form; it was never re-measured because WSL died before it surfaced.",
+   "mechanism": "It combines two constructs the session never tested together: (a) `count = D_800A2668 != 0;` - the guard staged through the s32 local and then overwritten with the table length inside the branch. This is a cast-free relative of session 3's guard carry, sits inside the frozen 'variable reuse for codegen control' family, and was never tried in combination with this session's do-while(0) wrap; by the same loop-depth/live-length arithmetic it should raise count's live_length (which is the direction F4b needs) rather than p's refs. (b) `D_800A2668++; D_800A2668--;` - a redundant RMW pair on the guard global. (b) is a FIRST REACH of a family nothing in the frozen SOTN list covers: if GCC folds the pair (likely - two adjacent RMWs on the same non-volatile location with nothing between them) it emits no bytes and its only function is to move GCC's analysis, failing checklist T1 and T2; if it does not fold it stores to a global the target never stores to, which is a behavioural difference rather than a match.",
+   "next_probe": "Measure `memory/grind/motion_Close/unmeasured_lead_s4_383.c` with `sandbox motion_Close --disable all` plus the instrumented cc1, then DECOMPOSE it: (a) alone, (b) alone, (a) composed with this session's `do { p = &D_8008D070; } while (0);` wrap, and (a) with p assigned first (the F4b shape). Report the allocno table per form. If (b) proves load-bearing, emit `ruling-request` - do not self-approve it. NOTE: WSL was left wedged at the end of session 4 (Wsl/Service/E_UNEXPECTED, host reboot likely needed); confirm the toolchain is healthy before trusting any measurement."
   },
   {
-   "hypothesis": "F4b - the emission-order / priority coupling can be broken by lengthening count's live range instead of moving statements.",
-   "mechanism": "Assigning p before count (the order the target wants once p owns $s0) fails only because count is born one statement later, which shortens its live_length 8->7 and raises its priority to 34285. If count's live range can be lengthened back to 8+ without adding a count reference - e.g. by an intervening real computation that the target also performs, so that count spans it - the p-first order and the priority tie could hold simultaneously, which is worth the 2-3 positional points of the two address materialisations.",
-   "next_probe": "Enumerate the insns the target places between the guard branch and the loop (insns 8-13) and test body arrangements that make count live across each of them in turn; measure score + allocno table per arrangement. Also worth reading the .lreg local-alloc dump for the loop temp, now $v0 against the target's $t0, which is the largest single remaining non-frame bucket."
+   "hypothesis": "F5 (NEW, largest never-probed bucket) - the guard-load / jalr temp can be moved from $v0 to the target's $t0, worth 2 points.",
+   "mechanism": "Both the D_800A2668 guard load and the indirect call target land in $v0 in every form measured across four sessions, while the target uses $t0 for both. This is a local-alloc (local-alloc.c) decision over call-clobbered registers, not a global.c one, so none of the allocno-priority levers worked on it so far touch it \u2014 and no session has ever read the .lreg dump for these pseudos. It is the only remaining non-frame bucket that is neither dead-by-H1 nor the F4 order bind.",
+   "next_probe": "Compile the candidate with `-da` and read the .lreg local-alloc dump for the guard pseudo and the call-target pseudo: what makes local-alloc prefer $v0, and does the preference come from a copy-preference to the return register or from the register-class scan order? Then sweep forms that give the guard value and the call target different lifetimes (guard consumed before the frame exists, call target read into a variable used after the call, a second call-clobbered value live across the guard test) and read the dump per form. Both halves must move together \u2014 the target uses $t0 for the load AND the jalr."
   },
   {
-   "hypothesis": "F1 (reduced) - motion_Close's original source was hand-written assembly (PsyQ crt0 runtime).",
-   "mechanism": "TWO surviving independent signals, not three: S-a, no outgoing-arg area despite making a call (REG_PARM_STACK_SPACE=16 forces >=16 for any C-level call; 2 of 854 in the oracle build, and both are this function and its inline-asm sibling), and S-b, an unfilled beqz delay slot that reorg.c demonstrably fills from a pending save. Corroborated by the crt0 neighbourhood (_start, InitHeap, a .word-syscall trampoline, bios_FileRead) and the ctor-table-walk body shape. S-c is RETRACTED by this session and must not be cited again.",
-   "next_probe": "Extract asm/funcs/motion_Close.s (absent because the function is C-routed, which is why tools/scan_hand_coded.py --single motion_Close aborts), then run scan_hand_coded to obtain a MEASURED signal tier - the endgame-lock canonical-asm gate requires STRONG signals (S1/S2/S6) and this must be measured, never asserted. Also re-examine the canonical gate's C verdict, reached on 'distance 21 <= 50' i.e. on size alone, predating every honest measurement. Do this only after F4/F4b are worked: the floor moved this session, so the function is still grindable."
+   "hypothesis": "F4b (carried forward, still unprobed) - lengthen count's live range instead of moving statements, so p-first emission order and p's priority win can hold at once (worth the last 2 positional points).",
+   "mechanism": "Assigning p before count fails only because count is born one statement later, shortening its live_length 8 -> 7 and RAISING its priority to 38571. If count's live range can be lengthened back to 8+ without adding a count reference - e.g. by an intervening real computation that the target also performs, so count spans it - the p-first order and p's 34285 could hold simultaneously. Alternatively give p ~11 weighted references inside its existing range (a second wrapped reference is worth 2 each), which beats 38571 at 11/8 = 41250.",
+   "next_probe": "Enumerate the insns the target places between the guard branch and the loop (insns 8-13) and test body arrangements that make count live across each in turn; measure score + allocno table per arrangement. In parallel, sweep p-first forms carrying two or three wrapped p references (each worth 2 by loop-depth weighting) and check whether p can reach 11 weighted refs at live_length 8 without emitting a byte."
   }
  ],
  "judge_constraints": [],
