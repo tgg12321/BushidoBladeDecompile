@@ -143,4 +143,127 @@ left intact for the next session.
 
 - [s1] tools/scan_hand_coded.py --single motion_Close could NOT run: it requires asm/funcs/motion_Close.s, which does not exist because the function is C-routed. A future escalation session must extract that file first to obtain a signal tier — the canonical-asm gate needs a measured STRONG tier (S1/S2/S6), not an asserted one.
 
+## Session 2 (structural, 2026-08-11)
+
+### New floor: 20 -> 17, from statement order alone
+The ONLY change against session 1's form is that `count` is assigned before
+`p` inside the guard (and declared first). GCC emits the two address
+materializations in source order, so assigning `count` first places the `$s0`
+lui/addiu pair at insns 7-8 and the `$s1` pair at 9-10 — which is the
+target's register ORDER at those four slots (target: `$s0` pair, then `$s1`
+pair). Worth 3 points. Note this does NOT contradict s1's H2: declaration
+order alone is inert (re-confirmed); it is the BODY assignment order that
+moves the emission order.
+
+### 20 structural spellings measured; only statement order moved anything
+Sweeps `tmp/grind/motion_Close/s2/sweep.py` (13 forms) and `sweep2.py`
+(14 forms). Everything below scored **17** and emitted the identical 25
+instructions once the count-first statement order was applied: `*p++`
+post-increment read, plain `while` instead of `if`+`do-while`, `--count` in
+the loop condition, `for (; count; count--)`, `(*p)()` with no `f` temp,
+`p[0]()` + `p = &p[1]`, `f` declared outside the loop, block-local
+declarations with initialisers, an early-`return` guard chain, a hoisted
+guard local, and `u32` instead of `s32` for count. Scoring **19** (worse):
+hoisting the `count` initialiser above the `D_800A2668` guard, decrementing
+count before the call, and an index-style walk. Scoring **21/27 insns**: the
+end-pointer loop. Conclusion: the loop's C spelling is essentially a free
+variable — the residual does not live in it.
+
+### H3 (CONFIRMED KILL) — the target's $s0/$s1 role split is unreachable from C
+Measured directly with the instrumented cc1 (`tools/gcc-2.7.2/cc1`,
+`BB2_ALLOC_DEBUG=1`; log `tmp/grind/motion_Close/s2/allocsweep.log`). GCC
+2.7.2's `global.c` sorts allocnos by
+`floor_log2(n_refs) * n_refs / live_length * 10000` (`allocno_compare`,
+global.c:642-655) and assigns hard registers in that order, so the
+higher-priority allocno takes `$s0`. For every spelling that emits the
+target's instruction sequence:
+
+    count (pseudo 72): n_refs=8  live_length=8  pri=30000  -> $s0 ($16)
+    p     (pseudo 73): n_refs=7  live_length=7  pri=20000  -> $s1 ($17)
+
+`count` is structurally one reference richer than `p` — init, outer guard
+test, in-loop decrement (set+use), loop test, versus init, in-loop load,
+in-loop bump — and the target's own instruction sequence contains all of the
+same references, so a hypothetical matching C source would have the same
+counts. **The target has `p` in `$s0`: the inverse of what global.c produces.**
+The `floor_log2` step at 8 makes this a wide margin (3*8 vs 2*7), not a
+tie-break: it is not reachable by nudging.
+
+Only two spellings out of the whole sweep flipped the roles, and both emit
+instructions the target does not contain, so neither can match:
+- **end-pointer loop** — p n_refs=11 pri=36666 takes `$s0`; costs the `end`
+  materialisation + add (27 insns vs target 26), score 21. Banked as
+  `rejected/end-pointer-loop-costs-two-insns.c`. This is the honest,
+  human-plausible spelling, and it is the one that proves the bind: the form
+  that fixes the registers necessarily breaks the instruction sequence.
+- **guard laundered through p** (`if (p != &D_8008D070 + count)`) — p
+  n_refs=9 pri=30000 takes `$s0`; emits `sll/addu/beq` (27 insns), score 17.
+  Also a cheat on T1/T2/T3 (the predicate is exactly `count != 0`; its only
+  purpose is to add a reference so global.c's priority tips). Not proposed;
+  banked as `rejected/role-flip-guard-laundering.c`.
+
+Any *byte-free* way to give `p` an eighth reference is by definition a
+construct with no emitted effect whose sole function is to move GCC's
+allocator — a forbidden coercion. So this axis is CLOSED on both the
+measurement and the policy side.
+
+### F2 closed: the 17-point residual attributes exhaustively
+Block-level attribution of the session-2 form against the target, summing to
+exactly the measured score of 17:
+
+    guard-load temp ($t0 vs $v0), 2 insns            2
+    frame size (addiu sp,-16 vs -32)                 1
+    register-save block (offsets + order)            3
+    beqz delay slot (target nop vs GCC's sw s0)      2
+    inner guard register (beqz s1 vs beqz s0)        1
+    loop body registers (lw/addiu/addiu/bnez)        4
+    epilogue restore offsets + sp adjust             4
+                                                    --
+                                                    17
+
+Every one of the seven buckets is (a) the frame — dead by H1, (b) the
+register roles — dead by H3, or (c) the wasted delay slot — hand-asm signal
+S-b. There is no unexplained instruction, and no bucket is a live grind
+axis. The nine regfix rules at regfix.txt:115-124 are a complete description
+of the gap.
+
+### Session-2 artifacts
+- `tmp/grind/motion_Close/s2/sweep.py` + `sweep.log` — 13-form structural sweep (found the 20->17 statement-order lever).
+- `tmp/grind/motion_Close/s2/sweep2.py` + `sweep2.log` — 14-form round-2 sweep on top of the new floor.
+- `tmp/grind/motion_Close/s2/allocsweep.py` + `allocsweep.log` — instrumented-cc1 allocno priority table per spelling (the H3 kill).
+- `tmp/grind/motion_Close/s2/greg.sh` + `ings2.i.greg` — RTL global-alloc dump confirming pseudo 72=count -> $16, pseudo 73=p -> $17.
+
+### Tree state at end of session 2
+`src/ings2.c` reverted to HEAD (session-1 precedent), so `build/src/ings2.o`
+stays valid as the target reference. The 17-scoring form lives only in
+`memory/grind/motion_Close/candidate.c`.
+
+- [s2] New honest floor 17 (from 20): assigning `count` before `p` inside the guard aligns the two address materializations with the target's $s0-then-$s1 emission order. Declaration order alone remains inert (s1 H2 re-confirmed) — it is the body statement order that matters.
+
+- [s2] 20 structural spellings measured (sweep.py + sweep2.py): *p++, plain while, --count in the condition, for-loop, (*p)() with no temp, p[0]()+p=&p[1], f hoisted out of the loop, block-local initialised decls, early-return guards, hoisted guard local, u32 count — ALL score 17 with byte-identical output. Worse: count hoisted above the D_800A2668 guard (19), decrement before the call (19), index walk (19), end-pointer loop (21/27 insns). The loop's C spelling is a free variable; the residual is not in it.
+
+- [s2] H3 KILLED with the instrumented cc1 (BB2_ALLOC_DEBUG=1): global.c ranks allocnos by floor_log2(n_refs)*n_refs/live_length; count measures n_refs=8 live_length=8 pri=30000 and takes $s0, p measures n_refs=7 live_length=7 pri=20000 and takes $s1, in every spelling that emits the target's instruction sequence. The target has p in $s0 — the inverse. The floor_log2 step at 8 makes the margin wide (3*8 vs 2*7), so it is not a tie-break to be nudged.
+
+- [s2] The only two spellings that flip the roles both emit instructions absent from the target: the end-pointer loop (p pri=36666, 27 insns, score 21) and a guard laundered through p (p pri=30000, 27 insns, score 17, and a T1/T2/T3 cheat). Any byte-free eighth reference for p would be a pure allocator-coercion construct — forbidden. Axis closed on measurement AND policy.
+
+- [s2] HAND-ASM SIGNAL S-c: the target's register ASSIGNMENT is not producible by global.c from any C source carrying the target's instruction sequence (H3). This is independent of S-a (zero outgoing-arg area, H1) and S-b (unfilled delay slot). Three independent impossibility signals now stand.
+
+- [s2] F2 CLOSED: the 17-point residual attributes exhaustively to 7 blocks summing to exactly 17 — guard-load temp 2, frame size 1, save block 3, beqz delay slot 2, inner guard register 1, loop-body registers 4, epilogue offsets 4. Every bucket is dead-by-H1, dead-by-H3, or hand-asm signal S-b. No unexplained instruction remains.
+
 - [s1] Tree state: src/ings2.c reverted to HEAD at end of session (git status shows only metrics/events.jsonl and the untracked ledger dir), so the oracle and the build/src/ings2.o reference are left intact. The honest form lives in memory/grind/motion_Close/candidate.c.
+
+- [s2] New honest floor 17 (was 20), measured this session with `sandbox motion_Close --disable all` and the form banked in memory/grind/motion_Close/candidate.c. build_insns 25 vs target 26.
+
+- [s2] The 20->17 lever is BODY STATEMENT ORDER, not declaration order: assigning `count` before `p` inside the guard. Session 1's H2 (declaration order alone) is re-confirmed inert — the two probes are different and both results stand.
+
+- [s2] 27 structural spellings measured across two sweeps; 11 of them are byte-identical to the best form at 17, 3 score 19, 1 scores 21. The loop's C spelling is effectively a free variable — the residual does not live in it.
+
+- [s2] Instrumented-cc1 measurement (BB2_ALLOC_DEBUG=1): motion_Close's two callee-saved allocnos are count (n_refs=8, live_length=8, pri=30000, gets $16) and p (n_refs=7, live_length=7, pri=20000, gets $17), invariant across every spelling that emits the target's instruction sequence. GCC 2.7.2 global.c:642-655 is the ranking function.
+
+- [s2] The target's register assignment (p in $s0) is therefore not producible by global.c from ANY C source carrying the target's instruction sequence — a third independent hand-written-asm signal (S-c), alongside S-a (zero outgoing-arg area despite making a call, unique in an 854-function corpus) and S-b (an unfilled beqz delay slot that reorg.c demonstrably fills).
+
+- [s2] The two role-flipping spellings are banked as rejected forms: rejected/end-pointer-loop-costs-two-insns.c (honest, human-plausible, but materialises an end pointer the target never forms — 27 insns) and rejected/role-flip-guard-laundering.c (emits sll/addu/beq absent from the target AND fails cheat tests T1/T2/T3; recorded so no future session re-derives it).
+
+- [s2] The bind is now explicit: the C form that fixes the registers necessarily breaks the instruction sequence, and the C form that keeps the instruction sequence necessarily loses the registers.
+
+- [s2] src/ings2.c was reverted to HEAD at end of session (session-1 precedent), so build/src/ings2.o remains a valid target reference; the 17-scoring form lives only in memory/grind/motion_Close/candidate.c.

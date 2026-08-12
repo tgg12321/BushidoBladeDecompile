@@ -25,6 +25,36 @@ from allocator priority. Banked as
 `rejected/decl-order-swap-no-register-effect.c`. Subordinate to H1 anyway —
 closing the registers alone cannot produce a match while the frame differs.
 
+### H3 — the target's $s0=p / $s1=count role split is reachable from pure C
+**Verdict: KILLED (session 2), measured with the instrumented cc1.**
+Mechanism: `global.c`'s `allocno_compare` (global.c:642-655) ranks allocnos by
+`floor_log2(n_refs)*n_refs/live_length` and assigns hard regs in that order.
+`BB2_ALLOC_DEBUG=1` reports, for EVERY spelling emitting the target's
+instruction sequence: `count` n_refs=8 live_length=8 pri=30000 -> `$s0`;
+`p` n_refs=7 live_length=7 pri=20000 -> `$s1`. `count` is structurally one
+reference richer (init + outer guard test + decrement set/use + loop test vs
+init + load + bump), and the target's instruction sequence contains those same
+references — so a matching C source would have the same counts. The target has
+`p` in `$s0`: the inverse. The floor_log2 step at 8 makes the margin wide
+(3*8 vs 2*7), not a tie-break.
+The only two role-flipping spellings both emit instructions the target lacks
+(end-pointer loop: 27 insns, score 21; guard laundered through `p`: 27 insns,
+and a T1/T2/T3 cheat). A byte-free eighth reference for `p` would be a pure
+allocator-coercion construct — forbidden. **Do not reopen the register axis.**
+
+### F2 — is the residual EXACTLY the nine regfix rules?
+**Verdict: RESOLVED YES (session 2).** Block attribution of the 17-point
+residual sums to exactly the measured score: guard-load temp 2, frame size 1,
+save block 3, beqz delay slot 2, inner guard register 1, loop-body registers 4,
+epilogue offsets 4. Every bucket is dead-by-H1 (frame), dead-by-H3 (registers),
+or hand-asm signal S-b (the wasted delay slot). No unexplained instruction.
+
+### F3 — the s0/s1 role + v0-vs-t0 temp assignment
+**Verdict: KILLED (session 2) — subsumed by H3.** 20 structural spellings
+measured; the only movement on the whole axis was statement order (floor
+20 -> 17), which fixes the emission POSITIONS of the two materializations but
+cannot touch the ROLES.
+
 ## LIVE FRONTIER
 
 ### F1 — motion_Close's original source was hand-written assembly (crt0 runtime)
@@ -44,7 +74,11 @@ requires **STRONG** signals (S1/S2/S6) — this must be measured, not asserted.
 Note the `canonical` gate currently routes the function **C** purely on
 "distance 21 <= 50", i.e. on size, having never seen an honest C measurement.
 
-### F2 — pin down whether the residual is EXACTLY the nine regfix rules
+> **Session 2 update:** F2 and F3 below are CLOSED — see the H3 / F2 entries in
+> the DEAD section above. F1 is the only live frontier. The honest floor is 17
+> and every one of its seven residual buckets is attributed to a dead axis.
+
+### F2 — [CLOSED s2] pin down whether the residual is EXACTLY the nine regfix rules
 **Mechanism:** if the honest C form differs from target only in (a) frame size,
 (b) the six save/restore offsets, (c) the s0/s1 roles + v0-vs-t0 temp, and (d)
 the one delay-slot nop, then the nine rules at `regfix.txt:115-124` are a
@@ -57,7 +91,7 @@ build insns and classifies each mismatch into one of those four buckets, and
 assert the buckets are exhaustive. Cheap, and it turns the escalation packet
 from narrative into a table.
 
-### F3 — the s0/s1 role + v0-vs-t0 temp assignment (LOW VALUE, do after F1/F2)
+### F3 — [CLOSED s2 — killed by H3] the s0/s1 role + v0-vs-t0 temp assignment
 **Mechanism:** allocator priority in `local-alloc`/`global-alloc` — `p` and
 `count` have near-identical reference counts and identical live ranges, so the
 tie-break decides. A lever would have to change reference counts or live ranges
@@ -90,3 +124,21 @@ claim airtight. If F1 returns STRONG, F3 is moot entirely.
 - probe: Declared `count` before `p`, leaving body assignment order unchanged; re-ran sandbox --disable all.
 - result: score 20, build_insns 25 — identical, no register moved. Both orders emit the address materializations in source order (p first), so emission order is not the discriminator; the split is an allocator-priority tie-break. Banked as rejected/decl-order-swap-no-register-effect.c.
 - verdict: KILLED
+
+## [s2] The loop's C spelling (pointer idiom, loop form, temp placement, guard shape, count signedness) can move the honest floor below 20.
+- mechanism: The residual is register names and stack offsets, not computation, so if any of it is reachable from C it must come from a spelling that changes GCC's emission order, reference counts, or live ranges.
+- probe: Two sandbox sweeps over 27 spellings total (tmp/grind/motion_Close/s2/sweep.py 13 forms, sweep2.py 14 forms), each patched into src/ings2.c and measured with `sandbox motion_Close --disable all`.
+- result: Exactly ONE lever moved: assigning `count` before `p` inside the guard drops the floor 20 -> 17 (GCC emits the two address materializations in source order, so count-first puts the $s0 lui/addiu pair at insns 7-8 and the $s1 pair at 9-10 — the target's register order at those slots). Everything else was inert at 17: *p++ post-increment read, plain `while`, `--count` in the loop condition, for-loop, (*p)() with no temp, p[0]()+p=&p[1], f hoisted out of the loop, block-local initialised decls, early-return guard chain, hoisted guard local, u32 count. Worse: count hoisted above the D_800A2668 guard (19), decrement before the call (19), index walk (19), end-pointer loop (21, 27 insns).
+- verdict: CONFIRMED
+
+## [s2] H3 — the target's $s0=p / $s1=count role split is reachable from a pure-C spelling.
+- mechanism: GCC 2.7.2's global.c ranks allocnos by floor_log2(n_refs)*n_refs/live_length (allocno_compare, global.c:642-655) and hands out hard registers in that order, so the higher-priority allocno takes $s0. If p and count are near-tied, a natural C spelling that shifts reference counts or live ranges could flip which one wins $s0.
+- probe: Ran the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) over 8 further spellings, reading the per-allocno n_refs / live_length / priority table for motion_Close directly (tmp/grind/motion_Close/s2/allocsweep.py + allocsweep.log); corroborated by the .greg RTL dump (greg.sh) showing pseudo 72=count -> $16 and pseudo 73=p -> $17.
+- result: For EVERY spelling that emits the target's instruction sequence: count n_refs=8 live_length=8 pri=30000 (takes $s0), p n_refs=7 live_length=7 pri=20000 (takes $s1). count is structurally one reference richer than p (init + outer guard test + in-loop decrement set/use + loop test, versus init + in-loop load + in-loop bump), and the target's own instruction sequence contains all of those same references, so a hypothetical matching C source would carry the same counts. The target has p in $s0 — the inverse — and the floor_log2 step at 8 makes the margin wide (3*8 vs 2*7), not a nudgeable tie-break. The only two spellings that DID flip the roles both emit instructions the target does not contain: the end-pointer loop (p pri=36666, 27 insns, score 21) and a guard laundered through p, `if (p != &D_8008D070 + count)` (p pri=30000, 27 insns, score 17 — and a T1/T2/T3 cheat: the predicate is exactly `count != 0` and its only purpose is to add a p reference). Any BYTE-FREE eighth reference for p would by definition be a construct with no emitted effect whose sole function is to move GCC's allocator, i.e. a forbidden coercion. Closed on measurement and on policy.
+- verdict: KILLED
+
+## [s2] F2 — the residual between the honest pure-C form and the target is EXACTLY the nine regfix rules at regfix.txt:115-124, with no unexplained instruction.
+- mechanism: If every mismatch classifies into frame size, save/restore offsets, the s0/s1 roles plus the v0-vs-t0 temp, and the one unfilled delay slot, the gap is fully characterised and no live grind axis remains inside it.
+- probe: Block-level attribution of the new 17-point residual against the target's 26 normalized instructions, using the target and build dumps produced by the sweeps.
+- result: The buckets sum to exactly the measured score of 17: guard-load temp ($t0 vs $v0) 2, frame size 1, register-save block (offsets + order) 3, beqz delay slot 2, inner guard register 1, loop-body registers 4, epilogue restore offsets + sp adjust 4. Every bucket is dead-by-H1 (frame), dead-by-H3 (registers), or hand-asm signal S-b (the wasted delay slot). No unexplained instruction remains.
+- verdict: CONFIRMED

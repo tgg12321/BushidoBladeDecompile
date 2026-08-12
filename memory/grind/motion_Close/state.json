@@ -1,31 +1,32 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 20,
    "modality": "recon",
    "headline": "First honest pure-C measurement of motion_Close (floor 21->20, structure an exact match) \u2014 and a corpus-wide kill: gcc-2.7.2 o32 reserves REG_PARM_STACK_SPACE=16 for every C-level call, so the target'"
+  },
+  {
+   "session": 2,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "Floor 20->17 from statement order alone; then H3 KILLED with the instrumented cc1 \u2014 global.c's allocno priority forces count->$s0 / p->$s1 for every C form that emits the target's instruction sequence"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 \u2014 motion_Close's original source was hand-written assembly (PsyQ crt0 runtime), which is why its frame has no outgoing-arg area and its beqz delay slot is unfilled.",
-   "mechanism": "Both anomalies are things GCC provably does not produce: the arg area is forced to >=16 by REG_PARM_STACK_SPACE for any C-level call (H1, measured 854/854), and reorg.c fills an available delay slot (the honest C form does fill it). Corroborated by the crt0 neighborhood and the ctor-table-walk body shape.",
-   "next_probe": "Extract asm/funcs/motion_Close.s (currently absent \u2014 the function is C-routed), then run tools/scan_hand_coded.py --single motion_Close to obtain a signal tier. The endgame-lock canonical-asm gate requires STRONG signals (S1/S2/S6); this must be measured before any escalation packet cites it. Re-examine the canonical gate's C verdict, which was reached on 'distance 21 <= 50' i.e. on size alone."
+   "hypothesis": "F1 (now the ONLY live frontier) \u2014 motion_Close's original source was hand-written assembly (PsyQ crt0 runtime), which is why its frame has no outgoing-arg area, its beqz delay slot is unfilled, and its register assignment inverts GCC's allocation priority.",
+   "mechanism": "Three independent anomalies that GCC provably does not produce from any C: S-a the zero outgoing-arg area (REG_PARM_STACK_SPACE=16 forces >=16 for any C-level call; 854/854 census), S-b the unfilled delay slot (reorg.c fills it in every honest C form), and now S-c the inverted $s0/$s1 assignment (global.c's allocno priority is 30000 vs 20000 the other way). Corroborated by the crt0 neighbourhood (_start, InitHeap, a .word-syscall trampoline, bios_FileRead) and the ctor-table-walk body shape.",
+   "next_probe": "Extract asm/funcs/motion_Close.s (absent \u2014 the function is C-routed, which is why tools/scan_hand_coded.py --single motion_Close aborts), then run scan_hand_coded to obtain a MEASURED signal tier. The endgame-lock canonical-asm gate requires STRONG signals (S1/S2/S6); this must be measured, never asserted, before any escalation packet cites it. Also re-examine the canonical gate's C verdict, which was reached on 'distance 21 <= 50' i.e. on size alone and predates every honest measurement."
   },
   {
-   "hypothesis": "F2 \u2014 the residual between the honest pure-C form and the target is EXACTLY the nine regfix rules at regfix.txt:115-124, with no unexplained instruction.",
-   "mechanism": "If every mismatch classifies into (a) frame size, (b) the six save/restore offsets, (c) the s0/s1 roles + v0-vs-t0 temp, or (d) the one unfilled delay slot, then the gap is fully characterized and the function is a clean 'bytes-provable only through a surface the grinder may not touch' case rather than an open grind.",
-   "next_probe": "Write a differ pairing the 26 target insns against the 25 build insns, classify each mismatch into those four buckets, and assert the buckets are exhaustive. Turns the escalation packet from narrative into a table. Cheap \u2014 the two dumps already exist in tmp/grind/motion_Close/s1/dump.py."
-  },
-  {
-   "hypothesis": "F3 (LOW VALUE, only after F1/F2) \u2014 the s0/s1 role split and the v0-vs-t0 scalar temp are movable by a natural C spelling.",
-   "mechanism": "p and count have near-identical reference counts and identical live ranges, so local-alloc/global-alloc priority tie-breaks decide. A lever would have to change reference counts or live ranges naturally (the *p++ idiom, a plain while rather than if+do-while, hoisting the guard load).",
-   "next_probe": "Measure the *p++ idiom and the while-loop spelling. NOTE: under H1 this axis cannot produce a match on its own \u2014 its only value is making the 'everything except the frame closes' claim airtight. If F1 returns a STRONG hand-asm tier, F3 is moot entirely. Do not open it first."
+   "hypothesis": "The v0-vs-t0 scalar temp (2 of the 17 residual points) is separable from the s0/s1 role split and might move on its own.",
+   "mechanism": "The guard load and the jalr target both use $v0 in every C form and $t0 in the target. $v0 is GCC's natural first choice for a short-lived call-clobbered temp; $t0 would require the value to conflict with $v0 across its live range. This is the one residual bucket session 2 did not probe directly (it was measured only as a by-product of the 27 spellings, all of which used $v0).",
+   "next_probe": "Read the .lreg/.greg dumps for the temp pseudo's local-alloc disposition and check whether any C shape makes $v0 unavailable at that point without adding an instruction. LOW VALUE: it is 2 of 17 points and cannot produce a match while H1 and H3 stand \u2014 worth only as further corroboration for the F1 packet, and only if a forensics session is already in the dumps."
   }
  ],
  "judge_constraints": [],
