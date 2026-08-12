@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor 3 -> 1: naming the first rand() into a temp AND assigning the *3 sum back into idx closes both prior residuals at once; the last point is an expand_binop commutative-swap keyed on the assignment"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor holds at 1 but the endgame is fully mapped: the last instruction is now closed on three independently-named sides, and the shipped form is the canonical for-loop spelling (byte-identical, and it"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Making the const-1 pseudo SINGLE-set gives `li val,1` the birthing bonus too; with both loop-top insns at max_priority the tie falls to INSN_LUID and the target's order (`addu` first) is restored without touching `idx` at all \u2014 so the AA shape's `idx = idx2 + idx` could be replaced by a third-variable sum (CA's operand order) and reach 0.",
-   "mechanism": "sched.c adjust_priority raises any birthing insn to max_priority; the AA .sched dump shows that when two ready insns are both at 7f000001 the later one is picked first and therefore emitted last. The obstacle is loop.c: a single-set `val = 1;` inside the inner loop is a movable and move_movables hoists it into a fresh callee-save (81 insns, measured in session 1), so the shape must fail exactly one of move_movables' preconditions (m->cond, m->global, or the register-pressure threshold at loop.c:532) while keeping reg_n_sets == 1.",
-   "next_probe": "Read move_movables' preconditions and rejection paths in tools/gcc-2.7.2/loop.c, dump t.i.loop for the current AA build (tmp/grind/func_800645B0/s2/dumpAA.py already produces it) to see which tests the current const-1 passes, then construct C shapes that fail exactly one; sandbox each against the CA shape (third-variable sum), where the operand order and every register are already correct."
+   "hypothesis": "The DA shape (byte offset routed through `idx`, sum in `wid`) is the only untried-in-detail form that satisfies all three constraints simultaneously; its whole 12-point cost is that `idx` and `idx2` are swapped between $s0 and $s1, and the target's own allocation proves the wanted state is reachable.",
+   "mechanism": "local_alloc runs before global_alloc. In the shipped/CA shape the block-local byte-offset CSE temp lives across all four rand() calls, needs a callee-save, and claims $s0, pushing the block-local `idx2` to $s1; the multi-block `idx` then re-uses $s0 because its range does not overlap. In DA that claimant is gone, so `idx2` takes $s0 from local_alloc and `idx` is left $s1 by global_alloc.",
+   "next_probe": "Read local-alloc.c's block_alloc / find_free_reg ordering (qty priority, qty_phys_reg suggestions, accept_call_clobbered) and dump .lreg/.greg for DA and for the shipped form side by side using tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py. Then look for a C shape in which the halfword-offset value is NOT a block-local pseudo (genuinely referenced in the loop-top block) or in which some other block-local callee-save-needing value out-prioritises it, and sandbox each."
   },
   {
-   "hypothesis": "A fold-surviving second set of `idx` exists that is NOT the *3 sum and NOT the byte offset, so the sum can take a third-variable destination (CA's correct operand order and register assignment) while the loop top stays right.",
-   "mechanism": "birthing_insn_p only needs reg_n_sets[idx] > 1 with a set that survives to flow; the constraint is only that the value must not already be live in another pseudo, and that the set must not turn `idx` into the carrier of the byte offset (which flips local_alloc's $s0 claim).",
-   "next_probe": "Enumerate values in this function that are genuinely derived from the slot index and not already computed: e.g. the bit mask recomputed from `idx` in the found-slot arm, the next-slot index used by the loop, or a restructured inner loop that recomputes `i + j` for the occupancy test only. Sandbox each; reject any whose second assignment is dead, unread, or has no reading as ordinary program logic (note the recompute axis is already dead at 79 insns via sweep12)."
+   "hypothesis": "The shipped 1-point residual (`addu s0,s0,s1` vs target `addu s0,s1,s0`) can be defeated by changing how the assignment is EXPANDED rather than how it is spelled.",
+   "mechanism": "optabs.c:399-417 (expand_binop) swaps a commutative operand pair whenever the expansion `target == op1`. Eight source-level respellings are already measured dead (previous session's H11) and the swapped form is present in the .rtl dump before cse runs. What has not been probed is which C constructs cause expand_binop to be called with `target == 0` (an anonymous temp) so no swap test fires, with the temp later coalesced into `idx`'s register.",
+   "next_probe": "Read expr.c's expand_expr / expand_assignment store path to enumerate the constructs that expand a binop into a fresh temp rather than directly into the destination pseudo (compound assignment through a cast, a differently-typed or narrower view of the destination, an assignment used as a value), then sandbox each on the shipped body."
   },
   {
-   "hypothesis": "The whole loop-top region can be sidestepped by changing which insns land in the inner-loop basic block (e.g. a for-loop spelling where `j++` sits at the loop bottom), which changes what reorg.c has available to steal into the back-edge delay slot.",
-   "mechanism": "reorg.c steals the FIRST insn of the target block into the back-edge delay slot; the scheduler decides which insn that is. Changing the block's membership changes the candidate set independently of any priority lever. NB the BANNED construct for this function is the specific relocation of `j += 1;` to between `idx = i + j;` and `val = 1;`; a loop-form change must be justified as a loop form, not as a statement relocation, and must be measured for all of the loop's shapes rather than picked from a directed sweep.",
-   "next_probe": "Measure the canonical `for (i = 0; i < 0xF; i += 4)` / `for (j = 0; j < 4; j++)` spelling of the same loops on top of the AA body, and record which basic block each of `addu idx,i,j`, `li val,1` and `addiu j,j,1` lands in via the t.i.sched dump \u2014 the point is the block-membership fact, which is reusable regardless of the score."
+   "hypothesis": "All three shapes are exactly one instruction away and each fails on a DIFFERENT fully-named GCC decision, which is the signature of a shape that is close to but not the original \u2014 the original's inner-loop pseudo set or live-range shape differs from all three.",
+   "mechanism": "The target's 78 instructions imply a specific pseudo count and live-range structure in the inner-loop block and in the found-slot arm; comparing the three near-miss builds' scheduler and allocator state against what the target implies should show which pseudo none of them reproduces.",
+   "next_probe": "Dump t.i.sched and t.i.greg for SB (shipped), CA and IA with tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py, extract the inner-loop block insn list and the register dispositions for each, and diff them against the target's instruction sequence to identify a pseudo count or live range none of the three shapes produces."
   }
  ],
  "judge_constraints": [

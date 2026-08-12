@@ -245,3 +245,169 @@ regresses to 21/81.
 - probe: sweep12.py GA (`idx = idx2 + (i + j)`), GB (`(i + j) + idx2`), GC (`idx2 + i + j`), GD (`idx2 = (i+j) << 1; idx = idx2 + (i+j);`).
 - result: GA/GB/GC = 19 / 79 insns, GD = 13 / 79 — the recomputed addu SURVIVES (one instruction over the 78-instruction target) and cascades the allocation. Axis dead; it was also the only shape this session that would have needed a cheat-checklist defence, and the measurement settles it without one.
 - verdict: KILLED
+
+## Session 4 (2026-08-12, structural) — floor stays 1; the residual is now closed on three sides
+
+### H14 — CONFIRMED. The maintained-index loop form satisfies BOTH previously-exclusive constraints, and its residual is a different single instruction.
+- **Mechanism:** setting `idx` before the inner loop and again at the loop's
+  tail gives it two genuinely different, non-foldable values, so
+  sched.c's `birthing_insn_p` bonus cannot fire on the loop-top `addu`; and
+  because the *3 sum no longer has to be the second set, it can take its own
+  destination `wid`, which avoids optabs.c `expand_binop`'s `target == op1`
+  commutative swap.
+- **Probe:** sweep13.py IA/IB/IC/IE, sweep16.py RA/RB.
+- **Result:** IA/IC/IE/RA/RB = 1 / 78; IB (sum back into `idx`) = 2 / 78. IA's
+  unmasked diff is a SINGLE pair at index 11: target `addu s0,s3,a0`, build
+  `move s0,s3`.
+- **Verdict:** CONFIRMED as a mechanism; dead as a route to zero — see H15.
+
+### H15 — KILLED. The loop-entry copy of a maintained index cannot be made to emit `addu s0,s3,a0`.
+- **Mechanism:** GCC knows `j == 0` in the basic block that contains
+  `j = 0; idx = i + j;`, so the PLUS is folded to a copy. In the target that
+  insn is not source-level at all: it is reorg.c's duplicate of the loop-top
+  insn it stole into the back-edge delay slot (the same `addu $s0,$s3,$a0`
+  appears at 0x800645DC and 0x800646B4).
+- **Probe:** sweep13.py IC (`idx = i;`), sweep16.py RB (`idx = j + i;`),
+  sweep14.py LA (`j` reset at the OUTER loop tail so the entry copy cannot see
+  a constant), sweep13.py ID (`idx += 1;` tail update).
+- **Result:** IC/RB byte-identical at 1/78; LA = 5 / 79 (costs a real
+  instruction); ID = 19 / 83.
+- **Verdict:** KILLED.
+
+### H16 — CONFIRMED. A second set of `idx` with a genuinely new value fixes CA's loop top; the residual then moves to that value's register.
+- **Mechanism:** `reg_n_sets[idx] > 1` denies `addu idx,i,j` the
+  birthing_insn_p bonus, so the inner-loop block emits it first and reorg.c
+  steals it into the back-edge delay slot. But `idx` is a multi-block pseudo
+  allocated `$s0` and GCC 2.7.2 does not split live ranges, so whatever value
+  is staged through `idx` is emitted in `$s0`.
+- **Probe:** sweep15.py MA (`idx = last & 7;` before the s16 store), MB (same,
+  before the D_800A3444 read), MD (`idx = val | mask;` feeding the store),
+  MC (`idx = rand();` with the mask re-derived at the use site); diffs via
+  diffvar15.py.
+- **Result:** MA/MB/MD = 2 / 78 (CA control 3 / 78) with all three loop-top
+  diffs gone and exactly two new ones, always the staged value's register
+  (`andi s0,v0,0x7` / `sh s0,0(at)` for MA; `or s0,v1,s2` / `sw s0,0(gp)` for
+  MD). MC = 3 / 78 — the value was still live elsewhere, so the fold rule from
+  H10 applies again.
+- **Verdict:** CONFIRMED, and it yields the closure argument in H17.
+
+### H17 — CONFIRMED (as a characterisation). Only three values may legally be staged through `idx`, and all three are now measured.
+The target keeps exactly three values in `$s0`: `i + j`, the *3 sum, and the
+12-byte byte offset. Therefore a second set of `idx` must be one of them:
+the sum (the shipped 1-point form, blocked by expand_binop's swap), the byte
+offset (variant DA, 12/78 — local_alloc assigns `$s0` to the block-local
+`idx2` before global_alloc reaches the multi-block `idx`), or `i + j` again
+(the maintained-index form, 1/78, blocked by H15). Nothing else in the function
+is derived from the slot index.
+
+### H18 — KILLED. The const-1 pseudo cannot be single-set and stay inside the loop.
+- **Mechanism:** loop.c:695-716 admits a single-set loop-invariant SET as a
+  movable through any one of three alternatives — a compiler temp passes
+  `! REG_USERVAR_P && ! REG_LOOP_TEST_P`, a user variable used only in the
+  set's own basic block passes `reg_in_basic_block_p`, and in both cases
+  `! maybe_never && ! loop_reg_used_before_p` also holds because the set is the
+  first insn of the loop body. move_movables' desirability test at loop.c:1631
+  (`threshold * savings * m->lifetime >= insn_count`, threshold =
+  `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`) is trivially satisfied,
+  and `m->global` does not block the move.
+- **Probe:** sweep14.py KA (named `one`), KB (`one` also the return value),
+  KD; sweep17.py TA (unnamed `mask = 1 << idx;`), TB (control).
+- **Result:** KA/KD = 12 / 80, KB = 13 / 80, TA = 12 / 80 — all hoisted into a
+  fresh callee-save against a 78-instruction target. TB = 3 / 78.
+- **Verdict:** KILLED. Frontier item 2 of the previous session is closed.
+
+### H19 — KILLED. A loop-tail `idx = i + j;` added to the loop-top recompute is a dead store.
+- **Probe:** sweep14.py JA. **Result:** 3 / 78, byte-identical to CA; flow.c
+  deletes it before reg_n_sets is taken. **Verdict:** KILLED.
+
+### H20 — KILLED (no gradient). The canonical `for` spelling of both loops is byte-identical to the do/while form.
+- **Probe:** sweep16.py SA (for-spelling of CA) and SB (for-spelling of AA).
+- **Result:** SA = 3 / 78 (== CA), SB = 1 / 78 (== AA). The previous session's
+  frontier item 3 (block membership via loop form) has no gradient here.
+- **Verdict:** KILLED as a lever — but adopted as the shipped spelling, since it
+  is the more natural C and removes any question about where `j += 1;` sits.
+
+## Frontier (rewritten by session 4)
+
+0. **Make `local_alloc` give `$s0` to the multi-block `idx` in the DA shape.**
+   DA (`wid = idx2 + idx; idx = wid << 2;`, stores use `idx`) is the ONLY
+   untried-in-detail way to satisfy all three constraints at once: correct
+   operand order, a real second set of `idx`, and a value the target really
+   does keep in `$s0`. It scores 12/78 and the ENTIRE cost is that `idx` and
+   `idx2` are swapped between `$s0` and `$s1`. Mechanism: local_alloc runs
+   before global_alloc; in the AA/CA shape the pseudo that claims `$s0` from
+   local_alloc is the byte-offset CSE temp (block-local, lives across all four
+   `rand()` calls, so it needs a callee-save), and `idx2` is pushed to `$s1`;
+   in DA that claimant is gone, `idx2` takes `$s0`, and the multi-block `idx`
+   gets `$s1`. Next probe: read `local-alloc.c`'s `block_alloc` /
+   `find_free_reg` ordering (qty priority, `qty_phys_reg` suggestions,
+   `accept_call_clobbered`), dump `.lreg`/`.greg` for DA and for the shipped
+   form side by side, and look for a C shape in which the halfword-offset value
+   is NOT a block-local pseudo (e.g. genuinely used in the loop-top block) or
+   in which some other block-local callee-save-needing value out-prioritises
+   it — the target's own allocation proves such a state exists.
+
+1. **Attack the `expand_binop` swap through the expansion target rather than
+   the syntax.** The shipped 1-point residual is `idx = idx2 + idx;` expanding
+   as `(plus idx idx2)` because optabs.c:399-417 swaps a commutative pair when
+   `target == op1`. Every source-level respelling is measured dead (session 3's
+   H11, eight spellings). What has NOT been probed is whether the assignment
+   can be expanded with a target that is not the `idx` pseudo yet still lands
+   in `idx`'s register — e.g. an assignment whose LHS is a narrower or
+   differently-typed view of the same variable, or an expression GCC expands
+   into a temp and then copies (the copy being coalesced away). Next probe:
+   read `expand_expr`'s `TREE_CODE (to) == VAR_DECL` store path in expr.c to
+   enumerate which C constructs cause `expand_binop` to be called with
+   `target == 0`, then measure each.
+
+2. **Re-derive the original's inner-loop block from the .sched dump of the
+   shipped form vs a synthetic CA dump.** All three shapes are now one insn
+   away and each fails on a DIFFERENT, fully-named GCC decision, which is the
+   signature of a shape that is close but not the original. Next probe: dump
+   `t.i.sched` and `t.i.greg` for SB, CA and IA (the tooling is
+   `tmp/grind/func_800645B0/s2/dumpvar.sh` + `dumpAA.py`), and compare the
+   inner-loop block's insn list and the register dispositions against what the
+   target's 78 instructions imply, looking for a pseudo count or live-range
+   shape none of the three reproduce.
+
+## [s3] The maintained-index loop form (slot index set before the inner loop and again at its tail, with the *3 sum taking its own destination variable) satisfies BOTH constraints the previous session called mutually exclusive: a real non-foldable second set of `idx` AND a sum whose destination is not `idx`.
+- mechanism: Two genuinely different values in `idx` make reg_n_sets[idx] == 2, so sched.c's birthing_insn_p bonus cannot fire on the loop-top `addu idx,i,j` and the block emits it first; and because the sum is no longer required to be the second set, it can be assigned to `wid`, avoiding optabs.c expand_binop's commutative swap (which fires only when the expansion target IS op1).
+- probe: tmp/grind/func_800645B0/s3/sweep13.py variants IA/IB/IC/IE and sweep16.py RA/RB, each scored with `sandbox func_800645B0 --disable all`; unmasked instruction pairs via diffvar13.py.
+- result: IA/IC/IE/RA/RB = score 1, build_insns 78 (IB, sum written back into idx, = 2/78). IA's ENTIRE unmasked residual is a single pair at index 11: target `addu s0,s3,a0`, build `move s0,s3`.
+- verdict: CONFIRMED
+
+## [s3] The loop-entry copy of a maintained index can be made to emit `addu s0,s3,a0` instead of `move s0,s3`.
+- mechanism: GCC constant-folds `i + j` in the block that also contains `j = 0;`. In the target that instruction is not source-level at all: `addu $s0,$s3,$a0` appears TWICE in asm/funcs/func_800645B0.s (0x800645DC, immediately before .L800645E0, and 0x800646B4, in the back-edge delay slot), which is reorg.c's steal-from-target transformation plus the loop-entry duplicate it forces.
+- probe: sweep13.py IC (`idx = i;`), sweep16.py RB (`idx = j + i;`), sweep14.py LA (`j` reset at the OUTER loop tail so the entry copy cannot see a constant), sweep13.py ID (`idx += 1;` as the tail update).
+- result: IC and RB are byte-identical at 1/78; LA costs a real instruction (5 / 79); ID = 19 / 83. No spelling defeats the fold at zero cost.
+- verdict: KILLED
+
+## [s3] In the CA shape (sum in its own `wid`) a second set of `idx` whose VALUE is genuinely new removes sched.c's birthing_insn_p bonus and fixes the loop-top emission order.
+- mechanism: birthing_insn_p (sched.c:2504-2537) returns reg_n_sets[dest]==1 for a live destination and adjust_priority raises that insn to max_priority; the backward list scheduler then emits it LAST in the block, so `li val,1` lands first and reorg.c steals the wrong insn into the back-edge delay slot. A second set whose value is not already live survives the fold passes and kills the bonus.
+- probe: sweep15.py MA (`idx = last & 7;` staged before the s16 store), MB (same, staged before the D_800A3444 read), MD (`idx = val | mask;` feeding the store), MC (`idx = rand();` with the mask re-derived at the use site); CA control; unmasked diffs via diffvar15.py.
+- result: MA/MB/MD = 2 / 78 against the CA control at 3 / 78, with ALL THREE loop-top diffs gone. The two remaining diffs are always the staged value's register: MA emits `andi s0,v0,0x7` / `sh s0,0(at)` where target has $v0; MD emits `or s0,v1,s2` / `sw s0,0(gp)` where target has $v1. MC = 3/78 (value still live elsewhere, so the fold rule applies).
+- verdict: CONFIRMED
+
+## [s3] Only three values may legally be staged through `idx`, and all three are now measured — this closes the enumeration for the last instruction.
+- mechanism: `idx` is a multi-block pseudo allocated $s0 and GCC 2.7.2 has no live-range splitting, so every value routed through `idx` is emitted in $s0. The target keeps exactly three values in $s0: `i + j`, the *3 sum, and the 12-byte byte offset.
+- probe: Direct reading of asm/funcs/func_800645B0.s (78 instructions) plus the measured variants: the sum (shipped form), the byte offset (variant DA from the previous session), and `i + j` again (this session's IA).
+- result: Sum -> optabs.c's `target == op1` swap, 1/78. Byte offset -> DA, 12/78, because local_alloc runs before global_alloc and the block-local `idx2` claims $s0 first. `i + j` again -> IA, 1/78, blocked by the entry-copy constant fold. Nothing else in the function is derived from the slot index.
+- verdict: CONFIRMED
+
+## [s3] The const-1 pseudo can be made single-set (so `li val,1` is bonused too and the loop-top tie falls back to source order) while keeping loop.c from hoisting it out of the inner loop.
+- mechanism: loop.c:695-716 admits a single-set loop-invariant SET as a movable through any one of three alternatives: a compiler temp passes `! REG_USERVAR_P && ! REG_LOOP_TEST_P`; a user variable used only in the set's own basic block passes `reg_in_basic_block_p`; and in both cases `! maybe_never && ! loop_reg_used_before_p` also holds because the set is the first insn of the loop body. move_movables' desirability test at loop.c:1631 is trivially satisfied and m->global does not block the move.
+- probe: sweep14.py KA (named user variable `one`), KB (`one` also the function's return value, so m->global is set), KD; sweep17.py TA (UNNAMED constant, `mask = 1 << idx;`, i.e. loop.c's REG_EQUAL / m->move_insn path) and TB (control).
+- result: KA/KD = 12 / 80, KB = 13 / 80, TA = 12 / 80 — every spelling hoisted into a fresh callee-save, 80 instructions against a 78-instruction target. TB control = 3 / 78. The previous session's frontier item 2 is closed.
+- verdict: KILLED
+
+## [s3] A loop-tail `idx = i + j;` added on top of the loop-top recomputation gives `idx` a second set without disturbing the CA shape's operand order.
+- mechanism: The tail store is dead — the loop top recomputes `idx` on the next iteration and the break path never reads it — so flow.c deletes it before reg_n_sets is taken, the same fold rule the previous session established for copies, split-inits and recomputations.
+- probe: sweep14.py JA against the CA control.
+- result: JA = 3 / 78, byte-identical to CA.
+- verdict: KILLED
+
+## [s3] Writing both loops in the canonical `for` form changes inner-loop basic-block membership and therefore what reorg.c can steal into the back-edge delay slot (previous session's frontier item 3).
+- mechanism: In the `for` spelling the inner counter's increment sits at the loop bottom instead of being an explicit `j += 1;` statement before the occupancy test, which changes the candidate set reorg.c sees independently of any priority lever.
+- probe: sweep16.py SA (for-spelling of CA) and SB (for-spelling of AA), each scored and diffed unmasked with diffvar16.py.
+- result: SA = 3 / 78, byte-identical to CA; SB = 1 / 78, byte-identical to AA (single diff at index 20, the commutative operand order). No gradient. Adopted as the shipped spelling anyway: it is the more natural C and it retires any question about where `j += 1;` sits, since the canonical form compiles to the same bytes.
+- verdict: KILLED
