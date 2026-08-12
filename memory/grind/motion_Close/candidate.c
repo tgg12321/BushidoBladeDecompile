@@ -82,6 +82,20 @@
  * identical allocno table (p 10/8 = 37500, count 8/7 = 34285) and the identical
  * score 13.
  *
+ * SESSION 10 (synthesis) VERIFICATION — this body's EMITTED STREAM was diffed
+ * against tmp/grind/motion_Close/s5b/wsA/_base.txt, the build stream the s7
+ * residual table was written from on the superseded three-level do-while
+ * chassis. They are the same 25 instructions in the same order with the same
+ * registers, the same `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`, the
+ * same filled beqz delay slot and the same descending save order
+ * (tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s). The s7 table therefore
+ * describes THIS form, not just its predecessor. Session 10 also closed F12:
+ * `for(;;)`+break, `while(1)`+break, `for(;;)`+continue and a middle-clause
+ * `for` all reproduce the do-while-LOOP family's allocno table exactly and all
+ * score 20 at wrap depths 0-2, so the goto chassis' depth-2 minimum is now
+ * minimal across the whole loop-construct surface as well
+ * (rejected/f12-loop-construct-surface-inert.c).
+ *
  * THIS FILE MUST NOT BE SUBMITTED AS `candidate-ready`. H1 is a backend-level
  * disproof, not a plateau: no pure-C body containing a call can reach the
  * target's zero-byte outgoing-argument area, so no member of this family can

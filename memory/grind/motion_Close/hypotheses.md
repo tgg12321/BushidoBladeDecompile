@@ -483,3 +483,123 @@ are worth a directed attack, and they are worth at most 2.
 - probe: The same three sweeps (18 gotosweep cells + 15 idiomsweep cells + the chassis/depth cells in declsweep), reading score and allocno table for every depth-0 and depth-1 cell.
 - result: KILLED for every chassis measured. The target's address-materialisation order requires p to be assigned FIRST, which puts count's birth one statement later: count then sits at 5 raw refs / live_length 7 = 14285 while p sits at 5/8 = 12500. p is behind on LIVE_LENGTH, not on references, and any added reference to p outside its existing range extends the range too — so p must reach 6 weighted references, i.e. two loop-note levels. The only measured way to drop count to 4 references is deleting the outer `if (count != 0)` guard by entering through a top-tested `goto test;` loop; that lets p win at depth 1 (12500 vs 11428) but scores 14, because the target HAS that outer guard. Trading one residual point for one wrap level is not an improvement. Banked as rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c, which doubles as prerequisite 3 of .claude/rules/do-while-zero-exception.md for the two-level wrap now in candidate.c.
 - verdict: KILLED
+
+## [s10] F12 — some other real C loop construct for the walk changes flow.c's reference accounting the way session 9's `goto` loop did, and reaches floor 13 at a do-while(0) wrap depth below 2.
+- mechanism: Session 9's decisive finding was that the walk's loop CONSTRUCT changes the weighting of every reference in the function, because flow.c weights REG_N_REFS by loop depth and a `goto` loop emits no NOTE_INSN_LOOP_BEG/END pair for the walk. That moved the required wrap depth from 3 (do-while / while chassis) to 2 (goto chassis). F12 asked whether any construct not yet measured on this function — a `for` with the test in the middle clause, a `for(;;)`/`while(1)` with a `break` exit, a `continue`-based back edge, or an outer real loop around the walk — changes the accounting further. Each is honest C with real semantics rather than a wrapper device, so a win here would be a strictly lighter form than candidate.c's two-level wrap.
+- probe: tmp/grind/motion_Close/s10/f12sweep.py — six loop chassis (A `for(;;)`+break, B `while(1)`+break, C `for(;;)`+continue, D `for (; count != 0; )`, E `for (i=0;i<1;i++)` around the goto walk, G the session-9 goto chassis as control) crossed with do-while(0) wrap depths 0/1/2, p assigned first and declared first in every cell (the target's address-materialisation order requires it). Every cell measured with `sandbox motion_Close --disable all` AND with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) reading the per-allocno n_refs / live_length / priority / hardreg table. Log: tmp/grind/motion_Close/s10/f12sweep.log; per-cell assembly f12_*.s.
+- result: KILLED, and cleanly. A, B, C and D score 20 at depths 0, 1 AND 2, with the BYTE-IDENTICAL allocno table at each depth — count 8 weighted refs / live_length 7 = 34285 against p 7/8 = 17500 (d0), 8/8 = 30000 (d1), 9/8 = 33750 (d2). That is exactly the do-while-LOOP family's ladder: `break` vs `continue` vs a middle-clause test vs a bottom test are codegen-inert to flow.c, because all four emit one NOTE_INSN_LOOP_BEG/END pair around the same body and therefore count the same references at the same weight. Only the `goto` chassis (G) escapes the loop note, and it alone reaches 13, at depth 2 (p 6/8 = 15000 vs count 5/7 = 14285), reproducing session 9 exactly. E — an outer once-through `for (i=0;i<1;i++)` — is worse on every axis: the induction variable becomes a third allocno (7 refs / live_length 8 -> $s2), the function grows 25 -> 30 emitted instructions, and the best cell is 18; it is also a construct the role prompt names as NOT sanctioned by the do-while(0) carve-out, so it was measured for mechanism only and can never be proposed. Banked as rejected/f12-loop-construct-surface-inert.c. CONSEQUENCE: the loop-construct surface joins F10 (whole-TU shape) and F11 (global declarations) as measured-inert, so every C-side input class that has ever been proposed for this function is now closed.
+- verdict: KILLED
+
+## [s10] The session-7 residual table, derived on the THREE-level do-while-loop chassis, still describes the CURRENT candidate (the session-9 two-level goto chassis) instruction for instruction.
+- mechanism: An escalation packet must describe the form actually banked in candidate.c, not a superseded one. Both chassis score 13, but equal scores do not by themselves prove equal residual COMPOSITION: a different distribution of the same 13 points across the H1 / F5 / F7 buckets would invalidate the s7 table's claim that all 13 are backend-disproven and force a re-derivation.
+- probe: Compared the emitted assembly of the current candidate chassis (tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s, produced by the instrumented cc1 during the F12 sweep) against tmp/grind/motion_Close/s5b/wsA/_base.txt, the byte-level build stream the s7 table was written from, and against _tgt_mine.txt (the byte-verified target).
+- result: CONFIRMED — the two chassis emit the same stream. Current candidate: `lw $2,D_800A2668 / subu $sp,$sp,32 / sw $31,24 / sw $17,20 / beq $2,$0 (delay: sw $16,16) / la $16,D_8008D070 / la $17,D_00000000 / beq $17,$0 / lw $2,0($16) / addu $16,$16,4 / jal $31,$2 (delay: addu $17,$17,-1) / bne $17,$0 / lw $31,24 / lw $17,20 / lw $16,16 / addu $sp,$sp,32 / j $31`, with `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`. That is _base.txt position for position: the same 25 instructions, the same $v0 temp, the same descending save order, the same filled beqz delay slot, the same 32-byte frame with a 16-byte outgoing-argument area. The s7 residual table therefore transfers verbatim — 5 points F5 ($v0 vs $t0 at insns 1, 2, 7, 15, 17), 6 points plus half of a 7th H1 (frame size and the six save/restore offsets), 3 points F7a/F7b (ascending save order and the empty beqz delay slot) — and the packet does not need re-deriving.
+- verdict: CONFIRMED
+
+# ============================================================================
+# SESSION 10 SYNTHESIS — FRONTIER RESET
+# This block SUPERSEDES every earlier "LIVE FRONTIER" section in this file
+# (the F1/F4 block near the top and the F4b/F8/F12 digest frontier). Read this
+# and nothing else for the current state of the search.
+# ============================================================================
+
+## THE MERGED PICTURE (ten sessions, one paragraph)
+
+motion_Close is a crt0-style destructor-table walk: guard a global, materialise
+a table pointer and a count from two linker-provided symbols, then call each
+entry and decrement. The honest pure-C form reproduces the target's control
+flow, its operation sequence and even its two delay-slot fills exactly, at 25
+emitted instructions against the target's 26. The floor fell 21 -> 20 (s1,
+honest C at all) -> 17 (s2, statement order) -> 16 (s3/s4, winning $s0 for p)
+-> 13 (s5, loop-note reference weighting) and has been FLAT at 13 for six
+consecutive sessions across five distinct modalities. The 13 residual points are
+paired instruction-by-instruction in tmp/grind/motion_Close/s7/residual_table.md
+and every one of them belongs to a mechanism with a BACKEND-LEVEL disproof, not
+a plateau:
+  * H1 (~6.5 pts, frame size + six save/restore offsets) — REG_PARM_STACK_SPACE
+    is the compile-time constant 16 for every fndecl (mips.h:1822 over
+    mips.h:1888 and the #if 0 at mips.h:1801-1812), applied by a MAX on every
+    call-expansion path (calls.c:1245-1247 feeding calls.c:1394-1401), and
+    compute_frame_size (mips.c:4466) reads nothing else. The only cfoas-free
+    emit_call_insn site in the whole compiler is expand_builtin_apply
+    (expr.c:8361), which emits a frame pointer, a 72-byte frame and 34
+    instructions. No C body containing a call can have the target's zero-byte
+    outgoing-argument area.
+  * F5 (5 pts, $v0 where the target uses $t0) — local-alloc.c:2249-2262 and
+    global.c:1057-1062/1203-1209 scan hard registers in ascending numeric order
+    because the MIPS backend defines no REG_ALLOC_ORDER, so $v0 wins whenever
+    free; reaching $t0 needs six simultaneously live call-clobbered values,
+    which the target's no-argument void call stream does not contain.
+  * F7a (save order) — mips.c:4680 emits GP saves GP_REG_LAST -> GP_REG_FIRST
+    unconditionally, and s8 measured that even a real incoming-argument WAR
+    anti-dependence in the prologue block does not flip them.
+  * F7b (empty beqz delay slot) — reorg.c must fill a slot when an eligible
+    single insn precedes the branch in the block; the target's block holds four,
+    and the corpus contains zero compiled-C counterexamples in 1788 functions.
+Everything OUTSIDE the body is measured codegen-inert: whole-TU shape and
+signature (F10, s8), global declarations (F11, s9), loop construct (F12, s10).
+The canonical-asm endgame gate is a MEASURED FAILED gate (scan_hand_coded tier
+LOW, 0/8, for motion_Close and for its sibling func_80083794 — s6), and no
+coercion/spelling family with an in-hand SOTN-master precedent applies.
+
+## THE FRONTIER, RESET TO THREE ENTRIES
+
+### FR1 (terminal, and the only entry that matters) — motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing.
+**State.** Floor flat at 13 for six sessions over five modalities (structural,
+permuter, forensics, rederive, synthesis). Residual 13/13 attributed, table
+verified this session against the CURRENT candidate chassis. All three residual
+mechanisms carry backend-level disproofs. All three non-body input axes are
+measured dead. Both endgame-lock AND-gates FAIL: (1) scan_hand_coded returns
+tier LOW 0/8 with S1/S2/S6 all negative, so the canonical-asm gate is a measured
+failed gate, not an open question; (2) no coercion/spelling family with a
+citable SOTN-master precedent (file+line or commit) applies to this residual —
+the gap is frame layout and hard-register scan order, which no C-level device
+can address.
+**Next probe.** None on the C side. Sessions must NOT re-measure a dead axis.
+When the driver assigns `escalation` modality, the packet is already written:
+file the entry as `**OWNER-ESCALATION — RESOLVED BY STANDING RULING
+(2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`, citing the s7 backend
+disproof of H1, the s7 residual table, the s6 corpus disproofs of F7a/F7b, the
+s5b scan-order disproof of F5, the s6 scan_hand_coded LOW tier, and the
+s8/s9/s10 trio showing every non-body input to cc1 is inert. Both gates fail, so
+nothing is pending on the owner and the entry is terminal.
+
+### FR2 (dormant, cosmetic) — F4b: reach floor 13 with a do-while(0) wrap depth below 2.
+**State.** Depth 2 on the goto chassis is the measured minimum and is minimal
+across five pointer/loop idioms, both declaration orders, two inlined chassis,
+ten global-declaration forms and now six loop constructs. The binding constraint
+is arithmetic: with p assigned first (which the target's materialisation order
+requires) count sits at 5 raw refs / live_length 7 = 14285 and p at 5/8 = 12500,
+so p must reach 6 weighted references. Deleting a count reference means deleting
+the outer guard the target has, which costs a residual point (14).
+**Next probe.** Only worth time if a session is preparing a submission, which
+cannot happen while H1 stands. The single untried direction is unchanged since
+s8: lengthen count's live range WITHOUT adding a count reference — an
+intervening real computation that the target also performs — and the target
+performs none. Success criterion is score 13 at wrap depth <= 1, not a lower
+score.
+
+### FR3 (housekeeping) — keep the escalation packet true to the banked form.
+**State.** Twice now the ledger's authoritative residual analysis has been
+derived on a chassis that a later session superseded (s7's table on the
+three-level do-while chassis; candidate.c replaced with the two-level goto
+chassis in s9). This session verified the table still transfers, but the check
+was ad hoc.
+**Next probe.** Any session that changes candidate.c must re-emit the build
+stream and diff it against tmp/grind/motion_Close/s5b/wsA/_base.txt before
+reusing the s7 residual table. It is a one-command check
+(`awk '/^motion_Close:/,/\.end/'` over the cc1 output) and it is the difference
+between an escalation packet that describes the banked form and one that
+describes a superseded one.
+
+## [s10] F12 - some other real C loop construct for the walk changes flow.c's reference accounting the way session 9's goto loop did, and reaches floor 13 at a do-while(0) wrap depth below 2.
+- mechanism: flow.c weights REG_N_REFS by loop depth and every loop construct emits a NOTE_INSN_LOOP_BEG/END pair, so the walk's own references are weighted; a goto loop emits no note and collapses every reference in the function to a raw count, which is why session 9 moved the required wrap depth from 3 to 2. If some other construct (for-with-break, while(1)-with-break, continue back edge, middle-clause for, or an outer real loop) changed the accounting further, p could win $s0 at depth 1 or 0 and the last device would leave the form.
+- probe: tmp/grind/motion_Close/s10/f12sweep.py - six loop chassis x do-while(0) wrap depths 0/1/2 (18 cells), p assigned first and declared first in every cell, each measured with `sandbox motion_Close --disable all` AND with the instrumented cc1 (BB2_ALLOC_DEBUG=1) reading the per-allocno n_refs / live_length / priority / hardreg table. Log f12sweep.log, per-cell assembly f12_*.s.
+- result: A for(;;)+break, B while(1)+break, C for(;;)+continue and D for(; count != 0; ) score 20 at depths 0, 1 AND 2 with the BYTE-IDENTICAL allocno table at each depth - count 8 weighted refs / live_length 7 = 34285 against p 7/8 = 17500 (d0), 8/8 = 30000 (d1), 9/8 = 33750 (d2), i.e. exactly the do-while-LOOP family's ladder, so break vs continue vs middle-clause vs bottom test are codegen-inert to flow.c. Only the goto chassis (control G) escapes the loop note and reaches 13, at depth 2 (p 6/8 = 15000 vs count 5/7 = 14285). The outer once-through for (i=0;i<1;i++) is worse on every axis - a third allocno in $s2 (7 refs / live_length 8), 30 emitted instructions against 25, best cell 18 - and is a construct the role prompt names as NOT sanctioned by the do-while(0) carve-out, so it was measured for mechanism only and can never be proposed. Banked as rejected/f12-loop-construct-surface-inert.c.
+- verdict: KILLED
+
+## [s10] The session-7 residual table, derived on the superseded three-level do-while-loop chassis, still describes the CURRENT candidate (the session-9 two-level goto chassis) instruction for instruction.
+- mechanism: An escalation packet must describe the form actually banked in candidate.c. Both chassis score 13, but equal scores do not prove equal residual COMPOSITION - a different distribution of the same 13 points across the H1 / F5 / F7 buckets would invalidate the table's claim that all 13 points are backend-disproven and force a re-derivation before any escalation.
+- probe: Diffed the current candidate chassis' emitted assembly (tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s, produced by the instrumented cc1 during the F12 sweep) against tmp/grind/motion_Close/s5b/wsA/_base.txt, the byte-level build stream the s7 table was written from, and against _tgt_mine.txt (the byte-verified target).
+- result: Same stream, position for position: lw $2,D_800A2668 / subu $sp,$sp,32 / sw $31,24 / sw $17,20 / beq $2,$0 with sw $16,16 in the delay slot / la $16,D_8008D070 / la $17,D_00000000 / beq $17,$0 / lw $2,0($16) / addu $16,$16,4 / jal $31,$2 with addu $17,$17,-1 in the delay slot / bne $17,$0 / three restores / addu $sp,$sp,32 / j $31, under `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`. Same 25 instructions, same $v0 temp, same descending save order, same filled beqz delay slot, same 32-byte frame with a 16-byte outgoing-argument area. The s7 buckets (5 points F5, 6 plus half of a 7th H1, 3 F7a/F7b) transfer verbatim.
+- verdict: CONFIRMED

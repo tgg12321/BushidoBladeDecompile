@@ -894,3 +894,107 @@ anywhere in the function.
 - [s9] No candidate-ready is claimed and none is possible in this family: H1 is a backend-level disproof (REG_PARM_STACK_SPACE is the compile-time constant 16 on every call-expansion path), so no pure-C body containing a call can reach the target's zero-byte outgoing-argument area.
 
 - [s9] src/ings2.c was restored to HEAD after every sweep; the working tree carries only the motion_Close ledger updates plus the untracked metrics append. The oracle build is untouched.
+
+## Session 10 (synthesis, 2026-08-12)
+
+### THE HEADLINE: the C-side search space for motion_Close is now closed, and the closure is a measurement rather than an inference
+
+Session 10's mandate was synthesis: re-read the whole ledger, merge it into one
+attack, and reset the frontier. Two things were measured on the way, and both
+tightened the packet rather than opening anything.
+
+1. **F12 KILLED.** The loop-CONSTRUCT surface — the one input session 9 proved
+   was a real lever — is exhausted. Six chassis x three wrap depths, every cell
+   read with the instrumented cc1: `for(;;)`+break, `while(1)`+break,
+   `for(;;)`+continue and `for (; count != 0; )` all produce the byte-identical
+   allocno table at every depth (count 8 weighted refs / live_length 7 = 34285;
+   p 7/8 = 17500 at depth 0, 8/8 = 30000 at 1, 9/8 = 33750 at 2) and all score
+   20 at depths 0-2. They are the do-while-LOOP family exactly: to flow.c, a
+   `break` exit, a `continue` back edge, a middle-clause test and a bottom test
+   are the same thing — one NOTE_INSN_LOOP_BEG/END pair around the same body,
+   hence the same references at the same weight. Only the `goto` loop escapes
+   the note, and it alone reaches 13, at depth 2, reproducing session 9 to the
+   digit. The outer once-through `for (i = 0; i < 1; i++)` is worse on every
+   axis (a third allocno in $s2, 30 emitted instructions against 25, best cell
+   18) as well as being a construct the role prompt names as NOT sanctioned by
+   the do-while(0) carve-out.
+
+2. **The s7 residual table verified against the CURRENT candidate.** The table
+   was derived on the three-level do-while chassis that session 9 superseded.
+   Equal scores do not prove equal residual composition, so the current
+   candidate chassis' emitted stream was diffed against the stream the table was
+   written from (`tmp/grind/motion_Close/s5b/wsA/_base.txt`). They are the same
+   25 instructions in the same order with the same registers, the same
+   `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`, the same filled beqz
+   delay slot and the same descending save order. The table transfers verbatim.
+
+### The merged attack, stated once
+
+Ten sessions have varied, and measured dead, every class of input to cc1 that
+this function has:
+
+| input class | axis | verdict |
+|---|---|---|
+| body: statement order | s2 | the ONE lever that ever moved anything (20 -> 17) |
+| body: register roles via allocno priority | s3, s4, s5 | moved 17 -> 16 -> 13; bottomed out |
+| body: loop / pointer idiom | s2, s3, s9 | free variable — inert |
+| body: loop CONSTRUCT | s9 (lever), s10 (exhausted) | goto chassis minimal at wrap depth 2 |
+| whole-TU shape, signature, inlining | F10, s8 | codegen-inert |
+| global declarations | F11, s9 | codegen-inert (all ten forms) |
+| compiler flags | frozen | not an available axis |
+
+and the 13 points that remain are, in full:
+
+| points | bucket | disproof |
+|---|---|---|
+| ~6.5 | frame size + six save/restore offsets | H1 — REG_PARM_STACK_SPACE is a compile-time 16 applied by MAX on every call-expansion path (s1 census, s7 backend) |
+| 5 | $v0 where the target uses $t0 | F5 — ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER (s5b) |
+| ~1.5 | ascending save order + empty beqz delay slot | F7a mips.c:4680 unconditional high-to-low emission (s6, s8); F7b reorg.c must fill a slot with four eligible insns before it, 0/1788 counterexamples (s6) |
+
+There is no unexplained instruction and no unexplored C-side surface. The
+function's remaining gap is not a hard search problem; it is a statement about
+what GCC 2.7.2's MIPS backend can emit at all.
+
+### What this session deliberately did NOT do
+
+It did not dispose of the function. The mandated modality was `synthesis`, and
+exhaustion is the driver's call, not a session's: the frontier reset below marks
+motion_Close as a fully determined escalation candidate and leaves the routing
+to the driver. When `escalation` modality is assigned, the packet is already
+written and both endgame-lock gates FAIL (scan_hand_coded tier LOW 0/8 with
+S1/S2/S6 negative — a measured failed gate; and no coercion/spelling family with
+a citable SOTN-master precedent addresses a frame-layout / register-scan-order
+residual), so under the owner's 2026-07-27 standing auto-ruling the terminal
+entry is REFUSED / OWNER-ACCEPTED INCOMPLETE with nothing pending on the owner.
+
+### Session-10 artifacts
+
+- `tmp/grind/motion_Close/s10/f12sweep.py` + `f12sweep.log` — the 18-cell
+  loop-construct x wrap-depth sweep, with the per-allocno table for every cell.
+- `tmp/grind/motion_Close/s10/f12_*.s` — emitted assembly per cell (18 files);
+  `f12_G_goto_tail_d2.s` is the current candidate chassis and is what the
+  residual-table verification was run against.
+- `memory/grind/motion_Close/rejected/f12-loop-construct-surface-inert.c`.
+
+### Tree state at end of session 10
+
+`src/ings2.c` restored to HEAD by the sweep's `finally` block and verified clean
+with `git status --porcelain` (only ledger files and `metrics/events.jsonl`
+modified). No build-pipeline file was touched. Floor unchanged at 13;
+`memory/grind/motion_Close/candidate.c` still holds the session-9 two-level
+goto-chassis form, now with a session-10 note recording that its emitted stream
+was verified against the s7 residual table.
+
+- [s10] F12 is dead: four real loop constructs (for(;;)+break, while(1)+break, for(;;)+continue, for(; count != 0; )) produce the identical allocno table to the do-while/while family at every wrap depth 0-2 and all score 20; to flow.c they are one NOTE_INSN_LOOP_BEG/END pair around the same body, so the exit spelling is codegen-inert.
+
+- [s10] The goto chassis is unique on the whole loop-construct surface, not merely the best of the three constructs session 9 tried: it is the only one that emits no loop note for the walk, and it alone reaches 13 (at wrap depth 2, p 6 raw refs / live_length 8 = 15000 vs count 5/7 = 14285).
+
+- [s10] An outer once-through `for (i = 0; i < 1; i++)` around the walk is strictly dominated as a weighting device: it adds a third allocno ($s2), grows the function from 25 to 30 emitted instructions and scores 18 at best - and it is an unsanctioned construct, so it could not be proposed even had it won.
+
+- [s10] The s7 residual table now provably describes the banked candidate.c form (the two-level goto chassis), not just the superseded three-level do-while chassis: the emitted streams are identical, so all 13 residual points remain attributed 5 to F5, ~6.5 to H1 and ~1.5 to F7a/F7b with nothing unexplained.
+
+- [s10] Merged closure statement for the next session: every class of input to cc1 that this function has - body statement/declaration order, register-role devices, pointer/loop idiom, loop construct, whole-TU shape and signature (F10, s8), global declarations (F11, s9) - is now measured, and the only lever that ever moved the floor bottoms out at 13.
+
+- [s10] Both endgame-lock AND-gates are already measured FAILED for this function: scan_hand_coded returns tier LOW 0/8 with S1/S2/S6 all negative (s6, and the same for sibling func_80083794), and no coercion/spelling family with a citable SOTN-master precedent addresses a residual made of frame layout and hard-register scan order.
+
+- [s10] src/ings2.c was restored to HEAD by the sweep's finally block and verified clean with git status --porcelain; no build-pipeline file was touched this session.

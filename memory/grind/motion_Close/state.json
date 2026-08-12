@@ -1,8 +1,8 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 13,
    "modality": "rederive",
    "headline": "Rederive: F11 KILLED (all ten global-declaration forms codegen-inert, so every cc1 input outside the body proper is now dead) and F4b ADVANCED for the first time \u2014 a goto-loop chassis emits no loop no"
+  },
+  {
+   "session": 10,
+   "floor": 13,
+   "modality": "synthesis",
+   "headline": "Synthesis: F12 KILLED (every real loop construct other than the goto chassis reproduces the do-while family's allocno table exactly, all 20 at wrap depths 0-2), the s7 residual table VERIFIED to descr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F8 (strengthened again) \u2014 motion_Close is an escalation candidate: all three residual mechanisms carry backend-level disproofs, and BOTH axes outside the function body (F10 whole-TU, F11 declarations) are now measured dead.",
-   "mechanism": "H1 (16-byte outgoing-arg area: compile-time constant applied by MAX on every call-expansion path, mips.h:1822 / calls.c:1245,1400 / mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns \u2014 s7). F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 not $t0 \u2014 s5b). F7a (mips.c:4680 emits GP saves high-to-low unconditionally; a real incoming-arg WAR anti-dependence does not reorder them \u2014 s8). F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four \u2014 s6). The s7 residual table accounts for 13/13 with nothing left over. The canonical-asm endgame gate is a MEASURED FAILED gate (scan_hand_coded tier LOW, 0/8, for this function and its sibling \u2014 s6) and no coercion/spelling family has an in-hand SOTN-master precedent.",
-   "next_probe": "Do NOT self-dispose \u2014 exhaustion is the driver's call and this session's modality was rederive. When the driver routes this to `escalation`, the packet is fully determined and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is REFUSED / OWNER-ACCEPTED INCOMPLETE, citing the s7 backend disproof of H1, the s7 residual table, the s8 mips.c:4680 disproof of F7a, and now the s8+s9 pair showing every non-body input to cc1 is inert."
+   "hypothesis": "FR1 (terminal) - motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing; there is no C-side probe left to run.",
+   "mechanism": "Floor flat at 13 for six sessions across five modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis this session) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path - mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally and a real incoming-arg WAR anti-dependence does not reorder them) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). All three non-body input axes - F10 whole-TU, F11 declarations, F12 loop construct - are measured dead.",
+   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8/s9/s10 trio showing every non-body input to cc1 is inert."
   },
   {
-   "hypothesis": "F4b (advanced this session, now nearly closed) \u2014 reach floor 13 with a do-while(0) wrap depth below 2.",
-   "mechanism": "Depth 2 on the goto-loop chassis is now the measured minimum, down from depth 3, and it is minimal across five idioms and both declaration orders. The binding constraint is arithmetic: with p assigned first (required for the target's materialisation order) count sits at 5 raw refs / live_length 7 = 14285 and p at 5/8 = 12500, so p needs 6 weighted references. Deleting a count reference is only possible by deleting the outer guard the target has, which costs a point (14).",
-   "next_probe": "Only worth time if a session is preparing a submission, which cannot happen while H1 stands. The single untried direction is unchanged from s8: lengthen count's live range WITHOUT adding a count reference \u2014 an intervening real computation the target also performs \u2014 and the target performs none. Success criterion is score 13 at wrap depth <= 1, not a lower score."
+   "hypothesis": "FR2 (dormant, cosmetic) - reach floor 13 with a do-while(0) wrap depth below 2.",
+   "mechanism": "Depth 2 on the goto chassis is the measured minimum and is now minimal across five pointer/loop idioms, both declaration orders, two inlined chassis, ten global-declaration forms and six loop constructs. The constraint is arithmetic: with p assigned first (required for the target's materialisation order) count sits at 5 raw refs / live_length 7 = 14285 and p at 5/8 = 12500, so p needs 6 weighted references; deleting a count reference means deleting the outer guard the target has, which costs a point (14).",
+   "next_probe": "Only worth time if a session is preparing a submission, which cannot happen while H1 stands. The single untried direction is unchanged since s8: lengthen count's live range WITHOUT adding a count reference - an intervening real computation that the target also performs - and the target performs none. Success criterion is score 13 at wrap depth <= 1, not a lower score."
   },
   {
-   "hypothesis": "F12 (new, and deliberately narrow) \u2014 the loop-note surface itself is a lever nobody had varied before s9, so other real C control-flow constructs may change flow.c's raw-vs-weighted reference accounting in ways the do-while/while/goto trio did not.",
-   "mechanism": "s9 showed that swapping the walk's loop construct (do-while / while / tail-tested goto / top-tested goto) changes the WEIGHTING of every reference in the function, not just the loop's own, and moved the required device from depth 3 to depth 2. Constructs not yet measured on this function: a `for` loop with the walk's test in the middle clause, a `switch`-dispatched loop back-edge, nested real loops (an outer once-through `for` around the walk), and `continue`-based back edges. Each is honest C with real semantics, unlike a wrapper device.",
-   "next_probe": "Extend gotosweep.py with those constructs at wrap depths 0-2, reading the allocno table for each. The honest expected outcome is that none beats 13 (H1/F5/F7 bound the score regardless) and the only movement available is on F4b's device weight \u2014 so this is a cheap cosmetic probe, NOT a reason to keep the function out of escalation."
+   "hypothesis": "FR3 (housekeeping) - keep the escalation packet true to whatever form candidate.c actually holds.",
+   "mechanism": "Twice the ledger's authoritative residual analysis has been derived on a chassis a later session superseded (s7's table on the three-level do-while chassis; candidate.c replaced with the two-level goto chassis in s9). Equal scores do not imply equal residual composition, and an escalation packet that describes a superseded form is a process error.",
+   "next_probe": "Any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table. One command (`awk '/^motion_Close:/,/\\.end/'` over the cc1 output), done this session for the current form."
   }
  ],
  "judge_constraints": [],
