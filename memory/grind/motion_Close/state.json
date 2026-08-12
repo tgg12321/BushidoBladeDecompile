@@ -1,7 +1,7 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "Floor 20->17 from statement order alone; then H3 KILLED with the instrumented cc1 \u2014 global.c's allocno priority forces count->$s0 / p->$s1 for every C form that emits the target's instruction sequence"
+  },
+  {
+   "session": 3,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "Session 2's H3 kill is FALSIFIED: global.c breaks an exact allocno priority TIE by declaration order, the target's $s0=p/$s1=count roles ARE C-reachable, floor 17->16, and hand-asm signal S-c is retra"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 (now the ONLY live frontier) \u2014 motion_Close's original source was hand-written assembly (PsyQ crt0 runtime), which is why its frame has no outgoing-arg area, its beqz delay slot is unfilled, and its register assignment inverts GCC's allocation priority.",
-   "mechanism": "Three independent anomalies that GCC provably does not produce from any C: S-a the zero outgoing-arg area (REG_PARM_STACK_SPACE=16 forces >=16 for any C-level call; 854/854 census), S-b the unfilled delay slot (reorg.c fills it in every honest C form), and now S-c the inverted $s0/$s1 assignment (global.c's allocno priority is 30000 vs 20000 the other way). Corroborated by the crt0 neighbourhood (_start, InitHeap, a .word-syscall trampoline, bios_FileRead) and the ctor-table-walk body shape.",
-   "next_probe": "Extract asm/funcs/motion_Close.s (absent \u2014 the function is C-routed, which is why tools/scan_hand_coded.py --single motion_Close aborts), then run scan_hand_coded to obtain a MEASURED signal tier. The endgame-lock canonical-asm gate requires STRONG signals (S1/S2/S6); this must be measured, never asserted, before any escalation packet cites it. Also re-examine the canonical gate's C verdict, which was reached on 'distance 21 <= 50' i.e. on size alone and predates every honest measurement."
+   "hypothesis": "F4 - a reference can be added to `p` that reaches priority PARITY with count without extending p's live range, giving the role flip without dragging the guard load into a callee-saved register.",
+   "mechanism": "Priority is floor_log2(n_refs)*n_refs/live_length, and flow.c weights REG_N_REFS by loop depth, so a reference INSIDE p's existing live range (especially inside the loop, worth 2) raises n_refs without raising live_length and is worth strictly more than one that extends the range. Session 2 declared any extra p reference forbidden on the grounds that it must be byte-free; session 3 changes the size of the ask, because the tie-break needs only PARITY, not dominance - p needs 9 refs against count's 8, not a wide margin. The 16-point form buys parity by carrying the guard in p, which costs the prologue (p is callee-saved, so the guard load lands in $s0 and forces sw s0 above it plus sw s1 into the beqz delay slot); any parity source that leaves the guard in a caller-saved temp should be worth more than the 1 point currently gained.",
+   "next_probe": "Sweep in-loop forms that reference p a second time in a byte-neutral way (a second read of *p that CSE folds, a p-relative address reused by the call setup, walking a second same-base pointer that jump2/CSE re-merges) and read the allocno table per form with BB2_ALLOC_DEBUG=1; any form that reaches p n_refs>=8 with live_length<=8 while count stays 8/8 wins $s0 by declaration order. Note the ruling question above: if the only parity sources are byte-free constructs, emit ruling-request rather than a submission."
   },
   {
-   "hypothesis": "The v0-vs-t0 scalar temp (2 of the 17 residual points) is separable from the s0/s1 role split and might move on its own.",
-   "mechanism": "The guard load and the jalr target both use $v0 in every C form and $t0 in the target. $v0 is GCC's natural first choice for a short-lived call-clobbered temp; $t0 would require the value to conflict with $v0 across its live range. This is the one residual bucket session 2 did not probe directly (it was measured only as a by-product of the 27 spellings, all of which used $v0).",
-   "next_probe": "Read the .lreg/.greg dumps for the temp pseudo's local-alloc disposition and check whether any C shape makes $v0 unavailable at that point without adding an instruction. LOW VALUE: it is 2 of 17 points and cannot produce a match while H1 and H3 stand \u2014 worth only as further corroboration for the F1 packet, and only if a forensics session is already in the dumps."
+   "hypothesis": "F4b - the emission-order / priority coupling can be broken by lengthening count's live range instead of moving statements.",
+   "mechanism": "Assigning p before count (the order the target wants once p owns $s0) fails only because count is born one statement later, which shortens its live_length 8->7 and raises its priority to 34285. If count's live range can be lengthened back to 8+ without adding a count reference - e.g. by an intervening real computation that the target also performs, so that count spans it - the p-first order and the priority tie could hold simultaneously, which is worth the 2-3 positional points of the two address materialisations.",
+   "next_probe": "Enumerate the insns the target places between the guard branch and the loop (insns 8-13) and test body arrangements that make count live across each of them in turn; measure score + allocno table per arrangement. Also worth reading the .lreg local-alloc dump for the loop temp, now $v0 against the target's $t0, which is the largest single remaining non-frame bucket."
+  },
+  {
+   "hypothesis": "F1 (reduced) - motion_Close's original source was hand-written assembly (PsyQ crt0 runtime).",
+   "mechanism": "TWO surviving independent signals, not three: S-a, no outgoing-arg area despite making a call (REG_PARM_STACK_SPACE=16 forces >=16 for any C-level call; 2 of 854 in the oracle build, and both are this function and its inline-asm sibling), and S-b, an unfilled beqz delay slot that reorg.c demonstrably fills from a pending save. Corroborated by the crt0 neighbourhood (_start, InitHeap, a .word-syscall trampoline, bios_FileRead) and the ctor-table-walk body shape. S-c is RETRACTED by this session and must not be cited again.",
+   "next_probe": "Extract asm/funcs/motion_Close.s (absent because the function is C-routed, which is why tools/scan_hand_coded.py --single motion_Close aborts), then run scan_hand_coded to obtain a MEASURED signal tier - the endgame-lock canonical-asm gate requires STRONG signals (S1/S2/S6) and this must be measured, never asserted. Also re-examine the canonical gate's C verdict, reached on 'distance 21 <= 50' i.e. on size alone, predating every honest measurement. Do this only after F4/F4b are worked: the floor moved this session, so the function is still grindable."
   }
  ],
  "judge_constraints": [],

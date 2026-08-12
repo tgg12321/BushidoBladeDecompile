@@ -26,7 +26,22 @@ from allocator priority. Banked as
 closing the registers alone cannot produce a match while the frame differs.
 
 ### H3 — the target's $s0=p / $s1=count role split is reachable from pure C
-**Verdict: KILLED (session 2), measured with the instrumented cc1.**
+**Verdict: session 2 said KILLED. SESSION 3 FALSIFIED THAT — H3 is CONFIRMED
+TRUE and has MOVED TO THE LIVE FRONTIER (see F4 below). The text that follows
+is session 2's, kept verbatim as the record of a wrong inference drawn from a
+correct measurement; do not act on its conclusion.**
+
+> **Why it was wrong.** Session 2 read only the priority formula in
+> `allocno_compare` and stopped one line early. `global.c:633-654` falls through
+> to `return *v1 - *v2;` — the ALLOCNO NUMBER, i.e. pseudo creation order, i.e.
+> DECLARATION order — whenever priorities are EQUAL. Session 1's H2
+> ("declaration order is inert") was measured in the no-tie regime, where that
+> code never runs. Session 3 created the tie (p carrying the D_800A2668 guard
+> value lifts p to n_refs=9 / live_length=9 / pri=30000, exactly count's) and
+> declared p first; p took `$s0` and the floor dropped 17 -> 16. The register
+> axis is OPEN.
+
+**Session 2's original entry (superseded):**
 Mechanism: `global.c`'s `allocno_compare` (global.c:642-655) ranks allocnos by
 `floor_log2(n_refs)*n_refs/live_length` and assigns hard regs in that order.
 `BB2_ALLOC_DEBUG=1` reports, for EVERY spelling emitting the target's
@@ -58,6 +73,12 @@ cannot touch the ROLES.
 ## LIVE FRONTIER
 
 ### F1 — motion_Close's original source was hand-written assembly (crt0 runtime)
+> **Session 3 amendment: the (S-c) leg below is RETRACTED — the register
+> assignment IS producible from C (see F4 / the H3 entry). Only S-a (zero
+> outgoing-arg area) and S-b (the unfilled beqz delay slot) survive, plus the
+> crt0-neighbourhood corroboration. Any escalation packet must cite two signals,
+> not three, and must not repeat S-c.**
+
 **Mechanism / evidence already in hand (see evidence.md):** (S-a) no outgoing-arg
 area despite making a call, unique in an 854-function corpus and impossible from
 compiled C per H1; (S-b) an unfilled `beqz` delay slot at insn 7 that GCC's
@@ -74,9 +95,51 @@ requires **STRONG** signals (S1/S2/S6) — this must be measured, not asserted.
 Note the `canonical` gate currently routes the function **C** purely on
 "distance 21 <= 50", i.e. on size, having never seen an honest C measurement.
 
-> **Session 2 update:** F2 and F3 below are CLOSED — see the H3 / F2 entries in
-> the DEAD section above. F1 is the only live frontier. The honest floor is 17
-> and every one of its seven residual buckets is attributed to a dead axis.
+> **Session 3 update — SUPERSEDES the session-2 update below.** F1 is NO LONGER
+> the only live frontier and its S-c leg is RETRACTED. H3 is falsified (the
+> register roles are C-reachable), so F2's "every bucket is dead" attribution no
+> longer holds either: the loop-body-register and inner-guard buckets have been
+> CLOSED by actual C, not merely attributed. The honest floor is 16. The live
+> frontier is now F4 (below), with F1 reduced to its two surviving signals.
+
+### F4 — [LIVE, session 3] close the order/priority coupling in the role-flipped family
+**State.** The role-flipped body (guard carried in `p`, `p` declared first)
+scores 16 and reproduces the target's loop-body registers exactly. Two things
+still cost:
+  (a) the guard load lands in `$s0` (p is callee-saved and holds the guard),
+      forcing `sw s0` above it and `sw s1` into the beqz delay slot, where the
+      target loads the guard into `$t0` before the frame exists;
+  (b) the two address materialisations emit count-pair-then-p-pair while the
+      target emits p-pair-then-count-pair.
+**The bind.** Fixing (b) by assigning `p` before `count` shortens count's live
+length 8 -> 7 (pri 30000 -> 34285) and stretches p's 9 -> 10 (pri 30000 -> 27000),
+destroying the tie and handing `$s0` back to count (score 20; banked as
+`rejected/pfirst-body-order-returns-s0-to-count.c`). Order and roles are coupled
+through `live_length`.
+**Also measured dead:** lowering count's priority instead of raising p's —
+references and live length shrink together, so deleting a count reference raises
+its priority (`rejected/staged-guard-local-shortens-count-liverange.c`, 22).
+**Next probes, in order:**
+1. Find a reference for `p` that does NOT extend its live range — the priority is
+   `floor_log2(n)*n/live_length`, so a ref inside p's existing range is worth
+   strictly more than one that extends it. A second real read of `*p` inside the
+   loop body would be weighted by loop depth (worth 2) without changing the
+   range; the question is whether any such read is byte-neutral.
+2. Attack (a) instead of (b): any form where `p` reaches priority parity WITHOUT
+   holding the guard leaves the guard load in a caller-saved temp and should be
+   worth more than the 1 point (b) is worth. This is the same "byte-free extra
+   reference for p" question session 2 declared forbidden — but session 3 shows
+   the requirement is only PARITY, not dominance, which is a much smaller ask.
+3. Re-run the `.lreg` local-alloc dump for the loop temp now that the roles are
+   right: the temp is `$v0` and the target's is `$t0`, and it is now the largest
+   single remaining non-frame bucket.
+**Hard cap to remember:** H1 still stands, so nothing in this frontier can reach
+distance 0. Its value is a lower floor and a correct escalation packet.
+
+> **Session 2 update (SUPERSEDED by the session-3 update above):** F2 and F3
+> below are CLOSED — see the H3 / F2 entries in the DEAD section above. F1 is
+> the only live frontier. The honest floor is 17 and every one of its seven
+> residual buckets is attributed to a dead axis.
 
 ### F2 — [CLOSED s2] pin down whether the residual is EXACTLY the nine regfix rules
 **Mechanism:** if the honest C form differs from target only in (a) frame size,
@@ -142,3 +205,51 @@ claim airtight. If F1 returns STRONG, F3 is moot entirely.
 - probe: Block-level attribution of the new 17-point residual against the target's 26 normalized instructions, using the target and build dumps produced by the sweeps.
 - result: The buckets sum to exactly the measured score of 17: guard-load temp ($t0 vs $v0) 2, frame size 1, register-save block (offsets + order) 3, beqz delay slot 2, inner guard register 1, loop-body registers 4, epilogue restore offsets + sp adjust 4. Every bucket is dead-by-H1 (frame), dead-by-H3 (registers), or hand-asm signal S-b (the wasted delay slot). No unexplained instruction remains.
 - verdict: CONFIRMED
+
+## [s3] H3 revisited — the target's $s0=p / $s1=count role split IS reachable from pure C, because global.c breaks an exact priority TIE by allocno number (= declaration order).
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:633-654) returns pri2-pri1 and, only when that is zero, falls through to `return *v1 - *v2;` — the allocno number, which follows pseudo creation order, which for block locals follows DECLARATION order. Session 2 read only the priority formula; session 1 measured declaration order as inert but did so in the no-tie regime where the fall-through never executes. Priority is floor_log2(n_refs)*n_refs/live_length*10000, so lifting p from 7 refs to 9 (with live_length also 9) moves it from 20000 to exactly count's 30000 — a tie, not dominance, which is all the tie-break needs.
+- probe: A 2x2 crossing {guard value carried in p, not carried} x {p declared first, count declared first}, each cell measured with `sandbox motion_Close --disable all` AND with the instrumented cc1 (BB2_ALLOC_DEBUG=1) reading the per-allocno table. Script tmp/grind/motion_Close/s3/tiebreak.py, log tiebreak.log; the tie itself was first spotted in allocsweep3.py/.log.
+- result: {count first, no carry} p 7/7 pri 20000, count 8/8 pri 30000, count takes $s0, score 17. {p first, no carry} identical priorities, count still takes $s0, score 17. {count first, carry} p 9/9 pri 30000 TIED with count 8/8 pri 30000, count wins on the lower allocno, score 17. {p first, carry} same tie, p wins on the lower allocno and takes $s0, score 16 — the target's role split, with the target's loop-body registers exactly (lw from $s0, addiu $s0,$s0,4, addiu $s1,$s1,-1, bnez $s1) and the inner guard on $s1. New honest floor 16. Both halves are load-bearing; neither alone moves anything. Hand-asm signal S-c is therefore RETRACTED.
+- verdict: CONFIRMED
+
+## [s3] The role flip can be had without the prologue cost by lowering count's allocno priority instead of raising p's.
+- mechanism: The tie-break only needs parity, so removing one of count's 8 references (the outer `if (count != 0)` guard test, staged instead through a separate short-lived local) should drop count to 7 refs and tie p's 7, letting declaration order win $s0 for p with no guard carried in p and hence no guard load in a callee-saved register.
+- probe: Three declaration/body-order arrangements of the staged-guard-local form, each measured with sandbox and the instrumented cc1 (tmp/grind/motion_Close/s3/rolesweep.py, rolesweep.log).
+- result: count does drop to 7 refs but its live_length drops 8 -> 6 at the same time, so its priority RISES from 30000 to 23333; p's live_length is simultaneously stretched to 9 by the extra local, dropping p to 15555. The gap widens instead of closing, no tie forms, and the extra local costs 3 more points of positional residual — score 22 in all three arrangements, with identical allocno tables. Banked as rejected/staged-guard-local-shortens-count-liverange.c. General rule extracted: references and live_length shrink together, so an allocno's priority can never be lowered by deleting references — the only workable direction on this function is adding references to the allocno you want to win.
+- verdict: KILLED
+
+## [s3] With the roles flipped, restoring the target's emission order (p pair before count pair) is compatible with keeping the roles.
+- mechanism: The target emits `lui/addiu s0` (= p) at insns 8-9 and `lui/addiu s1` (= count) at 10-11. Session 2's count-before-p statement order was derived while count owned $s0 and is backwards in the flipped family, so assigning p first should fix the two materialisations' positions at no cost.
+- probe: The p-before-count body order applied on top of the guard-carrying, p-declared-first form, measured twice with sandbox + instrumented cc1 (t5_pdecl_pguard_ptrorder in tiebreak.py, w5_pfirst_count_inside in ordersweep.py).
+- result: Assigning p first moves count's birth one statement later: count's live_length falls 8 -> 7 and its priority RISES 30000 -> 34285, while p's live_length grows 9 -> 10 and its priority FALLS 30000 -> 27000. The tie is destroyed, count takes $s0 back, the roles revert and the score returns to 20. Order and roles are coupled through live_length; any closing form must satisfy both at once. Banked as rejected/pfirst-body-order-returns-s0-to-count.c. This coupling is frontier F4's central problem.
+- verdict: KILLED
+
+## [s3] Some further structural spelling of the loop can move the floor.
+- mechanism: If any of the residual is reachable from C it must come from a spelling that changes emission order, reference counts, or live ranges — the same premise as session 2, re-tested with 18 forms disjoint from the 27 already banked.
+- probe: sweep3.py (12 forms: guard carried in count / in p / in a hoisted f, p assigned inside the inner guard, count as s16, count as u8, `*p++` with `--count`, guard folded into an && chain, f hoisted and re-read at the loop tail, decrement before the call, nested block declarations with initialisers, a u32* walk casting at the call) and ordersweep.py (6 forms on top of the role-flipped body).
+- result: In the s2 family everything was 17 or worse — s16 23, u8 21, p-inside-inner-guard 20, &&-chain 20, f-hoisted-and-re-read 20, decrement-before-call 19. In the role-flipped family, post-increment+pre-decrement, f hoisted out of the loop, an early-return guard, a scalar-cast guard test and a plain `while` are ALL byte-identical at 16. The loop's C spelling is confirmed a free variable in BOTH families; the residual lives in the prologue/guard region and the frame, not in the loop.
+- verdict: KILLED
+
+## [s3] H3 revisited - the target's $s0=p / $s1=count role split IS reachable from pure C, because global.c breaks an exact allocno priority TIE by allocno number (= pseudo creation order = declaration order).
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:633-654) computes pri = floor_log2(n_refs)*n_refs/live_length*10000*size, returns pri2-pri1, and ONLY when that is zero falls through to `return *v1 - *v2;` - the allocno number, which follows pseudo creation order, which for block locals follows DECLARATION order. Session 2 read only the priority formula and concluded a 30000-vs-20000 margin was unnudgeable; session 1 measured declaration order as inert but did so in the no-tie regime where the fall-through never executes. Lifting p from n_refs=7/live_length=7 (pri 20000) to 9/9 (pri 30000) reaches EXACT parity with count's 8/8/30000 - parity, not dominance, is all the tie-break needs - and the parity is reached by having p carry the D_800A2668 guard value before it is loaded with the table address.
+- probe: A 2x2 crossing {guard value carried in p, not carried} x {p declared first, count declared first}, every cell measured both with `sandbox motion_Close --disable all` and with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) reading the per-allocno n_refs / live_length / priority / assigned hardreg table. Scripts tmp/grind/motion_Close/s3/allocsweep3.py (spotted the tie) and tmp/grind/motion_Close/s3/tiebreak.py (the decisive 2x2).
+- result: {count declared first, no carry}: p 7/7 pri 20000, count 8/8 pri 30000, count takes $s0, score 17. {p declared first, no carry}: identical priorities, count still takes $s0, score 17. {count declared first, guard in p}: p 9/9 pri 30000 TIED with count 8/8 pri 30000, count wins on the lower allocno, score 17, byte-identical output. {p declared first, guard in p}: same tie, p wins on the lower allocno and takes $s0 - score 16, with the target's loop-body registers reproduced exactly (lw from $s0, addiu $s0,$s0,4, addiu $s1,$s1,-1, bnez $s1) and the inner guard branching on $s1 as the target does. Both halves are load-bearing; neither alone moves anything. New honest floor 16.
+- verdict: CONFIRMED
+
+## [s3] The role flip can be had without its prologue cost by LOWERING count's allocno priority instead of raising p's.
+- mechanism: The tie-break needs only parity, so removing one of count's 8 references - the outer `if (count != 0)` guard test, staged instead through a separate short-lived local - should drop count to 7 refs and tie p's 7, letting declaration order win $s0 for p with no guard carried in p, and hence with the guard load left in a caller-saved temp instead of being dragged into callee-saved $s0.
+- probe: Three declaration/body-order arrangements of the staged-guard-local form (u1_staged_guard_local, u2_staged_guard_local_countfirst, u4_staged_countinit_inside), each measured with sandbox and with the instrumented cc1: tmp/grind/motion_Close/s3/rolesweep.py + rolesweep.log.
+- result: count does drop to 7 refs, but its live_length drops 8 -> 6 at the same time, so its priority RISES from 30000 to 23333; p's live_length is simultaneously stretched to 9 by the extra local, dropping p from 20000 to 15555. The gap widens instead of closing, no tie forms, the tie-break never engages, and the extra local costs 3 more points of positional residual - score 22 in all three arrangements with identical allocno tables. General rule extracted for future sessions: references and live_length shrink together, so an allocno's priority can never be lowered by deleting references; the only workable direction on this function is adding references to the allocno you want to win.
+- verdict: KILLED
+
+## [s3] With the roles flipped, restoring the target's emission order (the p address pair before the count pair) is compatible with keeping the roles.
+- mechanism: The target emits `lui/addiu s0` (= p) at insns 8-9 and `lui/addiu s1` (= count) at 10-11. Session 2's count-before-p statement order was derived while count owned $s0 and is backwards once p owns it, so assigning p first should fix the two materialisations' positions at no cost.
+- probe: The p-before-count body order applied on top of the guard-carrying, p-declared-first form, measured twice with sandbox + instrumented cc1: t5_pdecl_pguard_ptrorder in tiebreak.py and w5_pfirst_count_inside in ordersweep.py.
+- result: Assigning p first moves count's birth one statement later: count's live_length falls 8 -> 7 and its priority RISES 30000 -> 34285, while p's live_length grows 9 -> 10 and its priority FALLS 30000 -> 27000. The tie is destroyed, count takes $s0 back, the roles revert, and the score returns to 20. Emission order and register roles are coupled through live_length - the statement order that fixes the positions is the one that destroys the priority tie fixing the roles. This coupling is the central problem of frontier F4.
+- verdict: KILLED
+
+## [s3] Some further structural spelling of the loop, disjoint from the 27 already banked, can move the floor.
+- mechanism: If any residual is reachable from C it must come from a spelling that changes GCC's emission order, reference counts, or live ranges - session 2's premise, re-tested with 18 forms chosen to be disjoint from the s1/s2 banked list and aimed at the two buckets s2 never probed directly (the $v0-vs-$t0 temp and the beqz delay slot).
+- probe: tmp/grind/motion_Close/s3/sweep3.py (12 forms: guard carried in count / in p / in a hoisted f, p assigned inside the inner guard, count as s16, count as u8, `*p++` combined with `--count`, guard folded into an && condition chain, f hoisted and re-read at the loop tail, decrement before the call, nested block declarations with initialisers, and a u32* walk casting at the call) plus tmp/grind/motion_Close/s3/ordersweep.py (6 body-order / loop-shape forms on top of the role-flipped body).
+- result: In the session-2 family everything scored 17 or worse: count as s16 23, count as u8 21, p assigned inside the inner guard 20, &&-chain guard 20, f hoisted and re-read 20, decrement before the call 19. In the role-flipped family, post-increment+pre-decrement, f hoisted out of the loop, an early-return guard, a scalar-cast guard test and a plain `while` are ALL byte-identical at 16. The loop's C spelling is confirmed a free variable in BOTH families; the residual lives in the prologue/guard region and the frame, not in the loop.
+- verdict: KILLED
