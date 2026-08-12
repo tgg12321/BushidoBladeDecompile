@@ -1,7 +1,7 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 16,
    "modality": "permuter",
    "headline": "Permuter found a POLICY-CLEAN route to floor 16: a single-level FAKE-annotated do{p=&D_8008D070;}while(0) wrap wins $s0 for p by a strict allocno priority margin (loop-depth ref weighting, 34285 vs 30"
+  },
+  {
+   "session": 5,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Floor 20->13 recovered and independently re-measured (the discarded s5 run's form, banked into candidate.c at last), and frontier F5 KILLED structurally: local-alloc/global.c scan hard regs ascending "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F6 (NEW, UNMEASURED LEAD - do this FIRST) - campaign wsA's best find, output-383-1 (permuter 383 vs base 468), may be a sub-16 form; it was never re-measured because WSL died before it surfaced.",
-   "mechanism": "It combines two constructs the session never tested together: (a) `count = D_800A2668 != 0;` - the guard staged through the s32 local and then overwritten with the table length inside the branch. This is a cast-free relative of session 3's guard carry, sits inside the frozen 'variable reuse for codegen control' family, and was never tried in combination with this session's do-while(0) wrap; by the same loop-depth/live-length arithmetic it should raise count's live_length (which is the direction F4b needs) rather than p's refs. (b) `D_800A2668++; D_800A2668--;` - a redundant RMW pair on the guard global. (b) is a FIRST REACH of a family nothing in the frozen SOTN list covers: if GCC folds the pair (likely - two adjacent RMWs on the same non-volatile location with nothing between them) it emits no bytes and its only function is to move GCC's analysis, failing checklist T1 and T2; if it does not fold it stores to a global the target never stores to, which is a behavioural difference rather than a match.",
-   "next_probe": "Measure `memory/grind/motion_Close/unmeasured_lead_s4_383.c` with `sandbox motion_Close --disable all` plus the instrumented cc1, then DECOMPOSE it: (a) alone, (b) alone, (a) composed with this session's `do { p = &D_8008D070; } while (0);` wrap, and (a) with p assigned first (the F4b shape). Report the allocno table per form. If (b) proves load-bearing, emit `ruling-request` - do not self-approve it. NOTE: WSL was left wedged at the end of session 4 (Wsl/Service/E_UNEXPECTED, host reboot likely needed); confirm the toolchain is healthy before trusting any measurement."
+   "hypothesis": "F7 (the only remaining nominally-open bucket, worth 2) - the beqz delay slot (target holds a nop where ours holds `sw s0,16`) and the prologue save ORDER (target saves s0,s1,ra at 4/8/12 ascending; ours emits ra,s1 then s0 into the delay slot).",
+   "mechanism": "Both come out of mips.c's save_restore_insns emission plus reorg.c's delay-slot fill of the guard branch. Our build has a free delay slot to fill precisely because it has three saves to place and a 32-byte frame to build; the target's frame is 16 with a different save order and leaves the slot empty. The two halves are probably one phenomenon, and both are downstream of the frame that H1 already proves unreachable - so this may well close out as a third structural kill rather than 2 recoverable points. That is worth establishing explicitly, because it decides whether motion_Close has ANY reachable gradient left.",
+   "next_probe": "Compile the floor-13 chassis with -da and read f13.c.dbr (reorg) plus the prologue emission: does the `sw s0` land in the slot because reorg found it the only eligible insn, or because save_restore_insns ordered the saves that way? Then test whether ANY pure-C body with a call and two callee-saved locals under this toolchain emits an empty guard-branch delay slot - a corpus scan of the oracle build for `beq $X,$zero` immediately followed by `nop` inside a function prologue answers it in one pass. If none exists, the last 2 points are dead too and motion_Close is fully explained at floor 13."
   },
   {
-   "hypothesis": "F5 (NEW, largest never-probed bucket) - the guard-load / jalr temp can be moved from $v0 to the target's $t0, worth 2 points.",
-   "mechanism": "Both the D_800A2668 guard load and the indirect call target land in $v0 in every form measured across four sessions, while the target uses $t0 for both. This is a local-alloc (local-alloc.c) decision over call-clobbered registers, not a global.c one, so none of the allocno-priority levers worked on it so far touch it \u2014 and no session has ever read the .lreg dump for these pseudos. It is the only remaining non-frame bucket that is neither dead-by-H1 nor the F4 order bind.",
-   "next_probe": "Compile the candidate with `-da` and read the .lreg local-alloc dump for the guard pseudo and the call-target pseudo: what makes local-alloc prefer $v0, and does the preference come from a copy-preference to the return register or from the register-class scan order? Then sweep forms that give the guard value and the call target different lifetimes (guard consumed before the frame exists, call target read into a variable used after the call, a second call-clobbered value live across the guard test) and read the dump per form. Both halves must move together \u2014 the target uses $t0 for the load AND the jalr."
+   "hypothesis": "F8 - motion_Close is an escalation candidate, and the next session should be prepared for the driver to route it there rather than spend more sessions on a floor with 11/13 points structurally proven unreachable.",
+   "mechanism": "Two independent frozen-toolchain mechanisms (H1 REG_PARM_STACK_SPACE = 16 for the frame; ascending first-free hard-reg scan with no MIPS REG_ALLOC_ORDER for $v0-vs-$t0) each prove a distinct bucket unreachable from any C source, not merely un-found. Together they account for 11 of the 13 remaining points. This is exactly the shape that distinguishes 'the search has not found it' from 'no C input to this compiler produces these bytes'.",
+   "next_probe": "Do NOT self-dispose - exhaustion is the driver's call and the ladder still has untried modalities (forensics / rederive / synthesis). What a future session CAN do cheaply is strengthen or refute the record: run `python3 tools/scan_hand_coded.py --single motion_Close` and record the signal tier verbatim (session 3 retracted the earlier S-c signal, so the current tier is unknown), and finish F7 above. Those two results are what an escalation entry would have to cite, and they are useful regardless of routing."
   },
   {
-   "hypothesis": "F4b (carried forward, still unprobed) - lengthen count's live range instead of moving statements, so p-first emission order and p's priority win can hold at once (worth the last 2 positional points).",
-   "mechanism": "Assigning p before count fails only because count is born one statement later, shortening its live_length 8 -> 7 and RAISING its priority to 38571. If count's live range can be lengthened back to 8+ without adding a count reference - e.g. by an intervening real computation that the target also performs, so count spans it - the p-first order and p's 34285 could hold simultaneously. Alternatively give p ~11 weighted references inside its existing range (a second wrapped reference is worth 2 each), which beats 38571 at 11/8 = 41250.",
-   "next_probe": "Enumerate the insns the target places between the guard branch and the loop (insns 8-13) and test body arrangements that make count live across each in turn; measure score + allocno table per arrangement. In parallel, sweep p-first forms carrying two or three wrapped p references (each worth 2 by loop-depth weighting) and check whether p can reach 11 weighted refs at live_length 8 without emitting a byte."
+   "hypothesis": "F4b (carried forward, now much lower value) - lengthen count's live range so p-first order and p's priority win can hold with a SMALLER device than the three-level wrap.",
+   "mechanism": "The floor-13 form already achieves p-first order AND p in $s0; F4b's original purpose (recovering the 2 positional points) is therefore ALREADY BANKED. What remains of it is purely a policy simplification: a three-level nested do-while(0) is a heavier device than a single level and a reviewer may push back on it, so a form reaching 13 with a single-level wrap (or none) would be strictly better to submit even at identical score.",
+   "next_probe": "Sweep bodies that lengthen count's live range without adding a count reference - an intervening real computation the target also performs, so count spans it - and check whether p at 8 weighted refs / live_length 8 can beat a count whose live_length grew back to 8 while p is assigned first. Measure score AND the allocno table per form (BB2_ALLOC_DEBUG=1). Success criterion is score 13 with wrap depth < 3, not a lower score."
   }
  ],
  "judge_constraints": [],

@@ -307,3 +307,59 @@ claim airtight. If F1 returns STRONG, F3 is moot entirely.
 - probe: Hand-transcribed the target region from `objdump -dr build/src/ings2.o`, assembled it to target.o, and had tmp/grind/motion_Close/s4/setup.sh VERIFY the normalized disassembly (32 lines incl. relocation records) against that region before building the workspace; compile.sh is the honest pipeline (cc1 -mel + prologue_fix + maspsx + multu_pad, no regfix/asmfix).
 - result: Verified byte-identical on the first corrected comparison and used for all three campaigns. A minimal 5-declaration TU also reproduces ings2.c's full-file codegen for this function exactly (25 insns, same sequence), so the permuter did not have to process all 814 lines. The recipe is reusable for any C-routed function lacking asm/funcs/*.s — and it also unblocks F1's next probe (extract the .s, then run scan_hand_coded for a MEASURED signal tier).
 - verdict: KILLED
+
+## [s5b] H-F5: the guard-load / jalr temp can be moved from $v0 to $t0 — KILLED
+
+STATEMENT. Frontier F5 held that the 4 points spent on $v0-vs-$t0 (guard lui/lw,
+body lw, jalr) were a local-alloc decision that some C form could steer.
+
+PROBE. `cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+-w -mel -da` on the floor-13 chassis (artifacts tmp/grind/motion_Close/s5b/f13.c.lreg,
+f13.c.greg), then reading the allocator scan order in the frozen toolchain source.
+
+RESULT. Both temps are block-local pseudos (74, 75) and both get hard reg 2.
+local-alloc.c:2249-2262 and global.c:1057-1062/1203-1209 scan hard regs ascending
+because the MIPS backend defines no REG_ALLOC_ORDER, so $v0 is the first
+allocatable GR_REGS register and wins whenever free. $t0 = hard reg 8 requires
+regs 2-7 all excluded, i.e. six live call-clobbered values over both ranges;
+the target's instruction stream contains none (no-arg, void call), so any C
+form manufacturing them emits instructions the target does not have.
+
+VERDICT: KILLED, structurally. Do not re-probe. See
+rejected/f5-t0-unreachable-alloc-scan-order.c.
+
+## [s5b] H-PERM3: a permuter campaign on the floor-13 chassis finds a sub-13 form — KILLED for this basin
+
+PROBE. tools/permuter_campaign.py launch/wait/harvest on tmp/grind/motion_Close/s5b/wsA
+(the floor-13 chassis, base permuter score 413, -j 6), three in-turn wait windows,
+55,660 iterations / 1421 s, harvested with --stop.
+
+RESULT. Two novel finds, best permuter 259. Re-measured with the engine both are
+worthless: the 259 find (a dead volatile local) scores 13 with two EXTRA emitted
+instructions and is a frame-coercion cheat besides; the 370 find re-treads the
+already-dead guard-staging family. Zero engine-gradient movement from 55k
+iterations on this basin.
+
+VERDICT: KILLED for this chassis. Combined with the F5 and H1 kills the basin is
+explained: 11 of the 13 residual points are structurally unreachable, so there is
+no gradient for a randomizer to descend. A future permuter session should not
+reseed this chassis; only the 2 open points (beqz delay slot, prologue save order)
+are worth a directed attack, and they are worth at most 2.
+
+## [s5] The floor-13 form described only in a comment line of rejected/pfirst-wrap-depth-1-and-2-insufficient.c (p assigned first, three-level do-while(0) wrap around p's initialiser) really does measure 13 on the honest gradient.
+- mechanism: flow.c weights REG_N_REFS by loop depth and each do{}while(0) emits a NOTE_INSN_LOOP_BEG/END pair, so three levels of nesting lift p to 10 weighted refs / live_length 8 = allocno priority 37500, past count's 34285, giving p $s0 while KEEPING the target's p-then-count address-materialisation order. Depth 1 and 2 measured insufficient (both score 20); depths 4-6 buy nothing.
+- probe: Applied the reconstructed body to src/ings2.c and ran `sandbox motion_Close --disable all`.
+- result: score 13, target_insns 26, build_insns 25 - confirmed, and re-confirmed at the end of the session with the same body still in src/. Banked into memory/grind/motion_Close/candidate.c with full mechanism + policy write-up (the file previously held session 4's floor-16 form).
+- verdict: CONFIRMED
+
+## [s5] Frontier F5: the D_800A2668 guard load and the indirect-call target, which land in $v0 in every form measured across five sessions, can be steered to the target's $t0 by some C form (worth 4 of the 13 remaining points).
+- mechanism: F5 assumed this was a steerable local-alloc.c decision over call-clobbered registers that no allocno-priority lever had yet touched. It is not steerable: local-alloc.c:2249-2262 and global.c:1057-1062/1203-1209 both scan hard registers in ASCENDING NUMERIC ORDER (`#ifdef REG_ALLOC_ORDER ... #else int regno = i; #endif`) and REG_ALLOC_ORDER is undefined in the MIPS backend, so $v0 (hard reg 2) is the first allocatable GR_REGS register and is taken whenever free. Reaching $t0 (hard reg 8) requires hard regs 2,3,4,5,6,7 all excluded over BOTH live ranges, i.e. six simultaneously live call-clobbered values - and the target's byte stream contains no value in $v0/$v1/$a0-$a3 anywhere, because the call takes no arguments and returns void. Manufacturing those values emits instructions the target does not contain, adding distance faster than it removes it.
+- probe: cc1 -da on the floor-13 chassis; read f13.c.lreg (Register 74 used 2 times across 4 insns in block 0; Register 75 used 4 times across 4 insns in block 2 - both block-local, so local-alloc owns them) and f13.c.greg (`;; Register dispositions: 72 in 17  73 in 16  74 in 2  75 in 2`); then grepped the frozen toolchain for REG_ALLOC_ORDER and read both allocators' find_reg scans.
+- result: KILLED. Both temps are block-local pseudos assigned hard reg 2 by first-free ascending scan; no C form can exclude regs 2-7 without emitting instructions absent from the target. Banked as rejected/f5-t0-unreachable-alloc-scan-order.c.
+- verdict: KILLED
+
+## [s5] A permuter campaign seeded on the floor-13 chassis finds a sub-13 form.
+- mechanism: Directed randomization on the closest known chassis is the standard way to surface a lever no hand-derivation reached; the s4 campaign on the floor-17 chassis is what produced the do-while(0) family in the first place.
+- probe: tools/permuter_campaign.py launch --dir tmp/grind/motion_Close/s5b/wsA --label pfirst_wrap3_floor13 -j 6 (base permuter score 413), three in-turn `wait` windows, then harvest --stop. 55,660 iterations over 1421 s.
+- result: KILLED for this basin. Exactly two novel finds. `output-259-1` (permuter 259, the best drop of the session) adds `volatile unsigned int new_var; new_var = 0;` - re-measured with the engine it scores 13, IDENTICAL to the chassis, with build_insns rising 25 -> 27; it is also an unused-local frame-coercion cheat outside the written-never-read carve-out (the target contains no such dead store), so it was rejected in-session and never surfaced as a candidate (rejected/volatile-dead-local-engine-neutral.c). `output-370-1` (permuter 370) re-treads the already-dead guard-staging family. Zero engine-gradient movement, which the F5+H1 kills explain: 11 of 13 residual points are structurally unreachable, so there is no gradient for a randomizer to descend.
+- verdict: KILLED
