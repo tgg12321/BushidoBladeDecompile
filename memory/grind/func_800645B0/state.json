@@ -1,0 +1,18 @@
+{
+ "func": "func_800645B0",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Constructs 1-4 are legitimate (pins/goto removed, var-reuse matches the confirmed defeat-licm-hoist-var-reuse precedent, RMW spelling and named-intermediate are ordinary C), but construct 5 (moving `j += 1;` between `idx = i + j;` and `val = 1;`) is an unsanctioned new spelling of 'reorder existing statements to win a cc1 first-pass-scheduler tie / steer reorg.c's delay-slot theft', found via an 8-variant directed hand-sweep, with no independent semantic reason to prefer this ordering over the other 7 measured variants. Next action: Revert construct 5 (the j+=1 rel"
+ ],
+ "banned_constructs": [
+  "`j += 1;` relocated from after the inner-loop body to between `idx = i + j;` and `val = 1;`, chosen from an 8-variant hand-authored sweep (tmp/grind/func_800645B0/s1/sweep.py) specifically because it flips which instruction (`addu $s0,$s3,$a0` vs `li $v1,1`) cc1's first-pass scheduler and reorg.c's back-edge delay-slot steal pick first"
+ ],
+ "ladder_skip": 9,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-12T20:04:09.997346+00:00"
+}
