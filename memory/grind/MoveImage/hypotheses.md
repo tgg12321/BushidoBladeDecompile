@@ -276,3 +276,208 @@ byte-similar sibling elsewhere in the tree.
 - probe: 29 forms across sweeps 3, 4 and 6: inline dispatch; p[6] staged into a local before and after `fn`; `(s32)bf24 - 8` staged into a local; `*(p + 6)`; `(*fn)(...)`; the call result staged into a local and returned; the dev table read twice; `p = g_gpu_dev_table + 6; fn = p[-4]; fn(*p, ...)`; a second pointer `q = p + 6`; the dev-table read placed before the stores, between the stores, and as the first statement of the body; u32 * / prototyped / s32-param / u16-param type views; and declaration-order permutations.
 - result: 26 of the 29 measured EXACTLY 2 / 49 - byte-identical output, the p[6] load's slot never moved. The three that differed were all worse: the two-pointer split 4/49, the `+6` base form 4/49, and `p` AND `fn` both hoisted above the stores 13/48 (steal lost). The dispatch tail and the type view cannot reach the residual.
 - verdict: KILLED
+
+---
+
+## Session 3 (structural, 2026-08-11)
+
+### Correction to the H7 mechanism (measured, supersedes the s2 wording)
+The s2 ledger recorded "anti/output links have insn_cost 0 and cannot raise a
+priority".  That is WRONG and it mis-shaped the s2 frontier.  Measured from the
+instrumented cc1 (`BB2_PRIO_DEBUG=1`, tmp/grind/MoveImage/s3/mv.prio, a
+standalone repro of the floor-2 candidate that reproduces the same insn UIDs as
+the s2 whole-file dump):
+
+    contrib = priority(pred) + insn_cost(pred, link, insn) - 1     (sched.c:1497)
+    insn_cost is 2 for a load feeding a true dependence, 1 otherwise —
+    INCLUDING for anti (kind 14) and output (kind 15) links.
+
+So an anti/output link does not ADD depth but it DOES propagate the
+predecessor's priority (`insn=86 pred=80 kind=14 pred_pri=3 cost=1 contrib=3`
+is in the dump).  Priority is the longest weighted path from the block start
+over ALL link kinds, not just true ones.
+
+The floor-2 dependence graph, as measured, is:
+
+    68  lw $a0,0x0($s0)   rect[0] load          pri 1
+    72  sw %lo(D_8009BF28)                      pri 1   (symbol store)
+    75  sw $a0,0x0($a1)   packet store          pri 2   (true dep on 68, cost 2)
+    78  lw $v0,0x4($s0)   rect[1] load          pri 2   (TRUE MEMORY dep on 75)
+    80  sw %lo(D_8009BF2C)                      pri 3   (true dep on 78, cost 2)
+    83  lw %lo(g_gpu_dev_table)                 pri 1   (NO true predecessor)
+    86  lw $v0,0x8($v1)   fn = p[2]             pri 3
+    91  lw $a0,0x18($v1)  p[6] load             pri 2   (83 cost 2; 75 cost 1)
+
+Note 78's depth comes from the PACKET store (75), not from the D_8009BF28
+symbol store — s2 had this backwards, and it is why the s2 frontier's "hoist
+above the BF28 store" framing was the wrong boundary.
+
+### H8 — CONFIRMED, and it is the session's finding.
+### "The floor-2 residual is an ALIAS-EXEMPTION artifact on the `p[6]` read,
+### not a priority tie: `p[6]` is MEM_IN_STRUCT_P, which makes it exempt from
+### the D_8009BF2C symbol store, so nothing pins it and it floats 4 slots early."
+Mechanism (both halves read from the compiler source and then measured):
+  * `expr.c:4567-4577` — an INDIRECT_REF whose operand is a PLUS_EXPR is marked
+    MEM_IN_STRUCT_P: *"If address was computed by addition, mark this as an
+    element of an aggregate."*  So `p[6]` (= INDIRECT_REF(PLUS(p,24))) is
+    `mem/s`, while `*rect` after `rect++` (= INDIRECT_REF(rect)) is a plain
+    `mem`.  Confirmed in tmp/grind/MoveImage/s3/mv.c.sched: insns 86 and 91 are
+    `mem/s`, insn 78 is plain `mem`.
+  * `sched.c:834-839` (true_dependence) — a (MEM_IN_STRUCT_P && varying-address
+    && non-QImode) ref NEVER conflicts with a (non-struct && fixed-address) ref.
+    The two `%lo(SYM)` stores are non-struct fixed-address MEMs, so the `mem/s`
+    `p[6]` load is exempt from both, has no ordering constraint against them,
+    and the scheduler is free to hoist it — which is precisely the 4-slot
+    displacement that is the entire floor-2 residual.
+Probe: re-spell the dispatch ARGUMENT read so its INDIRECT_REF operand is not a
+PLUS — advance a pointer first, then dereference it plainly (sweep10, 8 forms).
+Result: every plain-read form moves the `lw $a0,0x18($v1)` to TARGET'S EXACT
+SLOT (immediately after the `sw $v0,%lo(D_8009BF2C)($at)` store, immediately
+before the `fn` load).  The instrumented dump confirms the intended edge exists:
+`insn=94 pred=80 kind=0 pred_pri=3 cost=1 contrib=3` — a true store->load
+dependence that pins the load after the D_8009BF2C store and lifts its priority
+from 2 to 3.
+    G5/G6 `q = p + 6; ... fn(*q, ...)`        4 / 49
+    G3    `p = tbl + 6; fn = p[-4]; fn(*p,…)` 4 / 49
+    G4    both dispatch reads walked          4 / 49
+    G1/G2/G7/G8 `p += 6; ... fn(*p, ...)`     7 / 49
+Verdict: **CONFIRMED.**  The scorer reads 4 rather than 2 because the residual
+MOVED, not because the form is worse: on the G5 base the p[6] load, both symbol
+stores, the packet store, both rect loads, the `a2`/`a3` argument constants and
+the entire tail all sit in target's positions, and the ONLY thing left is the
+dev-table `lui/lw` pair being 4 slots late.  Banked as
+memory/grind/MoveImage/candidate_alt_plain_arg.c — the next session should treat
+it as a second base, not as a regression.
+
+### H9 — KILLED. "Alias-exempt the RECT reads (struct view or const) to drop the
+### D_8009BF2C store's priority."
+Mechanism: same two sched.c clauses, applied to the other side — a struct-typed
+view of the rect words (COMPONENT_REF sets MEM_IN_STRUCT_P) or a `const s32 *`
+rect (RTX_UNCHANGING_P, sched.c:828) would exempt the rect[1] load from the
+packet store, taking priority(78) to 1 and priority(80) to 2.
+Probe: sweep7, 8 forms — two-s32-member struct view (natural and src-hoisted),
+struct view of the second word only, a full s16 `RECT` struct including the w/h
+guard, `const s32 *` with and without the walking pointer, and a const struct
+pointer.
+Result: the exemption fires and destroys the H2 delay-slot steal in every form —
+the four struct forms all 21 / 47, the three const forms all 20 / 48.  Freeing
+the rect load lets it beat `sll $v0,$s1,16` to the head of the post-guard block.
+Verdict: **KILLED.**  MEM_IN_STRUCT_P / const may not be applied to the rect
+side of this function.
+
+### H10 — KILLED. "Give the dev-table symbol load a true predecessor by making
+### the packet pointer opaque (multi-set, so canon_rtx cannot resolve it)."
+Mechanism: `canon_rtx` (sched.c:370-377) replaces a REG by `reg_known_value`,
+which is filled only for a REG_EQUAL note with `reg_n_sets == 1` or a REG_EQUIV
+note (sched.c:421-433).  The packet pointer is a single-set `&D_8009BF24`, so
+the packet store canonicalizes to that SYMBOL and never conflicts with the
+`g_gpu_dev_table` symbol load.  A two-set packet pointer loses its known value,
+and an opaque-REG store does conflict with a symbol load.
+Probe: sweep8 — `bf24 -= 2;` before/after the dev-table read, the `(u8 *)`
+spelling, base-then-advance, and the combination with a store reorder.
+Result: the edge IS created (9 / 49, 49 insns preserved) and it is the WRONG
+edge: a true store->load dependence forces the dev-table load BELOW the packet
+store, while target emits it 5 instructions ABOVE (`lui $v1,%hi(D_8009BE6C)` at
+8007B734 vs `sw $a0,0x0($a1)` at 8007B748).  The base-then-advance spelling is
+folded back to a single set by cse (2 / 49, inert).
+Verdict: **KILLED** — and it is positive evidence that target's build does NOT
+have a memory dependence into the dev-table load.
+
+### H11 — KILLED. "The rect[1] read can sit between the D_8009BF28 symbol store
+### and the packet store."
+Mechanism: the symbol store is exempt from the rect loads, so a rect[1] read
+placed in that window would have no true predecessor -> priority(78) = 1,
+priority(80) = 2, tying the p[6] load and handing it the class tie-break.  H7a
+only ever measured reads hoisted above the SYMBOL store, so this window was
+genuinely untested.
+Probe: sweep9 (5 forms) plus the three store-reorder forms in sweep8.
+Result: all 48 instructions (scores 10-20).  The delay-slot steal dies whenever
+the rect[1] read OR the D_8009BF2C store precedes the packet store, not merely
+when it precedes the D_8009BF28 store.
+Verdict: **KILLED** — and it sharpens H7a: the boundary is the PACKET store.
+
+### H12 — KILLED. "The dev-table load's slot is steerable from source order."
+Probe: sweep11 — 11 placements of `p = (s32 *)g_gpu_dev_table;` on the plain-
+argument base (first statement, before the pointer setup, before/between/after
+each of the three stores, with `fn = p[2]` and `q = p + 6` moved alongside).
+Result: 10 of 11 byte-identical at 4 / 49; the eleventh (`p` and `fn` both
+hoisted above the stores) is 10 / 48 — the steal again.  This reproduces
+session 1's H3 on the new base.
+Verdict: **KILLED on both bases.**  The dev-table load's position is set by its
+scheduler priority, not by LUID.
+
+## Frontier after session 3
+
+### The one open edge (from the plain-argument base, 4 / 49)
+On memory/grind/MoveImage/candidate_alt_plain_arg.c the sole residual is that
+`lui $v1,%hi(D_8009BE6C) / lw $v1,%lo(D_8009BE6C)($v1)` is emitted 4 slots late.
+Measured cause: in that build the dev-table load acquires a true memory
+dependence on the packet store — mv2.prio has
+`insn=83 pred=75 kind=0 pred_pri=2 cost=1 contrib=2` and `SET insn=83
+final_pri=2` — whereas in the floor-2 build the same insn has only two
+anti/output predecessors and `final_pri=1` (mv.prio).  The RTL for both insns is
+textually identical between the two builds (mv.c.sched vs mv2.c.sched: insn 61
+sets the pointer pseudo from `(symbol_ref "D_8009BF24")` with a REG_EQUAL note
+in both; insn 75 is `(set (mem:SI (reg)) ...)` in both; insn 83 is
+`(set (reg) (mem:SI (symbol_ref "g_gpu_dev_table")))` in both).  So the edge is
+NOT explained by the RTL of those three insns alone, and finding out what
+actually flips `canon_rtx`/`true_dependence` for that pair between the two
+builds is the single highest-value next probe — priority(83) back to 1 with the
+plain argument read retained should close the function.
+
+Next probes, in order:
+  1. FORENSICS: re-run the two standalone dumps with `BB2_PRIO_DEBUG=1` and add
+     a print inside `memrefs_conflict_p` / `canon_rtx` (READ-ONLY diagnostics
+     are already compiled in; do not modify the compiler) to see which operand
+     differs for the (insn 75, insn 83) pair.  Candidate explanations to test
+     first: the extra pseudo shifts `reg_n_sets`/`max_reg_num` so the packet
+     pointer's REG_EQUAL entry is not installed; or the pass in which the two
+     dumps were taken differs (post-RA there are no pseudos at all, so
+     `init_alias_analysis` installs no known values and every pointer store
+     aliases every symbol load).
+  2. STRUCTURAL, on the plain-argument base: spellings that keep the dispatch
+     argument read plain but restore the packet store's symbol canonicalization
+     — e.g. taking the call's packet address from a separate expression so the
+     store's pointer is used exactly once, or reordering the dev-table read
+     relative to the `q` computation (only the placements in sweep11 have been
+     tried; the `q`/`fn` cross-product has not).
+  3. STRUCTURAL: apply the SAME MEM_IN_STRUCT_P lever to the `fn = p[2]` read
+     (sweep10's G4 walked both, 4 / 49) in combination with each of the sweep11
+     placements — that cross-product is unmeasured.
+
+### Standing constraints (unchanged, re-confirmed this session)
+  * build_insns MUST be 49.  Any form at 47/48 has lost the H2 delay-slot steal.
+  * At most ONE rect read may precede the PACKET store, and rect[0] holds it.
+  * No form may make the rect reads MEM_IN_STRUCT_P or const-qualified.
+  * The dev-table load must have NO true memory predecessor (target emits it
+    above the packet store).
+
+## [s3] The floor-2 residual is an ALIAS-EXEMPTION artifact on the p[6] dispatch-argument read, not a priority tie: p[6] is MEM_IN_STRUCT_P, which exempts it from the %lo(D_8009BF2C) symbol store, so nothing pins it and the scheduler floats it 4 slots early.
+- mechanism: expr.c:4567-4577 marks an INDIRECT_REF whose operand is a PLUS_EXPR as MEM_IN_STRUCT_P ('if address was computed by addition, mark this as an element of an aggregate'), so p[6] = INDIRECT_REF(PLUS(p,24)) emits mem/s while *rect after rect++ emits a plain mem (confirmed in mv.c.sched: insns 86/91 are mem/s, insn 78 is plain mem). sched.c:834-839 (true_dependence) then makes a (MEM_IN_STRUCT_P && varying-address && non-QImode) ref never conflict with a (non-struct && fixed-address) ref, and both %lo(SYM) stores are non-struct fixed-address MEMs.
+- probe: sweep10 (tmp/grind/MoveImage/s3/sweep10.py): 8 spellings that make the dispatch argument read a plain INDIRECT_REF -- advance a pointer then dereference (`q = p + 6; fn(*q, ...)`, `p += 6; fn(*p, ...)`, `p = tbl + 6; fn = p[-4]`, both dispatch reads walked, argument staged through a local, `p = &p[6]`). Each measured with sandbox --disable all and gated on build_insns == 49; the winner re-dumped with BB2_PRIO_DEBUG=1 on a standalone repro (mv2.c/mv2.prio/mv2.c.sched).
+- result: Every plain-read form moves `lw $a0,0x18($v1)` to TARGET'S EXACT SLOT -- immediately after `sw $v0,%lo(D_8009BF2C)($at)`, immediately before the fn load. The instrumented dump shows the intended edge: `insn=94 pred=80 kind=0 pred_pri=3 cost=1 contrib=3`, a true store->load dependence that pins the load and lifts its priority from 2 to 3, and insn 94 is a plain mem (no /s). Scores: G5/G6 second-pointer 4/49, G3 based-at-6 4/49, G4 both reads walked 4/49, G1/G2/G7/G8 p-advanced 7/49. The scorer reads 4 rather than 2 because the residual MOVED: on that base the p[6] load, both symbol stores, the packet store, both rect loads, the a2/a3 argument constants and the whole tail are all in target's positions, and the only diff left is the dev-table lui/lw pair being 4 slots late.
+- verdict: CONFIRMED
+
+## [s3] Alias-exempting the RECT reads (struct-typed view, or const-qualified pointer) drops the rect[1] load's depth to 1 and the D_8009BF2C store's priority to 2, tying the p[6] load and handing it the rank_for_schedule class tie-break.
+- mechanism: Same sched.c:834-839 exemption applied to the other side (COMPONENT_REF sets MEM_IN_STRUCT_P via expr.c:4888), plus sched.c:828 -- an RTX_UNCHANGING_P read can never conflict with a non-unchanging store, which a `const s32 *` rect would produce.
+- probe: sweep7 (tmp/grind/MoveImage/s3/sweep7.py): 8 forms -- two-s32-member struct view natural and src-hoisted, struct view of the second word only, a full s16 RECT struct including the w/h guard, `const s32 *` with the walking pointer and with plain rect[0]/rect[1], and a const struct pointer.
+- result: The exemption fires and destroys the H2 delay-slot steal in every form. The four struct forms all measure 21 / 47 instructions; the three const forms all measure 20 / 48. Freeing the rect load lets it beat `sll $v0,$s1,16` to the head of the post-guard block, which is exactly the H2 failure mode.
+- verdict: KILLED
+
+## [s3] Giving the g_gpu_dev_table symbol load a true memory predecessor -- by making the packet pointer multi-set so canon_rtx cannot resolve it to its symbol -- lifts the p[6] load's priority to 3 and flips the T-5 scheduler pick.
+- mechanism: canon_rtx (sched.c:370-377) replaces a REG by reg_known_value, filled only for a REG_EQUAL note with reg_n_sets == 1 or a REG_EQUIV note (sched.c:421-433). The single-set `bf24 = &D_8009BF24` therefore canonicalizes the packet store to that SYMBOL, and two distinct symbols never conflict (memrefs_conflict_p line 776), leaving the dev-table load with no predecessor at priority 1. A two-set pointer loses its known value and an opaque-REG store does conflict with a symbol load.
+- probe: sweep8 (tmp/grind/MoveImage/s3/sweep8.py): `bf24 -= 2;` before and after the dev-table read, the `(u8 *)bf24 - 8` spelling, base-then-advance (`&D_8009BF24 - 2` then `+= 2`), and the combination with a store reorder.
+- result: The edge IS created and build_insns stays 49, but it is the WRONG edge -- 9 / 49 for all three two-set spellings. A true store->load dependence forces the dev-table load BELOW the packet store, whereas target emits it 5 instructions ABOVE (asm/funcs/MoveImage.s: `lui $v1,%hi(D_8009BE6C)` at 8007B734 vs `sw $a0,0x0($a1)` at 8007B748). Base-then-advance is folded back to a single set by cse (2 / 49, inert). Positive corollary: target's build has NO memory dependence into the dev-table load.
+- verdict: KILLED
+
+## [s3] The rect[1] read can sit in the untested window between the D_8009BF28 symbol store and the packet store, where it would have no true predecessor -- H7a only ever measured reads hoisted above the SYMBOL store.
+- mechanism: The measured graph shows the rect[1] load's depth comes from the PACKET store (insn 75), not the D_8009BF28 symbol store, so a read placed after the symbol store but before the packet store would be depth 1, taking the D_8009BF2C store to priority 2 and tying the p[6] load.
+- probe: sweep9 (5 forms: wh read between the stores with and without the walking pointer, both reads after the BF28 store, D_8009BF2C store emitted first, dev-table read hoisted) plus the three store-reorder forms in sweep8.
+- result: All eight forms measure build_insns 48 (scores 10-20) -- the delay-slot steal dies whenever the rect[1] read OR the D_8009BF2C store precedes the packet store, not merely when it precedes the D_8009BF28 store. This sharpens H7a: the boundary is the PACKET store, and rect[0] already occupies the one slot available ahead of it.
+- verdict: KILLED
+
+## [s3] The dev-table load's emitted slot is steerable from C source order (re-test of session 1's H3 on the new plain-argument base, where that load is the sole remaining diff).
+- mechanism: Source order sets LUID, which breaks INSN_PRIORITY ties in cc1's list scheduler.
+- probe: sweep11: 11 placements of `p = (s32 *)g_gpu_dev_table;` on the plain-argument base -- first statement of the function, before the pointer setup, before/between/after each of the three stores, and with `fn = p[2]` and `q = p + 6` moved alongside it.
+- result: Ten of eleven are byte-identical at 4 / 49; the eleventh (`p` and `fn` both hoisted above the stores) is 10 / 48, the steal lost again. Source order is inert for this load on both bases -- its slot is set by its scheduler priority, which measurably rises from 1 to 2 on the plain-argument base.
+- verdict: KILLED

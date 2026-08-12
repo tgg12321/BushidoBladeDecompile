@@ -1,7 +1,7 @@
 {
  "func": "MoveImage",
  "file": "display",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "MoveImage floor 7 -> 2 (build_insns 49 == target): walking the rect argument with a post-increment pointer hoists the rect[0] read ahead of the D_8009BF28 store WITHOUT losing the H2 delay-slot steal;"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Found the mechanism behind the whole floor-2 residual: p[6] is MEM_IN_STRUCT_P (expr.c:4567) so sched.c:834-839 exempts it from the D_8009BF2C symbol store and it floats 4 slots early; re-spelling it "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H7 - the entire residual is one scheduler pick at T-5 (insn 80, the D_8009BF2C store, prio 3, beats insn 91, the p[6] load, prio 2). Target's build must have priority(91) >= priority(80), and since the rank_for_schedule class tie-break already favours 91 at T-5 (91 is independent of the last-scheduled insn 86, whereas 86 depends on 80), a lift of exactly +1 on 91 is sufficient - it does not have to exceed 80.",
-   "mechanism": "cc1 2.7.2 sched.c priority() = longest TRUE-dependence path from the block start; anti/output links cost 0. priority(91) = priority(83) + 1 and the dev-table load 83 is depth 1 because cc1 disambiguates %lo(D_8009BE6C) from every store in the block (the two symbol stores, and the `0x0($a1)` store whose base carries a REG_EQUIV to &D_8009BF24). Any source structure that puts ONE true-dependence edge into the dev-table load closes the function.",
-   "next_probe": "FORENSICS modality. Dump `.sched`/`.sched2` for the MATCHED siblings in the same TU that use the identical dev-table dispatch (LoadImage, StoreImage, ClearImage, ClearImage2 - src/display.c:129-163) and read the priority of each one's `p[N]` argument load relative to its neighbouring stores. If any matched sibling shows its dev-table load at depth >= 2, whatever produces that depth in the sibling is the missing structure here, and it is ground truth rather than a guess. Reuse tmp/grind/MoveImage/s2/dump.sh (it already reproduces the sandbox's exact cc1 invocation with -dr -dS -dR -dj)."
+   "hypothesis": "On the plain-argument base (candidate_alt_plain_arg.c, 4/49) the ONLY residual is the dev-table lui/lw pair being 4 slots late, caused by priority(insn 83) rising from 1 to 2 via a true memory dependence on the packet store that does not exist in the floor-2 build despite textually identical RTL for both insns. Removing that edge while keeping the plain dispatch-argument read should close the function.",
+   "mechanism": "priority() is the longest weighted path from the block start (sched.c:1497); the dev-table load is placed early only while it is the lowest-priority ready insn. The new edge is a true store->load dependence from the packet store, which can only arise if canon_rtx stops resolving the packet pointer to its symbol -- so either the extra pseudo perturbs the REG_EQUAL/reg_n_sets bookkeeping in init_alias_analysis, or the two dumps were taken in different sched passes (post-RA there are no pseudos, so no pointer is ever resolved and every pointer store aliases every symbol load).",
+   "next_probe": "FORENSICS. Re-run both standalone dumps (tmp/grind/MoveImage/s3/mv.c and mv2.c) with BB2_PRIO_DEBUG=1 and separate the sched1 and sched2 sections, then read `reg_n_sets` / the REG_EQUAL note on the packet-pointer set insn in each. Do NOT modify the compiler -- the diagnostics are already compiled in. Once the cause is known, look for a spelling that keeps the dispatch argument read plain while the packet store still canonicalizes to its symbol."
   },
   {
-   "hypothesis": "The +1 that H7 needs may come from the guard region rather than the body: the two `lh` guard loads and the func_8007B3A8 call sit in earlier blocks, and the dev-table load's depth is measured WITHIN block 3 only. If the dev-table read were expressed so that it is fed by a value produced in the body (rather than being a self-contained lui/lw pair with no predecessor), 83 becomes depth >= 2 and 91 becomes 3.",
-   "mechanism": "priority() is computed per basic block from LOG_LINKS, so an insn with no in-block predecessor is depth 1 by definition. The dev-table load currently has none. A true (not anti, which costs 0) in-block predecessor - a register dependence on a value computed in the body, or a memory dependence cc1 cannot disambiguate - lifts it.",
-   "next_probe": "Enumerate honest C shapes in which the dev-table pointer is REACHED THROUGH something already computed in the body, and check each for (a) build_insns == 49 and (b) whether the emitted dev-table load still uses the bare `lui $v1,%hi / lw $v1,%lo` pair target has. Any shape that survives both is a candidate. Note the anti-cheat boundary explicitly: a dependence manufactured by a construct with no semantic purpose (a dead store, an opaque holder, a volatile coercion) is a cheat, not a lever - the edge has to come from a computation the function genuinely performs."
+   "hypothesis": "The MEM_IN_STRUCT_P lever applied to the OTHER dispatch read (`fn = p[2]`) interacts with the dev-table load's placement, and that cross-product is unmeasured.",
+   "mechanism": "The fn load is also mem/s and therefore also alias-exempt from both symbol stores; making it plain gives it true dependences on the stores too, which changes both its own slot and the readiness order in which the dev-table load competes.",
+   "next_probe": "STRUCTURAL. Cross sweep10's G4 (both dispatch reads walked) with each of sweep11's 11 dev-table placements, gated on build_insns == 49, and dump BB2_PRIO_DEBUG for any form whose score drops below 4."
   },
   {
-   "hypothesis": "The remaining search space is narrow, fully characterised, and gated by a cheap mechanical test, which makes it a good fit for a directed permuter campaign rather than more hand enumeration.",
-   "mechanism": "The target is a single known edge in cc1's dependence graph and the acceptance test is two numbers from one sandbox run (score 0 with build_insns == 49). The structural axis has now been swept ~50 forms deep by hand with no movement, so random/directed mutation over the body is the cheaper remaining search.",
-   "next_probe": "PERMUTER modality with a clean single-function target built from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc (so the function sits at offset 0 and the base score is the real weighted diff), seeded from the floor-2 candidate, with PERM_* directives over the body statement order and the dev-table access shape. Per permuter-fresh-seed-discipline, run fresh-seed windows and harvest in-turn; every closing form is a PROPOSAL and must clear the 6-test cheat checklist plus the layer-1 reviewer before it can be submitted."
+   "hypothesis": "The remaining search space on both bases is a single scheduler edge with a two-number acceptance test, which fits a directed permuter campaign better than further hand enumeration.",
+   "mechanism": "The acceptance test is score 0 with build_insns == 49 from one sandbox run, and the structural axis has now been swept ~90 forms deep by hand across three sessions.",
+   "next_probe": "PERMUTER modality, seeded from BOTH memory/grind/MoveImage/candidate.c and memory/grind/MoveImage/candidate_alt_plain_arg.c, with a clean single-function target built from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc, PERM_* directives over the body statement order and the dispatch-read spelling, fresh-seed windows per permuter-fresh-seed-discipline, harvested in-turn. Every closing form is a PROPOSAL and must clear the 6-test cheat checklist plus the layer-1 reviewer."
   }
  ],
  "judge_constraints": [],

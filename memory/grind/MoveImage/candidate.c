@@ -36,6 +36,17 @@
  * we emit `lw $a0,0x18($v1)` (the p[6] call argument) four slots earlier,
  * immediately after `sw $a0,0x0($a1)`. Everything else is byte-identical.
  * Diagnosis from the cc1 .sched2 dump is in evidence.md / hypotheses.md H7.
+ *
+ * SESSION 3 NOTE — read this before grinding from here.  The 4-slot float of
+ * the p[6] load is now explained: `p[6]` is an INDIRECT_REF over a PLUS_EXPR,
+ * so expr.c:4567-4577 marks it MEM_IN_STRUCT_P, and sched.c:834-839 then makes
+ * it alias-EXEMPT from the `%lo(D_8009BF2C)` symbol store — nothing pins it.
+ * Re-spelling that read as `q = p + 6; ... fn(*q, ...)` (a plain INDIRECT_REF)
+ * restores the dependence and puts the load at TARGET'S EXACT SLOT.  That form
+ * is banked as ../candidate_alt_plain_arg.c and scores 4 / 49 — a HIGHER number
+ * than this file only because the residual MOVED to the dev-table load, which
+ * is now the single remaining diff.  Evaluate both bases; hypotheses.md H8
+ * carries the measurements.
  */
 extern u8 D_80015F74;
 extern s32 D_8009BF24;

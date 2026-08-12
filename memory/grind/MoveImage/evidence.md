@@ -284,3 +284,59 @@ All gated on `build_insns == 49`; full tables in
 - [s2] Approximately 50 distinct forms were measured across six scripted sweeps, every one gated on build_insns == 49 (a form scoring below 21 with build_insns 47 or 48 has lost the H2 steal and is a dead end regardless of score). Full tables: tmp/grind/MoveImage/s2/sweep{,2,3,4,5,6}_results.md; per-variant objdumps in tmp/grind/MoveImage/s2/asm{2,3,4,5,6}/.
 
 - [s2] Floor-2 form is live in src/display.c and saved to memory/grind/MoveImage/candidate.c. Two disproven families are banked: rejected/rect1-read-hoisted-above-bf28-store.c (10 forms, all build_insns 48) and rejected/tail-respellings-inert-at-floor-2.c (29 forms, all inert or worse).
+
+## Session 3 (structural, 2026-08-11) — measured facts
+
+* The instrumented cc1 (`tools/gcc-2.7.2/cc1`, `BB2_PRIO_DEBUG=1`) reproduces
+  MoveImage's dependence graph exactly from a 34-line standalone file
+  (`tmp/grind/MoveImage/s3/mv.c`), with the SAME insn UIDs as the whole-file
+  dump.  This makes the priority graph a one-command instrument for this
+  function: tmp/grind/MoveImage/s3/mv.prio (floor-2 form) and mv2.prio
+  (plain-argument form).
+* `sched.c:1497` — `contrib = priority(pred) + insn_cost(...) - 1`.  insn_cost
+  is 2 only for a load feeding a true dependence; anti (kind 14) and output
+  (kind 15) links cost 1, so they do not add depth but DO propagate the
+  predecessor's priority.  The s2 ledger's "anti/output cost 0" is corrected.
+* Floor-2 priorities: rect[0] load 1, D_8009BF28 store 1, packet store 2,
+  rect[1] load 2, D_8009BF2C store 3, dev-table load 1, `fn` load 3, p[6] load 2.
+* The rect[1] load's depth comes from the PACKET store (a pointer store), not
+  from the D_8009BF28 symbol store: symbol stores are alias-exempt from the
+  `mem/s` refs and merely anti-ordered against the plain ones.
+* `expr.c:4567-4577` marks an INDIRECT_REF with a PLUS_EXPR operand as
+  MEM_IN_STRUCT_P.  `p[6]` -> `mem/s`; `*q` after `q = p + 6` -> plain `mem`.
+  `sched.c:834-839` exempts a (MEM_IN_STRUCT && varying) ref from a
+  (non-struct && fixed) ref — this is why `p[6]` never depends on the
+  `%lo(D_8009BF2C)` store and floats 4 slots early.
+* Making the dispatch argument read plain puts `lw $a0,0x18($v1)` at target's
+  exact slot and lifts its priority to 3 via a true dependence on the
+  D_8009BF2C store (`insn=94 pred=80 kind=0`).  Score 4 / 49; the residual
+  becomes the dev-table pair being 4 slots late.
+* `canon_rtx` (sched.c:370-377) + `init_alias_analysis` (sched.c:421-433):
+  a pointer pseudo is resolved to its symbol only via a REG_EQUAL note with
+  `reg_n_sets == 1` or a REG_EQUIV note; hard registers are never given known
+  values (the loop requires `REGNO >= FIRST_PSEUDO_REGISTER`).
+* Target's own emission order (asm/funcs/MoveImage.s 8007B720-8007B76C) proves
+  its build has NO memory dependence into the dev-table load: the load pair sits
+  5 instructions ahead of the packet store.
+* 41 forms measured this session (sweeps 7-11), all gated on build_insns:
+  8 alias-exemption forms on the rect (all 47/48), 9 opaque/reorder forms
+  (9-20), 6 inter-store-window forms (all 48), 9 plain-dispatch-read forms
+  (4 or 7 at 49), 11 dev-table placements (10 inert at 4 / 49).
+
+- [s3] The s2 ledger's claim that anti/output dependence links have insn_cost 0 and cannot raise a priority is WRONG and is corrected in the ledger: sched.c:1497 computes contrib = priority(pred) + insn_cost(...) - 1, insn_cost is 2 only for a load feeding a true dependence, and anti (kind 14) / output (kind 15) links cost 1 -- they do not add depth but they DO propagate the predecessor's priority (the dump carries `insn=86 pred=80 kind=14 pred_pri=3 cost=1 contrib=3`).
+
+- [s3] Measured floor-2 priorities (BB2_PRIO_DEBUG=1): rect[0] load 1, D_8009BF28 store 1, packet store 2, rect[1] load 2, D_8009BF2C store 3, dev-table load 1, fn load 3, p[6] load 2.
+
+- [s3] The rect[1] load's depth comes from the PACKET store (a pointer store), NOT from the D_8009BF28 symbol store -- the s2 ledger had this backwards, which is why its 'hoist above the BF28 store' framing tested the wrong boundary.
+
+- [s3] expr.c:4567-4577 marks an INDIRECT_REF whose operand is a PLUS_EXPR as MEM_IN_STRUCT_P; sched.c:834-839 exempts such a ref (varying address, non-QImode) from ever conflicting with a non-struct fixed-address ref. Together these are why `p[6]` never depends on the `%lo(D_8009BF2C)` store while `*rect` does depend on the packet store.
+
+- [s3] A 34-line standalone repro (tmp/grind/MoveImage/s3/mv.c) reproduces MoveImage's dependence graph with the SAME insn UIDs as the whole-file dump, so the priority graph is now a one-command instrument for this function.
+
+- [s3] On the plain-argument base the dev-table load acquires a true memory dependence on the packet store (mv2.prio: `insn=83 pred=75 kind=0 pred_pri=2`, final_pri=2) that is absent in the floor-2 build (mv.prio: only two anti/output preds, final_pri=1) -- even though the RTL of insns 61, 75 and 83 is textually identical between the two builds. That unexplained edge is the last blocker.
+
+- [s3] canon_rtx/init_alias_analysis (sched.c:370-377, 421-433) install known values only for pseudos with a REG_EQUAL note at reg_n_sets == 1 or a REG_EQUIV note; hard registers are never given known values (the loop requires REGNO >= FIRST_PSEUDO_REGISTER).
+
+- [s3] 41 forms measured this session across sweeps 7-11, every one gated on build_insns as well as score; the standing gate is confirmed again -- any form at 47 or 48 instructions has lost the H2 delay-slot steal.
+
+- [s3] src/display.c was returned to its HEAD state; the session's forms live in memory/grind/MoveImage/candidate.c (floor 2), candidate_alt_plain_arg.c (the 4/49 alternate base) and rejected/alias-exemption-and-opaque-pointer-forms.c.
