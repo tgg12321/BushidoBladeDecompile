@@ -212,7 +212,9 @@ void func_80042874(u16 *a0, s16 *a1) {
     s32 cosA_cosB;
     s32 sinB_sinC;
     s32 cosA;
-    register s32 angC asm("$3");
+    s32 angC;
+    s32 idxB;
+    u16 rawA;
 
     angA = a0[0];
     angB = a0[1];
@@ -220,21 +222,25 @@ void func_80042874(u16 *a0, s16 *a1) {
     sinA = Judge[angA & 0xFFF];
     sinB = Judge[angB & 0xFFF];
 
-    angC = a0[2];
-    sinC = Judge[angC & 0xFFF];
+    idxB = (s16)angB + 0x400;
 
     negSinAxsinB_12 = (sinA * -sinB) >> 12;
 
+    angC = a0[2];
+    sinC = Judge[angC & 0xFFF];
+
     prod_sinC = negSinAxsinB_12 * sinC;
 
-    cosB = Judge[((s16)angB + 0x400) & 0xFFF];
+    cosB = Judge[idxB & 0xFFF];
     cosC = Judge[((s16)angC + 0x400) & 0xFFF];
 
     cosB_cosC = cosB * cosC;
 
     sinAxcosB = sinA * cosB;
 
-    cosA = (s16)*(volatile u16 *)(&Judge[((s16)angA + 0x400) & 0xFFF]);
+    rawA = Judge[((s16)angA + 0x400) & 0xFFF];
+    a1[7] = sinA;
+    cosA = (s16)rawA;
 
     cosA_negSinC = cosA * -sinC;
 
@@ -260,7 +266,6 @@ void func_80042874(u16 *a0, s16 *a1) {
 
     cosA_cosB = cosA * cosB;
 
-    a1[7] = sinA;
     a1[1] = cosA_negSinC >> 12;
     a1[4] = cosA_cosC >> 12;
     a1[6] = cosA_negSinB >> 12;

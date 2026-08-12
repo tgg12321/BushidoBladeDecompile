@@ -885,22 +885,12 @@ func_80041BF4: insert_after "lhu $3,0($16)" @ 105
 # _SelectSection: rotation matrix function regfix
 # Block 1: Fix negSinAxsinB_12 register + scheduling (TEXT 21-27)
 # GCC puts mflo result in $8 (t0), target has $12 (t4); sra/mult use $4 (a0), target $2 (v0)
-func_80042874: subst "mflo\s+\$8" "mflo\t$12" @ 21
-func_80042874: subst "sra\s+\$4,\$8,12" "sra\t$2,$12,12" @ 22
-func_80042874: subst "mult\s+\$4,\$8" "mult\t$2,$8" @ 27
 # Delete extra nop at TEXT 26 (target fills this delay slot with the sra instead)
-func_80042874: delete @ 26
 # Reorder post-delete 22-25: move sra after lh to fill load delay slot
-func_80042874: reorder 23,24,25,22 @ 22-25
 # Block 2: Fix volatile addressing (TEXT 56-59) + scheduling
 # la+addu+lhu(ptr) -> lui $at + addu $at + lhu %lo($at)
-func_80042874: subst "la\s+\$2,Judge" ".set\tnoat\nlui\t$at,%hi(Judge)" @ 56
-func_80042874: subst "addu\s+\$7,\$7,\$2" "addu\t$at,$at,$7" @ 57
-func_80042874: subst "lhu\s+\$3,0\(\$7\)" "lhu\t$3,%lo(Judge)($at)\n.set\tat" @ 59
 # Insert nop after lhu (post-delete idx 58) for load delay slot
-func_80042874: insert_after "nop" @ 58
 # Reorder post-insert 55-63: move subu down, swap sll/mflo order
-func_80042874: reorder 55,56,58,59,61,60,62,57,63 @ 55-63
 # ---- mot_data_set: RGB-to-HSV, insert max_val copy + register cascade ----
 # GCC keeps max_val in $4(a0) but target copies to $11(t3), shifting sat/dR/mfhi up by 1
 # TEXT indices from --expand-div maspsx output
