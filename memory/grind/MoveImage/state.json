@@ -1,8 +1,8 @@
 {
  "func": "MoveImage",
  "file": "display",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Found the mechanism behind the whole floor-2 residual: p[6] is MEM_IN_STRUCT_P (expr.c:4567) so sched.c:834-839 exempts it from the D_8009BF2C symbol store and it floats 4 slots early; re-spelling it "
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter modality SPENT on MoveImage: 4 campaigns / ~94k iterations / 2 bases / random + directed chassis, zero forms beat either base; session-3 frontier items 2 and 3 measured dead and the permuter'"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the plain-argument base (candidate_alt_plain_arg.c, 4/49) the ONLY residual is the dev-table lui/lw pair being 4 slots late, caused by priority(insn 83) rising from 1 to 2 via a true memory dependence on the packet store that does not exist in the floor-2 build despite textually identical RTL for both insns. Removing that edge while keeping the plain dispatch-argument read should close the function.",
-   "mechanism": "priority() is the longest weighted path from the block start (sched.c:1497); the dev-table load is placed early only while it is the lowest-priority ready insn. The new edge is a true store->load dependence from the packet store, which can only arise if canon_rtx stops resolving the packet pointer to its symbol -- so either the extra pseudo perturbs the REG_EQUAL/reg_n_sets bookkeeping in init_alias_analysis, or the two dumps were taken in different sched passes (post-RA there are no pseudos, so no pointer is ever resolved and every pointer store aliases every symbol load).",
-   "next_probe": "FORENSICS. Re-run both standalone dumps (tmp/grind/MoveImage/s3/mv.c and mv2.c) with BB2_PRIO_DEBUG=1 and separate the sched1 and sched2 sections, then read `reg_n_sets` / the REG_EQUAL note on the packet-pointer set insn in each. Do NOT modify the compiler -- the diagnostics are already compiled in. Once the cause is known, look for a spelling that keeps the dispatch argument read plain while the packet store still canonicalizes to its symbol."
+   "hypothesis": "The whole remaining residual is one unexplained alias fact: on the plain-argument base the dev-table load acquires a true memory dependence on the packet store that is absent in the floor-2 build, even though the RTL of the three insns involved is textually identical in the two dumps. Explaining that discrepancy -- not sampling more C -- is what closes the function.",
+   "mechanism": "canon_rtx (sched.c:370-377) resolves a pointer pseudo to its symbol only through reg_known_value, which init_alias_analysis (sched.c:421-433) installs only for a REG_EQUAL note at reg_n_sets == 1 or a REG_EQUIV note. mv2.prio shows `insn=83 pred=75 kind=0 pred_pri=2` with final_pri=2, while mv.prio shows insn 83 with only anti/output preds and final_pri=1. Either the extra pseudo perturbs the reg_n_sets / REG_EQUAL bookkeeping, or the two dumps were taken in different scheduling passes (post-RA there are no pseudos, so no pointer is ever resolved and every pointer store aliases every symbol load).",
+   "next_probe": "FORENSICS modality. Re-run the two standalone dumps (tmp/grind/MoveImage/s3/mv.c and mv2.c) with BB2_PRIO_DEBUG=1, separate the sched1 and sched2 sections, and read reg_n_sets and the REG_EQUAL note on the packet-pointer set insn in each. Do NOT modify the compiler -- the diagnostics are already compiled in. Session 4 has now proven that no amount of C-space sampling stumbles onto this by luck, so the explanation must come first."
   },
   {
-   "hypothesis": "The MEM_IN_STRUCT_P lever applied to the OTHER dispatch read (`fn = p[2]`) interacts with the dev-table load's placement, and that cross-product is unmeasured.",
-   "mechanism": "The fn load is also mem/s and therefore also alias-exempt from both symbol stores; making it plain gives it true dependences on the stores too, which changes both its own slot and the readiness order in which the dev-table load competes.",
-   "next_probe": "STRUCTURAL. Cross sweep10's G4 (both dispatch reads walked) with each of sweep11's 11 dev-table placements, gated on build_insns == 49, and dump BB2_PRIO_DEBUG for any form whose score drops below 4."
+   "hypothesis": "A matched sibling that dispatches through the same g_gpu_dev_table (LoadImage / StoreImage / ClearImage) can be dumped and read for what gives ITS dev-table load its scheduler priority relative to neighbouring stores; if any matched sibling shows a dev-table load with a depth our builds cannot produce, whatever supplies that depth is the missing structure.",
+   "mechanism": "The siblings are in the same TU under the same compiler invocation and are already byte-matched, so their dependence graphs are ground truth for what cc1 does with this exact dispatch shape. Session 2 killed 'copy the siblings' statement order' as a LEVER (all forms inert at 2/49), but nobody has ever read the siblings' PRIORITY GRAPH, which is a different question.",
+   "next_probe": "FORENSICS modality. Dump .sched/.sched2 with BB2_PRIO_DEBUG=1 for LoadImage, StoreImage and ClearImage (tmp/grind/MoveImage/s3/prio.sh already does whole-file dumps of src/display.c) and tabulate the priority and predecessor list of each sibling's dev-table load and its p[N] argument load against their neighbouring stores."
   },
   {
-   "hypothesis": "The remaining search space on both bases is a single scheduler edge with a two-number acceptance test, which fits a directed permuter campaign better than further hand enumeration.",
-   "mechanism": "The acceptance test is score 0 with build_insns == 49 from one sandbox run, and the structural axis has now been swept ~90 forms deep by hand across three sessions.",
-   "next_probe": "PERMUTER modality, seeded from BOTH memory/grind/MoveImage/candidate.c and memory/grind/MoveImage/candidate_alt_plain_arg.c, with a clean single-function target built from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc, PERM_* directives over the body statement order and the dispatch-read spelling, fresh-seed windows per permuter-fresh-seed-discipline, harvested in-turn. Every closing form is a PROPOSAL and must clear the 6-test cheat checklist plus the layer-1 reviewer."
+   "hypothesis": "The permuter axis is spent and must not be re-run on this function.",
+   "mechanism": "Four chassis across both bases -- random and directed, ~94,000 iterations -- produced not one form that beats either base, and the single sub-base score class was proven an artifact of the permuter's own weighted scorer.",
+   "next_probe": "None. This entry exists so a later session does not spend another modality slot re-running campaigns; the workspaces, logs and campaign_meta.json for all four are preserved under tmp/grind/MoveImage/s4/ if the negative ever needs re-reading."
   }
  ],
  "judge_constraints": [],

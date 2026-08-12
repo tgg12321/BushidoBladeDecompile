@@ -340,3 +340,76 @@ All gated on `build_insns == 49`; full tables in
 - [s3] 41 forms measured this session across sweeps 7-11, every one gated on build_insns as well as score; the standing gate is confirmed again -- any form at 47 or 48 instructions has lost the H2 delay-slot steal.
 
 - [s3] src/display.c was returned to its HEAD state; the session's forms live in memory/grind/MoveImage/candidate.c (floor 2), candidate_alt_plain_arg.c (the 4/49 alternate base) and rejected/alias-exemption-and-opaque-pointer-forms.c.
+
+## Session 4 (permuter, 2026-08-11) — measured facts
+
+* `src/display.c` was again at the RAW BASELINE at session start (third session
+  running: s1's, s2's and s3's edits do not persist). Applied
+  `memory/grind/MoveImage/candidate.c` and re-measured **2 / 49** before probing.
+  Returned `src/display.c` to its HEAD state at session end.
+* A reusable permuter-workspace builder now exists:
+  `tmp/grind/MoveImage/s4/mkws.sh <wsdir> <base.c>`. It emits settings.toml, a
+  compile.sh running the exact Makefile pipeline (CC_FLAGS **including `-mel`**,
+  prologue_fix, maspsx with every gate list, multu_pad, as), a clean
+  single-function `target.o` from `asm/funcs/MoveImage.s` +
+  `tools/decomp-permuter/prelude.inc` with `.set gp=64` stripped, and a
+  validation diff. NOTE for reuse: `tools/mar_perm_workspace.sh` is STALE — it
+  omits `-mel`, which has been load-bearing since 2026-08-04.
+* Standalone fidelity is MEASURED: the standalone base reproduces each whole-TU
+  residual exactly — ws_a (floor-2 candidate) 49 insns with the single
+  `lw a0,24(v1)` displacement, ws_b (plain-argument candidate) 49 insns with the
+  single dev-table `lui/lw` displacement.
+* Permuter base scores: floor-2 candidate **225**, plain-argument candidate
+  **415**. These are the permuter's weighted metric and are NOT comparable to the
+  sandbox's 2 and 4 — note in particular that the permuter ranks the
+  structurally-closer plain-argument base as much WORSE, because it weights the
+  two displaced dev-table instructions above the one displaced load.
+* Four campaigns, **~94,000 iterations total**, all launched through
+  `tools/permuter_campaign.py` (telemetry) and all harvested with `--stop`
+  in-session:
+  | ws | chassis | base | iterations | best find |
+  |---|---|---|---|---|
+  | ws_a | random, floor-2 base | 225 | 52,580 | 210 (artifact) |
+  | ws_b | random, plain-arg base | 415 | ~16,000 | 225 |
+  | ws_c | PERM_LINESWAP x10 stmts, plain-arg base | 415 | 11,527 | 400 |
+  | ws_d | PERM_LINESWAP x10 stmts + PERM_GENERAL over BOTH dispatch reads, floor-2 base | 225 | 30,462 | none |
+* ws_b's random search from the plain-argument base never produced anything below
+  225, i.e. it never found its way back even to the floor-2 base's quality; its
+  best forms simply respell the dispatch argument as `*(p + 6)`, which is
+  INDIRECT_REF(PLUS) again and therefore the floor-2 form by another name.
+* ws_d is the important negative: it is exactly session 3's frontier items 2 and
+  3 (the q/fn/dev-table placement cross-product, and the MEM_IN_STRUCT_P lever on
+  the `fn = p[2]` read) enumerated mechanically against every statement ordering,
+  and 30,462 samples produced ZERO forms at or below the base.
+* The only sub-base class the permuter ever produced (210) is a narrow-load
+  artifact: sweep12 measures P1/P2/P4 at 2 / 49 with a single-line objdump diff
+  that is a WIDTH change at the SAME index (`lw` -> `lhu`/`lh`), and the
+  wide-staging control P3 is byte-identical to the base.
+
+- [s4] Permuter modality is now SPENT on this function: four campaigns, ~94,000 iterations, two bases, both a random and a directed (PERM_LINESWAP x PERM_GENERAL) chassis; not one form beat either base. All four campaigns were harvested with --stop inside the session.
+- [s4] A reusable, fidelity-validated permuter workspace builder for MoveImage lives at tmp/grind/MoveImage/s4/mkws.sh; it uses the current Makefile flags including -mel, unlike the stale tools/mar_perm_workspace.sh, and its standalone base reproduces the whole-TU residual exactly on both bases.
+- [s4] The permuter's weighted score DISAGREES with the sandbox's honest distance on which base is closer: the floor-2 candidate scores 225 and the structurally-closer plain-argument candidate scores 415, because two displaced dev-table instructions outweigh one displaced load. Do not use permuter score to choose between the two bases.
+- [s4] The dispatch-argument load's WIDTH is steerable from C (u16/s16 staging or a narrow callee prototype all emit lhu/lh at the same index) but its SLOT is not -- confirming once more that the residual is a scheduler-placement problem and not a spelling problem.
+- [s4] src/display.c was at the raw baseline at session-4 start for the third consecutive session; apply memory/grind/MoveImage/candidate.c and re-measure (2 / 49) before any probe.
+
+- [s4] src/display.c was at the RAW BASELINE at session-4 start for the third consecutive session; memory/grind/MoveImage/candidate.c was applied and re-measured at 2 / 49 (build_insns 49 == target 49) before any probe, and src/display.c was returned to its HEAD state at session end.
+
+- [s4] A reusable, fidelity-validated permuter-workspace builder for this function now exists: tmp/grind/MoveImage/s4/mkws.sh <wsdir> <base.c>. It emits settings.toml, a compile.sh running the exact Makefile pipeline (CC_FLAGS including -mel, prologue_fix, maspsx with every gate list, multu_pad, as), a clean single-function target.o from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc with `.set gp=64` stripped, and a validation diff.
+
+- [s4] WARNING for reuse elsewhere: tools/mar_perm_workspace.sh is STALE -- its compile.sh omits -mel, which has been load-bearing since the 2026-08-04 adoption. mkws.sh is the current-flags template.
+
+- [s4] Standalone fidelity is MEASURED, not assumed: the standalone base reproduces each whole-TU residual exactly -- ws_a (floor-2 candidate) 49 insns with the single `lw a0,24(v1)` displacement, ws_b (plain-argument candidate) 49 insns with the single dev-table `lui/lw` displacement.
+
+- [s4] Permuter base scores: floor-2 candidate 225, plain-argument candidate 415. The permuter's weighted metric DISAGREES with the sandbox on which base is closer -- it ranks the structurally-closer plain-argument base far worse because two displaced dev-table instructions outweigh one displaced load. Do not use permuter score to choose between the two bases.
+
+- [s4] Four campaigns, ~94,000 iterations total, all launched through tools/permuter_campaign.py (telemetry) and all harvested with --stop in-session: ws_a random/floor-2 base 225, 52,580 iters, best 210 (artifact); ws_b random/plain-arg base 415, ~16,000 iters, best 225; ws_c PERM_LINESWAP over 10 statements/plain-arg base, 11,527 iters, best 400; ws_d PERM_LINESWAP over 10 statements crossed with PERM_GENERAL over BOTH dispatch reads/floor-2 base, 30,462 iters, ZERO finds at or below base.
+
+- [s4] ws_b's random search from the plain-argument base never produced anything below 225 -- it never found its way back even to the floor-2 base's quality, and its better forms simply respell the dispatch argument as `*(p + 6)`, which is INDIRECT_REF(PLUS) again and therefore the floor-2 form by another name.
+
+- [s4] ws_d is the load-bearing negative: it is exactly session 3's frontier items 2 and 3 enumerated mechanically against every statement ordering, and 30,462 samples produced ZERO forms at or below the base. Those two frontier items are now measured dead rather than unmeasured.
+
+- [s4] The dispatch-argument load's WIDTH is steerable from C (u16/s16 staging, or a narrow callee prototype, all emit lhu/lh at the same index) but its SLOT is not -- further confirmation that the residual is a scheduler-placement problem, not a spelling problem.
+
+- [s4] No campaign outlived the session: `permuter_campaign.py status` reports every registered campaign with alive=false at session end, and all four carry an explicit stop_reason.
+
+- [s4] Nothing in the session's diff touches src/ (restored to HEAD), regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, the Makefile or any *.ld. The diff is the MoveImage ledger plus metrics/events.jsonl.

@@ -481,3 +481,148 @@ Next probes, in order:
 - probe: sweep11: 11 placements of `p = (s32 *)g_gpu_dev_table;` on the plain-argument base -- first statement of the function, before the pointer setup, before/between/after each of the three stores, and with `fn = p[2]` and `q = p + 6` moved alongside it.
 - result: Ten of eleven are byte-identical at 4 / 49; the eleventh (`p` and `fn` both hoisted above the stores) is 10 / 48, the steal lost again. Source order is inert for this load on both bases -- its slot is set by its scheduler priority, which measurably rises from 1 to 2 on the plain-argument base.
 - verdict: KILLED
+
+---
+
+## Session 4 (permuter, 2026-08-11)
+
+### Campaign infrastructure built this session (reusable)
+`tmp/grind/MoveImage/s4/mkws.sh <wsdir> <base.c>` builds a complete
+decomp-permuter workspace for MoveImage from a STANDALONE base.c: settings.toml,
+a compile.sh that runs the exact current build pipeline
+(`tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1
+-mno-abicalls -fno-builtin -w -mel | prologue_fix | maspsx | multu_pad | as`,
+i.e. Makefile CC_FLAGS INCLUDING `-mel`), a clean single-function `target.o`
+assembled from `asm/funcs/MoveImage.s` + `tools/decomp-permuter/prelude.inc`
+(with `.set gp=64` stripped for r3000), and a validation diff.
+
+**Fidelity is measured, not assumed:** the standalone base reproduces the
+whole-TU residual EXACTLY on both bases — ws_a (floor-2 candidate) validates to
+49 insns with the single `lw a0,24(v1)` displacement, ws_b (plain-argument
+candidate) validates to 49 insns with the single dev-table `lui/lw` displacement.
+Permuter base scores: **225** for the floor-2 candidate, **415** for the
+plain-argument candidate.
+
+### H13 — KILLED. "Random permutation of the floor-2 base finds the missing edge."
+Statement: the residual is a single scheduler edge with a two-number acceptance
+test, so a random decomp-permuter campaign seeded from candidate.c should reach
+it where ~90 hand-enumerated forms did not.
+Mechanism: the permuter's randomizer mutates beyond the statement-order axis the
+three prior sessions swept — it introduces/removes temporaries, retypes them,
+re-associates expressions, changes declaration order and inlines/outlines
+sub-expressions, so it samples parts of the C space hand enumeration does not.
+Probe: `tmp/grind/MoveImage/s4/ws_a`, random chassis on the floor-2 base,
+`-j 6 --stop-on-zero`, **52,580 iterations / ~42 minutes**, four in-turn
+`permuter_campaign.py wait` windows.
+Result: **no find at or below score 210, and never any find below the base's
+own class in a meaningful sense.** The base is 225; the only sub-base class the
+campaign ever produced was 210, twice, and it is an artifact (see H15). No novel
+find in the final 9-minute window -> basin dry by the fresh-seed rule.
+Verdict: **KILLED.**
+
+### H14 — KILLED. "A directed cross-product closes it where random search cannot."
+Statement: the two unmeasured frontier items from session 3 — (2) the
+`q`/`fn`/dev-table placement cross-product on the plain-argument base, and (3)
+the MEM_IN_STRUCT_P lever applied to the `fn = p[2]` read crossed with each
+dev-table placement — are exactly what `PERM_LINESWAP` x `PERM_GENERAL` enumerate
+mechanically.
+Mechanism: `PERM_LINESWAP` permutes the ordered set of body statements and
+`PERM_GENERAL` cross-products alternative spellings at each site, so the
+permuter walks the full cross-product the hand sweeps could only sample.
+Probe: TWO directed campaigns.
+  * `ws_c` — plain-argument base, `PERM_LINESWAP` over all ten body statements
+    (packed / bf24 / rect / src / BF28 store / packet store / BF2C store /
+    dev-table read / fn read / `q = p + 6`). **11,527 iterations**, one find at
+    score 400 (worse than the floor-2 base's 225).
+  * `ws_d` — floor-2 base, `PERM_LINESWAP` over the same ten statements CROSSED
+    with `PERM_GENERAL` over the `fn` read (`p[2]` / `r = p + 2; *r` /
+    `r = &p[2]; *r`) and over the dispatch-argument read (`p[6]` / `q = p + 6; *q`
+    / `q = &p[6]; *q` / `q = p; q += 6; *q`) — i.e. frontier items 2 and 3 as one
+    12-way spelling cross-product against every statement ordering.
+    **30,462 iterations, ZERO finds at or below the base score 225.**
+Result: the directed cross-product is dry on both bases. Frontier items 2 and 3
+from session 3 are now measured DEAD, not merely unmeasured.
+Verdict: **KILLED.**
+
+### H15 — KILLED. "The permuter's only sub-base find (score 210) is a lever."
+Statement: ws_a's two 210 outputs stage the dispatch argument `p[6]` through a
+narrow local (`unsigned short` / `short`) before passing it; if narrowing the
+dispatch argument moves the `lw $a0,0x18($v1)` load, a legitimate narrow spelling
+(e.g. a truthful narrow first parameter in the callee prototype) might be the
+missing structure.
+Mechanism to test: a narrower load is a different `insn_cost`/mode and could
+plausibly change the load's dependence or priority.
+Probe: sweep12 (`tmp/grind/MoveImage/s4/sweep12.py`), five forms measured with
+`sandbox --disable all` on the real whole-TU build, objdumps in
+`tmp/grind/MoveImage/s4/asm12/`: P0 base, P1 the `nv = p[6]` assignment-expression
+argument, P2 the `short` staged local, P3 the same staging at `s32` width
+(isolates "staged temporary" from "narrowed value"), P4 a `u16` first parameter on
+the callee prototype (a narrowing that is a TYPE CLAIM rather than a truncating
+temporary).
+Result: **all five measure 2 / 49.** The objdump diff against P0 is one line in
+each narrow case and it is a WIDTH change at the SAME index —
+`8c640018 lw a0,24(v1)` becomes `94640018 lhu` (P1, P4) or `84640018 lh` (P2).
+P3 (wide staging) is byte-identical to P0. So the permuter's 210 is an artifact of
+its weighted scorer — a differing opcode at a matching index is cheaper than the
+4-slot displacement it stands in for — and narrowing does not move the load one
+slot. The forms are also semantically wrong (the dev-table word is 32-bit) and
+fail cheat tests T1/T2.
+Verdict: **KILLED.** Banked as
+`rejected/permuter-narrow-dispatch-argument.c`.
+
+## Frontier after session 4
+
+The permuter axis is spent on both bases, at both the random and the directed
+chassis, at ~94k total iterations. What survives untouched is the session-3
+frontier item **1**, which is a FORENSICS question and was never a permuter
+question:
+
+  * On the plain-argument base the dev-table load acquires a true memory
+    dependence on the packet store (`mv2.prio`: `insn=83 pred=75 kind=0
+    pred_pri=2`, `final_pri=2`) that is ABSENT in the floor-2 build (`mv.prio`:
+    two anti/output preds, `final_pri=1`) even though the RTL of insns 61, 75 and
+    83 is textually identical between the two dumps. Nothing in the C axis can be
+    steered until that discrepancy is explained, and session 4 has now shown that
+    no amount of C-space sampling stumbles onto it: 94k permuted forms across
+    four chassis produced not one form that beats either base.
+  * The correct next probe is unchanged and is FORENSIC: re-run the two
+    standalone dumps (`tmp/grind/MoveImage/s3/mv.c`, `mv2.c`) with
+    `BB2_PRIO_DEBUG=1`, separate the sched1 and sched2 sections, and read
+    `reg_n_sets` / the REG_EQUAL note on the packet-pointer set insn in each.
+    Do NOT modify the compiler — the diagnostics are compiled in.
+
+## [s4] A random decomp-permuter campaign seeded from the floor-2 candidate reaches the missing scheduler edge where ~90 hand-enumerated forms did not.
+- mechanism: The permuter's randomizer mutates beyond the statement-order axis sessions 1-3 swept -- it introduces and removes temporaries, retypes them, re-associates expressions, permutes declaration order and inlines/outlines sub-expressions -- so it samples regions of the C space hand enumeration does not reach. The residual is a single scheduler edge with a two-number acceptance test (score 0 at build_insns 49), which is the shape a permuter is good at.
+- probe: tmp/grind/MoveImage/s4/ws_a, built by tmp/grind/MoveImage/s4/mkws.sh from a standalone base validated to reproduce the whole-TU residual exactly (49 insns, the single `lw a0,24(v1)` displacement); compile.sh runs the exact Makefile pipeline including -mel; target.o assembled from asm/funcs/MoveImage.s + prelude.inc with `.set gp=64` stripped. Launched via tools/permuter_campaign.py with -j 6 --stop-on-zero and waited in-turn across four `wait` windows.
+- result: 52,580 iterations in ~42 minutes. Permuter base score 225. The campaign produced exactly one score class below the base -- 210, twice -- and that class is an artifact (see the narrow-argument entry). No novel find in the final 9-minute window, so the basin is dry under the fresh-seed rule. Harvested and stopped in-session.
+- verdict: KILLED
+
+## [s4] The two unmeasured session-3 frontier items -- the q/fn/dev-table placement cross-product, and the MEM_IN_STRUCT_P lever on the `fn = p[2]` read crossed with each dev-table placement -- close the function when enumerated mechanically as PERM_LINESWAP x PERM_GENERAL.
+- mechanism: PERM_LINESWAP permutes the ordered set of body statements and PERM_GENERAL cross-products alternative spellings at each site, so the permuter walks the entire cross-product the hand sweeps of sessions 2 and 3 could only sample at ~90 points.
+- probe: Two directed campaigns. ws_c: plain-argument base, PERM_LINESWAP over all ten body statements. ws_d: floor-2 base, the same PERM_LINESWAP crossed with PERM_GENERAL over the fn read (p[2] / r = p + 2, *r / r = &p[2], *r) and over the dispatch-argument read (p[6] / q = p + 6, *q / q = &p[6], *q / q = p; q += 6, *q) -- frontier items 2 and 3 as a single 12-way spelling cross-product against every statement ordering.
+- result: ws_c 11,527 iterations, one find at 400 (worse than the floor-2 base 225). ws_d 30,462 iterations, ZERO finds at or below base 225. The directed cross-product is dry on both bases; frontier items 2 and 3 are now measured dead rather than unmeasured. Both harvested and stopped in-session.
+- verdict: KILLED
+
+## [s4] The permuter's only sub-base score class (210, two forms staging the dispatch argument p[6] through a narrow local) is a real lever -- a legitimate narrow spelling such as a truthful narrow first parameter on the callee prototype might move the p[6] load into target's slot.
+- mechanism: A narrower load is a different machine mode and a different insn_cost, which could plausibly change the load's dependence structure or its scheduler priority; the permuter reported it as strictly better than the base, so something about it is closer to target.
+- probe: sweep12 (tmp/grind/MoveImage/s4/sweep12.py), five forms measured with sandbox --disable all against the real whole-TU build, objdumps saved to tmp/grind/MoveImage/s4/asm12/: P0 base; P1 the `fn(nv = p[6], ...)` assignment-expression argument (permuter output-210-1); P2 the `short nv; nv = p[6];` staged local (output-210-2); P3 the same staging at s32 width, isolating 'staged temporary' from 'narrowed value'; P4 a u16 first parameter on the callee prototype, a narrowing that is a type claim rather than a truncating temporary.
+- result: All five measure 2 / 49. The objdump diff against P0 is a single line in each narrow case and it is a WIDTH change at the SAME index: `8c640018 lw a0,24(v1)` becomes `94640018 lhu` (P1, P4) or `84640018 lh` (P2); P3 is byte-identical to P0. Narrowing does not move the load one slot -- the permuter's 210 is an artifact of its weighted scorer, where a differing opcode at a matching index is cheaper than the 4-slot displacement it stands in for. The forms are additionally semantically wrong (the dev-table word is 32 bits) and fail cheat tests T1 and T2.
+- verdict: KILLED
+
+## [s4] A random decomp-permuter campaign seeded from the floor-2 candidate reaches the missing scheduler edge where ~90 hand-enumerated forms did not.
+- mechanism: The permuter's randomizer mutates beyond the statement-order axis sessions 1-3 swept -- it introduces and removes temporaries, retypes them, re-associates expressions, permutes declaration order and inlines/outlines sub-expressions -- so it samples regions of the C space hand enumeration does not reach. The residual is a single scheduler edge with a two-number acceptance test (score 0 at build_insns 49), which is the shape a permuter is good at.
+- probe: tmp/grind/MoveImage/s4/ws_a, built by tmp/grind/MoveImage/s4/mkws.sh from a standalone base validated to reproduce the whole-TU residual exactly (49 insns, the single `lw a0,24(v1)` displacement). compile.sh runs the exact Makefile pipeline including -mel; target.o is assembled from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc with `.set gp=64` stripped. Launched through tools/permuter_campaign.py with -j 6 --stop-on-zero and waited in-turn across four `wait` windows.
+- result: 52,580 iterations in ~42 minutes from permuter base score 225. Exactly one score class below the base was ever produced -- 210, twice -- and that class is an artifact (see the narrow-argument hypothesis). No novel find in the final 9-minute window, so the basin is dry under the fresh-seed rule. Harvested and stopped in-session.
+- verdict: KILLED
+
+## [s4] The two unmeasured session-3 frontier items -- the q/fn/dev-table placement cross-product, and the MEM_IN_STRUCT_P lever on the `fn = p[2]` read crossed with each dev-table placement -- close the function when enumerated mechanically as PERM_LINESWAP x PERM_GENERAL.
+- mechanism: PERM_LINESWAP permutes the ordered set of body statements and PERM_GENERAL cross-products alternative spellings at each site, so the permuter walks the entire cross-product that the hand sweeps of sessions 2 and 3 could only sample at ~90 points.
+- probe: Two directed campaigns. ws_c: plain-argument base, PERM_LINESWAP over all ten body statements (packed / bf24 / rect / src / BF28 store / packet store / BF2C store / dev-table read / fn read / q = p + 6). ws_d: floor-2 base, the same PERM_LINESWAP crossed with PERM_GENERAL over the fn read (p[2] / r = p + 2, *r / r = &p[2], *r) and over the dispatch-argument read (p[6] / q = p + 6, *q / q = &p[6], *q / q = p; q += 6, *q) -- i.e. frontier items 2 and 3 as one 12-way spelling cross-product against every statement ordering.
+- result: ws_c: 11,527 iterations, one find at score 400 (worse than the floor-2 base 225). ws_d: 30,462 iterations, ZERO finds at or below base 225. The directed cross-product is dry on both bases. Both campaigns harvested with --stop in-session.
+- verdict: KILLED
+
+## [s4] The permuter's only sub-base score class (210, two forms staging the dispatch argument p[6] through a narrow local) is a real lever -- a legitimate narrow spelling such as a truthful narrow first parameter on the callee prototype might move the p[6] load into target's slot.
+- mechanism: A narrower load is a different machine mode and a different insn_cost, which could plausibly change the load's dependence structure or its scheduler priority; the permuter reported it as strictly better than the base, so something about it is closer to target.
+- probe: sweep12 (tmp/grind/MoveImage/s4/sweep12.py): five forms measured with `sandbox MoveImage --disable all` against the real whole-TU build, objdumps saved to tmp/grind/MoveImage/s4/asm12/. P0 base; P1 the `fn(nv = p[6], ...)` assignment-expression argument (permuter output-210-1); P2 the `short nv; nv = p[6];` staged local (output-210-2); P3 the same staging at s32 width, isolating 'staged temporary' from 'narrowed value'; P4 a u16 first parameter on the callee prototype, a narrowing that is a type claim rather than a truncating temporary.
+- result: All five measure 2 / 49. The objdump diff against P0 is a single line in each narrow case and it is a WIDTH change at the SAME index: `8c640018 lw a0,24(v1)` becomes `94640018 lhu` (P1, P4) or `84640018 lh` (P2); the wide-staging control P3 is byte-identical to P0. Narrowing does not move the load one slot, so the permuter's 210 is an artifact of its weighted scorer (a differing opcode at a matching index is cheaper than the 4-slot displacement it stands in for). The forms are additionally semantically wrong -- the dev-table word is 32 bits -- and fail cheat tests T1 and T2. Banked as memory/grind/MoveImage/rejected/permuter-narrow-dispatch-argument.c.
+- verdict: KILLED

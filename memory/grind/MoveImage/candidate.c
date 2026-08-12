@@ -47,6 +47,18 @@
  * than this file only because the residual MOVED to the dev-table load, which
  * is now the single remaining diff.  Evaluate both bases; hypotheses.md H8
  * carries the measurements.
+ *
+ * SESSION 4 NOTE (permuter modality).  This file is STILL the best form: the
+ * floor did not move.  Four decomp-permuter campaigns totalling ~94,000
+ * iterations were run and stopped in-session — random and directed
+ * (PERM_LINESWAP x PERM_GENERAL) chassis, seeded from BOTH this file and
+ * ../candidate_alt_plain_arg.c — and not one form beat either base.  The
+ * permuter's only sub-base score class stages the dispatch argument through a
+ * narrow local; it merely turns the `lw a0,24(v1)` into `lhu`/`lh` at the SAME
+ * index (measured, tmp/grind/MoveImage/s4/sweep12_results.md) and is banked in
+ * rejected/permuter-narrow-dispatch-argument.c.  Do not re-run a permuter
+ * campaign on this function; the remaining question is forensic (hypotheses.md
+ * "Frontier after session 4").
  */
 extern u8 D_80015F74;
 extern s32 D_8009BF24;
