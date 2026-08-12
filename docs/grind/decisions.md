@@ -4902,3 +4902,7 @@ The diff RETIRES two catalog cheats (register pin asm("$3"), volatile-cast coerc
 ## 2026-08-12 15:20 — func_800645B0 — layer-1 review — **FAIL**
 
 Constructs 1-4 are legitimate (pins/goto removed, var-reuse matches the confirmed defeat-licm-hoist-var-reuse precedent, RMW spelling and named-intermediate are ordinary C), but construct 5 (moving `j += 1;` between `idx = i + j;` and `val = 1;`) is an unsanctioned new spelling of 'reorder existing statements to win a cc1 first-pass-scheduler tie / steer reorg.c's delay-slot theft', found via an 8-variant directed hand-sweep, with no independent semantic reason to prefer this ordering over the other 7 measured variants.
+
+## 2026-08-12 17:45 — func_800645B0 — layer-1 review — **FAIL**
+
+Construct 4 (`wid = i + j; idx = wid;` staged through the same `wid` later used for the *3 sum) is the session-1 BANNED scheduling-tie-steer construct re-derived under a different spelling and laundered through a mis-scoped family citation; T1 is self-admitted failed.
