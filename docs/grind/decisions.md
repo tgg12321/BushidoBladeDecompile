@@ -4894,3 +4894,7 @@ OWNER-ACCEPTED INCOMPLETE and parked terminally. If the owner ever wishes to rev
 routes are (a) sanctioning a new family for the frame/arg-area residual against its own
 SOTN-master evidence bar, or (b) canonical-asm authorization despite the LOW scan tier — both
 owner-only policy calls, neither derivable by a grind session.
+
+## 2026-08-12 15:04 — func_80042874 — final call — **PASS**
+
+The diff RETIRES two catalog cheats (register pin asm("$3"), volatile-cast coercion on Judge[]) and closes with plain C: (1) idxB named intermediate — sanctioned Named-intermediate-declaration-order family (no-new-park-categories.md § SOTN-accepted, 2026-06-02 list, no FAKE prerequisite); (2) behavior-preserving statement reorders of live statements (angC read, a1[7]=sinA store); (3) u16 rawA staging local + (s16) cast — live value, real store, and the three-insn zero-extend-then-sign-extend it expresses is PRESENT in the target bytes (evidence.md § transfer 1, insns 57/59/61), so it passes all six cheat tests without needing a FAKE family. Decisive fact: no dead code, no pins, no volatile, no annotation-requiring construct remains. Independently verified: regfix.txt/asmfix.txt carry zero rules for func_80042874, and the function body (src/text1a_c.c:190-279) contains no asm/volatile (the line-454 volatile hit is the sibling func_80042C80). Full evidence: memory/grind/func_80042874/hypotheses.md (H1-H3 all CONFIRMED with measured probes), evidence.md (532/532-byte word compare, 0 non-reloc mismatches).
