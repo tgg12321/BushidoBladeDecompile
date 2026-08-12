@@ -4748,3 +4748,7 @@ OWNER-ESCALATION — func_8003B9D0 (code6cac_c2.c). WHAT WAS BUILT. The function
 The candidate C is preserved at `memory/grind/func_8003B9D0/candidate.c`; main is back at
 HEAD. Owner action: rule on the question above, then unpark via
 `& tools/wteng.ps1 main queue regen` (or reopen the item) so the grind resumes.
+
+## 2026-08-11 19:58 — func_8003A5A0 — final call — **PASS**
+
+The candidate is ordinary C and the diff is net-subtractive: it removes temp-variable staging and the shared 'epilogue:' return join, replacing them with direct-expression conditionals, per-exit returns, and a one-expression xor fold — all natural spellings with semantic purpose. The one steering-adjacent construct, the shared 'ret0_tramp' label for both retry exits mixed with an inline 'return 0;', is the SOTN-accepted 'mixed exit forms' family (no-new-park-categories.md § SOTN-accepted, [[cross-jump-store-tail-merge]], SsVabOpenHeadWithMode precedent); no annotation prerequisite applies to that family. Independently verified: full body read at src/code6cac_c_mid.c:1634-1694 (no __asm__, no volatile, no pins, no dead stores, no FAKE constructs), regfix.txt has zero func_8003A5A0 rules, judge_constraints empty. Full lever evidence: memory/grind/func_8003A5A0/evidence.md (levers 1-4, all measured), hypotheses.md (frontier CLOSED at 0), rejected/ empty.

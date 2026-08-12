@@ -877,3 +877,4 @@
 - 2026-08-11 18:42 func_8003B9D0 s5 [forensics] floor=6: Forensics: region A's fold is a find_best_addr COST/LOOKUP decision (reg+disp costs 1, sym+K costs 2 on MIPS) performed by cse1 for the candidate body -- correcting s4's cse2/delete_dead_from_cse story -- and the honest shared-pointer frontier item is KILLED at 16.
 - 2026-08-11 19:24 func_8003B9D0: LAYER-1 FAILED a sandbox-0 candidate — The scalar-to-array extern retype of D_80101EDA is a declaration-level respelling of the exact cse.c address-folding defeat that layer-1 already FAILed this session (banned D3) — the array indexing reaches into a separately-named adjacent global's storage, not a genuine array element.
 - 2026-08-11 19:40 func_8003B9D0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
+- 2026-08-11 19:58 func_8003A5A0 COMPLETED-C after 1 sessions.
