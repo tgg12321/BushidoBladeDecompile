@@ -1,120 +1,103 @@
 /*
- * motion_Close — BEST MEASURED FORM (floor 13). Reconstructed and re-measured
- * in session 5b: `sandbox motion_Close --disable all` prints
- * score 13, target_insns 26, build_insns 25 with this body in src/ings2.c.
+ * motion_Close — BEST MEASURED FORM (floor 13, unchanged since session 5b),
+ * but as of session 9 with a STRICTLY LIGHTER policy device: a TWO-level
+ * `do { } while (0);` wrap on a goto-loop chassis, replacing the three-level
+ * wrap on the do-while-loop chassis that sessions 5b-8 carried.
+ * `sandbox motion_Close --disable all` prints score 13, target_insns 26,
+ * build_insns 25 with this body in src/ings2.c (session 9, gotosweep.py
+ * d2_pdecl_pfirst_tail and d2_cdecl_pfirst_tail — both 13, so unlike the
+ * session-3 family this form does not depend on the allocno tie-break at all).
  *
- * PROVENANCE / WHY THIS FILE EXISTS. A prior session-5 run measured this form
- * at 13 but was DISCARDED by the driver on foreign dirt before it could update
- * candidate.c; only its rejected/*.c notes were committed, so the floor-13 form
- * itself survived only as a comment inside
- * rejected/pfirst-wrap-depth-1-and-2-insufficient.c ("f3_pfirst_wrap3 score 13
- * <-- the candidate"). Session 5b reconstructed it from that note, re-measured
- * it independently (13, confirmed), and banks it here so the floor is no longer
- * one discarded session away from being lost. The previous contents of this
- * file (session 4's single-level-wrap, count-first, floor-16 form) are
- * superseded; that form's mechanism write-up is preserved in evidence.md and in
- * rejected/dw0-pfirst-order-inverts-priority.c.
+ * WHY THE CHASSIS CHANGE IS THE WHOLE POINT (session 9, modality `rederive`).
+ * The device that wins $s0 for p is loop-depth reference weighting: flow.c
+ * weights REG_N_REFS by loop depth, and every `do { } while (0);` emits a
+ * NOTE_INSN_LOOP_BEG/END pair that makes its body one level deeper. On the
+ * do-while-LOOP chassis the walk's own references are ALSO weighted by that
+ * loop, so both allocnos start large (p 10 refs, count 8) and p needs three
+ * wrap levels to clear count. A `goto` loop emits NO loop notes for the walk,
+ * so every reference in the function is counted raw: p 4 refs, count 5. The
+ * margin p must close shrinks from "10 vs 8 weighted" to "5 vs 5 raw", and two
+ * wrap levels suffice. This is a structural change to the function's C shape,
+ * not a respelling of the old one — it changes what flow.c counts, not how the
+ * same counts are spelled.
  *
- * MECHANISM (measured, instrumented cc1, BB2_ALLOC_DEBUG=1; count is pseudo 72,
- * p is pseudo 73). flow.c weights REG_N_REFS by loop depth and each
- * NOTE_INSN_LOOP_BEG/END pair from a `do { } while (0)` makes its body one level
- * deeper, so a reference nested N levels deep counts 2^N-ish in the weighting.
- * global.c's allocno_compare ranks by floor_log2(n_refs)*n_refs/live_length:
+ * MEASURED LADDER ON THIS CHASSIS (session 9, sandbox + instrumented cc1
+ * BB2_ALLOC_DEBUG=1; p and count are pseudos 72/73 in declaration order):
+ *   depth 0:  p 4 refs / live_length 8 = 10000 -> $s1 ; count 5/7 = 14285 -> $s0   score 20
+ *   depth 1:  p 5/8 = 12500              -> $s1 ; count 5/7 = 14285 -> $s0   score 20
+ *   depth 2:  p 6/8 = 15000              -> $s0 ; count 5/7 = 14285 -> $s1   score 13  <— this form
+ * Depth 2 is NECESSARY (0 and 1 both score 20, banked as
+ * rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c) and it is necessary
+ * across FIVE pointer/loop idioms (`*p++`, `p[0]`, `--count`, decrement-before-
+ * call, and call-through-`p[-1]`), i.e. it is a property of the reference
+ * structure and not of this body's spelling (s9 idiomsweep.py). Declaration
+ * order of the two locals is inert here (13 in both). That is exactly
+ * prerequisite 3 of `.claude/rules/do-while-zero-exception.md` for a nested
+ * wrap.
  *
- *   p-first, wrap depth 1:  p  8 refs / len 8 = 30000 -> $s1 ; count 8/7 = 34285 -> $s0   score 20
- *   p-first, wrap depth 2:  p  9 refs / len 8 = 33750 -> $s1 ; count 8/7 = 34285 -> $s0   score 20
- *   p-first, wrap depth 3:  p 10 refs / len 8 = 37500 -> $s0 ; count 8/7 = 34285 -> $s1   score 13  <— this form
+ * FRONTIER F4b IS THEREFORE ADVANCED, NOT CLOSED. Its success criterion is
+ * score 13 with wrap depth < 3; that is now met at depth 2. Depth <= 1 remains
+ * unreached and the s9 measurements say why: with p assigned FIRST (which the
+ * target's address-materialisation order requires) count sits at 5 raw refs /
+ * live_length 7 = 14285 while p sits at 5/8 = 12500, so p must reach 6 weighted
+ * references, and no honest extra reference to p exists that the target does
+ * not also emit. The one chassis that drops count to 4 references — a top-
+ * tested goto loop entered by `goto test;`, which deletes the outer
+ * `if (count != 0)` guard — lets p win at depth 1 but scores 14, because the
+ * target HAS that outer guard (s9 gotosweep.py d1_*_top). Trading one residual
+ * point for one wrap level is not an improvement.
  *
- * Depth 3 is both NECESSARY (depths 1 and 2 leave count in $s0 and score 20)
- * and MINIMAL (depths 4, 5 and 6 also score 13 and buy nothing). That measured
- * demonstration is exactly prerequisite 3 of
- * `.claude/rules/do-while-zero-exception.md` for a NESTED wrap, and it is banked
- * as rejected/pfirst-wrap-depth-1-and-2-insufficient.c.
+ * MECHANISM RECORD FOR THE SUPERSEDED FORM (kept because the ledger's floor
+ * history references it): the three-level wrap on the do-while-loop chassis
+ * measured p 10 refs / live_length 8 = 37500 -> $s0 against count 8/7 = 34285
+ * -> $s1, with depths 1 and 2 insufficient (rejected/pfirst-wrap-depth-1-and-2-
+ * insufficient.c) and depths 4-6 worthless. Session 8 re-measured that same
+ * 20/20/20/13 ladder value-for-value on two inlined chassis. That form is not
+ * disproven — it is simply dominated by this one at equal score.
  *
- * WHY IT BEATS SESSION 4's 16. Session 4 reached the target's $s0=p / $s1=count
- * role split with a single-level wrap, but only in the COUNT-FIRST statement
- * order, so the two address materialisations came out in the wrong order (2
- * points). This form wins the same role split with p assigned FIRST, so the
- * materialisation order matches the target too.
+ * REMAINING RESIDUAL AT 13 (session 7's instruction-by-instruction pairing,
+ * tmp/grind/motion_Close/s7/residual_table.md, accounts for 13/13 with nothing
+ * left over): ~6.5 points H1 (frame size 32 vs 16, three save offsets, three
+ * restore offsets, addiu sp), 5 points F5 (guard lui/lw + body lw + jalr use
+ * $v0 where the target uses $t0), ~1.5 points F7 (beqz delay slot + save
+ * order). All three now carry a backend-level disproof:
+ *   H1  — REG_PARM_STACK_SPACE is the compile-time constant 16 on every
+ *         call-expansion path (mips.h:1822, calls.c:1245/1400, mips.c:4466);
+ *         the only cfoas-free site is __builtin_apply, which emits a frame
+ *         pointer, a 72-byte frame and 34 instructions (s7).
+ *   F5  — local-alloc/global.c scan hard regs ascending with no MIPS
+ *         REG_ALLOC_ORDER, so the first free caller-saved temp is always $v0,
+ *         never $t0 (s5b).
+ *   F7a — mips.c:4680 emits GP saves GP_REG_LAST -> GP_REG_FIRST
+ *         unconditionally; giving the function real incoming parameters
+ *         produces the WAR anti-dependence and the saves still come out
+ *         descending (s8).
+ *   F7b — an empty beqz delay slot needs the branch's block to hold no
+ *         eligible single insn; the target's holds four (s6).
+ * Session 8 additionally closed the whole-TU axis (signature, inlining, TU
+ * order, helper parameterisation all inert), and session 9 closed the
+ * declaration axis (F11): ten declaration forms of the three touched globals —
+ * array-typed table, array-typed count, `extern char` count, `void *` count,
+ * const-qualified table, u32 guard, and reordered externs — every one emits the
+ * identical allocno table (p 10/8 = 37500, count 8/7 = 34285) and the identical
+ * score 13.
  *
- * REMAINING RESIDUAL AT 13 (from the s5b permuter workspace,
- * tmp/grind/motion_Close/s5b/wsA/_base.txt vs _tgt_mine.txt):
- *   guard lui/lw + body lw + jalr all use $v0 where the target uses $t0   4
- *   frame size 32 vs 16 + the three save offsets + the three restore
- *     offsets + addiu sp                                                  ~7
- *   beqz delay slot (target nop, ours sw s0) + save ORDER                  2
- * The $v0-vs-$t0 bucket (frontier F5) is now the LARGEST live bucket and is a
- * local-alloc.c decision, not a global.c one.
+ * THIS FILE MUST NOT BE SUBMITTED AS `candidate-ready`. H1 is a backend-level
+ * disproof, not a plateau: no pure-C body containing a call can reach the
+ * target's zero-byte outgoing-argument area, so no member of this family can
+ * reach distance 0 whatever its score.
  *
- * SESSION 6 UPDATE — the residual is now 13/13 EXPLAINED, not 11/13. F5 was
- * killed in s5b (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER)
- * and F7's last 2 points were killed in s6: the ascending prologue save order
- * needs a WAR anti-dependence inside the prologue basic block (an incoming
- * argument copy `move sN,aM`), which a void(void) function whose s0/s1 writes
- * live in a LATER block cannot have — 2 instances in an 1788-function corpus,
- * both this cheat-carrying crt0 pair — and the empty beqz delay slot needs the
- * branch's block to contain no eligible single insn, while the target's block
- * holds four. Full disproof + corpus measurements in
- * rejected/f7-prologue-shape-unreachable-block-local-sched.c. Also measured in
- * s6: `scan_hand_coded --single motion_Close` = tier LOW, score 0/8, so the
- * canonical-asm endgame gate is a measured FAILED gate.
- *
- * STILL DEAD: H1. gcc-2.7.2's o32 backend reserves REG_PARM_STACK_SPACE = 16
- * bytes of outgoing-arg area for every C-level call, so any pure-C body with a
- * call has frame >= 16 + 12 = 28 -> 32, while the target's frame is 16 with a
- * ZERO arg area (census of all 854 call-making functions in the oracle build:
- * none below 16). NO form in this family can reach distance 0, so this file
- * must never be submitted as `candidate-ready` on the strength of its score.
- *
- * SESSION 7 UPDATE — H1 is no longer a census claim, it is a BACKEND claim.
- * `REG_PARM_STACK_SPACE` (mips.h:1822) is the compile-time constant 16 for every
- * fndecl (MAX_ARGS_IN_REGISTERS=4 words, FIRST_PARM_OFFSET is the #else arm of an
- * `#if 0`), MAYBE_/FINAL_REG_PARM_STACK_SPACE are undefined for MIPS and
- * OUTGOING_REG_PARM_STACK_SPACE IS defined, so calls.c:1245 MAXes the arg block
- * up to 16 on every call expansion and calls.c:1400 stores it into
- * current_function_outgoing_args_size, which mips.c:4466 takes as the ONLY input
- * to the frame's arg area. Every emit_call_insn site in the compiler is
- * expand_call / emit_library_call, a copy of an already-expanded call
- * (integrate.c, unroll.c, loop.c — integrate.c:1358 propagates the inlinee's
- * value by MAX), or expand_builtin_apply. Measured with the canonical cc1 flags
- * (tmp/grind/motion_Close/s7/f9probe.sh): indirect table call, direct call,
- * UNPROTOTYPED call, __attribute__((const)) call, inlined call and in-loop call
- * all emit `args= 16`; only __builtin_apply emits `args= 0`, and it does so with
- * a frame pointer, a 72-byte frame, 56 bytes of vars and 34 instructions — it
- * cannot produce the target. Also banked in s7:
- * tmp/grind/motion_Close/s7/residual_table.md, an instruction-by-instruction
- * pairing showing all 13 residual points and nothing else (5 F5, 6.5 H1, 1.5 F7).
- *
- * SESSION 8 UPDATE — the form is unchanged and the floor is unchanged at 13,
- * but two more things behind it are now closed. (1) The TU-level axis is
- * codegen-inert: rewriting BOTH motion_Close and its sibling func_80083794 as
- * one parameterised `static __inline__ ctor_walk(void)` body, or defining
- * motion_Close first in the TU, produces the identical allocno table and the
- * identical instruction stream (all 13). GCC 2.7.2 inlines before flow.c counts
- * references, so an inlined body is the same input as a written-out one — which
- * also means F4b cannot be reached by moving to an inlined chassis: the wrap
- * depth ladder there is 20/20/20/13 for depths 0/1/2/3, exactly as here.
- * (2) F7a is now unconditional. Session 6 killed the ascending save order
- * subject to motion_Close being void(void); session 8 gave it real incoming
- * parameters and got the WAR anti-dependence anyway, and the saves still came
- * out descending — because mips.c:4680's `for (regno = GP_REG_LAST; regno >=
- * GP_REG_FIRST; regno--)` is the unconditional emission order and the scheduler
- * breaks symmetric-store ties by program order. Both banked in
- * rejected/f10-tu-level-shape-is-codegen-inert.c and
- * rejected/f7a-arg-copy-does-not-flip-save-order.c.
- *
- * POLICY. The single construct is a THREE-LEVEL `do { ... } while (0);` wrap
- * carrying a FAKE annotation at the construct site.
+ * POLICY. The single non-obvious construct is the two-level
+ * `do { ... } while (0);` wrap, FAKE-annotated at the construct site.
  * `.claude/rules/do-while-zero-exception.md:23-24` states, verbatim:
  * "**`do { <any body> } while (0);` — including empty bodies — is a sanctioned
  * pure-C match device for ANY codegen effect, including register allocation.**"
- * Prerequisite 1 (inline annotation naming the observed effect) is satisfied
- * below; prerequisite 3 (a nested wrap needs a written measurement showing a
- * single level insufficient) is satisfied by
- * rejected/pfirst-wrap-depth-1-and-2-insufficient.c. A three-level wrap is a
- * heavier device than the single-level one and a reviewer may still reasonably
- * push back on it; that is a judgement for the layer-1/layer-2 reviewers, and
- * it is moot for completion while H1 holds.
+ * Prerequisite 1 (an inline annotation naming the observed effect) is satisfied
+ * below; prerequisite 3 (a nested wrap needs a written measurement showing
+ * fewer levels insufficient) is satisfied by
+ * rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c. The goto loop itself
+ * is NOT a device — it is a real loop with real semantics, and the five-idiom
+ * sweep shows the loop's spelling is a free variable rather than a coercion.
  */
 
 void motion_Close(void) {
@@ -123,19 +106,24 @@ void motion_Close(void) {
 
     if (D_800A2668 != 0) {
         /* FAKE: loop-note reference weighting (flow.c weights REG_N_REFS by
-           loop depth) lifts p to 10 weighted refs / live_length 8 = 37500, so
-           p takes $s0 ahead of count's 34285 while keeping the target's
-           p-then-count address-materialisation order. Depth 1 and 2 measured
-           insufficient — see rejected/pfirst-wrap-depth-1-and-2-insufficient.c. */
-        do { do { do { p = &D_8008D070; } while (0); } while (0); } while (0);
+           loop depth; each do-while(0) emits a NOTE_INSN_LOOP_BEG/END pair)
+           lifts p to 6 weighted refs / live_length 8 = 15000, so p takes $s0
+           ahead of count's 5/7 = 14285 while keeping the target's p-then-count
+           address-materialisation order. Depth 0 and 1 measured insufficient —
+           see rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c. */
+        do { do { p = &D_8008D070; } while (0); } while (0);
         count = (s32)&D_00000000;
         if (count != 0) {
-            do {
+        again:
+            {
                 void (*f)(void) = *p;
                 p++;
                 f();
                 count--;
-            } while (count != 0);
+            }
+            if (count != 0) {
+                goto again;
+            }
         }
     }
 }
