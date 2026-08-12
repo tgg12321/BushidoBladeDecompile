@@ -492,3 +492,160 @@ the frontier (expand_binop target selection; local_alloc ordering in DA).
 - probe: Applied memory/grind/func_800645B0/candidate.c to src/text1b.c from a clean tree and ran `sandbox func_800645B0 --disable all`. Rewrote self_vet.md so it argues its six tests entirely in terms of the constructs actually present, with no narration of the banned one, and validated the rewrite with tmp/grind/func_800645B0/s5/vetcheck.py (imports grindlib, runs validate_self_vet + check_banned_constructs).
 - result: sandbox score 0, target_insns 78 / build_insns 78, rules_dropped 1 — the distance-0 form reproduces exactly. validate_self_vet True; check_banned_constructs True at 7 hit terms vs a threshold of 17 (the residual hits are unavoidable: `func_800645b0` in the title, `grind` in ledger paths, and `loop`/`variant` inside the verbatim SCOPE quote "loop-invariant").
 - verdict: CONFIRMED
+
+## Session 6 (2026-08-12, forensics) — floor back to 1 (the distance-0 body was FAILed at layer 1 and is reverted); the SB chassis is proved dead
+
+### H24 — CONFIRMED (and it CORRECTS H11/[s2]/[s5]). optabs.c has TWO commutative swap clauses, and the target-independent one is the operative fact.
+- **Mechanism:** optabs.c:403-421 tests
+  `((GET_CODE (op1) == REG && GET_CODE (op0) != REG) || target == op1)`
+  when the expansion target is 0 or a REG (and `rtx_equal_p (op1, target)`
+  otherwise), plus a third `GET_CODE (op0) == CONST_INT` disjunct.  Clause 1 is
+  independent of the target; the ledger had recorded only clause 2.
+- **Probe:** direct read of optabs.c:380-422, plus the RTL dump
+  `tmp/grind/func_800645B0/s5/dump_NA/f_rtl.txt`, where the sum is expanded with
+  `target == 0` and is STILL emitted swapped (clause 1 fires because the
+  narrowed `idx2` arrives as a SUBREG while `idx` is a bare REG).
+- **Result:** on the SB chassis the emitted order is `(plus idx idx2)` for BOTH
+  source spellings — `idx = idx + idx2;` needs no swap and reaches that order
+  directly, `idx = idx2 + idx;` is swapped into it.  The target's
+  `addu $s0,$s1,$s0` (destination register == second operand register) is
+  therefore not producible by any body whose sum-destination pseudo is the
+  sum's second operand.
+- **Verdict:** CONFIRMED.  This retires the "change the expansion target" framing
+  of session 4's frontier item 1 as insufficient even in principle.
+
+### H25 — KILLED. The only C construct that reaches expand_binop with `target == 0` is a narrower-than-word destination, and it always costs at least one real instruction.
+- **Mechanism:** expr.c's `store_expr` (2692-2830) is the sole route from a C
+  assignment to the RHS expansion.  For a scalar whose DECL_RTL is a REG the
+  branches are COMPOUND_EXPR (2700, same target), COND_EXPR+BLKmode (2708,
+  unreachable), want_value+MEM target (2734, target is a REG), `queued_subexp_p`
+  (2749, a register local's DECL_RTL never holds a QUEUED), SUBREG_PROMOTED_VAR_P
+  (2768, `expand_expr (exp, NULL_RTX, VOIDmode, 0)` at 2793) and the fallthrough
+  (2814, passes target).  Only the promoted-SUBREG branch passes NULL_RTX, and it
+  then forces a truncate (or truncate + sign-extend) back into the narrow
+  destination.
+- **Probe:** sweep18.py — 14 variants: `idx` alone declared s16/u16/s8/u8 on the
+  SB chassis (NA/NB/NC/ND) and on the CA chassis (PA/PB), `idx2` alone (QA/QB),
+  and both together (RA/RB/RC/RD), against the SB and CA controls.  Mechanism
+  confirmed independently with `dump18.py NA` (cc1 `-da`, all passes).
+- **Result:** SB 1/78 and CA 3/78 controls; every narrowed variant lands at
+  **79-81 instructions** — NA 9/81, NB 7/80, NC 9/81, ND 7/80, PA 5/80, PB 3/79,
+  QA 3/79, QB 2/79, RA 16/81, RB 7/79, RC 7/79, RD 16/81.  Unsigned narrowing
+  costs one insn (andi), signed costs three (sll/sra).  The family cannot reach
+  distance 0 at any allocation.
+- **Verdict:** KILLED.  Session-4 frontier item 1 is closed.
+
+### H26 — CONFIRMED (as a structural inference about the original source). The original C is CA-shaped: the *3 sum lives in its own variable, and the register coincidence in the target comes from allocation, not expansion.
+- **Mechanism:** H24 shows expansion cannot emit a PLUS whose destination pseudo
+  is its second operand in the target's operand order, and H25 shows the only
+  escape costs an instruction.  The target's `addu $s0,$s1,$s0` must therefore be
+  two DIFFERENT pseudos — the `i + j` value and the *3 sum — that both received
+  `$s0` from the allocator.  That is exactly the CA body (`wid = idx2 + idx;`),
+  whose measured residual is only the inner-loop top (indices 11/12 plus the copy
+  at 65), with every register already correct.
+- **Probe:** the sweep18 table above, plus the existing CA/SB unmasked diffs.
+- **Result:** the SB chassis is dead as a route to 0; CA is the live one.
+- **Verdict:** CONFIRMED as an inference; it re-points the search rather than
+  moving the floor.
+
+### H27 — KILLED (two sub-axes at once). Neither the scheduler's other bonus preconditions nor local-alloc's priority formula is a lever here.
+- **Mechanism (a):** `birthing_insn_p` (sched.c:2504-2537) requires a SET of a
+  REG, `bb_live_regs[dest]`, and `reg_n_sets[dest] == 1`; `adjust_priority`
+  (2543-2594) applies the lift only in the `n_deaths == 0` arm, and its own
+  comment records the other arms as dead code because REG_DEAD notes are stripped
+  before the scheduler runs.  The dest-liveness condition is unavoidable (`idx`
+  feeds the shift and the mask), so `reg_n_sets` is the ONLY surface — already
+  enumerated by H10/H16/H17.
+- **Mechanism (b):** `qty_compare` (local-alloc.c:1640-1685) ranks block-local
+  quantities by `floor_log2 (n_refs) * n_refs * size / (death - birth)`, ties by
+  quantity number (`floor_log2 (1) == 0`, so a one-reference quantity has
+  priority zero).  In the DA shape the byte offset IS the multi-block `idx`, so
+  there is no block-local call-crossing quantity left to claim `$s0` before
+  global_alloc runs; an absent quantity cannot be re-weighted.
+- **Probe:** direct reads of sched.c:2490-2594 and local-alloc.c:1630-1690.
+- **Result:** both of session 4's remaining named GCC-internals probes resolve to
+  "no additional C-level surface".  DA stays at 12/78 for a structural reason,
+  not a tunable one.
+- **Verdict:** KILLED.
+
+### H28 — KILLED (no gradient, and a load-bearing negative). The store spelling and the named halfword index are not stylistic.
+- **Probe:** sweep19.py — TA (no named `idx2`, sum `idx * 3`, s16 store
+  subscripted), TB (TA + word stores subscripted), TC (CA + word stores
+  subscripted), TD (TC + s16 subscripted), UA (SB chassis, no named `idx2`).
+- **Result:** TA 14/80, TB 44/85, TC 36/82, TD 44/85, UA 25/83 against CA 3/78
+  and SB 1/78.  Subscripting a cast base stops GCC folding the splat symbol into
+  the computed byte offset, and dropping the named halfword index makes
+  `idx << 1` stop being shared between the *3 sum and the s16 store.
+- **Verdict:** KILLED — and recorded as a constraint: future bodies must keep the
+  hand-built `*(s32 *)((s32)&SYM + off)` stores and the named `idx2`.
+
+## Frontier (rewritten by session 6)
+
+0. **CA's inner-loop top is now the WHOLE problem, and the only named surface on
+   it is `reg_n_sets[idx]`.**  CA (`wid = idx2 + idx;`, stores through
+   `(wid << 2)`) has every register and the sum's operand order already correct;
+   its entire 3-point residual is that `addu idx,i,j` carries sched.c's
+   birthing_insn_p max_priority lift, is therefore emitted LAST in the block, and
+   reorg.c steals `li $v1,1` into the back-edge delay slot instead of the `addu`.
+   The lift needs `reg_n_sets[idx] == 1`; foldable second sets do not count
+   (H10), fresh values staged through `idx` land in `$s0` and cost 2 (H16), and
+   the loop-top staging pair that closed it is BANNED.  Next probe: attack the
+   OTHER member of the ready pair instead — enumerate C bodies in which the
+   const-1 set is not a member of the inner-loop top basic block at all (e.g. the
+   mask derived without a materialised 1 in that block, or the block boundary
+   moved by a `continue`-shaped guard) while `val` stays multi-set so loop.c
+   cannot hoist it (H18 killed making it single-set, but NOT making it absent).
+   Read reorg.c's `steal_delay_list_from_target` / `fill_simple_delay_slots`
+   candidate selection to determine exactly which insn of the loop-top block it
+   takes, then construct C that puts the `addu` first in that block by membership
+   rather than by priority.
+
+1. **Re-derive the original's inner-loop block from the CA `.sched`/`.greg`
+   dumps against the target's 78 instructions.**  H26 now says the original is
+   CA-shaped, which makes this comparison much more pointed than when session 4
+   proposed it against three candidate shapes.  Next probe: `dump18.py CA` (the
+   tooling generalises to any sweep variant), extract the inner-loop block's insn
+   list, ready lists and register dispositions, and compare against the target's
+   instruction sequence to identify what the original's block contains that CA's
+   does not — in particular whether the original's loop-top block has a different
+   INSN count or a different set of pseudos live across the back edge.
+
+2. **The `$s0` enumeration may be incomplete on the CA chassis.**  H17's closure
+   argument ("only three values live in `$s0`, all three measured") was derived
+   when the sum's destination was assumed to be `idx`.  On the CA chassis the
+   sum lives in `wid`, and `wid` also gets `$s0` — so the enumeration should be
+   redone in terms of PSEUDOS-allocated-`$s0` rather than values, asking which
+   pseudo in the CA body could legitimately carry a second value without
+   changing what the function computes.  Next probe: read the `.greg` register
+   dispositions for CA, list every pseudo assigned `$s0`/`$s1`, and check each
+   against the target's live ranges.
+
+## [s5] optabs.c's commutative swap on the *3 sum is governed by a single clause (`target == op1`), so changing the expansion target is a viable route to the target's operand order.
+- mechanism: The ledger (s3 H11, s4 frontier item 1, s5) recorded optabs.c:399-417 as swapping only when the expansion target IS op1. Reading optabs.c:403-421 shows the real test is `((GET_CODE (op1) == REG && GET_CODE (op0) != REG) || target == op1)` when the target is 0 or a REG, plus a `GET_CODE (op0) == CONST_INT` disjunct - TWO independent clauses, the first of which is target-independent.
+- probe: Direct read of optabs.c:380-422, cross-checked against the cc1 -da RTL dump tmp/grind/func_800645B0/s5/dump_NA/f_rtl.txt, where the sum is expanded with target == 0 (into fresh pseudo 93 at insn 72, copied into idx at insn 74) and is STILL emitted swapped because clause 1 fires.
+- result: On the SB chassis the emitted order is (plus idx idx2) for BOTH spellings: `idx = idx + idx2;` needs no swap and reaches that order directly, `idx = idx2 + idx;` is swapped into it. The target's `addu $s0,$s1,$s0` - destination register equal to second operand register - is not producible by any body whose sum-destination pseudo is the sum's second operand.
+- verdict: CONFIRMED
+
+## [s5] Some C construct makes GCC expand the *3 sum with `target == 0`, so neither swap clause fires and the target's operand order is emitted while `idx` stays multi-set (session-4 frontier item 1).
+- mechanism: expr.c's store_expr (2692-2830) is the only route from a C assignment to the RHS expansion. For a scalar whose DECL_RTL is a REG the branches are COMPOUND_EXPR (2700, same target), COND_EXPR+BLKmode (2708, unreachable for a scalar), want_value+MEM target (2734, the target is a REG here), queued_subexp_p (2749, a register local's DECL_RTL never holds a QUEUED), SUBREG_PROMOTED_VAR_P (2768 -> expand_expr (exp, NULL_RTX, VOIDmode, 0) at 2793), and the fallthrough (2814, which passes the target down). Only the promoted-SUBREG branch passes NULL_RTX, i.e. only a destination declared narrower than a word - and store_expr then forces a truncate back into it.
+- probe: tmp/grind/func_800645B0/s5/sweep18.py - 14 variants scored with `sandbox func_800645B0 --disable all`: idx alone declared s16/u16/s8/u8 on the SB chassis (NA/NB/NC/ND) and on the CA chassis (PA/PB), idx2 alone (QA/QB), and both narrowed together (RA/RB/RC/RD), against the SB and CA controls. Mechanism confirmed separately with tmp/grind/func_800645B0/s5/dump18.py NA (full cc1 -da pass set).
+- result: Controls SB 1/78 and CA 3/78. Every narrowed variant lands at 79-81 instructions against a 78-instruction target: NA 9/81, NB 7/80, NC 9/81, ND 7/80, PA 5/80, PB 3/79, QA 3/79, QB 2/79, RA 16/81, RB 7/79, RC 7/79, RD 16/81. Unsigned narrowing costs one instruction (andi), signed costs three (sll/sra). The mechanism fires but the family can never reach distance 0 at any allocation.
+- verdict: KILLED
+
+## [s5] The original C for this function is CA-shaped - the *3 sum lives in its own variable, and the target's register coincidence comes from allocation rather than from RTL expansion.
+- mechanism: Expansion cannot emit a PLUS whose destination pseudo is its second operand in the target's operand order (H24), and the only escape from that (target == 0) costs a real instruction (H25). The target's `addu $s0,$s1,$s0` must therefore be two DIFFERENT pseudos - the `i + j` value and the *3 sum - both allocated $s0 by the allocator. That is the CA body, whose measured residual is only the inner-loop top (indices 11/12 plus the copy at 65) with every register already correct.
+- probe: The sweep18 measurement table above, combined with the previously banked unmasked diffs for CA (3/78) and SB (1/78).
+- result: The SB chassis is dead as a route to 0; CA is the live one. This is the strongest structural evidence the ledger has about the original source and it re-points the whole search onto CA's loop top.
+- verdict: CONFIRMED
+
+## [s5] Session 4's two remaining named GCC-internals probes - other preconditions of sched.c's priority bonus, and local-alloc's quantity priority in the DA shape - offer additional C-level surface.
+- mechanism: birthing_insn_p (sched.c:2504-2537) requires a SET of a REG, bb_live_regs[dest], and reg_n_sets[dest] == 1; adjust_priority (sched.c:2543-2594) applies the max_priority lift only in its n_deaths == 0 arm and its own comment records the other arms as dead code because REG_DEAD notes are stripped before the scheduler runs. Separately qty_compare (local-alloc.c:1640-1685) ranks block-local quantities by floor_log2 (n_refs) * n_refs * size / (death - birth), ties broken by quantity number.
+- probe: Direct reads of sched.c:2490-2594 and local-alloc.c:1630-1690.
+- result: The dest-liveness condition is unavoidable (idx feeds the shift and the mask) and the death-count arms are inert, so reg_n_sets is the only surface on the bonus - already enumerated. And DA's problem is structural rather than tunable: in DA the byte offset IS the multi-block idx, so no block-local call-crossing quantity exists to claim $s0 before global_alloc runs, and an absent quantity cannot be re-weighted.
+- verdict: KILLED
+
+## [s5] Spelling the stores as array subscripts on a cast base, and/or dropping the named halfword index, is a neutral stylistic choice that may change the loop-top pseudo set.
+- mechanism: The three word destinations are separate splat symbols, so a subscript on a cast base stops GCC folding the symbol into the computed byte offset; and the named idx2 is what lets the `idx << 1` value be shared between the *3 sum and the s16 store.
+- probe: tmp/grind/func_800645B0/s5/sweep19.py - TA (no named idx2, sum `idx * 3`, s16 store subscripted), TB (TA + word stores subscripted), TC (CA + word stores subscripted), TD (TC + s16 subscripted), UA (SB chassis, no named idx2), against the CA and SB controls.
+- result: TA 14/80, TB 44/85, TC 36/82, TD 44/85, UA 25/83 against CA 3/78 and SB 1/78. Every subscript spelling regresses hard and every drop of the named halfword index costs two instructions.
+- verdict: KILLED

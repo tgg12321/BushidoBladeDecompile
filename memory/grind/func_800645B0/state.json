@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 1,
    "modality": "permuter",
    "headline": "Permuter axis measured dead: ~92.5k iterations across two structurally distinct chassis on a new clean offset-0 workspace produced nothing below the standing floor of 1, and the only legitimate near-f"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Reverted the layer-1-FAILed body per the reviewer's binding next-action (floor 1); RTL forensics prove the shipped SB chassis can never reach 0, and re-point all remaining search at the CA chassis' in"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The `expand_binop` commutative swap on the shipped form can be defeated by changing the EXPANSION TARGET rather than the syntax \u2014 a construct that makes GCC expand the *3 sum into an anonymous temp (`target == 0`, so no swap test fires) which is later coalesced into `idx`'s register.",
-   "mechanism": "optabs.c:399-417 swaps a commutative operand pair whenever the expansion target IS op1, so `idx = <x> + idx;` always expands as (plus idx x) \u2014 visible in the .rtl dump before cse runs. Eight source-level respellings are measured dead (s3 H11) and random search over ~40k iterations on this chassis found nothing (s5 H21), so the remaining surface is which C constructs cause expand_expr to call expand_binop with target == 0 at all.",
-   "next_probe": "Read expr.c's expand_assignment / expand_expr store path (the TREE_CODE (to) == VAR_DECL case and the paths that force a temp: assignment used as a value, compound assignment through a cast, a differently-typed or narrower view of the destination), enumerate the constructs that yield target == 0, and sandbox each on the shipped body. Confirm from the .rtl dump (tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py) that the emitted insn is (plus idx2 idx) before trusting the score."
+   "hypothesis": "CA's inner-loop top is now the entire problem, and the untried side of it is to remove the const-1 set from the loop-top basic block rather than to change any priority.",
+   "mechanism": "CA has every register and the sum's operand order correct; its whole 3-point residual is that `addu idx,i,j` carries sched.c's birthing_insn_p max_priority lift, so the backward list scheduler emits it LAST in the block and reorg.c steals `li $v1,1` into the back-edge delay slot instead of the `addu`. Session 4 killed making the const-1 pseudo single-set (loop.c hoists it, 80 insns), but NOT making it absent from that basic block while `val` stays multi-set.",
+   "next_probe": "Read reorg.c's fill_simple_delay_slots / steal_delay_list_from_target candidate selection to establish exactly which insn of the loop-top block is taken, then enumerate C bodies in which the const-1 set is not a member of that block (mask derived without materialising a 1 there, or the block boundary moved by a continue-shaped guard) and sandbox each on the CA chassis."
   },
   {
-   "hypothesis": "In the DA shape (byte offset routed through `idx`, sum in `wid`) local_alloc can be made to give $s0 to the multi-block `idx` instead of to the block-local `idx2`, which would close all three constraints at once.",
-   "mechanism": "local_alloc runs before global_alloc. In the shipped/CA shape the pseudo that claims $s0 from local_alloc is the byte-offset CSE temp \u2014 block-local, but live across all four rand() calls, so it needs a callee-save \u2014 and `idx2` is pushed to $s1. In DA that claimant is gone, so `idx2` takes $s0 and `idx` is left $s1 by global_alloc; the whole 12-point cost of DA is that swap, and the target's own allocation proves the wanted state is reachable.",
-   "next_probe": "Read local-alloc.c's block_alloc / find_free_reg ordering (qty priority, qty_phys_reg suggestions, accept_call_clobbered), dump .lreg/.greg for DA and for the shipped form side by side, then look for a C shape in which the halfword-offset value is NOT a block-local pseudo (genuinely referenced in the loop-top block) or in which some other block-local callee-save-needing value out-prioritises it, and sandbox each."
+   "hypothesis": "The original's inner-loop block can be re-derived by comparing a CA .sched/.greg dump against the target's 78 instructions, now that the original is known to be CA-shaped.",
+   "mechanism": "Session 4 proposed this comparison against three candidate shapes at once, which made it diffuse. H26 narrows it to one chassis, so any difference in the loop-top block's insn count, ready lists, or pseudos live across the back edge is a direct statement about the original source.",
+   "next_probe": "Run tmp/grind/func_800645B0/s5/dump18.py CA (the tooling generalises to any sweep variant), extract the inner-loop block from f_sched.txt and the dispositions from f_greg.txt, and diff them against asm/funcs/func_800645B0.s."
   },
   {
-   "hypothesis": "The original's inner-loop pseudo set differs from all three near-miss shapes, and the difference is visible by comparing their .sched/.greg state against what the target's 78 instructions imply.",
-   "mechanism": "SB (shipped), CA and IA are each exactly one instruction away and each fails on a DIFFERENT fully-named GCC decision (expand_binop swap / birthing_insn_p bonus / entry-copy constant fold). That is the signature of a shape that is close to but not the original. Permuter has now also been ruled out as a way to stumble onto the original from either chassis, which raises the value of the forensic comparison.",
-   "next_probe": "Dump t.i.sched and t.i.greg for SB, CA and IA with tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py, extract the inner-loop block's insn list and register dispositions for each, and diff them against the target's instruction sequence to identify a pseudo count or live-range shape none of the three produces."
+   "hypothesis": "The $s0 enumeration that closed the search in session 3 was framed in the wrong terms and may be incomplete on the CA chassis.",
+   "mechanism": "H17 argued that only three VALUES live in $s0 and that a second set of `idx` must be one of them - but that was derived assuming the sum's destination is `idx`. On the CA chassis the sum lives in `wid`, which also receives $s0, so the enumeration should be redone over PSEUDOS assigned $s0/$s1 rather than over values.",
+   "next_probe": "Read the .greg register dispositions for the CA body, list every pseudo assigned $s0 and $s1 with its live range, and check each against the target's live ranges to find a pseudo that could legitimately carry a second value without changing what the function computes."
   }
  ],
  "judge_constraints": [
