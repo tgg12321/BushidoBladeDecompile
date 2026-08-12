@@ -10,6 +10,14 @@ if (Test-Path $pidf) {
 }
 Write-Host "=== Grinder status ($(Get-Date -Format 'yyyy-MM-dd HH:mm')) ===" -ForegroundColor Cyan
 Write-Host ("driver: " + $(if ($alive) { "RUNNING (pid $gpid)" } else { "stopped" }))
+# WSL kernel-object leak watchdog (see tools/check_wsl_leak.ps1): each wsl.exe
+# call leaks nonpaged pool that only a reboot frees; audio degrades ~2.5 GB.
+try {
+    $npGB = [math]::Round((Get-Counter '\Memory\Pool Nonpaged Bytes').CounterSamples[0].CookedValue / 1GB, 2)
+    $note = if ($npGB -ge 2.5) { ' — DEGRADED, reboot recommended (audio stutter territory)' }
+            elseif ($npGB -ge 1.8) { ' — elevated (WSL leak), reboot when convenient' } else { '' }
+    Write-Host "nonpaged pool: $npGB GB$note"
+} catch { }
 
 $topRaw = & (Join-Path $Root 'tools\wteng.ps1') main queue next 2>$null | Out-String
 $top = $null

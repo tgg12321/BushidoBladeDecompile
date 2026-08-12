@@ -151,6 +151,20 @@ if (-not (Test-OracleGreen)) {
     Remove-Item $PidFile; exit 2
 }
 Log "pre-flight: oracle green."
+# Nonpaged-pool watchdog (2026-08-12): every wsl.exe invocation leaks ~1 Job +
+# ~11 File kernel objects (measured on WSL 2.6.3 AND 2.7.11; see
+# tools/check_wsl_leak.ps1 and memory/project/wsl-kernel-object-leak-audio.md).
+# Grind volume accumulates GBs of nonpaged pool, which degrades host audio/
+# latency and eventually wedges the WSL service; only a reboot frees it.
+# Warn loudly so the owner knows a reboot is due — never block the grind.
+try {
+    $npGB = [math]::Round((Get-Counter '\Memory\Pool Nonpaged Bytes').CounterSamples[0].CookedValue / 1GB, 2)
+    if ($npGB -ge 2.5) {
+        Log "PRE-FLIGHT WARNING: nonpaged pool at ${npGB} GB (healthy ~1 GB) — WSL kernel-object leak accumulation. Host audio stutter likely; REBOOT RECOMMENDED before long grinds."
+    } elseif ($npGB -ge 1.8) {
+        Log "pre-flight note: nonpaged pool at ${npGB} GB and climbing (WSL leak) — reboot clears it."
+    }
+} catch { }
 
 function Circuit-Break([string]$Reason) {
     $inc = Join-Path $Root 'docs\grind\INCIDENT.md'
