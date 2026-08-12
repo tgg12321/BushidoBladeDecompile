@@ -1,7 +1,7 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -69,23 +69,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Structural: F13 KILLED (guard/materialisation shape is byte-identical across six variants at every wrap depth on the goto chassis), the wrap depth is now PRICED (one level = three residual points), an"
+  },
+  {
+   "session": 12,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Structural: F14 (wrap PLACEMENT) measured \u2014 flow.c's loop-depth weighting is per-reference, so a one-level do-while(0) on `p++` (2 refs) does what two levels on p's initialiser (1 ref) did; with `coun"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "FR1 (terminal) - motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing; there is no C-side probe left to run.",
-   "mechanism": "Floor flat at 13 for seven sessions across six modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis in s10) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path - mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 is never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally and a real incoming-arg WAR anti-dependence does not reorder them) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). Five input axes outside the walk - F10 whole-TU, F11 declarations, F12 loop construct, F13 guard/materialisation shape, and the dead-store substitution - are measured dead.",
-   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8/s9/s10/s11 quartet showing every input to cc1 outside the walk itself is inert."
+   "hypothesis": "FR1 (terminal) \u2014 motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing; there is no C-side probe left to run.",
+   "mechanism": "Floor flat at 13 for EIGHT sessions across six modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis in s10 and re-verified against the new session-12 form) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path \u2014 mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 is never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). SIX input axes outside the walk are measured dead \u2014 F10 whole-TU, F11 declarations, F12 loop construct, F13 guard/materialisation shape, F14 wrap placement, and the dead-store substitution.",
+   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8\u2013s12 quintet showing every input to cc1 outside the walk itself is inert. Note the packet must now describe the SINGLE-level in-walk form, not the two-level initialiser form."
   },
   {
-   "hypothesis": "FR2 (dormant, cosmetic) - reach floor 13 with a do-while(0) wrap depth below 2.",
-   "mechanism": "Depth 2 on the goto chassis is the measured minimum and is now minimal across five pointer/loop idioms, both declaration orders, two inlined chassis, ten global-declaration forms, six loop constructs and ten guard/materialisation shapes. Session 11 priced the constraint: count-assigned-first DOES win p its register at depth 1 (p 5/7 = 14285 vs count 5/8 = 12500) but pays three residual points of materialisation order, so one wrap level costs three points and the trade is never profitable. The sanctioned dead-store substitute is separately dead (self-assigns are deleted before flow.c counts).",
-   "next_probe": "Only worth time if a session is preparing a submission, which cannot happen while H1 stands. The single untried direction, unchanged since s8 and now known to be the only one: lengthen count's live range WITHOUT adding a count reference and WITHOUT moving p's birth - an intervening real computation that the target also performs - and the target performs none. Success criterion is score 13 at wrap depth <= 1, not a lower score."
+   "hypothesis": "FR2 (CLOSED at its floor by session 12) \u2014 the policy device cannot be made lighter than one do-while(0) level.",
+   "mechanism": "Session 12 met FR2's criterion (13 at wrap depth <= 1) by moving the note's PLACEMENT onto p's `p++` bump, where it is worth two weighted references per level instead of the initialiser's one, and paying for the resulting schedule fence with a free statement reorder (`count--` ahead of `f()`). Depth 0 is then derived unreachable from the measured constants (p 4/8 = 10000 vs count 5/7 = 14285): the three routes to a flip each need instructions the target lacks.",
+   "next_probe": "None. Do not re-open the device-weight axis; the remaining device is one non-nested do-while(0) with an inline FAKE annotation, inside the frozen sanctioned family, and prerequisite 3 no longer applies. If a future session wants a device-free form it must first invalidate one of the three depth-0 routes above, which requires a p-reference or an intervening computation present in the TARGET's 26 instructions \u2014 s7's residual table says there is none."
   },
   {
-   "hypothesis": "FR3 (housekeeping) - keep the escalation packet true to whatever form candidate.c actually holds.",
-   "mechanism": "Twice the ledger's authoritative residual analysis has been derived on a chassis a later session superseded. Equal scores do not imply equal residual composition, so an escalation packet describing a superseded form is a process error. Session 11 did NOT change the form - the control cell of the sweep is the banked body and re-measured 13 - so the s10 stream verification still stands.",
-   "next_probe": "Unchanged: any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table (`awk '/^motion_Close:/,/\\.end/'` over the cc1 output)."
+   "hypothesis": "FR3 (housekeeping) \u2014 keep the escalation packet true to whatever form candidate.c actually holds.",
+   "mechanism": "Twice before, the ledger's authoritative residual analysis was derived on a chassis a later session superseded; equal scores do not imply equal residual composition. Session 12 DID change candidate.c, so it discharged the obligation in-session: the new form's cc1 stream was diffed against tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s and is identical but for the internal label number, so the s7 table still applies.",
+   "next_probe": "Unchanged for future sessions: any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s (or s5b/wsA/_base.txt, which is a byte/reloc dump, not cc1 asm \u2014 use the s10 file for a text diff) before reusing the s7 residual table. Also carry the label-number caveat: .L136 now, .L144 before."
   }
  ],
  "judge_constraints": [],

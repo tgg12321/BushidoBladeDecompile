@@ -1089,3 +1089,63 @@ session-11 note appended to the header comment.
 - [s11] Cumulative: every class of input to cc1 this function has is now measured dead except the walk itself - body statement/declaration order, register-role devices, pointer/loop idiom (s9), loop construct (F12, s10), whole-TU shape and signature (F10, s8), global declarations (F11, s9), and now guard/materialisation shape plus declaration scope (F13, s11).
 
 - [s11] src/ings2.c was restored to HEAD by the sweep's finally block and verified clean with `git status --porcelain`; no build-pipeline file was touched, no commit was made, and candidate.c still holds the session-9 two-level goto-chassis form (its control cell re-measured 13 this session), so the s10 stream verification and the s7 residual table still describe the banked form.
+
+## Session 12 (structural) — F14: wrap PLACEMENT, and the halving of the policy device
+
+- [s12] flow.c's loop-depth weighting is per-REFERENCE, and this is now measured on motion_Close rather than inferred: with the do-while(0) note moved from p's initialiser onto other statements, p's lift per wrap level tracks the number of p-references inside the note exactly — initialiser +1 (4/5/6 weighted refs at depths 0/1/2), `f = *p;` +1 (4/5/6), `p++` +2 (4/6/8), the read+bump pair +3 (4/7/10), initialiser+bump split +3 (4/7/10). count is untouched by every in-walk p placement (5 raw refs / live_length 7 = 14285 in all 21 cells of f14sweep.py).
+
+- [s12] Two directional controls make that a mechanism rather than a coincidence: wrapping the WHOLE walk body lifts both allocnos together (p +3, count +2 per level — 7 vs 7 at depth 1, 10 vs 9 at depth 2), never changes the ordering and scores 20 at every depth; wrapping count's initialiser lifts count alone (5/6/7) and also scores 20 at every depth. The device can only separate two allocnos when the note contains references belonging to one of them.
+
+- [s12] p wins $s0 at wrap depth ONE, with p still assigned FIRST, in five distinct in-walk placements. Every prior session needed depth 2 because every prior session placed the note on p's initialiser, which is worth one reference per level; the ladder that made depth 2 look necessary was a ladder in depth-at-one-placement, not in the strength of the device.
+
+- [s12] The naive in-walk form scores 15 with 26 instructions, and the cause is identified: the note fences `addu $16,$16,4` out of its position between the load and the call, the scheduler puts it in the jal delay slot instead of `addu $17,$17,-1`, `lw $2,0($16)` then feeds `jal $31,$2` back-to-back and maspsx inserts a load-delay nop. Emitted loop, naive form: lw / jal (delay: addu $16) / addu $17 / bne. Emitted loop, target and accepted form: lw / addu $16 / jal (delay: addu $17) / bne.
+
+- [s12] Moving `count--` ahead of `f()` restores the target's loop schedule and the nop disappears: score 13 at 25 instructions with a SINGLE wrap level. The reorder is semantically identical (`count` is a local the callee cannot observe) and was independently measured FREE on this chassis in s11 F13 cell V7. Three arrangements reach 13 at depth 1 — bump wrapped (p 6/8 = 15000), read+bump pair wrapped (7/8 = 17500) and initialiser+bump split (7/8 = 17500); depth 2 adds nothing to any of them.
+
+- [s12] The fence is the NOTE, not the wrapped statement. An EMPTY `do { } while (0);` in the same in-walk position adds no reference to either allocno, wins no register (score 21, the un-flipped ladder value) and still emits 26 instructions. Any in-walk note perturbs the loop schedule; whether that costs anything depends entirely on the statement order it sits in.
+
+- [s12] FR2 is CLOSED at its floor. candidate.c now holds the one-level form. Its emitted stream is identical to the s10-verified chassis except for the internal label NUMBER (.L136 vs .L144 — fewer loop notes, so the label counter lands lower): same 25 instructions, same registers, same `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`, same filled beqz delay slot, same descending save order, same $v0 temp. The s7 residual table therefore describes the new form verbatim and the FR3 obligation is discharged for this change.
+
+- [s12] Wrap depth 0 is now DERIVED unreachable rather than merely unreached. At depth 0 the measured constants are p 4/8 = 10000 against count 5/7 = 14285 (reproduced in every depth-0 cell of both sweeps, 7 placements). Flipping the roles requires (a) a real extra p reference the target does not emit, (b) p live_length <= 5 — impossible, p's range spans the walk and shortening it means moving p's birth after count's, which is the count-assigned-first form measured at 16, or (c) count live_length >= 10 at 5 references, i.e. three-plus insns of intervening real computation the target does not perform. One wrap level is the minimum policy device for floor 13 on this chassis.
+
+- [s12] rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c is hereby SCOPED, not superseded: its measurement is correct for the initialiser placement it was taken at, and wrong as a general statement about depth 1. Any future session quoting it must quote the placement with it.
+
+- [s12] Nothing in the 35 cells of the two sweeps scored below 13, consistent with the s7 residual table: all 13 points sit in H1 (frame / outgoing-argument area), F5 ($v0-vs-$t0 hard-register scan order) and F7a/F7b (save order, beqz delay slot), none of which any wrap placement or statement order can touch. The floor is unchanged at 13 for the eighth consecutive session; what changed is the weight of the policy device standing between the form and a submission, and one more axis (placement) is now dead.
+
+- [s12] CAUTION recorded for any future integration of candidate.c: the internal label COUNT is unchanged but the label NUMBER is not (.L136 vs .L144). That is the [[global-label-drift-sibling-cheat]] surface — check it before any sibling rule references a hardcoded `.L` name.
+
+### Tree state at end of session 12
+
+`src/ings2.c` restored to HEAD by both sweeps' `finally` blocks and verified clean
+with `git status --porcelain`. No build-pipeline file was touched, no commit was
+made. Floor unchanged at 13. `memory/grind/motion_Close/candidate.c` now holds the
+session-12 SINGLE-level in-walk form (score 13, build_insns 25, stream verified
+against the s10 chassis); the superseded two-level form's mechanism record is kept
+in the new candidate header and its trap variant in
+`rejected/f14-in-walk-wrap-costs-load-delay-nop.c`.
+
+- [s12] flow.c's loop-depth weighting is per-REFERENCE on this function, measured not inferred: p's lift per wrap level equals the number of p-references inside the note — initialiser +1 (4/5/6 weighted refs at depths 0/1/2), `f = *p;` +1, `p++` +2 (4/6/8), read+bump pair +3 (4/7/10), initialiser+bump split +3.
+
+- [s12] count is untouched by every in-walk p placement: 5 raw refs / live_length 7 = 14285 in all 21 cells of f14sweep.py and all 14 of f14bsweep.py.
+
+- [s12] Directional controls confirm the device can only separate allocnos when the note holds references of one of them: whole-walk-body wrap lifts both (p +3, count +2 per level), ordering unchanged, 20 at every depth; count-initialiser wrap lifts count alone (5/6/7), 20 at every depth.
+
+- [s12] p wins $s0 at wrap depth ONE with p still assigned FIRST in five distinct in-walk placements — the first time the roles have been had at one level without the count-first materialisation penalty.
+
+- [s12] The naive in-walk form's 26th instruction is a maspsx load-delay nop: the note fences `addu $16,$16,4` out of its position between the load and the call, the scheduler fills the jal delay slot with it instead of `addu $17,$17,-1`, and `lw $2,0($16)` then feeds `jal $31,$2` back-to-back. Naive loop: lw / jal (delay: addu $16) / addu $17 / bne. Target and accepted loop: lw / addu $16 / jal (delay: addu $17) / bne.
+
+- [s12] Moving `count--` ahead of `f()` restores the target's loop schedule: score 13 at 25 instructions with ONE wrap level. The reorder is semantically identical (count is a local the callee cannot observe) and was independently measured free on this chassis in s11 F13 cell V7.
+
+- [s12] The fence is the NOTE, not the wrapped statement: an EMPTY `do { } while (0);` in the same in-walk position adds no reference to either allocno, wins no register (score 21) and still emits 26 instructions.
+
+- [s12] The new candidate's emitted stream is identical to the s10-verified chassis except for the internal label NUMBER (.L136 vs .L144); same 25 instructions, registers, `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`, filled beqz delay slot, descending save order and $v0 temp — so the s7 residual table transfers verbatim and the FR3 obligation is discharged for this change.
+
+- [s12] Wrap depth 0 is derived unreachable: at p 4/8 = 10000 vs count 5/7 = 14285, the only three routes to a flip each require instructions the target does not contain (a foreign p reference; p live_length <= 5, which means moving p's birth after count's — the 16-point count-first form; or count live_length >= 10, i.e. three-plus insns of foreign computation).
+
+- [s12] rejected/goto-chassis-wrap-depth-0-and-1-insufficient.c is now SCOPED rather than general: its 'depth 1 insufficient' measurement is correct only for the initialiser placement it was taken at.
+
+- [s12] Nothing in the 35 cells scored below 13, consistent with the s7 residual table: all 13 points sit in H1 (frame / outgoing-argument area), F5 ($v0-vs-$t0 scan order) and F7a/F7b (save order, beqz delay slot), none of which wrap placement or statement order can touch.
+
+- [s12] Integration caution: the internal label COUNT is unchanged but the NUMBER is not (.L136 vs .L144) — the [[global-label-drift-sibling-cheat]] surface.
+
+- [s12] src/ings2.c was restored to HEAD by both sweeps' finally blocks and verified clean with `git status --porcelain`; no build-pipeline file was touched and no commit was made.
