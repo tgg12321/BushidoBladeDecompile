@@ -119,5 +119,34 @@ if ($rest[0] -ieq 'make') {
 }
 
 Write-Host "[wteng] target=$target  root=$root" -ForegroundColor DarkGray
+
+# --- persistent-bridge path (opt-in: BB2_WSL_BRIDGE=1) ----------------------
+# Every wsl.exe invocation leaks a kernel Job object (~14 KB nonpaged, drained
+# only by reboot), and the grind makes thousands of them — see
+# tools/wsl_bridge.ps1 and memory/project/wsl-kernel-object-leak-audio.md.
+# Routing through one long-lived bash session takes that to ~0.
+#
+# `make` deliberately stays on the DIRECT path: it is one invocation for a
+# multi-minute build (so the leak saving is a single job object) and it is the
+# case where watching output stream live actually matters. The bridge returns a
+# command's output only on completion.
+#
+# ANY bridge problem returns $null and we fall through to the direct call, so
+# this can slow the build down but never break it.
+if ($env:BB2_WSL_BRIDGE -eq '1' -and $rest[0] -ine 'make') {
+    . (Join-Path $PSScriptRoot 'wsl_bridge.ps1')
+    $r = Invoke-WslBridge -WslCwd $wsldir -Command $bashCmd -AutoStart
+    if ($null -ne $r) {
+        foreach ($l in $r.out) { Write-Output $l }
+        # [Console]::Error, NOT Write-Error: Write-Error wraps each line in a
+        # PowerShell ErrorRecord ("Write-Error: usage: engine ..."), which does
+        # not match what the direct `wsl bash -c` path passes through and would
+        # break anything parsing engine stderr.
+        foreach ($l in $r.err) { [Console]::Error.WriteLine($l) }
+        exit $r.code
+    }
+    Write-Host "[wteng] bridge unavailable — direct wsl.exe" -ForegroundColor DarkGray
+}
+
 wsl bash -c $bashCmd
 exit $LASTEXITCODE
