@@ -66,6 +66,25 @@
  * none below 16). NO form in this family can reach distance 0, so this file
  * must never be submitted as `candidate-ready` on the strength of its score.
  *
+ * SESSION 7 UPDATE — H1 is no longer a census claim, it is a BACKEND claim.
+ * `REG_PARM_STACK_SPACE` (mips.h:1822) is the compile-time constant 16 for every
+ * fndecl (MAX_ARGS_IN_REGISTERS=4 words, FIRST_PARM_OFFSET is the #else arm of an
+ * `#if 0`), MAYBE_/FINAL_REG_PARM_STACK_SPACE are undefined for MIPS and
+ * OUTGOING_REG_PARM_STACK_SPACE IS defined, so calls.c:1245 MAXes the arg block
+ * up to 16 on every call expansion and calls.c:1400 stores it into
+ * current_function_outgoing_args_size, which mips.c:4466 takes as the ONLY input
+ * to the frame's arg area. Every emit_call_insn site in the compiler is
+ * expand_call / emit_library_call, a copy of an already-expanded call
+ * (integrate.c, unroll.c, loop.c — integrate.c:1358 propagates the inlinee's
+ * value by MAX), or expand_builtin_apply. Measured with the canonical cc1 flags
+ * (tmp/grind/motion_Close/s7/f9probe.sh): indirect table call, direct call,
+ * UNPROTOTYPED call, __attribute__((const)) call, inlined call and in-loop call
+ * all emit `args= 16`; only __builtin_apply emits `args= 0`, and it does so with
+ * a frame pointer, a 72-byte frame, 56 bytes of vars and 34 instructions — it
+ * cannot produce the target. Also banked in s7:
+ * tmp/grind/motion_Close/s7/residual_table.md, an instruction-by-instruction
+ * pairing showing all 13 residual points and nothing else (5 F5, 6.5 H1, 1.5 F7).
+ *
  * POLICY. The single construct is a THREE-LEVEL `do { ... } while (0);` wrap
  * carrying a FAKE annotation at the construct site.
  * `.claude/rules/do-while-zero-exception.md:23-24` states, verbatim:

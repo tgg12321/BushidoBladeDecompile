@@ -1,7 +1,7 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "Forensics: F7 KILLED in both halves (ascending save order needs a prologue-block WAR anti-dep a void(void) fn cannot have; empty beqz slot needs an empty block \u2014 0 compiled-C counterexamples in 1788 f"
+  },
+  {
+   "session": 7,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "F9 KILLED at the backend level: REG_PARM_STACK_SPACE is a compile-time 16 on every call-expansion path, so H1 is upgraded from a census claim to 'no C input to this compiler produces these bytes' \u2014 pl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F8 \u2014 motion_Close is an escalation candidate and the ladder's remaining rungs (rederive, synthesis) are the only untried modalities; every sanctioned axis this ledger has measured is now dead.",
-   "mechanism": "Three independent frozen-toolchain mechanisms account for all 13 residual points: H1 (REG_PARM_STACK_SPACE=16 \u21d2 frame >= 32 vs the target's 16, census of 854 call-making functions), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER \u21d2 $v0 not $t0), F7 (block-local scheduling \u21d2 descending saves, and a non-empty block \u21d2 a filled delay slot). Each is a 'no C input to this compiler produces these bytes' argument, not a 'the search has not found it' argument, and each now carries a corpus measurement rather than a narrative.",
-   "next_probe": "Do NOT self-dispose \u2014 exhaustion is the driver's call. What is left for a session is the escalation packet's shape, and it is now fully determined: the canonical-asm gate FAILS on measurement (scan_hand_coded tier LOW 0/8, both this function and its sibling), and no coercion/spelling family has an in-hand SOTN-master precedent, so under the owner's 2026-07-27 standing auto-ruling a both-gates-fail entry is the terminal disposition whenever the driver routes this to `escalation`. A rederive/synthesis session should spend itself on the ONE thing not yet tried: reconstructing the function from the sibling func_80083794's shape (they are the same crt0 open/close pair and differ only in the guard polarity and the D_800A2668 store), to see whether a whole-file/TU-level change \u2014 not a body-level one \u2014 moves any of the three mechanisms."
+   "hypothesis": "F8 (unchanged, now fully evidenced) \u2014 motion_Close is an escalation candidate: every sanctioned axis this ledger has measured is dead, and as of s7 all three residual mechanisms carry a backend-level disproof rather than a census or a narrative.",
+   "mechanism": "H1 (16-byte outgoing-arg area, s7: compile-time constant applied by MAX on every call-expansion path; the only cfoas-free site, __builtin_apply, emits a frame pointer + 72-byte frame + 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER -> $v0 not $t0), F7a/F7b (block-local scheduling -> descending saves and a filled delay slot). The s7 residual table shows these three account for 13/13 points with nothing left over. The canonical-asm endgame gate is a MEASURED FAILED gate (scan_hand_coded tier LOW 0/8 for both this function and its sibling, s6), and no coercion/spelling family has an in-hand SOTN-master precedent.",
+   "next_probe": "Do NOT self-dispose \u2014 exhaustion is the driver's call and this session's modality was forensics, not escalation. When the driver does route this to `escalation`, the packet is fully determined and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is REFUSED / OWNER-ACCEPTED INCOMPLETE, citing the s7 backend disproof of H1 and the s7 residual table as the two load-bearing artifacts."
   },
   {
-   "hypothesis": "F9 (new, low value but genuinely untried) \u2014 the 16-byte outgoing-arg area H1 attributes to REG_PARM_STACK_SPACE could be avoided if the indirect call were not a C-level call at all in the ORIGINAL source either.",
-   "mechanism": "H1's census showed the only two sub-16 arg-area functions in the build are motion_Close and func_80083794, both of which get there because their jalr is inline asm (an __asm__ block never sets current_function_outgoing_args_size). That is a statement about OUR build. The complementary question \u2014 what C construct, if any, makes gcc-2.7.2 emit a jalr without reserving the arg area \u2014 has never been probed directly; the ledger inferred it from the census rather than from the backend.",
-   "next_probe": "Read mips.c/function.c for every path that sets current_function_outgoing_args_size and check whether ANY of them can be reached with a call expression (not an asm) that yields zero \u2014 e.g. a call through a pointer with a prototype gcc treats specially, or -mno-abicalls interactions. Expected outcome is a fourth structural kill, which is worth having explicitly: it converts H1 from 'census says no function does this' into 'the backend cannot do this', which is the stronger claim an escalation should carry."
+   "hypothesis": "F10 (new, the only untried direction left that is not a body-level respelling) \u2014 a WHOLE-TU / file-level change, rather than a body-level one, moves one of the three mechanisms.",
+   "mechanism": "Every form measured across seven sessions varies the BODY of motion_Close inside the existing ings2.c. The three killed mechanisms are all properties of how cc1 compiles a void(void) function containing a call, but two of them (F7a's WAR anti-dependence in the prologue block, F7b's delay-slot eligibility) are properties of the FUNCTION's shape as a whole \u2014 its signature, its callee-save set, its block structure \u2014 not of the loop's spelling. motion_Close and func_80083794 are the same crt0 open/close pair and differ only in the guard polarity and the D_800A2668 store, so the sibling is a free second data point on any TU-level change.",
+   "next_probe": "This is a rederive/synthesis modality probe, not a forensics one. Reconstruct motion_Close from func_80083794's shape (shared static helper, different signature, the two functions written as one parameterised body, different declaration/definition order in the TU) and measure each with sandbox plus the instrumented cc1. Expected outcome is another kill \u2014 H1 is signature-independent and F5 is allocation-order-independent \u2014 but F7a is the one mechanism whose disproof is conditional on the function being void(void) with no incoming-argument copy, so a TU-level change that legitimately gives the prologue block a write to s0 or s1 is the one untried shape that could move a point."
   },
   {
-   "hypothesis": "F4b (carried forward, now purely cosmetic) \u2014 reach floor 13 with a wrap depth below 3.",
-   "mechanism": "The floor-13 form's only construct is a THREE-level do{}while(0) wrap around p's initialiser, which wins p $s0 by loop-depth reference weighting (p 10 weighted refs / live_length 8 = 37500 vs count's 34285). Depths 1 and 2 are measured insufficient (both 20) and depths 4-6 buy nothing, so the device is minimal for THIS body \u2014 but a body reaching 13 with a lighter device would be strictly better to put in front of a reviewer.",
-   "next_probe": "Only worth spending time on if a future session is preparing a submission, which cannot happen while H1 stands (distance 0 is unreachable, so no candidate-ready is possible). Sweep bodies that lengthen count's live range without adding a count reference \u2014 an intervening real computation the target also performs \u2014 and measure score AND the allocno table (BB2_ALLOC_DEBUG=1). Success criterion is score 13 at wrap depth < 3, not a lower score."
+   "hypothesis": "F4b (carried forward, purely cosmetic, unchanged by this session) \u2014 reach floor 13 with a do-while(0) wrap depth below 3.",
+   "mechanism": "The floor-13 form's only construct is a THREE-level do{}while(0) wrap around p's initialiser, which wins p $s0 by loop-depth reference weighting (p 10 weighted refs / live_length 8 = 37500 vs count's 34285). Depths 1 and 2 are measured insufficient (both 20) and depths 4-6 buy nothing, so the device is minimal for THIS body \u2014 but a body reaching 13 with a lighter device would be strictly better in front of a reviewer.",
+   "next_probe": "Still only worth spending time on if a session is preparing a submission, which cannot happen while H1 stands (distance 0 is unreachable, so no candidate-ready is possible). Sweep bodies that lengthen count's live range without adding a count reference \u2014 an intervening real computation the target also performs \u2014 and measure score AND the allocno table (BB2_ALLOC_DEBUG=1). Success criterion is score 13 at wrap depth < 3, not a lower score."
   }
  ],
  "judge_constraints": [],

@@ -746,3 +746,91 @@ candidate holds nothing better under random mutation).
 - [s6] New reusable artifacts for the corpus: tmp/grind/motion_Close/s6/save_order_scan.py (per-function prologue save-order shape over build/src/*.o) and prologue_scan.py (conditional branches preceded by a callee-save store, with delay-slot occupancy). Both run in ~40 s and answer 'is this prologue shape compiler-reachable' for any function, not just this one.
 
 - [s6] Session 6 ran the whole forensics modality without editing any file outside src/ings2.c (reverted), memory/grind/motion_Close/ and tmp/grind/motion_Close/s6/. The asm/funcs/motion_Close.s needed by scan_hand_coded was created and deleted within the session.
+
+## [s7] H1 is now a BACKEND claim, not a census claim (F9 killed)
+
+Sessions 1-6 supported H1 with a corpus census: of the 854 call-making functions
+in the oracle-matching build, none has an outgoing-argument area below 16 bytes
+except motion_Close and its sibling func_80083794, and both reach it only because
+their `jalr` is inline asm. That is an argument about OUR build. Session 7 closed
+the complementary question by reading the frozen compiler and then measuring it.
+
+**Reading.** `mips.c:compute_frame_size` derives the arg area solely from
+`current_function_outgoing_args_size` (`args_size = MIPS_STACK_ALIGN (cfoas)`,
+mips.c:4466), with one adjustment that only ever RAISES it (`if (args_size == 0 &&
+current_function_calls_alloca) args_size = 4*UNITS_PER_WORD`). `cfoas` is written
+in exactly three places outside save/restore bookkeeping: `calls.c:1400-1401`
+(expand_call), `calls.c:2400-2401` and `calls.c:2750-2751` (emit_library_call),
+and `integrate.c:1358/3066` (propagating an inlinee's value by MAX). All of them
+apply `args_size.constant = MAX (args_size.constant, reg_parm_stack_space)`
+first, and on MIPS `reg_parm_stack_space` is a compile-time constant 16:
+`REG_PARM_STACK_SPACE` (mips.h:1822) is `MAX_ARGS_IN_REGISTERS(4) *
+UNITS_PER_WORD(4) - FIRST_PARM_OFFSET`, and `FIRST_PARM_OFFSET` is the `#else`
+arm of an `#if 0` block, i.e. 0. The two macros that could zero it out
+(`MAYBE_REG_PARM_STACK_SPACE`, `FINAL_REG_PARM_STACK_SPACE`) are undefined in
+`config/mips/`, and `OUTGOING_REG_PARM_STACK_SPACE` IS defined, which kills the
+`#ifndef`-guarded subtraction at calls.c:1253 that would otherwise remove it.
+
+**Enumeration.** Every `emit_call_insn` site in the compiler: calls.c:387/398/403
+(emit_call_1, shared by expand_call and emit_library_call — accounted);
+integrate.c:1807, unroll.c:1948, loop.c:1801/1845 (copies of an already-expanded
+call — accounted, and integrate.c:1358 carries the inlinee's value across);
+expr.c:8361/8382 in `expand_builtin_apply` — the ONLY site that never touches
+cfoas.
+
+**Measurement** (tmp/grind/motion_Close/s7/f9probe.sh, f9probe2.sh; emitted
+assembly under tmp/grind/motion_Close/s7/out/), canonical cc1 flags:
+
+| probe | shape | `.frame` |
+|---|---|---|
+| p1 | motion_Close-shaped indirect call through a table | `$sp,32` vars=0 regs=3 **args=16** |
+| p2 | plain direct call | `$sp,24` **args=16** |
+| p3 | `__builtin_apply` | `$fp,72` vars=56 regs=3 **args=0** |
+| p4 | UNPROTOTYPED call | `$sp,24` **args=16** |
+| p5 | call to `__attribute__((const))` fn | `$sp,24` **args=16** |
+| p6 | leaf, no call | `$sp,0` **args=0** |
+| p7 | call inlined from a static callee | `$sp,24` **args=16** |
+| p8 | call inside a loop (LICM/unroll copy path) | `$sp,24` **args=16** |
+
+The `__builtin_apply` hole is real and is the only one, but it is unusable: it
+buys `args=0` at the price of a frame POINTER, a 72-byte frame, 56 bytes of vars,
+`$fp` in the save mask and 34 emitted instructions, versus the target's 16-byte
+frame, `{s0,s1,ra}` mask and 26 instructions. It is also a GCC extension that no
+1998 PsyQ crt0 would contain.
+
+**Consequence.** H1 now reads: *the MIPS o32 backend of the frozen compiler
+reserves a 16-byte outgoing-argument area for every call it expands, as a
+compile-time constant applied by a MAX on every path that can set the frame's arg
+size; no C source that emits a call can produce this function's 16-byte frame.*
+That is the "no C input to this compiler produces these bytes" form the
+no-new-park-categories carve-outs require, and it is the sentence an escalation
+entry should cite. It also disposes of F9's own suggested escapes by measurement:
+an unprototyped call, a const-attributed call, an inlined call and a call in a
+loop all emit args=16.
+
+## [s7] The residual is a table now, not a narrative
+
+`tmp/grind/motion_Close/s7/residual_table.md` pairs all 26 target instructions
+against the 25 build instructions at the current floor and classifies every
+differing position. 13 differing positions; measured score 13; buckets are 5 ×
+F5 ($v0-vs-$t0), 6.5 × H1 (frame size + save/restore offsets), 1.5 × F7a/F7b
+(save order + empty beqz delay slot). No unexplained instruction remains
+anywhere in the function.
+
+- [s7] Floor re-measured this session at 13 with candidate.c applied to src/ings2.c: score 13, target_insns 26, build_insns 25, rules_dropped 9, cheat_asm_stripped 10. src/ings2.c was then restored to HEAD so the oracle build is untouched; the form lives in memory/grind/motion_Close/candidate.c.
+
+- [s7] REG_PARM_STACK_SPACE on MIPS is the compile-time constant 16 for every fndecl: mips.h:1822 defines it as MAX_ARGS_IN_REGISTERS(4, mips.h:1888) * UNITS_PER_WORD(4) - FIRST_PARM_OFFSET, and FIRST_PARM_OFFSET is the #else arm of an #if 0 block at mips.h:1801-1812, i.e. 0. It does not depend on the callee, its prototype, or its argument list.
+
+- [s7] The two macros that could zero the reservation (MAYBE_REG_PARM_STACK_SPACE at calls.c:648/1249, FINAL_REG_PARM_STACK_SPACE at calls.c:1193) are undefined in config/mips/; OUTGOING_REG_PARM_STACK_SPACE IS defined (mips.h:1830), so the #ifndef subtraction at calls.c:1253 is dead. The live code is calls.c:1245 MAX -> calls.c:1400 store into current_function_outgoing_args_size, unconditional in the args_size.var==0 branch and not gated on must_preallocate.
+
+- [s7] Complete enumeration of emit_call_insn sites in the frozen compiler: calls.c:387/398/403 (emit_call_1 — expand_call and emit_library_call, the latter MAXing at calls.c:2393-2401 and 2743-2751); integrate.c:1807, unroll.c:1948, loop.c:1801/1845 (copies of an already-expanded call; integrate.c:1358 propagates the inlinee's OUTGOING_ARGS_SIZE by MAX); expr.c:8361/8382 in expand_builtin_apply — the only site that never touches cfoas.
+
+- [s7] mips.c:4466 computes the frame's arg area as MIPS_STACK_ALIGN(current_function_outgoing_args_size) and reads nothing else; the only adjustment (mips.c:4473-4474, args_size==0 && current_function_calls_alloca -> 4*UNITS_PER_WORD) can only RAISE it.
+
+- [s7] MEASURED frames (canonical cc1 flags, tmp/grind/motion_Close/s7/f9probe.sh + f9probe2.sh, asm in s7/out/): indirect table call .frame $sp,32 args=16 | direct call $sp,24 args=16 | UNPROTOTYPED call $sp,24 args=16 | __attribute__((const)) call $sp,24 args=16 | call inlined from a static callee $sp,24 args=16 | call inside a loop $sp,24 args=16 | leaf with no call $sp,0 args=0 | __builtin_apply $fp,72 vars=56 regs=3/0 args=0 with 34 instructions and a frame pointer.
+
+- [s7] H1 now reads, in the form the no-new-park-categories carve-outs require: the MIPS o32 backend of the frozen compiler reserves a 16-byte outgoing-argument area for every call it expands, as a compile-time constant applied by a MAX on every path that can set the frame's arg size, so no C source that emits a call can produce this function's 16-byte frame (target frame 16 with ra@12 back-solves to a ZERO arg area; the pure-C minimum is 16 args + 12 saves = 28 -> aligned 32, which is exactly what every honest form emits).
+
+- [s7] The 26-row residual table (tmp/grind/motion_Close/s7/residual_table.md) pairs target against build at the floor of 13 and lands 13 differing positions — 5 x F5 ($v0-vs-$t0), 6.5 x H1 (frame size + save/restore offsets), 1.5 x F7a/F7b (ascending save order + empty beqz delay slot). The count equals the engine's score exactly, so no instruction in the function is unexplained.
+
+- [s7] All three residual mechanisms are now 'the compiler cannot emit this' arguments carrying their own measurement: H1 (backend enumeration + 8 compiled probes, s7), F5 (local-alloc.c:2249-2262 / global.c:1057-1062,1203-1209 ascending first-free scan with no MIPS REG_ALLOC_ORDER, s5b), F7a/F7b (block-local scheduling: an ascending save order needs a prologue-block WAR anti-dependence a void(void) function cannot have — 2/1788 corpus instances, both this crt0 pair; an empty conditional-branch delay slot needs a block with no eligible single insn while the target's holds four — 0/118 compiled-C counterexamples, s6).
