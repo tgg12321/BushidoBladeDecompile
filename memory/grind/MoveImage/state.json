@@ -46,7 +46,9 @@
    "next_probe": "None. This entry exists so a later session does not spend another modality slot re-running campaigns; the workspaces, logs and campaign_meta.json for all four are preserved under tmp/grind/MoveImage/s4/ if the negative ever needs re-reading."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Frozen pending owner ruling on the const/read-only type-level family. Until the ruling lands: no session may apply const or any RTX_UNCHANGING-producing qualifier to any global, in this function or elsewhere; do not re-run permuter campaigns on MoveImage (axis spent, five campaigns / ~152k iterations); the only permissible new work on this function is the session-3 forensics probe (BB2_PRIO_DEBUG on s3/mv.c vs mv2.c, read-only diagnostics), and only if the owner rules NO on Q1."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,

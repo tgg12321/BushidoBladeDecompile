@@ -626,3 +626,130 @@ question:
 - probe: sweep12 (tmp/grind/MoveImage/s4/sweep12.py): five forms measured with `sandbox MoveImage --disable all` against the real whole-TU build, objdumps saved to tmp/grind/MoveImage/s4/asm12/. P0 base; P1 the `fn(nv = p[6], ...)` assignment-expression argument (permuter output-210-1); P2 the `short nv; nv = p[6];` staged local (output-210-2); P3 the same staging at s32 width, isolating 'staged temporary' from 'narrowed value'; P4 a u16 first parameter on the callee prototype, a narrowing that is a type claim rather than a truncating temporary.
 - result: All five measure 2 / 49. The objdump diff against P0 is a single line in each narrow case and it is a WIDTH change at the SAME index: `8c640018 lw a0,24(v1)` becomes `94640018 lhu` (P1, P4) or `84640018 lh` (P2); the wide-staging control P3 is byte-identical to P0. Narrowing does not move the load one slot, so the permuter's 210 is an artifact of its weighted scorer (a differing opcode at a matching index is cheaper than the 4-slot displacement it stands in for). The forms are additionally semantically wrong -- the dev-table word is 32 bits -- and fail cheat tests T1 and T2. Banked as memory/grind/MoveImage/rejected/permuter-narrow-dispatch-argument.c.
 - verdict: KILLED
+
+---
+
+## Session 5 (permuter, 2026-08-11)
+
+### H16 — KILLED. "A fifth, structurally different permuter chassis — directed
+### over the PACKET-STORE / packet-address spelling on the plain-argument base —
+### finds the missing edge where session 4's four campaigns did not."
+Statement: session 4 permuted the DISPATCH side (fn read, p[6] read) and pure
+statement order; nobody ever permuted the packet side. Session 3's frontier item
+2 explicitly named an untested spelling — "taking the call's packet address from
+a separate expression so the store's pointer is used exactly once" — which is a
+PERM_GENERAL alternative, not a PERM_LINESWAP ordering, so ws_c/ws_d never
+enumerated it.
+Mechanism: the open edge is a true memory dependence from the packet store into
+the dev-table load. `canon_rtx` resolves the packet pointer to `&D_8009BF24`
+only through `reg_known_value`; how the pointer is spelled, how many times it is
+used, and whether the call argument is derived from it or from the symbol
+directly all feed that bookkeeping. So the packet-store spelling is the axis with
+a mechanistic reason to move the edge.
+Probe: `tmp/grind/MoveImage/s5/ws_e` (chassis E, label `packetstore-directed`),
+built from `tmp/grind/MoveImage/s5/base_e.c` — the plain-argument base with
+PERM_LINESWAP over all ten body statements CROSSED with three PERM_GENERAL sites:
+the packet-pointer materialization (`&D_8009BF24` / cast / `&D_8009BF28 - 1`),
+the packet store (`*bf24` / `bf24[0]` / plain symbol store), and the call's packet
+address (`(s32)bf24 - 8` / `(s32)&D_8009BF24 - 8` / `(s32)(bf24 - 2)` /
+`(s32)(&D_8009BF24 - 2)`) — a 36-way spelling cross-product against every
+statement ordering. Launched through `tools/permuter_campaign.py`, `-j 6
+--stop-on-zero`, waited IN-TURN across five `wait` windows.
+Result: **57,795 iterations / ~34 min. Base 415. Two finds, 400 and 410, both
+worse than the floor-2 base's 225 and both plain statement reorderings that put
+the packet store ahead of the `D_8009BF28` store — the shape sessions 2/3 already
+measured as 48-instruction (delay-slot steal lost). Zero finds at or below 225.**
+No novel find in the last 18 minutes; harvested with `--stop` in-session.
+Verdict: **KILLED.** The permuter axis is now spent across FIVE campaigns,
+~152,000 iterations, three chassis families and two bases. Do not run a sixth.
+
+### H17 — CONFIRMED, and it CLOSES THE FUNCTION (subject to an owner ruling).
+### "The false packet-store -> dev-table-load dependence is removable at the
+### DECLARATION, not in the body: an unchanging (const) read never conflicts
+### with any store."
+Statement: session 3/4's frontier said the whole residual on the plain-argument
+base is that the dev-table load acquires a true memory dependence on the packet
+store which target's build does not have, and that no C-body spelling removes it
+(H10 created the WRONG edge; sweep11 showed source order inert; 152k permuted
+forms found nothing). The remaining degree of freedom is the TYPE of the object
+being read.
+Mechanism: `sched.c:828` — `if (RTX_UNCHANGING_P (x)) return 0;` in
+`true_dependence`: a read from an unchanging MEM can never conflict with a store,
+whatever the aliasing analysis says. `const`-qualifying the declaration sets
+RTX_UNCHANGING_P on the `%lo(g_gpu_dev_table)` load, so the edge cannot form,
+priority(83) drops from 2 back to 1, and the `lui/lw` pair schedules into
+target's slots. (This is the exact mirror of session 3's H9, which applied
+RTX_UNCHANGING_P to the RECT side and was killed because it freed the rect load
+to beat `sll` to the block head; the dev-table load has no such role.)
+Probe: standalone repro first — `tmp/grind/MoveImage/s5/base_f.c` (plain-argument
+base, `extern s32 *const g_gpu_dev_table;`) through `s4/mkws.sh` into
+`tmp/grind/MoveImage/s5/ws_f`: the validation diff printed NOTHING (49 insns,
+zero differing lines vs `asm/funcs/MoveImage.s`). Then on the REAL whole-TU build
+in `src/display.c`: (i) the plain-argument body alone measured **4 / 49**;
+(ii) adding a block-scope `extern s32 *const g_gpu_dev_table;` inside MoveImage
+took it to **0 / 49**; (iii) moving the qualifier to the file-scope declaration
+(display.c:126, the clean single-declaration spelling) ALSO measures **0 / 49**
+and leaves every sibling that shares the table at zero: ClearImage 0/37,
+ClearImage2 0/39, LoadImage 0/25, StoreImage 0/25.
+Result: **sandbox MoveImage --disable all == 0, build_insns 49 == target 49,
+this session, with the edits in place in src/display.c.**
+Verdict: **CONFIRMED as the closing lever — NOT approved as a construct.**
+
+### Why session 5 returned `ruling-request` and not `candidate-ready`
+The lever is a type-qualifier CLAIM about a global, and it cannot be honestly
+placed in a frozen sanctioned family:
+  * FOR the claim (semantics): `g_gpu_dev_table` (0x8009BE6C) is provably
+    read-only in the shipped executable — `grep 8009BE6C asm/funcs/*.s` returns
+    17 files and every single reference is a `lw`; there is no `sw` to that
+    address anywhere in `asm/`, and no `g_gpu_dev_table = ...` in any `src/*.c`.
+    "This vtable pointer is never reassigned" is a true statement about the
+    program, so `const` is a truthful declaration, not a fiction. The four
+    matched siblings prove it is byte-neutral for every other user.
+  * AGAINST the claim (cheat checklist): T1 fails — the qualifier has no
+    observable effect on emitted behaviour; T3 fails — the mechanism I can
+    state is a named GCC pass (`sched.c:828` RTX_UNCHANGING_P in
+    `true_dependence`), not program logic; T5 is ambiguous — the nearest
+    catalog family is "volatile-coercion by plain extern", of which `const` is
+    the exact mirror image, and the frozen list contains no const/unchanging
+    family. The nearest SANCTIONING rule,
+    `.claude/rules/header-type-correction-from-use-sites.md`, covers correcting
+    a global's declared TYPE at its canonical extern, but its prong (b)
+    ("the OLD type required functionally necessary compensating casts") is about
+    signedness/width and cannot be quoted verbatim for a qualifier.
+Per the session contract ("if you cannot quote a scope sentence and cite a
+precedent for a family you are claiming, you do not have that family"), the
+correct disposition is a ruling request. `src/display.c` is LEFT in the
+bytes-proven state so the owner can re-verify in one command:
+`& tools/wteng.ps1 main sandbox MoveImage --disable all`.
+
+## Frontier after session 5
+1. THE RULING (owner). Is a `const` qualifier on a global that is provably never
+   stored to anywhere in the executable a legitimate type-level declaration (like
+   the MMIO volatile ruling of 2026-07-01), or is it a coercion cheat in the
+   volatile-coercion family? If legitimate, a follow-up scope question: the clean
+   spelling corrects the canonical declaration in `include/gpu.h`
+   (`extern u32 *const g_gpu_dev_table;`) and deletes display.c's wrong-type
+   duplicate — that touches a shared header and other TUs, which is outside a
+   grind session's allowed surface and needs an operator/integration step plus a
+   full `verify-oracle`.
+2. IF THE RULING IS NO: the residual is back to the session-3/4 frontier — the
+   forensic question of WHY the plain-argument build grows a packet-store ->
+   dev-table-load dependence that the floor-2 build does not have, when the RTL
+   of the three insns involved is textually identical. That is a FORENSICS
+   modality probe (`BB2_PRIO_DEBUG=1` on `s3/mv.c` and `s3/mv2.c`, separating the
+   sched1 and sched2 sections, reading `reg_n_sets` and the REG_EQUAL note on the
+   packet-pointer set insn). Session 5 did not touch it — it is a forensics
+   question, not a permuter one.
+3. The permuter axis is CLOSED (five campaigns, ~152k iterations). Do not reseed.
+
+## [s5] A fifth permuter chassis, directed over the packet-store / packet-address spelling on the plain-argument base (the axis sessions 1-4 never permuted), finds the missing scheduler edge.
+- mechanism: The open edge is a true memory dependence from the packet store into the dev-table load; canon_rtx resolves the packet pointer to its symbol only through reg_known_value, so how the pointer is materialized, how many times it is used, and whether the call's packet address is derived from the pointer or from the symbol directly all feed that bookkeeping. Session 3 named "take the call's packet address from a separate expression so the store's pointer is used exactly once" as untested; it is a PERM_GENERAL alternative, which ws_c (LINESWAP only) and ws_d (GENERAL over the DISPATCH reads) never enumerated.
+- probe: tmp/grind/MoveImage/s5/ws_e, chassis E `packetstore-directed`, built from tmp/grind/MoveImage/s5/base_e.c: the plain-argument base with PERM_LINESWAP over all ten body statements crossed with PERM_GENERAL at three packet-side sites (pointer materialization x3, packet store x3, call packet address x4 = 36 spellings). Launched via tools/permuter_campaign.py -j 6 --stop-on-zero, waited in-turn across five `wait` windows, harvested with --stop in-session.
+- result: 57,795 iterations in ~34 minutes from base score 415. Two finds, 400 and 410, both statement reorderings that place the packet store ahead of the D_8009BF28 store -- the shape already measured as build_insns 48 (delay-slot steal lost) in sessions 2 and 3. ZERO finds at or below the floor-2 base's 225. No novel find in the final 18 minutes. The permuter axis is now spent across five campaigns, ~152,000 iterations, three chassis families and both bases.
+- verdict: KILLED
+
+## [s5] The false packet-store -> dev-table-load dependence that is the entire residual on the plain-argument base is removable at the DECLARATION rather than in the body: an RTX_UNCHANGING_P (const) read can never conflict with a store, so const-qualifying g_gpu_dev_table deletes the edge and puts the lui/lw pair in target's slots.
+- mechanism: sched.c:828, inside true_dependence -- `if (RTX_UNCHANGING_P (x)) return 0;`. A const-qualified declaration sets RTX_UNCHANGING_P on the %lo(g_gpu_dev_table) load, so no store can ever be made its predecessor; priority(83) falls from 2 back to 1 and the dev-table pair schedules 4 slots earlier, into target's positions. Exact mirror of session 3's H9, which applied the same property to the RECT side and was killed because it freed the rect load to beat `sll $v0,$s1,16` to the head of the post-guard block; the dev-table load plays no such role.
+- probe: (1) standalone repro tmp/grind/MoveImage/s5/base_f.c through s4/mkws.sh into ws_f -- validation diff empty at 49 insns. (2) Real whole-TU build in src/display.c: plain-argument body alone = 4/49; plus a block-scope `extern s32 *const g_gpu_dev_table;` = 0/49; with the qualifier moved to the file-scope declaration at display.c:126 (the clean single-declaration spelling) = 0/49. (3) Collateral check on every sibling sharing the table: ClearImage, ClearImage2, LoadImage, StoreImage.
+- result: sandbox MoveImage --disable all == 0 with build_insns 49 == target_insns 49, measured this session with the edits in place in src/display.c. Siblings unaffected: ClearImage 0/37, ClearImage2 0/39, LoadImage 0/25, StoreImage 0/25. Semantics check: g_gpu_dev_table (0x8009BE6C) is read-only across the whole executable -- 17 asm/funcs files reference it, every reference a `lw`, zero `sw`, and no assignment in any src/*.c. Construct NOT submitted: it fails cheat tests T1 (no observable effect) and T3 (mechanism is a named GCC pass), its nearest catalog family is the FORBIDDEN volatile-coercion-by-plain-extern (const being its mirror), and no frozen sanctioned family covers a const/unchanging claim -- so session 5 returned ruling-request rather than candidate-ready.
+- verdict: CONFIRMED

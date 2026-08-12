@@ -1,65 +1,54 @@
-/* MoveImage — BEST FORM as of grind session 2 (structural).
- * Honest pure-C floor: 2 (sandbox MoveImage --disable all), down from 7.
- * build_insns 49 == target_insns 49 (the H2 delay-slot steal is intact — this
- * is the standing gate: ANY form at build_insns 47/48 has lost it and is a
- * dead end no matter how good its score looks).
+/* MoveImage — session 5 (permuter modality).
  *
- * Two levers are load-bearing here, both ordinary program logic:
+ * ############################################################################
+ * # THIS FORM MEASURES sandbox MoveImage --disable all == 0 (build_insns 49  #
+ * # == target 49) ON THE REAL WHOLE-TU BUILD — the function is byte-closed.  #
+ * # IT IS **NOT** APPROVED.  The closing lever is a TYPE-QUALIFIER CLAIM on  #
+ * # a global (`extern s32 *const g_gpu_dev_table;`) and I could not place it #
+ * # in a sanctioned SOTN family, so session 5 returned `ruling-request`      #
+ * # instead of `candidate-ready`.  DO NOT submit this as a candidate, and do #
+ * # NOT re-derive it as if it were sanctioned, until the owner has ruled.    #
+ * # The sanctioned-construct fallback is candidate_sanctioned_floor2.c       #
+ * # (floor 2) and candidate_alt_plain_arg.c (floor 4, residual moved).       #
+ * ############################################################################
  *
- * 1. (session 1) `D_8009BF28 = packed;` is the FIRST of the three primitive
- *    stores. That makes the packed-value computation (`sll $v0,$s1,16` / andi
- *    / or) the highest-priority work at the top of the post-guard block, so
- *    cc1's delay-branch pass (reorg.c fill_slots_from_thread, eager fill from
- *    the TAKEN thread) steals `sll $v0,$s1,16` into the guard branch's delay
- *    slot. Stealing from the taken thread requires the branch to point AT the
- *    body, which is why the guard is emitted as
- *    `bnez $v0,.L720 / j <epi> / addiu $v0,-1` — target's shape, and the two
- *    instructions that were missing at floor 21.
+ * WHAT CHANGED vs candidate_alt_plain_arg.c (which measures 4 / 49):
+ *   the file-scope declaration in src/display.c
+ *       -  extern s32 g_gpu_dev_table;
+ *       +  extern s32 *const g_gpu_dev_table;
+ *   Nothing else.  The function body is the session-3 plain-argument base
+ *   (walking rect pointer + `q = p + 6; fn(*q, ...)`), unchanged.
  *
- * 2. (session 2) The rect is walked with a post-increment pointer, so the
- *    rect[0] read happens BEFORE the D_8009BF28 store and the rect[1] read
- *    after it. Reading rect[0] ahead of the store puts the `lw $a0,0x0($s0)`
- *    where target has it (slot 5, ahead of the store group) and hands the
- *    rect[0] value $a0 — target's register. Session 1's probe G showed that
- *    reading rect[0] ahead of the store via a PLAIN named local
- *    (`src = arg0[0];`) destroys the delay-slot steal (47 insns); the walking
- *    pointer is the spelling that does it without paying that price
- *    (measured: W1/W2/W3 plain-local hoists all 21/47, W10 walking 2/49).
+ * MECHANISM (measured, session 3 + 5):
+ *   The sole residual on the plain-argument base was the dev-table
+ *   `lui/lw %hi/%lo(g_gpu_dev_table)` pair emitted 4 slots LATE, because in
+ *   that build the dev-table load acquires a true memory dependence on the
+ *   packet store (`mv2.prio`: insn=83 pred=75 kind=0, final_pri=2) that
+ *   target's build does not have.  A const-qualified declaration makes the
+ *   load RTX_UNCHANGING_P, and sched.c:828 makes an unchanging read never
+ *   conflict with any store — the false edge disappears, priority(83) goes
+ *   back to 1, and the pair moves into target's slots.  Score 4 -> 0.
  *
- * Everything here is ordinary program logic. No FAKE constructs, no dead
- * stores, no pins, no volatile, no unused declarations: `packed`, `bf24`,
- * `rect`, `src`, `p` and `fn` are all written and read.
+ * COLLATERAL: none measured.  With the const declaration in place the four
+ * matched siblings that share the declaration/table still measure 0:
+ *   ClearImage 0/37, ClearImage2 0/39, LoadImage 0/25, StoreImage 0/25.
  *
- * REMAINING 2 — one instruction's position. Target emits
- *   ... sw $a0,0x0($a1) / lw $v0,0x4($s0) / addu $a3,$zero,$zero /
- *       lui $at,%hi(BF2C) / sw $v0,%lo(BF2C)($at) / lw $a0,0x18($v1) / ...
- * we emit `lw $a0,0x18($v1)` (the p[6] call argument) four slots earlier,
- * immediately after `sw $a0,0x0($a1)`. Everything else is byte-identical.
- * Diagnosis from the cc1 .sched2 dump is in evidence.md / hypotheses.md H7.
- *
- * SESSION 3 NOTE — read this before grinding from here.  The 4-slot float of
- * the p[6] load is now explained: `p[6]` is an INDIRECT_REF over a PLUS_EXPR,
- * so expr.c:4567-4577 marks it MEM_IN_STRUCT_P, and sched.c:834-839 then makes
- * it alias-EXEMPT from the `%lo(D_8009BF2C)` symbol store — nothing pins it.
- * Re-spelling that read as `q = p + 6; ... fn(*q, ...)` (a plain INDIRECT_REF)
- * restores the dependence and puts the load at TARGET'S EXACT SLOT.  That form
- * is banked as ../candidate_alt_plain_arg.c and scores 4 / 49 — a HIGHER number
- * than this file only because the residual MOVED to the dev-table load, which
- * is now the single remaining diff.  Evaluate both bases; hypotheses.md H8
- * carries the measurements.
- *
- * SESSION 4 NOTE (permuter modality).  This file is STILL the best form: the
- * floor did not move.  Four decomp-permuter campaigns totalling ~94,000
- * iterations were run and stopped in-session — random and directed
- * (PERM_LINESWAP x PERM_GENERAL) chassis, seeded from BOTH this file and
- * ../candidate_alt_plain_arg.c — and not one form beat either base.  The
- * permuter's only sub-base score class stages the dispatch argument through a
- * narrow local; it merely turns the `lw a0,24(v1)` into `lhu`/`lh` at the SAME
- * index (measured, tmp/grind/MoveImage/s4/sweep12_results.md) and is banked in
- * rejected/permuter-narrow-dispatch-argument.c.  Do not re-run a permuter
- * campaign on this function; the remaining question is forensic (hypotheses.md
- * "Frontier after session 4").
+ * SEMANTIC BASIS FOR THE CLAIM (this is what the owner must rule on):
+ *   g_gpu_dev_table (0x8009BE6C) is READ-ONLY across the entire executable.
+ *   `grep 8009BE6C asm/funcs/*.s` -> 17 files, every reference a `lw`, ZERO
+ *   stores; no `g_gpu_dev_table = ...` in any src/*.c.  So "this pointer is
+ *   never reassigned" is a true statement about the program, not a fiction.
+ *   AGAINST: the construct has no observable effect on emitted behaviour
+ *   (cheat test T1), its mechanism is named in terms of a GCC pass
+ *   (sched.c RTX_UNCHANGING_P, test T3), and the nearest catalog family is
+ *   "volatile-coercion by plain extern", of which const is the mirror image
+ *   (test T5).  The nearest SANCTIONING rule is
+ *   .claude/rules/header-type-correction-from-use-sites.md, but its prong (b)
+ *   ("the OLD type required functionally necessary compensating casts") is
+ *   about signedness/width, not qualifiers, so it cannot be cited verbatim.
+ *   That unresolvable tension is exactly why this is a ruling-request.
  */
+extern s32 *const g_gpu_dev_table;   /* <-- THE LEVER (file scope, display.c) */
 extern u8 D_80015F74;
 extern s32 D_8009BF24;
 extern s32 D_8009BF28;
@@ -67,6 +56,7 @@ extern s32 D_8009BF2C;
 
 s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
     s32 *p;
+    s32 *q;
     s32 (*fn)();
     s32 packed;
     s32 *bf24;
@@ -86,5 +76,6 @@ s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
     D_8009BF2C = *rect;
     p = (s32 *)g_gpu_dev_table;
     fn = (s32 (*)())p[2];
-    return fn(p[6], (s32)bf24 - 8, 0x14, 0);
+    q = p + 6;
+    return fn(*q, (s32)bf24 - 8, 0x14, 0);
 }

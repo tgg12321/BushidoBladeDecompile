@@ -413,3 +413,35 @@ All gated on `build_insns == 49`; full tables in
 - [s4] No campaign outlived the session: `permuter_campaign.py status` reports every registered campaign with alive=false at session end, and all four carry an explicit stop_reason.
 
 - [s4] Nothing in the session's diff touches src/ (restored to HEAD), regfix.txt, asmfix.txt, .claude/rules/, engine/, tools/, the Makefile or any *.ld. The diff is the MoveImage ledger plus metrics/events.jsonl.
+
+## Session 5 (permuter, 2026-08-11) — measured facts
+
+* Chassis E (`tmp/grind/MoveImage/s5/ws_e`, label `packetstore-directed`): the
+  plain-argument base with PERM_LINESWAP over all ten body statements crossed
+  with PERM_GENERAL at three packet-side sites (packet-pointer materialization
+  x3, packet store x3, call packet address x4). 57,795 iterations / ~34 min /
+  base score 415 / two finds (400, 410), both statement reorderings that put the
+  packet store ahead of the D_8009BF28 store — the known build_insns-48 shape.
+  ZERO finds at or below the floor-2 base's 225. Harvested with `--stop`
+  in-session. The permuter axis for MoveImage is now spent across FIVE campaigns
+  and ~152,000 iterations (s4: ws_a/ws_b/ws_c/ws_d; s5: ws_e).
+* `g_gpu_dev_table` = 0x8009BE6C is READ-ONLY across the whole executable:
+  `grep 8009BE6C asm/funcs/*.s` matches 17 files and every reference is a `lw`
+  (`lui %hi` + `lw %lo`); there is no `sw` to that address in `asm/`, and no
+  `g_gpu_dev_table = ...` assignment in any `src/*.c`.
+* A const-qualified declaration of that global CLOSES MoveImage:
+  - standalone repro `tmp/grind/MoveImage/s5/base_f.c` -> `ws_f`: validation diff
+    EMPTY at 49 insns against `asm/funcs/MoveImage.s`;
+  - real whole-TU build, `sandbox MoveImage --disable all`:
+      plain-argument body, non-const decl .......... score 4, build_insns 49
+      + block-scope `extern s32 *const g_gpu_dev_table;` .... score 0, 49
+      + file-scope decl const'd (display.c:126) ............. score 0, 49
+  - collateral at the file-scope spelling: ClearImage 0/37, ClearImage2 0/39,
+    LoadImage 0/25, StoreImage 0/25 — no sibling regressed.
+* The construct was NOT submitted as a candidate. It fails cheat tests T1 (no
+  observable effect on emitted behaviour) and T3 (the mechanism I can state is
+  `sched.c:828` RTX_UNCHANGING_P inside `true_dependence`), and no frozen
+  sanctioned family covers a const/unchanging type claim — the nearest catalog
+  family is the FORBIDDEN "volatile-coercion by plain extern", of which const is
+  the mirror. Session 5 returned `ruling-request`; `src/display.c` is left in the
+  bytes-proven state for the owner to re-verify.

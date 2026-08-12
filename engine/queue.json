@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "MoveImage",
-      "file": "display",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 19,
-      "status": "active"
-    },
-    {
       "func": "motion_Close",
       "file": "ings2",
       "distance": 21,
@@ -2417,17 +2409,26 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-11 \u2014 func_8003B9D0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
+    },
+    {
+      "func": "MoveImage",
+      "file": "display",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 19,
+      "status": "parked",
+      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-11 \u2014 MoveImage \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
     "total": 283,
-    "active": 244,
+    "active": 243,
     "by_status": {
-      "active": 244,
-      "parked": 39
+      "active": 243,
+      "parked": 40
     },
     "by_verdict": {
-      "C": 160,
+      "C": 159,
       "ASM-PARTIAL": 37,
       "ASM-SUSPECT": 47
     }
