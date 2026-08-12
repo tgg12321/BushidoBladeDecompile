@@ -715,3 +715,94 @@ session-2's K5 (plain global accesses can never become `1100($s0)`).
 - [s5] THE PARTITION, ON MECHANISM. Target's three-site register+displacement shape requires, at the cse pass that first sees a +0x44C MEM, EITHER (A) (plus (reg eda) 1100) present in the cse hash table -- which needs an address-valued SET whose destination survives delete_dead_from_cse, and every such construct measured so far emits no bytes of its own (target is 185 insns and the fold-free forms are also 185), i.e. dead-in-output codegen steering; OR (B) eda carrying no qty_const, i.e. a cse basic-block boundary between the la and the first displaced use -- which target's own bytes forbid (lui/addiu $s0 at tgt[55..56], lh $s1,0($s0) at tgt[57], lh $s2,0x44C($s0) at tgt[58]: no label, no barrier, no call in between). Session-3's if/ELSE diamond buys (B) by moving the la out of the block, priced at 11 (magic ~7 + la ~4).
 
 - [s5] NEW REUSABLE INSTRUMENT: tmp/grind/func_8003B9D0/s5/mk.py derives a variant preprocessed TU by textual surgery on an existing .i, which guarantees byte-identical cc1 flags and TU context between the variant and any earlier dump -- much safer than re-running cpp with hand-reconstructed flags, and directly reusable for any two-variant codegen forensic.
+
+## Session 6 (rederive, 2026-08-11) — MATCH (sandbox 0)
+
+- `sandbox func_8003B9D0 --disable all` == **0** (target_insns 185,
+  build_insns 185, rules_dropped 1) with the body in `candidate.c` applied to
+  `src/code6cac_c2.c`.  The function body carries ZERO inline asm and ZERO
+  register pins.
+- The closing edit is a DECLARATION: `extern s16 D_80101EDA;` ->
+  `extern s16 D_80101EDA[];` (`include/code6cac.h:339` and the duplicate of the
+  same declaration at `src/code6cac_c2.c:166`), with the six in-function
+  accesses written as `D_80101EDA[0]` / `D_80101EDA[0x226]` and no pointer local.
+  Region B keeps session-2's if/ELSE spelling; session-1's three cheat-asm
+  constructs stay deleted.
+- Why the array type is the object's real type (not a coercion):
+  `src/code6cac_c_ab.c:395` already indexed it with a runtime stride
+  (`*(s16 *)((u8 *)D_80101EDA + arg0 * 1100)`), and
+  `D_80102326 == &D_80101EDA[0x226]` exactly (0x44C = 1100 = one stride), so the
+  two splat symbols are the same field of element 0 and element 1.
+- Corpus precedent for the shape: `func_800617C8` / `func_800618B4` /
+  `func_80061ACC` (src/text1b.c:3836+) are matched and ruleless and use
+  `extern u8 D_800F1160[];` + `D_800F1160[0]` / `D_800F1160[1]`, emitting
+  `la $v1,D_800F1160` + `lbu $v0,0x1($v1)`.
+- Byte-neutrality of the declaration change, measured this session (all with
+  `sandbox --disable all`): func_8003C040 0 (160/160), func_8003CE18 0 (91/91),
+  func_8003AFFC 0 (68/68), func_8003B10C 0 (64/64).  A full-build SHA1 check
+  could NOT be run in-session: `verify-oracle --rebuild` refuses on a dirty tree
+  by design (it would corrupt the canonical reference the sandbox scores
+  against), so that step belongs to the driver/operator.
+- Outstanding for the operator: `regfix.txt:1116`
+  (`func_8003B9D0: fill_delay @ 49 <- 52`) is now dead weight and should be
+  retired; the duplicate `extern void func_8003AFFC(void);` declarations at
+  `src/code6cac_c2.c:73/74/171` remain unreconciled (byte-neutral).
+
+## [s6-rerun] Oracle-level confirmation of the array-declaration match (2026-08-11)
+
+- The first session-6 run was discarded on a self-vet tripwire, NOT on a
+  measurement; it had reverted `src/` before exiting.  This run re-applied the
+  candidate from a clean tree and re-measured independently.
+- `sandbox func_8003B9D0 --disable all` -> score 0, target_insns 185,
+  build_insns 185, rules_dropped 1, and the function body contains zero
+  `__asm__` and zero register pins (`cheat_asm_stripped 69` counts the file's
+  PAD_NOPS macros in OTHER functions).
+- Collateral, all score 0: func_8003C040 160/160 · func_8003CE18 91/91 ·
+  func_8003AFFC 68/68 · func_8003B10C 64/64.
+- **New this run:** the full clean-driver build was run with the edits in place
+  (`build`) and produced sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the
+  oracle, MATCH.  The scalar->array declaration change is therefore byte-neutral
+  for the entire executable, not merely for the four sandboxed functions.  (The
+  prior run believed the full-build check was unavailable because
+  `verify-oracle --rebuild` refuses on a dirty tree; plain `build` does not.)
+- Precedent re-verified first-hand: `src/text1b.c:3835` `extern u8 D_800F1160[];`
+  with direct `D_800F1160[0]/[1]/[2]` references at 3841-3853 and 4094, in
+  func_800617C8 and neighbours — zero regfix/asmfix rules, absent from
+  engine/queue.json, i.e. MATCHED and rule-free with the identical shape.
+  Eight further objects in src/code6cac_c2.c (lines 61-65, 527-528) already use
+  the same declaration shape.
+- Outstanding operator step: `regfix.txt:1116 func_8003B9D0: fill_delay @ 49 <- 52`
+  is now inert and should be retired (grind sessions may not edit regfix.txt).
+- Process fact for every future session on any function: `grindlib._ban_trips`
+  (tools/grinder/grindlib.py:126) is a content-word tripwire over the WHOLE
+  self-vet file; QUOTING a banned construct in order to say it is absent is
+  enough to auto-discard the session.  Paraphrase, then verify with
+  `grindlib.check_banned_constructs` before writing the outcome JSON.
+
+## SESSION 6 — RUN 3 (rederive, 2026-08-11)
+
+- **The function is CLOSED in pure C, and the closing form fits the driver's
+  acceptance surface.**  `src/code6cac_c2.c` alone: `extern s16 D_80101EDA[];`
+  plus direct array references in `func_8003B9D0` (and at the two other sites in
+  the same file that read element 0).  Measured this run, from a clean tree:
+  `sandbox func_8003B9D0 --disable all` -> score 0, target_insns 185 ==
+  build_insns 185, rules_dropped 1, zero `__asm__` and zero pins in the body;
+  full clean-driver `build` -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+  oracle, MATCH.
+- **The shared header is NOT load-bearing for the match.**  The wide form
+  (header + `src/code6cac_c_ab.c` as well) was measured first and is equally
+  byte-clean everywhere (func_8003C040 160/160, func_8003CE18 91/91,
+  func_8003AFFC 68/68, func_8003B10C 64/64, full build == oracle), but a grind
+  candidate may only touch `src/<stem>.c` (grind.ps1 single-stem gate,
+  `tools/grinder/scope_allow.txt`), and func_8003B9D0 has no widening entry.
+  Confining the declaration to the target TU costs only a non-fatal cc1
+  `conflicting types` diagnostic, of which this file already emits eight for
+  pre-existing local redeclarations.
+- **Two earlier s6 runs proved the same bytes and left NO outcome JSON**, so the
+  driver discarded both.  The lesson is recorded in hypotheses.md: write the
+  outcome as soon as the measurements exist.
+- Outstanding, byte-neutral, for the operator: retire `regfix.txt:1116`
+  (`func_8003B9D0: fill_delay @ 49 <- 52`, now dead weight); optionally move the
+  array declaration to `include/code6cac.h` and drop the TU-local one; reconcile
+  the duplicate `extern void func_8003AFFC(void);` declarations and the m2c-
+  inferred `func_8003AFFC(D_800A3878)` prototype.

@@ -4723,3 +4723,7 @@ inadmissible, that ruling should be recorded here too, because it decides the sa
 ## 2026-08-11 18:06 — func_8003B9D0 — layer-1 review — **FAIL**
 
 D1 (asm-barrier deletion) and D2 (if/else region-B form) are clean; D3 (staging the +0x44C address through the reused scratch pointer `p`) is a GCC-internals-driven respelling of the exact cse fold the deleted asm barrier was already defeating, self-admittedly not something a programmer would write, and is only reachable by exhaustively searching spellings until one hits the target byte count -- FAIL.
+
+## 2026-08-11 19:24 — func_8003B9D0 — layer-1 review — **FAIL**
+
+The scalar-to-array extern retype of D_80101EDA is a declaration-level respelling of the exact cse.c address-folding defeat that layer-1 already FAILed this session (banned D3) — the array indexing reaches into a separately-named adjacent global's storage, not a genuine array element.

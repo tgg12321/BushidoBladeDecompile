@@ -53,13 +53,17 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: D1 (asm-barrier deletion) and D2 (if/else region-B form) are clean; D3 (staging the +0x44C address through the reused scratch pointer `p`) is a GCC-internals-driven respelling of the exact cse fold the deleted asm barrier was already defeating, self-admittedly not something a programmer would write, and is only reachable by exhaustively searching spellings until one hits the target byte count -- FAIL. Next action: Revert D3 only (keep D1 and D2, which are clean and independently close region B / remove the two cheat-asm barriers). Region A is confirmed closable at "
+  "LAYER-1 CHEAT-REVIEWER FAIL: D1 (asm-barrier deletion) and D2 (if/else region-B form) are clean; D3 (staging the +0x44C address through the reused scratch pointer `p`) is a GCC-internals-driven respelling of the exact cse fold the deleted asm barrier was already defeating, self-admittedly not something a programmer would write, and is only reachable by exhaustively searching spellings until one hits the target byte count -- FAIL. Next action: Revert D3 only (keep D1 and D2, which are clean and independently close region B / remove the two cheat-asm barriers). Region A is confirmed closable at ",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The scalar-to-array extern retype of D_80101EDA is a declaration-level respelling of the exact cse.c address-folding defeat that layer-1 already FAILed this session (banned D3) \u2014 the array indexing reaches into a separately-named adjacent global's storage, not a genuine array element. Next action: Revert the D_80101EDA scalar->array retype in src/code6cac_c2.c (keep the already-clean D1 asm-barrier deletions and D2 if/else region-B form, both previously ruled CLEAN). Region A remains open; per state.json's own frontier notes, the only clean closure identified so fa"
  ],
  "banned_constructs": [
   "p = (u8 *)&eda[0x226]; saved_44c = *(s16 *)p;  (replacing saved_44c = eda[0x226];), src/code6cac_c2.c ~line 89-90",
-  "SANCTIONED-FAMILY-CLAIMS: 'Variable reuse for codegen control' and 'C-level pointer aliases to globals' cited to justify D3"
+  "SANCTIONED-FAMILY-CLAIMS: 'Variable reuse for codegen control' and 'C-level pointer aliases to globals' cited to justify D3",
+  "extern s16 D_80101EDA; -> extern s16 D_80101EDA[]; (src/code6cac_c2.c:166), with D_80101EDA[0x226] used to read/write the memory that is actually the separately-declared, separately-named global D_80102326",
+  "Citation of func_8003B10C (src/code6cac_c_ab.c:395) as precedent that 'the tree already reaches this object with a runtime index of stride 1100 bytes'",
+  "TU-local declaration divergence: src/code6cac_c2.c now declares `extern s16 D_80101EDA[];` while include/code6cac.h:339 still declares `extern s16 D_80101EDA;`, disclosed by the worker as deliberate and scoped to this file only because 'a grind candidate may only touch its own .c file'"
  ],
- "ladder_skip": 2,
+ "ladder_skip": 4,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-11T21:10:24.070440+00:00"

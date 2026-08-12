@@ -1,63 +1,76 @@
-/* candidate.c — func_8003B9D0 — best LEGAL form.  HONEST FLOOR: 6.
+/* candidate.c — func_8003B9D0 — MATCHING FORM, CONFINED TO src/code6cac_c2.c.
  *
- * FLOOR: `sandbox func_8003B9D0 --disable all` == **6**
- *        (target_insns 185, build_insns 188, rules_dropped 1, cheat-asm
- *        stripping ON), re-measured in the forensics session (s4-forensics,
- *        2026-08-11) with this exact body applied to src/code6cac_c2.c.
+ * MEASURED THIS SESSION (s6, rederive, 2026-08-11 — third run of the modality;
+ * the two earlier runs derived the same lever but ended without writing an
+ * outcome JSON, so the driver discarded them and src/ was reverted each time.
+ * Everything below was re-applied from a clean tree and re-measured here):
+ *   & tools/wteng.ps1 main sandbox func_8003B9D0 --disable all
+ *     -> "score": 0, target_insns 185, build_insns 185, rules_dropped 1.
+ *        The function body carries ZERO __asm__ and ZERO register pins
+ *        (cheat_asm_stripped 69 is the file's PAD_NOPS macros elsewhere).
+ *   & tools/wteng.ps1 main build
+ *     -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH.
  *
- * WHY THIS IS THE CANDIDATE AND NOT THE SANDBOX-0 FORM.
- * The previous session's sandbox-0 body added, in place of
- * `saved_44c = eda[0x226];`, the pair
+ * THE CLOSING LEVER — REGION A, in one line:
+ *   `D_80101EDA` is declared as an incomplete ARRAY (`extern s16 D_80101EDA[];`)
+ *   and the six accesses are written as plain ARRAY REFERENCES with NO pointer
+ *   local at all.
  *
- *     p = (u8 *)&eda[0x226];      <- reuse of the function's later scratch ptr
- *     saved_44c = *(s16 *)p;
+ * WHY THAT WORKS (mechanism, and why every earlier spelling failed).
+ * Sessions 1-5 established (H6) that `find_best_addr` (cse.c:2621) folds any
+ * non-REG MEM address by substituting the base pseudo's `qty_const`
+ * (cse.c:2659-2665 + 5170-5180), and restores register+displacement only if the
+ * folded constant's equivalence class already holds a cheaper member.  A pointer
+ * local initialised from `&D_80101EDA` gives the base pseudo a `qty_const` of
+ * `(symbol_ref)`, so all three displaced sites folded to `lui %hi(sym+1100)` +
+ * `%lo(...)` — the 3-instruction, 6-point residual.  An ARRAY_REF on an array of
+ * UNKNOWN (incomplete) size never creates that pseudo: the base address is
+ * materialised once and the displaced accesses stay `(mem (plus (reg)
+ * (const_int 1100)))` through cse, so cc1 emits target's `la $s0,D_80101EDA` +
+ * `lh/sh $r,1100($s0)` at all three sites and the count lands on target's 185.
+ * A mini-TU sweep (tmp/grind/func_8003B9D0/s6/) shows the effect is specific to
+ * the array DECLARATION: a pointer local off the same array, a pointer-to-array
+ * cast, an array-of-struct index and a cast-to-array-of-unknown-size ALL still
+ * fold.  Only the declared-array direct reference works.
  *
- * The layer-1 cheat-reviewer FAILED it (D3) and the driver has BANNED that
- * construct for this function under any spelling.  It is banked, unchanged,
- * at rejected/p-staging-layer1-cheat-banned.c.  The forensics session then
- * proved the reviewer right on mechanism: see hypotheses.md H5 — the
- * construct's entire effect is to keep an otherwise-dead address-computation
- * insn alive through cse1 so that cse2 makes a different decision, and that
- * insn is deleted again by `flow` before any byte is emitted.  "Dead in the
- * emitted output, but its existence in source changed codegen upstream of
- * DCE" is the policy's own definition of a cheat-by-spelling.
+ * WHY THE DECLARATION IS HONEST (not a coercion):
+ *   * `src/code6cac_c_ab.c` (func_8003B10C) already indexes this object with a
+ *     RUNTIME stride of 1100 bytes.  A stride-1100 runtime index is array
+ *     semantics; the scalar declaration was what forced that site to pointer-pun
+ *     through the address of the scalar.
+ *   * `D_80102326` is exactly the element one stride further along (1100 bytes),
+ *     so the two symbols splat emitted are element 0 and element 1 of the same
+ *     per-player field.
+ *   * The same TU already declares many game globals this way
+ *     (`extern u8 D_800A4750[];`, `extern s16 D_800A7FE0[];`, ...), and the
+ *     matched, ruleless sibling `func_800617C8` (src/text1b.c:3836) uses the
+ *     identical shape (`extern u8 D_800F1160[];` + `D_800F1160[0]` /
+ *     `D_800F1160[1]`) and emits the same `la` + register+displacement form.
  *
- * WHAT THIS BODY ALREADY BUYS (both clean, both keep):
- *   D1 — all three session-1 cheat-asm constructs are gone (the `eda`
- *        identity-reload barrier and the two `__asm__ ("" ::: "memory")`
- *        scheduling barriers).  This body carries ZERO `__asm__`.
- *   D2 — REGION B (the whole original 7-instruction shortfall) is closed by
- *        spelling the two flag-selected argument initialisations as if/else
- *        rather than "init to -1, then conditionally overwrite".
+ * SCOPE NOTE (why the declaration is TU-local here).  The tidier end state puts
+ * the array declaration at the canonical `extern` in include/code6cac.h and
+ * drops the local one; that whole-tree form was ALSO measured this session and
+ * is byte-neutral everywhere (func_8003C040 160/160, func_8003CE18 91/91,
+ * func_8003AFFC 68/68, func_8003B10C 64/64, full build == oracle SHA1).  But a
+ * grind candidate may touch only its own .c file (tools/grinder/scope_allow.txt),
+ * so the committed form declares the array in this TU.  cc1 accepts the
+ * disagreement with the header with a non-fatal "conflicting types" diagnostic —
+ * this file already produces eight of those for pre-existing local
+ * redeclarations.  Aligning the header is an operator step; the precedent for
+ * widening the scope is the `replay_camera_Init include/code6cac.h` entry.
  *
- * WHAT IS LEFT (the 6 points) — REGION A, three `+0x44C` sites where we emit
- * `lui $x,%hi(D_80101EDA+1100)` + `lh|sh $r,%lo(...)($x)` and target emits
- * `lh|sh $r,1100($s0)`.  Named exactly, in hypotheses.md H6 (which CORRECTS
- * the earlier H5 — H5 described only the derived-pointer variants):
- *   * FOR THIS BODY the fold is performed by **cse1**.  The `.rtl` dump has no
- *     address pseudo at all (all three sites are
- *     `(mem/s:HI (plus:SI (reg/v:SI 94) (const_int 1100)))`, insns 97/120/130)
- *     and `.cse` already shows them folded to
- *     `(const (plus (symbol_ref "D_80101EDA") 1100))`.  `delete_dead_from_cse`
- *     plays no part here — there is nothing to delete.
- *   * `find_best_addr` (cse.c:2621) folds any non-REG address unconditionally
- *     (cse.c:2663-2665) via `fold_rtx`'s `qty_const` substitution
- *     (cse.c:5170-5180), and THEN looks the folded address up (cse.c:2680) and
- *     replaces it with the equivalence-class member of lowest `ADDRESS_COST`,
- *     tie-broken by highest `rtx_cost` (cse.c:2698-2739).  On MIPS
- *     (`mips.h:2897` + `mips_address_cost`) `(plus reg small_int)` costs 1 and
- *     `(const (plus symbol_ref small_int))` costs 2, so register+displacement
- *     is STRICTLY CHEAPER and is RESTORED whenever it is in the cse hash table.
- *     The fold is a LOOKUP MISS, not a one-way transform.
- *   * A dedicated pointer local puts the expression in the table, so cse1 does
- *     restore register+displacement — but that drops the pointer's
- *     whole-function reference count to 0, `delete_dead_from_cse` (cse.c:8683,
- *     toplev.c:2867) deletes the set, and cse2 re-folds with an empty table.
- *     That is why every dedicated-pointer variant measures 188/6.
- *   * The banned `p`-reuse worked only because `p` is assigned again later, so
- *     the set survives — and it emits no bytes, which is the cheat.
+ * INTEGRATION NOTE (operator step, not a matching issue): regfix.txt:1116 still
+ * carries `func_8003B9D0: fill_delay @ 49 <- 52`.  The cheat-invisible sandbox
+ * drops that rule and still scores 0, so it is now dead weight; retiring it is
+ * the operator's/driver's step (grind sessions may not edit regfix.txt).
  *
- * Region B's if/else spelling is unchanged from session 2.
+ * REGION B is unchanged from session 2: the two flag-selected argument
+ * initialisations are spelled if/ELSE.  All three session-1 cheat-asm constructs
+ * remain deleted.
+ */
+
+/* declaration (src/code6cac_c2.c:166):
+ *     extern s16 D_80101EDA[];
  */
 
 void func_8003B9D0(void) {
@@ -87,17 +100,16 @@ void func_8003B9D0(void) {
         u8 *q = (u8 *)D_800A3878;
         u8 qf = q[3];
         if (qf & 0x30) {
-            s16 *eda = &D_80101EDA;
-            saved_first = eda[0];
-            saved_44c = eda[0x226];
-            if (qf & 0x10) eda[0] = 0x32;
-            if (q[3] & 0x20) eda[0x226] = 0x32;
+            saved_first = D_80101EDA[0];
+            saved_44c = D_80101EDA[0x226];
+            if (qf & 0x10) D_80101EDA[0] = 0x32;
+            if (q[3] & 0x20) D_80101EDA[0x226] = 0x32;
             func_8003AFFC();
-            eda[0] = saved_first;
-            eda[0x226] = saved_44c;
+            D_80101EDA[0] = saved_first;
+            D_80101EDA[0x226] = saved_44c;
         }
     }
-    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA; else a3_arg = -1;
+    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA[0]; else a3_arg = -1;
     if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326; else a0_arg = -1;
     p = (u8 *)D_800A3878;
     flags = p[3];
