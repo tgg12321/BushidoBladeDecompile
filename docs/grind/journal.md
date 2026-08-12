@@ -879,3 +879,4 @@
 - 2026-08-11 19:40 func_8003B9D0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-11 19:58 func_8003A5A0 COMPLETED-C after 1 sessions.
 - 2026-08-11 20:14 MoveImage s1 [recon] floor=7: MoveImage floor 21 -> 7 and build_insns 47 -> 49 (== target): hoisting `D_8009BF28 = packed;` to be the first primitive store puts `sll $v0,$s1,16` at the head of the post-guard block, so reorg's eager delay-slot fill steals it from the taken thread and emits target's inverted `bnez / j / addiu -1` guard tail from pure C.
+- 2026-08-11 20:35 MoveImage s2 [structural] floor=2: MoveImage floor 7 -> 2 (build_insns 49 == target): walking the rect argument with a post-increment pointer hoists the rect[0] read ahead of the D_8009BF28 store WITHOUT losing the H2 delay-slot steal; residual is one scheduler pick, diagnosed from cc1's .sched2 dump.

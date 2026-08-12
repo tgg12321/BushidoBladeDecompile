@@ -147,4 +147,140 @@ G is the most informative negative: putting ANY instruction that outranks the
 
 - [s1] STANDING CONSTRAINT for every future session: score alone is not a valid report for this function. A form scoring under 21 with build_insns == 47 has lost the delay-slot steal and is a dead end. Always report and check build_insns == 49.
 
+## Session 2 (structural, 2026-08-11)
+
+### Start-of-session correction
+`src/display.c` was at the BASELINE form, NOT session 1's 7-floor form — s1's
+edits did not survive into s2's tree. The first act of any session on this
+function must be to APPLY `memory/grind/MoveImage/candidate.c` to
+`src/display.c` and re-measure; the ledger's floor is only real once the
+candidate is in place. (Re-measured floor 7 / build_insns 49 after applying.)
+
+### FLOOR 7 -> 2 (build_insns stays 49)
+The lever is a WALKING POINTER over the rect argument:
+```c
+rect = arg0;
+src = *rect++;      /* rect[0] read AHEAD of the D_8009BF28 store */
+D_8009BF28 = packed;
+*bf24 = src;
+D_8009BF2C = *rect; /* rect[1] read AFTER it */
+```
+This puts `lw $a0,0x0($s0)` at target's slot 5 (ahead of the whole BF28 store
+group) and hands the rect[0] value `$a0` — target's register — closing 5 of the
+7. Session 1's probe G had shown that hoisting the rect[0] read ahead of the
+store through a PLAIN named local (`src = arg0[0];`) destroys the H2
+delay-slot steal (21 / 47). Session 2 re-measured that (W1/W2/W3: all 21 / 47,
+under three placements) and then found that the post-increment pointer spelling
+does the same hoist WITHOUT paying that price (W10: 2 / 49). So the plain-local
+and walking-pointer hoists are NOT equivalent — the walking pointer is the one
+that works, and that difference is the single most valuable fact from s2.
+
+### Residual at floor 2 — ONE instruction's position
+```
+target                       | ours (floor 2)
+-----------------------------|---------------------------
+sw   $a0,0x0($a1)            | sw   $a0,0x0($a1)
+lw   $v0,0x4($s0)            | lw   $a0,0x18($v1)   <-- p[6], 4 slots early
+addu $a3,$zero,$zero         | lw   $v0,0x4($s0)
+lui  $at,%hi(D_8009BF2C)     | addu $a3,$zero,$zero
+sw   $v0,%lo(D_8009BF2C)($at)| lui  $at,%hi(D_8009BF2C)
+lw   $a0,0x18($v1)           | sw   $v0,%lo(D_8009BF2C)($at)
+lw   $v0,0x8($v1)            | lw   $v0,0x8($v1)
+```
+Every other instruction in the function is byte-identical to target.
+
+### THE MECHANISM, read out of cc1's own scheduler dump (not inferred)
+`tmp/grind/MoveImage/s2/dumps/display.i.sched2`, basic block 3 (the post-guard
+body). cc1 2.7.2's sched.c is a BACKWARD list scheduler: it fills the block
+from the last slot (T-1) upward, picking the highest INSN_PRIORITY ready insn,
+and `priority()` is the longest TRUE-dependence path from the block START to
+that insn (anti/output links contribute cost 0, so they cannot raise a
+priority). Dumped priorities for our build:
+
+| insn | what | priority |
+|---|---|---|
+| 54 | `sll $v0,$s1,16` | 1 |
+| 68 | `lw $a0,0x0($s0)`  (rect[0]) | 1 |
+| 72 | `sw %lo(D_8009BF28)` | 1 |
+| 75 | `sw 0x0($a1)` (BF24) | 2 |
+| 78 | `lw $v0,0x4($s0)`  (rect[1]) | 2 |
+| 80 | `sw %lo(D_8009BF2C)` | **3** |
+| 83 | `lw $v1,%lo(D_8009BE6C)` (dev table) | 1 |
+| 86 | `lw $v0,0x8($v1)` (fn) | 3 |
+| 91 | `lw $a0,0x18($v1)` (p[6]) | **2** |
+| 99 | the call | 4 |
+
+The whole residual is ONE pick: at T-5 the ready list is
+`80 (3) 91 (2) 97 (1) 95 (1)` and the scheduler takes 80. Target takes 91
+there. So target's build must have `priority(91) >= priority(80)`.
+
+Both numbers are structurally pinned in our form:
+- `priority(80) = 3` because the BF2C store's value comes from insn 78, the
+  rect[1] load, which is depth 2 — it carries a true memory dependence on the
+  D_8009BF28 store (an unknown-base `0x4($s0)` load cannot be disambiguated
+  from a SYMBOL_REF store). Lowering it to 2 requires reading rect[1] BEFORE
+  the BF28 store — which is precisely the hoist that costs the delay-slot
+  steal (10 measured forms, all build_insns 48; banked in
+  `rejected/rect1-read-hoisted-above-bf28-store.c`).
+- `priority(91) = 2` because the p[6] load's only true predecessor is insn 83,
+  the dev-table load, which is depth 1 (nothing feeds it: cc1 DOES disambiguate
+  `%lo(D_8009BE6C)` from the BF28/BF2C symbol stores, and it also disambiguates
+  the `0x0($a1)` store because `$a1` carries a REG_EQUIV to `&D_8009BF24`).
+  91's anti-dependence on insn 75 (both touch `$a0`) contributes cost 0 and
+  therefore cannot lift it.
+
+So the two knobs are mutually exclusive on the statement-order axis, which is
+what makes floor 2 a genuine plateau for THIS modality rather than a plateau
+for the function.
+
+### What was measured this session (six scripted sweeps, ~50 forms)
+All gated on `build_insns == 49`; full tables in
+`tmp/grind/MoveImage/s2/sweep{,2,3,4,5,6}_results.md`.
+- sweep 1 (15 forms — store order, pointer materialization, split init, decl
+  order, sibling convention): every form either 7/49 (inert) or worse. The
+  7-floor form is a broad flat basin: 10 of 15 were byte-identical.
+- sweep 2 (12 forms — the rect[0]-read-ahead axis): W10 walking pointer 2/49;
+  plain-local hoists 21/47; variable-reuse forms 17-19/48-50.
+- sweep 3 (15 forms — dispatch tail): 14 of 15 EXACTLY 2/49. The tail is inert.
+- sweep 4 (14 forms — type / signature views incl. the s16* RECT view and the
+  LoadImage/StoreImage sibling spelling): 10 of 14 exactly 2/49; none better.
+- sweep 5 (11 forms — the sched-priority levers): lever (a) uniformly 48 insns.
+- sweep 6 (9 forms — dev-table read placement + call spelling): 7 of 9 at 2/49.
+
+- [s2] Session-2 floor: 7 -> 2, build_insns 49 == target 49. Lever: walk the rect argument with a post-increment pointer (`rect = arg0; src = *rect++;`) so the rect[0] read sits AHEAD of the D_8009BF28 store and the rect[1] read after it.
+
+- [s2] The plain-local hoist and the walking-pointer hoist are NOT interchangeable. `src = arg0[0];` placed before the BF28 store measured 21/47 in three separate placements (destroys the H2 delay-slot steal, exactly as session 1's probe G reported); `rect = arg0; src = *rect++;` in the same position measured 2/49. Session 1's H4 note that "the naive way destroys the steal" was right about the naive way and wrong to generalize it to the whole read-ahead axis.
+
+- [s2] The floor-2 residual is ONE instruction's schedule slot: `lw $a0,0x18($v1)` (the p[6] call argument) is emitted immediately after `sw $a0,0x0($a1)` where target emits it after the D_8009BF2C store, four slots later. Every other instruction in MoveImage is byte-identical to target.
+
+- [s2] Read out of cc1's .sched2 dump (tmp/grind/MoveImage/s2/dumps/display.i.sched2, block 3): cc1 2.7.2's sched.c schedules a block BACKWARD from the last slot, picking the highest INSN_PRIORITY ready insn, where priority() is the longest TRUE-dependence path from the block start (anti/output dep links cost 0). At T-5 the ready list is `80 (3) 91 (2) 97 (1) 95 (1)` and it picks insn 80, the D_8009BF2C store; target picks insn 91, the p[6] load. That single pick IS the whole residual.
+
+- [s2] priority(80) = 3 is forced: the BF2C store's value is insn 78, the rect[1] load, which is depth 2 because an unknown-base `0x4($s0)` load carries a true memory dependence on the preceding `%lo(D_8009BF28)` symbol store. The only way to make it depth 1 is to read rect[1] before that store — measured 10 ways, all build_insns 48 (delay-slot steal lost).
+
+- [s2] priority(91) = 2 is forced: the p[6] load's only true predecessor is the dev-table load (insn 83), which is depth 1 — cc1 successfully disambiguates `%lo(D_8009BE6C)` from both symbol stores AND from the `0x0($a1)` store, because $a1 carries a REG_EQUIV to `&D_8009BF24`. 91's anti-dependence on insn 75 (shared $a0) contributes cost 0 and cannot lift the priority.
+
+- [s2] STANDING CORRECTION for every future session: `src/display.c` did NOT carry session 1's edits at session-2 start — it was at the raw baseline. ALWAYS apply memory/grind/MoveImage/candidate.c to src/display.c and re-measure before probing, and never trust the inherited floor until sandbox has printed it this session.
+
 - [s1] Full measured probe table (sandbox --disable all): baseline two-ifs 21/47; A inverted guard 21/47 byte-identical; B goto-err mixed exits 21/47 byte-identical; C `||` 21/47 byte-identical; D/F BF28-store-first 7/49; E dev-table ptr hoisted 9/49; G named src local before BF28 store 21/47; H dev-table fully hoisted 10/48; I `p =` between stores 9/49.
+
+- [s2] src/display.c was at the RAW BASELINE at session-2 start - session 1's edits did not survive into this session's tree. The first act of any session on this function must be to apply memory/grind/MoveImage/candidate.c to src/display.c and re-measure; the inherited floor is not real until sandbox prints it this session. (Re-measured 7 / 49 after applying, then 2 / 49 after the session-2 lever.)
+
+- [s2] FLOOR 7 -> 2, build_insns 49 == target_insns 49. The lever is a walking pointer over the rect argument: `rect = arg0; src = *rect++;` before the D_8009BF28 store, `D_8009BF2C = *rect;` after it. Ordinary program logic - no dead stores, no pins, no volatile, no unused declarations; packed, bf24, rect, src, p and fn are all written and read.
+
+- [s2] The plain-local hoist and the walking-pointer hoist are NOT interchangeable: `src = arg0[0];` placed ahead of the BF28 store measured 21/47 in three separate placements (delay-slot steal destroyed, reproducing session 1's probe G), while `rect = arg0; src = *rect++;` in the same position measured 2/49. This is the single most transferable fact from the session and likely generalizes to other functions where a read must be hoisted past a store without disturbing block-head priority.
+
+- [s2] The floor-2 residual is ONE instruction's schedule slot: `lw $a0,0x18($v1)` (the p[6] call argument) is emitted immediately after `sw $a0,0x0($a1)`, whereas target emits it after the D_8009BF2C store, four slots later. Every other instruction in MoveImage is byte-identical to target.
+
+- [s2] Read directly out of cc1's own scheduler dump (tmp/grind/MoveImage/s2/dumps/display.i.sched2, basic block 3): cc1 2.7.2's sched.c fills a block BACKWARD from the last slot, picking the highest INSN_PRIORITY ready insn, and priority() is the longest TRUE-dependence path from the block start - anti/output dependence links have insn_cost 0 and cannot raise a priority. At T-5 the ready list is `80 (3) 91 (2) 97 (1) 95 (1)` and cc1 picks insn 80 (the %lo(D_8009BF2C) store); target picks insn 91 (the p[6] load). That single pick IS the entire residual, so target's build satisfies priority(91) >= priority(80).
+
+- [s2] Dumped priorities for our floor-2 build, block 3: insn 54 sll = 1, insn 68 rect[0] load = 1, insn 72 BF28 store = 1, insn 75 BF24 store = 2, insn 78 rect[1] load = 2, insn 80 BF2C store = 3, insn 83 dev-table load = 1, insn 86 fn load = 3, insn 91 p[6] load = 2, insn 99 call = 4.
+
+- [s2] priority(80) = 3 is structurally forced: the BF2C store's value is the rect[1] load, which is depth 2 because an unknown-base `0x4($s0)` load carries a true memory dependence on the preceding %lo(D_8009BF28) symbol store. The only way to make it depth 1 is to read rect[1] before that store, and all 10 measured spellings of that hoist cost the delay-slot steal (build_insns 48).
+
+- [s2] priority(91) = 2 is structurally forced on the C axis: the p[6] load's only true predecessor is the dev-table load, which is depth 1 - cc1 successfully disambiguates %lo(D_8009BE6C) from both symbol stores and from the `0x0($a1)` store, because $a1 carries a REG_EQUIV to &D_8009BF24. 91's anti-dependence on insn 75 (both touch $a0) contributes cost 0.
+
+- [s2] The two knobs are mutually exclusive on the statement-order axis, which is exactly why floor 2 is a plateau for the STRUCTURAL modality and not for the function: only one of the two rect reads can be hoisted past the BF28 store, and the p[6] load's depth cannot be lifted from the tail.
+
+- [s2] Approximately 50 distinct forms were measured across six scripted sweeps, every one gated on build_insns == 49 (a form scoring below 21 with build_insns 47 or 48 has lost the H2 steal and is a dead end regardless of score). Full tables: tmp/grind/MoveImage/s2/sweep{,2,3,4,5,6}_results.md; per-variant objdumps in tmp/grind/MoveImage/s2/asm{2,3,4,5,6}/.
+
+- [s2] Floor-2 form is live in src/display.c and saved to memory/grind/MoveImage/candidate.c. Two disproven families are banked: rejected/rect1-read-hoisted-above-bf28-store.c (10 forms, all build_insns 48) and rejected/tail-respellings-inert-at-floor-2.c (29 forms, all inert or worse).

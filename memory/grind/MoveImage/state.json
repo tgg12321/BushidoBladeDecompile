@@ -1,31 +1,37 @@
 {
  "func": "MoveImage",
  "file": "display",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 7,
    "modality": "recon",
    "headline": "MoveImage floor 21 -> 7 and build_insns 47 -> 49 (== target): hoisting `D_8009BF28 = packed;` to be the first primitive store puts `sll $v0,$s1,16` at the head of the post-guard block, so reorg's eage"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "MoveImage floor 7 -> 2 (build_insns 49 == target): walking the rect argument with a post-increment pointer hoists the rect[0] read ahead of the D_8009BF28 store WITHOUT losing the H2 delay-slot steal;"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The entire floor-7 residual is one displacement: the D_8009BF28 store group is scheduled before the rect[0] load, the g_gpu_dev_table load and `addiu $a2,$zero,0x14`, whereas target schedules all three of those first \u2014 and the $a0/$v0 rename falls out of the same fix, so one correct ordering closes all 7.",
-   "mechanism": "cc1 sched.c cannot disambiguate a store to a SYMBOL_REF MEM from a load through a REG base (`0x0($s0)`, a pointer parameter), so memrefs_conflict_p yields a dependence edge that pins the rect[0] load behind the D_8009BF28 store. Target has the load ahead of the store, which under that model means the original source read rect[0] before storing BF28 \u2014 but probe G proved the naive way of doing that destroys the H2 delay-slot steal. The next form must satisfy both constraints simultaneously.",
-   "next_probe": "Run cc1 with the sandbox's exact flags plus `-da` on the preprocessed display.i into tmp/grind/MoveImage/s2/ and read the .sched2 and .dbr dumps for the post-guard block. Confirm or refute the alias edge by checking whether a dependence is recorded between the BF28 store and the `0x0($s0)` load. If the edge exists, the search is over statement permutations that keep `sll $v0,$s1,16` at the block head \u2014 enumerate them with a scripted sweep and gate every candidate on build_insns == 49. If there is no edge, this is a pure INSN_PRIORITY tie and the lever is dependency-chain length: sink the BF28 store by lengthening the chain feeding it, or lengthen the rect[0] load's chain so it outranks the store without reaching the block head."
+   "hypothesis": "H7 - the entire residual is one scheduler pick at T-5 (insn 80, the D_8009BF2C store, prio 3, beats insn 91, the p[6] load, prio 2). Target's build must have priority(91) >= priority(80), and since the rank_for_schedule class tie-break already favours 91 at T-5 (91 is independent of the last-scheduled insn 86, whereas 86 depends on 80), a lift of exactly +1 on 91 is sufficient - it does not have to exceed 80.",
+   "mechanism": "cc1 2.7.2 sched.c priority() = longest TRUE-dependence path from the block start; anti/output links cost 0. priority(91) = priority(83) + 1 and the dev-table load 83 is depth 1 because cc1 disambiguates %lo(D_8009BE6C) from every store in the block (the two symbol stores, and the `0x0($a1)` store whose base carries a REG_EQUIV to &D_8009BF24). Any source structure that puts ONE true-dependence edge into the dev-table load closes the function.",
+   "next_probe": "FORENSICS modality. Dump `.sched`/`.sched2` for the MATCHED siblings in the same TU that use the identical dev-table dispatch (LoadImage, StoreImage, ClearImage, ClearImage2 - src/display.c:129-163) and read the priority of each one's `p[N]` argument load relative to its neighbouring stores. If any matched sibling shows its dev-table load at depth >= 2, whatever produces that depth in the sibling is the missing structure here, and it is ground truth rather than a guess. Reuse tmp/grind/MoveImage/s2/dump.sh (it already reproduces the sandbox's exact cc1 invocation with -dr -dS -dR -dj)."
   },
   {
-   "hypothesis": "D_8009BF24 / D_8009BF28 / D_8009BF2C plus the 8 bytes below them are ONE GPU move-primitive object and the splat per-word D_ names are an artifact; a different C view of that memory would change which stores share a base register, hence the scheduler's dependence graph, and is plausibly the natural route to the H4 ordering.",
-   "mechanism": "cc1 emits `sw $x,%lo(SYM)($at)` for a standalone symbol store but `sw $x,N($base)` for a member store off a materialized base. Target uses the %lo form for BF28 and BF2C and the `0x0($a1)` base form for BF24 only \u2014 so any re-view must preserve exactly that split, with the BF24 pointer being the one decremented by 8 in the jalr delay slot.",
-   "next_probe": "Grep 8009BF1C / 8009BF20 / 8009BF24 / 8009BF28 / 8009BF2C across src/ and asm/funcs/ for a second user of the object (per base-register-store-invisible-to-symbol-grep, also grep for stores through a base register into that neighbourhood, not just %lo(SYM) forms), and check bb2.ld / undefined_syms_auto.txt / symbol_addrs.txt for what is declared at 0x8009BF1C. A second user would pin down the real shape; then re-express the three stores through it and re-measure, gating on build_insns == 49."
+   "hypothesis": "The +1 that H7 needs may come from the guard region rather than the body: the two `lh` guard loads and the func_8007B3A8 call sit in earlier blocks, and the dev-table load's depth is measured WITHIN block 3 only. If the dev-table read were expressed so that it is fed by a value produced in the body (rather than being a self-contained lui/lw pair with no predecessor), 83 becomes depth >= 2 and 91 becomes 3.",
+   "mechanism": "priority() is computed per basic block from LOG_LINKS, so an insn with no in-block predecessor is depth 1 by definition. The dev-table load currently has none. A true (not anti, which costs 0) in-block predecessor - a register dependence on a value computed in the body, or a memory dependence cc1 cannot disambiguate - lifts it.",
+   "next_probe": "Enumerate honest C shapes in which the dev-table pointer is REACHED THROUGH something already computed in the body, and check each for (a) build_insns == 49 and (b) whether the emitted dev-table load still uses the bare `lui $v1,%hi / lw $v1,%lo` pair target has. Any shape that survives both is a candidate. Note the anti-cheat boundary explicitly: a dependence manufactured by a construct with no semantic purpose (a dead store, an opaque holder, a volatile coercion) is a cheat, not a lever - the edge has to come from a computation the function genuinely performs."
   },
   {
-   "hypothesis": "The matched siblings LoadImage / StoreImage / ClearImage / ClearImage2 (src/display.c:129-163) are the same libgpu dev-table-dispatch shape in the same TU, so their statement order is direct evidence for the house convention the original author used, and MoveImage should be written to match it.",
-   "mechanism": "Same TU, same compiler invocation, same call shape \u2014 a byte-matched sibling's ordering is the closest available ground truth about the original source's conventions, and it costs nothing to copy.",
-   "next_probe": "Diff each matched sibling's C against its emitted schedule and extract the convention: where the dev-table read sits relative to any global stores, whether the dispatch args are named locals or inline expressions, and whether a primitive pointer is materialized before or after the payload stores. Apply the extracted convention to MoveImage's three stores and re-measure. In parallel run tools/find_duplicates.py and check tmp/duplicates_leads.txt for a byte-similar MoveImage sibling elsewhere in the tree."
+   "hypothesis": "The remaining search space is narrow, fully characterised, and gated by a cheap mechanical test, which makes it a good fit for a directed permuter campaign rather than more hand enumeration.",
+   "mechanism": "The target is a single known edge in cc1's dependence graph and the acceptance test is two numbers from one sandbox run (score 0 with build_insns == 49). The structural axis has now been swept ~50 forms deep by hand with no movement, so random/directed mutation over the body is the cheaper remaining search.",
+   "next_probe": "PERMUTER modality with a clean single-function target built from asm/funcs/MoveImage.s + tools/decomp-permuter/prelude.inc (so the function sits at offset 0 and the base score is the real weighted diff), seeded from the floor-2 candidate, with PERM_* directives over the body statement order and the dev-table access shape. Per permuter-fresh-seed-discipline, run fresh-seed windows and harvest in-turn; every closing form is a PROPOSAL and must clear the 6-test cheat checklist plus the layer-1 reviewer before it can be submitted."
   }
  ],
  "judge_constraints": [],
