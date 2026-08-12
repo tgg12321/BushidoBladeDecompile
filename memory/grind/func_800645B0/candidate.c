@@ -1,66 +1,53 @@
-/* func_800645B0 (src/text1b.c) — grind session 1 (recon modality), 2026-08-12.
+/* func_800645B0 (src/text1b.c) — grind session 2 (recon modality), 2026-08-12.
  *
- * HONEST PURE-C SANDBOX DISTANCE: 0  (`sandbox func_800645B0 --disable all`,
- * target_insns 78 / build_insns 78, rules_dropped 1, cheat_asm_stripped).
- * Verified byte-exact against asm/funcs/func_800645B0.s with an UNMASKED
- * instruction diff (engine.diagnose.diff_pairs, mask=False): the only four
- * residual text differences are absolute branch/jump target addresses, and all
- * four carry IDENTICAL relative displacements (+0xBC, +0x1C, -0xD0, -0xE8) —
- * they exist only because the sandbox object places the function at a different
- * section offset than build/src/text1b.o.
+ * HONEST PURE-C SANDBOX DISTANCE: 3  (`sandbox func_800645B0 --disable all`,
+ * target_insns 78 / build_insns 78, rules_dropped 1).
  *
- * WHAT THE PRIOR SOURCE WAS: a goto-based contortion carrying two cheat-asm
- * register pins (`register s32 s3 asm("$19")`, `register s32 one asm("$3")`) and
- * a bare `do { } while (0);`. Honest distance with the pins stripped: 21.
+ * PROVENANCE. Session 1 reached distance 0, but its last lever (relocating
+ * `j += 1;` to sit between `idx = i + j;` and `val = 1;`) was FAILed by the
+ * layer-1 cheat-reviewer as an unsanctioned statement-reorder chosen only to
+ * win a first-pass-scheduler tie, and is now a BANNED construct for this
+ * function. This file is session 1's constructs 1-4 (all ruled legitimate)
+ * with `j += 1;` back at its natural position, PLUS one new construct:
  *
- * WHAT CHANGED, AND WHY (each step measured):
+ *   `idx = idx2 + idx;`  — the slot index variable is reused to hold the
+ *   *3 (12-byte-stride) word index for the three parallel-array stores.
  *
- *  1. 21 -> 17  Rewrote the goto chain as the natural nested do/while with a
- *     `break`. The target asm IS a plain nested loop: outer `i += 4` until
- *     `i < 15`, inner `j` 0..3, `break` out of the inner loop after the stores.
- *     This fixed the accumulator (s3) and mask (s2) register assignments.
+ * WHY THAT CONSTRUCT, MECHANISM-FIRST (not a reorder — a different attack):
+ * tools/gcc-2.7.2/sched.c:birthing_insn_p returns `reg_n_sets[dest] == 1`,
+ * and adjust_priority raises such an insn's INSN_PRIORITY to max_priority.
+ * The .sched dump for the inner-loop block (basic block 2, insns 28/31/33/
+ * 36/39/40/42) shows this verbatim:
  *
- *  2. 17 -> 10  Defeated loop.c's invariant hoist of the constant `1`.
- *     `mask = 1 << idx` makes the const-1 pseudo a single-set loop invariant, so
- *     `scan_loop`/`move_movables` hoisted it into a fresh callee-save ($s4),
- *     costing an extra save/restore pair (build_insns 81 vs target 78) and
- *     cascading the whole allocation. Fix per [[defeat-licm-hoist-var-reuse]]:
- *     route the constant through a scratch variable (`val`) that is ALSO
- *     assigned a genuinely-used loop-variant value later in the same loop, so
- *     `n_times_set > 1` and the pseudo is not a movable. The variant value is
- *     the D_800A3444 read of the read-modify-write, which the target keeps in
- *     the same register ($v1) — so the reuse also reproduces the target's
- *     register choice, exactly as that rule prescribes ("pick the variable the
- *     target actually reuses").
- *     The same edit split the RMW into `val = D_800A3444; ...; D_800A3444 =
- *     val | mask;` with `last = rand();` named ahead of the halfword store,
- *     which reproduces the target's early `lw $v1,%gp_rel(D_800A3444)` (target
- *     fills the load-delay with the `andi`/`lui`/`sh` cluster; the naive
- *     trailing RMW emitted a `nop` there instead).
+ *   with `idx` single-set:   ready list at T-6: 31 (1) 28 (7f000001), now 28 31
+ *   with `idx` multi-set:    ready list at T-6: 31 (1) 28 (1),        now 31 28
  *
- *  3. 10 -> 3   `val = val | mask; D_800A3444 = val;` instead of
- *     `D_800A3444 = val | mask;`. Making `val` the destination of the OR both
- *     reproduces the target's `or $v1,$v1,$s2` (in-place, not into a fresh
- *     temp) and lifts `val`'s reference count above `j`'s, which flipped the
- *     $v1/$a0 assignment so that val=$v1 and j=$a0 as in the target.
+ * The scheduler is a BACKWARD list scheduler, so the insn picked at T-6 is
+ * placed LATER in the block. With the bonus, `addu idx,i,j` (insn 28) is
+ * picked at T-6 and `li val,1` (insn 31) lands first in the block — and
+ * reorg.c then steals that first insn into the inner back-edge delay slot,
+ * where the target instead has `addu $s0,$s3,$a0`. Removing the bonus leaves
+ * a plain INSN_LUID tie-break, which restores source order (addu first) and
+ * closes that residual WITHOUT touching statement order.
  *
- *  4. 3 -> 0    Moved `j += 1;` to sit BETWEEN `idx = i + j;` and `val = 1;`.
- *     At distance 3 the ONLY residual was which of the two ready-at-cycle-0
- *     loop-top insns (`addu $s0,$s3,$a0` vs `li $v1,1`) cc1's first-pass
- *     scheduler emitted first; reorg.c then steals whichever one lands first
- *     into the inner back-edge delay slot and moves the loop label past it.
- *     Target steals the `addu`; our build was stealing the `li`. Interposing
- *     the (already-present, semantically-required) `j += 1;` statement between
- *     them reorders the RTL so the `addu` is emitted first. Note this is pure
- *     statement ORDERING of code that has to exist anyway — nothing was added.
- *     Measured in the tmp/grind/func_800645B0/s1/sweep.py variant sweep:
- *     A_base(3) B_j_between(0) D_bits_named(3) E(7) F_mask_two_step(3)
- *     G_idx_selfadd(3) H(3).
+ * The construct is also what the target itself does: $s0 holds i+j, then the
+ * (idx*2 + idx) sum, then the <<2 byte offset — one register, three roles.
+ * Family: variable reuse for codegen control ([[defeat-licm-hoist-var-reuse]],
+ * frozen SOTN-accepted list), same family already used for `val`.
  *
- * INTEGRATION NOTE: regfix.txt still carries `func_800645B0: reorder 3,1,2 @ 1-3`
- * (line 2521). The sandbox drops it (rules_dropped 1) and the function matches
- * WITHOUT it, so it is now redundant and must be retired by the operator/driver
- * (`engine retire func_800645B0`) — a grind session may not touch regfix.txt.
+ * WHAT REMAINS (3 points, fully characterised — see evidence.md):
+ *   idx | target                   | this build
+ *   18  | jal rand                 | sll  s1,s0,0x1
+ *   19  |  sll  s1,s0,0x1 (delay)  | jal  rand
+ *   20  | addu s0,s1,s0            | addu s0,s0,s1
+ * i.e. (a) the target emits the *3 sum AFTER the first rand() call, so
+ * reorg.c fills the jal delay slot with the `sll`; here both the sll and the
+ * sum precede the call, so the sum fills the slot instead; and (b) the
+ * commutative PLUS operands are (idx, idx2) here but (idx2, idx) in target.
+ *
+ * INTEGRATION NOTE: regfix.txt:2521 (`func_800645B0: reorder 3,1,2 @ 1-3`)
+ * is the function's only rule; the sandbox drops it. Retiring it is the
+ * operator/driver's job, not a grind session's.
  */
 extern s32 rand(void);
 extern void *D_800A347C;
@@ -78,14 +65,15 @@ s32 func_800645B0(void) {
         j = 0;
         do {
             idx = i + j;
-            j += 1;
             val = 1;
             mask = val << idx;
+            j += 1;
             if (!(D_800A3444 & mask)) {
                 idx2 = idx << 1;
-                *((s32 *)(((s32)(&D_800F0D78)) + ((idx2 + idx) << 2))) = (((s32 *)D_800A347C)[0] + (rand() & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&D_800F0D7C)) + ((idx2 + idx) << 2))) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&videoDec)) + ((idx2 + idx) << 2))) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
+                idx = idx2 + idx;
+                *((s32 *)(((s32)(&D_800F0D78)) + (idx << 2))) = (((s32 *)D_800A347C)[0] + (rand() & 0xFF)) - 0x7F;
+                *((s32 *)(((s32)(&D_800F0D7C)) + (idx << 2))) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
+                *((s32 *)(((s32)(&videoDec)) + (idx << 2))) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
                 last = rand();
                 val = D_800A3444;
                 *((s16 *)(((s32)(&D_800F0BCC)) + idx2)) = last & 7;

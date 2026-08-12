@@ -1,6 +1,6 @@
 # Evidence — func_800645B0 (src/text1b.c)
 
-## Session 1 (2026-08-12, modality: recon) — SOLVED, honest distance 21 -> 0
+## Session 1 (2026-08-12, modality: recon) — reached distance 0, layer-1 FAILed
 
 ### Baseline
 - `canonical func_800645B0` -> verdict **C**, asm_insns 0, total 78, distance 21.
@@ -32,14 +32,8 @@ the inner loop. Returns 1. `D_800F10EC = 1` in the prologue.
 | 3 | `val = val \| mask; D_800A3444 = val;` (OR in place) | 3 | 78 |
 | 4 | `j += 1;` moved between `idx = i + j;` and `val = 1;` | **0** | 78 |
 
-### Byte-exactness proof (not a masked zero)
-`engine.diagnose.diff_pairs(mask=False)` on the cheat-stripped sandbox object
-vs `build/src/text1b.o` leaves exactly four text differences, all
-branch/jump target *addresses*, and all four carry identical relative
-displacements to the target: `bnez +0xBC`, `j +0x1C`, `bnez -0xD0`,
-`bnez -0xE8`. They differ only because the sandbox object places the function
-at a different section offset. Instruction sequence, opcodes, registers,
-immediates and frame layout are identical (78/78, frame 0x28, `ra` at 0x20).
+Step 4 was FAILed by the layer-1 cheat-reviewer and is a BANNED construct.
+Steps 1-3 were ruled legitimate and are retained.
 
 ### Mechanism facts established (reusable)
 - **loop.c hoists the const-1.** `mask = 1 << idx` inside the inner loop makes
@@ -48,38 +42,129 @@ immediates and frame layout are identical (78/78, frame 0x28, `ra` at 0x20).
   (81 insns vs 78) and cascades the whole allocation. Confirmed by reading
   `tools/gcc-2.7.2/loop.c` (`threshold = (loop_has_call ? 1 : 2) * (1 +
   n_non_fixed_regs)` at loop.c:532; the movable test needs `n_times_set == 1`).
-  The target keeps the constant INSIDE the loop in caller-save `$v1` — proof
-  that GCC did not hoist it for the original source.
-- **The fix is multi-set reuse, and the target names the register for you.**
-  Routing the constant through the same C variable that later holds the
-  `D_800A3444` read makes `n_times_set > 1` (not a movable) AND lands the
-  pseudo in `$v1`, which is exactly the register the target uses for both
-  roles. This is [[defeat-licm-hoist-var-reuse]] applied verbatim.
+  The target keeps the constant INSIDE the loop in caller-save `$v1`.
+- **The fix is multi-set reuse.** Routing the constant through the same C
+  variable that later holds the `D_800A3444` read makes `n_times_set > 1` AND
+  lands the pseudo in `$v1`, the register the target uses for both roles.
 - **`val = val | mask; D_800A3444 = val;` beats `D_800A3444 = val | mask;`**
   by 7 points: it makes `val` the OR destination (matching `or $v1,$v1,$s2`)
   and raises `val`'s reference count over `j`'s, flipping the $v1/$a0
   assignment so val=$v1 / j=$a0 as in the target.
-- **The last 3 points were a first-pass-scheduler tie.** At the inner-loop top
-  `addu $s0,$s3,$a0` and `li $v1,1` are both ready at cycle 0 with equal
-  priority; reorg.c then steals whichever lands FIRST into the inner
-  back-edge delay slot and moves the loop label past it. Target steals the
-  `addu`; our build stole the `li`. Simply swapping the two source statements
-  did NOT change the outcome (measured: still 3). Interposing the
-  already-required `j += 1;` statement between them DID (0). So the tie is
-  broken by the intervening statement, not by the relative order of the two
-  statements alone.
 - **The read-modify-write spelling controls a load-delay nop.** The fused
   `D_800A3444 |= mask;` emitted `lw; nop; or; sw` after the fourth `rand()`;
   naming the read earlier (`last = rand(); val = D_800A3444; *sh = last & 7;`)
   reproduces the target's `lw $v1,%gp_rel(D_800A3444)` immediately after the
   `jal`, with the `andi`/`lui`/`addu`/`sh` cluster filling the load delay.
 
-### Integration state (NOT done by this session — out of a grind session's surface)
-- `regfix.txt:2521` (`func_800645B0: reorder 3,1,2 @ 1-3`) is now REDUNDANT:
-  the sandbox drops it and the function matches without it. The operator/driver
-  must run `engine retire func_800645B0` (full-build SHA1 verify, auto-rollback)
-  and then `queue done func_800645B0`. A grind session may not edit regfix.txt,
-  run retire, or commit.
-- No other function was touched. `src/text1b.c` still contains cheat-asm in
-  OTHER functions (the sandbox reports 328 cheat-asm instructions stripped
-  file-wide); that is pre-existing and out of scope here.
+---
+
+## Session 2 (2026-08-12, modality: recon) — banned lever replaced; residual re-characterised. Floor 3.
+
+Starting point: session 1's constructs 1-3 with `j += 1;` restored to its
+natural position at the end of the inner-loop statement group ("A_base").
+Re-measured: **score 3, build_insns 78** — confirms the ledger's step-3 figure
+and that reverting the banned construct costs exactly the 3 points it bought.
+
+### The distance-3 residual at A_base (unmasked `diff_pairs`)
+Target steals `addu $s0,$s3,$a0` into the inner back-edge delay slot
+(`bnez $v0,.L800645E0` / `addu $s0,$s3,$a0`, asm lines 69-70) and places the
+loop label after it; our build steals `li $v1,1` instead. Everything else is
+identical; the remaining pairs are branch/jump target ADDRESSES only (the
+sandbox object places the function at a different section offset).
+
+### ROOT CAUSE FOUND — sched.c `birthing_insn_p`, not a LUID tie
+`cc1 -da` dumps of the real build (`tmp/grind/func_800645B0/s1/dump/`,
+extracted per-function with `extract.py`) show the inner-loop block verbatim:
+
+```
+;;      -- basic block number 2 from 24 to 42 --
+;; insn[  28]: priority = 1   (addu idx = i + j)
+;; insn[  31]: priority = 1   (li   val = 1)
+;; ready list at T-6: 31 (1) 28 (7f000001), now 28 31      <- A_base
+;; ready list at T-6: 31 (1) 28 (1),        now 31 28      <- with idx multi-set
+```
+
+`sched.c:birthing_insn_p` returns `reg_n_sets[dest] == 1` for a destination
+that is live at that point, and `adjust_priority` then raises that insn's
+INSN_PRIORITY to `max_priority` (0x7f000001 in the dump). `idx` is assigned
+exactly once in A_base, so `addu` gets the bonus; `val` is assigned three
+times, so `li` gets none. The scheduler runs BACKWARD (T-1 is the last insn of
+the block), so the bonused insn is picked first and therefore emitted LAST;
+`li` ends up first in the block and reorg.c steals the block's first insn into
+the back-edge delay slot. That is the whole of the 3-point gap at A_base —
+and it is a REGISTER-PRESSURE HEURISTIC, not a source-order tie, which is why
+session 1's statement-reorder appeared to be the only lever.
+
+### The legitimate lever: make `idx` multi-set (variant K, now candidate.c)
+`idx2 = idx << 1; idx = idx2 + idx;` (the index variable reused to hold the
+12-byte-stride word index) gives `reg_n_sets[idx] == 2`, kills the bonus, and
+the .sched dump above flips to `now 31 28` — `addu` first in the block, `addu`
+in the back-edge delay slot, exactly as target. The target's own register
+allocation does the same thing: `$s0` holds `i+j`, then `$s1+$s0`, then
+`$s0<<2`. Score stays 3 but the residual MOVES to a different, narrower axis.
+
+### The distance-3 residual at K (side-by-side, `listing.py`)
+```
+idx | target                  | build (K)
+ 18 | jal  rand               | sll  s1,s0,0x1
+ 19 |  sll  s1,s0,0x1 (delay) | jal  rand
+ 20 | addu s0,s1,s0           | addu s0,s0,s1
+```
+Two independent sub-diffs:
+1. **Delay-slot fill.** In target the `*3` sum is emitted AFTER the first
+   `rand()` call, so the only fillable insn before the call is the `sll` and
+   reorg.c puts it in the jal delay slot. In K both the `sll` and the sum
+   precede the call (they are separate statements ahead of the first store),
+   so reorg fills the slot with the sum instead. NOTE: A_base, which leaves
+   the sum INLINE in the store's address expression, gets this region exactly
+   right — GCC expands the call-bearing RHS before the address arithmetic.
+   So the two residuals are currently mutually exclusive: A_base has the
+   address region right and the loop top wrong; K has the loop top right and
+   the address region wrong.
+2. **Commutative operand order.** Target `addu $s0,$s1,$s0` (shift result
+   first); K emits `addu $s0,$s0,$s1`. cse.c's `fold_rtx` canonicalises the
+   PLUS operands via its hash-table `must_swap` path (cse.c:5278ff); the
+   source-level operand order (`idx2 + idx`) does not survive.
+
+### Measured NEGATIVES this session (all `sandbox --disable all`, 78-insn target)
+| variant | form | score | insns |
+|---|---|---|---|
+| A_base | session-1 step 3, `j += 1;` natural | 3 | 78 |
+| I_idx_reuse | `idx = (idx2 + idx) << 2;`, stores use `idx` | 12 | 79 |
+| J_idx_reuse_split | `idx = idx2 + idx; idx = idx << 2;` | 11 | 78 |
+| K_idx_reuse_sum | `idx = idx2 + idx;`, stores use `(idx << 2)` | **3** | 78 |
+| L_mul3_mul2 | `idx2 = idx * 2; idx = idx * 3;` | 3 | 78 |
+| M_mul12_mul2 | `idx2 = idx * 2; idx = idx * 12;` | 12 | 79 |
+| N_mul3_shift2 | `idx2 = idx << 1; idx = idx * 3;` | 3 | 78 |
+| O_mul12_shift2 | `idx2 = idx << 1; idx = idx * 12;` | 12 | 79 |
+| P_mul12_only | `idx2 = idx; idx = idx * 12;`, s16 uses `idx2 * 2` | 21 | 81 |
+| Q_declswap | K with `idx2` declared before `idx` | 3 | 78 |
+| R_declswap_mul3 | N with `idx2` declared before `idx` | 3 | 78 |
+| S_idx2_first | K with `idx2` declared first of all locals | 3 | 78 |
+
+Two axes are therefore MEASURED DEAD:
+- **Declaration order does not control the commutative PLUS operand order.**
+  Pseudo numbers do follow declaration order (confirmed in the .combine dump:
+  i=72, j=73, idx=74, idx2=75, mask=76, val=77), but Q/R/S all stay at 3 with
+  the same `addu $s0,$s0,$s1`. The SOTN "named-intermediate declaration order"
+  family is spent on this residual.
+- **Writing the stride as a multiply (`* 3` / `* 12`) does not help.** `* 3`
+  is byte-identical to the explicit `idx2 + idx` (L/N == K); `* 12` costs an
+  extra insn (79) because the `idx * 2` value is no longer shared with the
+  s16 store.
+
+### Integration state (unchanged, NOT done by this session)
+`regfix.txt:2521` (`func_800645B0: reorder 3,1,2 @ 1-3`) is the function's only
+rule and the sandbox drops it. Retirement + `queue done` is the operator's job.
+
+- [s1] Reverting the BANNED construct (j += 1 relocated between `idx = i + j;` and `val = 1;`) costs exactly 3 points: the legitimate session-1 form measures score 3, build_insns 78, rules_dropped 1 — confirming the ledger's step-3 figure.
+
+- [s1] sched.c:birthing_insn_p returns `reg_n_sets[dest] == 1` for a live destination and adjust_priority raises that insn to max_priority (printed as 7f000001 in the -da sched dump). This is a whole-function set count, so ANY second assignment to the variable anywhere in the function removes the bonus.
+
+- [s1] The GCC 2.7.2 list scheduler is BACKWARD (T-1 is the last insn of the block), so a priority bonus makes an insn emit LATER, not earlier — the opposite of the naive reading, and the reason session 1 mis-diagnosed the residual as a plain LUID tie.
+
+- [s1] Local pseudo numbers follow DECLARATION order in this compiler (t.i.combine: i=72, j=73, idx=74, idx2=75, mask=76, val=77) — a reusable fact for LUID/regno-based levers elsewhere, even though it did not move this residual.
+
+- [s1] The target's own allocation reuses one register for three roles ($s0 = i+j, then $s1+$s0, then $s0<<2), which is direct evidence that the original C reused the slot-index variable for the derived word index.
+
+- [s1] Reproducible tooling now exists: dump.sh (cpp+cc1 -da on the real build flags), extract.py (per-function slice of any -da dump), listing.py (side-by-side unmasked target-vs-build instruction listing), and four sandbox sweep harnesses.

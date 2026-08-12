@@ -1,10 +1,33 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 3,
+   "modality": "recon",
+   "headline": "Root-caused the banned lever's residual to sched.c birthing_insn_p (reg_n_sets==1 priority bonus) and replaced it with a sanctioned variable-reuse construct; floor stays 3 but the residual moved to a "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A form where `idx` is multi-set (killing the birthing_insn_p bonus at the loop top) while the *3 sum stays INLINE in the store address expressions (keeping it after the first rand() call) closes both residuals at once and reaches 0.",
+   "mechanism": "birthing_insn_p counts reg_n_sets over the whole function, whereas the jal delay-slot fill depends only on whether the sum is a statement before the call or an inline sub-expression of the call-bearing store. The two conditions are independent, so a second genuinely-used assignment to the slot index anywhere else in the function satisfies both.",
+   "next_probe": "Enumerate semantically-real second assignments of the slot index (e.g. the index reused as the s16 element index, or the outer accumulator and the slot index sharing one variable) with the sum left inline as `((idx2 + idx) << 2)`, and sandbox each. Reject any candidate whose second assignment is dead, unread, or has no reading as ordinary program logic."
+  },
+  {
+   "hypothesis": "Making the const-1 pseudo single-set AND unhoistable gives BOTH loop-top insns the birthing bonus, so the tie falls back to INSN_LUID and source order is restored without touching `idx` at all.",
+   "mechanism": "With equal INSN_PRIORITY, rank_for_schedule falls through to INSN_LUID, which restores the source order (addu first). A single-set const-1 is normally a loop.c movable and gets hoisted (that is what cost 81 insns in session 1), so the shape must violate one of move_movables' preconditions (m->cond, m->global, or the register-pressure threshold at loop.c:532) while keeping reg_n_sets == 1.",
+   "next_probe": "Read loop.c's movable preconditions and rejection paths, dump t.i.loop for the current build to see which test the current const-1 passes, then construct a C shape that fails exactly one of them; sandbox each shape."
+  },
+  {
+   "hypothesis": "The `addu $s0,$s1,$s0` operand order is fixed by CSE equivalence-class state at the moment the sum is folded, not by any syntactic property of the source expression.",
+   "mechanism": "cse.c fold_rtx's must_swap path (cse.c:5278ff) swaps commutative operands when the swapped form is the one found in the hash table; which form is in the table depends on what else is in that equivalence class and in what order it was entered.",
+   "next_probe": "Dump t.i.cse2 for the sum insn, identify the equivalence class supplying the swap, then vary what enters it: whether `idx * 2` is a named local or an inline expression, and whether the s16 store's use of it precedes or follows the three word stores in source order."
+  }
+ ],
  "judge_constraints": [
   "LAYER-1 CHEAT-REVIEWER FAIL: Constructs 1-4 are legitimate (pins/goto removed, var-reuse matches the confirmed defeat-licm-hoist-var-reuse precedent, RMW spelling and named-intermediate are ordinary C), but construct 5 (moving `j += 1;` between `idx = i + j;` and `val = 1;`) is an unsanctioned new spelling of 'reorder existing statements to win a cc1 first-pass-scheduler tie / steer reorg.c's delay-slot theft', found via an 8-variant directed hand-sweep, with no independent semantic reason to prefer this ordering over the other 7 measured variants. Next action: Revert construct 5 (the j+=1 rel"
  ],
