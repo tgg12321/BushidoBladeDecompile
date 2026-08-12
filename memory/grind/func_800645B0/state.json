@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor holds at 1 but the endgame is fully mapped: the last instruction is now closed on three independently-named sides, and the shipped form is the canonical for-loop spelling (byte-identical, and it"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter axis measured dead: ~92.5k iterations across two structurally distinct chassis on a new clean offset-0 workspace produced nothing below the standing floor of 1, and the only legitimate near-f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The DA shape (byte offset routed through `idx`, sum in `wid`) is the only untried-in-detail form that satisfies all three constraints simultaneously; its whole 12-point cost is that `idx` and `idx2` are swapped between $s0 and $s1, and the target's own allocation proves the wanted state is reachable.",
-   "mechanism": "local_alloc runs before global_alloc. In the shipped/CA shape the block-local byte-offset CSE temp lives across all four rand() calls, needs a callee-save, and claims $s0, pushing the block-local `idx2` to $s1; the multi-block `idx` then re-uses $s0 because its range does not overlap. In DA that claimant is gone, so `idx2` takes $s0 from local_alloc and `idx` is left $s1 by global_alloc.",
-   "next_probe": "Read local-alloc.c's block_alloc / find_free_reg ordering (qty priority, qty_phys_reg suggestions, accept_call_clobbered) and dump .lreg/.greg for DA and for the shipped form side by side using tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py. Then look for a C shape in which the halfword-offset value is NOT a block-local pseudo (genuinely referenced in the loop-top block) or in which some other block-local callee-save-needing value out-prioritises it, and sandbox each."
+   "hypothesis": "The `expand_binop` commutative swap on the shipped form can be defeated by changing the EXPANSION TARGET rather than the syntax \u2014 a construct that makes GCC expand the *3 sum into an anonymous temp (`target == 0`, so no swap test fires) which is later coalesced into `idx`'s register.",
+   "mechanism": "optabs.c:399-417 swaps a commutative operand pair whenever the expansion target IS op1, so `idx = <x> + idx;` always expands as (plus idx x) \u2014 visible in the .rtl dump before cse runs. Eight source-level respellings are measured dead (s3 H11) and random search over ~40k iterations on this chassis found nothing (s5 H21), so the remaining surface is which C constructs cause expand_expr to call expand_binop with target == 0 at all.",
+   "next_probe": "Read expr.c's expand_assignment / expand_expr store path (the TREE_CODE (to) == VAR_DECL case and the paths that force a temp: assignment used as a value, compound assignment through a cast, a differently-typed or narrower view of the destination), enumerate the constructs that yield target == 0, and sandbox each on the shipped body. Confirm from the .rtl dump (tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py) that the emitted insn is (plus idx2 idx) before trusting the score."
   },
   {
-   "hypothesis": "The shipped 1-point residual (`addu s0,s0,s1` vs target `addu s0,s1,s0`) can be defeated by changing how the assignment is EXPANDED rather than how it is spelled.",
-   "mechanism": "optabs.c:399-417 (expand_binop) swaps a commutative operand pair whenever the expansion `target == op1`. Eight source-level respellings are already measured dead (previous session's H11) and the swapped form is present in the .rtl dump before cse runs. What has not been probed is which C constructs cause expand_binop to be called with `target == 0` (an anonymous temp) so no swap test fires, with the temp later coalesced into `idx`'s register.",
-   "next_probe": "Read expr.c's expand_expr / expand_assignment store path to enumerate the constructs that expand a binop into a fresh temp rather than directly into the destination pseudo (compound assignment through a cast, a differently-typed or narrower view of the destination, an assignment used as a value), then sandbox each on the shipped body."
+   "hypothesis": "In the DA shape (byte offset routed through `idx`, sum in `wid`) local_alloc can be made to give $s0 to the multi-block `idx` instead of to the block-local `idx2`, which would close all three constraints at once.",
+   "mechanism": "local_alloc runs before global_alloc. In the shipped/CA shape the pseudo that claims $s0 from local_alloc is the byte-offset CSE temp \u2014 block-local, but live across all four rand() calls, so it needs a callee-save \u2014 and `idx2` is pushed to $s1. In DA that claimant is gone, so `idx2` takes $s0 and `idx` is left $s1 by global_alloc; the whole 12-point cost of DA is that swap, and the target's own allocation proves the wanted state is reachable.",
+   "next_probe": "Read local-alloc.c's block_alloc / find_free_reg ordering (qty priority, qty_phys_reg suggestions, accept_call_clobbered), dump .lreg/.greg for DA and for the shipped form side by side, then look for a C shape in which the halfword-offset value is NOT a block-local pseudo (genuinely referenced in the loop-top block) or in which some other block-local callee-save-needing value out-prioritises it, and sandbox each."
   },
   {
-   "hypothesis": "All three shapes are exactly one instruction away and each fails on a DIFFERENT fully-named GCC decision, which is the signature of a shape that is close to but not the original \u2014 the original's inner-loop pseudo set or live-range shape differs from all three.",
-   "mechanism": "The target's 78 instructions imply a specific pseudo count and live-range structure in the inner-loop block and in the found-slot arm; comparing the three near-miss builds' scheduler and allocator state against what the target implies should show which pseudo none of them reproduces.",
-   "next_probe": "Dump t.i.sched and t.i.greg for SB (shipped), CA and IA with tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py, extract the inner-loop block insn list and the register dispositions for each, and diff them against the target's instruction sequence to identify a pseudo count or live range none of the three shapes produces."
+   "hypothesis": "The original's inner-loop pseudo set differs from all three near-miss shapes, and the difference is visible by comparing their .sched/.greg state against what the target's 78 instructions imply.",
+   "mechanism": "SB (shipped), CA and IA are each exactly one instruction away and each fails on a DIFFERENT fully-named GCC decision (expand_binop swap / birthing_insn_p bonus / entry-copy constant fold). That is the signature of a shape that is close to but not the original. Permuter has now also been ruled out as a way to stumble onto the original from either chassis, which raises the value of the forensic comparison.",
+   "next_probe": "Dump t.i.sched and t.i.greg for SB, CA and IA with tmp/grind/func_800645B0/s2/dumpvar.sh + dumpAA.py, extract the inner-loop block's insn list and register dispositions for each, and diff them against the target's instruction sequence to identify a pseudo count or live-range shape none of the three produces."
   }
  ],
  "judge_constraints": [

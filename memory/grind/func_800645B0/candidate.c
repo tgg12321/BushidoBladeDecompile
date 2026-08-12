@@ -72,6 +72,20 @@
  * slot index at the loop top (the CA shape), and no hand-written entry copy can
  * reproduce that insn because GCC folds `j == 0` in it.
  *
+ *
+ * SESSION 5 (permuter modality, 2026-08-12) — form UNCHANGED, floor still 1.
+ * Two decomp-permuter campaigns were run against a newly-built, clean
+ * per-function workspace (tmp/grind/func_800645B0/s4/mkws.sh — offset-0
+ * target.o, honest pipeline with no regfix/asmfix, validated at 78 vs 78
+ * instructions with the single known diff).  Campaign 1 sampled this exact
+ * chassis (permuter base score 10) for 39,731 iterations and returned one
+ * find, at score 10 — equal to base, and a dead store (`idx = (last =
+ * rand());`).  Campaign 2 sampled the structurally different IA
+ * maintained-index chassis (base score 200) for 52,757 iterations; its best
+ * find was the already-banked MA shape (sandbox 2/78), and every other find
+ * broke the loop's semantics.  ~92,500 iterations produced nothing below this
+ * form, so the permuter axis is measured dead for both chassis and the shipped
+ * body below is retained verbatim.
  * INTEGRATION NOTE: regfix.txt:2521 (`func_800645B0: reorder 3,1,2 @ 1-3`) is
  * the function's only rule; the sandbox drops it.  Retiring it is the
  * operator/driver's job, not a grind session's.

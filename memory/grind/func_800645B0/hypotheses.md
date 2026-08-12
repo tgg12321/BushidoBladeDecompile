@@ -411,3 +411,60 @@ is derived from the slot index.
 - probe: sweep16.py SA (for-spelling of CA) and SB (for-spelling of AA), each scored and diffed unmasked with diffvar16.py.
 - result: SA = 3 / 78, byte-identical to CA; SB = 1 / 78, byte-identical to AA (single diff at index 20, the commutative operand order). No gradient. Adopted as the shipped spelling anyway: it is the more natural C and it retires any question about where `j += 1;` sits, since the canonical form compiles to the same bytes.
 - verdict: KILLED
+
+## Session 5 (2026-08-12, permuter) — floor stays 1
+
+### H21 — KILLED. Random permuter search from the shipped for-loop chassis finds nothing below the floor.
+- **Mechanism claim tested:** the shipped form's single residual is an
+  expand-time commutative swap (`target == op1`); random source mutation might
+  stumble on a spelling whose expansion target is not `idx` while keeping the
+  loop top and the block-local byte offset.
+- **Probe:** clean offset-0 workspace (`tmp/grind/func_800645B0/s4/mkws.sh`,
+  base 78 insns vs target 78, permuter base score 10), campaign
+  `shipped-for-chassis`, -j 6, 39,731 iterations / ~21 min.
+- **Result:** one novel find, at score 10 (== base): `idx = (last = rand());`,
+  a dead store overwritten on the next line — a coercion construct with zero
+  gain. Nothing below base.
+- **Verdict:** KILLED for this chassis.
+
+### H22 — KILLED. Random permuter search from the IA maintained-index chassis converges on an already-measured shape and never beats it.
+- **Mechanism claim tested:** IA's residual (`move s0,s3` where target has
+  `addu s0,s3,a0`) is a constant fold of `j == 0` at the loop-entry copy;
+  random mutation of the loop skeleton might produce a shape where `j` is not
+  provably constant at that point without paying an instruction.
+- **Probe:** second workspace built from the IA body
+  (`tmp/grind/func_800645B0/s4/{mkia.py,mkws2.sh}`, permuter base score 200),
+  campaign `ia-maintained-index-chassis`, -j 6, 52,757 iterations / ~35 min.
+- **Result:** 10 novel finds; best = 10, i.e. the CA+`idx = last & 7;` shape
+  that session 3 already measured as MA (sandbox 2/78) — rediscovered from a
+  different chassis, and never improved on. All other finds (125-200) defeat
+  the entry-copy fold only by breaking semantics (`j` read uninitialised,
+  `j = mask;`, `j = idx2;` with `idx2` hoisted), i.e. they confirm session 3's
+  LA measurement that defeating the fold costs real instructions.
+- **Verdict:** KILLED.
+
+### H23 — CONFIRMED (as corroboration). The near-floor basin contains exactly the shapes the hand sweeps already enumerated.
+Two structurally distinct chassis, ~92,500 iterations, a clean per-function
+metric, and the ONLY legitimate shape random search surfaced is one already in
+the ledger (MA). Combined with session 3's H17 closure argument (only three
+values may be staged through `idx`, all three measured), the remaining work is
+NOT more sampling of this basin — it is the two named GCC-internals probes on
+the frontier (expand_binop target selection; local_alloc ordering in DA).
+
+## [s4] Random permuter search from the shipped for-loop chassis finds a form below the floor of 1 by stumbling on a spelling whose expansion target is not `idx` (defeating optabs.c expand_binop's `target == op1` commutative swap) while keeping the loop-top emission order and the block-local byte offset.
+- mechanism: The shipped form's whole residual is one instruction, `addu s0,s0,s1` vs target `addu s0,s1,s0`, fixed at RTL expansion by optabs.c:399-417. Eight hand-authored respellings are already measured dead (s3 H11), so the remaining hope on this axis was a shape no human enumerated.
+- probe: Built a clean per-function permuter workspace (tmp/grind/func_800645B0/s4/mkws.sh): full-TU cpp of src/text1b.c as base.c, compile.sh running the honest pipeline (cc1 -mel | prologue_fix | maspsx | multu_pad, NO regfix/asmfix) then extracting the `.ent func_800645B0 .. .end func_800645B0` region and assembling it alone so the function sits at offset 0 like target.o. Validated: base 78 insns vs target 78, single diff. Campaign `shipped-for-chassis`, -j 6, via tools/permuter_campaign.py launch/wait/harvest.
+- result: 39,731 iterations / ~21 min. Permuter base score 10 (the lone operand-order diff counts as two register diffs x5). Exactly ONE novel find, at score 10 — equal to base, no improvement. Its only mutation is `idx = (last = rand());`, a dead store to `idx` overwritten by the *3 sum on the next line: a dead-store coercion with zero measured gain. Rejected and banked.
+- verdict: KILLED
+
+## [s4] Random permuter search from the IA maintained-index chassis finds a shape where `j` is not provably 0 at the loop-entry copy — so GCC emits the target's `addu s0,s3,a0` instead of `move s0,s3` — without paying an instruction elsewhere.
+- mechanism: IA (slot index set before the inner loop and again at its tail, *3 sum in its own `wid`) is 1/78 and its entire residual is that GCC constant-folds `i + j` in the block that also contains `j = 0;`. Session 3's LA probe defeated the fold by resetting `j` at the outer-loop tail but cost a real instruction (5/79); the question was whether some unenumerated shape defeats it for free.
+- probe: Second workspace built from the IA body (tmp/grind/func_800645B0/s4/mkia.py + mkws2.sh), sharing compile.sh/target.o with the first; validated at 78 vs 78 with the single `move`/`addu` diff. Campaign `ia-maintained-index-chassis`, -j 6.
+- result: 52,757 iterations / ~35 min from permuter base score 200 (a `move` vs `addu` residual is charged as insert+delete, 100 each, not as register diffs). 10 novel finds; best = 10, nothing below it and nothing at 0. The score-10 find is the CA chassis with `idx = last & 7;` staged before the s16 store — session 3's MA shape (sandbox 2/78) — rediscovered by mutation from a different chassis. Every other find (125-200) defeats the entry-copy fold only by breaking semantics: `j = 0;` relocated into the found-slot arm so `j` is read uninitialised (160), `j = idx2;` with `idx2 = 0;` hoisted above the outer loop (166), `j = mask;` inside an `if (1) { }` wrapper with the test rewritten `(j + 1) < (4 + 1)` (135).
+- verdict: KILLED
+
+## [s4] The near-floor basin around this function contains exactly the shapes the previous sessions' hand sweeps already enumerated.
+- mechanism: If independent random search over two structurally distinct chassis, with a clean per-function metric, converges on shapes already in the ledger and never beats them, the enumeration argument from session 3's H17 (only three values may legally be staged through `idx`, all three measured) is corroborated by a second, non-hand-directed method.
+- probe: The two campaigns above, ~92,500 iterations total, plus inspection of every novel output's source diff.
+- result: The only legitimate shape surfaced was MA (already banked at 2/78). No form below the floor of 1 exists anywhere in the sampled neighbourhood of either chassis.
+- verdict: CONFIRMED
