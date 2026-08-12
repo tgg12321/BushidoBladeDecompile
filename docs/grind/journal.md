@@ -878,3 +878,4 @@
 - 2026-08-11 19:24 func_8003B9D0: LAYER-1 FAILED a sandbox-0 candidate — The scalar-to-array extern retype of D_80101EDA is a declaration-level respelling of the exact cse.c address-folding defeat that layer-1 already FAILed this session (banned D3) — the array indexing reaches into a separately-named adjacent global's storage, not a genuine array element.
 - 2026-08-11 19:40 func_8003B9D0 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
 - 2026-08-11 19:58 func_8003A5A0 COMPLETED-C after 1 sessions.
+- 2026-08-11 20:14 MoveImage s1 [recon] floor=7: MoveImage floor 21 -> 7 and build_insns 47 -> 49 (== target): hoisting `D_8009BF28 = packed;` to be the first primitive store puts `sll $v0,$s1,16` at the head of the post-guard block, so reorg's eager delay-slot fill steals it from the taken thread and emits target's inverted `bnez / j / addiu -1` guard tail from pure C.

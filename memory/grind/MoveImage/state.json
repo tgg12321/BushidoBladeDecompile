@@ -1,0 +1,37 @@
+{
+ "func": "MoveImage",
+ "file": "display",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 7,
+   "modality": "recon",
+   "headline": "MoveImage floor 21 -> 7 and build_insns 47 -> 49 (== target): hoisting `D_8009BF28 = packed;` to be the first primitive store puts `sll $v0,$s1,16` at the head of the post-guard block, so reorg's eage"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The entire floor-7 residual is one displacement: the D_8009BF28 store group is scheduled before the rect[0] load, the g_gpu_dev_table load and `addiu $a2,$zero,0x14`, whereas target schedules all three of those first \u2014 and the $a0/$v0 rename falls out of the same fix, so one correct ordering closes all 7.",
+   "mechanism": "cc1 sched.c cannot disambiguate a store to a SYMBOL_REF MEM from a load through a REG base (`0x0($s0)`, a pointer parameter), so memrefs_conflict_p yields a dependence edge that pins the rect[0] load behind the D_8009BF28 store. Target has the load ahead of the store, which under that model means the original source read rect[0] before storing BF28 \u2014 but probe G proved the naive way of doing that destroys the H2 delay-slot steal. The next form must satisfy both constraints simultaneously.",
+   "next_probe": "Run cc1 with the sandbox's exact flags plus `-da` on the preprocessed display.i into tmp/grind/MoveImage/s2/ and read the .sched2 and .dbr dumps for the post-guard block. Confirm or refute the alias edge by checking whether a dependence is recorded between the BF28 store and the `0x0($s0)` load. If the edge exists, the search is over statement permutations that keep `sll $v0,$s1,16` at the block head \u2014 enumerate them with a scripted sweep and gate every candidate on build_insns == 49. If there is no edge, this is a pure INSN_PRIORITY tie and the lever is dependency-chain length: sink the BF28 store by lengthening the chain feeding it, or lengthen the rect[0] load's chain so it outranks the store without reaching the block head."
+  },
+  {
+   "hypothesis": "D_8009BF24 / D_8009BF28 / D_8009BF2C plus the 8 bytes below them are ONE GPU move-primitive object and the splat per-word D_ names are an artifact; a different C view of that memory would change which stores share a base register, hence the scheduler's dependence graph, and is plausibly the natural route to the H4 ordering.",
+   "mechanism": "cc1 emits `sw $x,%lo(SYM)($at)` for a standalone symbol store but `sw $x,N($base)` for a member store off a materialized base. Target uses the %lo form for BF28 and BF2C and the `0x0($a1)` base form for BF24 only \u2014 so any re-view must preserve exactly that split, with the BF24 pointer being the one decremented by 8 in the jalr delay slot.",
+   "next_probe": "Grep 8009BF1C / 8009BF20 / 8009BF24 / 8009BF28 / 8009BF2C across src/ and asm/funcs/ for a second user of the object (per base-register-store-invisible-to-symbol-grep, also grep for stores through a base register into that neighbourhood, not just %lo(SYM) forms), and check bb2.ld / undefined_syms_auto.txt / symbol_addrs.txt for what is declared at 0x8009BF1C. A second user would pin down the real shape; then re-express the three stores through it and re-measure, gating on build_insns == 49."
+  },
+  {
+   "hypothesis": "The matched siblings LoadImage / StoreImage / ClearImage / ClearImage2 (src/display.c:129-163) are the same libgpu dev-table-dispatch shape in the same TU, so their statement order is direct evidence for the house convention the original author used, and MoveImage should be written to match it.",
+   "mechanism": "Same TU, same compiler invocation, same call shape \u2014 a byte-matched sibling's ordering is the closest available ground truth about the original source's conventions, and it costs nothing to copy.",
+   "next_probe": "Diff each matched sibling's C against its emitted schedule and extract the convention: where the dev-table read sits relative to any global stores, whether the dispatch args are named locals or inline expressions, and whether a primitive pointer is materialized before or after the payload stores. Apply the extracted convention to MoveImage's three stores and re-measure. In parallel run tools/find_duplicates.py and check tmp/duplicates_leads.txt for a byte-similar MoveImage sibling elsewhere in the tree."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-12T00:58:14.903271+00:00"
+}
