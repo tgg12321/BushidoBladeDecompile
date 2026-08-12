@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "forensics",
+ "session_count": 7,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics named both remaining decisions from instrumented-cc1 dumps (CA's loop-top birthing_insn_p lift; DA's local-alloc $s0 claim) and proved they are mutually exclusive \u2014 the original body cannot "
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Re-derived the data model from the target (one 3-word-struct array + one s16 array, GCC's own k*12 expansion sharing k*2) and produced a genuinely new chassis JD at 3/78 whose ENTIRE residual is the l"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The halfword index `idx2` can be made a MULTI-BLOCK pseudo at zero instruction cost, which hands DA the target's allocation and therefore distance 0.",
-   "mechanism": "DA already emits the target's exact instruction sequence; its only defect is that local-alloc claims $s0 for the block-local `idx2` before global-alloc ever sees `idx`. A pseudo referenced in two basic blocks has reg_basic_block < 0 and is invisible to local-alloc, so it would instead be ranked against `idx` by global.c:allocno_compare \u2014 where `idx` (24 refs across 29 insns in DA) beats `idx2` (9 refs across 27) and takes $s0, leaving $s1 for idx2 exactly as the target has it. The only shape tried so far, `idx2 = idx << 1;` at the loop top (DC), costs one instruction because the sll leaves the first jal's delay slot empty.",
-   "next_probe": "Enumerate C bodies in which the halfword index is genuinely read or written in a SECOND basic block without adding an instruction \u2014 the loop-bottom block (where j is incremented and tested), the outer-loop tail, or a shape in which the inner loop maintains the halfword index rather than the slot index \u2014 and sandbox each on the DA chassis (tmp/grind/func_800645B0/s6/sweep20.py has the DA body factored for this)."
+   "hypothesis": "A second set of `idx` in the OUTER loop body - at a program point where the target really does write $s0 - denies the birthing lift at zero cost AND at zero register cost, closing the JD chassis.",
+   "mechanism": "KD proves an out-of-inner-loop second set kills the lift for free (78 insns, loop top exact) and that its only cost is the register the value lands in. The target writes $s0 in exactly two places: `addu $s0,$s3,$a0` at 0x800645DC, in the outer-loop block immediately before .L800645E0, and the if-body sequence. If the 0x800645DC write is a SOURCE-LEVEL statement in the outer loop body rather than reorg.c's duplicate of the stolen loop-top insn, then an outer-loop `idx = i;` / `idx = i + j;` is a second set at a point where the target itself writes $s0. Session 3's H15 killed that shape only in the MAINTAINED-INDEX form, where the inner loop no longer recomputes idx and the entry copy constant-folds to `move $s0,$s3`; the untried shape KEEPS the inner-loop recomputation, so the outer assignment is redundant-but-live rather than the loop's only definition.",
+   "next_probe": "On the JD chassis, measure `idx = i;`, `idx = i + j;` and `idx = 0;`-then-`idx = i;` placed at the top of the OUTER loop body (before `for (j ...)`), plus the same at the outer-loop tail, and check with diffvar25.py whether flow.c deletes them (H19's rule) or whether the inner loop's recomputation keeps them live enough for reg_scan to count them."
   },
   {
-   "hypothesis": "A second block-local call-crossing quantity in the DA if-body would claim $s0 ahead of `idx2`, or `idx2` can be steered to $s1 by a register suggestion.",
-   "mechanism": "This is the other resolution of the H32 contradiction. local-alloc.c:1648 ranks block-local quantities by floor_log2 (n_refs) * n_refs * size / (death - birth), and find_free_reg tries SUGGESTED registers before scanning reg_alloc_order (local-alloc.c:2205-2215, qty_phys_copy_sugg then qty_phys_sugg). A quantity tied by a copy to a hard register gets such a suggestion; nothing in the current body gives `idx2` one.",
-   "next_probe": "Read local-alloc.c's construction of qty_phys_copy_sugg / qty_phys_sugg in block_alloc, then run the DA build under BB2_SUGG_DEBUG / BB2_QTY_DEBUG (tmp/grind/func_800645B0/s6/dumpi.sh, adding the env vars) to see the exact quantity ranking and the used/first_used sets find_free_reg scans for idx2; isolate this function's slice of the log by matching the insn UIDs already extracted in dump_DA/f_lreg.txt."
+   "hypothesis": "The permuter finds something below 3 in the JD neighbourhood, which no campaign has ever sampled.",
+   "mechanism": "Session 5's own lesson ([s5]: seed the permuter from EACH near-miss chassis before calling the axis dead) applies directly. The four sampled chassis were SB, IA, CA and guard-continue; JD is structurally unlike all of them because it contains NO index locals to mutate - its source neighbourhood is the space of expression respellings and statement placements, not of variable staging.",
+   "next_probe": "Build a workspace from chassis_jd_inline_index_arith.c using tmp/grind/func_800645B0/s5/mkca.py + mkws3.sh's recipe (full-TU cpp as base.c, honest pipeline with no regfix/asmfix, offset-0 target.o), validate at 78 vs 78 with the three loop-top diffs, and run one fresh-seed campaign window with tools/permuter_campaign.py launch + wait + harvest --stop, all inside a single turn."
   },
   {
-   "hypothesis": "The loop-top `addu` can be made to become READY last, so it is emitted first even WITH the birthing lift \u2014 which would let the CA chassis (whose allocation is already the target's) reach 0 without touching reg_n_sets.",
-   "mechanism": "The lift makes insn 38 the highest-priority ready insn, so the backward scheduler picks it the instant it becomes ready, and it becomes ready as soon as its only in-block dependent (the sllv, insn 43) is scheduled. If the loop-top block contained a second, later-scheduled consumer of `idx`, insn 38 could not be picked until the final slot and would be emitted first regardless of its priority.",
-   "next_probe": "Determine whether any instruction the target already has in that block \u2014 the D_800A3444 load, the `and`, or the j increment that sits in the branch delay slot \u2014 can be made to depend on `idx` without adding an instruction, and measure each spelling on the CA chassis; dump_CA/f_sched.txt is the baseline to diff the ready lists against."
+   "hypothesis": "reorg.c can be made to steal the SECOND insn of the loop-top block instead of the first, which would need no scheduler change at all.",
+   "mechanism": "Every chassis' residual now reduces to the same sentence: the loop-top block's first emitted insn is `li $v1,1` where the target has the `addu`. The assumption throughout the ledger is that reorg takes the block's first insn; that has never been read out of the source.",
+   "next_probe": "Read reorg.c's steal_delay_list_from_target / fill_simple_delay_slots candidate selection (in particular how it walks the target block and what disqualifies a candidate), determine whether the second insn can ever be taken, and if so identify the C-visible precondition and measure it on JD."
   }
  ],
  "judge_constraints": [

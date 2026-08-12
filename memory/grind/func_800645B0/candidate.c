@@ -1,4 +1,9 @@
 /* func_800645B0 (src/text1b.c) — grind session 6 (forensics modality), 2026-08-12.
+ * (Session 7, rederive, left this body in place: it still holds the lowest
+ * honest score, 1 / 78.  But it is NOT where the next session should search —
+ * see chassis_jd_inline_index_arith.c, a 3/78 body whose entire residual is the
+ * loop top, with the *3 sum's operand order and every register already correct,
+ * i.e. without this body's expand_binop wall.)
  *
  * !! THIS FILE WAS REPLACED THIS SESSION.  The previous contents (the
  * "session 5" permuter find, honest sandbox distance 0) carried the loop-top

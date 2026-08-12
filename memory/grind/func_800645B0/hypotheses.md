@@ -813,3 +813,179 @@ the frontier (expand_binop target selection; local_alloc ordering in DA).
 - probe: Composition of this session's two dump-proven decisions with the previously banked H15/H18/H24 measurements, cross-checked against the full sweep20/sweep21 measurement table and against the target's own $s0 write set (asm/funcs/func_800645B0.s: 0x800645DC, 0x80064600, 0x80064608, 0x800646B4).
 - result: The constraint system is unsatisfiable over {i, j, idx, idx2, wid, mask, val, last}. The original body must therefore differ in basic-block MEMBERSHIP or in the pseudo set — most plausibly by making the halfword index a multi-block pseudo at zero instruction cost (local-alloc would then never touch it and global-alloc would rank it against `idx`, which has far more references and wins $s0), or by containing another block-local call-crossing quantity in the if-body that claims $s0 ahead of `idx2`.
 - verdict: CONFIRMED
+
+## Session 8 (2026-08-12, rederive) — floor stays 1; the search is re-derived onto a new chassis (JD) whose index arithmetic is entirely unnamed, and H32's contradiction is shown to be chassis-independent
+
+### H33 — CONFIRMED (a structural re-derivation of the data model). The three word-stride destinations are ONE array of 3-word structs, and the target's index cadence is GCC's own `k * 12` expansion sharing `k * 2` with the halfword array.
+- **Mechanism:** `undefined_syms_auto.txt:467-469` gives D_800F0D78 = 0x800F0D78,
+  D_800F0D7C = 0x800F0D7C, videoDec = 0x800F0D80 — three CONSECUTIVE words, and
+  the target addresses all three with the same `$s0` at a 12-byte stride, while
+  D_800F0BCC is addressed with `$s1` at a 2-byte stride.  So the per-word splat
+  names hide `struct {s32,s32,s32} D_800F0D78[15]` plus `s16 D_800F0BCC[15]`
+  ([[splat-symbol-names-are-not-evidence]]).  GCC 2.7.2's `synth_mult` expands
+  `k * 12` as `((k << 1) + k) << 2` and CSEs the `k << 1` with the halfword
+  index's `k * 2` — which IS the target's
+  `sll $s1,$s0,1` / `addu $s0,$s1,$s0` / `sll $s0,$s0,2` / `addu $at,$at,$s1`.
+  Every intermediate is then an UNNAMED pseudo, i.e. exactly the different
+  pseudo set session 6's H32 said the answer requires.
+- **Probe:** sweep22.py (struct-array subscripts + corrected declarations),
+  sweep24.py (per-symbol casts with the index arithmetic written inline as
+  expressions).
+- **Result:** the inline-arithmetic chassis **JD** —
+  `*((s32 *)((s32)&SYM + ((((idx << 1) + idx)) << 2)))` for the three word
+  stores and `((s32)&D_800F0BCC + (idx << 1))` for the halfword store, with NO
+  `idx2` and NO `wid` local — measures **3 / 78**, and its unmasked residual is
+  EXACTLY the three loop-top points (11, 12, 65).  Every register, the *3 sum's
+  operand order and the instruction count are already the target's.  JD reaches
+  CA's position without CA's `wid` and without SB's expand_binop wall.
+- **Verdict:** CONFIRMED.  JD is banked at
+  `memory/grind/func_800645B0/chassis_jd_inline_index_arith.c`.
+
+### H34 — CONFIRMED (an engine fact that disqualifies a whole spelling family). The struct-array SUBSCRIPT spelling can never score 0, because two of its points are a relocation-addend artifact.
+- **Mechanism:** written as `D_800F0D78[idx].unk4`, the store relocates against
+  `%lo(D_800F0D78)` with ADDEND 4; the target relocates against
+  `%lo(D_800F0D7C)` with addend 0.  Since D_800F0D7C == D_800F0D78 + 4 and
+  videoDec == D_800F0D78 + 8 (and all three share `%hi` 0x800F with no
+  low-half carry), the LINKED WORDS ARE IDENTICAL — but `engine/score.py`
+  compares disassembly text, which prints `sw v1,4(at)` vs `sw v1,0(at)`.
+  Same class as [[sandbox-lo16-text-addend-false-distance]], on a data symbol.
+- **Probe:** sweep22.py EB (word stores subscripted, halfword store hand-built)
+  = 5 / 78; diffvar22.py EB shows the five masked points as
+  11/12/65 (the loop top) + 40/51 (`sw v1,4(at)`, `sw v1,8(at)`).  Addresses
+  cross-checked against `undefined_syms_auto.txt:467-469`.
+- **Result:** EB's TRUE byte residual is 3, not 5 — but no subscripted variant
+  can ever be shown at 0 by the sandbox, so the whole family is unusable as a
+  closing form even though it is the more natural C.  The per-symbol cast
+  spelling (JD) carries the same pseudo set with addend-0 relocations and is
+  therefore the correct carrier of the re-derivation.
+- **Verdict:** CONFIRMED.  Banked to
+  `rejected/struct-array-subscript-lo16-addend-false-distance.c`.
+
+### H35 — KILLED. On the JD chassis every reg_n_sets[idx] lever behaves exactly as it does on CA/SB: H32's contradiction is a property of the FUNCTION, not of the named-variable pseudo set.
+- **Mechanism claim tested:** with the halfword shift, the *3 sum and the <<2
+  byte offset all unnamed, session 6's constraint (3) ("the byte offset must be
+  a block-local pseudo distinct from `idx`") is satisfied by construction, so
+  constraint (2) (`reg_n_sets[idx] > 1`) might be reachable without competing
+  with it.
+- **Probe:** sweep23.py GB/GC (`idx = idx << 1;` carrying the halfword offset),
+  GD (`i + j` written inline at both uses, so the slot index is a CSE temp
+  rather than a user pseudo), GF (`idx = last & 7;` — H16's MA lever);
+  sweep25.py KA (byte offset into `idx`, halfword offset recomputed as
+  `(i + j) << 1`), KB (byte offset into `idx`, halfword staged in a named
+  `idx2`), KC (MA lever + recomputed halfword offset).
+- **Result:** GB 5/78 and GC 5/78 — identical to the GA control, because the
+  `idx << 1` value is ALREADY live as the *12 expansion's own intermediate, so
+  H10's fold rule applies and the second set never reaches `reg_scan`.
+  GD 5/78 — byte-identical to GA, so removing the `idx` variable entirely
+  changes nothing (a single-set CSE temp is lifted exactly like a single-set
+  user pseudo).  GF 4/78 (true 2) — the lift dies and the cost is the staged
+  value landing in `$s0` (`andi s0,v0,0x7` / `sh s0,0(at)` where target has
+  `$v0`), reproducing MA's 2 points on the new chassis.  KB 12/78 — DA's
+  `$s0`/`$s1` swap reproduced exactly.  KA 28/82 and KC 22/83 — recomputing the
+  halfword offset from `i + j` after `idx` has been overwritten does NOT get
+  CSE'd back and costs real instructions.
+- **Verdict:** KILLED.  Every H32 conclusion transfers to a chassis with a
+  completely different pseudo set, which is the strongest available evidence
+  that the constraint system is intrinsic to the target's instruction sequence.
+
+### H36 — CONFIRMED (and it closes a lever before it was spent). `max_priority` is UNCONDITIONALLY `LAUNCH_PRIORITY`, so the birthing lift can never be denied by lowering the block's priority ceiling.
+- **Mechanism:** `adjust_priority` (sched.c:2586) applies the lift only when
+  `max_priority > INSN_PRIORITY (prev)`, which invited the idea that a block
+  whose longest dependence chain is 1 would have `max_priority == 1` and no
+  lift.  It cannot: `schedule_block` sets `INSN_PRIORITY (insn) =
+  LAUNCH_PRIORITY` (0x7f000001) on the just-scheduled insn immediately BEFORE
+  calling `schedule_insn` (sched.c:4049-4050), and `schedule_insn` computes
+  `max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))`
+  (sched.c:2619).  The second operand is therefore always 0x7f000001.
+- **Probe:** direct read of sched.c:185-189, 2605-2625 and 4030-4052.
+- **Result:** the `7f000001` seen on insns 38 and 46 in the s6 `.sched` dumps is
+  the LIFT value, not a load's launch priority; every birthing insn in every
+  block is raised to it.  There is no C-level surface on the priority ceiling.
+- **Verdict:** CONFIRMED — the lift is deniable ONLY through `reg_n_sets`.
+
+### H37 — CONFIRMED as a mechanism, KILLED as a route. A second set of `idx` OUTSIDE the loops kills the lift at ZERO instruction cost — but the target never writes `$s0` before the loops.
+- **Mechanism:** `reg_n_sets` is a whole-function count, so a set anywhere in
+  the function suffices, and a set outside the inner loop cannot disturb the
+  loop-top block's insn list.  This is the first construct found that removes
+  the lift without either paying an instruction or landing a foreign value in
+  `$s0` inside the if-body.
+- **Probe:** sweep25.py KD — `idx = 1; D_800F10EC = idx;` before the loops, on
+  the JD chassis; diffvar25.py KD for the unmasked pairs.
+- **Result:** **4 / 78.**  Indices 11, 12 and 65 are GONE — the loop top is the
+  target's.  The entire remaining residual is the prologue: `li s0,1` where the
+  target has `li v0,1`, the four register saves shifted by one slot, and
+  `sw s0,%lo(D_800F10EC)($at)` where the target has `sw v0,...`.  `idx` is a
+  multi-block pseudo allocated `$s0` and GCC 2.7.2 does not split live ranges,
+  so any pre-loop value it carries is materialised in `$s0`; the target's
+  prologue writes `$v0`, `$s3` and the saves only.
+- **Verdict:** KILLED as written — but it re-opens the search in a direction
+  H32 did not consider, because the second set no longer has to be a value the
+  target keeps in `$s0` INSIDE the if-body; it only has to be a value the target
+  keeps in `$s0` at ITS OWN program point.  See frontier 0.
+
+## Frontier (rewritten by session 8)
+
+0. **A second set of `idx` outside the INNER loop, at a program point where the
+   target does write `$s0`.**  H37 proves an out-of-loop second set denies the
+   birthing lift at zero instruction cost and fixes the loop top completely
+   (KD: 78 insns, loop top exact, 4 prologue points).  The target writes `$s0`
+   in exactly two places: `addu $s0,$s3,$a0` at 0x800645DC (the outer-loop
+   block, immediately before `.L800645E0`) and the if-body sequence.  The
+   0x800645DC write is currently believed to be reorg.c's duplicate of the
+   stolen loop-top insn — but if it is instead a SOURCE-LEVEL statement in the
+   OUTER loop body, then `idx = i;` (or `idx = i + j;`) there is a second set at
+   a point where the target really does write `$s0`, at zero cost.  Session 3's
+   H15 killed that shape only in the MAINTAINED-INDEX form, where the inner loop
+   no longer recomputes `idx` and the entry copy constant-folds to `move
+   $s0,$s3`; the untried shape keeps the inner-loop `idx = i + j;` recomputation
+   AND adds the outer-loop assignment, so the outer one is redundant-but-live
+   rather than the loop's only definition.  Next probe: on the JD chassis,
+   measure `idx = i;` / `idx = i + j;` / `idx = 0;`-then-`idx = i;` placed at the
+   top of the OUTER loop body (before `for (j ...)`), and check whether flow.c
+   deletes them (H19's rule) or whether the inner loop's recomputation keeps
+   them live enough to be counted by `reg_scan`.
+1. **Seed the permuter from JD.**  Session 5's lesson ([s5], "seed the permuter
+   from EACH near-miss chassis before calling the axis dead") applies directly:
+   JD is a chassis no campaign has ever sampled, it is 78 instructions with a
+   3-point residual, and its neighbourhood in source space is completely
+   different from SB's / CA's / IA's / DA's because it contains no index locals
+   to mutate.  Next probe: build a workspace from the JD body with
+   `tmp/grind/func_800645B0/s5/mkca.py`'s recipe (full-TU cpp, honest pipeline,
+   offset-0 target.o) and run one fresh-seed campaign window.
+2. **Which insn does reorg.c actually steal?**  Every chassis' residual is now
+   "the loop-top block's FIRST emitted insn is `li $v1,1` where the target has
+   the `addu`".  The assumption throughout has been that reorg takes the block's
+   first insn.  Next probe: read `reorg.c`'s `steal_delay_list_from_target` /
+   `fill_simple_delay_slots` candidate selection and confirm whether it can be
+   made to take the SECOND insn of the block instead (which would need no
+   scheduler change at all), then look for the C-visible precondition.
+
+## [s7] The three word-stride destinations are one array of 3-word structs and the target's index cadence is GCC's own synth_mult expansion of k*12 sharing its k<<1 with a parallel s16 array, so writing the index arithmetic INLINE (no idx2 / wid locals) gives the different pseudo set session 6's H32 said the answer requires.
+- mechanism: undefined_syms_auto.txt:467-469 gives D_800F0D78 = 0x800F0D78, D_800F0D7C = 0x800F0D7C, videoDec = 0x800F0D80 - three consecutive words addressed by the same $s0 at a 12-byte stride, with D_800F0BCC addressed by $s1 at a 2-byte stride. GCC 2.7.2's synth_mult expands k*12 as ((k<<1)+k)<<2 and CSEs the k<<1 with the halfword index's k*2, which is exactly the target's sll $s1,$s0,1 / addu $s0,$s1,$s0 / sll $s0,$s0,2 / addu $at,$at,$s1. Every intermediate is then an unnamed pseudo instead of a user local.
+- probe: tmp/grind/func_800645B0/s7/sweep22.py (struct-array subscripts with corrected file-scope declarations) and sweep24.py (per-symbol hand-built casts with the offsets written inline as expressions), each scored with `sandbox func_800645B0 --disable all`; unmasked pairs via diffvar22.py / diffvar24.py.
+- result: Chassis JD - *((s32 *)((s32)&SYM + ((((idx << 1) + idx)) << 2))) for the three word stores and ((s32)&D_800F0BCC + (idx << 1)) for the halfword store, with NO idx2 and NO wid local - measures 3 / 78 and its unmasked residual is EXACTLY the three loop-top points (11, 12, 65). Every register, the *3 sum's commutative operand order and the instruction count are already the target's. Sweep24 table: JA 44/85, JB 14/80, JC 36/82, JD 3/78, JE 44/85.
+- verdict: CONFIRMED
+
+## [s7] The struct-array SUBSCRIPT spelling (D_800F0D78[idx].unkN) is a usable closing form.
+- mechanism: It is the most natural C for the re-derived data model and it does reach 78 instructions; the question was whether the sandbox can ever show it at 0.
+- probe: sweep22.py EB (word stores subscripted, halfword store hand-built) scored and diffed unmasked; symbol addresses cross-checked against undefined_syms_auto.txt:467-469.
+- result: EB = 5 / 78 with a TRUE byte residual of 3. Indices 40 and 51 are `sw v1,4(at)` / `sw v1,8(at)` relocated against %lo(D_800F0D78) with addends 4 and 8, where the target uses %lo(D_800F0D7C) / %lo(videoDec) with addend 0. Since D_800F0D7C == D_800F0D78 + 4 and videoDec == D_800F0D78 + 8 (all three sharing %hi 0x800F with no low-half carry) the LINKED WORDS ARE IDENTICAL - but engine/score.py compares disassembly text and counts them. No subscripted variant can ever be demonstrated at sandbox 0; same class as [[sandbox-lo16-text-addend-false-distance]] on a data symbol. The per-symbol cast spelling carries the identical pseudo set with addend-0 relocations, so nothing is lost.
+- verdict: KILLED
+
+## [s7] With the halfword shift, the *3 sum and the <<2 byte offset all unnamed, session 6's H32 constraint (3) is satisfied by construction, so reg_n_sets[idx] > 1 becomes reachable without competing with it.
+- mechanism: H32's contradiction was derived over the named-variable pseudo set {idx, idx2, wid}; if the byte offset is a compiler temp by construction, constraint (3) cannot be violated by routing a value through idx.
+- probe: sweep23.py GB/GC (idx = idx << 1 carrying the halfword offset), GD (i + j written inline at both uses so the slot index is a CSE temp, no idx variable at all), GF (idx = last & 7, the H16/MA lever); sweep25.py KA (byte offset into idx with the halfword offset recomputed from i + j), KB (byte offset into idx with a named idx2), KC (MA lever plus recomputed halfword offset). Unmasked diffs via diffvar23.py / diffvar25.py.
+- result: GB 5/78 and GC 5/78, identical to the GA control - the idx<<1 value is already live as the *12 expansion's own intermediate so H10's fold rule applies and the second set never reaches reg_scan. GD 5/78, byte-identical to GA: a single-set CSE temp receives the birthing lift exactly like a single-set user pseudo. GF 4/78 (true 2), the lift dies and the staged value lands in $s0 (andi s0,v0,0x7 / sh s0,0(at) where target has $v0), reproducing MA. KB 12/78, DA's $s0/$s1 swap reproduced exactly. KA 28/82 and KC 22/83 - a halfword offset recomputed from i + j after idx has been overwritten is not CSE'd back and costs real instructions.
+- verdict: KILLED
+
+## [s7] sched.c's birthing lift can be denied by lowering the block's priority ceiling, because adjust_priority applies it only when max_priority > INSN_PRIORITY(prev) and a block whose longest dependence chain is 1 would have max_priority == 1.
+- mechanism: adjust_priority (sched.c:2586) guards the lift with `if (max > INSN_PRIORITY (prev))`, which would make the lift a no-op in a flat block.
+- probe: Direct read of tools/gcc-2.7.2/sched.c:185-189 (the priority constants), 2605-2625 (schedule_insn's max_priority computation) and 4030-4052 (schedule_block).
+- result: It cannot. schedule_block sets INSN_PRIORITY (insn) = LAUNCH_PRIORITY (0x7f000001) on the just-scheduled insn at sched.c:4049, immediately before schedule_insn computes max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn)) at sched.c:2619 - so the second operand is ALWAYS 0x7f000001. The 7f000001 seen on insns 38 and 46 in the session-6 .sched dumps is the LIFT value, not a load's launch priority. reg_n_sets remains the only C-level surface on the lift.
+- verdict: KILLED
+
+## [s7] A second set of `idx` outside the loops denies the birthing lift at zero instruction cost.
+- mechanism: reg_n_sets is a whole-function count, so a set anywhere suffices, and a set outside the inner loop cannot disturb the loop-top block's insn list - unlike every previously-measured second set, which either folded away (H10) or landed a foreign value in $s0 inside the if-body (H16).
+- probe: sweep25.py KD - `idx = 1; D_800F10EC = idx;` placed before the loops on the JD chassis; unmasked pairs via diffvar25.py KD.
+- result: KD = 4 / 78. Indices 11, 12 and 65 are GONE: the inner-loop top is emitted in the target's order and reorg.c steals the addu into the back-edge delay slot. The entire remaining residual is the prologue - `li s0,1` where the target has `li v0,1`, the four register saves shifted by one slot, and `sw s0,%lo(D_800F10EC)($at)` where the target has `sw v0`. `idx` is a multi-block pseudo allocated $s0 and GCC 2.7.2 has no live-range splitting, so any pre-loop value it carries is materialised in $s0, and the target never writes $s0 before the loop. CONFIRMED as a mechanism, KILLED as written - and it removes H32's implicit assumption that the second set must be a value the target keeps in $s0 INSIDE the if-body.
+- verdict: CONFIRMED

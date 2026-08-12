@@ -691,3 +691,41 @@ rule and the sandbox drops it.  Retirement + `queue done` is the operator's job.
 - [s6] VERIFIED INHERITANCE FACT: the committed src/text1b.c does NOT carry the floor-1 body — HEAD scores 21/80. The floor-1 body lives only in memory/grind/func_800645B0/candidate.c, which re-measured at score 1, target_insns 78 / build_insns 78 this session via tmp/grind/func_800645B0/s6/checkcand.py.
 
 - [s6] The instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1); tmp/grind/func_800645B0/s6/dumpi.sh runs it with -da and BB2_SCHED_DEBUG and is the reusable dump harness for this function.
+
+- [s7] undefined_syms_auto.txt:467-469 — D_800F0D78 = 0x800F0D78, D_800F0D7C = 0x800F0D7C, videoDec = 0x800F0D80. The three word-stride destinations are consecutive words at a 12-byte stride indexed by the slot number: one array of 3-word structs, not three scalars. D_800F0BCC is a parallel s16 array at a 2-byte stride.
+
+- [s7] NEW CHASSIS "JD" (tmp/grind/func_800645B0/s7/sweep24.py, banked at memory/grind/func_800645B0/chassis_jd_inline_index_arith.c): per-symbol hand-built casts with the index arithmetic written INLINE as expressions — `((((idx << 1) + idx)) << 2)` for the word offset, `(idx << 1)` for the halfword offset, and NO `idx2` / `wid` locals. 3 / 78, unmasked residual exactly the three loop-top points (11, 12, 65). Same position as CA, reached with an entirely unnamed pseudo set and without SB's expand_binop wall.
+
+- [s7] The struct-array SUBSCRIPT spelling (EB, sweep22.py) is 78 instructions with a TRUE residual of 3, but scores 5: indices 40 and 51 are `sw v1,4(at)` / `sw v1,8(at)` relocated against %lo(D_800F0D78) with addends 4 and 8, where the target uses %lo(D_800F0D7C) / %lo(videoDec) with addend 0. The linked words are identical; engine/score.py compares disassembly text and counts them. No subscripted variant can ever be demonstrated at sandbox 0.
+
+- [s7] Session-7 measurement table. sweep22: EA 16/80, ED 16/80, EB 5/78, EC 14/80, SB 1/78. sweep23 (EB chassis): GA 5/78, GB 5/78, GC 5/78, GD 5/78, GE 14/80, GF 4/78. sweep24: JA 44/85, JB 14/80, JC 36/82, JD 3/78, JE 44/85. sweep25 (JD chassis): JD 3/78, KA 28/82, KB 12/78, KC 22/83, KD 4/78.
+
+- [s7] Writing the halfword array as a subscript (`D_800F0BCC[idx]`) costs two instructions (EA 80 insns): loop.c hoists `&D_800F0BCC` into a fresh callee-save ($s4) instead of leaving the symbol in the store's %lo. The hand-built `(s32)&D_800F0BCC + off` cast is what keeps the symbol folded; this is a hard constraint for any future body.
+
+- [s7] Removing the `idx` variable entirely and writing `i + j` inline at both use sites (GD) is byte-identical to naming it (GA): a single-set CSE temp receives sched.c's birthing lift exactly like a single-set user pseudo.
+
+- [s7] sched.c's `max_priority` is unconditionally LAUNCH_PRIORITY (0x7f000001): schedule_block sets `INSN_PRIORITY (insn) = LAUNCH_PRIORITY` on the just-scheduled insn (sched.c:4049) immediately before schedule_insn computes `max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))` (sched.c:2619). The `7f000001` in the s6 dumps is the lift value, not a load's priority. The lift ceiling is therefore not a C-level surface; `reg_n_sets` remains the only one.
+
+- [s7] KD (`idx = 1; D_800F10EC = idx;` before the loops, JD chassis) is the FIRST construct measured that denies the birthing lift at zero instruction cost: 4 / 78, with the three loop-top points gone and the whole residual moved into the prologue (`li s0,1` / shifted saves / `sw s0,%lo(D_800F10EC)`). A second set of `idx` need not be inside the if-body — it only has to sit at a program point where the target itself writes $s0.
+
+- [s7] Naming caveat for any future integration of the struct-array data model: `videoDec = 0x800F0D80` carries a human-authored comment in named_syms.txt:1065 ("video decoder state") and an entry in symbol_addrs.txt:249. Folding it into `D_800F0D78[]` would erase that name, which is a naming-evidence decision ([[names-require-evidence]]) and belongs to the operator, not to a grind session. The JD chassis deliberately keeps all three per-word symbols and needs no declaration change at all.
+
+- [s7] undefined_syms_auto.txt:467-469 - D_800F0D78 = 0x800F0D78, D_800F0D7C = 0x800F0D7C, videoDec = 0x800F0D80: the three word-stride destinations are consecutive words at a 12-byte stride indexed by the slot number (one array of 3-word structs), and D_800F0BCC is a parallel s16 array at a 2-byte stride.
+
+- [s7] NEW CHASSIS JD (memory/grind/func_800645B0/chassis_jd_inline_index_arith.c): per-symbol hand-built casts with the index arithmetic written inline as expressions and no idx2 / wid locals. 3 / 78; unmasked residual exactly the three loop-top points (11, 12, 65). Same position as CA, reached with an entirely unnamed pseudo set and without SB's expand_binop wall.
+
+- [s7] The struct-array subscript spelling is 78 instructions with a true byte residual of 3 but scores 5: two of its points are LO16 relocation-addend artifacts (identical linked words), so no subscripted variant can ever be demonstrated at sandbox 0.
+
+- [s7] Session-7 measurement table. sweep22: EA 16/80, ED 16/80, EB 5/78, EC 14/80, SB 1/78. sweep23: GA 5/78, GB 5/78, GC 5/78, GD 5/78, GE 14/80, GF 4/78. sweep24: JA 44/85, JB 14/80, JC 36/82, JD 3/78, JE 44/85. sweep25: JD 3/78, KA 28/82, KB 12/78, KC 22/83, KD 4/78.
+
+- [s7] Writing the halfword array as a subscript costs two instructions (EA, 80 insns): loop.c hoists &D_800F0BCC into a fresh callee-save ($s4) instead of leaving the symbol in the store's %lo. The hand-built (s32)&D_800F0BCC + off cast is what keeps the symbol folded - a hard constraint for any future body.
+
+- [s7] Removing the idx variable entirely and writing i + j inline at both use sites (GD) is byte-identical to naming it (GA): a single-set CSE temp receives the birthing lift exactly like a single-set user pseudo.
+
+- [s7] sched.c's max_priority is unconditionally LAUNCH_PRIORITY (0x7f000001) - schedule_block sets it on the just-scheduled insn at sched.c:4049 before schedule_insn's MAX at sched.c:2619 - so the birthing lift has no priority-ceiling surface; reg_n_sets is the only one.
+
+- [s7] KD is the first construct measured that denies the lift at zero instruction cost (4/78, loop top exact, whole residual in the prologue). A second set of idx need not sit inside the if-body; it only has to sit at a program point where the target itself writes $s0.
+
+- [s7] Naming caveat for any future integration of the struct-array data model: videoDec = 0x800F0D80 carries a human-authored comment in named_syms.txt:1065 and an entry in symbol_addrs.txt:249, so folding it into D_800F0D78[] is a naming-evidence decision for the operator ([[names-require-evidence]]). The JD chassis keeps all three per-word symbols and needs no declaration change.
+
+- [s7] src/text1b.c is unmodified at end of session (all sweeps restore it); the standing floor of 1 is still held by memory/grind/func_800645B0/candidate.c, whose header now points at the JD chassis.
