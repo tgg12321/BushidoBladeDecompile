@@ -96,6 +96,27 @@
  * minimal across the whole loop-construct surface as well
  * (rejected/f12-loop-construct-surface-inert.c).
  *
+ * SESSION 11 (structural) — F13 CLOSED, AND THE WRAP DEPTH IS NOW PRICED. The
+ * guard/materialisation surface was re-measured in the raw-count regime this
+ * chassis lives in (the s2/s3 sweeps of that surface were taken on the
+ * do-while-LOOP chassis, where the allocno margin is ~10% rather than 1.4%, so
+ * their verdicts did not transfer). Thirty cells — ten variants x wrap depths
+ * 0/1/2, tmp/grind/motion_Close/s11/f13sweep.py + f13sweep.log: an early-return
+ * guard, a guard staged through a local, both locals declared inside the guard
+ * block, the call temp `f` declared at function scope and `count--` moved before
+ * `f()` are ALL byte-identical to this body at every depth, with the identical
+ * allocno table and the identical 20/20/13 ladder (this body's control cell
+ * re-measured 13 again this session). Declaration-with-initialiser (19),
+ * p-materialised-above-the-guard (20/21/21) and count-assigned-first (17/16/16)
+ * are worse. The last of those is the priced one: count-first wins p its $s0 at
+ * wrap depth ONE (p 5 refs / live_length 7 = 14285 vs count 5/8 = 12500) but
+ * costs three points of materialisation order, so one wrap level is worth three
+ * residual points and the trade is never profitable. Separately, a `p = p;`
+ * self-assign — the obvious sanctioned-family substitute for the wrap — is
+ * deleted before flow.c counts references and reproduces this ladder value for
+ * value, so the wrap is not substitutable (rejected/m1-self-assign-does-not-
+ * lift-refs.c).
+ *
  * THIS FILE MUST NOT BE SUBMITTED AS `candidate-ready`. H1 is a backend-level
  * disproof, not a plateau: no pure-C body containing a call can reach the
  * target's zero-byte outgoing-argument area, so no member of this family can

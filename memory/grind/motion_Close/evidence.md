@@ -998,3 +998,94 @@ was verified against the s7 residual table.
 - [s10] Both endgame-lock AND-gates are already measured FAILED for this function: scan_hand_coded returns tier LOW 0/8 with S1/S2/S6 all negative (s6, and the same for sibling func_80083794), and no coercion/spelling family with a citable SOTN-master precedent addresses a residual made of frame layout and hard-register scan order.
 
 - [s10] src/ings2.c was restored to HEAD by the sweep's finally block and verified clean with git status --porcelain; no build-pipeline file was touched this session.
+
+## Session 11 (modality `structural`) — F13, the guard/materialisation surface
+
+The session re-opened a surface earlier sessions had closed, on purpose and with
+a stated reason: sessions 2 and 3 swept guard shape on the do-while-LOOP chassis,
+inside the loop-note weighting regime where the two allocnos sit ~10% apart, while
+the current candidate runs on session 9's `goto` chassis, where every reference is
+counted raw and the margin is 1.4%. Verdicts measured at a 10% margin do not
+transfer to a 1.4% one, so the surface was genuinely unmeasured in the regime the
+candidate actually lives in. The re-measurement produced a concrete instance of
+that transfer error — `count--` before `f()` cost 19 points in the old regime and
+is free in this one — and then killed the surface again on its own terms.
+
+### Session-11 findings
+
+- [s11] F13 is dead: six guard/materialisation variants (control, early-return
+  guard, guard staged through a local, both locals declared inside the guard
+  block, call temp `f` at function scope, `count--` before `f()`) are
+  BYTE-IDENTICAL at every do-while(0) wrap depth 0/1/2, with the identical
+  allocno table (count 5 raw refs / live_length 7 = 14285; p 4+depth / 8 = 10000
+  / 12500 / 15000), the identical 25 emitted instructions and the identical
+  20 / 20 / 13 ladder.
+
+- [s11] The three non-inert guard variants are all worse and each for an
+  explained reason: count-assigned-first 17/16/16 (materialisation order),
+  declaration-with-initialiser 19 at every depth (both materialisations hoisted
+  above the guard, and the wrap then lands on the walk and weights BOTH allocnos
+  together — 9/13 refs vs 7/10 — reproducing session 4's nested-wrap result),
+  p-materialised-above-the-guard 20/21/21 (live_length 9-10 and 27 emitted
+  instructions instead of 25).
+
+- [s11] FR2's exchange rate is now measured, not derived: count-assigned-first
+  reaches the target's REGISTER ROLES at wrap depth 1 (p 5/7 = 14285 in $s0
+  against count 5/8 = 12500 in $s1) — the first time the roles have been had
+  below depth 2 on this chassis — but scores 16, because the address
+  materialisations then emit count-pair before p-pair while the target emits
+  p-pair first. One wrap level costs three residual points on this function.
+
+- [s11] A self-assign `p = p;` is invisible to flow.c's reference counter here:
+  the M1 cell reproduces the control ladder value for value at depths 0/1/2
+  (p 4/8, 5/8, 6/8), so jump.c/cse delete the no-op set before the counter sees
+  it. The FROZEN sanctioned dead-store/self-assign family therefore CANNOT
+  substitute for the do-while(0) wrap on this function, and
+  .claude/rules/duplicated-statement-into-arms.md's "dead stores measured INERT
+  for this — flow deletes before counting" is confirmed to transfer to
+  motion_Close.
+
+- [s11] Nothing in the 30-cell sweep scored below 13, consistent with the s7
+  residual table: all 13 points sit in H1 (frame / outgoing-argument area), F5
+  ($v0-vs-$t0 hard-register scan order) and F7a/F7b (save order, beqz delay
+  slot), and no guard or materialisation shape can touch any of them.
+
+- [s11] Cumulative closure statement: every class of input to cc1 that this
+  function has is now measured — body statement/declaration order, register-role
+  devices, pointer/loop idiom, loop construct (F12), whole-TU shape and signature
+  (F10), global declarations (F11), and now guard/materialisation shape plus
+  declaration scope (F13) — and the only lever that ever moved the floor bottoms
+  out at 13.
+
+### Session-11 artifacts
+
+- `tmp/grind/motion_Close/s11/f13sweep.py` + `f13sweep.log` — the 30-cell
+  variant x wrap-depth sweep with the per-allocno table for every cell.
+- `tmp/grind/motion_Close/s11/f13_*.s` — emitted assembly per cell (30 files),
+  produced by the instrumented cc1 at the moment each cell was measured.
+- `memory/grind/motion_Close/rejected/f13-guard-and-materialisation-shape-inert.c`
+- `memory/grind/motion_Close/rejected/m1-self-assign-does-not-lift-refs.c`
+
+### Tree state at end of session 11
+
+`src/ings2.c` restored to HEAD by the sweep's `finally` block and verified clean
+with `git status --porcelain`. No build-pipeline file was touched. Floor unchanged
+at 13; `memory/grind/motion_Close/candidate.c` still holds the session-9 two-level
+goto-chassis form (its control cell re-measured at 13 this session), with a
+session-11 note appended to the header comment.
+
+- [s11] Six guard/materialisation variants on the goto chassis (control, early-return guard, guard staged through a local, both locals declared inside the guard block, call temp `f` at function scope, count-- before f()) emit byte-identical code at do-while(0) wrap depths 0, 1 and 2, with the identical allocno table and the identical 20/20/13 ladder: guard spelling, guard staging, declaration SCOPE and loop-body statement order are free variables of this function in the raw-count regime.
+
+- [s11] The s2/s3 guard-surface verdicts provably do NOT transfer between chassis: `count--` before `f()` cost 19 points on the do-while-LOOP chassis (s3 sweep3.py) and costs nothing on the goto chassis (13, cell V7_dec_before_call_d2). The floor did not move, but the reason six forms are inert is now measured in the regime the candidate actually lives in rather than inherited from a different one.
+
+- [s11] Declaration-with-initialiser at function scope scores 19 at every wrap depth: it hoists both address materialisations above the D_800A2668 guard (the target materialises them inside it) and the wrap then lands on the walk, weighting BOTH allocnos together (9/13 refs vs 7/10) - session 4's nested-wrap finding reproduced on the new chassis.
+
+- [s11] count-assigned-first reaches the target's REGISTER ROLES at wrap depth 1 (p 5 refs / live_length 7 = 14285 in $s0 against count 5/8 = 12500 in $s1) but scores 16 because the materialisations then emit count-pair before p-pair. One do-while(0) wrap level is therefore worth exactly three residual points on this function - FR2's trade is priced and unprofitable at every depth.
+
+- [s11] A `p = p;` self-assign is deleted before flow.c counts references on this function (M1 cell reproduces the control ladder value for value at all three depths), so the FROZEN sanctioned dead-store/self-assign family cannot substitute for the wrap, and duplicated-statement-into-arms.md's 'flow deletes before counting' claim is confirmed to transfer to motion_Close.
+
+- [s11] Nothing in the 30-cell sweep scored below 13, consistent with the s7 residual table: all 13 points sit in H1 (frame / outgoing-argument area), F5 ($v0-vs-$t0 hard-register scan order) and F7a/F7b (save order, beqz delay slot), none of which any guard or materialisation shape can touch.
+
+- [s11] Cumulative: every class of input to cc1 this function has is now measured dead except the walk itself - body statement/declaration order, register-role devices, pointer/loop idiom (s9), loop construct (F12, s10), whole-TU shape and signature (F10, s8), global declarations (F11, s9), and now guard/materialisation shape plus declaration scope (F13, s11).
+
+- [s11] src/ings2.c was restored to HEAD by the sweep's finally block and verified clean with `git status --porcelain`; no build-pipeline file was touched, no commit was made, and candidate.c still holds the session-9 two-level goto-chassis form (its control cell re-measured 13 this session), so the s10 stream verification and the s7 residual table still describe the banked form.

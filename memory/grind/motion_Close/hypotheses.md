@@ -603,3 +603,95 @@ describes a superseded one.
 - probe: Diffed the current candidate chassis' emitted assembly (tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s, produced by the instrumented cc1 during the F12 sweep) against tmp/grind/motion_Close/s5b/wsA/_base.txt, the byte-level build stream the s7 table was written from, and against _tgt_mine.txt (the byte-verified target).
 - result: Same stream, position for position: lw $2,D_800A2668 / subu $sp,$sp,32 / sw $31,24 / sw $17,20 / beq $2,$0 with sw $16,16 in the delay slot / la $16,D_8008D070 / la $17,D_00000000 / beq $17,$0 / lw $2,0($16) / addu $16,$16,4 / jal $31,$2 with addu $17,$17,-1 in the delay slot / bne $17,$0 / three restores / addu $sp,$sp,32 / j $31, under `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16`. Same 25 instructions, same $v0 temp, same descending save order, same filled beqz delay slot, same 32-byte frame with a 16-byte outgoing-argument area. The s7 buckets (5 points F5, 6 plus half of a 7th H1, 3 F7a/F7b) transfer verbatim.
 - verdict: CONFIRMED
+
+## [s11] F13 — the GUARD and MATERIALISATION shape of the function (guard spelling, guard staging, declaration scope, call-temp scope, loop-body statement order, materialisation position) can move the floor on the session-9 goto chassis, because the s2/s3 verdicts that called this surface inert were measured in a different weighting regime.
+- mechanism: flow.c weights REG_N_REFS by loop depth. Sessions 2/3 swept the guard surface on the do-while-LOOP chassis, where the walk's own references are loop-weighted and the two allocnos sit ~10% apart (p 10 refs / live_length 8 = 37500 vs count 8/7 = 34285). Session 9 replaced the chassis with a `goto` loop, which emits no NOTE_INSN_LOOP_BEG/END for the walk, so every reference in the function is counted RAW and the margin collapsed to 1.4% (p 5/8 = 12500 vs count 5/7 = 14285). A one-reference or one-insn lever that is worthless at a 10% margin can be decisive at 1.4%, so the s2/s3 conclusions do not transfer by construction — the same chassis-transfer error frontier FR3 exists to prevent. Re-measuring the surface in the raw-count regime is therefore a new probe, not a re-run of a dead axis.
+- probe: tmp/grind/motion_Close/s11/f13sweep.py — 10 variants x do-while(0) wrap depths 0/1/2 = 30 cells, every cell measured with `sandbox motion_Close --disable all` AND with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) reading the per-allocno n_refs / live_length / priority / assigned-hardreg table. Variants: V0 control, V1 early-return guard, V2 guard staged through a local, V3 count assigned first, V4 both locals declared inside the guard block, V5 declaration-with-initialiser at function scope, V6 call temp `f` declared at function scope, V7 `count--` before `f()`, V8 p materialised above the guard, M1 self-assign (measurement only). Log f13sweep.log, per-cell assembly f13_*.s.
+- result: KILLED. Six variants (V0, V1, V2, V4, V6, V7) are BYTE-IDENTICAL to the control at every depth — identical allocno table (count 5 raw refs / live_length 7 = 14285; p 4+depth / 8 = 10000 / 12500 / 15000), identical 25 emitted instructions, identical 20 / 20 / 13 ladder. Guard spelling, guard staging, declaration SCOPE of the two locals, the call temp's scope and the loop body's statement order are all free variables of this function in the raw-count regime. The three non-inert variants are all worse: V3 count-first 17/16/16, V5 declaration-with-initialiser 19 at every depth (both materialisations hoisted above the guard and the wrap lands on the walk, weighting BOTH allocnos together — 9/13 refs vs 7/10 — exactly session 4's nested-wrap result), V8 p-above-guard 20/21/21 (p's live_length grows to 9-10 and the function emits 27 instructions instead of 25). Concrete demonstration that the re-measurement was warranted rather than redundant: `count--` before `f()` cost 19 points in the loop-note regime (s3 sweep3.py) and is completely FREE here (13, V7_dec_before_call_d2) — the verdict changed even though the floor did not. Banked as rejected/f13-guard-and-materialisation-shape-inert.c.
+- verdict: KILLED
+
+## [s11] FR2 / F4b — floor 13 is reachable at a do-while(0) wrap depth below 2 by giving up p-assigned-first, since count-assigned-first shortens p's live range and lets p win $s0 one wrap level cheaper.
+- mechanism: In the raw-count regime the priority is floor_log2(n)*n/live_length. With p assigned first, p's live range starts one insn earlier than count's, so p is 4+depth refs / live_length 8 and count is 5 / 7 — p needs 6 weighted refs (depth 2) to clear 14285. Assigning count first inverts the live lengths (p 7, count 8), so at depth 1 p reaches 5/7 = 14285 against count's 5/8 = 12500 and takes $s0 with only ONE wrap level. The open question was whether the resulting materialisation-order penalty is smaller than the wrap level it buys.
+- probe: cells V3_countfirst_assign at wrap depths 0/1/2 in tmp/grind/motion_Close/s11/f13sweep.py, sandbox + instrumented cc1.
+- result: KILLED as an improvement, CONFIRMED as a mechanism. V3 at depth 1 does reach the target's register roles (p 5/7 = 14285 in $s0, count 5/8 = 12500 in $s1) at one wrap level — the first time the roles have been had below depth 2 on this chassis — but it scores 16, not 13, because the two address materialisations then emit count-pair-then-p-pair while the target emits p-pair-then-count-pair. Depth 2 does not recover it (still 16; p rises to 17142 but the order penalty is unchanged) and depth 0 is 17. The exchange rate is now measured exactly: one wrap level costs three residual points. FR2's success criterion is score 13 at depth <= 1, so this fails it; the depth-2 p-first form remains the minimum. Banked inside rejected/f13-guard-and-materialisation-shape-inert.c as the representative rejected member.
+- verdict: KILLED
+
+## [s11] A self-assign `p = p;` — a construct inside the FROZEN sanctioned "dead stores / self-assigns to LOCALS or PARAMS" family — can supply p's extra reference and reach floor 13 at wrap depth 0, removing the last FAKE-annotated construct from the candidate form.
+- mechanism: The candidate's only non-obvious device is the two-level do-while(0) wrap, which exists purely to lift p's weighted reference count from 4 to 6. If a self-assign counted as a reference, one or two of them would do the same job inside a family that carries its own SOTN precedent. The competing claim — .claude/rules/duplicated-statement-into-arms.md's "dead stores measured INERT for this: flow deletes before counting" — was established on a different function and had never been measured here.
+- probe: cell M1_self_assign at wrap depths 0/1/2 in tmp/grind/motion_Close/s11/f13sweep.py (MEASUREMENT ONLY — the cell was never a proposable form: no annotation, no exhaustion record, and it is dominated at equal score), sandbox + instrumented cc1.
+- result: KILLED. The ladder is the control's VALUE FOR VALUE — depth 0: p 4/8 = 10000, count 5/7 = 14285, score 20; depth 1: p 5/8 = 12500, score 20; depth 2: p 6/8 = 15000, score 13 — with the same 25 emitted instructions. The self-assign never appears in the reference count at any depth: jump.c/cse delete the no-op set before flow.c's counter sees it, so it changes nothing upstream of the allocator either. The duplicated-statement-into-arms rule's claim therefore transfers to motion_Close: on this function a dead store is NOT a ref-lift device, the do-while(0) wrap is not substitutable by the cheaper-looking sanctioned family, and no future session should spend time on the substitution. Banked as rejected/m1-self-assign-does-not-lift-refs.c.
+- verdict: KILLED
+
+## FRONTIER AFTER SESSION 11 (structural)
+
+Unchanged in substance from session 10, with one axis added to the dead list and
+one arithmetic constant now measured rather than derived.
+
+### FR1 (terminal) — motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing.
+**State.** Floor flat at 13 for SEVEN sessions across SIX modalities (structural,
+permuter, forensics, rederive, synthesis, structural). The 13 residual points are
+paired instruction-by-instruction in tmp/grind/motion_Close/s7/residual_table.md,
+verified against the current chassis in s10, and all three mechanisms carry
+backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16
+applied by MAX on every call-expansion path — mips.h:1822, calls.c:1245/1400,
+mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a
+72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS
+REG_ALLOC_ORDER, so $v0 is never $t0), F7a (mips.c:4680 emits GP saves high-to-low
+unconditionally and a real incoming-arg WAR anti-dependence does not reorder them)
+and F7b (an empty beqz delay slot needs a block with no eligible single insn while
+the target's holds four; 0/1788 compiled-C counterexamples). FIVE non-body input
+axes are now measured dead — F10 whole-TU (s8), F11 declarations (s9), F12 loop
+construct (s10), F13 guard/materialisation shape (s11) — plus the pointer/loop
+idiom sweep (s9) and the dead-store substitution (s11).
+**Next probe.** None on the C side; do NOT re-measure a dead axis. When the driver
+assigns `escalation` modality, the packet is already written and both endgame-lock
+gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry
+is `OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED /
+OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual
+table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the
+s6 scan_hand_coded LOW tier, and the s8/s9/s10/s11 quartet showing every input to
+cc1 outside the body proper — and now every shape of the body outside the walk
+itself — is inert.
+
+### FR2 (dormant, cosmetic) — reach floor 13 with a do-while(0) wrap depth below 2.
+**State.** Depth 2 on the goto chassis remains the measured minimum, now minimal
+across five pointer/loop idioms, both declaration orders, two inlined chassis, ten
+global-declaration forms, six loop constructs and ten guard/materialisation shapes.
+Session 11 measured the exchange rate that makes it binding: count-assigned-first
+DOES win p its register at depth 1 (p 5/7 = 14285 vs count 5/8 = 12500) but pays
+three residual points of materialisation order, so 16 not 13. One wrap level costs
+three points; there is no arrangement in which that trade is profitable.
+**Next probe.** Only worth time if a session is preparing a submission, which
+cannot happen while H1 stands. The single untried direction is unchanged since s8
+and is now known to be the ONLY one: lengthen count's live range WITHOUT adding a
+count reference and WITHOUT moving p's birth — an intervening real computation
+that the target also performs — and the target performs none. The dead-store
+substitution is closed (s11, M1). Success criterion is score 13 at wrap depth <= 1,
+not a lower score.
+
+### FR3 (housekeeping) — keep the escalation packet true to whatever form candidate.c actually holds.
+**State.** Session 11 did NOT change candidate.c's form (the two-level goto
+chassis is still the banked best, and the sweep's control cell re-measured it at
+13 this session), so the s10 stream verification still stands and no re-diff was
+required. The comment header carries a session-11 note.
+**Next probe.** Unchanged: any session that changes candidate.c must re-emit the
+build stream from the instrumented cc1 and diff it against
+tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table.
+
+## [s11] F13 - the GUARD and MATERIALISATION shape of the function (guard spelling, guard staging, declaration scope of the locals, call-temp scope, loop-body statement order, materialisation position) can move the floor on the session-9 goto chassis, because the s2/s3 verdicts that called this surface inert were measured in a different weighting regime.
+- mechanism: flow.c weights REG_N_REFS by loop depth. Sessions 2/3 swept the guard surface on the do-while-LOOP chassis, where the walk's own references are loop-weighted and the two allocnos sit ~10% apart (p 10 refs / live_length 8 = 37500 vs count 8/7 = 34285). Session 9 replaced the chassis with a goto loop, which emits no NOTE_INSN_LOOP_BEG/END for the walk, so every reference is counted RAW and the margin collapsed to 1.4% (p 5/8 = 12500 vs count 5/7 = 14285). A one-reference or one-insn lever worthless at a 10% margin can be decisive at 1.4%, so the old verdicts do not transfer by construction - the same chassis-transfer error frontier FR3 exists to prevent.
+- probe: tmp/grind/motion_Close/s11/f13sweep.py - 10 variants x do-while(0) wrap depths 0/1/2 = 30 cells, each measured with `sandbox motion_Close --disable all` AND with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) reading the per-allocno n_refs / live_length / priority / assigned-hardreg table. Log f13sweep.log, per-cell assembly f13_*.s.
+- result: Six variants (control, early-return guard, guard staged through a local, both locals declared inside the guard block, call temp `f` at function scope, count-- before f()) are BYTE-IDENTICAL at every depth: identical allocno table (count 5 raw refs / live_length 7 = 14285; p 4+depth / 8 = 10000 / 12500 / 15000), identical 25 emitted instructions, identical 20 / 20 / 13 ladder. The three non-inert variants are worse: count-assigned-first 17/16/16, declaration-with-initialiser 19 at every depth (both materialisations hoisted above the guard and the wrap then weights BOTH allocnos, 9/13 refs vs 7/10 - session 4's nested-wrap result reproduced), p-materialised-above-the-guard 20/21/21 (live_length 9-10, 27 emitted instructions). Concrete proof the re-measurement was warranted rather than redundant: `count--` before `f()` cost 19 points in the loop-note regime (s3) and is FREE here (13). Nothing in the sweep scored below 13. Banked as rejected/f13-guard-and-materialisation-shape-inert.c.
+- verdict: KILLED
+
+## [s11] FR2 / F4b - floor 13 is reachable at a do-while(0) wrap depth below 2 by giving up p-assigned-first, since count-assigned-first shortens p's live range and lets p win $s0 one wrap level cheaper.
+- mechanism: Priority is floor_log2(n)*n/live_length. With p assigned first, p's range starts one insn earlier than count's, so p is 4+depth refs / live_length 8 against count 5/7 - p needs 6 weighted refs (depth 2) to clear 14285. Assigning count first inverts the live lengths (p 7, count 8), so at depth 1 p reaches 5/7 = 14285 against count's 5/8 = 12500 and takes $s0 with ONE wrap level. Open question: whether the resulting materialisation-order penalty is smaller than the wrap level it buys.
+- probe: Cells V3_countfirst_assign at wrap depths 0/1/2 in tmp/grind/motion_Close/s11/f13sweep.py, sandbox + instrumented cc1.
+- result: KILLED as an improvement, CONFIRMED as a mechanism. Depth 1 does reach the target's register roles (p 5/7 = 14285 in $s0, count 5/8 = 12500 in $s1) - the first time the roles have been had below depth 2 on this chassis - but scores 16, because the address materialisations then emit count-pair before p-pair while the target emits p-pair first. Depth 2 does not recover it (16; p rises to 17142, the order penalty is unchanged) and depth 0 is 17. Exchange rate now measured: one wrap level costs three residual points. FR2's criterion is 13 at depth <= 1, so this fails it and the depth-2 p-first form remains the minimum.
+- verdict: KILLED
+
+## [s11] A self-assign `p = p;` - a construct inside the FROZEN sanctioned 'dead stores / self-assigns to LOCALS or PARAMS' family - can supply p's extra reference and reach floor 13 at wrap depth 0, removing the last FAKE-annotated construct from the candidate form.
+- mechanism: The candidate's only non-obvious device is the two-level do-while(0) wrap, which exists purely to lift p's weighted reference count from 4 to 6. If a self-assign counted as a reference, one or two would do the same job inside a family carrying its own SOTN precedent. The competing claim - .claude/rules/duplicated-statement-into-arms.md's 'dead stores measured INERT for this: flow deletes before counting' - was established on a different function and had never been measured here.
+- probe: Cell M1_self_assign at wrap depths 0/1/2 in tmp/grind/motion_Close/s11/f13sweep.py. MEASUREMENT ONLY - never a proposable form (no annotation, no exhaustion record, dominated at equal score).
+- result: KILLED. The ladder is the control's value for value - depth 0 p 4/8 = 10000 / score 20, depth 1 p 5/8 = 12500 / score 20, depth 2 p 6/8 = 15000 / score 13 - with the same 25 emitted instructions. The self-assign never appears in the reference count: jump.c/cse delete the no-op set before flow.c's counter sees it. The sanctioned dead-store family therefore cannot substitute for the do-while(0) wrap on this function. Banked as rejected/m1-self-assign-does-not-lift-refs.c.
+- verdict: KILLED

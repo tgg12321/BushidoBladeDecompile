@@ -1,8 +1,8 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 13,
    "modality": "synthesis",
    "headline": "Synthesis: F12 KILLED (every real loop construct other than the goto chassis reproduces the do-while family's allocno table exactly, all 20 at wrap depths 0-2), the s7 residual table VERIFIED to descr"
+  },
+  {
+   "session": 11,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Structural: F13 KILLED (guard/materialisation shape is byte-identical across six variants at every wrap depth on the goto chassis), the wrap depth is now PRICED (one level = three residual points), an"
   }
  ],
  "frontier": [
   {
    "hypothesis": "FR1 (terminal) - motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing; there is no C-side probe left to run.",
-   "mechanism": "Floor flat at 13 for six sessions across five modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis this session) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path - mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally and a real incoming-arg WAR anti-dependence does not reorder them) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). All three non-body input axes - F10 whole-TU, F11 declarations, F12 loop construct - are measured dead.",
-   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8/s9/s10 trio showing every non-body input to cc1 is inert."
+   "mechanism": "Floor flat at 13 for seven sessions across six modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis in s10) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path - mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 is never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally and a real incoming-arg WAR anti-dependence does not reorder them) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). Five input axes outside the walk - F10 whole-TU, F11 declarations, F12 loop construct, F13 guard/materialisation shape, and the dead-store substitution - are measured dead.",
+   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8/s9/s10/s11 quartet showing every input to cc1 outside the walk itself is inert."
   },
   {
    "hypothesis": "FR2 (dormant, cosmetic) - reach floor 13 with a do-while(0) wrap depth below 2.",
-   "mechanism": "Depth 2 on the goto chassis is the measured minimum and is now minimal across five pointer/loop idioms, both declaration orders, two inlined chassis, ten global-declaration forms and six loop constructs. The constraint is arithmetic: with p assigned first (required for the target's materialisation order) count sits at 5 raw refs / live_length 7 = 14285 and p at 5/8 = 12500, so p needs 6 weighted references; deleting a count reference means deleting the outer guard the target has, which costs a point (14).",
-   "next_probe": "Only worth time if a session is preparing a submission, which cannot happen while H1 stands. The single untried direction is unchanged since s8: lengthen count's live range WITHOUT adding a count reference - an intervening real computation that the target also performs - and the target performs none. Success criterion is score 13 at wrap depth <= 1, not a lower score."
+   "mechanism": "Depth 2 on the goto chassis is the measured minimum and is now minimal across five pointer/loop idioms, both declaration orders, two inlined chassis, ten global-declaration forms, six loop constructs and ten guard/materialisation shapes. Session 11 priced the constraint: count-assigned-first DOES win p its register at depth 1 (p 5/7 = 14285 vs count 5/8 = 12500) but pays three residual points of materialisation order, so one wrap level costs three points and the trade is never profitable. The sanctioned dead-store substitute is separately dead (self-assigns are deleted before flow.c counts).",
+   "next_probe": "Only worth time if a session is preparing a submission, which cannot happen while H1 stands. The single untried direction, unchanged since s8 and now known to be the only one: lengthen count's live range WITHOUT adding a count reference and WITHOUT moving p's birth - an intervening real computation that the target also performs - and the target performs none. Success criterion is score 13 at wrap depth <= 1, not a lower score."
   },
   {
    "hypothesis": "FR3 (housekeeping) - keep the escalation packet true to whatever form candidate.c actually holds.",
-   "mechanism": "Twice the ledger's authoritative residual analysis has been derived on a chassis a later session superseded (s7's table on the three-level do-while chassis; candidate.c replaced with the two-level goto chassis in s9). Equal scores do not imply equal residual composition, and an escalation packet that describes a superseded form is a process error.",
-   "next_probe": "Any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table. One command (`awk '/^motion_Close:/,/\\.end/'` over the cc1 output), done this session for the current form."
+   "mechanism": "Twice the ledger's authoritative residual analysis has been derived on a chassis a later session superseded. Equal scores do not imply equal residual composition, so an escalation packet describing a superseded form is a process error. Session 11 did NOT change the form - the control cell of the sweep is the banked body and re-measured 13 - so the s10 stream verification still stands.",
+   "next_probe": "Unchanged: any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s5b/wsA/_base.txt before reusing the s7 residual table (`awk '/^motion_Close:/,/\\.end/'` over the cc1 output)."
   }
  ],
  "judge_constraints": [],
