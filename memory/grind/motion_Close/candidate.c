@@ -46,6 +46,19 @@
  * The $v0-vs-$t0 bucket (frontier F5) is now the LARGEST live bucket and is a
  * local-alloc.c decision, not a global.c one.
  *
+ * SESSION 6 UPDATE — the residual is now 13/13 EXPLAINED, not 11/13. F5 was
+ * killed in s5b (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER)
+ * and F7's last 2 points were killed in s6: the ascending prologue save order
+ * needs a WAR anti-dependence inside the prologue basic block (an incoming
+ * argument copy `move sN,aM`), which a void(void) function whose s0/s1 writes
+ * live in a LATER block cannot have — 2 instances in an 1788-function corpus,
+ * both this cheat-carrying crt0 pair — and the empty beqz delay slot needs the
+ * branch's block to contain no eligible single insn, while the target's block
+ * holds four. Full disproof + corpus measurements in
+ * rejected/f7-prologue-shape-unreachable-block-local-sched.c. Also measured in
+ * s6: `scan_hand_coded --single motion_Close` = tier LOW, score 0/8, so the
+ * canonical-asm endgame gate is a measured FAILED gate.
+ *
  * STILL DEAD: H1. gcc-2.7.2's o32 backend reserves REG_PARM_STACK_SPACE = 16
  * bytes of outgoing-arg area for every C-level call, so any pure-C body with a
  * call has frame >= 16 + 12 = 28 -> 32, while the target's frame is 16 with a

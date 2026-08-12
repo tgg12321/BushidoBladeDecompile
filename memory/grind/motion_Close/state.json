@@ -1,8 +1,8 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Floor 20->13 recovered and independently re-measured (the discarded s5 run's form, banked into candidate.c at last), and frontier F5 KILLED structurally: local-alloc/global.c scan hard regs ascending "
+  },
+  {
+   "session": 6,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Forensics: F7 KILLED in both halves (ascending save order needs a prologue-block WAR anti-dep a void(void) fn cannot have; empty beqz slot needs an empty block \u2014 0 compiled-C counterexamples in 1788 f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F7 (the only remaining nominally-open bucket, worth 2) - the beqz delay slot (target holds a nop where ours holds `sw s0,16`) and the prologue save ORDER (target saves s0,s1,ra at 4/8/12 ascending; ours emits ra,s1 then s0 into the delay slot).",
-   "mechanism": "Both come out of mips.c's save_restore_insns emission plus reorg.c's delay-slot fill of the guard branch. Our build has a free delay slot to fill precisely because it has three saves to place and a 32-byte frame to build; the target's frame is 16 with a different save order and leaves the slot empty. The two halves are probably one phenomenon, and both are downstream of the frame that H1 already proves unreachable - so this may well close out as a third structural kill rather than 2 recoverable points. That is worth establishing explicitly, because it decides whether motion_Close has ANY reachable gradient left.",
-   "next_probe": "Compile the floor-13 chassis with -da and read f13.c.dbr (reorg) plus the prologue emission: does the `sw s0` land in the slot because reorg found it the only eligible insn, or because save_restore_insns ordered the saves that way? Then test whether ANY pure-C body with a call and two callee-saved locals under this toolchain emits an empty guard-branch delay slot - a corpus scan of the oracle build for `beq $X,$zero` immediately followed by `nop` inside a function prologue answers it in one pass. If none exists, the last 2 points are dead too and motion_Close is fully explained at floor 13."
+   "hypothesis": "F8 \u2014 motion_Close is an escalation candidate and the ladder's remaining rungs (rederive, synthesis) are the only untried modalities; every sanctioned axis this ledger has measured is now dead.",
+   "mechanism": "Three independent frozen-toolchain mechanisms account for all 13 residual points: H1 (REG_PARM_STACK_SPACE=16 \u21d2 frame >= 32 vs the target's 16, census of 854 call-making functions), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER \u21d2 $v0 not $t0), F7 (block-local scheduling \u21d2 descending saves, and a non-empty block \u21d2 a filled delay slot). Each is a 'no C input to this compiler produces these bytes' argument, not a 'the search has not found it' argument, and each now carries a corpus measurement rather than a narrative.",
+   "next_probe": "Do NOT self-dispose \u2014 exhaustion is the driver's call. What is left for a session is the escalation packet's shape, and it is now fully determined: the canonical-asm gate FAILS on measurement (scan_hand_coded tier LOW 0/8, both this function and its sibling), and no coercion/spelling family has an in-hand SOTN-master precedent, so under the owner's 2026-07-27 standing auto-ruling a both-gates-fail entry is the terminal disposition whenever the driver routes this to `escalation`. A rederive/synthesis session should spend itself on the ONE thing not yet tried: reconstructing the function from the sibling func_80083794's shape (they are the same crt0 open/close pair and differ only in the guard polarity and the D_800A2668 store), to see whether a whole-file/TU-level change \u2014 not a body-level one \u2014 moves any of the three mechanisms."
   },
   {
-   "hypothesis": "F8 - motion_Close is an escalation candidate, and the next session should be prepared for the driver to route it there rather than spend more sessions on a floor with 11/13 points structurally proven unreachable.",
-   "mechanism": "Two independent frozen-toolchain mechanisms (H1 REG_PARM_STACK_SPACE = 16 for the frame; ascending first-free hard-reg scan with no MIPS REG_ALLOC_ORDER for $v0-vs-$t0) each prove a distinct bucket unreachable from any C source, not merely un-found. Together they account for 11 of the 13 remaining points. This is exactly the shape that distinguishes 'the search has not found it' from 'no C input to this compiler produces these bytes'.",
-   "next_probe": "Do NOT self-dispose - exhaustion is the driver's call and the ladder still has untried modalities (forensics / rederive / synthesis). What a future session CAN do cheaply is strengthen or refute the record: run `python3 tools/scan_hand_coded.py --single motion_Close` and record the signal tier verbatim (session 3 retracted the earlier S-c signal, so the current tier is unknown), and finish F7 above. Those two results are what an escalation entry would have to cite, and they are useful regardless of routing."
+   "hypothesis": "F9 (new, low value but genuinely untried) \u2014 the 16-byte outgoing-arg area H1 attributes to REG_PARM_STACK_SPACE could be avoided if the indirect call were not a C-level call at all in the ORIGINAL source either.",
+   "mechanism": "H1's census showed the only two sub-16 arg-area functions in the build are motion_Close and func_80083794, both of which get there because their jalr is inline asm (an __asm__ block never sets current_function_outgoing_args_size). That is a statement about OUR build. The complementary question \u2014 what C construct, if any, makes gcc-2.7.2 emit a jalr without reserving the arg area \u2014 has never been probed directly; the ledger inferred it from the census rather than from the backend.",
+   "next_probe": "Read mips.c/function.c for every path that sets current_function_outgoing_args_size and check whether ANY of them can be reached with a call expression (not an asm) that yields zero \u2014 e.g. a call through a pointer with a prototype gcc treats specially, or -mno-abicalls interactions. Expected outcome is a fourth structural kill, which is worth having explicitly: it converts H1 from 'census says no function does this' into 'the backend cannot do this', which is the stronger claim an escalation should carry."
   },
   {
-   "hypothesis": "F4b (carried forward, now much lower value) - lengthen count's live range so p-first order and p's priority win can hold with a SMALLER device than the three-level wrap.",
-   "mechanism": "The floor-13 form already achieves p-first order AND p in $s0; F4b's original purpose (recovering the 2 positional points) is therefore ALREADY BANKED. What remains of it is purely a policy simplification: a three-level nested do-while(0) is a heavier device than a single level and a reviewer may push back on it, so a form reaching 13 with a single-level wrap (or none) would be strictly better to submit even at identical score.",
-   "next_probe": "Sweep bodies that lengthen count's live range without adding a count reference - an intervening real computation the target also performs, so count spans it - and check whether p at 8 weighted refs / live_length 8 can beat a count whose live_length grew back to 8 while p is assigned first. Measure score AND the allocno table per form (BB2_ALLOC_DEBUG=1). Success criterion is score 13 with wrap depth < 3, not a lower score."
+   "hypothesis": "F4b (carried forward, now purely cosmetic) \u2014 reach floor 13 with a wrap depth below 3.",
+   "mechanism": "The floor-13 form's only construct is a THREE-level do{}while(0) wrap around p's initialiser, which wins p $s0 by loop-depth reference weighting (p 10 weighted refs / live_length 8 = 37500 vs count's 34285). Depths 1 and 2 are measured insufficient (both 20) and depths 4-6 buy nothing, so the device is minimal for THIS body \u2014 but a body reaching 13 with a lighter device would be strictly better to put in front of a reviewer.",
+   "next_probe": "Only worth spending time on if a future session is preparing a submission, which cannot happen while H1 stands (distance 0 is unreachable, so no candidate-ready is possible). Sweep bodies that lengthen count's live range without adding a count reference \u2014 an intervening real computation the target also performs \u2014 and measure score AND the allocno table (BB2_ALLOC_DEBUG=1). Success criterion is score 13 at wrap depth < 3, not a lower score."
   }
  ],
  "judge_constraints": [],
