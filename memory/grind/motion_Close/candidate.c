@@ -85,6 +85,24 @@
  * tmp/grind/motion_Close/s7/residual_table.md, an instruction-by-instruction
  * pairing showing all 13 residual points and nothing else (5 F5, 6.5 H1, 1.5 F7).
  *
+ * SESSION 8 UPDATE — the form is unchanged and the floor is unchanged at 13,
+ * but two more things behind it are now closed. (1) The TU-level axis is
+ * codegen-inert: rewriting BOTH motion_Close and its sibling func_80083794 as
+ * one parameterised `static __inline__ ctor_walk(void)` body, or defining
+ * motion_Close first in the TU, produces the identical allocno table and the
+ * identical instruction stream (all 13). GCC 2.7.2 inlines before flow.c counts
+ * references, so an inlined body is the same input as a written-out one — which
+ * also means F4b cannot be reached by moving to an inlined chassis: the wrap
+ * depth ladder there is 20/20/20/13 for depths 0/1/2/3, exactly as here.
+ * (2) F7a is now unconditional. Session 6 killed the ascending save order
+ * subject to motion_Close being void(void); session 8 gave it real incoming
+ * parameters and got the WAR anti-dependence anyway, and the saves still came
+ * out descending — because mips.c:4680's `for (regno = GP_REG_LAST; regno >=
+ * GP_REG_FIRST; regno--)` is the unconditional emission order and the scheduler
+ * breaks symmetric-store ties by program order. Both banked in
+ * rejected/f10-tu-level-shape-is-codegen-inert.c and
+ * rejected/f7a-arg-copy-does-not-flip-save-order.c.
+ *
  * POLICY. The single construct is a THREE-LEVEL `do { ... } while (0);` wrap
  * carrying a FAKE annotation at the construct site.
  * `.claude/rules/do-while-zero-exception.md:23-24` states, verbatim:
