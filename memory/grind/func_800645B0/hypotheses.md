@@ -649,3 +649,167 @@ the frontier (expand_binop target selection; local_alloc ordering in DA).
 - probe: tmp/grind/func_800645B0/s5/sweep19.py - TA (no named idx2, sum `idx * 3`, s16 store subscripted), TB (TA + word stores subscripted), TC (CA + word stores subscripted), TD (TC + s16 subscripted), UA (SB chassis, no named idx2), against the CA and SB controls.
 - result: TA 14/80, TB 44/85, TC 36/82, TD 44/85, UA 25/83 against CA 3/78 and SB 1/78. Every subscript spelling regresses hard and every drop of the named halfword index costs two instructions.
 - verdict: KILLED
+
+## Session 7 (2026-08-12, forensics) — floor stays 1; the CA loop-top decision AND the DA allocation decision are now both proven from dumps, and together they are a CONTRADICTION
+
+### H29 — CONFIRMED (direct dump evidence, replacing inference). The CA loop-top residual is sched.c's `birthing_insn_p` lift on the `addu`, and the const-1 insn provably cannot be lifted alongside it.
+- **Mechanism:** in the inner-loop-top basic block the scheduler sees exactly six
+  insns.  From `tmp/grind/func_800645B0/s6/dump_CA/f_sched.txt`:
+
+        (insn 41 ...) (set (reg/v:SI 78=val) (const_int 1))
+        (insn 38 ...) (set (reg/v:SI 74=idx) (plus (reg 72=i) (reg 73=j)))
+        (insn 46 ...) (set (reg 83) (mem (symbol_ref "D_800A3444")))
+        (insn 43 ...) (set (reg/v:SI 77=mask) (ashift (reg 78) (reg 74)))
+        (insn 47 ...) (set (reg 84) (and (reg 83) (reg 77)))
+        (insn 49 ...) the conditional branch
+        ;; insn[38]: priority = 1   ;; insn[41]: priority = 1
+        ;; ready list at T-4: 38 (7f000001) 41 (1) 46 (7f000001), now 46 38 41
+        ;; ready list at T-5: 38 (7f000001) 41 (1), now 38 41
+        ;; ready list at T-6: 41 (1), now 41
+
+  `adjust_priority` (sched.c:2543-2594, `n_deaths == 0` arm) lifts insn 38 and
+  insn 46 to `max_priority` because both are birthing insns (`reg_n_sets == 1`
+  on a live destination).  The list scheduler runs BACKWARD, so the T-6 pick is
+  the FIRST insn of the emitted block: `val = 1` is emitted first and reorg.c
+  steals it into the back-edge delay slot.  The target's block has the `addu`
+  first.  Insn 41 cannot be lifted with it: the lift needs
+  `reg_n_sets[val] == 1`, and a single-set const-1 is a loop.c movable that is
+  hoisted into a fresh callee-save (H18, three spellings, 80 insns vs a
+  78-instruction target).  The target itself proves `val` is multi-set — its
+  `$v1` carries the 1, then the `D_800A3444` read, then the OR result, and the
+  `1` is materialised INSIDE the loop rather than hoisted.
+- **Probe:** `tmp/grind/func_800645B0/s6/dumpi.sh` + `dumpv.py CA` — the
+  instrumented cc1 (`tools/gcc-2.7.2/cc1`, the BB2_*_DEBUG build) with `-da`,
+  per-pass extraction of this function.
+- **Result:** the tie-break direction is also now measured rather than assumed:
+  at T-4 insns 38 and 46 are both at `max_priority` and 46 (the higher LUID) is
+  picked first, i.e. with EQUAL priorities the later source insn is picked first
+  and therefore emitted LAST — which is why removing the lift (SB's multi-set
+  `idx`) restores the target's order.
+- **Verdict:** CONFIRMED.
+
+### H30 — CONFIRMED (direct dump evidence). DA's 12 points are ONE decision: with the byte offset routed through `idx`, local-alloc hands `$s0` to `idx2`.
+- **Mechanism:** local-alloc runs before global-alloc and only ever sees pseudos
+  referenced in a single basic block.  In CA the 12-byte byte offset is its own
+  block-local pseudo that crosses two calls, so it needs a callee-save and takes
+  `$s0`; the block-local `idx2` is pushed to `$s1`; the multi-block `idx` then
+  takes `$s0` from global-alloc (its live range does not overlap the offset's).
+  Routing the byte offset into `idx` DELETES that pseudo, so when local-alloc
+  reaches `idx2` — the only remaining block-local call-crossing quantity — `$s0`
+  is free and `find_free_reg` (local-alloc.c:2250-2270) takes it, because it
+  scans `reg_alloc_order` and `$s0` precedes `$s1` among the callee-saves.
+- **Probe:** `dumpv.py DA` + `dumpv.py CA`; `f_greg.txt` register dispositions
+  and `f_lreg.txt` per-pseudo summaries, plus a side-by-side listing of the two
+  `t.s` outputs.
+- **Result:**
+
+        CA  74 (idx) in 16   75 (idx2) in 17   76 (wid) in 16   85 (byteoff) in 16
+        DA  74 (idx) in 17   75 (idx2) in 16   76 (wid) in 3    (no pseudo 85)
+
+  CA's dispositions ARE the target's ($s0 = i+j / sum / byte offset,
+  $s1 = idx2, $s2 = mask, $s3 = i).  DA's whole 12-point cost is the swap plus
+  `wid` falling to `$v1` (it no longer crosses a call) and the `D_800A347C`
+  pointer temp displaced from `$v1` to `$a0`.  DA's INSTRUCTION SEQUENCE is
+  otherwise the target's exactly, including the entry `addu $s0,$s3,$a0` before
+  the loop label, `li $v1,1` first inside it, and the back-edge delay slot.
+- **Verdict:** CONFIRMED.
+
+### H31 — KILLED. No spelling of the *3 sum changes DA's allocation.
+- **Probe:** sweep21.py — FA (`idx = (idx2 + idx) << 2;`, sum an UNNAMED temp),
+  FD (`idx = (idx * 3) << 2;`), FB (SB chassis plus `idx = idx << 2;`, three sets
+  of `idx`), FC (CA with the byte offset staged through `wid`); plus sweep20.py
+  DB (`wid = wid << 2; idx = wid;`), DC (`idx2` computed at the loop top), DD.
+- **Result:** FA 12/78, FD 12/78, FB 10/78, FC 3/78 (== CA: staging through
+  `wid` leaves `idx` single-set, so the lift still fires), DB 3/78 (the copy
+  `idx = wid;` folds, H10's rule again), DC 12/**79** (making `idx2` multi-block
+  by computing it at the loop top costs a real instruction), DD 12/78.
+- **Verdict:** KILLED — the family is complete and uniformly 10-12 points.
+
+### H32 — CONFIRMED (a structural contradiction, and the most useful thing this session produced). The target's 78 instructions require three properties that no shape over the current variable set can hold at once.
+1. `reg_n_sets[val] > 1` — otherwise loop.c hoists the const-1 out of the loop
+   into a fresh callee-save (+2 insns, H18), and the target materialises the 1
+   inside the loop.
+2. `reg_n_sets[idx] > 1` — otherwise `birthing_insn_p` lifts the loop-top `addu`
+   and it is emitted second, so reorg.c steals the wrong insn (H29).  Since (1)
+   holds, the const-1 insn is never lifted alongside it, so this is the ONLY way
+   to get the loop-top order.
+3. The 12-byte byte offset must be a block-local pseudo DISTINCT from `idx`,
+   otherwise local-alloc hands `$s0` to `idx2` (H30).
+
+   `idx` is multi-block by construction (set at the loop top, read in the
+   if-body).  The target keeps exactly three values in `$s0`: `i + j`, the *3
+   sum, and the byte offset.  The sum is excluded as `idx`'s second set by H24
+   (expansion can never emit a PLUS whose destination pseudo is its second
+   operand in the target's operand order); `i + j` again is excluded by H15 (the
+   loop-entry copy constant-folds to `move $s0,$s3`, 1/78); so (2) forces the
+   byte offset to be `idx`'s second set — which is exactly what (3) forbids.
+- **Consequence:** the original body is NOT any of the four chassis (SB / CA /
+  IA / DA).  It must differ in a way that changes basic-block MEMBERSHIP or the
+  pseudo set — most plausibly something that makes the halfword index `idx2` a
+  MULTI-BLOCK pseudo at zero instruction cost (then local-alloc never touches it
+  and global-alloc ranks it against `idx`, which has far more references and
+  would win `$s0`), or some other block-local call-crossing quantity in the
+  if-body that claims `$s0` ahead of `idx2`.
+- **Verdict:** CONFIRMED as a constraint system; it re-points the search away
+  from priority/spelling levers and onto block membership.
+
+## Frontier (rewritten by session 7)
+
+0. **Make `idx2` a multi-block pseudo at zero instruction cost, on the DA
+   chassis.**  This is the single highest-value open probe: DA already emits the
+   target's exact instruction SEQUENCE (H30) and its only defect is that
+   local-alloc claims `$s0` for the block-local `idx2` before global-alloc ever
+   sees `idx`.  A pseudo referenced in two basic blocks is invisible to
+   local-alloc (`reg_basic_block < 0`), so it would be ranked against `idx` by
+   `global.c:allocno_compare`, where `idx` (24 refs across 29 insns in DA) beats
+   `idx2` (9 refs across 27) and takes `$s0`.  The one shape tried,
+   `idx2 = idx << 1;` at the loop top (DC), costs one instruction (12/79)
+   because the `sll` leaves the first `jal`'s delay slot empty.  Next probe:
+   enumerate C bodies in which the halfword index is genuinely read or written
+   in a SECOND block without adding an instruction — e.g. the loop-bottom block
+   (where `j` is incremented and tested), the outer-loop tail, or a shape where
+   the halfword index rather than the slot index is what the inner loop
+   maintains — and sandbox each on the DA chassis.
+1. **Find a second block-local call-crossing quantity for the DA if-body.**  The
+   alternative resolution of H32(3): if any other block-local value in the
+   if-body needed a callee-save and out-ranked `idx2` under
+   `local-alloc.c:1648`'s `floor_log2 (n_refs) * n_refs * size / (death - birth)`,
+   it would take `$s0` and push `idx2` to `$s1` exactly as CA's byte-offset
+   pseudo does.  Next probe: read `local-alloc.c`'s `qty_phys_copy_sugg` /
+   `qty_phys_sugg` construction (find_free_reg tries suggested regs first,
+   local-alloc.c:2205-2215) to see whether a quantity can be STEERED to `$s1`
+   by a copy suggestion instead, and check with `BB2_SUGG_DEBUG` /
+   `BB2_QTY_DEBUG` on the DA build which quantities local-alloc actually ranks.
+2. **Deny the lift by making the loop-top `addu` become READY last instead of
+   by changing `reg_n_sets`.**  The lift makes insn 38 the highest-priority
+   ready insn, so it is picked the moment it becomes ready; it becomes ready as
+   soon as its only in-block dependent (the `sllv`) is scheduled.  If the
+   loop-top block contained a second, later-scheduled consumer of `idx`, the
+   `addu` could not be picked until the final slot and would be emitted first
+   even WITH the lift.  Next probe: identify whether any instruction the target
+   already has in that block (the `lw` of `D_800A3444`, the `and`, the `j`
+   increment) can be made to depend on `idx` without adding an instruction.
+
+## [s6] The CA chassis' 3-point residual is sched.c's birthing_insn_p max_priority lift on the loop-top `addu idx,i,j`, and the const-1 insn provably cannot be lifted alongside it.
+- mechanism: In the inner-loop-top basic block the scheduler sees six insns: 41 (set reg 78=val (const_int 1)), 38 (set reg 74=idx (plus reg 72=i reg 73=j)), 46 (the D_800A3444 load), 43 (the sllv), 47 (the and) and 49 (the branch). adjust_priority (sched.c:2543-2594, the n_deaths == 0 arm) lifts 38 and 46 to max_priority because birthing_insn_p returns reg_n_sets == 1 on a live destination. The list scheduler runs BACKWARD, so the last pick is the first emitted insn: `val = 1` is emitted first and reorg.c steals it into the back-edge delay slot, where the target has the addu. Lifting insn 41 as well would need reg_n_sets[val] == 1, and H18 already measured that a single-set const-1 is a loop.c movable hoisted into a fresh callee-save (80 insns vs a 78-instruction target); the target itself materialises the 1 INSIDE the loop, so `val` is multi-set there.
+- probe: tmp/grind/func_800645B0/s6/dumpi.sh + dumpv.py CA — the instrumented cc1 (tools/gcc-2.7.2/cc1) with -da and BB2_SCHED_DEBUG, per-pass extraction of this function; read of the ready lists and the per-insn priorities in dump_CA/f_sched.txt.
+- result: ;; insn[38]: priority = 1 and ;; insn[41]: priority = 1, then `ready list at T-4: 38 (7f000001) 41 (1) 46 (7f000001), now 46 38 41`, `T-5: 38 (7f000001) 41 (1), now 38 41`, `T-6: 41 (1), now 41`. Emission order is 41, 38, 46, 43, 47, 49 — the const-1 first. The T-4 line also measures the tie-break direction for the first time: 38 and 46 are both at max_priority and 46 (the higher LUID) is picked first, i.e. with equal priorities the later source insn is emitted LAST, which is exactly why SB's multi-set `idx` restores the target's order.
+- verdict: CONFIRMED
+
+## [s6] The DA chassis' 12 points are ONE allocation decision: with the 12-byte byte offset routed through `idx`, local-alloc hands $s0 to the block-local `idx2`.
+- mechanism: local-alloc runs before global-alloc and only handles pseudos referenced in a single basic block. In CA the byte offset is its own block-local pseudo (85) that crosses two calls, so it needs a callee-save and takes $s0, pushing the block-local `idx2` to $s1; the multi-block `idx` then takes $s0 from global-alloc because their live ranges do not overlap. Routing the byte offset into `idx` deletes pseudo 85, so `idx2` becomes the only block-local call-crossing quantity and find_free_reg (local-alloc.c:2250-2270) gives it $s0 — it scans reg_alloc_order, in which $s0 precedes $s1 among the callee-saves — and global-alloc is then forced to put `idx` in $s1.
+- probe: dumpv.py CA and dumpv.py DA; the ;; Register dispositions blocks of dump_CA/f_greg.txt and dump_DA/f_greg.txt, the per-pseudo summaries in f_lreg.txt, and a side-by-side listing of the two cc1 t.s outputs.
+- result: CA: 74 (idx) in 16, 75 (idx2) in 17, 76 (wid) in 16, 85 (byte offset) in 16, 77 (mask) in 18, 72 (i) in 19 — identical to the target's allocation. DA: 74 (idx) in 17, 75 (idx2) in 16, 76 (wid) in 3, and pseudo 85 does not exist. DA's instruction SEQUENCE is otherwise the target's exactly: the entry `addu $s0,$s3,$a0` before the loop label, `li $v1,1` first inside it, the sum after the jal in the target's operand order, and the same back-edge delay slot. All 12 points are the $s0/$s1 swap plus the two knock-on displacements it causes.
+- verdict: CONFIRMED
+
+## [s6] Some spelling of the *3 sum, or of where the byte offset lands, changes DA's allocation.
+- mechanism: If the swap were a priority/weighting effect rather than a structural one, respelling the sum (unnamed temp, multiply, three sets of `idx`) or staging the offset through another variable would move it.
+- probe: tmp/grind/func_800645B0/s6/sweep21.py FA (`idx = (idx2 + idx) << 2;`, sum an unnamed temp), FD (`idx = (idx * 3) << 2;`), FB (SB chassis plus `idx = idx << 2;`, three sets of idx), FC (CA with the offset staged through `wid`); plus sweep20.py DB (`wid = wid << 2; idx = wid;`), DC (`idx2` computed at the loop top), DD; each scored with `sandbox func_800645B0 --disable all`.
+- result: FA 12/78, FD 12/78, FB 10/78, DA 12/78, DD 12/78 — the whole family pays the same swap. FC 3/78 and DB 3/78 are identical to CA, because staging through `wid` leaves `idx` single-set and the copy `idx = wid;` folds before reg_n_sets is taken. DC (the one shape that makes `idx2` multi-block) costs a real instruction: 12/79.
+- verdict: KILLED
+
+## [s6] The target's 78 instructions require three properties simultaneously that no body over the current variable set can hold, so the original is none of the four enumerated chassis (SB / CA / IA / DA).
+- mechanism: (1) reg_n_sets[val] > 1, or loop.c hoists the const-1 into a fresh callee-save (+2 insns, H18) — and the target materialises the 1 inside the loop. (2) reg_n_sets[idx] > 1, or birthing_insn_p lifts the loop-top addu and reorg.c steals the wrong insn; since (1) holds, the const-1 insn is never lifted alongside it, so this is the only route to the loop-top order. (3) The byte offset must be a block-local pseudo DISTINCT from `idx`, or local-alloc gives `idx2` $s0. `idx` is multi-block by construction, and the target keeps exactly three values in $s0: i + j, the *3 sum and the byte offset. H24 excludes the sum as `idx`'s second set (expansion can never emit a PLUS whose destination pseudo is its second operand in the target's operand order) and H15 excludes i + j (the loop-entry copy constant-folds to `move $s0,$s3`). So (2) forces the byte offset into `idx`, which (3) forbids.
+- probe: Composition of this session's two dump-proven decisions with the previously banked H15/H18/H24 measurements, cross-checked against the full sweep20/sweep21 measurement table and against the target's own $s0 write set (asm/funcs/func_800645B0.s: 0x800645DC, 0x80064600, 0x80064608, 0x800646B4).
+- result: The constraint system is unsatisfiable over {i, j, idx, idx2, wid, mask, val, last}. The original body must therefore differ in basic-block MEMBERSHIP or in the pseudo set — most plausibly by making the halfword index a multi-block pseudo at zero instruction cost (local-alloc would then never touch it and global-alloc would rank it against `idx`, which has far more references and wins $s0), or by containing another block-local call-crossing quantity in the if-body that claims $s0 ahead of `idx2`.
+- verdict: CONFIRMED

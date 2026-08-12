@@ -651,3 +651,43 @@ rule and the sandbox drops it.  Retirement + `queue done` is the operator's job.
 - [s5] The store spelling is load-bearing: hand-built `*(s32 *)((s32)&SYM + off)` stores plus a NAMED idx2 are required; subscripting a cast base costs 4-7 instructions (sweep19).
 
 - [s5] Scope: the only tracked files touched are src/text1b.c (function body only), the ledger under memory/grind/func_800645B0/, and metrics/events.jsonl (engine-written). No permuter campaign was launched, so nothing outlives the session.
+
+- [s6] The CA inner-loop-top block contains exactly six insns and the emission order is decided by sched.c's `adjust_priority`: insns 38 (`idx = i + j`) and 46 (the `D_800A3444` load) are lifted to max_priority as birthing insns, insn 41 (`val = 1`) is not, so 41 is the T-6 pick and is EMITTED FIRST; reorg.c then steals it into the back-edge delay slot where the target has the `addu`. Dump: tmp/grind/func_800645B0/s6/dump_CA/f_sched.txt (instrumented cc1, -da).
+
+- [s6] With EQUAL priorities the scheduler picks the HIGHER-LUID (later source) insn first and therefore emits it LAST — measured at T-4 of the CA block, where insns 38 and 46 are both at max_priority and 46 wins. This is why a multi-set `idx` (SB) restores the target's loop-top order.
+
+- [s6] CA's register dispositions ARE the target's: 74 (idx) in 16, 75 (idx2) in 17, 76 (wid) in 16, 85 (the block-local byte-offset temp) in 16, 77 (mask) in 18, 72 (i) in 19, 73 (j) in 4. Dump: tmp/grind/func_800645B0/s6/dump_CA/f_greg.txt.
+
+- [s6] DA's register dispositions are 74 (idx) in 17, 75 (idx2) in 16, 76 (wid) in 3, and pseudo 85 does not exist. DA's INSTRUCTION SEQUENCE is otherwise the target's exactly — entry `addu` before the loop label, `li $v1,1` first inside it, the sum after the `jal` with the target's operand order, and the back-edge delay slot — so all 12 points are that one allocation. Dumps: tmp/grind/func_800645B0/s6/dump_DA/{f_greg.txt,f_lreg.txt,t.s}.
+
+- [s6] The mechanism of that allocation is ordering, not weighting: local-alloc runs before global-alloc and only handles pseudos referenced in ONE basic block. In CA the byte offset is such a pseudo and crosses calls, so it claims $s0 and pushes the block-local `idx2` to $s1; in DA the byte offset IS the multi-block `idx`, so `idx2` is the only block-local call-crossing quantity left and find_free_reg (local-alloc.c:2250-2270) gives it $s0 because reg_alloc_order puts $s0 before $s1.
+
+- [s6] Every spelling of "the byte offset is `idx`'s second set" pays the same swap: FA (unnamed sum temp, `idx = (idx2 + idx) << 2;`) 12/78, FD (`idx = (idx * 3) << 2;`) 12/78, FB (SB chassis plus `idx = idx << 2;`) 10/78, DA 12/78, DD 12/78. Controls CA 3/78, SB 1/78. Sweeps: tmp/grind/func_800645B0/s6/{sweep20.py,sweep21.py}.
+
+- [s6] Staging the byte offset through `wid` instead (FC: `wid = idx2 + idx; wid = wid << 2;`) is 3/78 — identical to CA — because it leaves `idx` single-set, so the birthing lift still fires. And `wid = wid << 2; idx = wid;` (DB) is 3/78 because the copy folds before reg_n_sets is taken (H10's rule).
+
+- [s6] Making `idx2` multi-block by computing it at the loop top (DC) costs one real instruction: 12/79. The `sll` moves into the loop-top block and the first `jal`'s delay slot is left empty.
+
+- [s6] THE CONTRADICTION (the session's main result): the target simultaneously requires reg_n_sets[val] > 1 (else loop.c hoists the const-1, +2 insns), reg_n_sets[idx] > 1 (else the birthing lift misorders the loop top), and a block-local byte-offset pseudo distinct from `idx` (else local-alloc gives `idx2` $s0). The only values the target keeps in $s0 are `i + j`, the *3 sum and the byte offset; the sum is excluded as `idx`'s second set by H24 and `i + j` by H15, so requirement 2 forces the byte offset into `idx`, which requirement 3 forbids. No body over the current variable set can satisfy all three — the original must differ in basic-block membership or in the pseudo set.
+
+- [s6] IMPORTANT INHERITANCE FACT, verified this session: the COMMITTED src/text1b.c does NOT carry the floor-1 body. HEAD's body scores 21 / 80 (`sandbox func_800645B0 --disable all`, rules_dropped 1) — it is still the pre-grind pinned/goto form. The floor-1 body lives ONLY in memory/grind/func_800645B0/candidate.c, which re-measures at score 1, target_insns 78 / build_insns 78 when applied (tmp/grind/func_800645B0/s6/checkcand.py applies it, scores it and restores src). Any session that reads a score off an untouched src/ is reading 21, not the floor.
+
+- [s6] Scope: the only tracked file touched is src/text1b.c (function body only; every sweep and the candidate check restore it in a finally-block, and `git status` was verified clean at session end) plus the ledger under memory/grind/func_800645B0/ and metrics/events.jsonl (engine-written). No permuter campaign was launched, so nothing outlives the session.
+
+- [s6] The CA inner-loop-top block has exactly six insns and its emission order is decided by sched.c's adjust_priority: insns 38 (idx = i + j) and 46 (the D_800A3444 load) are lifted to max_priority as birthing insns, insn 41 (val = 1) is not, so 41 is the T-6 pick and is emitted FIRST — dump_CA/f_sched.txt.
+
+- [s6] With equal priorities the scheduler picks the higher-LUID (later source) insn first and therefore emits it last; measured at T-4 of the CA block, where 38 and 46 are both at max_priority and 46 wins.
+
+- [s6] CA's register dispositions ARE the target's: 74 (idx) in 16, 75 (idx2) in 17, 76 (wid) in 16, 85 (byte offset) in 16, 77 (mask) in 18, 72 (i) in 19, 73 (j) in 4.
+
+- [s6] DA's dispositions are 74 (idx) in 17, 75 (idx2) in 16, 76 (wid) in 3, with no pseudo 85; DA's instruction sequence is otherwise byte-for-byte the target's shape, so all 12 points are that single local-alloc claim.
+
+- [s6] The mechanism is ordering, not weighting: local-alloc precedes global-alloc and only sees single-block pseudos, and find_free_reg scans reg_alloc_order, in which $s0 precedes $s1 among the callee-saves (local-alloc.c:2250-2270).
+
+- [s6] Measurement table this session: CA 3/78, SB 1/78, DA 12/78, DB 3/78, DC 12/79, DD 12/78, FA 12/78, FB 10/78, FC 3/78, FD 12/78.
+
+- [s6] Making idx2 multi-block by computing the halfword index at the loop top costs one real instruction (DC, 12/79): the sll moves into the loop-top block and the first jal's delay slot is left empty.
+
+- [s6] VERIFIED INHERITANCE FACT: the committed src/text1b.c does NOT carry the floor-1 body — HEAD scores 21/80. The floor-1 body lives only in memory/grind/func_800645B0/candidate.c, which re-measured at score 1, target_insns 78 / build_insns 78 this session via tmp/grind/func_800645B0/s6/checkcand.py.
+
+- [s6] The instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1); tmp/grind/func_800645B0/s6/dumpi.sh runs it with -da and BB2_SCHED_DEBUG and is the reusable dump harness for this function.
