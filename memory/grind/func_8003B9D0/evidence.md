@@ -806,3 +806,105 @@ session-2's K5 (plain global accesses can never become `1100($s0)`).
   array declaration to `include/code6cac.h` and drop the TU-local one; reconcile
   the duplicate `extern void func_8003AFFC(void);` declarations and the m2c-
   inferred `func_8003AFFC(D_800A3878)` prototype.
+
+## SESSION 6 — SYNTHESIS (2026-08-11): the banned form's `0` was partly a SCORER ARTIFACT, and the internally-consistent form is ORACLE-EXACT
+
+### Floor (re-measured this session, with a clean reference object)
+`sandbox func_8003B9D0 --disable all` == **6** (target_insns 185,
+build_insns 188, rules_dropped 1, strip_cheat_asm true) with the LEGAL body
+(D1 = the three cheat-asm deletions; D2 = the if/ELSE region-B form; no
+declaration change, no pointer-staging).  That body is now what
+`memory/grind/func_8003B9D0/candidate.c` holds.  `src/` was restored to HEAD at
+the end of the session and `build/` was left rebuilt from HEAD.
+
+### THE MERGED READING OF SESSIONS 1-6 (what the ladder actually proved)
+Target's region-A shape needs, at the cse pass that first sees a `+0x44C` MEM,
+one of exactly three states — this is a partition on the compiler's own code,
+not a list of ideas:
+  * **(A)** `(plus (reg eda) (const_int 1100))` present in the cse hash table.
+    Requires an address-valued SET whose destination pseudo survives
+    `delete_dead_from_cse` (cse.c:8683/8730-8734), i.e. is referenced again
+    while the same table is live.  **Measured EMPTY for this function** (s6 K16:
+    no instruction in tgt 0x8003BAAC-0x8003BAEC consumes `$s0+0x44C` as a
+    value; the `jal func_8003AFFC` has a `nop` delay slot and sets no argument
+    register).  The only construct that manufactured such a reference was the
+    banned pointer-staging D3, whose surviving SET emits no bytes.
+  * **(B)** `eda` carrying no `qty_const` — a cse basic-block boundary between
+    the `la` and the first displaced use.  **Target's own bytes forbid it**
+    (`lui/addiu $s0` at tgt[55..56], `lh $s1,0($s0)` at tgt[57],
+    `lh $s2,0x44C($s0)` at tgt[58]: no label, no barrier, no call between).
+    Buying it anyway (session-3's if/ELSE diamond) costs 11: `magic` sinks out
+    of the prologue (~7) and the `la` leaves the block (~4).
+  * **(C)** no `qty_const`-bearing pseudo at all.  In GCC 2.7.2 this arises from
+    exactly one C construct: an ARRAY_REF on an object of INCOMPLETE array type
+    (the front end emits `(mem (plus (reg) (const_int 1100)))` with no
+    symbol-valued pseudo for cse to substitute).  Every pointer-flavoured
+    respelling re-creates the pseudo and folds again (s6 K17).
+So (C) is the only reachable state, and (C) is reachable only by changing the
+DECLARED TYPE of the object — which is precisely what the driver has banned.
+
+### NEW MEASUREMENT 1 — the consistent form scores 1, and that 1 is a scorer artifact
+The banned body reached sandbox 0 while spelling the SAME halfword two
+different ways: array-indexed inside the `qf & 0x30` block, and by the second
+splat name at the later argument read.  Spelling it ONE way everywhere (array
+reference at all six in-function sites plus the two other value-use sites in
+the same TU, at lines 477 and 843) measures:
+
+    sandbox func_8003B9D0 --disable all -> score 1, target_insns 185,
+                                           build_insns 185, rules_dropped 1
+
+and the ONLY differing instruction is the later argument read:
+
+    target: lui a0,0x0 / lh a0,0(a0)       <- reloc against the second splat name, addend 0
+    mine  : lui a0,0x0 / lh a0,1100(a0)    <- reloc against the first splat name, addend 1100
+
+Those two relocations resolve to the SAME address (0x80101EDA + 0x44C ==
+0x80102326), so the linked bytes are identical and the 1 is a false distance —
+`engine/score.py` normalises branch/jump targets and section-relative addends
+but not a symbol-relative LO16 addend, exactly the failure mode already recorded
+as [[sandbox-lo16-text-addend-false-distance]].
+
+### NEW MEASUREMENT 2 — the consistent form builds the ORIGINAL EXECUTABLE
+`& tools/wteng.ps1 main build` with the internally-consistent form in place ->
+`sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH`.
+So the consistent form is byte-exact for the whole game, and the previously
+banked "sandbox 0" form and this "sandbox 1" form are the same executable.
+
+### NEW MEASUREMENT 3 — an incidental, generalisable pipeline gotcha
+Running the full `build` with an experimental body in `src/` REWRITES
+`build/src/<file>.o`, which is the object `sandbox` scores AGAINST.  Measuring
+the legal body immediately afterwards returned 7 instead of 6 — the extra point
+being that same addend, now baked into the reference.  A `build` with
+experimental source in the tree must be followed by `git checkout -- src/...`
+plus a second `build` before any further sandbox number is trustworthy.
+(That accident is also an independent confirmation of measurement 1: the HEAD
+reference and the array-form object differ by exactly that one instruction, and
+both link to the oracle SHA1.)
+
+### WHAT THIS MEANS FOR THE BAN (stated neutrally, for the owner)
+Two of the layer-1 objections to the declaration change are now answerable with
+measurements, and one is not:
+  * "the diff spells the same memory two different ways at two sites, chosen per
+    site to hit the byte count" — ANSWERED: the single-spelling form is
+    oracle-exact too; the inconsistency was an artifact of optimising the
+    sandbox number rather than the executable.
+  * "the change is TU-local and deliberately diverges from the shared header" —
+    NOT ANSWERABLE BY A GRIND SESSION: the non-divergent form (declaration moved
+    to include/code6cac.h, the other TU's address pun dropped) was measured
+    byte-neutral in s6-run3, but touching a second build input requires an entry
+    in tools/grinder/scope_allow.txt, which grind sessions may not create.
+  * "the retype is a respelling of the cse fold defeat rather than a genuine
+    type correction" — this is the classification question itself, and it is the
+    subject of the ruling request.
+
+- [s6-synthesis] LEGAL floor re-measured with a clean reference object: sandbox --disable all == 6 (target 185, build 188, rules_dropped 1). candidate.c now holds that legal body (D1 cheat-asm deletions + D2 if/ELSE region B, no declaration change, no pointer staging); the banned form was moved to rejected/consistent-array-retype-oracle-exact-but-banned-family.c.
+
+- [s6-synthesis] The internally-CONSISTENT form (one spelling of the object at all six in-function sites and at the two other value-use sites in the TU) measures sandbox 1 with build_insns 185 == target_insns 185, and the single differing instruction is the later argument read: target relocates against the second splat name with addend 0, ours against the first splat name with addend 1100. Both resolve to 0x80102326, so the linked bytes are identical.
+
+- [s6-synthesis] `build` with the internally-consistent form in place produced sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. The sandbox 1 is therefore a FALSE distance of the [[sandbox-lo16-text-addend-false-distance]] family (score.py masks branch targets and section-relative addends, not a symbol-relative LO16 addend), and the previously banked sandbox-0 form and this sandbox-1 form are the same executable.
+
+- [s6-synthesis] The scorer artifact actively REWARDED the incoherent source: the banned form scored 0 only because it kept the second splat name at the one site where target's relocation uses it, while the coherent single-spelling form scores 1. Optimising the sandbox integer rather than the executable is what produced the per-site inconsistency layer 1 objected to.
+
+- [s6-synthesis] PIPELINE GOTCHA (generalises to every function): a full `build` run with experimental source in the tree rewrites build/src/<file>.o, which is the reference object `sandbox` scores against. The legal body measured 7 against the contaminated reference and 6 after `git checkout -- src/` plus a second `build`. Always restore src and rebuild before trusting a post-`build` sandbox number.
+
+- [s6-synthesis] THE PARTITION IS CLOSED, not merely unexplored. Route (A) is measured empty for this function (s6 K16), route (B) is forbidden by target's own instruction stream and costs 11 when bought anyway (s3), and route (C) — no qty_const-bearing base pseudo — is reachable in GCC 2.7.2 only from an ARRAY_REF on an incomplete-array-typed object, i.e. only by changing the object's declared type. There is no fourth state of the cse machinery that produces register+displacement addressing here.

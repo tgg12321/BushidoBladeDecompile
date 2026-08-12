@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8003B9D0",
-      "file": "code6cac_c2",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8003A5A0",
       "file": "code6cac_c_mid",
       "distance": 21,
@@ -2424,17 +2416,26 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-08-11 \u2014 func_8002FDB0 \u2014 OWNER-ESCALATION \u2014 INTEGRATION HANDOFF (bytes proven; blocked only by inline_asm_canonical.txt)'"
+    },
+    {
+      "func": "func_8003B9D0",
+      "file": "code6cac_c2",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-11 \u2014 func_8003B9D0 \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
     }
   ],
   "counts": {
     "total": 284,
-    "active": 246,
+    "active": 245,
     "by_status": {
-      "active": 246,
-      "parked": 38
+      "active": 245,
+      "parked": 39
     },
     "by_verdict": {
-      "C": 162,
+      "C": 161,
       "ASM-PARTIAL": 37,
       "ASM-SUSPECT": 47
     }
