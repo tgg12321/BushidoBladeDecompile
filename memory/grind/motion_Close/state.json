@@ -1,8 +1,8 @@
 {
  "func": "motion_Close",
  "file": "ings2",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Structural: F14 (wrap PLACEMENT) measured \u2014 flow.c's loop-depth weighting is per-reference, so a one-level do-while(0) on `p++` (2 refs) does what two levels on p's initialiser (1 ref) did; with `coun"
+  },
+  {
+   "session": 13,
+   "floor": 13,
+   "modality": "escalation",
+   "headline": "Disposition session: both endgame-lock gates measured FAIL (scan_hand_coded tier LOW 0/8; no citable SOTN precedent for a frame-layout / hard-reg-scan-order residual), so the owner's 2026-07-27 standi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "FR1 (terminal) \u2014 motion_Close is a fully determined ESCALATION candidate awaiting the driver's routing; there is no C-side probe left to run.",
-   "mechanism": "Floor flat at 13 for EIGHT sessions across six modalities. The 13 residual points are paired instruction-by-instruction (s7 residual_table.md, verified against the current chassis in s10 and re-verified against the new session-12 form) and all three mechanisms carry backend-level disproofs: H1 (REG_PARM_STACK_SPACE is the compile-time constant 16 applied by MAX on every call-expansion path \u2014 mips.h:1822, calls.c:1245/1400, mips.c:4466; the only cfoas-free site, __builtin_apply, emits a frame pointer, a 72-byte frame and 34 insns), F5 (ascending first-free hard-reg scan, no MIPS REG_ALLOC_ORDER, so $v0 is never $t0), F7a (mips.c:4680 emits GP saves high-to-low unconditionally) and F7b (an empty beqz delay slot needs a block with no eligible single insn while the target's holds four; 0/1788 compiled-C counterexamples). SIX input axes outside the walk are measured dead \u2014 F10 whole-TU, F11 declarations, F12 loop construct, F13 guard/materialisation shape, F14 wrap placement, and the dead-store substitution.",
-   "next_probe": "None on the C side; do NOT re-measure a dead axis. When the driver assigns `escalation` modality, the packet is already written and both endgame-lock gates FAIL, so under the owner's 2026-07-27 standing auto-ruling the terminal entry is `OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`, citing the s7 backend disproof of H1, the s7 residual table, the s5b scan-order disproof of F5, the s6 corpus disproofs of F7a/F7b, the s6 scan_hand_coded LOW tier, and the s8\u2013s12 quintet showing every input to cc1 outside the walk itself is inert. Note the packet must now describe the SINGLE-level in-walk form, not the two-level initialiser form."
+   "hypothesis": "FR1 (DISCHARGED) - motion_Close is disposed of terminally under the owner's 2026-07-27 standing ruling; there is no C-side probe left and no further grind session should be dispatched.",
+   "mechanism": "Both endgame-lock AND-gates are measured FAIL (scan tier LOW 0/8 with S1/S2/S6 negative; no citable SOTN-master precedent for a frame-layout / hard-register-scan-order / save-order residual), which is exactly the pre-decided case in .claude/rules/endgame-lock-disposition.md. The floor's three components each carry a backend-level disproof and every cc1 input outside the loop walk is measured codegen-inert.",
+   "next_probe": "None. The only routes that could ever reopen this function are owner-only policy calls: (a) sanctioning a new family for the outgoing-argument-area residual against its own SOTN-master evidence bar, or (b) canonical-asm authorization despite the LOW scan tier. A grind session cannot derive either."
   },
   {
-   "hypothesis": "FR2 (CLOSED at its floor by session 12) \u2014 the policy device cannot be made lighter than one do-while(0) level.",
-   "mechanism": "Session 12 met FR2's criterion (13 at wrap depth <= 1) by moving the note's PLACEMENT onto p's `p++` bump, where it is worth two weighted references per level instead of the initialiser's one, and paying for the resulting schedule fence with a free statement reorder (`count--` ahead of `f()`). Depth 0 is then derived unreachable from the measured constants (p 4/8 = 10000 vs count 5/7 = 14285): the three routes to a flip each need instructions the target lacks.",
-   "next_probe": "None. Do not re-open the device-weight axis; the remaining device is one non-nested do-while(0) with an inline FAKE annotation, inside the frozen sanctioned family, and prerequisite 3 no longer applies. If a future session wants a device-free form it must first invalidate one of the three depth-0 routes above, which requires a p-reference or an intervening computation present in the TARGET's 26 instructions \u2014 s7's residual table says there is none."
+   "hypothesis": "FR2 (CLOSED at its floor, unchanged from session 12) - the policy device cannot be made lighter than one do-while(0) level.",
+   "mechanism": "With the note placed on p's `p++` bump (two weighted references per level instead of the initialiser's one) and `count--` moved ahead of `f()` to pay the schedule fence for free, floor 13 is reached at a SINGLE wrap level. Depth 0 is derived unreachable from the measured priority constants (p 4/8 = 10000 vs count 5/7 = 14285): all three routes to a role flip require instructions the target's 26 do not contain.",
+   "next_probe": "None. Do not re-open the device-weight axis."
   },
   {
-   "hypothesis": "FR3 (housekeeping) \u2014 keep the escalation packet true to whatever form candidate.c actually holds.",
-   "mechanism": "Twice before, the ledger's authoritative residual analysis was derived on a chassis a later session superseded; equal scores do not imply equal residual composition. Session 12 DID change candidate.c, so it discharged the obligation in-session: the new form's cc1 stream was diffed against tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s and is identical but for the internal label number, so the s7 table still applies.",
-   "next_probe": "Unchanged for future sessions: any session that changes candidate.c must re-emit the build stream from the instrumented cc1 and diff it against tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s (or s5b/wsA/_base.txt, which is a byte/reloc dump, not cc1 asm \u2014 use the s10 file for a text diff) before reusing the s7 residual table. Also carry the label-number caveat: .L136 now, .L144 before."
+   "hypothesis": "FR3 (housekeeping, standing) - any future session that changes candidate.c must re-verify the emitted stream before reusing the s7 residual table.",
+   "mechanism": "Twice in this function's history the authoritative residual analysis was derived on a chassis a later session superseded; equal scores do not imply equal residual composition. Session 13 did NOT change candidate.c, so no re-derivation is owed and the s12 verification still stands.",
+   "next_probe": "If candidate.c ever changes: re-emit the build stream from the instrumented cc1 and text-diff it against tmp/grind/motion_Close/s10/f12_G_goto_tail_d2.s (NOT s5b/wsA/_base.txt, which is a byte/reloc dump), carrying the label-number caveat (.L136 now, .L144 before)."
   }
  ],
  "judge_constraints": [],

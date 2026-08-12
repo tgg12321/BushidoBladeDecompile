@@ -4797,3 +4797,100 @@ DISPOSITION. The function freezes pending the ruling. Evidence trail: memory/gri
 The candidate C is preserved at `memory/grind/MoveImage/candidate.c`; main is back at
 HEAD. Owner action: rule on the question above, then unpark via
 `& tools/wteng.ps1 main queue regen` (or reopen the item) so the grind resumes.
+
+## 2026-08-12 — motion_Close — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Filed by:** grind session 13 (modality `escalation`, disposition session), `src/ings2.c`.
+**Disposition:** terminal. Both endgame-lock AND-gates are measured FAIL, so the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`) applies directly. Nothing is
+pending on the owner; the driver parks motion_Close and the queue advances.
+
+### What holds the byte-match today (main, HEAD)
+`motion_Close` byte-matches ONLY via a stack of cheats that the completion standard forbids:
+
+* **9 regfix rules** — `regfix.txt:115-124`: a `$2 <-> $8` prologue register rename over insns 0-4,
+  an `insert "nop" @ 6`, a `reorder 2,3,5,4 @ 2-5`, and five `subst` rules that rewrite the three
+  save offsets and the three restore offsets (`$31,8` to `$16,4`; `,4(` to `,8(`; `$16,0(` to
+  `$31,0xc(`; `,8(` to `,0xc(`; `,4(` to `,8(`; `,0(` to `,4(`).
+* **cheat-asm in the C body** — two `register T x asm("$N")` pins (`p` pinned to `$s0`, `count` to
+  `$s1`), a third pin on the loop's function-pointer temp (`f` to `$t0`), a `jalr %0` inline-asm
+  call, and a hardcoded-`$N` `__asm__ volatile("addiu $17, $17, -1")` decrement (the
+  inline-asm-injection family).
+
+The honest, cheat-invisible distance is what matters, and it is **13**:
+`sandbox motion_Close --disable all` printed `{"score": 13, "target_insns": 26, "build_insns": 25,
+"rules_dropped": 9, "cheat_asm_stripped": 10}` THIS session with
+`memory/grind/motion_Close/candidate.c` applied to `src/ings2.c` (src reverted to HEAD afterwards).
+
+### Gate 1 — canonical-asm (hand-coded signals): **FAIL**
+`python3 tools/scan_hand_coded.py --single motion_Close` returns **tier=LOW, score 0/8**
+("no strong hand-coded indicators"): S1 multu pacing negative (0 multu/mflo pairs), S2 empty-body
+branch negative, S6 BIOS jumptable negative — the three STRONG signals the gate requires — with
+S3/S4 skipped as too short (26 < 40 insns) and S5/S7/S8 negative. Re-run this session by
+synthesising `asm/funcs/motion_Close.s` from the byte-verified `tmp/grind/motion_Close/s4/target.s`
+(the function is C-routed, so no real asm/funcs file exists) and deleting the synthesised file
+immediately after; log at `tmp/grind/motion_Close/s13/scan_hand_coded_s13.log`. This reproduces
+session 6's measurement exactly (`tmp/grind/motion_Close/s6/scan_hand_coded.log`), which also scored
+the 54-insn sibling `func_80083794` at tier=LOW 0/8. This is a MEASURED FAILED GATE, not an open
+question.
+
+### Gate 2 — in-hand SOTN-master precedent for the closing construct: **FAIL**
+The residual is not a coercion/spelling problem; it is frame layout, hard-register scan order and
+prologue save order. Session 7's instruction-by-instruction pairing
+(`tmp/grind/motion_Close/s7/residual_table.md`) accounts for all 13 points with nothing left over:
+~6.5 points H1 (our frame is 32 bytes vs the target's 16 — three save offsets, three restore
+offsets, the `addiu sp`), 5 points F5 (the guard `lui`/`lw`, the body `lw` and the `jalr` use `$v0`
+where the target uses `$t0`), ~1.5 points F7 (the `beqz` delay slot and the save order). The only
+constructs that would close those bytes are exactly the ones the FROZEN SOTN list does NOT contain
+and the forbidden-family catalog DOES: register-asm pins, hardcoded-`$N` `__asm__` injection, and
+regfix-style build-time rewriting — for which the 2026-07-01 SOTN census explicitly found **zero
+community precedent**. No file:line or commit citation from SOTN master exists for a construct that
+changes a function's outgoing-argument-area size, the allocator's hard-register scan order, or
+`save_restore_insns`' emission order. "Same spirit" is not a citation; the gate FAILS.
+
+### Why the pure-C axes are exhausted (13 sessions, six modalities, floor flat at 13 for nine)
+Each of the three residual mechanisms carries a BACKEND-level disproof, not a plateau observation:
+
+* **H1 (frame size / outgoing-arg area)** — `REG_PARM_STACK_SPACE` is the compile-time constant 16
+  applied by MAX on every call-expansion path (`mips.h:1822`, `calls.c:1245/1400`, `mips.c:4466`).
+  No pure-C body containing a call can reach the target's zero-byte outgoing-argument area; the only
+  cfoas-free expansion site, `__builtin_apply`, emits a frame pointer, a 72-byte frame and 34
+  instructions (session 7). This alone means **no member of this family can reach distance 0**,
+  whatever its score.
+* **F5 (`$v0` vs `$t0`)** — local-alloc/global.c scan hard regs ASCENDING and MIPS defines no
+  `REG_ALLOC_ORDER`, so the first free caller-saved temp is always `$v0`, never `$t0` (session 5b).
+* **F7a (save order)** — `mips.c:4680` emits GP saves `GP_REG_LAST` down to `GP_REG_FIRST`
+  unconditionally; giving the function real incoming parameters produces the WAR anti-dependence and
+  the saves still come out descending (session 8).
+* **F7b (empty `beqz` delay slot)** — requires the branch's block to hold no eligible single insn;
+  the target's block holds four, and a corpus scan found 0 counterexamples in 1788 compiled-C
+  functions (session 6).
+
+Every input to cc1 outside the loop walk itself has been measured codegen-inert: whole-TU shape and
+signature (F10, s8), all ten global-declaration forms (F11, s9), every real loop construct (F12,
+s10 — 20 cells at wrap depths 0-2), guard/materialisation shape and declaration scope (F13, s11 —
+six variants at every depth), wrap PLACEMENT (F14, s12 — 21 + 14 cells read against the instrumented
+cc1 allocno table), the five pointer/loop idioms (s9), and the sanctioned dead-store/self-assign
+substitution (s11 M1 — jump.c/cse delete the no-op set before flow.c's reference counter ever sees
+it). Four permuter campaigns ran across sessions 4-5 (wsA ~11k iterations on the policy-clean 17
+chassis, wsB ~4k on the role-flipped 16 chassis, plus wsC and s5b wsD); their only sub-base finds
+were the banked lever that produced floor 13 and one semantically broken form that reads `count`
+uninitialised. 21 disproven forms are banked in `memory/grind/motion_Close/rejected/`.
+
+**Modalities spent:** permuter (s4, s5), forensics (s6, s7), rederive (s8, s9), synthesis (s10),
+structural (s11, s12), escalation (s13) — six distinct modalities; the honest floor has been FLAT at
+13 for nine consecutive sessions.
+
+### Best form preserved
+`memory/grind/motion_Close/candidate.c` holds the best measured pure-C form (floor 13, 25 emitted
+instructions). Its only policy device is a SINGLE-level `do { p++; } while (0);` inside the walk — a
+frozen-sanctioned family, FAKE-annotated at the construct site — with wrap depth 0 both measured
+(score 20) and derived unreachable in closed form from the allocno priority constants (s12). It is
+explicitly NOT submittable as `candidate-ready`: H1 forbids distance 0 for the entire family.
+
+### Owner action
+None. This entry records the standing ruling being applied; `motion_Close` is REFUSED /
+OWNER-ACCEPTED INCOMPLETE and parked terminally. If the owner ever wishes to revisit it, the two
+routes are (a) sanctioning a new family for the frame/arg-area residual against its own
+SOTN-master evidence bar, or (b) canonical-asm authorization despite the LOW scan tier — both
+owner-only policy calls, neither derivable by a grind session.
