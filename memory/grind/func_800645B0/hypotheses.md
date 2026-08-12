@@ -74,9 +74,93 @@ order" family is spent on this residual.
 shared with the s16 store; `P` (idx2 as a plain copy, s16 index `idx2 * 2`)
 regresses to 21/81.
 
+## Session 3 (2026-08-12, structural) — floor 3 -> 1
+
+### H9 — CONFIRMED. Both of the previous session's residuals close simultaneously if the *3 sum is assigned to `idx` AND the first `rand()` is named into a temp ahead of it.
+- **Mechanism:** the sum is a real second set of `idx`, killing the
+  `birthing_insn_p` bonus at the loop top; and naming the call puts the CALL
+  before the sum in source order, so GCC emits the sum after the `jal` and
+  reorg.c fills the delay slot with the `sll` (the target's shape) instead of
+  with the sum.
+- **Probe:** sweep6.py variants AA/AB/AC (+ control AD, call named but sum
+  inline).
+- **Result:** AA/AB/AC = **1 / 78** (previous floor 3); AD = 3 / 78. The
+  unmasked diff drops from three real pairs to one.
+- **Verdict:** CONFIRMED — this is the session's floor move.
+
+### H10 — KILLED. A second assignment to `idx` that CSE/copy-prop can fold does not remove the birthing bonus.
+- **Mechanism claim tested:** `reg_n_sets` is a whole-function count, so ANY
+  second assignment should do. False in practice — the count is taken after the
+  fold passes, so a copy / split-init / recomputation of a live value leaves
+  `reg_n_sets == 1`.
+- **Probe:** sweep5 (T_split `idx = i; idx += j;`, U_half `idx = idx << 1;`
+  after the stores, V_both, W_late) plus sweep11 (FA/FB/FC/FD, the halfword
+  offset re-assigned into `idx` three ways); `.sched` dumps of A_base and
+  U_half compared directly.
+- **Result:** all nine variants 3 / 78, and the two `.sched` dumps carry an
+  identical ready list `T-6: 31 (1) 28 (7f000001), now 28 31`.
+- **Verdict:** KILLED.
+
+### H11 — KILLED (and mechanism corrected). The commutative operand order of the sum is NOT a cse.c `fold_rtx`/`must_swap` effect and no source spelling changes it.
+- **Mechanism (corrected):** `optabs.c:399-417`, `expand_binop` — for a
+  commutative optab GCC swaps op0/op1 when `target == op1`. `idx = idx2 + idx;`
+  therefore expands as `(plus idx idx2)` *in the .rtl dump*, before cse runs.
+- **Probe:** sweep7 (eight respellings: `idx + idx2`, `idx += idx2`,
+  declaration swap, `idx2 = idx + idx`, `idx2 = idx * 2`, call before the
+  shift, `idx * 3`), plus a read of `dump_AA/f_rtl.txt` insn 53 and of
+  optabs.c.
+- **Result:** all eight = 1 / 78 with the identical `addu s0,s0,s1`. The
+  previous session's frontier item 3 (vary the cse equivalence class) is
+  therefore misdirected and is retired.
+- **Verdict:** KILLED — the fix must change the assignment DESTINATION, not the
+  operand syntax.
+
+### H12 — KILLED. Giving the sum its own destination variable fixes the operand order but cannot keep the loop top, because of local_alloc ordering.
+- **Mechanism:** `local_alloc` precedes `global_alloc`; the byte-offset value is
+  normally a high-priority BLOCK-LOCAL pseudo that claims `$s0` before the
+  block-local `idx2` (which overlaps it) can, and the multi-block `idx` then
+  re-uses `$s0`. Routing the byte offset through `idx` removes that claimant,
+  so `idx2` takes `$s0` and `idx` is pushed to `$s1`.
+- **Probe:** sweep8 (CA/CB/CC/CD), sweep9 (DA/DB/DC/DD/DE), sweep10 (five
+  declaration orders), with `.lreg`/`.greg` dumps of DA and AA and a read of
+  `global.c:allocno_compare`.
+- **Result:** CA = 3 / 78 (operand order + every register right, loop top
+  wrong); DA = 12 / 78 (loop top + operand order right, `$s0`/`$s1` swapped);
+  declaration order moves nothing.
+- **Verdict:** KILLED as written; the underlying constraint (byte offset must
+  stay block-local) is now a hard fact for any future shape.
+
+### H13 — KILLED. Recomputing `i + j` as the sum's right operand to dodge the expand-time swap costs a real instruction.
+- **Probe:** sweep12 GA/GB/GC/GD.
+- **Result:** 19 / **79** (GA/GB/GC) and 13 / **79** (GD) — CSE does not fold
+  the recomputation away.
+- **Verdict:** KILLED.
+
 ## Frontier
 
-1. **Get `idx` multi-set WITHOUT hoisting the sum ahead of the first call.**
+0. **The last point: emit `(plus idx2 idx)` while keeping a real second set of
+   `idx` and a block-local byte offset.** Mechanism: the three constraints are
+   (a) `expand_binop` swaps when the sum's `target == op1`, so the sum's dest
+   must not be `idx`; (b) `birthing_insn_p` needs `reg_n_sets[idx] > 1` with a
+   set that survives the fold passes; (c) the byte offset must stay a
+   block-local pseudo or `local_alloc` hands `$s0` to `idx2`. Every pairwise
+   combination has now been measured; no shape satisfying all three has been
+   found. Next probe: attack (b) from the other side instead — make the
+   const-1 pseudo SINGLE-set so `li val,1` is bonused too (with both insns at
+   max_priority the tie falls to INSN_LUID and the dump shows the LATER insn
+   picked first, i.e. `addu` emitted first — see the `52/63` and `52/61` ready
+   lines in `dump_AA/f_sched.txt`), while preventing loop.c from hoisting it
+   (a plain single-set `val = 1;` is a movable and costs 81 insns). Read
+   loop.c's `move_movables` preconditions (`m->cond`, `m->global`, the
+   `threshold` register-pressure test at loop.c:532), dump `t.i.loop` for the
+   AA build to see which test the current const-1 passes, and construct a C
+   shape that fails exactly one of them.
+
+1. ~~**Get `idx` multi-set WITHOUT hoisting the sum ahead of the first call.**~~
+   **RESOLVED by H9** (session 3): naming the first `rand()` into `last` does
+   exactly this and moved the floor 3 -> 1. The paragraph below is kept only
+   for its reasoning trail; the "enumerate second assignments" half of it is
+   KILLED by H10 (foldable second sets are inert).
    Mechanism: `birthing_insn_p` counts `reg_n_sets` over the WHOLE function,
    while the delay-slot fill only depends on whether the sum statement sits
    before or after the call-bearing store. If a second, semantically-real
@@ -97,8 +181,10 @@ regresses to 21/81.
    `reg_n_sets == 1` still holds. Next probe: instrument/read loop.c's
    rejection reasons on the current build, then construct the shape.
 
-3. **Attack the commutative operand order through CSE state rather than
-   syntax.** H7 killed declaration order and H8 killed the multiply spelling;
+3. ~~**Attack the commutative operand order through CSE state rather than
+   syntax.**~~ **RETIRED by H11** (session 3): the operand order is fixed at
+   RTL expansion by `expand_binop`'s `target == op1` swap, not by cse; the
+   `.rtl` dump already shows the swapped form. Original text below. H7 killed declaration order and H8 killed the multiply spelling;
    what has NOT been probed is the CSE hash-table state at the point the sum
    is folded (cse.c `fold_rtx` must_swap). Next probe: dump `t.i.cse2` for the
    sum insn and identify which equivalence class supplies the swap, then vary
@@ -128,4 +214,34 @@ regresses to 21/81.
 - mechanism: synth_mult builds the multiply RTL directly rather than through the C-level PLUS, so its operand order might escape cse's commutative canonicalisation.
 - probe: sweep3.py: L_mul3_mul2, N_mul3_shift2, M_mul12_mul2, O_mul12_shift2, P_mul12_only.
 - result: `* 3` is byte-identical to the explicit `idx2 + idx` (L/N == K: 3 / 78) — synth_mult's order does not survive canonicalisation. `* 12` regresses to 12 / 79 because the `idx * 2` value stops being shared with the D_800F0BCC s16 store; P_mul12_only regresses to 21 / 81.
+- verdict: KILLED
+
+## [s2] Both of the previous session's residuals (the loop-top emission order and the jal delay-slot fill) close simultaneously if the *3 word-index sum is assigned back into `idx` AND the first rand() call is named into the existing `last` temp ahead of it.
+- mechanism: The sum is a REAL second set of `idx`, so reg_n_sets[idx] == 2 and sched.c's birthing_insn_p bonus no longer fires on `addu idx,i,j`; the inner-loop block emits `addu` first and reorg.c steals it into the back-edge delay slot as target. Independently, naming the call puts the CALL ahead of the sum in source order, so GCC emits the sum after the `jal` and reorg fills the jal delay slot with the `sll` rather than with the sum.
+- probe: tmp/grind/func_800645B0/s2/sweep6.py variants AA (first rand() named), AB (every rand() named), AC (sum spelled `idx * 3`), plus control AD (call named, sum left inline); each scored with `sandbox func_800645B0 --disable all` and diffed unmasked with diffvar6.py.
+- result: AA/AB/AC = score 1, build_insns 78 (previous floor 3); AD = 3/78. The unmasked diff drops from three real pairs (li/addu swap at the loop top and back edge, plus the operand order) to one (the operand order).
+- verdict: CONFIRMED
+
+## [s2] Any second assignment to `idx` anywhere in the function removes the birthing_insn_p bonus, because reg_n_sets is a whole-function count.
+- mechanism: reg_n_sets is recomputed by reg_scan/flow AFTER cse, combine and copy propagation, so a second set whose value is already available in another live pseudo is folded away before the count is taken.
+- probe: sweep5.py (T_split `idx = i; idx += j;`, U_half `idx = idx << 1;` after the stores with the s16 store using `idx`, V_both, W_late `idx = idx2 + idx;` after stores that already compute the sum inline) and sweep11.py (FA/FB/FC/FD: the halfword offset re-assigned into `idx` as `<<1`, `+idx`, `*2`); plus a direct comparison of the extracted t.i.sched blocks for A_base and U_half.
+- result: All nine variants score 3 / 78, and the two .sched dumps carry a byte-identical inner-loop ready list (`;; ready list at T-6: 31 (1) 28 (7f000001), now 28 31`). A reg_n_sets lever needs a set whose VALUE is not already live.
+- verdict: KILLED
+
+## [s2] The commutative operand order of the *3 sum (`addu s0,s1,s0` in target vs `addu s0,s0,s1` in our build) is a cse.c fold_rtx/must_swap effect that can be steered by respelling the expression.
+- mechanism: CORRECTED: it is optabs.c:399-417 (expand_binop), which swaps op0/op1 for a commutative optab whenever `target == op1` (or op1 is a REG and op0 is not). `idx = <x> + idx;` therefore expands as (plus idx x) at RTL EXPANSION, before cse ever runs.
+- probe: sweep7.py, eight respellings (`idx = idx + idx2`, `idx += idx2`, declaration swap, `idx2 = idx + idx`, `idx2 = idx * 2`, call before the shift, `idx = idx * 3`, s16-offset variation); plus reading the expand dump tmp/grind/func_800645B0/s2/dump_AA/f_rtl.txt (insn 53) and tools/gcc-2.7.2/optabs.c.
+- result: All eight measure 1 / 78 with the identical `addu s0,s0,s1`, and the .rtl dump already carries `(plus (reg 74=idx) (reg 75=idx2))` — the swap is pre-cse. The previous session's frontier item 'vary the cse equivalence class' is retired as misdirected.
+- verdict: KILLED
+
+## [s2] Giving the *3 sum its own destination variable fixes the operand order and can be combined with a real second set of `idx` (the byte offset) to reach 0.
+- mechanism: local_alloc runs BEFORE global_alloc. The 12-byte-stride byte offset is normally a BLOCK-LOCAL CSE temp with high allocno priority (floor_log2(n_refs)*n_refs/live_length, global.c:allocno_compare), so it claims $s0 first; the block-local `idx2`, whose range overlaps it, is pushed to $s1; the multi-block `idx` then re-uses $s0. Routing the byte offset through `idx` removes that early claimant, so `idx2` takes $s0 and `idx` is forced to $s1.
+- probe: sweep8.py (CA/CB/CC third local `wid` for the sum; CD sum before the call), sweep9.py (DA/DB/DC/DD/DE byte offset routed through `idx`), sweep10.py (five declaration orders on the DA shape), with .lreg/.greg dumps of DA and AA and a read of global.c:allocno_compare.
+- result: CA = 3/78: operand order and EVERY register correct, only the loop top wrong. DA = 12/78: loop top and operand order both correct, but idx=$s1 / idx2=$s0 where target has idx=$s0 / idx2=$s1, renaming 12 points. All five declaration orders on DA stay at 12/78 (second independent confirmation that declaration order is dead here).
+- verdict: KILLED
+
+## [s2] Writing the sum's right operand as a recomputation of the slot index (`idx = idx2 + (i + j);`) makes op1 a fresh pseudo at expand time, dodging the `target == op1` swap at zero cost because CSE folds the recomputation back onto `idx`.
+- mechanism: expand_binop's swap test compares the assignment target against op1 by rtx identity, so a recomputed temp escapes it; CSE was expected to eliminate the duplicate `addu` afterwards.
+- probe: sweep12.py GA (`idx = idx2 + (i + j)`), GB (`(i + j) + idx2`), GC (`idx2 + i + j`), GD (`idx2 = (i+j) << 1; idx = idx2 + (i+j);`).
+- result: GA/GB/GC = 19 / 79 insns, GD = 13 / 79 — the recomputed addu SURVIVES (one instruction over the 78-instruction target) and cascades the allocation. Axis dead; it was also the only shape this session that would have needed a cheat-checklist defence, and the measurement settles it without one.
 - verdict: KILLED

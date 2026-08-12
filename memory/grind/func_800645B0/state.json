@@ -1,31 +1,37 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 3,
    "modality": "recon",
    "headline": "Root-caused the banned lever's residual to sched.c birthing_insn_p (reg_n_sets==1 priority bonus) and replaced it with a sanctioned variable-reuse construct; floor stays 3 but the residual moved to a "
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 3 -> 1: naming the first rand() into a temp AND assigning the *3 sum back into idx closes both prior residuals at once; the last point is an expand_binop commutative-swap keyed on the assignment"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A form where `idx` is multi-set (killing the birthing_insn_p bonus at the loop top) while the *3 sum stays INLINE in the store address expressions (keeping it after the first rand() call) closes both residuals at once and reaches 0.",
-   "mechanism": "birthing_insn_p counts reg_n_sets over the whole function, whereas the jal delay-slot fill depends only on whether the sum is a statement before the call or an inline sub-expression of the call-bearing store. The two conditions are independent, so a second genuinely-used assignment to the slot index anywhere else in the function satisfies both.",
-   "next_probe": "Enumerate semantically-real second assignments of the slot index (e.g. the index reused as the s16 element index, or the outer accumulator and the slot index sharing one variable) with the sum left inline as `((idx2 + idx) << 2)`, and sandbox each. Reject any candidate whose second assignment is dead, unread, or has no reading as ordinary program logic."
+   "hypothesis": "Making the const-1 pseudo SINGLE-set gives `li val,1` the birthing bonus too; with both loop-top insns at max_priority the tie falls to INSN_LUID and the target's order (`addu` first) is restored without touching `idx` at all \u2014 so the AA shape's `idx = idx2 + idx` could be replaced by a third-variable sum (CA's operand order) and reach 0.",
+   "mechanism": "sched.c adjust_priority raises any birthing insn to max_priority; the AA .sched dump shows that when two ready insns are both at 7f000001 the later one is picked first and therefore emitted last. The obstacle is loop.c: a single-set `val = 1;` inside the inner loop is a movable and move_movables hoists it into a fresh callee-save (81 insns, measured in session 1), so the shape must fail exactly one of move_movables' preconditions (m->cond, m->global, or the register-pressure threshold at loop.c:532) while keeping reg_n_sets == 1.",
+   "next_probe": "Read move_movables' preconditions and rejection paths in tools/gcc-2.7.2/loop.c, dump t.i.loop for the current AA build (tmp/grind/func_800645B0/s2/dumpAA.py already produces it) to see which tests the current const-1 passes, then construct C shapes that fail exactly one; sandbox each against the CA shape (third-variable sum), where the operand order and every register are already correct."
   },
   {
-   "hypothesis": "Making the const-1 pseudo single-set AND unhoistable gives BOTH loop-top insns the birthing bonus, so the tie falls back to INSN_LUID and source order is restored without touching `idx` at all.",
-   "mechanism": "With equal INSN_PRIORITY, rank_for_schedule falls through to INSN_LUID, which restores the source order (addu first). A single-set const-1 is normally a loop.c movable and gets hoisted (that is what cost 81 insns in session 1), so the shape must violate one of move_movables' preconditions (m->cond, m->global, or the register-pressure threshold at loop.c:532) while keeping reg_n_sets == 1.",
-   "next_probe": "Read loop.c's movable preconditions and rejection paths, dump t.i.loop for the current build to see which test the current const-1 passes, then construct a C shape that fails exactly one of them; sandbox each shape."
+   "hypothesis": "A fold-surviving second set of `idx` exists that is NOT the *3 sum and NOT the byte offset, so the sum can take a third-variable destination (CA's correct operand order and register assignment) while the loop top stays right.",
+   "mechanism": "birthing_insn_p only needs reg_n_sets[idx] > 1 with a set that survives to flow; the constraint is only that the value must not already be live in another pseudo, and that the set must not turn `idx` into the carrier of the byte offset (which flips local_alloc's $s0 claim).",
+   "next_probe": "Enumerate values in this function that are genuinely derived from the slot index and not already computed: e.g. the bit mask recomputed from `idx` in the found-slot arm, the next-slot index used by the loop, or a restructured inner loop that recomputes `i + j` for the occupancy test only. Sandbox each; reject any whose second assignment is dead, unread, or has no reading as ordinary program logic (note the recompute axis is already dead at 79 insns via sweep12)."
   },
   {
-   "hypothesis": "The `addu $s0,$s1,$s0` operand order is fixed by CSE equivalence-class state at the moment the sum is folded, not by any syntactic property of the source expression.",
-   "mechanism": "cse.c fold_rtx's must_swap path (cse.c:5278ff) swaps commutative operands when the swapped form is the one found in the hash table; which form is in the table depends on what else is in that equivalence class and in what order it was entered.",
-   "next_probe": "Dump t.i.cse2 for the sum insn, identify the equivalence class supplying the swap, then vary what enters it: whether `idx * 2` is a named local or an inline expression, and whether the s16 store's use of it precedes or follows the three word stores in source order."
+   "hypothesis": "The whole loop-top region can be sidestepped by changing which insns land in the inner-loop basic block (e.g. a for-loop spelling where `j++` sits at the loop bottom), which changes what reorg.c has available to steal into the back-edge delay slot.",
+   "mechanism": "reorg.c steals the FIRST insn of the target block into the back-edge delay slot; the scheduler decides which insn that is. Changing the block's membership changes the candidate set independently of any priority lever. NB the BANNED construct for this function is the specific relocation of `j += 1;` to between `idx = i + j;` and `val = 1;`; a loop-form change must be justified as a loop form, not as a statement relocation, and must be measured for all of the loop's shapes rather than picked from a directed sweep.",
+   "next_probe": "Measure the canonical `for (i = 0; i < 0xF; i += 4)` / `for (j = 0; j < 4; j++)` spelling of the same loops on top of the AA body, and record which basic block each of `addu idx,i,j`, `li val,1` and `addiu j,j,1` lands in via the t.i.sched dump \u2014 the point is the block-membership fact, which is reusable regardless of the score."
   }
  ],
  "judge_constraints": [
