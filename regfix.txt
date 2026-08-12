@@ -137,27 +137,6 @@ func_8003800C: insert "nop" @ 53
 func_8003800C: reorder 55,54 @ 54-55
 
 # pad_ClearAppliBuffer: GCC uses $3(v1) for result, target uses $2(v0)
-func_8003A5A0: subst "\$3," "$2," @ 42
-func_8003A5A0: subst "\$2," "$3," @ 43
-func_8003A5A0: subst "\$3,\$2" "$2,$3" @ 44
-func_8003A5A0: subst "\$3,\$2" "$2,$2" @ 48
-func_8003A5A0: subst ",\$3," ",$2," @ 49
-func_8003A5A0: subst "\$3,\$0" "$2,$0" @ 55
-func_8003A5A0: subst "\$3,\$5" "$2,$5" @ 60
-func_8003A5A0: subst "\$3,\$3,\$5" "$2,$5,$2" @ 61
-func_8003A5A0: subst "\$2,\$4" "$3,$4" @ 62
-func_8003A5A0: subst "\$3,\$3,\$2" "$2,$2,$3" @ 63
-func_8003A5A0: subst "\$3,\$3" "$2,$2" @ 64
-func_8003A5A0: subst "\$2,\$4" "$3,$4" @ 65
-func_8003A5A0: subst "\$2,\$3" "$3,$2" @ 66
-func_8003A5A0: subst "\$3,\$0,\$zero" "$2,$0,$zero" @ 67
-func_8003A5A0: subst "\$2," "$3," @ 68
-func_8003A5A0: subst "\$2,\$2,1" "$3,$3,1" @ 70
-func_8003A5A0: subst "\$2," "$3," @ 71
-func_8003A5A0: subst "addu.*" "nop" @ 73
-func_8003A5A0: subst "\$3,\$0" "$2,$0" @ 75
-func_8003A5A0: subst "\$3,\$zero" "$2,$zero" @ 76
-func_8003A5A0: delete @ 79
 
 # tslLineG5Init: fix playerCount branch direction and register
 

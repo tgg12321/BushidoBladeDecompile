@@ -1663,42 +1663,34 @@ loop_check:
     func_8003A574();
     ResetRCnt(0xF2000001);
 poll:
-    v0 = (_comb_control(0, 0, 0) >> 7) & 3;
-    if (v0 == 1) {
+    if (((_comb_control(0, 0, 0) >> 7) & 3) == 1) {
         goto loop_check;
     }
-    v0 = GetRCnt(0xF2000001) - s0;
-    if (v0 < 0x3C01) {
+    if (GetRCnt(0xF2000001) - s0 < 0x3C01) {
         goto loop_check;
     }
     s1 += 1;
-    v0 = 0;
     if (s1 >= 5) {
-        goto epilogue;
+        goto ret0_tramp;
     }
     goto overflow;
 success:
     a1 = D_800A3688;
     a0 = D_800A368C;
-    v0 = a1 >> 16;
-    v0 = v0 ^ a1;
+    v0 = a1 ^ (a1 >> 16);
     v0 = v0 ^ (a0 >> 16);
     v0 = v0 & 0xFFFF;
     if ((a0 & 0xFFFF) == v0) {
         goto match;
     }
-    v0 = 0;
     D_800A38D0 += 1;
-    goto epilogue;
+    return 0;
 ret0_tramp:
-    v0 = 0;
-    goto epilogue;
+    return 0;
 match:
-    v0 = 1;
     D_800A36C0 = a1;
     D_800A36C4 = a0;
-epilogue:
-    return v0;
+    return 1;
 }
 /* kengo:HIGH  |  is_pad/pad_ClearAppliBuffer  |  87i */
 s32 func_8003A6FC(u32 arg0) {
