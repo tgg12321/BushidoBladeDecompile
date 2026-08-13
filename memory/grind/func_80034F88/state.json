@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 10,
- "current_modality": "synthesis",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "Honest floor 18 -> 9 at 49/49 insns: a THIRD, zero-cost reload mechanism (cse satisfies a read of a just-stored byte from the live REGISTER member of the equivalence class, so the reload survives when"
+  },
+  {
+   "session": 11,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Structural: a POINTER COPY is a fourth, zero-cost way to keep block 1's post-store reload \u2014 h1 is instruction- AND register-identical to the target from the prologue through block 1's if/else (13/49),"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Block 1's `lbu` reload and the target's register assignment are mutually exclusive on the 9-point chassis, and breaking that tie closes all 9 remaining points at once.",
-   "mechanism": "The conflict is a live-range one, not a spelling one. The reload needs the mask's stored value to be dead in registers at block 1's read; the only local reassigned at that exact point is the condition/value local `c`, and using it for the mask extends its range across the call return, which permutes the whole allocation (33). Without the reload, block 1's byte stays in the mask's register instead of being loaded into a fresh one, which pins the mask's base into the wrong hard register (build a2 where the target has v1) and strands a nop in the lw load-delay slot.",
-   "next_probe": "Hold the base structure of zz5/zz6 fixed and vary ONLY the mask statement and block 1's read: `val` vs `c` vs a third local for the mask value; the mask read through the symbol with the store through the pointer and the reverse; block 1's read hoisted above or sunk below its condition; block 1 reading through the second pointer with the second pointer's materialisation forced back down. Read every result with s10/sbs.py rather than the score alone."
+   "hypothesis": "h1's 13 closes entirely if blocks 2/3's base takes a0 and their byte takes v1 \u2014 the target's assignment for an instruction stream the build already reproduces exactly.",
+   "mechanism": "The build's base inherits v1 because base 1 dies at block 1's store and v1 is then the cheapest free register; the target's allocator picked a0 for the base, which frees the scheduler to hoist the `lui`/`addiu` pair above that `sb`. Both are legal, so the difference is an allocno-priority tie (global.c orders by reg_n_refs/live_length and breaks ties by the hard-register preference each pseudo accumulated from its copies), not a shape difference. s11 proved no PLACEMENT of the base reaches it.",
+   "next_probe": "Attack the priority inputs rather than the placement: dump greg.fn for h1 (s11/dump.sh + slice.py are wired) and read the two pseudos' conflict lists, preferences and live lengths side by side, then change the REF COUNTS \u2014 e.g. blocks 2 and 3 reading the flag through the base a second time inside the arms, or the loop's `p` traffic re-spelled so `p`'s allocno is ordered differently \u2014 and re-read with sbs.py. The instrumented cc1's BB2_PRIO_DEBUG/BB2_ALLOC_DEBUG hooks (tools/gcc-2.7.2/cc1, per [[instrumented-cc1-location]]) print the priority order directly and would settle in one run which pseudo is allocated first."
   },
   {
-   "hypothesis": "The target's third addend-0 base has a spelling a human would write, and the redundant `ptr2 = &D_80106A73;` re-assignment the 9 currently rests on is not it.",
-   "mechanism": "A redundant address set is NOT deleted on this chassis (unlike the s2-s9 chassis, where cse deleted the second and third `ptrN = &D_80106A73;` as redundant), so re-assigning the pointer emits a fresh lui %hi + addiu %lo at addend 0. That is a codegen-only justification and it is the shape the cheat catalog calls a cheat-by-spelling; per-block scoped pointers, the natural alternative, are measured at 23.",
-   "next_probe": "A derivation, not a sweep: find a program structure in which re-deriving the flag pointer is what the source naturally says. If none exists, the correct outcome is a `ruling-request` naming this construct specifically - not a submission and not a silent carry-forward. Until then the submittable floor is the clean 13 in candidate_clean_13.c."
+   "hypothesis": "The pointer-copy reload mechanism, being free, may also let the 9-point base structure keep its reload \u2014 i.e. h1's mechanism crossed with s10's two-variable base structure rather than with its single re-assigned handle.",
+   "mechanism": "s11 only ever crossed the copy handle with base structures that give block 1 the mask's base. The 9-point form (`ptr` for mask+block 1, `ptr2` re-assigned for blocks 2 and 3) reaches the target's three bases but loses block 1's reload; h1 keeps the reload but leaves the blocks-2/3 swap. The two failures are in different regions of the function, so the cross has not actually been measured.",
+   "next_probe": "Cross the copy handle with every s10 base structure the ledger records (z1's single re-assigned pointer, zz5's two variables, w3's single base) \u2014 i.e. add `ptr2 = ptr;` (or a third handle used only for the block-1 read) to each, holding everything else fixed. 6-8 forms, one probe.py run."
   },
   {
-   "hypothesis": "The register-death reload mechanism generalises past this function and should be checked against the other queue items whose residual is a missing post-store reload.",
-   "mechanism": "Nothing in the mechanism is specific to func_80034F88: it is cse's ordinary equivalence-class bookkeeping. Any function whose target reloads a global it just stored, and whose build folds that reload into a register copy or a zero-extend, is a candidate - and the C-side lever (reuse the stored value's variable for the next thing computed) sits in the frozen SOTN 'variable reuse for codegen control' family rather than in any coercion family.",
-   "next_probe": "Out of scope for this function's grind, but worth a rule entry once s11 either closes func_80034F88 or settles the F2 classification; the evidence is already written up in memory/grind/func_80034F88/evidence.md under s10."
+   "hypothesis": "The third addend-0 base has no redundancy-free spelling at all, which makes the classification question a ruling, not a search.",
+   "mechanism": "s11 closed the last open route: a direct symbol reference cannot produce an addend-0 base (it folds `%lo` per access), so a third base requires a third pointer-local ASSIGNMENT. Either that assignment re-assigns a live variable a value it already holds (the construct s10 flagged, T1/T2 failures) or it introduces a further single-assignment pointer local to the same byte, which a human writing this function would not do either \u2014 and those measure 23 (three locals), 18 (dedicated third) and 13 (four locals, i5), never 9.",
+   "next_probe": "If s12/s13's attack on the h1 allocation tie does not close the function, the honest next step is a `ruling-request` naming BOTH constructs precisely \u2014 the redundant re-assignment AND the multi-single-assignment-handle alternative \u2014 with this measured impossibility argument attached, rather than another sweep of the same space."
   }
  ],
  "judge_constraints": [],

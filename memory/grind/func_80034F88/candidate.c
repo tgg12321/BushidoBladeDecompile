@@ -12,6 +12,19 @@
  * The clean form, which carries every legitimate lever and scores 13, is saved
  * beside this file as `candidate_clean_13.c`.
  *
+ * s11 UPDATE (read this before working from this body).  This is still the
+ * lowest score measured (9), but it is NOT the closest form to the target any
+ * more.  `candidate_h1_13.c` scores 13 and is instruction- AND
+ * register-identical to the target from the prologue through block 1's if/else
+ * — the whole region this body gets wrong — using a POINTER COPY
+ * (`ptr2 = ptr;`) to keep block 1's `lbu` reload at zero instruction cost.
+ * Its residual is a single allocno-priority tie in blocks 2/3.  Start from
+ * that body, not this one.  s11 also proved the constraint behind the
+ * classification problem below: an addend-0 base can ONLY come from a pointer
+ * local (a direct symbol reference folds `%lo` into each access instead), so a
+ * third base can ONLY come from a third pointer-local assignment, and every
+ * redundancy-free spelling of that measures 23, 18 or 13.
+ *
  * =====================================================================
  * WHAT s10 FOUND (the whole 18 -> 9 drop is one mechanism plus one structure)
  * =====================================================================
