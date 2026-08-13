@@ -928,3 +928,4 @@
 - 2026-08-13 03:27 func_80083794 s9 [escalation] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: Disposition reached: both endgame gates FAIL (scan_hand_coded LOW 0/8; no sanctioned family can shrink a compiler-mandated 16-byte arg block), standing-ruling REFUSED/OWNER-ACCEPTED-INCOMPLETE entry filed; new fact: func_80083794 is byte-contiguous with the already-INCLUDE_ASM'd _start.
 - 2026-08-13 03:46 CdControlF s1 [recon] floor=11: Floor 23 -> 11 on pure statement ordering + CdControlB's base/elem two-step; the register asm("s6") pin is deleted and the entire residual is now one result/elem allocno swap.
 - 2026-08-13 04:11 CdControlF s2 [structural] floor=9: Floor 11 -> 9 on the Sony libcd u_char-com parameter type; the entire 9-point residual is now reduced to one exactly-specified allocno-priority inequality, measured with the instrumented cc1 rather than hand-counted.
+- 2026-08-13 04:33 CdControlF COMPLETED-C after 3 sessions.
