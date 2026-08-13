@@ -57,6 +57,32 @@
  * (ModuleNotFoundError) — the rederive probe needs it installed first.
  * See evidence.md SESSION 5.
  *
+ * SESSION 6 (forensics) ALSO left this form unchanged and still best at 19. It
+ * built the full RTL dump set (tmp/grind/func_80078654/s6/dump.sh -> in.c.rtl
+ * .jump .cse .loop .cse2 .flow .combine .sched .lreg .greg .sched2 .jump2 .dbr)
+ * and produced the ledger's long-outstanding PER-INSN PROVENANCE TABLE: pseudo
+ * 72 (arg0) is mentioned in exactly 13 insns (uids 4, 118, 129, 142, 164, 169,
+ * 173, 203, 214, 227, 249, 257, 261) and pseudo 73 (walk) in exactly 4 insns
+ * (uids 47, 185, 254, 265; uid 254 carries two mentions, hence nrefs 5), and the
+ * IDENTICAL uid sets appear at every stage from .rtl through .sched. No pass
+ * creates or destroys a reference between RTL expansion and register allocation,
+ * and there are no reload-generated address reloads at all — so the
+ * "some reference was created after RA" frontier item is KILLED.
+ * Three further results, all new: (a) reg_n_refs is frozen at flow_analysis
+ * (toplev.c:2983) and never recomputed before global_alloc (3080), so a genuine
+ * "free reference" window [flow, global_alloc) exists — but its measured yield
+ * here is zero (split-increment: allocno table byte-identical; nx-chain: +0 refs,
+ * +1 insn) or byte-materializing (double read: +1 ref for +2 insns).
+ * (b) allocno_compare's tie-break is `return *v1 - *v2`, lower allocno index
+ * first, and the parameter's pseudo is always created before any local's — so the
+ * flip condition is STRICT and the walk pointer needs >= 13 references (+8).
+ * (c) The find_reg pass-0 seeding route is killed by the target bytes: the target
+ * mentions s0/s1/s2 seven/fifteen/five times and s3-s7 zero times, so there is no
+ * fourth callee-save-resident value for local_alloc to have seeded.
+ * Net: in ANY compile emitting the target bytes, reg_n_refs(arg0) >= 13, so the
+ * original must have carried >= 8 walk-pointer references that died between flow
+ * and global_alloc. See evidence.md SESSION 6.
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply

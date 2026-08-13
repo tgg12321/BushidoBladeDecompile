@@ -1,8 +1,8 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 19,
    "modality": "permuter",
    "headline": "Permuter modality CLOSED for func_80078654: the directed PERM_* cross-product (39,950 iters, base 108, zero improving finds) reproduces s4's semantics-breaking equal-score attractor, and two never-bef"
+  },
+  {
+   "session": 6,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "Forensics: per-insn provenance table proves both pseudos' reference counts are pinned from RTL expansion to RA (no post-RA reference exists), the flow->global_alloc free-reference window is real but m"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The twelve buffer accesses did not all exist as references to ONE pseudo at global_alloc time in the original compile; some reference was created after RA, or the original's flow-time counts differed for a reason not yet identified. This remains the leading explanation and is now the ONLY frontier item with no measured contradiction: s2 (splitting), s2 (live-length inflation), s3 (duplication), s4 (random permutation, two chassis) and s5 (directed permutation plus the index and sub-pointer partitions) are all measured dead, and s5's sub-pointer number shows even a 7-reference reduction of the parameter does not flip the sort.",
-   "mechanism": "allocno priority is computed from flow/sched-time counts, but the bytes we compare against are post-reorg. s2 checked reorg's delay-slot duplication (no 0xC($sN)/0x14($sN) sits in a delay slot in the target) and s3 checked cross-jump (it merges nothing here), but no per-insn provenance table has ever been built for the twelve accesses, and reload-generated address reloads have never been enumerated at all.",
-   "next_probe": "Forensics modality: dump the full RTL insn stream at flow, sched and global_alloc for the candidate form (cc1 -da plus BB2_SCHED_DEBUG / BB2_XJUMP_DEBUG / BB2_RELOAD_DEBUG on the instrumented tools/gcc-2.7.2/cc1 \u2014 NOT build/cc1) and enumerate, insn by insn, every target byte whose reference could have been created after RA, including reload-generated address reloads. Deliverable is a per-insn provenance table for the 12 buffer accesses and the 5 walk accesses, which either finds the slack or proves the counts are pinned end to end. Use tmp/grind/func_80078654/s5/eval.sh's standalone-chassis compile line as the driver \u2014 it isolates the function from the rest of text1b_b.c, which makes the RTL dump readable."
+   "hypothesis": "The original compile carried >= 8 references to the walk pointer that existed at flow_analysis time and were gone by global_alloc, and the surviving un-measured mechanism for that is local-alloc.c's optimize_reg_copy_1/2 reference TRANSFER (not combine deletion, which s6 measured at zero yield).",
+   "mechanism": "local-alloc.c:781-783 (optimize_reg_copy_1) walks forward from a copy insn `dest = src` whose SRC dies later, replaces every use of SRC between the copy and its death with DEST, and explicitly does `reg_n_refs[sregno] -= loop_depth; reg_n_refs[dregno] += loop_depth` for each replaced use. local-alloc.c:913-914 (optimize_reg_copy_2) does the mirror transfer for the reverse copy shape when DEST dies. Both run inside local_alloc, i.e. AFTER flow (so the transfer is invisible to the byte census) and BEFORE global_alloc (so it changes the priorities the sort sees). This is the only mechanism in the compiler that can ADD references to a pseudo without adding an emitted instruction, and no session has probed it.",
+   "next_probe": "Forensics or structural. Instrument or trace optimize_reg_copy_1/2 on this function (BB2_ALLOC_DEBUG already prints the post-transfer nrefs, so a differential is enough: build a chassis containing a copy insn whose source is a reference-rich pseudo and whose destination is the walk pointer, e.g. `s32 *src = D_800A3610 + 5; ... uses of src ...; var_s0 = src;` with src's death after the copy, and read pseudo 73's nrefs off tmp/grind/func_80078654/s5/eval.sh). Establish the per-copy transfer yield first on ONE form; if the transfer moves fewer than 8 references, or if every shape that supplies 8 transferable references materialises extra instructions, this mechanism is dead and the (arg0 >= 13 / walk <= 12) proof obligation becomes unsatisfiable, which is the evidence an escalation entry would need."
   },
   {
-   "hypothesis": "The residual is an artefact of having PATCHED an inherited body rather than re-derived the function: a from-scratch reconstruction of func_80078654 from the target bytes may express the buffer or the walk in a partition no incremental edit of the current body can reach.",
-   "mechanism": "Every form measured in s1-s5 is a local edit of one inherited body, and s4+s5 now show that neither 89k random mutations nor a directed cross-product over six chosen axes leaves that dataflow neighbourhood \u2014 the permuter mutates spellings rather than inventing a different decomposition, and the two hand-built alternative partitions this session (index walk, sub-pointer) both land strictly worse. The priority model says the answer must lie in a different partition, so a re-derivation is the only systematic way to leave the neighbourhood.",
-   "next_probe": "Rederive modality \u2014 BUT NOTE THE BLOCKER MEASURED THIS SESSION: m2c is NOT installed (ModuleNotFoundError: No module named 'm2c'; no ~/m2c checkout). Step one is therefore to install decompals/m2c into .venv, or to hand-derive the reconstruction directly from asm/funcs/func_80078654.s. Then write the reconstruction VERBATIM from that output (not from candidate.c), measure it with tmp/grind/func_80078654/s5/eval.sh (allocno table + byte diff in one call), and specifically check whether the reconstruction expresses arg0 with <= 5 RA-time references or expresses the walk with a second induction variable."
+   "hypothesis": "The residual is an artefact of having PATCHED an inherited body rather than re-derived the function: a from-scratch reconstruction of func_80078654 from the target bytes may express the buffer or the walk in a partition no incremental edit of the current body can reach. (Carried forward from s5; still the only untried MODALITY.)",
+   "mechanism": "Every form measured in s1-s6 is a local edit of one inherited body. s4 and s5 show that neither 129k random/directed permutations nor hand-built alternative partitions leave that dataflow neighbourhood, and s6 shows the reference counts are fixed by RTL expansion - so only a genuinely different decomposition of the same dataflow can move them. NB s6's proof obligation constrains what a re-derivation must achieve: it must give the walk pointer >= 13 flow-time references while emitting only 5 mentions of $s0.",
+   "next_probe": "Rederive modality. BLOCKER MEASURED IN s5: m2c is NOT installed (ModuleNotFoundError: No module named 'm2c'; no ~/m2c checkout). Step one is to install decompals/m2c into .venv or hand-derive directly from asm/funcs/func_80078654.s. Write the reconstruction VERBATIM from that output (not from candidate.c) and measure it with tmp/grind/func_80078654/s5/eval.sh, checking specifically whether the reconstruction gives pseudo 73 more than 5 references without adding instructions."
   },
   {
-   "hypothesis": "No further permuter campaign on this function has positive expected value; the modality should be considered closed rather than re-dispatched.",
-   "mechanism": "Three chassis and two mutation regimes (129,034 iterations) produced zero score-improving finds, and both regimes converged on the SAME equal-score attractor \u2014 rewrites that clobber the walk pointer inside the loop, which the permuter's scorer cannot distinguish from a legal respelling. The search therefore spends its budget in a basin that is semantically invalid by construction.",
-   "next_probe": "If the driver dispatches permuter again, do NOT re-run a campaign on this chassis family. The only permuter work with any remaining value is a campaign seeded from a RE-DERIVED chassis (frontier item 2) once one exists \u2014 i.e. permuter becomes useful again only after rederive produces a genuinely different decomposition to seed it with."
+   "hypothesis": "Every mechanical route through GCC 2.7.2's allocation stack is now measured dead, so if the optimize_reg_copy transfer probe also fails the function is at a genuine model-level wall and the correct disposition is an owner escalation rather than further grinding.",
+   "mechanism": "The kills now cover: reference weighting by loop depth (s1 H3), base/walk merge (s2 H4), every non-priority find_reg route (s2 H5), live-length inflation (s2 H6), sibling census (s2 F2), duplication into arms with cross-jump re-merge (s3 F4), 129k permuter iterations across three chassis and two regimes (s4, s5), index-walk and sub-pointer partitions (s5), post-RA reference creation and reload address reloads (s6), the combine free-reference window (s6), the strictness of the tie-break (s6), and the find_reg pass-0 seeding route (s6).",
+   "next_probe": "Do NOT emit owner-gated from a non-escalation modality - the driver decides exhaustion. The remaining ladder is: the optimize_reg_copy transfer probe (frontier 1), then rederive (frontier 2), then synthesis. Only if the driver later assigns `escalation` should the two endgame-lock gates be evaluated; note in advance that gate 1 (canonical-asm) needs STRONG scan_hand_coded signals, which this ordinary draw-primitive helper is very unlikely to have, and gate 2 needs a citable SOTN-master precedent for a coercion family, which no session has found."
   }
  ],
  "judge_constraints": [],
