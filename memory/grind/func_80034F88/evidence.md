@@ -1768,3 +1768,155 @@ from self-approving a respelling. s15 therefore returned `ruling-request`.
 `BB2_FINDREG_DEBUG` takes a **pseudo number**, not a boolean — `=1` silently
 matches pseudo 1 and prints nothing. Use `BB2_FINDREG_DEBUG=<pseudo>` (or
 `BB2_RELOAD_DEBUG=1`, which dumps every retrying call).
+
+# ==================== s16 (forensics) ====================
+Session-numbering note: the driver dispatched this session as "session 15", but
+two earlier attempts already occupied the s15 scratch namespace — `tmp/grind/
+func_80034F88/s15/` (the ruling-request session whose three-object score-0 form
+the Judge FAILed on 2026-08-13 16:36) and `tmp/grind/func_80034F88/s15b/` (a
+forensics session the driver DISCARDED for a scope violation, so nothing it found
+was ever banked). This session's scratch is `s15c/`. Everything below was
+measured or verified first-hand here; s15b material is cited only where this
+session independently reproduced it.
+
+## The target's own register assignment, read off asm/funcs/func_80034F88.s
+The datum every earlier session inferred but the ledger never wrote down
+literally. The flag section of the target is:
+
+    lui  $v1,%hi(D_80106A73) ; addiu $v1,$v1,%lo(D_80106A73)   <- materialisation #1
+    lbu  $a0,0x0($v1) ; andi $a0,$a0,0xF8 ; sb $a0,0x0($v1)    <- the 0xF8 mask
+    lw   $v0,0x20($a1) ; lbu $a0,0x0($v1) ; andi $v0,$v0,0x1
+    ori  $v0,$a0,0x1
+    lui  $a0,%hi(D_80106A73) ; addiu $a0,$a0,%lo(D_80106A73)   <- materialisation #2
+    sb   $v0,0x0($v1)                                          <- bit-1 store, base $v1
+    lw   $v0,0x20($a1) ; lbu $v1,0x0($a0) ; andi $v0,$v0,0x2
+    ori  $v0,$v1,0x2 ; sb $v0,0x0($a0)                         <- bit-2, base $a0
+    lui  $a0,%hi(D_80106A73) ; addiu $a0,$a0,%lo(D_80106A73)   <- materialisation #3
+    lw   $v0,0x20($a1) ; lbu $v1,0x0($a0) ; andi $v0,$v0,0x4
+    ori  $v0,$v1,0x4 ; sb $v0,0x0($a0)                         <- bit-4, base $a0
+    ... lbu $v0,0x17($v0) ; lui $at,%hi(D_80106A70) ; sb $v0,%lo(D_80106A70)($at)
+
+Read structurally: the target holds &D_80106A73 in EXACTLY TWO live ranges — one
+in $v1 spanning the mask block and the whole bit-1 block, and one in $a0 that is
+SET TWICE (once before the bit-2 block, once before the bit-4 block, byte-
+identical materialisations). The trailing 3-byte copy loop uses no base local at
+all: `%lo(D_80106A70)($at)`, the assembler's own scratch. `p` lives in $a1, and
+the loaded byte alternating $a0 / $v1 between the first segment and the other two
+follows from the base choice, it is not an independent degree of freedom.
+
+Two live ranges of one address, each with its own hard register, is the entire
+10-point residual.
+
+## The single-object ceiling is a structural fact of GCC 2.7.2, verified in source
+Verified first-hand this session (not inherited):
+* `tools/gcc-2.7.2/global.c:426` — `reg_allocno[i] = max_allocno++;`. One allocno
+  per pseudo. The only aliasing path is the `reg_may_share` branch two lines
+  above, which MERGES two pseudos into one allocno; there is no split anywhere.
+  `find_reg` then gives each allocno a single hard register for its whole live
+  range, and 2.7.2 has no live-range-splitting pass at all.
+* `tools/gcc-2.7.2/reload.c:4128-4137` — the one escape (spill the pointer and let
+  reload rematerialise its `REG_EQUIV (symbol_ref "D_80106A73")` into a different
+  reload register per reference) is closed in source:
+
+      if (GET_CODE (ad) == REG) { regno = REGNO (ad);
+        if (reg_equiv_constant[regno] != 0
+            && strict_memory_address_p (mode, reg_equiv_constant[regno]))
+          { *loc = ad = reg_equiv_constant[regno]; return 1; }
+
+  On MIPS a bare symbol_ref IS a legitimate memory address, so the MEM's address
+  is replaced by the constant instead of being reloaded into a register: the
+  access degenerates to the plain-symbol form (`lbu $r,SYM`), the measured 28-29
+  family, never an addend-0 base.
+
+Therefore two hard registers for this address require two allocnos, which require
+two pseudos, which — given the kill below — require two C pointer objects. That
+is the banned construct by construction, not by spelling.
+
+## NEW MEASUREMENT — the anonymous-reference escape is dead (4 forms)
+The only route to a second base that is neither a DECLARED nor an ASSIGNED C
+pointer object is an ANONYMOUS reference: a direct symbol access, or pointer
+arithmetic yielding an unnamed temporary. Four spellings measured on the r8
+single-object chassis (`tmp/grind/func_80034F88/s15c/variants/*.c`,
+`s15c/results.json`; honest `sandbox func_80034F88 --disable all`; target census
+49 insns / lbu 176 / sb 164 / lui 456):
+
+    r8.c  single object `q`, re-assigned before the bit-2 and bit-4 blocks
+                                            score 10   49 insns  lbu 175 lui 456
+    a1.c  q covers mask+bit-1; bit-2 and bit-4 use `D_80106A73` directly
+                                            score 28   48 insns  lbu 174 lui 457
+    a2.c  mask+bit-1 use `D_80106A73` directly; q covers bit-2 and bit-4
+                                            score 14   49 insns  lbu 175 lui 458
+    a3.c  r8 chassis with only the bit-4 block spelled as a direct reference
+                                            score 16   49 insns  lbu 175 lui 457
+    a4.c  bit-2/bit-4 spelled `*((u8 *)&D_80106A70 + 3)` — arithmetic off the
+          neighbouring symbol, hoping for an unfoldable temporary
+                                            score 28   49 insns  lbu 174 lui 457
+
+Every anonymous spelling is WORSE than the 10-point single-object floor, and the
+lui census RISES (456 -> 457/458) instead of holding the target's 456: each
+anonymous access pays its own materialisation rather than sharing a base.
+
+## Forensic cause, from the instrumented cc1 (not inferred from the score)
+`tmp/grind/func_80034F88/s15c/rtl/a2/cc1.err:637-646` (BB2_ALLOC_DEBUG on a2, the
+best anonymous form) lists this function's allocnos:
+
+    ord=0 pseudo=73 hardreg=3  nrefs=11 livelen=7  pri=47142
+    ord=1 pseudo=82 hardreg=2  nrefs=5  livelen=7  pri=14285
+    ord=2 pseudo=86 hardreg=2  nrefs=5  livelen=7  pri=14285
+    ord=3 pseudo=78 hardreg=3  nrefs=5  livelen=11 pri=9090
+    ord=4 pseudo=77 hardreg=2  nrefs=3  livelen=4  pri=7500
+    ord=5 pseudo=81 hardreg=3  nrefs=3  livelen=4  pri=7500
+    ord=6 pseudo=85 hardreg=3  nrefs=3  livelen=4  pri=7500
+    ord=7 pseudo=74 hardreg=4  nrefs=6  livelen=17 pri=7058   <- the ONE pointer q
+    ord=8 pseudo=72 hardreg=5  nrefs=6  livelen=37 pri=3243   <- p
+
+It is the SAME pseudo set as the single-object control r8 (73/78/82/86/77/81/85/
+74/72 — nine allocnos, one pointer pseudo): replacing three of q's uses with
+anonymous references created NO new pseudo. GCC 2.7.2 expands a direct symbol MEM
+with the symbol_ref inline in the address, so an anonymous reference never
+occupies a register — no pseudo, no allocno, no second hard register. The
+generated asm confirms it (`s15c/rtl/a2/code6cac_b.s`): `lbu $2,D_80106A73` /
+`sb $2,D_80106A73` / `sb $3,D_80106A73` for the direct segment, then `0($4)` for
+the bit-2 and bit-4 segments — one base register, not two.
+
+Net: the pointer-OBJECT count is not a spelling choice. It is the only dial GCC
+2.7.2 exposes for the number of base registers, and the Judge has banned turning
+it past one.
+
+## Gate-1 datum (re-run and re-verified this session)
+`python3 tools/scan_hand_coded.py --single func_80034F88` ->
+`HAND_CODED: tier=LOW  score=0/8  ("no strong hand-coded indicators")`, all eight
+signals unchecked (0 multu/mflo pairs, no empty-body branches, no BIOS jumptable
+pattern, no high-similarity siblings, all callee-save uses saved, no redundant
+mask-before-shift, max load burst 3 in any 8-insn window, 1 spill / 4 distinct
+registers over 49 instructions). Banked here because the session that previously
+ran it was discarded, so the result never reached the ledger. It is dispositive
+against a canonical-asm disposition under endgame-lock-disposition gate 1 — as
+one should expect, since the residual is an ordinary GCC register-allocation
+tie-break, the opposite of a hand-coded signature.
+
+## Ledger hygiene performed this session
+`memory/grind/func_80034F88/candidate.c` had been left holding the THREE-object
+score-0 body the Judge FAILed on 2026-08-13 16:36 (its own header says "DO NOT
+INSTALL AND SUBMIT"). That is a trap for a future session, and candidate.c is
+specified as the best ADMISSIBLE form. candidate.c now holds the single-pointer-
+object r8 body at honest 10; the FAILed three-object body remains banked at
+`memory/grind/func_80034F88/rejected/three-pointer-objects-judge-FAIL-score0.c`.
+
+- [s15] Target register assignment, read literally off asm/funcs/func_80034F88.s for the first time in this ledger: &D_80106A73 lives in EXACTLY TWO live ranges — $v1 spanning the 0xF8 mask and the whole bit-1 block (lui/addiu $v1 once), and $a0 SET TWICE with byte-identical lui/addiu materialisations, once before the bit-2 block and once before the bit-4 block. The trailing 3-byte copy loop uses no base local at all (sb $v0,%lo(D_80106A70)($at)); p lives in $a1.
+
+- [s15] tools/gcc-2.7.2/global.c:426 is `reg_allocno[i] = max_allocno++;` — one allocno per pseudo. The only aliasing path is the reg_may_share branch two lines above, which MERGES allocnos; there is no split anywhere, and GCC 2.7.2 has no live-range-splitting pass. find_reg gives each allocno one hard register for its whole live range.
+
+- [s15] tools/gcc-2.7.2/reload.c:4128-4137 closes the spill/rematerialise escape in source: a REG address whose pseudo carries a reg_equiv_constant that is itself a legal memory address has the MEM ADDRESS replaced by the constant (*loc = ad = reg_equiv_constant[regno]; return 1;) rather than being reloaded into a register. On MIPS a bare symbol_ref is a legal address, so the access degenerates to the plain-symbol form.
+
+- [s15] Anonymous-reference sweep on the r8 single-object chassis, honest sandbox (target census 49 insns / lbu 176 / sb 164 / lui 456): r8 = 10 (49, lbu 175, lui 456); a1 = 28 (48, lbu 174, lui 457); a2 = 14 (49, lbu 175, lui 458); a3 = 16 (49, lbu 175, lui 457); a4 = 28 (49, lbu 174, lui 457). Every anonymous spelling is worse than the single-object floor AND raises the lui census above the target's 456.
+
+- [s15] BB2_ALLOC_DEBUG trace for a2 (tmp/grind/func_80034F88/s15c/rtl/a2/cc1.err:637-646) lists nine allocnos — 73(hr3) 82(hr2) 86(hr2) 78(hr3) 77(hr2) 81(hr3) 85(hr3) 74(hr4, the one pointer) 72(hr5, p) — the identical pseudo set to the single-object control. Replacing three pointer uses with anonymous references created NO new pseudo: GCC 2.7.2 never puts a direct symbol_ref into a register on MIPS, so an anonymous reference cannot be a base register.
+
+- [s15] Generated asm for a2 (s15c/rtl/a2/code6cac_b.s) confirms it at instruction level: lbu $2,D_80106A73 / sb $2,D_80106A73 / sb $3,D_80106A73 for the direct segment, then 0($4) for the bit-2 and bit-4 segments — one base register, not two.
+
+- [s15] Gate-1 datum re-run and banked this session (the prior session that ran it was discarded, so it never reached the ledger): python3 tools/scan_hand_coded.py --single func_80034F88 -> HAND_CODED: tier=LOW score=0/8, all eight signals unchecked (0 multu/mflo pairs, no empty-body branches, no BIOS jumptable pattern, no high-similarity siblings, all callee-save uses saved, no redundant mask-before-shift, max load burst 3 in any 8-insn window, 1 spill / 4 distinct registers over 49 insns). Dispositive against a canonical-asm disposition under endgame-lock-disposition gate 1.
+
+- [s15] Ledger hygiene: memory/grind/func_80034F88/candidate.c had been left holding the THREE-pointer-object score-0 body that the layer-1 reviewer FAILed on 2026-08-13 15:24 and the Judge FAILed on 2026-08-13 16:36 (its own header reads 'DO NOT INSTALL AND SUBMIT') — a trap in the slot reserved for the best ADMISSIBLE form. candidate.c now holds the single-pointer-object r8 body at honest 10; the FAILed body remains banked in rejected/.
+
+- [s15] src/code6cac_b.c was left byte-identical to its committed state this session (the probe harness restores it after every splice); no build-pipeline file, rule file, or engine file was touched.

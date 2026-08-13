@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -87,23 +87,24 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Forensics: cc1 -da dumps name the mechanism (cse value-table flush at the two-armed if/else join labels) and REFUTE the ledger's central premise \u2014 the target's four address materialisations need a fre"
+  },
+  {
+   "session": 15,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Forensics proves the 10-point residual is a STRUCTURAL ceiling of GCC 2.7.2, not a plateau: the target needs &D_80106A73 in two hard registers, global.c:426 gives one allocno per pseudo with no live-r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 10 points are a pure local-alloc question: give the FIRST segment (mask + bit-1 block) a different hard register from the bit-2/bit-4 segments \u2014 target has base a0 / byte v1 there, the build has base v1 / byte a0 \u2014 without reintroducing the banned multi-declaration shape.",
-   "mechanism": "One pseudo re-set three times gets ONE hard register for its whole live range, so the first segment is pinned to the same choice as the rest. Four distinct pseudos give the allocator four allocnos and it picks target's assignment. The question is which OTHER live-range shape produces two allocnos without two pointer objects \u2014 e.g. a re-assignment that makes the pointer dead between segments, an extra non-pointer local whose live range crosses the first segment and shifts allocno priority, or a different order of first-use for q and the byte local.",
-   "next_probe": "Run the instrumented cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG / BB2_RANK_DEBUG / BB2_FINDREG_DEBUG set on the r8 form and on the banned w4 control, diff the allocno priority and find_reg traces for the pointer and byte pseudos, and identify exactly which priority input differs. tmp/grind/func_80034F88/s14/dump.sh already takes trailing ENV=1 arguments for this; the dumps land in s14/rtl/<tag>/cc1.err."
+   "hypothesis": "The pure-C axis for this function is now measured closed: reaching 0 requires two C pointer objects, which the Judge has banned, and the 10-point single-object floor is a compiler-structural ceiling rather than a search plateau. What remains is a DISPOSITION question, not a grinding question, and it belongs to escalation modality (the driver's call, not a session's).",
+   "mechanism": "Two hard registers require two allocnos (global.c:426, one allocno per pseudo, no live-range splitting); the two routes to a pseudo that is not a named C object are both dead (anonymous references never occupy a register; reload replaces the address with the REG_EQUIV constant per reload.c:4128-4137). Endgame-lock gate 1 is already evaluated and FAILS: scan_hand_coded tier=LOW score=0/8, which is what an RA tie-break should score.",
+   "next_probe": "Escalation-modality session: evaluate gate 2 by searching SOTN-master (and Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist purely to raise the allocno count and win a base-register split. If no such precedent is in hand, both gates fail and the 2026-07-27 standing ruling pre-decides the disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10). Do NOT re-run the pure-C ladder: the s16 evidence block in evidence.md is the packet's evidence base."
   },
   {
-   "hypothesis": "F2 (unchanged, still the standing escalation): the classification contradiction. The target bytes are reachable (0 measured three times now) but every construct that reaches them is banned, and s14's 10-point form \u2014 the closest non-banned shape yet \u2014 carries value-redundant self-assignments that are arguably the same intent respelled.",
-   "mechanism": "s14 changes the escalation's evidence base in the owner's favour: the ledger's premise that four DECLARATIONS are forced is refuted, the mechanism is now a named GCC decision (cse value-table flush at a two-armed if/else join, plus local-alloc's single-allocno-per-pseudo assignment), and the remaining gap is 10 points of register allocation rather than a structural impossibility.",
-   "next_probe": "Do not file it from a non-escalation modality. If the allocation probe above closes the gap the question becomes moot; if it does not, the ruling question should now be worded around the s14 mechanism \u2014 is a value-redundant re-assignment of one pointer local (frozen-list 'dead stores / self-assigns to LOCALS') admissible here, given the banned construct was four DECLARATIONS and the codegen requirement is a fresh SET after a cse flush?"
-  },
-  {
-   "hypothesis": "The mask + bit-1 segment can be given target's shape by making the bit-1 block share the mask's VALUE (no reload, load-delay nop) while still sharing its base \u2014 which is what target does.",
-   "mechanism": "Target's bit-1 block has no address materialisation and no reload; it reuses the masked byte still live in v1 and stores through the mask's base. s14's r12 spells exactly that in C (the mask leaves the byte in a local, the bit-1 block reuses it) and the RTL confirms only three QI loads \u2014 yet the build still emits a memory op in the bit-1 block's delay slot and scores 10, so something between combine and dbr is reinstating it.",
-   "next_probe": "Read s14/rtl/r12/code6cac_b.i.{combine,lreg,greg,sched2,dbr} in sequence and find the pass that turns r12's three-load RTL into a four-memory-op schedule; the slice.py per-pass memQI column already shows 7 at rtl/cse/combine and 8 at greg, so the reinstatement happens in local-alloc or reload."
+   "hypothesis": "The one dial left inside the single-object constraint that has never been measured is WHICH hard register the single pointer allocno wins: r8 gives it $a0 (hardreg=4), matching the target's bit-2/bit-4 segments but not its bit-1 segment. Forcing it to $v1 instead would match the bit-1 segment and mismatch the other two, and the residual may not redistribute symmetrically.",
+   "mechanism": "global.c allocno_compare orders allocation by pri = floor_log2(n_refs) * n_refs * 10000 * size / live_length, then falls through to allocno number (pseudo number, i.e. declaration order) on a tie; find_reg then excludes regs_someone_prefers. Changing the pointer allocno's priority relative to the three loaded-byte allocnos (pri 7500 each) \u2014 by declaration order, by giving the pointer more or fewer refs, or by lengthening/shortening a byte local's live range \u2014 flips which of $v1 / $a0 it wins without adding a second object.",
+   "next_probe": "On the r8 chassis, sweep declaration order and byte-local live-range length until the BB2_ALLOC_DEBUG trace shows pseudo 74 at hardreg=3 ($v1) rather than 4 ($a0), then score it. If the residual comes in below 10 the ceiling argument needs re-pricing; if it lands at 10 or above (the expected outcome \u2014 one register can satisfy at most one of the two segments either way), that closes the last intra-constraint dial and the escalation packet is complete."
   }
  ],
  "judge_constraints": [
