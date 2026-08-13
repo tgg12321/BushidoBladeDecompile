@@ -616,3 +616,104 @@ RE-DERIVATION question, exactly as s3 concluded.
 - [s8] Endgame gate 1 is pre-measured for whoever files the escalation: `python3 tools/scan_hand_coded.py --single func_80078654` returns tier=LOW, score 0/8 (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 17 spills over 116 insns / 10 distinct registers, S4 max load burst 3, S5 no high-similarity siblings, S6 no BIOS jumptable pattern, S7 all callee-save uses have $sp saves, S8 no redundant mask-before-shift). The canonical-asm gate fails on evidence, not on presumption.
 
 - [s8] Gate 2 (a citable SOTN-master precedent for an RA-coercion family) remains unfound after eight sessions; the sanctioned families that do exist (duplicated-statement-into-arms, dead-store/self-assign, constant-holder locals, pointer alias) are all measured INERT or byte-materializing on this function (s3 duplication +2/+39 insns, s6 V1 zero yield / V2 +2 insns per reference, s7 alias round-trip zero yield, s8 x1 fourth callee-save).
+
+## SESSION 9 (escalation) — 2026-08-13
+
+**Base re-measured.** candidate.c applied over src/text1b_b.c (HEAD still
+carries the inherited inline-asm body that scores 23; the s2-s8 ledger commits
+are ledger-only). `sandbox func_80078654 --disable all` =>
+`{"score": 19, "target_insns": 116, "build_insns": 116, "scorable": true,
+"rules_dropped": 6, "cheat_asm_stripped": 89}`. Ninth consecutive session at
+floor 19.
+
+**What holds the byte match on main.** Six regfix rules, zero asmfix rules
+(regfix.txt:2556-2566): one register swap `func_80078654: $16 <-> $17`, four
+prologue/epilogue save-slot substitutions (`sw $17,72`->`sw $17,76` @1,
+`sw $16,76`->`sw $16,72` @9, `lw $16,76`->`lw $16,72` @109,
+`lw $17,72`->`lw $17,76` @110) and one `reorder 110,109 @ 109-110`. Every one
+of the six is paperwork for the SAME single fact: the two callee-saves are
+swapped relative to target. There is no second defect anywhere in the function.
+
+**The RMW-window-only split — the last un-built partition — is KILLED.**
+Form: block-scoped PURE aliases of the parameter confined to the call-free tail
+RMW window (`p = arg0; p[5] = p[5] + 0xC;` in block A, `q = arg0; q[5] = q[5] +
+0xC;` in the loop), pure alias rather than `&arg0[5]` so the target's 0x14
+displacement is preserved. Measured with the s5 one-call instrument
+(`s5/eval.sh .../s9/r1.c r1`).
+
+    ALLOCDBG ord=3 pseudo=72 hardreg=16 nrefs=13 livelen=98 pri=3979   ($s0)
+    ALLOCDBG ord=4 pseudo=73 hardreg=17 nrefs=5  livelen=91 pri=1098   ($s1)
+    insns: mine=116 target=116  difflines=38
+
+Byte-identical to the base allocno table and the base diff. cse deletes a
+call-free pure alias outright, so it never reaches register allocation and
+moves zero references off the parameter.
+
+**Why this closes the theorem.** s8's forced-decomposition theorem rested on
+one inductive premise — that every pseudo carrying a proper subset of the twelve
+buffer accesses is live across a call and so costs a fourth callee-save. That
+premise is now deductive, because the alias axis is closed at BOTH endpoints
+with nothing in between:
+  * call-CROSSING pure alias (s8a): survives cse, becomes a fourth
+    call-crossing pseudo (7 refs / 47 live / pri 2978) that takes $s0 itself;
+    119 insns, frame 0x60 vs 0x58, 47 diff lines.
+  * call-FREE pure alias (s9, this session): deleted by cse before RA; zero
+    references moved, allocno table unchanged.
+An alias cheap enough to avoid a callee-save is deleted before it can lower
+reg_n_refs; an alias that survives to RA is expensive enough to need one.
+
+**Gate 1 (canonical asm) — FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80078654`:
+
+    HAND_CODED: tier=LOW  score=0/8  (func_80078654, 116 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing   0 multu/mflo pairs
+      [ ] S2 empty branch   no empty-body branches
+      [ ] S3 no spills      116 insns, 17 spills, 10 distinct regs
+      [ ] S4 front loads    max load burst 3 in any 8-insn window
+      [ ] S5 cluster        no high-similarity siblings (jaccard < 0.5)
+      [ ] S6 BIOS jumptable no BIOS jumptable call pattern
+      [ ] S7 unsaved $sN    all callee-save uses have $sp save
+      [ ] S8 redundant mask no redundant mask-before-shift
+
+The STRONG tier needs S1/S2/S6; none fires. Per
+.claude/rules/endgame-lock-disposition.md a LOW score is dispositive, and a
+register-allocation tiebreak is ordinary compiler output by definition.
+
+**Gate 2 (SOTN precedent for a coercion family) — FAILS.** No precedent can be
+exhibited because no closing CONSTRUCT exists to seek one for. Nine sessions
+across six modalities measured every sanctioned family this CFG admits and each
+leaves allocno_compare's ordering intact: duplication-into-arms raises the
+parameter 1.5x faster than the walk pointer (5671 vs 2125 at k=2) and is not
+byte-neutral here; the base/walk merge tops out at 2448 against 3979; the
+sub-pointer arg0-lowering form forces a fourth callee-save; the joint quadrant
+produces an exact 2424/2424 tie that global.c's strict `*v1 - *v2` tie-break
+resolves in the parameter's favour; and the window alias above is deleted
+before RA. A census that comes back negative is a failed gate, not an open
+question.
+
+**Disposition applied.** Both gates fail, so the owner's standing ruling
+(2026-07-27) is applied immediately with no owner wait: entry filed at
+docs/grind/decisions.md as `OWNER-ESCALATION — RESOLVED BY STANDING RULING
+(2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`. src/text1b_b.c was reverted
+to HEAD so the six regfix rules keep holding the byte match and the full-build
+oracle stays green, exactly as that ruling's disposition clause requires. The
+retained rules are NOT sanctioned as a technique; they survive only to hold the
+match, and the function is openly flagged unresolved and remains eligible for
+re-attempt if a genuine new pure-C lever or new tooling emerges.
+
+- [s9] Base re-measured this session with candidate.c applied over src/text1b_b.c: sandbox func_80078654 --disable all = {"score": 19, "target_insns": 116, "build_insns": 116, "scorable": true, "rules_dropped": 6, "cheat_asm_stripped": 89}. Ninth consecutive session at floor 19; the build is instruction-exact and the whole residual is one two-way callee-save inversion.
+
+- [s9] What holds the byte match on main: six regfix rules and zero asmfix rules (regfix.txt:2556-2566) — `func_80078654: $16 <-> $17`, four prologue/epilogue save-slot substitutions (sw $17,72->sw $17,76 @1; sw $16,76->sw $16,72 @9; lw $16,76->lw $16,72 @109; lw $17,72->lw $17,76 @110) and `reorder 110,109 @ 109-110`. All six are paperwork for the SAME single inversion; there is no second defect in the function.
+
+- [s9] GATE 1 evidence (verbatim tool output): `HAND_CODED: tier=LOW score=0/8 (func_80078654, 116 insns) / Reason: no strong hand-coded indicators` with S1-S8 all unchecked. The STRONG tier needs S1/S2/S6; none fires.
+
+- [s9] GATE 2 evidence: no SOTN-master (or VS/ESA) precedent is exhibited and none can be, because six modalities across nine sessions have failed to identify ANY closing construct for which a citation could be sought. The blocking mechanism is measured exactly — global.c allocno_compare sorts by floor_log2(n_refs)*n_refs/live_length, giving the parameter 3979 (13 refs / 98 live) against the walk pointer's 1098 (5 refs / 91 live, ceiling 8 refs / 2448), and find_reg hands out free callee-saves by ascending first-fit.
+
+- [s9] New this session: the RMW-window-only alias split is deleted by cse before register allocation — allocno table byte-identical to the base (pseudo 72: 13 refs / 98 live / 3979 / $s0; pseudo 73: 5 refs / 91 live / 1098 / $s1), 116 insns, 38 diff lines, zero references moved off the parameter.
+
+- [s9] Closing the axis: a call-CROSSING pure alias (s8a) survives cse but becomes a fourth call-crossing pseudo (7 refs / 47 live / pri 2978) that takes $s0 itself at 119 insns and frame 0x60 vs 0x58; a call-FREE pure alias (s9) is deleted before RA. There is no middle, so s8's forced-decomposition theorem premise (3) is now deductive rather than inductive.
+
+- [s9] Exhaustion record: 9 sessions; 6 distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive, escalation); 129,034 permuter iterations across three campaigns with ZERO score-improving finds; a per-insn provenance table proving both pseudos' reference counts are pinned from RTL expansion through RA with no post-RA reference; a full hand re-derivation from asm/funcs/func_80078654.s accounting for all 116 target instructions and converging on the current body; 14 disproven forms banked in memory/grind/func_80078654/rejected/.
+
+- [s9] Disposition applied per the standing ruling: src/text1b_b.c reverted to HEAD so the six regfix rules keep holding the byte match and the full-build oracle stays green. The retained rules are NOT sanctioned as a technique — they survive only to hold the match, and the function is openly flagged unresolved and remains eligible for re-attempt. The best honest pure-C form (floor 19, instruction-exact, zero inline asm — materially better than HEAD's inherited floor-23 inline-asm body) is preserved at memory/grind/func_80078654/candidate.c.

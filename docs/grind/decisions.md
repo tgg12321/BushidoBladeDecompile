@@ -5271,3 +5271,105 @@ One FAKE construct: a SINGLE-LEVEL do{}while(0) around the retry-loop body, anno
 ## 2026-08-13 05:10 — func_8006288C — final call — **PASS**
 
 Three constructs: (C1) the slot scan respelled as a real do/while with an early `goto out` and (C2) the `D_800F1138 = 1;` store moved to the head of the init block are ordinary program logic — a real 6-trip loop with a real exit condition and a real unconditional store; no family needed. (C3) `s32 one; one = 1; mask = one << i;` is the only construct without independent semantic purpose, and it is the verbatim spelling on the frozen SOTN list (no-new-park-categories.md:175 'Opaque arithmetic variables ... s32 one = 1;', generalized by named-local-fake-exception.md:12). All four prerequisites hold: exhaustion is real, not asserted — hypotheses.md H7 measures 10 literal-1 forms (store at each of 7 init positions, while(1)/break, i-last, reversed init) all parking `addiu $t3,$zero,1` at slot 6, banked as rejected/literal-shift-base-parks-const-at-slot6.c, with H6 (8 holder positions) and H8 (6 type permutations) closing the other axes; mechanism named (loop.c invariant hoist to preheader tail + sched.c first-pass slot); `/* FAKE: ... */` present at the declaration with WHAT/MECHANISM/EXHAUSTION. Decisive fact: the holder is not even first-reach — HEAD already carried it as `int new_var;` with the same single use as the shift base, so this session renamed, moved and annotated an existing live local rather than introducing a coercion. Verified independently: `git diff -U0 src/text1b.c` confines every hunk to func_8006288C; `grep func_8006288C regfix.txt asmfix.txt` returns 0 (all 6 rules deleted, none respelled); the file is UTF-8/LF; no pins, no `__asm__`, no volatile, no alias rename, no dead store, no array. Full evidence: memory/grind/func_8006288C/{hypotheses.md,evidence.md,self_vet.md,rejected/}.
+
+## 2026-08-13 — func_80078654 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+`func_80078654` (src/text1b_b.c:1009, `text1b_b`) reached the driver's
+exhaustion condition after nine grind sessions across six distinct modalities
+(recon, structural ×2, permuter ×2, forensics ×2, rederive, escalation) with the
+honest pure-C floor FLAT at 19 since session 1. Both endgame-lock AND-gates fail,
+so the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`) is applied here directly. Nothing
+is pending on the owner.
+
+**What the residual is.** The build is instruction-exact — `sandbox
+func_80078654 --disable all` reports `target_insns 116 == build_insns 116` — and
+the entire 19-point residual is ONE two-way callee-save allocation inversion:
+target holds the parameter `arg0` in `$s1` and the table-walk pointer in `$s0`;
+our build holds them the other way round. All 38 objdump diff lines are that one
+swap plus its prologue/epilogue save-slot consequences.
+
+**What holds the byte match on main.** Six regfix rules and zero asmfix rules
+(regfix.txt:2556-2566): `func_80078654: $16 <-> $17`, four save-slot
+substitutions (`sw $17,72`→`sw $17,76` @1, `sw $16,76`→`sw $16,72` @9, `lw
+$16,76`→`lw $16,72` @109, `lw $17,72`→`lw $17,76` @110) and `reorder 110,109 @
+109-110`. Every one is paperwork for that same single inversion. Per the standing
+ruling's disposition clause these rules are RETAINED so the full-build oracle
+stays green; `src/text1b_b.c` was reverted to HEAD at the end of this session.
+The rules are explicitly NOT sanctioned as a technique — they survive only to
+hold the match.
+
+**GATE 1 — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80078654` returns `tier=LOW score=0/8`, reason "no strong hand-coded
+indicators", with every one of the eight signals absent: S1 0 multu/mflo pairs,
+S2 no empty-body branches, S3 17 spills over 116 insns / 10 distinct regs, S4 max
+load burst 3 in any 8-insn window, S5 no high-similarity siblings (jaccard <
+0.5), S6 no BIOS jumptable pattern, S7 every callee-save use has an `$sp` save,
+S8 no redundant mask-before-shift. The STRONG tier requires S1/S2/S6. A
+register-allocation tiebreak is by definition ordinary GCC output, which the rule
+states is dispositive against authorizing asm.
+
+**GATE 2 — SOTN-master precedent for a coercion/spelling family: FAILS.** No
+precedent is exhibited, and none can be, because no closing CONSTRUCT has been
+identified for which a citation could be sought. The mechanism is measured
+exactly: `global.c`'s `allocno_compare` sorts by
+`floor_log2(n_refs)*n_refs/live_length`, and in every compile that emits the
+target bytes the parameter scores 3979 (13 refs / 98 live) against the walk
+pointer's 1098 (5 refs / 91 live, ceiling 8 refs / 2448); `find_reg` then hands
+out free callee-saves by ascending first-fit, so the higher-priority allocno
+takes `$s0`. Every sanctioned family this CFG admits was built and measured, and
+each leaves that ordering intact:
+  * duplicated-statement-into-arms — not byte-neutral here (`find_cross_jump`
+    re-merges neither shape: +2 and +39 insns), and the arithmetic runs the wrong
+    way (loop body holds 6 parameter references against 4 walk references, so
+    duplication raises the parameter 1.5× faster: 5671 vs 2125 at k=2);
+  * base/walk-pointer merge — works as designed and is still 1.63× short
+    (walk 1098 → 2448 vs parameter 3979), 8 refs being the dataflow ceiling;
+  * sub-pointer parameter-lowering (`s32 *ot = &arg0[5]`) — drops the parameter
+    to 6 refs / 1212 but the extracted pointer takes `$s0` itself and forces a
+    fourth callee-save;
+  * the joint quadrant of the 2-D frontier — both pointers land on an EXACT tie
+    (8 refs / 99 live / pri 2424 each), which `allocno_compare`'s strict
+    `return *v1 - *v2` lower-allocno-index tie-break resolves in the parameter's
+    favour;
+  * reference TRANSFER at `optimize_reg_copy_1/2` and allocno SHARING at
+    global.c:450 — both killed by the target's own move census and by the
+    absence of `NOTE_INSN_LOOP_BEG` in this body;
+  * and this session's final probe, the RMW-window-only alias split, below.
+
+**The last inductive premise, closed this session.** Session 8's
+forced-decomposition theorem rested on one premise that was inductive rather than
+deductive: that every pseudo carrying a proper subset of the twelve buffer
+accesses must be live across a call and so cost a fourth callee-save. The target
+contains exactly one call-free window — the tail RMW pair `lw $v0,0x14($sN);
+addiu $v0,$v0,0xC; sw $v0,0x14($sN)` — so this session built the split confined
+to it (block-scoped PURE aliases `p = arg0; p[5] = p[5] + 0xC;`, pure alias so
+the 0x14 displacement survives). Result: cse DELETES a call-free pure alias
+outright, so it never reaches register allocation; the allocno table is
+byte-identical to the base (pseudo 72 nrefs=13 livelen=98 pri=3979 → `$s0`;
+pseudo 73 nrefs=5 livelen=91 pri=1098 → `$s1`), 116 insns, the same 38 diff
+lines, zero references moved. Combined with session 8's measurement that a
+CALL-CROSSING pure alias survives cse but becomes a fourth call-crossing pseudo
+(7 refs / pri 2978) taking `$s0` itself (119 insns, frame 0x60 vs 0x58), the
+alias axis is closed at both endpoints with nothing in between — cheap enough to
+avoid a callee-save means deleted before RA, surviving to RA means paying for
+one. Banked at `memory/grind/func_80078654/rejected/rmw-window-alias-deleted-by-cse.c`.
+
+**Exhaustion record.** 9 sessions; 6 modalities; 129,034 permuter iterations
+across three campaigns (s4: 89,084 over two chassis; s5: 39,950 directed PERM_*
+cross-product) with ZERO score-improving finds; a per-insn provenance table
+proving both pseudos' reference counts are pinned from RTL expansion through
+register allocation with no post-RA reference anywhere; a full hand
+re-derivation from `asm/funcs/func_80078654.s` accounting for all 116 target
+instructions and converging on the current body; 14 disproven forms banked in
+`memory/grind/func_80078654/rejected/`. Full detail:
+`memory/grind/func_80078654/{evidence.md,hypotheses.md,candidate.c,rejected/}`.
+
+**Disposition (standing ruling, applied — no owner action pending).** Classify
+INCOMPLETE-owner-accepted: NOT COMPLETED-C, NOT COMPLETED-INLINE-ASM-CANONICAL.
+Keep the six regfix rules on main so the oracle stays green. Park out of active
+grind so the queue advances, eligible for re-attempt if a genuine pure-C lever or
+new tooling emerges. The best honest pure-C form (floor 19, instruction-exact,
+zero inline asm — materially better than HEAD's inherited floor-23 inline-asm
+body) is preserved at `memory/grind/func_80078654/candidate.c` for that
+re-attempt.

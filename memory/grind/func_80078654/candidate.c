@@ -142,6 +142,39 @@
  * modality is CLOSED. Endgame gate 1 is pre-measured for the escalation:
  * scan_hand_coded --single func_80078654 = tier LOW, score 0/8.
  *
+ * SESSION 9 (escalation) ALSO left this form unchanged and still best at 19
+ * (sandbox re-measured this session with the body applied to src/text1b_b.c:
+ * score 19, target_insns 116 == build_insns 116, rules_dropped 6). It closed
+ * the last inductive premise of the s8 forced-decomposition theorem and then
+ * reached the mandated disposition.
+ *   (a) The RMW-WINDOW-ONLY split — the one un-built partition the ledger's
+ *       frontier named — is KILLED. A block-scoped PURE alias of the parameter
+ *       confined to the call-free tail RMW window (`p = arg0; p[5] = p[5] +
+ *       0xC;` in each block, pure alias so the 0x14 displacement survives) is
+ *       DELETED BY cse before it ever reaches register allocation: the allocno
+ *       table is byte-identical to the base (pseudo 72 nrefs=13 / livelen 98 /
+ *       pri 3979 -> $s0; pseudo 73 nrefs=5 / livelen 91 / pri 1098 -> $s1),
+ *       116 insns, the same 38 diff lines. Zero references move off the
+ *       parameter. Banked at rejected/rmw-window-alias-deleted-by-cse.c.
+ *       Together with s8(a) — a CALL-CROSSING pure alias survives cse but
+ *       becomes a fourth call-crossing pseudo (7 refs / pri 2978) that takes
+ *       $s0 itself, 119 insns / frame 0x60 — the alias axis is closed at BOTH
+ *       endpoints with no middle: cheap enough to avoid a callee-save means
+ *       deleted before RA; surviving to RA means paying for one. Premise (3)
+ *       of the forced-decomposition theorem is now deductive.
+ *   (b) DISPOSITION. Both endgame-lock AND-gates FAIL. Gate 1:
+ *       `scan_hand_coded.py --single func_80078654` = tier LOW, score 0/8, all
+ *       eight signals absent ("no strong hand-coded indicators") — canonical
+ *       asm refused. Gate 2: no in-hand SOTN-master precedent exists, and none
+ *       can exist, because six modalities have failed to identify ANY closing
+ *       construct for which a precedent could be sought. Per the owner's
+ *       standing ruling 2026-07-27 (.claude/rules/endgame-lock-disposition.md)
+ *       the both-gates-fail disposition is pre-decided: REFUSED /
+ *       OWNER-ACCEPTED INCOMPLETE, filed at docs/grind/decisions.md
+ *       (2026-08-13, func_80078654). src/text1b_b.c was REVERTED to HEAD so
+ *       the six regfix rules keep holding the byte match and the full-build
+ *       oracle stays green, per that ruling's disposition clause.
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply

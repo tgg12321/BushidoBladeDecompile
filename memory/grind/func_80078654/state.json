@@ -1,8 +1,8 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,24 @@
    "floor": 19,
    "modality": "rederive",
    "headline": "Rederive modality CLOSED: the hand derivation from the target bytes converges on the inherited body, the last two unbuilt partitions (pure-alias split, joint 2-D move) are measured dead, and a forced-"
+  },
+  {
+   "session": 9,
+   "floor": 19,
+   "modality": "escalation",
+   "headline": "Escalation: the last inductive premise (RMW-window-only alias split) is KILLED \u2014 cse deletes a call-free pure alias before RA, closing the alias axis at both endpoints \u2014 and both endgame gates fail (s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every sanctioned axis on func_80078654 is now measured dead across five distinct modalities, and the forced-decomposition theorem explains why: the correct disposition is an owner escalation, not further grinding.",
-   "mechanism": "The target's three-callee-save census plus its 0xC/0x14 displacements force all twelve buffer accesses onto one pseudo (reg_n_refs 13, pri 3979), while the walk pointer's reference count is pinned at 5 with a ceiling of 8 (pri 2448) and free references are impossible (s6 pinning, s7 no transfer / no sharing) - so allocno_compare can never order the walk pointer first, and its tie-break is strict in the parameter's favour.",
-   "next_probe": "The driver decides exhaustion, not the session; if it assigns `escalation` modality, both endgame gates are already measured and BOTH FAIL, so the entry is the standing 2026-07-27 auto-ruling shape (REFUSED / OWNER-ACCEPTED INCOMPLETE), citing scan_hand_coded tier=LOW score=0/8 for gate 1 and the absence of any citable SOTN-master RA-coercion precedent for gate 2."
+   "hypothesis": "If func_80078654 is ever re-attempted, the only remaining unexplored surface is a different TU-level or header-level premise, not a body-level respelling: every body-level partition of the twelve buffer accesses is now measured dead.",
+   "mechanism": "The forced-decomposition theorem is now fully deductive \u2014 the target has exactly three callee-save-resident values; every one of the twelve buffer accesses must be a direct dereference of a pseudo holding arg0's value (a derived pointer emits displacement 0 instead of 0xC/0x14); a pseudo carrying a proper subset either crosses a call (fourth callee-save, s8a) or is call-free and deleted by cse (s9). So reg_n_refs(arg0) = 13 / pri 3979 in every conforming compile, against a walk-pointer ceiling of 8 refs / pri 2448.",
+   "next_probe": "Only a premise OUTSIDE the function body could change the reference census \u2014 e.g. a corrected declared type for D_800A3610 or for the S78654 field layout that changes how many separate accesses the twelve buffer touches decompose into. That is a header/evidence question, not a codegen-lever question, and it requires evidence of the original object model (which memory/splat-symbol-names-are-not-evidence warns splat's D_ names cannot supply). Do NOT re-grind the body."
   },
   {
-   "hypothesis": "If a further grinding session is assigned before escalation, the only premise of the theorem that is inductive rather than deductive is premise (3): that EVERY pseudo carrying a proper subset of the twelve accesses must be live across a call.",
-   "mechanism": "Premise (3) rests on four measured splits, not on an exhaustive enumeration. A split confined to a call-free window would not need a callee-save - the target's only such window is the `lw $v0,0x14($s1); addiu $v0,$v0,0xC; sw $v0,0x14($s1)` RMW pair at the end of each block.",
-   "next_probe": "Build the RMW-window-only split (a pointer holding arg0's value created and killed strictly between the AddPrim call and the block end, so it never crosses a call) and check with s5/eval.sh whether it (a) survives cse, (b) keeps three callee-saves, and (c) moves reg_n_refs(72) below 13. Note the displacement argument predicts it must still be a pure ALIAS, not `arg0 + 5`, to keep `20($sN)`; a two-reference alias is also the shape cse is most likely to delete."
-  },
-  {
-   "hypothesis": "The ledger's own instruments are now sufficient to reject a candidate body before it is assembled, which any future session on this function should exploit rather than rebuild.",
+   "hypothesis": "The ledger's instruments are reusable for any future re-attempt and should be exploited rather than rebuilt.",
    "mechanism": "s7 established `mentions in in.c.combine` == `reg_n_refs at RA` as a measured identity for this function, and s5/eval.sh returns the allocno table plus a full-pipeline objdump diff in ONE call.",
-   "next_probe": "For any new form: `bash tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label>` and require pseudo-73-class (walk) priority to exceed pseudo-72-class (arg0) priority in the printed ALLOCDBG table AND the callee-save count to stay at three; nothing else is worth assembling. Chassis must be comment-free (cc1 consumes preprocessed input - the s8 chassis were rejected with a parse error until the header comments were stripped)."
+   "next_probe": "For any new form: `bash tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label>` and require walk-pseudo priority to exceed arg0-pseudo priority in the printed ALLOCDBG table AND the callee-save count to stay at three; nothing else is worth assembling. Chassis must be comment-free (cc1 consumes preprocessed input) and must run under WSL via `bash tools/wsl.sh` (eval.sh cds to the /mnt/c path)."
   }
  ],
  "judge_constraints": [],
