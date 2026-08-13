@@ -1,0 +1,155 @@
+# EVIDENCE — func_8001E404 (src/code6cac.c:1384)
+
+## Session 1 (recon, 2026-08-12)
+
+### Baseline
+- `canonical func_8001E404` → verdict **C**, 0 asm insns, 184 target insns,
+  pure-C distance 23 ("pure-C target").
+- `sandbox func_8001E404 --disable all` → **score 23**, target_insns 184,
+  build_insns 183, 0 rules dropped, 139 cheat-asm insns stripped file-wide.
+- 0 regfix rules, 0 asmfix rules for this function.
+
+### The residual is ONE cause, measured — not 23 independent diffs
+Normalized instruction diff (`tmp/grind/func_8001E404/s1/diff.py`, artifacts
+`diff_sandbox_vs_target.txt` / `diff_realbuild_vs_target.txt`):
+
+- **Against the REAL build object (`build/src/code6cac.o`, i.e. with the committed
+  `s32 pre_pad[2];` in place): 184 vs 184 instructions, ZERO real differences.**
+  (The 4 residual lines the script prints at target[41/48/54/93] are a normalizer
+  artifact — `addiu $s2,$s2,%lo(SYM)` vs objdump's unrelocated `addiu s2,s2,0`.)
+  So the function **byte-matches target today** and is queued INCOMPLETE purely
+  because its match is held up by a forbidden construct.
+- **Against the cheat-stripped sandbox object (pre_pad removed): 183 vs 184.**
+  Every real difference is downstream of ONE fact — the frame is 8 bytes short:
+  - `addiu $sp,$sp,-0x70` → `-0x68`; all four callee-save slots shift −8
+    (0x6C/0x68/0x64/0x60 → 0x64/0x60/0x5C/0x58) in both prologue and epilogue;
+  - the camera work buffer base moves `sp+0x18` → `sp+0x10`, so every buffer
+    store/load offset shifts −8 (`sw 0x18/0x1C/0x20($sp)`, `sh 0x28/0x2A/0x2C($sp)`,
+    `sw 0x30($sp)`, `addiu $a3,$sp,0x18`, `lw $a2,0x30($sp)`);
+  - knock-on addressing choice: target materializes the buffer address ONCE
+    (`addiu $s0,$sp,0x18` + `move $a0,$s0` at both consumers, 184 insns); the
+    8-bytes-short build re-derives it inline (`addiu $a0,$sp,0x10` twice, 183 insns).
+    This is a consequence of the frame geometry, not an independent lever — it
+    disappears the moment the 8 bytes are present (real-build diff = 0).
+
+### The 8 bytes are an ALLOCATED-BUT-NEVER-TOUCHED leading frame region
+Lowest `$sp` offset any target instruction touches is 0x18. `sp+0x10..0x17` is
+inside the frame and is **never read or written by any instruction in the target**.
+Binary-wide census (`tools/…` = `tmp/grind/func_8001E6E4/s7/hole_census.py`,
+re-run this session, output `tmp/grind/func_8001E404/s1/hole_census.txt`):
+
+```
+ hole func                  frame   lowest   saves@  in-src?
+  512 sprintf                 584    0x210    0x218  (PsyQ varargs, not in src)
+   16 func_8003CF84            72     0x20     0x38  code6cac_c2.c
+    8 func_8001E6E4           112     0x18     0x60  code6cac.c
+    8 func_8001E404           112     0x18     0x60  code6cac.c   <-- this function
+```
+Exactly four functions in 1434 have the shape; three are the known family.
+
+### This function IS the sibling family member named in the 2026-08-11 escalation
+`docs/grind/decisions.md:4640-4649` (the func_8001E6E4 OWNER-ESCALATION —
+RESOLVED BY STANDING RULING entry) names `func_8001E404` explicitly: "same file,
+same 0x70 frame, same 8-byte hole, same committed `pre_pad` construct — every s4-s7
+instrument transfers unchanged … When either reaches the queue top, one
+measurement … confirms it is the same single-phantom-region defect before any
+spelling work is spent, and it should take this same disposition rather than
+re-grinding six modalities."
+
+Both prescribed confirmations were run THIS session and both are positive:
+the hole-census row above, and the frame gradient (honest form = 0x68/vars base
+0x10; committed form = 0x70/vars base 0x18, byte-identical to target).
+
+### Inherited (do NOT re-derive) — the sibling's white-box frame partition
+From `memory/grind/func_8001E6E4/{evidence,hypotheses}.md` + decisions.md:4578-4609,
+8 sessions / 6 modalities / ~100k permuter iterations / 19 measured spellings:
+- **vars, declaration order:** `assign_stack_local` (tools/gcc-2.7.2/function.c:669-742)
+  does `frame_offset = CEIL_ROUND(frame_offset, alignment)` from `frame_offset = 0`
+  with `FRAME_GROWS_DOWNWARD` undefined on MIPS ⇒ the FIRST declared slot always
+  lands at vars offset 0 for every type/size/alignment. Nothing can pad beneath it.
+- **pre-declaration window:** provably empty on o32 (`assign_parms` keeps `stack_parm`
+  non-null because `REG_PARM_STACK_SPACE` is unconditionally 16, mips.h:1822; the only
+  pre-body allocator is the nested-function static-chain slot).
+- **args partition:** `args=24 / vars=72` reproduces the geometry, but every route to
+  `args_size > 16` (5th scalar arg, 8-byte-aligned arg past `$a3`, struct-return hidden
+  pointer) materializes a store into `sp+0x10..0x17` — and the target stores nothing there.
+- **expansion-time objects:** temps/spills/inner-scope objects grow the frame at the TOP
+  (measured `put_reg_into_stack` 72→74→76), never below the first declared slot.
+- **pretend_args_size:** mips.c:4531 guarded by `ABI_64BIT && mips_isa >= 3` ⇒ 0 on o32.
+⇒ the 8 bytes can ONLY come from an object declared before the work buffer, i.e. an
+unwritten leading dead array/struct lead — the forbidden family.
+
+### Endgame gates re-measured for THIS function
+- **Gate 1 (canonical asm): FAIL.** `python3 tools/scan_hand_coded.py --single
+  func_8001E404` → `tier=LOW score=1/8`, "no strong hand-coded indicators"; only S4
+  (front loads) fires. S1 (multu pacing), S2 (empty branch), S6 (BIOS jumptable) —
+  the only signals that can carry STRONG — are all absent.
+- **Gate 2 (citable SOTN precedent for the coercion family): FAIL.** The only
+  mechanically-viable construct is an UNWRITTEN leading local array/struct lead. The
+  nearest sanctioned family, the written-never-read local array carve-out, excludes it
+  by its own scope sentence (.claude/rules/no-new-park-categories.md:255-262):
+  "sanctioned ONLY when the target bytes contain the corresponding dead stores
+  (oracle-enforced), written (not merely declared) … The unwritten-array and
+  `(void)&local` forms remain forbidden." Measured here: target touches nothing in
+  `sp+0x10..0x17`, so the carve-out's precondition is false for this function too.
+
+### The 8 bytes are an ARGS-partition fact, not a locals-padding fact (NEW — recon run 2)
+The first run framed the residual as "8 phantom bytes below the first declared
+local". Reading the frame equation end-to-end this run makes the statement much
+sharper, and moves the whole search out of the locals partition:
+
+- `tools/gcc-2.7.2/config/mips/mips.h:1651` —
+  `#define STARTING_FRAME_OFFSET (current_function_outgoing_args_size + (TARGET_ABICALLS ? MIPS_STACK_ALIGN(UNITS_PER_WORD) : 0))`
+  and `FRAME_GROWS_DOWNWARD` is `#undef` (mips.h:1645). TARGET_ABICALLS is off in
+  this build. So the address of the FIRST slot `assign_stack_local` hands out is
+  **exactly `$sp + current_function_outgoing_args_size`**, with no rounding applied
+  at that point (`compute_frame_size` rounds only its own `args_size` copy).
+- `compute_frame_size` (mips.c:4444-4535) — the complete frame equation is
+  `total = MIPS_STACK_ALIGN(get_frame_size()) + MIPS_STACK_ALIGN(outgoing_args_size)
+   + extra_size + MIPS_STACK_ALIGN(gp_reg_size) + MIPS_STACK_ALIGN(fp_reg_size)`
+  with `extra_size = MIPS_STACK_ALIGN(TARGET_ABICALLS ? UNITS_PER_WORD : 0)` = **0**
+  here, `fp_reg_size` = 0, and the `pretend_args_size` term guarded by
+  `ABI_64BIT && mips_isa >= 3` = **0** on o32. There is no fourth term to hide 8
+  bytes in.
+- Target: first local at `$sp+0x18`, saves at 0x60..0x6F, frame 0x70.
+  ⇒ `get_frame_size()` (vars) = 72 in BOTH forms; the differing term is
+  `current_function_outgoing_args_size`: **24 in the original, 16 in our honest
+  build**. The committed `pre_pad[2]` fakes the same bytes on the vars side
+  (vars 80 / args 16), which is why it is byte-equivalent but mechanically wrong.
+
+This is why no locals-side spelling can ever be honest here: the theorem that the
+first declared slot lands at vars offset 0 is not an obstacle to be spelled
+around, it is the *definition* of where `local` goes. The only honest lever is
+`current_function_outgoing_args_size == 24`.
+
+### KILLED: "some callee originally took a 5th (stack) argument"
+`tmp/grind/func_8001E404/s1/callee_stackarg_scan.py` scans every in-EXE callee
+(func_80046BF4, func_8001A538, func_80061064, func_80041688, func_8003F3D4) plus
+the sibling func_8001E6E4 for any `$sp`-relative access at or above its own frame
+size — i.e. any read of an incoming stack argument. **Zero hits in all six**
+(`…/s1/callee_stackarg_scan.txt`). None of them takes more than 4 words. So the
+ordinary route to `outgoing_args_size = 24` (a call whose 5th/6th word is stored
+into the caller's `sp+0x10..0x17`) is doubly refuted: no callee reads such an
+argument, and the target contains no store into that range.
+
+### What holds the byte-match today
+No regfix/asmfix rule (0 of each). The committed body carries `s32 pre_pad[2];`
+declared first — the unwritten-local-array frame coercion from the forbidden-family
+catalog. It is RETAINED (not sanctioned) so the oracle stays green; it is exactly the
+cheat this disposition refuses to legitimize.
+
+- [s1] canonical func_8001E404 -> verdict C, 0 asm insns, 184 target insns, pure-C distance 23; sandbox --disable all -> score 23 (target_insns 184, build_insns 183, 0 rules dropped, 139 cheat-asm insns stripped file-wide). 0 regfix and 0 asmfix rules for this function.
+
+- [s1] The committed body is byte-identical to target today; its match is held up by `s32 pre_pad[2];` declared first — the unwritten-leading-local-array frame coercion from the forbidden-family catalog. Retained (not sanctioned) so the oracle stays green.
+
+- [s1] Target $sp map (complete): stores/loads at 0x18,0x1C,0x20 (words), 0x28,0x2A,0x2C (halfwords), 0x30 (word), address materializations `addiu $a3,$sp,0x18` / `addiu $s0,$sp,0x18` / `addiu $s1,$sp,0x28`, callee saves 0x60/0x64/0x68/0x6C, frame 0x70. NOTHING is read or written in sp+0x10..0x17.
+
+- [s1] Frame equation, frozen toolchain: STARTING_FRAME_OFFSET == current_function_outgoing_args_size (mips.h:1651, FRAME_GROWS_DOWNWARD undefined at mips.h:1645, TARGET_ABICALLS off) — the first stack slot is at exactly $sp+outgoing_args_size, unrounded. compute_frame_size (mips.c:4444-4535): total = MIPS_STACK_ALIGN(get_frame_size()) + MIPS_STACK_ALIGN(outgoing_args_size) + extra_size + saves, with extra_size = 0 (non-ABICALLS), fp_reg_size = 0, pretend_args_size term gated on ABI_64BIT && mips_isa >= 3 = 0 on o32.
+
+- [s1] Therefore the honest and original builds have IDENTICAL vars (get_frame_size() == 72) and differ only in current_function_outgoing_args_size: 16 (ours) vs 24 (original). The defect is an ARGS-partition fact, not a locals-padding fact — which is the mechanical reason every pad / lead-array / declaration-order spelling on this family failed, and why they should not be re-run.
+
+- [s1] No callee of this function reads an incoming stack argument (six-function scan, tmp/grind/func_8001E404/s1/callee_stackarg_scan.txt), so no ordinary call site here can honestly carry args=24.
+
+- [s1] Endgame gates, re-checked for this function (context only — the driver has NOT declared exhaustion and the modality is recon): gate 1 canonical-asm FAIL (scan_hand_coded tier=LOW 1/8, S1/S2/S6 absent); gate 2 citable-precedent FAIL (the written-never-read local-array carve-out's own scope sentence requires the target bytes to contain the dead stores; this target touches nothing in the region).
+
+- [s1] The 2026-08-12 OWNER-ESCALATION entry filed for this function by the earlier discarded session has been annotated WITHDRAWN in docs/grind/decisions.md — the disposition was taken in the wrong modality; the measured evidence in it stands, the disposition does not. func_8001E404 is an ACTIVE grind item.

@@ -5010,3 +5010,102 @@ neither derivable by a grind session.
 ## 2026-08-12 20:58 — func_800470B0 — final call — **PASS**
 
 Pure cheat-removal plus two semantically-grounded corrections; no sanctioned-exception families invoked, no FAKE annotations needed. The diff deletes the HEAD body's register asm("s1"/"s2") pins and volatile s32 _sp_pad[2] frame pad (cheats, now gone entirely) and closes the match with (1) retyping the local to the real PsyQ MATRIX and (2) restoring the dropped third argument to func_80052930 — a correctness fix, not GCC-steering. Decisive fact, independently verified: src/sound.c:47 declares func_80052930 with three parameters and the sibling call at sound.c:425 passes three; include/gte.h:29 MATRIX is exactly the target's 32-byte locals region. Working-tree diff confirmed identical to the candidate; final body inspected — plain C throughout, no pins/volatile/dead constructs. Full evidence: memory/grind/func_800470B0/hypotheses.md (H1-H5), evidence.md, rejected/store-order-*.c.
+
+## 2026-08-12 — func_8001E404 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Function:** `func_8001E404` (src/code6cac.c:1384), queue verdict C, 0 regfix/asmfix rules,
+honest floor 23 (`sandbox func_8001E404 --disable all` = 23, target_insns 184).
+
+**This is the third member of the family already resolved on 2026-08-11.** The
+`func_8001E6E4` entry above (docs/grind/decisions.md, "Scope note — this disposition
+covers a family of THREE, not one") names this function explicitly: *"`func_8001E6E4`
+and its sibling `func_8001E404` (same file, same 0x70 frame, same 8-byte hole, same
+committed `pre_pad` construct — every s4-s7 instrument transfers unchanged) … When
+either reaches the queue top, one measurement — the s7 `hole_census.py` row plus the s6
+`fdbg.sh` frame gradient on its honest form — confirms it is the same single-phantom-region
+defect before any spelling work is spent, and it should take this same disposition rather
+than re-grinding six modalities."* Both prescribed measurements were run in grind session 1
+(recon, 2026-08-12) and both are positive.
+
+**Measurement 1 — the residual is ONE cause, not a codegen gap.** Normalized instruction
+diff (`tmp/grind/func_8001E404/s1/diff.py`, artifacts `diff_realbuild_vs_target.txt` /
+`diff_sandbox_vs_target.txt`): against the REAL build object the function is
+**184/184 instructions with zero real differences — it byte-matches target today**.
+Against the cheat-stripped sandbox object (183 insns) every difference is the same uniform
+−8 shift of `$sp`-relative offsets (frame `-0x70`→`-0x68`; the four callee-save slots
+0x6C/0x68/0x64/0x60→0x64/0x60/0x5C/0x58; work-buffer base `sp+0x18`→`sp+0x10` and every
+buffer store/load with it), plus one knock-on that the shift forces: target materializes
+the buffer address once (`addiu $s0,$sp,0x18` + `move $a0,$s0` at both consumers) while the
+8-bytes-short build re-derives `addiu $a0,$sp,0x10` inline at each. That knock-on vanishes
+when the 8 bytes are present (real-build diff = 0), so it is not an independent lever.
+
+**Measurement 2 — binary-wide hole census** (`tmp/grind/func_8001E6E4/s7/hole_census.py`
+re-run; output `tmp/grind/func_8001E404/s1/hole_census.txt`): exactly four non-leaf
+functions in 1434 have an ≥8-byte untouched leading vars hole — `sprintf` (PsyQ varargs,
+not in src), `func_8003CF84` (16-byte hole), `func_8001E6E4` and `func_8001E404`, the last
+two identical rows (`hole 8, frame 112, lowest 0x18, saves@0x60`). Lowest `$sp` offset any
+target instruction touches here is 0x18; `sp+0x10..0x17` is allocated and never read or
+written by any instruction in the target.
+
+**Why no pure-C lever remains.** The white-box partition of the frame equation established
+across the sibling's 8 sessions / 6 modalities / ~100k permuter iterations / 19 measured
+spellings (docs/grind/decisions.md:4578-4609) transfers unchanged — same compiler, same
+file, same frame shape: declaration-order theorem (`assign_stack_local`,
+tools/gcc-2.7.2/function.c:669-742 — `CEIL_ROUND(0, A) == 0`, so the first declared slot
+always lands at vars offset 0); provably empty pre-declaration window on o32
+(`REG_PARM_STACK_SPACE` unconditionally 16, mips.h:1822); the `args=24/vars=72` partition
+reproduces the geometry but every route to `args_size > 16` materializes a store into
+`sp+0x10..0x17`, which the target provably does not contain; expansion temps/spills grow
+the frame at the TOP, never below the first declared slot; `pretend_args_size` identically
+zero on o32 (mips.c:4531). So the 8 bytes can only come from an object declared before the
+work buffer — an unwritten leading dead array/struct lead.
+
+**Gate (1) — canonical asm: FAIL.** `python3 tools/scan_hand_coded.py --single func_8001E404`
+(run this session): `tier=LOW score=1/8`, "no strong hand-coded indicators". Only S4 (front
+loads) fires; S1 (multu pacing), S2 (empty branch) and S6 (BIOS jumptable) — the only
+signals that can carry a STRONG tier — are all absent. Ordinary compiled C, not hand-written asm.
+
+**Gate (2) — coercion/spelling family with a citable SOTN-master precedent: FAIL.** The only
+mechanically-viable construct is an UNWRITTEN leading local array / struct lead. The nearest
+sanctioned family is the written-never-read local array carve-out, whose scope sentence is
+explicit (.claude/rules/no-new-park-categories.md:255-262): *"sanctioned ONLY when the target
+bytes contain the corresponding dead stores (oracle-enforced), written (not merely declared)
+… The unwritten-array and `(void)&local` forms remain forbidden."* Measured above: the target
+contains no stores at all in `sp+0x10..0x17`, so the carve-out's own precondition is false
+here exactly as it was for the sibling. No in-hand SOTN-master citation exists for an
+unwritten leading pad.
+
+**What holds the byte-match today.** No regfix/asmfix rule (0 of each). The committed
+`src/code6cac.c` body carries `s32 pre_pad[2];` declared first — the unwritten-local-array
+frame coercion named in the forbidden-family catalog. It is RETAINED (not sanctioned) so the
+oracle stays green; it is the cheat this escalation refuses to legitimize.
+
+**Disposition.** Both endgame-lock AND-gates FAIL, so the owner's standing auto-ruling
+(2026-07-27, .claude/rules/endgame-lock-disposition.md) pre-decides it: **REFUSED /
+OWNER-ACCEPTED INCOMPLETE**. `func_8001E404` is parked terminally out of the active grind,
+eligible for re-attempt if a genuine pure-C producer of an 8-byte allocated-but-untouched
+region below the first declared local ever emerges. **Nothing is pending on the owner.**
+
+> **WITHDRAWN 2026-08-12 (same day, later recon run) — this entry is NOT in force.**
+> The session that filed it was discarded by the grinder driver: a standing-ruling
+> terminal disposition may only be taken in `escalation` modality (driver-declared
+> exhaustion), and that session's mandated modality was `recon`. Read everything above
+> as measured EVIDENCE (it is all still valid), not as a disposition — `func_8001E404`
+> remains an active grind item and must not be cited as parked.
+>
+> The later recon run also invalidated this entry's framing of the defect. The 8 bytes
+> are **not** a locals-partition pad: `STARTING_FRAME_OFFSET` (tools/gcc-2.7.2/config/
+> mips/mips.h:1651) places the first stack slot at exactly
+> `$sp + current_function_outgoing_args_size`, and `compute_frame_size`
+> (config/mips/mips.c:4444-4535) has no other non-zero term on o32 (`extra_size` ≡ 0
+> without TARGET_ABICALLS; the `pretend_args_size` term is gated on
+> `ABI_64BIT && mips_isa >= 3`). Both forms have `get_frame_size() == 72`; the term that
+> differs is `current_function_outgoing_args_size` — **24 in the original, 16 in our
+> honest build**. So every locals-side spelling (including the 19 measured on the
+> sibling) attacks the wrong term, and the live search is the args term alone. See
+> `memory/grind/func_8001E404/hypotheses.md` H5/H6 + frontier.
+
+**Remaining family member.** `func_8003CF84` (src/code6cac_c2.c:862, queue distance 28,
+0 rules, 16-byte hole at `sp+0x10..0x1F`, solved in-tree with `volatile s32 pad[4];` +
+`volatile s32 pad2[2];`) is the last of the three. When it reaches the queue top, the same
+two measurements should be run and the same disposition taken.
