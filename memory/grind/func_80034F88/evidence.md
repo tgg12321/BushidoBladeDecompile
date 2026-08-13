@@ -808,3 +808,116 @@ builds, rather than at the level of an optimizer pass that was never involved.
 - [s6] Nothing cheat-shaped was written, proposed or measured this session: all seven variants are ordinary C differing only in select form and temporary cardinality; the session's product is RTL evidence plus seven banked negatives.
 
 - [s6] New reusable instruments: s6/dump.sh (cc1 -da on the real build flags against the CURRENT src/), s6/slice.py (cut the func_80034F88 region out of every pass dump into rtl/<tag>/fn/*.fn — the only safe way to read these dumps, since the raw ones are whole-TU), s6/forensic.py (splice a variant -> honest sandbox -> cc1 -da -> print the .greg allocation header + the flag-block objdump -> restore src/), s6/sbs.py (build-vs-target instruction listing from the sandbox object with no src mutation), s6/gen.py + gen2.py + bank.py.
+
+
+---
+
+## s7 — forensics modality (cse basic-block boundaries and qty classes)
+
+s7 took the two axes s6 left on the frontier and closed both. It also produced
+the single most consequential measurement made on this function so far: a
+NON-VOLATILE C form whose flag section carries the target's exact memory-access
+and address signature.
+
+### The measured wave (16 forms, all `sandbox func_80034F88 --disable all`)
+| form | score | insns | lbu | sb | lui |
+|---|---|---|---|---|---|
+| v1 floor-18 chassis (control) | 18 | 51 | 3 | 5 | 6 |
+| v2 do-while(0) + three pointer locals | 23 | 47 | 2 | 5 | 2 |
+| v3 do-while(0) + one pointer local | 23 | 47 | 2 | 5 | 2 |
+| v4 three pointer locals, no boundary | 21 | 47 | 2 | 5 | 2 |
+| v5 three distinct symbol+addend pointers, all hoisted | 26 | 49 | 4 | 5 | 4 |
+| v6 three distinct symbol+addend pointers, staged per block | 21 | 49 | 4 | 5 | 4 |
+| v7 copy-chained pointers (`ptr2 = ptr1;`) | 21 | 47 | 2 | 5 | 2 |
+| v8 floor chassis + do-while(0) per block | 20 | 51 | 3 | 5 | 6 |
+| v9 bit-index loop, pointer accesses | 31 | 36 | 3 | 3 | 2 |
+| v10 bit-index loop, symbol accesses | 31 | 37 | 3 | 3 | 4 |
+| w1 four distinct symbol+addend pointers | 28 | 55 | 5 | 5 | 5 |
+| w2 floor chassis + distinct pointers for blocks 2/3 | **18 (TIE)** | 51 | 5 | 5 | 6 |
+| w3 as w2 but stores through the plain symbol | 20 | 51 | 5 | 5 | 8 |
+| p1 one-iteration `for` per block + three pointer locals | 36 | 58 | **5** | **5** | **4** |
+| (target) | 0 | 49 | 5 | 5 | 4 |
+
+### Finding 1 — the boundary that works is a CODE_LABEL, and only a CODE_LABEL
+`cse_end_of_basic_block` (cse.c:8039) terminates the block at a CODE_LABEL
+**unconditionally**, so a label boundary is honoured by both cse passes. The
+NOTE_INSN_LOOP_END break at cse.c:8054 is guarded by `! after_loop`, and the
+comment there is explicit: "If we are running after loop.c has finished, we can
+ignore the NOTE_INSN_LOOP_END." cse2 runs after loop.c.
+This is not inference — it is in the dumps. `s7/rtl/v3_dw_one_ptr/fn/cse.fn`
+still contains `(set (reg 85) (mem:QI (reg/v:SI 73)))` for blocks 2 and 3 after
+the FIRST cse pass (the reloads survive), and `.../cse2.fn` no longer contains
+them (the second pass merged the flag section back into one basic block and
+forwarded every store into the following load). The do-while(0) family — and
+any construct whose only cse effect is a loop note — is therefore dead on this
+function for a mechanism reason, not a spelling reason. s2 measured it dead
+(26/24/30); s7 explains why no respelling of it can work.
+
+### Finding 2 — a surviving boundary reproduces the target's signature exactly
+`p1_loop1_per_block` (each flag block wrapped in `for (j = 0; j < 1; j++)`, three
+pointer locals) produces **lbu 5 / sb 5 / lui 4 — the target's counts** — with
+three `lui %hi(D_80106A73)` + `addiu ...,%lo(D_80106A73)` bases at addend 0 and
+a real `lbu 0(base)` for every flag read. Both target properties that s1-s6
+recorded as mutually exclusive in non-volatile C appear together, because a
+fresh cse basic block flushes the value table and therefore (a) the store cannot
+be forwarded into the next block's read and (b) the next `ptr = &D_80106A73;` is
+no longer a redundant set, so it emits its own address materialisation.
+The cost is entirely the loop scaffolding: `addiu a1,a1,1` / `blez a1,...` /
+`move a1,zero` per block, 9 insns, 58 against target's 49, score 36.
+`for (i = 0; i < 1; i++)` is explicitly named as a NOT-sanctioned spelling by the
+non-extension clause of `.claude/rules/no-new-park-categories.md`, so this form
+is an instrument, never a submission.
+
+### Finding 3 — the qty-class-breaking family works and cannot beat 18
+`insert_regs` (cse.c:1006-1042) merges two address pseudos into one quantity
+only when their SET_SRC rtxs hash equal, and `canon_reg` (cse.c:2532-2574) then
+rewrites the later pseudo to the older one, which is what makes the store and
+the read share an address rtx and forward. Spelling the second and third bases
+as `(u8 *)&D_80106A70 + 3` / `(u8 *)&D_80106A71 + 2` gives
+`(const (plus (symbol_ref ...) (const_int N)))`, which does not hash equal to
+`(symbol_ref "D_80106A73")` — the pseudos stay in separate quantities
+(`s7/rtl/v6_distinct_syms_staged/fn/cse.fn` shows regs 73/74/75 alive with three
+different address values) and every reload survives.
+It never beats the floor: w2 ties at 18 with the target's exact access counts,
+and the side-by-side shows why — blocks 2 and 3 now match the target
+instruction-for-instruction except for register names and the LO16 addend
+(`addiu a2,a2,3` against `addiu a0,a0,0`). The two non-zero addends cost exactly
+what the two recovered reloads gain. An addend-0 spelling of the same mechanism
+would score below 18, but that requires a SECOND declared symbol at 0x80106A73,
+which is the forbidden alias-rename family. Copy-chained pointers (`ptr2 = ptr1`)
+merge as predicted (21, lui 2), confirming the reading of insert_regs.
+
+### Finding 4 — the loop SHAPE is refuted by the bytes
+The flag section as a loop over the bit index (the last untried shape) emits a
+real 36-insn loop: GCC 2.7.2 at -O2 without `-funroll-loops` neither unrolls nor
+peels. 31 in both the pointer and symbol spellings. Refuted by the objdump
+rather than by the score.
+
+### What this does to the F3 escalation packet
+The packet's central claim must be REWRITTEN before it is ever filed. It is no
+longer true that "honest non-volatile pure C cannot produce the target's four
+0(reg) reloads" — p1 produces them, plus the three addend-0 bases, without any
+volatile. The correct, much narrower claim is:
+> every construct measured so far that creates a cse basic-block boundary
+> surviving cse2 also emits instructions of its own, and the target has no
+> instructions to spare.
+That is a search question about C control flow, not a proof of impossibility,
+and it is the frontier this session hands to the next one.
+
+- [s7] Honest floor unchanged at 18 (v1 control re-measured this session: 18 / 51 insns). 16 forms scored with `sandbox func_80034F88 --disable all`; full table in evidence.md.
+
+- [s7] cse.c:8039 ends a basic block at a CODE_LABEL unconditionally, so a label boundary is honoured by BOTH cse passes; the NOTE_INSN_LOOP_END break at cse.c:8054 is guarded by `! after_loop`, so loop-note boundaries work in cse1 and are erased by cse2 (dump-proven: v3's cse.fn keeps the block-2/3 reloads, cse2.fn does not).
+
+- [s7] p1_loop1_per_block reaches lbu 5 / sb 5 / lui 4 — the target's exact memory-access and address signature — in non-volatile C, with three addend-0 %hi/%lo(D_80106A73) bases and a real lbu 0(base) per flag read. Cost: 9 insns of loop scaffolding (58 vs 49), score 36.
+
+- [s7] The qty-class-breaking family works exactly as insert_regs (cse.c:1006-1042) + canon_reg (cse.c:2532-2574) predict: identical SET_SRC rtxs merge (v4 21, v7 copy-chain 21, both lui 2 / lbu 2), distinct symbol+addend rtxs do not (v5 26, v6 21, both lui 4 / lbu 4; regs 73/74/75 alive in v6's cse.fn).
+
+- [s7] Ceiling of the qty-class-breaking family is a TIE at 18 (w2, lbu 5 / sb 5), never an improvement: its blocks 2 and 3 match target instruction-for-instruction except register names and the LO16 addend, and the two non-zero addends cost exactly what the two recovered reloads gain. Four distinct bases (w1) score 28.
+
+- [s7] An addend-0 distinct address rtx for the same byte would beat 18, but it requires a SECOND declared symbol at 0x80106A73, which is the forbidden alias-rename family — not an available axis.
+
+- [s7] The bit-index loop shape is refuted by the bytes, not the score: GCC 2.7.2 at -O2 without -funroll-loops emits a real 36-insn loop (v9 31, v10 31) against a 49-insn unrolled target.
+
+- [s7] The F3 escalation packet's central claim ('honest non-volatile pure C cannot produce the target's four 0(reg) reloads') is now FALSE and must be rewritten before it is ever filed; the surviving claim is only that every cse2-surviving boundary construct measured so far emits instructions the target has no room for.
+
+- [s7] src/code6cac_b.c was left byte-unchanged (every probe splices and restores); the best form remains the floor-18 body in memory/grind/func_80034F88/candidate.c, whose header now carries the s7 correction.

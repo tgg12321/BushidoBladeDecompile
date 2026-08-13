@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 18,
    "modality": "forensics",
    "headline": "First cc1 -da dump of the floor-18 form itself: the 'combine folds %lo' model and the 'v0/v1 swap is a steerable RA tie' model are both REFUTED from the RTL, seven live-range-surgery forms measured de"
+  },
+  {
+   "session": 7,
+   "floor": 18,
+   "modality": "forensics",
+   "headline": "Forensics: the target's exact flag-section signature (lbu 5 / sb 5 / lui 4, three addend-0 bases, four surviving reloads) is reachable in NON-VOLATILE C via a cse basic-block boundary \u2014 refuting the s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The flag section's SHAPE \u2014 a loop over a bit index rather than three unrolled blocks \u2014 has never been varied, and the s6 RTL model makes it materially more interesting than it looked to s5: since the address form of an access is fixed one-to-one by its C spelling at expansion, a loop body contains exactly ONE flag-byte read and ONE flag-byte store, so the store-to-load forward question is asked once per iteration across a loop back-edge instead of three times in straight-line code.",
-   "mechanism": "cse's value table is invalidated across a loop back-edge (cse_end_of_basic_block terminates the block at the loop's CODE_LABEL when the label has more than one use), so a loop-carried read of the flag byte cannot be forwarded from the previous iteration's store. If GCC then peels or unrolls, the peeled form is a genuinely new chassis whose reads were born un-forwardable; if it emits a real loop, the shape is refuted immediately by the objdump. Either outcome is decisive and neither has ever been measured.",
-   "next_probe": "Write the flag section as `for (k = 1; k <= 4; k <<= 1) { c = p[8] & k; val = *ptr; val2 = val | k; if (!c) val2 = val; *ptr = val2; }` and as an explicit three-iteration variant over a local index, score both with `sandbox func_80034F88 --disable all`, and read BOTH the objdump and the .cse slice (s6/forensic.py already prints the .greg header and the flag block; add the cse.fn read). rederive/synthesis modality."
+   "hypothesis": "There is a C construct that puts a CODE_LABEL surviving cse2 between the flag blocks at ZERO instruction cost \u2014 and it is the whole remaining gap, because p1 shows a surviving boundary already produces the target's exact access/address signature.",
+   "mechanism": "cse_end_of_basic_block (cse.c:8039) stops at a CODE_LABEL in both passes, but the follow_jumps / skip_blocks extension at cse.c:8102-8184 walks straight through a conditional branch whose target label has LABEL_NUSES == 1 \u2014 which is true of all three of this function's if-join labels, so today they are NOT boundaries. A label with NUSES != 1 ends the block. The cost of every boundary measured so far (one-iteration for: 9 insns; real loop: collapses the unrolled shape) comes from the branch that creates the second use, so the question is whether a second LABEL_REF can exist without a new branch \u2014 e.g. a shared end label reached from two arms that the target's own branch structure already contains, a switch, or an if/else whose join is also a goto target.",
+   "next_probe": "Read cse.c:8102-8184 for the exact extension conditions, then enumerate C control-flow shapes whose RTL gives a join label LABEL_NUSES >= 2 between the flag blocks: the shared-end-label technique (.claude/rules/shared-end-label.md), if/else with a common tail, a two-arm goto to one label, and a switch over the bit index. Score each honestly and read greg/jump2 to confirm the label survives into the final code. Check LABEL_NUSES directly in the jump.fn dumps rather than inferring it. structural or rederive modality."
   },
   {
-   "hypothesis": "Target's four flag-byte accesses are ALL pointer-spelled (`0(reg)`), so the original source addressed the byte through a pointer everywhere; the open question is what kept cse's canon_reg from merging the three distinct base pseudos into one address rtx \u2014 because merging them is exactly what makes the store forward into the next block's read.",
-   "mechanism": "canon_reg (cse.c) rewrites a register in an address to the oldest register in its equivalence class, so two locals both initialised `= &D_80106A73;` hash identically and the forward fires (s2/s3 measured that family at 22). The forms that have NEVER been measured are the ones where the second and third bases are derived from something whose equivalence class cse cannot collapse to the first: `ptr2 = ptr;` copy chains, a base re-derived per block from a value the compiler cannot constant-fold, or a base whose class is broken by an intervening clobber. s6 established that the address rtx identity test is the WHOLE mechanism, so this is now a precisely-posed question rather than a spelling sweep.",
-   "next_probe": "Read tools/gcc-2.7.2/cse.c canon_reg + insert_regs to enumerate exactly what puts two pseudos in one qty class and what breaks a class; then build the small set of C forms that the reading says would NOT merge (copy-chained pointers, per-block re-derivation, pointer arithmetic that folds back to the same address), score each with the honest sandbox, and dump .cse for any that changes the reload count. forensics or structural modality."
+   "hypothesis": "Even with a free boundary between the flag blocks, the target's FIRST reload (lbu a0,0(v1) at insn 13, immediately after sb a0,0(v1) at insn 11, with no label, call or store between them) needs its own explanation \u2014 it is the only pair the boundary model cannot cover from the target's own instruction stream.",
+   "mechanism": "The &0xF8 read-modify-write and block 1's read share base $v1 with nothing between them, so at cse time either a boundary existed there and was erased by a later pass without residue (only possible if the branch creating it became provably dead \u2014 a forbidden dead-branch construct), or the mem was not recordable (volatile, cse.c:7329, which s3 ruled out on policy), or the two accesses had different address rtxs that were later allocated the same hard register (impossible: each rtx needs its own materialisation).",
+   "next_probe": "Take the p1 dump and check what jump2 / flow do to a boundary label whose branch is later removed; separately, enumerate the passes after cse2 that can delete a CODE_LABEL plus its branch with zero residue and test whether any is reachable without a constant condition. If none is, this sub-question \u2014 not the reload question \u2014 becomes the escalation's core. forensics modality."
   },
   {
-   "hypothesis": "s3's F3 escalation packet still stands and must still NOT be filed from a non-escalation modality, but s6 materially strengthens it: the packet's central claim is no longer 'cse.c:7329 blocks the reloads' (which s6 refuted) but the sharper 'the target needs four pointer-spelled accesses that do not merge, and merging is decided by canon_reg on address-rtx identity'.",
-   "mechanism": "If the frontier item above comes back negative \u2014 i.e. no C form keeps two same-valued address pseudos in distinct qty classes \u2014 then honest non-volatile pure C provably cannot produce target's four 0(reg) reloads, and the two spellings that could are ruled a cheat (s2-F1, volatile pointer local) and ruled out by the volatile carve-out's two-prong gate (s3-H1). s4 adds the random-permuter negative, s5 the exhaustive directed-permuter negative, s6 the RTL-level statement of the contradiction.",
-   "next_probe": "Do NOT file. Two sanctioned axes remain untried (the loop-shape rederive; the canon_reg class-breaking family), and s6 alone corrected two mechanisms that three prior sessions had reasoned from while believing the family was understood. If the driver later assigns escalation modality, the packet is hypotheses.md F3 plus the s6 corrections plus the rejected/*.c headers."
+   "hypothesis": "The F3 escalation packet is NOT ready to file and its premise is now known to be wrong; do not file it from a non-escalation modality.",
+   "mechanism": "s3-H4/s6 asserted an impossibility that s7 refuted by measurement (p1). The two remaining sanctioned axes named by s6's frontier are now measured dead, but s7 opened a NEW, cheap, honest axis (zero-cost cse2-surviving label boundaries) that has never been probed at all, so the function is still plainly grindable.",
+   "next_probe": "Do NOT file. Work frontier item 1 first. If and only if the label-boundary family is exhausted should the packet be rewritten around the corrected claim: 'every cse2-surviving basic-block boundary construct costs instructions the target does not have', with p1's signature match as the central exhibit."
   }
  ],
  "judge_constraints": [],

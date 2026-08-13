@@ -162,6 +162,38 @@
  * Net: all three residual defect classes are downstream of ONE decision —
  * pointer-vs-symbol spelling per access, fixed at expansion — so do not look
  * for a separate register or scheduling lever.
+ *
+ * =====================================================================
+ * s7 (forensics) — form UNCHANGED at 18, but the model above is now
+ * INCOMPLETE in an important way: the target's access signature IS
+ * reachable without volatile
+ * =====================================================================
+ * s7 attacked the two axes s6 left open and closed both, and in doing so found
+ * the first non-volatile form whose flag section has the target's exact memory
+ * and address signature (lbu 5 / sb 5 / lui 4 — see
+ * rejected/loop1-per-block-TARGET-SIGNATURE-score36.c).
+ *  - The mechanism is a cse BASIC-BLOCK BOUNDARY, and only one kind works.
+ *    cse.c:8039 ends the block at a CODE_LABEL unconditionally, so a label
+ *    boundary is honoured by BOTH cse passes; cse.c:8051-8056 ends it at a
+ *    NOTE_INSN_LOOP_END only while `! after_loop`, so a do-while(0)/loop-note
+ *    boundary works in cse1 and is then undone by cse2. Measured both ways in
+ *    the RTL dumps (s7/rtl/v3_dw_one_ptr/fn/{cse,cse2}.fn).
+ *    A fresh basic block flushes the value table, which simultaneously (a)
+ *    stops the store being forwarded into the next block's read and (b) makes
+ *    the next `ptr = &D_80106A73;` a non-redundant set, so it emits its own
+ *    lui+addiu with addend 0 — the two target properties s1-s6 believed were
+ *    mutually exclusive in non-volatile C.
+ *  - The qty-class-breaking family (distinct symbol+addend address rtxs, which
+ *    insert_regs at cse.c:1006-1042 cannot merge) also produces the reloads,
+ *    but only TIES this form at 18: the non-zero LO16 addend costs exactly what
+ *    each recovered reload gains. See rejected/hybrid-distinct-addend-score18-
+ *    TIE.c (18), distinct-symbol-addend-four-bases-score28.c (28).
+ *  - The bit-index LOOP shape — the last untried SHAPE — is dead: GCC 2.7.2 at
+ *    -O2 neither unrolls nor peels, so it emits a 36-insn real loop against a
+ *    49-insn unrolled target (31). rejected/loop-bitindex-shape-score31.c.
+ * So do NOT read the paragraphs above as "only volatile can do this". The
+ * correct statement is narrower: what is still missing is a boundary construct
+ * that costs ZERO instructions.
  */
 void func_80034F88(void) {
     s32 *p;
