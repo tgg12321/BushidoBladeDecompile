@@ -223,3 +223,113 @@ F2 is closed: no sibling exhibits a reference-RICH parameter in $s1.
 - [s2] All 12 buffer references exist at RA time in the target: no 0xC($s1) or 0x14($s1) insn sits in a branch/jal delay slot in asm/funcs/func_80078654.s, so none of them was created after register allocation by reorg's delay-slot duplication.
 
 - [s2] Sibling census (190 hits, tmp/grind/func_80078654/s2/census.py): the COMPLETED-C sibling func_80078824 in the same file has its parameter in $s1 with only 3 references and its derived pointer in $s0 — confirming the mechanism and that the target shape demands a reference-poor parameter.
+
+## SESSION 3 (structural) - the duplication axis (F4) is measured DEAD
+
+**Floor unchanged at 19.** candidate.c was re-applied to src/text1b_b.c at the
+start of the session (HEAD still carried the OLD inline-asm body - see the
+process note below) and reproduces the ledger numbers exactly: sandbox
+`--disable all` = 19, build_insns 116 == target 116, and the instrumented cc1
+reprints the s1/s2 allocno table verbatim
+(`tmp/grind/func_80078654/s3/base/alloc.log`):
+
+    ord=3 pseudo=72 hardreg=16 nrefs=13 livelen=98  pri=3979   <- arg0   -> $s0
+    ord=4 pseudo=73 hardreg=17 nrefs=5  livelen=91  pri=1098   <- var_s0 -> $s1
+    ord=5 pseudo=74 hardreg=18 nrefs=3  livelen=170 pri=176    <- zero   -> $s2
+
+### F4 measured on both of the CFG's available duplication shapes
+
+D2 - the whole walk loop duplicated into both arms of the single junction
+(`rejected/dup-loop-into-arms-no-crossjump-merge.c`):
+
+| | nrefs | livelen | pri |
+|---|---|---|---|
+| arg0 (72) | 13 -> **19** | 98 -> 134 | 3979 -> **5671** |
+| var_s0 (73) | 5 -> **9** | 91 -> 127 | 1098 -> **2125** |
+
+Sandbox 19 -> **58**, build_insns 116 -> **155**.
+
+D1 - the walk-pointer-ONLY initialiser duplicated into both arms
+(`rejected/dup-walk-init-into-arms-second-gp-load.c`):
+
+| | nrefs | livelen | pri |
+|---|---|---|---|
+| arg0 (72) | 13 | 98 -> 100 | 3979 -> 3900 |
+| var_s0 (73) | 5 -> **6** | 91 -> 85 | 1098 -> **1411** |
+
+Sandbox 19 -> **25**, build_insns 116 -> **118** (a second
+`lw %gp_rel(D_800A3610)`, appearing as a new pseudo 76 in $v1).
+
+### Why that closes the axis (two independent kills)
+
+1. **jump2's find_cross_jump re-merges NEITHER shape.** The sanctioned
+   [[duplicated-statement-into-arms]] family's byte-neutrality prerequisite
+   fails at the first measurement: +39 insns for D2, +2 for D1. The family
+   works when two arms present a common SUFFIX reaching a common label; this
+   function's arms are separated by the whole of block A (D1) or carry their
+   own back-edges and exit tests (D2), so no mergeable suffix exists.
+2. **The reference arithmetic runs the wrong way.** The loop body - the only
+   region containing walk-pointer references - contains SIX arg0 references
+   (`arg0[3]` x2, `arg0[5]` x3, plus the store) against FOUR walk references.
+   Every duplication therefore grows the parameter's `reg_n_refs` 1.5x faster
+   than the walk pointer's, so the priority ratio has an asymptotic FLOOR of
+   1.5 and can never reach 1.0. The measured k=2 point (5671 vs 2125, ratio
+   2.67) is the best point on the curve: at k=3 arg0 crosses floor_log2's
+   16-reference step (4*25/170 = 0.588 vs 3*13/163 = 0.239) and the ratio
+   worsens again. Walk-only duplication yields +1 reference per junction and
+   the function has exactly ONE junction - the flip needs +9.
+
+### The bound is 2-D, and the 2-D relaxation is unreachable too
+s2 stated the bound one-sided (walk >= 14 refs, or arg0 <= 5). The exact
+condition is `floor_log2(w)*w/len_w > floor_log2(a)*a/len_a`, and because
+floor_log2 steps, LOWERING arg0 helps disproportionately: at a = 8 refs /
+len 98 (pri 2448) a walk pointer with just 8 refs / len 91 (pri 2637) already
+wins. So the flip does NOT strictly require 14 walk references - it requires
+the PAIR to move. That relaxation is nonetheless unreachable: arg0's 13
+references are one def plus the target's own twelve `12($sN)` / `20($sN)`
+accesses, and the only way to reduce a single pseudo's count is to split the
+accesses across two pseudos - which s2 already measured produces a SHORTER,
+HIGHER-priority half (block-A-only holder: 7 refs / ~30 length / pri ~4666,
+which takes $s0 itself). Every split makes the situation worse, in both
+directions.
+
+**Consequence.** Within the measured global.c model, no C source that emits
+the target's own memory accesses can produce the target's allocation: the
+byte content pins pri(arg0) ~ 3979 and pri(walk) ~ 1098-1411 in every variant
+tried, and the three levers that could move them (reference lift by
+duplication, reference reduction by splitting, live-length inflation) are each
+measured dead. The remaining question is therefore FORENSIC - what the
+ORIGINAL compile's RA-time reference counts were - not structural.
+
+- [s3] PROCESS NOTE (correcting the s2 ledger): HEAD's src/text1b_b.c did NOT
+  carry the s2 form - it still carried the inherited inline-asm body (`s32 v;`
+  + `__asm__ volatile("move %0, %1" ...)`), because the s2 ledger commit was
+  ledger-only. candidate.c MUST be re-applied at the start of every session
+  before any measurement; a session that skips this measures the stale floor
+  of 23. src carries the candidate form at the end of session 3.
+
+- [s3] Baseline re-measured this session: sandbox --disable all = 19, build_insns 116 == target 116, allocno table identical to s1/s2 (pseudo 72 nrefs 13 / livelen 98 / pri 3979 -> $s0; pseudo 73 nrefs 5 / livelen 91 / pri 1098 -> $s1; pseudo 74 pri 176 -> $s2).
+
+- [s3] MEASURED D2 (whole walk loop duplicated into both arms of the single junction): arg0 nrefs 13 -> 19, livelen 98 -> 134, pri 3979 -> 5671; walk nrefs 5 -> 9, livelen 91 -> 127, pri 1098 -> 2125. Sandbox 19 -> 58, build_insns 116 -> 155 - find_cross_jump does NOT re-merge the copies, so the form is not byte-neutral and the sanctioned duplicated-statement-into-arms prerequisite fails outright.
+
+- [s3] MEASURED D1 (walk-pointer-only initialiser duplicated into both arms): walk nrefs 5 -> 6, livelen 91 -> 85, pri 1098 -> 1411; arg0 unchanged at 13 refs, pri 3900. Sandbox 19 -> 25, build_insns 116 -> 118 (a second lw %gp_rel(D_800A3610) as new pseudo 76 in $v1). Walk-only duplication yields exactly +1 reference per junction and the function has one junction.
+
+- [s3] The loop body contains SIX arg0 references against FOUR walk-pointer references, so duplication grows the parameter's reg_n_refs 1.5x faster than the walk pointer's; the priority ratio therefore has an asymptotic floor of 1.5 and the k=2 measurement (2.67x) is the best point on the curve - at k=3 arg0 crosses floor_log2's 16-reference step and the ratio worsens. No amount of duplication can flip the sort.
+
+- [s3] The flip condition is 2-D, not the one-sided ">= 14 walk refs" of s2: at arg0 = 8 refs / len 98 (pri 2448) a walk pointer with 8 refs / len 91 (pri 2637) already wins, because floor_log2 steps. The relaxation is still unreachable - arg0's 13 refs are one def plus the target's own twelve buffer accesses, and splitting them across pseudos produces a shorter, HIGHER-priority half (s2: 7 refs / ~30 len / pri ~4666), so every split moves the wrong way.
+
+- [s3] PROCESS CORRECTION to the s2 ledger: HEAD's src/text1b_b.c did NOT carry the s2 form — it still had the inherited inline-asm body ('s32 v;' + __asm__ volatile("move %0, %1" ...)), because the s2 ledger commit was ledger-only. memory/grind/func_80078654/candidate.c MUST be re-applied at the start of every session before any measurement, or the session measures the stale floor of 23. src carries the candidate form (floor 19) at the end of session 3.
+
+- [s3] Baseline re-measured this session with candidate.c applied: sandbox --disable all = 19, build_insns 116 == target_insns 116, and the instrumented cc1 reprints the s1/s2 allocno table verbatim (pseudo 72 arg0 nrefs 13 / livelen 98 / pri 3979 -> $s0; pseudo 73 walk nrefs 5 / livelen 91 / pri 1098 -> $s1; pseudo 74 zero pri 176 -> $s2).
+
+- [s3] MEASURED D2 (whole walk loop duplicated into both arms of the single junction): arg0 nrefs 13 -> 19, livelen 98 -> 134, pri 3979 -> 5671; walk nrefs 5 -> 9, livelen 91 -> 127, pri 1098 -> 2125. Sandbox 19 -> 58, build_insns 116 -> 155 — jump2's find_cross_jump does NOT re-merge the two loop copies (they carry their own back-edges and exit tests, so no common mergeable suffix is presented).
+
+- [s3] MEASURED D1 (walk-pointer-only initialiser duplicated into both arms): walk nrefs 5 -> 6, livelen 91 -> 85, pri 1098 -> 1411; arg0 unchanged at 13 refs, livelen 98 -> 100, pri 3900. Sandbox 19 -> 25, build_insns 116 -> 118 — the duplicated initialiser materialises a SECOND lw %gp_rel(D_800A3610) (new pseudo 76, allocated $v1) because the arms are separated by the whole of block A and its four calls; the target contains exactly one such load, at insn 5.
+
+- [s3] The loop body — the only region of the function containing walk-pointer references — holds SIX arg0 references (arg0[3] x2, arg0[5] x3, plus the store) against FOUR walk-pointer references. Duplication therefore grows the parameter's reg_n_refs 1.5x faster than the walk pointer's, so the priority ratio has an asymptotic FLOOR of 1.5 and can never reach 1.0; the measured k=2 point (2.67x) is the best point on the curve and k=3 is worse.
+
+- [s3] The flip condition is a 2-D frontier, not the one-sided '>= 14 walk refs' of s2: at arg0 = 8 refs / len 98 (pri 2448) a walk pointer with 8 refs / len 91 (pri 2637) already wins. The relaxation is unreachable because arg0's 13 refs are one def plus the target's own twelve buffer accesses and every split of them produces a shorter, higher-priority half (s2 measured 7 refs / ~30 len / pri ~4666, which takes $s0 itself).
+
+- [s3] Consequence for the ladder: within the fully-measured global.c model, all three levers that could move the two priorities — reference lift by duplication (this session), reference reduction by splitting (s2), and live-length inflation (s2 H6) — are now measured dead. No C source that emits the target's own memory accesses can produce the target's allocation, so the remaining question is FORENSIC (what the original compile's RA-time reference counts were) or a search question for the permuter, not a hand-derivable structural one.
+
+- [s3] Incidental measurement worth keeping: local-alloc DOES hand out callee-saves in this translation unit for other functions (ALLOCDBG seed_used for func_80077D10 includes 16, for func_800784E4 includes 16 and 17), so the empty callee-save seed measured for func_80078654 in s2 is a consequence of this function's shape, not a property of the target/flags. It cannot be exploited here: any local-alloc pseudo taking $s0 would also conflict with the walk pointer, which is live across the entire body.

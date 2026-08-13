@@ -20,6 +20,19 @@
  * global.c decision procedure is now read and closed (evidence.md §SESSION 2).
  * It IS applied to src/text1b_b.c as of the end of session 2.
  *
+ * SESSION 3 (structural) ALSO left this form unchanged and still best at 19.
+ * It measured the ledger's F4 duplication axis on both shapes this CFG admits
+ * and KILLED it: jump2's find_cross_jump re-merges neither (walk-init into both
+ * arms = +2 insns / sandbox 25; whole loop into both arms = +39 insns / sandbox
+ * 58), and the loop body holds 6 arg0 references against 4 walk references, so
+ * duplication raises the PARAMETER's priority 1.5x faster than the walk
+ * pointer's (measured 5671 vs 2125 at k=2). See evidence.md SESSION 3.
+ *
+ * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
+ * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
+ * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply
+ * this file FIRST or every measurement you take will be against the stale base.
+ *
  * Apply this body over src/text1b_b.c's func_80078654 (replacing the whole
  * function AND deleting the now-unused `s32 v;` local). NOTE: with these
  * edits the six existing regfix.txt rules for func_80078654 no longer line
