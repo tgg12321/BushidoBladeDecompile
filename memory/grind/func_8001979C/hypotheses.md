@@ -424,3 +424,124 @@
 - probe: NOT MEASURED - closed by policy after reading .claude/rules/or-tree-shape-shift.md.
 - result: FORBIDDEN. That rule classifies reordering operands or reparenthesising an associative+commutative OR/AND expression as a cheat-by-spelling (status FORBIDDEN 2026-06-06, two confirmed rejected instances on func_8007CBB0 and func_8007C97C). The axis is permanently closed and must not be re-opened by a later session.
 - verdict: KILLED
+
+## KILLED (session 4)
+
+- **H4-A: an opaque local holding the 0x20 constant changes the shift/subtract
+  allocation in our favour** (permuter outputs 345-1 / 375-1 / 400-1 / 325-2).
+  *Probe:* vA (holder feeding all four `0x20 - x` subtractions), vB (shift
+  amount only), vI (the session-4 carrier line only), vJ (vI + a condition
+  holder).
+  *Result:* 21 / 31 / 31 / 35, and vB/vI/vJ also push build_insns to 78.
+  **KILLED** - and note vA at 21 is worse than the 18 reached without it, so
+  the constant-holder axis is dead at the current baseline in every spelling
+  measured. (It is also the spelling closest to the forbidden `s32 one = 1;`
+  opaque-variable family, so it should not be revived without a ruling.)
+
+- **H4-B: hoisting the arm's `if` condition into an existing dead local
+  (`needed` / `nd`) changes the branch/compare allocation** (permuter output
+  300-1, minus its nonsense float cast).
+  *Probe:* vG (`needed = bits_left < w; if (needed)`) and vH (same into `nd`).
+  *Result:* vG 22, vH 18 (exactly neutral). **KILLED** - no gradient in either
+  direction; the condition holder buys nothing.
+
+- **H4-C: session 3's frontier F1(c) - re-homing one of `val`'s three roles
+  into an already-dead EXISTING local will lower `val`'s ref count and flip
+  the D2 ordering without the D1 loss that vL suffered.**
+  *Mechanism:* global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen.
+  *Probe:* the session-4 carrier form itself, read against ALLOCDBG.
+  *Result:* **KILLED as a mechanism** (even though the form it produced lowered
+  the floor for other reasons). Spelling the re-home as `dst2 = 0x20 - bits_left;
+  val = dst2;` leaves `val` with all 19 references - the read-back IS a
+  reference - so val's priority is unchanged at 50666 and `hi`'s at 13333. A
+  re-home that actually removes refs from `val` is the vL case, which loses D1.
+  F1(c) is therefore closed: the ordering must be attacked from `hi`'s side.
+
+- **H4-D: the walker used as the carrier matters.**
+  *Probe:* vE5 - carrier = the third-loop walker `out` instead of the other bit
+  loop's walker.
+  *Result:* 20 vs 18. **KILLED** - only the OTHER bit loop's walker produces
+  the gain, consistent with the effect being live-range pressure inside the bit
+  loops rather than anything about the carrier's identity.
+
+## CONFIRMED (session 4)
+
+- **H4-E: a permuter campaign on the cheat-invisible full-TU chassis finds
+  allocation-pressure levers that hand structural search missed.**
+  *Probe:* two campaigns (~13k iterations each), proposals filtered for
+  semantics and policy, then re-measured on the engine gradient.
+  *Result:* **CONFIRMED.** Floor 20 -> 18. The winning edit (per-loop carrier
+  re-home + `nd` holder) is not in any shape sessions 1-3 tried, and its halves
+  are individually neutral - a gradient-following hand search could not have
+  reached it.
+
+## FRONTIER (ranked, as of end of session 4)
+
+1. **F1 - D2 (14 of the remaining 18 points): make `hi` outrank `val` in
+   global.c allocno_compare.** Unchanged numeric target, now re-confirmed at the
+   18-point baseline: `val` nrefs 19 / livelen 15 / pri 50666; `hi` nrefs 8 /
+   livelen 18 / pri 13333. Session 4 closed the "remove refs from val" and
+   "re-home val's roles" sub-branches for good (H4-C, and session 3's vL), so
+   only the `hi` side is left.
+   *Next probes:* (a) ADD refs to `hi` without touching `val` - e.g.
+   `hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;`
+   (this is the one F1(a) probe session 3 listed and session 4 did not reach);
+   (b) SHORTEN `hi`'s livelen of 18 - it currently spans the `cur = *arg1;`
+   refill, so anything that moves the refill out of `hi`'s span raises its
+   priority; (c) note the arithmetic: `hi` needs pri > 50666, i.e. with
+   floor_log2(8)=3 and nrefs 8 it would need livelen < 1 - so a pure livelen
+   change cannot do it and `hi` MUST gain refs to cross a floor_log2 bucket
+   (nrefs 16 -> floor_log2 4 -> pri 64000/livelen). That arithmetic is the
+   concrete design constraint for every future D2 probe.
+
+2. **F2 - D4 (4 of the remaining 18 points): our `move $t1,$t3` is emitted
+   before the `sw`/`lw` preamble instead of last.** The `li` order half of D4
+   closed as a side effect this session, so the residual is purely the walker
+   init's position, which is still coupled to the priority window (moving the
+   init late costs livelen and flips the walker above the counter - session 2's
+   P6). Counter is nrefs 21 / livelen 60 / pri 14000; each walker is nrefs 13.
+   *Next probes:* (a) widen the window from the counter's side (lengthen the
+   counter's live range without dropping it a floor_log2 bucket); (b) read
+   tools/gcc-2.7.2/loop.c move_movables / scan_loop for where the preheader
+   insertion point is chosen relative to the loop's first insn.
+
+3. **F3 - policy pre-clearance, now TWO constructs.** Before any
+   candidate-ready: (i) the duplicated `dst += 2` (byte-neutrality proven in
+   session 3, family scope quote + precedent still owed); (ii) NEW - the
+   session-4 carrier reuse (`dst2 = 0x20 - bits_left; val = dst2;`), i.e.
+   writing a walking pointer that is live LATER with an unrelated value purely
+   for allocation pressure. It plausibly sits in the frozen "variable reuse for
+   codegen control" family, but that is a claim; it must be checked against the
+   rule's scope sentence with a file:line or commit precedent, and a
+   ruling-request emitted if the scope does not cleanly cover it. Do not
+   submit either construct on assumption.
+
+## [s4] A permuter campaign on a cheat-invisible full-TU chassis will find allocation-pressure levers that sessions 1-3's hand structural search could not reach.
+- mechanism: decomp-permuter's randomizer mutates statement placement, temp introduction and variable reuse at a granularity that produces individually-neutral edits whose COMBINATION shifts global.c allocno priorities; a hand search that follows the sandbox gradient one edit at a time cannot see such a combination because each half scores exactly neutral.
+- probe: Built tmp/perm_979C (baseline chassis, perm base_score 410) and tmp/perm_979C_b (vE3 chassis, base_score 370) with tmp/grind/func_8001979C/s4/mk_workspace.sh; ~13k iterations each with -j 8; proposals filtered for semantics and policy with odiff.py, then re-measured on the engine gradient (sandbox --disable all).
+- result: Baseline chassis best perm-score 305 (output-305-1) contained the winning edit; hand-minimised to vE3. Engine gradient: carrier chain in loop 1 alone 20, 'nd' holder in loop 1 alone 20, both in loop 1 19, both in both loops 18 (build_insns 77 == target_insns 77 throughout). Floor 20 -> 18.
+- verdict: CONFIRMED
+
+## [s4] Session 3's frontier F1(c) - re-homing one of 'val's three roles into an already-dead EXISTING local - lowers val's ref count and flips the D2 $v0/$v1 ordering without the D1 loss that session 3's vL suffered.
+- mechanism: global.c allocno_compare orders allocnos by floor_log2(nrefs)*nrefs/livelen; val's 19 refs come from three reuses, and removing one was expected to drop it below hi (nrefs 8, pri 13333).
+- probe: The session-4 carrier form itself (dst2 = 0x20 - bits_left; val = dst2;) read against BB2_ALLOC_DEBUG output, tmp/grind/func_8001979C/s4/qty_vE3.log.
+- result: KILLED as a mechanism. The read-back 'val = dst2;' IS a reference, so val keeps all 19 refs: pseudo 83 ord 1 nrefs 19 livelen 15 pri 50666 -> $v1 and pseudo 78 (hi) ord 7 nrefs 8 livelen 18 pri 13333 -> $v0, bit-for-bit identical to the session-3 numbers. The only re-home that actually removes val's refs is vL, which loses D1 (build_insns 75). The D2 ordering can now only be attacked from hi's side.
+- verdict: KILLED
+
+## [s4] An opaque local holding the 0x20 constant (permuter outputs 345-1 / 375-1 / 400-1 / 325-2) improves the shift/subtract allocation.
+- mechanism: a separate pseudo for the constant changes which allocno owns 0x20 and when it is live, feeding global.c allocno priorities and loop.c's constant hoist.
+- probe: vA (holder feeding all four 0x20-minus-x subtractions), vB (shift amount only), vI (the session-4 carrier line only), vJ (vI stacked with a condition holder); sandbox --disable all on each.
+- result: 21, 31, 31, 35 - vB/vI/vJ also push build_insns to 78. Every spelling is worse than the 18 reached without it. The axis is dead at this baseline (and is the spelling nearest the forbidden 's32 one = 1;' opaque-variable family, so it must not be revived without a ruling).
+- verdict: KILLED
+
+## [s4] Hoisting the arm's if condition into an existing dead local (permuter output 300-1) changes the compare/branch allocation.
+- mechanism: the condition becomes a pseudo with its own allocno instead of feeding the branch directly, changing local-alloc quantity spans in the loop head.
+- probe: vG ('needed = bits_left < w; if (needed)') and vH (same into the session-4 local 'nd'); sandbox --disable all.
+- result: vG 22, vH 18 (exactly neutral). No gradient in either direction; the condition holder buys nothing.
+- verdict: KILLED
+
+## [s4] The identity of the walker used as the shift-amount carrier matters.
+- mechanism: any dead local should serve equally if the effect is purely an extra def-use pair.
+- probe: vE5 - carrier = the third-loop walker 'out' instead of the other bit loop's walker; sandbox --disable all.
+- result: 20 vs 18 for the other-bit-loop walker. Only a walker whose live range lies inside the other bit loop produces the gain, so the effect is live-range pressure in the bit loops, not the extra def-use pair.
+- verdict: KILLED

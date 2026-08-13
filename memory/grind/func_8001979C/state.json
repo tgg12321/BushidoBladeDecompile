@@ -1,8 +1,8 @@
 {
  "func": "func_8001979C",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "Floor held at 20 (77/77 insns); eleven structural variants measured and killed, and D2's mechanism corrected from a local-alloc combine_regs tie to a global.c allocno_compare contest between exactly t"
+  },
+  {
+   "session": 4,
+   "floor": 18,
+   "modality": "permuter",
+   "headline": "Floor 20 -> 18: a permuter-found, hand-minimised per-loop carrier re-home (the 0x20-bits_left shift amount computed into the other bit loop's dead walking pointer, plus a second holder for 'needed') c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "D2 (14 of the 20 remaining points) closes when 'hi' outranks 'val' in global.c allocno_compare while 'val' keeps enough references to keep materialising D1's copy pair.",
-   "mechanism": "global.c allocno_compare orders allocnos by floor_log2(nrefs)*nrefs/livelen and the earlier-allocated of the two takes $v1. Measured: val nrefs 19 / livelen 15 / pri 50666 vs hi nrefs 8 / livelen 18 / pri 13333. vL proved that stripping val's third reuse flips the ordering but also kills D1 (build_insns 75), so the ordering must be changed from hi's side or by re-homing (not deleting) val's third role.",
-   "next_probe": "(a) ADD references to hi without touching val - e.g. 'hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;' so hi gains two refs per arm; (b) shorten hi's livelen (it currently spans the refill); (c) re-home the third loop's -2 into an already-dead EXISTING local (needed, or hi) rather than a brand-new one, so val loses refs without a new pseudo appearing; (d) read the ALLOCDBG pri column from qty.sh for every variant - it is a much finer gradient than the sandbox score because it shows how close a form came to flipping the order."
+   "hypothesis": "D2 (14 of the remaining 18 points) closes only if 'hi' gains enough references to cross a floor_log2 bucket and outrank 'val' in global.c allocno_compare; every route that removes or re-homes val's references is now measured dead.",
+   "mechanism": "global.c allocno_compare priority = floor_log2(nrefs)*nrefs/livelen; val = nrefs 19 / livelen 15 / pri 50666 takes $v1, hi = nrefs 8 / livelen 18 / pri 13333 takes $v0, and target needs the reverse. vL (session 3) proved removing val's refs kills D1; session 4 proved a read-back re-home changes nothing.",
+   "next_probe": "(a) The one unexecuted F1(a) probe: spell the store as 'hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;' so hi gains two refs per arm (8 -> ~16, crossing into floor_log2 4) with val untouched; (b) shorten hi's livelen of 18 by moving the 'cur = *arg1;' refill out of hi's span; (c) read the ALLOCDBG pri column (tmp/grind/func_8001979C/s3/qty.sh) for every variant - it is a far finer gradient than the sandbox score."
   },
   {
-   "hypothesis": "D4 (6 of the 20 points) can only move if the walker/counter priority window is widened from the COUNTER's side, because every source-level lever on the li order and on the walker-init placement is now measured dead.",
-   "mechanism": "global.c allocno_compare (counter nrefs 21 / livelen 60 / pri 14000; each walker nrefs 13, livelens 28 and 31) plus loop.c move_movables deciding where the hoisted li constants land relative to the walker init. Dead levers: session 1 H-E and session 3 vI (li order via source order, 33->43 and 20->45), session 2 P6 (late walker init, 20->31).",
-   "next_probe": "(a) find a change that LENGTHENS the counter's live range without dropping it a floor_log2 bucket, which widens the window and lets both walker inits move late into target's position; (b) read tools/gcc-2.7.2/loop.c scan_loop / move_movables and determine whether the two hoisted li constants are emitted in movable-list order or its reverse, then derive the source order that yields target's 'li t4,<w>' before 'li t2,0x20' - the hoist mechanism is the surface, not statement order."
+   "hypothesis": "D4's remaining 4 points are purely the walking-pointer init's POSITION (ours before the sw/lw preamble, target's last in the preheader), and it can only move if the counter/walker priority window is widened from the counter's side.",
+   "mechanism": "loop.c move_movables / scan_loop choose the preheader insertion point, and global.c allocno_compare fixes what may move: counter nrefs 21 / livelen 60 / pri 14000, each walker nrefs 13; moving an init late costs livelen and flips the walker above the counter (session 2's P6, score 31). The 'li' order half of D4 closed this session as a side effect of the allocation change.",
+   "next_probe": "(a) Find a change that lengthens the counter's live range without dropping it a floor_log2 bucket, then re-test the late walker init; (b) read tools/gcc-2.7.2/loop.c move_movables / scan_loop to find where the preheader insertion point is chosen relative to the loop's first insn, and whether the walker init is a movable at all in this form."
   },
   {
-   "hypothesis": "The closing form's policy status must be settled before a candidate-ready submission; byte-neutrality is now discharged but the family-scope question is not.",
-   "mechanism": "The duplicated 'dst += 2' is a REAL, live-in-output statement duplicated into two control-flow arms whose measurable effect is loop.c's biv_count (and hence strength reduction), which is a codegen-priority effect of the kind the duplicated-statement-into-arms family was sanctioned for - but the family's prerequisites (byte-neutrality, documented exhaustion, FAKE annotation) must each be quoted and satisfied, not assumed.",
-   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md, quote its scope sentence VERBATIM into memory/grind/func_8001979C/self_vet.md, and pair it with a precedent as file:line or a commit hash. Byte-neutrality is already proven (target's single 'addiu $t1,$t1,0x2' in the bnez delay slot at asm/funcs/func_8001979C.s:45 and :67). If the scope sentence does not cleanly cover a duplication whose effect is a biv-count change, emit ruling-request rather than a submission."
+   "hypothesis": "The closing form's policy status is the binding gate on any candidate-ready, and it now covers TWO constructs, not one.",
+   "mechanism": "The duplicated 'dst += 2' is byte-neutral (proven) and its measurable effect is loop.c biv_count; the session-4 carrier reuse writes a later-live walking pointer with an unrelated value purely for allocation pressure. Both are claims on the frozen 'variable reuse for codegen control' / 'duplicated-statement-into-arms' families, and a claim is not a finding.",
+   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md and the frozen list in .claude/rules/no-new-park-categories.md; quote each scope sentence VERBATIM into memory/grind/func_8001979C/self_vet.md paired with a file:line or commit-hash precedent. If either scope does not cleanly cover its construct - in particular the carrier reuse, which has no precedent in this ledger - emit ruling-request rather than a submission."
   }
  ],
  "judge_constraints": [],
