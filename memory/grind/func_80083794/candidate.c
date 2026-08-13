@@ -116,6 +116,30 @@
  * has the same branch shape behind the same three eligible saves and leaves its
  * delay slot EMPTY, while both compilers fill it with `sw $16,16($sp)`.
  *
+ * SESSION 8 (rederive) spent the modality's own two probes and then brought in
+ * the first evidence from OUTSIDE this repository. m2c reconstructs THIS BODY
+ * verbatim from the target (the 28 instructions admit exactly one dataflow), and
+ * the 3754-scratch decomp.me corpus contains no matched `__main`/ctor-walk in
+ * any PS1 project, so there is no alternative shape and no transplant source.
+ * Using the corpus's 1740 already-matched GCC-2.7.2/PsyQ functions as a control
+ * group: class A has 0 counterexamples in 1246 matched CALLING functions (1019
+ * put their lowest callee-save at exactly +16, none below it — target puts $s0
+ * at +4), and class E has 0 counterexamples in 484 (the shape itself is
+ * ordinary, but 480 of the 484 have NO adjacent preceding callee-save and none
+ * has 2+; target has 3). Class D is confirmed C-reachable (33 matched ascending
+ * runs), which is s3's result, so the operative constraint there stays s3's
+ * joint-unreachability, not the emission order.
+ * Session 8 also REVISED class C's meaning: 591 matched corpus scratches contain
+ * `ori $rX,$zero,small` (84 of them in BB2's addiu-flavoured `la` regime), cc1
+ * never emits `ori` for a constant (mips.md:1899-1908 iorsi3 needs a register;
+ * mips.c mips_move_1word emits `li %0,%X1`), and our maspsx decides it in
+ * expand_load_immediate (addiu for 0<imm<=0x7FFF, ori for 0x8000-0xFFFF) with
+ * the in-source note "ori is actually addiu on ASPSX 2.56+". So the spelling is
+ * an ASPSX-VERSION property: class C stays unreachable for us, but it is a
+ * FOREIGN-ASSEMBLER fingerprint, not a hand-written-asm one. All five classes
+ * then collapse into one claim — these bytes were linked in from a prebuilt
+ * PsyQ/SN object (crt0/libgcc `__main`), not compiled from this project's C.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

@@ -845,3 +845,127 @@ dead-local guards (cheats, 29 insns).
 - probe: tmp/grind/func_80083794/s7/twin.sh on s7/twin.i (the minimal TU with `if (D_800A2668 != 0)` and no flag store), compiled through BOTH our fork (tools/gcc-2.7.2/build/cc1, canonical CC_FLAGS) and cc1psx.
 - result: Both compilers emit 'beq $2,$0,.L2' with 'sw $16,16($sp)' in the delay slot - both steal the nearest preceding save exactly as they do for the scored body, and neither leaves the nop the target has. Two instances of one branch shape, 0x70 bytes apart in shipped code, identical eligible fillers, opposite outcomes: one filled from the conditional arm with an insn clobbering the branch's own test register, one empty.
 - verdict: CONFIRMED
+
+
+## Session 8 (rederive, 2026-08-13)
+
+### H13 -- "a fresh m2c decompile or a corpus sibling/transplant yields a structurally DIFFERENT C shape for func_80083794" (the mandated rederive modality) -- **KILLED**
+Probe: (a) `tools/m2c/m2c.py --target mipsel-gcc-c -f func_80083794
+asm/funcs/func_80083794.s`; (b) a name+shape sweep for a libgcc/crt0 ctor-walk
+sibling across the 3754-scratch decomp.me corpus.
+Result: (a) m2c reconstructs the existing candidate body verbatim -- the 28
+target instructions admit exactly one dataflow, so there is no alternative shape
+to try; (b) 40 name/shape candidates, none of them a ctor-table walk, and no
+matched `__main` anywhere in the corpus -- there is no transplant source.
+Artifacts: s8/m2c_rederive.txt, s8/frame_probe.txt.
+
+### H14 -- "residual class A (the 16-byte o32 outgoing-argument block) is a property of OUR fork's mips backend rather than of the toolchain family" -- **KILLED (class A corroborated externally)**
+Probe: over the 1740 `is_matching` gcc2.7.2/psyq3.5 decomp.me scratches, take
+every target that contains a `jal`/`jalr` and has callee-save stores (n=1246)
+and histogram the LOWEST callee-save offset.
+Result: 1019 at exactly +16, 108 at +24, 37 at +32, 12 at +40, 11 at +48, ...
+and ZERO below +16. Every matched calling function in an independent corpus of
+already-solved-from-C functions keeps the bottom 16 bytes clear. Target stores
+$s0 at +4. Artifact: s8/frame_probe.txt.
+
+### H15 -- "class C's `ori $t0,$zero,1` is a hand-written-assembly fingerprint (s7's reading of the 5537:3 census)" -- **KILLED as an inference; the reachability measurement stands**
+Probe: count small-immediate `ori $rX,$zero,imm` in matching corpus scratches,
+classify each such function's `la` flavour, and trace the ori/addiu decision
+through our own toolchain source.
+Result: 591 matched scratches contain the shape; 84 of them are in functions
+whose `la`s are entirely addiu-flavoured like BB2's, so the mix target shows is
+attested. cc1 never emits ori for a constant (mips.md:1899-1908 `iorsi3` needs a
+register operand; mips.c `mips_move_1word` emits `li\t%0,%X1`); our maspsx's
+`expand_load_immediate` maps `0 < imm <= 0x7FFF` to addiu and only 0x8000-0xFFFF
+to ori, with the in-source comment "ori is actually addiu on ASPSX 2.56+". So
+the spelling is an ASPSX-VERSION property. Class C remains UNREACHABLE for us
+(no C form changes it, floor arithmetic untouched), but its evidentiary meaning
+changes from "hand-written" to "assembled by a different assembler mode than the
+other 5537 constant-load sites in this executable" -- a prebuilt/foreign-object
+fingerprint. Artifacts: s8/ori_probe.txt, s8/ori_style_probe.txt.
+
+### H16 -- "class E as stated by s6 is too strong: a delay slot that clobbers its own branch's test register is exotic" -- **KILLED, and class E is sharpened and corroborated**
+Probe: count the shape in the matched corpus, then re-count restricted to BB2's
+actual configuration (a run of adjacent preceding callee-save stores available
+to reorg.c's backward scan).
+Result: the general shape is ORDINARY -- 484 of 1740 matching scratches have it.
+But of those 484, 480 have ZERO adjacent preceding callee-save stores, 4 have
+exactly one, and NONE has two or more. func_80083794 has three. The narrow claim
+(reorg.c reached the fall-through scan at 3048/3075 despite eligible backward
+candidates at 2960) survives with 0 counterexamples in an independent corpus.
+Artifact: s8/classE_probe.txt.
+
+### C6 -- class D is C-reachable, as s3 measured -- **CONFIRMED externally**
+33 matching scratches emit a >=3-deep ascending callee-save run (vs 143
+descending, 331 mixed). Ascending IS producible from C; s3's JOINT
+unreachability (the ascending basin costs +5 from the floor form) is the
+operative constraint, not the emission order by itself.
+Artifact: s8/corpus_census.txt.
+
+## Live frontier after session 8
+
+### F1 -- the question is DISPOSITION, not grinding; SEVEN independent results, two of them external control corpora, and a single unifying explanation
+Sessions 1-7 argued five residual classes from the decompals fork's own source
+plus BB2-internal censuses, then closed the fork-divergence counter-explanation
+with cc1psx. Session 8 adds the first evidence from OUTSIDE this repo that is
+also outside this binary: 1740 already-matched gcc2.7.2/psyq3.5 functions on
+decomp.me, giving 0/1246 counterexamples for class A and 0/484 for class E in
+BB2's exact configuration -- and it replaces the weakest link in the chain
+(class C read as handwriting) with a stronger, testable one (class C as an
+ASPSX-version/foreign-object fingerprint). All five classes now collapse into ONE
+claim: **func_80083794's bytes were linked in from a prebuilt PsyQ/SN object
+(crt0/libgcc `__main`), not compiled from this project's C.**
+Next probe: not a measurement. When the driver assigns `escalation` modality,
+file the docs/grind/decisions.md entry on the seven results (five mechanism
+arguments, the cc1psx differential, the two external corpus censuses) against
+the failed `scan_hand_coded` gate (tier LOW 0/8), and return owner-gated citing
+it. Note for whoever writes it: the prebuilt-object reading is NOT the same
+claim as "hand-written asm", so the canonical-asm gate does not get easier --
+it is the `no C in this build produced these bytes` claim, which is what the
+entry should actually say.
+
+### F2 -- external corroboration of the crt0 identity: PARTIALLY REOPENED and then answered
+s6 closed the OFFLINE route (MOVOVL.EXE has no __main) and s7 made it
+unnecessary. s8 shows a third route existed all along and is now spent: the
+decomp.me corpus contains no matched `__main`/ctor-walk from any PS1 project, so
+there is no external C to transplant and no external byte-level twin to diff.
+Next probe: none. Do not re-open.
+
+### F3 -- cumulative kill list; every item is answered with a measurement
+s1-s7's kill list, plus s8's: do NOT re-run m2c on this function (it returns the
+candidate body verbatim), do NOT hunt for a `__main` sibling/transplant (the
+decomp.me corpus has none), do NOT re-argue class A or class E from BB2's binary
+alone (an independent 1740-function matched corpus now says 0/1246 and 0/484),
+and do NOT repeat s7's "the ori is hand-written" inference -- the corpus shows
+591 matched instances of that spelling and our own maspsx source shows it is an
+ASPSX-version property, not a C-level or handwriting one.
+
+## [s8] A fresh m2c decompile or a corpus sibling/transplant yields a structurally DIFFERENT C shape for func_80083794 (the mandated rederive modality).
+- mechanism: m2c reconstructs the original dataflow from the target bytes rather than from our C, so it can expose a shape our hand-derivations missed; and a libgcc/crt0 __main matched by another PS1 project would be a direct transplant source.
+- probe: tools/m2c/m2c.py --target mipsel-gcc-c -f func_80083794 asm/funcs/func_80083794.s (s8/m2c_rederive.txt); plus a name+shape sweep for __main / __do_global_ctors / crt0 / ctor-walk (jalr with addiu $sN,$sN,0x4) over all 3754 decomp.me scratches (s8/frame_probe.txt).
+- result: m2c returns the existing candidate body verbatim - same guard, same flag store, same walking pointer with descending counter, same do/while under an if (count != 0) pre-test; the only deltas are byte-unit pointer arithmetic and reading the link-time-absolute count as literal 0. The 28 target instructions admit exactly one dataflow. The sibling sweep returns 40 candidates by name or shape, none of them a ctor-table walk, and no matched __main anywhere in the corpus.
+- verdict: KILLED
+
+## [s8] Residual class A (the mandatory 16-byte o32 outgoing-argument block) is a property of OUR decompals fork's mips backend rather than of the GCC-2.7.2/PsyQ toolchain family.
+- mechanism: If the block were fork-specific, some function matched from real C by another project under the same compiler class would show a callee-save stored inside the bottom 16 bytes of its frame - which is what target does ($s0 at +4 of a 0x10 frame).
+- probe: Over the 1740 is_matching gcc2.7.2/psyq3.5 decomp.me scratches, take every target containing jal/jalr with callee-save stores (n=1246) and histogram the lowest callee-save offset (tmp/grind/func_80083794/s8/frame_and_sibling_probe.py -> s8/frame_probe.txt).
+- result: 1019 at exactly +16, 108 at +24, 37 at +32, 12 at +40, 11 at +48, 9 at +56, ... and ZERO below +16. Not one matched calling function in an independent corpus of already-solved-from-C functions stores a callee-save inside the argument block. Class A is corroborated from outside BB2's binary.
+- verdict: KILLED
+
+## [s8] Class C's ori $t0,$zero,1 is a hand-written-assembly fingerprint (session 7's reading of the 5537-to-3 BB2 census).
+- mechanism: If the ori spelling were exclusive to hand-written asm, it should be rare-to-absent in functions other people have MATCHED from real C under this toolchain family; if instead it is what an older ASPSX mode emits for an ordinary li, it is a toolchain-version fingerprint and says nothing about handwriting.
+- probe: Count small-immediate ori $rX,$zero,imm across matching corpus scratches and classify each such function's la flavour (s8/ori_probe.txt, s8/ori_style_probe.txt); then trace the ori/addiu decision through our own frozen toolchain source (mips.md iorsi3 at 1899-1908, mips.c mips_move_1word, tools/maspsx/maspsx/__init__.py expand_load_immediate at 213-241).
+- result: 591 matched scratches contain the shape, 84 of them inside functions whose la's are entirely addiu-flavoured exactly like BB2's (e.g. co4Jn/func_80089174: addiu $s0,$s0,%lo(D_800B2384) plus jal ... / ori $a0,$zero,0x1 in the delay slot, from the plain C argument func_8009CF78(1, ...)). cc1 never emits ori for a constant load - iorsi3 needs a register operand and mips_move_1word emits li %0,%X1 - and maspsx maps 0<imm<=0x7FFF to addiu, 0x8000-0xFFFF to ori, with the in-source comment 'ori is actually addiu on ASPSX 2.56+'. The spelling is an ASPSX-VERSION property. Class C stays UNREACHABLE under our frozen pipeline (floor arithmetic untouched), but its meaning changes from 'hand-written' to 'assembled by a different assembler mode than the other 5537 constant-load sites in this executable'.
+- verdict: KILLED
+
+## [s8] Class E as session 6 stated it is too strong - a branch delay slot holding an insn that clobbers the branch's own test register is exotic.
+- mechanism: reorg.c fills from the backward scan (2960) first and only falls through to the arm scan (3048/3075) when the backward scan finds nothing; the diagnostic configuration is therefore 'arm filler chosen DESPITE adjacent eligible callee-saves', not the clobbering filler by itself.
+- probe: Count the general shape across the 1740 matching scratches, then re-count restricted to BB2's configuration (>= 2 adjacent preceding callee-save stores) - tmp/grind/func_80083794/s8/classE_probe.py -> s8/classE_probe.txt.
+- result: The general shape is ORDINARY: 484 of 1740. But of those 484, 480 have ZERO adjacent preceding callee-save stores, 4 have exactly one, and NONE has two or more. func_80083794 has three (sw $s0,0x4 / sw $s1,0x8 / sw $ra,0xC). The loose version of the claim is dead; the narrow version survives with 0 counterexamples in an independent corpus.
+- verdict: KILLED
+
+## [s8] Class D (a >=3-deep ascending prologue callee-save run) is C-reachable under this toolchain family, as session 3 measured in isolation.
+- mechanism: mips.c:4680's single GP_REG_LAST->FIRST loop emits both prologue and epilogue descending, so only the post-reload scheduler can reverse a run - which it does under an in-block anti-dependence; if that path is real, other matched projects should exhibit ascending runs.
+- probe: Classify the prologue save-offset order of every matching corpus scratch with >=3 early callee-save stores (s8/corpus_census.txt).
+- result: 33 ascending vs 143 descending vs 331 mixed. Ascending is genuinely producible from C, confirming s3's hoisted-la measurement. The operative constraint for this function therefore remains s3's JOINT unreachability (the ascending basin costs +5: 18 -> 23), not the emission order by itself.
+- verdict: CONFIRMED
