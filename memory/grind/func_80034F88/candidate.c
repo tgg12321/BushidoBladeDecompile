@@ -3,9 +3,23 @@
  *
  * `sandbox func_80034F88 --disable all` = score 10, 49 build insns vs 49 target
  * insns, lbu 175 / sb 164 / lui 456 (target census: 49 / lbu 176 / sb 164 /
- * lui 456). Re-measured this session (s16 forensics, tmp/grind/func_80034F88/
- * s15c/results.json, variant r8.c). It is NOT a byte match and must not be
- * submitted as candidate-ready.
+ * lui 456). Re-measured again in s16 (rederive) as variant base.c,
+ * tmp/grind/func_80034F88/s16/results.json. It is NOT a byte match and must not
+ * be submitted as candidate-ready.
+ *
+ * s16 (rederive) added nothing to the body — 13 further structurally different
+ * single-object shapes all scored 10 or worse — but it localised the residual
+ * exactly and killed the last open dial. The full instruction-aligned
+ * side-by-side is in evidence.md under "==== s16 (rederive) ====". In one line:
+ * blocks 2 and 4 and the trailing copy loop are instruction- AND
+ * register-identical to target; ALL 10 points are in block 1, as (a) the base
+ * register being $a0 where target uses $v1 with the byte swapped the other way,
+ * and (b) one missing post-store reload (our maspsx nop where target has a
+ * second `lbu`), which is why the lbu census is 175 against the target's 176.
+ * The $v1-vs-$a0 dial is dead three ways (declaration order inert; a block-1-only
+ * live range wins $a1 not $v1; an explicit `register asm("$3")` pin is ignored
+ * outright) and would in any case be a net LOSS: $a0 is what makes blocks 2 and 4
+ * exact, so switching costs 10 lines to save 5.
  *
  * WHY THIS FILE CHANGED (s16). candidate.c previously held the THREE-pointer-
  * object body that measures 0 but which the layer-1 cheat-reviewer FAILed on

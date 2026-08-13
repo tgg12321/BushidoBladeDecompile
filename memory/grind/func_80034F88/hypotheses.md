@@ -1697,3 +1697,63 @@ evidence - not another sweep.
 - probe: global.c:426 and reload.c:4128-4137 source verification; the a1-a4 anonymous sweep; the r8 (10) and w1 (29) single-object controls; the target's register assignment read directly from asm/funcs/func_80034F88.s.
 - result: Confirmed. Every remaining pure-C dial — declaration order, live-range shape, re-assignment count, mask spelling, value-local placement, statement order, and 6,450+ permuter iterations across four campaigns — operates on WHICH single hard register the one pointer allocno receives and on the reload census. None can change HOW MANY it receives. That is why fifteen prior sessions across six modalities all bottom out at 9/10 with one object and reach 0 with two or more.
 - verdict: CONFIRMED
+
+## [s16] The single pointer allocno can be steered onto $v1 (the target's block-1 base) by declaration order, live-range length, or an explicit register pin.
+- mechanism: global.c allocno_compare orders allocation by pri = floor_log2(n_refs)*n_refs*10000*size/live_length and falls through to allocno number (pseudo declaration order) on a tie; find_reg then excludes regs_someone_prefers. If the pointer's priority or conflict set can be changed, the hard register it wins should change with it.
+- probe: eight single-object variants (tmp/grind/func_80034F88/s16/variants, results.json): pointer declared first/middle/last (d1/d2/d3), all temporaries hoisted to function scope (f1), byte pointer for p (pb1), pointer live only across block 1 (seg1), pointer live only across blocks 2+4 (seg23), plus the diagnostic `register u8 *q asm("$3"/"$4"/"$2")` pins.
+- result: d1/d2/d3/f1/pb1 all score 10 with an identical instruction stream — declaration order is completely inert. seg1 puts the pointer on $a1 (score 28); seg23 leaves it on $a0 (score 14). All three register pins are IGNORED (GCC 2.7.2 honours a local register variable only where it appears as an asm operand): pin_v1's emitted stream is instruction-identical to the unpinned candidate. No shape, legal or otherwise, moves the allocno to $v1.
+- verdict: KILLED
+
+## [s16] $v1 would be a better register for the single pointer than $a0 (the residual might not redistribute symmetrically).
+- mechanism: the target's block 1 uses $v1 as the base and $a0 for the loaded byte; blocks 2 and 4 use $a0 as the base and $v1 for the byte. A single allocno serves whichever segment its register matches.
+- probe: instruction-aligned side-by-side of the banked candidate against target (s16/sbs.py base.c) — count the lines each choice repairs and breaks.
+- result: our build's $a0 makes blocks 2 and 4 EXACTLY identical to target (0 diffs across both) and costs 5 swapped lines in block 1. Switching to $v1 repairs those 5 and breaks the 5 equivalent lines in each of blocks 2 and 4: net +5, i.e. score ~15. The residual is asymmetric in $a0's FAVOUR; the compiler is already picking the better of the two.
+- verdict: KILLED
+
+## [s16] The block-1 post-store reload (the target's second `lbu`, our maspsx nop) is reachable from a single C pointer object.
+- mechanism: GCC 2.7.2 cse.c hashes a MEM on its ADDRESS RTX. After `sb reg,0(pseudo)` the entry for (mem:QI (reg pseudo)) holds reg, so a later load through the SAME pseudo is satisfied from the register and the reload is folded. Only a different address rtx misses the entry. Blocks 2 and 4 escape this because a two-armed if/else JOIN LABEL flushes the value table between their store and their read (s14); block 1 has no preceding join, and the one intervening insn (`lw v0,32(a1)`) is a LOAD, which does not invalidate.
+- probe: every single-object shape measured this session (13 variants) plus the s14/s15 banks; lbu census on the sandbox object against the target's 176.
+- result: every single-object form comes in at lbu 175 — exactly one reload short, always block 1's. Restating `q = &D_80106A73;` before block 1 does not help: one C local is one DECL_RTL is one pseudo, so the restatement is a redundant set to the same pseudo and the hash entry survives. A second address pseudo requires a second C object.
+- verdict: KILLED
+
+## [s16] m2c's fresh reconstruction of the target reveals a value shape we have not tried (compute the OR first, else-arm overrides).
+- mechanism: m2c reconstructs from the asm, so its statement shape is evidence about what the original compiler was fed.
+- probe: `python3 tools/m2c/m2c.py --target mipsel-gcc-c asm/funcs/func_80034F88.s`, then three transcriptions: literal (no pointer, m3), on the single-pointer chassis with u8 temporaries (m1) and with s32 temporaries (m2).
+- result: m3 = 26 at 45 insns (lui 458); m1 = m2 = 21 at 45 insns. All three come out FOUR instructions short of the target's 49 — GCC folds m2c's two reads of the byte into one and then collapses the diamond. m2c's shape is a worse shape, not an untried lever; candidate.c's symmetric if/else is what reproduces the target's diamond.
+- verdict: KILLED
+
+## [s16] In BB2's already-matched corpus, the "one global in two base registers" codegen is reached by some pure-C spelling OTHER than multiple C handles on that global.
+- mechanism: if a matched, zero-rule function anywhere in the tree produces two base registers for one symbol from a single C handle, that spelling transplants directly onto func_80034F88 and closes it inside the Judge's constraint.
+- probe: tmp/grind/func_80034F88/s16/sibling_scan.py + sibling_scan2.py — sweep all asm/funcs/*.s for a symbol materialised into 2+ distinct registers where both are used as a memory base; cross-reference engine/queue.json to keep only zero-cheat COMPLETED functions; read their C.
+- result: 34 functions in the binary have the construct, 9 of them COMPLETED with zero rules. The closest, func_80037F40 (src/code6cac_c_mid.c, commit 89bfc882, D_80106A50 in $v1 and $a2), reaches it with TWO C pointer objects on the one global — `p = (u8 *)&g_file_disc_size;` (:196) and `src = (Quad *)&g_file_disc_size;` (:211) — of different types doing different jobs, so incidental to the match that the commit message never mentions them. No corpus example reaches two base registers from a single C handle. The construct and the multiple-C-object source are one-to-one.
+- verdict: KILLED
+
+## [s16] The single pointer allocno can be steered onto $v1 (the target's block-1 base) by declaration order, live-range length, or an explicit register pin.
+- mechanism: global.c allocno_compare orders allocation by pri = floor_log2(n_refs)*n_refs*10000*size/live_length and falls through to allocno number (pseudo declaration order) on a tie; find_reg then excludes regs_someone_prefers. If the pointer's priority or conflict set can be changed, the hard register it wins should change with it.
+- probe: Eight single-object variants (tmp/grind/func_80034F88/s16/variants, results.json): pointer declared first/middle/last (d1/d2/d3), all temporaries hoisted to function scope (f1), byte pointer for p (pb1), pointer live only across block 1 (seg1), pointer live only across blocks 2+4 (seg23), plus diagnostic `register u8 *q asm("$3"/"$4"/"$2")` pins.
+- result: d1/d2/d3/f1/pb1 all score 10 with an identical instruction stream, so declaration order is completely inert. seg1 puts the pointer on $a1 (score 28); seg23 leaves it on $a0 (score 14). All three register pins are IGNORED by GCC 2.7.2 (a local register variable is only honoured where it appears as an asm operand) -- pin_v1's emitted stream is instruction-identical to the unpinned candidate, score 10, same census. No shape, legal or otherwise, moves the allocno to $v1.
+- verdict: KILLED
+
+## [s16] $v1 would be a better register for the single pointer than $a0, so the 10-point residual might not redistribute symmetrically.
+- mechanism: The target's block 1 uses $v1 as the base and $a0 for the loaded byte; blocks 2 and 4 use $a0 as the base and $v1 for the byte. A single allocno serves whichever segment its register matches.
+- probe: Instruction-aligned side-by-side of the banked candidate against target (tmp/grind/func_80034F88/s16/sbs.py base.c), counting the lines each choice repairs and breaks.
+- result: Our build's $a0 makes blocks 2 and 4 EXACTLY identical to target (zero diffs across both) at a cost of 5 swapped lines in block 1. Switching to $v1 would repair those 5 and break the 5 equivalent lines in each of blocks 2 and 4: net +5, i.e. a score near 15. The residual is asymmetric in $a0's favour -- the compiler already picks the better of the two.
+- verdict: KILLED
+
+## [s16] The block-1 post-store reload (the target's second `lbu`, our maspsx nop) is reachable from a single C pointer object.
+- mechanism: GCC 2.7.2 cse.c hashes a MEM on its ADDRESS RTX. After `sb reg,0(pseudo)` the entry for (mem:QI (reg pseudo)) holds reg, so a later load through the SAME pseudo is satisfied from that register and the reload is folded away. Only a different address rtx misses the entry. Blocks 2 and 4 escape this because a two-armed if/else JOIN LABEL flushes the cse value table between their store and their read (the s14 finding); block 1 has no preceding join, and the single intervening insn (`lw v0,32(a1)`) is a LOAD, which does not invalidate.
+- probe: All 13 single-object shapes measured this session plus the s14/s15 banks; lbu census on the sandbox object against the target's 176.
+- result: Every single-object form comes in at lbu 175 -- exactly one reload short, always block 1's. Restating `q = &D_80106A73;` before block 1 does not help: one C local is one DECL_RTL is one pseudo, so the restatement is a redundant set to the same pseudo and the hash entry survives untouched. A second address pseudo requires a second C object. This is the s15 register-allocator ceiling re-derived independently from the CSE side.
+- verdict: KILLED
+
+## [s16] m2c's fresh reconstruction of the target reveals a value shape we have not tried (compute the OR first, else-arm overrides).
+- mechanism: m2c reconstructs from the asm, so its statement shape is evidence about what the original compiler was fed.
+- probe: `python3 tools/m2c/m2c.py --target mipsel-gcc-c asm/funcs/func_80034F88.s`, then three transcriptions: literal / no pointer (m3), single-pointer chassis with u8 temporaries (m1), same with s32 temporaries (m2).
+- result: m3 = 26 at 45 build insns (lui 458); m1 = m2 = 21 at 45 insns. All three land FOUR instructions short of the target's 49 -- GCC folds m2c's two reads of the byte into one and then collapses the diamond. m2c's shape is a worse shape, not an untried lever; candidate.c's symmetric `if (c) c = v | bit; else c = v;` is what reproduces the target's diamond.
+- verdict: KILLED
+
+## [s16] Somewhere in BB2's already-matched corpus, the 'one global in two base registers' codegen is reached by a pure-C spelling OTHER than multiple C handles on that global -- a spelling that would transplant onto func_80034F88 inside the Judge's one-object constraint.
+- mechanism: A matched, zero-rule function that produces two base registers for one symbol from a single C handle is a direct counter-example to the ceiling and an immediately transplantable form.
+- probe: New tools tmp/grind/func_80034F88/s16/sibling_scan.py + sibling_scan2.py: sweep all 1,437 asm/funcs/*.s for a symbol materialised into 2+ distinct registers via lui/addiu where BOTH registers are then used as a memory base (offset($reg)), excluding address-as-a-value cases; cross-reference engine/queue.json to keep only zero-cheat COMPLETED functions; read their C bodies.
+- result: 34 functions in the binary carry the construct; 9 are COMPLETED with zero regfix/asmfix rules (SpuSetKey, SpuSetReverbModeParam, func_8002C0DC, func_80037F40, func_8004A940 x2 symbols, func_8008241C, func_80082D34, startIntrDMA, startIntrVSync). The closest, func_80037F40 (src/code6cac_c_mid.c, commit 89bfc882, D_80106A50 in both $v1 and $a2), reaches it with TWO C pointer objects on the one global -- `p = (u8 *)&g_file_disc_size;` at :196 and `src = (Quad *)&g_file_disc_size;` at :211 -- of different types doing different jobs, so incidental that the match commit never mentions them. No corpus example reaches two base registers from a single C handle. The codegen and the multiple-C-object source are one-to-one.
+- verdict: KILLED

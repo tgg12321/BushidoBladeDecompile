@@ -1920,3 +1920,131 @@ object r8 body at honest 10; the FAILed three-object body remains banked at
 - [s15] Ledger hygiene: memory/grind/func_80034F88/candidate.c had been left holding the THREE-pointer-object score-0 body that the layer-1 reviewer FAILed on 2026-08-13 15:24 and the Judge FAILed on 2026-08-13 16:36 (its own header reads 'DO NOT INSTALL AND SUBMIT') — a trap in the slot reserved for the best ADMISSIBLE form. candidate.c now holds the single-pointer-object r8 body at honest 10; the FAILed body remains banked in rejected/.
 
 - [s15] src/code6cac_b.c was left byte-identical to its committed state this session (the probe harness restores it after every splice); no build-pipeline file, rule file, or engine file was touched.
+
+==== s16 (rederive) ====
+
+Modality: rederive (fresh m2c decompile, matched-corpus sibling transplant,
+structurally different C shapes). Floor unchanged at 10; the session's product
+is four independent kills plus the first CORPUS-LEVEL evidence about how this
+codegen shape is spelled in already-matched BB2 code.
+
+**1. The 10-point residual is entirely in BLOCK 1, and it is TWO defects, not
+one.** Full instruction-aligned side-by-side of the banked candidate against
+target (tmp/grind/func_80034F88/s16/, `sbs.py base.c`; both 49 insns):
+
+    target                        our build
+    lui  v1,%hi(D_80106A73)   |   lui  a0,%hi(D_80106A73)
+    addiu v1,v1,%lo           |   addiu a0,a0,%lo
+    lbu  a0,0(v1)             |   lbu  v1,0(a0)
+    move a1,v0                |   move a1,v0
+    andi a0,a0,0xf8           |   andi v1,v1,0xf8
+    sb   a0,0(v1)             |   sb   v1,0(a0)
+    lw   v0,32(a1)            |   lw   v0,32(a1)
+    lbu  a0,0(v1)   <-RELOAD  |   nop             <-RELOAD MISSING
+    andi v0,v0,0x1            |   andi v0,v0,0x1
+    bnez v0,.L                |   bnez v0,.L
+    ori  v0,a0,0x1            |   ori  v0,v1,0x1
+    move v0,a0                |   move v0,v1
+    (join) lui a0 / addiu a0  |   sb   v0,0(a0)
+    sb   v0,0(v1)             |   lui  a0 / addiu a0
+
+Blocks 2 and 4 and the whole trailing 3-byte copy loop are INSTRUCTION- AND
+REGISTER-IDENTICAL. The residual decomposes as: (a) block 1's base register is
+$a0 in our build and $v1 in the target, with the byte value swapped the other
+way (5 lines); (b) our build has no post-store reload in block 1 (the masked
+value stays live in a register), so a maspsx load-delay nop lands where the
+target's second `lbu` is (lbu census 175 vs the target's 176); (c) the block-1
+store then floats to the other side of block 2's address materialisation.
+
+**2. A SECOND, independent derivation of the ceiling — from cse.c, not from
+global.c.** s15 closed the ceiling from the register-allocator side (one allocno
+per pseudo, no live-range splitting). The missing block-1 reload closes it again
+from the CSE side, and the two are the same wall seen from two directions:
+GCC 2.7.2's cse hashes a MEM on its ADDRESS RTX. A store and a later load whose
+addresses are the same pseudo hash to the same entry, so the load is always
+satisfied from the stored register and the reload is folded away. Nothing
+between the block-1 store and the block-1 read invalidates that entry — the only
+intervening insn is a LOAD (`lw v0,32(a1)`), and loads do not invalidate. Blocks
+2 and 4 get their reloads for free only because a two-armed if/else JOIN LABEL
+sits between their store and their read and flushes the value table (the s14
+finding). Block 1 has no preceding join, so the ONLY way to miss the hash entry
+is a DIFFERENT address rtx — i.e. a second address pseudo — i.e. a second C
+object, which is exactly the banned construct. One C local is one DECL_RTL is
+one pseudo in GCC 2.7.2; restating `q = &D_80106A73;` does not create a second
+one (measured: identical output).
+
+**3. The register dial ($v1 vs $a0 for the single pointer allocno) is KILLED
+three independent ways.** This was the last unmeasured intra-constraint dial on
+the s15 frontier.
+  - Declaration order is INERT. Pointer declared first / middle / last, and all
+    block temporaries hoisted to function scope: d1 / d2 / d3 / f1 all score 10
+    with an identical instruction stream (tmp/grind/func_80034F88/s16/results.json).
+  - Live-range length does not free $v1. Confining the pointer to block 1 alone
+    makes it win $a1 (not $v1), score 28; confining it to blocks 2+4 leaves it on
+    $a0, score 14. Banked as rejected/pointer-live-block1-only-score28.c and
+    rejected/pointer-live-blocks23-only-score14.c.
+  - Even the ILLEGITIMATE route fails. `register u8 *q asm("$3")` (diagnostic
+    only, never committable) is IGNORED by GCC 2.7.2 for a local that never
+    appears as an asm operand — the emitted stream is instruction-identical to
+    the unpinned form, score 10, same census. So there is no shape, legal or
+    otherwise, that puts the single pointer allocno on $v1.
+  The counterfactual is also now arithmetic rather than speculation: $v1 would
+  repair block 1's five swapped lines and BREAK the five equivalent lines in each
+  of blocks 2 and 4, which currently match exactly — net +5. One register cannot
+  serve both segments in either direction.
+
+**4. m2c's fresh reconstruction is NOT the original shape.** m2c (mipsel-gcc-c
+target) reconstructs the function with no pointer object at all and with the OR
+computed first and the else-arm overriding it (`v = D_80106A73 | 1; if (!(p[8] &
+1)) v = D_80106A73; D_80106A73 = v;`). Transcribed literally it scores 26 at 45
+build insns; carried onto the single-pointer chassis it scores 21, also at 45
+insns (u8 or s32 temporaries alike). In every spelling GCC folds the two reads
+of the byte together and then collapses the diamond, so the build comes out FOUR
+instructions SHORT of the target's 49. The symmetric `if (c) c = v | bit; else
+c = v;` in candidate.c is the shape that reproduces the target's diamond; m2c's
+is not a lever, it is a worse shape.
+
+**5. CORPUS EVIDENCE — how already-matched BB2 code spells "one global in two
+base registers".** New tool: tmp/grind/func_80034F88/s16/sibling_scan.py and
+sibling_scan2.py sweep all 1,437 asm/funcs/*.s for functions that materialise
+ONE symbol into TWO OR MORE distinct registers via lui/addiu, then keep only
+those where both registers are genuinely used as a memory BASE (offset($reg)),
+excluding address-as-a-value cases. Result: 34 functions in the whole binary have
+the construct; 9 of them are NOT in engine/queue.json, i.e. already COMPLETED
+with zero regfix/asmfix rules — SpuSetKey, SpuSetReverbModeParam, func_8002C0DC,
+func_80037F40, func_8004A940 (x2 symbols), func_8008241C, func_80082D34,
+startIntrDMA, startIntrVSync.
+  The closest and most instructive is **func_80037F40** (src/code6cac_c_mid.c,
+zero rules, matched in commit 89bfc882): its target asm puts D_80106A50 in BOTH
+$v1 and $a2 as base registers, and its accepted pure-C body reaches that with
+TWO C pointer objects on the one global —
+    src/code6cac_c_mid.c:196   p   = (u8 *)&g_file_disc_size;      /* checksum byte walker */
+    src/code6cac_c_mid.c:211   src = (Quad *)&g_file_disc_size;    /* block-copy source */
+  Two handles, but of DIFFERENT TYPES doing DIFFERENT JOBS, and the commit
+message does not even mention them — they were ordinary program logic, not a
+technique. That is the distinction the Judge drew for func_80034F88: four
+identical `u8 *q = &D_80106A73;` handles with identical jobs have no such
+semantic differentiation and read as a register-allocation lever. The census
+result to carry forward is that in the ENTIRE matched corpus there is no example
+of the construct being reached WITHOUT multiple C handles; the two-base-register
+codegen and the multiple-C-object source are one-to-one.
+
+- [s16] The 10-point residual is entirely inside BLOCK 1. Instruction-aligned side-by-side (49 build insns vs 49 target): blocks 2 and 4 and the whole trailing 3-byte copy loop are INSTRUCTION- AND REGISTER-IDENTICAL to target. Block 1 contributes (a) 5 lines where our base register is $a0 and the loaded byte $v1 while the target has them the other way round, (b) one missing post-store reload -- a maspsx load-delay nop sits where the target has a second `lbu a0,0(v1)` -- and (c) the block-1 store floating to the other side of block 2's address materialisation.
+
+- [s16] lbu census 175 against the target's 176 pins the missing instruction exactly: it is block 1's reload, and only block 1's. sb 164 and lui 456 already match target exactly.
+
+- [s16] Declaration order of the pointer relative to the other locals is completely INERT for this function: pointer-first, pointer-middle, pointer-last, and all-temporaries-at-function-scope produce an identical instruction stream at score 10.
+
+- [s16] `register u8 *q asm("$3")` is IGNORED by GCC 2.7.2 here -- the emitted stream is instruction-identical to the unpinned candidate. (Diagnostic only; the pin is a forbidden family and is banked purely as the recorded measurement in rejected/register-asm-pin-v1-ignored-diagnostic-score10.c.) Even the illegitimate route cannot move the allocno.
+
+- [s16] Confining the pointer's live range to block 1 alone makes it win $a1, not the target's $v1 (score 28); confining it to blocks 2+4 leaves it on $a0 (score 14). Live-range length does not free $v1 either.
+
+- [s16] $a0 is the BETTER of the two choices, by arithmetic on the measured side-by-side: it makes blocks 2 and 4 exact (0 diffs) at a cost of 5 lines in block 1, whereas $v1 would repair 5 and break 10.
+
+- [s16] cse.c mechanism for the missing reload: GCC 2.7.2 hashes a MEM on its address rtx, so a store and a later load through the SAME pseudo hit one entry and the load is folded to the stored register. Blocks 2 and 4 keep their reloads only because a two-armed if/else join label flushes the value table first (s14); block 1 has no preceding join and the one intervening insn is a load, which does not invalidate. A second address pseudo -- hence a second C object -- is the only escape.
+
+- [s16] New reusable tooling: tmp/grind/func_80034F88/s16/sibling_scan.py and sibling_scan2.py census the whole binary for 'one symbol materialised into N distinct base registers', filtered to zero-cheat COMPLETED functions. Useful for any future function with this shape.
+
+- [s16] Corpus result: 34 functions in the binary have one symbol in 2+ base registers; 9 are COMPLETED with zero rules; every one of those that was inspected reaches it with MULTIPLE C handles on the global. func_80037F40 (src/code6cac_c_mid.c:196 and :211, commit 89bfc882) is the cleanest in-tree precedent -- two handles of different types doing different jobs (a checksum byte-walker and a block-copy source), incidental enough that the match commit never mentions them. That contrast is exactly the Judge's distinction: func_80034F88's four handles are the same type doing the same job, which is what makes them read as an allocation lever rather than program logic.
+
+- [s16] m2c's fresh reconstruction (tools/m2c/m2c.py --target mipsel-gcc-c) uses no pointer object and an asymmetric value shape; every transcription of it lands 4 instructions short of the target at scores 21-26. It is not a lever.

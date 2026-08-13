@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 15,
- "current_modality": "forensics",
+ "session_count": 16,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -93,18 +93,24 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Forensics proves the 10-point residual is a STRUCTURAL ceiling of GCC 2.7.2, not a plateau: the target needs &D_80106A73 in two hard registers, global.c:426 gives one allocno per pseudo with no live-r"
+  },
+  {
+   "session": 16,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Rederive: residual localised to block 1 alone (blocks 2/4 + loop are register-identical), the $v1-vs-$a0 dial killed three ways, m2c's shape killed, and a whole-binary corpus scan shows the two-base-r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis for this function is now measured closed: reaching 0 requires two C pointer objects, which the Judge has banned, and the 10-point single-object floor is a compiler-structural ceiling rather than a search plateau. What remains is a DISPOSITION question, not a grinding question, and it belongs to escalation modality (the driver's call, not a session's).",
-   "mechanism": "Two hard registers require two allocnos (global.c:426, one allocno per pseudo, no live-range splitting); the two routes to a pseudo that is not a named C object are both dead (anonymous references never occupy a register; reload replaces the address with the REG_EQUIV constant per reload.c:4128-4137). Endgame-lock gate 1 is already evaluated and FAILS: scan_hand_coded tier=LOW score=0/8, which is what an RA tie-break should score.",
-   "next_probe": "Escalation-modality session: evaluate gate 2 by searching SOTN-master (and Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist purely to raise the allocno count and win a base-register split. If no such precedent is in hand, both gates fail and the 2026-07-27 standing ruling pre-decides the disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10). Do NOT re-run the pure-C ladder: the s16 evidence block in evidence.md is the packet's evidence base."
+   "hypothesis": "The pure-C axis for this function is measured closed from BOTH compiler directions now (register allocator: one allocno per pseudo, no live-range splitting, global.c:426; CSE: MEM hashed on the address rtx, so a single address pseudo can never miss its own store's entry). Reaching 0 requires two C address objects, which the Judge has banned. What remains is a DISPOSITION question, not a grinding question, and it belongs to escalation modality.",
+   "mechanism": "Both defects in the 10-point residual reduce to the same thing: the target's block 1 needs an address pseudo that is DISTINCT from the one blocks 2 and 4 use -- distinct so it can hold a different hard register ($v1 vs $a0), and distinct so its MEM misses the cse hash entry left by its own store and reloads. One C object is one DECL_RTL is one pseudo, so one C object can supply neither.",
+   "next_probe": "Escalation-modality session: evaluate endgame-lock gate 2 by searching SOTN master (and Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist to win a base-register split. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). The BB2-internal precedent found this session (func_80037F40, src/code6cac_c_mid.c:196+211) is NOT a substitute -- it is a different-types/different-jobs case, and the standing 2026-07-27 ruling requires a SOTN-master citation for a coercion/spelling family. If no SOTN citation is in hand, both gates fail and the ruling pre-decides the disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10). Do NOT re-run the pure-C ladder."
   },
   {
-   "hypothesis": "The one dial left inside the single-object constraint that has never been measured is WHICH hard register the single pointer allocno wins: r8 gives it $a0 (hardreg=4), matching the target's bit-2/bit-4 segments but not its bit-1 segment. Forcing it to $v1 instead would match the bit-1 segment and mismatch the other two, and the residual may not redistribute symmetrically.",
-   "mechanism": "global.c allocno_compare orders allocation by pri = floor_log2(n_refs) * n_refs * 10000 * size / live_length, then falls through to allocno number (pseudo number, i.e. declaration order) on a tie; find_reg then excludes regs_someone_prefers. Changing the pointer allocno's priority relative to the three loaded-byte allocnos (pri 7500 each) \u2014 by declaration order, by giving the pointer more or fewer refs, or by lengthening/shortening a byte local's live range \u2014 flips which of $v1 / $a0 it wins without adding a second object.",
-   "next_probe": "On the r8 chassis, sweep declaration order and byte-local live-range length until the BB2_ALLOC_DEBUG trace shows pseudo 74 at hardreg=3 ($v1) rather than 4 ($a0), then score it. If the residual comes in below 10 the ceiling argument needs re-pricing; if it lands at 10 or above (the expected outcome \u2014 one register can satisfy at most one of the two segments either way), that closes the last intra-constraint dial and the escalation packet is complete."
+   "hypothesis": "A form that gives block 1 a second ADDRESS object which is not a second handle on D_80106A73 -- e.g. an address derived from a genuinely different program value that happens to equal &D_80106A73 -- could satisfy both the cse-miss and the second allocno without re-declaring the banned construct.",
+   "mechanism": "The ceiling is about the number of ADDRESS PSEUDOS, not about the spelling of the C declaration. Anything that makes GCC compute the block-1 address into its own pseudo from a non-constant expression would create the second allocno, and because the expression is not a constant, local-alloc's update_equiv_regs would not substitute it away (the failure mode that killed the single-set form at 23).",
+   "next_probe": "The only non-constant address available in this function is the return of func_80077D00() (held in $a1), and &D_80106A73 has no evident relationship to it -- so this is almost certainly empty, and it must not be chased by manufacturing an opaque zero (`s32 zero = 0; q = &D_80106A73 + zero;`), which is a lever by any reading and would be a first-reach cheat. Worth at most one turn to check whether D_80106A73 lies at a fixed offset from anything the function already holds; if not, close it and do not revisit."
   }
  ],
  "judge_constraints": [
