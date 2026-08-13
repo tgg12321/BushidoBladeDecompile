@@ -282,3 +282,109 @@ function exhibits.
 - [s2] [s2] The 18-instruction residual is now fully partitioned: class A frame geometry ~8 insns PROVEN unreachable; class B register roles ~5 insns structural-axis-dead with the mechanism quantified; class C the single ori PROVEN unreachable. Honest distance 0 is therefore not attainable in pure C for this function.
 
 - [s2] [s2] The two no-C-form proofs, the two corpus-uniqueness results (1/1437 calling functions without an outgoing-arg area; 3/3 small-immediate ori instances hand-written), the function's identity as SN Systems / PsyQ crt0 __main, its placement immediately after _start, and its neighbourhood (func_800836B8 / func_800836C8 / func_80083698 / _start, all four already owner-authorized canonical asm for ings2.c under the 2026-08-06 grant) all point the same way. The countervailing fact is scan_hand_coded.py returning tier=LOW 0/8 — but that scanner has neither a frame-geometry signal nor an assembler-macro-expansion signal, i.e. it cannot see either anomaly this function exhibits. That tension is the disposition question, and it is the owner's to resolve.
+
+## Session 3 (structural, 2026-08-13)
+
+### Starting state (same correction as s2 — it recurred)
+`src/ings2.c` AGAIN held the inherited register-pin + hardcoded-`$17` `__asm__`
+body at session start (s2's src edit was not committed either; only its ledger
+was, in `abc06667`). Re-applied `memory/grind/func_80083794/candidate.c` and
+reproduced the floor exactly: **score 18, target_insns 28, build_insns 28,
+rules_dropped 9, cheat_asm_stripped 10.** `candidate.c` remains the authoritative
+carrier of the floor. NOTE: `motion_Close` (src/ings2.c:636), the twin body at
+0x80083804, still carries the same pin form and is a separate queue item.
+
+### The exact 28-instruction accounting (new — s1/s2 had class estimates only)
+Full side-by-side table: `tmp/grind/func_80083794/s3/sidebyside.md`. 9 of the 28
+instructions match; 19 differ, of which the scorer counts 18 (the four masked
+`la` instructions at positions 11-14 are compared on destination register only —
+session-1 finding C1). The accounting closes cleanly against the class
+partition — with one class s1/s2 never isolated.
+
+### Residual class D (NEW) — prologue callee-save EMISSION ORDER
+- Target prologue stores ASCENDING: `sw $s0,0x4($sp); sw $s1,0x8($sp);
+  sw $ra,0xC($sp)`. Target epilogue loads DESCENDING: `lw $ra,0xC; lw $s1,0x8;
+  lw $s0,0x4`. The target's prologue is the reverse of its own epilogue.
+- Our build stores AND loads descending (`sw ra,24; sw s1,20; sw s0,16` — the
+  last one stolen into the `bnez` delay slot by reorg).
+- Compiler source: `tools/gcc-2.7.2/config/mips/mips.c:4680` is a single loop
+  `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)` and it serves BOTH
+  the `store_p` (prologue, called at mips.c:5045) and `!store_p` (epilogue,
+  mips.c:5175/5359) paths. cc1 therefore emits both runs descending; only the
+  post-reload scheduler can reverse a run.
+- The register-to-slot ASSIGNMENT is GCC-consistent in target (highest regno at
+  the highest offset: `$ra@0xC`). Only the ORDER is inverted.
+
+### Corpus scans for class D (tmp/grind/func_80083794/s3/)
+- `savescan.py` / `savescan.txt`: of 566 shipped functions with a multi-save
+  prologue run, 193 are descending (the cc1-natural shape), 114 ascending, 259
+  mixed/split by delay-slot stealing. So ascending is NOT rare — the axis is
+  live, not structurally forbidden.
+- `contig.py` / `contig.txt`: restricting to CONTIGUOUS ascending runs (target's
+  shape — back-to-back stores with nothing interleaved) gives 38 runs, of which
+  21 sit in functions that are matched pure C with zero rules, so the frozen
+  pipeline demonstrably emits ascending runs. But every one of those 21 is a run
+  of LENGTH 2. func_80083794 is the only function in the executable with a
+  contiguous ascending run of length 3 (the second listing in contig.txt is its
+  own unlabelled twin body at 0x80083804). Third corpus-uniqueness result for
+  this function, after the frame (1/1437) and the small-immediate `ori` (3/3).
+
+### The mechanism behind every ascending run, and why it is coupled here
+Inspecting the clean-C ascending functions (`func_80069A30`, `player_Destroy`,
+`func_8004046C`, `func_8001A538`, `ClearOTag`, `func_80023E40`) shows one shape
+in all of them: an in-block anti-dependence. A body instruction in the same
+basic block WRITES `$sN` (typically `addu $s0,$a0,$zero` sitting in a `jal`
+delay slot), so the scheduler must place it after `sw $sN` and hoists that store
+to unblock it.
+
+Measured directly on this function
+(`rejected/hoisted-la-flips-save-order-but-costs-5.c`): moving the two `la` pairs
+ahead of the `if` puts the writes to `$s0`/`$s1` in the entry block, and the
+prologue flips to the target's ascending order (`sw s0,16; ...; sw s1,20; ...;
+sw ra,24`). Score 18 -> 23. That is the coupled constraint: the writes to
+`$s0`/`$s1` ARE the two `la` pairs, so the anti-dependence exists only when the
+`la`s are in the entry block — and target emits both `la` pairs AFTER the `bnez`,
+where they exert no pressure. Target has ascending saves AND post-branch `la`s at
+the same time; this compiler + scheduler gives one or the other.
+
+### Sharper statement of residual class A
+`mips.c:4464-4476`: `total_size = var_size + args_size + extra_size` (each
+`MIPS_STACK_ALIGN`ed) with `gp_reg_size` on top. Target's 0x10 frame decomposes
+as `var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves`, rounded
+to 16 — i.e. byte-exactly the frame cc1 emits for a LEAF function with three
+callee-saves, for a body that contains a `jalr`. That is a tighter phrasing of
+s2's H1 than "the arg area is missing": the whole frame is leaf-shaped.
+
+- [s3] STARTING STATE recurred: src/ings2.c again held the pin form at session start (s2's src edit uncommitted, only its ledger landed in abc06667). Re-applied candidate.c; floor reproduced exactly at 18 (target_insns 28, build_insns 28, rules_dropped 9, cheat_asm_stripped 10). candidate.c is the authoritative carrier. motion_Close (src/ings2.c:636) is the twin body at 0x80083804 and still carries the same pin form as a separate queue item.
+
+- [s3] EXACT 28-INSTRUCTION ACCOUNTING (tmp/grind/func_80083794/s3/sidebyside.md): 9 of 28 instructions match, 19 differ, scorer counts 18 (positions 11-14, the two masked la pairs, are compared on destination register only). The accounting revealed a residual class s1/s2 never isolated.
+
+- [s3] NEW RESIDUAL CLASS D — prologue callee-save EMISSION ORDER. Target prologue stores ASCENDING (sw $s0,0x4; sw $s1,0x8; sw $ra,0xC) while its own epilogue loads DESCENDING (lw $ra,0xC; lw $s1,0x8; lw $s0,0x4). Ours stores and loads descending. mips.c:4680 is a SINGLE loop `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)` serving both the store_p (prologue, mips.c:5045) and !store_p (epilogue, mips.c:5175/5359) call sites, so cc1 emits both runs descending; only the post-reload scheduler can reverse one. The register-to-slot assignment in target is GCC-consistent ($ra at the highest offset) — only the order is inverted.
+
+- [s3] CORPUS SCAN (savescan.py/.txt): 566 shipped functions have a multi-save prologue run — 193 descending, 114 ascending, 259 mixed. Ascending is common, so class D is a live scheduler axis, not a structural impossibility.
+
+- [s3] CORPUS SCAN (contig.py/.txt): restricting to CONTIGUOUS ascending runs (target's shape) gives 38, of which 21 are in functions matched pure C with zero rules — the frozen pipeline does emit ascending runs. But all 21 are runs of LENGTH 2. func_80083794 is the ONLY function in the executable with a contiguous ascending run of LENGTH 3 (the duplicate listing is its own twin body at 0x80083804). Third corpus-uniqueness result for this function.
+
+- [s3] MECHANISM for every ascending run in the corpus: an in-block ANTI-DEPENDENCE — a body insn in the same basic block writes $sN (classically `addu $s0,$a0,$zero` in a jal delay slot), forcing the scheduler to hoist `sw $sN` to unblock it. Verified across func_80069A30, player_Destroy, func_8004046C, func_8001A538, ClearOTag, func_80023E40.
+
+- [s3] MEASURED on this function: hoisting the two la pairs ahead of the `if` puts the $s0/$s1 writes in the entry block and DOES flip the prologue to the target's ascending order (sw s0,16 / sw s1,20 / sw ra,24). Score 18 -> 23. Banked as rejected/hoisted-la-flips-save-order-but-costs-5.c. The constraint is COUPLED: the $s0/$s1 writes ARE the two la pairs, so ascending saves require the la's in the entry block, while target emits both la pairs AFTER the bnez. Target has both properties at once; this compiler gives one or the other.
+
+- [s3] SHARPER CLASS A: mips.c:4464-4476 total_size = var_size + args_size + extra_size (each MIPS_STACK_ALIGNed) plus gp_reg_size. Target's 0x10 frame decomposes as var_size 0 + args_size 0 + extra 0 + 12 bytes of saves rounded to 16 — byte-exactly the frame cc1 emits for a LEAF function with three callee-saves, for a body containing a jalr.
+
+- [s3] STARTING-STATE CORRECTION RECURRED: src/ings2.c again held the inherited register-pin + hardcoded-$17 __asm__ body at session start, because session 2's src edit was not committed either (only its ledger landed, in abc06667). Re-applied memory/grind/func_80083794/candidate.c and reproduced the floor exactly: score 18, target_insns 28, build_insns 28, rules_dropped 9, cheat_asm_stripped 10. candidate.c remains the authoritative carrier of the floor; src/ is left carrying it again at session end.
+
+- [s3] EXACT 28-INSTRUCTION ACCOUNTING (new; s1/s2 had only class-size estimates): 9 match, 19 differ, scorer counts 18. Full table in tmp/grind/func_80083794/s3/sidebyside.md. This is what surfaced a residual class the previous two sessions never isolated.
+
+- [s3] NEW RESIDUAL CLASS D - prologue callee-save EMISSION ORDER. Target's prologue stores ASCENDING (sw $s0,0x4; sw $s1,0x8; sw $ra,0xC) while target's own epilogue loads DESCENDING (lw $ra,0xC; lw $s1,0x8; lw $s0,0x4). Our build stores and loads descending (the last store, sw s0,16(sp), stolen into the bnez delay slot by reorg). mips.c:4680 is a single loop serving both directions, so cc1 emits both runs descending; the register-to-slot ASSIGNMENT in target is GCC-consistent ($ra at the highest offset) and only the ORDER is inverted.
+
+- [s3] CORPUS SCAN savescan.py over all 1437 asm/funcs/*.s: 566 functions have a multi-save prologue run - 193 descending, 114 ascending, 259 mixed. Ascending prologues are common, so class D is a live scheduler axis, not a structural impossibility.
+
+- [s3] CORPUS SCAN contig.py (contiguous ascending runs only - target's exact shape): 38 runs, 21 of them in functions matched pure C with ZERO rules, proving the frozen pipeline emits ascending runs. Every one of those 21 is LENGTH 2. func_80083794 is the ONLY function in the executable with a contiguous ascending run of LENGTH 3. That is the THIRD corpus-uniqueness result for this function, after the frame (1/1437 calling functions lack the outgoing-arg block) and the small-immediate ori (3/3 instances hand-written).
+
+- [s3] MECHANISM behind every ascending run in the corpus, verified across func_80069A30, player_Destroy, func_8004046C, func_8001A538, ClearOTag and func_80023E40: an in-block anti-dependence - a body instruction in the same basic block writes $sN (classically 'addu $s0,$a0,$zero' in a jal delay slot), forcing the scheduler to hoist 'sw $sN' to unblock it.
+
+- [s3] MEASURED on func_80083794: hoisting the two 'la' pairs ahead of the 'if' puts the $s0/$s1 writes in the entry block and DOES flip the prologue to the target's ascending order - and costs 5 points (18 -> 23). The constraint is coupled, because the $s0/$s1 writes ARE the two 'la' pairs and target emits both after the bnez. Banked as rejected/hoisted-la-flips-save-order-but-costs-5.c.
+
+- [s3] SHARPER CLASS A: target's 0x10 frame = var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves rounded to 16 (mips.c:4464-4476) - byte-exactly cc1's LEAF-function frame, for a body containing a jalr.
+
+- [s3] HOUSEKEEPING: motion_Close (src/ings2.c:636) is the unlabelled twin body at 0x80083804 and still carries the same register-pin + hardcoded-$17 __asm__ form; it is a separate queue item and was not touched. The 9 regfix rules at regfix.txt:105-113 remain calibrated against the old pin form, so the integrated build is expected to disagree until an operator retires them; regfix.txt was not touched (out of session scope).

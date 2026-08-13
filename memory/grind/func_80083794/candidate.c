@@ -39,6 +39,18 @@
  *     otherwise; 1 takes the addiu path. All 3 small-immediate `ori $rX,$zero,imm`
  *     instances in the executable are hand-written asm.  [PROVEN UNREACHABLE]
  *
+ *   D prologue callee-save EMISSION ORDER, ~3 insns (isolated by session 3's
+ *     exact 28-instruction accounting; s1/s2 folded it into A) — target stores
+ *     ASCENDING (s0@4, s1@8, ra@0xC) while its own epilogue loads DESCENDING.
+ *     mips.c:4680 is ONE loop (GP_REG_LAST -> GP_REG_FIRST) serving both the
+ *     prologue and the epilogue, so cc1 emits both descending; only the
+ *     post-reload scheduler can reverse a run, and it does so only under an
+ *     in-block anti-dependence (a body insn writing $sN). Measured: hoisting the
+ *     two `la` pairs into the entry block DOES produce the ascending order, and
+ *     costs 5 points (18 -> 23), because target emits those `la`s AFTER the
+ *     bnez.  [C-REACHABLE IN ISOLATION, JOINTLY UNREACHABLE — see
+ *     rejected/hoisted-la-flips-save-order-but-costs-5.c]
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

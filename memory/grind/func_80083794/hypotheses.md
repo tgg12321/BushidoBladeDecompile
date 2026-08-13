@@ -231,3 +231,114 @@ duplicate-lead lookup (s1).
 - probe: Session 1's probe (b) — read the frame path in the frozen compiler source. It turned out not to need the -da frame notes at all: the code path is unconditional. Cross-checked against the 18 measured C forms (frame -32 in every single one) and against session 1's corpus scan. Probe (c) (grep the ori files for a sub-16 save offset) is subsumed by that scan, which already found exactly 1/1437 calling functions with a lowest save offset below 16 — this one.
 - result: Any function whose body expands a call gets >= 16 bytes of outgoing-argument area. The target's entire frame is 16 bytes (addiu $sp,-0x10) and already holds 12 bytes of register saves (s0@4, s1@8, ra@0xC), so it demonstrably does not contain that block. Confirmed: honest distance 0 is unreachable in pure C for this function, independently of residual classes B and C.
 - verdict: CONFIRMED
+
+## Session 3 (structural, 2026-08-13)
+
+### KILLED
+
+**[s3] H4 — the target's prologue callee-save ORDER (residual class D) is
+reachable jointly with the score-18 floor form.**
+- mechanism: `tools/gcc-2.7.2/config/mips/mips.c:4680` emits the callee-save run
+  from a single loop `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)`
+  that serves the prologue (`store_p`, mips.c:5045) and the epilogue
+  (mips.c:5175/5359) alike, so cc1 always emits both runs descending. The only
+  producer of an ascending prologue is the post-reload scheduler reordering the
+  stores, and the only pressure that makes it do so is an in-block
+  anti-dependence: a body instruction in the SAME basic block that writes `$sN`
+  must follow `sw $sN`, so the scheduler hoists that store to unblock it. Every
+  one of the 21 matched-pure-C contiguous ascending runs in the corpus has that
+  shape (e.g. `func_80069A30`, `player_Destroy`, `func_8004046C`:
+  `sw $s0,0x10($sp); sw $ra,0x14($sp); jal ...; addu $s0,$a0,$zero`).
+- probe: (1) exact 28-instruction side-by-side accounting of the score-18
+  residual (`tmp/grind/func_80083794/s3/sidebyside.md`), which isolated class D
+  in the first place; (2) two corpus scans — `savescan.py` over all 1437
+  `asm/funcs/*.s` (566 multi-save prologues: 193 descending, 114 ascending, 259
+  mixed) and `contig.py` restricting to contiguous ascending runs (38 runs, 21 in
+  zero-rule pure-C functions, ALL of length 2; func_80083794's length-3 run is
+  unique in the executable); (3) a direct measurement — hoist both `la` pairs
+  ahead of the `if` so the `$s0`/`$s1` writes land in the entry block, then
+  sandbox + objdump.
+- result: the hoisted form DOES flip the prologue to the target's ascending order
+  (`sw s0,16(sp); lui s0; addiu s0; sw s1,20(sp); lui s1; addiu s1; bnez;
+  sw ra,24(sp)`) — class D is genuinely C-reachable in isolation — but scores
+  **23 against the 18 floor**. The constraint is COUPLED: the only writes to
+  `$s0`/`$s1` in this function ARE the two `la` pairs, so the anti-dependence
+  exists only when the `la`s sit in the entry block, whereas target emits both
+  `la` pairs AFTER the `bnez`, in the post-branch block, where they exert no
+  scheduling pressure on the prologue. Target exhibits ascending saves AND
+  post-branch `la`s simultaneously; cc1 + this scheduler yields one or the other.
+  Banked: `rejected/hoisted-la-flips-save-order-but-costs-5.c`.
+- verdict: KILLED (jointly unreachable; the isolated reachability is CONFIRMED
+  and is why it is worth recording rather than assuming impossibility).
+
+### CONFIRMED
+
+**[s3] C3 — the residual is now fully accounted instruction by instruction, and
+the target's frame is byte-exactly cc1's LEAF-function frame.**
+- mechanism: `mips.c:4464-4476`, `total_size = var_size + args_size +
+  extra_size` (each `MIPS_STACK_ALIGN`ed) with `gp_reg_size` on top.
+- probe: objdump the sandbox `.o` against `asm/funcs/func_80083794.s` and
+  tabulate all 28 positions (`sidebyside.md`); decompose the target's 0x10 frame.
+- result: 9 of 28 instructions match; 19 differ; the scorer counts 18 (the four
+  masked `la` instructions are compared on destination register only). Target's
+  0x10 frame = `var_size 0 + args_size 0 + extra_size 0 + 12 bytes of saves`
+  rounded to 16 — precisely what cc1 emits for a LEAF function with three
+  callee-saves, for a body containing a `jalr`. This is a tighter phrasing of
+  s2's H1 than "the 16-byte outgoing-arg block is missing": the entire frame is
+  leaf-shaped.
+- verdict: CONFIRMED
+
+## Live frontier after session 3 (ordered)
+
+**F1 — DISPOSITION, not grinding (unchanged, now with a third uniqueness
+result).** Three independent corpus-uniqueness results and two no-C-form proofs:
+the frame (1/1437 calling functions lack the outgoing-arg block, and the frame is
+byte-exactly leaf-shaped), the small-immediate `ori` (3/3 instances in the
+executable are hand-written asm), and now the contiguous length-3 ascending
+prologue save run (1/1437 — every other contiguous ascending run in the corpus is
+length 2). Identity (SN Systems / PsyQ crt0 `__main`), placement (immediately
+after `_start`), and neighbourhood (four adjacent functions already owner-
+authorized canonical asm for ings2.c, grant 2026-08-06) agree. The countervailing
+fact remains `scan_hand_coded.py` tier=LOW 0/8 — a scanner with no frame-geometry
+signal, no assembler-macro signal, and no prologue-order signal, i.e. blind to all
+three anomalies. That tension is the owner's to resolve at `escalation`.
+
+**F2 — residual class B ($s0/$s1 roles) via the sanctioned
+[[duplicated-statement-into-arms]] ref-lift.** Unchanged from s2, and session 3
+adds a reason for caution: the residual is now known to contain FOUR coupled
+classes, and closing B alone leaves A, C and D. Requires a ruling before any such
+form is written.
+
+**F3 — do NOT re-run any of these.** Cumulative kill list across s1/s2/s3:
+declaration order (s1 K2); the pin/asm form (s1 K1); both statement orders of the
+two `la` pairs (s1 C1 + s2 sweep); all 18 structural forms in
+`rejected/structural-refcount-forms-do-not-flip-s0-s1.c` (s2 H2); the `ori`
+spelling (s2 H3); frame minimality via simpler C (s1 (a)), via the compiler
+source (s2 H1 (b)) and via the corpus (s1/s2 (c)); `scan_hand_coded` (s1); the
+duplicate-lead lookup (s1); and now the prologue-save-order axis (s3 H4) —
+including the specific hoisted-`la` form, which is measured at 23 and banked in
+`rejected/hoisted-la-flips-save-order-but-costs-5.c`.
+
+## [s3] H4 — the target's ascending prologue callee-save order (new residual class D) is reachable jointly with the score-18 floor form.
+- mechanism: mips.c:4680 emits the callee-save run from a SINGLE loop `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)` serving both the prologue (store_p, mips.c:5045) and the epilogue (mips.c:5175/5359), so cc1 always emits both runs descending. Only the post-reload scheduler can reverse a run, and the only pressure that makes it do so is an in-block ANTI-DEPENDENCE — a body insn in the same basic block writing $sN must follow `sw $sN`, so the scheduler hoists that store. All 21 matched-pure-C contiguous ascending runs in the corpus have exactly that shape (func_80069A30 / player_Destroy / func_8004046C: `sw $s0,0x10($sp); sw $ra,0x14($sp); jal ...; addu $s0,$a0,$zero`).
+- probe: (1) exact 28-instruction side-by-side accounting (tmp/grind/func_80083794/s3/sidebyside.md) which isolated class D; (2) two corpus scans over all 1437 asm/funcs/*.s — savescan.py (566 multi-save prologues: 193 descending, 114 ascending, 259 mixed) and contig.py (38 contiguous ascending runs, 21 of them in zero-rule pure-C functions, ALL length 2; func_80083794's length-3 run is unique); (3) direct measurement — hoist both la pairs ahead of the `if` so the $s0/$s1 writes land in the entry block, then sandbox --disable all + objdump.
+- result: the hoisted form DOES flip the prologue to target's ascending order (sw s0,16 / lui s0 / addiu s0 / sw s1,20 / lui s1 / addiu s1 / bnez / sw ra,24) — class D is genuinely C-reachable in isolation — but scores 23 against the 18 floor. The constraint is COUPLED: the only writes to $s0/$s1 in this function ARE the two la pairs, so the anti-dependence exists only when the la's sit in the entry block, while target emits both la pairs AFTER the bnez where they exert no scheduling pressure. Target has ascending saves AND post-branch la's simultaneously; cc1 + this scheduler gives one or the other. Banked as rejected/hoisted-la-flips-save-order-but-costs-5.c.
+- verdict: KILLED
+
+## [s3] C3 — the score-18 residual is fully accounted instruction by instruction, and the target's frame is byte-exactly cc1's LEAF-function frame.
+- mechanism: mips.c:4464-4476, total_size = var_size + args_size + extra_size (each MIPS_STACK_ALIGNed) with gp_reg_size added on top.
+- probe: objdump the sandbox .o against asm/funcs/func_80083794.s and tabulate all 28 positions (sidebyside.md); decompose the target's 0x10 frame against the formula.
+- result: 9 of 28 instructions match, 19 differ, scorer counts 18 (the four masked la instructions are compared on destination register only). Target's 0x10 frame = var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves, rounded to 16 — precisely cc1's LEAF-function frame with three callee-saves, for a body containing a jalr. Tighter than s2's phrasing: the whole frame is leaf-shaped, not merely missing the arg block.
+- verdict: CONFIRMED
+
+## [s3] H4 - the target's ascending prologue callee-save order (new residual class D) is reachable jointly with the score-18 floor form.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.c:4680 emits the callee-save run from a SINGLE loop 'for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)' that serves both the prologue (store_p, called at mips.c:5045) and the epilogue (mips.c:5175/5359), so cc1 emits BOTH runs descending. Only the post-reload scheduler can reverse a run, and the only pressure that makes it do so is an in-block ANTI-DEPENDENCE: a body instruction in the same basic block that writes $sN must be scheduled after 'sw $sN', so the scheduler hoists that store to unblock it. All 21 matched-pure-C contiguous ascending runs in the corpus have exactly that shape (func_80069A30 / player_Destroy / func_8004046C all emit 'sw $s0,0x10($sp); sw $ra,0x14($sp); jal ...; addu $s0,$a0,$zero').
+- probe: (1) Built the exact 28-instruction side-by-side accounting of the score-18 residual by objdumping tmp/sandbox/func_80083794/ings2.o against asm/funcs/func_80083794.s (tmp/grind/func_80083794/s3/diff28.sh, ours.txt, sidebyside.md) - this is what isolated class D, which s1/s2 had folded into the frame class. (2) Two corpus scans over all 1437 asm/funcs/*.s: savescan.py (prologue save-run direction) and contig.py (contiguous ascending runs, cross-referenced against engine/queue.json + regfix.txt + asmfix.txt + inline_asm_canonical.txt + src/*.c to identify zero-rule pure-C functions). (3) Direct measurement: hoisted both 'la' pairs ahead of the 'if' so the $s0/$s1 writes land in the entry block, then sandbox --disable all + objdump of the prologue.
+- result: savescan: 566 shipped functions have a multi-save prologue run - 193 descending (the cc1-natural shape), 114 ascending, 259 mixed/split by delay-slot stealing, so ascending is common and the axis is live rather than structurally forbidden. contig: 38 CONTIGUOUS ascending runs, 21 of them in functions matched pure C with zero rules (the pipeline demonstrably emits ascending runs) - but ALL 21 are runs of LENGTH 2, and func_80083794 is the only function in the executable with a contiguous ascending run of LENGTH 3 (the duplicate listing in contig.txt is its own unlabelled twin body at 0x80083804). Direct measurement: the hoisted-la form DOES flip the prologue to the target's ascending order (sw s0,16 / lui s0 / addiu s0 / sw s1,20 / lui s1 / addiu s1 / bnez / sw ra,24), so class D is genuinely C-reachable in isolation, but it scores 23 against the 18 floor. The constraint is COUPLED: the only writes to $s0/$s1 in this function ARE the two 'la' pairs, so the anti-dependence exists only when the la's sit in the entry block, whereas target emits both la pairs AFTER the bnez where they exert no scheduling pressure on the prologue. Target exhibits ascending saves AND post-branch la's simultaneously; cc1 + this scheduler gives one or the other. Banked as memory/grind/func_80083794/rejected/hoisted-la-flips-save-order-but-costs-5.c.
+- verdict: KILLED
+
+## [s3] C3 - the score-18 residual is fully accounted instruction by instruction, and the target's frame is byte-exactly cc1's LEAF-function frame rather than merely missing the outgoing-argument block.
+- mechanism: mips.c:4464-4476: total_size = var_size + args_size + extra_size (each MIPS_STACK_ALIGNed), with gp_reg_size laid on top and the callee-saves placed above args_size.
+- probe: Tabulated all 28 instruction positions of our build against target (tmp/grind/func_80083794/s3/sidebyside.md) and decomposed the target's 0x10 frame against the formula.
+- result: 9 of the 28 instructions match; 19 differ; the scorer counts 18 (the four masked 'la' instructions at positions 11-14 are compared on destination register only - session-1 finding C1). Target's 0x10 frame decomposes as var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves rounded to 16 - precisely the frame cc1 emits for a LEAF function with three callee-saves, for a body that contains a jalr. That is a tighter phrasing of session 2's H1: the whole frame is leaf-shaped, not just missing a block.
+- verdict: CONFIRMED

@@ -1,7 +1,7 @@
 {
  "func": "func_80083794",
  "file": "ings2",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 18,
    "modality": "structural",
    "headline": "Structural axis closed: 18 semantics-preserving forms all leave $s0/$s1 swapped (H2 KILLED with exact cc1 -da allocno numbers), and both remaining residual classes are now PROVEN unreachable from any "
+  },
+  {
+   "session": 3,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Exact 28-insn accounting isolated a FOURTH residual class (prologue callee-save order); measured it C-reachable in isolation but jointly unreachable with the floor form (18 -> 23), and added a third c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 \u2014 the remaining question for func_80083794 is DISPOSITION, not grinding: whether two independent no-C-form proofs plus two corpus-uniqueness results override scan_hand_coded.py's tier=LOW 0/8 verdict for a canonical-asm authorization.",
-   "mechanism": "The jtbl-infra and GTE-leaf carve-outs are gated on 'no C input to the same compiler can produce the target bytes, by construction' \u2014 which is exactly what this session proved twice (calls.c/mips.h/mips.c for the frame; GNU as li-expansion for the ori). The standing endgame-lock gate (1), by contrast, is gated on scan_hand_coded STRONG signals S1/S2/S6, and that scan FAILED (tier=LOW, 0/8) \u2014 the scanner has no frame-geometry or assembler-macro signal, so it is blind to both anomalies here.",
-   "next_probe": "Not a measurement. When the driver reaches `escalation` modality it should file the docs/grind/decisions.md entry weighing exactly these two facts against each other, rather than spending further sessions on axes that are proven incapable of reaching distance 0. If an intervening modality is assigned, spend it on corroborating the crt0 identity (e.g. compare against a known SN Systems / PsyQ crt0 __main listing, or the same function in another PsyQ-3.5 title's asm) rather than on new C forms."
+   "hypothesis": "F1 - the remaining question is DISPOSITION, not grinding, and session 3 strengthened it: there are now THREE corpus-uniqueness results and two no-C-form proofs pointing at hand-written assembly, against scan_hand_coded.py's tier=LOW 0/8.",
+   "mechanism": "The jtbl-infra and GTE-leaf carve-outs are gated on 'no C input to the same compiler can produce the target bytes, by construction'. This function now has: (A) a frame that is byte-exactly cc1's LEAF frame despite containing a jalr, with the outgoing-arg block unconditional per calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474 (corpus 1/1437); (C) an 'ori $t0,$zero,1' that GNU as cannot produce from 'li 1' (corpus 3/3 small-immediate instances hand-written); and now (D) a contiguous length-3 ascending prologue save run that cc1 emits descending and the scheduler only reverses under an anti-dependence this function's block structure cannot supply (corpus 1/1437). scan_hand_coded.py has no frame-geometry signal, no assembler-macro signal, and no prologue-order signal - it is blind to all three.",
+   "next_probe": "Not a measurement. When the driver reaches `escalation` modality, file the docs/grind/decisions.md entry weighing the three uniqueness results plus the two no-C-form proofs against the failed scan_hand_coded gate. If an intervening modality is assigned, spend it on corroborating the crt0 identity from outside this executable (a known SN Systems / PsyQ crt0 __main listing, or the same function in another PsyQ-3.5 title's asm) rather than on new C forms - every C axis measured so far is dead."
   },
   {
-   "hypothesis": "F2 \u2014 residual class B ($s0/$s1 roles) might still be flippable by the sanctioned duplicated-statement-into-arms ref-lift, which is documented as 'the proven byte-free ref-lift for global-RA priority walls'.",
-   "mechanism": "Duplicating a real statement into 2+ control-flow arms raises a pseudo's reg_n_refs without changing the emitted bytes (jump2 cross-jump re-merges it), which is precisely the 7-vs-8 gap measured this session for pseudo 73 (p).",
-   "next_probe": "Low priority and NOT to be attempted casually: func_80083794 has exactly one control-flow arm, so the family does not obviously apply, and the sanction carries hard prerequisites (byte-neutrality verified, documented lever-exhaustion, /* FAKE */ annotation, layer-1 + layer-2 review). It also cannot reach distance 0 on its own, because class A is proven unreachable. Read .claude/rules/duplicated-statement-into-arms.md and request a ruling before writing any such form."
+   "hypothesis": "F2 - residual class B ($s0/$s1 roles) via the sanctioned duplicated-statement-into-arms ref-lift.",
+   "mechanism": "Duplicating a real statement into 2+ control-flow arms raises a pseudo's reg_n_refs without changing emitted bytes (jump2 cross-jump re-merges it), which is precisely the 8-vs-7 gap measured in s2 for pseudo 73 (p).",
+   "next_probe": "Still low priority and NOT to be attempted casually. Session 3 adds a reason for extra caution: the residual is now known to contain FOUR coupled classes (A frame, B roles, C ori, D save order), so closing B alone leaves three. func_80083794 has exactly one control-flow arm, so the family does not obviously apply, and the sanction carries hard prerequisites (byte-neutrality verified, documented lever-exhaustion, /* FAKE */ annotation, layer-1 + layer-2 review). Read .claude/rules/duplicated-statement-into-arms.md and request a ruling before writing any such form."
   },
   {
-   "hypothesis": "F3 \u2014 do NOT re-run these; every one is answered with a measurement in the ledger.",
-   "mechanism": "Cumulative kill list across s1 and s2.",
-   "next_probe": "Already dead: the register-pin/hardcoded-asm body (s1 K1); local declaration order (s1 K2); both statement orders of the two la pairs (s1 C1 + s2 sweep); all 18 structural forms enumerated in rejected/structural-refcount-forms-do-not-flip-s0-s1.c (s2 H2); the ori spelling (s2 H3); frame minimality via simpler C (s1 probe (a)) and via the compiler source (s2 probe (b)) and via the ori-file cross-scan (s2 probe (c), subsumed by the 1/1437 corpus scan); scan_hand_coded (s1); the duplicate-lead lookup (s1)."
+   "hypothesis": "F3 - do NOT re-run these; every one is answered with a measurement in the ledger.",
+   "mechanism": "Cumulative kill list across s1, s2 and s3.",
+   "next_probe": "Already dead: the register-pin/hardcoded-asm body (s1 K1); local declaration order (s1 K2); both statement orders of the two la pairs (s1 C1 + s2 sweep); all 18 structural forms in rejected/structural-refcount-forms-do-not-flip-s0-s1.c (s2 H2); the ori spelling (s2 H3); frame minimality via simpler C (s1 probe (a)), via the compiler source (s2 probe (b)) and via the corpus (s2 probe (c)); scan_hand_coded (s1); the duplicate-lead lookup (s1); and now the entire prologue-save-order axis (s3 H4), including the specific hoisted-la form measured at 23 and banked in rejected/hoisted-la-flips-save-order-but-costs-5.c."
   }
  ],
  "judge_constraints": [],
