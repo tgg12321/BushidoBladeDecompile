@@ -1,7 +1,7 @@
 {
  "func": "func_8001979C",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "Floor 24 -> 20: D1 and D3 both closed and target's exact register assignment reached at build_insns 77 == target_insns 77; residual is the $v0/$v1 mirror in the if-arms plus preheader order."
+  },
+  {
+   "session": 3,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Floor held at 20 (77/77 insns); eleven structural variants measured and killed, and D2's mechanism corrected from a local-alloc combine_regs tie to a global.c allocno_compare contest between exactly t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "D2 closes when the 0x20 - bits_left shift amount lives in its own named local that DIES at the srlv, letting local-alloc tie 'hi' to that dying quantity ($v1) and leaving $v0 for 'val' and 'cur >> bits_left' -- target's exact pairing.",
-   "mechanism": "GCC 2.7.2 local-alloc block_alloc/combine_regs ties a SET's destination quantity to a source quantity that dies in the same insn. Our 'val' is re-assigned later in the same arm so its quantity is still live at the srlv and cannot be tied; P8 showed that removing the variable entirely is also wrong (score 31), so the shape wanted is a short-lived NAMED third local, not the absence of one.",
-   "next_probe": "(a) add a third local used only as 'shift = 0x20 - bits_left; hi = cur >> shift;' in both loops, keeping 'val' for the 0x20 - needed step, and re-measure; (b) read tools/gcc-2.7.2/local-alloc.c combine_regs / block_alloc for the exact tying precondition and satisfy it in C; (c) diff the instrumented cc1's BB2_QTY_DEBUG output ('QTYDBG blk= ord= qty= reg1= birth= death= refs= got=') between the current form and each variant to see which quantity takes $v1 first."
+   "hypothesis": "D2 (14 of the 20 remaining points) closes when 'hi' outranks 'val' in global.c allocno_compare while 'val' keeps enough references to keep materialising D1's copy pair.",
+   "mechanism": "global.c allocno_compare orders allocnos by floor_log2(nrefs)*nrefs/livelen and the earlier-allocated of the two takes $v1. Measured: val nrefs 19 / livelen 15 / pri 50666 vs hi nrefs 8 / livelen 18 / pri 13333. vL proved that stripping val's third reuse flips the ordering but also kills D1 (build_insns 75), so the ordering must be changed from hi's side or by re-homing (not deleting) val's third role.",
+   "next_probe": "(a) ADD references to hi without touching val - e.g. 'hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;' so hi gains two refs per arm; (b) shorten hi's livelen (it currently spans the refill); (c) re-home the third loop's -2 into an already-dead EXISTING local (needed, or hi) rather than a brand-new one, so val loses refs without a new pseudo appearing; (d) read the ALLOCDBG pri column from qty.sh for every variant - it is a much finer gradient than the sandbox score because it shows how close a form came to flipping the order."
   },
   {
-   "hypothesis": "D4's preheader order can be reached only by widening the walker/counter priority window, because the early walker initialisation that currently buys the correct allocation is the same thing that emits 'move $t1,$t3' too early.",
-   "mechanism": "global.c allocno_compare (counter nrefs 21 / livelen 60 / pri 14000 vs walkers nrefs 13 / livelen 28 and 31) plus loop.c move_movables, which decides where the hoisted 'li' constants land relative to the walker init.",
-   "next_probe": "(a) find a change that raises the counter's priority or lowers both walkers' without touching the init placement -- anything that shortens the counter's live range while keeping nrefs in the 16-31 floor_log2 bucket; (b) inspect tmp/grind/func_8001979C/s2/dump/code6cac.i.loop to see whether the 'li' emission order follows move_movables insertion order rather than source order (session 1 already killed the naive source-order swap, so the hoist mechanism is the surface)."
+   "hypothesis": "D4 (6 of the 20 points) can only move if the walker/counter priority window is widened from the COUNTER's side, because every source-level lever on the li order and on the walker-init placement is now measured dead.",
+   "mechanism": "global.c allocno_compare (counter nrefs 21 / livelen 60 / pri 14000; each walker nrefs 13, livelens 28 and 31) plus loop.c move_movables deciding where the hoisted li constants land relative to the walker init. Dead levers: session 1 H-E and session 3 vI (li order via source order, 33->43 and 20->45), session 2 P6 (late walker init, 20->31).",
+   "next_probe": "(a) find a change that LENGTHENS the counter's live range without dropping it a floor_log2 bucket, which widens the window and lets both walker inits move late into target's position; (b) read tools/gcc-2.7.2/loop.c scan_loop / move_movables and determine whether the two hoisted li constants are emitted in movable-list order or its reverse, then derive the source order that yields target's 'li t4,<w>' before 'li t2,0x20' - the hoist mechanism is the surface, not statement order."
   },
   {
-   "hypothesis": "The closing form's policy status should be settled before, not after, a candidate-ready submission: 'dst += 2' duplicated into both if-arms is a REAL, live-in-output statement duplicated into two control-flow arms.",
-   "mechanism": "It matches the SOTN-sanctioned duplicated-statement-into-arms family rather than any dead-store family -- the increment must happen on every path and it materialises in the emitted code -- but the sanctioned family's prerequisites (byte-neutrality, exhaustion, FAKE annotation) were written for byte-neutral duplications, and here the duplication changes loop.c's biv_count.",
-   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md and .claude/rules/no-new-park-categories.md, decide whether the FAKE-annotation prerequisite applies to a duplication that is live in the output, and draft the self-vet with a verbatim scope quote plus a file:line or commit precedent. If the family does not cleanly cover it, emit ruling-request rather than a submission."
+   "hypothesis": "The closing form's policy status must be settled before a candidate-ready submission; byte-neutrality is now discharged but the family-scope question is not.",
+   "mechanism": "The duplicated 'dst += 2' is a REAL, live-in-output statement duplicated into two control-flow arms whose measurable effect is loop.c's biv_count (and hence strength reduction), which is a codegen-priority effect of the kind the duplicated-statement-into-arms family was sanctioned for - but the family's prerequisites (byte-neutrality, documented exhaustion, FAKE annotation) must each be quoted and satisfied, not assumed.",
+   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md, quote its scope sentence VERBATIM into memory/grind/func_8001979C/self_vet.md, and pair it with a precedent as file:line or a commit hash. Byte-neutrality is already proven (target's single 'addiu $t1,$t1,0x2' in the bnez delay slot at asm/funcs/func_8001979C.s:45 and :67). If the scope sentence does not cleanly cover a duplication whose effect is a biv-count change, emit ruling-request rather than a submission."
   }
  ],
  "judge_constraints": [],

@@ -253,3 +253,174 @@
 - probe: Direct objdump of the floor object (tmp/grind/func_8001979C/s2/floor.txt).
 - result: The floor emits 'li v1,-2 ; li t0,3 ; addiu v0,t3,840', byte-identical to target's 'addiu $v1,$zero,-0x2 ; addiu $t0,$zero,0x3 ; addiu $v0,$t3,0x348'. The third loop was never mirrored; D2 is confined to the two bit loops, so no function-wide allocno-ordering explanation is needed.
 - verdict: KILLED
+
+## KILLED (session 3)
+
+- **H3-A: D2 is a `local-alloc.c` `combine_regs` tie — giving the
+  `0x20 - bits_left` shift amount a short dedicated life (a third named local,
+  distinct from session 2's anonymous temp P8) will let local-alloc tie `hi`
+  to the dying shift-amount quantity and put both in `$v1`.**
+  *Mechanism claimed by session 2:* `combine_regs`/`block_alloc` tie a SET's
+  destination quantity to a source quantity that dies in the same insn.
+  *Probes:* vA (third named local `amt` declared last), vA2 (declared first),
+  vC (reuse `hi` itself as the carrier), vB (reuse the dead `out` walker),
+  plus `BB2_QTY_DEBUG` tables for P7 and vC.
+  *Result:* **KILLED, three ways.** (1) The third-local spelling scores **31**
+  for both declaration orders — identical to P8's anonymous temp, so the
+  "short dedicated life" idea costs 11 points and is not the shape.
+  (2) The tie itself IS reachable (vC/vB produce `subu v0,t2,a3 ; srlv v0,a2,v0`
+  — one register for both, target's shape) but lands in `$v0`, scoring 22.
+  (3) Decisively: the QTYDBG (local-alloc) table for the two arm blocks is
+  **byte-identical between P7 and vC**, so local-alloc is not where the
+  `$v0`/`$v1` choice is made at all. It is made in **global.c**: `val`
+  (pseudo 83, nrefs 19, pri 50666) is allocated before `hi` (pseudo 78,
+  nrefs 8, pri 13333) and takes `$v1`. Session 2's F1 mechanism statement is
+  superseded.
+
+- **H3-B: lowering `val`'s global ref count — by giving the third loop its own
+  `-2` holder instead of reusing `val` — will drop `val` below `hi` in
+  `allocno_compare` and flip the `$v0`/`$v1` pair into target's orientation.**
+  *Mechanism:* global.c `allocno_compare` priority
+  `floor_log2(nrefs)*nrefs/livelen`; `val`'s 19 refs come from three distinct
+  reuses (shift amount, D1 intermediate, `-2` holder).
+  *Probe:* vL — `s32 neg2;` for the third loop, `val` untouched elsewhere.
+  *Result:* **KILLED as spelled.** Score 22 and **build_insns drops to 75**:
+  removing the `-2` use also removes the ref pressure that materialises D1's
+  `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero` pair, so the two instructions
+  session 1 fought for disappear. D1 and D2 are coupled through the same
+  `val` ref count. Any future attack on the ordering must ADD refs to `hi`
+  rather than REMOVE refs from `val`.
+
+- **H3-C (re-kill at the settled baseline): hoisting `needed = w - bits_left;`
+  to the top of the arm fixes D4's preheader `li` order.**
+  *Probe:* vI — session 1's probe E, re-run on the P7 form as the session-2
+  ledger explicitly asked.
+  *Result:* **45** (from 20). Re-killed, and far worse than at the old
+  baseline. D4 is not reachable by moving the subtraction that first uses the
+  width constant.
+
+- **H3-D: statement-order changes around the refill (`cur = *arg1; arg1++;`)
+  shift the arm's RTL order enough to change the `$v0`/`$v1` outcome.**
+  *Probes:* vG (refill below `needed`), vG2 (refill just above the store),
+  vH (vG + the `hi` tie), vF (tie + `val` carrying `cur >> bits_left`),
+  vK (`val` carrying `hi << needed`).
+  *Result:* 24 / 26 / 26 / 28 / 26 (vK also loses 2 insns, 75). **All KILLED.**
+  Every re-association inside the arm is neutral-to-worse; P7's statement
+  order is a local optimum for the arm. (vE — `val` additionally carrying
+  `cur >> bits_left` — is exactly neutral at 20, so it is an available spare
+  spelling but buys nothing.)
+
+- **H3-E (policy, not measurement): swapping the operands of the
+  `(hi << needed) | (cur >> bits_left)` OR to flip the emission order.**
+  *Result:* **FORBIDDEN, never to be measured.**
+  `.claude/rules/or-tree-shape-shift.md` classifies operand reordering /
+  reparenthesisation of an associative+commutative `|` as a cheat-by-spelling
+  (status FORBIDDEN 2026-06-06, two confirmed rejected instances). Session 1's
+  frontier probe F3(b) is closed by policy.
+
+## CONFIRMED (session 3)
+
+- **H3-F: the `$v0`/`$v1` mirror (D2) is decided by global.c allocno priority
+  between exactly two pseudos — `val` and `hi` — and the required flip is
+  "`hi` must outrank `val`".**
+  *Mechanism:* `global.c` `allocno_compare` orders by
+  `floor_log2(nrefs)*nrefs/livelen`; the earlier-allocated of the two takes
+  `$v1` (P7: `val` pri 50666 -> `$v1`, `hi` pri 13333 -> `$v0`; target needs
+  the reverse). Local-alloc is provably not involved (identical QTYDBG tables
+  across forms with different outcomes).
+  *Probe:* `BB2_QTY_DEBUG=1 BB2_ALLOC_DEBUG=1` instrumented-cc1 dumps of P7 and
+  vC (`tmp/grind/func_8001979C/s3/qty_p7.log`, `qty_vC.log`) plus the vL
+  ref-count experiment.
+  *Result:* **CONFIRMED.** This replaces session 2's F1 mechanism and gives the
+  next session an exact numeric target.
+
+- **H3-G: the duplicated `dst += 2` is byte-neutral in the emitted code.**
+  *Mechanism:* cross-jump (`jump2`) re-merges the two identical arm tails;
+  target itself carries a single `addiu $t1,$t1,0x2` in the `bnez` delay slot
+  (`asm/funcs/func_8001979C.s` lines 45 and 67) and our build emits exactly one
+  too (build_insns 77 == target_insns 77 with the duplication in source).
+  *Result:* **CONFIRMED** — the byte-neutrality prerequisite of the
+  `duplicated-statement-into-arms` family is satisfied and verified, not
+  assumed.
+
+## FRONTIER (ranked, as of end of session 3)
+
+1. **F1 — D2 (14 of the 20 points): make `hi` outrank `val` in global.c
+   `allocno_compare` WITHOUT removing the `val` refs that materialise D1.**
+   Numeric target from the measured dumps: `val` = nrefs 19 / livelen 15 /
+   pri 50666; `hi` = nrefs 8 / livelen 18 / pri 13333; `hi` must be allocated
+   first.
+   *Next probes:* (a) ADD refs to `hi` — e.g. spell the store as
+   `hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;`
+   so `hi` gains references while `val` is untouched; (b) SHORTEN `hi`'s
+   livelen (it currently spans the refill); (c) re-home the third loop's `-2`
+   into a DIFFERENT already-dead local (`needed` or `hi`) rather than a new
+   one, since vL proved a brand-new holder breaks D1 while the goal is only to
+   move refs off `val`; (d) run `qty.sh` on every variant and read the ALLOCDBG
+   `pri` column — it is a far better gradient than the sandbox score because it
+   shows how close a form came to flipping the order.
+
+2. **F2 — D4 (6 of the 20 points): preheader order, still coupled to the
+   walker-init placement.** Target: `addu t0,zero,zero ; addiu t4,zero,<w> ;
+   addiu t2,zero,0x20 ; addu t1,t3,zero`. Both source-level levers are now
+   dead (session 1 H-E and session 3 vI for the `li` order; session 2 P6 for
+   the init placement).
+   *Next probes:* (a) attack the window from the counter's side — the counter
+   is nrefs 21 / livelen 60 / pri 14000 and each walker is nrefs 13; anything
+   that lengthens the counter's live range without dropping it a `floor_log2`
+   bucket widens the window and lets the walker init move late; (b) read
+   `tools/gcc-2.7.2/loop.c` `move_movables` / `scan_loop` and determine whether
+   the two hoisted `li` constants are emitted in movable-list order or its
+   reverse, then derive the source order that produces target's order.
+
+3. **F3 — policy pre-clearance for the closing form (one prerequisite now
+   discharged).** `dst += 2` duplicated into both arms is **verified
+   byte-neutral** (H3-G). What remains before any `candidate-ready`: read
+   `.claude/rules/duplicated-statement-into-arms.md`, confirm the family's
+   scope sentence covers a duplication whose observable effect is a
+   biv-count / `reg_n_refs` priority change, and write the self-vet with a
+   VERBATIM scope quote plus a `file:line` or commit-hash precedent. If the
+   scope sentence does not cleanly cover it, emit `ruling-request` instead of
+   a submission.
+
+## [s3] D2 is a local-alloc.c combine_regs tie: giving the 0x20 - bits_left shift amount a short dedicated life (a THIRD named local, distinct from session 2's anonymous temp P8) lets local-alloc tie hi to the dying shift-amount quantity so both land in $v1.
+- mechanism: local-alloc.c combine_regs / block_alloc tie a SET's destination quantity to a source quantity that dies in the same insn; qty_compare orders quantities by floor_log2(n_refs)*n_refs*size/(death-birth).
+- probe: vA (third named local 'amt' declared last), vA2 (same declared first), vC (reuse 'hi' itself as the carrier), vB (reuse the otherwise-dead third-loop walker 'out'), each measured with sandbox --disable all; plus BB2_QTY_DEBUG=1 instrumented-cc1 dumps of the P7 form and of vC (tmp/grind/func_8001979C/s3/qty_p7.log, qty_vC.log).
+- result: vA 31, vA2 31 (identical to P8's anonymous temp, so declaration order is irrelevant and a dedicated short-lived local costs 11 points). vC 22 and vB 22: the tie DOES occur - the disassembly becomes 'subu v0,t2,a3 ; srlv v0,a2,v0', one register for both, exactly target's shape - but the merged quantity lands in $v0 instead of $v1 and we lose the 'subu $v1,$t2,$a3' line P7 already matched. Decisive: the QTYDBG local-alloc table for both if-arm blocks is BYTE-IDENTICAL between P7 and vC (blk=2: ord0 pseudo101 refs8 got=2, ord1 pseudo98 refs4 got=3; blk=7 the mirror), so local-alloc is not where the $v0/$v1 choice is made.
+- verdict: KILLED
+
+## [s3] The $v0/$v1 mirror (D2) is decided in global.c allocno_compare between exactly two pseudos, 'val' and 'hi', and closing D2 requires making hi outrank val.
+- mechanism: global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen; the earlier-allocated allocno takes $v1 here.
+- probe: BB2_ALLOC_DEBUG=1 dumps of the P7 form and of vC, read alongside the disassembly of each.
+- result: P7: pseudo 83 = val, ord=1, nrefs 19, livelen 15, pri 50666 -> hardreg 3 ($v1); pseudo 78 = hi, ord=7, nrefs 8, livelen 18, pri 13333 -> hardreg 2 ($v0). vC: pseudo 78 = hi (tie merged), ord=1, nrefs 16, livelen 20, pri 32000 -> $v0; pseudo 83 = val, ord=2, nrefs 11, livelen 11, pri 30000 -> $v1. Target needs hi in $v1 and val in $v0. val's nrefs is 19 because the one local is reused three ways (shift amount, the 0x20 - needed D1 intermediate, the third loop's -2 holder).
+- verdict: CONFIRMED
+
+## [s3] Lowering val's global ref count by giving the third loop its own -2 holder will drop val below hi in allocno_compare and flip the pair into target's orientation.
+- mechanism: global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen; removing one of val's three reuses removes 3-4 references.
+- probe: vL - declare 's32 neg2;' and use it for the third loop's -2 fill, leaving val's other two roles untouched; sandbox --disable all.
+- result: Score 22 and build_insns falls from 77 to 75. Removing the -2 use also removes the ref pressure that materialises D1's 'subu $v0,$t2,$a0' + 'addu $a3,$v0,$zero' pair, so the two instructions session 1 fought for disappear. D1 and D2 are coupled through the same val ref count; a future attack must ADD references to hi rather than REMOVE them from val (or re-home the -2 into an already-dead existing local instead of a brand-new one).
+- verdict: KILLED
+
+## [s3] Hoisting 'needed = width - bits_left;' to the top of the if-arm fixes D4's preheader li order, now that D1 and D3 are settled (session 1 killed it at the old 33-point baseline; the session-2 ledger asked for a re-test at the settled baseline).
+- mechanism: loop.c hoists loop-invariant constant loads into the preheader; the hypothesis was that first-use order of the width constant drives the emission order of 'li $t4,<w>' vs 'li $t2,0x20'.
+- probe: vI - 'needed = 0xC - bits_left;' / 'needed = 2 - bits_left;' moved to the first statement of each arm, on top of the P7 form; sandbox --disable all.
+- result: 20 -> 45. Re-killed at the settled baseline, and far worse than at the session-1 baseline. D4 is not reachable by moving the subtraction that first uses the width constant.
+- verdict: KILLED
+
+## [s3] Statement-order changes around the refill (cur = *arg1; arg1++;) or around which temp 'val' carries will shift the arm's RTL order enough to flip the $v0/$v1 outcome.
+- mechanism: RTL emission order feeds both local-alloc quantity spans and global-alloc live lengths.
+- probe: vG (refill moved below 'needed = w - bits_left'), vG2 (refill moved down to just above the store), vH (vG plus the hi tie), vF (hi tie plus val carrying 'cur >> bits_left'), vK (val carrying 'hi << needed'), vE (val additionally carrying 'cur >> bits_left'); all sandbox --disable all.
+- result: vG 24, vG2 26, vH 26, vF 28, vK 26 with build_insns 75, vE exactly 20 (neutral). Every re-association inside the arm is neutral-to-worse; the P7 statement order is a local optimum for the arm.
+- verdict: KILLED
+
+## [s3] The duplicated 'dst += 2' in both if-arms is byte-neutral in the emitted code (the prerequisite the duplicated-statement-into-arms family asks for).
+- mechanism: GCC's jump2 cross-jump pass re-merges the two identical arm tails into a single increment in the shared tail, which the delay-slot filler then puts in the bnez delay slot.
+- probe: Read the target's loop bottoms in asm/funcs/func_8001979C.s and compare with our build's instruction count and disassembly.
+- result: Target carries exactly ONE 'addiu $t1,$t1,0x2' per loop, in the bnez delay slot (asm/funcs/func_8001979C.s lines 45 and 67), and our build with the duplication in source emits exactly one too (build_insns 77 == target_insns 77). Byte-neutrality is verified, not assumed.
+- verdict: CONFIRMED
+
+## [s3] Swapping the operands of '(hi << needed) | (cur >> bits_left)' to flip the emission order (session 1 frontier probe F3(b)).
+- mechanism: cc1's OR-tree shape drives INSN_PRIORITY ordering in sched.c.
+- probe: NOT MEASURED - closed by policy after reading .claude/rules/or-tree-shape-shift.md.
+- result: FORBIDDEN. That rule classifies reordering operands or reparenthesising an associative+commutative OR/AND expression as a cheat-by-spelling (status FORBIDDEN 2026-06-06, two confirmed rejected instances on func_8007CBB0 and func_8007C97C). The axis is permanently closed and must not be re-opened by a later session.
+- verdict: KILLED

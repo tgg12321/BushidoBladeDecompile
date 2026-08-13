@@ -55,6 +55,38 @@
  *       opposite order.  The early init is currently load-bearing for the
  *       allocno priority (point 3), so D4 and the priority requirement are
  *       coupled - see hypotheses.md F1.
+ *
+ * SESSION 3 (structural) — body UNCHANGED, floor still 20. Session 3 probed
+ * eleven structural variants of this body (tie the shift amount into `hi`;
+ * a third named local for it, declared first and last; the same tie through
+ * the dead `out` walker; three refill-placement moves; `val` carrying the
+ * third temp, or the shifted `hi`; `needed` hoisted to the top of the arm; a
+ * separate `-2` holder for the third loop) and every one of them scored
+ * 20-45, i.e. neutral or worse. This body is a local optimum for the arm.
+ *
+ * Session 3's substantive result is a MECHANISM CORRECTION that the next
+ * session should work from: the D2 `$v0`/`$v1` mirror is NOT a local-alloc
+ * `combine_regs` tie (the BB2_QTY_DEBUG local-alloc tables are byte-identical
+ * between this form and a form whose registers differ). It is decided in
+ * global.c `allocno_compare`, between exactly two pseudos:
+ *
+ *     val  -> pseudo 83, nrefs 19, livelen 15, pri 50666  -> takes $v1
+ *     hi   -> pseudo 78, nrefs  8, livelen 18, pri 13333  -> takes $v0
+ *
+ * Target needs the reverse. `val`'s nrefs is 19 because this body reuses the
+ * one local three ways (shift amount, the `0x20 - needed` D1 intermediate,
+ * and the third loop's `-2`). Removing the `-2` reuse does lower the priority
+ * — and also destroys D1 (build_insns falls back to 75), so the two are
+ * coupled. The reachable direction is to ADD references to `hi`, not to
+ * remove them from `val`. Full numbers, tooling and the eleven measurements
+ * are in evidence.md / hypotheses.md (session 3).
+ *
+ * Also settled in session 3: the duplicated `dst += 2` is verifiably
+ * BYTE-NEUTRAL — target itself emits a single `addiu $t1,$t1,0x2` in the
+ * bnez delay slot (asm/funcs/func_8001979C.s:45 and :67) because cross-jump
+ * re-merges the two arm tails, and our build emits exactly one too. That
+ * discharges the byte-neutrality prerequisite of the
+ * duplicated-statement-into-arms family for the eventual self-vet.
  */
 void func_8001979C(s32 arg0, u32 *arg1) {
     s32 bits_left;
