@@ -1,8 +1,8 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,18 +45,29 @@
    "floor": 19,
    "modality": "forensics",
    "headline": "Forensics: the optimize_reg_copy_1/2 reference-TRANSFER frontier is KILLED in both directions by the target's own move census, and a newly-found sibling mechanism (allocno sharing, global.c:450) is ki"
+  },
+  {
+   "session": 8,
+   "floor": 19,
+   "modality": "rederive",
+   "headline": "Rederive modality CLOSED: the hand derivation from the target bytes converges on the inherited body, the last two unbuilt partitions (pure-alias split, joint 2-D move) are measured dead, and a forced-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A from-scratch RE-DERIVATION of func_80078654 from the target bytes may express the buffer or the walk in a partition no incremental edit of the inherited body can reach. This is now the ONLY remaining modality: s6 pinned the reference counts to the RTL-expansion mention census, and s7 closed the two mechanisms (local_alloc transfer, allocno sharing) that could have changed them afterwards, so only a different set of expanded insns can move the sort.",
-   "mechanism": "reg_n_refs(P) == the number of insns mentioning P at RTL expansion, for every pseudo, with no pass creating, destroying, transferring or sharing a reference afterwards (s6 provenance table + s7 copy census + s7 sharing trace). The sort therefore reflects the DECOMPOSITION alone; a re-derivation is the only edit class that changes it.",
-   "next_probe": "Rederive modality. Step one remains installing decompals/m2c into .venv (s5 measured: ModuleNotFoundError, no ~/m2c checkout) or hand-deriving directly from asm/funcs/func_80078654.s; write the reconstruction VERBATIM from that output, not from candidate.c. Then PRE-SCREEN it cheaply before assembling: `bash tmp/grind/func_80078654/s7/dump.sh <chassis.c> <label>` followed by `python3 tmp/grind/func_80078654/s7/mentions.py <label>/in.c.combine 72 73 ...`, and require the walk pseudo to reach >= 13 mentions while the parameter pseudo stays below it; only forms passing that screen are worth running through s5/eval.sh."
+   "hypothesis": "Every sanctioned axis on func_80078654 is now measured dead across five distinct modalities, and the forced-decomposition theorem explains why: the correct disposition is an owner escalation, not further grinding.",
+   "mechanism": "The target's three-callee-save census plus its 0xC/0x14 displacements force all twelve buffer accesses onto one pseudo (reg_n_refs 13, pri 3979), while the walk pointer's reference count is pinned at 5 with a ceiling of 8 (pri 2448) and free references are impossible (s6 pinning, s7 no transfer / no sharing) - so allocno_compare can never order the walk pointer first, and its tie-break is strict in the parameter's favour.",
+   "next_probe": "The driver decides exhaustion, not the session; if it assigns `escalation` modality, both endgame gates are already measured and BOTH FAIL, so the entry is the standing 2026-07-27 auto-ruling shape (REFUSED / OWNER-ACCEPTED INCOMPLETE), citing scan_hand_coded tier=LOW score=0/8 for gate 1 and the absence of any citable SOTN-master RA-coercion precedent for gate 2."
   },
   {
-   "hypothesis": "The proof obligation may be unsatisfiable, in which case the correct disposition is an owner escalation rather than further grinding: the target's own bytes bound the walk pointer to 5 mentions of $s0 and arg0 to 13 mentions of $s1, and every mechanism that could have decoupled reg_n_refs from those counts is now measured dead.",
-   "mechanism": "s6 fixed reg_n_refs to the emitted-mention count from below and proved the tie-break strict (walk needs >= 13 references); s7 removed the last two candidate decouplers (optimize_reg_copy transfer, allocno sharing). Unless a re-derivation produces flow-time references that die before global_alloc \u2014 and combine deletion was measured at zero yield in s6 \u2014 no compile emitting the target bytes can present the required priority ordering.",
-   "next_probe": "Do NOT emit owner-gated from a non-escalation modality; the driver decides exhaustion. Run the rederive modality first. If it also fails, note in advance for the escalation entry that gate 1 (canonical-asm) needs STRONG scan_hand_coded signals which this ordinary draw-primitive helper is very unlikely to have, and gate 2 needs a citable SOTN-master precedent for a coercion family, which no session has found \u2014 i.e. the standing 2026-07-27 auto-ruling shape."
+   "hypothesis": "If a further grinding session is assigned before escalation, the only premise of the theorem that is inductive rather than deductive is premise (3): that EVERY pseudo carrying a proper subset of the twelve accesses must be live across a call.",
+   "mechanism": "Premise (3) rests on four measured splits, not on an exhaustive enumeration. A split confined to a call-free window would not need a callee-save - the target's only such window is the `lw $v0,0x14($s1); addiu $v0,$v0,0xC; sw $v0,0x14($s1)` RMW pair at the end of each block.",
+   "next_probe": "Build the RMW-window-only split (a pointer holding arg0's value created and killed strictly between the AddPrim call and the block end, so it never crosses a call) and check with s5/eval.sh whether it (a) survives cse, (b) keeps three callee-saves, and (c) moves reg_n_refs(72) below 13. Note the displacement argument predicts it must still be a pure ALIAS, not `arg0 + 5`, to keep `20($sN)`; a two-reference alias is also the shape cse is most likely to delete."
+  },
+  {
+   "hypothesis": "The ledger's own instruments are now sufficient to reject a candidate body before it is assembled, which any future session on this function should exploit rather than rebuild.",
+   "mechanism": "s7 established `mentions in in.c.combine` == `reg_n_refs at RA` as a measured identity for this function, and s5/eval.sh returns the allocno table plus a full-pipeline objdump diff in ONE call.",
+   "next_probe": "For any new form: `bash tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label>` and require pseudo-73-class (walk) priority to exceed pseudo-72-class (arg0) priority in the printed ALLOCDBG table AND the callee-save count to stay at three; nothing else is worth assembling. Chassis must be comment-free (cc1 consumes preprocessed input - the s8 chassis were rejected with a parse error until the header comments were stripped)."
   }
  ],
  "judge_constraints": [],

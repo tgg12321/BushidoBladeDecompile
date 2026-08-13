@@ -113,6 +113,35 @@
  * measured identity for this function, so a form can be rejected on its
  * reference census before it is ever assembled.
  *
+ * SESSION 8 (rederive) ALSO left this form unchanged and still best at 19
+ * (sandbox re-measured with the body applied: score 19, 116 == 116,
+ * rules_dropped 6). It executed the mandated re-derivation BY HAND from
+ * asm/funcs/func_80078654.s (m2c is still not installed) and accounted for
+ * all 116 target instructions; the derivation converges on exactly this
+ * body — there is no second reading of these bytes. The one structural
+ * freedom it exposes, giving the single gp-load of D_800A3610 its own named
+ * local, is codegen-identical (116 insns, same 38 diff lines, allocno table
+ * identical up to renumbering; rejected/rederive-explicit-base-local-
+ * byte-identical.c). It then measured the last two unbuilt partitions:
+ *   (a) block-scoped PURE ALIASES of the parameter (`s32 *p = arg0;`), the
+ *       only split that keeps the target's 0xC/0x14 displacements — the
+ *       alias survives cse (unlike s7's round-trip alias) and becomes a
+ *       FOURTH call-crossing pseudo (7 refs / 47 live / pri 2978) that takes
+ *       $s0; 119 insns, frame 0x60 vs 0x58, 47 diff lines.
+ *   (b) the JOINT quadrant of the s3 2-D frontier (alias split + H4 base
+ *       merge together): both pointers land at an EXACT tie, 8 refs / 99
+ *       live / pri 2424, and s6's strict tie-break gives $s0-precedence to
+ *       the parameter's lower allocno index; 119 insns, 53 diff lines.
+ * Net (the FORCED-DECOMPOSITION THEOREM, evidence.md SESSION 8): the target
+ * has exactly three callee-save-resident values, every one of the twelve
+ * buffer accesses must be a direct dereference of a pseudo holding arg0's
+ * value (a derived pointer emits displacement 0 instead), and every such
+ * pseudo carrying a proper subset is live across a call and costs a fourth
+ * callee-save — so reg_n_refs(arg0) = 13 / pri 3979 in every conforming
+ * compile, against a walk-pointer ceiling of 8 refs / pri 2448. The rederive
+ * modality is CLOSED. Endgame gate 1 is pre-measured for the escalation:
+ * scan_hand_coded --single func_80078654 = tier LOW, score 0/8.
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply
