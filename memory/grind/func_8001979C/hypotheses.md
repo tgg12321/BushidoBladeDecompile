@@ -1031,3 +1031,138 @@
 - probe: Each construct deleted individually from the score-0 form and re-measured with sandbox --disable all.
 - result: none of them (natural C) 22 build 75; one-statement OR 55; fresh `amt` local instead of reusing hi 16; no nd 4; needed hoisted instead of nd 4; no val 4 build 75; literal -2 instead of neg2 2. All five remain individually load-bearing.
 - verdict: KILLED
+
+## CONFIRMED (session 8b, synthesis)
+
+- **H8b-A: the whole 4-point residual of the policy-clean (no-`nd`) form is
+  the EMISSION ORDER OF THE TWO HOISTED LOOP-INVARIANT CONSTANTS, and that
+  order is fixed by the source-statement order of the two subtractions, which
+  is in direct conflict with the required in-arm position of one of them.**
+  *Mechanism:* the `(set reg <const>)` insn is emitted at expand immediately
+  before the first source-level use of that constant in a register;
+  `loop.c` `move_movables` hoists the constants in their RTL order, so the
+  preheader order equals the source order of the two subtractions
+  (`hi = 0x20 - bits_left;` and `needed = W - bits_left;`).  `sched.c` does
+  NOT reorder these insns - in all three measured forms the emitted arm is
+  exactly the `.jump2` RTL order, instruction for instruction.  Target,
+  however, needs the 32-subtraction FIRST in the arm (`subu $v1,$t2,$a3` is
+  the arm's first insn) and the width-subtraction FIFTH (after the `lw`/`addiu`
+  refill), while needing the 12-constant load BEFORE the 32-constant load in
+  the preheader.  With one statement per subtraction those two requirements
+  cannot both hold.
+  *Probes:* the three-form table, each measured with `sandbox --disable all`
+  and each dumped with cc1 `-da`
+  (`tmp/grind/func_8001979C/s8b/dump_{nond,va,nd}`, listed with
+  `tmp/grind/func_8001979C/s8b/rtlist.py`):
+
+  | form | source position of the width subtraction | preheader consts | arm subu | score |
+  |---|---|---|---|---|
+  | no-`nd` (this session's candidate) | after the refill | 32 then 12 (wrong) | late (right) | 4 |
+  | hoisted `needed` | first in the arm | 12 then 32 (right) | early (wrong) | 4 |
+  | banned `nd` | first, copied into `needed` after the refill | 12 then 32 | late | 0 |
+
+  *Result:* **CONFIRMED.** The residual is exactly two instructions (one per
+  bit loop) and every other instruction and register in the function already
+  matches.
+
+- **H8b-B: the banned `nd` construct works by a cse.c substitution, not by the
+  LUID / named-intermediate-declaration-order family the session-8 self-vet
+  cited.**
+  *Mechanism:* with `nd = W - bits_left;` written first and `needed = nd;`
+  written after the refill, expand emits `(set r12 (const_int 12))` +
+  `(set nd (minus r12 a3))` early and the copy late.  By `.jump2` the early
+  `minus` is GONE and a single `(set a0 (minus r12 a3))` sits at the copy's
+  position (dump_nd, insn 78), while `(set r12 (const_int 12))` remains at its
+  early position and is hoisted first.  cse re-materialises the subtraction at
+  the consumption site and leaves the constant load behind; nothing about
+  INSN_LUID bias or declaration order is involved.  This is the SAME cse.c
+  pass, and the same load/use-splitting shape, as the `val` construct the
+  reviewer did not object to.
+  *Result:* **CONFIRMED** - the mechanism the layer-1 FAIL said had never been
+  established is now established from dumps.  It does not by itself lift the
+  ban; it is the evidence attached to this session's ruling-request.
+
+## KILLED (session 8b, synthesis)
+
+- **H8b-C: an arm statement re-ordering on the hoisted-`needed` chassis lets
+  the scheduler push the width subtraction back below the refill.**
+  *Probes:* six orderings of the arm's tail on the 12-first chassis (`sllv`
+  early, `cur <<=` before the carrier read, `val` split across the shift,
+  `sllv` before the refill, carrier read before the shift, `val` first).
+  *Result:* 6 / 8 / 8 / 8 / 4 / 8.  **KILLED** - sched.c never moves the
+  subtraction across the refill in any spelling, consistent with the dumps
+  showing the emitted arm equal to the `.jump2` order.
+
+- **H8b-D: a named field-width variable (`w = 0xC;` / `w = 2;` before each
+  loop) puts the constant load in the pre-loop block by source order while
+  leaving the subtraction late - reaching target's preheader order with
+  ordinary, human-natural C.**
+  *Probes:* `w` used in BOTH the compare and the subtraction (`w1`), and `w`
+  used only in the subtraction with the compare left as a literal (`w2`).
+  *Result:* 18 and 16.  **KILLED on measurement, before the policy question
+  had to be answered.**  `w1` additionally emits `slt $v0,$a3,$t2` where
+  target has `slti $v0,$a3,0xC` - cse cannot propagate the constant into the
+  loop body because `w` is assigned outside it and the body is reached by a
+  back edge - so the natural spelling is byte-wrong independently of its
+  score, and `w2` (literal compare + variable subtraction, i.e. the same
+  constant spelled two ways) is an opaque constant holder, the forbidden
+  family that sessions 4 and 5 already measured dead at two other chassis.
+
+## FRONTIER (ranked, as of end of session 8b - reset by synthesis)
+
+1. **F1 - the policy question is now the whole function.** The residual is two
+   instructions, the mechanism is fully understood, and the C-level solution
+   space for separating a constant load from its subtraction is exactly two
+   spellings, both currently blocked: the banned `nd` named intermediate (now
+   with a dump-established cse.c mechanism and a correctable annotation) and
+   an opaque constant holder (measured 16/18 AND in a forbidden family).  The
+   session-8b outcome is a `ruling-request` on the first.  A future session
+   must NOT re-spell either construct; if the ruling refuses both, the
+   function's honest policy-clean floor is 4 and the disposition question
+   moves to the owner.
+2. **F2 - the one untried structural axis: make the 32-constant not be a
+   movable.** Every attack so far has tried to move the 12 earlier.  The
+   mirror - leave the width subtraction late (this candidate) and make the
+   32-constant load appear LATER than it does - is untried because
+   `hi = 0x20 - bits_left;` must be the arm's first instruction, so its
+   constant is loaded first by construction.  The only escape would be a C
+   form in which the arm's first instruction is still `subu $v1,$t2,$a3` but
+   the `(set r 32)` insn is created by a LATER statement (e.g. by the
+   `val = 0x20 - needed;` subtraction) and re-used backwards by cse.  Whether
+   cse can supply a constant to an EARLIER insn from a LATER one is a
+   one-read question in `tools/gcc-2.7.2/cse.c` (it almost certainly cannot,
+   which would close the axis permanently and leave F1 as the only item).
+3. **F3 - permuter campaign on the score-4 chassis.** Still unrun (session 7
+   listed it, session 8 closed D4 structurally instead).  Its value is now
+   narrow but real: the permuter mutates temp introduction and statement
+   placement, and the two-instruction residual is precisely a
+   temp-introduction problem; a campaign might surface a THIRD spelling of the
+   load/use split that neither the named intermediate nor the constant-holder
+   family covers.  Workspace recipe:
+   `tmp/grind/func_8001979C/s4/mk_workspace.sh`; hygiene rules in the
+   session-4/5 evidence; forbidden OR-operand swaps per
+   `.claude/rules/or-tree-shape-shift.md`.
+
+## [s8b] The entire 4-point residual of the policy-clean form is the emission order of the two hoisted loop-invariant constants, and that order is fixed by the source order of the two subtractions, which conflicts with the required in-arm position of the width subtraction.
+- mechanism: The (set reg <const>) insn is emitted at expand immediately before the first source-level register use of that constant; loop.c move_movables hoists the constant loads in RTL order, so the preheader order equals the source order of `hi = 0x20 - bits_left;` vs `needed = W - bits_left;`. sched.c does not reorder them - in all three measured forms the emitted arm is exactly the .jump2 RTL order. Target needs the 32-subtraction first in the arm and the width subtraction fifth (after the lw/addiu refill), but the 12-constant load before the 32-constant load in the preheader; with one statement per subtraction both cannot hold.
+- probe: Three forms measured with sandbox --disable all and dumped with cc1 -da (tmp/grind/func_8001979C/s8b/dump_nond, dump_va, dump_nd; compact listings via tmp/grind/func_8001979C/s8b/rtlist.py): no-nd (subtraction after the refill), hoisted-needed (subtraction first in the arm), and the banned nd form.
+- result: no-nd -> preheader `r10=32 ; r12=12` (wrong) with the arm right, score 4. hoisted-needed -> preheader `r12=12 ; r10=32` (right) with the subu emitted in the branch delay slot instead of after the refill, score 4. nd -> both right, score 0. The residual is exactly two instructions, one per bit loop; every other instruction and register already matches target.
+- verdict: CONFIRMED
+
+## [s8b] The banned `nd` construct works by a cse.c substitution that re-materialises the subtraction at the copy site while leaving the constant load at the early site - not by the LUID / named-intermediate-declaration-order family cited in the session-8 self-vet.
+- mechanism: expand emits `(set r12 (const_int 12))` + `(set nd (minus r12 a3))` at the early source position and `(set needed nd)` at the late one. By .jump2 the early minus is gone and a single `(set a0 (minus r12 a3))` sits at the copy's position (dump_nd insn 78), while `(set r12 (const_int 12))` stays early and is hoisted first by move_movables. Same cse.c pass, and the same load/use-splitting shape, as the `val = 0x20 - needed; bits_left = val;` construct the reviewer did not object to.
+- probe: cc1 -da .rtl / .cse / .loop / .jump2 dumps of the nd form and of the hoisted-needed form, compared insn by insn with rtlist.py.
+- result: The mechanism the layer-1 FAIL said had never been established is now established from dumps. It does not by itself lift the ban - it is the evidence attached to this session's ruling-request.
+- verdict: CONFIRMED
+
+## [s8b] An arm statement re-ordering on the 12-first chassis lets sched.c push the width subtraction back below the lw/addiu refill.
+- mechanism: sched.c rank_for_schedule - the hope was that a different dependence/priority structure in the arm's tail would make the refill win the ready-list contest against the subtraction, as splitting the OR did for D5 in session 7.
+- probe: Six arm orderings on the hoisted-needed chassis (sllv early, cur<<= before the carrier read, val split across the shift, sllv before the refill, carrier read before the shift, val first), each sandbox --disable all.
+- result: 6, 8, 8, 8, 4 (neutral re-spelling), 8. sched.c never moves the subtraction across the refill in any spelling - consistent with the dumps showing the emitted arm equal to the .jump2 order in every form measured this session.
+- verdict: KILLED
+
+## [s8b] A named field-width variable (`w = 0xC;` / `w = 2;` set before each loop) puts the constant load in the pre-loop block by source order while leaving the subtraction late, reaching target's preheader order with ordinary human-natural C.
+- mechanism: a variable assigned outside the loop needs no hoist, so its `li` sits where the source put it (after `i = 0;`, i.e. target's position), while `needed = w - bits_left;` stays after the refill.
+- probe: w1 (w used in both the `bits_left < w` compare and the subtraction) and w2 (w used only in the subtraction, compare left as the literal 0xC), sandbox --disable all.
+- result: 18 and 16. w1 also emits `slt $v0,$a3,$t2` where target has `slti $v0,$a3,0xC` - cse cannot propagate w's value into the loop body because w is set outside it and the body is reached by a back edge - so the natural spelling is byte-wrong independently of its score. w2 (the same constant spelled two ways, variable in the subtraction and literal in the compare) is an opaque constant holder, a forbidden family already measured dead at two other chassis in sessions 4 and 5.
+- verdict: KILLED

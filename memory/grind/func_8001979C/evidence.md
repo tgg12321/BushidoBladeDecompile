@@ -603,3 +603,88 @@ prerequisite the `duplicated-statement-into-arms` family asks for.
   (tmp/grind/func_8001979C/s8/sweep.ps1 does exactly this) and keep WSL calls in
   the Bash tool. A sweep whose apply step silently fails reports the SAME score
   for every variant - that is the signature to watch for.
+
+## Session 8b (synthesis) - the residual is two instructions, and it is a
+## constant-hoist-order vs statement-order conflict
+
+**Starting state.** Session 8 reached `sandbox --disable all` = 0 on the giv
+chassis, but the layer-1 cheat-reviewer FAILed the closing form on ONE of its
+constructs - `nd = 0xC - bits_left; ... needed = nd;` - and the driver banned
+it. `src/code6cac.c` had been reverted to the recon-era body. This session
+re-applied the session-8 closing form MINUS `nd` (score 4, build_insns 77 ==
+target_insns 77) and worked from there.
+
+**The residual, measured exactly.** `cmp.py` against `asm/funcs/func_8001979C.s`
+reports four masked lines (the `%hi`/`%lo` pair of `D_800F1B18` and two
+branch-target immediates) plus exactly two real differences, one per bit loop:
+
+    target : addu t0,zero,zero ; addiu t4,zero,12 ; addiu t2,zero,32 ; addu t1,t3,zero
+    ours   : addu t0,zero,zero ; addiu t2,zero,32 ; addiu t4,zero,12 ; addu t1,t3,zero
+
+(loop 2 the same with 2 instead of 12). Every other instruction, and every
+register in the whole function, already matches: `$a3` bits_left, `$t0`
+counter, `$t1` the reduced walker giv, `$t2` 0x20, `$t3` base, `$t4` field
+width, `$a2` cur, `$a1` arg1, `$a0` needed, `$v1` hi, `$v0` val/carrier, and
+`$v0`/`$v1` for out/neg2 in the third loop.
+
+**The mechanism, established from cc1 `-da` dumps** (three forms dumped and
+listed insn-by-insn with `tmp/grind/func_8001979C/s8b/rtlist.py`):
+
+1. The `(set reg <const>)` insn for a loop-invariant constant is emitted at
+   expand immediately before the first source-level statement that uses that
+   constant in a register. `loop.c`'s `move_movables` then hoists the constant
+   loads to the preheader in their RTL order, so **the preheader order of
+   `li 12` and `li 32` is the source order of `needed = W - bits_left;` and
+   `hi = 0x20 - bits_left;`.**
+2. `sched.c` does not reorder these insns. In all three forms the emitted arm
+   is exactly the `.jump2` RTL order, instruction for instruction - so the
+   in-arm position of the width subtraction is also pure source order.
+3. Target requires the 32-subtraction to be the arm's FIRST instruction
+   (`subu $v1,$t2,$a3`) and the width subtraction to be its FIFTH (after the
+   `lw`/`addiu` refill), while requiring `li 12` BEFORE `li 32` in the
+   preheader. With one statement per subtraction these are contradictory:
+
+   | form | width subtraction written | preheader | arm | score |
+   |---|---|---|---|---|
+   | no-`nd` (candidate) | after the refill | 32,12 wrong | right | 4 |
+   | hoisted `needed` | first in the arm | 12,32 right | wrong | 4 |
+   | banned `nd` | first, copied after the refill | right | right | 0 |
+
+4. **Why `nd` works** (dump_nd `.jump2`): expand emits `(set r12 12)` +
+   `(set nd (minus r12 a3))` early and `(set needed nd)` late; by `.jump2` the
+   early `minus` is gone and a single `(set a0 (minus r12 a3))` sits at the
+   copy's position (insn 78), while `(set r12 12)` remains early and is
+   therefore hoisted first. cse re-materialises the subtraction at the
+   consumption site and leaves the constant load behind. This is the SAME
+   cse.c pass and the same load/use-splitting shape as the `val = 0x20 -
+   needed; bits_left = val;` construct that the same review did not object to;
+   it is NOT the LUID / named-intermediate-declaration-order family that the
+   session-8 self-vet cited, which is precisely what the layer-1 FAIL said was
+   never established.
+
+**Consequence.** Separating the constant LOAD from its SUBTRACTION requires a
+second name for the value. The C-level space of such spellings is exactly two,
+and both are policy-blocked: the banned named intermediate, and an opaque
+constant holder (`s32 w = 0xC;`) used only by the subtraction. The holder was
+measured this session at 16 (literal compare) and 18 (`w` also in the compare,
+which additionally emits `slt $v0,$a3,$t2` where target has `slti $v0,$a3,0xC`,
+because cse cannot propagate `w` into a loop body reached by a back edge), so
+it is dead on measurement as well as on policy. Six arm re-orderings on the
+12-first chassis were also measured (6/8/8/8/4/8) - sched.c never moves the
+subtraction across the refill.
+
+**Tooling built this session** (reusable, in `tmp/grind/func_8001979C/s8b/`):
+- `sweep.py` - splices a full function body from a variant `.c` file into
+  `src/code6cac.c`, runs the engine sandbox with the repo venv, prints
+  `score=/build=`, leaves the last variant in place. Run it from WSL via
+  `bash tools/wsl.sh` so the engine uses the Linux toolchain.
+- `rtlist.py` - compact one-line-per-insn listing of `func_8001979C` from any
+  cc1 `-da` dump stage, with pseudos rendered `rNN` and constants `#N`. This is
+  what made the constant-hoist mechanism visible in a single screen.
+- `dump.sh` - cc1 `-da` dump of the current `src/code6cac.c` into
+  `dump_<tag>/` (copy of the session-6 script with the output path retargeted).
+
+**Gotcha for the next session.** The Bash tool's `python3` on this machine is
+the WINDOWS interpreter, and the ledger files contain non-ASCII: always pass
+`encoding='utf-8'` to `read_text`/`write_text` (and `newline='\n'` to avoid
+CRLF), or the append silently fails with a cp1252 `UnicodeDecodeError`.
