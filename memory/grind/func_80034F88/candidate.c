@@ -171,6 +171,41 @@
  * the NEW pseudo, the old one dies early so nothing is gained, and cse forwards
  * that store into the next block's read and deletes two further reloads. That is
  * s18's instruction-ordering proof reproduced from the source side.
+ *
+ * s21 (permuter) re-measured this body — still 10 at 49 insns, lbu 175 / sb 164
+ * / lui 456 — and added nothing to it, but it ran the FIRST campaigns ever
+ * seeded at the honest floor and produced the function's first semantically
+ * correct sub-floor find (full write-up under "==== s21 (permuter) ====" in
+ * evidence.md). Two campaigns, 81,779 iterations total, both harvested and
+ * stopped in session.
+ *
+ * Seed 1 = THIS body (score 10, the chassis no prior campaign had ever seeded;
+ * s4 seeded floor-18 chassis, s5 was directed on 18, s13 seeded the
+ * inline-helper 13). 44,626 iterations, permuter metric 455 -> 340, six finds,
+ * every one re-scored with the honest sandbox at 10 or WORSE (10 / 12 / 13 /
+ * 13 / 14 / 21). No form the permuter can reach from the floor beats the floor;
+ * this body is a local minimum of the random-structural neighbourhood as well
+ * as of hand enumeration. s4-H1 reconfirmed a second time: the permuter's BEST
+ * metric find (340) is sandbox 14, its WORST metric find (455) is sandbox 10.
+ *
+ * Seed 2 = e1, the direct-symbol block-1 read (score 11, 50 insns, target's lbu
+ * 176 census). 37,153 iterations. Its two sub-floor finds are the SAME lever
+ * and it is BANNED: a pointer COPY `new_var = q;`, a second C pointer object
+ * aliasing D_80106A73, which the Judge's constraint names by that exact
+ * spelling. Worth exactly 3 points at +1 instruction (e1's 11/50 -> 8/51).
+ * The one that keeps the program's meaning is banked at
+ * rejected/permuter-s21-pointer-copy-second-object-score8-BANNED.c; the other
+ * deleted block 1's `& 1` and is banked as a MISCOMPILE. Every single-object
+ * find on seed 2 scored 13 or 14 — worse than this body's 10.
+ *
+ * The load-bearing new fact for the escalation packet: the banned two-object
+ * form does NOT reach 0. At 8/51 insns its whole residual is still block 1's
+ * $a0/$v1 naming plus the `move` and `lui` it spends buying the reload — a copy
+ * gives a second pseudo whose value comes FROM the first, which is not the
+ * target's second base materialised from the symbol before block 1's store.
+ * Zero previously needed THREE objects. So the ceiling statement is now
+ * confirmed from a third independent direction (random search from both sides
+ * of it), and the sub-floor scores the banned family unlocks are 8, not 0.
  */
 void func_80034F88(void) {
     s32 *p;

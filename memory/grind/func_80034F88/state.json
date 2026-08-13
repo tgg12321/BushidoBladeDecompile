@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 20,
- "current_modality": "structural",
+ "session_count": 21,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -123,23 +123,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural: 35 more forms; the residual is re-decomposed and its 'missing memory access' half is closed -- the target's block-1 reload is recoverable at ZERO instruction cost from ONE C pointer object"
+  },
+  {
+   "session": 21,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Fifth permuter kill, and the first campaigns ever seeded AT the floor: 81,779 iterations from two chassis leave the honest floor at 10, and the first semantically-correct sub-floor find (8) is the ban"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis remains closed and the gap is still a SOURCE-MODEL gap, but its statement is now sharper and smaller: the original source held two SIMULTANEOUSLY LIVE address values for D_80106A73, and that is the ONLY thing left -- the reload/access half of the residual is no longer part of the problem.",
-   "mechanism": "One C object provides one live value at a time. Extra address PSEUDOS are obtainable from one object (s20 proves it -- pointer arithmetic makes cse-opaque pseudos that local-alloc coalesces for free), but extra simultaneously-LIVE values are not, and two hard registers need two live values (tools/gcc-2.7.2/global.c:426, one allocno per pseudo, no live-range splitting in 2.7.2). Both remaining defects -- block 1's $a0/$v1 naming and the second base materialising after block 1's store instead of before it -- reduce to that single fact, now confirmed from the target's bytes (s18) AND from the source side (s20 x4/x5/x6).",
-   "next_probe": "Escalation-modality session ONLY. Do NOT re-run the pure-C ladder: s19 saturated the structural dimensions around the single pseudo and s20 saturated the address-pseudo dimension and closed the reload half. Lead the packet with the two-live-values statement (s18's ordering proof plus s20's source-side reproduction of it), note that the reload half is closed so the escalation is narrower than previously framed, evaluate the two endgame-lock gates (gate 1 already FAILS: scan_hand_coded tier=LOW, 0/8; gate 2 needs a CITED SOTN-master precedent where multiple C handles on one global are load-bearing), and if both fail file the standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE entry at the single-handle floor of 10."
+   "hypothesis": "The pure-C axis is closed and the gap is a SOURCE-MODEL gap whose statement is now one notch sharper than the ledger's: the original source held two INDEPENDENTLY MATERIALISED, simultaneously live address values for D_80106A73 -- not merely two address objects.",
+   "mechanism": "One C object gives one live value at a time (tools/gcc-2.7.2/global.c:426, one allocno per pseudo, no live-range splitting in 2.7.2). Two objects obtained by a COPY give a second pseudo that is a dependent value: measured this session at sandbox 8 / 51 insns, carrying a `move` plus a fresh `lui` the target does not have, with block 1's register naming still inverted. Only three objects, each initialised from the symbol, ever reached 0. So the escalation packet's claim should be the stronger and more specific one -- the target's second base is materialised from the symbol before block 1's store -- and the fallback 'maybe two objects of any kind would do it' is now measured dead.",
+   "next_probe": "Escalation-modality session ONLY. Do NOT re-run the pure-C ladder and do NOT re-run the permuter: s19/s20 saturated the structural and address-pseudo dimensions by hand, and s21 has now saturated the random-structural neighbourhood from BOTH sides of the ceiling (44,626 iterations at the floor with one object, 37,153 from e1 reaching only 8 with two). Lead the packet with the independent-materialisation statement plus this session's pricing (a copied second object is worth 3 points and stops at 8), then evaluate the two endgame-lock gates -- gate 1 already FAILS (scan_hand_coded tier=LOW, 0/8); gate 2 needs a CITED SOTN-master precedent where multiple C handles on one global are load-bearing -- and if both fail, file the standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE entry at the single-handle floor of 10."
   },
   {
-   "hypothesis": "`x + K - K` opaque pointer arithmetic is a live ruling question for this function, but it is MOOT and must not be escalated on its own.",
-   "mechanism": "The SOTN-sanctioned 'opaque arithmetic variables' family is endorsed on the SOTN wiki in the shape `(Random() & 3) + 1 - 1`, which is syntactically what s20's round trip does to a pointer. But the construct buys census fidelity only: score stays at exactly 10 in all eight measured forms, so nothing about the disposition changes whether it is sanctioned or not.",
-   "next_probe": "No probe. Raise it only if some FUTURE lever makes the recovered reload load-bearing for the score -- i.e. only in combination with something that also fixes block 1's register naming. On its own it is a cheat by T1/T2/T3 and is banked as rejected."
+   "hypothesis": "The permuter axis on func_80034F88 is now closed in the strong sense (every chassis of interest seeded), not merely the weak sense (seeds happened to be above the floor).",
+   "mechanism": "s4 seeded two floor-18 chassis, s5 ran directed PERM_* on 18, s12b and s13 seeded 24 and 13, and s21 seeded the two chassis that carry the function's best numbers: the score-10 floor and the score-11 e1 with the target's access census. Across five sessions and ~170k iterations no campaign has ever produced an admissible form below the then-current floor, and the two sub-floor finds that exist are one miscompile and one banned construct.",
+   "next_probe": "None. A sixth campaign would need a chassis that is neither the floor, nor e1, nor any of the 18/13/24 seeds, and no such chassis exists that is not already in the 126-entry rejected bank. If a future session is nonetheless assigned permuter modality, the correct action is to record that fact and spend the session on the escalation packet instead."
   },
   {
-   "hypothesis": "e1 (score 11, 50 insns, direct-symbol block-1 read) is no longer interesting as a 'closer base'.",
-   "mechanism": "s17 kept e1 because it was the only form with the target's exact lbu 176 census, at the price of one extra lui. s20 reaches that same census at 49 insns with no extra lui, in eight different forms, all at score 10 -- so e1's distinguishing property is now available strictly more cheaply and e1 is dominated.",
-   "next_probe": "None. Drop e1 from the frontier; the diagnostic chassis at rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c supersedes it for any future census-fidelity comparison (with the caveat that it is inadmissible as a candidate)."
+   "hypothesis": "`x + K - K` opaque pointer arithmetic remains a live ruling question but is still MOOT and must not be escalated on its own.",
+   "mechanism": "s20 measured the round-trip construct at exactly 10 in all eight forms: it buys census fidelity, never score. s21 changes nothing about it -- the recovered reload is still not load-bearing for the score, and both of this session's sub-floor finds got their reload from the banned copy instead.",
+   "next_probe": "No probe. Raise it only if some future lever makes the recovered reload load-bearing -- i.e. only in combination with something that also fixes block 1's register naming. On its own it fails T1/T2/T3 and is banked as rejected."
   }
  ],
  "judge_constraints": [

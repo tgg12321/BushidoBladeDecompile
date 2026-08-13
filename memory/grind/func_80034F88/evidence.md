@@ -2618,3 +2618,134 @@ THE OTHER 25 FORMS (all worse or neutral; one dimension changed each)
 - [s20] A SINGLE addend-spelled materialisation carries no phantom distance (x2 = 10 / 49). s17's +2 R_MIPS_LO16 artefact applies per-materialisation, not per-form -- future sessions should subtract it proportionally, not wholesale.
 
 - [s20] Seventeen further block-1 / addressing spellings measured at 12-32 (signed read 14/16, store into arms 12, single local no else 13, inline condition 13, mask folded into arms 13, flag-word staged 27, flag word read once 19, D_80106A70-based displaced addressing 17/20/20/22/54-insn variants, neighbour-symbol re-assignment 13, mask on the symbol 16).
+
+
+==== s21 (permuter) ====
+
+MODALITY: permuter (5th permuter session on this function; s4 random, s5
+directed, s12b, s13, now s21). Two campaigns, both launched, waited for
+IN-TURN, harvested and --stopped before the session ended. 81,779 iterations
+total. Artifacts under tmp/grind/func_80034F88/s21/.
+
+WHAT WAS NEW ABOUT THIS SESSION'S CAMPAIGNS. Every prior campaign was seeded
+ABOVE the honest floor: s4's two seeds were floor-18 chassis, s5 was a directed
+run on 18, s13 seeded the inline-helper chassis at 13. Seed 1 here is the
+score-10 single-object body that has been candidate.c since s16 — the honest
+floor itself, never permuted. Seed 2 is e1
+(rejected/b1-read-direct-symbol-reload-priced-at-1-score11.c, score 11 at 50
+insns), the only other chassis carrying the target's exact lbu 176 access
+census, also never permuted.
+
+Workspaces are built by tmp/grind/func_80034F88/s21/mkws.sh and mkws2.sh, both
+derived from s13's validated minimal-context builder (the base reproduces
+full-TU codegen instruction-for-instruction; base_insns.txt / base2_insns.txt
+vs target_insns.txt confirm it again this session). Finds are re-scored with
+the HONEST sandbox by tmp/grind/func_80034F88/s21/eval.py, which also censuses
+each find for ADMISSIBILITY: how many distinct C objects hold an address of
+D_80106A73, counting pointer COPIES (`q2 = q;`) as second objects, plus
+new_var constant holders / volatile / __asm__. Ranking is on the sandbox score,
+never the permuter score (s4-H1).
+
+SEED 1 — the floor chassis. 44,626 iterations, permuter metric 455 -> 340, six
+finds. Honest sandbox re-scores (eval_seed1.json), best first:
+
+    find             perm   sandbox  insns  addr-objects
+    output-455-1     455    10       49     1     (a re-spelling of the seed)
+    output-380-1     380    12       49     1
+    output-440-1     440    13       49     1
+    output-450-2     450    13       49     1
+    output-340-1     340    14       49     2
+    output-450-1     450    21       50     2
+
+Nothing beats the seed. The floor chassis is a local minimum of the RANDOM
+STRUCTURAL neighbourhood as well as of nineteen sessions of hand enumeration —
+this is the first time that has been tested, because no campaign had ever been
+seeded there. It also reconfirms s4-H1 in the sharpest possible form: the
+permuter's BEST metric find (340) is the sandbox's SECOND-WORST (14), and the
+permuter's WORST metric find (455) is the sandbox's best (10). The two metrics
+are anti-correlated on this function, so --stop-on-zero can never fire here and
+campaign progress cannot be read off the permuter's numbers.
+
+SEED 2 — the e1 chassis. 37,153 iterations, permuter metric 365 -> 255, six
+finds. Honest sandbox re-scores (eval_seed2.json):
+
+    find             perm   sandbox  insns  lbu  addr-objects
+    output-255-1     255    8        51     176  2   (BANNED — pointer copy)
+    output-355-1     355    8        50     176  2   (MISCOMPILE + copy)
+    output-350-2     350    13       51     176  1
+    output-350-1     350    14       50     176  1
+    output-360-1     360    14       50     176  1
+    output-275-1     275    22       52     176  2
+
+This is the first time any search or any hand form on this function has
+produced a semantically correct score below 10. It does not move the floor,
+because it is the BANNED construct:
+
+  * output-255-1 keeps the program's meaning (`c = p[8] & 1;` intact) and
+    scores 8. Its delta from its own seed is exactly one line: `new_var = q;`
+    in block 1 with `*new_var = c;` for the store. That is a pointer COPY, a
+    SECOND C pointer object aliasing D_80106A73, which the Judge's binding
+    constraint names by that exact spelling ("`q1 = qm;` copies ... are all
+    out"). It is also the lever s11 found by hand and recorded as the
+    zero-cost reload handle. Banked at
+    rejected/permuter-s21-pointer-copy-second-object-score8-BANNED.c.
+  * output-355-1 also scores 8 but DELETED block 1's `& 1`, so the bit-0 flag
+    is set whenever ANY bit of p[8] is set. Banked at
+    rejected/permuter-s21-block1-mask-dropped-MISCOMPILES-score8.c. Two of the
+    three sub-floor finds in this function's entire history are semantic
+    breaks (the other is s4's 17), which is the standing reason every
+    sub-floor find here is read for meaning before its score is believed.
+  * every SINGLE-OBJECT find on seed 2 scored 13 or 14 — worse than the floor.
+
+PRICING THE BANNED OBJECT, AND THE FACT THAT MATTERS. e1 is output-255-1 minus
+the copy and scores 11 at 50 insns. So a second address object is worth
+exactly 3 points and costs 1 instruction: 11/50 -> 8/51.
+
+And it still does not reach 0. The instruction-level side-by-side of
+output-255-1 against asm/funcs/func_80034F88.s
+(tmp/grind/func_80034F88/s21/sbs.sh; output-255-1_insns.txt vs
+target2_insns.txt) is 51 insns against 49, and the whole difference is block 1:
+
+    ours                              target
+    lui a0 / addiu a0,a0,0            lui v1 / addiu v1,v1,0
+    lbu v1,0(a0)                      lbu a0,0(v1)
+    andi v1,v1,0xf8                   andi a0,a0,0xf8
+    sb v1,0(a0)                       sb a0,0(v1)
+    move v1,a0                        (absent)
+    lui a0 / lbu a0,0(a0)             lbu a0,0(v1)
+
+The copy produces a second pseudo whose VALUE COMES FROM THE FIRST — hence the
+`move`, and hence a fresh `lui` for the direct-symbol read — where the target
+materialises its second base from the symbol itself, before block 1's store
+(s18's ordering proof). Reaching 0 previously required THREE objects
+(rejected/three-pointer-objects-judge-FAIL-score0.c). So the banned two-object
+family is not one construct away from the match either, and the ledger's "two
+SIMULTANEOUSLY LIVE address values, materialised independently" statement is
+now confirmed from a third independent direction: random search descending onto
+the ceiling from ABOVE (seed 1 cannot get under 10 with one object) and from
+BELOW (seed 2's two-object forms stop at 8, not 0).
+
+TELEMETRY. Both campaigns are in metrics/events.jsonl with
+permuter-launch/permuter-harvest events and stop reasons. Seed 1's fresh-seed
+window closed cleanly: no novel find for 546s after 38,015 iterations. Seed 2
+was still emitting novel finds when it was stopped, but every novel find after
+the first two was the same copy family, and its single-object finds never got
+below 13.
+
+- [s21] Two permuter campaigns, 81,779 iterations total, both launched via tools/permuter_campaign.py with telemetry, waited for IN-TURN, and harvested with --stop before the session ended; both stop reasons are recorded in metrics/events.jsonl.
+
+- [s21] Seed 1 (tmp/grind/func_80034F88/s21/ws, label s21-floor10-single-object) is the score-10 single-object candidate body -- the honest floor -- which no prior campaign had ever seeded (s4 seeded floor-18 chassis, s5 was directed at 18, s13 seeded the inline-helper 13). 44,626 iterations, permuter metric 455 -> 340, six finds, honest sandbox re-scores 10 / 12 / 13 / 13 / 14 / 21. Fresh-seed window closed: no novel find for 546s after 38,015 iterations.
+
+- [s21] Seed 2 (ws2, label s21-e1-direct-symbol-b1read) is e1, the only other chassis with the target's exact lbu 176 census, also never permuted. 37,153 iterations, permuter metric 365 -> 255, six finds; single-object finds 13 / 14 / 14, two-object finds 8 / 8 / 22.
+
+- [s21] output-255-1 is the first semantically correct sub-floor form in this function's history: sandbox 8 at 51 insns with lbu 176 / sb 164 (the target's exact access census). It is INADMISSIBLE -- `new_var = q;` is a pointer COPY, a second C pointer object aliasing D_80106A73, named verbatim by the Judge's binding constraint ('`q1 = qm;` copies ... are all out'). Banked at memory/grind/func_80034F88/rejected/permuter-s21-pointer-copy-second-object-score8-BANNED.c.
+
+- [s21] output-355-1 also scores 8 but DELETED block 1's `& 1`, so the bit-0 flag would be set whenever any bit of p[8] is set. Two of the three sub-floor finds in this function's entire history are semantic breaks (the other is s4's 17), which is the standing reason every sub-floor find here is read for meaning before its score is believed. Banked at rejected/permuter-s21-block1-mask-dropped-MISCOMPILES-score8.c.
+
+- [s21] Pricing: the second address object is worth exactly 3 points and costs 1 instruction on the e1 chassis (11 at 50 insns -> 8 at 51). It does NOT reach 0; the three-object body was needed for that.
+
+- [s21] Instruction-level side-by-side of the score-8 two-object form against asm/funcs/func_80034F88.s (s21/sbs.sh): 51 insns vs 49, and the whole difference is block 1 -- ours `lui a0 / addiu a0 / lbu v1,0(a0) / andi v1 / sb v1,0(a0) / move v1,a0 / lui a0 / lbu a0,0(a0)` against target `lui v1 / addiu v1 / lbu a0,0(v1) / andi a0 / sb a0,0(v1) / lbu a0,0(v1)`. A copied pointer is a dependent value, not an independent materialisation, so it buys the reload at the price of a move plus a lui and leaves the register naming inverted.
+
+- [s21] s4-H1 (permuter score vs honest sandbox distance are uncorrelated on this function) reconfirmed at maximum contrast on seed 1: best metric find 340 = sandbox 14; worst metric find 455 = sandbox 10.
+
+- [s21] src/ was left untouched: eval.py splices each find in, sandboxes it, and restores the file in a finally block; `git status` shows only ledger files and metrics/events.jsonl modified. Bare src/code6cac_b.c (the cheat-carrying body still in the tree) sandboxes at 24 / 48 insns as it did at session start; the honest floor of 10 is the candidate.c body, re-measured this session as find output-455-1.
