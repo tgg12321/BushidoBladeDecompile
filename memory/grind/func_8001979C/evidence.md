@@ -1,15 +1,15 @@
-# evidence — func_8001979C (src/code6cac.c)
+# evidence â€” func_8001979C (src/code6cac.c)
 
 ## Session 1 (recon, 2026-08-13)
 
 ### Routing / floor
-- `canonical func_8001979C` → verdict **C**, asm_insns 0, total 77, distance 24.
+- `canonical func_8001979C` â†’ verdict **C**, asm_insns 0, total 77, distance 24.
   Pure-C target; no canonical-asm question anywhere in this function.
-- `sandbox func_8001979C --disable all` → **score 24**, target_insns 77,
+- `sandbox func_8001979C --disable all` â†’ **score 24**, target_insns 77,
   build_insns 75, 22 regfix rules dropped. This is the honest floor at HEAD.
-- The 22 regfix rules on this function (regfix.txt:255–279) are a *map* of the
-  residual, not a cheat to preserve: 4 `subst` clusters of `$v0`↔`$v1`
-  renames, 2 `subst`s turning `srl`→`srlv`-position renames, 4 `subst`s
+- The 22 regfix rules on this function (regfix.txt:255â€“279) are a *map* of the
+  residual, not a cheat to preserve: 4 `subst` clusters of `$v0`â†”`$v1`
+  renames, 2 `subst`s turning `srl`â†’`srlv`-position renames, 4 `subst`s
   rewriting `sh $x,0($9)` into `sh $x,0xa($9)` / `0x8e($9)`, 2
   `insert "addu $7,$2,$0"` (the missing copies), and 2 `reorder 15,14` /
   `42,41` (the preheader `li` order). They enumerate exactly the four diff
@@ -30,52 +30,52 @@ Everything else in the function is already byte-identical, including the whole
 
 | # | family | target | ours |
 |---|---|---|---|
-| D1 | missing copy (×2, one per loop) | `subu $v0,$t2,$a0` ; `addu $a3,$v0,$zero` | `subu $a3,$t2,$a0` |
-| D2 | `$v0`/`$v1` role swap (×2 loops, + the final fill loop) | `hi` chain in `$v1`, scratch in `$v0`, `or $v1,$v1,$v0`, `sh $v1` | mirror image |
-| D3 | biv/displacement (×2 loops) | `addu $t1,$t3,$zero` + `sh $x,0xA($t1)` / `0x8E($t1)` | `addiu $t1,$t3,10` / `,142` + `sh $x,0($t1)` |
-| D4 | preheader constant order (×2 loops) | `li $t4,0xC` ; `li $t2,0x20` | `li $t2,32` ; `li $t4,12` |
+| D1 | missing copy (Ã—2, one per loop) | `subu $v0,$t2,$a0` ; `addu $a3,$v0,$zero` | `subu $a3,$t2,$a0` |
+| D2 | `$v0`/`$v1` role swap (Ã—2 loops, + the final fill loop) | `hi` chain in `$v1`, scratch in `$v0`, `or $v1,$v1,$v0`, `sh $v1` | mirror image |
+| D3 | biv/displacement (Ã—2 loops) | `addu $t1,$t3,$zero` + `sh $x,0xA($t1)` / `0x8E($t1)` | `addiu $t1,$t3,10` / `,142` + `sh $x,0($t1)` |
+| D4 | preheader constant order (Ã—2 loops) | `li $t4,0xC` ; `li $t2,0x20` | `li $t2,32` ; `li $t4,12` |
 
 **Register ASSIGNMENT already matches target at the floor.** `$t3` = base,
 `$t2` = 0x20, `$t4` = the field width, `$t1` = walking store pointer,
 `$t0` = counter, `$a3` = bits_left, `$a2` = cur, `$a1` = arg1, `$a0` = needed.
 Only which of `$v0`/`$v1` holds which short-lived temp differs (D2). This is a
 much better starting allocation than it looks from the score of 24, and it is
-fragile — see H3.
+fragile â€” see H3.
 
 ### Measured probes (all reverted; src is back at HEAD)
 
-**Probe A — single store at the if/else join (loop 1 only).**
-Replaced the two per-arm `*(s16 *)(dst + 0xA) = …` with one store after the
-if/else through a local `val`. Score 24 → 29, build_insns 75 → 76.
+**Probe A â€” single store at the if/else join (loop 1 only).**
+Replaced the two per-arm `*(s16 *)(dst + 0xA) = â€¦` with one store after the
+if/else through a local `val`. Score 24 â†’ 29, build_insns 75 â†’ 76.
 *But the D3 fold disappeared*: the preheader became `move $t1,$t3` and the
-store became `sh $v0,10($t1)` — **exactly target's biv + displacement form**.
+store became `sh $v0,10($t1)` â€” **exactly target's biv + displacement form**.
 The +1 insn was a `sll`/`sra` sign-extension pair minus the removed second
 `sh`, an artifact of routing the value through an `s32` local.
 
-**Probe B — `s16 *dp` walking pointer, `dp[5]`, `dp++` (loop 1).**
-Score 24, build_insns 75 — bit-for-bit the same output as the `u32 dst`
+**Probe B â€” `s16 *dp` walking pointer, `dp[5]`, `dp++` (loop 1).**
+Score 24, build_insns 75 â€” bit-for-bit the same output as the `u32 dst`
 spelling. Pointer-typed vs integer-typed walker is codegen-neutral here.
 
-**Probe C — named intermediate for the new bits_left (loop 1 only):**
+**Probe C â€” named intermediate for the new bits_left (loop 1 only):**
 `val = 0x20 - needed; bits_left = val;` instead of
-`bits_left = 0x20 - needed;`. build_insns 75 → 76, score 24 → 34.
-The new instruction is `subu $v0,$t3,$a0` ; `move $a3,$v0` — **D1's missing
+`bits_left = 0x20 - needed;`. build_insns 75 â†’ 76, score 24 â†’ 34.
+The new instruction is `subu $v0,$t3,$a0` ; `move $a3,$v0` â€” **D1's missing
 copy, in exactly target's position**, confirmed by disassembly.
 
-**Probe D — probe C applied to both loops** (file saved as
+**Probe D â€” probe C applied to both loops** (file saved as
 `variant_named_intermediate_77insn.c`). **build_insns 77 == target_insns 77**
 for the first time; score 33. Every remaining diff in that form is register
 naming plus D3. The cost is a one-allocno pressure increase that cascades the
-entire allocation up a register (base `$t3`→`$t4`, consts `$t2`/`$t4` →
-`$t3`/`$t5`, walker `$t1`→`$t2`) and, worst, evicts `hi` out of the caller-save
+entire allocation up a register (base `$t3`â†’`$t4`, consts `$t2`/`$t4` â†’
+`$t3`/`$t5`, walker `$t1`â†’`$t2`) and, worst, evicts `hi` out of the caller-save
 pair into `$t1`. At the floor and in target, `hi` shares its register with the
 `0x20 - bits_left` sub-expression that produces it (`srlv $v1,$a2,$v1` in
 target, `srlv $v0,$a2,$v0` at our floor); with the extra allocno that sharing
-is lost (`subu $v0,…` ; `srlv $t1,$a2,$v0`).
+is lost (`subu $v0,â€¦` ; `srlv $t1,$a2,$v0`).
 
-**Probe E — probe D plus hoisting `needed = 0xC - bits_left;` above the
+**Probe E â€” probe D plus hoisting `needed = 0xC - bits_left;` above the
 `hi = cur >> (0x20 - bits_left);` statement** (an attempt at D4's `li` order,
-semantically neutral since both read the old `bits_left`). Score 33 → 43.
+semantically neutral since both read the old `bits_left`). Score 33 â†’ 43.
 Strictly worse; killed.
 
 ### Mechanism notes
@@ -84,7 +84,7 @@ Strictly worse; killed.
   the identical address (one per if-arm) `combine_givs` merges them, the merged
   giv is reduced, `bl->all_reduced` becomes true and `maybe_eliminate_biv`
   deletes the biv, folding `+0xA` into its initial value. With *one* address
-  giv (probe A) the giv is left as a plain displacement and the biv survives —
+  giv (probe A) the giv is left as a plain displacement and the biv survives â€”
   which is target's form. So target's compilation had a single address giv in
   the loop, yet target's output still contains two `sh` instructions. Finding
   the C shape that has two stores but one address giv (or that otherwise blocks
@@ -116,7 +116,7 @@ Strictly worse; killed.
 
 - [s1] src/code6cac.c was reverted with 'git checkout --' at the end of the session; the working tree carries only metrics/events.jsonl and the memory/grind/func_8001979C/ ledger.
 
-## Session 2 (structural, 2026-08-13) — floor 24 -> 20
+## Session 2 (structural, 2026-08-13) â€” floor 24 -> 20
 
 ### Headline
 Instruction parity AND target's exact register assignment reached at the same
@@ -141,7 +141,7 @@ D2 is confined to the two bit loops; the third loop was never mirrored.
     if (v->lifetime * threshold * benefit < insn_count && ! bl->reversed)
       { v->ignore = 1; all_reduced = 0; }         /* loop.c:3823 */
 
-with `threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` — a large
+with `threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` â€” a large
 number (loop.c:3241), so the predicate only fires when `benefit <= 0`.
 `combine_givs` (loop.c:5500) pools the two identical per-arm DEST_ADDR givs
 (`combine_givs_p` returns 1 immediately for equal mult_val+add_val,
@@ -152,7 +152,7 @@ So: two arms, one increment => pooled benefit ~ 2b - add_cost > 0 => reduced =>
 biv eliminated => `addiu $t1,$t3,10` + `sh $x,0($t1)` (our old floor).
 Two arms, TWO increments (`bl->biv_count == 2`) => 2b - 2*add_cost == 0 =>
 ignored => all_reduced 0 => biv survives => `move $t1,$t3` + `sh $x,0xA($t1)`
-— target's form, with both stores kept. Confirmed by measurement, not
+â€” target's form, with both stores kept. Confirmed by measurement, not
 inference (probe P1 below).
 
 ### The allocation mechanism, measured with the instrumented cc1
@@ -181,40 +181,40 @@ Splitting the walker per loop (nrefs 13) and lengthening each live range by
 moving its initialisation as early as its loop allows is what closes it.
 
 ### Measured probes (scores are `sandbox --disable all`)
-- **P1 — `dst += 2` duplicated into both arms, loop 1 only.** 24 -> 45,
+- **P1 â€” `dst += 2` duplicated into both arms, loop 1 only.** 24 -> 45,
   build_insns 75. Score worse but the loop-1 store became `sh v0,10(a3)` with
-  preheader `move a3,t3` — D3 closed, at the cost of a register rotation.
-- **P2 — same for both loops.** 44, build_insns 75. D3 closed in both loops.
-- **P3 — P2 + session-1's named-intermediate D1 lever in both loops.** 49,
+  preheader `move a3,t3` â€” D3 closed, at the cost of a register rotation.
+- **P2 â€” same for both loops.** 44, build_insns 75. D3 closed in both loops.
+- **P3 â€” P2 + session-1's named-intermediate D1 lever in both loops.** 49,
   build_insns 77 == target_insns. All 77 instructions present, same
   opcodes in the same order as target; the entire residual is register naming.
   `hi` landed in $t2 and pushed base/consts up one register.
-- **P4 — P3 with `val` also carrying the `0x20 - bits_left` shift amount.**
+- **P4 â€” P3 with `val` also carrying the `0x20 - bits_left` shift amount.**
   43, 77 insns. `hi` moved out of $t2 back into the $v0/$v1 pair; base $t3,
   consts $t2/$t4 restored.
-- **P5 — P4 + a separate walker (`out`) for the third loop.** 40, 77 insns.
+- **P5 â€” P4 + a separate walker (`out`) for the third loop.** 40, 77 insns.
   Walker nrefs 33 -> 26.
-- **P6 — P5 + per-loop walkers `dst` / `dst2` for the two bit loops.** 31,
+- **P6 â€” P5 + per-loop walkers `dst` / `dst2` for the two bit loops.** 31,
   77 insns. bits_left correctly in $a3; walkers $t0 and counter $t1 still
   swapped (walker pri 14444 vs counter 13548).
-- **P7 — P6 + `dst = base;` hoisted above the `sw`/`lw`/`addiu` preamble and
+- **P7 â€” P6 + `dst = base;` hoisted above the `sw`/`lw`/`addiu` preamble and
   `dst2 = base;` moved ahead of `i = 0;`.** **20**, 77 insns. Walker livelens
   31 / 28, counter livelen 60: priorities become 17313 / 14000 / 13928 / 12580
   and the register assignment matches target exactly.
-- **P8 — P7 with `hi = cur >> (0x20 - bits_left);` (anonymous temp) instead of
+- **P8 â€” P7 with `hi = cur >> (0x20 - bits_left);` (anonymous temp) instead of
   reusing `val`.** 31, 77 insns. Strictly worse; the `val` reuse is
   load-bearing.
 
 ### Artifacts
-- `tmp/grind/func_8001979C/s2/floor.txt` — floor disassembly (the s1 D2
+- `tmp/grind/func_8001979C/s2/floor.txt` â€” floor disassembly (the s1 D2
   correction).
-- `tmp/grind/func_8001979C/s2/p7.txt` — current-form disassembly.
-- `tmp/grind/func_8001979C/s2/alloc.sh` — ALLOCDBG reproduction script.
-- `tmp/grind/func_8001979C/s2/alloc_floor.txt`, `alloc_p5.txt` — priority dumps.
-- `tmp/grind/func_8001979C/s2/dump.sh` + `dump/code6cac.i.greg` — cc1 -da
+- `tmp/grind/func_8001979C/s2/p7.txt` â€” current-form disassembly.
+- `tmp/grind/func_8001979C/s2/alloc.sh` â€” ALLOCDBG reproduction script.
+- `tmp/grind/func_8001979C/s2/alloc_floor.txt`, `alloc_p5.txt` â€” priority dumps.
+- `tmp/grind/func_8001979C/s2/dump.sh` + `dump/code6cac.i.greg` â€” cc1 -da
   register-disposition dump (note: cc1 prints unrelated parse errors for
   `GameObj` prototypes later in the file and still emits every dump; harmless).
-- `memory/grind/func_8001979C/rejected/` — P4, P5, P6 saved as named forms.
+- `memory/grind/func_8001979C/rejected/` â€” P4, P5, P6 saved as named forms.
 
 ### Housekeeping
 `src/code6cac.c` is left carrying the P7 form (score 20). The only other dirty
@@ -242,11 +242,11 @@ file is `metrics/events.jsonl`.
 
 - [s2] [s2] src/code6cac.c is left carrying the score-20 form; the same body is saved at memory/grind/func_8001979C/candidate.c with a full header explaining each lever. Rejected intermediates saved under memory/grind/func_8001979C/rejected/ as single-walker-both-loops-score40.c, single-walker-loop3-shared-score43.c and split-walkers-late-init-score31.c.
 
-## Session 3 (structural, 2026-08-13) — floor stays 20; D2's mechanism CORRECTED
+## Session 3 (structural, 2026-08-13) â€” floor stays 20; D2's mechanism CORRECTED
 
 ### Housekeeping first (important for the next session)
 `src/code6cac.c` at the START of this session was back at the **session-1 HEAD
-form (score 24)**, not the session-2 P7 form — the s2 src edit did not survive
+form (score 24)**, not the session-2 P7 form â€” the s2 src edit did not survive
 into the commit the driver made. The first action of this session was to
 re-apply `memory/grind/func_8001979C/candidate.c` to `src/code6cac.c`; the
 sandbox then reproduced score 20 / build_insns 77 exactly. Session 3 ends with
@@ -254,14 +254,14 @@ the same P7 form in place and re-verified at 20. **Always re-apply candidate.c
 and re-measure before probing.**
 
 ### Tooling added (reusable, all under tmp/grind/func_8001979C/s3/)
-- `apply.py` — splices a variant body into `src/code6cac.c` (LF-safe, replaces
+- `apply.py` â€” splices a variant body into `src/code6cac.c` (LF-safe, replaces
   the whole `void func_8001979C(...) { ... }` block). Run it with
   `wsl.exe -e python3 ...` from PowerShell or `python3 ...` from Git Bash.
-- `dis.sh` — objdumps `tmp/sandbox/func_8001979C/code6cac.o` into a file.
-- `cmp.py` — normalized side-by-side of our disassembly vs
+- `dis.sh` â€” objdumps `tmp/sandbox/func_8001979C/code6cac.o` into a file.
+- `cmp.py` â€” normalized side-by-side of our disassembly vs
   `asm/funcs/func_8001979C.s` (li/move/nop canonicalised, immediates
   decimalised, branch targets + %hi/%lo masked). Prints only the real diffs.
-- `qty.sh` — runs the instrumented `tools/gcc-2.7.2/cc1` with BOTH
+- `qty.sh` â€” runs the instrumented `tools/gcc-2.7.2/cc1` with BOTH
   `BB2_QTY_DEBUG=1` (local-alloc quantities) and `BB2_ALLOC_DEBUG=1`
   (global-alloc allocnos) and captures the raw log. The QTYDBG lines carry no
   function name; take the QTYDBG run immediately preceding the first
@@ -269,9 +269,9 @@ and re-measure before probing.**
 
 ### The score-20 residual, line-exact (cmp.py on the P7 form)
 Exactly 20 differing instructions, which is the whole score:
-- **D2 = 14** — 7 lines per bit loop: `srlv`, `subu`, `addu a3`, `sllv`,
-  `srlv`, `or`, `sh`; a perfect `$v0`↔`$v1` mirror of target.
-- **D4 = 6** — 3 lines per bit loop: our preheader is
+- **D2 = 14** â€” 7 lines per bit loop: `srlv`, `subu`, `addu a3`, `sllv`,
+  `srlv`, `or`, `sh`; a perfect `$v0`â†”`$v1` mirror of target.
+- **D4 = 6** â€” 3 lines per bit loop: our preheader is
   `addu t1,t3,zero ; addu t0,zero,zero ; addiu t2,zero,0x20 ; addiu t4,zero,<w>`
   where target is
   `addu t0,zero,zero ; addiu t4,zero,<w> ; addiu t2,zero,0x20 ; addu t1,t3,zero`
@@ -279,54 +279,54 @@ Exactly 20 differing instructions, which is the whole score:
 Nothing else differs. (`lui/addiu %hi/%lo` and the two branch-target lines that
 cmp.py marks are masking artifacts, not diffs.)
 
-### MECHANISM CORRECTION — D2 is decided by GLOBAL alloc, not local alloc
+### MECHANISM CORRECTION â€” D2 is decided by GLOBAL alloc, not local alloc
 Session 2's frontier item F1 attributed the `$v0`/`$v1` mirror to
 `local-alloc.c` `combine_regs` tying a SET's dest to a dying source. **That is
 wrong.** The QTYDBG table for the two if-arm blocks is **byte-identical**
-between the P7 form and the tie-form (variant vC below) — local-alloc's
+between the P7 form and the tie-form (variant vC below) â€” local-alloc's
 quantities and their `got=` hard regs do not change at all. The whole `$v0`
 vs `$v1` outcome moves in the **ALLOCDBG (global.c) table**:
 
 | form | pseudo 83 = `val` | pseudo 78 = `hi` | result |
 |---|---|---|---|
-| P7 (score 20) | ord=1 nrefs=19 livelen=15 **pri 50666 → $v1** | ord=7 nrefs=8 livelen=18 **pri 13333 → $v0** | mirror of target |
-| vC tie (score 22) | ord=2 nrefs=11 livelen=11 pri 30000 → $v1 | ord=1 nrefs=16 livelen=20 pri 32000 → $v0 | still mirrored |
+| P7 (score 20) | ord=1 nrefs=19 livelen=15 **pri 50666 â†’ $v1** | ord=7 nrefs=8 livelen=18 **pri 13333 â†’ $v0** | mirror of target |
+| vC tie (score 22) | ord=2 nrefs=11 livelen=11 pri 30000 â†’ $v1 | ord=1 nrefs=16 livelen=20 pri 32000 â†’ $v0 | still mirrored |
 
 `val` carries a huge `nrefs` (19) because the SAME local is reused three ways:
 the `0x20 - bits_left` shift amount, the `0x20 - needed` D1 intermediate, and
 the third loop's `-2` holder. That ref count is what makes `val` outrank `hi`
-in `allocno_compare` and take `$v1` first, leaving `$v0` for `hi` — the exact
+in `allocno_compare` and take `$v1` first, leaving `$v0` for `hi` â€” the exact
 mirror of target, where `hi` holds `$v1` and `val`/`cur >> bits_left` share
 `$v0`. **The lever is the two pseudos' global priorities relative to each
 other, not any local-alloc tie.**
 
 ### Measured probes this session (all `sandbox --disable all`, all 77 insns
 unless noted; baseline P7 = 20)
-- **vC — reuse `hi` itself as the shift-amount carrier**
-  (`hi = 0x20 - bits_left; hi = cur >> hi;`). **22.** The tie DOES happen —
+- **vC â€” reuse `hi` itself as the shift-amount carrier**
+  (`hi = 0x20 - bits_left; hi = cur >> hi;`). **22.** The tie DOES happen â€”
   the disassembly becomes `subu v0,t2,a3 ; srlv v0,a2,v0`, one register for
-  both, exactly target's *shape* — but the merged quantity lands in `$v0`
+  both, exactly target's *shape* â€” but the merged quantity lands in `$v0`
   instead of `$v1`, and we lose the `subu $v1,$t2,$a3` line that P7 already
   matched. Net +2.
-- **vB — same tie but through the otherwise-dead third-loop walker `out`.**
+- **vB â€” same tie but through the otherwise-dead third-loop walker `out`.**
   **22.** Identical outcome to vC; the carrier's identity is irrelevant.
-- **vA / vA2 — a THIRD named local (`amt`) holding only the shift amount,
+- **vA / vA2 â€” a THIRD named local (`amt`) holding only the shift amount,
   declared last / declared first.** **31 / 31.** Identical to session 2's P8
   (anonymous temp, 31). Declaration order changes nothing. This kills
   session 2's frontier probe F1(a) outright: a short-lived dedicated local is
   NOT the shape that fixes D2; it is the shape that costs 11 points.
-- **vE — `val` additionally carries `cur >> bits_left`.** **20**, no change.
-- **vF — vC + vE (tie `hi`, and `val` carries both other temps).** **28.**
-- **vG — refill (`cur = *arg1; arg1++;`) moved below `needed = w - bits_left`.**
+- **vE â€” `val` additionally carries `cur >> bits_left`.** **20**, no change.
+- **vF â€” vC + vE (tie `hi`, and `val` carries both other temps).** **28.**
+- **vG â€” refill (`cur = *arg1; arg1++;`) moved below `needed = w - bits_left`.**
   **24.**
-- **vG2 — refill moved all the way down to just above the store.** **26.**
-- **vH — vC + vG.** **26.**
-- **vI — `needed = w - bits_left;` hoisted to the TOP of the arm** (session 1's
+- **vG2 â€” refill moved all the way down to just above the store.** **26.**
+- **vH â€” vC + vG.** **26.**
+- **vI â€” `needed = w - bits_left;` hoisted to the TOP of the arm** (session 1's
   probe E, re-run at the settled P7 baseline as the ledger asked). **45.**
   Re-killed, and much worse than at the old baseline.
-- **vK — `val` carries `hi << needed` instead.** **26**, build_insns **75**
+- **vK â€” `val` carries `hi << needed` instead.** **26**, build_insns **75**
   (the D1 copies are lost).
-- **vL — third loop gets its own `neg2` holder instead of reusing `val`**
+- **vL â€” third loop gets its own `neg2` holder instead of reusing `val`**
   (the direct attack on `val`'s nrefs=19). **22**, build_insns **75**. Lowering
   `val`'s ref count does move the allocation, but it also destroys D1: with the
   `-2` use removed, `val`'s remaining refs no longer force the
@@ -351,8 +351,8 @@ duplication is therefore demonstrably **byte-neutral**, which is the
 prerequisite the `duplicated-statement-into-arms` family asks for.
 
 ### Artifacts
-`tmp/grind/func_8001979C/s3/` — `apply.py`, `dis.sh`, `cmp.py`, `qty.sh`,
-`base_p7.c`, all variant bodies (`vA`…`vL`), `vC.txt` (disassembly),
+`tmp/grind/func_8001979C/s3/` â€” `apply.py`, `dis.sh`, `cmp.py`, `qty.sh`,
+`base_p7.c`, all variant bodies (`vA`â€¦`vL`), `vC.txt` (disassembly),
 `qty_p7.log`, `qty_vC.log`.
 
 - [s3] [s3] HOUSEKEEPING: src/code6cac.c was back at the session-1 HEAD form (score 24) at the start of this session - the session-2 src edit did not survive into the driver's commit. Re-applying memory/grind/func_8001979C/candidate.c reproduced score 20 / build_insns 77 exactly. Every future session must re-apply candidate.c and re-measure before probing.
@@ -568,3 +568,38 @@ prerequisite the `duplicated-statement-into-arms` family asks for.
 - [s7] POLICY: the session-7 edit adds a fourth uncleared construct - the third loop's walking pointer `out` used as loop 1's OR carrier (the session-4 'carrier' construct in a new place). A policy-clean fallback that uses only ordinary variable reuse (`val` in loop 1 + a fresh `lo` in loop 2) is banked at score 5 as rejected/s7-d5-val-plus-lo-carriers-score5-policy-clean.c.
 
 - [s7] HOUSEKEEPING (fifth consecutive session): src/code6cac.c was again at the session-1 HEAD form (score 24) at session start; re-applying candidate.c reproduced score 8 / 77 / 77 before any probing.
+
+## Session 8 (rederive) - the function reaches sandbox distance 0
+
+- The closing form is in src/code6cac.c and banked at
+  memory/grind/func_8001979C/candidate.c; the self-vet is at
+  memory/grind/func_8001979C/self_vet.md. `sandbox func_8001979C --disable all`
+  prints score 0 with target_insns 77 == build_insns 77, and the objdump of
+  tmp/sandbox/func_8001979C/code6cac.o differs from asm/funcs/func_8001979C.s
+  on exactly four lines, all of which are masks in
+  tmp/grind/func_8001979C/s3/cmp.py (the %hi/%lo pair of D_800F1B18 and two
+  branch-target immediates).
+- THE STRUCTURAL FACT that closed it: an ordinary pre-loop assignment can never
+  be emitted after loop.c's hoisted loop-invariants, because move_movables
+  inserts each of them immediately before loop_start (after all straight-line
+  pre-loop code) and it runs before strength_reduce. Target's
+  `addu $t1,$t3,$zero` sits AFTER those constants, so it cannot be a
+  source-level pointer initialisation; it is a reduced giv's init, emitted by
+  strength_reduce at the same insertion point but later in the pass order.
+  Writing the walker as `dst = base + i * 2;` inside the loop produces it.
+- The giv rewrite also produces target's D3 shape (store displacement kept,
+  both `sh` present, `addiu $t1,$t1,0x2` in the bnez delay slot) WITHOUT the
+  duplicated `dst += 2` in the if-arms, so sessions 2-7's policy construct (i)
+  is gone from the closing form, and construct (iv) (`out` as loop 1's OR
+  carrier) is gone too because two fresh per-loop carriers now score 0.
+- The four remaining levers are individually load-bearing on this chassis
+  (deletion sweep): `hi` reused as its own shift-amount holder 0 -> 16 (a
+  dedicated fresh local for the same value is also 16), the split OR 0 -> 55,
+  `val` 0 -> 4 with build_insns 77 -> 75, `nd` 0 -> 4, `neg2` 0 -> 2, all five
+  removed together 0 -> 22 at build 75.
+- Tooling note for the next session: tools/wsl.sh cannot be invoked from the
+  PowerShell tool on this machine (wsl: command not found in that context);
+  drive the variant sweep with the Windows python interpreter
+  (tmp/grind/func_8001979C/s8/sweep.ps1 does exactly this) and keep WSL calls in
+  the Bash tool. A sweep whose apply step silently fails reports the SAME score
+  for every variant - that is the signature to watch for.

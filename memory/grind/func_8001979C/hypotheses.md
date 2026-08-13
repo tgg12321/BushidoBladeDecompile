@@ -1,4 +1,4 @@
-# hypotheses — func_8001979C
+# hypotheses â€” func_8001979C
 
 ## KILLED (session 1)
 
@@ -9,7 +9,7 @@
   *Mechanism:* different `mult_val` scaling in `loop.c`'s giv records for
   pointer vs integer arithmetic.
   *Probe:* probe B, `sandbox --disable all`.
-  *Result:* score 24, build_insns 75 — output identical to the integer
+  *Result:* score 24, build_insns 75 â€” output identical to the integer
   spelling, instruction for instruction. **KILLED.** Do not re-spell the walker
   hoping for a codegen change; pick the spelling that reads best.
 
@@ -19,7 +19,7 @@
   *Mechanism:* `loop.c` hoists loop-invariant constant loads into the preheader
   in first-use order.
   *Probe:* probe E (on top of probe D), `sandbox --disable all`.
-  *Result:* 33 → 43. The `li` order did not flip and the allocation degraded
+  *Result:* 33 â†’ 43. The `li` order did not flip and the allocation degraded
   further. **KILLED as a standalone lever.** D4 is not a source-statement-order
   effect; it follows the allocation, so it should be re-tested only after D1/D3
   are settled, never chased on its own.
@@ -36,7 +36,7 @@
   *Result:* **CONFIRMED.** The copy appears in exactly target's position, and
   with both loops converted `build_insns == target_insns == 77` for the first
   time. Cost: +1 allocno of loop pressure, which cascades the whole register
-  assignment (score 24 → 33). Form banked as
+  assignment (score 24 â†’ 33). Form banked as
   `variant_named_intermediate_77insn.c`.
 
 - **H-A: D3 (the folded `+0xA` / `+0x8E` displacement) is `loop.c` biv
@@ -45,36 +45,36 @@
   *Mechanism:* `combine_givs` merges the two address givs, the merged giv gets
   reduced, `bl->all_reduced` goes true, `maybe_eliminate_biv` deletes the biv
   and folds the constant into its initial value.
-  *Probe:* A — collapse the two per-arm stores into a single store at the
+  *Probe:* A â€” collapse the two per-arm stores into a single store at the
   if/else join.
   *Result:* **CONFIRMED.** With one address giv the preheader becomes
-  `move $t1,$t3` and the store becomes `sh $v0,10($t1)` — target's exact form.
+  `move $t1,$t3` and the store becomes `sh $v0,10($t1)` â€” target's exact form.
   Caveat that makes this a frontier item rather than a solution: target still
   contains *two* `sh` instructions per loop, so the single-store form cannot be
   the final shape.
 
 ## FRONTIER (ranked)
 
-1. **F1 — two stores, one address giv.** Find the C shape that keeps a store in
+1. **F1 â€” two stores, one address giv.** Find the C shape that keeps a store in
    each if-arm (target has two `sh`) while presenting `loop.c` with a single
    reducible address giv, or that makes the address giv not worth reducing.
    *Mechanism to attack:* `combine_givs` merging + `maybe_eliminate_biv` in
    `tools/gcc-2.7.2/loop.c`.
    *Concrete next probes:* (a) hoist the address into a loop-local pointer
    computed once per iteration (`s16 *q = &dp[5];`) and store through `*q` in
-   both arms — one giv, two stores; (b) read `tools/gcc-2.7.2/loop.c`
+   both arms â€” one giv, two stores; (b) read `tools/gcc-2.7.2/loop.c`
    `strength_reduce` / `combine_givs` / `maybe_eliminate_biv` and identify the
    exact predicate that flipped between probe A and the floor, then target it;
    (c) check whether making the counter `i` and the walker the *same* induction
    variable (drop `i`, test the walker against an end pointer) is compatible
-   with target's `slti $v0,$t0,0x3F` — it is not, so (c) is a diagnostic only.
+   with target's `slti $v0,$t0,0x3F` â€” it is not, so (c) is a diagnostic only.
 
-2. **F2 — recover the floor's register assignment on top of the 77-insn
+2. **F2 â€” recover the floor's register assignment on top of the 77-insn
    shape.** The named-intermediate form is one allocno too heavy; the specific
    casualty is `hi`, which must stay in the caller-save temp it shares with the
    `0x20 - bits_left` sub-expression (target: `srlv $v1,$a2,$v1`).
    *Mechanism:* GCC 2.7.2 `local-alloc`/`global-alloc` allocno priority
-   (`reg_n_refs` / live length) — one extra live pseudo pushes `hi` out of the
+   (`reg_n_refs` / live length) â€” one extra live pseudo pushes `hi` out of the
    `$v0`/`$v1` pair into `$t1` and cascades every `$t` register up one.
    *Concrete next probes:* (a) shorten the intermediate's live range by writing
    `val` immediately before `bits_left = val;` and immediately after the
@@ -83,10 +83,10 @@
    on both forms and diff `;; Register dispositions:` + the conflict lists to
    see precisely which conflict evicts `hi` (per
    `.claude/rules/register-alloc-pure-c.md`); note
-   `memory/project/instrumented-cc1-location.md` — the instrumented cc1 is
+   `memory/project/instrumented-cc1-location.md` â€” the instrumented cc1 is
    `tools/gcc-2.7.2/cc1`, not `build/cc1`.
 
-3. **F3 — D2's `$v0`/`$v1` mirror.** At the floor the whole shift/or chain is a
+3. **F3 â€” D2's `$v0`/`$v1` mirror.** At the floor the whole shift/or chain is a
    clean mirror image of target (`hi` chain in `$v0` instead of `$v1`), and the
    final `-2` fill loop is mirrored too (`li $v0,-2` + `addiu $v1,$t3,0x348`
    vs target's `li $v1,-2` + `addiu $v0,$t3,0x348`). That the *third* loop is
@@ -94,7 +94,7 @@
    says the flip is decided function-wide by allocno ordering rather than by
    anything local to the bit loops.
    *Concrete next probes:* (a) reorder the local *declarations* (a
-   SOTN-sanctioned named-intermediate-declaration-order lever) and re-measure —
+   SOTN-sanctioned named-intermediate-declaration-order lever) and re-measure â€”
    cheapest possible test of the allocno-ordering theory; (b) change which
    operand of the `|` is written first. **(b) must not be attempted before
    reading `.claude/rules/or-tree-shape-shift.md`**, which forbids
@@ -135,7 +135,7 @@
   pointer) plus the ALLOCDBG numbers.
   *Result:* nrefs 26 / livelen 54 / pri 19259 against a counter at 13548.
   Falling below the counter needs livelen > 76 and the longest live range in
-  the entire function is 69. **KILLED** — the walker MUST be split per loop
+  the entire function is 69. **KILLED** â€” the walker MUST be split per loop
   once the increment is duplicated.
 
 - **H2-B: `hi` should be given its own anonymous temp for the
@@ -149,7 +149,7 @@
   $v0/$v1-mirrored, therefore the mirror is decided function-wide.**
   *Probe:* direct disassembly of the floor object.
   *Result:* the third loop is byte-identical to target at the floor.
-  **KILLED as a premise** — D2 is local to the two bit loops, so a
+  **KILLED as a premise** â€” D2 is local to the two bit loops, so a
   function-wide allocno-ordering explanation is not required.
 
 ## CONFIRMED (session 2)
@@ -163,7 +163,7 @@
   (guarded at loop.c:4035) never runs.
   *Probes:* P1 (loop 1), P2 (both loops), disassembly of each.
   *Result:* **CONFIRMED.** D3 closed in both loops. This supersedes session-1
-  frontier item F1 ("two stores, one address giv") — the answer was not one
+  frontier item F1 ("two stores, one address giv") â€” the answer was not one
   giv, it was two biv increments.
 
 - **H2-E: with D1 + D3 closed, the whole remaining register cascade is
@@ -179,7 +179,7 @@
 
 ## FRONTIER (ranked, as of end of session 2)
 
-1. **F1 — D2: make `hi` share the register of the `0x20 - bits_left` temp.**
+1. **F1 â€” D2: make `hi` share the register of the `0x20 - bits_left` temp.**
    Target emits `subu $v1,$t2,$a3` then `srlv $v1,$a2,$v1`: the temp dies at
    the srlv and local-alloc ties `hi` to its quantity, so both are $v1, and
    `val` + `cur >> bits_left` then share $v0. In the current form `val` holds
@@ -187,24 +187,24 @@
    is still live at the srlv and cannot be tied to `hi`; we get the mirror
    (temp $v1, hi $v0, val $v1, `cur >> bits_left` $v1).
    *Next probes:* (a) a THIRD named local holding only `0x20 - bits_left`,
-   never touched again in the arm — distinct from P8, which removed the
+   never touched again in the arm â€” distinct from P8, which removed the
    variable entirely rather than giving it a short dedicated life;
    (b) read `tools/gcc-2.7.2/local-alloc.c` `combine_regs` / `block_alloc`
    and identify the precondition for tying a SET's dest to a dying source,
    then satisfy it in C; (c) the instrumented cc1 also prints
    `QTYDBG blk=.. ord=.. qty=.. reg1=.. birth=.. death=.. refs=.. got=..`
-   under `BB2_QTY_DEBUG=1` — diff that between the current form and each
+   under `BB2_QTY_DEBUG=1` â€” diff that between the current form and each
    variant to see which quantity grabs $v1 first.
 
-2. **F2 — D4: preheader order, coupled to the walker-init placement.**
+2. **F2 â€” D4: preheader order, coupled to the walker-init placement.**
    Target's preheaders are `move $t0,zero ; li $t4,<width> ; li $t2,0x20 ;
-   move $t1,$t3` — walker init LAST, width constant before 0x20. Our early
+   move $t1,$t3` â€” walker init LAST, width constant before 0x20. Our early
    walker init is load-bearing (it buys the livelen that keeps the walker
    below the counter), so D4 cannot simply be re-ordered: moving
    `dst2 = base;` back after `i = 0;` costs 1 livelen and flips the walker
    above the counter again (that is exactly P6, score 31).
    *Next probes:* (a) widen the priority window some other way so the inits
-   can move late — the counter is nrefs 21 / livelen 60 / pri 14000 and each
+   can move late â€” the counter is nrefs 21 / livelen 60 / pri 14000 and each
    walker is nrefs 13, so anything that shortens the counter's live range
    without dropping it a floor_log2 bucket helps; (b) check whether the `li`
    order follows `move_movables` insertion order rather than source order,
@@ -213,7 +213,7 @@
    source-order swap (old H-E), so this must be attacked through the hoist
    mechanism, not by re-ordering statements.
 
-3. **F3 — policy pre-clearance for the closing form (do this BEFORE a
+3. **F3 â€” policy pre-clearance for the closing form (do this BEFORE a
    candidate-ready submission, not after).** `dst += 2` duplicated into both
    if-arms is a REAL statement duplicated into two control-flow arms: it has
    genuine semantic purpose (the pointer must advance on every path) and it is
@@ -256,7 +256,7 @@
 
 ## KILLED (session 3)
 
-- **H3-A: D2 is a `local-alloc.c` `combine_regs` tie — giving the
+- **H3-A: D2 is a `local-alloc.c` `combine_regs` tie â€” giving the
   `0x20 - bits_left` shift amount a short dedicated life (a third named local,
   distinct from session 2's anonymous temp P8) will let local-alloc tie `hi`
   to the dying shift-amount quantity and put both in `$v1`.**
@@ -266,10 +266,10 @@
   vC (reuse `hi` itself as the carrier), vB (reuse the dead `out` walker),
   plus `BB2_QTY_DEBUG` tables for P7 and vC.
   *Result:* **KILLED, three ways.** (1) The third-local spelling scores **31**
-  for both declaration orders — identical to P8's anonymous temp, so the
+  for both declaration orders â€” identical to P8's anonymous temp, so the
   "short dedicated life" idea costs 11 points and is not the shape.
   (2) The tie itself IS reachable (vC/vB produce `subu v0,t2,a3 ; srlv v0,a2,v0`
-  — one register for both, target's shape) but lands in `$v0`, scoring 22.
+  â€” one register for both, target's shape) but lands in `$v0`, scoring 22.
   (3) Decisively: the QTYDBG (local-alloc) table for the two arm blocks is
   **byte-identical between P7 and vC**, so local-alloc is not where the
   `$v0`/`$v1` choice is made at all. It is made in **global.c**: `val`
@@ -277,13 +277,13 @@
   nrefs 8, pri 13333) and takes `$v1`. Session 2's F1 mechanism statement is
   superseded.
 
-- **H3-B: lowering `val`'s global ref count — by giving the third loop its own
-  `-2` holder instead of reusing `val` — will drop `val` below `hi` in
+- **H3-B: lowering `val`'s global ref count â€” by giving the third loop its own
+  `-2` holder instead of reusing `val` â€” will drop `val` below `hi` in
   `allocno_compare` and flip the `$v0`/`$v1` pair into target's orientation.**
   *Mechanism:* global.c `allocno_compare` priority
   `floor_log2(nrefs)*nrefs/livelen`; `val`'s 19 refs come from three distinct
   reuses (shift amount, D1 intermediate, `-2` holder).
-  *Probe:* vL — `s32 neg2;` for the third loop, `val` untouched elsewhere.
+  *Probe:* vL â€” `s32 neg2;` for the third loop, `val` untouched elsewhere.
   *Result:* **KILLED as spelled.** Score 22 and **build_insns drops to 75**:
   removing the `-2` use also removes the ref pressure that materialises D1's
   `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero` pair, so the two instructions
@@ -293,7 +293,7 @@
 
 - **H3-C (re-kill at the settled baseline): hoisting `needed = w - bits_left;`
   to the top of the arm fixes D4's preheader `li` order.**
-  *Probe:* vI — session 1's probe E, re-run on the P7 form as the session-2
+  *Probe:* vI â€” session 1's probe E, re-run on the P7 form as the session-2
   ledger explicitly asked.
   *Result:* **45** (from 20). Re-killed, and far worse than at the old
   baseline. D4 is not reachable by moving the subtraction that first uses the
@@ -306,8 +306,8 @@
   vK (`val` carrying `hi << needed`).
   *Result:* 24 / 26 / 26 / 28 / 26 (vK also loses 2 insns, 75). **All KILLED.**
   Every re-association inside the arm is neutral-to-worse; P7's statement
-  order is a local optimum for the arm. (vE — `val` additionally carrying
-  `cur >> bits_left` — is exactly neutral at 20, so it is an available spare
+  order is a local optimum for the arm. (vE â€” `val` additionally carrying
+  `cur >> bits_left` â€” is exactly neutral at 20, so it is an available spare
   spelling but buys nothing.)
 
 - **H3-E (policy, not measurement): swapping the operands of the
@@ -321,7 +321,7 @@
 ## CONFIRMED (session 3)
 
 - **H3-F: the `$v0`/`$v1` mirror (D2) is decided by global.c allocno priority
-  between exactly two pseudos — `val` and `hi` — and the required flip is
+  between exactly two pseudos â€” `val` and `hi` â€” and the required flip is
   "`hi` must outrank `val`".**
   *Mechanism:* `global.c` `allocno_compare` orders by
   `floor_log2(nrefs)*nrefs/livelen`; the earlier-allocated of the two takes
@@ -339,33 +339,33 @@
   target itself carries a single `addiu $t1,$t1,0x2` in the `bnez` delay slot
   (`asm/funcs/func_8001979C.s` lines 45 and 67) and our build emits exactly one
   too (build_insns 77 == target_insns 77 with the duplication in source).
-  *Result:* **CONFIRMED** — the byte-neutrality prerequisite of the
+  *Result:* **CONFIRMED** â€” the byte-neutrality prerequisite of the
   `duplicated-statement-into-arms` family is satisfied and verified, not
   assumed.
 
 ## FRONTIER (ranked, as of end of session 3)
 
-1. **F1 — D2 (14 of the 20 points): make `hi` outrank `val` in global.c
+1. **F1 â€” D2 (14 of the 20 points): make `hi` outrank `val` in global.c
    `allocno_compare` WITHOUT removing the `val` refs that materialise D1.**
    Numeric target from the measured dumps: `val` = nrefs 19 / livelen 15 /
    pri 50666; `hi` = nrefs 8 / livelen 18 / pri 13333; `hi` must be allocated
    first.
-   *Next probes:* (a) ADD refs to `hi` — e.g. spell the store as
+   *Next probes:* (a) ADD refs to `hi` â€” e.g. spell the store as
    `hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;`
    so `hi` gains references while `val` is untouched; (b) SHORTEN `hi`'s
    livelen (it currently spans the refill); (c) re-home the third loop's `-2`
    into a DIFFERENT already-dead local (`needed` or `hi`) rather than a new
    one, since vL proved a brand-new holder breaks D1 while the goal is only to
    move refs off `val`; (d) run `qty.sh` on every variant and read the ALLOCDBG
-   `pri` column — it is a far better gradient than the sandbox score because it
+   `pri` column â€” it is a far better gradient than the sandbox score because it
    shows how close a form came to flipping the order.
 
-2. **F2 — D4 (6 of the 20 points): preheader order, still coupled to the
+2. **F2 â€” D4 (6 of the 20 points): preheader order, still coupled to the
    walker-init placement.** Target: `addu t0,zero,zero ; addiu t4,zero,<w> ;
    addiu t2,zero,0x20 ; addu t1,t3,zero`. Both source-level levers are now
    dead (session 1 H-E and session 3 vI for the `li` order; session 2 P6 for
    the init placement).
-   *Next probes:* (a) attack the window from the counter's side — the counter
+   *Next probes:* (a) attack the window from the counter's side â€” the counter
    is nrefs 21 / livelen 60 / pri 14000 and each walker is nrefs 13; anything
    that lengthens the counter's live range without dropping it a `floor_log2`
    bucket widens the window and lets the walker init move late; (b) read
@@ -373,7 +373,7 @@
    the two hoisted `li` constants are emitted in movable-list order or its
    reverse, then derive the source order that produces target's order.
 
-3. **F3 — policy pre-clearance for the closing form (one prerequisite now
+3. **F3 â€” policy pre-clearance for the closing form (one prerequisite now
    discharged).** `dst += 2` duplicated into both arms is **verified
    byte-neutral** (H3-G). What remains before any `candidate-ready`: read
    `.claude/rules/duplicated-statement-into-arms.md`, confirm the family's
@@ -960,4 +960,74 @@
 - mechanism: global.c allocno_compare - moving the init late shortens the walker's live range and lifts it above the loop counter (counter nrefs 21 / livelen 60 / pri 14000; walkers nrefs 13 need livelen >= 28).
 - probe: Late init in both loops, in loop 1 only and in loop 2 only, on both the out/lo and lo/out chassis; sandbox --disable all.
 - result: 19 in every spelling (from 4). KILLED at a fourth distinct allocation - sessions 2, 5, 6 and 7 have now measured it dead at floors 20, 12, 8 and 4.
+- verdict: KILLED
+
+## CONFIRMED (session 8)
+
+- **H8-A: D4 is unreachable from any source position because an ordinary
+  pre-loop assignment is emitted UPSTREAM of loop.c's hoisted movables by
+  construction; target's `addu $t1,$t3,$zero` is the initialisation of a
+  REDUCED GIV, and the C that produces it computes the walking pointer from
+  the loop counter inside the loop (`dst = base + i * 2;`) instead of
+  incrementing a source-level biv.**
+  *Mechanism:* `scan_loop` runs `move_movables` before `strength_reduce`;
+  each hoisted invariant is emitted immediately before `loop_start`, i.e.
+  after ALL straight-line pre-loop code, so no source statement can follow
+  them. `strength_reduce` then emits a reduced giv's initialisation at the
+  same insertion point, AFTER the movables - which is exactly target's
+  preheader order (`addu $t0,$zero,$zero ; addiu $t4,zero,<w> ;
+  addiu $t2,zero,0x20 ; addu $t1,$t3,$zero`). Because the reduced giv is the
+  VARIABLE and not the memory address, the `+0xA` / `+0x8E` stays a store
+  displacement and both `sh` instructions survive, so the giv rewrite also
+  subsumes session 2's two-biv-increment trick for D3.
+  *Probe:* the whole closing form, `sandbox --disable all` plus a
+  disassembly diff against `asm/funcs/func_8001979C.s`.
+  *Result:* **CONFIRMED. Floor 4 -> 0.** build_insns 77 == target_insns 77 and
+  the disassembly differs only on the four lines the comparison script masks
+  (the %hi/%lo pair of D_800F1B18 and two branch-target immediates). Four
+  sessions of "move the init later in source" (31 / 27 / 23 / 19) were
+  attacking a position that source order cannot reach.
+
+- **H8-B: on the giv chassis the OR carrier no longer has to be a foreign
+  existing allocno; two DISTINCT fresh named intermediates (one per loop)
+  reach 0, while one shared fresh local does not.**
+  *Mechanism:* a carrier live in both loops becomes a global allocno and
+  re-enters the $v0/$v1 contest (session 7's H7-B); two locals each confined
+  to one loop never do.
+  *Probe:* the 8-cell carrier matrix on the giv chassis.
+  *Result:* **CONFIRMED.** `lo`/`lo2` (two fresh locals) 0, `out`/`lo` 0,
+  `lo`/`out` 0, `nd`/`lo` 0, `dst2`/`lo` 0, one shared fresh local in both
+  loops 16, `val`/`lo` 1, `neg2`/`lo` 20, `val`/`out` 24, `out`/`val` 24.
+  The closing form takes the two-fresh-locals cell, which removes session 7's
+  policy construct (iv) (`out` as loop 1's OR carrier) entirely.
+
+## KILLED (session 8)
+
+- **H8-C: with D4 closed by the giv rewrite, the four surviving allocation
+  levers (nd / val / hi-shift-amount reuse / neg2) and the split OR become
+  unnecessary.**
+  *Probe:* delete each construct from the closing form and re-measure.
+  *Result:* **KILLED, all five.** natural C (none of them) 22 at build 75;
+  one-statement OR 55; fresh `amt` local for the shift amount 16 (identical
+  to deleting the construct, so it is the reuse of `hi` that carries); no
+  `nd` 4; `needed` hoisted to the top of the arm instead of `nd` 4; no `val`
+  4 at build 75 (D1's copy pair lost); literal -2 instead of `neg2` 2. Every
+  construct in the closing form is individually load-bearing on this chassis.
+
+## [s8] D4 (target emits the walker init `addu $t1,$t3,$zero` LAST in the preheader, after the hoisted constants; we emit it first) is unreachable from any source statement position, because target's init is not a source-level assignment at all - it is the initialisation of a strength-reduced giv, produced by writing the walking pointer as `dst = base + i * 2;` inside the loop instead of as a biv incremented in the arms.
+- mechanism: tools/gcc-2.7.2/loop.c scan_loop calls move_movables before strength_reduce; every hoisted loop-invariant is emitted immediately before loop_start, hence after ALL straight-line pre-loop code, so an ordinary pre-loop assignment can never follow the hoisted constants at any source position. strength_reduce emits a reduced giv's initialisation at the same insertion point but later, so it lands after the movables - target's order. The reduced giv is the VARIABLE (add_val = base, mult_val = 2), not the memory address, so the +0xA / +0x8E stays a store displacement, both sh instructions are kept, and the increment addiu $t1,$t1,0x2 lands in the bnez delay slot. This also subsumes session 2's two-biv-increment lever for D3, so the duplicated `dst += 2` disappears from the source.
+- probe: Rewrote both bit loops to compute the walker from the counter inside the loop (`dst = base + i * 2;` / `dst2 = base + i * 2;`), removing the pre-loop inits and both per-arm increments, on the session-7 score-4 chassis; sandbox --disable all plus mipsel objdump diffed against asm/funcs/func_8001979C.s with tmp/grind/func_8001979C/s3/cmp.py.
+- result: Score 4 -> 0 immediately, build_insns 77 == target_insns 77, and the disassembly comparison reports only the four masked lines (%hi/%lo of D_800F1B18, two branch-target immediates). Sessions 2, 5, 6 and 7 measured the source-order late-init at 31 / 27 / 23 / 19 across four allocations; the position they were chasing is not reachable by statement order in principle.
+- verdict: CONFIRMED
+
+## [s8] On the giv chassis the split-OR carrier must still avoid becoming a global allocno, but it no longer has to be an EXISTING foreign variable: two distinct fresh locals, one per loop, are sufficient.
+- mechanism: global.c - a carrier live in both loops becomes a global allocno competing for the $v0/$v1 pair (session 7's H7-B); a carrier confined to one loop does not.
+- probe: 8-cell carrier matrix on the giv chassis, sandbox --disable all each.
+- result: lo/lo2 0, out/lo 0, lo/out 0, nd/lo 0, dst2/lo 0, val/lo 1, one shared fresh local 16, neg2/lo 20, val/out 24, out/val 24. The closing form uses lo/lo2, which removes session 7's policy construct (iv).
+- verdict: CONFIRMED
+
+## [s8] With D4 closed structurally, the five carried allocation constructs (nd, val, hi-as-shift-amount, the split OR, neg2) are no longer needed.
+- mechanism: n/a - a deletion sweep on the closing form.
+- probe: Each construct deleted individually from the score-0 form and re-measured with sandbox --disable all.
+- result: none of them (natural C) 22 build 75; one-statement OR 55; fresh `amt` local instead of reusing hi 16; no nd 4; needed hoisted instead of nd 4; no val 4 build 75; literal -2 instead of neg2 2. All five remain individually load-bearing.
 - verdict: KILLED

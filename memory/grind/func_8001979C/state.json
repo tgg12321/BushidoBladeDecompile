@@ -64,9 +64,13 @@
    "next_probe": "(i) the duplicated `dst += 2` in both if-arms (byte-neutrality PROVEN in session 3) against .claude/rules/duplicated-statement-into-arms.md; (ii) the `hi` / `val` variable reuse against the frozen 'variable reuse for codegen control' family; (iii) the final zero routed through `val`; (iv) NEW - `out` used as loop 1's OR carrier, or drop it for the banked policy-clean score-5 form."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Six of the seven codegen constructs are legitimately family-sanctioned with named, dump-verified GCC-pass mechanisms and honest FAKE annotations, but the `nd` named-intermediate (loop-1/loop-2 `nd = W - bits_left; needed = nd;`) is filed under the 'named-intermediate declaration order' (LUID-bias) family despite never having that mechanism \u2014 or any specific mechanism \u2014 independently established; its self-vet justification is 'measured allocation pressure', which is not the cited precedent's mechanism and was never confirmed with an allocno/cse/greg dump the way eve"
+ ],
+ "banned_constructs": [
+  "`nd = 0xC - bits_left;` / `nd = 2 - bits_left;` (a named intermediate for `needed`, filed under construct (2) in the self-vet, classified under the SOTN-accepted 'Named-intermediate declaration order' family with precedent no-new-park-categories.md:189)"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-13T12:54:37.150635+00:00"

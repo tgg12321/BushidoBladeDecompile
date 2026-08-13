@@ -5373,3 +5373,7 @@ new tooling emerges. The best honest pure-C form (floor 19, instruction-exact,
 zero inline asm — materially better than HEAD's inherited floor-23 inline-asm
 body) is preserved at `memory/grind/func_80078654/candidate.c` for that
 re-attempt.
+
+## 2026-08-13 10:36 — func_8001979C — layer-1 review — **FAIL**
+
+Six of the seven codegen constructs are legitimately family-sanctioned with named, dump-verified GCC-pass mechanisms and honest FAKE annotations, but the `nd` named-intermediate (loop-1/loop-2 `nd = W - bits_left; needed = nd;`) is filed under the 'named-intermediate declaration order' (LUID-bias) family despite never having that mechanism — or any specific mechanism — independently established; its self-vet justification is 'measured allocation pressure', which is not the cited precedent's mechanism and was never confirmed with an allocno/cse/greg dump the way every other construct in this candidate was.
