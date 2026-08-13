@@ -1,31 +1,37 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 19,
    "modality": "recon",
    "headline": "Floor 23->19 and insn count now exact (116==116) by deleting the inherited INLINE_MOVE_ALIASING cheat in favour of a short-typed clamp; the entire residual is now ONE measured allocno-priority inversi"
+  },
+  {
+   "session": 2,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "Floor held at 19; the entire global.c decision procedure is now read, measured and closed \u2014 the residual $s0/$s1 inversion needs the walk pointer at >=14 RA-time refs (has 5, ceiling 8 by partition me"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a dataflow-PARTITION problem, not a statement-order problem: the original C held one of the two pointers in a differently-scoped variable, so the walk pointer inherited enough references (or the parameter shed enough) to sort first in allocno_compare.",
-   "mechanism": "global.c allocno_compare priority = floor_log2(n_refs)*n_refs/live_length*10000*size, with find_reg assigning callee-saves in ascending hard-reg order. Changing which VALUES share a pseudo changes n_refs and live_length together, which is the only axis left after ordering and loop weighting were killed.",
-   "next_probe": "Build variants that change the pseudo partition rather than the statement order \u2014 chiefly: does the original hold the D_800A3610 base and the table-walk pointer in ONE variable (so the walk pointer inherits the base's early references and long live range, e.g. `var_s0 = D_800A3610; s.a = var_s0[0xF]; ... var_s0 += 5;`)? Score each variant with BB2_ALLOC_DEBUG=1 on tools/gcc-2.7.2/cc1 and read the pri= numbers directly; that is a much finer gradient than the sandbox score, which only reports the binary outcome of the sort. tmp/grind/func_80078654/s1/greg.sh regenerates the dumps with the exact build flags."
+   "hypothesis": "The only remaining route inside the measured model is a byte-neutral reference lift: the walk pointer must carry ~9 extra RA-time references (5 -> >=14) that do not materialize as bytes.",
+   "mechanism": "jump2's find_cross_jump runs AFTER register allocation, so a REAL statement duplicated into two control-flow arms is counted twice by flow.c's reg_n_refs and then re-merged to identical bytes \u2014 the sanctioned [[duplicated-statement-into-arms]] family, whose documented use is exactly a reg_n_refs priority lift for global-RA walls. Every other post-RA pass was checked and creates no new references here.",
+   "next_probe": "Duplicate the walk-pointer statements (s.a = var_s0[0]; var_s0++; the var_s0[1] != -1 test) across the function's one junction (the block-A/skip join at .L80078774) in 2-3 forms, and read pseudo 73's nrefs from BB2_ALLOC_DEBUG after each (one cc1 run per form via tmp/grind/func_80078654/s2/flowprobe.sh, no build needed). Judge fast: if no form gets past ~10 refs, declare the axis dead and move the ladder on rather than grinding it."
   },
   {
-   "hypothesis": "A COMPLETED-C sibling in the same text1b_b.c draw-primitive cluster already exhibits the target's allocation shape (parameter pointer in the higher callee-save, walk pointer in the lower), and its C is direct evidence of the dataflow the original author used.",
-   "mechanism": "Matched siblings compiled by the same frozen toolchain from adjacent-style C are the cheapest available ground truth for what pseudo partition GCC 2.7.2 turns into which allocation \u2014 the same evidence route mandated by .claude/rules/register-alloc-pure-c.md.",
-   "next_probe": "Census the neighbours around src/text1b_b.c lines 900-1100 that build the same S78654 descriptor and call the same func_8007352C / func_8006E480 / SetDrawMode / AddPrim quartet (func_80078824, func_800788B0 and siblings), find one that is COMPLETED-C and holds both a parameter pointer and a walk pointer in callee-saves, and diff its .greg dispositions and BB2_ALLOC_DEBUG pri numbers against ours. One cc1 run per sibling."
+   "hypothesis": "A permuter campaign seeded from the clean floor-19 base (exact insn count, zero inline asm) reaches the flip where hand-derivation cannot, because the required construct is a reference-count artefact that is hard to enumerate by hand.",
+   "mechanism": "Random and directed structural mutation explores pseudo partitions and duplication shapes outside the hand-derivable set; the priority model measured this session gives a cheap post-filter (score any find's plausibility from nrefs/livelen before trusting the sandbox).",
+   "next_probe": "Run tools/permuter_campaign.py against a SINGLE-FUNCTION target.o built from asm/funcs/func_80078654.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 and the score is the real weighted diff. Honour the fresh-seed stopping rule, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest --stop before ending the turn, and vet every closing form against the cheat checklist."
   },
   {
-   "hypothesis": "A permuter campaign seeded from the new, materially better base (floor 19, exact instruction count, zero inline asm) reaches the flip where hand-derivation has not.",
-   "mechanism": "Random and directed structural mutation explores pseudo partitions that are hard to enumerate by hand; the prior sessions had no such clean seed to start from.",
-   "next_probe": "Run tools/permuter_campaign.py against a SINGLE-FUNCTION target.o built from asm/funcs/func_80078654.s + tools/decomp-permuter/prelude.inc (drop the `.set gp=64` line for r3000) so the function sits at offset 0 and the score is the real weighted diff rather than ~340k of branch-address noise. Honour the fresh-seed stopping rule, wait for it IN-TURN with `permuter_campaign.py wait --dir <ws>`, and vet every closing form against the cheat checklist before proposing it."
+   "hypothesis": "If the duplication axis also measures dead, the function's honest state is that no C with these RTL reference counts can produce the target allocation \u2014 which is a forensics question about which RA-time reference counts the ORIGINAL C had, not a search question.",
+   "mechanism": "The bytes pin 12 buffer accesses through the $s1 holder and 5 through the $s0 walk pointer; allocno_compare then forces the $s1 holder to sort first. Either some references were introduced after global_alloc (only cross-jump/reorg can do that, both checked) or the original's flow-time counts differed for a reason not yet identified.",
+   "next_probe": "Forensics modality: instrument/dump the full RTL insn stream at flow, sched and global_alloc for the best form (cc1 -da plus BB2_SCHED_DEBUG/BB2_XJUMP_DEBUG) and enumerate, insn by insn, every target byte whose reference could have been created after RA. Deliverable is a per-insn provenance table for the 12 buffer accesses, which either finds the slack or proves the count is pinned end to end."
   }
  ],
  "judge_constraints": [],

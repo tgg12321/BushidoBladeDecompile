@@ -14,6 +14,12 @@
  * inversion. Target puts arg0 in $s1 and var_s0 in $s0; our build puts arg0
  * in $s0 and var_s0 in $s1. Nothing else differs — see evidence.md.
  *
+ * SESSION 2 (structural) left this form UNCHANGED and still best at 19: every
+ * structural partition variant measured worse or equal (the base/walk-pointer
+ * merge scores 22 — rejected/base-merge-walk-pointer-pri-2448.c), and the whole
+ * global.c decision procedure is now read and closed (evidence.md §SESSION 2).
+ * It IS applied to src/text1b_b.c as of the end of session 2.
+ *
  * Apply this body over src/text1b_b.c's func_80078654 (replacing the whole
  * function AND deleting the now-unused `s32 v;` local). NOTE: with these
  * edits the six existing regfix.txt rules for func_80078654 no longer line

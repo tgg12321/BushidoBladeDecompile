@@ -113,4 +113,113 @@ shape for one of these two values. Finding that shape is the job.
 
 - [s1] The .greg conflict sets for pseudos 72 and 73 are identical (both conflict with 72 73 74 81 85 91 2 3 4 5 6 7 29 65 66), so there is no conflict-driven route to the flip, and neither pseudo carries a usable copy preference — arg0's only preference is hard reg $a0, excluded because the pseudo crosses calls.
 
+## SESSION 2 (structural) — the global.c model is now CLOSED, and quantified
+
+**Floor unchanged at 19.** candidate.c was re-applied to src/text1b_b.c at the
+start of the session (sandbox `--disable all` = 19, build_insns 116 == target
+116) and src carries that form at session end.
+
+### The whole of find_reg is now read, not assumed (tools/gcc-2.7.2/global.c)
+The s1 model ("higher allocno priority takes $s0, callee-saves handed out in
+ascending order") is correct, but it was only half the machine. The complete
+decision procedure for our two pointers is:
+
+1. `find_reg` runs TWO passes (global.c:993-1084). Pass 0's candidate set is
+   `regs_used_so_far` MINUS `regs_someone_prefers[allocno]` minus conflicts —
+   i.e. *only registers that are already in use*, so that no new callee-save
+   save/restore is created. Pass 1 (reached only if pass 0 finds nothing) is a
+   pure first-fit walk of `reg_alloc_order`, which on MIPS lists $s0..$s7
+   ascending.
+2. `regs_used_so_far` is seeded (global.c:344-372) from `regs_ever_live` +
+   `call_used_regs` + every hard reg already handed out by LOCAL alloc.
+   **MEASURED for this function** (`ALLOCDBG seed_used=`):
+   `0..15,24..29,31,32..51,64..67` — i.e. every call-clobbered reg and no
+   callee-save at all. So pass 0 can never award $s0/$s1 here, and both
+   pointers are decided by pass 1's ascending first-fit. There is no
+   cost-based choice between two free callee-saves anywhere in find_reg.
+3. The copy-preference override (global.c:1097-1166) could move an allocno off
+   the first-fit answer, but `prune_preferences` (global.c:899-909) strips
+   every call-clobbered reg from the preferences of a call-crossing allocno, so
+   arg0's only preference ($a0, from `addu $s1,$a0,$zero`) is removed, and pure
+   C has no way to make a *callee-save* a copy preference (that would require a
+   register-asm pin — a forbidden construct).
+4. The local-alloc eviction path (global.c:1198-1253) only fires when
+   `best_reg < 0`, which never happens here.
+
+**Consequence — the "share $s0 with an earlier disjoint allocno" route is dead
+too.** In principle the target's allocation could be produced without a
+priority flip: a higher-priority allocno X taking $s0 while conflicting with
+arg0 (pushing arg0 to $s1) and NOT conflicting with the walk pointer (letting
+the walk pointer re-use $s0). That is impossible for this function: the walk
+pointer is live across the ENTIRE body — its def must precede block A, because
+`D_800A3610` is a global pointer and block A contains four calls, so any
+`var_s0 = D_800A3610 + 5` placed after block A forces a SECOND
+`lw %gp_rel(D_800A3610)` (the target has exactly one, at insn 5). A pointer
+live across the whole body conflicts with every other allocno, so no X can be
+disjoint from it.
+
+### live_length provenance, measured (this closes the last modelling gap)
+`zero` showing livelen=170 in a ~116-insn function looked like an accumulation
+quirk that might make live lengths inflatable by CFG shape. It is not:
+
+* flow.c increments `reg_live_length` exactly once per insn the reg is live
+  (flow.c:1685 + :2087). **MEASURED with BB2_FLOW_DEBUG**: pseudo 72 → 104
+  increments over 104 DISTINCT insns; pseudo 74 → 103 over 103 distinct insns;
+  **zero repeats for either**, so life analysis' fixpoint iteration does NOT
+  double-count and CFG shape cannot inflate a live length.
+* `sched.c:5106` then OVERWRITES `reg_live_length` with its own
+  post-scheduling recount (that is why the allocno values 98 / 91 / 85 differ
+  from the flow counts).
+* `local-alloc.c:1058-1064` then **DOUBLES** `reg_live_length` for any pseudo
+  carrying a `REG_EQUIV` note. That — not a quirk — is the whole explanation of
+  `zero`'s 170 (= 2 x 85) and of why it sorts last and lands in $s2.
+
+So a REG_EQUIV note is a genuine 2x priority DEMOTION lever. It is
+**unreachable for arg0**: local-alloc only auto-attaches the note to a pseudo
+whose single set has a MEM source AND which is local to one basic block
+(`reg_basic_block[regno] >= 0`, local-alloc.c:1051-1055), while arg0 is a
+register-passed parameter (`addu $s1,$a0,$zero`, a REG source) spanning every
+block. GCC only gives a register-passed scalar parm a stack-home REG_EQUIV when
+it is addressable / homed, which would change the emitted bytes.
+
+### The residual, now stated as a hard numeric bound
+With arg0 pinned at 13 refs / live length 98 (pri 3979) by the target's own
+emitted accesses, `allocno_compare` requires the walk pointer to reach
+**>= 14 references** at length ~98 to take $s0 (13 refs gives 3900 < 3979).
+It has 5. Equivalently arg0 must drop to <= 5 refs. Splitting the 12 buffer
+accesses across two disjoint pseudos does not help: a block-A-only holder
+(7 refs / ~30 length) scores ~4666 and takes $s0 itself.
+
+### Sibling ground truth (F2, closed)
+Census over all 1437 `asm/funcs/*.s` (tmp/grind/func_80078654/s2/census.py):
+190 target functions copy the incoming `$a0` into `$s1` or higher. The nearest
+COMPLETED-C sibling is **func_80078824** (src/text1b_b.c:1059, same file, same
+draw cluster): it holds its parameter in $s1 and the derived pointer
+`s0 = arg0 + 0x58` in $s0. Its C shows WHY — the parameter is referenced only
+3 times (`arg0 + 0x58`, `D_800A360C = arg0`) while the derived pointer is
+referenced 5 times over a shorter range, so the derived value wins the priority
+sort. The sibling therefore CONFIRMS the s1 mechanism and shows the target's
+shape requires a reference-POOR parameter; it does not supply a new dataflow.
+F2 is closed: no sibling exhibits a reference-RICH parameter in $s1.
+
 - [s1] PROCESS NOTE: src/text1b_b.c was reverted to HEAD before the session ended, because with the improved C the six existing regfix rules no longer align to their maspsx indices and a full build would not be SHA1-clean. The improved form is carried in memory/grind/func_80078654/candidate.c and MUST be re-applied at the start of the next session before any measurement — the sandbox will otherwise report the stale floor of 23.
+
+- [s2] candidate.c re-applied to src/text1b_b.c reproduces the s1 floor exactly: sandbox --disable all score 19, build_insns 116 == target_insns 116. src carries that form at session end (git diff: src/text1b_b.c only).
+
+- [s2] MEASURED pass-0 seed for func_80078654 (ALLOCDBG seed_used): 0..15,24..29,31,32..51,64..67 — no callee-save register is in regs_used_so_far, so find_reg's pass 0 cannot award $s0 or $s1 and both pointers fall through to pass 1's ascending first-fit over reg_alloc_order.
+
+- [s2] find_reg contains no cost-based comparison between two FREE callee-saves (global.c:1052-1084 is a plain first-fit break); the only override is the copy/full-preference switch at global.c:1097-1166, and prune_preferences (global.c:899-909) removes every call-clobbered reg from a call-crossing allocno's preference sets, which deletes arg0's sole preference ($a0 from addu $s1,$a0,$zero).
+
+- [s2] The walk pointer's def cannot be moved after block A: D_800A3610 is a global pointer and block A contains four calls, so a later `var_s0 = D_800A3610 + 5` forces a second lw %gp_rel(D_800A3610); the target has exactly one such load (insn 5). Therefore the walk pointer is live across the whole body and conflicts with every other allocno — no higher-priority allocno can take $s0 and leave it shareable.
+
+- [s2] reg_live_length is NOT inflated by flow.c's fixpoint iteration: BB2_FLOW_DEBUG shows 104 increments over 104 distinct insns for pseudo 72 and 103 over 103 for pseudo 74, with zero repeats. sched.c:5106 then overwrites reg_live_length with its post-scheduling recount, and local-alloc.c:1058-1064 doubles it for any pseudo with a REG_EQUIV note — that is the entire explanation of `zero`'s livelen 170 (= 2 x 85) and of its last-place sort into $s2.
+
+- [s2] The REG_EQUIV doubling is a real 2x priority-demotion lever for other functions but is unreachable for this parameter: local-alloc only auto-attaches the note when the pseudo's single set has a MEM source AND the pseudo lives in one basic block (local-alloc.c:1051-1055); arg0 is register-passed (REG source) and spans every block.
+
+- [s2] MEASURED V1 (base/walk-pointer merge): pseudo 73 nrefs 8, livelen 98, pri 2448 vs arg0 pri 3979; sandbox 22 (vs 19 for the best form), insn count still 116. The analytic model predicted 2449, validating it to 0.04% — future variants can be scored from the model before spending a build.
+
+- [s2] Numeric bound for the flip: with arg0 pinned at 13 refs / length 98 (pri 3979), the walk pointer needs >= 14 references at length ~98 (13 refs gives 3900 < 3979). Splitting the 12 buffer accesses across two disjoint pseudos does not help — a block-A-only holder (7 refs / ~30 length) scores ~4666 and takes $s0 itself.
+
+- [s2] All 12 buffer references exist at RA time in the target: no 0xC($s1) or 0x14($s1) insn sits in a branch/jal delay slot in asm/funcs/func_80078654.s, so none of them was created after register allocation by reorg's delay-slot duplication.
+
+- [s2] Sibling census (190 hits, tmp/grind/func_80078654/s2/census.py): the COMPLETED-C sibling func_80078824 in the same file has its parameter in $s1 with only 3 references and its derived pointer in $s0 — confirming the mechanism and that the target shape demands a reference-poor parameter.

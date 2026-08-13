@@ -932,3 +932,4 @@
 - 2026-08-13 04:51 func_8006288C s1 [recon] floor=2: Floor 23 -> 2: the whole gap was the global.c allocno-priority sort; spelling the slot scan as a real do/while with an early exit reproduces all 9 target registers. Residual is one prologue slot (li $t3,1).
 - 2026-08-13 05:10 func_8006288C COMPLETED-C after 2 sessions.
 - 2026-08-13 05:22 func_80078654 s1 [recon] floor=19: Floor 23->19 and insn count now exact (116==116) by deleting the inherited INLINE_MOVE_ALIASING cheat in favour of a short-typed clamp; the entire residual is now ONE measured allocno-priority inversion ($s0/$s1), pri 3979 vs 1098.
+- 2026-08-13 05:43 func_80078654 s2 [structural] floor=19: Floor held at 19; the entire global.c decision procedure is now read, measured and closed — the residual $s0/$s1 inversion needs the walk pointer at >=14 RA-time refs (has 5, ceiling 8 by partition merging), and three separate non-priority routes are killed with measurements.
