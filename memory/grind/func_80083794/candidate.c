@@ -1,8 +1,11 @@
-/* func_80083794 — best honest pure-C form, session 1 (recon).
+/* func_80083794 — best honest pure-C form. Session 1 found it; session 2
+ * re-measured it and swept 18 structural variants around it without moving it.
  * Honest sandbox floor: 18 (target_insns 28, build_insns 28).
- * Structure is instruction-for-instruction isomorphic to target; the residual is
- * (a) frame layout — see hypotheses.md H1, and (b) register assignment
- * (temp v0-vs-t0, and the s0/s1 roles being swapped relative to target).
+ *
+ * THIS FILE IS THE AUTHORITATIVE CARRIER OF THE FLOOR. At the start of session 2
+ * `src/ings2.c` still held the old register-pin + hardcoded-`$17` `__asm__` body
+ * (only s1's LEDGER was committed, in b26eadc6, not its src edit). Re-apply this
+ * body to src/ings2.c before measuring anything.
  *
  * Identity: this is GCC's `__main` — the only caller is main() (src/ings.c:589,
  * first statement), and the body is libgcc2.c's `__main` with
@@ -13,10 +16,35 @@
  * D_00000000 is a link-time absolute symbol whose VALUE (not contents) is the
  * ctor count — hence the `la` (lui/addiu) rather than a load.
  *
- * NOTE: the 9 regfix rules still present for this function (regfix.txt:105-113)
- * were calibrated against the previous register-pin/inline-asm form that this
- * body replaces, so the integrated build is expected to disagree until those
- * rules are retired. The honest sandbox floor is the gradient that matters.
+ * The residual is instruction-for-instruction aligned with target (same 28 insns
+ * in the same order) and splits into exactly three classes, two of which are now
+ * PROVEN unreachable from any C source under the frozen pipeline:
+ *
+ *   A frame geometry, ~8 insns — we emit the mandatory 16-byte o32
+ *     outgoing-argument block (calls.c:1246-1252 + mips.h:1822/1830 +
+ *     mips.c:4464/4474: >= 16 bytes for ANY function that expands a call, with
+ *     the MAYBE_REG_PARM_STACK_SPACE zeroing escape dead because that macro is
+ *     undefined for MIPS). Target's whole frame is 16 bytes and already holds 12
+ *     bytes of saves, so it does not contain the block. Corpus: 1/1437 calling
+ *     functions lack it — this one.  [PROVEN UNREACHABLE]
+ *
+ *   B register roles, ~5 insns — target has $s0=p, $s1=count, temp $t0; we get
+ *     $s0=count, $s1=p, temp $v0. cc1 -da: pseudo 72 (count) has 8 loop-weighted
+ *     refs, pseudo 73 (p) has 7, and global.c:635 allocno_compare ranks
+ *     floor_log2(n)*n/live_length, i.e. 24 vs 14. 18 semantics-preserving
+ *     structural forms all leave it unchanged.  [STRUCTURAL AXIS DEAD]
+ *
+ *   C `ori $t0,$zero,1` vs our `li`, 1 insn — GNU as expands `li` to `ori` only
+ *     for immediates needing zero extension (0x8000..0xFFFF) and to `addiu`
+ *     otherwise; 1 takes the addiu path. All 3 small-immediate `ori $rX,$zero,imm`
+ *     instances in the executable are hand-written asm.  [PROVEN UNREACHABLE]
+ *
+ * Consequence: honest distance 0 is not reachable in pure C for this function.
+ * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
+ *
+ * NOTE: the 9 regfix rules for this function (regfix.txt:105-113) were calibrated
+ * against the old register-pin form, so the integrated build is expected to
+ * disagree until they are retired. The honest sandbox floor is the gradient.
  */
 extern s32 D_800A2668;
 extern void (*D_8008D070)(void);
