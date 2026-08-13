@@ -34,10 +34,28 @@
  * function sits at offset 0 and the score is the real weighted diff; validated
  * base score 108 whose objdump diff prints exactly the twelve known $s0/$s1
  * lines) and ran two campaigns totalling 89,084 iterations with ZERO
- * score-improving finds � chassis A random from this base (best 108 == base,
+ * score-improving finds � chassis A random from this base (best 108 == base,
  * both saved finds semantics-changing) and chassis B seeded from the s2 H4
  * base/walk-pointer merge (base 331, best 191, strictly worse basin). The
  * permuter axis is closed; see evidence.md SESSION 4.
+ *
+ * SESSION 5 (permuter) ALSO left this form unchanged and still best at 19. It ran
+ * the ledger's directed-permutation probe: a PERM_* cross-product over six chosen
+ * axes (three walk-initialiser partitions, three block-A shapes incl. the
+ * `s32 *ot = &arg0[5]` arg0-lowering sub-pointer, four loop-head read shapes incl.
+ * the double-read ref-lift, a PERM_LINESWAP over the increment pair, four loop-test
+ * spellings, two PERM_RANDOMIZE regions) in tmp/grind/func_80078654/s5/ws —
+ * 39,950 iterations, base 108, ZERO score-improving finds, both equal-score finds
+ * semantics-CHANGING in exactly s4's way (they clobber var_s0 inside the loop).
+ * It also killed two never-before-built chassis on their allocno tables alone with
+ * the new one-call instrument tmp/grind/func_80078654/s5/eval.sh: the INDEX-walk
+ * form (strength reduction => 120 insns, walk pri 1098 -> 851) and the SUB-POINTER
+ * arg0-lowering form (arg0 13 -> 6 refs / pri 3979 -> 1212 but the walk pointer is
+ * STILL below it at 1086, and the extracted pointer takes $s0 itself and forces a
+ * fourth callee-save). Sharpest bound to date: arg0 must reach <= 5 references
+ * before the walk pointer wins the sort. And note m2c is NOT installed in this tree
+ * (ModuleNotFoundError) — the rederive probe needs it installed first.
+ * See evidence.md SESSION 5.
  *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited

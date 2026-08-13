@@ -415,3 +415,100 @@ RE-DERIVATION question, exactly as s3 concluded.
 - [s4] Interpretation banked in the ledger: the permuter's mutation set (statement reordering, temp introduction/removal, expression and cast respelling, &x[i] vs *(x+i)) is precisely the class of edits that preserves the emitted memory accesses, and the s1-s3 priority model proves every such edit leaves reg_n_refs(arg0) = 13 and reg_n_refs(walk) <= 8, so allocno_compare cannot flip. The 89,084 iterations confirm the prediction empirically rather than merely failing to find something.
 
 - [s4] Both campaigns were harvested with --stop inside the session (permuter_campaign.py status reports alive=false / registered_active=false for both), and the in-turn wait loop exited; no campaign outlives this session.
+
+## SESSION 5 (permuter — directed PERM_* sweep + three-chassis priority census)
+
+- [s5] PROCESS NOTE, fourth consecutive session: HEAD's src/text1b_b.c again carried the
+  inherited inline-asm body (`s32 v;` + `__asm__ volatile("move %0, %1" ...)`), because every
+  ledger commit so far has been ledger-only. memory/grind/func_80078654/candidate.c was
+  re-applied before any measurement and the baseline re-confirmed:
+  `sandbox func_80078654 --disable all` = 19, build_insns 116 == target_insns 116,
+  rules_dropped 6, cheat_asm_stripped 89.
+
+- [s5] m2c IS NOT INSTALLED in this tree. `python3 -m m2c.main` fails with
+  ModuleNotFoundError (no m2c package in .venv, no ~/m2c checkout; only the historical
+  outputs in tmp/blitz/ and include/m2c_context.h remain). The ledger's "rederive with m2c"
+  next-probe therefore cannot be executed as written — a future rederive session must either
+  install decompals/m2c or hand-derive from asm/funcs/func_80078654.s. This is a hard blocker
+  discovered by measurement, not an opinion; record it before planning that modality.
+
+- [s5] A new, cheaper instrument exists: tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label>.
+  One invocation compiles a STANDALONE single-function chassis with the instrumented cc1
+  (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1) and prints the full allocno table, then re-compiles
+  the same file through the exact build pipeline (build/cc1 -mel | prologue_fix | maspsx with
+  all five gate lists | multu_pad | as -march=r3000) and objdump-diffs it against the s4 rig's
+  target.o. It costs ~5 s and needs no src/ edit and no sandbox run, so a structural variant can
+  now be judged on priorities AND bytes in a single call. Baseline chassis A reproduces the
+  known table exactly: pseudo 72 (arg0) nrefs=13 livelen=98 pri=3979 -> $s0; pseudo 73 (walk)
+  nrefs=5 livelen=91 pri=1098 -> $s1; pseudo 74 (zero) nrefs=3 livelen=170 pri=176 -> $s2;
+  116 == 116 insns, 38 objdump diff lines (the 19 known exchanged instructions, both sides).
+
+- [s5] MEASURED chassis C1 — INDEX-EXPRESSED WALK (`s32 i = 5; ... D_800A3610[i]; i++;
+  if (D_800A3610[i + 1] != -1)`), the partition the permuter provably cannot invent because it
+  changes the induction variable's type rather than an expression's spelling. KILLED at the
+  first measurement: loop strength-reduction re-creates a pointer induction variable anyway but
+  keeps the base register live, so the function grows to 120 insns (vs target 116) and 50 diff
+  lines, and the walk allocno gets WORSE not better — pseudo 73 nrefs 5 -> 4, livelen 91 -> 94,
+  pri 1098 -> 851, while arg0 stays at 13 refs (pri 3861). Banked at
+  rejected/index-walk-strength-reduce-plus4-insns.c.
+
+- [s5] MEASURED chassis C2 — SUB-POINTER ARG0-LOWERING (`s32 *ot = arg0 + 5;` hoisted to
+  function scope, every `arg0[5]` rewritten as `*ot`), i.e. the arg0-LOWERING quadrant of the s3
+  2-D frontier, which no prior session had ever built (s2 measured only a block-scoped split and
+  s4 seeded only the walk-RAISING chassis). KILLED, and it produces the single most informative
+  number of this session: arg0's references do drop 13 -> 6 and its priority drops 3979 -> 1212,
+  but the walk pointer is STILL BELOW IT at 1086 (nrefs 5, livelen 92) — because livelen 99 vs 92
+  and floor_log2(6) == floor_log2(5) == 2 make the comparison 2*6/99 vs 2*5/92. So even a
+  7-reference reduction of the parameter does not flip the sort. Extrapolating on the same
+  measured live lengths, arg0 must reach <= 5 references (2*5/99 = 1010 < 1086) — i.e. ELEVEN of
+  its twelve emitted accesses must leave the pseudo — before the walk pointer wins. Worse, the
+  extracted `ot` pseudo behaves exactly as s2/s3 predicted for every split: it is shorter-lived
+  (85) with more references (9) and therefore OUTRANKS everything at pri 3176, taking $s0 itself
+  and forcing a FOURTH callee-save ($s3); 119 insns, 53 diff lines. Banked at
+  rejected/ot-subpointer-arg0-lowering-4th-callee-save.c.
+
+- [s5] MEASURED campaign (label s5-directed-perm, workspace tmp/grind/func_80078654/s5/ws,
+  -j 8 --stop-on-zero --stack-diffs): the ledger's F-directed probe — hand-written PERM_* macros
+  over genuine alternatives rather than s4's uniform random sampling. Six directed axes:
+  PERM_GENERAL over three walk-initialiser partitions (`D_800A3610 + 5` / `&D_800A3610[5]` /
+  split base-then-`+= 5`); PERM_GENERAL over three block-A shapes including the `s32 *ot =
+  &arg0[5]` arg0-lowering sub-pointer; PERM_GENERAL over four loop-head read shapes including
+  the double-read `s.b = var_s0[0] + 0xC;` ref-lift candidate; PERM_LINESWAP over the
+  `var_s0++` / `arg0[5] += 0xC` pair; PERM_GENERAL over four loop-test spellings; plus two
+  PERM_RANDOMIZE regions so random mutation still runs on the prologue and the call block.
+  Base score 108 (identical to chassis A, confirming the default expansion is the floor-19 form).
+  RESULT: 39,950 iterations in 1152 s, ZERO score-improving finds; two equal-score (108) finds at
+  147 s and 584 s, then a full 9-minute window with no novel find at all, at which point the
+  fresh-seed rule was honoured and the campaign harvested with --stop (procs_killed 9,
+  pid_alive_at_harvest true -> stopped true). No campaign outlives this session.
+
+- [s5] Both s5 finds reproduce s4's failure mode EXACTLY and are unusable for the same reason:
+  each one clobbers the walk pointer inside the loop (`var_s0 = &arg0[3];` in output-108-1,
+  `var_s0 = &arg0[5];` in output-108-2) and is therefore semantics-CHANGING, not a respelling.
+  Two independent campaigns on two different mutation regimes converging on the same
+  semantics-breaking equal-score attractor is itself evidence: the permuter's scorer cannot see
+  the walk-pointer clobber, so that attractor will absorb any future campaign on this function.
+  A third campaign on this chassis family has negative expected value.
+
+- [s5] Cumulative permuter evidence for this function is now 129,034 iterations across THREE
+  chassis and TWO mutation regimes (s4 random on the clean base, s4 random on the walk-raising
+  merge, s5 directed cross-product on the clean base) with zero score-improving finds, plus two
+  additional chassis (C1, C2) killed analytically on their allocno tables without needing a
+  campaign at all. Every one of them leaves reg_n_refs(arg0) >= 6 with a live length longer than
+  the walk pointer's, so allocno_compare never inverts. The permuter modality is closed for
+  func_80078654; the remaining frontier is post-RA reference provenance (forensics) and a
+  from-scratch re-derivation (rederive, which now needs m2c installed first).
+
+- [s5] Baseline re-confirmed after re-applying candidate.c over HEAD's stale inline-asm body (fourth consecutive session that HEAD did not carry the candidate): sandbox func_80078654 --disable all = 19, build_insns 116 == target_insns 116, rules_dropped 6, cheat_asm_stripped 89. src/text1b_b.c was restored to HEAD at session end, so the tree carries only ledger changes.
+
+- [s5] New one-call instrument banked: tmp/grind/func_80078654/s5/eval.sh <chassis.c> <label> compiles a STANDALONE single-function chassis with the instrumented cc1 (BB2_ALLOC_DEBUG=1) and prints the allocno table, then re-compiles the same file through the exact build pipeline and objdump-diffs against the s4 rig's target.o. ~5 s, no src/ edit, no sandbox run — a structural variant is now judged on priorities AND bytes in one call.
+
+- [s5] Chassis A (the floor-19 candidate) reproduces the known allocno table exactly through the new instrument: pseudo 72 (arg0) nrefs=13 livelen=98 pri=3979 -> $s0; pseudo 73 (walk) nrefs=5 livelen=91 pri=1098 -> $s1; pseudo 74 (zero) nrefs=3 livelen=170 pri=176 -> $s2; 116 == 116 insns; 38 objdump diff lines (the 19 known exchanged instructions counted on both sides).
+
+- [s5] Directed campaign s5-directed-perm: base 108, 39,950 iterations, 1152 s, zero score-improving finds, two equal-score finds, harvested with --stop after a full no-novel-find window; permuter_campaign.py status reports alive=false / registered_active=false for it and for both s4 campaigns. No campaign outlives this session.
+
+- [s5] Both s5 finds are semantics-CHANGING in exactly the way s4's were — they assign the walk pointer from arg0 inside the loop (`var_s0 = &arg0[3];`, `var_s0 = &arg0[5];`). The permuter's scorer cannot see the clobber, so this equal-score attractor will absorb any future campaign on this chassis family; a third campaign has negative expected value.
+
+- [s5] Cumulative permuter evidence is now 129,034 iterations across THREE chassis and TWO mutation regimes (s4 random on the clean base, s4 random on the walk-raising merge, s5 directed cross-product on the clean base) with zero score-improving finds, plus two further chassis (index-walk, sub-pointer) killed on their allocno tables without a campaign. Every measured form leaves reg_n_refs(arg0) >= 6 with a live length longer than the walk pointer's, so allocno_compare never inverts.
+
+- [s5] SHARPEST BOUND TO DATE (new this session, from the sub-pointer measurement): lowering arg0 from 13 to 6 references is NOT sufficient — the walk pointer is still below it (1212 vs 1086) because floor_log2(6) == floor_log2(5) and the live lengths are 99 vs 92. On the measured live lengths arg0 must reach <= 5 references, i.e. eleven of its twelve emitted accesses must leave the pseudo, and every extraction that achieves this creates a shorter-lived higher-priority pseudo that takes $s0 itself (measured 3176 here, 4666 in s2).

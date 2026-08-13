@@ -1,7 +1,7 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 19,
    "modality": "permuter",
    "headline": "F3 (permuter) KILLED: 89,084 iterations over two chassis produced zero score-improving finds, and a clean single-function permuter rig is now banked and reusable."
+  },
+  {
+   "session": 5,
+   "floor": 19,
+   "modality": "permuter",
+   "headline": "Permuter modality CLOSED for func_80078654: the directed PERM_* cross-product (39,950 iters, base 108, zero improving finds) reproduces s4's semantics-breaking equal-score attractor, and two never-bef"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The twelve buffer accesses did not all exist as references to ONE pseudo at global_alloc time in the original compile; some reference was created after RA, or the original's flow-time counts differed for a reason not yet identified. This is now the leading explanation, because the three structural levers (s2 splitting, s3 duplication, s2 live-length inflation) and the whole random-search neighbourhood (s4) are all measured dead.",
+   "hypothesis": "The twelve buffer accesses did not all exist as references to ONE pseudo at global_alloc time in the original compile; some reference was created after RA, or the original's flow-time counts differed for a reason not yet identified. This remains the leading explanation and is now the ONLY frontier item with no measured contradiction: s2 (splitting), s2 (live-length inflation), s3 (duplication), s4 (random permutation, two chassis) and s5 (directed permutation plus the index and sub-pointer partitions) are all measured dead, and s5's sub-pointer number shows even a 7-reference reduction of the parameter does not flip the sort.",
    "mechanism": "allocno priority is computed from flow/sched-time counts, but the bytes we compare against are post-reorg. s2 checked reorg's delay-slot duplication (no 0xC($sN)/0x14($sN) sits in a delay slot in the target) and s3 checked cross-jump (it merges nothing here), but no per-insn provenance table has ever been built for the twelve accesses, and reload-generated address reloads have never been enumerated at all.",
-   "next_probe": "Forensics modality: dump the full RTL insn stream at flow, sched and global_alloc for the candidate form (cc1 -da plus BB2_SCHED_DEBUG / BB2_XJUMP_DEBUG / BB2_RELOAD_DEBUG on the instrumented tools/gcc-2.7.2/cc1 \u2014 NOT build/cc1) and enumerate, insn by insn, every target byte whose reference could have been created after RA, including reload-generated address reloads. Deliverable is a per-insn provenance table for the 12 buffer accesses and the 5 walk accesses, which either finds the slack or proves the counts are pinned end to end."
+   "next_probe": "Forensics modality: dump the full RTL insn stream at flow, sched and global_alloc for the candidate form (cc1 -da plus BB2_SCHED_DEBUG / BB2_XJUMP_DEBUG / BB2_RELOAD_DEBUG on the instrumented tools/gcc-2.7.2/cc1 \u2014 NOT build/cc1) and enumerate, insn by insn, every target byte whose reference could have been created after RA, including reload-generated address reloads. Deliverable is a per-insn provenance table for the 12 buffer accesses and the 5 walk accesses, which either finds the slack or proves the counts are pinned end to end. Use tmp/grind/func_80078654/s5/eval.sh's standalone-chassis compile line as the driver \u2014 it isolates the function from the rest of text1b_b.c, which makes the RTL dump readable."
   },
   {
    "hypothesis": "The residual is an artefact of having PATCHED an inherited body rather than re-derived the function: a from-scratch reconstruction of func_80078654 from the target bytes may express the buffer or the walk in a partition no incremental edit of the current body can reach.",
-   "mechanism": "Every form measured in s1-s4 is a local edit of one inherited body \u2014 and s4 now shows that even 89,084 random mutations stay inside that one dataflow neighbourhood, because the permuter mutates spellings rather than inventing a different decomposition. The priority model says the answer must lie in a different partition, so a re-derivation is the only systematic way to leave the neighbourhood.",
-   "next_probe": "Rederive modality: run m2c on asm/funcs/func_80078654.s, write the reconstruction VERBATIM from its output (not from candidate.c), then measure sandbox and the BB2_ALLOC_DEBUG table. Compare the resulting pseudo partition against the target's, and specifically check whether the reconstruction expresses arg0 as a struct pointer with fewer distinct RA-time references, or expresses the walk with a second induction variable. The s4 rig (tmp/grind/func_80078654/s4/mkws.sh) can then permute the reconstruction cheaply \u2014 a re-derived chassis is the one seed s4 did not have."
+   "mechanism": "Every form measured in s1-s5 is a local edit of one inherited body, and s4+s5 now show that neither 89k random mutations nor a directed cross-product over six chosen axes leaves that dataflow neighbourhood \u2014 the permuter mutates spellings rather than inventing a different decomposition, and the two hand-built alternative partitions this session (index walk, sub-pointer) both land strictly worse. The priority model says the answer must lie in a different partition, so a re-derivation is the only systematic way to leave the neighbourhood.",
+   "next_probe": "Rederive modality \u2014 BUT NOTE THE BLOCKER MEASURED THIS SESSION: m2c is NOT installed (ModuleNotFoundError: No module named 'm2c'; no ~/m2c checkout). Step one is therefore to install decompals/m2c into .venv, or to hand-derive the reconstruction directly from asm/funcs/func_80078654.s. Then write the reconstruction VERBATIM from that output (not from candidate.c), measure it with tmp/grind/func_80078654/s5/eval.sh (allocno table + byte diff in one call), and specifically check whether the reconstruction expresses arg0 with <= 5 RA-time references or expresses the walk with a second induction variable."
   },
   {
-   "hypothesis": "Directed permutation (hand-written PERM_* macros over the specific alternatives the technique rules name) is materially different from the random mutation s4 measured and may still reach the flip.",
-   "mechanism": "Random mode samples spellings uniformly; PERM_GENERAL / PERM_LINESWAP let a form enumerate a chosen cross-product exhaustively, so a small set of semantically-equivalent alternatives is covered completely rather than sampled. tools/permuter_annotate.py is the bridge, though its hint catalog does not currently carry an entry that fits this function (no returns to vary, loop-rotation already killed in s1).",
-   "next_probe": "LOW priority \u2014 record it as measured-thin rather than untried: the s4 evidence is that every spelling-preserving edit leaves the two reference counts pinned, so a directed sweep over spellings is predicted dead by the same model. Only worth running on a RE-DERIVED chassis (frontier 2), where the alternatives being enumerated are genuine partition choices rather than spellings, and it should be seeded with hand-written PERM_GENERAL blocks rather than permuter_annotate.py."
+   "hypothesis": "No further permuter campaign on this function has positive expected value; the modality should be considered closed rather than re-dispatched.",
+   "mechanism": "Three chassis and two mutation regimes (129,034 iterations) produced zero score-improving finds, and both regimes converged on the SAME equal-score attractor \u2014 rewrites that clobber the walk pointer inside the loop, which the permuter's scorer cannot distinguish from a legal respelling. The search therefore spends its budget in a basin that is semantically invalid by construction.",
+   "next_probe": "If the driver dispatches permuter again, do NOT re-run a campaign on this chassis family. The only permuter work with any remaining value is a campaign seeded from a RE-DERIVED chassis (frontier item 2) once one exists \u2014 i.e. permuter becomes useful again only after rederive produces a genuinely different decomposition to seed it with."
   }
  ],
  "judge_constraints": [],
