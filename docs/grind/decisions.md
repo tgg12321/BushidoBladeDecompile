@@ -4914,3 +4914,95 @@ The `bit=1; ...; bit=0; /* FAKE */` dead store exists for exactly one purpose �
 ## 2026-08-12 20:03 — func_800645B0 — layer-1 review — **FAIL**
 
 C5 (`val = idx; idx = idx2 + val;`) is a directed structural-sweep artifact chosen to defeat optabs.c's commutative-operand swap and cherry-picked from six functionally-identical spellings specifically because it can be laundered through staged-value-reused-variable.md's bound 2 (borrowed vs invented local) -- a citation-fit choice, not a semantic one.
+
+## 2026-08-13 — func_800645B0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 10 (escalation modality) under the owner's standing auto-ruling
+(`.claude/rules/endgame-lock-disposition.md`, 2026-07-27). Both endgame-lock AND-gates FAIL, so this
+entry is TERMINAL: nothing is pending on the owner and the driver parks the function.
+
+### Gate 1 — canonical-asm (hand-written-asm evidence): **FAIL**
+`python3 tools/scan_hand_coded.py --single func_800645B0` → `tier=LOW score=0/8`, "no strong
+hand-coded indicators". Every signal is negative, including all three STRONG-tier ones: S1 multu
+pacing (0 multu/mflo pairs), S2 empty-body branches (none), S6 BIOS jumptable call pattern (none).
+The `canonical` gate independently routes the function **C** (asm_insns 0, total 78). There is no
+canonical-asm case to make.
+
+### Gate 2 — an in-hand SOTN-master precedent for the closing construct: **FAIL**
+Every form ever measured at distance 0 on this function closes it with a construct in a forbidden
+family, and no SOTN-master file+line or commit citation exists for any of them:
+- `j += 1;` relocated between `idx = i + j;` and `val = 1;` — statement relocation chosen from a
+  directed 8-variant sweep to win a cc1 first-pass-scheduler tie (layer-1 FAIL 2026-08-12 15:20);
+- `wid = i + j; idx = wid;` — the same steer respelled as staging (layer-1 FAIL 17:45);
+- `bit = 1; … bit = 0;` dead store denying `birthing_insn_p` (layer-1 FAIL 19:40);
+- `val = idx; idx = idx2 + val;` — staging chosen to defeat optabs.c's commutative swap
+  (layer-1 FAIL 20:03);
+- `do { idx = i + j; } while (0);` / bare `do { } while (0);` / `if (1) { … }` — the permuter's own
+  6-of-6 distinct score-0 bodies on the JD chassis (s9c). These are outside the do-while(0)
+  carve-out, which is scoped to the LABEL_OUTSIDE_LOOP_P / reorg.c `relax_delay_slots` interaction,
+  not to first-pass-scheduler boundary effects; `if (1) { … }` is in the forbidden catalog verbatim.
+All four layer-1 FAILs name the SAME underlying GCC-pass interaction, so they are one lever, refused
+four times under four spellings. There is no un-refused construct left to cite a precedent FOR.
+
+### What holds the byte-match on main
+`regfix.txt:2521` — `func_800645B0: reorder 3,1,2 @ 1-3`, a prologue save-order reorder — is the
+function's ONLY rule, plus the HEAD body's two cheat-asm register pins (`register s32 s3 asm("$19")`,
+`register s32 one asm("$3") = 1`) and its goto-based inner loop. The sandbox drops all of them; the
+honest pure-C distance without them is **1 / 78** and has been for eight sessions.
+
+### The residual, in full
+The honest floor form (`memory/grind/func_800645B0/candidate.c`, the "SB" chassis) emits 78
+instructions against a 78-instruction target and differs in exactly ONE: index 20, target
+`addu $s0,$s1,$s0`, build `addu $s0,$s0,$s1` — a commutative operand order. Every other instruction,
+register and the frame layout are the target's. The sibling JD chassis (3/78) has the operand order
+and every register right and differs only in the inner-loop top's emission order.
+
+The two decisions are provably mutually exclusive in pure C:
+- `optabs.c:403-421` (`expand_binop`) swaps a commutative pair when op1 is a REG and op0 is not, OR
+  when the expansion target IS op1. So `idx = <x> + idx;` can never emit the target's order — the
+  sum's destination pseudo must differ from `idx`.
+- `sched.c:2504-2594` (`birthing_insn_p` / `adjust_priority`) lifts a SET whose destination is live
+  and has `reg_n_sets == 1` to max_priority; the scheduler is BACKWARD, so the lift makes the
+  loop-top `addu idx,i,j` emit LAST and `li val,1` is what reorg.c steals into the back-edge delay
+  slot. Denying the lift requires a second, fold-surviving SET of `idx` — i.e. exactly what the
+  operand-order constraint forbids inside the sum.
+`expr.c:2692-2830` (`store_expr`) was enumerated branch by branch in s6: the ONLY C construct that
+reaches `expand_binop` with `target == 0` is a destination declared narrower than a word, and the
+truncate/extend it forces costs 1-3 real instructions (measured, bottoms at 79 vs a 78-insn target).
+
+### Exhaustion evidence
+- **Sessions:** 10. **Honest floor FLAT at 1** since session 3 (sessions 3-10). The two sessions that
+  reached 0 (s5, s9) were layer-1 FAILed and their constructs banned; the floor is unchanged.
+- **Distinct modalities spent:** recon (s1, s2), structural (s3, s4, s9b), permuter (s5, s9c),
+  forensics (s6, s7), rederive (s8, s8b), synthesis (s9), escalation (s10) — **seven**.
+- **Permuter:** ~148,000 iterations across 8 campaigns on 6 structurally distinct offset-0 chassis
+  (SB, IA, CA, guard-continue, JD, OA), all harvested with `--stop`. No policy-clean form below the
+  floor. On JD it reaches score 0 in 20.6 s, and all 11 zeros de-duplicate to 6 bodies of which
+  **6/6** carry the banned loop-note wrapper.
+- **Hand sweeps:** 34 numbered sweeps, >120 measured variants; **31** disproven forms banked in
+  `memory/grind/func_800645B0/rejected/`.
+- **Forensics:** instrumented-cc1 `-da` dumps at every pass for 8 variants; both decisions read
+  directly out of the `.sched` ready lists and the `.rtl`/`.lreg`/`.greg` dumps.
+- **All three of the ledger's live frontier items were measured DEAD this session** (see
+  hypotheses.md H51-H53): a zero-cost second set of `idx` outside the if-body does not exist (nine
+  placements: eight are dead stores deleted by flow.c and byte-identical to the control; the ninth
+  survives only by materialising a value in `$s0` before the loops, costing 4/78); the COMPOUND_EXPR
+  route into `store_expr` recurses with the same target and is inert; and a copy relationship for the
+  halfword offset does not move local-alloc's quantity ranking (four spellings, all 12/78).
+
+### Best form preserved
+`memory/grind/func_800645B0/candidate.c` — the SB chassis, **1/78**, zero rules, zero cheat-asm, zero
+policy devices, no FAKE annotation of any kind. It is ordinary C throughout: two nested `for` loops,
+a named intermediate for the halfword index, a named temp for the first `rand()`, and a split
+read-modify-write on the occupancy bitmask. It is explicitly NOT submittable as `candidate-ready`
+(distance 1), but it is a strictly better source of truth than what HEAD carries (pins + goto chain),
+and it is the form the next reader should start from.
+
+### Owner action
+None. This entry records the standing ruling being applied; `func_800645B0` is REFUSED /
+OWNER-ACCEPTED INCOMPLETE and parked terminally. If the owner ever wishes to revisit it, the only two
+routes are (a) sanctioning a new family for the single commutative-operand-order instruction against
+its own SOTN-master evidence bar — the concrete candidate would be an empty statement-level loop note
+at the inner-loop top, which the permuter independently rediscovers as the unique closing device —
+or (b) canonical-asm authorization despite the LOW scan tier. Both are owner-only policy calls,
+neither derivable by a grind session.

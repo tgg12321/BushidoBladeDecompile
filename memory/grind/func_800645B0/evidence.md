@@ -1016,3 +1016,143 @@ check_banned_constructs True).
 - [s9] The whole function now reduces to ONE question: what semantic C construct denies sched.c's birthing_insn_p priority lift on the loop-top `addu idx,i,j` at zero instruction cost? JD is byte-exact except for that -- every register, the *3 sum's commutative operand order and the instruction count are already the target's.
 
 - [s9] Three forms were banked to memory/grind/func_800645B0/rejected/: jd-basin-zeros-are-all-loop-note-wrappers.c, block-scope-decls-are-codegen-inert.c, oa-basin-best-drops-j-initialiser-ub.c.
+
+---
+
+## Session 10 (2026-08-13, modality: ESCALATION) — all three live frontier items measured DEAD; both endgame-lock gates FAIL; the standing ruling is applied and the function is parked terminally at floor 1.
+
+### Starting state
+`src/text1b.c` at session start carried the HEAD body (two `register asm()` pins
+plus the goto-based inner loop), measuring `sandbox func_800645B0 --disable all`
+= score 21 / build_insns 80.  `memory/grind/func_800645B0/candidate.c` (the SB
+chassis) was applied with `tmp/grind/func_800645B0/s10/apply.py` and re-measured
+at **score 1, target_insns 78, build_insns 78, rules_dropped 1** — the standing
+honest floor, unchanged since session 3 and re-confirmed independently here.
+
+### Frontier item 1 — KILLED (sweep33, ten variants on the JD chassis)
+"What semantic C construct denies sched.c's `birthing_insn_p` lift on the
+loop-top `addu idx,i,j` at ZERO instruction cost?"  Every second set of `idx`
+INSIDE the if-body was already enumerated by s3/s4 (it must be one of the three
+values the target keeps in `$s0`, and all three are measured dead).  The
+un-measured surface was placements OUTSIDE the if-body; nine were measured, plus
+the session-8 KD control:
+
+| variant | placement | score | insns |
+|---|---|---|---|
+| YA | JD control | 3 | 78 |
+| YB | `idx = 1; D_800F10EC = idx;` before the loops (KD) | 4 | 78 |
+| YC | declaration initialiser `s32 idx = 0;` | 3 | 78 |
+| YD | `idx = 0;` statement before the loops | 3 | 78 |
+| YE | `idx = i;` at the outer-loop body TOP | 3 | 78 |
+| YF | `idx = i;` at the outer-loop body TAIL | 3 | 78 |
+| YG | outer `for` INIT clause `for (i = 0, idx = 0; …)` | 3 | 78 |
+| YH | outer `for` UPDATE clause `i += 4, idx = i` | 3 | 78 |
+| YI | inner `for` UPDATE clause `j++, idx = j` | 3 | 78 |
+| YJ | `idx = D_800A3444;` before the loops (a real LOAD) | 3 | 78 |
+
+Two branches, both closed.  (1) A second set that is not READ before
+`idx = i + j;` overwrites it is a dead store, deleted by flow.c before
+`reg_n_sets` is taken: eight placements, all BYTE-IDENTICAL to the control.  YJ
+is the sharpening datum — its RHS is a memory load and therefore cannot be
+constant-folded, yet it is still inert, so the operative rule outside the
+if-body is DEADNESS, not foldability (the ledger's earlier H10/H16 rule was
+stated as foldability and is hereby generalised).  (2) A second set that IS read
+survives and makes the loop top EXACT — but `idx` is a multi-block pseudo in
+`$s0` and GCC 2.7.2 has no live-range splitting, so the value is materialised in
+`$s0` before the loops, where the target writes `$s0` not at all: 4/78, one
+WORSE than the control.  There is no zero-cost second set.  Banked to
+rejected/second-set-of-idx-outside-if-body-folds-or-costs-prologue.c.
+
+### Frontier item 2 — CLOSED (sweep34 Z, SB chassis)
+The last named `store_expr` path that session 6's enumeration left un-measured
+is COMPOUND_EXPR (expr.c:2700), which the source reading says recurses with the
+SAME target.  ZB folds the first `rand()` into the sum's RHS as a comma
+expression (`idx = (last = rand(), idx2 + idx);`) with the evaluation order
+unchanged from the control: **1 / 78, byte-identical to ZA**.  The reading is
+confirmed by measurement, so the store_expr enumeration is now fully spent: the
+only route to `expand_binop` with `target == 0` remains a narrower destination,
+which costs 1-3 instructions and bottoms out at 79.  The "non-staging member of
+the family" the ledger hoped for does not exist.
+
+### Frontier item 3 — KILLED (sweep34 W, DA chassis)
+local-alloc.c:2205-2270 tries `qty_phys_copy_sugg` / `qty_phys_sugg` before
+`find_free_reg`'s `reg_alloc_order` scan, so a copy relationship for the
+halfword offset should have restored the target's `$s0`/`$s1` assignment on the
+DA chassis.  Measured: WA control 12/78, WB copy PRODUCER (`idx2 = idx;
+idx2 = idx2 << 1;`) 12/78, WC copy CONSUMER (`hw = idx2;`, the s16 store
+addressing `hw`) 12/78, WD both 12/78 — all four byte-identical, not one
+instruction and not one register moved.  A C-level copy is folded away before
+quantities are formed, so `qty_phys_copy_sugg` has nothing to rank and the DA
+allocation is not reachable from the C level.  Banked to
+rejected/halfword-offset-copy-relationship-does-not-move-local-alloc.c.
+
+### The two endgame-lock gates
+- **Gate 1 (canonical-asm): FAIL.**  `python3 tools/scan_hand_coded.py --single
+  func_800645B0` → `tier=LOW score=0/8`, "no strong hand-coded indicators"; all
+  three STRONG signals negative (S1 0 multu/mflo pairs, S2 no empty-body
+  branches, S6 no BIOS jumptable pattern).  `canonical` routes the function C
+  (asm_insns 0, total 78).
+- **Gate 2 (in-hand SOTN-master precedent): FAIL.**  Every distance-0 form ever
+  measured closes with a construct in a forbidden family — four layer-1 FAILs
+  (2026-08-12 15:20 / 17:45 / 19:40 / 20:03) all naming the SAME GCC-pass
+  interaction under four spellings, plus the permuter's 6-of-6 loop-note
+  wrapper bodies.  No file+line or commit citation exists for any of them.
+
+Both gates fail, so the owner's standing auto-ruling (2026-07-27,
+.claude/rules/endgame-lock-disposition.md) applies.  The entry is filed at
+docs/grind/decisions.md (`## 2026-08-13 — func_800645B0 — OWNER-ESCALATION —
+RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`)
+and this session returns `owner-gated` citing it.  Nothing is pending on the
+owner; the driver parks the function terminally.
+
+### Final state
+`src/text1b.c` carries the SB body (candidate.c verbatim, floor 1/78, zero
+rules-in-source, zero pins, zero policy devices).  `regfix.txt:2521`
+(`func_800645B0: reorder 3,1,2 @ 1-3`) is untouched and remains the function's
+only rule.  No campaign was launched, so nothing can outlive the session.
+
+- [s10] The honest floor is 1 (score 1, target_insns 78, build_insns 78, rules_dropped 1) with candidate.c applied to src/text1b.c — re-measured independently this session, unchanged since session 3.
+
+- [s10] Frontier item 1 is KILLED with ten measurements. Outside the if-body, a second set of `idx` is inert unless it is READ: eight placements (declaration initialiser, pre-loop statement, outer-loop top, outer-loop tail, outer `for` init clause, outer `for` update clause, inner `for` update clause, and a pre-loop set from a real memory LOAD) are all byte-identical to the JD control at 3/78. The load case (YJ) proves the operative rule is DEAD-STORE DELETION by flow.c, not constant folding — a generalisation of the ledger's earlier H10/H16.
+
+- [s10] The one placement that survives (KD's `idx = 1; D_800F10EC = idx;`) makes the loop top EXACT but costs 4/78, because `idx` is a multi-block pseudo in $s0, GCC 2.7.2 has no live-range splitting, and the target writes $s0 nowhere before the loops. A zero-cost denial of sched.c's birthing_insn_p lift therefore does not exist in this function's C.
+
+- [s10] Frontier item 2 is closed by measurement: the COMPOUND_EXPR path into expr.c's store_expr (the last un-measured branch of session 6's enumeration) recurses with the SAME expansion target, so `idx = (last = rand(), idx2 + idx);` is byte-identical to the plain form at 1/78. The only C construct reaching expand_binop with target == 0 remains a narrower destination, measured dead at 79 insns.
+
+- [s10] Frontier item 3 is KILLED: giving the halfword offset a copy PRODUCER, a copy CONSUMER, or both leaves the DA chassis at exactly 12/78 in all four spellings, not one register moved. A C-level copy is folded before local-alloc forms quantities, so qty_phys_copy_sugg has nothing to rank and the target's $s0/$s1 assignment is unreachable from the C level.
+
+- [s10] Endgame-lock gate 1 FAILS: tools/scan_hand_coded.py --single func_800645B0 reports tier=LOW score=0/8 with every signal negative, including all three STRONG ones (S1 multu pacing, S2 empty-body branch, S6 BIOS jumptable).
+
+- [s10] Endgame-lock gate 2 FAILS: every distance-0 form this grind has ever produced closes with a forbidden-family construct (four layer-1 FAILs naming one GCC-pass interaction under four spellings, plus the permuter's 6-of-6 loop-note wrapper bodies), and no SOTN-master file+line or commit precedent exists for any of them.
+
+- [s10] Both gates failing, the owner's standing auto-ruling (2026-07-27) was applied and the terminal entry filed at docs/grind/decisions.md — `## 2026-08-13 — func_800645B0 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`. Nothing is pending on the owner.
+
+- [s10] Scope: src/text1b.c (the candidate.c body, function region only), docs/grind/decisions.md (the escalation entry), memory/grind/func_800645B0/{evidence.md, hypotheses.md, two new rejected/ entries}, tmp/grind/func_800645B0/s10/ scratch, and metrics/events.jsonl (engine-written). Nothing under regfix.txt / asmfix.txt / .claude/rules/ / engine/ / tools/ / Makefile / *.ld was touched.
+
+- [s10] The honest floor is 1: with memory/grind/func_800645B0/candidate.c (the SB chassis) applied to src/text1b.c, `sandbox func_800645B0 --disable all` reports score 1, target_insns 78, build_insns 78, rules_dropped 1. Re-measured independently this session; unchanged since session 3. src/text1b.c at session start carried the HEAD pinned/goto body at score 21 / 80 insns.
+
+- [s10] The entire residual is one instruction's operand order: index 20, target `addu $s0,$s1,$s0`, build `addu $s0,$s0,$s1`. Every other instruction, every register and the frame layout are the target's.
+
+- [s10] Frontier item 1 is KILLED with ten measurements (sweep33). Outside the if-body a second set of `idx` is inert unless it is READ - eight placements (declaration initialiser, pre-loop statement, outer-loop top, outer-loop tail, outer `for` init clause, outer `for` update clause, inner `for` update clause, and a pre-loop set from a real memory LOAD) are all byte-identical to the JD control at 3/78.
+
+- [s10] The load case (YJ, `idx = D_800A3444;`) generalises the ledger's earlier H10/H16 rule: the operative pass is flow.c's dead-store deletion, not constant folding, because a memory load cannot be folded yet is still deleted.
+
+- [s10] The one placement that survives (KD's `idx = 1; D_800F10EC = idx;`) makes the loop top EXACT but measures 4/78 - one WORSE than the control - because `idx` is a multi-block pseudo in $s0, GCC 2.7.2 has no live-range splitting, and the target writes $s0 nowhere before the loops. A zero-cost denial of sched.c's birthing_insn_p lift does not exist in this function's C.
+
+- [s10] Frontier item 2 is closed by measurement: the COMPOUND_EXPR branch of expr.c's store_expr (the last un-measured branch of session 6's enumeration) recurses with the SAME expansion target, so `idx = (last = rand(), idx2 + idx);` is byte-identical to the plain form at 1/78. The only C construct reaching expand_binop with target == 0 remains a destination narrower than a word, measured dead at 79 insns against a 78-insn target.
+
+- [s10] Frontier item 3 is KILLED: a copy PRODUCER, a copy CONSUMER, or both leave the DA chassis at exactly 12/78 in all four spellings, not one register moved. A C-level copy is folded before local-alloc forms quantities, so qty_phys_copy_sugg has nothing to rank.
+
+- [s10] The pure-C closure argument is now complete on both sides. The sum's destination pseudo must not be `idx` (optabs.c:403-421) and the only escape costs 1-3 instructions (expr.c store_expr, enumerated in s6 and its last branch measured here); denying sched.c's lift requires a fold-surviving second set of `idx`, which inside the if-body must be one of the three values the target keeps in $s0 (all three measured dead in s3/s4) and outside it must be READ, which costs the prologue.
+
+- [s10] Endgame-lock gate 1 FAILS: `python3 tools/scan_hand_coded.py --single func_800645B0` reports tier=LOW score=0/8, 'no strong hand-coded indicators', every signal negative including all three STRONG ones.
+
+- [s10] Endgame-lock gate 2 FAILS: no SOTN-master file+line or commit precedent exists for any construct that has ever reached distance 0 on this function; the four layer-1 FAILs (2026-08-12 15:20 / 17:45 / 19:40 / 20:03) all name the same GCC-pass interaction under four different spellings, and the permuter's 11 score-0 finds on the JD chassis de-duplicate to 6 bodies of which 6/6 carry the banned loop-note wrapper.
+
+- [s10] Exhaustion: 10 sessions, floor FLAT at 1 since session 3, seven distinct modalities (recon, structural, permuter, forensics, rederive, synthesis, escalation), ~148,000 permuter iterations across 8 campaigns on 6 structurally distinct offset-0 chassis, 34 numbered hand sweeps with >120 measured variants, and 31 disproven forms banked in memory/grind/func_800645B0/rejected/.
+
+- [s10] The terminal escalation entry was FILED this session at docs/grind/decisions.md: `## 2026-08-13 - func_800645B0 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`. Nothing is pending on the owner.
+
+- [s10] What holds the byte-match on main: regfix.txt:2521 (`func_800645B0: reorder 3,1,2 @ 1-3`) is the function's only rule, plus the HEAD body's two cheat-asm register pins and its goto-based inner loop. The sandbox drops all of them; the honest pure-C distance without them is 1/78.
+
+- [s10] Scope: src/text1b.c (the candidate.c body, function region only), docs/grind/decisions.md (the escalation entry), memory/grind/func_800645B0/{evidence.md, hypotheses.md, two new rejected/ entries}, tmp/grind/func_800645B0/s10/ scratch, and metrics/events.jsonl (engine-written). Nothing under regfix.txt / asmfix.txt / .claude/rules/ / engine/ / tools/ / Makefile / *.ld was touched. No campaign was launched, so nothing can outlive the session.

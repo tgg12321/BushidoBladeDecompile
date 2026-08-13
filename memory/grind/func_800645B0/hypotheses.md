@@ -1457,3 +1457,118 @@ genuinely new chassis to seed from.  The three live leads, in priority order:
 - probe: Built and validated a fresh offset-0 workspace tmp/grind/func_800645B0/s9c/ws_oa (permuter base 160, known duplicate `move a0,zero` diff); ran one full fresh-seed window.
 - result: 21,451 iterations / 24.2 min, NO score-0 find, best 60. The 60-find buys its instruction by DELETING the pre-loop `j = 0;` initialiser (leaving a dead `j = 0;` after the `break;`), so `j` is read uninitialised on the first inner iteration -- the already-banked semantics-breaking family. The only instruction-removing mutation ~21k attempts found is the one that breaks semantics.
 - verdict: KILLED
+
+## Session 10 (2026-08-13, ESCALATION) — the three live frontier items are measured dead and the function is disposed under the standing ruling
+
+### H51 — a second SET of `idx` placed OUTSIDE the if-body can deny sched.c's `birthing_insn_p` lift at zero instruction cost
+- **Statement.** The loop-top residual needs `reg_n_sets[idx] >= 2`; every
+  in-if-body second set is enumerated and dead, so the open surface was second
+  sets elsewhere in the function. Session 8's sweep25 KD (a pre-loop set, 4/78
+  with the loop top EXACT) proved the mechanism reaches; the hypothesis was that
+  some other placement escapes KD's prologue cost.
+- **Mechanism.** `sched.c:2504-2594` — `birthing_insn_p` requires the SET's
+  destination to be live and `reg_n_sets[dest] == 1`; `adjust_priority` then
+  lifts it to `max_priority`. The whole-function set count means ANY surviving
+  second set anywhere removes the lift. `flow.c` deletes dead stores before
+  `reg_n_sets` is taken, and GCC 2.7.2 has no live-range splitting, so a
+  multi-block pseudo carries one hard register everywhere.
+- **Probe.** `tmp/grind/func_800645B0/s10/sweep33.py`, ten variants on the JD
+  chassis (whose entire residual is the three loop-top points), honest
+  `sandbox --disable all` each: control; KD replication; declaration
+  initialiser; pre-loop statement; outer-loop body top; outer-loop body tail;
+  outer `for` init clause; outer `for` update clause; inner `for` update clause;
+  and a pre-loop set whose RHS is a real memory LOAD (`idx = D_800A3444;`).
+- **Result.** YA control 3/78. YC/YD/YE/YF/YG/YH/YI/YJ — all eight — 3/78 and
+  BYTE-IDENTICAL to the control, not one instruction moved. YB (the KD form,
+  the only variant whose second set is READ) 4/78: the loop top is exact and the
+  entire residual moves into the prologue, because the value is materialised in
+  `$s0` where the target writes `$s0` nowhere before the loops.
+- **Verdict:** KILLED. The rule is sharper than the ledger previously recorded:
+  outside the if-body a second set is deleted unless it is READ (YJ's load
+  cannot be constant-folded and is still inert, so the operative pass is
+  flow.c's dead-store deletion, not folding), and any set that IS read costs the
+  prologue. A zero-cost second set of `idx` does not exist.
+
+### H52 — a COMPOUND_EXPR RHS reaches `expand_binop` without receiving `to_rtx` as its target
+- **Statement.** The SB chassis' last instruction is optabs.c's commutative
+  swap, which fires because the sum's expansion target IS its second operand.
+  Session 6 enumerated `expr.c:2692-2830` (`store_expr`) and measured the one
+  escape it found (a narrower destination) dead at 79 insns; COMPOUND_EXPR
+  (expr.c:2700) was read as recursing with the SAME target but never measured.
+- **Mechanism.** If `store_expr` passed `NULL_RTX` down for a comma-expression
+  RHS, `expand_binop` would be entered with `target == 0` and optabs.c:403-421's
+  swap clause 2 (`target == op1`) could not fire, while clause 1 ("op1 is a REG
+  and op0 is not") is satisfied by neither operand here.
+- **Probe.** `tmp/grind/func_800645B0/s10/sweep34.py` ZA/ZB on the SB chassis:
+  `idx = (last = rand(), idx2 + idx);` against the control
+  `last = rand(); idx = idx2 + idx;` — identical evaluation order, identical
+  semantics.
+- **Result.** ZA 1/78, ZB 1/78, byte-identical.
+- **Verdict:** KILLED. The source reading is confirmed by measurement; the
+  `store_expr` enumeration is fully spent and the ledger's hoped-for
+  "non-staging member of the family" does not exist.
+
+### H53 — a copy relationship gives the halfword offset a `qty_phys_copy_sugg` that restores the target's `$s0`/`$s1` assignment on the DA chassis
+- **Statement.** DA satisfies BOTH hard constraints (the sum's destination is
+  not `idx`, and `idx` gets a real second set) and fails only on allocation:
+  local-alloc hands `$s0` to the block-local halfword offset and pushes the
+  multi-block `idx` to `$s1`, the mirror of the target. The target's own
+  allocation proves the wanted assignment exists.
+- **Mechanism.** `local-alloc.c:2205-2270` consults `qty_phys_copy_sugg` /
+  `qty_phys_sugg` BEFORE `find_free_reg`'s `reg_alloc_order` scan, and those
+  suggestions are built from register-to-register copies.
+- **Probe.** sweep34 W-variants on the DA chassis: WA control; WB a copy
+  PRODUCER (`idx2 = idx; idx2 = idx2 << 1;`); WC a copy CONSUMER (`hw = idx2;`
+  with the s16 store addressing `hw`); WD both.
+- **Result.** WA/WB/WC/WD all 12/78, byte-identical — not one instruction and
+  not one register moved.
+- **Verdict:** KILLED. A C-level copy is folded away before quantities are
+  formed, so `qty_phys_copy_sugg` has nothing to rank; the DA allocation is not
+  reachable from the C level.
+
+## Disposition (this session's product)
+Both endgame-lock AND-gates FAIL — `tools/scan_hand_coded.py --single
+func_800645B0` = `tier=LOW score=0/8` with all three STRONG signals negative,
+and no SOTN-master file+line/commit precedent exists for any construct that has
+ever reached distance 0 here (four layer-1 FAILs naming ONE GCC-pass interaction
+under four spellings, plus the permuter's 6-of-6 loop-note wrapper bodies).
+The owner's standing auto-ruling (2026-07-27) therefore applies; the terminal
+entry is filed at docs/grind/decisions.md and the session returns `owner-gated`.
+
+## Frontier (rewritten by session 10)
+**EMPTY BY CONSTRUCTION.** All three items session 9c left are now measured dead
+(H51/H52/H53), and the pure-C closure argument is complete on both sides:
+- the sum's destination pseudo must NOT be `idx` (optabs.c:403-421), and the
+  only C construct that escapes it costs 1-3 instructions (expr.c store_expr,
+  fully enumerated and now confirmed by measurement of its last branch);
+- denying sched.c's lift requires a fold-surviving second set of `idx`, which
+  inside the if-body must be one of the three values the target keeps in `$s0`
+  (all three measured) and outside it must be READ, which costs the prologue.
+Nothing remains that is both zero-cost and semantically motivated. If the
+function is ever reopened it is an owner policy call, not a search: either
+sanction a family for the closing construct against its own SOTN-master evidence
+bar, or authorize canonical asm despite the LOW scan tier.
+
+## [s10] H51 - a second SET of `idx` placed OUTSIDE the if-body can deny sched.c's birthing_insn_p priority lift on the loop-top `addu idx,i,j` at ZERO instruction cost, closing the JD chassis' entire 3-point residual.
+- mechanism: sched.c:2504-2594 - birthing_insn_p requires the SET's destination to be live with reg_n_sets[dest] == 1, and adjust_priority then lifts that insn to max_priority; the scheduler is BACKWARD, so the lift makes the index addu emit LAST and reorg.c steals `li val,1` into the back-edge delay slot instead. reg_n_sets is a whole-function count, so any surviving second set anywhere removes the lift. Counterforces: flow.c deletes dead stores before reg_n_sets is taken, and GCC 2.7.2 has no live-range splitting, so a multi-block pseudo carries one hard register everywhere.
+- probe: tmp/grind/func_800645B0/s10/sweep33.py - ten variants on the JD chassis, honest `sandbox func_800645B0 --disable all` each: YA control; YB the session-8 KD form (`idx = 1; D_800F10EC = idx;` before the loops); YC declaration initialiser `s32 idx = 0;`; YD pre-loop statement `idx = 0;`; YE outer-loop body TOP; YF outer-loop body TAIL; YG outer `for` INIT clause; YH outer `for` UPDATE clause; YI inner `for` UPDATE clause; YJ a pre-loop set whose RHS is a real memory LOAD (`idx = D_800A3444;`).
+- result: YA 3/78 (control). YC, YD, YE, YF, YG, YH, YI, YJ - all eight - 3/78 and byte-identical to the control, not one instruction moved. YB 4/78: the loop top becomes EXACT (indices 11/12/65 gone) and the whole residual moves into the prologue, because the read value is materialised in $s0 and the target writes $s0 nowhere before the loops. Sharper rule than the ledger previously held: outside the if-body the operative pass is flow.c's DEAD-STORE deletion, not constant folding - YJ's RHS is a load and cannot be folded, yet it is still inert.
+- verdict: KILLED
+
+## [s10] H52 - a COMPOUND_EXPR (comma-expression) RHS reaches expand_binop without receiving `to_rtx` as its expansion target, which would defeat optabs.c's commutative swap on the SB chassis' last instruction without any staging variable.
+- mechanism: optabs.c:403-421 swaps a commutative operand pair when op1 is a REG and op0 is not, OR when the expansion target IS op1; with target == 0 neither clause fires and the target's `addu $s0,$s1,$s0` order is emitted. expr.c:2692-2830 (store_expr) is the only route from a C assignment to the RHS expansion; session 6 enumerated its branches and measured the one escape it found (a destination declared narrower than a word) dead at 79 insns. COMPOUND_EXPR at expr.c:2700 was READ as recursing with the same target but never measured.
+- probe: tmp/grind/func_800645B0/s10/sweep34.py ZA/ZB on the SB chassis: ZB writes `idx2 = idx << 1; idx = (last = rand(), idx2 + idx);` against the control ZA `idx2 = idx << 1; last = rand(); idx = idx2 + idx;` - identical evaluation order, identical semantics, the only difference being that the call and the sum are one comma expression.
+- result: ZA 1/78, ZB 1/78, byte-identical. The source reading is confirmed by measurement: store_expr's COMPOUND_EXPR branch recurses with the SAME target, so no comma-expression spelling changes the operand order. The store_expr enumeration is now fully spent and the 'non-staging member' of the escape family the ledger hoped for does not exist.
+- verdict: KILLED
+
+## [s10] H53 - giving the halfword offset a copy relationship makes local-alloc's qty_phys_copy_sugg rank $s1 for it, restoring the target's $s0/$s1 assignment on the DA chassis (which already satisfies both hard constraints and fails only on allocation).
+- mechanism: local-alloc.c:2205-2270 consults qty_phys_copy_sugg / qty_phys_sugg BEFORE find_free_reg's reg_alloc_order scan, and those suggestions are built from register-to-register copies. On DA the block-local halfword offset claims $s0 from local_alloc and the multi-block `idx` is pushed to $s1 - the mirror of the target, whose own allocation proves the wanted assignment is reachable.
+- probe: tmp/grind/func_800645B0/s10/sweep34.py W-variants on the DA chassis (`idx2 = idx << 1; last = rand(); wid = idx2 + idx; idx = wid << 2;`, word stores through `idx`): WA control; WB a copy PRODUCER (`idx2 = idx; idx2 = idx2 << 1;`); WC a copy CONSUMER (`hw = idx2;` with the s16 store addressing `hw`); WD both.
+- result: WA 12/78, WB 12/78, WC 12/78, WD 12/78 - all four byte-identical, not one instruction and not one register moved. A C-level copy is folded away before local-alloc forms quantities, so qty_phys_copy_sugg has nothing to rank and the DA allocation is unreachable from the C level.
+- verdict: KILLED
+
+## [s10] H54 (disposition) - func_800645B0 clears at least one of the two endgame-lock AND-gates, so a genuine pending owner escalation is warranted rather than the standing auto-ruling.
+- mechanism: .claude/rules/endgame-lock-disposition.md (owner standing ruling 2026-07-27): gate 1 requires STRONG hand-coded-asm signals (S1/S2/S6) from tools/scan_hand_coded.py; gate 2 requires an in-hand SOTN-master precedent for the closing construct, cited as file+line or a commit hash.
+- probe: Ran `python3 tools/scan_hand_coded.py --single func_800645B0`; audited every distance-0 form in the ledger against the four layer-1 FAIL rulings (docs/grind/decisions.md 2026-08-12 15:20 / 17:45 / 19:40 / 20:03) and session 9c's permuter zero-body de-duplication.
+- result: Gate 1 FAIL: tier=LOW score=0/8, 'no strong hand-coded indicators', with all three STRONG signals negative (S1 0 multu/mflo pairs, S2 no empty-body branches, S6 no BIOS jumptable pattern); the canonical gate independently routes the function C (asm_insns 0, total 78). Gate 2 FAIL: every form that has ever reached 0 closes with a forbidden-family construct - statement relocation, two staging spellings, a dead store, and the permuter's 6-of-6 loop-note wrappers - and no file+line or commit citation exists for any of them. All four layer-1 FAILs name the SAME GCC-pass interaction under four spellings, i.e. one lever refused four times.
+- verdict: CONFIRMED
