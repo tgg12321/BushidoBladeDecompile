@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 21,
- "current_modality": "permuter",
+ "session_count": 22,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,24 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Fifth permuter kill, and the first campaigns ever seeded AT the floor: 81,779 iterations from two chassis leave the honest floor at 10, and the first semantically-correct sub-floor find (8) is the ban"
+  },
+  {
+   "session": 22,
+   "floor": 10,
+   "modality": "escalation",
+   "headline": "Disposition reached: both endgame-lock gates FAIL (scan_hand_coded tier LOW 0/8; first-hand SOTN-master census for multiple live C handles on one global comes back NEGATIVE), so the owner's 2026-07-27"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis is closed and the gap is a SOURCE-MODEL gap whose statement is now one notch sharper than the ledger's: the original source held two INDEPENDENTLY MATERIALISED, simultaneously live address values for D_80106A73 -- not merely two address objects.",
-   "mechanism": "One C object gives one live value at a time (tools/gcc-2.7.2/global.c:426, one allocno per pseudo, no live-range splitting in 2.7.2). Two objects obtained by a COPY give a second pseudo that is a dependent value: measured this session at sandbox 8 / 51 insns, carrying a `move` plus a fresh `lui` the target does not have, with block 1's register naming still inverted. Only three objects, each initialised from the symbol, ever reached 0. So the escalation packet's claim should be the stronger and more specific one -- the target's second base is materialised from the symbol before block 1's store -- and the fallback 'maybe two objects of any kind would do it' is now measured dead.",
-   "next_probe": "Escalation-modality session ONLY. Do NOT re-run the pure-C ladder and do NOT re-run the permuter: s19/s20 saturated the structural and address-pseudo dimensions by hand, and s21 has now saturated the random-structural neighbourhood from BOTH sides of the ceiling (44,626 iterations at the floor with one object, 37,153 from e1 reaching only 8 with two). Lead the packet with the independent-materialisation statement plus this session's pricing (a copied second object is worth 3 points and stops at 8), then evaluate the two endgame-lock gates -- gate 1 already FAILS (scan_hand_coded tier=LOW, 0/8); gate 2 needs a CITED SOTN-master precedent where multiple C handles on one global are load-bearing -- and if both fail, file the standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE entry at the single-handle floor of 10."
+   "hypothesis": "func_80034F88 is terminally disposed as INCOMPLETE \u2014 OWNER-ACCEPTED; it is NOT a grindable frontier and no further session should be spawned on it unless new tooling or a genuinely new pure-C lever appears.",
+   "mechanism": "Both endgame-lock AND-gates were evaluated with measurements this session and both failed, so the owner's 2026-07-27 standing auto-ruling applies: the 31 regfix rules and three scheduling barriers stay on main so the full-build oracle remains green, the retained cheat is not sanctioned as a technique, and the function is parked out of active grind.",
+   "next_probe": "None. The queue should advance. A future re-attempt is only warranted if (a) new tooling makes a second INDEPENDENTLY MATERIALISED address value reachable from a single C object, or (b) the owner sanctions a multi-handle family on evidence that does not exist in SOTN master today."
   },
   {
-   "hypothesis": "The permuter axis on func_80034F88 is now closed in the strong sense (every chassis of interest seeded), not merely the weak sense (seeds happened to be above the floor).",
-   "mechanism": "s4 seeded two floor-18 chassis, s5 ran directed PERM_* on 18, s12b and s13 seeded 24 and 13, and s21 seeded the two chassis that carry the function's best numbers: the score-10 floor and the score-11 e1 with the target's access census. Across five sessions and ~170k iterations no campaign has ever produced an admissible form below the then-current floor, and the two sub-floor finds that exist are one miscompile and one banned construct.",
-   "next_probe": "None. A sixth campaign would need a chassis that is neither the floor, nor e1, nor any of the 18/13/24 seeds, and no such chassis exists that is not already in the 126-entry rejected bank. If a future session is nonetheless assigned permuter modality, the correct action is to record that fact and spend the session on the escalation packet instead."
-  },
-  {
-   "hypothesis": "`x + K - K` opaque pointer arithmetic remains a live ruling question but is still MOOT and must not be escalated on its own.",
-   "mechanism": "s20 measured the round-trip construct at exactly 10 in all eight forms: it buys census fidelity, never score. s21 changes nothing about it -- the recovered reload is still not load-bearing for the score, and both of this session's sub-floor finds got their reload from the banned copy instead.",
-   "next_probe": "No probe. Raise it only if some future lever makes the recovered reload load-bearing -- i.e. only in combination with something that also fixes block 1's register naming. On its own it fails T1/T2/T3 and is banked as rejected."
+   "hypothesis": "If the multi-handle family were ever sanctioned, the closing form is still not the cheap one: two objects reach only 8, and three are required for 0.",
+   "mechanism": "A copied second pointer is a DEPENDENT value \u2014 it costs a 'move' plus a fresh 'lui' and leaves block 1's register naming inverted \u2014 where the target materialises its second base from the symbol itself before block 1's store (s18's instruction-ordering proof, s21's pricing).",
+   "next_probe": "Only relevant inside an owner ruling that sanctions the family; then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0) rather than the two-object forms."
   }
  ],
  "judge_constraints": [

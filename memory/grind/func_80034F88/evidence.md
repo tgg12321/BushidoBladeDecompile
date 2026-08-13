@@ -2749,3 +2749,115 @@ below 13.
 - [s21] s4-H1 (permuter score vs honest sandbox distance are uncorrelated on this function) reconfirmed at maximum contrast on seed 1: best metric find 340 = sandbox 14; worst metric find 455 = sandbox 10.
 
 - [s21] src/ was left untouched: eval.py splices each find in, sandboxes it, and restores the file in a finally block; `git status` shows only ledger files and metrics/events.jsonl modified. Bare src/code6cac_b.c (the cheat-carrying body still in the tree) sandboxes at 24 / 48 insns as it did at session start; the honest floor of 10 is the candidate.c body, re-measured this session as find output-455-1.
+
+==== s22 (escalation) ====
+
+DISPOSITION SESSION. No new pure-C form was proposed and none was needed: the
+driver had declared exhaustion (floor FLAT AT 10 across s14..s21, five distinct
+modalities), and s21 closed the last open search axis. This session's product is
+the disposition itself, filed in docs/grind/decisions.md as the entry
+"2026-08-13 — func_80034F88 — OWNER-ESCALATION — RESOLVED BY STANDING RULING
+(2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE".
+
+1. BASELINE RE-MEASURED (both bodies, this session).
+   * The in-tree cheat-carrying body (src/code6cac_b.c:3899, three
+     `asm volatile("" ::: "memory")` barriers + 31 regfix rules) sandboxes at
+     24 with cheats stripped: 49 target insns vs 48 build insns.
+   * candidate.c (single C pointer object) installed into src and sandboxed:
+     10 at 49/49 insns. Floor confirmed unchanged for the ninth session.
+   * src/ was then restored with `git checkout -- src/code6cac_b.c` so main
+     keeps the cheat that holds the oracle, exactly as the standing ruling
+     directs. `git status` at session end shows only ledger/doc files and
+     metrics/events.jsonl.
+
+2. GATE 1 (canonical-asm / hand-coded evidence) — FAILS, measured, not asserted.
+   `python3 tools/scan_hand_coded.py --single func_80034F88` returns
+   tier=LOW score=0/8 ("no strong hand-coded indicators"); all eight boxes are
+   unchecked, including the whole STRONG tier (S1 multu pacing, S2 empty branch,
+   S6 BIOS jumptable). Saved at tmp/grind/func_80034F88/s22/scan_hand_coded.txt.
+   This is the FIRST time the gate has actually been run on this function — the
+   2026-08-13 16:36 Judge ruling explicitly noted "Gate 1 is unevaluated — no
+   scan_hand_coded run appears anywhere in this ledger". It is now evaluated and
+   it fails, so canonical-asm authorization is refused by policy
+   (.claude/rules/endgame-lock-disposition.md: a LOW score is dispositive).
+
+3. GATE 2 (SOTN-master precedent for the closing construct) — FAILS, and this
+   is a FIRST-HAND CENSUS, not an absence-of-memory argument. A local SOTN
+   master checkout exists at C:\Users\Trenton\Desktop\sotn-decomp, commit
+   db41b28eee52969244a52cc269c8163d1ed8826a (branch master, 2026-07-01). Two
+   scripted passes over its 1,675 src/**/*.c files:
+
+   * Permissive (s22/sotn_census.py -> sotn_census.txt): 65 functions assign
+     `&SYM` of ONE symbol to two or more distinct local handles. Reading them,
+     essentially all are distinct SUB-OBJECTS — `&g_CurrentEntity->ext.azaghal.base`
+     vs `.pos` vs `.offset`; `&g_Entities[UNK_ENTITY_8]` vs `[UNK_ENTITY_5]`;
+     `&g_CurrentBuffer->drawModes[..]` vs `->sprite[..]` — i.e. ordinary program
+     logic, and not the construct at issue.
+   * Strict (s22/sotn_census2.py -> sotn_census2.txt, keyed on the IDENTICAL
+     address-expression text): only 21 functions, every one disqualified:
+       - non-matching ports: src/dra_psp/, src/main_psp/, src/sel_psp/, src/pc/,
+         src/saturn/ (these are not the PSX matching target);
+       - global-to-global stores (`D_80138FB4 = &D_psp_09236838;` etc.), not two
+         live local handles;
+       - two genuinely different walkers that merely START at the same node —
+         the strongest-looking hit, src/ric/pl_blueprints.c:2219 (and the
+         identical shape in src/maria/pl_blueprints.c:1887), is
+         `prim2 = prim1 = &g_PrimBuf[self->primIndex];` after which `prim1` is
+         advanced 16 nodes in its own loop and the two pointers then write
+         DIFFERENT vertices of DIFFERENT primitives each iteration. Real logic;
+         not a redundant handle retained for codegen.
+   * A targeted grep for fake/match/required-ANNOTATED address-taking lines in
+     the matched PSX trees (dra, ric, st, main, weapon, servant, boss) returns
+     only the FakePrim / VertexFake TYPE-PUNNING family — a cast of ONE handle to
+     a different struct type — plus `_svm_tn[...field_7_fake_program...]`. No
+     instance anywhere of a second, redundant, simultaneously-live C handle on
+     one address kept because the match needs it.
+
+   The sanctioned pointer-alias-fake-exception family's own SOTN evidence
+   (`tilemap = &g_Tilemap; // n.b.! unused, required for PSP`) is a SINGLE and
+   UNUSED alias. What this function needs is two (in the only form that reaches
+   0, three) simultaneously live, independently materialised, load-bearing
+   handles. Extending the family to that shape is precisely the "novel extension
+   of an existing sanctioned family to a shape that family's evidence does not
+   cover" the endgame-lock rule refuses, and under the 2026-07-27 ruling a
+   census that comes back negative is a FAILED gate, not an open question.
+
+4. ONE CANDIDATE UN-TRIED LEVER WAS CONSIDERED AND FOUND ALREADY DEAD. The tail
+   copy loop needs a base at D_80106A70 anyway, so declaring `u8 *r = &D_80106A70;`
+   for the loop and letting block 1 ride on it is the one shape that could add a
+   second address pseudo out of ORDINARY logic rather than as a lever. It is
+   already banked: rejected/base70-disp3-loop-shares-object-score22.c, score 22.
+   No other un-tried lever was derivable from the ledger.
+
+5. DISPOSITION FILED. Both AND-gates fail, so the owner's 2026-07-27 standing
+   ruling is APPLIED, not requested: keep the cheat on main (oracle stays green),
+   classify INCOMPLETE — OWNER-ACCEPTED (not COMPLETED-C, not
+   COMPLETED-INLINE-ASM-CANONICAL), park out of active grind but eligible for
+   re-attempt if a genuinely new pure-C lever or new tooling appears. Nothing is
+   pending on the owner.
+
+- [s22] Floor re-measured and unchanged at 10 (candidate.c body, 49/49 insns); in-tree cheat-carrying body measures 24 at 48 insns with cheats stripped; src/ restored to HEAD after measurement.
+- [s22] What holds the byte-match: 31 regfix.txt rules for func_80034F88, 0 asmfix rules, plus three `asm volatile("" ::: "memory")` cheat-asm barriers in the in-tree body; the function is not in inline_asm_canonical.txt.
+- [s22] GATE 1 EVALUATED FOR THE FIRST TIME: scan_hand_coded --single func_80034F88 = tier LOW, score 0/8, no STRONG (S1/S2/S6) signal. Canonical-asm refused by policy. Artifact: tmp/grind/func_80034F88/s22/scan_hand_coded.txt.
+- [s22] GATE 2 EVALUATED BY FIRST-HAND CENSUS of the local SOTN master checkout (commit db41b28eee52969244a52cc269c8163d1ed8826a, 1,675 src .c files): 65 permissive hits are distinct sub-objects; only 21 strict hits (identical address expression) and every one is a non-matching port, a global store, or two genuinely different walkers (ric/maria pl_blueprints `prim2 = prim1 = &g_PrimBuf[...]`, where prim1 is then advanced 16 nodes). NO SOTN precedent exists for a redundant, simultaneously-live second C handle on one global. Artifacts: s22/sotn_census.py|.txt, s22/sotn_census2.py|.txt, s22/sotn_checkout.txt.
+- [s22] The `fake`-annotated address-taking lines in SOTN's matched PSX trees are the FakePrim/VertexFake TYPE-PUNNING family (one handle cast to another struct type), not second handles — so they do not support the construct even by analogy.
+- [s22] The last plausibly-untried lever (a `u8 *r = &D_80106A70;` object owned by the tail copy loop, shared with block 1) was already measured dead at 22: rejected/base70-disp3-loop-shares-object-score22.c.
+- [s22] DISPOSITION FILED in docs/grind/decisions.md as OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE. Terminal; nothing pending on the owner.
+
+- [s22] [s22] Floor re-measured and unchanged at 10: candidate.c's single-C-pointer-object body installed into src/code6cac_b.c sandboxes at 10 with 49 build insns vs 49 target insns. src/ was restored with 'git checkout -- src/code6cac_b.c' immediately afterwards, per the standing ruling that the cheat stays on main to hold the oracle.
+
+- [s22] [s22] What holds the byte-match: 31 regfix.txt rules for func_80034F88, 0 asmfix rules, plus three asm volatile("" ::: "memory") cheat-asm scheduling barriers in the in-tree body; the function is not in inline_asm_canonical.txt. The bare in-tree body sandboxes at 24 (48 build insns) with cheats stripped.
+
+- [s22] [s22] GATE 1 EVALUATED FOR THE FIRST TIME IN 22 SESSIONS: scan_hand_coded --single func_80034F88 = tier LOW, score 0/8, no STRONG (S1/S2/S6) signal. Canonical-asm authorization is refused by policy (a LOW score is dispositive per .claude/rules/endgame-lock-disposition.md).
+
+- [s22] [s22] GATE 2 EVALUATED BY FIRST-HAND CENSUS of the local SOTN master checkout (db41b28eee52969244a52cc269c8163d1ed8826a, 1,675 src .c files): NO instance anywhere of a redundant, simultaneously-live second C handle on one global address kept because the match needs it. 65 permissive hits are distinct sub-objects; the 21 strict hits are non-matching ports, global stores, or two genuinely different walkers.
+
+- [s22] [s22] The fake/match-annotated address-taking lines in SOTN's matched PSX trees (dra, ric, st, main, weapon, servant, boss) are the FakePrim/VertexFake TYPE-PUNNING family — one handle cast to a different struct type — so they do not support the construct even by analogy.
+
+- [s22] [s22] The last plausibly-untried lever (a 'u8 *r = &D_80106A70;' object owned by the tail copy loop and shared with block 1) was already measured dead at 22 in the rejected bank (base70-disp3-loop-shares-object-score22.c), so the escalation was not filed over an unexplored axis.
+
+- [s22] [s22] Exhaustion, as inherited and re-stated for the entry: floor FLAT AT 10 for nine consecutive sessions (s14..s22) across five distinct modalities (forensics, rederive, synthesis, structural, permuter), thirteen earlier sessions before those, 128 disproven forms banked in memory/grind/func_80034F88/rejected/, and ~170,000 permuter iterations over five campaigns including the first two ever seeded AT the floor (s21).
+
+- [s22] [s22] DISPOSITION FILED THIS SESSION in docs/grind/decisions.md: '2026-08-13 — func_80034F88 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It states both gates' evidence, the mechanism of the 10-point residual, and the exhaustion record. Terminal — nothing is pending on the owner.
+
+- [s22] [s22] Session scope: no src/ change survives (git status shows only docs/grind/decisions.md, the two ledger files, memory/grind/func_80034F88/candidate.c's header, and metrics/events.jsonl). No commit, no queue/retire command, no touch of regfix.txt/asmfix.txt/.claude/rules/engine/tools/Makefile/*.ld.

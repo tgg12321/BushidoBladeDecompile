@@ -5458,3 +5458,109 @@ Four repeated `u8 *q = &D_80106A73;` pointer-alias declarations require a mandat
 ## 2026-08-13 16:36 — func_80034F88 — ruling: func_80034F88 now byte-matches (honest sandbox distance 0, 49/49 insns, lbu 176  — **FAIL**
 
 (1) FAIL. candidate.c's qm/q1/q2 all alias &D_80106A73; q1/q2 are value-redundant with qm (v2 spells it literally `q1 = qm;`) and evidence.md:1693-1708 shows their ONLY function is raising the allocno count so allocno_compare/find_reg land target's $v1/$a0 split. That is the banned four-handle construct respelled (checklist T1/T2/T3/T5, state.json banned_constructs); rejected/macro-respelling-...-DO-NOT-SUBMIT.c is the same call already made in-ledger. The session's own reading is correct and its refusal to self-approve was right. (2) ADMISSIBLE as ordinary style only: declaration order is not an added construct — every C body has one — so no annotation and no in-src lever narrative; it may not be paired with extra handles. (3) NOT an escalation: the residual is an RA tie-break, i.e. the endgame-lock species, and the owner's 2026-07-27 standing auto-ruling directs the pipeline to apply option (b) itself. Gate 1 is unevaluated — no scan_hand_coded run appears anywhere in this ledger. Verified independently: candidate.c and candidate_clean10_t1.c both carry >1 handle; s15 measured score 10 on the single-object r8 chassis too, so banning multi-handle does not raise the floor.
+
+## 2026-08-13 — func_80034F88 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s22 (escalation modality) after the driver declared the
+pure-C levers exhausted: the honest floor has been FLAT AT 10 for nine
+consecutive sessions (s14..s22) across five distinct modalities (forensics,
+rederive, synthesis, structural, permuter), on top of thirteen earlier sessions,
+with 128 disproven forms banked in `memory/grind/func_80034F88/rejected/` and
+~170,000 permuter iterations across five campaigns.
+
+**What holds the byte-match today.** `src/code6cac_b.c:3899` carries the
+cheat-bearing body: three `asm volatile("" ::: "memory")` scheduling barriers
+(cheat-asm) plus **31 regfix.txt rules** for this function (0 asmfix, not in
+`inline_asm_canonical.txt`). Measured this session: the in-tree body sandboxes at
+**24** (49 target insns vs 48 build insns) with cheats stripped; the best
+ADMISSIBLE pure-C form (`memory/grind/func_80034F88/candidate.c`, ONE C pointer
+object aliasing `D_80106A73`) sandboxes at **10** at 49/49 insns, census
+lbu 175 / sb 164 / lui 456 against the target's 176 / 164 / 456. Per the standing
+ruling the cheat stays on main so the full-build oracle remains green; the
+function is classified INCOMPLETE — owner-accepted, NOT completed.
+
+**The residual, stated mechanically.** Blocks 2 and 4 and the trailing copy loop
+are instruction- AND register-identical to target. All 10 points are in block 1:
+(a) the flag byte's base register is `$a0` where the target uses `$v1` (with the
+value register swapped the other way), and (b) one post-store reload the target
+has and our stream folds. The target holds `&D_80106A73` in TWO simultaneously
+live, INDEPENDENTLY MATERIALISED address values — its `lui $a0,%hi` / `addiu $a0`
+at 0x80034FC8/0x80034FCC are emitted BEFORE `sb $v0,0($v1)` at 0x80034FD0, i.e.
+the second base is materialised while the first is still the live base of a
+pending store, an order no one-C-object program can produce because those two
+would be the same pseudo and the set would be a def of the register the store
+reads. GCC 2.7.2 gives one allocno per pseudo (`tools/gcc-2.7.2/global.c:426`)
+and has no live-range splitting, so two base registers require two pseudos, which
+require two C objects. Both non-object routes are closed in compiler source:
+anonymous symbol references never create a pseudo (the symbol_ref stays inline in
+the MEM address on MIPS), and spilling the single pointer is short-circuited by
+`tools/gcc-2.7.2/reload.c:4128-4137`, which substitutes the REG_EQUIV constant
+instead of allocating a reload register. The gap is therefore a SOURCE-MODEL gap,
+not a search gap.
+
+**GATE 1 — canonical-asm evidence: FAILS.**
+`python3 tools/scan_hand_coded.py --single func_80034F88` (run this session,
+output at `tmp/grind/func_80034F88/s22/scan_hand_coded.txt`):
+
+    HAND_CODED: tier=LOW  score=0/8  (func_80034F88, 49 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing   [ ] S2 empty branch   [ ] S6 BIOS jumptable   (all 8 unset)
+
+Zero of eight signals, and specifically none of the STRONG tier (S1/S2/S6). Per
+`.claude/rules/endgame-lock-disposition.md` a LOW score is dispositive: refuse
+asm. The residual is a register-allocation tie-break, which is by definition
+ordinary GCC output, not a hand-coded signature.
+
+**GATE 2 — SOTN-master precedent for the closing construct: FAILS.**
+The closing construct would be two or more C pointer objects both holding
+`&D_80106A73` simultaneously (three were needed to reach sandbox 0 in s12; the
+Judge FAILed that body on 2026-08-13 16:36 and the layer-1 reviewer FAILed it at
+15:24). A first-hand census was run this session against the local SOTN master
+checkout at `C:\Users\Trenton\Desktop\sotn-decomp`, commit
+`db41b28eee52969244a52cc269c8163d1ed8826a` (master, 2026-07-01), 1,675 `.c` files
+under `src/`:
+
+- Permissive pass (`tmp/grind/func_80034F88/s22/sotn_census.py`, output
+  `sotn_census.txt`): 65 functions assign `&SYM` for one symbol to 2+ distinct
+  local handles — but essentially all are distinct SUB-OBJECTS (different array
+  elements or struct members: `&g_CurrentEntity->ext.azaghal.base` vs `.pos` vs
+  `.offset`, `&g_Entities[8]` vs `&g_Entities[5]`), i.e. ordinary program logic,
+  not duplicate handles on one address.
+- Strict pass (`sotn_census2.py`, output `sotn_census2.txt`): only **21**
+  functions give 2+ distinct handles the IDENTICAL address expression, and every
+  one is disqualified on inspection: they are in non-matching ports
+  (`src/*_psp/`, `src/pc/`, `src/saturn/`), or are global-to-global assignments,
+  or are two genuinely different walkers that merely start at the same node —
+  e.g. `src/ric/pl_blueprints.c:2219` `prim2 = prim1 = &g_PrimBuf[self->primIndex];`
+  where `prim1` is then advanced 16 nodes and both pointers write DIFFERENT
+  vertices of different primitives every iteration. That is real logic, not a
+  redundant handle retained for codegen.
+- The `fake`/`match`/`required`-annotated address-taking lines in the matched PSX
+  trees are the `FakePrim` / `VertexFake` TYPE-PUNNING family (a cast of one
+  handle to a different struct type), not a second live handle on one address.
+
+So the census came back NEGATIVE. Under the 2026-07-27 ruling a negative census
+is a FAILED gate, not an open question, and the sanctioned
+`pointer-alias-fake-exception` family's own SOTN evidence
+(`tilemap = &g_Tilemap; // n.b.! unused, required for PSP`) covers a SINGLE,
+UNUSED alias — extending it to multiple simultaneously-live load-bearing handles
+is exactly the "novel extension of an existing sanctioned family to a shape that
+family's evidence does not cover" the rule refuses.
+
+**Additional fact that sharpens the refusal (s21).** Even the banned construct in
+its cheapest two-object form does not close the function: a semantically correct
+permuter find that adds one pointer copy scores **8**, not 0, at 51 insns, because
+a copied pointer is a DEPENDENT value (it costs a `move` plus a fresh `lui` and
+leaves block 1's register naming inverted). Only a THREE-object body reached 0. So
+sanctioning the family would buy a construct that is both unprecedented and, in
+its minimal form, still not a match.
+
+**Disposition (auto-applied, nothing pending on the owner).** Both AND-gates fail,
+so per the owner's standing ruling of 2026-07-27: keep the existing regfix rules
+and scheduling barriers on main so the oracle stays green; classify
+func_80034F88 as **INCOMPLETE — OWNER-ACCEPTED**, neither COMPLETED-C nor
+COMPLETED-INLINE-ASM-CANONICAL; park it out of active grind, eligible for
+re-attempt if a genuine new pure-C lever or new tooling emerges. The retained
+cheat is NOT sanctioned as a technique — it survives only to hold the match. The
+best admissible pure-C form (floor 10) is preserved at
+`memory/grind/func_80034F88/candidate.c`; `src/` is back at HEAD.

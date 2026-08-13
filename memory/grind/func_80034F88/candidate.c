@@ -206,6 +206,34 @@
  * Zero previously needed THREE objects. So the ceiling statement is now
  * confirmed from a third independent direction (random search from both sides
  * of it), and the sub-floor scores the banned family unlocks are 8, not 0.
+ *
+ * s22 (escalation) re-measured this body once more — still 10 at 49/49 insns —
+ * and did not change a line of it. s22 was the DISPOSITION session: it evaluated
+ * the two endgame-lock AND-gates and both FAILED, so the owner's standing ruling
+ * of 2026-07-27 was applied and filed in docs/grind/decisions.md as
+ * "2026-08-13 — func_80034F88 — OWNER-ESCALATION — RESOLVED BY STANDING RULING
+ * (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE".
+ *
+ *   Gate 1 (hand-written-asm evidence), run for the first time in 22 sessions:
+ *   `tools/scan_hand_coded.py --single func_80034F88` = tier LOW, score 0/8, no
+ *   STRONG (S1/S2/S6) signal → canonical asm refused.
+ *
+ *   Gate 2 (SOTN-master precedent for multiple live C handles on one global),
+ *   censused first-hand against the local sotn-decomp master checkout (commit
+ *   db41b28eee52969244a52cc269c8163d1ed8826a, 1,675 src .c files): NEGATIVE.
+ *   Only 21 functions in all of SOTN give two distinct handles the identical
+ *   address expression, and every one is a non-matching port, a global-to-global
+ *   store, or two genuinely different walkers that merely start at the same node
+ *   (ric/maria pl_blueprints `prim2 = prim1 = &g_PrimBuf[self->primIndex];`, with
+ *   prim1 then advanced 16 nodes). The `fake`-annotated address-taking lines in
+ *   the matched PSX trees are the FakePrim/VertexFake type-punning family, not
+ *   second handles.
+ *
+ * The function is therefore parked as INCOMPLETE — OWNER-ACCEPTED: main keeps
+ * the 31 regfix rules + three scheduling barriers that hold the byte-match (the
+ * oracle stays green), the retained cheat is NOT sanctioned as a technique, and
+ * THIS file remains the best admissible pure-C form at floor 10. It is eligible
+ * for re-attempt if a genuinely new pure-C lever or new tooling appears.
  */
 void func_80034F88(void) {
     s32 *p;
