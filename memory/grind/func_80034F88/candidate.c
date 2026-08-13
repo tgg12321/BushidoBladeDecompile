@@ -1,128 +1,126 @@
 /*
- * func_80034F88 — best NON-BANNED form, grind session s14 (forensics modality).
- * Honest sandbox (`sandbox func_80034F88 --disable all`): **score 10**,
- *   49 build insns vs 49 target insns.  Previous best non-banned form was
- *   s12b/s13's `static inline` helper at 13, so this is a floor drop 13 -> 10.
- * NOT installed in src/ (src/code6cac_b.c is left at its committed state, as
- *   s12b and s13 also left it).
+ * func_80034F88 — grind session s15 (forensics modality).
  *
- * =====================================================================
- * WHAT THIS FORM IS, AND THE CLASSIFICATION CAVEAT UP FRONT
- * =====================================================================
- * ONE pointer local (`u8 *q`) declared once, ASSIGNED `&D_80106A73` three
- * times: before the mask, and again at the top of the bit-2 and bit-4 blocks.
- * The two later assignments are value-redundant — `q` already holds that
- * address when they execute.  That is a dead self-assign to a LOCAL, which is
- * on the frozen SOTN-sanctioned list, but it is also unmistakably in the same
- * INTENT family as the construct the driver banned for this function (four
- * repeated `u8 *q = &D_80106A73;` block-scoped declarations).  This file is
- * banked as the best MEASURED non-banned form and as the carrier of the s14
- * mechanism; it is NOT a submittable candidate and must NOT be sent to a Judge
- * without a ruling.  See the s14 section of evidence.md for the full argument
- * and the ruling question.
+ * ============================ READ THIS FIRST ============================
+ * THIS FORM MEASURES **SCORE 0** ON THE HONEST SANDBOX
+ * (`sandbox func_80034F88 --disable all`, 49 build insns vs 49 target insns,
+ * lbu 176 / sb 164 / lui 456 — the target's exact access census).  It is
+ * s15/variants/v1.c.  It was NOT installed in src/ and it was deliberately NOT
+ * submitted as `candidate-ready`.  s15 returned `ruling-request` instead.
  *
- * =====================================================================
- * WHY IT WORKS — the s14 mechanism, read out of cc1 -da dumps
- * =====================================================================
- * 1. Each flag block is a TWO-ARMED `if/else`, so it emits a conditional
- *    branch, an unconditional jump, a barrier and TWO code labels.  On that
- *    chassis `cse_end_of_basic_block` ENDS the cse basic block at the join
- *    label and the value table is flushed.  (s2 concluded the join labels are
- *    NOT cse boundaries, citing the LABEL_NUSES == 1 "branch skips a block"
- *    extension at cse.c:8102-8184.  That was correct for s2's ONE-ARMED
- *    `val2 = val|K; if (!c) val2 = val;` chassis, where the branch really does
- *    skip a block and fall through.  It is FALSE on the two-armed chassis every
- *    form since s10 has used.  The dumps show the flush directly.)
- * 2. A pointer pseudo RE-USED across the flush loses nothing that matters: the
- *    previous block's store and the next block's load are the identical address
- *    rtx `(mem:QI (reg 74))` inside the same post-flush block, so cse records
- *    the store and forwards it — the reload dies — and one pseudo means one
- *    lui/addiu for the whole function.  That is the 29-point one-handle form.
- * 3. A FRESH SET of the address AFTER the flush changes both halves at once:
- *    the new `(set (reg N) (symbol_ref "D_80106A73"))` finds nothing in the
- *    flushed table so it SURVIVES as a real lui/addiu materialisation, and the
- *    previous block's store — addressed through a pseudo whose value the table
- *    no longer knows — hashes differently from the new block's load, so the
- *    load SURVIVES as a real lbu.  Reloads AND an unfolded shared base at the
- *    same time, with zero volatile.  This is the answer to the tension s1-s3
- *    called "mutually exclusive".
- * 4. THE NEW PART: the fresh set does not need a fresh DECLARATION.  A plain
- *    re-ASSIGNMENT of the same local has the identical effect, because what cse
- *    keys on is whether the symbol_ref is in the (flushed) table, not on how
- *    many C objects exist.  RTL proof: s14/rtl/r1/code6cac_b.i.cse retains
- *    THREE `(set (reg/v:SI 74) (symbol_ref "D_80106A73"))` insns (14, 59, 93)
- *    and all eight QI mems, while s14/rtl/w1/code6cac_b.i.cse has one such set
- *    and only five QI mems (three loads forwarded away).
- * 5. Corollary that explains a measurement: an assignment placed BEFORE a flush
- *    is deleted by cse as redundant.  The bit-1 block's assignment in the
- *    "assign in every block" variant is gone from the .cse dump, which is why
- *    that variant and this one compile to byte-identical code and both score 10.
+ * WHY IT IS BLOCKED.  The driver's BANNED-CONSTRUCTS list for this function
+ * bans "four separate `u8 *q = &D_80106A73;` local pointer declarations (one
+ * per flag block)", both as a claimed pointer-alias-fake-exception AND as
+ * "ordinary program logic".  This form is NOT that construct literally — it
+ * declares THREE function-scope pointers (`qm` for the 0xF8 mask, `q1` for the
+ * bit-1 block, `q2` re-assigned for the bit-2 and bit-4 blocks) — but it is
+ * plainly in the SAME INTENT FAMILY: multiple C handles on one global existing
+ * to give GCC's allocator more allocnos.  Under cheat-checklist T5 ("it is
+ * different because it is spelled with X instead of Y is exactly the loophole
+ * the policy forbids") a session may not self-approve that.  The additional
+ * lever it carries — declaring the six value locals BEFORE the pointers — is
+ * from the frozen sanctioned "named-intermediate declaration order" family, but
+ * it is chosen here for a documented allocator reason (see below), which is
+ * itself a T3 signal.  So: DO NOT INSTALL AND SUBMIT THIS WITHOUT AN OWNER
+ * RULING.  The ruling question is in s15's outcome JSON and in evidence.md.
  *
- * =====================================================================
- * THE RESIDUAL 10 POINTS — entirely the FIRST SEGMENT's registers
- * =====================================================================
- * Side-by-side (s14/sbs.py): the bit-2 and bit-4 blocks and the whole copy loop
- * are instruction- AND register-identical to target.  Everything that differs
- * is the mask + bit-1 segment: target puts the base in a0 and the loaded byte
- * in v1, this build swaps them (base v1, byte a0), and target's bit-1 block has
- * a load-delay `nop` where this build has a memory op.  With ONE pseudo re-set
- * three times, local-alloc gives the pointer a single hard register for the
- * whole function, so the first segment cannot be allocated differently from the
- * rest.  FOUR DISTINCT pseudos (the banned form) is what produces the target
- * allocation — and 2- and 3-pseudo splits are measured WORSE, not better
- * (21 and 23), so this is not a monotone "more handles is better" axis.
+ * The best form s15 considers unambiguously outside the ban is s15/variants/
+ * t1.c (TWO pointer objects + the declaration-order lever) at score 10 — the
+ * same floor s14 reached with one re-assigned pointer.  10 is therefore the
+ * recorded honest floor.
+ *
+ * ======================= WHY IT WORKS (s15 forensics) =======================
+ * Read out of instrumented-cc1 dumps (tmp/grind/func_80034F88/s15/rtl/*, the
+ * BB2_ALLOC_DEBUG / BB2_SUGG_DEBUG traces).  Three named GCC decisions, in
+ * order:
+ *
+ * 1. cse.c value-table flush at the two-armed if/else join labels (the s14
+ *    finding, unchanged): a pointer SET placed after a flush survives as a real
+ *    lui/addiu materialisation and stops the previous block's store forwarding
+ *    into the next block's load.  That is what produces lbu 176 / lui 456.
+ *
+ * 2. cse.c rewrites a pointer set that is NOT after a flush into a REGISTER
+ *    COPY.  `q1 = &D_80106A73;` inside the bit-1 block sits before the first
+ *    flush, so the .lreg RTL carries `(set (reg/v:SI 77) (reg/v:SI 74))` — a
+ *    copy from the mask block's pointer pseudo.  The mask pseudo is confined to
+ *    one basic block, so local-alloc.c assigns it a hard register before
+ *    global.c ever runs, and the copy gives the bit-1 pointer allocno a
+ *    copy-preference for that same hard register.
+ *
+ * 3. global.c `allocno_compare` orders allocation by
+ *        pri = floor_log2(n_refs) * n_refs * 10000 * size / live_length
+ *    and `find_reg` excludes `regs_someone_prefers[allocno]` — the registers a
+ *    conflicting, not-yet-allocated allocno prefers.  With the pointer split
+ *    into per-segment allocnos their priorities fall to ~2142-3076, so the
+ *    three loaded-byte allocnos (pri 7500) are allocated FIRST, and the bit-1
+ *    byte is pushed off $v1 (preferred by the copy-linked pointer allocno) onto
+ *    $a0.  That is exactly the target's first segment: base $v1, byte $a0,
+ *    with base $a0 / byte $v1 in the bit-2 and bit-4 segments.
+ *
+ * With ONE pointer object (s14's floor-10 form) the pointer is ONE pseudo =
+ * ONE allocno = ONE hard register for the whole function, so the first segment
+ * can never be allocated differently from the other two: GCC 2.7.2's global.c
+ * has no live-range splitting.  That is why 10 is a hard floor for every
+ * single-object shape, whatever its live-range spelling.
+ *
+ * The declaration-order lever is the tie-break in the same comparator: when the
+ * mask+bit-1 pointer allocno and the byte allocnos tie at pri 7500,
+ * `allocno_compare` falls through to `return *v1 - *v2;` — the allocno number,
+ * which follows pseudo number, which follows declaration order.  Declaring the
+ * value locals before the pointers is worth 11 points on the two-object chassis
+ * (t2 = 21 -> t1 = 10) and 13 on this three-object chassis (v3 = 13 -> v1 = 0).
  */
 void func_80034F88(void) {
     s32 *p;
     s32 i;
-    u8 *q;
+    s32 va;
+    s32 vb;
+    s32 vc;
+    s32 ca;
+    s32 cb;
+    s32 cc;
+    u8 *qm;
+    u8 *q1;
+    u8 *q2;
 
     p = func_80077D00();
-    q = &D_80106A73;
-    *q &= 0xF8;
+    qm = &D_80106A73;
+    *qm &= 0xF8;
 
     {
-        s32 v;
-        s32 c;
-
-        c = p[8] & 1;
-        v = *q;
-        if (c) {
-            c = v | 1;
+        q1 = &D_80106A73;
+        ca = p[8] & 1;
+        va = *q1;
+        if (ca) {
+            ca = va | 1;
         } else {
-            c = v;
+            ca = va;
         }
-        *q = c;
+        *q1 = ca;
     }
 
     {
-        s32 v;
-        s32 c;
-
-        q = &D_80106A73;
-        c = p[8] & 2;
-        v = *q;
-        if (c) {
-            c = v | 2;
+        q2 = &D_80106A73;
+        cb = p[8] & 2;
+        vb = *q2;
+        if (cb) {
+            cb = vb | 2;
         } else {
-            c = v;
+            cb = vb;
         }
-        *q = c;
+        *q2 = cb;
     }
 
     {
-        s32 v;
-        s32 c;
-
-        q = &D_80106A73;
-        c = p[8] & 4;
-        v = *q;
-        if (c) {
-            c = v | 4;
+        q2 = &D_80106A73;
+        cc = p[8] & 4;
+        vc = *q2;
+        if (cc) {
+            cc = vc | 4;
         } else {
-            c = v;
+            cc = vc;
         }
-        *q = c;
+        *q2 = cc;
     }
 
     for (i = 0; i < 3; i++) {

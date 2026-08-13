@@ -1643,3 +1643,128 @@ been carrying since s12.
 - [s14] [s14] CLASSIFICATION CAVEAT, stated and not self-approved: r8's two later `q = &D_80106A73;` assignments are value-redundant — q already holds that address. As written they are dead self-assigns to a LOCAL, which is on the frozen SOTN-sanctioned list, but they are in the same INTENT family as the four repeated block-scoped declarations the driver banned for this function, and a banned construct respelled is the same construct. s14 therefore did not submit, did not install in src/, and folded the question into the standing F2 escalation.
 
 - [s14] [s14] Reusable instruments left behind: tmp/grind/func_80034F88/s14/dump.sh (splice a variant into src/, cpp + the INSTRUMENTED tools/gcc-2.7.2/cc1 with -da, collect every RTL dump plus BB2_* debug stderr, restore src/), splice.py, slice.py (per-pass census of address pseudos / symbol-addressed mems / QI mems), flat.py (one compact line per insn from any -da dump), probe.py (honest sandbox + lbu/sb/lui census per variant), sbs.py. The instrumented cc1 exposes BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG / BB2_FINDREG_DEBUG / BB2_RANK_DEBUG / BB2_QTY_DEBUG / BB2_SCHED_DEBUG / BB2_RELOAD_DEBUG and nine more env-gated hooks; s14 used none of them and they are the obvious instrument for the remaining allocation question.
+
+
+## s15 (forensics) — the register allocation is now fully explained, and a THREE-object form measures 0
+
+### Harness / artifacts
+`tmp/grind/func_80034F88/s15/dump.sh <variant> [ENV=1 ...]` is s14's dump
+harness re-pointed at `s15/rtl/`; it splices a variant from
+`tmp/grind/func_80034F88/s14/variants/` into src/, runs cpp + the INSTRUMENTED
+`tools/gcc-2.7.2/cc1` with `-da`, and restores src/. `s15/flatten.py <v> <pass>`
+prints one line per insn of func_80034F88 out of any RTL dump. `s15/probe.py`
+and `s15/sbs.py` are s14's, re-pointed at `s15/variants/`. Dumps taken this
+session: r8, w4, r19, t1.
+
+### VALIDITY CHECK, done first (bank this — it was never checked before)
+`engine/buildconfig.py:19` compiles with `tools/gcc-2.7.2/build/cc1`, while the
+INSTRUMENTED compiler is `tools/gcc-2.7.2/cc1` — two different binaries (md5
+8837b7da… vs 29b10d86…). Every forensics session since s11 has read dumps from
+the instrumented one and compared them against sandbox scores from the other.
+`tmp/grind/func_80034F88/s15/xcheck.sh` compiles the same .i with BOTH and diffs
+func_80034F88's asm: **IDENTICAL**. The instrumentation is print-only and the
+dumps are representative. Re-run xcheck.sh if either binary is ever rebuilt.
+
+### LEDGER CORRECTION — s14 recorded the residual's orientation backwards
+s14's frontier says "target has base a0 / byte v1 there, the build has base v1 /
+byte a0". It is the other way round. From `asm/funcs/func_80034F88.s` directly:
+the mask + bit-1 segment is `lui $v1 / addiu $v1 / lbu $a0,0($v1) / andi $a0 /
+sb $a0,0($v1) / lw $v0 / lbu $a0,0($v1)` — **target base $v1, byte $a0** — and
+the bit-2 / bit-4 segments are base $a0, byte $v1. The floor-10 build has base
+$a0 / byte $v1 in ALL THREE segments. (In `s15/sbs_t1.txt`, i.e. sbs.py's
+output, the LEFT column is the TARGET and the RIGHT column is the build.)
+
+### THE MECHANISM, named end to end
+Three GCC decisions, all read out of the dumps, produce the target's register
+assignment:
+
+1. **cse.c value-table flush at the two-armed if/else join labels** (s14's
+   finding, re-confirmed). A pointer SET after a flush survives as a real
+   lui/addiu; the previous block's store then no longer hashes equal to the next
+   block's load, so the reload survives. This is what moves lbu 173 to 176.
+
+2. **cse.c rewrites a pointer set that is NOT after a flush into a register
+   COPY.** In the banned four-declaration form w4, `s15/rtl/w4/code6cac_b.i.lreg`
+   insn 27 is `(set (reg/v:SI 77) (reg/v:SI 74))` — the bit-1 block's handle is a
+   copy of the mask block's handle, not a fresh symbol_ref. reg 74 is confined to
+   one basic block, so **local-alloc.c** gives it a hard register before global
+   allocation runs, and the copy gives allocno 77 a preference for that register.
+
+3. **global.c `allocno_compare` + `find_reg`'s `regs_someone_prefers`.**
+   Priority is `floor_log2(n_refs) * n_refs * 10000 * size / live_length`
+   (global.c:643-648; the ALLOCDBG line prints exactly this). Measured, for
+   func_80034F88:
+
+   | form | pointer allocnos | pri | alloc order | result |
+   |---|---|---|---|---|
+   | r8 (one object re-set 3x) | one pseudo, 10 refs / len 29 | 10344 | ord 4, BEFORE the bytes | pointer takes $a0 for the whole function, all bytes $v1 — score 10 |
+   | r19 = t2 (two objects, pointers declared first) | 6 refs / len 16 and 4 / 26 | 7500, 3076 | the 7500 ties the bytes and wins on allocno number | 21 |
+   | t1 (two objects, values declared first) | same | same | the tie now goes to the BYTES | 10 |
+   | w4 (banned, four declarations) | 3 refs / len 14 each | 2142 | ord 8-10, AFTER the bytes and after `p` | bit-1 byte pushed off $v1 onto $a0, pointer then takes $v1 = TARGET, score 0 |
+
+   `find_reg` does `IOR_HARD_REG_SET (used, regs_someone_prefers[allocno])`
+   (global.c:1001) — an allocno avoids registers that a conflicting,
+   not-yet-allocated allocno prefers. That is the step that puts the bit-1 byte
+   in $a0 in w4 and leaves $v1 for the copy-linked pointer.
+
+### THE STRUCTURAL CONSEQUENCE (kills s14's frontier hypothesis outright)
+GCC 2.7.2's global.c has **no live-range splitting**: one C pointer object gives
+one DECL_RTL pseudo, one allocno and ONE hard register for the whole function.
+The target uses TWO different hard registers for the flag-byte base ($v1 for the
+mask + bit-1 segment, $a0 for bit-2 / bit-4). Therefore **no single-pointer-
+object form can ever score below 10, whatever its live-range shape** — the s14
+frontier's question ("which other live-range shape produces two allocnos without
+two pointer objects") has the answer: none exists. Do not spend another session
+on live-range spellings of one handle.
+
+### THE DECLARATION-ORDER LEVER (new, and it is worth 11-13 points)
+When the pointer allocno and the byte allocnos tie at pri 7500,
+`allocno_compare` falls through to `return *v1 - *v2;` — the allocno number,
+which follows pseudo number, which follows DECLARATION ORDER. Declaring the six
+value locals before the pointer locals flips that tie:
+  * two-object chassis: t2 (pointers first) **21** → t1 (values first) **10**
+  * three-object chassis: v3 (pointers first) **13** → v1 (values first) **0**
+Declaration order is on the frozen sanctioned list ("named-intermediate
+declaration order"), but note the choice here is made for an allocator reason.
+s3 measured "declaration order is neutral" — true on the one-object chassis,
+where the single pointer allocno prices at 10344 and there is no tie to break.
+
+### THE 0
+`s15/variants/v1.c` — THREE function-scope pointer objects (`qm` for the mask,
+`q1` set inside the bit-1 block, `q2` set inside the bit-2 block and re-set
+inside the bit-4 block) plus the declaration-order lever — measures **score 0 at
+49/49 insns, lbu 176 / sb 164 / lui 456**. `v2.c`, identical except that the
+bit-1 handle is spelled `q1 = qm;` (an explicit pointer copy, which is what cse
+produces from `q1 = &D_80106A73;` anyway), also measures **0**. Both are banked:
+v1 at `memory/grind/func_80034F88/candidate.c`, v2 at `s15/variants/v2.c`.
+
+**Neither was submitted.** The driver's ban covers "four separate
+`u8 *q = &D_80106A73;` local pointer declarations (one per flag block)" under
+both the pointer-alias family and the ordinary-program-logic reading. Three
+function-scope objects with four assignments is not that construct literally,
+but it is the same intent — extra C handles on one global whose only purpose is
+to give the allocator more allocnos — and cheat-checklist T5 forbids a session
+from self-approving a respelling. s15 therefore returned `ruling-request`.
+
+### Forms measured this session (honest sandbox, `--disable all`)
+
+    t1  two objects, values declared first .......... 10  (49 insns, lbu 175)
+    t2  two objects, pointers declared first ........ 21  (= s14's r19)
+    t3  values split around the pointers ............ 10
+    t5  two objects, next handle staged pre-store ... 20  (lbu 174)
+    t6  three objects, staged pre-store ............. 23
+    t7  t6 with pointers declared first ............. 23
+    t8  two objects, one staged one in-block ........ 10
+    u1  symbol-spelled mask + two objects ........... 16  (51 insns, lbu 176)
+    u2  symbol mask + three objects ................. 27
+    u3  u1 with pointers declared first ............. 27
+    u4  u1 with the mask written out longhand ....... 16
+    v1  three objects, values declared first ........  0  (49 insns, lbu 176)
+    v2  v1 with `q1 = qm;` ..........................  0
+    v3  v1 with pointers declared first ............. 13
+    v4  v2 with pointers declared first ............. 13
+
+### Harness gotcha worth banking
+`BB2_FINDREG_DEBUG` takes a **pseudo number**, not a boolean — `=1` silently
+matches pseudo 1 and prints nothing. Use `BB2_FINDREG_DEBUG=<pseudo>` (or
+`BB2_RELOAD_DEBUG=1`, which dumps every retrying call).

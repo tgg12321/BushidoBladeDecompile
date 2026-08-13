@@ -1617,3 +1617,47 @@ evidence - not another sweep.
 - probe: Six variants on the 10-point chassis: declaration-order permutations (r15, r16), the mask split into read/and/write through the handle (r17), `*q = *q & 0xF8` (r22), a `u8 m` staging local (r23), and read-before-condition in the bit-1 block (r24).
 - result: ALL SIX score exactly 10 at 49 insns — a hard plateau. The side-by-side (s14/sbs.py) shows why: the bit-2 block, the bit-4 block and the whole copy loop are instruction- AND register-identical to target, and the entire residual is the mask + bit-1 segment — target puts the base in a0 and the loaded byte in v1, the build swaps them, and target's bit-1 block carries a load-delay nop where the build has a memory op.
 - verdict: KILLED
+
+## Resolved in s15 (forensics)
+
+## [s15] The last 10 points are a pure local-alloc question: some OTHER live-range shape for ONE pointer object can give the mask + bit-1 segment a different hard register from the bit-2 / bit-4 segments (s14's live frontier).
+- mechanism: s14 proposed that a re-assignment making the pointer dead between segments, an extra local whose live range crosses the first segment, or a different first-use order could give the allocator two allocnos for one declared pointer.
+- probe: Instrumented-cc1 dumps (BB2_ALLOC_DEBUG / BB2_SUGG_DEBUG) of r8 (one object, 10), w4 (four declarations, banned, 0), r19 (two objects, 21) and t1 (two objects + declaration order, 10), read against global.c's allocno_compare and find_reg; plus 15 measured variants (t1-t8, u1-u4, v1-v4).
+- result: KILLED as stated, and killed structurally rather than by sweep. GCC 2.7.2's global.c has no live-range splitting: one C pointer object is one DECL_RTL pseudo, one allocno and ONE hard register for the entire function. ALLOCDBG confirms it directly - r8's single pointer pseudo 74 has nrefs=10, live_length=29, priority 10344, is allocated at ord=4 ahead of the three byte allocnos (7500) and takes $a0 for the whole function. The target uses TWO different hard registers for the flag-byte base ($v1 for the mask + bit-1 segment, $a0 for bit-2 / bit-4 - note s14 recorded this orientation BACKWARDS). No single-object form can produce two base registers, so 10 is a hard floor for the entire one-handle family regardless of live-range spelling.
+- verdict: KILLED
+
+## [s15] The forensics line since s11 is valid: the instrumented cc1 whose dumps every forensics session reads is codegen-identical to the cc1 the sandbox actually builds with.
+- mechanism: engine/buildconfig.py:19 compiles with tools/gcc-2.7.2/build/cc1 while the BB2_*_DEBUG-instrumented compiler is tools/gcc-2.7.2/cc1 - two different binaries (md5 8837b7da... vs 29b10d86...) that no session had ever cross-checked.
+- probe: tmp/grind/func_80034F88/s15/xcheck.sh - compile the same preprocessed code6cac_b.i with both binaries and diff func_80034F88's emitted asm.
+- result: CONFIRMED IDENTICAL for the r8 chassis. The instrumentation is print-only; the dumps are representative of the scored build. Re-run xcheck.sh if either binary is rebuilt.
+- verdict: CONFIRMED
+
+## [s15] The target's first-segment register assignment is produced by a copy-preference interaction in global.c, and the number of DECLARED pointer objects matters only through allocno priority.
+- mechanism: global.c allocno_compare (lines 643-648) orders allocation by floor_log2(n_refs)*n_refs*10000*size/live_length; find_reg then excludes regs_someone_prefers[allocno] (global.c:1001), i.e. the registers a conflicting not-yet-allocated allocno prefers. In the banned four-declaration form the mask handle is confined to one basic block so local-alloc.c assigns it a hard register first; cse rewrites the bit-1 block's handle set into a register COPY from it (s15/rtl/w4/code6cac_b.i.lreg insn 27), which gives that allocno a copy-preference; and because each pointer allocno then carries only 3 refs over 14 insns its priority is 2142, so all three pointers are allocated AFTER the three byte allocnos (7500) and after `p` (3529). The bit-1 byte is pushed off $v1 by regs_someone_prefers and takes $a0; the pointer then takes $v1. That is exactly the target.
+- probe: ALLOCDBG traces for r8 / w4 / r19 / t1 plus .lreg flattening (s15/flatten.py), cross-checked against the emitted asm and asm/funcs/func_80034F88.s.
+- result: CONFIRMED, and it is a complete explanation of the residual: the priority table predicts every measured score. r8's pointer at 10344 allocates before the bytes (10); r19's two-object pointer ties the bytes at 7500 and wins on allocno number (21); t1 is the same body with the value locals declared FIRST so the tie goes to the bytes (10); w4's three pointer allocnos at 2142 allocate last (0).
+- verdict: CONFIRMED
+
+## [s15] Declaration order at function scope is worth double-digit points on this function, because it decides a priority TIE in global.c's allocno comparator.
+- mechanism: allocno_compare ends with `return *v1 - *v2;` - the allocno number, which follows pseudo number, which follows DECL order. When the mask+bit-1 pointer allocno and the three loaded-byte allocnos both price at 7500, declaration order alone decides who picks a hard register first.
+- probe: Matched pairs differing ONLY in whether the six value locals are declared before or after the pointer locals: t1 vs t2 (two pointer objects) and v1 vs v3 (three pointer objects); honest sandbox --disable all.
+- result: CONFIRMED and large. Two-object chassis 21 -> 10; three-object chassis 13 -> 0. This lever was never isolated in fourteen prior sessions (s3 measured "declaration order is neutral" on the one-object chassis, which is true there - with one pointer allocno at 10344 there is no tie to break).
+- verdict: CONFIRMED
+
+## [s15] A THREE-object pointer form reaches the target bytes, so the four banned declarations are not the unique route.
+- mechanism: The three ingredients above, spelled with three function-scope pointers: `qm` for the 0xF8 mask (block-local, so local-alloc assigns it first), `q1` set inside the bit-1 block (before the first cse flush, so cse turns it into a copy of qm and it inherits the copy-preference), and `q2` set inside the bit-2 block and re-set inside the bit-4 block (both after a flush, so both survive as real materialisations) - plus the six value locals declared before the pointers to win the priority tie.
+- probe: s15/variants/v1.c and v2.c (v2 spells the bit-1 handle `q1 = qm;` explicitly), honest sandbox --disable all plus the objdump census.
+- result: BOTH SCORE 0 at 49 build insns vs 49 target insns, lbu 176 / sb 164 / lui 456 - the target's exact access census. NOT SUBMITTED: three handles on one global whose purpose is to give the allocator more allocnos is the same INTENT as the four declarations the driver banned, and cheat-checklist T5 forbids a session from self-approving a respelling. s15 returned ruling-request with these forms attached as the evidence.
+- verdict: CONFIRMED (as codegen), CLASSIFICATION-BLOCKED (as a submission)
+
+## [s15] s2's 'stage the next block's pointer before the current block's store' lever transfers to the multi-object chassis.
+- mechanism: s2 measured that assigning the next block's handle before the current block's store scored 12 against 18 for assigning it before the condition, and the target's own asm does put block 2's lui/addiu ahead of block 1's sb.
+- probe: t5 (two objects, staged), t6 (three objects, staged), t8 (mixed) against t1 and v1 on the same declaration order.
+- result: KILLED on this chassis. t5 = 20 with lbu 174 (two reloads lost), t6 = 23, t8 = 10 (no gain). Staging moves the handle's SET to BEFORE the cse value-table flush, which degrades the fresh materialisation into a register copy and lets the next block's load be forwarded away. s2's lever was measured on the one-armed chassis where the join labels are not flushes; it is negative on the two-armed if/else chassis. The 0-scoring form sets each handle INSIDE its own block, after the previous join label.
+- verdict: KILLED
+
+## [s15] Spelling the 0xF8 mask through the plain symbol frees the pointer objects to reproduce the target's bases.
+- mechanism: If the mask does not consume a pointer handle, the mask+bit-1 pointer allocno loses two refs, which should drop its priority below the byte allocnos' 7500 without needing a third object.
+- probe: u1 (`D_80106A73 &= 0xF8;` + two pointer objects), u4 (same, mask written longhand), u2 (three objects), u3 (u1 with pointers declared first).
+- result: KILLED. 16 / 16 / 27 / 27, all at 51 insns with lui 458. u1 is the first TWO-object form to produce all four target reloads (lbu 176), but the symbol-spelled mask pays its own address materialisation instead of sharing the bit-1 block's base, costing 2 instructions and 2 luis; the target's mask block and bit-1 block share one unfolded $v1 base.
+- verdict: KILLED
