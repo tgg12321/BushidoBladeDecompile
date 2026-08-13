@@ -100,11 +100,10 @@ def validate_self_vet(root, func):
 
 
 def _declared_constructs(root, func):
-    """Lowercased text of the self-vet's declared constructs (whole file, so a
-    construct mentioned anywhere in the vet still trips the banned check)."""
+    """Self-vet text, ORIGINAL CASE (section headings are ALL-CAPS)."""
     try:
         with open(self_vet_path(root, func), encoding="utf-8", errors="replace") as f:
-            return f.read().lower()
+            return f.read()
     except OSError:
         return ""
 
@@ -113,9 +112,14 @@ def _significant_terms(text):
     """Content words of a banned-construct phrase, for substring matching.
 
     Deliberately crude: the ban is a TRIPWIRE, not a parser. If enough of the
-    phrase's content words appear in the self-vet, the session is re-proposing
-    the banned thing under some spelling and the driver makes it explain itself
-    rather than burning a Judge cycle."""
+    phrase's content words appear in the DECLARED constructs, the session is
+    re-proposing the banned thing under some spelling and the driver makes it
+    explain itself rather than burning a Judge cycle.
+
+    (Weighting these toward code-ish 'distinctive' tokens was tried and
+    reverted: most bans are plain English — "shared return label with goto end
+    accumulator" — and demanding identifiers made those bans inert, which
+    silently disarms the tripwire instead of narrowing it.)"""
     stop = {"the", "a", "an", "of", "to", "in", "for", "and", "or", "is", "it",
             "that", "this", "with", "on", "as", "by", "be", "was", "not", "no",
             "construct", "family", "form", "use", "using", "used", "cheat"}
@@ -123,12 +127,50 @@ def _significant_terms(text):
             if w not in stop]
 
 
+# Section boundaries are ALL-CAPS headings, so this must run on ORIGINAL-case
+# text; matching [A-Z] against lowercased text finds no boundary and silently
+# widens the "section" to the whole file.
+_CONSTRUCTS_SEC = re.compile(r"^CONSTRUCTS?\b.*?(?=^[A-Z][A-Z /_-]{3,}:)", re.M | re.S)
+
+_DISCLAIM = re.compile(
+    r"\b(not present|is banned|was banned|banned and|no longer|not used|"
+    r"does not|do not|did not|never|avoided|avoid|without|retired|removed|"
+    r"rejected|forbidden|must not|cannot)\b")
+
+
+def _strip_disclaimers(text):
+    """Drop sentences that ASSERT ABSENCE. A vet is REQUIRED to address a
+    standing ban, and "X is BANNED and is NOT present here" is the honest way to
+    do it — reading that as a re-declaration punishes the wanted behaviour."""
+    return " ".join(s for s in re.split(r"(?<=[.;:])\s+|\n", text)
+                    if not _DISCLAIM.search(s))
+
+
 def _ban_trips(ban_text, vet_text):
-    """The tripwire match: enough of the ban's content words appear in the vet."""
+    """The tripwire match: enough of the ban's content words appear in what the
+    vet DECLARES it used.
+
+    SCOPE is the fix for the 2026-08-12 false positive (func_800645B0). The
+    check used to read the WHOLE vet, so a long prose ban — mostly domain
+    vocabulary like 'relocated / from / inner / loop / body' — matched any vet
+    that merely DISCUSSED the banned axis. It discarded a session whose vet
+    honestly said the construct "is BANNED and is NOT present here", throwing
+    away a sandbox-0 candidate, and it would fire again on every honest vet:
+    sessions are REQUIRED to reason about a standing ban, so reading that
+    reasoning as a re-declaration punishes exactly the wanted behaviour.
+
+    Now: scan the CONSTRUCTS section (the declaration), fall back to the whole
+    file only if the vet has no such section (i.e. is malformed), and drop
+    sentences that assert ABSENCE. A construct used but never declared is a
+    vet-completeness failure the default-FAIL Judge catches; this tripwire only
+    saves Judge cycles on respelling loops, so erring toward the Judge is the
+    safe direction."""
     terms = _significant_terms(ban_text)
     if len(terms) < 2:
         return False, []
-    hits = [t for t in terms if t in vet_text]
+    m = _CONSTRUCTS_SEC.search(vet_text)
+    decl = _strip_disclaimers((m.group(0) if m else vet_text).lower())
+    hits = [t for t in terms if t in decl]
     return len(hits) >= max(2, int(len(terms) * 0.5)), hits
 
 

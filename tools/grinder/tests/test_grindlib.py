@@ -442,5 +442,102 @@ class TestModalityRouting(unittest.TestCase):
         self.assertIn("self_vet.md", b)
 
 
+class TestBannedConstructTripwire(unittest.TestCase):
+    """Regression cover for the 2026-08-12 false-positive discard.
+
+    A long prose ban made mostly of domain vocabulary ('relocated', 'from',
+    'inner', 'loop', 'body') matched any vet discussing the same subject — and
+    discarded a session whose candidate measured sandbox 0, because its vet
+    honestly said the banned construct was NOT present."""
+
+    BAN = ("`j += 1;` relocated from after the inner-loop body to between "
+           "`idx = i + j;` and `val = 1;`, chosen from an 8-variant hand-authored "
+           "sweep (tmp/grind/func_800645B0/s1/sweep.py) specifically because it "
+           "flips which instruction (`addu $s0,$s3,$a0` vs `li $v1,1`) cc1's "
+           "first-pass scheduler and reorg.c's back-edge delay-slot steal pick first")
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1b")
+        self.assertTrue(G.add_banned_construct(self.root, "func_X", self.BAN))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def vet(self, text):
+        with open(G.self_vet_path(self.root, "func_X"), "w", encoding="utf-8") as f:
+            f.write(text)
+        return G.check_banned_constructs(self.root, "func_X")
+
+    def test_disclaiming_the_ban_does_not_trip(self):
+        ok, why = self.vet(
+            "# SELF-VET\n\n"
+            "CONSTRUCTS: (1) `val` reused for the constant 1 and the OR result;\n"
+            "(2) canonical for-loop spelling in both loops.\n\n"
+            "PRECEDENT: the session-4 layer-1 FAIL was on the relocated `j += 1;`\n"
+            "statement, which is BANNED and is NOT present here: both loops are\n"
+            "written in the canonical for form.\n")
+        self.assertTrue(ok, why)
+
+    def test_forensic_discussion_without_negation_does_not_trip(self):
+        ok, why = self.vet(
+            "CONSTRUCTS: (1) `val` reused for the constant 1.\n\n"
+            "WHY THE PRIOR AXIS IS CLOSED: session 4 placed `j += 1;` between\n"
+            "`idx = i + j;` and `val = 1;`, flipping addu $s0,$s3,$a0 against\n"
+            "li $v1,1 in cc1's first pass; reorg.c then took the other insn.\n")
+        self.assertTrue(ok, why)
+
+    def test_genuine_redeclaration_still_trips(self):
+        ok, why = self.vet(
+            "CONSTRUCTS: (1) `j += 1;` relocated from after the inner-loop body to\n"
+            "sit between `idx = i + j;` and `val = 1;`, which flips which instruction\n"
+            "cc1's first-pass scheduler picks (addu $s0,$s3,$a0 vs li $v1,1), chosen\n"
+            "from the s1 sweep.py variants because reorg.c's back-edge delay-slot\n"
+            "steal then takes it.\n")
+        self.assertFalse(ok)
+        self.assertIn("BANNED", why)
+
+    def test_disclaimer_cannot_launder_a_redeclaration(self):
+        """Appending "this is NOT the banned construct" to an actual
+        re-declaration must not buy a pass: the strip drops only the sentence
+        asserting absence, never the affirmative declaration around it."""
+        ok, why = self.vet(
+            "CONSTRUCTS: (1) `j += 1;` relocated from after the inner-loop body to\n"
+            "sit between `idx = i + j;` and `val = 1;`, which flips which instruction\n"
+            "cc1's first-pass scheduler picks (addu $s0,$s3,$a0 vs li $v1,1), chosen\n"
+            "from the s1 sweep.py variants because reorg.c's back-edge delay-slot\n"
+            "steal then takes it.\n"
+            "This is NOT the banned construct, because I spelled it differently.\n")
+        self.assertFalse(ok, "a disclaimer sentence must not launder a re-declaration")
+        self.assertIn("BANNED", why)
+
+    def test_short_paraphrase_is_left_to_the_judge(self):
+        """Documents a real limit rather than pretending it away: against a long
+        prose ban, a brief paraphrase reproduces too few of its words to trip.
+        The tripwire only short-circuits near-verbatim respelling loops; the
+        default-FAIL Judge is what actually adjudicates the construct."""
+        ok, _ = self.vet(
+            "CONSTRUCTS: (1) `j += 1;` moved next to `idx`, flipping addu vs li.\n")
+        self.assertTrue(ok)
+
+    def test_no_ban_banked_means_no_check(self):
+        G.init_ledger(self.root, "func_Y", "text1b")
+        with open(G.self_vet_path(self.root, "func_Y"), "w", encoding="utf-8") as f:
+            f.write("CONSTRUCTS: anything at all\n")
+        ok, _ = G.check_banned_constructs(self.root, "func_Y")
+        self.assertTrue(ok)
+
+    def test_paperwork_ban_is_still_refused_at_banking(self):
+        """The func_800401CC guard: a 'ban' describing vet paperwork rather than
+        a C construct would deadlock the function, so it must not be banked."""
+        G.init_ledger(self.root, "func_Z", "text1b")
+        banked = G.add_banned_construct(
+            self.root, "func_Z",
+            "Annotation-conformance claim ('One FAKE construct') in the "
+            "sanctioned-family-claims line of the self-vet paperwork")
+        self.assertFalse(banked)
+
+
 if __name__ == "__main__":
     unittest.main()
