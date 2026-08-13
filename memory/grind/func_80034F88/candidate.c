@@ -41,7 +41,18 @@
  *    `lui a0; lbu a0,0(a0)` and `lui at; sb v0,0(at)` where the target has one
  *    shared unfolded `lui`/`addiu` base reused by both the reload and the
  *    store. Passing the address as an argument does not escape it (22).
- *    Closing that folding is s13's F1 — see hypotheses.md.
+ *    s13 CONFIRMED that model from a cc1 -da dump and then KILLED the lever.
+ *    The substitution is visible already at .rtl (the three inlined reads are
+ *    `(mem:QI (symbol_ref "D_80106A73"))`, the caller's own mask read is
+ *    `(mem:QI (reg/v:SI 74))`), and it is stable through cse/loop/cse2/combine,
+ *    so integrate.c is the folding agent, not cse or combine. The stores keep
+ *    their pseudo in RTL — they sit after the if/else merge label, where
+ *    integrate bumps `map->const_age` — and fold only later, in local-alloc's
+ *    `update_equiv_regs`, because the substituted read left each pseudo with a
+ *    single remaining reference. Wave N then measured all eight natural shapes
+ *    that would give the pseudo a second reference: 35/38/34/13/42/29/24/36.
+ *    None beats 13. The label route works exactly as predicted but pays for the
+ *    unfolded base with real duplicated loads (lbu 177-179 vs target's 176).
  *
  * Ties at 13: this form, the same with the mask handle at caller function
  * scope, and the same with the helper taking `p` and computing its own

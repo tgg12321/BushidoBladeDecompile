@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Permuter axis KILLED a third time (6,450 iterations, every find worse than its seed); wave K priced the four address materialisations as load-bearing (1/2/3 handles = 23/27/23 vs 0 for four); and a NE"
+  },
+  {
+   "session": 13,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Inline-helper 13 fully explained from RTL (integrate.c const-substitutes the read, local-alloc then folds the store) and F1 KILLED across 8 shapes; permuter dead a fourth time from an exact-instructio"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The inline-helper chassis's remaining 13 closes if the helper's pointer pseudo survives to cse as a shared two-use base instead of being const-substituted into each mem at inline time. This is the only live axis that reaches the target's access signature from a construct nobody has objected to.",
-   "mechanism": "GCC 2.7.2's integrate.c copies the inline body with copy_rtx_and_substitute and a const-equivalence map; a local initialised from a SYMBOL_REF is a constant equivalence, so it is propagated into every use inside the copy. Each mem then reaches combine with a single-use address and combine folds %lo into it, producing `lui; lbu 0(reg)` per access instead of the target's one shared unfolded `lui`/`addiu` base. The textual four-handle form does not hit this because its pointer locals are never inlined and survive to cse as shared pseudos.",
-   "next_probe": "Confirm the pass first, then attack it. (a) Run cc1 -da on the m1 form (harness already wired at s11/dump.sh and s6's dump scripts) and check whether the address is already substituted in the .rtl dump (integrate) or only after .cse/.combine. (b) If integrate: give the helper's handle a shape the const map cannot equate - e.g. a second natural mem use through `q[0]`, or a nested second inline accessor so the address crosses two inline boundaries, or helper parameter shapes beyond m7's `u8 *` (a `u8 **`). Note m2 (mask factored into a second helper, zero handle declarations in the function body) is 26, so the mask handle must stay in the caller."
+   "hypothesis": "F2 \u2014 the classification contradiction is now the only live item: the target bytes are reachable (0 measured twice) but every construct that produces them is banned under both of its declared classifications, including the remedy the layer-1 reviewer itself prescribed.",
+   "mechanism": "Wave K priced every smaller handle count at 23-29; s13's wave N priced every non-repeating route to four address materialisations at 13 or worse and explained WHY from the RTL (integrate.c const-substitution + local-alloc reg_equiv_constant). So four separate materialisations of &D_80106A73 are forced by the target's codegen, and the only spellings that produce them are the four repeated `u8 *q = &D_80106A73;` declarations (banned as pointer-alias-fake-exception AND as ordinary program logic) or a macro that expands to exactly those (rejected under cheat-checklist T5 as the banned construct respelled).",
+   "next_probe": "Emit a ruling-request with the precise three-way question \u2014 (i) does the FAKE-annotated pointer-alias form remain available here, given the layer-1 reviewer prescribed exactly that remedy; (ii) is the `static inline` chassis acceptable as an authorized non-matching form given its 13 is now a proven two-pass codegen fact rather than an unexplored lever; (iii) if neither, is this OWNER-ACCEPTED INCOMPLETE \u2014 attaching the wave-K price table, the wave-N kill table with its integrate.c/local-alloc mechanism, and the four permuter kills as the exhaustion evidence."
   },
   {
-   "hypothesis": "If F1 does not close, the correct next outcome is a ruling-request, not another sweep: the only constructs that produce the target bytes are banned under every declared classification, including the one the layer-1 reviewer itself prescribed.",
-   "mechanism": "Bytes are proven twice at 0 (the four-handle body, and the macro expanding to it). Wave K prices every smaller handle count at 23-29 and the inline-factoring route at 13, so four separate address materialisations are forced by the target's codegen. The reviewer's remedy (FAKE-annotate the four declarations under pointer-alias-fake-exception) and its only alternative (treat them as ordinary program logic) are both on the driver's BANNED list for this function, so no declared path remains.",
-   "next_probe": "Emit `ruling-request` with a precise three-way question - (i) does the FAKE-annotated pointer-alias form remain available here, since the layer-1 reviewer prescribed exactly that; (ii) is the `static inline` helper acceptable if a further lever closes its 13; (iii) if neither, is this OWNER-ACCEPTED INCOMPLETE - attaching the wave-K price table, the inline-chassis 13 with its integrate.c mechanism, and the three permuter kills as the exhaustion evidence. Do NOT file it as an escalation from a non-escalation modality."
+   "hypothesis": "F1 is CLOSED. Do not re-open the inline-helper folding lever.",
+   "mechanism": "The residual is not a spelling problem: giving the inlined pointer pseudo a second reference is achievable (the CODE_LABEL route works exactly as the integrate.c model predicts) but always costs more instructions than the unfolded base saves, because the only natural second reference is a duplicated load.",
+   "next_probe": "None. If a future session wants to revisit it, read tmp/grind/func_80034F88/s13/results_wave_n.json first \u2014 all eight shapes are priced."
   },
   {
-   "hypothesis": "The permuter axis is dead on this function for good, whatever the seed.",
-   "mechanism": "Its weighted metric (regs x5, reorderings x60, ins/del x100) is uncorrelated with engine/score.py's distance here, and its randomizer is free to emit semantically different code, which on this function means deleting the flag stores (sb 160-161 vs 164).",
-   "next_probe": "None - do not spend a fourth session on it. s4 (50,425 iterations), s5 (1,152 iterations + 1,008 enumerated forms) and s12b (6,450 iterations from a seed one instruction from target) all measured the same result, so the 'the seed was too far away' explanation is now refuted."
+   "hypothesis": "The permuter axis is dead on this function for good, at every seed quality.",
+   "mechanism": "Its weighted metric (regs x5, reorderings x60, ins/del x100) is uncorrelated with engine/score.py's distance here, and its randomizer emits semantically different code \u2014 on this function, deleting flag stores (sb 162 vs 164).",
+   "next_probe": "None \u2014 four sessions (s4 50,425 iterations; s5 1,152 + 1,008 enumerated forms; s12b 6,450; s13 4,544) have measured the same result from seeds at every distance, including one at the target's exact instruction count."
   }
  ],
  "judge_constraints": [

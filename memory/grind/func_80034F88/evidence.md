@@ -1459,3 +1459,68 @@ spelling that produces the target's FOUR separate materialisations of
 - [s12] The function-like macro spelling reaches 0 at 49 insns (m9) but is the banned four-handle construct respelled (identical post-preprocessing declarations), so it was banked as evidence only and NOT submitted. src/code6cac_b.c was left at its committed state; `git status` shows no src change.
 
 - [s12] CLASSIFICATION CONTRADICTION now the real blocker: the target bytes are reachable (0 measured twice), wave K shows the four materialisations are forced, and the layer-1 reviewer's own prescribed remedy was to add the `/* FAKE: ... */` annotation to the four `u8 *q = &D_80106A73;` declarations - but the driver's BANNED-CONSTRUCTS list for this function bans that construct both 'claimed under the C-level pointer alias to a global / pointer-alias-fake-exception family' AND 'treated as ordinary program logic', i.e. it bans the remedy along with its alternative.
+
+## s13 (permuter) — the inline-helper 13 is a two-stage codegen fact, and the permuter is dead a fourth time
+
+- **The stall is located exactly.** A cc1 `-da` dump of the m1 inline-helper
+  chassis (`tmp/grind/func_80034F88/s11/rtl/s13m1`, sliced by
+  `tmp/grind/func_80034F88/s13/rtlslice.py`) shows that already at `.rtl` —
+  before any optimisation pass — the three INLINED reads of the flag byte are
+  `(mem:QI (symbol_ref "D_80106A73"))` while the caller's own non-inlined mask
+  block reads `(mem:QI (reg/v:SI 74))`. All four stores, including the inlined
+  ones, are still `(mem:QI (reg/v:SI N))` at `.rtl` and at `.combine`. Counts
+  are flat across rtl/jump/cse/loop/cse2/combine, so **cse and combine are not
+  the folding agents** — the substitution is done by integrate.c at inline time
+  (`copy_rtx_and_substitute` + its const-equivalence map), and the stores escape
+  it only because they sit after the if/else merge label where integrate bumps
+  `map->const_age` and drops every equivalence.
+- **The store folding is a downstream consequence.** With the read substituted,
+  each inlined copy's pointer pseudo has one reference left, so local-alloc's
+  `update_equiv_regs` records `reg_equiv_constant` and substitutes the address
+  into the store as well — which is why the final asm shows `lui at,0x0 / sb
+  v0,0(at)` despite `.combine` RTL that still stores through a register. The
+  four-handle form escapes it because each of its pseudos carries three
+  references (set + read + store) and stays in a hard register.
+- **Wave N killed the lever.** Eight forms, all designed to give the pointer
+  pseudo a second reference: read duplicated into both arms 35 (60 insns) and
+  38 (66) with the arms swapped; select performed on the mask so the read is a
+  single post-label RMW 34 (38 insns, branch structure lost); read through a
+  pointer copy 13 (the const equivalence propagates straight through a
+  pseudo-to-pseudo set — ties m1 exactly at 50 insns / lbu 176); handle assigned
+  inside both arms 42 (68); nested inline read accessor 29 (56); three
+  materialisations with the mask and flag block 1 sharing one caller-scope
+  handle 24 at the target's exact 49 insns and lbu 175; that last crossed with
+  the duplicated read 36 (55). **Nothing beats 13.** The label route does keep
+  the pseudo, exactly as the mechanism predicts — it just materialises real
+  extra loads (lbu census 177-179 vs the target's 176) that cost far more than
+  the one or two instructions an unfolded base saves.
+- **n7 is the instructive negative.** It reproduces the target's own base
+  structure (`sbs_m1.txt` shows the target reloading block 1 through the mask's
+  `v1`), lands on the target's exact instruction count, and still scores 24 with
+  lbu 175: three address materialisations cannot produce the fourth reload. It
+  is independent confirmation of wave K's price table from a different chassis.
+- **Permuter, fourth kill.** Seeded from n7 (a structurally different chassis
+  from s12b's m1, and the closest-by-instruction-count seed ever used):
+  4,544 iterations drove the permuter's metric 1670 -> 675 while the six best
+  finds sandbox-scored 26/27/33/33/33/34 against the seed's 24, every one of
+  them carrying `sb` 162 against the correct 164 — the randomizer again buys its
+  metric by deleting two flag stores. Harvested and stopped in-session
+  (`tmp/grind/func_80034F88/s13/harvest.json`). Four kills now span every seed
+  quality there is; seed structure is not the variable.
+- **Net.** The honest floor for a form carrying no banned construct is unchanged
+  at 13 (m1, tied by n4). F1 is closed. The only live item is F2 — the
+  classification contradiction — which is a ruling-request, not a sweep.
+
+- [s13] cc1 -da on the m1 inline-helper chassis: at .rtl the three inlined flag-byte reads are already (mem:QI (symbol_ref "D_80106A73")) while the caller's own mask read is (mem:QI (reg/v:SI 74)); the counts do not move through jump/cse/loop/cse2/combine, so integrate.c — not cse and not combine — performs the folding.
+
+- [s13] All four stores, including the three inlined ones, are still (mem:QI (reg/v:SI N)) at .combine, yet the final asm emits `lui at,0x0 / sb v0,0(at)`; the only pass left is local-alloc's update_equiv_regs, so the store folding is a downstream consequence of the read folding leaving each pseudo with one reference.
+
+- [s13] Wave N price table (score / build insns / lbu census, target = 49 insns / lbu 176): n1 35/60/179, n2 38/66/179, n3 34/38/173, n4 13/50/176, n5 42/68/179, n6 29/56/176, n7 24/49/175, n8 36/55/177, m1 baseline 13/50/176.
+
+- [s13] n4 proves the integrate const equivalence propagates through a pseudo-to-pseudo copy: `u8 *r = q; v = *r;` scores exactly the same 13/50/176 as reading through q directly.
+
+- [s13] n7 is independent confirmation of wave K from a different chassis: it reproduces the target's own base structure (target reloads flag block 1 through the mask's v1, per s12/sbs_m1.txt) and hits the target's exact 49-instruction count, and still scores 24 with lbu 175 — three address materialisations cannot produce the fourth reload.
+
+- [s13] Permuter campaign s13 (n7 seed, 4,544 iterations, 73 finds): metric 1670 -> 675, every sandbox-scored find 26-34 against the seed's 24, all with sb 162 against the correct 164 (two flag stores deleted). Harvested and stopped in-session; no campaign left running.
+
+- [s13] The honest floor for a form carrying no banned construct is unchanged at 13 (m1, tied by n4). src/code6cac_b.c was restored to its committed state; the only working-tree change is the engine's own metrics/events.jsonl append.

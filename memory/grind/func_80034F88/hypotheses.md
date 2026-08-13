@@ -919,7 +919,7 @@ untried — grind those first.
 
 ---
 
-## s8 � rederive modality
+## s8 � rederive modality
 
 ## [s8] There is a SECOND cse mechanism, unrelated to the CODE_LABEL boundary s7 identified, that produces the target's four lbu reloads in non-volatile C at ZERO instruction cost: a MEM store placed inside a conditionally-skipped block.
 - mechanism: cse_end_of_basic_block (cse.c:8102-8184) classifies a forward conditional branch over a block as AROUND when the branch's target label has LABEL_NUSES == 1 and there is no CODE_LABEL between the branch and the insn preceding that label; cse_basic_block then calls invalidate_skipped_block (cse.c:7843-7867), which runs note_stores over every insn of the skipped block with invalidate_skipped_set (cse.c:7810-7836). That callback INVALIDATES a MEM destination (note_mem_written + invalidate) instead of recording it, so a store inside the arm never enters the value table and the following read of the same byte cannot be forwarded. No volatile, no label boundary, no extra instruction.
@@ -1489,4 +1489,83 @@ produces semantically different code (dropped stores) and cannot preserve a
 - mechanism: A `#define BB2_SET_FLAG(cond, bit) { u8 *q = &D_80106A73; ... }` invoked three times is textually one declaration site and expands to exactly the body that byte-matches.
 - probe: Variant m9, sandbox --disable all.
 - result: KILLED BY CLASSIFICATION, not by measurement - it does byte-match (score 0 at 49 insns, lbu 176). After preprocessing the diff contains the identical four `u8 *q = &D_80106A73;` declarations the driver has banned, so under cheat-checklist T5 it is the banned construct respelled rather than a new attack. Banked as evidence at rejected/macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c and deliberately NOT submitted; src/ was left untouched.
+- verdict: KILLED
+## Resolved in s13 (permuter)
+
+## [s13] The inline-helper chassis stalls at 13 because integrate.c const-substitutes the helper's pointer into the READ, and the exact stage is identifiable from a cc1 -da dump.
+- mechanism: GCC 2.7.2's integrate.c copies an inlined body with `copy_rtx_and_substitute` plus a const-equivalence map (`map->const_equiv_map`, aged by `map->const_age`). The helper's `u8 *q = &D_80106A73;` is a single set of a pseudo to a `symbol_ref`, i.e. a constant equivalence, so every use of q the copier reaches is rewritten to the bare `(symbol_ref)` — until a CODE_LABEL, where integrate bumps `const_age` and drops every equivalence.
+- probe: `bash tmp/grind/func_80034F88/s11/dump.sh s13m1` on the m1 chassis installed in src/, then `tmp/grind/func_80034F88/s13/rtlslice.py` to slice func_80034F88 out of the .rtl/.jump/.cse/.loop/.cse2/.combine dumps and count `symbol_ref "D_80106A73"`, `(mem ... symbol_ref)` and `(set (mem:QI ...))` forms per pass.
+- result: CONFIRMED, and sharper than the s12b guess. Already at `.rtl` (before any optimisation pass runs) the three INLINED reads are `(set (reg:QI N) (mem:QI (symbol_ref "D_80106A73")))` while the caller's own non-inlined mask block reads `(mem:QI (reg/v:SI 74))`. All FOUR stores — including the three inlined ones — are still `(set (mem:QI (reg/v:SI N)) ...)` at .rtl AND at .combine, because each store sits after the if/else merge label where `const_age` has already been bumped. The counts are stable across rtl/jump/cse/loop/cse2/combine (symref 7 -> 10, mem_with_sym 3 throughout), so cse and combine are NOT the folding agents: the substitution is done at inline time and nothing later undoes it.
+- verdict: CONFIRMED
+
+## [s13] The remaining 13 is then a SECOND-stage effect: with the read substituted, each inlined pointer pseudo has one use left, so local-alloc replaces the store's address with the constant too.
+- mechanism: GCC 2.7.2 local-alloc.c `update_equiv_regs` records `reg_equiv_constant` for a pseudo that is set exactly once from a constant, and substitutes the constant into its remaining reference(s) (a `symbol_ref` is a legal MIPS memory address, so the replacement validates). The four-handle form escapes this because each of its pseudos carries THREE references (set + read + store) and stays allocated to a hard register; the inlined copies carry two (set + store) after integrate has eaten the read.
+- probe: The final-asm side-by-side (tmp/grind/func_80034F88/s12/sbs_m1.txt) read against the .rtl/.combine dumps above.
+- result: CONFIRMED. The .combine RTL still has `(set (mem:QI (reg/v:SI 82)) ...)` for every inlined store, yet the emitted asm is `lui at,0x0 / sb v0,0(at)` — the assembler-macro spelling of a store to an absolute symbol. Nothing between combine and final changes the store except local-alloc's equivalence substitution, so the store folding is a downstream CONSEQUENCE of the read folding, not an independent problem. This is why the residual is exactly the target's three shared unfolded `lui`/`addiu` bases.
+- verdict: CONFIRMED
+
+## [s13] F1 — the inline-helper chassis closes if the helper's pointer pseudo reaches local-alloc with TWO uses, which any of several natural C shapes should provide.
+- mechanism: From the two findings above, the whole 13 reduces to one requirement — keep a second reference on each inlined copy's pointer pseudo. Natural shapes that do it: (a) put the read behind a CODE_LABEL so integrate's `const_age` has already been bumped when the copier reaches it (read duplicated into the two arms of the select, either arm order); (b) do the select on the MASK instead of on the value, so the single read-modify-write sits entirely after the merge label; (c) set the handle inside both arms, so it is not a single-set pseudo at all; (d) route the read through a pointer copy or through a nested inline accessor so the address expression is not the helper's constant-equivalent local.
+- probe: Wave N, 8 forms through `tmp/grind/func_80034F88/s13/gen_n.py` + `s13/probe.py --all`, each scored with `sandbox func_80034F88 --disable all` plus the objdump lbu/sb/lui census: n1 (read duplicated into arms), n2 (same, arms swapped), n3 (select on the mask, single RMW after the label), n4 (read through a pointer copy), n5 (handle assigned inside both arms), n6 (nested inline read accessor taking `u8 *`), n7 (mask and flag block 1 sharing one caller-scope handle, blocks 2/3 inlined — the target's own base structure, per sbs_m1.txt where target block 1 reloads through the mask's v1), n8 (n1 crossed with n7).
+- result: KILLED. Not one form beats 13: n1 35 (60 insns), n2 38 (66), n3 34 (38), n4 13 (50), n5 42 (68), n6 29 (56), n7 24 (49), n8 36 (55). The mechanism prediction is CONFIRMED — the label route really does keep the pseudo — but it is not free: every form that duplicates the read materialises real extra loads (lbu census 177-179 against the target's 176, and 55-68 build insns against 49), which costs far more than the 1-2 instructions the unfolded base saves. n4 shows the const equivalence propagates straight through a pseudo-to-pseudo copy (`u8 *r = q;` ties m1 exactly at 13/50/176), and n6 shows it survives a second inline boundary (29). n3, the one form with FEWER instructions than target (38), loses the branch structure entirely. n7 is the interesting negative: it has the target's exact instruction count (49) and the target's shared mask/block-1 base, and still scores 24 because three materialisations cannot produce the fourth reload (lbu 175).
+- verdict: KILLED
+
+## [s13] The permuter axis, tried a FOURTH time from a structurally different chassis, fails the same way.
+- mechanism: Fresh-seed discipline says a basin yields early or not at all and a new seed must be a structurally different chassis, so s13 seeded from n7 (three address materialisations, mask and flag block 1 sharing one caller-scope handle, 49 build insns = the target's exact count) rather than from s12b's m1.
+- probe: tools/permuter_campaign.py launch --func func_80034F88 --dir tmp/grind/func_80034F88/s13/ws --label n7-shared-mask-block1-chassis -j 8 --stop-on-zero; one in-turn `wait` window; the six lowest-permuter-score finds extracted and sandbox-scored through s13/probe.py; harvest --stop in-session (tmp/grind/func_80034F88/s13/harvest.json, 4,544 iterations, 73 finds).
+- result: KILLED, identically to s4/s5/s12b. The permuter's own metric fell 1670 -> 675 while every sandbox-scored find came back 26-34 against the seed's 24, and every one carries sb 162 against the correct 164 - the randomizer again buys its metric by deleting two of the flag stores. Four kills now span every seed quality from 'far away' (s4/s5) through 'one instruction from target' (s12b) to 'exact instruction count' (s13), so seed structure is definitively not the variable. The permuter's weighted metric is uncorrelated with engine/score.py's distance on this function.
+- verdict: KILLED
+
+## Open frontier for s14
+
+### F1 is now CLOSED (killed in s13). The inline-helper route's 13 is a
+### two-stage codegen fact, not a spelling problem, and every natural C shape
+### that defeats stage 1 costs more instructions than it saves.
+The mechanism is fully characterised (integrate.c const-substitution of the
+read + local-alloc reg_equiv_constant substitution of the store), and wave N
+measured all four families of shape that give the pointer pseudo a second use:
+duplicated reads (35/38/36), select-on-the-mask (34), pointer copy (13, the
+equivalence propagates), handle set in both arms (42), nested inline accessor
+(29), and the three-materialisation caller-shared chassis (24 at the target's
+exact 49 insns). Nothing beats 13.
+
+### F2 (unchanged, and now the ONLY live item) - the classification
+### contradiction is the real blocker.
+The target bytes are reachable and have been measured at 0 twice (the
+four-handle body and the macro that expands to it). Wave K priced every smaller
+handle count at 23-29; s13's wave N priced every non-repeating route to four
+materialisations at 13 or worse. The layer-1 reviewer's own prescribed remedy
+(FAKE-annotate the four `u8 *q = &D_80106A73;` declarations under
+pointer-alias-fake-exception) and its only alternative (treat them as ordinary
+program logic) are BOTH on the driver's banned list for this function, so no
+declared path remains for the only construct that produces the bytes. The
+correct next outcome is a ruling-request carrying the wave-K price table, the
+wave-N kill table, and the integrate.c/local-alloc mechanism as the exhaustion
+evidence - not another sweep.
+
+### F3 - the permuter is dead FOUR times over. Do not seed it again on this
+### function, whatever the chassis.
+
+## [s13] The inline-helper chassis stalls at 13 because integrate.c const-substitutes the helper's pointer into the flag-byte READ at inline time, and the exact stage is identifiable from a cc1 -da dump.
+- mechanism: GCC 2.7.2's integrate.c copies an inlined body with copy_rtx_and_substitute plus a const-equivalence map aged by map->const_age. The helper's `u8 *q = &D_80106A73;` is a single set of a pseudo to a symbol_ref, i.e. a constant equivalence, so every use the copier reaches is rewritten to the bare symbol_ref until a CODE_LABEL bumps const_age and drops the equivalences.
+- probe: bash tmp/grind/func_80034F88/s11/dump.sh s13m1 on the m1 chassis installed in src/, then tmp/grind/func_80034F88/s13/rtlslice.py to slice func_80034F88 out of the .rtl/.jump/.cse/.loop/.cse2/.combine dumps and count symbol_ref / (mem ... symbol_ref) / (set (mem:QI ...)) forms per pass.
+- result: Already at .rtl the three inlined reads are (mem:QI (symbol_ref "D_80106A73")) while the caller's own non-inlined mask block reads (mem:QI (reg/v:SI 74)). All four stores, including the three inlined ones, are still (mem:QI (reg/v:SI N)) at .rtl AND at .combine, because each store sits after the if/else merge label. Counts are flat across rtl/jump/cse/loop/cse2/combine (symref 7->10, mem_with_sym 3 throughout), so cse and combine are not the folding agents.
+- verdict: CONFIRMED
+
+## [s13] The store folding is a SECOND-stage consequence: with the read substituted, each inlined pointer pseudo has one reference left, so local-alloc replaces the store's address with the constant too.
+- mechanism: GCC 2.7.2 local-alloc.c update_equiv_regs records reg_equiv_constant for a pseudo set exactly once from a constant and substitutes it into the remaining reference(s); a symbol_ref is a legal MIPS memory address so the replacement validates. The four-handle form escapes this because each of its pseudos carries three references (set + read + store) and stays in a hard register.
+- probe: The final-asm side-by-side (tmp/grind/func_80034F88/s12/sbs_m1.txt) read against the .rtl/.combine dumps above.
+- result: .combine RTL still stores through (reg/v:SI 82) etc., yet the emitted asm is `lui at,0x0 / sb v0,0(at)` — the absolute-symbol store. Nothing between combine and final touches the store except local-alloc's equivalence substitution, so the store folding is downstream of the read folding rather than an independent problem.
+- verdict: CONFIRMED
+
+## [s13] F1 — the inline-helper chassis closes if the helper's pointer pseudo reaches local-alloc with TWO uses, which several natural C shapes should provide.
+- mechanism: From the two findings above the whole 13 reduces to keeping a second reference on each inlined copy's pointer pseudo: put the read behind a CODE_LABEL so const_age has already been bumped (read duplicated into the arms), do the select on the mask so the single read-modify-write sits after the merge label, set the handle inside both arms so it is not a single-set pseudo, or route the read through a pointer copy or a nested inline accessor.
+- probe: Wave N, 8 forms via tmp/grind/func_80034F88/s13/gen_n.py + s13/probe.py, each scored with `sandbox func_80034F88 --disable all` plus an objdump lbu/sb/lui census (results_wave_n.json).
+- result: KILLED — nothing beats 13. n1 duplicated read 35 (60 insns), n2 arms swapped 38 (66), n3 select-on-the-mask 34 (38, branch structure lost), n4 pointer copy 13 (50/lbu 176 — the const equivalence propagates straight through a pseudo-to-pseudo set, exactly tying m1), n5 handle set in both arms 42 (68), n6 nested inline accessor 29 (56), n7 three materialisations with mask+block 1 sharing a caller handle 24 at the target's exact 49 insns and lbu 175, n8 n7 crossed with the duplicated read 36 (55). The label route does keep the pseudo as predicted, but it materialises real extra loads (lbu 177-179 vs the target's 176) that cost far more than the unfolded base saves.
+- verdict: KILLED
+
+## [s13] The permuter axis, tried a FOURTH time from a structurally different chassis with the target's exact instruction count, can close the residual.
+- mechanism: Fresh-seed discipline says a basin yields early or not at all and a new seed must be a structurally different chassis, so s13 seeded from n7 (three address materialisations, mask and flag block 1 sharing one caller-scope handle, 49 build insns = the target's count) instead of s12b's m1.
+- probe: tools/permuter_campaign.py launch --func func_80034F88 --dir tmp/grind/func_80034F88/s13/ws --label n7-shared-mask-block1-chassis -j 8 --stop-on-zero; one in-turn `wait` window; the six lowest-permuter-score finds extracted and sandbox-scored; harvest --stop in-session (harvest.json: 4,544 iterations, 73 finds, stopped=true).
+- result: KILLED, identically to s4/s5/s12b. The permuter's own metric fell 1670 -> 675 while the six best finds sandbox-scored 26/27/33/33/33/34 against the seed's 24, and every one carries sb 162 against the correct 164 — the randomizer buys its metric by deleting two flag stores. Four kills now span every seed quality from 'far away' (s4/s5) through 'one instruction from target' (s12b) to 'exact instruction count' (s13).
 - verdict: KILLED
