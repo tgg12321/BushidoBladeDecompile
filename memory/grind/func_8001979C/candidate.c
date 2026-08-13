@@ -1,28 +1,60 @@
-/* func_8001979C — BEST FORM as of session 1 (recon). Floor: sandbox
- * --disable all = 24 (target_insns 77, build_insns 75).
+/* func_8001979C - BEST FORM as of session 2 (structural). Floor: sandbox
+ * --disable all = 20 (target_insns 77, build_insns 77) - down from 24 at
+ * the end of session 1, and the FIRST form that reaches instruction parity
+ * AND target's exact register assignment at the same time.
  *
- * This is byte-identical to what is already in src/code6cac.c at HEAD
- * (session 1 measured probes on top of it and reverted; none beat 24).
- * It is recorded here so later sessions have an explicit baseline to
- * diff against rather than re-reading git.
+ * This form is IN PLACE in src/code6cac.c at the end of session 2.
  *
- * Residual diff families at this floor (see evidence.md for the full
- * instruction-level table):
- *   D1  2 insns MISSING: target has `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero`
- *       (one per loop); we emit a single `subu $a3,$t2,$a0`.
- *   D2  $v0/$v1 role swap through the whole shift/or chain in both loops,
- *       and again on the final -2 fill loop ($v0/$v1 swapped there too).
- *   D3  walking pointer: target inits `addu $t1,$t3,$zero` and stores at
- *       `0xA($t1)` / `0x8E($t1)`; we init `addiu $t1,$t3,10` / `,142` and
- *       store at `0($t1)`. GCC eliminated the biv and folded the constant
- *       displacement into the induction variable's initial value.
- *   D4  preheader constant order: target emits `li $t4,0xC` then
- *       `li $t2,0x20`; we emit `li $t2,32` then `li $t4,12`.
- * Register ASSIGNMENT at this floor already matches target exactly
- * ($t3 = base, $t2 = 0x20, $t4 = nbits, $t1 = walker, $t0 = counter,
- * $a3 = bits_left, $a2 = cur, $a1 = arg1, $a0 = needed) — do not disturb
- * it casually; the session-1 probes showed it is one allocno away from
- * cascading.
+ * What session 2 changed vs the session-1 baseline, and why (all three are
+ * load-bearing; removing any one regresses the score - measurements in
+ * evidence.md):
+ *
+ *  1. `dst += 2` is duplicated into BOTH if-arms instead of sitting once at
+ *     the loop bottom.  This gives the walking-pointer biv TWO increments, so
+ *     loop.c computes `benefit -= add_cost * bl->biv_count` with biv_count 2,
+ *     the combined DEST_ADDR giv's benefit falls to <= 0, strength_reduce sets
+ *     v->ignore, all_reduced goes 0 and maybe_eliminate_biv is never reached.
+ *     The biv therefore survives and the +0xA / +0x8E stays a store
+ *     displacement - target's exact D3 form - while both `sh` instructions are
+ *     kept.  This closed D3, which session 1 could only reach with a single
+ *     store.
+ *
+ *  2. `val` carries BOTH `0x20 - bits_left` (the hi shift amount) and
+ *     `0x20 - needed` (the new bits_left).  The second use is session 1's
+ *     confirmed D1 lever (it materialises target's `subu $v0,$t2,$a0` +
+ *     `addu $a3,$v0,$zero` pair); reusing the same variable for the first
+ *     keeps `hi` out of the $t register file, which the separate-temp
+ *     spelling did not (measured: score 31 with an anonymous temp vs 20 here).
+ *
+ *  3. Per-loop walking pointers (`dst`, `dst2`, `out`) and their
+ *     initialisations placed as early as their loop allows.  This is pure
+ *     allocno-priority arithmetic in global.c: priority is
+ *     floor_log2(nrefs)*nrefs/livelen.  The duplicated increment adds 4
+ *     weighted refs to each walker, and the walkers must stay BELOW the loop
+ *     counter in priority so that the counter takes $t0 and the walkers take
+ *     $t1 (target's assignment).  Measured priorities in this form:
+ *     bits_left 17313 ($a3) > counter 14000 ($t0) > dst2 13928 ($t1) >
+ *     dst 12580 ($t1).  Moving either walker init one statement later pushes
+ *     that walker above the counter and the whole $t file rotates.
+ *
+ * Register assignment now MATCHES target exactly: $a3 = bits_left,
+ * $t0 = counter, $t1 = walking pointer, $t2 = 0x20, $t3 = base,
+ * $t4 = field width, $a2 = cur, $a1 = arg1, $a0 = needed.
+ *
+ * Residual at score 20 (all of it inside the two bit loops):
+ *   D2  $v0/$v1 mirror.  Target keeps `hi` in $v1 SHARING the register of the
+ *       `0x20 - bits_left` temp (`srlv $v1,$a2,$v1`) and puts `val` +
+ *       `cur >> bits_left` in $v0.  We produce the mirror: temp $v1, hi $v0,
+ *       val $v1, `cur >> bits_left` $v1.  The share fails because our `val`
+ *       is still live after the srlv (it is re-assigned later in the arm), so
+ *       its quantity conflicts with hi's.
+ *   D4  preheader order + walker-init placement.  Target emits
+ *       `move $t0,zero ; li $t4,<w> ; li $t2,0x20 ; move $t1,$t3` with the
+ *       walker init LAST; we emit the walker init first (loop 2) or hoisted
+ *       above the `sw`/`lw` preamble (loop 1), and the two `li`s in the
+ *       opposite order.  The early init is currently load-bearing for the
+ *       allocno priority (point 3), so D4 and the priority requirement are
+ *       coupled - see hypotheses.md F1.
  */
 void func_8001979C(s32 arg0, u32 *arg1) {
     s32 bits_left;
@@ -32,62 +64,70 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     u32 hi;
     s32 needed;
     u32 dst;
+    u32 dst2;
+    u32 out;
     s32 val;
 
     bits_left = 0x20;
     base = (u32)&D_800F1B18[arg0 * 0x570];
+    dst = base;
 
     *(u32 **)base = arg1;
     cur = *arg1;
     arg1++;
 
     i = 0;
-    dst = base;
     do {
         if (bits_left < 0xC) {
-            hi = cur >> (0x20 - bits_left);
+            val = 0x20 - bits_left;
+            hi = cur >> val;
             cur = *arg1;
             arg1++;
             needed = 0xC - bits_left;
-            bits_left = 0x20 - needed;
+            val = 0x20 - needed;
+            bits_left = val;
             *(s16 *)(dst + 0xA) = (s16)((hi << needed) | (cur >> bits_left));
             cur <<= needed;
+            dst += 2;
         } else {
             *(s16 *)(dst + 0xA) = (s16)(cur >> 20);
             cur <<= 0xC;
             bits_left -= 0xC;
+            dst += 2;
         }
         i++;
-        dst += 2;
     } while (i < 0x3F);
 
+    dst2 = base;
     i = 0;
-    dst = base;
     do {
         if (bits_left < 2) {
-            hi = cur >> (0x20 - bits_left);
+            val = 0x20 - bits_left;
+            hi = cur >> val;
             cur = *arg1;
             arg1++;
             needed = 2 - bits_left;
-            bits_left = 0x20 - needed;
-            *(s16 *)(dst + 0x8E) = (s16)((hi << needed) | (cur >> bits_left));
+            val = 0x20 - needed;
+            bits_left = val;
+            *(s16 *)(dst2 + 0x8E) = (s16)((hi << needed) | (cur >> bits_left));
             cur <<= needed;
+            dst2 += 2;
         } else {
-            *(s16 *)(dst + 0x8E) = (s16)(cur >> 30);
+            *(s16 *)(dst2 + 0x8E) = (s16)(cur >> 30);
             cur <<= 2;
             bits_left -= 2;
+            dst2 += 2;
         }
         i++;
-        dst += 2;
     } while (i < 0x3F);
 
     val = -2;
     i = 3;
-    dst = base + 0x348;
+    out = base + 0x348;
     do {
-        *(s32 *)(dst + 0x110) = val;
+        *(s32 *)(out + 0x110) = val;
         i--;
-        dst -= 0x118;
+        out -= 0x118;
     } while (i >= 0);
     *(s32 *)(base + 0x10C) = 0;
 }

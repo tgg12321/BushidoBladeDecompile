@@ -115,3 +115,129 @@ Strictly worse; killed.
 - [s1] Everything outside those four families is already byte-identical, including the arg0*0x570 shift/subtract chain, the prologue, the third loop's 'addiu $v0,$t3,0x348' + 'sw $v1,0x110($v0)' shape, and the epilogue.
 
 - [s1] src/code6cac.c was reverted with 'git checkout --' at the end of the session; the working tree carries only metrics/events.jsonl and the memory/grind/func_8001979C/ ledger.
+
+## Session 2 (structural, 2026-08-13) — floor 24 -> 20
+
+### Headline
+Instruction parity AND target's exact register assignment reached at the same
+time for the first time. `sandbox --disable all` = **20**, target_insns 77,
+build_insns 77. Form in place in `src/code6cac.c`; also saved as
+`candidate.c`. D1 and D3 are CLOSED; the residual is D2 (a $v0/$v1 mirror
+inside the two if-arms) plus D4 (preheader order / walker-init placement).
+
+### Correction to a session-1 evidence line
+s1 recorded that the third (`-2` fill) loop is $v0/$v1-mirrored at the floor.
+It is not. Disassembling the floor object directly
+(`tmp/grind/func_8001979C/s2/floor.txt`) shows `li v1,-2 ; li t0,3 ;
+addiu v0,t3,840`, which is byte-identical to target's
+`addiu $v1,$zero,-0x2 ; addiu $t0,$zero,0x3 ; addiu $v0,$t3,0x348`.
+D2 is confined to the two bit loops; the third loop was never mirrored.
+
+### The D3 mechanism, resolved exactly (reading tools/gcc-2.7.2/loop.c)
+`strength_reduce` (loop.c:3779-3852) decides per giv:
+
+    benefit  = v->benefit;
+    benefit -= add_cost * bl->biv_count;          /* loop.c:3804 */
+    if (v->lifetime * threshold * benefit < insn_count && ! bl->reversed)
+      { v->ignore = 1; all_reduced = 0; }         /* loop.c:3823 */
+
+with `threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs)` — a large
+number (loop.c:3241), so the predicate only fires when `benefit <= 0`.
+`combine_givs` (loop.c:5500) pools the two identical per-arm DEST_ADDR givs
+(`combine_givs_p` returns 1 immediately for equal mult_val+add_val,
+loop.c:5464), doubling `benefit` and `lifetime`. `maybe_eliminate_biv` is only
+attempted when `all_reduced == 1` (loop.c:4035).
+
+So: two arms, one increment => pooled benefit ~ 2b - add_cost > 0 => reduced =>
+biv eliminated => `addiu $t1,$t3,10` + `sh $x,0($t1)` (our old floor).
+Two arms, TWO increments (`bl->biv_count == 2`) => 2b - 2*add_cost == 0 =>
+ignored => all_reduced 0 => biv survives => `move $t1,$t3` + `sh $x,0xA($t1)`
+— target's form, with both stores kept. Confirmed by measurement, not
+inference (probe P1 below).
+
+### The allocation mechanism, measured with the instrumented cc1
+`tools/gcc-2.7.2/cc1` with `BB2_ALLOC_DEBUG=1` prints
+`ALLOCDBG func=... ord=N pseudo=P hardreg=H nrefs=R livelen=L pri=X`, i.e.
+global.c's `allocno_compare` priority `floor_log2(R)*R/L*10000` and the
+resulting allocation order. Reproduce with
+`bash tools/wsl.sh 'sh tmp/grind/func_8001979C/s2/alloc.sh'`
+(script kept at that path; it cpp's src/code6cac.c and runs the instrumented
+cc1 with the canonical -G0 flags). In-loop refs are weighted x2.
+
+Measured allocno priorities:
+
+| form | bits_left | counter | walker(s) | resulting regs |
+|---|---|---|---|---|
+| session-1 floor | 17846 | 14482 | 11739 x2 (reduced givs) | a3 / t0 / t1 = target |
+| P5 one walker, 2 incs | 17313 | 13548 | 19259 (nrefs 26, livelen 54) | walker a3, bits_left t0, counter t1 |
+| P6 split walkers | 17313 | 13548 | 14444 x2 (nrefs 13, livelen 27) | bits_left a3, walkers t0, counter t1 |
+| **P7 (current)** | **17313** | **14000** | **13928 / 12580** | **a3 / t0 / t1 = target** |
+
+The duplicated increment adds exactly 4 weighted refs per walker (9 -> 13),
+which is enough to lift a walker above the counter. A single walker shared by
+both loops can never be fixed this way: at nrefs 26 it needs livelen > 76 to
+fall below the counter and the longest live range in the whole function is 69.
+Splitting the walker per loop (nrefs 13) and lengthening each live range by
+moving its initialisation as early as its loop allows is what closes it.
+
+### Measured probes (scores are `sandbox --disable all`)
+- **P1 — `dst += 2` duplicated into both arms, loop 1 only.** 24 -> 45,
+  build_insns 75. Score worse but the loop-1 store became `sh v0,10(a3)` with
+  preheader `move a3,t3` — D3 closed, at the cost of a register rotation.
+- **P2 — same for both loops.** 44, build_insns 75. D3 closed in both loops.
+- **P3 — P2 + session-1's named-intermediate D1 lever in both loops.** 49,
+  build_insns 77 == target_insns. All 77 instructions present, same
+  opcodes in the same order as target; the entire residual is register naming.
+  `hi` landed in $t2 and pushed base/consts up one register.
+- **P4 — P3 with `val` also carrying the `0x20 - bits_left` shift amount.**
+  43, 77 insns. `hi` moved out of $t2 back into the $v0/$v1 pair; base $t3,
+  consts $t2/$t4 restored.
+- **P5 — P4 + a separate walker (`out`) for the third loop.** 40, 77 insns.
+  Walker nrefs 33 -> 26.
+- **P6 — P5 + per-loop walkers `dst` / `dst2` for the two bit loops.** 31,
+  77 insns. bits_left correctly in $a3; walkers $t0 and counter $t1 still
+  swapped (walker pri 14444 vs counter 13548).
+- **P7 — P6 + `dst = base;` hoisted above the `sw`/`lw`/`addiu` preamble and
+  `dst2 = base;` moved ahead of `i = 0;`.** **20**, 77 insns. Walker livelens
+  31 / 28, counter livelen 60: priorities become 17313 / 14000 / 13928 / 12580
+  and the register assignment matches target exactly.
+- **P8 — P7 with `hi = cur >> (0x20 - bits_left);` (anonymous temp) instead of
+  reusing `val`.** 31, 77 insns. Strictly worse; the `val` reuse is
+  load-bearing.
+
+### Artifacts
+- `tmp/grind/func_8001979C/s2/floor.txt` — floor disassembly (the s1 D2
+  correction).
+- `tmp/grind/func_8001979C/s2/p7.txt` — current-form disassembly.
+- `tmp/grind/func_8001979C/s2/alloc.sh` — ALLOCDBG reproduction script.
+- `tmp/grind/func_8001979C/s2/alloc_floor.txt`, `alloc_p5.txt` — priority dumps.
+- `tmp/grind/func_8001979C/s2/dump.sh` + `dump/code6cac.i.greg` — cc1 -da
+  register-disposition dump (note: cc1 prints unrelated parse errors for
+  `GameObj` prototypes later in the file and still emits every dump; harmless).
+- `memory/grind/func_8001979C/rejected/` — P4, P5, P6 saved as named forms.
+
+### Housekeeping
+`src/code6cac.c` is left carrying the P7 form (score 20). The only other dirty
+file is `metrics/events.jsonl`.
+
+- [s2] [s2] sandbox func_8001979C --disable all with the session-2 form in src/code6cac.c: score 20, target_insns 77, build_insns 77. This is the first form that has both instruction parity and target's register assignment; the previous floor was 24 at build_insns 75.
+
+- [s2] [s2] Register assignment in the session-2 form matches target exactly: $a3 = bits_left, $t0 = counter, $t1 = walking pointer, $t2 = 0x20, $t3 = base, $t4 = field width, $a2 = cur, $a1 = arg1, $a0 = needed.
+
+- [s2] [s2] Three source changes are jointly load-bearing and each was measured: (1) 'dst += 2' duplicated into both if-arms of both bit loops (closes D3 via loop.c biv_count); (2) the local 'val' carries BOTH 0x20 - bits_left and 0x20 - needed (the second is session 1's confirmed D1 lever; the first keeps 'hi' inside the $v0/$v1 pair); (3) per-loop walking pointers dst / dst2 / out with each initialisation placed as early as its loop allows.
+
+- [s2] [s2] loop.c's giv reduction predicate is effectively 'benefit <= 0': threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs) (loop.c:3241) is large, so 'v->lifetime * threshold * benefit < insn_count' (loop.c:3823) can only fire when benefit is non-positive. benefit is reduced by add_cost * bl->biv_count at loop.c:3804, which is why doubling the biv increments is what flips it.
+
+- [s2] [s2] combine_givs_p (loop.c:5464) returns 1 unconditionally for two givs with equal mult_val and add_val, so two identical per-arm DEST_ADDR givs ALWAYS pool their benefit and lifetime. There is no C shape that keeps two identical store addresses from combining; the reachable lever is biv_count, not giv count. This closes session 1's frontier item F1 as mis-aimed.
+
+- [s2] [s2] The instrumented cc1 at tools/gcc-2.7.2/cc1 prints 'ALLOCDBG func=... ord=N pseudo=P hardreg=H nrefs=R livelen=L pri=X' under BB2_ALLOC_DEBUG=1, which is global.c's allocno_compare priority floor_log2(R)*R/L*10000 and the allocation order. Reproduction script: tmp/grind/func_8001979C/s2/alloc.sh. In-loop references are weighted x2.
+
+- [s2] [s2] Measured allocno priorities. Floor: bits_left 17846 / counter 14482 / two reduced-giv walkers 11739. P5 one shared walker: bits_left 17313 / counter 13548 / walker 19259 (nrefs 26, livelen 54). P6 split walkers, late inits: walkers 14444 each (nrefs 13, livelen 27) still above counter 13548. P7 (current): bits_left 17313 / counter 14000 (nrefs 21, livelen 60) / dst2 13928 (livelen 28) / dst 12580 (livelen 31).
+
+- [s2] [s2] The walker priority window is narrow: at nrefs 13 a walker needs livelen >= 29 to fall below the counter. Moving 'dst2 = base;' back after 'i = 0;' costs exactly one livelen unit and re-inverts the walker/counter order (that regression is measured as P6, score 31). This couples D4's preheader order to the allocation and means D4 cannot be fixed by statement re-ordering alone.
+
+- [s2] [s2] Remaining residual at score 20 is two families. D2: target keeps 'hi' in $v1 SHARING the register of the 0x20 - bits_left temp ('srlv $v1,$a2,$v1') with 'val' and 'cur >> bits_left' in $v0; we emit the mirror (temp $v1, hi $v0, val $v1, cur >> bits_left $v1), because our 'val' is re-assigned later in the same arm and so is still live at the srlv. D4: target's preheader is 'move $t0,zero ; li $t4,<width> ; li $t2,0x20 ; move $t1,$t3' with the walker init last and the width constant before 0x20.
+
+- [s2] [s2] cc1 -da dumps for this file are reproducible with tmp/grind/func_8001979C/s2/dump.sh. cc1 prints unrelated 'parse error before GameObj' diagnostics for prototypes later in code6cac.c (GameObj is not typedef'd in the preprocessed unit) and still emits every dump file; this is pre-existing and harmless.
+
+- [s2] [s2] src/code6cac.c is left carrying the score-20 form; the same body is saved at memory/grind/func_8001979C/candidate.c with a full header explaining each lever. Rejected intermediates saved under memory/grind/func_8001979C/rejected/ as single-walker-both-loops-score40.c, single-walker-loop3-shared-score43.c and split-walkers-late-init-score31.c.

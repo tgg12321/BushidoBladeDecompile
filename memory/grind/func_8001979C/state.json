@@ -1,31 +1,37 @@
 {
  "func": "func_8001979C",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 24,
    "modality": "recon",
    "headline": "Recon: floor 24 confirmed (75 vs 77 insns); residual isolated to 4 families; named-intermediate lever reaches 77/77 insn parity (score 33) and biv-elimination confirmed as the cause of the folded stor"
+  },
+  {
+   "session": 2,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Floor 24 -> 20: D1 and D3 both closed and target's exact register assignment reached at build_insns 77 == target_insns 77; residual is the $v0/$v1 mirror in the if-arms plus preheader order."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C shape exists that keeps one store in each if-arm (target has two sh per loop) while presenting loop.c with a single reducible address giv, so the biv survives and the +0xA / +0x8E stays a store displacement.",
-   "mechanism": "loop.c combine_givs merging of the two identical DEST_ADDR givs -> merged giv reduced -> bl->all_reduced -> maybe_eliminate_biv folds the constant into the biv's initial value. Blocking any link in that chain restores target's form (proven by probe A's single-giv case).",
-   "next_probe": "(a) Hoist the address into a loop-local pointer computed once per iteration ('s16 *q = &dp[5];') and store through *q in both arms -- one giv, two stores; (b) read tools/gcc-2.7.2/loop.c strength_reduce / combine_givs / maybe_eliminate_biv and identify the exact predicate that flipped between probe A and the floor, then attack it directly."
+   "hypothesis": "D2 closes when the 0x20 - bits_left shift amount lives in its own named local that DIES at the srlv, letting local-alloc tie 'hi' to that dying quantity ($v1) and leaving $v0 for 'val' and 'cur >> bits_left' -- target's exact pairing.",
+   "mechanism": "GCC 2.7.2 local-alloc block_alloc/combine_regs ties a SET's destination quantity to a source quantity that dies in the same insn. Our 'val' is re-assigned later in the same arm so its quantity is still live at the srlv and cannot be tied; P8 showed that removing the variable entirely is also wrong (score 31), so the shape wanted is a short-lived NAMED third local, not the absence of one.",
+   "next_probe": "(a) add a third local used only as 'shift = 0x20 - bits_left; hi = cur >> shift;' in both loops, keeping 'val' for the 0x20 - needed step, and re-measure; (b) read tools/gcc-2.7.2/local-alloc.c combine_regs / block_alloc for the exact tying precondition and satisfy it in C; (c) diff the instrumented cc1's BB2_QTY_DEBUG output ('QTYDBG blk= ord= qty= reg1= birth= death= refs= got=') between the current form and each variant to see which quantity takes $v1 first."
   },
   {
-   "hypothesis": "The 77-insn named-intermediate shape (variant_named_intermediate_77insn.c) can keep its instruction parity while recovering the floor's register assignment; the intermediate only needs a shorter live range so it stops evicting 'hi' from the $v0/$v1 pair.",
-   "mechanism": "GCC 2.7.2 local-alloc/global-alloc allocno priority (reg_n_refs / live length). One extra live pseudo in the loop pushes 'hi' into $t1 and cascades every $t register up one.",
-   "next_probe": "(a) Shorten the intermediate's live range -- put 'val = 0x20 - needed; bits_left = val;' immediately adjacent and move the 'cur = *arg1++;' refill above it; re-measure. (b) Take cc1 -da .greg dumps of the floor form and the probe-D form and diff ';; Register dispositions:' plus the conflict lists to see exactly which conflict evicts 'hi' (instrumented cc1 is tools/gcc-2.7.2/cc1, NOT build/cc1)."
+   "hypothesis": "D4's preheader order can be reached only by widening the walker/counter priority window, because the early walker initialisation that currently buys the correct allocation is the same thing that emits 'move $t1,$t3' too early.",
+   "mechanism": "global.c allocno_compare (counter nrefs 21 / livelen 60 / pri 14000 vs walkers nrefs 13 / livelen 28 and 31) plus loop.c move_movables, which decides where the hoisted 'li' constants land relative to the walker init.",
+   "next_probe": "(a) find a change that raises the counter's priority or lowers both walkers' without touching the init placement -- anything that shortens the counter's live range while keeping nrefs in the 16-31 floor_log2 bucket; (b) inspect tmp/grind/func_8001979C/s2/dump/code6cac.i.loop to see whether the 'li' emission order follows move_movables insertion order rather than source order (session 1 already killed the naive source-order swap, so the hoist mechanism is the surface)."
   },
   {
-   "hypothesis": "D2's $v0/$v1 mirror is decided function-wide by allocno ordering, not by anything local to the bit loops -- the structurally-matching third loop is mirrored too ('li $v0,-2' + 'addiu $v1,$t3,0x348' vs target's 'li $v1,-2' + 'addiu $v0,$t3,0x348').",
-   "mechanism": "allocno creation/priority order in local-alloc, which follows declaration and first-use order of the function's locals.",
-   "next_probe": "(a) Permute the local DECLARATION order (the SOTN-sanctioned named-intermediate-declaration-order lever) and re-measure -- cheapest test of the ordering theory. (b) Writing the other operand of the '|' first is a candidate, but MUST NOT be attempted before reading .claude/rules/or-tree-shape-shift.md, which forbids parenthesisation-axis mutations in associative/commutative expressions; if that rule covers bare operand-order swaps, record the kill in hypotheses.md instead of probing."
+   "hypothesis": "The closing form's policy status should be settled before, not after, a candidate-ready submission: 'dst += 2' duplicated into both if-arms is a REAL, live-in-output statement duplicated into two control-flow arms.",
+   "mechanism": "It matches the SOTN-sanctioned duplicated-statement-into-arms family rather than any dead-store family -- the increment must happen on every path and it materialises in the emitted code -- but the sanctioned family's prerequisites (byte-neutrality, exhaustion, FAKE annotation) were written for byte-neutral duplications, and here the duplication changes loop.c's biv_count.",
+   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md and .claude/rules/no-new-park-categories.md, decide whether the FAKE-annotation prerequisite applies to a duplication that is live in the output, and draft the self-vet with a verbatim scope quote plus a file:line or commit precedent. If the family does not cleanly cover it, emit ruling-request rather than a submission."
   }
  ],
  "judge_constraints": [],
