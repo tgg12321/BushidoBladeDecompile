@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 18,
- "current_modality": "synthesis",
+ "session_count": 19,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -111,26 +111,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis: closed the last hole in the ceiling proof (aggregate address holders measured both ways \u2014 single-slot scalarises to a byte-identical stream at 10, two-slot spills to the frame at 58 insns/3"
+  },
+  {
+   "session": 19,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural axis closed by saturation as well as by mechanism: 18 further forms on the score-10 single-object chassis, TEN of them exactly codegen-neutral (same insns, same lbu/sb/lui census, same scor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis is closed and the remaining gap is a SOURCE-MODEL gap: the original source provably held two simultaneously-live address objects for D_80106A73 (s18 ordering proof), and every route to two address pseudos from one C object is now measured dead (scalar: s15/s16; aggregate: s18). The next step is the escalation-modality pass, and it must lead with the ordering proof.",
-   "mechanism": "Reaching 0 needs a second address pseudo. Two hard registers require two allocnos (global.c:426, no live-range splitting in 2.7.2); a single-slot aggregate scalarises to one pseudo (byte-identical stream, s18); a two-slot aggregate gets two pseudos only by going to the frame (58 insns / 35, s18); anonymous references never occupy a register (s16); reload rematerialisation is short-circuited (reload.c:4128-4137, s16). What remains is the banned two-or-more-scalar-object construct \u2014 which the target's instruction order shows was in the ORIGINAL source, not invented to steer the allocator.",
-   "next_probe": "Escalation-modality session ONLY (do NOT re-run the pure-C ladder). Evaluate the two endgame-lock gates. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). Gate 2: search SOTN master (then Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist and the match depends on them; the BB2-internal precedents (func_80037F40 at src/code6cac_c_mid.c:196+211 \u2014 two pointer objects of different types on one global, COMPLETED with zero rules; func_8003504C at src/code6cac_b.c:3941-3942) are NOT substitutes under the 2026-07-27 ruling. File the decisions.md entry with the ordering proof as lead evidence and the sharpened gate-2 question ('is reconstructing a provably-multi-object original a coercion at all?'). If no SOTN citation is in hand, both gates fail and the standing ruling pre-decides it: REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10.",
-   "hypothesis_id": "F1"
+   "hypothesis": "The pure-C axis is closed and the remaining gap is a SOURCE-MODEL gap: the original source provably held two simultaneously-live address objects for D_80106A73 (s18's instruction-ordering proof), and every route to two address pseudos from one C object is measured dead (scalar: s15/s16; aggregate: s18; and now every structural dimension around the single pseudo: s19). The next step is the escalation-modality pass, and it must lead with the ordering proof.",
+   "mechanism": "Reaching 0 needs a second address pseudo. Two hard registers require two allocnos (tools/gcc-2.7.2/global.c:426, no live-range splitting in 2.7.2); a single-slot aggregate scalarises to one pseudo (byte-identical stream, s18); a two-slot aggregate gets two pseudos only by going to the frame (58 insns / score 35, s18); anonymous references never occupy a register (s16); reload rematerialisation is short-circuited (reload.c:4128-4137, s16); and s19 shows the shape of the code around the single pseudo -- scoping, declaration order, statement order, mask-store spelling, the other pointer's type -- is exactly codegen-neutral. What remains is the banned two-or-more-scalar-object construct, which the target's instruction order shows was in the ORIGINAL source rather than invented to steer the allocator.",
+   "next_probe": "Escalation-modality session ONLY (do NOT re-run the pure-C ladder; s19 saturated its last unswept dimensions). Evaluate the two endgame-lock gates. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). Gate 2: search SOTN master (then Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist and the match depends on them; the BB2-internal precedents (func_80037F40 at src/code6cac_c_mid.c:196+211, func_8003504C at src/code6cac_b.c:3941-3942) are NOT substitutes under the 2026-07-27 ruling. File the decisions.md entry with the ordering proof as lead evidence and the sharpened gate-2 question ('is reconstructing a provably-multi-object original a coercion at all?'). If no SOTN citation is in hand, both gates fail and the standing ruling pre-decides it: REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10."
   },
   {
-   "hypothesis": "e1 (score 11, 50 insns, the target's EXACT lbu 176 / sb 164 access census) remains a better base than the score-10 form for any future lever that can remove one `lui`, because its only structural defect is that one instruction plus register naming, whereas the score-10 form is missing a whole memory access.",
-   "mechanism": "Distance 10 and distance 11 are nearly equal but not equally close in shape: the score-10 form differs from target in the ACCESS PATTERN (lbu 175 vs 176), which no register-level lever can repair, while e1 differs only by one address materialisation. A hypothetical lever that shared the symbol read's `lui $at` with an existing base materialisation would land e1 at or near 0.",
-   "next_probe": "Worth at most one turn, and only if a future session finds a sanctioned construct that changes address-materialisation sharing (nothing known does). Answer it from compiler source before spending measurements: read the %lo folding path in tools/gcc-2.7.2/config/mips/mips.c and combine, and determine whether any C shape makes GCC reuse one `lui %hi(D_80106A73)` for BOTH a symbol-addressed MEM and a pointer materialisation. Expect no \u2014 the pointer form needs the `addiu` and the MEM form does not.",
-   "hypothesis_id": "F2"
+   "hypothesis": "e1 (score 11, 50 insns, the target's EXACT lbu 176 / sb 164 access census) remains a better base than the score-10 form for any future lever that can remove one lui, because its only structural defect is that one instruction plus register naming, whereas the score-10 form is missing a whole memory access.",
+   "mechanism": "Distance 10 and distance 11 are nearly equal but not equally close in shape: the score-10 form differs from the target in the ACCESS PATTERN (lbu 175 vs 176), which no register-level lever can repair, while e1 differs only by one address materialisation. A lever that shared the symbol read's lui $at with an existing base materialisation would land e1 at or near 0. s19 adds a caution: every form that removed an access this session did so by letting cse forward a store, which moves the census the wrong way -- so the missing access cannot be recovered by removing separation, only by adding an address object.",
+   "next_probe": "Worth at most one turn, and only if a future session finds a sanctioned construct that changes address-materialisation sharing (nothing known does). Answer it from compiler source before spending measurements: read the %lo folding path in tools/gcc-2.7.2/config/mips/mips.c and combine, and determine whether any C shape makes GCC reuse one lui %hi(D_80106A73) for BOTH a symbol-addressed MEM and a pointer materialisation. Expect no -- the pointer form needs the addiu and the MEM form does not."
   },
   {
    "hypothesis": "Standing measurement caveat: the sandbox can OVERSTATE distance on this function whenever a variant reaches the address through a different splat auto-symbol, because engine/score.py does not mask R_MIPS_LO16 addends.",
-   "mechanism": "s17's a1_arr_all is byte-identical after linking to a form scoring 2 points lower, purely because its relocations name D_80106A70 with addend 3 instead of D_80106A73 with addend 0. Any session comparing symbol-spelling variants here must subtract that artefact before drawing conclusions.",
-   "next_probe": "No probe needed \u2014 a reading caveat for s17's and any future session's numbers. It does not affect the 10-point residual, which s16 localised to register naming plus one missing memory access and s18 re-confirmed, neither of which is a relocation artefact.",
-   "hypothesis_id": "F3"
+   "mechanism": "s17's a1_arr_all is byte-identical after linking to a form scoring 2 points lower, purely because its relocations name D_80106A70 with addend 3 instead of D_80106A73 with addend 0. Any session comparing symbol-spelling variants here must subtract that artefact before drawing conclusions. It does not affect the 10-point residual, which s16 localised to register naming plus one missing memory access, s18 re-confirmed, and s19 showed invariant under the whole structural dimension set.",
+   "next_probe": "No probe needed -- a reading caveat for s17's and any future session's numbers."
   }
  ],
  "judge_constraints": [

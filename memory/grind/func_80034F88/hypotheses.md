@@ -1853,3 +1853,51 @@ evidence - not another sweep.
 - probe: Read the three instructions directly off the target asm, then checked the emitted order of the banked floor-10 single-object candidate in tmp/grind/func_80034F88/s18/asm_a0_base.txt.
 - result: CONFIRMED. Our single-object build emits `sb v0,0(a0)` and only THEN `lui a0` / `addiu a0` — the target's same two instructions in the only order one object permits — and no source-level dial across eighteen sessions (declaration order, live-range shape, statement order, staging, mask spelling, temporary width, register pins, 6,450+ permuter iterations) has ever flipped it, nor by the argument above can any. The ledger's central claim is upgraded in kind: no longer 'our reproduction cannot get two base registers from one C object' but 'the original source necessarily contained at least two distinct address objects'.
 - verdict: CONFIRMED
+
+## [s19] Some structural dimension of the score-10 single-object chassis that has never been varied ON THIS CHASSIS (the other pointer's type, the 0xF8 mask store's spelling/staging, scope flattening, declaration order inside block 1, statement order of block 1's two reads) can move block 1's base register from $a0 to $v1 or restore its missing post-store reload.
+- mechanism: The residual was localised by s16-s18 to block 1 alone, as a base-register naming difference plus one absent reload, both consequences of there being exactly one address pseudo (global.c:426 gives one allocno per pseudo and 2.7.2 has no live-range splitting). If any of those dimensions perturbs allocno numbering or the live ranges around that pseudo, find_reg could hand block 1 a different hard register even with one object.
+- probe: 11 forms through tmp/grind/func_80034F88/s19/{gen.py,gen2.py,probe*.py} — a_p_as_u8ptr (p declared u8 *, conditions as *(s32 *)(p+0x20)&K), d_flat_scope_reuse (v/c at function scope, reused), i_block1_read_first, n1/n2/n3/n7 (the 0xF8 store as m=*q;*q=m&0xF8 / *q=*q&0xF8 / u8-staged / &=~7), n5_q_declared_first, o3_block1_decl_order, o4_block1_flat — each scored with the honest `sandbox func_80034F88 --disable all` and censused with objdump.
+- result: ALL TEN land on exactly score 10, 49 build insns, lbu 175 / sb 164 / lui 456 — identical to the base chassis on every counter. The dimensions are exactly codegen-neutral, not merely equal-scoring: the mask store has five spellings and one instruction stream, and the type of the other live pointer is neutral too. The residual is invariant under every source-level structural dimension that does not change how many address objects exist.
+- verdict: KILLED
+
+## [s19] Re-associating block 1's condition (a sign test instead of a mask test), narrowing block 1's cond/result local to u8, or re-associating the copy loop's exit test can recover part of block 1's residual.
+- mechanism: Statement re-association and type narrowing are listed structural levers; block 1 is the only defective region, and the loop's induction registers are adjacent to block 1's allocnos.
+- probe: b_block1_shift_cond (`c = p[8] << 31;`), m_block1_u8_cond (`u8 c;`), o2_loop_ne_cond (`i != 3`); same harness.
+- result: 11 / 11 / 13, all at 49 insns with the base census. The shift form emits sll+bgez where target has andi+beq; the u8 local adds a truncation; `i != 3` changes the loop's compare. Every one is a strict regression on an already-exact region.
+- verdict: KILLED
+
+## [s19] Hoisting the flag conditions above the flag stores (one condition, or all three) changes block 1's register assignment.
+- mechanism: The `p[8]` load between a flag store and the next flag read is what separates them in cse's insn walk; removing it changes the value-table state at block 1.
+- probe: n6_cond_above_mask (block 1's condition only) and c_conditions_hoisted (all three, computed before the mask store).
+- result: 13 at 45 insns (lbu 174) and 29 at 39 insns (lbu 173). Hoisting removes the separating memory reference, so cse FORWARDS the flag store into the following read and deletes reloads the target has — the census moves AWAY from the target's lbu 176. This is the same store-to-load forwarding mechanism s1-s3 mapped, seen from the other side: the interleaved `p[8]` reads in the base chassis are load-bearing, not incidental.
+- verdict: KILLED
+
+## [s19] Giving a value an earlier live range (the pointer object materialised before the call, or the loop index defined at the top) perturbs allocno ordering usefully.
+- mechanism: Allocno priority in global.c is driven by live-range length and reference counts; lengthening a range changes the order in which find_reg assigns hard registers.
+- probe: n4_q_before_call (`q = &D_80106A73;` before `p = func_80077D00();`) and o1_i_live_early (`i = 0;` at the top with `for (; i < 3; i++)`).
+- result: 29 at 51 insns and 24 at 53 insns. Both regress for the obvious structural reason rather than a subtle one: a value live across the jal must take a callee-saved register, which grows the prologue/epilogue with a save/restore pair the target does not have. Lengthening live ranges is not available as an allocation dial on this function.
+- verdict: KILLED
+
+## [s19] Some structural dimension of the score-10 single-pointer-object chassis that has never been varied ON THIS CHASSIS -- the type of the other live pointer, the spelling/staging of the 0xF8 mask store, scope flattening, declaration order (between the two pointer objects and inside block 1), or the statement order of block 1's two reads -- can move block 1's base register from $a0 to $v1 or restore its missing post-store reload.
+- mechanism: s16-s18 localised the whole 10-point residual to block 1, as a base-register naming difference plus one absent reload, both consequences of there being exactly one address pseudo (tools/gcc-2.7.2/global.c:426 gives one allocno per pseudo and 2.7.2 has no live-range splitting). If any of these dimensions perturbs allocno numbering or the live ranges around that pseudo, find_reg could hand block 1 a different hard register even from one C object.
+- probe: 11 forms through tmp/grind/func_80034F88/s19/{gen.py,gen2.py,probe.py,probe2.py,probe3.py}: a_p_as_u8ptr (p declared u8 *, conditions as *(s32 *)(p+0x20)&K, loop as p+i+0x17), d_flat_scope_reuse (v/c at function scope reused by all three blocks), i_block1_read_first, n1/n2/n3/n7 (the 0xF8 store as m=*q;*q=m&0xF8 / *q=*q&0xF8 / u8-staged / &=~7), n5_q_declared_first, o3_block1_decl_order, o4_block1_flat. Each measured with the honest `sandbox func_80034F88 --disable all` and censused with objdump on tmp/sandbox/func_80034F88/code6cac_b.o.
+- result: All TEN land on exactly score 10, 49 build insns, lbu 175 / sb 164 / lui 456 -- identical to the base chassis on every counter, so the dimensions are exactly codegen-neutral rather than merely equal-scoring. The 0xF8 mask store has five spellings and one instruction stream; the type of the other live pointer is neutral too.
+- verdict: KILLED
+
+## [s19] Re-associating block 1's condition as a sign test, narrowing block 1's cond/result local to u8, or re-associating the copy loop's exit test recovers part of block 1's residual.
+- mechanism: Statement re-association and type narrowing are listed structural levers; block 1 is the only defective region and the copy loop's induction registers are adjacent to block 1's allocnos.
+- probe: b_block1_shift_cond (c = p[8] << 31), m_block1_u8_cond (u8 c), o2_loop_ne_cond (i != 3); same harness.
+- result: 11 / 11 / 13, all at 49 insns with the base census. The shift form emits sll+bgez where the target has andi+beq, the u8 local adds a truncation, and i != 3 changes the loop compare in a region that was already register-identical to the target. Strict regressions.
+- verdict: KILLED
+
+## [s19] Hoisting the flag conditions above the flag stores (block 1's alone, or all three above the 0xF8 mask store) changes block 1's register assignment.
+- mechanism: The p[8] load sitting between a flag store and the next flag read is what separates them in cse's insn walk; removing it changes the value-table state at block 1.
+- probe: n6_cond_above_mask (block 1 only) and c_conditions_hoisted (all three conditions computed before the mask store).
+- result: 13 at 45 insns (lbu 174) and 29 at 39 insns (lbu 173). Hoisting removes the separating memory reference so cse FORWARDS the flag store into the next read and DELETES reloads the target has -- the census moves away from the target's lbu 176, not toward it. The interleaved p[8] reads in the base chassis are load-bearing, not incidental.
+- verdict: KILLED
+
+## [s19] Giving a value an earlier live range (the pointer object materialised before the call, or the loop index defined at the top of the function) perturbs allocno ordering usefully.
+- mechanism: Allocno priority in global.c is driven by live-range length and reference counts, so lengthening a range changes the order in which find_reg hands out hard registers.
+- probe: n4_q_before_call (q = &D_80106A73; before p = func_80077D00();) and o1_i_live_early (i = 0; at the top with for (; i < 3; i++)).
+- result: 29 at 51 insns and 24 at 53 insns. Both regress for a structural reason, not a subtle one: a value live across the jal must take a callee-saved register, which grows the prologue/epilogue by a save/restore pair the target does not have. Lengthening live ranges is not available as an allocation dial on this function.
+- verdict: KILLED

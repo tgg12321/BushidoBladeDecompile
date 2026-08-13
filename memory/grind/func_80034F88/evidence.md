@@ -2344,3 +2344,107 @@ names, carrying the ordering proof. The pure-C ladder should not be re-run.
 - [s18] src/code6cac_b.c was left exactly as committed (the probe harness splices and restores; `git status` shows src clean). The session's only tracked changes are the two ledger files, two new rejected/ banks, and the candidate.c header.
 
 - [s18] Housekeeping note for future sessions: the body committed in src/code6cac_b.c is NOT candidate.c — it is an older form carrying `asm volatile("" ::: "memory")` scheduling barriers, which the honest sandbox strips, and which coincidentally also scores 10 (with a different instruction stream: one base in $a2 plus `move` copies). Any 'base' measurement taken without splicing candidate.c is measuring that body, not the banked candidate.
+
+==== s19 (structural) ====
+
+HEADLINE. Floor unchanged at 10. Eighteen further structurally distinct forms
+measured on the score-10 single-pointer-object chassis (candidate.c), chosen to
+sweep the structural dimensions that had never been varied ON THIS CHASSIS: the
+type of the OTHER live pointer, the spelling and staging of the 0xF8 mask store,
+condition hoisting/re-association, scope flattening, declaration order inside
+block 1, and three allocno-ordering perturbations. TEN of the eighteen land on
+exactly 10 / 49 insns / lbu 175 / sb 164 / lui 456 — bit-for-bit the same score
+and census as the base — and the other eight are strictly worse. The structural
+axis is now dead by saturation as well as by the s15-s18 mechanism proof: the
+residual is invariant under every source-level dimension that does not add a
+second address object.
+
+HARNESS / ARTIFACTS (all under tmp/grind/func_80034F88/s19/)
+  gen.py / gen2.py           variant generators (waves 1 and 2)
+  variants/ variants2/ variants3/   the 18 bodies, one dimension changed each
+  probe.py / probe2.py / probe3.py  splice -> `sandbox --disable all` -> objdump
+                                    census (lbu / sb / lui) -> restore src
+  results.json / results2.json / results3.json   the raw measurements
+
+THE MEASUREMENTS (honest `sandbox func_80034F88 --disable all`; target 49 insns,
+census lbu 176 / sb 164 / lui 456)
+
+  score 10, 49 insns, lbu 175 / sb 164 / lui 456  — INDISTINGUISHABLE FROM BASE
+    a0_base                candidate.c re-measured (sanity anchor)
+    a_p_as_u8ptr           `p` declared `u8 *`, flag conditions read as
+                           `*(s32 *)(p + 0x20) & K`, loop as `p + i + 0x17`
+    d_flat_scope_reuse     v/c hoisted to function scope, reused by all 3 blocks
+    i_block1_read_first    block 1 reads the flag BEFORE the condition
+    n1_mask_via_s32_temp   `m = *q; *q = m & 0xF8;`
+    n2_mask_longhand       `*q = *q & 0xF8;`
+    n3_mask_via_u8_temp    `u8 m = *q; *q = m & 0xF8;`
+    n5_q_declared_first    `u8 *q;` declared before `s32 *p;`
+    n7_mask_complement     `*q &= ~7;`
+    o3_block1_decl_order   block 1 declares `c` before `v`
+    o4_block1_flat         block 1 loses its inner scope (locals at fn top)
+
+  worse
+    b_block1_shift_cond    11 / 49  block 1's test re-associated as `p[8] << 31`
+                                    (sll+bgez where target has andi+beq)
+    m_block1_u8_cond       11 / 49  block 1's cond/result local narrowed to u8
+    o2_loop_ne_cond        13 / 49  copy loop `i != 3` instead of `i < 3`
+    n6_cond_above_mask     13 / 45  block 1's condition read hoisted above the
+                                    0xF8 store: cse then forwards that store into
+                                    block 1's read, lbu 175 -> 174, -4 insns
+    o1_i_live_early        24 / 53  `i = 0;` before the call (loop index live
+                                    across the whole flag section)
+    c_conditions_hoisted   29 / 39  all three `p[8] & K` conditions computed
+                                    before the mask store: with no memory read
+                                    between the flag stores cse forwards TWO of
+                                    them, lbu 175 -> 173, and the function
+                                    collapses to 39 insns (10 under target)
+    n4_q_before_call       29 / 51  `q = &D_80106A73;` before `func_80077D00()`:
+                                    the pointer is live across the jal, so it
+                                    takes a callee-saved register and the
+                                    prologue grows a save/restore pair
+
+WHAT THE TEN-WAY TIE MEANS (the load-bearing part)
+
+The ten tied forms are not near-duplicates. They differ in the type of the
+function's other live pointer, in whether the flag temporaries live in three
+inner scopes / one inner scope / function scope, in declaration order both
+between the two pointer objects and between block 1's own two locals, in the
+statement order of block 1's two reads, and in four different spellings of the
+0xF8 read-modify-write (compound, long-hand, s32-staged, u8-staged, complement
+constant). Every one of those is a dimension the codegen-technique-index lists
+as a structural lever, and every one is EXACTLY codegen-neutral here: same
+instruction count, same lbu/sb/lui census, same score.
+
+That is the empirical face of the s15-s18 mechanism result. Block 1's defect is
+(a) the base register being $a0 where target uses $v1 and (b) one missing
+post-store reload, and both are decided by there being ONE address pseudo. All
+of the above vary the SHAPE of the code around that pseudo without changing how
+many address objects exist, so none of them can move either half. The three
+forms that DO move the numbers move them the wrong way and for a legible reason:
+hoisting a condition (n6) or all three conditions (c) removes the memory
+reference that was separating a flag store from the next flag read, so cse
+forwards the store and DELETES a reload the target has (census lbu 175 -> 174 ->
+173, i.e. moving further from the target's 176, not closer); and making a value
+live across the call (n4, o1) buys callee-saved registers and prologue growth.
+
+Two smaller facts worth banking on their own:
+  * The type of `p` is codegen-neutral on this function. `s32 *p` with `p[8]`
+    and `(u8 *)p + i + 0x17`, and `u8 *p` with `*(s32 *)(p + 0x20)` and
+    `p + i + 0x17`, produce the same count and census at the same score. Future
+    sessions do not need to re-sweep the other pointer's type.
+  * The 0xF8 mask store has no spelling degrees of freedom at all — five
+    spellings, one stream. It is not a lever, it is a fixed point.
+
+- [s19] Floor unchanged at 10 (49 build insns vs the target's 49; census lbu 175 / sb 164 / lui 456 against the target's lbu 176 / sb 164 / lui 456). candidate.c re-measured this session as variant a0_base and is unchanged as the best admissible form; src/code6cac_b.c is byte-clean at session end (the probe harness restores it).
+
+- [s19] TEN structurally distinct forms tie the base at 10 on every counter simultaneously (score, insn count, lbu, sb, lui). They differ in the type of the function's other live pointer, in whether the flag temporaries live in three inner scopes / one inner scope / function scope, in declaration order both between the two pointer objects and between block 1's own two locals, in the statement order of block 1's two reads, and in five spellings of the 0xF8 read-modify-write. Every one of those is a codegen-technique-index structural lever and every one is exactly codegen-neutral here.
+
+- [s19] The type of `p` is codegen-neutral on this function: `s32 *p` with p[8] and (u8 *)p + i + 0x17, and `u8 *p` with *(s32 *)(p + 0x20) and p + i + 0x17, give the same instruction count and the same census at the same score. Future sessions do not need to re-sweep the other pointer's type.
+
+- [s19] The 0xF8 mask store has no spelling degrees of freedom at all: compound assignment, long-hand `*q = *q & 0xF8;`, s32-staged temp, u8-staged temp and `&= ~7` all produce one stream. It is a fixed point, not a lever.
+
+- [s19] Condition hoisting is measurably counter-productive and explains why: with the separating p[8] load removed, cse forwards the flag store into the following read and deletes a reload the target has, driving the lbu census 175 -> 174 (one condition hoisted, score 13 at 45 insns) -> 173 (all three hoisted, score 29 at 39 insns) against the target's 176.
+
+- [s19] Any value made live across the func_80077D00() call takes a callee-saved register and grows the prologue: q materialised before the call scores 29 at 51 insns, the loop index defined at the top scores 24 at 53 insns.
+
+- [s19] Taken with s15-s18, the residual is now shown invariant under every source-level structural dimension that does not change how many address objects exist -- the empirical face of the one-allocno-per-pseudo ceiling proof, reached independently of it.

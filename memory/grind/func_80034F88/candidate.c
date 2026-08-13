@@ -126,6 +126,21 @@
  * necessarily contained at least two". That is the escalation packet's lead
  * evidence; it is NOT a licence for a session to self-approve a multi-object
  * body (checklist T5), and this file stays the best ADMISSIBLE form.
+ *
+ * s19 (structural) re-measured this body as variant a0_base — still 10 at 49
+ * insns, lbu 175 / sb 164 / lui 456 — and added nothing to it, but closed the
+ * structural axis by saturation as well as by mechanism (full write-up under
+ * "==== s19 (structural) ====" in evidence.md). Eighteen further forms varied
+ * the dimensions never varied ON THIS CHASSIS; TEN of them are exactly
+ * codegen-neutral (same insn count, same census, same score): the type of the
+ * other live pointer `p`, five spellings of the 0xF8 mask store, block-1
+ * statement order, scope flattening, and declaration order both between the two
+ * pointer objects and inside block 1. The eight that move the numbers move them
+ * away from the target — hoisting a condition lets cse forward a flag store and
+ * DELETES a reload (lbu 175 -> 174 -> 173 against the target's 176), and
+ * lengthening any live range across the `func_80077D00()` call buys a
+ * callee-saved register plus prologue growth. Nothing at source level moves
+ * block 1 without changing how many address objects exist.
  */
 void func_80034F88(void) {
     s32 *p;
