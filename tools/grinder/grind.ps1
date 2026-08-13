@@ -21,7 +21,15 @@ param(
     [switch]$Once,
     [switch]$Stop,
     [string]$Model = 'claude-opus-5[1m]',
-    [string]$JudgeModel = 'claude-fable-5[1m]',
+    # Owner directive 2026-08-12: Fable 5 (the previous default) has its own
+    # per-model allowance, and exhausting it stalled the whole pipeline — five
+    # 429 wait cycles over 2.5 h with a proven candidate parked in front of the
+    # Judge, while every other model still had usage. A same-or-stronger tier
+    # than the worker is also the safer direction for the integrity gate: the
+    # 2026-07-22 backlog audit found a fabricated-evidence cheat that the
+    # weaker same-tier fable judge passed unverified (see the ledger-staging
+    # note further down).
+    [string]$JudgeModel = 'claude-opus-5[1m]',
     # Layer-1 (the pre-Judge cheat-reviewer gate) runs on the model the agent
     # definition declares — it is a high-volume, cheap gate whose job is to bounce
     # obvious cheat-by-spelling before a Judge cycle is spent.

@@ -12,7 +12,10 @@
   0 = GO, 1 = a drill failed, 2 = preflight refused (dirty tree).
 #>
 [CmdletBinding()]
-param([switch]$WithJudge, [string]$JudgeModel = 'claude-fable-5[1m]')
+# JudgeModel default tracks grind.ps1's (owner directive 2026-08-12: off Fable 5,
+# whose separate per-model allowance stalled the pipeline). Drill C spends a real
+# Judge cycle, so a stale default here would drill a model the driver no longer uses.
+param([switch]$WithJudge, [string]$JudgeModel = 'claude-opus-5[1m]')
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $Root
