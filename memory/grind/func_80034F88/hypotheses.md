@@ -1057,3 +1057,188 @@ untried — grind those first.
 - probe: Read toplev.c:2845-2870 to establish the pass order, then checked thread_jumps' precondition against the target's own instruction stream (asm/funcs/func_80034F88.s).
 - result: KILLED on the precondition, no measurement needed. thread_jumps only redirects a jump when the destination code is equivalent to the redirect target's code under the same register state; the three join labels here are each followed by DIFFERENT code (block 1's join by base2's materialisation and block 1's store, block 2's join by block 2's store and base3's materialisation, block 3's join by block 3's store and the copy-loop setup). No pair of equivalent destinations exists, so no redirection is available and no label's NUSES can rise without a new LABEL_REF - i.e. without a new jump insn. This closes the second of the two lines of attack s8's frontier named.
 - verdict: KILLED
+
+## Resolved in s10 (synthesis)
+
+### s9-F2 — KILLED. "The 49-instruction `u8 val` chassis may reach 18 or below
+### once crossed with the levers found after s3."
+*Mechanism.* Score on this function is diff ALIGNMENT, not instruction count or
+access counts, so a chassis two instructions shorter than the floor form might
+align better once given the s4-s9 levers (two-reads-per-block, staged pointer
+bases, per-access pointer/symbol mixes).
+*Probe.* Wave U — 13 forms through `tmp/grind/func_80034F88/s10/probe.py`.
+*Result.* u0/u1/u9/u10 20/49, u4 23/48, u3/u5/u7/u8 24, u6/u11/u12 25/49,
+u2 29/47. Best 20; nothing reached the then-floor of 18. The chassis was never
+the axis. **KILLED.** `rejected/u8-chassis-49insn-plateau-score20.c`.
+
+### s10-H1 — CONFIRMED. There is a THIRD reload mechanism, it costs nothing, and
+### it is compatible with the target's unconditional store.
+*Statement.* A read of a just-stored byte survives as a real `lbu` whenever the
+VARIABLE that supplied the stored value has been reassigned before the read.
+*Mechanism.* cse records a store as an equivalence class containing both the
+stored MEM and the register the value came from, and satisfies a later read from
+the cheapest live member — the register (which is what emitted the s3-s9 floor
+form's `andi a0,v1,0xff` zero-extend-from-register where the target has an
+`lbu`). Overwrite that register first and the MEM is the only member left, so
+cse must emit the load. No volatile, no CODE_LABEL, no NOTE_INSN_LOOP_END, no
+conditional store, no extra instruction.
+*Probe.* Spell the block condition and the selected value as ONE local, so each
+block's `c = p[8] & K;` kills the previous block's stored value: waves V/W/Z/ZZ,
+53 forms.
+*Result.* Reloads appear in every flag block from the second onward with the
+build at or below the target's instruction count. Floor 18 -> 13 -> 10 -> 9.
+**CONFIRMED** — and it supersedes the s7/s8/s9 claim that every reload-producing
+construct costs an instruction the target does not have.
+
+### s10-H2 — CONFIRMED (and it REFUTES s6). The `$v0`/`$v1` swap of the selected
+### value IS steerable, by variable reuse.
+*Statement.* s6 read `.greg` conflicts and concluded the swap was a `local-alloc`
+fact, not a C-reachable choice; six live-range forms all scored worse.
+*Mechanism.* The target reuses the CONDITION's register for the result
+(`lw v0,32(a1)`; `andi v0,v0,K`; `bnez v0`; `ori v0,a0,K`; `move v0,a0`). A
+separate `val2` local is what forces the result into `v1`; one local carrying
+both puts it in the condition's register.
+*Probe.* Wave V (10 forms) and every later wave.
+*Result.* All six `ori`/`move` register-naming points flip together. **CONFIRMED
+— s6's conclusion is withdrawn.**
+
+### s10-H3 — KILLED. Three separate pointer LOCALS supply the target's three
+### addend-0 bases.
+*Mechanism.* One pointer local = one base; the target has three, so three locals
+should give three.
+*Probe.* w1 (assigned at block top), w2 (staged before the previous block's
+store), w9 (block-scoped), z6 (declared last), z7 (`p` declared last), z8.
+*Result.* All 23, several at exactly 49 instructions: the shape is right but the
+allocator gives every base the same hard register and evicts `p` from `a1` into
+`a0`, cascading through the function; and with one register for all bases the
+second base cannot be materialised before block 1's store as the target's is.
+**KILLED.** `rejected/three-pointer-locals-ra-cascade-score23.c`. What does work
+is ONE pointer variable re-assigned (z1 10/49) or two variables one of which is
+re-assigned (zz5/zz6 9/49).
+
+### s10-H4 — KILLED as a route to the floor, CONFIRMED as a mechanism. Block 1's
+### missing reload via the mask's value routed through the reused local.
+*Mechanism.* `c = *ptr & 0xF8; *ptr = c;` makes block 1's `c = p[8] & 1;` kill
+the mask's stored value, so block 1's read is a real `lbu` — the target's full
+`lbu 5` count, with an unconditional store, in non-volatile C at no instruction
+cost. Nothing measured in s1-s9 achieved that combination.
+*Probe.* Waves X and A2 (16 forms) crossing the spelling with every base
+structure; plus wave B's second-pointer read spellings.
+*Result.* The reload appears every time, and the score is **33** every time
+(x1/x5/x6 33/45, x3 33/47, x2/x4/x8/zz1/a1/a2/a3/a4/a8 33/49, a7 34/50), because
+carrying the mask through `c` extends that local's live range across the call
+return and permutes the whole allocation (`p` into a2, condition and value into
+v1). Reading block 1 through the other pointer variable also produces the reload
+at 50 insns / 27 (b1); storing through it is 13 (b2); both is 23/51 (b3).
+**KILLED as a route to the floor.** `rejected/maskc-reload-ra-cascade-score33.c`,
+`rejected/block1-read-through-second-pointer-score27.c`.
+
+## Open frontier for s11
+
+### F1 — block 1's reload and the target's register assignment are mutually
+### exclusive on this chassis; break the tie.
+*Why it matters.* It is the ENTIRE residual 9. Every one of the 9 points is
+downstream of the single missing `lbu a0,0(v1)`: without it block 1's byte stays
+in the mask's register instead of being loaded into a fresh one, which pins the
+mask's base into the wrong hard register (build `a2` where the target has `v1`)
+and leaves a `nop` in the `lw` load-delay slot. With it (s10-H4) the allocation
+permutes and the score triples.
+*Mechanism to attack.* The conflict is a live-range one, not a spelling one: the
+only local killed at the right point (between the mask's store and block 1's
+read) is the condition/value local `c`, and using it for the mask extends its
+range across the call return. So the search is for a way to kill the mask's
+value register at that point WITHOUT `c` carrying it across the call — e.g. a
+mask spelling whose value is dead by construction, a different variable that is
+naturally reassigned between the mask and block 1, or a block-1 read whose
+address expression differs from the mask's while re-using an already-materialised
+base (b1 does the latter but pays an instruction because the second base has to
+move up).
+*Next probe.* Take `zz5`/`zz6` (9/49) and vary ONLY the mask statement and
+block 1's read, holding the base structure fixed: `val` vs `c` vs a third local
+for the mask value; the mask read spelled through the symbol and stored through
+the pointer (and the reverse); block 1's read hoisted above / sunk below the
+condition. Read every result with `s10/sbs.py`, which prints the difflib-aligned
+listing — on this function the score IS the count of misaligned positions, so
+the listing tells you exactly which insn to chase.
+
+### F2 — the third base needs a spelling a human would write.
+*Why it matters.* The 9 rests on a second `ptr2 = &D_80106A73;` that re-assigns
+a variable a value it already holds. It fails checklist T1/T2 as written, it is
+NOT vetted and NOT self-approved, and if it is ruled out the function falls back
+to the CLEAN 13 (`candidate_clean_13.c`), not to the old 18.
+*Next probe.* Not a sweep — a derivation. The target materialises `&D_80106A73`
+three times with addend 0; find a program structure in which that re-derivation
+is what the source naturally says (a per-block scope with its own pointer is
+already measured at 23; a helper-shaped re-fetch would cost a call). If no such
+structure exists, the correct outcome is a `ruling-request` naming this
+construct specifically — not a submission and not a silent carry-forward.
+
+### F3 — the escalation thesis inherited from s7/s8/s9 must be REWRITTEN AGAIN
+### before it is ever filed.
+s9's packet claimed that every construct supplying the target's reloads costs at
+least one instruction the target does not contain, and that the boundary family
+is the only source of the addend-0 bases. Both halves are now false:
+register-death supplies the reloads for free, and a re-assigned pointer variable
+supplies the bases at their exact cost. The function moved 18 -> 9 in a single
+session with no new sanctioned-family claim. It is not near exhaustion, and no
+escalation packet should be filed from its current state.
+
+## [s10] The 49-instruction `u8 val` chassis reaches 18 or below once crossed with the levers found after s3.
+- mechanism: Score on this function is diff ALIGNMENT rather than instruction count or access-signature counts, so a chassis two instructions shorter than the floor form could align better once given the two-reads-per-block, staged-pointer-base and per-access pointer/symbol mixes discovered in s4-s9. No session since s3 had re-explored it.
+- probe: Wave U, 13 forms, `tmp/grind/func_80034F88/s10/probe.py` with an objdump lbu/sb/lui census per form.
+- result: u0/u1/u9/u10 20/49, u4 23/48, u3/u5/u7/u8 24, u6/u11/u12 25/49, u2 29/47. Best 20; nothing reached even the then-floor of 18. The chassis was never the axis.
+- verdict: KILLED
+
+## [s10] A read of a just-stored byte survives as a real lbu whenever the VARIABLE that supplied the stored value is reassigned before the read — a third reload mechanism, at zero instruction cost, compatible with the target's unconditional store.
+- mechanism: cse records a store as an equivalence class containing both the stored MEM and the register the value came from, and satisfies a later read from the cheapest LIVE member — the register (which is what emits the s3-s9 floor form's `andi a0,v1,0xff` zero-extend-from-register where the target has an lbu). Overwriting that register first leaves the MEM as the only member, so cse emits the load. No volatile, no CODE_LABEL, no NOTE_INSN_LOOP_END, no conditional store, no extra instruction.
+- probe: Spell each block's condition and selected value as ONE local, so `c = p[8] & K;` kills the previous block's stored value; waves V/W/Z/ZZ, 53 forms, honest sandbox plus difflib side-by-side.
+- result: Reloads appear in every flag block from the second onward at or below the target's instruction count; honest floor 18 -> 13 (w3, 45 insns) -> 10 (z1, 49) -> 9 (zz5/zz6, 49), and from block 2 onward the build matches the target instruction-for-instruction and register-for-register. Supersedes the s7/s8/s9 claim that every reload-producing construct costs an instruction the target does not have.
+- verdict: CONFIRMED
+
+## [s10] s6's finding that the $v0/$v1 swap of the selected value is not a steerable allocation tie.
+- mechanism: The target reuses the CONDITION's register for the result (`lw v0,32(a1)`; `andi v0,v0,K`; `bnez v0`; `ori v0,a0,K`; `move v0,a0`). A separate `val2` local is what forces the result into v1; one local carrying both puts it in the condition's register. s6 read the .greg conflict list and concluded local-alloc had already taken $v0, but it had taken it for a val2 that need not exist.
+- probe: Wave V (10 forms) and every subsequent wave.
+- result: All six `ori`/`move` register-naming points flip together with the reuse spelling. s6's conclusion is withdrawn.
+- verdict: CONFIRMED
+
+## [s10] Three separate pointer LOCALS supply the target's three addend-0 address bases.
+- mechanism: One pointer local yields one unfolded lui+addiu base; the target materialises three, so three locals staged where the target materialises them should reproduce it (s2's L3 placement finding).
+- probe: w1 (block top), w2 (staged before the previous block's store), w9 (block-scoped), z6 (extra pointers declared last), z7 (`p` declared last), z8; plus the two-pointer partial forms z3/z4/z5 and w7.
+- result: All 23, several at exactly 49 instructions. The instruction shape is the target's, but the allocator gives every base the same hard register and evicts `p` from a1 into a0, cascading through the function; with one register for all bases the second base cannot be materialised before block 1's store the way the target does. What works instead is ONE pointer variable re-assigned (10/49) or two variables one of which is re-assigned (9/49).
+- verdict: KILLED
+
+## [s10] Block 1's missing reload can be bought by routing the mask's stored value through the reused local.
+- mechanism: `c = *ptr & 0xF8; *ptr = c;` makes block 1's `c = p[8] & 1;` kill the mask's value, so block 1's read is a real lbu — the target's full lbu 5 count alongside an unconditional store, in non-volatile C, at no instruction cost. Nothing in s1-s9 achieved that combination.
+- probe: Waves X and A2 (16 forms) crossing the mask spelling with every base structure, plus wave B's second-pointer read spellings.
+- result: The reload appears every time and the score is 33 every time (x1/x5/x6 33/45, x3 33/47, x2/x4/x8/zz1/a1/a2/a3/a4/a8 33/49, a7 34/50), because carrying the mask through `c` extends that local's live range across the call return and permutes the whole allocation (p into a2, condition and value into v1). Block 1 reading through the other pointer variable also produces the reload at 50 insns / 27; storing through it is 13; both is 23/51. The mechanism is real; as a route to the floor it is dead, and the tie between block 1's reload and the target's register assignment is the entire residual 9.
+- verdict: KILLED
+
+## [s10] The 49-instruction `u8 val` chassis (s9 frontier item 2, untouched since s3) reaches 18 or below once crossed with the levers found in s4-s9.
+- mechanism: Score on this function is diff ALIGNMENT, not instruction count or access-signature counts, so a chassis two instructions shorter than the floor form could align better once given the two-reads-per-block, staged-pointer-base and per-access pointer/symbol mixes.
+- probe: Wave U: 13 forms through tmp/grind/func_80034F88/s10/probe.py (honest sandbox + objdump lbu/sb/lui census per form).
+- result: u0/u1/u9/u10 20/49, u4 23/48, u3/u5/u7/u8 24, u6/u11/u12 25/49, u2 29/47. Best 20; nothing reached even the then-floor of 18. The chassis was never the axis.
+- verdict: KILLED
+
+## [s10] A read of a just-stored byte survives as a real lbu whenever the VARIABLE that supplied the stored value is reassigned before the read - a third reload mechanism, at zero instruction cost, compatible with the target's unconditional store.
+- mechanism: cse records a store as an equivalence class containing both the stored MEM and the register the value came from, and satisfies a later read from the cheapest LIVE member - the register, which is exactly what emitted the s3-s9 floor form's `andi a0,v1,0xff` zero-extend-from-register where the target has an lbu. Overwrite that register first and the MEM is the only member left, so cse must emit the load. No volatile, no CODE_LABEL, no NOTE_INSN_LOOP_END, no conditional store, no extra instruction.
+- probe: Spell each block's condition and selected value as ONE local (the frozen SOTN 'variable reuse for codegen control' family), so `c = p[8] & K;` kills the previous block's stored value; waves V/W/Z/ZZ, 53 forms, honest sandbox plus difflib side-by-side (s10/sbs.py).
+- result: Reloads appear in every flag block from the second onward at or below the target's instruction count. Floor 18/51 -> 21/52 (symbol-spelled) -> 13/45 (all accesses through one pointer local) -> 10/49 (pointer variable re-assigned per block) -> 9/49 (second pointer variable). From flag block 2 to the end of the function the build is identical to the target instruction-for-instruction AND register-for-register. Supersedes the s7/s8/s9 claim that every reload-producing construct costs an instruction the target does not have.
+- verdict: CONFIRMED
+
+## [s10] s6's finding that the $v0/$v1 swap of the selected value is NOT a steerable allocation tie.
+- mechanism: The target reuses the CONDITION's register for the result (`lw v0,32(a1)`; `andi v0,v0,K`; `bnez v0`; `ori v0,a0,K`; `move v0,a0`). A separate `val2` local is what forces the result into v1; one local carrying both puts it in the condition's register. s6 read the .greg conflict list and concluded local-alloc had already taken $v0 - but it had taken it for a val2 that need not exist.
+- probe: Wave V (10 forms) and every subsequent wave; side-by-side listings sbs_f0.txt vs sbs_w3.txt.
+- result: All six `ori`/`move` register-naming points flip together with the reuse spelling. s6's conclusion is withdrawn.
+- verdict: CONFIRMED
+
+## [s10] Three separate pointer LOCALS supply the target's three addend-0 address bases.
+- mechanism: One pointer local yields one unfolded lui+addiu base shared by that block's load and store; the target materialises three, so three locals staged where the target materialises them should reproduce it (s2's L3 placement finding).
+- probe: w1 (block top), w2 (staged before the previous block's store), w9 (block-scoped), z6 (extra pointers declared last), z7 (`p` declared last), z8, plus the partial two-pointer forms z3/z4/z5 and w7.
+- result: All 23, several at exactly 49 instructions: the instruction shape is the target's, but the allocator gives every base the same hard register and evicts `p` from a1 into a0, cascading through the function, and with one register for all bases the second base cannot be materialised before block 1's store as the target's is. What works instead is ONE pointer variable re-assigned (10/49) or two variables one of which is re-assigned (9/49).
+- verdict: KILLED
+
+## [s10] Block 1's missing lbu reload can be bought by routing the mask's stored value through the reused local.
+- mechanism: `c = *ptr & 0xF8; *ptr = c;` makes block 1's `c = p[8] & 1;` kill the mask's stored value, so block 1's read is a real lbu - the target's full lbu 5 count alongside an UNCONDITIONAL store, in non-volatile C, at no instruction cost. Nothing measured in s1-s9 achieved that combination.
+- probe: Waves X and A2 (16 forms) crossing the mask spelling with every base structure, plus wave B's second-pointer read spellings.
+- result: The reload appears every time and the score is 33 every time (x1/x5/x6 33/45, x3 33/47, x2/x4/x8/zz1/a1/a2/a3/a4/a8 33/49, a7 34/50): carrying the mask through `c` extends that local's live range across the call return and permutes the whole allocation (p into a2, condition and value into v1). Block 1 reading through the other pointer variable also produces the reload at 50 insns / 27; storing through it is 13; both is 23/51. Real mechanism, dead as a route to the floor - and the tie it exposes IS the residual 9.
+- verdict: KILLED

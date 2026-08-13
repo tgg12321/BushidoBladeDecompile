@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 18,
    "modality": "rederive",
    "headline": "Rederive: the cse basic-block BOUNDARY trade is now priced and net-negative at every count (no boundary 21/47, one 23/50, two 31/53, three 33/55), the target's lbu 5 / sb 5 signature is separately rea"
+  },
+  {
+   "session": 10,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "Honest floor 18 -> 9 at 49/49 insns: a THIRD, zero-cost reload mechanism (cse satisfies a read of a just-stored byte from the live REGISTER member of the equivalence class, so the reload survives when"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The escalation thesis is now supported by measurement rather than by an enumeration argument: every cse-basic-block boundary construct reachable from C costs at least one branch/jump insn the target does not contain, and the boundary is the ONLY construct that supplies the target's addend-0 shared bases and its reloads at the same time. The two lines of attack s8's frontier named (the '&&' LABEL_NUSES-2 boundary; thread_jumps redirection) are both closed. What remains formally unproven is only that no exotic C construct emits a CODE_LABEL without a jump - and the only such family is the computed-goto `&&label` label pad, which is a forbidden dead-label construct by another name.",
-   "mechanism": "cse.c:8092-8184 read verbatim; escapes (a) LABEL_NUSES != 1, (b) a used CODE_LABEL immediately preceding the join, (c) any CODE_LABEL between the branch and the arm's last insn. (a) needs a second LABEL_REF, (b) and (c) need a referenced label; every one of them is a jump insn from C.",
-   "next_probe": "Do NOT file this from a non-escalation modality. If the driver assigns `escalation`, the packet writes itself from the s9 table in evidence.md: the signature is buyable and priced (+2 / +13 / +15 score for one / two / three boundaries), the floor form is 2 insns over target while every signature-correct form is 5+, and both zero-cost mechanisms (AROUND / invalidate_skipped_block from s8; the mismatched-spelling family from s9) are incompatible with the target's combination of an unconditional store and four addend-0 bases. Before that, the untried MODALITY is synthesis: take f1 (54 insns, complete access signature, score 32) and run a difflib side-by-side against target (tmp/grind/func_80034F88/s3/sidebyside.py) to identify exactly which 5 instructions it has that the target does not, and whether any of them is removable without losing the boundary."
+   "hypothesis": "Block 1's `lbu` reload and the target's register assignment are mutually exclusive on the 9-point chassis, and breaking that tie closes all 9 remaining points at once.",
+   "mechanism": "The conflict is a live-range one, not a spelling one. The reload needs the mask's stored value to be dead in registers at block 1's read; the only local reassigned at that exact point is the condition/value local `c`, and using it for the mask extends its range across the call return, which permutes the whole allocation (33). Without the reload, block 1's byte stays in the mask's register instead of being loaded into a fresh one, which pins the mask's base into the wrong hard register (build a2 where the target has v1) and strands a nop in the lw load-delay slot.",
+   "next_probe": "Hold the base structure of zz5/zz6 fixed and vary ONLY the mask statement and block 1's read: `val` vs `c` vs a third local for the mask value; the mask read through the symbol with the store through the pointer and the reverse; block 1's read hoisted above or sunk below its condition; block 1 reading through the second pointer with the second pointer's materialisation forced back down. Read every result with s10/sbs.py rather than the score alone."
   },
   {
-   "hypothesis": "The score on this function is dominated by instruction-count alignment, not by access-signature correctness, so the remaining 18 points may be attackable by making the FLOOR form 2 instructions shorter rather than by making a signature-correct form cheaper.",
-   "mechanism": "The floor form is 51 insns against the target's 49 and scores 18 with lbu 3 / lui 6; d5 is 47 insns with the same lbu 3 / lui 6 and scores 20; d1 is 45 insns and scores 29. Score is therefore not monotone in either instruction count or access counts - it is the diff alignment. The floor's 2 excess insns are the two `andi a0,v1,0xff` truncations that s6 traced to the `s32 val` widening, and s3 measured that removing the widening (`u8 val`) costs 2 points while saving those 2 insns.",
-   "next_probe": "Sweep the 49-insn `u8 val` chassis (score 20) against the levers found since s3 - the two-reads-per-block spelling (d4/d5 family), the staged-pointer base order, and the pointer/symbol mix per access - looking for a 49-insn form that reaches 18 or below WITHOUT the widening. Nothing in s4-s9 has re-explored the 49-insn chassis; every session since s3 has grinded the 51-insn one."
+   "hypothesis": "The target's third addend-0 base has a spelling a human would write, and the redundant `ptr2 = &D_80106A73;` re-assignment the 9 currently rests on is not it.",
+   "mechanism": "A redundant address set is NOT deleted on this chassis (unlike the s2-s9 chassis, where cse deleted the second and third `ptrN = &D_80106A73;` as redundant), so re-assigning the pointer emits a fresh lui %hi + addiu %lo at addend 0. That is a codegen-only justification and it is the shape the cheat catalog calls a cheat-by-spelling; per-block scoped pointers, the natural alternative, are measured at 23.",
+   "next_probe": "A derivation, not a sweep: find a program structure in which re-deriving the flag pointer is what the source naturally says. If none exists, the correct outcome is a `ruling-request` naming this construct specifically - not a submission and not a silent carry-forward. Until then the submittable floor is the clean 13 in candidate_clean_13.c."
   },
   {
-   "hypothesis": "The one-object re-derivation (0x80106A70..73 as a single declared u8[4], flag byte = element 3) is not measurable in the sandbox even if it is correct, because engine/score.py does not mask NAMED-symbol relocation addends.",
-   "mechanism": "score.py masks section-relative HI16/LO16 addends only ([[sandbox-lo16-text-addend-false-distance]]); a build spelling the flag byte as &D_80106A70[3] emits R_MIPS_HI16/LO16 against D_80106A70 with addend 3 where the reference object has D_80106A73 with addend 0. Both link to the same bytes (both symbols are absolute addresses in undefined_syms_auto.txt), so the sandbox would report a false non-zero distance for a byte-correct form.",
-   "next_probe": "Unchanged from s8, and s9 adds a reason to deprioritise it further: the array model does not solve the boundary problem (cse still merges the address pseudos, and s9 showed the bases are a boundary property, not an addressing-spelling property), so it can only ever explain the addressing, never the reloads. It also requires touching include/code6cac.h:462, outside a grind session's single-file scope, so it needs an owner decision rather than a probe."
+   "hypothesis": "The register-death reload mechanism generalises past this function and should be checked against the other queue items whose residual is a missing post-store reload.",
+   "mechanism": "Nothing in the mechanism is specific to func_80034F88: it is cse's ordinary equivalence-class bookkeeping. Any function whose target reloads a global it just stored, and whose build folds that reload into a register copy or a zero-extend, is a candidate - and the C-side lever (reuse the stored value's variable for the next thing computed) sits in the frozen SOTN 'variable reuse for codegen control' family rather than in any coercion family.",
+   "next_probe": "Out of scope for this function's grind, but worth a rule entry once s11 either closes func_80034F88 or settles the F2 classification; the evidence is already written up in memory/grind/func_80034F88/evidence.md under s10."
   }
  ],
  "judge_constraints": [],
