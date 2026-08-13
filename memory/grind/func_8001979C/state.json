@@ -1,0 +1,37 @@
+{
+ "func": "func_8001979C",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 24,
+   "modality": "recon",
+   "headline": "Recon: floor 24 confirmed (75 vs 77 insns); residual isolated to 4 families; named-intermediate lever reaches 77/77 insn parity (score 33) and biv-elimination confirmed as the cause of the folded stor"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A C shape exists that keeps one store in each if-arm (target has two sh per loop) while presenting loop.c with a single reducible address giv, so the biv survives and the +0xA / +0x8E stays a store displacement.",
+   "mechanism": "loop.c combine_givs merging of the two identical DEST_ADDR givs -> merged giv reduced -> bl->all_reduced -> maybe_eliminate_biv folds the constant into the biv's initial value. Blocking any link in that chain restores target's form (proven by probe A's single-giv case).",
+   "next_probe": "(a) Hoist the address into a loop-local pointer computed once per iteration ('s16 *q = &dp[5];') and store through *q in both arms -- one giv, two stores; (b) read tools/gcc-2.7.2/loop.c strength_reduce / combine_givs / maybe_eliminate_biv and identify the exact predicate that flipped between probe A and the floor, then attack it directly."
+  },
+  {
+   "hypothesis": "The 77-insn named-intermediate shape (variant_named_intermediate_77insn.c) can keep its instruction parity while recovering the floor's register assignment; the intermediate only needs a shorter live range so it stops evicting 'hi' from the $v0/$v1 pair.",
+   "mechanism": "GCC 2.7.2 local-alloc/global-alloc allocno priority (reg_n_refs / live length). One extra live pseudo in the loop pushes 'hi' into $t1 and cascades every $t register up one.",
+   "next_probe": "(a) Shorten the intermediate's live range -- put 'val = 0x20 - needed; bits_left = val;' immediately adjacent and move the 'cur = *arg1++;' refill above it; re-measure. (b) Take cc1 -da .greg dumps of the floor form and the probe-D form and diff ';; Register dispositions:' plus the conflict lists to see exactly which conflict evicts 'hi' (instrumented cc1 is tools/gcc-2.7.2/cc1, NOT build/cc1)."
+  },
+  {
+   "hypothesis": "D2's $v0/$v1 mirror is decided function-wide by allocno ordering, not by anything local to the bit loops -- the structurally-matching third loop is mirrored too ('li $v0,-2' + 'addiu $v1,$t3,0x348' vs target's 'li $v1,-2' + 'addiu $v0,$t3,0x348').",
+   "mechanism": "allocno creation/priority order in local-alloc, which follows declaration and first-use order of the function's locals.",
+   "next_probe": "(a) Permute the local DECLARATION order (the SOTN-sanctioned named-intermediate-declaration-order lever) and re-measure -- cheapest test of the ordering theory. (b) Writing the other operand of the '|' first is a candidate, but MUST NOT be attempted before reading .claude/rules/or-tree-shape-shift.md, which forbids parenthesisation-axis mutations in associative/commutative expressions; if that rule covers bare operand-order swaps, record the kill in hypotheses.md instead of probing."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-13T12:54:37.150635+00:00"
+}
