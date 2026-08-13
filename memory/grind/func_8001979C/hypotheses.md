@@ -708,3 +708,136 @@
 - probe: vSplitOr; sandbox --disable all.
 - result: 12, exactly neutral.
 - verdict: KILLED
+
+## KILLED (session 6)
+
+- **H6-B: D6 closes by ADDING references to `out` so it outranks `val` in
+  global.c allocno_compare and is allocated first (session 5's frontier F2).**
+  *Probes:* v1 (split init `out = base; out += 0x348;`) and v2 (lengthen
+  `val`'s livelen so `out` is allocated first), both with ALLOCDBG.
+  *Result:* **KILLED, and the mechanism is wrong.** v1 is folded before
+  allocation - the ALLOCDBG table is bit-for-bit identical, so that spelling
+  cannot add a reference at all. v2 DID flip the order (`val` livelen 11 -> 15,
+  pri 30000 -> 22000; `out` allocated at ord 3 against `val` at ord 4) and
+  `out` STILL took $v1. Reason, read out of global.c:993-1084: find_reg's pass 0
+  excludes every hard register not already in `regs_used_so_far` ("we never
+  allocate a register for the first time in pass 0"), so the first-allocated of
+  the pair takes an already-used non-conflicting register, not $v0. Allocation
+  ORDER is not the lever for D6; the CONFLICT GRAPH is.
+
+- **H6-C: `val` can be made to keep D1 by carrying the arm's
+  `cur >> bits_left` sub-expression once the -2 is split off.**
+  *Probe:* v4.
+  *Result:* 24, build_insns 75. **KILLED** - an extra use inside the same arm
+  does not satisfy the cse.c:856 last-use test, which compares positions in the
+  whole function, not liveness inside the block.
+
+- **H6-D (third kill, new allocation): target's late walker init (D4) is
+  affordable at the score-8 allocation.**
+  *Probe:* v6 - session 2's P6 shape on the score-8 chassis.
+  *Result:* 23. **KILLED.** D4's coupling to the walker/counter priority window
+  has now survived three different allocations (floors 20, 12 and 8).
+
+## CONFIRMED (session 6)
+
+- **H6-A: D1's copy pair is created by cse.c, not by the register allocator,
+  and it survives exactly when `val` has a reference LATER IN THE FUNCTION than
+  `bits_left`'s last reference.**
+  *Mechanism:* cse.c:7454 ("Special handling for (set REG0 REG1) where REG0 is
+  the cheapest") rewrites `val = 0x20 - needed; bits_left = val;` so the
+  previous insn writes `bits_left` directly and the copy becomes a dead store -
+  but only when `qty_first_reg[reg_qty[val]] == bits_left`. make_regs_eqv
+  (cse.c:826-863) makes `bits_left` canonical only when it lives past the
+  current basic block AND
+  `uid_cuid[regno_last_uid[bits_left]] > uid_cuid[regno_last_uid[val]]`
+  (cse.c:856). Give `val` a later last-use and the rewrite is blocked.
+  *Probes:* -da dumps of the score-12 form and of v3 (separate `neg2`). The
+  copy is present identically in .rtl and .jump for both and diverges in .cse:
+  v3 already shows `(set (reg/v:SI 74) (minus:SI (reg:SI 97) (reg/v:SI 79)))`
+  while the score-12 form still shows the pair. Then v5: split the -2 into
+  `neg2` (which closes D6) and give `val` the function's final zero
+  (`val = 0; *(s32 *)(base + 0x10C) = val;`).
+  *Result:* **CONFIRMED. Floor 12 -> 8, build_insns 77, D6 closed and D1 kept.**
+  This supersedes the sessions-3/4/5 account of D1 as a `val` reference-count
+  effect and retro-explains all six previously-rejected -2 re-homes: each moved
+  `val`'s last use earlier than `bits_left`'s, so cse.c:7454 fired.
+
+## FRONTIER (ranked, as of end of session 6)
+
+1. **F1 - D4 (4 of the remaining 8 points): the walker init's position in the
+   preheader.** Target: `addu $t0,$zero,$zero ; addiu $t4,zero,<w> ;
+   addiu $t2,zero,0x20 ; addu $t1,$t3,$zero`; ours emits `addu $t1,$t3,$zero`
+   first, ahead of the `sw`/`lw` preamble. Moving the init late in SOURCE is
+   now measured dead at three allocations (31 at floor 20, 27 at floor 12, 23
+   at floor 8) because it shortens the walker's live range and flips it above
+   the loop counter in allocno_compare.
+   *Next probes:* (a) move the init late AND restore the walker's live range
+   from the OTHER end - give `dst` a reference after loop 1 / `dst2` a
+   reference after loop 2 - so the livelen is paid for without the early init;
+   (b) the never-executed reading: `tools/gcc-2.7.2/loop.c` `move_movables` /
+   `scan_loop`, to establish whether the walker init is a movable at all in
+   this form and where the preheader insertion point is chosen relative to the
+   loop's first insn.
+
+2. **F2 - D5 (4 of the remaining 8 points): `sllv $a2,$a2,$a0` vs the `or`.**
+   Unchanged from session 5: source order is proven neutral, so this is a
+   sched.c INSN_PRIORITY / ready-list tie-break. `tools/sched_solver`
+   (validated 6978/6978, memory/project/sched-solver-campaign-2026-08-05.md)
+   should be pointed at the arm's block in both builds to identify the
+   tie-break and which C-visible dependence change moves it. The .sched and
+   .sched2 -da dumps for the current form are reproducible with
+   tmp/grind/func_8001979C/s6/dump.sh.
+
+3. **F3 - policy pre-clearance (three constructs, unchanged plus one).** Before
+   any candidate-ready: (i) the duplicated `dst += 2` (byte-neutrality proven
+   in session 3); (ii) variable reuse of `hi` and `val`; (iii) NEW - routing the
+   final zero through `val`. Each needs a VERBATIM scope sentence from the
+   cited rule plus a file:line or commit-hash precedent, or a ruling-request.
+
+## [s6] D1's copy pair (subu $v0,$t2,$a0 + addu $a3,$v0,$zero) is created by cse.c rather than by the register allocator, and it survives exactly when `val` carries a reference later in the function than `bits_left`'s last reference.
+- mechanism: cse.c:7454 rewrites (set bits_left val) so the previous insn writes bits_left directly, deleting the copy, but only when qty_first_reg[reg_qty[val]] == bits_left. make_regs_eqv (cse.c:826-863) makes bits_left canonical only if it lives past the current basic block and uid_cuid[regno_last_uid[bits_left]] > uid_cuid[regno_last_uid[val]] (cse.c:856).
+- probe: cc1 -da dumps (tmp/grind/func_8001979C/s6/dump_base12, dump_v3) compared insn by insn across .rtl / .jump / .cse / .combine / .lreg; then variant v5, which splits the third loop's -2 into its own local `neg2` (closing D6) and gives `val` the function's final zero store so its last use moves past bits_left's.
+- result: The copy is identical in .rtl and .jump for both forms and diverges in .cse. v5 scores 8 with build_insns 77 == target_insns 77 - D6 closed and D1 kept simultaneously for the first time. Floor 12 -> 8. This supersedes the sessions-3/4/5 reference-count account of D1 and explains all six previously-rejected -2 re-homes.
+- verdict: CONFIRMED
+
+## [s6] D6 (the third loop's $v0/$v1 mirror) closes by ADDING references to the address walker `out` so it outranks `val` in global.c allocno_compare and is allocated first.
+- mechanism: allocno_compare priority floor_log2(nrefs)*nrefs/livelen; the earlier-allocated allocno was assumed to take the lower register.
+- probe: v1 (split init on `out`) and v2 (lengthen `val`'s livelen so `out` is allocated first), each with BB2_ALLOC_DEBUG.
+- result: v1 is folded before allocation (ALLOCDBG bit-for-bit unchanged), so that spelling cannot add references at all. v2 did flip the order - val livelen 11 -> 15, pri 30000 -> 22000, out at ord 3 against val at ord 4 - and out STILL took $v1 (score 20). global.c find_reg (993-1084) runs two passes and pass 0 excludes every hard register not already in regs_used_so_far, so the first-allocated allocno takes an already-used non-conflicting register, not $v0. Order is not the lever; the conflict graph is, and target's $v0-for-out requires the -2 to be a separate variable.
+- verdict: KILLED
+
+## [s6] Once the -2 is split off, `val` can keep D1 by carrying the arm's cur >> bits_left sub-expression instead.
+- mechanism: an extra use of val inside the arm was expected to keep val live past the copy.
+- probe: v4 (v3 plus `val = cur >> bits_left; hi = (hi << needed) | val;` in both arms); sandbox --disable all.
+- result: 24, build_insns 75. The cse.c:856 test compares regno_last_uid positions across the WHOLE function, not liveness inside the block, so an extra in-arm use cannot satisfy it.
+- verdict: KILLED
+
+## [s6] Target's late walker init (D4) is affordable at the score-8 allocation.
+- mechanism: global.c allocno_compare; moving the init late shortens the walker's live range and lifts it above the loop counter.
+- probe: v6 - session 2's P6 shape re-applied to the score-8 chassis; sandbox --disable all.
+- result: 23 against the 8 baseline. D4's coupling to the priority window has now survived three different allocations (floors 20, 12, 8).
+- verdict: KILLED
+
+## [s6] D1's copy pair (target's `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero`) is created by cse.c, not by the register allocator, and it survives exactly when `val` carries a reference LATER IN THE FUNCTION than `bits_left`'s last reference.
+- mechanism: cse.c:7454 ("Special handling for (set REG0 REG1) where REG0 is the cheapest") rewrites `val = 0x20 - needed; bits_left = val;` so the previous insn writes bits_left directly and the copy becomes a dead store - but only when qty_first_reg[reg_qty[val]] == bits_left. make_regs_eqv (cse.c:826-863) makes bits_left the canonical register of that quantity only when it lives past the current basic block AND uid_cuid[regno_last_uid[bits_left]] > uid_cuid[regno_last_uid[val]] (cse.c:856). A later last-use for val blocks the rewrite and the copy survives.
+- probe: cc1 -da dumps of the score-12 form and of v3 (third loop's -2 split into its own local `neg2`), compared insn by insn across .rtl / .jump / .cse / .combine / .lreg (tmp/grind/func_8001979C/s6/dump_base12, dump_v3); then variant v5 = v3 plus `val = 0; *(s32 *)(base + 0x10C) = val;` measured with `sandbox func_8001979C --disable all`.
+- result: The copy insn is present identically in .rtl and .jump for BOTH forms and diverges in .cse: v3 already shows `(insn 80 (set (reg/v:SI 74) (minus:SI (reg:SI 97) (reg/v:SI 79))))` while the score-12 form still shows `(insn 80 (set (reg/v:SI 83) (minus ...)))` + `(insn 83 (set (reg/v:SI 74) (reg/v:SI 83)))`. v5 scores 8 with build_insns 77 == target_insns 77: D6 closed and D1 kept at the same time for the first time. Floor 12 -> 8.
+- verdict: CONFIRMED
+
+## [s6] D6 (the third loop's $v0/$v1 mirror) closes by ADDING references to the address walker `out` so it outranks `val` in global.c allocno_compare and is allocated first - session 5's top frontier item.
+- mechanism: global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen; the earlier-allocated allocno was assumed to take the lower-numbered register.
+- probe: v1 (split init `out = base; out += 0x348;`) and v2 (`arg1++` moved between val's def and use, which lengthens val's livelen so out is allocated first), each measured with `sandbox --disable all` plus a BB2_ALLOC_DEBUG dump (tmp/grind/func_8001979C/s6/qty_v1.log, qty_v2.log against qty_base12.log).
+- result: v1 scores 12 and its ALLOCDBG table is bit-for-bit identical to the baseline - the split init is folded before allocation, so that spelling cannot add a reference at all. v2 DID flip the order (val livelen 11 -> 15, pri 30000 -> 22000; out at ord 3 against val at ord 4) and `out` STILL landed in $v1, score 20. Reason read out of global.c:993-1084: find_reg's pass 0 excludes every hard register not already in regs_used_so_far ("we never allocate a register for the first time in pass 0"), so the first-allocated of the pair takes an already-used non-conflicting register, not $v0. Allocation ORDER is not the lever for D6; the conflict graph is, and target's $v0-for-out requires the -2 to be a separate variable.
+- verdict: KILLED
+
+## [s6] Once the third loop's -2 is split off, `val` can keep D1 by carrying the arm's `cur >> bits_left` sub-expression instead.
+- mechanism: an extra use of val inside the same arm was expected to keep val live past the copy insn and block the coalesce.
+- probe: v4 = v3 plus `val = cur >> bits_left; hi = (hi << needed) | val;` in both arms (operand order of the OR preserved); sandbox --disable all.
+- result: 24 with build_insns 75 - D1 still lost. The cse.c:856 test compares regno_last_uid positions across the WHOLE function, not liveness inside the block, so an extra in-arm use cannot satisfy it.
+- verdict: KILLED
+
+## [s6] Target's late walker init (D4's remaining 4 points) is affordable at the new score-8 allocation.
+- mechanism: global.c allocno_compare; moving the init late shortens the walker's live range and lifts it above the loop counter, which is what killed it at floors 20 and 12.
+- probe: v6 - session 2's P6 shape (dst initialised after the sw/lw preamble and after `i = 0;`, dst2 after `i = 0;`) re-applied to the score-8 chassis; sandbox --disable all.
+- result: 23 against the 8 baseline. D4's coupling to the walker/counter priority window has now survived three different allocations (floors 20, 12 and 8).
+- verdict: KILLED

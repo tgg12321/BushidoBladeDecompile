@@ -474,3 +474,51 @@ prerequisite the `duplicated-statement-into-arms` family asks for.
 - [s5] Permuter proposal hygiene for this function is unchanged from session 4 and was applied again: semantics-breakers that clobber `i` (`i = bits_left < 2; if (i)`), pycparser-artefact rewrites (`*(s16 *)(0x8E + dst2)`), `do {} while (0)` wrappers, and OR-operand swaps (FORBIDDEN by .claude/rules/or-tree-shape-shift.md, deliberately not measured).
 
 - [s5] HOUSEKEEPING (third session running): src/code6cac.c was again at the session-1 HEAD form at session start; re-applying candidate.c reproduced 18 / 77 / 77 before any probing.
+
+## Session 6 (forensics, 2026-08-13) - floor 12 -> 8; D1's REAL mechanism named; D6 CLOSED
+
+- [s6] HOUSEKEEPING (fourth occurrence, standing expectation): src/code6cac.c was again at the session-1 HEAD form at session start. Re-applying memory/grind/func_8001979C/candidate.c reproduced score 12 / 77 / 77 exactly before any probing.
+
+- [s6] FLOOR 12 -> 8 (sandbox --disable all, target_insns 77, build_insns 77). Two coupled edits, both OUTSIDE the bit loops: (A) the third loop's -2 gets its own local `neg2` instead of reusing `val`, which closes D6; (B) `val` is given a use after the third loop by carrying the final zero (`val = 0; *(s32 *)(base + 0x10C) = val;`), which restores D1. A alone is session 5's rejected form (12, build_insns 75); B alone is meaningless. Together: 8, build 77.
+
+- [s6] D1's MECHANISM IS NAMED EXACTLY, and it is NOT the allocator. Every prior session attributed D1's `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero` pair to `val`'s global-alloc reference count. The -da dumps show the copy insn is present identically in .rtl and .jump for BOTH the score-12 form and the separate-neg2 form, and DIVERGES in the .cse dump: with a separate neg2 the copy is already gone after cse (`(insn 80 ... (set (reg/v:SI 74) (minus:SI (reg:SI 97) (reg/v:SI 79))))`), while the score-12 form still carries `(insn 80 (set (reg/v:SI 83) (minus ...)))` plus `(insn 83 (set (reg/v:SI 74) (reg/v:SI 83)))`.
+
+- [s6] The deciding code is cse.c:7454, "Special handling for (set REG0 REG1) where REG0 is the cheapest": it rewrites the pair so the PREVIOUS insn writes bits_left directly and the copy becomes a dead store, but only when `qty_first_reg[reg_qty[REGNO(val)]] == REGNO(bits_left)`. make_regs_eqv (cse.c:826-863) makes bits_left the canonical register of that quantity only if bits_left lives past the current basic block AND `uid_cuid[regno_last_uid[bits_left]] > uid_cuid[regno_last_uid[val]]` (cse.c:856). Therefore D1's copy survives EXACTLY WHEN `val` carries a reference LATER IN THE FUNCTION than bits_left's last reference. That is the whole rule, and it is a source-reachable, ref-count-free condition.
+
+- [s6] This retro-explains every failed -2 re-home in sessions 3, 4 and 5 (vL, and the five s5 spellings): removing the third loop's -2 from `val` moved val's last reference back into loop 2's arm, i.e. earlier than bits_left's last reference, so cse.c:7454 fired and the D1 pair vanished (build_insns 75). Those sessions read the symptom (val's nrefs) rather than the cause (val's last-use position). The -2 was never load-bearing as a REFERENCE COUNT; only as a LATE reference.
+
+- [s6] D6 IS CLOSED. With `neg2` separate, the third loop emits `addiu $v1,$zero,-2 ; addiu $t0,$zero,3 ; addiu $v0,$t3,0x348 ; sw $v1,0x110($v0)` - byte-identical to target. The .greg dump shows pseudo 82 (`out`) in hardreg 2 ($v0) and pseudo 85 (`neg2`) in hardreg 3 ($v1), and pseudo 83 (`val`) is no longer in the third loop's conflict set at all.
+
+- [s6] The session-5 frontier's D6 plan (ADD references to `out` so it outranks `val` in allocno_compare) is KILLED as a mechanism, with the reason. global.c find_reg (tools/gcc-2.7.2/global.c:993-1084) runs a TWO-PASS scan in which pass 0 excludes every hard register not already in `regs_used_so_far` ("we never allocate a register for the first time in pass 0"). Allocating `out` FIRST therefore does not give it $v0 - it gives it whatever already-used non-conflicting register comes first, which is $v1. Measured: variant v2 lengthened val's livelen from 11 to 15 (pri 30000 -> 22000) and did flip the allocation ORDER so `out` was allocated before `val` (ord 3 vs 4) - and `out` still landed in $v1. Ordering is not the lever; the conflict graph is. Target's $v0-for-`out` comes from `out` NOT conflicting with the $v0 holder, which requires the -2 to be a different variable.
+
+- [s6] The instrumented cc1 also exposes BB2_FINDREG_DEBUG=<pseudo> (global.c:1004-1049), which dumps that pseudo's conflicts / regs_someone_prefers / regs_used_so_far / pass-0 exclusion set / copy and full preferences / class+mode. Not needed once the pass-0 rule above was read, but it is the tool for any future find_reg question on this function.
+
+- [s6] Measured probes this session (all sandbox --disable all, baseline 12): v1 split-init on `out` (`out = base; out += 0x348;`) 12 and the ALLOCDBG table is bit-for-bit unchanged - the split is folded before allocation, so it cannot add references. v2 `arg1++` moved between `val = 0x20 - needed;` and `bits_left = val;` 20 (livelen lever, see above). v3 separate `neg2` alone 12 / build 75. v4 v3 + `val` carrying `cur >> bits_left` 24 / build 75. v5 = v3 + the final-zero reuse 8 / build 77 (the new floor). v6 = v5 + late walker inits 23.
+
+- [s6] D4 re-killed a THIRD time, now at the score-8 allocation: the late walker inits (session 2's P6 shape) score 23. Sessions 2, 5 and 6 have now measured it dead at floors 20, 12 and 8 respectively.
+
+- [s6] Residual at 8 is exactly two 4-point families, confirmed line by line with cmp.py (tmp/grind/func_8001979C/s6/v5.txt): D4 - our `addu $t1,$t3,$zero` walker init is emitted FIRST in each preheader, before the `sw`/`lw` preamble, where target emits it LAST (after `addu $t0,$zero,$zero ; addiu $t4,zero,<w> ; addiu $t2,zero,0x20`); D5 - inside each refill arm target emits `sllv $a2,$a2,$a0` before the `or`, we emit the `or` first. Nothing else in the function differs.
+
+- [s6] POLICY: the s6 edit adds ONE new construct to the pre-clearance list - routing the function's final zero through `val` (`val = 0; *(s32 *)(base + 0x10C) = val;`). The store and its value are real (not a dead store), so this is the "variable reuse for codegen control" family, but it is the construct in the current form most likely to draw a "why is this here?" from a reviewer and it has NOT been cleared with a scope quote + precedent.
+
+- [s6] src/code6cac.c is left carrying the score-8 form, re-verified at the end of the session (score 8, target_insns 77, build_insns 77), and memory/grind/func_8001979C/candidate.c matches it byte for byte.
+
+- [s6] Floor 12 -> 8 (sandbox --disable all, target_insns 77, build_insns 77), re-verified at end of session with the form in place in src/code6cac.c and memory/grind/func_8001979C/candidate.c matching byte for byte.
+
+- [s6] The winning edit is two coupled changes outside the bit loops: (A) the third loop's -2 gets its own local `neg2` instead of reusing `val` (closes D6); (B) `val` is given a later last-use by carrying the function's final zero, `val = 0; *(s32 *)(base + 0x10C) = val;` (restores D1). A alone is session 5's rejected form (12, build_insns 75); B alone does nothing.
+
+- [s6] D1's mechanism is cse.c, NOT the allocator: cse.c:7454's cheapest-register swap deletes the copy whenever make_regs_eqv (cse.c:826-863, test at cse.c:856) has made bits_left the canonical register of val's quantity, which happens iff bits_left's regno_last_uid is later than val's. This supersedes the sessions-3/4/5 account of D1 as a `val` reference-count effect.
+
+- [s6] That rule retro-explains all six previously-rejected -2 re-homes (session 3's vL and the five session-5 spellings, all build_insns 75): each moved val's last reference back into loop 2's arm, i.e. earlier than bits_left's last reference, so cse.c:7454 fired and the copy pair vanished. The -2 was never load-bearing as a reference COUNT, only as a LATE reference.
+
+- [s6] D6 is CLOSED: the third loop now emits `addiu $v1,$zero,-2 ; addiu $t0,$zero,3 ; addiu $v0,$t3,0x348 ; sw $v1,0x110($v0)`, byte-identical to target. The .greg dump shows pseudo 82 (`out`) in hardreg 2 ($v0) and pseudo 85 (`neg2`) in hardreg 3 ($v1).
+
+- [s6] global.c find_reg (tools/gcc-2.7.2/global.c:993-1084) runs a two-pass hard-reg scan whose pass 0 excludes every register not already in regs_used_so_far - so being allocated FIRST does not win the lower register. Measured directly: v2 flipped the allocation order in `out`'s favour and `out` still took $v1.
+
+- [s6] The instrumented cc1 also exposes BB2_FINDREG_DEBUG=<pseudo> (global.c:1004-1049), dumping that pseudo's conflicts, regs_someone_prefers, regs_used_so_far, the pass-0 exclusion set, its copy and full preferences, and class/mode. Documented for future find_reg questions on this function.
+
+- [s6] Residual at 8 is exactly two 4-point families (cmp.py on tmp/grind/func_8001979C/s6/v5.txt): D4 - our `addu $t1,$t3,$zero` walker init is emitted FIRST in each preheader, ahead of the `sw`/`lw` preamble, where target emits it LAST; D5 - inside each refill arm target emits `sllv $a2,$a2,$a0` before the `or` and we emit the `or` first. Nothing else in the function differs.
+
+- [s6] Session probe scores (baseline 12): v1 out split-init 12 (ALLOCDBG unchanged), v2 arg1++ between val's def and use 20, v3 separate neg2 alone 12 / build 75, v4 val carries cur>>bits_left 24 / build 75, v5 the new floor 8 / build 77, v6 late walker inits 23.
+
+- [s6] POLICY: the session-6 edit adds one construct to the pre-clearance list - routing the final zero through `val`. The store and its value are real (not a dead store), so it is the 'variable reuse for codegen control' family, but it is uncleared and is the construct most likely to draw a 'why is this here?' from a reviewer. The other two uncleared constructs are unchanged: the duplicated `dst += 2` (byte-neutrality proven in session 3) and the `hi` / `val` reuse.
