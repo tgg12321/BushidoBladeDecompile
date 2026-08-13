@@ -1,7 +1,7 @@
 {
  "func": "func_8001979C",
  "file": "code6cac",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 8,
    "modality": "forensics",
    "headline": "Floor 12 -> 8: forensics named D1's real mechanism (cse.c:7454 cheapest-register swap, gated by make_regs_eqv's last-use test at cse.c:856), which let the third loop's -2 split into its own local (D6 "
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Floor 8 -> 4: D5 CLOSED by naming its mechanism as sched.c:2464's INSN_LUID tie-break (not INSN_PRIORITY), leaving D4 as the only remaining family."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "D4 (4 of the remaining 8 points) - the walker init must be emitted LAST in the preheader (target: `addu $t0,$zero,$zero ; addiu $t4,zero,<w> ; addiu $t2,zero,0x20 ; addu $t1,$t3,$zero`) without losing the walker's live range.",
-   "mechanism": "Moving the init late in SOURCE is measured dead at three allocations (31 at floor 20, 27 at floor 12, 23 at floor 8) because it shortens the walker's livelen and lifts it above the loop counter in global.c allocno_compare (counter nrefs 21 / livelen 60 / pri 14000; walkers nrefs 13). The init position itself is otherwise pure source order.",
-   "next_probe": "Move the init late AND pay the livelen back from the OTHER end: give `dst` a reference after loop 1 and `dst2` a reference after loop 2, so the live range is restored without the early init. If that fails, execute the reading no session has done - tools/gcc-2.7.2/loop.c move_movables / scan_loop - to establish whether the walker init is a movable at all in this form and where the preheader insertion point is chosen relative to the loop's first insn."
+   "hypothesis": "D4 - the last family (all 4 remaining points): our walker init `addu $t1,$t3,$zero` is emitted first in each preheader instead of last.",
+   "mechanism": "Source-order moves are now dead at FOUR allocations (floors 20, 12, 8, 4), so the position is not a statement-order effect. Our walker init is ordinary straight-line code that happens to precede the loop, whereas target's sits AFTER the three hoisted loop-invariant constants - i.e. target's init is emitted at (or after) loop.c's preheader insertion point, ours before it.",
+   "next_probe": "Execute the reading no session has done: tools/gcc-2.7.2/loop.c scan_loop / move_movables / the emit_insn_before call that places hoisted movables, to establish where the preheader insertion point is chosen relative to the pre-loop block and whether an ordinary pre-loop assignment can be made to land after the hoisted constants. Then the two arithmetic escapes: (a) initialise the walker late AND give it a use after its loop so livelen returns to >= 28; (b) widen the window from the counter's side - one extra reference on the counter (nrefs 21 -> 22, pri 14000 -> 14666) would let a late-init walker at pri 14444 sit below it, and no spelling for that extra reference has been tried."
   },
   {
-   "hypothesis": "D5 (4 of the remaining 8 points) - target schedules `sllv $a2,$a2,$a0` (`cur <<= needed`) before the `or`; we emit the `or` first. It is a list-scheduler tie-break, not a source-order effect.",
-   "mechanism": "sched.c INSN_PRIORITY / ready-list ordering. Session 5 proved statement order neutral (vTieShiftEarly, bit-identical residual), so the decision is made inside sched.c.",
-   "next_probe": "Point tools/sched_solver (validated 6978/6978, memory/project/sched-solver-campaign-2026-08-05.md) at the refill arm's block in both our build and target, identify the priority/tie-break that orders the `or` against the `sllv`, then derive which C-visible change (an extra dependence into `cur`, a different consumer distance) moves it. The .sched / .sched2 -da dumps for the current form are reproducible with tmp/grind/func_8001979C/s6/dump.sh."
+   "hypothesis": "A permuter campaign on the score-4 chassis will find the D4 lever, as it did for the s4 and s5 chassis.",
+   "mechanism": "decomp-permuter mutates statement placement and temp introduction at a granularity that produces individually-neutral edits whose COMBINATION shifts global.c allocno priorities - exactly the shape of the D4 window problem.",
+   "next_probe": "Rebuild the workspace with tmp/grind/func_8001979C/s4/mk_workspace.sh on the score-4 body, run a campaign with the fresh-seed stopping rule, filter proposals with the session-4/5 hygiene list (semantics-breakers that clobber `i`, pycparser artefacts, and OR-operand swaps which are FORBIDDEN by .claude/rules/or-tree-shape-shift.md), then re-measure survivors on the engine gradient."
   },
   {
-   "hypothesis": "Policy pre-clearance for the closing form - three constructs still need a family classification before any candidate-ready.",
-   "mechanism": "The self-vet must carry, per construct, a VERBATIM scope sentence from the cited rule plus a file:line or commit-hash precedent; otherwise the correct outcome is a ruling-request.",
-   "next_probe": "(i) the duplicated `dst += 2` in both if-arms (byte-neutrality already PROVEN in session 3 - cross-jump re-merges it and both target and our build carry a single `addiu $t1,$t1,0x2` in the bnez delay slot) against .claude/rules/duplicated-statement-into-arms.md; (ii) the `hi` and `val` variable reuse against the frozen 'variable reuse for codegen control' family; (iii) NEW - `val = 0; *(s32 *)(base + 0x10C) = val;`."
+   "hypothesis": "Policy pre-clearance for the closing form - now FOUR constructs, none cleared.",
+   "mechanism": "A self-vet must carry, per construct, a VERBATIM scope sentence from the cited rule plus a file:line or commit-hash precedent; otherwise the correct outcome is a ruling-request.",
+   "next_probe": "(i) the duplicated `dst += 2` in both if-arms (byte-neutrality PROVEN in session 3) against .claude/rules/duplicated-statement-into-arms.md; (ii) the `hi` / `val` variable reuse against the frozen 'variable reuse for codegen control' family; (iii) the final zero routed through `val`; (iv) NEW - `out` used as loop 1's OR carrier, or drop it for the banked policy-clean score-5 form."
   }
  ],
  "judge_constraints": [],

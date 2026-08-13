@@ -841,3 +841,123 @@
 - probe: v6 - session 2's P6 shape (dst initialised after the sw/lw preamble and after `i = 0;`, dst2 after `i = 0;`) re-applied to the score-8 chassis; sandbox --disable all.
 - result: 23 against the 8 baseline. D4's coupling to the walker/counter priority window has now survived three different allocations (floors 20, 12 and 8).
 - verdict: KILLED
+
+## CONFIRMED (session 7)
+
+- **H7-A: D5 (target's `sllv $a2,$a2,$a0` before the `or`) is decided by
+  sched.c's FINAL tie-break - `INSN_LUID` order - and is therefore reachable by
+  changing which of the two insns comes first in the RTL stream, i.e. by
+  splitting the one-statement OR so that `cur <<= needed;` sits between the
+  `cur >> bits_left` read and the OR.**
+  *Mechanism:* both insns are ready at the same backward-scheduling step with
+  equal INSN_PRIORITY (2) and equal dependency class (3) against the last
+  scheduled insn, so `rank_for_schedule` falls through to
+  `tools/gcc-2.7.2/sched.c:2464`, `return INSN_LUID (tmp) - INSN_LUID (tmp2);`,
+  which prefers the larger LUID.
+  *Probes:* the cc1 `-da` `.sched` / `.sched2` ready-list traces
+  (`tmp/grind/func_8001979C/s7/dump_base8/`), `BB2_RANK_DEBUG=1`
+  (`rank_base8.log`), then the split-OR forms measured on the engine gradient.
+  *Result:* **CONFIRMED. Floor 8 -> 4 and D5 is closed in both loops.**
+  Session 5's H5-E (source order is neutral) was right about MOVING the
+  statement and wrong only in scope: moving `cur <<= needed;` anywhere below
+  the OR is neutral, because the LUID order is what matters and only splitting
+  the OR changes it.
+
+- **H7-B: the split's cost (`hi` nrefs 24 -> 32) must be absorbed by reusing an
+  EXISTING allocno as the OR carrier; a carrier that becomes a new global
+  allocno re-opens D2.**
+  *Mechanism:* global.c. With a fresh local live in both loops the carrier
+  becomes a global allocno competing for the $v0/$v1 pair, and `hi` (ord 0,
+  pri 66666) takes hardreg 2. With loop 1's carrier = the third loop's dead
+  walker `out` and loop 2's carrier a loop-2-local fresh `lo` (never a global
+  allocno), `hi` is still ord 0 at pri 66666 but takes hardreg 3. As in
+  session 6's `out`/`neg2` finding, the lever is the conflict/preference graph
+  in `find_reg`, not the allocation order.
+  *Probes:* the 12-cell carrier matrix (see evidence) plus ALLOCDBG dumps
+  `qty_base8.log`, `qty_pC1.log`, `qty_pCb.log`, `qty_pR.log`.
+  *Result:* **CONFIRMED.**
+
+## KILLED (session 7)
+
+- **H7-C: `hi`'s extra references can be paid back so that a plain fresh-local
+  carrier works in both loops.**
+  *Probes:* OR folded into the store expression (`= (s16)(hi | lo)`); OR result
+  written to the carrier (`lo = hi | lo; store lo`); the shift amount moved off
+  `hi` onto the carrier in one loop and in both.
+  *Result:* 58 / 58 (both at build_insns 70 - seven instructions lost) and 20 /
+  20. **KILLED.** No spelling sheds `hi` references without losing either
+  instructions or session 5's shift-amount tie. A pure-livelen escape is
+  arithmetically impossible: at nrefs 32 (floor_log2 5) `hi` needs livelen >= 27
+  and can be live at most 13 insns per arm = 26.
+
+- **H7-D (fourth kill): the late walker init (target's preheader order, D4) is
+  affordable at the new score-4 allocation.**
+  *Probes:* late-init both loops, late-init loop 1 only, late-init loop 2 only,
+  on both the `out`/`lo` and `lo`/`out` chassis.
+  *Result:* **19 in every spelling** (from 4). **KILLED at a fourth distinct
+  allocation** (sessions 2, 5, 6, 7 -> floors 20, 12, 8, 4). D4 is not reachable
+  by moving the initialisation in source at any allocation this function has
+  visited.
+
+## FRONTIER (ranked, as of end of session 7)
+
+1. **F1 - D4, the LAST family (all 4 remaining points).** Target's preheader is
+   `addu $t0,$zero,$zero ; addiu $t4,zero,<w> ; addiu $t2,zero,0x20 ;
+   addu $t1,$t3,$zero` (walker init LAST); ours emits `addu $t1,$t3,$zero`
+   first, ahead of the `sw`/`lw` preamble. Source-order moves are dead at four
+   allocations, so the remaining attack is mechanical, not statement order:
+   *(a)* read `tools/gcc-2.7.2/loop.c` `scan_loop` / `move_movables` and
+   `loop_skip_over`/`emit_insn_before` to establish WHERE the preheader
+   insertion point is and in what order hoisted movables are emitted relative to
+   an insn that was already in the pre-loop block (our walker init is NOT a
+   hoisted movable - it is ordinary straight-line code that happens to precede
+   the loop, whereas target's is emitted after the three hoisted constants);
+   *(b)* the instrumented cc1's `BB2_FINDREG_DEBUG=<pseudo>` and the ALLOCDBG
+   window arithmetic are already known: the walkers are nrefs 13 and must keep
+   pri < the counter's 14000, i.e. livelen >= 28; a late init gives 27. So a
+   probe that lengthens a walker's live range at the OTHER end (a use after its
+   loop) while initialising late is still the untried shape;
+   *(c)* alternatively widen the window from the counter's side - the counter is
+   nrefs 21 / livelen 60 / pri 14000, and ONE extra reference (nrefs 22 ->
+   pri 14666) would let a late-init walker at pri 14444 sit below it. No
+   spelling for that extra reference has been tried.
+
+2. **F2 - policy pre-clearance, now FOUR constructs.** Before any
+   candidate-ready: (i) the duplicated `dst += 2` (byte-neutrality proven in
+   session 3); (ii) the `hi` / `val` variable reuse; (iii) the final zero routed
+   through `val` (session 6); (iv) NEW - the third loop's walking pointer `out`
+   used as loop 1's OR carrier. Each needs a VERBATIM scope quote from the cited
+   rule plus a file:line or commit-hash precedent, or a ruling-request. Note the
+   banked policy-clean fallback at score 5 (`val` in loop 1 + a fresh `lo` in
+   loop 2), which drops construct (iv) for one point.
+
+3. **F3 - a permuter campaign on the score-4 chassis.** Sessions 4 and 5 both
+   found their winning edit this way and the chassis has changed twice since the
+   last campaign. The workspace recipe is
+   `tmp/grind/func_8001979C/s4/mk_workspace.sh`; the proposal-hygiene rules
+   (semantics-breakers, pycparser artefacts, forbidden OR-operand swaps) are in
+   the session-4 and session-5 evidence.
+
+## [s7] D5 (target emits `sllv $a2,$a2,$a0` before the `or`; we emit the `or` first) is decided by sched.c's final INSN_LUID tie-break, so it is reachable by splitting the one-statement OR so that `cur <<= needed;` sits between the `cur >> bits_left` read and the OR.
+- mechanism: In the refill arm's basic block the OR (insn 87) and `cur <<= needed` (insn 92) are both ready at the same backward-scheduling step with equal INSN_PRIORITY (2) and equal dependency class (cls=3) against the last scheduled insn, so rank_for_schedule falls through both earlier tests to tools/gcc-2.7.2/sched.c:2464, `return INSN_LUID (tmp) - INSN_LUID (tmp2);`, which prefers the LARGER LUID (scheduling runs backwards, so this minimises movement). Whichever of the two insns comes later in the RTL stream wins the tie and is emitted after the other.
+- probe: cc1 -da .sched / .sched2 ready-list traces (tmp/grind/func_8001979C/s7/dump_base8/), BB2_RANK_DEBUG=1 instrumented-cc1 run (rank_base8.log), then split-OR forms measured with sandbox --disable all.
+- result: The .sched trace shows `ready list at T-4: 92 (2) 83 (1) 72 (1) 87 (2), now 92 87 83 72` and RANKDBG shows `last=90 y=87 cls=3 x=92 cls2=3 val=0`, so the class test returns 0 and LUID decides. Splitting the OR inverts the LUID order and reproduces target's `sllv $a2,$a2,$a0 ; or $v1,$v1,$v0`. Floor 8 -> 4 with both loops converted (target_insns 77, build_insns 77). The tie is already decided in sched1; sched2 re-derives it.
+- verdict: CONFIRMED
+
+## [s7] The split's cost to `hi` (nrefs 24 -> 32, weighted x2 in-loop) must be absorbed by reusing an allocno that ALREADY exists as the OR carrier; a carrier that becomes a new global allocno re-opens D2's 14-point $v0/$v1 mirror.
+- mechanism: global.c. A fresh local live in BOTH loops becomes a global allocno (pseudo 86, nrefs 8, livelen 6 -> hardreg 3) competing for the $v0/$v1 pair, and `hi` (ord 0, pri 66666) then takes hardreg 2. With loop 1's carrier = the third loop's dead walking pointer `out` and loop 2's carrier a fresh `lo` that stays local to loop 2 and never becomes a global allocno, `hi` is still ord 0 at pri 66666 but takes hardreg 3 ($v1). As in session 6's out/neg2 finding, the deciding structure is the conflict/preference graph inside find_reg, not the allocation order.
+- probe: A 12-cell carrier matrix measured on the engine gradient plus ALLOCDBG dumps qty_base8.log / qty_pC1.log / qty_pCb.log / qty_pR.log.
+- result: out/lo -> 4; lo/out -> 4; val/lo -> 5; one shared fresh local in both loops -> 20; val/val -> 20; out/out -> 24; nd/nd -> 24 (build 79); out/val -> 28; lo/nd -> 12 (build 78); dst2/dst -> 47; out/dst -> 49; two separate fresh locals -> 50 (build 74). Single-loop application is always safe (6 for either loop alone, hi nrefs 28 / pri 48695 / still hardreg 3).
+- verdict: CONFIRMED
+
+## [s7] `hi`'s extra references can be paid back so that a plain fresh-local carrier works in both loops.
+- mechanism: global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen: dropping `hi` from 32 to 30 refs crosses back the floor_log2 5 -> 4 bucket (pri 50000 < val's 60000) and would restore the ordering.
+- probe: Four ref-shedding spellings: the OR folded into the store expression (`*(s16 *)(dst2 + 0x8E) = (s16)(hi | lo);`), the OR's result written into the carrier (`lo = hi | lo; store lo`), and the `0x20 - bits_left` shift amount moved off `hi` onto the carrier in one loop and in both.
+- result: 58 and 58, both at build_insns 70 - seven instructions lost - and 20 / 20 for the shift-amount moves, which destroy session 5's shift-amount tie. KILLED. The livelen escape is arithmetically impossible and was not measured: at nrefs 32 (floor_log2 5) `hi` needs livelen >= 27, but its live range is at most 13 insns per arm (def is the arm's first insn, last use is the store, only `dst += 2` follows) = 26 total.
+- verdict: KILLED
+
+## [s7] The late walker init (target's preheader order, D4) is affordable at the new score-4 allocation.
+- mechanism: global.c allocno_compare - moving the init late shortens the walker's live range and lifts it above the loop counter (counter nrefs 21 / livelen 60 / pri 14000; walkers nrefs 13 need livelen >= 28).
+- probe: Late init in both loops, in loop 1 only and in loop 2 only, on both the out/lo and lo/out chassis; sandbox --disable all.
+- result: 19 in every spelling (from 4). KILLED at a fourth distinct allocation - sessions 2, 5, 6 and 7 have now measured it dead at floors 20, 12, 8 and 4.
+- verdict: KILLED
