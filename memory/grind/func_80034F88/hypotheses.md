@@ -455,3 +455,148 @@ that two prior sessions had missed. Grind those first.
 - probe: Read cse.c (canon_hash, cse_insn's dest-recording block, cse_end_of_basic_block) and tested the resulting dichotomy against every spelling measured in s1-s3 (~50 forms in total across the three sessions).
 - result: Two C address expressions for one byte either hash the same (cse merges the pseudos: one shared unfolded base, but the store forwards into the load and the reload dies) or hash differently (no forward, but two luis and combine folds %lo into each single-use mem). The target needs BOTH on the same pair — `lbu a0,0(v1)` immediately after `sb a0,0(v1)`, reloading into the register that already holds the stored value. Aliasing spellings such as (&D_80106A70)[3] are not an escape: GCC would treat the two expressions as distinct objects and MISCOMPILE the read-back, so the original source cannot have done that either.
 - verdict: CONFIRMED
+
+## Resolved in s4 (permuter)
+
+### s3-F2 — KILLED. "decomp-permuter is well-conditioned on this function and a
+### campaign is a register-allocation search that should close the last points."
+*Statement.* With a form already at (or within 2 of) the target's instruction
+count and the residual being register assignment, a permuter campaign is a
+narrow RA search rather than a shape search, so it should find the closing form.
+*Mechanism.* decomp-permuter randomizes C-level structure and scores the
+compiled function against `target.o` with a weighted metric (regs x5,
+reorderings x60, ins/del x100).
+*Probe.* Two campaigns via `tools/permuter_campaign.py`, both waited for
+IN-TURN and `harvest --stop`ped: seed 1 from the floor-18 51-insn `s32 val`
+chassis (34,003 iterations, 30 finds) and seed 2 from the structurally different
+49-insn `u8 val` chassis (16,422 iterations, 67 finds). All 97 finds re-scored
+with `sandbox func_80034F88 --disable all` via `s4/eval.py` / `eval2.py`.
+*Result.* Best honest, semantically-correct find on EITHER seed is **18** — a
+tie with the seed, no improvement, from 50,425 total iterations. Seed 2
+converged onto seed 1's basin (its 18-point finds are 51-insn `s32`-widened
+forms), so the two chassis are one basin. The single sub-floor number (17) is a
+miscompile, see s4-H2. **KILLED — the random-permuter axis is closed here.**
+
+### s4-H1 — CONFIRMED (and it is the reusable finding). The permuter's weighted
+### score is not a usable gradient for this function.
+*Statement.* Permuter score and honest sandbox distance measure different things
+here, so campaign progress cannot be read off the permuter's numbers.
+*Probe.* Re-scored all 30 seed-1 finds through the engine sandbox and compared
+the two metrics pairwise (`s4/eval.json`).
+*Result.* Uncorrelated, in fact slightly NEGATIVELY correlated: the permuter's
+best find (perm 1070) scores sandbox 18 while its worst (perm 1300) scores 20,
+and the numerically best sandbox result came from a mid-table perm 1290.
+`--stop-on-zero` can therefore never fire on a form the engine would call
+closed. Operational consequence: rank finds on the sandbox, never on the
+permuter score. **CONFIRMED.**
+
+### s4-H2 — KILLED. "The permuter's 17-point find is a floor drop."
+*Probe.* Read `ws/output-1290-4/source.c` for semantics after it scored 17 at
+49 insns.
+*Result.* The third block's `D_80106A73 = val2;` store was hoisted INSIDE the
+`if (!c)` arm, so the byte is never written when bit 4 of `p[8]` is set and is
+written with `val | 4` instead of `val` when it is clear — a behaviour change,
+not a spelling. It also carries a `long new_var = 4;` constant holder and an
+`s32 *new_var3 = p;` pointer alias. **KILLED**, banked at
+`rejected/permuter-17-store-hoisted-into-arm-MISCOMPILES.c`.
+
+### s3-F1's four untried probes — measured; two DEAD, two NEUTRAL. F1 is spent.
+*Probe.* `s4/score_files.py` on five standalone chassis files.
+*Result.* per-block temporaries `va/vb/vc + ra/rb/rc + ca/cb/cc` = **30**/50;
+copy loop through the existing pointer `*(ptr - 3 + i)` = **31**/50; third block
+storing via `*ptr = val2;` = **22**/50; explicit `(u8)`-cast staging on the
+selected value = **18** (neutral); block 1 read-first with blocks 2-3
+condition-first = **18** (neutral). Banked as
+`rejected/perblock-temps-score30.c`, `rejected/copyloop-via-ptr-alias-score31.c`
+and `rejected/last-store-via-ptr-score22.c`. **KILLED.**
+*What the two pointer results teach.* They invert s3's intuition. Lengthening
+`ptr`'s live range is exactly what must NOT happen: each extra use keeps the one
+address pseudo live further down the function, which is the case where cse
+merges it and the target's per-block `lui`+`addiu` rematerialisations vanish.
+The floor form's `ptr` having exactly ONE read-modify-write use is load-bearing
+in BOTH directions — two memory operands so `combine` cannot fold `%lo`, and no
+third operand so the pseudo dies before block 2.
+
+## Open frontier for s5
+
+### F1 — a forensic `-da` read of the FLOOR-18 form itself (never yet taken).
+Structural spelling (s2, s3) and permuter (s4) are both spent on this basin:
+roughly 60 hand-measured spellings plus 50,425 permuter iterations from two
+chassis all bottom out at 18, and s3-H4 gives a compiler-source-level reason
+(cse.c:7329 plus canon_hash's `MEM_VOLATILE_P`-only `do_not_record`). What has
+NOT been done is an RTL dump of the CURRENT form — s2's only dumps
+(`s2/rtl/v10/`) are of a pre-lever variant that no longer resembles it. The
+`.greg` dump would say WHY the selected value lands in `v1` where target has
+`v0`, in terms of allocno order and conflicts, instead of by spelling roulette.
+Cheapest remaining honest measurement, and it is a forensics-modality probe.
+*Next probe.* `s2/dump_rtl.sh` against the current src/ body; read
+`;; Register dispositions` and the conflict list for the pseudo holding `val2`;
+then diff against the same dump for a variant with the condition temporary `c`
+eliminated (`if (!(p[8] & K))` inline) to see whether `c`'s live range is what
+occupies `v0` in our build.
+
+### F2 — directed permuter (PERM_* macros) is untried; RANDOM permuter is dead.
+s4 ran random campaigns only. `tools/permuter_annotate.py --func <f> --hint
+<rule-slug>` plus `PERM_*` macros would let a campaign enumerate a specific axis
+(e.g. every ordering of the three statements in a flag block, or the
+cross-product of temporary types) rather than sample the neighbourhood. Given
+s4-H1 (the permuter metric is not a gradient here), a directed campaign's value
+is as an exhaustive ENUMERATOR whose output is re-scored by `s4/eval.py` — not
+as a search. Worth one campaign, at low expectation, and only after F1.
+
+### F3 — the escalation packet, unchanged; do NOT file it from a
+### non-escalation modality.
+s3's F3 stands verbatim: if s3-H4 holds, honest pure C cannot produce the
+target's four `lbu` reloads, and the two spellings that could are ruled a cheat
+(s2-F1) and ruled out by the carve-out's own two-prong gate (s3-H1). s4 adds one
+fact to the packet: the permuter, given 50,425 iterations from two structurally
+different chassis, also never produced them. The ladder still has forensics,
+rederive and synthesis untried — grind those first.
+
+## [s4] decomp-permuter is well-conditioned on this function: the form is at the target's instruction count and the residual is register assignment, so a campaign is a register-allocation search that should close the last points.
+- mechanism: decomp-permuter randomizes C-level structure and scores the compiled function against target.o with a weighted metric (regs x5, reorderings x60, ins/del x100). A seed already at target's shape means the space it explores is allocation, not shape.
+- probe: Two campaigns via tools/permuter_campaign.py, each launched with -j 8 --stop-on-zero, waited for IN-TURN with `permuter_campaign.py wait`, and harvest --stopped before the session ended: seed 1 from the floor-18 51-insn `s32 val` chassis (34,003 iterations, 30 finds) and seed 2 from the structurally different 49-insn `u8 val` chassis (16,422 iterations, 67 finds). All 97 finds re-scored with `sandbox func_80034F88 --disable all` (tmp/grind/func_80034F88/s4/eval.py, eval2.py). Workspaces built by s4/mkws.sh with a minimal-context base validated to reproduce full-TU codegen instruction-for-instruction.
+- result: Best honest, semantically-correct find on either seed is 18 — a tie with the seed, no floor improvement, from 50,425 total iterations. Seed 2 converged onto seed 1's basin (its 18-point finds are 51-insn s32-widened forms), so two structurally distinct chassis are one basin. The random-permuter axis on this function is closed.
+- verdict: KILLED
+
+## [s4] The permuter's weighted score tracks the engine's honest sandbox distance closely enough to be used as campaign progress on this function.
+- mechanism: Both metrics compare the built function against the same target bytes, so they were expected to move together; --stop-on-zero relies on it.
+- probe: Re-scored all 30 seed-1 finds through `sandbox func_80034F88 --disable all` and compared the two metrics pairwise (tmp/grind/func_80034F88/s4/eval.json).
+- result: Uncorrelated, in fact slightly NEGATIVELY correlated. The permuter's best find (perm 1070) scores sandbox 18; its worst (perm 1300) scores 20; the numerically best sandbox result came from a mid-table perm 1290. --stop-on-zero can therefore never fire on a form the engine would call closed, and a campaign is a random SAMPLER of the neighbourhood rather than a descent of the metric that counts. Operational rule for every future permuter session here: rank finds on the sandbox score, never on the permuter score; s4/eval.py does the re-scoring and generalises to other functions by changing three constants.
+- verdict: CONFIRMED
+
+## [s4] The permuter's single sub-floor find (sandbox 17 at 49 insns) is a genuine floor drop.
+- mechanism: It scored below every hand-derived form, at the target's exact instruction count, which is the shape a closing form would have.
+- probe: Read ws/output-1290-4/source.c for semantics rather than crediting the score.
+- result: It is a MISCOMPILE. The third flag block's `D_80106A73 = val2;` store was hoisted INSIDE the `if (!c)` arm, so the flag byte is never written when bit 4 of p[8] is set, and is written with `val | 4` instead of `val` when it is clear; the target stores unconditionally on the join. It also carries a `long new_var = 4;` constant holder and an `s32 *new_var3 = p;` pointer alias, both of which would need FAKE carve-outs even had the semantics been right. Banked at rejected/permuter-17-store-hoisted-into-arm-MISCOMPILES.c.
+- verdict: KILLED
+
+## [s4] The four structural probes s3 left untried on frontier F1 (per-block temporaries, an explicit (u8)-cast staging variable, a second natural use of `ptr` late in the function, and swapping which of c/val is computed adjacent to the delay slot) contain a floor improvement.
+- mechanism: Each targets the v0/v1 swap of the selected value, which s3 identified as the one residual sub-problem not obviously downstream of the missing lbu reloads.
+- probe: Five standalone chassis files scored with tmp/grind/func_80034F88/s4/score_files.py (splice into src/code6cac_b.c, `sandbox --disable all`, restore).
+- result: None improves the floor. Per-block temporaries (va/vb/vc + ra/rb/rc + ca/cb/cc) = 30 at 50 insns; the copy loop addressed through the existing pointer as `*(ptr - 3 + i)` = 31 at 50; the third block storing via `*ptr = val2;` = 22 at 50; the explicit (u8)-cast staging variable = 18 (neutral); block 1 reading the flag before its condition while blocks 2-3 stay condition-first = 18 (neutral). The two pointer results invert s3's intuition: lengthening `ptr`'s live range is exactly what must NOT happen, because each extra use keeps the single address pseudo live further down the function — the case where cse merges it and the target's per-block lui+addiu rematerialisations vanish. The floor form's one read-modify-write use of `ptr` is load-bearing in both directions.
+- verdict: KILLED
+
+## [s4] decomp-permuter is well-conditioned on this function: the form is already at the target's instruction count and the residual is register assignment, so a campaign is a register-allocation search that should close the last points (s3's frontier F2).
+- mechanism: decomp-permuter randomizes C-level structure and scores the compiled function against target.o with a weighted metric (regs x5, reorderings x60, ins/del x100). A seed already at target's shape means the space it explores is allocation, not shape.
+- probe: Two campaigns via tools/permuter_campaign.py, each launched -j 8 --stop-on-zero, waited for IN-TURN with `permuter_campaign.py wait`, and harvest --stopped before the session ended. Seed 1 from the floor-18 51-insn `s32 val` chassis: 34,003 iterations, 30 finds. Seed 2 from the structurally different 49-insn `u8 val` chassis: 16,422 iterations, 67 finds. All 97 finds re-scored with `sandbox func_80034F88 --disable all` via tmp/grind/func_80034F88/s4/eval.py and eval2.py. Workspaces built by s4/mkws.sh, whose minimal-context base was validated to reproduce the full-TU codegen instruction-for-instruction.
+- result: Best honest, semantically-correct find on EITHER seed is 18 — a tie with the seed, no floor improvement, from 50,425 total iterations. Seed 2 converged onto seed 1's basin (its 18-point finds are 51-insn s32-widened forms), so two structurally distinct chassis are one basin. The random-permuter axis on this function is closed.
+- verdict: KILLED
+
+## [s4] The permuter's weighted score tracks the engine's honest sandbox distance closely enough to be used as campaign progress on this function.
+- mechanism: Both metrics compare the built function against the same target bytes, so they were expected to move together; --stop-on-zero relies on it.
+- probe: Re-scored all 30 seed-1 finds through `sandbox func_80034F88 --disable all` and compared the two metrics pairwise (tmp/grind/func_80034F88/s4/eval.json).
+- result: Uncorrelated, in fact slightly NEGATIVELY correlated. The permuter's best find (perm 1070) scores sandbox 18; its worst (perm 1300) scores 20; the numerically best sandbox result came from a mid-table perm 1290. --stop-on-zero can therefore never fire on a form the engine would call closed, and a campaign here is a random SAMPLER of the neighbourhood rather than a descent of the metric that counts. Operational rule banked for every future permuter session on this function: rank finds on the sandbox score, never on the permuter score.
+- verdict: CONFIRMED
+
+## [s4] The permuter's single sub-floor find (sandbox 17 at 49 insns, seed-1 output-1290-4) is a genuine floor drop.
+- mechanism: It scored below every hand-derived form, at the target's exact instruction count, which is the shape a closing form would have.
+- probe: Read ws/output-1290-4/source.c for semantics rather than crediting the score.
+- result: It is a MISCOMPILE. The third flag block's `D_80106A73 = val2;` store was hoisted INSIDE the `if (!c)` arm, so the flag byte is never written when bit 4 of p[8] is set and is written with `val | 4` instead of `val` when it is clear; the target stores unconditionally on the join. It additionally carries a `long new_var = 4;` constant holder and an `s32 *new_var3 = p;` pointer alias, both of which would need FAKE carve-outs even had the semantics been right. Banked at rejected/permuter-17-store-hoisted-into-arm-MISCOMPILES.c so no later session re-finds this 17 and credits it.
+- verdict: KILLED
+
+## [s4] The four spellings s3 left untried on frontier F1 — per-block temporaries, an explicit (u8)-cast staging variable, a second natural use of `ptr` late in the function, and swapping which of c/val is computed adjacent to the delay slot — contain a floor improvement.
+- mechanism: Each targets the v0/v1 swap of the SELECTED VALUE, which s3 identified as the one residual sub-problem not obviously downstream of the missing lbu reloads.
+- probe: Five standalone chassis files scored with tmp/grind/func_80034F88/s4/score_files.py (splice into src/code6cac_b.c, `sandbox func_80034F88 --disable all`, restore src/).
+- result: None improves the floor. Per-block temporaries (va/vb/vc + ra/rb/rc + ca/cb/cc) = 30 at 50 insns; the copy loop addressed through the existing pointer as `*(ptr - 3 + i)` = 31 at 50; the third block storing via `*ptr = val2;` = 22 at 50; the explicit (u8)-cast staging variable = 18 (neutral); block 1 reading the flag before its condition while blocks 2-3 stay condition-first = 18 (neutral). Banked as rejected/perblock-temps-score30.c, rejected/copyloop-via-ptr-alias-score31.c and rejected/last-store-via-ptr-score22.c.
+- verdict: KILLED

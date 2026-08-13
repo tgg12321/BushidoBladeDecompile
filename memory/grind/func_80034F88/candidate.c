@@ -73,6 +73,34 @@
  * src/ings.c:414, not installed as a callback), and the use-site shape
  * (store-then-readback) is not on the rule's exact three-shape list.
  * See `rejected/volatile-ptr-coercion-score12.c` and hypotheses.md s3-H1..H4.
+ *
+ * =====================================================================
+ * s4 (permuter modality) — form UNCHANGED, and now defended on two more axes
+ * =====================================================================
+ * s4 did not move the floor and did not change a character of this body.  What
+ * it did was close the two axes that could have replaced it:
+ *  - decomp-permuter ran on this function for the first time: 50,425 iterations
+ *    across two structurally different chassis (this 51-insn `s32 val` form,
+ *    34,003 iters / 30 finds; and the 49-insn `u8 val` form, 16,422 iters /
+ *    67 finds).  Every find was re-scored with the honest sandbox; the best
+ *    honest, semantically-correct find on either seed TIES this form at 18.
+ *    The 49-insn chassis converged onto this one (its 18-point finds are
+ *    51-insn `s32`-widened forms), so the two are a single basin.
+ *  - The four spellings s3 listed as "untried" on frontier F1 are measured:
+ *    per-block temporaries 30, copy loop through `ptr` 31, third block storing
+ *    via `*ptr` 22, `(u8)`-cast staging 18 (neutral), block-1-read-first 18
+ *    (neutral).  Banked in rejected/.
+ * The two pointer results sharpen WHY lever 1 above is spelled the way it is:
+ * giving `ptr` any use beyond the single read-modify-write keeps its address
+ * pseudo live further down the function, cse then merges it, and the target's
+ * per-block `lui`+`addiu` rematerialisations vanish.  ONE read-modify-write use
+ * is load-bearing in both directions — two memory operands so `combine` cannot
+ * fold `%lo`, and no third operand so the pseudo dies before block 2.  Do not
+ * "clean up" that pointer, and do not give it another use.
+ * NB (s4): the permuter produced exactly one sub-floor number, a 17, and it is
+ * a MISCOMPILE (the third block's store hoisted inside the `if` arm) — see
+ * rejected/permuter-17-store-hoisted-into-arm-MISCOMPILES.c.  The sandbox
+ * scores bytes, not behaviour.
  */
 void func_80034F88(void) {
     s32 *p;
