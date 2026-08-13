@@ -66,6 +66,34 @@
  * register-allocation lever — is not a session's call to make; it is an owner /
  * escalation-modality question, and the escalation packet's evidence base is
  * the s16 block in evidence.md.
+ *
+ * s17 (rederive) re-measured this body as variant a0_base — still 10 at 49
+ * insns, lbu 175 / sb 164 / lui 456 — and added nothing to it, but sharpened
+ * the ceiling statement in two ways (full write-up under "==== s17 (rederive)
+ * ====" in evidence.md).
+ *
+ * (1) The residual's reload half is now priced EXACTLY. Making block 1's flag
+ * READ alone a direct symbol access (`v = D_80106A73;`, one pointer object
+ * still) scores 11 at 50 insns with lbu 176 / sb 164 — the target's exact
+ * access census, a first for this chassis — and its entire cost is one extra
+ * `lui $at`. So the base spends 1 point on the missing reload and that form
+ * spends 1 point on the lui that buys it: an exactly balanced trade, because
+ * the compiler charges one address materialisation either way. Getting the
+ * reload WITHOUT the lui needs the read to go through a register whose address
+ * rtx differs from the mask store's — a second address pseudo — a second C
+ * pointer object. That is the banned construct, and this is the cleanest
+ * arithmetic statement yet of why 10 is a ceiling and not a plateau.
+ * Banked at rejected/b1-read-direct-symbol-reload-priced-at-1-score11.c.
+ *
+ * (2) Two long-standing side questions are closed. The "0x80106A70..73 was one
+ * declared 4-byte object" model, which s2 killed by citing relocation records
+ * that a PS-X EXE does not have, is codegen-NEUTRAL: spelling every address
+ * `&D_80106A70 + 3` gives the identical instruction count and census, and its
+ * apparent +2 is a false distance from the unmasked R_MIPS_LO16 addend (the
+ * linked bytes are identical). And the frontier's "address from a genuinely
+ * different program value" bullet is dead: func_80077D00 returns &D_8009BD24,
+ * 0x6AD4F away across a segment boundary, so no non-constant expression in
+ * this function yields the flag address.
  */
 void func_80034F88(void) {
     s32 *p;

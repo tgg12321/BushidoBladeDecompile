@@ -2048,3 +2048,140 @@ codegen and the multiple-C-object source are one-to-one.
 - [s16] Corpus result: 34 functions in the binary have one symbol in 2+ base registers; 9 are COMPLETED with zero rules; every one of those that was inspected reaches it with MULTIPLE C handles on the global. func_80037F40 (src/code6cac_c_mid.c:196 and :211, commit 89bfc882) is the cleanest in-tree precedent -- two handles of different types doing different jobs (a checksum byte-walker and a block-copy source), incidental enough that the match commit never mentions them. That contrast is exactly the Judge's distinction: func_80034F88's four handles are the same type doing the same job, which is what makes them read as an allocation lever rather than program logic.
 
 - [s16] m2c's fresh reconstruction (tools/m2c/m2c.py --target mipsel-gcc-c) uses no pointer object and an asymmetric value shape; every transcription of it lands 4 instructions short of the target at scores 21-26. It is not a lever.
+
+
+==== s17 (rederive) ====
+
+Modality: rederive. Baseline re-measured this session: candidate.c's
+single-pointer-object body scores 10 at 49 build insns, lbu 175 / sb 164 /
+lui 456 (variant a0_base, tmp/grind/func_80034F88/s17/results.json). Thirteen
+bodies measured in total, all with AT MOST ONE C pointer object aliasing
+D_80106A73 (the Judge's binding constraint).
+
+-- 1. s2's kill of the "one declared 4-byte object" model (s1's F3) rested on
+      evidence that does not exist, and the real answer is "codegen-neutral".
+
+s2 recorded F3 as "Refuted directly by the shipped relocations: the flag
+accesses carry R_MIPS_HI16/LO16 against D_80106A73 while the copy-loop store
+carries R_MIPS_HI16/LO16 against D_80106A70. Two distinct symbols in the
+relocation records means the original source declared two distinct objects. No
+measurement needed."
+
+There are no relocation records. disc/SLUS_006.63 is a PS-X EXE (verified this
+session from the file magic), a flat absolutely-linked image with no reloc
+table; the %hi/%lo forms in asm/funcs/func_80034F88.s are splat's
+RECONSTRUCTION, pairing lui/addiu immediates and naming the sum from its own
+symbol table, which carries D_80106A70..D_80106A73 as four consecutive one-byte
+auto-names in undefined_syms_auto.txt:981-984. This is exactly the failure mode
+memory/splat-symbol-names-are-not-evidence.md warns about. F3 was therefore
+never actually answered; it is UNFALSIFIABLE from the binary.
+
+Answered by measurement instead. Variant a1_arr_all spells every flag address
+`&D_80106A70 + 3`:
+
+    a1_arr_all   score 12   49 insns   lbu 175  sb 164  lui 456
+    a0_base      score 10   49 insns   lbu 175  sb 164  lui 456
+
+Identical instruction count and identical census. tmp/grind/func_80034F88/s17/
+reloc.py disassembles the sandbox object with relocations: a1's three base pairs
+are R_MIPS_HI16/LO16 against D_80106A70 with an in-field addend of 3, base's are
+the same relocs against D_80106A73 with addend 0. 0x80106A70 + 3 == 0x80106A73
+and %hi is 0x8010 either way, so the LINKED bytes are byte-identical. The +2 is a
+FALSE distance -- engine/score.py masks branch/jump targets but not R_MIPS_LO16
+addends (memory/sandbox-lo16-text-addend-false-distance.md).
+
+CONCLUSION, on real evidence: the one-4-byte-object model and the four-scalars
+model are indistinguishable in linked bytes for this function. GCC folds the +3
+into the pointer's own materialisation (`la reg, D_80106A70+3`), not into a MEM
+displacement, so the pointer still holds 0x80106A73 and every access is at
+displacement 0 exactly as in the target. The model cannot help and cannot hurt;
+F3 is closed for the right reason. Mixed-addend spellings on ONE object
+(a2_arr_first 10, a3_arr_last 12) confirm it: the addend is invisible once the
+address is in a pointer, because the MEM is (mem:QI (reg q)) either way.
+
+-- 2. The missing block-1 reload is repriced from +5 to +1, and the reprice is
+      itself the proof that the ceiling is the address-pseudo count.
+
+The 10-point residual is (a) block 1's base register being $a0 where the target
+uses $v1, and (b) one missing post-store reload (our lbu 175 vs the target's
+176). Buying (b) needs block 1's flag READ to have an address rtx that differs
+from the mask store's, so cse's value table misses. With one pointer object the
+only such rtx available is the bare symbol, and this session priced every
+placement of it:
+
+    e1  block 1 READ via symbol only      11   50 insns  lbu 176  sb 164  lui 457
+    e2  mask STORE via symbol only        15   50        lbu 176  sb 164  lui 457
+    e3  block 1 STORE via symbol only     18   50        lbu 175  sb 164  lui 457
+    d1  whole mask via symbol             16   51        lbu 176  sb 164  lui 458
+    d2  whole block 1 via symbol          15   52        lbu 176  sb 164  lui 458
+    d3  whole mask via symbol, addend 3   16   51        lbu 176  sb 164  lui 457
+    d4  whole block 3 via symbol          16   49        lbu 175  sb 164  lui 457
+
+e1 is the new cheapest: it reproduces the target's lbu 176 AND sb 164 exactly --
+the first form on this chassis to carry the target's full access census -- and
+its entire cost is one `lui $at` (50 insns vs 49, lui 457 vs 456). The
+side-by-side (s17 sbs.py e1_b1read_sym.c) shows the difference is precisely
+`lui v1,%hi / lbu v1,%lo(v1)` where the target has a single `lbu a0,0($v1)`.
+
+That is a clean statement of the ceiling. Base spends exactly 1 point on the
+absent reload; e1 spends exactly 1 point on the lui that buys it. To get the
+reload for free the block-1 read must go through a REGISTER whose address rtx
+differs from the mask store's -- i.e. a second address pseudo -- i.e. a second C
+pointer object, which is the banned construct. The trade is exactly balanced
+because the compiler charges one address materialisation either way.
+
+-- 3. The unrolled three-if/else shape is confirmed as the original source shape.
+
+r1_bitcopy `*q = (*q & 0xF8) | (p[8] & 7);` scores 34 at 27 insns; r2_accum
+(three ifs ORing into one value, one store) scores 30 at 35 insns. The target is
+49 insns with four lbu / four sb on the flag byte and three `bnez` selects
+(`andi $v0,$v0,K / bnez / ori $v0,$a0,K / addu $v0,$a0,$zero`). No branchless or
+single-store spelling can produce that; the source really was three separate
+read-modify-write blocks. This closes the "maybe the semantics are simpler than
+we assume" line of re-derivation.
+
+-- 4. Frontier bullet 2 (a second address object derived from a genuinely
+      different program value) is KILLED.
+
+The only non-constant value in the function is p = func_80077D00(). Read at
+src/text1b_b.c:898, that function is `s32* func_80077D00(void) { return
+&D_8009BD24; }` -- it returns 0x8009BD24. D_80106A73 - 0x8009BD24 = 0x6AD4F, an
+arbitrary distance across a segment boundary (0x8009BD24 is in .data, which ends
+~0x800A3800; 0x80106A73 is bss). There is no fixed structural offset a human
+would ever have written, so there is no non-constant expression in this function
+that yields &D_80106A73. The bullet is closed as predicted, without
+manufacturing an opaque zero.
+
+-- 5. Sibling context (not a lever, recorded for the next session).
+
+The next function in the file, func_8003504C (src/code6cac_b.c:3938, still in
+the queue with 10 regfix rules, so NOT a proven-spelling precedent), reads the
+SAME status word: `D_80102786 = ((u32)p[8] >> 3) & 1;`. So p[8] is a bitfield
+and func_80034F88 mirrors its bits 0..2 into D_80106A73's bits 0..2. It also
+carries `base = &D_80102785; ptr = (u8 *)(base - 9);` -- two pointer objects
+derived from one global region -- but as an unmatched, rule-carrying function it
+is evidence of nothing.
+
+- [s17] Baseline re-measured: candidate.c's single-pointer-object body (variant a0_base) scores 10 at 49 build insns, lbu 175 / sb 164 / lui 456, against the target's 49 / 176 / 164 / 456. Floor unchanged at 10.
+
+- [s17] Thirteen bodies measured this session, every one with AT MOST ONE C pointer object aliasing D_80106A73 (the Judge's binding constraint). Full table in memory/grind/func_80034F88/evidence.md under '==== s17 (rederive) ===='.
+
+- [s17] NEW BEST-CENSUS FORM: e1 (block 1's flag READ alone spelled as the direct symbol D_80106A73, everything else through the single pointer q) scores 11 at 50 insns with lbu 176 and sb 164 - the target's EXACT access census, the first single-object form on this chassis to reach it. Its entire excess is one 'lui $at' (lui 457 vs 456).
+
+- [s17] The reload/lui trade is exactly one-for-one: the floor-10 base loses exactly 1 point to the absent reload, and e1 pays exactly 1 point for the lui that buys the reload back. That balance is not a coincidence - the compiler charges one address materialisation either way - so it is an arithmetic restatement of the ceiling rather than a plateau observation.
+
+- [s17] s2's kill of the 4-byte-single-object model (s1's F3) cited 'the shipped relocation records'. disc/SLUS_006.63 is a PS-X EXE with no relocation table; asm/funcs/*.s %hi/%lo symbol names are splat's reconstruction from absolute immediates against undefined_syms_auto.txt:981-984, which auto-names D_80106A70..73 as four consecutive single bytes. The premise was false and the hypothesis had never been tested.
+
+- [s17] Answered properly: spelling every flag address '&D_80106A70 + 3' gives 49 insns and lbu 175 / sb 164 / lui 456 - identical to base in every respect - and objdump -r shows the difference is only R_MIPS_HI16/LO16 against D_80106A70 with an in-field addend of 3 vs against D_80106A73 with addend 0. Since 0x80106A70+3 == 0x80106A73 and %hi is 0x8010 either way, the LINKED bytes are identical; the sandbox's +2 is a false distance from the unmasked LO16 addend (memory/sandbox-lo16-text-addend-false-distance.md). The declaration model is codegen-neutral and cannot close the function.
+
+- [s17] GCC folds a constant addend into the pointer's own materialisation ('la reg, D_80106A70+3'), NOT into the MEM displacement, so every access remains at displacement 0 exactly as in the target. This also means the addend is invisible to cse once the address is in a pointer, because the MEM is (mem:QI (reg q)) regardless of how q was initialised - which is why mixed-addend spellings on one object (a2 10, a3 12) buy nothing.
+
+- [s17] The register dial was re-tested on the new e1 chassis and is inert there too: f2 (q declared first), f4 (read hoisted above the condition) and f5 (u8 read temporary) all score 11 at 50 insns with lbu 176 / sb 164 / lui 457, bit-for-bit e1's own result. f1 (q assigned before the call) 29 / 52, f3 (mask via symbol) 15 / 50.
+
+- [s17] The target's three-if/else shape is confirmed as the original source shape, not an artefact of the chassis: the branchless bit-copy is 34 at 27 insns and the OR-accumulation form is 30 at 35, against the target's 49 insns with four lbu / four sb on the flag byte and three bnez selects.
+
+- [s17] func_80077D00 is 's32* func_80077D00(void) { return &D_8009BD24; }' (src/text1b_b.c:898), so the function's only non-constant value is 0x8009BD24 - 0x6AD4F away from D_80106A73 across a segment boundary. There is no non-constant expression in this function that yields the flag address.
+
+- [s17] Sibling context (not a lever): the next function in the file, func_8003504C (src/code6cac_b.c:3938), reads the same status word with 'D_80102786 = ((u32)p[8] >> 3) & 1;', so p[8] is a bitfield and func_80034F88 mirrors its bits 0..2 into D_80106A73's bits 0..2. func_8003504C still carries 10 regfix rules, so its own two-pointers-from-one-global spelling is evidence of nothing.
+
+- [s17] src/ was restored clean after every probe (git status shows only memory/grind ledger files, the three new rejected/ forms, and metrics/events.jsonl).

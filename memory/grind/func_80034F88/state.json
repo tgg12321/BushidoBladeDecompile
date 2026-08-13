@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 16,
+ "session_count": 17,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -99,18 +99,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "Rederive: residual localised to block 1 alone (blocks 2/4 + loop are register-identical), the $v1-vs-$a0 dial killed three ways, m2c's shape killed, and a whole-binary corpus scan shows the two-base-r"
+  },
+  {
+   "session": 17,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Rederive: the missing block-1 reload is repriced from +5 to exactly +1 (a form with the target's exact lbu 176 / sb 164 census at 50 insns), which turns the 10-point ceiling from an empirical plateau "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis for this function is measured closed from BOTH compiler directions now (register allocator: one allocno per pseudo, no live-range splitting, global.c:426; CSE: MEM hashed on the address rtx, so a single address pseudo can never miss its own store's entry). Reaching 0 requires two C address objects, which the Judge has banned. What remains is a DISPOSITION question, not a grinding question, and it belongs to escalation modality.",
-   "mechanism": "Both defects in the 10-point residual reduce to the same thing: the target's block 1 needs an address pseudo that is DISTINCT from the one blocks 2 and 4 use -- distinct so it can hold a different hard register ($v1 vs $a0), and distinct so its MEM misses the cse hash entry left by its own store and reloads. One C object is one DECL_RTL is one pseudo, so one C object can supply neither.",
-   "next_probe": "Escalation-modality session: evaluate endgame-lock gate 2 by searching SOTN master (and Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist to win a base-register split. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). The BB2-internal precedent found this session (func_80037F40, src/code6cac_c_mid.c:196+211) is NOT a substitute -- it is a different-types/different-jobs case, and the standing 2026-07-27 ruling requires a SOTN-master citation for a coercion/spelling family. If no SOTN citation is in hand, both gates fail and the ruling pre-decides the disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10). Do NOT re-run the pure-C ladder."
+   "hypothesis": "The pure-C axis is closed and what remains is a DISPOSITION question, not a grinding question. Five modalities (structural, permuter x4, synthesis, forensics x2, rederive x2) have now measured the same ceiling from the source side, the RTL side, the compiler-source side and, this session, the arithmetic side.",
+   "mechanism": "Reaching 0 requires block 1 to hold &D_80106A73 in an address pseudo DISTINCT from the one blocks 2 and 4 use - distinct so it can take a different hard register, and distinct so its MEM misses the cse hash entry its own store left. One C object is one DECL_RTL is one pseudo (global.c:426 gives one allocno per pseudo and GCC 2.7.2 has no live-range splitting), so one C object can supply neither. s17 adds the exact-cost statement: the only single-object way to recover the reload costs precisely the one point it recovers.",
+   "next_probe": "Escalation-modality session: evaluate endgame-lock gate 2 by searching SOTN master (and Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist to win a base-register split. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). The BB2-internal precedents (func_80037F40 at src/code6cac_c_mid.c:196+211; func_8003504C at src/code6cac_b.c:3941-3942) are NOT substitutes - neither is a matched function and the standing 2026-07-27 ruling requires a SOTN-master citation for a coercion/spelling family. If no SOTN citation is in hand, both gates fail and the ruling pre-decides the disposition (REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10). Do NOT re-run the pure-C ladder."
   },
   {
-   "hypothesis": "A form that gives block 1 a second ADDRESS object which is not a second handle on D_80106A73 -- e.g. an address derived from a genuinely different program value that happens to equal &D_80106A73 -- could satisfy both the cse-miss and the second allocno without re-declaring the banned construct.",
-   "mechanism": "The ceiling is about the number of ADDRESS PSEUDOS, not about the spelling of the C declaration. Anything that makes GCC compute the block-1 address into its own pseudo from a non-constant expression would create the second allocno, and because the expression is not a constant, local-alloc's update_equiv_regs would not substitute it away (the failure mode that killed the single-set form at 23).",
-   "next_probe": "The only non-constant address available in this function is the return of func_80077D00() (held in $a1), and &D_80106A73 has no evident relationship to it -- so this is almost certainly empty, and it must not be chased by manufacturing an opaque zero (`s32 zero = 0; q = &D_80106A73 + zero;`), which is a lever by any reading and would be a first-reach cheat. Worth at most one turn to check whether D_80106A73 lies at a fixed offset from anything the function already holds; if not, close it and do not revisit."
+   "hypothesis": "e1 (score 11, 50 insns, target's exact lbu 176 / sb 164 census) is a better base than the score-10 form for any FUTURE lever that can remove one lui, because its only structural defect is that one instruction plus register naming, whereas the score-10 form is missing a whole memory access.",
+   "mechanism": "Distance-10 and distance-11 are nearly equal, but they are not equally close in shape: the score-10 form differs from target in the ACCESS PATTERN (175 lbu vs 176), which no register-level lever can fix, while e1 differs only by one address materialisation. A hypothetical lever that shares the symbol read's 'lui $at' with an existing base materialisation would land e1 at or near 0.",
+   "next_probe": "Only worth one turn, and only if a future session finds a sanctioned construct that changes address materialisation sharing (nothing known does). Concretely: is there any C shape in which GCC reuses one 'lui %hi(D_80106A73)' for BOTH a symbol-addressed access and a pointer materialisation? Read tools/gcc-2.7.2/config/mips/mips.c's %lo folding in combine to answer it from source before spending measurements; expect the answer to be no, since the pointer form needs the addiu and the MEM form does not."
+  },
+  {
+   "hypothesis": "The sandbox can OVERSTATE distance on this function whenever a variant reaches an address through a different splat auto-symbol, because engine/score.py does not mask R_MIPS_LO16 addends.",
+   "mechanism": "a1_arr_all is byte-identical after linking to a form scoring 2 points lower, purely because its relocations name D_80106A70 with addend 3 instead of D_80106A73 with addend 0. Any future session comparing symbol-spelling variants on this function must subtract that artefact before drawing conclusions.",
+   "next_probe": "No probe needed - this is a standing caveat for reading s17's and any future session's numbers. It does NOT affect the 10-point residual itself, which s16 localised to register naming and one missing memory access, neither of which is a relocation artefact."
   }
  ],
  "judge_constraints": [
