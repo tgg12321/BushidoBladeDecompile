@@ -1314,3 +1314,83 @@ escalation packet should be filed from its current state.
 - probe: Wave I (three and four pointer handles, declaration orders, block 3 via the mask's pointer) and wave K (the base set between the if/else and the store, before the if/else, and with base 1 extended into block 3).
 - result: Never below 13. i1 9 (loses the reload entirely), i2/i3/i6 18, i4 14, i5 13, k1 18, k2 13, k3 15, k4 26, k5 23/50. Denying v1 either costs the reload or moves the whole allocation. The swap survives every structural perturbation measured — it is a genuine allocno-priority tie and needs a different attack, not another placement.
 - verdict: KILLED
+
+## Resolved in s12 (structural) — the function is MATCHED
+
+### s12-H1 — CONFIRMED. This is the match.
+*Statement.* The residual that eleven sessions read as an allocno-priority tie
+in blocks 2/3 is not a tie at all: it is a live-range CONFLICT created by the C
+source using ONE local for the loaded flag byte across all three blocks, where
+the original used more than one.
+*Mechanism.* The target materialises block 2's base into a0 one instruction
+after block 1's loaded byte dies in a0, and still ahead of block 1's `sb`
+(`ori v0,a0,1 / move v0,a0 / lui a0 / addiu a0 / sb v0,0(v1)`). GCC 2.7.2's
+global allocator works per-pseudo over the union of a variable's live ranges,
+so a single C byte local is one allocno that is live inside block 2's base
+range; the two conflict, global.c evicts the base from a0 onto a2, and the byte
+is then pinned to a0 for every block. Splitting the byte local removes the
+conflict and the target's whole register cascade follows: block 2/3's byte onto
+v1 (freed by block 1's `sb`), block 3's base reusing a0.
+*Probe.* Wave F — the byte local split four ways (mask+b1 / b2+b3, per block,
+mask alone, and a control with one local) across the three best chassis, 24
+forms through tmp/grind/func_80034F88/s12/probe.py; then waves G/H/I/J (31 more
+forms) to minimise and naturalise the winning body.
+*Result.* **Score 0 at 49/49 instructions**, seven structurally distinct bodies.
+The submitted form (i5/h2) is four self-contained blocks, each declaring its own
+`u8 *q = &D_80106A73;` plus `s32 v` and `s32 c`. `sandbox --disable all` prints
+score 0, rules_dropped 30, cheat_asm_stripped 317. **CONFIRMED.**
+
+### s12-H2 — KILLED. The s11 frontier's pointer-copy cross.
+*Statement.* s11's free reload mechanism (`ptr2 = ptr;`) crossed with s10's
+9-point base structure would give a form that has both block 1's reload and
+blocks 2/3's register assignment.
+*Probe.* Wave A — the copy handle crossed with every base structure the ledger
+records (zz5 two variables, z1 single re-assigned handle, w3 single base, three
+copies one per block, a dedicated third local as the copy handle), 13 forms.
+*Result.* The copy strictly costs: 13 (a1), 12 (a5/a6), 12 (a7/a8), 18 (a3/a4),
+27 (a9); the 9-point chassis without it stays 9 (a2). The two failure regions
+were entangled through the shared byte local, not independent. **KILLED** — and
+mooted by s12-H1, which closes both regions at once without any copy.
+
+### s12-H3 — KILLED. Duplicated-read-into-arms as a ref-count lever.
+*Statement.* Spelling the select as a read duplicated into both arms
+(`if (c) { c = *q | K; } else { c = *q; }`) lifts the base pseudo's reg_n_refs
+and reorders global.c's allocno priority, which is the frontier's named attack
+on the blocks-2/3 assignment.
+*Probe.* Wave B — duplicated read in blocks 2/3 only, in all three blocks, on
+two mask spellings.
+*Result.* 20, 22 and 20 at 53 insns with lbu 178 — the duplicate reads
+materialise as real extra loads the target does not have. **KILLED.**
+
+### s12-H4 — CONFIRMED (negative). The base-register ALTERNATION is not
+### reachable by moving the base assignments alone.
+*Statement.* The target alternates the base register (v1 for the mask+block 1,
+a0 for blocks 2/3) because base 2 is materialised while base 1 is still live, so
+the lever is to move each base assignment earlier in the source.
+*Probe.* Waves C/D/E — the copy handle on the mask (freeing the second handle
+for early materialisation), each base assigned before the previous block's
+store / before its condition / after its store, with two, three and four locals.
+11 forms.
+*Result.* Best 12 (d3), and the side-by-side showed every INSTRUCTION already in
+the target's position with all 12 points being register naming — which is what
+pointed at the byte local and produced s12-H1. Placement is real but secondary:
+it fixes the instruction ORDER, and the byte split fixes the register
+ASSIGNMENT. **CONFIRMED as a partial lever, exhausted on its own.**
+
+## [s12] The blocks-2/3 base/byte register swap that eleven sessions recorded as an unsteerable allocno-priority tie is a live-range CONFLICT caused by the C source using one local for the loaded flag byte across all three flag blocks.
+- mechanism: The target materialises block 2's base into a0 one instruction after block 1's loaded byte dies in a0 and still ahead of block 1's sb (ori v0,a0,1 / move v0,a0 / lui a0 / addiu a0 / sb v0,0(v1)). GCC 2.7.2's global.c allocates per-pseudo over the union of a C variable's live ranges, so one byte local is one allocno that is live inside block 2's base range; they conflict, the base is evicted from a0 onto a2, and the byte is pinned to a0 in every block. Two byte locals remove the conflict and the target's entire register cascade follows.
+- probe: Wave F -- the byte local split four ways (mask+block1 / blocks2+3, per block, mask alone, and a one-local control) across the three best chassis, 24 forms through tmp/grind/func_80034F88/s12/probe.py; then waves G/H/I/J (31 further forms) minimising and naturalising the winning body, all scored with sandbox --disable all.
+- result: Score 0 at 49/49 instructions, reached by seven structurally distinct bodies. The submitted form is four self-contained blocks each declaring its own 'u8 *q = &D_80106A73;', 's32 v' and 's32 c'; sandbox prints score 0, rules_dropped 30, cheat_asm_stripped 317. One byte local for everything is 13 and the wrong split (mask alone vs the three blocks) is also 13, so the split point is load-bearing.
+- verdict: CONFIRMED
+
+## [s12] s11's frontier item 2 -- the free pointer-COPY reload handle crossed with s10's 9-point base structure yields a form with both block 1's reload and blocks 2/3's register assignment.
+- mechanism: s11 had only crossed the copy handle with base structures that give block 1 the mask's base; the two failures sat in different regions of the function, so the cross was assumed to be additive.
+- probe: Wave A, 13 forms -- the copy handle crossed with zz5's two variables, z1's single re-assigned handle, w3's single base, three copies one per block, and a dedicated third local as the copy handle, on both mask spellings.
+- result: The copy strictly costs on a single-byte-local chassis: 13, 12, 12, 18 and 27 against the 9 the same chassis scores without it. The two regions were entangled through the shared byte local rather than independent. Mooted by s12-H1, which closes both regions at once with no copy handle at all.
+- verdict: KILLED
+
+## [s12] Duplicating the flag-byte read into both arms of the select lifts the base pseudo's reg_n_refs and reorders global.c's allocno priority in the target's direction.
+- mechanism: The frontier's named attack on the blocks-2/3 assignment was to change the REF COUNTS rather than the placement; a read duplicated into two arms is the SOTN-sanctioned spelling for a byte-neutral reg_n_refs lift.
+- probe: Wave B -- the read duplicated in blocks 2/3 only, in all three blocks, on two mask spellings, sandbox-scored with an objdump lbu/sb/lui census.
+- result: 20, 22 and 20 at 53 build insns with lbu 178 against the target's 176 -- on this function the duplicated reads are not byte-neutral, they materialise as real extra loads. The ref-count axis is dead here.
+- verdict: KILLED

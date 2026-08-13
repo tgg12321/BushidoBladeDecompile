@@ -5450,3 +5450,7 @@ ONE HOUSEKEEPING NOTE, not part of the question: the form now in src/code6cac.c 
 The candidate C is preserved at `memory/grind/func_8001979C/candidate.c`; main is back at
 HEAD. Owner action: rule on the question above, then unpark via
 `& tools/wteng.ps1 main queue regen` (or reopen the item) so the grind resumes.
+
+## 2026-08-13 15:24 — func_80034F88 — layer-1 review — **FAIL**
+
+Four repeated `u8 *q = &D_80106A73;` pointer-alias declarations require a mandatory `/* FAKE */` annotation under the exact rule the worker cites (pointer-alias-fake-exception.md prereq 3); none is present, and the worker's self-vet falsely asserts the family carries no annotation requirement.

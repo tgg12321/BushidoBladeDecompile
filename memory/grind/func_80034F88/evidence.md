@@ -1288,3 +1288,87 @@ assignment, no volatile, no barrier, no label pad), is `candidate_clean_13.c` at
 - [s11] Floor UNCHANGED at 9 (b0/zz5, b1, b6, f4, f7 all 9/49). s10's classification block on the 9's redundant `ptr2 = &D_80106A73;` is unchanged, and s11 sharpened it: the only redundancy-free spellings of three bases are three or four single-assignment pointer locals, measured at 23, 18 and 13. A redundancy-free 9 does not exist on any structure measured in s1-s11.
 
 - [s11] src/code6cac_b.c was restored to HEAD after every probe; the session leaves no source edits (probe.py splices and restores, and the one --install for the RTL dump was reverted with git checkout).
+
+## s12 (structural) — MATCHED. Honest floor 9 -> **0** at 49/49 insns.
+
+- [s12] `sandbox func_80034F88 --disable all` prints `score 0`, `build_insns 49`,
+  `target_insns 49`, `rules_dropped 30`, `cheat_asm_stripped 317` with the body
+  now installed at src/code6cac_b.c:3899. The form is banked verbatim at
+  memory/grind/func_80034F88/candidate.c and vetted at
+  memory/grind/func_80034F88/self_vet.md.
+
+- [s12] THE ELEVEN-SESSION WALL WAS THE BYTE LOCAL, NOT THE POINTER STRUCTURE.
+  s1-s11 all used ONE C local for the loaded flag byte across all three flag
+  blocks, and every one of ~150 measured forms varied only the pointer/base
+  structure around it. With a single byte local the allocno's live range spans
+  block 2's base materialisation, the two conflict, the base is evicted from a0
+  onto a2, and the byte is then pinned to a0 in every block — which is exactly
+  the "blocks 2/3 base/byte swap" the ledger recorded from s3 onward as an
+  unsteerable allocno-priority tie. It was never a tie; it was a conflict, and
+  the conflict was created by the source using one variable where the original
+  used two.
+
+- [s12] The target's own stream states the requirement plainly (read off
+  tmp/grind/func_80034F88/s12/sbs_d3.txt, target side):
+      ori v0,a0,1 / move v0,a0 / lui a0 / addiu a0 / sb v0,0(v1)
+  Block 1's loaded byte is in a0 and dies at the `move`; block 2's base is
+  materialised into THAT SAME a0 one instruction later, still ahead of block 1's
+  `sb`. a0 therefore has to be free between block 1's `move` and block 2's
+  `lui`, which is only possible if block 1's byte and block 2's byte are
+  different pseudos. Everything downstream (block 2/3's byte on v1, block 3's
+  base reusing a0) follows from that one reuse.
+
+- [s12] The split POINT matters and is measurable: mask+block 1 sharing one
+  local and blocks 2/3 sharing another scores 0; one local per block also
+  scores 0 (h5, f_d1_s2/s4); one local for everything scores 13 (h6); and the
+  "wrong" split — mask alone against the three blocks together — is also 13
+  (f_d1_s7). Byte-local splitting is worth 12-13 points on any chassis whose
+  instruction stream is already right, and 0 points on one that is not
+  (f_a2_s1..s8 are all 9 or 21 — the split cannot rescue a chassis missing
+  block 1's reload).
+
+- [s12] Once the split is present the pointer structure stops being delicate.
+  SEVEN structurally different bodies reach 0: four single-assignment pointer
+  locals with no copy (g4), the same with a copy handle (g7 = f_d1_s1), the
+  same with purely sequential assignment placement (g9, h3), per-block-scoped
+  handles with the mask outside (h1) and with the mask as its own block (h2),
+  and h5's per-block byte locals. The submitted form is h2/i5 — the one with
+  the fewest constructs to vet.
+
+- [s12] The two constructs s10 and s11 both flagged as classification-blocked
+  are GONE from the matched form: there is no re-assignment of a pointer to a
+  value it already holds (every handle is assigned exactly once, in its own
+  block) and no pointer copy. The three `asm volatile("" ::: "memory")`
+  scheduling barriers that the pre-existing src body carried are also deleted.
+  The matched body adds no inline asm, no pin, no volatile, no cast, no dead
+  store and no unused declaration.
+
+- [s12] KILLED — the s11 frontier's item 2 (cross the pointer-COPY handle with
+  every recorded base structure). Measured across all of them and the copy
+  handle strictly COSTS on a single-byte-local chassis: zz5's two variables 13
+  (a1), z1's single re-assigned handle 12 (a5/a6), w3's single base 12 (a7/a8),
+  three copy handles one per block 27 (a9); the 9-point chassis with the h1
+  mask spelling and no copy stays 9 (a2). The copy buys block 1's reload
+  (objdump lbu 176 vs 175) and pays for it in blocks 2/3 — the two failure
+  regions were entangled, not independent as the frontier assumed.
+
+- [s12] KILLED — duplicated-read-into-arms as a ref-count lever on this
+  function. Spelling the select as `if (c) { c = *q | K; } else { c = *q; }`
+  adds two lbu (178) and four instructions (53) and scores 20-22 (b1/b2/b3),
+  against 13 for the same chassis with a shared read. The frontier's "change
+  the REF COUNTS" probe is answered negatively for this shape.
+
+- [s12] Load-bearing spellings inside the matched form, each measured against
+  the otherwise-identical body: reusing `c` for the condition and then for the
+  stored value is required (a separate result local collapses the if/else
+  diamond to 44 insns and scores 30 — j1; a compound `v |= K` with no else is
+  also 30 — j3; a ternary is 25 — j5; testing `p[8] & K` directly in the `if`
+  is 30 — i1/i6). `s32` for the byte local is required (`u8` scores 10 —
+  i3/i7). Hoisting all four pointer assignments to the top of the function
+  scores 25 (h4); assigning each handle inside its own block is 0.
+
+- [s12] Wave sizes: 13 forms (wave A, the s11-frontier cross), 11 (wave C/D/E,
+  base-register alternation), 24 (wave F, byte-local splits x 3 chassis),
+  10 (wave G, construct minimisation), 7 (wave H, naturalisation), 8 (wave I,
+  spelling strip-down), 6 (wave J, is the `c` reuse avoidable). 79 forms, all
+  sandbox-scored; results in tmp/grind/func_80034F88/s12/results.json.

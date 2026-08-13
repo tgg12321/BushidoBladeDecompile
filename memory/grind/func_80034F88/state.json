@@ -88,9 +88,14 @@
    "next_probe": "If s12/s13's attack on the h1 allocation tie does not close the function, the honest next step is a `ruling-request` naming BOTH constructs precisely \u2014 the redundant re-assignment AND the multi-single-assignment-handle alternative \u2014 with this measured impossibility argument attached, rather than another sweep of the same space."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Four repeated `u8 *q = &D_80106A73;` pointer-alias declarations require a mandatory `/* FAKE */` annotation under the exact rule the worker cites (pointer-alias-fake-exception.md prereq 3); none is present, and the worker's self-vet falsely asserts the family carries no annotation requirement. Next action: Revert this src change. Either (a) add the required `/* FAKE: <one-line reason naming the GCC-pass interaction, e.g. allocno-priority/ref-count> */` annotation to each of the four `u8 *q = &D_80106A73;` declarations AND explicitly document lever-exhaustion + the "
+ ],
+ "banned_constructs": [
+  "Four separate `u8 *q = &D_80106A73;` local pointer declarations (one per flag block), claimed under the 'C-level pointer alias to a global' / pointer-alias-fake-exception family",
+  "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever"
+ ],
+ "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-13T16:00:39.577842+00:00"
