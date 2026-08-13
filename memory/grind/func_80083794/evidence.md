@@ -388,3 +388,72 @@ s2's H1 than "the arg area is missing": the whole frame is leaf-shaped.
 - [s3] SHARPER CLASS A: target's 0x10 frame = var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves rounded to 16 (mips.c:4464-4476) - byte-exactly cc1's LEAF-function frame, for a body containing a jalr.
 
 - [s3] HOUSEKEEPING: motion_Close (src/ings2.c:636) is the unlabelled twin body at 0x80083804 and still carries the same register-pin + hardcoded-$17 __asm__ form; it is a separate queue item and was not touched. The 9 regfix rules at regfix.txt:105-113 remain calibrated against the old pin form, so the integrated build is expected to disagree until an operator retires them; regfix.txt was not touched (out of session scope).
+
+## Session 4 (permuter) — facts
+
+- The honest floor is **18** (target_insns 28, build_insns 28) with the
+  `candidate.c` body applied to `src/ings2.c`. Re-measured at the start and the
+  end of session 4; `src/ings2.c` was found carrying the s1 register-pin +
+  hardcoded-`$17` `__asm__` body again at session start (only the ledgers are
+  committed, never the src edit) and was re-seeded from `candidate.c`.
+- **A permuter workspace for this function must truncate the target.**
+  `asm/funcs/func_80083794.s` is 60 lines and contains TWO 28-instruction
+  bodies: `func_80083794` (lines 1-31) and its unlabelled twin at 0x80083804
+  (lines 32-59, the `motion_Close` body). Assembling the whole file as
+  `target.o` gives a 56-instruction target against a 28-instruction base and
+  makes the permuter score meaningless. `tmp/grind/func_80083794/s4/mkws.sh`
+  builds the workspace correctly (prelude.inc with `.set gp=64` stripped for
+  r3000, `sed -n '1,31p'`, `endlabel`).
+- **`--stack-diffs` must stay ON for this function** (it is the campaign
+  wrapper's default since 2026-07-13). The permuter's default scorer normalizes
+  sp-relative offsets away, and this function's dominant residual IS a
+  frame-size/stack-offset shift — the default scorer would false-match at 0.
+- **The minimal-TU chassis is faithful.** A standalone TU containing only
+  `typedef int s32;`, the three externs and the function body compiles, through
+  the full `cpp | cc1 -mel | prologue_fix | maspsx | multu_pad | as` pipeline,
+  to the same 28 instructions as the full-TU sandbox object. `src/ings2.c`'s
+  file-scope `__asm__`/`INCLUDE_ASM` blocks would otherwise have to go through
+  pycparser.
+  One assembler detail: the permuter prelude's `.set noat` must be cancelled
+  with `.set at` before the compiled body, because `la $16,D_00000000` needs
+  `$at`; the real build assembles with `at` enabled, so this is faithful, not a
+  divergence.
+- **Campaign telemetry** (both harvested with `--stop` in-session; neither
+  outlived the session; `permuter_campaign.py status` shows both `alive: false`):
+  | campaign | chassis | base_score | iterations | wall | best |
+  |---|---|---|---|---|---|
+  | `s4/ws`  | score-18 floor form            | 383  | 48,633 | ~22 min | 340 |
+  | `s4/ws2` | s3 hoisted-`la` (class-D) form | 1168 | 58,431 | ~22 min | 383 |
+  Find timings in campaign A: 383 @ 19 s, 378 @ 28 s, 340 @ 522 s, 378 @ 752 s,
+  340 @ 992 s — i.e. the basin yielded everything it had inside the first ~9
+  minutes and then repeated itself, exactly the shape the fresh-seed rule
+  describes.
+- **Honest re-measurements of the permuter's proposals** (the permuter score is
+  NOT the honest metric; every proposal was re-scored):
+  - permuter 340 (`volatile unsigned char new_var` guard): **29 emitted
+    instructions vs target's 28**, frame -40 (worse than the floor's -32),
+    `$s0`/`$s1` still inverted, no `ori`. Strictly worse honestly; also a cheat.
+  - permuter 378 (`do { while (...) {...} } while (0);`): spliced into
+    `src/ings2.c` and sandboxed — **score 18, build_insns 28**, i.e. exactly the
+    floor. The permuter delta is label-numbering noise.
+  - permuter 383 forms: tie the base.
+- **Minimum honest score observed across 107,064 iterations: 18.** No form from
+  either chassis beat the floor.
+
+- [s4] src/ings2.c was found at session start carrying the s1 register-pin + hardcoded-$17 __asm__ body again (only the ledgers get committed, never the src edit); it was re-seeded from memory/grind/func_80083794/candidate.c and re-measured at score 18 / target_insns 28 / build_insns 28 at both the start and the end of the session.
+
+- [s4] A permuter workspace for this function MUST truncate the target: asm/funcs/func_80083794.s is 60 lines and contains TWO 28-instruction bodies — func_80083794 (lines 1-31) and its unlabelled twin at 0x80083804 (lines 32-59). Assembling the whole file gives a 56-instruction target against a 28-instruction base and the score is meaningless. tmp/grind/func_80083794/s4/mkws.sh builds it correctly and is reusable.
+
+- [s4] --stack-diffs must stay ON for this function (the campaign wrapper's default since 2026-07-13): the permuter's default scorer normalizes sp-relative offsets away and this function's dominant residual IS a frame-size/stack-offset shift, so the default scorer would false-match at 0.
+
+- [s4] The minimal-TU chassis is faithful: a standalone TU with only 'typedef int s32;', the three externs and the body compiles through the full real pipeline to the same 28 instructions as the full-TU sandbox object, which keeps pycparser away from ings2.c's file-scope __asm__/INCLUDE_ASM blocks. The permuter prelude's '.set noat' must be cancelled with '.set at' before the compiled body ('la $16,D_00000000' needs $at); the real build assembles with at enabled, so this is faithful.
+
+- [s4] Campaign A find timings: 383 @ 19 s, 378 @ 28 s, 340 @ 522 s, 378 @ 752 s, 340 @ 992 s. The basin yielded everything it had inside the first ~9 minutes and then repeated itself — exactly the shape the fresh-seed rule predicts, and the reason both campaigns were stopped at ~22 min rather than left to simmer.
+
+- [s4] Honest re-measurement is not optional here: the permuter's best form (score 340) is WORSE on the honest metric (29 insns vs 28) than the form it 'beat'. The permuter's diff rewarded making the three callee-save stores contiguous, which cost an extra instruction and 8 more bytes of frame.
+
+- [s4] The do-while(0) wrap that the permuter surfaced at 378 measures exactly 18 in the honest sandbox — so the sanctioned carve-out's prerequisites are moot for this function: there is nothing for the wrapper to buy.
+
+- [s4] Both campaigns were harvested with --stop before the session ended; permuter_campaign.py status reports alive:false for both PIDs (5069, 498721). No campaign outlived the session.
+
+- [s4] Cumulative: every sanctioned C axis is now measured dead for this function — declaration order (s1), the pin/asm form (s1), both la statement orders (s1/s2), 18 structural forms (s2), the ori spelling (s2), frame minimality by three independent routes (s1/s2), the prologue-save-order axis (s3), and now randomized search from both the floor chassis and the class-D chassis (s4).

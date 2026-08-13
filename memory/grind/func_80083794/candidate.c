@@ -51,6 +51,15 @@
  *     bnez.  [C-REACHABLE IN ISOLATION, JOINTLY UNREACHABLE — see
  *     rejected/hoisted-la-flips-save-order-but-costs-5.c]
  *
+ * SESSION 4 (permuter) re-measured this exact body at 18 and then ran 107,064
+ * decomp-permuter iterations from two chassis (this floor form, and the s3
+ * hoisted-`la` class-D form) without ever going below it. The three closing-form
+ * families the search produced are banked in
+ * rejected/permuter-s4-proposals-cheat-or-byte-neutral.c: a dead-`volatile`-local
+ * cheat that is measurably WORSE honestly (29 insns vs 28), a `do {...} while (0)`
+ * wrap measured byte-identical to this body (score 18), and staged-value
+ * respellings that tie the base. This body remains the floor carrier.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

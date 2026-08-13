@@ -342,3 +342,115 @@ including the specific hoisted-`la` form, which is measured at 23 and banked in
 - probe: Tabulated all 28 instruction positions of our build against target (tmp/grind/func_80083794/s3/sidebyside.md) and decomposed the target's 0x10 frame against the formula.
 - result: 9 of the 28 instructions match; 19 differ; the scorer counts 18 (the four masked 'la' instructions at positions 11-14 are compared on destination register only - session-1 finding C1). Target's 0x10 frame decomposes as var_size 0 + args_size 0 + extra_size 0 + 12 bytes of callee-saves rounded to 16 - precisely the frame cc1 emits for a LEAF function with three callee-saves, for a body that contains a jalr. That is a tighter phrasing of session 2's H1: the whole frame is leaf-shaped, not just missing a block.
 - verdict: CONFIRMED
+
+## Session 4 (permuter, 2026-08-13)
+
+### KILLED
+
+**[s4] H5 — an unbiased randomized search over the C-form space around the
+score-18 floor finds a form below 18 (i.e. the structural sweep of s2 simply
+missed the right spelling).**
+- mechanism: decomp-permuter's randomizer explores a much larger and less
+  human-biased region of the C-form space than a hand-enumerated sweep — it
+  mutates declaration order, statement order, temporaries, casts, loop forms,
+  branch inversion, expression association and inlining. If s2's 18 hand-written
+  forms were merely an unlucky sample of a space that does contain a sub-18
+  form, a six-figure-iteration search seeded on the floor form should find it.
+- probe: TWO campaigns via `tools/permuter_campaign.py` (telemetry in
+  metrics/events.jsonl), 107,064 iterations total, on a purpose-built workspace
+  (`tmp/grind/func_80083794/s4/mkws.sh`) whose `target.o` is assembled from
+  `asm/funcs/func_80083794.s` lines 1-31 + `prelude.inc` (the file also carries
+  the unlabelled twin body at 0x80083804, which must be truncated or it doubles
+  the metric) so the function sits at offset 0 and the permuter score is the
+  real per-function diff; `--stack-diffs` left ON by default, which matters here
+  because the dominant residual IS a frame-size/stack-offset shift and the
+  default scorer would normalize it away and false-match at 0.
+  Campaign A `ws` (label `minimal-tu-clean-c`): base = the score-18 floor form,
+  base_score 383, 48,633 iterations / ~22 min, best 340.
+  Campaign B `ws2` (label `class-D-hoisted-la-chassis`): base = the s3
+  hoisted-`la` form that DOES produce target's ascending prologue save order,
+  base_score 1168, 58,431 iterations / ~22 min, best 383. Both harvested and
+  stopped in-session; no campaign outlived the session.
+- result: THREE closing-form families, all banked in
+  `rejected/permuter-s4-proposals-cheat-or-byte-neutral.c`, none below the
+  floor. (1) permuter-best 340 is `volatile unsigned char new_var;` +
+  `D_800A2668 == (1 * (new_var = 0))` — a dead volatile frame-slot local
+  smuggled through a multiply-by-one; a cheat by the expanded catalog AND
+  measured at 29 emitted instructions against target's 28, i.e. strictly worse
+  on the honest metric (frame -40, $s0/$s1 still inverted, no `ori`). Its
+  permuter score fell only because the extra `sb` made the three callee-save
+  stores contiguous, which the permuter's diff rewards. (2) permuter 378 is the
+  sanctioned `do { while (...) {...} } while (0);` wrap — spliced into
+  src/ings2.c and measured in the honest sandbox at **score 18, build_insns 28**,
+  byte-identical to the floor; the 5-point permuter delta is label-numbering
+  noise. (3) permuter 383 forms are staged-value / named-intermediate
+  respellings that tie the base exactly. The minimum honest score observed
+  across 107k iterations is 18.
+- verdict: KILLED. The score-18 floor is not a sampling artifact of session 2's
+  hand-enumeration; it survives an unbiased six-figure randomized search from
+  two different chassis.
+
+### CONFIRMED
+
+**[s4] C4 — session 3's COUPLED-constraint claim (class D and the floor form are
+jointly unreachable) is corroborated by search, not only by mechanism.**
+- mechanism: s3 argued from mips.c:4680 + the post-reload scheduler's
+  anti-dependence requirement that the ascending prologue save order and
+  post-branch `la`s cannot coexist. That was an argument about the compiler; it
+  had never been tested by an unbiased search seeded inside the ascending-save
+  basin.
+- probe: campaign B above — seed the permuter on the hoisted-`la` chassis (which
+  demonstrably HAS target's ascending save order) and let it run 58,431
+  iterations, checking whether it can recover the 5 lost points while keeping
+  class D.
+- result: it cannot. The basin starts at permuter score 1168 and the best form
+  found in ~22 min is 383 — exactly campaign A's BASE score — and that form
+  (`ws2/output-383-1`) is one that has walked back OUT of the ascending-save
+  basin (`void (**new_var)(void) = &D_8008D070; ... p = new_var;`). The search
+  independently rediscovers the floor basin rather than finding a joint form.
+- verdict: CONFIRMED (as corroboration; the mechanism argument remains the
+  primary evidence).
+
+## Live frontier after session 4 (ordered)
+
+**F1 — DISPOSITION, not grinding (unchanged; now with the search axis closed
+too).** Three corpus-uniqueness results and two no-C-form proofs (see the s3
+frontier) plus, now, a negative result from the one modality that could have
+shown the hand-enumeration was unlucky: 107k permuter iterations from two
+chassis never go below the score-18 floor, and the only forms that beat the
+floor on the PERMUTER's metric are a catalog cheat (measurably worse honestly)
+and a byte-neutral sanctioned wrapper. Every sanctioned C axis — structural,
+prologue-order, spelling, and now randomized search — is measured dead.
+`scan_hand_coded.py` remains tier=LOW 0/8 and remains blind to all three
+anomalies (no frame-geometry, no assembler-macro, no prologue-order signal).
+That tension is the owner's to resolve when the driver reaches `escalation`.
+
+**F2 — residual class B via the sanctioned duplicated-statement-into-arms
+ref-lift.** Unchanged from s2/s3, and session 4 adds a datum against it: the
+permuter, which mutates freely, never produced ANY form that flips $s0/$s1 in
+107k iterations. Still requires a ruling before any such form is written, and
+still cannot reach distance 0 alone (classes A, C, D remain).
+
+**F3 — do NOT re-run any of these.** Cumulative kill list across s1-s4:
+declaration order (s1 K2); the pin/asm form (s1 K1); both statement orders of
+the two `la` pairs (s1 C1 + s2 sweep); all 18 structural forms (s2 H2); the
+`ori` spelling (s2 H3); frame minimality via simpler C / compiler source /
+corpus (s1 (a), s2 H1); the prologue-save-order axis incl. the hoisted-`la`
+form (s3 H4); `scan_hand_coded` (s1); the duplicate-lead lookup (s1); and now
+randomized permuter search from BOTH the floor chassis and the class-D chassis
+(s4 H5/C4), including the three specific proposal families banked in
+`rejected/permuter-s4-proposals-cheat-or-byte-neutral.c`. In particular do NOT
+re-propose the `do { ... } while (0)` wrap (measured byte-neutral at 18) or the
+`volatile` dead-local guard (cheat, and 29 insns).
+
+## [s4] An unbiased randomized search over the C-form space around the score-18 floor finds a form below 18 — i.e. session 2's 18 hand-enumerated structural forms were merely an unlucky sample of a space that does contain a sub-18 form.
+- mechanism: decomp-permuter's randomizer explores a far larger and less human-biased region than a hand-enumerated sweep: it mutates declaration order, statement order, temporaries, casts, loop forms, branch inversion, expression association and inlining. If the floor were a sampling artifact, a six-figure-iteration search seeded on the floor form should escape it.
+- probe: Built a correct per-function permuter workspace (tmp/grind/func_80083794/s4/mkws.sh): target.o assembled from asm/funcs/func_80083794.s lines 1-31 + decomp-permuter's prelude.inc with '.set gp=64' stripped for r3000 — the .s file also carries the unlabelled twin body at 0x80083804 and assembling it whole gives a 56-instruction target against a 28-instruction base, which makes the score meaningless. Minimal-TU base.c (typedef + three externs + the body) verified to compile through the real cpp|cc1 -mel|prologue_fix|maspsx|multu_pad|as pipeline to the same 28 instructions as the full-TU sandbox object; the prelude's '.set noat' cancelled with '.set at' because 'la $16,D_00000000' needs $at and the real build assembles with at enabled. --stack-diffs left ON (wrapper default) because the dominant residual IS a frame/stack-offset shift and the default scorer would normalize it away and false-match at 0. Campaign A (tmp/grind/func_80083794/s4/ws, label minimal-tu-clean-c): base = the score-18 floor form, permuter base_score 383, 48,633 iterations over ~22 min. Campaign B (tmp/grind/func_80083794/s4/ws2, label class-D-hoisted-la-chassis): base = the s3 hoisted-la form, base_score 1168, 58,431 iterations over ~22 min. Both launched/harvested via tools/permuter_campaign.py (telemetry to metrics/events.jsonl), both stopped with --stop in-session; status shows both alive:false. Every proposal re-scored on the HONEST metric (sandbox --disable all with the body spliced into src/ings2.c, and objdump instruction counts).
+- result: Three closing-form families, none below the floor. (1) Campaign A best, permuter 340 (found twice, at 522 s and 992 s): 'volatile unsigned char new_var;' with 'if (D_800A2668 == (1 * (new_var = 0)))' — a dead volatile frame-slot local smuggled through a multiply-by-one. It is a cheat by the expanded catalog (volatile-coercion / dead-local family; 'new_var' is itself the naming-announces-intent signal) AND it is strictly worse honestly: 29 emitted instructions against target's 28, frame -40 vs the floor's -32, $s0/$s1 still inverted, no 'ori'. Its permuter score fell only because the extra 'sb $zero,16($sp)' made the three callee-save stores contiguous, which the permuter's diff algorithm rewards. (2) permuter 378: 'do { while (count != 0) { (*p++)(); count--; } } while (0);' — spliced into src/ings2.c and sandboxed at score 18, build_insns 28, byte-identical to the floor; the 5-point permuter delta is label-numbering noise. (3) permuter 383: staged-value / named-intermediate respellings ('count = 1; D_800A2668 = count;', 'void (**new_var)(void) = &D_8008D070; ... p = new_var;') that tie the base exactly. Minimum honest score observed across 107,064 iterations: 18.
+- verdict: KILLED
+
+## [s4] Session 3's COUPLED-constraint claim — that the target's ascending prologue save order (residual class D) and the score-18 floor form are jointly unreachable — survives an unbiased search seeded INSIDE the ascending-save basin, not just the mechanism argument from mips.c:4680 plus the post-reload scheduler's anti-dependence requirement.
+- mechanism: s3 argued from the compiler source that cc1 emits both prologue and epilogue save runs descending (one loop, GP_REG_LAST -> GP_REG_FIRST) and that only an in-block anti-dependence makes the scheduler reverse the prologue run; for this function the only $s0/$s1 writes are the two 'la' pairs, so class D requires entry-block 'la's while target emits them post-branch. That is an argument about the compiler and had never been tested by search from the class-D side.
+- probe: Campaign B: seed the permuter on the hoisted-la chassis (which demonstrably HAS target's ascending save order — verified by objdump: sw s0,16 emitted first) and run 58,431 iterations, watching whether it can recover the 5 lost points while keeping class D.
+- result: It cannot. The class-D basin starts at permuter score 1168 and the best form found in ~22 min is 383 — exactly campaign A's BASE score, never below it — and that form (ws2/output-383-1) has walked back OUT of the ascending-save basin by re-introducing a named intermediate for the pointer ('void (**new_var)(void) = &D_8008D070; ... p = new_var;'). The search independently rediscovers the floor basin instead of finding a joint form, which is corroboration by search of the coupling argument.
+- verdict: CONFIRMED
