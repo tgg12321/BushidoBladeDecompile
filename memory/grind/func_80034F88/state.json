@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "structural",
+ "session_count": 12,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 9,
    "modality": "structural",
    "headline": "Structural: a POINTER COPY is a fourth, zero-cost way to keep block 1's post-store reload \u2014 h1 is instruction- AND register-identical to the target from the prologue through block 1's if/else (13/49),"
+  },
+  {
+   "session": 12,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Permuter axis KILLED a third time (6,450 iterations, every find worse than its seed); wave K priced the four address materialisations as load-bearing (1/2/3 handles = 23/27/23 vs 0 for four); and a NE"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "h1's 13 closes entirely if blocks 2/3's base takes a0 and their byte takes v1 \u2014 the target's assignment for an instruction stream the build already reproduces exactly.",
-   "mechanism": "The build's base inherits v1 because base 1 dies at block 1's store and v1 is then the cheapest free register; the target's allocator picked a0 for the base, which frees the scheduler to hoist the `lui`/`addiu` pair above that `sb`. Both are legal, so the difference is an allocno-priority tie (global.c orders by reg_n_refs/live_length and breaks ties by the hard-register preference each pseudo accumulated from its copies), not a shape difference. s11 proved no PLACEMENT of the base reaches it.",
-   "next_probe": "Attack the priority inputs rather than the placement: dump greg.fn for h1 (s11/dump.sh + slice.py are wired) and read the two pseudos' conflict lists, preferences and live lengths side by side, then change the REF COUNTS \u2014 e.g. blocks 2 and 3 reading the flag through the base a second time inside the arms, or the loop's `p` traffic re-spelled so `p`'s allocno is ordered differently \u2014 and re-read with sbs.py. The instrumented cc1's BB2_PRIO_DEBUG/BB2_ALLOC_DEBUG hooks (tools/gcc-2.7.2/cc1, per [[instrumented-cc1-location]]) print the priority order directly and would settle in one run which pseudo is allocated first."
+   "hypothesis": "The inline-helper chassis's remaining 13 closes if the helper's pointer pseudo survives to cse as a shared two-use base instead of being const-substituted into each mem at inline time. This is the only live axis that reaches the target's access signature from a construct nobody has objected to.",
+   "mechanism": "GCC 2.7.2's integrate.c copies the inline body with copy_rtx_and_substitute and a const-equivalence map; a local initialised from a SYMBOL_REF is a constant equivalence, so it is propagated into every use inside the copy. Each mem then reaches combine with a single-use address and combine folds %lo into it, producing `lui; lbu 0(reg)` per access instead of the target's one shared unfolded `lui`/`addiu` base. The textual four-handle form does not hit this because its pointer locals are never inlined and survive to cse as shared pseudos.",
+   "next_probe": "Confirm the pass first, then attack it. (a) Run cc1 -da on the m1 form (harness already wired at s11/dump.sh and s6's dump scripts) and check whether the address is already substituted in the .rtl dump (integrate) or only after .cse/.combine. (b) If integrate: give the helper's handle a shape the const map cannot equate - e.g. a second natural mem use through `q[0]`, or a nested second inline accessor so the address crosses two inline boundaries, or helper parameter shapes beyond m7's `u8 *` (a `u8 **`). Note m2 (mask factored into a second helper, zero handle declarations in the function body) is 26, so the mask handle must stay in the caller."
   },
   {
-   "hypothesis": "The pointer-copy reload mechanism, being free, may also let the 9-point base structure keep its reload \u2014 i.e. h1's mechanism crossed with s10's two-variable base structure rather than with its single re-assigned handle.",
-   "mechanism": "s11 only ever crossed the copy handle with base structures that give block 1 the mask's base. The 9-point form (`ptr` for mask+block 1, `ptr2` re-assigned for blocks 2 and 3) reaches the target's three bases but loses block 1's reload; h1 keeps the reload but leaves the blocks-2/3 swap. The two failures are in different regions of the function, so the cross has not actually been measured.",
-   "next_probe": "Cross the copy handle with every s10 base structure the ledger records (z1's single re-assigned pointer, zz5's two variables, w3's single base) \u2014 i.e. add `ptr2 = ptr;` (or a third handle used only for the block-1 read) to each, holding everything else fixed. 6-8 forms, one probe.py run."
+   "hypothesis": "If F1 does not close, the correct next outcome is a ruling-request, not another sweep: the only constructs that produce the target bytes are banned under every declared classification, including the one the layer-1 reviewer itself prescribed.",
+   "mechanism": "Bytes are proven twice at 0 (the four-handle body, and the macro expanding to it). Wave K prices every smaller handle count at 23-29 and the inline-factoring route at 13, so four separate address materialisations are forced by the target's codegen. The reviewer's remedy (FAKE-annotate the four declarations under pointer-alias-fake-exception) and its only alternative (treat them as ordinary program logic) are both on the driver's BANNED list for this function, so no declared path remains.",
+   "next_probe": "Emit `ruling-request` with a precise three-way question - (i) does the FAKE-annotated pointer-alias form remain available here, since the layer-1 reviewer prescribed exactly that; (ii) is the `static inline` helper acceptable if a further lever closes its 13; (iii) if neither, is this OWNER-ACCEPTED INCOMPLETE - attaching the wave-K price table, the inline-chassis 13 with its integrate.c mechanism, and the three permuter kills as the exhaustion evidence. Do NOT file it as an escalation from a non-escalation modality."
   },
   {
-   "hypothesis": "The third addend-0 base has no redundancy-free spelling at all, which makes the classification question a ruling, not a search.",
-   "mechanism": "s11 closed the last open route: a direct symbol reference cannot produce an addend-0 base (it folds `%lo` per access), so a third base requires a third pointer-local ASSIGNMENT. Either that assignment re-assigns a live variable a value it already holds (the construct s10 flagged, T1/T2 failures) or it introduces a further single-assignment pointer local to the same byte, which a human writing this function would not do either \u2014 and those measure 23 (three locals), 18 (dedicated third) and 13 (four locals, i5), never 9.",
-   "next_probe": "If s12/s13's attack on the h1 allocation tie does not close the function, the honest next step is a `ruling-request` naming BOTH constructs precisely \u2014 the redundant re-assignment AND the multi-single-assignment-handle alternative \u2014 with this measured impossibility argument attached, rather than another sweep of the same space."
+   "hypothesis": "The permuter axis is dead on this function for good, whatever the seed.",
+   "mechanism": "Its weighted metric (regs x5, reorderings x60, ins/del x100) is uncorrelated with engine/score.py's distance here, and its randomizer is free to emit semantically different code, which on this function means deleting the flag stores (sb 160-161 vs 164).",
+   "next_probe": "None - do not spend a fourth session on it. s4 (50,425 iterations), s5 (1,152 iterations + 1,008 enumerated forms) and s12b (6,450 iterations from a seed one instruction from target) all measured the same result, so the 'the seed was too far away' explanation is now refuted."
   }
  ],
  "judge_constraints": [

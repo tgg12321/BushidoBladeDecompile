@@ -1372,3 +1372,90 @@ assignment, no volatile, no barrier, no label pad), is `candidate_clean_13.c` at
   10 (wave G, construct minimisation), 7 (wave H, naturalisation), 8 (wave I,
   spelling strip-down), 6 (wave J, is the `c` reuse avoidable). 79 forms, all
   sandbox-scored; results in tmp/grind/func_80034F88/s12/results.json.
+
+## s12b (permuter modality — re-dispatch after the layer-1 FAIL)
+
+Context: the preceding session reached honest sandbox **0** at 49/49 insns, and
+its body was FAILed by the layer-1 cheat-reviewer for carrying four textually
+repeated `u8 *q = &D_80106A73;` declarations. The driver has since BANNED that
+construct under BOTH classifications (pointer-alias-fake-exception family, and
+"ordinary program logic"). This session therefore treated the byte-local-split
+finding as inherited and attacked the ONE remaining open question: is there a C
+spelling that produces the target's FOUR separate materialisations of
+`&D_80106A73` WITHOUT four repeated declarations?
+
+- [s12b] The four separate address materialisations are LOAD-BEARING, and their
+  price is now measured exactly (wave K, 8 forms, byte-local split held fixed
+  in every one). One natural handle for the whole function scores **23** at 47
+  insns (lbu 173); two handles **27**/47; three handles **23**/49 (lbu 175);
+  one handle with the mask through the plain symbol **28**; one handle with
+  blocks 2/3 through the plain symbol **28**; no handle at all (plain symbol
+  everywhere) **29**; two handles where the second is a pointer copy **23**; a
+  single handle with three function-scope byte locals and no inner scopes
+  **23**. Against 0 for four handles. So the byte-local split — the s12
+  breakthrough — is worth nothing on its own: it only pays on a chassis that
+  already has four address materialisations. The reload census tracks it
+  monotonically (lbu 173 at one handle, 175 at three, 176 at four).
+
+- [s12b] NEW AXIS, and the first structurally different route to the four
+  materialisations ever found: a `static inline` helper. A single
+  `static inline void bb2_set_flag(s32 c, s32 bit)` whose body declares
+  `u8 *q = &D_80106A73;` ONCE, called three times, plus one handle in the
+  caller for the `&= 0xF8` mask, scores **13 at 50 insns with lbu 176** — all
+  four reloads present, the same access signature as the matched form, from
+  ONE textual declaration of the handle. Three spellings of it tie at 13 (m1
+  caller-scope mask block, m3 caller function-scope mask handle, m4 helper
+  takes `p` and computes its own condition); `u8` instead of `s32` for the
+  helper's byte local costs 3 (m5 = 16). Precedent for `static inline` in this
+  codebase: src/main.c:2396 (`_memcpy`). CONTROL: the same helper without the
+  `inline` keyword emits a real `jal` (m6 = 35 at 37 insns), so the inlining is
+  what produces the four pseudos, not the factoring per se.
+
+- [s12b] WHY the inline chassis is 13 and not 0 — read off the side-by-side
+  (tmp/grind/func_80034F88/s12/sbs_m1.txt). The inlined copies do NOT keep an
+  unfolded shared base: each instantiation's access folds `%lo` into its own
+  mem, so where the target has `lbu a0,0(v1)` / `lui a0; addiu a0,a0,0` /
+  `sb v0,0(v1)` the build has `lui a0,0x0; lbu a0,0(a0)` and `lui at,0x0;
+  sb v0,0(at)`. The mask's base does survive in v1 and is reused for block 1's
+  STORE, but not for block 1's load. The mechanism is GCC 2.7.2's inliner
+  (`integrate.c` `copy_rtx_and_substitute` + its const-equivalence map)
+  substituting the constant address at each use inside the copied body, which
+  leaves every mem with a single-use address that `combine` then folds. This is
+  the exact inverse of the textual form, where the pointer local survives to
+  cse as a shared pseudo. Passing the address as an ARGUMENT does not escape it
+  (m7 = 22 at 52 insns, lbu 174) — the actual argument is itself a constant, so
+  the same substitution happens.
+
+- [s12b] KILLED (third independent confirmation) — the permuter axis, now also
+  on the inline chassis. Campaign `inline-helper-chassis`, workspace
+  tmp/grind/func_80034F88/s12/ws, 8 jobs, base permuter score 1885, **6,450
+  iterations**, best permuter score 450 (a 4x improvement on its own metric).
+  Every one of the 16 lowest-scoring finds sandbox-scores **32-43**, against
+  **13** for the seed the campaign started from — and each carries sb 160-161
+  against the correct 164, i.e. the mutations delete the flag stores outright.
+  The permuter cannot preserve a `static inline` chassis (it un-inlines or
+  guts the helper) and its metric remains uncorrelated with the honest sandbox
+  on this function. Harvested and stopped in-session.
+
+- [s12b] The function-like MACRO spelling reaches **0** (m9, 49 insns, lbu 176)
+  — one textual declaration site, expanding to exactly the banned four-handle
+  body. It is recorded and banked deliberately as
+  `rejected/macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c`:
+  under cheat-checklist T5 it is the banned construct respelled, not a new
+  attack, and the brief is explicit that respelling a banned construct is the
+  same construct. It is banked as EVIDENCE for the ruling question below, not
+  as a candidate. Do not submit it.
+
+- [s12] Wave K price table for the pointer-handle count, byte-local split held fixed in all 8 forms: one handle 23/47 insns (lbu 173), two 27/47 (174), three 23/49 (175), two-with-a-copy 23/46 (174), one-with-mask-on-symbol 28/49 (174), one-with-blocks-2/3-on-symbol 28/48 (174), no handle at all 29/47 (173) - against 0/49 (lbu 176) for four handles. The four address materialisations of &D_80106A73 are load-bearing and the honest floor without them is 23.
+
+- [s12] NEW AXIS: `static inline void bb2_set_flag(s32 c, s32 bit)` declaring `u8 *q = &D_80106A73;` ONCE and called three times, plus one handle in the caller for the `&= 0xF8` mask, scores 13 at 50 insns with lbu 176 - the matched form's exact access signature (all four reloads) from a single textual declaration. Three spellings tie at 13 (m1/m3/m4). `static inline` precedent in this tree: src/main.c:2396 (`_memcpy`).
+
+- [s12] CONTROL for that axis: the same helper WITHOUT the `inline` keyword emits a real `jal` and scores 35 at 37 insns (m6), so the inlining - not the factoring - is what creates the four pointer pseudos.
+
+- [s12] The inline chassis's residual 13 is entirely %lo folding, read off the side-by-side at tmp/grind/func_80034F88/s12/sbs_m1.txt: build emits `lui a0,0x0; lbu a0,0(a0)` and `lui at,0x0; sb v0,0(at)` where target has one shared unfolded `lui`/`addiu` base serving both the reload and the store. Mechanism: GCC 2.7.2's inliner (integrate.c copy_rtx_and_substitute + const-equivalence map) substitutes the constant address at each use inside the copied body, so every mem reaches combine with a single-use address. Passing the address as an ARGUMENT does not escape it (m7 = 22 at 52 insns), because the actual argument is itself a constant.
+
+- [s12] PERMUTER, third independent kill: campaign `inline-helper-chassis` (tmp/grind/func_80034F88/s12/ws, 8 jobs) ran 6,450 iterations, base permuter score 1885 -> best 450, and all 16 lowest-scoring finds sandbox-score 32-43 against the seed's 13. Every find carries sb 160-161 vs the correct 164 - the randomizer deletes flag stores and cannot preserve a `static inline` chassis. Harvested and stopped in-session with a reason string; campaign confirmed dead (alive: false).
+
+- [s12] The function-like macro spelling reaches 0 at 49 insns (m9) but is the banned four-handle construct respelled (identical post-preprocessing declarations), so it was banked as evidence only and NOT submitted. src/code6cac_b.c was left at its committed state; `git status` shows no src change.
+
+- [s12] CLASSIFICATION CONTRADICTION now the real blocker: the target bytes are reachable (0 measured twice), wave K shows the four materialisations are forced, and the layer-1 reviewer's own prescribed remedy was to add the `/* FAKE: ... */` annotation to the four `u8 *q = &D_80106A73;` declarations - but the driver's BANNED-CONSTRUCTS list for this function bans that construct both 'claimed under the C-level pointer alias to a global / pointer-alias-fake-exception family' AND 'treated as ordinary program logic', i.e. it bans the remedy along with its alternative.

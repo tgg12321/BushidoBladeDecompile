@@ -1394,3 +1394,99 @@ ASSIGNMENT. **CONFIRMED as a partial lever, exhausted on its own.**
 - probe: Wave B -- the read duplicated in blocks 2/3 only, in all three blocks, on two mask spellings, sandbox-scored with an objdump lbu/sb/lui census.
 - result: 20, 22 and 20 at 53 build insns with lbu 178 against the target's 176 -- on this function the duplicated reads are not byte-neutral, they materialise as real extra loads. The ref-count axis is dead here.
 - verdict: KILLED
+
+## Resolved in s12b (permuter)
+
+## [s12b] The s12 byte-local-split finding is the substantive lever, so it should close the function on a chassis with FEWER than four repeated `u8 *q = &D_80106A73;` handles — i.e. the four repeated declarations the layer-1 reviewer FAILed may be incidental rather than load-bearing.
+- mechanism: If the win came from splitting the loaded-byte local (block 1's byte dying before block 2's base is materialised), then the number of pointer handles should be free to drop to the one a human would naturally write, with the split carrying the score.
+- probe: Wave K, 8 forms through tmp/grind/func_80034F88/s12/probe.py, byte-local split held fixed in every one and only the handle structure varied: one handle (k1/k5), two (k2), three (k3), two with a copy (k6), one with the mask on the plain symbol (k4), one with blocks 2/3 on the plain symbol (k7), none at all (k8).
+- result: KILLED decisively. 23/27/23/23/28/28/29 against 0 for four handles, with the reload census moving monotonically with the handle count (lbu 173 at one handle, 174-175 at two/three, 176 at four). The split is worth 12-13 points ONLY on a chassis that already has four address materialisations; on its own it is worth nothing. The four materialisations are load-bearing and the honest floor without them is 23 — worse than the pre-s10 floor of 18.
+- verdict: KILLED
+
+## [s12b] A `static inline` helper produces the target's four separate materialisations of &D_80106A73 from ONE textual declaration of the handle, dissolving the layer-1 objection (four repeated declarations) without changing what the program does.
+- mechanism: GCC 2.7.2 at -O2 inlines `static inline` functions (precedent in this tree: src/main.c:2396 `_memcpy`). Each inline instantiation gets its own copy of the body's locals, so a single `u8 *q = &D_80106A73;` inside the helper becomes three independent pointer pseudos at three call sites — the four-materialisation shape, arrived at by ordinary program factoring rather than by repeating a declaration.
+- probe: Wave M, 9 forms. m1 (inline setter x3 + a caller-scope block for the mask handle), m3 (caller function-scope mask handle), m4 (helper takes p and computes its own condition), m5 (u8 byte local), m7 (helper takes a u8* parameter, &D_80106A73 passed at each call site), m2 (a second inline helper for the mask so the function body has ZERO handle declarations), m6 (control: static but NOT inline). Sandbox --disable all plus an objdump lbu/sb/lui census; side-by-side against target via s12/sbs.py, saved to s12/sbs_m1.txt.
+- result: CONFIRMED as a mechanism, INSUFFICIENT as a match. The inlined chassis reaches 13 at 50 insns with lbu 176 — all four reloads, the matched form's exact access signature, from one declaration (m1 = m3 = m4 = 13; u8 byte local 16; the two-helper form 26; the pointer-parameter form 22; the non-inline control 35 at 37 insns with a real jal, proving the inlining is what creates the pseudos). It does not reach 0 because the inliner substitutes the constant address at each use inside the copied body (integrate.c copy_rtx_and_substitute and its const-equivalence map), leaving every mem with a single-use address that combine then folds %lo into: the build emits "lui a0; lbu a0,0(a0)" and "lui at; sb v0,0(at)" where the target has a shared unfolded lui/addiu base reused by both the reload and the store. Passing the address as an argument does not escape the substitution (m7 = 22).
+- verdict: CONFIRMED
+
+## [s12b] With the honest chassis now at target's instruction count minus one and the residual reduced to base folding, a decomp-permuter campaign seeded from the inline-helper chassis can close it.
+- mechanism: The remaining difference is address-expression folding plus one instruction, which is the class of local rewrite the permuter's randomizer explores well; s4/s5 killed the permuter on chassis that were further away, so the seed quality was the stated reason it failed.
+- probe: tools/permuter_campaign.py launch --func func_80034F88 --dir tmp/grind/func_80034F88/s12/ws --label inline-helper-chassis -j 8 --stop-on-zero; waited in-turn across three windows; sandbox-scored the 16 lowest-permuter-score finds through probe.py; harvest --stop in-session.
+- result: KILLED, and this is the THIRD independent kill of the permuter axis on this function. 6,450 iterations took the permuter's own metric from 1885 to 450 (a 4x improvement) while every sandbox-scored find came back 32-43 against the seed's 13. All finds carry sb 160-161 against the correct 164 — the mutations delete flag stores, i.e. the permuter is buying its metric with semantically different code, and it also fails to preserve the `static inline` chassis at all. The permuter's metric is uncorrelated with the honest sandbox on this function regardless of seed quality; seed quality was not the problem.
+- verdict: KILLED
+
+## [s12b] A function-like macro is a legitimate way to author the four handles once.
+- mechanism: A `#define BB2_SET_FLAG(cond, bit) { u8 *q = &D_80106A73; ... }` invoked three times is textually one declaration site and expands to exactly the body that byte-matches.
+- probe: m9, sandbox --disable all.
+- result: It scores 0 at 49 insns with lbu 176 — it does byte-match. But it is REJECTED BY CLASSIFICATION, not by measurement: after preprocessing the diff contains the identical four `u8 *q = &D_80106A73;` declarations the driver has banned, so under cheat-checklist T5 ("it is different because it is spelled with X instead of Y is exactly the loophole the policy forbids") it is the banned construct respelled rather than a new attack. Banked as evidence at rejected/macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c and deliberately NOT submitted.
+- verdict: KILLED
+
+## Open frontier for s13
+
+### F1 — close the inline-helper chassis's 13 by defeating the inliner's constant substitution.
+This is the only live axis that reaches the target's access signature from a
+construct nobody has objected to. The residual is entirely `%lo` folding: the
+inlined copies need their pointer pseudo to survive to cse as a shared base
+with two mem uses, instead of being const-substituted into each mem at inline
+time. Untried levers, in order of cheapness: (a) read the `.rtl`/`.combine`
+dumps of m1 to confirm whether the substitution happens in integrate.c or in
+cse/combine — the cc1 -da harness is already wired at s11/dump.sh and s6's
+dump scripts; (b) give the helper's handle a third natural mem use, or have the
+helper read AND write through `q[0]` in a shape that keeps two live uses at
+combine time; (c) nest a second inline accessor inside the helper so the
+address crosses two inline boundaries; (d) helper parameter shapes beyond m7's
+`u8 *` (e.g. `u8 **`). Note m2 (the fully-factored form with ZERO handle
+declarations in the function body) is 26, so the mask handle must stay in the
+caller.
+
+### F2 — the classification contradiction, which is now the real blocker and is
+### almost certainly the correct outcome for s13 if F1 does not close.
+The target bytes are reachable (0 measured twice, by the four-handle body and
+by the macro that expands to it). Wave K prices every smaller handle count at
+23-29 and the inline route at 13, so the four materialisations are forced. The
+layer-1 reviewer's own prescribed remedy was "add the required /* FAKE: ... */
+annotation to each of the four `u8 *q = &D_80106A73;` declarations AND document
+lever-exhaustion", but the driver's BANNED-CONSTRUCTS list for this function
+bans that construct "claimed under the 'C-level pointer alias to a global' /
+pointer-alias-fake-exception family" AND "treated as ordinary program logic" —
+i.e. it bans the reviewer's own remedy along with its alternative, leaving no
+declared path for the only construct that produces the bytes. That is a precise
+`ruling-request`: does the FAKE-annotated pointer-alias form remain available
+for this function (the reviewer's remedy), is the macro spelling acceptable, or
+is neither and the function is OWNER-ACCEPTED INCOMPLETE? Do NOT file it as an
+escalation from a non-escalation modality; file it as a ruling-request with the
+wave-K price table and the inline-chassis 13 attached as the exhaustion
+evidence.
+
+### F3 — the permuter is now dead three times over; do not spend a fourth
+### session on it whatever the seed quality.
+s4 (50,425 iterations), s5 (1,152 permuter iterations + 1,008 enumerated forms)
+and s12b (6,450 iterations from a seed one instruction from target) all
+measured the same thing: the permuter's metric moves freely while the honest
+sandbox score does not follow, and on this function the randomizer additionally
+produces semantically different code (dropped stores) and cannot preserve a
+`static inline` chassis.
+
+## [s12] The s12 byte-local-split finding is the substantive lever, so it should close the function on a chassis with FEWER than four repeated `u8 *q = &D_80106A73;` handles - i.e. the four repeated declarations the layer-1 cheat-reviewer FAILed may be incidental rather than load-bearing.
+- mechanism: If the win came from splitting the loaded-byte local (block 1's byte dying before block 2's base is materialised), the pointer handle count should be free to drop to the one a human would naturally write, with the split carrying the score.
+- probe: Wave K: 8 forms through tmp/grind/func_80034F88/s12/probe.py with the byte-local split held fixed in every one and only the handle structure varied - one handle (k1/k5), two (k2), three (k3), two with a pointer copy (k6), one with the mask through the plain symbol (k4), one with blocks 2/3 through the plain symbol (k7), and none at all (k8). Each scored with `sandbox func_80034F88 --disable all` plus an objdump lbu/sb/lui census.
+- result: KILLED decisively: 23 / 27 / 23 / 23 / 28 / 28 / 29 against 0 for four handles, and the reload census moves monotonically with the handle count (lbu 173 at one handle, 174-175 at two/three, 176 at four). The byte-local split is worth 12-13 points ONLY on a chassis that already has four address materialisations; on its own it is worth nothing, and the best honest floor without the four materialisations is 23 - worse than the pre-s10 floor of 18. The four materialisations are therefore forced, not incidental.
+- verdict: KILLED
+
+## [s12] A `static inline` helper produces the target's four separate materialisations of &D_80106A73 from ONE textual declaration of the handle, dissolving the layer-1 objection (four repeated declarations) without changing what the program does.
+- mechanism: GCC 2.7.2 at -O2 inlines `static inline` functions (precedent in this tree: src/main.c:2396 `_memcpy`). Each inline instantiation gets its own copy of the body's locals, so a single `u8 *q = &D_80106A73;` inside a helper called three times becomes three independent pointer pseudos - the four-materialisation shape (with the caller's mask handle), arrived at by ordinary program factoring rather than by repeating a declaration.
+- probe: Wave M: 9 forms - m1 (inline setter x3 + a caller-scope block for the mask handle), m3 (mask handle at caller function scope), m4 (helper takes p and computes its own condition), m5 (u8 byte local in the helper), m7 (helper takes a u8* parameter with &D_80106A73 passed at each call site), m2 (a second inline helper for the mask, so the function body declares no handle at all), m6 (control: static but NOT inline). Sandbox --disable all plus objdump census; side-by-side against target via s12/sbs.py into s12/sbs_m1.txt.
+- result: CONFIRMED as a mechanism, INSUFFICIENT as a match. The inlined chassis scores 13 at 50 insns with lbu 176 - all four reloads, the matched form's exact access signature, from one declaration (m1 = m3 = m4 = 13; u8 byte local 16; two-helper form 26; pointer-parameter form 22). The control m6 without `inline` emits a real jal and scores 35 at 37 insns, proving the inlining is what creates the pseudos. It stops at 13 because the inliner substitutes the constant address at each use inside the copied body (integrate.c copy_rtx_and_substitute + its const-equivalence map), leaving every mem with a single-use address that combine folds %lo into: the build emits `lui a0; lbu a0,0(a0)` and `lui at; sb v0,0(at)` where target has one shared unfolded lui/addiu base serving both the reload and the store.
+- verdict: CONFIRMED
+
+## [s12] With the honest chassis now one instruction from the target and the residual reduced to address folding, a decomp-permuter campaign seeded from the inline-helper chassis can close it - s4/s5's kills were a seed-quality problem.
+- mechanism: The remaining difference is address-expression folding plus one instruction, which is the class of local rewrite the permuter's randomizer explores well.
+- probe: tools/permuter_campaign.py launch --func func_80034F88 --dir tmp/grind/func_80034F88/s12/ws --label inline-helper-chassis -j 8 --stop-on-zero; waited in-turn across three `wait` windows; extracted and sandbox-scored the 16 lowest-permuter-score finds through probe.py; harvest --stop in-session with a reason string.
+- result: KILLED - the third independent kill of the permuter axis on this function. 6,450 iterations drove the permuter's own metric from 1885 to 450 (a 4x improvement) while every sandbox-scored find came back 32-43 against the seed's 13. Every find also carries sb 160-161 against the correct 164, i.e. the mutations delete flag stores and buy the metric with semantically different code, and the randomizer does not preserve the `static inline` chassis at all. Seed quality was not the problem: the permuter's metric is uncorrelated with the honest sandbox on this function regardless of how close the seed is.
+- verdict: KILLED
+
+## [s12] A function-like macro is a legitimate way to author the four handles once, and therefore a way around the layer-1 objection to the four repeated declarations.
+- mechanism: A `#define BB2_SET_FLAG(cond, bit) { u8 *q = &D_80106A73; ... }` invoked three times is textually one declaration site and expands to exactly the body that byte-matches.
+- probe: Variant m9, sandbox --disable all.
+- result: KILLED BY CLASSIFICATION, not by measurement - it does byte-match (score 0 at 49 insns, lbu 176). After preprocessing the diff contains the identical four `u8 *q = &D_80106A73;` declarations the driver has banned, so under cheat-checklist T5 it is the banned construct respelled rather than a new attack. Banked as evidence at rejected/macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c and deliberately NOT submitted; src/ was left untouched.
+- verdict: KILLED
