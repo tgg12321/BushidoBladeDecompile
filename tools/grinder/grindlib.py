@@ -127,10 +127,26 @@ def _significant_terms(text):
             if w not in stop]
 
 
-# Section boundaries are ALL-CAPS headings, so this must run on ORIGINAL-case
-# text; matching [A-Z] against lowercased text finds no boundary and silently
-# widens the "section" to the whole file.
-_CONSTRUCTS_SEC = re.compile(r"^CONSTRUCTS?\b.*?(?=^[A-Z][A-Z /_-]{3,}:)", re.M | re.S)
+# The declared-constructs block: the CONSTRUCTS: line through to the next
+# structural boundary. Terminators are the format's OWN mandated markers
+# (_SELF_VET_REQUIRED: T1..T6, SANCTIONED-FAMILY-CLAIMS:, ANNOTATION-CONFORMANCE:),
+# plus any other heading-like line, plus a blank line.
+#
+# A first cut ended the section at the next ALL-CAPS heading and fell back to
+# the whole file when it found none. That fallback silently restored the very
+# false positive it was meant to fix the moment a vet used differently-cased
+# headings (func_800645B0 tripped again at 19:55 on 2026-08-12 for exactly
+# that reason). Boundaries are matched case-INSENSITIVELY now, and there is no
+# whole-file fallback: a vet with no CONSTRUCTS: line is format-invalid and
+# _SELF_VET_REQUIRED rejects it on its own.
+_CONSTRUCTS_SEC = re.compile(
+    r"^[ \t]*CONSTRUCTS[ \t]*:.*?"
+    r"(?=(?:^[ \t]*(?:\#*[ \t]*T[0-9]\b|[A-Za-z][A-Za-z0-9 /_-]{2,}[ \t]*:|[ \t]*$))|\Z)",
+    re.M | re.S | re.I)
+
+# Declarations are short; this bounds the damage if a vet runs prose straight
+# into the block with no blank line or heading to end it.
+_DECL_MAX = 2000
 
 _DISCLAIM = re.compile(
     r"\b(not present|is banned|was banned|banned and|no longer|not used|"
@@ -159,17 +175,20 @@ def _ban_trips(ban_text, vet_text):
     sessions are REQUIRED to reason about a standing ban, so reading that
     reasoning as a re-declaration punishes exactly the wanted behaviour.
 
-    Now: scan the CONSTRUCTS section (the declaration), fall back to the whole
-    file only if the vet has no such section (i.e. is malformed), and drop
-    sentences that assert ABSENCE. A construct used but never declared is a
-    vet-completeness failure the default-FAIL Judge catches; this tripwire only
-    saves Judge cycles on respelling loops, so erring toward the Judge is the
-    safe direction."""
+    Now: scan ONLY the declared-constructs block, and drop sentences that
+    assert ABSENCE. No CONSTRUCTS: line means no declaration to check — such a
+    vet is format-invalid and _SELF_VET_REQUIRED rejects it separately, so
+    falling back to a whole-file scan here would only resurrect the bug.
+    A construct used but never declared is a vet-completeness failure the
+    default-FAIL Judge catches; this tripwire only saves Judge cycles on
+    respelling loops, so erring toward the Judge is the safe direction."""
     terms = _significant_terms(ban_text)
     if len(terms) < 2:
         return False, []
     m = _CONSTRUCTS_SEC.search(vet_text)
-    decl = _strip_disclaimers((m.group(0) if m else vet_text).lower())
+    if not m:
+        return False, []
+    decl = _strip_disclaimers(m.group(0)[:_DECL_MAX].lower())
     hits = [t for t in terms if t in decl]
     return len(hits) >= max(2, int(len(terms) * 0.5)), hits
 

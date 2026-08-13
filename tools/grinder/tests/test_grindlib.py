@@ -521,6 +521,41 @@ class TestBannedConstructTripwire(unittest.TestCase):
             "CONSTRUCTS: (1) `j += 1;` moved next to `idx`, flipping addu vs li.\n")
         self.assertTrue(ok)
 
+    def test_mixed_case_heading_still_bounds_the_section(self):
+        """The 19:55 recurrence on 2026-08-12: the first fix ended the section
+        at the next ALL-CAPS heading and fell back to the WHOLE FILE when it
+        found none, so a vet with differently-cased headings tripped again."""
+        ok, why = self.vet(
+            "CONSTRUCTS: (1) `val` reused for the constant 1.\n"
+            "Six-test checklist:\n"
+            "T3 the session-4 form put `j += 1;` relocated from after the inner-loop\n"
+            "body between `idx = i + j;` and `val = 1;`, chosen from an 8-variant\n"
+            "hand-authored sweep because it flips which instruction cc1's first-pass\n"
+            "scheduler and reorg.c's back-edge delay-slot steal pick first.\n")
+        self.assertTrue(ok, why)
+
+    def test_blank_line_bounds_the_section(self):
+        ok, why = self.vet(
+            "CONSTRUCTS: (1) `val` reused for the constant 1.\n"
+            "\n"
+            "The prior form had `j += 1;` relocated from after the inner-loop body to\n"
+            "between `idx = i + j;` and `val = 1;`, chosen from an 8-variant\n"
+            "hand-authored sweep, flipping which instruction cc1's first-pass\n"
+            "scheduler and reorg.c's back-edge delay-slot steal pick first.\n")
+        self.assertTrue(ok, why)
+
+    def test_vet_without_constructs_line_does_not_trip(self):
+        """No declaration to check. Such a vet is format-invalid on its own —
+        the tripwire must not stand in for the format gate by scanning prose."""
+        ok, _ = self.vet(
+            "The prior form had `j += 1;` relocated from after the inner-loop body\n"
+            "to between `idx = i + j;` and `val = 1;` from the 8-variant sweep.\n")
+        self.assertTrue(ok)
+        # ...and the format gate is what actually rejects it, so nothing escapes.
+        valid, why = G.validate_self_vet(self.root, "func_X")
+        self.assertFalse(valid, "a vet with no CONSTRUCTS: line must fail the format gate")
+        self.assertIn("CONSTRUCTS", why)
+
     def test_no_ban_banked_means_no_check(self):
         G.init_ledger(self.root, "func_Y", "text1b")
         with open(G.self_vet_path(self.root, "func_Y"), "w", encoding="utf-8") as f:
