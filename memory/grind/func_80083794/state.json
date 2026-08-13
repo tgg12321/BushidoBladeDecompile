@@ -1,0 +1,37 @@
+{
+ "func": "func_80083794",
+ "file": "ings2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 18,
+   "modality": "recon",
+   "headline": "func_80083794 is GCC's __main (sole caller = first statement of main); clean pure C is instruction-for-instruction isomorphic to target at floor 18 (was 23), and the dominant residual is a frame with "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1 \u2014 the frame-geometry residual (~8 of the 18) is not reachable from any C source under the frozen pipeline, because current_function_outgoing_args_size cannot be 0 for a function that emits a call.",
+   "mechanism": "mips.h:1811/1822 REG_PARM_STACK_SPACE == 16 unconditionally (FIRST_PARM_OFFSET == 0) plus OUTGOING_REG_PARM_STACK_SPACE; mips.c:4450-4476 compute_frame_size lays callee-saves above args_size. Corroborated by the 1/1437 corpus scan.",
+   "next_probe": "This is a NEGATIVE claim and recon deliberately did not certify it \u2014 attack it before believing it. (a) is already answered negative (our build of this function IS the minimal no-param/no-local/zero-arg-call case and still gets 16 bytes). Remaining: (b) instrumented cc1 -da on this TU, read the frame notes and check whether ANY construct drives current_function_outgoing_args_size to 0; (c) forensics on the 53 `ori $rX,$zero,imm` files for one that also shows a sub-16 save offset and diff its C. If (b) and (c) both come back negative, the correct move is a ruling-request citing the frame-uniqueness evidence AND the failed scan_hand_coded gate \u2014 not a self-declared exhaustion."
+  },
+  {
+   "hypothesis": "H2 \u2014 $s0/$s1 are swapped relative to target because count (4 refs) outranks p (3 refs) in allocno priority; a semantics-preserving C form that moves a reference from count to p will flip them.",
+   "mechanism": "global.c allocno priority is driven by reg_n_refs weighted by loop depth; both pseudos are loop-resident so the tiebreak is ref count.",
+   "next_probe": "One sandbox run each for: hoisting the load (`void (*f)(void) = *p; p++; count--; f();`), a `for (; count; count--)` header, `do { ... } while (--count);`, and guard-through-the-pointer forms. Judge by which register the loop body's `lw $?,0($s?)` uses, NOT by the masked `la` pairs (see the C1 caveat in hypotheses.md). Directed permuter sweep once 2-3 manual forms are banked."
+  },
+  {
+   "hypothesis": "H3 \u2014 `ori $rX,$zero,1` is a reachable C-level spelling for the flag store, not an assembler-macro divergence; landing it retires regfix.txt:110.",
+   "mechanism": "Unknown, but 53/1437 asm/funcs files contain the form, so the frozen pipeline demonstrably emits it. Candidates: an IOR surviving to RTL with a $zero-allocated operand, or a movsi expansion that picks the logical form.",
+   "next_probe": "Cheap 1-2 turn forensics: pick 2-3 of those 53 files that are already COMPLETED-C, locate the C statement that produced the `ori`, and copy the spelling class into the flag store."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-13T05:35:19.843298+00:00"
+}
