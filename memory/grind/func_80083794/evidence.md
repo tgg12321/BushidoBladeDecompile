@@ -457,3 +457,114 @@ s2's H1 than "the arg area is missing": the whole frame is leaf-shaped.
 - [s4] Both campaigns were harvested with --stop before the session ended; permuter_campaign.py status reports alive:false for both PIDs (5069, 498721). No campaign outlived the session.
 
 - [s4] Cumulative: every sanctioned C axis is now measured dead for this function — declaration order (s1), the pin/asm form (s1), both la statement orders (s1/s2), 18 structural forms (s2), the ori spelling (s2), frame minimality by three independent routes (s1/s2), the prologue-save-order axis (s3), and now randomized search from both the floor chassis and the class-D chassis (s4).
+
+## Session 5 (permuter, 2026-08-13)
+
+### Starting state (the recurring correction, fourth time)
+`src/ings2.c` again held the s1 register-pin + hardcoded-`$17` `__asm__` body at
+session start (only ledgers are committed, never the src edit). Re-applied
+`memory/grind/func_80083794/candidate.c` and reproduced the floor exactly:
+**score 18, target_insns 28, build_insns 28**, re-verified again at session end
+with `src/ings2.c` left carrying the floor form.
+
+### The NEW instrument — a normalized-target permuter workspace
+Sessions 2 and 3 proved two of the four residual classes have no C preimage:
+class A (frame geometry) and class C (`ori $t0,$zero,1`). Those classes
+contribute a CONSTANT penalty to every permuter score, so the randomizer's
+gradient in s4 was dominated by noise no mutation could ever move — which is
+exactly why its best finds were frame-junk forms. Session 5 therefore built a
+**normalized target**: `asm/funcs/func_80083794.s` lines 1-31 with ONLY the
+proven-unreachable classes rewritten to the form our pipeline can emit
+(`addiu $sp,-0x10` -> `-0x20`; saves `0x4/0x8/0xC` -> `0x10/0x14/0x18`;
+`ori $t0,$zero,0x1` -> `li $t0,1`), leaving target's register roles ($s0 = `p`,
+$s1 = `count`, $t0 = temp) and target's ASCENDING prologue save order untouched.
+Builder: `tmp/grind/func_80083794/s5/mkws3.py` (asserts exactly 9
+normalizations) and `mkws4.py`.
+**`ws3/target.o` and `ws4/target.o` are MEASUREMENT INSTRUMENTS, not match
+targets — a score of 0 against them is NOT a byte match.** Against the
+normalized target the floor form matches 15 of 28 positions (vs 9 against the
+real target) and the entire prologue/epilogue frame block matches, so the
+remaining objective is exactly classes B (register roles) + D (save order).
+
+### The proven lower bound on ANY pure-C form (new, and it closes the modality)
+Position accounting against the real target (s3's `sidebyside.md`, re-derived
+from the normalized-target diff): the target instructions that reference the
+frame are positions 3 (`addiu $sp,-0x10`), 4/5/6 (`sw $s0,0x4` / `$s1,0x8` /
+`$ra,0xC`), 23/24/25 (the matching `lw`s) and 26 (`addiu $sp,0x10`) — eight
+instructions whose immediates our pipeline can never emit, because class A is
+proven unreachable. Position 8 (`ori $t0,$zero,0x1`) is a ninth, by the class-C
+assembler proof. So **no pure-C form under the frozen pipeline can score better
+than 9 honest instructions of residual (>=8 even discounting the one position
+the scorer masks), against a current floor of 18.** A permuter campaign on this
+function cannot reach distance 0 no matter how many iterations it runs — the
+modality is closed by arithmetic, not by exhaustion. The most any future search
+could buy is classes B+D, roughly half the residual.
+
+### Campaign telemetry (both harvested with `--stop` in-session; `status` shows `alive:false` for both PIDs)
+| campaign | chassis | base | iterations | wall | best |
+|---|---|---|---|---|---|
+| `s5/ws3` | score-18 floor form vs normalized target | 308 | 95,501 | ~30 min | 263 |
+| `s5/ws4` | s3 hoisted-`la` (class-D) form vs normalized target | 970 | 63,304 | ~15 min | 478 |
+
+- ws3's best (263, found at 190 s and never beaten in the following ~27 min) is
+  the s4-340 cheat family re-found under two new spellings:
+  `volatile unsigned short new_var; if (D_800A2668 == (new_var = 0))` and
+  `s32 new_var2; s32 *new_var3 = &new_var2; if (*new_var3 == 0)` — a dead
+  volatile frame-slot local, and an address-taken dead local. Both measured
+  honestly: **29 emitted instructions, frame -40, `$s0`/`$s1` still inverted,
+  save order still descending** — they touch neither class B nor class D. Even
+  with the frame noise removed from the objective the permuter's alignment-based
+  diff still rewards adding a frame slot, which is why this family keeps coming
+  back; it is a property of the permuter's metric, not a lead.
+- ws4 (class-D chassis) never re-entered the sub-308 region: base 970, best 478.
+
+### The one genuinely new lead, and why it is dead (the session's main result)
+`ws4/output-478-1` is **the first form in five sessions whose loop reads through
+`$s0`** (`lw v0,0(s0)`, `beqz s1`, `bnez s1`) — i.e. target's register roles,
+residual class B flipped. It flips them because it TESTS `new_var` while
+decrementing `count`, so the decrement is dead, flow deletes it, and the counter
+pseudo loses its two in-loop references, inverting the allocno priority. It is
+an infinite loop — the permuter does not preserve semantics.
+Six semantics-preserving spellings of that same ref-split intent were then
+measured in the honest sandbox (`tmp/grind/func_80083794/s5/sweep.py` +
+`variants.json`, raw in `sweep_out.json`): scores 18/18/22/22/23/24, `p` in
+`$s1` in every one, temp `$v0` in every one, frame -32 in every one. GCC's
+copy-propagation folds `n = count;` back into one pseudo, so a
+semantics-preserving split is not a split. Banked:
+`rejected/count-ref-split-forms-do-not-flip-s0-s1.c`.
+
+- [s5] STARTING STATE (fourth recurrence): src/ings2.c held the s1 register-pin + hardcoded-$17 __asm__ body again at session start; re-applied candidate.c and reproduced score 18 / target_insns 28 / build_insns 28, re-verified at session end. src/ings2.c is left carrying the floor form.
+
+- [s5] NEW INSTRUMENT — the normalized-target permuter workspace (tmp/grind/func_80083794/s5/mkws3.py, mkws4.py). Classes A (frame geometry) and C (ori) are proven to have no C preimage, so they add a constant penalty that drowns the real search signal; the s5 workspaces assemble a target with EXACTLY those two classes rewritten to our reachable form (addiu $sp,-0x10 -> -0x20; saves 0x4/0x8/0xC -> 0x10/0x14/0x18; ori $t0,$zero,0x1 -> li $t0,1) and nothing else. Against it the floor form matches 15/28 positions (vs 9/28 against the real target) and the whole frame block matches, leaving classes B (register roles) + D (prologue save order) as the sole objective. WARNING for future sessions: ws3/ws4 target.o is a MEASUREMENT INSTRUMENT — a score of 0 against it is NOT a byte match.
+
+- [s5] PROVEN LOWER BOUND: eight target instructions reference the frame (positions 3, 4, 5, 6, 23, 24, 25, 26 — the addiu $sp pair and the three sw / three lw), and class A makes every one of their immediates unreachable; position 8's `ori $t0,$zero,0x1` is a ninth by the class-C assembler proof. Therefore NO pure-C form under the frozen pipeline can score below 9 honest residual instructions (>=8 discounting the single position the scorer masks), against the current floor of 18. A permuter campaign here cannot reach distance 0 by construction — the modality is closed by arithmetic, not by exhaustion, and the most any future search can buy is classes B+D.
+
+- [s5] CAMPAIGN ws3 (normalized-target-BD-isolation): base 308, 95,501 iterations, ~30 min, best 263 found at 190 s and never beaten afterwards. The 263 family is the s4-340 cheat re-found under two new spellings — `volatile unsigned short new_var; if (D_800A2668 == (new_var = 0))` and `s32 *new_var3 = &new_var2; if (*new_var3 == 0)`. Honest re-measurement of both: 29 emitted instructions, frame -40, $s0/$s1 still inverted, save order still descending. Removing the frame noise from the OBJECTIVE does not stop the permuter's alignment-based diff from rewarding an added frame slot; that is a property of the permuter metric, not a lead.
+
+- [s5] CAMPAIGN ws4 (class-D-chassis-vs-normalized-target): base 970, 63,304 iterations, ~15 min, best 478 — it never re-entered the sub-308 region, corroborating s3/s4's coupled-constraint result from a second angle.
+
+- [s5] FIRST-EVER CLASS-B FLIP, and why it is dead: ws4/output-478-1 emits `lw v0,0(s0)` / `beqz s1` / `bnez s1`, i.e. target's register roles. It achieves that only by TESTING `new_var` while decrementing `count`, which makes the decrement dead code that flow deletes, stripping two in-loop references off the counter and inverting the allocno priority. The form is an infinite loop (the permuter does not preserve semantics) and its emitted body is missing target's `addiu $s1,$s1,-0x1` entirely.
+
+- [s5] The ref-split family measured honestly (s5/sweep.py + variants.json + sweep_out.json), six semantics-preserving spellings: x1_guard_count_loop_copy 23, x2_plain_copy_rename 18, x3_guard_count_endptr_loop 22 (29 insns), x4_copy_before_p 22, x5_guard_copy_while 24 (30 insns), x6_countdown_predec_guarded 18. `p` is in $s1 in ALL six, temp $v0 in ALL six, frame -32 in ALL six. GCC's copy-propagation folds `n = count;` back into a single pseudo, so a semantics-preserving split is not a split; the only way to remove the counter's two in-loop references is to stop the loop decrementing the variable it tests, which is the semantic break. Banked as rejected/count-ref-split-forms-do-not-flip-s0-s1.c.
+
+- [s5] SHARPER STATEMENT OF CLASS B: target's own body references `count` ($s1) four times (la, beqz guard, addiu -1, bnez) and `p` ($s0) three times (la, lw base, addiu +4) — the SAME 4-vs-3 split our build has — yet assigns them the opposite hard registers. Under global.c:635 allocno_compare that assignment is anti-priority, i.e. target's register choice is not what this cc1's allocator produces from ANY C source with a correct loop, independently of spelling. That is a fourth no-C-form signal, alongside the frame (class A), the small-immediate ori (class C) and the length-3 ascending save run (class D).
+
+- [s5] STARTING STATE (fourth recurrence): src/ings2.c held the s1 register-pin + hardcoded-$17 __asm__ body again at session start, because only the ledgers are ever committed and never the src edit. Re-applied memory/grind/func_80083794/candidate.c and reproduced the floor exactly — score 18, target_insns 28, build_insns 28 — and re-verified it at session end. src/ings2.c is left carrying the floor form.
+
+- [s5] NEW INSTRUMENT — the normalized-target permuter workspace (tmp/grind/func_80083794/s5/mkws3.py builds ws3, mkws4.py builds ws4; mkws3.py asserts exactly 9 normalizations so the instrument cannot silently drift). It assembles asm/funcs/func_80083794.s lines 1-31 with ONLY the proven-unreachable classes A and C rewritten to the form our pipeline can emit, leaving target's register roles ($s0 = p, $s1 = count, $t0 = temp) and target's ASCENDING prologue save order in the objective. WARNING for future sessions: ws3/ws4 target.o is a MEASUREMENT INSTRUMENT — a score of 0 against it is NOT a byte match and must be re-measured honestly with sandbox --disable all against the real target.
+
+- [s5] PROVEN LOWER BOUND: positions 3, 4, 5, 6, 23, 24, 25 and 26 of the target all reference the frame and class A makes their immediates unreachable; position 8's ori is a ninth by the class-C assembler proof. No pure-C form under the frozen pipeline can score below 9 (>= 8 discounting the masked position), against a floor of 18. A permuter campaign on this function cannot reach distance 0 by construction.
+
+- [s5] CAMPAIGN ws3 (normalized-target-BD-isolation): base_score 308 (vs 383 against the real target), 95,501 iterations, ~30 min wall, best 263 found at 190 s and never beaten afterwards — the basin-yields-early shape the fresh-seed rule predicts.
+
+- [s5] CAMPAIGN ws4 (class-D-chassis-vs-normalized-target): base_score 970 (vs 1168 against the real target), 63,304 iterations, ~15 min wall, best 478; it never re-entered the sub-308 region, a second corroboration of s3/s4's coupled-constraint result from inside the ascending-save basin.
+
+- [s5] Both s5 campaigns were harvested with --stop in-session; tools/permuter_campaign.py status reports alive:false for PIDs 1098766 and 2018275. No campaign outlived the session.
+
+- [s5] FIRST-EVER CLASS-B FLIP: tmp/grind/func_80083794/s5/ws4/output-478-1 emits lw v0,0(s0) / beqz s1 / bnez s1 — target's register roles — but only because it tests new_var while decrementing count, making the decrement dead code that flow deletes. It is an infinite loop and its body is missing target's addiu $s1,$s1,-0x1 entirely. The permuter does not preserve semantics; this is a proposal, and it is a semantic break, not a lead.
+
+- [s5] The six semantics-preserving ref-split forms measured honestly: x1_guard_count_loop_copy 23, x2_plain_copy_rename 18, x3_guard_count_endptr_loop 22 (29 insns), x4_copy_before_p 22, x5_guard_copy_while 24 (30 insns), x6_countdown_predec_guarded 18. p is in $s1 in ALL six, temp $v0 in ALL six, frame -32 in ALL six. GCC's copy-propagation folds `n = count;` back into one pseudo, so a semantics-preserving split is not a split.
+
+- [s5] SHARPER CLASS B (fourth no-C-form signal): target's own body references count ($s1) four times (la, beqz guard, addiu -1, bnez) and p ($s0) three times (la, lw base, addiu +4) — the SAME 4-vs-3 split our build has — yet assigns them the opposite hard registers. Under global.c:635 allocno_compare that assignment is anti-priority, i.e. it is not what this cc1's allocator produces from ANY C source with a correct loop, independently of spelling. This joins the leaf-shaped frame (1/1437), the small-immediate ori (3/3 hand-written) and the length-3 contiguous ascending save run (1/1437).
+
+- [s5] The 263 cheat family re-found this session adds one NEW spelling to the s4 bank: an address-taken dead local (`s32 new_var2; s32 *new_var3 = &new_var2; if (*new_var3 == 0)`) alongside the volatile dead local. Both are frame-coercion cheats by the expanded catalog and both are measurably worse honestly (29 insns vs target's 28).

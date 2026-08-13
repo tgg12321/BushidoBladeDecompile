@@ -454,3 +454,138 @@ re-propose the `do { ... } while (0)` wrap (measured byte-neutral at 18) or the
 - probe: Campaign B: seed the permuter on the hoisted-la chassis (which demonstrably HAS target's ascending save order — verified by objdump: sw s0,16 emitted first) and run 58,431 iterations, watching whether it can recover the 5 lost points while keeping class D.
 - result: It cannot. The class-D basin starts at permuter score 1168 and the best form found in ~22 min is 383 — exactly campaign A's BASE score, never below it — and that form (ws2/output-383-1) has walked back OUT of the ascending-save basin by re-introducing a named intermediate for the pointer ('void (**new_var)(void) = &D_8008D070; ... p = new_var;'). The search independently rediscovers the floor basin instead of finding a joint form, which is corroboration by search of the coupling argument.
 - verdict: CONFIRMED
+
+## Session 5 (permuter, 2026-08-13)
+
+### KILLED
+
+**[s5] H6 — residual class B ($s0/$s1 roles) is reachable by LOWERING `count`'s
+allocno priority (splitting its references across two pseudos), the mirror image
+of session 2's killed "raise `p`'s ref count" attack.**
+- mechanism: `global.c:635 allocno_compare` ranks by
+  `floor_log2(n_refs)*n_refs/live_length`, and s2 measured 8 loop-weighted refs
+  for `count` against 7 for `p`. s2 attacked the numerator on `p`'s side and
+  found every route costs an instruction the 28-insn target has no room for.
+  The untried mirror is to give the counter's references to two different
+  pseudos so neither outranks the pointer. Session 5's isolated-objective
+  campaign surfaced this side of the lever for the first time:
+  `s5/ws4/output-478-1` is the first form in five sessions whose loop reads
+  through `$s0` (`lw v0,0(s0)`, `beqz s1`, `bnez s1`) — target's roles.
+- probe: (1) disassembled the permuter find through the real pipeline
+  (`s5/dis4.sh`) and read what it actually does; (2) measured six
+  semantics-preserving spellings of the same intent in the honest sandbox
+  (`s5/sweep.py` + `s5/variants.json`, raw `s5/sweep_out.json`), each checked
+  by objdump for the loop's `lw` base register, the temp register and the frame
+  size: guard-on-count/loop-on-copy with `--n`; plain copy rename; guard +
+  end-pointer loop; copy placed after the `p` assignment; guard + copy + while;
+  guarded pre-decrement countdown.
+- result: the permuter find flips class B ONLY because it tests `new_var` while
+  decrementing `count`, making the decrement dead code that flow deletes — it is
+  an infinite loop and its body is missing target's `addiu $s1,$s1,-0x1`
+  entirely. Of the six correct forms: scores 23 / 18 / 22 / 22 / 24 / 18, with
+  `p` in `$s1`, the temp in `$v0` and the frame at -32 in **every one**; two of
+  them merely tie the floor. GCC's copy-propagation folds `n = count;` back into
+  a single pseudo, so a semantics-preserving "split" is not a split at all.
+  Banked: `rejected/count-ref-split-forms-do-not-flip-s0-s1.c`.
+- verdict: KILLED. Both directions of the allocno-priority lever are now
+  measured dead, and the residual class B is characterised more sharply than
+  before: target references `count` four times and `p` three times — the same
+  split our build has — while assigning them the opposite hard registers, i.e.
+  target's assignment is ANTI-priority under this allocator and is not produced
+  by any correct C source, not merely by none we have found.
+
+### CONFIRMED
+
+**[s5] C5 — the permuter modality is closed for this function by arithmetic:
+no pure-C form can score below 9, so no campaign can ever reach distance 0.**
+- mechanism: eight of target's 28 instructions reference the frame — position 3
+  (`addiu $sp,-0x10`), 4/5/6 (`sw $s0,0x4` / `$s1,0x8` / `$ra,0xC`), 23/24/25
+  (the matching `lw`s) and 26 (`addiu $sp,0x10`). Class A (s2 H1, proven from
+  calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474) makes every one of
+  those immediates unreachable, because any function expanding a call carries
+  the 16-byte outgoing-argument block. Position 8's `ori $t0,$zero,0x1` is a
+  ninth by the class-C assembler proof (s2 H3).
+- probe: position accounting against s3's `sidebyside.md`, cross-checked by
+  building the normalized-target workspace (`s5/mkws3.py`) — with exactly those
+  two classes rewritten to our reachable form, the floor build matches 15 of 28
+  positions instead of 9, and the entire prologue/epilogue frame block matches.
+- result: honest residual >= 9 (>= 8 discounting the single position the scorer
+  masks) for ANY pure-C source under the frozen pipeline, against a floor of 18.
+  The maximum a future search could buy is classes B + D, i.e. roughly half the
+  residual — and B is now killed from both directions while D is jointly
+  unreachable (s3 H4, corroborated by s4 C4 and again by s5's ws4 campaign,
+  which never re-entered the sub-308 region from the class-D basin).
+- verdict: CONFIRMED
+
+## Live frontier after session 5 (ordered)
+
+**F1 — DISPOSITION, not grinding.** Unchanged in direction, stronger in
+evidence. FOUR corpus/mechanism results now say these bytes did not come from
+GCC 2.7.2 compiling C: the leaf-shaped frame containing a `jalr` (1/1437 calling
+functions), the small-immediate `ori` (3/3 instances in the executable are
+hand-written asm), the contiguous length-3 ascending prologue save run (1/1437),
+and now the ANTI-PRIORITY register assignment (target gives the 4-ref counter
+the LOWER-priority hard register while the 3-ref pointer takes `$s0`, which
+`global.c:635` cannot produce from any correct C). Session 5 adds the closing
+arithmetic: even a perfect search buys at most classes B+D and can never go
+below 9. `scan_hand_coded.py` remains tier=LOW 0/8 and remains blind to all four
+anomalies (no frame-geometry, no assembler-macro, no prologue-order, no
+allocation-priority signal).
+*Next probe:* not a measurement. At `escalation` modality, file the
+docs/grind/decisions.md entry weighing the four uniqueness/mechanism results and
+the proven >=9 lower bound against the failed `scan_hand_coded` gate. If an
+intervening modality is assigned, the ONE untouched evidence class remains
+corroborating the crt0 identity from OUTSIDE this executable (a known SN Systems
+/ PsyQ crt0 `__main` listing, or the same function in another PsyQ-3.5 title's
+asm) — a forensics/rederive task, not a C-form task.
+
+**F2 — residual class B is now CLOSED, not merely low-priority.** s2 killed the
+"raise `p`'s refs" direction; s5 killed the "lower `count`'s refs" direction and
+showed the only form that flips the roles does so by deleting a semantically
+required decrement. The sanctioned duplicated-statement-into-arms ref-lift
+(previously F2) is moot: this function has one control-flow arm, the residual
+contains four coupled classes, and closing B alone still leaves >= 9 by C5. Do
+not open it.
+
+**F3 — do NOT re-run any of these.** Cumulative kill list across s1-s5:
+declaration order (s1 K2); the pin/asm form (s1 K1); both statement orders of
+the two `la` pairs (s1 C1 + s2 sweep); all 18 structural forms (s2 H2); the
+`ori` spelling (s2 H3); frame minimality via simpler C / compiler source /
+corpus (s1 (a), s2 H1); the prologue-save-order axis incl. the hoisted-`la` form
+(s3 H4); randomized permuter search from the floor chassis and the class-D
+chassis against the REAL target (s4 H5/C4); and now randomized search from both
+chassis against the NORMALIZED target plus the six counter-ref-split forms
+(s5 H6/C5). Do NOT re-propose the `do {...} while (0)` wrap (byte-neutral at
+18), the `volatile` dead-local guard (cheat; 29 insns), the address-taken dead
+local `s32 *new_var3 = &new_var2` (same cheat family, same 29 insns), or any
+`n = count;` copy-split (copy-propagation folds it).
+
+## [s5] H6 — residual class B ($s0/$s1 roles) is reachable by LOWERING count's allocno priority — splitting the counter's references across two pseudos — the mirror image of session 2's killed 'raise p's ref count' attack.
+- mechanism: global.c:635 allocno_compare ranks by floor_log2(n_refs)*n_refs/live_length; s2 measured 8 loop-weighted refs for count against 7 for p and killed every route that raises p's count (each costs an instruction the 28-insn target has no room for). The untried mirror is to give the counter's references to two different pseudos. Session 5's isolated-objective permuter campaign surfaced exactly that: tmp/grind/func_80083794/s5/ws4/output-478-1 is the FIRST form in five sessions whose loop reads through $s0 (lw v0,0(s0); beqz s1; bnez s1) — target's register roles.
+- probe: (1) disassembled the permuter find through the real pipeline (s5/dis4.sh) and read what it actually does; (2) measured six SEMANTICS-PRESERVING spellings of the same ref-split intent in the honest sandbox (s5/sweep.py + s5/variants.json; raw s5/sweep_out.json), each checked by objdump for the loop's lw base register, the temp register and the frame size — guard-on-count/loop-on-copy with --n; plain copy rename; guard + end-pointer loop; copy after the p assignment; guard + copy + while; guarded pre-decrement countdown.
+- result: the permuter find flips class B ONLY because it TESTS new_var while decrementing count, so the decrement is dead code that flow deletes, stripping two in-loop references off the counter; the form is an infinite loop and its emitted body is missing target's addiu $s1,$s1,-0x1 entirely. The six correct forms score 23 / 18 / 22 / 22 / 24 / 18 with p in $s1, the temp in $v0 and the frame at -32 in EVERY one (two merely tie the floor). GCC's copy-propagation folds `n = count;` back into a single pseudo, so a semantics-preserving split is not a split. Banked as memory/grind/func_80083794/rejected/count-ref-split-forms-do-not-flip-s0-s1.c. Sharper characterisation of class B: target references count four times (la, beqz, addiu -1, bnez) and p three times (la, lw base, addiu +4) — the SAME split our build has — yet assigns them the opposite hard registers, i.e. target's assignment is anti-priority under this allocator and is not produced by any correct C source.
+- verdict: KILLED
+
+## [s5] C5 — the permuter modality is closed for this function by arithmetic rather than by exhaustion: no pure-C form can score below 9 honest residual instructions, so no campaign of any length can reach distance 0.
+- mechanism: eight of target's 28 instructions reference the frame — position 3 (addiu $sp,-0x10), 4/5/6 (sw $s0,0x4 / $s1,0x8 / $ra,0xC), 23/24/25 (the matching lw's) and 26 (addiu $sp,0x10). Class A (s2 H1) proves every one of those immediates unreachable: calls.c:1246-1252 MAXes args_size against reg_parm_stack_space unconditionally for MIPS, mips.h:1822 fixes it at 16, mips.c:4464/4474 lays the saves above it, so any function expanding a call carries the 16-byte block. Position 8's `ori $t0,$zero,0x1` is a ninth unreachable instruction by the class-C assembler proof (s2 H3).
+- probe: position accounting against s3's sidebyside.md, cross-checked by building the normalized-target workspace (s5/mkws3.py): with exactly those two classes rewritten to the form our pipeline can emit, the floor build matches 15 of 28 positions instead of 9, and the whole prologue/epilogue frame block matches.
+- result: honest residual >= 9 for any pure-C source under the frozen pipeline (>= 8 discounting the single position the scorer masks), against the current floor of 18. The most any future search can buy is classes B + D — and B is now killed from both directions (s2 H2, s5 H6) while D is jointly unreachable (s3 H4, corroborated by s4 C4 and again by s5's ws4 campaign, which never re-entered the sub-308 region from inside the class-D basin).
+- verdict: CONFIRMED
+
+## [s5] Residual class B ($s0/$s1 roles) is reachable by LOWERING count's allocno priority — splitting the counter's references across two pseudos — the mirror image of session 2's killed 'raise p's ref count' attack.
+- mechanism: global.c:635 allocno_compare ranks by floor_log2(n_refs)*n_refs/live_length; s2 measured 8 loop-weighted refs for count against 7 for p and killed every route that raises p's count. The untried mirror is to give the counter's references to two pseudos so neither outranks the pointer. Session 5's isolated-objective campaign surfaced exactly that shape: tmp/grind/func_80083794/s5/ws4/output-478-1 is the FIRST form in five sessions whose loop reads through $s0 (lw v0,0(s0); beqz s1; bnez s1) — target's register roles.
+- probe: (1) Disassembled the permuter find through the real cpp|cc1 -mel|prologue_fix|maspsx|multu_pad|as pipeline (tmp/grind/func_80083794/s5/dis4.sh) and read what it actually computes. (2) Measured six SEMANTICS-PRESERVING spellings of the same ref-split intent in the honest sandbox (tmp/grind/func_80083794/s5/sweep.py + variants.json, raw sweep_out.json), each checked by objdump for the loop's lw base register, the temp register and the frame size: guard-on-count/loop-on-copy with --n; plain copy rename; guard + end-pointer loop; copy placed after the p assignment; guard + copy + while; guarded pre-decrement countdown.
+- result: The permuter find flips class B ONLY because it TESTS new_var while decrementing count: the decrement becomes dead code that flow deletes, stripping two in-loop references off the counter and inverting the allocno priority. It is an infinite loop (the permuter does not preserve semantics) and its emitted body is missing target's addiu $s1,$s1,-0x1 entirely. The six correct forms score 23 / 18 / 22 / 22 / 24 / 18 with p in $s1, the temp in $v0 and the frame at -32 in EVERY one; two merely tie the floor, none beats it. GCC's copy-propagation folds `n = count;` back into a single pseudo, so a semantics-preserving split is not a split. Banked as memory/grind/func_80083794/rejected/count-ref-split-forms-do-not-flip-s0-s1.c.
+- verdict: KILLED
+
+## [s5] The permuter modality is closed for this function by arithmetic rather than by exhaustion: no pure-C form can score below 9 honest residual instructions, so no campaign of any length can reach distance 0.
+- mechanism: Eight of target's 28 instructions reference the frame — position 3 (addiu $sp,-0x10), 4/5/6 (sw $s0,0x4 / $s1,0x8 / $ra,0xC), 23/24/25 (the matching lw's) and 26 (addiu $sp,0x10). Class A (s2 H1) proves every one of those immediates unreachable: calls.c:1246-1252 MAXes args_size against reg_parm_stack_space unconditionally for MIPS (the MAYBE_REG_PARM_STACK_SPACE zeroing escape is dead), mips.h:1822 fixes it at 16, and mips.c:4464/4474 lays the callee-saves above it, so ANY function expanding a call carries the 16-byte outgoing-argument block. Position 8's `ori $t0,$zero,0x1` is a ninth unreachable instruction by the class-C assembler proof (s2 H3: GNU as expands `li 1` to addiu, and all 3 small-immediate ori instances in the executable are hand-written asm).
+- probe: Position accounting against session 3's sidebyside.md, cross-checked by building a normalized-target permuter workspace (tmp/grind/func_80083794/s5/mkws3.py): the shipped target with EXACTLY those two classes rewritten to the form our pipeline can emit (addiu $sp,-0x10 -> -0x20; saves 0x4/0x8/0xC -> 0x10/0x14/0x18; ori $t0,$zero,0x1 -> li $t0,1) and nothing else changed.
+- result: Against the normalized target the floor build matches 15 of 28 positions instead of 9, and the entire prologue/epilogue frame block matches — confirming the 9 unreachable positions exactly. Honest residual is therefore >= 9 for any pure-C source under the frozen pipeline (>= 8 discounting the single position the scorer masks), against the current floor of 18. The most any future search can buy is classes B + D, and B is now killed from both directions (s2 H2, s5 H6) while D is jointly unreachable (s3 H4, corroborated by s4 C4 and again by s5's ws4 campaign).
+- verdict: CONFIRMED
+
+## [s5] With the two proven-unreachable classes removed from the OBJECTIVE (so the randomizer's gradient is no longer dominated by constant noise), a fresh search finds a form that improves classes B and/or D honestly.
+- mechanism: Session 4's campaigns scored against the shipped target, where ~9 instructions can never match; that constant penalty dominates the permuter's alignment-based diff and explains why its best finds were frame-junk forms. Removing it should let the real B/D signal drive the search.
+- probe: Two campaigns via tools/permuter_campaign.py against the normalized target, both harvested with --stop in-session (status reports alive:false for both PIDs; no campaign outlived the session). ws3 'normalized-target-BD-isolation': base = the score-18 floor form, base_score 308, 95,501 iterations, ~30 min. ws4 'class-D-chassis-vs-normalized-target': base = the s3 hoisted-la form, base_score 970, 63,304 iterations, ~15 min. Every closing proposal disassembled through the real pipeline and checked for frame size, loop lw base register and prologue save order.
+- result: No. ws3's best (263) was found at 190 s and never beaten in the following ~27 minutes; it is the s4-340 cheat family re-found under two new spellings — `volatile unsigned short new_var; if (D_800A2668 == (new_var = 0))` and `s32 new_var2; s32 *new_var3 = &new_var2; if (*new_var3 == 0)` — and both measure 29 emitted instructions, frame -40, $s0/$s1 still inverted, save order still descending, i.e. they touch neither class B nor class D. Even with the frame noise removed from the objective, the permuter's alignment diff still rewards adding a frame slot; that is a property of the metric, not a lead. ws4 never re-entered the sub-308 region (base 970, best 478).
+- verdict: KILLED

@@ -60,6 +60,22 @@
  * wrap measured byte-identical to this body (score 18), and staged-value
  * respellings that tie the base. This body remains the floor carrier.
  *
+ * SESSION 5 (permuter) built a NORMALIZED-TARGET workspace — the shipped target
+ * with ONLY the proven-unreachable classes A and C rewritten to the form our
+ * pipeline can emit — so the search objective was exactly classes B + D with the
+ * constant noise removed (tmp/grind/func_80083794/s5/mkws3.py; that target.o is
+ * a MEASUREMENT INSTRUMENT, a 0 against it is NOT a byte match). Two more
+ * campaigns (95,501 + 63,304 iterations) still never beat this body honestly.
+ * The one new lead — ws4/output-478-1, the first form in five sessions to put
+ * `p` in $s0 — flips the roles only by testing one variable while decrementing
+ * another, i.e. by deleting a semantically required decrement (infinite loop).
+ * All six semantics-preserving spellings of that ref-split measure 18-24 with
+ * `p` in $s1 (rejected/count-ref-split-forms-do-not-flip-s0-s1.c).
+ * Session 5 also closes the search modality by arithmetic: eight of target's 28
+ * instructions reference the frame and one is the `ori`, so NO pure-C form can
+ * score below 9 — distance 0 is unreachable regardless of iteration count, and
+ * the most any search can buy is classes B + D.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *
