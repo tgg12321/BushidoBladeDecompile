@@ -76,6 +76,27 @@
  * score below 9 — distance 0 is unreachable regardless of iteration count, and
  * the most any search can buy is classes B + D.
  *
+ * SESSION 6 (forensics) added a FIFTH residual class and closed the external-
+ * corroboration probe. Class E — DELAY-SLOT PROVENANCE: target's `bnez $t0`
+ * delay slot holds `ori $t0,$zero,1`, an insn that CLOBBERS the register the
+ * branch tests, so it can only have come from the conditional arm via reorg.c's
+ * fall-through scan (reorg.c:3075) — which reorg.c:3048 reaches ONLY when the
+ * backward scan (reorg.c:2960) finds nothing, and target has three eligible
+ * callee-saves immediately ahead of the branch. Instrumented cc1
+ * (BB2_DBR_DEBUG=1) logs `DBRDBG simp insn=11 trial=73 ... elig=1`: our build
+ * consumes the nearest preceding save (`sw $16,16($sp)`) into that slot, every
+ * time. Corpus: the 39 shipped functions that DO keep an intact >=3 save run
+ * with a non-save filler all use an entry-block computation as the filler, never
+ * an arm insn clobbering the tested register.  [PROVEN UNREACHABLE, and
+ * INDEPENDENT of class D — fixing the save order would not stop the theft.]
+ * Session 6 also confirmed class D at pass level from the RTL dumps (the saves
+ * are absent from .greg, appear in .jump2 as insns 69/71/73 descending, survive
+ * .sched2 unchanged, and .dbr steals insn 73), KILLED the "unfilled return delay
+ * slot is a hand-asm fingerprint" idea (838 of 1434 shipped functions have
+ * exactly that shape), and KILLED the external-corroboration probe: the second,
+ * independently linked PsyQ executable disc/STR/MOVOVL.EXE contains no __main,
+ * no ctor-walk loop and no leaf-frame save signature at all.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

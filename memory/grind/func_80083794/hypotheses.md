@@ -589,3 +589,113 @@ local `s32 *new_var3 = &new_var2` (same cheat family, same 29 insns), or any
 - probe: Two campaigns via tools/permuter_campaign.py against the normalized target, both harvested with --stop in-session (status reports alive:false for both PIDs; no campaign outlived the session). ws3 'normalized-target-BD-isolation': base = the score-18 floor form, base_score 308, 95,501 iterations, ~30 min. ws4 'class-D-chassis-vs-normalized-target': base = the s3 hoisted-la form, base_score 970, 63,304 iterations, ~15 min. Every closing proposal disassembled through the real pipeline and checked for frame size, loop lw base register and prologue save order.
 - result: No. ws3's best (263) was found at 190 s and never beaten in the following ~27 minutes; it is the s4-340 cheat family re-found under two new spellings — `volatile unsigned short new_var; if (D_800A2668 == (new_var = 0))` and `s32 new_var2; s32 *new_var3 = &new_var2; if (*new_var3 == 0)` — and both measure 29 emitted instructions, frame -40, $s0/$s1 still inverted, save order still descending, i.e. they touch neither class B nor class D. Even with the frame noise removed from the objective, the permuter's alignment diff still rewards adding a frame slot; that is a property of the metric, not a lead. ws4 never re-entered the sub-308 region (base 970, best 478).
 - verdict: KILLED
+
+## Session 6 (forensics, 2026-08-13)
+
+### H7 — "target's unfilled RETURN delay slot (`addiu $sp,0x10; jr $ra; nop`) is a hand-assembly fingerprint" — **KILLED**
+Mechanism proposed: reorg.c normally sinks the epilogue stack restore into the
+`jr $ra` delay slot, so an unfilled return slot with a legal filler right above
+it would be a reorg.c-inconsistent shape.
+Probe: `tmp/grind/func_80083794/s6/epilogue_scan.py`, census of all 1434
+`asm/funcs/*.s`.
+Result: 838 functions have EXACTLY target's shape (restore before `jr`, slot =
+`nop`); only 94 sink the restore into the slot. It is the pipeline's norm here.
+**Verdict: KILLED — not evidence, do not cite it.**
+
+### H8 — "the crt0/libgcc identity can be corroborated from OUTSIDE the main executable" (frontier F1's named next probe) — **KILLED (probe answered negative)**
+Mechanism proposed: `disc/STR/MOVOVL.EXE` is a second, independently linked
+PS-EXE built by the same PsyQ toolchain; if it carried the same `__main` /
+`__do_global_ctors` object, that would be direct external corroboration that the
+bytes come from a prebuilt library object rather than compiled project C.
+Probe: `tmp/grind/func_80083794/s6/movovl_scan.py` (opcode-exact word signatures
+for the leaf frame and for the ctor-walk loop, plus an ascending-save-run scan),
+followed by objdump of the overlay's crt0 region; plus two web searches for a
+primary SN Systems / PsyQ crt0 `__main` listing.
+Result: MOVOVL.EXE has 0 hits for either signature; its single ascending >=3
+`sw`-to-`$sp` run is `sw zero,64/72/80($sp)` inside vsprintf; its entry
+(0x801DA084) is `lui gp / addiu gp / j 0x801D91CC` with no ctor machinery. The
+same scan on the main EXE hits exactly twice — func_80083794 and its twin. No
+primary crt0 listing was found online.
+**Verdict: KILLED — external corroboration is measured-unavailable by the only
+offline route that existed. Do NOT re-run this probe.**
+
+### H9 — "residual class E: the branch delay slot's PROVENANCE is itself unreachable" — **CONFIRMED**
+Mechanism: target's `bnez $t0` delay slot holds `ori $t0,$zero,0x1`, which
+clobbers the register the branch tests, so it must have been pulled backwards
+from the conditional arm. `reorg.c` can only do that in its fall-through scan
+(reorg.c:3075), guarded at reorg.c:3048 by `slots_filled != slots_to_fill` —
+reached only if the BACKWARD scan (reorg.c:2960) failed. Target has three
+eligible callee-saves immediately ahead of the branch, so the backward scan
+cannot fail.
+Probe: instrumented cc1 with `BB2_DBR_DEBUG=1`
+(`tmp/grind/func_80083794/s6/dbr.sh` -> `dbr_mini.log`) + a corpus census
+(`slotscan.py`).
+Result: `DBRDBG simp insn=11 trial=73 refset=0 setset=0 setneed=0` / `elig=1` —
+the nearest preceding save (`sw $16,16($sp)`) is eligible and IS consumed into
+the slot, as the emitted asm shows. Corpus: 39/1434 functions do keep an intact
+>=3 save run with a non-save filler, but every one of those fillers is an
+ENTRY-BLOCK computation sitting nearest the branch (35x `addiu $s3,$a0,-0x1`),
+never an arm insn clobbering the tested register.
+**Verdict: CONFIRMED — a fifth no-C-form / corpus-uniqueness result, and one
+that is INDEPENDENT of class D (fixing the save order would not stop reorg from
+eating the third save).**
+
+## Live frontier after session 6
+
+### F1 — the question remains DISPOSITION, not grinding; the evidence is now FIVE independent mechanism results
+(A) a byte-exact cc1 LEAF frame for a body containing a `jalr`, with the 16-byte
+outgoing-arg block unconditional (calls.c:1246-1252 + mips.h:1822/1830 +
+mips.c:4464/4474; corpus 1/1437); (B) an ANTI-PRIORITY register assignment that
+global.c:635 `allocno_compare` cannot produce from any correct C (s5); (C) an
+`ori $t0,$zero,1` GNU as cannot emit from `li 1` (corpus 3/3 small-immediate
+instances hand-written); (D) a contiguous length-3 ASCENDING prologue save run
+that mips.c:4680 emits descending and that only sched2 could reverse, under an
+anti-dependence this function's block structure cannot supply (corpus 1/1437,
+now confirmed at pass level from the RTL dumps); and NEW (E) a branch delay slot
+filled from the conditional arm with an insn clobbering the branch's own test
+register, while three eligible saves sit adjacent — impossible under reorg.c's
+backward-scan-first order (corpus: 39 intact-run functions, all with entry-block
+fillers, none with an arm insn). Against that stands `scan_hand_coded.py`
+tier=LOW 0/8 — a scanner with no frame-geometry, no assembler-macro, no
+prologue-order, no allocation-priority and no delay-slot-provenance signal, i.e.
+blind to all five. s5's arithmetic still caps any future search at >= 9.
+**Next probe:** none that is a measurement. When the driver reaches `escalation`
+modality, file the docs/grind/decisions.md entry weighing the five mechanism
+results and the proven >= 9 lower bound against the failed scan_hand_coded gate.
+
+### F2 — external corroboration is CLOSED (was F1's named next probe)
+The second executable does not carry the object (H8), and no primary PsyQ crt0
+listing is available. Do not spend another session on it.
+**Next probe:** none.
+
+### F3 — cumulative kill list; do NOT re-run any of these
+Everything in s1-s5's F3 list, plus: the return-delay-slot-nop signal (H7, it is
+the corpus norm at 838/1434) and the MOVOVL/external-corroboration probe (H8).
+Also do not re-open the duplicated-statement-into-arms ref-lift (s5 F2), the
+do-while(0) wrap (byte-neutral at 18), the volatile / address-taken dead-local
+guards (cheats, 29 insns), or any `n = count;` copy split (copy-propagation folds
+it).
+
+## [s6] Residual class E: the PROVENANCE of target's branch delay-slot filler is itself unreachable under this pipeline, independently of the save-order class D.
+- mechanism: Target position 7-8 is `bnez $t0,.L800837EC` with `ori $t0,$zero,0x1` in the delay slot. That filler writes $t0, the very register the branch tests, so it cannot be an entry-block insn (it would destroy the comparison) — it is the conditional arm's `initialized = 1` materialisation pulled backwards from the fall-through path. In tools/gcc-2.7.2/reorg.c, fill_simple_delay_slots can only do that in its fall-through scan (reorg.c:3075), and reorg.c:3048 guards that scan with `if (slots_filled != slots_to_fill && ...)` — it runs ONLY when the backward scan (reorg.c:2960, 'Now, scan backwards from the insn to search for a potential delay-slot candidate') found nothing. Target has three eligible callee-save stores immediately in front of the branch, so the backward scan cannot fail.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_DBR_DEBUG=1) on the minimal-TU floor form -> tmp/grind/func_80083794/s6/dbr_mini.log; plus a corpus census of intact save runs ahead of an early branch (tmp/grind/func_80083794/s6/slotscan.py over all 1434 asm/funcs/*.s).
+- result: The log shows `DBRDBG simp insn=11 trial=73 refset=0 setset=0 setneed=0` then `DBRDBG simp insn=11 trial=73 elig=1`: insn 11 is the flag-test branch, trial 73 is `sw $16,16($sp)`, the nearest preceding prologue save; it is eligible and IS consumed into the slot, exactly as the emitted asm shows (`bne $2,$0,.L2` / delay `sw $16,16($sp)`). Census: 1346 files have no >=3-save run early, 13 fill the branch slot with another save, 36 have no branch after the run, and 39 keep an intact run with a non-save filler — but all 39 fillers are ENTRY-BLOCK computations that sat nearest the branch (35x `addiu $s3,$a0,-0x1` from the incoming $a0, 2x `lh $s7,0x60($s2)`). Spot-checked func_8004C994 (zero regfix/asmfix rules, not in the queue, i.e. matched pure C): 8 saves intact, slot `addiu $s3,$a0,-0x1`. No shipped function except func_80083794 and its twin fills a branch delay slot with an insn that clobbers the branch's own test register while eligible saves sit adjacent.
+- verdict: CONFIRMED
+
+## [s6] Target's unfilled RETURN delay slot (`addiu $sp,$sp,0x10; jr $ra; nop`, with the stack restore NOT sunk into the slot) is a hand-assembly fingerprint.
+- mechanism: reorg.c would normally sink the epilogue stack restore into the `jr $ra` delay slot (the ubiquitous PS1 epilogue), so an unfilled return slot with a legal filler sitting directly above it would be a reorg.c-inconsistent shape.
+- probe: tmp/grind/func_80083794/s6/epilogue_scan.py — census of the return delay slot across all 1434 asm/funcs/*.s.
+- result: 838 of 1434 shipped functions have EXACTLY target's shape (restore before `jr $ra`, slot = nop); 288 are leaves with a nop slot; 158 have some other filler; only 94 sink the restore into the slot. The shape is this pipeline's norm, not an anomaly. Banked so no future session mistakes it for evidence.
+- verdict: KILLED
+
+## [s6] The crt0/libgcc identity of func_80083794 can be corroborated from OUTSIDE the main executable — specifically from disc/STR/MOVOVL.EXE, a second, independently linked PS-EXE built by the same PsyQ toolchain (this was frontier F1's named next probe).
+- mechanism: If the same `__main` / `__do_global_ctors` object were linked into the overlay, its presence in a second executable would be direct evidence that the bytes come from a prebuilt library object rather than from compiled project C.
+- probe: tmp/grind/func_80083794/s6/movovl_scan.py (opcode-exact word signatures for the leaf frame `addiu $sp,-0x10 / sw $s0,4 / sw $s1,8 / sw $ra,0xC` and for the ctor-walk loop `lw $t0,0($s0); addiu $s0,$s0,4; jalr $t0; addiu $s1,$s1,-1`, plus an ascending-save-run scan) over both executables, followed by objdump of the overlay's crt0 region (tmp/grind/func_80083794/s6/movovl_head.txt); plus two web searches for a primary SN Systems / PsyQ crt0 `__main` listing.
+- result: MOVOVL.EXE: 0 hits for the leaf-frame signature, 0 hits for the ctor-walk loop, and its single contiguous ascending >=3 sw-to-sp run is `sw zero,64/72/80($sp)` inside the overlay's vsprintf, not a prologue; its entry at 0x801DA084 is `lui gp / addiu gp / j 0x801D91CC`, with no ctor machinery anywhere. The identical scan over the main EXE hits exactly twice — func_80083794 and its twin at 0x80083804. The web searches returned no primary crt0 listing (only the secondary observation that crt0 objects are the PsyQ objects that fail PSYQ->ELF conversion). The probe is answered NEGATIVE: external corroboration is unavailable by the only offline route that existed.
+- verdict: KILLED
+
+## [s6] Class D (prologue callee-save emission order) is decided by mips.c's save_restore_insns and can only be reversed by the post-reload scheduler — s3 asserted this from compiler source; forensics must confirm it at pass level.
+- mechanism: mips.c:4680 is a single `for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)` loop serving both the prologue (store_p) and epilogue (!store_p) call sites, so cc1 emits both runs descending; only schedule_insns (sched2) could reorder them, and it does so only under an in-block anti-dependence.
+- probe: Full cc1 -da RTL dump of the minimal-TU floor form (tmp/grind/func_80083794/s6/dump.sh -> dump/mini.i.{greg,jump2,sched2,dbr}), inspecting the sp-relative insns per pass.
+- result: The three saves are ABSENT from .greg and first appear in .jump2 as RTL insns 69/71/73 in descending offset order (`sw $ra,24 / sw $s1,20 / sw $s0,16`) — i.e. inserted by prologue threading after register allocation. .sched2 leaves the sequence 67-69-71-73 untouched (the post-reload scheduler does not reorder the run absent an anti-dependence). .dbr then pulls insn 73 into the branch delay slot. s3's mechanism claim is confirmed with dump evidence rather than source reading alone.
+- verdict: CONFIRMED

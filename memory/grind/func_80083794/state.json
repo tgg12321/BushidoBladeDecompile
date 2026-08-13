@@ -1,8 +1,8 @@
 {
  "func": "func_80083794",
  "file": "ings2",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 18,
    "modality": "permuter",
    "headline": "Permuter axis closed by arithmetic, not exhaustion: no pure-C form can score below 9 (8 frame-referencing insns + the ori are proven unreachable), and 158k further iterations against a normalized targ"
+  },
+  {
+   "session": 6,
+   "floor": 18,
+   "modality": "forensics",
+   "headline": "Forensics: instrumented cc1 + reorg.c source proves a FIFTH no-C-form residual class (delay-slot provenance) independent of the other four; two candidate signals killed, and the external-corroboration"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 \u2014 the remaining question is DISPOSITION, not grinding, and session 5 both strengthens the evidence and caps what any future search could win.",
-   "mechanism": "FOUR independent mechanism/corpus results now say these bytes did not come from GCC 2.7.2 compiling C: (A) a frame that is byte-exactly cc1's LEAF frame despite the body containing a jalr, with the outgoing-arg block unconditional per calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474 (corpus 1/1437); (C) an `ori $t0,$zero,1` GNU as cannot produce from `li 1` (corpus 3/3 small-immediate instances hand-written); (D) a contiguous length-3 ascending prologue save run cc1 emits descending and the scheduler reverses only under an anti-dependence this function's block structure cannot supply (corpus 1/1437); and now (B) an ANTI-PRIORITY register assignment \u2014 target gives the 4-ref counter the lower-priority register while the 3-ref pointer takes $s0, which global.c:635 cannot produce from any correct C. Against that, scan_hand_coded.py returns tier=LOW 0/8 \u2014 but it has no frame-geometry, no assembler-macro, no prologue-order and no allocation-priority signal, i.e. it is blind to all four. Session 5 adds the closing arithmetic: even a perfect search buys at most classes B+D and can never go below 9.",
-   "next_probe": "Not a measurement. When the driver reaches `escalation` modality, file the docs/grind/decisions.md entry weighing the four uniqueness/mechanism results and the proven >= 9 lower bound against the failed scan_hand_coded gate. If an intervening modality is assigned, spend it on the ONE evidence class nobody has touched: corroborating the crt0 identity from OUTSIDE this executable (a known SN Systems / PsyQ crt0 __main listing, or the same function in another PsyQ-3.5 title's asm). That is a forensics/rederive task, not a C-form task."
+   "hypothesis": "F1 \u2014 the remaining question is DISPOSITION, not grinding, and session 6 adds a fifth independent mechanism result plus pass-level confirmation of a fourth.",
+   "mechanism": "(A) a byte-exact cc1 LEAF frame for a body containing a jalr, with the 16-byte outgoing-arg block unconditional (calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474; corpus 1/1437); (B) an anti-priority register assignment global.c:635 allocno_compare cannot produce from any correct C; (C) an `ori $t0,$zero,1` GNU as cannot emit from `li 1` (3/3 small-immediate instances hand-written); (D) a contiguous length-3 ascending prologue save run, now confirmed from the RTL dumps to be emitted descending by save_restore_insns and left untouched by sched2 (corpus 1/1437); (E) NEW \u2014 a branch delay slot filled from the conditional arm by an insn that clobbers the branch's own test register while three eligible saves sit adjacent, impossible under reorg.c's backward-scan-first order (reorg.c:2960 before reorg.c:3075, guarded at 3048), measured with the instrumented cc1. Against that: scan_hand_coded.py tier=LOW 0/8 from a scanner blind to all five signals.",
+   "next_probe": "Not a measurement. When the driver reaches `escalation` modality, file the docs/grind/decisions.md entry weighing the five mechanism/corpus results and s5's proven >= 9 lower bound against the failed scan_hand_coded gate, and return owner-gated citing it."
   },
   {
-   "hypothesis": "F2 \u2014 residual class B is CLOSED, not merely low-priority; the previously-listed duplicated-statement-into-arms ref-lift should not be opened.",
-   "mechanism": "Session 2 killed the 'raise p's refs' direction (every route costs an instruction the 28-insn target has no room for); session 5 killed the 'lower count's refs' direction and showed the only form that flips the roles does so by deleting a semantically required decrement. func_80083794 also has exactly one control-flow arm, so the sanctioned family does not apply on its face, and by C5 closing B alone still leaves >= 9.",
-   "next_probe": "None. Do not write a duplicated-statement-into-arms form for this function; if a future session believes otherwise it must first overturn s5 H6's measurements and then request a ruling, per the family's byte-neutrality + lever-exhaustion + FAKE-annotation prerequisites."
+   "hypothesis": "F2 \u2014 external corroboration of the crt0 identity is CLOSED, not merely untried (this was s5's named next probe for an intervening modality).",
+   "mechanism": "The only offline route was the second independently linked executable, and it does not contain the object (H8: zero signature hits in MOVOVL.EXE, no ctor machinery at its entry). No primary SN Systems / PsyQ crt0 `__main` listing is available online either.",
+   "next_probe": "None. Do not spend another session on external corroboration."
   },
   {
-   "hypothesis": "F3 \u2014 do NOT re-run any of these; every one is answered with a measurement in the ledger.",
-   "mechanism": "Cumulative kill list across s1-s5.",
-   "next_probe": "Already dead: the register-pin/hardcoded-asm body (s1 K1); local declaration order (s1 K2); both statement orders of the two la pairs (s1 C1 + s2 sweep); all 18 structural forms (s2 H2); the ori spelling (s2 H3); frame minimality via simpler C, the compiler source and the corpus (s1/s2 H1); the whole prologue-save-order axis incl. the hoisted-la form (s3 H4); randomized permuter search from both chassis against the REAL target (s4 H5/C4); and now randomized search from both chassis against the NORMALIZED target plus the six counter-ref-split forms (s5 H6/C5). In particular do NOT re-propose the do-while(0) wrap (byte-neutral at 18), the volatile dead-local guard (cheat, 29 insns), the address-taken dead local `s32 *new_var3 = &new_var2` (same cheat family, same 29 insns), or any `n = count;` copy-split (copy-propagation folds it)."
+   "hypothesis": "F3 \u2014 cumulative kill list; every item is answered with a measurement in the ledger.",
+   "mechanism": "s1-s5's kill list (declaration order; the pin/asm body; both la statement orders; 18 structural forms; the ori spelling; frame minimality by three routes; the whole prologue-save-order axis incl. the hoisted-la form; randomized permuter search from both chassis against the real AND the normalized target; the six counter-ref-split forms), plus s6's two new kills.",
+   "next_probe": "Already dead \u2014 and now additionally: do NOT cite the unfilled return delay slot as evidence (838/1434 shipped functions share it), and do NOT re-run the MOVOVL / external-corroboration probe. Also still dead: the duplicated-statement-into-arms ref-lift, the do-while(0) wrap (byte-neutral at 18), the volatile and address-taken dead-local guards (cheats, 29 insns), and any `n = count;` copy split."
   }
  ],
  "judge_constraints": [],
