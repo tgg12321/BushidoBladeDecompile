@@ -83,6 +83,36 @@
  * original must have carried >= 8 walk-pointer references that died between flow
  * and global_alloc. See evidence.md SESSION 6.
  *
+ * SESSION 7 (forensics) ALSO left this form unchanged and still best at 19
+ * (sandbox re-measured this session with the body applied: score 19, 116 ==
+ * 116, rules_dropped 6). It closed the s6 frontier's named mechanism and one
+ * previously-unknown sibling:
+ *   (a) local-alloc.c's optimize_reg_copy_1/2 reference TRANSFER is KILLED.
+ *       The RTL local_alloc consumes holds exactly five reg<-reg copies and
+ *       only ONE with a pseudo destination (uid 4, reg72 <- a0, the parameter
+ *       home); none targets pseudo 73. Every pseudo's post-local_alloc
+ *       ALLOCDBG nrefs equals its note-free mention count in .combine/.lreg
+ *       exactly, so the transfer fires zero times. The C-level round-trip
+ *       alias that would create an eligible copy is deleted by cse
+ *       (rejected/alias-writeback-copy-deleted-by-cse-zero-ref-transfer.c:
+ *       0 copies at .cse, allocno table byte-identical, 116 insns). Generally:
+ *       a copy survives cse only as an EMITTED `move`, and the target's twelve
+ *       moves have no $s0 destination and no $s1 source, so neither direction
+ *       of the transfer can exist in a compile emitting the target bytes.
+ *   (b) Allocno SHARING (global.c:450 sums reg_n_refs across pseudos sharing
+ *       an allocno — a genuinely byte-free priority lift) is KILLED: the only
+ *       producer of regs_may_share is loop.c:1659, gated on m->partial, which
+ *       is set only for the const0 + STRICT_LOW_PART narrow-load idiom
+ *       (loop.c:838-849) that an SImode pointer can never satisfy — and this
+ *       body has zero NOTE_INSN_LOOP_BEG notes, so loop.c never runs on it.
+ * Net: the reference counts are pinned from expansion to RA (s6),
+ * un-transferable at local_alloc (s7) and un-shareable at global_alloc (s7).
+ * Only a different DECOMPOSITION (rederive) can move them. New cheap
+ * pre-screen for any future candidate: tmp/grind/func_80078654/s7/dump.sh
+ * then s7/mentions.py — `mentions in in.c.combine` == `reg_n_refs at RA` is a
+ * measured identity for this function, so a form can be rejected on its
+ * reference census before it is ever assembled.
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body — the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply
