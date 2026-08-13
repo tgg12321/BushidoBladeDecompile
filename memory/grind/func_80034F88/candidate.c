@@ -194,6 +194,41 @@
  * So do NOT read the paragraphs above as "only volatile can do this". The
  * correct statement is narrower: what is still missing is a boundary construct
  * that costs ZERO instructions.
+ *
+ * =====================================================================
+ * s8 (rederive) — form UNCHANGED at 18; a SECOND, cheaper reload mechanism
+ * exists, and the reason it cannot be used here is now proven
+ * =====================================================================
+ * s8 re-derived the flag section from scratch (16 structurally new shapes,
+ * none a tweak of this body) and found that s7's "only a CODE_LABEL boundary
+ * can produce the reloads" is INCOMPLETE.  There is a second, entirely
+ * different cse path that produces all four reloads for FREE:
+ *  - `if (p[8] & K) *ptr |= K;` — the store inside the conditional arm.
+ *    cse_end_of_basic_block (cse.c:8102-8184) classifies the arm as AROUND,
+ *    and cse_basic_block then calls invalidate_skipped_block (cse.c:7843) ->
+ *    invalidate_skipped_set (7810-7836), which INVALIDATES a MEM written in a
+ *    skipped block instead of recording it.  The stored value therefore never
+ *    enters the value table and the next read is a real `lbu`.  Measured:
+ *    score 18 at 42 insns, lbu 4 / sb 5, ONE base, no volatile, no label,
+ *    and cse2.fn still carries `(mem:QI (reg/v:SI 73))` for every flag read
+ *    (rtl/m1_ptr_read_condstore/fn/cse2.fn).
+ *  - It is nevertheless UNUSABLE for this target, and that is a proof, not a
+ *    tuning failure: the mechanism needs the store INSIDE the arm, while the
+ *    target's store is unconditional — asm/funcs/func_80034F88.s carries
+ *    `addu $v0,$a0,$zero` at 0x80034FC4 on the fall-through path and a single
+ *    `sb $v0,0($v1)` AFTER the join label in every block.  The AROUND form is
+ *    7 insns short of the target (3 missing value-select moves + 4 missing
+ *    address-materialisation insns) and it cannot grow them.
+ * So the two reload mechanisms are mutually exclusive on this function:
+ * conditional store -> free reloads but the wrong store shape; unconditional
+ * store -> the target's shape but the store is recorded, and only a
+ * cse2-surviving CODE_LABEL boundary can stop the forward.
+ * Also measured dead this session: the store duplicated into both arms
+ * (19 at 46 insns — find_cross_jump merges only one of the three pairs,
+ * leaving 7 sb), the plain-symbol conditional store (35), the read
+ * duplicated into both arms (28), an explicit two-label goto diamond (22 —
+ * jump.c rebuilds the ordinary diamond before cse1, so no boundary), and the
+ * mask spelled through the symbol with the blocks through the pointer (33).
  */
 void func_80034F88(void) {
     s32 *p;

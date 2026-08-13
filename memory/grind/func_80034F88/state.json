@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 18,
    "modality": "forensics",
    "headline": "Forensics: the target's exact flag-section signature (lbu 5 / sb 5 / lui 4, three addend-0 bases, four surviving reloads) is reachable in NON-VOLATILE C via a cse basic-block boundary \u2014 refuting the s"
+  },
+  {
+   "session": 8,
+   "floor": 18,
+   "modality": "rederive",
+   "headline": "Rederive: 16 structurally new shapes measured; found a SECOND, zero-cost, non-volatile cse mechanism that produces all four target reloads (invalidate_skipped_block), proved it incompatible with the t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is a C construct that puts a CODE_LABEL surviving cse2 between the flag blocks at ZERO instruction cost \u2014 and it is the whole remaining gap, because p1 shows a surviving boundary already produces the target's exact access/address signature.",
-   "mechanism": "cse_end_of_basic_block (cse.c:8039) stops at a CODE_LABEL in both passes, but the follow_jumps / skip_blocks extension at cse.c:8102-8184 walks straight through a conditional branch whose target label has LABEL_NUSES == 1 \u2014 which is true of all three of this function's if-join labels, so today they are NOT boundaries. A label with NUSES != 1 ends the block. The cost of every boundary measured so far (one-iteration for: 9 insns; real loop: collapses the unrolled shape) comes from the branch that creates the second use, so the question is whether a second LABEL_REF can exist without a new branch \u2014 e.g. a shared end label reached from two arms that the target's own branch structure already contains, a switch, or an if/else whose join is also a goto target.",
-   "next_probe": "Read cse.c:8102-8184 for the exact extension conditions, then enumerate C control-flow shapes whose RTL gives a join label LABEL_NUSES >= 2 between the flag blocks: the shared-end-label technique (.claude/rules/shared-end-label.md), if/else with a common tail, a two-arm goto to one label, and a switch over the bit index. Score each honestly and read greg/jump2 to confirm the label survives into the final code. Check LABEL_NUSES directly in the jump.fn dumps rather than inferring it. structural or rederive modality."
+   "hypothesis": "Every construct that ends the cse basic block between two flag blocks costs at least one instruction the target does not contain, or is a forbidden no-semantic-purpose construct - and the only zero-cost reload mechanism (AROUND / invalidate_skipped_block) is incompatible with the target's unconditional store. If that holds, this is the escalation thesis and the F3 packet should be rewritten around it.",
+   "mechanism": "cse_end_of_basic_block's extension (cse.c:8102-8184) declines only on LABEL_NUSES != 1, a CODE_LABEL inside the arm, or a used CODE_LABEL immediately preceding the join label; s8 showed each of the three requires an extra jump insn or a dead-goto label pad. The claim that remains unproven is completeness: that no OTHER C construct reaches those three states.",
+   "next_probe": "Do NOT file from a non-escalation modality. The two remaining honest lines of attack before it becomes an escalation: (1) enumerate what else creates a CODE_LABEL in GCC 2.7.2's RTL stream that C can reach without a jump - switch/ADDR_VEC labels, computed goto, the loop-exit label of a real loop whose body the target already contains, and the labels emitted by expand_* for && / || short-circuits (an '&&' condition emits TWO conditional branches to ONE false-label, i.e. LABEL_NUSES 2, at the cost of one extra branch - measure whether the boundary it buys is worth more than the branch it costs, which s8 never measured); (2) check whether jump.c's thread_jumps (run before cse1) can be made to redirect a second branch onto an existing join label, raising its NUSES to 2 without a new insn."
   },
   {
-   "hypothesis": "Even with a free boundary between the flag blocks, the target's FIRST reload (lbu a0,0(v1) at insn 13, immediately after sb a0,0(v1) at insn 11, with no label, call or store between them) needs its own explanation \u2014 it is the only pair the boundary model cannot cover from the target's own instruction stream.",
-   "mechanism": "The &0xF8 read-modify-write and block 1's read share base $v1 with nothing between them, so at cse time either a boundary existed there and was erased by a later pass without residue (only possible if the branch creating it became provably dead \u2014 a forbidden dead-branch construct), or the mem was not recordable (volatile, cse.c:7329, which s3 ruled out on policy), or the two accesses had different address rtxs that were later allocated the same hard register (impossible: each rtx needs its own materialisation).",
-   "next_probe": "Take the p1 dump and check what jump2 / flow do to a boundary label whose branch is later removed; separately, enumerate the passes after cse2 that can delete a CODE_LABEL plus its branch with zero residue and test whether any is reachable without a constant condition. If none is, this sub-question \u2014 not the reload question \u2014 becomes the escalation's core. forensics modality."
+   "hypothesis": "The '&&'-condition boundary pays for itself: 'if ((p[8] & K) && something)' emits two conditional branches to a shared false-label (LABEL_NUSES 2), which ends the cse block at the join and should recover one reload plus one addend-0 base per block (worth ~3 insns) against a 1-insn branch cost.",
+   "mechanism": "expand_expr for TRUTH_ANDIF_EXPR emits jumpifnot on each operand to the same label, so the join label of the whole if has two LABEL_REFs and the cse extension at cse.c:8112 declines. It is the ONLY way found so far to raise LABEL_NUSES without an unconditional jump that jump.c will delete.",
+   "next_probe": "The honest problem is finding a SECOND condition that is semantically real (the target has no second branch, so any construct here changes the emitted control flow and will show up as an inserted branch in the score). Measure it anyway to put a number on the trade: 'if ((p[8] & K) && p[8])' and similar, honest-scored, plus a cse.fn check that the boundary actually materialises. If the boundary is confirmed to produce the target's per-block signature, the finding is that the SIGNATURE is buyable and only the branch is in the way - which is the strongest possible exhibit for the escalation packet."
   },
   {
-   "hypothesis": "The F3 escalation packet is NOT ready to file and its premise is now known to be wrong; do not file it from a non-escalation modality.",
-   "mechanism": "s3-H4/s6 asserted an impossibility that s7 refuted by measurement (p1). The two remaining sanctioned axes named by s6's frontier are now measured dead, but s7 opened a NEW, cheap, honest axis (zero-cost cse2-surviving label boundaries) that has never been probed at all, so the function is still plainly grindable.",
-   "next_probe": "Do NOT file. Work frontier item 1 first. If and only if the label-boundary family is exhausted should the packet be rewritten around the corrected claim: 'every cse2-surviving basic-block boundary construct costs instructions the target does not have', with p1's signature match as the central exhibit."
+   "hypothesis": "The one-object re-derivation (0x80106A70..73 as a single declared u8[4], flag byte = element 3) is not measurable in the sandbox even if it is correct, because engine/score.py does not mask NAMED-symbol relocation addends.",
+   "mechanism": "score.py masks section-relative HI16/LO16 addends only ([[sandbox-lo16-text-addend-false-distance]]); a build spelling the flag byte as &D_80106A70[3] emits R_MIPS_HI16/LO16 against D_80106A70 with addend 3 where the reference object has D_80106A73 with addend 0. The two link to the SAME bytes (both symbols are absolute addresses in undefined_syms_auto.txt), so the sandbox would report a false non-zero distance for a byte-correct form. s2's original kill of this hypothesis cited relocations that a shipped PS-EXE does not have, and s3 already voided that premise.",
+   "next_probe": "Requires touching include/code6cac.h:462 (the extern u8 D_80106A70 declaration), which is outside a grind session's single-file scope and would change other functions' codegen - so it needs an owner decision, not a probe. Before spending anything on it, note that the array model does NOT solve the boundary problem (cse still merges the address pseudos), so it can only ever explain the addressing, never the reloads."
   }
  ],
  "judge_constraints": [],

@@ -921,3 +921,89 @@ and it is the frontier this session hands to the next one.
 - [s7] The F3 escalation packet's central claim ('honest non-volatile pure C cannot produce the target's four 0(reg) reloads') is now FALSE and must be rewritten before it is ever filed; the surviving claim is only that every cse2-surviving boundary construct measured so far emits instructions the target has no room for.
 
 - [s7] src/code6cac_b.c was left byte-unchanged (every probe splices and restores); the best form remains the floor-18 body in memory/grind/func_80034F88/candidate.c, whose header now carries the s7 correction.
+
+
+---
+
+## s8 (rederive) - what changed in the model
+
+**The floor did not move: 18, the same body as s3-s7.** What moved is the
+mechanism model, in one important direction and one closing direction.
+
+**1. A second, cheaper reload mechanism exists, and it is not a label
+boundary.** s7 concluded that only a cse2-surviving CODE_LABEL can stop the
+store-to-load forward. That is now known to be incomplete. `cse.c`'s
+`invalidate_skipped_block` (7843-7867) / `invalidate_skipped_set` (7810-7836)
+INVALIDATE any MEM written inside a conditionally-skipped block instead of
+recording it. So a store spelled inside a conditional arm -
+`if (p[8] & K) *ptr |= K;` - makes every following read of the byte a real
+`lbu`, in non-volatile C, with no label, no loop note and no extra
+instruction. Measured directly: `m1_ptr_read_condstore` scores 18 at 42
+instructions with `lbu 4 / sb 5`, and its `cse2.fn` still contains
+`(mem:QI (reg/v:SI 73))` for every flag read
+(`tmp/grind/func_80034F88/s8/rtl/m1_ptr_read_condstore/fn/cse2.fn`).
+
+**2. And it cannot be used here, for a reason internal to the target.** The
+target's store is UNCONDITIONAL: `asm/funcs/func_80034F88.s` has
+`addu $v0,$a0,$zero` at 0x80034FC4 - the else-value of a select computed on
+the fall-through path - and exactly one `sb` per block, placed AFTER the join
+label. The AROUND mechanism requires the store to be INSIDE the arm. A
+conditional-store body is therefore 7 instructions short of the target by
+construction: 3 missing value-select moves plus 4 missing
+address-materialisation instructions. Every hybrid that restores part of the
+target's shape (block 1 floor + blocks 2/3 conditional, symbol/pointer
+crossings, symbol-spelled mask) scores 21-33, all worse.
+
+**3. The two open sub-problems are ONE sub-problem.** s7 listed the missing
+reloads and the three addend-0 address bases as separate frontier items. They
+are the same item: with three pointer locals staged exactly as the target
+materialises its bases, `cse` still deletes the second and third
+`ptr = &D_80106A73;` as redundant sets (measured: `lui 2` in both n3 and m5),
+because `invalidate_skipped_block` only invalidates registers SET INSIDE the
+skipped arm and the pointer locals are set at top level. A cse basic-block
+boundary is what produces BOTH.
+
+**4. The zero-cost boundary question is now answered, negatively, from the
+compiler source.** `cse_end_of_basic_block` ends the block at a join label
+only if the extension at cse.c:8102-8184 declines, and there are exactly
+three ways for it to decline: `LABEL_NUSES (JUMP_LABEL (p)) != 1`; a
+`CODE_LABEL` between the branch and the insn preceding the label (which
+defeats the `no_labels_between_p` test in the AROUND arm); or the preceding
+insn being a used `CODE_LABEL` (which defeats both arms). Each needs an
+instruction the target does not contain, or a construct in a forbidden
+family:
+  - a second `LABEL_REF` means a second jump insn. Where the added jump
+    targets the immediately following label, `jump.c` deletes it before cse1
+    runs and `LABEL_NUSES` falls back to 1 - measured on two spellings
+    (n4 22/51 and n8 23/49, both with `lbu 3`, the plain-diamond signature).
+  - an unreferenced label inside the arm is a dead-goto label pad, a listed
+    forbidden family; a referenced one carries its own jump.
+  - the BARRIER (follow_jumps) escape needs the arm to end in an
+    unconditional jump, i.e. the if/else shape, where the block is FOLLOWED
+    rather than ended, with no invalidation.
+
+**What this means for the F3 escalation packet.** It is closer to filable
+than it was, but it is still NOT filable from a non-escalation modality and
+the wording s7 proposed must change again. The correct claim is now: *every
+construct that ends the cse basic block between two flag blocks costs at
+least one instruction the target does not contain, or is a forbidden
+no-semantic-purpose construct; and the only zero-cost mechanism that
+reproduces the reloads (the AROUND / invalidate_skipped_block path) is
+incompatible with the target's unconditional store.* The exhibits are s7's
+p1 signature match and this session's m1 (free reloads, wrong store shape).
+
+- [s8] cse.c's invalidate_skipped_block (7843-7867) / invalidate_skipped_set (7810-7836) INVALIDATE a MEM written inside a conditionally-skipped block instead of recording it - a second, label-free, volatile-free way to defeat the store-to-load forward that no prior session had found.
+
+- [s8] m1_ptr_read_condstore ('val = *ptr; if (c) *ptr = val|K;') scores 18 at 42 insns with lbu 4 / sb 5 / lui 2, and its cse2.fn still holds (mem:QI (reg/v:SI 73)) for every flag read - the reloads survive both cse passes.
+
+- [s8] The target's store is UNCONDITIONAL: asm/funcs/func_80034F88.s carries 'addu $v0,$a0,$zero' at 0x80034FC4 on the fall-through path and one 'sb' per block after the join label, so the AROUND mechanism (which needs the store inside the arm) can never produce the target's shape - the conditional-store chassis is 7 insns short by construction.
+
+- [s8] The most natural human spelling of this function (plain symbol, conditional |=) scores 35 at 51 insns with lui 8 - four more lui than the target and no shared base; the target's source was NOT the obvious form.
+
+- [s8] Store duplicated into both arms: find_cross_jump merges only 1 of the 3 duplicate pairs, leaving 7 sb against the target's 5 (19 at 46 insns).
+
+- [s8] An explicit two-label goto diamond does NOT create a cse boundary: jump.c deletes the jump-to-the-next-label before cse1 runs and LABEL_NUSES returns to 1 (n4 22/51, lbu 3 - the plain-diamond signature).
+
+- [s8] Three pointer locals staged exactly where the target materialises its three bases still collapse to lui 2 in the conditional-store chassis, because invalidate_skipped_block only invalidates registers set INSIDE the skipped arm.
+
+- [s8] Consequence for the model: the missing reloads and the missing addend-0 bases are ONE problem (a cse basic-block boundary), not two as s7's frontier had it.
