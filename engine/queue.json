@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80033DF4",
-      "file": "code6cac_b",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active"
-    },
-    {
       "func": "func_80083794",
       "file": "ings2",
       "distance": 23,
@@ -2400,14 +2392,14 @@
     }
   ],
   "counts": {
-    "total": 280,
-    "active": 237,
+    "total": 279,
+    "active": 236,
     "by_status": {
-      "active": 237,
+      "active": 236,
       "parked": 43
     },
     "by_verdict": {
-      "C": 153,
+      "C": 152,
       "ASM-PARTIAL": 37,
       "ASM-SUSPECT": 47
     }

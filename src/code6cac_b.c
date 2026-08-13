@@ -85,8 +85,8 @@ extern void func_8003AA48(void);
 extern void func_800174F4(void);
 extern void func_8003AAB0(void);
 extern s32 D_800A384C;
-extern u8 D_8008E908;
-extern u8 D_8008EC24;
+extern u8 D_8008E908[][5];
+extern u8 D_8008EC24[][5];
 extern s32 D_80106A50;
 extern s32 ratan2(s32, s32);
 extern s32 rand(void);
@@ -3568,8 +3568,8 @@ void func_80033D38(void) {
     }
 }
 s32 func_80033DF4(void) {
-    register u8 state asm("v1");
-    register s32 tableIndex asm("a1");
+    u8 state;
+    s32 tableIndex;
 
     state = D_800A38E2;
     tableIndex = state & 0xFF;
@@ -3578,70 +3578,56 @@ s32 func_80033DF4(void) {
         D_800A3781 = 0;
 
         if (D_800A3858 < 0x6979) {
-            register s32 v0 asm("v0");
-            register s32 v1 asm("v1");
-            register s32 *a0 asm("a0");
+            s32 *flags;
+            s32 word;
+            s32 mask;
 
-            v0 = (s8)D_8010277C;
-            v0 = *(&D_8008D538 + v0);
-            v0 = *(&D_8008D9EC + v0);
-            tableIndex = 0x20;
-            if (v0 != 0) {
-                tableIndex = 0x10000;
+            mask = 0x20;
+            if ((&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] != 0) {
+                mask = 0x10000;
             }
-            a0 = &D_80106A50;
-            v1 = *a0;
-            D_800A36F0 = (u32)(v1 & tableIndex) < 1;
-            *a0 = v1 | tableIndex;
+            flags = &D_80106A50;
+            word = *flags;
+            D_800A36F0 = (u32)(word & mask) < 1;
+            *flags = word | mask;
         }
 
         if (D_800A380C == 0) {
-            register s32 v0 asm("v0");
-            register s32 v1 asm("v1");
-            register s32 *a0 asm("a0");
+            s32 *flags;
+            s32 word;
+            s32 mask;
 
-            v0 = (s8)D_8010277C;
-            v0 = *(&D_8008D538 + v0);
-            v0 = *(&D_8008D9EC + v0);
-            tableIndex = 0x1000000;
-            if (v0 != 0) {
-                tableIndex = 0x4000000;
+            mask = 0x1000000;
+            if ((&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] != 0) {
+                mask = 0x4000000;
             }
-            a0 = &D_80106A50;
-            v1 = *a0;
-            D_800A3781 = (u32)(v1 & tableIndex) < 1;
-            *a0 = v1 | tableIndex;
+            flags = &D_80106A50;
+            word = *flags;
+            D_800A3781 = (u32)(word & mask) < 1;
+            *flags = word | mask;
         }
 
         func_80033D38();
         D_800A3834 = 4;
         return 0;
     } else {
-        register s32 v0 asm("v0");
-        register u8 *v1 asm("v1");
-        register s32 a0 asm("a0");
-        register s32 a2 asm("a2");
-        register u8 *table asm("a1");
+        u8 *table = &cpu_practice_honmokuroku_data_tbl + (tableIndex * 4);
+        u8 (*ranks)[5] = D_8008EC24;
+        u8 (*moves)[5] = D_8008E908;
+        s32 entry;
+        s32 row;
 
         D_800A38E2 = state + 1;
-        table = &cpu_practice_honmokuroku_data_tbl + (tableIndex * 4);
         D_800A376B = 0;
-        a2 = table[0];
-        v0 = (s8)D_8010277C;
-        *((u8 *)&D_800A384C) = a2;
-        v0 = *(&D_8008D538 + v0);
-        v1 = &D_8008EC24;
-        v0 = *(&D_8008D9EC + v0);
-        a2 &= 0xFF;
-        v0 = (u32)v0 < 1;
-        a0 = v0 << 2;
-        a0 += v0;
-        D_800A38DE = *(v1 + a0 + a2);
+        entry = table[0];
+        *((u8 *)&D_800A384C) = entry;
+        row = (&D_8008D9EC)[(&D_8008D538)[(s8)D_8010277C]] == 0;
+        entry &= 0xFF;
+        D_800A38DE = ranks[row][entry];
         D_800A38EC = table[1];
         D_800A38ED = table[2];
         D_800A38EE = table[3];
-        a0 = a0 + (s32)&D_8008E908;
-        D_8010277D = *(u8 *)(a0 + a2);
+        D_8010277D = moves[row][entry];
         return 1;
     }
 }
