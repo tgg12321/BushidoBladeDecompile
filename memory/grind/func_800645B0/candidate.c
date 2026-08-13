@@ -58,6 +58,18 @@
  *   the two coinciding only at register allocation — i.e. the "CA" body, whose
  *   own residual is the inner-loop top.  All remaining search belongs there.
  *
+ * SESSION [s8] NOTE (rederive #2): this body still holds the floor at 1 / 78.
+ * Two things narrowed the search around it.  (a) The reg_n_sets axis is now
+ * CLOSED to placement enumeration: reg_n_sets is recounted by flow.c during
+ * life_analysis (after the last reg_scan at toplev.c:2925) and every later pass
+ * keeps the count honest, so a second set of `idx` counts only if it survives as
+ * a real instruction — hence it must BE one of the target's own four $s0 writes,
+ * i.e. either the *3 sum (this body's expand_binop wall) or the <<2 byte offset
+ * (DA's local-alloc wall).  (b) The target's `addu $s0,$s3,$a0` at 0x800645DC is
+ * reorg.c's copy of the inner loop's first insn, not a source-level statement:
+ * every maintained-index spelling that defeats the group-top constant fold pays
+ * a duplicated `j = 0` (chassis OA, 3 / 79 — banked under rejected/).
+ *
  * INTEGRATION NOTE: regfix.txt:2521 (`func_800645B0: reorder 3,1,2 @ 1-3`) is
  * the function's only rule and the sandbox drops it.  Retiring the rule +
  * `queue done` is the operator/driver's job, not a grind session's.

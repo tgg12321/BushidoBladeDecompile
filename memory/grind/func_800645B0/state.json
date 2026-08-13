@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Re-derived the data model from the target (one 3-word-struct array + one s16 array, GCC's own k*12 expansion sharing k*2) and produced a genuinely new chassis JD at 3/78 whose ENTIRE residual is the l"
+  },
+  {
+   "session": 8,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Re-derived a genuinely new chassis (OA, 3/79) that gets the loop top AND the *3 operand order right with no scheduling lever at all, then bounded it at exactly one instruction; and closed the whole re"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A second set of `idx` in the OUTER loop body - at a program point where the target really does write $s0 - denies the birthing lift at zero cost AND at zero register cost, closing the JD chassis.",
-   "mechanism": "KD proves an out-of-inner-loop second set kills the lift for free (78 insns, loop top exact) and that its only cost is the register the value lands in. The target writes $s0 in exactly two places: `addu $s0,$s3,$a0` at 0x800645DC, in the outer-loop block immediately before .L800645E0, and the if-body sequence. If the 0x800645DC write is a SOURCE-LEVEL statement in the outer loop body rather than reorg.c's duplicate of the stolen loop-top insn, then an outer-loop `idx = i;` / `idx = i + j;` is a second set at a point where the target itself writes $s0. Session 3's H15 killed that shape only in the MAINTAINED-INDEX form, where the inner loop no longer recomputes idx and the entry copy constant-folds to `move $s0,$s3`; the untried shape KEEPS the inner-loop recomputation, so the outer assignment is redundant-but-live rather than the loop's only definition.",
-   "next_probe": "On the JD chassis, measure `idx = i;`, `idx = i + j;` and `idx = 0;`-then-`idx = i;` placed at the top of the OUTER loop body (before `for (j ...)`), plus the same at the outer-loop tail, and check with diffvar25.py whether flow.c deletes them (H19's rule) or whether the inner loop's recomputation keeps them live enough for reg_scan to count them."
+   "hypothesis": "The *3 sum can be expanded with a target that is neither operand (which JD proves emits the target's `addu $s0,$s1,$s0`) and still land in `idx`'s pseudo without a copy that cse/combine deletes \u2014 closing the only remaining route on the sum side of H39.",
+   "mechanism": "optabs.c:403-421 swaps a commutative pair whenever the expansion target IS op1, so `idx = <x> + idx;` can never emit the target's operand order; but with target == 0 the order is already correct (JD). The missing piece is a C construct whose assignment does NOT pass `to_rtx` down as the RHS expansion target \u2014 expr.c's expand_assignment / store_expr have such paths (want_value, RHS containing a CALL, safe_from_p clearing `target`) \u2014 while still leaving reg_n_sets[idx] == 2 (a plain `t = sum; idx = t;` copy folds: DB, 3/78).",
+   "next_probe": "Read expr.c's expand_assignment and store_expr (the want_value paths, the call-containing-RHS paths, and safe_from_p's clearing of `target`), enumerate the C spellings that reach them \u2014 e.g. an assignment whose RHS also contains one of the `rand()` calls, or the sum as the value of a comma expression \u2014 and measure each on the JD chassis with sweep27.py's harness."
   },
   {
-   "hypothesis": "The permuter finds something below 3 in the JD neighbourhood, which no campaign has ever sampled.",
-   "mechanism": "Session 5's own lesson ([s5]: seed the permuter from EACH near-miss chassis before calling the axis dead) applies directly. The four sampled chassis were SB, IA, CA and guard-continue; JD is structurally unlike all of them because it contains NO index locals to mutate - its source neighbourhood is the space of expression respellings and statement placements, not of variable staging.",
-   "next_probe": "Build a workspace from chassis_jd_inline_index_arith.c using tmp/grind/func_800645B0/s5/mkca.py + mkws3.sh's recipe (full-TU cpp as base.c, honest pipeline with no regfix/asmfix, offset-0 target.o), validate at 78 vs 78 with the three loop-top diffs, and run one fresh-seed campaign window with tools/permuter_campaign.py launch + wait + harvest --stop, all inside a single turn."
+   "hypothesis": "The halfword-offset quantity can be steered off $s0 by an ordinary C-level copy relationship, which would close the byte-offset route (DA/KB, 12/78) and with it the other half of H39.",
+   "mechanism": "The halfword offset needs a callee-save only because it is live across all four rand() calls; once the byte offset is routed into `idx` it is the only block-local call-crossing quantity, and find_free_reg takes $s0 because it scans reg_alloc_order. local-alloc.c:2205-2270 tries qty_phys_copy_sugg / qty_phys_sugg FIRST, so a suggestion for $s1 would restore the target's allocation (which the target itself proves exists: its halfword offset is block-local and sits in $s1).",
+   "next_probe": "Read local-alloc.c's qty_phys_copy_sugg / qty_phys_sugg construction and find_free_reg's use of them, dump .lreg with BB2_SUGG_DEBUG / BB2_QTY_DEBUG on the KB build to see which quantities local-alloc ranks and what suggestions exist, then re-measure KB/DA with the halfword offset written to participate in a copy relationship."
   },
   {
-   "hypothesis": "reorg.c can be made to steal the SECOND insn of the loop-top block instead of the first, which would need no scheduler change at all.",
-   "mechanism": "Every chassis' residual now reduces to the same sentence: the loop-top block's first emitted insn is `li $v1,1` where the target has the `addu`. The assumption throughout the ledger is that reorg takes the block's first insn; that has never been read out of the source.",
-   "next_probe": "Read reorg.c's steal_delay_list_from_target / fill_simple_delay_slots candidate selection (in particular how it walks the target block and what disqualifies a candidate), determine whether the second insn can ever be taken, and if so identify the C-visible precondition and measure it on JD."
+   "hypothesis": "The permuter finds something below 3 in the JD or OA neighbourhood, neither of which any campaign has ever sampled.",
+   "mechanism": "[s5]'s standing lesson (seed from EACH near-miss chassis before calling the axis dead). JD has no index locals to mutate, so its source neighbourhood is expression respellings and statement placements; OA's residual is a single duplicated instruction rather than a compiler decision, so its neighbourhood is loop-skeleton mutations \u2014 both unlike the four sampled chassis (SB, IA, CA, guard-continue).",
+   "next_probe": "Build workspaces from chassis_jd_inline_index_arith.c and from rejected/maintained-index-nonfold-reset-costs-one-insn.c using tmp/grind/func_800645B0/s5/mkca.py + mkws3.sh's recipe (full-TU cpp base.c, honest pipeline, offset-0 target.o), validate at 78/79 vs 78 with the known diffs, and run one fresh-seed campaign window with tools/permuter_campaign.py launch + wait + harvest --stop, all inside a single turn."
   }
  ],
  "judge_constraints": [

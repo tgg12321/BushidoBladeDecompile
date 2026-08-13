@@ -989,3 +989,191 @@ the frontier (expand_binop target selection; local_alloc ordering in DA).
 - probe: sweep25.py KD - `idx = 1; D_800F10EC = idx;` placed before the loops on the JD chassis; unmasked pairs via diffvar25.py KD.
 - result: KD = 4 / 78. Indices 11, 12 and 65 are GONE: the inner-loop top is emitted in the target's order and reorg.c steals the addu into the back-edge delay slot. The entire remaining residual is the prologue - `li s0,1` where the target has `li v0,1`, the four register saves shifted by one slot, and `sw s0,%lo(D_800F10EC)($at)` where the target has `sw v0`. `idx` is a multi-block pseudo allocated $s0 and GCC 2.7.2 has no live-range splitting, so any pre-loop value it carries is materialised in $s0, and the target never writes $s0 before the loop. CONFIRMED as a mechanism, KILLED as written - and it removes H32's implicit assumption that the second set must be a value the target keeps in $s0 INSIDE the if-body.
 - verdict: CONFIRMED
+
+## Session [s8] (2026-08-12, rederive #2) — floor stays 1; the maintained-index family is bounded at exactly one instruction, and the reg_n_sets axis is closed to everything except two named walls
+
+### H38 — KILLED. A second set of `idx` in the OUTER loop body (session-7 frontier item 0) is a dead store and cannot bump `reg_n_sets`.
+- **Mechanism:** the inner loop's first statement recomputes `idx` unconditionally
+  on entry, so ANY set of `idx` in the outer block (top or tail) is dead and
+  flow.c deletes it in `propagate_block` before the count is taken (H19's rule).
+  The frontier item's premise — that the inner loop's recomputation would keep an
+  outer-loop assignment "redundant-but-live" — is false: liveness comes from
+  uses, and a recomputation is a definition, not a use.
+- **Probe:** sweep27.py NA (`idx = i;` at the top of the outer loop body, before
+  the inner `for`) and NB (the same at the outer-loop tail), on the JD chassis.
+- **Result:** NA = 3 / 78 and NB = 3 / 78, byte-identical to the JD control.
+- **Verdict:** KILLED.
+
+### H39 — CONFIRMED (an impossibility theorem for the whole `reg_n_sets[idx]` axis, read out of toplev.c / flow.c / combine.c). Any second set of `idx` either costs a real instruction or is not counted; therefore it must be an instruction the target ALREADY has, writing the register `idx` occupies.
+- **Mechanism:** the LAST `reg_scan` call is toplev.c:2925, immediately before
+  cse2; `reg_n_sets` is then re-allocated and re-counted from scratch by
+  flow.c:1284-1285 plus the `reg_n_sets[regno]++` sites in `mark_set_1`
+  (flow.c:2061/2079), i.e. DURING `life_analysis`, which deletes dead stores as it
+  walks — a deleted set is never counted. Everything after flow that can delete an
+  insn keeps the count honest: combine decrements at combine.c:2309 and 2332 when
+  it deletes i2/i3 and only ever increments in one narrow case (combine.c:1815,
+  when a split leaves both i2 and i3 setting the same REG); sched.c:4381-4409
+  (`update_reg_n_sets`) maintains it too. So a second set is counted if and only if
+  it survives to the output as an instruction — and in a 78-instruction target it
+  must therefore BE one of the target's own `$s0` writes.
+- **Probe:** direct read of toplev.c:2820-3120 (pass order), flow.c:1280-1290 and
+  2040-2090, combine.c:1795-1835 and 2300-2340, sched.c:4381-4409; cross-checked
+  against every measured second-set variant in the ledger (H10, H19, H37, H38 —
+  folded/deleted and inert; MA / MD / GF — surviving insns that land a foreign
+  value in `$s0`).
+- **Result:** the target writes `$s0` at 0x800645DC, 0x80064600 (the *3 sum),
+  0x80064608 (the `<<2` byte offset) and 0x800646B4. With H40's corollary showing
+  0x800645DC / 0x800646B4 to be one insn plus reorg.c's copy, the second set of
+  `idx` can ONLY be the sum (walled by H24: `expand_binop` always emits the
+  assignment's own target as op0, so `addu $s0,$s1,$s0` is unreachable for every
+  `idx = <x> + idx;` spelling) or the byte offset (walled by H30: routing it
+  through `idx` deletes the block-local claimant and local-alloc hands `$s0` to
+  the halfword-offset pseudo — 12/78).
+- **Verdict:** CONFIRMED. Stop enumerating placements; the axis is closed except
+  through those two walls.
+
+### H40 — CONFIRMED as a mechanism, KILLED as a route. The maintained-index family CAN defeat the group-top constant fold, and the whole family then costs exactly one instruction: a duplicated `j = 0`.
+- **Mechanism:** `idx = i + j;` in the group-top block folds to `move $s0,$s3`
+  only because `j`'s reset sits in that same block (H15). With the reset in the
+  outer loop's UPDATE (or TEST) the group-top block has two predecessors, cse
+  cannot propagate the 0, and the sum is emitted as a real `addu $s0,$s3,$a0`;
+  the inner loop's bottom update `idx = i + j;` (after `j += 1;`) is then the insn
+  reorg.c puts in the back-edge delay slot exactly as the target has at
+  0x800646B4; and `reg_n_sets[idx] == 2` by construction, so the birthing lift can
+  never fire. The price: the reset is emitted TWICE (prologue initialiser + the
+  loop-tail block) where the target emits `addu $a0,$zero,$zero` exactly once, at
+  the top of the outer loop body.
+- **Probe:** sweep27.py NC (reset as the outer body's last statement) and
+  sweep28.py OA / OB / OC / OD / OE / OF (reset after the outer increment; before
+  it; in the for-init pair; spelled `j = j - j`; group-top sum written `j + i`),
+  PA (reset inside the loop TEST: `for (i = 0; (j = 0), i < 0xF; i += 4)`) and PB
+  (reset in the update with no separate initialiser:
+  `for (j = 0, i = 0; i < 0xF; i += 4, j = 0)`); diffs via diffvar27.py /
+  diffvar28.py.
+- **Result:** OA = OD = OE = PA = PB = **3 / 79**; OF 4 / 79; NC = OC = OB =
+  5 / 79. OA's and PA's ENTIRE unmasked residual is the duplicated `move a0,zero`
+  (prologue + loop tail) and the one-slot shift it causes — the three loop-top
+  points 11/12/65 AND the *3 sum's commutative operand order are all correct,
+  which no previous chassis achieved without a reg_n_sets lever. NC/OC
+  additionally lose the claim path's `jal` delay slot (`nop` where the target has
+  `addiu $s3,$s3,4`) because the reset sits between the inner loop and the outer
+  increment. Banked at
+  `rejected/maintained-index-nonfold-reset-costs-one-insn.c`.
+- **Verdict:** KILLED as a route — every placement outside the group-top block is
+  either duplicated by GCC's loop-exit-test duplication or needs a pre-loop
+  initialiser, and the one placement that is NOT duplicated (the natural
+  `for (j = 0; j < 4; j++)` init) is exactly the one that re-enables the fold.
+- **Corollary (the most useful thing this session produced):** the target's
+  `addu $s0,$s3,$a0` at 0x800645DC is therefore NOT a source-level group-top
+  statement — no C spelling can put it in a block that also zeroes `j` — so it is
+  reorg.c's non-own-thread COPY of the inner loop's FIRST insn, and the original
+  body did carry `reg_n_sets[idx] >= 2` from a set that costs no instruction, i.e.
+  from one of H39's two walls.
+
+### H41 — KILLED (session-7 frontier item 2). reorg.c can never take the SECOND insn of the loop-top block.
+- **Mechanism:** `fill_slots_from_thread`'s scan loop (reorg.c:3390-3392) is
+  `for (trial = thread; ! stop_search_p (...) && (! lose || own_thread); ...)`.
+  For a loop back edge the target label is also reached from the preheader, so
+  `own_thread == 0` and the search stops at the first trial it cannot place. The
+  only way past a trial without taking it is the `redundant_insn` path
+  (reorg.c:3433-3453), which needs an identical, still-valid earlier set of the
+  same register — unavailable for `li $v1,1`, whose `$v1` is reused for the
+  `D_800A347C` pointer inside the if-body. When the first insn IS placeable it is
+  copied into the delay slot and the label is advanced past it, which is exactly
+  the 0x800645DC / 0x800646B4 pair.
+- **Probe:** read of reorg.c:3340-3500 plus the empirical JD diff: our build and
+  the target BOTH copy the loop-top block's first insn into the back-edge delay
+  slot and leave the original before the advanced label — ours `li v1,1` (indices
+  11 and 65), the target's `addu s0,s3,a0`.
+- **Result:** which insn reorg takes is fully determined by the scheduler's
+  emission order; reorg offers no independent lever.
+- **Verdict:** KILLED.
+
+## Frontier (rewritten by session [s8])
+
+0. **Break H24's `expand_binop` wall: get the *3 sum expanded with a target that
+   is neither operand, and land it in `idx`'s pseudo without a foldable copy.**
+   H39 proves this is one of only two remaining routes, and JD already proves the
+   unnamed-temp expansion emits the target's operand order (`addu $s0,$s1,$s0`).
+   What is missing is a C construct in which the STORE of that value into `idx` is
+   neither a separate copy insn that cse/combine deletes (DB, 3/78) nor a
+   `target == op1` expansion (SB, 1/78). Next probe: read `expr.c`'s
+   `expand_assignment` / `store_expr` for the cases where the assignment's
+   `to_rtx` is NOT passed down as the RHS expansion target (the `want_value`
+   paths, the call-containing-RHS paths, and `safe_from_p`'s clearing of
+   `target`), enumerate the C spellings that reach them — e.g. an assignment whose
+   RHS also contains one of the `rand()` calls, or the sum as the value of a
+   comma expression — and measure each on the JD chassis.
+1. **Break H30's local-alloc wall: make the halfword offset not want `$s0`.** The
+   other of H39's two routes. The halfword offset needs a callee-save only because
+   it is live across all four `rand()` calls, and `find_free_reg` then takes `$s0`
+   because it scans `reg_alloc_order` and (once the byte offset has been routed
+   into `idx`) no other block-local call-crossing quantity exists. Next probe:
+   read `local-alloc.c`'s `qty_phys_copy_sugg` / `qty_phys_sugg` construction and
+   `find_free_reg`'s use of them (local-alloc.c:2205-2270) to see whether an
+   ordinary C-level copy relationship can steer that quantity to `$s1`, then
+   re-measure KB / DA with the halfword offset written to participate in one.
+2. **Seed the permuter from JD, and from this session's OA.** Carried over from
+   the session-7 frontier and now doubled: JD (3/78) and OA (3/79) are both
+   chassis no campaign has ever sampled, and OA's residual is a single duplicated
+   instruction rather than a scheduling decision. Recipe:
+   `tmp/grind/func_800645B0/s5/mkca.py` + `mkws3.sh` (full-TU cpp base.c, honest
+   pipeline, offset-0 target.o), one fresh-seed window with
+   `tools/permuter_campaign.py launch` / `wait` / `harvest --stop`, all inside a
+   single turn.
+
+## [s8] A second set of `idx` placed in the OUTER loop body (the session-7 frontier's highest-value probe) is a dead store and cannot bump reg_n_sets.
+- mechanism: The inner loop's first statement recomputes `idx` unconditionally on entry, so an outer-loop assignment has no downstream use and flow.c's propagate_block deletes it before the count is taken. The frontier's premise (that the inner-loop recomputation keeps the outer assignment "redundant-but-live") confuses a definition with a use.
+- probe: tmp/grind/func_800645B0/s8/sweep27.py NA (`idx = i;` at the top of the outer loop body) and NB (the same at the outer-loop tail), on the JD chassis; scored with `sandbox func_800645B0 --disable all`, diffed unmasked with diffvar27.py.
+- result: NA 3/78 and NB 3/78, byte-identical to the JD control (3/78, residual = the three loop-top points 11/12/65).
+- verdict: KILLED
+
+## [s8] Any second set of `idx` either costs a real instruction or is never counted, so it must be an instruction the target already has, writing the register `idx` occupies — which leaves exactly two candidates, both already walled.
+- mechanism: The last reg_scan is toplev.c:2925 (immediately before cse2); reg_n_sets is then reallocated and recounted from scratch by flow.c:1284-1285 plus the reg_n_sets[regno]++ sites in mark_set_1 (flow.c:2061/2079) DURING life_analysis, which deletes dead stores as it walks, so a deleted set is never counted. Every later pass that deletes insns keeps the count honest: combine decrements at combine.c:2309/2332 and increments only in the narrow split case at combine.c:1815; sched.c:4381-4409 maintains it as well. Therefore a counted set is a surviving instruction, and in a 78-instruction target it must be one of the target's own $s0 writes: 0x800645DC / 0x800646B4 (one insn plus reorg.c's copy — see the H40 corollary), 0x80064600 (the *3 sum, walled by H24's expand_binop operand order) or 0x80064608 (the <<2 byte offset, walled by H30's local-alloc claim).
+- probe: Direct read of toplev.c:2820-3120, flow.c:1280-1290 and 2040-2090, combine.c:1795-1835 and 2300-2340, sched.c:4381-4409; cross-checked against every measured second-set variant in the ledger (H10, H19, H37, H38 all folded and inert; MA/MD/GF all surviving insns that land a foreign value in $s0).
+- result: The reg_n_sets axis is closed except through the two named walls. No further "free second set" spelling can exist, so future sessions should attack expand_binop's target selection (frontier 0) or local-alloc's suggestion machinery (frontier 1) instead of enumerating placements.
+- verdict: CONFIRMED
+
+## [s8] The maintained-index shape can defeat the group-top constant fold by moving `j`'s reset out of the group-top block, and the whole family then costs exactly one instruction: a duplicated `j = 0`.
+- mechanism: With the reset in the outer loop's update (or test) the group-top block has two predecessors, cse cannot propagate the 0, and `idx = i + j;` is emitted as a real `addu $s0,$s3,$a0` instead of H15's `move $s0,$s3`; the inner loop's bottom update is then the insn reorg.c places in the back-edge delay slot (the target's 0x800646B4) and reg_n_sets[idx] == 2 by construction, so sched.c's birthing lift cannot fire. But the reset is then emitted twice (prologue initialiser + loop-tail block) where the target emits `addu $a0,$zero,$zero` exactly once, at the top of the outer loop body.
+- probe: sweep27.py NC and sweep28.py OA/OB/OC/OD/OE/OF/PA/PB — eight reset placements (outer body tail; after / before the outer increment; in the for-init pair; spelled `j = j - j`; group-top sum written `j + i`; inside the loop TEST as `(j = 0), i < 0xF`; in the update with no separate initialiser) — each scored with `sandbox func_800645B0 --disable all` and diffed unmasked.
+- result: OA = OD = OE = PA = PB = 3 / 79; OF 4 / 79; NC = OC = OB = 5 / 79. OA/PA's entire residual is the duplicated `move a0,zero` plus the one-slot shift it causes: the three loop-top points AND the *3 sum's commutative operand order are all correct, which no previous chassis achieved without a reg_n_sets lever. NC/OC additionally lose the claim path's jal delay slot (nop where the target has `addiu $s3,$s3,4`). Banked at rejected/maintained-index-nonfold-reset-costs-one-insn.c.
+- verdict: KILLED as a route (CONFIRMED as a mechanism) — every placement outside the group-top block is duplicated by GCC's loop-exit-test duplication or needs a pre-loop initialiser, and the only non-duplicated placement (the natural `for (j = 0; j < 4; j++)` init) is exactly the one that re-enables the fold. Corollary: the target's 0x800645DC `addu $s0,$s3,$a0` is NOT a source-level statement, so it is reorg.c's non-own-thread copy of the inner loop's first insn.
+
+## [s8] reorg.c can be made to steal the SECOND insn of the loop-top block instead of the first (session-7 frontier item 2).
+- mechanism claim tested: Every chassis' residual reduces to "the loop-top block's first emitted insn is `li $v1,1` where the target has the `addu`", and no session had read reorg.c's candidate selection.
+- probe: Read of reorg.c:3340-3500 (fill_slots_from_thread) plus the empirical JD diff.
+- result: The scan loop's condition is `! stop_search_p (trial, ! thread_if_true) && (! lose || own_thread)`; for a loop back edge the target label is also reached from the preheader so own_thread == 0, and the search stops at the first trial it cannot place. The only way past a trial without taking it is the redundant_insn path (reorg.c:3433-3453), which needs an identical still-valid earlier set of the same register — unavailable for `li $v1,1`, whose register $v1 is reused for the D_800A347C pointer inside the if-body. The JD diff confirms it empirically: our build and the target BOTH copy the loop-top block's first insn into the back-edge delay slot and leave the original before the advanced label (ours `li v1,1` at indices 11 and 65, the target's `addu s0,s3,a0`).
+- verdict: KILLED
+
+## [s8] Session-8 measurement table. sweep27: JD 3/78 (control), NA 3/78, NB 3/78, NC 5/79, ND 7/79 (halfword offset routed through `idx` with the word offset re-derived as `((idx<<1)+idx)<<1`, so the second set is genuinely used — one instruction over target). sweep28: OA 3/79, OB 5/79, OC 5/79, OD 3/79, OE 3/79, OF 4/79, PA 3/79, PB 3/79.
+
+## [s8] A second set of `idx` in the OUTER loop body (session-7 frontier item 0) bumps reg_n_sets[idx] at zero instruction cost, because the inner loop's recomputation keeps it live.
+- mechanism: reg_n_sets is a whole-function count, so a set outside the inner loop cannot disturb the loop-top block's insn list; the claim was that the inner loop's `idx = i + j;` recomputation makes an outer-loop assignment redundant-but-LIVE rather than dead (H19's deletion rule).
+- probe: tmp/grind/func_800645B0/s8/sweep27.py NA (`idx = i;` at the top of the outer loop body, before the inner `for`) and NB (the same at the outer-loop tail), on the JD chassis; scored with `sandbox func_800645B0 --disable all`, unmasked pairs via diffvar27.py.
+- result: NA 3/78 and NB 3/78, byte-identical to the JD control. Liveness comes from USES; a recomputation is a definition, so the outer set is dead and flow.c's propagate_block deletes it before the count is taken.
+- verdict: KILLED
+
+## [s8] Any second set of `idx` either costs a real instruction or is never counted, so a free second set must BE one of the target's own $s0 writes — which leaves exactly two candidates, both already walled.
+- mechanism: The last reg_scan is toplev.c:2925 (immediately before cse2); reg_n_sets is then reallocated and recounted from scratch by flow.c:1284-1285 plus the reg_n_sets[regno]++ sites in mark_set_1 (flow.c:2061/2079) DURING life_analysis, which deletes dead stores as it walks, so a deleted set is never counted. Everything later keeps the count honest: combine decrements at combine.c:2309/2332 and increments only in the narrow both-i2-and-i3-set-the-same-REG split case at combine.c:1815; sched.c:4381-4409 maintains it too.
+- probe: Direct read of toplev.c:2820-3120 (pass order), flow.c:1280-1290 and 2040-2090, combine.c:1795-1835 and 2300-2340, sched.c:4381-4409, plus birthing_insn_p/adjust_priority at sched.c:2505-2600; cross-checked against every measured second-set variant in the ledger (H10, H19, H37, H38 folded and inert; MA/MD/GF surviving insns that land a foreign value in $s0).
+- result: The target's four $s0 writes are 0x800645DC, 0x80064600 (the *3 sum), 0x80064608 (the <<2 byte offset) and 0x800646B4. The first and last are one insn plus reorg.c's copy (see the next hypothesis), so only the sum (walled by H24: expand_binop always emits the assignment's own target as op0, so `addu $s0,$s1,$s0` is unreachable for every `idx = <x> + idx;` spelling) and the byte offset (walled by H30: local-alloc then hands $s0 to the halfword-offset pseudo, 12/78) remain. Also confirmed from source that birthing_insn_p's only other surface, `bb_live_regs[dest]`, is always set here because the loop-top addu's destination is read by the in-block sllv.
+- verdict: CONFIRMED
+
+## [s8] The maintained-index shape can defeat the group-top constant fold that killed H15, by moving `j`'s reset out of the group-top block — and it then reaches the target's loop top and operand order with no reg_n_sets or scheduling lever at all.
+- mechanism: With the reset in the outer loop's UPDATE (or TEST) the group-top block has two predecessors, cse cannot propagate the 0, and `idx = i + j;` is emitted as a real `addu $s0,$s3,$a0` instead of `move $s0,$s3`; the inner loop's bottom update (after `j += 1;`) is then the insn reorg.c puts in the back-edge delay slot exactly as the target has at 0x800646B4, and reg_n_sets[idx] == 2 by construction so sched.c's birthing lift can never fire.
+- probe: tmp/grind/func_800645B0/s8/sweep27.py NC and sweep28.py OA/OB/OC/OD/OE/OF/PA/PB — eight reset placements (outer body tail; after the outer increment; before it; in the for-init pair; spelled `j = j - j`; group-top sum written `j + i`; inside the loop TEST as `(j = 0), i < 0xF`; in the update with no separate initialiser) — each scored with `sandbox func_800645B0 --disable all` and diffed unmasked with diffvar27.py / diffvar28.py.
+- result: OA = OD = OE = PA = PB = 3 / 79; OF 4 / 79; NC = OC = OB = 5 / 79. OA's and PA's ENTIRE unmasked residual is a duplicated `move a0,zero` (prologue initialiser + loop-tail block) and the one-slot shift it causes: indices 11, 12 and 65 — the whole residual of the JD and CA chassis — are gone, and the *3 sum's commutative operand order is correct too. The target emits `addu $a0,$zero,$zero` exactly ONCE, at the top of the outer loop body, and every placement in that block re-enables the fold. Banked at memory/grind/func_800645B0/rejected/maintained-index-nonfold-reset-costs-one-insn.c.
+- verdict: KILLED
+
+## [s8] reorg.c can be made to steal the SECOND insn of the loop-top block instead of the first, which would need no scheduler change at all (session-7 frontier item 2).
+- mechanism: Every chassis' residual reduces to 'the loop-top block's first emitted insn is `li $v1,1` where the target has the addu', and no session had read reorg.c's candidate selection.
+- probe: Read of tools/gcc-2.7.2/reorg.c:3340-3500 (fill_slots_from_thread) plus the empirical JD unmasked diff.
+- result: The scan loop condition is `! stop_search_p (trial, ! thread_if_true) && (! lose || own_thread)`; a loop back edge whose target label is also reached from the preheader gives own_thread == 0, so the search stops at the first unplaceable trial. The only skip path is redundant_insn (reorg.c:3433-3453), needing an identical still-valid earlier set of the same register — unavailable for `li $v1,1`, whose $v1 is reused for the D_800A347C pointer in the if-body. The JD diff confirms it: our build and the target BOTH copy the block's first insn into the back-edge delay slot and leave the original before the advanced label (ours `li v1,1` at 11 and 65, the target's `addu s0,s3,a0`).
+- verdict: KILLED
+
+## [s8] Routing the halfword offset (k*2) through `idx`, so that the second set of `idx` is genuinely used and cannot be folded, is free.
+- mechanism: H35's GB/GC were inert only because the `idx << 1` value was already live as the *12 expansion's own intermediate; re-deriving the word byte offset FROM the new value of `idx` makes the second set genuinely used.
+- probe: sweep27.py ND — `idx = idx << 1;` in the if-body with the three word stores addressed by `((((idx << 1) + idx)) << 1)` (== k*12) and the halfword store by `idx`.
+- result: 7 / 79 — one instruction over target: the re-derivation is 3 insns on top of the `sll` that produced the halfword offset, against the target's 3 insns for both offsets together.
+- verdict: KILLED
