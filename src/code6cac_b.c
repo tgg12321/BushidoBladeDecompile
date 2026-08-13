@@ -849,26 +849,19 @@ s32 func_8002BEA0(void) {
 }
 
 void func_8002C0DC(void) {
-    register s32 var_s1 asm("s1");
-    register u8 *var_s0 asm("s0");
-    register s32 temp_s2 asm("s2");
+    s32 i;
+    u8 *var_s0;
+    s32 temp_s2;
 
-    var_s1 = 0;
-    var_s0 = &D_80101EC8;
     temp_s2 = func_8002BC68(D_800A371C);
 
-    do {
-        u8 *ptr;
-        s32 arg1, arg2;
-        var_s1++;
-        ptr = *(u8 **)var_s0;
-        arg1 = *(s32 *)(var_s0 + 0xD8);
-        arg2 = *(s32 *)(var_s0 + 0xE0);
-        arg1 = *(s32 *)(ptr + 0xD8) - arg1;
-        arg2 = *(s32 *)(ptr + 0xE0) - arg2;
-        func_8001F860((s16 *)var_s0, ratan2(arg1, arg2));
-        var_s0 += 0x44C;
-    } while (var_s1 < 2);
+    for (i = 0; i < 2; i++) {
+        u8 *e = (u8 *)&D_80101EC8 + i * 0x44C;
+        u8 *ptr = *(u8 **)e;
+        s32 arg1 = *(s32 *)(ptr + 0xD8) - *(s32 *)(e + 0xD8);
+        s32 arg2 = *(s32 *)(ptr + 0xE0) - *(s32 *)(e + 0xE0);
+        func_8001F860((s16 *)e, ratan2(arg1, arg2));
+    }
 
     {
         s32 idx;
