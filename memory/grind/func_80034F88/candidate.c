@@ -94,6 +94,38 @@
  * different program value" bullet is dead: func_80077D00 returns &D_8009BD24,
  * 0x6AD4F away across a segment boundary, so no non-constant expression in
  * this function yields the flag address.
+ *
+ * s18 (synthesis) re-measured this body as variant a0_base — still 10 at 49
+ * insns — and added nothing to it either, but closed the last hole in the
+ * ceiling proof and produced the strongest statement the function has yielded
+ * (full write-up under "==== s18 (synthesis) ====" in evidence.md).
+ *
+ * (1) The ceiling proof's load-bearing step, "one C object is one DECL_RTL is
+ * one pseudo", had only ever been checked for SCALAR pointer locals — and it
+ * is not a theorem for AGGREGATES, since a frame-resident array/struct loads
+ * each member read into a fresh pseudo. Measured both ways: a single-slot
+ * aggregate (`u8 *qa[1];`, `struct { u8 *b; } s;`) is scalarised to ONE pseudo
+ * and emits a stream BYTE-FOR-BYTE identical to this file's (10 / 49 insns,
+ * same census); a two-slot aggregate does get two address pseudos but becomes
+ * frame-resident — prologue -24 → -32, `sw v1,16(sp)` plus per-use reloads,
+ * 58 insns, score 35. So the aggregate family neither rescues the single-object
+ * floor nor hides a route to the target, and step (d) now rests on a
+ * measurement. Banked at rejected/aggregate-address-holder-{single-slot-score10,
+ * two-slot-score35}.c.
+ *
+ * (2) The target's own instruction ORDER proves the ORIGINAL source held two
+ * simultaneously-live address objects: `lui $a0,%hi` (80034FC8) and
+ * `addiu $a0` (80034FCC) are emitted BEFORE `sb $v0,0x0($v1)` (80034FD0), i.e.
+ * the second base is materialised while the first is still the live base of a
+ * pending store. With one C object those are the same pseudo, so that set is a
+ * def of the register the store reads — no GCC pass may hoist it above the
+ * use, at any optimisation level. This build emits the forced opposite order
+ * (`sb v0,0(a0)` then `lui a0` / `addiu a0`). The remaining gap is therefore a
+ * SOURCE-MODEL gap, not a search gap: the claim is no longer "our reproduction
+ * cannot get two base registers from one C object" but "the original source
+ * necessarily contained at least two". That is the escalation packet's lead
+ * evidence; it is NOT a licence for a session to self-approve a multi-object
+ * body (checklist T5), and this file stays the best ADMISSIBLE form.
  */
 void func_80034F88(void) {
     s32 *p;

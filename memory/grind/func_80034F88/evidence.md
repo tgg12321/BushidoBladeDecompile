@@ -2185,3 +2185,162 @@ is evidence of nothing.
 - [s17] Sibling context (not a lever): the next function in the file, func_8003504C (src/code6cac_b.c:3938), reads the same status word with 'D_80102786 = ((u32)p[8] >> 3) & 1;', so p[8] is a bitfield and func_80034F88 mirrors its bits 0..2 into D_80106A73's bits 0..2. func_8003504C still carries 10 regfix rules, so its own two-pointers-from-one-global spelling is evidence of nothing.
 
 - [s17] src/ was restored clean after every probe (git status shows only memory/grind ledger files, the three new rejected/ forms, and metrics/events.jsonl).
+
+==== s18 (synthesis) ====
+
+MODALITY BRIEF: re-read the whole ledger, write the best MERGED attack, reset
+the frontier. Two things came out of the merge: one previously-unmeasured hole
+in the ceiling proof (now closed by measurement, in both directions), and one
+proof that no session had stated, which materially changes what the escalation
+packet is asking the owner.
+
+--- 1. THE HOLE IN THE CEILING PROOF, AND ITS CLOSURE.
+
+The ceiling argument the ledger has rested on since s15/s16 is a chain:
+  (a) the target holds &D_80106A73 in TWO hard registers;
+  (b) hard registers are handed out per allocno, global.c:426 makes exactly one
+      allocno per pseudo, find_reg gives one hard register per allocno for the
+      whole live range, and GCC 2.7.2 has no live-range splitting;
+  (c) therefore two hard registers require two pseudos;
+  (d) "one C object is one DECL_RTL is one pseudo", so two pseudos require two
+      C pointer objects -- the construct the Judge banned.
+
+Step (d) had only ever been verified for SCALAR pointer locals. It is not a
+theorem: a C object of AGGREGATE type is not one DECL_RTL pseudo at all. A
+frame-resident aggregate is a MEM, and every read of a member loads into a
+FRESH pseudo -- which is precisely the "two pseudos from one declared C object"
+that the whole argument says is impossible. Eighteen sessions in, no aggregate
+address holder had ever been measured, so the load-bearing step of the ceiling
+argument had a live hole.
+
+Measured this session (tmp/grind/func_80034F88/s18/{probe.py,probe2.py,
+variants/,results.json,asm_*.txt}); all four bodies are the banked floor-10
+chassis with the pointer local replaced by an aggregate:
+
+  variant        shape                                     score  insns  lbu/sb/lui
+  a0_base.c      control: scalar `u8 *q` (candidate.c)        10     49   175/164/456
+  g1_arr1.c      `u8 *qa[1];` one slot, all four accesses     10     49   175/164/456
+  g2_struct1.c   `struct { u8 *b; } s;` one member            10     49   175/164/456
+  g3_arr2.c      `u8 *qa[2];` mask+blk1 on [0], blk2/4 on [1] 35     58   175/164/456
+  g4_struct2.c   `struct { u8 *a, *b; } s;` same split        35     58   175/164/456
+
+The kill is stronger than the scores: g1 and g2 are byte-for-byte the SAME
+instruction stream as the scalar control (`diff asm_a0_base.txt asm_g1_arr1.txt`
+and the same against asm_g2_struct1.txt are both empty). A single-slot,
+address-never-taken aggregate is scalarised into exactly ONE pseudo by GCC
+2.7.2, so it is not a route to a second address register -- it is the scalar
+form spelled longer.
+
+The two-slot aggregates DO create two address pseudos, and they pay for it in
+the frame: the prologue grows from `addiu sp,sp,-24` to `addiu sp,sp,-32`, the
+first address is SPILLED with `sw v1,16(sp)` and reloaded per use, and the body
+lands at 58 instructions against the target's 49 (score 35). That is strictly
+worse than the two-SCALAR-object forms the Judge banned (10 and 21), and
+nowhere near 0. The aggregate family therefore neither rescues the
+single-object floor nor hides an unexplored route to the target.
+
+Step (d) now reads, in its repaired form: two address pseudos require either
+two scalar C pointer objects (the banned construct, reaches 0) or one aggregate
+C object with two slots (frame-resident, 58 insns, score 35, cannot reach 0).
+The ceiling stands, and it now stands on a measurement instead of on an
+untested premise.
+
+--- 2. THE ORDERING PROOF: THE TARGET'S OWN INSTRUCTION ORDER SHOWS THE
+--- ORIGINAL SOURCE HELD TWO SIMULTANEOUSLY-LIVE ADDRESS OBJECTS.
+
+Read straight off asm/funcs/func_80034F88.s, three consecutive instructions:
+
+    /* 80034FC8 */  lui    $a0, %hi(D_80106A73)     <- block 2's base materialised
+    /* 80034FCC */  addiu  $a0, $a0, %lo(D_80106A73)
+    /* 80034FD0 */  sb     $v0, 0x0($v1)            <- block 1's store, base $v1
+
+The second base is materialised while the FIRST base is still the live base
+register of a store that has not been issued yet. The two values overlap.
+
+A single C pointer object cannot produce that order, and not for allocator
+reasons -- for dataflow reasons that hold at every optimisation level. One C
+pointer local is one DECL_RTL pseudo; re-assigning it emits `(set (reg q)
+(symbol_ref))` on the SAME pseudo; and that set is a def of the very register
+the pending `sb` reads as its base. No GCC pass will move a def of a pseudo
+above a use of that pseudo, because doing so changes the program. So with one
+object the store must precede the re-materialisation, always.
+
+Our own build confirms the forced order empirically. s18/asm_a0_base.txt,
+block 1:
+
+    sb    v0,0(a0)          <- block 1's store FIRST
+    lui   a0,0x0            <- only then the next base
+    addiu a0,a0,0
+
+i.e. exactly the target's two instructions, in the only order a single object
+permits. Every single-object form measured across eighteen sessions has this
+order; no source-level dial (declaration order, live-range shape, statement
+order, staging, mask spelling, temporary width, register pins, 6,450+ permuter
+iterations) has ever flipped it, and by the argument above none can.
+
+This upgrades the ledger's central claim in kind, not merely in strength. Until
+now the statement was "OUR reproduction cannot get two base registers from one
+C object". The statement now available is "the ORIGINAL SOURCE necessarily
+contained at least two distinct address objects for D_80106A73", because the
+shipped instruction order is unreachable from any one-object C program compiled
+by any compiler that preserves dataflow.
+
+That is the most decision-relevant fact this function has produced, and it
+belongs at the top of the escalation packet, because it changes the question
+the owner is being asked. The Judge's ban was reasoned as "four identical
+`u8 *q = &D_80106A73;` declarations treated as a register-allocation lever
+rather than as ordinary program logic". The ordering proof says a multi-object
+source is not a lever invented to steer the allocator -- it is a property of the
+code that was actually compiled in 1998. Whether that makes a two- or
+three-object reconstruction admissible is still NOT a session's call (checklist
+T5 forbids self-approving a respelling of a banned construct, and the standing
+2026-07-27 ruling wants a cited SOTN-master precedent for a coercion/spelling
+family). But the escalation entry should ask the sharpened question -- "is
+reconstructing a provably-multi-object original a coercion at all?" -- rather
+than the old one, "may we add handles to steer the allocator?".
+
+--- 3. THE MERGED POSITION, FOR THE NEXT LADDER PASS.
+
+Stated once so no future session re-derives it:
+
+  * Floor 10 at 49/49 insns, census lbu 175 / sb 164 / lui 456 against the
+    target's 176 / 164 / 456. The entire residual is block 1: the base/byte
+    register pair is swapped against the target, and block 1's post-store
+    reload is folded by cse (our maspsx nop where the target has the second
+    `lbu`).
+  * The reload is priced at exactly +1 (s17's e1: buy the reload with a direct
+    symbol read, pay one extra `lui $at`; 11 at 50 insns with the target's
+    EXACT access census). The trade is exactly balanced -- getting the reload
+    without the lui needs a second address pseudo.
+  * A second address pseudo is reachable only by a second scalar C pointer
+    object (banned; reaches 0) or a two-slot aggregate (new this session;
+    frame-resident, 58 insns, 35). There is no third route: anonymous symbol
+    references never occupy a register (s16), reload rematerialisation is
+    short-circuited by reload.c:4128-4137 (s16), no non-constant expression in
+    the function yields the address (s17), the declaration model is
+    codegen-neutral (s17), and the semantic simplification is four instructions
+    short of the target's shape (s17).
+  * The target's instruction ORDER proves the original held two objects (this
+    session), so the gap between the admissible floor and the target is a
+    SOURCE-MODEL gap, not a search gap.
+
+The correct next step is the escalation-modality pass the frontier already
+names, carrying the ordering proof. The pure-C ladder should not be re-run.
+
+- [s18] s18 measured the aggregate address-holder family for the first time in eighteen sessions: a0_base (scalar control) 10 / 49 insns / lbu 175 sb 164 lui 456; g1_arr1 (`u8 *qa[1];`) 10 / 49 / same census; g2_struct1 (`struct { u8 *b; } s;`) 10 / 49 / same census; g3_arr2 (`u8 *qa[2];`) 35 / 58; g4_struct2 (two-member struct) 35 / 58. Results at tmp/grind/func_80034F88/s18/results.json.
+
+- [s18] The single-slot aggregate forms are not merely equal-scoring — their disassembly is byte-for-byte identical to the scalar candidate's (empty diffs of asm_g1_arr1.txt and asm_g2_struct1.txt against asm_a0_base.txt). GCC 2.7.2 scalarises a single-slot, address-never-taken aggregate into exactly one pseudo, so aggregate spelling is inert on this function.
+
+- [s18] The two-slot aggregate forms do produce two address pseudos, but the aggregate goes to the frame: prologue `addiu sp,sp,-24` becomes `addiu sp,sp,-32`, the first address is stored with `sw v1,16(sp)` and reloaded per use, and the body costs 9 extra instructions (58 vs the target's 49). Two address pseudos are therefore obtainable from ONE C object, but only at a price that puts the form further from the target than any two-scalar-object form.
+
+- [s18] The ceiling proof's step (d) is repaired and now measured rather than assumed: two address pseudos require either two scalar C pointer objects (the banned construct, reaches 0) or one two-slot aggregate (58 insns, score 35, cannot reach 0). No third route survives — anonymous symbol references never occupy a register (s16), reload rematerialisation is short-circuited by reload.c:4128-4137 (s16), no non-constant expression in the function yields the flag address (s17), and the 4-byte declaration model is codegen-neutral (s17).
+
+- [s18] ORDERING PROOF (new, and the most decision-relevant fact this function has produced): the target emits `lui $a0,%hi(D_80106A73)` at 80034FC8 and `addiu $a0,$a0,%lo` at 80034FCC BEFORE `sb $v0,0x0($v1)` at 80034FD0 — the second base is materialised while the first is still the live base of a pending store. With one C pointer object those are the same pseudo, so the second materialisation is a def of the register the store reads, and no dataflow-preserving compiler may emit it first. The original source therefore necessarily contained at least two distinct address objects for D_80106A73.
+
+- [s18] The forced opposite order is visible in our own floor-10 build (s18/asm_a0_base.txt): `sb v0,0(a0)` then `lui a0` / `addiu a0`. Eighteen sessions of source-level dials have never flipped it and, by the dataflow argument, none can.
+
+- [s18] Consequence for the escalation packet: the Judge's ban was reasoned as 'four identical `u8 *q = &D_80106A73;` declarations treated as a register-allocation lever rather than as ordinary program logic'. The ordering proof shows a multi-object source is not an invented lever but a property of the code that was actually compiled in 1998, so the gate-2 question the owner should be asked is 'is reconstructing a provably-multi-object original a coercion at all?' rather than 'may we add handles to steer the allocator?'. A session may NOT self-answer that (checklist T5; the standing 2026-07-27 ruling's citation requirement), and no multi-object body was installed or submitted this session.
+
+- [s18] src/code6cac_b.c was left exactly as committed (the probe harness splices and restores; `git status` shows src clean). The session's only tracked changes are the two ledger files, two new rejected/ banks, and the candidate.c header.
+
+- [s18] Housekeeping note for future sessions: the body committed in src/code6cac_b.c is NOT candidate.c — it is an older form carrying `asm volatile("" ::: "memory")` scheduling barriers, which the honest sandbox strips, and which coincidentally also scores 10 (with a different instruction stream: one base in $a2 plus `move` copies). Any 'base' measurement taken without splicing candidate.c is measuring that body, not the banked candidate.
