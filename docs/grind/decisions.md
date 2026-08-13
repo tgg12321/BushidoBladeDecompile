@@ -5006,3 +5006,7 @@ its own SOTN-master evidence bar — the concrete candidate would be an empty st
 at the inner-loop top, which the permuter independently rediscovers as the unique closing device —
 or (b) canonical-asm authorization despite the LOW scan tier. Both are owner-only policy calls,
 neither derivable by a grind session.
+
+## 2026-08-12 20:58 — func_800470B0 — final call — **PASS**
+
+Pure cheat-removal plus two semantically-grounded corrections; no sanctioned-exception families invoked, no FAKE annotations needed. The diff deletes the HEAD body's register asm("s1"/"s2") pins and volatile s32 _sp_pad[2] frame pad (cheats, now gone entirely) and closes the match with (1) retyping the local to the real PsyQ MATRIX and (2) restoring the dropped third argument to func_80052930 — a correctness fix, not GCC-steering. Decisive fact, independently verified: src/sound.c:47 declares func_80052930 with three parameters and the sibling call at sound.c:425 passes three; include/gte.h:29 MATRIX is exactly the target's 32-byte locals region. Working-tree diff confirmed identical to the candidate; final body inspected — plain C throughout, no pins/volatile/dead constructs. Full evidence: memory/grind/func_800470B0/hypotheses.md (H1-H5), evidence.md, rejected/store-order-*.c.
