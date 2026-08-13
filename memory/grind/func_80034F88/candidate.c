@@ -101,6 +101,35 @@
  * a MISCOMPILE (the third block's store hoisted inside the `if` arm) — see
  * rejected/permuter-17-store-hoisted-into-arm-MISCOMPILES.c.  The sandbox
  * scores bytes, not behaviour.
+ *
+ * =====================================================================
+ * s5 (permuter modality, DIRECTED) — form UNCHANGED; three of the levers
+ * above are now known to be free, and two more are proven load-bearing
+ * =====================================================================
+ * s5 ran the permuter's OTHER mode (manual mutation via PERM_GENERAL, random
+ * mutation disabled) as an exhaustive enumerator, and scored the same two
+ * cross-products deterministically with the honest sandbox: 1,008 forms in
+ * total (864 + 144), plus 1,152 permuter iterations across the same spaces.
+ * Best = 18 in both waves. The only campaign output (permuter score 1290 vs a
+ * base of 1300 — the permuter ranked it BETTER) sandbox-scores 18, a tie; see
+ * rejected/directed-perm-mixed-condform-score18-TIE.c.
+ * What changed in how this body must be READ:
+ *  - Lever 2 above (condition BEFORE the flag-byte read) is NO LONGER A LEVER.
+ *    All eight per-block orderings score 18. It was worth 1 point at floor 23
+ *    and was absorbed by lever 4's `s32 val` widening. Spell it however reads
+ *    best; do not defend it.
+ *  - `p = func_80077D00();` BEFORE `ptr = &D_80106A73;` is load-bearing and was
+ *    never previously probed: assigning the pointer first costs a MINIMUM of
+ *    +11 (29 over all 432 such forms). Do not tidy that order.
+ *  - Lever 1's `*ptr &= 0xF8;` may equally be spelled `*ptr = *ptr & 0xF8;`
+ *    (both 18). What defeats combine's `%lo` fold is the address expression
+ *    having TWO memory operands, not the compound assignment.
+ *  - `s32 val` may equally be `u32 val` (both 18); `u8 val` is 20. The lever is
+ *    WORD WIDTH (the zero_extend), not signedness. `u8 val2` and a single
+ *    word-typed `c` are both required (s32 val2 / u32 val2 / u8 c / split
+ *    c1,c2,c3 all cost 1-2).
+ *  - The copy loop is exactly orthogonal: `+ 0x17 + i` costs exactly +2 in all
+ *    432 pairings, delta set {2}.
  */
 void func_80034F88(void) {
     s32 *p;

@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 18,
    "modality": "permuter",
    "headline": "Permuter axis measured DEAD: 50,425 iterations across two structurally different chassis never beat the honest floor of 18, the permuter's own metric is uncorrelated with the sandbox here, its single "
+  },
+  {
+   "session": 5,
+   "floor": 18,
+   "modality": "permuter",
+   "headline": "Directed-permuter axis KILLED: 1,008 forms enumerated exhaustively and sandbox-scored across two cross-products (plus 1,152 permuter iterations over the same spaces), best 18 in both waves; three of t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A forensic cc1 -da dump of the FLOOR-18 form itself will explain the v0/v1 swap of the selected value in terms of allocno order and conflicts, instead of leaving it to spelling roulette.",
-   "mechanism": "s2's only RTL dumps (tmp/grind/func_80034F88/s2/rtl/v10/) are of a pre-lever variant that no longer resembles the current body. The `.greg` dump's `;; Register dispositions` and conflict lists would say WHY the pseudo holding `val2` lands in v1 where target has v0 \u2014 target's v0 is the very register `lw v0,0x20(a1)` just used for the condition, so the suspicion is that our condition temporary `c` holds v0 across the block.",
-   "next_probe": "Run tmp/grind/func_80034F88/s2/dump_rtl.sh against the current src/ body; read the dispositions and conflict list for the pseudo holding `val2`; then diff against the same dump for a variant with `c` eliminated (`if (!(p[8] & K))` inline) to test whether `c`'s live range is what occupies v0. This is a forensics-modality probe and it is the cheapest remaining honest measurement on the function."
+   "hypothesis": "A forensic cc1 -da dump of the FLOOR-18 form itself will explain the v0/v1 swap of the selected value in terms of allocno order and conflicts, instead of leaving it to spelling roulette. It is now the ONLY remaining instrument that is not another spelling.",
+   "mechanism": "s2's only RTL dumps (tmp/grind/func_80034F88/s2/rtl/v10/) are of a pre-lever variant that no longer resembles the current body. The .greg dump's `;; Register dispositions` and conflict lists would say WHY the pseudo holding `val2` lands in v1 where target has v0 \u2014 target's v0 is the very register `lw v0,0x20(a1)` just used for the condition, so the suspicion is that our condition temporary `c` holds v0 across the block. s5-H1 makes this cheaper than it was: the statement-ordering axis is measured FREE, so a `c`-eliminated variant can be dumped without perturbing anything else.",
+   "next_probe": "Run tmp/grind/func_80034F88/s2/dump_rtl.sh against the current src/ body; read the dispositions and the conflict list for the pseudo holding `val2`; then diff against the same dump for a variant with `c` eliminated (`if (!(p[8] & K))` inline). Forensics modality."
   },
   {
-   "hypothesis": "Directed permuter (PERM_* macros) can still contribute as an exhaustive ENUMERATOR of a specific axis even though random permuter is dead.",
-   "mechanism": "s4 ran random campaigns only, and s4-H1 shows the permuter's metric is not a gradient here \u2014 so its value is not as a search but as a mechanism for enumerating a cross-product (e.g. every ordering of the three statements in a flag block, or every combination of temporary types) whose members are then re-scored by the sandbox.",
-   "next_probe": "tools/permuter_annotate.py --func func_80034F88 --hint <rule-slug> to place PERM_* macros over the flag-block statement ordering and temporary types, one campaign from the floor-18 chassis, harvest and re-score every output with tmp/grind/func_80034F88/s4/eval.py. Low expectation; run it only after the F1 forensics probe, which is likelier to be decisive."
+   "hypothesis": "The flag section's SHAPE \u2014 not its spelling \u2014 is what has never been varied: a loop over a bit index, rather than three unrolled blocks.",
+   "mechanism": "s1-s5 all assumed the source was three unrolled blocks because the target is unrolled, but at -O2 without -funroll-loops GCC does not unroll, so an unrolled target does not by itself imply an unrolled source only if the loop would be fully peeled \u2014 which this compiler will not do. Measuring it is the cheapest way to falsify the assumption that has silently underpinned ~1,070 spellings, and it changes the address/liveness structure of all three blocks at once rather than one statement at a time.",
+   "next_probe": "Write the flag section as `for (k = 1; k <= 4; k <<= 1) { ... }` and as an explicit 3-iteration loop over a local `u8 bits[3]`-free index, score both with `sandbox func_80034F88 --disable all`, and read the objdump: if either produces a real loop, the shape is refuted immediately; if GCC peels, the peeled form is a genuinely new chassis. rederive/synthesis modality."
   },
   {
    "hypothesis": "s3's F3 escalation packet stands, with one fact added, and must still NOT be filed from a non-escalation modality.",
-   "mechanism": "If s3-H4 holds (cse.c:7329 records a SET_DEST unless src_elt is 0, and canon_hash sets do_not_record for a MEM only under MEM_VOLATILE_P), honest pure C cannot produce the target's four lbu reloads; the two spellings that could are ruled a cheat (s2-F1) and ruled out by the volatile carve-out's own two-prong gate (s3-H1). s4 adds that the permuter, given 50,425 iterations from two structurally different chassis, also never produced them.",
-   "next_probe": "Do NOT file. The ladder still has forensics, rederive and synthesis untried, and s3 alone found 5 honest points that two prior sessions had missed while believing the family was exhausted. If the driver later assigns escalation modality, the packet is written up in hypotheses.md F3 plus the rejected/*.c headers, and this session's permuter negative is the newest line in it."
+   "mechanism": "If s3-H4 holds (cse.c:7329 records a SET_DEST unless src_elt is 0, and canon_hash sets do_not_record for a MEM only under MEM_VOLATILE_P), honest pure C cannot produce the target's four lbu reloads; the two spellings that could are ruled a cheat (s2-F1) and ruled out by the volatile carve-out's two-prong gate (s3-H1). s5 adds that the DIRECTED permuter, given an exhaustive enumeration of 1,008 forms across two cross-products, also never produced them.",
+   "next_probe": "Do NOT file. The ladder still has forensics, rederive and synthesis untried, and s3 alone found 5 honest points that two prior sessions had missed while believing the family was exhausted. If the driver later assigns escalation modality, the packet is written up in hypotheses.md F3 plus the rejected/*.c headers, and this session's directed-permuter negative is the newest line in it."
   }
  ],
  "judge_constraints": [],

@@ -600,3 +600,181 @@ rederive and synthesis untried — grind those first.
 - probe: Five standalone chassis files scored with tmp/grind/func_80034F88/s4/score_files.py (splice into src/code6cac_b.c, `sandbox func_80034F88 --disable all`, restore src/).
 - result: None improves the floor. Per-block temporaries (va/vb/vc + ra/rb/rc + ca/cb/cc) = 30 at 50 insns; the copy loop addressed through the existing pointer as `*(ptr - 3 + i)` = 31 at 50; the third block storing via `*ptr = val2;` = 22 at 50; the explicit (u8)-cast staging variable = 18 (neutral); block 1 reading the flag before its condition while blocks 2-3 stay condition-first = 18 (neutral). Banked as rejected/perblock-temps-score30.c, rejected/copyloop-via-ptr-alias-score31.c and rejected/last-store-via-ptr-score22.c.
 - verdict: KILLED
+
+## Resolved in s5 (permuter — DIRECTED)
+
+### s4-F2 — KILLED. "Directed permuter (`PERM_*` macros) can still contribute as
+### an exhaustive ENUMERATOR of a specific axis even though random permuter is
+### dead."
+*Statement.* Random sampling is dead (s4), but manual-mutation mode makes the
+permuter enumerate a declared cross-product, and re-scoring every member with
+the honest sandbox would close an axis rather than sample it.
+*Probe.* Two directed campaigns through `tools/permuter_campaign.py`
+(launch / wait IN-TURN / harvest --stop), each with a `PERM_GENERAL`-annotated
+base and NO `PERM_RANDOMIZE` so random mutation is disabled: `s5/ws`
+(864-form ordering/select/call-order/loop space) and `s5/ws2` (144-form
+type/mask/condition-form space). Both campaigns terminated by themselves on
+space exhaustion (864 and 288 iterations). In parallel the SAME two
+cross-products were enumerated deterministically and every member scored with
+`sandbox func_80034F88 --disable all` — `s5/sweep5.py` (864 forms) and
+`s5/sweep6.py` (144 forms), results in `s5/sweep5.jsonl` / `s5/sweep6.jsonl`.
+*Result.* **1,008 forms scored on the honest metric; best = 18 in both waves; no
+form beats, and none but the known chassis ties, the floor.** The directed
+campaigns produced exactly ONE output between them (`ws2/output-1290-1`,
+permuter weighted score 1290 vs base 1300) and it sandbox-scores 18 — a tie,
+banked at `rejected/directed-perm-mixed-condform-score18-TIE.c`. The permuter
+axis is now closed in BOTH modes: random (s4, 50,425 iters) and directed (s5,
+1,152 iters + 1,008 exhaustive sandbox scores). **KILLED.**
+
+### s5-H1 — CONFIRMED. The per-block ORDER of the condition read and the
+### flag-byte read is completely neutral at floor 18.
+*Statement.* s3's 23 -> 22 "condition before the flag read" lever should still
+be worth a point, and mixing orders per block might be worth more.
+*Mechanism.* Ordering pins the relative position of `lw v0,0x20(a1)` and the
+`lbu`, which decides whether the load-delay slot is filled.
+*Probe.* Wave A enumerates all 8 per-block order combinations against every
+other axis (`s5/sweep5.jsonl`).
+*Result.* The eight 18-point forms are precisely `call=pc` x `sels=nnn` x
+`loop=i17` crossed with ALL EIGHT orderings — the axis contributes ZERO in every
+combination. The s3 lever was worth 1 point at floor 23 and was ABSORBED by the
+`s32 val` widening (s3-H5) rather than being additive with it. Practical
+consequence for later sessions: spell that ordering however reads best; it is
+not a lever any more and must not be treated as load-bearing. **CONFIRMED.**
+
+### s5-H2 — CONFIRMED (new, and it is the largest single-axis penalty measured
+### on this function). `ptr = &D_80106A73;` must be assigned AFTER the call.
+*Statement.* The relative order of `p = func_80077D00();` and
+`ptr = &D_80106A73;` is cosmetic.
+*Mechanism (measured, not assumed).* It is not cosmetic: creating the address
+pseudo BEFORE the call insn makes it live across the call, which reshapes the
+whole flag section's allocation and address materialisation.
+*Probe.* Wave A crosses both call orders with all 432 other combinations.
+*Result.* Minimum over the 432 `ptr`-first forms is **29** (+11 over the floor);
+minimum over the 432 call-first forms is 18. This axis had never been probed in
+s1-s4. **CONFIRMED — the call-first order is load-bearing and must not be
+"tidied".**
+
+### s5-H3 — CONFIRMED. The copy-loop spelling is exactly orthogonal to every
+### flag-block spelling.
+*Probe.* Wave A pairs each of the 432 flag-section forms with both copy-loop
+spellings.
+*Result.* `*((u8 *)p + 0x17 + i)` scores EXACTLY +2 over
+`*((u8 *)p + i + 0x17)` in all 432 pairs — the delta set is the single value
+{2}, no exceptions. s3's copy-loop lever is fully independent of everything
+else, which is why it survived every subsequent change. **CONFIRMED.**
+
+### s5-H4 — KILLED. The type / cardinality / condition-shape cross-product
+### contains an improvement.
+*Statement.* s3 measured val/val2 types only as a 2x2 (s32/u8) on one condition
+form; u32, the type of `c`, splitting `c` alone, the mask spelling and the
+masked-inside-the-`if` condition form were all untried, and none had ever been
+crossed with the others.
+*Probe.* Wave B, 144 forms (`s5/sweep6.py`).
+*Result.* Best 18, reached only by {`s32 val`, `u32 val`} x {compound, expanded}
+mask with `u8 val2`, `s32 c`, one shared `c`, condition pre-masked. Everything
+else is worse: `u8 val` 20, `s32 val2` / `u32 val2` 20, `u8 c` 19, three used
+`c1/c2/c3` locals 19, condition masked inside the `if` 19 at 52 insns. Three of
+these are genuinely new facts: (a) what the loaded byte needs is WORD width, not
+signedness — `u32 val` ties `s32 val`; (b) the mask spelling
+`*ptr &= 0xF8;` vs `*ptr = *ptr & 0xF8;` is NEUTRAL, so what defeats combine's
+`%lo` fold is the address expression having two memory operands, not the
+compound-assignment syntax; (c) splitting only `c` costs 1, so s4's per-block
+score of 30 was dominated by splitting `val`/`val2`, not `c`. **KILLED.**
+
+## Open frontier for s6
+
+### F1 (unchanged, and now the ONLY instrument left that is not spelling) — a
+### forensic `-da` read of the FLOOR-18 form itself.
+Permuter is closed in both modes (s4 random, s5 directed) and structural
+spelling has now been enumerated exhaustively over two large cross-products
+(s5's 1,008 forms) on top of s2/s3's ~60 hand-measured ones. Every one bottoms
+at 18. What has still NEVER been done is an RTL dump of the CURRENT body:
+s2's only dumps (`s2/rtl/v10/`) are of a pre-lever variant. The `.greg` dump's
+`;; Register dispositions` and conflict list would say WHY the pseudo holding
+`val2` lands in `v1` where target has `v0` — target's `v0` is the very register
+`lw v0,0x20(a1)` just used for the condition, so the standing suspicion is that
+our condition temporary `c` holds `v0` across the block.
+*Next probe.* `s2/dump_rtl.sh` against the current src/ body; read the
+dispositions and the conflict list for the `val2` pseudo; then diff against the
+same dump for a variant with `c` eliminated (`if (!(p[8] & K))` inline). Note
+s5-H1 makes the ordering axis free, so a `c`-eliminated variant can be dumped
+without disturbing anything else. Forensics modality.
+
+### F2 — rederive / synthesis modalities are untried.
+The ladder still holds `rederive` (what did the ORIGINAL source look like — the
+four `lbu` reloads plus three `lui`+`addiu` bases are a signature that may be
+produced by a shape nobody has written yet, e.g. the flag section being a small
+loop over a bit-index rather than three unrolled blocks) and `synthesis`. A
+bit-index loop over `{1,2,4}` has never been measured on this function; it is
+the one structural shape s1-s5 all assumed away, because the target is unrolled
+— but GCC unrolls nothing here, so an unrolled TARGET does not imply an
+unrolled SOURCE only if the loop were fully peeled, which `-O2` without
+`-funroll-loops` will not do. Cheap to falsify and it is the last untried
+SHAPE rather than another spelling.
+
+### F3 — the escalation packet, unchanged; do NOT file it from a
+### non-escalation modality.
+s3's F3 stands verbatim, with s4's permuter negative and now s5's directed-
+permuter negative (1,008 exhaustively enumerated forms, 0 improvements) as the
+newest lines in it. The ladder still has forensics, rederive and synthesis
+untried — grind those first.
+
+## [s5] s4's frontier F2 — directed permuter (PERM_* macros) can still contribute as an exhaustive ENUMERATOR of a specific axis even though the random permuter is dead.
+- mechanism: decomp-permuter's manual-mutation mode: a base annotated with multi-choice PERM_GENERAL(...) macros and NO PERM_RANDOMIZE disables random mutation entirely and makes the permuter enumerate the declared cross-product, printing "Will run for N iterations" where N is the space size. Its own weighted metric is not a gradient here (s4-H1), so the value is enumeration, with every member re-scored by the honest sandbox.
+- probe: Two directed campaigns via tools/permuter_campaign.py (launch / wait IN-TURN / harvest --stop), each terminating by itself on space exhaustion: tmp/grind/func_80034F88/s5/ws, label directed-perm-general, 864-form space (call/ptr order x per-block condition-vs-read order x per-block select form neg/pos/ternary x copy-loop spelling), 864 iterations; and tmp/grind/func_80034F88/s5/ws2, label directed-types-condform, 144-form space (val/val2/c types x c cardinality x mask spelling x condition form), 288 iterations. In parallel the SAME two cross-products were enumerated deterministically and EVERY member scored with `sandbox func_80034F88 --disable all` via s5/sweep5.py (864 forms) and s5/sweep6.py (144 forms).
+- result: 1,008 forms scored on the honest metric; best is 18 in both waves, no improvement on the floor. Wave A distribution: 18 x8, 19 x8, 20 x24, 21 x56, 22 x48, 23 x88, 24 x80, 25 x56, 26 x48, 27 x16, tail to 38. Wave B: 18 x4, 19 x28, 20 x14, 21 x98. The two campaigns produced exactly ONE output between them (ws2/output-1290-1, permuter weighted score 1290 against base 1300 — i.e. the permuter ranked it BETTER than the floor chassis) and it sandbox-scores 18, a tie; banked at rejected/directed-perm-mixed-condform-score18-TIE.c and a third independent confirmation of s4-H1. The permuter axis is now closed in both of its modes: random (s4, 50,425 iterations) and directed (s5, 1,152 iterations plus 1,008 exhaustive sandbox scores).
+- verdict: KILLED
+
+## [s5] s3's "condition read before the flag-byte read" lever is still worth a point at floor 18, and mixing the order per block is worth more.
+- mechanism: Source order pins the relative position of `lw v0,0x20(a1)` and the flag-byte `lbu`, which decides whether the lw's load-delay slot gets filled; s3 measured the lever as 23 -> 22 on the pre-widening chassis.
+- probe: Wave A enumerates all 8 per-block order combinations against every other axis (864 forms, s5/sweep5.jsonl).
+- result: The eight 18-point forms are precisely call-first x all-negated-selects x `p + i + 0x17` loop, crossed with ALL EIGHT per-block orderings — the axis contributes ZERO in every combination. The s3 lever was ABSORBED by the s32-val widening (s3-H5) rather than being additive with it. Practical consequence: the ordering is free, so it must not be treated as load-bearing, and a forensics variant may reorder or eliminate the condition temporary without disturbing anything else.
+- verdict: CONFIRMED
+
+## [s5] The relative order of `p = func_80077D00();` and `ptr = &D_80106A73;` is cosmetic.
+- mechanism: Assigning the pointer local before the call makes its address pseudo live ACROSS the call insn, which reshapes the whole flag section's allocation and per-block address materialisation.
+- probe: Wave A crosses both call orders with all 432 other axis combinations.
+- result: Refuted, and it is the largest single-axis penalty measured on this function: the minimum over the 432 `ptr`-first forms is 29 (+11 over the floor) while the minimum over the 432 call-first forms is 18. This axis had never been probed in s1-s4. The call-first order is load-bearing and must not be "tidied".
+- verdict: KILLED
+
+## [s5] The type / cardinality / condition-shape cross-product (u32 temporaries, the type of `c`, splitting only `c`, the mask spelling, and masking inside the `if`) contains a floor improvement.
+- mechanism: s3 measured val/val2 types only as a 2x2 (s32/u8) on a single condition form, and s4's per-block probe split ALL THREE temporaries at once; none of these axes had ever been crossed with the others.
+- probe: Wave B, 144 forms, every one scored with `sandbox func_80034F88 --disable all` (s5/sweep6.py, s5/sweep6.jsonl).
+- result: Best 18, reached only by {s32 val, u32 val} x {compound mask, expanded mask} with u8 val2, s32 c, one shared c and a pre-masked condition. `u8 val` 20; `s32 val2` and `u32 val2` 20; `u8 c` 19; three used c1/c2/c3 locals 19; condition masked inside the `if` 19 at 52 insns. Three new facts fall out: (a) the loaded byte needs WORD WIDTH, not signedness — `u32 val` ties `s32 val`, so s3-H5's mechanism is the zero_extend, full stop; (b) `*ptr &= 0xF8;` and `*ptr = *ptr & 0xF8;` are NEUTRAL, so what defeats combine's %lo fold is the address expression having two memory operands rather than the compound-assignment syntax; (c) splitting only `c` costs exactly 1, so s4's per-block score of 30 was dominated by splitting val/val2.
+- verdict: KILLED
+
+## [s5] The copy-loop spelling interacts with the flag-block spellings.
+- mechanism: If the two regions competed for registers or scheduling slots, the copy loop's 2-point lever would vary with the flag section's shape.
+- probe: Wave A pairs each of the 432 flag-section forms with both copy-loop spellings and diffs the scores pairwise.
+- result: `*((u8 *)p + 0x17 + i)` scores EXACTLY +2 over `*((u8 *)p + i + 0x17)` in all 432 pairs — the delta set is the single value {2}, with no exceptions. The copy loop is fully orthogonal to every flag-block spelling, which is why s3's lever survived every later change and why no future session needs to re-cross it.
+- verdict: KILLED
+
+## [s5] s4's frontier F2 — directed permuter (PERM_* macros) can still contribute as an exhaustive ENUMERATOR of a specific axis even though the random permuter is dead.
+- mechanism: decomp-permuter's manual-mutation mode: a base annotated with multi-choice PERM_GENERAL(...) macros and NO PERM_RANDOMIZE disables random mutation entirely and makes the permuter enumerate the declared cross-product, printing 'Will run for N iterations' where N is the space size. Its own weighted metric is not a gradient here (s4-H1), so the value is enumeration, with every member re-scored on the honest sandbox.
+- probe: Two directed campaigns via tools/permuter_campaign.py (launch / wait IN-TURN / harvest --stop), both terminating by themselves on space exhaustion: tmp/grind/func_80034F88/s5/ws (label directed-perm-general, 864-form space = call/ptr order x per-block condition-vs-read order x per-block select form neg/pos/ternary x copy-loop spelling, 864 iterations) and s5/ws2 (label directed-types-condform, 144-form space = val/val2/c types x c cardinality x mask spelling x condition form, 288 iterations). In parallel the SAME two cross-products were enumerated deterministically and EVERY member scored with `sandbox func_80034F88 --disable all` via s5/sweep5.py (864 forms) and s5/sweep6.py (144 forms).
+- result: 1,008 forms scored on the honest metric; best is 18 in both waves, no improvement on the floor. Wave A distribution: 18 x8, 19 x8, 20 x24, 21 x56, 22 x48, 23 x88, 24 x80, 25 x56, 26 x48, 27 x16, tail to 38. Wave B: 18 x4, 19 x28, 20 x14, 21 x98. The two campaigns produced exactly ONE output between them (ws2/output-1290-1, permuter weighted score 1290 against a base of 1300 — i.e. the permuter ranked it BETTER than the floor chassis) and it sandbox-scores 18, a tie; banked at rejected/directed-perm-mixed-condform-score18-TIE.c and a third independent confirmation of s4-H1. The permuter axis is now closed in BOTH of its modes: random (s4, 50,425 iterations) and directed (s5, 1,152 iterations plus 1,008 exhaustive sandbox scores).
+- verdict: KILLED
+
+## [s5] s3's 'condition read before the flag-byte read' lever is still worth a point at floor 18, and mixing the order per block is worth more.
+- mechanism: Source order pins the relative position of `lw v0,0x20(a1)` and the flag-byte `lbu`, which decides whether the lw's load-delay slot gets filled; s3 measured the lever as 23 -> 22 on the pre-widening chassis.
+- probe: Wave A enumerates all 8 per-block order combinations against every other axis (864 forms, s5/sweep5.jsonl).
+- result: The eight 18-point forms are precisely call-first x all-negated-selects x `p + i + 0x17` loop, crossed with ALL EIGHT per-block orderings — the axis contributes ZERO in every combination. The s3 lever was worth 1 point at floor 23 and was ABSORBED by the s32-val widening (s3-H5) rather than being additive with it. Practical consequence: the ordering is free, so it must not be defended as load-bearing, and a forensics variant may reorder or eliminate the condition temporary without disturbing anything else.
+- verdict: CONFIRMED
+
+## [s5] The relative order of `p = func_80077D00();` and `ptr = &D_80106A73;` is cosmetic.
+- mechanism: Assigning the pointer local before the call makes its address pseudo live ACROSS the call insn, which reshapes the whole flag section's allocation and per-block address materialisation.
+- probe: Wave A crosses both call orders with all 432 other axis combinations.
+- result: Refuted, and it is the largest single-axis penalty measured on this function: the minimum over the 432 `ptr`-first forms is 29 (+11 over the floor) while the minimum over the 432 call-first forms is 18. This axis had never been probed in s1-s4. The call-first order is load-bearing and must not be 'tidied'.
+- verdict: KILLED
+
+## [s5] The type / cardinality / condition-shape cross-product (u32 temporaries, the type of `c`, splitting only `c`, the mask spelling, and masking inside the `if`) contains a floor improvement.
+- mechanism: s3 measured val/val2 types only as a 2x2 (s32/u8) on a single condition form, and s4's per-block probe split ALL THREE temporaries at once; none of these axes had ever been crossed with the others.
+- probe: Wave B, 144 forms, every one scored with `sandbox func_80034F88 --disable all` (s5/sweep6.py, s5/sweep6.jsonl).
+- result: Best 18, reached only by {s32 val, u32 val} x {compound mask, expanded mask} with u8 val2, s32 c, one shared c and a pre-masked condition. `u8 val` 20; `s32 val2` and `u32 val2` 20; `u8 c` 19; three used c1/c2/c3 locals 19; condition masked inside the `if` 19 at 52 insns. Three new facts: (a) the loaded byte needs WORD WIDTH, not signedness — `u32 val` ties `s32 val`, so s3-H5's mechanism is the zero_extend, full stop; (b) `*ptr &= 0xF8;` and `*ptr = *ptr & 0xF8;` are NEUTRAL, so what defeats combine's %lo fold is the address expression having two memory operands rather than the compound-assignment syntax; (c) splitting only `c` costs exactly 1, so s4's per-block score of 30 was dominated by splitting val/val2.
+- verdict: KILLED
+
+## [s5] The copy-loop spelling interacts with the flag-block spellings.
+- mechanism: If the two regions competed for registers or scheduling slots, the copy loop's 2-point lever would vary with the flag section's shape.
+- probe: Wave A pairs each of the 432 flag-section forms with both copy-loop spellings and diffs the scores pairwise.
+- result: `*((u8 *)p + 0x17 + i)` scores EXACTLY +2 over `*((u8 *)p + i + 0x17)` in all 432 pairs — the delta set is the single value {2}, no exceptions. The copy loop is fully orthogonal to every flag-block spelling, which is why s3's lever survived every later change and why no future session needs to re-cross it.
+- verdict: KILLED

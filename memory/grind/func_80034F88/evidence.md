@@ -541,3 +541,129 @@ is load-bearing in both directions: two memory operands so `combine` cannot fold
 - [s4] A minimal-context permuter base (six lines of typedefs/externs plus the function) was VALIDATED to reproduce the full-TU codegen instruction-for-instruction for this function, so permuter workspaces need not carry the 4,000-line translation unit. Builder tmp/grind/func_80034F88/s4/mkws.sh runs the real pipeline in compile.sh (cc1 with -mel, prologue_fix, maspsx, multu_pad), extracts the `.ent`..`.end` region and assembles it at offset 0, and builds target.o from asm/funcs/func_80034F88.s prefixed with a `.set gp=64`-stripped prelude.inc.
 
 - [s4] No cheat construct was proposed or installed this session. The permuter's coercion-shaped proposals (constant-holder `new_var` locals, pointer aliases, a `volatile int pad;`, dead `val2 = val | 2;` stores, a stray `do { } while (0);`) were rejected on sight as unsanctioned-without-exhaustion proposals rather than surfaced; none of them beat 18 on the honest sandbox anyway.
+
+## s5 (permuter modality) — the DIRECTED permuter axis, measured and closed
+
+s4 killed the RANDOM permuter (50,425 iterations, two chassis, best find ties
+the floor at 18) and left frontier F2: "directed permuter (`PERM_*` macros) can
+still contribute as an exhaustive ENUMERATOR of a specific axis even though
+random permuter is dead." s5 executed exactly that, twice, and additionally ran
+the same two cross-products deterministically through the honest sandbox so the
+axis is CLOSED rather than sampled. Nothing improved on 18; the floor form is
+unchanged; src/code6cac_b.c carries the floor-18 candidate.
+
+### How the directed campaigns were run
+`decomp-permuter` in MANUAL-MUTATION mode: a base with multi-choice
+`PERM_GENERAL(...)` macros and no `PERM_RANDOMIZE`, which disables random
+mutation entirely and makes the permuter enumerate the declared cross-product.
+Both campaigns went through `tools/permuter_campaign.py launch/wait/harvest
+--stop` (telemetry per the 2026-07-07 owner directive) and both TERMINATED BY
+THEMSELVES on space exhaustion — the permuter prints "Will run for N
+iterations" where N is the size of the declared space, so a directed campaign
+has a natural, provable end rather than a fresh-seed stopping heuristic.
+
+| campaign | ws | space | permuter iters | outputs |
+|---|---|---|---|---|
+| `directed-perm-general` | `s5/ws` | 864 (ordering / select / call order / loop) | 864 | **0** |
+| `directed-types-condform` | `s5/ws2` | 144 (types / mask / condition form) | 288 | 1 (`output-1290-1`) |
+
+The single output scored 1290 against a base of 1300 on the permuter's weighted
+metric — i.e. the permuter ranked it BETTER than the floor chassis. Re-scored
+with `sandbox func_80034F88 --disable all` it is **18: a tie**. Third
+independent confirmation of s4-H1 (the permuter metric is not a gradient here).
+Banked at `rejected/directed-perm-mixed-condform-score18-TIE.c`.
+
+### Wave A — 864 forms, exhaustively sandbox-scored (`s5/sweep5.py`)
+Axes, all INDEPENDENT per flag block (s1-s4 only ever measured UNIFORM
+spellings plus one block-1-only variant):
+call/ptr order (2) x per-block condition-read-vs-flag-read order (2^3) x
+per-block select form neg-if/pos-if/ternary (3^3) x copy-loop spelling (2).
+
+Score distribution over all 864: 18 x8, 19 x8, 20 x24, 21 x56, 22 x48, 23 x88,
+24 x80, 25 x56, 26 x48, 27 x16, tail to 38. **Best = 18, floor unchanged.**
+
+Four facts fall straight out of the full grid:
+
+1. **Per-block statement order is COMPLETELY NEUTRAL at floor 18.** The eight
+   18-point forms are exactly `call=pc`, `sels=nnn`, `loop=i17` crossed with ALL
+   EIGHT per-block orderings. s3's "condition before the flag read" lever was
+   worth 1 point at floor 23 and is worth ZERO now, in every per-block
+   combination — the lever was absorbed by the `s32 val` widening, not additive
+   with it. Any future session may spell that ordering whichever way reads best.
+2. **`ptr = &D_80106A73;` must come AFTER `p = func_80077D00();`** — the minimum
+   over all 432 forms with the assignment before the call is **29**, +11 over
+   the floor. The address pseudo has to be born after the call insn or the whole
+   flag section reshapes. This axis had never been probed at all.
+3. **The select form is additive and position-weighted, never mixable for gain.**
+   Minimum by select triple: nnn 18, pnn 19, npn 20, nnp 20, ntn/tnn/ttn 21,
+   ppn/nnt 21, ... ttt 24. A positive-sense `if` costs +1 in block 1 and +2 in
+   blocks 2-3; a ternary costs +3 anywhere. Uniform-negated is strictly optimal
+   and no mixture recovers anything.
+4. **The copy-loop spelling is exactly orthogonal.** Over all 432 matched pairs,
+   `*((u8 *)p + 0x17 + i)` scores EXACTLY +2 versus `*((u8 *)p + i + 0x17)` —
+   delta set = {2}, no exceptions. s3's lever is fully independent of every flag
+   block spelling, which is why it survived every later change.
+
+### Wave B — 144 forms, exhaustively sandbox-scored (`s5/sweep6.py`)
+val type (s32/u8/u32) x val2 type (u8/s32/u32) x c type (s32/u8) x c
+cardinality (one shared `c` vs three used `c1/c2/c3`) x mask spelling
+(`*ptr &= 0xF8;` vs `*ptr = *ptr & 0xF8;`) x condition form
+(`c = p[8] & K; if (!c)` vs `c = p[8]; if (!(c & K))`).
+
+Distribution: 18 x4, 19 x28, 20 x14, 21 x98. **Best = 18, floor unchanged.**
+
+1. **`u32 val` ties `s32 val` at 18**; `u8 val` bottoms at 20. What matters is
+   that the loaded byte is read into a WORD-sized temporary (the
+   `(zero_extend:SI (mem:QI))` of s3-H5), not its signedness.
+2. **The mask spelling is neutral**: compound `*ptr &= 0xF8;` and expanded
+   `*ptr = *ptr & 0xF8;` both reach 18. This is a real result about lever 1 of
+   the candidate: what defeats `combine`'s `%lo` fold is the address expression
+   having TWO memory operands, not the compound-assignment syntax.
+3. **`u8 c` bottoms at 19, `s32 c` at 18** — the condition temporary must be
+   word-sized too.
+4. **Splitting `c` into three used locals `c1/c2/c3` bottoms at 19.** s4's
+   per-block probe split all three temporaries at once (30) and never isolated
+   the condition; isolated, the split costs exactly 1. So the shared `c` is
+   load-bearing but only mildly, and the 30 of s4's probe was dominated by
+   splitting `val`/`val2`.
+5. **Masking inside the `if` (`c = p[8]; if (!(c & K))`) costs 1 and one
+   instruction** (19 at 52 insns) — GCC keeps the raw word live across the
+   flag-byte read instead of the already-masked condition.
+
+### What s5 spent, and what remains
+Directed enumeration: 1,008 distinct forms scored on the honest metric
+(864 + 144), plus 1,152 permuter iterations across the same two spaces. Added
+to s1-s4 that is roughly 1,070 hand/enumerated spellings and 51,577 permuter
+iterations, all bottoming at 18. The permuter axis — random (s4) AND directed
+(s5) — is now closed in both of its modes.
+
+The frontier that survives is unchanged and is NOT a permuter question: the
+forensic `-da` read of the floor-18 form itself (`.greg` register dispositions
+and the conflict list for the pseudo holding `val2`), which is the only
+remaining instrument that would explain the v0/v1 swap mechanically instead of
+by spelling. s5 deliberately did not spend its budget there — that is a
+forensics-modality probe and s5's mandate was permuter.
+
+- [s5] Honest floor is UNCHANGED at 18 (51 build insns vs a 49-insn target); src/code6cac_b.c carries the floor-18 candidate body and `sandbox func_80034F88 --disable all` printed score 18 with it in place at the end of the session.
+
+- [s5] Directed permuter was run on this function for the first time: manual-mutation mode (multi-choice PERM_GENERAL macros, no PERM_RANDOMIZE) makes decomp-permuter enumerate the declared cross-product and TERMINATE BY ITSELF on exhaustion — so a directed campaign has a provable end rather than needing the fresh-seed stopping heuristic. Campaign 1 ran its full 864 iterations in ~30 s; campaign 2 ran 288 iterations in ~44 s. Both harvest --stopped; `permuter_campaign.py status` reports 0 live campaigns and no permuter processes remain.
+
+- [s5] The directed campaigns produced ONE output in total: ws2/output-1290-1, permuter weighted score 1290 against a base of 1300 — the permuter's own metric ranked it BETTER than the floor chassis. Re-scored honestly it is 18, a tie. Third independent confirmation of s4-H1 that the permuter metric is uncorrelated with the sandbox here.
+
+- [s5] 1,008 distinct forms were enumerated deterministically and scored with the honest sandbox this session (864 in wave A, 144 in wave B); cumulative across s1-s5 that is roughly 1,070 measured spellings plus 51,577 permuter iterations, every one bottoming at 18.
+
+- [s5] Wave A score distribution over all 864 forms: 18 x8, 19 x8, 20 x24, 21 x56, 22 x48, 23 x88, 24 x80, 25 x56, 26 x48, 27 x16, tail to 38. Wave B over 144: 18 x4, 19 x28, 20 x14, 21 x98.
+
+- [s5] The eight 18-point wave-A forms are exactly `call-first` x `all-negated-if selects` x `p + i + 0x17` loop crossed with all eight per-block condition/read orderings — so the per-block ordering axis is completely neutral at the floor, and s3's 1-point ordering lever was absorbed by the s32-val widening rather than being additive with it.
+
+- [s5] Assigning `ptr = &D_80106A73;` BEFORE the `func_80077D00()` call costs a minimum of +11 (best 29 over all 432 such forms) — the largest single-axis penalty measured on this function, and an axis never probed in s1-s4.
+
+- [s5] Select-form penalties are additive and position-weighted, never mixable for gain: minimum by triple is nnn 18, pnn 19, npn/nnp 20, nnt/ntn/tnn/ppn/ttn 21, ... ttt 24. A positive-sense `if` costs +1 in block 1 and +2 in blocks 2-3; a ternary costs +3 anywhere.
+
+- [s5] The copy-loop lever is exactly orthogonal: `+ 0x17 + i` costs exactly +2 versus `+ i + 0x17` in all 432 matched pairs, delta set {2}.
+
+- [s5] `u32 val` ties `s32 val` at 18 while `u8 val` is 20 — the loaded byte's lever is WORD WIDTH (the (zero_extend:SI (mem:QI))), not signedness. `u8 val2` is required (s32/u32 val2 = 20), `s32 c` is required (`u8 c` = 19), one shared `c` is required (three used c1/c2/c3 = 19), and pre-masking the condition is required (`c = p[8]; if (!(c & K))` = 19 at 52 insns).
+
+- [s5] `*ptr &= 0xF8;` and `*ptr = *ptr & 0xF8;` both score 18 — what defeats combine's %lo fold is the address expression carrying TWO memory operands, not the compound-assignment syntax. This refines lever 1 of the candidate without changing it.
+
+- [s5] No cheat-family construct was written, proposed or measured this session: every one of the 1,008 forms is ordinary C (statement order, select spelling, integer types, local cardinality), and the single permuter output was vetted and rejected as a strictly-worse tie rather than surfaced.
