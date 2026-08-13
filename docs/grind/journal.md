@@ -929,3 +929,4 @@
 - 2026-08-13 03:46 CdControlF s1 [recon] floor=11: Floor 23 -> 11 on pure statement ordering + CdControlB's base/elem two-step; the register asm("s6") pin is deleted and the entire residual is now one result/elem allocno swap.
 - 2026-08-13 04:11 CdControlF s2 [structural] floor=9: Floor 11 -> 9 on the Sony libcd u_char-com parameter type; the entire 9-point residual is now reduced to one exactly-specified allocno-priority inequality, measured with the instrumented cc1 rather than hand-counted.
 - 2026-08-13 04:33 CdControlF COMPLETED-C after 3 sessions.
+- 2026-08-13 04:51 func_8006288C s1 [recon] floor=2: Floor 23 -> 2: the whole gap was the global.c allocno-priority sort; spelling the slot scan as a real do/while with an early exit reproduces all 9 target registers. Residual is one prologue slot (li $t3,1).
