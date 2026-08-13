@@ -1,0 +1,37 @@
+{
+ "func": "CdControlF",
+ "file": "system",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 11,
+   "modality": "recon",
+   "headline": "Floor 23 -> 11 on pure statement ordering + CdControlB's base/elem two-step; the register asm(\"s6\") pin is deleted and the entire residual is now one result/elem allocno swap."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Swapping the result/elem allocno order closes the function outright \u2014 it is the entire 11-point residual.",
+   "mechanism": "global.c:635 allocno_compare priority = floor_log2(n_refs)*n_refs/live_length. Our result (3 refs) outranks our elem (2 refs) and so takes s5; target has elem at s5. The original C must give elem a higher rank \u2014 one more genuine elem reference, or a longer-lived result (live_length is the divisor).",
+   "next_probe": "Run cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -da on the candidate (tmp/grind/CdControlF/s1/dump.sh already builds system.i; the cc1 binary to use is tools/gcc-2.7.2/cc1, NOT build/cc1) and read the .greg dump's register dispositions plus the allocno priority order for the two pseudos. Then sweep honest respellings that raise elem's real reference count or extend result's live range \u2014 no dead stores, no holders."
+  },
+  {
+   "hypothesis": "The PsyQ prototype shape (int CdControlF(u_char com, u_char *param)) changes the a0-copy liveness and with it the allocno ordering that result/elem sit inside.",
+   "mechanism": "Parameter types drive the incoming-arg copy pseudos and their reg_n_refs; the s3 raw-a0 copy exists only because a0 & 0xFF is needed twice, and a u_char param would fold one of those references away.",
+   "next_probe": "Re-type the params to the Sony libcd signature, cross-checking sotn-decomp src/main/psxsdk/libcd/sys.c (already cited in this TU's comments for CdSync/CdReady), then re-run the sweep-4 init-order sweep over the re-typed form."
+  },
+  {
+   "hypothesis": "The winning form ports to the sibling CdControl (queue-active, distance 25, still pinned).",
+   "mechanism": "Same three-way family, same allocno-ordering question, one extra live argument.",
+   "next_probe": "Out of scope for a CdControlF session \u2014 replay sweep-1/sweep-4 against CdControl seeded with CdControlF's winning spelling once this function closes."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-13T08:27:33.125230+00:00"
+}
