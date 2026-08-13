@@ -1177,3 +1177,103 @@ the frontier (expand_binop target selection; local_alloc ordering in DA).
 - probe: sweep27.py ND — `idx = idx << 1;` in the if-body with the three word stores addressed by `((((idx << 1) + idx)) << 1)` (== k*12) and the halfword store by `idx`.
 - result: 7 / 79 — one instruction over target: the re-derivation is 3 insns on top of the `sll` that produced the halfword offset, against the target's 3 insns for both offsets together.
 - verdict: KILLED
+
+## Session 9 (2026-08-12, synthesis) — FLOOR 1 -> 0. The residual is closed by giving the const-1 set the birthing lift instead of denying it to the index addu.
+
+### H42 — CONFIRMED (the synthesis that closes the function). The residual was never "the addu is lifted"; it was "the addu is lifted AND the const-1 set is not". Three of the four lift configurations produce the target's emission order, and the ledger had only ever attacked one of them.
+- **Mechanism (merged from H29 / H36 / H18 / H39):** in the inner-loop-top basic
+  block the scheduler ranks insn 38 (`addu idx,i,j`), insn 41 (the const-1 set)
+  and insn 46 (the `D_800A3444` load). `adjust_priority` lifts a birthing insn
+  (`reg_n_sets[dest] == 1`, dest live) to `max_priority`, and the s6 dumps
+  measured the tie-break: with EQUAL priorities the higher-LUID insn is picked
+  first and therefore emitted LAST. So of the four (38, 41) lift combinations:
+  neither lifted -> 38 emitted first (this is why SB's multi-set `idx` worked);
+  BOTH lifted -> 38 emitted first (LUID tie-break); only 41 lifted -> 38 emitted
+  first; **only 38 lifted -> 41 emitted first**, which is the single bad
+  configuration and is exactly what every chassis in this ledger produced
+  (`val` deliberately multi-set to dodge loop.c's hoist, `idx` single-set).
+  Sessions 1-8 attacked it exclusively by denying 38's lift
+  (`reg_n_sets[idx] > 1`), which H39 proved closed behind two walls. The
+  untouched half is to GRANT 41 its lift, i.e. `reg_n_sets[val] == 1` at sched
+  time — which H18 had measured as costing two instructions, but only for
+  spellings where loop.c is still free to hoist the const-1 out.
+- **Probe:** direct reads of loop.c:520-576 (`scan_loop`'s phony-loop return),
+  620-660 (the `may_not_optimize` gate at loop.c:649), 683-716 (the three
+  admission alternatives), 735-768 (the `reg_single_usage` substitute-and-delete
+  path), 900-943 (`maybe_never`), 3010-3092 (`count_loop_regs_set`), plus
+  mips.md:3686-3689; then sweep29.py (VA-VG) on the JD chassis.
+- **Result:** `tmp/grind/func_800645B0/s9/sweep29.py` — VA (JD control) 3/78,
+  VB 12/80, **VC 0/78, VD 0/78, VE 0/78**, VF 12/80, VG 12/80. The closing form
+  is banked at `memory/grind/func_800645B0/candidate.c` and applied to
+  `src/text1b.c`: `sandbox func_800645B0 --disable all` = **score 0,
+  target_insns 78, build_insns 78, rules_dropped 1**.
+- **Verdict:** CONFIRMED.
+
+### H43 — CONFIRMED. loop.c can be denied the hoist of a SINGLE-SET const-1 only by giving that local a second set in a second basic block of the loop, and the two decisions are taken at different times, so a DEAD second store satisfies both at zero instruction cost.
+- **Mechanism:** `count_loop_regs_set` (loop.c:3036-3047) sets
+  `may_not_move[regno]` when a register's first set in the current basic block is
+  not its first set in the loop ("it must be set in two basic blocks, so it
+  cannot be moved out of the loop"), and the movable scan at loop.c:649 skips any
+  register with that flag before ever reaching the three admission alternatives
+  at loop.c:695-700. Those three alternatives are otherwise unbeatable for the
+  const-1 set: alternative (2) admits any compiler temp
+  (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`), alternative (1)
+  (`reg_in_basic_block_p`) admits a named local whose only use is the in-block
+  shift, and alternative (3) (`! maybe_never && ! loop_reg_used_before_p`) admits
+  everything else because `maybe_never` is 0 in the loop's FIRST block and
+  nothing in the loop uses the value before the set. Independently, `reg_n_sets`
+  is counted by flow.c's `life_analysis`, which deletes dead stores as it walks
+  and never counts them (H39). So a dead second store is VISIBLE to loop.c and
+  INVISIBLE to the count the lift depends on.
+- **Probe:** the sweep29 table with its controls: VB (`bit` single-set, no second
+  store), VF (`bit = bit;`), VG (`bit = 1;`), against VC/VD/VE.
+- **Result:** VB 12/80 — the const-1 is hoisted into a fresh callee-save exactly
+  as H18 measured. VF 12/80 — a self-assignment is gone before loop.c sees it, so
+  no second set exists. VG 12/80 — a store of the value the register already
+  holds is folded out by cse1, which runs BEFORE loop, so it also leaves one set.
+  VC / VD / VE (dead store of a DIFFERENT value, at the tail of the arm, at the
+  head of the arm, and spelled `bit = 2;`) are all 0/78. The construct is
+  therefore neither a placement nor a value tuning: what matters is only that a
+  second store to that local exists in a second basic block and is dead.
+- **Verdict:** CONFIRMED. Sanctioned family: dead stores / self-assigns to locals
+  (`.claude/rules/dead-store-fake-exception.md`), FAKE-annotated per that rule's
+  prerequisite 3; self-vet at `memory/grind/func_800645B0/self_vet.md`.
+
+### H44 — KILLED (three doors closed on the way, worth banking so no session re-opens them).
+- **(a) loop.c's `reg_single_usage` substitute-and-delete path (loop.c:735-768)
+  can remove the const-1 insn outright.** It cannot: it requires
+  `validate_replace_rtx` to succeed, and `ashlsi3` (mips.md:3686-3689) declares
+  operand 1 `register_operand`, so `(ashift (const_int 1) (reg))` is not
+  recognised and the substitution is rejected. The const-1 must always be its
+  own insn.
+- **(b) `scan_loop` can be made to skip the loop entirely (the "phony loop"
+  return at loop.c:569-576).** It cannot from C: the return fires only when
+  `scan_start` is not a `CODE_LABEL`, and `expand_start_loop` always emits the
+  loop-top label.
+- **(c) admission alternative (3) can be failed by `maybe_never`.**
+  `maybe_never` is only set after a `CODE_LABEL` or `JUMP_INSN`
+  (loop.c:921-930), so it is 0 throughout the loop's first basic block — which is
+  precisely where the const-1 set has to live. (It IS 1 for the OUTER loop's
+  scan, because that scan passes the inner loop's label first; that is why only
+  the inner hoist ever needed defeating.)
+
+## Frontier (rewritten by session 9)
+
+The pure-C body is CLOSED at sandbox distance 0. What remains is not search:
+
+0. **Acceptance review.** The closing construct is one FAKE-annotated dead store
+   to a local, claimed under `.claude/rules/dead-store-fake-exception.md` with
+   its scope sentence quoted and precedent cited in `self_vet.md`. Layer-1 and
+   layer-2 cheat-reviewer, then the Judge.
+1. **Integration.** `sandbox --disable all` reports `rules_dropped 1`: the
+   function still carries one regfix/asmfix rule in the tree. Retiring it plus a
+   full-build SHA1 verify against the oracle is the operator/driver step
+   (`retire func_800645B0`, then `queue done func_800645B0`); a grind session may
+   not run either.
+2. **Reusable lesson for other functions (worth a rule if the Judge accepts).**
+   When a residual is a single emission-order point in a loop-top block, do NOT
+   only ask "how do I deny the lift to the insn that has it" — ask "can the OTHER
+   insn in the tie be given the lift instead". And the general form of the
+   mechanism: loop.c's movability decision and flow.c's `reg_n_sets` count are
+   taken at different times, so a dead store is a way to be visible to the first
+   and invisible to the second.

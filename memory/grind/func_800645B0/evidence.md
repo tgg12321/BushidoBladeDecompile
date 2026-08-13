@@ -763,3 +763,86 @@ rule and the sandbox drops it.  Retirement + `queue done` is the operator's job.
 - [s8] Session-8 measurement table. sweep27: JD 3/78 (control), NA 3/78, NB 3/78, NC 5/79, ND 7/79. sweep28: OA 3/79, OB 5/79, OC 5/79, OD 3/79, OE 3/79, OF 4/79, PA 3/79, PB 3/79.
 
 - [s8] src/text1b.c is unmodified at end of session (every sweep restores it); the floor of 1 is still held by memory/grind/func_800645B0/candidate.c (the SB body), whose header now carries the [s8] narrowing.
+
+## Session 9 (2026-08-12, modality: synthesis) — FLOOR 1 -> 0. First honest pure-C distance-0 form for this function that does not touch a banned axis.
+
+### The merged model (the synthesis product)
+Eight sessions had reduced the whole residual to ONE fact about the inner-loop-top
+basic block: our builds emit the const-1 set first and the target emits
+`addu $s0,$s3,$a0` first (reorg.c then copies whichever is first into the
+back-edge delay slot, H41). The scheduler's `adjust_priority` lift
+(`birthing_insn_p`: `reg_n_sets[dest] == 1` on a live dest) is what orders them,
+and the s6 dumps had already measured the tie-break: equal priorities -> the
+higher-LUID insn is picked first and emitted LAST. Enumerating the four lift
+configurations of the two insns shows THREE of them give the target's order:
+
+    38 (index addu) lifted?   41 (const-1) lifted?   emitted first
+    no                        no                     38   (SB / the shipped form)
+    no                        yes                    38
+    yes                       yes                    38   <-- never attempted
+    yes                       no                     41   <-- every chassis in this ledger
+
+Sessions 1-8 attacked only the first column (`reg_n_sets[idx] > 1`), and H39
+proved that axis closed behind two walls (expand_binop's operand order; local
+alloc's `$s0` claim). The third row was never tried, because H18 had measured
+that a single-set const-1 is hoisted out of the loop by loop.c and costs two
+instructions — but H18 only ever measured spellings in which loop.c was still
+FREE to hoist.
+
+### The closing construct and why it costs nothing
+`count_loop_regs_set` (loop.c:3036-3047) sets `may_not_move[regno]` for a
+register set in two basic blocks of the loop, and the movable scan at loop.c:649
+skips such a register before reaching the admission alternatives at
+loop.c:695-700. `reg_n_sets`, on the other hand, is counted by flow.c's
+`life_analysis`, which deletes dead stores as it walks and never counts them
+(H39). A DEAD second store to the const-1 local is therefore visible to loop.c
+(no hoist) and invisible to the count the lift depends on (`reg_n_sets == 1`,
+lift fires) — at zero emitted instructions.
+
+    bit = 1;
+    mask = bit << idx;
+    ...
+    bit = 0;   /* FAKE: ... */   <- dead; never read
+
+### Measured (all `sandbox func_800645B0 --disable all`, 78-insn target)
+    VA  JD control (const 1 shares `val` with the OR chain)      3 / 78
+    VB  const-1 in its own single-set `bit`, no dead store      12 / 80
+    VC  VB + dead `bit = 0;` at the tail of the arm              0 / 78
+    VD  VB + the same dead store at the head of the arm          0 / 78
+    VE  VB + dead `bit = 2;`                                     0 / 78
+    VF  VB + `bit = bit;`                                       12 / 80
+    VG  VB + `bit = 1;`                                         12 / 80
+Shipped form (VC + the local renamed, annotation added), applied to
+src/text1b.c: score 0, target_insns 78, build_insns 78, rules_dropped 1.
+
+VF and VG are the load-bearing controls: a self-assignment never reaches loop.c,
+and a store of the value already held is folded out by cse1 (which runs BEFORE
+loop), so in both cases only one set survives to loop.c and the const-1 is
+hoisted. The store must carry a DIFFERENT value and must be dead. VC/VD/VE
+together show the win is not a placement or a value choice.
+
+### Doors closed on the way (do not re-open)
+- loop.c's `reg_single_usage` substitute-and-delete path (loop.c:735-768) can
+  never remove the const-1 insn: `ashlsi3` (mips.md:3686-3689) declares operand 1
+  `register_operand`, so `(ashift (const_int 1) (reg))` fails
+  `validate_replace_rtx`.
+- `scan_loop`'s "phony loop" early return (loop.c:569-576) needs `scan_start` to
+  not be a `CODE_LABEL`; `expand_start_loop` always emits the loop-top label.
+- Admission alternative (3) cannot be failed via `maybe_never`: it is only set
+  after a `CODE_LABEL` / `JUMP_INSN` (loop.c:921-930), hence 0 throughout the
+  loop's first basic block, which is where the const-1 set must live. For the
+  OUTER loop's scan it IS 1 (that scan passes the inner label first), which is
+  why only the inner hoist ever had to be defeated.
+
+### Integration state (NOT done by this session)
+`rules_dropped 1` — one regfix/asmfix rule for this function is still in the
+tree. Retirement + full-build SHA1 verify + `queue done` are operator/driver
+steps; a grind session may not run them. Acceptance is layer-1 + layer-2
+cheat-reviewer then the Judge, against
+`memory/grind/func_800645B0/self_vet.md` (validated with
+`tmp/grind/func_800645B0/s5/vetcheck.py`: validate_self_vet True,
+check_banned_constructs True).
+
+### Tooling added (tmp/grind/func_800645B0/s9/)
+- `sweep29.py` — the VA-VG sweep (patches src/text1b.c, scores, restores).
+- `applyfinal.py` — writes the shipped closing form into src/text1b.c (LF).
