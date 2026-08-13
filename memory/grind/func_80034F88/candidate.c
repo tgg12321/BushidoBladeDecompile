@@ -127,8 +127,8 @@
  * evidence; it is NOT a licence for a session to self-approve a multi-object
  * body (checklist T5), and this file stays the best ADMISSIBLE form.
  *
- * s19 (structural) re-measured this body as variant a0_base � still 10 at 49
- * insns, lbu 175 / sb 164 / lui 456 � and added nothing to it, but closed the
+ * s19 (structural) re-measured this body as variant a0_base � still 10 at 49
+ * insns, lbu 175 / sb 164 / lui 456 � and added nothing to it, but closed the
  * structural axis by saturation as well as by mechanism (full write-up under
  * "==== s19 (structural) ====" in evidence.md). Eighteen further forms varied
  * the dimensions never varied ON THIS CHASSIS; TEN of them are exactly
@@ -136,11 +136,41 @@
  * other live pointer `p`, five spellings of the 0xF8 mask store, block-1
  * statement order, scope flattening, and declaration order both between the two
  * pointer objects and inside block 1. The eight that move the numbers move them
- * away from the target � hoisting a condition lets cse forward a flag store and
+ * away from the target � hoisting a condition lets cse forward a flag store and
  * DELETES a reload (lbu 175 -> 174 -> 173 against the target's 176), and
  * lengthening any live range across the `func_80077D00()` call buys a
  * callee-saved register plus prologue growth. Nothing at source level moves
  * block 1 without changing how many address objects exist.
+ *
+ * s20 (structural) re-measured this body as variant base.c — still 10 at 49
+ * insns, lbu 175 / sb 164 / lui 456 — and added nothing to it, but it
+ * RE-DECOMPOSED the residual and closed one half of it (35 further forms; full
+ * write-up under "==== s20 (structural) ====" in evidence.md).
+ *
+ * (1) The "missing memory access" half of the residual is GONE from the search
+ * space. The target's second `lbu a0,0(v1)` and our maspsx nop occupy the same
+ * position — the load-delay slot of `lw p[8]` — and the load is recoverable at
+ * ZERO instruction cost from ONE C pointer object: eight forms that create a
+ * fresh address pseudo between the mask store and block 1's read reach 49 insns
+ * with the target's EXACT lbu 176 / sb 164 / lui 456 census. They all still score
+ * exactly 10, because the recovered load merely trades a "nop vs lbu" difference
+ * for an "lbu $v1 vs lbu $a0" one. This kills s17's claim that the reload costs
+ * one extra lui and that 10 is an exactly balanced ceiling: the reload half is
+ * free, and the whole ceiling is the register half. The construct that does it
+ * (`q = q + 3; q = q - 3;`) is dead pointer arithmetic, fails checklist T1/T2/T3,
+ * was never installed, and is banked as a DIAGNOSTIC chassis at
+ * rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c.
+ *
+ * (2) The residual is therefore exactly two things, both requiring two
+ * SIMULTANEOUSLY LIVE address values: block 1's $a0/$v1 naming (dead a fourth
+ * independent way this session — all eight fresh-pseudo forms score 10), and the
+ * second base's lui/addiu sitting after block 1's store instead of before it.
+ * Hoisting the chassis's existing `q = &D_80106A73;` re-materialisation to just
+ * before that store — pure statement order, no new construct — is measured dead
+ * at 21 / 51 insns (25 / 48 if done in every block): the store then goes through
+ * the NEW pseudo, the old one dies early so nothing is gained, and cse forwards
+ * that store into the next block's read and deletes two further reloads. That is
+ * s18's instruction-ordering proof reproduced from the source side.
  */
 void func_80034F88(void) {
     s32 *p;

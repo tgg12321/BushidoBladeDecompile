@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -117,23 +117,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural axis closed by saturation as well as by mechanism: 18 further forms on the score-10 single-object chassis, TEN of them exactly codegen-neutral (same insns, same lbu/sb/lui census, same scor"
+  },
+  {
+   "session": 20,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural: 35 more forms; the residual is re-decomposed and its 'missing memory access' half is closed -- the target's block-1 reload is recoverable at ZERO instruction cost from ONE C pointer object"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pure-C axis is closed and the remaining gap is a SOURCE-MODEL gap: the original source provably held two simultaneously-live address objects for D_80106A73 (s18's instruction-ordering proof), and every route to two address pseudos from one C object is measured dead (scalar: s15/s16; aggregate: s18; and now every structural dimension around the single pseudo: s19). The next step is the escalation-modality pass, and it must lead with the ordering proof.",
-   "mechanism": "Reaching 0 needs a second address pseudo. Two hard registers require two allocnos (tools/gcc-2.7.2/global.c:426, no live-range splitting in 2.7.2); a single-slot aggregate scalarises to one pseudo (byte-identical stream, s18); a two-slot aggregate gets two pseudos only by going to the frame (58 insns / score 35, s18); anonymous references never occupy a register (s16); reload rematerialisation is short-circuited (reload.c:4128-4137, s16); and s19 shows the shape of the code around the single pseudo -- scoping, declaration order, statement order, mask-store spelling, the other pointer's type -- is exactly codegen-neutral. What remains is the banned two-or-more-scalar-object construct, which the target's instruction order shows was in the ORIGINAL source rather than invented to steer the allocator.",
-   "next_probe": "Escalation-modality session ONLY (do NOT re-run the pure-C ladder; s19 saturated its last unswept dimensions). Evaluate the two endgame-lock gates. Gate 1 is already evaluated and FAILS (scan_hand_coded tier=LOW, 0/8). Gate 2: search SOTN master (then Vagrant Story / ESA) for a CITED precedent (file:line or commit hash) where multiple C handles on one global exist and the match depends on them; the BB2-internal precedents (func_80037F40 at src/code6cac_c_mid.c:196+211, func_8003504C at src/code6cac_b.c:3941-3942) are NOT substitutes under the 2026-07-27 ruling. File the decisions.md entry with the ordering proof as lead evidence and the sharpened gate-2 question ('is reconstructing a provably-multi-object original a coercion at all?'). If no SOTN citation is in hand, both gates fail and the standing ruling pre-decides it: REFUSED / OWNER-ACCEPTED INCOMPLETE at the single-handle floor of 10."
+   "hypothesis": "The pure-C axis remains closed and the gap is still a SOURCE-MODEL gap, but its statement is now sharper and smaller: the original source held two SIMULTANEOUSLY LIVE address values for D_80106A73, and that is the ONLY thing left -- the reload/access half of the residual is no longer part of the problem.",
+   "mechanism": "One C object provides one live value at a time. Extra address PSEUDOS are obtainable from one object (s20 proves it -- pointer arithmetic makes cse-opaque pseudos that local-alloc coalesces for free), but extra simultaneously-LIVE values are not, and two hard registers need two live values (tools/gcc-2.7.2/global.c:426, one allocno per pseudo, no live-range splitting in 2.7.2). Both remaining defects -- block 1's $a0/$v1 naming and the second base materialising after block 1's store instead of before it -- reduce to that single fact, now confirmed from the target's bytes (s18) AND from the source side (s20 x4/x5/x6).",
+   "next_probe": "Escalation-modality session ONLY. Do NOT re-run the pure-C ladder: s19 saturated the structural dimensions around the single pseudo and s20 saturated the address-pseudo dimension and closed the reload half. Lead the packet with the two-live-values statement (s18's ordering proof plus s20's source-side reproduction of it), note that the reload half is closed so the escalation is narrower than previously framed, evaluate the two endgame-lock gates (gate 1 already FAILS: scan_hand_coded tier=LOW, 0/8; gate 2 needs a CITED SOTN-master precedent where multiple C handles on one global are load-bearing), and if both fail file the standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE entry at the single-handle floor of 10."
   },
   {
-   "hypothesis": "e1 (score 11, 50 insns, the target's EXACT lbu 176 / sb 164 access census) remains a better base than the score-10 form for any future lever that can remove one lui, because its only structural defect is that one instruction plus register naming, whereas the score-10 form is missing a whole memory access.",
-   "mechanism": "Distance 10 and distance 11 are nearly equal but not equally close in shape: the score-10 form differs from the target in the ACCESS PATTERN (lbu 175 vs 176), which no register-level lever can repair, while e1 differs only by one address materialisation. A lever that shared the symbol read's lui $at with an existing base materialisation would land e1 at or near 0. s19 adds a caution: every form that removed an access this session did so by letting cse forward a store, which moves the census the wrong way -- so the missing access cannot be recovered by removing separation, only by adding an address object.",
-   "next_probe": "Worth at most one turn, and only if a future session finds a sanctioned construct that changes address-materialisation sharing (nothing known does). Answer it from compiler source before spending measurements: read the %lo folding path in tools/gcc-2.7.2/config/mips/mips.c and combine, and determine whether any C shape makes GCC reuse one lui %hi(D_80106A73) for BOTH a symbol-addressed MEM and a pointer materialisation. Expect no -- the pointer form needs the addiu and the MEM form does not."
+   "hypothesis": "`x + K - K` opaque pointer arithmetic is a live ruling question for this function, but it is MOOT and must not be escalated on its own.",
+   "mechanism": "The SOTN-sanctioned 'opaque arithmetic variables' family is endorsed on the SOTN wiki in the shape `(Random() & 3) + 1 - 1`, which is syntactically what s20's round trip does to a pointer. But the construct buys census fidelity only: score stays at exactly 10 in all eight measured forms, so nothing about the disposition changes whether it is sanctioned or not.",
+   "next_probe": "No probe. Raise it only if some FUTURE lever makes the recovered reload load-bearing for the score -- i.e. only in combination with something that also fixes block 1's register naming. On its own it is a cheat by T1/T2/T3 and is banked as rejected."
   },
   {
-   "hypothesis": "Standing measurement caveat: the sandbox can OVERSTATE distance on this function whenever a variant reaches the address through a different splat auto-symbol, because engine/score.py does not mask R_MIPS_LO16 addends.",
-   "mechanism": "s17's a1_arr_all is byte-identical after linking to a form scoring 2 points lower, purely because its relocations name D_80106A70 with addend 3 instead of D_80106A73 with addend 0. Any session comparing symbol-spelling variants here must subtract that artefact before drawing conclusions. It does not affect the 10-point residual, which s16 localised to register naming plus one missing memory access, s18 re-confirmed, and s19 showed invariant under the whole structural dimension set.",
-   "next_probe": "No probe needed -- a reading caveat for s17's and any future session's numbers."
+   "hypothesis": "e1 (score 11, 50 insns, direct-symbol block-1 read) is no longer interesting as a 'closer base'.",
+   "mechanism": "s17 kept e1 because it was the only form with the target's exact lbu 176 census, at the price of one extra lui. s20 reaches that same census at 49 insns with no extra lui, in eight different forms, all at score 10 -- so e1's distinguishing property is now available strictly more cheaply and e1 is dominated.",
+   "next_probe": "None. Drop e1 from the frontier; the diagnostic chassis at rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c supersedes it for any future census-fidelity comparison (with the caveat that it is inadmissible as a candidate)."
   }
  ],
  "judge_constraints": [

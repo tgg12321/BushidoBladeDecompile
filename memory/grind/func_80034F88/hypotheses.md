@@ -1901,3 +1901,77 @@ evidence - not another sweep.
 - probe: n4_q_before_call (q = &D_80106A73; before p = func_80077D00();) and o1_i_live_early (i = 0; at the top with for (; i < 3; i++)).
 - result: 29 at 51 insns and 24 at 53 insns. Both regress for a structural reason, not a subtle one: a value live across the jal must take a callee-saved register, which grows the prologue/epilogue by a save/restore pair the target does not have. Lengthening live ranges is not available as an allocation dial on this function.
 - verdict: KILLED
+
+## s20 (structural) — 2026-08-13
+
+### s20-H1 — the missing block-1 reload can be recovered at zero instruction cost from ONE C pointer object. **CONFIRMED**
+- mechanism: The target's second `lbu a0,0(v1)` and our maspsx nop occupy the SAME position (the load-delay slot of `lw p[8]`); we lose the load because cse forwards the mask store into block 1's read. cse.c keys its memory table on the address expression's equivalence class and cannot re-associate `(q + 3) - 3` back to `q`, so a pseudo produced by that round trip carries no equivalence to the store's address pseudo, the recorded MEM value is not matched, and the load survives. local-alloc then coalesces the copy chain onto one hard register, so the arithmetic emits nothing.
+- probe: 8 forms creating a fresh address pseudo between the mask store and block 1's read (x1 delta-3 true symbol, y1 reversed order, y2 delta 1, y3 inside block 1's scope, y4 after the condition load, y5 two round trips, y8 in every block, w06 with the `&D_80106A70 + 3` spelling), against 2 controls (v01 redundant constant re-assignment, y6 round trip before the mask store).
+- result: x1/y1/y2/y3/y4/w06 all score 10 at 49 insns with lbu 176 / sb 164 / lui 456 — the target's exact access census at the target's exact instruction count. Controls: v01 is exactly neutral (10 / 49 / lbu 175, the re-assignment is copy-propagated away) and y6 leaves the census at 175 (the pseudo must be created BETWEEN store and read). y8 over-applies it and drops to 45 insns / score 13.
+- verdict: **CONFIRMED** — and it KILLS s17's pricing claim that the reload costs one extra lui. The construct itself is inadmissible (dead pointer arithmetic; fails T1/T2/T3) and was never installed or proposed; it is banked as a diagnostic chassis at rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c.
+
+### s20-H2 — recovering the reload lowers the score. **KILLED**
+- mechanism: If the residual were "5 points of register naming plus 5 points of missing memory access" (the inherited s16/s17 decomposition), then restoring the access at zero instruction cost should remove its share of the distance.
+- probe: the same 8 forms as s20-H1, scored with the honest sandbox.
+- result: every one scores exactly 10, identical to the base. The reload's position differs from target only in which register it names, so restoring it converts one "nop vs lbu" difference into one "lbu $v1 vs lbu $a0" difference — a wash.
+- verdict: **KILLED**. The 10-point residual is entirely (a) block 1's $a0/$v1 naming and (b) the second base's lui/addiu sitting after block 1's store rather than before it. This is a strictly sharper statement than the inherited one and it removes the "missing memory access" half of the residual from the search space.
+
+### s20-H3 — the target's lui/addiu-before-store order is reachable by moving the existing re-materialisation statement earlier. **KILLED**
+- mechanism: The base chassis already contains `q = &D_80106A73;` at the top of blocks 2 and 4. Moving one of them to just before block 1's store is pure statement order on an existing statement (no new construct), and would put the pair before the `sb` exactly as the target has it.
+- probe: x4 (hoisted, block 2 then inherits), x5 (hoisted, block 2 keeps its own as well), x6 (hoisted before every store).
+- result: 21 / 51 insns, 21 / 51, and 25 / 48 insns with lbu 173. All far worse than 10.
+- verdict: **KILLED**. If the store goes through the NEW pseudo, the old pseudo dies before it and the two share a hard register, so nothing is gained; cse then forwards that store into the following block's read and deletes two further reloads. The target's order needs the store to use the OLD value while the NEW base is already materialised — two simultaneously live address values. This reproduces s18's instruction-ordering proof from the source side.
+
+### s20-H4 — the $a0/$v1 dial moves on a chassis with extra address pseudos. **KILLED**
+- mechanism: The round-trip forms introduce two or four extra pseudos before block 1, changing pseudo numbering, LUIDs and therefore allocno priority order — the plausible route to flipping which of $a0/$v1 the base lands in, after s16 killed the dial three ways on the plain chassis.
+- probe: the 8 reload-recovering forms plus y5 (two round trips) and y7 (round trip with the block re-materialisations removed).
+- result: all eight score exactly 10 with the same base/value register assignment; y7 collapses to 32 / 50.
+- verdict: **KILLED** — a fourth independent kill of the dial.
+
+### s20-H5 — a single addend-spelled materialisation carries the s17 LO16 phantom distance. **KILLED**
+- mechanism: s17 measured a form spelling every address `&D_80106A70 + 3` as scoring 2 points above its byte truth, because engine/score.py does not mask R_MIPS_LO16 addends.
+- probe: x2 — the base chassis with ONLY the first materialisation spelled `&D_80106A70 + 3`.
+- result: 10 / 49 / lbu 175, indistinguishable from the base.
+- verdict: **KILLED** as stated. The artefact is per-materialisation, not per-form; w06's 10 is therefore an honest 10 and no hidden floor drop is being masked.
+
+### s20-H6 — remaining block-1 spelling dimensions (signed read, arm duplication, single-local compound-or, inline condition, mask folded into the arms, flag-word staging, displaced 0x70-based addressing). **KILLED**
+- mechanism: The last untried block-1 shapes from the codegen-technique-index that do not change how many address objects exist.
+- probe: v02/v03 (signed byte read, one block and all three), v06 (mask folded into block 1's arms), v07 (store duplicated into arms), v08 (single local, no else), v09 (inline condition), v10/v11 (flag-word staging, per-block and once), v04/v05/w01/w02/w03/w08 (0x70-based object with displacement 3, six combinations), w04/w05 (neighbour-symbol re-assignment; mask on the symbol), w07 (`q[0]` spelling).
+- result: 12 to 32; the only ties at 10 are the ones that change nothing (w07's `q[0]` is the same rtx; x3's pre-mask walk is folded away).
+- verdict: **KILLED**. Combined with s19's eighteen forms, no source-level dimension around a single address pseudo moves the score in either direction except by deleting reloads the target has.
+
+## [s20] The missing block-1 reload can be recovered at zero instruction cost from a SINGLE C pointer object.
+- mechanism: The target's second `lbu a0,0(v1)` and our maspsx nop occupy the same position -- the load-delay slot of `lw p[8]`; we lose the load because cse forwards the mask store into block 1's read. cse.c keys its memory table on the address expression's equivalence class and cannot re-associate `(q + 3) - 3` back to `q`, so a pseudo produced by that round trip carries no equivalence to the store's address pseudo, the recorded MEM value is not matched, and the load survives. local-alloc then coalesces the copy chain onto one hard register, so the arithmetic itself emits nothing.
+- probe: Eight forms creating a fresh address pseudo between the mask store and block 1's read (x1 delta-3 with the true symbol, y1 reversed order, y2 delta 1, y3 inside block 1's scope, y4 after the condition load, y5 two round trips, y8 in every block, w06 with the &D_80106A70+3 spelling), plus two controls: v01 (redundant constant re-assignment in the same place) and y6 (the same round trip placed before the mask store).
+- result: x1/y1/y2/y3/y4/w06 all score 10 at 49 insns with lbu 176 / sb 164 / lui 456 -- the target's exact access census at the target's exact instruction count, with the true &D_80106A73 spelling and therefore no LO16-addend artefact. Controls: v01 is exactly neutral (10 / 49 / lbu 175 -- the re-assignment is copy-propagated onto the first pseudo), y6 leaves the census at lbu 175 (the fresh pseudo must be created BETWEEN the store and the read), y8 over-applies it and collapses to 45 insns / score 13.
+- verdict: CONFIRMED
+
+## [s20] Recovering that reload lowers the score (i.e. the residual really is 'register naming PLUS one missing memory access', the inherited s16/s17 decomposition).
+- mechanism: If the missing access carried its own share of the distance, restoring it at zero instruction cost should remove that share.
+- probe: The same eight reload-recovering forms, scored with the honest sandbox --disable all.
+- result: Every one scores exactly 10, identical to the base. Restoring the load converts one 'nop vs lbu' difference into one 'lbu $v1 vs lbu $a0' difference -- a wash, because block 1's registers are swapped relative to target.
+- verdict: KILLED
+
+## [s20] The target's lui/addiu-before-store order in block 1 is reachable by moving the chassis's EXISTING re-materialisation statement earlier (pure statement order, no new construct).
+- mechanism: candidate.c already contains `q = &D_80106A73;` at the top of blocks 2 and 4; hoisting one to just before block 1's store would place the pair before the `sb` exactly as target has it.
+- probe: x4 (hoisted, block 2 inherits), x5 (hoisted, block 2 keeps its own too), x6 (hoisted before every store).
+- result: 21 at 51 insns, 21 at 51, and 25 at 48 insns with lbu 173 -- all far worse than 10. The store then goes through the NEW pseudo, so the old pseudo dies before it and the two share a hard register (nothing gained), and cse forwards that store into the following block's read, deleting two further reloads.
+- verdict: KILLED
+
+## [s20] The $a0/$v1 dial in block 1 moves on a chassis carrying extra address pseudos.
+- mechanism: The round-trip forms introduce two or four extra pseudos before block 1, changing pseudo numbering, LUIDs and hence allocno priority order -- the plausible route to flipping the base register after s16 killed the dial three ways on the plain chassis.
+- probe: The eight reload-recovering forms plus y5 (two round trips) and y7 (round trip with the block re-materialisations removed).
+- result: All eight score exactly 10 with the same base/value register assignment; y7 collapses to 32 / 50 insns.
+- verdict: KILLED
+
+## [s20] A single addend-spelled address materialisation carries s17's +2 R_MIPS_LO16 phantom distance.
+- mechanism: engine/score.py does not mask R_MIPS_LO16 addends, so s17 measured a body spelling every address `&D_80106A70 + 3` as scoring 2 above its byte truth.
+- probe: x2 -- the base chassis with ONLY the first materialisation spelled `&D_80106A70 + 3`.
+- result: 10 / 49 / lbu 175, indistinguishable from the base.
+- verdict: KILLED
+
+## [s20] One of the remaining untried block-1 spelling dimensions moves the score.
+- mechanism: The last codegen-technique-index shapes that do not change how many address objects exist: signed byte read, store duplicated into arms, single local with compound-or and no else, inline condition test, mask folded into the arms, flag-word staging, displaced addressing off a D_80106A70 base, neighbour-symbol re-assignment, mask applied to the symbol.
+- probe: v02, v03, v06, v07, v08, v09, v10, v11, v04, v05, w01, w02, w03, w04, w05, w07, w08 (17 forms).
+- result: 12 to 32. The only ties at 10 are the forms that change nothing at all (w07's `q[0]` is the same rtx as `*q`; x3's pre-mask walk is folded away).
+- verdict: KILLED

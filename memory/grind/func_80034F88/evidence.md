@@ -2448,3 +2448,173 @@ Two smaller facts worth banking on their own:
 - [s19] Any value made live across the func_80077D00() call takes a callee-saved register and grows the prologue: q materialised before the call scores 29 at 51 insns, the loop index defined at the top scores 24 at 53 insns.
 
 - [s19] Taken with s15-s18, the residual is now shown invariant under every source-level structural dimension that does not change how many address objects exist -- the empirical face of the one-allocno-per-pseudo ceiling proof, reached independently of it.
+
+==== s20 (structural) ====
+
+HEADLINE. Floor unchanged at 10, but the residual is RE-DECOMPOSED and one half of
+it is now closed for good. 35 further forms measured. The session's central
+result: the block-1 reload that the target has and we lack (our lbu census 175
+against the target's 176) is recoverable at EXACTLY ZERO instruction cost from a
+SINGLE C pointer object -- eight different forms reach 49 instructions with the
+target's exact lbu 176 / sb 164 / lui 456 census -- and the score does not move.
+That kills s17's central pricing claim ("the reload costs one extra lui, so 10 is
+an exactly balanced ceiling") and it narrows the whole 10-point residual to ONE
+thing: block 1's register naming plus the placement of the second base
+materialisation, both of which need two SIMULTANEOUSLY LIVE address values.
+
+HARNESS / ARTIFACTS (all under tmp/grind/func_80034F88/s20/)
+  gen.py gen2.py gen3.py gen4.py               variant generators (waves 1-4)
+  variants/ variants2/ variants3/ variants4/   the 35 bodies, one dimension each
+  probe.py probe2.py probe3.py probe4.py       splice -> `sandbox --disable all`
+                                    -> objdump census (lbu/sb/lui) -> restore src
+  results.json results2.json results3.json results4.json   raw measurements
+
+THE INSTRUCTION-LEVEL PICTURE (dumped fresh this session, not inherited)
+
+Our score-10 base, block 1 (objdump of tmp/sandbox/.../code6cac_b.o):
+    lui a0 ; addiu a0 ; lbu v1,0(a0) ; move a1,v0 ; andi v1,0xf8 ; sb v1,0(a0)
+    lw v0,32(a1) ; NOP ; andi v0,v0,1 ; bnez ; ori v0,v1,1 ; move v0,v1
+    sb v0,0(a0) ; lui a0 ; addiu a0
+Target (asm/funcs/func_80034F88.s):
+    lui v1 ; addiu v1 ; lbu a0,0(v1) ; move a1,v0 ; andi a0,0xf8 ; sb a0,0(v1)
+    lw v0,0x20(a1) ; LBU a0,0(v1) ; andi v0,v0,1 ; bnez ; ori v0,a0,1 ; addu v0,a0,0
+    lui a0 ; addiu a0 ; sb v0,0(v1)
+
+Two facts fall straight out of that alignment and neither was in the ledger:
+  (1) The "missing reload" and the "maspsx nop" are the SAME position: the
+      target's second lbu sits in the load-delay slot of `lw p[8]`. We emit a nop
+      there because cse forwarded the mask store into block 1's read and deleted
+      the load. The instruction COUNT is 49 either way.
+  (2) Our build already re-materialises the base THREE times from ONE C object
+      (lui/addiu at the top of blocks 2 and 4), exactly as the target does. The
+      single-object chassis is not short of address materialisations; it is short
+      of two materialisations that are LIVE AT THE SAME TIME.
+
+RESULT 1 -- THE RELOAD IS FREE (the s17 pricing claim is dead)
+
+`q = q + 3; q = q - 3;` inserted between the mask store and block 1's read
+(x1_roundtrip_true_symbol) scores 10 at 49 insns with lbu 176 / sb 164 / lui 456 --
+the target's exact access census at the target's exact instruction count, with the
+true `&D_80106A73` symbol spelling and therefore no LO16-addend artefact. Seven
+sibling forms do the same: delta 3 in either order (y1), delta 1 (y2), the pair
+inside block 1's scope (y3), the pair after the condition load (y4), two round
+trips (y5), the pair replicated in every block (y8, 45 insns / score 13 -- worse,
+because it also frees blocks 2 and 4), and the `&D_80106A70 + 3` spelling (w06).
+
+MECHANISM (why it is free, and why the cheaper spellings are not equivalent).
+GCC 2.7.2's cse.c keys its memory table on the ADDRESS EXPRESSION's equivalence
+class. It cannot re-associate `(q + 3) - 3` back to `q`, so the pseudo that
+reaches block 1's read carries no known equivalence to the pseudo the mask store
+wrote through; the recorded MEM value is not matched and the load survives.
+local-alloc then coalesces the whole copy chain onto one hard register, so the
+arithmetic itself emits nothing. Contrast the two nearby spellings, both measured:
+  * a redundant CONSTANT re-assignment in the same place (`q = &D_80106A73;`
+    again -- v01_reassign_b1) is score-, count- AND census-neutral (10 / 49 /
+    lbu 175): cse copy-propagates the second set onto the first pseudo, the
+    equivalence survives, and the store is still forwarded.
+  * the same round trip placed BEFORE the mask store (y6) leaves the census at
+    lbu 175: the fresh pseudo has to be created BETWEEN the store and the read.
+
+ADMISSIBILITY. The round trip is dead pointer arithmetic with no semantic purpose;
+it fails checklist T1/T2/T3 and is NOT proposed and NOT installed. It is banked at
+rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c as a DIAGNOSTIC
+chassis only. (Noted for a future ruling, not acted on here: `x + K - K` opaque
+arithmetic is the shape SOTN's wiki endorses for defeating bit-test transforms.
+The question is moot at present because the construct does not move the score --
+it buys census fidelity and nothing else.)
+
+RESULT 2 -- THE RESIDUAL IS NOW EXACTLY ONE THING
+
+With the reload recovered the two streams agree instruction-for-instruction in
+block 1 except: (a) the base register is $a0 where the target uses $v1 and the
+loaded value is $v1 where the target uses $a0, and (b) the second base's lui/addiu
+pair sits AFTER block 1's store where the target has it BEFORE. Every one of the
+eight reload-recovering forms scores exactly 10, so the $a0/$v1 dial does not move
+on this chassis either -- a fourth independent kill after s16's three.
+
+(b) is not reachable by moving the existing re-materialisation statement earlier,
+which is the obvious source-side attack and is now measured dead:
+`q = &D_80106A73;` hoisted to just before block 1's store (x4) scores 21 at 51
+insns; with block 2 keeping its own re-materialisation as well (x5) also 21 / 51;
+done in every block (x6) 25 at 48 insns with lbu 173. The reason is exactly the
+s18 ordering proof seen from the source side: if the store goes through the NEW
+pseudo then the old pseudo dies early, so the two share a register and nothing is
+gained, and cse then forwards that store into the next block's read and destroys
+two further reloads. The target's order requires the store to use the OLD value
+while the NEW base is already materialised -- two live values, which one C object
+cannot provide.
+
+THE OTHER 25 FORMS (all worse or neutral; one dimension changed each)
+
+  10 / 49  v01 redundant constant re-assignment at the top of block 1 (above)
+  10 / 49  w07 block 1 addressing spelled `q[0]` instead of `*q` (same rtx)
+  10 / 49  x2  first materialisation spelled `&D_80106A70 + 3`, nothing else --
+               so a SINGLE addend-spelled materialisation carries NO phantom
+               distance; s17's +2 R_MIPS_LO16 artefact needs the whole body
+               spelled that way
+  10 / 49  x3  walk to the flag byte before the mask store (pseudo folded away)
+  12 / 46  v07 block 1's store duplicated into both arms
+  13 / 47  v08 block 1 as one local, compound `|=`, no else arm
+  13 / 47  v09 block 1 tests p[8] inline (no staged condition local)
+  13 / 48  v06 the 0xF8 mask folded into block 1's arms (one store fewer)
+  13 / 52  w04 single object re-assigned to the neighbouring symbol for block 1
+  13 / 45  y8  round trip replicated in every block
+  14 / 52  v02 block 1 reads the flag byte SIGNED (`*(s8 *)q`)
+  14 / 52  w02 object walked to `&D_80106A70` after the mask, block 1 uses q[3]
+  16 / 52  v03 all three blocks read signed
+  16 / 51  w05 mask applied to the symbol, pointer materialised for block 1
+  17 / 52  v05 object based at D_80106A70 with displacement 3, symbol copy loop
+  19 / 47  v11 the flag word p[8] read ONCE into a local for all three blocks
+  20 / 51  w01 object based at D_80106A70, mask via q[3], then walked +3
+  20 / 51  w08 mask via q[3] off the 0x70 base, blocks re-materialise the flag ptr
+  20 / 54  w03 every access displaced +3 off a D_80106A70 base
+  21 / 51  x4  re-materialisation hoisted before block 1's store
+  21 / 51  x5  same, blocks 2 and 4 keeping their own as well
+  22 / 50  v04 as v05 but the copy loop shares the object (loses the loop's lui)
+  25 / 48  x6  re-materialisation before every store
+  27 / 49  v10 block 1 stages the whole flag word and masks at the test
+  32 / 50  y7  round trip but blocks 2 and 4 lose their re-materialisations
+
+- [s20] Floor unchanged at 10 (49 build insns vs the target's 49). src/code6cac_b.c is byte-clean at session end (the probe harness restores it); candidate.c keeps the same body and gains an s20 header note.
+
+- [s20] The block-1 defect is TWO things at ONE position, not two separate costs: the target's second `lbu a0,0(v1)` sits in the load-delay slot of `lw p[8]`, and our build emits a maspsx nop there because cse forwarded the mask store into block 1's read and deleted the load. Both streams are 49 instructions.
+
+- [s20] The missing reload is recoverable at ZERO instruction cost from ONE C pointer object: eight forms that create a fresh address pseudo between the mask store and block 1's read (`q = q + 3; q = q - 3;` and siblings) reach 49 insns with the target's exact lbu 176 / sb 164 / lui 456 census. This KILLS s17's claim that the reload costs one extra lui and that 10 is therefore an exactly balanced ceiling -- the reload half is free, and the ceiling is entirely the register half.
+
+- [s20] Mechanism: cse.c cannot re-associate `(q + 3) - 3` back to `q`, so the pseudo reaching the read has no equivalence to the store's address pseudo and the recorded MEM value is not matched; local-alloc coalesces the copies afterwards, so the arithmetic emits nothing. A redundant CONSTANT re-assignment in the same place is copy-propagated instead and is exactly neutral (10 / 49 / lbu 175), and the same round trip placed BEFORE the mask store does not recover the reload -- the fresh pseudo must be created between the store and the read.
+
+- [s20] Corollary that corrects an inherited assumption: the per-block `q = &D_80106A73;` re-assignments emit lui/addiu because they follow the if/else JOIN LABEL (cse table flush, the s14 finding), not because a re-assignment is inherently a fresh materialisation. Our single-object build already makes three address materialisations, exactly as the target does; what it cannot make is two that are live at the same time.
+
+- [s20] The dead-arithmetic chassis is a DIAGNOSTIC ONLY and was never installed or proposed: dead pointer arithmetic has no semantic purpose (T1/T2) and its mechanism is a named GCC pass (T3). Banked at rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c. It is also moot for disposition -- it does not move the score, only the census.
+
+- [s20] With the reload recovered, the entire 10-point residual is (a) block 1's $a0/$v1 register naming and (b) the second base materialisation sitting after block 1's store instead of before it. All eight reload-recovering forms score exactly 10, so the $a0/$v1 dial is dead a fourth independent way.
+
+- [s20] Hoisting the existing re-materialisation statement to just before block 1's store -- the obvious source-side attack on the ordering half -- is measured dead: 21 at 51 insns (x4, x5) and 25 at 48 insns with lbu 173 (x6). If the store goes through the new pseudo the old pseudo dies early, so nothing is gained, and cse then forwards that store into the next block's read and deletes two further reloads. This is the s18 ordering proof reproduced from the source side.
+
+- [s20] A single addend-spelled materialisation (`&D_80106A70 + 3` for the first one only) carries NO phantom distance (10 / 49, x2). s17's +2 R_MIPS_LO16 artefact requires the whole body spelled that way; the caveat should be applied per-materialisation, not per-form.
+
+- [s20] Floor unchanged at 10 (49 build insns vs the target's 49; census lbu 175 / sb 164 / lui 456 against the target's lbu 176 / sb 164 / lui 456). src/code6cac_b.c is byte-clean at session end -- the probe harness splices and restores.
+
+- [s20] Fresh instruction-level alignment (dumped this session, not inherited): our block 1 is `lui a0; addiu a0; lbu v1,0(a0); move a1,v0; andi v1,0xf8; sb v1,0(a0); lw v0,32(a1); NOP; andi v0,v0,1; bnez; ori v0,v1,1; move v0,v1; sb v0,0(a0); lui a0; addiu a0` against target's `lui v1; addiu v1; lbu a0,0(v1); move a1,v0; andi a0,0xf8; sb a0,0(v1); lw v0,0x20(a1); LBU a0,0(v1); andi v0,v0,1; bnez; ori v0,a0,1; addu v0,a0,0; lui a0; addiu a0; sb v0,0(v1)`.
+
+- [s20] The 'missing reload' and the 'maspsx nop' are the SAME position: the target's second lbu sits in the load-delay slot of `lw p[8]`. Both streams are 49 instructions.
+
+- [s20] Our single-object build ALREADY makes three address materialisations (lui/addiu at the tops of blocks 2 and 4), exactly as the target does. The chassis is not short of materialisations; it is short of two that are live at the same time.
+
+- [s20] Corollary that corrects an inherited assumption: those per-block re-assignments emit lui/addiu because they follow the if/else JOIN LABEL (cse table flush, the s14 finding), not because a re-assignment is inherently a fresh materialisation -- v01 proves it, since the same re-assignment placed inside the mask's basic block is copy-propagated away and is exactly neutral.
+
+- [s20] The reload half of the residual is FREE from one C object: eight fresh-address-pseudo forms reach 49 insns with the target's exact lbu 176 / sb 164 / lui 456 census. s17's 'the reload costs one extra lui, so 10 is an exactly balanced ceiling' is therefore dead as stated -- the balance was an artefact of the particular (direct-symbol) spelling s17 measured.
+
+- [s20] Mechanism for that: cse.c cannot re-associate (q + 3) - 3 back to q, so the pseudo reaching the read has no equivalence to the store's address pseudo and the recorded MEM value is not matched; local-alloc coalesces the copies afterwards so the arithmetic emits nothing. Position matters -- the same round trip placed before the mask store (y6) does not recover the load.
+
+- [s20] The construct that achieves it is dead pointer arithmetic with no semantic purpose (fails checklist T1/T2, and its only explanation is a named GCC pass -- T3). It was NEVER installed as a candidate and is NOT proposed; it is banked as a diagnostic chassis at memory/grind/func_80034F88/rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c. It is moot for disposition in any case: it does not move the score, only the census.
+
+- [s20] After that recovery the entire 10-point residual is exactly two things: (a) block 1's $a0/$v1 register naming and (b) the second base's lui/addiu sitting after block 1's store instead of before it -- both requiring two SIMULTANEOUSLY LIVE address values.
+
+- [s20] The obvious source-side attack on (b) -- hoisting the chassis's existing re-materialisation statement to just before block 1's store -- is measured dead at 21 / 51 insns (x4, x5) and 25 / 48 with lbu 173 (x6). This reproduces s18's instruction-ordering proof from the source side rather than from the target's bytes.
+
+- [s20] The $a0/$v1 dial is now dead a fourth independent way: all eight forms that change block 1's pseudo structure keep the identical register assignment at score 10.
+
+- [s20] A SINGLE addend-spelled materialisation carries no phantom distance (x2 = 10 / 49). s17's +2 R_MIPS_LO16 artefact applies per-materialisation, not per-form -- future sessions should subtract it proportionally, not wholesale.
+
+- [s20] Seventeen further block-1 / addressing spellings measured at 12-32 (signed read 14/16, store into arms 12, single local no else 13, inline condition 13, mask folded into arms 13, flag-word staged 27, flag word read once 19, D_80106A70-based displaced addressing 17/20/20/22/54-insn variants, neighbour-symbol re-assignment 13, mask on the symbol 16).
