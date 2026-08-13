@@ -2463,12 +2463,6 @@ MoveImage: reorder 26,29,21,22,23,24,30,25,28,32,33,27,31,34,35,36 @ 21-36
 
 # func_800618B4: swap v0/v1 in tail (arg0[2] in v1, FF0000 in v0)
 # RETIRED (targeted-permuter): func_80060CB8: reorder 3,4,1,2 @ 1-4
-func_8006288C: $5 <-> $8
-func_8006288C: $5 <-> $10
-func_8006288C: $5 <-> $7
-func_8006288C: $5 <-> $9
-func_8006288C: $5 <-> $6
-func_8006288C: reorder 4,1,2,3 @ 1-4
 # func_80060B70: schedule 3rd s32 store into jal delay slot,
 # remove 2 redundant nops, reorder lw $6/lw $2 to match target.
 # Move li t6,1 to early position (target #3)

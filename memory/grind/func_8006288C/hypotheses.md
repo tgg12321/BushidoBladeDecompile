@@ -123,3 +123,128 @@ happens; same 42 instructions, same slot-5 placement.)
 - probe: Sweep set 3: new_var = 1; at each of the 8 init-block positions, under the confirmed do/while shape
 - result: Every position before the D_800F1138 = 1; store makes cse fold the two constant-1 materialisations (sw $t3,D_800F1138) and drops the function to 41 instructions; the target has 42 with two separate li insns. Only the after-the-store position keeps 42, and there the scheduler parks li $t3,1 at prologue slot 5, not slot 1. The best form therefore drops the holder entirely (mask = 1 << i), letting loop.c hoist the constant post-cse2 — same 42 instructions, same slot-5 placement.
 - verdict: KILLED
+
+
+## Session 2 (structural, 2026-08-13) - floor 2 -> 0
+
+### CONFIRMED
+**The closing lever - the constant holder's init-block position IS the
+residual, and it becomes reachable once the `D_800F1138 = 1;` store is moved to
+the FRONT of the init block.**
+Mechanism: with a literal `1 << i` the shift base is loop-invariant, so loop.c
+hoists its `(set reg 1)` into the TAIL of the preheader and sched.c's first
+pass emits it at init-block slot 6. A holder assigned in the init block gives
+that insn an early LUID instead. s1's H6 could not use an early holder because
+the holder always preceded the store and cse folded the two constant-1s (41
+insns). Putting the store FIRST keeps the holder after it (no fold, 42 insns)
+while still giving it an early LUID.
+Probe: sweep set 5 axis A (9 variants, init-order x holder-position) with the
+new prologue-order scorer, then the winning form applied in-tree.
+Result: `D_800F1138 = 1; i = 0; one = 1; flag_p = ...;` with `mask = one << i`
+emits the target's init block exactly and the honest sandbox
+(`--disable all`) prints **score 0 / 52 of 52 instructions**. Position is
+exact: holder at index 1 inverts slots 1-2, holder at index 3 emits at slot 4.
+
+### KILLED
+**H7 - some ordering of the init block with a LITERAL `1 << i` (no constant
+holder at all) can put the shift-base constant at the target's slot 2.**
+Mechanism tested: statement order sets RTL LUID, which breaks ready-list ties
+in sched.c's first pass.
+Probe: sweep set 6 (`tmp/grind/func_8006288C/s2/variants6.py`, 10 variants) -
+`D_800F1138 = 1;` at each of the 7 possible init-block positions, plus a
+`while (1) { ... break; }` loop spelling, plus `i` initialised last, plus the
+whole init block reversed.
+Result: **all 10 park `addiu $t3,$zero,1` at init-block slot 6.** With a
+literal the constant is not emitted from the init block at all - loop.c
+creates it at the preheader tail - so no init-block ordering can reach it.
+KILLED; banked as `rejected/literal-shift-base-parks-const-at-slot6.c`. This
+is the lever-exhaustion evidence for the constant holder's FAKE annotation.
+
+**H8 - the declared types of the loop scalars (`i`, `off_s32`, `off_s16`,
+`mask`) have unexplored gradient (s1 frontier item 2).**
+Mechanism claimed: `allocno_size` is a direct multiplier in
+`global.c:allocno_compare`, and narrower types change flow.c live-range
+bookkeeping.
+Probe: sweep set 5 axis B - each scalar and then all of them re-declared
+`unsigned int`, plus `short off_s16/off_s32` and `short i`.
+Result: every `unsigned int` spelling is **codegen-identical** to the `s32`
+base (same 9 registers, same instruction count, same init-block order) -
+GCC 2.7.2 promotes all of them to SImode pseudos, so `allocno_size` is 1 for
+every variant and the claimed multiplier never varies. `short off_s16/off_s32`
+costs 2 extra instructions and drops to 7/9; `short i` costs 3 extra and drops
+to 4/9. Axis closed as an allocation lever. KILLED.
+
+## Live frontier after session 2
+
+The function MATCHES in pure C (honest sandbox 0). The remaining work is not
+a search problem:
+1. **Rule retirement + oracle verify.** `regfix.txt` still carries the 6 rules
+   ($5 <-> $8/$10/$7/$9/$6 plus `reorder 4,1,2,3 @ 1-4`) that were paperwork
+   over the old register permutation. They must be retired
+   (`retire func_8006288C`) and the full build re-verified against the oracle
+   SHA1 before `queue done`. This session may not touch regfix.txt and did not.
+2. **Layer-1 / layer-2 cheat-review of the `one` holder.** The one construct
+   in the diff without independent semantic purpose is the constant holder
+   (pre-existing in HEAD as `int new_var;`, moved/renamed/annotated here). It
+   is claimed under the sanctioned constant-holder / opaque-arithmetic-variable
+   family with the exhaustion evidence above; see `self_vet.md`.
+
+## [s2] The `D_800F1138 = 1;` store must lead the init block for the constant holder to be placeable early: with a literal `1 << i` loop.c creates the shift base at the preheader tail (slot 6), and with the holder BEFORE the store cse folds the two constant-1 materialisations to 41 instructions. Store-first + holder-at-index-2 is the only cell that keeps 42 instructions AND gives the constant an early LUID.
+- mechanism: loop.c invariant hoist (preheader tail) vs. init-block LUID + sched.c first-pass ready-list tie-break; cse2 constant folding across the two 1s
+- probe: sweep set 5 axis A (tmp/grind/func_8006288C/s2/variants5.py) with the new prologue-order scorer in sweep2.py, then the winning form applied to src/text1b.c and measured with `sandbox func_8006288C --disable all`
+- result: honest sandbox distance 0, build_insns 52 == target_insns 52, all 9 register assignments and the full init-block order reproduced
+- verdict: CONFIRMED
+
+## [s2] Some ordering of the init block with a literal `1 << i` and no constant-holder local can put the shift-base constant at the target's init-block slot 2.
+- mechanism: statement order sets RTL LUID, which breaks ready-list ties in sched.c's first pass
+- probe: sweep set 6 (tmp/grind/func_8006288C/s2/variants6.py) - 10 variants: the `D_800F1138 = 1;` store at each of the 7 possible init-block positions, a `while (1) { ... break; }` loop spelling, `i` initialised last, and the init block reversed
+- result: all 10 park `addiu $t3,$zero,1` at init-block slot 6. With a literal the constant is never emitted from the init block at all - loop.c hoists it to the preheader tail - so no init-block ordering can reach slot 2. Banked as rejected/literal-shift-base-parks-const-at-slot6.c
+- verdict: KILLED
+
+## [s2] The declared types of the loop scalars (i, off_s32, off_s16, mask) still have unexplored allocation gradient via allocno_size and flow.c live ranges (s1 frontier item 2).
+- mechanism: allocno_size is a direct multiplier in global.c allocno_compare; narrower types also change flow.c live-range bookkeeping
+- probe: sweep set 5 axis B - each scalar and then all four re-declared `unsigned int`, plus `short off_s16/off_s32` and `short i`
+- result: every unsigned spelling is codegen-identical to the s32 base (same registers, same instruction count, same init-block order) because GCC 2.7.2 promotes all of them to SImode pseudos, so allocno_size is 1 in every variant; `short off_s16/off_s32` costs 2 extra instructions and drops to 7/9 registers, `short i` costs 3 extra and drops to 4/9
+- verdict: KILLED
+
+## Session 3 (structural, 2026-08-13) — re-verification + self-vet format fix
+
+No new search was needed and none was run: session 2 had already reached honest
+sandbox 0, and its outcome was discarded by the driver for a MECHANICAL FORMAT
+defect in `self_vet.md`, not for anything about the C. The validator
+(`tools/grinder/grindlib.py:51`, regex
+`^\s*SCOPE\s*:\s*["“](.+?)["”]\s*$`) requires each claimed family's SCOPE quote
+to sit on a SINGLE physical line; s2 had wrapped both quotes across four lines
+each, so zero of the two claims matched and the session was rejected with
+"claims 2 sanctioned family/families but quotes only 0 verbatim SCOPE
+sentence(s)".
+
+What session 3 did:
+1. Confirmed the driver had reverted s2's `src/text1b.c` edit (git status showed
+   the ledger files dirty but `src/text1b.c` clean at HEAD's label+goto form).
+2. Re-applied `memory/grind/func_8006288C/candidate.c` verbatim to
+   `src/text1b.c` (do/while + `goto out`, store-first init block, `one` holder
+   at init index 2 with its FAKE annotation).
+3. Re-measured: `sandbox func_8006288C --disable all` -> `"score": 0`,
+   `build_insns 52 == target_insns 52`, `rules_dropped: 6`. The 0 is reproduced
+   in-tree THIS session, independently of s2.
+4. Rewrote `self_vet.md`: same six answers, same two family claims, same
+   prerequisite evidence, but each SCOPE quote de-wrapped onto one physical line
+   (newlines -> single spaces, no other edit) and each PRECEDENT given as a
+   literal file:line —
+   `.claude/rules/named-local-fake-exception.md:12` for the constant-holder
+   family and `.claude/rules/no-new-park-categories.md:175` for the opaque
+   arithmetic variable family.
+5. Verified the fix mechanically by calling `grindlib.validate_self_vet` on the
+   repo directly: it now returns `(True, '')`.
+
+LESSON FOR FUTURE SESSIONS ON ANY FUNCTION: the self-vet SCOPE line is
+line-oriented. A rule file wraps its prose, so quoting "verbatim" means
+de-wrapping the sentence onto one line in self_vet.md — a wrapped quote is
+mechanically invisible to the validator no matter how faithful it is. State the
+de-wrap explicitly next to the quote so the human reviewer can see nothing was
+altered.
+
+The live frontier is unchanged from session 2: the function MATCHES in pure C;
+what remains is operator-side (retire the 6 regfix rules + oracle verify) and
+the layer-1/layer-2 review of the `one` constant holder.

@@ -4183,7 +4183,15 @@ s32 func_8006288C(void) {
     extern s32 D_800F10A2;
     extern s32 D_800F10A4;
     extern s32 D_800F1138;
-    int new_var;
+    /* FAKE: `one` is an opaque holder for the constant 1 rather than a literal
+       `1 << i`; mechanism: with a literal the shift base is loop-invariant and
+       loop.c hoists its `(set reg 1)` into the preheader TAIL, so sched.c's
+       first pass parks `addiu $t3,$zero,1` at init-block slot 6 instead of the
+       target's slot 2. Lever-exhaustion: memory/grind/func_8006288C/
+       hypotheses.md H6 (s1) + H7/H8 (s2) — every literal-1 init-block ordering
+       and every scalar-type permutation measured, all leave the constant at
+       slot 6. */
+    s32 one;
     s16 *flag_p;
     s32 *src_a;
     u16 *src_b;
@@ -4192,32 +4200,33 @@ s32 func_8006288C(void) {
     s32 off_s16;
     s32 mask;
 
+    D_800F1138 = 1;
     i = 0;
+    one = 1;
     flag_p = &D_800F0C04;
     off_s16 = 0;
     off_s32 = 0;
     src_a = (s32 *)D_800A347C;
     src_b = (u16 *)D_800A3478;
-    D_800F1138 = 1;
-    new_var = 1;
-loop_top:
-    mask = new_var << i;
-    if (!(D_800A3460 & mask)) {
-        *(s32 *)((s32)&D_800F0FB8 + off_s32) = src_a[0];
-        *(s32 *)((s32)&D_800F0FBC + off_s32) = src_a[1];
-        *(s32 *)((s32)&D_800F0FC0 + off_s32) = src_a[2];
-        *(u16 *)((s32)&D_800F10A0 + off_s16) = src_b[0];
-        *(u16 *)((s32)&D_800F10A2 + off_s16) = src_b[1];
-        D_800A3460 |= mask;
-        *(u16 *)((s32)&D_800F10A4 + off_s16) = src_b[2];
-        *flag_p = 0;
-    } else {
+    do {
+        mask = one << i;
+        if (!(D_800A3460 & mask)) {
+            *(s32 *)((s32)&D_800F0FB8 + off_s32) = src_a[0];
+            *(s32 *)((s32)&D_800F0FBC + off_s32) = src_a[1];
+            *(s32 *)((s32)&D_800F0FC0 + off_s32) = src_a[2];
+            *(u16 *)((s32)&D_800F10A0 + off_s16) = src_b[0];
+            *(u16 *)((s32)&D_800F10A2 + off_s16) = src_b[1];
+            D_800A3460 |= mask;
+            *(u16 *)((s32)&D_800F10A4 + off_s16) = src_b[2];
+            *flag_p = 0;
+            goto out;
+        }
         flag_p++;
         off_s16 += 8;
         i++;
         off_s32 += 0xC;
-        if (i < 6) goto loop_top;
-    }
+    } while (i < 6);
+out:
     return 1;
 }
 INCLUDE_ASM("asm/funcs", func_8006295C);

@@ -125,3 +125,77 @@ Run under WSL: `bash tools/wsl.sh 'cd tmp/grind/func_8006288C/s1 && python3 swee
 - [s1] Current best form is in src/text1b.c (uncommitted) at distance 2 with 52/52 instructions; the only differing slot is the position of li $t3,1 in the init block (target slot 1, ours slot 5).
 
 - [s1] The target materialises the constant 1 three times (shift base, the D_800F1138 = 1 store, the return value) and cse folds none of them.
+
+
+## Session 2 (structural, 2026-08-13) - floor 2 -> 0  (MATCH)
+
+### The closing lever: store first, constant holder second
+s1's H6 swept the constant holder (`new_var = 1;`) across all 8 init-block
+positions but held `D_800F1138 = 1;` FIXED at index 6. Every holder position
+that was early was therefore also BEFORE the store, and cse folded the two
+constant-1 materialisations (`sw $t3,D_800F1138`), dropping the function to 41
+instructions. The cell H6 never covered is **store FIRST, holder SECOND**: the
+holder is then still after the store (no fold, 42 insns kept) while its RTL
+LUID sits near the top of the init block.
+
+    D_800F1138 = 1;
+    i = 0;
+    one = 1;
+    flag_p = &D_800F0C04;
+    off_s16 = 0;
+    off_s32 = 0;
+    src_a = (s32 *)D_800A347C;
+    src_b = (u16 *)D_800A3478;
+    do { mask = one << i; ... } while (i < 6);
+
+This emits the target's exact init block -
+`addu $a0,$zero,$zero | addiu $t3,$zero,1 | lui $t2 | addiu $t2 |
+addu $a1,$zero,$zero | addu $v1,$zero,$zero | lw $t0 | lw $t1 |
+addiu $v0,1 | lui $at | sw` - and the honest sandbox
+(`--disable all`, 6 rules dropped, 332 cheat-asm insns stripped) prints
+**score 0, build_insns 52, target_insns 52**.
+
+Note `i = 0;` must come BEFORE `one = 1;` (variant `a_storefirst_one1`, holder
+first, emits `addiu $t3` at slot 1 and `addu $a0` at slot 2 - inverted), and
+the holder must be at init index 2, not 3 (`a_storefirst_one3`, holder after
+`flag_p`, emits it at slot 4).
+
+### The literal-1 axis is dead (10/10 measured)
+Sweep set 6 (`tmp/grind/func_8006288C/s2/variants6.py`) compiled `mask = 1 << i`
+with the `D_800F1138 = 1;` store at each of the 7 init-block positions, plus a
+`while (1) { ... break; }` spelling, plus `i` initialised last, plus the whole
+init block reversed. Every one of the 10 parks `addiu $t3,$zero,1` at
+init-block slot 6. With a literal the shift base is loop-invariant, loop.c
+hoists its `(set reg 1)` into the TAIL of the preheader, and sched.c's first
+pass places it there; no ordering of the other statements moves it. So the
+constant holder is load-bearing and there is no no-holder form.
+
+### The declared-type axis is dead (frontier item 2 from s1)
+Sweep set 5 axis B: `i`, `off_s32`, `off_s16` and `mask` re-declared
+`unsigned int` (individually and all together) are **codegen-identical** to the
+`s32` base - same 9 registers, same instruction count, same init-block order.
+`short` spellings are strictly worse: `short off_s16/off_s32` costs 2 extra
+instructions and drops to 7/9 registers; `short i` costs 3 extra and drops to
+4/9. allocno_size never changes because GCC 2.7.2 promotes all of these to
+SImode pseudos. Axis closed.
+
+### Tooling added this session
+`tmp/grind/func_8006288C/s2/sweep2.py` extends the s1 rig with a **prologue
+order** score (the s1 residual was a slot, not a register name): it expands
+cc1's `la`/`li`/`move` macros and the `-G0` `lw $8,SYM` macro form the way the
+assembler does, and prints the emitted `(mnemonic, dest-reg)` sequence so a
+variant's init block can be compared against the target's directly.
+`variants5.py` (16 variants: init-order x holder-position, plus the type axis)
+and `variants6.py` (10 literal-1 variants) are the sets.
+
+- [s2] Applying the s1 candidate to src/text1b.c reproduces the s1 floor exactly: sandbox --disable all score 2, build_insns 52, target_insns 52. (The s1 form was NOT in the tree at session start; HEAD carried the pre-grind label+goto form at distance 23.)
+
+- [s2] MATCH: moving `D_800F1138 = 1;` to init-block position 1 and the constant holder to position 3 (immediately after `i = 0;`), with `mask = one << i`, gives honest sandbox distance 0 with 52/52 instructions.
+
+- [s2] The holder's init-block position is exact: index 1 (before `i = 0;`) inverts slots 1 and 2; index 3 (after `flag_p`) emits the constant at slot 4. Only index 2 matches.
+
+- [s2] The literal-1 (no-holder) axis is exhausted: 10 variants - the store at each of 7 init positions, a while(1)/break loop spelling, `i` initialised last, and the init block reversed - all park `addiu $t3,$zero,1` at init-block slot 6.
+
+- [s2] The declared-type axis is exhausted: u32 spellings of i/off_s32/off_s16/mask are codegen-identical to s32 (GCC 2.7.2 promotes them all to SImode pseudos, so allocno_size never changes); `short` spellings cost 2-3 extra instructions and lose 2-5 register assignments.
+
+- [s2] The function still carries its 6 regfix rules; this session did not touch regfix.txt. The 0 is the cheat-invisible score (rules_dropped: 6, cheat_asm_stripped: 332), so rule retirement is the operator's normal `retire` step, not a dependency of the C form.
