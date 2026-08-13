@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 12,
    "modality": "structural",
    "headline": "Floor 23 -> 12: pointer-to-volatile defeats cse dest-recording (cse.c:7329), condition-before-read fills the load-delay slots, three pointer locals reproduce target's three lui/addiu bases \u2014 build is "
+  },
+  {
+   "session": 3,
+   "floor": 18,
+   "modality": "structural",
+   "headline": "Honest floor 23 -> 18 with three volatile-free structural levers, and s2's blocking volatile question resolved AGAINST the construct (its 12 is discarded) with the sanctioned allowlist path measured d"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The blocking question is a RULING, not a measurement: is 'volatile u8 *pbit = &D_80106A73;' (pointer-to-volatile local aliasing a global declared plain 'extern u8') a sanctioned construct or a forbidden volatile-coercion respelling? Everything below is downstream of it \u2014 the whole 23 -> 12 drop rests on it.",
-   "mechanism": "The engine's volatile_cheats stripper does not catch it (measured), it matches none of the three patterns that module implements, and src/code6cac_b.c:4030 in the same file already uses it; but the frozen catalog lists 'volatile-coercion ... by cast' as forbidden and this is arguably that intent in different syntax. Neither the detector's silence nor the sibling's usage is a sanction.",
-   "next_probe": "Settle the classification before spending another session on register allocation. If sanctioned, F2 below is a short grind from a form that already emits the right 49 instructions. If not sanctioned, s1's 23 is the honest floor, the whole volatile family is discarded, and s1's F1 re-opens as unanswered \u2014 in which case the surviving structural knowledge is that non-volatile spellings are exhausted at 23 (15 variants) and that v10_block_scoped.c reaches 23 at 45 insns with the correct shared base, which is a better non-volatile starting point than s1's 50-insn form."
+   "hypothesis": "The last honest points in the flag blocks are register assignment, and the v0/v1 swap of the SELECTED VALUE is the one sub-problem that is not obviously downstream of the missing reloads.",
+   "mechanism": "At floor 18 the conditional value lands in v1 (`ori v1,a0,K` / `move v1,a0`) where the target uses v0 \u2014 and the target's v0 is exactly the register `lw v0,0x20(a1)` just used for the condition, so a spelling that shortens the condition's live range or lets the condition and the value share a register class preference may flip it. Blocks 2 and 3 additionally read the byte with `move a0,v1` instead of `lbu` and store via `lui at,%hi` + `sb v1,0(at)`; both of those are downstream of the reload question.",
+   "next_probe": "Wave G/H already spent shared condition/value locals, declaration order, s32/u8 on both temporaries, hoisted p[8], ternary / positive-if / read-first (16 numbers, all 18 or worse). Untried: per-block temporaries (val_a/val_b/val_c), an explicit (u8)-cast staging variable for the truncation the `s32 val` form emits, a second natural use of `ptr` late in the function to lengthen its live range, and swapping which of c/val is computed adjacent to the delay slot. Harness: tmp/grind/func_80034F88/s3/{probe,sidebyside,apply}.py."
   },
   {
-   "hypothesis": "The last 12 points are register assignment only, driven by the live range of the first pointer local: in target the first base stays live in v1 across the bit-1 block's store while the second base is materialised into a0 ahead of that store, whereas our allocator reuses a0 for the new base and is forced to emit the pair after the sb.",
-   "mechanism": "Allocno ordering in local-alloc/global.c follows live ranges and declaration order, so lengthening the first pointer's live range or reordering the local declarations should change which hard register each base lands in.",
-   "next_probe": "From f1_staged_ptrs_before_store.c, vary (a) the DECLARATION order of pbit/pbit2/pbit3 and the u8/s32 temporaries, (b) how many statements earlier or later the pbit2/pbit3 assignments sit, (c) giving pbit one further use after the bit-1 store. Measure each with tmp/grind/func_80034F88/s2/sweep.py and diff the .greg dump from dump_rtl.sh against the previous best. Gate on F1."
+   "hypothesis": "decomp-permuter has still never been run on this function, and it is now well-conditioned and no longer gated on any ruling.",
+   "mechanism": "The seed form is volatile-free and at (or within 2 of) target's instruction count, with the remaining differences being register assignment plus three missing loads \u2014 so a permutation search is a register-allocation search rather than a shape search.",
+   "next_probe": "Seed a campaign from tmp/grind/func_80034F88/s3/variants/h0_s32val.c with tools/permuter_campaign.py, wait for it IN-TURN with `python3 tools/permuter_campaign.py wait --dir <ws>` under the fresh-seed stopping rule, harvest, then `harvest --stop` it before ending the turn."
   },
   {
-   "hypothesis": "decomp-permuter has never been run on this function, and it is only now well-conditioned: the input form already has the target's exact instruction count and differs solely in register assignment.",
-   "mechanism": "tools/permuter_campaign.py with the fresh-seed stopping rule; a permutation search over a form that is shape-correct is a register-allocation search rather than a shape search.",
-   "next_probe": "Run one campaign seeded from f1_staged_ptrs_before_store.c, wait for it in-turn with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvest, then stop it before ending the turn. Gate on F1 \u2014 do not spend a campaign on a construct that may be ruled out."
+   "hypothesis": "If the cse proof holds, honest pure C cannot produce the target's four lbu reloads at all, and this function is converging on an owner question \u2014 but it is NOT ripe for one yet.",
+   "mechanism": "The two spellings that would produce them are (a) ruled a cheat and (b) ruled out by the carve-out's own two-prong gate. The owner question would be whether prong 2's exact shape list extends to store-then-readback, noting the existing allowlist entry for D_8009BF7C already covers a 'collateral store-then-readback' consumer as part of a symbol-level grant justified by a spin-wait elsewhere plus a cited IRQ writer \u2014 a justification D_80106A73 does not have.",
+   "next_probe": "Do NOT file this from a non-escalation modality. The ladder still has forensics, rederive and synthesis untried, and s3 alone found 5 honest points that two prior sessions had missed while believing the family was exhausted. Grind those first; if the driver later assigns escalation modality, the packet is already written up in hypotheses.md F3 and both rejected/*.c headers."
   }
  ],
  "judge_constraints": [],

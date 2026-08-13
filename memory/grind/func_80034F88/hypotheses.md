@@ -265,3 +265,193 @@ s1 or s2. Gate it behind F1.
 - probe: 15 non-volatile variants measured through tmp/grind/func_80034F88/s2/sweep.py: v01-v10 and w1-w7.
 - result: Best non-volatile result is 23, matching s1's floor, reached by two structurally different forms (v05 at 50 insns, v10/w4 at 45 insns). v10 achieved the shared unfolded base for the first time but forwarded all three stores; nothing non-volatile produced more than one lbu reload. The non-volatile family is exhausted at 23.
 - verdict: KILLED
+
+## Resolved in s3 (structural)
+
+### s2-F1 — RESOLVED AGAINST THE CONSTRUCT (policy, not codegen).
+*Question.* Is `volatile u8 *pbit = &D_80106A73;` — a local pointer-to-volatile
+aliasing a global declared plain `extern u8` — sanctioned or a cheat?
+*Answer.* A CHEAT, resolved from the project's own artifacts without an owner
+ruling. It is `engine/volatile_cheats.py` pattern 2 ("Inline
+`*(volatile T *)&D_globalsym` casts on game-RAM symbols. Treats a plain
+game-state global as volatile at the access site, defeating CSE/scheduling.")
+spelled in two statements instead of one: same object, same added qualifier,
+same CSE effect. That module's pointer-to-volatile carve-out is scoped to
+`extern volatile T *name;` declarations whose pointee "is whatever address the
+pointer holds (typically a hardware register address loaded at startup)", which
+is not a local initialised with the address of a known plain global. The
+detector not stripping it is a regex gap, and cheat-checklist T4/T5 say a gap is
+not a sanction. The sibling usage at src/code6cac_b.c:4030 is unreviewed
+pre-existing source, not a precedent.
+*Consequence.* s2's floor of 12 is DISCARDED; banked at
+`rejected/volatile-ptr-coercion-score12.c`.
+
+### s3-H1 — KILLED. The sanctioned volatile spelling is available here.
+*Statement.* `extern volatile u8 D_80106A73;` plus an entry in
+`volatile_extern_allowlist.txt` is the one sanctioned volatile family for a
+`D_`-named global, so the axis may be reachable legitimately.
+*Probe.* Researched both prongs of
+`.claude/rules/legitimate-volatile-interrupt-touched.md` against the codebase.
+*Result.* BOTH PRONGS FAIL. Prong 1 (IRQ/MMIO writer, must be cited):
+0x80106A73 is KSEG0 game RAM, not the 0x1F801000-0x1F802FFF MMIO range; the six
+functions referencing the byte are func_800167AC/BC/D4/EC, func_80034708,
+func_80034F88 and func_80035280, none of which is installed via
+InterruptCallback / VSyncCallback / irq_EnableInterrupts /
+irq_AcknowledgeVblank anywhere in src/, and the only external storer
+(func_800167EC) is called synchronously from src/ings.c:414. Prong 2 (use-site
+shape, "exact list, not illustrative"): store-then-readback in straight-line
+code is not spin-wait, not double-read-across-sequence-point, not
+IRQ-mutated-loop-bound. **KILLED** — a measured gate failure, not an open
+question.
+
+### s3-H2 — KILLED. A volatile DECLARATION alone would reproduce the target.
+*Statement.* If the flag byte were simply declared volatile in the original, the
+natural body (plain symbol accesses, no pointer locals) would give the target.
+*Mechanism/probe.* The sandbox strips declaration-level volatile, so this was
+unmeasurable until s3 built `tmp/grind/func_80034F88/s3/rawscore.py` (same
+`engine/score.py` distance, all rules dropped, NO volatile/cheat-asm strip).
+Measured four decl-volatile bodies.
+*Result.* raw 28-32 at 51 insns — WORSE than the honest non-volatile 20. With
+every access volatile, `combine` cannot fold `%lo` into any of the eight mems,
+and the target's THREE separate address bases still require three pointer
+locals. The 12 belongs to the pointer-local structure, not to the declaration:
+plain-decl + three volatile pointers and volatile-decl + three volatile pointers
+both score 12. **KILLED** — banked at
+`rejected/declvol-plain-symbol-accesses-raw28.c`.
+
+### s3-H3 — CONFIRMED. The non-volatile family was NOT exhausted at 23.
+*Statement.* s2's condition-before-read lever, found on the volatile form,
+transfers to the non-volatile form; and the copy loop is not actually matching.
+*Probe.* 22 variants through `tmp/grind/func_80034F88/s3/probe.py`.
+*Result.* `c = p[8] & K;` before `val = D_80106A73;` moves 23/50 -> **22/49**.
+The copy loop spelled `*((u8 *)p + i + 0x17)` (induction variable before the
+constant displacement) moves 22 -> **20**: it emits `addu v0,a1,v1` in target's
+operand order where `+ 0x17 + i` emits `addu v0,v1,a1`, and the insn occurs
+twice (loop body + branch delay slot). `((u8 *)p)[i + 0x17]` and
+`(&D_80106A70)[i] = ((u8 *)p)[0x17 + i]` do NOT fix it (both 22).
+**CONFIRMED — honest floor 20 at 49/49 insns, before s3-H5 took it to 18.**
+
+### s3-H5 — CONFIRMED. Int-typed loaded byte is worth 2 more points, but only
+### once the other levers are in place.
+*Statement.* s1's H1 ("int-typed temporaries are not the lever", KILLED at 28)
+was measured on a form that had none of the levers found since; re-test the type
+of the loaded byte on top of the floor-20 form.
+*Mechanism.* `s32 val = D_80106A73;` makes the read a `(zero_extend:SI (mem:QI))`
+and forces an explicit `andi a0,v1,0xff` truncation before the store, which
+lengthens the byte's live range across the block boundary and changes which
+value each block's `ori`/`move` pair reads.
+*Probe.* Wave G/H (16 variants) through `s3/probe.py`.
+*Result.* `s32 val` (with `u8 val2`) scores **18 at 51 insns** — 2 points better
+than the 20 despite being 2 instructions longer. `s32` on val2 instead gives
+back the gain (20); both `s32` gives 20; declaration order of `c`/`val`/`val2` is
+neutral (18 in all three orders tried); read-before-condition is also neutral at
+this point (18); ternary (24), positive-sense `if` (26), a single local reused
+for load+select (26), one local shared between condition and value (23), pointer
+stores (24) and hoisting `p[8]` into a local once (32) are all worse.
+**CONFIRMED — honest floor 18, the current state of src/code6cac_b.c.**
+
+### s3-H4 — CONFIRMED (proof, upgrading s2's empirical claim). The residual 20
+### points are unreachable without a volatile QImode access.
+*Mechanism.* `cse.c:7308-7340` skips recording a SET_DEST only when
+`sets[i].src_elt == 0` (line 7329), and `canon_hash` (cse.c:1941-1947) sets
+`do_not_record` for a MEM **only** under `MEM_VOLATILE_P`. The remaining
+`do_not_record` triggers — PRE/POST inc-dec (no MIPS auto-inc), PC, CC0, CALL,
+UNSPEC_VOLATILE, volatile ASM_OPERANDS, hard reg under SMALL_REGISTER_CLASSES —
+are unreachable from C in this function.
+*Probe.* Read the compiler source, then checked the dichotomy against every
+spelling measured in s1-s3 (~30 forms).
+*Result.* Two C address expressions for one byte either hash the same (cse
+merges the pseudos: one base, the store forwards into the load, the reload dies)
+or hash differently (no forward, but two `lui`s and `%lo` folded into each
+single-use mem). Target needs BOTH — a shared unfolded base AND a surviving
+reload — on the same pair (`lbu a0,0(v1)` immediately after `sb a0,0(v1)`, into
+the register that already holds the stored value). Aliasing spellings like
+`(&D_80106A70)[3]` do not escape: GCC treats the two expressions as distinct
+objects and would MISCOMPILE the read-back, so the original source cannot have
+done that either. **CONFIRMED.**
+
+### s2's F3 kill — PREMISE CORRECTED (conclusion survives).
+s2 killed "0x80106A70..0x80106A73 is one declared object" by citing "the
+target's own relocation records". A shipped PS-EXE has no relocations; splat
+renders `%hi(D_80106A73)` by resolving the computed address to the nearest
+symbol ([[splat-symbol-names-are-not-evidence]]). The premise is void. F3 stays
+dead for the stronger s3-H4 reason instead.
+
+## Open frontier for s4
+
+### F1 — the last honest points are register assignment in the flag blocks, and
+### some of them look reachable without touching the reload question.
+At floor 18 the build differs from target as follows (side-by-side in
+`tmp/grind/func_80034F88/s3/` via `sidebyside.py h0_s32val.c`): the
+conditional value lands in `v1` (`ori v1,a0,0x1` / `move v1,a0`) where target
+uses `v0` (`ori v0,a0,0x1` / `move v0,a0`); blocks 2 and 3 read the byte with
+`move a0,v1` instead of `lbu`; and their stores are `lui at,%hi` + `sb v1,0(at)`
+instead of `sb v0,0(base)`. The `v0`/`v1` swap of the SELECTED VALUE is the one
+sub-problem that is not obviously downstream of the missing reloads — target's
+`v0` is the register `lw v0,0x20(a1)` just used for the condition, so a spelling
+that lets the condition temporary and the selected value share one C variable
+(or that shortens the condition's live range) may flip it.
+*Next probe.* Wave G/H already spent (a) one local shared between condition and
+value, (b) declaration order, (c) `s32`/`u8` on both temporaries, (d) hoisting
+`p[8]`, (e) ternary / positive-`if` / read-first orderings — see s3-H5 for all
+16 numbers; only `s32 val` moved. Untried from here: splitting the three blocks'
+temporaries into per-block locals (`val_a`/`val_b`/`val_c`), an explicit
+`(u8)`-cast staging variable for the truncation the `s32 val` form emits, a
+second natural use of `ptr` late in the function to lengthen its live range, and
+swapping which of `c`/`val` is computed into the delay-slot-adjacent statement.
+Measure with `s3/probe.py`, read the deltas with `s3/sidebyside.py`.
+
+### F2 — decomp-permuter has still never been run on this function.
+It is well-conditioned now for the OPPOSITE reason s2 gave: the form is at
+target's exact instruction count and the remaining differences are register
+assignment plus three missing loads. A campaign seeded from
+`f_L3_srcptr_local.c` is a register-allocation search. Run it in-turn
+(`tools/permuter_campaign.py wait --dir <ws>`), harvest, `--stop` it before
+ending the turn. No longer gated on any ruling — the seed form is volatile-free.
+
+### F3 — the escalation question this function is converging on (do NOT file it
+### from a non-escalation modality; bank it until the driver says so).
+If s3-H4 holds, honest pure C cannot produce the target's four `lbu` reloads,
+and the two spellings that could are (a) ruled a cheat (s2-F1) and (b) ruled out
+by the carve-out's own two-prong gate (s3-H1). That points at an owner question
+— "the target bytes say this byte was volatile; the carve-out's prong-2 shape
+list does not cover store-then-readback; does the owner extend it, or is this
+function OWNER-ACCEPTED INCOMPLETE?" — but the ladder still has forensics,
+rederive and synthesis modalities untried, and s3 itself found 3 honest points
+that two prior sessions had missed. Grind those first.
+
+## [s3] s2's blocking F1 — is `volatile u8 *pbit = &D_80106A73;` (a local pointer-to-volatile aliasing a global declared plain `extern u8`) a sanctioned construct or a forbidden volatile coercion?
+- mechanism: The construct is engine/volatile_cheats.py pattern 2 — its docstring reads 'Inline `*(volatile T *)&D_globalsym` casts on game-RAM symbols. Treats a plain game-state global as volatile at the access site, defeating CSE/scheduling.' A local `volatile u8 *` initialised with `&D_80106A73` is that cast spelled in two statements: same object, same added qualifier, same CSE effect. The module's pointer-to-volatile carve-out is explicitly scoped to `extern volatile T *name;` declarations whose pointee 'is whatever address the pointer holds (typically a hardware register address loaded at startup)', which is not a local aliasing a known plain global.
+- probe: Read engine/volatile_cheats.py (docstring + allowlist machinery) and .claude/rules/legitimate-volatile-interrupt-touched.md instead of measuring another spelling; cross-checked against the cheat checklist's family test.
+- result: Ruled a CHEAT and resolved in-session rather than escalated: the detector not stripping it is a regex gap, and checklist tests T4/T5 say a detector gap is not a sanction ('it's different because it's spelled with X instead of Y' is the loophole the policy forbids). The sibling usage at src/code6cac_b.c:4030 is unreviewed pre-existing source, not a precedent. s2's floor of 12 is therefore DISCARDED and banked at memory/grind/func_80034F88/rejected/volatile-ptr-coercion-score12.c.
+- verdict: KILLED
+
+## [s3] The sanctioned volatile spelling is available for this byte: `extern volatile u8 D_80106A73;` plus an entry in volatile_extern_allowlist.txt.
+- mechanism: engine/volatile_cheats.py reads volatile_extern_allowlist.txt at run time and skips listed symbols for pattern 3, so an allowlisted symbol's volatile is NOT stripped by the sandbox and would move the honest floor. Entry requires both prongs of .claude/rules/legitimate-volatile-interrupt-touched.md.
+- probe: Researched both prongs against the codebase: enumerated every function referencing D_80106A73 (func_800167AC/BC/D4/EC, func_80034708, func_80034F88, func_80035280), checked which store to it, and grepped src/ for InterruptCallback / VSyncCallback / irq_EnableInterrupts / irq_AcknowledgeVblank installations naming any of them.
+- result: BOTH PRONGS FAIL. Prong 1: 0x80106A73 is KSEG0 game RAM, not the 0x1F801000-0x1F802FFF MMIO range, and no referencing function is installed as an IRQ/VSync callback anywhere in src/; the only external storer, func_800167EC, is called synchronously from src/ings.c:414. Prong 2: the use-site shape is store-then-readback in straight-line code, which is not on the rule's exact three-shape list (spin-wait / double-read-across-sequence-point / IRQ-mutated-loop-bound). A measured gate failure, not an open question.
+- verdict: KILLED
+
+## [s3] If the flag byte were simply declared volatile in the original, the natural body (plain symbol accesses, no pointer locals) would reproduce the target.
+- mechanism: The cheat-invisible sandbox strips declaration-level volatile, so this had never been measurable. s3 built tmp/grind/func_80034F88/s3/rawscore.py — same engine/score.py distance, all regfix/asmfix rules dropped, NO volatile strip and NO cheat-asm strip — purely as a forensic instrument.
+- probe: Four decl-volatile bodies (condition-first / read-first x ternary / if-else) plus decl-volatile combined with s2's three volatile pointer locals, scored raw.
+- result: raw 28-32 at 51 insns — WORSE than the honest non-volatile 20 reached the same session. With every access volatile, combine cannot fold %lo into any of the eight mems. Plain-decl + three volatile pointer locals and volatile-decl + three volatile pointer locals both score 12, so the 12 belongs to the pointer-local structure, not to the declaration: even if the allowlist grant existed it would not close the function. Banked at rejected/declvol-plain-symbol-accesses-raw28.c.
+- verdict: KILLED
+
+## [s3] The non-volatile family is NOT exhausted at 23 — s2's condition-before-read lever transfers to it, and the copy loop that s1/s2 both recorded as already matching does not actually match.
+- mechanism: Ordering the p[8] read before the flag-byte read frees the lw's load-delay slot on the non-volatile form too. Separately, `*((u8 *)p + 0x17 + i)` emits `addu v0,v1,a1` while the target has `addu v0,a1,v1` — the operand order follows the source's addition order, and the insn appears twice (loop body + branch delay slot).
+- probe: 22 variants through tmp/grind/func_80034F88/s3/probe.py (splice -> sandbox --disable all -> restore), read with s3/sidebyside.py (difflib-aligned build-vs-target instruction listing).
+- result: 23/50 -> 22/49 for the ordering lever; 22 -> 20 for the copy loop spelled `*((u8 *)p + i + 0x17)` (induction variable before the constant displacement). Near-identical spellings do NOT work: `((u8 *)p)[i + 0x17]` and `(&D_80106A70)[i] = ((u8 *)p)[0x17 + i]` both stay at 22.
+- verdict: CONFIRMED
+
+## [s3] An int-typed loaded byte (`s32 val = D_80106A73;`) is worth further points once the address and ordering levers are in place — reopening s1's H1, which killed int temporaries at 28.
+- mechanism: The read becomes a (zero_extend:SI (mem:QI)) and an explicit `andi a0,v1,0xff` truncation appears before each store, lengthening the byte's live range across the block boundary and changing which value each block's ori/move pair reads.
+- probe: Waves G and H, 16 variants: type of val and val2, declaration order, ternary vs positive-sense if vs negated if, one local shared between condition and value, pointer stores, hoisting p[8] into a local, read-before-condition.
+- result: `s32 val` with `u8 val2` scores 18 at 51 insns — 2 points better than the 20 despite 2 more instructions. `s32 val2` gives the gain straight back (20); both s32 = 20; declaration order is neutral (18 in all three orders); read-first is neutral (18); ternary 24, positive-sense if 26, single reused local 26, shared condition/value local 23, pointer stores 24, hoisted p[8] 32. s1's kill was correct for its form and wrong for this one — the byte's type only pays once the shape is right.
+- verdict: CONFIRMED
+
+## [s3] The residual distance is unreachable in pure C without a volatile QImode access — upgrading s2's empirical 'non-volatile is exhausted' to a mechanism-level proof.
+- mechanism: cse.c:7308-7340 skips recording a SET_DEST only when sets[i].src_elt == 0 (line 7329), and canon_hash (cse.c:1941-1947) sets do_not_record for a MEM ONLY under MEM_VOLATILE_P. Every other do_not_record trigger — PRE/POST inc-dec (no MIPS auto-inc), PC, CC0, CALL, UNSPEC_VOLATILE, volatile ASM_OPERANDS, hard reg under SMALL_REGISTER_CLASSES — is unreachable from C in this function.
+- probe: Read cse.c (canon_hash, cse_insn's dest-recording block, cse_end_of_basic_block) and tested the resulting dichotomy against every spelling measured in s1-s3 (~50 forms in total across the three sessions).
+- result: Two C address expressions for one byte either hash the same (cse merges the pseudos: one shared unfolded base, but the store forwards into the load and the reload dies) or hash differently (no forward, but two luis and combine folds %lo into each single-use mem). The target needs BOTH on the same pair — `lbu a0,0(v1)` immediately after `sb a0,0(v1)`, reloading into the register that already holds the stored value. Aliasing spellings such as (&D_80106A70)[3] are not an escape: GCC would treat the two expressions as distinct objects and MISCOMPILE the read-back, so the original source cannot have done that either.
+- verdict: CONFIRMED
