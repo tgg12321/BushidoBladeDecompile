@@ -333,3 +333,85 @@ ORIGINAL compile's RA-time reference counts were - not structural.
 - [s3] Consequence for the ladder: within the fully-measured global.c model, all three levers that could move the two priorities — reference lift by duplication (this session), reference reduction by splitting (s2), and live-length inflation (s2 H6) — are now measured dead. No C source that emits the target's own memory accesses can produce the target's allocation, so the remaining question is FORENSIC (what the original compile's RA-time reference counts were) or a search question for the permuter, not a hand-derivable structural one.
 
 - [s3] Incidental measurement worth keeping: local-alloc DOES hand out callee-saves in this translation unit for other functions (ALLOCDBG seed_used for func_80077D10 includes 16, for func_800784E4 includes 16 and 17), so the empty callee-save seed measured for func_80078654 in s2 is a consequence of this function's shape, not a property of the target/flags. It cannot be exploited here: any local-alloc pseudo taking $s0 would also conflict with the walk pointer, which is live across the entire body.
+
+## SESSION 4 (permuter) — the random-search axis is measured, with a reusable rig
+
+**Floor unchanged at 19.** candidate.c was re-applied to src/text1b_b.c at the
+start of the session (HEAD again carried the OLD inline-asm body — the s3 ledger
+commit was ledger-only, exactly as the s3 process note warned) and reproduces the
+ledger numbers: sandbox `--disable all` = 19, build_insns 116 == target 116. src
+carries that form at session end.
+
+### The rig (reusable — this is the session's most durable artifact)
+`tmp/grind/func_80078654/s4/mkws.sh` builds a CLEAN single-function permuter
+workspace in one command:
+* `target.o` = `tools/decomp-permuter/prelude.inc` with the `.set gp=64` line
+  stripped (r3000) + `asm/funcs/func_80078654.s`, so the function sits at
+  offset 0 and the permuter score is the REAL weighted diff, not ~340k of
+  branch-address noise.
+* `compile.sh` reproduces the exact build pipeline: cc1 `-O2 -G0 -funsigned-char
+  -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel` → prologue_fix →
+  maspsx (`--expand-div --aspsx-version=2.34` + all five gate lists) →
+  multu_pad → `as -march=r3000 -no-pad-sections -O1 -G0`.
+* `base.c` is a STANDALONE 6-typedef TU carrying only the externs, the `S78654`
+  struct and the function, so no other function shares the object. The script
+  self-validates by objdump-diffing base.o against target.o.
+**Measured base score = 108**, and the validating diff prints exactly the twelve
+known `$s0`/`$s1` lines and nothing else — independent confirmation, through a
+completely different tool chain than `engine sandbox`, that the residual is the
+one allocation inversion and nothing more.
+
+### Campaign A — random from the clean floor-19 base (chassis A)
+`s4-random-clean19`, `-j 8 --stop-on-zero --stack-diffs`, workspace
+`tmp/grind/func_80078654/s4/ws`. **39,636 iterations / 1005 s.** Best new score
+**108 == base**; the two saved finds (`output-108-1`, `output-108-2`) are
+equal-score and both are semantics-CHANGING permuter rewrites
+(`var_s0 = &arg0[5]; SetDrawMode(*var_s0, ...)` and
+`var_s0 = &arg0[3]; s.c = *var_s0;` — they clobber the walk pointer inside the
+loop), so neither is a usable form. **Zero score-improving finds.**
+
+### Campaign B — random from the base/walk-pointer merge (chassis B)
+`s4-chassisB-basemerge`, same flags, workspace `tmp/grind/func_80078654/s4/ws2`.
+Seeded from the s2 H4 form because it is the only measured shape that materially
+lifts the walk pointer's allocno priority (nrefs 5 → 8, pri 1098 → 2448) — i.e.
+the structurally different chassis nearest the 2-D flip frontier.
+**49,448 iterations / ~19 min.** Base score **331**; best find **191**; five
+finds total, all still far ABOVE chassis A's 108, and no novel find in the final
+9-minute window. The basin is strictly worse and does not tunnel back.
+
+### What this measures (and what it does not)
+88,000+ iterations of random structural mutation over the two chassis produced
+**no form scoring below the hand-derived base**. The permuter's mutation set
+(statement reordering, temp introduction/removal, expression respelling, type
+and cast changes, `&x[i]`/`*(x+i)` re-spelling) is exactly the space of edits
+that leaves the emitted memory accesses intact — and by the s1-s3 priority
+model, every such edit leaves `reg_n_refs(arg0) = 13` and `reg_n_refs(walk) ≤ 8`.
+So this is not a lucky miss: the search space the permuter samples is provably
+inside the region the model already proves cannot flip the sort. The permuter
+axis is therefore CLOSED as a route to the flip, and the residual question is
+FORENSIC (what the original compile's RA-time reference counts were) or a
+RE-DERIVATION question, exactly as s3 concluded.
+
+- [s4] PROCESS NOTE (third consecutive session): HEAD's src/text1b_b.c again carried the inherited inline-asm body (`s32 v;` + `__asm__ volatile("move %0, %1" ...)`), because every ledger commit so far has been ledger-only. candidate.c MUST be re-applied before any measurement. Applied, re-measured: sandbox --disable all = 19, build_insns 116 == target_insns 116.
+
+- [s4] A CLEAN single-function permuter rig now exists and is reusable: tmp/grind/func_80078654/s4/mkws.sh builds target.o from asm/funcs/func_80078654.s + the r3000-ified prelude (offset 0), a compile.sh reproducing the exact cc1/prologue_fix/maspsx/multu_pad/as pipeline, and a standalone 6-typedef base.c holding only this function. Measured base score 108, and its self-validating objdump diff prints exactly the twelve known $s0/$s1 lines — an independent confirmation of the residual through a different toolchain than engine sandbox.
+
+- [s4] MEASURED campaign A (s4-random-clean19, random mutation from the clean floor-19 base, -j 8, --stop-on-zero, --stack-diffs): 39,636 iterations in 1005 s, ZERO score-improving finds. The two saved finds are equal-score (108 == base) and both are semantics-CHANGING rewrites that clobber the walk pointer inside the loop (var_s0 = &arg0[5] / var_s0 = &arg0[3]), so neither is a usable form.
+
+- [s4] MEASURED campaign B (s4-chassisB-basemerge, random mutation seeded from the s2 H4 base/walk-pointer merge — the only measured shape that lifts the walk pointer's priority, 1098 -> 2448): base score 331, 49,448 iterations, best find 191, no novel find in the final 9-minute window. Every point in that basin scores far above chassis A's 108; the basin is strictly worse and does not tunnel back to the clean base.
+
+- [s4] Interpretation, and why the negative is strong rather than merely unlucky: the permuter's mutation set (statement reordering, temp introduction/removal, expression and cast respelling, &x[i] vs *(x+i)) is precisely the class of edits that preserves the emitted memory accesses, and the s1-s3 priority model proves every such edit leaves reg_n_refs(arg0) = 13 and reg_n_refs(walk) <= 8, which cannot flip allocno_compare. 88,000+ iterations across two chassis confirm the prediction empirically. The permuter axis is closed as a route to the $s0/$s1 flip.
+
+- [s4] PROCESS NOTE, third consecutive session: HEAD's src/text1b_b.c again carried the inherited inline-asm body (`s32 v;` + `__asm__ volatile("move %0, %1" ...)`) because every ledger commit so far has been ledger-only. memory/grind/func_80078654/candidate.c was re-applied before any measurement; re-measured sandbox --disable all = 19, build_insns 116 == target_insns 116. src carries the candidate form at session end.
+
+- [s4] A reusable clean single-function permuter rig now exists: tmp/grind/func_80078654/s4/mkws.sh builds target.o from asm/funcs/func_80078654.s + tools/decomp-permuter/prelude.inc with the '.set gp=64' line stripped (r3000), so the function sits at offset 0; compile.sh reproduces the exact cc1/prologue_fix/maspsx/multu_pad/as pipeline including -mel and all five maspsx gate lists; base.c is a standalone 6-typedef TU carrying only the externs, the S78654 struct and the function.
+
+- [s4] Measured permuter base score for the floor-19 form: 108. The rig's self-validating objdump diff prints exactly the twelve known $s0/$s1 lines and nothing else — independent confirmation, through a different toolchain than engine sandbox, that the residual is the one allocation inversion.
+
+- [s4] MEASURED campaign A (label s4-random-clean19, workspace tmp/grind/func_80078654/s4/ws, -j 8 --stop-on-zero --stack-diffs): 39,636 iterations in 1005 s, ZERO score-improving finds. Both saved finds are equal-score (108 == base) and are semantics-CHANGING rewrites that clobber the walk pointer inside the loop, so neither is usable.
+
+- [s4] MEASURED campaign B (label s4-chassisB-basemerge, workspace tmp/grind/func_80078654/s4/ws2): seeded from the s2 H4 base/walk-pointer merge (walk nrefs 5 -> 8, pri 1098 -> 2448 — the shape nearest the 2-D flip frontier). Base score 331, 49,448 iterations, best find 191, no novel find in the final 9-minute window. Every point in that basin scores far above chassis A's 108 and it does not tunnel back.
+
+- [s4] Interpretation banked in the ledger: the permuter's mutation set (statement reordering, temp introduction/removal, expression and cast respelling, &x[i] vs *(x+i)) is precisely the class of edits that preserves the emitted memory accesses, and the s1-s3 priority model proves every such edit leaves reg_n_refs(arg0) = 13 and reg_n_refs(walk) <= 8, so allocno_compare cannot flip. The 89,084 iterations confirm the prediction empirically rather than merely failing to find something.
+
+- [s4] Both campaigns were harvested with --stop inside the session (permuter_campaign.py status reports alive=false / registered_active=false for both), and the in-turn wait loop exited; no campaign outlives this session.

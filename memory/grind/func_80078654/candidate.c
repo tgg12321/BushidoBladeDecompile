@@ -28,6 +28,17 @@
  * duplication raises the PARAMETER's priority 1.5x faster than the walk
  * pointer's (measured 5671 vs 2125 at k=2). See evidence.md SESSION 3.
  *
+ * SESSION 4 (permuter) ALSO left this form unchanged and still best at 19. It
+ * built a clean single-function permuter rig (tmp/grind/func_80078654/s4/mkws.sh:
+ * target.o from asm/funcs/func_80078654.s + the r3000-ified prelude, so the
+ * function sits at offset 0 and the score is the real weighted diff; validated
+ * base score 108 whose objdump diff prints exactly the twelve known $s0/$s1
+ * lines) and ran two campaigns totalling 89,084 iterations with ZERO
+ * score-improving finds — chassis A random from this base (best 108 == base,
+ * both saved finds semantics-changing) and chassis B seeded from the s2 H4
+ * base/walk-pointer merge (base 331, best 191, strictly worse basin). The
+ * permuter axis is closed; see evidence.md SESSION 4.
+ *
  * NOTE FOR THE NEXT SESSION: HEAD does NOT carry this body â€” the s2/s3 ledger
  * commits are ledger-only, so src/text1b_b.c at HEAD still has the inherited
  * `s32 v;` + `__asm__ volatile("move %0, %1" ...)` form that scores 23. Apply

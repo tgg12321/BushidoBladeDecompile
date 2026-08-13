@@ -1,8 +1,8 @@
 {
  "func": "func_80078654",
  "file": "text1b_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 19,
    "modality": "structural",
    "headline": "F4 (byte-neutral reference lift by duplication into arms) KILLED on both shapes this CFG admits \u2014 cross-jump re-merges neither (+2 / +39 insns) and the loop body's 6:4 arg0-to-walk reference ratio mak"
+  },
+  {
+   "session": 4,
+   "floor": 19,
+   "modality": "permuter",
+   "headline": "F3 (permuter) KILLED: 89,084 iterations over two chassis produced zero score-improving finds, and a clean single-function permuter rig is now banked and reusable."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter campaign seeded from the clean floor-19 base reaches the flip where hand-derivation provably cannot, because every hand-enumerable structural axis (duplication, splitting, live-length) is now measured dead and the required construct is a reference-count artefact outside the hand-derivable set.",
-   "mechanism": "Random and directed structural mutation explores pseudo partitions and duplication shapes no analytic enumeration covers; the now-validated priority model (predicted 2449 vs measured 2448 in s2) gives a cheap post-filter \u2014 score any find's plausibility from its nrefs/livelen with BB2_ALLOC_DEBUG before spending a sandbox run.",
-   "next_probe": "Run tools/permuter_campaign.py against a SINGLE-FUNCTION target.o built from asm/funcs/func_80078654.s + tools/decomp-permuter/prelude.inc (drop the '.set gp=64' line for r3000) so the function sits at offset 0 and the score is the real weighted diff. Honour the fresh-seed stopping rule, wait IN-TURN with 'permuter_campaign.py wait --dir <ws>', harvest --stop before ending the turn, and vet every closing form against the cheat checklist (the model says any legitimate find must show pseudo 73 nrefs >= 8 with pseudo 72 nrefs <= 13)."
+   "hypothesis": "The twelve buffer accesses did not all exist as references to ONE pseudo at global_alloc time in the original compile; some reference was created after RA, or the original's flow-time counts differed for a reason not yet identified. This is now the leading explanation, because the three structural levers (s2 splitting, s3 duplication, s2 live-length inflation) and the whole random-search neighbourhood (s4) are all measured dead.",
+   "mechanism": "allocno priority is computed from flow/sched-time counts, but the bytes we compare against are post-reorg. s2 checked reorg's delay-slot duplication (no 0xC($sN)/0x14($sN) sits in a delay slot in the target) and s3 checked cross-jump (it merges nothing here), but no per-insn provenance table has ever been built for the twelve accesses, and reload-generated address reloads have never been enumerated at all.",
+   "next_probe": "Forensics modality: dump the full RTL insn stream at flow, sched and global_alloc for the candidate form (cc1 -da plus BB2_SCHED_DEBUG / BB2_XJUMP_DEBUG / BB2_RELOAD_DEBUG on the instrumented tools/gcc-2.7.2/cc1 \u2014 NOT build/cc1) and enumerate, insn by insn, every target byte whose reference could have been created after RA, including reload-generated address reloads. Deliverable is a per-insn provenance table for the 12 buffer accesses and the 5 walk accesses, which either finds the slack or proves the counts are pinned end to end."
   },
   {
-   "hypothesis": "The target's twelve buffer accesses did not all exist as references to ONE pseudo at global_alloc time in the original compile; some reference was created after RA, or the original's flow-time counts differed for a reason not yet identified.",
-   "mechanism": "allocno priority is computed from flow/sched-time counts, but the bytes we compare against are post-reorg. s2 checked reorg's delay-slot duplication (no 0xC($sN)/0x14($sN) sits in a delay slot in the target) and this session checked cross-jump (it merges nothing here), but no per-insn provenance table has ever been built for the twelve accesses.",
-   "next_probe": "Forensics modality: dump the full RTL insn stream at flow, sched and global_alloc for the candidate form (cc1 -da plus BB2_SCHED_DEBUG/BB2_XJUMP_DEBUG/BB2_RELOAD_DEBUG) and enumerate, insn by insn, every target byte whose reference could have been created after RA \u2014 including reload-generated address reloads. Deliverable is a per-insn provenance table for the 12 buffer accesses and the 5 walk accesses, which either finds the slack or proves the counts are pinned end to end."
+   "hypothesis": "The residual is an artefact of having PATCHED an inherited body rather than re-derived the function: a from-scratch reconstruction of func_80078654 from the target bytes may express the buffer or the walk in a partition no incremental edit of the current body can reach.",
+   "mechanism": "Every form measured in s1-s4 is a local edit of one inherited body \u2014 and s4 now shows that even 89,084 random mutations stay inside that one dataflow neighbourhood, because the permuter mutates spellings rather than inventing a different decomposition. The priority model says the answer must lie in a different partition, so a re-derivation is the only systematic way to leave the neighbourhood.",
+   "next_probe": "Rederive modality: run m2c on asm/funcs/func_80078654.s, write the reconstruction VERBATIM from its output (not from candidate.c), then measure sandbox and the BB2_ALLOC_DEBUG table. Compare the resulting pseudo partition against the target's, and specifically check whether the reconstruction expresses arg0 as a struct pointer with fewer distinct RA-time references, or expresses the walk with a second induction variable. The s4 rig (tmp/grind/func_80078654/s4/mkws.sh) can then permute the reconstruction cheaply \u2014 a re-derived chassis is the one seed s4 did not have."
   },
   {
-   "hypothesis": "The residual is an artefact of having PATCHED our inherited body rather than re-derived the function: a from-scratch reconstruction of func_80078654 from the target bytes (m2c + the matched sibling func_80078824's idioms) may express the buffer as a struct pointer or express the walk differently, giving a pseudo partition no incremental edit of the current body can reach.",
-   "mechanism": "Every form measured so far (s1-s3) is a local edit of one inherited body, so the whole search has been confined to one dataflow neighbourhood; the priority model shows the answer must lie in a different partition, and a re-derivation is the only systematic way to leave the neighbourhood by hand.",
-   "next_probe": "Rederive modality: run m2c on asm/funcs/func_80078654.s, write the reconstruction verbatim from its output (not from candidate.c), then measure sandbox and the BB2_ALLOC_DEBUG table. Compare the resulting pseudo partition against the target's, and specifically check whether the reconstruction expresses arg0 as a struct pointer with fewer distinct RA-time references."
+   "hypothesis": "Directed permutation (hand-written PERM_* macros over the specific alternatives the technique rules name) is materially different from the random mutation s4 measured and may still reach the flip.",
+   "mechanism": "Random mode samples spellings uniformly; PERM_GENERAL / PERM_LINESWAP let a form enumerate a chosen cross-product exhaustively, so a small set of semantically-equivalent alternatives is covered completely rather than sampled. tools/permuter_annotate.py is the bridge, though its hint catalog does not currently carry an entry that fits this function (no returns to vary, loop-rotation already killed in s1).",
+   "next_probe": "LOW priority \u2014 record it as measured-thin rather than untried: the s4 evidence is that every spelling-preserving edit leaves the two reference counts pinned, so a directed sweep over spellings is predicted dead by the same model. Only worth running on a RE-DERIVED chassis (frontier 2), where the alternatives being enumerated are genuine partition choices rather than spellings, and it should be seeded with hand-written PERM_GENERAL blocks rather than permuter_annotate.py."
   }
  ],
  "judge_constraints": [],
