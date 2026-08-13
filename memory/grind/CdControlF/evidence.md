@@ -270,3 +270,97 @@ So the only two live doors are `result` at 2 references, or `elem` at exactly
 - [s2] [s2] The goto-chain loop body is now fixed evidence, not an assumption: every real-loop spelling regresses (do/while 18, for 22, while(1)+break 18 against a base of 11).
 
 - [s2] [s2] Harness for the next session: tmp/grind/CdControlF/s2/harness.py provides splice()/score()/sweep() against src/system.c with guaranteed restore, and variants_c.py provides allocdbg() returning the parsed ALLOCDBG table. A new probe batch is just a list of (name, body) pairs; measure the ALLOCDBG table, not only the score, because most spellings are score-flat at 9 while still being informative about nrefs/livelen.
+
+## Session 3 (structural, 2026-08-13) — floor 9 → 4 → **0**. CLOSED.
+
+### The missing term in the s2 model: `reg_n_refs` is loop-depth WEIGHTED
+Sessions 1 and 2 modelled `nrefs` as a plain count of references. It is not.
+`tools/gcc-2.7.2/flow.c` accumulates **`reg_n_refs[regno] += loop_depth`** at
+four sites (flow.c:2081, 2329, 2515, 2725), and `loop_depth` is derived from
+`NOTE_INSN_LOOP_BEG` / `NOTE_INSN_LOOP_END` notes (flow.c:1385-1453, filling
+`basic_block_loop_depth`). So **every reference that sits inside a loop-note
+region counts TWICE**, while `reg_live_length` is untouched by depth.
+
+`tools/gcc-2.7.2/toplev.c` pins the pass order this depends on:
+`cse_main` (2865) → `loop_optimize` (2895) → `cse2` (2926) → **`flow_analysis`
+(2983)** → `combine_instructions` (3004) → `schedule_insns` (3033) →
+`local_alloc` (3052) → `global_alloc` (3080). `reg_n_refs` / `reg_live_length`
+are fixed at 2983 and never recomputed, so anything combine or sched later
+folds STILL COUNTS, while anything cse/loop folds does not.
+
+This is a general instrument, not a CdControlF fact: a loop-note region is a
+per-REGION multiplier on `global.c:635 allocno_compare`'s numerator, with no
+effect on its denominator.
+
+### Why the s2 frontier (a byte-neutral third `elem` reference) was the wrong door
+Measured directly (batch A, `tmp/grind/CdControlF/s3/variants_a.json`): lifting
+`elem` ALONE to 3 references via a minimal loop-note region gives
+`nrefs=3 livelen=31 pri=967`, which is ABOVE `idx` (882) — `elem` takes s2, and
+the score regresses 9 → 19. The s2 frontier's target window "livelen ~38" is
+unreachable for a different reason than s2 recorded: livelen is not moved by
+ref-lifting at all, and `elem`'s live range cannot reach 37-39 without a
+reference in the post-loop TAIL — and `asm/funcs/CdControlF.s` shows target's
+tail never touches s5, so no such reference exists in the original either.
+The door was mis-specified because the model was missing the depth weight.
+
+### The right door: size the loop-note region to the WHOLE loop body
+Predicted by hand before measuring (see `tmp/grind/CdControlF/s3/variants_b.py`
+docstring) and reproduced exactly. Wrapping the retry-loop body — everything
+from `g_cd_callback_a = 0;` through the `if (count != -1) goto loop;` back
+branch — in a `do { ... } while (0);` region doubles exactly the references that
+need doubling:
+
+| value  | refs in/out of region | nrefs | livelen | pri  | hardreg |
+|--------|-----------------------|-------|---------|------|---------|
+| count  | 1 out + 2×2 + 2       | 7     | 35      | 4000 | s0 ✓ |
+| a1     | 1 out + 2 + 2 + 2     | 7     | 37      | 3783 | s1 ✓ |
+| idx    | 1 out + 2 + 1 out     | 4     | 34      | 2352 | s2 ✓ |
+| a0     | 1 + 1 out + 2         | 4     | 37      | 2162 | s3 ✓ |
+| saved  | 1 out + 2 + 1 out     | 4     | 37      | 2162 | s4 ✓ |
+| elem   | 1 out + 2             | 3     | 31      |  967 | s5 ✓ |
+| result | 3 refs, ALL outside   | 3     | 39      |  769 | s6 ✓ |
+
+= target's s0..s6 in one step. `result` is the only value whose three references
+all lie outside the region (`result = 0` before the loop, `result = -1` and
+`return result + 1` after it), which is precisely why it alone stays at the
+bottom of the order. Floor **9 → 4**.
+
+**Region sizing is load-bearing** (batch B, `variants_b.json`): whole loop body
+including the decrement and back branch → 4; body only, decrement outside → 16
+(count keeps 4 refs and falls below a1); region opened before the `loop:` label
+so the label sits inside → 16 plus two spilled extra allocnos.
+
+### The last 4 was the prologue schedule, and init order was free again
+At floor 4 the normalized diff was 75 vs 75 with a single displaced pair:
+ours emitted `sw s6,40(sp)` / `move s6,zero` at prologue positions 5-6, target
+emits them at 17-18. That is `result = 0;` being the FIRST init statement in our
+C and the LAST in the original. Session 2 had measured "result first-or-early,
+result-last scores 20-24" — true, but only on the OLD basis where init order WAS
+the allocation lever. With the allocation pinned by the region the axis is free,
+so all 240 legal init orders were re-swept (`sweep_c_d_result_first.json`).
+
+**`idx, saved, count, base, elem, result`** (i.e. `result = 0;` last) → **0**.
+Reached at permutation 58 of 240; the sweep stops on zero.
+
+### Final state, verified this session
+`sandbox CdControlF --disable all` → `{"score": 0, "target_insns": 75,
+"build_insns": 75, "rules_dropped": 0}` with the edits in place in `src/system.c`.
+The four in-file neighbours re-measured with the edits applied: `CdRead` 0,
+`CdReadBreak` 0, `CdControlB` 0. `src/system.c` remains LF.
+
+The committed body carries strictly FEWER constructs than HEAD did: the
+`register s32 result asm("s6")` pin and the `new_var`/`new_var2` DImode chain are
+both gone; what is added is one FAKE-annotated single-level `do { } while (0);`
+region, the `u8` parameter type, the `base` named intermediate (the matched
+sibling `CdControlB`'s own spelling at src/system.c:237-238) and a statement
+order. Self-vet: `memory/grind/CdControlF/self_vet.md`.
+
+### Ported lever for the sibling `CdControl` (queue-active, distance 25)
+`CdControl` is the same function with a third argument and still carries a
+`register s32 result asm("s7")` pin. Its measured allocno table (from the same
+dump, `tmp/grind/CdControlF/s3/allocdbg_all.txt`) is
+count 4/31=2580, a1 4/38=2105, 3/37=810, 3/38=789, 3/38=789, 3/39=769, 2/34=588
+— the same shape as CdControlF's pre-close table, with `result` again third from
+last and `elem` last. The whole CdControlF recipe (u8 `com`, `base`/`elem`
+two-step, whole-loop-body do-while(0) region, then a 240-order init sweep) is
+the obvious first attack there.

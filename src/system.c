@@ -178,24 +178,28 @@ next:
 done:
     return result + 1;
 }
-s32 CdControlF(s32 a0, s32 a1) {
-    register s32 result asm("s6");
-    s32 count;
-    unsigned long long new_var2;
+s32 CdControlF(u8 a0, s32 a1) {
+    s32 result;
     s32 idx;
     s32 saved;
-    int new_var;
+    s32 count;
+    s32 *base;
     s32 *elem;
 
-    idx = a0 & 0xFF;
+    idx = a0;
     saved = g_cd_callback_a;
-    elem = &g_cd_sector_buf[idx];
-    new_var = 3;
+    count = 3;
+    base = g_cd_sector_buf;
+    elem = base + idx;
     result = 0;
-    new_var2 = new_var;
-    count = new_var2;
 
 loop:
+    /* FAKE: loop-note ref weighting seats elem in s5 and result in s6,
+       mechanism: flow.c life analysis (reg_n_refs += loop_depth) feeding
+       global.c allocno_compare, lever-exhaustion: memory/grind/CdControlF/
+       hypotheses.md (s1 60+120 perms, s2 240 init orders + batches A-E,
+       s3 batches A/B) */
+    do {
     g_cd_callback_a = 0;
 
     if (idx != 1) {
@@ -211,7 +215,7 @@ loop:
         }
     }
     g_cd_callback_a = saved;
-    if (CD_cw(a0 & 0xFF, a1, 0, 1) == 0) {
+    if (CD_cw(a0, a1, 0, 1) == 0) {
         goto done;
     }
 next:
@@ -220,6 +224,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
+    } while (0);
     g_cd_callback_a = saved;
     result = -1;
 done:
@@ -1011,7 +1016,7 @@ extern volatile s32 D_800A14FC;
 extern u8 *D_800A1504;   /* cdread.c v1.86: saved result ptr for cb dispatch */
 extern s32 D_800A14CC;   /* CD_ReadCallbackFunc */
 extern s32 D_800162D4;   /* "CdRead: sector error\n" */
-extern s32 CdControlF(s32, s32); /* CdControlF */
+extern s32 CdControlF(u8, s32); /* CdControlF */
 
 /* PsyQ 4.0 LIBCD cdread: cb_read (static) — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libcd/cdread.c

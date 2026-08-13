@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CdControlF",
-      "file": "system",
-      "distance": 23,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "func_8006288C",
       "file": "text1b",
       "distance": 23,
@@ -2393,14 +2384,14 @@
     }
   ],
   "counts": {
-    "total": 279,
-    "active": 235,
+    "total": 278,
+    "active": 234,
     "by_status": {
-      "active": 235,
+      "active": 234,
       "parked": 44
     },
     "by_verdict": {
-      "C": 151,
+      "C": 150,
       "ASM-PARTIAL": 37,
       "ASM-SUSPECT": 47
     }

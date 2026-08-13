@@ -168,6 +168,71 @@ Whatever closes CdControlF should close it.
 CdControl with the winning spelling as the seed. (Out of scope for a CdControlF
 session — recorded so the work is not re-derived.)
 
+## SESSION 3 — CLOSED at distance 0 (structural modality)
+
+### CONFIRMED in session 3
+
+- **H-s3-a: `reg_n_refs` is loop-depth WEIGHTED, and s1/s2 modelled it as a
+  plain count.** CONFIRMED from source and by measurement. `flow.c` does
+  `reg_n_refs[regno] += loop_depth` (flow.c:2081/2329/2515/2725), with
+  `loop_depth` derived from NOTE_INSN_LOOP_BEG/END. A reference inside a
+  loop-note region counts TWICE; `reg_live_length` is untouched by depth.
+  `toplev.c` fixes the pass order: cse(2865) → loop(2895) → cse2(2926) →
+  **flow(2983)** → combine(3004) → sched(3033) → local(3052) → global(3080),
+  and nrefs/livelen are never recomputed after 2983.
+- **H-s3-b: sizing a loop-note region to the WHOLE loop body lands the entire
+  allocno table on target's order.** CONFIRMED — predicted by hand before
+  measuring, reproduced exactly: count 7/35=4000 s0, a1 7/37=3783 s1,
+  idx 4/34=2352 s2, a0 4/37=2162 s3, saved 4/37=2162 s4, elem 3/31=967 s5,
+  result 3/39=769 s6. Floor 9 → 4. `result` is the only value with all three
+  references outside the region, which is why it alone stays last.
+  `tmp/grind/CdControlF/s3/variants_b.json`.
+- **H-s3-c: region SIZING is load-bearing.** CONFIRMED — whole loop body incl.
+  the decrement and back branch → 4; body only, decrement outside → 16;
+  region opened before the `loop:` label → 16 plus two spilled allocnos.
+- **H-s3-d: once the allocation is pinned by the region, the init-order axis is
+  free again and `result = 0;` belongs LAST.** CONFIRMED — the residual 4 was
+  exactly `sw s6 / move s6,zero` at prologue positions 5-6 instead of 17-18.
+  Re-sweeping all 240 legal init orders gives **`idx, saved, count, base, elem,
+  result` → 0**. `sweep_c_d_result_first.json`. This does NOT contradict s2's
+  "result first-or-early": that was measured on the old basis, where init order
+  WAS the allocation lever.
+
+### KILLED in session 3
+
+- **F0 as s2 specified it (a byte-neutral third `elem` reference at livelen
+  ~38).** KILLED — mis-specified. Ref-lifting does not move livelen at all, so a
+  3-reference `elem` sits at 3/31 = pri 967, ABOVE `idx` (882): it takes s2 and
+  the score regresses 9 → 19. Reaching livelen 37-39 would need an `elem`
+  reference in the post-loop tail, and `asm/funcs/CdControlF.s` shows target's
+  tail never touches s5, so no such reference exists in the original either.
+  `variants_a.json` (S1_dw0_deref_only).
+- **A LOCAL ref lift on any single value.** KILLED as a class — the priorities
+  must move as a SET. Lifting only `a1`'s block puts a1 above count (3783 vs
+  2285, score 28); lifting only the `idx` guard puts idx above count (2352 vs
+  2285, score 22). Only the whole-loop-body region moves every row by the right
+  factor at once. `variants_a.json` (S2, S7).
+- **`if (elem != base + 1)` in place of `if (idx != 1)`.** KILLED — `idx` stops
+  being an allocno entirely and `base` becomes one at livelen 66. Score 16.
+- **Declaration order, again.** Still score-inert (S5_decl_elem_first → 9 on the
+  old base; the closing form uses the s1 declaration order unchanged).
+
+### Disposition
+Bytes proven at `sandbox CdControlF --disable all` = 0 with the edits in place;
+`CdRead` / `CdReadBreak` / `CdControlB` re-measured at 0 alongside. Closing form
+banked at `memory/grind/CdControlF/candidate.c`; self-vet at
+`memory/grind/CdControlF/self_vet.md`. The one FAKE construct is a single-level
+`do { } while (0);` region, annotated inline, claimed under
+`.claude/rules/do-while-zero-exception.md:23`.
+
+### Carry-forward for the sibling `CdControl` (queue-active, distance 25)
+Measured allocno table (same dump, `tmp/grind/CdControlF/s3/allocdbg_all.txt`):
+count 4/31=2580, a1 4/38=2105, then 810 / 789 / 789 / 769 / 588 — the same shape
+CdControlF had before closing, with `result` third from last and `elem` last.
+Replay the whole recipe: `u8 com` parameter (+ keep any forward decl in sync),
+`base`/`elem` two-step, whole-loop-body `do { } while (0);` region, then the
+240-order init sweep with `result` allowed to land last.
+
 ## [s1] The residual is not structural — target and build emit the same 75 instructions and differ only in which callee-saved register each value occupies.
 - mechanism: Register allocation only: GCC 2.7.2 global.c assigns the same RTL to different hard regs; no insn count, branch, frame-size or jal-site difference exists.
 - probe: objdump -d tmp/sandbox/CdControlF/system.o vs asm/funcs/CdControlF.s, instruction-by-instruction
