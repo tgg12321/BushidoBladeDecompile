@@ -1,7 +1,7 @@
 {
  "func": "func_8001979C",
  "file": "code6cac",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 18,
    "modality": "permuter",
    "headline": "Floor 20 -> 18: a permuter-found, hand-minimised per-loop carrier re-home (the 0x20-bits_left shift amount computed into the other bit loop's dead walking pointer, plus a second holder for 'needed') c"
+  },
+  {
+   "session": 5,
+   "floor": 12,
+   "modality": "permuter",
+   "headline": "Floor 18 -> 12 and D2 (14 pts, the $v0/$v1 mirror that blocked sessions 1-4) is CLOSED: giving `hi` two extra refs per arm crosses the floor_log2 bucket in global.c allocno_compare and hands it $v1, a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "D2 (14 of the remaining 18 points) closes only if 'hi' gains enough references to cross a floor_log2 bucket and outrank 'val' in global.c allocno_compare; every route that removes or re-homes val's references is now measured dead.",
-   "mechanism": "global.c allocno_compare priority = floor_log2(nrefs)*nrefs/livelen; val = nrefs 19 / livelen 15 / pri 50666 takes $v1, hi = nrefs 8 / livelen 18 / pri 13333 takes $v0, and target needs the reverse. vL (session 3) proved removing val's refs kills D1; session 4 proved a read-back re-home changes nothing.",
-   "next_probe": "(a) The one unexecuted F1(a) probe: spell the store as 'hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;' so hi gains two refs per arm (8 -> ~16, crossing into floor_log2 4) with val untouched; (b) shorten hi's livelen of 18 by moving the 'cur = *arg1;' refill out of hi's span; (c) read the ALLOCDBG pri column (tmp/grind/func_8001979C/s3/qty.sh) for every variant - it is a far finer gradient than the sandbox score."
+   "hypothesis": "D6 (4 pts) closes by ADDING references to the third loop's address walker `out` so it outranks `val` and is allocated first (taking $v0), rather than by demoting `val` - the exact mirror of the session-5 win, and the only direction not yet measured dead.",
+   "mechanism": "global.c allocno_compare priority floor_log2(nrefs)*nrefs/livelen. Target emits `li $v1,-2` + `addiu $v0,$t3,0x348`, i.e. `out` is allocated before the -2 holder. `val` (holding the -2) is nrefs 19 / pri 50666; `out` has roughly 6 refs, so it needs the same floor_log2-bucket crossing that `hi` just made. Every attempt to demote `val` instead costs D1 (measured five ways this session).",
+   "next_probe": "Route the third loop's store through `out` the way the bit loops now route through `hi` - e.g. give `out` an extra def-use per iteration that a human would write anyway - and read the ALLOCDBG pri column (tmp/grind/func_8001979C/s3/qty.sh) rather than only the sandbox score, since it shows how close a form came to flipping the order."
   },
   {
-   "hypothesis": "D4's remaining 4 points are purely the walking-pointer init's POSITION (ours before the sw/lw preamble, target's last in the preheader), and it can only move if the counter/walker priority window is widened from the counter's side.",
-   "mechanism": "loop.c move_movables / scan_loop choose the preheader insertion point, and global.c allocno_compare fixes what may move: counter nrefs 21 / livelen 60 / pri 14000, each walker nrefs 13; moving an init late costs livelen and flips the walker above the counter (session 2's P6, score 31). The 'li' order half of D4 closed this session as a side effect of the allocation change.",
-   "next_probe": "(a) Find a change that lengthens the counter's live range without dropping it a floor_log2 bucket, then re-test the late walker init; (b) read tools/gcc-2.7.2/loop.c move_movables / scan_loop to find where the preheader insertion point is chosen relative to the loop's first insn, and whether the walker init is a movable at all in this form."
+   "hypothesis": "D5 (4 pts) is a list-scheduler tie-break, not a source-order effect, so it must be attacked with the sched.c model rather than by moving statements.",
+   "mechanism": "Target emits `sllv $a2,$a2,$a0` (`cur <<= needed`) before the `or`; we emit the `or` first. Moving the C statement above the store is bit-identical (vTieShiftEarly, 12), so the decision is made in sched.c's INSN_PRIORITY ordering of the arm's ready list.",
+   "next_probe": "Point tools/sched_solver (validated 6978/6978, memory/project/sched-solver-campaign-2026-08-05.md) at the arm's block in both our build and target, identify the priority/tie-break that orders the `or` against the `sllv`, then derive which C-visible change (an extra dependence into `cur`, a different consumer distance) moves it."
   },
   {
-   "hypothesis": "The closing form's policy status is the binding gate on any candidate-ready, and it now covers TWO constructs, not one.",
-   "mechanism": "The duplicated 'dst += 2' is byte-neutral (proven) and its measurable effect is loop.c biv_count; the session-4 carrier reuse writes a later-live walking pointer with an unrelated value purely for allocation pressure. Both are claims on the frozen 'variable reuse for codegen control' / 'duplicated-statement-into-arms' families, and a claim is not a finding.",
-   "next_probe": "Read .claude/rules/duplicated-statement-into-arms.md and the frozen list in .claude/rules/no-new-park-categories.md; quote each scope sentence VERBATIM into memory/grind/func_8001979C/self_vet.md paired with a file:line or commit-hash precedent. If either scope does not cleanly cover its construct - in particular the carrier reuse, which has no precedent in this ledger - emit ruling-request rather than a submission."
+   "hypothesis": "D4 (4 pts) - the walker init's preheader position - has never been attacked through loop.c itself; both source-level levers are now measured dead at two different allocations (P6 at floor 20 -> 31, vTieLateInit at floor 12 -> 27).",
+   "mechanism": "loop.c move_movables / scan_loop choose the preheader insertion point; global.c allocno_compare fixes what may move (counter nrefs 21 / livelen 60 / pri 14000 against walkers at nrefs 13).",
+   "next_probe": "Read tools/gcc-2.7.2/loop.c move_movables / scan_loop and determine where the insertion point is chosen relative to the loop's first insn and whether the walker init is a movable at all in this form; only then re-test a late init."
   }
  ],
  "judge_constraints": [],

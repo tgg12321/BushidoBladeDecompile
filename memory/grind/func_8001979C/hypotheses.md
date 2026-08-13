@@ -545,3 +545,166 @@
 - probe: vE5 - carrier = the third-loop walker 'out' instead of the other bit loop's walker; sandbox --disable all.
 - result: 20 vs 18 for the other-bit-loop walker. Only a walker whose live range lies inside the other bit loop produces the gain, so the effect is live-range pressure in the bit loops, not the extra def-use pair.
 - verdict: KILLED
+
+## KILLED (session 5)
+
+- **H5-B: the third loop's `-2` holder can be moved off `val` without losing
+  D1, now that the D2 contest is settled.**
+  *Mechanism:* global.c allocno_compare - target wants the -2 in $v1 and the
+  `out` address in $v0, i.e. the -2 allocno must rank BELOW `out`.
+  *Probes (all on the score-12 chassis):* onto `hi`, onto `needed`, onto `nd`,
+  onto a fresh local, and copied through a fresh local with `val` still
+  holding it.
+  *Result:* 12/build 75, 14/build 75, 31, 12/build 75, and 12/build 77
+  (neutral). **KILLED.** Every spelling that removes a real `val` reference
+  costs D1's `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero` pair (build_insns 75).
+  This re-confirms session 3's vL coupling at a completely different
+  allocation, so it should be treated as structural, not baseline-specific.
+
+- **H5-C: with D2 closed the walker/counter priority window has moved, so the
+  late walker init (target's preheader order, D4) is now affordable.**
+  *Probe:* session 2's P6 shape re-applied to the score-12 chassis, both loops
+  and loop-1-only.
+  *Result:* 27 and 27. **KILLED at this baseline too.** D4's coupling to the
+  allocno window survived the D2 fix untouched.
+
+- **H5-D: the opaque constant-holder axis (killed in s4) reopens at the new
+  baseline** - the vTie campaign's best find (perm 290 of base 420) is a holder
+  for the field-width constant feeding `nd = wc - bits_left;`.
+  *Probe:* holder in both loops, and the literal loop-2-only find.
+  *Result:* 18 and 12 (neutral). **RE-KILLED.** No engine-gradient value, so the
+  policy question about opaque constant holders never has to be answered here.
+
+- **H5-E: D5 (target's `sllv $a2,$a2,$a0` before the `or`) is reachable by
+  putting `cur <<= needed;` before the store in source.**
+  *Probe:* vTieShiftEarly.
+  *Result:* 12 with a bit-identical residual. **KILLED** - the emission order is
+  chosen by the scheduler, not by statement order.
+
+## CONFIRMED (session 5)
+
+- **H5-A: `hi` can be made to outrank the arm's temps in global.c
+  allocno_compare by GAINING references (session 3's F1(a), never executed),
+  and once it holds $v1 the session-3 vC tie closes D2 instead of mirroring
+  it.**
+  *Mechanism:* allocno_compare priority `floor_log2(nrefs)*nrefs/livelen`.
+  Routing the merged value through `hi` before the store adds two references
+  per arm (weighted x2 in-loop), taking `hi` from nrefs 8 / pri 13333 to
+  nrefs 16 / livelen 20 / pri 32000 - across the floor_log2 3 -> 4 bucket that
+  session 4 derived as the necessary condition. `hi` then takes hardreg 3
+  ($v1) and `val` hardreg 2 ($v0), target's orientation, after which
+  `hi = 0x20 - bits_left; hi = cur >> hi;` produces target's shared-register
+  `subu $v1,$t2,$a3 ; srlv $v1,$a2,$v1`.
+  *Probes:* vF1a_loop1 (18), vF1a_both (16), vTie (12), each with
+  `sandbox --disable all`, plus the ALLOCDBG dump
+  `tmp/grind/func_8001979C/s5/qty_vF1a.log` and cmp.py residuals.
+  *Result:* **CONFIRMED. Floor 18 -> 12 and D2 (14 points across sessions 1-4)
+  is closed.** Note the lesson for the pipeline: the winning probe had been
+  written down as the top frontier item since session 3 and skipped twice.
+
+## FRONTIER (ranked, as of end of session 5)
+
+1. **F1 - D5 (4 pts, NEW): the arm's `or` / `sllv $a2,$a2,$a0` emission
+   order.** Target schedules `cur <<= needed` before the `or`; we schedule it
+   after. Source order is proven neutral (H5-E), so this is a list-scheduler
+   question: `tools/sched_solver` models GCC 2.7.2's sched.c exactly
+   (memory/project/sched-solver-campaign-2026-08-05.md) and should be pointed
+   at this arm to find which INSN_PRIORITY tie-break decides it and what C
+   change moves it.
+
+2. **F2 - D6 (4 pts, NEW): the third loop's $v0/$v1 mirror.** Target: `li
+   $v1,-2` + `addiu $v0,$t3,0x348`; ours is the reverse because `val` (which
+   holds the -2) is now the $v0 allocno. Every re-home of the -2 is measured
+   dead (H5-B) because it costs D1. The untried direction is the mirror of the
+   session-5 win: ADD references to `out` (the third loop's address walker) so
+   it outranks `val` and is allocated first, instead of trying to demote
+   `val`. `out` currently has ~6 refs against `val`'s 19, so the same
+   floor_log2-bucket arithmetic applies (out would need pri > 50666).
+
+3. **F3 - D4 (4 pts): the walker init's position in the preheader.**
+   Unchanged and now re-tested at two different allocations (session 2's P6 at
+   floor 20, session 5's vTieLateInit at floor 12; 31 and 27). The remaining
+   untried lever is the one session 3 wrote down and no session has executed:
+   read `tools/gcc-2.7.2/loop.c` `move_movables` / `scan_loop` to find where
+   the preheader insertion point is chosen relative to the loop's first insn,
+   and whether the walker init is a movable at all in this form.
+
+4. **Policy pre-clearance (smaller than it was).** The session-4 carrier
+   construct is gone from the candidate. What remains for a self-vet: the
+   duplicated `dst += 2` (byte-neutrality proven in session 3) and ordinary
+   variable reuse (`hi` carrying its own shift amount; `val` as the D1
+   intermediate and the -2 holder). Both still need a VERBATIM scope quote
+   plus a file:line/commit precedent before any candidate-ready, or a
+   ruling-request.
+
+## [s5] Session 3's F1(a) probe - routing the merged field value through `hi` before the store so `hi` gains references - lifts `hi` across a floor_log2 bucket in global.c allocno_compare, gives it $v1, and (with the session-3 vC tie stacked on top) closes D2 entirely.
+- mechanism: allocno_compare priority = floor_log2(nrefs)*nrefs/livelen, in-loop refs weighted x2. `hi` goes from nrefs 8 / livelen 18 / pri 13333 (hardreg 2 = $v0) to nrefs 16 / livelen 20 / pri 32000 (hardreg 3 = $v1); `val` keeps nrefs 19 / pri 50666 and takes $v0. With `hi` already in $v1, computing the 0x20 - bits_left shift amount into `hi` itself (session 3's vC) reproduces target's shared-register `subu $v1,$t2,$a3 ; srlv $v1,$a2,$v1` instead of session 3's $v0 mirror.
+- probe: vF1a_loop1, vF1a_both, vTie - each measured with sandbox --disable all; BB2_ALLOC_DEBUG dump tmp/grind/func_8001979C/s5/qty_vF1a.log; residual diffs with tmp/grind/func_8001979C/s3/cmp.py.
+- result: 18 (loop 1 alone, neutral), 16 (both loops), 12 (both loops + the tie), build_insns 77 == target_insns 77 throughout. Both bit loops are now byte-identical to target through the entire shift/or/store chain. Floor 18 -> 12; the 14-point D2 family is closed and the session-4 carrier construct is deleted along the way.
+- verdict: CONFIRMED
+
+## [s5] The third loop's -2 holder can be moved off `val` without losing D1's copy pair, now that the D2 contest is settled.
+- mechanism: global.c allocno_compare - target wants the -2 in $v1 and the `out` address in $v0, so the -2 allocno must rank below `out`.
+- probe: On the score-12 chassis: -2 re-homed onto `hi`, onto `needed`, onto `nd`, onto a fresh local, and copied through a fresh local while `val` still holds it; all sandbox --disable all.
+- result: 12 (build 75), 14 (build 75), 31, 12 (build 75), 12 (build 77, exactly neutral). Every spelling that removes a real `val` reference drops build_insns to 75 - D1's subu/addu pair stops materialising, exactly as session 3's vL did at a completely different allocation. Instruction parity is a hard invariant, so all are rejected.
+- verdict: KILLED
+
+## [s5] With D2 closed the walker/counter allocno window has shifted, so target's late walker init (D4) is now affordable.
+- mechanism: global.c allocno_compare; moving an init late shortens the walker's live range and lifts it above the counter (session 2's P6).
+- probe: Session 2's P6 shape re-applied to the score-12 chassis, both loops and loop-1-only; sandbox --disable all.
+- result: 27 and 27, against the 12 baseline. The coupling survived the D2 fix untouched.
+- verdict: KILLED
+
+## [s5] The opaque constant-holder axis (killed in session 4) reopens at the score-12 baseline - the vTie campaign's best find (perm 290 vs base 420) is a holder for the field-width constant feeding `nd = wc - bits_left;`.
+- mechanism: a separate pseudo for the constant changes which allocno owns the width and when it is live.
+- probe: Holder in both loops, and the literal loop-2-only permuter find; sandbox --disable all.
+- result: 18 and 12 (neutral). No gradient. Re-killed at the new baseline, so the policy question about opaque constant holders does not have to be answered for this function.
+- verdict: KILLED
+
+## [s5] D5 (target emits `sllv $a2,$a2,$a0` before the `or`, we emit the `or` first) is reachable by moving `cur <<= needed;` above the store in source.
+- mechanism: RTL emission order feeding the delay-slot/scheduling decision.
+- probe: vTieShiftEarly - `cur <<= needed;` moved above the store in both arms (semantically neutral because `hi` already holds the merged value); sandbox --disable all + cmp.py.
+- result: 12, with a bit-identical residual line for line. The order is chosen by sched.c, not by statement order.
+- verdict: KILLED
+
+## [s5] Splitting the OR into an accumulation (`hi = hi << needed; hi = hi | (cur >> bits_left);`), a permuter proposal, changes the arm's codegen. Operand ORDER is preserved, so this is not the or-tree reshape forbidden by .claude/rules/or-tree-shape-shift.md.
+- mechanism: split-init accumulation gives the OR's two operands separate RTL statements.
+- probe: vSplitOr; sandbox --disable all.
+- result: 12, exactly neutral.
+- verdict: KILLED
+
+## [s5] Session 3's never-executed F1(a) probe - routing the merged field value through `hi` before the store so `hi` gains references - lifts `hi` across a floor_log2 bucket in global.c allocno_compare, gives it $v1, and (with session 3's vC tie stacked on top) closes D2 entirely.
+- mechanism: allocno_compare priority = floor_log2(nrefs)*nrefs/livelen with in-loop refs weighted x2. `hi` goes from nrefs 8 / livelen 18 / pri 13333 (hardreg 2 = $v0) to nrefs 16 / livelen 20 / pri 32000 (hardreg 3 = $v1) while `val` keeps nrefs 19 / pri 50666 and takes $v0 - target's orientation. With `hi` already in $v1, computing the 0x20 - bits_left shift amount into `hi` itself reproduces target's shared-register `subu $v1,$t2,$a3 ; srlv $v1,$a2,$v1` instead of session 3's $v0-landing mirror.
+- probe: vF1a_loop1 / vF1a_both / vTie measured with `sandbox func_8001979C --disable all`; BB2_ALLOC_DEBUG + BB2_QTY_DEBUG dump (tmp/grind/func_8001979C/s5/qty_vF1a.log); residuals with tmp/grind/func_8001979C/s3/cmp.py.
+- result: 18 (loop 1 alone, neutral), 16 (both loops), 12 (both loops + the tie); build_insns 77 == target_insns 77 throughout. Both bit loops are byte-identical to target through the whole shift/or/store chain.
+- verdict: CONFIRMED
+
+## [s5] The third loop's -2 holder can be moved off `val` without losing D1's copy pair, now that the D2 contest is settled (target wants the -2 in $v1 and the `out` address in $v0).
+- mechanism: global.c allocno_compare - the -2 allocno must rank below `out` to be allocated second and take $v1.
+- probe: On the score-12 chassis: -2 re-homed onto `hi`, onto `needed`, onto `nd`, onto a fresh local, and copied through a fresh local while `val` still holds it; sandbox --disable all on each.
+- result: 12 (build 75), 14 (build 75), 31, 12 (build 75), 12 (build 77, exactly neutral). Every spelling that removes a real `val` reference drops build_insns to 75 - D1's subu/addu pair stops materialising, exactly as session 3's vL did at a completely different allocation.
+- verdict: KILLED
+
+## [s5] With D2 closed the walker/counter allocno window has shifted, so target's late walker init (D4) is now affordable.
+- mechanism: global.c allocno_compare; moving an init late shortens the walker's live range and lifts it above the counter (session 2's P6 regression).
+- probe: Session 2's P6 shape re-applied to the score-12 chassis, both loops and loop-1-only; sandbox --disable all.
+- result: 27 and 27 against the 12 baseline. The coupling survived the D2 fix untouched.
+- verdict: KILLED
+
+## [s5] The opaque constant-holder axis (killed in session 4) reopens at the score-12 baseline - the vTie campaign's best find (perm 290 vs base 420) is a holder for the field-width constant feeding `nd = wc - bits_left;`.
+- mechanism: a separate pseudo for the constant changes which allocno owns the width and when it is live.
+- probe: Holder in both loops, and the literal loop-2-only permuter find; sandbox --disable all.
+- result: 18 and 12 (neutral). No gradient in either direction, so the policy question about opaque constant holders never has to be answered for this function.
+- verdict: KILLED
+
+## [s5] D5 (target emits `sllv $a2,$a2,$a0` before the `or`; we emit the `or` first) is reachable by moving `cur <<= needed;` above the store in source.
+- mechanism: RTL emission order feeding the scheduling decision.
+- probe: vTieShiftEarly - `cur <<= needed;` moved above the store in both arms (semantically neutral because `hi` already holds the merged value); sandbox --disable all + cmp.py.
+- result: 12, with a residual identical line for line. The order is chosen by sched.c, not by statement order.
+- verdict: KILLED
+
+## [s5] Splitting the OR into an accumulation (`hi = hi << needed; hi = hi | (cur >> bits_left);`), a permuter proposal that preserves operand ORDER and so is not the reshape forbidden by .claude/rules/or-tree-shape-shift.md, changes the arm's codegen.
+- mechanism: split-init accumulation gives the OR's two operands separate RTL statements.
+- probe: vSplitOr; sandbox --disable all.
+- result: 12, exactly neutral.
+- verdict: KILLED

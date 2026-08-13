@@ -424,3 +424,53 @@ prerequisite the `duplicated-statement-into-arms` family asks for.
 - [s4] src/code6cac.c was again found at the session-1 HEAD form (score 24) at session start - the second session in a row - so re-applying candidate.c and re-measuring is a standing first step, not a one-off.
 
 - [s4] POLICY STATUS UNCHANGED AND NOW LARGER: two constructs need family clearance before any candidate-ready - the duplicated 'dst += 2' (byte-neutrality already proven in session 3) and the NEW session-4 carrier reuse (writing a later-live walking pointer with an unrelated value purely for allocation pressure). Neither has been cleared; both need a verbatim scope quote plus a file:line/commit precedent, or a ruling-request.
+
+## Session 5 (permuter, 2026-08-13) - floor 18 -> 12; D2 CLOSED
+
+- [s5] HOUSEKEEPING (third occurrence, now fully expected): src/code6cac.c was again at the session-1 HEAD form at session start. Re-applying memory/grind/func_8001979C/candidate.c reproduced score 18 / 77 / 77 exactly before any probing.
+
+- [s5] FLOOR 18 -> 16 -> 12 (target_insns 77, build_insns 77 throughout). Two edits, both in the refill arm of each bit loop. (A) The merged field value is routed through `hi` before the store - `hi = (hi << needed) | (cur >> bits_left); *(s16 *)(dst + 0xA) = (s16)hi;` - which is session 3's F1(a) probe, listed but never executed by sessions 3 or 4. Loop 1 alone is neutral (18); both loops give 16. (B) On top of (A), the `0x20 - bits_left` shift amount is computed INTO `hi` and immediately consumed (`hi = 0x20 - bits_left; hi = cur >> hi;`) - session 3's vC tie, which cost 2 points then and buys 4 now. Both loops: 12.
+
+- [s5] MECHANISM, measured (tmp/grind/func_8001979C/s5/qty_vF1a.log, BB2_ALLOC_DEBUG): edit (A) does exactly what the session-4 arithmetic predicted. `hi` (pseudo 78) goes from nrefs 8 / livelen 18 / pri 13333 to nrefs 16 / livelen 20 / pri 32000, crossing the floor_log2 bucket from 3 to 4, and takes hardreg 3 ($v1) at ord 2; `val` (pseudo 83, nrefs 19, livelen 15, pri 50666) now takes hardreg 2 ($v0). That is target's orientation. The session-3/4 frontier item F1 is therefore CLOSED, and the closing move was the one probe both prior sessions listed and skipped.
+
+- [s5] D2 IS CLOSED. With `hi` in $v1 the session-3 vC tie lands correctly: our arm now emits `subu $v1,$t2,$a3 ; srlv $v1,$a2,$v1 ; ... ; sllv $v1,$v1,$a0 ; srlv $v0,$a2,$a3 ; or $v1,$v1,$v0 ; sh $v1,0xA($t1)` - byte-identical to target through the whole shift/or/store chain in BOTH bit loops. The 14-point D2 family is gone.
+
+- [s5] The session-4 CARRIER CONSTRUCT IS GONE from the best form. Edit (B) overwrites the carrier chain (`dst2 = 0x20 - bits_left; val = dst2;`), so the ledger's open policy question about writing a later-live walking pointer with an unrelated value purely for allocation pressure no longer applies to the candidate. The remaining policy questions are only the duplicated `dst += 2` and ordinary variable reuse (`hi` as its own shift-amount carrier, `val` as the D1 intermediate + the third loop's -2 holder).
+
+- [s5] RESIDUAL AT 12 = three 4-point families, none of them inside the arm's shift/or chain. D4 (unchanged since s2): our preheader emits the walker init `move $t1,$t3` BEFORE the `sw`/`lw` preamble, target emits it LAST. D5 (NEW): inside each arm target emits `sllv $a2,$a2,$a0` (`cur <<= needed`) BEFORE the `or`; we emit the `or` first. D6 (NEW): the third (-2 fill) loop is now $v0/$v1 mirrored (target `li $v1,-2` + `addiu $v0,$t3,0x348`; ours the reverse) - it matched at floors 20 and 18 and flipped when `val` became the $v0 allocno.
+
+- [s5] D5 is NOT a source-order effect: moving `cur <<= needed;` above the store (vTieShiftEarly) is exactly codegen-neutral, 12, with a bit-identical residual. It is a scheduling decision, so the next attack on it is sched.c/INSN_PRIORITY-shaped (tools/sched_solver), not statement order.
+
+- [s5] D6 is coupled to D1 exactly the way session 3's vL was. Every re-home of the third loop's -2 was measured on the score-12 chassis: onto `hi` -> 12 but build_insns 75; onto `needed` -> 14, build 75; onto a fresh local -> 12, build 75; onto `nd` -> 31; copied through a fresh local while `val` still holds it -> 12 neutral (build 77). Every spelling that actually removes a `val` reference costs the D1 pair. Instruction parity (77) is treated as a hard invariant, so all of them are rejected.
+
+- [s5] D4 re-tested at the new allocation and still dead: late walker inits (session 2's P6 shape) score 27 both-loops and 27 loop-1-only on the score-12 chassis. The walker/counter priority window is unchanged by the D2 fix.
+
+- [s5] The `nd` holder from session 4 is still load-bearing at this floor: removing it (needed = W - bits_left; written directly where `needed = nd;` stood) costs 2 points (14).
+
+- [s5] Two permuter campaigns this session, both harvested with --stop. (1) vF1a chassis (perm base_score 440), stopped early at 186 s / best find 415 when the hand probe found the better score-12 chassis. (2) vTie chassis (perm base_score 420), 31339 iterations over 1021 s, 32 finds, best perm score 290. Logs: tmp/grind/func_8001979C/s5/campaign_vF1a.log, campaign_vTie.log; normalised proposal diffs: tmp/grind/func_8001979C/s5/proposals_vTie.txt.
+
+- [s5] Every surviving proposal from the vTie campaign was measured on the engine gradient and NONE beat 12: opaque holder for the field-width constant (the best perm find, 290) -> 18 both loops / 12 loop-2-only; opaque 0x20 holder -> already killed in s4; the -2 copied through a fresh local -> 12 neutral; splitting the OR into an accumulation (`hi = hi << needed; hi = hi | (cur >> bits_left);` - operand ORDER preserved, so not the forbidden or-tree reshape) -> 12 neutral; third-loop `out` initialised before `val = -2;` -> 12 neutral. The permuter's remaining finds are semantics-breakers (clobbering `i`, `i = bits_left < 2`), pycparser-artefact rewrites (`*(s16 *)(0x8E + dst2)`), or `do {} while (0)` wrappers.
+
+- [s5] src/code6cac.c is left carrying the score-12 form, re-verified at the end of the session (score 12, target_insns 77, build_insns 77), and memory/grind/func_8001979C/candidate.c matches it byte for byte.
+
+- [s5] FLOOR 18 -> 12 (sandbox --disable all, target_insns 77, build_insns 77). src/code6cac.c is left carrying the score-12 form and memory/grind/func_8001979C/candidate.c matches it byte for byte.
+
+- [s5] D2 - the 14-point $v0/$v1 mirror that was the top frontier item from session 1 through session 4 - is CLOSED. Our arm now emits `subu $v1,$t2,$a3 ; srlv $v1,$a2,$v1 ; ... ; sllv $v1,$v1,$a0 ; srlv $v0,$a2,$a3 ; or $v1,$v1,$v0 ; sh $v1,0xA($t1)` in both bit loops, byte-identical to target.
+
+- [s5] ALLOCDBG confirms the predicted mechanism exactly: `hi` (pseudo 78) nrefs 8 -> 16, livelen 18 -> 20, pri 13333 -> 32000, hardreg 2 -> 3; `val` (pseudo 83) unchanged at nrefs 19 / livelen 15 / pri 50666 and now hardreg 2. Session 4's derived condition (hi must cross the floor_log2 3->4 bucket) was correct and sufficient.
+
+- [s5] The closing move was the single probe listed as frontier F1(a) at the end of BOTH session 3 and session 4 and skipped by both - a pipeline lesson worth more than the four points: execute the top listed probe before opening a new axis.
+
+- [s5] The session-4 carrier construct (the 0x20 - bits_left shift amount written into the OTHER loop's live-later walking pointer and read back through `val`) is GONE from the candidate - the score-12 edit overwrites it. The ledger's open policy question about that construct no longer applies.
+
+- [s5] Residual at 12 is three 4-point families, none of them in the arm's shift/or chain: D4 (walker init emitted before the sw/lw preamble instead of last, unchanged since session 2), D5 (NEW: target schedules `cur <<= needed` before the `or`), D6 (NEW: the third -2 fill loop is now $v0/$v1 mirrored because `val` became the $v0 allocno; it matched at floors 20 and 18).
+
+- [s5] Instruction parity (build_insns 77) is treated as a hard invariant: three of the five D6 re-home spellings score 12 or better on paper but drop to build_insns 75 because they cost D1's `subu $v0,$t2,$a0` + `addu $a3,$v0,$zero` pair.
+
+- [s5] The session-4 `nd` holder is still load-bearing at this floor: removing it costs 2 points (14).
+
+- [s5] Permuter telemetry: two campaigns, both harvested with --stop and confirmed dead. (1) vF1a chassis, perm base_score 440, stopped at 186 s / best 415 once the hand probe produced a strictly better chassis. (2) vTie chassis, perm base_score 420, 31339 iterations / 1021 s / 32 finds / best perm score 290. Every surviving proposal was re-measured on the engine gradient and NONE beat 12.
+
+- [s5] Permuter proposal hygiene for this function is unchanged from session 4 and was applied again: semantics-breakers that clobber `i` (`i = bits_left < 2; if (i)`), pycparser-artefact rewrites (`*(s16 *)(0x8E + dst2)`), `do {} while (0)` wrappers, and OR-operand swaps (FORBIDDEN by .claude/rules/or-tree-shape-shift.md, deliberately not measured).
+
+- [s5] HOUSEKEEPING (third session running): src/code6cac.c was again at the session-1 HEAD form at session start; re-applying candidate.c reproduced 18 / 77 / 77 before any probing.
