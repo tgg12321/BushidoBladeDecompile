@@ -915,3 +915,4 @@
 - 2026-08-12 21:17 func_8001E404 s1 [recon] floor=23: Residual reframed: not a locals-side pad but the args term — target's current_function_outgoing_args_size is 24 vs our 16; direct 5-arg-callee route killed by a callee scan.
 - 2026-08-12 23:55 CIRCUIT-BREAK: STOP requested during judge usage-limit wait for func_8001E404 (benign: candidate preserved; relaunch after the limit resets)
 - 2026-08-13 00:12 func_8001E404 JUDGE ESCALATE (ruling request) — parked pending owner ruling.
+- 2026-08-13 00:21 func_8002C0DC COMPLETED-C after 1 sessions.
