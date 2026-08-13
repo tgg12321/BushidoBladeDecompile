@@ -913,3 +913,4 @@
 - 2026-08-12 20:44 func_800645B0 s10 [escalation] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: All three live frontier items measured DEAD (no zero-cost second set of idx exists; the COMPOUND_EXPR store_expr branch is inert; a copy relationship does not move local-alloc), both endgame-lock gates FAIL (scan_hand_coded LOW 0/8; no SOTN precedent for any construct that has ever reached 0 here), so the owner's 2026-07-27 standing ruling is applied and func_800645B0 is parked terminally at floor 1/78.
 - 2026-08-12 20:58 func_800470B0 COMPLETED-C after 1 sessions.
 - 2026-08-12 21:17 func_8001E404 s1 [recon] floor=23: Residual reframed: not a locals-side pad but the args term — target's current_function_outgoing_args_size is 24 vs our 16; direct 5-arg-callee route killed by a callee scan.
+- 2026-08-12 23:55 CIRCUIT-BREAK: STOP requested during judge usage-limit wait for func_8001E404 (benign: candidate preserved; relaunch after the limit resets)

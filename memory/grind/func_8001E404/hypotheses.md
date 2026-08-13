@@ -134,3 +134,57 @@ is the args term only.
 - probe: binary-wide hole census (four functions in 1434 have the shape) + the frame gradient on the honest vs committed form
 - result: census row `8 func_8001E404 112 0x18 0x60 code6cac.c` is identical to func_8001E6E4's; honest form = frame 0x68 / first local 0x10, committed form = 0x70 / 0x18 = target. CONFIRMED as the same family — but this session's H5 shows the family's shared framing (a locals-side pad) was wrong, so the sibling's 19 measured locals-side spellings were all aimed at the wrong term and should not be re-run.
 - verdict: CONFIRMED
+
+## Session 2 (structural, 2026-08-12)
+
+## [s2] A call expanded and then deleted keeps the raised current_function_outgoing_args_size, leaving args=24 with no surviving stack-arg store — the target's exact shape.
+- mechanism: expand_call raises current_function_outgoing_args_size during RTL expansion; compute_frame_size (mips.c:4444-4535) reads it at final, after jump.c/cse.c have deleted the insns. There is no recompute.
+- probe: tmp/grind/func_8001E404/s2/probe2.c — a 72-byte local plus one >4-word call made unreachable five different ways (`if (0)`, a local `mode = 0` tested later, a zero-trip `for`, statements after `return`, a `goto` over the call), compiled to .s with the canonical cc1 flags via tmp/grind/func_8001E404/s2/frame.sh; read the `# vars=/args=` frame comment and grep for the call and its stack-arg stores.
+- result: all five report `vars= 72, args= 24, extra= 0` and emit neither the `jal` nor any store in the args region. The live control (`if (G) { g6(...); }`) reports the same args=24 but emits the `jal` plus `sw ...,16($sp)` / `sw ...,20($sp)`.
+- verdict: CONFIRMED
+
+## [s2] Some library call reachable from plausible C in this body raises the args partition above 16 without a stack-arg store of our own.
+- mechanism: emit_library_call feeds current_function_outgoing_args_size the same way expand_call does, and OUTGOING_REG_PARM_STACK_SPACE makes register args count toward it
+- probe: tmp/grind/func_8001E404/s2/probe1.c — one variant per reachable libcall family (72-byte struct block copy, 64-bit `__divdi3` divide, float divide/convert), each read through the frame comment
+- result: `__divdi3` -> args=16; float libcalls -> args=16; the struct copy is expanded INLINE (no libcall) and leaves args=16. No libcall family reachable from this body exceeds the 16-byte register-home floor.
+- verdict: KILLED
+
+## [s2] A LIVE call can raise the args partition to 24 without storing anything into sp+0x10..0x17.
+- mechanism: o32 REG_PARM_STACK_SPACE / OUTGOING_REG_PARM_STACK_SPACE reserve the first 16 bytes as register homes; argument words past that are the only thing that can raise the partition, and they are real stores
+- probe: tmp/grind/func_8001E404/s2/probe1.c — six scalar words; three words plus an 8-byte-aligned `double` (alignment pushes it to offset 16); two words plus a `double`; a 72-byte struct passed by value
+- result: six words -> args=24 WITH `sw` at 16 and 20; three words plus a double -> args=24 WITH stores at 16..23; two words plus a double -> args=16; struct by value -> args=72 with block-copy stores. Every form that raises the partition also writes the region the target never touches.
+- verdict: KILLED — combined with the previous two entries this closes the dichotomy: args>16 with zero stores in the args region <=> the >4-word call was expanded and then deleted, i.e. the original TU contained a >=5-word call site that compiled away.
+
+## [s2] The honest args-partition reconstruction closes the function.
+- mechanism: with args=24 the first stack slot lands at $sp+0x18 by STARTING_FRAME_OFFSET (mips.h:1651) with vars staying at the true 72, i.e. the target's partition produced on the args side instead of faked on the vars side by `pre_pad[2]`
+- probe: delete `s32 pre_pad[2];`, add `extern void bb2_dbg_probe();` + `if (0) { bb2_dbg_probe(0,0,0,0,0,0); }`, measure `sandbox func_8001E404 --disable all`; then name the work-buffer address (`s32 *lp = (s32 *)&local;`) and pass it to func_80046BF4 and func_8001A538
+- result: cc1 reports `# vars= 72, regs= 4/0, args= 24, extra= 0`; sandbox 23 -> 3 on the dead call alone (183 vs 184 insns, the residual being GCC rematerializing `addiu $a0,$sp,0x18` at each consumer because `local` at vars offset 0 IS the frame base, where target keeps it in `$s0`), then 3 -> **0** with the named pointer. 184/184; normalized objdiff clean but for the four known `%lo` relocation-display artifacts.
+- verdict: CONFIRMED — but the closing construct is dead code (a reconstructed compiled-out call site), a first reach of a family no sanctioned carve-out covers, so it was NOT self-approved; src was reverted and the body banked in candidate.c pending an owner ruling.
+
+## [s2] A dead 5-word and a dead 6-word call are indistinguishable at the frame level, and 7 words reproduces the OTHER family member's hole.
+- mechanism: compute_frame_size applies MIPS_STACK_ALIGN to the args partition, so 20 and 24 both land at 24
+- probe: tmp/grind/func_8001E404/s2/probe3.c — dead calls of 5, 6 and 7 words; plus a dead call carrying a string literal
+- result: 5 and 6 words -> args=24 (this function and func_8001E6E4); 7 words -> args=32, exactly func_8003CF84's 16-byte hole. A deleted call STILL emits its string literal into `.rodata`.
+- verdict: CONFIRMED
+
+## Frontier (rebuilt for session 3)
+1. **The ruling is the gate, not the search.** The mechanism is solved and the closing
+   form is in candidate.c at sandbox 0. If the owner rules the reconstructed
+   compiled-out call site acceptable (with or without a required spelling / FAKE
+   annotation), the remaining work is one edit plus verification, and the same ruling
+   closes func_8001E6E4 and func_8003CF84. If the owner refuses it, the dichotomy
+   theorem above says there is NO live-C form, and the function's disposition question
+   changes shape entirely — that is an owner call, not a further search.
+2. **Forensics: identify what the deleted call WAS.** A deleted call still emits its
+   string literal into `.rodata` (measured). So an unreferenced string in the shipped
+   rodata attributable to this file would name the compiled-out debug call and turn the
+   reconstruction from a plausible shape into an evidenced one; conversely, the absence
+   of any orphan string proves the dead call took no string argument. Probe: cross-
+   reference every string constant now living in the code6cac `const` declarations (and
+   the retired `asm/data/*.rodata*` history) against all `%hi/%lo` references in the
+   binary, and look for orphans adjacent to the three family functions.
+3. **Cross-check the family before spending a ruling.** Run frame.sh on func_8001E6E4
+   and func_8003CF84's honest forms to confirm each reports the predicted partition
+   (vars 72 / args 16 and vars 40 / args 16 respectively, against target vars 72 /
+   args 24 and vars 40 / args 32). Cheap, and it makes the ruling packet cover all
+   three with measurements rather than by analogy.

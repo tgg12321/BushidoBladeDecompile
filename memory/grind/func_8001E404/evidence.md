@@ -153,3 +153,97 @@ cheat this disposition refuses to legitimize.
 - [s1] Endgame gates, re-checked for this function (context only — the driver has NOT declared exhaustion and the modality is recon): gate 1 canonical-asm FAIL (scan_hand_coded tier=LOW 1/8, S1/S2/S6 absent); gate 2 citable-precedent FAIL (the written-never-read local-array carve-out's own scope sentence requires the target bytes to contain the dead stores; this target touches nothing in the region).
 
 - [s1] The 2026-08-12 OWNER-ESCALATION entry filed for this function by the earlier discarded session has been annotated WITHDRAWN in docs/grind/decisions.md — the disposition was taken in the wrong modality; the measured evidence in it stands, the disposition does not. func_8001E404 is an ACTIVE grind item.
+
+
+## Session 2 (structural, 2026-08-12) — the args partition is REPRODUCIBLE; floor 23 -> 0
+
+### The `# vars=/regs=/args=/extra=` instrument is now in the loop (s1 frontier item 3, DONE)
+`tmp/grind/func_8001E404/s2/frame.sh <src.c> [func]` compiles any TU with the exact
+canonical cc1 flags (`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls
+-fno-builtin -w -mel`, cpp `-Iinclude -undef -Wall -lang-c -fno-builtin` plus the
+Makefile CPP_DEFS) straight to `.s` and prints the frame comment cc1 emits above
+`.frame`, which reads out compute_frame_size's partition directly. Reusable verbatim
+for func_8001E6E4 and func_8003CF84.
+- committed (`pre_pad[2]`) form: `.frame $sp,112,$31  # vars= 80, regs= 4/0, args= 16, extra= 0`
+- target's partition (from the asm): vars 72 / args 24 — same total 112, different split.
+NB `src/code6cac.c` emits two `parse error before 'GameObj'` diagnostics (lines 757 /
+1072 — `GameObj` is declared nowhere the TU includes); cc1 RECOVERS and emits complete,
+correct code for every other function, and the real build has always done this. Not a
+tooling failure; do not chase it.
+
+### CONFIRMED — a compiled-out call keeps the raised args partition (s1 frontier item 1)
+`tmp/grind/func_8001E404/s2/probe2.c` (a 72-byte local plus one >4-word call made
+unreachable five different ways) — ALL FIVE report `vars= 72, args= 24` and emit NO
+call and NO stores anywhere in the args region:
+  `if (0) { g6(...); }` · `s32 mode = 0; if (mode) { g6(...); }` · a zero-trip
+  `for (i = 0; i < 0; i++)` · statements after `return` · a `goto` over the call.
+The live control (`if (G) { g6(...); }`) also reports args=24 but emits the `jal` and
+the two `sw ...,16($sp)` / `sw ...,20($sp)` stack-arg stores. Mechanism exactly as
+predicted by the s1 frontier: `expand_call` raises
+`current_function_outgoing_args_size` during RTL expansion; `compute_frame_size` reads
+it at final, after jump.c / cse.c have deleted the insns. Deleting the call does not
+lower the partition.
+
+### The dichotomy theorem (the durable result of this session)
+o32 sets `REG_PARM_STACK_SPACE` / `OUTGOING_REG_PARM_STACK_SPACE` to an unconditional
+16-byte register-home floor, so a LIVE call raises the args partition above 16 only by
+having a 5th-or-later argument word — and every such word is genuinely STORED into
+`sp+0x10..0x17`. Measured across the whole plausible space
+(`tmp/grind/func_8001E404/s2/probe1.c`): six scalar words -> args=24 with stores at
+16/20; three words plus a `double` (8-byte alignment pushes the double to offset 16)
+-> args=24 with stores; two words plus a `double` -> args=16; a 72-byte struct passed
+BY VALUE -> args=72 with block-copy stores; `__divdi3` (64-bit divide) -> args=16;
+float libcalls -> args=16. No libcall family reachable from this body exceeds 16, so
+s1 frontier item 2 (the library-call route) is KILLED.
+
+=> **args > 16 with zero stores in the args region <=> the >4-word call was expanded
+and then deleted.** The original translation unit therefore CONTAINED a >=5-word call
+site that compiled away. The 8-byte "hole" is that call site's fossil, not padding —
+and no live C can ever reproduce it.
+
+### Word-count calibration of the three-function family
+`tmp/grind/func_8001E404/s2/probe3.c`: a dead 5-word call and a dead 6-word call both
+give args=24 (`MIPS_STACK_ALIGN` rounds 20 -> 24); a dead 7-word call gives args=32 —
+which is exactly the 16-byte hole of the third census family member func_8003CF84
+(frame 72, lowest touched 0x20, saves 0x38). So the census family is ONE phenomenon at
+two word counts: 5-6 words in func_8001E404 / func_8001E6E4, 7-8 words in
+func_8003CF84 (and sprintf's 512-byte hole is the same term, varargs-sized).
+Also measured: a DELETED call still emits its string literal into `.rodata`. So if the
+original dead calls had been `printf`-style, their format strings would be present —
+and unreferenced — in the shipped rodata. That is a checkable forensic prediction about
+what the deleted call was; it has NOT been run.
+
+### Floor 23 -> 3 -> 0, measured this session
+1. Delete `s32 pre_pad[2];`; add `extern void bb2_dbg_probe();` and
+   `if (0) { bb2_dbg_probe(0, 0, 0, 0, 0, 0); }` at the top of the body. cc1 then
+   reports `# vars= 72, regs= 4/0, args= 24, extra= 0` — the target's partition,
+   produced on the args side rather than faked on the vars side — and
+   `sandbox func_8001E404 --disable all` drops **23 -> 3** (build_insns 183 vs
+   target 184, 0 rules dropped).
+2. The residual 3 is the address-materialization choice s1 had attributed to the frame
+   shift. With `local` at vars offset 0 its address IS the frame base, so GCC
+   rematerializes `addiu $a0,$sp,0x18` at each of the two consumers, where the target
+   holds it in `$s0` (`addiu $s0,$sp,0x18` once + `move $a0,$s0` twice). Naming the
+   pointer — `s32 *lp = (s32 *)&local;` passed to func_80046BF4 and func_8001A538 —
+   restores the target's form: **`sandbox --disable all` == 0**, 184/184, and the
+   normalized objdiff is clean except the four known `addiu s2,s2,%lo(SYM)`
+   relocation-display artifacts. `lp` is ordinary live C (a named pointer consumed by
+   two live calls); the `if (0)` call is not.
+`verify-oracle --rebuild` was REFUSED with `dirty-build-inputs` — the correct guard, a
+rebuild with uncommitted edits would corrupt the `build/` reference the sandbox scores
+against — so the full-link proof is not in hand. Sandbox 0 is.
+
+### Disposition: ruling-request, tree reverted
+The closing construct is a reconstructed compiled-out call site: dead code with no
+observable effect. That fails tests T1 (semantic purpose) and T2 (human-programmer) on
+its face, and no sanctioned SOTN family covers it — it is the mirror image of the
+catalog's forbidden `if (1) { ... }` always-true wrapping. Per the first-reach rule
+this session did NOT self-approve it. `src/code6cac.c` was reverted to the committed
+`pre_pad` form (tree clean, oracle untouched) and the closing body is banked verbatim
+in `memory/grind/func_8001E404/candidate.c` for one-edit re-application if the owner
+rules it acceptable. What makes the question worth the owner's time rather than a
+routine rejection: this construct does not coerce GCC's analysis of live code the way
+every cataloged family does. The args partition is a mechanical fossil that PROVES the
+original source contained such a call, and the dichotomy theorem shows no live C can
+reproduce it. One ruling settles all three family members (func_8001E404,
+func_8001E6E4 which is parked on exactly this question, and func_8003CF84).
