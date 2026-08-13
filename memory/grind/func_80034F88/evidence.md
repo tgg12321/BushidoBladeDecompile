@@ -1524,3 +1524,122 @@ spelling that produces the target's FOUR separate materialisations of
 - [s13] Permuter campaign s13 (n7 seed, 4,544 iterations, 73 finds): metric 1670 -> 675, every sandbox-scored find 26-34 against the seed's 24, all with sb 162 against the correct 164 (two flag stores deleted). Harvested and stopped in-session; no campaign left running.
 
 - [s13] The honest floor for a form carrying no banned construct is unchanged at 13 (m1, tied by n4). src/code6cac_b.c was restored to its committed state; the only working-tree change is the engine's own metrics/events.jsonl append.
+
+---
+
+# s14 — forensics modality (best NON-BANNED floor 13 -> 10; the cse-flush mechanism named)
+
+## Headline
+The instrumented-cc1 `-da` dumps answer, for the first time, WHY the banned
+four-declaration form reaches 0 and every other shape does not — and the answer
+turns out not to be about declarations at all.  What produces the target's
+"four address materialisations + surviving reloads" signature is a FRESH SET of
+the address rtx after a cse value-table flush, and a plain RE-ASSIGNMENT of one
+pointer local does that just as well as a new declaration.  A single `u8 *q`
+re-assigned before the bit-2 and bit-4 blocks scores **10 at 49/49 insns**,
+against 13 for s12b/s13's `static inline` helper — a real drop of the best
+non-banned floor, reached by a construct that is not the banned one.
+
+## The mechanism (RTL, not inference)
+Artifacts: `tmp/grind/func_80034F88/s14/rtl/{w4,w1,r1,r12}/code6cac_b.i.*`
+(cpp + the INSTRUMENTED `tools/gcc-2.7.2/cc1` on the real build flags, via
+`s14/dump.sh`; sliced with `s14/slice.py` and `s14/flat.py`).
+
+1. **The join labels ARE cse basic-block boundaries on this chassis.**  Each
+   flag block is a TWO-ARMED `if/else`, so it emits a conditional branch, an
+   unconditional jump, a barrier and two CODE_LABELs.  `cse_end_of_basic_block`
+   ends the block at the join and the value table is flushed.  This CORRECTS an
+   s2 conclusion that has been carried forward unchallenged for eleven sessions:
+   s2 argued the join labels are not boundaries because cse.c:8102-8184 extends
+   a block through a conditional branch when `LABEL_NUSES (JUMP_LABEL (p)) == 1`.
+   That extension applies to a branch that SKIPS a block and falls through —
+   true of s2's one-armed `val2 = val|K; if (!c) val2 = val;` chassis, false of
+   the two-armed `if/else` chassis every form since s10 has used.  The dumps show
+   the flush directly.
+2. **A pseudo re-used across the flush loses the reloads.**  In `w1` (one handle,
+   no re-assignment) the previous block's store and the next block's load are the
+   identical address rtx `(mem:QI (reg 74))` inside the same post-flush block, so
+   cse records the store and forwards it.  `w1`'s `.cse` dump has ONE
+   `(set (reg 74) (symbol_ref "D_80106A73"))` and only FIVE QI mems (three loads
+   gone).  Honest score 29.
+3. **A fresh set after the flush restores BOTH halves at once.**  The new
+   `(set (reg N) (symbol_ref "D_80106A73"))` finds nothing in the flushed table,
+   so it survives as a real `lui`/`addiu` materialisation; and the previous
+   block's store, addressed through a pseudo whose value the table no longer
+   knows, hashes differently from the new block's load, so the load survives as a
+   real `lbu`.  Reloads AND an unfolded shared base simultaneously, with zero
+   volatile.  This is the concrete resolution of the tension s1-s3 recorded as
+   "mutually exclusive" and s2 attributed to `MEM_VOLATILE_P`.
+4. **The fresh set does not need a fresh DECLARATION** — this is the new result.
+   `r1`'s `.cse` dump retains THREE `(set (reg/v:SI 74) (symbol_ref
+   "D_80106A73"))` insns (14, 59, 93) and ALL EIGHT QI mems, from a single
+   declared `u8 *q` re-assigned per block.  cse keys on whether the symbol_ref is
+   in the (flushed) table, not on how many C objects exist.
+5. **Corollary that explains a measurement.**  An assignment placed BEFORE a
+   flush is deleted by cse as redundant: the bit-1 block's assignment in `r1` is
+   absent from the `.cse` dump, which is why `r1` (assign in all three blocks)
+   and `r8` (assign only in the bit-2 and bit-4 blocks) compile to byte-identical
+   code and both score 10.
+
+## The residual 10 points — the FIRST SEGMENT's register assignment only
+Side-by-side (`s14/sbs.py r1.c`): the bit-2 block, the bit-4 block and the whole
+copy loop are instruction- AND register-identical to target.  Everything that
+differs is the mask + bit-1 segment — target puts the base in `a0` and the loaded
+byte in `v1`, this build swaps them, and target's bit-1 block carries a
+load-delay `nop` where this build has a memory op.  With ONE pseudo re-set three
+times, local-alloc gives the pointer one hard register for the whole function, so
+the first segment cannot be allocated differently from the rest.  FOUR DISTINCT
+pseudos (the banned form) is what produces the target allocation.
+
+## Measured this session (honest `sandbox --disable all`, 49-insn target)
+| form | score | insns | note |
+|---|---|---|---|
+| `w4` four block-scoped declarations (BANNED — control only) | 0 | 49 | reproduces s12's result |
+| **`r8` one `u8 *q`, re-assigned before the bit-2 and bit-4 blocks** | **10** | **49** | **new best non-banned** |
+| `r1` same, re-assigned in all three blocks | 10 | 49 | byte-identical to `r8` (cse deletes the bit-1 set) |
+| `r12` mask leaves the byte in a local, bit-1 reuses it, 2/4 re-assign | 10 | 49 | same code |
+| `r15`/`r16` declaration-order permutations | 10 | 49 | neutral |
+| `r17` mask split into read / and / write | 10 | 49 | neutral |
+| `r22` mask as `*q = *q & 0xF8` · `r23` via a `u8 m` · `r24` read-before-condition | 10 | 49 | neutral — a hard plateau |
+| `r11` re-assign before the bit-2 block only | 20 | 47 | |
+| `r19` TWO pointer locals (q for mask+bit-1, q2 re-assigned for 2 and 4) | 21 | 49 | |
+| `r6` `u8` byte local on the re-assign chassis | 21 | 51 | |
+| `r20` THREE pointer locals | 23 | 49 | |
+| `r3` re-assignment placed before the CURRENT block's store | 25 | 48 | |
+| `r10` re-assign before the bit-4 block only | 27 | 49 | |
+| `r4` mask on the plain symbol + three re-assignments | 16 | 51 | keeps all four reloads but costs 2 insns |
+| `r13` handle initialised in its declaration, before the call | 29 | 51 | |
+| `w1` one handle, no re-assignment | 29 | 49 | the forwarding baseline |
+Note the axis is NOT monotone in handle count: 1 re-set handle = 10, two
+declarations = 21, three = 23, four = 0.  "More handles is better" is false.
+
+## Classification caveat (stated plainly, not self-approved)
+`r8`'s two later `q = &D_80106A73;` assignments are value-redundant — `q`
+already holds that address.  As written they are dead self-assigns to a LOCAL,
+which is on the frozen SOTN-sanctioned list; but they are unmistakably in the
+same INTENT family as the four repeated block-scoped declarations the driver
+banned for this function, and the driver's standing rule is that a banned
+construct respelled is the same construct.  s14 therefore does NOT submit it,
+does NOT install it in src/, and banks it in candidate.c with this caveat
+attached.  The ruling question is folded into the F2 escalation the ledger has
+been carrying since s12.
+
+- [s14] [s14] Best NON-BANNED honest floor moved 13 -> 10 (`sandbox func_80034F88 --disable all`, 49 build insns vs a 49-insn target). The form is ONE `u8 *q` declared once and ASSIGNED `&D_80106A73` three times — before the mask, and at the top of the bit-2 and bit-4 blocks. It is banked at memory/grind/func_80034F88/candidate.c and deliberately NOT installed in src/ (src/code6cac_b.c is left at its committed state, as s12b and s13 also left it).
+
+- [s14] [s14] MECHANISM, read out of cc1 -da dumps rather than inferred: each flag block is a TWO-ARMED if/else, so it emits a conditional branch, an unconditional jump, a barrier and two CODE_LABELs; cse_end_of_basic_block ends the cse basic block at the join and FLUSHES the value table. A pointer pseudo re-used across the flush keeps an identical address rtx, so the previous store is recorded and forwarded into the next load (reload dies, one lui/addiu for the function — w1, score 29). A FRESH SET of the address after the flush finds nothing in the table, so it survives as a real lui/addiu materialisation AND the previous store no longer hashes equal to the next load, so the reload survives. Both halves at once, with zero volatile.
+
+- [s14] [s14] THE NEW RESULT: that fresh set does not need a fresh DECLARATION. tmp/grind/func_80034F88/s14/rtl/r1/code6cac_b.i.cse retains THREE `(set (reg/v:SI 74) (symbol_ref "D_80106A73"))` insns (14, 59, 93) and all eight QI mems from a single declared `u8 *q` re-assigned per block, while s14/rtl/w1/code6cac_b.i.cse has one such set and only five QI mems. Eleven sessions of handle-COUNT sweeps missed this because they varied how many pointers were declared, never whether one pointer was re-set after a flush.
+
+- [s14] [s14] CORRECTION to an s2 conclusion that has been carried forward since session 2: the if/else join labels ARE cse basic-block boundaries on the chassis in use since s10. s2's citation of the LABEL_NUSES == 1 block-extension at cse.c:8102-8184 is correct only for its own ONE-ARMED `if` chassis, where the branch skips a block and falls through. On the two-armed if/else the table is flushed at every join, and the .cse dumps show it.
+
+- [s14] [s14] Corollary that explains an otherwise puzzling measurement: an address assignment placed BEFORE a flush is deleted by cse as redundant. The bit-1 block's assignment in r1 is absent from the .cse dump, which is why r1 (assign in all three blocks) and r8 (assign only in the bit-2 and bit-4 blocks) compile to byte-identical code and both score 10.
+
+- [s14] [s14] The residual 10 points are ENTIRELY the first segment's register assignment. Side-by-side: the bit-2 block, the bit-4 block and the copy loop are instruction- and register-identical to target; the mask + bit-1 segment has target's base in a0 and byte in v1 where the build has base v1 and byte a0, and target's bit-1 block carries a load-delay nop where the build has a memory op. With ONE pseudo re-set three times, local-alloc gives the pointer one hard register for the whole function, so the first segment cannot be allocated differently from the rest; four DISTINCT pseudos (the banned form) is what produces the target allocation.
+
+- [s14] [s14] The handle axis is NOT monotone: one re-set handle = 10, two declared pointer locals = 21, three = 23, four (banned) = 0, one handle with no re-assignment = 29. Any future session that reasons 'more handles is closer' is reasoning from a false premise.
+
+- [s14] [s14] Full measurement set on the re-assign chassis (honest sandbox / build insns): r8 and r1 and r12 and r15 and r16 and r17 and r22 and r23 and r24 all 10/49; r4 (mask on the plain symbol + three re-assignments) 16/51 with all four reloads; r11 (re-assign before the bit-2 block only) 20/47; r19 (two pointer locals) 21/49; r6 (u8 byte local) 21/51; r20 (three pointer locals) 23/49; r3 (re-assignment before the CURRENT block's store) 25/48; r10 (re-assign before the bit-4 block only) 27/49; r13 (handle initialised in its declaration, before the call) 29/51; r7 (separate result local) 30/44; w1 29/49; w4 (banned control) 0/49.
+
+- [s14] [s14] CLASSIFICATION CAVEAT, stated and not self-approved: r8's two later `q = &D_80106A73;` assignments are value-redundant — q already holds that address. As written they are dead self-assigns to a LOCAL, which is on the frozen SOTN-sanctioned list, but they are in the same INTENT family as the four repeated block-scoped declarations the driver banned for this function, and a banned construct respelled is the same construct. s14 therefore did not submit, did not install in src/, and folded the question into the standing F2 escalation.
+
+- [s14] [s14] Reusable instruments left behind: tmp/grind/func_80034F88/s14/dump.sh (splice a variant into src/, cpp + the INSTRUMENTED tools/gcc-2.7.2/cc1 with -da, collect every RTL dump plus BB2_* debug stderr, restore src/), splice.py, slice.py (per-pass census of address pseudos / symbol-addressed mems / QI mems), flat.py (one compact line per insn from any -da dump), probe.py (honest sandbox + lbu/sb/lui census per variant), sbs.py. The instrumented cc1 exposes BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG / BB2_FINDREG_DEBUG / BB2_RANK_DEBUG / BB2_QTY_DEBUG / BB2_SCHED_DEBUG / BB2_RELOAD_DEBUG and nine more env-gated hooks; s14 used none of them and they are the obvious instrument for the remaining allocation question.

@@ -1569,3 +1569,51 @@ evidence - not another sweep.
 - probe: tools/permuter_campaign.py launch --func func_80034F88 --dir tmp/grind/func_80034F88/s13/ws --label n7-shared-mask-block1-chassis -j 8 --stop-on-zero; one in-turn `wait` window; the six lowest-permuter-score finds extracted and sandbox-scored; harvest --stop in-session (harvest.json: 4,544 iterations, 73 finds, stopped=true).
 - result: KILLED, identically to s4/s5/s12b. The permuter's own metric fell 1670 -> 675 while the six best finds sandbox-scored 26/27/33/33/33/34 against the seed's 24, and every one carries sb 162 against the correct 164 — the randomizer buys its metric by deleting two flag stores. Four kills now span every seed quality from 'far away' (s4/s5) through 'one instruction from target' (s12b) to 'exact instruction count' (s13).
 - verdict: KILLED
+
+## [s14] The target's four `&D_80106A73` address materialisations require four separately DECLARED pointer locals (the banned construct); no other C spelling can produce them.
+- mechanism: Wave K (s12b) and wave N (s13) priced every handle-count and every inline-helper shape and concluded the four repeated `u8 *q = &D_80106A73;` declarations, or a macro expanding to exactly them, were the only route.
+- probe: cc1 -da dumps of the banned four-declaration form (`w4`) and of the one-handle form (`w1`) with the INSTRUMENTED tools/gcc-2.7.2/cc1, sliced with tmp/grind/func_80034F88/s14/{slice,flat}.py; then a mechanism-derived variant sweep (`r1`-`r24`) scored with the honest sandbox.
+- result: REFUTED. What cse keys on is not the number of declared C objects but whether the `symbol_ref` is present in its value table when the address is SET. The two-armed if/else join labels end the cse basic block and flush the table, so a plain RE-ASSIGNMENT of ONE declared `u8 *q` after the flush survives as a real lui/addiu materialisation exactly as a fresh declaration does. A single `u8 *q` re-assigned before the bit-2 and bit-4 blocks scores 10 at 49/49 insns against 13 for the previous best non-banned form.
+- verdict: KILLED
+
+## [s14] The three if/else join labels are NOT cse basic-block boundaries on this function (s2's standing conclusion, carried unchallenged since session 2).
+- mechanism: s2 cited cse.c:8102-8184, which extends a cse basic block through a conditional branch that skips a block whenever LABEL_NUSES (JUMP_LABEL (p)) == 1, and argued this holds for all three join labels.
+- probe: Read the `.cse` dumps of `w4`, `w1` and `r1` directly instead of reasoning about the source: in `w4` the bit-2 and bit-4 blocks' `(set (reg) (symbol_ref "D_80106A73"))` insns SURVIVE cse while the bit-1 block's is rewritten to a register copy, and in `r1` three re-assignments of the same pseudo survive while the one placed before a flush is deleted.
+- result: The claim is TRUE for s2's own chassis (the one-armed `val2 = val|K; if (!c) val2 = val;` form, where the branch really does skip a block and fall through) and FALSE for the two-armed `if/else` chassis that every form since s10 has used. On the current chassis the table IS flushed at each join, and that flush is the entire mechanism behind the reloads and the per-block address materialisations.
+- verdict: KILLED (as a general claim; retained only for the one-armed chassis)
+
+## [s14] More address handles monotonically improve the score, so a 2- or 3-handle form should sit between the one-handle 29 and the four-handle 0.
+- mechanism: Wave K's price table (one 23, two 27, three 23, four 0) was read as noisy but broadly monotone; on the re-assign chassis the same ordering was expected.
+- probe: `r19` (two pointer locals: q for the mask + bit-1 block, q2 re-assigned before the bit-2 and bit-4 blocks) and `r20` (three pointer locals) against `r8` (one local re-assigned) — honest sandbox.
+- result: 21 and 23 respectively, both far WORSE than the single re-assigned handle's 10 and worse than several one-handle forms. The axis is not monotone in handle count; the one-pseudo-re-set basin at 10 is structurally distinct from the multi-declaration basin.
+- verdict: KILLED
+
+## [s14] The residual on the 10-point form is spread across the function and is attackable by re-spelling the mask block or the local declarations.
+- mechanism: Prior sessions found the mask spelling (`*ptr &= 0xF8` vs symbol) and declaration order worth several points each.
+- probe: Six variants on the 10-point chassis — declaration-order permutations (`r15`, `r16`), the mask split into read/and/write (`r17`), `*q = *q & 0xF8` (`r22`), a `u8 m` staging local (`r23`), and read-before-condition in the bit-1 block (`r24`).
+- result: ALL SIX score exactly 10 at 49 insns — a hard plateau. The side-by-side shows why: the bit-2 block, the bit-4 block and the copy loop are instruction- AND register-identical to target, and the entire residual is the mask + bit-1 segment's register assignment (target: base a0, byte v1; build: base v1, byte a0) plus one memory op where target has a load-delay nop. With one pseudo re-set three times, local-alloc gives the pointer a single hard register for the whole function, so the first segment cannot be allocated differently from the rest.
+- verdict: KILLED
+
+## [s14] The target's four &D_80106A73 address materialisations require four separately DECLARED pointer locals (the banned construct); no other C spelling can produce them.
+- mechanism: s12b's wave K priced every handle count (one 23, two 27, three 23, four 0) and s13's wave N priced all eight inline-helper shapes, and both concluded that four repeated `u8 *q = &D_80106A73;` declarations — or a macro expanding to exactly them — were the only route to the target's address/reload signature.
+- probe: cc1 -da dumps of the banned four-declaration form (w4) and the one-handle form (w1) with the INSTRUMENTED tools/gcc-2.7.2/cc1 on the real build flags, sliced with tmp/grind/func_80034F88/s14/{slice,flat}.py; then a mechanism-derived variant sweep (r1-r24) scored with `sandbox func_80034F88 --disable all`.
+- result: REFUTED. cse keys on whether the symbol_ref is present in its value table when the address is SET, not on how many C objects are declared. The two-armed if/else join labels end the cse basic block and flush the table, so a plain RE-ASSIGNMENT of ONE declared `u8 *q` after the flush survives as a real lui/addiu materialisation exactly as a fresh declaration does, and the previous block's store no longer hashes equal to the next block's load so the reload survives too. A single `u8 *q` re-assigned before the bit-2 and bit-4 blocks scores 10 at 49 build insns vs 49 target insns, against 13 for s12b/s13's static-inline helper.
+- verdict: KILLED
+
+## [s14] The three if/else join labels are NOT cse basic-block boundaries on this function (s2's conclusion, carried unchallenged for eleven sessions).
+- mechanism: s2 cited tools/gcc-2.7.2/cse.c:8102-8184, which extends a cse basic block through a conditional branch that skips a block whenever LABEL_NUSES (JUMP_LABEL (p)) == 1, and asserted this holds for all three join labels here.
+- probe: Read the .cse dumps of w4, w1 and r1 directly rather than reasoning from the source: check whether each block's `(set (reg) (symbol_ref "D_80106A73"))` survives cse and whether the QI mem count drops.
+- result: The claim is TRUE for s2's own one-armed chassis (`val2 = val|K; if (!c) val2 = val;`, where the branch really does skip a block and fall through) and FALSE for the two-armed if/else chassis every form since s10 has used. In w4's .cse dump the bit-2 and bit-4 blocks' symbol_ref sets SURVIVE (regs 82 and 87) while the bit-1 block's is rewritten to a register copy (reg 77 <- reg 74) because it precedes the first flush; w1 keeps one set and loses three of its eight QI mems to store-to-load forwarding; r1 keeps three sets of the SAME pseudo and all eight QI mems. The flush is the entire mechanism behind the reloads and the per-block address materialisations.
+- verdict: KILLED
+
+## [s14] Score improves monotonically with the number of address handles, so a 2- or 3-handle form should sit between the one-handle 29 and the four-handle 0.
+- mechanism: Wave K's price table was read as broadly monotone in handle count; on the re-assign chassis the same ordering was expected.
+- probe: r19 (two pointer locals: q for the mask + bit-1 block, q2 re-assigned before the bit-2 and bit-4 blocks) and r20 (three pointer locals) against r8 (one local re-assigned three times), honest sandbox.
+- result: 21 and 23 respectively — both far worse than the single re-assigned handle's 10, and worse than several one-handle forms. The axis is not monotone in handle count; the one-pseudo-re-set basin at 10 is structurally distinct from the multi-declaration basin, which is why eleven sessions of handle-count sweeps never found it.
+- verdict: KILLED
+
+## [s14] The residual on the new 10-point form is spread across the function and is attackable by re-spelling the mask block or reordering the local declarations.
+- mechanism: Prior sessions found the mask spelling (`*ptr &= 0xF8` vs the plain symbol) and declaration order worth several points each on earlier chassis.
+- probe: Six variants on the 10-point chassis: declaration-order permutations (r15, r16), the mask split into read/and/write through the handle (r17), `*q = *q & 0xF8` (r22), a `u8 m` staging local (r23), and read-before-condition in the bit-1 block (r24).
+- result: ALL SIX score exactly 10 at 49 insns — a hard plateau. The side-by-side (s14/sbs.py) shows why: the bit-2 block, the bit-4 block and the whole copy loop are instruction- AND register-identical to target, and the entire residual is the mask + bit-1 segment — target puts the base in a0 and the loaded byte in v1, the build swaps them, and target's bit-1 block carries a load-delay nop where the build has a memory op.
+- verdict: KILLED

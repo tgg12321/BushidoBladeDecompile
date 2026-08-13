@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 13,
- "current_modality": "permuter",
+ "session_count": 14,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Inline-helper 13 fully explained from RTL (integrate.c const-substitutes the read, local-alloc then folds the store) and F1 KILLED across 8 shapes; permuter dead a fourth time from an exact-instructio"
+  },
+  {
+   "session": 14,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Forensics: cc1 -da dumps name the mechanism (cse value-table flush at the two-armed if/else join labels) and REFUTE the ledger's central premise \u2014 the target's four address materialisations need a fre"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F2 \u2014 the classification contradiction is now the only live item: the target bytes are reachable (0 measured twice) but every construct that produces them is banned under both of its declared classifications, including the remedy the layer-1 reviewer itself prescribed.",
-   "mechanism": "Wave K priced every smaller handle count at 23-29; s13's wave N priced every non-repeating route to four address materialisations at 13 or worse and explained WHY from the RTL (integrate.c const-substitution + local-alloc reg_equiv_constant). So four separate materialisations of &D_80106A73 are forced by the target's codegen, and the only spellings that produce them are the four repeated `u8 *q = &D_80106A73;` declarations (banned as pointer-alias-fake-exception AND as ordinary program logic) or a macro that expands to exactly those (rejected under cheat-checklist T5 as the banned construct respelled).",
-   "next_probe": "Emit a ruling-request with the precise three-way question \u2014 (i) does the FAKE-annotated pointer-alias form remain available here, given the layer-1 reviewer prescribed exactly that remedy; (ii) is the `static inline` chassis acceptable as an authorized non-matching form given its 13 is now a proven two-pass codegen fact rather than an unexplored lever; (iii) if neither, is this OWNER-ACCEPTED INCOMPLETE \u2014 attaching the wave-K price table, the wave-N kill table with its integrate.c/local-alloc mechanism, and the four permuter kills as the exhaustion evidence."
+   "hypothesis": "The last 10 points are a pure local-alloc question: give the FIRST segment (mask + bit-1 block) a different hard register from the bit-2/bit-4 segments \u2014 target has base a0 / byte v1 there, the build has base v1 / byte a0 \u2014 without reintroducing the banned multi-declaration shape.",
+   "mechanism": "One pseudo re-set three times gets ONE hard register for its whole live range, so the first segment is pinned to the same choice as the rest. Four distinct pseudos give the allocator four allocnos and it picks target's assignment. The question is which OTHER live-range shape produces two allocnos without two pointer objects \u2014 e.g. a re-assignment that makes the pointer dead between segments, an extra non-pointer local whose live range crosses the first segment and shifts allocno priority, or a different order of first-use for q and the byte local.",
+   "next_probe": "Run the instrumented cc1 with BB2_ALLOC_DEBUG / BB2_PRIO_DEBUG / BB2_RANK_DEBUG / BB2_FINDREG_DEBUG set on the r8 form and on the banned w4 control, diff the allocno priority and find_reg traces for the pointer and byte pseudos, and identify exactly which priority input differs. tmp/grind/func_80034F88/s14/dump.sh already takes trailing ENV=1 arguments for this; the dumps land in s14/rtl/<tag>/cc1.err."
   },
   {
-   "hypothesis": "F1 is CLOSED. Do not re-open the inline-helper folding lever.",
-   "mechanism": "The residual is not a spelling problem: giving the inlined pointer pseudo a second reference is achievable (the CODE_LABEL route works exactly as the integrate.c model predicts) but always costs more instructions than the unfolded base saves, because the only natural second reference is a duplicated load.",
-   "next_probe": "None. If a future session wants to revisit it, read tmp/grind/func_80034F88/s13/results_wave_n.json first \u2014 all eight shapes are priced."
+   "hypothesis": "F2 (unchanged, still the standing escalation): the classification contradiction. The target bytes are reachable (0 measured three times now) but every construct that reaches them is banned, and s14's 10-point form \u2014 the closest non-banned shape yet \u2014 carries value-redundant self-assignments that are arguably the same intent respelled.",
+   "mechanism": "s14 changes the escalation's evidence base in the owner's favour: the ledger's premise that four DECLARATIONS are forced is refuted, the mechanism is now a named GCC decision (cse value-table flush at a two-armed if/else join, plus local-alloc's single-allocno-per-pseudo assignment), and the remaining gap is 10 points of register allocation rather than a structural impossibility.",
+   "next_probe": "Do not file it from a non-escalation modality. If the allocation probe above closes the gap the question becomes moot; if it does not, the ruling question should now be worded around the s14 mechanism \u2014 is a value-redundant re-assignment of one pointer local (frozen-list 'dead stores / self-assigns to LOCALS') admissible here, given the banned construct was four DECLARATIONS and the codegen requirement is a fresh SET after a cse flush?"
   },
   {
-   "hypothesis": "The permuter axis is dead on this function for good, at every seed quality.",
-   "mechanism": "Its weighted metric (regs x5, reorderings x60, ins/del x100) is uncorrelated with engine/score.py's distance here, and its randomizer emits semantically different code \u2014 on this function, deleting flag stores (sb 162 vs 164).",
-   "next_probe": "None \u2014 four sessions (s4 50,425 iterations; s5 1,152 + 1,008 enumerated forms; s12b 6,450; s13 4,544) have measured the same result from seeds at every distance, including one at the target's exact instruction count."
+   "hypothesis": "The mask + bit-1 segment can be given target's shape by making the bit-1 block share the mask's VALUE (no reload, load-delay nop) while still sharing its base \u2014 which is what target does.",
+   "mechanism": "Target's bit-1 block has no address materialisation and no reload; it reuses the masked byte still live in v1 and stores through the mask's base. s14's r12 spells exactly that in C (the mask leaves the byte in a local, the bit-1 block reuses it) and the RTL confirms only three QI loads \u2014 yet the build still emits a memory op in the bit-1 block's delay slot and scores 10, so something between combine and dbr is reinstating it.",
+   "next_probe": "Read s14/rtl/r12/code6cac_b.i.{combine,lreg,greg,sched2,dbr} in sequence and find the pass that turns r12's three-load RTL into a four-memory-op schedule; the slice.py per-pass memQI column already shows 7 at rtl/cse/combine and 8 at greg, so the reinstatement happens in local-alloc or reload."
   }
  ],
  "judge_constraints": [

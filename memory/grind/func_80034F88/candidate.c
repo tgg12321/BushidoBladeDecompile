@@ -1,91 +1,129 @@
 /*
- * func_80034F88 — best NON-BANNED form, grind session s12b (permuter modality).
- * Honest sandbox (`sandbox func_80034F88 --disable all`): **score 13**,
- *   50 build insns vs 49 target insns, lbu census 176 (all four reloads —
- *   the matched form's exact access signature).
- * NOT installed in src/ (src/code6cac_b.c is left at its committed state).
- *
- * WHY candidate.c CHANGED. The previous session's candidate scored 0 but was
- * FAILed by the layer-1 cheat-reviewer for carrying four textually repeated
- * `u8 *q = &D_80106A73;` declarations, and the driver has since BANNED that
- * construct under BOTH classifications (the pointer-alias-fake-exception
- * family, and "ordinary program logic"). That body is preserved verbatim at
- * rejected/layer1-fail-0813-1524.c; it is not a candidate any more. This file
- * now holds the best form that carries no banned construct.
+ * func_80034F88 — best NON-BANNED form, grind session s14 (forensics modality).
+ * Honest sandbox (`sandbox func_80034F88 --disable all`): **score 10**,
+ *   49 build insns vs 49 target insns.  Previous best non-banned form was
+ *   s12b/s13's `static inline` helper at 13, so this is a floor drop 13 -> 10.
+ * NOT installed in src/ (src/code6cac_b.c is left at its committed state, as
+ *   s12b and s13 also left it).
  *
  * =====================================================================
- * WHAT s12b ESTABLISHED
+ * WHAT THIS FORM IS, AND THE CLASSIFICATION CAVEAT UP FRONT
  * =====================================================================
- * 1. The FOUR separate materialisations of `&D_80106A73` are load-bearing, and
- *    their price is now measured exactly. Holding the s12 byte-local split
- *    fixed and varying only the handle structure (wave K, 8 forms): one handle
- *    23, two 27, three 23, two-with-a-copy 23, one-with-the-mask-on-the-symbol
- *    28, one-with-blocks-2/3-on-the-symbol 28, no handle at all 29 — against 0
- *    for four. The reload census tracks it monotonically (lbu 173 → 176). So
- *    the byte-local split, s12's breakthrough, pays ONLY on a chassis that
- *    already has four address materialisations; it is worth nothing alone.
+ * ONE pointer local (`u8 *q`) declared once, ASSIGNED `&D_80106A73` three
+ * times: before the mask, and again at the top of the bit-2 and bit-4 blocks.
+ * The two later assignments are value-redundant — `q` already holds that
+ * address when they execute.  That is a dead self-assign to a LOCAL, which is
+ * on the frozen SOTN-sanctioned list, but it is also unmistakably in the same
+ * INTENT family as the construct the driver banned for this function (four
+ * repeated `u8 *q = &D_80106A73;` block-scoped declarations).  This file is
+ * banked as the best MEASURED non-banned form and as the carrier of the s14
+ * mechanism; it is NOT a submittable candidate and must NOT be sent to a Judge
+ * without a ruling.  See the s14 section of evidence.md for the full argument
+ * and the ruling question.
  *
- * 2. A `static inline` helper is the first structurally different route to
- *    those four materialisations ever found. One declaration of the handle,
- *    inside a helper called three times, gives three independent pointer
- *    pseudos plus the caller's mask handle — the four-materialisation shape,
- *    reached by ordinary program factoring instead of by repeating a
- *    declaration. Precedent for `static inline` in this tree: src/main.c:2396
- *    (`_memcpy`). Control: the same helper without `inline` emits a real `jal`
- *    and scores 35, so the inlining is what creates the pseudos.
+ * =====================================================================
+ * WHY IT WORKS — the s14 mechanism, read out of cc1 -da dumps
+ * =====================================================================
+ * 1. Each flag block is a TWO-ARMED `if/else`, so it emits a conditional
+ *    branch, an unconditional jump, a barrier and TWO code labels.  On that
+ *    chassis `cse_end_of_basic_block` ENDS the cse basic block at the join
+ *    label and the value table is flushed.  (s2 concluded the join labels are
+ *    NOT cse boundaries, citing the LABEL_NUSES == 1 "branch skips a block"
+ *    extension at cse.c:8102-8184.  That was correct for s2's ONE-ARMED
+ *    `val2 = val|K; if (!c) val2 = val;` chassis, where the branch really does
+ *    skip a block and fall through.  It is FALSE on the two-armed chassis every
+ *    form since s10 has used.  The dumps show the flush directly.)
+ * 2. A pointer pseudo RE-USED across the flush loses nothing that matters: the
+ *    previous block's store and the next block's load are the identical address
+ *    rtx `(mem:QI (reg 74))` inside the same post-flush block, so cse records
+ *    the store and forwards it — the reload dies — and one pseudo means one
+ *    lui/addiu for the whole function.  That is the 29-point one-handle form.
+ * 3. A FRESH SET of the address AFTER the flush changes both halves at once:
+ *    the new `(set (reg N) (symbol_ref "D_80106A73"))` finds nothing in the
+ *    flushed table so it SURVIVES as a real lui/addiu materialisation, and the
+ *    previous block's store — addressed through a pseudo whose value the table
+ *    no longer knows — hashes differently from the new block's load, so the
+ *    load SURVIVES as a real lbu.  Reloads AND an unfolded shared base at the
+ *    same time, with zero volatile.  This is the answer to the tension s1-s3
+ *    called "mutually exclusive".
+ * 4. THE NEW PART: the fresh set does not need a fresh DECLARATION.  A plain
+ *    re-ASSIGNMENT of the same local has the identical effect, because what cse
+ *    keys on is whether the symbol_ref is in the (flushed) table, not on how
+ *    many C objects exist.  RTL proof: s14/rtl/r1/code6cac_b.i.cse retains
+ *    THREE `(set (reg/v:SI 74) (symbol_ref "D_80106A73"))` insns (14, 59, 93)
+ *    and all eight QI mems, while s14/rtl/w1/code6cac_b.i.cse has one such set
+ *    and only five QI mems (three loads forwarded away).
+ * 5. Corollary that explains a measurement: an assignment placed BEFORE a flush
+ *    is deleted by cse as redundant.  The bit-1 block's assignment in the
+ *    "assign in every block" variant is gone from the .cse dump, which is why
+ *    that variant and this one compile to byte-identical code and both score 10.
  *
- * 3. It stops at 13 because the inliner substitutes the CONSTANT address at
- *    each use inside the copied body (integrate.c `copy_rtx_and_substitute`
- *    and its const-equivalence map), leaving every mem with a single-use
- *    address that `combine` then folds `%lo` into. The build emits
- *    `lui a0; lbu a0,0(a0)` and `lui at; sb v0,0(at)` where the target has one
- *    shared unfolded `lui`/`addiu` base reused by both the reload and the
- *    store. Passing the address as an argument does not escape it (22).
- *    s13 CONFIRMED that model from a cc1 -da dump and then KILLED the lever.
- *    The substitution is visible already at .rtl (the three inlined reads are
- *    `(mem:QI (symbol_ref "D_80106A73"))`, the caller's own mask read is
- *    `(mem:QI (reg/v:SI 74))`), and it is stable through cse/loop/cse2/combine,
- *    so integrate.c is the folding agent, not cse or combine. The stores keep
- *    their pseudo in RTL — they sit after the if/else merge label, where
- *    integrate bumps `map->const_age` — and fold only later, in local-alloc's
- *    `update_equiv_regs`, because the substituted read left each pseudo with a
- *    single remaining reference. Wave N then measured all eight natural shapes
- *    that would give the pseudo a second reference: 35/38/34/13/42/29/24/36.
- *    None beats 13. The label route works exactly as predicted but pays for the
- *    unfolded base with real duplicated loads (lbu 177-179 vs target's 176).
- *
- * Ties at 13: this form, the same with the mask handle at caller function
- * scope, and the same with the helper taking `p` and computing its own
- * condition. `u8` instead of `s32` for the helper's byte local costs 3 (16);
- * factoring the mask into a second inline helper costs 13 (26).
+ * =====================================================================
+ * THE RESIDUAL 10 POINTS — entirely the FIRST SEGMENT's registers
+ * =====================================================================
+ * Side-by-side (s14/sbs.py): the bit-2 and bit-4 blocks and the whole copy loop
+ * are instruction- AND register-identical to target.  Everything that differs
+ * is the mask + bit-1 segment: target puts the base in a0 and the loaded byte
+ * in v1, this build swaps them (base v1, byte a0), and target's bit-1 block has
+ * a load-delay `nop` where this build has a memory op.  With ONE pseudo re-set
+ * three times, local-alloc gives the pointer a single hard register for the
+ * whole function, so the first segment cannot be allocated differently from the
+ * rest.  FOUR DISTINCT pseudos (the banned form) is what produces the target
+ * allocation — and 2- and 3-pseudo splits are measured WORSE, not better
+ * (21 and 23), so this is not a monotone "more handles is better" axis.
  */
-static inline void bb2_set_flag(s32 c, s32 bit) {
-    u8 *q = &D_80106A73;
-    s32 v;
-
-    v = *q;
-    if (c) {
-        c = v | bit;
-    } else {
-        c = v;
-    }
-    *q = c;
-}
-
 void func_80034F88(void) {
     s32 *p;
     s32 i;
+    u8 *q;
 
     p = func_80077D00();
-    {
-        u8 *q = &D_80106A73;
+    q = &D_80106A73;
+    *q &= 0xF8;
 
-        *q &= 0xF8;
+    {
+        s32 v;
+        s32 c;
+
+        c = p[8] & 1;
+        v = *q;
+        if (c) {
+            c = v | 1;
+        } else {
+            c = v;
+        }
+        *q = c;
     }
 
-    bb2_set_flag(p[8] & 1, 1);
-    bb2_set_flag(p[8] & 2, 2);
-    bb2_set_flag(p[8] & 4, 4);
+    {
+        s32 v;
+        s32 c;
+
+        q = &D_80106A73;
+        c = p[8] & 2;
+        v = *q;
+        if (c) {
+            c = v | 2;
+        } else {
+            c = v;
+        }
+        *q = c;
+    }
+
+    {
+        s32 v;
+        s32 c;
+
+        q = &D_80106A73;
+        c = p[8] & 4;
+        v = *q;
+        if (c) {
+            c = v | 4;
+        } else {
+            c = v;
+        }
+        *q = c;
+    }
 
     for (i = 0; i < 3; i++) {
         *(&D_80106A70 + i) = *((u8 *)p + i + 0x17);
