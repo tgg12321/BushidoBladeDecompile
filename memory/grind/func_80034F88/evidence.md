@@ -137,3 +137,142 @@ mutually exclusive.** That tension is the entire frontier.
 - [s1] src/code6cac_b.c:4044 already spells 'src1 = (&D_80106A73) - 3;', so the surrounding code treats 0x80106A70..0x80106A73 as one contiguous 4-byte region - a struct/array re-derivation is an untried modality. Caveat: target addresses the flag byte via %hi/%lo(D_80106A73) at offset 0 but the copy destination via %lo(D_80106A70)($at), so a naive g[3] spelling would introduce displacements target does not have.
 
 - [s1] PROCESS NOTE for the next session: the 23-point form currently in src/ has a 'ptr' local with exactly ONE use ('*ptr &= 0xF8;'). That is the 'why is this here?' smell from the cheat checklist - a one-use pointer alias to a global whose only observable effect is on GCC's CSE table. It is banked as the best MEASURED floor, NOT as a submittable form; do not send it to a Judge as-is.
+
+---
+
+# s2 — structural modality (floor 23 -> 12)
+
+## Headline
+The instruction SEQUENCE of func_80034F88 is now reproduced 1:1 by pure C at
+**49 build insns vs target 49**, honest sandbox score **12** (was 23). Every
+remaining point of distance is register ASSIGNMENT, not shape.
+
+## The three levers, each measured
+All measurements via `sandbox func_80034F88 --disable all` with the harness
+`tmp/grind/func_80034F88/s2/sweep.py` (splices a variant body into
+src/code6cac_b.c, scores it, restores the file). 26 variants measured.
+
+### L1 — `volatile u8 *pbit` (pointer-to-volatile local) produces the reloads
+This is the answer to s1's central open question F1 ("how does target get a
+shared base register for a load/store pair of the same byte without the store
+being forwarded into the load?"). The mechanism, read out of the compiler
+source rather than inferred:
+
+- `tools/gcc-2.7.2/cse.c:7308-7340` — "Now insert the destinations into their
+  equivalence classes" — skips recording a SET_DEST entirely when
+  `sets[i].src_elt == 0` (line 7329).
+- `canon_hash` sets `do_not_record` for a MEM with `MEM_VOLATILE_P`, which
+  leaves `sets[i].src_elt` at 0 for a volatile store.
+- Consequence: a volatile QImode store is invalidated but never RECORDED, so
+  the next read of the same byte is a real `lbu` — while the ADDRESS pseudo,
+  which is an ordinary non-volatile `(set (reg) (symbol_ref))`, stays in the
+  value table and is still shared. Reloads AND a shared unfolded base at the
+  same time. That is exactly the combination s1 measured as "mutually
+  exclusive" under every non-volatile spelling, and it is not mutually
+  exclusive at all — volatile is the discriminator.
+- Measured: `x2_single_volptr.c` produced all four `lbu` reloads for the first
+  time (s1's best had one).
+
+### L2 — condition-before-read ordering kills the three load-delay `nop`s
+GCC's scheduler will not move a non-volatile load across a volatile one, so
+source order pins the `lw v0,0x20(a1)` / `lbu` order. Reading the flag byte
+first (`val = *pbit;` then `if (p[8] & K)`) strands a `nop` in each `lw`
+load-delay slot: 48 insns, score 28. Computing the condition first
+(`c = p[8] & K;` then `val = *pbit;`) lets the `lbu` fill the delay slot
+exactly as target does: 45 insns, score 15 (with the ternary spelling).
+
+### L3 — three pointer locals reproduce target's three address bases
+Target materialises `lui`+`addiu` for `&D_80106A73` THREE times:
+  base1 -> {&=0xF8 load+store, bit-1 load+store}
+  base2 -> {bit-2 load+store}
+  base3 -> {bit-4 load+store}
+One pointer local gives ONE base (45 insns, score 15). Three separate locals
+(`pbit`, `pbit2`, `pbit3`) give three (49 insns, score 12). Placement matters:
+assigning the NEXT block's pointer immediately BEFORE the CURRENT block's
+store puts the `lui`/`addiu` pair ahead of the `sb`, which is where target has
+it (`f1_staged_ptrs_before_store.c` = 12; assigning it before the condition
+instead = `f2` = 18).
+
+### Spelling note
+With volatile in play the ternary (`val2 = c ? (u8)(val|K) : val;`) and the
+if/else spelling tie exactly (both 15 at one base); the s1-era
+`val2 = val|K; if (!(p[8]&K)) val2 = val;` spelling scores 27 at the same 45
+insns. Without volatile the ternary is strictly WORSE than the if-form (30 vs
+23) — the two levers interact, which is why s1's ternary sweep looked dead.
+
+## RTL evidence (artifacts, not inference)
+`tmp/grind/func_80034F88/s2/rtl/v10/code6cac_b.i.{rtl,cse,combine,greg,...}`
+(cc1 -da on the real build flags). In the pre-cse dump each block has its own
+address pseudo — `(set (reg/v:SI 74|77|83|89) (symbol_ref "D_80106A73"))` — and
+its own `(mem:QI (reg))`. In the .cse dump insns 27/55/83 are DELETED (all four
+pseudos merged into reg 74) and insns 30/58/86 (the reloads) are deleted or
+rewritten to reuse the stored value. cse merges and forwards ACROSS the three
+join labels because `cse_end_of_basic_block` (cse.c:8102-8184) extends the
+block through a conditional branch that skips a block when
+`LABEL_NUSES (JUMP_LABEL (p)) == 1`. So the join labels are NOT cse boundaries
+here, and the label-boundary theory for target's three bases is wrong; L3 is.
+
+## Killed this session (do not re-probe)
+- **Bitfield container for the flag byte is DEAD.** `struct { u8 rest:5; u8 b2:1;
+  u8 b1:1; u8 b0:1; }` (fork allocates HIGH-first, so the 5-bit pad is declared
+  first to leave masks 4/2/1) scored **44** at 64 insns — far worse than any
+  byte spelling. The cse.c ZERO_EXTRACT carve-out at lines 7004-7027 that
+  motivated the hypothesis does exist, but its `src_const` exception (7009-7016)
+  means CONSTANT bitfield stores are recorded anyway, and MIPS has no `insv` for
+  memory so every field write expands to an and/or read-modify-write that the
+  target does not contain. Banked `rejected/bitfield-container-score44.c`.
+- **`do { ... } while (0)` wrapping is DEAD here.** Per flag block: 26. Around
+  the whole flag section: 24. Both worse than the 15/12 forms. Banked
+  `rejected/dowhile0-per-block-wrap-score26.c`.
+- **Re-deriving 0x80106A70..0x80106A73 as ONE declared object (s1's F3) is
+  refuted by the relocations, no measurement needed.** The flag accesses carry
+  `R_MIPS_HI16/LO16 D_80106A73` and the copy-loop store carries
+  `R_MIPS_HI16/LO16 D_80106A70`; two distinct symbols in the target's own
+  relocation records means the original source had two distinct declared
+  objects. `src/code6cac_b.c:4044`'s `(&D_80106A73) - 3` is pointer arithmetic
+  across them, not evidence of one object.
+- Non-volatile spellings are exhausted as a family: block-scoped pointers,
+  per-block pointers, pointer reassignment, symbol/pointer read-store mixes,
+  s32 vs u8 temps, ternary vs if/else — 15 variants, best 23, none below.
+
+## OPEN CLASSIFICATION QUESTION (load-bearing — resolve before submitting)
+The whole 23 -> 12 drop rests on `volatile u8 *pbit = &D_80106A73;`, which adds
+a `volatile` qualifier to a global declared plain `extern u8` at
+src/code6cac_b.c:127.
+FOR it being legitimate: the engine's `volatile_cheats` detector does NOT strip
+it (proved by measurement — the score moves; s1 proved by contrast that
+`extern volatile u8 D_80106A73;` IS stripped, which is why that axis is dead);
+`engine/volatile_cheats.py` catches three patterns (alias-rename, inline
+`*(volatile T *)&G` cast, plain `extern volatile T G;`) and a
+pointer-to-volatile local is none of them; and the sibling function in this
+same file already spells it exactly this way at src/code6cac_b.c:4030.
+AGAINST: the frozen forbidden-family catalog lists "volatile-coercion ... by
+cast", and a pointer-to-volatile local is plausibly the same intent respelled.
+D_80106A73 is a game FLAG byte (see named_syms.txt:413-415, three getters
+returning its bits) — the `extern volatile T G;` two-prong gate for IRQ-touched
+game-state globals may or may not apply to it; that has not been researched.
+This is the first thing the next session (or the owner) should settle: at floor
+12 the remaining work is register allocation, so the payoff is near, but every
+bit of it is downstream of this construct.
+
+- [s2] [s2] Floor moved 23 -> 12 (sandbox func_80034F88 --disable all, edits in place in src/code6cac_b.c). Build is 49 instructions against a 49-instruction target and the instruction SEQUENCE of the whole flag section now matches 1:1; every residual point of distance is register ASSIGNMENT.
+
+- [s2] [s2] MECHANISM, read out of the compiler source rather than inferred: tools/gcc-2.7.2/cse.c:7308-7340 declines to record a SET_DEST when sets[i].src_elt == 0 (line 7329), and canon_hash leaves src_elt at 0 for a volatile MEM because MEM_VOLATILE_P sets do_not_record. A volatile QImode store is therefore invalidated but never recorded, so the next read is a real lbu, while the address — an ordinary non-volatile (set (reg) (symbol_ref)) insn — stays in the value table and is still shared between load and store.
+
+- [s2] [s2] s1's 'mutually exclusive' framing was wrong in a specific and useful way: reloads and a shared unfolded base are only mutually exclusive for NON-volatile mems. Volatile is the discriminator, and it is a property of the ACCESS (a pointer-to-volatile local), not of the global's declaration.
+
+- [s2] [s2] The three levers and their measured contributions: (1) volatile u8 *pbit -> all four lbu reloads appear (28 at 48 insns); (2) 'c = p[8] & K;' before 'val = *pbit;' -> the three load-delay nops vanish because the scheduler cannot move a non-volatile load across a volatile one (15 at 45 insns); (3) three separate pointer locals, each assigned immediately before the PREVIOUS block's store -> target's three lui+addiu bases appear (12 at 49 insns).
+
+- [s2] [s2] Spelling interaction worth knowing: WITH volatile the ternary 'val2 = c ? (u8)(val|K) : val;' and the if/else form tie exactly (both 15 at one base), while the s1-era 'val2 = val|K; if (!(p[8]&K)) val2 = val;' scores 27 at the same insn count. WITHOUT volatile the ternary is strictly worse than the if-form (30 vs 23). s1's ternary sweep looked dead only because the volatile lever was absent.
+
+- [s2] [s2] cse's basic-block boundary theory for target's three address bases is WRONG and is banked as such: cse_end_of_basic_block (cse.c:8039) does end a block at a CODE_LABEL, but lines 8102-8184 extend it straight through a block-skipping conditional branch whenever LABEL_NUSES (JUMP_LABEL (p)) == 1, which holds for all three join labels. The .cse dump confirms the merge happens across them. The three bases come from three C pointer locals.
+
+- [s2] [s2] First cc1 -da RTL dumps ever taken for this function, at tmp/grind/func_80034F88/s2/rtl/v10/. The pre-cse dump shows each block with its own address pseudo — (set (reg/v:SI 74|77|83|89) (symbol_ref "D_80106A73")) — and its own (mem:QI (reg)); the .cse dump shows insns 27/55/83 deleted (all merged into reg 74) and insns 30/58/86 (the reloads) deleted or rewritten to reuse the stored value.
+
+- [s2] [s2] s1's F3 (one declared object over 0x80106A70..0x80106A73) is refuted by the target's own relocations without spending a measurement: the flag accesses relocate against D_80106A73 and the copy-loop store against D_80106A70, so the original source had two declared objects.
+
+- [s2] [s2] BLOCKING POLICY QUESTION, load-bearing for the entire drop: 'volatile u8 *pbit = &D_80106A73;' adds a volatile qualifier to a global declared plain 'extern u8' at src/code6cac_b.c:127. FOR: the engine's volatile_cheats detector does NOT strip it (proved by measurement — the score moves; s1 proved by contrast that 'extern volatile u8 D_80106A73;' IS stripped, which is why that axis is dead), engine/volatile_cheats.py implements three patterns (alias-rename, inline '*(volatile T *)&G' cast, plain 'extern volatile T G;') and a pointer-to-volatile local is none of them, and the sibling function in this same file already spells it this way at src/code6cac_b.c:4030. AGAINST: the frozen forbidden-family catalog lists 'volatile-coercion ... by cast', and a pointer-to-volatile local is plausibly that intent respelled. D_80106A73 is a game flag byte with three dedicated bit-getters (named_syms.txt:413-415); whether it clears the two-prong IRQ-touched-game-state gate has not been researched. NOT submitted, NOT self-approved.
+
+- [s2] [s2] Reusable harness left behind for s3: tmp/grind/func_80034F88/s2/sweep.py (splice a variant body into src/, score it, restore), inspect.py (splice + sandbox + objdump the function), install.py (make a variant permanent), dump_rtl.sh (cc1 -da on the real build flags), gen_variants.py / gen_wave2.py. 26 variants measured this session.
+
+- [s2] [s2] Register-level residual, for F2: target uses base v1 for the &=0xF8 and bit-1 blocks and a0 for bit-2 and bit-4, with the loaded byte in a0,a0,v1,v1, p in a1 and the selected value in v0. The current build has p in a1 and the value in v0 already correct, base a0 throughout and the byte in v1 — only the base/byte pair is swapped, and only for the first two blocks.

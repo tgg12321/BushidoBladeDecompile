@@ -1,31 +1,37 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 23,
    "modality": "recon",
    "headline": "Recon: floor 24 -> 23, three scheduling-barrier cheats removed; CSE store-to-load forwarding identified as the single mechanism, volatile axis permanently killed (sandbox strips it)."
+  },
+  {
+   "session": 2,
+   "floor": 12,
+   "modality": "structural",
+   "headline": "Floor 23 -> 12: pointer-to-volatile defeats cse dest-recording (cse.c:7329), condition-before-read fills the load-delay slots, three pointer locals reproduce target's three lui/addiu bases \u2014 build is "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some condition in cse_insn makes GCC 2.7.2 decline to RECORD a QImode MEM destination in the value table while still CSE-ing its address, and that condition is what lets the target share one lui/addiu base between a block's reload and its store without the store being forwarded into the reload.",
-   "mechanism": "cse.c dest-recording block in cse_insn - candidate triggers are a subreg SET_SRC, a mode mismatch between the recorded value and the QImode mem, a zero_extract (bitfield-insert) SET_DEST, or do_not_record being set by the address. A bitfield container is the strongest candidate: 0xF8 plus three single-bit flags is exactly a ':1,:1,:1,:5' shape.",
-   "next_probe": "grep -n 'in_memory|invalidate|GET_CODE (dest) == MEM' tools/gcc-2.7.2/cse.c and read cse_insn's dest-recording block to identify the exact condition; then declare 0x80106A73 as a 3x1-bit + 5-bit bitfield struct and measure. Mind that this fork allocates bitfields HIGH-first (.claude/rules/bitfield-direction-divergence.md), so the field order is constrained by which mask bit is which."
+   "hypothesis": "The blocking question is a RULING, not a measurement: is 'volatile u8 *pbit = &D_80106A73;' (pointer-to-volatile local aliasing a global declared plain 'extern u8') a sanctioned construct or a forbidden volatile-coercion respelling? Everything below is downstream of it \u2014 the whole 23 -> 12 drop rests on it.",
+   "mechanism": "The engine's volatile_cheats stripper does not catch it (measured), it matches none of the three patterns that module implements, and src/code6cac_b.c:4030 in the same file already uses it; but the frozen catalog lists 'volatile-coercion ... by cast' as forbidden and this is arguably that intent in different syntax. Neither the detector's silence nor the sibling's usage is a sanction.",
+   "next_probe": "Settle the classification before spending another session on register allocation. If sanctioned, F2 below is a short grind from a form that already emits the right 49 instructions. If not sanctioned, s1's 23 is the honest floor, the whole volatile family is discarded, and s1's F1 re-opens as unanswered \u2014 in which case the surviving structural knowledge is that non-volatile spellings are exhausted at 23 (15 variants) and that v10_block_scoped.c reaches 23 at 45 insns with the correct shared base, which is a better non-volatile starting point than s1's 50-insn form."
   },
   {
-   "hypothesis": "The objdump-level inferences above can be confirmed or replaced outright by reading the RTL, and doing so is cheaper than further spelling sweeps.",
-   "mechanism": "cc1 -da emits .cse / .combine / .greg dumps; the .cse dump shows directly whether the sb's MEM is entered into the value table and the .combine dump shows whether the %lo fold is combine's doing or the expander's.",
-   "next_probe": "Run cc1 with the build flags plus -da on the sandbox's preprocessed input for code6cac_b, write the dumps to tmp/grind/func_80034F88/s2/, and read the .cse and .combine dumps around the three sb insns of func_80034F88."
+   "hypothesis": "The last 12 points are register assignment only, driven by the live range of the first pointer local: in target the first base stays live in v1 across the bit-1 block's store while the second base is materialised into a0 ahead of that store, whereas our allocator reuses a0 for the new base and is forced to emit the pair after the sb.",
+   "mechanism": "Allocno ordering in local-alloc/global.c follows live ranges and declaration order, so lengthening the first pointer's live range or reordering the local declarations should change which hard register each base lands in.",
+   "next_probe": "From f1_staged_ptrs_before_store.c, vary (a) the DECLARATION order of pbit/pbit2/pbit3 and the u8/s32 temporaries, (b) how many statements earlier or later the pbit2/pbit3 assignments sit, (c) giving pbit one further use after the bit-1 store. Measure each with tmp/grind/func_80034F88/s2/sweep.py and diff the .greg dump from dump_rtl.sh against the previous best. Gate on F1."
   },
   {
-   "hypothesis": "0x80106A70..0x80106A73 was one declared object in the original source (a 4-byte array or a struct), and re-deriving it as such changes every address expression in the function at once.",
-   "mechanism": "A single declared object gives one base for the whole region, which is the only untried change that touches both the flag blocks and the copy loop simultaneously; it also changes which addresses combine can fold.",
-   "next_probe": "Introduce a single declaration covering the region (keeping the existing extern names as the split-out view for the other users at src/code6cac_b.c:4032 and :4044 so the diff stays scoped), spell the flag byte and the copy destination through it, and measure. Abort early if the emitted addressing shows 3(base) displacements, since target has none."
+   "hypothesis": "decomp-permuter has never been run on this function, and it is only now well-conditioned: the input form already has the target's exact instruction count and differs solely in register assignment.",
+   "mechanism": "tools/permuter_campaign.py with the fresh-seed stopping rule; a permutation search over a form that is shape-correct is a register-allocation search rather than a shape search.",
+   "next_probe": "Run one campaign seeded from f1_staged_ptrs_before_store.c, wait for it in-turn with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvest, then stop it before ending the turn. Gate on F1 \u2014 do not spend a campaign on a construct that may be ruled out."
   }
  ],
  "judge_constraints": [],
