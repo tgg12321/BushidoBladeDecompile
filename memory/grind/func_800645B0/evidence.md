@@ -931,3 +931,88 @@ check_banned_constructs True).
   to a clean src/text1b.c: `sandbox func_800645B0 --disable all` → score 0,
   target_insns 78, build_insns 78, scorable true, rules_dropped 1.  Same body,
   same numbers as the first run; candidate.c is unchanged.
+
+## Session 9c (PERMUTER modality, 2026-08-13)
+
+- **Starting state.** The session-9 `val = idx; idx = idx2 + val;` candidate had
+  been layer-1 FAILed and its construct BANNED for this function; src/text1b.c
+  in the tree still carried the pre-grind pinned/goto body.  The SB body
+  (candidate.c, `idx = idx2 + idx;`) was applied to src/ and re-measured:
+  `sandbox func_800645B0 --disable all` → score 1, target_insns 78,
+  build_insns 78, rules_dropped 1.  That is the standing honest floor and it is
+  where src/ was left at the end of this session.
+
+- **Two brand-new offset-0 permuter workspaces were built and validated** —
+  the first time either of the session-7/8 chassis has ever been sampled:
+  `tmp/grind/func_800645B0/s9c/ws_jd` from the JD chassis (inline index
+  arithmetic, no idx2/wid locals; sandbox 3/78, permuter base 260, validated at
+  78 insns vs 78 with exactly the three known loop-top diffs) and
+  `tmp/grind/func_800645B0/s9c/ws_oa` from the OA chassis (maintained index in a
+  do/while; sandbox 3/79, permuter base 160, validated with the known duplicate
+  `move a0,zero`).  Recipe: s9c/mkchassis.py (body swap into a full copy of
+  src/text1b.c) + s9c/mkws.sh (full-TU cpp, honest compile.sh, session-4
+  offset-0 target.o).  Both campaigns were launched, waited on IN-TURN, and
+  harvested with --stop inside this session; `permuter_campaign status` ends the
+  session at "0 live campaign(s), 0 stale registry entr(ies)".
+
+- **JD basin: score 0 is reachable, and reachable FAST.** First zero 20.6 s
+  after launch (iteration 390, with `--stop-on-zero`).  Relaunched without
+  `--stop-on-zero`: ELEVEN score-0 finds in 23,456 iterations / 22.8 min.
+
+- **All eleven zeros are the same construct.** They de-duplicate (s9c/zdiff.py)
+  to six distinct bodies, and every one of the six closes the residual with an
+  empty statement-level LOOP NOTE at the inner-loop top — `do { idx = i + j; }
+  while (0);` (6 finds), `idx = i + j; do { } while (0);` (4 finds), or the same
+  inside an `if (1) { ... }` wrapper (1 find).  The other differences between
+  them are scorer-invisible noise (`val |= mask`, an `(unsigned long long)` cast
+  on the `i` initialiser, and in output-0-10 a store-then-read-back respelling
+  of the halfword store).  This REPLICATES the session-5 CA-chassis find
+  (rejected/permuter-bare-do-while0-wrapper-outside-carveout.c) on a chassis
+  with a completely different pseudo set: two independent basins, ~92k + ~23k
+  iterations, and the only zero-scoring mechanism either has ever produced is
+  the loop note.  Banked at
+  rejected/jd-basin-zeros-are-all-loop-note-wrappers.c.
+
+- **A lexical block boundary is NOT a substitute for the loop note** (sweep32,
+  eight variants, honest sandbox each, JD chassis throughout): XA control 3/78;
+  XB `s32 idx = i + j;` declared in the inner for-body 3/78; XC idx+val both
+  inner 3/78; XE idx/val/mask/last all inner 3/78; XH bare `{ ... }` braces
+  around the inner-loop body 3/78.  Byte-identical to the control in every case
+  — GCC 2.7.2 at -O2 without -g gives a scope no RTL presence the first-pass
+  scheduler can see.  Only a LOOP STATEMENT emits NOTE_INSN_LOOP_BEG/END, and no
+  loop belongs at that point semantically.  Two side rows re-confirm the const-1
+  carrier is load-bearing: XD (`{ s32 one = 1; mask = one << idx; }`) 12/80 and
+  XG (`mask = 1 << idx;`, no carrier) 12/80.  Banked at
+  rejected/block-scope-decls-are-codegen-inert.c.
+
+- **OA basin: no zero in a full fresh-seed window.** 21,451 iterations /
+  24.2 min, best 60 (base 160).  The 60-find buys its instruction by DELETING
+  the pre-loop `j = 0;` initialiser, so `j` is read uninitialised on the first
+  inner iteration — the already-banked semantics-breaking family.  The permuter
+  independently reproduced session 8's structural conclusion: OA's one
+  instruction of slack is the duplicated `j = 0`, and no semantics-preserving
+  mutation in its neighbourhood removes it.  Banked at
+  rejected/oa-basin-best-drops-j-initialiser-ub.c.
+
+- **Net position after this session.** Floor unchanged at 1 (SB).  The permuter
+  axis is now measured on ALL FOUR near-miss chassis the grind has produced
+  (SB + IA + CA + guard-continue in session 4/5, JD + OA here): every basin
+  either yields nothing below its base or yields only the banned loop-note
+  wrapper.  The standing lesson from [s5] — "seed from EACH near-miss chassis
+  before calling the axis dead" — has now been discharged in full.
+
+- [s9] src/text1b.c was left carrying the SB body (candidate.c) at the standing honest floor: `sandbox func_800645B0 --disable all` = score 1, target_insns 78, build_insns 78, rules_dropped 1, measured twice this session (before and after the sweeps restored the file).
+
+- [s9] The tree's src/text1b.c had NOT been reverted to a grind body after session 9's layer-1 FAIL -- it still carried the pre-grind cheat body (register asm("$19")/asm("$3") pins, a goto-based inner loop, a bare do-while(0)). Session 9c replaced it with the SB body, which is both cheat-free and 2 points better than that body's honest score.
+
+- [s9] candidate.c previously held the session-9 WC body whose `val = idx; idx = idx2 + val;` staging is now a BANNED construct; it has been rewritten to the SB body so no future session applies a banned form as its starting point. self_vet.md, which still declared that banned construct in its CONSTRUCTS: line, was likewise replaced with a `CONSTRUCTS: none` stub pointing at the ledger for the FAIL record.
+
+- [s9] Two brand-new offset-0 permuter workspaces were built and validated for the first time in the grind, from the two chassis session 7/8 produced but never sampled: ws_jd (JD, base 260, 78 insns vs 78) and ws_oa (OA, base 160). Recipe: s9c/mkchassis.py body-swap into a full copy of src/text1b.c + s9c/mkws.sh (full-TU cpp, honest compile.sh, session-4 offset-0 target.o).
+
+- [s9] Both campaigns were launched, waited on IN-TURN, and harvested with --stop inside this session; `permuter_campaign status` ends at 0 live campaigns / 0 stale registry entries. JD: 23,456 iterations, best_new_score 0. OA: 21,451 iterations, best_new_score 60.
+
+- [s9] The permuter axis is now discharged on ALL near-miss chassis the grind has produced -- SB, IA, CA and guard-continue in sessions 4-5, JD and OA here. Every basin either yields nothing below its base or yields only the banned loop-note wrapper. The standing [s5] lesson ('seed from EACH near-miss chassis before calling the axis dead') is fully spent.
+
+- [s9] The whole function now reduces to ONE question: what semantic C construct denies sched.c's birthing_insn_p priority lift on the loop-top `addu idx,i,j` at zero instruction cost? JD is byte-exact except for that -- every register, the *3 sum's commutative operand order and the instruction count are already the target's.
+
+- [s9] Three forms were banked to memory/grind/func_800645B0/rejected/: jd-basin-zeros-are-all-loop-note-wrappers.c, block-scope-decls-are-codegen-inert.c, oa-basin-best-drops-j-initialiser-ub.c.

@@ -1357,3 +1357,103 @@ axis (nine sessions of measurements say it is closed): it is the five other
 measured 0/78 spellings in sweep30 (WB/WD/WE/WF/WG), which reach the same bytes
 by inventing a local instead of borrowing one — a different policy question
 (named intermediate vs borrowed variable) about the same dataflow.
+
+## Session 9c (PERMUTER modality, 2026-08-13)
+
+### H48 — the JD chassis is exactly one loop note away from byte-exact, and its permuter basin contains no policy-clean zero
+- **Statement.** JD's three-point residual is closable, and the closing
+  mechanism available to random source mutation is exclusively an empty
+  statement-level loop note at the inner-loop top.
+- **Mechanism.** `do { } while (0);` emits NOTE_INSN_LOOP_BEG/END, which changes
+  what cc1's first-pass scheduler may move across the boundary between the index
+  `addu` and the const-1 set — the same scheduling-tie steer as this function's
+  BANNED `j += 1;` relocation, and NOT the LABEL_OUTSIDE_LOOP_P / reorg.c
+  `relax_delay_slots` interaction that the do-while(0) carve-out is scoped to.
+- **Probe.** Fresh offset-0 workspace ws_jd; one `--stop-on-zero` campaign
+  (zero at 20.6 s, iteration 390) plus one open campaign (11 zeros / 23,456
+  iterations / 22.8 min); s9c/zdiff.py de-duplication of every score-0 body.
+- **Result.** 11 zeros, 6 distinct bodies, 6/6 carry the loop note; nothing else
+  in any of them is load-bearing.  Everything else about JD — every register,
+  the *3 sum's commutative operand order, the instruction count — is already the
+  target's.
+- **Verdict:** CONFIRMED (both halves: the residual is closable, and the
+  permuter axis on JD yields no proposable form).
+
+### H49 — a lexical block boundary can substitute for the loop note
+- **Statement.** Declaring a variable in the innermost scope where it is used
+  (an ordinary, semantically motivated construct that needs no GCC-internals
+  justification) puts a NOTE_INSN_BLOCK_BEG at the same point and closes the
+  same three instructions the wrapper closes.
+- **Mechanism.** stmts.c / function.c emit block notes for a scope; if the
+  first-pass scheduler treats them as a boundary the way it treats loop notes,
+  the effect would be identical and the construct would be policy-clean.
+- **Probe.** sweep32 (tmp/grind/func_800645B0/s9c/sweep32.py), eight variants on
+  the JD chassis, honest `sandbox --disable all` each.
+- **Result.** Completely inert.  XB/XC/XE (declarations at point of use, in
+  three different combinations) and XH (bare braces, no declarations) all
+  measure 3/78 — byte-identical to the XA control, not one instruction moved.
+  GCC 2.7.2 at -O2 without -g gives a scope no RTL presence the scheduler sees.
+- **Verdict:** KILLED.  Only a loop statement emits the note that matters, and
+  no loop belongs at that point of this function semantically.
+
+### H50 — the OA chassis' extra instruction is removable by source mutation
+- **Statement.** OA (3/79) is one instruction over target only incidentally;
+  some semantics-preserving spelling in its neighbourhood drops the duplicated
+  `j = 0`.
+- **Mechanism.** [s8] argued the duplicate is structural (any placement outside
+  the group-top block is duplicated by GCC's loop-exit-test duplication or needs
+  a pre-loop initialiser; the one placement that is not duplicated lets cse fold
+  `i + j` to `move $s0,$s3`).  A 21k-iteration random search is the independent
+  test of that argument.
+- **Probe.** Fresh offset-0 workspace ws_oa, one full fresh-seed window
+  (21,451 iterations / 24.2 min).
+- **Result.** No zero; best 60 (base 160), and that 60 deletes the `j = 0;`
+  initialiser outright — `j` read uninitialised on the first inner iteration.
+  The only instruction-removing mutation the search found is the one that breaks
+  semantics.
+- **Verdict:** KILLED (the hypothesis), CONFIRMED (session 8's structural
+  reading of the duplicate).
+
+## Frontier (rewritten by session 9c)
+Floor 1 (SB).  The permuter axis is now discharged on every near-miss chassis
+the grind has (SB/IA/CA/guard-continue in s4-s5, JD/OA here), so the next
+session should NOT spend its window on another campaign unless it first builds a
+genuinely new chassis to seed from.  The three live leads, in priority order:
+
+1. **What semantic C construct denies sched.c's `birthing_insn_p` lift on the
+   loop-top `addu idx,i,j` at zero instruction cost?**  This is now the WHOLE
+   function: JD is byte-exact except for that, and s9c proved a block boundary
+   does not do it while a loop note does.  The un-measured surface is
+   constructs that give `idx` a second SET which costs no instruction — s8's
+   frontier item 0 (a second set OUTSIDE the loops, sweep25 KD at 4/78 with the
+   loop top exact) is the closest measured relative and was never pushed past
+   its 4-point residual on the JD chassis (it was measured on the older one).
+   Probe: port KD's out-of-loop second set onto JD and sweep its placements.
+2. **The sum side of H39 on the SB chassis** (unchanged from s8): find an
+   assignment form whose RHS expansion does NOT receive `to_rtx` as its target
+   (expr.c `expand_assignment` / `store_expr` want_value paths, RHS containing a
+   CALL, `safe_from_p` clearing `target`) while still leaving
+   `reg_n_sets[idx] == 2`.  Note the BANNED staging spelling is one member of
+   this family — the open question is whether a NON-staging member exists.
+3. **The halfword-offset allocation route** (unchanged from s8): give the
+   halfword offset a copy relationship so local-alloc's `qty_phys_copy_sugg`
+   ranks $s1 for it, which the target's own allocation proves is reachable.
+   Probe: BB2_SUGG_DEBUG / BB2_QTY_DEBUG .lreg dumps on the KB build.
+
+## [s9] The JD chassis (inline index arithmetic, no idx2/wid locals, sandbox 3/78) is exactly one loop note away from byte-exact, and its permuter basin contains no policy-clean score-0 form.
+- mechanism: do { } while (0); emits NOTE_INSN_LOOP_BEG/END, which changes what cc1's first-pass scheduler may move across the boundary between the loop-top index addu and the const-1 set. That is the scheduling-tie steer this function's BANNED `j += 1;` relocation used, NOT the LABEL_OUTSIDE_LOOP_P / reorg.c relax_delay_slots interaction the do-while(0) carve-out is scoped to.
+- probe: Built and validated a fresh offset-0 workspace tmp/grind/func_800645B0/s9c/ws_jd (78 insns vs 78 target, exactly the three known JD diffs). One --stop-on-zero campaign, then one open campaign; de-duplicated every score-0 body with s9c/zdiff.py.
+- result: First zero at 20.6 s / iteration 390. Relaunched open: 11 score-0 finds in 23,456 iterations / 22.8 min, de-duplicating to 6 distinct bodies. 6/6 carry an empty statement-level loop note at the inner-loop top -- `do { idx = i + j; } while (0);` (6 finds), `idx = i + j; do { } while (0);` (4), or the same inside `if (1) { ... }` (1). All other differences are scorer-invisible noise. This replicates the session-5 CA-chassis find on a chassis with a completely different pseudo set.
+- verdict: CONFIRMED
+
+## [s9] A lexical block boundary from an ordinary declaration-at-point-of-use can substitute for the loop note and close the same three instructions -- a policy-clean closing form.
+- mechanism: stmts.c / function.c emit NOTE_INSN_BLOCK_BEG for a scope; if cc1's first-pass scheduler treated block notes as a boundary the way it treats loop notes, declaring `idx` (or `val`) inside the inner for-body would close the residual with a construct that needs no GCC-internals justification at all.
+- probe: sweep32 (tmp/grind/func_800645B0/s9c/sweep32.py), eight variants on the JD chassis, honest `sandbox func_800645B0 --disable all` on each.
+- result: Completely inert. XA control 3/78; XB `s32 idx = i + j;` in the inner for-body 3/78; XC idx+val both inner 3/78; XE idx/val/mask/last all inner 3/78; XH bare braces around the inner-loop body 3/78 -- byte-identical to the control, not one instruction moved. Side rows re-confirm the const-1 carrier is load-bearing: XD `{ s32 one = 1; mask = one << idx; }` 12/80, XG `mask = 1 << idx;` 12/80.
+- verdict: KILLED
+
+## [s9] The OA chassis' one extra instruction (the duplicated `j = 0`) is removable by some semantics-preserving source mutation in its neighbourhood.
+- mechanism: Session 8 argued the duplicate is structural: any placement outside the group-top block is duplicated by GCC's loop-exit-test duplication or needs a pre-loop initialiser, and the one placement that is not duplicated lets cse fold `i + j` back to `move $s0,$s3`. A large random search is the independent test of that argument.
+- probe: Built and validated a fresh offset-0 workspace tmp/grind/func_800645B0/s9c/ws_oa (permuter base 160, known duplicate `move a0,zero` diff); ran one full fresh-seed window.
+- result: 21,451 iterations / 24.2 min, NO score-0 find, best 60. The 60-find buys its instruction by DELETING the pre-loop `j = 0;` initialiser (leaving a dead `j = 0;` after the `break;`), so `j` is read uninitialised on the first inner iteration -- the already-banked semantics-breaking family. The only instruction-removing mutation ~21k attempts found is the one that breaks semantics.
+- verdict: KILLED

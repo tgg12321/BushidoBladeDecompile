@@ -1,8 +1,8 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Re-derived a genuinely new chassis (OA, 3/79) that gets the loop top AND the *3 operand order right with no scheduling lever at all, then bounded it at exactly one instruction; and closed the whole re"
+  },
+  {
+   "session": 9,
+   "floor": 1,
+   "modality": "permuter",
+   "headline": "Permuter axis discharged on the last two unsampled chassis: JD reaches score 0 in 20 s but ALL 11 zeros (6 distinct bodies) are the banned loop-note wrapper, and a lexical block boundary is measured c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The *3 sum can be expanded with a target that is neither operand (which JD proves emits the target's `addu $s0,$s1,$s0`) and still land in `idx`'s pseudo without a copy that cse/combine deletes \u2014 closing the only remaining route on the sum side of H39.",
-   "mechanism": "optabs.c:403-421 swaps a commutative pair whenever the expansion target IS op1, so `idx = <x> + idx;` can never emit the target's operand order; but with target == 0 the order is already correct (JD). The missing piece is a C construct whose assignment does NOT pass `to_rtx` down as the RHS expansion target \u2014 expr.c's expand_assignment / store_expr have such paths (want_value, RHS containing a CALL, safe_from_p clearing `target`) \u2014 while still leaving reg_n_sets[idx] == 2 (a plain `t = sum; idx = t;` copy folds: DB, 3/78).",
-   "next_probe": "Read expr.c's expand_assignment and store_expr (the want_value paths, the call-containing-RHS paths, and safe_from_p's clearing of `target`), enumerate the C spellings that reach them \u2014 e.g. an assignment whose RHS also contains one of the `rand()` calls, or the sum as the value of a comma expression \u2014 and measure each on the JD chassis with sweep27.py's harness."
+   "hypothesis": "A second SET of `idx` placed OUTSIDE the loops denies the birthing_insn_p lift at zero instruction cost, and porting it onto the JD chassis closes JD outright.",
+   "mechanism": "sched.c's birthing_insn_p gives a priority bonus to a set of a pseudo with reg_n_sets == 1; a second set anywhere in the function removes it. Session 8's sweep25 KD measured exactly this (a second set outside the loops) at 4/78 with the loop top EXACT -- but on the older chassis, where the remaining points were the sum/halfword ones JD does not have. JD's residual IS the loop top and nothing else, so the same lever on JD has a different, much shorter ceiling.",
+   "next_probe": "Port KD's out-of-loop second set of `idx` onto chassis_jd_inline_index_arith.c and sweep its placements (before the outer loop, in the outer loop's init, in the outer loop's update, after the loops) with the s9c/sweep32.py harness, measuring each with the honest sandbox. Watch instruction count: the lever is only interesting at 78."
   },
   {
-   "hypothesis": "The halfword-offset quantity can be steered off $s0 by an ordinary C-level copy relationship, which would close the byte-offset route (DA/KB, 12/78) and with it the other half of H39.",
-   "mechanism": "The halfword offset needs a callee-save only because it is live across all four rand() calls; once the byte offset is routed into `idx` it is the only block-local call-crossing quantity, and find_free_reg takes $s0 because it scans reg_alloc_order. local-alloc.c:2205-2270 tries qty_phys_copy_sugg / qty_phys_sugg FIRST, so a suggestion for $s1 would restore the target's allocation (which the target itself proves exists: its halfword offset is block-local and sits in $s1).",
-   "next_probe": "Read local-alloc.c's qty_phys_copy_sugg / qty_phys_sugg construction and find_free_reg's use of them, dump .lreg with BB2_SUGG_DEBUG / BB2_QTY_DEBUG on the KB build to see which quantities local-alloc ranks and what suggestions exist, then re-measure KB/DA with the halfword offset written to participate in a copy relationship."
+   "hypothesis": "The *3 sum can be expanded with a target that is neither operand and still land in `idx`'s pseudo without a staging copy -- the NON-staging member of the family whose staging member is now banned.",
+   "mechanism": "optabs.c:403-421 swaps a commutative pair whenever the expansion target IS op1, so `idx = <x> + idx;` can never emit the target's operand order; with target == 0 the order is already correct (JD proves it). The missing piece is a C construct whose assignment does not pass `to_rtx` down as the RHS expansion target -- expr.c's expand_assignment / store_expr have such paths (want_value, RHS containing a CALL, safe_from_p clearing `target`) -- while still leaving reg_n_sets[idx] == 2.",
+   "next_probe": "Read expr.c's expand_assignment and store_expr, enumerate the C spellings that reach those paths (e.g. an assignment whose RHS also contains one of the rand() calls, or the sum as the value of a comma expression), and measure each on the SB chassis. Any spelling that is a variable-staging respelling is the BANNED construct and must not be proposed."
   },
   {
-   "hypothesis": "The permuter finds something below 3 in the JD or OA neighbourhood, neither of which any campaign has ever sampled.",
-   "mechanism": "[s5]'s standing lesson (seed from EACH near-miss chassis before calling the axis dead). JD has no index locals to mutate, so its source neighbourhood is expression respellings and statement placements; OA's residual is a single duplicated instruction rather than a compiler decision, so its neighbourhood is loop-skeleton mutations \u2014 both unlike the four sampled chassis (SB, IA, CA, guard-continue).",
-   "next_probe": "Build workspaces from chassis_jd_inline_index_arith.c and from rejected/maintained-index-nonfold-reset-costs-one-insn.c using tmp/grind/func_800645B0/s5/mkca.py + mkws3.sh's recipe (full-TU cpp base.c, honest pipeline, offset-0 target.o), validate at 78/79 vs 78 with the known diffs, and run one fresh-seed campaign window with tools/permuter_campaign.py launch + wait + harvest --stop, all inside a single turn."
+   "hypothesis": "The halfword-offset quantity can be steered off $s0 by an ordinary C-level copy relationship, closing the byte-offset route (DA/KB, 12/78).",
+   "mechanism": "The halfword offset needs a callee-save only because it is live across all four rand() calls; once the byte offset is routed into `idx` it is the only block-local call-crossing quantity and find_free_reg takes $s0 by reg_alloc_order. local-alloc.c:2205-2270 tries qty_phys_copy_sugg / qty_phys_sugg FIRST, so a suggestion for $s1 would restore the target's allocation -- which the target itself proves exists (its halfword offset is block-local and sits in $s1).",
+   "next_probe": "Dump .lreg with BB2_SUGG_DEBUG / BB2_QTY_DEBUG on the KB build to see which quantities local-alloc ranks and what copy suggestions exist, then re-measure KB/DA with the halfword offset written to participate in a real copy relationship."
   }
  ],
  "judge_constraints": [
