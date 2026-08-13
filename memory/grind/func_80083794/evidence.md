@@ -975,3 +975,79 @@ Consequences, kept separate on purpose:
 - [s8] [s8] UNIFYING READING for the disposition: all five residual classes collapse into ONE claim instead of five - func_80083794's bytes were linked in from a prebuilt PsyQ/SN object (crt0 / libgcc __main, whose identity s1 established from the call graph), not compiled from this project's C. That single explanation covers the non-o32 leaf frame (A), the anti-priority register assignment (B), the foreign assembler's ori (C), the ascending prologue run (D) and the arm-sourced delay-slot fill (E), and it is consistent with s7's cc1psx differential showing the compiler that shipped THIS GAME produces our code from this C, not target's. NOTE for the eventual escalation entry: 'prebuilt foreign object' is NOT the same claim as 'hand-written asm', so it does not make the canonical-asm gate easier.
 
 - [s8] [s8] No new C form was proposed, and no cheat construct was written, considered or banked. The honest floor is UNCHANGED at 18.
+
+## Session 9 (escalation) — disposition reached, both endgame gates measured FAIL
+
+Modality: escalation (driver-declared exhaustion: floor FLAT at 18 across sessions 1-8 and
+five distinct modalities — recon, structural x2, permuter x2, forensics x2, rederive —
+including 265,869 total decomp-permuter iterations from four chassis). This session ran no
+new grind variants; it re-measured the two facts a disposition needs and filed the ruling.
+
+### Re-measured on main this session (not inherited)
+1. `sandbox func_80083794 --disable all` against the COMMITTED body (register pins +
+   hardcoded-`$17` `__asm__` decrement): **score 23**, build_insns 16, target_insns 28,
+   rules_dropped 9, cheat_asm_stripped 18. This is the state of `src/ings2.c` at HEAD —
+   note the committed source is still the pin form; only the ledger was ever committed.
+2. Same command with `memory/grind/func_80083794/candidate.c` applied verbatim to
+   `src/ings2.c`: **score 18**, build_insns 28, target_insns 28. The honest pure-C floor is
+   confirmed at 18 for the ninth consecutive session. `src/ings2.c` was then reverted with
+   `git checkout --`, so the tree is clean and the pin form remains committed.
+3. Rule inventory: `grep -c func_80083794 regfix.txt asmfix.txt` → **regfix 9, asmfix 0**.
+   The byte-match on main is held by those 9 regfix rules plus the cheat-asm body.
+
+### GATE 1 (canonical-asm / hand-coded signals): FAIL
+`tools/scan_hand_coded.py --single func_80083794` →
+`HAND_CODED: tier=LOW score=0/8 (54 insns)`; artifact
+`tmp/grind/func_80083794/s9/scan_hand_coded.txt`. All eight signals negative: S1 0 multu/mflo
+pairs, S2 no empty-body branches, S3 6 spills over 3 distinct regs, S4 max load burst 1,
+S5 no high-similarity siblings, S6 no BIOS jumptable pattern, S7 all callee-save uses have a
+`$sp` save, S8 no redundant mask-before-shift. LOW is not STRONG, so the gate does not open.
+
+### GATE 2 (in-hand SOTN-master precedent for a closing construct): FAIL
+There is no candidate construct to cite a precedent for. The dominant residual class A is a
+frame-size SHORTFALL IN THE WRONG DIRECTION: our build must emit the 16-byte o32
+outgoing-argument block for any function that expands a call, while target's entire frame is
+16 bytes and already holds 12 bytes of callee-saves. Every sanctioned family on the frozen
+list can only ADD frame bytes or ADD instructions (written-never-read local array,
+constant-holder locals, dead stores/self-assigns, pointer aliases, duplicated statement into
+arms, do-while(0)); none can REMOVE a compiler-mandated argument area. So no family is even
+applicable, and no file:line citation exists to make. Classes B/C/D/E were each measured
+unreachable (or jointly unreachable) in sessions 2-8, and the search modality is closed by
+arithmetic: 8 frame-referencing insns + the `ori` put a hard lower bound of 9 on any pure-C
+score.
+
+### NEW FACT this session — crt0 contiguity with `_start`
+`asm/funcs/_start.s` spans 0x800836EC-0x80083790 and ends `jal main; nop; break 0,1`.
+func_80083794 begins at the very next word (0x80083794), i.e. it is byte-contiguous with the
+entry stub. `_start` is already carried in `src/ings2.c` as `INCLUDE_ASM("asm/funcs",
+_start)` — the project already treats the immediately preceding function of this same linked
+region as asm rather than pure C. This is direct provenance corroboration for the
+"prebuilt PsyQ/SN crt0 object" conclusion the ledger reached in sessions 6-8 (the frame
+geometry, the anti-priority allocation, the ASPSX-flavoured `ori`, the prologue save order,
+the delay-slot provenance, the cc1psx differential, and the decomp.me matched-corpus
+censuses). It is NOT a `scan_hand_coded` signal and NOT a SOTN precedent, so under the
+owner's 2026-07-27 standing ruling it does not change the disposition — but it is the single
+cheapest piece of evidence in the whole ledger and it is recorded here and in
+docs/grind/decisions.md so no future session has to rediscover it.
+
+### Disposition filed
+`docs/grind/decisions.md` — `## 2026-08-13 — func_80083794 — **OWNER-ESCALATION — RESOLVED
+BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`. Terminal: nothing
+pending on the owner; the driver parks the function and the queue advances. The honest
+pure-C floor of 18 stands; the best honest body remains banked at candidate.c.
+
+- [s9] Re-measured this session: sandbox --disable all with candidate.c applied = score 18, build_insns 28 == target_insns 28; with HEAD's committed pin/__asm__ body = score 23, build_insns 16. src/ings2.c reverted to HEAD afterwards; working tree carries only docs/grind/decisions.md + the two ledger files + metrics.
+
+- [s9] What holds the byte-match on main: 9 regfix.txt rules (regfix.txt:105-113) plus the cheat-asm body; 0 asmfix.txt rules.
+
+- [s9] GATE 1 FAIL: scan_hand_coded.py --single func_80083794 -> tier=LOW score=0/8, every signal negative (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 6 spills/3 regs, S4 max load burst 1, S5 no similar siblings, S6 no BIOS jumptable, S7 all callee-saves have $sp saves, S8 no redundant mask).
+
+- [s9] GATE 2 FAIL: no sanctioned family is applicable, because the residual requires the frame to SHRINK past a compiler-mandated 16-byte outgoing-argument block, and every family on the frozen SOTN list only adds frame bytes or instructions. No file:line precedent exists to cite because there is no closing construct to cite one for.
+
+- [s9] Exhaustion inherited and unchallenged: floor FLAT at 18 across sessions 1-8 and five distinct modalities (recon, structural x2, permuter x2, forensics x2, rederive), 265,869 total decomp-permuter iterations from four chassis against both the shipped target and a normalized-target instrument, plus an arithmetic lower bound of 9 (8 frame-referencing insns + the ori) that makes distance 0 unreachable by search at any iteration count.
+
+- [s9] NEW: func_80083794 is byte-contiguous with _start (asm/funcs/_start.s ends at 0x80083790 with `break 0,1`), and _start is already carried as INCLUDE_ASM("asm/funcs", _start) at src/ings2.c:610 - the two are adjacent members of the same linked crt0 region.
+
+- [s9] Disposition filed by this session at docs/grind/decisions.md: '## 2026-08-13 - func_80083794 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'. Terminal - nothing pending on the owner.
+
+- [s9] No cheat, coercion, or new construct was written this session; no candidate-ready is claimed and no self_vet is required (the diff to src/ is empty).

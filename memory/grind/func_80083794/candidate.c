@@ -140,6 +140,19 @@
  * then collapse into one claim — these bytes were linked in from a prebuilt
  * PsyQ/SN object (crt0/libgcc `__main`), not compiled from this project's C.
  *
+ * SESSION 9 (escalation) re-measured this body at 18 (build_insns 28 == target_insns
+ * 28; HEAD's committed pin/__asm__ form measures 23 with build_insns 16) and reached the
+ * DISPOSITION. Both endgame-lock gates FAIL: scan_hand_coded --single returns tier=LOW
+ * 0/8 with every signal negative, and no sanctioned SOTN family is even applicable —
+ * class A needs the frame to SHRINK by the mandatory 16-byte o32 outgoing-arg block, and
+ * every family on the frozen list only ADDS frame or instructions. New corroboration:
+ * func_80083794 is byte-contiguous with `_start` (which ends at 0x80083790 with
+ * `break 0,1`), and `_start` is already carried as INCLUDE_ASM in src/ings2.c — the two
+ * are adjacent members of the same linked crt0 region. Filed as
+ * `## 2026-08-13 — func_80083794 — OWNER-ESCALATION — RESOLVED BY STANDING RULING
+ * (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` in docs/grind/decisions.md; terminal,
+ * nothing pending on the owner. Do not re-open this to grind another variant.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

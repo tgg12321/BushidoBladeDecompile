@@ -1,8 +1,8 @@
 {
  "func": "func_80083794",
  "file": "ings2",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 18,
    "modality": "rederive",
    "headline": "Rederive modality spent (m2c returns the candidate body verbatim; no __main sibling exists to transplant) and the decomp.me matched corpus becomes the first evidence from outside this repo: 0/1246 cou"
+  },
+  {
+   "session": 9,
+   "floor": 18,
+   "modality": "escalation",
+   "headline": "Disposition reached: both endgame gates FAIL (scan_hand_coded LOW 0/8; no sanctioned family can shrink a compiler-mandated 16-byte arg block), standing-ruling REFUSED/OWNER-ACCEPTED-INCOMPLETE entry f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F1 - the remaining question is DISPOSITION, not grinding: seven independent results (five mechanism arguments from the compiler source, the cc1psx differential, and now two external matched-corpus censuses) against a single blind scanner verdict, and they now share ONE explanation - these bytes came from a prebuilt PsyQ/SN object, not from this project's compilation.",
-   "mechanism": "(A) a byte-exact cc1 LEAF frame for a body containing a jalr, with the 16-byte outgoing-arg block unconditional (calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474; BB2 corpus 1/1437, decomp.me matched corpus 0/1246); (B) an anti-priority register assignment global.c:635 allocno_compare cannot produce from any correct C; (C) an ori $t0,$zero,1 our pipeline cannot emit (cc1 emits li; maspsx expand_load_immediate maps small li to addiu) and which the matched corpus shows is an ASPSX-version spelling, i.e. a foreign-assembler fingerprint; (D) a contiguous length-3 ascending prologue save run that IS C-reachable (33 matched instances) but only from a form measured 5 points worse; (E) a branch delay slot filled from the conditional arm while three eligible saves sit adjacent - 0/484 counterexamples in the matched corpus, where 480 of the 484 instances of the loose shape have no adjacent save at all; plus the cc1psx differential across -O0/-O1/-O2/-O3 on both compilers. Against that stands only scan_hand_coded.py tier=LOW 0/8, from a scanner with no frame-geometry, no assembler-macro, no prologue-order, no allocation-priority and no delay-slot-provenance signal.",
-   "next_probe": "Not a measurement. When the driver assigns `escalation` modality, file the docs/grind/decisions.md entry weighing the seven results against the failed scan_hand_coded gate and return owner-gated citing it. Per the owner's standing auto-ruling (2026-07-27) both endgame gates fail (scan tier LOW not STRONG; no SOTN-master precedent to cite for any coercion family that would close this), so that entry is terminal-by-standing-ruling, not a pending packet. Word it as 'no C in this build produced these bytes (prebuilt foreign object)', NOT as 'hand-written asm'."
+   "hypothesis": "F1 - The function is terminally parked; there is no grind lever left and no owner wait.",
+   "mechanism": "The floor is arithmetically bounded below by 9 and empirically flat at 18 across five modalities; the residual is attributed to a prebuilt PsyQ/SN crt0 object by seven independent results (frame geometry 1/1437 in BB2 and 0/1246 in an external matched corpus; anti-priority allocation vs global.c:635; ASPSX-flavoured ori our maspsx expand_load_immediate never emits; prologue save order reachable only from a form 5 points worse; delay-slot provenance 0/484 counterexamples; the cc1psx differential across -O0..-O3; m2c returning our body verbatim with no corpus twin) - now joined by byte-contiguity with the already-asm _start.",
+   "next_probe": "None. Do not re-open this function to grind another variant, and do not re-run scan_hand_coded (LOW 0/8 is banked as an artifact)."
   },
   {
-   "hypothesis": "F2 - external corroboration is CLOSED on all three routes that ever existed.",
-   "mechanism": "s6 measured the offline route negative (MOVOVL.EXE has no __main, no ctor-walk loop, no leaf-frame signature; no primary SN Systems / PsyQ crt0 listing is available online). s7 made it unnecessary via the cc1psx differential. s8 spends the last route: the 3754-scratch decomp.me corpus contains no matched __main / ctor-walk from any PS1 project, so there is no external C to transplant and no external byte-level twin to diff.",
-   "next_probe": "None. Do not spend another session on external corroboration of the crt0 identity."
+   "hypothesis": "F2 - The only thing that could change the disposition is an owner POLICY decision, not a grind result: whether the crt0 region containing _start + func_80083794 should be routed the way _start already is.",
+   "mechanism": "_start is carried as INCLUDE_ASM; func_80083794 begins at the next word in the same linked region and shows five residual classes no C in this build can produce. Routing is a policy call reserved to the owner (canonical-asm authorization requires owner sign-off and a STRONG scan tier, which this function does not have).",
+   "next_probe": "Nothing in the pipeline waits on this. A future session must NOT self-authorize it; if the owner ever raises it, the evidence is already written up in docs/grind/decisions.md and evidence.md."
   },
   {
-   "hypothesis": "F3 - cumulative kill list; every item is answered with a measurement in the ledger.",
-   "mechanism": "s1-s7's kill list (declaration order; the pin/asm body; both la statement orders; 18 structural forms; the ori spelling; frame minimality by three routes; the whole prologue-save-order axis incl. the hoisted-la form; randomized permuter search from four chassis against the real AND the normalized target; the six counter-ref-split forms; the return-delay-slot-nop signal at 838/1434; the MOVOVL probe; the fork-divergence counter-explanation), plus s8's four new kills.",
-   "next_probe": "Already dead - and now additionally: do NOT re-run m2c on this function (it returns the candidate body verbatim), do NOT hunt for a __main sibling or transplant (the decomp.me corpus has none), do NOT re-argue classes A or E from BB2's binary alone (an independent 1740-function matched corpus now says 0/1246 and 0/484), and do NOT repeat s7's 'the ori is hand-written' inference - 591 matched corpus instances plus maspsx's own expand_load_immediate show it is an ASPSX-version property. Still dead: the duplicated-statement-into-arms ref-lift, the do-while(0) wrap (byte-neutral at 18), the volatile and address-taken dead-local guards (cheats, 29 insns), and any `n = count;` copy split."
+   "hypothesis": "F3 - All prior kill lists (sessions 1-8) remain in force verbatim, plus this session's two.",
+   "mechanism": "Dead: declaration order; the pin/asm body; both la statement orders; 18 structural forms; the ori spelling; frame minimality by three routes; the whole prologue-save-order axis incl. the hoisted-la form; randomized permuter search from four chassis against real and normalized targets; the six counter-ref-split forms; the return-delay-slot-nop signal; the MOVOVL probe; fork divergence; m2c rederivation; the decomp.me transplant hunt; the duplicated-statement ref-lift; the do-while(0) wrap (byte-neutral at 18); volatile and address-taken dead-local guards (cheats, 29 insns).",
+   "next_probe": "Additionally dead as of s9: the canonical-asm gate (scan LOW 0/8) and the sanctioned-family gate (no applicable construct - the frame must shrink, and no family shrinks it)."
   }
  ],
  "judge_constraints": [],

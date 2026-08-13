@@ -5186,3 +5186,80 @@ The diff is strictly cheat-REMOVING: it deletes three `register T x asm("sN")` p
 ## 2026-08-13 00:35 — func_80033DF4 — final call — **PASS**
 
 Net cheat REMOVAL: the diff deletes all 8 register asm("$N") pins and the retire deleted all 3 asmfix.txt rules (asmfix.txt:17-19, incl. a ~50-insn hand-written insert_before blob for the whole else-branch). Verified myself against the working tree: zero grep hits for func_80033DF4 in asmfix.txt/regfix.txt/inline_asm_canonical.txt, and zero asm/volatile/FAKE/register in src/code6cac_b.c:3570-3630. The two load-bearing constructs are ordinary C needing no exception family: (a) extern decl corrected to u8 [][5] (declaration fidelity from use sites, evidence.md Facts 1-2 show target CSEs a stride-5 row offset across both reads); (b) named base-pointer locals ranks/moves -- plain idiomatic table-base hoists with semantic names, human-writable from spec, no annotation-requiring construct. No /* FAKE */ present and none required. Full evidence in memory/grind/func_80033DF4/evidence.md (Facts 1-4) and rejected/ (flat-scalar-extern-fused-index.c, 2d-decl-no-named-base-local.c).
+
+## 2026-08-13 — func_80083794 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Filed by grind session 9 (escalation modality).** The driver declared exhaustion after
+the honest sandbox floor stayed FLAT at 18 across eight sessions and five distinct
+modalities (recon, structural ×2, permuter ×2, forensics ×2, rederive), including
+265,869 decomp-permuter iterations from four chassis against both the shipped target and
+a normalized-target measurement instrument. Both endgame-lock AND-gates FAIL, so the
+owner's standing ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`)
+applies and this entry is TERMINAL: nothing is pending on the owner, and the driver parks
+the function so the queue advances.
+
+### Re-measured this session (not taken from the ledger)
+- `sandbox func_80083794 --disable all` with the committed pin/`__asm__` body in place:
+  **score 23**, build_insns 16, target_insns 28, rules_dropped 9, cheat_asm_stripped 18.
+- Same command with `memory/grind/func_80083794/candidate.c` (the honest pure-C body)
+  applied to `src/ings2.c`: **score 18**, build_insns 28, target_insns 28. This is the
+  honest floor; it is unchanged from session 1. `src/ings2.c` was reverted to HEAD before
+  this entry was written, so the tree is clean.
+- `grep -c func_80083794 regfix.txt asmfix.txt` → **9 regfix rules, 0 asmfix rules**.
+
+### GATE 1 — canonical-asm (hand-coded signals): **FAIL**
+`python3 tools/scan_hand_coded.py --single func_80083794` returns
+`HAND_CODED: tier=LOW score=0/8 (54 insns)` — every signal negative, including the three
+that carry weight (S1 multu pacing 0 pairs, S2 no empty-body branches, S6 no BIOS
+jumptable pattern). The scanner's verdict is LOW, not STRONG, so the canonical-asm gate
+does not open, regardless of the provenance argument below.
+
+### GATE 2 — in-hand SOTN-master precedent for a closing construct: **FAIL**
+There is no construct to cite a precedent FOR. The dominant residual (class A) is that
+our build's frame is LARGER than target's: cc1 emits the mandatory 16-byte o32
+outgoing-argument block for any function that expands a call
+(`calls.c:1246-1252` + `mips.h:1822/1830` + `mips.c:4464/4474`, with the
+`MAYBE_REG_PARM_STACK_SPACE` escape dead because that macro is undefined for MIPS), while
+target's entire frame is 16 bytes and already holds 12 bytes of callee-saves. Every
+sanctioned coercion family in the frozen list (`no-new-park-categories.md:164-208`) —
+written-never-read local array, constant-holder locals, dead stores/self-assigns, pointer
+aliases, duplicated statement into arms, `do {...} while (0)` — can only ADD frame or ADD
+insns. None can REMOVE a compiler-mandated argument block, so none of them is even a
+candidate closing construct here, and no SOTN-master file:line can be cited. The
+remaining four residual classes (B register roles, C `ori $t0,$zero,1`, D prologue save
+order, E delay-slot provenance) were each measured unreachable or jointly unreachable in
+sessions 2–8, and the permuter modality is additionally closed by arithmetic: eight of
+target's 28 instructions reference the frame and one is the `ori`, so no pure-C form can
+score below 9 — distance 0 is unreachable by search at any iteration count.
+
+### The provenance finding (recorded for the owner; it does not open either gate)
+Seven independent results now share one explanation: **these bytes were linked in from a
+prebuilt PsyQ/SN object (crt0 / libgcc `__main`), not compiled from this project's C.**
+(1) the frame geometry is 1/1437 in BB2 and 0/1246 in an independent matched corpus;
+(2) the register assignment contradicts `global.c:635 allocno_compare` from any correct C;
+(3) `ori $rX,$zero,small` is an ASPSX-version spelling our maspsx `expand_load_immediate`
+never emits (foreign-assembler fingerprint, not a hand-written-asm one); (4) the prologue
+save order is C-reachable only from a form measured 5 points worse; (5) the branch delay
+slot is filled from the conditional arm with three eligible saves adjacent — 0/484
+counterexamples; (6) the ORIGINAL cc1psx reproduces all five classes from our floor C at
+-O0/-O1/-O2/-O3, killing the fork-divergence counter-explanation; (7) m2c returns our
+candidate body verbatim and the decomp.me corpus has no matched `__main` anywhere.
+
+New this session: **func_80083794 is byte-contiguous with `_start`.** `asm/funcs/_start.s`
+runs 0x800836EC–0x80083790 and ends `jal main; nop; break 0,1`; func_80083794 begins at the
+very next word. `_start` is already carried in `src/ings2.c` as `INCLUDE_ASM("asm/funcs",
+_start)` — i.e. the project already treats the immediately preceding function of this same
+linked crt0 region as asm rather than pure C. That adjacency is direct provenance evidence,
+but it is NOT a `scan_hand_coded` STRONG tier and it is NOT a SOTN precedent, so under the
+standing ruling it does not change the disposition. If the owner ever wishes to revisit,
+the natural question is whether the crt0 region containing `_start` + func_80083794 should
+be routed like `_start` is; that is an owner policy call, not a grind lever, and nothing in
+the pipeline is waiting on it.
+
+### Disposition
+REFUSED / OWNER-ACCEPTED INCOMPLETE per the 2026-07-27 standing ruling. The function keeps
+its 9 regfix rules and its committed pin/`__asm__` body; the honest pure-C floor is 18 and
+is not reachable to 0 in pure C under the frozen pipeline. The best honest body is banked
+verbatim at `memory/grind/func_80083794/candidate.c` with the full five-class analysis in
+its header. Full ledger: `memory/grind/func_80083794/{evidence.md,hypotheses.md}`.
+No owner action required.

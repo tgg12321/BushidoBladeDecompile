@@ -969,3 +969,71 @@ ASPSX-version property, not a C-level or handwriting one.
 - probe: Classify the prologue save-offset order of every matching corpus scratch with >=3 early callee-save stores (s8/corpus_census.txt).
 - result: 33 ascending vs 143 descending vs 331 mixed. Ascending is genuinely producible from C, confirming s3's hoisted-la measurement. The operative constraint for this function therefore remains s3's JOINT unreachability (the ascending basin costs +5: 18 -> 23), not the emission order by itself.
 - verdict: CONFIRMED
+
+## Session 9 (escalation) — the frontier after disposition
+
+H-S9-1 (CONFIRMED): the honest pure-C floor is 18 and the byte-match on main is held by
+9 regfix rules + a cheat-asm body. Probe: two `sandbox --disable all` runs this session, one
+against HEAD's committed pin form (23, build_insns 16) and one against candidate.c applied
+verbatim (18, build_insns 28 == target_insns 28); `grep -c` over regfix.txt/asmfix.txt gives
+9/0. Nothing about the floor moved in nine sessions.
+
+H-S9-2 (KILLED — gate 1): "the function qualifies for canonical-asm authorization on
+hand-coded signals." `scan_hand_coded.py --single` returns tier=LOW score=0/8 with every
+signal negative. The provenance argument (prebuilt PsyQ/SN object) is orthogonal to what the
+scanner measures — the scanner looks for HAND-WRITTEN asm idioms, and a compiled-by-a-
+different-toolchain library object has none of them. Gate closed.
+
+H-S9-3 (KILLED — gate 2): "some sanctioned coercion family could close the residual if we
+found the right precedent." No family is applicable in principle: the dominant residual is
+that our frame is 16 bytes LARGER than target's (mandatory o32 outgoing-args block for a
+call-expanding function), and every family on the frozen SOTN list adds frame/instructions
+rather than removing them. There is therefore no closing construct to cite a precedent for,
+and no file:line citation is possible. Gate closed.
+
+H-S9-4 (CONFIRMED, new): func_80083794 is byte-contiguous with `_start` (which ends at
+0x80083790 with `break 0,1`) and `_start` is already carried as `INCLUDE_ASM("asm/funcs",
+_start)` in src/ings2.c. The two functions are adjacent members of the same linked crt0
+region. Corroborates the prebuilt-object conclusion at essentially zero cost; does not open
+either gate.
+
+### Live frontier after session 9 (for the record — the function is PARKED, terminal)
+F1 — Nothing is pending on the owner. The disposition entry in docs/grind/decisions.md is
+terminal under the 2026-07-27 standing ruling. Do NOT re-open this function to grind another
+variant: the floor is arithmetically bounded below by 9 and empirically flat at 18 across
+five modalities and 265,869 permuter iterations, and the residual is attributed to a
+prebuilt object rather than to any C we can write.
+
+F2 — The ONLY thing that could ever change the disposition is an owner POLICY decision, not
+a grind result: whether the crt0 region containing `_start` + func_80083794 should be routed
+the way `_start` already is (INCLUDE_ASM / canonical). That is explicitly the owner's call
+and nothing in the pipeline waits on it. A future session must not self-authorize it.
+
+F3 — All prior kill lists (sessions 1-8, F3 in the s8 ledger) remain in force verbatim. In
+addition: do NOT re-run scan_hand_coded on this function (LOW 0/8, banked as an artifact),
+and do NOT re-derive the frame-direction argument in gate 2 — it is a one-line consequence
+of calls.c:1246-1252 plus target's 16-byte frame and is written down above.
+
+## [s9] The honest pure-C floor is still 18, and the byte-match on main is held by 9 regfix rules plus the committed cheat-asm body.
+- mechanism: sandbox --disable all strips regfix rules and cheat-asm, so it reports the honest distance for whatever C is in src/ings2.c; HEAD still carries the session-0 register-pin + hardcoded-$17 __asm__ form, while candidate.c carries the honest floor form.
+- probe: Two sandbox runs this session: HEAD body -> score 23, build_insns 16, target_insns 28, rules_dropped 9, cheat_asm_stripped 18. candidate.c applied verbatim to src/ings2.c -> score 18, build_insns 28, target_insns 28. Then `grep -c func_80083794 regfix.txt asmfix.txt` -> 9 and 0. src/ings2.c reverted with git checkout -- afterwards; tree clean.
+- result: floor 18 for the ninth consecutive session; 9 regfix rules, 0 asmfix rules
+- verdict: CONFIRMED
+
+## [s9] GATE 1 - the function qualifies for canonical-asm authorization on hand-coded signals.
+- mechanism: tools/scan_hand_coded.py scores eight hand-written-asm idioms (multu pacing, empty-body branches, spill absence, front-loaded loads, sibling clustering, BIOS jumptable, unsaved $sN, redundant mask-before-shift); STRONG tier requires S1/S2/S6.
+- probe: python3 tools/scan_hand_coded.py --single func_80083794 (artifact tmp/grind/func_80083794/s9/scan_hand_coded.txt)
+- result: HAND_CODED: tier=LOW score=0/8 (54 insns) - all eight signals negative, including all three that carry weight. The scanner looks for hand-written idioms; a library object compiled by a different toolchain has none, so the provenance argument cannot open this gate.
+- verdict: KILLED
+
+## [s9] GATE 2 - some sanctioned SOTN family could close the residual if the right precedent were cited.
+- mechanism: The dominant residual (class A) is a frame-size difference in the wrong direction: cc1 emits the mandatory 16-byte o32 outgoing-argument block for any function that expands a call (calls.c:1246-1252 + mips.h:1822/1830 + mips.c:4464/4474, MAYBE_REG_PARM_STACK_SPACE undefined for MIPS), while target's whole frame is 16 bytes already holding 12 bytes of callee-saves.
+- probe: Enumerate the frozen sanctioned-family list (.claude/rules/no-new-park-categories.md:164-208) against the required effect: written-never-read local array, constant-holder/dead scalar locals, dead stores/self-assigns, C-level pointer aliases, duplicated statement into arms, do-while(0) wrap, sub-word param reads, mixed exit forms, named-intermediate declaration order.
+- result: Every family can only ADD frame bytes or ADD instructions; none can REMOVE a compiler-mandated argument area. There is therefore no candidate closing construct, hence no file:line precedent to cite. Gate fails not for want of evidence but for want of an applicable construct.
+- verdict: KILLED
+
+## [s9] func_80083794 is an adjacent member of the same linked crt0 region as _start, which the project already carries as asm.
+- mechanism: If these bytes came from a prebuilt PsyQ/SN crt0+libgcc object (the conclusion sessions 6-8 converged on), the object's other functions should be contiguous in .text and should show the same not-from-our-C character; _start is the canonical crt0 entry stub.
+- probe: Read asm/funcs/_start.s bounds and the src/ings2.c carrier lines: _start spans 0x800836EC-0x80083790 and ends `jal main; nop; break 0,1`; func_80083794 starts at the very next word; src/ings2.c:610 is INCLUDE_ASM("asm/funcs", _start).
+- result: Byte-contiguous, and the immediately preceding function of the same region is already routed as asm rather than pure C. Direct provenance corroboration at near-zero cost; it is not a scan_hand_coded signal and not a SOTN precedent, so it does not open either gate.
+- verdict: CONFIRMED
