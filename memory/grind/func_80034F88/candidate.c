@@ -130,6 +130,38 @@
  *    c1,c2,c3 all cost 1-2).
  *  - The copy loop is exactly orthogonal: `+ 0x17 + i` costs exactly +2 in all
  *    432 pairings, delta set {2}.
+ *
+ * =====================================================================
+ * s6 (forensics) — form UNCHANGED; two of the mechanisms quoted ABOVE are
+ * WRONG and are corrected here (read this before trusting levers 1 and 4)
+ * =====================================================================
+ * The first cc1 `-da` dump taken of THIS body (s2's dumps were of a pre-lever
+ * volatile variant) corrects the model this header has carried since s1:
+ *  - "combine folds `%lo` into a single-use mem" is FALSE. The pre-cse dump
+ *    already contains `(mem:QI (symbol_ref "D_80106A73"))` for every plain
+ *    symbol access and `(mem:QI (reg 73))` for every `*ptr` access, straight
+ *    out of RTL expansion — MIPS accepts a bare symbol_ref as an address and
+ *    the `lui $at` / `%lo(...)($at)` pair is manufactured at assembly-output
+ *    time. No optimizer pass is involved, so lever 1 works for a DIFFERENT
+ *    reason than stated: `*ptr &= 0xF8;` is spelled through a pointer, so its
+ *    two accesses are `(mem (reg))`, and the following SYMBOL-spelled read
+ *    hashes differently and therefore survives as a real `lbu`.
+ *  - the block-2/3 reloads die by an ORDINARY cse hash hit (identical
+ *    `(mem:QI (symbol_ref))` rtx on store and load), not by the
+ *    `cse.c:7329 src_elt == 0` path, which is volatile-only. The two
+ *    `zero_extend`-from-register insns that replace them are exactly the two
+ *    `andi a0,v1,0xff` truncations, i.e. the forward is ALSO the whole 51-vs-49
+ *    instruction excess.
+ *  - the `$v0`/`$v1` swap of `val2` is NOT a steerable allocation tie. `.greg`
+ *    shows `75 conflicts: … 2 …` (hard reg $v0) while the condition pseudo
+ *    carries `preferences: 2`; the hard reg was taken by `local-alloc` for the
+ *    block-local `p[8]` loads before `global_alloc` ran. Six forms that alter
+ *    the live ranges (if/else both arms 24, ternary 24, positive-sense if 23,
+ *    store duplicated into arms 35, val2-split 24, val-split 23, both-split 29)
+ *    all keep the conflict and all score worse. Banked in rejected/.
+ * Net: all three residual defect classes are downstream of ONE decision —
+ * pointer-vs-symbol spelling per access, fixed at expansion — so do not look
+ * for a separate register or scheduling lever.
  */
 void func_80034F88(void) {
     s32 *p;

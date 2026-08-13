@@ -667,3 +667,144 @@ forensics-modality probe and s5's mandate was permuter.
 - [s5] `*ptr &= 0xF8;` and `*ptr = *ptr & 0xF8;` both score 18 — what defeats combine's %lo fold is the address expression carrying TWO memory operands, not the compound-assignment syntax. This refines lever 1 of the candidate without changing it.
 
 - [s5] No cheat-family construct was written, proposed or measured this session: every one of the 1,008 forms is ordinary C (statement order, select spelling, integer types, local cardinality), and the single permuter output was vetted and rejected as a strictly-worse tie rather than surfaced.
+
+---
+
+# s6 — forensics modality (floor unchanged at 18; the RTL model that s1-s5 were
+# grinding against is WRONG in two specific, load-bearing ways)
+
+## Headline
+The first cc1 `-da` dump ever taken OF THE FLOOR-18 FORM ITSELF (s2's dumps were
+of a pre-lever volatile variant that no longer resembles the body) refutes two
+mechanisms that s1-s5 all reasoned from, and replaces them with what the dumps
+actually show. The floor did not move, and no spelling was found below 18, but
+the search space this closes is larger than any single spelling: the "combine
+folds %lo" model and the "the v0/v1 swap is an RA problem you can steer" model
+are both dead.
+
+## CORRECTION 1 — nothing "folds %lo". RTL EXPANSION emits `(mem (symbol_ref))`.
+s1 (evidence "Residual defect 1"), s3 (candidate.c lever 1) and s4 all state that
+`combine` folds `%lo` into an address expression that feeds exactly ONE memory
+operand, and that this is why the unfolded `lui`+`addiu` base disappears. That is
+not what happens. In the PRE-CSE dump (`s6/rtl/floor18/fn/rtl.fn`) every plain
+`D_80106A73` access is ALREADY `(mem:QI (symbol_ref:SI ("D_80106A73")))` —
+lines 52, 87, 102, 137, 152, 187 — while the two `*ptr` accesses are ALREADY
+`(mem:QI (reg/v:SI 73))` — lines 29, 37. The address form is decided by RTL
+EXPANSION (`expand_expr` on the C expression), because the MIPS backend's
+`GO_IF_LEGITIMATE_ADDRESS` accepts a bare `symbol_ref` as an address; the
+`lui $at` / `%lo(...)($at)` pair is manufactured downstream at ASSEMBLY OUTPUT
+time, not by any optimizer pass. No GCC pass ever converts a register base into a
+`%lo` operand, and no pass can be defeated into keeping one.
+
+Consequence for the C: the address form of every single access is a DIRECT,
+one-to-one function of how that access is spelled in the source —
+`*ptr`/`ptr[0]` gives `(mem (reg))`, `D_80106A73` gives `(mem (symbol_ref))`.
+There is no optimizer decision in between to steer, and therefore no lever on
+this axis beyond choosing the spelling per access. Target's four flag-byte
+accesses are all `0(reg)`, so ALL FOUR were spelled through a pointer in the
+original source.
+
+## CORRECTION 2 — the store→load forward is an ADDRESS-RTX identity test in cse,
+## and the two address forms never hash together.
+`s6/rtl/floor18/fn/cse.fn` shows exactly which reads survive:
+  - block 1's read (line 64) survives as `(mem:QI (symbol_ref))` → a real `lbu`.
+    The preceding store was `(set (mem:QI (reg 73)) ...)` (line 49) — a DIFFERENT
+    address rtx, so `cse_insn` never finds the stored value.
+  - blocks 2 and 3's reads (lines 114, 160) are GONE, replaced by
+    `(set (reg/v:SI 74) (zero_extend:SI (reg/v:QI 75)))` — the value that was
+    just stored. Their stores (lines 99, 145) are `(mem:QI (symbol_ref))`, the
+    IDENTICAL rtx, so the forward fires.
+  Those two surviving `zero_extend`s from a register are the two `andi a0,v1,0xff`
+  truncations, i.e. they are ALSO the entire 51-vs-49 instruction-count excess.
+So the dichotomy s3 stated is confirmed, but its cause is `canon_hash` seeing two
+structurally different address rtxes — NOT `cse.c:7329` declining to record a
+SET_DEST. The 7329 path (`sets[i].src_elt == 0`) is only reached for a volatile
+MEM; for these non-volatile stores the destination IS recorded and the forward is
+an ordinary hash hit.
+
+## CORRECTION 3 — the v0/v1 swap is NOT steerable by live-range surgery.
+The frontier s5 handed to this session was: "the `.greg` dispositions and conflict
+list will say WHY the pseudo holding `val2` lands in v1 where target has v0."
+Answer, from `s6/rtl/floor18/fn/greg.fn`:
+
+    ;; 8 regs to allocate: 77 75 74 76 82 86 90 72
+    ;; 75 conflicts: 72 74 75 76 82 86 90 2 29     <- val2, conflicts HARD REG 2
+    ;; 76 conflicts: 72 74 75 76 82 86 90 29       <- c, no hard-reg-2 conflict
+    ;; 76 preferences: 2
+    ;; Register dispositions: ... 75 in 3   76 in 2 ...
+
+`find_reg` (global.c) hands `$v0` to the condition pseudo 76 — which carries an
+explicit `preferences: 2` — and cannot hand it to 75 because 75's conflict set
+contains hard reg 2. The `$v0`/`$v1` swap is therefore a HARD-REG conflict, not a
+tie-break, not a priority ordering, and not a consequence of 75 conflicting with
+76 (the ternary and if/else forms REMOVE the 75-76 conflict and still get `$v1`).
+
+Where hard reg 2 comes from is visible one pass earlier: `local-alloc` assigns the
+block-local `p[8]` load pseudos to `$v0` before `global-alloc` ever runs —
+`s6/rtl/floor18/fn/lreg.fn` ";; Register 80 in 2. ... 84 in 2. 88 in 2. 92 in 2."
+Every pseudo whose allocno survives into `global_alloc` alongside those blocks
+inherits the hard-reg-2 conflict.
+
+Six independent forms were built and dumped to test whether ANY live-range
+surgery removes that conflict. None does, and every one is worse than the floor:
+
+| form | sandbox / insns | what its .greg showed |
+|---|---|---|
+| floor-18 control | **18** / 51 | 75 in $v1, conflicts {…,2,29} |
+| if/else both arms | 24 / 51 | 75-76 conflict GONE, hard-reg-2 conflict remains, still $v1 |
+| ternary + `(u8)` casts | 24 / 51 | identical to if/else |
+| positive-sense if | 23 / 49 | unchanged picture |
+| store duplicated into arms | 35 / 61 | `j` around the else arm + two symbol-addressed stores per block |
+| `val2` split per block | 24 / 49 | all three val2 pseudos still conflict with 2; value moves to `$a0` |
+| `val` split per block | 23 / 51 | loaded-byte pseudos gain `preferences: 3`; value to `$a0` |
+| `val` + `val2` split | 29 / 49 | monotonic with the above; brackets s4's 30 |
+
+`val2`-only and `val`-only splits had never been isolated (s4 split all three
+temporaries at once = 30; s5 isolated only `c` = 19). Both are now measured.
+
+## What this leaves
+Every one of the three residual defect classes — the missing `lbu` reloads, the
+two extra `andi` truncations, and the `$v0`/`$v1` swap — is now traced to ONE
+source decision: **whether each flag-byte access is spelled through a pointer or
+through the symbol**, decided at RTL expansion with no intervening pass. Target's
+bytes require all four accesses to be pointer-spelled AND require the block-2/3
+reads NOT to be forwarded from the block-1/2 stores. Under non-volatile C those
+two requirements are contradictory, because two pointer pseudos holding the same
+`symbol_ref` are merged by `canon_reg` into one address rtx and the forward fires
+(measured by s2 and s3 at 22 for the three-pointer form).
+
+That contradiction is now stated at the level of the RTL the compiler actually
+builds, rather than at the level of an optimizer pass that was never involved.
+
+- [s6] Honest floor UNCHANGED at 18 (`sandbox func_80034F88 --disable all`, 51 build insns vs 49 target insns) with the s3/s4/s5 candidate body re-installed in src/code6cac_b.c; the committed baseline that src/ carried at session start was again the 24-point form with three forbidden `asm volatile("" ::: "memory")` scheduling barriers.
+- [s6] FIRST cc1 -da dump of the FLOOR-18 form itself (s2's only dumps were of a pre-lever volatile variant). Artifacts: tmp/grind/func_80034F88/s6/rtl/floor18/ plus per-variant dumps; the per-function slices are in each rtl/<tag>/fn/*.fn (rtl, cse, combine, lreg, greg, sched, jump2, dbr).
+- [s6] CORRECTION to s1/s3/s4, load-bearing: nothing "folds %lo". The pre-cse dump (rtl.fn lines 52/87/102/137/152/187) shows every plain `D_80106A73` access is ALREADY `(mem:QI (symbol_ref))` straight out of RTL expansion, and the `*ptr` accesses are ALREADY `(mem:QI (reg 73))` (lines 29/37). MIPS `GO_IF_LEGITIMATE_ADDRESS` accepts a bare symbol_ref, so the `lui $at` + `%lo(...)($at)` pair is manufactured at ASSEMBLY OUTPUT time. `combine` is not involved; there is no optimizer decision on this axis to defeat. The address form of each access is a direct function of how that access is spelled in C.
+- [s6] CORRECTION to s2/s3: the store-to-load forward that eats the block-2 and block-3 reloads is an ORDINARY cse hash hit on identical address rtxes, not the `cse.c:7329` `src_elt == 0` path (which is reachable only for a volatile MEM). cse.fn shows block 1's read surviving as `(mem:QI (symbol_ref))` because the preceding store was through `(mem:QI (reg 73))`, and blocks 2/3's reads replaced by `(zero_extend:SI (reg/v:QI 75))` because their stores were the identical symbol_ref rtx.
+- [s6] The two surviving `zero_extend`-from-register insns ARE the two `andi a0,v1,0xff` truncations in the build, i.e. the forward is also the entire 51-vs-49 instruction-count excess. Killing the forward and getting target's insn count are the same problem, not two.
+- [s6] The s5 frontier question is ANSWERED: `val2` lands in $v1 because its allocno's conflict set contains HARD REG 2 (greg.fn `;; 75 conflicts: 72 74 75 76 82 86 90 2 29`), while the condition pseudo 76 carries an explicit `preferences: 2` and no hard-reg-2 conflict, so global.c's find_reg gives it $v0. The hard reg comes from `local-alloc`, which assigns the block-local `p[8]` load pseudos to $v0 before global_alloc runs (lreg.fn `;; Register 80 in 2. ... 84 in 2. 88 in 2. 92 in 2.`).
+- [s6] The v0/v1 swap is NOT a 75-vs-76 tie: the if/else-both-arms and ternary forms REMOVE the 75-76 conflict entirely (`75 conflicts: 72 74 75 2 29`) and `val2` still gets $v1. Only the hard-reg-2 conflict binds.
+- [s6] Live-range surgery on the temporaries is measured DEAD as a register lever, in six forms, none of which removes the hard-reg-2 conflict: if/else both arms 24/51, ternary with explicit (u8) casts 24/51, positive-sense if 23/49, store duplicated into both arms 35/61 (GCC emits a `j` around the else arm plus two symbol-addressed stores per block), val2-split-only 24/49, val-split-only 23/51, val-and-val2-split 29/49. Splitting val2 or val ALONE had never been isolated before (s4 split all three temporaries at once = 30; s5 isolated only `c` = 19).
+- [s6] Reusable instruments: tmp/grind/func_80034F88/s6/dump.sh (cc1 -da on the real build flags for the current src/), slice.py (cut the func_80034F88 region out of every pass dump into rtl/<tag>/fn/*.fn — the ONLY safe way to read these dumps, the raw ones are whole-TU), forensic.py (splice a variant -> honest sandbox -> cc1 -da -> print the .greg allocation header + the flag-block objdump -> restore src/), sbs.py (build-vs-target instruction listing from the sandbox object with no src mutation), gen.py / gen2.py (variant generators), bank.py.
+- [s6] Nothing cheat-shaped was written, proposed or measured this session: all seven variants are ordinary C (select form, temporary cardinality), and the session's product is RTL evidence plus seven banked negatives.
+
+- [s6] Honest floor UNCHANGED at 18 (`sandbox func_80034F88 --disable all`, 51 build insns vs a 49-insn target), with the s3/s4/s5 candidate body re-installed in src/code6cac_b.c and re-scored at 18 at the end of the session. The committed baseline that src/ carried at session start was AGAIN the 24-point form with three forbidden `asm volatile("" ::: "memory")` scheduling barriers — every session inherits that and must re-apply candidate.c first.
+
+- [s6] This is the first cc1 -da dump ever taken of the FLOOR-18 form; s2's only dumps (s2/rtl/v10/) are of a pre-lever volatile variant that no longer resembles the body, which is why two wrong mechanisms survived three sessions.
+
+- [s6] CORRECTION to s1/s3/s4: nothing 'folds %lo'. RTL EXPANSION emits `(mem:QI (symbol_ref "D_80106A73"))` for a plain symbol access and `(mem:QI (reg 73))` for a `*ptr` access; the `lui $at` + `%lo(...)($at)` pair is manufactured at assembly-output time because the MIPS backend accepts a bare symbol_ref as a legitimate address. There is no optimizer decision on this axis to steer.
+
+- [s6] CORRECTION to s2/s3: the store-to-load forward that eats the block-2/3 reloads is an ordinary cse hash hit on identical address rtxes, NOT the cse.c:7329 src_elt == 0 path (which remains volatile-only, so s3's volatile ruling stands untouched).
+
+- [s6] The two `zero_extend`-from-register insns that replace the forwarded reloads ARE the two `andi a0,v1,0xff` truncations in the build, so killing the forward and reaching the target's 49-instruction count are the same problem rather than two.
+
+- [s6] The s5 frontier question is answered mechanically: `val2` lands in $v1 because its allocno's conflict set contains hard reg 2 (greg.fn `;; 75 conflicts: 72 74 75 76 82 86 90 2 29`), while the condition pseudo 76 carries `preferences: 2` and no hard-reg-2 conflict. local-alloc gave $v0 to the block-local p[8] load pseudos before global_alloc ran (lreg.fn `;; Register 80 in 2. ... 84 in 2. 88 in 2. 92 in 2.`).
+
+- [s6] Live-range surgery on the temporaries is measured DEAD as a register lever in seven forms, none of which removes the hard-reg-2 conflict: if/else both arms 24/51, ternary with explicit (u8) casts 24/51, positive-sense if 23/49, store duplicated into both arms 35/61 (GCC emits a `j` around the else arm plus two symbol-addressed stores per block — the sanctioned duplicated-statement-into-arms shape is the WORST result of the session), val2-split-only 24/49, val-split-only 23/51, val-and-val2-split 29/49.
+
+- [s6] val2-only and val-only splits had never been isolated before: s4 split all three temporaries at once (30) and s5 isolated only `c` (19). Both are now measured and both are worse than the shared form, so the whole live-range-cardinality axis is monotonically worse than 18.
+
+- [s6] All three residual defect classes (missing lbu reloads, two extra andi truncations, $v0/$v1 swap) are now traced to ONE source decision: pointer-vs-symbol spelling per access, fixed at RTL expansion. Target's bytes need all four flag-byte accesses pointer-spelled AND need the block-2/3 reads not forwarded from the block-1/2 stores; under non-volatile C those are contradictory because two pointer pseudos holding the same symbol_ref are merged by canon_reg into one address rtx (measured by s2/s3 at 22 for the three-pointer form).
+
+- [s6] Nothing cheat-shaped was written, proposed or measured this session: all seven variants are ordinary C differing only in select form and temporary cardinality; the session's product is RTL evidence plus seven banked negatives.
+
+- [s6] New reusable instruments: s6/dump.sh (cc1 -da on the real build flags against the CURRENT src/), s6/slice.py (cut the func_80034F88 region out of every pass dump into rtl/<tag>/fn/*.fn — the only safe way to read these dumps, since the raw ones are whole-TU), s6/forensic.py (splice a variant -> honest sandbox -> cc1 -da -> print the .greg allocation header + the flag-block objdump -> restore src/), s6/sbs.py (build-vs-target instruction listing from the sandbox object with no src mutation), s6/gen.py + gen2.py + bank.py.

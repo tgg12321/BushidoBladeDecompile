@@ -778,3 +778,87 @@ untried — grind those first.
 - probe: Wave A pairs each of the 432 flag-section forms with both copy-loop spellings and diffs the scores pairwise.
 - result: `*((u8 *)p + 0x17 + i)` scores EXACTLY +2 over `*((u8 *)p + i + 0x17)` in all 432 pairs — the delta set is the single value {2}, no exceptions. The copy loop is fully orthogonal to every flag-block spelling, which is why s3's lever survived every later change and why no future session needs to re-cross it.
 - verdict: KILLED
+
+---
+
+## s6 — forensics modality
+
+### s6-H1 — "combine folds %lo into a single-use mem, which is why our unfolded base disappears" (INHERITED from s1/s3/s4)
+- **statement.** The target's `lui`+`addiu` base register survives because its
+  address expression feeds two memory operands; when an address expression feeds
+  exactly one memory operand, `combine` folds `%lo` into that operand and the base
+  register disappears.
+- **mechanism claimed.** A `combine` (combine.c) fold of the address into the mem.
+- **probe.** cc1 `-da` dump of the floor-18 form; read `rtl.fn` (pre-cse, i.e.
+  straight out of RTL expansion) for the address rtx of each flag-byte access.
+- **result.** REFUTED. `rtl.fn` lines 52/87/102/137/152/187 already carry
+  `(mem:QI (symbol_ref:SI ("D_80106A73")))` before ANY optimizer pass has run, and
+  lines 29/37 already carry `(mem:QI (reg/v:SI 73))` for the `*ptr` accesses. The
+  MIPS backend accepts a bare `symbol_ref` as a legitimate address; the
+  `lui $at` / `%lo(...)($at)` expansion happens at assembly-output time. `combine`
+  never touches this.
+- **verdict.** KILLED.
+- **consequence.** The address form of every access is fixed by its C spelling at
+  expansion time. There is no optimizer decision on this axis, so there is no
+  lever on it other than choosing pointer-vs-symbol per access — an axis s1-s5
+  already swept exhaustively (23/24/26/27/29 for the mixes).
+
+### s6-H2 — "the reloads die via cse.c:7329 declining to record a SET_DEST" (INHERITED from s2/s3)
+- **statement.** cse forwards a store into a following load of the same byte
+  unless `sets[i].src_elt == 0` (cse.c:7329), which happens only for a volatile
+  MEM (`canon_hash` sets `do_not_record` under `MEM_VOLATILE_P`) — hence only a
+  volatile access can produce target's four reloads.
+- **probe.** Read `cse.fn` for which reads survive and what replaced the others.
+- **result.** PARTIALLY REFUTED. The DICHOTOMY is confirmed but its mechanism is
+  simpler and stronger than claimed: block 1's read survives as
+  `(mem:QI (symbol_ref))` purely because the preceding store went through
+  `(mem:QI (reg 73))` — a structurally different address rtx that `canon_hash`
+  hashes differently — while blocks 2 and 3's reads are replaced by
+  `(zero_extend:SI (reg/v:QI 75))` because their stores are the identical
+  symbol_ref rtx. This is an ordinary hash hit in `cse_insn`, not the
+  `src_elt == 0` path. The 7329 path remains volatile-only, so the volatile ruling
+  is unaffected, but the non-volatile picture is now correctly stated.
+- **verdict.** KILLED as stated; replaced by the address-rtx-identity model.
+- **bonus fact.** The two surviving `zero_extend`-from-register insns ARE the two
+  `andi a0,v1,0xff` truncations, i.e. the forward is also the entire 51-vs-49
+  instruction excess. One defect, not two.
+
+### s6-H3 — "the v0/v1 swap of the selected value is an allocation tie that some C spelling can steer" (the s5 frontier)
+- **statement.** `val2` lands in `$v1` where target has `$v0` because its live
+  range overlaps the condition temporary's; a spelling that separates them (or
+  that shortens `val2`'s live range) will let `find_reg` give it `$v0`.
+- **mechanism.** global.c `find_reg` over the `.greg` conflict lists.
+- **probe.** Read the `.greg` allocation header for the floor form, then build six
+  forms that alter exactly the live ranges involved (if/else both arms, ternary,
+  positive-sense if, store duplicated into arms, val2-split, val-split,
+  val+val2-split), dump and score each.
+- **result.** KILLED. The binding constraint is `75 conflicts: … 2 …`, a conflict
+  with HARD REG 2, not with the condition pseudo 76 — the if/else and ternary
+  forms remove the 75-76 conflict outright (`75 conflicts: 72 74 75 2 29`) and
+  `val2` still gets `$v1`. The hard reg is already taken by `local-alloc`, which
+  assigns the block-local `p[8]` load pseudos to `$v0` (`lreg.fn`
+  ";; Register 80 in 2. … 84 in 2. 88 in 2. 92 in 2.") before `global_alloc`
+  runs. Splitting `val2` or `val` per block does not remove the conflict either —
+  it merely moves the selected value to `$a0` — and every one of the six forms
+  scores worse than 18 (24, 24, 23, 35, 24, 23, 29).
+- **verdict.** KILLED. There is no independent register lever here. The swap is
+  downstream of the address/forward decision, exactly like the missing reloads and
+  the two extra truncations, and it will resolve with them or not at all.
+
+## [s6] The target's unfolded lui+addiu base survives because its address expression feeds two memory operands; when an address expression feeds exactly one memory operand, combine folds %lo into that operand and the base register disappears. (Inherited from s1 evidence 'Residual defect 1', s3's candidate.c lever 1, and s4.)
+- mechanism: A combine.c fold of the address into the mem operand.
+- probe: cc1 -da dump of the CURRENT floor-18 body (tmp/grind/func_80034F88/s6/dump.sh + slice.py); read the PRE-CSE dump rtl.fn for the address rtx of every flag-byte access.
+- result: REFUTED. rtl.fn lines 52/87/102/137/152/187 already carry (mem:QI (symbol_ref:SI ("D_80106A73"))) before any optimizer pass runs, and lines 29/37 already carry (mem:QI (reg/v:SI 73)) for the two *ptr accesses. The MIPS backend's GO_IF_LEGITIMATE_ADDRESS accepts a bare symbol_ref as an address, so the lui $at / %lo(...)($at) pair is manufactured at ASSEMBLY-OUTPUT time. combine is never involved; no pass converts a register base into a %lo operand or can be defeated into keeping one. The address form of each access is a one-to-one function of its C spelling at expansion time.
+- verdict: KILLED
+
+## [s6] The block-2/3 reloads die because cse.c:7329 records a SET_DEST unless sets[i].src_elt == 0, and canon_hash leaves src_elt at 0 only for a MEM_VOLATILE_P mem — hence only a volatile access can produce the target's four lbu reloads. (Inherited from s2/s3.)
+- mechanism: cse.c:7308-7340 SET_DEST recording gated on src_elt.
+- probe: Read cse.fn (the post-cse slice of the floor-18 dump) for which reads survive and what replaced the ones that did not.
+- result: REFUTED AS STATED (the dichotomy is real, its mechanism is not). Block 1's read survives as (mem:QI (symbol_ref)) purely because the preceding store went through (mem:QI (reg 73)) — a structurally different address rtx that canon_hash hashes differently. Blocks 2 and 3's reads are replaced by (zero_extend:SI (reg/v:QI 75)) because their stores are the IDENTICAL symbol_ref rtx: an ordinary hash hit in cse_insn, not the src_elt == 0 path (which stays volatile-only, so the s3 volatile ruling is unaffected). Bonus: those two surviving zero_extend-from-register insns ARE the two andi a0,v1,0xff truncations, i.e. the forward is also the entire 51-vs-49 instruction excess — one defect, not two.
+- verdict: KILLED
+
+## [s6] The v0/v1 swap of the selected value is an allocation tie that some C spelling can steer: val2 lands in $v1 because its live range overlaps the condition temporary's, so a spelling that separates them or shortens val2's range will let find_reg give it $v0. (This was the ONLY frontier item s5 left, and the reason forensics was mandated.)
+- mechanism: global.c find_reg over the .greg conflict lists.
+- probe: Read the .greg allocation header for the floor form; then build, dump and honestly sandbox-score six forms that alter exactly the live ranges involved — if/else both arms, ternary with explicit (u8) casts, positive-sense if, store duplicated into both arms, val2 split per block, val split per block, val+val2 split per block (tmp/grind/func_80034F88/s6/forensic.py).
+- result: KILLED. The binding constraint is '75 conflicts: ... 2 ...' — a conflict with HARD REG 2 — not a conflict with the condition pseudo 76. The if/else and ternary forms remove the 75-76 conflict outright ('75 conflicts: 72 74 75 2 29') and val2 STILL gets $v1; the condition pseudo additionally carries an explicit 'preferences: 2'. The hard reg was already taken one pass earlier by local-alloc, which assigns the block-local p[8] load pseudos to $v0 before global_alloc runs (lreg.fn ';; Register 80 in 2. ... 84 in 2. 88 in 2. 92 in 2.'). Splitting val2 or val per block does not remove the conflict either — it only moves the selected value to $a0 — and every one of the six forms scores worse than the floor: if/else 24/51, ternary 24/51, positive-sense if 23/49, store-duplicated-into-arms 35/61, val2-split 24/49, val-split 23/51, val+val2-split 29/49. There is no independent register lever; the swap is downstream of the address/forward decision and will resolve with it or not at all.
+- verdict: KILLED
