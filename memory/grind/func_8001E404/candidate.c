@@ -41,6 +41,19 @@
  * consumer (183 insns) where the target holds it in $s0 (`addiu $s0,$sp,0x18` +
  * `move $a0,$s0` x2, 184 insns). Naming the pointer restores the target's form.
  * Measured gradient this session: 23 (honest baseline) -> 3 (dead call alone) -> 0.
+ *
+ * SESSION 3 (structural, 2026-08-13) — re-measured independently: this exact body in
+ * src/code6cac.c gives `sandbox func_8001E404 --disable all` == 0 (184/184, 0 rules
+ * dropped) and cc1 reports `# vars= 72, regs= 4/0, args= 24, extra= 0`. Two new facts:
+ *   - the deleted call leaves NO symbol and NO relocation in the object (nm shows zero
+ *     `bb2_dbg_probe` entries), so the callee's NAME is unobservable in the bytes and
+ *     the construct cannot break the link;
+ *   - the alternative `args=16 / vars=80` partition (an 8-byte COMPILER-INTERNAL object
+ *     ahead of the first local) is impossible here: the only allocator that provably
+ *     precedes the decls is expand_function_start's static-chain slot
+ *     (function.c:5038, 4 bytes, nested functions only). So the vars side is reachable
+ *     only by a DECLARED unwritten leading object — the forbidden family.
+ * Still NOT submitted; still awaiting the owner ruling.
  */
 
 typedef struct {

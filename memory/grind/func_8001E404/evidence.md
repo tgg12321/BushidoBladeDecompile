@@ -247,3 +247,79 @@ every cataloged family does. The args partition is a mechanical fossil that PROV
 original source contained such a call, and the dichotomy theorem shows no live C can
 reproduce it. One ruling settles all three family members (func_8001E404,
 func_8001E6E4 which is parked on exactly this question, and func_8003CF84).
+
+## Session 3 (structural, 2026-08-13) — s2's result independently re-measured; the vars-side alternative partition CLOSED at the compiler-source level; the family cross-check DONE
+
+Session 2 did all of the mechanism work recorded above but ended without writing an
+outcome JSON, so the driver discarded it as an invalid session and re-dispatched
+`structural`. Its ledger survived (it is what this file's Session 2 section is), so this
+session did NOT re-derive any of it. What follows is only what is NEW.
+
+### Re-measured this session, with the banked candidate applied to src/code6cac.c
+`sandbox func_8001E404 --disable all` -> **score 0**, target_insns 184, build_insns 184,
+0 rules dropped, 138 cheat-asm insns stripped file-wide. So the closing form in
+`memory/grind/func_8001E404/candidate.c` reproduces at floor 0 on a fresh session; s2's
+claim is confirmed by independent measurement rather than inherited.
+
+### NEW — the deleted call leaves NO external reference in the object
+`mipsel-linux-gnu-nm` on the sandbox object (`tmp/sandbox/func_8001E404/code6cac.o`)
+with the candidate applied: **zero occurrences of `bb2_dbg_probe` in the symbol table**
+(neither defined nor undefined), against 60+ genuine `U` entries for the file's real
+callees. Because jump.c deletes the call before final, the fabricated callee never
+becomes a relocation — so the construct cannot break the link, and it is invisible to
+everything downstream of cc1. (Artifact: `tmp/grind/func_8001E404/s3/family.sh` output.)
+This also means the choice of callee NAME is unobservable in the bytes: any 5-or-6-word
+dead call produces the identical object. The name is therefore purely a
+source-plausibility question, not a codegen one.
+
+### NEW — the "vars-side internal object" alternative partition is CLOSED at the source level
+The 8-byte hole below the first local admits exactly two frame partitions:
+`args=24 / vars=72` (the reconstruction) or `args=16 / vars=80` with some
+compiler-internal object occupying vars offsets 0..7 ahead of the work buffer. s1
+asserted the second is impossible ("the pre-declaration window is provably empty on
+o32") but did not enumerate it. Enumerated this session by grepping every
+`assign_stack_local` / `assign_stack_temp` call site in `tools/gcc-2.7.2/function.c`:
+- lines 3596/3605, 3758, 3888 — all inside `assign_parms` (function boundaries checked:
+  `assign_parms` runs to `promoted_input_arg` at 3996). This function is
+  `void func_8001E404(void)`: no parameters, so none of the three can fire.
+- line 4503 — `trampoline_address` (taking the address of a NESTED function);
+  allocates `TRAMPOLINE_REAL_SIZE`, and fires at the point of use, i.e. after the
+  outermost block's `expand_decl`s, not before them.
+- line 5038 — `expand_function_start`, guarded by `current_function_needs_context`,
+  commented verbatim *"If function gets a static chain arg, store it in the stack frame.
+  Do this first, so it gets the first stack slot offset."* This is the ONLY allocator
+  that provably precedes the first declared local — and it allocates
+  `GET_MODE_SIZE (Pmode)` = **4 bytes**, not 8, and only for a nested function.
+- line 1347 — `put_reg_into_stack`, i.e. a pseudo demoted to memory during expansion:
+  by construction it runs after the decls whose slots are already handed out.
+=> No compiler-internal object can put exactly 8 bytes below the first declared local in
+a `void f(void)`. The vars-side partition is reachable ONLY by a declared object, i.e.
+the forbidden unwritten-leading-array family. The args-side partition is reachable ONLY
+by an expanded-then-deleted >4-word call (s2's dichotomy theorem). **Both roads end at
+"the original source contained something that compiled away"** — that is the complete
+statement of the defect, and it is why no live-C form exists.
+
+### NEW — the census family's partitions, all three measured (s2 frontier item 3, DONE)
+Via `tmp/grind/func_8001E404/s3/report.sh` reading cc1's `# vars=/regs=/args=/extra=`
+comment out of a full-TU compile with the canonical flags:
+
+| function | our current form | frame | target's partition (from the asm layout) |
+|---|---|---|---|
+| func_8001E404 (candidate applied) | `vars= 72, args= 24` | 112 | vars 72 / args 24 — **identical** |
+| func_8001E6E4 (committed `pre_pad[2]`) | `vars= 80, args= 16` | 112 | vars 72 / args 24 — same total, wrong split |
+| func_8001E6E4 (honest, pre_pad deleted) | `vars= 72, args= 16` | 104 | 8 bytes short, as predicted |
+| func_8003CF84 (as committed) | `vars= 40, args= 16` | 72 | first local 0x20, saves 0x38 => vars 24 / args 32 |
+
+So all three family members are the SAME defect at two word counts, now with measured
+partitions rather than by analogy: 5-6 dead argument words for the two 0x70-frame
+functions, 7-8 for func_8003CF84. One ruling disposes of all three.
+NB `frame.sh` exits non-zero because `src/code6cac.c` provokes recoverable cc1
+diagnostics (`parse error before 'GameObj'` at 757/1072, a `func_80017FA0` prototype
+conflict) — cc1 still writes complete, correct assembly for every other function, which
+is what the real build has always relied on. Read the `.s` it produced rather than
+trusting the exit code; `report.sh` does exactly that.
+
+### Disposition
+Unchanged from s2, and now on independently re-measured ground: **ruling-request**.
+`src/code6cac.c` was reverted to the committed `pre_pad` form (tree clean); the closing
+body stays banked verbatim in `candidate.c` for one-edit re-application.

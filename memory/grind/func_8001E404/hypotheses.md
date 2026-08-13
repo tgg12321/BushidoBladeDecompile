@@ -188,3 +188,46 @@ is the args term only.
    (vars 72 / args 16 and vars 40 / args 16 respectively, against target vars 72 /
    args 24 and vars 40 / args 32). Cheap, and it makes the ruling packet cover all
    three with measurements rather than by analogy.
+
+## Session 3 (structural, 2026-08-13)
+
+## [s3] The 8-byte hole could sit in the VARS partition after all, carried by a COMPILER-INTERNAL object allocated ahead of the first declared local (args staying at the 16-byte o32 floor).
+- mechanism: any `assign_stack_local` / `assign_stack_temp` call that runs before the outermost block's `expand_decl`s would consume frame_offset 0..7 and push the work buffer to vars offset 8, giving frame 112 with vars=80/args=16 — byte-indistinguishable from the args=24 reconstruction, but reachable without any deleted call. s1 asserted this window is empty; it had never been enumerated.
+- probe: grep every `assign_stack_local`/`assign_stack_temp` call site in tools/gcc-2.7.2/function.c and classify each by the enclosing function and its guard (function boundaries taken from the file's own definition list).
+- result: 3596/3605, 3758, 3888 are all inside `assign_parms` (which ends at `promoted_input_arg`, 3996) and cannot fire for a `void f(void)`; 4503 is `trampoline_address` (nested-function address-taken, TRAMPOLINE_REAL_SIZE, and fires at the point of use, after the decls); 1347 is `put_reg_into_stack` (expansion-time demotion, necessarily after the decls); 5038 is the ONLY provably-first allocator — `expand_function_start`, guarded by `current_function_needs_context`, commented "Do this first, so it gets the first stack slot offset", allocating GET_MODE_SIZE(Pmode) = 4 bytes for a nested function's static chain.
+- verdict: KILLED — no compiler-internal object can place exactly 8 bytes below the first declared local here, so the vars-side partition is reachable only by a DECLARED unwritten leading object (the forbidden family). Combined with s2's dichotomy theorem this is the complete statement of the defect: both partitions require source that compiled away, and only the args-side one is consistent with the target's zero stores in sp+0x10..0x17.
+
+## [s3] The reconstructed dead call adds an external reference (a fabricated symbol) to the object, which would be a real cost of the construct even if the bytes match.
+- mechanism: a call to an undefined extern normally emits an R_MIPS_26 relocation and an undefined symbol entry
+- probe: `mipsel-linux-gnu-nm` (and `nm -u`) on tmp/sandbox/func_8001E404/code6cac.o with the candidate applied
+- result: ZERO occurrences of `bb2_dbg_probe` anywhere in the symbol table, against 60+ genuine `U` entries for the file's real callees — jump.c deletes the call before final, so no relocation is ever emitted. The construct cannot break the link, and the callee's NAME is entirely unobservable in the bytes (any 5- or 6-word dead call gives the identical object).
+- verdict: KILLED — but note the corollary: because the name is unobservable, choosing it is a pure source-plausibility judgement, which is part of what the owner is being asked to rule on. There is no existing project symbol that can carry it as-is (`sys_Panic` is declared `void sys_Panic(void)` at src/code6cac.c:70 and is called with zero arguments at three live sites, so re-spelling it as variadic would perturb code outside this function).
+
+## [s3] The three census-family members are the same defect at different word counts, and their partitions can be shown rather than argued.
+- mechanism: cc1 emits `# vars= N, regs= .., args= N, extra= N` above every `.frame`, reading out compute_frame_size's partition directly
+- probe: tmp/grind/func_8001E404/s3/report.sh — full-TU compiles of src/code6cac.c (candidate applied), src/code6cac.c with func_8001E6E4's `pre_pad[2]` deleted, and src/code6cac_c2.c
+- result: func_8001E404 (candidate) vars=72/args=24 frame 112 == target's partition; func_8001E6E4 committed vars=80/args=16 frame 112 (same total, faked on the vars side); func_8001E6E4 honest vars=72/args=16 frame 104 (8 short, as predicted); func_8003CF84 vars=40/args=16 frame 72 against a target layout of first-local 0x20 / saves 0x38 => vars 24 / args 32. 5-6 dead argument words for the two 0x70-frame functions, 7-8 for func_8003CF84.
+- verdict: CONFIRMED — one ruling disposes of all three, on measurement rather than analogy.
+
+## Frontier (rebuilt for session 4)
+1. **The ruling is still the only gate.** The mechanism is solved from both ends now
+   (args-side dichotomy, s2; vars-side impossibility, s3), the closing form is banked at
+   a re-measured floor 0, and the family cross-check is done. If the owner accepts the
+   reconstructed compiled-out call site (with or without a mandated spelling / FAKE
+   annotation), the remaining work is one edit plus verification for three functions. If
+   the owner refuses it, no live-C form exists and the disposition question is the
+   owner's, not a further search.
+2. **Forensics: identify what the deleted call WAS** (carried over from s2, still unrun).
+   A deleted call still emits its string literal into `.rodata` (measured s2). An
+   unreferenced string in the shipped rodata attributable to this file would name the
+   compiled-out debug call and turn the reconstruction from a plausible shape into an
+   evidenced one; the absence of any orphan string proves the dead call took no string
+   argument. Probe: cross-reference every string constant in the code6cac `const`
+   declarations (and the retired asm/data/*.rodata* history) against all `%hi/%lo`
+   references in the binary, looking for orphans adjacent to the three family functions.
+   This is the one line of work that could change the RULING's evidence base rather than
+   just re-confirming the mechanism, and it is a `forensics` modality task.
+3. **Spelling, only if the ruling lands favourably.** The callee name is unobservable in
+   the bytes (s3), so if the owner accepts the family the remaining question is which
+   spelling to ship — a named debug-probe extern, a guard variable, or a FAKE-annotated
+   comment-only form. Do not spend a session on this before the ruling.

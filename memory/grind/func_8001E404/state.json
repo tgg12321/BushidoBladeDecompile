@@ -28,7 +28,9 @@
    "next_probe": "add a cc1 -S step to this function's grind loop (compile to .s, grep the frame comment) and record the args/vars pair for the honest form and each candidate; reusable unchanged for func_8001E6E4 and func_8003CF84, the other two members of the census family."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do NOT apply candidate.c or commit any dead-call construct for func_8001E404 / func_8001E6E4 / func_8003CF84; the function is frozen pending the owner's ruling on the new family."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,
