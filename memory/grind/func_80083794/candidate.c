@@ -97,6 +97,25 @@
  * independently linked PsyQ executable disc/STR/MOVOVL.EXE contains no __main,
  * no ctor-walk loop and no leaf-frame save signature at all.
  *
+ * SESSION 7 (forensics) closed the one counter-explanation that six sessions of
+ * mechanism arguments had left formally open — that all five classes are
+ * decompals-fork-vs-cc1psx DIVERGENCE rather than evidence about provenance.
+ * The ORIGINAL PsyQ compiler (tools/cc1psx_wrapper.sh -> cc1psx.exe, banner
+ * "GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation") was fed THIS EXACT BODY
+ * and reproduces all five classes as our fork does: `.frame $sp,32,$31 #
+ * args= 16` (A), $16=count / $17=p / temp $2 (B), `li $2,0x00000001` not `ori`
+ * (C), saves descending sw $31,24 / sw $17,20 / sw $16,16 (D), and the branch
+ * delay slot filled with the nearest preceding SAVE (E). `args= 16` holds at
+ * -O0/-O1/-O2/-O3 on both compilers. cc1psx is DIAGNOSTIC-ONLY here
+ * ([[cc1psx-calibration-only]]); no build change is implied.
+ * Session 7 also killed the last alternative reading of class C — that ASPSX
+ * 2.34 (not GNU as) expanded small `li` to `ori` — by census: 5537
+ * `addiu $rX,$zero,imm<0x8000` against 3 `ori` in the shipped executable, two of
+ * the three inside /* handwritten instruction */-annotated GTE bodies. And it
+ * added a WITHIN-REGION control experiment for class E: the twin at 0x80083804
+ * has the same branch shape behind the same three eligible saves and leaves its
+ * delay slot EMPTY, while both compilers fill it with `sw $16,16($sp)`.
+ *
  * Consequence: honest distance 0 is not reachable in pure C for this function.
  * See memory/grind/func_80083794/hypotheses.md §"Live frontier after session 2".
  *

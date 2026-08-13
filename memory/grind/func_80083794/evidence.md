@@ -700,3 +700,140 @@ anomalies.
 - [s6] [s6] The twin body at 0x80083804 (motion_Close, separate queue item) carries every anomaly: the 0x10 leaf frame for a body containing a jalr, the ascending s0@4/s1@8/ra@0xC save run, the anti-priority roles ($s0 = pointer, $s1 = counter, $t0 = temp), and an unfilled `nop` in its `beqz $t0` slot with three eligible saves in front of it — which reorg.c's backward scan would have consumed. Two independent bodies in the same crt0 cluster, identical five anomalies.
 
 - [s6] [s6] The evidence for the disposition question is now FIVE independent mechanism/corpus results (A frame geometry 1/1437, B anti-priority allocation, C small-immediate ori 3/3 hand-written, D length-3 ascending save run 1/1437, E delay-slot provenance) against a scan_hand_coded.py verdict of tier=LOW 0/8 from a scanner that has no frame-geometry, no assembler-macro, no prologue-order, no allocation-priority and no delay-slot-provenance signal. s5's arithmetic lower bound (no pure-C form can score below 9) is unchanged.
+
+## Session 7 (forensics, 2026-08-13)
+
+### Starting state (the recurring correction, fifth time)
+`src/ings2.c` again held the s1 register-pin + hardcoded-`$17` `__asm__` body at
+session start (only ledgers are committed, never the src edit). Re-applied
+`memory/grind/func_80083794/candidate.c` and reproduced the floor exactly:
+**score 18, target_insns 28, build_insns 28, rules_dropped 9,
+cheat_asm_stripped 10**. `src/ings2.c` is left carrying the floor form.
+`motion_Close` (the twin at 0x80083804) still carries its own pin form and
+remains a separate queue item — untouched.
+
+### The decisive new instrument: the ORIGINAL PsyQ compiler as a differential
+Six sessions of evidence rested on mechanism arguments read out of
+`tools/gcc-2.7.2/` — i.e. out of the decompals FORK. The standing counter-
+explanation for every one of the five residual classes was therefore always
+available to a skeptic: *"this is fork-vs-cc1psx divergence, not hand-written
+asm."* `.claude/rules/difficult-is-not-impossible.md` mandates settling exactly
+that empirically before any pessimistic claim, and no session had done it.
+`tools/cc1psx_wrapper.sh` runs the ORIGINAL PsyQ `cc1psx.exe`
+(**GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation**, per its own banner) —
+the compiler that actually built this game — as a drop-in cc1. It is
+DIAGNOSTIC-ONLY here ([[cc1psx-calibration-only]], [[no-compiler-divergence]]);
+nothing in this session proposes changing the build.
+
+Driver: `tmp/grind/func_80083794/s7/probe_cc1psx.sh` (+ `olevels.sh`), input
+`tmp/grind/func_80083794/s7/mini.i` (= s6's minimal TU carrying the exact
+score-18 floor body), flags `-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1
+-w` (the canonical `CC_FLAGS` minus the GNU-only tokens cc1psx does not accept).
+
+**cc1psx output (`s7/psx.s`), verbatim shape:**
+
+    .frame  $sp,32,$31    # vars= 0, regs= 3/0, args= 16, extra= 0
+    lw    $2,D_800A2668
+    subu  $sp,$sp,32
+    sw    $31,24($sp)
+    sw    $17,20($sp)
+    bne   $2,$0,$L2
+    sw    $16,16($sp)          <- delay slot: the nearest preceding SAVE
+    li    $2,0x00000001        <- NOT `ori`
+    sw    $2,D_800A2668
+    la    $16,D_00000000       <- $s0 = count
+    la    $17,D_8008D070       <- $s1 = p
+    beq   $16,$0,$L2
+    $L5:  lw $2,0($17) / addu $17,$17,4 / jal $31,$2 / addu $16,$16,-1
+    bne   $16,$0,$L5
+
+Class by class, against target:
+
+| class | target | cc1psx (ORIGINAL compiler) | our fork |
+|---|---|---|---|
+| A frame | `-0x10`, args=0 (leaf-shaped) | **32, `args= 16`** | 32, `args= 16` |
+| B roles | `$s0`=p, `$s1`=count, temp `$t0` | **`$s0`=count, `$s1`=p, temp `$v0`** | identical |
+| C const | `ori $t0,$zero,1` | **`li $2,0x00000001`** | identical |
+| D saves | ASCENDING `s0@4,s1@8,ra@0xC` | **DESCENDING `ra@24,s1@20,s0@16`** | identical |
+| E slot | arm insn (`ori`) clobbering the tested reg | **nearest preceding save `sw $16,16($sp)`** | identical |
+
+Modulo label spelling (`$L2` vs `.L2`) and the assembler-directive preamble, the
+two compilers emit the SAME instruction sequence for this function
+(`diff` of `s7/ours.s` vs `s7/psx.s` in the ledger's artifacts).
+
+`s7/olevels.sh` sweeps `-O0/-O1/-O2/-O3` on BOTH compilers:
+`args= 16` at **every** level on **both** (`-O0` gives `.frame $fp,40` with
+`vars= 8, args= 16`; `-O1/-O2/-O3` all give `.frame $sp,32 ... args= 16`), and
+cc1psx emits the callee-save run descending (`sw $31,24 / sw $17,20 /
+sw $16,16`) at every optimizing level. The leaf frame is not an optimization-
+level artifact in either compiler.
+
+**Consequence: "fork divergence" is eliminated as the explanation for ALL FIVE
+residual classes at once.** The residual is not a property of the decompals
+fork; the compiler that shipped this game produces our code, not target's.
+
+### Class C: the last alternative explanation closed (5537 to 3)
+s2 proved GNU `as` expands `li rX,1` to `addiu rX,$zero,1`. The one surviving
+alternative was that the ORIGINAL assembler (ASPSX 2.34, which maspsx emulates)
+expanded `li` to `ori rX,$zero,imm` for small non-negative immediates — which
+would have made target's `ori $t0,$zero,1` ordinary toolchain output. cc1psx's
+output above shows the original compiler does emit `li` here, so the question is
+purely what ASPSX did with it, and the shipped executable answers it directly:
+`tmp/grind/func_80083794/s7/li_form_census.py` over all 1434 `asm/funcs/*.s`
+counts **5537 `addiu $rX,$zero,imm` with imm < 0x8000** against **3
+`ori $rX,$zero,imm` with imm < 0x8000**. ASPSX 2.34 expanded small-immediate
+`li` to `addiu`, 5537 times out of 5540. The three exceptions are
+`func_80052788` and `func_800527FC` (both `ori $t3/$v0,$zero,0x1000`, both
+`INCLUDE_ASM` GTE bodies whose neighbouring lines are annotated
+`/* handwritten instruction */`) and func_80083794's own `ori $t0,$zero,0x1`.
+
+### The twin body as a WITHIN-REGION control experiment for class E (new)
+`asm/funcs/func_80083794.s` lines 32-59 are the unlabelled twin at 0x80083804 —
+the same routine with the flag test inverted and no `initialized = 1` store.
+Its branch is `beqz $t0,.L80083854` at 0x8008381C and its delay slot is
+**`nop`** — with the SAME three callee-save stores (`sw $s0,0x4 / sw $s1,0x8 /
+sw $ra,0xC`) sitting immediately ahead of it, exactly as in the scored body.
+
+Measured (`tmp/grind/func_80083794/s7/twin.sh`, input `s7/twin.i` = the same
+minimal TU with `if (D_800A2668 != 0)` and no flag store): BOTH our fork and
+cc1psx compile that shape to
+
+    beq   $2,$0,.L2
+    sw    $16,16($sp)          <- the save IS stolen into the slot
+
+i.e. every compiler in reach fills the twin's slot with a save. Target leaves it
+`nop`. So within a single 60-instruction region the shipped code has two
+instances of one branch shape with identical eligible fillers, and fills one
+slot with an insn pulled out of the conditional arm while leaving the other
+empty. `reorg.c`'s `fill_simple_delay_slots` backward scan (reorg.c:2960) would
+fill BOTH; nothing in the pass is stateful across functions. This is a control
+experiment inside the target itself, independent of any corpus census, and it is
+the sixth corpus/mechanism result pointing the same way.
+
+- [s7] STARTING STATE recurred for the FIFTH session: src/ings2.c held the s1 register-pin + hardcoded-$17 __asm__ body again (only ledgers are ever committed, never the src edit). Re-applied memory/grind/func_80083794/candidate.c and reproduced the floor exactly at score 18 / target_insns 28 / build_insns 28 / rules_dropped 9 / cheat_asm_stripped 10. src/ings2.c is left carrying the floor form; motion_Close (the twin at 0x80083804) still carries its own pin form and is a separate queue item.
+
+- [s7] THE ORIGINAL PsyQ COMPILER PRODUCES OUR CODE, NOT TARGET'S. tools/cc1psx_wrapper.sh runs cc1psx.exe (banner: 'GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation') — the compiler that built this game — as a drop-in cc1; it is diagnostic-only per .claude/rules/cc1psx-calibration-only.md and nothing here proposes changing the build. Fed the exact score-18 floor body (tmp/grind/func_80083794/s7/mini.i) at the canonical flags, cc1psx emits `.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16, extra= 0`, saves DESCENDING (sw $31,24 / sw $17,20 / sw $16,16), fills the flag-test branch's delay slot with the nearest preceding SAVE (`bne $2,$0,$L2` / `sw $16,16($sp)`), materialises the flag with `li $2,0x00000001` (not `ori`), and assigns $16=count / $17=p with the temp in $2 — i.e. it reproduces ALL FIVE residual classes exactly as our fork does. Modulo label spelling and the directive preamble the two compilers emit the same instruction sequence (s7/ours.s vs s7/psx.s).
+
+- [s7] The leaf frame is not an optimization-level artifact: tmp/grind/func_80083794/s7/olevels.sh sweeps -O0/-O1/-O2/-O3 on BOTH compilers and every single configuration reports `args= 16` (-O0: .frame $fp,40 vars= 8 args= 16; -O1/-O2/-O3: .frame $sp,32 vars= 0 args= 16), with cc1psx emitting the callee-save run descending at every optimizing level. Target's frame is 0x10 with args=0 and ascending saves.
+
+- [s7] CONSEQUENCE: 'fork-vs-cc1psx divergence' is eliminated as the explanation for all five residual classes simultaneously. Sessions 1-6 argued each class from the decompals fork's own source (calls.c / mips.h / mips.c / global.c / reorg.c), which left that counter-explanation formally open; .claude/rules/difficult-is-not-impossible.md mandates settling it empirically with cc1psx before any pessimistic claim, and no prior session had run it. It is now run and negative.
+
+- [s7] CLASS C's last alternative explanation is closed 5537 to 3. The surviving possibility was that ASPSX 2.34 (which maspsx emulates) expanded small-immediate `li` to `ori $rX,$zero,imm` — cc1psx does emit `li $2,0x00000001` here, so the question was purely the assembler's. tmp/grind/func_80083794/s7/li_form_census.py over all 1434 asm/funcs/*.s counts 5537 `addiu $rX,$zero,imm` with imm < 0x8000 against 3 `ori $rX,$zero,imm` with imm < 0x8000. ASPSX expanded small `li` to addiu 5537 times out of 5540; the three exceptions are func_80052788 and func_800527FC (both `ori $rX,$zero,0x1000`, both INCLUDE_ASM GTE bodies with neighbouring `/* handwritten instruction */` annotations) and func_80083794's own `ori $t0,$zero,0x1`.
+
+- [s7] WITHIN-REGION CONTROL EXPERIMENT for class E (new, and independent of any corpus census): the unlabelled twin at 0x80083804 (asm/funcs/func_80083794.s lines 32-59) is the same routine with the flag test inverted and no flag store. Its branch `beqz $t0,.L80083854` at 0x8008381C has an UNFILLED delay slot (nop) with the SAME three callee-saves (sw $s0,0x4 / sw $s1,0x8 / sw $ra,0xC) sitting immediately ahead of it. Measured with tmp/grind/func_80083794/s7/twin.sh on s7/twin.i (the minimal TU with `if (D_800A2668 != 0)` and no flag store): BOTH our fork and cc1psx emit `beq $2,$0,.L2` with `sw $16,16($sp)` in the slot. So the shipped code contains two instances of the same branch shape with identical eligible fillers 0x70 bytes apart, fills one with an insn pulled out of the conditional arm (clobbering the tested register) and leaves the other empty — a combination reorg.c's backward-scan-first fill_simple_delay_slots cannot produce for either instance.
+
+- [s7] The honest floor is UNCHANGED at 18 and no new C form was proposed or measured this session; forensics added evidence about provenance, not gradient. s5's arithmetic lower bound (no pure-C form can score below 9) is untouched.
+
+- [s7] [s7] STARTING STATE recurred for the FIFTH session: src/ings2.c held the s1 register-pin + hardcoded-$17 __asm__ body again (only ledgers are ever committed, never the src edit). Re-applied memory/grind/func_80083794/candidate.c and reproduced the floor exactly at score 18 / target_insns 28 / build_insns 28 / rules_dropped 9 / cheat_asm_stripped 10. src/ings2.c is left carrying the floor form; motion_Close (the twin at 0x80083804) still carries its own pin form and is a separate queue item.
+
+- [s7] [s7] THE ORIGINAL PsyQ COMPILER PRODUCES OUR CODE, NOT TARGET'S. cc1psx.exe (banner 'GNU C 2.7.2.SN.1 [AL 1.1, MM 40] Sony Playstation'), fed the exact score-18 floor body at the canonical flags, emits '.frame $sp,32,$31 # vars= 0, regs= 3/0, args= 16, extra= 0', saves DESCENDING (sw $31,24 / sw $17,20 / sw $16,16), fills the flag-test branch's delay slot with the nearest preceding SAVE ('bne $2,$0,$L2' / 'sw $16,16($sp)'), materialises the flag with 'li $2,0x00000001' (not ori), and assigns $16=count / $17=p with the temp in $2 - i.e. it reproduces all five residual classes exactly as our fork does. Modulo label spelling and the directive preamble the two compilers emit the same instruction sequence (s7/ours.s vs s7/psx.s). cc1psx is diagnostic-only here per .claude/rules/cc1psx-calibration-only.md; nothing in this session proposes a build change.
+
+- [s7] [s7] The leaf frame is not an optimization-level artifact: olevels.sh sweeps -O0/-O1/-O2/-O3 on BOTH compilers and every configuration reports args= 16 (-O0: .frame $fp,40 vars= 8 args= 16; -O1/-O2/-O3: .frame $sp,32 vars= 0 args= 16), with cc1psx emitting the callee-save run descending at every optimizing level. Target's frame is 0x10 with args=0 and ascending saves.
+
+- [s7] [s7] CONSEQUENCE: 'fork-vs-cc1psx divergence' is eliminated as the explanation for all five residual classes simultaneously. Sessions 1-6 argued each class from the decompals fork's own source, which left that counter-explanation formally open; .claude/rules/difficult-is-not-impossible.md mandates settling it empirically before any pessimistic claim, and it is now settled negative.
+
+- [s7] [s7] CLASS C's last alternative explanation is closed 5537 to 3: li_form_census.py over all 1434 asm/funcs/*.s counts 5537 `addiu $rX,$zero,imm` with imm < 0x8000 against 3 `ori $rX,$zero,imm` with imm < 0x8000. ASPSX 2.34 expanded small `li` to addiu 5537 times out of 5540; two of the three exceptions are INCLUDE_ASM GTE bodies annotated /* handwritten instruction */ and the third is func_80083794 itself.
+
+- [s7] [s7] WITHIN-REGION CONTROL EXPERIMENT for class E, independent of any corpus census: the twin at 0x80083804 has the same branch shape behind the same three eligible callee-saves and leaves its delay slot EMPTY, while both our fork and cc1psx fill that exact shape with 'sw $16,16($sp)'. The shipped code fills one slot from the conditional arm (clobbering the tested register) and leaves the other empty - a combination reorg.c's backward-scan-first fill_simple_delay_slots cannot produce for either instance.
+
+- [s7] [s7] The honest floor is UNCHANGED at 18 and no new C form was proposed or measured this session; forensics added evidence about provenance, not gradient. s5's arithmetic lower bound (no pure-C form can score below 9) is untouched. No cheat construct was written, considered or banked.
