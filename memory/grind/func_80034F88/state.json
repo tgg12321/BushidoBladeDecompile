@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 18,
    "modality": "rederive",
    "headline": "Rederive: 16 structurally new shapes measured; found a SECOND, zero-cost, non-volatile cse mechanism that produces all four target reloads (invalidate_skipped_block), proved it incompatible with the t"
+  },
+  {
+   "session": 9,
+   "floor": 18,
+   "modality": "rederive",
+   "headline": "Rederive: the cse basic-block BOUNDARY trade is now priced and net-negative at every count (no boundary 21/47, one 23/50, two 31/53, three 33/55), the target's lbu 5 / sb 5 signature is separately rea"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every construct that ends the cse basic block between two flag blocks costs at least one instruction the target does not contain, or is a forbidden no-semantic-purpose construct - and the only zero-cost reload mechanism (AROUND / invalidate_skipped_block) is incompatible with the target's unconditional store. If that holds, this is the escalation thesis and the F3 packet should be rewritten around it.",
-   "mechanism": "cse_end_of_basic_block's extension (cse.c:8102-8184) declines only on LABEL_NUSES != 1, a CODE_LABEL inside the arm, or a used CODE_LABEL immediately preceding the join label; s8 showed each of the three requires an extra jump insn or a dead-goto label pad. The claim that remains unproven is completeness: that no OTHER C construct reaches those three states.",
-   "next_probe": "Do NOT file from a non-escalation modality. The two remaining honest lines of attack before it becomes an escalation: (1) enumerate what else creates a CODE_LABEL in GCC 2.7.2's RTL stream that C can reach without a jump - switch/ADDR_VEC labels, computed goto, the loop-exit label of a real loop whose body the target already contains, and the labels emitted by expand_* for && / || short-circuits (an '&&' condition emits TWO conditional branches to ONE false-label, i.e. LABEL_NUSES 2, at the cost of one extra branch - measure whether the boundary it buys is worth more than the branch it costs, which s8 never measured); (2) check whether jump.c's thread_jumps (run before cse1) can be made to redirect a second branch onto an existing join label, raising its NUSES to 2 without a new insn."
+   "hypothesis": "The escalation thesis is now supported by measurement rather than by an enumeration argument: every cse-basic-block boundary construct reachable from C costs at least one branch/jump insn the target does not contain, and the boundary is the ONLY construct that supplies the target's addend-0 shared bases and its reloads at the same time. The two lines of attack s8's frontier named (the '&&' LABEL_NUSES-2 boundary; thread_jumps redirection) are both closed. What remains formally unproven is only that no exotic C construct emits a CODE_LABEL without a jump - and the only such family is the computed-goto `&&label` label pad, which is a forbidden dead-label construct by another name.",
+   "mechanism": "cse.c:8092-8184 read verbatim; escapes (a) LABEL_NUSES != 1, (b) a used CODE_LABEL immediately preceding the join, (c) any CODE_LABEL between the branch and the arm's last insn. (a) needs a second LABEL_REF, (b) and (c) need a referenced label; every one of them is a jump insn from C.",
+   "next_probe": "Do NOT file this from a non-escalation modality. If the driver assigns `escalation`, the packet writes itself from the s9 table in evidence.md: the signature is buyable and priced (+2 / +13 / +15 score for one / two / three boundaries), the floor form is 2 insns over target while every signature-correct form is 5+, and both zero-cost mechanisms (AROUND / invalidate_skipped_block from s8; the mismatched-spelling family from s9) are incompatible with the target's combination of an unconditional store and four addend-0 bases. Before that, the untried MODALITY is synthesis: take f1 (54 insns, complete access signature, score 32) and run a difflib side-by-side against target (tmp/grind/func_80034F88/s3/sidebyside.py) to identify exactly which 5 instructions it has that the target does not, and whether any of them is removable without losing the boundary."
   },
   {
-   "hypothesis": "The '&&'-condition boundary pays for itself: 'if ((p[8] & K) && something)' emits two conditional branches to a shared false-label (LABEL_NUSES 2), which ends the cse block at the join and should recover one reload plus one addend-0 base per block (worth ~3 insns) against a 1-insn branch cost.",
-   "mechanism": "expand_expr for TRUTH_ANDIF_EXPR emits jumpifnot on each operand to the same label, so the join label of the whole if has two LABEL_REFs and the cse extension at cse.c:8112 declines. It is the ONLY way found so far to raise LABEL_NUSES without an unconditional jump that jump.c will delete.",
-   "next_probe": "The honest problem is finding a SECOND condition that is semantically real (the target has no second branch, so any construct here changes the emitted control flow and will show up as an inserted branch in the score). Measure it anyway to put a number on the trade: 'if ((p[8] & K) && p[8])' and similar, honest-scored, plus a cse.fn check that the boundary actually materialises. If the boundary is confirmed to produce the target's per-block signature, the finding is that the SIGNATURE is buyable and only the branch is in the way - which is the strongest possible exhibit for the escalation packet."
+   "hypothesis": "The score on this function is dominated by instruction-count alignment, not by access-signature correctness, so the remaining 18 points may be attackable by making the FLOOR form 2 instructions shorter rather than by making a signature-correct form cheaper.",
+   "mechanism": "The floor form is 51 insns against the target's 49 and scores 18 with lbu 3 / lui 6; d5 is 47 insns with the same lbu 3 / lui 6 and scores 20; d1 is 45 insns and scores 29. Score is therefore not monotone in either instruction count or access counts - it is the diff alignment. The floor's 2 excess insns are the two `andi a0,v1,0xff` truncations that s6 traced to the `s32 val` widening, and s3 measured that removing the widening (`u8 val`) costs 2 points while saving those 2 insns.",
+   "next_probe": "Sweep the 49-insn `u8 val` chassis (score 20) against the levers found since s3 - the two-reads-per-block spelling (d4/d5 family), the staged-pointer base order, and the pointer/symbol mix per access - looking for a 49-insn form that reaches 18 or below WITHOUT the widening. Nothing in s4-s9 has re-explored the 49-insn chassis; every session since s3 has grinded the 51-insn one."
   },
   {
    "hypothesis": "The one-object re-derivation (0x80106A70..73 as a single declared u8[4], flag byte = element 3) is not measurable in the sandbox even if it is correct, because engine/score.py does not mask NAMED-symbol relocation addends.",
-   "mechanism": "score.py masks section-relative HI16/LO16 addends only ([[sandbox-lo16-text-addend-false-distance]]); a build spelling the flag byte as &D_80106A70[3] emits R_MIPS_HI16/LO16 against D_80106A70 with addend 3 where the reference object has D_80106A73 with addend 0. The two link to the SAME bytes (both symbols are absolute addresses in undefined_syms_auto.txt), so the sandbox would report a false non-zero distance for a byte-correct form. s2's original kill of this hypothesis cited relocations that a shipped PS-EXE does not have, and s3 already voided that premise.",
-   "next_probe": "Requires touching include/code6cac.h:462 (the extern u8 D_80106A70 declaration), which is outside a grind session's single-file scope and would change other functions' codegen - so it needs an owner decision, not a probe. Before spending anything on it, note that the array model does NOT solve the boundary problem (cse still merges the address pseudos), so it can only ever explain the addressing, never the reloads."
+   "mechanism": "score.py masks section-relative HI16/LO16 addends only ([[sandbox-lo16-text-addend-false-distance]]); a build spelling the flag byte as &D_80106A70[3] emits R_MIPS_HI16/LO16 against D_80106A70 with addend 3 where the reference object has D_80106A73 with addend 0. Both link to the same bytes (both symbols are absolute addresses in undefined_syms_auto.txt), so the sandbox would report a false non-zero distance for a byte-correct form.",
+   "next_probe": "Unchanged from s8, and s9 adds a reason to deprioritise it further: the array model does not solve the boundary problem (cse still merges the address pseudos, and s9 showed the bases are a boundary property, not an addressing-spelling property), so it can only ever explain the addressing, never the reloads. It also requires touching include/code6cac.h:462, outside a grind session's single-file scope, so it needs an owner decision rather than a probe."
   }
  ],
  "judge_constraints": [],

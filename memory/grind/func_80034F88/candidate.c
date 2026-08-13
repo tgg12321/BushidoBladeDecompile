@@ -230,6 +230,37 @@
  * jump.c rebuilds the ordinary diamond before cse1, so no boundary), and the
  * mask spelled through the symbol with the blocks through the pointer (33).
  */
+/*
+ * =====================================================================
+ * s9 (rederive) - form UNCHANGED at 18; the boundary trade is now PRICED
+ * =====================================================================
+ * s9 measured the one frontier item s8 left open ("does the `&&` boundary pay
+ * for itself?") and the answer is no, with numbers.  A cse basic-block
+ * boundary IS reachable with this function's unconditional store - spelling a
+ * flag block's condition `if (!c && ptrN)` gives the join label LABEL_NUSES 2,
+ * which makes cse_end_of_basic_block's extension test at cse.c:8112 decline,
+ * and the block ends AT the join in BOTH cse passes.  Two such boundaries
+ * reproduce the target's three addend-0 `lui`+`addiu` bases and its block-2/3
+ * reloads (lui 4 / lbu 4, exactly target's counts) - but each costs one
+ * conditional branch, and the target has exactly one branch per block.  The
+ * measured ladder: no boundary 21/47, one 23/50, two 31/53, three 33/55.
+ * Separately, the target's lbu 5 / sb 5 counts are reachable with NO boundary
+ * at all by spelling a block's two reads differently (symbol outside the arm,
+ * pointer inside it) - 29/47, best member 24 - but then every symbol-spelled
+ * access drags its own `lui $at` + `%lo(...)($at)` and the lui count goes to
+ * 5-7.  Combining both (f1: two boundaries + the block-1 mismatch) gives the
+ * target's complete access signature at 54 insns and scores 32.
+ * So the residual 18 is now understood as a THREE-WAY trade, not a wall with
+ * one missing lever: address materialisation belongs to the boundary family,
+ * the reloads belong to the mismatched-spelling family, and this body - which
+ * has neither signature - still wins because it is only 2 instructions over
+ * the target while every signature-correct form is 5 or more.
+ * A fresh m2c re-derivation (rederive mandate) was also measured this session
+ * and is NOT the missing structure: m2c's own output scores 29, and its best
+ * hybrid with this body's levers scores 20.
+ * Do not re-derive any of this; see hypotheses.md s9 and rejected/andand-*,
+ * rejected/armread-*, rejected/m2c-*, rejected/full-target-signature-*.
+ */
 void func_80034F88(void) {
     s32 *p;
     u8 *ptr;

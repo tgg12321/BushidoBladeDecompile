@@ -1007,3 +1007,83 @@ p1 signature match and this session's m1 (free reloads, wrong store shape).
 - [s8] Three pointer locals staged exactly where the target materialises its three bases still collapse to lui 2 in the conditional-store chassis, because invalidate_skipped_block only invalidates registers set INSIDE the skipped arm.
 
 - [s8] Consequence for the model: the missing reloads and the missing addend-0 bases are ONE problem (a cse basic-block boundary), not two as s7's frontier had it.
+
+
+## s9 (rederive) - the boundary trade, priced
+
+The session's numbers, all `sandbox func_80034F88 --disable all` with the
+objdump census of the whole function (the copy loop contributes one `lbu`,
+one `sb` and one `lui` to every count below; the target totals are
+lbu 5 / sb 5 / lui 4 at 49 insns):
+
+| form | score | insns | lbu | sb | lui |
+|---|---|---|---|---|---|
+| floor (current src) | 18 | 51 | 3 | 5 | 6 |
+| b0 staged pointers, no boundary | 21 | 47 | 2 | 5 | 2 |
+| c1 one `&&` boundary (block 1) | 23 | 50 | 3 | 5 | 3 |
+| c4 two `&&` boundaries (blocks 1+2) | 31 | 53 | 4 | 5 | 4 |
+| b1 three `&&` boundaries | 33 | 55 | 4 | 5 | 4 |
+| d6 symbol-outer / pointer-arm read | 29 | 47 | 5 | 5 | 6 |
+| e2 same + store through the pointer | 24 | 48 | 7 | 5 | 5 |
+| f1 two boundaries + block-1 mismatch | 32 | 54 | 5 | 5 | 5 |
+| d4 m2c two-read select + floor levers | 20 | 49 | 3 | 5 | 6 |
+| d1 m2c verbatim | 29 | 45 | 2 | 5 | 6 |
+
+Read the table as three families that each own PART of the target and cannot
+be combined below the floor:
+
+1. **Address materialisation** (lui 4, three addend-0 bases) is owned by the
+   cse basic-block BOUNDARY family.  Without a boundary, cse deletes the second
+   and third `ptrN = &D_80106A73;` as redundant sets (b0: lui 2).  With one
+   boundary per join, each survives and emits its own `lui %hi` + `addiu %lo`
+   at addend 0 (c4/b1: lui 4).  Price: one conditional branch per boundary.
+2. **Reloads** (lbu 5) are owned by the mismatched-SPELLING family - two reads
+   of the same byte written through different address expressions.  Price: each
+   symbol-spelled access carries its own `lui $at` + `%lo(...)($at)`.
+3. The **floor form** owns neither signature (lbu 3 / lui 6) and wins on
+   alignment: at 51 insns it is 2 over the target, where the closest
+   signature-correct form (f1) is 5 over.
+
+The two mechanisms are not additive: f1 has both properties and scores 32.
+The gap between "the build looks like the target" and "the build scores like
+the target" is entirely the branch and materialisation insns the boundary
+constructs drag in.
+
+### What this does to the escalation thesis inherited from s8
+
+s8's frontier read: *"every construct that ends the cse basic block between two
+flag blocks costs at least one instruction the target does not contain ... the
+claim that remains unproven is completeness: that no OTHER C construct reaches
+those three states."*  s9 closes both of the two lines of attack that frontier
+named, and it does so with a measurement rather than an argument:
+
+- the `&&` boundary (LABEL_NUSES 2) is the cheapest reachable spelling, it is
+  measured, and it is net-negative at every count of boundaries (+2, +13, +15);
+- `thread_jumps` cannot supply a second LABEL_REF here because the three join
+  labels are followed by different code, so no redirection is available.
+
+The remaining escapes from cse_end_of_basic_block's extension test (read
+verbatim at cse.c:8102-8184 this session) are: a used CODE_LABEL immediately
+preceding the join (needs a jump to it), any CODE_LABEL between the branch and
+the arm's last insn (needs a jump, or an unreferenced label = the forbidden
+dead-goto label pad), and a BARRIER before the join (the if/else shape, where
+the block is FOLLOWED rather than ended).  Every one of them costs at least one
+jump insn.  A C construct that emits a CODE_LABEL with no jump does not exist
+outside the computed-goto (`&&label`) family, which is a label pad by another
+name.
+
+- [s9] cse_end_of_basic_block's extension test was read VERBATIM this session at tools/gcc-2.7.2/cse.c:8092-8184 and its escapes are exactly three: (a) LABEL_NUSES (JUMP_LABEL (p)) != 1; (b) the backward scan at 8109-8114 stopping on a CODE_LABEL with LABEL_NUSES != 0 immediately before the join (the scan skips ordinary NOTEs and NUSES-0 labels, and breaks on NOTE_INSN_LOOP_END / NOTE_INSN_SETJMP); (c) the forward no_labels_between_p check at 8168-8172 finding ANY CODE_LABEL between the branch and the arm's last insn. Each of the three requires at least one extra jump or branch insn from C, or an unreferenced label (the forbidden dead-goto label pad).
+
+- [s9] The `&&` boundary is REAL and works with an unconditional store: staged-pointer chassis, no guard = lbu 2 / sb 5 / lui 2 at 47 insns (score 21); guards on blocks 1+2 = lbu 4 / sb 5 / lui 4 at 53 insns (score 31), i.e. the target's three addend-0 `lui %hi(D_80106A73)` + `addiu %lo(D_80106A73)` bases materialise and the block-2/3 reloads survive.
+
+- [s9] Marginal price of one cse basic-block boundary on this function: +3 insns and +2 score for the first (21/47 -> 23/50), +3 insns and +8 score for the second (23/50 -> 31/53), +2 insns and +2 score for the third (31/53 -> 33/55, and it buys nothing because there is no fourth base to rematerialise).
+
+- [s9] The target's lbu 5 / sb 5 access counts are reachable with NO boundary, NO volatile and NO loop scaffolding by spelling a block's two reads differently - `val2 = D_80106A73 | K;` outside the arm and `val2 = *ptr;` inside it - at 47 insns (score 29). Spelling the store through the pointer as well gives SEVEN surviving reloads at 48 insns (score 24, the best member of the family).
+
+- [s9] The complete target signature (lbu 5 / sb 5) alongside an unconditional store costs 54 insns and scores 32 (f1). Signature is not score: the floor form has neither signature (lbu 3 / lui 6) and wins because it is only 2 insns over the target where every signature-correct form is 5 or more.
+
+- [s9] m2c's own reconstruction of this function (fresh run this session) scores 29 at 45 insns; the best hybrid of m2c's two-reads-per-block select with the floor's levers scores 20 at 49 insns. m2c's structure is NOT the missing one.
+
+- [s9] The three flag blocks' join labels are each followed by different code, so thread_jumps (which runs at toplev.c:2861, immediately before cse1) has no equivalent-destination pair to redirect and cannot raise any join label's LABEL_NUSES.
+
+- [s9] Target census re-established from asm/funcs/func_80034F88.s this session: 49 insns, lbu 5 (mask read + one per flag block + the copy loop), sb 5, lui 4 (three addend-0 D_80106A73 bases + the copy loop's D_80106A70), exactly one conditional branch per flag block, and each block's store emitted AFTER its join label.
