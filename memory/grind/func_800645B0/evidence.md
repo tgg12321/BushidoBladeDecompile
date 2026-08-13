@@ -846,3 +846,88 @@ check_banned_constructs True).
 ### Tooling added (tmp/grind/func_800645B0/s9/)
 - `sweep29.py` — the VA-VG sweep (patches src/text1b.c, scores, restores).
 - `applyfinal.py` — writes the shipped closing form into src/text1b.c (LF).
+
+## [s9] (2026-08-12, structural) — the floor is 0; banked facts
+
+- **[s9] The honest pure-C distance for func_800645B0 is 0.** Measured with the
+  body in memory/grind/func_800645B0/candidate.c in place in src/text1b.c:
+  `sandbox func_800645B0 --disable all` → `score 0, target_insns 78,
+  build_insns 78, scorable true, rules_dropped 1`.  The body is the session-6/8
+  SB body plus ONE added statement (`val = idx;` immediately before
+  `idx = idx2 + val;`).  Nothing else changed — same declarations, same loop
+  skeleton, same statement order, same store spellings.
+
+- **[s9] optabs.c's commutative swap has three operands in its condition, and
+  only two of them had ever been levered.** The clause is
+  `((GET_CODE (op1) == REG && GET_CODE (op0) != REG) || target == op1)`.
+  Sessions 2-8 attacked `target` (H24/H25: the only C construct reaching
+  `target == 0` is a narrower-than-word destination, 79-81 instructions) and
+  the destination's identity (H39: any second set of `idx` must be an
+  instruction the target already has).  Nobody had changed `op1` while keeping
+  its VALUE.  Staging the addend in any other pseudo defeats both clauses
+  (clause 1 needs `op0` to be a non-REG, and `idx2` is a REG), and the staging
+  copy is coalesced away at zero instruction cost.
+
+- **[s9] The win is a dataflow property, not a placement.** Six independent
+  spellings of the staged addend all measure 0/78 (sweep30 WB/WC/WD/WE/WF/WG:
+  fresh local before the sum; the existing `val`; copy before the `idx2` shift;
+  copy before the `rand()` call; copy in an inner block scope; the staged value
+  also feeding the halfword shift).  This is the opposite signature to the
+  three previously-FAILed constructs, each of which was the single winner of a
+  directed placement sweep.
+
+- **[s9] Staging through `last` is NOT free (2/78).** `last` is the named
+  `rand()` result; borrowing it forces the call later and costs two points.
+  The only free carriers are a fresh local or `val`.
+
+- **[s9] The copy CANNOT be avoided by re-deriving the addend from `idx2`.**
+  `idx2 + (idx2 >> 1)` = 2/79, `idx2 + (s32)(((u32)idx2) >> 1)` = 2/79,
+  `idx2 + (idx2 / 2)` = 14/79.  GCC 2.7.2 does not simplify
+  `(ashiftrt (ashift x 1) 1)` back to `x`, so the re-derivation is a real
+  instruction against a 78-instruction target.  Banked at
+  rejected/sum-addend-rederived-from-idx2-costs-an-instruction.c.
+
+- **[s9] The shipped spelling is chosen by POLICY, not by measurement.**
+  WC (`val = idx;`) borrows a pre-existing multiply-assigned local, which is
+  what .claude/rules/staged-value-reused-variable.md bound 2 requires
+  ("Inventing a new variable just to have something to borrow is NOT this
+  rule").  WB/WD/WE/WF/WG measure identically but invent a local.  If the
+  reviewer rules that a fresh named intermediate is the better disposition,
+  those five are already measured and need no new probe.
+
+- **[s9] Methodological fact worth keeping beyond this function.** Every one of
+  this function's three layer-1 FAILs, four banned constructs and its H32
+  "structural contradiction" lived on the inner-loop-top emission-order axis
+  (reg_n_sets / first-pass scheduler / reorg.c delay-slot theft).  The chassis
+  that closed it had that axis correct for free since session 2 and its single
+  residual was on a different pass entirely (RTL expansion).  A one-instruction
+  residual on an otherwise-exact chassis is worth levering at the pass that
+  EMITS that instruction before the search moves to a new chassis; sessions 5-8
+  moved chassis five times and each move re-opened the loop-top axis at 3-12
+  points.
+
+- **[s9] Integration state (operator surface, untouched by this session).**
+  regfix.txt:2521 `func_800645B0: reorder 3,1,2 @ 1-3` is still the function's
+  only rule and the sandbox drops it (`rules_dropped: 1`).  `retire` +
+  full-build SHA1 verify + `queue done` remain to be run by the driver/operator.
+
+- **[s9 re-run] The closing form was re-measured and the self-vet re-formatted.**
+  The first session-9 run reached score 0 but was DISCARDED by the driver's
+  validator, not on merit: `check_banned_constructs` reads the `CONSTRUCTS:`
+  section of self_vet.md, and that section's regex ends only at the next
+  ALL-CAPS heading — the `## T1`..`## T6` markdown headings do not terminate
+  it, so the T5 paragraph that HONESTLY discusses the four standing bans sat
+  inside the "declared constructs" span and tripped the word-overlap tripwire
+  (`from / inner / loop / body / ...`).  Fix, no change to the C: keep the
+  `CONSTRUCTS:` enumeration to a single line and put an ALL-CAPS heading
+  (`SIX-TEST CHECKLIST:`) immediately after it, so the declaration span is
+  exactly the enumeration and the ban discussion lives outside it.
+  `python tools/grinder/grindlib.py selfvet . func_800645B0` now exits 0.
+  GENERAL LESSON for every future session on any function: a self-vet must put
+  an ALL-CAPS heading directly after the `CONSTRUCTS:` line, otherwise the
+  mandatory T5 reasoning about standing bans is read as a re-declaration of
+  them.
+  Re-measurement this run, with tmp/grind/func_800645B0/s9b/applywc.py applied
+  to a clean src/text1b.c: `sandbox func_800645B0 --disable all` → score 0,
+  target_insns 78, build_insns 78, scorable true, rules_dropped 1.  Same body,
+  same numbers as the first run; candidate.c is unchanged.

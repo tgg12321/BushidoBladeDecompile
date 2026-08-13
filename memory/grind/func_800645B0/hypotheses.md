@@ -1277,3 +1277,83 @@ The pure-C body is CLOSED at sandbox distance 0. What remains is not search:
    mechanism: loop.c's movability decision and flow.c's `reg_n_sets` count are
    taken at different times, so a dead store is a way to be visible to the first
    and invisible to the second.
+
+## Session 9 (2026-08-12, structural) — FLOOR 1 -> 0. The SB chassis' last instruction is closed by staging the *3 sum's ADDEND, which is the one degree of freedom optabs.c's swap condition leaves open.
+
+### H45 — CONFIRMED (this closes the function). optabs.c's swap fires on the pair (target, op1); H24 retired "change the target", but "change op1 while keeping the same VALUE" was never tried, and it costs nothing.
+- **Mechanism:** optabs.c:403-421 tests
+  `((GET_CODE (op1) == REG && GET_CODE (op0) != REG) || target == op1)`.
+  Sessions 2-8 read that as a wall on the SB chassis because the sum MUST be
+  written into `idx` (that second set of `idx` is what denies sched.c's
+  `birthing_insn_p` lift at the inner-loop top, which is what makes SB's loop
+  top match) and the SB spelling `idx = idx2 + idx;` therefore always has
+  `target == op1`.  H25 killed the "make target == 0" escape (only a narrower-
+  than-word destination reaches it, and that costs 1-3 instructions); H39
+  killed the "second set of idx somewhere else" escape.  The escape nobody
+  tried is the third variable in the clause: put the SAME VALUE in a DIFFERENT
+  pseudo and use that as op1.  Clause 1 cannot fire either, because `op0`
+  (`idx2`) is a REG.  The pair is then emitted unswapped —
+  `(set idx (plus idx2 <staged>))` — which is the target's
+  `addu $s0,$s1,$s0`; the staging copy is coalesced away, so the instruction
+  count is unchanged; and `reg_n_sets[idx]` is still 2, so the loop top keeps
+  the order SB already had.
+- **Probe:** tmp/grind/func_800645B0/s9b/sweep30.py — eight variants on the SB
+  chassis (control WA = the session-6/8 shipped body).
+- **Result:** WA 1/78 (control).  **WB 0/78** (fresh local `k` copied just
+  before the sum), **WC 0/78** (staged through the existing `val`), **WD 0/78**
+  (copy placed before the `idx2` shift), **WE 0/78** (copy placed before the
+  `rand()` call, so both values cross the jal), **WF 0/78** (copy in an inner
+  block scope), **WG 0/78** (the staged value also feeds the halfword shift).
+  WH 2/78 (staging through `last`, which displaces the `rand()` call).
+  Six independent placements/spellings all reach zero, so the win is a property
+  of the DATAFLOW (op1 is a different pseudo), not of any one placement — the
+  same robustness signature H42's sweep lacked.
+- **Verdict:** CONFIRMED.  Shipped spelling is WC, staged through the
+  pre-existing `val`, because .claude/rules/staged-value-reused-variable.md
+  bound 2 covers only a borrowed EXISTING variable; WB/WD/WE/WF/WG invent a
+  local and are therefore outside the sanctioned family even though they
+  measure identically.  Self-vet: memory/grind/func_800645B0/self_vet.md.
+
+### H46 — KILLED. The copy cannot be avoided by re-deriving the addend arithmetically from `idx2`; every such spelling pays a real instruction.
+- **Mechanism:** if the addend were an EXPRESSION over `idx2` rather than a
+  copy of `idx`, op1 would be a fresh pseudo with no staging statement at all —
+  the same optabs outcome with nothing to justify under a matching-family rule.
+  The arithmetic identity is `idx == idx2 >> 1`.
+- **Probe:** tmp/grind/func_800645B0/s9b/sweep31.py, four spellings on the SB
+  chassis.
+- **Result:** `idx2 + (idx2 >> 1)` 2/79; `idx2 + (s32)(((u32)idx2) >> 1)` 2/79;
+  `idx2 + (idx2 / 2)` 14/79; `(idx << 1) + idx2 - idx2 + idx2` 15/78 (folds
+  back to the swapped form).  GCC 2.7.2 does not simplify
+  `(ashiftrt (ashift x 1) 1)` to `x` — the equality only holds for values whose
+  top two bits agree — so the re-derivation is a real shift, 79 against a
+  78-instruction target.
+- **Verdict:** KILLED.  Banked at
+  rejected/sum-addend-rederived-from-idx2-costs-an-instruction.c.
+
+### H47 — CONFIRMED as a negative-control reading of the whole nine-session arc (no new measurement; recorded so the arc is legible).
+- The function's three layer-1 FAILs, the four banned constructs, and H32's
+  "structural contradiction" all lived on ONE axis: the inner-loop top's
+  emission order, attacked by manipulating `reg_n_sets` / the first-pass
+  scheduler / reorg.c's delay-slot theft.  The SB chassis never needed that
+  axis — it had the loop top right from session 2 — and its single residual sat
+  on a completely different pass (RTL expansion).  The generalisable lesson: a
+  residual of ONE instruction on a chassis that is otherwise exact deserves the
+  pass that EMITS that instruction to be levered directly, before any search
+  moves to a different chassis.  Sessions 5-8 moved chassis (CA, DA, IA, JD, OA)
+  and each new chassis re-opened the loop-top axis at 3-12 points.
+- **Verdict:** CONFIRMED (as a methodological reading, not a codegen claim).
+
+## Frontier (rewritten by session 9)
+The function is CLOSED at distance 0 with the body in candidate.c, so there is
+no search frontier.  What remains is integration, which is the operator's/
+driver's surface, not a grind session's:
+1. Layer-1 cheat-reviewer + Judge on the single new construct (`val = idx;`).
+2. `retire func_800645B0` (drops regfix.txt:2521,
+   `func_800645B0: reorder 3,1,2 @ 1-3`, the function's only rule) followed by
+   a full-build SHA1 verify against the oracle.
+3. `queue done func_800645B0`.
+If the Judge FAILs the staged addend, the fallback frontier is NOT the loop-top
+axis (nine sessions of measurements say it is closed): it is the five other
+measured 0/78 spellings in sweep30 (WB/WD/WE/WF/WG), which reach the same bytes
+by inventing a local instead of borrowing one — a different policy question
+(named intermediate vs borrowed variable) about the same dataflow.

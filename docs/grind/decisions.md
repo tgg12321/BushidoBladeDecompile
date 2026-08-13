@@ -4910,3 +4910,7 @@ Construct 4 (`wid = i + j; idx = wid;` staged through the same `wid` later used 
 ## 2026-08-12 19:40 — func_800645B0 — layer-1 review — **FAIL**
 
 The `bit=1; ...; bit=0; /* FAKE */` dead store exists for exactly one purpose — denying sched.c's birthing_insn_p priority lift so the INSN_LUID tie-break controls which insn reorg.c steals into the inner-loop back-edge delay slot — which is the identical GCC-pass interaction this function's own layer-1 history has already FAILed twice under other spellings; citing dead-store-fake-exception does not launder a mechanism this project has already ruled out for this function.
+
+## 2026-08-12 20:03 — func_800645B0 — layer-1 review — **FAIL**
+
+C5 (`val = idx; idx = idx2 + val;`) is a directed structural-sweep artifact chosen to defeat optabs.c's commutative-operand swap and cherry-picked from six functionally-identical spellings specifically because it can be laundered through staged-value-reused-variable.md's bound 2 (borrowed vs invented local) -- a citation-fit choice, not a semantic one.
