@@ -1,31 +1,37 @@
 {
  "func": "CdControlF",
  "file": "system",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 11,
    "modality": "recon",
    "headline": "Floor 23 -> 11 on pure statement ordering + CdControlB's base/elem two-step; the register asm(\"s6\") pin is deleted and the entire residual is now one result/elem allocno swap."
+  },
+  {
+   "session": 2,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Floor 11 -> 9 on the Sony libcd u_char-com parameter type; the entire 9-point residual is now reduced to one exactly-specified allocno-priority inequality, measured with the instrumented cc1 rather th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Swapping the result/elem allocno order closes the function outright \u2014 it is the entire 11-point residual.",
-   "mechanism": "global.c:635 allocno_compare priority = floor_log2(n_refs)*n_refs/live_length. Our result (3 refs) outranks our elem (2 refs) and so takes s5; target has elem at s5. The original C must give elem a higher rank \u2014 one more genuine elem reference, or a longer-lived result (live_length is the divisor).",
-   "next_probe": "Run cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -da on the candidate (tmp/grind/CdControlF/s1/dump.sh already builds system.i; the cc1 binary to use is tools/gcc-2.7.2/cc1, NOT build/cc1) and read the .greg dump's register dispositions plus the allocno priority order for the two pseudos. Then sweep honest respellings that raise elem's real reference count or extend result's live range \u2014 no dead stores, no holders."
+   "hypothesis": "A byte-neutral THIRD reference to `elem`, at live length ~38, closes the function outright \u2014 it is the last wrong row in an otherwise exact allocation.",
+   "mechanism": "global.c:635 allocno_compare, pri = floor_log2(n_refs)*n_refs/live_length*10000. elem must land strictly inside (769, 810), which with 3 references means livelen 38 (2 references is arithmetically impossible; 4 overshoots to 2352). reg_n_refs and reg_live_length are set by flow.c's life analysis, which runs AFTER cse/loop/combine \u2014 so a second read that a later pass folds still counts, while one cse folds before flow does not.",
+   "next_probe": "Enumerate spellings that read `elem` a second time without adding an instruction, and read the ALLOCDBG table for each rather than the score (most are score-flat at 9). Reuse tmp/grind/CdControlF/s2/variants_c.py's harness verbatim \u2014 a new batch is a list of bodies. Start with reads on already-emitted control-flow edges, and note that the spelling must ALSO lengthen elem's live range from 31 to 38 (initialising it earlier gets it to 34, measured). If the only surviving shape is a duplicated `*elem` read across the arms of the `a1` test, that is the SANCTIONED duplicated-statement-into-arms family (byte-neutral reg_n_refs lift) \u2014 but it needs demonstrated lever exhaustion, a /* FAKE */ annotation and layer-1+2 review, so it must not be reached for until the honest spellings are enumerated and killed."
   },
   {
-   "hypothesis": "The PsyQ prototype shape (int CdControlF(u_char com, u_char *param)) changes the a0-copy liveness and with it the allocno ordering that result/elem sit inside.",
-   "mechanism": "Parameter types drive the incoming-arg copy pseudos and their reg_n_refs; the s3 raw-a0 copy exists only because a0 & 0xFF is needed twice, and a u_char param would fold one of those references away.",
-   "next_probe": "Re-type the params to the Sony libcd signature, cross-checking sotn-decomp src/main/psxsdk/libcd/sys.c (already cited in this TU's comments for CdSync/CdReady), then re-run the sweep-4 init-order sweep over the re-typed form."
+   "hypothesis": "A `result` carrying only 2 references, while still emitting target's `move s6,zero` / `li s6,-1` / `addiu v0,s6,1` tail, closes the function \u2014 and this door is much wider than the elem door (pri 512 vs a 2-unit window).",
+   "mechanism": "floor_log2(2)*2 = 2 against floor_log2(3)*3 = 3 cuts result's priority by a third, to 512, well below elem's 645. Confirmed by probe: dropping result to 2 references makes elem take s5, target's register.",
+   "next_probe": "Find a spelling where one of result's two constant stores belongs to a DIFFERENT pseudo whose live range does not overlap result's, so local_alloc (not global_alloc) handles it and it never becomes an allocno. `base` is the existing proof of that shape in this very function: a real local that never appears in the global allocno list because local_alloc gives it v1. Candidate direction: a second named local holding the failure value, copied into the return expression, arranged so the two live ranges are disjoint."
   },
   {
-   "hypothesis": "The winning form ports to the sibling CdControl (queue-active, distance 25, still pinned).",
-   "mechanism": "Same three-way family, same allocno-ordering question, one extra live argument.",
-   "next_probe": "Out of scope for a CdControlF session \u2014 replay sweep-1/sweep-4 against CdControl seeded with CdControlF's winning spelling once this function closes."
+   "hypothesis": "The u8-parameter lever ports to the sibling CdControl (queue-active, distance 25, still carrying its own `register s32 result asm(\"s7\")` pin).",
+   "mechanism": "Same three-way CdControl/CdControlF/CdControlB family, same Sony libcd `u_char com` prototype, same allocno-ordering question with one extra live argument.",
+   "next_probe": "Out of scope for a CdControlF session. Once CdControlF closes, replay the u8-param retype plus the 240-permutation init-order sweep against CdControl seeded with CdControlF's winning spelling."
   }
  ],
  "judge_constraints": [],
