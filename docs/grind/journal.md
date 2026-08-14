@@ -984,3 +984,4 @@
 - 2026-08-13 22:44 func_8003504C COMPLETED-C after 10 sessions.
 - 2026-08-13 22:57 func_800174F4 s1 [recon] floor=14: Recon: floor 25 -> 14 in pure C (cheat scaffold dropped, worth 0); residual is now register-name-only, 136 vs 136 insns, in exactly two clusters.
 - 2026-08-13 23:15 func_800174F4 s2 [structural] floor=8: Floor 14 -> 8: moving `i = 0;` inside the loop guard closed the whole callee-save cluster; both session-1 frontier mechanisms measured dead and replaced with instrumented successors.
+- 2026-08-13 23:32 func_800174F4 s3 [structural] floor=8: Floor holds at 8 (17 more structural forms, none below); session 2's K4 is CORRECTED — the $s0/$s1 flip IS global.c:allocno_compare, and both residual clusters are now stated as exact allocator arithmetic.

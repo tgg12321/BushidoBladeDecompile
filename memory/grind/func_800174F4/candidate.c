@@ -1,6 +1,29 @@
-/* func_800174F4 - best form as of grind session 2 (structural).
+/* func_800174F4 - best form as of grind session 3 (structural).
  * Honest sandbox floor (`sandbox func_800174F4 --disable all`): 8
  * (session 1 left 14; build_insns == target_insns == 136 throughout).
+ *
+ * SESSION 3 did not move the floor: seventeen further structural forms all
+ * measured >= 8 (ladder in evidence.md). What it DID establish is the exact
+ * arithmetic of the remaining 8 points, and it CORRECTS session 2's K4:
+ *
+ *  - The $s0/$s1 assignment is decided by `global.c:allocno_compare`, not by
+ *    local-alloc. The cc1 `-dg` headers of this form and the floor-14 form
+ *    differ in exactly one place, the allocno ORDER list; the conflict lists
+ *    are identical. Counter pseudo 85: n_refs 4, live_length 9, priority 8888.
+ *    `h` pseudo 73: n_refs 7, live_length 16, priority 8750. The whole
+ *    callee-save match rests on that 1.6% margin - ONE unit of the counter's
+ *    live length. Do not lengthen it.
+ *  - The 2-point delay-slot residue costs 6 to buy 2: putting `i = 0;` before
+ *    the `rand()` call (the only placement reorg.c can pull into the jal
+ *    delay slot) takes the counter's live_length to ~13 and its priority to
+ *    6153, so `h` wins $s0.
+ *  - The 6-point switch-selector residue needs regs 3 AND 4 in the selector
+ *    allocno's `hard_reg_conflicts U regs_someone_prefers`; instrumented
+ *    find_reg shows conflicts {2,29} and all three preference sets EMPTY.
+ *
+ * An exactly equivalent spelling of this body (8, 136 insns, byte-identical
+ * output) inverts the guard to an early exit: `if (h == 0) break;` followed by
+ * the unindented `i = 0; inner_loop: ...`.
  *
  * 100% pure C. Session 2's single change over the session-1 form is the
  * placement of `i = 0;`: it moved from the loop PRE-HEADER (before the

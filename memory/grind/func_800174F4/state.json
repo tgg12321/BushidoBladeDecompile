@@ -1,7 +1,7 @@
 {
  "func": "func_800174F4",
  "file": "ings",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Floor 14 -> 8: moving `i = 0;` inside the loop guard closed the whole callee-save cluster; both session-1 frontier mechanisms measured dead and replaced with instrumented successors."
+  },
+  {
+   "session": 3,
+   "floor": 8,
+   "modality": "structural",
+   "headline": "Floor holds at 8 (17 more structural forms, none below); session 2's K4 is CORRECTED \u2014 the $s0/$s1 flip IS global.c:allocno_compare, and both residual clusters are now stated as exact allocator arithm"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 2-point delay-slot residue: target's `i = 0;` sits before the rand() call (proven from reorg.c's call-slot filling rules), yet the counter still takes $s0 there. A C shape exists that gets both; the discriminator is in local-alloc, not global alloc.",
-   "mechanism": "global.c is measured inert for this flip (identical allocno tables across the 14/8 forms), so the $s0/$s1 choice is made by local-alloc.c quantity assignment - most likely qty_phys_sugg / suggested-register propagation - or by reload.",
-   "next_probe": "FORENSICS modality. Run the instrumented cc1 with BB2_QTY_DEBUG (local-alloc.c:1518/1585) and BB2_SUGG_DEBUG (local-alloc.c:1437/1447/2215) on memory/grind/func_800174F4/candidate.c vs memory/grind/func_800174F4/rejected/i-init-before-call.c (reuse tmp/grind/func_800174F4/s2/dump.sh, which already sets up the exact cc1 flags), and read which quantity is handed $s0 and on what suggestion. Then look for a C shape that reproduces the winning suggestion with a pre-call initialisation."
+   "hypothesis": "F4' \u2014 the 2-point delay-slot residue is now a closed-form inequality: with `i = 0;` pre-`rand()` the counter allocno sits at priority 6153 against `h`'s 8750, so the flip needs either counter n_refs >= 6 or `h` live_length > 22.7. The remaining untried surface is lowering `h`'s n_refs from 7 to 4 (floor_log2(4)*4/16 = 5000 < 6153) WITHOUT splitting the variable.",
+   "mechanism": "global.c:allocno_compare, priority = floor_log2(n_refs)*n_refs/live_length*10000, ties broken by allocno number; whichever of {counter, h} is allocated first takes $s0(16). Session 3 measured every parameter of both allocnos directly.",
+   "next_probe": "Respell the case-20 arithmetic so `h` is referenced fewer times without splitting it into separate locals (which K2/K3 already killed): fold `h = D_800A37A8[a0_val]; if (...) h |= 0x8000; func_80060414(h, ...)` into forms with one or two `h` references (e.g. compute the ORed value in a temporary and pass it, or select between two expressions), then read `h`'s n_refs/live_length/priority straight out of `bash tmp/grind/func_800174F4/s3/alloc.sh <tag>` BEFORE scoring. Any form whose `h` priority drops under 6153 is then re-measured with the pre-`rand()` `i = 0;` in place."
   },
   {
-   "hypothesis": "Cluster (A), 6 pts: the switch selector reaches $a1 only if its allocno conflicts with whatever holds $v0, $v1 and $a0, because no copy preference can survive combine (K6) and MIPS has no REG_ALLOC_ORDER override.",
-   "mechanism": "global.c:find_reg allocates the lowest-numbered non-conflicting register of the class; the selector is allocated 2nd overall and currently conflicts only with the $v0 holder.",
-   "next_probe": "First VERIFY the conflict hypothesis: take a cc1 `-dg` dump of the floor-8 form and read the selector allocno's conflict list out of the `.greg` output. If regs 2/3/4 are already in its conflict set the hypothesis is wrong and cluster (A) is also a local-alloc question. If not, search for an honest C shape in which the dispatch value is still live across the func_8005D46C call region (target insns 43-45) so it conflicts with the $a0 argument pseudo and the $v1 g_disp_fade pseudo at once."
+   "hypothesis": "F5' \u2014 cluster (A) (6 of the 8 points) needs BOTH reg 3 and reg 4 in the selector allocno's `hard_reg_conflicts U regs_someone_prefers`; it currently has conflicts {2,29} and all three preference sets empty. The working precedent inside the same function is pseudo 99, which skips reg 4 only because lower-priority conflicting allocno 101 prefers 4.",
+   "mechanism": "global.c:find_reg allocates the lowest-numbered register of the class outside that union; prune_preferences populates regs_someone_prefers from the hard_reg_full_preferences of lower-priority CONFLICTING allocnos. config/mips/mips.h defines no REG_ALLOC_ORDER.",
+   "next_probe": "Search for a C shape in which the dispatch value's allocno conflicts with an argument-position-preferring allocno while still dying before `func_8005D46C` (crossing that call forces callee-save \u2014 the measured 29/138 form). Verify every candidate with `bash tmp/grind/func_800174F4/s3/findreg.sh <tag> 120` FIRST: the dump shows directly whether conflicts/someone_prefers moved, which the score does not. If no shape moves those sets, cluster (A) is a genuine allocator lock and the function is a candidate for the endgame-lock disposition after the remaining modalities."
   },
   {
-   "hypothesis": "A directed permuter campaign from the floor-8 base closes the register-name residual.",
-   "mechanism": "The residual is a clean 136-vs-136 register-name-only diff in two small clusters, which is the shape decomp-permuter's weighted register scoring searches well; the base is now 6 points closer than the one session 1 proposed seeding from.",
-   "next_probe": "Build a single-function target.o from asm/funcs/func_800174F4.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64`) per .claude/rules/difficult-is-not-impossible.md so the base score is the real weighted diff, seed from memory/grind/func_800174F4/candidate.c, and run a fresh-seed campaign via tools/permuter_campaign.py - launching, waiting (`wait --dir <ws>`) and `harvest --stop` all inside the same turn."
+   "hypothesis": "F6 \u2014 a directed permuter campaign from the floor-8 base closes the register-name residual. Still unrun (proposed in s1 as F3, re-proposed in s2); the base is now 6 points closer than when it was first proposed and is a clean 136-vs-136 register-name-only diff, the shape decomp-permuter's weighted register scoring searches well.",
+   "mechanism": "decomp-permuter randomizes statement order, temporaries and types and scores against a single-function target.o; the two residual clusters are pure register-name substitutions with zero insert/delete/reorder, so the search space it explores is exactly the one that matters here.",
+   "next_probe": "Build the single-function target.o from asm/funcs/func_800174F4.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64`) per .claude/rules/difficult-is-not-impossible.md so the base score is the real weighted diff; seed from memory/grind/func_800174F4/candidate.c; run a fresh-seed campaign with tools/permuter_campaign.py, doing launch, `wait --dir <ws>` and `harvest --stop` all inside a single turn (see [[grinder-permuter-orphan-stop-gate]])."
   }
  ],
  "judge_constraints": [],

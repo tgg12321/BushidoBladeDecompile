@@ -207,3 +207,139 @@ priority tables), `diff_b3.txt` (the floor-8 aligned diff),
 - [s2] [s2] Read from tools/gcc-2.7.2/reorg.c:fill_simple_delay_slots - a CALL_INSN's delay slot is filled by the BACKWARD search over preceding insns; the forward 'beyond the insn' search cannot reach our guard-block `i = 0;` because the intervening `andi`/`addiu` both reference the call's $v0 result and the search cannot cross the `beqz`. Target's `i = 0;` is therefore PRE-call, which is exactly the placement that costs the counter $s0. The two remaining goals are in direct tension and that tension is the frontier.
 
 - [s2] [s2] tmp/grind/func_800174F4/s2/sweep.py is a reusable splice-a-variant-and-score harness (restores src/ings.c in a finally block); allocsweep.sh + dump.sh produce per-variant BB2_ALLOC_DEBUG allocno priority tables; probe.sh applies a variant and prints the aligned normalized-insn diff. 23 variants measured this session.
+
+## Session 3 (structural, 2026-08-13) — floor stays 8; the s2 K4 kill is CORRECTED
+
+### THE HEADLINE: session 2's K4 ("global.c is inert; the flip is a
+### local-alloc question") is WRONG, and the frontier it produced was
+### misdirected. The $s0/$s1 flip IS decided by global.c:allocno_compare.
+
+Session 2 compared BB2_ALLOC_DEBUG output between the floor-8 form and the
+floor-14 pre-call forms and read the tables as byte-identical. They are not:
+the per-allocno STATS are the same shape but the ORDER of two allocnos
+(pseudo 85 = the case-1/2 loop counter, pseudo 73 = `h`) swaps, and that swap
+is exactly the $s0/$s1 flip. Measured this session with `-dg` + BB2_ALLOC_DEBUG
+on both forms (artifacts `tmp/grind/func_800174F4/s3/ings_b3.i.greg`,
+`ings_b12.i.greg`, `alloc_b12.txt`):
+
+| form | counter (pseudo 85) | `h` (pseudo 73) | order | result |
+|---|---|---|---|---|
+| floor 8 (`i = 0;` inside the `if (h != 0)` guard) | nrefs 4, livelen **9**, pri **8888** | nrefs 7, livelen 16, pri **8750** | 85 then 73 | 85 -> $s0(16), 73 -> $s1(17) — TARGET |
+| floor 14 (`i = 0;` after `h = v0 + 4;`, pre-guard) | nrefs 4, livelen **10**, pri **8000** | nrefs 7, livelen 16, pri **8750** | 73 then 85 | 73 -> $s0(16), 85 -> $s1(17) — WRONG |
+
+The conflict lists and every other allocno's stats are IDENTICAL between the
+two forms. The ONLY difference in the whole `.greg` header is the two-element
+order swap. The margin at floor 8 is **8888 vs 8750 — 1.6%**, i.e. ONE unit of
+the counter's live length. This is the sharpest possible statement of the
+lever and it is a *global.c* lever, not a local-alloc one.
+
+### What that means quantitatively for the 2-point delay-slot residue (F4)
+Target fills the `rand()` jal delay slot with `move s0,zero`, which requires
+`i = 0;` to be emitted in the basic block that ENDS with that call — i.e. the
+first statement of the `if (g_disp_fade != 0)` block, before `v0 = rand();`.
+Measured this session (`rejected/i-init-first-stmt-of-fade-block.c`): score 14,
+136 insns. With that placement the counter's live range spans `jal rand` +
+`andi` + `addiu` + `beqz` (livelen ~13), so
+  priority = floor_log2(4)*4/13*10000 = 6153  <  h's 8750,
+and `h` takes $s0. To win with a pre-call init the counter allocno needs
+either n_refs >= 6 (2*6/13 = 9230 > 8750) or `h` pushed below 6153
+(n_refs 7 needs livelen > 22.7, vs its actual 16). Both were attacked
+structurally this session and both are dead (see the ladder below). THAT
+inequality is the whole of F4, written as arithmetic.
+
+### Measured ladder (all `sandbox func_800174F4 --disable all`)
+| form | score | insns |
+|---|---|---|
+| **s2 floor-8 base (`i = 0;` inside the guard)** | **8** | 136 |
+| guard inverted to an early-exit `if (h == 0) break;` | **8** | 136 |
+| `i = 0;` first statement of the fade block (pre-`rand()`) | 14 | 136 |
+| `i = 0;` after `h = v0 + 4;` (pre-guard) | 14 | 136 |
+| `i = 0;` duplicated: pre-`rand()` AND inside the guard | 14 | 136 |
+| `i = 0;` at the top of case 1/2 (before func_8005D46C) | 15 | 136 |
+| `i = 0;` before the `g_disp_fade` test (block-scoped `i`) | 18 | 137 |
+| `for (i = 0; ; ) { ...; if (i >= h) break; }` | 33 | 136 |
+| natural `for (i = 0; i < h; i++)` (no explicit guard) | 39 | 135 |
+| natural `i = 0; while (i < h) { ...; i++; }` | 39 | 135 |
+| `env` (the drawenv-buffer variable) doubles as the counter, init in guard | 22 | 136 |
+| `env` doubles as the counter, init pre-`rand()` / fade-top / after-`h` | 21 | 136 |
+| counter shared with the case-20 `D_800A37C0` counter (7 refs), init in guard | 18 | 136 |
+| counter shared with case 20, init pre-`rand()` | 24 | 136 |
+| case-20 `h = D_800A37A8[a0_val];` hoisted to the top of its else block | 14 | 136 |
+| that hoist + pre-`rand()` init | 19 | 136 |
+
+Seventeen forms, none below 8. Floor 8 stands.
+
+### Cluster (A), the 6-point switch selector: the exact find_reg state
+Instrumented `BB2_FINDREG_DEBUG=120` on the floor-8 form
+(`tmp/grind/func_800174F4/s3/findreg_b3_120.txt`) prints the selector
+allocno's complete decision state:
+
+    FINDREGDBG func=func_800174F4 pseudo=120 alt=0 acc=0 retry=0
+    FINDREGDBG  conflicts: 2 29
+    FINDREGDBG  someone_prefers:            <- EMPTY
+    FINDREGDBG  own_copy_prefs:             <- EMPTY
+    FINDREGDBG  own_full_prefs:             <- EMPTY
+    FINDREGDBG  pass0_used: 0 1 2 17..23 26..31
+    FINDREGDBG  class=1 mode=4 size=1
+
+So `find_reg` takes reg 3 because 3 is simply the lowest register of the class
+that is neither a conflict nor preferred-by-a-conflicting-lower-priority
+allocno. To land on $a1(5) the selector needs **3 AND 4 in
+`hard_reg_conflicts` U `regs_someone_prefers`**. In the same dump the
+mechanism is visible working for another allocno: pseudo 99 has hard conflicts
+{2,3} and still skips 4 to take 5, because the lower-priority allocno 101
+*prefers* 4 (`;; 101 preferences: 4`) and `prune_preferences` therefore puts 4
+into `regs_someone_prefers[99]`. That is the ONLY route to $a1 for the
+selector, and it needs (a) a lower-priority allocno preferring 3 or 4 that
+CONFLICTS with the selector, plus (b) a hard-reg conflict at the other one.
+The selector's conflict set is `{74, 81}` (the two callee-save pseudos) plus
+hard {2, 29} — it conflicts with nothing that prefers 3 or 4, and it cannot
+without living across the `func_8005D46C` call region, which forces it
+callee-save instead (that is the measured 29/138 form from s2's K6).
+
+### Artifacts (session 3)
+`tmp/grind/func_800174F4/s3/` — `apply.py` (persistently splice a variant into
+src/ings.c), `greg.sh` (cc1 `-dg` dump), `alloc.sh` (BB2_ALLOC_DEBUG allocno
+table), `findreg.sh` (BB2_FINDREG_DEBUG per-pseudo find_reg state),
+`gen.py`/`gen2.py`/`gen3.py`/`gen4.py` (variant generators), `variants/*.c`
+(17 measured forms + `base8.c`), `ings_b3.i.greg`, `ings_b12.i.greg`,
+`alloc_b12.txt`, `findreg_b3_120.txt`, `diff_base8.txt` (the floor-8 aligned
+diff, showing only insns 28/30/31/33/35/41 and the 50/54 delay-slot swap).
+
+- [s3] CORRECTION to [s2] K4: global.c is NOT inert for the $s0/$s1 flip. The cc1 `-dg` headers of the floor-8 and floor-14 forms differ in exactly one place - the allocno ORDER list (`;; 9 regs to allocate: 84 120 85 73 ...` vs `84 120 73 85 ...`). Conflict lists are identical. The counter (pseudo 85) has pri 8888 at livelen 9 in the floor-8 form and pri 8000 at livelen 10 in the floor-14 form, against `h` (pseudo 73) at a constant pri 8750. The lever is global.c:allocno_compare after all; session 2 read the BB2_ALLOC_DEBUG tables as identical and missed the order swap.
+
+- [s3] The floor-8 margin is 1.6% (8888 vs 8750) - ONE unit of the loop counter's live length. Any C shape that lengthens the counter's live range by a single insn loses $s0 to `h` and costs 6 points.
+
+- [s3] QUANTIFIED F4: to fill the `rand()` jal delay slot with `move s0,zero`, `i = 0;` must be the first statement of the `if (g_disp_fade != 0)` block (livelen ~13, pri 6153). To still win $s0 from there the counter allocno needs n_refs >= 6 (2*6/13 = 9230 > 8750) or `h` must drop under 6153 (with n_refs 7 that needs livelen > 22.7 vs its actual 16). Both requirements were attacked structurally and neither is reachable: raising the counter's refs by sharing it with the case-20 counter gives 18/24, and lengthening `h` by hoisting its case-20 table load gives 14/19.
+
+- [s3] MEASURED KILL of the natural-loop hypothesis: `for (i = 0; i < h; i++)` and `i = 0; while (i < h) { ...; i++; }` both score 39 with 135 insns - GCC 2.7.2's loop rotation emits a two-instruction entry test (`slt` + branch) instead of target's single `beqz $s1`, so the goto-form loop with an explicit `if (h != 0)` guard is load-bearing, not a decompiler artifact.
+
+- [s3] MEASURED KILL of the env-reuse hypothesis (target reuses $s0 for the drawenv-buffer address AND the loop counter, which suggested one C variable): making `env` double as the counter scores 21-22 on all four init placements. The $s0 sharing in target is RA reusing a dead register, not a shared C variable.
+
+- [s3] MEASURED: `if (h == 0) break;` as an early-exit guard (instead of `if (h != 0) { ... }`) is exactly equivalent - 8, 136 insns, byte-identical output. Two spellings of the floor-8 form now exist.
+
+- [s3] MEASURED KILL of the duplicated-init form: `i = 0;` written BOTH before `v0 = rand();` and inside the guard scores 14 - the dead pre-store still lengthens the counter allocno's live range, so the sanctioned dead-store-to-a-local family buys nothing here.
+
+- [s3] Cluster (A) find_reg state read from the instrumented cc1 (BB2_FINDREG_DEBUG=120, floor-8 form): the selector allocno has conflicts {2, 29}, EMPTY someone_prefers, EMPTY own_copy_prefs, EMPTY own_full_prefs. It takes reg 3 because 3 is the lowest class register outside pass0_used. Reaching $a1(5) needs BOTH 3 and 4 in conflicts-union-someone_prefers. The same dump shows the mechanism working for pseudo 99 (hard conflicts {2,3}, skips 4 because lower-priority allocno 101 prefers 4, lands on 5) - so the route exists in principle but requires a conflicting lower-priority allocno that prefers 3 or 4, which the selector cannot acquire without living across the func_8005D46C call and going callee-save (s2's measured 29/138).
+
+- [s3] [s3] CORRECTION to [s2] K4: global.c is NOT inert for the $s0/$s1 flip. The cc1 `-dg` headers of the floor-8 and floor-14 forms differ in exactly one place â€” the allocno ORDER list (`;; 9 regs to allocate: 84 120 85 73 ...` vs `84 120 73 85 ...`). All nine conflict lists are byte-identical. The lever is global.c:allocno_compare; session 2 read the BB2_ALLOC_DEBUG stats as identical and missed the order swap.
+
+- [s3] [s3] The floor-8 register match rests on a 1.6% priority margin: counter pseudo 85 = n_refs 4, live_length 9, pri 8888 vs `h` pseudo 73 = n_refs 7, live_length 16, pri 8750. ONE extra unit of the counter's live length flips it (the floor-14 form measures live_length 10, pri 8000). Any future form that lengthens the counter's live range by a single insn costs 6 points.
+
+- [s3] [s3] QUANTIFIED F4 (the 2-point delay-slot residue): to fill the `rand()` jal delay slot with `move s0,zero`, `i = 0;` must be the first statement of the `if (g_disp_fade != 0)` block (reorg.c's backward search), which puts the counter at live_length ~13 / pri 6153. Winning $s0 from there needs counter n_refs >= 6 (2*6/13 = 9230 > 8750) or `h` under 6153 (n_refs 7 needs live_length > 22.7 vs its actual 16). Both requirements were attacked structurally this session and both are dead.
+
+- [s3] [s3] Cluster (A) find_reg state, read from the instrumented cc1 (BB2_FINDREG_DEBUG=120, floor-8 form, tmp/grind/func_800174F4/s3/findreg_b3_120.txt): the selector allocno has conflicts {2, 29}, EMPTY someone_prefers, EMPTY own_copy_prefs, EMPTY own_full_prefs, and takes reg 3 as the lowest class register outside pass0_used. Reaching $a1(5) needs BOTH 3 and 4 in conflicts-union-someone_prefers.
+
+- [s3] [s3] The exclusion mechanism that cluster (A) needs is visible working elsewhere in the same function: pseudo 99 has hard conflicts {2,3} and still skips reg 4 to take 5, because lower-priority conflicting allocno 101 carries `;; 101 preferences: 4` and prune_preferences therefore puts 4 into regs_someone_prefers[99]. So the $a1 route requires a lower-priority argument-preferring allocno that CONFLICTS with the selector.
+
+- [s3] [s3] MEASURED KILL of the natural-loop hypothesis: `for (i = 0; i < h; i++)` and `i = 0; while (i < h) { ...; i++; }` both score 39 with 135 insns â€” GCC 2.7.2's loop rotation emits a two-instruction entry test (`slt` + branch) instead of target's single `beqz $s1`. The goto-form loop with the explicit `if (h != 0)` guard is load-bearing.
+
+- [s3] [s3] MEASURED KILL of the env-reuse hypothesis: making `env` (the drawenv-buffer address) double as the loop counter scores 21-22 across all four init placements. Target's $s0 sharing between the buffer address and the counter is the allocator reusing a dead register, not a shared C variable.
+
+- [s3] [s3] MEASURED: `if (h == 0) break;` as an early-exit guard is exactly equivalent to `if (h != 0) { ... }` â€” 8, 136 insns, byte-identical output. Two spellings of the floor-8 form now exist; noted in candidate.c.
+
+- [s3] [s3] MEASURED KILL of the duplicated-init form: `i = 0;` written BOTH before `v0 = rand();` and inside the guard scores 14 â€” the dead pre-store still starts the counter allocno's live range, so the sanctioned dead-store-to-a-local family buys nothing here.
+
+- [s3] [s3] Seventeen structural forms measured this session, none below 8: guard early-exit 8; i-init pre-rand 14; i-init after h 14; i-init duplicated 14; i-init top of case 15; i-init before the fade test 18 (137 insns); for-header hybrid 33; natural for 39 (135); natural while 39 (135); env-as-counter 22/21/21/21; counter shared with case 20 18/24; case-20 h hoist 14; that hoist plus pre-call init 19.
+
+- [s3] [s3] Reusable tooling added: tmp/grind/func_800174F4/s3/alloc.sh (BB2_ALLOC_DEBUG per-allocno priority table for the current src/ings.c), greg.sh (cc1 `-dg` dump with the allocno order list and conflict lists), findreg.sh <tag> <pseudo> (BB2_FINDREG_DEBUG dump of one allocno's complete find_reg decision state), apply.py (persistently splice a variant body into src/ings.c). Reading the priority/exclusion sets directly is far cheaper than inferring them from the score.
