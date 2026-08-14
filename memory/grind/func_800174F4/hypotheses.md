@@ -477,3 +477,82 @@ prelude per `.claude/rules/difficult-is-not-impossible.md`, seed from
 - probe: two fresh-seed campaigns on structurally different floor-8 chassis (`if (h != 0) {...}` guard = tmp/perm_ings, and the `if (h == 0) break;` early-exit spelling = tmp/perm_ings2), 46045 + 41859 iterations, 21 + 20 minutes, both harvested and stopped in-session.
 - result: both converged within 100 s to the SAME form - `i = 0;` hoisted to just after `v0 = rand();` - and produced nothing novel afterwards. That form is the already-rejected pre-call-init attractor and measures sandbox 8, i.e. WORSE. Root cause measured: the permuter's weighting makes trading the 2-point delay-slot reordering for the 6-point register cluster look like a 65-point gain while it is a 6-point honest loss. Undirected campaigns on this function are anti-aligned with the honest metric; only a chassis that already carried the lever produced anything useful.
 - verdict: KILLED
+
+## Session 5 (permuter, 2026-08-14)
+
+### H-S5-1 - KILLED (F4''-(a), s3's last untried arithmetic surface)
+- statement: `h`'s allocation priority can be pushed below the pre-call counter's 6153 by lowering its n_refs from 7 to 4 through a case-20 tail respelling that keeps `h` as the variable (folding the `|= 0x8000` and the table load into one expression), which would let a pre-call `i = 0;` keep $s0 and close the 2-point delay-slot residue.
+- mechanism: priority = floor_log2(n_refs)*n_refs/live_length*10000; at livelen 16, nrefs 4 gives 5000 < 6153 while nrefs 7 gives 8750.
+- probe: four case-20 tail spellings measured on the floor-2 base AND on the pre-call-init base (ternary fold, shift fold, `h` removed from the tail, two-step fold), plus an instrumented BB2_ALLOC_DEBUG table for the ternary fold.
+- result: 21 / 21 / 41 (137 insns) / 26 on the floor-2 base and 25 / 25 / 39 / 25 on the pre-call base. The instrumented table shows the fold takes `h` only to nrefs 6 / livelen 15 / pri 8000 (one ref removed, not two) and introduces a new allocno (pseudo 115, pri 7500) that takes reg 3 and pushes the selector from $a1(5) to $a0(4), destroying cluster (A). Reaching pri < 6153 needs nrefs <= 4, i.e. `h` out of the case-20 tail, which costs an instruction. With K5 (definition end) and K11 (case-20 hoist end) this closes the entire `h`-priority axis.
+- verdict: KILLED
+
+### H-S5-2 - KILLED (case-20 local merging, the ledger's low-priority frontier item)
+- statement: merging or re-purposing the case-20 locals (a2_val/new_val, div_result/counter, or reusing the dead `env` there) changes which pseudo occupies $s0 across `h`'s live range and therefore breaks the counter-vs-`h` tie in the counter's favour.
+- mechanism: `h`(73) and the counter(87) have no callee-save hard conflict, so only a pseudo actually assigned to reg 16 across `h`'s range could exclude it. `env` (pseudo 72) IS assigned $s0 by local-alloc, so extending its live range into case 20 - where it does not overlap the case-1/2 counter - was the one shape that could conflict with `h` alone.
+- probe: four merged spellings measured on the floor-2 base and the pre-call base: new_val merged into a2_val; div_result folded into its compare; `env` reused as case-20's div_result; `env` reused as case-20's counter.
+- result: 6 / 12, 2 / 8 (exactly neutral - a third equivalent spelling of the floor-2 form), 23 / 29, 12 / 18. Nothing below the floor; the `env` extensions degrade case 20 far more than the conflict change could buy.
+- verdict: KILLED
+
+### H-S5-3 - KILLED (the modality's own stopping question, decisive form)
+- statement: a decomp-permuter campaign seeded from a chassis where the permuter's weighted score is ALIGNED with the honest metric can close the $s0/$s1 register flip.
+- mechanism: the pre-call-init chassis already matches target's delay-slot placement, so its base-vs-target diff is nothing but register substitutions (weight 5 each, base score 80) and a permuter score of 0 would be an honest 0 - the anti-alignment s4 measured cannot mislead the search from there.
+- probe: fresh-seed campaign on that chassis (tmp/perm_ings5b, label s5-precall-basin, -j 6), waited on in-turn, harvested and stopped in-session.
+- result: 37,035 iterations / 19 minutes, ZERO finds. Combined with campaign 5a (floor-2 chassis, base 145, 43,747 iterations, one find at permuter 80 that measures sandbox 8 - the known pre-call attractor spelled `if (h == (i = 0))`), five campaigns and ~165k iterations across sessions 4 and 5 have produced exactly ONE useful proposal, and only from a chassis that already carried the lever by hand. The permuter modality is exhausted on this function.
+- verdict: KILLED
+
+## LIVE FRONTIER (for session 6)
+
+**F7 - the delay-slot residue is now a fully-closed arithmetic problem with one
+un-worked surface: the loop-note ref weighting.** Read this session from
+`tools/gcc-2.7.2/flow.c`: `reg_n_refs[regno] += loop_depth` (:2081, :2329,
+:2515, :2725), with `loop_depth` driven by `basic_block_loop_depth` /
+`NOTE_INSN_LOOP_BEG` (:1385, :1401, :1447). Our loop is GOTO-formed, so the
+front end emits NO loop note and every ref is weighted 1 - which is exactly why
+the counter reads nrefs 4 and `h` reads nrefs 7. If the front end emitted loop
+notes for this loop, the counter's in-loop refs (`i++` def+use, the compare
+use) would be weighted 2, taking it to nrefs ~7 at the pre-call livelen 13
+(pri 2*7/13 = 10769 > 8750) - but `h`'s in-loop `slt` use would be re-weighted
+too (nrefs ~8-9 at livelen 16, pri 15000+), so the naive form LOSES. The
+un-worked question is whether any loop-note-emitting shape re-weights the
+counter WITHOUT re-weighting `h` (e.g. an exit test that does not read `h` at
+the deeper depth). NOTE: K8 measured the two natural loop forms at 39 / 135
+insns, so any loop-note form must first reproduce target's single `beqz $s1`
+entry test. Cheap first step: compute the weighted refs for both pseudos from a
+`-dg` dump of one loop-note form BEFORE scoring it.
+
+**F8 - the modality ladder, not the levers, is what is left.** Structural
+(s2, s3) and permuter (s4, s5) are both measured out; every sanctioned axis on
+the two competing allocnos - counter n_refs (K10, and no honest ref-adder
+exists), counter live_length (fixed at 13 by the delay-slot requirement),
+`h` live_length (K5, K11), `h` n_refs (H-S5-1) - is dead, and there is no
+conflict-level route (this session's `-dg` reading). The untried modalities are
+FORENSICS (read the `.dbr` dump directly: is there ANY other insn reorg.c could
+legally pull into the `jal rand` delay slot by its backward search - e.g. a
+`mask`/`prim`/`D_800A374C` computation deliberately sunk to just before the
+call - and does target's `move s0,zero` have to be `i = 0;` at all?) and
+REDERIVE (re-read insns 43-60 of target on the assumption that the counter is
+initialised from something other than a literal `i = 0;` statement).
+
+**F9 [low priority, unchanged] - other single-variable-multiple-live-range
+reuses.** The `mode` lever (s4) generalises; the case-20 locals were swept this
+session (H-S5-2) and are dead, but the s4 statement about `prim`/`env` roles has
+not been swept in the case-1/2 arm.
+
+## [s5] h's allocation priority can be pushed below the pre-call counter's 6153 by lowering h's n_refs from 7 to 4 through a case-20 tail respelling that keeps h as the variable (folding the |= 0x8000 and the table load into one expression) - s3's last untried arithmetic surface, which would let a pre-call `i = 0;` keep $s0 and close the 2-point delay-slot residue.
+- mechanism: global.c:allocno_compare priority = floor_log2(n_refs)*n_refs/live_length*10000; at h's live_length 16, n_refs 4 gives 5000 < the pre-call counter's 6153, while n_refs 7 gives 8750.
+- probe: Four case-20 tail spellings measured with `sandbox func_800174F4 --disable all` on BOTH the floor-2 base and the pre-call-init base (ternary fold, shift fold, h removed from the tail entirely, two-step fold), plus a BB2_ALLOC_DEBUG allocno table for the ternary fold (tmp/grind/func_800174F4/s3/alloc_s5ab1.txt).
+- result: 21 / 21 / 41 (137 insns) / 26 on the floor-2 base; 25 / 25 / 39 (137) / 25 on the pre-call base. The instrumented table shows the fold takes h only to n_refs 6 / live_length 15 / pri 8000 - it removes ONE ref, not two, and 8000 is still far above 6153 - and it creates a NEW allocno (pseudo 115, pri 7500) that takes reg 3 and pushes the switch selector from $a1(5) to $a0(4), destroying cluster (A). Reaching pri < 6153 needs n_refs <= 4, i.e. h out of the case-20 tail, which costs an instruction. With s2's K5 (h's definition end) and s3's K11 (the case-20 hoist end) this closes the entire h-priority axis.
+- verdict: KILLED
+
+## [s5] Merging or re-purposing the case-20 locals (a2_val/new_val, div_result/counter, or reusing the dead `env` there) changes which pseudo occupies $s0 across h's live range and breaks the counter-vs-h tie in the counter's favour.
+- mechanism: From the floor-2 -dg dump, h(73) and the counter(87) have NO callee-save hard conflict, so only a pseudo actually assigned to reg 16 across h's range could exclude it. `env` (pseudo 72) IS assigned $s0 by local-alloc, so extending its live range into case 20 - where it does not overlap the case-1/2 counter - was the one shape that could conflict with h alone.
+- probe: Four merged spellings measured on the floor-2 base and on the pre-call base: new_val merged into a2_val; div_result folded into its compare; `env` reused as case-20's div_result; `env` reused as case-20's counter.
+- result: 6 / 12, 2 / 8 (exactly neutral - a third equivalent spelling of the floor-2 form, one local fewer), 23 / 29, 12 / 18. Nothing below the floor; the env extensions degrade case 20 far more than the conflict change could buy.
+- verdict: KILLED
+
+## [s5] A decomp-permuter campaign seeded from a chassis where the permuter's weighted score is ALIGNED with the honest metric can close the $s0/$s1 register flip (the modality's own stopping question, in its decisive form).
+- mechanism: The pre-call-init chassis already matches target's delay-slot placement, so its base-vs-target insn diff is nothing but register substitutions (weight 5 each; base score 80) and a permuter score of 0 would be an honest 0 - the metric anti-alignment s4 measured cannot mislead the search from that basin.
+- probe: Fresh-seed campaign on that chassis (tmp/perm_ings5b, label s5-precall-basin, -j 6), validated pre-launch with mkws2.sh (base-vs-target diff = the register flip only), waited on in-turn with `permuter_campaign.py wait`, harvested and --stop'd in-session.
+- result: 37,035 iterations / 19 minutes, ZERO finds. The companion campaign on the floor-2 chassis (tmp/perm_ings5a, base score 145 - WORSE than the honest-8 form's 80) ran 43,747 iterations and produced ONE find at permuter 80, `if (h == (i = 0)) { break; } i = 0;`, which measures sandbox 8 honestly (as do its two hand-reductions) - the known anti-aligned pre-call attractor in a new spelling. Five campaigns and ~165k iterations across s4+s5 have produced exactly ONE useful proposal, and only from a chassis that already carried the lever by hand.
+- verdict: KILLED

@@ -45,6 +45,21 @@
  * table value; `if (h == 0) break;` and `if (h != 0) { ... }` are exactly
  * equivalent spellings.
  *
+ * SESSION 5 (permuter) left this body UNCHANGED and re-confirmed it at 2.
+ * What it added: the floor-2 allocno table (counter pseudo 87 = nrefs 4 /
+ * livelen 9 / pri 8888 -> $s0; `h` pseudo 73 = nrefs 7 / livelen 16 /
+ * pri 8750 -> $s1 - the same 1.6% margin s3 measured on the floor-8 base), a
+ * `-dg` reading showing neither allocno has a callee-save hard conflict (so
+ * allocno_compare ORDER is the only lever), and kills for the last two open
+ * axes: lowering `h`'s n_refs by folding the case-20 tail (21/21/41/26 - the
+ * fold only reaches nrefs 6 / pri 8000 and its temp allocno steals reg 3,
+ * pushing the selector off $a1), and every case-20 local merge including
+ * reusing `env` there (6/2/23/12). Two more permuter campaigns, one of them
+ * from the ALIGNED pre-call-init basin (base 80, 37k iterations, ZERO finds),
+ * close the permuter modality. Note one equivalent respelling measured
+ * neutral: `div_result` may be folded into its compare (`if (h / (mode + 1)
+ * >= counter)`), one local fewer, still 2.
+ *
  * 100% pure C. Zero pins, zero inline asm, zero dead code.
  */
 void func_800174F4(void) {

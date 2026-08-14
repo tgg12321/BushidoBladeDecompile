@@ -480,3 +480,145 @@ measured forms). Campaign workspaces + logs: `tmp/perm_ings/`, `tmp/perm_ings2/`
 - [s4] [s4] VETTING STATUS of the floor-2 form: `mode` carrying two values is the SOTN-sanctioned 'variable reuse for codegen control' family (frozen list, .claude/rules/no-new-park-categories.md), and the resulting body has one FEWER local than the floor-8 form. It has NOT been through a cheat-reviewer, because the floor is 2 and not 0 - it is banked as the measured best form, not as a submission. Whichever session reaches 0 must self-vet it.
 
 - [s4] [s4] All three campaigns were launched, waited on in-turn (`permuter_campaign.py wait`), harvested and --stop'd inside this session; zero permuter processes survive it.
+
+## Session 5 (permuter, 2026-08-14) - floor stays 2; the permuter modality is now measured exhausted
+
+### THE HEADLINE
+Two more fresh-seed campaigns (both launched, waited on in-turn, harvested and
+--stop'd inside the session; zero permuter processes survive it) close the
+permuter question for this function, and the F4'' arithmetic is attacked from
+its last untried direction (h's n_refs) and killed with an instrumented reading.
+
+### Campaign 5b - the ALIGNED basin, and the decisive negative result
+Chassis: the floor-2 body with `i = 0;` hoisted to the FIRST statement of the
+`if (g_disp_fade != 0)` block (the pre-call placement reorg.c needs). Validated
+before launch with mkws2.sh: the base-vs-target insn diff of that chassis is
+NOTHING but the $s0/$s1 register flip (insns 51/53/54/59/61/117/120/121) - the
+2-point delay-slot residue is already GONE in it, and sandbox reads it at 8.
+This is the one chassis on this function where decomp-permuter's weighted score
+is ALIGNED with the honest metric: every remaining diff is a register
+substitution (weight 5), base score 80, and a permuter score of 0 would be an
+honest 0. Result: 37,035 iterations / 19 minutes, ZERO finds. The permuter
+cannot reach the register flip from that basin by any mutation in its
+repertoire. That is the strongest available statement that this residual is not
+a search-depth problem in permuter space.
+
+### Campaign 5a - the floor-2 chassis (the inherited F6' probe)
+Chassis: candidate.c verbatim; mkws2.sh confirms the base-vs-target diff is
+exactly the two delay-slot lines (nop vs `move s0,zero` and its mirror).
+Permuter base score 145, i.e. the honest floor-2 form scores WORSE in permuter
+space than the honest floor-8 pre-call form (80) - a third independent
+confirmation of the metric anti-alignment s4 measured. 43,747 iterations /
+~48 min, ONE find: `output-80-1`, permuter 80, the form
+`if (h == (i = 0)) { break; } i = 0;` - an embedded assignment that starts the
+counter's live range before the guard branch. Measured honestly: 8. Two
+hand-reductions of it (`if (h == (i = 0))` alone; `h = (i = 0) + v0 + 4;`) are
+also 8. Exactly the known anti-aligned attractor in a new spelling.
+
+### The floor-2 allocno table (the ledger's next-probe #1, now measured)
+`tmp/grind/func_800174F4/s3/alloc.sh s5base` on the floor-2 base:
+
+| ord | pseudo | role | hardreg | nrefs | livelen | pri |
+|---|---|---|---|---|---|---|
+| 0 | 86 | (short-lived temp) | 2 | 4 | 3 | 26666 |
+| 1 | 76 | the switch selector `mode` | 5 ($a1) | 11 | 28 | 11785 |
+| 2 | 87 | the case-1/2 loop counter | 16 ($s0) | 4 | 9 | 8888 |
+| 3 | 73 | `h` (loop-limit + table-value web) | 17 ($s1) | 7 | 16 | 8750 |
+| 6 | 74 | `prim` | 18 ($s2) | 8 | 76 | 3157 |
+| 8 | 82 | `h`'s 0xF0/div web | 17 ($s1) | 4 | 58 | 1379 |
+
+Cluster (A)'s win is visible: the selector is now an 11-ref / 28-length allocno
+(the second live range) and lands on $a1 directly. The counter-vs-`h`
+inequality is UNCHANGED by it: 8888 vs 8750, the same 1.6% margin s3 measured
+on the floor-8 base. s3's arithmetic therefore still governs verbatim.
+
+### Why the tie is decided by ORDER and nothing else (new, from the -dg dump)
+`;; 8 regs to allocate: 86 76 87 73 101 102 74 82` with
+`;; 73 conflicts: 73 74 76 87 2 4 5 29` and `;; 87 conflicts: 73 74 87 2 4 5 29`.
+Neither `h` nor the counter has a CALLEE-SAVE hard conflict, and they conflict
+with each other - so whichever global-alloc reaches first takes $s0(16) and the
+other takes $s1(17). `;; Register dispositions` shows `72 in 16` as well: the
+drawenv-address pseudo 72 is assigned $s0 by LOCAL-alloc and conflicts with
+neither, which is exactly how target shares $s0 between the buffer address and
+the counter. There is no conflict-level route to force `h` off $s0; the ONLY
+lever is allocno_compare priority, i.e. the s3 inequality.
+
+### F4''-(a) KILLED: `h`'s n_refs cannot be lowered
+s3 left "make h's n_refs drop from 7 to 4 without splitting the variable" as the
+untried surface (at livelen 16 that gives 5000 < the pre-call counter's 6153).
+Four case-20 tail spellings measured on BOTH bases:
+
+| case-20 tail form | floor-2 base | pre-call base |
+|---|---|---|
+| `h = tbl[a0] | ((cond) ? 0x8000 : 0);` (one def, one use) | 21 | 25 |
+| same with `<< 15` instead of the ternary | 21 | 25 |
+| `h` removed from the tail entirely (expression argument) | 41 (137 insns) | 39 (137) |
+| two-step `h = tbl[a0]; h = h | (...);` | 26 | 25 |
+
+Instrumented (`alloc.sh s5ab1`, the ternary fold on the floor-2 base): the fold
+moves `h` from nrefs 7 / livelen 16 / pri 8750 to nrefs 6 / livelen 15 /
+pri 8000 - it removes ONE ref, not two, and 8000 is still far above 6153.
+Worse, it introduces a NEW allocno (pseudo 115, the fold temp, nrefs 3 livelen 4
+pri 7500) that takes reg 3, which pushes the selector from reg 5 ($a1) to reg 4
+($a0) and DESTROYS cluster (A) - that is where the 21 comes from. Reaching
+pri < 6153 needs nrefs <= 4, i.e. `h` out of the case-20 tail altogether, which
+is the 137-insn form. The axis is dead from this end too, joining K5 (h's
+definition end) and K11 (the case-20 hoist end).
+
+### Case-20 local merging KILLED (the ledger's low-priority frontier item 2)
+Measured on the floor-2 base / the pre-call base: `new_val` merged into
+`a2_val` 6 / 12; `div_result` folded into its compare 2 / 8 (exactly
+neutral - a second equivalent spelling of the floor-2 form); `env` reused as
+case-20's `div_result` 23 / 29; `env` reused as case-20's `counter` 12 / 18.
+The `env`-reuse probes were mechanism-motivated (a case-20 local landing in
+$s0 would put reg 16 in `h`'s conflict set) and they are dead: reusing `env`
+that late degrades case 20 far more than the conflict change could buy.
+
+### Artifacts (session 5)
+`tmp/grind/func_800174F4/s5/` - `chassisA.c` (the floor-2 body), `chassisB.c`
+(the pre-call-init body), `genc.py`/`gend.py`/`bank.py`/`ledger.py` (variant
+generators + bookkeeping), `variants/*.c` (19 measured forms). Campaign
+workspaces + logs: `tmp/perm_ings5a/` (campaign.log, campaign_meta.json,
+output-80-1/source.c), `tmp/perm_ings5b/`. Instrumented dumps:
+`tmp/grind/func_800174F4/s3/alloc_s5base.txt`, `alloc_s5ab1.txt`,
+`ings_s5b2.i.greg`.
+
+- [s5] The floor-2 allocno arithmetic is IDENTICAL to s3's floor-8 arithmetic: counter pseudo 87 = nrefs 4 / livelen 9 / pri 8888 -> $s0(16); `h` pseudo 73 = nrefs 7 / livelen 16 / pri 8750 -> $s1(17). Closing cluster (A) did not perturb the inequality at all, so every F4' number s3 derived carries over verbatim to the floor-2 base.
+
+- [s5] The switch selector is now pseudo 76 with nrefs 11 / livelen 28 / pri 11785 and lands on reg 5 ($a1) directly - the cluster-(A) fix is visible in the allocno table as the second live range, not as a preference.
+
+- [s5] From the floor-2 `-dg` dump: `h`(73) conflicts {73,74,76,87} + hard {2,4,5,29}; the counter(87) conflicts {73,74} + hard {2,4,5,29}. NEITHER has a callee-save hard conflict and they conflict with each other, so whichever global-alloc reaches FIRST takes $s0. `;; Register dispositions` also shows `72 in 16`: the drawenv-address pseudo is LOCAL-alloc'd into $s0 and conflicts with neither - which is exactly how target shares $s0 between the buffer address and the loop counter. There is no conflict-level lever; allocno_compare order is the only one.
+
+- [s5] MEASURED KILL of F4''-(a) (s3's last untried arithmetic surface): lowering `h`'s n_refs by folding the case-20 tail. Four spellings measured on two bases (21/21/41/26 on floor-2; 25/25/39/25 on the pre-call base). Instrumented, the ternary fold takes `h` from nrefs 7 / livelen 16 / pri 8750 only to nrefs 6 / livelen 15 / pri 8000 - one ref, not two, still far above the pre-call counter's 6153 - and it creates a new allocno (pseudo 115) that steals reg 3 and pushes the selector off $a1, destroying cluster (A). Getting `h` under 6153 requires nrefs <= 4, i.e. removing `h` from the case-20 tail, which costs an instruction (137 insns).
+
+- [s5] MEASURED KILL of case-20 local merging: new_val-into-a2_val 6/12, div_result folded into its compare 2/8 (neutral), `env` reused as case-20 div_result 23/29, `env` reused as case-20 counter 12/18. The env-reuse probes were mechanism-motivated (a case-20 local in $s0 would put reg 16 into `h`'s conflict set) and are dead.
+
+- [s5] MEASURED: `if (div_result >= counter)` written with the divide inline (`if (h / (mode + 1) >= counter)`, one local fewer) is exactly neutral at 2 - a third equivalent spelling of the floor-2 form.
+
+- [s5] DECISIVE permuter negative: a campaign seeded from the pre-call-init chassis - the one basin on this function where the permuter's weighted score is ALIGNED with the honest metric (the delay slot already matches; every remaining diff is a register substitution; base 80, and permuter 0 would be honest 0) - produced ZERO finds in 37,035 iterations / 19 minutes. The register flip is not reachable by decomp-permuter mutation.
+
+- [s5] The floor-2 form's permuter base score is 145, WORSE than the honest-8 pre-call form's 80. Third independent confirmation of the metric anti-alignment; the only find from a 43,747-iteration campaign on the floor-2 chassis was `if (h == (i = 0)) { break; } i = 0;` at permuter 80, which measures sandbox 8 (as do its two hand-reductions). Never read a permuter score on this function as progress.
+
+- [s5] Read from tools/gcc-2.7.2/flow.c: `reg_n_refs[regno] += loop_depth` at :2081/:2329/:2515/:2725, with loop_depth driven by basic_block_loop_depth / NOTE_INSN_LOOP_BEG (:1385/:1401/:1447). Our loop is GOTO-formed, so the front end emits no loop note and every ref is weighted 1 - which is why the counter reads exactly nrefs 4 (i=0, i++ def+use, the compare use). A form that makes the front end emit real loop notes would re-weight IN-LOOP refs for the counter AND for `h` simultaneously; the arithmetic has NOT been worked out and the only measured loop-note forms so far (K8's natural for/while) cost an instruction.
+
+- [s5] All campaigns launched this session were harvested and --stop'd in-session; `permuter_campaign.py status` shows every workspace (including s4's) with alive:false at session end.
+
+- [s5] The floor-2 allocno arithmetic is IDENTICAL to s3's floor-8 arithmetic: counter pseudo 87 = n_refs 4 / live_length 9 / pri 8888 -> $s0(16); h pseudo 73 = n_refs 7 / live_length 16 / pri 8750 -> $s1(17). Closing cluster (A) did not perturb the inequality at all, so every number s3 derived for F4' carries over verbatim to the floor-2 base (the ledger's next-probe #1, now answered).
+
+- [s5] The switch selector is now pseudo 76 with n_refs 11 / live_length 28 / pri 11785 and lands on reg 5 ($a1) directly - s4's cluster-(A) fix is visible in the allocno table as a second live range, not as a preference.
+
+- [s5] From the floor-2 cc1 -dg dump: `;; 8 regs to allocate: 86 76 87 73 101 102 74 82`, `;; 73 conflicts: 73 74 76 87 2 4 5 29`, `;; 87 conflicts: 73 74 87 2 4 5 29`. NEITHER h nor the counter has a callee-save hard conflict and they conflict with each other, so whichever global-alloc reaches FIRST takes $s0. `;; Register dispositions` also shows `72 in 16`: the drawenv-address pseudo is LOCAL-alloc'd into $s0 and conflicts with neither - which is exactly how target shares $s0 between the buffer address and the loop counter. There is no conflict-level lever on this residual; allocno_compare ORDER is the only one.
+
+- [s5] MEASURED KILL of s3's F4''-(a): folding the case-20 tail lowers h only to n_refs 6 / pri 8000 (not the required <= 4 / 5000) and its fold temp (pseudo 115) steals reg 3, knocking the selector off $a1 - 21/21/41/26 on the floor-2 base, 25/25/39/25 on the pre-call base.
+
+- [s5] MEASURED KILL of case-20 local merging incl. the mechanism-motivated env-reuse probes: 6/12, 2/8, 23/29, 12/18.
+
+- [s5] MEASURED: `if (h / (mode + 1) >= counter)` with the divide inline (dropping the div_result local) is exactly neutral at 2 - a third equivalent spelling of the floor-2 form.
+
+- [s5] DECISIVE permuter negative: from the ALIGNED pre-call-init basin (base 80; only register substitutions separate it from a byte match) decomp-permuter found NOTHING in 37,035 iterations / 19 minutes. The register flip is not reachable by permuter mutation, so this residual is not a search-depth problem in permuter space.
+
+- [s5] The floor-2 form's permuter base score is 145 while the honest-8 pre-call form's is 80 - a third independent confirmation of the metric anti-alignment. Never read a permuter score on this function as progress.
+
+- [s5] Read from tools/gcc-2.7.2/flow.c: `reg_n_refs[regno] += loop_depth` at :2081/:2329/:2515/:2725, with loop_depth driven by basic_block_loop_depth / NOTE_INSN_LOOP_BEG (:1385/:1401/:1447). Our loop is GOTO-formed, so the front end emits no loop note and every ref is weighted 1 - which is exactly why the counter reads n_refs 4 and h reads 7. Loop-note re-weighting is the one un-worked surface of the inequality.
+
+- [s5] All campaigns launched this session were harvested and --stop'd in-session; `permuter_campaign.py status` reports alive:false for every workspace (including session 4's) at session end.
