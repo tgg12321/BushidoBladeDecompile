@@ -1042,3 +1042,128 @@ table, tmp/grind/func_8003504C/s7/alloc.sh):
 - [s9] The three necessary conditions for target's preheader are now each measured and jointly contradictory: (1) the walker's allocno must outrank the counter's, which only a SOURCE pseudo carrying the post-loop D_801027D8 reuse achieves (11 refs / pri 10645 vs 10000); (2) INSN_LUID(walker init) > INSN_LUID(li 20); (3) the two constants are loop.c movables inserted after every pre-loop source statement. (2)+(3) force the walker init to be a loop.c emission, (1) forces it to be a source pseudo - so the fourth chassis (a loop.c loop_start emission whose destination IS a source pseudo) is the only remaining structural route.
 
 - [s9] The floor is unchanged at 4 (141/141 instructions, four differing positions, all the pre-loop rotation li t2,5 / li t1,20 versus move t3,v0 / move a2,t3). src/code6cac_b.c is left carrying memory/grind/func_8003504C/candidate.c.
+
+## Session 10 (synthesis) - FLOOR 4 -> 0.  The preheader rotation is closed.
+
+The merged attack this session was: (a) finish the ledger's frontier item 1 by
+READING loop.c rather than measuring it, (b) run the never-yet-run permuter
+campaign on the four-position chassis, (c) re-derive, from session 8's sched1
+model, what a closing preheader would have to look like.  (a) and (b) both
+landed, and together they closed the function.
+
+### The closing form (honest distance 0, 141/141, zero differing positions)
+The session-7/9 candidate, plus ONE change: loop 1's two compare constants 5 and
+20 are held in pre-loop locals whose assignments come BEFORE the walker copy
+"s = (u8 *)p;".
+
+    s32 new_var;    /* FAKE-annotated in src - see self_vet.md */
+    s32 new_var2;
+    ...
+    p = func_80077D00();
+    i = 0;
+    new_var = 5;
+    new_var2 = 20;
+    s = (u8 *)p;
+    ...  if (... || (s8)lv == new_var || ... || (s8)lv == new_var2) ...
+
+Measured gradient on this chassis, all at 141/141 instructions:
+  * literals inline (the session-9 candidate)                      -> 4
+  * 5 alone held, assigned BEFORE s = p                            -> 2
+  * both held, assigned BEFORE s = p                               -> **0**
+  * both held, assigned AFTER s = p (session 7's v_p2a)            -> 4
+
+### Why it works - session 8's model, unchanged, finally satisfied
+Session 8's exact requirement was INSN_LUID(s = p) > INSN_LUID(li 20).  As
+literals the two constants are loop.c MOVABLES, and move_movables inserts every
+movable immediately before NOTE_INSN_LOOP_BEG, i.e. after EVERY pre-loop source
+statement - so as literals they can only ever carry HIGHER LUIDs than s = p,
+and sched1's backward list schedule puts them behind the two p-copies.  Held in
+locals assigned ahead of s = p, their li's become ordinary pre-loop SOURCE
+insns with LUIDs BELOW s = p's, and the backward schedule emits target's order
+exactly: i=0 / li 5 / li 20 / p=v0 / s=p / b / w-giv-init.
+Sessions 8 and 9 sought this LUID property in loop.c's emission classes and never
+tested the opposite direction - lowering the constants' LUIDs instead of raising
+the walker's.  That was the blind spot; the model itself was right all along.
+
+### CORRECTION to session 9's H4 (important - do not re-inherit the old reason)
+Session 9 recorded v_p2a (pre-loop constant locals) as scoring 4 because "cse
+propagates the constants into the loop body, the pre-loop li's become dead and
+are deleted, and loop.c re-hoists fresh li's as movables".  That explanation is
+WRONG.  v_p2a assigns c5 = 5; c20 = 20; AFTER s = (u8 *)p;
+(rejected/preloop-constant-locals-are-cse-folded-and-loop-c-rehoists-them.c,
+lines 12-16), so the holders' LUIDs are HIGHER than the walker copy's and the
+backward schedule still places them behind it - the same emission as literals.
+cse does not fold them away at all; the ORDER of the two initialisations is the
+entire lever.  A one-line source-order difference separated a score-4 rejection
+from a score-0 match for three sessions.
+
+### Frontier item 1 (the "fourth chassis") - KILLED by reading loop.c
+The ledger's top frontier hypothesis was that a loop.c emission at loop_start
+whose destination is a SOURCE pseudo exists (combine_movables' m->match
+register copies, or move_movables' m->partial path).  Read out of
+tools/gcc-2.7.2/loop.c this session:
+  * The only loop_start emission whose destination is a source pseudo is
+    move_movables' "m->partial && m->match" branch (loop.c:1641-1668), which
+    emits (set r1 r2) before loop_start.  m->partial is set ONLY at
+    loop.c:838-862, which requires the insn after the "reg = 0" to be a
+    STRICT_LOW_PART (SUBREG ...) set - the zero-extend-clear idiom.  The MIPS
+    backend has no movstrict* pattern at all (grep -n strict_low_part
+    tools/gcc-2.7.2/config/mips/mips.md returns nothing), so STRICT_LOW_PART
+    never appears in this target's RTL and m->partial is never 1.  The branch
+    is dead code on MIPS.
+  * combine_movables (loop.c:1244-1288) for NON-partial movables sets
+    m1->done = 1; m1->match = m;, which UNIFIES the two registers through
+    reg_map - it emits no insn at loop_start at all.
+  * The giv path never yields a source-pseudo destination either:
+    v->new_reg = gen_reg_rtx (v->mode) (loop.c:3861) is always a fresh pseudo,
+    and the only copy back to v->dest_reg is emit_insn_after (gen_move_insn
+    (v->dest_reg, v->new_reg), v->insn) (loop.c:3948) - inside the loop, at the
+    giv's own insn, not at loop_start.
+So the fourth chassis does not exist, and it did not need to: the answer was to
+lower the constants' LUIDs, not to raise the walker's.
+
+### Frontier item 2 (the live_length definition) - KILLED arithmetically
+The hypothesis was that allocno_live_length might count something other than
+the block-span figure, reopening the giv chassis.  cc1's OWN table
+(BB2_ALLOC_DEBUG) reports len 33 for the counter, which is exactly 6 preheader
+insns after its def plus loop 1's 27-insn body - the block-span interpretation,
+and the number is measured, not modelled.  The giv-chassis flip needs L_i >= 36
+with refs 11, i.e. NINE preheader insns after the counter's def, against target's
+byte-forced SEVEN-insn preheader.  Unreachable.  (Moot in any case now that the
+source-pseudo chassis closes.)
+
+### The permuter campaign (frontier item 3 - never run on this chassis)
+tmp/grind/func_8003504C/s10/ws10, label s10-4pos-chassis-random, base permuter
+score 120, -j 8, --stop-on-zero, 30112 iterations over 610 s, harvested and
+STOPPED in-session.  Two novel finds: a score-120 tie at 260 s and
+**output-60-1 at 396 s** - "int new_var = 5;" assigned before "s = (u8 *)p;" and
+used as the first equality operand.  That find is half the closing form; the
+second holder, the requirement that both assignments precede s = p, and the
+prediction that this reproduces target's preheader came from session 8's model,
+and each step was measured separately (4 -> 2 -> 0).  Session 4's ws3 campaign
+had run on the seven-position chassis and found nothing; on the four-position
+chassis the basin yielded in under seven minutes.
+
+- [s10] FLOOR 0: sandbox func_8003504C --disable all = 0, target_insns 141,
+  build_insns 141, with memory/grind/func_8003504C/candidate.c spliced into
+  src/code6cac_b.c.  Zero differing normalized positions.
+- [s10] The closing lever is loop 1's two compare constants held in pre-loop
+  locals ASSIGNED BEFORE the walker copy s = (u8 *)p;.  Assigned after it, the
+  same two locals measure 4 (session 7's v_p2a) - the order is the whole lever.
+- [s10] Session 9's stated reason for v_p2a's failure (cse folds the constants
+  and loop.c re-hoists them) is disproven: the constants survive as source insns
+  in both orders; what differs is their INSN_LUID relative to s = p.
+- [s10] loop.c's "m->partial && m->match" loop_start copy emission (loop.c:1641)
+  is DEAD CODE on MIPS: m->partial requires a STRICT_LOW_PART zero-extend idiom
+  (loop.c:838-862) and mips.md has no movstrict* pattern.  combine_movables
+  for non-partial movables unifies registers via reg_map and emits nothing.  The
+  giv path's v->new_reg is always a fresh pseudo (loop.c:3861) and its only
+  copy back to the source pseudo is emitted INSIDE the loop (loop.c:3948).
+- [s10] Permuter campaign on the four-position chassis (30112 iters / 610 s,
+  base 120): finds at 120 (260 s) and 60 (396 s); the 60 is the one-constant half
+  of the closing form.  Campaign harvested and stopped in-session.
+- [s10] src/code6cac_b.c is left carrying the score-0 candidate, with the
+  mandatory FAKE annotation on the two constant-holder locals and the full
+  six-test vet in memory/grind/func_8003504C/self_vet.md.  The function still
+  carries its 9 regfix/asmfix rules in the pipeline files - retiring them is the
+  operator/driver's step, not this session's.

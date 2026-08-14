@@ -3938,39 +3938,49 @@ void func_80034F88(void) {
 void func_8003504C(void) {
     s32 *p;
     s32 i;
-    u8 *src;
-    u8 *ptr;
-    s8 *base;
+    u8 *s;
+    /* FAKE: 5 and 20 held in locals so their `li`s are pre-loop SOURCE insns
+       whose LUIDs are lower than the walker copy `s = p`; mechanism: sched.c
+       rank_for_schedule's INSN_LUID tie-break inside sched1's backward list
+       schedule (written as literals they are loop.c movables, and move_movables
+       inserts every movable after ALL pre-loop statements, which emits them
+       behind the two p-copies); lever-exhaustion: sessions 1-9 of
+       memory/grind/func_8003504C/hypotheses.md. */
+    s32 new_var;
+    s32 new_var2;
+    s32 *q;
     s8 val;
     u8 tmp;
 
     p = func_80077D00();
     i = 0;
-    src = (u8 *)p;
-    base = &D_80102785;
-    ptr = (u8 *)(base - 9);
+    new_var = 5;
+    new_var2 = 20;
+    s = (u8 *)p;
 
     do {
-        s32 lv = (&D_8008D55C)[*src];
-        *ptr = lv;
-        if ((u32)(lv - 3) < 2 || (s8)lv == 5 || (u32)(lv - 18) < 2 || (s8)lv == 20) {
-            if (*base == 0) {
-                *ptr = *ptr - 3;
+        s8 *b = &D_80102785;
+        u8 *w = (u8 *)b - 9;
+        s32 lv = (&D_8008D55C)[s[0]];
+        w[i] = lv;
+        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
+            if (*b == 0) {
+                w[i] = w[i] - 3;
             }
         }
-        tmp = src[1];
-        src += 10;
+        tmp = s[1];
+        s += 10;
         (&D_80102780)[i] = 0;
         (&D_8010277E)[i] = tmp;
         i++;
-        ptr++;
     } while (i < 2);
 
     D_80102784 = ((u32)p[5] >> 4) & 0x3F;
+    q = &p[8];
+    D_80102786 = ((u32)*q >> 3) & 1;
     D_800A36F6 = 0;
-    D_80102786 = ((u32)p[8] >> 3) & 1;
-
     val = D_80102785;
+
     if (val == 2) {
         D_800A389A = ((u32)p[5] >> 17) & 1;
         D_800A3788 = ((u32)p[5] >> 18) & 7;
@@ -3986,10 +3996,11 @@ void func_8003504C(void) {
             sel = 2;
         }
         D_800A37F8 = sel;
+        s = &D_801027D8;
         D_800A38E1 = ((u32)p[5] >> 15) & 3;
         {
             s32 j = 0;
-            u8 *dst_d = &D_801027D8;
+            u8 *dst_d = s;
             u8 *dst_a = &D_801027A0;
             do {
                 s32 k = 0;

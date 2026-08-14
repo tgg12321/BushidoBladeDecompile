@@ -1,74 +1,86 @@
-/* candidate.c - func_8003504C - SESSION 7 (forensics) replacement candidate.
+/* candidate.c - func_8003504C - SESSION 10 (synthesis).  HONEST DISTANCE 0.
  *
- * `sandbox func_8003504C --disable all` = **4**, 141/141 instructions, and
- * only **FOUR** differing normalized positions (the session-4 candidate this
- * replaces scored the same 4 but had SEVEN).  The entire residual is one
- * rotation inside the pre-loop block:
+ * `sandbox func_8003504C --disable all` = **0**, 141/141 instructions, ZERO
+ * differing normalized positions, measured this session with this exact body
+ * spliced into src/code6cac_b.c.  It replaces the session-7/9 candidate, which
+ * scored 4 (the pre-loop rotation) and is otherwise IDENTICAL to this form.
  *
- *     target  ... li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 ...
- *     ours    ... move t3,v0 / move a2,t3 / li t2,5 / li t1,20 / lui t0 ...
+ * WHAT CHANGED FROM THE SESSION-9 CANDIDATE (the whole delta, 4 -> 0):
+ *   the two loop-1 compare constants 5 and 20 are held in pre-loop locals that
+ *   are assigned BEFORE the walker copy `s = (u8 *)p;`.
  *
- * Every other instruction in the function - including the loop-1 register
- * assignment (p-walker $a2, counter i $a3, D_8010277C walker $a1, guard base
- * $t0), the `addiu a1,t0,-9` derivation and both bitfield-extraction clusters
- * - matches target byte for byte and register for register.
+ * WHY THAT IS THE WHOLE RESIDUAL (session 8's sched1 model, unchanged):
+ * sched1 fills a block BACKWARDS, repeatedly taking the insn with the greatest
+ * (INSN_PRIORITY, INSN_LUID) among those whose in-block successors are already
+ * placed.  Target's preheader is
+ *     move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 /
+ *     lui t0 / addiu t0 / addiu a1,t0,-9
+ * so `s = p` (move a2,t3) has to be placed 5th.  There it is tied at priority 1
+ * with the two `li`s, and priority ties go to the HIGHER LUID, so target's order
+ * requires INSN_LUID(`s = p`) > INSN_LUID(`li 20`).  Written as literals the two
+ * constants are loop.c MOVABLES, and move_movables inserts every movable
+ * immediately before NOTE_INSN_LOOP_BEG - i.e. after EVERY pre-loop source
+ * statement - so as literals they can only ever land BEHIND the two p-copies
+ * (that is the session-4..9 chassis's 4-point residual).  Held in locals
+ * assigned ahead of `s = p`, their `li`s are ordinary pre-loop SOURCE insns with
+ * LUIDs below `s = p`'s, and the backward schedule then emits target's order
+ * exactly: i=0, li 5, li 20, p=v0, s=p, b, w-giv-init.
  *
- * How it is built (session 6's h1 chassis crossed with session 4's lever):
- *   1. `b` / `w` are assigned INSIDE loop 1's body.  As in-loop loop
- *      invariants loop.c hoists them as MOVABLES, which is what puts target's
- *      `lui t0 / addiu t0` in the preheader with $t0 live across the loop
- *      (guard reads `lb v0,0(t0)`), and makes the D_8010277C walker giv's
- *      initial value `(plus (reg b) (const_int -9))` = target's third
- *      preheader insn `addiu a1,t0,-9`.   [session 6, gaps (a) and (b)]
- *   2. The loop-1 p-walker is a SOURCE pointer `s` (not an i-indexed
- *      expression strength-reduced into a giv), and `s` - dead after loop 1 -
- *      carries loop 2's D_801027D8 destination.  Session 7 measured why that
- *      is load-bearing: with the reuse, cc1's own allocno table (BB2_ALLOC_DEBUG)
- *      gives s nrefs=11 livelen=31 pri=10645 against the counter's nrefs=11
- *      livelen=33 pri=10000, so s is allocated first and takes $a2 while i
- *      inherits $a3 - target's assignment.  Without the reuse (v_s1) s is
- *      nrefs=9 livelen=31 pri=8709 and the assignment inverts (score 12).
+ * The insn ORDER of the initialisations is load-bearing and is what separates
+ * this form from the banked rejection
+ * rejected/preloop-constant-locals-are-cse-folded-and-loop-c-rehoists-them.c
+ * (session 7's v_p2a, re-measured in session 9): that form declared the same two
+ * constant locals but assigned them AFTER `s = (u8 *)p;`, giving them HIGHER
+ * LUIDs, so the backward schedule still put them behind the p-copies and it
+ * measured 4 with a diff byte-identical to the session-9 candidate.  Session 9's
+ * recorded explanation for v_p2a ("cse folds them and loop.c re-hoists") is
+ * therefore wrong; the real cause was the assignment order.  Measured this
+ * session, on this chassis: constants after `s = p` -> 4; only 5 held, before
+ * `s = p` -> 2; both held, before `s = p` -> 0.
  *
- * Why the remaining rotation does not fall to a source spelling ON THIS
- * chassis (SESSION 8, exact): sched1 schedules this block BACKWARDS, taking at
- * each step the insn with the greatest (INSN_PRIORITY, INSN_LUID) among those
- * whose in-block successors are already placed.  `s = p` has to land 5th, but
- * there it is tied at priority 1 with `li 5` / `li 20` and carries the LOWEST
- * LUID, so it loses; and its priority can never rise, because its only
- * possible in-block successors would be `b`/`w`, whose values are unrelated
- * symbol addresses.  So target's order requires INSN_LUID(`s = p`) >
- * INSN_LUID(`li 20`) - the walker's init must be emitted by loop.c AFTER
- * move_movables appends the constants, and move_movables inserts every movable
- * immediately before NOTE_INSN_LOOP_BEG, i.e. after EVERY pre-loop source
- * statement.  Only a walker emitted by loop.c AT loop_start (a giv init) sits
- * after the movables - which is the h1 chassis, where the allocation inverts
- * because a giv cannot pick up the two post-loop refs this reuse gives `s`.
- * See memory/grind/func_8003504C/chassis_h1_score9.c and the session-7
- * hypotheses for the exact arithmetic.
+ * The two locals carry the mandatory FAKE annotation in src (see the
+ * body below) under the constant-holder carve-out of
+ * .claude/rules/named-local-fake-exception.md.  Everything else in this file is
+ * the session-7 chassis unchanged:
+ *   1. `b` / `w` assigned INSIDE loop 1's body: as in-loop invariants loop.c
+ *      hoists them as MOVABLES, producing target's `lui t0 / addiu t0` with $t0
+ *      live across the loop (the guard reads `lb v0,0(t0)`) and making the
+ *      D_8010277C walker giv's initial value `(plus (reg b) (const_int -9))` =
+ *      target's `addiu a1,t0,-9`.
+ *   2. The loop-1 p-walker is a SOURCE pointer `s`, and `s` - dead after loop 1 -
+ *      carries loop 2's D_801027D8 destination.  cc1's own allocno table gives
+ *      s nrefs=11 livelen=31 pri=10645 against the counter's 11/33/10000, so s
+ *      is allocated first and takes $a2 while i inherits $a3 = target's
+ *      assignment.  (Without the reuse: 9/31/8709 and the assignment inverts.)
+ *   3. `q = &p[8]` stages the second bitfield read through a pointer, and
+ *      `D_800A36F6 = 0;` sits BETWEEN the two extractions - session 4's two
+ *      cluster-2 levers.
  *
- * SESSION 9 UPDATE - the h1 alternative is now DEAD, so this form is not just
- * the best measured chassis, it is the only surviving one.  Session 9 showed the
- * h1 allocation CAN be flipped (a post-loop reuse that demotes the counter's
- * allocno below the giv's 9310 gives target's preheader AND target's loop-1
- * registers together, positions 1..80 byte-clean), but that every such vehicle
- * forces the counter into the hard register the carried value occupies in
- * target - and target has no post-loop $a3 reference at all.  See evidence.md,
- * "the three necessary conditions are jointly contradictory".
- *
- * NO cheat construct: no pins, no inline asm, no dead stores, no volatile
- * coercion, no unused locals.  Every local is assigned and then read; `s` is
- * ordinary variable reuse of a local that is dead after loop 1.
+ * No pins, no inline asm, no dead stores, no volatile coercion, no unused
+ * locals, no arrays: every local is assigned and then read.  See
+ * memory/grind/func_8003504C/self_vet.md for the full six-test vet.
  */
 void func_8003504C(void) {
     s32 *p;
     s32 i;
     u8 *s;
+    /* FAKE: 5 and 20 held in locals so their `li`s are pre-loop SOURCE insns
+       whose LUIDs are lower than the walker copy `s = p`; mechanism: sched.c
+       rank_for_schedule's INSN_LUID tie-break inside sched1's backward list
+       schedule (written as literals they are loop.c movables, and move_movables
+       inserts every movable after ALL pre-loop statements, which emits them
+       behind the two p-copies); lever-exhaustion: sessions 1-9 of
+       memory/grind/func_8003504C/hypotheses.md. */
+    s32 new_var;
+    s32 new_var2;
     s32 *q;
     s8 val;
     u8 tmp;
 
     p = func_80077D00();
     i = 0;
+    new_var = 5;
+    new_var2 = 20;
     s = (u8 *)p;
 
     do {
@@ -76,7 +88,7 @@ void func_8003504C(void) {
         u8 *w = (u8 *)b - 9;
         s32 lv = (&D_8008D55C)[s[0]];
         w[i] = lv;
-        if ((u32)(lv - 3) < 2 || (s8)lv == 5 || (u32)(lv - 18) < 2 || (s8)lv == 20) {
+        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
             if (*b == 0) {
                 w[i] = w[i] - 3;
             }
