@@ -1,0 +1,37 @@
+{
+ "func": "CdControl",
+ "file": "system",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Floor 25 -> 4: ported the matched sibling CdControlF's solved shape (pin-free + base/elem two-step + do-while(0) loop-note wrap) and swept 480 init-order permutations; residual is a single a0-vs-saved"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "A loop.c-visible loop can be obtained without the LICM instruction cost, which would close the a0/saved inversion (the real-loop form already demonstrates that seating).",
+   "mechanism": "loop.c emits NOTE_INSN_LOOP_BEG and re-weights refs, but also runs LICM on the loop; the two spellings tried both paid one-to-four extra instructions for the invariant -1 or for the shortened exit test.",
+   "next_probe": "Keep the two-instruction '!= -1' exit test but make the -1 non-hoistable (compare against a value produced inside the loop); measure 'while (1) { ...; if (count == -1) break; }' and 'for (;;)' spellings purely as MEASUREMENTS to map the space (they are not sanctioned by the do-while(0) carve-out and must be judged on their own merits before any submission); and try a real loop enclosing only part of the body."
+  },
+  {
+   "hypothesis": "The a0-vs-saved priority inversion at the goto-form's score 4 can be flipped by changing a0's ref count or saved's live length rather than by loop visibility.",
+   "mechanism": "global.c allocno_compare divides by ALLOCNO_LIVE_LENGTH, so lengthening a0's live range or shortening saved's flips their relative priority; a0 has 2 refs (one inside the retry body) against saved's 3 (one inside), which under the wrap ties them closely enough that saved wins.",
+   "next_probe": "Sweep the spelling of the second CD_cw's first argument ('a0 & 0xFF' vs '(u8)a0' vs 'idx') \u2014 that is the most direct handle on a0's ref count \u2014 and move the 'saved = g_cd_callback_a;' read to immediately before the loop; sandbox each."
+  },
+  {
+   "hypothesis": "A side-by-side RTL comparison with the matched CdControlB explains why saved out-prioritises the a0 copy in CdControl but not in CdControlB.",
+   "mechanism": "CdControlB matches with the same target seating and NO do-while(0) wrap; its structural differences are that it has no 'result' local (it uses 'status', assigned inside BOTH exit arms) and a trailing CD_sync block after the shared done: label.",
+   "next_probe": "cc1 -da greg dumps of CdControl-at-4 and CdControlB, reading ';; Register dispositions:' and the conflict lists, to locate the exact allocno priority tiebreak; then test whether spelling CdControl's exit value the CdControlB way (set inside both arms rather than initialised before the loop) reproduces the ordering."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-14T06:45:17.962789+00:00"
+}
