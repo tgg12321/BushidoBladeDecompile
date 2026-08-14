@@ -307,3 +307,63 @@ discrete step away from a measured, reproducible configuration.
 - probe: Campaign ws6 `giv-chassis-both-walkers-random` on tmp/grind/func_8003504C/s5/ws6 (base permuter score 495), -j 8, --stop-on-zero, 10255+ iterations over ~500 s, harvested and stopped in-session.
 - result: KILLED as a closing chassis. Four novel finds (495 / 450 / 495 / 465); the best, 450, is far above the floor-4 chassis's base of 120, so the basin is not competitive. Its proposals were constant-holder reuses of the dead `i` / `tmp` locals (`i = 5;` then `p[i]`, `tmp = 5;` then `(s8)lv == tmp`) - a different lever, not adopted here.
 - verdict: KILLED
+
+## [s6] The pre-loop block is emitted in pure RTL order and sched1 has nothing to do with it (session 5's closure).
+- mechanism: session 5 read GCC 2.7.2 sched.c's priority computation, saw that the subtracted one makes every latency-1 insn tie at priority 1, and concluded rank_for_schedule falls through to INSN_LUID and therefore emits the block in RTL order.
+- probe: compared the .loop and .sched cc1 -da dumps of the pre-loop block on BOTH chassis (tmp/grind/func_8003504C/s6/d_floor4, d_giv) with tmp/grind/func_8003504C/s3/rtlblock.py, and re-ran the block through the instrumented cc1 with BB2_RANK_DEBUG=1 on a new SOLO TU (one function, so uids are unambiguous).
+- result: DISPROVEN as stated. sched1 reorders on both chassis: floor-4 goes `11 14 17 20 23 342 344` -> `14 11 17 20 23 342 344`, and the giv chassis goes `11 14 347 349 355 379` -> `14 347 349 11 355 379`, i.e. the call-result copy is sunk below BOTH hoisted constants. The tie-break IS LUID (every RANKDBG line in this block reads cls=3 x cls2=3 val=0), but only among insns READY that cycle, and insn 11 alone carries a true dependence on the call. Session 5's practical conclusion survives - the movables are still appended after every pre-loop source statement, so no floor-4-chassis spelling can lift them ahead of the base address setup - but the stated mechanism was wrong and must not be re-used to close a scheduling question.
+- verdict: KILLED
+
+## [s6] The giv chassis's missing &D_80102785 base register is recovered by assigning the guard pointer INSIDE loop 1's body, where loop.c sees it as an invariant MOVABLE rather than a pre-loop source statement.
+- mechanism: three RTL emission classes decide the preheader's order (pre-loop source statements, then loop.c movables, then giv initial values). A pre-loop `base = &D_80102785;` is class 1 and emits ahead of the hoisted constants, destroying target's order; the same assignment written inside the loop body is loop-invariant, so move_movables hoists it into the preheader as class 2 - after the constants - and the pseudo stays live across the loop so the guard can dereference it at offset 0.
+- probe: tmp/grind/func_8003504C/s6/gen6.py generated four placements on the session-5 giv chassis (b first in the body, b after the `lv` load, b inside the guarded arm, b as a pre-loop local), each measured with `sandbox func_8003504C --disable all` plus the normalized position diff.
+- result: CONFIRMED. Score 18 -> 13 at 141/141 for the in-body placements (14 at 142 insns for the placement inside the guarded arm; 13 for the pre-loop local too, but only the in-body form keeps target's block order). The emitted preheader becomes `move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0` - target's, through position 10 - and the in-loop guard reads `lb v0,0(t0)`.
+- verdict: CONFIRMED
+
+## [s6] The remaining `addiu a1,t0,-9` is recovered by giving the D_8010277C walker giv an initial value that IS the -9 subtraction, i.e. a second in-loop invariant `w = (u8 *)b - 9` walked as `w[i]`.
+- mechanism: loop.c's emit_iv_add_mult materializes a giv's initial-value expression at loop_start. With the walker written `((u8 *)b)[i - 9]` the -9 is part of the giv's INDEX, so the init is a bare copy (`move a1,t0`) and every access carries -9 in its memory offset. Making `b - 9` its own in-loop invariant moves the subtraction into the giv's initial value, which is exactly target's third preheader insn.
+- probe: tmp/grind/func_8003504C/s6/gen6b.py variant h1 (`s8 *b = &D_80102785; u8 *w = (u8 *)b - 9; ... w[i] = lv; if (*b == 0) w[i] = w[i] - 3;`), measured with `sandbox --disable all` and the position diff.
+- result: CONFIRMED. Score 13 -> 9 at 141/141 instructions, and the preheader is now target's in full: `move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`. All nine remaining positions are the single i/p-walker register swap. Banked as memory/grind/func_8003504C/chassis_h1_score9.c.
+- verdict: CONFIRMED
+
+## [s6] Session 4's src-reuse allocation lever transplants onto the giv chassis if `b` / `w` are hoisted to function scope so one of them can carry loop 2's D_801027D8 destination.
+- mechanism: session 4 flipped the i/walker allocation by extending a dead loop-1 pointer's live range into the `val == 5` branch. On the giv chassis the only source-visible pointers left in loop 1 are the two in-loop invariants, so hoisting one to function scope should give the lever something to attach to.
+- probe: gen6b.py variants h2 (reuse `w`), h3 (reuse `b`, with the -9 fold) and h4 (reuse `b`, without it); `sandbox --disable all` on each.
+- result: KILLED. 35 / 50 / 51 at 121 / 118 / 116 instructions against target's 141 - the function COLLAPSES. A function-scope pointer assigned inside loop 1 is no longer a loop-invariant movable, so the whole emission-class structure the chassis depends on is lost and loop 2's code folds. The lever cannot be spelled this way.
+- verdict: KILLED
+
+## [s6] On the h1 chassis the i/p-walker inversion flips by lowering `i`'s allocno rank through a live-range extension (session 1's H3 lever, re-aimed at the new chassis).
+- mechanism: .greg on h1 ranks the source pseudo 73 (`i`) ahead of every loop.c-created giv pseudo, so `i` takes $a2 as the first free register in REG_ALLOC_ORDER and the p-walker giv inherits $a3. Extending `i` past loop 1 should drop it below a giv.
+- probe: three reuses of the dead loop-1 counter measured with `sandbox --disable all`: as loop 2's outer counter (v_i1), as the val==5 table index (v_i2 - the mildest possible extension, one extra ref outside any loop), and as loop 2's inner counter (v_i3).
+- result: KILLED. 33 (136 insns) / 26 (141 insns) / 58 (122 insns) - every extension moves AWAY from target and even the mildest costs 17 points. On this chassis the allocation lever is not lowering `i`; it must be raising a giv's rank, or eliminating `i` as a source pseudo altogether.
+- verdict: KILLED
+
+## [s6] The pre-loop block is emitted in pure RTL order and sched1 has nothing to do with it (session 5's stated closure).
+- mechanism: Session 5 read GCC 2.7.2 sched.c's priority computation, saw that the subtracted one makes every latency-1 insn tie at priority 1, and concluded rank_for_schedule falls through to INSN_LUID and therefore emits the block in RTL order.
+- probe: Compared the .loop and .sched cc1 -da dumps of the pre-loop block on BOTH chassis (tmp/grind/func_8003504C/s6/d_floor4, d_giv) with s3/rtlblock.py, and re-ran the block through the instrumented cc1 with BB2_RANK_DEBUG=1 on a new SOLO TU (one function per TU, so insn uids are unambiguous).
+- result: DISPROVEN as stated. sched1 reorders on both chassis: floor-4 goes 11 14 17 20 23 342 344 -> 14 11 17 20 23 342 344, and the giv chassis goes 11 14 347 349 355 379 -> 14 347 349 11 355 379 (the call-result copy sunk below BOTH hoisted constants). The tie-break IS LUID - every RANKDBG line in this block reads cls=3 x cls2=3 val=0 - but only among insns READY that cycle, and insn 11 alone carries a true dependence on the call (insn_list 9 in LOG_LINKS) while i=0 and the constants carry only REG_DEP_ANTI 9. Session 5's practical conclusion survives (movables are still appended after every pre-loop source statement) but its mechanism must not be reused to close a scheduling question.
+- verdict: KILLED
+
+## [s6] The giv chassis's missing &D_80102785 base register is recovered by assigning the guard pointer INSIDE loop 1's body, where loop.c sees it as an invariant MOVABLE rather than a pre-loop source statement.
+- mechanism: Three RTL emission classes decide the preheader's order: pre-loop source statements, then loop.c movables (move_movables, immediately before NOTE_INSN_LOOP_BEG), then giv initial values at loop_start. A pre-loop base = &D_80102785 is class 1 and emits ahead of the hoisted constants; the same assignment written inside the loop body is loop-invariant, so it is hoisted as class 2 - after the constants - and its pseudo stays live across the loop so the guard can dereference it at offset 0.
+- probe: tmp/grind/func_8003504C/s6/gen6.py generated four placements on the session-5 giv chassis (b first in the body, b after the lv load, b inside the guarded arm, b as a pre-loop local); each measured with sandbox --disable all plus the normalized position diff.
+- result: CONFIRMED. Score 18 -> 13 at 141/141 for the in-body placements (14 at 142 insns for the guarded-arm placement; 13 for the pre-loop local as well, but only the in-body form keeps target's block order). The preheader becomes move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 - target's, through position 10 - and the in-loop guard reads lb v0,0(t0) exactly like target.
+- verdict: CONFIRMED
+
+## [s6] The remaining addiu a1,t0,-9 is recovered by giving the D_8010277C walker giv an initial value that IS the -9 subtraction, i.e. a second in-loop invariant w = (u8 *)b - 9 walked as w[i].
+- mechanism: loop.c's emit_iv_add_mult materializes a giv's initial-value expression at loop_start. Written ((u8 *)b)[i - 9] the -9 is part of the giv's INDEX, so the init is a bare copy (move a1,t0) and every access carries -9 in its memory offset. Making b - 9 its own in-loop invariant moves the subtraction into the giv's initial value, which is exactly target's third preheader insn.
+- probe: tmp/grind/func_8003504C/s6/gen6b.py variant h1 (s8 *b = &D_80102785; u8 *w = (u8 *)b - 9; ... w[i] = lv; if (*b == 0) w[i] = w[i] - 3;), measured with sandbox --disable all and the position diff.
+- result: CONFIRMED. Score 13 -> 9 at 141/141 instructions and the preheader is target's in full: move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9. All nine remaining differing positions are the single i/p-walker register swap. Banked as memory/grind/func_8003504C/chassis_h1_score9.c.
+- verdict: CONFIRMED
+
+## [s6] Session 4's src-reuse allocation lever transplants onto the giv chassis if b / w are hoisted to function scope so one of them can carry loop 2's D_801027D8 destination.
+- mechanism: Session 4 flipped the i/walker allocation by extending a dead loop-1 pointer's live range into the val == 5 branch; on the giv chassis the only source-visible pointers left in loop 1 are the two in-loop invariants, so hoisting one to function scope should give that lever something to attach to.
+- probe: gen6b.py variants h2 (reuse w), h3 (reuse b with the -9 fold) and h4 (reuse b without it); sandbox --disable all on each.
+- result: KILLED. 35 / 50 / 51 at 121 / 118 / 116 instructions against target's 141 - the function COLLAPSES, because a function-scope pointer assigned inside loop 1 is no longer a loop-invariant movable, so the emission-class structure the chassis depends on is lost and loop 2's code folds. Banked as rejected/giv-chassis-function-scope-pointer-collapses-loop2.c.
+- verdict: KILLED
+
+## [s6] On the h1 chassis the i/p-walker inversion flips by lowering i's allocno rank through a live-range extension (session 1's H3 lever re-aimed at the new chassis).
+- mechanism: .greg on h1 ranks the source pseudo 73 (i) ahead of every loop.c-created giv pseudo, so i takes $a2 as the first free register in REG_ALLOC_ORDER and the p-walker giv inherits $a3; extending i past loop 1 should drop it below a giv.
+- probe: Three reuses of the dead loop-1 counter, each measured with sandbox --disable all: as loop 2's outer counter (v_i1), as the val==5 table index (v_i2, the mildest possible extension - one extra ref outside any loop), as loop 2's inner counter (v_i3).
+- result: KILLED. 33 (136 insns) / 26 (141 insns) / 58 (122 insns) - every extension moves AWAY from target and even the mildest costs 17 points. On this chassis the lever is not lowering i; it must be raising a giv's allocno rank, or eliminating i as a source pseudo. Banked as rejected/h1-chassis-extend-i-liverange-wrong-direction.c.
+- verdict: KILLED

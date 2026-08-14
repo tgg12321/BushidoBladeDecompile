@@ -606,3 +606,124 @@ pre-loop ORDER exactly - the first form in five sessions to do so.
 - [s5] Permuter campaign telemetry, both campaigns harvested and stopped in-session with no orphans (harvest reported procs_killed 9 for ws6 and pid_alive false for ws5): ws5 preloop-directed-lineswap-disjuncts base 120, 288/288 iterations in 14 s, zero finds; ws6 giv-chassis-both-walkers-random base 495, 10255+ iterations over ~500 s, four novel finds at 495 / 450 / 495 / 465.
 
 - [s5] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s5/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every probed variant was a plain re-spelling of live, semantically necessary statements.
+
+## Session 6 (forensics, 2026-08-13) - sched1 rediscovered, and a new score-9 chassis
+
+The engine floor is unchanged at 4 (the session-4 pointer chassis was
+re-applied and re-confirmed at `sandbox func_8003504C --disable all` = 4,
+141/141, at session start and again at session end).  But the function is much
+closer than that number suggests: this session built a NEW chassis
+(`memory/grind/func_8003504C/chassis_h1_score9.c`, score 9, 141/141) whose
+ENTIRE residual is a single register swap - `i` in $a2 and the loop-1 p-walker
+in $a3, where target wants the inverse - with every other instruction in the
+function, including the whole pre-loop block, matching target byte for byte.
+
+### Instruments (tmp/grind/func_8003504C/s6/)
+- `dump.sh <outdir>` - cc1 `-da` dump set for the CURRENT src/code6cac_b.c.
+- `solo.py` / `solo.sh <tag>` - build a SOLO preprocessed TU that keeps only
+  func_8003504C's body (every other definition is reduced to a prototype by a
+  brace-depth parse) and compile it with the INSTRUMENTED cc1.  This fixes what
+  session 3 flagged: insn uids restart per function, so BB2_*_DEBUG output from
+  a full-TU compile is ambiguous.  VERIFIED: the solo TU emits the identical
+  pre-loop block to the full-TU compile.
+- `rank.sh <tag>` - re-run the solo TU with `BB2_RANK_DEBUG=1` and print the
+  `rank_for_schedule` tie decisions, now unambiguous.
+- `gen6.py` / `gen6b.py` - the in-loop-invariant-pointer variant families.
+
+### FORENSIC CORRECTION: sched1 DOES reorder the pre-loop block
+Session 5 concluded "the pre-loop block is emitted in PURE RTL ORDER - there is
+nothing to steer in the scheduler".  The RTL dumps disprove that.  On the
+floor-4 chassis the `.loop` dump has the block as
+`9(call) 11(p=v0) 14(i=0) 17(src=p) 20(base=sym) 23(ptr=base-9) 342(li 5)
+344(li 20)` and the `.sched` dump has `9 14 11 17 20 23 342 344` - sched1
+hoisted insn 14 ABOVE insn 11.  On the giv chassis the `.loop` order is
+`9 11 14 347(li 5) 349(li 20) 355 379` and the `.sched` order is
+`9 14 347 349 11 355 379` - sched1 SANK the call-result copy below BOTH
+constants.  The discriminator is READINESS, not priority and not LUID: insn 11
+carries a true dependence on the call (`(insn_list 9 ...)` in its LOG_LINKS)
+while `i = 0` and the hoisted constants carry only `REG_DEP_ANTI 9`, so the
+ready list issues the independent insns while the call's result is in flight.
+Session 5's reading of sched.c is right as far as it goes (all these insns are
+latency-1, so `rank_for_schedule` falls through to INSN_LUID) - what it missed
+is that the ready SET differs by cycle.  `BB2_RANK_DEBUG` on the solo TU
+confirms every comparison in this block is `cls=3 x cls2=3 val=0`, i.e. decided
+purely by LUID among the insns that are ready.
+
+The practical consequence is unchanged and session 5's frontier item 3 still
+stands: the movables are appended after every pre-loop source statement, so no
+floor-4-chassis spelling can lift `li 5` / `li 20` ahead of the base address
+setup.  The route to target's block order is the giv chassis, and only it.
+
+### The two giv-chassis gaps, both CLOSED this session (18 -> 13 -> 9)
+1. **The &D_80102785 base register (18 -> 13).**  Assigning the guard pointer
+   INSIDE loop 1's body - `s8 *b = &D_80102785;` as the body's first statement
+   - makes it an in-loop loop INVARIANT, so loop.c hoists it as a MOVABLE into
+   the preheader instead of it being a pre-loop source statement.  Target's
+   `lui t0 / addiu t0` then lands in the right place, $t0 stays live across the
+   loop, and the guard reads `lb v0,0(t0)` exactly like target.  Measured
+   placements: b first in the body 13, b after the `lv` load 13, b inside the
+   guarded arm 14 (142 insns), b as a pre-loop local 13.  Session 5's
+   `(&D_80102785)[i - 9]` attempt failed because there was no pointer pseudo at
+   all for cse to keep - the fix is a source-level pointer, not an array base.
+2. **The `-9` derivation (13 -> 9).**  With `b` in a register, a second in-loop
+   invariant `u8 *w = (u8 *)b - 9;` walked as `w[i]` gives the D_8010277C
+   walker giv the initial value `(plus (reg b) (const_int -9))`, so loop.c's
+   `emit_iv_add_mult` emits target's third preheader insn `addiu a1,t0,-9` and
+   every in-loop access is at offset 0.  Without it the giv init is
+   `move a1,t0` and the -9 rides in the memory offsets (`sb v1,-9(a1)`,
+   `lbu v0,-9(a1)`).
+
+### What is left on the h1 chassis: one allocation flip
+All 9 residual positions are `i` <-> p-walker.  `.greg` on h1 gives the allocno
+order `79 92 162 161 160 159 180 73 156 176 124 158 157 72 139 77 99 94`: the
+SOURCE pseudo 73 (`i`) is ranked ahead of every loop.c-created giv pseudo, so
+it takes $a2 as the first free register in REG_ALLOC_ORDER and the p-walker giv
+inherits $a3.  Dispositions: 72 (p) = $t3, 73 (i) = $a2, 77 (b) = $t0.
+
+Three live-range extensions of `i` were measured on this chassis and ALL move
+the wrong way: reuse as loop 2's outer counter 33 (136 insns), as the val==5
+table index 26 (141 insns), as loop 2's inner counter 58 (122 insns).  So the
+lever is not lowering `i` - it is raising a giv, or removing `i` as a source
+pseudo.  Also killed: hoisting `b` / `w` to function scope so one can carry
+loop 2's D_801027D8 destination (session 4's src-reuse lever) COLLAPSES the
+function - 121 / 118 / 116 instructions against target's 141 - because a
+function-scope pointer assigned inside loop 1 stops being a loop-invariant
+movable and loop 2's code folds.
+
+- [s6] FORENSIC CORRECTION to session 5: sched1 DOES reorder the pre-loop block. On the floor-4 chassis the .loop order is `11(p=v0) 14(i=0) 17 20 23 342(li 5) 344(li 20)` and the .sched order is `14 11 17 20 23 342 344`; on the giv chassis the .loop order is `11 14 347 349 355 379` and the .sched order is `14 347 349 11 355 379`. The discriminator is READINESS: insn 11 carries a true dependence on the call (insn_list 9 in LOG_LINKS) while `i = 0` and the hoisted constants carry only REG_DEP_ANTI 9, so the ready list issues the independent insns while the call result is in flight. BB2_RANK_DEBUG on a solo TU confirms every comparison in this block is cls=3 vs cls2=3 val=0, i.e. decided purely by INSN_LUID among the insns that are READY that cycle.
+
+- [s6] A SOLO-TU instrument now exists (tmp/grind/func_8003504C/s6/solo.py + solo.sh + rank.sh): it reduces every other function in the preprocessed code6cac_b.i to a prototype by a brace-depth parse, so the instrumented cc1's BB2_*_DEBUG output is unambiguous (insn uids restart per function, which is what made session 3 distrust rank.sh). The solo TU was verified to emit the identical pre-loop block to the full-TU compile.
+
+- [s6] NEW CHASSIS at score 9 / 141 of 141 instructions, banked at memory/grind/func_8003504C/chassis_h1_score9.c: the session-5 both-walkers-as-givs chassis plus two in-loop loop-invariant pointers. ALL NINE differing positions are one register swap (i in $a2 / p-walker in $a3, target wants the inverse); every other instruction in the function, including the entire pre-loop block and both bitfield-extraction clusters, matches target byte for byte and register for register.
+
+- [s6] Giv-chassis gap (a) is CLOSED: assigning the guard pointer INSIDE loop 1's body (`s8 *b = &D_80102785;`) makes it an in-loop loop-invariant, so loop.c hoists it as a MOVABLE into the preheader rather than it being a pre-loop source statement. Target's `lui t0 / addiu t0` lands correctly, $t0 stays live across the loop, and the guard reads `lb v0,0(t0)` exactly like target. Score 18 -> 13. Measured placements: b first in the body 13, b after the lv load 13, b inside the guarded arm 14 (142 insns), b as a pre-loop local 13.
+
+- [s6] Giv-chassis gap (b) is CLOSED: a second in-loop invariant `u8 *w = (u8 *)b - 9;` walked as `w[i]` gives the D_8010277C walker giv the initial value `(plus (reg b) (const_int -9))`, so loop.c's emit_iv_add_mult emits target's third preheader insn `addiu a1,t0,-9` and every in-loop access is at offset 0. Score 13 -> 9. Without it the giv init is `move a1,t0` and the -9 rides in the memory offsets (`sb v1,-9(a1)`, `lbu v0,-9(a1)`).
+
+- [s6] On the h1 chassis .greg's allocno order is `79 92 162 161 160 159 180 73 156 176 124 158 157 72 139 77 99 94` - the source pseudo 73 (`i`) outranks EVERY loop.c-created giv pseudo, so `i` takes $a2 as the first free register in REG_ALLOC_ORDER and the p-walker giv inherits $a3. Dispositions: 72 (p) = $t3, 73 (i) = $a2, 77 (b) = $t0.
+
+- [s6] Three live-range extensions of `i` measured on the h1 chassis all move the WRONG way: reuse i as loop 2's outer counter 33 (136 insns), reuse i as the val==5 table index 26 (141 insns), reuse i as loop 2's inner counter 58 (122 insns). Lowering `i` is not the lever on this chassis; raising a giv (or removing `i` as a source pseudo) is.
+
+- [s6] Session 4's src-reuse allocation lever CANNOT be transplanted onto the giv chassis by hoisting `b` / `w` to function scope: measured 35 / 50 / 51 at 121 / 118 / 116 instructions against target's 141, because a function-scope pointer assigned inside loop 1 stops being a loop-invariant movable and the loop-2 code folds away.
+
+- [s6] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s6/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every local in every probed form is assigned and then read.
+
+- [s6] [s6] Engine floor unchanged at 4: the session-4 candidate was re-applied to src/code6cac_b.c and re-confirmed at sandbox func_8003504C --disable all = 4, 141/141 instructions, at session start and again at session end.
+
+- [s6] [s6] NEW CHASSIS at score 9 / 141 of 141 instructions, banked at memory/grind/func_8003504C/chassis_h1_score9.c: the session-5 both-walkers-as-givs chassis plus two in-loop loop-invariant pointers. ALL NINE differing positions are one register swap (i in $a2 / p-walker in $a3; target wants the inverse). Every other instruction in the function - the entire pre-loop block and both bitfield-extraction clusters included - matches target byte for byte and register for register.
+
+- [s6] [s6] FORENSIC CORRECTION to session 5: sched1 DOES reorder the pre-loop block. Floor-4 chassis .loop order 11(p=v0) 14(i=0) 17 20 23 342(li 5) 344(li 20) becomes .sched order 14 11 17 20 23 342 344; giv chassis .loop order 11 14 347 349 355 379 becomes .sched order 14 347 349 11 355 379. The discriminator is READINESS: insn 11 carries a true dependence on the call (insn_list 9 in LOG_LINKS) while i=0 and the hoisted constants carry only REG_DEP_ANTI 9, so independent insns issue while the call result is in flight. BB2_RANK_DEBUG confirms every comparison in this block is cls=3 vs cls2=3 val=0 - decided purely by INSN_LUID among the READY insns.
+
+- [s6] [s6] Giv-chassis gap (a) CLOSED: assigning the guard pointer INSIDE loop 1's body (s8 *b = &D_80102785;) makes it an in-loop loop-invariant, so loop.c hoists it as a MOVABLE into the preheader instead of it being a pre-loop source statement. Target's lui t0 / addiu t0 lands correctly, $t0 stays live across the loop, and the guard reads lb v0,0(t0). Score 18 -> 13. Placements measured: b first in the body 13, b after the lv load 13, b inside the guarded arm 14 (142 insns), b as a pre-loop local 13.
+
+- [s6] [s6] Giv-chassis gap (b) CLOSED: a second in-loop invariant u8 *w = (u8 *)b - 9; walked as w[i] gives the D_8010277C walker giv the initial value (plus (reg b) (const_int -9)), so loop.c's emit_iv_add_mult emits target's third preheader insn addiu a1,t0,-9 and every in-loop access is at offset 0. Score 13 -> 9. Without it the giv init is move a1,t0 and the -9 rides in the memory offsets (sb v1,-9(a1), lbu v0,-9(a1)).
+
+- [s6] [s6] On the h1 chassis .greg's allocno order is 79 92 162 161 160 159 180 73 156 176 124 158 157 72 139 77 99 94 - the SOURCE pseudo 73 (i) outranks EVERY loop.c-created giv pseudo, so i takes $a2 as the first free register in REG_ALLOC_ORDER and the p-walker giv inherits $a3. Dispositions: 72 (p) = $t3, 73 (i) = $a2, 77 (b) = $t0.
+
+- [s6] [s6] Three live-range extensions of i on the h1 chassis all move the WRONG way: loop 2 outer counter 33 (136 insns), val==5 table index 26 (141 insns), loop 2 inner counter 58 (122 insns).
+
+- [s6] [s6] Session 4's src-reuse allocation lever cannot be transplanted onto the giv chassis by hoisting b / w to function scope: 35 / 50 / 51 at 121 / 118 / 116 instructions against target's 141, because the pointer stops being a loop-invariant movable and loop 2's code folds away.
+
+- [s6] [s6] New reusable instrument: tmp/grind/func_8003504C/s6/solo.py + solo.sh + rank.sh build a SOLO preprocessed TU containing only func_8003504C's body (every other definition reduced to a prototype by a brace-depth parse) and compile it with the INSTRUMENTED cc1, so BB2_*_DEBUG output is unambiguous - insn uids restart per function, which is what made session 3 distrust rank.sh. The solo TU was verified to emit the identical pre-loop block to the full-TU compile.
+
+- [s6] [s6] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s6/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every local in every probed form is assigned and then read.
