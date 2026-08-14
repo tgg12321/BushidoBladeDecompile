@@ -989,3 +989,4 @@
 - 2026-08-14 01:19 func_800174F4 s5 [permuter] floor=2: Floor holds at 2. The permuter modality is measured EXHAUSTED (a campaign from the one ALIGNED basin - where every remaining diff is a register substitution and permuter 0 would be honest 0 - returned ZERO finds in 37k iterations), and the last two open axes of the s3 priority inequality (h's n_refs; case-20 local merging incl. env-reuse) are killed with instrumented allocno readings.
 - 2026-08-14 01:45 func_800174F4 COMPLETED-C after 6 sessions.
 - 2026-08-14 02:02 CdControl s1 [recon] floor=4: Floor 25 -> 4: ported the matched sibling CdControlF's solved shape (pin-free + base/elem two-step + do-while(0) loop-note wrap) and swept 480 init-order permutations; residual is a single a0-vs-saved priority inversion (s4/s5).
+- 2026-08-14 02:31 CdControl COMPLETED-C after 2 sessions.
