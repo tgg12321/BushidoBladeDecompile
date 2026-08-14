@@ -983,3 +983,4 @@
 - 2026-08-13 22:14 func_8003504C s9 [rederive] floor=4: The giv-walker chassis is CLOSED: its allocation flip is reachable (w4 = 141/141 with target's preheader AND target's loop-1 registers, positions 1-80 byte-clean) but every demotion vehicle pins the counter into the carried value's target register, and target has no post-loop $a3 reference at all.
 - 2026-08-13 22:44 func_8003504C COMPLETED-C after 10 sessions.
 - 2026-08-13 22:57 func_800174F4 s1 [recon] floor=14: Recon: floor 25 -> 14 in pure C (cheat scaffold dropped, worth 0); residual is now register-name-only, 136 vs 136 insns, in exactly two clusters.
+- 2026-08-13 23:15 func_800174F4 s2 [structural] floor=8: Floor 14 -> 8: moving `i = 0;` inside the loop guard closed the whole callee-save cluster; both session-1 frontier mechanisms measured dead and replaced with instrumented successors.

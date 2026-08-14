@@ -1,31 +1,12 @@
-/* func_800174F4 - best form as of grind session 2 (structural).
- * Honest sandbox floor (`sandbox func_800174F4 --disable all`): 8
- * (session 1 left 14; build_insns == target_insns == 136 throughout).
+/* REJECTED (grind session 2, structural) - sandbox --disable all
+ * score=29, build_insns=138 (base for this session: score 8, insns 136).
  *
- * 100% pure C. Session 2's single change over the session-1 form is the
- * placement of `i = 0;`: it moved from the loop PRE-HEADER (before the
- * rand() call) INTO the `if (h != 0)` guard block. That one statement move
- * resolved the entire callee-save cluster (B) - the counter now takes $s0
- * and the loop-limit / D_800A37A8[] table-value webs both take $s1, exactly
- * as target does - worth 6 of the 14 points.
- *
- * Remaining 8 points, both measured this session:
- *  (A) switch-selector web, 6 pts, insns 28/30/31/33/35/41: ours reads
- *      `lbu v1,%gp_rel(D_800A3768)` and does the whole dispatch in $v1;
- *      target does it in $a1. This is the exact scope of the sole surviving
- *      regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`, regfix.txt:11).
- *  (B') delay-slot placement, 2 pts, insns 50 and 54: target fills the
- *      rand() `jal` delay slot with `move s0,zero` (the `i = 0;`) and leaves
- *      a `nop` in the guard branch's delay slot; ours is the mirror image.
- *      Target's `i = 0;` therefore sits BEFORE the call in the insn stream -
- *      but every spelling that puts it before the call measured back at 14
- *      because the counter then loses $s0 to the `h` web (see
- *      rejected/i-init-before-call.c). Those two goals are in tension and
- *      the tension is the next session's whole problem.
- *
- * `h` is ONE C variable deliberately reused for 0xF0 / the loop limit / the
- * D_800A37A8[] table value - that reuse is load-bearing (session 1 measured
- * every split WORSE; see rejected/).
+ * the dispatch value cached in a local `mode` that is ALSO passed as
+ * func_8005D554's second argument - the spelling that would give the
+ * selector pseudo an $a1 copy-preference through global.c:expand_preferences.
+ * It costs 2 instructions and 21 points: `mode` then has to survive
+ * func_8005D46C and rand(), so it is forced into a callee-save and the
+ * per-iteration `lbu a1` that target has is replaced by a register move.
  */
 void func_800174F4(void) {
     u8 sp18[8];
@@ -34,6 +15,7 @@ void func_800174F4(void) {
     unsigned short h;
     s32 prim;
     s32 mask;
+    s32 mode;
 
     prim = (s32)(&D_800F33D8);
     if (g_disp_enable == DISP_DISABLED) {
@@ -48,7 +30,8 @@ void func_800174F4(void) {
     PutDrawEnv((u8 *)env);
     D_800A374C = sp18;
     ClearOTagR(sp18, 2);
-    switch (g_disp_enable) {
+    mode = g_disp_enable;
+    switch (mode) {
     case 1:
     case 2:
         prim = (s32)func_8005D46C((u8 *)prim);
@@ -61,7 +44,7 @@ void func_800174F4(void) {
             if (h != 0) {
                 i = 0;
                 inner_loop:
-                prim = (s32)func_8005D554((u8 *)prim, g_disp_enable);
+                prim = (s32)func_8005D554((u8 *)prim, mode);
                 i++;
                 if (i >= h) {
                     break;
@@ -70,7 +53,7 @@ void func_800174F4(void) {
             }
         }
         else if ((rand() & 7) == 0) {
-            func_8005D554((u8 *)prim, g_disp_enable);
+            func_8005D554((u8 *)prim, mode);
         }
         break;
     case 10:
