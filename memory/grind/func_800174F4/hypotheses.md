@@ -556,3 +556,33 @@ not been swept in the case-1/2 arm.
 - probe: Fresh-seed campaign on that chassis (tmp/perm_ings5b, label s5-precall-basin, -j 6), validated pre-launch with mkws2.sh (base-vs-target diff = the register flip only), waited on in-turn with `permuter_campaign.py wait`, harvested and --stop'd in-session.
 - result: 37,035 iterations / 19 minutes, ZERO finds. The companion campaign on the floor-2 chassis (tmp/perm_ings5a, base score 145 - WORSE than the honest-8 form's 80) ran 43,747 iterations and produced ONE find at permuter 80, `if (h == (i = 0)) { break; } i = 0;`, which measures sandbox 8 honestly (as do its two hand-reductions) - the known anti-aligned pre-call attractor in a new spelling. Five campaigns and ~165k iterations across s4+s5 have produced exactly ONE useful proposal, and only from a chassis that already carried the lever by hand.
 - verdict: KILLED
+
+## Session 6 (forensics, 2026-08-14)
+
+### H-S6-1 - CONFIRMED (the F6' forensic question, answered NO)
+- statement: target's `move s0,zero` in the `jal rand` delay slot need not have come from a literal pre-call `i = 0;` - reorg.c's backward search could have pulled a different insn, so a sunk `mask`/`prim`/`D_800A374C` computation might fill the slot while `i = 0;` stays in the guard.
+- mechanism: reorg.c:fill_simple_delay_slots fills a CALL_INSN's slot by a backward search over preceding insns in the same block; any insn that neither sets nor needs the call's resources is eligible.
+- probe: instrumented cc1 with BB2_DBR_DEBUG=1 and `-dd` on the floor-2 body; read every DBRDBG line for the rand CALL_INSN and the post-reorg RTL around it (tmp/grind/func_800174F4/s6/dbr_f2.txt, ings_f2.i.dbr).
+- result: the rand call is uid 95 and the trace contains ZERO `DBRDBG simp insn=95` lines - the backward scan stopped on its first step because the call is the first real insn of its basic block (only `(insn 345 (use (reg v0)))` precedes it, then the guard branch). The `.dbr` shows the call with no SEQUENCE (a bare nop) and our `i = 0;` (insn 119) taken by fill_slots_from_thread into the guard branch's slot. There is NO other candidate; the slot can only be filled by an insn placed in that block by the C. Target's asm agrees (func_800174F4.s:51-53). The sunk-computation idea is dead by construction.
+- verdict: CONFIRMED (the requirement is exact: `i = 0;` first statement of the fade block)
+
+### H-S6-2 - CONFIRMED (F7, and it closes the function)
+- statement: flow.c's loop-depth reference weighting can re-weight the loop counter's references WITHOUT equally re-weighting `h`'s, letting the counter win $s0 from the pre-call initialisation that reorg.c requires.
+- mechanism: flow.c:2081/2329/2515/2725 `reg_n_refs[regno] += loop_depth`, loop_depth from basic_block_loop_depth / NOTE_INSN_LOOP_BEG (flow.c:1385/1401/1447), base depth 1. A `do { ... } while (0);` wrap emits those notes, so refs inside a wrap weigh 2. global.c:allocno_compare then orders by floor_log2(n_refs)*n_refs/live_length*10000 and the first-allocated of the two conflicting allocnos takes $s0(16). `h`'s only in-loop reference is the exit test's `slt`, which sits outside any wrap placed on the counter's refs.
+- probe: five wrap placements measured on the pre-call-init floor-2 base, each read with BB2_ALLOC_DEBUG (n_refs / live_length / priority for pseudos 87 and 73) BEFORE the score was consulted.
+- result: init wrap only = n_refs 5 / pri 7692 (score 8); `i++` wrap only = 6 / 9230 (score 11); whole-body wrap only = 6 / 9230 (score 8); init + `i++` wraps = 7 / 10769, registers correct, score 4; init wrap + WHOLE-BODY wrap = 7 / 10769, **score 0, build_insns 136 == target_insns 136, rules_dropped 1**. `h` stays at n_refs 7 / live_length 15 / pri 9333 in all six.
+- verdict: CONFIRMED
+
+### H-S6-3 - CONFIRMED (why the wrap's SCOPE matters)
+- statement: the second wrap must span the whole loop body rather than just `i++`.
+- mechanism: `do { ... } while (0);` leaves a CODE_LABEL at the wrap's end; reorg.c's backward search from the func_8005D554 CALL_INSN stops at labels (stop_search_p), so a label between the call and `i++` makes `addiu s0,s0,1` ineligible for that call's delay slot.
+- probe: the two-wrap form measured with the second wrap around `i++` alone vs around the whole body; aligned normalized-insn diff of the former (tmp/grind/func_800174F4/s6/diff_wboth.txt).
+- result: `i++`-only = score 4, and the diff is exactly the loop's delay slots (ours `move a0,s2` in the call slot + nop in the back-edge `j` slot; target `addiu s0,s0,1` in the call slot + `move a0,s2` duplicated into the pre-header and the `j` slot). Whole-body = score 0.
+- verdict: CONFIRMED
+
+### H-S6-4 - KILLED (a stated-reason correction, not a new axis)
+- statement (s3's K12 rationale): a duplicated `i = 0;` - one pre-call for the delay slot, one in the guard for the register - fails because the dead pre-call store lengthens the counter allocno's live range.
+- mechanism: if the dead store started the live range, live_length would rise from 9 towards 13 and the priority would fall.
+- probe: the duplicated form re-measured on the floor-2 base with a BB2_ALLOC_DEBUG table (tmp/grind/func_800174F4/s6/alloc_dup.txt).
+- result: the allocno table is byte-identical to the single-pre-call form (counter n_refs 4 / live_length 13 / pri 6153; `h` 7 / 15 / 9333) and the score is the same 8. The redundant store is folded away before flow analysis entirely - it neither adds a ref nor changes the range. The form stays dead; the recorded reason was wrong.
+- verdict: KILLED

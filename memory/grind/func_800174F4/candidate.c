@@ -1,66 +1,64 @@
-/* func_800174F4 - best form as of grind session 4 (permuter).
- * Honest sandbox floor (`sandbox func_800174F4 --disable all`): 2
- * (sessions 1/2/3 left 25 -> 14 -> 8 -> 8; build_insns == target_insns == 136
- * throughout).
+/* func_800174F4 - MATCHING FORM as of grind session 6 (forensics).
+ * Honest sandbox distance (`sandbox func_800174F4 --disable all`): **0**
+ * with build_insns == target_insns == 136 and rules_dropped == 1, i.e. the
+ * sole surviving regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`,
+ * regfix.txt:11) is DISABLED in that measurement and the bytes still match -
+ * the rule is now redundant and is an operator-side retire.
  *
- * SESSION 4 dropped the floor 8 -> 2 by closing cluster (A), the 6-point
- * switch-selector residue that had survived three sessions and is the exact
- * scope of the sole surviving regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`).
+ * Floor history: s1 25 -> 14, s2 -> 8, s3 8, s4 -> 2, s5 2, s6 -> 0.
  *
- * THE MOVE: one C variable, `mode`, holds the switch selector AND the case-20
- * limit value. `mode = g_disp_enable; switch (mode) { ... case 20: mode =
- * D_800A37A0; ...}` and every former `a1_val` use in case 20 now reads `mode`.
- * The case-20 block loses its separate `a1_val` local entirely, so the body is
- * SIMPLER than the floor-8 form, not more contrived - and it mirrors target's
- * own register economy exactly: target keeps the dispatch value and the case-20
- * limit in the SAME hardware register ($a1). Sessions 2 and 3 had measured a
- * selector local that was only ever the selector (ten spellings, all 8); what
- * they never tried was giving that local a SECOND live range in case 20. That
- * second def is what puts reg 4 into the selector allocno's exclusion set and
- * lets find_reg walk past $v1(3)/$a0(4) to $a1(5).
+ * ==================== WHAT SESSION 6 ADDED ====================
+ * The last 2 points were the `jal rand` delay slot: target fills it with
+ * `move s0,zero` (the loop counter's `i = 0;`) and leaves a nop in the guard
+ * branch's slot; every form before this session had the mirror. Sessions 2-5
+ * proved the tension: reorg.c can only fill a CALL_INSN's slot from the
+ * BACKWARD search, so `i = 0;` must sit in the basic block that ends with the
+ * call (i.e. before `v0 = rand();`) - and that placement takes the counter
+ * allocno to live_length 13 / priority 6153, losing $s0 to `h` (9333) in
+ * global.c:allocno_compare, which costs 8 points of register naming.
  *
- * PROVENANCE: proposed by a directed decomp-permuter campaign (chassis 3,
- * tmp/perm_ings3/output-145-1, 74 s after seed) and then MEASURED, reduced and
- * re-spelled by hand - the permuter's own find kept a redundant `s32 a1_val =
- * mode;` intermediate; dropping it scores the same 2 with one fewer local.
- * VETTING NOTE for the next session: `mode` serving two values is the SOTN
- * "variable reuse for codegen control" family (frozen sanctioned list,
- * .claude/rules/no-new-park-categories.md). It is NOT yet cleared by a
- * cheat-reviewer, because the floor is 2 and not 0 - it is banked here as the
- * measured best form, not as a submission.
+ * Session 6 broke the tension with the ONE surface s5 left open (F7): flow.c
+ * weights every reference by loop depth (`reg_n_refs[regno] += loop_depth`,
+ * flow.c:2081/2329/2515/2725, loop_depth driven by NOTE_INSN_LOOP_BEG at
+ * :1385/:1401/:1447). Our loop is goto-formed, so the front end emits no loop
+ * notes and every counter ref weighs 1 (n_refs 4). Two `do { ... } while (0);`
+ * wraps - a sanctioned family, see .claude/rules/do-while-zero-exception.md -
+ * emit real loop notes and re-weight exactly the counter's own references:
+ *   - `do { i = 0; } while (0);`   -> the init ref weighs 2
+ *   - the whole loop body wrapped  -> the two `i++` refs weigh 2 each
+ * n_refs 4 -> 7 at the unchanged live_length 13 gives priority
+ * floor_log2(7)*7/13*10000 = 10769 > `h`'s 9333, so the counter is allocated
+ * first and takes $s0(16) while `h` takes $s1(17) - target's assignment - with
+ * the init still sitting pre-call where reorg.c needs it.
  *
- * REMAINING 2 POINTS - unchanged from session 2/3, and the tension is unchanged
- * by this session's win: insns 50 and 54, the `rand()` jal delay slot. Target
- * fills it with `move s0,zero` (the `i = 0;`) and leaves a nop in the guard
- * branch's slot; ours is the mirror. Session 4 re-measured all three pre-call
- * `i = 0;` placements ON TOP of the new floor-2 base: pre-`rand()`, after
- * `rand()`, and after `h = v0 + 4;` all score 8 (136 insns), i.e. they still
- * cost exactly the 6-point callee-save cluster. The s3 inequality still governs
- * (counter allocno priority 6153 vs `h` 8750 once the counter's live range
- * crosses the call).
+ * MEASURED, all on this base (see evidence.md for the tables):
+ *   wrap `i++` only              n_refs 6, pri 9230 -> LOSES by 1% (score 11;
+ *                                the wrap's end label also lands between the
+ *                                call and `i++`, which costs the jal slot)
+ *   wrap `i = 0;` only           n_refs 5, pri 7692 -> loses (score 8)
+ *   both, `i++` wrapped alone    n_refs 7, pri 10769 -> registers WIN, but the
+ *                                label costs the loop's delay slot (score 4)
+ *   both, WHOLE BODY wrapped     n_refs 7, pri 10769 -> **score 0**
+ * The body-spanning wrap is load-bearing for the second reason, not the first:
+ * a `do { i++; } while (0);` on its own puts a CODE_LABEL between the call and
+ * the increment, and reorg.c's backward search stops at labels, so
+ * `addiu s0,s0,1` can no longer reach the func_8005D554 delay slot.
  *
- * Other load-bearing facts, all inherited and re-confirmed: the goto-form loop
- * with an explicit guard is required (natural for/while measure 39); `h` is ONE
- * variable deliberately reused for 0xF0 / the loop limit / the D_800A37A8[]
- * table value; `if (h == 0) break;` and `if (h != 0) { ... }` are exactly
- * equivalent spellings.
+ * ==================== INHERITED, STILL LOAD-BEARING ====================
+ * - `mode` (s4) holds the switch selector AND the case-20 limit; that second
+ *   live range is what puts regs 3 and 4 into the selector allocno's exclusion
+ *   union so global.c:find_reg walks to $a1(5). Sanctioned "variable reuse for
+ *   codegen control". It also deletes the old `a1_val` local outright.
+ * - The goto-form loop with an explicit entry guard is required (the natural
+ *   `for`/`while` forms score 39 at 135 insns - loop rotation emits a
+ *   two-instruction entry test where target has a single `beqz $s1`).
+ * - `h` is ONE variable deliberately reused for 0xF0 / the loop limit / the
+ *   D_800A37A8[] table value; splitting any role costs 3 instructions.
+ * - `i++` after the call statement (s1 H3); `if (h == 0) break;` and
+ *   `if (h != 0) { ... }` are equivalent spellings.
  *
- * SESSION 5 (permuter) left this body UNCHANGED and re-confirmed it at 2.
- * What it added: the floor-2 allocno table (counter pseudo 87 = nrefs 4 /
- * livelen 9 / pri 8888 -> $s0; `h` pseudo 73 = nrefs 7 / livelen 16 /
- * pri 8750 -> $s1 - the same 1.6% margin s3 measured on the floor-8 base), a
- * `-dg` reading showing neither allocno has a callee-save hard conflict (so
- * allocno_compare ORDER is the only lever), and kills for the last two open
- * axes: lowering `h`'s n_refs by folding the case-20 tail (21/21/41/26 - the
- * fold only reaches nrefs 6 / pri 8000 and its temp allocno steals reg 3,
- * pushing the selector off $a1), and every case-20 local merge including
- * reusing `env` there (6/2/23/12). Two more permuter campaigns, one of them
- * from the ALIGNED pre-call-init basin (base 80, 37k iterations, ZERO finds),
- * close the permuter modality. Note one equivalent respelling measured
- * neutral: `div_result` may be folded into its compare (`if (h / (mode + 1)
- * >= counter)`), one local fewer, still 2.
- *
- * 100% pure C. Zero pins, zero inline asm, zero dead code.
+ * 100% pure C. Zero pins, zero inline asm, zero dead code, zero rules needed.
+ * Self-vet: memory/grind/func_800174F4/self_vet.md.
  */
 void func_800174F4(void) {
     u8 sp18[8];
@@ -92,16 +90,31 @@ void func_800174F4(void) {
         if (g_disp_fade != 0) {
             s32 v0;
             s32 i;
+            /* FAKE: do-while(0) wrap, mechanism: flow.c loop-note reference
+             * weighting (reg_n_refs += loop_depth) feeding
+             * global.c:allocno_compare, lever-exhaustion: memory/grind/
+             * func_800174F4/hypotheses.md K5/K10/K11/K12/H-S4-2/H-S5-1/H-S5-2.
+             * Effect: seats the loop counter in $s0 and h in $s1 while the
+             * counter is initialised before rand(). */
+            do { i = 0; } while (0);
             v0 = rand();
             v0 &= 3;
             h = v0 + 4;
             if (h == 0) {
                 break;
             }
-            i = 0;
         inner_loop:
-            prim = (s32)func_8005D554((u8 *)prim, g_disp_enable);
-            i++;
+            /* FAKE: do-while(0) wrap, mechanism: flow.c loop-note reference
+             * weighting (reg_n_refs += loop_depth) feeding
+             * global.c:allocno_compare, lever-exhaustion: as above.
+             * Effect: the companion wrap for the counter's in-loop refs; it
+             * must span the whole body so no code label lands between the
+             * call and `i++` (that placement costs reorg.c the jal delay
+             * slot). */
+            do {
+                prim = (s32)func_8005D554((u8 *)prim, g_disp_enable);
+                i++;
+            } while (0);
             if (i >= h) {
                 break;
             }

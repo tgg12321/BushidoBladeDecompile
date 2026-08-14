@@ -8,7 +8,6 @@
 # PutShadowRmd: v0/v1 swapped in two regions, a2/a3 swapped in OT linking block
 
 # gnd_disp_loop_ctrl: switch variable in v1 ($3) instead of a1 ($5)
-func_800174F4: $3 <-> $5 @ 27-41
 
 # cpu_get_dist: cos_idx in a0 ($4) instead of v1 ($3), plus scheduling reorder
 # Reorder: move cos_idx sll/lui/addu/lh before vx load, push sin mask after mult

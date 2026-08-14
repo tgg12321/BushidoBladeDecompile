@@ -622,3 +622,116 @@ output-80-1/source.c), `tmp/perm_ings5b/`. Instrumented dumps:
 - [s5] Read from tools/gcc-2.7.2/flow.c: `reg_n_refs[regno] += loop_depth` at :2081/:2329/:2515/:2725, with loop_depth driven by basic_block_loop_depth / NOTE_INSN_LOOP_BEG (:1385/:1401/:1447). Our loop is GOTO-formed, so the front end emits no loop note and every ref is weighted 1 - which is exactly why the counter reads n_refs 4 and h reads 7. Loop-note re-weighting is the one un-worked surface of the inequality.
 
 - [s5] All campaigns launched this session were harvested and --stop'd in-session; `permuter_campaign.py status` reports alive:false for every workspace (including session 4's) at session end.
+
+## Session 6 (forensics, 2026-08-14) - floor 2 -> 0. THE FUNCTION MATCHES IN PURE C.
+
+### THE HEADLINE
+`sandbox func_800174F4 --disable all` prints **score 0**, build_insns 136 ==
+target_insns 136, rules_dropped 1 - i.e. the honest, cheat-invisible distance is
+ZERO with the sole surviving regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`,
+regfix.txt:11) DISABLED. That rule is now redundant; retiring it is an
+operator-side step (regfix.txt is outside a grind session's allowed surface).
+
+### The forensic reading that unlocked it (the mandated modality, in order)
+
+**(1) reorg.c cannot fill the `jal rand` delay slot from anywhere except the
+call's own basic block, and in every floor-2-class form that block is EMPTY.**
+Instrumented cc1 (`BB2_DBR_DEBUG=1` + `-dd`) on the floor-2 body
+(`tmp/grind/func_800174F4/s6/dbr_f2.txt`, `ings_f2.i.dbr`): the trace contains
+ZERO `DBRDBG simp insn=95 ...` lines for the rand CALL_INSN (uid 95), i.e.
+`fill_simple_delay_slots`' backward scan terminated on its first `stop_search_p`
+step - the only thing before the call in that block is `(insn 345 (use (reg
+v0)))` and then the guard branch. The `.dbr` dump shows `(call_insn 95 ...)`
+with no SEQUENCE (a bare nop) while `(insn 388 (sequence[ (jump_insn 110 ...)
+(insn 119 (set (reg 16 s0) (const_int 0))) ]))` shows OUR `i = 0;` was taken by
+`fill_slots_from_thread` into the guard branch's slot (`DBRDBG thr WINNER
+insn=110 trial=119 annul=0`). So the ledger's F6' question - "does target's
+`move s0,zero` have to be `i = 0;` at all, could reorg have pulled a different
+insn?" - is answered NO: nothing else can reach that slot, and target's own asm
+confirms the block is not empty there (asm/funcs/func_800174F4.s:51-53 shows the
+guard branch's slot holding `addu $s2,$v0,$zero` - the `prim = func_8005D46C()`
+result copy - and the `jal rand` slot holding `addu $s0,$zero,$zero`). The
+requirement is exact: `i = 0;` must be the first statement of the
+`if (g_disp_fade != 0)` block.
+
+**(2) The priority inequality on that base is SHARPER than s3 stated, and s3's
+"n_refs >= 6" target was wrong.** Measured allocno tables (BB2_ALLOC_DEBUG, this
+session, on the floor-2 base with the `mode` lever):
+
+| form | counter (pseudo 87) | `h` (pseudo 73) | score |
+|---|---|---|---|
+| floor-2 (init inside the guard) | nrefs 4 / livelen 9 / pri **8888** -> $s0 | nrefs 7 / livelen 16 / pri 8750 -> $s1 | 2 |
+| pre-call init (first stmt of the fade block) | nrefs 4 / livelen 13 / pri **6153** -> $s1 | nrefs 7 / livelen **15** / pri **9333** -> $s0 | 8 |
+| K12 duplicated init (pre-call + in-guard) | IDENTICAL to the pre-call row | IDENTICAL | 8 |
+
+`h`'s priority in the pre-call form is 9333, not the 8750 of the in-guard form
+(its live_length drops 16 -> 15 when the counter's init moves out of the guard).
+So the counter needs pri > 9333 at live_length 13, i.e. weighted n_refs >= 7
+(2*7/13 = 10769); n_refs 6 gives 9230 and LOSES BY 1.1%. Every session before
+this one was aiming at the wrong number.
+
+**(3) flow.c's loop-note ref weighting (the ledger's F7) is REAL, measurable,
+and supplies exactly the missing refs.** `reg_n_refs[regno] += loop_depth`
+(flow.c:2081/2329/2515/2725) with `loop_depth` from `basic_block_loop_depth` /
+`NOTE_INSN_LOOP_BEG` (flow.c:1385/1401/1447); base depth is 1 (flow.c aborts on
+depth 0), so refs inside a note-delimited loop weigh 2. Our loop is goto-formed
+and emits no notes, which is exactly why the counter reads n_refs 4. Measured,
+each `do { ... } while (0);` wrap re-weighting only the refs it spans:
+
+| form | counter n_refs / pri | `h` n_refs / pri | score |
+|---|---|---|---|
+| pre-call base, no wrap | 4 / 6153 | 7 / 9333 | 8 |
+| + `do { i = 0; } while (0);` only | 5 / 7692 | 7 / 9333 | 8 |
+| + `do { i++; } while (0);` only | 6 / 9230 | 7 / 9333 | 11 |
+| + whole loop body wrapped only | 6 / 9230 | 7 / 9333 | 8 |
+| + init wrap AND `i++` wrap | **7 / 10769** | 7 / 9333 | 4 |
+| + init wrap AND WHOLE-BODY wrap | **7 / 10769** | 7 / 9333 | **0** |
+
+The wraps re-weight the COUNTER's refs without touching `h` because `h`'s only
+in-loop reference is the `slt` in the exit test, which sits OUTSIDE both wraps.
+That is the asymmetry s5 doubted existed ("only if a shape exists that
+re-weights the COUNTER's in-loop refs without equally re-weighting h's in-loop
+`slt` use") - it exists, and the exit test staying outside the wrap is what
+creates it.
+
+**(4) Why the wrap must span the whole loop body, not just `i++`.** With
+`do { i++; } while (0);` the registers are already correct (10769 > 9333) but
+the score is 4, not 0: the wrap's trailing CODE_LABEL lands between the
+`func_8005D554` call and `i++`, and reorg.c's backward search stops at labels,
+so `addiu s0,s0,1` can no longer reach that call's delay slot - ours emits
+`move a0,s2` there and a nop in the back-edge `j` slot, where target has
+`addiu s0,s0,1` in the call slot and `move a0,s2` duplicated into both the
+pre-header and the `j` slot. Wrapping the whole body puts the label after the
+increment and restores target's loop verbatim.
+
+### Also measured (a correction to a session-3 kill)
+K12's duplicated `i = 0;` (pre-call dead store + the in-guard live one) does NOT
+lengthen the counter's live range by one unit as s3's arithmetic assumed: the
+redundant store is folded away before flow analysis and the allocno table is
+byte-identical to the single-pre-call form (n_refs 4, live_length 13, pri 6153).
+The kill stands; the stated reason was wrong.
+
+### Artifacts (session 6)
+`tmp/grind/func_800174F4/s6/` - `dbr.sh` (BB2_DBR_DEBUG + cc1 `-dd` reorg dump
+of the current src/ings.c), `alloc6.sh` (BB2_ALLOC_DEBUG allocno table),
+`probe.py` (apply a variant -> honest sandbox score + allocno table -> restore),
+`gen.py`/`gen2.py`/`gen3.py` (variant generators), `bank.py`, `ledger.py`,
+`dbr_f2.txt` + `ings_f2.i.dbr` (the floor-2 reorg forensics),
+`diff_wboth.txt` (the 4-point aligned diff that isolated the loop delay slot),
+`variants/*.c` (9 measured forms incl. `final.c`, the matching body).
+
+- [s6] MATCH: `sandbox func_800174F4 --disable all` = score 0, build_insns 136 == target_insns 136, rules_dropped 1. The honest cheat-free pure-C distance is ZERO and the sole regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`, regfix.txt:11) is redundant - retiring it plus `queue done` is an operator-side step, outside a grind session's allowed surface.
+
+- [s6] The matching form = the session-4/5 floor-2 body with `i = 0;` moved to the FIRST statement of the `if (g_disp_fade != 0)` block (reorg.c's requirement) plus TWO sanctioned `do { ... } while (0);` wraps: one around that init, one around the WHOLE case-1/2 loop body. Both are FAKE-annotated inline per .claude/rules/do-while-zero-exception.md.
+
+- [s6] FORENSIC KILL of the F6' question "could reorg.c have pulled a different insn into the `jal rand` delay slot?": NO. BB2_DBR_DEBUG on the floor-2 body produces ZERO `DBRDBG simp insn=95` lines for the rand CALL_INSN - fill_simple_delay_slots' backward scan hits stop_search_p immediately because the call is the first real insn of its basic block. Target's own asm (asm/funcs/func_800174F4.s:51-53) confirms the shape: the guard branch's slot holds the `prim = func_8005D46C()` result copy and the `jal rand` slot holds `addu $s0,$zero,$zero`.
+
+- [s6] CORRECTION to s3's F4' arithmetic: on the pre-call-init base `h` (pseudo 73) measures n_refs 7 / live_length 15 / priority 9333, NOT the 8750 of the in-guard base (its live_length shrinks by one when the counter's init leaves the guard). The counter therefore needs weighted n_refs >= 7 at live_length 13 (10769), not the n_refs >= 6 (9230) s3 derived - 6 loses by 1.1%.
+
+- [s6] CONFIRMED with instrumented tables: flow.c's loop-note ref weighting (`reg_n_refs[regno] += loop_depth`, :2081/:2329/:2515/:2725; loop_depth from NOTE_INSN_LOOP_BEG at :1385/:1401/:1447, base depth 1) is a real and controllable lever. `do { i = 0; } while (0);` takes the counter to n_refs 5 (7692); a wrap covering the two `i++` refs takes it to 6 (9230); both together reach 7 (10769) and beat `h`. `h` is NOT re-weighted because its only in-loop reference is the exit test's `slt`, which stays outside both wraps.
+
+- [s6] MEASURED: a wrap around `i++` ALONE fixes the registers but scores 4, because the wrap's trailing CODE_LABEL sits between the func_8005D554 call and the increment and reorg.c's backward search stops at labels, costing `addiu s0,s0,1` the jal delay slot. Wrapping the WHOLE loop body puts the label past the increment and restores target's loop (score 0). Wrap SCOPE is load-bearing, not just wrap presence.
+
+- [s6] MEASURED CORRECTION to s3's K12: the duplicated `i = 0;` (pre-call + in-guard) produces an allocno table byte-identical to the single pre-call form (counter n_refs 4 / live_length 13 / pri 6153) - the redundant store is folded away before flow analysis, so it does not lengthen the live range at all. The kill stands; its stated reason did not.
+
+- [s6] Reusable tooling: tmp/grind/func_800174F4/s6/dbr.sh (BB2_DBR_DEBUG=1 + cc1 `-dd`: per-candidate delay-slot trace plus the post-reorg RTL, which is how "the block is empty" was proven rather than inferred) and probe.py (one command: splice a variant, print honest score AND the allocno priority table, restore src).
