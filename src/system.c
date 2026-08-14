@@ -131,24 +131,30 @@ s32 CdReadyCallback(s32 a0) {
 extern s32 g_cd_sector_buf[];
 extern s32 CD_cw(s32, void *, void *, s32);
 
-s32 CdControl(s32 a0, s32 a1, s32 a2) {
-    register s32 result asm("s7");
-    s32 count;
-    unsigned long long new_var2;
+s32 CdControl(u8 a0, s32 a1, s32 a2) {
+    s32 result;
     s32 idx;
     s32 saved;
-    int new_var;
+    s32 count;
+    s32 *base;
     s32 *elem;
 
-    idx = a0 & 0xFF;
+    idx = a0;
     saved = g_cd_callback_a;
-    elem = &g_cd_sector_buf[idx];
-    new_var = 3;
+    count = 3;
+    base = g_cd_sector_buf;
+    elem = base + idx;
     result = 0;
-    new_var2 = new_var;
-    count = new_var2;
 
 loop:
+    /* FAKE: loop-note ref weighting seats count/a1/a2/idx/a0/saved/elem/result
+       in s0..s7, mechanism: flow.c life analysis (reg_n_refs += loop_depth)
+       feeding global.c allocno_compare, lever-exhaustion:
+       memory/grind/CdControl/hypotheses.md (s1: 2x240 init-order sweeps, honest
+       real-loop restructure measured worse at 13; s2: 240 wrap-free init orders
+       floor 17, 720 declaration orders inert, mask/param/named-intermediate
+       axes measured) */
+    do {
     g_cd_callback_a = 0;
 
     if (idx != 1) {
@@ -164,7 +170,7 @@ loop:
         }
     }
     g_cd_callback_a = saved;
-    if (CD_cw(a0 & 0xFF, a1, a2, 0) == 0) {
+    if (CD_cw(a0, a1, a2, 0) == 0) {
         goto done;
     }
 next:
@@ -173,6 +179,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
+    } while (0);
     g_cd_callback_a = saved;
     result = -1;
 done:

@@ -35,7 +35,68 @@
   instruction where target spends two (`addiu $v0,$zero,-1` + `bne`). The exit
   test must stay the two-instruction `!= -1` compare. **KILLED.**
 
-### Frontier for session 2+
+## Session 2 (structural, 2026-08-14) — floor 4 → 0
+
+### CONFIRMED
+- **H6 — The a0-vs-`saved` allocno priority inversion is driven by the DECLARED
+  TYPE of the command parameter, not by statement order or ref-count
+  micro-surgery.** Mechanism: `a0` is a CD command BYTE. Declared `s32`, the
+  incoming register is known full-width, so the parameter pseudo and its `&0xFF`
+  derivation collapse differently and the copy's live range/ref profile loses the
+  `allocno_compare` tie to `saved`. Declared `u8` — the real PsyQ signature
+  `int CdControl(u_char com, u_char *param, u_char *result)`, and the spelling
+  BOTH matched siblings already use — GCC keeps the raw parameter copy live and
+  masks at each use, which is exactly what target does (`andi $s3,$s4,0xFF` at
+  entry and `andi $a0,$s4,0xFF` in the retry loop, `asm/funcs/CdControl.s:12,56`).
+  Probe: 2×2 cross product of param type × named-raw-intermediate at session 1's
+  winning init order (`tmp/grind/CdControl/s2/phaseA.json`).
+  Result: s32/no-raw **4**, s32/raw **4**, **u8/no-raw 0**, u8/raw **5** — all at
+  78 instructions. One-token type change, 4 → 0. **CONFIRMED.**
+- **H7 — The `& 0xFF` masks are inert once `a0` is `u8`.** Probe: 2×2×2 cross
+  product of {mask the `idx` init} × {mask the retry-call argument} × {wrap}
+  (`tmp/grind/CdControl/s2/phaseG_masks.json`). Result: all four masked/unmasked
+  combinations score **0** with the wrap and **17** without it. The masks buy
+  nothing, so the candidate drops them (`idx = a0;`, `CD_cw(a0, a1, a2, 0)`) —
+  which is byte-for-byte CdControlF's spelling. **CONFIRMED.**
+
+### KILLED
+- **H8 — A named `raw = a0;` intermediate for the raw command word is the handle
+  on the a0 allocno (target copies a0 to s4 and reads it twice).** Probe: phase A
+  above. Result: inert at `s32` (4 → 4) and a REGRESSION at `u8` (0 → 5) — the
+  intermediate splits the parameter's own allocno from the copy and destroys the
+  seating the `u8` type buys. Banked:
+  `memory/grind/CdControl/rejected/named-raw-intermediate-regress-5.c`. **KILLED.**
+- **H9 — Declaration order of the six locals is a live lever (GCC 2.7.2 numbers
+  pseudos in declaration order, and `global.c` breaks `allocno_compare` ties by
+  allocno number).** Probe: full 720-permutation declaration-order sweep at the
+  best wrap-free init order, `u8` param
+  (`tmp/grind/CdControl/s2/phaseF_nowrap_declorder.json`). Result: **every one of
+  the 720 orders scores 17.** Declaration order is completely inert for this
+  function — pseudos are created at first USE, not at declaration, so the
+  initialiser order (already swept) is the only order lever. **KILLED.**
+- **H10 — With the correct `u8` parameter type the do-while(0) wrap becomes
+  unnecessary (a fully construct-free pure-C match).** Probe: full 240-permutation
+  legal init-order sweep at `u8` with the wrap removed
+  (`tmp/grind/CdControl/s2/phaseD_nowrap_u8.json`), then the 720 declaration
+  orders on the best of those, then the mask cross product. Result: wrap-free
+  floor is **17** (range 17…30) and nothing moves it. The wrap is load-bearing
+  and is worth 17 points on its own at the correct parameter type. **KILLED** —
+  this is the lever-exhaustion evidence backing the FAKE annotation.
+
+### Session-2 outcome
+Honest sandbox distance **0** (78/78 instructions) with the edits in place in
+`src/system.c`. Zero-basin width with the wrap: **6 of 240** init orders reach 0
+(`tmp/grind/CdControl/s2/phaseE_wrap_u8.json`) — the same six that tied at 4 in
+session 1, so the `u8` type shifted the whole surface down by 4 rather than
+picking out a new order. Self-vet: `memory/grind/CdControl/self_vet.md`.
+
+### Frontier for session 2+ (session-1 text; items 1-3 are now resolved or dead)
+Item 1 (loop.c-visible loop without the LICM cost) and item 2 (attack the
+a0/`saved` inversion via ref counts / live length) are SUPERSEDED — H6 closed the
+inversion outright via the parameter type, and H8 killed the ref-count handle.
+Item 3 (RTL diff against CdControlB) was never needed: CdControlB's relevant
+structural difference turned out to be its `u8 a0` parameter, not its exit-value
+spelling.
 
 1. **Get a loop.c-visible loop WITHOUT the LICM cost.** H4/H5's real-loop form
    is the ONLY form measured this session that seats `a0` in s4 and `saved` in

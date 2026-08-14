@@ -121,6 +121,72 @@ already-committed matched sibling `CdControlF` (`src/system.c:192-197`, commit
 session: the floor is 4, not 0, and the exhaustion prerequisite is explicitly
 not yet met — this is session 1 and the frontier below is un-run.
 
+## Session 2 (structural, 2026-08-14) — floor 4 → 0
+
+### The closing lever: the parameter's declared TYPE
+`CdControl`'s first parameter is a CD command **byte**. HEAD and the session-1
+candidate both declared it `s32`. Declaring it `u8` — the real PsyQ libcd
+signature (`int CdControl(u_char com, u_char *param, u_char *result)`) and the
+spelling BOTH already-matched siblings in the same file use (`CdControlF`
+`src/system.c:184`, `CdControlB` `src/system.c:236`) — moves the honest sandbox
+distance from **4 to 0** with nothing else changed. It is a one-token change and
+it is a typing CORRECTION, not a coercion: the target masks the value at each
+use (`andi $s3,$s4,0xFF` at entry, `andi $a0,$s4,0xFF` in the retry loop,
+`asm/funcs/CdControl.s:12,56`), which is precisely what GCC 2.7.2 does for a
+`u8` parameter whose incoming register is not known extended.
+
+That single change dissolves the entire session-1 residual: the a0-copy/`saved`
+priority inversion at s4/s5, and the prologue emission order that followed from
+it, both land on target simultaneously.
+
+### The measured surface (all at 78 == 78 instructions)
+
+| axis | result | artifact |
+|---|---|---|
+| param `s32`/`u8` × named `raw = a0;` intermediate | s32/no-raw **4**, s32/raw **4**, **u8/no-raw 0**, u8/raw **5** | `phaseA.json` |
+| `u8`, wrap-free, all 240 legal init orders | floor **17**, range 17…30 | `phaseD_nowrap_u8.json` |
+| `u8`, wrap-free, all 720 declaration orders | **every order 17** — declaration order is completely inert | `phaseF_nowrap_declorder.json` |
+| `u8`, with wrap, all 240 legal init orders | **6 orders reach 0**, range 0…30 | `phaseE_wrap_u8.json` |
+| `u8`, mask-`idx` × mask-call-arg × wrap | masks entirely inert: **0** with wrap in all 4, **17** without in all 4 | `phaseG_masks.json` |
+
+(Artifacts live in `tmp/grind/CdControl/s2/`; harness `probe.py`.)
+
+Consequences banked:
+- **The `& 0xFF` masks are dropped.** At `u8` they are no-ops that buy nothing,
+  so the candidate reads `idx = a0;` and `CD_cw(a0, a1, a2, 0)` — byte-for-byte
+  CdControlF's spelling, and one fewer redundant-width-cast question for review.
+- **The do-while(0) wrap is load-bearing and worth 17 points** at the correct
+  parameter type. Removing it cannot be rescued by any initialiser order (240
+  swept) or any declaration order (720 swept) or by the masks. That is the
+  lever-exhaustion evidence the FAKE annotation cites.
+- **Declaration order is a dead axis for this function** — GCC 2.7.2 creates
+  pseudos at first USE, so the initialiser order (already exhausted in s1 and
+  re-swept here) is the only order lever. Do not re-sweep declarations.
+- **The six zero-scoring init orders are exactly the six that tied at 4 in
+  session 1.** The `u8` type shifted the whole score surface down by 4; it did
+  not select a different order. Session 1's order choice was already optimal.
+
+### Status
+Honest sandbox distance **0** (`sandbox CdControl --disable all`, 78/78) with the
+edits in place in `src/system.c`. The three regfix rules (regfix.txt:58-61) are
+untouched by this session and are inert under the cheat-invisible sandbox; the
+operator's `retire` + full-build SHA1 verification is the remaining step.
+Self-vet written to `memory/grind/CdControl/self_vet.md`.
+
+- [s2] The closing lever was the DECLARED TYPE of the command parameter: s32 -> u8 (the real PsyQ CdControl(u_char com, ...) signature, and the type both matched siblings CdControlF/CdControlB already use) moves the honest floor from 4 to 0 with nothing else changed, at 78 == 78 instructions.
+
+- [s2] Mechanism: for a u8 parameter GCC 2.7.2 does not treat the incoming register as known-extended, so it keeps the raw copy live and masks at each use — exactly what target does (andi $s3,$s4,0xFF at entry, andi $a0,$s4,0xFF in the retry loop, asm/funcs/CdControl.s:12,56). That restores the a0->s4 / saved->s5 seating the whole session-1 residual consisted of.
+
+- [s2] KILLED: a named 'raw = a0;' intermediate for the raw command word. Inert at s32 (4 -> 4) and a REGRESSION at u8 (0 -> 5) — it splits the parameter's own allocno from the copy. Banked at memory/grind/CdControl/rejected/named-raw-intermediate-regress-5.c.
+
+- [s2] KILLED: declaration order as a lever. All 720 permutations of the six local declarations score 17 (wrap-free, u8, best init order) — GCC 2.7.2 creates pseudos at first USE, so initialiser order is the only order lever. Do not re-sweep declarations for this function.
+
+- [s2] KILLED: the hope that the correct u8 parameter type makes the do-while(0) wrap unnecessary. Wrap-free floor is 17 across all 240 legal init orders (range 17..30) and unmoved by all 720 declaration orders and by every mask combination. The wrap is load-bearing and worth 17 points; this is the lever-exhaustion evidence backing its FAKE annotation.
+
+- [s2] The '& 0xFF' masks are inert once a0 is u8 (all four mask/no-mask combinations score 0 with the wrap, 17 without), so the candidate drops them: idx = a0; and CD_cw(a0, a1, a2, 0) — byte-for-byte CdControlF's spelling.
+
+- [s2] The six init orders that reach 0 with the wrap are exactly the six that tied at 4 in session 1 — the u8 type shifted the entire score surface down by 4 rather than selecting a new order, so session 1's order choice was already optimal.
+
 - [s1] canonical CdControl -> verdict C, asm_insns 0, total 78: pure-C target, no canonical-asm question exists for this function.
 
 - [s1] Honest floor at session start was 25 with target_insns 78 == build_insns 78 — instruction count and control flow were already exact, so the whole distance was and still is register assignment plus the prologue emission order that follows from it.

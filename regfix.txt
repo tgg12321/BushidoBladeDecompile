@@ -55,10 +55,7 @@ func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
 
 # func_80080258: 3-way register rotation s2/s3/s4 in body (TEXT 11-59)
 # My: s2=idx, s3=a0, s4=a2 → Target: s2=a2, s3=idx, s4=a0
-CdControl: $18 <-> $20 @ 11-59
-CdControl: $19 <-> $20 @ 11-59
 # func_80080258: interleave argument moves with prologue saves
-CdControl: reorder 3,18,4,17,5,6,7,19,8,9,10,11,12,13,14,15,16 @ 3-19
 
 # func_80036FD4: SpecialCam in $5(a1) -> $3(v1), entry loads $3/$2 -> $4/$5
 # Reorder: put sra after SpecialCam load

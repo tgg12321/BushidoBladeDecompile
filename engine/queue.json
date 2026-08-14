@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CdControl",
-      "file": "system",
-      "distance": 25,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "func_80084A7C",
       "file": "main",
       "distance": 26,
@@ -2363,14 +2354,14 @@
     }
   ],
   "counts": {
-    "total": 275,
-    "active": 228,
+    "total": 274,
+    "active": 227,
     "by_status": {
-      "active": 228,
+      "active": 227,
       "parked": 47
     },
     "by_verdict": {
-      "C": 144,
+      "C": 143,
       "ASM-PARTIAL": 37,
       "ASM-SUSPECT": 47
     }
