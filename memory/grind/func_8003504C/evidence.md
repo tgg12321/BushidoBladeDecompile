@@ -91,4 +91,122 @@ order, which is a hint about the original statement order in this block.
 
 - [s1] Reusable instruments were built and are committed to the scratch dir: sidediff.py (normalized position-by-position target-vs-ours listing; canonicalizes $reg prefixes, move/li aliases, %hi/%lo vs reloc-0, hex vs decimal immediates, and branch displacements - baseline reports 26 differing positions), greg.sh (regenerates the full cc1 -da dump set for code6cac_b.c), refs.py (per-pseudo reg_n_refs + first-set insn).
 
+## Session 2 (structural, 2026-08-13) — the cluster-1 allocation model, solved
+
+Floor unchanged at 24 (HEAD form re-confirmed at session end, `git status src/`
+clean). This session did not lower the floor; it CLOSED the cluster-1
+register-inversion axis with an exact model of GCC 2.7.2 `global.c`, and built
+the instruments that turn every future allocation question into one command.
+
+### New instruments (tmp/grind/func_8003504C/s2/)
+- `apply.py <variant.c>` — splice a whole-function variant into src/code6cac_b.c.
+- `probe.sh` — regenerate the cc1 `-da` dumps for the CURRENT src and print, for
+  func_8003504C: every pseudo's `refs`/`live_length` (parsed from the `.flow`
+  dump's "Register N used R times across L insns"), the post-qsort allocno order
+  (`;; N regs to allocate:` in `.greg`), and the register-disposition line.
+- `sweep.sh <variant.c>...` — apply+probe a list of variants, then revert src.
+- `findreg.sh <pseudo>` — run the INSTRUMENTED cc1 (`tools/gcc-2.7.2/cc1`, NOT
+  `build/cc1`) with `BB2_FINDREG_DEBUG=<pseudo>` and print that pseudo's hard-reg
+  conflicts / someone_prefers / used_so_far / pass0 / pass1 exclusion sets.
+
+### The exact allocation model (read out of tools/gcc-2.7.2/global.c)
+`allocno_compare` sorts by `pri = floor_log2(refs) * refs / live_length` (times
+allocno_size, = 1 for all of these). `flow.c` accumulates `reg_n_refs[r] +=
+loop_depth` per OCCURRENCE, with loop_depth 1 outside any loop-note region and 2
+inside loop 1 — a ref inside a `do/while` counts DOUBLE. `find_reg` then walks
+REG_ALLOC_ORDER and takes the first hard reg that is neither conflicting nor
+(pass 0) preferred by someone else.
+
+Measured baseline (HEAD form); pseudos 72=p, 73=i, 74=src, 75=ptr, 76=base:
+
+    p    refs=12 len=103  pri = 3*12/103 = 0.350   -> $t3
+    i    refs=11 len=37   pri = 3*11/37  = 0.892   -> $a2   (target: $a3)
+    src  refs=9  len=36   pri = 3*9 /36  = 0.750   -> $a3   (target: $a2)
+    ptr  refs=11 len=34   pri = 3*11/34  = 0.971   -> $a1   (matches target)
+    base refs=4  len=34   pri = 2*4 /34  = 0.235   -> $t0   (matches target)
+
+The `;; regs to allocate` order is exactly that ranking, and `findreg.sh 73` shows
+i's hard-reg conflicts are exactly {2,3,4,5} = $v0,$v1,$a0,$a1 with an EMPTY
+someone_prefers set — so i takes $a2 as the first free reg in REG_ALLOC_ORDER,
+deterministically; src then inherits the conflict on $a2 and takes $a3.
+
+### The target's own compile had the SAME ref counts
+The occurrences are visible in target's asm and are identical to ours. $a3 (=i):
+`addu $a3,$zero,$zero` (pre-loop, weight 1), `addu $at,$at,$a3` x2,
+`addiu $a3,$a3,1` (2 occurrences), `slti $v0,$a3,0x2` — 5 in-loop occurrences x2
++ 1 = **11**. $a2 (=src): `move $a2,$t3` (weight 1), `lbu $v0,0($a2)`,
+`lbu $v0,1($a2)`, `addiu $a2,$a2,0xA` (2 occurrences) — 4 in-loop x2 + 1 = **9**.
+The hoisted `li $t2,5` / `li $t1,20` prove loop 1 carried NOTE_INSN_LOOP_BEG in
+the original too (that hoist is loop.c LICM), so the depth-2 weighting applied
+there as well. Hence pri_i = 33/L_i and pri_src = 27/L_src in the original, and
+for src to be allocated first it needs **L_i > 1.222 * L_src**.
+
+### Why that is unreachable (the closure)
+Both i and src are live-in and live-out of every block of the loop body (a
+loop-carried value is live across the back edge), so both carry the full body
+length B (measured B ~= 33). They can differ ONLY by the number of pre-loop insns
+between their two initializations — and the entire pre-loop block is 8 insns
+(target positions 4-11), of which src's `move $a2,$t3` must follow `move $t3,$v0`.
+Measured extremes: baseline L_i=37 / L_src=36; src-initialized-last L_i=37 /
+L_src=34, i.e. a best achievable ratio of **1.088** against a requirement of
+1.222. Session 1's H3 frontier ("one discrete position weaker live-range
+extension") is therefore not mis-calibrated — the axis has no such position.
+
+### Loop-note removal compresses the gap but not the requirement
+Spelling loop 1 as an `if/goto` loop (no NOTE_INSN_LOOP_BEG) drops every in-loop
+weight from 2 to 1: measured refs become i=6, src=5, ptr=6, base=3. Both i and
+src stay in the same `floor_log2 = 2` bucket, so the requirement is still
+L_i > 1.2 * L_src and the achievable ratio is still 37/34. It also shifts the
+whole assignment DOWN one register ($a0/$a2/$a3 instead of $a1/$a2/$a3) because
+p's allocno overtakes ptr's in the reordered ranking — strictly worse.
+
+### Strength-reduction (giv) provenance does not change it either
+Rewriting loop 1 with pure `i * 10` indexing so the walkers become loop.c-created
+givs leaves the giv allocated AFTER i in every case (same 27/L priority shape), so
+i still takes $a2. vE (both walkers as givs): 142 insns, score 32 — the
+D_8010277C giv costs an extra `lui`+`addiu`, because target derives that pointer
+as `addiu $a1,$t0,-0x9` from the D_80102785 address, which independently proves
+the original had the source-level `base` / `ptr = base - 9` relationship HEAD
+already spells. vF (only the p-walk as a giv, HEAD's base/ptr kept): 141 insns,
+score 26, identical inversion.
+
+### What this leaves for cluster 1
+Every knob feeding `allocno_compare` is measured and closed: refs are pinned by
+the (fixed, 141/141) instruction stream, live lengths are pinned by loop-carried
+liveness, loop-note weighting scales both sides equally, and giv provenance does
+not reorder them. `find_reg` cannot be steered either — i's hard-reg conflicts
+come only from $v0/$v1/$a0 (in-loop temporaries) and $a1 (ptr, allocated
+earlier), ANY pseudo conflicting with i inside the body also conflicts with src
+(so none can take $a2 "on i's behalf"), and `regs_someone_prefers` is empty for
+every pseudo because the function has no argument-register copies at all (both
+calls are 0-arg), so the pass-0 preference skip can never fire. Treat cluster 1
+as allocation-CLOSED under the current instruction stream; spend effort on
+cluster 2 (untouched this session), or re-open cluster 1 only against a premise
+this model does not cover (a source shape in which the loop-1 counter is not one
+pseudo spanning the whole body).
+
+- [s2] allocno_compare in GCC 2.7.2 global.c ranks by floor_log2(refs)*refs/live_length; flow.c weights each ref occurrence by loop_depth (1 outside a loop-note region, 2 inside loop 1). Measured baseline priorities ptr 0.971 > i 0.892 > src 0.750 > base 0.235 reproduce the observed allocation order and the observed $a1/$a2/$a3/$t0 assignment exactly.
+
+- [s2] BB2_FINDREG_DEBUG=73 on the instrumented cc1 (tools/gcc-2.7.2/cc1) shows i's hard-reg conflicts are exactly {$v0,$v1,$a0,$a1} with an EMPTY someone_prefers set, so i takes $a2 as the first free register in REG_ALLOC_ORDER; src then conflicts with $a2 and takes $a3. The function has no argument-register copies (both calls are 0-arg), so no copy preference can ever populate someone_prefers here.
+
+- [s2] The target's own asm pins the original compile's ref counts to the same 11 (i) and 9 (src) - 5 vs 4 in-loop occurrences at weight 2 plus one pre-loop init at weight 1 - and the hoisted li 5 / li 20 prove loop 1 had loop notes in the original. So src outranking i requires L_i > 1.222*L_src.
+
+- [s2] i and src are both live across the whole loop body (loop-carried, live across the back edge), so their live lengths differ only by the pre-loop distance between their initializations, and the entire pre-loop block is 8 insns. Measured extremes give L_i/L_src = 37/34 = 1.088 against the 1.222 requirement: the live-range-extension axis is arithmetically closed, not merely uncalibrated.
+
 - [s1] src/ was left byte-identical to HEAD (git diff --stat src/ is empty) and the floor was re-confirmed at 24 after reverting every probe. No cheat construct was written at any point in this session: no pins, no inline asm, no dead stores, no volatile coercion, no unused locals.
+
+- [s2] GCC 2.7.2 global.c ranks allocnos by floor_log2(refs)*refs/live_length (allocno_compare), and flow.c adds loop_depth per ref occurrence (1 outside a loop-note region, 2 inside loop 1). Measured baseline priorities ptr 0.971 > i 0.892 > src 0.750 > base 0.235 reproduce both the observed allocno order and the observed $a1/$a2/$a3/$t0 assignment exactly.
+
+- [s2] Measured baseline pseudo table (72=p, 73=i, 74=src, 75=ptr, 76=base): p refs=12 len=103, i refs=11 len=37, src refs=9 len=36, ptr refs=11 len=34, base refs=4 len=34.
+
+- [s2] Target's own asm pins the ORIGINAL compile's weighted ref counts to the same values: $a3 (i) has 5 in-loop occurrences plus one pre-loop init = 11; $a2 (src) has 4 in-loop occurrences plus one pre-loop init = 9. The hoisted li 5 / li 20 prove loop 1 had NOTE_INSN_LOOP_BEG in the original, so the same depth-2 weighting applied.
+
+- [s2] i and src are both loop-carried, hence live across every block of the loop body; their live lengths can differ only by the pre-loop distance between their initializations, and the whole pre-loop block is 8 insns. Best measured ratio 37/34 = 1.088 against a 1.222 requirement - the live-range-extension axis is arithmetically closed, not mis-calibrated.
+
+- [s2] BB2_FINDREG_DEBUG on the instrumented cc1 shows i's hard-reg conflicts = {$v0,$v1,$a0,$a1} and an empty someone_prefers set; the function has no argument-register copies at all (both calls 0-arg), so the pass-0 preference skip can never fire here.
+
+- [s2] Spelling loop 1 as an if/goto loop removes the loop notes and halves every in-loop weight (measured refs i=6, src=5, ptr=6, base=3) but leaves i and src in the same floor_log2 bucket, so the flip requirement is unchanged; it also shifts the group down one register ($a0/$a2/$a3), which is strictly worse.
+
+- [s2] New reusable instruments in tmp/grind/func_8003504C/s2: apply.py (splice a variant), probe.sh (per-pseudo refs/live_length from the .flow dump + post-qsort allocno order + dispositions), sweep.sh (apply+probe a list, then revert), findreg.sh (BB2_FINDREG_DEBUG exclusion sets from the instrumented cc1).
+
+- [s2] Session end state: src/ reverted to HEAD and re-verified at sandbox score 24, 141/141 instructions; no cheat construct was written at any point (no pins, no inline asm, no dead stores, no volatile coercion, no unused locals).

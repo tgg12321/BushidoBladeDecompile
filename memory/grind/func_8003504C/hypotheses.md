@@ -103,3 +103,51 @@ discrete step away from a measured, reproducible configuration.
 - probe: Reused `i` as loop 2's outer counter (deleted `s32 j`, ran the `val == 5` do/while on `i`) - a genuine reuse of a dead scratch local, no dead store; sandbox --disable all + normalized position diff.
 - result: Floor 24 -> 28 as a closing form, BUT the intended flip happened: positions 12/38/39 went clean and `src` landed in $a2 exactly as target wants. The extension overshot by one position - got ptr=$a1, src=$a2, base=$a3, i=$t0 where target wants ptr=$a1, src=$a2, i=$a3, base=$t0 (i fell below `base`, 3 refs / short range, instead of landing between src and base).
 - verdict: CONFIRMED
+
+## [s2] H3-calibration: reusing `i` as loop 2's INNER counter is the "one discrete position weaker" live-range extension that lands ptr=$a1, src=$a2, i=$a3, base=$t0.
+- mechanism: global.c allocno priority = floor_log2(refs)*refs/live_length; flow.c weights refs by loop depth, so refs placed in a DEEPER loop were expected to raise the numerator while the live range grew by a similar span, giving a smaller net ratio drop than session 1's outer-loop reuse.
+- probe: Replaced loop 2's inner counter `s32 k` with `i` (vA, tmp/grind/func_8003504C/s2/vA_i_as_inner.c); sandbox --disable all plus the new refs/live_length + allocno-order + disposition instrument.
+- result: Floor 24 -> 39 and the allocation moved the WRONG WAY. The inner loop sits at loop depth 3, so i's weighted refs went 11 -> 19 while its live length only went 37 -> 52: priority ROSE from 0.892 to 0.365*floor_log2 (19 refs -> 4*19/52 = 1.46), putting i FIRST and pushing ptr off $a1 (got i=$a1, ptr=$a2, src=$a3). Deeper reuse raises priority; it cannot lower it.
+- verdict: KILLED
+
+## [s2] The cluster-1 inversion is reachable at all through allocno priority (src outranking i) under the fixed 141-instruction stream.
+- mechanism: allocno_compare = floor_log2(refs)*refs/live_length. Target's asm pins the original's occurrence counts to i=11 and src=9 weighted refs (5 vs 4 in-loop occurrences at depth 2, plus one pre-loop init at depth 1), and the LICM-hoisted li 5 / li 20 prove loop 1 had loop notes in the original. So src outranks i only if L_i > (33/27)*L_src = 1.222*L_src.
+- probe: Measured refs/live_length for every pseudo across four variants (baseline; src-init-last; goto-spelled loop 1 with baseline init order; goto-spelled loop 1 with src-init-last), plus BB2_FINDREG_DEBUG dumps for pseudos 73 and 74.
+- result: i and src are both loop-carried and therefore live across the entire loop body, so their lengths can differ only by the pre-loop distance between their initializations - and the whole pre-loop block is 8 insns. Measured extremes: baseline 37/36 = 1.028, src-init-last 37/34 = 1.088, both far below 1.222. Removing the loop notes (if/goto spelling) rescales both sides identically (i=6, src=5 refs, same floor_log2 bucket 2), leaving the requirement at 1.2 and additionally demoting ptr off $a1. KILLED - the axis has no reachable position, which retires session 1's H3 frontier.
+- verdict: KILLED
+
+## [s2] The inversion can be steered through find_reg instead of priority (make i skip $a2 via a hard-reg conflict or a someone_prefers bit).
+- mechanism: find_reg's pass 0 excludes registers preferred by other allocnos and registers never used so far; pass 1 takes the first non-conflicting reg in REG_ALLOC_ORDER.
+- probe: BB2_FINDREG_DEBUG=73 / =74 on the instrumented cc1 (tools/gcc-2.7.2/cc1) for the HEAD form.
+- result: i's hard-reg conflicts are exactly {$v0,$v1,$a0,$a1} and its someone_prefers set is EMPTY, so $a2 is simply the first free register. A someone_prefers bit for $a2 would require a copy between a pseudo and an argument register, and this function has no such copy at all (both calls are 0-arg). A hard conflict on $a2 would require an earlier-allocated conflicting pseudo to hold $a2, but every pseudo live anywhere in loop 1's body conflicts with src exactly as much as with i, so it cannot separate them. KILLED.
+- verdict: KILLED
+
+## [s2] Loop 1's walking pointers were loop.c strength-reduction givs in the original (pure i-indexed source), and that different pseudo provenance changes the i/src allocation.
+- mechanism: loop.c reduces a multi-use `base[i*K]` address expression to a walking pointer while leaving single-use i-indexed arrays as lui+addu, which would explain why target walks $a2 over p and $a1 over D_8010277C but keeps lui+addu+%lo for D_80102780 / D_8010277E.
+- probe: vE (both walkers as givs, all four arrays i-indexed) and vF (only the p-walk as a giv, HEAD's base/ptr kept); sandbox + the disposition instrument on each.
+- result: vE = 142 insns / score 32 - one insn OVER target, because target derives the D_8010277C pointer as `addiu $a1,$t0,-0x9` from the D_80102785 address while a giv needs its own lui+addiu; that is positive evidence that the original DID have HEAD's `base` / `ptr = base - 9` source relationship. vF = 141 insns / score 26 with the identical inversion: the giv is created late and allocated after i, so i still takes $a2. KILLED as an allocation lever (kept as evidence about ptr's provenance).
+- verdict: KILLED
+
+## [s2] Reusing `i` as loop 2's INNER counter is the one-discrete-position-weaker live-range extension that lands ptr=$a1, src=$a2, i=$a3, base=$t0 (session 1's frontier probe).
+- mechanism: global.c allocno priority = floor_log2(refs)*refs/live_length, and flow.c increments reg_n_refs by loop_depth, so refs placed in a deeper loop were expected to raise the numerator while the live range grew by a comparable span, giving a smaller net ratio drop than session 1's outer-loop reuse.
+- probe: vA (tmp/grind/func_8003504C/s2/vA_i_as_inner.c): replaced loop 2's inner counter `s32 k` with `i`; sandbox --disable all plus the new refs/live_length + allocno-order + register-disposition instrument.
+- result: Floor 24 -> 39, and the allocation moved the WRONG WAY: the inner loop is at depth 3, so i's weighted refs went 11 -> 19 while its live length only went 37 -> 52; its priority ROSE (4*19/52 = 1.46 vs 0.892), putting i FIRST and displacing ptr off $a1 (i=$a1, ptr=$a2, src=$a3). Deeper reuse raises priority and can never lower it.
+- verdict: KILLED
+
+## [s2] The cluster-1 inversion is reachable at all through allocno priority (getting src allocated before i) under the fixed 141-instruction stream.
+- mechanism: allocno_compare = floor_log2(refs)*refs/live_length. Target's own asm pins the original compile's weighted ref counts to i=11 and src=9 (5 vs 4 in-loop occurrences at loop_depth 2, plus one pre-loop init at depth 1), and the LICM-hoisted `li $t2,5` / `li $t1,20` prove loop 1 carried loop notes in the original, so the depth-2 weighting applied there too. src outranks i only if L_i > (33/27)*L_src = 1.222*L_src.
+- probe: Measured refs/live_length + allocno order + dispositions for four variants: baseline HEAD, src-init-last (do/while), goto-spelled loop 1 with baseline init order, goto-spelled loop 1 with src-init-last.
+- result: Both i and src are loop-carried and therefore live across the whole loop body, so their live lengths can differ only by the pre-loop distance between their two initializations - and the entire pre-loop block is 8 insns. Measured extremes: baseline L_i/L_src = 37/36 = 1.028; src-init-last = 37/34 = 1.088; both far below the 1.222 requirement. Removing the loop notes (if/goto spelling) rescales both sides identically (refs i=6, src=5, same floor_log2 bucket 2), leaving the requirement at 1.2, and additionally demotes ptr off $a1 (p's allocno overtakes it). The axis has no reachable position - this retires session 1's H3 frontier.
+- verdict: KILLED
+
+## [s2] The inversion can be steered through find_reg instead of priority - make i skip $a2 via a hard-reg conflict or a regs_someone_prefers bit, leaving $a2 for src.
+- mechanism: find_reg's pass 0 excludes registers preferred by other allocnos and registers not yet used; pass 1 takes the first non-conflicting register in REG_ALLOC_ORDER.
+- probe: BB2_FINDREG_DEBUG=73 and =74 on the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, not build/cc1) over the HEAD form; script tmp/grind/func_8003504C/s2/findreg.sh.
+- result: i's hard-reg conflicts are exactly {$v0,$v1,$a0,$a1} and its someone_prefers set is EMPTY, so $a2 is simply the first free register in REG_ALLOC_ORDER. Populating someone_prefers requires a copy between a pseudo and an argument register, and this function has none (both calls are 0-arg). A hard conflict on $a2 requires an earlier-allocated conflicting pseudo to hold $a2, but every pseudo live in loop 1's body conflicts with src exactly as much as with i, so no pseudo can separate them.
+- verdict: KILLED
+
+## [s2] Loop 1's walking pointers were loop.c strength-reduction givs in the original (i.e. the original source was purely i-indexed), and that different pseudo provenance changes the i/src allocation.
+- mechanism: loop.c reduces a multi-use base[i*K] address to a walking pointer while leaving single-use i-indexed arrays as lui+addu+%lo - which would explain why target walks $a2 over p and $a1 over D_8010277C but keeps lui+addu for D_80102780 / D_8010277E.
+- probe: vE (all four arrays i-indexed, both walkers as givs) and vF (only the p-walk as a giv, HEAD's base/ptr kept); sandbox --disable all + the disposition instrument on each.
+- result: vE = 142 insns / score 32 - one insn OVER target, because target derives the D_8010277C pointer as `addiu $a1,$t0,-0x9` from the D_80102785 address while a giv needs its own lui+addiu; that is positive evidence the original had HEAD's `base` / `ptr = base - 9` source relationship. vF = 141 insns / score 26 with the identical inversion: the giv is created late by loop.c and allocated after i, so i still takes $a2. Killed as an allocation lever, kept as provenance evidence for ptr.
+- verdict: KILLED

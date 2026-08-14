@@ -1,31 +1,37 @@
 {
  "func": "func_8003504C",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 24,
    "modality": "recon",
    "headline": "Recon: floor 24 is 100% register+ordering (141/141 insns) in exactly two clusters; 3 hypotheses killed, and the cluster-1 allocation flip is PROVEN reachable (a live-range extension of `i` put `src` i"
+  },
+  {
+   "session": 2,
+   "floor": 24,
+   "modality": "structural",
+   "headline": "Cluster 1's i/src register inversion is CLOSED as an allocation problem: exact global.c priority model measured, requirement L_i > 1.222*L_src proven unreachable (max 1.088), find_reg steering shown i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cluster 1 closes with a live-range extension of `i` that is one discrete position weaker than session 1's, landing the order at ptr=$a1, src=$a2, i=$a3, base=$t0.",
-   "mechanism": "global.c allocno priority = reg_n_refs / live_length with hard regs handed out in MIPS allocation order; flow.c increments reg_n_refs by loop depth, so refs placed in a DEEPER loop raise the numerator while the live range grows by roughly the same span - giving a smaller net ratio drop than an outer-loop reuse.",
-   "next_probe": "Reuse `i` as loop 2's INNER counter (replace `s32 k`) rather than its outer counter, and as a second variant reuse it for the inner `off`. After each build, read `;; Register dispositions:` out of tmp/grind/func_8003504C/sN/code6cac_b.i.greg and the ref counts from refs.py - judge on the disposition line, not on the score, since the score mixes in cluster 2's movement."
+   "hypothesis": "Cluster 2 closes on STATEMENT ORDER of the three global stores plus the D_80102785 read, not on variable reuse (killed in s1) - untouched this session and now the highest-value remaining axis.",
+   "mechanism": "sched1 fills the load-delay region of `lw $v0,0x20($t3)` with a later-in-program-order independent instruction, which is exactly where target's `sh zero` (D_800A36F6 = 0) sits; and target's early `lui $v1` / `lb $v1` is the D_80102785 read being available early enough to fill the `lw 0x14` delay region instead of the p[8] load being hoisted there.",
+   "next_probe": "Sweep the orderings of { D_80102784 store, D_800A36F6 = 0, D_80102786 store, val = D_80102785 } - in particular `val = D_80102785;` FIRST and `D_800A36F6 = 0;` LAST - measuring positions 51-61 with tmp/grind/func_8003504C/s1/sidediff.py each time. Cluster 1's registers will not move (now proven), so any score delta in that window is pure cluster-2 signal."
   },
   {
-   "hypothesis": "Cluster 2 closes on STATEMENT ORDER of the three global stores, not on variable reuse (which is killed): the D_800A36F6 zero-store belongs AFTER the D_80102786 assignment in the source, and the D_80102785 read belongs before the D_80102784 store.",
-   "mechanism": "sched1 fills the load-delay region of `lw $v0,0x20($t3)` with a later-in-program-order independent instruction, which is exactly where target's `sh zero` sits; and target's early `lui $v1`/`lb $v1` is the D_80102785 read being available early enough to fill the `lw 0x14` delay region instead of the p[8] load being hoisted there.",
-   "next_probe": "Sweep the 3!-ish orderings of { D_80102784 store, D_800A36F6 = 0, D_80102786 store, val = D_80102785 } - in particular `val = D_80102785;` first and `D_800A36F6 = 0;` last - measuring the positions 51-61 window with sidediff.py each time."
+   "hypothesis": "If cluster 1 is re-opened, the only premise this session's model does not cover is that the loop-1 counter is a single pseudo spanning the whole body; a source shape where the counter's live range is SPLIT (two pseudos that reload coalesces) would change refs/live_length without changing the emitted stream.",
+   "mechanism": "allocno priority is per-pseudo; a split induction variable halves both refs and length for each half, which can move one half below src's 27/L while the emitted addiu/slti stay identical if reload coalesces them back.",
+   "next_probe": "Look for a natural C spelling that makes cc1 emit two pseudos for the loop-1 counter (e.g. the counter consumed by the stores being a distinct value from the one incremented) and read the .flow refs/live_length with probe.sh BEFORE judging on score. Do NOT spend turns on any further init-order / loop-note / giv variant - all three are measured dead."
   },
   {
-   "hypothesis": "The pre-loop ordering residual (constants 5/20 early vs late, positions 4-11) is a consequence of cluster 1's allocation, not an independent axis.",
-   "mechanism": "Positions 4..11 are a single basic block scheduled by sched1 on priority; the pseudos' dependence structure and hard-reg assignment feed that priority, so the constant-materialization position should move once the allocation matches.",
-   "next_probe": "Do NOT attack this directly. Re-measure positions 4-11 only after a variant lands the target disposition (ptr=$a1, src=$a2, i=$a3, base=$t0); attack it separately only if it survives that."
+   "hypothesis": "The pre-loop ordering residual (constants 5/20 early vs late, positions 4-11) is a sched1 priority effect that is now known NOT to be downstream of the allocation flip.",
+   "mechanism": "Positions 4..11 are one basic block scheduled by sched1 on INSN_PRIORITY; session 1 deferred this axis on the assumption it would resolve once the allocation matched, but the allocation is now proven unreachable, so the assumption is void and the block must be attacked on its own terms.",
+   "next_probe": "Re-derive the pre-loop block's sched1 priorities directly from the .sched dump for the HEAD form and identify which dependence makes our li 5 / li 20 sink to positions 10-11; then look for a source order of the four initializers that raises their priority without moving the pointer copies."
   }
  ],
  "judge_constraints": [],

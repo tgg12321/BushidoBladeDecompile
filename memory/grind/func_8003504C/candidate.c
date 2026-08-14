@@ -1,4 +1,17 @@
-/* candidate.c — func_8003504C — BEST FORM as of session 1 (recon).
+/* candidate.c — func_8003504C — BEST FORM as of session 2 (structural).
+ *
+ * STILL the HEAD form: session 2 measured five more variants (i reused as loop
+ * 2's inner counter; loop 1 spelled as an if/goto loop with and without
+ * src-init-last; the do/while src-init-last control; two strength-reduction
+ * "giv" reconstructions of the walking pointers) and none beat 24 — scores 39,
+ * 24/26-class, 32 and 26 respectively. Session 2 also CLOSED cluster 1's
+ * allocation axis arithmetically (see evidence.md §Session 2): with the
+ * instruction stream fixed at 141/141, i's and src's weighted ref counts are
+ * pinned at 11 and 9, and their live lengths can differ by at most the 8-insn
+ * pre-loop block, so src can never outrank i in global.c's allocno order.
+ * One side finding worth keeping: the `base` / `ptr = base - 9` spelling below
+ * is positively CORROBORATED by target — a strength-reduced walker over
+ * D_8010277C needs its own lui+addiu and comes out one instruction over.
  *
  * Honest pure-C floor: 24 (sandbox --disable all), 141/141 instructions.
  * This is IDENTICAL to what is committed in src/code6cac_b.c at HEAD — session 1
