@@ -343,3 +343,140 @@ diff, showing only insns 28/30/31/33/35/41 and the 50/54 delay-slot swap).
 - [s3] [s3] Seventeen structural forms measured this session, none below 8: guard early-exit 8; i-init pre-rand 14; i-init after h 14; i-init duplicated 14; i-init top of case 15; i-init before the fade test 18 (137 insns); for-header hybrid 33; natural for 39 (135); natural while 39 (135); env-as-counter 22/21/21/21; counter shared with case 20 18/24; case-20 h hoist 14; that hoist plus pre-call init 19.
 
 - [s3] [s3] Reusable tooling added: tmp/grind/func_800174F4/s3/alloc.sh (BB2_ALLOC_DEBUG per-allocno priority table for the current src/ings.c), greg.sh (cc1 `-dg` dump with the allocno order list and conflict lists), findreg.sh <tag> <pseudo> (BB2_FINDREG_DEBUG dump of one allocno's complete find_reg decision state), apply.py (persistently splice a variant body into src/ings.c). Reading the priority/exclusion sets directly is far cheaper than inferring them from the score.
+
+## Session 4 (permuter, 2026-08-13/14) - floor 8 -> 2; cluster (A) CLOSED
+
+### THE HEADLINE
+The 6-point switch-selector cluster (A) - the residue three sessions could not
+move, and the exact scope of the sole surviving regfix rule
+`func_800174F4: $3 <-> $5 @ 27-41` - is CLOSED in pure C. Floor 8 -> 2.
+The move: give the switch-selector local a SECOND live range in case 20, so one
+C variable `mode` holds the dispatch value AND the case-20 limit:
+
+    mode = g_disp_enable;
+    switch (mode) {
+    ...
+    case 20:
+        mode = D_800A37A0;
+    {   u8 a2_val = D_800A38F8;
+        s32 a0_val = a2_val & 0xFF;                 /* a1_val local is GONE */
+        if (((u32)mode) < (u32)a0_val) break;
+        div_result = h / (mode + 1);
+        ... if (a0_val == mode) ... if ((new_val & 0xFF) == mode) ...
+
+Sessions 2 and 3 measured TEN spellings of a selector local, all 8; every one
+of them gave the local exactly one def (the `g_disp_enable` read). What was
+never tried was a second def. Target's own register economy is the tell: target
+keeps the dispatch value and the case-20 limit in the SAME register ($a1).
+
+### Why it works (mechanism, consistent with the s3 find_reg reading)
+s3 measured the selector allocno's complete find_reg state: hard conflicts
+{2,29}, EMPTY someone_prefers / own_copy_prefs / own_full_prefs, so find_reg
+handed it $v1(3) as the lowest free class register. Adding the case-20 def
+extends the same pseudo's live range across the case-20 argument setup, which
+is what finally puts regs 3 and 4 into its exclusion union and lets find_reg
+walk to $a1(5) - the state s3 predicted was required ("to land on $a1(5) the
+selector needs 3 AND 4 in hard_reg_conflicts U regs_someone_prefers"). s3's
+route hypothesis (a lower-priority CONFLICTING allocno that prefers 3 or 4) was
+therefore right about the requirement and wrong about the only way to reach it:
+a second def of the selector itself does it without the selector going
+callee-save (the measured 29/138 failure mode of s2's K6). The instrumented
+confirmation (BB2_FINDREG_DEBUG on the floor-2 form, to read the new conflict /
+someone_prefers sets directly) was NOT run this session and is a cheap,
+high-value first probe for the next one.
+
+### Measured ladder (all `sandbox func_800174F4 --disable all`, 136 insns)
+| form | score |
+|---|---|
+| s3 floor-8 base (early-exit guard spelling) | 8 |
+| + `s32 mode` selector local, single def (s2's K6 shape, re-measured) | 8 |
+| + `mode` re-defined in case 20, `s32 a1_val = mode;` kept | **2** |
+| + that, plus the `(s32)` cast dropped on the func_8005D554 result | **2** |
+| + `a1_val` local deleted, case 20 reads `mode` directly | **2** |
+| floor-2 base, `i = 0;` moved before `v0 = rand();` | 8 |
+| floor-2 base, `i = 0;` moved between `rand()` and `v0 &= 3;` | 8 |
+| floor-2 base, `i = 0;` moved after `h = v0 + 4;` | 8 |
+
+The last three re-measure F4' on the NEW base: closing cluster (A) does NOT
+relax the s3 priority inequality. The 2-point delay-slot residue is unchanged
+and is now the ONLY thing between this function and a byte match.
+
+### The permuter campaigns (the mandated modality)
+Three fresh-seed campaigns, all launched/waited/harvested in-session via
+`tools/permuter_campaign.py`, all against a hand-built single-function
+workspace (see Artifacts):
+
+| chassis | label | iters | elapsed | finds |
+|---|---|---|---|---|
+| 1: floor-8 candidate (`if (h != 0) {...}` guard) | goto-loop-floor8 | 46045 | 21 min | 1 (score 110) |
+| 2: floor-8 early-exit (`if (h == 0) break;`) | earlyexit-guard-chassis | 41859 | 20 min | 1 (score 110) |
+| 3: chassis 2 + `s32 mode` selector local | selector-local-chassis | ~8000 | 5 min | 3 (145, 110, 175) |
+
+Chassis 1 and 2 both converged within 100 s to the SAME form - `i = 0;` hoisted
+to just after `v0 = rand();` - and then produced nothing new for 20 more
+minutes across 87k combined iterations. That form is s2/s3's already-rejected
+pre-call-init attractor, measured at sandbox 8 (permuter 110). This is a
+measured statement about the two metrics: decomp-permuter weights a reordering
+at 60 and a register substitution at 5, so in THIS function its gradient points
+away from the honest sandbox optimum (fixing the 2-point delay-slot reordering
+"gains" 65 permuter points while losing 6 sandbox points). Seeding a permuter
+campaign here and trusting its score would walk the function backwards.
+
+Chassis 3 is where the modality paid: giving the permuter a selector local to
+mutate, it produced `mode = D_800A37A0; s32 a1_val = mode;` (output-145-1) 74 s
+after seed. That find is a PROPOSAL - it was then measured in the honest
+sandbox (2), reduced by hand (the `a1_val` intermediate is unnecessary), and
+re-spelled into the simpler one-variable form now in candidate.c.
+
+### Artifacts (session 4)
+`tmp/grind/func_800174F4/s4/` - `mkws.sh` (build the single-function permuter
+workspace: full-TU preprocessed base.c, real cheat-free pipeline in compile.sh,
+target.o assembled from asm/funcs/func_800174F4.s + prelude.inc with
+`.set gp=64` stripped), `mkbase.sh` (trim base.c to the declaration prologue +
+this one function so pycparser can parse it - PROVEN byte-identical to the
+full-TU compile), `mkws2.sh <chassis.c> <dir>` (reusable: build a workspace from
+an arbitrary chassis body), `chassis2.c`, `chassis3.c`, `variants/*.c` (9
+measured forms). Campaign workspaces + logs: `tmp/perm_ings/`, `tmp/perm_ings2/`,
+`tmp/perm_ings3/` (each with campaign.log, campaign_meta.json, output-*/source.c).
+
+- [s4] FLOOR 8 -> 2. Cluster (A), the 6-point switch-selector residue that is the exact scope of the sole surviving regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`), is CLOSED in pure C by giving the switch-selector local a SECOND live range: `mode = g_disp_enable; switch (mode) { ... case 20: mode = D_800A37A0; ... }` with every case-20 use of the old `a1_val` local reading `mode` instead (the `a1_val` local is deleted outright, so the body is one local SIMPLER than the floor-8 form). 136 == 136 insns.
+
+- [s4] WHY sessions 2 and 3 missed it: their ten selector-local spellings all gave the local exactly ONE def (the `g_disp_enable` read), and s2's K6 correctly measured that shape at 8. The lever is not "cache the selector in a local", it is "the selector local also carries a second, later value". Target's register economy is the tell - target holds the dispatch value and the case-20 limit in the SAME register ($a1).
+
+- [s4] The s3 find_reg requirement is satisfied exactly as s3 predicted ("to land on $a1(5) the selector needs 3 AND 4 in hard_reg_conflicts U regs_someone_prefers"); s3's assumed ROUTE (needing a lower-priority conflicting allocno that prefers 3 or 4, unreachable without the selector going callee-save at 29/138) was not the only route - a second def of the selector pseudo itself reaches the same exclusion state without crossing func_8005D46C. The BB2_FINDREG_DEBUG confirmation on the floor-2 form was not run this session.
+
+- [s4] MEASURED: the 2-point delay-slot residue (F4') is UNCHANGED by the cluster-(A) win. All three pre-call `i = 0;` placements re-measured on the new floor-2 base (pre-`rand()`, between `rand()` and `v0 &= 3;`, after `h = v0 + 4;`) score 8 with 136 insns - still exactly the 6-point callee-save loss. The s3 priority inequality (counter 6153 vs `h` 8750 once the counter's live range crosses the call) still governs.
+
+- [s4] MEASURED: dropping the `(s32)` cast on `prim = func_8005D554(...)` is codegen-neutral (2 either way), so the explicit cast stays.
+
+- [s4] METRIC ANTI-ALIGNMENT, measured: decomp-permuter's weighted score and the engine's honest sandbox distance point in OPPOSITE directions for this function. Two independent fresh-seed campaigns (chassis 1 = the floor-8 candidate, chassis 2 = its early-exit spelling) each converged within 100 s to the same form - `i = 0;` hoisted to just after `v0 = rand();`, permuter 110 vs base 175 - and then produced nothing novel for 20 more minutes over 87k combined iterations. That form is the already-rejected pre-call-init attractor and measures sandbox 8. The cause is the weighting: a reordering costs 60 and a register substitution 5, so trading the 2-point delay-slot reordering for the 6-point register cluster looks like a 65-point win to the permuter and is a 6-point loss honestly. Never seed a campaign here and read its score as progress.
+
+- [s4] The modality PAID once the chassis carried the lever: chassis 3 (chassis 2 + a `s32 mode` selector local) produced `mode = D_800A37A0; s32 a1_val = mode;` 74 s after seed (tmp/perm_ings3/output-145-1, permuter 145). Treated as a PROPOSAL per policy: measured honestly (2), then hand-reduced (the `a1_val` intermediate is unnecessary - deleting it scores the same 2 with one fewer local) into the form now in candidate.c.
+
+- [s4] Reusable tooling added: tmp/grind/func_800174F4/s4/mkws2.sh builds a complete single-function decomp-permuter workspace for func_800174F4 from ANY chassis body file in one command (declaration-prologue-trimmed preprocessed base.c, real cheat-free compile pipeline, offset-0 target.o) and prints the base-vs-target insn diff as validation.
+
+- [s4] PROVEN context-neutrality: a base.c trimmed to src/ings.c's declaration prologue (lines 1-90) plus func_800174F4 alone compiles to output BYTE-IDENTICAL to the full-TU compile for this function. That is what makes the workspace pycparser-parseable at all (the rest of ings.c is full of `register T x asm("...")` declarations and file-scope `__asm__` blobs pycparser cannot read).
+
+- [s4] VETTING STATUS of the floor-2 form: `mode` carrying two values is the SOTN-sanctioned "variable reuse for codegen control" family (frozen list, .claude/rules/no-new-park-categories.md), and the resulting body has one FEWER local than the floor-8 form. It has NOT been through a cheat-reviewer, because the floor is 2 and not 0 - it is banked as the measured best form, not as a submission. Whichever session reaches 0 must self-vet it.
+
+- [s4] [s4] FLOOR 8 -> 2. Cluster (A), the 6-point switch-selector residue that is the exact scope of the sole surviving regfix rule (`func_800174F4: $3 <-> $5 @ 27-41`, regfix.txt:11), is CLOSED in pure C by giving the switch-selector local a SECOND live range: `mode = g_disp_enable; switch (mode) { ... case 20: mode = D_800A37A0; ... }` with every case-20 use of the old `a1_val` local reading `mode` instead. The a1_val local is deleted outright, so the body is one local SIMPLER than the floor-8 form. 136 == 136 insns.
+
+- [s4] [s4] WHY sessions 2 and 3 missed it: their ten selector-local spellings all gave the local exactly ONE def (the g_disp_enable read), and s2's K6 correctly measured that shape at 8. The lever is not 'cache the selector in a local', it is 'the selector local also carries a second, later value'. Target's own register economy is the tell - target holds the dispatch value and the case-20 limit in the SAME register ($a1).
+
+- [s4] [s4] The s3 find_reg requirement is satisfied exactly as s3 predicted ('to land on $a1(5) the selector needs 3 AND 4 in hard_reg_conflicts U regs_someone_prefers'); s3's assumed ROUTE (a lower-priority conflicting allocno preferring 3 or 4, unreachable without the selector going callee-save at 29/138) was not the only route - a second def of the selector pseudo itself reaches the same exclusion state without crossing func_8005D46C. The BB2_FINDREG_DEBUG confirmation on the floor-2 form was NOT run this session.
+
+- [s4] [s4] MEASURED: the 2-point delay-slot residue is UNCHANGED by the cluster-(A) win. All three pre-call `i = 0;` placements re-measured on the floor-2 base score 8 with 136 insns - still exactly the 6-point callee-save loss. The s3 priority inequality (counter 6153 vs h 8750 once the counter's live range crosses the call) still governs.
+
+- [s4] [s4] MEASURED: dropping the (s32) cast on `prim = func_8005D554(...)` is codegen-neutral (2 either way), so the explicit cast stays in candidate.c.
+
+- [s4] [s4] METRIC ANTI-ALIGNMENT, measured: decomp-permuter's weighted score and the engine's honest sandbox distance point in OPPOSITE directions for this function. Two independent fresh-seed campaigns each converged within 100 s to the pre-call-init attractor (permuter 110 vs base 175; sandbox 8 vs base 8-form's 8 -> it is the floor-14-class form) and then produced nothing novel over 87k combined iterations. Cause: reordering weight 60 vs register weight 5. Never read a permuter score here as progress.
+
+- [s4] [s4] The modality PAID once the chassis carried the lever: chassis 3 (early-exit floor-8 chassis + a `s32 mode` selector local) produced `mode = D_800A37A0; s32 a1_val = mode;` 74 s after seed (tmp/perm_ings3/output-145-1, permuter 145). Treated as a PROPOSAL per policy: measured honestly (2), then hand-reduced into the simpler one-variable form now in candidate.c.
+
+- [s4] [s4] Reusable tooling: tmp/grind/func_800174F4/s4/mkws2.sh builds a complete single-function decomp-permuter workspace for func_800174F4 from ANY chassis body file in one command (declaration-prologue-trimmed preprocessed base.c, real cheat-free compile pipeline with regfix/asmfix excluded, offset-0 target.o) and prints the base-vs-target insn diff as validation.
+
+- [s4] [s4] PROVEN context-neutrality: a base.c trimmed to src/ings.c's declaration prologue (lines 1-90) plus func_800174F4 alone compiles to output BYTE-IDENTICAL to the full-TU compile for this function. That is what makes the workspace pycparser-parseable at all (the rest of ings.c is full of `register T x asm(...)` declarations and file-scope __asm__ blobs pycparser cannot read).
+
+- [s4] [s4] VETTING STATUS of the floor-2 form: `mode` carrying two values is the SOTN-sanctioned 'variable reuse for codegen control' family (frozen list, .claude/rules/no-new-park-categories.md), and the resulting body has one FEWER local than the floor-8 form. It has NOT been through a cheat-reviewer, because the floor is 2 and not 0 - it is banked as the measured best form, not as a submission. Whichever session reaches 0 must self-vet it.
+
+- [s4] [s4] All three campaigns were launched, waited on in-turn (`permuter_campaign.py wait`), harvested and --stop'd inside this session; zero permuter processes survive it.

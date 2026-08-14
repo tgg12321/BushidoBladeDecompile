@@ -436,3 +436,44 @@ prelude per `.claude/rules/difficult-is-not-impossible.md`, seed from
 - probe: Instrumented cc1 with BB2_FINDREG_DEBUG=120 on the floor-8 form, reading the selector allocno's complete decision state (conflicts, someone_prefers, own_copy_prefs, own_full_prefs, pass0_used).
 - result: conflicts {2, 29}; someone_prefers EMPTY; own_copy_prefs EMPTY; own_full_prefs EMPTY — it takes reg 3 as the lowest free class register, deterministically. The same dump shows the exclusion mechanism working for pseudo 99 (hard conflicts {2,3}, skips 4 because lower-priority conflicting allocno 101 prefers 4, lands on 5), so the route exists but needs a conflicting lower-priority argument-preferring allocno, which the selector cannot acquire without living across func_8005D46C and being forced callee-save (s2's measured 29/138 form).
 - verdict: KILLED
+
+## Session 4 (permuter, 2026-08-13/14)
+
+### H-S4-1 — CONFIRMED (floor 8 -> 2)
+- statement: Cluster (A), the 6-point switch-selector residue ($v1 vs target's $a1 at insns 28/30/31/33/35/41), closes if the switch-selector local is given a SECOND live range later in the function — specifically if the same C variable that holds `g_disp_enable` for the `switch` is re-defined in case 20 to hold `D_800A37A0` (replacing the separate `a1_val` local outright).
+- mechanism: global.c:find_reg allocates the lowest-numbered register of the class outside `hard_reg_conflicts U regs_someone_prefers`. s3 measured the single-def selector allocno with conflicts {2,29} and all three preference sets empty, so it deterministically took $v1(3), and s3 stated the requirement for $a1(5) as "3 AND 4 must both be in that union". A second def extends the SAME pseudo's live range across the case-20 argument setup, which supplies that exclusion without pushing the selector across `func_8005D46C` (the callee-save failure mode s2 measured at 29/138).
+- probe: chassis-3 permuter campaign proposed `mode = D_800A37A0; s32 a1_val = mode;` (tmp/perm_ings3/output-145-1, 74 s after seed, permuter 145 vs base 175); the form was then measured honestly with `sandbox func_800174F4 --disable all` and hand-reduced.
+- result: `s32 mode` with a single def = 8 (re-confirms s2's K6). With the case-20 re-definition = **2**, 136 insns. With `a1_val` deleted and case 20 reading `mode` directly = **2**, 136 insns, one local fewer than the floor-8 form. The `(s32)` cast on the func_8005D554 result is codegen-neutral (2 either way).
+- verdict: CONFIRMED
+
+### H-S4-2 — KILLED
+- statement: With cluster (A) closed, the allocation landscape has changed enough that a pre-call `i = 0;` (the placement reorg.c needs in order to fill the `rand()` jal delay slot with `move s0,zero`) might no longer cost the counter its $s0.
+- mechanism: s3's closed-form inequality — priority = floor_log2(n_refs)*n_refs/live_length*10000; a pre-call init takes the counter allocno to live_length ~13 / priority 6153 against `h`'s 8750, so `h` wins $s0. The hope was that the selector's new live range perturbs the allocno order enough to change the outcome.
+- probe: three `i = 0;` placements re-measured on the floor-2 base — before `v0 = rand();`, between `v0 = rand();` and `v0 &= 3;`, and after `h = v0 + 4;` (rejected/floor2-base-i0-*.c).
+- result: 8, 8, 8 — all 136 insns, i.e. all three still pay exactly the 6-point callee-save cluster on top of the surviving 2-point delay-slot residue. The inequality is untouched by the cluster-(A) win.
+- verdict: KILLED
+
+### H-S4-3 — KILLED (the modality's own stopping question)
+- statement: An undirected fresh-seed permuter campaign from the floor-8 base closes the register-name residual (the inherited F6).
+- mechanism: decomp-permuter randomizes statement order, temporaries and types and hill-climbs on a weighted score (registers 5, reorderings 60, insert/delete 100) against a single-function target.o.
+- probe: two fresh-seed campaigns on structurally different floor-8 chassis (`if (h != 0) {...}` guard, and its `if (h == 0) break;` early-exit spelling), 46045 + 41859 iterations, 21 + 20 minutes, both harvested and stopped in-session.
+- result: both converged within 100 s to the SAME form — `i = 0;` hoisted to just after `v0 = rand();` — and produced nothing novel afterwards. That form is the already-rejected pre-call-init attractor and measures sandbox 8, i.e. WORSE. Root cause measured: the permuter's weighting makes trading the 2-point delay-slot reordering for the 6-point register cluster look like a 65-point gain while it is a 6-point honest loss. Undirected campaigns on this function are anti-aligned with the honest metric; only a chassis that already carries the lever (H-S4-1) produced anything useful.
+- verdict: KILLED
+
+## [s4] Cluster (A) (6 pts, insns 28/30/31/33/35/41, ours $v1 vs target $a1) closes if the switch-selector local is given a SECOND live range later in the function - specifically if the same C variable that holds g_disp_enable for the switch is re-defined in case 20 to hold D_800A37A0, replacing the separate a1_val local outright.
+- mechanism: global.c:find_reg allocates the lowest-numbered class register outside hard_reg_conflicts U regs_someone_prefers. s3 measured the single-def selector allocno at conflicts {2,29} with all three preference sets empty, so it deterministically took $v1(3), and stated the $a1(5) requirement as '3 AND 4 both in that union'. A second def extends the SAME pseudo's live range across the case-20 argument setup, supplying that exclusion without pushing the selector across func_8005D46C (the callee-save failure mode s2 measured at 29/138).
+- probe: chassis-3 permuter campaign proposed `mode = D_800A37A0; s32 a1_val = mode;` (tmp/perm_ings3/output-145-1, 74 s after seed, permuter 145 vs base 175); measured honestly with `sandbox func_800174F4 --disable all`, then hand-reduced by deleting the a1_val intermediate.
+- result: s32 mode with a single def = 8 (re-confirms s2's K6). With the case-20 re-definition = 2, 136 insns. With a1_val deleted and case 20 reading `mode` directly = 2, 136 insns and one local FEWER than the floor-8 form. Dropping the (s32) cast on the func_8005D554 result is codegen-neutral (2 either way).
+- verdict: CONFIRMED
+
+## [s4] With cluster (A) closed the allocation landscape has changed enough that a pre-call `i = 0;` (the placement reorg.c needs to fill the rand() jal delay slot with `move s0,zero`) may no longer cost the counter its $s0.
+- mechanism: s3's closed-form inequality: priority = floor_log2(n_refs)*n_refs/live_length*10000; a pre-call init takes the counter allocno to live_length ~13 / priority 6153 against `h`'s 8750, so `h` wins $s0. The hope was that the selector's new live range perturbs the allocno order.
+- probe: three `i = 0;` placements re-measured on the floor-2 base - before `v0 = rand();`, between `v0 = rand();` and `v0 &= 3;`, and after `h = v0 + 4;` (memory/grind/func_800174F4/rejected/floor2-base-i0-*.c).
+- result: 8, 8, 8 - all 136 insns, i.e. all three still pay exactly the 6-point callee-save cluster on top of the surviving 2-point delay-slot residue. The inequality is untouched by the cluster-(A) win.
+- verdict: KILLED
+
+## [s4] An undirected fresh-seed permuter campaign from the floor-8 base closes the register-name residual (the inherited F6).
+- mechanism: decomp-permuter randomizes statement order, temporaries and types and hill-climbs on a weighted score (registers 5, reorderings 60, insert/delete 100) against a single-function target.o built from asm/funcs/func_800174F4.s at offset 0.
+- probe: two fresh-seed campaigns on structurally different floor-8 chassis (`if (h != 0) {...}` guard = tmp/perm_ings, and the `if (h == 0) break;` early-exit spelling = tmp/perm_ings2), 46045 + 41859 iterations, 21 + 20 minutes, both harvested and stopped in-session.
+- result: both converged within 100 s to the SAME form - `i = 0;` hoisted to just after `v0 = rand();` - and produced nothing novel afterwards. That form is the already-rejected pre-call-init attractor and measures sandbox 8, i.e. WORSE. Root cause measured: the permuter's weighting makes trading the 2-point delay-slot reordering for the 6-point register cluster look like a 65-point gain while it is a 6-point honest loss. Undirected campaigns on this function are anti-aligned with the honest metric; only a chassis that already carried the lever produced anything useful.
+- verdict: KILLED

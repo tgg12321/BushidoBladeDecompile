@@ -1,8 +1,8 @@
 {
  "func": "func_800174F4",
  "file": "ings",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 8,
    "modality": "structural",
    "headline": "Floor holds at 8 (17 more structural forms, none below); session 2's K4 is CORRECTED \u2014 the $s0/$s1 flip IS global.c:allocno_compare, and both residual clusters are now stated as exact allocator arithm"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Floor 8 -> 2: cluster (A), the 6-point switch-selector residue that IS the sole surviving regfix rule's scope, closes in pure C when the switch-selector local is given a second live range in case 20 ("
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F4' \u2014 the 2-point delay-slot residue is now a closed-form inequality: with `i = 0;` pre-`rand()` the counter allocno sits at priority 6153 against `h`'s 8750, so the flip needs either counter n_refs >= 6 or `h` live_length > 22.7. The remaining untried surface is lowering `h`'s n_refs from 7 to 4 (floor_log2(4)*4/16 = 5000 < 6153) WITHOUT splitting the variable.",
-   "mechanism": "global.c:allocno_compare, priority = floor_log2(n_refs)*n_refs/live_length*10000, ties broken by allocno number; whichever of {counter, h} is allocated first takes $s0(16). Session 3 measured every parameter of both allocnos directly.",
-   "next_probe": "Respell the case-20 arithmetic so `h` is referenced fewer times without splitting it into separate locals (which K2/K3 already killed): fold `h = D_800A37A8[a0_val]; if (...) h |= 0x8000; func_80060414(h, ...)` into forms with one or two `h` references (e.g. compute the ORed value in a temporary and pass it, or select between two expressions), then read `h`'s n_refs/live_length/priority straight out of `bash tmp/grind/func_800174F4/s3/alloc.sh <tag>` BEFORE scoring. Any form whose `h` priority drops under 6153 is then re-measured with the pre-`rand()` `i = 0;` in place."
+   "hypothesis": "F4'' - the 2-point rand() delay-slot residue (insns 50 and 54) is the ONLY remaining gap, and it is still the s3 tension: target's `move s0,zero` in the jal delay slot requires `i = 0;` to be emitted pre-call, and every pre-call placement costs the counter allocno $s0 (re-measured 8/8/8 on the floor-2 base). The untried surface is no longer WHERE `i = 0;` goes but WHAT ELSE can fill that delay slot, or how to make the counter allocno survive a pre-call init.",
+   "mechanism": "reorg.c:fill_simple_delay_slots fills a CALL_INSN's slot by BACKWARD search over preceding insns (the forward search is blocked here because the intervening andi/addiu both reference the call's $v0 result and it cannot cross the beqz). global.c:allocno_compare then decides $s0 by priority = floor_log2(n_refs)*n_refs/live_length*10000; a pre-call init puts the counter at ~6153 against h's 8750.",
+   "next_probe": "Two cheap probes, in order. (1) Re-run the s3 instrumentation on the FLOOR-2 base - `bash tmp/grind/func_800174F4/s3/alloc.sh <tag>` and `findreg.sh <tag> <pseudo>` - to read the counter and `h` allocnos' CURRENT n_refs/live_length/priority. Cluster (A)'s new live range may have shifted h's numbers, and s3's inequality was measured on the floor-8 base; the arithmetic must be re-derived before any more structural guessing. (2) Attack the counter's n_refs rather than its live_length: the inequality needs counter n_refs >= 6 at live_length 13 (2*6/13 = 9230 > 8750). s3 killed sharing the counter with the case-20 D_800A37C0 counter (18/24), but that was on the floor-8 base where the case-20 region had a different allocno population; re-measure it on floor 2."
   },
   {
-   "hypothesis": "F5' \u2014 cluster (A) (6 of the 8 points) needs BOTH reg 3 and reg 4 in the selector allocno's `hard_reg_conflicts U regs_someone_prefers`; it currently has conflicts {2,29} and all three preference sets empty. The working precedent inside the same function is pseudo 99, which skips reg 4 only because lower-priority conflicting allocno 101 prefers 4.",
-   "mechanism": "global.c:find_reg allocates the lowest-numbered register of the class outside that union; prune_preferences populates regs_someone_prefers from the hard_reg_full_preferences of lower-priority CONFLICTING allocnos. config/mips/mips.h defines no REG_ALLOC_ORDER.",
-   "next_probe": "Search for a C shape in which the dispatch value's allocno conflicts with an argument-position-preferring allocno while still dying before `func_8005D46C` (crossing that call forces callee-save \u2014 the measured 29/138 form). Verify every candidate with `bash tmp/grind/func_800174F4/s3/findreg.sh <tag> 120` FIRST: the dump shows directly whether conflicts/someone_prefers moved, which the score does not. If no shape moves those sets, cluster (A) is a genuine allocator lock and the function is a candidate for the endgame-lock disposition after the remaining modalities."
+   "hypothesis": "The `mode` second-def lever generalizes: other roles in this function that target keeps in one register may also want one C variable with several live ranges. In particular `prim` ($s2) and `env`/counter ($s0) are already single-variable, but the case-20 block still declares a2_val / a0_val / div_result / counter as four separate locals where target may be reusing registers.",
+   "mechanism": "Same global.c:find_reg exclusion arithmetic that closed cluster (A): a second def of an existing pseudo extends its live range and changes which registers are excluded when it is allocated, without forcing it callee-save.",
+   "next_probe": "The residual is only 2 points and both are in the case-1/2 fade block, so this is a LOW-priority probe - but if the F4'' probes stall, sweep case-20 local-merging forms (a2_val/a0_val merged, div_result/counter merged) with tmp/grind/func_800174F4/s2/sweep.py and read the allocno table for each, rather than scoring blind."
   },
   {
-   "hypothesis": "F6 \u2014 a directed permuter campaign from the floor-8 base closes the register-name residual. Still unrun (proposed in s1 as F3, re-proposed in s2); the base is now 6 points closer than when it was first proposed and is a clean 136-vs-136 register-name-only diff, the shape decomp-permuter's weighted register scoring searches well.",
-   "mechanism": "decomp-permuter randomizes statement order, temporaries and types and scores against a single-function target.o; the two residual clusters are pure register-name substitutions with zero insert/delete/reorder, so the search space it explores is exactly the one that matters here.",
-   "next_probe": "Build the single-function target.o from asm/funcs/func_800174F4.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64`) per .claude/rules/difficult-is-not-impossible.md so the base score is the real weighted diff; seed from memory/grind/func_800174F4/candidate.c; run a fresh-seed campaign with tools/permuter_campaign.py, doing launch, `wait --dir <ws>` and `harvest --stop` all inside a single turn (see [[grinder-permuter-orphan-stop-gate]])."
+   "hypothesis": "A DIRECTED permuter campaign seeded from the floor-2 base, with PERM_* macros confined to the case-1/2 fade block (the only region still differing), can close the last 2 points - unlike the undirected campaigns, whose gradient is anti-aligned.",
+   "mechanism": "decomp-permuter's weighted score misleads globally here (reordering 60 vs register 5), but with the register clusters already matched the ONLY remaining diff IS a reordering, so from the floor-2 base the permuter's gradient and the honest metric finally agree.",
+   "next_probe": "`bash tmp/grind/func_800174F4/s4/mkws2.sh <floor-2 chassis with PERM_ONCE(i = 0;) at the candidate placements> tmp/perm_ings4`, confirm the printed base-vs-target diff is exactly insns 50/54, then launch/wait/harvest --stop in one session per the campaign discipline. Base permuter score should now be ~120-130 rather than 175; anything below that is worth measuring in the sandbox immediately."
   }
  ],
  "judge_constraints": [],
