@@ -1,0 +1,37 @@
+{
+ "func": "func_800174F4",
+ "file": "ings",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 14,
+   "modality": "recon",
+   "headline": "Recon: floor 25 -> 14 in pure C (cheat scaffold dropped, worth 0); residual is now register-name-only, 136 vs 136 insns, in exactly two clusters."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cluster (B): an honest statement-order change around the loop pre-header flips the counter web and the loop-limit web between $s0 and $s1 (8 of the remaining 14 points).",
+   "mechanism": "global.c:allocno_compare priority = floor_log2(n_refs)*n_refs/live_length decides which of {counter, limit} is allocated first and therefore takes $s0; the lever is each web's live_length / n_refs, not its name.",
+   "next_probe": "Re-run cc1 -dg on the CURRENT floor-14 source (reuse tmp/grind/func_800174F4/s1/dump.sh) to read the actual n_refs/live_length/allocno numbers for the counter and limit webs, then sweep statement order in the pre-header: whether `i = 0;` precedes or follows the `rand()` call, whether the guard tests `h` or the freshly computed `v0 + 4`, and where the guard sits relative to the initialisation."
+  },
+  {
+   "hypothesis": "Cluster (A): the switch selector lands in $a1 because in the original C the selector pseudo carries a call-argument preference, not because each site re-reads the global independently (6 of the remaining 14 points; this is the exact scope of the sole surviving regfix rule).",
+   "mechanism": "GCC 2.7.2 global.c:expand_preferences propagates argument-position preferences through copies, so a selector value that also feeds an argument-1 position prefers $a1; our independent re-reads give the selector no preference and it falls to $v1.",
+   "next_probe": "Read g_disp_enable once into a named local, `switch (mode)`, and feed that local to the func_8005D554 call site -- but keep the per-iteration re-read of the global inside the loop (target HAS a per-iteration `lbu a1`, so a naive single-read hoist will lose an instruction). Measure both the hoisted and the hybrid spelling."
+  },
+  {
+   "hypothesis": "If F1/F2 plateau, a directed permuter campaign from the floor-14 base closes the register-name residual.",
+   "mechanism": "The residual is a clean 136-vs-136 register-name-only diff, which is exactly the shape decomp-permuter's weighted register scoring searches well.",
+   "next_probe": "Build a single-function target.o from asm/funcs/func_800174F4.s + tools/decomp-permuter/prelude.inc (drop `.set gp=64`) per .claude/rules/difficult-is-not-impossible.md so the base score is the real weighted diff, seed from the floor-14 candidate, and run a fresh-seed campaign via tools/permuter_campaign.py (wait + harvest --stop inside the same turn)."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-14T03:44:27.512211+00:00"
+}
