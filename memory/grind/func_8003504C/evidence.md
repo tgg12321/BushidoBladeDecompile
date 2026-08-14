@@ -329,3 +329,142 @@ probe so far reproduces. That is the sharpest open question on the function.
 - [s3] The instrumented cc1 (tools/gcc-2.7.2/cc1) already carries a BB2_RANK_DEBUG hook inside rank_for_schedule that prints every priority-TIE decision (last scheduled insn, both uids, both classes). It is usable but NOT yet scoped to one function — insn uids collide across the functions in code6cac_b.c, so tmp/grind/func_8003504C/s3/rank.sh needs a function filter before its output can be trusted.
 
 - [s3] Session end state: src/ reverted to HEAD and re-verified at score 24 / 141 of 141 instructions / 26 differing positions. No cheat construct was written at any point: no pins, no inline asm, no dead stores, no volatile coercion, no unused locals — every probed variant was a plain re-spelling of live, semantically necessary statements.
+
+## Session 4 (permuter, 2026-08-13) — floor 24 -> 4; both clusters essentially closed
+
+The first session to LOWER the floor. `sandbox func_8003504C --disable all`
+went **24 -> 17 -> 13 -> 4**, and the normalized position diff went **26 -> 7**.
+The remaining 7 positions are a pure ROTATION of a single 7-instruction
+pre-loop block — every instruction is present with the correct register.
+The winning form is `memory/grind/func_8003504C/candidate.c` and it is spliced
+into `src/code6cac_b.c` as of session end.
+
+### Instruments (tmp/grind/func_8003504C/s4/)
+- `mkws.sh <wsdir>` — build a decomp-permuter workspace for func_8003504C that
+  mirrors the REAL pipeline for code6cac_b.c (cpp | cc1 -mel -O2 -G0 |
+  prologue_fix | maspsx --expand-lb (twice, per EXPAND_LB_FILES) |
+  `sed .align 3 -> .align 2` (RODATA_ALIGN2_FILES) | multu_pad | as), with
+  regfix/asmfix DELIBERATELY OMITTED so the permuter's metric is the honest,
+  cheat-free one. Extracts the func's `.ent`..`.end` region and assembles it
+  against `asm/funcs/func_8003504C.s` + the r3000-trimmed permuter prelude.
+  NOTE: maspsx emits its directives at column 0, so the extraction regex must
+  be `^[ \t]*\.ent[ \t]+<func>$`, not `^\t\.ent\t<func>$`.
+- `mkbase.sh <wsdir> [srcfile]` — preprocess src/code6cac_b.c into
+  `<wsdir>/base.c` (cpp line markers stripped), compile it through the
+  workspace and print insn counts + the raw diff. A FULL preprocessed TU is
+  the right base.c: decomp-permuter's randomizer only mutates the function
+  named in settings.toml (`randomizer.py: extract_fn(ast, fn_name)`), so the
+  rest of the TU costs only parse/print time and keeps the codegen context real.
+- `showfinds.sh <wsdir>` — print the source diff of every `output-*` find,
+  best score first. `dd.sh [variant.c]` — apply a variant, sandbox it, and
+  print ONLY the differing normalized positions (target vs ours, side by side).
+- `gen4.py` — emits the 24 cluster-2 variants (4 intermediate spellings x 6
+  statement orders). `mkreuse.py` — builds the `src`-reuse variant.
+
+### Campaign telemetry (all three campaigns harvested + stopped in-session)
+- ws1 `head-chassis-random`: base permuter score 1120; **first novel find at
+  15 s**; 9742 iterations / 300 s; best new 315. Stopped once the lever was
+  identified.
+- ws2 `acbv-ptrtemp-chassis`: base 175; first novel at 132 s; 9742 iterations /
+  300 s; best new 120 (the `src`-reuse find). Stopped when it superseded.
+- ws3 `reuse-src-chassis-floor4`: base 120; **20373 iterations / 610 s with NO
+  find below 120** (one score-120 tie). The pre-loop rotation does not fall out
+  of random search on this chassis — that is the session's negative datum.
+
+### Lever 1 (cluster 2, 24 -> 13): a pointer intermediate for the p[8] read
+Staging the eighth-word read through a named POINTER local —
+`q = &p[8]; D_80102786 = ((u32)*q >> 3) & 1;` — keeps a live pointer pseudo
+across the first extraction chain, so sched1 can no longer hoist the p[8] load
+above the `D_80102784` store. The two chains stop interleaving, their live
+ranges stop overlapping, and lreg reuses $v0 for the second chain instead of
+allocating $v1 — exactly target's strictly-serialized block.
+The spelling matters and was measured across all four candidates the permuter
+surfaced: `s32 v8 = p[8];` -> 24, `u32 v8 = p[8];` -> 24 (both folded straight
+back into the shift), `i = p[8];` (reusing the dead counter) -> 20,
+`q = &p[8];` -> **17**.
+
+### Lever 2 (cluster 2, 17 -> 13): D_800A36F6 = 0 BETWEEN the two extractions
+With the pointer intermediate in place, statement order comes ALIVE again —
+which retires session 3's exhaustive-sweep closure as chassis-specific. All
+six orders measured on the pointer chassis: A-B-C-val 17, A-C-B-val **13**,
+A-val-C-B 16, A-C-val-B 16, A-val-B-C 19 (143 insns), A-B-val-C 19 (143 insns).
+The winner puts the `D_800A36F6 = 0;` store between the two bitfield
+extractions and keeps the `val = D_80102785;` read LAST (session 3's `s8 val`
+read-last finding still holds). At 13, cluster 2 has ZERO differing positions.
+
+### Lever 3 (cluster 1, 13 -> 4): reuse the dead `src` for loop 2's destination
+`src` is dead after loop 1. Reusing it to carry loop 2's D_801027D8
+destination pointer (`src = &D_801027D8;` then `u8 *dst_d = src;`) extends its
+live range into the `val == 5` branch and FLIPS the allocation to target's:
+measured dispositions `72 in 11 (p=$t3), 73 in 7 (i=$a3), 74 in 6 (src=$a2),
+75 in 5 (ptr=$a1), 76 in 8 (base=$t0)` — identical to target. Positions 4, 12,
+38, 39, 41, 44, 46, 47 all went clean in one step.
+
+### The allocation model from session 2 is EMPIRICALLY DISPROVEN
+Post-flip measurements (tmp/grind/func_8003504C/s2/probe.sh on the winning
+form): `i` refs=11 len=37 ratio=0.297, `src` refs=11 len=43 ratio=0.256 — by
+the `floor_log2(refs)*refs/live_length` model session 2 built, `i` (0.892)
+still outranks `src` (0.767), yet the post-qsort allocno order printed by
+`.greg` is `... 75 74 73 ...`, i.e. src BEFORE i, and src gets $a2. So either
+`allocno_live_length` differs from the `.flow` "used R times across L insns"
+figure the probe parses, or another allocno_compare term dominates. Session
+2's conclusion ("the axis has no reachable position") is therefore WRONG as a
+closure — the flip is reachable and has been reached. Treat the probe's ratio
+column as a heuristic, not as a decision procedure, and never close an axis on
+that model alone again.
+
+### What remains (the whole residual)
+7 positions, all in the pre-loop block, all present-with-correct-register:
+target `li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 /
+addiu a1,t0,-9`; ours `move t3,v0 / move a2,t3 / lui t0 / addiu t0 /
+addiu a1,t0,-9 / li t2,5 / li t1,20`. The two loop-1 comparison constants (5
+and 20, consumed by `beq a0,t2` and `bne a0,t1` inside loop 1) are LICM-hoisted
+and land at the END of the preheader in our compile, where sched1 leaves them
+because they have no in-block dependents and therefore the lowest INSN_PRIORITY
+in the block, while `move t3,v0 -> move a2,t3` is a 2-deep chain. For target to
+emit them FIRST they must either carry a higher priority (an in-block
+dependent our RTL does not give them) or have a LOWER LUID than the p-copy —
+i.e. exist in the entry block BEFORE the call's return copy rather than being
+appended to the preheader by loop.c.
+
+- [s4] FLOOR LOWERED 24 -> 4 (141/141 instructions, 26 -> 7 differing normalized positions). Three edits, all originating as decomp-permuter proposals and each re-measured with `sandbox --disable all`: (1) stage the p[8] read through a named pointer intermediate `q = &p[8]`; (2) order the post-loop block as D_80102784-store / p[8]-extraction / `D_800A36F6 = 0` / `val = D_80102785`; (3) reuse the dead `src` local to carry loop 2's D_801027D8 destination pointer.
+
+- [s4] Cluster 2 is CLOSED (zero differing positions). Mechanism: taking the ADDRESS of the eighth word keeps a live pointer pseudo across the first extraction chain, so sched1 can no longer hoist the p[8] load above the D_80102784 store; the two chains stop interleaving, their live ranges stop overlapping, and lreg reuses $v0 for the second chain instead of allocating $v1 — target's strictly-$v0-serialized block.
+
+- [s4] The intermediate's SPELLING is load-bearing and all four permuter-surfaced candidates were measured: `s32 v8 = p[8];` -> score 24 and `u32 v8 = p[8];` -> 24 (combine/CSE folds the value temp straight back into the shift), `i = p[8];` (dead-counter reuse) -> 20, `q = &p[8];` -> 17. Only the POINTER form survives the fold.
+
+- [s4] Session 3's exhaustive cluster-2 statement-order sweep is CHASSIS-SPECIFIC, not a closure: with the pointer intermediate present, order comes alive again. Measured on the pointer chassis — A-B-C-val 17, A-C-B-val 13, A-val-C-B 16, A-C-val-B 16, A-val-B-C 19 (143 insns), A-B-val-C 19 (143 insns). The winner puts `D_800A36F6 = 0;` BETWEEN the two extractions; `s8 val` read LAST is unchanged from session 3.
+
+- [s4] Reusing the (dead after loop 1) `src` local to carry loop 2's D_801027D8 destination pointer flips cluster 1's register allocation to target's exactly: measured dispositions p=$t3, i=$a3, src=$a2, ptr=$a1, base=$t0. Positions 4, 12, 38, 39, 41, 44, 46 and 47 all went clean in a single step.
+
+- [s4] Session 2's arithmetic closure of the cluster-1 allocation axis is EMPIRICALLY DISPROVEN. On the winning form the probe reports i refs=11 len=37 (ratio 0.297) and src refs=11 len=43 (ratio 0.256), so the `floor_log2(refs)*refs/live_length` model still predicts i first — yet `.greg`'s post-qsort allocno order is `... 75 74 73 ...` (src before i) and src takes $a2. The probe's ratio column is a heuristic, not a decision procedure; do not close an allocation axis on it again.
+
+- [s4] Permuter campaign telemetry, all three campaigns harvested and stopped in-session: ws1 head-chassis-random (base score 1120, first novel find at 15 s, 9742 iters / 300 s, best new 315); ws2 acbv-ptrtemp-chassis (base 175, first novel at 132 s, 9742 iters / 300 s, best new 120); ws3 reuse-src-chassis-floor4 (base 120, 20373 iters / 610 s, NO find below 120). Basins yielded within seconds on the first two chassis and not at all on the third — the fresh-seed discipline's "yields early or not at all" prediction held exactly.
+
+- [s4] A reusable, pipeline-faithful permuter workspace builder now exists: tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh. It mirrors the real per-file build (cc1 -mel, maspsx --expand-lb twice per EXPAND_LB_FILES, the RODATA_ALIGN2 `.align 3 -> .align 2` sed, multu_pad) and OMITS regfix/asmfix so the permuter scores the honest distance. Two gotchas worth reusing: maspsx emits `.ent`/`.end` at column 0 (so the extraction regex must not require a leading tab), and a FULL preprocessed TU is the correct base.c because decomp-permuter's randomizer only mutates the function named in settings.toml.
+
+- [s4] The entire residual is 7 positions and is a pure ROTATION of the pre-loop block — every instruction present with the correct register. Target: `li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`. Ours: the same seven with the two `li`s moved to the END. The constants are the loop-1 comparison operands (consumed by `beq a0,t2` / `bne a0,t1`), LICM-hoisted into the preheader; sched1 leaves them last because they have no in-block dependents (lowest INSN_PRIORITY) while `move t3,v0 -> move a2,t3` is a 2-deep chain.
+
+- [s4] Session end state: src/code6cac_b.c carries the score-4 form (identical to memory/grind/func_8003504C/candidate.c) and nothing else in the tree was modified outside src/, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s4/. No cheat construct was written at any point: no pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every local in the winning form is assigned and then read.
+
+- [s4] Honest pure-C floor is now 4 (sandbox func_8003504C --disable all), 141/141 instructions, 7 differing normalized positions - down from the 24 / 26 positions that stood unchanged through sessions 1, 2 and 3. src/code6cac_b.c carries the winning form and it is saved verbatim to memory/grind/func_8003504C/candidate.c.
+
+- [s4] The winning form differs from the session-3 form by exactly three edits: (1) the p[8] read is staged through a named pointer intermediate `q = &p[8]`; (2) the post-loop block is ordered D_80102784-store / p[8]-extraction / `D_800A36F6 = 0` / `val = D_80102785`; (3) the dead-after-loop-1 `src` local is reused to carry loop 2's D_801027D8 destination pointer.
+
+- [s4] Cluster 2 (the p[5]/p[8] bitfield-extraction block) is CLOSED - zero differing positions. Target's strictly-$v0-serialized form, with the D_80102785 `lb` hoisted into the `lw 0x14($t3)` load-delay region and the `sh zero` filling the `lw 0x20($t3)` delay region, is reproduced exactly.
+
+- [s4] The intermediate's spelling is load-bearing: `s32 v8 = p[8];` -> 24, `u32 v8 = p[8];` -> 24 (both folded straight back into the shift by combine/CSE), `i = p[8];` -> 20, `q = &p[8];` -> 17. Only the pointer form survives the fold.
+
+- [s4] Cluster 1's register assignment is now target's exactly: measured dispositions p=$t3, i=$a3, src=$a2, ptr=$a1, base=$t0.
+
+- [s4] Session 2's ratio model (floor_log2(refs)*refs/live_length as parsed from the .flow dump) mis-predicts the allocno order on the very form where the flip happened - it still ranks i above src while .greg ranks src above i. The model is a heuristic, not a decision procedure, and no allocation axis should be closed on it again.
+
+- [s4] The entire residual is 7 positions and is a pure ROTATION of one 7-instruction pre-loop block, every instruction present with the correct register. Target: `li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`. Ours: the same seven with the two `li`s moved to the END.
+
+- [s4] Those two constants are loop 1's comparison operands (consumed by `beq a0,t2` and `bne a0,t1` inside the loop), LICM-hoisted into the preheader. sched1 leaves them last because they have no in-block dependents and therefore carry the lowest INSN_PRIORITY in a block where `move t3,v0 -> move a2,t3` is a 2-deep chain.
+
+- [s4] Permuter campaign telemetry, all three campaigns harvested and stopped in-session (no orphans; `permuter_campaign.py status` shows alive=false for all three): ws1 head-chassis-random base 1120, first novel find at 15 s, 9742 iters / 300 s, best new 315; ws2 acbv-ptrtemp-chassis base 175, first novel at 132 s, 9742 iters / 300 s, best new 120; ws3 reuse-src-chassis-floor4 base 120, 20373 iters / 610 s, no find below base. The fresh-seed discipline's "a basin yields early or not at all" prediction held exactly.
+
+- [s4] A reusable, pipeline-faithful permuter workspace builder now exists (tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh). It mirrors the real per-file build for code6cac_b.c (cc1 -mel, maspsx --expand-lb twice per EXPAND_LB_FILES, the RODATA_ALIGN2 `.align 3 -> .align 2` sed, multu_pad) and OMITS regfix/asmfix so the permuter scores the honest distance. Two gotchas worth reusing: maspsx emits `.ent`/`.end` at column 0 (the extraction regex must not require a leading tab), and a FULL preprocessed TU is the correct base.c because decomp-permuter's randomizer only mutates the function named in settings.toml.
+
+- [s4] No cheat construct was written at any point this session: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits, no touched surface outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s4/. Every local in the winning form is assigned and then read.
