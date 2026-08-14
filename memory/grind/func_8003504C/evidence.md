@@ -727,3 +727,107 @@ movable and loop 2's code folds.
 - [s6] [s6] New reusable instrument: tmp/grind/func_8003504C/s6/solo.py + solo.sh + rank.sh build a SOLO preprocessed TU containing only func_8003504C's body (every other definition reduced to a prototype by a brace-depth parse) and compile it with the INSTRUMENTED cc1, so BB2_*_DEBUG output is unambiguous - insn uids restart per function, which is what made session 3 distrust rank.sh. The solo TU was verified to emit the identical pre-loop block to the full-TU compile.
 
 - [s6] [s6] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s6/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every local in every probed form is assigned and then read.
+
+## Session 7 (forensics, 2026-08-13) - the allocation question is now ARITHMETIC
+
+Engine floor unchanged at 4, but `memory/grind/func_8003504C/candidate.c` was
+REPLACED: the new candidate scores the same 4 with only **FOUR** differing
+normalized positions instead of seven, and its entire residual is the pre-loop
+rotation `li t2,5 / li t1,20` vs `move t3,v0 / move a2,t3`.  Everything else in
+the function - loop-1's register assignment included - matches target.
+
+### The instrument this session was built on
+GCC 2.7.2's `global.c` in this tree already carries an env-gated hook
+(`BB2_ALLOC_DEBUG=1`) that prints, for every allocno in post-qsort order,
+`ord / pseudo / hardreg / nrefs / livelen / pri`, where `pri` is exactly
+`allocno_compare`'s `floor_log2(nrefs)*nrefs/livelen*10000`.  That retires the
+`.flow`-parsed ratio column session 2 built and session 4 disproved: these are
+cc1's OWN numbers, taken from the same array `qsort` sorts.  Driver:
+`tmp/grind/func_8003504C/s7/alloc.sh [tag]` (full TU, dumps + the table for
+func_8003504C only) and `sweep7.sh <variant.c>...` (apply + sandbox + table).
+Verified: a solo TU (s6/solo.py) reproduces the table pseudo-for-pseudo.
+
+### Session 4's flip lever, finally quantified
+On the session-4 chassis the table reads `75 (ptr) 11/29 pri 11379 -> $a1`,
+`74 (src) 11/31 pri 10645 -> $a2`, `73 (i) 11/33 pri 10000 -> $a3`.  The
+src-reuse lever works because reusing the dead loop-1 walker for loop 2's
+destination adds TWO depth-1 references (the `src = &D_801027D8;` store and the
+`dst_d = src;` read) for only TWO insns of extra live range: 9/29 (pri 9310)
+becomes 11/31 (pri 10645), which crosses the counter's 10000.  Without the
+reuse the walker is 9 refs and always loses.
+
+### The new candidate: h1's in-loop invariants + a SOURCE-pointer walker
+Crossing session 6's h1 chassis (b/w assigned inside loop 1, so loop.c hoists
+them as movables and emits `lui t0 / addiu t0 / addiu a1,t0,-9`) with a
+source-pointer p-walker carrying session 4's reuse gives score 4 at 141/141
+with four differing positions.  Measured siblings: the same chassis WITHOUT the
+reuse (v_s1) scores 12 with the walker at 9/31 pri 8709.
+
+### The closure: a giv walker can NEVER outrank the counter here
+On the h1 chassis the table is `180 (D_8010277C walker giv) 11/27 pri 12222 ->
+$a1`, `73 (i) 11/33 pri 10000 -> $a2`, `176 (p-walker giv) 9/29 pri 9310 ->
+$a3`.  Live lengths are measured on the SCHEDULED order and every one of them
+is `B + n`, where B = 27 is loop 1's body length and n is the number of
+preheader insns that follow that pseudo's initialization.  Target's preheader
+is seven RTL insns (the `lui/addiu` pair for `&D_80102785` is ONE RTL insn),
+and the counter's init is first, so n_i <= 6 and n_walker >= 0.  The flip needs
+`27/(B+n_w) > 33/(B+n_i)`, i.e. `27*n_i - 33*n_w > 6B = 162`; with n_i <= 6 the
+left side is at most 162.  Equality is the best case, and `allocno_compare`
+breaks an exact priority tie by ALLOCNO NUMBER (`return *v1 - *v2`), which
+always favours the low-numbered source pseudo `i` over a loop.c-created giv.
+So on any chassis where the p-walker is a 9-ref giv the counter takes $a2 -
+which is why h1 sits at 9 and why the route to zero must give the walker more
+references, i.e. keep it a SOURCE pseudo.
+
+### And that is exactly what the rotation costs
+`move_movables` inserts loop.c's movables immediately before
+NOTE_INSN_LOOP_BEG - after EVERY pre-loop source statement - while giv initial
+values are emitted at loop_start, i.e. after the movables.  A source-pointer
+walker's init is a pre-loop statement, so `move t3,v0 / move a2,t3` always
+carry lower LUIDs than `li 5 / li 20` and sched1 (all latency-1, so
+rank_for_schedule falls through to INSN_LUID among ready insns) keeps them
+ahead.  The two requirements - walker with post-loop refs, and walker init
+after the movables - are in direct tension, and that tension IS the remaining
+4 positions.
+
+- [s7] NEW INSTRUMENT: GCC 2.7.2's global.c in this tree has an env-gated hook (BB2_ALLOC_DEBUG=1) that prints every allocno in post-qsort order as `ord / pseudo / hardreg / nrefs / livelen / pri`, with pri computed by allocno_compare's own formula. tmp/grind/func_8003504C/s7/alloc.sh runs it over the current src and filters to func_8003504C; sweep7.sh does apply + sandbox + table per variant. This supersedes the .flow-parsed ratio column from session 2 that session 4 disproved - these are cc1's own numbers.
+
+- [s7] Session 4's src-reuse lever is now quantified with cc1's numbers: on the session-4 chassis the table is 75 (ptr) 11 refs/29 len pri 11379 -> $a1, 74 (src) 11/31 pri 10645 -> $a2, 73 (i) 11/33 pri 10000 -> $a3. The reuse adds TWO depth-1 references for only TWO insns of live range, taking the walker from 9/29 (pri 9310) to 11/31 (pri 10645) and across the counter's 10000.
+
+- [s7] NEW CANDIDATE at score 4 with only FOUR differing positions (the session-4 candidate scored the same 4 with seven): session 6's h1 in-loop invariants (b/w hoisted as movables, giving target's lui t0 / addiu t0 / addiu a1,t0,-9) crossed with a SOURCE-pointer p-walker carrying session 4's post-loop reuse. The whole residual is the pre-loop rotation li 5 / li 20 versus move t3,v0 / move a2,t3.
+
+- [s7] The same chassis WITHOUT the reuse (v_s1) scores 12 and the walker measures 9 refs/31 len pri 8709 against the counter's 10000 - the isolation measurement for the lever.
+
+- [s7] CLOSURE, with cc1's numbers plus arithmetic: on any chassis where loop 1's p-walker is a loop.c giv it has 9 weighted refs, and live lengths are B + n where B = 27 is the body length and n counts the preheader insns after that init. Target's preheader is 7 RTL insns and the counter's init is first, so n_i <= 6; the flip needs 27*n_i - 33*n_w > 6B = 162, whose maximum is exactly 162. Equality is the best reachable case and allocno_compare breaks priority ties by ALLOCNO NUMBER (`return *v1 - *v2`), which always favours the low-numbered source pseudo i over a giv. The h1 chassis therefore cannot reach target's assignment by any spelling that leaves the walker a 9-ref giv.
+
+- [s7] Three attempts to give a giv walker post-loop references all fail: a pre-loop pointer indexed s[i*10] and reused post-loop (v_b1) and an in-loop `s = (u8 *)p + i*10` at function scope reused post-loop (v_p1) both score 9 with an allocno table identical to plain h1, because the store to the source pointer is dead (the giv reads p directly) and is eliminated. A loop.c-created giv cannot inherit source-level references.
+
+- [s7] The counter cannot be demoted on the h1 chassis either, and the target is now numeric: pri(i) must be < 9310. Reuses whose def and use are adjacent (i as the D_800A38E1 value, i as idx) are copy-propagated away entirely - score stays 9 and the table still reads 11 refs/33 len/10000. The `sel` reuse (two defs joining, so it survives) reaches 14 refs/43 len/9767 - still above 9310 - and costs 3 points. The requirement table is (refs 12, len >= 39), (13, >= 42), (14, >= 46), (15, >= 49).
+
+- [s7] Moving `i = 0;` ahead of the call does NOT lengthen the counter's live range (still 33): live lengths are measured on the SCHEDULED order and sched1 puts the counter init back immediately after the call.
+
+- [s7] The rotation's mechanism is confirmed by the RTL dumps of the new candidate: loop.c's movables (345 `b = &D_80102785`, 347 `b - 9`, 349 `li 5`, 351 `li 20`) are inserted immediately before NOTE_INSN_LOOP_BEG - after every pre-loop source statement - while the p-copies 11 (`p = v0`) and 17 (`s = p`) are pre-loop statements with lower LUIDs. sched1 emits 14, 11, 17, 349, 351, 345, 357. Giv initial values are the only class emitted AFTER the movables, so a walker whose init sits after the constants must be a giv - the exact class the allocation arithmetic forbids.
+
+- [s7] Holding loop 1's two compare constants in pre-loop locals (so their `li`s would carry low LUIDs) is measured DEAD in both placements - constants initialised after the call and before it, score 9 in both, allocation wrecked - independently of it being a constant-holder spelling.
+
+- [s7] Session end state: src/code6cac_b.c carries the new candidate (re-verified at sandbox func_8003504C --disable all = 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s7/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every local in the candidate is assigned and then read.
+
+- [s7] GCC 2.7.2's global.c in this tree carries an env-gated hook (BB2_ALLOC_DEBUG=1) printing every allocno in post-qsort order as ord / pseudo / hardreg / nrefs / livelen / pri, with pri computed by allocno_compare's own formula - cc1's own numbers, superseding the .flow-parsed ratio column session 2 built and session 4 disproved. Drivers: tmp/grind/func_8003504C/s7/alloc.sh and sweep7.sh.
+
+- [s7] Session 4's src-reuse lever quantified on its own chassis: ptr 11 refs/29 len pri 11379 -> $a1, src 11/31 pri 10645 -> $a2, i 11/33 pri 10000 -> $a3. The reuse adds TWO depth-1 references for only TWO insns of live range, taking the walker from 9/29 (pri 9310) across the counter's 10000.
+
+- [s7] NEW CANDIDATE at score 4 / 141 of 141 with only FOUR differing normalized positions (the session-4 candidate scored the same 4 with seven): h1's in-loop invariants b/w crossed with a SOURCE-pointer p-walker carrying session 4's post-loop reuse. The entire residual is the pre-loop rotation `li t2,5 / li t1,20` versus `move t3,v0 / move a2,t3`; every other instruction, loop-1's registers included, matches target.
+
+- [s7] CLOSURE: on any chassis where loop 1's p-walker is a loop.c giv it has 9 weighted refs, live lengths are B + n (B = 27 body insns, n = preheader insns after the init, measured on the scheduled order), target's preheader is 7 RTL insns and the counter's init is first, so the flip needs 27*n_i - 33*n_w > 6B = 162 with n_i <= 6 - maximum exactly 162, a tie at best - and allocno_compare breaks ties by allocno NUMBER, always favouring the low-numbered source pseudo i. The h1 chassis cannot reach target's assignment by any spelling that leaves the walker a giv.
+
+- [s7] A loop.c-created giv cannot inherit source-level references: a pre-loop pointer indexed s[i*10] and reused post-loop (v_b1) and an in-loop `s = (u8 *)p + i*10` at function scope reused post-loop (v_p1) both score 9 with an allocno table identical to plain h1, because the store to the source pointer is dead and is eliminated.
+
+- [s7] Counter demotion is calibrated: pri(i) must fall below 9310. Adjacent def/use reuses are copy-propagated away entirely (v_c1, v_c2: score 9, table unchanged at 11/33/10000); only a reuse with two joining definitions survives (v_a1 sel: 14 refs / 43 len / pri 9767, score 12). Requirement table: (12, >= 39), (13, >= 42), (14, >= 46), (15, >= 49).
+
+- [s7] Live lengths are measured on the SCHEDULED order: moving `i = 0;` ahead of the call does not lengthen the counter's range (still 33) because sched1 puts the init back immediately after the call.
+
+- [s7] RTL dumps of the new candidate confirm the rotation's mechanism: loop.c's movables (345 b = &D_80102785, 347 b - 9, 349 li 5, 351 li 20) are inserted immediately before NOTE_INSN_LOOP_BEG - after every pre-loop source statement - while the p-copies 11 (p = v0) and 17 (s = p) are pre-loop statements with lower LUIDs; sched1 emits 14, 11, 17, 349, 351, 345, 357. Giv initial values are the ONLY class emitted after the movables, which is exactly the class the allocation arithmetic forbids.
+
+- [s7] The solo-TU instrument from session 6 was re-verified: a solo TU reproduces the full-TU allocno table pseudo-for-pseudo, so BB2_* debug output on it is trustworthy.
+
+- [s7] Session end state: src/code6cac_b.c carries the new candidate (re-verified at sandbox --disable all = 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s7/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits.

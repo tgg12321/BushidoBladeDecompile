@@ -1,7 +1,7 @@
 {
  "func": "func_8003504C",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "Forensics corrected session 5's sched1 model and built a NEW score-9 chassis whose entire residual is one i/p-walker register swap - target's pre-loop block, both bitfield clusters and every other ins"
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Forensics turned the allocation question into arithmetic with cc1's own allocno table (BB2_ALLOC_DEBUG): a giv p-walker can never outrank the counter (tie at best, and ties go to the lower allocno), t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole function closes on the h1 chassis (memory/grind/func_8003504C/chassis_h1_score9.c) as soon as the loop-1 p-walker giv is allocated BEFORE the source pseudo i - the last nine positions are exactly that swap and nothing else.",
-   "mechanism": ".greg on h1 ranks pseudo 73 (i) ahead of every giv pseudo (order 79 92 162 161 160 159 180 73 156 176 124 158 157 72 139 77 99 94), so i takes $a2 first and the p-walker inherits $a3. Session 4 proved this class of flip is reachable (its src-reuse lever produced target's exact dispositions on the pointer chassis), and session 4 also proved the flow-dump ratio model does NOT predict the outcome - so the ranking must be measured, not modelled. Lowering i is measured dead on this chassis (all three reuses move away), so the lever is RAISING a giv: more in-loop refs on the p-walker, or a spelling that makes the p-walker a source pseudo again while keeping both walkers strength-reduced.",
-   "next_probe": "On chassis_h1_score9.c, sweep spellings that add in-loop references to the p-walker without adding instructions - e.g. read both bytes through one pointer intermediate inside loop 1 (u8 *s = (u8 *)p + i * 10; lv = table[s[0]]; tmp = s[1];), which makes the walker a SOURCE pseudo whose refs and live range can then be steered by session 4's reuse lever, and measure tmp/grind/func_8003504C/s2/probe.sh dispositions plus the position diff after each. Track the allocno ORDER, not just the score: any spelling that puts a giv (or the walker pseudo) ahead of 73 is the win."
+   "hypothesis": "The function closes on the NEW candidate chassis as soon as one insn class other than a giv initial value can be emitted between loop.c's movables and NOTE_INSN_LOOP_BEG - i.e. as soon as the two p-copies land after `li 5 / li 20` while the walker stays a SOURCE pseudo (which is what gives it the 11 refs the allocation needs).",
+   "mechanism": "move_movables inserts movables immediately before loop_start, after every pre-loop source statement; strength_reduce's emit_iv_add_mult then emits giv initial values after them. Those are the only two loop.c insertion points measured so far, and the giv class is forbidden by this session's allocation arithmetic (9 refs can only tie, and ties go to the counter). The next probe is forensic on loop.c itself, not on spellings already swept.",
+   "next_probe": "Instrument tools/gcc-2.7.2/loop.c with a BB2-style env-gated hook at every emit_insn_before(loop_start)-class call site (move_movables, strength_reduce/emit_iv_add_mult, loop_iterations/biv initialisation, final-value replacement) and print what each emits for func_8003504C on both chassis. Then ask which of those classes can carry a pointer that is ALSO referenced after the loop - e.g. whether a biv whose final value is used after the loop gets its initialisation emitted at loop_start rather than as a pre-loop statement. Any class that does is the win."
   },
   {
-   "hypothesis": "The engine score is mis-ranking the two chassis: the h1 chassis at 9 is closer to a match than the floor-4 pointer chassis, because its residual is a register swap that is PROVEN reachable while the floor-4 residual is a block rotation that is PROVEN unreachable on that chassis.",
-   "mechanism": "The floor-4 chassis's pre-loop block always has four class-1 source statements (p copy, src copy, base, ptr) ahead of loop.c's movables; session 5's 288/288 directed enumeration and this session's RTL dumps both confirm no spelling reorders them. The h1 chassis has exactly one class-1 statement (i = 0) and reproduces target's preheader in full. A future session should treat chassis_h1_score9.c as the working chassis and the score-4 form only as the fallback candidate.",
-   "next_probe": "Before spending a session on the floor-4 chassis again, re-read this ledger entry: the only remaining question on h1 is the allocno ranking. If a spelling reaches score 0 there, candidate.c should be replaced wholesale."
+   "hypothesis": "The h1 chassis (score 9, whole residual = the i/p-walker swap) still closes if the counter's allocno priority can be pushed below 9310 by a post-loop reuse that survives copy propagation and costs no instruction.",
+   "mechanism": "pri = floor_log2(refs)*refs/live_length with cc1's own numbers; the counter is 11/33 = 10000 and the giv is 9/29 = 9310. Only reuses with two joining definitions survive propagation (adjacent def/use pairs are folded), and the reuse must reach far enough out: (refs 12, len >= 39), (13, >= 42), (14, >= 46), (15, >= 49). v_a1 (sel) reached 14/43 = 9767, three insns of live range short.",
+   "next_probe": "Enumerate post-loop reuse sites in the val==2 and val==5 arms that produce two joining definitions (conditional value selections and the loop-2 setup), generate one variant per site, and read pri(pseudo 73) straight off tmp/grind/func_8003504C/s7/alloc.sh - no sandbox run needed to reject a site. Only variants with pri < 9310 AND build_insns == 141 need scoring; on h1 such a variant is a full match, since the swap is its only residual."
   },
   {
-   "hypothesis": "A decomp-permuter campaign seeded on the h1 chassis is now competitive (session 5's giv-chassis campaign was not, because its base was score 18 / permuter base 495).",
-   "mechanism": "Session 4 showed random search finds allocation levers of exactly this shape (the src-reuse lever came out of ws2 at 132 s) when the chassis is close. h1 is nine positions from target with no instruction-count error at all, so the permuter's metric there should be dominated by the register swap.",
-   "next_probe": "Rebuild a workspace with tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh from chassis_h1_score9.c, record the permuter base score, and run a fresh-seed campaign; harvest and --stop in-session per the fresh-seed discipline. Any find that changes the loop-1 register assignment is the answer."
+   "hypothesis": "A decomp-permuter campaign seeded on the NEW candidate chassis is worth one run: it is a strictly better base than session 4's ws3 (four differing positions instead of seven, and target's register assignment already in place).",
+   "mechanism": "Session 4 showed random search finds levers of exactly this shape when the chassis is close (the src-reuse find came out of ws2 at 132 s); session 4's ws3 ran 20373 iterations with no find, but that was on the seven-position chassis whose residual included the base/ptr pre-loop statements this chassis no longer has.",
+   "next_probe": "Rebuild a workspace with tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh from the new candidate.c, record the permuter base score (session 4's chassis was 120), run a fresh-seed campaign with tools/permuter_campaign.py, and wait for it in-session with `permuter_campaign.py wait`; harvest and --stop before ending the turn. Any find that moves the two `li`s ahead of the p-copies is the answer."
   }
  ],
  "judge_constraints": [],

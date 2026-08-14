@@ -1,85 +1,77 @@
-/* candidate.c — func_8003504C — BEST FORM as of session 4 (permuter).
+/* candidate.c - func_8003504C - SESSION 7 (forensics) replacement candidate.
  *
- * Honest pure-C floor: **4** (`sandbox func_8003504C --disable all`),
- * 141/141 instructions, **7 differing normalized positions**, down from the 24
- * / 26 positions that stood unchanged through sessions 1-3. This is the form
- * currently spliced into src/code6cac_b.c.
+ * `sandbox func_8003504C --disable all` = **4**, 141/141 instructions, and
+ * only **FOUR** differing normalized positions (the session-4 candidate this
+ * replaces scored the same 4 but had SEVEN).  The entire residual is one
+ * rotation inside the pre-loop block:
  *
- * THREE edits vs the session-3 form, all found by decomp-permuter random
- * search and then re-measured with the engine sandbox:
+ *     target  ... li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 ...
+ *     ours    ... move t3,v0 / move a2,t3 / li t2,5 / li t1,20 / lui t0 ...
  *
- *   1. The `p[8]` read is staged through a named POINTER intermediate
- *      (`q = &p[8]; D_80102786 = ((u32)*q >> 3) & 1;`) rather than spelled
- *      inline as `((u32)p[8] >> 3) & 1`.
- *   2. The post-loop statements are ordered `D_80102784` store -> the p[8]
- *      extraction -> `D_800A36F6 = 0` -> `val = D_80102785;`, i.e. the
- *      D_800A36F6 zero-store now sits BETWEEN the two bitfield extractions.
- *   3. `src` — dead after loop 1 — is REUSED to carry the D_801027D8
- *      destination pointer for loop 2 (`src = &D_801027D8;` then
- *      `u8 *dst_d = src;`).
+ * Every other instruction in the function - including the loop-1 register
+ * assignment (p-walker $a2, counter i $a3, D_8010277C walker $a1, guard base
+ * $t0), the `addiu a1,t0,-9` derivation and both bitfield-extraction clusters
+ * - matches target byte for byte and register for register.
  *
- * Edits 1+2 close cluster 2 completely (24 -> 13): taking the ADDRESS of the
- * eighth word keeps a live pointer pseudo across the first extraction chain,
- * so sched1 can no longer hoist the p[8] load above the D_80102784 store; the
- * chains stop interleaving, their live ranges stop overlapping, and lreg
- * reuses $v0 for the second chain instead of allocating $v1. Only the POINTER
- * spelling does this — `s32 v8 = p[8];` and `u32 v8 = p[8];` are folded
- * straight back into the shift (measured, score 24), and reusing `i` as the
- * value temp scores 20. Neither edit works alone: with the inline p[8]
- * spelling all 24 statement orders were measured dead in session 3, and with
- * the pointer temp at session 3's order the score is 17.
+ * How it is built (session 6's h1 chassis crossed with session 4's lever):
+ *   1. `b` / `w` are assigned INSIDE loop 1's body.  As in-loop loop
+ *      invariants loop.c hoists them as MOVABLES, which is what puts target's
+ *      `lui t0 / addiu t0` in the preheader with $t0 live across the loop
+ *      (guard reads `lb v0,0(t0)`), and makes the D_8010277C walker giv's
+ *      initial value `(plus (reg b) (const_int -9))` = target's third
+ *      preheader insn `addiu a1,t0,-9`.   [session 6, gaps (a) and (b)]
+ *   2. The loop-1 p-walker is a SOURCE pointer `s` (not an i-indexed
+ *      expression strength-reduced into a giv), and `s` - dead after loop 1 -
+ *      carries loop 2's D_801027D8 destination.  Session 7 measured why that
+ *      is load-bearing: with the reuse, cc1's own allocno table (BB2_ALLOC_DEBUG)
+ *      gives s nrefs=11 livelen=31 pri=10645 against the counter's nrefs=11
+ *      livelen=33 pri=10000, so s is allocated first and takes $a2 while i
+ *      inherits $a3 - target's assignment.  Without the reuse (v_s1) s is
+ *      nrefs=9 livelen=31 pri=8709 and the assignment inverts (score 12).
  *
- * Edit 3 closes cluster 1's REGISTER INVERSION (13 -> 4): extending `src`'s
- * live range into the `val == 5` branch flips the global.c allocno order so
- * that `src` is allocated before `i`, landing p=$t3, ptr=$a1, src=$a2,
- * i=$a3, base=$t0 — target's exact assignment. This DISPROVES session 2's
- * arithmetic closure of the axis (see hypotheses.md [s4]).
+ * Why the remaining rotation does not fall to a source spelling ON THIS
+ * chassis: the two constants are loop.c MOVABLES, and move_movables inserts
+ * them immediately before NOTE_INSN_LOOP_BEG, i.e. after EVERY pre-loop source
+ * statement.  `p = call` and `s = (u8 *)p` are pre-loop source statements, so
+ * their LUIDs are always lower, and sched1 (all these insns are latency-1, so
+ * rank_for_schedule falls through to INSN_LUID among the ready insns) keeps
+ * them ahead.  Only a walker emitted by loop.c AT loop_start (a giv init) sits
+ * after the movables - which is the h1 chassis, where the allocation inverts
+ * because a giv cannot pick up the two post-loop refs this reuse gives `s`.
+ * See memory/grind/func_8003504C/chassis_h1_score9.c and the session-7
+ * hypotheses for the exact arithmetic.
  *
- * WHAT REMAINS — 7 positions, and they are a pure ROTATION of one 7-insn
- * pre-loop block; every instruction is present with the right register:
- *   target: li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 /
- *           addiu t0 / addiu a1,t0,-9
- *   ours:   move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9 /
- *           li t2,5 / li t1,20
- * i.e. the two LICM-hoisted loop-1 comparison constants must move from LAST
- * to FIRST in the pre-loop block.
- *
- * NO cheat construct of any kind is present: no pins, no inline asm, no dead
- * stores, no volatile coercion, no unused locals. Every local is live and
- * read. `q` is a plain pointer intermediate in a function that already walks
- * five other pointer locals (src, ptr, base, pp, da/db), and the `src` reuse
- * assigns a value that is then read on the next line.
+ * NO cheat construct: no pins, no inline asm, no dead stores, no volatile
+ * coercion, no unused locals.  Every local is assigned and then read; `s` is
+ * ordinary variable reuse of a local that is dead after loop 1.
  */
 void func_8003504C(void) {
     s32 *p;
     s32 i;
-    u8 *src;
-    u8 *ptr;
-    s8 *base;
+    u8 *s;
     s32 *q;
     s8 val;
     u8 tmp;
 
     p = func_80077D00();
     i = 0;
-    src = (u8 *)p;
-    base = &D_80102785;
-    ptr = (u8 *)(base - 9);
+    s = (u8 *)p;
 
     do {
-        s32 lv = (&D_8008D55C)[*src];
-        *ptr = lv;
+        s8 *b = &D_80102785;
+        u8 *w = (u8 *)b - 9;
+        s32 lv = (&D_8008D55C)[s[0]];
+        w[i] = lv;
         if ((u32)(lv - 3) < 2 || (s8)lv == 5 || (u32)(lv - 18) < 2 || (s8)lv == 20) {
-            if (*base == 0) {
-                *ptr = *ptr - 3;
+            if (*b == 0) {
+                w[i] = w[i] - 3;
             }
         }
-        tmp = src[1];
-        src += 10;
+        tmp = s[1];
+        s += 10;
         (&D_80102780)[i] = 0;
         (&D_8010277E)[i] = tmp;
         i++;
-        ptr++;
     } while (i < 2);
 
     D_80102784 = ((u32)p[5] >> 4) & 0x3F;
@@ -103,11 +95,11 @@ void func_8003504C(void) {
             sel = 2;
         }
         D_800A37F8 = sel;
-        src = &D_801027D8;
+        s = &D_801027D8;
         D_800A38E1 = ((u32)p[5] >> 15) & 3;
         {
             s32 j = 0;
-            u8 *dst_d = src;
+            u8 *dst_d = s;
             u8 *dst_a = &D_801027A0;
             do {
                 s32 k = 0;
