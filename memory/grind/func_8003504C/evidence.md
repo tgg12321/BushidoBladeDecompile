@@ -468,3 +468,141 @@ appended to the preheader by loop.c.
 - [s4] A reusable, pipeline-faithful permuter workspace builder now exists (tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh). It mirrors the real per-file build for code6cac_b.c (cc1 -mel, maspsx --expand-lb twice per EXPAND_LB_FILES, the RODATA_ALIGN2 `.align 3 -> .align 2` sed, multu_pad) and OMITS regfix/asmfix so the permuter scores the honest distance. Two gotchas worth reusing: maspsx emits `.ent`/`.end` at column 0 (the extraction regex must not require a leading tab), and a FULL preprocessed TU is the correct base.c because decomp-permuter's randomizer only mutates the function named in settings.toml.
 
 - [s4] No cheat construct was written at any point this session: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits, no touched surface outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s4/. Every local in the winning form is assigned and then read.
+
+## Session 5 (permuter, 2026-08-13) - the pre-loop order MECHANISM is solved
+
+Floor unchanged at 4 (session-4 candidate re-applied and re-confirmed at
+`sandbox func_8003504C --disable all` = 4, 141/141 instructions, at session
+start and again at session end). This session did not lower the floor. It
+(a) KILLED both of session 4's frontier levers with an exhaustive directed
+permuter sweep, and (b) found, by structural chassis variation, the FIRST form
+in five sessions whose pre-loop block is ordered exactly like target's - which
+converts the residual from "an unexplained sched1 decision" into a concrete,
+named RTL-emission-order requirement.
+
+### Instruments (tmp/grind/func_8003504C/s5/)
+- `inject.py <ws>/base.c [--randomize]` - injects DIRECTED `PERM_*` directives
+  into a permuter workspace base.c: `PERM_LINESWAP` over the pre-loop init
+  statements (two sites) and a `PERM_GENERAL` over all 24 orders of loop 1's
+  four condition disjuncts. Optional `--randomize` wraps loop 1 in
+  `PERM_RANDOMIZE` so random mutation runs alongside the directed sites.
+- `gen5.py` - generates the walker-PROVENANCE chassis cross-product
+  (dwalk = pointer-local vs i-indexed, pwalk = pointer-local vs i-indexed,
+  loop-2 dst = reuse-`src` vs fresh local); six variants.
+- `sweep5.sh <v>...` - apply + `sandbox --disable all` each variant, print
+  score / build_insns, then restore the candidate form.
+- `bank.py` - copies disproven forms into rejected/ with a why-header.
+
+### Campaign 1 (ws5) - the directed cross-product, EXHAUSTED, zero finds
+`preloop-directed-lineswap-disjuncts` on the floor-4 chassis, base permuter
+score 120. The perm space is finite (6 init orders x 2 src/ptr orders x 24
+disjunct orders = 288) and the permuter enumerated **all 288 in 14 s with not
+one find below base**. Both of session 4's top frontier levers are therefore
+dead as stated: neither the pre-loop init statement order nor loop 1's
+disjunct order can move the two LICM-hoisted constants.
+
+### Campaign 2 (ws6) - random on the giv chassis, harvested + stopped
+`giv-chassis-both-walkers-random`, base 495 (the giv chassis's own base),
+10255+ iterations / ~500 s, four novel finds at 495 / 450 / 495 / 465 - i.e.
+the basin yields but its best is 450 against a floor-4 chassis base of 120, so
+it is not competitive as a closing chassis. Its proposals were constant-holder
+reuses of the dead `i`/`tmp` locals (`i = 5;` then `p[i]`), which is a
+different lever entirely and was not adopted. Harvested with --stop; no orphans.
+
+### The mechanism, now positively identified
+Reading GCC 2.7.2 `sched.c` settles the scheduling half: the priority
+computation subtracts one so that "when all instructions have a latency of 1 ...
+all instructions will end up with a priority of one, and hence no scheduling
+will be done" - every insn in the pre-loop block is a reg-reg move / lui /
+addiu of latency 1, so they all tie at priority 1 and `rank_for_schedule` falls
+through class to `INSN_LUID`. **The pre-loop block is emitted in pure RTL
+order.** There is nothing to steer in the scheduler; the question is entirely
+where each insn is EMITTED.
+
+The three emission classes, measured one at a time:
+1. **Pre-loop source statements** get the lowest LUIDs and are emitted first.
+2. **loop.c movables** (the `li 5` / `li 20` the condition's compares need in
+   registers) are emitted by `move_movables` immediately before
+   NOTE_INSN_LOOP_BEG, i.e. after ALL pre-loop statements, in discovery order.
+3. **loop.c strength-reduction giv initial values** - and, with them, the
+   call-result copy `move t3,v0` - are emitted at loop_start AFTER the
+   movables.
+
+Target's block is `i=0 / li 5 / li 20 / move t3,v0 / move a2,t3 / lui t0 /
+addiu t0 / addiu a1,t0,-9`: exactly ONE class-1 statement (`i = 0`), then the
+movables, then the giv inits. **In the original source, loop 1's two walking
+pointers were not pre-loop locals at all - they were loop.c givs**, and the
+only pre-loop statement was the counter initialization.
+
+Measured, all at 141/141 instructions (`sandbox --disable all`):
+  - `v_ptr_src_reuse` (= the session-4 candidate)            score **4**
+  - `v_ptr_src_plain` (candidate minus the src-reuse lever)  score 13
+  - `v_ptr_idx_plain` (p walker as a giv)                    score 15
+  - `v_idx_src_reuse` (D_8010277C walker as a giv)           score 10
+  - `v_idx_src_plain`                                        score 19
+  - `v_idx_idx_plain` (BOTH walkers as givs)                 score 18
+  - `v_idx85_idx_plain` (both givs, walker based on &D_80102785) score 18
+
+`v_ptr_idx_plain` proves class 3: making the p walker a giv moves BOTH
+`move t3,v0` and `move <src>,t3` from the front of the block to behind the two
+constants. `v_idx_src_reuse` proves class 2 in isolation: making only the
+D_8010277C walker a giv lifts the constants ahead of the address setup but not
+ahead of the p-copies. `v_idx_idx_plain` combines them and reproduces target's
+pre-loop ORDER exactly - the first form in five sessions to do so.
+
+### Why the giv chassis still scores 18 (the two remaining gaps)
+1. **The `-9` derivation collapses.** Target's walker giv init is three insns,
+   `lui t0,%hi(D_80102785) / addiu t0,t0,%lo(D_80102785) / addiu a1,t0,-9`,
+   leaving `t0` live so the in-loop guard reads `lb v0,0(t0)`. Ours is two,
+   `lui a1 / addiu a1` - cse folds the walker's base straight into a single
+   %lo, and the `D_80102785 == 0` guard then gets its OWN lui inside the loop.
+   Writing the walker as `(&D_80102785)[i - 9]` to force the derivation does
+   not help: cse folds the -9 into the %lo instead (`addiu a1,a1,-9`), same 2
+   insns. Target needs &D_80102785 to be a REGISTER that the walker's init
+   subtracts 9 from AND the guard dereferences at offset 0.
+2. **Cluster 1's register inversion returns.** With the p walker as a giv there
+   is no `src` local left, so session 4's live-range-extension lever (reusing
+   the dead `src` for loop 2's D_801027D8 destination) has nothing to attach
+   to, and `i`/`src` invert again ($a2/$a3 instead of target's $a3/$a2).
+
+- [s5] Session 4's TOP frontier lever is KILLED exhaustively: a DIRECTED permuter campaign on the floor-4 chassis (PERM_LINESWAP over the pre-loop init statements x PERM_GENERAL over all 24 orders of loop 1's four condition disjuncts) enumerated its ENTIRE 288-combination space in 14 s with not one find below the base score of 120. Neither pre-loop statement order nor loop-condition disjunct order can move the two LICM-hoisted constants.
+
+- [s5] GCC 2.7.2 sched.c's priority computation subtracts one specifically so that "when all instructions have a latency of 1 ... all instructions will end up with a priority of one, and hence no scheduling will be done". Every insn of the pre-loop block is a latency-1 move / lui / addiu, so they all tie at priority 1 and rank_for_schedule falls through the dependence-class test to INSN_LUID. The pre-loop block is emitted in PURE RTL ORDER - there is nothing to steer in the scheduler, and the entire residual is an RTL EMISSION-ORDER question.
+
+- [s5] Three RTL emission classes decide the pre-loop block's order, and each was isolated by measurement: (1) pre-loop source statements get the lowest LUIDs and come first; (2) loop.c movables (the `li 5` / `li 20` the compares need in registers) are emitted by move_movables immediately before NOTE_INSN_LOOP_BEG, i.e. after every pre-loop statement, in discovery order; (3) loop.c strength-reduction giv INITIAL VALUES - and with them the call-result copy `move t3,v0` - are emitted at loop_start AFTER the movables.
+
+- [s5] Target's pre-loop block (`i=0 / li 5 / li 20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`) has exactly ONE class-1 statement followed by the movables followed by the giv inits. That is positive evidence that in the ORIGINAL SOURCE loop 1's two walking pointers were NOT pre-loop pointer locals - they were i-indexed expressions that loop.c strength-reduced into givs - and the only pre-loop statement was the counter initialization.
+
+- [s5] v_ptr_idx_plain (only the p walker made i-indexed, score 15) proves emission class 3 in isolation: both `move t3,v0` and `move <src>,t3` move from the FRONT of the pre-loop block to BEHIND the two hoisted constants. v_idx_src_reuse (only the D_8010277C walker made i-indexed, score 10) proves class 2 in isolation: the constants lift ahead of the address setup but stay behind the p-copies.
+
+- [s5] v_idx_idx_plain (BOTH walkers as givs, score 18, 141/141 insns) reproduces target's pre-loop block ORDER exactly - `i=0 / li / li / move t3,v0 / move t3-copy / lui / addiu` - the first form in five sessions to do so. It is banked at rejected/giv-both-walkers-preloop-order-matches-score18.c.
+
+- [s5] Two gaps keep the giv chassis at 18. (a) Target's walker giv init is THREE insns (`lui t0,%hi(D_80102785) / addiu t0,t0,%lo(D_80102785) / addiu a1,t0,-9`) leaving t0 live so the in-loop guard reads `lb v0,0(t0)`; ours is TWO (`lui a1 / addiu a1`) because cse folds the walker's base into one %lo and the `D_80102785 == 0` guard then gets its own lui inside the loop. Spelling the walker as `(&D_80102785)[i - 9]` does not force the derivation - cse folds the -9 into the %lo instead (`addiu a1,a1,-9`), still 2 insns. (b) With the p walker a giv there is no `src` local left, so session 4's src-reuse allocation lever has nothing to attach to and cluster 1's i/src register inversion returns.
+
+- [s5] Walker-provenance chassis sweep, all at 141/141 instructions: v_ptr_src_reuse (the session-4 candidate) 4, v_ptr_src_plain 13, v_ptr_idx_plain 15, v_idx_src_reuse 10, v_idx_src_plain 19, v_idx_idx_plain 18, v_idx85_idx_plain 18. The src-reuse allocation lever alone is worth 9 points on the pointer chassis (13 -> 4).
+
+- [s5] Permuter campaign telemetry, both campaigns harvested and stopped in-session: ws5 preloop-directed-lineswap-disjuncts, base 120, perm space 288, ENUMERATED 288/288 in 14 s, zero finds; ws6 giv-chassis-both-walkers-random, base 495, 10255+ iterations over ~500 s, four novel finds (495 / 450 / 495 / 465) whose best is far above the floor-4 chassis's base of 120. ws6's proposals were constant-holder reuses of the dead `i` / `tmp` locals (`i = 5;` then `p[i]`), a different lever that was not adopted.
+
+- [s5] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s5/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every probed variant was a plain re-spelling of live, semantically necessary statements.
+
+- [s5] Floor unchanged at 4: the session-4 candidate was re-applied to src/code6cac_b.c at session start and re-confirmed at score 4 / 141 of 141 instructions, and again at session end.
+
+- [s5] A DIRECTED permuter campaign (PERM_LINESWAP over the pre-loop init statements x PERM_GENERAL over all 24 orders of loop 1's four condition disjuncts) has a finite 288-combination space and the permuter ENUMERATED 288/288 in 14 s with zero finds below the base score of 120. Session 4's two top frontier levers are exhaustively dead.
+
+- [s5] GCC 2.7.2 sched.c subtracts one in its priority computation specifically so that 'when all instructions have a latency of 1 ... all instructions will end up with a priority of one, and hence no scheduling will be done'. Every insn of the pre-loop block is a latency-1 move / lui / addiu, so all priorities tie at 1, the dependence-class test ties, and rank_for_schedule falls through to INSN_LUID. The pre-loop block is emitted in PURE RTL ORDER - the residual is an emission-order problem, not a scheduling problem.
+
+- [s5] Three RTL emission classes decide that block's order and each was isolated by measurement: (1) pre-loop source statements get the lowest LUIDs and come first; (2) loop.c movables (the `li 5` / `li 20` the compares need in registers) are emitted by move_movables immediately before NOTE_INSN_LOOP_BEG, i.e. after every pre-loop statement, in discovery order; (3) loop.c strength-reduction giv INITIAL VALUES - and with them the call-result copy `move t3,v0` - are emitted at loop_start AFTER the movables.
+
+- [s5] Target's pre-loop block (`i=0 / li 5 / li 20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`) contains exactly ONE class-1 statement followed by the movables followed by the giv inits. That is positive evidence that in the ORIGINAL source loop 1's two walking pointers were i-indexed expressions strength-reduced into givs by loop.c, and the only pre-loop statement was the counter initialization.
+
+- [s5] Walker-provenance chassis sweep, all at 141/141 instructions: v_ptr_src_reuse (the session-4 candidate) 4, v_ptr_src_plain 13, v_ptr_idx_plain 15, v_idx_src_reuse 10, v_idx_src_plain 19, v_idx_idx_plain 18, v_idx85_idx_plain 18. Session 4's src-reuse allocation lever alone is worth 9 points on the pointer chassis (13 -> 4).
+
+- [s5] v_ptr_idx_plain (only the p walker made i-indexed) proves emission class 3 in isolation: both `move t3,v0` and `move <src>,t3` move from the FRONT of the pre-loop block to BEHIND the two hoisted constants. v_idx_src_reuse (only the D_8010277C walker made i-indexed) proves class 2 in isolation: the constants lift ahead of the address setup but stay behind the p-copies.
+
+- [s5] v_idx_idx_plain (BOTH walkers as givs, score 18) reproduces target's pre-loop block ORDER exactly - the first form in five sessions to do so - and is banked at memory/grind/func_8003504C/rejected/giv-both-walkers-preloop-order-matches-score18.c.
+
+- [s5] Two gaps keep the giv chassis at 18: (a) target's walker giv init is THREE insns (`lui t0,%hi(D_80102785) / addiu t0,t0,%lo(D_80102785) / addiu a1,t0,-9`) leaving t0 live so the in-loop guard reads `lb v0,0(t0)`, while ours is TWO (`lui a1 / addiu a1`) because cse folds the walker's base into one %lo and the `D_80102785 == 0` guard then gets its own lui inside the loop; spelling the walker as `(&D_80102785)[i - 9]` does not force the derivation because cse folds the -9 into the %lo instead; (b) with the p walker a giv there is no `src` local left, so session 4's src-reuse allocation lever has nothing to attach to and cluster 1's i/src register inversion returns.
+
+- [s5] Permuter campaign telemetry, both campaigns harvested and stopped in-session with no orphans (harvest reported procs_killed 9 for ws6 and pid_alive false for ws5): ws5 preloop-directed-lineswap-disjuncts base 120, 288/288 iterations in 14 s, zero finds; ws6 giv-chassis-both-walkers-random base 495, 10255+ iterations over ~500 s, four novel finds at 495 / 450 / 495 / 465.
+
+- [s5] Session end state: src/code6cac_b.c carries the session-4 candidate form (re-verified at score 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s5/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits. Every probed variant was a plain re-spelling of live, semantically necessary statements.

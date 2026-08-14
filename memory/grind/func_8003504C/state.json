@@ -1,7 +1,7 @@
 {
  "func": "func_8003504C",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Permuter broke the 3-session plateau: floor 24 -> 4 (26 -> 7 differing positions). Cluster 2 fully closed by a pointer intermediate for the p[8] read plus a new statement order; cluster 1's register i"
+  },
+  {
+   "session": 5,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Floor held at 4; both of session 4's frontier levers killed by an EXHAUSTIVE 288/288 directed permuter enumeration, and the pre-loop residual is re-identified as an RTL emission-order problem (not a s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's two LICM-hoisted constants (li 5 / li 20) precede the p-copy chain because in target's RTL they are NOT appended to the end of the loop preheader - they exist in the entry block with a LOWER INSN_LUID than `move t3,v0`, which makes them win the sched1 tie among priority-equal insns.",
-   "mechanism": "loop.c hoists loop invariants by emitting them at the END of the preheader, which is why ours land last; sched1 then keeps them last because they have no in-block dependents (lowest INSN_PRIORITY) while `move t3,v0 -> move a2,t3` is a 2-deep chain. If instead the constants are materialized in the entry block by RTL generation or by CSE before the call's return copy, their LUIDs drop below the copies' and, with all of them priority-tied at the block end, LUID order decides - producing target's `li / li / move / move / lui / addiu / addiu`.",
-   "next_probe": "Read the pre-loop block's per-insn INSN_PRIORITY and LUID directly. Session 3 left the exact blocker: tmp/grind/func_8003504C/s3/rank.sh runs the instrumented cc1 with BB2_RANK_DEBUG=1 (hook in rank_for_schedule, tools/gcc-2.7.2/sched.c) but its output is not scoped to one function and insn uids collide across code6cac_b.c's functions. Add a function filter (or bracket the dump per function) FIRST, then read the priorities of the seven pre-loop insns on the floor-4 form. If they are all priority-tied except the copy chain, the attack is to lower the constants' LUIDs; if the copy chain outranks them on priority, the attack is to give the constants an in-block dependent."
+   "hypothesis": "The closing form is the GIV chassis (both loop-1 walkers i-indexed, which already reproduces target's pre-loop ORDER exactly) plus a spelling that keeps &D_80102785 in a live register across loop 1 so the D_8010277C walker's giv initial value is emitted as `addiu a1,t0,-9` instead of collapsing into a folded `lui a1 / addiu a1`.",
+   "mechanism": "Target holds &D_80102785 in $t0 across the whole loop - the guard reads `lb v0,0(t0)` at position 30 - and derives the walker from it. Ours loses that because cse folds the walker's base address into a single %lo (with or without the -9) and then materialises the guard's address separately inside the loop. The register must be created by something loop.c cannot fold: e.g. an invariant POINTER assigned INSIDE the loop body AFTER the condition (so it is discovered as a movable after the two constants) and used both to dereference the guard at offset 0 and to index the walker at `[i - 9]`, or a pre-loop pointer whose address is re-loaded rather than constant-folded.",
+   "next_probe": "On the v_idx_idx_plain chassis (memory/grind/func_8003504C/rejected/giv-both-walkers-preloop-order-matches-score18.c), sweep spellings that force a base register: `s8 *b; ... b = &D_80102785; b[i - 9] = lv; if (*b == 0) b[i - 9] -= 3;` with the `b = ...` assignment placed at each legal point inside loop 1's body (before the store, between the store and the condition, inside the condition), measuring `sandbox --disable all` and the pre-loop window each time. Check specifically whether the guard's `lb` uses the walker's base register and whether the giv init becomes three insns."
   },
   {
-   "hypothesis": "The pre-loop rotation is reachable by a DIRECTED permuter chassis (PERM_LINESWAP / PERM_GENERAL over the five init statements and over the order of the four disjuncts in loop 1's condition), even though undirected random search on the floor-4 chassis found nothing in 20k iterations.",
-   "mechanism": "The order of the four disjuncts in `(u32)(lv-3) < 2 || (s8)lv == 5 || (u32)(lv-18) < 2 || (s8)lv == 20` sets loop.c's invariant DISCOVERY order and hence the order the two constants are appended to the preheader; the order of the five pre-loop init statements sets the entry block's LUIDs. Both are pure re-spellings of the same program, and neither has been swept on the floor-4 chassis (session 1 swept init order on the floor-24 chassis only, and session 4's own evidence is that chassis changes make an old sweep non-binding).",
-   "next_probe": "Build a ws4 workspace from the floor-4 base.c with PERM_LINESWAP over the five init statements and PERM_GENERAL over the disjunct order, launch via `tools/permuter_campaign.py launch --label preloop-directed`, and cross-check any find with `sandbox --disable all`. Do NOT re-run undirected random on this chassis - 20373 iterations are already banked as a negative."
+   "hypothesis": "Cluster 1's register assignment can be recovered ON the giv chassis by a live-range extension of the giv's source-visible companion, the same class of lever session 4 used with `src`.",
+   "mechanism": "With both walkers as givs, the only source-visible pseudos left in loop 1 are `i`, `tmp` and `p`, so session 4's `src = &D_801027D8;` reuse has nothing to attach to and `i` re-takes $a2 while the p-walking giv takes $a3 (target wants the inverse). The givs are created by loop.c, so their allocno ranking is set by their in-loop refs and by whatever live range the source can still extend - which now means extending the range of the pseudo that FEEDS the giv (p, or the giv's initial-value copy) rather than the walker itself.",
+   "next_probe": "On the giv chassis, measure the register dispositions with tmp/grind/func_8003504C/s2/probe.sh, then sweep: (a) reusing `tmp` or `i` in the `val == 5` branch, (b) carrying loop 2's D_801027D8 destination through a pointer initialised before loop 1, (c) keeping ONE walker as a pointer local (v_idx_src_reuse / v_ptr_idx_plain already score 10 / 15) and giving the surviving local the loop-2 reuse. Track the dispositions, not just the score."
   },
   {
-   "hypothesis": "Cluster 1's remaining rotation is coupled to the `src`-reuse lever's exact placement, so sweeping WHERE the reused assignment sits (and which loop-2 pointer it feeds) can move the pre-loop block as well as the allocation.",
-   "mechanism": "The `src = &D_801027D8;` statement is currently placed just before `D_800A38E1 = ...`, which is where the permuter happened to put it. Its position changes src's live range and the LUIDs of everything after it, and the allocation flip it produces already proved that this function's pre-loop scheduling and its allocation are coupled (session 1 recorded the same coupling in the other direction).",
-   "next_probe": "Sweep the placement of `src = &D_801027D8;` across every legal point inside the `val == 5` branch (and the symmetric variant reusing `src` for dst_a instead of dst_d), measuring `sandbox --disable all` and the register dispositions for each. Cheap, mechanical, and it tests a premise no session has touched."
+   "hypothesis": "The remaining 7-position residual on the floor-4 pointer chassis is NOT closable at all on that chassis - the pre-loop block there always has four class-1 statements ahead of the movables - so the floor-4 form is a local optimum and the closing form must come from the giv family.",
+   "mechanism": "On the pointer chassis, `src`, `base` and `ptr` are pre-loop source statements and therefore always emit before loop.c's movables; the 288-combination directed enumeration proved no permutation of those statements changes that. Target has only `i = 0` ahead of the movables. So no amount of reordering, and no statement-level lever, can produce target's order while those three locals exist as pre-loop assignments.",
+   "next_probe": "Treat this as the working assumption and stop spending sessions on the floor-4 pointer chassis's pre-loop block. If a giv-chassis variant reaches a score at or below 4 with target's pre-loop order intact, the assumption is confirmed and the two chassis families can be merged; if the giv family stalls above 4, re-open by asking whether any THIRD provenance exists for the walkers (e.g. one walker a giv and the other a pre-loop local initialised from the giv's base register)."
   }
  ],
  "judge_constraints": [],
