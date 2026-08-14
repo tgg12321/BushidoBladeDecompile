@@ -46,6 +46,15 @@
  * See memory/grind/func_8003504C/chassis_h1_score9.c and the session-7
  * hypotheses for the exact arithmetic.
  *
+ * SESSION 9 UPDATE - the h1 alternative is now DEAD, so this form is not just
+ * the best measured chassis, it is the only surviving one.  Session 9 showed the
+ * h1 allocation CAN be flipped (a post-loop reuse that demotes the counter's
+ * allocno below the giv's 9310 gives target's preheader AND target's loop-1
+ * registers together, positions 1..80 byte-clean), but that every such vehicle
+ * forces the counter into the hard register the carried value occupies in
+ * target - and target has no post-loop $a3 reference at all.  See evidence.md,
+ * "the three necessary conditions are jointly contradictory".
+ *
  * NO cheat construct: no pins, no inline asm, no dead stores, no volatile
  * coercion, no unused locals.  Every local is assigned and then read; `s` is
  * ordinary variable reuse of a local that is dead after loop 1.

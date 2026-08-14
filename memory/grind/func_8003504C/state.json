@@ -1,7 +1,7 @@
 {
  "func": "func_8003504C",
  "file": "code6cac_b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "Rederive: m2c reproduces the current chassis (no new shape), and an exact backward-list-scheduler model of sched1 - validated insn-for-insn on BOTH chassis - converts the 4-point residual into one fal"
+  },
+  {
+   "session": 9,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "The giv-walker chassis is CLOSED: its allocation flip is reachable (w4 = 141/141 with target's preheader AND target's loop-1 registers, positions 1-80 byte-clean) but every demotion vehicle pins the c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function closes on the h1/giv chassis (which already has target's preheader; its whole residual is the i/p-walker swap) as soon as a post-loop reuse demotes the counter's allocno priority below the giv's 9310 - and the reuse must have TWO joining definitions, since adjacent def/use pairs are copy-propagated away and a plain post-loop READ of `i` is constant-folded (loop.c knows i == 2).",
-   "mechanism": "pri = floor_log2(refs)*refs/live_length with cc1's own numbers. Requirement table (session 7, unchanged): (refs 12, len >= 39), (13, >= 42), (14, >= 46), (15, >= 49); refs 16 crosses the floor_log2 boundary to 4 and needs len > 68. v_a1 (i carrying `sel`) reached 14/43 = 9767, three insns of live range short. Session 8 adds the reason the search space is narrow: refs are weighted by loop depth, so any reuse inside loop 2 explodes the numerator, and the live length can only be extended by placing the surviving use LATER in the post-loop stream.",
-   "next_probe": "Enumerate post-loop sites in the val==2 / val==5 arms that produce two JOINING definitions of an s32 whose last use sits later than v_a1's `sb $a0,%lo(D_800A37F8)` store - in particular a value defined in BOTH arms and consumed after the if/else join, which gives a much longer range than a def inside one arm. Generate one variant per site and read pri(pseudo 73) straight off tmp/grind/func_8003504C/s7/alloc.sh; only variants with pri < 9310 AND build_insns == 141 need a sandbox run. On h1 such a variant is a full match, since the swap is its only residual."
+   "hypothesis": "The fourth chassis - a loop.c emission at loop_start whose destination is a SOURCE pseudo (combine_movables' m->match register copies, or move_movables' m->partial path) - is the only construction that can satisfy all three necessary conditions at once, and it is now the ONLY structural route left (session 9 closed the giv family that was the alternative).",
+   "mechanism": "combine_movables turns a movable that duplicates an earlier movable's value into a register COPY emitted at the LATER movable's insertion point, which is exactly the insn shape (a plain register copy) and exactly the position (after the hoisted constants) the LUID requirement needs - and unlike emit_iv_add_mult its destination is the ORIGINAL source pseudo, so the walker keeps the 11 weighted refs the post-loop D_801027D8 reuse gives it. Session 8 enumerated the loop_start emission points statically (move_movables 1652-1854, emit_iv_add_mult 5561/6098, check_dbra_loop 5868) but never instrumented them; session 9's m1 shows the naive spelling costs an extra insn because the movable and the giv init are both emitted, so what is needed is a shape where ONE emission is both.",
+   "next_probe": "Instrument tools/gcc-2.7.2/loop.c with BB2-style env-gated hooks at every emit_insn_before(loop_start)-class call site (and inside combine_movables where m->match is set) and print what each emits for func_8003504C on the candidate chassis, on h1, and on m1. Then ask which class can emit `(set <source pseudo> <reg>)` after the constants WITHOUT a second insn. Read the resulting .loop/.sched pre-loop region with tmp/grind/func_8003504C/s8/solo8.sh; the acceptance test is INSN_LUID(walker init) > INSN_LUID(li 20) at 141 build_insns."
   },
   {
-   "hypothesis": "There is a fourth chassis class in which the p-walker's initialising copy is emitted at loop_start (satisfying INSN_LUID(s = p) > INSN_LUID(li 20)) while the pseudo still carries >= 10 weighted references - i.e. a loop.c-emitted copy whose destination is a SOURCE variable.",
-   "mechanism": "Session 8 enumerated loop.c's loop_start emission points statically (move_movables 1652-1854, emit_iv_add_mult 5561/6098, check_dbra_loop 5868) but did not instrument them. combine_movables turns a movable that duplicates an earlier movable's value into a register COPY emitted at the LATER movable's insertion point - which is exactly the insn shape and exactly the position the requirement needs. Whether a copy of a call result into a source variable can ever be classified as such a movable is unresolved.",
-   "next_probe": "Instrument tools/gcc-2.7.2/loop.c with a BB2-style env-gated hook at every emit_insn_before(loop_start)-class call site and print what each emits for func_8003504C on both chassis, paying particular attention to combine_movables' m->match copies and to move_movables' m->partial path. Then ask which class can emit `(set <source pseudo> <reg>)` after the constants. Any class that can is the win; use tmp/grind/func_8003504C/s8/solo8.sh to read the resulting .loop/.sched pre-loop region in one command."
+   "hypothesis": "One of the three necessary conditions is subtly wrong, and the most likely one is the definition of allocno live_length that the giv arithmetic rests on (session 4 already caught one live_length modelling artefact).",
+   "mechanism": "pri = floor_log2(refs)*refs/live_length is confirmed against cc1's own table, but what live_length COUNTS (whole-function insns where the allocno is live, versus a block-local span, versus a scheduled-order span) decides whether L_i > 1.222*L_giv is really capped at 33/27. If live_length includes regions where the counter is conservatively live-in but the giv is not, the cap moves and the h1 chassis reopens WITHOUT any post-loop reuse - which would resolve the contradiction in the cleanest possible way.",
+   "next_probe": "Read the live_length computation in tools/gcc-2.7.2/global.c (mark_reg_live_nc / allocno_live_length accumulation) and print, from the instrumented cc1 on the h1 chassis, the per-block contribution to allocno_live_length for pseudos 73 and 176. Then check whether any source shape lengthens the counter's live_length without adding a REFERENCE (e.g. a longer preheader that keeps refs at 11): the requirement is only L_i >= 36 with refs 11, i.e. three insns, versus the six-insn preheader budget."
   },
   {
-   "hypothesis": "A decomp-permuter campaign seeded on the session-7 chassis finds the LUID arrangement that the analytic model says is needed but cannot construct (it is a strictly better base than session 4's ws3: four differing positions instead of seven, with target's register assignment already in place).",
-   "mechanism": "Session 4 showed random search finds levers of exactly this shape when the chassis is close (the src-reuse find came out of ws2 at 132 s); session 4's ws3 ran 20373 iterations with no find, but on the seven-position chassis whose residual still included the base/ptr pre-loop statements this chassis no longer has. Session 8's model also gives a cheap acceptance test for any find: it must move `s = p` behind the two `li`s.",
-   "next_probe": "Rebuild a workspace with tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh from the current candidate.c, record the permuter base score, run a fresh-seed campaign with tools/permuter_campaign.py, and wait for it IN-SESSION with `permuter_campaign.py wait`; harvest and --stop before ending the turn. Free structural variation the permuter can be seeded with, all measured neutral this session: the m2c `&&` guard, the `for` spelling of loop 1, and dropping `q` by letting `s` carry &p[8]."
+   "hypothesis": "A decomp-permuter fresh-seed campaign seeded on the CURRENT (session-7) candidate finds the LUID arrangement the analytic model cannot construct.",
+   "mechanism": "Session 4 showed random search finds levers of exactly this shape when the chassis is close (the src-reuse find came out of ws2 at 132 s); session 4's ws3 campaign ran on the older seven-differing-position chassis whose residual still included the base/ptr pre-loop statements this chassis no longer has, and no campaign has ever been run on the four-position chassis. Session 8's sched1 model gives a cheap acceptance test for any find: it must move `s = p` behind the two li's.",
+   "next_probe": "Rebuild a workspace with tmp/grind/func_8003504C/s4/mkws.sh + mkbase.sh from the current candidate.c, record the permuter base score, run a fresh-seed campaign with tools/permuter_campaign.py and wait for it IN-SESSION with `permuter_campaign.py wait`; harvest and --stop before ending the turn. Free structural variation to seed it with, all measured neutral in session 8: the m2c && guard, the `for` spelling of loop 1, and dropping `q` by letting `s` carry &p[8]."
   }
  ],
  "judge_constraints": [],

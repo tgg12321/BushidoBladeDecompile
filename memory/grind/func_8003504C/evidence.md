@@ -969,3 +969,76 @@ to a future session as free structural variation that costs nothing.
 - [s8] m2c's fresh reconstruction of the target reproduces the current chassis (source-pointer p-walker copied from the call result, `&D_80102785 - 9` for the D_8010277C walker), so the chassis is corroborated by the decompiler and is not an artefact of five sessions of incremental edits.
 
 - [s8] The immediate sibling func_80035280 (same `p = func_80077D00()` idiom) is itself an unmatched queue item carrying volatile / `new_var` debt - not usable as a transplant source.
+
+## Session 9 (rederive) - the three necessary conditions are jointly contradictory
+
+Session 9 measured the last untested half of the preheader problem and closed the
+giv family. Combining today's measurements with sessions 7 and 8, target's
+preheader plus target's loop-1 register assignment impose THREE conditions that
+cannot all be met by any chassis built so far:
+
+ (1) The p-walker's allocno must outrank the counter's.  Measured, on cc1's own
+     allocno table: a SOURCE-pseudo walker does this only by carrying the
+     post-loop D_801027D8 pointer (9 refs -> 11 refs, pri 8709 -> 10645 against
+     the counter's 10000).  A loop.c GIV walker can never do it: it is pinned at
+     9 weighted refs, both allocnos are in floor_log2 bucket 3, so the flip needs
+     L_i > 1.222 * L_giv while the giv's init is always emitted LATER in the
+     preheader than the counter's - the maximum is 33/27 = 1.222 exactly, a tie,
+     and ties go to the low-numbered source pseudo.  [s9 H3]
+
+ (2) The walker's init insn must satisfy INSN_LUID(init) > INSN_LUID(li 20), or
+     sched1's backward list schedule places the two hoisted constants after the
+     two p-copies instead of before them.  [s8, unchanged]
+
+ (3) The two constants must be loop.c movables (target holds 5 and 20 in $t2/$t1
+     across loop 1), and move_movables inserts every movable immediately before
+     NOTE_INSN_LOOP_BEG - i.e. after EVERY pre-loop source statement.  Writing
+     them as pre-loop source locals does not evade this: cse propagates them back
+     into the loop, the source `li`s die, and loop.c re-hoists them (v_p2a is
+     byte-identical to the candidate).  [s9 H4]
+
+(2) + (3) force the walker's init to be a loop.c emission at loop_start; (1)
+forces the walker to be a source pseudo with the post-loop reuse.  The only known
+loop.c class that emits at loop_start and can carry a pointer is the giv init,
+whose destination is a loop.c-created pseudo - so the two requirements collide.
+One of these three, or the model behind it, must be wrong; every one of them is
+now backed by a measurement rather than a model, which is why the remaining
+frontier is loop.c's OTHER loop_start emission classes (combine_movables'
+`m->match` register copies and move_movables' `m->partial` path), whose
+destination IS a source pseudo.  That is the fourth chassis, and it is now the
+only structural route left.
+
+Supporting measurements banked this session (all with cc1's BB2_ALLOC_DEBUG
+table, tmp/grind/func_8003504C/s7/alloc.sh):
+
+ - w4 (h1 chassis, counter demoted by carrying loop 2's sel, def block hoisted to
+   the top of the val==5 arm): 141/141 instructions; pseudo 176 (giv) -> $a2,
+   pseudo 73 (i) -> $a3, pri 8400 vs 9310; normalized positions 1..80 BYTE-CLEAN.
+   The preheader and the loop-1 allocation are simultaneously correct for the
+   first time in nine sessions.  All 29 residual positions are inside the val==5
+   arm, and one of them (`sb $a3` vs target's `sb $a0`) can never go clean,
+   because the demotion vehicle forces the counter into the register the carried
+   value occupies in target.
+ - w1: refs 14 / len 45 -> pri 9333 (misses 9310 by 23) and 140 instructions.
+   Session 7's requirement table is exact: refs 14 needs live length >= 46.
+ - w3: refs 14 / len 66 -> pri 6363; overshoots, and the counter then conflicts
+   with loop 2's inner counter and lands in $t1 rather than $a3.
+ - m1: an in-loop invariant base copy costs 142 instructions, because loop.c
+   emits the movable copy AND the giv's own initial value.
+ - Target's bytes carry NO reference to $a3 between loop 1's exit and
+   `.L8003520C: addu $a3,$zero,$zero`, so the original compile had no post-loop
+   use of the loop-1 counter at all.
+
+- [s9] w4 (h1 chassis, counter demoted by carrying loop 2's sel with the def block hoisted to the top of the val==5 arm) builds 141/141 instructions and is the FIRST form in nine sessions whose preheader AND loop-1 register assignment are both target's: cc1's allocno table gives pseudo 176 (p-walker giv) -> $a2 and pseudo 73 (i) -> $a3, and normalized positions 1..80 are byte-clean. Its 29 differing positions are all inside the val==5 arm.
+
+- [s9] The counter-demotion requirement table from session 7 is now exact rather than interpolated: w1 = refs 14 / live length 45 -> pri 9333 (fails the 9310 threshold by 23 units); w4 = refs 14 / len 50 -> pri 8400 (succeeds); w3 = refs 14 / len 66 -> pri 6363 (overshoots, and the counter then conflicts with loop 2's inner counter and lands in $t1 instead of $a3).
+
+- [s9] Target's asm contains NO reference to $a3 anywhere between loop 1's exit (lw $v0,0x14($t3) at 0x80035114) and .L8003520C's addu $a3,$zero,$zero, so the original compile had no post-loop use of the loop-1 counter. Any demotion vehicle therefore pins the counter into the hard register the carried value occupies in target ($a0 for sel), which is why w4 emits sb $a3 where target has sb $a0.
+
+- [s9] Target's loop-1 body confirms the p-walker is $a2 itself (lbu $v0,0x0($a2), lbu $v0,0x1($a2), addiu $a2,$a2,0xA), so target's move $a2,$t3 is the walker's own initialisation and there is no room for a separate invariant base register - which is why the in-loop-invariant-copy chassis (m1) costs 142 instructions.
+
+- [s9] Pre-loop constant locals are a no-op spelling: v_p2a measures score 4 at 141/141 with a diff byte-identical to the candidate's, because cse propagates the constants back into the loop, the source li's die, and loop.c re-hoists them as movables. (Session 7 recorded this variant as scoring 9; on the current chassis it is 4.)
+
+- [s9] The three necessary conditions for target's preheader are now each measured and jointly contradictory: (1) the walker's allocno must outrank the counter's, which only a SOURCE pseudo carrying the post-loop D_801027D8 reuse achieves (11 refs / pri 10645 vs 10000); (2) INSN_LUID(walker init) > INSN_LUID(li 20); (3) the two constants are loop.c movables inserted after every pre-loop source statement. (2)+(3) force the walker init to be a loop.c emission, (1) forces it to be a source pseudo - so the fourth chassis (a loop.c loop_start emission whose destination IS a source pseudo) is the only remaining structural route.
+
+- [s9] The floor is unchanged at 4 (141/141 instructions, four differing positions, all the pre-loop rotation li t2,5 / li t1,20 versus move t3,v0 / move a2,t3). src/code6cac_b.c is left carrying memory/grind/func_8003504C/candidate.c.
