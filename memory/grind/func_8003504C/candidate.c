@@ -1,4 +1,14 @@
-/* candidate.c — func_8003504C — BEST FORM as of session 2 (structural).
+/* candidate.c — func_8003504C — BEST FORM as of session 3 (structural).
+ *
+ * STILL the HEAD form after session 3 as well. Session 3 swept the cluster-2
+ * axis to exhaustion: all 24 orderings of the four independent statements in
+ * that block were measured, and the final asm takes exactly two shapes — the
+ * six orders with `val = D_80102785;` LAST are byte-identical to this form
+ * (score 24, 141 insns), and every order that moves the val read earlier costs
+ * 2 insns (lbu + sll/sra instead of a folded `lb`) for score 24-27. Widening
+ * `val` to s32 removes that 2-insn penalty but turns the load into `lbu` where
+ * target has `lb`. So `s8 val`, read last, is positively corroborated, and
+ * cluster 2 does not close on statement order at all.
  *
  * STILL the HEAD form: session 2 measured five more variants (i reused as loop
  * 2's inner counter; loop 1 spelled as an if/goto loop with and without

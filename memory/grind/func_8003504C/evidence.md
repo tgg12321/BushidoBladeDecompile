@@ -210,3 +210,122 @@ pseudo spanning the whole body).
 - [s2] New reusable instruments in tmp/grind/func_8003504C/s2: apply.py (splice a variant), probe.sh (per-pseudo refs/live_length from the .flow dump + post-qsort allocno order + dispositions), sweep.sh (apply+probe a list, then revert), findreg.sh (BB2_FINDREG_DEBUG exclusion sets from the instrumented cc1).
 
 - [s2] Session end state: src/ reverted to HEAD and re-verified at sandbox score 24, 141/141 instructions; no cheat construct was written at any point (no pins, no inline asm, no dead stores, no volatile coercion, no unused locals).
+
+## Session 3 (structural, 2026-08-13) — cluster 2 closed on statement order
+
+Floor unchanged at 24 (HEAD form re-confirmed; `git status src/` clean at session
+end). This session did not lower the floor; it CLOSED the cluster-2
+statement-order axis by exhaustive sweep, pinned two source-spelling facts with
+positive evidence, and localized the pre-loop residual to a single unexplained
+sched1 decision.
+
+### New instruments (tmp/grind/func_8003504C/s3/)
+- `gen_perm.py` — emits the 24 permutations of the cluster-2 statement block.
+- `sweep_score.sh <v>...` — apply + `sandbox --disable all` for a list of
+  variants, printing score / target_insns / build_insns, then reverts src.
+- `sweep_diff.sh` / `sweep_bad.sh` / `one_diff.sh` — same, but printing the
+  normalized position diff (windowed, differing-only, or single-variant).
+- `head_diff.sh <first> <last>` — position diff of the CURRENT src over a window.
+- `rtlblock.py <dump>` — one compact line per RTL insn of func_8003504C for any
+  cc1 `-da` dump (uid, code, squashed body); this is how the sched1 in/out order
+  was read without dumping raw RTL into context.
+- `rank.sh` — runs the instrumented cc1 with `BB2_RANK_DEBUG=1` (the hook lives
+  in `rank_for_schedule`, tools/gcc-2.7.2/sched.c). CAVEAT: its output is not
+  yet scoped to func_8003504C, and insn uids collide across the functions in
+  code6cac_b.c — a next session must add a function filter before trusting it.
+
+### The exhaustive cluster-2 sweep (the closure)
+The block is four mutually independent statements — nothing in the function
+writes D_80102785 and the three destinations are distinct objects — so all 24
+orderings are the same program:
+  A `D_80102784 = ((u32)p[5] >> 4) & 0x3F;`   B `D_800A36F6 = 0;`
+  C `D_80102786 = ((u32)p[8] >> 3) & 1;`      D `val = D_80102785;`
+
+All 24 measured. The final asm takes exactly TWO shapes:
+- The 6 orders with D last (ABCD ACBD BACD BCAD CABD CBAD): 141 insns, score 24,
+  and the normalized diff is BYTE-IDENTICAL to HEAD's — cluster 2 included.
+  Permuting A/B/C among themselves is completely codegen-neutral.
+- Every order with D not last: 143 insns, score 24 or 27.
+
+So cluster 2 is invariant under source statement order. Whatever sets its final
+order is downstream of sched1's block schedule.
+
+### Why moving the `val` read costs 2 insns (a source-spelling pin)
+With `s8 val`, a read adjacent to its first use is folded by combine into one
+`(set (reg) (sign_extend:SI (mem:QI ...)))` = `extendqisi2_insn` = `lb`. Moving
+the read away from the compare leaves val as a QImode pseudo and cc1 emits
+`lbu` + `sll 24` + `sra 24`. Declaring `s32 val` removes that penalty (all four
+probed orders came back at 141 insns) but makes the load `lbu` where target has
+`lb`: with val's only uses being equality compares against 2 and 5, combine
+narrows the sign_extend to a zero_extend. **`s8 val`, read LAST, is therefore
+positively corroborated by target** — both the `lb` and the +0-insn cost pin it.
+
+### What actually shapes cluster 2 (read out of the RTL dumps)
+sched1's output order for the block is `122(lw p[5]) 131(sh zero) 123(srl)
+134(lw p[8]) 126(andi) 128(sb D_80102784) 135 138 140(sb D_80102786) 146(lb val)`
+— i.e. sched1 INTERLEAVES the two extraction chains. That interleave gives the
+two chains overlapping live ranges, so lreg must give the second chain its own
+hard reg ($v1), and sched2 then produces the emitted order. Target's block is
+strictly serialized through $v0 (`122 146 123 126 128 134 131 135 138 140`),
+which is what a NON-interleaved sched1 output would allow. The residual is thus
+one sched1 decision (hoisting insn 134, the p[8] load, above insn 128, the
+D_80102784 store) plus its downstream consequences — and that decision does not
+respond to statement order.
+
+`rank_for_schedule` (tools/gcc-2.7.2/sched.c) is: INSN_PRIORITY first; then a
+3-way class on dependence w.r.t. the last scheduled insn; then INSN_LUID
+(original program order) as the stable tie-break. Since every source order gives
+the same schedule, the priorities — not the LUIDs — decide here.
+
+### Pre-loop block: the LICM hoist-order mechanism, half confirmed
+Target's pre-loop block is `move $a3,zero / li $t2,5 / li $t1,20 / move $t3,$v0 /
+move $a2,$t3 / lui $t0 / addiu $t0 / addiu $a1,$t0,-9`; ours is
+`move $a2,zero / move $t3,$v0 / move $a3,$t3 / lui $t0 / addiu $t0 /
+addiu $a1,$t0,-9 / li $t2,5 / li $t1,20`. Probe vP3 (drop the `base`/`ptr`
+locals; spell those accesses as direct i-indexed globals inside the loop) DID
+move the two hoisted constants ahead of the address setup (positions 7,8 with
+lui/addiu at 9,10), confirming that constants-vs-address order in that block is
+decided by loop.c's hoist order — an address computed inside the loop is hoisted
+into the preheader AFTER the constants hoisted from the loop condition. But vP3
+scores 30 / 44 differing positions, because it loses target's
+`addiu $a1,$t0,-9` derivation (independent evidence, matching session 2's giv
+result, that the original had the `base` / `ptr = base - 9` relationship).
+
+What remains UNEXPLAINED in that block: target also has `move $t3,$v0` and
+`move $a2,$t3` AFTER the constants. `move $t3,$v0` has the lowest LUID in the
+block and feeds `move $a2,$t3`, so its INSN_PRIORITY strictly exceeds a
+constant's — under the same RTL it can never be scheduled after them. Target's
+RTL for the block must therefore differ structurally from ours in a way no
+probe so far reproduces. That is the sharpest open question on the function.
+
+- [s3] All 24 orderings of the four independent cluster-2 statements (D_80102784 store, D_800A36F6=0, D_80102786 store, val=D_80102785) were measured with sandbox --disable all. The final asm takes exactly two shapes: the six orders with the val read LAST are byte-identical to HEAD (141 insns, score 24, same 26 differing positions including all of cluster 2), and every order with the val read earlier is 143 insns at score 24-27. Cluster 2 is invariant under source statement order.
+
+- [s3] Moving the `val = D_80102785;` read away from its first use costs exactly 2 insns because combine only folds the read into a single extendqisi2_insn (`lb`) when it is adjacent to the compare; otherwise val stays a QImode pseudo and cc1 emits lbu + sll 24 + sra 24.
+
+- [s3] Declaring `s32 val` instead of `s8 val` removes that 2-insn penalty (141 insns in all four probed orders) but emits `lbu` where target has `lb`: with val's only uses being equality compares against 2 and 5, combine narrows the sign_extend to a zero_extend. `s8 val` read last is positively corroborated by target.
+
+- [s3] Read out of the cc1 -da dumps with the new rtlblock.py instrument: sched1's output for the cluster-2 block is 122(lw p[5]) 131(sh zero) 123(srl) 134(lw p[8]) 126(andi) 128(sb D_80102784) 135 138 140(sb D_80102786) 146(lb val) - the two extraction chains are INTERLEAVED at sched1, which forces overlapping live ranges, which is why lreg gives the second chain $v1 and sched2 emits the interleaved form. Target's block (122 146 123 126 128 134 131 135 138 140) is strictly serialized, which is what an uninterleaved sched1 output permits. The residual is one sched1 decision - hoisting insn 134 (the p[8] load) above insn 128 (the D_80102784 store) - and it does not respond to statement order.
+
+- [s3] rank_for_schedule (tools/gcc-2.7.2/sched.c) orders by INSN_PRIORITY, then by a 3-way dependence class relative to the last scheduled insn, then by INSN_LUID (original program order) as a stable tie-break. Because every source permutation yields the identical schedule, cluster 2's residual is a PRIORITY effect, not a LUID/program-order effect.
+
+- [s3] Probe vP3 (drop the base/ptr locals, spell the D_8010277C-area accesses as direct i-indexed globals inside loop 1) moved the two LICM-hoisted constants li 5 / li 20 AHEAD of the address lui/addiu in the pre-loop block, confirming that the constants-vs-address order there is set by loop.c's hoist order (an address computed inside the loop is hoisted after the constants hoisted from the loop condition). It scores 30 / 44 differing positions because it loses target's `addiu $a1,$t0,-9` derivation - a second, independent corroboration of the `base` / `ptr = base - 9` source relationship.
+
+- [s3] The pre-loop block's remaining puzzle is sharply localized: target emits `move $t3,$v0` and `move $a2,$t3` AFTER the two hoisted constants, but `move $t3,$v0` has the lowest LUID in the block and feeds `move $a2,$t3`, so its INSN_PRIORITY strictly exceeds a constant's and it can never be scheduled after them under our RTL. Target's RTL for that block must differ structurally in a way no probe so far reproduces.
+
+- [s3] Session end state: src/ reverted to HEAD and re-verified at sandbox score 24, 141/141 instructions. No cheat construct was written at any point in this session - no pins, no inline asm, no dead stores, no volatile coercion, no unused locals; every probed variant was a plain re-spelling of live, semantically-necessary statements.
+
+- [s3] All 24 orderings of the four independent cluster-2 statements were measured. Six orders (the ones with the val read last) produce output byte-identical to HEAD at 141 insns / score 24; the other 18 produce 143 insns at score 24-27. Cluster 2 is invariant under source statement order — session 2's top frontier item is closed.
+
+- [s3] Moving the `val = D_80102785;` read away from its first use costs exactly 2 insns: combine only folds the read into a single extendqisi2_insn (`lb`) when it is adjacent to the compare; otherwise val stays a QImode pseudo and cc1 emits lbu + sll 24 + sra 24.
+
+- [s3] Declaring `s32 val` removes that 2-insn penalty (141 insns in all four probed orders) but emits `lbu` where target has `lb` — with val's only uses being equality compares against 2 and 5, combine narrows the sign_extend to a zero_extend. `s8 val`, read LAST, is therefore positively corroborated by target.
+
+- [s3] sched1's output order for the cluster-2 block (read with the new rtlblock.py instrument) is 122(lw p[5]) 131(sh zero) 123(srl) 134(lw p[8]) 126(andi) 128(sb D_80102784) 135 138 140(sb D_80102786) 146(lb val): the two extraction chains are INTERLEAVED at sched1, which forces overlapping live ranges, which is why lreg gives the second chain $v1 and sched2 emits the interleaved form. Target's block (122 146 123 126 128 134 131 135 138 140) is strictly serialized through $v0. The whole residual is one sched1 decision — hoisting insn 134 (the p[8] load) above insn 128 (the D_80102784 store).
+
+- [s3] rank_for_schedule (tools/gcc-2.7.2/sched.c) orders by INSN_PRIORITY, then by a 3-way dependence class relative to the last scheduled insn, then by INSN_LUID as a stable tie-break. Because every source permutation yields the identical schedule, cluster 2's residual is a priority effect, not a program-order effect.
+
+- [s3] The pre-loop residual is now sharply localized: target emits `move $t3,$v0` and `move $a2,$t3` AFTER the two LICM-hoisted constants, but `move $t3,$v0` has the lowest LUID in the block and feeds `move $a2,$t3`, so its INSN_PRIORITY strictly exceeds a constant's and it can never be scheduled after them under our RTL. Target's RTL for that block must differ structurally from ours in a way no probe so far reproduces.
+
+- [s3] The instrumented cc1 (tools/gcc-2.7.2/cc1) already carries a BB2_RANK_DEBUG hook inside rank_for_schedule that prints every priority-TIE decision (last scheduled insn, both uids, both classes). It is usable but NOT yet scoped to one function — insn uids collide across the functions in code6cac_b.c, so tmp/grind/func_8003504C/s3/rank.sh needs a function filter before its output can be trusted.
+
+- [s3] Session end state: src/ reverted to HEAD and re-verified at score 24 / 141 of 141 instructions / 26 differing positions. No cheat construct was written at any point: no pins, no inline asm, no dead stores, no volatile coercion, no unused locals — every probed variant was a plain re-spelling of live, semantically necessary statements.
