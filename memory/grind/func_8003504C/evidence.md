@@ -831,3 +831,141 @@ after the movables - are in direct tension, and that tension IS the remaining
 - [s7] The solo-TU instrument from session 6 was re-verified: a solo TU reproduces the full-TU allocno table pseudo-for-pseudo, so BB2_* debug output on it is trustworthy.
 
 - [s7] Session end state: src/code6cac_b.c carries the new candidate (re-verified at sandbox --disable all = 4, 141/141) and nothing outside src/code6cac_b.c, memory/grind/func_8003504C/ and tmp/grind/func_8003504C/s7/ was modified. No cheat construct was written at any point: no register pins, no inline asm, no dead stores, no volatile coercion, no unused locals, no regfix/asmfix edits.
+
+## Session 8 (rederive, 2026-08-13) — the sched1 model that explains the rotation, and the arithmetic closure of the giv chassis
+
+Floor unchanged at **4** (the session-7 candidate re-applied to src and
+re-measured: score 4, 141/141). This session did not lower the floor. It
+produced the first EXACT model of how GCC 2.7.2's sched1 orders the loop-1
+preheader — a model that fits both chassis instruction-for-instruction — and
+used it to convert the remaining 4-point residual from "an RTL emission-order
+mystery" into a single, precisely stated, falsifiable requirement.
+
+### The fresh re-derivation (modality deliverable)
+`tools/m2c/m2c.py --target mipsel-gcc-c -f func_8003504C` (run this session)
+reconstructs the function as: `temp_v0 = func_80077D00(); var_a3 = 0; var_a2 =
+temp_v0; var_a1 = &D_80102785 - 9; do { ... } while (var_a3 < 2);` — i.e. the
+p-walker as a **source pointer copied from the call result**, the D_8010277C
+walker as a pre-loop `&D_80102785 - 9`, and the guard as a single `&&`
+condition rather than nested ifs. That is structurally the session-7 candidate,
+so m2c contributes no new chassis. The sibling `func_80035280` (the next
+function in the file, same `p = func_80077D00()` idiom) is itself unmatched and
+carries `volatile`/`new_var` debt, so it is not a transplant source.
+
+### The sched1 model (NEW — supersedes the partial models of s5 and s6)
+GCC 2.7.2's `sched.c` schedules each basic block **backwards**: it repeatedly
+takes, from the set of insns whose in-block successors have all been placed,
+the one with the greatest (INSN_PRIORITY, INSN_LUID), and places it at the
+current LAST free position. Practical consequences for this preheader:
+  * an insn with a dependent still unplaced is NOT a candidate;
+  * among candidates, the one whose dependence chain to the block end is
+    longest wins; ties go to the **higher LUID** (later in RTL order).
+
+Read off the s8 dumps (`tmp/grind/func_8003504C/s8/solo_cand.i.{loop,sched}`),
+the candidate chassis's preheader RTL is
+`9 call / 11 p=v0 / 14 i=0 / 17 s=p / 345 b=&D_80102785 / 347 w=b-9 /
+349 li 5 / 351 li 20 / 357 giv-init(D_8010277C walker) / 19 LOOP_BEG`
+(345+347 later fold so 357 becomes `(plus b -9)`), and sched1 emits
+`14, 11, 17, 349, 351, 345, 357`. The model reproduces that exactly:
+357 (highest LUID, no successor) is placed last, 345 becomes a candidate with
+priority 2 and is placed 6th, then the LUID ties 351, 349, 17, then 11
+(priority 2 via 17), then 14. Applying the same model to the h1/giv chassis
+(where `s = p` is not a source statement but the p-walker giv's initial value,
+emitted AFTER the movables) yields `i=0, li 5, li 20, p=v0, giv-init, b,
+w-giv-init` = **target's preheader exactly**, which is what h1 measures. Two
+independent chassis, zero free parameters.
+
+### What that makes the residual
+The 4-point residual is exactly: `s = p` must be placed 5th, but at that step
+it is tied at priority 1 with `li 5` / `li 20` and has the LOWEST LUID.
+Because the preheader's insn set and its dependence graph are byte-forced
+(i=0, li 5, li 20, p=v0, s=p, b=&D_80102785, w=b-9; the only possible
+successors of `s=p` are b and w, whose values are unrelated addresses), the
+priority of `s = p` can never exceed 1. Therefore:
+
+> **On any chassis where the p-walker is a source pseudo, target's preheader
+> order requires INSN_LUID(`s = p`) > INSN_LUID(`li 20`) — i.e. the walker's
+> initializing insn must be emitted by loop.c AFTER `move_movables` has
+> appended the two hoisted constants.**
+
+`move_movables` inserts every movable immediately before `NOTE_INSN_LOOP_BEG`,
+after every pre-loop source statement, so no source statement can qualify and
+no permutation of the pre-loop statements or of the movable discovery order can
+help (both re-verified against the model, and the 288-combination enumeration
+of session 5 is the empirical counterpart). The classes loop.c emits at
+`loop_start` are enumerated in `tools/gcc-2.7.2/loop.c`: the movables
+themselves (lines 1652-1854), the giv initial values from `emit_iv_add_mult`
+(5561, 6098), and `check_dbra_loop`'s reversed-counter initialisation (5868 —
+unreachable here, the counter is used for addressing so the loop cannot be
+reversed). Only the giv class can carry a pointer.
+
+### The giv chassis is now arithmetically CLOSED (strengthens s7)
+On the giv chassis the walker's initial value IS emitted after the movables
+(target's order), but the pseudo is loop.c-created and its weighted
+`reg_n_refs` is byte-forced at 9: init 1 (depth 1) + `s[0]` and `s[1]` (2 refs
+x depth 2) + the `addiu a2,a2,0xA` increment (2 refs x depth 2). A third
+in-loop reference would need a third occurrence of the walker in the body, and
+target's body dereferences it exactly twice; a post-loop reference is
+impossible because the walker's final value is `(u8 *)p + 20 = &p[5]` and
+target reads that memory as `lw $v0,0x14($t3)` (base `p`, offset 0x14), not
+through the walker — any post-loop use of the walker changes the emitted base
+register. Its live length is bounded below by loop 1's 27-insn body (it is
+loop-carried), measured 29. So pri(walker) = floor_log2(9)*9/29 = 0.931 at
+best 27/27 = 1.000.
+
+The counter's numbers are equally byte-forced: 11 weighted refs (init 1;
+`(&D_80102780)[i]` and `(&D_8010277E)[i]` 2x2 — target keeps both as
+`lui $at / addu $at,$at,$a3`, so neither is strength-reduced and neither can
+be re-based on the D_8010277C walker without deleting four instructions;
+`addiu $a3,$a3,1` 2x2; `slti $v0,$a3,2` 1x2) and live length exactly 33
+(def is the first preheader insn — it cannot move above the call, the .sched
+dump shows `insn_list:REG_DEP_ANTI 9` on it because $a3 is call-clobbered —
+plus 6 preheader insns and 27 body insns), giving pri(i) = 3*11/33 = 1.000.
+Since `allocno_compare` breaks priority ties by allocno number and the counter
+is a low-numbered source pseudo, **a giv walker can never outrank the counter
+without demoting the counter**. That is the same conclusion session 7 reached
+from a different direction, now with both sides of the inequality pinned to
+target's bytes rather than to one measurement.
+
+### Measurements taken this session (all at 141 target insns)
+  * candidate re-measured: **4**.
+  * `p / s / i` init order (s before i): **12**, 141 insns.
+  * `i = 0` before the call: **20**, **142** insns (the extra insn is real).
+  * m2c's single `&&` guard instead of the nested ifs: **4**, byte-identical.
+  * loop 1 spelled `for (; i < 2; i++)` instead of `do/while`: **4**,
+    byte-identical (GCC folds the entry test, the loop notes are the same).
+  * `s` reused as the `&p[8]` pointer intermediate (dropping the `q` local):
+    **4**, byte-identical — so `q` is a free variable, not load-bearing.
+The last three are recorded as codegen-NEUTRAL spellings: they are available
+to a future session as free structural variation that costs nothing.
+
+### Instruments added (tmp/grind/func_8003504C/s8/)
+  * `gen8.py` — variant generator over the session-7 candidate.
+  * `sweep8.sh` — apply + `sandbox --disable all`, score line only.
+  * `solo8.sh <tag> <variant.c>` — full `-da` dump set into `s8/d_<tag>`, a
+    SOLO one-function TU, the instrumented-cc1 compile, and the pre-loop RTL
+    region of the `.loop` (pre-sched1) and `.sched` (post-sched1) dumps side by
+    side. This is the instrument that produced the scheduling model; it is the
+    fastest way to check any future chassis's preheader emission order.
+
+- [s8] Floor re-measured at 4 with the session-7 candidate applied to src/code6cac_b.c: score 4, target_insns 141, build_insns 141. src is left holding that form.
+
+- [s8] sched1 model (NEW, exact, fits both chassis with zero free parameters): GCC 2.7.2 schedules each block BACKWARDS, repeatedly taking the insn with the greatest (INSN_PRIORITY, INSN_LUID) among those whose in-block successors are all already placed, and putting it in the last free slot. Candidate preheader RTL `11 p=v0 / 14 i=0 / 17 s=p / 345 b=&D_80102785 / 347 w=b-9 / 349 li 5 / 351 li 20 / 357 giv-init` -> emitted `14, 11, 17, 349, 351, 345, 357`, predicted exactly, including `b` being demoted to position 6 because it carries priority 2 through the giv init.
+
+- [s8] The candidate's whole 4-point residual is that `s = p` is emitted 4th instead of 5th (and the two `li`s 5th/6th instead of 2nd/3rd). Target's preheader is `move a3,zero / li t2,5 / li t1,20 / move t3,v0 / move a2,t3 / lui t0 / addiu t0 / addiu a1,t0,-9`; ours swaps the copies with the constants. Everything else in the function - both bitfield clusters, loop 2, the whole loop-1 body and its register assignment - is byte-identical.
+
+- [s8] EXACT REQUIREMENT for the source-pointer chassis: INSN_LUID(`s = p`) > INSN_LUID(`li 20`). Its priority cannot be raised (its only conceivable in-block successors, `b` and `w`, hold unrelated symbol addresses), so the LUID is the only lever, and move_movables inserts every movable immediately before NOTE_INSN_LOOP_BEG - after every pre-loop source statement. No source statement can therefore qualify.
+
+- [s8] loop.c's insertion points at loop_start, enumerated (tools/gcc-2.7.2/loop.c): move_movables lines 1652 / 1708 / 1795-1854; emit_iv_add_mult giv initial values lines 5561 and 6098; check_dbra_loop's reversed-counter initialisation line 5868. The dbra class is unreachable here (the counter is used for addressing, so the loop cannot be reversed). Only the giv class can carry a pointer, which is why the giv chassis gets target's preheader.
+
+- [s8] The giv chassis's allocno inequality is now pinned to target's bytes on BOTH sides: p-walker giv = 9 weighted refs (init 1 + two dereferences at depth 2 + the increment's 2 refs at depth 2), live length >= 27 (loop-carried across a 27-insn body), measured 29 -> pri 0.931; counter i = 11 weighted refs (init 1 + two i-indexed stores at depth 2, both of which target keeps as `lui $at / addu $at,$at,$a3` + the increment + the `slti` compare) and live length exactly 33 -> pri 1.000. allocno_compare breaks the tie by allocno number, favouring the low-numbered source pseudo.
+
+- [s8] A post-loop reference cannot be attached to the walker on the giv chassis: the walker's final value is (u8 *)p + 20 = &p[5], and target reads that memory as `lw $v0,0x14($t3)` (base p, offset 0x14), so any post-loop use of the walker changes the emitted base register.
+
+- [s8] `i = 0` cannot be scheduled above the call: $a3 is call-clobbered and the .sched dump carries `insn_list:REG_DEP_ANTI 9` on that insn, so the counter's live length is capped at 33 (6 preheader insns + 27 body insns) on every chassis.
+
+- [s8] Three codegen-NEUTRAL spellings measured on the current chassis (all 4 at 141/141, byte-identical diffs): m2c's single `&&` guard instead of the nested ifs; loop 1 written `for (; i < 2; i++)` instead of do/while; and `s` reused to carry the `&p[8]` pointer intermediate, which drops the `q` local entirely.
+
+- [s8] m2c's fresh reconstruction of the target reproduces the current chassis (source-pointer p-walker copied from the call result, `&D_80102785 - 9` for the D_8010277C walker), so the chassis is corroborated by the decompiler and is not an artefact of five sessions of incremental edits.
+
+- [s8] The immediate sibling func_80035280 (same `p = func_80077D00()` idiom) is itself an unmatched queue item carrying volatile / `new_var` debt - not usable as a transplant source.

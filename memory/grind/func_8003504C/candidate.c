@@ -30,12 +30,17 @@
  *      nrefs=9 livelen=31 pri=8709 and the assignment inverts (score 12).
  *
  * Why the remaining rotation does not fall to a source spelling ON THIS
- * chassis: the two constants are loop.c MOVABLES, and move_movables inserts
- * them immediately before NOTE_INSN_LOOP_BEG, i.e. after EVERY pre-loop source
- * statement.  `p = call` and `s = (u8 *)p` are pre-loop source statements, so
- * their LUIDs are always lower, and sched1 (all these insns are latency-1, so
- * rank_for_schedule falls through to INSN_LUID among the ready insns) keeps
- * them ahead.  Only a walker emitted by loop.c AT loop_start (a giv init) sits
+ * chassis (SESSION 8, exact): sched1 schedules this block BACKWARDS, taking at
+ * each step the insn with the greatest (INSN_PRIORITY, INSN_LUID) among those
+ * whose in-block successors are already placed.  `s = p` has to land 5th, but
+ * there it is tied at priority 1 with `li 5` / `li 20` and carries the LOWEST
+ * LUID, so it loses; and its priority can never rise, because its only
+ * possible in-block successors would be `b`/`w`, whose values are unrelated
+ * symbol addresses.  So target's order requires INSN_LUID(`s = p`) >
+ * INSN_LUID(`li 20`) - the walker's init must be emitted by loop.c AFTER
+ * move_movables appends the constants, and move_movables inserts every movable
+ * immediately before NOTE_INSN_LOOP_BEG, i.e. after EVERY pre-loop source
+ * statement.  Only a walker emitted by loop.c AT loop_start (a giv init) sits
  * after the movables - which is the h1 chassis, where the allocation inverts
  * because a giv cannot pick up the two post-loop refs this reuse gives `s`.
  * See memory/grind/func_8003504C/chassis_h1_score9.c and the session-7
