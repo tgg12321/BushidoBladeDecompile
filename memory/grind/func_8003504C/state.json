@@ -1,0 +1,37 @@
+{
+ "func": "func_8003504C",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 24,
+   "modality": "recon",
+   "headline": "Recon: floor 24 is 100% register+ordering (141/141 insns) in exactly two clusters; 3 hypotheses killed, and the cluster-1 allocation flip is PROVEN reachable (a live-range extension of `i` put `src` i"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Cluster 1 closes with a live-range extension of `i` that is one discrete position weaker than session 1's, landing the order at ptr=$a1, src=$a2, i=$a3, base=$t0.",
+   "mechanism": "global.c allocno priority = reg_n_refs / live_length with hard regs handed out in MIPS allocation order; flow.c increments reg_n_refs by loop depth, so refs placed in a DEEPER loop raise the numerator while the live range grows by roughly the same span - giving a smaller net ratio drop than an outer-loop reuse.",
+   "next_probe": "Reuse `i` as loop 2's INNER counter (replace `s32 k`) rather than its outer counter, and as a second variant reuse it for the inner `off`. After each build, read `;; Register dispositions:` out of tmp/grind/func_8003504C/sN/code6cac_b.i.greg and the ref counts from refs.py - judge on the disposition line, not on the score, since the score mixes in cluster 2's movement."
+  },
+  {
+   "hypothesis": "Cluster 2 closes on STATEMENT ORDER of the three global stores, not on variable reuse (which is killed): the D_800A36F6 zero-store belongs AFTER the D_80102786 assignment in the source, and the D_80102785 read belongs before the D_80102784 store.",
+   "mechanism": "sched1 fills the load-delay region of `lw $v0,0x20($t3)` with a later-in-program-order independent instruction, which is exactly where target's `sh zero` sits; and target's early `lui $v1`/`lb $v1` is the D_80102785 read being available early enough to fill the `lw 0x14` delay region instead of the p[8] load being hoisted there.",
+   "next_probe": "Sweep the 3!-ish orderings of { D_80102784 store, D_800A36F6 = 0, D_80102786 store, val = D_80102785 } - in particular `val = D_80102785;` first and `D_800A36F6 = 0;` last - measuring the positions 51-61 window with sidediff.py each time."
+  },
+  {
+   "hypothesis": "The pre-loop ordering residual (constants 5/20 early vs late, positions 4-11) is a consequence of cluster 1's allocation, not an independent axis.",
+   "mechanism": "Positions 4..11 are a single basic block scheduled by sched1 on priority; the pseudos' dependence structure and hard-reg assignment feed that priority, so the constant-materialization position should move once the allocation matches.",
+   "next_probe": "Do NOT attack this directly. Re-measure positions 4-11 only after a variant lands the target disposition (ptr=$a1, src=$a2, i=$a3, base=$t0); attack it separately only if it survives that."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-13T23:59:42.692212+00:00"
+}
