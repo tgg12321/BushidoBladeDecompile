@@ -18,6 +18,13 @@ try {
             elseif ($npGB -ge 1.8) { ' — elevated (WSL leak), reboot when convenient' } else { '' }
     Write-Host "nonpaged pool: $npGB GB$note"
 } catch { }
+# Bridge state — the lever on the leak above (default ON since 2026-08-14).
+try {
+    . (Join-Path $Root 'tools\wsl_bridge.ps1')
+    $up = Test-WslBridge
+    if ($env:BB2_WSL_BRIDGE -eq '0') { Write-Host "wsl bridge: DISABLED (BB2_WSL_BRIDGE=0) — engine calls leak 1 job each" }
+    else { Write-Host ("wsl bridge: enabled, daemon " + $(if ($up) { 'up' } else { 'down (starts on next engine call)' })) }
+} catch { }
 
 $topRaw = & (Join-Path $Root 'tools\wteng.ps1') main queue next 2>$null | Out-String
 $top = $null

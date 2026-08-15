@@ -173,6 +173,17 @@ try {
         Log "pre-flight note: nonpaged pool at ${npGB} GB and climbing (WSL leak) — reboot clears it."
     }
 } catch { }
+# WSL bridge state (2026-08-14): wteng now routes engine calls through one
+# long-lived bash session BY DEFAULT, which takes the Job leak above from ~1 per
+# call to 0 (measured: direct 1.00/call, bridge 0.00/call). It was opt-in from
+# 2026-08-12 and nothing ever set the flag, so it never actually ran — log the
+# state every grind so a disabled or silently-failing bridge is visible instead
+# of quietly costing pool for another few thousand calls.
+if ($env:BB2_WSL_BRIDGE -eq '0') {
+    Log "pre-flight WARNING: WSL bridge DISABLED (BB2_WSL_BRIDGE=0) — every engine call leaks a Job object."
+} else {
+    Log "pre-flight: WSL bridge enabled (default; BB2_WSL_BRIDGE=0 disables). `make` stays on the direct path by design."
+}
 
 function Circuit-Break([string]$Reason) {
     $inc = Join-Path $Root 'docs\grind\INCIDENT.md'

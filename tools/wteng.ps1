@@ -120,11 +120,18 @@ if ($rest[0] -ieq 'make') {
 
 Write-Host "[wteng] target=$target  root=$root" -ForegroundColor DarkGray
 
-# --- persistent-bridge path (opt-in: BB2_WSL_BRIDGE=1) ----------------------
+# --- persistent-bridge path (DEFAULT ON; set BB2_WSL_BRIDGE=0 to disable) ---
 # Every wsl.exe invocation leaks a kernel Job object (~14 KB nonpaged, drained
 # only by reboot), and the grind makes thousands of them — see
 # tools/wsl_bridge.ps1 and memory/project/wsl-kernel-object-leak-audio.md.
 # Routing through one long-lived bash session takes that to ~0.
+#
+# Opt-in until 2026-08-14, which meant it was never actually on: nothing in the
+# repo or the environment ever set BB2_WSL_BRIDGE, so every grind since the
+# bridge landed ran the direct path and leaked ~1 job per engine call. Re-measured
+# that day (10 real `queue next` calls per arm): direct 1.00 jobs/call, bridge
+# 0.00. Now opt-OUT — the fallback below already makes a broken bridge a
+# non-event, so defaulting to the leaky path bought nothing.
 #
 # `make` deliberately stays on the DIRECT path: it is one invocation for a
 # multi-minute build (so the leak saving is a single job object) and it is the
@@ -133,7 +140,7 @@ Write-Host "[wteng] target=$target  root=$root" -ForegroundColor DarkGray
 #
 # ANY bridge problem returns $null and we fall through to the direct call, so
 # this can slow the build down but never break it.
-if ($env:BB2_WSL_BRIDGE -eq '1' -and $rest[0] -ine 'make') {
+if ($env:BB2_WSL_BRIDGE -ne '0' -and $rest[0] -ine 'make') {
     . (Join-Path $PSScriptRoot 'wsl_bridge.ps1')
     $r = Invoke-WslBridge -WslCwd $wsldir -Command $bashCmd -AutoStart
     if ($null -ne $r) {
