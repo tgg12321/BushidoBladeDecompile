@@ -992,3 +992,4 @@
 - 2026-08-14 02:31 CdControl COMPLETED-C after 2 sessions.
 - 2026-08-17 11:21 func_80084A7C s1 [recon] floor=26: Recon: whole residual localized to ONE register-allocation decision (offset allocno takes $a1, forcing the $a2/$a3 swap + a failed-coalesce 'move $a1,$a3'); operand-order axis eliminated at flat floor 26; declaration-order and named-intermediate levers KILLED.
 - 2026-08-17 12:10 func_80084A7C COMPLETED-C after 2 sessions.
+- 2026-08-17 12:25 func_80086130 COMPLETED-C after 1 sessions.
