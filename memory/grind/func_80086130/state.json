@@ -1,0 +1,14 @@
+{
+ "func": "func_80086130",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-17T17:10:49.674524+00:00"
+}
