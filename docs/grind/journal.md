@@ -990,3 +990,4 @@
 - 2026-08-14 01:45 func_800174F4 COMPLETED-C after 6 sessions.
 - 2026-08-14 02:02 CdControl s1 [recon] floor=4: Floor 25 -> 4: ported the matched sibling CdControlF's solved shape (pin-free + base/elem two-step + do-while(0) loop-note wrap) and swept 480 init-order permutations; residual is a single a0-vs-saved priority inversion (s4/s5).
 - 2026-08-14 02:31 CdControl COMPLETED-C after 2 sessions.
+- 2026-08-17 11:21 func_80084A7C s1 [recon] floor=26: Recon: whole residual localized to ONE register-allocation decision (offset allocno takes $a1, forcing the $a2/$a3 swap + a failed-coalesce 'move $a1,$a3'); operand-order axis eliminated at flat floor 26; declaration-order and named-intermediate levers KILLED.
