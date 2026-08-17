@@ -107,11 +107,15 @@ infrastructure retirement + rule-catalog crystallization phase.
 | 2026-07-01 | **SOTN-family research 2026-07-01** ratified 4 new narrow last-resort carve-outs: `dead-store-fake-exception`, `named-local-fake-exception`, `pointer-alias-fake-exception`, `mmio-volatile-type-level`, plus `duplicated-statement-into-arms`. Each requires `/* FAKE */` annotation + documented lever-exhaustion + layer-1/2 review. |
 | 2026-07-06 | **The Grinder** (`tools/grinder/`) — new default autonomous pipeline. Single-lane deterministic driver, per-function persistent ledger (`memory/grind/`), driver-enforced modality ladder, default-FAIL Judge. Supersedes the multi-agent fleet (which is now retired). Spec: `docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md`; skill: `decomp-grind`. |
 
-## Phase 8 — Closer mission (Sony PsyQ library adoption) (2026-07-09 to present)
+## Phase 8 — Closer mission (Sony PsyQ library adoption) (2026-07-09 to 2026-07-13)
 
 Manual close-out mission to adopt SOTN-matched Sony PsyQ 4.0 psxsdk C source
-for BB2's census-proven verbatim-linked library functions. Runs in
-parallel with the Grinder on unrelated queue items.
+for BB2's census-proven verbatim-linked library functions. Ran in
+parallel with the Grinder on unrelated queue items. **Retired 2026-07-13**:
+all 7 legitimately-banked candidates map to functions still active in
+`engine/queue.json`, so the Grinder inherits every remaining item by
+construction — no Class-D (novel-lever) work was left that a dedicated Closer
+session would do better.
 
 | Date | Milestone |
 |---|---|
@@ -121,13 +125,39 @@ parallel with the Grinder on unrelated queue items.
 | 2026-07-11 | **LIBGTE canonical-asm authorization pass**: 10 functions retired as COMPLETED-INLINE-ASM-CANONICAL in one commit (`9eba9a3e`). 27 forbidden `dead-branch-scheduling` regfix rules cleared alongside. Infrastructure finding: `.set reorder/at` at end of file-scope `__asm__` block combined with a subsequent `.section .text`-opening block causes maspsx to insert a stray load-delay nop — fix documented in `canonical-asm-authorization-recipe.md`. |
 | 2026-07-12 | **`hoist-shared-arm-computation-defeats-copy-pref` sanctioned** as a new pure-C RA lever. Confirmed case: `saTan2Main` (banked at floor 5 since 2026-07-10). Rule doc in `.claude/rules/`. |
 
-## Standing items (2026-07-12)
+## Phase 9 — Toolchain fidelity, asmfix-to-zero, naming (2026-07-14 to present)
 
-- **INCOMPLETE queue**: 439 items (370 active, 69 parked). Verdict breakdown: 258 C / 48 ASM-PARTIAL / 107 ASM-SUSPECT / 26 ASM-STRUCTURAL.
-- **COMPLETED-INLINE-ASM-CANONICAL**: 170 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
-- **Rules**: 139 functions carry `regfix.txt` rules, 153 carry `asmfix.txt` rules, 140 carry `replace_with_asmfile` bridges.
-- **Banked closer candidates**: 7 in `memory/closer/candidates/` (cdcontrol_trio, cdcw_tslTm2LoadImage, exec_game_sotn_hybrid, marionation_p6/vAT1, satan2main_vsvh → CLOSED as of 2026-07-12, spu_writebyio_splice, spusetreverbmodeparam_struct). Each documents a real ongoing investigation.
-- **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22).
+The phase that moved the project's leverage from per-function grinding to
+*config fidelity* (make our compiler behave like Sony's), *class-wide debt
+retirement* (delete an entire cheat category at once), and *evidence-backed
+naming*. The Grinder ran continuously underneath it all.
+
+| Date | Milestone |
+|---|---|
+| 2026-08-04 | **`-mel` adopted** into canonical `CC_FLAGS`. The prebuilt cc1's `mips-mips-gnu` triple defaulted to BIG-endian on a little-endian target, corrupting spill-slot layout, bitfield direction and lwl/lwr offsets; `-mel` fixes it at the source and **retires the `fix_lwl` pipeline stage** entirely. 20 `-mel`-obsoleted offset rules retired the same day. Both `-mel` and the empty `FIX_LWL_FILES` are now load-bearing for the oracle ([[mel-endianness-adoption]]). |
+| 2026-08-04 | **`tools/ra_solver`** — GCC 2.7.2's *entire* allocation stack modelled and ground-truth validated: global.c allocation, local-alloc, reload/`retry_global_alloc`, and the suggested-register pass. Turns "which register will GCC pick" from intuition into arithmetic ([[ra-solver-campaign-2026-08-04]]). |
+| 2026-08-05 | **`tools/sched_solver`** — sched.c's list scheduler modelled EXACTLY: 6,978/6,978 blocks reproduced across both passes, plus a perturbation layer and a goal mapper (target order → RTL UIDs) ([[sched-solver-campaign-2026-08-05]]). |
+| 2026-08-05 | **Per-file `-G8` adopted for `text1a`** (owner-approved, flag-evidence backed), enabling the top-level-asm extraction class. |
+| 2026-08-06 | **Owner ruling: ALL `asmfix.txt` entries are debt** — including the 65 canonical-extraction wirings. The end state is zero regfix + zero asmfix ([[asmfix-all-debt-end-state]]). |
+| 2026-08-06 | **Campaign 4 — asmfix-to-zero** (Waves 0-7). Scoped as 205× in-place `INCLUDE_ASM` conversion + 1 true TU re-split; executed to completion. `asmfix.txt` fell from 153 rule-carrying functions to 14, and `replace_with_asmfile` bridges from 140 to 3. The CANON-EXTRACT queue category ended EMPTY. |
+| 2026-08-06 | **65 canonical text1b bodies extracted** to `asm/funcs/` (owner-approved, `[infra-rule: canonical-asm-extraction]` — sanctioned with mechanical narrowness: every added rule must be `replace_with_asmfile` against a function already in `inline_asm_canonical.txt`). `text1b.c` shrank 17,743 → 7,440 lines. The wave regressed 66 canonical completions to one wiring rule apiece, which Campaign 4 then retired ([[canonical-extraction-resurrection-wave]]). |
+| 2026-08-07 | **Scorer fix: section-relative `R_MIPS_LO16` addends masked.** A function taking the address of a `.text` symbol read as distance 1 forever — a scorer artifact, not a gap ([[sandbox-lo16-text-addend-false-distance]]). `saEft00Add` had been reverted over it. |
+| 2026-08-07 | **`tools/spotcheck/`** — standing guards against silent COMPLETED-C regressions (four-mode per-function check + whole-corpus queue-regen diff). A completion had previously been verified exactly once, at completion time. |
+| 2026-08-07 | **COMPLETED-C count made definitional**: 12 data-as-code symbols (`.include`d asm bodies, `.aent` alternate entries, an instruction-less glabel marker) excluded from the pool by owner ruling, applied to both counters in one commit so they can never disagree. |
+| 2026-08-07 | **Function-naming census + waves.** Phase 1 tiered all 1,436 functions by name evidence; the libscan verbatim wave applied **334 Sony names**; the phase-2 reset wave applied **300 RESET + 2 RENAME**. Every wave oracle-verified byte-neutral, applied only via `tools/naming_wave.py` (names are pipeline keys — [[naming-wave-tool]], [[names-require-evidence]]). |
+| 2026-08-10 | **XDEF boundary fixes**: `note2pitch`, `_spu_FiDMA` + `_spu_Fr_`, and `_spu_2pitch` split out of the functions they had been glued into, plus an addendum wave of 12 renames. |
+| 2026-08-11 | **Canonical-sweep decision packet** (A=1 / B=4 / C=81) + library xref (25 census-matched) + reference-body measurements. `_SsSeqPlay` closed by reference adoption; owner-ruled ternary grant closed the `get_cs`/`get_ce` twins; `func_80052930` authorized as canonical, completing the gte-3x3 cluster. |
+| 2026-08-14 | **WSL bridge on by default** in `tools/wteng.ps1`, with grinder state reporting — cutting `wsl.exe` invocations (each leaks a kernel Job object — [[wsl-kernel-object-leak-audio]]). |
+
+
+## Standing items (2026-08-17)
+
+- **COMPLETED-C**: 1,022 functions (per `tools/check_completion_integrity.py`, the authority).
+- **COMPLETED-INLINE-ASM-CANONICAL**: 178 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
+- **INCOMPLETE queue**: 274 items (227 active, 47 parked). Verdict breakdown: 187 C / 40 ASM-PARTIAL / 47 ASM-SUSPECT / 0 ASM-STRUCTURAL.
+- **Rules**: 82 functions carry `regfix.txt` rules, 14 carry `asmfix.txt` rules, 3 carry `replace_with_asmfile` bridges — all of it debt per the 2026-08-06 ruling.
+- **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22), Closer Phase 3 (2026-07-13).
+- **Owner escalation shelf**: `docs/escalations/` — incl. the cc1 fork-divergence ruling request (`_spu_FiDMA`: our decompals fork segfaults on Sony's faithful volatile-MMIO wait loop that original cc1psx compiles to target bytes).
 
 ## Major handoff documents
 
