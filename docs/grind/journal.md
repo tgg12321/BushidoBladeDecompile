@@ -994,3 +994,4 @@
 - 2026-08-17 12:10 func_80084A7C COMPLETED-C after 2 sessions.
 - 2026-08-17 12:25 func_80086130 COMPLETED-C after 1 sessions.
 - 2026-08-17 12:47 func_800453E0: LAYER-1 FAILED a sandbox-0 candidate — Otherwise well-documented pure-C recovery, but the session cites a nonexistent rule file as the precedent/mechanism for one of its load-bearing derivation steps; an unresolvable citation is a FAIL under the review protocol regardless of whether the underlying technique is independently sound.
+- 2026-08-17 12:58 func_800453E0 COMPLETED-C after 1 sessions.
