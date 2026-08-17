@@ -208,3 +208,92 @@ text, and must be non-DOTALL. A wrong-anchor edit LOOKS like a null result
 - [s2] Best form containing NO unsanctioned construct measures 24 (banked as rejected/natural-offset-no-negation-floor24.c). If the owner refuses the negation lever, the remaining problem is exactly: make the `offset` allocno conflict with hard reg $a1 (or acquire a copy preference for $a2) without an arithmetic no-op.
 - [s2] cc1-only sweeps are the right gradient on this function: tmp/grind/func_80084A7C/s2/sweep{2,3,5,6}.py fingerprint the allocation directly (which hard reg the chain's last insn writes, presence of `move $5,$7`, `la`-vs-`sra` order) in seconds, where a sandbox run takes minutes and its scalar score misleads (s1 banked two probes that moved structure at a flat 26).
 - [s2] EDIT-ANCHOR TRAP: `s32 offset = (s16)a1 * 0xB0;` appears twice in src/main.c (the sibling at ~line 307 has the identical line). Anchor every programmatic edit on `&D_80106F28 + ((a0 << 16) >> 14)` and never use a DOTALL span — a DOTALL anchor reaches from the sibling into our function and deletes the body between them.
+
+## Session 3 (structural, 2026-08-17)
+
+### Floor: 24 (the natural resume point) -> 0, with NO unsanctioned construct
+The Judge refused session 2's negation lever and directed a resume from
+`rejected/natural-offset-no-negation-floor24.c`. That resume closed the function
+in natural C by DELETING a variable rather than adding a construct: the
+`s32 offset` local is gone, and the stride multiply is written out where it is
+needed —
+
+    u8 *base = (u8 *)(*base_ptr + (s16)a1 * 0xB0);
+    ...
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) &= ~1;    /* x8 flag sites */
+
+`sandbox func_80084A7C --disable all` = score 0, target_insns 145,
+build_insns 145, 11 regfix rules dropped, 79 cheat-asm lines stripped. The s1
+normalized objdump diff shows the ONLY remaining token difference is the unlinked
+sandbox object's unresolved `D_80106F28` lui/addiu relocation pair (target `REL`
+vs our `0`).
+
+### Why it works (the mechanism, now fully closed)
+Sessions 1-2 localized the residual to one hard-reg decision. This session names
+its cause: `offset` and `base_ptr` were two GLOBAL allocnos of EQUAL
+`allocno_compare` priority — each about ten refs across the same span — so
+global.c's tiebreak fell through to the raw allocno NUMBER. It reached `offset`
+while $a1 was free (our early `move $s1,$a1` retires the parameter) and gave it
+$a1, which both cost the failed coalesce with the multiply chain's block-local
+$a3 destination (`move $a1,$a3`, our 146th instruction) and swapped the $a2/$a3
+pair against target. Session 2 flipped that tiebreak by perturbing pseudo
+numbering (an arithmetic no-op). Session 3 removes the tie instead: with no named
+holder the multiply's value is a single-def quantity whose definition IS the
+chain's final `sll`, so it lands in $a2 exactly as target does, `base_ptr` keeps
+$a3, and no join copy is ever created.
+
+**Generalisable lesson: when two same-priority global allocnos fight over an
+arg-register pair, DELETING one of the two C handles is a legitimate lever, and
+it should be tried before any coercion is considered.**
+
+### Measured this session (cc1-only gold diff; 0 == byte-identical to target)
+GOLD = the cc1 asm of session 2's distance-0 form (whose bytes are target's), so
+`golddiff` counts differing insn lines with no sandbox run. Baseline = the
+floor-24 natural form = 45. Insn counts are pre-maspsx (target 123).
+
+| Form | golddiff | insns | notes |
+|---|---|---|---|
+| floor-24 natural baseline | 45 | 124 | offset in $a1, `move $5,$7`, a2/a3 swapped |
+| table word read into a local before the offset chain | 45 | 124 | INERT (byte-identical to baseline) |
+| base as pointer-add / offset-first / `u8 *` entry handle | 45 | 124 | INERT |
+| `u32 offset` (type-narrowing axis) | 45 | 124 | INERT |
+| flag sites re-deriving base_ptr from `addr` | 45 | 124 | INERT |
+| sibling `_SsSeqPlay` one-expression base, offset kept | 45 | 124 | INERT |
+| 4-parameter signature matching the call sites | 45 | 124 | INERT |
+| separate stage variable (`s32 idx = (s16)a1;`) | 45 | 124 | INERT |
+| declaration-order permutations (4, with the sibling idiom) | 45-51 | 124 | never better |
+| `s16 chan = a1;` consumed by the notify sites | 41 | 124 | copy moves to $t0 |
+| channel word cached in one local | 59 | 118 | wrong bytes (drops a recompute) |
+| same-variable split-init (`offset = (s16)a1; offset = offset * 0xB0;`) | 19 | 124 | swap FIXED, 1 extra join copy |
+| split-init with shift-pair staging (`a1 << 16`, then `(>>16)*0xB0`) | 13 | 124 | same 1-insn residual |
+| `offset = (s16)a1 * 0xB; offset = offset << 4;` | 16 | 123 | insn count right, entry chains emitted in the wrong order |
+| base_ptr staged in its own variable (two-def, table side) | 47 | 124 | worse |
+| base from `(offset << 4)` with offset finalised after | **0** | 123 | closes, but reads backwards |
+| the multiply duplicated at `base` and at the offset holder | **0** | 123 | closes (cse unifies) |
+| `offset` holds `a1*0xB`, every use shifts `<< 4` | **0** | 123 | closes |
+| **NO offset variable — multiply written at every site** | **0** | 123 | **SUBMITTED**; also 0 with flag sites base_ptr-first; multiply-first at `base` costs 2 |
+
+### Tooling built this session (re-use; do not rebuild)
+Session 2's `.py` scripts were NOT preserved under `tmp/` (only their outputs
+survived), so the gradient was rebuilt:
+- `tmp/grind/func_80084A7C/s3/sweep.py` — pipeline-faithful cpp + cc1 (-G0
+  CC_FLAGS; main.c is NOT a GP file) over a list of complete function bodies,
+  diffing the extracted function asm against `gold.s`. `--gold` regenerates gold
+  from `gold_body.c`. A nine-variant batch costs ONE turn. Two traps are encoded
+  in it: this fork emits `.L`-prefixed labels, so an extractor that stops at the
+  first non-`$L` label silently truncates the function to 36 of 123 insns; and
+  cc1 exits non-zero on main.c's pre-existing redeclaration warnings while still
+  writing complete output — never gate on its exit status.
+- `tmp/grind/func_80084A7C/s3/greg.py` — the same pipeline with `-da`; extracts
+  this function's `.greg` section and prints the `;; N regs to allocate:` line
+  (which IS `allocno_compare`'s post-qsort priority order), the conflict and
+  preference lines, and the `;; Register dispositions:` block. This is what
+  proved `80 in 6 / 82 in 5` (broken) versus `82 in 6 / 80 in 7` (fixed).
+- `tmp/grind/func_80084A7C/s3/variants{1..9}.py` — the 50 measured forms.
+
+- [s3] FLOOR 0 IN FULLY NATURAL C: deleting the `s32 offset` local and writing the stride multiply `(s16)a1 * 0xB0` at the base computation and at each of the eight +0x98 flag sites gives sandbox --disable all score 0 with build_insns 145 == target_insns 145. No construct is added anywhere (the diff is 11 insertions / 11 deletions and is a net DELETION of one local); session 2's refused negation no-op is absent. Self-vet: memory/grind/func_80084A7C/self_vet.md.
+- [s3] THE RESIDUAL WAS AN ALLOCNO-PRIORITY TIE, AND DELETING A C HANDLE BREAKS TIES: `offset` and `base_ptr` were two global allocnos of equal allocno_compare priority, so global.c's tiebreak fell to the allocno number and gave `offset` $a1 (join copy `move $a1,$a3` plus the $a2/$a3 swap). With no named holder the multiply's value is single-def, its def IS the chain's final `sll`, and it takes $a2 exactly as target does while base_ptr keeps $a3. Try deleting one of two tied handles BEFORE reaching for any coercion.
+- [s3] MEASURED INERT on this function (all byte-identical to the floor-24 baseline, cc1-only golddiff 45): reading the table word into a local before the offset chain; base as pointer-add or offset-first; a u8* entry handle; `u32 offset`; flag sites re-deriving base_ptr from `addr`; the sibling _SsSeqPlay one-expression base; a separate stage variable (`s32 idx`); and the 4-PARAMETER SIGNATURE matching the three casting call sites (main.c:451,503,547). The prototype contradiction is codegen-inert here — banked as rejected/four-param-signature-inert.c.
+- [s3] The same-variable split-init `offset = (s16)a1; offset = offset * 0xB0;` fixes the WHOLE $a2/$a3 swap (greg dispositions 82 in 6 / 80 in 7, no `move $5,$7`) but leaves exactly one extra instruction: the chain's final sll writes a temp that is copied into the variable, and copy-prop rewrites only the two early-branch uses, so both pseudos stay live and the copy survives. Seven spellings measured, all with the same 1-insn residual; a SEPARATE stage variable is inert, so the lever is the two-def structure and not the extra name. Banked as rejected/offset-split-init-two-def-join-copy.c.
+- [s3] Session 2's tmp scripts were gone (tmp keeps only their outputs), so the cc1-only gradient was rebuilt as tmp/grind/func_80084A7C/s3/sweep.py plus greg.py. Two traps encoded there: this fork emits `.L`-prefixed labels, so an asm extractor that stops at the first non-`$L` label silently truncates the function to 36 of 123 insns; and cc1 exits non-zero on main.c's pre-existing redeclaration warnings while still writing complete dumps.
+- [s3] The `shifted` + `addr` entry idiom is not a one-off sibling quirk: it appears in FOUR already-matched functions in src/main.c (lines 304-305, 596-597, 615-616, 628-629). It is this translation unit's house style for a D_80106F28 table access, which is the strongest available naturalness evidence for keeping it.

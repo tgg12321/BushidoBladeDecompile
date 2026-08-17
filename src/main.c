@@ -354,9 +354,9 @@ void _SsSeqPlay(s16 a0, s16 a1) {
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 void func_80084A7C(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *base_ptr = (s32 *)((u8 *)&D_80106F28 + (shifted >> 14));
-    s32 offset = (s16)a1 * 0xB0;
-    u8 *base = (u8 *)(*base_ptr + offset);
+    s32 *addr = (s32 *)&D_80106F28;
+    s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
+    u8 *base = (u8 *)(*base_ptr + (s16)a1 * 0xB0);
     s32 val;
     u32 threshold;
 
@@ -368,7 +368,7 @@ void func_80084A7C(s16 a0, s16 a1) {
         *(s32 *)(base + 0x88) = 0;
         base[0x1C] = 0;
         *(s32 *)(base + 0x90) = 0;
-        if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+        if (*(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) & 0x400) {
             *(s32 *)base = *(s32 *)(base + 0xC);
         } else {
             *(s32 *)base = *(s32 *)(base + 4);
@@ -380,7 +380,7 @@ void func_80084A7C(s16 a0, s16 a1) {
         *(s32 *)(base + 0x88) = 0;
         base[0x1C] = 0;
         *(s32 *)(base + 0x90) = 0;
-        if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+        if (*(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) & 0x400) {
             *(s32 *)base = *(s32 *)(base + 0xC);
             *(s32 *)(base + 8) = *(s32 *)(base + 0xC);
         } else {
@@ -390,14 +390,14 @@ void func_80084A7C(s16 a0, s16 a1) {
         return;
     }
 
-    *(s32 *)(*base_ptr + offset + 0x98) &= ~1;
-    *(s32 *)(*base_ptr + offset + 0x98) &= ~8;
-    *(s32 *)(*base_ptr + offset + 0x98) &= ~2;
-    *(s32 *)(*base_ptr + offset + 0x98) |= 0x200;
-    *(s32 *)(*base_ptr + offset + 0x98) |= 4;
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) &= ~1;
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) &= ~8;
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) &= ~2;
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) |= 0x200;
+    *(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) |= 4;
     base[0x14] = 0;
 
-    if (*(s32 *)(*base_ptr + offset + 0x98) & 0x400) {
+    if (*(s32 *)(*base_ptr + (s16)a1 * 0xB0 + 0x98) & 0x400) {
         *(s32 *)(base + 8) = *(s32 *)(base + 0xC);
     } else {
         *(s32 *)(base + 8) = *(s32 *)(base + 4);

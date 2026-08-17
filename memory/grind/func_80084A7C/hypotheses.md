@@ -212,3 +212,81 @@ pressure so the copy's sched priority differs.
 for this whole table-access family and it was not consulted before session 2.
 Any future BB2 function touching `D_80106F28` should start by copying its
 idiom; likewise check for other matched siblings before sweeping spellings.
+
+## Session 3 (structural, 2026-08-17)
+
+### H9 — CONFIRMED (the closing hypothesis)
+**Statement.** The residual is an allocno-PRIORITY TIE between the `offset` and
+`base_ptr` global allocnos, not a property of either value; therefore removing
+one of the two C handles — deleting the `offset` local and writing the stride
+multiply at its use sites — removes the tie and hands the multiply's value
+target's register with no join copy.
+**Mechanism.** `global.c`'s `allocno_compare` ranks allocnos by
+`floor_log2(n_refs) * n_refs / live_length * size` and falls back to the raw
+allocno NUMBER when priorities are equal. `offset` and `base_ptr` each carried
+about ten refs across the same span, so the tie decided the hard-reg order:
+`offset` was reached while $a1 was free (our early `move $s1,$a1` retires the
+parameter) and took it, forcing the failed coalesce with the multiply chain's
+block-local $a3 destination (`move $a1,$a3`, the 146th instruction) and the
+$a2/$a3 swap. With no named holder the multiply's value is a single-def quantity
+whose definition IS the chain's final `sll`; it lands in $a2 (target's register),
+`base_ptr` keeps $a3, and there is no copy insn to delete.
+**Probe.** 50 forms measured cc1-only against a gold asm (session 2's distance-0
+output, whose bytes are target's) with `tmp/grind/func_80084A7C/s3/sweep.py`;
+the winner confirmed with `sandbox func_80084A7C --disable all` and with the s1
+normalized objdump diff.
+**Result.** Sandbox score **0**, build_insns 145 == target_insns 145; objdump
+diff clean apart from the unlinked object's unresolved `D_80106F28` relocation
+pair. Three other forms also reach 0 (base computed from `(offset << 4)` with
+`offset` finalised afterwards; the multiply duplicated at `base` and at the
+`offset` holder; `offset` holding `a1*0xB` with `<< 4` at every use) — the
+submitted form is the one that ADDS nothing and reads as ordinary C.
+**Verdict. CONFIRMED.** In `candidate.c`; self-vet written.
+
+### H10 — CONFIRMED as a mechanism, superseded as a submission
+**Statement.** Same-variable split-init staging of `offset`
+(`offset = (s16)a1; offset = offset * 0xB0;`) shortens the variable's live range
+enough to lift its `allocno_compare` priority above `base_ptr`'s and fix the
+$a2/$a3 swap.
+**Result.** Confirmed by the `.greg` dispositions (`82 in 6 / 80 in 7` — offset
+in $a2, base_ptr in $a3 — and no `move $5,$7`), but the two-def structure costs
+one extra instruction: the chain's final `sll` writes a temp that is then copied
+into the variable, and copy-propagation rewrote only the two early-branch uses,
+so both pseudos stay live and the copy survives. Seven spellings of the staging
+measured, all with the same 1-insn residual. A SEPARATE stage variable
+(`s32 idx = (s16)a1;`) is completely inert, so the lever is the two-def
+structure, not the extra name.
+**Verdict. CONFIRMED (mechanism), NOT SUBMITTED** — H9 closes with no extra
+instruction. Banked as `rejected/offset-split-init-two-def-join-copy.c`.
+
+### H11 — KILLED
+**Statement.** Declaring the signature the three call sites actually use
+(`void func_80084A7C(s16 a0, s16 a1, u8 a2, u8 *a3)`, per the
+`(void (*)(s16,s16,u8,u8 *))` casts at main.c:451,503,547) makes the incoming
+$a2/$a3 hard regs live-in and changes the allocation.
+**Result.** BYTE-IDENTICAL to the two-parameter form (golddiff 45 == baseline,
+same join copy, same swap). Unused parameters never acquire a live range here.
+**Verdict. KILLED.** Banked as `rejected/four-param-signature-inert.c`; confirms
+session 1's note that the prototype contradiction is not part of the residual.
+
+### H12 — KILLED
+**Statement.** The remaining structural axes on the entry block reach the
+allocation: statement/declaration order, base as a pointer add or offset-first,
+a `u8 *` entry handle, `u32` type narrowing, re-deriving `base_ptr` from `addr`
+at the flag sites, and the sibling `_SsSeqPlay` one-expression base.
+**Result.** Every one is byte-identical to the baseline (golddiff 45);
+declaration-order permutations measure 45-51 and are never better.
+cse/combine canonicalise the address expression, exactly as session 2 found for
+the eight address spellings.
+**Verdict. KILLED.** Do not re-sweep these axes on this function.
+
+## Live frontier for session 4+
+
+None: the honest floor is 0 in natural C and the form is submitted as
+`candidate-ready`. If layer 1 or the Judge FAILs it, the fallback ladder is the
+other three 0-diff forms in evidence.md's table (same allocation, different
+spelling — each adds something the submitted form does not, so they are strictly
+worse on the checklist), then H10's split-init form, which is one instruction
+short. Integration note for the operator: the 11 regfix rules at
+`regfix.txt:719-742` exist only to paper over the residual this form removes, so
+`retire func_80084A7C` should drop all 11.
