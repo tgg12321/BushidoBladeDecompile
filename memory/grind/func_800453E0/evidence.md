@@ -1,27 +1,39 @@
 # func_800453E0 — evidence ledger
 
 ## Status
-**MATCHED in pure C, session 1 (2026-08-17, modality `recon`).**
-`sandbox func_800453E0 --disable all` == **0**, with `rules_dropped: 7` and
-`cheat_asm_stripped: 71` — i.e. the honest cheat-free distance is zero. 76/76
-instructions identical to `asm/funcs/func_800453E0.s` register-for-register and
-mnemonic-for-mnemonic (artifact: `tmp/grind/func_800453E0/s1/final_diff.txt`).
-Matching body: `memory/grind/func_800453E0/candidate.c`, applied in place at
-`src/text1a_c.c:1713-1759`.
+**MATCHED in pure C. Honest floor 0.**
+Session 1 (2026-08-17, modality `recon`) closed 26 -> 0 but its submission was
+bounced by the layer-1 cheat-reviewer on a CITATION defect, not a construct
+defect: its H5 justified the outer-loop shape by citing
+`.claude/rules/loop-counter-fills-load-delay.md`, a file that does not exist
+(the technique appears only as a summary line in the index rule
+`.claude/rules/codegen-technique-index.md`). That citation is BANNED for this
+function.
 
-**Integration note (NOT done by this session):** the 7 stale regfix.txt rules
-for this function (regfix.txt:214-224 — two `subst` on addu operand order, one
-10-instruction `reorder` of the copy loop, four `subst` register swaps in the
-clear section) were written for the OLD C and must be deleted. A full build with
-them still present will corrupt the function. This session may not touch
+Session 2 (2026-08-17, modality `recon`) did not argue the citation. It
+reproduced distance 0, then ran a SUBTRACTION pass over session 1's constructs
+and **removed the construct the citation was attached to** — plus one more —
+after measuring both to be byte-neutral. Final state:
+
+`sandbox func_800453E0 --disable all` == **0**, `rules_dropped: 7`,
+`cheat_asm_stripped: 71`, `target_insns` 76 == `build_insns` 76, frame 0x30.
+Matching body: `memory/grind/func_800453E0/candidate.c`, applied in place at
+`src/text1a_c.c:1713-1755`. Disassembly + relocs:
+`tmp/grind/func_800453E0/s2/final_func.txt`.
+
+**Integration note (NOT done by any grind session):** the 7 stale regfix.txt
+rules for this function (regfix.txt:214-224 — two `subst` on addu operand order,
+one 10-instruction `reorder` of the copy loop, four `subst` register swaps in
+the clear section) were written for the OLD C and must be deleted. A full build
+with them still present will corrupt the function. Grind sessions may not touch
 regfix.txt; retirement is the driver's/operator's step.
 
 ## What the function is (recovered semantics, not transcription)
 `D_800EED10` is an array of 16-byte records; `D_800A33AC` is the live count.
 The record layout, corroborated by the five sibling functions in
 `src/text1a_c.c` that walk the same table with a 0x10 stride
-(func_80045294 at ~1690, func_80045510 at 1760, func_800455AC, and the two
-setters at ~1862/1875):
+(func_80045294 at 1666, func_80045510 at 1759, func_800455AC, and the two
+setters near the end):
 
     struct { s16 id; s16 unk2; s32 unk4; s32 amt; void (*fn)(s16, s32); }
     /* offsets 0x0, 0x2, 0x4, 0x8, 0xC — splat names them D_800EED10,
@@ -57,9 +69,10 @@ registers, four goto labels (`L_search`/`L_copy`/`L_clear`/`L_not_found`), the
 2. **The correct frame (`vars= 8`, 0x30) falls out HONESTLY from the natural
    struct-array body** — no declaration reserves those 8 bytes. All five save
    offsets (0x18/0x1C/0x20/0x24/0x28) and both `addiu $sp` matched from the very
-   first natural-C probe. Another instance of the ordinary GCC 2.7.2
-   phantom-slot artifact: "target reserves more than it writes" did NOT imply a
-   dead declaration here.
+   first natural-C probe, and still do in the session-2 body
+   (`addiu sp,sp,-48` at 0x275c of `s2/final_func.txt`). Another instance of the
+   ordinary GCC 2.7.2 phantom-slot artifact: "target reserves more than it
+   writes" did NOT imply a dead declaration here.
 
 3. **A real 16-byte struct assignment is what produces target's copy loop.**
    Target's inner loop is 4×`lw` then 4×`sw` then `addiu $a3` / `lw` gp /
@@ -76,9 +89,8 @@ registers, four goto labels (`L_search`/`L_copy`/`L_clear`/`L_not_found`), the
    CSE'd one base register across the whole function, including the tail clear
    (`addu $v1,$v1,$s2` + two displaced stores instead of target's two
    `lui`/`addu` pairs). Build fell to 66 insns vs target's 76. Replacing the
-   local with a constant-address macro (`#define SUBTBL ((SubEntry *)D_800EED10)`)
-   restored the symbol-relative addressing and took 66 -> 69 insns, floor
-   37 -> 21.
+   local with a constant-address macro restored symbol-relative addressing and
+   took 66 -> 69 insns, floor 37 -> 21.
 
 5. **The search loop and the tail clear must address the table through a
    source-level byte offset, while the copy loop uses the struct view.** Target
@@ -87,37 +99,22 @@ registers, four goto labels (`L_search`/`L_copy`/`L_clear`/`L_not_found`), the
    `*(s32 *)((u8 *)&D_800EED18 + off)` / `*(s16 *)((u8 *)D_800EED10 + (last << 4))`
    — the idiom used by every sibling in this file — reproduces it exactly, while
    the struct assignment stays in the copy loop. This HYBRID took the build back
-   to 76/76 insns and floor 21 -> 18, with insns 13..61 then structurally
-   identical to target.
+   to 76/76 insns and floor 21 -> 18 (session 1). **Session 2 re-measured it as
+   a subtraction from the ZERO baseline:** rewriting ONLY the search loop's two
+   accesses as `SUBSLOT[i + 1].id` / `SUBSLOT[i + 1].amt` took the build to 72
+   insns and distance **11**. Banked as
+   `rejected/struct-idiom-search-loop-costs-11.c`. This spelling is genuinely
+   load-bearing.
 
-6. **`i + 1` needs its own variable, separate from the shift-loop counter.**
-   Target keeps `index + 1` in `$s1` (callee-save, live across the `jal`) and
-   copies it into `$t0` (caller-save) for the loop: `addu $t0,$s1,$zero`. Reusing
-   one variable for the call argument and the loop counter merges them into a
-   single pseudo, which lands `i` in `$s1` and `j` in `$s0` — the mirror image of
-   target's `$s0`/`$s1`. Introducing `s32 next = i + 1;` and starting the loop
-   `for (j = next; ...)` gave two pseudos and the exact target assignment:
-   floor **18 -> 6**, the single largest step of the session.
-
-7. **The outer loop must re-read `D_800A33AC` BEFORE incrementing `i`.** With
-   `for (...; i++, off += 0x10)` the increment is emitted first, leaving nothing
-   to fill the `lw`'s load-delay slot — an unfillable maspsx `nop` and one extra
-   instruction. Target's order is `lw` gp / `addiu $s0,$s0,1` / `slt` / `bnez`.
-   Restructuring to a do-while whose body ends `count = D_800A33AC; i += 1;`
-   with an `if (i >= count) return;` entry guard — the exact shape of the
-   already-matching sibling **func_80045510** (src/text1a_c.c:1760-1763) — filled
-   the slot. Same mechanism as
-   `.claude/rules/loop-counter-fills-load-delay.md`, discovered on this
-   function's own callee func_80045294. Floor **6 -> 3**.
-
-8. **The byte offset must be a strength-reduction giv, not a second source
+6. **The table byte offset must be a strength-reduction giv, not a second source
    induction variable.** With `off` advanced in the for-increment, `off = 0` was
    emitted in the pre-header BEFORE the LICM-hoisted base addresses; target emits
    `addu $v1,$zero,$zero` AFTER them. Writing `off = i << 4;` at the top of the
    loop body instead makes `off` a giv, so loop.c creates its zero-init in the
    pre-header after the movables. Fixed the ordering exactly. Floor **3 -> 1**.
+   Retained in the final body.
 
-9. **The last diff was a reloc addend, and the spelling that removes it is the
+7. **The last diff was a reloc addend, and the spelling that removes it is the
    one whose two base pointers derive from ONE symbol.** `SUBTBL[j-1] = SUBTBL[j]`
    emits `lui %hi(D_800EED10)` / `addiu` with a LO16 reloc against D_800EED10 and
    addend -16. The resolved immediate is identical to target's
@@ -126,24 +123,49 @@ registers, four goto labels (`L_search`/`L_copy`/`L_clear`/`L_not_found`), the
    mask data LO16 addends and counted it as 1 (the data analogue of
    memory/sandbox-lo16-text-addend-false-distance.md). Writing the loop against
    the D_800EED00-based view — `SUBSLOT[j] = SUBSLOT[j + 1]`, semantically
-   identical since `SUBSLOT[n+1] == SUBTBL[n]` — makes both base pointers derive
-   from that one symbol (`$s2 = %lo(D_800EED00)`, `$s3 = $s2 + 0x10`, matching
-   target's roles) and emits the addend-0 reloc. Floor **1 -> 0**.
+   identical since `SUBSLOT[n+1]` is table entry `n` — makes both base pointers
+   derive from that one symbol (`$s2 = %lo(D_800EED00)`, `$s3 = $s2 + 0x10`,
+   matching target's roles) and emits the addend-0 reloc, visible in
+   `s2/final_func.txt`. Floor **1 -> 0**.
 
-## Floor path (all measured this session, one attributable change per step)
+8. **(SESSION 2, KILL) The outer loop does NOT need the do-while +
+   `count = D_800A33AC;` re-read + entry guard.** Session 1 claimed that shape
+   was required to fill the `lw`'s load-delay slot (its H5 — the claim carrying
+   the banned citation). Measured from the zero baseline: replacing the entire
+   scaffold with a plain `for (i = 0; i < D_800A33AC; i++)` and deleting `count`
+   holds sandbox `--disable all` at **0**, 76/76 insns, and the two objects'
+   disassemblies `diff` **clean** (`s2/forloop_func.txt` vs `s2/dowhile_func.txt`).
+   A live control probe (`i + 1` -> `i + 2`, score 1) proves both builds were
+   fresh. Once `off = i << 4` is a giv (fact 6), the loop condition's own re-read
+   of the global supplies the delay-slot filler either way. The simpler `for`
+   form is what is in `src/` and in `candidate.c`.
+
+9. **(SESSION 2, KILL) `i + 1` does NOT need its own named local.** Session 1
+   claimed a separate `s32 next = i + 1;` was required to keep the call argument
+   and the shift-loop counter in two pseudos (its H4; true at the intermediate
+   floor of 18, where sharing cost 12). Measured from the zero baseline:
+   substituting `i + 1` inline at both use sites AND deleting the declaration
+   holds distance at **0**, 76/76 insns, in both intermediate states. GCC creates
+   the two pseudos from the two `i + 1` expressions on its own.
+
+## Floor path
 | floor | form |
 |---|---|
 | 26 | inherited asm transcription + `volatile s32 sp_pad;` cheat |
 | 37 | natural struct array via a local `SubEntry *tbl` (frame fixed honestly; walking pointer cost 10 insns) |
 | 21 | same, but constant-symbol base macro instead of the local pointer |
 | 18 | hybrid: byte-offset casts for search+clear, struct assignment for the copy loop (76/76 insns) |
-| 6 | `next` split out from the shift-loop counter `j` |
-| 3 | do-while + `count` re-read before `i += 1` (sibling func_80045510's shape) |
+| 6 | `next` split out from the shift-loop counter (session 1; later shown path-only — fact 9) |
+| 3 | do-while + `count` re-read before `i += 1` (session 1; later shown path-only — fact 8) |
 | 1 | `off = i << 4` as a giv instead of a second induction variable |
 | **0** | shift-down loop written against `SUBSLOT` (D_800EED00 base) so both base pointers share one symbol |
+| **0** | *(session 2)* same, minus the do-while scaffold and minus `next` — byte-identical, four locals instead of six |
 
 ## Cheat posture
 The final body contains no inline asm, no register pins, no volatile, no dead
 stores, no unused declarations, no frame coercion, and claims NO sanctioned
-carve-out and no FAKE construct. It DELETES the inherited `sp_pad` cheat. Full
-six-test walkthrough: `memory/grind/func_800453E0/self_vet.md`.
+carve-out and no FAKE construct. Every local (`i`, `j`, `last`, `off`) is read.
+It DELETES the inherited `sp_pad` cheat. Session 2 additionally removed the two
+constructs it measured to be byte-neutral, so nothing in the body survives that
+a cheaper spelling could replace. Full six-test walkthrough:
+`memory/grind/func_800453E0/self_vet.md`.

@@ -1710,82 +1710,48 @@ void func_80045294(s32 a0, s32 a1) {
     D_800A33A0 += a1;
     D_800A33A4 -= a1;
 }
+/* The subtitle/effect slot table is an array of 16-byte records:
+   { s16 id; s16 unk2; s32 unk4; s32 amt; void (*fn)(s16, s32); }
+   (field offsets 0/2/4/8/0xC), with D_800A33AC live entries. The same layout
+   and 0x10 stride is used by every other function in this file that walks it
+   (func_80045294 above, func_80045510 / func_800455AC below, and the two
+   setters near the end). D_800EED00 is the 16-byte slot immediately preceding
+   the table, so SUBSLOT[n + 1] is table entry n. */
+typedef struct {
+    s16 id;
+    s16 unk2;
+    s32 unk4;
+    s32 amt;
+    void (*fn)(s16, s32);
+} SubEntry;
+
+#define SUBSLOT ((SubEntry *)D_800EED00)
+
+/* Remove the table entry whose id == a0: undo its contribution via
+   func_80045294(index + 1, -amt), shift the following records down one slot,
+   clear the freed tail slot, decrement the count. */
 void func_800453E0(s32 a0) {
-    s32 s0 = 0;
-    s32 s1;
-    s32 *s2;
-    s32 *s3;
-    s32 v1;
-    s32 t0;
-    volatile s32 sp_pad;
-    s32 v0;
+    s32 i;
+    s32 j;
+    s32 last;
+    s32 off;
 
-    v0 = D_800A33AC;
-    if (v0 <= 0) goto L_exit;
-
-    s2 = D_800EED00;
-    s3 = s2 + 4;
-    v1 = 0;
-
-L_search:
-    v0 = *(s16 *)((u8 *)D_800EED10 + v1);
-    if (v0 != a0) goto L_not_found;
-
-    s1 = s0 + 1;
-    func_80045294(s1, -(*(s32 *)((u8 *)&D_800EED18 + v1)));
-
-    {
-        s32 v1b = D_800A33AC;
-        s32 v0b = v1b - 1;
-        if (s0 >= v0b) goto L_clear;
-        t0 = s1;
-        if (t0 >= v1b) goto L_clear;
-
-        {
-            s32 *a3p = t0 * 4 + s2;
-            s32 *a2p = t0 * 4 + s3;
-L_copy:
-            {
-                s32 w0 = a2p[0];
-                s32 w1 = a2p[1];
-                s32 w2 = a2p[2];
-                s32 w3 = a2p[3];
-                a3p[0] = w0;
-                a3p[1] = w1;
-                a3p[2] = w2;
-                a3p[3] = w3;
-                a3p += 4;
-                v0 = D_800A33AC;
-                t0++;
-                a2p += 4;
-                if (t0 < v0) goto L_copy;
+    for (i = 0; i < D_800A33AC; i++) {
+        off = i << 4;
+        if (*(s16 *)((u8 *)D_800EED10 + off) == a0) {
+            func_80045294(i + 1, -*(s32 *)((u8 *)&D_800EED18 + off));
+            if (i < D_800A33AC - 1) {
+                for (j = i + 1; j < D_800A33AC; j++) {
+                    SUBSLOT[j] = SUBSLOT[j + 1];
+                }
             }
+            last = D_800A33AC - 1;
+            *(s16 *)((u8 *)D_800EED10 + (last << 4)) = -1;
+            *(s32 *)((u8 *)D_800EED1C + (last << 4)) = 0;
+            D_800A33AC = last;
+            return;
         }
     }
-
-L_clear:
-    {
-        s32 cnt;
-        s32 neg1;
-        s32 shift;
-        cnt = D_800A33AC;
-        neg1 = -1;
-        cnt--;
-        shift = cnt << 4;
-        *(s16 *)((u8 *)D_800EED10 + shift) = neg1;
-        *(s32 *)((u8 *)D_800EED1C + shift) = 0;
-        D_800A33AC = cnt;
-    }
-    goto L_exit;
-
-L_not_found:
-    v0 = D_800A33AC;
-    s0++;
-    v1 += 0x10;
-    if (s0 < v0) goto L_search;
-
-L_exit:
-    return;
 }
 void func_80045510(s32 a0, s32 a1) {
     s32 i = 0;
