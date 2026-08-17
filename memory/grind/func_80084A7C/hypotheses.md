@@ -116,3 +116,99 @@ the score alone will mislead you on this function.
 - probe: Applied the split in src/main.c; sandbox --disable all + normalized disassembly diff.
 - result: Score 26 -> 26 and the emitted code is byte-for-byte IDENTICAL to the unsplit form — cse/combine fold 'idx' away before allocation so no new pseudo ever exists. 'move $a1,$a3' still present, $a2/$a3 still swapped. Reverted.
 - verdict: KILLED
+
+## Session 2 (structural, 2026-08-17)
+
+### H5 — CONFIRMED (the F1 diagnosis)
+**Statement.** The `offset` allocno is given `$a1` for a knowable reason that a
+`.greg` dump names, and that reason selects the lever.
+**Mechanism.** GCC 2.7.2 `global.c` assigns allocnos in priority order honouring
+`expand_preferences` copy hints and the per-allocno hard-reg conflict sets.
+**Probe.** Built `tmp/grind/func_80084A7C/s2/greg.py` (pipeline-faithful cpp +
+`cc1 -da`, function section extracted) and diffed the plain form against a form
+that fixes the allocation.
+**Result.** Allocno 82 is `offset`. Plain: `;; 82 conflicts: ... 2 3 4 29` — no
+conflict with hard reg 5 and no preference line — so it takes `$a1`, and the
+multiply chain's final `sll` (block-local, local-alloc gave it `$a3`) needs the
+join copy `move $a1,$a3`. Fixed: `;; 82 conflicts: ... 2 3 4 5 29` plus
+`;; 82 preferences: 6` — it takes `$a2`, target's register, and the copy is
+gone. Confirms session 1's causal reading exactly: it is ONE decision, and both
+halves of the residual follow from it.
+**Verdict. CONFIRMED.**
+
+### H6 — CONFIRMED (banked, natural, keep unconditionally)
+**Statement.** BB2's own matched sibling `spu_SetMotionState` (src/main.c:303),
+which reads the same `D_80106F28` table with the same 0xB0 stride, spells the
+entry in the ORIGINAL's idiom, and adopting it verbatim fixes the table-address
+load's schedule slot.
+**Mechanism.** The two named intermediates (`s32 shifted`, `s32 *addr`) change
+the LUID/emission order enough that sched places the symbol-address load
+between `sll v0,a0,16` and `sra v0,v0,14`, which is target's order.
+**Probe.** cc1-only sweep over EIGHT address spellings (`sweep3.py`) plus the
+sibling cross-product (`sweep5.py`); sandbox confirmation.
+**Result.** All eight non-sibling spellings — index form, pointer add, reversed
+PLUS operand order, `* 4`, `<< 2`, a named `tbl` alone, a named `idx` alone,
+the current inline form — emit BYTE-IDENTICAL code (cse/combine canonicalises
+the address expression). Only the two-intermediate sibling idiom moves the
+`la`; `addr` alone overshoots (la at index 1, before the `sll`). Worth 26 -> 24
+on its own, and it is a prerequisite for reaching 0.
+**Verdict. CONFIRMED.** In candidate.c and in the no-cheat fallback form.
+
+### H7 — CONFIRMED-BUT-UNSANCTIONED (the ruling question)
+**Statement.** Re-associating / re-spelling the `*0xB0` chain changes which
+insn defines the value crossing the entry-block boundary and can hand the
+`offset` allocno target's register (session 1's F3).
+**Mechanism.** Extra RTL temporaries in the offset expression shift pseudo and
+allocno numbering; combine then folds the arithmetic back, so the emitted chain
+can be unchanged while `global.c`'s conflict/preference tables differ.
+**Probe.** cc1-only sweep over 18 offset spellings (`sweep2.py`, `sweep6.py`),
+fingerprinting the chain's final destination register and the presence of
+`move $5,$7`; sandbox on the winners.
+**Result.** EIGHT spellings reach the target allocation, but only the negation
+pair (`-((s16)a1 * -0xB0)` / `-(-0xB0 * (s16)a1)`) ALSO leaves the emitted
+multiply chain byte-identical to target; the rest change the arithmetic and
+cost 5-11 points of chain mismatch. With the sibling idiom + the negation the
+honest sandbox distance is **0** (145 insns == target). Every NATURAL spelling
+tested (`(s16)a1 * 0xB0`, `a1 * 0xB0`, `(s32)a1 * 0xB0`, `(s16)(u16)a1 * 0xB0`,
+a named `s16 ch`, a named `s32 idx`, and four factorisations `0xB*0x10`,
+`0x58*2`, `0x2C*4`, `0x16*8`) leaves the allocno in `$a1`.
+**Verdict. CONFIRMED as a byte-lever, NOT SUBMITTED.** The negation pair has no
+observable effect, no human-programmer rationale, and a GCC-internals-only
+mechanism; no sanctioned family covers an inline arithmetic no-op used as an RA
+lever (the nearest, "opaque arithmetic variables", is a NAMED variable
+defeating a bit-test transform). First reach => `ruling-request`.
+
+### H8 — KILLED
+**Statement.** Declaring `base` and assigning it in a separate statement (the
+sibling's `u8 *entry; entry = ...;` shape) is an available structural lever.
+**Probe.** cc1-only sweep + one sandbox run.
+**Result.** In THIS function the assignment would sit ahead of the remaining
+declarations (`s32 val; u32 threshold;`), which is a C89 violation: cc1 stops
+and emits a 34-instruction stub (sandbox 135). Not a lever here — and any
+future sweep row reporting ~34 build_insns is this parse failure, not codegen.
+**Verdict. KILLED.**
+
+## Live frontier for session 3+
+
+**F1 (the whole question).** Does the owner accept `-((s16)a1 * -0xB0)`? The
+bytes are proven at distance 0 with it. If ACCEPTED (presumably as a
+FAKE-annotated last-resort inside a named family), the function closes
+immediately: apply `memory/grind/func_80084A7C/candidate.c`, add the required
+`/* FAKE: ... */` annotation, self-vet, and submit.
+
+**F2 (if the negation is REFUSED).** Resume from
+`rejected/natural-offset-no-negation-floor24.c` (floor 24, entry schedule
+already target-correct). The remaining problem is stated precisely: make the
+`offset` allocno conflict with hard reg `$a1` — equivalently, keep the
+parameter `$a1` live past the offset def, i.e. make the `s1 = a1` copy schedule
+AFTER `lw $v1,0($a3)` as target does — or give it a copy preference for `$a2`,
+using only natural C. Untried angles: change what the later `a1` reads look
+like (the two `spu_NotifyChannel((s16)(a0 | (a1 << 8)))` sites are the only
+consumers of the saved copy — e.g. compute the channel word once into a named
+local, or read it from a different expression shape), and change the callee-save
+pressure so the copy's sched priority differs.
+
+**F3.** The sibling `spu_SetMotionState` is a matched, ORIGINAL-STYLE reference
+for this whole table-access family and it was not consulted before session 2.
+Any future BB2 function touching `D_80106F28` should start by copying its
+idiom; likewise check for other matched siblings before sweeping spellings.

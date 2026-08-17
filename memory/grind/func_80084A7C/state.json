@@ -28,7 +28,9 @@
    "next_probe": "Measure re-associated forms such as 'offset = (s16)a1 * 0x10 * 0xB' and '(s16)a1 * 0xB * 0x10' with diffit.py (NOT the scalar score), checking whether the multiply chain's last insn writes the register that the +0x98 sites subsequently read."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Resume from rejected/natural-offset-no-negation-floor24.c (floor 24, sibling idiom retained) and close the residual in natural C \u2014 make the offset allocno conflict with $a1 or acquire an $a2 preference via F2's untried angles; if a later session banks a genuinely exhausted natural ladder, re-file as a ruling-request for an owner family grant, never self-approve."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,

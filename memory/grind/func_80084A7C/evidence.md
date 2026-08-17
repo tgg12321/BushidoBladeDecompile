@@ -98,3 +98,113 @@ after it they differ only in register. It is the form saved in `candidate.c`.
 - [s1] The declared signature 'void func_80084A7C(s16 a0, s16 a1)' is contradicted by three call sites in the same file (main.c:451,503,547) that cast it to (void (*)(s16,s16,u8,u8*)) because it is one slot of the D_800F3340..3350 dispatch table. This is pre-existing and NOT part of the residual — the extra args never reach a register in the body. Do not spend a session on it.
 
 - [s1] SCORE IS A MISLEADING GRADIENT ON THIS FUNCTION: two separate probes (H1 confirmed, H4 killed) both left the score at exactly 26 while changing the emitted code materially in opposite directions. Future sessions must judge probes with diffit.py, not with the sandbox scalar alone.
+
+## Session 2 (structural, 2026-08-17)
+
+### Floor: 26 -> 0 (sandbox `--disable all`, 145 insns == target)
+Two independent levers, found by cc1-only sweeps and confirmed by the sandbox:
+
+1. **The sibling idiom (natural, worth 2 points: 26 -> 24).** `src/main.c:303`
+   `spu_SetMotionState` is an ALREADY-MATCHED neighbour that reads the same
+   `D_80106F28` table with the same 0xB0 stride, and it spells the access as
+   `s32 shifted = a0 << 16; s32 *addr = (s32 *)&D_80106F28; s32 *base_ptr =
+   (s32 *)((u8 *)addr + (shifted >> 14));`. Adopting that verbatim moves the
+   table address load from AFTER `sra v0,v0,14` to BETWEEN `sll v0,a0,16` and
+   the `sra` — target's schedule. **Every other address spelling is inert**
+   (measured: index form `&((s32*)&D_80106F28)[(s16)a0]`, pointer add,
+   reversed PLUS operand order, `(s16)a0 * 4`, `(s16)a0 << 2`, a named `tbl`
+   alone, a named `idx` alone — all eight emit byte-identical code). Only the
+   TWO-named-intermediate sibling form moves the schedule; `shifted` alone or
+   `addr` alone do not (addr-alone overshoots, putting the `la` at index 1,
+   before the `sll`).
+2. **`offset = -((s16)a1 * -0xB0)` (the open question, worth the other 24).**
+   Arithmetically identical to `* 0xB0`; combine cancels the negation pair, so
+   the emitted multiply chain is byte-identical. What changes is allocation.
+
+### The RA mechanism, read off the `.greg` dumps (the mandated F1 diagnosis, now DONE)
+`tmp/grind/func_80084A7C/s2/greg.py` reproduces the pipeline's cpp+cc1 and
+extracts this function's section from a `cc1 -da` dump. Comparing the plain
+form against a form that fixes the allocation:
+
+    plain:  ;; 8 regs to allocate: 91 94 76 90 82 93 74 72
+            ;; 82 conflicts: ... 2 3 4 29          <- NO conflict with hard reg 5
+            (no preference line for 82)            -> allocno 82 gets $a1
+    fixed:  ;; 7 regs to allocate: 93 96 82 76 95 74 72
+            ;; 82 conflicts: ... 2 3 4 5 29        <- conflicts with hard reg 5
+            ;; 82 preferences: 6                   -> allocno 82 gets $a2
+
+Allocno 82 is `offset`. In target, hard reg $a1 is still live at the offset
+def (target's `move $s1,$a1` sits at insn 19, AFTER `lw $v1,0($a3)`), so
+`offset` cannot take $a1. In our plain build the `s1 = a1` copy is scheduled
+early (insn 16), $a1 dies, allocno 82 takes it, and the multiply chain's final
+`sll` (a block-local quantity local-alloc placed in $a3) then needs the join
+copy `move $a1,$a3` — our 146th instruction. Fixing the conflict/preference
+fixes BOTH halves at once, exactly as session 1's frontier predicted.
+
+### Measured this session (sandbox `--disable all`)
+| Form | score | insns |
+|---|---|---|
+| s1 candidate (offset-first flag sites, no `shifted`) | 26 | 146 |
+| + sibling idiom, plain `(s16)a1 * 0xB0` | 24 | 146 |
+| + sibling idiom, `-((s16)a1 * -0xB0)` | **0** | **145** |
+| plain base_ptr + `-((s16)a1 * -0xB0)` | 2 | 145 |
+| `(s16)a1 * 0x80 + (s16)a1 * 0x30` (split multiply) | 11 | 145 |
+| `u8 *base;` + separate assignment (statement before later decls) | 135 | 34 |
+
+The last row is a C89 violation (a statement ahead of the `s32 val; u32
+threshold;` declarations) — cc1 truncates the function. Any sweep row showing
+~34 build_insns is that parse failure, not a codegen result; ignore it.
+
+### Which offset spellings reach the target allocation (cc1-only fingerprint)
+GOOD (offset ends in $a2, no `move $5,$7`): `-((s16)a1 * -0xB0)`,
+`-(-0xB0 * (s16)a1)`, `((s16)a1 << 4) * 0xB`, `(s16)a1 * 0xAF + (s16)a1`,
+`(s16)a1 * 0xB1 - (s16)a1`, `(s16)a1 * 0x80 + (s16)a1 * 0x30`,
+`(s16)a1 * 0xA0 + (s16)a1 * 0x10`, `(s16)a1 * 0xC0 - (s16)a1 * 0x10`.
+BAD (offset in $a3 + the join copy): `(s16)a1 * 0xB0`, `a1 * 0xB0`,
+`(s32)a1 * 0xB0`, `(s16)(u16)a1 * 0xB0`, `s16 ch = a1; ch * 0xB0`,
+`s32 idx = (s16)a1; idx * 0xB0`, `((s16)a1 * 0xB) * 0x10`,
+`((s16)a1 * 0x58) * 2`, `((s16)a1 * 0x2C) * 4`, `((s16)a1 * 0x16) * 8`,
+`(s16)a1 * 0x58 + (s16)a1 * 0x58`.
+Of the GOOD set, only the two negation spellings ALSO emit target's exact
+multiply chain (`sll ,1 / addu / sll ,2 / subu / sll ,4` with target's $v1/$v0
+pairing); every other GOOD spelling changes the arithmetic itself and leaves
+5-11 points of chain mismatch. So the negation is not one option among many —
+it is the only measured spelling that buys the allocation for free.
+
+### The disposition question this session hands to the owner
+`-((s16)a1 * -0xB0)` has no observable effect (T1), no human-programmer
+rationale (T2), and its mechanism is stated in GCC-internals terms (T3:
+pseudo/allocno numbering feeding `global.c`'s conflict + preference tables).
+It is a FIRST REACH: no sanctioned family covers an inline arithmetic no-op
+used as an RA lever. The nearest sanctioned family, "opaque arithmetic
+variables" (`s32 one = 1;`; SOTN's `(Random() & 3) + 1 - 1`), is about a NAMED
+variable defeating a bit-test transform. Per the frozen-list non-extension
+clause the session did not self-approve it; outcome = `ruling-request`.
+
+### Tooling built this session (re-use; do not rebuild)
+- `tmp/grind/func_80084A7C/s2/greg.py` — pipeline-faithful cpp+cc1 `-da` dump,
+  extracts this function's `.greg`/`.lreg`/`.combine`/`.sched` sections.
+  NB cc1 exits non-zero on main.c's pre-existing redeclaration warnings and
+  still emits complete dumps — never gate on its exit status.
+- `tmp/grind/func_80084A7C/s2/sweep2.py` / `sweep3.py` / `sweep5.py` /
+  `sweep6.py` — cc1-ONLY variant sweeps (seconds each vs minutes for a full
+  sandbox run) fingerprinting: which hard reg the multiply chain's last insn
+  writes, presence of `move $5,$7`, and the `la`-vs-`sra` order. Screen with
+  these, then sandbox only the winners.
+- `sweep.py` — the full-sandbox version (slower; use for confirmation).
+
+### TRAP that cost this session three turns (record for every future session)
+`    s32 offset = (s16)a1 * 0xB0;` occurs TWICE in src/main.c — the sibling
+`spu_SetMotionState` at line ~307 has the identical line. A `str.replace(..., 1)`
+or a DOTALL regex anchored on `s32 *base_ptr = ...` silently edits the SIBLING
+(or spans from it into our function and deletes everything between). Every edit
+anchor MUST include `&D_80106F28 + ((a0 << 16) >> 14)` or equivalent unique
+text, and must be non-DOTALL. A wrong-anchor edit LOOKS like a null result
+(dumps identical to baseline), which is how it burned three turns.
+
+- [s2] Honest floor reached 0 this session (sandbox --disable all: score 0, build_insns 145 == target_insns 145) with two levers in src/main.c: BB2's own sibling entry idiom (natural) plus `offset = -((s16)a1 * -0xB0)` (an arithmetic no-op with no sanctioned family). Session returned ruling-request, NOT candidate-ready.
+- [s2] The mandated F1 .greg diagnosis is DONE: allocno 82 is `offset`; in the plain form it has NO conflict with hard reg 5 and no copy preference, so global-alloc gives it $a1 and the multiply chain's block-local $a3 destination needs the join copy `move $a1,$a3`; in the fixed form 82 conflicts with hard reg 5 AND carries `preferences: 6`, so it lands in $a2 and the copy vanishes. One decision, both halves of the residual.
+- [s2] The matched sibling spu_SetMotionState (src/main.c:303) reads the SAME D_80106F28 table with the SAME 0xB0 stride; copying its two-named-intermediate entry idiom (`s32 shifted` + `s32 *addr`) verbatim moves the table address load into target's schedule slot (between `sll v0,a0,16` and `sra v0,v0,14`) and is worth 2 points on its own. All eight other address spellings tested are byte-identical to each other — cse/combine canonicalises them; only this idiom moves the schedule.
+- [s2] Best form containing NO unsanctioned construct measures 24 (banked as rejected/natural-offset-no-negation-floor24.c). If the owner refuses the negation lever, the remaining problem is exactly: make the `offset` allocno conflict with hard reg $a1 (or acquire a copy preference for $a2) without an arithmetic no-op.
+- [s2] cc1-only sweeps are the right gradient on this function: tmp/grind/func_80084A7C/s2/sweep{2,3,5,6}.py fingerprint the allocation directly (which hard reg the chain's last insn writes, presence of `move $5,$7`, `la`-vs-`sra` order) in seconds, where a sandbox run takes minutes and its scalar score misleads (s1 banked two probes that moved structure at a flat 26).
+- [s2] EDIT-ANCHOR TRAP: `s32 offset = (s16)a1 * 0xB0;` appears twice in src/main.c (the sibling at ~line 307 has the identical line). Anchor every programmatic edit on `&D_80106F28 + ((a0 << 16) >> 14)` and never use a DOTALL span — a DOTALL anchor reaches from the sibling into our function and deletes the body between them.
