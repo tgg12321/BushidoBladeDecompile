@@ -996,3 +996,4 @@
 - 2026-08-17 12:47 func_800453E0: LAYER-1 FAILED a sandbox-0 candidate — Otherwise well-documented pure-C recovery, but the session cites a nonexistent rule file as the precedent/mechanism for one of its load-bearing derivation steps; an unresolvable citation is a FAIL under the review protocol regardless of whether the underlying technique is independently sound.
 - 2026-08-17 12:58 func_800453E0 COMPLETED-C after 1 sessions.
 - 2026-08-17 13:14 func_80049584 COMPLETED-C after 1 sessions.
+- 2026-08-17 13:27 func_80032314 s1 [recon] floor=15: Floor 27 -> 15 and build_insns now exactly 109 = target: copying the matched, user-authorized GTE-LZC island from the same-file sibling func_800274BC fixed a 12-point cheat-classifier artifact; the entire residual is one 3-cycle register rotation on $a1/$a2/$a3.
