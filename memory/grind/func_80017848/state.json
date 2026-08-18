@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Floor 5 -> 3: target's long-unexplained dead preheader copy is a COMBINE-SURVIVAL artifact (can_combine_p refuses when the copy's dest is used after the base add), not the post-combine allocator artif"
+  },
+  {
+   "session": 10,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor holds at 3, but the wall is now correctly identified: target's two preheader copies have DIFFERENT origins - loop 1's is a cse fold (single-predecessor block), loop 2's cannot be (its guard bloc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Loop 2's missing copy needs a downstream second use of its base addend, and the only remaining candidate sites are INSIDE loop 2's own if-block, after the do/while - i.e. a statement that target also contains but that we currently spell as a fresh read.",
-   "mechanism": "Confirmed this session: the copy survives combine iff its destination has a use reached from the base add (H-s9-1). Loop 1 gets this from `p = q` at its exit tail, whose consumer is loop 2's guard. Loop 2 has no consumer after it because all three of target's remaining ctx+0xC reads (math_Distance3D at T.txt:77, rec_a at :94, rec_b at :104) are emitted as fresh `lw`s and routing any of them through a live local costs 19 points (T1/T3/T4 = 22). The open question is whether some OTHER value - the links pointer, the loop counter, or `base` itself - can carry the liveness instead of the pointer.",
-   "next_probe": "On the V1 chassis, sweep second-use carriers for loop 2's base addend that are NOT the ctx+0xC pointer: (a) make loop 2's do/while condition read the count through the addend local rather than through `base`; (b) give the loop-2 links local `lnk2` a post-loop use and derive the base addend from it; (c) assign the addend into the still-live `slots` or `t` local after loop 2 rather than into a fresh dead one (flow.c will not DSE a store to a variable that is read later). Score all of them in one score.sh batch and disassemble anything at 2 or below. Do NOT re-try a source-level `r = p` copy (W1/W2/W3 = 8, killed) or any post-loop-2 use of the pointer in the tail (T family = 22, killed)."
+   "hypothesis": "Loop 2's preheader copy is created by a pass AFTER combine - the allocator - and the lever is whatever makes local-alloc decline to tie the base add's destination to its dying addend. Every C-level origin (cse fold, source copy, second use, block duplication) is now measured dead, so this is the only class left.",
+   "mechanism": "s9 established the tie rule from the .lreg dump: when the base add's addend carries REG_DEAD, local-alloc's combine_regs ties the destination to the addend's hard register and the copy never appears (`addu a0,a1,a0`); when it does not, the copy appears with target's exact register numbers. Loop 2's addend carries REG_DEAD (s10 combine dump, insn 164) and cannot be given a downstream use for free. But in TARGET the base add's destination (a0) is not the addend's register (a3) even though the addend must also die there - so target's allocator declined the tie for a reason other than liveness, and that reason has never been isolated.",
+   "next_probe": "Take the -da .lreg/.greg dumps of the current 3-form (already generated at tmp/grind/func_80017848/s10/dump/) and diff local-alloc's treatment of loop 1's base add against loop 2's IN THE SAME DUMP - the two differ in outcome, so the deciding condition is visible side by side. Identify which combine_regs guard fires (register class, allocno priority, reg_n_refs, the pseudo already being tied to another allocno) and then search for a plain-C construct that reproduces that condition in loop 2. This is forensics on our own dump, not a new construct - no ruling risk. Do NOT re-probe downstream uses; all sites in the function are measured (s9 T-family, s10 R-family)."
   },
   {
-   "hypothesis": "Loop 1's exit tail can emit target's `lw a0,12(s2)` while still supplying loop 1's copy with its second use, if the second use is moved off the tail assignment.",
-   "mechanism": "Right now the single statement `p = q;` does double duty: it is q's second use (which buys loop 1's copy, worth 2) and it is the loop-1 exit tail (where target has a fresh re-read, costing 2 because we emit `addu a0,a3,zero` instead of `lw a0,12(s2)`). If some other statement supplied q's second use, the tail could go back to `p = *(u8**)(ctx+0xC);` and the net would be 3 -> 2. The constraint is that the second use must be reached from loop 1's base add and must not itself materialise an instruction target lacks.",
-   "next_probe": "On the V1 chassis, try second uses for `q` that are absorbed into instructions target already has: q as the base of loop 1's do/while count reload (`while (i < *(s32 *)(sh + (s32)q + 0x1C))` - target uses `lw v0,28(a0)` off `base`, so this will likely cost an add; measure it), and q as the addend of the loop-1 body's element read. Also measure whether loop 1's copy and loop 2's copy can be bought by the SAME second use by making loop 2's base addend `q` under a pre-initialisation spelling other than X1/X3 (both = 14, killed)."
+   "hypothesis": "The remaining banked spelling conclusions that have NEVER been re-measured on the V1 chassis are the s3-era ones about base placement and guard/base role swapping, plus s8's Z3_swapbase - and this function has inverted a banked conclusion in five consecutive sessions.",
+   "mechanism": "s9 inverted three s7/s8 kills; s10 inverted nothing but re-confirmed s2's loop shape, showing the chassis-relativity cuts both ways. The s3 conclusions (count address written pointer-first; slots read hoisted above the two >=0 top guards) predate the s6 chassis retirement and have been carried unexamined through four chassis changes.",
+   "next_probe": "Re-run each s3-era and s8-era conclusion as a matched pair against V1 with tmp/grind/func_80017848/s10/score.sh (the s9 harness, re-pathed). Start with pointer-first vs shift-first at the loop-1 entry guard, the placement of the `slots` hoist relative to the two top guards, and Z3_swapbase. Anything that scores 2 or below gets disassembled with tmp/grind/func_80017848/s10/dis2.sh."
   },
   {
-   "hypothesis": "Every remaining banked spelling conclusion is chassis-relative and must be re-measured before it is spent - the chassis has now changed in EVERY session since s5, and s9 inverted three more s7/s8 kills.",
-   "mechanism": "s9 inverted: s7's links-local kill (X1/X2/X3), now worth 2 points; s8's frontier prediction about the shift's four-way assignment, which turned out to be the worst cell in its own space; and s8's 'loop-2 mirror costs 26-31', which was a shared-local artifact and is exactly neutral with per-loop locals. What survives chassis changes untouched is only the pass-level facts, because those are RTL facts rather than score comparisons: H-s6-2, H-s6-3, H-s7-3..H-s7-6, s8's loop.c elimination, and now H-s9-1 (the can_combine_p survival condition) and H-s9-3 (cse+flow kill a source-level copy before combine).",
-   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against V1 with tmp/grind/func_80017848/s9/score.sh. The highest-value untested-on-this-chassis items are the s3-era conclusions about base placement and guard/base role swapping (never retested since s6 retired their chassis) and s8's Z3_swapbase. Note s8's 'per-loop fresh read for the base addend' is now known to be a TIE with `p` (N_P_SF = N_F_SF = 5), not a win, so it is free to change if something else wants it."
+   "hypothesis": "With the C-level space around the loop-2 preheader now exhaustively mapped by hand (s10 measured 28 variants across six families, all >= 3), a fresh-seed permuter campaign anchored on the V1 chassis is the highest-yield remaining modality - it is what produced the only other floor drop of this kind (s4, 14 -> 12).",
+   "mechanism": "s4's win was invisible to the permuter's own ranking and only appeared when every output was re-scored with the engine. The current chassis is three levers deeper than s4's and has never been permuted.",
+   "next_probe": "Launch tools/permuter_campaign.py on the V1 candidate with the loop-2 preheader as the PERM region, wait IN-TURN with `permuter_campaign.py wait --dir <ws>` (one blocking call per fresh-seed window, ~20-30 windows per the fresh-seed discipline), re-score EVERY output with `sandbox --disable all` rather than trusting the permuter score, and `harvest --stop` before writing the outcome."
   }
  ],
  "judge_constraints": [],

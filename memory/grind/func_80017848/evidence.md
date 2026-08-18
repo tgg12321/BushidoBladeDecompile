@@ -1070,3 +1070,45 @@ confirmed but is now known to be a tie rather than a win.
 - [s9] Symmetric per-loop locals are free; shared locals are catastrophic. s8's 'loop 2 mirror costs 26/31' entries must be re-read as 'SHARED-LOCAL loop 2 mirror costs 26/31' - with its own `t2` the same lever is exactly neutral (P2 = 5), and the full loop-2 mirror is exactly neutral on the V1 chassis (W4 = 3).
 
 - [s9] 11 new disproven forms banked to memory/grind/func_80017848/rejected/ (51 total).
+
+- [s10] CFG FACT, read directly off the target listing (asm/funcs/func_80017848.s:55-66): loop 1's skip branch `blez $v0, .L8001791C` targets 0x8001791C = `addu $v0,$a1,$a0`, the FIRST instruction of loop 2's guard. Loop-1's exit tail (`lw $a0,0xC($s2)` at 0x80017914 and `sll $a1,$s4,6` at 0x80017918) is therefore INSIDE loop 1's if-block, and loop 2's guard block is a JOIN with two predecessors. Our build has byte-identical block structure (branch to 0x144c in the sandbox object).
+
+- [s10] CONSEQUENCE (the session's central structural finding): cse's extended-basic-block cannot reach loop 2's preheader, because an EBB stops at the join label .L8001791C. So target's `addu $a3,$a0,$zero` at 0x80017930 CANNOT be a cse-folded redundant `*(u8 **)(ctx + 0xC)` read - unlike loop 1's copy at 0x800178E4, whose block IS single-predecessor from loop 1's guard. The two copies that look symmetric in the listing have DIFFERENT origins, and s9's H-s9-1 (combine-survival of a cse-folded redundant load) explains loop 1 only.
+
+- [s10] RTL confirmation from the -da dump of the current 3-form (tmp/grind/func_80017848/s10/dump/F_combine.txt): loop 2's preheader is insn 162 `(set (reg 113) (mem (plus (reg/v 72) (const_int 12))))` - a full load, cse never folded it - followed by insn 164 `(set (reg/v 81) (plus (reg/v 85) (reg 113)))` carrying REG_DEAD for BOTH the shift (85) and the pointer (113). Loop 2's base addend dies at the base add, exactly the shape s9 showed produces no copy.
+
+- [s10] A SOURCE-LEVEL copy for loop 2's base addend is dead in every spelling measured: `q2 = p` with a separate local (M4 = 9), with loop 1's `q` shared (M1 = 9, M3 = 8), with a per-loop `base2` (M5 = 9), and with a pre-initialised second pointer split across the guard/base roles (Q3 = 13, Q4 = 9). M4's disassembly shows why: cse propagates the copy into the base add, flow deletes it, AND the loop-1 exit-tail re-read becomes redundant and is deleted too, so the function comes out 12 bytes SHORT. This is H-s9-3 generalised - no spelling of a plain C copy survives to the allocator.
+
+- [s10] SECOND-USE CARRIERS INSIDE THE LOOP ARE WORTHLESS. Routing loop 1's do/while count through the addend (`while (i < *(s32 *)(sh + (s32)q + 0x1C))`, P4 = 6), the element read through the addend (P5 = 7), or both (P6 = 4) never buys the copy, because loop.c hoists the loop-invariant `sh + q` into the preheader and cse2 folds it into the existing `base` - so by the time combine runs the addend has exactly one use again. Same carriers applied to loop 2: P1 = 5, P2 = 6, P3 = 3. This kills s9's frontier probe (a)/(b) as a class, not just as spellings.
+
+- [s10] TAIL SECOND-USE CARRIERS EXTEND s9's T-FAMILY KILL TO EVERYTHING: routing `rec_a` through a live local costs 32 (R2), `rec_b` 32 (R3), both 52 (R4), and via a separate p2 local 14 (R5). Together with s9's math_Distance3D measurement (19-22), ALL THREE of target's post-loop-2 ctx+0xC re-reads are now measured and fatal. There is no free downstream use of loop 2's base addend anywhere in the function.
+
+- [s10] LOOP-2 ADDEND SPELLING IS INSENSITIVE ON THE V1 CHASSIS - inline fresh read (baseline = 3), an explicit `q2` local (P0 = 3), reuse of the s32 local `t` (S1 = 3) and reuse of `p` itself (S4 = 3) all score exactly 3. Only cross-loop sharing hurts: reuse of `slots` = 8, sharing loop 1's `q` = 13. So the addend's NAME/type is not a lever; only its use-count is, and the use-count cannot be raised for free.
+
+- [s10] LOOP-2 LOOP SHAPE RE-CONFIRMED (first re-measurement since s2, on the V1 chassis): `base` precomputed + `while` = 9, plain `while` with the address recomputed in the condition = 14, do/while with the count re-read through the shift+pointer = 7, base recomputed inside the body = 10. The s2-era `if (guard) { do { } while (cond); }` with a `base` local remains strictly optimal.
+
+- [s10] THE SANCTIONED duplicated-statement-into-arms LEVER IS DEAD HERE. Duplicating all of loop 2 into both arms of loop 1's `if` (the only sanctioned way to make loop 2's preheader single-predecessor, which is what cse would need to fold the redundant read into a copy) costs 35 with the fresh-read tail (D1) and 35 with the `p = q` tail (D2). jump2's cross-jumping does not re-merge the arms, because the fall-through arm's preheader gets the copy and the else arm's gets the load, so the tails are not identical.
+
+- [s10] COST ACCOUNTING OF THE RESIDUAL 3, now exact. Loop 1's copy is not free: it is BOUGHT for 2 points by spending the exit tail on `p = q` (`addu a0,a3,zero`) where target has `lw a0,12(s2)`. Removing the purchase (M6: symmetric fresh reads in both loops, no second use anywhere) scores 4 = 3 - 1 (tail now correct) + 2 (loop-1 copy lost). So the true statement of the wall is: each loop's preheader copy costs 2 points to buy and returns 2, and loop 1 only nets out because its purchase instruction happens to sit where target has an instruction of its own.
+
+- [s10] 10 new disproven forms banked to memory/grind/func_80017848/rejected/ (61 total).
+
+- [s10] CFG fact read directly off asm/funcs/func_80017848.s:62 - loop 1's skip branch `blez $v0, .L8001791C` targets 0x8001791C = `addu $v0,$a1,$a0`, the first instruction of loop 2's guard. Loop 1's exit tail (`lw $a0,0xC($s2)` at 0x80017914, `sll $a1,$s4,6` at 0x80017918) is inside loop 1's if-block; loop 2's guard block is a JOIN with two predecessors. Our build has byte-identical block structure.
+
+- [s10] Therefore target's `addu $a3,$a0,$zero` at 0x80017930 cannot be a cse-folded redundant ctx+0xC read: cse's extended basic block stops at the join label. Loop 1's copy at 0x800178E4 sits in a single-predecessor block and IS such a fold. The two visually symmetric copies have different origins, and s9's H-s9-1 explains loop 1 only.
+
+- [s10] RTL confirmation from the -da dump of the current 3-form (tmp/grind/func_80017848/s10/dump/F_combine.txt): loop 2's preheader is insn 162 `(set (reg 113) (mem (plus (reg/v 72) (const_int 12))))` - a full load cse never folded - feeding insn 164 `(set (reg/v 81) (plus (reg/v 85) (reg 113)))` which carries REG_DEAD for BOTH the shift (85) and the pointer (113).
+
+- [s10] A source-level copy for loop 2's base addend is dead in every spelling: private q2 = 9, shared q = 9, shared q with the p=q tail = 8, private base2 = 9, pre-initialised split pointer = 13/9. cse propagates it into the base add, flow deletes it, and the loop-1 exit-tail re-read is deleted with it (M4 comes out 12 bytes short).
+
+- [s10] Second-use carriers inside either loop are worthless as a class: loop.c hoists the loop-invariant `sh + addend` into the preheader and cse2 folds it into the existing `base`, so combine sees a single-use addend again (P4=6, P5=7, P6=4, P1=5, P2=6, P3=3).
+
+- [s10] All three of target's post-loop-2 ctx+0xC re-reads are now measured as second-use carriers and all are fatal: math_Distance3D 19-22 (s9), rec_a 32, rec_b 32, both 52, via a separate local 14.
+
+- [s10] Loop-2 addend spelling is insensitive on the V1 chassis: inline fresh read, an explicit q2 local, reuse of the s32 `t`, and reuse of `p` all score exactly 3. Only cross-loop sharing hurts (slots = 8, loop 1's q = 13).
+
+- [s10] The sanctioned duplicated-statement-into-arms lever is dead here (35/35): jump2's cross-jumping does not re-merge the arms, because the very fold that motivates the duplication makes the two arms textually different.
+
+- [s10] Exact cost accounting of the residual 3: a preheader copy costs 2 points to BUY (the loop's exit tail is spent on the second use, emitting `addu a0,a3,zero` where target has `lw a0,12(s2)`) and returns 2. Loop 1 only nets out because its purchase instruction lands where target has an instruction of its own. Removing the purchase entirely - symmetric fresh reads, no second use in either loop - scores 4, not 1 (M6).
+
+- [s10] 10 new disproven forms banked to memory/grind/func_80017848/rejected/ (61 total). Best form unchanged at 3; candidate.c carries an s10 addendum correcting the s9 header's symmetric-copies reading.

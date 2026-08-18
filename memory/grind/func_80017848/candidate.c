@@ -66,6 +66,25 @@
  * target re-reads ctx+0xC freshly three more times in the tail (math_Distance3D,
  * rec_a, rec_b) - routing any of them through a live local costs 19 points
  * (T1/T3/T4 = 22).
+ *
+ * [s10 SYNTHESIS ADDENDUM - body unchanged, still 3.]  The s9 header above reads
+ * target's two preheader copies as one symmetric construct.  s10 disproved that
+ * from the target listing itself: loop 1's skip branch is `blez $v0, .L8001791C`
+ * (asm/funcs/func_80017848.s:62), which lands on loop 2's GUARD, so loop 2's
+ * guard block is a JOIN with two predecessors and cse's extended basic block
+ * cannot reach loop 2's preheader.  Loop 1's preheader, by contrast, is
+ * single-predecessor.  So loop 1's copy is a cse-folded redundant load that
+ * survived combine (s9's H-s9-1, correct), and loop 2's copy CANNOT be - it has
+ * a different, still-unidentified origin, and every C-level way to write a
+ * reg-reg copy at that point is now measured dead (source copy 8-9, shared
+ * local 13, duplicated-into-arms 35).
+ *
+ * s10 also priced the residual exactly: a preheader copy costs 2 points to BUY
+ * (the loop's exit tail is spent on the second use) and returns 2.  Loop 1 only
+ * nets out because its purchase instruction lands where target has one of its
+ * own.  Dropping the purchase entirely (symmetric fresh reads, no second use in
+ * either loop) is 4, not 1 - see rejected/s10_no_l1_second_use_symmetric_fresh
+ * _reads_costs_4.c.
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;

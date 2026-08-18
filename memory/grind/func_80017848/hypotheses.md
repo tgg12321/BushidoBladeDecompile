@@ -884,3 +884,87 @@ as "SHARED-LOCAL loop 2 mirror costs N".
 - probe: P1 (loop 2 t-reuse through the SAME `t` local) vs P2 (loop 2 t-reuse through its own `t2`), plus W4 (full loop-2 mirror of loop 1's preheader: own read, own links local, own tail copy) on the V1 chassis.
 - result: P1 = 31 but P2 = 5 (exactly neutral) and W4 = 3 (exactly neutral). The cost was entirely due to SHARING the local, not to the lever.
 - verdict: KILLED
+
+## [s10] Target's two preheader copies have the same origin, so the spelling that produced loop 1's will produce loop 2's.
+- mechanism: s6-s9 all read the two `addu a3,a0,zero` instructions (0x800178E4 and 0x80017930) as one symmetric construct, and s9 explained loop 1's as a cse-folded redundant `*(u8 **)(ctx + 0xC)` read surviving combine because its destination has a downstream use.
+- probe: read the branch targets straight out of asm/funcs/func_80017848.s (never done before - the scoring normaliser masks them) to establish the real CFG, then confirm with the -da combine dump of the current 3-form.
+- result: loop 1's skip branch targets .L8001791C = loop 2's guard, so loop 2's guard block is a JOIN and cse's EBB cannot reach loop 2's preheader. Loop 1's preheader IS single-predecessor. The two copies therefore cannot share the cse-fold origin.
+- verdict: KILLED
+
+## [s10] Loop 2's copy can be produced by a source-level C copy (`q2 = p;`) of the guard's pointer, in some spelling.
+- mechanism: since cse cannot fold a redundant read at that point, the only remaining C-level way to emit a reg-reg copy there is to write one.
+- probe: M1 (shared `q`), M3 (shared `q`, `p = q` tail retained), M4 (private `q2`), M5 (private `base2`), Q3/Q4 (a pre-initialised second pointer with the guard and base roles split between it and `p`).
+- result: 9 / 8 / 9 / 9 / 13 / 9 versus the 3-form's 3. M4's disassembly shows the copy propagated away by cse and deleted by flow, taking the loop-1 exit-tail re-read with it (function 12 bytes short).
+- verdict: KILLED
+
+## [s10] A second use of the base addend that sits INSIDE the loop can buy the preheader copy, so the exit tail can be spent on target's fresh re-read instead.
+- mechanism: s9's frontier probes (a) and (b) - carry the liveness on the do/while count reload or the element read rather than on a post-loop assignment.
+- probe: loop 1 (whose target bytes we already match, so the mechanism is directly observable): P4 count-through-addend, P5 element-through-addend, P6 both, all with the tail restored to a fresh read. Same carriers on loop 2: P1, P2, P3.
+- result: P4 = 6, P5 = 7, P6 = 4, P1 = 5, P2 = 6, P3 = 3 - never better than the 3-form, and P6 is no better than having no second use at all (M6 = 4). loop.c hoists the invariant `sh + q` into the preheader and cse2 folds it into `base`, so combine sees a single-use addend again.
+- verdict: KILLED
+
+## [s10] One of target's three post-loop-2 ctx+0xC re-reads can carry loop 2's second use cheaply, even though s9 measured math_Distance3D at 19-22.
+- mechanism: rec_a and rec_b each consume the pointer once; if either could be fed from the loop-2 addend, the addend would gain the downstream use combine needs.
+- probe: R2 (rec_a via the live local), R3 (rec_b), R4 (both), R5 (rec_a via a separate p2 local).
+- result: 32 / 32 / 52 / 14. Every one of target's three tail re-reads is now measured; all are fatal.
+- verdict: KILLED
+
+## [s10] The sanctioned duplicated-statement-into-arms family can make loop 2's guard block single-predecessor, restoring the cse fold that produces loop 1's copy.
+- mechanism: duplicate loop 2 into both arms of loop 1's `if`; the fall-through copy is then reached only from loop 1's exit tail, so cse's EBB extends into its preheader and folds the redundant read to a copy, and jump2's cross-jumping was expected to re-merge the two identical arms afterwards.
+- probe: D1 (fresh-read tail) and D2 (`p = q` tail), whole loop 2 duplicated into both arms.
+- result: 35 and 35. Cross-jumping does not merge, precisely because the fold makes the two arms textually different (copy in one, load in the other).
+- verdict: KILLED
+
+## [s10] Loop 2's addend can be made to behave differently by giving it a different identity (a reused existing local, a different type, its own name).
+- mechanism: variable reuse for codegen control is the sanctioned family that has repeatedly moved this function; s9's frontier item (c) proposed reusing a still-live local so flow would not DSE the assignment.
+- probe: S1 (reuse the s32 `t`), S2 (reuse `slots`), S3 (reuse loop 1's `q`), S4 (reuse `p`), plus P0 (its own `q2`) and the inline baseline.
+- result: 3 / 8 / 13 / 3 / 3 / 3. Everything that does not cross loops is exactly neutral; everything that crosses loops is worse. Identity is not a lever here - only use-count is.
+- verdict: KILLED
+
+## [s10] Loop 2's shape (if + do/while + `base` local) is still optimal on the V1 chassis, six chassis changes after s2 established it.
+- mechanism: every s2-era conclusion is chassis-relative and none of loop 2's shape had been re-measured since.
+- probe: W1 (base precomputed + `while`), W2 (plain `while`, address recomputed in the condition), W3 (do/while with the count re-read through shift+pointer), W4 (base recomputed inside the body).
+- result: 9 / 14 / 7 / 10 versus 3.
+- verdict: CONFIRMED (the s2 shape survives; the alternatives are killed)
+
+## [s10] Target's two preheader copies (0x800178E4 and 0x80017930) have the same origin, so the spelling that produced loop 1's will produce loop 2's.
+- mechanism: s6-s9 all read the two `addu a3,a0,zero` instructions as one symmetric construct, and s9 explained loop 1's as a cse-folded redundant `*(u8 **)(ctx + 0xC)` read that survived combine because its destination has a downstream use.
+- probe: Read the branch targets straight out of asm/funcs/func_80017848.s (never done before - the scoring normaliser masks branch targets), then confirm the block structure against the sandbox object and the -da combine dump of the current 3-form.
+- result: Loop 1's skip branch is `blez $v0, .L8001791C` and .L8001791C is loop 2's guard `addu $v0,$a1,$a0`. Loop 2's guard block therefore has two predecessors, so cse's EBB stops there and cannot fold a redundant load in loop 2's preheader. Loop 1's preheader block IS single-predecessor. Confirmed in RTL: combine-dump insn 162 is a full `(mem (plus (reg 72) (const_int 12)))` load, and insn 164's base add carries REG_DEAD for both the shift and the pointer.
+- verdict: KILLED
+
+## [s10] Loop 2's copy can be produced by a source-level C copy (`q2 = p;`) of the guard's pointer, in some spelling.
+- mechanism: Since cse cannot fold a redundant read at a join, the only remaining C-level way to emit a reg-reg copy in loop 2's preheader is to write one explicitly.
+- probe: M1 (shared `q`), M3 (shared `q` with the `p = q` tail retained), M4 (private `q2`), M5 (private `base2`), Q3/Q4 (a pre-initialised second pointer with the guard and base roles split between it and `p`).
+- result: 9 / 8 / 9 / 9 / 13 / 9 versus the 3-form's 3. M4's disassembly shows the copy propagated into the base add by cse and deleted by flow, which also makes the loop-1 exit-tail re-read redundant - the function comes out 12 bytes short.
+- verdict: KILLED
+
+## [s10] A second use of the base addend INSIDE the loop can buy the preheader copy, freeing the exit tail for target's fresh re-read (s9 frontier probes a and b).
+- mechanism: Carry the liveness on the do/while count reload or on the element read instead of on a post-loop assignment.
+- probe: Applied to loop 1, whose target bytes we already match so the mechanism is directly observable: P4 (count through the addend), P5 (element through the addend), P6 (both), each with the tail restored to a fresh read. Same carriers on loop 2: P1, P2, P3.
+- result: P4 = 6, P5 = 7, P6 = 4, P1 = 5, P2 = 6, P3 = 3. P6 is no better than having no second use at all (M6 = 4). loop.c hoists the invariant `sh + q` into the preheader and cse2 folds it into the existing `base`, so combine sees a single-use addend again. The carrier class is dead, not just these spellings.
+- verdict: KILLED
+
+## [s10] One of target's three post-loop-2 ctx+0xC re-reads can carry loop 2's second use cheaply (s9 only measured math_Distance3D).
+- mechanism: rec_a and rec_b each consume the pointer once; feeding either from the loop-2 addend would give the addend the downstream use combine needs.
+- probe: R2 (rec_a via the live local), R3 (rec_b), R4 (both), R5 (rec_a via a separate p2 local).
+- result: 32 / 32 / 52 / 14. All three of target's tail re-reads are now measured and all are fatal; there is no free downstream use of loop 2's base addend anywhere in the function.
+- verdict: KILLED
+
+## [s10] The sanctioned duplicated-statement-into-arms family can make loop 2's guard block single-predecessor, restoring the cse fold that produces loop 1's copy.
+- mechanism: Duplicate loop 2 into both arms of loop 1's `if`; the fall-through copy is then reached only from loop 1's exit tail, so cse's EBB extends into its preheader and folds the redundant read to a copy, with jump2's cross-jumping expected to re-merge the arms afterwards.
+- probe: D1 (fresh-read tail) and D2 (`p = q` tail), whole loop 2 duplicated into both arms.
+- result: 35 and 35. Cross-jumping does not merge - precisely because the fold makes the two arms textually different (copy in one arm, load in the other).
+- verdict: KILLED
+
+## [s10] Loop 2's addend responds to its identity (a reused existing local, a different type, its own name) - s9 frontier probe (c).
+- mechanism: Variable reuse for codegen control is the sanctioned family that has repeatedly moved this function, and s9 predicted flow would not DSE an assignment into a still-live local.
+- probe: S1 (reuse the s32 `t`), S2 (reuse `slots`), S3 (reuse loop 1's `q`), S4 (reuse `p`), P0 (its own `q2`), versus the inline baseline.
+- result: 3 / 8 / 13 / 3 / 3 / 3. Everything that does not cross loops is exactly neutral; everything that crosses loops is worse. Identity is not a lever here - only use-count is, and use-count cannot be raised for free.
+- verdict: KILLED
+
+## [s10] Loop 2's shape (if + do/while + a `base` local) is still optimal on the V1 chassis, six chassis changes after s2 established it.
+- mechanism: Every s2-era conclusion on this function is chassis-relative and loop 2's shape had never been re-measured.
+- probe: W1 (base precomputed + `while`), W2 (plain `while` with the address recomputed in the condition), W3 (do/while with the count re-read through shift+pointer), W4 (base recomputed inside the body).
+- result: 9 / 14 / 7 / 10 versus 3.
+- verdict: CONFIRMED
