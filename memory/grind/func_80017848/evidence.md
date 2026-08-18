@@ -163,3 +163,75 @@ own base register also makes the guard's count survive, so the two effects have 
 - [s2] One variant in the sweep (S6, guard reading the slots local while the assignment sits inside the guard body) scored 16 but is SEMANTICALLY INVALID — loop 1 would read an uninitialized slots. Recorded here so a later session does not resurrect it from the raw sweep numbers.
 
 - [s2] Instruments regenerated/extended and left in place: tmp/score_sweep.py + tmp/run_sweep.sh (score + frame per variant, restores src afterwards), tmp/apply_variant.py, tmp/diffvar.sh (apply + sandbox + normalized target diff), tmp/dadump.sh (cc1 -da dumps), tmp/count_ctx12.py (per-stage load-count census).
+
+## s3 (structural, 2026-08-18)
+- **FLOOR BROKEN: 16 -> 14.** The floor had been flat at 16 across s1/s2. The new form is
+  in src/ings.c and saved as `memory/grind/func_80017848/candidate.c`; 125/127 build insns
+  (was 125 at score 16 with the residual spread through both loops, and 122-123 for the
+  17-form family). `candidate_alt_dowhile_ivar_17.c` is now SUPERSEDED - do not start there.
+- **The new lever (the whole session's finding): the loop entry guard's count address must
+  be written POINTER-FIRST.**  `if (i < *(s32 *)((s32)slots + (slot_a << 6) + CNT))` scores
+  14; the identical value written shift-first `(slot_a << 6) + (s32)slots + CNT` scores 16;
+  with no `slots` local at all it scores 34.  This is a THREE-regime axis, not the two
+  regimes s2 recorded, and the third regime was invisible to s2 because every s2 spelling
+  wrote the address shift-first (the shift-first rule inherited from the pre-do-while era,
+  "index expression must be i-first", does NOT extend to the guard's count address).
+- **Second new lever: WHERE the `slots` read is hoisted.**  Hoisting `slots = *(u8**)(ctx+0xC)`
+  ABOVE the two >=0 top guards (so those guards consume it too) = 14.  Hoisting it only to
+  just-before-loop-1 = 15.  Re-reading it before each loop = 17.  No hoist (inline in each
+  loop guard) = 16.  Measured with everything else held fixed.
+- **Byte-exact surface is now everything except two insns.**  Target insns 75-126 (the
+  math_Distance3D call, all four link stores, both count-append blocks, the epilogue) and
+  both scan-loop BODIES are byte-identical; the frame is 0x40 / vars=16 as target.  The
+  entire remaining residual is one insn per scan-loop preheader:
+    target: `lw a0,0xC(s2); sll a1,s4,6; addu v0,a1,a0; lw v0,0x1C(v0)` then, after the
+            blez, `move a3,a0; lw a2,0x10(s2); addu a0,a1,a3`
+    ours:   `sll a0,s4,6; addu v0,a1,a0; lw v0,0x1C(v0)` then `lw v0,0xC(s2);
+            lw a2,0x10(s2); addu a0,a0,v0`
+  i.e. we reuse the hoisted `slots` register for the guard address and read fresh only for
+  the base; target reads fresh for the guard address and *copies* that read for the base.
+- **KILLED: the top >=0 guards are NOT a lever.**  s2's frontier item 1 claimed the top
+  guards' spelling controls whether the preheader reload appears.  Eight spellings measured
+  with the loop held fixed - inline reads (baseline), per-slot record-pointer locals dead
+  after the compare, a named `slots` local, `&&`-flattened, explicit `goto scan` inversion
+  (which puts the return-0 on the fall-through exactly as target does), pointer-arithmetic
+  address form, count-into-a-local, and goto+record-pointers - ALL scored 17 with the
+  17-form loop, and the association order of the top guards is inert at the 14-form too
+  (ts/tp x gs/gp x 3 base forms: only the LOOP guard's association moves the score).
+- **KILLED: no C-level spelling produces target's `move a3,a0` copy.**  Measured across ~60
+  variants this session: a second read before the guard, a second read inside the guard
+  body, a third read, a two-step C copy chain, a fresh read for the base with the guard on
+  the hoisted local and vice versa, base by int-cast / pointer-first / pointer arithmetic,
+  base assigned inside the do-while body, and fully-inline addressing (loop.c LICM).  Every
+  added read is either folded by cse or coalesced by local-alloc; base spelling is
+  completely inert at 14 (int-cast, pointer-first and pointer-arithmetic all score 14).
+- Artifacts: tmp/grind/func_80017848/s3/variants{,2..9}.py + final.py (the 60-variant
+  matrices), diff_G0_base.txt / diff_P3.txt / diff_Q4+G0_base.txt / diff_T1.txt /
+  diff_U8.txt / diff_V2.txt / diff_FINAL.txt (normalized target-vs-build diffs at each
+  score step), asm_*.txt (raw build disassembly), dv.sh (apply + score + dump + diff).
+
+- [s3] Floor 16 -> 14. src/ings.c carries the 14-form at session end; candidate.c updated; 125/127 insns; frame 0x40.
+
+- [s3] NEW LEVER: the loop entry guard's count address association order is a three-way regime switch - pointer-first `(s32)slots + (slot_a << 6) + CNT` = 14, shift-first `(slot_a << 6) + (s32)slots + CNT` = 16, no slots local (inline read) = 34. s2 saw only two regimes because every s2 spelling was shift-first.
+
+- [s3] NEW LEVER: hoisting the `slots = *(u8**)(ctx+0xC)` read ABOVE the two >=0 top guards (so they consume it) = 14; hoisting it only before loop 1 = 15; re-reading before each loop = 17; no hoist = 16.
+
+- [s3] The loop BASE spelling is completely inert at the 14-form (int-cast, pointer-first, pointer-arithmetic, copy-chain, inline/LICM all identical), as is the top-guard spelling (8 forms) and the top-guard association order.
+
+- [s3] Residual is now exactly 2 insns (1 per scan-loop preheader): target's fresh `lw a0,0xC(s2)` for the guard address plus its uncoalesced `move a3,a0` copy feeding `addu a0,a1,a3`. Everything else in the function - both loop bodies, all four link stores, both count-append blocks, the call, the prologue/epilogue and the frame - is byte-exact.
+
+- [s3] Floor improved 16 -> 14 this session (flat at 16 across s1 and s2). The 14-form is in src/ings.c at session end and saved to memory/grind/func_80017848/candidate.c; sandbox --disable all re-verified = 14, 125/127 build insns, frame 0x40 / vars=16 as target.
+
+- [s3] NEW LEVER: the loop entry guard's count address is a three-way regime switch on association order alone - pointer-first `(s32)slots + (slot_a << 6) + CNT` = 14, shift-first `(slot_a << 6) + (s32)slots + CNT` = 16, inline read with no local = 34. s2 saw only two regimes because every s2 spelling wrote that address shift-first.
+
+- [s3] NEW LEVER: hoisting the slots read ABOVE the two >=0 top guards (so they consume it too) = 14; hoisting only to just-before-loop-1 = 15; re-reading before each loop = 17; no hoist = 16.
+
+- [s3] The residual is now exactly 2 insns, one per scan-loop preheader. Target: `lw a0,0xC(s2); sll a1,s4,6; addu v0,a1,a0; lw v0,0x1C(v0)` then after the blez `move a3,a0; lw a2,0x10(s2); addu a0,a1,a3`. Ours: `sll a0,s4,6; addu v0,a1,a0; lw v0,0x1C(v0)` then `lw v0,0xC(s2); lw a2,0x10(s2); addu a0,a0,v0`. We reuse the hoisted slots register for the guard address and read fresh only for the base; target reads fresh for the guard address and copies that read for the base.
+
+- [s3] Everything else in the function is byte-exact: target insns 75-126 (the math_Distance3D call, all four link-record stores, both count-append blocks, the prologue/epilogue) and both scan-loop BODIES, verified against the normalized diff (tmp/grind/func_80017848/s3/diff_FINAL.txt).
+
+- [s3] The two >=0 top guards are inert as a lever: 8 spellings measured against the 17-form loop (including an explicit `goto scan` inversion that puts return-0 on the fall-through exactly as target lays it out) all scored 17/19, and their association order is inert at the 14-form too.
+
+- [s3] The loop BASE spelling is completely inert at the 14-form - int-cast, pointer-first, pointer arithmetic, an explicit two-step copy chain, assignment inside the do-while body and fully-inline addressing (forcing loop.c LICM) all score 14 with identical asm.
+
+- [s3] ~60 distinct forms were measured this session across nine variant matrices, all with the sandbox (score) and the cc1 frameprobe (.frame vars=) recorded per variant; every measured form kept frame 0x40, confirming s2's `i = 0; if (i < count)` guard-operand finding is orthogonal to the new association lever.

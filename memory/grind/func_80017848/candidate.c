@@ -1,21 +1,29 @@
-/* candidate.c — func_80017848 (src/ings.c) — floor 16 (confirmed s1, 2026-08-18)
- * This is the CURRENT src/ings.c form (already in place in the tree). 125/127 insns.
- * Everything outside the two scan loops is byte-exact. Residual = 8 pts per scan loop:
- * mine caches the count in a1 (move a1,v0 preheader; slt v0,v1,a1 bound) and splits the
- * index add (addu v0,v1,a3 delay + addu v0,v0,a0 loop-top); target keeps ONE hoisted
- * base (addu a3,a0,zero copy of slots; addu a0,a1,a3) used by both the index
- * (addu v0,a0,v1) and a PER-ITERATION count reload (lw v0,0x1C(a0); nop; slt).
- * See memory/grind/func_80017848/hypotheses.md frontier before editing.
+/* CANDIDATE - func_80017848, s3 (2026-08-18).  sandbox --disable all = 14
+ * (floor was 16 for three sessions; this is the first form below it).
+ * 125/127 build insns; EVERYTHING from the math_Distance3D call to the epilogue,
+ * both scan-loop bodies, the two >=0 top guards and the frame (0x40 / vars=16) are
+ * byte-exact.  The entire residual is 1 insn per scan-loop preheader: target reloads
+ * the slots pointer there (lw a0,0xC(s2)) and keeps an uncoalesced copy of it
+ * (move a3,a0) feeding a recomputed base (addu a0,a1,a3); this form reuses the
+ * hoisted `slots` pseudo for the loop guard and reads fresh only for the base.
  *
- * s2 (2026-08-18): this form still holds the numeric floor (16), but it is NO LONGER
- * the best starting point. candidate_alt_dowhile_ivar_17.c scores 17 with BOTH scan
- * loops byte-exact (target's per-iteration reload, single hoisted base and one-addu
- * index all reproduced, frame 0x40) — its whole residual is the 2-insn preheader.
- * Start s3 from the alt form. The floor-16 form's residual is still inside the loops.
+ * The three levers that produce this form (all measured s3, 60+ variants):
+ *   (1) source-level do-while  -> target's per-iteration bound reload + one-addu index
+ *       (inherited from s2);
+ *   (2) entry guard spelled `i = 0; if (i < count)` -> the phantom-16 frame
+ *       (inherited from s2);
+ *   (3) NEW s3: the loop entry guard's count address must be written POINTER-FIRST
+ *       `*(s32 *)((s32)slots + (slot_a << 6) + CNT)` and the `slots` read must be
+ *       hoisted ABOVE the two >=0 top guards so those guards consume it too.
+ *       Shift-first `(slot_a << 6) + (s32)slots + CNT` costs 2 pts; hoisting the read
+ *       only to just-before-loop-1 costs 1; re-reading it per loop costs 2-3.
+ * The loop BASE spelling is inert (int-cast / pointer-first / pointer arithmetic all 14).
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *slots;
+    u8 *p;
+    u8 *base;
     u8 *rec_a;
     u8 *rec_b;
     s32 i;
@@ -24,29 +32,38 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     if (slot_a == slot_b) {
         return 0;
     }
-    if (*(s32 *)((slot_a << 6) + (s32) * (u8 **)(ctx + 0xC) + 0x18) >= 0) {
-        if (*(s32 *)((slot_b << 6) + (s32) * (u8 **)(ctx + 0xC) + 0x18) >= 0) {
+
+    slots = *(u8 **)(ctx + 0xC);
+    if (*(s32 *)((slot_a << 6) + (s32)slots + 0x18) >= 0) {
+        if (*(s32 *)((slot_b << 6) + (s32)slots + 0x18) >= 0) {
             return 0;
         }
     }
 
-    slots = *(u8 **)(ctx + 0xC);
     i = 0;
-    while (i < *(s32 *)((slot_a << 6) + (s32)slots + 0x1C)) {
-        if (*(u16 *)((*(u8 *)(i + (slot_a << 6) + (s32)slots + 0x24) << 4) +
-                     (s32) * (u8 **)(ctx + 0x10) + 0x4) == slot_b) {
-            return 0;
-        }
-        i++;
+    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x1C)) {
+        p = *(u8 **)(ctx + 0xC);
+        base = (u8 *)((slot_a << 6) + (s32)p);
+        do {
+            if (*(u16 *)((*(u8 *)(base + i + 0x24) << 4) +
+                         (s32) * (u8 **)(ctx + 0x10) + 0x4) == slot_b) {
+                return 0;
+            }
+            i++;
+        } while (i < *(s32 *)(base + 0x1C));
     }
-    slots = *(u8 **)(ctx + 0xC);
+
     i = 0;
-    while (i < *(s32 *)((slot_a << 6) + (s32)slots + 0x20)) {
-        if (*(s16 *)((*(u8 *)(i + (slot_a << 6) + (s32)slots + 0x2C) << 4) +
-                     (s32) * (u8 **)(ctx + 0x10) + 0x6) == slot_b) {
-            return 0;
-        }
-        i++;
+    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x20)) {
+        p = *(u8 **)(ctx + 0xC);
+        base = (u8 *)((slot_a << 6) + (s32)p);
+        do {
+            if (*(s16 *)((*(u8 *)(base + i + 0x2C) << 4) +
+                         (s32) * (u8 **)(ctx + 0x10) + 0x6) == slot_b) {
+                return 0;
+            }
+            i++;
+        } while (i < *(s32 *)(base + 0x20));
     }
 
     dist = math_Distance3D((s32 *)(*(u8 **)(ctx + 0xC) + (slot_a << 6)),
@@ -70,3 +87,4 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     *(s16 *)(ctx + 0x6) = *(u16 *)(ctx + 0x6) + 1;
     return 1;
 }
+

@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 16,
    "modality": "structural",
    "headline": "Phantom-16 frame producer pinned to the guard's comparison operand (i < count, not the loop shape); a do-while + that guard makes BOTH scan loops byte-exact at 17, moving the entire residual out of th"
+  },
+  {
+   "session": 3,
+   "floor": 14,
+   "modality": "structural",
+   "headline": "Floor 16 -> 14 (first drop in 3 sessions): the loop entry guard's count address must be written POINTER-FIRST and the slots read hoisted above the two >=0 top guards; residual is now 2 insns total (on"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Regime A can be broken into target's shape without falling into regime B: the 17-form needs exactly ONE more live *(u8**)(ctx+0xC) read reaching the preheader while the top guards keep their own read.",
-   "mechanism": "The preheader reload exists only when the top guards' slots pseudo is dead at the merge; in target it dies at insn 20, in every regime-A spelling it lives to the preheader. Since the read count is a source-structure property (H2), the lever is the TOP GUARDS' spelling, not the loop's.",
-   "next_probe": "Re-spell the two >=0 top guards so their pointer dies at the compare (e.g. per-slot record-pointer locals dead after the compare, or reading each 0x18 field through its own inline ctx read), holding the loop at the alt-candidate form; verify insns 12-26 stay byte-exact and check whether lw a0,12(s2) appears at insn 27."
+   "hypothesis": "Target's `move a3,a0` is a register-ALLOCATION outcome (a coalescing failure), not a source-structure one, so it cannot be reached by any further read-count or address-spelling sweep.",
+   "mechanism": "cse replaces the base's redundant load with a reg-reg copy in every one of our builds too; local-alloc then coalesces it because the two pseudos do not conflict. Target's survive, so target's pseudos must conflict or carry an opposing preference. ~20 read-count spellings and 8 base spellings all failed to change this, which is what a pure-RA property looks like from the C side.",
+   "next_probe": "Spend the allocator-dump probe that s1/s2 both banked and never ran: cc1 -da on the 14-form (tools/gcc-2.7.2/cc1 per [[instrumented-cc1-location]], dumps to tmp/grind/func_80017848/s4/) and read .lreg/.greg to see which pseudo pair is coalesced and what conflict or register preference would prevent it. That names the property directly instead of guessing spellings."
   },
   {
-   "hypothesis": "Target's move a3,a0 is an uncoalesced register-allocator copy whose survival is caused by a register-preference property our C never creates.",
-   "mechanism": "cse replaces a redundant load with a reg-reg copy rather than deleting it; that copy survives only if local-alloc/global-alloc fails to coalesce the two pseudos. LICM is ruled out as the producer.",
-   "next_probe": "Read .lreg/.greg from the already-generated tmp/grind/func_80017848/s2/da_S3 dump set and find where our equivalent copy is coalesced away; the answer names the liveness/preference property to create."
+   "hypothesis": "The conflict that keeps target's copy alive comes from loop-1's SKIP edge: in target the blez at insn 36 jumps to .L8001791C, which is loop-2's guard AFTER loop-1's exit reload, so the loop-1 preheader's a0/a1 are live-out along the skip edge and conflict with the base pseudo.",
+   "mechanism": "A pseudo that is live-out on one successor edge conflicts with a pseudo defined on the other, so local-alloc cannot coalesce the copy that bridges them. Our build instead gives both paths one shared reload, so nothing is live across and the copy folds. This also explains why target is 127 insns and every one of our forms is 122-125.",
+   "next_probe": "Build a C shape where loop 2's guard is reachable from loop 1's skip WITHOUT its own read - e.g. hoist loop 2's count read next to loop 1's, or chain the two guards so the skip of loop 1 falls directly into loop 2's compare - and check whether `move a3,a0` appears and whether the loop-1 exit grows its own `lw a0,0xC(s2); sll a1,s4,6` pair as in target insns 51-52."
   },
   {
-   "hypothesis": "The named-count guard (n = count; i = 0; if (i < n)) is a second, distinct phantom-16 producer that may combine differently with the preheader read count.",
-   "mechanism": "It also yields frame 0x40 (score 19) while adding a live count local, which changes what is live across the guard \u2014 the exact axis that separates regime A from regime B.",
-   "next_probe": "Cross the named-count guard against the regime-B read pattern (all pointer reads fresh from ctx) and measure; a form with frame 0x40, the preheader reload and the copy would close the function."
+   "hypothesis": "The remaining 2-insn gap is in the regime where decomp-permuter outperforms hand sweeps, and permuter has never been run on this function.",
+   "mechanism": "s1-s3 were all hand-authored spelling matrices (~105 forms total) and the last three levers found (do-while shape, guard comparison operand, guard association order) were each invisible until someone happened to write that exact spelling. With 125 of 127 insns byte-exact and both residual insns confined to one basic block, the search space a permuter explores is now tiny.",
+   "next_probe": "Seed a fresh-seed campaign from candidate.c per [[permuter-fresh-seed-discipline]] (tools/permuter_campaign.py; wait in-turn with `wait --dir <ws>` and `harvest --stop` before ending the turn per [[grinder-permuter-orphan-stop-gate]]), scoring against the 14 floor."
   }
  ],
  "judge_constraints": [],

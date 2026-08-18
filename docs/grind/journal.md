@@ -1000,3 +1000,4 @@
 - 2026-08-18 11:58 func_80017848 s1 [recon] floor=16: Recon: floor 16 confirmed; residual mapped to one coupled loop-shape decision (single hoisted base + per-iteration count reload vs my cached count); 3-hypothesis frontier banked
 - 2026-08-18 12:17 func_80017848 s2 [structural] floor=16: Phantom-16 frame producer pinned to the guard's comparison operand (i < count, not the loop shape); a do-while + that guard makes BOTH scan loops byte-exact at 17, moving the entire residual out of the loops into a 2-insn preheader.
 - 2026-08-18 12:27 CIRCUIT-BREAK: 3 consecutive invalid sessions on func_80017848
+- 2026-08-18 12:51 func_80017848 s3 [structural] floor=14: Floor 16 -> 14 (first drop in 3 sessions): the loop entry guard's count address must be written POINTER-FIRST and the slots read hoisted above the two >=0 top guards; residual is now 2 insns total (one per scan-loop preheader) with the rest of the function byte-exact.
