@@ -968,3 +968,63 @@ as "SHARED-LOCAL loop 2 mirror costs N".
 - probe: W1 (base precomputed + `while`), W2 (plain `while` with the address recomputed in the condition), W3 (do/while with the count re-read through shift+pointer), W4 (base recomputed inside the body).
 - result: 9 / 14 / 7 / 10 versus 3.
 - verdict: CONFIRMED
+
+## [s11] Every banked s3-era spelling conclusion still standing is chassis-relative and must be re-measured on V1 before it is spent
+- mechanism: this function has inverted a banked conclusion in five consecutive sessions (s5 inverted s3/s4, s8 inverted two s7 conclusions, s9 inverted three s7/s8 conclusions); s3's pointer-first rule and its slots-hoist rule predate the s6 chassis retirement and had been carried unexamined through four chassis changes.
+- probe: matched-pair re-runs of every s3-era and s8-era conclusion against V1 with tmp/grind/func_80017848/s11/score.sh - association order at all five address sites, the slots hoist, the loop-1 two-step guard local, the t-reuse kill, the shared shift local.
+- result: BOTH s3 conclusions fall. Pointer-first is now a strict regression (top guards 5 vs 3; loop-1 guard 4; loop-1 base 4; loop-2 guard 4) and the slots hoist is inert (inline reads in both top guards = 3, tied). Both s8 loop-1 conclusions re-confirm (two-step guard 3 vs inline 7 vs count-local 7; t-reuse for loop 2 = 36/18; separate shift local worth 1).
+- verdict: CONFIRMED (the meta-hypothesis: banked spelling conclusions are chassis-relative and half of them invert)
+
+## [s11] The lever for loop 2's missing preheader copy is somewhere in loop 2's preheader C
+- mechanism: s10 mapped 28 hand-written variants across six families and found none below 3, but had not swept the axes independently, so a cross-product cell could still have been missed.
+- probe: three independent cross-products holding loop 2's guard on the carried `p` - the E cube (guard source x base addend x links x second use, 12 cells), the G cube (loop-1 guard shape x loop-2 guard shape x guard temp variable, 15 cells) and the H cross (4 loop-1 tails x 5 loop-2 preheader spellings, 20 cells) - plus the association-order pair on loop 2's base.
+- result: every carried-guard cell scores exactly its loop-1-tail baseline. The loop-2 preheader is C-INERT: named local vs inline read, links local vs inline, second use vs none, inline vs two-step-t2 vs count-local guard, and both association orders all produce the same score.
+- verdict: KILLED
+
+## [s11] Declaration order of the function's locals can flip local-alloc's tie decision at loop 2's base add
+- mechanism: pseudo-register numbers follow declaration order, and local-alloc's allocno ordering and combine_regs tie-breaking are sensitive to pseudo numbering, so a permutation could change which allocno wins the tie without changing any semantics. This is the sanctioned named-intermediate-declaration-order family.
+- probe: 56 permutations of the 13-local declaration block - 12 rotations, 13 move-to-front, the full reverse, and 30 random shuffles (seed 1234) - each engine-scored on a clean tree.
+- result: all 56 score exactly 3. Not one permutation moved a single instruction.
+- verdict: KILLED
+
+## [s11] Writing loop 2 as an exact statement-for-statement mirror of loop 1 (fresh read + two-step guard local + redundant read + links local) reproduces target's identical-preheader shape
+- mechanism: target's two preheaders are byte-identical instruction sequences with identical register numbers (`lw a0,12(s2); sll a1,s4,6; addu v0,a1,a0; lw v0,CNT(v0); blez; addu v1,zero,zero; addu a3,a0,zero; lw a2,16(s2); addu a0,a1,a3`), which is the fingerprint of two identical source constructs, so the C should be symmetric too.
+- probe: the S family (12 cells: fresh-name locals p2/q2/lnk2/t2 vs reuse of p/q/lnk/t, crossed with 3 loop-1 tails and 2 loop-2 tails) and the R family (54 cells: fresh read reusing `p` with an inline guard, crossed with base addend, links, second use and loop-1 tail).
+- result: fresh names = 10 uniformly, variable reuse = 36 uniformly, R family >= 9 uniformly. Loop 2's guard reading ctx+0xC freshly is a hard regime boundary worth 6 to 28 points regardless of every other axis; the carried `p` is mandatory. E_fresh's disassembly shows the whole function's allocation shifting (124 insns vs target 127, a0 and v1 swapping roles from loop 1's first instruction).
+- verdict: KILLED
+
+## [s11] Target's preheader copies are produced by the s9 second-use mechanism
+- mechanism: s9 showed a copy survives combine iff its destination has a second use downstream of the base add, and used `p = q;` in loop 1's exit tail to buy loop 1's copy.
+- probe: read target's own tail out of tmp/grind/func_80017848/s10/T.txt and look for any live carrier of ctx+0xC out of either loop.
+- result: there is none. Target re-reads ctx+0xC three separate times after loop 2 (T.txt:77 for the math_Distance3D args, :94 for the rec_a update, :104 for the rec_b update) and each loop's addend register a3 is dead immediately after its base add. Target's copies exist with NO second use.
+- verdict: KILLED (as an account of TARGET; the lever itself still works on our chassis and is still V1's best form - it is a coincidental reproduction of loop 1's bytes, and it cannot be replicated for loop 2 because no downstream purchase site exists)
+
+## [s11] Every banked s3-era and s8-era spelling conclusion still standing is chassis-relative and must be re-measured on the V1 chassis before it is spent (frontier item #2).
+- mechanism: This function has inverted a banked conclusion in five consecutive sessions (s5 inverted s3/s4; s8 inverted two s7 conclusions; s9 inverted three s7/s8 conclusions). s3's pointer-first rule and its slots-hoist rule predate the s6 chassis retirement and had been carried unexamined through four chassis changes.
+- probe: Matched-pair re-runs against V1 with tmp/grind/func_80017848/s11/score.sh: association order at all five address sites (top guards, loop-1 guard, loop-1 base, loop-2 guard, loop-2 base), the slots hoist, the loop-1 two-step guard local, the t-reuse kill for loop 2, and the shared shift local.
+- result: BOTH s3 conclusions fall. Pointer-first is now a strict regression at four of five sites (top guards 5 vs 3, loop-1 guard 4, loop-1 base 4, loop-2 guard 4; loop-2 base inert), and the slots hoist above the two >=0 top guards is INERT (deleting the local and reading inline in both guards = 3, exactly tied). Both s8 loop-1 conclusions re-confirm: two-step guard local 3 vs inline 7 vs count-into-local 7; t-reuse for loop 2 = 36 (two-step) / 18 (count-local) while a separate t2 is inert; one shared shift local = 4, so s9's second shift local is still worth 1.
+- verdict: CONFIRMED
+
+## [s11] The lever for loop 2's missing preheader copy is somewhere in loop 2's preheader C (s10 frontier item #1, C-level half).
+- mechanism: s10 measured 28 hand-written variants across six families and found none below 3, but had not swept the axes independently as a cross-product, so a cell could still have been missed.
+- probe: Three independent cross-products holding loop 2's guard on the carried `p`: the E cube (guard source x base addend x links x second use, 12 cells), the G cube (loop-1 guard shape x loop-2 guard shape x guard temp variable, 15 cells) and the H cross (4 loop-1 tails x 5 loop-2 preheader spellings, 20 cells), plus the association-order matched pair on loop 2's base address.
+- result: Every carried-guard cell scores exactly its loop-1-tail baseline. Base addend inline-fresh-read vs named local `q2` vs reuse of `q`, links inline vs named `lnk2`, a second use of the addend after the loop vs none, guard shape inline vs two-step-through-t2 vs count-into-local, and both association orders ALL produce the identical score. 47 distinct spellings, one score.
+- verdict: KILLED
+
+## [s11] Declaration order of the function's 13 locals can flip local-alloc's tie decision at loop 2's base add (the sanctioned named-intermediate-declaration-order family).
+- mechanism: Pseudo-register numbers follow declaration order, and local-alloc's allocno ordering and combine_regs tie-breaking are sensitive to pseudo numbering, so a permutation could change which allocno wins the tie with zero semantic change.
+- probe: 56 permutations of the declaration block, each engine-scored on a clean tree: 12 rotations, 13 move-to-front, the full reverse, and 30 random shuffles (seed 1234).
+- result: All 56 score exactly 3. Not one permutation moved a single instruction.
+- verdict: KILLED
+
+## [s11] Writing loop 2 as an exact statement-for-statement mirror of loop 1 reproduces target's identical-preheader shape, because target's two preheaders are byte-identical instruction sequences with identical register numbers.
+- mechanism: Target's loop-2 preheader is a register-for-register copy of loop 1's (`lw a0,12(s2); sll a1,s4,6; addu v0,a1,a0; lw v0,CNT(v0); blez; addu v1,zero,zero; addu a3,a0,zero; lw a2,16(s2); addu a0,a1,a3`), which is the fingerprint of two identical source constructs, so the C should be symmetric too - including loop 2 reading ctx+0xC freshly for its guard, which is what target's asm literally does.
+- probe: The S family (12 cells: fresh-name locals p2/q2/lnk2/t2 vs reuse of p/q/lnk/t, crossed with 3 loop-1 tails and 2 loop-2 tails) and the R family (54 cells: fresh read reusing `p` with an inline guard, crossed with base addend, links spelling, second use and loop-1 tail).
+- result: Fresh names = 10 uniformly; variable reuse = 36 uniformly; the R family is >= 9 in all 54 cells. Loop 2's guard reading ctx+0xC freshly is a HARD REGIME BOUNDARY worth 6 (reusing `p`) to 28 (a new local p2) regardless of every other axis - the carried `p` is mandatory. E_fresh's disassembly shows the whole function's allocation shifting (124 insns vs target's 127; a0 and v1 swap roles from loop 1's first instruction).
+- verdict: KILLED
+
+## [s11] Target's two dead preheader copies are produced by the s9 second-use mechanism (a copy survives combine iff its destination has a use downstream of the base add).
+- mechanism: s9 established the rule from the .lreg/.combine dumps and used `p = q;` in loop 1's exit tail to buy loop 1's copy; s10 priced the purchase at 2 in and 2 out. If that were target's mechanism, target must contain a live carrier of ctx+0xC out of at least one loop.
+- probe: Read target's own tail out of the normalized listing tmp/grind/func_80017848/s10/T.txt and look for any live carrier of ctx+0xC out of either loop, and for any use of the addend register after each base add.
+- result: There is none. Target re-reads ctx+0xC three separate times after loop 2 (T.txt:77 `lw a1,12(s2)` for the math_Distance3D args, T.txt:94 for the rec_a update, T.txt:104 for the rec_b update) and each loop's addend register a3 is dead immediately after its base add. Both of target's preheader copies therefore exist with NO second use.
+- verdict: KILLED

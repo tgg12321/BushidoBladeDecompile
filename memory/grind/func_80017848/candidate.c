@@ -86,6 +86,33 @@
  * either loop) is 4, not 1 - see rejected/s10_no_l1_second_use_symmetric_fresh
  * _reads_costs_4.c.
  */
+/* [s11 STRUCTURAL ADDENDUM - body unchanged, still 3, re-measured on a clean
+ * tree as cell A_base.]  s11 swept ~120 cells across every structural axis of
+ * this chassis and found no cell below 3.  What it DID establish:
+ *   - s3's two surviving conclusions are retired: pointer-first association is
+ *     now a strict REGRESSION at four of the five address sites (top guards 5,
+ *     loop-1 guard 4, loop-1 base 4, loop-2 guard 4), and the `slots` hoist
+ *     above the two >=0 top guards is INERT (inline reads in both guards = 3).
+ *     The `slots` local is kept here only because it is tied, not because it
+ *     earns anything.
+ *   - loop 2's entire preheader is C-INERT: base addend (inline / named local /
+ *     reused), links (inline / named local), a second use of the addend, the
+ *     guard shape (inline / two-step through a SEPARATE t2 / count-into-local)
+ *     and the association order all score identically.  47 cells, one score.
+ *   - declaration order of the 13 locals is completely inert (56 permutations).
+ *   - loop 2's guard MUST consume the carried `p`.  Reading ctx+0xC freshly
+ *     there - which is what target's asm literally does - costs 6 (reusing `p`)
+ *     to 28 (a new local), uniformly across 66 cells.
+ *   - s8's loop-1 two-step guard local (3 vs 7 vs 7) and its t-reuse kill for
+ *     loop 2 (36 / 18) both re-confirm on V1; s9's second shift local is +1.
+ *   - THE s9 SECOND-USE LEVER IS NOT TARGET'S MECHANISM.  Target has no live
+ *     carrier of ctx+0xC out of either loop: it re-reads it three times in the
+ *     tail (s10/T.txt:77, :94, :104) and each addend register dies at its base
+ *     add.  So both of target's preheader copies exist with NO second use, and
+ *     loop 2's copy can never be bought the s9 way - there is no purchase site.
+ *     The `p = q;` tail below reproduces loop 1's bytes for the wrong reason,
+ *     at a price of exactly 1 (fresh-read tail = 4, no tail = 12).
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;

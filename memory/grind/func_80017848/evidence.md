@@ -1112,3 +1112,125 @@ confirmed but is now known to be a tie rather than a win.
 - [s10] Exact cost accounting of the residual 3: a preheader copy costs 2 points to BUY (the loop's exit tail is spent on the second use, emitting `addu a0,a3,zero` where target has `lw a0,12(s2)`) and returns 2. Loop 1 only nets out because its purchase instruction lands where target has an instruction of its own. Removing the purchase entirely - symmetric fresh reads, no second use in either loop - scores 4, not 1 (M6).
 
 - [s10] 10 new disproven forms banked to memory/grind/func_80017848/rejected/ (61 total). Best form unchanged at 3; candidate.c carries an s10 addendum correcting the s9 header's symmetric-copies reading.
+
+## [s11] STRUCTURAL SWEEP OF THE WHOLE V1 CHASSIS (floor holds at 3)
+
+s11 was the frontier's item #2: re-run every banked s3-era and s8-era spelling
+conclusion as a matched pair against the V1 chassis, plus a full structural
+sweep of the two regions the residual lives in.  ~120 engine-scored cells, all
+with tmp/grind/func_80017848/s11/score.sh (the s9 harness re-pathed); every cell
+body is in tmp/grind/func_80017848/s11/v/.  V1 (memory/grind/func_80017848/
+candidate.c) re-measured at 3 on a clean tree as cell A_base, and NOTHING found
+this session beats it.  The value of the session is that it closes four whole
+structural families and inverts two banked s3 conclusions.
+
+### [s11] s3's TWO SURVIVING CONCLUSIONS ARE BOTH RETIRED ON V1.
+- **"The loop entry guard's count address must be written POINTER-FIRST" is
+  INVERTED.**  On V1 shift-first is optimal at every one of the five address
+  sites, and pointer-first is a strict regression at four of them: top guards
+  `(s32)slots + (slot_a<<6) + 0x18` = 5 (vs 3), loop-1 guard `(s32)p + sh` = 4,
+  loop-1 base `(s32)q + sh` = 4, loop-2 guard `(s32)p + sh2` = 4, loop-2 base
+  = 3 (inert).  s3 measured pointer-first 14 / shift-first 16 on the s3 chassis
+  and s5 re-confirmed it on the s4 chassis; V1 reverses the sign.  Cells
+  A_tg1 / A_g1 / A_b1 / A_c1 / A_d1.
+- **"Hoisting the `slots` read ABOVE the two >=0 top guards" is INERT.**
+  Deleting the `slots` local entirely and reading `*(u8 **)(ctx + 0xC)` inline
+  in both top guards (cell A_tg2) scores 3 - exactly tied with V1.  s3 measured
+  no-hoist = 16 against hoisted = 14.  The lever no longer exists.
+
+### [s11] LOOP 2's ENTIRE PREHEADER IS C-INERT ON V1.  This closes s10's
+frontier #1 at the C level.  Holding loop-2's guard on the carried `p`, EVERY
+spelling of loop 2's preheader produces the identical score:
+  - base addend: inline fresh read / named local `q2` / reuse of `q` = same
+  - links: inline `*(u8 **)(ctx + 0x10)` / named `lnk2` local = same
+  - a second use of the base addend after the loop (`p = q2;`) = same
+  - guard shape: inline / two-step through a SEPARATE `t2` local / count-into-
+    a-separate-local = all 3
+  - association order of the base address = 3 either way
+  Measured as the full E cube (12 cells), the G cube (15 cells) and the H cross
+  (20 cells: 4 loop-1 tails x 5 loop-2 preheader spellings).  Every carried-
+  guard cell equals its loop-1-tail baseline exactly.  The only non-inert cell
+  in the H cross is `qreuse` (loop 2 reusing loop 1's `q`/`lnk`), which is worse
+  (9/12/14) and is not a loop-2 effect at all - it changes loop 1's codegen.
+
+### [s11] LOCAL DECLARATION ORDER IS COMPLETELY INERT.  56 permutations of the
+13-local declaration block (12 rotations, 13 move-to-front, full reverse, 30
+random shuffles, seed 1234) ALL score exactly 3.  The sanctioned "named-
+intermediate declaration order" family therefore has no purchase on this
+function at V1, and no future session should spend a cell on it.  Cells D_*.
+
+### [s11] LOOP 2's GUARD MUST CONSUME THE CARRIED `p` - a hard regime boundary.
+Target's asm reads ctx+0xC freshly at the top of loop 2's guard block
+(`lw a0,12(s2)`, asm/funcs/func_80017848.s loop-2 preheader), so the obvious
+structural move is to spell that as a fresh read in C.  It is catastrophic:
+  - fresh read into a NEW local `p2`  = 31 (cell E_fresh_*, 124 insns; the whole
+    function's allocation shifts, a0 and v1 swap roles from insn 1 of loop 1)
+  - fresh read REUSING `p`            = 9  (R family, 30 cells, all >= 9)
+  - fresh read reusing `p` + t-local guard = 36 (S_reuse family, 6 cells)
+  - carried `p` (V1)                  = 3
+This holds across all 54 R-family cells (3 loop-1 tails x 3 base addends x 3
+links spellings x 2 second-use choices) and all 12 S-family cells, i.e. it is
+independent of every other loop-2 axis.  It is also why the full target-
+symmetric loop 2 (fresh read + two-step guard local + redundant read + links
+local, mirroring loop 1 statement for statement) is 10 with fresh names and 36
+with variable reuse - both banked in rejected/.
+
+### [s11] s8's TWO LOOP-1 LEVERS ARE RE-CONFIRMED ON V1 (matched pairs).
+- loop-1 guard MUST be the two-step `t = sh + (s32)p; t = *(s32 *)(t + 0x1C);
+  if (i < t)`: two-step = 3, inline = 7, count-into-local = 7 (G cube).
+- reusing `t` for loop 2's guard is still catastrophic: 36 (two-step) / 18
+  (count-into-local).  A SEPARATE `t2` local is inert at 3.  s8's kill stands.
+- sharing ONE shift local across both loops = 4; s9's second shift local `sh2`
+  is still worth 1 (cell T7).
+
+### [s11] THE SECOND-USE MECHANISM IS NOT TARGET'S MECHANISM - proved from the
+target listing.  s9's lever buys loop 1's preheader copy by giving the base
+addend a downstream use (`p = q;` in loop 1's exit tail).  Target has no such
+carrier ANYWHERE: after loop 2 it re-reads ctx+0xC three separate times
+(tmp/grind/func_80017848/s10/T.txt lines 77 `lw a1,12(s2)` for the
+math_Distance3D args, 94 and 104 for the two record updates), and inside each
+loop the addend register (a3) is dead immediately after the base add.  So both
+of target's preheader copies exist WITHOUT a second use, and s9's lever is a
+coincidental reproduction of loop 1's bytes, not the original mechanism.  The
+corollary is that loop 2's copy can never be purchased the s9 way, because
+there is no downstream site to purchase it with - independently re-confirming
+s9's T-family (19) and s10's R-family kills from the target side rather than
+by measurement.
+
+### [s11] THE PURCHASE IS STRUCTURALLY FORCED, AND ITS PRICE IS EXACTLY 1.
+Loop-1 exit tail: `p = q;` = 3, `p = *(u8 **)(ctx + 0xC);` = 4, nothing = 12.
+The fresh-read tail MAKES loop 1's tail insn match target (`lw a0,12(s2)`) but
+loses loop 1's preheader copy, which costs 2 - net +1.  cse cannot rescue it:
+the loop-1 exit block's extended basic block starts at the loop-top join, so
+the redundant load in the tail has no equivalence entry for `q` and is emitted
+as a real load.  Disassembly of both forms is in the session log; H_fr's
+residual is 4 = 2 (loop-1 preheader, copy missing, `addu a0,a1,a0` instead of
+`addu a3,a0,zero` + `addu a0,a1,a3`) + 2 (loop-2 preheader, unchanged).
+
+### [s11] POINTER-SOURCE VARIANTS, all worse, all matched pairs against V1:
+single top read consumed by the top guards AND loop 1 = 9 (re-confirms s5's
+E-s5-3 kill on V1); `p = slots;` copy instead of loop 1's fresh read = 6;
+loop-1 guard consuming `slots` = 7; loop-2 guard consuming `slots` = 17;
+loop-2 guard consuming loop-1's `q` = 12.
+
+- [s11] [s11] V1 (memory/grind/func_80017848/candidate.c) re-measured at 3 on a clean tree as cell A_base; the minimum over all ~120 cells scored this session is 3, so the floor is unchanged.
+
+- [s11] [s11] s3's banked rule 'the loop entry guard's count address must be written POINTER-FIRST' is INVERTED on V1: shift-first is optimal at every one of the five address sites, and pointer-first is a strict regression at four of them (top guards 5 vs 3, loop-1 guard 4, loop-1 base 4, loop-2 guard 4; loop-2 base inert at 3).
+
+- [s11] [s11] s3's banked rule 'hoist the slots read ABOVE the two >=0 top guards' is INERT on V1: deleting the `slots` local entirely and reading *(u8 **)(ctx + 0xC) inline in both top guards scores 3, exactly tied (s3 measured no-hoist = 16 vs hoisted = 14).
+
+- [s11] [s11] LOOP 2's ENTIRE PREHEADER IS C-INERT ON V1. Holding loop 2's guard on the carried `p`, 47 distinct spellings all score identically: base addend (inline fresh read / named local q2 / reuse of q), links (inline / named lnk2), a second use of the addend after the loop, guard shape (inline / two-step through a separate t2 / count-into-a-separate-local), and both association orders. Measured as the E cube (12 cells), the G cube (15 cells) and the H cross (20 cells).
+
+- [s11] [s11] LOCAL DECLARATION ORDER IS COMPLETELY INERT: 56 permutations of the 13-local block (12 rotations, 13 move-to-front, full reverse, 30 random shuffles seed 1234) all score exactly 3. No future session should spend a cell on this family for this function.
+
+- [s11] [s11] LOOP 2's GUARD MUST CONSUME THE CARRIED `p` - a hard regime boundary independent of every other loop-2 axis. A fresh read of ctx+0xC at loop 2's guard costs 6 when it reuses `p` (R family, 54 cells, min 9) and 28 when it uses a new local p2 (E_fresh, 6 cells, all 31; 124 insns vs target 127, with a0/v1 swapping roles from loop 1's first instruction). The fully target-symmetric loop 2 is 10 with fresh names and 36 with variable reuse.
+
+- [s11] [s11] s8's loop-1 levers re-confirm on V1 as matched pairs: the two-step guard local `t = sh + (s32)p; t = *(s32 *)(t + 0x1C); if (i < t)` is 3 against inline 7 and count-into-local 7; reusing `t` for loop 2's guard is still catastrophic (36 two-step / 18 count-local) while a separate `t2` is inert; sharing ONE shift local across both loops is 4, so s9's second shift local is worth 1.
+
+- [s11] [s11] THE s9 SECOND-USE LEVER IS NOT TARGET'S MECHANISM, proved from the target listing rather than by measurement. Target has no live carrier of ctx+0xC out of either loop: it re-reads ctx+0xC three separate times in the tail (s10/T.txt:77 for the math_Distance3D args, :94 for rec_a, :104 for rec_b) and each loop's addend register a3 dies at its base add. So loop 2's copy can NEVER be purchased the s9 way - there is no downstream purchase site - which re-confirms s9's T-family (19) and s10's R-family kills from the target side.
+
+- [s11] [s11] The purchase is structurally forced and its price is exactly 1. Loop-1 exit tail: `p = q;` = 3, `p = *(u8 **)(ctx + 0xC);` = 4, nothing = 12. The fresh-read tail MAKES loop 1's tail instruction match target (`lw a0,12(s2)`) but loses loop 1's preheader copy, which costs 2 - net +1. cse cannot rescue it: the loop-1 exit block's extended basic block starts at the loop-top join, so the redundant load has no equivalence entry for `q` and is emitted as a real load. H_fr's residual is 4 = 2 (loop-1 preheader copy missing) + 2 (loop-2 preheader unchanged).
+
+- [s11] [s11] Pointer-source variants, all worse, all matched pairs against V1: a single top read consumed by the top guards AND loop 1 = 9 (re-confirms s5's E-s5-3 kill on V1); `p = slots;` copy instead of loop 1's fresh read = 6; loop-1 guard consuming `slots` = 7; loop-2 guard consuming `slots` = 17; loop-2 guard consuming loop-1's `q` = 12.
+
+- [s11] [s11] The 3-instruction residual is confirmed unchanged and is a clean SWAP: loop-1 exit tail target `lw a0,12(s2)` vs ours `addu a0,a3,zero`; loop-2 preheader target `addu a3,a0,zero` + `addu a0,a1,a3` vs ours `lw v0,12(s2)` + `addu a0,a1,v0`. Instruction COUNT already matches target's 127 exactly; only these three opcodes/registers differ.
