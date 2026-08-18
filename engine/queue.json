@@ -61,14 +61,6 @@
       "status": "active"
     },
     {
-      "func": "func_8003CF84",
-      "file": "code6cac_c2",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8008C1E8",
       "file": "main",
       "distance": 28,
@@ -2313,14 +2305,14 @@
     }
   ],
   "counts": {
-    "total": 264,
-    "active": 223,
+    "total": 263,
+    "active": 222,
     "by_status": {
-      "active": 223,
+      "active": 222,
       "parked": 41
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 37
     }
   }
