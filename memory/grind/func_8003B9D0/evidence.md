@@ -908,3 +908,82 @@ measurements, and one is not:
 - [s6-synthesis] PIPELINE GOTCHA (generalises to every function): a full `build` run with experimental source in the tree rewrites build/src/<file>.o, which is the reference object `sandbox` scores against. The legal body measured 7 against the contaminated reference and 6 after `git checkout -- src/` plus a second `build`. Always restore src and rebuild before trusting a post-`build` sandbox number.
 
 - [s6-synthesis] THE PARTITION IS CLOSED, not merely unexplored. Route (A) is measured empty for this function (s6 K16), route (B) is forbidden by target's own instruction stream and costs 11 when bought anyway (s3), and route (C) â€” no qty_const-bearing base pseudo â€” is reachable in GCC 2.7.2 only from an ARRAY_REF on an incomplete-array-typed object, i.e. only by changing the object's declared type. There is no fourth state of the cse machinery that produces register+displacement addressing here.
+
+## 2026-08-17 — s7 MEASUREMENT SESSION (owner-ruled struct-table merge)
+
+Executes the 2026-08-17 owner ruling (docs/grind/decisions.md): the ONE permitted
+new spelling is the complete per-word-symbol -> aggregate merge, struct-table form.
+
+**Declaration applied** (include/code6cac.h, replacing `extern s16 D_80101EDA;`
+at old :339 and `extern s16 D_80102326;` at old :410, both now DELETED):
+
+```c
+typedef struct PracticeMenuRec {
+    u8  unk_00[0x12];
+    s16 unk_12;
+    u8  unk_14[0x438];
+} PracticeMenuRec;                 /* sizeof == 0x44C */
+
+extern PracticeMenuRec g_practice_menu_table[];
+```
+
+Base symbol resolves via named_syms.txt:345 (`g_practice_menu_table = 0x80101EC8`),
+already fed to ld by the Makefile's `-T named_syms.txt`. No new symbol config was
+needed; undefined_syms_auto.txt was NOT edited (D_80101EDA/D_80102326 remain as
+link-time symbol definitions there but have zero C handles).
+
+**Access spelling** (src/code6cac_c2.c, on top of candidate.c's D1+D2 body):
+`g_practice_menu_table[0].unk_12` / `g_practice_menu_table[1].unk_12` at all six
+in-function sites, plus the two other value-use sites in the same TU (the
+func_80054884 calls formerly reading D_80101EDA / D_80102326).
+
+**Measurements**
+
+| # | State | sandbox --disable all | build_insns / target_insns |
+|---|---|---|---|
+| 0 | committed HEAD body (cheat-asm stripped) | 21 | 178 / 185 |
+| 1 | struct-table merge (this session) | **3** | **185 / 185** |
+
+Region A is CLOSED: the three re-materialised `lui`+`%lo` pairs are gone and the
+build emits target's `addiu s0,s0,%lo(...)` + `lh/sh $r,1100($s0)` /
+`lh $r,<disp>($hi)` forms. The residual 3 is the
+[[sandbox-lo16-text-addend-false-distance]] artifact in its data-symbol form:
+target relocates against `D_80101EDA`/`D_80102326` with addend 0, we relocate
+against `g_practice_menu_table` with addend 0x12 / 0x45E. Same addresses
+(0x80101EC8+0x12 == 0x80101EDA, 0x80101EC8+0x44C+0x12 == 0x80102326), same linked
+words. Instruction ORDER and register allocation are identical at all 185 slots
+(only those 3 disp/addend fields differ in the objdump text).
+
+**Full-build byte neutrality**: `verify-oracle --rebuild --allow-dirty` ->
+build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**, with
+the merged declaration in the shared header and every consumer rewritten.
+
+**The regfix rule is now INERT.** `engine.score.func_byte_signature` of
+build/src/code6cac_c2.o (rules APPLIED, from the oracle-matching build) is
+byte-identical to tmp/sandbox/func_8003B9D0/code6cac_c2.o (rules DROPPED,
+cheat-asm stripped). The remaining `func_8003B9D0: fill_delay @ 49 <- 52`
+(regfix.txt:1041) therefore produces no byte change against the struct-table body;
+retiring it is predicted byte-neutral. NOT executed this session (operator
+constraint: the rule stays until the completion pass).
+
+**Cross-TU consumers (src/code6cac_c_ab.c:368, :395).** Both sites formerly punned
+`(u8 *)&D_80101EDA + <byte offset>`. Two spellings measured:
+
+- Variant A (natural struct index): `g_practice_menu_table[s2].unk_12` and
+  `g_practice_menu_table[arg0].unk_12`. **NOT byte-neutral** — build/src/
+  code6cac_c_ab.o .text grew 3724 -> 3752 bytes (+28 == 7 insns), which shifted
+  the whole EXE (+28) and rewrote that object's .rodata jump table at 0x80010CA4.
+  Both enclosing functions (func_8003AFFC score 4, func_8003B10C score 48) are
+  themselves UNMATCHED and hold their bytes only through their own rules, so the
+  natural index disturbs their cheat-held codegen. Rejected per the ruling's
+  byte-neutrality prong.
+- Variant B (kept, in tree): `*(s16 *)((u8 *)g_practice_menu_table + s0 + 0x12)`
+  and `*(s16 *)((u8 *)g_practice_menu_table + arg0 * 1100 + 0x12)`. Byte-neutral
+  (the oracle-matching build above includes it). This retires the last two C
+  handles on the merged storage while preserving the existing address arithmetic;
+  converting these two sites to the natural index belongs to those functions' own
+  grinds, not to this merge.
+
+Result: zero occurrences of `D_80101EDA` / `D_80102326` remain in src/ or include/
+(one C handle per storage, prong (c) satisfied); the declaration is header-level
+(prong (d)); byte-neutrality + oracle verified (prong (e)).

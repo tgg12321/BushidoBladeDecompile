@@ -365,7 +365,8 @@ void func_8003AFFC(void) {
     edcp = &D_80101EDC;
     s0 = 0;
 loop:
-    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + s0));
+    /* interim: byte-offset pun on g_practice_menu_table, inherited from pre-struct code (9cb130a8); naturalize to .unk_12 when func_8003AFFC is matched */
+    func_800493E4(*(s16 *)((u8 *)g_practice_menu_table + s0 + 0x12));
     func_800494D4(s2, *(tbl + *(s16 *)((u8 *)&D_80101ED2 + s0) * 8 + *(s16 *)((u8 *)&D_80101ED6 + s0)));
 
     v1 = *edcp;
@@ -392,7 +393,8 @@ void func_8003B10C(s32 arg0) {
     func_80020D38();
     func_8004939C();
 
-    func_800493E4(*(s16 *)((u8 *)&D_80101EDA + arg0 * 1100));
+    /* interim: byte-offset pun on g_practice_menu_table, inherited from pre-struct code (9cb130a8); naturalize to .unk_12 when func_8003B10C is matched */
+    func_800493E4(*(s16 *)((u8 *)g_practice_menu_table + arg0 * 1100 + 0x12));
 
     if (D_800A38DC == 5) {
         s32 v1;

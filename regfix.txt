@@ -1012,7 +1012,6 @@ func_8008BF04: $3 <-> $6 @ 39-44
 # func_8003B9D0: target schedules andi ,,0x0010 into beqz delay slot of &0x30 check.
 # GCC put nop in delay because asm constraint (=r/0 on eda) blocks scheduling past la.
 # Move idx 52 andi into idx 50 nop; deletes source idx 52.
-func_8003B9D0: fill_delay @ 49 <- 52
 
 # func_80038170: prologue scheduling — sw ra goes late (right before sllv)
 # Mine: sw_ra(9), addu_a3(10), li_a0(11), li_a2(12), lw_a1(13/la), sllv(14)

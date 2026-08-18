@@ -163,8 +163,6 @@ extern u8 D_800A37B6;
 extern s32 D_800A37B8;
 extern u8 D_800A390F;
 extern s16 D_800A3834;
-extern s16 D_80101EDA;
-extern s16 D_80102326;
 extern void gpu_InitDisplay(void);
 extern void gpu_DisableDisplay(void);
 extern void gpu_EnableDisplay(void);
@@ -207,23 +205,17 @@ void func_8003B9D0(void) {
         u8 *q = (u8 *)D_800A3878;
         u8 qf = q[3];
         if (qf & 0x30) {
-            s16 *eda = &D_80101EDA;
-            __asm__ __volatile__("" : "=r"(eda) : "0"(eda));
-            saved_first = eda[0];
-            saved_44c = eda[0x226];
-            if (qf & 0x10) eda[0] = 0x32;
-            if (q[3] & 0x20) eda[0x226] = 0x32;
+            saved_first = g_practice_menu_table[0].unk_12;
+            saved_44c = g_practice_menu_table[1].unk_12;
+            if (qf & 0x10) g_practice_menu_table[0].unk_12 = 0x32;
+            if (q[3] & 0x20) g_practice_menu_table[1].unk_12 = 0x32;
             func_8003AFFC();
-            eda[0] = saved_first;
-            eda[0x226] = saved_44c;
+            g_practice_menu_table[0].unk_12 = saved_first;
+            g_practice_menu_table[1].unk_12 = saved_44c;
         }
     }
-    a3_arg = -1;
-    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = D_80101EDA;
-    __asm__ __volatile__("" ::: "memory");
-    a0_arg = -1;
-    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = D_80102326;
-    __asm__ __volatile__("" ::: "memory");
+    if (((u8 *)D_800A3878)[3] & 0x1) a3_arg = g_practice_menu_table[0].unk_12; else a3_arg = -1;
+    if (((u8 *)D_800A3878)[3] & 0x2) a0_arg = g_practice_menu_table[1].unk_12; else a0_arg = -1;
     p = (u8 *)D_800A3878;
     flags = p[3];
     if (flags & 0x10) a3_arg = 0x32;
@@ -474,7 +466,7 @@ void func_8003C040(void) {
         }
     skip_copy:;
     }
-    func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EDA, -1, -1, -1, (s32)0x80118800);
+    func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, g_practice_menu_table[0].unk_12, -1, -1, -1, (s32)0x80118800);
     func_80041688(0, 0);
     func_80041688(1, 0);
     game_Cleanup();
@@ -840,7 +832,7 @@ void func_8003CE18(void) {
         }
         result = func_80022408(addr);
         D_800A3818 = result;
-        func_80054884(0x16, s0, result, (s32)D_80101EDA, (s32)D_80102326, -1, -1, 0);
+        func_80054884(0x16, s0, result, (s32)g_practice_menu_table[0].unk_12, (s32)g_practice_menu_table[1].unk_12, -1, -1, 0);
     }
     func_80041688(0, 0);
     func_80041688(1, 0);

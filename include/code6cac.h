@@ -12,6 +12,18 @@ extern u8 g_module_type_tbl;
 extern s32 menuDat;
 extern s16 single_dojo_yaburi_char_id_tbl;
 
+/* Per-character / practice-menu record table (base 0x80101EC8, stride 0x44C,
+ * 4 records).  Schema: docs/naming/CHAR_STRUCT_SCHEMA.md; base symbol:
+ * named_syms.txt:345 (g_practice_menu_table).  Only the fields reached by C so
+ * far are named; the rest is reserved padding. */
+typedef struct PracticeMenuRec {
+    u8  unk_00[0x12];
+    s16 unk_12;
+    u8  unk_14[0x438];
+} PracticeMenuRec;                 /* sizeof == 0x44C */
+
+extern PracticeMenuRec g_practice_menu_table[];
+
 /* Data symbols */
 extern s32 D_800100A4;
 extern s32 D_800109C8;
@@ -336,7 +348,6 @@ extern s32 D_80101EA4;
 extern u8 D_80101EC8;
 extern s16 D_80101ECE;
 extern s16 D_80101ED2;
-extern s16 D_80101EDA;
 extern s16 D_80101EDC;
 extern s16 D_80101EE8;
 extern s32 D_80101F04;
@@ -407,7 +418,6 @@ extern s16 D_801021E2;
 extern u8 D_80102216;
 extern s16 D_8010231A;
 extern u16 D_80102322;
-extern s16 D_80102326;
 extern s16 D_80102334;
 extern s32 D_80102350;
 extern s16 D_8010235C;
