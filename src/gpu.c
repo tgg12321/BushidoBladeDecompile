@@ -596,7 +596,7 @@ u32 ResetGraph(s32 a0) {
         if (g_gpu_debug_level >= 2) {
             g_gpu_debug_func(&D_80015E7C, a0);
         }
-        ((void (*)(s32))g_gpu_dev_table[0x34 / 4])(1);
+        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
         break;
     }
 }
@@ -608,15 +608,15 @@ u32 SetGraphReverse(s32 a0) {
         g_gpu_debug_func(&D_80015E90, a0);
     }
     *p = a0;
-    val = ((u32 (*)(s32))g_gpu_dev_table[0x28 / 4])(8);
+    val = ((u32 (*)(s32))((u32 *)g_gpu_dev_table)[0x28 / 4])(8);
     if (*p) {
         val |= 0x8000080;
     } else {
         val |= 0x8000000;
     }
-    ((void (*)(u32))g_gpu_dev_table[0x10 / 4])(val);
+    ((void (*)(u32))((u32 *)g_gpu_dev_table)[0x10 / 4])(val);
     if (g_gpu_type == 2) {
-        u32 *tbl = g_gpu_dev_table;
+        u32 *tbl = (u32 *)g_gpu_dev_table;
         val = 0x20000504;
         if (g_gpu_dither) {
             val = 0x20000501;
@@ -643,7 +643,7 @@ u32 SetGraphQueue(s32 a0) {
         g_gpu_debug_func(&D_80015ED4, a0);
     }
     if (a0 != *p) {
-        ((void (*)(s32))g_gpu_dev_table[0x34 / 4])(1);
+        ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
         *p = a0;
         DMACallback(2, 0);
     }

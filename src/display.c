@@ -78,7 +78,7 @@ void SetDispMask(s32 a0) {
     }
     {
         u32 cmd = GP1_DISP_ENABLE;
-        u32 *v0 = g_gpu_dev_table;
+        u32 *v0 = (u32 *)g_gpu_dev_table;
         if (a0) {
             cmd = 0x03000000;
         }
@@ -90,7 +90,7 @@ void DrawSync(s32 a0) {
         g_gpu_debug_func(&g_str_drawsync, a0);
     }
     {
-        u32 *v0 = g_gpu_dev_table;
+        u32 *v0 = (u32 *)g_gpu_dev_table;
         ((void (*)(s32))v0[15])(a0);
     }
 }
@@ -123,7 +123,6 @@ end:
     ;
 }
 extern u8 g_str_clearimage;
-extern s32 g_gpu_dev_table;
 extern void func_8007B3A8(u8 *, s16 *);
 
 void ClearImage(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
@@ -150,7 +149,7 @@ extern u32 g_str_loadimage;
 void LoadImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_loadimage, a0);
-    v0 = g_gpu_dev_table;
+    v0 = (u32 *)g_gpu_dev_table;
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[8], a0, 8, a1);
 }
 extern u32 g_str_storeimage;
@@ -158,36 +157,27 @@ extern u32 g_str_storeimage;
 void StoreImage(s32 a0, s32 a1) {
     u32 *v0;
     func_8007B3A8(&g_str_storeimage, a0);
-    v0 = g_gpu_dev_table;
+    v0 = (u32 *)g_gpu_dev_table;
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
 }
 extern u8 D_80015F74;
-extern s32 D_8009BF24;
-extern s32 D_8009BF28;
-extern s32 D_8009BF2C;
+extern u32 g_gpu_move_param[5];
 
 s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
-    s32 *p;
-    s32 (*fn)();
     s32 packed;
-    s32 *bf24;
 
     func_8007B3A8(&D_80015F74, (s32)arg0);
-    if (((s16 *)arg0)[2] == 0) {
-        return -1;
-    }
-    if (((s16 *)arg0)[3] == 0) {
+    if (((s16 *)arg0)[2] == 0 || ((s16 *)arg0)[3] == 0) {
         return -1;
     }
     packed = ((s32)arg2 << 16) | ((u32)arg1 & 0xFFFF);
-    bf24 = &D_8009BF24;
-    *bf24 = arg0[0];
-    D_8009BF28 = packed;
-    D_8009BF2C = arg0[1];
-    p = (s32 *)g_gpu_dev_table;
-    fn = (s32 (*)())p[2];
-    return fn(p[6], (s32)bf24 - 8, 0x14, 0);
+    g_gpu_move_param[2] = arg0[0];
+    g_gpu_move_param[3] = packed;
+    g_gpu_move_param[4] = arg0[1];
+    return g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, g_gpu_move_param,
+                                    sizeof(g_gpu_move_param), 0);
 }
+
 extern u32 g_str_clearotag;
 extern u32 g_gpu_ot_end;
 
@@ -220,7 +210,7 @@ u32 *ClearOTagR(u32 *ot, s32 n) {
         new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
     }
     {
-        u32 *v0 = g_gpu_dev_table;
+        u32 *v0 = (u32 *)g_gpu_dev_table;
         ((void (*)(u32 *, s32))v0[11])(ot, n);
     }
     new_var = ot;
@@ -228,10 +218,10 @@ u32 *ClearOTagR(u32 *ot, s32 n) {
     return new_var;
 }
 void DrawPrim(u8 *a0) {
-    u32 *dev = g_gpu_dev_table;
+    u32 *dev = (u32 *)g_gpu_dev_table;
     u32 size = a0[3];
     ((void (*)(s32))dev[15])(0);
-    dev = g_gpu_dev_table;
+    dev = (u32 *)g_gpu_dev_table;
     ((void (*)(u32 *, u32))dev[5])(a0 + 4, size);
 }
 void DrawOTag(s32 a0) {
@@ -239,7 +229,7 @@ void DrawOTag(s32 a0) {
         g_gpu_debug_func(&g_str_drawotag, a0);
     }
     {
-        u32 *v0 = g_gpu_dev_table;
+        u32 *v0 = (u32 *)g_gpu_dev_table;
         ((void (*)(u32, s32, s32, s32))v0[2])(v0[6], a0, 0, 0);
     }
 }
@@ -263,7 +253,7 @@ s32 *PutDrawEnv(s32 *arg0) {
     p = arg0 + 7;
     func_8007C4B8(p, arg0);
     arg0[7] |= 0xFFFFFF;
-    dev = g_gpu_dev_table;
+    dev = (u32 *)g_gpu_dev_table;
     ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
 
     dst = (_drawenv_q *)(base + 0xE);
@@ -291,7 +281,7 @@ void DrawOTagEnv(s32 arg0, s32 *arg1) {
     p = arg1 + 7;
     func_8007C4B8(p, arg1);
     arg1[7] = (arg1[7] & 0xFF000000) | (arg0 & 0xFFFFFF);
-    dev = g_gpu_dev_table;
+    dev = (u32 *)g_gpu_dev_table;
     ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
 
     dst = (_drawenv_q *)(base + 0xE);

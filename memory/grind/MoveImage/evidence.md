@@ -445,3 +445,112 @@ All gated on `build_insns == 49`; full tables in
   family is the FORBIDDEN "volatile-coercion by plain extern", of which const is
   the mirror. Session 5 returned `ruling-request`; `src/display.c` is left in the
   bytes-proven state for the owner to re-verify.
+
+## [s6] 2026-08-17 — psxsdk-adoption structural session (owner-authorized ONE session) — **MATCHED, COMPLETED-C**
+
+Outcome: **MoveImage byte-matches in pure C with ZERO rules.** All 19 regfix rules
+retired (`retire MoveImage` -> SHA1 62efab4f...), `sandbox MoveImage --disable all`
+== 0 (49/49, rules_dropped 0), `canonical` verdict C distance 0, `queue done`
+accepted (COMPLETED-C), `verify-oracle --rebuild` green on the final body.
+The const/RTX_UNCHANGING lever was NOT used and is not needed.
+
+### What closed it: the packet buffer is an ARRAY OBJECT, not three scalars
+The refused const lever and every session-1..5 body treated 0x8009BF24/28/2C as
+three unrelated `extern s32` scalars, with the packet address carried by a
+pointer local (`bf24 = &D_8009BF24; ... (s32)bf24 - 8`). That pointer store
+(`*bf24 = src`) is a VARYING, non-struct MEM: `canon_rtx` (sched.c:370-377) can
+only resolve it to a symbol through `reg_known_value`, and when it fails the
+store aliases every fixed-address symbol read -- including the `%lo(g_gpu_dev_table)`
+load. That false true-dependence is what pinned the dev-table load 4 slots late
+(the entire plain-argument residual, score 4) and what `const` was deleting at
+sched.c:828.
+
+Declaring the storage as what it is -- PsyQ's `u_long param[5]` blit packet at
+0x8009BF1C, whose first two words are the initialized command words already
+sitting in .data -- removes the pointer entirely: all three per-call writes
+become ARRAY_REFs at fixed addresses, no varying store exists, the dependence
+cannot form, and the dev-table load schedules into target's slot with no
+qualifier anywhere. The residual did not have to be suppressed; it was an
+artifact of the wrong object model.
+
+### Evidence that this IS the object model (not a convenient spelling)
+1. `tmp/sotn-decomp/src/main/psxsdk/libgpu/sys.c:269-279` -- the matched decomp of
+   this same PsyQ source file: `u_long param[5]; param[0]=0x04FFFFFF;
+   param[1]=0x80000000; param[2]=LOW(rect->x); param[3]=(u16)y<<16|(u16)x;
+   param[4]=LOW(rect->w); return ...->addque2(...->cwc, param, sizeof(param), 0);`
+2. BB2's .data at 0x8009BF1C/0x8009BF20 holds exactly `0x04FFFFFF` / `0x80000000`
+   -- param[0]/param[1] verbatim, and splat had lumped them onto the tail of the
+   unrelated 5-entry height table D_8009BF08 (asm/data/7D920.data.s:24180).
+3. `0x14 == sizeof(u_long[5])` -- the size argument the call already passed.
+4. Target's `addiu $a1,$a1,-0x8` is the compiler deriving `param` from the
+   address of `param[2]`: cse.c materializes the FIRST store's address into a
+   register and reaches the array base by a negative offset. Measured both ways
+   -- with `param[3]` written first (v8) the register holds param+12 and the
+   delay slot is `addiu a1,a1,-12`; with `param[2]` first (v10/v11) it holds
+   param+8 and `-8`, target exactly. The "-8" nobody could motivate from three
+   scalars falls straight out of the array declaration.
+
+### The dev-table struct (lever 1) -- adopted, and byte-neutral by itself
+`include/gpu.h` now declares the 0x40-byte PsyQ `gpu` struct (`GpuDevTable`,
+member names/offsets from sys.c:6-22) and `extern GpuDevTable *g_gpu_dev_table;`;
+the contradictory TU-local `extern s32 g_gpu_dev_table;` (display.c:126) is
+deleted. Every index used anywhere in src/ maps onto a member exactly
+(p[2]=addque2, p[3]=clr, p[5]=cwb, p[6]=cwc, p[7]=drs, p[8]=dws, p[0xB]=otc,
+0x28/4=getctl, 0x10/4=ctl, p[0xD]=reset, p[0xE]=status, p[0xF]=sync) -- itself
+independent confirmation of the layout.
+MEASURED: the struct declaration ALONE does not close the function. `p->cwc`
+behaves exactly like `p[6]`: COMPONENT_REF sets MEM_IN_STRUCT_P (expr.c:4888)
+just as INDIRECT_REF(PLUS) does (expr.c:4567), so the floor-2 float returns
+(v2 = 2). It is the packet-side array declaration that closes it; the struct is
+what makes the closing body read as the original code.
+The other 13 call sites keep a `(u32 *)` word view deliberately -- respelling
+them as member accesses is a codegen change on already-matched bodies, noted in
+the gpu.h comment.
+
+### Variant grid (sandbox --disable all, all at build_insns 49 == target)
+| v | body | score |
+|---|---|---|
+| HEAD | 3 scalars, pointer store, `p[6]` arg, 19 rules | 21 |
+| v1 | plain-arg base (candidate_alt_plain_arg.c) reproduced | 4 |
+| v1+hdr | same, with the GpuDevTable header adopted (cast form) | 4 |
+| v2 | struct member dispatch `fn(p->cwc,...)`, scalars | 2 |
+| v4 | 3-word array at D_8009BF24 + struct dispatch | 11 |
+| v6/v7 | param[5] array, pointer store `*pkt`, struct dispatch | 7 (=4 true) |
+| v8 | param[5], all-symbol stores, `param[3]` written FIRST | 12 |
+| v9 | param[5], all-symbol stores, `pkt-2` call arg | 3 (=0 true) |
+| v10 | v9 with store order [2],[3],[4] and `param` as the arg | **0** |
+| v11 | v10 minus the walking rect pointer (plain `arg0[0]`/`arg0[1]`) | **0** |
+| v12 | v11 with the packed word inlined into the store | 7 |
+| v13 | v11 minus the `fn` local (`p->addque2(p->cwc,...)`) | **0** |
+| v14 | v13 minus the `p` local (global dereferenced directly) — **ADOPTED** | **0** |
+(v6-v9 scores carry up to 3 FALSE points: named-symbol HI16/LO16 addends are not
+masked by engine/score.py, so `%lo(g_gpu_move_param)+8` scores as a diff against
+target's `%lo(D_8009BF24)` even though the linked word is identical. The
+instruction-by-instruction alignment for v9 was verified by hand
+(tmp/grind/MoveImage/s6/mvdiff.py); once the symbol existed and the reference
+object was rebuilt, the score reads a true 0.)
+
+### Every prior lever is now GONE from the body
+The final body carries NO session-1/2/3 construct: no packed-store-first
+ordering, no walking rect pointer, no `q = p + 6` plain-deref dispatch, no
+`bf24`/`pkt` pointer local, no `- 8`. What remains is PsyQ's own statement
+sequence. The only named local is `packed` (inlining it costs 7 -- v12).
+
+### Tree changes
+* `asm/data/7D920.data.s` -- `dlabel g_gpu_move_param` at 0x8009BF1C (moves the
+  `enddlabel D_8009BF08` up so that symbol is the 5-entry height table it always
+  was); no emitted byte changes.
+* `symbol_addrs.txt` -- `g_gpu_move_param = 0x8009BF1C;`
+* `include/gpu.h` -- GpuDevTable struct + `extern GpuDevTable *g_gpu_dev_table;`
+* `src/display.c` -- MoveImage body; the TU-local wrong-type extern deleted;
+  `(u32 *)` casts at the untouched word-view sites.
+* `src/gpu.c` -- `(u32 *)` casts at its five sites (byte-neutral: full-build SHA1).
+* `regfix.txt` -- 19 MoveImage rules deleted by `retire`.
+
+### Side probe (owner asked for it, hardens the const refusal for the record)
+`extern int T[]; int *const p = T;` through the real cc1
+(-O2 -G0 -mel, tmp/grind/MoveImage/s6/rdata_probe.*) emits
+`.globl p / .section .rodata / p: .word T`, while an unqualified initialized
+object emits `.data`. So a const-qualified `g_gpu_dev_table` would have been
+placed in .rodata, contradicting its actual .data address at 0x8009BE6C --
+the ruling's secondary argument is confirmed, not merely plausible.

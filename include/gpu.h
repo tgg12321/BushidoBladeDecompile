@@ -5,7 +5,7 @@
 
 #include "common.h"
 
-/* PS1 ordering-table / primitive tag word — the head word of PsyQ
+/* PS1 ordering-table / primitive tag word -- the head word of PsyQ
  * LIBGPU.H's P_TAG (`unsigned addr:24; unsigned len:8;`): next-packet
  * address in the LOW 24 bits, packet word count in the HIGH 8.
  *
@@ -25,7 +25,38 @@ typedef struct {
 /* Named globals */
 extern void (*g_gpu_debug_func)();
 extern u8 g_gpu_debug_level;
-extern u32 *g_gpu_dev_table;
+/* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
+ * function pointers, the object at D_8009BE2C, reached through the pointer
+ * g_gpu_dev_table (0x8009BE6C).  Member names/offsets are the PsyQ ones; every
+ * index used across src/ maps onto them exactly (p[2]=addque2, p[3]=clr,
+ * p[5]=cwb, p[6]=cwc, p[7]=drs, p[8]=dws, p[0xB]=otc, p[0xD]=reset,
+ * p[0xE]=status, p[0xF]=sync, 0x28/4=getctl, 0x10/4=ctl).
+ *
+ * The other call sites in display.c/gpu.c keep a `(u32 *)` word view of the
+ * same pointer ON PURPOSE: a COMPONENT_REF sets MEM_IN_STRUCT_P (expr.c:4888)
+ * where an INDIRECT_REF over a PLUS does not (expr.c:4567), which changes the
+ * scheduler's alias classes -- respelling those already-matched bodies as member
+ * accesses is a codegen change, not a cosmetic one. */
+typedef struct GpuDevTable {
+    /* 0x00 */ const char *rcsid;
+    /* 0x04 */ void (*addque)();
+    /* 0x08 */ s32 (*addque2)();
+    /* 0x0C */ s32 (*clr)();
+    /* 0x10 */ void (*ctl)();
+    /* 0x14 */ s32 (*cwb)();
+    /* 0x18 */ void (*cwc)();
+    /* 0x1C */ s32 (*drs)();
+    /* 0x20 */ s32 (*dws)();
+    /* 0x24 */ s32 (*exeque)();
+    /* 0x28 */ s32 (*getctl)();
+    /* 0x2C */ s32 (*otc)();
+    /* 0x30 */ s32 (*param)();
+    /* 0x34 */ s32 (*reset)();
+    /* 0x38 */ u32 (*status)();
+    /* 0x3C */ s32 (*sync)();
+} GpuDevTable;
+
+extern GpuDevTable *g_gpu_dev_table;
 extern s16 g_gpu_disp_x;
 extern s16 g_gpu_disp_y;
 extern u8 g_gpu_dither;

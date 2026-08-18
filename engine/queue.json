@@ -2221,15 +2221,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, operator-filed 2026-08-11): 2-byte reorg branch-target residual unreachable from C under frozen pipeline; both endgame gates FAILED (scan LOW 0/8, no SOTN precedent); 25 rules retained to hold byte-match; see docs/grind/decisions.md 2026-08-11 entry"
     },
     {
-      "func": "MoveImage",
-      "file": "display",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 19,
-      "status": "parked",
-      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-11 \u2014 MoveImage \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
-    },
-    {
       "func": "motion_Close",
       "file": "ings2",
       "distance": 21,
@@ -2276,11 +2267,11 @@
     }
   ],
   "counts": {
-    "total": 265,
+    "total": 264,
     "active": 223,
     "by_status": {
       "active": 223,
-      "parked": 42
+      "parked": 41
     },
     "by_verdict": {
       "ASM-PARTIAL": 37,

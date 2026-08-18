@@ -24179,9 +24179,14 @@ dlabel D_8009BF08
     /* 8C710 8009BF10 00040000 */ .word 0x00000400
     /* 8C714 8009BF14 00020000 */ .word 0x00000200
     /* 8C718 8009BF18 00040000 */ .word 0x00000400
+enddlabel D_8009BF08
+
+/* PsyQ libgpu MoveImage packet buffer (`u_long param[5]` in the SDK's sys.c).
+ * param[0]/param[1] are the initialized VRAM-to-VRAM blit command words; the
+ * tail three (D_8009BF24/28/2C below) are written per call. */
+dlabel g_gpu_move_param
     /* 8C71C 8009BF1C FFFFFF04 */ .word 0x04FFFFFF
     /* 8C720 8009BF20 00000080 */ .word 0x80000000
-enddlabel D_8009BF08
 
 nonmatching D_8009BF24
 

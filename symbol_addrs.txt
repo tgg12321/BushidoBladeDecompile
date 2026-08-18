@@ -45,6 +45,7 @@ g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
 // === GPU Subsystem (gpu.c / display.c) ===
 g_gpu_debug_func = 0x8009BE70; // GPU debug printf callback
 g_gpu_dev_table = 0x8009BE6C; // GPU device function vtable
+g_gpu_move_param = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` blit packet (head 2 words initialized: 0x04FFFFFF, 0x80000000)
 g_gpu_type = 0x8009BE74; // GPU hardware type
 g_gpu_interlace = 0x8009BE75; // interlace mode flag
 g_gpu_debug_level = 0x8009BE76; // GPU debug verbosity (>=2 prints)
