@@ -1559,6 +1559,7 @@ s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
     u8 a3;
     u8 *e;
     u8 *e2;
+    u8 *base;
     u8 e7val;
     s32 *list;
     s32 vflag;
@@ -1609,14 +1610,17 @@ s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
                     temp_v0 = *t3;
                     va1 = temp_v0;
                     if (temp_v0 >= 0) {
-                        a3 = D_800A8FB0[(t4 << 5) + t1];
+                        v1 = t4 << 5;
+                        a3 = D_800A8FB0[v1 + t1];
                         vidx = va1;
                         do {
-                            t0 = D_800A87E0[vidx];
+                            base = (u8 *)&D_800A87E0[vidx];
+                            t0 = *(u16 *)base;
                             v1 = t0 & 0x7FFF;
                             va1 += 1;
                             if (v1 < D_800A3368) {
-                                e = &D_800A4750[v1 * 0x10];
+                                base = D_800A4750;
+                                e = base + v1 * 0x10;
                                 e[6] = a3 & 3;
                                 if ((a3 & 8) || ((a3 & 4) && (e[7] & 8))) {
                                     e7val = e[7] | 1;
@@ -1629,12 +1633,14 @@ s32 *func_8003EB84(s32 a0, s32 a1, s32 *out) {
                                 *list = (s32)e;
                                 goto block_30;
                             }
-                            e2 = &D_800A6690[(v1 - D_800A3368) * 0x68];
+                            base = D_800A6690;
+                            e2 = base + (v1 - D_800A3368) * 0x68;
                             vflag = t0 & 0x8000;
                             if (e2[0x58] == 0) {
                                 *out = (s32)e2;
                                 out += 1;
-                                e2[0x58] = 1;
+                                vflag = 1;
+                                e2[0x58] = vflag;
                             block_30:
                                 vflag = t0 & 0x8000;
                             }

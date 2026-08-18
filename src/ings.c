@@ -814,70 +814,60 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
-    register u8 *ctxp asm("s2") = ctx;
-    register s32 saved_arg1 asm("s5") = arg1;
-    register s32 sa asm("s4") = slot_a;
-    register s32 sb asm("s3") = slot_b;
-    register u8 *slot_a_ptr asm("s0");
-    register u8 *slot_b_ptr asm("s1");
+    u8 *link;
     u8 *slots;
-    u8 *links;
+    u8 *rec_a;
+    u8 *rec_b;
     s32 i;
     s32 dist;
 
-    if (sa == sb) {
+    if (slot_a == slot_b) {
         return 0;
     }
-
-    slots = *(u8 **)(ctxp + 0xC);
-    if (*(s32 *)(slots + (sa << 6) + 0x18) >= 0) {
-        if (*(s32 *)(slots + (sb << 6) + 0x18) >= 0) {
+    if (*(s32 *)((slot_a << 6) + (s32) * (u8 **)(ctx + 0xC) + 0x18) >= 0) {
+        if (*(s32 *)((slot_b << 6) + (s32) * (u8 **)(ctx + 0xC) + 0x18) >= 0) {
             return 0;
         }
     }
 
-    slot_a_ptr = slots + (sa << 6);
-    if (*(s32 *)(slot_a_ptr + 0x1C) > 0) {
-        i = 0;
-        do {
-            links = *(u8 **)(ctxp + 0x10);
-            if (*(u16 *)(links + (*(u8 *)(slot_a_ptr + 0x24 + i) << 4) + 4) == sb) {
-                return 0;
-            }
-            i++;
-        } while (i < *(s32 *)(slot_a_ptr + 0x1C));
+    slots = *(u8 **)(ctx + 0xC);
+    i = 0;
+    while (i < *(s32 *)((slot_a << 6) + (s32)slots + 0x1C)) {
+        if (*(u16 *)((*(u8 *)(i + (slot_a << 6) + (s32)slots + 0x24) << 4) +
+                     (s32) * (u8 **)(ctx + 0x10) + 0x4) == slot_b) {
+            return 0;
+        }
+        i++;
+    }
+    slots = *(u8 **)(ctx + 0xC);
+    i = 0;
+    while (i < *(s32 *)((slot_a << 6) + (s32)slots + 0x20)) {
+        if (*(s16 *)((*(u8 *)(i + (slot_a << 6) + (s32)slots + 0x2C) << 4) +
+                     (s32) * (u8 **)(ctx + 0x10) + 0x6) == slot_b) {
+            return 0;
+        }
+        i++;
     }
 
-    if (*(s32 *)(slot_a_ptr + 0x20) > 0) {
-        i = 0;
-        do {
-            links = *(u8 **)(ctxp + 0x10);
-            if (*(s16 *)(links + (*(u8 *)(slot_a_ptr + 0x2C + i) << 4) + 6) == sb) {
-                return 0;
-            }
-            i++;
-        } while (i < *(s32 *)(slot_a_ptr + 0x20));
-    }
+    dist = math_Distance3D((s32 *)(*(u8 **)(ctx + 0xC) + (slot_a << 6)),
+                           (s32 *)(*(u8 **)(ctx + 0xC) + (slot_b << 6)));
+    link = *(u8 **)(ctx + 0x10) + (*(s16 *)(ctx + 0x6) << 4);
+    *(s32 *)(link + 0x0) = dist;
+    *(s32 *)(link + 0x8) = dist * 3;
+    *(s32 *)(link + 0xC) = arg1;
+    *(s32 *)(link + 0x4) = (slot_a << 16) | slot_b;
 
-    slot_a_ptr = slots + (sa << 6);
-    slot_b_ptr = slots + (sb << 6);
-    dist = math_Distance3D((s32 *)slot_a_ptr, (s32 *)slot_b_ptr);
-    i = *(s16 *)(ctxp + 0x6);
-    links = *(u8 **)(ctxp + 0x10) + (i << 4);
-    *(s32 *)(links + 0x0) = dist;
-    *(s32 *)(links + 0x8) = dist * 3;
-    *(s32 *)(links + 0xC) = saved_arg1;
-    *(s32 *)(links + 0x4) = (sa << 16) | sb;
+    rec_a = (u8 *)((slot_a << 6) + (s32) * (u8 **)(ctx + 0xC));
+    i = *(s32 *)(rec_a + 0x1C);
+    *(s32 *)(rec_a + 0x1C) = i + 1;
+    *(u8 *)(rec_a + i + 0x24) = *(u16 *)(ctx + 0x6);
 
-    i = *(s32 *)(slot_a_ptr + 0x1C);
-    *(s32 *)(slot_a_ptr + 0x1C) = i + 1;
-    *(u8 *)(slot_a_ptr + 0x24 + i) = *(u16 *)(ctxp + 0x6);
+    rec_b = (u8 *)((slot_b << 6) + (s32) * (u8 **)(ctx + 0xC));
+    i = *(s32 *)(rec_b + 0x20);
+    *(s32 *)(rec_b + 0x20) = i + 1;
+    *(u8 *)(rec_b + i + 0x2C) = *(u16 *)(ctx + 0x6);
 
-    i = *(s32 *)(slot_b_ptr + 0x20);
-    *(s32 *)(slot_b_ptr + 0x20) = i + 1;
-    *(u8 *)(slot_b_ptr + 0x2C + i) = *(u16 *)(ctxp + 0x6);
-
-    *(u16 *)(ctxp + 0x6) = *(u16 *)(ctxp + 0x6) + 1;
+    *(s16 *)(ctx + 0x6) = *(u16 *)(ctx + 0x6) + 1;
     return 1;
 }
 INCLUDE_ASM("asm/funcs", func_80017A44);
