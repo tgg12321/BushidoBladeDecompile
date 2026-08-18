@@ -255,3 +255,108 @@ into two adds (`addu v0,v1,a3` in the delay slot + `addu v0,v0,a0` at loop top).
 - probe: ~20 spellings: variants2.py P1/P2/P8 (second read before the guard, inside the guard body, three reads), variants3.py Q1/Q3 (fully-inline LICM base, two-step copy chain), variants4.py R1/R5/R7 (two and three fresh reads, explicit copy chains), variants7.py V4/V5 (a per-loop read feeding the guard plus a second feeding the base), variants9.py Y1-Y4 (re-assigning the same local before each loop).
 - result: No spelling produced the copy. Every added read is folded by cse or coalesced by local-alloc; the ones that survive as real insns cost 1-3 points (17-19) rather than the 2 the copy would buy. Base spelling is entirely inert at the 14-form: int-cast, pointer-first, pointer-arithmetic, copy chain and fully-inline (loop.c LICM) all score 14.
 - verdict: KILLED
+
+## s4 (2026-08-18) — permuter modality
+
+### H-s4-1 — KILLED (and it kills a whole way of running this function)
+**Statement:** "The remaining 2-insn gap is in the regime where decomp-permuter outperforms
+hand sweeps, and permuter has never been run on this function" (the s3 frontier item).
+Permuter has now been run, properly, on a workspace that reproduces the real build exactly.
+**Probe:** built + validated a per-function workspace (`s4/mkws.sh`, self-checks at
+125 vs 127 insns), launched a telemetered campaign from the s3 candidate
+(`permuter_campaign.py launch --dir tmp/perm_ings_s4 -j 10`), waited in-turn, harvested
+~25 saved outputs, and re-scored EVERY one with `sandbox --disable all`.
+**Result:** best engine distance across all permuter output = **14** = exactly the starting
+floor. The permuter's own best find (score 405 vs base 855) is engine **18**.
+**Verdict:** KILLED as a *directed* lever. The premise "with 125/127 byte-exact the search
+space a permuter explores is now tiny" was wrong in an instructive way: the space is tiny,
+but the permuter's compass points out of it (see H-s4-2). A permuter campaign on this
+function is a proposal generator whose ranking must be discarded and replaced with the
+engine's, and at that point it is strictly weaker than the exhaustive directed sweep in
+H-s4-3, which covers the same axes deterministically. Do not spend another session's
+modality on an undirected campaign here.
+
+### H-s4-2 — CONFIRMED (the session's most transferable finding)
+**Statement:** The permuter's default scorer is anti-correlated with the engine's honest
+distance for a function whose residual is a small instruction DELETION near the top of the body.
+**Mechanism:** the permuter weights reorderings at 60 and ins/del at 100 and aligns the two
+instruction streams globally. Two missing instructions early in the body displace the whole
+tail, so the aligner charges ~14 reorderings (855 ≈ 14x60) even though 125 of 127 instructions
+are byte-identical. The gradient therefore rewards mutations that re-sync the aligner by
+CHANGING the already-correct tail, and punishes staying in the correct basin. The engine's
+metric counts differing instructions with branch/jump targets masked and has no displacement
+term, so the two metrics disagree by construction, not by accident.
+**Probe:** the 20-row permuter-score vs engine-distance table in evidence.md E-s4-2, produced
+by `batch_score.ps1` over every saved output of campaign A.
+**Verdict:** CONFIRMED. Note the practical corollary: `permuter_campaign.py launch` does not
+expose `--keep-prob`, so campaigns always run decomp-permuter's default 0.6 hill-climb, which
+is precisely the behaviour that walks away from the basin here. A future session that wants a
+usable campaign on a deletion-residual function needs either restart-from-base sampling or
+engine-metric rescoring in the loop; the second is what s4 did by hand.
+
+### H-s4-3 — KILLED (exhaustively, by measurement, not by sampling)
+**Statement:** Some combination of the loop-preheader spelling axes that s1-s3 only swept
+one-at-a-time reaches below 14.
+**Mechanism:** the last three levers found on this function (do-while shape, guard comparison
+operand, guard association order) were each invisible until someone wrote that exact spelling,
+so combinations plausibly hid another.
+**Probe:** generated the full symmetric cross-product of the five preheader axes
+(guard-count base x preheader-p x base-spelling x body-index base x do-while-bound base =
+72 variants, `s4/gen_variants.py`) and engine-scored all 72 in one pass (`s4/sweep.sh`,
+raw results in `s4/sweep_results.txt`).
+**Result:** min 14, max 19. Twelve cells tie at 14; zero cells go below.
+**Verdict:** KILLED. The preheader spelling family is now closed by exhaustion rather than by
+sampling. New sub-finding worth carrying: cells `a1_b0_*_{d0,d2}_e1` reach 14 with a FRESH
+guard read, so s3's pointer-first/hoisted-guard rule is one sufficient route to 14 and not a
+necessary condition — 14 is a plateau over the family, which is the signature of a constraint
+living below the C source (register allocation), exactly as the s3 frontier predicted.
+
+### H-s4-4 — CONFIRMED, and it is the floor drop (14 -> 12)
+**Statement:** Randomization CONFINED to the residual region, with the permuter used purely as
+a proposal generator and the ENGINE used as the objective, can find preheader structure that
+neither the hand sweeps (s1-s3, ~105 forms) nor the full spelling cross-product (H-s4-3, 72
+cells) could reach.
+**Mechanism:** the winning form leaves the spelling family entirely — it introduces a SECOND
+live pointer variable (`base = slots;`) that carries the hoisted pointer into the two scan-loop
+entry guards, and is then re-pointed at the per-slot record inside each preheader. Every cell
+of the H-s4-3 cross-product routed the guards through one of the two pointers that already
+existed, so no amount of respelling inside that family could express this. It is the frozen-list
+"variable reuse for codegen control" family; `base` is read by both loop guards before it is
+reassigned, so it is a live variable, not a dead store or a holder.
+**Probe:** chassis B = the validated workspace with the residual region wrapped in
+`PERM_RANDOMIZE` (`s4/mk_perm_b.py`); 733 s / 21911 iterations / 130 saved outputs; every
+output re-scored with `sandbox --disable all` (`s4/score_outputs.sh`); then a 4-cell cleanup
+sweep to find the most readable spelling of the winner.
+**Result:** two outputs at engine **12**, both at permuter score 845 — the permuter's own
+WORST decile, ten points off base. Cleanup sweep: top guards through `base` = 12, through
+`slots` = 12, mixed (as emitted) = 12, loop guards back onto `slots` = **19**. Chosen form
+(both top guards through `slots`) re-verified in `src/ings.c` at **12**, 125/127 insns.
+**Verdict:** CONFIRMED. Two compounding lessons for the pipeline: (i) scope the randomization
+to the residual region so the randomizer cannot damage what is already exact — chassis B found
+in 12 minutes what chassis A could not find at all; (ii) the engine metric must be the
+objective, applied as a rescoring pass over every saved output. Trusting the permuter's own
+ranking would have discarded both 12-cells as near-worst results.
+
+## [s4] The remaining 2-insn gap is in the regime where decomp-permuter outperforms hand sweeps, and an undirected campaign from the s3 candidate will close or narrow it (the s3 frontier item).
+- mechanism: s1-s3 were hand-authored spelling matrices (~105 forms) and each of the last three levers was invisible until someone wrote that exact spelling; with 125/127 insns byte-exact the space a permuter explores should be tiny.
+- probe: Built and self-validated a per-function permuter workspace mirroring the real build exactly (tools/grind/func_80017848/s4/mkws.sh; prints 'base insns: 125  target: 127'), launched a telemetered campaign from the s3 candidate (permuter_campaign.py launch --dir tmp/perm_ings_s4 -j 10), waited in-turn, harvested ~25 saved outputs, and re-scored EVERY one with sandbox --disable all.
+- result: Best engine distance across all campaign-A output = 14, exactly the starting floor. The permuter's own best find (score 405 vs base 855, a nominal 53% improvement) is engine distance 18  -  four instructions WORSE than where it started.
+- verdict: KILLED
+
+## [s4] decomp-permuter's default scorer is anti-correlated with the engine's honest distance for a function whose residual is a small instruction DELETION near the top of the body.
+- mechanism: The permuter weights reorderings at 60 and ins/del at 100 and aligns the two instruction streams globally. Two missing instructions early in the body displace the whole tail, so the aligner charges ~14 reorderings (855 ~= 14 x 60) even though 125 of 127 instructions are byte-identical. The gradient therefore rewards mutations that re-sync the aligner by CHANGING the already-correct tail. The engine metric counts differing instructions with branch/jump targets masked and has no displacement term, so the two disagree by construction.
+- probe: Re-scored every saved permuter output with sandbox --disable all and tabulated permuter score against engine distance (tmp/grind/func_80017848/s4/batch_score.ps1; 20-row table in evidence.md E-s4-2, full 130-row table for chassis B in tmp_perm_ings_s4b_engine_scores.txt).
+- result: Ranking inversion is systematic, not noisy: perm 405 -> engine 18, perm 480 -> 16, perm 575 -> 14, perm 775 -> 39, perm 845 -> 12, perm 855 (base tie) -> 14. The two BEST forms found all session sit at permuter score 845, i.e. in the permuter's worst decile.
+- verdict: CONFIRMED
+
+## [s4] Some combination of the loop-preheader spelling axes that s1-s3 only swept one-at-a-time reaches below 14.
+- mechanism: The last three levers found on this function (do-while shape, guard comparison operand, guard association order) were each invisible until someone wrote that exact spelling, so combinations plausibly hid another.
+- probe: Generated the full symmetric cross-product of the five preheader axes (guard-count base x preheader-p x base-spelling x body-index base x do-while-bound base = 72 variants, s4/gen_variants.py) and engine-scored all 72 in one pass (s4/sweep.sh -> sweep_results.txt).
+- result: Minimum 14, maximum 19. Twelve distinct cells tie at 14; zero cells go below. New sub-finding: cells a1_b0_*_{d0,d2}_e1 reach 14 with a FRESH guard read, so s3's 'the guard must consume the hoisted slots' is a sufficient route to 14, not a necessary one  -  14 was a broad plateau over the family, not a knife-edge.
+- verdict: KILLED
+
+## [s4] Randomization CONFINED to the residual region, with the permuter used purely as a proposal generator and the ENGINE used as the objective, can find preheader structure that neither the hand sweeps nor the full spelling cross-product could reach.
+- mechanism: The winning form leaves the spelling family entirely: it introduces a SECOND live pointer variable (`base = slots;`) that carries the hoisted pointer into the two scan-loop entry guards and is then re-pointed at the per-slot record inside each preheader. Every cell of the 72-cross-product routed the guards through one of the two pointers that already existed, so no respelling inside that family could express it. Frozen-list 'variable reuse for codegen control' family  -  `base` is READ by both loop guards before it is reassigned, so it is a live variable, not a dead store or a constant-holder.
+- probe: Chassis B = the validated workspace with the residual region wrapped in PERM_RANDOMIZE so the randomizer cannot touch the 125 byte-exact instructions (s4/mk_perm_b.py); 733 s / 21911 iterations / 130 saved outputs; every output re-scored with sandbox --disable all (s4/score_outputs.sh); then a 4-cell cleanup sweep to pick the most readable spelling of the winner.
+- result: Two outputs at engine 12 (output-845-1, output-845-3), both at permuter score 845. Cleanup sweep: both top guards through `base` = 12, both through `slots` = 12, mixed as emitted = 12, loop entry guards moved back onto `slots` = 19. Chosen form re-verified in src/ings.c at sandbox distance 12, 125 build insns vs 127 target.
+- verdict: CONFIRMED

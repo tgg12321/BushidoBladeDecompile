@@ -1,23 +1,38 @@
-/* CANDIDATE - func_80017848, s3 (2026-08-18).  sandbox --disable all = 14
- * (floor was 16 for three sessions; this is the first form below it).
- * 125/127 build insns; EVERYTHING from the math_Distance3D call to the epilogue,
- * both scan-loop bodies, the two >=0 top guards and the frame (0x40 / vars=16) are
- * byte-exact.  The entire residual is 1 insn per scan-loop preheader: target reloads
- * the slots pointer there (lw a0,0xC(s2)) and keeps an uncoalesced copy of it
- * (move a3,a0) feeding a recomputed base (addu a0,a1,a3); this form reuses the
- * hoisted `slots` pseudo for the loop guard and reads fresh only for the base.
+/* CANDIDATE - func_80017848, s4 (2026-08-18).  sandbox --disable all = 12
+ * (was 16 for s1/s2, 14 after s3; this is the second drop and the first one
+ * produced by the permuter modality).  125/127 build insns.
  *
- * The three levers that produce this form (all measured s3, 60+ variants):
- *   (1) source-level do-while  -> target's per-iteration bound reload + one-addu index
- *       (inherited from s2);
- *   (2) entry guard spelled `i = 0; if (i < count)` -> the phantom-16 frame
- *       (inherited from s2);
- *   (3) NEW s3: the loop entry guard's count address must be written POINTER-FIRST
- *       `*(s32 *)((s32)slots + (slot_a << 6) + CNT)` and the `slots` read must be
- *       hoisted ABOVE the two >=0 top guards so those guards consume it too.
- *       Shift-first `(slot_a << 6) + (s32)slots + CNT` costs 2 pts; hoisting the read
- *       only to just-before-loop-1 costs 1; re-reading it per loop costs 2-3.
- * The loop BASE spelling is inert (int-cast / pointer-first / pointer arithmetic all 14).
+ * WHAT S4 ADDED (one lever, and it is the whole delta 14 -> 12):
+ *   `base = slots;` immediately after the slots read, so the TWO SCAN-LOOP ENTRY
+ *   GUARDS read their count through `base` while the two >=0 top guards keep
+ *   reading through `slots`.  `base` is then re-pointed at the per-slot record
+ *   inside each loop preheader exactly as before.  This is ordinary variable
+ *   reuse - `base` is a live, read pointer at every point (both loop guards
+ *   consume it before the reassignment), not a dead store or a holder - and it
+ *   is the frozen-list "variable reuse for codegen control" family.
+ *
+ *   Measured alternatives at the same node (all engine-scored this session):
+ *     both top guards through `base`      -> 12   (equivalent)
+ *     both top guards through `slots`     -> 12   (THIS FORM - the cleanest)
+ *     as the permuter emitted it (mixed)  -> 12   (equivalent)
+ *     loop guards moved back onto `slots` -> 19   (the lever is load-bearing)
+ *
+ * INHERITED LEVERS (do not re-derive - s2/s3):
+ *   (1) source-level do-while  -> target's per-iteration bound reload + one-addu index;
+ *   (2) entry guard spelled `i = 0; if (i < count)` -> the phantom-16 frame;
+ *   (3) the loop entry guard's count address written POINTER-FIRST, and the `slots`
+ *       read hoisted ABOVE the two >=0 top guards so those guards consume it too.
+ *   s4 note: (3) is SUFFICIENT for 14 but not NECESSARY - the s4 72-cell
+ *   cross-product found fresh-read-guard cells that also reach 14.  14 was a
+ *   plateau over that whole family; 12 required leaving the family.
+ *
+ * REMAINING RESIDUAL (2 insns short of 127, 12 differing):
+ *   target keeps an uncoalesced copy of the reloaded slots pointer
+ *   (`lw a0,0xC(s2)` + `move a3,a0` feeding `addu a0,a1,a3`) in each scan-loop
+ *   preheader.  s3/s4 evidence says this is a register-ALLOCATION property
+ *   (a coalescing failure), not a source-spelling one.  The cc1 -da .lreg/.greg
+ *   dumps for this form are on disk (tmp/grind/func_80017848/s4/) and UNREAD -
+ *   that is the next probe, not another spelling sweep.
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
@@ -34,6 +49,7 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     }
 
     slots = *(u8 **)(ctx + 0xC);
+    base = slots;
     if (*(s32 *)((slot_a << 6) + (s32)slots + 0x18) >= 0) {
         if (*(s32 *)((slot_b << 6) + (s32)slots + 0x18) >= 0) {
             return 0;
@@ -41,7 +57,7 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     }
 
     i = 0;
-    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x1C)) {
+    if (i < *(s32 *)((s32)base + (slot_a << 6) + 0x1C)) {
         p = *(u8 **)(ctx + 0xC);
         base = (u8 *)((slot_a << 6) + (s32)p);
         do {
@@ -54,7 +70,7 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     }
 
     i = 0;
-    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x20)) {
+    if (i < *(s32 *)((s32)base + (slot_a << 6) + 0x20)) {
         p = *(u8 **)(ctx + 0xC);
         base = (u8 *)((slot_a << 6) + (s32)p);
         do {
@@ -87,4 +103,3 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     *(s16 *)(ctx + 0x6) = *(u16 *)(ctx + 0x6) + 1;
     return 1;
 }
-

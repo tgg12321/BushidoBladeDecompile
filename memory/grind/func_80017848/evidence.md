@@ -235,3 +235,169 @@ own base register also makes the guard's count survive, so the two effects have 
 - [s3] The loop BASE spelling is completely inert at the 14-form - int-cast, pointer-first, pointer arithmetic, an explicit two-step copy chain, assignment inside the do-while body and fully-inline addressing (forcing loop.c LICM) all score 14 with identical asm.
 
 - [s3] ~60 distinct forms were measured this session across nine variant matrices, all with the sandbox (score) and the cc1 frameprobe (.frame vars=) recorded per variant; every measured form kept frame 0x40, confirming s2's `i = 0; if (i < count)` guard-operand finding is orthogonal to the new association lever.
+
+## s4 (2026-08-18) — permuter modality
+
+Starting point: the s3 candidate re-applied to `src/ings.c`, sandbox `--disable all`
+re-confirmed at **14** (127 target insns, 125 build insns). Floor at end of session: **14**
+(unchanged — no form measured below it this session).
+
+### E-s4-1. A validated permuter workspace for func_80017848 now exists and is reproducible.
+`tmp/grind/func_80017848/s4/mkws.sh <dir>` builds it end to end and self-validates
+(prints `base insns: 125  target: 127`). It mirrors the real build exactly:
+full-TU `cpp` of `src/ings.c` → `tools/gcc-2.7.2/build/cc1 -O2 -G0 -funsigned-char
+-quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel` → `prologue_fix` →
+`maspsx` (all the Makefile flags) → `multu_pad`, then extracts only
+func_80017848's `.ent`…`.end` region and assembles it against a `.set noat / .set
+noreorder` prelude. `target.o` is `prelude_r3k.inc + asm/funcs/func_80017848.s`.
+Two gotchas cost real time and are baked into the script so the next session does not
+repay them:
+  (a) `-mel` MUST be on the cc1 line (Makefile `CC_FLAGS`, [[mel-endianness-adoption]]);
+      `tools/mar_perm_workspace.sh` predates it and is therefore NOT a copyable template.
+  (b) maspsx emits `.ent func_80017848` with NO leading tab, so the mar-workspace's
+      `/^\t\.ent\t.../` awk extraction silently never triggers and swallows the rest
+      of the TU (including the `INCLUDE_ASM` `.include` of `asm/funcs/func_80017A44.s`),
+      producing a pile of assembler errors that look like a toolchain problem and are not.
+  (c) `src/ings.c` contains a multi-LINE inline-asm string literal (in func_80017D84,
+      around line 931). cpp passes it through with a warning, but pycparser rejects it and
+      the permuter dies with "Syntax error in base.c". `tmp/grind/func_80017848/s4/fix_base.py`
+      joins any unterminated string literal onto one line with an escaped `\n`, which is
+      semantically identical and lets the permuter parse the TU.
+
+### E-s4-2. THE HEADLINE: decomp-permuter's default scorer is ANTI-CORRELATED with the engine's honest distance on this function.
+Measured, not inferred. The s3 candidate scores **855** in the permuter and **14** in
+`sandbox --disable all`. Every permuter output was then re-scored with the engine
+(`tmp/grind/func_80017848/s4/batch_score.ps1`, results in the s4 scratch dir):
+
+| permuter score | engine distance |
+|---|---|
+| 405 | 18 |
+| 480 | 16 |
+| 575 | 14 |
+| 585 | 18 |
+| 650 | 18 |
+| 660 | 19 |
+| 680 | 15 |
+| 720 | 15 |
+| 730 | 16 |
+| 770 | 16 |
+| 775 | 39 |
+| 785 | 15 |
+| 797 | 31 |
+| 815 | 14 (x2) |
+| 820 | 15 |
+| 825 | 16 |
+| 835 | 37 |
+| 840 | 17, 19 |
+| 855 (base-tie) | 14 (x5) |
+
+The permuter's single best find (405, a 53% "improvement") is engine distance **18** —
+four instructions WORSE than where it started. Nothing the permuter produced beat 14.
+
+Mechanism: the permuter's weighted metric charges reorderings at 60 and ins/del at 100.
+Our build is 2 instructions SHORT of target, and those 2 missing instructions sit early
+(in the first scan-loop preheader), so the diff aligner charges the entire 100-instruction
+tail as displaced: 855 ≈ 14 x 60 + change. The cheapest way for the permuter to lower that
+number is to change the SHAPE of the tail so the aligner re-syncs — i.e. to move away from
+the byte-exact tail we already have, which is exactly the wrong direction. The engine's
+metric (differing instructions, branch/jump targets masked) has no such displacement term.
+**Consequence for the pipeline, not just this function: on any function whose residual is a
+small ins/del near the TOP of the body, a permuter campaign's own score ranking is not usable
+as the objective. The campaign is still a legitimate PROPOSAL GENERATOR — a true match still
+scores 0 and is still saved — but every find must be re-scored with `sandbox --disable all`
+before it means anything, and "the permuter improved the score by half" is not evidence of
+progress.** Budget campaigns accordingly: the hill-climb (`--keep-prob 0.6`, the default and
+not exposed by `permuter_campaign.py launch`) actively walks away from the basin here.
+
+### E-s4-3. The loop-preheader spelling cross-product is EXHAUSTED at 14.
+s1-s3 swept these axes one at a time (~105 hand forms). s4 enumerated the full symmetric
+CROSS-PRODUCT and scored every cell with the engine
+(`gen_variants.py` -> 72 variants, `sweep.sh` -> `sweep_results.txt`):
+  A  guard-count read base : hoisted `slots` | fresh `*(u8**)(ctx+0xC)`
+  B  preheader `p`         : fresh read | reuse `slots`
+  C  base spelling         : int-cast `(u8*)((slot_a<<6)+(s32)X)` | ptr-arith `X + (slot_a<<6)`
+  D  loop-body index base  : `base` | recompute from `p` | recompute from a fresh ctx read
+  E  do-while bound base   : `base` | recompute from `p` | recompute from a fresh ctx read
+Result over all 72: **minimum 14, maximum 19**; twelve distinct cells tie at 14 and none
+goes below. The 14-cells are `a0_b0_{c0,c1}_{d0e0,d1e1,d2e2}`, `a0_b1_{c0,c1}_d2e2`, and —
+new information — `a1_b0_{c0,c1}_{d0,d2}_e1`, i.e. a FRESH-read guard also reaches 14 when
+the do-while bound is recomputed from `p`. So s3's "the guard must consume the hoisted
+`slots`" is a sufficient route to 14, not a necessary one; 14 is a broad plateau over this
+entire family rather than a knife-edge. Both facts point the same way: the last 2
+instructions are NOT reachable by respelling the preheader, which corroborates s3's live
+frontier hypothesis that `move a3,a0` is a register-ALLOCATION outcome.
+
+### E-s4-4. cc1 `-da` RTL dumps for the 14-form are now on disk and cost nothing to regenerate.
+`tmp/grind/func_80017848/s4/dump.sh` produces the full pass series for the preprocessed TU
+(`ings_pp.c.rtl/.jump/.cse/.loop/.combine/.cse2/.flow/.lreg/.greg/.sched/.jump2/.dbr/.sched2`).
+This is the probe s1 and s2 both banked and never spent; s4 produced the artifacts but did
+NOT get to the analysis (the permuter work consumed the session). The .lreg/.greg pair is
+the direct evidence for which pseudo pair local-alloc coalesces and what conflict or
+register preference would keep target's copy alive — read those, do not re-derive by
+spelling sweeps.
+
+### E-s4-5. FLOOR 14 -> 12. The lever is a second live pointer variable feeding the two scan-loop entry guards.
+Chassis B (`tmp/perm_ings_s4b`) is the same validated workspace with the residual region —
+the two scan-loop preheaders and bodies — wrapped in `PERM_RANDOMIZE(...)` so the randomizer
+cannot touch the 125 already-byte-exact instructions (`s4/mk_perm_b.py`). 733 s, 21911
+iterations, 130 saved outputs, all re-scored with the engine (`s4/score_outputs.sh`,
+`perm_ings_s4b_engine_scores.txt`). Engine-distance distribution over the 130:
+2x12, 1x13, 12x14, 15x15, 19x16, 11x17, 17x18, 15x19, and a long tail to 34.
+
+The two 12-cells are `output-845-1` and `output-845-3` — permuter score **845**, i.e. the
+permuter ranked them in its WORST decile, ten points off base. They would have been thrown
+away by any campaign that trusts the permuter's ranking. This is E-s4-2 paying for itself.
+
+The delta is one line: **`base = slots;`** right after the slots read, so the two SCAN-LOOP
+ENTRY GUARDS read their count through `base` (`*(s32 *)((s32)base + (slot_a << 6) + 0x1C)`
+and `+ 0x20`) while the two `>= 0` top guards keep reading through `slots`. `base` is then
+re-pointed at the per-slot record inside each preheader exactly as before. Cleanup sweep
+(`s4/variants2`, engine-scored):
+  - both top guards through `base`                 -> **12**
+  - both top guards through `slots` (chosen form)  -> **12**
+  - exactly as the permuter emitted it (mixed)     -> **12**
+  - loop entry guards moved back onto `slots`      -> **19**
+So the top guards are indifferent, and routing the two LOOP ENTRY GUARDS through the second
+pointer variable is worth 7 points. It is load-bearing, not incidental. The chosen candidate
+is the both-top-guards-through-`slots` spelling because it is the one a reader can follow:
+`slots` is the array base used by the top guards, `base` is the walking record pointer that
+starts at the array base and is re-pointed per loop.
+
+Classification note for whoever closes this function: this is the frozen-list
+**"variable reuse for codegen control"** family — `base` is a genuine live pointer that is
+READ by both loop guards before it is reassigned, so it is not a dead store, not a
+constant-holder, and not a coercion. It carries no annotation requirement. It has NOT been
+through a cheat-reviewer, because the function is not at distance 0 and nothing was submitted.
+
+### E-s4-6. What 12 leaves, and what NOT to spend the next session on.
+Still 125 build insns vs 127 target: the two instructions target has and we do not are the
+per-preheader uncoalesced copy of the reloaded slots pointer (`lw a0,0xC(s2)` + `move a3,a0`
+feeding `addu a0,a1,a3`). s3 argued this is a register-ALLOCATION outcome; s4's two
+exhaustions (the 72-cell preheader cross-product, and 21911 permuter iterations scoped to
+exactly that region, neither of which produced a 127-insn build) are two more independent
+measurements pointing the same way. Do NOT open another spelling sweep of the preheaders and
+do NOT run another undirected permuter campaign here. The unspent probe is the one s1, s2 and
+s3 all banked and never ran: read the `.lreg` / `.greg` dumps that s4 has already generated
+for the 14-form in `tmp/grind/func_80017848/s4/` (regenerate for the 12-form with
+`s4/dump.sh`, seconds) and identify the coalesced pseudo pair and the conflict or register
+preference that would keep target's copy alive.
+
+- [s4] FLOOR 14 -> 12 this session, verified with the form in place in src/ings.c: sandbox --disable all = 12, target_insns 127, build_insns 125. Second drop in four sessions and the first produced by the permuter modality.
+
+- [s4] The lever is one line: `base = slots;` after the slots read, so the two SCAN-LOOP ENTRY GUARDS read their count through `base` while the two >=0 top guards read through `slots`; `base` is then re-pointed at the per-slot record inside each preheader as before. Control measurement: routing the loop entry guards back through `slots` costs 7 points (19), so the lever is load-bearing, not incidental. The top guards are indifferent (12 either way).
+
+- [s4] Classification of that lever: frozen-list 'variable reuse for codegen control'. `base` is a genuine live pointer READ by both loop guards before its reassignment  -  not a dead store, not a constant-holder, not a coercion, no annotation requirement. It has NOT been through a cheat-reviewer because nothing was submitted (distance is 12, not 0).
+
+- [s4] HEADLINE, transferable beyond this function: decomp-permuter's default scorer is anti-correlated with the engine's honest distance whenever the residual is a small instruction DELETION near the TOP of the body. Measured table (perm -> engine): 405->18, 480->16, 575->14, 585->18, 650->18, 660->19, 680->15, 720->15, 730->16, 770->16, 775->39, 785->15, 797->31, 815->14, 820->15, 825->16, 835->37, 840->17, 845->12, 855(base)->14. Mechanism: reorderings cost 60 and 2 early missing insns displace the whole tail, so base scores 855 ~= 14 x 60 despite 125/127 insns being byte-identical; the cheapest way to lower that is to destroy the correct tail.
+
+- [s4] Operational corollary: a permuter campaign here is a legitimate PROPOSAL GENERATOR (a true match still scores 0 and is still saved) but its ranking must be discarded and replaced by a `sandbox --disable all` rescoring pass over every saved output. Note `permuter_campaign.py launch` does not expose --keep-prob, so campaigns always run decomp-permuter's default 0.6 hill-climb  -  precisely the behaviour that walks away from the basin on a deletion residual.
+
+- [s4] Second operational lesson: SCOPE the randomization. Chassis A (whole-function randomization from the s3 candidate) produced nothing below 14 in ~8 min / ~25 outputs. Chassis B (identical workspace, residual region wrapped in PERM_RANDOMIZE so the 125 byte-exact insns are untouchable) produced two 12-cells in 733 s / 21911 iterations / 130 outputs.
+
+- [s4] The loop-preheader SPELLING family is now closed by exhaustion rather than sampling: the full symmetric 72-cell cross-product of the five axes scores min 14 / max 19 with twelve cells tied at 14 and none below. Corollary that corrects an s3 conclusion: fresh-read-guard cells (a1_b0_*_{d0,d2}_e1) also reach 14, so s3's pointer-first hoisted-guard rule is sufficient for 14 but not necessary.
+
+- [s4] A reproducible per-function permuter workspace now exists and self-validates: tmp/grind/func_80017848/s4/mkws.sh <dir> prints 'base insns: 125  target: 127'. Three gotchas are baked into it so they are never repaid: (a) -mel MUST be on the cc1 line (Makefile CC_FLAGS)  -  tools/mar_perm_workspace.sh predates the 2026-08-04 adoption and is NOT a copyable template; (b) maspsx emits '.ent func_80017848' with NO leading tab, so the mar-workspace's /^\t\.ent\t/ awk extraction silently never fires and swallows the rest of the TU including the INCLUDE_ASM .include of func_80017A44, producing assembler errors that look like a toolchain fault and are not; (c) src/ings.c has a multi-LINE inline-asm string literal near line 931 that cpp passes but pycparser rejects ('Syntax error in base.c')  -  s4/fix_base.py joins it onto one line with an escaped newline.
+
+- [s4] Both campaigns were harvested with --stop before the session ended; no permuter process is left running.
+
+- [s4] cc1 -da RTL dumps for the pre-s4 14-form are on disk (tmp/grind/func_80017848/s4/ings_pp.c.{rtl,jump,cse,loop,combine,cse2,flow,lreg,greg,sched,jump2,dbr,sched2}), regenerable in seconds via s4/dump.sh. This is the probe s1, s2 and s3 all banked and none spent; s4 produced the artifacts but the permuter work consumed the session before the analysis.

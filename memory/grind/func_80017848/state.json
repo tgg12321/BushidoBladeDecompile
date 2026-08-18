@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 14,
    "modality": "structural",
    "headline": "Floor 16 -> 14 (first drop in 3 sessions): the loop entry guard's count address must be written POINTER-FIRST and the slots read hoisted above the two >=0 top guards; residual is now 2 insns total (on"
+  },
+  {
+   "session": 4,
+   "floor": 12,
+   "modality": "permuter",
+   "headline": "Floor 14 -> 12 via a second live pointer variable feeding the two scan-loop entry guards; found only because every permuter output was re-scored with the engine (the permuter ranked the winning form i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's `move a3,a0` is a register-ALLOCATION outcome (a coalescing failure), not a source-structure one, so it cannot be reached by any further read-count or address-spelling sweep.",
-   "mechanism": "cse replaces the base's redundant load with a reg-reg copy in every one of our builds too; local-alloc then coalesces it because the two pseudos do not conflict. Target's survive, so target's pseudos must conflict or carry an opposing preference. ~20 read-count spellings and 8 base spellings all failed to change this, which is what a pure-RA property looks like from the C side.",
-   "next_probe": "Spend the allocator-dump probe that s1/s2 both banked and never ran: cc1 -da on the 14-form (tools/gcc-2.7.2/cc1 per [[instrumented-cc1-location]], dumps to tmp/grind/func_80017848/s4/) and read .lreg/.greg to see which pseudo pair is coalesced and what conflict or register preference would prevent it. That names the property directly instead of guessing spellings."
+   "hypothesis": "The final 2 instructions (target's per-preheader `lw a0,0xC(s2)` + uncoalesced `move a3,a0` feeding `addu a0,a1,a3`) are a register-ALLOCATION property  -  a coalescing failure  -  and are therefore invisible to any further source-spelling search.",
+   "mechanism": "Three independent exhaustions now point the same way: s1-s3's ~105 hand forms, s4's complete 72-cell preheader cross-product (min 14), and s4's 21911 permuter iterations scoped to exactly that region (min 12, never 127 insns). cse replaces the base's redundant load with a reg-reg copy in every one of our builds and local-alloc coalesces it because the two pseudos do not conflict; target's survive, so target's pseudos must conflict or carry an opposing preference.",
+   "next_probe": "Spend the dump probe that s1/s2/s3 all banked and never ran. Regenerate for the CURRENT 12-form with tmp/grind/func_80017848/s4/dump.sh (seconds; dumps already exist for the 14-form) and READ ings_pp.c.lreg and ings_pp.c.greg  -  grep the func_80017848 region for the pseudo pair that local-alloc coalesces and for its conflict/preference records. That names the property directly. Do NOT open another spelling sweep and do NOT run another undirected campaign; both are measured dead."
   },
   {
-   "hypothesis": "The conflict that keeps target's copy alive comes from loop-1's SKIP edge: in target the blez at insn 36 jumps to .L8001791C, which is loop-2's guard AFTER loop-1's exit reload, so the loop-1 preheader's a0/a1 are live-out along the skip edge and conflict with the base pseudo.",
-   "mechanism": "A pseudo that is live-out on one successor edge conflicts with a pseudo defined on the other, so local-alloc cannot coalesce the copy that bridges them. Our build instead gives both paths one shared reload, so nothing is live across and the copy folds. This also explains why target is 127 insns and every one of our forms is 122-125.",
-   "next_probe": "Build a C shape where loop 2's guard is reachable from loop 1's skip WITHOUT its own read - e.g. hoist loop 2's count read next to loop 1's, or chain the two guards so the skip of loop 1 falls directly into loop 2's compare - and check whether `move a3,a0` appears and whether the loop-1 exit grows its own `lw a0,0xC(s2); sll a1,s4,6` pair as in target insns 51-52."
+   "hypothesis": "The conflict that keeps target's copy alive comes from loop-1's SKIP edge: in target the blez at insn 36 jumps to .L8001791C, which is loop-2's guard AFTER loop-1's exit reload, so the loop-1 preheader's a0/a1 are live-out along the skip edge and conflict with the base pseudo. (Carried from s3, still unprobed, and the s4 12-lever makes it more testable.)",
+   "mechanism": "A pseudo that is live-out on one successor edge conflicts with a pseudo defined on the other, so local-alloc cannot coalesce the copy that bridges them. Our build gives both paths one shared reload, so nothing is live across and the copy folds. This also explains why target is 127 insns and every one of our forms is 122-125.",
+   "next_probe": "Build a C shape where loop 2's guard is reachable from loop 1's SKIP edge without its own read  -  hoist loop 2's count read next to loop 1's, or chain the two guards so loop 1's skip falls directly into loop 2's compare  -  now expressed on TOP of the s4 `base = slots;` chassis rather than the s3 one, since the second live pointer changes which pseudos are available to be live across the edge. Check for `move a3,a0` and for the loop-1 exit growing its own `lw a0,0xC(s2); sll a1,s4,6` pair (target insns 51-52)."
   },
   {
-   "hypothesis": "The remaining 2-insn gap is in the regime where decomp-permuter outperforms hand sweeps, and permuter has never been run on this function.",
-   "mechanism": "s1-s3 were all hand-authored spelling matrices (~105 forms total) and the last three levers found (do-while shape, guard comparison operand, guard association order) were each invisible until someone happened to write that exact spelling. With 125 of 127 insns byte-exact and both residual insns confined to one basic block, the search space a permuter explores is now tiny.",
-   "next_probe": "Seed a fresh-seed campaign from candidate.c per [[permuter-fresh-seed-discipline]] (tools/permuter_campaign.py; wait in-turn with `wait --dir <ws>` and `harvest --stop` before ending the turn per [[grinder-permuter-orphan-stop-gate]]), scoring against the 14 floor."
+   "hypothesis": "A THIRD live pointer variable (or a different assignment of the existing three across the four guard sites) extends the s4 lever the rest of the way, since introducing the second one was worth 2 instructions and 7 score points.",
+   "mechanism": "The s4 lever worked by giving the loop entry guards a pseudo distinct from the one the top guards use, which changed what local-alloc could coalesce. That is a lever with an obvious next notch: the four guard sites (two >=0 top guards, two loop entry guards) and the two preheader base computations can each be routed through a different named pointer, and the s4 cleanup sweep only explored 4 of those assignments.",
+   "next_probe": "Enumerate the assignment of guard sites to named pointer variables as a small cross-product (3-4 pointers x 6 sites, pruned to the cells that keep every variable live-read) with s4/gen_variants.py as the template and s4/sweep.sh as the scorer  -  the harness runs ~70 cells in one turn. Order this AFTER the .lreg/.greg read, so the dump says which pseudo pair to separate instead of the sweep guessing."
   }
  ],
  "judge_constraints": [],
