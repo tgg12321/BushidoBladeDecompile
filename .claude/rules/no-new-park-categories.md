@@ -312,7 +312,16 @@ the rule file BEFORE using:
     frames whose residual is provably a single allocated-but-untouched
     leading region confirmed by frame-term forensics. Scope: applies to
     `func_8001E404`, `func_8001E6E4`, `func_8003CF84` ONLY; any further
-    use requires a fresh owner ruling. Prerequisite (mechanical): the
+    use requires a fresh owner ruling.
+    - **Extension (owner ruling 2026-08-18, func_8003CF84 only):** that
+      function's frame census shows a SECOND, trailing 8-byte
+      allocated-but-untouched object above `vec` (leading 16 + trailing
+      8; 14 honest spellings and all three [[phantom-slot-frame-lever]]
+      producers measured inert — memory/wip/func_8003CF84/notes.md).
+      Its `volatile u32 pad2[2];` is sanctioned under the same prongs
+      (volatile, FAKE-annotated, exhaustion-documented, engine
+      allowlist row). Trailing position is granted for THIS function
+      only; it does not generalize. Prerequisite (mechanical): the
     volatile respelling must be oracle-verified, and the sanctioned pads
     are allowlisted in the engine's volatile-cheat detector so honest
     floors read true.

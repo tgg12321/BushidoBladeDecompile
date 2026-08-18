@@ -5704,3 +5704,20 @@ extern s32 g_gpu_dev_table; vs include/gpu.h:28 extern u32 *g_gpu_dev_table;) to
 struct-pointer form. If the session fails, disposition is endgame-lock-disposition-policy at the
 proven floor (2, or 4 on the plain-arg base) — NOT a re-run of the const question. Ledger freeze
 replaced accordingly.
+
+## 2026-08-18 — func_8003CF84 — OWNER RULING — **pad carve-out EXTENDED: trailing 8-byte pad, this function only**
+
+The 2026-08-17 leading-pad re-scope was granted on the premise (from the func_8001E404
+evaluation) of a single leading untouched region for all three trio functions. The 2026-08-18
+strike session's frame forensics (cc1 .frame gradient + BB2_FRAME_DEBUG slot census,
+memory/wip/func_8003CF84/notes.md) show func_8003CF84's target frame actually holds TWO
+untouched objects: the leading 16 bytes (covered) AND a trailing 8-byte object above vec.
+With the sanctioned leading pad alone the honest floor is 8 (208/208 insns, prologue/epilogue
+sp offsets only). No honest producer exists: 14 natural spellings measured vars-inert, and all
+three phantom-slot-frame-lever producers are structurally unavailable (no loop, no narrow
+second use, named locals allocate cleanly). Owner ruling: EXTEND the carve-out for THIS
+FUNCTION ONLY — volatile u32 pad2[2]; trailing, FAKE-annotated, engine allowlist row
+("pad2", 2) added beside ("pre_pad", 4). Trailing position does not generalize; any other
+function claiming a trailing pad needs a fresh ruling. Executed same day: both pads respelled
+volatile u32 + FAKE from HEAD's unauthorized volatile s32 forms, byte-neutrality
+oracle-verified, sandbox --disable all == 0, layer-2 review, queue done.
