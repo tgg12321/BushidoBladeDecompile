@@ -360,3 +360,121 @@ ranking would have discarded both 12-cells as near-worst results.
 - probe: Chassis B = the validated workspace with the residual region wrapped in PERM_RANDOMIZE so the randomizer cannot touch the 125 byte-exact instructions (s4/mk_perm_b.py); 733 s / 21911 iterations / 130 saved outputs; every output re-scored with sandbox --disable all (s4/score_outputs.sh); then a 4-cell cleanup sweep to pick the most readable spelling of the winner.
 - result: Two outputs at engine 12 (output-845-1, output-845-3), both at permuter score 845. Cleanup sweep: both top guards through `base` = 12, both through `slots` = 12, mixed as emitted = 12, loop entry guards moved back onto `slots` = 19. Chosen form re-verified in src/ings.c at sandbox distance 12, 125 build insns vs 127 target.
 - verdict: CONFIRMED
+
+## s5 frontier (2026-08-18, floor 10)
+
+### KILLED this session
+- **H-s5-A** "Hoist the ctx+0xC read above each entry guard so ONE pointer feeds the guard
+  address and the loop base (target's preheader order)." KILLED — 14..35 over ~40 cells,
+  best 17 (7 worse than 10). cse folds `p + (slot_a<<6)` to one pseudo and the second addu
+  plus the copy both vanish; the build drops to 122 insns. See E-s5-3.
+- **H-s5-B** "Write target's `move a3,a0` as a C-level intermediate pointer copy." KILLED —
+  32 cells, `cp0` and `cp1` score IDENTICALLY in every pair. GCC 2.7.2 coalesces the copy
+  unconditionally. See E-s5-4.
+- **H-s5-C** "The top-guard pointer must not be a named variable, so it dies at the join and
+  the loops re-read." KILLED — inline-expression top guards tie at 10, never beat it. See
+  E-s5-5.
+- **H-s5-D** (carried from s4 frontier) "A THIRD live pointer variable / a different
+  assignment of pointers across the guard sites extends the s4 lever." KILLED as an
+  independent lever — the `pv2`/`share`/`q` axes in all three s5 sweeps (a distinct pointer
+  variable for loop 2, and a distinct copy variable per loop) are inert at the 10-cells and
+  strictly harmful elsewhere (`_q_` cells reach 31-34). The s4 lever's value was the
+  guard-vs-top-guard SPLIT, not the pointer count.
+
+### Live frontier for s6
+- **H-s5-E. The residual is one property: target computes `ptr + (slot_a<<6)` TWICE per
+  scan loop (guard address, then loop base) with the pointer live across the entry-guard
+  branch; we compute it once.**
+  *Mechanism:* in target the guard address and the loop base are separate pseudos that cse
+  never unified, and the pointer pseudo is live-out on the guard's taken edge, so
+  local-alloc cannot coalesce the copy that bridges them. Both of the obvious C spellings
+  are now measured dead: one shared pointer (H-s5-A) makes cse fold them, and an explicit
+  copy (H-s5-B) is coalesced away. What has NOT been tried is forcing the two computations
+  to be non-equivalent to cse — e.g. deriving the guard address from a pointer expression
+  whose value cse cannot prove equal to the base's (a different base object, a different
+  cast chain, or a read of `ctx+0xC` placed so the two live in different extended basic
+  blocks).
+  *Next probe:* the .lreg/.greg dump read that s1-s4 all banked and none has spent, now
+  regenerable for the 10-form in seconds via `tmp/grind/func_80017848/s4/dump.sh`. Grep the
+  func_80017848 region of `ings_pp.c.cse` FIRST (does cse fold the two addu's, and at which
+  insn?), then `.lreg`/`.greg` for the pseudo pair and its conflict/preference records.
+  That distinguishes "cse folded them" from "they were never separate" and names which pass
+  to attack. Do NOT open another preheader spelling sweep — three sessions and ~230 cells
+  say that family is a plateau.
+
+- **H-s5-F. The 4 top-block differing instructions are downstream of H-s5-E, not an
+  independent lever.**
+  *Mechanism:* target's second `bltz` has a `nop` delay slot because the first insn of its
+  target block is `lw a0,0xC(s2)`; ours has `sll a1,s4,6` there (the pointer is already
+  live, so only the shift is needed), and `reorg` steals it into the slot and retargets the
+  branch to label+4. Fix H-s5-E and the delay slot should follow for free — so do NOT spend
+  a session attacking the delay slot directly.
+  *Next probe:* after any H-s5-E movement, re-diff with `s5/dis.sh` and check whether the
+  `bltz` delay slot became a `nop` without further work. If it did not, `reorg.c`'s
+  `fill_slots_from_thread` non-own-thread path is the named mechanism to read.
+
+- **H-s5-G. Chassis-relative rejection: re-measure cheap per-axis spellings after every
+  structural lever lands.**
+  *Mechanism:* s3 rejected shift-first guard spelling with a correct measurement on the s3
+  chassis; on the s4 chassis the same spelling is worth 2 instructions (E-s5-1). Rejected
+  forms in this ledger are conditional on the chassis they were measured against.
+  *Next probe:* whenever s6+ lands a new structural lever, re-run `s5/gen.py`-style
+  sweeps over the cheap axes (guard operand order, base spelling, guard source, read
+  placement) on the NEW chassis before declaring any of them dead. One sweep is ~50 cells
+  and one blocking call.
+
+
+## s5 CORRECTION (supersedes the s5 frontier item H-s5-G and the E-s5-1 claim)
+
+- **H-s5-G is WITHDRAWN.** It asserted that rejected forms are chassis-relative,
+  citing shift-first guard spelling as worth 2 instructions on the s4 chassis. That
+  measurement was contaminated by an unused local declaration in the sweep template.
+  Clean: pointer-first 12, shift-first 13. s3's pointer-first conclusion stands.
+- **H-s5-H (new, and the practical one for s6).** Generated-variant sweeps on this
+  function must prune the declaration block per cell; a fixed declaration block
+  makes dead declarations look like spelling wins and is worth up to 3 instructions
+  of false signal here. Use `s5/gen_clean.py` as the template shape, and re-apply
+  the banked candidate from a clean tree and re-score it before writing any outcome.
+- The three KILLS (H-s5-A hoisted read, H-s5-B explicit copy, H-s5-C top-guard
+  variable) and the H-s5-D kill all stand: each was measured as matched pairs or at
+  margins far larger than the contamination, with the identical declaration block on
+  both sides.
+- The live frontier is unchanged and is H-s5-E: spend the cc1 -da dump probe
+  (`s4/dump.sh`, then read `ings_pp.c.cse`, then `.lreg`/`.greg`) to find out whether
+  cse folds the guard-address addu into the loop-base addu. Floor stays 12.
+
+## [s5] On the s4 `base = slots;` chassis, the two scan-loop entry guards want their count address written SHIFT-FIRST rather than POINTER-FIRST, contradicting s3's banked conclusion.
+- mechanism: Shift-first makes GCC emit `addu v0,a1,a0` with the `sll` result in the LEFT operand, which is target's operand order at both scan-loop preheaders; pointer-first emits `addu v0,a0,a1`.
+- probe: First measured by the 56-cell s5/gen.py sweep (shift-first cells 10, pointer-first cells 12) and INITIALLY BANKED AS CONFIRMED. Then re-measured cleanly at the end of the session, because re-applying the banked candidate from a `git checkout`d tree scored 13 where the sweep log said 10. s5/gen_clean.py regenerates the four cells {pointer-first, shift-first} x {base spelling} with the declaration block pruned to exactly the variables each cell uses.
+- result: KILLED, and the earlier CONFIRMED verdict is WITHDRAWN. The sweep templates (gen.py, gen2.py, gen3.py) emitted a FIXED declaration block including `u8 *q;` (and in gen3 `u8 *r;`) for every cell, so cells that never referenced them carried dead declarations. Clean numbers: pointer-first + no dead local = 12; shift-first + no dead local = 13; shift-first + `u8 *q;` = 10; pointer-first + `u8 *q;` = 12. The dead declaration is worth 3 instructions on the shift-first chassis and 0 on the pointer-first one; the operand order is worth nothing on its own and is a 1-instruction REGRESSION. s3's pointer-first conclusion stands and the honest floor is 12, unchanged. The dead declaration is not shippable (cheat-checklist T1/T2/T6, dead-local family) and is banked as rejected/unused_local_decl_q_contaminates_sweeps.c as an artifact to avoid, not a lever to spend.
+- verdict: KILLED
+
+## [s5] Hoisting the `*(u8 **)(ctx + 0xC)` read ABOVE each entry guard, so ONE pointer feeds both the guard's count address and the loop base, reproduces target's preheader order (`lw a0,0xC(s2)` before the guard) and closes the residual.
+- mechanism: Target loads the pointer before the guard, uses it for the guard address, keeps it live across the `blez`, copies it (`move a3,a0`) and recomputes the loop base from the copy - so `ptr + (slot_a<<6)` is computed twice. The hypothesis was that a single C-level pointer read placed before the guard would produce that shape.
+- probe: Axis G=1 in s5/variants (28 cells) and axis K=1 in s5/variants3 (24 cells), each engine-scored; plus a full instruction-level diff of the best such form (s5/probe3.sh on variants3/k11_c0_cp0_s1.c).
+- result: Every cell scores 14-35; the best is 17, i.e. SEVEN instructions worse than the 10-form. The diff explains it: with one C pointer feeding both, cse folds `p + (slot_a<<6)` into a single `addu a0,v1,v0`, the guard address and the loop base become the same pseudo, and BOTH the second addu and the copy disappear - the build falls to 122 insns against target's 127. The form gets target's ORDER right and its instruction COUNT further wrong.
+- verdict: KILLED
+
+## [s5] Target's uncoalesced `move a3,a0` can be reproduced by writing the copy explicitly in C as a named intermediate pointer (`q = p; base = q + (slot_a << 6);`).
+- mechanism: If GCC kept a C-level pointer copy as a distinct pseudo, the `move` would materialize and the loop base would be recomputed from the copy exactly as in target.
+- probe: Axis `cp` in s5/gen3.py: all 32 cells generated in matched pairs (with/without the copy) across both the read-after-guard and read-before-guard chassis, with and without a distinct copy variable per loop; every pair engine-scored via s5/sweep3.sh.
+- result: cp0 and cp1 score IDENTICALLY in every single pair (10/10, 17/17, 23/23, 31/31). GCC 2.7.2 coalesces the copy unconditionally, so a C copy statement is codegen-inert here. There is no C-level handle on target's copy via this route.
+- verdict: KILLED
+
+## [s5] Target's top-guard pointer dies at the join (it is v1 and is never reused) because no C variable holds it; removing the `slots` variable and spelling the top guards as two inline `*(u8 **)(ctx + 0xC)` reads will make the pointer die and force the loops to re-read it.
+- mechanism: A named live variable keeps the value in a register across the join, so the loop preheaders never need their own load; an inline expression consumed only by the two top guards should let cse fold the pair inside the top-guard extended basic block and then let the value die.
+- probe: s5/gen2.py generated all 40 cells of the no-`slots`-variable family (top guards inline) across the same G/o/c/pv2/base-seed axes; s5/sweep2.sh engine-scored them (s5/sweep2_results.txt).
+- result: Best cells TIE at 10 and none beats it; the 11-cells mirror the 10-cells exactly one operand-order step away. Whether the top-guard pointer is a named variable or an inline expression is codegen-inert - the `base` seed keeps the value live either way.
+- verdict: KILLED
+
+## [s5] (Carried from the s4 frontier) A THIRD live pointer variable, or a different assignment of the existing pointers across the four guard sites, extends the s4 two-pointer lever the rest of the way.
+- mechanism: s4's lever worked by giving the loop entry guards a pseudo distinct from the one the top guards use, which changed what local-alloc could coalesce; the obvious next notch is routing more of the six sites through more named pointers.
+- probe: Covered as the `pv2` axis in s5/gen.py and s5/gen2.py (loop 2 takes its own pointer `q`) and the `share`/`cp` axes in s5/gen3.py (a distinct source pointer AND a distinct copy variable per loop) - 128 engine-scored cells in total across the three sweeps.
+- result: Inert at every 10-cell and strictly harmful elsewhere: the `_q_` cells reach 31-34 in sweep 1 and 34 in sweep 2. The s4 lever's value was the guard-vs-top-guard SPLIT, not the number of pointer variables; there is no further notch on this axis.
+- verdict: KILLED
+
+## [s5] A directed permuter campaign scoped to the residual region of the 10-form finds a body below distance 10.
+- mechanism: The residual is now 10 differing instructions concentrated in the two scan-loop preheaders and the top-guard block; PERM_RANDOMIZE over exactly those regions lets the randomizer explore the residual without disturbing the 125 already-byte-exact instructions.
+- probe: Two campaigns on the validated s4 workspace built from the 10-form, launched via tools/permuter_campaign.py with telemetry: chassis C (s4/mk_perm_b.py region - the two scan loops only) and chassis D (new s5/mk_perm_d.py region - widened to include the top-guard block, because 4 of the 10 differing insns live there and every prior chassis froze it). 633 s each, 13447 + 13293 iterations, 88 outputs, every one re-scored with `sandbox --disable all` (s5/score_outputs.sh). A third campaign, chassis E, was run on the structurally different read-before-guard base as the fresh-seed reseed. All campaigns harvested with --stop. Chassis E was built from the read-before-guard form (variants3/k11_c0_cp0_s1.c, 122 insns, engine 17) with the widened region - a structurally different base, per the fresh-seed rule - and ran 31600 iterations to 205 outputs.
+- result: Nothing below 10. Distributions - C: 3x10, 1x11, 4x12, 5x13, 5x14, 6x15, 7x16, 3x17, tail to 27; D: 4x10, 7x12, 6x13, 4x14, 6x15, 7x16, 2x17, 2x18, tail to 35. E-s4-2's anti-correlation reproduced exactly: each campaign's best permuter-ranked find (620) is not among the engine-best cells, while chassis D's mid-ranked output-685-1 ties the base at 10 with a structurally different body. 2 of 88 outputs could not be scored (apply_find.py could not locate the function in the permuter's reformatted source) - a bounded, recorded gap. Chassis E: 1x10, 7x11, 1x12, 15x13, 13x14, 15x15, 20x16, 22x17, tail to 121 (4 apply-fails, 1 unscorable); its single best cell TIES 10 and came from permuter score 540, mid-ranking again. Across s4+s5 that is 4 chassis, ~80k iterations and 423 engine-scored outputs with zero finds below the running floor; both of this session's floor drops came from directed hand sweeps, not the randomizer. permuter_campaign.py status reports 0 live campaigns.
+- verdict: KILLED

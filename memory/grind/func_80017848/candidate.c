@@ -1,38 +1,58 @@
-/* CANDIDATE - func_80017848, s4 (2026-08-18).  sandbox --disable all = 12
- * (was 16 for s1/s2, 14 after s3; this is the second drop and the first one
- * produced by the permuter modality).  125/127 build insns.
+/* CANDIDATE - func_80017848, s5 (2026-08-18).  sandbox --disable all = 12
+ * 125/127 build insns, frame 0x40 both sides.
  *
- * WHAT S4 ADDED (one lever, and it is the whole delta 14 -> 12):
- *   `base = slots;` immediately after the slots read, so the TWO SCAN-LOOP ENTRY
- *   GUARDS read their count through `base` while the two >=0 top guards keep
- *   reading through `slots`.  `base` is then re-pointed at the per-slot record
- *   inside each loop preheader exactly as before.  This is ordinary variable
- *   reuse - `base` is a live, read pointer at every point (both loop guards
- *   consume it before the reassignment), not a dead store or a holder - and it
- *   is the frozen-list "variable reuse for codegen control" family.
+ * THE BODY IS UNCHANGED FROM S4 AND THAT IS THE HEADLINE FINDING OF S5.
+ * s5 appeared to reach 10 and it does not.  The 12 -> 10 drop was produced by
+ * an UNUSED LOCAL DECLARATION (`u8 *q;`, never written and never read) that the
+ * s5 sweep templates emitted in a fixed declaration block for every cell.  Once
+ * the declaration block is pruned to exactly the variables a cell uses, the
+ * apparent winner scores 13 - one WORSE than this form.  Measured three ways:
+ *     s4 body, guard address POINTER-FIRST, no unused local   -> 12
+ *     same body, guard address SHIFT-FIRST, no unused local   -> 13
+ *     same body, SHIFT-FIRST, plus the unused `u8 *q;`        -> 10
+ *     same body, POINTER-FIRST, plus the unused `u8 *q;`      -> 12
+ * So the unused declaration is worth 3 instructions on the shift-first chassis
+ * and 0 on the pointer-first one, and the guard operand order is worth nothing
+ * on its own.  s3's banked "the loop entry guard's count address must be
+ * written POINTER-FIRST" therefore STANDS.
  *
- *   Measured alternatives at the same node (all engine-scored this session):
- *     both top guards through `base`      -> 12   (equivalent)
- *     both top guards through `slots`     -> 12   (THIS FORM - the cleanest)
- *     as the permuter emitted it (mixed)  -> 12   (equivalent)
- *     loop guards moved back onto `slots` -> 19   (the lever is load-bearing)
+ * The unused declaration is NOT shipped here.  It has no semantic purpose
+ * (checklist T1), no programmer would write it (T2), and its only appearance in
+ * the function is the declaration itself (T6) - it is the dead-local family, and
+ * first reach of an unsanctioned family is a cheat regardless of spelling.  It is
+ * banked in rejected/unused_local_decl_q_contaminates_sweeps.c as a MEASUREMENT
+ * ARTIFACT to be avoided, not as a lever to be spent.
  *
- * INHERITED LEVERS (do not re-derive - s2/s3):
- *   (1) source-level do-while  -> target's per-iteration bound reload + one-addu index;
+ * INHERITED LEVERS (do not re-derive - s2/s3/s4):
+ *   (1) source-level do-while -> target's per-iteration bound reload + one-addu index;
  *   (2) entry guard spelled `i = 0; if (i < count)` -> the phantom-16 frame;
- *   (3) the loop entry guard's count address written POINTER-FIRST, and the `slots`
- *       read hoisted ABOVE the two >=0 top guards so those guards consume it too.
- *   s4 note: (3) is SUFFICIENT for 14 but not NECESSARY - the s4 72-cell
- *   cross-product found fresh-read-guard cells that also reach 14.  14 was a
- *   plateau over that whole family; 12 required leaving the family.
+ *   (3) the loop entry guard's count address written POINTER-FIRST, and the
+ *       `slots` read hoisted ABOVE the two >=0 top guards so those guards
+ *       consume it too;
+ *   (4) `base = slots;` right after the slots read, so the two SCAN-LOOP ENTRY
+ *       guards read their count through `base` while the two >=0 top guards read
+ *       through `slots`.  `base` is re-pointed at the per-slot record inside each
+ *       preheader.  Ordinary variable reuse - `base` is live and read at every
+ *       point.
  *
- * REMAINING RESIDUAL (2 insns short of 127, 12 differing):
- *   target keeps an uncoalesced copy of the reloaded slots pointer
- *   (`lw a0,0xC(s2)` + `move a3,a0` feeding `addu a0,a1,a3`) in each scan-loop
- *   preheader.  s3/s4 evidence says this is a register-ALLOCATION property
- *   (a coalescing failure), not a source-spelling one.  The cc1 -da .lreg/.greg
- *   dumps for this form are on disk (tmp/grind/func_80017848/s4/) and UNREAD -
- *   that is the next probe, not another spelling sweep.
+ * REMAINING RESIDUAL (2 insns short of 127, 12 differing).  s5 decomposed it
+ * exactly, per scan loop:
+ *     target: lw a0,0xC(s2) BEFORE the entry guard ; sll a1,s4,6 ;
+ *             addu v0,a1,a0 ; lw v0,0x1C(v0) ; blez ; move a3,a0 ;
+ *             lw a2,0x10(s2) ; addu a0,a1,a3
+ *     ours:   sll a1,s4,6 ; addu v0,a0,a1 ; lw v0,0x1C(v0) ; blez ;
+ *             lw v0,0xC(s2) AFTER the branch ; lw a2,0x10(s2) ; addu a0,a1,v0
+ * i.e. target computes `ptr + (slot_a<<6)` TWICE per loop, with the pointer live
+ * across the guard branch and copied in between; we compute it once.  The
+ * `lw ...,0xC(s2)` COUNT is already equal (6 both sides, measured) - this is a
+ * PLACEMENT difference, not a missing load.  The remaining differing insns in
+ * the top-guard block are downstream of the same property.
+ *
+ * NEXT PROBE (banked and unspent since s1): the cc1 -da dumps.
+ * tmp/grind/func_80017848/s4/dump.sh regenerates them in seconds.  Read
+ * ings_pp.c.cse first - does cse fold the guard-address addu into the loop-base
+ * addu, and at which insn?  Then .lreg/.greg for the pseudo pair's conflict and
+ * preference records.  Do NOT open another preheader spelling sweep.
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;

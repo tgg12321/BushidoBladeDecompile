@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,30 @@
    "floor": 12,
    "modality": "permuter",
    "headline": "Floor 14 -> 12 via a second live pointer variable feeding the two scan-loop entry guards; found only because every permuter output was re-scored with the engine (the permuter ranked the winning form i"
+  },
+  {
+   "session": 5,
+   "floor": 12,
+   "modality": "permuter",
+   "headline": "Floor stays 12: the apparent 12 -> 10 drop was an UNUSED LOCAL DECLARATION contaminating every s5 sweep template (clean, shift-first is 13 and s3's pointer-first conclusion stands) - caught by re-meas"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The final 2 instructions (target's per-preheader `lw a0,0xC(s2)` + uncoalesced `move a3,a0` feeding `addu a0,a1,a3`) are a register-ALLOCATION property  -  a coalescing failure  -  and are therefore invisible to any further source-spelling search.",
-   "mechanism": "Three independent exhaustions now point the same way: s1-s3's ~105 hand forms, s4's complete 72-cell preheader cross-product (min 14), and s4's 21911 permuter iterations scoped to exactly that region (min 12, never 127 insns). cse replaces the base's redundant load with a reg-reg copy in every one of our builds and local-alloc coalesces it because the two pseudos do not conflict; target's survive, so target's pseudos must conflict or carry an opposing preference.",
-   "next_probe": "Spend the dump probe that s1/s2/s3 all banked and never ran. Regenerate for the CURRENT 12-form with tmp/grind/func_80017848/s4/dump.sh (seconds; dumps already exist for the 14-form) and READ ings_pp.c.lreg and ings_pp.c.greg  -  grep the func_80017848 region for the pseudo pair that local-alloc coalesces and for its conflict/preference records. That names the property directly. Do NOT open another spelling sweep and do NOT run another undirected campaign; both are measured dead."
+   "hypothesis": "The entire 10-instruction residual is one property: target computes `ptr + (slot_a<<6)` TWICE per scan loop (once for the entry-guard count address, once for the loop base) with the pointer pseudo live across the guard branch, while every form we can build computes it once. The two obvious C spellings of that shape are now measured dead, so the question is which GCC pass makes target's two computations non-equivalent.",
+   "mechanism": "In target the guard address and the loop base are separate pseudos that cse never unified, and the pointer pseudo is live-out on the guard's taken edge, so local-alloc cannot coalesce the copy that bridges them. In our builds either cse folds the two expressions into one pseudo (when one C pointer feeds both - H-s5-A) or the copy is coalesced away (when written explicitly - H-s5-B). What has NOT been tried is making the two computations non-equivalent TO CSE: deriving the guard address from a pointer expression whose value cse cannot prove equal to the base's, or placing the two reads so they fall in different extended basic blocks.",
+   "next_probe": "SPEND THE DUMP PROBE - it is the fifth session it has been banked and it is now the only thing that names the mechanism instead of guessing at it. Regenerate for the CURRENT 10-form with tmp/grind/func_80017848/s4/dump.sh (seconds). Read `ings_pp.c.cse` FIRST, grepping the func_80017848 region: does cse fold the guard-address addu into the loop-base addu, and at which insn? That single answer distinguishes 'cse folded them' from 'they were never separate', and tells you whether the attack surface is cse.c's equivalence classes (defeat the fold) or local-alloc's coalescing (defeat the copy). THEN read .lreg/.greg for the pseudo pair's conflict and preference records. Do NOT open another preheader spelling sweep: three sessions and ~230 engine-scored cells say that family is a plateau at 10.",
+   "note": "Do not re-run an undirected permuter campaign either - s4 (21911 iterations) and s5 (26.7k iterations across three chassis, including one that finally exposed the top-guard block) both came back empty below their base."
   },
   {
-   "hypothesis": "The conflict that keeps target's copy alive comes from loop-1's SKIP edge: in target the blez at insn 36 jumps to .L8001791C, which is loop-2's guard AFTER loop-1's exit reload, so the loop-1 preheader's a0/a1 are live-out along the skip edge and conflict with the base pseudo. (Carried from s3, still unprobed, and the s4 12-lever makes it more testable.)",
-   "mechanism": "A pseudo that is live-out on one successor edge conflicts with a pseudo defined on the other, so local-alloc cannot coalesce the copy that bridges them. Our build gives both paths one shared reload, so nothing is live across and the copy folds. This also explains why target is 127 insns and every one of our forms is 122-125.",
-   "next_probe": "Build a C shape where loop 2's guard is reachable from loop 1's SKIP edge without its own read  -  hoist loop 2's count read next to loop 1's, or chain the two guards so loop 1's skip falls directly into loop 2's compare  -  now expressed on TOP of the s4 `base = slots;` chassis rather than the s3 one, since the second live pointer changes which pseudos are available to be live across the edge. Check for `move a3,a0` and for the loop-1 exit growing its own `lw a0,0xC(s2); sll a1,s4,6` pair (target insns 51-52)."
+   "hypothesis": "The 4 top-block differing instructions are downstream of the preheader property, not an independent lever, and will fall for free once it moves.",
+   "mechanism": "Target's second `bltz` has a `nop` delay slot because the first instruction of its target block is `lw a0,0xC(s2)`. Ours has `sll a1,s4,6` there - the pointer is already live so only the shift is needed - and reorg's fill_slots_from_thread steals it into the slot and retargets the branch to label+4. Change what the preheader block starts with and the theft stops.",
+   "next_probe": "After ANY movement on the preheader property, re-diff with s5/dis.sh and check whether the `bltz` delay slot became a `nop` without further work. Only if it did NOT should reorg.c's non-own-thread fill_slots_from_thread path be read as its own mechanism. Do not spend a session attacking the delay slot directly."
   },
   {
-   "hypothesis": "A THIRD live pointer variable (or a different assignment of the existing three across the four guard sites) extends the s4 lever the rest of the way, since introducing the second one was worth 2 instructions and 7 score points.",
-   "mechanism": "The s4 lever worked by giving the loop entry guards a pseudo distinct from the one the top guards use, which changed what local-alloc could coalesce. That is a lever with an obvious next notch: the four guard sites (two >=0 top guards, two loop entry guards) and the two preheader base computations can each be routed through a different named pointer, and the s4 cleanup sweep only explored 4 of those assignments.",
-   "next_probe": "Enumerate the assignment of guard sites to named pointer variables as a small cross-product (3-4 pointers x 6 sites, pruned to the cells that keep every variable live-read) with s4/gen_variants.py as the template and s4/sweep.sh as the scorer  -  the harness runs ~70 cells in one turn. Order this AFTER the .lreg/.greg read, so the dump says which pseudo pair to separate instead of the sweep guessing."
+   "hypothesis": "Sweep hygiene is now a first-class risk on this function: the residual is 12 instructions and a single dead declaration moves the score by 3, so any measurement harness that varies anything other than the axis under test will produce a floor that does not reproduce.",
+   "mechanism": "GCC 2.7.2 reserves frame slots and shifts allocation for locals that no instruction touches ([[phantom-frame-slots-gcc272]]), so a declaration alone perturbs codegen. A fixed declaration block across generated cells therefore confounds the spelling axis with a dead-declaration axis.",
+   "next_probe": "Use s5/gen_clean.py's shape - declaration block emitted per cell from exactly the variables that cell references - for every future sweep, and re-apply memory/grind/func_80017848/candidate.c from a `git checkout`d tree and re-score it as the last step before writing any outcome. If the re-score disagrees with the sweep log, the sweep log is wrong."
   }
  ],
  "judge_constraints": [],

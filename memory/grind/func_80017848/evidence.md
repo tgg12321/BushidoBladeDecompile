@@ -401,3 +401,244 @@ preference that would keep target's copy alive.
 - [s4] Both campaigns were harvested with --stop before the session ended; no permuter process is left running.
 
 - [s4] cc1 -da RTL dumps for the pre-s4 14-form are on disk (tmp/grind/func_80017848/s4/ings_pp.c.{rtl,jump,cse,loop,combine,cse2,flow,lreg,greg,sched,jump2,dbr,sched2}), regenerable in seconds via s4/dump.sh. This is the probe s1, s2 and s3 all banked and none spent; s4 produced the artifacts but the permuter work consumed the session before the analysis.
+
+## s5 (2026-08-18) — permuter modality
+
+Starting point: the s4 candidate re-applied to `src/ings.c`, sandbox `--disable all`
+re-confirmed at **12** (127 target insns, 125 build insns). Floor at end of session: **10**.
+
+### E-s5-1. FLOOR 12 -> 10. The lever is the ENTRY-GUARD ADDRESS OPERAND ORDER, and it is chassis-dependent.
+The two scan-loop entry guards must spell their count address **SHIFT-FIRST**:
+
+    if (i < *(s32 *)((slot_a << 6) + (s32)base + 0x1C))    /* s5  -> distance 10 */
+    if (i < *(s32 *)((s32)base + (slot_a << 6) + 0x1C))    /* s4  -> distance 12 */
+
+Shift-first makes GCC emit `addu v0,a1,a0` (the `sll` result in the LEFT operand),
+which is target's operand order at both preheaders; pointer-first emits `addu v0,a0,a1`.
+Two instructions, one per scan loop.
+
+**This directly contradicts a banked s3 conclusion, and the contradiction is the
+transferable lesson.** s3 banked "the loop entry guard's count address must be written
+POINTER-FIRST" and even filed the shift-first form as a rejected form
+(`rejected/loopguard_shiftfirst_costs_2pts.c`). That was measured correctly ON THE S3
+CHASSIS. On the s4 `base = slots;` chassis the sign flips: the s5 sweep measured all four
+combinations of {pointer-first, shift-first} x {guard through `base`, guard through
+`slots`} and only (guard through `base`) x (shift-first) reaches 10. **A rejected form in
+this ledger is rejected RELATIVE TO THE CHASSIS IT WAS MEASURED ON.** When a session lands
+a structural lever (s4's `base = slots;`), the cheap per-axis spellings that were killed on
+the previous chassis are NOT still dead and must be re-measured — this one was worth 2
+instructions for the price of a 56-cell sweep.
+
+### E-s5-2. The 10-residual, fully decomposed (10 differing insns, still 125 vs 127).
+Per scan loop, TARGET's preheader is
+
+    lw   a0,0xC(s2)      ; pointer loaded BEFORE the entry guard
+    sll  a1,s4,6
+    addu v0,a1,a0        ; guard count address
+    lw   v0,0x1C(v0)
+    blez v0,<skip>
+    move a3,a0           ; pointer survives the branch and is COPIED
+    lw   a2,0x10(s2)
+    addu a0,a1,a3        ; loop base = ptr + shift, computed a SECOND time
+
+ours is
+
+    sll  a1,s4,6
+    addu v0,a1,a0        ; guard count address, from the long-lived top-guard pointer
+    lw   v0,0x1C(v0)
+    blez v0,<skip>
+    lw   v0,0xC(s2)      ; pointer loaded AFTER the branch
+    lw   a2,0x10(s2)
+    addu a0,a1,v0        ; ptr + shift computed ONCE
+
+So the residual is: target computes `ptr + (slot_a<<6)` TWICE per loop with a register copy
+between the two, we compute it once. The other 4 differing insns are the same property seen
+upstream: target's top guards hold the pointer in v1 and let it DIE at the join, so the
+second `bltz`'s delay slot is a `nop`; ours keeps it live into the loops (a0), so `reorg`
+steals `sll a1,s4,6` into that delay slot and retargets the branch to label+4.
+Both `lw ...,0xC(s2)` COUNTS are already equal (6 in the function, 6 in target) — this is a
+PLACEMENT difference, not a missing-load difference. Measured, not inferred
+(`s5/probe2.sh`).
+
+### E-s5-3. KILLED — hoisting the pointer read ABOVE the entry guard (so one pointer feeds guard and base).
+This is the obvious reading of E-s5-2 and it is measured dead. Sweep `variants/` axis G=1
+and `variants3/` axis K=1 both place `p = *(u8 **)(ctx + 0xC);` immediately before
+`i = 0; if (i < ...)` and read the guard count through `p`. Every such cell scores 14-35;
+the best is 17, i.e. **7 instructions WORSE** than the 10-form. Reason, from the
+disassembly of `variants3/k11_c0_cp0_s1.c` (122 build insns, 5 short of target): with one
+C-level pointer feeding both, cse folds `p + (slot_a<<6)` into a single `addu a0,v1,v0` and
+the loop base and the guard address become the SAME pseudo, so the second `addu` and the
+copy both disappear. The form gets target's preheader ORDER right and its instruction COUNT
+further wrong. Banked as `rejected/read_hoisted_above_entry_guard_costs_7.c`.
+
+### E-s5-4. KILLED — an explicit C-level pointer copy does not survive to `move a3,a0`.
+Axis `cp` in `variants3/` inserts a named intermediate (`q = p; base = q + (slot_a<<6);`)
+in each preheader, on BOTH the read-after-guard and read-before-guard chassis, with and
+without a distinct copy variable per loop. All 32 cells: **cp0 and cp1 score identically**
+(10/10, 17/17, 23/23, 31/31 pairwise). GCC 2.7.2 coalesces the copy in every one. The
+"reproduce target's uncoalesced `move a3,a0` by writing the copy in C" hypothesis is dead;
+the copy in target is an allocator artifact of the pointer being live across the guard
+branch, and there is no C-level handle on it via a copy statement. Banked as
+`rejected/explicit_pointer_copy_var_is_coalesced_inert.c`.
+
+### E-s5-5. KILLED — removing the `slots` variable from the top guards.
+Hypothesis: target's top-guard pointer (v1) dies at the join because there is no C variable
+holding it, so the loops must re-read. Sweep 2 (`variants2/`, 40 cells) spells the top
+guards as two inline `*(u8 **)(ctx + 0xC)` reads with no `slots` variable at all. Best cells
+tie at **10**, none beats it, and the 11-cells mirror the 10-cells exactly one operand-order
+step away. Whether the top-guard pointer is a named variable or an inline expression is
+codegen-inert here: the `base` seed keeps the value live either way. Banked as
+`rejected/top_guards_inline_no_slots_var_ties_at_10.c`.
+
+### E-s5-6. Two directed permuter campaigns on the 10-form: 26.7k iterations, 88 outputs, NOTHING below 10.
+Both were built on the validated s4 workspace (`s4/mkws.sh`) from the current 10-form and
+launched via `tools/permuter_campaign.py` (telemetry; owner directive 2026-07-07):
+  - **chassis C** (`tmp/perm_ings_s5c`, label `s5c_loops`) — s4's `mk_perm_b.py` region:
+    `PERM_RANDOMIZE` over the two scan-loop preheaders + bodies only.
+    633 s, 13447 iterations, 43 outputs.
+  - **chassis D** (`tmp/perm_ings_s5d`, label `s5d_topguards`) — new `s5/mk_perm_d.py`
+    region: widened to include the TOP-GUARD block, because at floor 10 four of the ten
+    differing instructions live there and chassis B/C froze it.
+    633 s, 13293 iterations, 45 outputs.
+Every output was re-scored with the engine (`s5/score_outputs.sh`; results in
+`*_engine_scores.txt`). Engine-distance distributions:
+  C: 3x10, 1x11, 4x12, 5x13, 5x14, 6x15, 7x16, 3x17, tail to 27 (+1 apply-fail)
+  D: 4x10, 7x12, 6x13, 4x14, 6x15, 7x16, 2x17, 2x18, tail to 35 (+1 apply-fail)
+**No output beat the base.** E-s4-2's anti-correlation reproduced exactly: the permuter's
+best-ranked find in each campaign (620) is not among the engine-best cells, and chassis D's
+`output-685-1` — a mid-ranked find — ties the base at 10 with a structurally different body.
+Both campaigns were harvested with `--stop`. One output per campaign
+(`s5c/output-695-1`, `s5d/output-620-1`) could not be scored: `s4/apply_find.py` failed to
+locate the function in the permuter's reformatted source and the awk fallback found no
+`^s32 func_80017848(` line either. That is 2 of 88 unscored — a known, bounded gap, not a
+silent truncation.
+
+### E-s5-7. Session bookkeeping.
+- Every campaign launched this session was harvested with `--stop` before the session ended.
+- Sweep harnesses are reusable and self-contained: `s5/gen.py`/`gen2.py`/`gen3.py` emit
+  variant sets, `s5/sweep.sh`/`sweep2.sh`/`sweep3.sh` engine-score them (~50 cells per
+  blocking call), `s5/apply.py` splices a variant into `src/ings.c`, `s5/dis.sh` prints the
+  build-vs-target instruction diff, `s5/probe3.sh <variant>` does both for one cell.
+  `s5/ings_10form.c.bak` is the restore point every sweep resets to.
+
+### E-s5-8. Chassis E (the fresh-seed reseed) — 31600 iterations, 205 outputs, nothing below 10.
+Per the fresh-seed discipline, after C and D plateaued the reseed was a STRUCTURALLY
+DIFFERENT base rather than another window on the same one: `tmp/perm_ings_s5e`, label
+`s5e_readbeforeguard`, built from `variants3/k11_c0_cp0_s1.c` — the read-BEFORE-guard form
+(122 build insns, engine 17) whose preheader ORDER matches target even though its
+instruction count is further off — with the widened `mk_perm_d.py` region. Every output
+engine-scored (`perm_ings_s5e_engine_scores.txt`): 1x10, 7x11, 1x12, 15x13, 13x14, 15x15,
+20x16, 22x17, and a long tail to 121; 4 apply-fails and 1 unscorable. **The single best cell
+ties the 10-form and nothing beats it** — and note it came from permuter score 540, i.e.
+from the middle of the ranking, not the top, which is E-s4-2 reproducing for the third time.
+Harvested with `--stop`; `permuter_campaign.py status` reports 0 live campaigns.
+
+Cumulative permuter evidence for this function across s4+s5: **4 chassis, ~80k iterations,
+423 engine-scored outputs, zero finds below the hand-derived floor of the session that ran
+them.** Both of this session's floor drops came from directed hand sweeps, not from the
+randomizer. That is now a strong prior for s6+: on func_80017848 the permuter is a
+proposal generator whose yield below the current floor has been measured at zero, and the
+modality ladder should not spend another session on it.
+
+
+### E-s5-9. CORRECTION, AND IT SUPERSEDES E-s5-1: the 12 -> 10 drop was an UNUSED LOCAL DECLARATION, not the guard operand order. HONEST FLOOR THIS SESSION IS 12, UNCHANGED.
+Caught at the end of the session while re-applying the banked candidate: the form
+saved from the sweep scored 10, and the same body typed out by hand scored 13. The
+difference was a single line in the declaration block - `u8 *q;`, never written and
+never read. `s5/gen.py`, `gen2.py` and `gen3.py` each emitted a FIXED declaration
+block (`p`, `q`, and in gen3 also `r`) for every generated cell, so any cell that
+did not reference `q`/`r` silently carried one or two dead declarations.
+
+Clean re-measurement, declaration block pruned to exactly the variables used
+(`s5/gen_clean.py`, each cell applied to `src/ings.c` from a `git checkout`d tree and
+scored with `sandbox --disable all`):
+
+| form | unused local | score |
+|---|---|---|
+| s4 body, guard address POINTER-FIRST | none | **12** |
+| s4 body, guard address SHIFT-FIRST   | none | **13** |
+| s4 body, SHIFT-FIRST                 | `u8 *q;` | **10** |
+| s4 body, POINTER-FIRST               | `u8 *q;` | **12** |
+
+So the dead declaration is worth 3 instructions on the shift-first chassis and 0 on
+the pointer-first one, and the guard operand order is worth NOTHING on its own -
+shift-first is a 1-instruction REGRESSION without the dead local. **s3's banked
+conclusion "the loop entry guard's count address must be written POINTER-FIRST"
+STANDS; E-s5-1's claim that it was chassis-relative is WITHDRAWN, as is the
+`H-s5-G` frontier item built on top of it.** The candidate's body is therefore
+byte-for-byte the s4 body and the floor for s5 is 12.
+
+The dead declaration is NOT shippable: it has no semantic purpose (cheat-checklist
+T1), no programmer writes an unreferenced local (T2), and its only appearance in the
+function is the declaration itself (T6). It is the dead-local family, and first reach
+of an unsanctioned family is a cheat regardless of spelling. It is banked as
+`rejected/unused_local_decl_q_contaminates_sweeps.c` explicitly as a MEASUREMENT
+ARTIFACT to be avoided, not as a lever to be spent.
+
+**What this costs and what it does not.** Every s5 sweep number carries the same
+contamination, so the RANKINGS inside sweeps 1-3 (which cell beats which) are not
+trustworthy in absolute terms. What survives untouched is every KILL that was
+measured as a matched pair or a large margin, because both sides of those
+comparisons carried the identical declaration block:
+  - E-s5-3 (hoisting the read above the entry guard costs 7): the whole family sits
+    at 14-35 against a same-template base of 10, a margin no dead declaration
+    explains.
+  - E-s5-4 (an explicit C-level pointer copy is coalesced away): cp0 and cp1 are
+    matched pairs from the same template and score IDENTICALLY in all 16 pairs.
+  - E-s5-5 (top-guard `slots` variable vs inline expression is inert): same
+    template on both sides, ties everywhere.
+  - E-s5-6 / E-s5-8 (three permuter chassis, ~58k iterations, 336 engine-scored
+    outputs, nothing below the base): the base and the outputs share the template.
+  - E-s5-2 (the instruction-level decomposition of the residual) and the load-count
+    equality in the s5 evidence are disassembly facts, independent of scoring.
+
+**Two process rules fall out of this, and they generalize past this function.**
+  1. A generated-variant sweep MUST prune its declaration block per cell.
+     A fixed declaration block turns "which spelling is best" into "which spelling
+     tolerates the most dead declarations", and on a function this tight that is a
+     3-instruction lie. `s5/gen_clean.py` is the corrected template shape.
+  2. ALWAYS re-measure the banked candidate end-to-end from a clean tree before
+     writing the outcome. This was caught only because the final verification
+     re-applied `candidate.c` from scratch and got a different number than the
+     sweep reported. A session that trusts its own sweep log ships a floor that
+     does not reproduce.
+
+### E-s5-10. Tooling hazard worth one line: the sandboxed Bash tool writes to an OVERLAY, not the real tree.
+Edits made with `python3`/`git checkout` through the Bash tool were visible to
+subsequent Bash reads but NOT to the engine (which runs through PowerShell/WSL) -
+`sandbox` kept scoring a stale `src/ings.c`, which is what produced two confusing
+scores (19, 33) mid-session. Every mutation of `src/ings.c` in this repo must go
+through `bash tools/wsl.sh '...'` or the PowerShell wrapper; the Bash tool is safe
+for reading and for writing scratch under `tmp/` that is later consumed from WSL.
+
+- [s5] [s5] HONEST FLOOR IS 12, UNCHANGED - and the reason is the session's most transferable finding. s5's sweeps reported a 12 -> 10 drop from spelling the scan-loop entry guards' count address SHIFT-FIRST. Re-measuring the banked candidate from a clean tree scored 13 instead of 10, which exposed that gen.py/gen2.py/gen3.py emitted a FIXED declaration block (`u8 *q;`, and in gen3 `u8 *r;`) for every cell, so cells that never referenced them carried dead declarations. Clean: pointer-first 12, shift-first 13, shift-first + `u8 *q;` 10, pointer-first + `u8 *q;` 12. The dead declaration is worth 3 instructions on one chassis and 0 on the other; the operand order is worth nothing. s3's banked pointer-first conclusion STANDS.
+
+- [s5] [s5] The dead declaration is not shippable and was not shipped: no semantic purpose (T1), no programmer writes an unreferenced local (T2), only appearance is the declaration itself (T6) - dead-local family, first reach of an unsanctioned family. Banked as rejected/unused_local_decl_q_contaminates_sweeps.c as a measurement artifact.
+
+- [s5] [s5] PROCESS RULE 1 (generalizes past this function): a generated-variant sweep MUST prune its declaration block per cell. A fixed declaration block turns 'which spelling is best' into 'which spelling tolerates the most dead declarations', worth up to 3 instructions of false signal here. s5/gen_clean.py is the corrected template shape.
+
+- [s5] [s5] PROCESS RULE 2: always re-apply the banked candidate end-to-end from a clean tree and re-score it before writing the outcome. This contamination was caught only by that step; a session that trusts its own sweep log ships a floor that does not reproduce.
+
+- [s5] [s5] TOOLING HAZARD: the sandboxed Bash tool writes to an overlay, not the real tree. Edits to src/ings.c made with python3/git through the Bash tool were visible to later Bash reads but NOT to the engine (PowerShell/WSL), which kept scoring a stale file and produced two spurious scores (19, 33) mid-session. Mutate src/ only through `bash tools/wsl.sh '...'` or the PowerShell wrapper.
+
+- [s5] [s5] The 10-residual decomposes into ONE property plus its downstream shadow. Per scan loop, target does `lw a0,0xC(s2)` BEFORE the entry guard, `addu v0,a1,a0` (guard address), `blez`, `move a3,a0`, `addu a0,a1,a3` - computing `ptr + (slot_a<<6)` TWICE with the pointer live across the branch. Ours does `addu v0,a1,a0` from the long-lived top-guard pointer, `blez`, then `lw v0,0xC(s2)` and `addu a0,a1,v0` - computing it once. That is 3 differing insns per loop. The remaining 4 are upstream shadow: target's top guards hold the pointer in v1 and let it die, so the second `bltz` delay slot is a `nop`; ours keeps it live, so reorg steals `sll a1,s4,6` into that slot and retargets the branch to label+4.
+
+- [s5] [s5] The `lw ...,0xC(s2)` COUNT is already equal - 6 in our build, 6 in target (measured via s5/probe2.sh over three different forms). The residual is a PLACEMENT difference, not a missing-load difference. Any future hypothesis phrased as 'target has an extra load we are missing' is factually wrong.
+
+- [s5] [s5] KILLED: hoisting the ctx+0xC read above the entry guard so one pointer feeds guard and base. ~52 engine-scored cells, best 17 (7 worse). cse folds `p + (slot_a<<6)` to one pseudo, the second addu and the copy both vanish, and the build drops to 122 insns vs target's 127.
+
+- [s5] [s5] KILLED: an explicit C-level pointer copy (`q = p; base = q + (slot_a<<6);`) as a way to materialize target's `move a3,a0`. 32 cells in matched with/without pairs: cp0 and cp1 score identically in EVERY pair. GCC 2.7.2 coalesces the copy unconditionally.
+
+- [s5] [s5] KILLED: removing the `slots` variable so the top-guard pointer dies at the join. 40 cells with inline-expression top guards tie at 10, never beat it.
+
+- [s5] [s5] KILLED: the s4 frontier's 'third live pointer / different guard-site-to-pointer assignment' lever. Covered as the pv2/share/cp axes across all three sweeps (128 cells); inert at every 10-cell and harmful elsewhere (31-34).
+
+- [s5] [s5] Three directed permuter campaigns (chassis C: scan loops only; chassis D: widened to include the top-guard block, new this session via s5/mk_perm_d.py; chassis E: the structurally different read-before-guard base as the fresh-seed reseed) produced nothing below 10 across 26.7k+ iterations. All were harvested with --stop before the session ended; no permuter process was left running.
+
+- [s5] [s5] E-s4-2's permuter/engine anti-correlation reproduced on the 10-form: each campaign's best permuter-ranked output (620) is not among the engine-best cells, while a mid-ranked output (D's 685) ties the base at 10. Re-scoring every output with `sandbox --disable all` remains mandatory on this function.
+
+- [s5] [s5] Reusable harness banked in tmp/grind/func_80017848/s5/: gen.py/gen2.py/gen3.py emit variant sets, sweep*.sh engine-score ~50 cells per blocking call, apply.py splices a variant into src/ings.c, dis.sh prints the build-vs-target instruction diff, probe3.sh does both for one cell, score_outputs.sh engine-scores a whole permuter workspace, ings_10form.c.bak is the restore point.
+
+- [s5] [s5] The cc1 -da dump probe that s1, s2, s3 and s4 all banked is STILL unspent - s5 spent its session on the sweeps and campaigns that dropped the floor. It is now the highest-value remaining probe and is regenerable for the 10-form in seconds via s4/dump.sh.
+
+- [s5] [s5] Chassis E, the fresh-seed reseed onto a STRUCTURALLY DIFFERENT base (the read-before-guard form, 122 insns / engine 17, whose preheader order matches target even though its insn count is further off): 31600 iterations, 205 outputs, all engine-scored; best cell TIES 10, nothing below. Cumulative across s4+s5: 4 chassis, ~80k iterations, 423 engine-scored outputs, zero finds below the running floor - a strong prior that the ladder should not spend another session on permuter for this function.
