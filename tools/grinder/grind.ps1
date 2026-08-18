@@ -20,10 +20,14 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # Owner directive 2026-08-17: worker back on Fable 5 (reversing the
-    # 2026-08-12 move to Opus that was made when Fable's separate per-model
-    # allowance stalled the pipeline).
-    [string]$Model = 'claude-fable-5[1m]',
+    # Owner directive 2026-08-17 (supersedes the same-day all-Fable switch):
+    # split the model by modality — recon (session 1: floor measurement, lever
+    # mapping, frontier hypotheses) runs on Fable 5, where model strength pays
+    # off most; execution sessions grind pre-built frontiers on Opus. This
+    # also keeps Fable's separate per-model allowance from stalling the
+    # pipeline (the 2026-08-12 incident: five 429 wait cycles over 2.5 h).
+    [string]$Model = 'claude-opus-5[1m]',
+    [string]$ReconModel = 'claude-fable-5[1m]',
     # Judge stays on Opus per the 2026-08-12 directive: Fable 5 has its own
     # per-model allowance, and exhausting it on judging stalled the whole
     # pipeline — five 429 wait cycles over 2.5 h with a proven candidate parked
@@ -833,10 +837,14 @@ while ($true) {
         $pf = $stObj.floor_history[-1].floor
         if ($null -ne $pf -and "$pf" -match '^-?\d+$') { $priorFloor = [int]$pf }
     }
-    Log "${func}: session $sessionN starting, modality=$modality"
+    # Per-modality model: recon sessions get the strong model (frontier quality
+    # determines how many execution sessions follow); everything else grinds on
+    # the cheaper worker model.
+    $sessionModel = if ($modality -eq 'recon') { $ReconModel } else { $Model }
+    Log "${func}: session $sessionN starting, modality=$modality, model=$sessionModel"
 
     # 4) spawn
-    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $Model $MockSessionScript $func
+    $o = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'grind-session.md') $sessionModel $MockSessionScript $func
 
     # 5) scope check — any edit outside the allowed surface invalidates the session
     $dirty = Assert-CleanTree
