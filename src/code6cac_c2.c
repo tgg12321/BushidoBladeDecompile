@@ -852,9 +852,11 @@ extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern s32 D_800A312C;
 void func_8003CF84(void) {
-    volatile s32 pad[4];
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call, frame forensics in memory/wip/func_8003CF84/notes.md). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
+    volatile u32 pre_pad[4];
     s32 vec[3];
-    volatile s32 pad2[2];
+    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame's census shows a second 8-byte allocated-but-untouched object above vec; 14 honest spellings + all 3 phantom-slot producers measured inert (notes.md). */
+    volatile u32 pad2[2];
     s32 *vp;
     s32 *a;
     s32 *b;
