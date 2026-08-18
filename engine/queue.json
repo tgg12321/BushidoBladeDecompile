@@ -2230,15 +2230,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: '## 2026-08-11 - func_8001E6E4 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
-      "func": "func_8002FDB0",
-      "file": "code6cac_b",
-      "distance": 21,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "owner escalation pending: docs/grind/decisions.md \u2014 '2026-08-11 \u2014 func_8002FDB0 \u2014 OWNER-ESCALATION \u2014 INTEGRATION HANDOFF (bytes proven; blocked only by inline_asm_canonical.txt)'"
-    },
-    {
       "func": "func_8003B9D0",
       "file": "code6cac_c2",
       "distance": 21,
@@ -2321,11 +2312,11 @@
     }
   ],
   "counts": {
-    "total": 270,
+    "total": 269,
     "active": 223,
     "by_status": {
       "active": 223,
-      "parked": 47
+      "parked": 46
     },
     "by_verdict": {
       "ASM-PARTIAL": 37,
