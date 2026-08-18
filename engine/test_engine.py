@@ -2238,6 +2238,41 @@ def test_memo_and_rule_index_caches() -> None:
         _clear_memos()
 
 
+def test_sanctioned_unwritten_pads() -> None:
+    """The owner-ruled 2026-08-17 unwritten-pad allowlist: EXACTLY the three
+    (function, name, count) triples, volatile-qualified, are exempt from the
+    unused-local-array roster; every deviation stays a cheat."""
+    NL = chr(10)
+
+    def spans_for(fname: str, body: str):
+        text = "void " + fname + "(void) {" + NL + body + "}" + NL
+        lo = text.index("{")
+        hi = text.rindex("}") + 1
+        params: list = []
+        return volatile_cheats.body_cheat_spans(text, lo, hi, params, fname)
+
+    pad = "    volatile u32 pre_pad[2];" + NL + "    other();" + NL
+    eq("pad-allowlist: sanctioned func+name+count+volatile is exempt",
+       len(spans_for("func_8001E404", pad)), 0)
+    eq("pad-allowlist: second sanctioned function exempt",
+       len(spans_for("func_8001E6E4", pad)), 0)
+    eq("pad-allowlist: unsanctioned function still flagged",
+       len(spans_for("func_80012345", pad)), 1)
+    eq("pad-allowlist: non-volatile spelling still flagged",
+       len(spans_for("func_8001E404",
+                     "    s32 pre_pad[2];" + NL + "    other();" + NL)), 1)
+    eq("pad-allowlist: wrong count still flagged",
+       len(spans_for("func_8001E404",
+                     "    volatile u32 pre_pad[8];" + NL + "    other();" + NL)), 1)
+    eq("pad-allowlist: wrong name still flagged",
+       len(spans_for("func_8001E404",
+                     "    volatile u32 spill[2];" + NL + "    other();" + NL)), 1)
+    text = "void func_8001E404(void) {" + NL + pad + "}" + NL
+    eq("pad-allowlist: no-fname call (default) still flagged",
+       len(volatile_cheats.body_cheat_spans(
+           text, text.index("{"), text.rindex("}") + 1, [])), 1)
+
+
 def main() -> int:
     test_canonical()
     test_score()
@@ -2246,6 +2281,7 @@ def main() -> int:
     test_cheats()
     test_prologue_cheat()
     test_addr_coerced_locals()
+    test_sanctioned_unwritten_pads()
     test_volatile_extern_allowlist()
     test_memo_and_rule_index_caches()
     test_lowercase_asm_cheats()

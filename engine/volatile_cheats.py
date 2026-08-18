@@ -733,8 +733,44 @@ def _record_kept_orphan_candidates(
         kept.append((name, reason))
 
 
+# Sanctioned UNWRITTEN leading pads — owner ruling 2026-08-17 (decisions.md;
+# .claude/rules/no-new-park-categories.md re-scope of the written-never-read
+# carve-out). Ground: direct SOTN-master inspection (db41b28) exhibits
+# `volatile u32 pad[4]; // FAKE` (src/st/sel/stream.c:80) and
+# `volatile u32 pad; // !FAKE:` (src/st/sel/2C048.c:560) — declared first,
+# never written, never read, in fully matched PSX code. The 2026-07-01
+# carve-out mis-scoped itself against the very exemplar it cites.
+# Scope is EXACTLY these (function, name, count) triples; the declaration
+# must be volatile-qualified (oracle-verified byte-neutral 2026-08-17) and
+# FAKE-annotated in source. Any extension requires a fresh owner ruling.
+_SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
+    "func_8001E404": frozenset({("pre_pad", 2)}),
+    "func_8001E6E4": frozenset({("pre_pad", 2)}),
+    "func_8003CF84": frozenset({("pre_pad", 4)}),
+}
+
+
+def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
+                       name: str) -> bool:
+    """True iff the unused-local-array span [s, e) is one of the owner-
+    sanctioned unwritten leading pads: exact function, exact name, exact
+    element count, volatile-qualified. Everything else stays a cheat."""
+    if not fname or fname not in _SANCTIONED_UNWRITTEN_PADS:
+        return False
+    # The detector's span starts at the TYPE token; the volatile qualifier
+    # sits before it on the same line — check from the line start.
+    line_start = text.rfind("\n", 0, s) + 1
+    decl = text[line_start:e]
+    if "volatile" not in decl:
+        return False
+    m = re.search(r"\[(\d+)\]", decl)
+    if not m:
+        return False
+    return (name, int(m.group(1))) in _SANCTIONED_UNWRITTEN_PADS[fname]
+
+
 def _body_base_spans(text: str, body_lo: int, body_hi: int,
-                     params: list[str]) -> list[tuple[int, int]]:
+                     params: list[str], fname: str | None = None) -> list[tuple[int, int]]:
     """The per-body detector roster, BEFORE the orphaned-declaration closure.
 
     SINGLE source of truth for that roster. It used to be spelled out three
@@ -745,6 +781,8 @@ def _body_base_spans(text: str, body_lo: int, body_hi: int,
     """
     spans: list[tuple[int, int]] = []
     for s, e, _n in find_unused_local_arrays(text, body_lo, body_hi):
+        if _is_sanctioned_pad(fname, text, s, e, _n):
+            continue
         spans.append((s, e))
     for s, e, _n in find_addr_coerced_locals(text, body_lo, body_hi):
         spans.append((s, e))
@@ -768,12 +806,12 @@ def _body_base_spans(text: str, body_lo: int, body_hi: int,
 
 
 def body_cheat_spans(text: str, body_lo: int, body_hi: int,
-                     params: list[str]) -> list[tuple[int, int]]:
+                     params: list[str], fname: str | None = None) -> list[tuple[int, int]]:
     """Every in-body cheat span the stripper removes for one function body:
     the detector roster plus the orphaned-declaration closure, applied to
     fixpoint so a declaration orphaned by another stripped declaration is
     caught too."""
-    spans = _body_base_spans(text, body_lo, body_hi, params)
+    spans = _body_base_spans(text, body_lo, body_hi, params, fname)
     if not spans:
         return spans
     for _ in range(4):  # fixpoint; chains beyond 4 links do not occur in src/
@@ -805,7 +843,7 @@ def orphaned_decl_audit(text: str) -> dict:
     for fname, lo, hi, params in _iter_func_bodies(text):
         # The pre-closure span set, so the report names the declarations the
         # closure itself contributes rather than skipping them as already-covered.
-        spans = _body_base_spans(text, lo, hi, params)
+        spans = _body_base_spans(text, lo, hi, params, fname)
         if not spans:
             continue
         k: list[tuple[str, str]] = []
@@ -1305,7 +1343,7 @@ def _find_all_cheats_cached(
     # Per-function in-body cheats (unused locals, dead stores, orphaned
     # declarations, ...) — one roster, shared with the strip path.
     for _fname, body_lo, body_hi, params in _iter_func_bodies(text):
-        for s, e in body_cheat_spans(text, body_lo, body_hi, params):
+        for s, e in body_cheat_spans(text, body_lo, body_hi, params, _fname):
             out.append((s, e, s))
     out.sort()
     return tuple(out)
@@ -1397,7 +1435,7 @@ def strip_volatile_cheats_file(text: str) -> tuple[str, int]:
     # We iterate definitions to get their spans, then enumerate per-func.
     body_extra_spans: list[tuple[int, int]] = []
     for _fname, body_lo, body_hi, params in _iter_func_bodies(text):
-        body_extra_spans.extend(body_cheat_spans(text, body_lo, body_hi, params))
+        body_extra_spans.extend(body_cheat_spans(text, body_lo, body_hi, params, _fname))
 
     # Apply edits in reverse order.
     all_edits = []
@@ -1525,7 +1563,7 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     # the same roster the strip path removes, so the gate refuses exactly what
     # the sandbox makes invisible.
     params = _extract_func_params(text, span)
-    for s, _e in body_cheat_spans(text, lo, hi, params):
+    for s, _e in body_cheat_spans(text, lo, hi, params, func):
         counted_vol_positions.add(s)
     return len(counted_vol_positions)
 

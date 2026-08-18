@@ -1405,7 +1405,8 @@ typedef struct {
 } CamBuf;
 
 void func_8001E404(void) {
-    s32 pre_pad[2];
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    volatile u32 pre_pad[2];
     CamBuf local;
     s32 *s2;
 
@@ -1483,7 +1484,8 @@ typedef struct {
 } CamWork;
 
 void func_8001E6E4(s32 arg0) {
-    s32 pre_pad[2];
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner ruling 2026-08-17): reconstructs the original frame's 8-byte allocated-but-untouched leading region (outgoing-args partition 24 vs 16, proven by frame-term forensics in memory/grind/func_8001E404/); SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Sanctioned for func_8001E404/func_8001E6E4/func_8003CF84 ONLY. */
+    volatile u32 pre_pad[2];
     CamWork local;
     s32 *s2;
 
