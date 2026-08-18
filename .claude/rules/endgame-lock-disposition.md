@@ -3,7 +3,7 @@ name: endgame-lock-disposition
 paths: [".claude/rules/endgame-lock-disposition.md"]
 # on-demand: surfaced via codegen-technique-index; read when an escalation
 # proposes canonical-asm OR a new coercion family for an RA/scheduler-locked fn.
-description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence; coercion families ONLY with in-hand SOTN precedent; absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY (no owner wait) — cheat retained to hold the match, never sanctioned. Only gate-PASSING cases escalate to the owner."
+description: "OWNER POLICY 2026-07-20 + AUTO-RULING 2026-07-27 + judge-sole-gate 2026-08-18 for RA/scheduler-locked endgame functions: canonical-asm ONLY with STRONG scan_hand_coded evidence (pipeline-executed grant, no owner wait); coercion families ONLY with in-hand SOTN precedent (borderline-logged, refused under the current frozen list); absent both, REFUSED / OWNER-ACCEPTED INCOMPLETE applies AUTOMATICALLY. NOTHING escalates to a waiting owner."
 metadata:
   type: rules
 ---
@@ -54,18 +54,27 @@ queue park reason is the terminal `OWNER-ACCEPTED INCOMPLETE (standing ruling
 2026-07-27): …` form. There is no pending state and nothing for the owner to
 answer.
 
-**What still escalates to the owner (the ONLY two cases):**
+**Gate-passing cases (UPDATED by owner ruling 2026-08-18, [[judge-sole-gate]] —
+NOTHING waits on the owner anymore):**
 1. **Gate 1 passes** — `scan_hand_coded` shows STRONG S1/S2/S6-class signals:
-   file a canonical-asm authorization request (user sign-off is still required
-   for `inline_asm_canonical.txt` per [[hand-coded-asm-recognition]]).
+   the pipeline canonical-asm grant path applies. The function stays ACTIVE;
+   the whole-body canonical form is authored per
+   [[canonical-asm-authorization-recipe]], the Judge makes the final call, and
+   the DRIVER writes the `inline_asm_canonical.txt` entry and logs the grant
+   to `docs/grind/borderline.md` for later owner audit. No owner sign-off wait.
 2. **Gate 2 passes** — a genuinely in-hand SOTN-master (or VS/ESA) precedent
    is EXHIBITED (file + line / commit citation, not "believed viable" or
-   "same spirit"): file a family-sanction request presenting that evidence.
+   "same spirit"): the packet is logged to `docs/grind/borderline.md` as a
+   `family-candidate` entry and the function takes the terminal refusal under
+   the CURRENT frozen list. The list remains owner-only to extend; the owner
+   batch-reviews the ledger and a later landed ruling can spend the entry.
 
-Owner directive verbatim (2026-07-27): *"I only ever want to be presented
+Owner directives verbatim: (2026-07-27) *"I only ever want to be presented
 with new techniques that DO have SOTN precedence and are not an explicit
-cheat."* Filing a both-gates-fail escalation as "awaiting owner ruling" is
-now itself a process error — apply the standing ruling instead.
+cheat."* — (2026-08-18) *"Anything borderline can be logged somewhere that we
+can evaluate later down the line, but i dont want work to just pile up or be
+'parked' pending my decisions anymore."* Filing ANY escalation as "awaiting
+owner ruling" is a process error — no pending state exists.
 
 ## Disposition when both criteria fail (the common case, auto-applied)
 No clean COMPLETED state is reachable. Then:
@@ -88,8 +97,10 @@ signals, and do NOT propose a coercion family without exhibiting the SOTN
 precedent in-hand. When both gates fail, APPLY THE STANDING RULING yourself
 (see the 2026-07-27 section above): file the RESOLVED-BY-STANDING-RULING
 entry with both gates' evidence stated plainly, and return owner-gated so the
-driver parks terminally. Only a gate-passing case files a true pending
-escalation for the owner. Members of this species so far: motion_SetMotion,
+driver parks terminally. A gate-1-passing case files a CANONICAL-ASM GRANT
+PATH entry (stays active); a gate-2-passing case includes the exhibited
+precedent so the driver borderline-logs it ([[judge-sole-gate]]). Members of
+this species so far: motion_SetMotion,
 func_80045294, cpu_side_move_dir_4, func_80057CC8, plus the 2026-07-22 batch
 (7) and 2026-07-27 batch (13) — see docs/grind/decisions.md.
 

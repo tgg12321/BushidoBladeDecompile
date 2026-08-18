@@ -388,9 +388,9 @@ def validate_outcome(o, modality, root, func=None):
                 txt = f.read()
         except OSError:
             return False, "owner-gated: docs/grind/decisions.md not readable"
-        if "OWNER-ESCALATION" not in txt:
-            return False, ("owner-gated: no OWNER-ESCALATION entry found in "
-                           "docs/grind/decisions.md")
+        if "OWNER-ESCALATION" not in txt and "CANONICAL-ASM GRANT PATH" not in txt:
+            return False, ("owner-gated: no OWNER-ESCALATION / CANONICAL-ASM GRANT "
+                           "PATH entry found in docs/grind/decisions.md")
         # EXHAUSTION IS THE DRIVER'S CALL (guard added 2026-07-28). The
         # standing-ruling TERMINAL disposition is only available once the driver
         # has declared exhaustion by assigning `escalation` modality (flat floor
@@ -555,8 +555,10 @@ def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
     fails to self-file (dodges with a flat-floor progress), so the function can never
     loop unresolved. Per the owner's 2026-07-27 standing auto-ruling, a non-STRONG
     scan tier means both AND-gates fail and the entry is RESOLVED (terminal
-    OWNER-ACCEPTED INCOMPLETE) — only a STRONG tier files a true pending
-    escalation for owner sign-off."""
+    OWNER-ACCEPTED INCOMPLETE). Per the 2026-08-18 ruling (judge-sole-gate,
+    b9d91163) a STRONG tier no longer waits on the owner either: it routes to the
+    pipeline canonical-asm grant path (function stays ACTIVE; the Judge makes the
+    final call on the authored candidate and the driver writes the grant)."""
     st = load_state(root, func) or {}
     hist = st.get("floor_history", [])
     floor = hist[-1].get("floor") if hist else "?"
@@ -564,10 +566,14 @@ def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
     mods = sorted({e.get("modality") for e in hist if e.get("modality")})
     strong = "STRONG" in str(scan_tier).upper()
     if strong:
-        ref = f"{date} — {func} — OWNER-ESCALATION (auto-filed by driver, exhaustion backstop; STRONG scan tier — awaiting owner ruling)"
-        tail = f"""Gate 1 may PASS: `scan_hand_coded --single {func}` = **{scan_tier}** — canonical-asm
-authorization requires owner sign-off. Awaiting owner ruling; the driver parks {func} until
-the owner rules."""
+        ref = f"{date} — {func} — CANONICAL-ASM GRANT PATH (auto-filed by driver, exhaustion backstop; STRONG scan tier — owner ruling 2026-08-18, no owner wait)"
+        tail = f"""Gate 1 PASSES: `scan_hand_coded --single {func}` = **{scan_tier}**. Per the owner's
+2026-08-18 ruling (.claude/rules/judge-sole-gate.md, commit b9d91163) canonical-asm
+authorization is pipeline-executed — nothing waits on the owner. The function STAYS ACTIVE:
+the next session authors the whole-body canonical form per
+.claude/rules/canonical-asm-authorization-recipe.md and proves bytes on main; the Judge makes
+the final call; on its verdict the driver writes the inline_asm_canonical.txt grant and logs
+it to docs/grind/borderline.md for later owner audit."""
     else:
         ref = f"{date} — {func} — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (auto-filed by driver, exhaustion backstop)"
         tail = f"""Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
@@ -592,6 +598,53 @@ evidence.md + hypotheses.md for the per-session kill record). {tail}
     with open(dec, "a", encoding="utf-8", newline="\n") as f:
         f.write(entry)
     return ref
+
+
+def log_borderline(root, func, category, evidence, disposition, date):
+    """Append an entry to docs/grind/borderline.md (owner ruling 2026-08-18,
+    judge-sole-gate). Entries are informational — nothing pending, nothing
+    authorized by the entry itself. LF-enforced (the driver must never append
+    to pipeline-adjacent files from PowerShell — CRLF)."""
+    entry = f"""
+## {date} — {func} — {category}
+category: {category}
+evidence: {evidence}
+disposition taken: {disposition}
+"""
+    with open(os.path.join(root, "docs", "grind", "borderline.md"), "a",
+              encoding="utf-8", newline="\n") as f:
+        f.write(entry)
+
+
+def grant_canonical_asm(root, func, tier, date):
+    """Execute a pipeline canonical-asm grant (owner ruling 2026-08-18,
+    judge-sole-gate, b9d91163): append the inline_asm_canonical.txt entry and
+    the borderline-ledger record. The driver calls this on a Judge ESCALATE
+    with escalate_kind=canonical-asm-grant AFTER independently re-running
+    scan_hand_coded and confirming the STRONG tier — the grant is mechanical
+    and evidence-bound, never judgment-bound. Refuses (returns None) if the
+    tier is not STRONG-class or the function is already listed."""
+    if "STRONG" not in str(tier).upper():
+        return None
+    allow = os.path.join(root, "inline_asm_canonical.txt")
+    with open(allow, encoding="utf-8") as f:
+        existing = {ln.strip().split()[0] for ln in f
+                    if ln.strip() and not ln.strip().startswith("#")}
+    line = (f"{func}  # pipeline grant {date}: scan_hand_coded tier={tier} "
+            f"(STRONG class, driver-verified), judge ESCALATE canonical-asm-grant — "
+            f"owner ruling 2026-08-18 (.claude/rules/judge-sole-gate.md, b9d91163). "
+            f"Packet in docs/grind/decisions.md {date} entry.")
+    if func not in existing:
+        with open(allow, "a", encoding="utf-8", newline="\n") as f:
+            f.write(line + "\n")
+    log_borderline(
+        root, func, "canonical-asm-grant",
+        f"scan_hand_coded --single {func} tier={tier} (driver-verified); "
+        f"judge ESCALATE packet in docs/grind/decisions.md ({date})",
+        "inline_asm_canonical.txt entry written by the driver per owner ruling "
+        "2026-08-18; function stays ACTIVE for canonical-asm integration.",
+        date)
+    return line
 
 
 MODALITY_PLAYBOOK = {
@@ -665,11 +718,18 @@ MODALITY_PLAYBOOK = {
                    "docs/grind/decisions.md stating both gates' evidence and the exhaustion "
                    "(sessions/modalities/permuter iters from the ledger), then return "
                    "result=owner-gated with escalation_ref citing that entry — the driver "
-                   "parks terminally, no owner wait. ONLY if a gate PASSES (STRONG scan "
-                   "tier, or an actually-exhibited SOTN precedent) file a true pending "
-                   "`**OWNER-ESCALATION**` entry presenting that evidence for owner "
-                   "sign-off. A flat-floor `progress` is NOT an acceptable outcome this "
-                   "session — the driver will auto-file the standing ruling if you dodge."),
+                   "parks terminally, no owner wait. If gate (a) PASSES (STRONG scan tier), "
+                   "append a `## <date> — <func> — CANONICAL-ASM GRANT PATH` entry with the "
+                   "scanner evidence and return owner-gated citing it — per the owner's "
+                   "2026-08-18 ruling (judge-sole-gate) the function STAYS ACTIVE and the "
+                   "next session authors the whole-body canonical form; no owner wait. If "
+                   "only gate (b) passes (an actually-exhibited SOTN precedent), file the "
+                   "standing-ruling entry AND include the precedent citation — the driver "
+                   "borderline-logs it for owner batch review; the frozen list is owner-only "
+                   "to extend and the disposition is still the terminal refusal. NEVER file "
+                   "an 'awaiting owner ruling' entry — that shape is retired. A flat-floor "
+                   "`progress` is NOT an acceptable outcome this session — the driver will "
+                   "auto-file the disposition if you dodge."),
 }
 
 
@@ -917,6 +977,8 @@ if __name__ == "__main__":
     #   grindlib.py convert-wip <root> <func> <file_stem>
     #   grindlib.py modality <root> <func>                          -> prints next modality
     #   grindlib.py constrain <root> <func> <text>
+    #   grindlib.py grant-canonical-asm <root> <func> <tier> <date>   -> prints allowlist line / exit 1 refused
+    #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -965,6 +1027,17 @@ if __name__ == "__main__":
         # autoescalate <root> <func> <file_stem> <scan_tier> <rule_count> <date>
         print(autoescalate(sys.argv[2], sys.argv[3], sys.argv[4],
                            sys.argv[5], sys.argv[6], sys.argv[7]))
+    elif cmd == "grant-canonical-asm":
+        # grant-canonical-asm <root> <func> <tier> <date>
+        line = grant_canonical_asm(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+        if line is None:
+            print("grant REFUSED (tier not STRONG-class — evidence gate failed)")
+            sys.exit(1)
+        print(line)
+    elif cmd == "log-borderline":
+        # log-borderline <root> <func> <category> <evidence> <disposition> <date>
+        log_borderline(sys.argv[2], sys.argv[3], sys.argv[4],
+                       sys.argv[5], sys.argv[6], sys.argv[7])
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)

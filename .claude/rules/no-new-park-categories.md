@@ -372,17 +372,20 @@ Per this policy:
    restructurings.
 2. **The fallback for a function with strong hand-coded signals is
    canonical-asm authorization** (per [[hand-coded-asm-recognition]]
-   /[[canonical-asm-retirement]], requires user judgment).
+   /[[canonical-asm-retirement]], via the pipeline grant path —
+   [[judge-sole-gate]], owner ruling 2026-08-18).
 3. **The fallback for a function without those signals is to keep it
    parked**, in the existing "INCOMPLETE — search continues" state. The
    queue is a worklist of unfinished work; it can hold parked items
    indefinitely without inventing a new "done" category for them.
 
-When surfacing escalations to the user, do NOT phrase options as "accept
-X as a new infrastructure category." Phrase them as "(a) permuter budget,
-(b) canonical-asm authorization IF the hand-coded signals support it,
-(c) keep parked." Categories (a) and (b) and (c) are exhaustive; there
-is no (d) "new infrastructure carve-out."
+Escalations to a waiting owner no longer exist (owner ruling 2026-08-18,
+[[judge-sole-gate]]). The exhaustive dispositions are: (a) more search,
+(b) the pipeline canonical-asm grant path IF the hand-coded signals
+support it, (c) terminal OWNER-ACCEPTED INCOMPLETE park with a
+borderline-ledger entry. There is no (d) "new infrastructure carve-out",
+and a proposed frozen-list extension is logged to
+`docs/grind/borderline.md` — never granted in-pipeline, never waited on.
 
 ## Related
 

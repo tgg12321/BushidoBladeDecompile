@@ -147,8 +147,13 @@ __asm__(
 Match the existing entries. Include a 1-2 line rationale citing:
 - The specific hand-coded signal(s) per `[[hand-coded-asm-recognition]]`
   (S1/S2/S6/S7/S8) — e.g. "vestigial frame + unfilled jr ra delay slot"
-- User authorization date + category — "User authorized 2026-06-07
-  (canonical-asm A category)"
+- The authorization provenance. Historical entries cite a user
+  authorization date ("User authorized 2026-06-07, canonical-asm A
+  category"); since owner ruling 2026-08-18 ([[judge-sole-gate]]) new
+  entries are pipeline grants — cite the scanner tier, the Judge verdict
+  date, and the ruling ("pipeline grant YYYY-MM-DD: scan_hand_coded
+  tier=STRONG, judge ESCALATE canonical-asm-grant — owner ruling
+  2026-08-18"), and confirm the matching borderline-ledger entry exists.
 
 ## Verification gate (mandatory before commit)
 

@@ -106,19 +106,26 @@ invokes mechanical detectors as backstop, and outputs the JSON verdict.
   surface a policy question to the user). The reviewer's `next_action`
   field is the path forward.
 - **NEEDS_USER** — the reviewer found a borderline construct that
-  requires user policy judgment. The orchestrator surfaces the
-  reviewer's specific question to the user; commit is deferred.
+  requires owner policy judgment. **Per owner ruling 2026-08-18
+  ([[judge-sole-gate]]) this is no longer a blocking wait: it maps to
+  FAIL + a `needs-user-downgrade` entry in `docs/grind/borderline.md`.**
+  The work is NOT committed; the reviewer's specific question is recorded
+  in the ledger for the owner's later batch review. The agent may re-invoke
+  the reviewer with genuinely NEW evidence, but may never re-adjudicate the
+  recorded question itself — the ledger entry is the disposition.
 
 ## Two hard process rules (added 2026-06-10, from the fable retro-audit)
 
 1. **No self-resolved NEEDS_USER.** If the reviewer returns NEEDS_USER, the
-   question goes to the user -- period. The worker/orchestrator may add
-   evidence and re-invoke the reviewer with NEW facts, but may not
-   re-adjudicate the same question against a counter-precedent of their own
-   choosing and proceed. (Violation case: `func_80052754`, commit `14d99d6e`
-   -- worker revised NEEDS_USER -> PASS against a factually-inapt precedent;
-   the retro-audit caught it; the user approved the authorization after the
-   fact, but the pathway was wrong.)
+   question goes to the borderline ledger and the work is treated as FAIL
+   (owner ruling 2026-08-18, [[judge-sole-gate]]; previously the question
+   went to the user live). The worker/orchestrator may add evidence and
+   re-invoke the reviewer with NEW facts, but may not re-adjudicate the same
+   question against a counter-precedent of their own choosing and proceed.
+   (Violation case: `func_80052754`, commit `14d99d6e` -- worker revised
+   NEEDS_USER -> PASS against a factually-inapt precedent; the retro-audit
+   caught it; the user approved the authorization after the fact, but the
+   pathway was wrong.)
 
 2. **No self-sanctioning rule docs.** A `.claude/rules/` addition that
    sanctions a technique used by the SAME commit must be reviewed
@@ -147,9 +154,10 @@ I want a separately defined agent we can kickoff to evaluate any given
 work."* The orchestrator's role is:
 
 1. Invoke the reviewer at the right moment (per the "when to invoke" list).
-2. Surface the verdict to the user (especially NEEDS_USER cases).
-3. On FAIL: never bypass. Either follow `next_action` or surface the
-   evidence to the user for direction.
+2. Record the verdict (NEEDS_USER cases go to the borderline ledger per
+   [[judge-sole-gate]]; the owner reads the ledger later, not live).
+3. On FAIL: never bypass. Follow `next_action`, or log the evidence to the
+   borderline ledger if it raises a genuine policy question.
 4. On PASS: proceed with commit as normal.
 
 The orchestrator does not get to override the reviewer. The reviewer's

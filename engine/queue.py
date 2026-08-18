@@ -21,15 +21,20 @@ Routing (mirrors canonical._verdict's structural categories):
                below NEAR_CERTAIN                 -> active, keep grinding pure C
   ASM-PARTIAL  opcode: canonical region + C        -> active, work the C part
   ASM-STRUCTURAL distance > NEAR_CERTAIN (500) AND tier >= POSSIBLE
-                                                   -> authorize (user canonical-asm sign-off)
+                                                   -> authorize (pipeline canonical-asm grant path)
   ASM-WHOLE    opcode: >=80% canonical             -> authorize
   JTBL-INFRA   rules are all jump-table rodata-split infra (cheats.is_jtbl_infra)
-                                                   -> authorize (needs a global rodata reorder)
+                                                   -> authorize (needs a global rodata reorder —
+                                                      a borderline-ledger policy-question)
 
 Sub-statuses (all mean INCOMPLETE — completed items DROP off the queue
 entirely):
   active     work it (top first)
-  authorize  needs user canonical-asm sign-off — not pure-C-closable
+  authorize  needs the pipeline canonical-asm grant path (owner ruling
+             2026-08-18, .claude/rules/judge-sole-gate.md — STRONG scanner
+             evidence + Judge verdict; the driver writes the grant. No user
+             sign-off wait; pre-2026-08-18 this bucket meant "needs user
+             canonical-asm sign-off")
   parked     blocked; skipped by `next`. Sticky across `regen`.
 
 Queue file: engine/queue.json (committed). Driven by `python3 -m engine.cli

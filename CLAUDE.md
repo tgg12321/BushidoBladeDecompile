@@ -112,12 +112,14 @@ the top each session; `queue status` shows progress.
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance, rule count) |
 | `queue done <func>` | mark complete — re-checks ZERO rules + ZERO non-canonical cheat-asm + build SHA1 == oracle (refuses otherwise). On success the function is REMOVED from the queue. `python3 tools/check_completion_integrity.py` audits the invariants still hold. |
-| `queue park <func> --reason "…"` | block an item (e.g. needs user canonical-asm auth); `next` skips it |
+| `queue park <func> --reason "…"` | block an item (terminal dispositions only — no pending-owner states per [[judge-sole-gate]]); `next` skips it |
 | `queue status` | counts by status/verdict + the current top |
 | `queue regen` | rebuild the queue (preserves done/parked); run after big changes |
 
-Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they need user
-canonical-asm sign-off, so they never block pure-C work.
+Items routed `ASM-STRUCTURAL` / `ASM-WHOLE` sit in an `authorize` bucket (not `active`) — they take the
+pipeline canonical-asm grant path (STRONG scanner evidence + Judge verdict, driver-written grant,
+logged to `docs/grind/borderline.md`; owner ruling 2026-08-18, [[judge-sole-gate]] — no user
+sign-off wait), so they never block pure-C work.
 
 ## The per-function loop + WIP checkpoints
 The manual-path loop (`queue next` → `canonical` → `sandbox --disable all` → edit pure C → `retire` →

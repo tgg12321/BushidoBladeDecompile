@@ -148,8 +148,10 @@ orchestrator MUST, before treating the item as accepted:
 4. Verdict handling: PASS → accepted. FAIL → revert workflow (restore the
    prior bridged state byte-identical; rules restorations use the
    `[infra-rule: reviewer-fail-revert]` guard category; preserve clean
-   levers in a WIP checkpoint). NEEDS_USER → surface to the user; the item
-   stays provisional.
+   levers in a WIP checkpoint). NEEDS_USER → treat as FAIL + log the
+   reviewer's question to `docs/grind/borderline.md` (owner ruling
+   2026-08-18, [[judge-sole-gate]] — no live owner wait, no
+   self-resolution; the ledger entry is the disposition).
 5. The mechanical sweeps ride along once per batch: gate-tampering diff
    (engine/, tools/hooks/, Makefile, bb2.ld vs the batch baseline),
    `check_completion_integrity.py`, `audit_asm_cheats.py --summary`, and
@@ -165,21 +167,25 @@ A future fully-headless orchestrator can loop: launch run → on the completion
 notification, review + handle/escalate → retro-audit the batch → relaunch.
 You're re-invoked when the background run finishes, so no polling.
 
-## 5. Escalation boundary (MAXIMAL AUTONOMY — the default)
+## 5. Escalation boundary (FULL AUTONOMY — owner ruling 2026-08-18, [[judge-sole-gate]])
 
-Keep going autonomously; **STOP and surface to the user ONLY for:**
-- an **oracle break** (a committed build ≠ target SHA1),
-- a **worker error** or a **stuck / no-progress** run,
-- a **dirty tree** (uncommitted worker leftover — never run onto it; salvage it:
-  commit if verified-matching, revert if incomplete),
-- a **CHEATED match** (`headless_review` flags non-canonical cheat-asm in committed source),
-- a **NOVEL park** you can't mechanically confirm,
-- an **architecture / policy decision** (e.g. a global rodata reorder, a substrate
-  change).
+Nothing waits on the user anymore. What used to be the stop-and-surface list is
+now handled in-pipeline:
+- an **oracle break** (a committed build ≠ target SHA1) → fix or revert to green
+  YOURSELF before anything else; log the incident,
+- a **worker error** or **stuck / no-progress** run → change modality, respawn,
+- a **dirty tree** → salvage it (commit if verified-matching, revert if incomplete),
+- a **CHEATED match** (`headless_review` flags non-canonical cheat-asm in
+  committed source) → revert it; log to `docs/grind/borderline.md`,
+- a **NOVEL park** you can't mechanically confirm → refuse the park; the item
+  stays active,
+- an **architecture / policy decision** (e.g. a global rodata reorder, a
+  substrate change) → log a `policy-question` borderline entry; proceed with
+  other work — it executes only on a later landed owner ruling.
 
-Everything else is logged and not blocked on. When you escalate, **confirm the
-finding yourself first** (verify the worker's rationale against the actual rules /
-source / linker) — workers over-claim; your review is the integrity check.
+Before logging any finding, **confirm it yourself first** (verify the worker's
+rationale against the actual rules / source / linker) — workers over-claim;
+your review is the integrity check.
 
 **No deferral (user directive 2026-06-12):** a stuck top item is NEVER skipped,
 rotated, or deferred — everything gets decompiled eventually, so deferring buys
@@ -195,11 +201,14 @@ what closed sys_VSync after 7 cold-start worker sessions), bulk variant sweeps
   them yourself — remove the cheat-asm `register asm` pin (GCC returns in `$v0`
   naturally), `verify-oracle --rebuild`, add to `inline_asm_canonical.txt`,
   `queue done`. [[gte-wrapper-misroute-park]]. *Contrast whole-body hand-coded
-  asm (custom ABI / trapping ops) — that needs a user judgment call → escalate.*
+  asm (custom ABI / trapping ops) — that takes the pipeline canonical-asm grant
+  path: STRONG scanner evidence + adversarial review, grant logged to
+  `docs/grind/borderline.md` ([[judge-sole-gate]]).*
 - **jtbl-infra** (a `switch` whose jump table splat carved into asm/data rodata;
   asmfix-only rename/replace_first/delete_between referencing `jtbl_*`): the queue
   auto-routes to `authorize`; `headless_review` auto-confirms the park. The global
-  rodata reorder to truly pure-C them is the architecture decision that escalates.
+  rodata reorder to truly pure-C them is an architecture decision — log it as a
+  `policy-question` borderline entry; it executes only on a landed owner ruling.
   [[jtbl-rodata-split-infrastructure]]
 - **maspsx `.L`-label load-delay nop** (sole cheat-asm is one `__asm__("nop")` for a
   load-consumer-across-`.L`-label): now a **pure-C retirement path** — add the

@@ -49,12 +49,14 @@ secondary signal. It is NOT proof. Specifically:
   [[split-read-defeats-hoist]], etc.
 - **ASM-STRUCTURAL** (distance > 500 AND tier >= POSSIBLE): the engine
   has TWO converging signals. **Still not proof.** This is the threshold
-  for "stop pure-C grinding and surface to user for canonical-asm
-  sign-off", but the user's decision is still required
-  ([[hand-coded-asm-recognition]]), and you can still be wrong about the
-  tier. Lay out the per-function signals (which of S1/S2/S6/S7/S8
-  actually fired, the asm signature) and let the user decide — don't
-  pre-authorize.
+  for "stop pure-C grinding and route to the canonical-asm grant path"
+  (owner ruling 2026-08-18, [[judge-sole-gate]]: the pipeline executes
+  the grant on STRONG evidence + the Judge's verdict — no owner wait,
+  and the grant is logged to docs/grind/borderline.md for later audit).
+  You can still be wrong about the tier: lay out the per-function
+  signals (which of S1/S2/S6/S7/S8 actually fired, the asm signature) so
+  the Judge and the driver's tier re-verification have real evidence —
+  the verdict + driver check decide, never your inference alone.
 
 ### When you're tempted to think "this is canonical-asm"
 
@@ -103,8 +105,8 @@ The cardinal rules that say "don't give up":
 - [[register-alloc-pure-c]] — the canonical RA-via-C-structure playbook
   (block-local var split, narrow integer type, loop-local precompute)
 - [[hand-coded-asm-recognition]] — what STRONG evidence actually looks
-  like (S1/S2/S6/S7/S8); requires user authorization, not agent
-  inference
+  like (S1/S2/S6/S7/S8); grants go through the pipeline grant path
+  ([[judge-sole-gate]]), never agent inference
 
 ## The audit population (parked 2026-06-09)
 

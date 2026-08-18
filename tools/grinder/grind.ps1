@@ -370,37 +370,61 @@ function Invoke-Judge([string]$func, [string]$TaskText) {
 }
 
 function Invoke-JudgeEscalation([string]$func, [string]$kind, $v) {
-    # ESCALATE (2026-08-07 review-audit fix #4). 23% of measured FAILs were
-    # AUTHORITY ARTIFACTS: the work was sound, the Judge simply had no verdict for
-    # "the grant you are asking for is above my pay grade", so it FAILed and the
-    # driver re-ground a function that was actually finished pending one owner
-    # ruling. ESCALATE routes to the SAME disposition as an owner-gated park: the
-    # function freezes, the queue advances, and nothing is re-ground until the
-    # owner rules. It is a wait-state, not a completion and not a refusal.
+    # ESCALATE (2026-08-07 review-audit fix #4; rewired by owner ruling 2026-08-18,
+    # .claude/rules/judge-sole-gate.md, commit b9d91163). The Judge still says
+    # "the grant is above my standing authority" — but NOTHING waits on the owner
+    # anymore. The driver routes on the verdict's escalate_kind:
+    #   canonical-asm-grant — the driver independently re-runs scan_hand_coded;
+    #     on a STRONG-class tier it EXECUTES the grant (inline_asm_canonical.txt
+    #     entry via grindlib, LF-safe) and logs it to docs/grind/borderline.md.
+    #     The function stays ACTIVE so the next session integrates to
+    #     COMPLETED-INLINE-ASM-CANONICAL. Non-STRONG tier = evidence failure:
+    #     falls through to the log-and-refuse path.
+    #   family-extension / policy-question — logged to docs/grind/borderline.md
+    #     with the Judge's packet, then the STANDING REFUSAL applies (terminal
+    #     OWNER-ACCEPTED INCOMPLETE park, endgame-lock-disposition). The owner
+    #     reviews the ledger in batches; nothing is pending.
     $date = Get-Date -Format 'yyyy-MM-dd'
-    $ref = "$date — $func — OWNER-ESCALATION (judge ESCALATE on $kind; awaiting owner ruling)"
+    $ekind = [string]$v.escalate_kind
+    if (-not $ekind) { $ekind = 'policy-question' }
+    $ref = "$date — $func — JUDGE ESCALATE on $kind ($ekind) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     $body = @"
-**Filed by the grinder Judge ($date)** — verdict ESCALATE: the work is sound and
-complete, but the grant it needs is above the Judge's standing authority (a rule
-extension, a new construct family, or an owner-policy question). No re-grind is
-warranted; the function is parked until the owner rules.
+**Filed by the grinder Judge ($date)** — verdict ESCALATE ($ekind): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
 
 **The Judge's packet:**
 
 $($v.justification)
 
 $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.constraint)" })
-
-The candidate C is preserved at ``memory/grind/$func/candidate.c``; main is back at
-HEAD. Owner action: rule on the question above, then unpark via
-``& tools/wteng.ps1 main queue regen`` (or reopen the item) so the grind resumes.
 "@
     @("", "## $ref", "", $body) | Add-Content $Decisions
-    Invoke-Eng @('queue', 'park', $func, '--reason', "owner escalation pending (judge ESCALATE): $ref") | Out-Null
-    Journal "$func JUDGE ESCALATE ($kind) — parked pending owner ruling."
-    Log "${func}: judge ESCALATE — owner escalation filed, function parked."
+    if ($ekind -eq 'canonical-asm-grant') {
+        $tier = 'LOW'
+        try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
+              if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }
+        $granted = python tools/grinder/grindlib.py grant-canonical-asm . $func $tier $date
+        if ($LASTEXITCODE -eq 0) {
+            python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANTED (pipeline, $date, tier $tier): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written.") | Out-Null
+            Journal "$func JUDGE ESCALATE (canonical-asm-grant) — grant EXECUTED (tier $tier), function stays active."
+            Log "${func}: judge ESCALATE — canonical-asm grant executed (tier $tier); staying active for integration."
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl inline_asm_canonical.txt 2>$null
+            git -C $Root commit -m "grind: $func canonical-asm grant executed (judge ESCALATE, ruling b9d91163) [skip-park-src-guard]" 2>$null | Out-Null
+            return
+        }
+        # Tier not STRONG — the grant claim fails on evidence; log-and-refuse below.
+        $ekind = 'canonical-asm-grant (REFUSED: tier ' + $tier + ', not STRONG-class)'
+    }
+    $evid = "judge ESCALATE packet in docs/grind/decisions.md ($ref)"
+    $disp = "REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
+    python tools/grinder/grindlib.py log-borderline . $func $ekind $evid $disp $date | Out-Null
+    Invoke-Eng @('queue', 'park', $func, '--reason', "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE $ekind, logged to borderline.md per ruling 2026-08-18): $ref") | Out-Null
+    Journal "$func JUDGE ESCALATE ($kind, $ekind) — logged to borderline ledger, parked terminally (nothing pending)."
+    Log "${func}: judge ESCALATE — borderline-logged + terminal park (no owner wait)."
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-    git -C $Root commit -m "grind: $func judge ESCALATE — owner escalation filed [skip-park-src-guard]" 2>$null | Out-Null
+    git -C $Root commit -m "grind: $func judge ESCALATE — borderline-logged, terminal park [skip-park-src-guard]" 2>$null | Out-Null
 }
 
 function Set-FailRouting([string]$func, $v) {
@@ -608,8 +632,10 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
     $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)
     Record-Review $func 'judge' ([string]$v.verdict) ([string]$v.fail_ground).ToLower()
     if ($v.verdict -eq 'ESCALATE') {
-        # Sound work, authority limit. Preserve the candidate as the escalation's
-        # evidence, put main back to HEAD, file + park. No re-grind.
+        # Sound work, authority limit. Preserve the candidate as the record's
+        # evidence, put main back to HEAD, then route per owner ruling 2026-08-18
+        # (Invoke-JudgeEscalation: grant executed, or borderline-logged + terminal
+        # park — never a wait on the owner).
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\candidate.c") -ErrorAction SilentlyContinue
         git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
@@ -630,8 +656,8 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
             # whole driver (the old Circuit-Break here stopped everything).
             $reason = ("queue done refused a judge-PASSed candidate — an un-retired config-level " +
                        "cheat remains (prologue_fix / maspsx cheat-pathway gate / other) that the " +
-                       "honest COMPLETED-C form must eliminate, or the function needs owner " +
-                       "canonical-asm authorization. gate: " + (($qd -replace '["\r\n\t]+', ' ') -replace '\s+', ' ').Trim())
+                       "honest COMPLETED-C form must eliminate, or the function needs the pipeline " +
+                       "canonical-asm grant (judge ESCALATE canonical-asm-grant per ruling 2026-08-18). gate: " + (($qd -replace '["\r\n\t]+', ' ') -replace '\s+', ' ').Trim())
             $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
             Log "${func}: queue done REFUSED after judge PASS — banking constraint, grind continues."
             git -C $Root add -- metrics/events.jsonl 2>$null
@@ -885,13 +911,14 @@ while ($true) {
             Record-Review $func 'layer1' 'REJECTED' $cause
         }
         # owner-gated: the validator can't see $func, so the driver verifies the
-        # cited OWNER-ESCALATION entry actually names THIS function.
+        # cited escalation entry (OWNER-ESCALATION or CANONICAL-ASM GRANT PATH,
+        # ruling 2026-08-18) actually names THIS function.
         if ($valid -and [string]$o.result -eq 'owner-gated') {
             $decTxt = Get-Content (Join-Path $Root 'docs\grind\decisions.md') -Raw -ErrorAction SilentlyContinue
-            $named = @(($decTxt -split "`n") | Where-Object { $_ -match 'OWNER-ESCALATION' -and $_ -match [regex]::Escape($func) })
+            $named = @(($decTxt -split "`n") | Where-Object { $_ -match 'OWNER-ESCALATION|CANONICAL-ASM GRANT PATH' -and $_ -match [regex]::Escape($func) })
             if (-not $named.Count) {
                 $valid = $false
-                $invalidReason = "owner-gated claim rejected: no OWNER-ESCALATION entry in docs/grind/decisions.md names $func"
+                $invalidReason = "owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names $func"
             }
         }
     }
@@ -930,28 +957,40 @@ while ($true) {
         'ruling-request' { Invoke-JudgeRuling $func ([string]$o.ruling_question); Revert-SessionEdits }
         'candidate-ready' { Invoke-CandidatePath $func $stem $modality $o }
         'owner-gated' {
-            # A filed OWNER-ESCALATION (verified above to name $func) blocks
-            # this function on an owner-only ruling and every sanctioned axis is
-            # measured dead. Park it so the queue advances (parked items are
-            # skipped by `queue next`; the escalation stays open in
-            # docs/grind/decisions.md — parking is a wait-state, not a
-            # disposition, per no-park-permanently).
+            # A filed escalation entry (verified above to name $func) means every
+            # sanctioned axis is measured dead. Per owner ruling 2026-08-18
+            # (judge-sole-gate, b9d91163) NOTHING waits on the owner: a
+            # RESOLVED BY STANDING RULING entry parks terminally; a
+            # CANONICAL-ASM GRANT PATH entry keeps the function ACTIVE for
+            # authoring/integration; any legacy pending-shaped ref is
+            # borderline-logged and parked terminally.
             python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
             Revert-SessionEdits
-            # Standing auto-ruling (owner, 2026-07-27): a RESOLVED BY STANDING RULING
-            # entry is terminal (OWNER-ACCEPTED INCOMPLETE, nothing pending); only a
-            # true pending escalation (gate-passing case) waits on the owner.
             $escRef = [string]$o.escalation_ref
             if ($escRef -match 'RESOLVED BY STANDING RULING') {
                 $reason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): $escRef"
                 Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
                 Log "${func}: STANDING RULING APPLIED — REFUSED / OWNER-ACCEPTED INCOMPLETE, parked terminally ($escRef)."
                 Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: $($o.headline)"
+            } elseif ($escRef -match 'CANONICAL-ASM GRANT PATH') {
+                # Owner ruling 2026-08-18 (judge-sole-gate, b9d91163): STRONG-tier
+                # canonical-asm no longer waits on the owner. Stay ACTIVE — the next
+                # session authors the whole-body form; the Judge makes the final
+                # call and the driver writes the grant on its verdict.
+                python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANT PATH ($escRef): author the whole-body form per canonical-asm-authorization-recipe and integrate; no owner wait.") | Out-Null
+                Log "${func}: CANONICAL-ASM GRANT PATH — stays active for authoring/integration (no owner wait)."
+                Journal "$func s$sessionN [$modality] canonical-asm grant path — stays active: $($o.headline)"
+                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func canonical-asm grant path filed (stays active) [skip-park-src-guard]" 2>$null | Out-Null
             } else {
-                $reason = "owner escalation pending: $escRef"
+                # Legacy pending-shaped ref (pre-2026-08-18). No pending states exist
+                # anymore: log to the borderline ledger and park terminally.
+                $date = Get-Date -Format 'yyyy-MM-dd'
+                python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed escalation: $escRef" "terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry." $date | Out-Null
+                $reason = "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): $escRef"
                 Invoke-Eng @('queue', 'park', $func, '--reason', $reason) | Out-Null
-                Log "${func}: OWNER-GATED — parked pending owner ruling ($escRef)."
-                Journal "$func s$sessionN [$modality] OWNER-GATED — parked pending owner ruling: $($o.headline)"
+                Log "${func}: OWNER-GATED — borderline-logged + parked terminally (no owner wait): $escRef"
+                Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, terminal park: $($o.headline)"
             }
             # engine/queue.json is where `queue park` wrote the parked status — it
             # MUST be staged, or the park stays as working-tree dirt and the next
@@ -960,7 +999,7 @@ while ($true) {
             # straight back to the queue top forever (2026-07-18: ~40 sessions
             # burned re-parking motion_SetMotion; see grinder-park-queue-dirt-deadlock).
             git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-            git -C $Root commit -m "grind: $func parked owner-gated pending ruling [skip-park-src-guard]" 2>$null | Out-Null
+            git -C $Root commit -m "grind: $func owner-gated disposition (ruling 2026-08-18, nothing pending) [skip-park-src-guard]" 2>$null | Out-Null
         }
         default {
             # ESCALATION BACKSTOP: in `escalation` modality the session was mandated
@@ -980,16 +1019,22 @@ while ($true) {
                 $rc = 0
                 try { $rc = @(Select-String -Path (Join-Path $Root 'regfix.txt'),(Join-Path $Root 'asmfix.txt') -Pattern "^$([regex]::Escape($func)):" -ErrorAction SilentlyContinue).Count } catch { }
                 $ref = (python tools/grinder/grindlib.py autoescalate . $func $stem $tier $rc (Get-Date -Format 'yyyy-MM-dd')).Trim()
-                if ($ref -match 'RESOLVED BY STANDING RULING') {
-                    $bsReason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): $ref"
+                if ($ref -match 'CANONICAL-ASM GRANT PATH') {
+                    # Owner ruling 2026-08-18: STRONG tier routes to the pipeline
+                    # grant path — the function STAYS ACTIVE for authoring/integration.
+                    python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANT PATH ($ref): author the whole-body form per canonical-asm-authorization-recipe and integrate; no owner wait.") | Out-Null
+                    Log "${func}: ESCALATION BACKSTOP — STRONG tier, canonical-asm grant path; stays active."
+                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop — canonical-asm grant path (stays active): $ref"
+                    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                    git -C $Root commit -m "grind: $func auto-filed canonical-asm grant path (backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 } else {
-                    $bsReason = "owner escalation pending (auto-filed backstop): $ref"
+                    $bsReason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): $ref"
+                    Invoke-Eng @('queue', 'park', $func, '--reason', $bsReason) | Out-Null
+                    Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + parked."
+                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file): $ref"
+                    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+                    git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 }
-                Invoke-Eng @('queue', 'park', $func, '--reason', $bsReason) | Out-Null
-                Log "${func}: ESCALATION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + parked."
-                Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file): $ref"
-                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-                git -C $Root commit -m "grind: $func auto-escalated owner-gated (backstop) [skip-park-src-guard]" 2>$null | Out-Null
             } else {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
                 Revert-SessionEdits

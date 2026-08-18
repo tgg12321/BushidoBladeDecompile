@@ -142,7 +142,9 @@ You don't need to manually `queue park` a new one; a `queue regen` routes it.
 
 The remaining pure-C path (relocate the table out of `asm/data/*.rodata.s` into the
 C file **and** reorder the global rodata layout so the C file's `.rodata` lands at
-the table's address) is a project-wide architecture change needing user sign-off.
+the table's address) is a project-wide architecture change — a `policy-question`
+entry in `docs/grind/borderline.md` per [[judge-sole-gate]] (2026-08-18); it
+proceeds only on a landed owner ruling, but nothing blocks waiting on it.
 Since it currently affects **one** function, it is **low urgency** — not a systemic
 blocker.
 

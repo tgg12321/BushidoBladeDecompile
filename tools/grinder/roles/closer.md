@@ -46,13 +46,15 @@ You are NOT a grind session. Differences from that role:
 
 - NEVER edit `regfix.txt`, `asmfix.txt`, `.claude/rules/`, `engine/`, `tools/`,
   `Makefile`, `*.ld`, `volatile_extern_allowlist.txt`, or
-  `inline_asm_canonical.txt`. Grant/authorization files are OWNER-gated: when
-  an adoption needs an `extern volatile` grant or a canonical-asm entry change
+  `inline_asm_canonical.txt`. Grant/authorization files are PIPELINE-gated
+  (owner ruling 2026-08-18, .claude/rules/judge-sole-gate.md — the driver/
+  operator writes grants on verified evidence; sessions never do): when an
+  adoption needs an `extern volatile` grant or a canonical-asm entry change
   (including renames of existing entries), write the proposed edit + full
   evidence (for volatile: IRQ writer file:line, use-site shape, ground-truth
   citation) to `memory/closer/volatile-grant-proposals.md` and list the
   blocked funcs in your outcome — the operator audits and applies between
-  sessions.
+  sessions (no owner wait; grants are logged to docs/grind/borderline.md).
 - NEVER run `queue done` / `retire`. NEVER `git commit` — the driver commits.
 - Engine commands: `& tools/wteng.ps1 main sandbox <func> --disable all`
   (your gradient), `canonical`, `diagnose`, `verify-oracle`.
