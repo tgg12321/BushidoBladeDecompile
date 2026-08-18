@@ -478,3 +478,108 @@ ranking would have discarded both 12-cells as near-worst results.
 - probe: Two campaigns on the validated s4 workspace built from the 10-form, launched via tools/permuter_campaign.py with telemetry: chassis C (s4/mk_perm_b.py region - the two scan loops only) and chassis D (new s5/mk_perm_d.py region - widened to include the top-guard block, because 4 of the 10 differing insns live there and every prior chassis froze it). 633 s each, 13447 + 13293 iterations, 88 outputs, every one re-scored with `sandbox --disable all` (s5/score_outputs.sh). A third campaign, chassis E, was run on the structurally different read-before-guard base as the fresh-seed reseed. All campaigns harvested with --stop. Chassis E was built from the read-before-guard form (variants3/k11_c0_cp0_s1.c, 122 insns, engine 17) with the widened region - a structurally different base, per the fresh-seed rule - and ran 31600 iterations to 205 outputs.
 - result: Nothing below 10. Distributions - C: 3x10, 1x11, 4x12, 5x13, 5x14, 6x15, 7x16, 3x17, tail to 27; D: 4x10, 7x12, 6x13, 4x14, 6x15, 7x16, 2x17, 2x18, tail to 35. E-s4-2's anti-correlation reproduced exactly: each campaign's best permuter-ranked find (620) is not among the engine-best cells, while chassis D's mid-ranked output-685-1 ties the base at 10 with a structurally different body. 2 of 88 outputs could not be scored (apply_find.py could not locate the function in the permuter's reformatted source) - a bounded, recorded gap. Chassis E: 1x10, 7x11, 1x12, 15x13, 13x14, 15x15, 20x16, 22x17, tail to 121 (4 apply-fails, 1 unscorable); its single best cell TIES 10 and came from permuter score 540, mid-ranking again. Across s4+s5 that is 4 chassis, ~80k iterations and 423 engine-scored outputs with zero finds below the running floor; both of this session's floor drops came from directed hand sweeps, not the randomizer. permuter_campaign.py status reports 0 live campaigns.
 - verdict: KILLED
+
+## s6 (2026-08-18) — forensics
+
+### H-s6-1 — CONFIRMED (and it retires the chassis)
+**Statement.** The inherited 12-form's `base = slots;` reuse makes loop 2's entry guard
+address `ptr + 2*slot_a*64 + 0x20` on the loop-1-ran path, where target addresses
+`ptr + slot_a*64 + 0x20`; the form is therefore semantically divergent and cannot reach 0.
+**Mechanism.** `base` is re-pointed to `(slot_a << 6) + (s32)p` in loop 1's preheader and
+loop 2's guard still reads through it. Target reloads the pointer at `0x80017914` in loop
+1's exit tail precisely to avoid that.
+**Probe.** `cc1 -da` cse dump (insn 146 consumes reg/v79 set at insn 86) plus the build /
+target instruction diff (`s6/build.txt` vs `s6/target.txt`).
+**Verdict.** CONFIRMED divergent. Chassis retired; `rejected/base_reuse_loop2_guard_is_semantically_divergent.c`.
+
+### H-s6-2 — CONFIRMED
+**Statement.** cse.c's extended-basic-block equivalence table is what collapses the
+E-s5-3 "hoisted read" family, and the collapse is defeatable by sourcing the base's addend
+from a pseudo that was live before the guard block's join label.
+**Mechanism.** The loop preheader is the fall-through successor of the guard block, so it
+is in the same EBB; `(plus shift p)` is already in the hash table from the guard-address
+insn and cse rewrites the preheader insn to a register copy (hoist dump insn 83). A
+pre-join pseudo (`slots`) has no known value in the post-join EBB, so no fold occurs.
+**Probe.** `s6/hoist/ings_pp.c.cse` insn 83 vs `s6/G/ings_pp.c.combine` insns 71/86.
+**Verdict.** CONFIRMED. Variants D/G reproduce target's pre-guard `lw` and both addus; the
+cost is keeping `slots` live (15 vs B's 14).
+
+### H-s6-3 — CONFIRMED (and it corrects E-s5-4's attribution)
+**Statement.** No C-level copy statement can materialize target's `addu a3,a0,zero`,
+because combine.c deletes it before register allocation — not because the allocator
+coalesces it.
+**Mechanism.** `try_combine` substitutes a single-use register copy into its use and the
+dead copy insn is removed; the copy is `NOTE_INSN_DELETED` already in the `.combine` dump.
+**Probe.** Variant G (`q = slots;` on the fold-defeated chassis, i.e. the one regime where
+E-s5-4's kill does not apply by construction) — `s6/G/ings_pp.c.combine` note 82; score 15
+with 125 build insns, identical to D.
+**Verdict.** CONFIRMED. Do not re-propose a copy statement in any spelling.
+
+---
+
+## Live frontier for s7+
+
+1. **The last 2 instructions are the two `addu a3,a0,zero` copies, and they are a
+   whole-function live-range property, not a preheader spelling.**
+   *Mechanism.* In target the loop-1 pre-guard pointer `a0` is live-out on the entry
+   guard's **taken** edge: the `blez` at `0x800178C8` jumps to `.L8001791C`, which consumes
+   `a0` as loop 2's guard operand. The preheader therefore cannot overwrite `a0` with the
+   loop base, so the allocator emits the copy and then `addu a0,a1,a3`. Every form we have
+   built lets the guard pointer die at the branch, so the allocator overwrites it and the
+   copy never appears.
+   *Next probe.* Build a form where ONE pointer variable is read fresh after each join,
+   used by that loop's entry guard, AND still read by the NEXT guard on the skip path — so
+   that its live range spans the taken edge. Concretely: a single `p` assigned before loop
+   1's guard and re-assigned only in loop 1's exit tail (i.e. after the `do/while`, not
+   before loop 2's guard), which is exactly the data flow the target asm shows. Start from
+   variant D (`rejected/base_from_pre_join_pseudo_defeats_cse_fold_costs_1.c`), not from B,
+   because D already has the pre-guard read and the un-folded addus. Read
+   `tmp/grind/func_80017848/s6/G/ings_pp.c.greg` for reg/v77's conflict and preference
+   records before writing C, and re-dump with `s6/probe.sh` after each attempt.
+
+2. **Every s3/s4/s5 conclusion that was measured ON the divergent chassis must be treated
+   as chassis-relative and re-measured before it is spent.**
+   *Mechanism.* The divergence deleted two pointer reloads, which shifted register
+   pressure and scheduling for the whole preheader region; rankings measured against a
+   125-insn build that was 2 insns short for a semantic reason do not transfer to a
+   correct 125-insn build. s5 already learned the same lesson in a weaker form (its
+   "shift-first" conclusion was chassis-relative to s4's `base = slots;`).
+   *Next probe.* Before re-using ANY banked spelling conclusion, re-run it as a matched
+   pair on the current candidate with `s6/score.sh`. Cheap (one blocking call per ~6 cells)
+   and it is the only thing that makes an inherited conclusion trustworthy. The kills that
+   DO survive untouched are the pass-level ones (H-s6-2, H-s6-3) because they are RTL
+   facts, not score comparisons.
+
+3. **The top-block 4-instruction shadow is still downstream, and still should not be
+   attacked directly.**
+   *Mechanism.* Unchanged from s5: target's second `bltz` has a `nop` delay slot because
+   the first instruction of its target block is `lw a0,0xC(s2)`; ours has `sll a1,s4,6`
+   there and `reorg`'s `fill_slots_from_thread` steals it, retargeting the branch to
+   label+4. Variant D already puts a `lw` first in that block, so this may fall for free.
+   *Next probe.* After ANY movement on frontier item 1, re-diff with `s6/dis.sh` and check
+   whether the `bltz` delay slot became a `nop` on its own. Only if it did NOT should
+   `reorg.c`'s non-own-thread `fill_slots_from_thread` path be read as its own mechanism.
+
+## [s6] The s3/s4/s5 chassis (base = slots; base re-pointed in loop 1's preheader; loop 2's entry guard still reading its count through base) is semantically divergent from the target and therefore cannot produce target's bytes at any distance.
+- mechanism: On the path where loop 1's guard passed, `base` holds ptr + slot_a*64, so loop 2's guard addresses ptr + 2*slot_a*64 + 0x20. Target addresses ptr + slot_a*64 + 0x20 on that path: at 0x80017914, in loop 1's exit tail, it does `lw a0,0xC(s2)` then `sll a1,s4,6` before falling into .L8001791C's `addu v0,a1,a0 ; lw v0,0x20(v0)`. Byte-identical code implies identical semantics, so a divergent C body cannot close.
+- probe: cc1 -da cse dump sliced to the function (tmp/grind/func_80017848/s6/dump/ings_pp.c.cse): insn 86 sets reg/v79 = (plus reg92 reg/v78) in loop 1's preheader and insn 146, loop 2's guard address, is (set reg111 (plus reg/v79 reg110)) consuming that stale pseudo. Cross-checked against the build-vs-target instruction diff (s6/build.txt vs s6/target.txt): our loop-2 guard is `sll a1,s4,6 ; addu v0,a0,a1 ; lw v0,32(v0)` with a0 = loop 1's base; target's is `lw a0,0xC(s2) ; sll a1,s4,6 ; addu v0,a1,a0 ; lw v0,0x20(v0)`.
+- result: Divergence confirmed twice over. The 12 score was 2 instructions of false credit: the two 'missing' insns (125 vs 127) ARE the two pointer reloads the divergence deleted. Seven semantically-correct forms measured; best is 14, and HEAD's untouched form is 16.
+- verdict: CONFIRMED
+
+## [s6] cse.c's extended-basic-block equivalence table is what collapses the E-s5-3 'hoisted read' family, and the collapse is defeatable by sourcing the loop base's addend from a pseudo that was live BEFORE the guard block's join label.
+- mechanism: The loop preheader is the fall-through successor of the guard block, so it lies in the same extended basic block; (plus shift p) is already in cse's hash table from the guard-address insn, so cse rewrites the preheader insn to a register copy and the second addu never reaches the allocator. A pre-join pseudo has no known value in the post-join EBB (cse's table is reset at a join), so no fold occurs.
+- probe: Dumped the E-s5-3 hoisted form (s6/hoist/ings_pp.c.cse): insn 71 `reg93 = reg92 + reg/v78` is the guard address, insn 83 is `(set reg/v79 reg93)` — a copy, not an addu. Then built variants D and G (guard through the fresh post-join read, base through the pre-join `slots` pseudo) and dumped G: s6/G/ings_pp.c.combine shows insn 71 `reg94 = reg/v78 + reg93` and insn 86 `reg/v80 = reg93 + reg/v77` as two independent addsi3_internal insns.
+- result: Fold defeated. D/G's build contains BOTH of target's structural features the 12-form was faking: the pre-guard `lw v0,12(s2)` and two separate addus. Cost is keeping `slots` live across both loops, so D/G score 15 vs B's 14.
+- verdict: CONFIRMED
+
+## [s6] No C-level copy statement can materialize target's `addu a3,a0,zero`, and s5's attribution of this to register-allocator coalescing (E-s5-4) is wrong — combine.c deletes the copy before allocation.
+- mechanism: combine.c's try_combine substitutes a single-use register copy into its one use and the now-dead copy insn is deleted; local-alloc never sees it. E-s5-4 measured only on chassis where cse had already folded the base addu away, so it could not distinguish the two passes.
+- probe: Variant G writes `q = slots; base = (u8 *)((slot_a << 6) + (s32)q);` on the fold-defeated chassis — the one regime where E-s5-4's kill does not apply by construction. In s6/G/ings_pp.c.combine the copy's insn is already `(note 82 ... NOTE_INSN_DELETED)`. Scored end-to-end: G = 15 with 125 build insns, byte-for-byte the same shape as D.
+- result: Copy statement is completely inert. Two named passes now cover the whole 'make a copy appear' family: cse.c when the two expressions are equal, combine.c when they are not.
+- verdict: CONFIRMED
+
+## [s6] Repairing the divergence by giving loop 2's guard its own fresh pointer read is cheap and keeps the 12-form's other levers.
+- mechanism: A fresh `base = *(u8 **)(ctx + 0xC);` immediately before loop 2's guard restores target's data flow without touching the do-while shape, the `i = 0; if (i < count)` guard shape, or the hoisted slots read.
+- probe: Variant A scored from a clean tree (s6/score.sh, s6/scores.txt).
+- result: A = 15, one worse than variant B's 14. Reading both scan-loop guards through the never-re-pointed `slots` (B) is the cheaper repair.
+- verdict: KILLED
