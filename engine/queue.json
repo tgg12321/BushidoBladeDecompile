@@ -1,8 +1,16 @@
 {
-  "generated_at": "2026-08-11T09:43:10",
+  "generated_at": "2026-08-18T01:09:03",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
     {
       "func": "func_80032314",
       "file": "code6cac_b",
@@ -521,25 +529,28 @@
       "func": "func_800430E4",
       "file": "text1a_c",
       "distance": 52,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 25,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8007352C",
       "file": "text1b",
       "distance": 54,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 11,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8003F6D8",
       "file": "config",
       "distance": 55,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8002D780",
@@ -553,98 +564,110 @@
       "func": "CD_ready",
       "file": "system",
       "distance": 56,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 42,
       "status": "active",
+      "hand_coded_tier": "LOW",
       "prologue_fix": 1
-    },
-    {
-      "func": "func_8002E6B0",
-      "file": "code6cac_b",
-      "distance": 57,
-      "verdict": "ASM-SUSPECT",
-      "rules": 2,
-      "status": "active"
     },
     {
       "func": "func_800393C8",
       "file": "code6cac_c_mid",
       "distance": 57,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 2,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80042C80",
       "file": "text1a_c",
       "distance": 58,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 63,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8003F824",
       "file": "config",
       "distance": 61,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 26,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80047BE0",
       "file": "sound",
       "distance": 63,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_8002E6B0",
+      "file": "code6cac_b",
+      "distance": 64,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "_spu_pitch2note",
       "file": "main",
       "distance": 64,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_800335D8",
       "file": "code6cac_b",
       "distance": 65,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 43,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8005D554",
       "file": "text1b",
       "distance": 65,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 88,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80074B18",
       "file": "text1b",
       "distance": 79,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 29,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 84,
-      "verdict": "ASM-SUSPECT",
+      "func": "func_8003EB84",
+      "file": "code6cac_c2",
+      "distance": 81,
+      "verdict": "C",
       "rules": 2,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80048864",
       "file": "text1b",
       "distance": 87,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 36,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8002EBDC",
@@ -652,14 +675,6 @@
       "distance": 97,
       "verdict": "ASM-PARTIAL",
       "rules": 45,
-      "status": "active"
-    },
-    {
-      "func": "func_8003EB84",
-      "file": "code6cac_c2",
-      "distance": 98,
-      "verdict": "ASM-SUSPECT",
-      "rules": 2,
       "status": "active"
     },
     {
@@ -706,25 +721,28 @@
       "func": "func_80070C70",
       "file": "text1b",
       "distance": 118,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 32,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8003DE14",
       "file": "code6cac_c2",
       "distance": 119,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 36,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "_spu_gcSPU",
       "file": "main",
       "distance": 121,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 104,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006D3DC",
@@ -842,9 +860,10 @@
       "func": "func_8002CA8C",
       "file": "code6cac_b",
       "distance": 177,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 2,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8007D6D8",
@@ -858,9 +877,10 @@
       "func": "func_80056CB8",
       "file": "text1b",
       "distance": 188,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 15,
-      "status": "active"
+      "status": "active",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006CCC8",
@@ -1546,121 +1566,131 @@
       "func": "func_80036140",
       "file": "code6cac_b2_post",
       "distance": 512,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006F97C",
       "file": "text1b",
       "distance": 515,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80055138",
       "file": "text1b",
       "distance": 516,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8003993C",
       "file": "code6cac_c_mid",
       "distance": 526,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "sprintf",
       "file": "text1b_b",
       "distance": 535,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80034708",
       "file": "code6cac_b",
       "distance": 544,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8005D814",
       "file": "text1b",
       "distance": 545,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006A880",
       "file": "text1b",
       "distance": 552,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8005F1C8",
       "file": "text1b",
       "distance": 564,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80027AD8",
       "file": "code6cac_b",
       "distance": 574,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8001A820",
@@ -1674,37 +1704,40 @@
       "func": "func_8001CE60",
       "file": "code6cac",
       "distance": 588,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80022580",
       "file": "code6cac",
       "distance": 621,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006C21C",
       "file": "text1b",
       "distance": 622,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_800187F4",
@@ -1726,109 +1759,118 @@
       "func": "func_800720FC",
       "file": "text1b",
       "distance": 690,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80070188",
       "file": "text1b",
       "distance": 698,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80030D7C",
       "file": "code6cac_b",
       "distance": 709,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_800198D0",
       "file": "code6cac",
       "distance": 749,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8005C8A8",
       "file": "text1b",
       "distance": 753,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "_comb_control",
       "file": "main",
       "distance": 763,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8005E54C",
       "file": "text1b",
       "distance": 799,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80070F78",
       "file": "text1b",
       "distance": 810,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80029454",
       "file": "code6cac_b",
       "distance": 1025,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80067D14",
@@ -1842,25 +1884,27 @@
       "func": "func_80055B60",
       "file": "text1b",
       "distance": 1110,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8002AB08",
       "file": "code6cac_b",
       "distance": 1112,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80065800",
@@ -1874,25 +1918,27 @@
       "func": "func_80023F08",
       "file": "code6cac",
       "distance": 2983,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80058580",
       "file": "text1b",
       "distance": 2991,
-      "verdict": "ASM-SUSPECT",
+      "verdict": "C",
       "rules": 0,
       "status": "active",
       "prior_park_reason": "canonical-asm audit 2026-06-09: REJECTED. scan_hand_coded.py scores LOW (0-1 of 5 signals, no S1/S2/S6/S7/S8 indicators). Asm reads as standard GCC-compiled C (prologue saves, GP-rel loads, strength-reduced index math, JAL+delay-slot, struct stores). Canonical gate auto-routed via distance>500 heuristic, but per hand-coded-asm-recognition.md size alone is not strong evidence. Per no-new-park-categories.md: no infrastructure carve-out. Needs pure-C work via standard queue when prioritized; do NOT auto-authorize.",
       "owner_override": true,
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
-      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing"
+      "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
+      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_80038C70",
@@ -2274,9 +2320,8 @@
       "parked": 41
     },
     "by_verdict": {
-      "ASM-PARTIAL": 37,
-      "C": 139,
-      "ASM-SUSPECT": 47
+      "C": 186,
+      "ASM-PARTIAL": 37
     }
   }
 }
