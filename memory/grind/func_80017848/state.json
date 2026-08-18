@@ -1,0 +1,37 @@
+{
+ "func": "func_80017848",
+ "file": "ings",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 16,
+   "modality": "recon",
+   "headline": "Recon: floor 16 confirmed; residual mapped to one coupled loop-shape decision (single hoisted base + per-iteration count reload vs my cached count); 3-hypothesis frontier banked"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Guarded do-while, distinct guard/bound lvalues, slots-copy local, index+bound through one base local",
+   "mechanism": "cse path-following label barrier keeps the bottom bound load alive; single base pseudo gives target's one-addu index; distinct-lvalue guard may itself be the missing phantom-16 frame producer",
+   "next_probe": "tmp/score_sweep.py variant matrix recording score AND .frame vars= per variant; win = score<16 with vars=16"
+  },
+  {
+   "hypothesis": "Pin the exact pass folding my bound reload (cse1 vs cse_around_loop vs rerun-cse)",
+   "mechanism": "duplicate_loop_exit_test copies the exit test; the folding pass determines which C property breaks the fold",
+   "next_probe": "cc1 -da dumps on current form, diff where the bound load disappears"
+  },
+  {
+   "hypothesis": "Reload and single-base index are ONE coupled decision \u2014 partial forms stay >= 16",
+   "mechanism": "prior sessions: own-base spellings kept guard count alive; cached-count spellings split the index add",
+   "next_probe": "falsified for free if any partial variant in the H1 sweep scores below 16"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-18T16:50:40.473817+00:00"
+}

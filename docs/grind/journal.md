@@ -997,3 +997,4 @@
 - 2026-08-17 12:58 func_800453E0 COMPLETED-C after 1 sessions.
 - 2026-08-17 13:14 func_80049584 COMPLETED-C after 1 sessions.
 - 2026-08-17 13:27 func_80032314 s1 [recon] floor=15: Floor 27 -> 15 and build_insns now exactly 109 = target: copying the matched, user-authorized GTE-LZC island from the same-file sibling func_800274BC fixed a 12-point cheat-classifier artifact; the entire residual is one 3-cycle register rotation on $a1/$a2/$a3.
+- 2026-08-18 11:58 func_80017848 s1 [recon] floor=16: Recon: floor 16 confirmed; residual mapped to one coupled loop-shape decision (single hoisted base + per-iteration count reload vs my cached count); 3-hypothesis frontier banked
