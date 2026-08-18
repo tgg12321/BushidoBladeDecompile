@@ -155,6 +155,31 @@
  * preheader a single-predecessor block so cse folds, then let jump2 re-merge) is
  * 35 - jump2 does NOT merge them.  The join cannot be removed from C.
  */
+/* [s13 PERMUTER ADDENDUM - body unchanged, still 3.]  The automated-breadth
+ * modality that s10/s11/s12 all named as the highest-yield remaining lever has
+ * now been spent and found nothing.  Three telemetried campaigns totalling
+ * 98,604 iterations - V1 with loop 2 fenced off (25,905 iters), V1 with no
+ * fences at all so the randomizer could touch loop 2's preheader jointly with
+ * every other region (27,827 iters), and the s12 symmetric chassis (44,872
+ * iters) - produced 16 finds and ZERO engine-scored improvements on either
+ * chassis.  Both chassis floors (3 and 4) survived intact.
+ *
+ * The one durable fact s13 adds: on THIS function the permuter's own weighted
+ * score is ANTI-CORRELATED with the engine distance, now measured a third time.
+ * s13b's best find (perm 220, ninety points better than its base) re-scores to
+ * engine 5, while the cells that actually tie its floor at engine 4 sit at perm
+ * 310 = exactly the base score.  The residual here is 2-3 register-IDENTITY
+ * differences, which the permuter's metric prices far below the instruction
+ * reorderings it will happily trade them for.  Any future campaign on this
+ * function must re-score every single output with `sandbox --disable all`.
+ *
+ * Do NOT re-run a permuter campaign on either of these two chassis.  The next
+ * untried axis is the one s12's frontier named third and no session has touched:
+ * the TRANSLATION-UNIT context outside the function body (the math_Distance3D
+ * prototype, the position of func_80017848 within src/ings.c, the number and
+ * order of the file's preceding declarations) - the only surface left that can
+ * move GCC 2.7.2's allocno ordering without changing a single statement.
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;

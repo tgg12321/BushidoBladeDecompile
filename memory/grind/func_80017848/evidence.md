@@ -1274,3 +1274,58 @@ loop-2 guard consuming loop-1's `q` = 12.
 - [s12] DUPLICATING LOOP 2 INTO BOTH GUARD ARMS to remove that join scores 35 in both spellings - jump2 does not merge the duplicated blocks. The join cannot be removed from C.
 
 - [s12] src/ings.c was left untouched (every cell was applied and reverted by tmp/grind/func_80017848/s12/score.sh); the session's only tracked-file changes are the ledger under memory/grind/func_80017848/.
+
+## s13 (permuter) — the automated-breadth modality is now measured, and it is dead on this chassis
+
+- Floor unchanged at 3. `sandbox --disable all` on memory/grind/func_80017848/candidate.c
+  re-measured 3 at the start of the session and 3 again at the end, on a clean tree.
+- THREE campaigns, all launched through tools/permuter_campaign.py (telemetry in
+  metrics/events.jsonl), all waited on IN-TURN via `permuter_campaign.py wait`, all
+  `harvest --stop`ed before the outcome was written; `permuter_campaign.py status`
+  confirms both surviving pids dead at session end and no permuter.py process alive.
+    * s13a  tmp/perm_ings_s13a  V1 chassis, two PERM_RANDOMIZE regions (top guards +
+      loop 1; the whole tail), loop 2 frozen.  base perm 405.  25,905 iters / ~27 min.
+      2 finds: perm 380 -> engine 5, perm 310 -> engine 4.  Reseeded per the fresh-seed
+      discipline after 12 min with no novel find.
+    * s13c  tmp/perm_ings_s13c  V1 chassis, NO PERM macros (whole-function
+      randomization, loop 2's preheader included).  base perm 405.  27,827 iters /
+      ~28 min.  7 finds: engine 3 (= the base, reformatted, perm 405), 4, 5, 7, 9, 11, 12.
+    * s13b  tmp/perm_ings_s13b  the s12 symmetric chassis (floor 4), whole-function
+      randomization.  base perm 310.  44,872 iters / ~50 min.  8 finds, 7 re-appliable:
+      engine 4, 4, 5, 5, 6, 8, 15.  Its floor 4 was never beaten either.
+- 98,604 iterations, 16 finds, ZERO engine-scored improvements on either chassis.
+- THE PERM-SCORE / ENGINE-DISTANCE ANTI-CORRELATION IS NOW A HARD FACT ON THIS FUNCTION,
+  measured a third time.  On s13b the permuter's BEST find (perm 220, a 90-point
+  improvement over base) re-scores to engine 5, while the cells that actually tie the
+  chassis floor at engine 4 sit at perm 310 = exactly the base score.  Any future
+  campaign on this function MUST re-score every output with `sandbox --disable all`;
+  the permuter's own ranking is worse than useless here because the residual is 2-3
+  register-identity differences that its weighted metric prices below the reorderings
+  it happily trades them for.
+- What this closes: the s10/s11/s12 frontier item "a fresh-seed permuter campaign
+  anchored on the V1 chassis is the highest-yield remaining modality" is now SPENT, on
+  both of the two chassis the ledger names, with and without the loop-2 fence.  The
+  multi-region combination space that s12 could only sample 8 points of by hand has been
+  sampled ~98k times by machine, and it contains nothing below 3.
+- Banked forms: rejected/s13_permuter_wholefn_best_find_costs_4.c (s13c's best genuine
+  find) and rejected/s13_permuter_symmetric_best_perm_score_costs_5.c (s13b's
+  perm-score champion, engine 5 - the anti-correlation exhibit).
+- Artifacts: tmp/grind/func_80017848/s13/{perm_ings_s13a,perm_ings_s13b,perm_ings_s13c}
+  _engine_scores.txt, harvest_b.json, harvest_c.json, chassis_A.c, chassis_B.c, plus the
+  workspace campaign.log files under tmp/perm_ings_s13{a,b,c}/.
+
+- [s13] Floor unchanged at 3. candidate.c re-measured `sandbox --disable all` = 3 at the start of the session on a clean tree and 3 again at the end, after all campaigns were stopped and src/ings.c restored.
+
+- [s13] Three campaigns, 98,604 total permuter iterations, 16 distinct finds, ZERO engine-scored improvements on either chassis. s13a (V1, loop 2 fenced): 25,905 iters, 2 finds, best engine 4. s13c (V1, no fences): 27,827 iters, 7 finds, best genuine engine 4. s13b (symmetric chassis, no fences): 44,872 iters, 8 finds, best engine 4 = its own floor.
+
+- [s13] THE PERM-SCORE / ENGINE-DISTANCE ANTI-CORRELATION IS NOW A HARD, THRICE-MEASURED FACT ON THIS FUNCTION. On s13b the permuter's best find (perm 220, ninety points better than base) re-scores to engine 5, while the two cells that actually tie the chassis floor at engine 4 sit at perm 310 = exactly the base score. Mechanism: the residual here is 2-3 register-IDENTITY differences, which the permuter's weighted metric (regs x5) prices far below the instruction reorderings (x60) it will happily trade them for. Any future campaign on this function MUST re-score every output with `sandbox --disable all`; the permuter's own ranking is worse than useless here.
+
+- [s13] The unfenced campaign (s13c) is the affirmative closure of loop 2's preheader against MACHINE search, complementing s11's 47 hand cells and s12's 23 symmetric-chassis cells: with the randomizer free to mutate the preheader jointly with every other region, the engine-score distribution (3, 4, 5, 7, 9, 11, 12) is monotone in perm score with no outlier below the base.
+
+- [s13] Campaign hygiene: all three campaigns were launched through tools/permuter_campaign.py (telemetry to metrics/events.jsonl), waited on IN-TURN via `permuter_campaign.py wait` (one blocking ~9-min call per window, never hand-polled across turns), and `harvest --stop`ed before this outcome was written. `permuter_campaign.py status` reports both surviving pids dead and `pgrep -af permuter.py` is empty - no campaign outlives the session.
+
+- [s13] s13a was reseeded rather than simmered: after 12 minutes with no novel find it was harvested with --stop and the fresh seed (s13c) was a structurally DIFFERENT chassis (fences removed), per the fresh-seed discipline in .claude/rules/permuter-directives.md.
+
+- [s13] Banked: rejected/s13_permuter_wholefn_best_find_costs_4.c (s13c's best genuine find) and rejected/s13_permuter_symmetric_best_perm_score_costs_5.c (s13b's perm-score champion, engine 5 - the anti-correlation exhibit). src/ings.c is left clean at HEAD; only memory/grind/ ledger files are modified.
+
+- [s13] What this closes for the ladder: the frontier item 'a fresh-seed permuter campaign anchored on the V1 chassis is the highest-yield remaining modality', carried unchanged by s10, s11 and s12, is now SPENT - on both chassis the ledger names, with and without the loop-2 fence. Automated breadth is no longer an untried modality on this function.
