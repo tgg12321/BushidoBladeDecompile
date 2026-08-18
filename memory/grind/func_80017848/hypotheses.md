@@ -758,3 +758,129 @@ and in BOTH loops.  Verdict: KILLED (asymmetric and swapped assignments).
 - probe: A_preuse, D_walkptr, E_countlocal, U8_l1_condfresh, Y3_condassign, C_twobases - all scored from a clean tree against the then-current best.
 - result: A = 14, D = 45, E = 32, U8 = 21, Y3 = 29, C = 11 (a pure rename with no effect). Every loop-shape change loses. The session's three wins were read-routing and variable-reuse levers inside the existing shape, not loop shape.
 - verdict: KILLED
+
+## Session 9 (2026-08-18, rederive) — floor 5 -> 3
+
+### H-s9-1  CONFIRMED — the dead preheader copy survives COMBINE; it is not created after it
+Statement: target's `addu a3,a0,zero` / `addu a0,a1,a3` preheader pair is a copy that
+existed at combine time and that combine.c was FORBIDDEN to delete, not an artifact
+manufactured by local-alloc / global-alloc / reload as s6, s7 and s8 concluded.
+Mechanism: `can_combine_p` refuses to combine I2 into I3 when I2's destination is used
+after I3. cse.c folds a redundant `*(u8 **)(ctx + 0xC)` read in the preheader into a
+plain reg-reg copy of the guard's pointer; give that copy's destination a second use
+downstream of the base add and combine cannot substitute it away. The addend then loses
+its REG_DEAD note at the base add, so local-alloc's tie-output-to-a-dying-input path
+does not fire and the base stops collapsing into the addend's own hard register.
+Probe: variant R2_q_live_past_base — `q = *(u8**)(ctx+0xC); base = (u8*)(sh + (s32)q);
+... ; p = q;` in loop 1, scored with the engine and disassembled.
+Result: loop 1's preheader became byte-exact with target for the first time in nine
+sessions (both instructions, both register numbers). Score 5 -> 6 in isolation (the tail
+`p = q` costs 2), then 6 -> 4 -> 3 once E-s9-3 and E-s9-2's `sh2` were stacked.
+Verdict: CONFIRMED.
+
+### H-s9-2  KILLED — s8's frontier prediction that the shift should be shared by the two GUARDS and recomputed for loop 2's BASE
+Statement: decoupling the shared `sh` so both guards use it while loop 2's base
+recomputes `(slot_a << 6)` inline would recover target's `sll a1,s4,6` without losing
+loop 1's links register.
+Mechanism: the two effects were believed coupled only because one local fed all four
+sites.
+Probe: the complete 16-cell sweep of {loop1 guard, loop1 base, loop2 guard, loop2 base}
+x {sh, inline} — s9/v/M0000.c .. M1111.c, one batched score.sh call.
+Result: the score depends ONLY on loop 2's pair; loop 1's two sites are exactly neutral
+in all four combinations. (L2G,L2B) = (1,0) — the predicted cell — is 31, the worst
+value in the space. (1,1) = 5, (0,0) = (0,1) = 6.
+Verdict: KILLED. The correct spelling is a SECOND shift local `sh2` covering both of
+loop 2's sites (V1 = 3); guard-only = 5 and base-only = 7.
+
+### H-s9-3  KILLED — a source-level `r = p;` copy can give loop 2 the same copy loop 1 now has
+Statement: writing the copy explicitly in C, with a second use, should reproduce for
+loop 2 what the cse-folded redundant load reproduces for loop 1.
+Mechanism: same can_combine_p survival condition as H-s9-1.
+Probe: W1 (copy before loop 2's guard, guard+base both read r), W2 (copy in the
+preheader, `p = r` tail), W3 (copy in the preheader, no second use).
+Result: 8 / 8 / 8 — all five points worse than V1's 3. cse registers p and r as
+equivalent and flow.c dead-store-eliminates the `p = r` tail before combine runs, so r
+is back to a single use and the copy is deleted exactly as before.
+Verdict: KILLED. The copy must be MANUFACTURED BY cse FROM A REDUNDANT LOAD, and its
+second use must feed a variable that is genuinely live afterwards.
+
+### H-s9-4  KILLED — loop 2's base addend can get its required second use from the function tail
+Statement: routing one of the tail's three ctx+0xC reads through the loop-2 base addend
+local would supply the missing downstream use.
+Mechanism: same as H-s9-1; any live use after loop 2's base add suffices.
+Probe: T1 / T3 / T4 (math_Distance3D's two arguments taken from the live local),
+plus T2 / T5 (base addend = `p`, tail left as fresh reads).
+Result: 22 / 22 / 22 and 8 / 8, versus V1's 3. Target emits `lw a1,12(s2)` for
+math_Distance3D and `lw v0,12(s2)` twice more for rec_a / rec_b (s9/T.txt:77, 94, 104);
+every one of those disappears when a live local is substituted, and the register
+pressure change cascades through the whole tail.
+Verdict: KILLED. Loop 2 has no post-loop second-use site.
+
+### H-s9-5  KILLED — loop 2's base can borrow loop 1's already-live `q` if `q` is pre-initialised before loop 1's guard
+Statement: pre-initialising `q` makes it legal on the loop-1-skipped path, so loop 2's
+base could read it and inherit loop 1's liveness.
+Mechanism: *(ctx+0xC) is never written by this function, so all reads of it are the
+same value and the substitution is semantically sound.
+Probe: X1 (pre-init by copy), X3 (pre-init by its own read), X2 / X4 (same, with the
+loop-1 tail restored to a fresh read).
+Result: 14 / 14 / 13 / 13 versus V1's 3.
+Verdict: KILLED.
+
+### H-s9-6  CONFIRMED — the links pointer wants its own local, positioned between the addend read and the base assignment
+Statement: an explicit `lnk = *(u8 **)(ctx + 0x10);` local fixes `lw a2,16(s2)`'s
+position relative to the copy/base pair.
+Probe: S1 (lnk read after the `q` read, before `base = ...`) vs S2 (lnk read first).
+Result: S1 = 4, S2 = 6. Purely positional; the whole 2-point gain is in the ordering.
+Verdict: CONFIRMED. Note s7 had killed the links local outright (X1/X2/X3 = 12/10/7 on
+the s8 chassis) — the fourth banked chassis inversion on this function.
+
+### H-s9-7  CONFIRMED — symmetric per-loop locals are neutral, shared locals are catastrophic
+Statement: s8's "t-reuse costs 26 on loop 2" was a property of SHARING the `t` local,
+not of the lever.
+Probe: P1 (loop 2 t-reuse through the same `t`) vs P2 (loop 2 t-reuse through its own
+`t2`); W4 (full loop-2 mirror of loop 1's preheader on the V1 chassis).
+Result: P1 = 31, P2 = 5 (exactly neutral), W4 = 3 (exactly neutral).
+Verdict: CONFIRMED — every "loop 2 mirror costs N" entry in the s8 bank must be re-read
+as "SHARED-LOCAL loop 2 mirror costs N".
+
+## [s9] Target's `addu a3,a0,zero` / `addu a0,a1,a3` preheader pair is a copy that existed at combine time and that combine.c was forbidden to delete, not an artifact manufactured by local-alloc / global-alloc / reload as s6, s7 and s8 concluded.
+- mechanism: combine.c's can_combine_p refuses to combine I2 into I3 when I2's destination register is still used after I3. cse.c folds a redundant `*(u8 **)(ctx + 0xC)` read in the preheader into a plain reg-reg copy of the guard's pointer; giving that copy's destination a second use downstream of the base add makes combine unable to substitute it away. The addend then loses its REG_DEAD note at the base add (visible as `(expr_list:REG_DEAD (reg/v:SI 78))` on insn 85 of the .lreg dump), so local-alloc's block_alloc/combine_regs tie-output-to-a-dying-input path does not fire and the base stops collapsing into the addend's own hard register.
+- probe: Variant R2_q_live_past_base: `q = *(u8**)(ctx+0xC); base = (u8*)(sh + (s32)q); ... ; p = q;` in loop 1, scored with engine sandbox --disable all and disassembled against the normalised target.
+- result: Loop 1's preheader became byte-exact with target (both instructions, both register numbers - `addu a3,a0,zero` then `addu a0,a1,a3`). Score 5 -> 6 in isolation because the tail `p = q` costs 2, then 6 -> 4 -> 3 once the links local and the second shift local were stacked.
+- verdict: CONFIRMED
+
+## [s9] s8's frontier prediction that the shift should be shared by the two GUARDS and recomputed for loop 2's BASE recovers target's `sll a1,s4,6` without losing loop 1's links register.
+- mechanism: The two effects were believed coupled only because one `sh` local fed all four sites (loop1 guard, loop1 base, loop2 guard, loop2 base).
+- probe: The complete 16-cell sweep of those four sites x {shared `sh`, inline `(slot_a << 6)`} - variants M0000..M1111, one batched score.sh call.
+- result: Score depends ONLY on loop 2's pair; loop 1's two sites are exactly codegen-neutral in all four combinations. The predicted cell (L2G=sh, L2B=inline) is 31 - the worst value in the whole space. (1,1)=5, (0,0)=6, (0,1)=6.
+- verdict: KILLED
+
+## [s9] A source-level `r = p;` copy can give loop 2 the same surviving copy loop 1 now has.
+- mechanism: Same can_combine_p survival condition as the confirmed hypothesis above.
+- probe: W1 (copy before loop 2's guard, guard+base both read r), W2 (copy in the preheader with a `p = r` tail), W3 (copy in the preheader, no second use).
+- result: 8 / 8 / 8 - all five points worse than V1's 3. cse registers p and r as equivalent and flow.c dead-store-eliminates the `p = r` tail before combine runs, so r is back to a single use and the copy is deleted exactly as before.
+- verdict: KILLED
+
+## [s9] Loop 2's base addend can get its required downstream second use from one of the function tail's three ctx+0xC reads.
+- mechanism: Any live use after loop 2's base add would remove the REG_DEAD note and preserve the copy.
+- probe: T1 / T3 / T4 (math_Distance3D's two arguments taken from the live local) plus T2 / T5 (loop-2 base addend = `p`, tail left as fresh reads).
+- result: 22 / 22 / 22 and 8 / 8, versus V1's 3. Target emits `lw a1,12(s2)` for math_Distance3D and `lw v0,12(s2)` twice more for rec_a / rec_b; each disappears when a live local is substituted and the register-pressure change cascades through the whole tail.
+- verdict: KILLED
+
+## [s9] Loop 2's base can borrow loop 1's already-live `q` if `q` is pre-initialised before loop 1's guard (legal because this function never writes *(ctx+0xC), so all reads of it are the same value).
+- mechanism: Pre-initialisation makes `q` defined on the loop-1-skipped path, so loop 2's base could read it and inherit loop 1's liveness for free.
+- probe: X1 (pre-init by copy), X3 (pre-init by its own read), X2 / X4 (same two, with the loop-1 tail restored to a fresh read).
+- result: 14 / 14 / 13 / 13 versus V1's 3.
+- verdict: KILLED
+
+## [s9] An explicit links-pointer local `lnk = *(u8 **)(ctx + 0x10);` is dead on this function (s7's X1/X2/X3 kill).
+- mechanism: s7 measured the links local at 12/10/7 on its own chassis and banked it as closed.
+- probe: S1 (lnk read after the `q` read and before `base = ...`) vs S2 (lnk read first), both on the R2 chassis.
+- result: S1 = 4, S2 = 6, R2 = 6. The local is worth 2 points and the entire gain is POSITIONAL - it fixes `lw a2,16(s2)`'s placement between the copy and the base add. s7's kill is inverted; this is the fourth banked chassis inversion on this function.
+- verdict: KILLED
+
+## [s9] s8's bank that mirroring loop 1's guard-address/count-reuse lever onto loop 2 costs 26-31 points is a property of the lever.
+- mechanism: s8 measured P_treuse_both and R_treuse_l2 and concluded the lever was loop-1-specific.
+- probe: P1 (loop 2 t-reuse through the SAME `t` local) vs P2 (loop 2 t-reuse through its own `t2`), plus W4 (full loop-2 mirror of loop 1's preheader: own read, own links local, own tail copy) on the V1 chassis.
+- result: P1 = 31 but P2 = 5 (exactly neutral) and W4 = 3 (exactly neutral). The cost was entirely due to SHARING the local, not to the lever.
+- verdict: KILLED

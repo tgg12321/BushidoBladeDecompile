@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 5,
    "modality": "rederive",
    "headline": "Floor 11 -> 5: three stacked levers (per-loop fresh read for the base addend; loop-1 guard-address/count sharing ONE local, which invalidates cse's hash entry and stops the base folding to a copy; one"
+  },
+  {
+   "session": 9,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Floor 5 -> 3: target's long-unexplained dead preheader copy is a COMBINE-SURVIVAL artifact (can_combine_p refuses when the copy's dest is used after the base add), not the post-combine allocator artif"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The dead preheader copy (`addu a3,a0,zero`, once per scan loop) is emitted by a pass that runs AFTER combine.c - local-alloc.c, global-alloc.c or reload - and is therefore invisible to every source-level copy or read-placement lever tried so far.",
-   "mechanism": "s6 proved combine deletes any copy it can see, and s8 re-confirmed that on the current chassis (W1 = 11) and eliminated loop.c by reading its only two preheader-copy emitters (the `m->move_insn` REG_EQUIV/CONSTANT path and the `m->partial && m->match` zero-extension combiner). A copy that survives to the final assembly and that combine never removed must therefore be created after combine. In target the copy's destination a3 is read once by the next insn and never again, and the base's destination a0 is the SAME hard register the addend arrived in - the signature of an allocator/reload artifact rather than a written copy.",
-   "next_probe": "Generate the -da dumps for the s8 Z1 candidate into tmp/grind/func_80017848/s8/O2/ (the s7 dump.sh shows the recipe) and read ings_pp.c.lreg, .greg and .postreload in that order, looking for where target's shape would need a copy that ours does not: specifically whether our base pseudo is allocated the same hard reg as its addend (which makes the copy unnecessary) and what would have to be true of the addend's live range for local-alloc's `block_alloc`/`combine_regs` tie-to-a-dying-input to fail. Do NOT re-open loop.c, a source-level copy statement, addend re-routing, or read placement in the guard block - all four are killed with measurements this session."
+   "hypothesis": "Loop 2's missing copy needs a downstream second use of its base addend, and the only remaining candidate sites are INSIDE loop 2's own if-block, after the do/while - i.e. a statement that target also contains but that we currently spell as a fresh read.",
+   "mechanism": "Confirmed this session: the copy survives combine iff its destination has a use reached from the base add (H-s9-1). Loop 1 gets this from `p = q` at its exit tail, whose consumer is loop 2's guard. Loop 2 has no consumer after it because all three of target's remaining ctx+0xC reads (math_Distance3D at T.txt:77, rec_a at :94, rec_b at :104) are emitted as fresh `lw`s and routing any of them through a live local costs 19 points (T1/T3/T4 = 22). The open question is whether some OTHER value - the links pointer, the loop counter, or `base` itself - can carry the liveness instead of the pointer.",
+   "next_probe": "On the V1 chassis, sweep second-use carriers for loop 2's base addend that are NOT the ctx+0xC pointer: (a) make loop 2's do/while condition read the count through the addend local rather than through `base`; (b) give the loop-2 links local `lnk2` a post-loop use and derive the base addend from it; (c) assign the addend into the still-live `slots` or `t` local after loop 2 rather than into a fresh dead one (flow.c will not DSE a store to a variable that is read later). Score all of them in one score.sh batch and disassemble anything at 2 or below. Do NOT re-try a source-level `r = p` copy (W1/W2/W3 = 8, killed) or any post-loop-2 use of the pointer in the tail (T family = 22, killed)."
   },
   {
-   "hypothesis": "Loop 2's remaining `sll a1,s4,6` can be recovered without losing the point that sharing `sh` across both loops buys, by making the shift's live range end at loop 2's guard rather than at loop 2's base.",
-   "mechanism": "Sharing one `sh` local across both loops fixed loop 1's links register (a1 -> a2) and is worth 1 point, but it also lets GCC keep the single `sll` live into loop 2 instead of recomputing it there, costing loop 2's `sll`. The two effects are currently coupled because the same local feeds loop 1's guard, loop 1's base, loop 2's guard and loop 2's base. Decoupling them means finding a spelling where the shift is shared by the two GUARDS but recomputed for loop 2's BASE - the two crude decouplings already tried (Z5 reassigns `sh` before loop 2; Z7 uses two shift locals) both lose more than they gain.",
-   "next_probe": "On the Z1 chassis, sweep the four-way assignment of `sh` vs an inline `(slot_a << 6)` across {loop1 guard, loop1 base, loop2 guard, loop2 base} - 16 bodies, all scorable in one s8/score.sh call - and read the disassembly of any that reaches 4 or below. Z1 (all four through `sh`) = 5, Z4 (loop 1 only) = 6 and Z7 (two locals) = 11 are already measured and are three of the sixteen."
+   "hypothesis": "Loop 1's exit tail can emit target's `lw a0,12(s2)` while still supplying loop 1's copy with its second use, if the second use is moved off the tail assignment.",
+   "mechanism": "Right now the single statement `p = q;` does double duty: it is q's second use (which buys loop 1's copy, worth 2) and it is the loop-1 exit tail (where target has a fresh re-read, costing 2 because we emit `addu a0,a3,zero` instead of `lw a0,12(s2)`). If some other statement supplied q's second use, the tail could go back to `p = *(u8**)(ctx+0xC);` and the net would be 3 -> 2. The constraint is that the second use must be reached from loop 1's base add and must not itself materialise an instruction target lacks.",
+   "next_probe": "On the V1 chassis, try second uses for `q` that are absorbed into instructions target already has: q as the base of loop 1's do/while count reload (`while (i < *(s32 *)(sh + (s32)q + 0x1C))` - target uses `lw v0,28(a0)` off `base`, so this will likely cost an add; measure it), and q as the addend of the loop-1 body's element read. Also measure whether loop 1's copy and loop 2's copy can be bought by the SAME second use by making loop 2's base addend `q` under a pre-initialisation spelling other than X1/X3 (both = 14, killed)."
   },
   {
-   "hypothesis": "Every remaining banked spelling conclusion - now including s8's own - is chassis-relative and must be re-measured before it is spent, because the chassis has changed in EVERY session since s5.",
-   "mechanism": "s6 retired the s3/s4/s5 chassis as semantically divergent; s7 found s6's fold-defeat lever inverted in sign on the corrected chassis; s8 found TWO of s7's kills (the `slots` addend and the explicit shift local) inverted on the s7 chassis itself, worth 2 and 1 points respectively in the direction s7 had ruled out. The pattern is now three sessions deep and is the single most reliable source of free points on this function. What survives chassis changes untouched is only the pass-level kills, because those are RTL facts rather than score comparisons: H-s6-2, H-s6-3, H-s7-3..H-s7-6, s8's loop.c elimination, and s8's re-confirmed source-level-copy kill.",
-   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against the s8 Z1 candidate with s8/score.sh. The highest-value re-runs are the s7 kills that were never retested on a later chassis: variant Y1/Y2 (the links local's position - s8's X1/X2/X3 retested this on the Q chassis and got 12/10/7, all worse, so this one is now closed), and the s3-era conclusions about base placement and guard/base role swapping, which have not been retested since s6 retired their chassis."
+   "hypothesis": "Every remaining banked spelling conclusion is chassis-relative and must be re-measured before it is spent - the chassis has now changed in EVERY session since s5, and s9 inverted three more s7/s8 kills.",
+   "mechanism": "s9 inverted: s7's links-local kill (X1/X2/X3), now worth 2 points; s8's frontier prediction about the shift's four-way assignment, which turned out to be the worst cell in its own space; and s8's 'loop-2 mirror costs 26-31', which was a shared-local artifact and is exactly neutral with per-loop locals. What survives chassis changes untouched is only the pass-level facts, because those are RTL facts rather than score comparisons: H-s6-2, H-s6-3, H-s7-3..H-s7-6, s8's loop.c elimination, and now H-s9-1 (the can_combine_p survival condition) and H-s9-3 (cse+flow kill a source-level copy before combine).",
+   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against V1 with tmp/grind/func_80017848/s9/score.sh. The highest-value untested-on-this-chassis items are the s3-era conclusions about base placement and guard/base role swapping (never retested since s6 retired their chassis) and s8's Z3_swapbase. Note s8's 'per-loop fresh read for the base addend' is now known to be a TIE with `p` (N_P_SF = N_F_SF = 5), not a win, so it is free to change if something else wants it."
   }
  ],
  "judge_constraints": [],

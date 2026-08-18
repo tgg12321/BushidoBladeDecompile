@@ -947,3 +947,126 @@ is inert at best.
 - [s8] THE DEAD PREHEADER COPY IS NARROWED TO ONE SUSPECT REGION. Four routes are now dead: a source-level copy statement (W1 = 11, re-confirming s6 on the current chassis); the redundant read placed in the guard block so the copy would land in a combine-unreachable block (ZB emits code byte-identical to Z1 - the read is folded away and no copy is ever created); every addend re-routing (`p` U2 = 11, `slots` U3 = 11 / U4 = 9, a named preheader intermediate I/J8 = 9, the base written inside the loop body F/U6 = no change); and loop.c as the emitter, eliminated by source reading. What remains is local-alloc.c, global-alloc.c and reload - passes that run after combine and whose output combine never sees.
 
 - [s8] Harness for the next session: tmp/grind/func_80017848/s8/score.sh scores a whole LIST of candidate bodies from a clean tree in ONE blocking call (write the bodies to s8/v/ first); s8/ad.sh applies one body and prints the normalized target-vs-build disassembly diff; s8/dis2.sh + s8/norm.py are inherited unchanged from s7. src/ings.c was left at HEAD - every measurement reverts it - and no permuter campaign was launched or left running.
+
+## Session 9 (2026-08-18, rederive) — floor 5 -> 3; the dead preheader copy is EXPLAINED and REPRODUCED
+
+### E-s9-1 (CONFIRMED, decisive). The dead preheader copy is a COMBINE-SURVIVAL artifact, not a post-combine (allocator/reload) artifact. s6/s7/s8's pass-level conclusion is REFUTED.
+Sessions s6, s7 and s8 all concluded that target's `addu a3,a0,zero` / `addu a0,a1,a3`
+preheader pair had to be created by a pass running AFTER combine.c (local-alloc,
+global-alloc or reload), on the reasoning that "combine deletes any copy it can see"
+and that a copy surviving to final assembly therefore cannot have existed at combine
+time. That reasoning is wrong in one specific way, and the correction is worth 2 points
+per loop.
+
+combine.c does not delete every copy it sees. `can_combine_p` refuses to combine an
+insn I2 into I3 when I2's destination register is still USED AFTER I3. A copy insn
+`q = p` feeding `base = sh + q` is therefore deleted only when `q` has exactly that one
+downstream use. Give `q` a SECOND use that is reached from the base add, and combine
+cannot substitute, the copy survives to assembly, and — critically — the addend pseudo
+no longer carries REG_DEAD at the base add, so local-alloc's tie-the-output-to-a-dying-
+input path (`combine_regs` in block_alloc) does not fire and the base does NOT collapse
+into the addend's own hard register.
+
+Reproduced and measured: variant `R2_q_live_past_base` (s9/v/R2_q_live_past_base.c),
+loop 1 only:
+
+    q   = *(u8 **)(ctx + 0xC);      /* cse folds the redundant load to `q = p` */
+    base = (u8 *)(sh + (s32)q);
+    ... do { ... } while (...);
+    p = q;                          /* THE SECOND USE */
+
+emits, in loop 1's preheader, `addu a3,a0,zero` followed by `addu a0,a1,a3` — target's
+exact two instructions with target's exact register numbers. Before this change the same
+preheader was the single instruction `addu a0,a1,a0`.
+
+Supporting RTL evidence (tmp/grind/func_80017848/s9/dump/F_lreg.txt, produced from the
+s8 candidate): insn 85 is `(set (reg/v:SI 79) (plus:SI (reg/v:SI 82) (reg/v:SI 78)))`
+carrying `(expr_list:REG_DEAD (reg/v:SI 78))`, and the allocno header records
+"Register 78 used 5 times across 10 insns; dies in 2 places" / "Register 79 used 10
+times across 23 insns; dies in 0 places". That REG_DEAD note on the addend at the base
+add is exactly the condition the fix removes.
+
+### E-s9-2 (CONFIRMED). The `sll` shift assignment is a two-site, not four-site, decision, and s8's frontier prediction about it is inverted.
+The full 16-way sweep of `sh` vs an inline `(slot_a << 6)` across {loop1 guard, loop1
+base, loop2 guard, loop2 base} was run in one batch (s9/v/M0000.c .. M1111.c). Scores
+depend ONLY on the loop-2 pair; both loop-1 sites are exactly codegen-neutral:
+
+    (L2G,L2B) = (0,0) -> 6      (0,1) -> 6      (1,0) -> 31     (1,1) -> 5
+
+for every one of the four settings of (L1G,L1B). s8's frontier item #2 predicted that
+the shift wanted to be shared by the two GUARDS and recomputed for loop 2's BASE; that
+is (L2G,L2B) = (1,0) = 31, the worst cell in the entire space. KILLED.
+
+The correct decoupling, found later in the session, is a SECOND shift local `sh2` for
+loop 2 covering BOTH of loop 2's sites (variant V1, 4 -> 3). Guard-only (V2) = 5 and
+base-only (V3) = 7; the two sites must move together.
+
+### E-s9-3 (CONFIRMED). The links pointer wants its own local, read BETWEEN the addend read and the base assignment.
+`lnk = *(u8 **)(ctx + 0x10);` placed between `q = *(u8 **)(ctx + 0xC);` and
+`base = ...` is worth 2 points (R2 = 6 -> S1 = 4); the same local read BEFORE the `q`
+read (S2) is 6, i.e. the whole gain is positional. This fixes the position of
+`lw a2,16(s2)` relative to the copy/base pair (target: copy, lw a2, base add).
+s7 killed the links local outright (its variants X1/X2/X3 = 12/10/7 on the s8 Q
+chassis). This is now the FOURTH banked instance of a spelling conclusion inverting
+when the chassis changed.
+
+### E-s9-4 (CONFIRMED). Symmetric loop-2 shapes are neutral, not harmful, once each loop owns its own locals.
+`t2` as a separate guard-address/count local for loop 2 (mirroring loop 1's s8 lever)
+is exactly neutral (P2 = 5 on the s8 chassis); the same lever spelled with the SHARED
+`t` local is 31 (P1). s8 had banked "t-reuse on loop 2 costs 26" from the shared-local
+spelling only. The full loop-2 mirror of loop 1's preheader (own `r` read, own `lnk2`
+local, tail `p = r`) is likewise neutral at 3 (W4) on the V1 chassis.
+
+### E-s9-5 (KILLED, expensive). Every post-loop-2 use site for a live pointer local is fatal.
+Target re-reads ctx+0xC three more times in the tail (`lw a1,12(s2)` for
+math_Distance3D, and `lw v0,12(s2)` twice for rec_a / rec_b — see s9/T.txt:77, 94, 104).
+Routing math_Distance3D's two arguments through a live local so that loop 2's base
+addend gains a downstream use costs 19 points (T1 = T3 = T4 = 22 vs V1 = 3). Loop 2
+therefore has NO available second-use site after its own do/while, which is precisely
+why loop 2 still lacks the copy that loop 1 now has.
+
+### E-s9-6 (KILLED). A source-level `r = p;` copy for loop 2 does not survive, in any of the three placements tried.
+`r = p` before loop 2's guard with guard+base both reading r (W1) = 8; `r = p` in loop
+2's preheader with a `p = r` tail (W2) = 8; `r = p` in the preheader with no second use
+(W3) = 8. All three are 5 points worse than V1. The reason is cse: cse.c registers p
+and r as equivalent and the later `p = r` is dead-store-eliminated by flow.c BEFORE
+combine ever runs, so r is back down to one use. Loop 1's copy works only because the
+copy is manufactured by cse FOLDING A REDUNDANT LOAD (`q = *(u8**)(ctx+0xC)` -> `q = p`)
+rather than being written as a copy in the source, and because its second use (`p = q`)
+feeds a variable that is genuinely live afterwards (loop 2's guard).
+
+### E-s9-7 (KILLED). Pre-initialising `q` before loop 1's guard so that loop 2's base may legally read it costs 11.
+X1 (q pre-initialised by a copy) = 14, X3 (q pre-initialised by its own read) = 14, and
+the tail-fresh-read variants X2/X4 = 13. This closes the one route by which loop 2's
+base addend could have borrowed loop 1's already-live `q`.
+
+### E-s9-8 (CONFIRMED). Loop-1 base addend `p` vs a fresh re-read is neutral on the s8 chassis; `slots` is not.
+N_P_SF = N_F_SF = 5; N_L_SF (the top-guard `slots` local) = 15. s7's conclusion that the
+addend should be sourced from `slots` remains dead, and s8's fresh-read conclusion is
+confirmed but is now known to be a tie rather than a win.
+
+- [s9] Floor 5 -> 3. Best form is variant V1_sh2_both, saved to memory/grind/func_80017848/candidate.c.
+
+- [s9] Loop 1's preheader is now BYTE-EXACT with target, including the dead reg-reg copy `addu a3,a0,zero` that sessions 6, 7 and 8 all failed to produce and declared invisible to source-level levers.
+
+- [s9] MECHANISM (the session's central result): combine.c does NOT delete every copy it can see. can_combine_p refuses when the copy's destination is used AFTER the insn being combined into. A cse-folded redundant load `q = *(u8**)(ctx+0xC)` becomes a plain copy `q = p`; adding a second downstream use of q (`p = q` at loop 1's exit tail, feeding loop 2's guard) makes the copy survive combine, removes the addend's REG_DEAD note at the base add, and stops local-alloc tying the base into the addend's hard register.
+
+- [s9] RTL evidence: tmp/grind/func_80017848/s9/dump/F_lreg.txt insn 85 is `(set (reg/v:SI 79) (plus:SI (reg/v:SI 82) (reg/v:SI 78)))` with `(expr_list:REG_DEAD (reg/v:SI 78))`; the allocno header reads `Register 78 used 5 times across 10 insns; dies in 2 places` and `Register 79 used 10 times across 23 insns; dies in 0 places`.
+
+- [s9] The copy CANNOT be written as a source-level copy: cse equates the two names and flow.c dead-store-eliminates the second use before combine runs (W1/W2/W3 all = 8). It must be manufactured by cse from a REDUNDANT LOAD, and its second use must feed a variable that is genuinely live afterwards.
+
+- [s9] The 16-cell shift-assignment sweep (M0000..M1111) shows the score depends only on loop 2's guard/base pair; both loop-1 sites are exactly codegen-neutral. (L2G,L2B): (1,1)=5, (0,0)=6, (0,1)=6, (1,0)=31.
+
+- [s9] The correct shift decoupling is a SECOND shift local `sh2 = slot_a << 6;` recomputed immediately before loop 2's guard and used by BOTH of loop 2's sites (V1 = 3). Guard-only (V2) = 5, base-only (V3) = 7 - the two sites must move together.
+
+- [s9] The links local is positional: read after the addend read and before the base assignment = 4; read first = 6.
+
+- [s9] Loop-1 base addend `p` and a fresh re-read are exactly tied at 5 on the s8 chassis (N_P_SF = N_F_SF = 5); the top-guard `slots` local is 15. s7's `slots` conclusion stays dead; s8's fresh-read conclusion is confirmed but is a tie, not a win.
+
+- [s9] The residual 3 instructions are: loop-1 exit tail, target `lw a0,12(s2)` vs ours `addu a0,a3,zero`; loop-2 preheader, target `addu a3,a0,zero` vs ours `lw v0,12(s2)`; and target `addu a0,a1,a3` vs ours `addu a0,a1,v0`.
+
+- [s9] Those 3 are ONE missing fact, not three: loop 2 needs the same cse-folded copy loop 1 now has, which needs a downstream second use, and every second-use site available after loop 2 was measured this session (T/W/X families) and is fatal because target re-reads ctx+0xC freshly three more times in the tail (s9/T.txt lines 77, 94, 104).
+
+- [s9] Symmetric per-loop locals are free; shared locals are catastrophic. s8's 'loop 2 mirror costs 26/31' entries must be re-read as 'SHARED-LOCAL loop 2 mirror costs 26/31' - with its own `t2` the same lever is exactly neutral (P2 = 5), and the full loop-2 mirror is exactly neutral on the V1 chassis (W4 = 3).
+
+- [s9] 11 new disproven forms banked to memory/grind/func_80017848/rejected/ (51 total).
