@@ -5721,3 +5721,23 @@ FUNCTION ONLY — volatile u32 pad2[2]; trailing, FAKE-annotated, engine allowli
 function claiming a trailing pad needs a fresh ruling. Executed same day: both pads respelled
 volatile u32 + FAKE from HEAD's unauthorized volatile s32 forms, byte-neutrality
 oracle-verified, sandbox --disable all == 0, layer-2 review, queue done.
+
+
+## 2026-08-18 — WORKFLOW — **OWNER RULING: user-escalation/approval REMOVED; Judge is the sole gate; borderline ledger established**
+
+Owner (Trenton), verbatim: *"I want to remove the concept of a user-escalation/approval. Our
+workflow should be mature enough now that we can prevent anything egregious from slipping
+through by relying on the Judge to reject anything that isnt SOTN standard. Anything borderline
+can be logged somewhere that we can evaluate later down the line, but i dont want work to just
+pile up or be 'parked' pending my decisions anymore."*
+
+Full ruling text: `.claude/rules/judge-sole-gate.md` (this commit). Summary: (1) no
+pending-owner states anywhere — "pending owner ruling" parks and "awaiting owner ruling"
+filings are retired; (2) the default-FAIL Judge (frozen static policy, read-only) is the sole
+acceptance gate for autonomous work; (3) canonical-asm authorization is pipeline-executed on
+STRONG S1/S2/S6 evidence + Judge PASS (driver writes inline_asm_canonical.txt, logs the grant);
+(4) the frozen SOTN family list stays OWNER-ONLY to extend — extension candidates are logged to
+`docs/grind/borderline.md` and refused under the current list, never waited on; (5) reviewer
+NEEDS_USER maps to FAIL + borderline-ledger entry. The standards themselves are unchanged and
+permanent: no cheats, SOTN standard, 100% C or hard evidence for inline asm. Pre-existing
+"awaiting owner ruling" filings re-process under this ruling as next touched.
