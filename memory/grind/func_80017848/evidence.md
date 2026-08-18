@@ -794,3 +794,120 @@ it is the only remaining source of the 2-instruction shortfall.
 - [s6] [s6] Reusable forensics harness banked in tmp/grind/func_80017848/s6/: dump.sh regenerates the full cc1 -da set for whatever is in src/ings.c; probe.sh <body.c> <tag> does the same for an arbitrary body WITHOUT touching src/ings.c; dump/slice.sh <pass> slices a dump to the func_80017848 region; dump/flat.py collapses each RTL insn onto one line (a 640-line region becomes 156 readable lines — this is what made the dumps affordable to read, and every future forensics session should start there); dis.sh writes build.txt/target.txt and diffs them; score.sh <bodies...> scores a list of bodies from a clean tree.
 
 - [s6] [s6] No permuter campaign was launched this session and none was left running. The instrumented-cc1 caveat did not bite: plain -da dumps come from tools/gcc-2.7.2/build/cc1, the same binary the Makefile uses.
+
+## s7 (2026-08-18) - forensics modality (the cse-fold lever, spent on the corrected chassis)
+
+Starting point: s6's candidate B re-applied from a clean tree, sandbox `--disable all`
+re-confirmed at **14** / 125 build insns.  Floor at end of session: **11** / 125 build
+insns.  First floor movement in three sessions and the largest single-session drop this
+function has had since s3.
+
+### E-s7-1. CONFIRMED: the missing pointer reload is a SOURCE-LEVEL reload in loop 1's EXIT TAIL, and it reproduces target's skip-past-the-reload branch exactly.
+Target's loop-1 entry guard is `blez v0,.L8001791C` at `0x800178C8`, and `.L8001791C`
+(`0x8001791C`) is instruction index 53 of the function - i.e. the branch skips BOTH
+`lw a0,0xC(s2)` and `sll a1,s4,6` (indices 51/52, loop 1's exit tail) and lands on
+`addu v0,a1,a0`, the second insn of loop 2's guard.  That is only expressible in C if
+ONE pointer variable feeds both entry guards and is re-read in loop 1's exit tail:
+
+    p = *(u8 **)(ctx + 0xC);
+    i = 0;
+    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x1C)) {
+        ... do/while ...
+        p = *(u8 **)(ctx + 0xC);      /* <-- the exit-tail reload */
+    }
+    i = 0;
+    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x20)) { ... }
+
+Measured (variant J, `s7/v/J.c`): the build's `blez v0,1444` skips the `lw a0,12(s2)` at
+`1440` and lands on the `sll` at `1444` - target's structure, one insn narrower because
+target also carries the shift across the edge.  This is the frontier item s6 handed over
+and it is now CONFIRMED as a C-expressible property.  Semantically the reload is a no-op
+(the scan loops contain no stores), so this is plain equivalent C, not a coercion.
+
+### E-s7-2. CONFIRMED, AND IT IS THE FLOOR-MOVING FACT: (1) alone is worth NOTHING and (2) alone is worth NOTHING; together they are worth 3 instructions.
+Variant J (exit-tail reload, guards AND bases both through `p`) scores **14** at 124
+insns - one insn WORSE in body count than s6's B - because both the guard address and the
+loop base are `(plus shift p)` in the same cse extended basic block, so cse.c rewrites the
+base into a copy of the guard address (loop 1) or drops it entirely and reuses the guard's
+address register as the base (loop 2).  That is E-s6-3's fold, reproduced on the new
+chassis.  s6's fold-defeat lever (base's addend = the pre-join `slots` read) cost 1 insn on
+the OLD chassis (D/G = 15 vs B = 14) and was therefore banked as a loser.  On the corrected
+chassis it is the opposite: **variant O = the exit-tail reload + the base's addend sourced
+from `slots` scores 11 at 125 insns.**  s7/O/ings_pp.c.combine shows the fold defeated
+insn-for-insn: insn 146 `reg111 = reg110 + reg/v78` (guard, `reg/v78` = the post-join `p`)
+and insn 158 `reg/v79 = reg110 + reg/v77` (base, `reg/v77` = the pre-join `slots`), two
+independent `addsi3_internal`s.  This is a direct instance of s6's process rule 3 in the
+other direction: a lever measured on a divergent chassis was banked with the WRONG sign.
+
+### E-s7-3. The whole remaining residual is ONE instruction, appearing once per scan loop, and it is a DEAD register copy.
+Normalized target-vs-build diff (`s7/T.txt` vs `s7/B.txt`, produced by `s7/dis2.sh` +
+`s7/norm.py`) has exactly two non-register hunks left, one per loop:
+
+    target:  addu a3,a0,zero  /  lw a2,16(s2)  /  addu a0,a1,a3
+    ours:    addu a0,a1,a2    /  lw a1,16(s2)
+
+`a3` is written, read once by the very next `addu`, and never read again - in BOTH
+preheaders.  Target therefore routes the loop base's addend through a register copy of the
+pre-guard pointer that is dead immediately afterwards.  Everything else in the function is
+instruction-identical; the only other differences are register NAMES that fall out of
+keeping `slots` live (ours slots=a2 / links=a1; target slots=v1, dead after the two `>=0`
+top guards, links=a2).  125 build insns vs 127 target.
+
+### E-s7-4. KILLED: placement cannot defeat the cse fold - only the addend's live range can.
+Variant M writes the base assignment INSIDE the do-loop body (so cse1 sees it in a
+different extended basic block from the guard).  It builds byte-identically to J (124
+insns, 14): loop.c hoists the invariant into the preheader and the second cse pass folds it
+exactly as cse1 would have.  Variant N (no `base` local at all, the whole expression
+inlined in the loop) is also 14.  The fold is a property of the two expressions' addends,
+not of where the statement is written.
+
+### E-s7-5. KILLED: an explicit `shift` local carried across loop 1's guard edge.
+Target skips both the reload AND the `sll` on the skip edge, so making `slot_a << 6` an
+explicit local assigned before loop 1's guard and recomputed in the exit tail looks like
+the matching shape.  Measured: 16 on the J chassis (K), **17** on the O chassis (X).  The
+extra live pseudo costs far more than the one `sll` it saves; letting GCC recompute the
+shift at the join is correct.  The one-insn structural difference this leaves (our skip
+edge lands on the `sll`, target's one insn later) is NOT worth attacking directly.
+
+### E-s7-6. KILLED: source-level control of the preheader's lw/addu ORDER.
+Target's preheader order is copy / `lw` links / `addu` base; ours is `addu` base / `lw`
+links.  Hoisting the links read into an explicit per-loop local placed BEFORE the base
+assignment (Y1) scores 15; the same local placed AFTER (Y2) scores 11, identical to O
+without the local.  The order is a scheduling artifact, not a source order, and the local
+is inert at best.
+
+### E-s7-7. Session bookkeeping and harness.
+- No permuter campaign was launched and none was left running.
+- `s7/norm.py` + `s7/dis2.sh` replace s6's `dis.sh`: s6's sed pipeline stripped every hex
+  offset from the target side and left objdump's alias mnemonics (`move`, `nop`, `bnez`) on
+  the build side, so the two files never aligned and the diff was a whole-file rewrite.
+  `norm.py` canonicalizes both sides (aliases expanded to their real ops, offsets to
+  decimal, branch targets to `LBL`) and produces a diff that is directly readable.  Use it,
+  not s6/dis.sh.
+- `s7/score.sh <bodies...>` (inherited from s6) scores a list of bodies from a clean tree;
+  `s7/ad.sh <body>` applies one body, scores it and prints the normalized diff;
+  `s7/probe.sh <body> <tag>` drops a full cc1 `-da` dump set in `s7/<tag>/`.
+- `src/ings.c` was left at HEAD (every measurement reverts it); the candidate lives only in
+  `memory/grind/func_80017848/candidate.c`.
+
+- [s7] Floor moved 14 -> 11, the first movement in three sessions and the largest single-session drop since s3. The winning form (variant O) is banked as memory/grind/func_80017848/candidate.c and was re-verified from a clean tree (git checkout src/ings.c, re-apply, re-score) at 11.
+
+- [s7] The win required TWO facts at once, and each is worth nothing alone: (1) `p` read fresh before loop 1's entry guard and re-read ONLY in loop 1's exit tail, with both entry guards reading their count through it; (2) each loop's base built from the PRE-JOIN `slots` read instead of `p`. Fact (1) alone (variant J) is 14 at 124 insns; fact (2) alone was measured at 15 by s6 on the divergent chassis; together they are 11 at 125 insns.
+
+- [s7] Fact (1) reproduces target's control flow exactly: target's `blez` at 0x800178C8 jumps to .L8001791C = insn index 53, skipping loop 1's exit-tail `lw a0,0xC(s2)` and `sll a1,s4,6`; our build's `blez v0,1444` skips the `lw a0,12(s2)` at 1440 the same way. The reload is semantically a no-op (the scan loops contain no stores), so this is plain equivalent C, not a coercion.
+
+- [s7] Fact (2) is s6's E-s6-3 lever re-measured on the corrected chassis, where its SIGN flips: cse.c folds the loop base into a copy of the entry guard's address whenever both are `(plus shift p)` in the same extended basic block, and sourcing the base's addend from a pseudo live before the join defeats it. RTL proof in tmp/grind/func_80017848/s7/O/ings_pp.c.combine: insn 146 `reg111 = reg110 + reg/v78` (guard, post-join p) and insn 158 `reg/v79 = reg110 + reg/v77` (base, pre-join slots), two independent addsi3_internal insns.
+
+- [s7] This is the second consecutive session in which a banked spelling conclusion flipped sign after the chassis changed (s6 retired s3/s4/s5's chassis as semantically divergent; s7 finds s6's own D/G verdict inverted). The standing process rule holds: re-run a banked conclusion on the CURRENT chassis before spending it.
+
+- [s7] THE ENTIRE REMAINING RESIDUAL IS ONE INSTRUCTION APPEARING ONCE PER SCAN LOOP. Normalized target-vs-build diff (tmp/grind/func_80017848/s7/T.txt vs s7/B.txt) has exactly two non-register hunks: target `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3` against ours `addu a0,a1,a2 / lw a1,16(s2)`. In BOTH of target's preheaders a3 is written, read once by the very next addu, and never read again - a dead register copy of the pre-guard pointer.
+
+- [s7] The only other differences are register NAMES that fall out of keeping `slots` live: ours slots=a2 / links=a1; target's top-guard slots read dies after the two `>=0` guards (slots=v1) and links=a2. 125 build insns vs 127 target, frame 0x40 both sides.
+
+- [s7] s6's two pass-level kills on C-level copies still stand and were not re-tested: cse.c folds a copy when the two expressions are equal, combine.c's try_combine propagates and deletes it when they are not. In target the copy is dead after its single use in both preheaders, so it is a pass artifact of a source shape not yet found, not a written copy.
+
+- [s7] In our build the base's addend DIES at the base's own insn (REG_DEAD reg/v77 on insn 158 of s7/O/ings_pp.c.combine), which is exactly why no copy is needed. Any route to target's copy must make that addend NOT die there.
+
+- [s7] Tool-health finding: s6/dis.sh was broken - its sed pipeline stripped every hex offset from the target side and left objdump's alias mnemonics (move / nop / bnez) on the build side, so target and build never aligned and every diff was a whole-file rewrite. s7/norm.py + s7/dis2.sh canonicalize both sides (aliases expanded, offsets to decimal, branch targets to LBL) and produce a directly readable diff. Future sessions should use s7/dis2.sh, not s6/dis.sh.
+
+- [s7] No permuter campaign was launched and none was left running. src/ings.c was left at HEAD (every measurement reverts it); the candidate lives only in memory/grind/func_80017848/candidate.c.

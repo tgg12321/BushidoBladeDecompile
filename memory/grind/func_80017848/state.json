@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 14,
    "modality": "forensics",
    "headline": "The inherited 12-form is SEMANTICALLY DIVERGENT from target and can never reach 0 (proved from RTL + disassembly); honest correct floor is 14, and the -da dumps name both remaining passes: cse.c EBB f"
+  },
+  {
+   "session": 7,
+   "floor": 11,
+   "modality": "forensics",
+   "headline": "Floor 14 -> 11: the loop-1 exit-tail pointer reload (target's skip-past-the-reload branch) COMBINED with s6's cse-fold-defeat lever, whose sign was chassis-relative; residual is now exactly one dead r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 2 instructions are the two `addu a3,a0,zero` copies, and they are a whole-function pointer-live-range property \u2014 not a preheader spelling and not a C-level copy.",
-   "mechanism": "In target the loop-1 pre-guard pointer a0 is live-out on the entry guard's TAKEN edge: the `blez` at 0x800178C8 jumps to .L8001791C, which consumes a0 as loop 2's guard operand on the skip path. Because a0 must survive that edge, the preheader cannot overwrite it with the loop base, so the allocator emits the copy and then `addu a0,a1,a3`. Every form built so far lets the guard pointer DIE at the branch, so the allocator overwrites it and no copy appears. Both C-level routes to a copy are now closed by name (cse.c, combine.c \u2014 H-s6-2/H-s6-3), so the only remaining route is to give the pointer a live range that spans the taken edge.",
-   "next_probe": "Build a form where ONE pointer variable is read fresh after each join, used by that loop's entry guard, AND still read by the NEXT guard on the skip path. Concretely: a single `p` assigned before loop 1's guard and re-assigned only in loop 1's EXIT TAIL (after the do/while, not before loop 2's guard) \u2014 which is exactly the data flow the target asm shows. Start from variant D (rejected/base_from_pre_join_pseudo_defeats_cse_fold_costs_1.c), NOT from candidate B, because D already has the pre-guard read and the un-folded addus. Read tmp/grind/func_80017848/s6/G/ings_pp.c.greg for reg/v77's conflict and preference records before writing C, and re-dump with s6/probe.sh after each attempt."
+   "hypothesis": "The last 2 instructions are one dead reg-reg copy per scan loop, emitted by a GCC pass rather than written in C, and the pass can be named from the dumps already on disk.",
+   "mechanism": "Target routes the loop base's addend through `addu a3,a0,zero` - a copy of the pre-guard pointer that is read once by the next `addu a0,a1,a3` and never again, in BOTH preheaders. C-level copies are closed by name (cse.c / combine.c, s6), and in our build the addend dies at the base's own insn (REG_DEAD reg/v77 on insn 158 of s7/O/ings_pp.c.combine), which is precisely why no copy is needed. So the question is which pass emits a redundant move INTO a loop preheader, and what source shape stops the addend dying at the base insn.",
+   "next_probe": "Read tools/gcc-2.7.2/loop.c `move_movables` (the `m->move_insn` path emits `(set new old)` at the loop start when a movable's source register may be modified) and local-alloc.c `block_alloc`/`combine_regs` (the tie-the-output-to-a-dying-input path) against the dumps already in tmp/grind/func_80017848/s7/O/ - ings_pp.c.loop, .lreg, .greg. Then build the C shape those passes require and score it with s7/score.sh. Do NOT re-propose a source-level copy statement (s6 pass-level kill) and do NOT re-open base placement, an explicit shift local, explicit links locals, or swapped guard/base roles (all killed this session)."
   },
   {
-   "hypothesis": "Every s3/s4/s5 spelling conclusion was measured ON the divergent chassis and must be treated as chassis-relative until re-measured on the correct one.",
-   "mechanism": "The divergence deleted two pointer reloads, which shifted register pressure and scheduling across the whole preheader region; rankings measured against a 125-insn build that was 2 short for a SEMANTIC reason do not transfer to a correct 125-insn build. s5 already learned a weaker form of this (its shift-first conclusion turned out chassis-relative to s4's `base = slots;`, and then turned out to be a dead-declaration artifact on top of that). What DOES survive untouched is the pass-level kills (H-s6-2, H-s6-3), because they are RTL facts rather than score comparisons.",
-   "next_probe": "Before spending ANY banked spelling conclusion, re-run it as a matched pair against the current candidate with s6/score.sh (one blocking call per ~6 cells, cells generated with a per-cell-pruned declaration block per s5's process rule 1). Do NOT re-open a broad preheader sweep \u2014 the point is targeted re-validation of a conclusion about to be used, not another 50-cell grid."
+   "hypothesis": "The register-naming residual (ours slots=a2 / links=a1 vs target slots=v1 / links=a2) is downstream of frontier item 1 and should not be attacked separately first.",
+   "mechanism": "Ours keeps `slots` live across both scan loops because the loop bases consume it; target's top-guard slots read dies after the two `>=0` guards and each preheader instead copies the fresh pre-guard pointer. If the copy in frontier item 1 is solved by giving the base's addend its own short live range, `slots` stops being live across the loops and the naming should follow for free.",
+   "next_probe": "After ANY movement on frontier item 1, re-diff with s7/dis2.sh and check whether the slots/links register assignment collapsed to target's without further work. Only if it did not should the allocator's preference records in s7/O/ings_pp.c.greg be read as their own mechanism."
   },
   {
-   "hypothesis": "The top-block 4-instruction shadow is still downstream of the preheader property and should still not be attacked directly.",
-   "mechanism": "Unchanged from s5: target's second `bltz` has a `nop` delay slot because the first instruction of its target block is `lw a0,0xC(s2)`; ours has `sll a1,s4,6` there and reorg.c's fill_slots_from_thread steals it into the slot, retargeting the branch to label+4. Variant D already places a `lw` first in that block, so this may resolve for free once frontier item 1 moves.",
-   "next_probe": "After ANY movement on frontier item 1, re-diff with s6/dis.sh and check whether the `bltz` delay slot became a `nop` without further work. Only if it did NOT should reorg.c's non-own-thread fill_slots_from_thread path be read as its own mechanism."
+   "hypothesis": "Every remaining banked spelling conclusion from s3/s4/s5/s6 is chassis-relative to a chassis that has now changed TWICE, and must be re-run before it is spent.",
+   "mechanism": "s6 retired the s3/s4/s5 chassis as semantically divergent; s7 then found s6's own D/G verdict inverted in sign on the corrected chassis (the fold-defeat lever went from -1 to +3). What survives untouched is only the pass-level kills (H-s6-2, H-s6-3, H-s7-3..H-s7-6), because they are RTL facts rather than score comparisons.",
+   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against the s7 candidate with s7/score.sh (one blocking call scores a whole list of bodies from a clean tree). Do not re-open a broad preheader sweep - targeted re-validation only."
   }
  ],
  "judge_constraints": [],

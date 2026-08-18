@@ -583,3 +583,94 @@ with 125 build insns, identical to D.
 - probe: Variant A scored from a clean tree (s6/score.sh, s6/scores.txt).
 - result: A = 15, one worse than variant B's 14. Reading both scan-loop guards through the never-re-pointed `slots` (B) is the cheaper repair.
 - verdict: KILLED
+
+## s7 (2026-08-18) - forensics
+
+### H-s7-1. CONFIRMED. The loop-1 exit-tail reload is C-expressible and produces target's skip-past-the-reload branch.
+Mechanism: one pointer variable `p` read before loop 1's guard and re-read only in loop 1's
+exit tail; loop 2's guard reads it too, so on the skip path it consumes the pre-guard value
+and GCC lets the `blez` branch into the middle of loop 2's guard block.
+Probe: variant J, `s7/v/J.c`, built and disassembled with addresses (`blez v0,1444` skips
+`lw a0,12(s2)` at `1440`).  Result: control flow matches target exactly.  Verdict: CONFIRMED.
+
+### H-s7-2. CONFIRMED. The fold-defeat lever's SIGN was chassis-relative; on the corrected chassis it is worth 3 instructions.
+Mechanism: with the exit-tail reload in place, the entry guard's address and the loop base
+are the same expression in the same cse EBB unless the base's addend is a pseudo that was
+live before the join.  Sourcing it from `slots` leaves both `addsi3`s alive.
+Probe: J (both through `p`) = 14 / 124 insns; O (base through `slots`) = 11 / 125 insns;
+s7/O/ings_pp.c.combine insns 146 and 158.  Verdict: CONFIRMED - floor 14 -> 11.
+
+### H-s7-3. KILLED. The cse fold can be defeated by WHERE the base is written.
+Probe: variant M (base assigned inside the do-loop body) and N (no base local at all).
+Both build to 124 insns / 14, identical to J.  loop.c hoists, cse2 folds.  Verdict: KILLED.
+
+### H-s7-4. KILLED. An explicit `shift` local carried across loop 1's guard edge buys the skipped `sll`.
+Probe: K (J chassis) = 16, X (O chassis) = 17, against O = 11.  Verdict: KILLED.
+
+### H-s7-5. KILLED. The preheader's lw/addu order is source-controllable.
+Probe: Y1 (explicit `links` local read before the base) = 15; Y2 (after) = 11 = O.
+Verdict: KILLED - scheduling artifact.
+
+### H-s7-6. KILLED. The guard/base roles are interchangeable.
+Probe: V (guards through the pre-join `slots`, bases through the fresh `p`) = 16; W (only
+loop 2's base through `p`) = 14; S (only loop 1's base through `slots`) = 14.  The guard
+must consume the fresh read and the base must consume the pre-join read, in that assignment
+and in BOTH loops.  Verdict: KILLED (asymmetric and swapped assignments).
+
+### FRONTIER FOR s8
+1. The residual is exactly one dead register copy per scan loop (`addu a3,a0,zero`,
+   read once by the next `addu` and never again).  s6 closed both C-level routes to a copy
+   by name (cse.c folds it when the expressions are equal, combine.c's try_combine
+   propagates and deletes it when they are not), so the copy has to come from a pass.  The
+   forensics question for s8 is narrow and answerable: WHICH GCC 2.7.2 pass emits a
+   redundant reg-reg move into a loop preheader?  Read `tools/gcc-2.7.2/loop.c`
+   `move_movables` (the `m->move_insn` path emits `(set new old)` at the loop start) and
+   `local-alloc.c` `block_alloc`/`combine_regs` (the tie-the-output-to-a-dying-input path)
+   against `s7/O/ings_pp.c.loop`, `.lreg` and `.greg`, and ask what source shape makes the
+   base's addend NOT die at the base's own insn.  In O it dies there
+   (`REG_DEAD reg/v77` on insn 158).
+2. Register naming: ours keeps `slots` live (slots=a2, links=a1); target lets its top-guard
+   `slots` read die after the two `>=0` guards (slots=v1) and uses links=a2.  If the copy in
+   frontier item 1 is solved by giving the base's addend its own short live range, the
+   naming should follow for free - do not attack it separately first.
+3. Do NOT re-open: source-level copy statements (s6, pass-level kill), base placement
+   (H-s7-3), an explicit `shift` local (H-s7-4), explicit `links` locals (H-s7-5), swapped
+   guard/base roles (H-s7-6).  And do not re-measure a banked spelling conclusion without
+   re-running it on the CURRENT chassis first - s7 is the second session in a row where a
+   banked verdict flipped sign after the chassis changed.
+
+## [s7] The pointer reload that target executes between the two scan loops is a SOURCE-LEVEL reload in loop 1's exit tail, and writing it there reproduces target's control flow, where loop 1's entry-guard branch skips the reload and lands in the middle of loop 2's guard block.
+- mechanism: Target's blez at 0x800178C8 targets .L8001791C = instruction index 53, skipping both `lw a0,0xC(s2)` and `sll a1,s4,6` (indices 51/52) and landing on `addu v0,a1,a0`, the second insn of loop 2's guard. That is only expressible if ONE pointer variable feeds both entry guards and is re-read only in loop 1's exit tail (after the do/while, inside the if): on the skip path loop 2's guard consumes the pre-guard value, on the loop-ran path the reload. Semantically the reload is a no-op because the scan loops contain no stores, so this is plain equivalent C.
+- probe: Variant J (tmp/grind/func_80017848/s7/v/J.c) built and disassembled with addresses: `blez v0,1444` where 1440 is `lw a0,12(s2)` and 1444 is the `sll` - the reload is skipped on the guard's taken edge, exactly target's shape.
+- result: Control flow matches target; J itself scores 14 at 124 build insns (the preheader is wrong for a separate reason, see H-s7-2).
+- verdict: CONFIRMED
+
+## [s7] s6's cse-fold-defeat lever (source the loop base's addend from the PRE-JOIN `slots` read rather than from the post-join fresh read) was banked with the wrong sign: it cost 1 instruction on s6's chassis but is worth 3 on the chassis that carries the exit-tail reload.
+- mechanism: With the exit-tail reload in place, the entry guard's address and the loop base are both `(plus shift p)` and sit in the SAME cse extended basic block (the preheader is the fall-through successor of the guard block), so cse.c rewrites the base into a copy of the guard address in loop 1 and reuses the guard's address register outright as the base in loop 2 - 124 insns. Making the base's addend a pseudo that was live BEFORE the join (`slots`) leaves the two addends un-equatable and both addsi3s survive.
+- probe: J (guards AND bases through `p`) vs O (guards through `p`, bases through `slots`), both scored from a clean tree with s7/score.sh; plus the RTL at tmp/grind/func_80017848/s7/O/ings_pp.c.combine, insn 146 `reg111 = reg110 + reg/v78` (guard) and insn 158 `reg/v79 = reg110 + reg/v77` (base) as two independent addsi3_internal insns.
+- result: J = 14 at 124 insns; O = 11 at 125 insns. O re-verified end to end by re-applying memory/grind/func_80017848/candidate.c to a git-checkout'd src/ings.c and re-scoring: 11.
+- verdict: CONFIRMED
+
+## [s7] The cse fold can be defeated by WHERE the base assignment is written (inside the loop body instead of the preheader) rather than by the addend's live range.
+- mechanism: If the base is written inside the do-loop body, cse's first pass sees it in a different extended basic block from the guard (the loop top is a join), so the equivalence table should be empty for that expression.
+- probe: Variant M (base assigned inside both do-loop bodies) and variant N (no base local at all, the full expression inlined in the loop), scored from a clean tree.
+- result: M builds byte-identically to J (124 insns, 14) and N is also 14: loop.c hoists the invariant into the preheader and the second cse pass folds it exactly as cse1 would have. Placement is irrelevant; only the addend's live range matters.
+- verdict: KILLED
+
+## [s7] An explicit `shift` local assigned before loop 1's guard and recomputed in loop 1's exit tail buys the `sll` that target also skips on the guard's taken edge.
+- mechanism: Target's skip edge bypasses both `lw a0,0xC(s2)` and `sll a1,s4,6`, so the shift must be live across that edge and recomputed on the loop-ran path - the same shape as the pointer.
+- probe: Variant K (that shift local on the J chassis) and variant X (the same on the O chassis), scored from a clean tree against O = 11.
+- result: K = 16, X = 17. The extra live pseudo costs far more than the one `sll` it saves; letting GCC recompute the shift at the join is correct.
+- verdict: KILLED
+
+## [s7] The preheader's instruction ORDER (target: copy / lw links / addu base; ours: addu base / lw links) is controllable from the source by hoisting the links read into an explicit per-loop local.
+- mechanism: If the links pointer is read into a named local placed ahead of the base assignment, the RTL order should follow the source order into the preheader.
+- probe: Variant Y1 (links local read BEFORE the base) and Y2 (AFTER), scored from a clean tree.
+- result: Y1 = 15, Y2 = 11 (identical to O without the local). The order is a scheduling artifact and the local is inert at best.
+- verdict: KILLED
+
+## [s7] The guard / base roles are interchangeable - it does not matter which of the two pointer reads (pre-join `slots` vs fresh post-join `p`) feeds the entry guard and which feeds the loop base.
+- mechanism: Both reads load the same memory and the same value, so either assignment should defeat the cse fold equally.
+- probe: Variant V (guards through `slots`, bases through `p`), W (only loop 2's base through `p`), S (only loop 1's base through `slots`), scored from a clean tree against O = 11.
+- result: V = 16, W = 14, S = 14. The guard must consume the FRESH read (it is what target's cross-jump edge carries into loop 2) and the base must consume the PRE-JOIN read, in that assignment and in BOTH loops.
+- verdict: KILLED

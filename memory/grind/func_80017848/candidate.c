@@ -1,74 +1,62 @@
-/* CANDIDATE - func_80017848, s6 (2026-08-18, forensics).  sandbox --disable all = 14
- * 125/127 build insns, frame 0x40 both sides.
+/* CANDIDATE - func_80017848, s7 (2026-08-18, forensics).  sandbox --disable all = 11
+ * 125/127 build insns, frame 0x40 both sides.  FLOOR 14 -> 11 (variant O).
  *
- * THIS REPLACES THE S4/S5 12-FORM AND THE FLOOR MOVES 12 -> 14 ON PURPOSE.
- * The inherited 12-form is SEMANTICALLY DIVERGENT from the target and therefore
- * provably cannot reach distance 0.  s6 proved it from the RTL and from the
- * disassembly, not by argument:
+ * WHAT CHANGED FROM THE S6 CANDIDATE (B, 14).  Two independent structural facts
+ * were combined; each one alone is worth nothing, together they are worth 3:
  *
- *   The 12-form declares `base = slots;` and then RE-POINTS `base` inside loop 1's
- *   preheader (`base = (u8 *)((slot_a << 6) + (s32)p);`) while loop 2's ENTRY GUARD
- *   still reads its count through `base`:
- *       if (i < *(s32 *)((s32)base + (slot_a << 6) + 0x20))
- *   On the path where loop 1's guard passed, `base` already holds `ptr + slot_a*64`,
- *   so that guard addresses `ptr + 2*slot_a*64 + 0x20`.  The target addresses
- *   `ptr + slot_a*64 + 0x20` on the same path - it RELOADS the pointer in loop 1's
- *   exit tail (`lw a0,0xC(s2)` at 0x80017914) precisely so the second guard sees a
- *   fresh pointer.  Confirmed in the cse dump (insn 146 `reg111 = reg/v79 + reg110`
- *   consumes the loop-1 preheader's reg/v79 set at insn 86) and in the build
- *   disassembly (`sll a1,s4,6 ; addu v0,a0,a1 ; lw v0,32(v0)` with a0 = loop 1's
- *   base).  Byte-identical code implies identical semantics, so no compilation of
- *   the 12-form can produce the target's bytes.  The whole s3/s4/s5 chassis - and
- *   the ~230 swept cells and ~80k permuter iterations spent around it - was
- *   searching a form that could never close.  Banked as
- *   rejected/base_reuse_loop2_guard_is_semantically_divergent.c.
+ *  (1) THE LOOP-1 EXIT-TAIL RELOAD (new this session).  `p` is read fresh ONCE
+ *      before loop 1's entry guard and re-read ONLY in loop 1's EXIT TAIL (after
+ *      the do/while, inside the if).  Loop 2's entry guard then reads its count
+ *      through the SAME `p`, so on loop 1's skip path it consumes the pre-guard
+ *      value and on the loop-ran path it consumes the reload.  GCC turns that
+ *      into exactly target's control flow: the `blez` at loop 1's guard branches
+ *      PAST the reload straight into the middle of loop 2's guard block
+ *      (`blez v0,1444` where `1444` is the `sll`, one insn after the
+ *      `lw a0,12(s2)` at `1440`).  This is target's `blez v0,.L8001791C` shape.
+ *  (2) THE BASE'S ADDEND IS THE PRE-JOIN `slots` READ, NOT `p` (the s6 E-s6-3
+ *      fold-defeat lever, which s6 could only measure on the OLD chassis where it
+ *      LOST an instruction).  If the base is built from `p` as well, both the
+ *      guard address and the base are `(plus shift p)` inside the SAME cse
+ *      extended basic block, cse.c rewrites the base to a copy of the guard
+ *      address, and the preheader is 1 insn short in loop 1 and 2 short in loop 2
+ *      (124 insns, score 14 - variants J/M/N below).  Sourcing the addend from
+ *      `slots`, which was live before the join, makes the two addends
+ *      un-equatable and both `addu`s survive (s7/O/ings_pp.c.combine: insn 146
+ *      `reg111 = reg110 + reg/v78` for the guard, insn 158
+ *      `reg/v79 = reg110 + reg/v77` for the base - two independent addsi3s).
  *
- * THIS FORM (variant B) is the best SEMANTICALLY CORRECT one measured in s6:
- *   B  both scan-loop entry guards read their count through `slots` (the single
- *      pre-join read, never re-pointed); each loop's base comes from its own fresh
- *      read after the branch                                             -> 14
- *   A  12-form + a fresh `base = *(u8 **)(ctx + 0xC);` before loop 2's guard -> 15
- *   D  fresh pre-guard read `p` per loop feeding the guard, base from `slots` -> 15
- *   G  D + an explicit copy variable feeding the base                      -> 15
- *   C  re-read into `slots` before loop 2's guard (closest to the HEAD form) -> 16
- *   I  D but the base's addend is a copy of `p` (cse re-folds)             -> 17
- *   F  D but loop 2's base through `p`                                     -> 18
- * (HEAD's untouched while-loop form is 16, so 14 is still the best correct floor
- * this function has ever had.)
+ * S7 MEASUREMENTS (all from a clean tree via s7/score.sh; s7/scores.txt):
+ *   O   = THIS FORM: guards through fresh `p` + exit-tail reload, base through
+ *         `slots`                                                        -> 11
+ *   R   = O but the base is written inside the loop body (LICM hoists it)  -> 11
+ *   Y2  = O + an explicit per-loop `links` local read after the base       -> 11
+ *   B   = s6 candidate (guards through `slots`, base from a fresh read)    -> 14
+ *   J   = guards AND base both through `p` (+ exit-tail reload)            -> 14
+ *   M   = J with the base written inside the loop body                     -> 14
+ *   N   = J with no base variable at all (fully inlined)                   -> 14
+ *   S   = J but only loop 1's base through `slots`                         -> 14
+ *   W   = O but only loop 2's base through `p`                             -> 14
+ *   Y1  = O + the `links` local read BEFORE the base                       -> 15
+ *   V   = guards through `slots`, bases through `p`                        -> 16
+ *   K   = J + an explicit `shift` local recomputed in the exit tail        -> 16
+ *   X   = O + that same explicit `shift` local                             -> 17
  *
- * WHAT S6 ESTABLISHED ABOUT THE REMAINING RESIDUAL (all pass-level, from -da dumps
- * under tmp/grind/func_80017848/s6/):
- *  1. The cse fold IS defeatable and the lever is named.  In the E-s5-3 "hoisted
- *     read" family one C pointer feeds both the guard address and the loop base,
- *     both expressions land in the SAME extended basic block, and cse.c replaces
- *     the second `(plus shift p)` with a copy of the first (hoist dump, insn 83
- *     `(set reg/v79 reg93)`), which is why that family loses 5 instructions.
- *     Sourcing the base's addend from a pseudo that was live BEFORE the join label
- *     (variant D/G: guard through the fresh post-join read, base through `slots`)
- *     defeats the fold - G's dump shows insn 71 `reg94 = reg78 + reg93` and insn 86
- *     `reg/v80 = reg93 + reg/v77` as two independent addsi3s - and the build then
- *     contains BOTH target's pre-guard `lw v0,12(s2)` and two separate addus.  Its
- *     cost is that `slots` must stay live, which is why D/G sit at 15.
- *  2. Target's `addu a3,a0,zero` CANNOT be written in C.  s5 attributed the
- *     disappearance of an explicit copy statement to allocator coalescing; the
- *     dumps say otherwise.  In variant G's own dump the copy's insn is already
- *     `(note 82 ... NOTE_INSN_DELETED)` in ings_pp.c.combine, i.e. combine.c's
- *     try_combine substituted the copy into its single use (insn 86) and the dead
- *     copy was deleted BEFORE local-alloc ever ran.  No spelling of a C-level copy
- *     survives that, and G confirms it end to end (125 insns, unchanged from D).
- *     The `move a3,a0` is therefore an allocator/reload artifact of the pointer
- *     being live-out on the guard branch's TAKEN edge (in target a0 flows to loop
- *     2's guard at .L8001791C on the skip path), not a source construct.
+ * THE ENTIRE REMAINING RESIDUAL IS 2 INSTRUCTIONS, AND THEY ARE THE SAME
+ * INSTRUCTION TWICE (s7/T.txt vs s7/B.txt - the ONLY non-register hunks left):
+ *      target preheader:  addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3
+ *      ours:              addu a0,a1,a2   / lw a1,16(s2)
+ * i.e. target routes the base's addend through a DEAD register copy of the
+ * pre-guard pointer, once per scan loop.  Everything else in the function is
+ * instruction-identical; the only other diff is the register naming that falls
+ * out of keeping `slots` live (ours: slots=a2, links=a1; target: slots=v1 and
+ * dead after the two >=0 guards, links=a2).
  *
- * NEXT PROBE: the two remaining instructions are the two `addu a3,a0,zero` copies.
- * Build a form where ONE pointer variable is (a) read fresh after each join, (b)
- * used by that loop's entry guard, and (c) still LIVE-OUT on the guard branch's
- * TAKEN edge into the NEXT guard - that is the live-range shape that forces the
- * allocator to copy rather than overwrite.  In target that is exactly how it
- * happens: loop 2's guard consumes loop 1's pre-guard pointer on the skip path.
- * Read tmp/grind/func_80017848/s6/G/ings_pp.c.greg for reg/v77's conflict record
- * first.  Do NOT re-open the preheader spelling sweep and do NOT re-propose a
- * C-level copy statement - combine.c deletes it.
+ * DO NOT re-propose a C-level copy statement for that `addu a3,a0,zero` - s6
+ * killed it at pass level (cse.c folds it when the expressions are equal,
+ * combine.c's try_combine propagates and deletes it when they are not; s6/G's
+ * dump shows the copy already `NOTE_INSN_DELETED` before local-alloc).  In
+ * target the copy is dead after its single use in BOTH preheaders, so it is a
+ * pass artifact of a source shape not yet found, not a written copy.
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
@@ -91,10 +79,10 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
         }
     }
 
+    p = *(u8 **)(ctx + 0xC);
     i = 0;
-    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x1C)) {
-        p = *(u8 **)(ctx + 0xC);
-        base = (u8 *)((slot_a << 6) + (s32)p);
+    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x1C)) {
+        base = (u8 *)((slot_a << 6) + (s32)slots);
         do {
             if (*(u16 *)((*(u8 *)(base + i + 0x24) << 4) +
                          (s32) * (u8 **)(ctx + 0x10) + 0x4) == slot_b) {
@@ -102,12 +90,12 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
             }
             i++;
         } while (i < *(s32 *)(base + 0x1C));
+        p = *(u8 **)(ctx + 0xC);
     }
 
     i = 0;
-    if (i < *(s32 *)((s32)slots + (slot_a << 6) + 0x20)) {
-        p = *(u8 **)(ctx + 0xC);
-        base = (u8 *)((slot_a << 6) + (s32)p);
+    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x20)) {
+        base = (u8 *)((slot_a << 6) + (s32)slots);
         do {
             if (*(s16 *)((*(u8 *)(base + i + 0x2C) << 4) +
                          (s32) * (u8 **)(ctx + 0x10) + 0x6) == slot_b) {
