@@ -113,6 +113,48 @@
  *     The `p = q;` tail below reproduces loop 1's bytes for the wrong reason,
  *     at a price of exactly 1 (fresh-read tail = 4, no tail = 12).
  */
+/* [s12 STRUCTURAL ADDENDUM - body unchanged, still 3, re-measured this session
+ * as cell T0 on a clean tree.]  s12 spent ~90 cells closing the FOUR regions the
+ * s11 frontier named as the last hand-reachable structural surface, and all four
+ * are now dead:
+ *   - PARAMETER HOMING / PROLOGUE (s11 frontier #3).  Homing any parameter into
+ *     a named local is a strict regression (slot_a 6, ctx 6, arg1 6, both slots
+ *     7 in either order).  The prologue stays byte-exact in every cell, so the
+ *     "allocno priority is set by pseudo creation order in the prologue" theory
+ *     has no C-level handle.  Top-block spellings: fused && = 3, redundant slots
+ *     re-read between the guards = 3, slots read above the equality return = 7,
+ *     sh hoisted above the guards = 6, guard values through `t` = 41.
+ *   - LOOP BODY.  `* 16` for `<< 4` = 3, `!=`-else = 3, byte staged into `t` = 3,
+ *     links-first association = 5, `(i + 0x24)` grouping = 7, element pointer
+ *     local = 13.
+ *   - EXIT FORM / LOOP SHAPE.  jump.c ALREADY cross-jumps our four inline
+ *     `return 0`s into target's single shared exit block, so spelling it out
+ *     costs: all-goto = 15, mixed = 8, accumulator = 9.  Reversed while test = 3,
+ *     separate counter `j` for loop 2 = 3, count into a local = 30, for-form = 21.
+ *   - BASE DESTINATION VARIABLE IDENTITY (the sanctioned variable-reuse family
+ *     applied to the RECEIVING local rather than the addend).  base1/base2 = 3,
+ *     loop-2 base into `p` = 3, into `q` = 8, `slots` = 8, `lnk` = 10, rec_a = 41.
+ *   And no COMPOUND win exists: eight stacked combinations of every 3-scoring
+ *   lever above, including one stacking all seven at once, all score exactly 3.
+ *
+ * THE ONE GENUINELY NEW STRUCTURAL FACT, and the best hand-off this session has:
+ * the SYMMETRIC CHASSIS.  Replace the `p = q;` loop-1 exit tail below with
+ * target's own `p = *(u8 **)(ctx + 0xC);` and the residual becomes 4 but
+ * PERFECTLY SYMMETRIC - both preheaders missing `addu a3,a0,zero`, both base
+ * adds reading the wrong register.  Loop 1 then comes out one instruction SHORT
+ * (126 vs 127) while loop 2 has the right COUNT but emits `lw v0,12(s2)` exactly
+ * where target has the copy.  That is the sharpest statement of the wall to date:
+ * loop 2's copy is a redundant ctx+0xC load that target's compiler folded to a
+ * copy, in a block cse provably cannot reach.  On that chassis the addend MUST
+ * be a fresh ctx+0xC read (any live pointer = 9) and all 12 spellings of the
+ * fresh read score exactly 4 - so the symmetric chassis is a better DESCRIPTION
+ * of the wall than V1 is, but not a better score.  Banked as
+ * rejected/s12_symmetric_fresh_reload_tail_costs_4.c.
+ *
+ * Also closed: duplicating loop 2 into both arms of the loop-1 guard (to give its
+ * preheader a single-predecessor block so cse folds, then let jump2 re-merge) is
+ * 35 - jump2 does NOT merge them.  The join cannot be removed from C.
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;
