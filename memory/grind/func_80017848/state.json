@@ -1,31 +1,37 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 16,
    "modality": "recon",
    "headline": "Recon: floor 16 confirmed; residual mapped to one coupled loop-shape decision (single hoisted base + per-iteration count reload vs my cached count); 3-hypothesis frontier banked"
+  },
+  {
+   "session": 2,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "Phantom-16 frame producer pinned to the guard's comparison operand (i < count, not the loop shape); a do-while + that guard makes BOTH scan loops byte-exact at 17, moving the entire residual out of th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Guarded do-while, distinct guard/bound lvalues, slots-copy local, index+bound through one base local",
-   "mechanism": "cse path-following label barrier keeps the bottom bound load alive; single base pseudo gives target's one-addu index; distinct-lvalue guard may itself be the missing phantom-16 frame producer",
-   "next_probe": "tmp/score_sweep.py variant matrix recording score AND .frame vars= per variant; win = score<16 with vars=16"
+   "hypothesis": "Regime A can be broken into target's shape without falling into regime B: the 17-form needs exactly ONE more live *(u8**)(ctx+0xC) read reaching the preheader while the top guards keep their own read.",
+   "mechanism": "The preheader reload exists only when the top guards' slots pseudo is dead at the merge; in target it dies at insn 20, in every regime-A spelling it lives to the preheader. Since the read count is a source-structure property (H2), the lever is the TOP GUARDS' spelling, not the loop's.",
+   "next_probe": "Re-spell the two >=0 top guards so their pointer dies at the compare (e.g. per-slot record-pointer locals dead after the compare, or reading each 0x18 field through its own inline ctx read), holding the loop at the alt-candidate form; verify insns 12-26 stay byte-exact and check whether lw a0,12(s2) appears at insn 27."
   },
   {
-   "hypothesis": "Pin the exact pass folding my bound reload (cse1 vs cse_around_loop vs rerun-cse)",
-   "mechanism": "duplicate_loop_exit_test copies the exit test; the folding pass determines which C property breaks the fold",
-   "next_probe": "cc1 -da dumps on current form, diff where the bound load disappears"
+   "hypothesis": "Target's move a3,a0 is an uncoalesced register-allocator copy whose survival is caused by a register-preference property our C never creates.",
+   "mechanism": "cse replaces a redundant load with a reg-reg copy rather than deleting it; that copy survives only if local-alloc/global-alloc fails to coalesce the two pseudos. LICM is ruled out as the producer.",
+   "next_probe": "Read .lreg/.greg from the already-generated tmp/grind/func_80017848/s2/da_S3 dump set and find where our equivalent copy is coalesced away; the answer names the liveness/preference property to create."
   },
   {
-   "hypothesis": "Reload and single-base index are ONE coupled decision \u2014 partial forms stay >= 16",
-   "mechanism": "prior sessions: own-base spellings kept guard count alive; cached-count spellings split the index add",
-   "next_probe": "falsified for free if any partial variant in the H1 sweep scores below 16"
+   "hypothesis": "The named-count guard (n = count; i = 0; if (i < n)) is a second, distinct phantom-16 producer that may combine differently with the preheader read count.",
+   "mechanism": "It also yields frame 0x40 (score 19) while adding a live count local, which changes what is live across the guard \u2014 the exact axis that separates regime A from regime B.",
+   "next_probe": "Cross the named-count guard against the regime-B read pattern (all pointer reads fresh from ctx) and measure; a form with frame 0x40, the preheader reload and the copy would close the function."
   }
  ],
  "judge_constraints": [],

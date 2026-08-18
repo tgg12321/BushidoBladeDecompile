@@ -99,3 +99,67 @@ own base register also makes the guard's count survive, so the two effects have 
 - [s1] GCC 2.7.2 loop.c hoists plain MEM loads in store-free loops, but NOT conditionally-executed ones (bound load sits after the beq exit), so my build's count cache is a cse-family fold over the duplicated exit test, not LICM
 
 - [s1] residual is 8 pts per scan loop, loops identical in shape; everything outside the loops is byte-exact per inherited ledger, re-confirmed by 125-insn disasm
+
+## s2 (structural, 2026-08-18)
+- Floor unchanged at **16** (baseline form re-verified in place at end of session:
+  score 16, 125/127 insns). No spelling measured this session went below 16 — but the
+  residual MOVED: the best new form (17) has both scan loops byte-exact and confines
+  the entire gap to the 2-insn preheader shape. Saved as
+  `memory/grind/func_80017848/candidate_alt_dowhile_ivar_17.c` (start there, not at
+  candidate.c).
+- **The phantom-16 frame producer is now pinned exactly.** It is NOT the `while` vs
+  `do-while` shape (the inherited belief) and NOT the guard/bound lvalue distinction
+  (H1's claim). It is the guard's COMPARISON OPERAND: only an entry guard that compares
+  the loop's own induction variable — `i = 0; if (i < count)` — yields `.frame vars=16`
+  (frame 0x40). Measured on 9 guard spellings with the rest of the form held fixed:
+  `i < count` -> 17 / frame 0x40; `count > 0` -> 35 / 0x30; `count != 0` -> 37 / 0x30;
+  `count >= 1` -> 35 / 0x30; `0 < count` -> 35 / 0x30; named `n = count; n > 0` -> 36 / 0x30;
+  `k = count - 1; k != -1` -> 37 / 0x30; `n = count; i = 0; i < n` -> 19 / 0x40;
+  bound-through-named-`n` -> 41 / 0x30. This is [[phantom-slot-frame-lever]] producer #1
+  (folded loop-guard compare) with a sharper predicate than the rule states.
+- **A source-level do-while DOES give target's per-iteration bound reload** and its
+  single hoisted base + one-addu index (`addu v0,a0,v1`), contradicting the inherited
+  assumption that reload and phantom frame are mutually exclusive. Combined with the
+  `i < count` guard the two coexist: variant `g_ivar` / `S1` = 17, frame 0x40, loops
+  byte-exact.
+- **Two rigid regimes, quantized at 17 and 34.** Whether a `u8 *` holding `*(u8**)(ctx+0xC)`
+  is live across the entry guard decides everything downstream:
+  * Regime A (pointer live across the guard): score **17** for all 20+ spellings measured
+    — guard address form (int-cast vs pointer arithmetic), base source (slots local /
+    fresh ctx read / copy local / two-step copy chain), operand order, base formed
+    before vs inside the guard body, index `base + i` vs `i + (s32)base`. The preheader
+    reuses the top guards' slots pseudo, so target's `lw a0,12(s2)` reload is absent.
+  * Regime B (nothing live; every read fresh from ctx): score **34** for all 10+ spellings
+    — the preheader DOES re-load ctx+0xC exactly like target, but cse then unifies the
+    loop base with the guard's address pseudo, so target's uncoalesced `move a3,a0` copy
+    and recomputed `addu a0,a1,a3` never appear (123 insns vs target 127) and the loop
+    register assignment shifts off a0/a1/a2/a3.
+  No spelling produced reload AND copy. That pair is the whole remaining residual.
+- **KILLED: target's `move a3,a0` copy is a loop.c LICM artifact.** Wrote the record
+  address fully inline inside the do-while body so loop.c must hoist it (variant T1):
+  LICM does hoist, and cse still folds the hoisted base onto the guard's address —
+  123 insns, byte-identical result to the copy-local spellings. Same for a two-step
+  C-level copy chain (`p = read; q = p; base = q + off`).
+- **Read-count forensics (H2, partially answered).** cc1 `-da` dumps of both regimes
+  (tmp/grind/func_80017848/s2/da_S1, da_S3): the C-level number of `*(u8**)(ctx+0xC)`
+  reads survives to the final asm — regime A carries 9 `const_int 12` refs at .rtl and 10
+  at .greg, regime B carries 11 and 12. cse collapses both to 7 mid-pipeline and the
+  difference re-emerges, i.e. cse is NOT what removes the preheader reload in regime A;
+  the reload is simply never emitted because the C has one fewer read reaching that point.
+  So the reload is a SOURCE-STRUCTURE lever (how many live reads), not a pass to defeat.
+- Artifacts: variants{,2,3,4,5,6}.py (the full measured matrices), diff_*.txt (normalized
+  target-vs-build diffs for the baseline, the 17-form and the 34-form), da_S1/, da_S3/.
+
+- [s2] Floor unchanged at 16; baseline form restored and re-verified in place at end of session (score 16, 125/127 insns, src/ings.c clean vs HEAD).
+
+- [s2] Best new form scores 17 (frame 0x40) with BOTH scan loops byte-exact — target's per-iteration bound reload, single hoisted base and one-addu index all reproduce. Saved as memory/grind/func_80017848/candidate_alt_dowhile_ivar_17.c; s3 should start there, not from candidate.c, because the floor-16 form's residual is still inside the loops while the 17-form's is confined to a 2-insn preheader.
+
+- [s2] The whole search space collapses into two rigid regimes decided by ONE property: whether a u8* holding *(u8**)(ctx+0xC) is live across the entry guard. Regime A (live) = score 17 for all 20+ spellings measured — guard address form (int-cast vs pointer arithmetic), base source (slots local / fresh ctx read / copy local / two-step chain), operand order, base formed before vs inside the guard body, index base+i vs i+(s32)base. Regime B (nothing live, every read fresh) = score 34 for all 10+ spellings.
+
+- [s2] Regime B reproduces target's preheader reload (lw a0,12(s2)) exactly, but cse then unifies the loop base with the guard's address pseudo, so target's uncoalesced move a3,a0 copy and its recomputed addu a0,a1,a3 never appear: 123 insns vs target 127, and the loop register assignment shifts off a0/a1/a2/a3. No spelling in 45 produced reload AND copy — that pair is the entire remaining residual.
+
+- [s2] Guard spelling controls the frame independently of loop shape: i < count gives vars=16 / frame 0x40 in BOTH the do-while and the rotated-while families; every constant-comparison guard gives vars=0 / frame 0x30 and costs ~18 points of sp-offset cascade through the save/restore block.
+
+- [s2] One variant in the sweep (S6, guard reading the slots local while the assignment sits inside the guard body) scored 16 but is SEMANTICALLY INVALID — loop 1 would read an uninitialized slots. Recorded here so a later session does not resurrect it from the raw sweep numbers.
+
+- [s2] Instruments regenerated/extended and left in place: tmp/score_sweep.py + tmp/run_sweep.sh (score + frame per variant, restores src afterwards), tmp/apply_variant.py, tmp/diffvar.sh (apply + sandbox + normalized target diff), tmp/dadump.sh (cc1 -da dumps), tmp/count_ctx12.py (per-stage load-count census).

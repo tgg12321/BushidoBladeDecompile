@@ -6,6 +6,12 @@
  * base (addu a3,a0,zero copy of slots; addu a0,a1,a3) used by both the index
  * (addu v0,a0,v1) and a PER-ITERATION count reload (lw v0,0x1C(a0); nop; slt).
  * See memory/grind/func_80017848/hypotheses.md frontier before editing.
+ *
+ * s2 (2026-08-18): this form still holds the numeric floor (16), but it is NO LONGER
+ * the best starting point. candidate_alt_dowhile_ivar_17.c scores 17 with BOTH scan
+ * loops byte-exact (target's per-iteration reload, single hoisted base and one-addu
+ * index all reproduced, frame 0x40) — its whole residual is the 2-insn preheader.
+ * Start s3 from the alt form. The floor-16 form's residual is still inside the loops.
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
