@@ -12,6 +12,117 @@
       "status": "active"
     },
     {
+      "func": "func_8008C1E8",
+      "file": "main",
+      "distance": 28,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8001B748",
+      "file": "code6cac",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_8002D518",
+      "file": "code6cac_b",
+      "distance": 33,
+      "verdict": "ASM-PARTIAL",
+      "rules": 33,
+      "status": "active"
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active"
+    },
+    {
+      "func": "func_80041BF4",
+      "file": "text1a_post",
+      "distance": 41,
+      "verdict": "C",
+      "rules": 35,
+      "status": "active"
+    },
+    {
+      "func": "func_800283D0",
+      "file": "code6cac_b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active"
+    },
+    {
+      "func": "func_800393C8",
+      "file": "code6cac_c_mid",
+      "distance": 57,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_8002E6B0",
+      "file": "code6cac_b",
+      "distance": 64,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_800335D8",
+      "file": "code6cac_b",
+      "distance": 65,
+      "verdict": "C",
+      "rules": 43,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_8003EB84",
+      "file": "code6cac_c2",
+      "distance": 81,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_80070C70",
+      "file": "text1b",
+      "distance": 118,
+      "verdict": "C",
+      "rules": 32,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_8002CA8C",
+      "file": "code6cac_b",
+      "distance": 177,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": 188,
+      "verdict": "C",
+      "rules": 15,
+      "status": "active",
+      "hand_coded_tier": "LOW"
+    },
+    {
       "func": "func_80032314",
       "file": "code6cac_b",
       "distance": 27,
@@ -61,14 +172,6 @@
       "status": "active"
     },
     {
-      "func": "func_8008C1E8",
-      "file": "main",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_80061250",
       "file": "text1b",
       "distance": 28,
@@ -99,14 +202,6 @@
       "distance": 31,
       "verdict": "C",
       "rules": 25,
-      "status": "active"
-    },
-    {
-      "func": "func_8001B748",
-      "file": "code6cac",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -147,14 +242,6 @@
       "distance": 33,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_8002D518",
-      "file": "code6cac_b",
-      "distance": 33,
-      "verdict": "ASM-PARTIAL",
-      "rules": 33,
       "status": "active"
     },
     {
@@ -342,14 +429,6 @@
       "status": "active"
     },
     {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 39,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_800644FC",
       "file": "text1b",
       "distance": 39,
@@ -382,14 +461,6 @@
       "status": "active"
     },
     {
-      "func": "func_80041BF4",
-      "file": "text1a_post",
-      "distance": 41,
-      "verdict": "C",
-      "rules": 35,
-      "status": "active"
-    },
-    {
       "func": "func_80019568",
       "file": "code6cac",
       "distance": 42,
@@ -419,14 +490,6 @@
       "distance": 44,
       "verdict": "ASM-PARTIAL",
       "rules": 2,
-      "status": "active"
-    },
-    {
-      "func": "func_800283D0",
-      "file": "code6cac_b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 1,
       "status": "active"
     },
     {
@@ -563,15 +626,6 @@
       "prologue_fix": 1
     },
     {
-      "func": "func_800393C8",
-      "file": "code6cac_c_mid",
-      "distance": 57,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
       "func": "func_80042C80",
       "file": "text1a_c",
       "distance": 58,
@@ -599,29 +653,11 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_8002E6B0",
-      "file": "code6cac_b",
-      "distance": 64,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
       "func": "_spu_pitch2note",
       "file": "main",
       "distance": 64,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_800335D8",
-      "file": "code6cac_b",
-      "distance": 65,
-      "verdict": "C",
-      "rules": 43,
       "status": "active",
       "hand_coded_tier": "LOW"
     },
@@ -640,15 +676,6 @@
       "distance": 79,
       "verdict": "C",
       "rules": 29,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_8003EB84",
-      "file": "code6cac_c2",
-      "distance": 81,
-      "verdict": "C",
-      "rules": 2,
       "status": "active",
       "hand_coded_tier": "LOW"
     },
@@ -708,15 +735,6 @@
       "verdict": "C",
       "rules": 0,
       "status": "active"
-    },
-    {
-      "func": "func_80070C70",
-      "file": "text1b",
-      "distance": 118,
-      "verdict": "C",
-      "rules": 32,
-      "status": "active",
-      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8003DE14",
@@ -849,30 +867,12 @@
       "status": "active"
     },
     {
-      "func": "func_8002CA8C",
-      "file": "code6cac_b",
-      "distance": 177,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
       "func": "func_8007D6D8",
       "file": "display",
       "distance": 187,
       "verdict": "C",
       "rules": 0,
       "status": "active"
-    },
-    {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": 188,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active",
-      "hand_coded_tier": "LOW"
     },
     {
       "func": "func_8006CCC8",

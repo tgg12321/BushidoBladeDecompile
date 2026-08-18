@@ -216,6 +216,12 @@ def _filter_text(func: str, disable: str, cfg: str) -> tuple[str, int]:
     return "".join(out), dropped
 
 
+def asmfix_funcs() -> set[str]:
+    """Every symbol keying at least one asmfix.txt rule (mtime-cached via
+    _rule_index). Empty set once asmfix.txt is fully retired."""
+    return set(_rule_index(ASMFIX).keys())
+
+
 def all_keyed_functions() -> set[str]:
     """Every symbol that keys at least one rule across the three configs."""
     keyre = re.compile(r"^([A-Za-z_]\w*)\s*:")
