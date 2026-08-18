@@ -15,10 +15,13 @@ is already COMPLETED-C (or COMPLETED-INLINE-ASM-CANONICAL if listed in
 inline_asm_canonical.txt) and is omitted.
 
 Routing (mirrors canonical._verdict's structural categories):
-  C            distance <= SUSPECT (50)            -> active, pure-C target
-  ASM-SUSPECT  SUSPECT < distance <= NEAR_CERTAIN  -> active, bounded attempt then PARK
+  C            distance <= SUSPECT (50), OR any distance with a scanner-
+               confirmed hand-coded tier of LOW  -> active, pure-C target
+  ASM-SUSPECT  distance > SUSPECT (50) and tier TIGHT_C/UNAVAILABLE/POSSIBLE+
+               below NEAR_CERTAIN                 -> active, keep grinding pure C
   ASM-PARTIAL  opcode: canonical region + C        -> active, work the C part
-  ASM-STRUCTURAL distance > NEAR_CERTAIN (500)     -> authorize (user canonical-asm sign-off)
+  ASM-STRUCTURAL distance > NEAR_CERTAIN (500) AND tier >= POSSIBLE
+                                                   -> authorize (user canonical-asm sign-off)
   ASM-WHOLE    opcode: >=80% canonical             -> authorize
   JTBL-INFRA   rules are all jump-table rodata-split infra (cheats.is_jtbl_infra)
                                                    -> authorize (needs a global rodata reorder)
@@ -207,22 +210,27 @@ def not_a_c_function_text(text: str, func: str) -> bool:
             or func in inlineasm.symbol_marker_funcs(text))
 
 
-def _route(func: str, opcode_verdict: str, distance: int) -> str:
-    """(opcode verdict, honest pure-C distance) -> queue verdict. Mirrors
-    canonical._verdict's structural tier EXACTLY: ASM-STRUCTURAL requires
-    BOTH distance > NEAR_CERTAIN_DISTANCE AND hand-coded corroboration
-    (2026-06-09 gate fix; distance alone is not evidence — the pre-fix
-    distance-only routing here kept resurrecting the audit-rejected
-    population after every regen)."""
+def _route_with_evidence(func: str, opcode_verdict: str,
+                         distance: int) -> tuple[str, str | None]:
+    """(opcode verdict, honest pure-C distance) -> (queue verdict, hand-coded
+    tier or None). The structural tier is DELEGATED to canonical._verdict
+    rather than re-implemented, so the two can no longer drift (the docstring
+    used to claim "mirrors EXACTLY" while keeping a second copy of the rules —
+    and that copy silently dropped the tier, which is why every ASM-SUSPECT
+    queue entry carried no evidence field; 2026-08-18).
+
+    ASM-STRUCTURAL still requires BOTH distance > NEAR_CERTAIN_DISTANCE AND
+    hand-coded corroboration (2026-06-09 gate fix); a scanner-confirmed LOW
+    tier now re-verdicts the item as an ordinary C target."""
     if opcode_verdict in ("ASM-WHOLE", "ASM-PARTIAL"):
-        return opcode_verdict
-    if distance > canonical.NEAR_CERTAIN_DISTANCE:
-        if canonical._hand_coded_tier(func) in ("STRONG", "POSSIBLE"):
-            return "ASM-STRUCTURAL"
-        return "ASM-SUSPECT"
-    if distance > canonical.SUSPECT_DISTANCE:
-        return "ASM-SUSPECT"
-    return "C"
+        return opcode_verdict, None   # opcode signal decides; no scan needed
+    v = canonical._verdict(func, [], 0, distance=distance)
+    return v["verdict"], v.get("hand_coded_tier")
+
+
+def _route(func: str, opcode_verdict: str, distance: int) -> str:
+    """Verdict only (back-compat wrapper over _route_with_evidence)."""
+    return _route_with_evidence(func, opcode_verdict, distance)[0]
 
 
 def _sort_key(it: dict):
@@ -333,12 +341,33 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 pv = prev[func]
                 # parked -> sticky regardless (until the user un-parks via regen
                 # after fixing the underlying blocker).
-                items.append({**pv, "file": stem, "distance": dist, "rules": rules})
+                kept = {**pv, "file": stem, "distance": dist, "rules": rules}
+                if (kept.get("verdict") in ("ASM-SUSPECT", "ASM-STRUCTURAL")
+                        and "hand_coded_tier" not in kept):
+                    # Record the evidence on sticky items too — without this the
+                    # 26 owner_override suspects keep an asm label with no tier
+                    # attached, which is exactly the gap the 2026-08-18 triage
+                    # found. STATUS is never touched here (it is an owner ruling
+                    # or a park, not the gate's to move); only an active
+                    # ASM-SUSPECT with scanner-confirmed LOW loses the label,
+                    # which is the direction the owner already ruled ("ordinary
+                    # pure-C work that was merely deferred").
+                    tier = canonical._hand_coded_tier(func)
+                    kept["hand_coded_tier"] = tier
+                    if (tier == "LOW" and kept["verdict"] == "ASM-SUSPECT"
+                            and kept.get("status") == "active"):
+                        kept["verdict"] = "C"
+                        note = ("2026-08-18 re-gate: scan_hand_coded tier=LOW "
+                                "(no S1/S2/S6) - ASM-SUSPECT label was a "
+                                "distance artifact; ordinary pure-C target")
+                        kept["regate"] = (kept["regate"] + " | " + note
+                                          if kept.get("regate") else note)
+                items.append(kept)
                 continue
             if cheats.is_jtbl_infra(func):
                 # canonical jump-table rodata-split infra — needs a global rodata
                 # reorder (user-authorized), not per-function pure-C work.
-                verdict, status = "JTBL-INFRA", "authorize"
+                verdict, status, tier = "JTBL-INFRA", "authorize", None
             elif cheats.is_canonical_extraction_only(func):
                 # Authorized canonical body whose ONLY rule is the
                 # [infra-rule: canonical-asm-extraction] replace_with_asmfile
@@ -346,7 +375,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # not per-function grind work: the wiring is retired by the
                 # INCLUDE_ASM/TU-resplit campaign. Keep it visible outside
                 # the active lane, like jtbl-infra.
-                verdict, status = "CANON-EXTRACT", "authorize"
+                verdict, status, tier = "CANON-EXTRACT", "authorize", None
             elif _no_c_body(stem, func):
                 # Asm-supplied, no C at all. `dist` here is definitionally "the
                 # whole function is missing", so it carries ZERO information
@@ -357,13 +386,18 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                 # disclaims (and that the owner overturned for 26 functions on
                 # 2026-08-01). Keep the distance for ORDERING, route on the
                 # opcode verdict alone.
-                verdict = _route(func, verdicts.get(func, "C"), 0)
+                verdict, tier = _route_with_evidence(func, verdicts.get(func, "C"), 0)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             else:
-                verdict = _route(func, verdicts.get(func, "C"), dist)
+                verdict, tier = _route_with_evidence(func, verdicts.get(func, "C"), dist)
                 status = "authorize" if verdict in _AUTHORIZE else "active"
             entry = {"func": func, "file": stem, "distance": dist,
                      "verdict": verdict, "rules": rules, "status": status}
+            if tier is not None:
+                # The evidence the routing rests on, carried into the worklist
+                # so a reader (or an audit) never has to re-run the scan to see
+                # whether a suspicion label had any corroboration.
+                entry["hand_coded_tier"] = tier
             if prologue:
                 entry["prologue_fix"] = prologue
             if not scorable:

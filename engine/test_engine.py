@@ -116,10 +116,58 @@ def test_canonical() -> None:
         canonical._hand_coded_tier = lambda f: "TIGHT_C"
         eq("verdict: d600 + tier=TIGHT_C -> ASM-SUSPECT (not enough signal)",
            canonical._verdict("i", [], 80, distance=600)["verdict"], "ASM-SUSPECT")
+        # 2026-08-18 re-gate: a scanner-confirmed LOW tier is affirmative
+        # counter-evidence (the triage of all 47 suspects found 0 candidates),
+        # so the suspicion label is dropped and the item is an ordinary C
+        # target — in BOTH distance bands.
+        canonical._hand_coded_tier = lambda f: "LOW"
+        eq("verdict: d600 + tier=LOW -> C (re-verdict, distance is size)",
+           canonical._verdict("j", [], 80, distance=600)["verdict"], "C")
+        eq("verdict: d60 + tier=LOW -> C (re-verdict)",
+           canonical._verdict("k", [], 80, distance=60)["verdict"], "C")
+        canonical._hand_coded_tier = lambda f: "POSSIBLE"
+        eq("verdict: d60 + tier=POSSIBLE stays ASM-SUSPECT (below near-certain)",
+           canonical._verdict("l", [], 80, distance=60)["verdict"], "ASM-SUSPECT")
+        # The tier is RECORDED on every verdict the scanner was consulted for —
+        # the evidence must travel with the routing (queue.json carried
+        # `hand_coded_tier: null` on all 47 suspects before this).
+        canonical._hand_coded_tier = lambda f: "TIGHT_C"
+        eq("verdict: tier recorded on the >SUSPECT band too",
+           canonical._verdict("m", [], 80, distance=60).get("hand_coded_tier"),
+           "TIGHT_C")
     finally:
         canonical._hand_coded_tier = _saved_tier
+    eq("verdict: no tier field when the scanner was never consulted",
+       "hand_coded_tier" in canonical._verdict("f", [], 8, distance=10), False)
     eq("verdict: distance=None stays C",
        canonical._verdict("f", [], 8, distance=None)["verdict"], "C")
+
+    # Bulk tier prefill: `--all --json` carries only the NON-LOW candidates, so
+    # "has an asm file but is absent from the dump" MUST read as LOW, while "no
+    # asm file at all" must NOT (it falls through to the single-function path,
+    # which reports UNAVAILABLE). This inference is what keeps `queue regen`
+    # from re-running the whole-tree scan once per item.
+    _saved = (canonical._hand_coded_bulk_tiers, dict(canonical._hand_coded_cache))
+    with tempfile.TemporaryDirectory() as td:
+        cwd = os.getcwd()
+        os.chdir(td)
+        try:
+            Path("asm/funcs").mkdir(parents=True)
+            Path("asm/funcs/known.s").write_text("")
+            Path("asm/funcs/plain.s").write_text("")
+            canonical._hand_coded_cache.clear()
+            canonical._hand_coded_bulk_tiers = lambda: {"known": "STRONG"}
+            eq("bulk tier: candidate in the dump keeps its tier",
+               canonical._hand_coded_tier("known"), "STRONG")
+            eq("bulk tier: asm file present but absent from the dump -> LOW",
+               canonical._hand_coded_tier("plain"), "LOW")
+            eq("bulk tier: no asm file is UNAVAILABLE, never LOW",
+               canonical._hand_coded_tier("nosuchfunc"), "UNAVAILABLE")
+        finally:
+            os.chdir(cwd)
+            canonical._hand_coded_bulk_tiers = _saved[0]
+            canonical._hand_coded_cache.clear()
+            canonical._hand_coded_cache.update(_saved[1])
 
     # _regions: contiguous-span collapse
     eq("regions: collapse contiguous spans",
@@ -2273,6 +2321,117 @@ def test_sanctioned_unwritten_pads() -> None:
            text, text.index("{"), text.rindex("}") + 1, [])), 1)
 
 
+def test_queue_hand_coded_tier() -> None:
+    """The 2026-08-18 gate fix: regen must PERSIST the scan tier on every item
+    the gate consulted the scanner for, and a LOW tier must re-verdict a
+    distance-only suspect as an ordinary C target.
+
+    Root cause it pins: queue._route re-implemented canonical._verdict's tier
+    logic, computed the tier for corroboration and then THREW IT AWAY — so
+    every ASM-SUSPECT entry in queue.json carried no evidence field, and the
+    50 < distance <= 500 band never consulted the scanner at all.
+    """
+    def _regen(distance: int, tier: str, prev: dict | None = None) -> dict:
+        with tempfile.TemporaryDirectory() as td:
+            cwd = os.getcwd()
+            os.chdir(td)
+            Path("build/src").mkdir(parents=True)
+            Path("build/src/faketu.o").write_text("")
+            Path("src").mkdir()
+            Path("src/faketu.c").write_text("void func_WB(void) { body(); }" + chr(10))
+            orig = (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
+                    cheats.canonical_asm_funcs, Q._rule_count,
+                    cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                    cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
+                    Q.sandbox.build_stripped_object, score._o_func_table,
+                    score.score_func, canonical._hand_coded_tier)
+            Q.QUEUE_PATH = str(Path(td) / "queue.json")
+            Path(Q.QUEUE_PATH).write_text(json.dumps(
+                {"items": [prev] if prev else [], "counts": {}}))
+            P.c_stems = lambda: ["faketu"]
+            canonical.scan_all = lambda: []
+            cheats.canonical_asm_funcs = lambda: set()
+            Q._rule_count = lambda f: 0
+            cheats.func_prologue_count = lambda f: 0
+            inlineasm.file_func_cheat_asm_count = lambda s, f: 0
+            cheats.is_jtbl_infra = lambda f: False
+            cheats.is_canonical_extraction_only = lambda f: False
+            Q.sandbox.build_stripped_object = lambda *a, **k: {}
+            score._o_func_table = lambda o: {"func_WB": (0, 0)}
+            score.score_func = lambda a, b, f: {"score": distance}
+            canonical._hand_coded_tier = lambda f: tier
+            try:
+                return Q.generate(workdir=td)["items"][0]
+            finally:
+                os.chdir(cwd)
+                (Q.QUEUE_PATH, P.c_stems, canonical.scan_all,
+                 cheats.canonical_asm_funcs, Q._rule_count,
+                 cheats.func_prologue_count, inlineasm.file_func_cheat_asm_count,
+                 cheats.is_jtbl_infra, cheats.is_canonical_extraction_only,
+                 Q.sandbox.build_stripped_object, score._o_func_table,
+                 score.score_func, canonical._hand_coded_tier) = orig
+
+    # (a) tier PERSISTED on every scanned item, in both distance bands
+    eq("queue tier: persisted on a >SUSPECT item",
+       _regen(60, "TIGHT_C").get("hand_coded_tier"), "TIGHT_C")
+    eq("queue tier: persisted on a >NEAR_CERTAIN item",
+       _regen(600, "POSSIBLE").get("hand_coded_tier"), "POSSIBLE")
+    eq("queue tier: absent when the scanner was never consulted (distance<=50)",
+       "hand_coded_tier" in _regen(10, "LOW"), False)
+
+    # (b) LOW tier re-verdicts a suspect to an ordinary C target (both bands),
+    #     and it stays in the ACTIVE lane — this is pure-C work, not authorize.
+    low_hi = _regen(600, "LOW")
+    eq("queue tier: LOW at distance>500 re-verdicts to C", low_hi["verdict"], "C")
+    eq("queue tier: LOW re-verdict stays active", low_hi["status"], "active")
+    eq("queue tier: LOW re-verdict records the evidence",
+       low_hi["hand_coded_tier"], "LOW")
+    eq("queue tier: LOW at distance>50 re-verdicts to C",
+       _regen(60, "LOW")["verdict"], "C")
+
+    # (c) a genuinely-signalled function still routes to ASM-STRUCTURAL /
+    #     authorize at >500, and an unknown tier keeps the SUSPECT label.
+    strong = _regen(600, "STRONG")
+    eq("queue tier: STRONG at distance>500 still routes ASM-STRUCTURAL",
+       strong["verdict"], "ASM-STRUCTURAL")
+    eq("queue tier: ASM-STRUCTURAL still lands in authorize",
+       strong["status"], "authorize")
+    eq("queue tier: POSSIBLE at distance>500 still routes ASM-STRUCTURAL",
+       _regen(600, "POSSIBLE")["verdict"], "ASM-STRUCTURAL")
+    eq("queue tier: UNAVAILABLE is not counter-evidence — stays ASM-SUSPECT",
+       _regen(600, "UNAVAILABLE")["verdict"], "ASM-SUSPECT")
+    eq("queue tier: POSSIBLE below near-certain stays ASM-SUSPECT",
+       _regen(60, "POSSIBLE")["verdict"], "ASM-SUSPECT")
+
+    # (d) STICKY items (owner_override / parked) are carried verbatim by regen,
+    #     so they never reach _route at all — the second half of the tier gap.
+    #     They get the evidence recorded; an ACTIVE LOW suspect also sheds the
+    #     label, but STATUS is never moved by the gate.
+    def _sticky(status: str, tier: str, verdict: str = "ASM-SUSPECT") -> dict:
+        return _regen(600, tier, prev={
+            "func": "func_WB", "file": "faketu", "distance": 600,
+            "verdict": verdict, "rules": 0, "status": status,
+            "owner_override": True, "regate": "prior note"})
+
+    ov = _sticky("active", "LOW")
+    eq("queue tier: sticky owner_override suspect records the tier",
+       ov["hand_coded_tier"], "LOW")
+    eq("queue tier: sticky active LOW suspect re-verdicts to C", ov["verdict"], "C")
+    eq("queue tier: sticky re-verdict keeps the owner override", ov["owner_override"], True)
+    check("queue tier: sticky re-verdict appends to the prior regate note",
+          ov["regate"].startswith("prior note | 2026-08-18 re-gate"))
+    parked = _sticky("parked", "LOW")
+    eq("queue tier: a PARKED sticky item keeps its verdict (status is sticky)",
+       parked["verdict"], "ASM-SUSPECT")
+    eq("queue tier: a parked sticky item still records the tier",
+       parked["hand_coded_tier"], "LOW")
+    eq("queue tier: sticky TIGHT_C keeps the ASM-SUSPECT label",
+       _sticky("active", "TIGHT_C")["verdict"], "ASM-SUSPECT")
+    eq("queue tier: sticky ASM-STRUCTURAL is never demoted by the gate",
+       _sticky("authorize", "LOW", verdict="ASM-STRUCTURAL")["verdict"],
+       "ASM-STRUCTURAL")
+
+
 def main() -> int:
     test_canonical()
     test_score()
@@ -2298,6 +2457,7 @@ def main() -> int:
     test_fake_annotated_lever_d_bypass()
     test_metrics()
     test_queue_reopen()
+    test_queue_hand_coded_tier()
     test_queue_write_serialization()
     test_canonical_build()
     test_score_object_paths()

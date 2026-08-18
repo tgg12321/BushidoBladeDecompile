@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+from pathlib import Path
 
 from . import buildconfig as cfg
 
@@ -47,9 +48,17 @@ from . import buildconfig as cfg
 # ASM-SUSPECT (bounded pure-C attempt, then PARK) — keep pushing pure C, the
 # size alone isn't evidence the function was hand-written.
 # See `.claude/rules/canonical-gate-distance-not-evidence.md`.
-SUSPECT_DISTANCE = 50       # > this, gate=C: structural-asm SUSPECT (bounded attempt then PARK)
+#
+# 2026-08-18 follow-up: a four-agent triage of all 47 ASM-SUSPECT queue items
+# found ZERO hand-coded candidates (every one tier LOW, none of the decisive
+# S1/S2/S6 signals) — the band is dominated by functions with NO C body written
+# yet, whose "distance" is just the full instruction count. A scanner-confirmed
+# LOW tier is therefore treated as affirmative counter-evidence and the item is
+# re-verdicted an ordinary C target; the tier is recorded on the verdict so the
+# evidence travels with the routing.
+SUSPECT_DISTANCE = 50       # > this: consult scan_hand_coded (SUSPECT unless tier=LOW)
 NEAR_CERTAIN_DISTANCE = 500  # > this AND hand-coded tier ≥ POSSIBLE: ASM-STRUCTURAL.
-                             # > this WITHOUT signal: demoted to ASM-SUSPECT.
+                             # > this WITHOUT signal: ASM-SUSPECT (or C if tier=LOW).
 
 # Unambiguous cop2/GTE mnemonics objdump knows by name. 'break' is EXCLUDED
 # (GCC emits it for div-by-zero / overflow traps — not an asm signal).
@@ -180,34 +189,77 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
         out["reason"] = "no definitive asm signal (structural distance not checked)"
         return out
     out["distance"] = distance
-    if distance > NEAR_CERTAIN_DISTANCE:
+    if distance > SUSPECT_DISTANCE:
         # Distance alone is not strong evidence — large pure-C functions
         # accumulate enough RA/scheduling drift to exceed the threshold without
-        # being hand-written. Require corroboration from scan_hand_coded.
+        # being hand-written. Require corroboration from scan_hand_coded, and
+        # RECORD the tier on the verdict either way: it is the evidence the
+        # routing rests on, and downstream consumers (engine/queue.py) carry it
+        # into the worklist so a reader can see WHY an item was labelled.
         tier = _hand_coded_tier(func)
-        if tier in ("STRONG", "POSSIBLE"):
+        out["hand_coded_tier"] = tier
+        if distance > NEAR_CERTAIN_DISTANCE and tier in ("STRONG", "POSSIBLE"):
             out["verdict"] = "ASM-STRUCTURAL"
-            out["hand_coded_tier"] = tier
             out["reason"] = (f"pure-C distance {distance} > {NEAR_CERTAIN_DISTANCE} "
                              f"AND scan_hand_coded tier={tier} — corroborated "
                              f"hand-asm (auto-escalate, no pure-C grind)")
+        elif tier == "LOW":
+            # Affirmative counter-evidence: the scanner ran and found NO
+            # hand-coded indicator (0-2/8, none of the decisive S1/S2/S6).
+            # A high distance then measures function SIZE / un-attempted body,
+            # not asm-ness — the 2026-08-18 triage of all 47 ASM-SUSPECT queue
+            # items found 0 hand-coded candidates, most with no C body written
+            # at all (distance == full instruction count). Route as an ordinary
+            # pure-C target rather than leaving a suspicion label that reads as
+            # evidence. UNAVAILABLE/TIGHT_C are NOT this case — unknown is not
+            # counter-evidence, so those keep the conservative SUSPECT label.
+            out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} but "
+                             f"scan_hand_coded tier=LOW (no S1/S2/S6 signal) — "
+                             f"distance is size, not hand-asm evidence. Ordinary "
+                             f"pure-C target. See canonical-gate-distance-not-evidence.md.")
         else:
             out["verdict"] = "ASM-SUSPECT"
-            out["hand_coded_tier"] = tier
-            out["reason"] = (f"pure-C distance {distance} > {NEAR_CERTAIN_DISTANCE} but "
-                             f"scan_hand_coded tier={tier} — distance alone is NOT "
-                             f"hand-asm evidence. Keep grinding pure C; size is just "
-                             f"size. See canonical-gate-distance-not-evidence.md.")
-    elif distance > SUSPECT_DISTANCE:
-        out["verdict"] = "ASM-SUSPECT"
-        out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} — "
-                         f"structural-asm suspect (bounded attempt, then PARK)")
+            out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} and "
+                             f"scan_hand_coded tier={tier} — structural-asm suspect; "
+                             f"distance alone is NOT hand-asm evidence, keep grinding "
+                             f"pure C. See canonical-gate-distance-not-evidence.md.")
     else:
         out["reason"] = f"pure-C distance {distance} <= {SUSPECT_DISTANCE} — pure-C target"
     return out
 
 
 _hand_coded_cache: dict[str, str] = {}
+_hand_coded_bulk: dict[str, str] | None = None
+
+
+def _hand_coded_bulk_tiers() -> dict[str, str] | None:
+    """{func: tier} for every NON-LOW function, from ONE whole-tree scan.
+
+    `scan_hand_coded.py --single` re-runs the full asm/funcs scan internally
+    (it needs cluster context), so it costs ~5s PER CALL. `queue regen` now
+    consults the tier for every item above SUSPECT_DISTANCE (~160 items), which
+    would be ~13 minutes of the same scan repeated. `--all --json` emits exactly
+    the STRONG/POSSIBLE/TIGHT_C candidates in one pass, so anything with an asm
+    file and no entry here is LOW by construction (those are the only four
+    tiers). Returns None if the scan is unavailable — callers fall back to the
+    per-function path."""
+    global _hand_coded_bulk
+    if _hand_coded_bulk is None:
+        import json
+        import os
+        try:
+            env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+            r = subprocess.run(
+                ["python3", "tools/scan_hand_coded.py", "--all", "--json"],
+                capture_output=True, text=True, env=env, timeout=600,
+            )
+            if r.returncode != 0 or not r.stdout.strip():
+                return None
+            _hand_coded_bulk = {e["func"]: e["tier"] for e in json.loads(r.stdout)}
+        except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError, KeyError,
+                TypeError):
+            return None
+    return _hand_coded_bulk
 
 
 def _hand_coded_tier(func: str) -> str:
@@ -218,6 +270,15 @@ def _hand_coded_tier(func: str) -> str:
     """
     if func in _hand_coded_cache:
         return _hand_coded_cache[func]
+    bulk = _hand_coded_bulk_tiers()
+    if bulk is not None and Path(f"asm/funcs/{func}.s").exists():
+        # Present in the candidate dump -> its tier; absent WITH an asm file ->
+        # LOW (the dump carries every non-LOW function). A missing asm file is
+        # NOT LOW — it falls through to the single-function path, which reports
+        # UNAVAILABLE.
+        tier = bulk.get(func, "LOW")
+        _hand_coded_cache[func] = tier
+        return tier
     import json
     import os
     try:
