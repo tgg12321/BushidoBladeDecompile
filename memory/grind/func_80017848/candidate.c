@@ -1,62 +1,71 @@
-/* CANDIDATE - func_80017848, s7 (2026-08-18, forensics).  sandbox --disable all = 11
- * 125/127 build insns, frame 0x40 both sides.  FLOOR 14 -> 11 (variant O).
+/* CANDIDATE - func_80017848, s8 (2026-08-18, rederive).  sandbox --disable all = 5
+ * FLOOR 11 -> 5 (variant Z1).  Residual is 5 differing instructions, all of them
+ * inside the two scan-loop preheaders; the rest of the function is exact.
  *
- * WHAT CHANGED FROM THE S6 CANDIDATE (B, 14).  Two independent structural facts
- * were combined; each one alone is worth nothing, together they are worth 3:
+ * THREE INDEPENDENT LEVERS WERE STACKED THIS SESSION.  Each was measured on its
+ * own; the order below is the order they were found, and the score after each:
  *
- *  (1) THE LOOP-1 EXIT-TAIL RELOAD (new this session).  `p` is read fresh ONCE
- *      before loop 1's entry guard and re-read ONLY in loop 1's EXIT TAIL (after
- *      the do/while, inside the if).  Loop 2's entry guard then reads its count
- *      through the SAME `p`, so on loop 1's skip path it consumes the pre-guard
- *      value and on the loop-ran path it consumes the reload.  GCC turns that
- *      into exactly target's control flow: the `blez` at loop 1's guard branches
- *      PAST the reload straight into the middle of loop 2's guard block
- *      (`blez v0,1444` where `1444` is the `sll`, one insn after the
- *      `lw a0,12(s2)` at `1440`).  This is target's `blez v0,.L8001791C` shape.
- *  (2) THE BASE'S ADDEND IS THE PRE-JOIN `slots` READ, NOT `p` (the s6 E-s6-3
- *      fold-defeat lever, which s6 could only measure on the OLD chassis where it
- *      LOST an instruction).  If the base is built from `p` as well, both the
- *      guard address and the base are `(plus shift p)` inside the SAME cse
- *      extended basic block, cse.c rewrites the base to a copy of the guard
- *      address, and the preheader is 1 insn short in loop 1 and 2 short in loop 2
- *      (124 insns, score 14 - variants J/M/N below).  Sourcing the addend from
- *      `slots`, which was live before the join, makes the two addends
- *      un-equatable and both `addu`s survive (s7/O/ings_pp.c.combine: insn 146
- *      `reg111 = reg110 + reg/v78` for the guard, insn 158
- *      `reg/v79 = reg110 + reg/v77` for the base - two independent addsi3s).
+ *  (1) 11 -> 9  THE LOOP BASE'S ADDEND IS ITS OWN FRESH READ OF ctx+0xC, NOT THE
+ *      TOP-GUARD `slots` READ (s8 variant B_basefresh).  s7 had concluded the
+ *      opposite ("source the addend from `slots` so the two addends are
+ *      un-equatable"), but that conclusion was measured on the s6 chassis.  On
+ *      the s7 chassis a per-loop fresh read is worth 2 points: loop 2's preheader
+ *      becomes instruction-exact with target (9 insns) because loop 2's block is
+ *      a cse JOIN (loop 1's `blez` branches into the middle of it, past the
+ *      `lw a0,12(s2)`), so cse's table is reset and the redundant read survives
+ *      as a real `lw`.  With `slots` the whole preheader was 2 insns short.
  *
- * S7 MEASUREMENTS (all from a clean tree via s7/score.sh; s7/scores.txt):
- *   O   = THIS FORM: guards through fresh `p` + exit-tail reload, base through
- *         `slots`                                                        -> 11
- *   R   = O but the base is written inside the loop body (LICM hoists it)  -> 11
- *   Y2  = O + an explicit per-loop `links` local read after the base       -> 11
- *   B   = s6 candidate (guards through `slots`, base from a fresh read)    -> 14
- *   J   = guards AND base both through `p` (+ exit-tail reload)            -> 14
- *   M   = J with the base written inside the loop body                     -> 14
- *   N   = J with no base variable at all (fully inlined)                   -> 14
- *   S   = J but only loop 1's base through `slots`                         -> 14
- *   W   = O but only loop 2's base through `p`                             -> 14
- *   Y1  = O + the `links` local read BEFORE the base                       -> 15
- *   V   = guards through `slots`, bases through `p`                        -> 16
- *   K   = J + an explicit `shift` local recomputed in the exit tail        -> 16
- *   X   = O + that same explicit `shift` local                             -> 17
+ *  (2) 9 -> 6  ONE LOCAL SERVES AS BOTH LOOP 1'S GUARD ADDRESS AND THE COUNT IT
+ *      LOADS (`t = sh + (s32)p; t = *(s32 *)(t + 0x1C); if (i < t)`).  This is
+ *      the single highest-value discovery of the session and the mechanism is
+ *      exact: cse.c hashes the guard's address expression `(plus shift p)` and
+ *      records the pseudo holding it.  Overwriting that SAME pseudo with the
+ *      loaded count INVALIDATES the hash entry (cse_insn -> invalidate on the
+ *      SET_DEST), so when the loop base recomputes `(plus shift p)` in the
+ *      preheader cse can no longer fold it to a copy of the guard address.
+ *      Without the reuse, loop 1's base collapsed to `addu a0,a1,zero` (a copy of
+ *      the still-live guard address) and the preheader was 1 insn short; with it,
+ *      the base is genuinely recomputed as `addu a0,a1,a0`.
+ *      This lever is loop-1 ONLY.  Applying it to loop 2 as well costs 26 points
+ *      (P_treuse_both = 32) and applying it to the s7 O chassis costs 31
+ *      (S_treuse_O = 37) - it is chassis- and loop-specific.
  *
- * THE ENTIRE REMAINING RESIDUAL IS 2 INSTRUCTIONS, AND THEY ARE THE SAME
- * INSTRUCTION TWICE (s7/T.txt vs s7/B.txt - the ONLY non-register hunks left):
- *      target preheader:  addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3
- *      ours:              addu a0,a1,a2   / lw a1,16(s2)
- * i.e. target routes the base's addend through a DEAD register copy of the
- * pre-guard pointer, once per scan loop.  Everything else in the function is
- * instruction-identical; the only other diff is the register naming that falls
- * out of keeping `slots` live (ours: slots=a2, links=a1; target: slots=v1 and
- * dead after the two >=0 guards, links=a2).
+ *  (3) 6 -> 5  AN EXPLICIT `sh = slot_a << 6;` LOCAL, SHARED BY BOTH LOOPS.
+ *      s7 killed the explicit shift local (variants K=16, X=17) - on the s7
+ *      chassis.  On this chassis it is worth 1 point: it fixes loop 1's links
+ *      register (ours `lw a1,16(s2)` -> target's `lw a2,16(s2)`, which also fixes
+ *      the dependent `addu v0,v0,a2` in loop 1's body).  Recomputing it per loop
+ *      (Z5) or using two shift locals (Z7) both LOSE the point.
  *
- * DO NOT re-propose a C-level copy statement for that `addu a3,a0,zero` - s6
- * killed it at pass level (cse.c folds it when the expressions are equal,
- * combine.c's try_combine propagates and deletes it when they are not; s6/G's
- * dump shows the copy already `NOTE_INSN_DELETED` before local-alloc).  In
- * target the copy is dead after its single use in BOTH preheaders, so it is a
- * pass artifact of a source shape not yet found, not a written copy.
+ * THE REMAINING 5 (s8/T.txt vs s8/B.txt - the complete residual):
+ *   loop 1:  target  addu a3,a0,zero  /  addu a0,a1,a3
+ *            ours    addu a0,a1,a0
+ *   loop 2:  target  sll a1,s4,6  /  addu a3,a0,zero  /  addu a0,a1,a3
+ *            ours    lw v0,12(s2)  /  addu a0,a1,v0
+ * i.e. the SAME unexplained artifact s7 already isolated: target routes each
+ * preheader's base addend through a dead reg-reg copy of the pre-guard pointer.
+ * Plus, now, loop 2's `sll` which our shared `sh` local hoists away (recomputing
+ * it costs more than it buys - Z5 = 6).
+ *
+ * WHAT IS NOW PROVEN ABOUT THAT COPY (do not re-derive):
+ *   - It is NOT a source-level copy statement.  `q = p; base = sh + (s32)q;`
+ *     was re-measured on THIS chassis (W1_qcopy) and costs 6 points (11).  s6's
+ *     pass-level kill therefore survives the two chassis changes since.
+ *   - It is NOT a cse-created copy from a redundant load placed in the guard
+ *     block.  ZB_readinguard_l1 puts a second `*(u8 **)(ctx + 0xC)` read BEFORE
+ *     the guard branch (so the copy would land in a different basic block from
+ *     the base add, where combine.c cannot reach across to propagate it); the
+ *     read is folded away entirely and the emitted code is byte-identical to Z1.
+ *   - It is not reachable by re-routing the addend: `p` (U2 = 11), `slots`
+ *     (U3 = 11, U4 = 9), a fresh read (this candidate), a named intermediate
+ *     read in the preheader (I/J8 = 9), the base written inside the loop body
+ *     (F/U6, no change) all leave it untouched.
+ *   - loop.c is ruled out as the emitter by source reading: the only two places
+ *     loop.c emits a preheader copy are `move_movables`'s `m->move_insn` path
+ *     (requires a REG_EQUIV note or a CONSTANT REG_EQUAL - our addend is a
+ *     memory load, neither applies) and the `m->partial && m->match` path
+ *     (zero/sign-extension movable combining, which needs a `reg = 0` movable
+ *     whose next insn sets a SUBREG of it - not our shape).
  */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
@@ -65,6 +74,8 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *base;
     u8 *rec_a;
     u8 *rec_b;
+    s32 sh;
+    s32 t;
     s32 i;
     s32 dist;
 
@@ -80,9 +91,12 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     }
 
     p = *(u8 **)(ctx + 0xC);
+    sh = slot_a << 6;
     i = 0;
-    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x1C)) {
-        base = (u8 *)((slot_a << 6) + (s32)slots);
+    t = sh + (s32)p;
+    t = *(s32 *)(t + 0x1C);
+    if (i < t) {
+        base = (u8 *)(sh + (s32) * (u8 **)(ctx + 0xC));
         do {
             if (*(u16 *)((*(u8 *)(base + i + 0x24) << 4) +
                          (s32) * (u8 **)(ctx + 0x10) + 0x4) == slot_b) {
@@ -94,8 +108,8 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     }
 
     i = 0;
-    if (i < *(s32 *)((slot_a << 6) + (s32)p + 0x20)) {
-        base = (u8 *)((slot_a << 6) + (s32)slots);
+    if (i < *(s32 *)(sh + (s32)p + 0x20)) {
+        base = (u8 *)(sh + (s32) * (u8 **)(ctx + 0xC));
         do {
             if (*(s16 *)((*(u8 *)(base + i + 0x2C) << 4) +
                          (s32) * (u8 **)(ctx + 0x10) + 0x6) == slot_b) {

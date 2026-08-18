@@ -674,3 +674,87 @@ and in BOTH loops.  Verdict: KILLED (asymmetric and swapped assignments).
 - probe: Variant V (guards through `slots`, bases through `p`), W (only loop 2's base through `p`), S (only loop 1's base through `slots`), scored from a clean tree against O = 11.
 - result: V = 16, W = 14, S = 14. The guard must consume the FRESH read (it is what target's cross-jump edge carries into loop 2) and the base must consume the PRE-JOIN read, in that assignment and in BOTH loops.
 - verdict: KILLED
+
+## [s8] s7's "the base's addend must be the PRE-JOIN `slots` read" conclusion is chassis-relative and inverts on the s7 chassis itself.
+- mechanism: s7 measured the addend routing on the s6 chassis and banked "guard = fresh read, base = `slots`" (variant O = 11) as settled. But the fold cse actually performs depends on which BASIC BLOCK the base add sits in relative to the guard's address expression, not on which C variable supplies the addend. Loop 2's preheader is a cse JOIN - target's loop-1 `blez` branches to .L8001791C, which sits AFTER both `lw a0,0xC(s2)` and `sll a1,s4,6` - so cse's hash table is reset there and a redundant read in loop 2's base block survives as a real `lw` instead of being folded into the guard's value.
+- probe: B_basefresh - variant O with `base = (u8 *)((slot_a << 6) + (s32) * (u8 **)(ctx + 0xC));` in BOTH loops instead of `+ (s32)slots`. Scored from a clean tree with s8/score.sh, then disassembled with s8/dis2.sh.
+- result: 11 -> 9. Loop 2's preheader becomes instruction-count-exact with target (9 insns: lw/sll/addu/lw/blez/addu/lw/lw/addu). Loop 1 still folds (7 insns vs target's 9... 8 vs 9 after the branch). Confirmed by the disassembly diff, not just the score.
+- verdict: CONFIRMED (and s7's opposite conclusion is retired)
+
+## [s8] Reusing ONE local for both a scan loop's guard ADDRESS and the count it loads defeats cse's fold of the loop base against the guard address.
+- mechanism: cse.c hashes the guard's address expression `(plus shift p)` and records the pseudo that holds it. Writing the loaded count back into that SAME pseudo makes cse_insn invalidate the hash entry on the SET_DEST. When the loop base later recomputes `(plus shift p)` in the preheader, cse has no available register for it and must emit a real `addu`. Without the reuse the base collapses to `addu a0,a1,zero` - a copy of the still-live guard address - and the preheader is one instruction short of target.
+- probe: Q_treuse_l1 - loop 1's guard rewritten as `t = sh + (s32)p; t = *(s32 *)(t + 0x1C); if (i < t)`, on the B_basefresh chassis. Also P_treuse_both (the same on both loops), R_treuse_l2 (loop 2 only), S_treuse_O (the same on the s7 O chassis).
+- result: Q = 6 (9 -> 6, and loop 1's base is now genuinely recomputed as `addu a0,a1,a0`). P = 32, R = 9, S = 37. The lever is LOOP-1-ONLY and chassis-specific: on loop 2 it costs 26 points, on the s7 chassis 31.
+- verdict: CONFIRMED (loop 1) / KILLED (loop 2, and on the O chassis)
+
+## [s8] s7's kill of the explicit `slot_a << 6` shift local is chassis-relative and reverses on the Q chassis.
+- mechanism: s7 measured K = 16 and X = 17 and banked "the extra live pseudo costs far more than the one `sll` it saves". With the guard-address/count reuse in place, loop 1's register pressure is different: our links read was landing in a1 (target: a2) because a1 was free after `addu a0,a1,a0`. A shared `sh` local keeps the shift live into loop 2's guard, which pushes the links read to a2 and fixes the dependent `addu v0,v0,a2` in loop 1's body.
+- probe: Z1_shiftlocal - `sh = slot_a << 6;` assigned once before loop 1's guard and used by both loops' guards and bases, on the Q chassis. Plus Z4 (loop 1 only), Z5 (reassigned before loop 2), Z7 (two shift locals).
+- result: Z1 = 5 (6 -> 5). Z4 = 6, Z5 = 6, Z7 = 11. The local must be assigned ONCE and SHARED by both loops; every other spelling of it loses the point.
+- verdict: CONFIRMED (and s7's opposite conclusion is retired)
+
+## [s8] A source-level copy statement for target's `addu a3,a0,zero` is still dead on the Q chassis (s6's pass-level kill survives two chassis changes).
+- mechanism: s6 proved at RTL level that `q = p; base = shift + q;` is deleted before local-alloc (cse folds it when the expressions are equal, combine's try_combine propagates and deletes it when they are not). The frontier flagged that every s3-s6 spelling conclusion is chassis-relative, so the kill was worth one re-measurement now that the chassis has changed twice more.
+- probe: W1_qcopy (the copy feeding both loops' bases on the Q chassis) and W2_qcopy_t2 (the same plus a loop-2 guard reuse).
+- result: W1 = 11 (5 points WORSE than Q = 6), W2 = 34. The copy is not merely inert, it actively perturbs allocation. s6's kill is re-confirmed on the current chassis.
+- verdict: KILLED (re-confirmed)
+
+## [s8] Placing the redundant `ctx+0xC` read in the GUARD block (before the branch) puts the cse-created copy in a different basic block from the base add, where combine.c cannot reach across to propagate and delete it.
+- mechanism: combine.c only combines insns within one basic block. If cse folds a redundant load in the guard block into `(set q p)` and the base add lives in the post-branch preheader block, try_combine cannot substitute q -> p, so the copy should survive as target's `addu a3,a0,zero`.
+- probe: ZA_readinguard (both loops), ZB_readinguard_l1 (loop 1 only), ZC_readinguard_l2 (loop 2 only), on the Z1 chassis.
+- result: ZB = 5 with a disassembly BYTE-IDENTICAL to Z1 - the read is folded away entirely, no copy is ever created, so there is nothing for combine to fail to delete. ZA = 16, ZC = 8. The block-boundary reasoning is sound but unreachable from this source position.
+- verdict: KILLED
+
+## [s8] loop.c is the pass that emits target's dead preheader copy.
+- mechanism: The frontier's next probe named `move_movables` as the suspect. loop.c has exactly two preheader-copy emitters.
+- probe: Read tools/gcc-2.7.2/loop.c: the `m->move_insn` path (lines 653-672, 1673-1712) and the `m->partial && m->match` path (lines 1290-1336, 1639-1662).
+- result: `m->move_insn` is set ONLY when the insn carries a REG_EQUIV note or a REG_EQUAL note with a CONSTANT operand (or a REG_RETVAL libcall block). Our addend is a plain memory load - none of those apply. The `m->partial && m->match` path is the zero/sign-extension movable combiner: it requires a `reg = 0` movable whose NEXT insn sets a SUBREG of that reg, which is not our shape. loop.c is eliminated as the emitter.
+- verdict: KILLED
+
+## [s8] Structurally different loop shapes (variable reuse of the pointer as the base, walking-pointer body, for-loop guard, count-into-local guard) reach target's preheader.
+- mechanism: The rederive mandate: produce a shape that is not a tweak of the inherited one.
+- probe: A_preuse (`p` reused as the base in both loops), D_walkptr (`rec_a` walked through the byte array instead of `base + i`), E_countlocal (the guard count hoisted into a local BEFORE the `if`), U8_l1_condfresh (the do/while condition through the fresh read expression), Y3_condassign (the do/while condition assigning into the count local), C_twobases (per-loop base locals).
+- result: A = 14, D = 45, E = 32, U8 = 21, Y3 = 29, C = 11 (identical to O). All KILLED except C, which is a pure renaming with no effect. The winning shapes were NOT loop-shape changes but the read-routing and variable-reuse levers above.
+- verdict: KILLED
+
+## [s8] s7's banked conclusion 'the loop base's addend must be the PRE-JOIN `slots` read, in BOTH loops' is chassis-relative and inverts: a per-loop FRESH read of ctx+0xC for the base addend is worth 2 points on the s7 chassis itself.
+- mechanism: The fold cse performs depends on which BASIC BLOCK the base add sits in relative to the guard's address expression, not on which C variable supplies the addend. Loop 2's preheader is a cse JOIN (target's loop-1 `blez` branches to .L8001791C, which sits AFTER both `lw a0,0xC(s2)` and `sll a1,s4,6`), so cse's hash table is reset there and a redundant read in loop 2's base block survives as a real `lw` instead of being folded into the guard's value. With `slots` as the addend the whole preheader was 2 insns short.
+- probe: B_basefresh - variant O with `base = (u8 *)((slot_a << 6) + (s32) * (u8 **)(ctx + 0xC));` in both loops instead of `+ (s32)slots`. Scored from a clean tree with tmp/grind/func_80017848/s8/score.sh, then disassembled with s8/dis2.sh to confirm the mechanism rather than just the number.
+- result: 11 -> 9. Loop 2's preheader becomes instruction-count-exact with target (9 insns). Loop 1 still folds its base into a copy of the guard address and stays 1 insn short.
+- verdict: CONFIRMED
+
+## [s8] Reusing ONE local for both loop 1's guard ADDRESS and the count it loads through that address defeats cse's fold of the loop base against the guard address.
+- mechanism: cse.c hashes the guard's address expression `(plus shift p)` and records the pseudo holding it. Writing the loaded count back into that SAME pseudo makes cse_insn invalidate the hash entry on the SET_DEST, so when the loop base later recomputes `(plus shift p)` in the preheader cse has no available register for it and must emit a real `addu`. Without the reuse the base collapses to `addu a0,a1,zero` - a copy of the still-live guard address.
+- probe: Q_treuse_l1 - loop 1's guard rewritten as `t = sh + (s32)p; t = *(s32 *)(t + 0x1C); if (i < t)` on the B_basefresh chassis. Controls: P_treuse_both (both loops), R_treuse_l2 (loop 2 only), S_treuse_O (the same lever on the s7 O chassis).
+- result: Q = 6 (9 -> 6), and the disassembly confirms loop 1's base is now genuinely recomputed as `addu a0,a1,a0`. Controls: P = 32, R = 9, S = 37 - the lever is loop-1-only and chassis-specific.
+- verdict: CONFIRMED
+
+## [s8] s7's kill of the explicit `slot_a << 6` shift local (K = 16, X = 17) is chassis-relative and reverses on the s8 chassis.
+- mechanism: With the guard-address/count reuse in place, loop 1's register pressure differs: our links read was landing in a1 (target: a2) because a1 fell free after `addu a0,a1,a0`. A single shared `sh` local keeps the shift live into loop 2's guard, pushing the links read to a2 and fixing the dependent `addu v0,v0,a2` in loop 1's body.
+- probe: Z1_shiftlocal - `sh = slot_a << 6;` assigned once before loop 1's guard and used by both loops' guards and bases, on the Q chassis. Controls: Z4 (loop 1 only), Z5 (reassigned before loop 2), Z7 (two shift locals).
+- result: Z1 = 5 (6 -> 5). Z4 = 6, Z5 = 6, Z7 = 11. The local must be assigned ONCE and SHARED by both loops; every other spelling loses the point.
+- verdict: CONFIRMED
+
+## [s8] A source-level copy statement for target's `addu a3,a0,zero` might survive on the new chassis even though s6 killed it at pass level.
+- mechanism: s6 proved at RTL level that `q = p; base = shift + q;` is deleted before local-alloc (cse folds it when the expressions are equal; combine's try_combine propagates and deletes it when they are not). Since the frontier flags every pre-s7 spelling conclusion as chassis-relative and the chassis has now changed twice more, the kill was worth exactly one re-measurement.
+- probe: W1_qcopy (the copy feeding both loops' bases on the Q chassis) and W2_qcopy_t2 (the same plus a loop-2 guard reuse), scored from a clean tree.
+- result: W1 = 11, five points WORSE than its base Q = 6. W2 = 34. The copy is not merely inert - it actively perturbs allocation. s6's pass-level kill is re-confirmed on the current chassis and needs no further re-testing.
+- verdict: KILLED
+
+## [s8] Placing the redundant ctx+0xC read in the GUARD block (before the branch) puts the cse-created copy in a different basic block from the base add, where combine.c cannot reach across to propagate and delete it, so target's `addu a3,a0,zero` survives.
+- mechanism: combine.c only combines insns within one basic block. If cse folds a redundant load in the guard block into `(set q p)` and the base add lives in the post-branch preheader block, try_combine cannot substitute q -> p and the copy would have to survive.
+- probe: ZA_readinguard (both loops), ZB_readinguard_l1 (loop 1 only), ZC_readinguard_l2 (loop 2 only), on the Z1 chassis, each scored and ZB disassembled.
+- result: ZB = 5 with a disassembly BYTE-IDENTICAL to Z1 - the extra read is folded away entirely, so no copy is ever created and there is nothing for combine to fail to delete. ZA = 16, ZC = 8. The block-boundary reasoning is sound but unreachable from this source position.
+- verdict: KILLED
+
+## [s8] loop.c is the pass that emits target's dead preheader copy (the frontier's named next probe).
+- mechanism: loop.c has exactly two preheader-copy emitters: `move_movables`'s `m->move_insn` path, and the `m->partial && m->match` movable-matching path.
+- probe: Read tools/gcc-2.7.2/loop.c:653-672 and :1673-1712 (the move_insn flag and its emission), and :1290-1336 and :1639-1662 (the partial/match path).
+- result: `m->move_insn` is set ONLY when the movable's insn carries a REG_EQUIV note, or a REG_EQUAL note whose operand is CONSTANT_P, or a REG_RETVAL libcall block - our addend is a plain memory load and qualifies for none. The `m->partial && m->match` path is the zero/sign-extension movable combiner and requires a `reg = 0` movable whose NEXT insn sets a SUBREG of that reg - not our shape. loop.c is eliminated; the emitter must be a pass AFTER cse2 that combine does not undo.
+- verdict: KILLED
+
+## [s8] A structurally different loop shape (the mandated rederive axis) reaches target's preheader where read-routing tweaks could not.
+- mechanism: Fresh shapes rather than tweaks: reuse the pointer variable itself as the base, walk a pointer through the byte array instead of indexing `base + i`, hoist the guard count into a local before the `if`, run the do/while condition through the fresh-read expression or assign into the count local, give each loop its own base local.
+- probe: A_preuse, D_walkptr, E_countlocal, U8_l1_condfresh, Y3_condassign, C_twobases - all scored from a clean tree against the then-current best.
+- result: A = 14, D = 45, E = 32, U8 = 21, Y3 = 29, C = 11 (a pure rename with no effect). Every loop-shape change loses. The session's three wins were read-routing and variable-reuse levers inside the existing shape, not loop shape.
+- verdict: KILLED

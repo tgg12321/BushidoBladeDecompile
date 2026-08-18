@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 11,
    "modality": "forensics",
    "headline": "Floor 14 -> 11: the loop-1 exit-tail pointer reload (target's skip-past-the-reload branch) COMBINED with s6's cse-fold-defeat lever, whose sign was chassis-relative; residual is now exactly one dead r"
+  },
+  {
+   "session": 8,
+   "floor": 5,
+   "modality": "rederive",
+   "headline": "Floor 11 -> 5: three stacked levers (per-loop fresh read for the base addend; loop-1 guard-address/count sharing ONE local, which invalidates cse's hash entry and stops the base folding to a copy; one"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 2 instructions are one dead reg-reg copy per scan loop, emitted by a GCC pass rather than written in C, and the pass can be named from the dumps already on disk.",
-   "mechanism": "Target routes the loop base's addend through `addu a3,a0,zero` - a copy of the pre-guard pointer that is read once by the next `addu a0,a1,a3` and never again, in BOTH preheaders. C-level copies are closed by name (cse.c / combine.c, s6), and in our build the addend dies at the base's own insn (REG_DEAD reg/v77 on insn 158 of s7/O/ings_pp.c.combine), which is precisely why no copy is needed. So the question is which pass emits a redundant move INTO a loop preheader, and what source shape stops the addend dying at the base insn.",
-   "next_probe": "Read tools/gcc-2.7.2/loop.c `move_movables` (the `m->move_insn` path emits `(set new old)` at the loop start when a movable's source register may be modified) and local-alloc.c `block_alloc`/`combine_regs` (the tie-the-output-to-a-dying-input path) against the dumps already in tmp/grind/func_80017848/s7/O/ - ings_pp.c.loop, .lreg, .greg. Then build the C shape those passes require and score it with s7/score.sh. Do NOT re-propose a source-level copy statement (s6 pass-level kill) and do NOT re-open base placement, an explicit shift local, explicit links locals, or swapped guard/base roles (all killed this session)."
+   "hypothesis": "The dead preheader copy (`addu a3,a0,zero`, once per scan loop) is emitted by a pass that runs AFTER combine.c - local-alloc.c, global-alloc.c or reload - and is therefore invisible to every source-level copy or read-placement lever tried so far.",
+   "mechanism": "s6 proved combine deletes any copy it can see, and s8 re-confirmed that on the current chassis (W1 = 11) and eliminated loop.c by reading its only two preheader-copy emitters (the `m->move_insn` REG_EQUIV/CONSTANT path and the `m->partial && m->match` zero-extension combiner). A copy that survives to the final assembly and that combine never removed must therefore be created after combine. In target the copy's destination a3 is read once by the next insn and never again, and the base's destination a0 is the SAME hard register the addend arrived in - the signature of an allocator/reload artifact rather than a written copy.",
+   "next_probe": "Generate the -da dumps for the s8 Z1 candidate into tmp/grind/func_80017848/s8/O2/ (the s7 dump.sh shows the recipe) and read ings_pp.c.lreg, .greg and .postreload in that order, looking for where target's shape would need a copy that ours does not: specifically whether our base pseudo is allocated the same hard reg as its addend (which makes the copy unnecessary) and what would have to be true of the addend's live range for local-alloc's `block_alloc`/`combine_regs` tie-to-a-dying-input to fail. Do NOT re-open loop.c, a source-level copy statement, addend re-routing, or read placement in the guard block - all four are killed with measurements this session."
   },
   {
-   "hypothesis": "The register-naming residual (ours slots=a2 / links=a1 vs target slots=v1 / links=a2) is downstream of frontier item 1 and should not be attacked separately first.",
-   "mechanism": "Ours keeps `slots` live across both scan loops because the loop bases consume it; target's top-guard slots read dies after the two `>=0` guards and each preheader instead copies the fresh pre-guard pointer. If the copy in frontier item 1 is solved by giving the base's addend its own short live range, `slots` stops being live across the loops and the naming should follow for free.",
-   "next_probe": "After ANY movement on frontier item 1, re-diff with s7/dis2.sh and check whether the slots/links register assignment collapsed to target's without further work. Only if it did not should the allocator's preference records in s7/O/ings_pp.c.greg be read as their own mechanism."
+   "hypothesis": "Loop 2's remaining `sll a1,s4,6` can be recovered without losing the point that sharing `sh` across both loops buys, by making the shift's live range end at loop 2's guard rather than at loop 2's base.",
+   "mechanism": "Sharing one `sh` local across both loops fixed loop 1's links register (a1 -> a2) and is worth 1 point, but it also lets GCC keep the single `sll` live into loop 2 instead of recomputing it there, costing loop 2's `sll`. The two effects are currently coupled because the same local feeds loop 1's guard, loop 1's base, loop 2's guard and loop 2's base. Decoupling them means finding a spelling where the shift is shared by the two GUARDS but recomputed for loop 2's BASE - the two crude decouplings already tried (Z5 reassigns `sh` before loop 2; Z7 uses two shift locals) both lose more than they gain.",
+   "next_probe": "On the Z1 chassis, sweep the four-way assignment of `sh` vs an inline `(slot_a << 6)` across {loop1 guard, loop1 base, loop2 guard, loop2 base} - 16 bodies, all scorable in one s8/score.sh call - and read the disassembly of any that reaches 4 or below. Z1 (all four through `sh`) = 5, Z4 (loop 1 only) = 6 and Z7 (two locals) = 11 are already measured and are three of the sixteen."
   },
   {
-   "hypothesis": "Every remaining banked spelling conclusion from s3/s4/s5/s6 is chassis-relative to a chassis that has now changed TWICE, and must be re-run before it is spent.",
-   "mechanism": "s6 retired the s3/s4/s5 chassis as semantically divergent; s7 then found s6's own D/G verdict inverted in sign on the corrected chassis (the fold-defeat lever went from -1 to +3). What survives untouched is only the pass-level kills (H-s6-2, H-s6-3, H-s7-3..H-s7-6), because they are RTL facts rather than score comparisons.",
-   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against the s7 candidate with s7/score.sh (one blocking call scores a whole list of bodies from a clean tree). Do not re-open a broad preheader sweep - targeted re-validation only."
+   "hypothesis": "Every remaining banked spelling conclusion - now including s8's own - is chassis-relative and must be re-measured before it is spent, because the chassis has changed in EVERY session since s5.",
+   "mechanism": "s6 retired the s3/s4/s5 chassis as semantically divergent; s7 found s6's fold-defeat lever inverted in sign on the corrected chassis; s8 found TWO of s7's kills (the `slots` addend and the explicit shift local) inverted on the s7 chassis itself, worth 2 and 1 points respectively in the direction s7 had ruled out. The pattern is now three sessions deep and is the single most reliable source of free points on this function. What survives chassis changes untouched is only the pass-level kills, because those are RTL facts rather than score comparisons: H-s6-2, H-s6-3, H-s7-3..H-s7-6, s8's loop.c elimination, and s8's re-confirmed source-level-copy kill.",
+   "next_probe": "Before spending any banked spelling conclusion, re-run it as a matched pair against the s8 Z1 candidate with s8/score.sh. The highest-value re-runs are the s7 kills that were never retested on a later chassis: variant Y1/Y2 (the links local's position - s8's X1/X2/X3 retested this on the Q chassis and got 12/10/7, all worse, so this one is now closed), and the s3-era conclusions about base placement and guard/base role swapping, which have not been retested since s6 retired their chassis."
   }
  ],
  "judge_constraints": [],
