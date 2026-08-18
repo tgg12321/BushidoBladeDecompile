@@ -28,7 +28,9 @@
    "next_probe": "After the ruling, take one sibling (e.g. the function at code6cac_b.c:1452), apply the candidate.c recipe, and measure sandbox --disable all before and after."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "OWNER RULING 2026-08-17 (decisions.md): canonical-asm authorization GRANTED \u2014 inline_asm_canonical.txt entry added (three GTE islands, admissibility test recorded, 26-sibling cluster inherits subject to the mechanical per-function check). Integration: apply candidate.c, fresh layer-2 cheat-reviewer on the diff, verify-oracle --rebuild, queue done."
+ ],
  "banned_constructs": [],
  "ladder_skip": 0,
  "pending_fixup": null,

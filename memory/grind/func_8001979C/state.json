@@ -66,11 +66,9 @@
  ],
  "judge_constraints": [
   "LAYER-1 CHEAT-REVIEWER FAIL: Six of the seven codegen constructs are legitimately family-sanctioned with named, dump-verified GCC-pass mechanisms and honest FAKE annotations, but the `nd` named-intermediate (loop-1/loop-2 `nd = W - bits_left; needed = nd;`) is filed under the 'named-intermediate declaration order' (LUID-bias) family despite never having that mechanism \u2014 or any specific mechanism \u2014 independently established; its self-vet justification is 'measured allocation pressure', which is not the cited precedent's mechanism and was never confirmed with an allocno/cse/greg dump the way eve",
-  "func_8001979C is FROZEN pending the owner's ruling: do not re-propose, respell, or substitute any construct that separates a constant's load site from its use site (the `nd` named intermediate or any equivalent), and do not submit the function as complete; leave src/code6cac.c at the policy-clean floor-4 form."
+  "OWNER RULING 2026-08-17 (decisions.md): named-intermediate family GRANTED scoped by shape (six mandatory bounds; see no-new-park-categories.md clarification). The nd intermediate is UNBANNED. Execution conditions: re-apply the floor-4 candidate body + nd with FAKE annotations on all four levers (hi/val/neg2/nd, mechanism cse.c cited); independently re-measure sandbox --disable all == 0 (prior score-0 single-sourced); retire all 22 regfix rules incl. the two lost-codegen inserts; fresh layer-1 + layer-2 review; verify-oracle before queue done."
  ],
- "banned_constructs": [
-  "`nd = 0xC - bits_left;` / `nd = 2 - bits_left;` (a named intermediate for `needed`, filed under construct (2) in the self-vet, classified under the SOTN-accepted 'Named-intermediate declaration order' family with precedent no-new-park-categories.md:189)"
- ],
+ "banned_constructs": [],
  "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",

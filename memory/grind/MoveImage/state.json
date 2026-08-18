@@ -47,7 +47,7 @@
   }
  ],
  "judge_constraints": [
-  "Frozen pending owner ruling on the const/read-only type-level family. Until the ruling lands: no session may apply const or any RTX_UNCHANGING-producing qualifier to any global, in this function or elsewhere; do not re-run permuter campaigns on MoveImage (axis spent, five campaigns / ~152k iterations); the only permissible new work on this function is the session-3 forensics probe (BB2_PRIO_DEBUG on s3/mv.c vs mv2.c, read-only diagnostics), and only if the owner rules NO on Q1."
+  "OWNER RULING 2026-08-17 (decisions.md): const/RTX_UNCHANGING family REFUSED on evidence \u2014 the matched reference (tmp/sotn-decomp/src/main/psxsdk/libgpu/sys.c:80) declares this object non-const as a gpu-struct pointer. No session may apply const or any RTX_UNCHANGING-producing qualifier to any global. Function REOPENED for ONE structural session under the 2026-07-09 psxsdk-adoption directive: adopt the reference's aggregate dev-table declaration (gpu struct; COMPONENT_REF/MEM_IN_STRUCT_P axis) and/or the packet buffer as a declared array object (g_gpu_move_param base 0x8009BF1C); resolve the display.c:126 vs include/gpu.h:28 extern contradiction to the struct-pointer form in the same session. Permuter axis SPENT (~152k iterations) \u2014 do not re-run. If the session fails: endgame-lock disposition at the proven floor (2, or 4 plain-arg); do NOT re-run the const question."
  ],
  "banned_constructs": [],
  "ladder_skip": 0,

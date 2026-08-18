@@ -190,6 +190,46 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   hi/lo sub-trick): declare a sub-expression as a separately-named
   local to bias LUID. SOTN's `randy` chain in `src/weapon/w_037.c` is
   the same mechanism.
+  - **Clarification (owner ruling 2026-08-17, func_8001979C escalation).**
+    This entry's SOTN backing is the *shape* shipped in `w_037.c`
+    (`randy = basePoint.x; baseX = randy;`, "FAKE but makes register
+    allocation work") — a once-written, once-read fresh local whose value
+    is real and consumed. The trailing "to bias LUID" clause is BB2's own
+    mechanism-class annotation from the 2026-06-02 census, NOT a scope
+    limit: SOTN's acceptance was never conditioned on a GCC pass. A fresh
+    named intermediate therefore qualifies under this entry **whatever GCC
+    pass it acts through** (LUID bias, cse.c re-materialization, allocno
+    priority), provided ALL of: (1) once-written, once-read — multi-write
+    carriers are NOT this entry (the `y1` FAIL, decisions.md:1833, stands);
+    (2) real value — the intermediate holds a computation that appears in
+    the target's own bytes and only relocates where the value is named;
+    pure no-op copies stay with the dead-store family and its
+    prerequisites; (3) byte-neutral — `build_insns == target_insns`, the
+    compiler folds the copy; (4) fresh local, not a borrow —
+    [[staged-value-reused-variable]] keeps its own bounds; (5) destination
+    not live-pre-initialized (the `x/tx` FAIL, decisions.md:4251, stands);
+    (6) standard prerequisites: dump-proven named mechanism, documented
+    lever exhaustion, `/* FAKE: ... */` annotation, layer-1 + layer-2
+    review. Does not relax any other frozen entry; licenses no extra
+    *handles* to one object.
+- **Per-word splat symbol → aggregate merge** (owner ruling 2026-08-17,
+  func_8003B9D0 escalation; SOTN precedent: `include/game.h` `Vram`
+  struct merges, PRs #1175 / bd612229 / 88344c03 — "standard, encouraged,
+  ongoing" per [[sotn-prototype-struct-precedent-2026-08-10]]): two or
+  more splat-invented `D_<addr>` scalars may be replaced by a single
+  aggregate declaration. Prongs, ALL mandatory: (a) the object model is
+  established by evidence independent of and predating the byte-chasing
+  session — cross-TU stride indexing, base+offset addressing in the
+  original binary, or a committed naming-census schema; (b) the merged
+  declaration reflects that documented shape (a struct/record table where
+  the evidence shows records; a flat array only where the evidence shows
+  a flat array) — an index that encodes a record stride as a magic number
+  does NOT qualify; (c) the merge is complete: every merged per-word
+  symbol is removed from C and from the splat symbol config, leaving
+  exactly one C handle per storage location; (d) spelled at the canonical
+  declaration in the shared header, never TU-local, never a per-use
+  pointer pun; (e) byte-neutrality verified for every other consumer,
+  full `verify-oracle --rebuild`, layer-2 cheat-reviewer.
 - **`do { ... } while (0);` wrap** (empty or non-empty body)
   ([[do-while-zero-exception]] / [[sotn-do-while-zero-research-2026-06-04]]):
   emits NOTE_INSN_LOOP_BEG which sets LABEL_OUTSIDE_LOOP_P on outside-loop
@@ -258,8 +298,33 @@ the rule file BEFORE using:
   written (not merely declared), exhaustion-documented, FAKE-annotated,
   dual-reviewed. SOTN evidence: `u8 sp70[4]` written 4×/read 0× in two
   matched dra-core functions (62DEC.c), `s16 z[5]` ×2, annotated
-  `volatile u32 pad[4]; // FAKE`. The unwritten-array and `(void)&local`
-  forms remain forbidden.
+  `volatile u32 pad[4]; // FAKE`. The `(void)&local` form remains
+  forbidden.
+  - **Re-scope (owner ruling 2026-08-17, func_8001E404 escalation).**
+    Direct inspection of SOTN master (`db41b28`) exhibits
+    `volatile u32 pad[4]; // FAKE` (`src/st/sel/stream.c:80`) and
+    `volatile u32 pad; // !FAKE:` (`src/st/sel/2C048.c:560`) — both
+    declared first, never written, never read, in fully matched PSX code.
+    The 2026-07-01 carve-out mis-scoped itself against the very exemplar
+    it cites: the cited pad IS unwritten. Accordingly, an **unwritten
+    leading local pad** — spelled `volatile`, FAKE-annotated, with
+    documented lever exhaustion and layer-2 review — is sanctioned for
+    frames whose residual is provably a single allocated-but-untouched
+    leading region confirmed by frame-term forensics. Scope: applies to
+    `func_8001E404`, `func_8001E6E4`, `func_8003CF84` ONLY; any further
+    use requires a fresh owner ruling. Prerequisite (mechanical): the
+    volatile respelling must be oracle-verified, and the sanctioned pads
+    are allowlisted in the engine's volatile-cheat detector so honest
+    floors read true.
+- **Fabricated dead call site ("reconstructed compiled-out call site") —
+  REFUSED (owner ruling 2026-08-17, func_8001E404 escalation).** An
+  `if (0) { call(...); }` (or any never-executed call) added to move the
+  outgoing-args frame partition is NOT a sanctioned family and may not be
+  re-proposed in any spelling: zero SOTN-master precedent (census run
+  2026-08-17 against `db41b28`: no `if (0)` block in matched PSX code
+  contains a call), it fabricates a callee symbol against
+  [[names-require-evidence]], and it is a parameterized general-purpose
+  frame lever (argument count selects the frame delta).
 
 What the 2026-07-01 research explicitly does NOT support relaxing
 (zero community precedent found): register-asm pins, hardcoded-`$N`

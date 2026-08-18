@@ -5600,3 +5600,107 @@ Body is ordinary program logic for 'remove the record with this id from a packed
 ## 2026-08-17 13:14 — func_80049584 — final call — **PASS**
 
 Only one construct is questionable: `i` shared by both loop counters and the func_8004954C total. That is the FROZEN sanctioned family 'Variable reuse for codegen control' (.claude/rules/no-new-park-categories.md:170-176), whose scope reads '...to influence loop-invariant detection or RA' — this is the RA half, so no category extension is requested. Decisive fact: the counter can only reach $s0 if it is the same pseudo as the call result (global.c call-saved eligibility = reg_crosses_call), proven in both directions — merged 23->16, control re-split 0->12, control banked at rejected/separate-total-var.c. Verified independently: git diff -U0 confines every hunk to func_80049584; 0 hits for the func in regfix.txt/asmfix.txt/inline_asm_canonical.txt; sandbox_final.json score 0 (99/99 insns, 0 rules dropped). The diff also DELETES five register-asm pins, `s32 dummy[2]` frame coercion and a `(void)` discard; nothing dead, no volatile, no inline asm remains. FAKE annotation carries WHAT/MECHANISM/EXHAUSTION. Evidence: memory/grind/func_80049584/{hypotheses.md H1-H4, evidence.md F1-F3, self_vet.md, rejected/}.
+
+## 2026-08-17 — OWNER RULINGS — all five pending escalations resolved (batch evaluation, five independent adversarial packets)
+
+Owner adopted all five recommendations from the 2026-08-17 escalation-evaluation pass (five fresh
+adversarial evaluator agents, each independently verifying ledger claims and running the SOTN lens
+against the local sotn-decomp master clone). Individual rulings follow.
+
+## 2026-08-17 — func_8002FDB0 — OWNER RULING — **GRANTED (canonical-asm authorization, existing GTE family)**
+
+Authorization line added to inline_asm_canonical.txt (adjacent to sibling precedent func_800274BC).
+Evidence independently re-verified: evaluator disassembled tmp/sandbox/func_8002FDB0/code6cac_b.o and
+confirmed all 92 instruction words identical to asm/funcs/func_8002FDB0.s (correcting the ledger's
+repeated "90 == 90" figure), with candidate.c as the source. Hand-asm evidence: three redundant
+lui/ori/addu materialize-then-copy preambles, fixed $12-$15 island footprint, two unfilled cop2
+load-delay nops, splat "handwritten instruction" tags. The "verbatim published PsyQ inline_c.h"
+ledger claim was found OVERSTATED (stock macros differ in register detail) and is NOT part of the
+grant's basis. Admissibility test recorded in the authorization line: in-island GPR instructions
+authorized ONLY as the addressing preamble of a cop2 transfer with no C form. CLUSTER RULING: the
+26 queued functions sharing the addu $t4,$aN,$zero + cop2 idiom (28 total in the 0x8001-0x8003 band)
+inherit this disposition subject to the same mechanical per-function check — sandbox --disable all
+== 0, zero pins/move-aliasing/barriers, in-island GPR limited to cop2 addressing preamble — which
+the Judge may apply without re-escalation. Conditions before queue done: fresh layer-2
+cheat-reviewer on the applied diff + verify-oracle --rebuild (prior proof was object-level only).
+
+## 2026-08-17 — func_8001979C — OWNER RULING — **GRANTED (named-intermediate family clarified: scoped by shape, six mandatory bounds)**
+
+The frozen-list "Named-intermediate declaration order" entry's "to bias LUID" clause is BB2's own
+2026-06-02 census annotation, not part of the SOTN precedent: SOTN's shipped randy chain
+(src/weapon/w_037.c, "FAKE but makes register allocation work") is a SHAPE — once-written,
+once-read fresh local holding a real consumed value — never conditioned on a GCC pass. Clarifying
+sub-bullet added to .claude/rules/no-new-park-categories.md with six mandatory bounds
+(once-written/once-read; real value present in target bytes; byte-neutral; fresh local not a
+borrow; destination not live-pre-initialized; dump-proven mechanism + exhaustion + FAKE annotation
++ layer-1/2 review). The nd intermediate (nd = 0xC - bits_left / nd = 2 - bits_left) qualifies:
+clears every distinguishing test from the y1 (1833), x/tx (4251), val-staging (1359) FAILs.
+Ledger freeze lifted; nd unbanned. Execution conditions: re-apply the floor-4 candidate body plus
+nd with FAKE annotations on all four levers; independently re-measure sandbox --disable all == 0
+(prior score-0 is single-sourced); retire all 22 regfix rules incl. the two lost-codegen
+insert "addu $7,$2,$0" cheats; fresh layer-1 + layer-2 review; oracle before queue done.
+
+## 2026-08-17 — func_8003B9D0 — OWNER RULING — **flat-array retype REFUSED; per-word-symbol -> aggregate-merge family GRANTED (struct-table form)**
+
+The escalated spelling (extern s16 D_80101EDA[] indexed at [0x226]) is refused: flat-halfword view
+with a magic stride index, leaves D_80102326 alive as a second C handle — the FAKE-waypoint form
+SOTN treats as debt, not an end state. The underlying structural correction is granted as a new
+frozen-list family "Per-word splat symbol -> aggregate merge" (added to no-new-park-categories.md)
+on SOTN master precedent (Vram struct merges, PRs #1175/bd612229/88344c03 — standard, encouraged,
+ongoing) with five mandatory prongs (pre-existing object-model evidence; declaration reflects the
+documented shape; complete merge, one handle per storage; header-level; byte-neutral for all
+consumers + oracle + layer-2). The qualifying edit for this function is the STRUCT-TABLE
+declaration per named_syms.txt:345 + docs/naming/CHAR_STRUCT_SCHEMA.md (base 0x80101EC8, stride
+0x44C, D_80101EDA == rec[0].f12, D_80102326 == rec[1].f12), retiring both scalar externs from
+include/code6cac.h. Closure is plausible but UNMEASURED — one measurement session decides. If the
+struct form fails where the flat array closes, that asymmetry is the tell of a fold-escape and the
+disposition flips to REFUSE + endgame-lock at the proven floor. Ledger constraint amended: the
+struct-table spelling is exempted from the "no re-proposal in any spelling" freeze; the flat-array
+and pointer-pun bans stand. Evaluator also flagged: the banned candidate's "merge" left the double
+handle in place, the packet cited a wrong regfix line (1116 vs actual 1041), and the
+func_800617C8 sibling-precedent claim was overstated — none of which survives into this grant.
+
+## 2026-08-17 — func_8001E404 — OWNER RULING — **"reconstructed compiled-out call site" REFUSED; unwritten-pad carve-out RE-SCOPED (three functions)**
+
+The fabricated dead-call family (if (0) { bb2_dbg_probe(0,0,0,0,0,0); } to move
+current_function_outgoing_args_size 16 -> 24) is REFUSED: zero SOTN-master precedent (census run
+against db41b28 — no if (0) block in matched PSX code contains a call), fabricates a callee symbol
+against names-require-evidence, is a parameterized general-purpose frame lever (arg count selects
+frame delta), and its sandbox-0 evidence is a detector-coverage artifact. The ledger freeze on
+candidate.c stands permanently; refusal recorded in no-new-park-categories.md. SEPARATELY: direct
+SOTN-master inspection exhibits volatile u32 pad[4]; // FAKE (st/sel/stream.c:80) and
+volatile u32 pad; // !FAKE: (st/sel/2C048.c:560) — declared, never written, never read, in fully
+matched PSX code. The 2026-07-01 written-never-read carve-out mis-scoped itself against the very
+exemplar it cites. Carve-out re-scoped (no-new-park-categories.md): an unwritten leading local
+pad — volatile, FAKE-annotated, exhaustion-documented, layer-2-reviewed — is sanctioned for
+func_8001E404, func_8001E6E4, func_8003CF84 ONLY (any further use needs a fresh owner ruling).
+Prerequisites before completion: (i) oracle-verify the volatile respelling of each pre_pad (the
+committed form is plain s32 — codegen neutrality is NOT assumed); (ii) allowlist the three
+sanctioned pads in the engine's volatile-cheat detection so honest floors read 0 and queue done
+accepts them (engine test must stay green). The 08-12 entry for this function was self-withdrawn
+the same day and was never an in-force refusal; the 08-13 ask was evaluated on its merits.
+
+## 2026-08-17 — MoveImage — OWNER RULING — **const/RTX_UNCHANGING type-level family REFUSED (on evidence); function reopened under the Phase-3 psxsdk-adoption directive**
+
+Q1: NO. Ground: the matched reference decomp of this exact PsyQ source file is on disk —
+tmp/sotn-decomp/src/main/psxsdk/libgpu/sys.c:80 declares this very object WITHOUT const, as
+static gpu* D_8002C260 = &D_8002C220; — a struct-of-function-pointers view that maps word-for-word
+onto BB2's .data bytes at D_8009BE2C/D_8009BE6C (asm/data/7D920.data.s:24003-24024; p[2]=addque2
+at +0x08, p[6]=cwc at +0x18, 0x14 == sizeof(u_long[5])). Bytes-decide-the-declaration, run against
+the strongest available evidence, returns non-const struct pointer. Supporting: const on an
+initialized file-scope object would route it to .rdata under -G0 while the symbol sits in .data
+(placement probe recommended before citing this half in future rulings); and the claimed mirror
+with the 2026-07-01 mmio-volatile ruling fails — volatile is required for correctness, const only
+enables an optimization. The refusal is evidential, not conservative: do not re-litigate absent
+new evidence about the original declaration. Q2 falls with Q1. Q3: not reached — before any
+endgame disposition, ONE structural session is authorized under the standing 2026-07-09
+psxsdk-adoption directive (docs/closer/mission-phase3-psxsdk-adoption.md, "original semantics,
+not coercions") with the untried lever: adopt the reference's aggregate declaration (the gpu
+dev-table struct; COMPONENT_REF accesses set MEM_IN_STRUCT_P through expr.c:4888, the exact
+alias-class machinery the sched.c residual sits on), plus the packet's second untried probe (the
+packet buffer as a declared array object). Permuter stays spent (~152k iterations; do not re-run).
+Housekeeping in the same session: resolve the contradictory externs (src/display.c:126
+extern s32 g_gpu_dev_table; vs include/gpu.h:28 extern u32 *g_gpu_dev_table;) to the reference's
+struct-pointer form. If the session fails, disposition is endgame-lock-disposition-policy at the
+proven floor (2, or 4 on the plain-arg base) — NOT a re-run of the const question. Ledger freeze
+replaced accordingly.
