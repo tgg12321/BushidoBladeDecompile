@@ -2293,15 +2293,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80078654 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
-      "func": "func_8001979C",
-      "file": "code6cac",
-      "distance": 24,
-      "verdict": "C",
-      "rules": 22,
-      "status": "parked",
-      "park_reason": "owner escalation pending (judge ESCALATE): 2026-08-13 \u2014 func_8001979C \u2014 OWNER-ESCALATION (judge ESCALATE on ruling request; awaiting owner ruling)"
-    },
-    {
       "func": "func_80034F88",
       "file": "code6cac_b",
       "distance": 24,
@@ -2312,11 +2303,11 @@
     }
   ],
   "counts": {
-    "total": 269,
+    "total": 268,
     "active": 223,
     "by_status": {
       "active": 223,
-      "parked": 46
+      "parked": 45
     },
     "by_verdict": {
       "ASM-PARTIAL": 37,

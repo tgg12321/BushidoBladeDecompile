@@ -688,3 +688,28 @@ subtraction across the refill.
 the WINDOWS interpreter, and the ledger files contain non-ASCII: always pass
 `encoding='utf-8'` to `read_text`/`write_text` (and `newline='\n'` to avoid
 CRLF), or the append silently fails with a cp1252 `UnicodeDecodeError`.
+
+## 2026-08-17 — integration session (owner ruling execution): tail constant-holder measured
+
+Layer-2 review of the closing form flagged the tail `val = 0; *(s32 *)(base + 0x10C) = val;`
+as a fifth construct not covered by the 2026-08-17 named-intermediate ruling. Measured and
+DUMP-VERIFIED this session (an earlier draft of this note mis-located the effect at the tail
+store site; layer-2 caught it and the objdump diff below is the corrected record):
+
+- direct literal store `*(s32 *)(base + 0x10C) = 0;` -> sandbox --disable all score 4,
+  build_insns 75 vs target 77. The tail itself is IDENTICAL either way (target: `sw $zero,
+  0x10C($t3)` in the jr delay slot; both variants emit it). The two lost instructions are the
+  IN-LOOP copy pairs: without the tail SET, cse.c's cheapest-register rewrite (make_regs_eqv
+  last-use test, cse.c:856) folds `val = 0x20 - needed; bits_left = val;` to a direct
+  `subu $a3,$t2,$a0` in both loops.
+- staged store through `val` -> score 0, 77/77: the later SET of val defeats the last-use
+  test, preserving `subu $v0,$t2,$a0` + `move $a3,$v0` in both loops — the pair the TARGET
+  carries at asm/funcs/func_8001979C.s lines 28/58.
+- objdump evidence: tmp/979c_staged.dis vs tmp/979c_direct.dis (staged has the pair at
+  offsets 0x8a0/0x90c; direct collapses both).
+
+So the tail staging is the anchoring half of the ledger's own `val` lever (cse.c:7454 /
+cse.c:856 mechanism, established sessions 6-8), spelled under the sanctioned constant-holder
+family [[named-local-fake-exception]] (2026-07-01) with an inline FAKE annotation citing this
+measurement. Not part of the named-intermediate grant; vetted separately by layer-2 on
+2026-08-17.

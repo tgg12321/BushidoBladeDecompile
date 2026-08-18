@@ -605,7 +605,13 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     u32 hi;
     s32 needed;
     u32 dst;
+    u32 dst2;
+    u32 out;
     s32 val;
+    s32 nd;
+    s32 neg2;
+    u32 lo;
+    u32 lo2;
 
     bits_left = 0x20;
     base = (u32)&D_800F1B18[arg0 * 0x570];
@@ -615,54 +621,71 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     arg1++;
 
     i = 0;
-    dst = base;
     do {
+        dst = base + i * 2;
         if (bits_left < 0xC) {
-            hi = cur >> (0x20 - bits_left);
+            /* FAKE: nd names the width subtraction so the constant's load site separates from its use site, mechanism: cse.c:7454 re-materialisation of the deleted early subu at the copy site (dump: tmp/grind/func_8001979C/s8b/dump_nd), lever-exhaustion: hypotheses.md [s8] v2_no_nd + s8b-needed-hoisted (score 4) + s8b-width-constant-holder (score 16); owner ruling 2026-08-17 */
+            nd = 0xC - bits_left;
+            /* FAKE: hi carries its own shift amount before the value, mechanism: global.c allocno_compare (hi crosses the floor_log2 nrefs bucket and keeps $v1), lever-exhaustion: memory/grind/func_8001979C/hypotheses.md [s2] H2-B, [s3] H3-A, [s8] v2_amt */
+            hi = 0x20 - bits_left;
+            hi = cur >> hi;
             cur = *arg1;
             arg1++;
-            needed = 0xC - bits_left;
-            bits_left = 0x20 - needed;
-            *(s16 *)(dst + 0xA) = (s16)((hi << needed) | (cur >> bits_left));
+            needed = nd;
+            /* FAKE: new bits_left routed through val, mechanism: cse.c:7454 cheapest-register rewrite blocked by make_regs_eqv's last-use test at cse.c:856, lever-exhaustion: hypotheses.md [s1] H-C, [s6] H6-A, [s8] v2_no_val */
+            val = 0x20 - needed;
+            bits_left = val;
+            hi = hi << needed;
+            lo = cur >> bits_left;
             cur <<= needed;
+            hi = hi | lo;
+            *(s16 *)(dst + 0xA) = (s16)hi;
         } else {
             *(s16 *)(dst + 0xA) = (s16)(cur >> 20);
             cur <<= 0xC;
             bits_left -= 0xC;
         }
         i++;
-        dst += 2;
     } while (i < 0x3F);
 
     i = 0;
-    dst = base;
     do {
+        dst2 = base + i * 2;
         if (bits_left < 2) {
-            hi = cur >> (0x20 - bits_left);
+            /* FAKE: nd - same construct as loop 1 (cse.c re-materialisation), owner ruling 2026-08-17 */
+            nd = 2 - bits_left;
+            hi = 0x20 - bits_left;
+            hi = cur >> hi;
             cur = *arg1;
             arg1++;
-            needed = 2 - bits_left;
-            bits_left = 0x20 - needed;
-            *(s16 *)(dst + 0x8E) = (s16)((hi << needed) | (cur >> bits_left));
+            needed = nd;
+            val = 0x20 - needed;
+            bits_left = val;
+            hi = hi << needed;
+            lo2 = cur >> bits_left;
             cur <<= needed;
+            hi = hi | lo2;
+            *(s16 *)(dst2 + 0x8E) = (s16)hi;
         } else {
-            *(s16 *)(dst + 0x8E) = (s16)(cur >> 30);
+            *(s16 *)(dst2 + 0x8E) = (s16)(cur >> 30);
             cur <<= 2;
             bits_left -= 2;
         }
         i++;
-        dst += 2;
     } while (i < 0x3F);
 
-    val = -2;
+    /* FAKE: named constant holder for the fill value, mechanism: global.c find_reg conflict graph (a separate allocno for -2 is what puts the fill pointer in $v0), lever-exhaustion: hypotheses.md [s5] H5-B, [s6] H6-A, [s8] v2_no_neg2 */
+    neg2 = -2;
     i = 3;
-    dst = base + 0x348;
+    out = base + 0x348;
     do {
-        *(s32 *)(dst + 0x110) = val;
+        *(s32 *)(out + 0x110) = neg2;
         i--;
-        dst -= 0x118;
+        out -= 0x118;
     } while (i >= 0);
-    *(s32 *)(base + 0x10C) = 0;
+    /* FAKE: tail reuse of val ([[named-local-fake-exception]] constant-holder, sanctioned 2026-07-01): this later SET of val blocks cse.c:7454's cheapest-register rewrite (make_regs_eqv last-use test, cse.c:856) of the in-loop `val = 0x20 - needed; bits_left = val;`, preserving the subu $v0,$t2,$a0 + move $a3,$v0 copy pair that exists in the TARGET bytes in BOTH loops (asm/funcs/func_8001979C.s lines 28/58). Dump-verified 2026-08-17: direct literal store here -> both pairs collapse to subu $a3,$t2,$a0 (score 4, build_insns 75 vs 77; objdump diff tmp/979c_staged.dis vs tmp/979c_direct.dis). */
+    val = 0;
+    *(s32 *)(base + 0x10C) = val;
 }
 INCLUDE_ASM("asm/funcs", func_800198D0);
 void func_8001A484(u16 *arg0) {
