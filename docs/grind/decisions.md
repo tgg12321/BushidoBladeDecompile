@@ -6622,3 +6622,145 @@ temp2's dual role (construct 2 + construct 4) cites a mismatched loop-only famil
 ## 2026-08-19 10:21 — func_80060A68 — ruling: func_80060A68 reaches honest score 0 only if copy 2's address load has a multipl — **FAIL**
 
 The frozen list draws a closed line: staged-value-reused-variable bound 2 excludes inventing a variable to borrow, and the named-intermediate entry's 2026-08-17 clarification admits a FRESH local only once-written/once-read (prong 1; the y1 multi-write FAIL stands, prong 4 defers borrows back to staged-value). Fresh AND multi-write is the excluded quadrant, not a gap -- filling it is an owner-only family extension, and no SOTN exhibit was offered (only BB2 entries that exclude the shape). Decisive fact: scarcity of carriers is not a licensing condition; bound 2 has no last-carrier escape, so s4's closure argues necessity, never sanction. Verified independently: sched.c:2513-2526 birthing_insn_p reads exactly as claimed (reg_n_sets==1 the only live exit) and sched.c:2551 marks the death arms dead -- the mechanism is real, which is why this is a rules answer, not an evidence gap. This also re-affirms the two standing bans (state.json judge_constraints; rejected/layer1-fail-0819-*.c). On the second question: canonical-asm is REFUSED -- scan_hand_coded --single func_80060A68 returns tier=LOW 1/8 (S4 only), which endgame-lock-disposition gate 1 calls dispositive for a scheduling artifact. Both gates fail, so the 2026-07-27 standing auto-ruling applies immediately and with no owner wait: terminal OWNER-ACCEPTED INCOMPLETE. Evidence banked: hypotheses.md s2/s3/s3b/s4, evidence.md, rejected/ (K15 idx global-alloc $a0 conflict, K16 result $v0 anti-dependence, K17 temp_a1 overlap; 65,445 permuter iterations).
+
+## 2026-08-19 — func_80060A68 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Function:** func_80060A68 (src/text1b.c:3321, 66 target instructions, 2 asmfix rules at
+asmfix.txt:109/110 that splice the entire body in from rule text).
+
+**Status of the work.** Five grind sessions (recon, structural, permuter x2, forensics).
+Honest floor moved 39 -> 2 in session s1 and the residual has been localised to a single
+adjacent instruction swap: the staged 0x10 pointer load and copy 2's address load are
+emitted in the opposite order from target. All 64 other instructions, every register
+assignment and the whole frame already match. Re-measured on the current chassis this
+session: HEAD body = score 39 (build 64 / target 66); the ban-free floor-2 body now banked
+at memory/grind/func_80060A68/candidate.c = score 2 (build 66 / target 66), carrying no
+rule, no register pin, no volatile, no inline asm and no dead local.
+
+**Mechanism (named passes, verified by code reading and independently re-verified by the
+Judge).** The swap is decided by GCC 2.7.2's `adjust_priority` ->`birthing_insn_p`
+(tools/gcc-2.7.2/sched.c:2540-2592 and 2504-2535), which raises a ready insn's
+INSN_PRIORITY to LAUNCH_PRIORITY (0x7f000001, sched.c:187) when the destination pseudo has
+`reg_n_sets[i] == 1`. Blocks are scheduled backward, so "bumped" means "picked early"
+means "emitted late". Copy 2's address load has a single-set destination and is bumped;
+the staged 0x10 load does not and is not. `birthing_insn_p` has no other live exit: the
+non-REG-destination exit is a SUBREG/DImode spelling (a forbidden family), the
+`bb_live_regs` exit is unreachable because `attach_deaths_insn` (sched.c:3955) makes the
+destination live before the next `adjust_priority`, and the death-count arms of
+`adjust_priority` are dead code by GCC's own comment at sched.c:2551. Closing the function
+therefore REQUIRES a C variable assigned more than once to carry copy 2's source pointer.
+
+**Gate 1 — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80060A68`, re-run this session, returns `tier=LOW score=1/8`, with S4 (6 loads in an
+8-insn window @ insn 9) the only signal; S1 (multu pacing), S2 (empty branch) and S6 (BIOS
+jumptable) are all clear. Per endgame-lock-disposition, a LOW tier is dispositive against
+canonical-asm for a pure scheduling artifact, and this function is exactly that — a
+two-instruction ordering residual in an otherwise fully-matching compiled body.
+
+**Gate 2 — a cited SOTN-master precedent for the closing family: FAILS.** The only carrier
+that closes the function is a variable the ORIGINAL body did not have, written more than
+once. The Judge's 2026-08-19 10:21 ruling (this file, above) searched for a precedent and
+found none: staged-value-reused-variable's bound 2 forbids inventing a variable just to
+have something to borrow, and the named-intermediate entry's 2026-08-17 clarification
+admits a FRESH local only when it is once-written and once-read. "Fresh AND multi-write"
+is an excluded quadrant of the frozen list, not a gap in it; filling it would be an
+owner-only family extension. The ruling also records the decisive principle that scarcity
+of carriers is not a licensing condition — bound 2 has no last-carrier escape, so the
+closure argument below establishes necessity, never sanction.
+
+**Why no further measurement can change this.** Every alternative has been measured dead:
+- Every pre-existing local of the original body, as copy 2's carrier, with a named failure
+  pass each (session s4): `idx` -> global.c prints `73 conflicts: 73 2 3 4 5 29`, a
+  conflict with hard reg 4 = $a0, so the pseudo lands in $a2 (score 9/67); `result` -> $v0
+  anti-dependence, the load is not hoisted at all (score 4/67); `temp_a1` -> live-range
+  overlap from target slot 12 to slot 29 (score 7/66); `outer` is live for the whole body.
+- The both-loads-bumped alternative (make the stage load single-set too, so the LUID
+  tie-break at sched.c:2464 orders them): score 5/67 — a bumped insn is picked the instant
+  it is ready, and the stage load overshoots by ~10 slots (session s3-permuter, probe w2).
+- Source position of every statement in the contested block: byte-identical emit in all
+  four positions, with the mechanism explaining why all positions must be identical
+  (sessions s1 K6, s2 K8).
+- Eight distinct respellings of the 0xC copy triple: none reaches the pair (session s2 K7).
+- Search: 65,445 permuter iterations across two structurally different chassis with ZERO
+  finds (s3: 27,212 iterations from the floor-2 seed, base score 20; s3b: 38,233 iterations
+  from the w3 seed which is one adjacent swap from the match, base score 10). The residual
+  is not reachable by random mutation because the only edit that moves `reg_n_sets` is
+  "rebind this value onto a different existing local", which is not in the permuter's
+  mutation vocabulary.
+
+**Disposition.** Both gates fail, which is the owner's pre-decided case, so the standing
+auto-ruling of 2026-07-27 applies immediately and with no owner wait: **REFUSED /
+OWNER-ACCEPTED INCOMPLETE, terminal.** Nothing is pending on the owner. The function stays
+at its HEAD form (2 asmfix rules) unless and until the frozen family list is extended by
+the owner to admit a purpose-introduced multiply-assigned carrier; if that ever happens,
+the measured score-0 body is preserved at
+memory/grind/func_80060A68/rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c
+and its integration step is the retirement of asmfix.txt:109 and asmfix.txt:110 in the
+same change (their delete_between anchor `lhu $4,0($3)` is written against the HEAD body
+and would mis-fire against any matched body, whose first instruction is `lhu $2,0($3)`).
+
+**Evidence banked:** memory/grind/func_80060A68/hypotheses.md (sections s1-s5),
+evidence.md, candidate.c (ban-free floor-2 body, score 2 re-measured this session),
+rejected/ (25 forms including K15/K16/K17 carrier probes and both layer-1 FAIL bodies),
+tmp/grind/func_80060A68/dumps/ (instrumented cc1 -da pass dumps for the current chassis).
+Prior rulings for this function in this file: layer-1 FAIL 2026-08-19 08:56, layer-1 FAIL
+2026-08-19 10:01, Judge ruling 2026-08-19 10:21.
+
+## 2026-08-19 — func_80060A68 — **RETRACTION OF THE ENTRY ABOVE + RULING REQUEST**
+
+The escalation entry immediately above (s5, terminal REFUSED / OWNER-ACCEPTED INCOMPLETE)
+is **retracted by the session that followed it (s6, forensics)**, and the driver validator
+had independently already discarded s5 for claiming a terminal disposition outside
+`escalation` modality. The retraction is on the merits, not on the process point: s5's
+exhaustion claim rested on s4's enumeration of CARRIERS for copy 2's address load
+(`idx`, `result`, `temp_a1`, `outer`, each failing for a named reason). That enumeration
+holds every OTHER local's job fixed at whatever candidate.c happens to give it. Enumerated
+instead as a partition — target's register flow defines seven jobs, the function has five
+locals, `outer` and `temp_a1` are forced, copy 1's staging and the call return share
+`result` for free, leaving three jobs for two locals and therefore exactly three possible
+pairings — one seat had never been measured:
+
+  * {copy-2 pointer, 0x1A halfword} on one local: score 0, and BANNED (the temp2 dual role).
+  * {copy-2 pointer, late index} on one local: measured s6, score 11 / 67 insns. Dead, and
+    the reason is named — the merged live range reaches the call, so the pseudo is deferred
+    from local_alloc to global_alloc, whose conflict set for it already contains hard reg 4.
+  * {0x1A halfword, late index} on one local — never tried before s6. **Measured score 0,
+    build 66 / target 66** (`sandbox func_80060A68 --disable all`, 2026-08-19 chassis).
+
+So the function is NOT exhausted: a body that closes it exists today, uses the same five
+locals it has always declared, invents nothing, and leaves every local both written and
+read. It is `memory/grind/func_80060A68/ruling-y3-role-permutation-score0.c`.
+
+**The question for the Judge (this is a ruling request, not a submission).** In that body
+`idx` holds copies 2 and 3's source pointer, loaded once per copy, so its block reads:
+
+    idx = *(s32 *)(outer + 0xC);
+    *(s32 *)(outer + 0x24) = *(s32 *)(idx + 4);
+    ...
+    idx = *(s32 *)(outer + 0xC);
+    *(s32 *)(outer + 0x28) = *(s32 *)(idx + 8);
+
+That is textually banned construct 1 with the identifier changed from `src` to `idx`, and
+the 2026-08-19 Judge ruling forbids respelling that carrier "under any name or family".
+Against that: nothing here is FRESH. The local count is unchanged, no variable is invented,
+every local is written and read, and the layer-1 FAIL's own remedy (a) was "find an honest
+pre-existing local the function already uses for a real job" — `idx` is such a local, and
+the job it vacates (the late character index) is absorbed by `temp2`, whose own 0x1A
+halfword lives in the same hard register ($a0) and dies immediately before it.
+
+Is a pure permutation of the existing jobs across the existing locals — no new storage, no
+dead local, no annotation-bearing construct — remedy (a), or is it banned construct 1
+wearing an existing name? A grind session may not self-approve that call. If it is remedy
+(a), the function is finished today and needs only the standing integration step
+(retire asmfix.txt:109 + :110 in the same change as the C, then verify-oracle). If it is
+the ban, then the partition argument recorded in memory/grind/func_80060A68/evidence.md
+[s6] is exhaustive over the function's storage and the C axis really is closed — but that
+conclusion belongs to the Judge, and it should be reached on the partition argument rather
+than on s5's carrier enumeration, which was incomplete.
+
+**Evidence:** memory/grind/func_80060A68/evidence.md [s6] and hypotheses.md [s6]
+(H-s6-1..H-s6-5); probe bodies and `-da` dump sets in tmp/grind/func_80060A68/s3/f2/.
+
+## 2026-08-19 10:48 — func_80060A68 — ruling: func_80060A68's two-instruction residual closes (sandbox --disable all = 0, buil — **FAIL**
+
+y3 is not a pure permutation of pre-existing jobs. I diffed ruling-y3-role-permutation-score0.c against candidate.c: in the ban-free floor-2 body NO local carries copy 1/2/3's source pointer at all (all three are inline expressions, candidate.c copy block). y3 CREATES that staging role and hosts it in existing identifiers - idx gets the identical pointer loaded twice from outer+0xC with no intervening write, which is banned construct 1 verbatim with the name changed, and result gets the same self-overwrite lever (result = ptr; result = *ptr). Layer-1 remedy (a) required an honest pre-existing JOB, not a pre-existing NAME. Cheat tests 2 and 3 fail on the session's own stated mechanism (evidence.md [s6]): the double assignment exists solely to strip birthing_insn_p's LAUNCH_PRIORITY bump via reg_n_sets>1 - GCC-steering is its only function, and no human writes a redundant reload of an unchanged pointer from spec. Separately, temp2 is widened u16->s32 and made a multi-write carrier (0x1A halfword, then the late index), which is banned_constructs entries 3/4 with the second value swapped. Bytes (sandbox 0, 66/66) are not in dispute; legitimacy is, and default-FAIL governs.

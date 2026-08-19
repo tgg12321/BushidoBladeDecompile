@@ -519,3 +519,116 @@ the carrier constraint is a register-allocation constraint, not a scheduling one
 - tmp/grind/func_80060A68/s4/x1/    — the same dump set for the `idx`-carrier body
 - tmp/grind/func_80060A68/s4/{x1,x2,x3,x4,x6}.c, {x1,x4}.o, apply.py, run.ps1, run2.ps1,
   dis.sh, dumpsched.sh
+
+## [s5] 2026-08-19 — forensics: chassis re-measurement + disposition
+
+- **Fact (measured this session, current chassis):** HEAD body honest floor = 39
+  (build 64 / target 66), with 2 asmfix rules dropped by the sandbox.
+- **Fact (measured this session, current chassis):** the ban-free s1/s2 floor-2 body
+  scores 2 (build 66 / target 66). It is now candidate.c. The banned temp2-dual-role
+  score-0 body was moved to
+  rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c.
+- **Fact (measured this session):** `scan_hand_coded.py --single func_80060A68` =>
+  tier=LOW score=1/8, S4 only (6 loads in an 8-insn window @ insn 9). S1/S2/S6 clear.
+- **Fact:** the instrumented-cc1 -da dump set regenerates cleanly for the current
+  chassis (tmp/grind/func_80060A68/dumps/), so s2/s3/s4's pass attribution
+  (sched.c birthing_insn_p / adjust_priority) remains reproducible.
+- **Disposition:** both endgame-lock gates fail; terminal OWNER-ACCEPTED INCOMPLETE
+  under the owner's 2026-07-27 standing auto-ruling. Escalation entry filed in
+  docs/grind/decisions.md this session.
+
+## [s6] 2026-08-19 — forensics. The carrier axis is a REGISTER-ALLOCATION problem, and
+## the job/local partition has exactly one unmeasured seat left — which measures 0.
+
+### Chassis (re-measured this session; quote these, not older numbers)
+- `memory/grind/func_80060A68/candidate.c` (the ban-free floor-2 body) applied over
+  src/text1b.c → `sandbox func_80060A68 --disable all` = **score 2, build 66 / target 66**.
+  Unchanged since s3b/s4/s5.
+
+### The GCC code, re-read this session rather than inherited
+- `birthing_insn_p` (tools/gcc-2.7.2/sched.c:2504-2535) confirmed verbatim: after the
+  `reload_completed == 1` early return, the only nonzero exit for a `SET` with a bare
+  `REG` dest is `if (bb_live_regs[offset] & bit) return (reg_n_sets[i] == 1);`.
+  s4's reading stands.
+- NEW: `schedule_insn` (sched.c:2604-2652) sets `max_priority` — the value
+  `adjust_priority` bumps a birthing insn TO — only after `if (LOG_LINKS (insn) == 0)
+  return n_ready;`, and the main emission loop sets the insn's own priority to
+  `LAUNCH_PRIORITY` around that call (sched.c:4049), so `max_priority` is 0x7f000001 for
+  every ordinary insn. The ONE path where it is not is the `SCHED_GROUP_P` loop at
+  sched.c:4068-4075, which deliberately does not set LAUNCH_PRIORITY (GCC's own
+  "??? Why don't we set LAUNCH_PRIORITY here?" comment at sched.c:4079) — so a birthing
+  insn launched by a group member is bumped only to a small honest priority. That door
+  is CLOSED for this function: SCHED_GROUP_P is set in exactly two places
+  (sched.c:1856, the `HAVE_cc0` arm, which MIPS does not compile; and sched.c:2168, the
+  USE-chain immediately preceding a CALL_INSN), and neither covers the contested pair,
+  whose consumers are ordinary stores. Recording it so no future session re-opens it.
+
+### The real constraint: local_alloc vs global_alloc, proven by a matched pair
+The carrier for copy 2's address load needs `reg_n_sets > 1` (to lose the bump) AND
+hard reg $a0 (target's register for that value). s4 measured `idx` as the carrier and
+saw `;; 73 conflicts: 73 2 3 4 5 29` → `73 in 6` ($a2) but did not name WHY. It is the
+allocator split, and two probes this session isolate it:
+
+| probe | what `idx` does | score / insns | allocator outcome for the carrier pseudo |
+|---|---|---|---|
+| y2 | copies 2+3 source pointer **and** the late character index | 11 / 67 | pseudo 73 deferred to global_alloc, `;; 73 conflicts: … 4 …`, lands in $a2 |
+| y1 | copies 2+3 source pointer only (late index moved to `result`) | 8 / 66 | pseudo 73 **local-allocated to $a0** (`73 in 4`), conflict set loses 4 |
+
+y1 vs y2 differ in one line of C and flip the carrier from global_alloc/$a2 to
+local_alloc/$a0. So the rule is: **a carrier whose live range reaches the late-index job
+is handed to global_alloc, where $a0 is already conflicted; a carrier confined to the
+copy block is taken by local_alloc, which hands out $a0 freely.** In the floor-2
+candidate local_alloc gives $a0 to five disjoint short pseudos in turn (dispositions
+`73 in 4  74 in 4 … 85 in 4  87 in 4`), which is why the candidate's registers are all
+correct at score 2 — the residual really is only the ordering.
+
+y1 still scores 8 because the job it displaced has to land somewhere: `result` then
+holds copy 1's staging *and* the late index *and* the call return, its range spans the
+whole body, and it is the one that loses its register (`76 in 6`, $a2).
+
+### The partition argument (this is the durable result)
+Target's own register flow assigns seven jobs to the function's storage:
+  (a) `outer`/$v1, whole body ·
+  (b) copy 1's source pointer then its loaded word, $v0, slots 10-14 ·
+  (c) copies 2 and 3's source pointer, $a0, slots 11 and 17 ·
+  (d) the 0x10 pointer then the halfword read through it, $a1, slots 12-29 ·
+  (e) the 0x1A halfword, $a0, slots 24-27 ·
+  (f) the late character index, $a0 → the call's arg 0, slots 29-call ·
+  (g) the dispatch call's return value, $v0.
+The function has five locals. `outer` is (a); `temp_a1` is forced to (d) alone (its
+value must stay live slots 12-29); (b) and (g) share `result` naturally (same register,
+disjoint ranges — measured free, w4/y1). That leaves **three jobs (c), (e), (f) for two
+locals**, so exactly one pair must share, and there are only three pairings:
+  * {c,e} — one local holds copy 2's pointer and the 0x1A halfword. **Score 0** (s3b w3/w4)
+    and **BANNED** for this function (the temp2 dual role, layer-1 FAIL ×2 + Judge).
+  * {c,f} — one local holds copy 2/3's pointer and the late index. **Measured this
+    session: y2 = 11 / 67.** KILLED, with the named reason above (the merged range
+    reaches the call, so global_alloc, so no $a0).
+  * {e,f} — one local holds the 0x1A halfword and then the late index (both $a0, ranges
+    disjoint and adjacent), freeing `idx` for (c). **Measured this session: y3 = score 0,
+    build 66 / target 66.** This seat had never been tried.
+Plus the fourth option, invent a sixth local, which is banned construct 1.
+That enumeration is exhaustive over the function's storage, so the carrier axis is now
+CLOSED rather than merely sampled: {c,e} and {e,f} both close the function, {c,f} is
+dead, and "invent a local" is banned.
+
+### y3 — the score-0 role permutation, banked UNRULED
+`memory/grind/func_80060A68/ruling-y3-role-permutation-score0.c`. Same five locals, all
+written and all read, none invented; only the job-to-local mapping moves (`result` takes
+copy 1's staging in addition to the return, `idx` takes copies 2+3's source pointer,
+`temp2` takes the late index after its own 0x1A halfword). Emitted slots 9/10 become
+`lw $4,12($3)` / `lw $5,16($3)` — the exact swap the residual was — and the whole body
+matches: **sandbox = 0, 66/66**. Dump set (instrumented cc1, `-da`, BB2_SCHED_DEBUG) in
+tmp/grind/func_80060A68/s3/f2/y3dump/; the carrier pseudos are 73 and 74, both allocated
+hard reg 4 with `;; 74 preferences: 4`.
+
+It is NOT submitted. The `idx` block is textually banned construct 1 with the identifier
+changed, and the Judge's ruling forbids respelling that carrier "under any name or
+family"; against that, nothing in y3 is fresh — the local count is unchanged and every
+local is read — which is exactly the layer-1 FAIL's own remedy (a). A grind session may
+not self-approve that call, so this session returns `ruling-request`.
+
+### Artifacts
+- tmp/grind/func_80060A68/s3/f2/{y1,y2,y3}.c — the three probe bodies
+- tmp/grind/func_80060A68/s3/f2/canddump/ — full `-da` set + sched.log for the floor-2 body
+- tmp/grind/func_80060A68/s3/f2/y1dump/, y3dump/ — same for y1 and the score-0 y3

@@ -390,3 +390,116 @@ chassis with zero finds, s4's carrier-space closure). If it comes back "sanction
 memory/grind/func_80060A68/candidate.c is a measured score-0 body on the current chassis
 (re-verified twice this session) and the only remaining work is the asmfix.txt:109/110
 integration handoff described at the end of the s3 section.
+
+## [s5] 2026-08-19 — forensics modality. Chassis re-measured, ban-free floor established, function disposed.
+
+s5 was dispatched in `forensics` modality after the Judge's 2026-08-19 10:21 ruling
+(docs/grind/decisions.md:6622) closed the only known closing lever. It deliberately did
+NOT re-run any carrier probe (s4 closed that space) and did not re-open the permuter axis
+(65,445 iterations, two chassis, zero finds). What it DID do is the one thing the brief
+says must never be inherited: it re-measured the chassis-relative numbers from scratch,
+because every banked spelling conclusion in this ledger is chassis-relative.
+
+### CONFIRMED — the chassis is unchanged and the ban-free floor is 2, not 39
+- HEAD body (register-pinned `outer` + `volatile s32 _frame_pad[2]`, 2 asmfix rules):
+  `sandbox func_80060A68 --disable all` => **score 39, build 64 / target 66**.
+- The s1/s2 ban-free floor-2 body re-applied over src/text1b.c:3321 =>
+  **score 2, build 66 / target 66**. Re-measured this session; this is now the banked
+  contents of candidate.c, replacing the BANNED temp2-dual-role score-0 body (preserved
+  at rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c).
+  This matters for the escalation record: the function is parked at an honest distance of
+  2 with a body that carries no rule, no pin, no volatile, no asm and no dead local — not
+  at HEAD's 39-with-two-asmfix-rules.
+- `scan_hand_coded.py --single func_80060A68` re-run this session: **tier=LOW score=1/8**,
+  S4 (front loads: 6 loads in an 8-insn window @ insn 9) the only signal; S1/S2/S6 all
+  clear. Endgame-lock gate 1 therefore fails on a measurement taken this session, not on a
+  quoted one.
+- Instrumented-cc1 -da dump set regenerated for the current chassis into
+  tmp/grind/func_80060A68/dumps/ (.combine/.cse/.loop/.lreg/.greg/.sched/.sched2/.flow/
+  .jump2/.rtl/.dbr) — the pass-attribution substrate behind s2/s3/s4 is reproducible on
+  demand and was not disturbed by any chassis drift.
+
+### The disposition, and why it is terminal rather than a pause
+Gate 1 (canonical-asm): FAILS — LOW 1/8, measured above; endgame-lock-disposition calls a
+LOW tier dispositive for a pure scheduling artifact.
+Gate 2 (cited SOTN-master precedent for the closing family): FAILS — the Judge searched
+for one and found none; the fresh-AND-multiply-written carrier is an *excluded quadrant*
+of the frozen list (staged-value-reused-variable bound 2 forbids inventing a variable to
+borrow; the named-intermediate 2026-08-17 clarification admits a fresh local only
+once-written/once-read), and scarcity of carriers is explicitly not a licensing condition.
+Both gates failing is the owner's pre-decided case, so the 2026-07-27 standing auto-ruling
+applies immediately and with no owner wait: **terminal OWNER-ACCEPTED INCOMPLETE**. Entry
+filed this session in docs/grind/decisions.md.
+
+### Frontier after s5
+None that is a measurement. The C axis is closed by the ruling, not by a lack of ideas;
+the search axis is closed by 65,445 zero-find iterations; the carrier axis is closed by
+s4's four named-mechanism failures; canonical-asm is refused by the scanner. The only
+thing that could ever reopen this function is a RULES change — specifically, an owner
+extension of the frozen list to admit a purpose-introduced multiply-assigned carrier. If
+that ever happens, candidate.c's header records the exact closing body (now in rejected/)
+and the two-line asmfix.txt:109/110 integration step it needs.
+
+## [s6] 2026-08-19 — forensics. s5's "the carrier axis is closed" was PREMATURE.
+
+s5 concluded the function was terminal on the strength of s4's four named-mechanism
+carrier failures (`idx`, `result`, `temp_a1`, `outer`). That enumeration was over
+CARRIERS, not over the function's whole job/local assignment, and it silently assumed
+every other local keeps the job it happens to have in candidate.c. Once the assignment is
+enumerated as a partition — seven jobs from target's own register flow, five locals, two
+forced pairings, three jobs left for two locals, therefore exactly three possible sharings
+— one seat had never been measured. It measures score 0. Details and the full table in
+evidence.md [s6]; the body is
+memory/grind/func_80060A68/ruling-y3-role-permutation-score0.c.
+
+**H-s6-1 — CONFIRMED.** The carrier's failure mode is register allocation, not
+scheduling, and it is decided by the local_alloc/global_alloc split.
+  mechanism: a pseudo whose live range is confined to the copy block is taken by
+  local-alloc, which hands out $a0 to five disjoint short pseudos in this function; a
+  pseudo whose range reaches the late-index job (which itself needs $a0 as the call's
+  arg 0) is deferred to global_alloc, whose conflict set for it already contains 4.
+  probe: y1 vs y2 — one line of C apart. y2 (carrier also holds the late index) → pseudo
+  73 to global_alloc, `;; 73 conflicts: 73 2 3 4 5 29`, $a2, score 11/67. y1 (late index
+  moved off the carrier) → `73 in 4`, $a0, conflict set loses 4, score 8/66.
+
+**H-s6-2 — KILLED.** The {c,f} sharing (one local carrying copies 2+3's source pointer
+AND the late character index) closes the residual.
+  probe: y2 = score 11, 67 insns. Banked as
+  rejected/y2-idx-carries-copies23-plus-late-index-range-escapes-global-alloc-score11.c.
+
+**H-s6-3 — KILLED.** Moving the late index onto `result` (so the carrier is free) is a
+net win.
+  probe: y1 = score 8, 66 insns. The carrier does get $a0, but `result` then spans copy
+  1's staging + the late index + the call return and loses $v0 to $a2 (`76 in 6`). Banked
+  as rejected/y1-late-index-in-result-carrier-gets-a0-but-result-loses-v0-score8.c.
+
+**H-s6-4 — CONFIRMED (unruled).** The {e,f} sharing — `temp2` holds the 0x1A halfword and
+then the late character index (both $a0, adjacent disjoint ranges), which frees `idx` to
+carry copies 2 and 3's source pointer — closes the function.
+  probe: y3 = **score 0, build 66 / target 66**, plus the `-da` dump set in
+  tmp/grind/func_80060A68/s3/f2/y3dump/ showing both carrier pseudos local-allocated to
+  hard reg 4. NOT submitted: the `idx` block is banned construct 1 with the identifier
+  changed, while nothing in the body is fresh (same five locals, all read). Session
+  returns ruling-request.
+
+**H-s6-5 — KILLED (door closed, never re-open).** A birthing insn can be bumped to
+something smaller than LAUNCH_PRIORITY, via the SCHED_GROUP_P path at sched.c:4068-4075
+which deliberately omits the LAUNCH_PRIORITY assignment.
+  probe: read sched.c. SCHED_GROUP_P is set at exactly two sites — sched.c:1856 (the
+  `HAVE_cc0` arm, not compiled for MIPS) and sched.c:2168 (the USE chain immediately
+  before a CALL_INSN). The contested pair's consumers are ordinary stores, so neither
+  applies and `max_priority` is 0x7f000001 for every relevant bump.
+
+### Frontier after s6
+1. **The ruling on y3.** If a pure role permutation across the existing locals is an
+   acceptable form, the function is DONE at score 0 today and only needs the asmfix.txt
+   integration step. If it is a respelling of ban 1, then the partition argument in
+   evidence.md [s6] is complete and the function is genuinely closed on the C axis — but
+   that is the Judge's call, not a session's.
+2. If y3 is refused, the remaining unexplored direction is not a new carrier but a
+   different TARGET register flow: every argument above takes target's assignment of
+   values to $v0/$a0/$a1 as given. Nobody has yet asked whether a differently-shaped body
+   reaches the same 66 instructions with the contested pair produced by a different pair
+   of pseudos entirely.
+3. Do NOT re-open: the SCHED_GROUP_P bump path (H-s6-5), the {c,f} sharing (H-s6-2), the
+   permuter (65,445 iterations, two chassis, zero finds), canonical-asm (LOW 1/8).
