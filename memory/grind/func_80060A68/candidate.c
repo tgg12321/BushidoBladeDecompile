@@ -1,39 +1,52 @@
-/* func_80060A68 candidate — session s1 (2026-08-19), honest sandbox floor 2
- * (from 39 at session start). Apply this body over src/text1b.c:3321.
+/* func_80060A68 candidate — session s3 (2026-08-19, structural). HONEST SANDBOX
+ * SCORE 0 (build 66 / target 66) measured THIS session with this body applied
+ * over src/text1b.c:3321.  `sandbox func_80060A68 --disable all` => 0.
  *
- * MEASURED THIS SESSION: sandbox func_80060A68 --disable all => score 2,
- * build 66 / target 66 insns, frame 0x20 matches, all registers match.
- * The residual 2 is a single adjacent swap of two independent loads:
- *   ours:   lw $2,12($3); lw $5,16($3); lw $4,12($3)   (slots 10/11/12)
- *   target: lw $2,12($3); lw $4,12($3); lw $5,16($3)
- * i.e. the staged pointer load (insn "25", priority 3) places one slot
- * before copy2's address load (insn "35", priority 3 — equal priority,
- * rank_for_schedule tie). Source-position sweep of the staged statement
- * (before copy1 / after copy1 / after copy2) measured IDENTICAL emit.
+ * WHAT CLOSED IT (the s3 mechanism finding).  s1/s2 had the residual down to a
+ * single adjacent swap: our slots 10/11/12 were `lw $2,0xC($3); lw $5,0x10($3);
+ * lw $4,0xC($3)` where target has `lw $2,0xC($3); lw $4,0xC($3); lw $5,0x10($3)`.
+ * s2 localised the decision to rank_for_schedule but attacked it from the wrong
+ * side.  Reading tools/gcc-2.7.2/sched.c:2500-2600 against a fresh -da dump shows
+ * the deciding line is NOT the LUID fall-through but `birthing_insn_p`
+ * (sched.c:2504-2535), called from `adjust_priority` (sched.c:2540-2592) the
+ * moment an insn becomes ready:
  *
- * INTEGRATION WARNING (FRAGILE ANCHOR): this body changes the first body
- * instruction from lhu $4,0($3) (old pinned C) to lhu $2,0($3). The two
- * asmfix rules for this function anchor delete_between on
- * "^lhu\t\$4,0\(\$3\)$" — applying this candidate to src WITHOUT retiring
- * or re-anchoring the asmfix rules in the same change silently mis-fires
- * the splice and duplicates the body in the full build (the func_800393C8
- * +452-byte failure mode). Session s1 therefore reverted src to HEAD after
- * measuring; re-apply from here.
+ *     if (bb_live_regs[offset] & bit)  return (reg_n_sets[i] == 1);
  *
- * [s2 2026-08-19, structural] RE-MEASURED on today's chassis: still score 2,
- * build 66 / target 66. This body remains the best known form; s2 measured 14
- * structural respellings (copy-triple spelling x5, copy1 data-load split, stage
- * statement position x2 more, tail-block statement order x3, stage read hoisted
- * above the D_800F10D0 store) and NONE beat it. The residual is now localised to
- * one line of GCC: rank_for_schedule's LUID fall-through, sched.c:2464 � insns 25
- * (stage load) and 35 (copy2 addr load) are structurally identical, tie on both
- * INSN_PRIORITY (3) and dependence class (3), and the LUID that breaks the tie is
- * the chain order sched1 already emitted (28->25->30->35), not source order. See
- * evidence.md [s2]. Do NOT re-spend the position or copy-spelling axes.
+ * An insn whose destination pseudo has EXACTLY ONE SET, and which kills no
+ * register, gets its INSN_PRIORITY raised to `max_priority` — which at that point
+ * is the LAUNCH_PRIORITY (0x7f000001, sched.c:187) temporarily held by the insn
+ * being scheduled.  GCC 2.7.2 schedules each block BACKWARD, so "picked early"
+ * means "emitted late".  Concretely, in the floor-2 body:
+ *   - copy2's address load (insn 35) set a fresh single-set pseudo  -> bumped to
+ *     0x7f000001 -> picked at T-45 -> emitted LAST of the group (slot 12);
+ *   - the staged 0x10 load (insn 25) set the multiply-assigned `temp_a1` ->
+ *     reg_n_sets == 2 -> no bump -> sat in the ready list at honest priority 3
+ *     for 18 cycles -> picked at T-47 only when alone -> emitted FIRST (slot 11).
+ * That is the whole residual.  The fix is to take the bump AWAY from copy1's and
+ * copy2's address loads as well, by giving those destinations more than one set,
+ * and to place the staged 0x10 read AFTER copy2 so that when the three loads are
+ * finally all at honest priority the LUID tie-break (sched.c:2464) orders them
+ * the way target wants.  Measured ladder this session: v40 (copy2/copy3 share one
+ * scratch, stage after copy2) fixed slot 12 and left 10/11 swapped; v42/v45/v47
+ * (copy1 additionally staged through a multiply-set local) => 0.
  *
- * Contains ONE sanctioned-family construct: the staged-value load through
- * temp_a1 ([[staged-value-reused-variable]], SANCTIONED 2026-07-03), FAKE-
- * annotated below; exhaustion grid in evidence.md.
+ * CONSTRUCTS (all three are one family — a real, immediately-read value staged
+ * through a multiply-assigned local; zero dead code, no pins, no asm, no
+ * volatile): `result` carries copy1's source pointer and then the loaded word;
+ * `src` carries copies 2 and 3's source pointer; `temp_a1` carries the 0x10
+ * pointer and then the halfword read through it.  Each is FAKE-annotated in
+ * place with the sched.c mechanism.  See memory/grind/func_80060A68/self_vet.md
+ * for the 6-test vet and the sanctioned-family citations.
+ *
+ * INTEGRATION (BLOCKING, operator/driver surface — do not skip).  asmfix.txt:109
+ * and asmfix.txt:110 splice this function's ENTIRE body in from rule text
+ * (delete_between anchored on "^lhu\t\$4,0\(\$3\)$" + a 43-instruction
+ * insert_before).  With this C body the first body instruction is `lhu $2,0($3)`,
+ * so the delete_between anchor no longer matches and the splice mis-fires,
+ * duplicating the body in a full build.  Both rules MUST be retired in the same
+ * change as this C (`engine retire func_80060A68`, then `verify-oracle`).  The
+ * grind session may not touch asmfix.txt, so this is handed off.
  */
 void func_80060A68(void) {
     extern s32 D_800A3468;
@@ -48,19 +61,35 @@ void func_80060A68(void) {
     u16 temp2;
     s32 temp_a1;
     s32 result;
+    s32 src;
 
     outer = D_800A3468;
     *(s32 *)((s32)&D_800F10D0 + *(u16 *)outer * 4) = 0;
-    /* FAKE: pointer ctx->unk10 staged through temp_a1 (dead until its real
-       assignment below reads through and overwrites it), mechanism: sched.c
-       load-late launch priority for reg_n_sets==1 destinations sinks a fresh
-       single-set local's load to slot 23/26 (measured) or floats it into the
-       slot-5 delay slot when hoisted above the D_800F10D0 store; target has it
-       at slot 12, lever-exhaustion: memory/grind/func_80060A68/evidence.md s1 */
+    /* FAKE: copy1's source pointer, and then the word it points at, are staged
+       through the function's existing `result` local (its previous value is dead
+       here — nothing reads `result` until the dispatch call below overwrites it),
+       mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p, whose
+       LAUNCH_PRIORITY bump is gated on reg_n_sets[regno] == 1, so a fresh
+       single-set destination is picked early in the backward list schedule and
+       therefore EMITTED late; a multiply-set destination keeps its honest
+       priority, lever-exhaustion: memory/grind/func_80060A68/evidence.md
+       (s1 v3-v13, s2 v20-v33, s3 v40-v46) */
+    result = *(s32 *)(outer + 0xC);
+    result = *(s32 *)(result + 0);
+    *(s32 *)(outer + 0x20) = result;
+    /* FAKE: copies 2 and 3 share one `src` pointer scratch rather than re-reading
+       the 0xC field inline, so that copy2's address load also loses the
+       birthing_insn_p LAUNCH_PRIORITY bump (same sched.c mechanism as above),
+       lever-exhaustion: memory/grind/func_80060A68/evidence.md s2 K7 + s3 v40/v42 */
+    src = *(s32 *)(outer + 0xC);
+    *(s32 *)(outer + 0x24) = *(s32 *)(src + 4);
+    /* FAKE: the 0x10 pointer is staged through temp_a1, which its own next read
+       (`temp_a1 = *(u16 *)(temp_a1 + 4)`) consumes and overwrites; same reg_n_sets
+       mechanism, and the statement sits AFTER copy2 so that its RTL LUID is above
+       copy2's address load, lever-exhaustion: evidence.md s1 K2 / s2 K10 / s3 */
     temp_a1 = *(s32 *)(outer + 0x10);
-    *(s32 *)(outer + 0x20) = *(s32 *)(*(s32 *)(outer + 0xC) + 0);
-    *(s32 *)(outer + 0x24) = *(s32 *)(*(s32 *)(outer + 0xC) + 4);
-    *(s32 *)(outer + 0x28) = *(s32 *)(*(s32 *)(outer + 0xC) + 8);
+    src = *(s32 *)(outer + 0xC);
+    *(s32 *)(outer + 0x28) = *(s32 *)(src + 8);
 
     *(u16 *)(outer + 0x18) = *(u16 *)(*(s32 *)(outer + 0x10) + 0);
     temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2);

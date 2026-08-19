@@ -206,3 +206,104 @@ for the *multi-set staged* variable, which was the only untested half.
 - [s2] [s2] src/text1b.c was reverted to HEAD before finishing. The s1 integration hazard is unchanged and re-confirmed: the candidate's first body instruction is 'lhu $2,0($3)' while both asmfix rules anchor delete_between on '^lhu\t\$4,0\(\$3\)$', so applying the candidate without retiring or re-anchoring those rules in the same change silently duplicates the body in the full build.
 
 - [s2] [s2] No new construct was introduced this session. candidate.c is unchanged apart from a header comment recording the s2 result, and the only sanctioned-family construct in it remains s1's staged-value-reused-variable.
+
+## [s3] 2026-08-19 — structural. **FLOOR 2 -> 0.** The residual was `birthing_insn_p`, not the LUID fall-through.
+
+Chassis re-measured at session start with s1/s2's candidate.c applied over
+src/text1b.c: `sandbox func_80060A68 --disable all` = **score 2, build 66 / target
+66** — the ledger floor reproduces on today's chassis for the third session running.
+By the end of the session the same command prints **score 0**.
+
+### The correction to s2's attribution (read this before trusting the s2 section)
+
+s2 concluded that the pair is decided by `rank_for_schedule`'s LUID fall-through at
+`sched.c:2464` and that "sched1 must emit 25 after 35". The *conclusion* about what
+has to happen is right; the *attribution* is not, and the difference is what unlocked
+the match. A fresh `-da` dump for the floor-2 body (regenerated this session into
+`tmp/grind/func_80060A68/s3/dumps/`) plus a line-by-line read of
+`tools/gcc-2.7.2/sched.c` shows the deciding code is:
+
+    sched.c:2504-2535  birthing_insn_p (pat)
+        ...
+        if (bb_live_regs[offset] & bit)
+          return (reg_n_sets[i] == 1);      /* <-- THE LINE */
+
+    sched.c:2540-2592  adjust_priority (prev)      /* called from schedule_insn */
+        switch (n_deaths) { ... case 0:
+            if (birthing_insn_p (PATTERN (prev)))
+              { int max = max_priority;
+                if (max > INSN_PRIORITY (prev)) INSN_PRIORITY (prev) = max; }
+
+`max_priority` is `MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))` where `insn`
+is the insn currently being scheduled — and `schedule_block` sets that insn's
+priority to `LAUNCH_PRIORITY` (`0x7f000001`, sched.c:187) for the duration of the
+`schedule_insn` call (sched.c:4049). So **every insn that (a) kills no register and
+(b) sets a pseudo with `reg_n_sets == 1` is bumped to `0x7f000001` the moment it
+becomes ready.** GCC 2.7.2 schedules each basic block BACKWARD, and the pick is
+`ready[0]` of the sorted list, so "bumped -> picked early" means "emitted LATE".
+
+Applied to the floor-2 body's contested pair (sched1 trace,
+`s3/dumps/text1b.sched`, function block at line 34032):
+
+  * insn 35 (copy 2's address load, `lw $a0,0xC($v1)`) sets a fresh compiler temp,
+    `reg_n_sets == 1` -> bumped -> shown as `35 (7f000001)` from T-44 on -> picked at
+    T-45 -> emitted LAST of the group, slot 12.
+  * insn 25 (the staged 0x10 load) sets `temp_a1`, which the s1 body assigns twice,
+    `reg_n_sets == 2` -> NO bump -> shown as `25 (3)` for eighteen consecutive
+    cycles (T-29 .. T-47) -> picked at T-47 only when it is the sole ready insn ->
+    emitted FIRST of the group, slot 11.
+
+That is the entire two-instruction residual, and it also explains every earlier
+measurement in one sentence: a fresh single-set local's load is bumped and lands
+late (s1 K2, slots 23/26), a multiply-set local's load is unbumped and lands early
+(slot 11), and no amount of statement repositioning changes either, because the bump
+is decided by `reg_n_sets`, not by position. s2's "LUID fall-through" reading is what
+happens at sched2 *after* sched1 has already fixed the chain; the LUID tie-break only
+gets to speak when the competing insns are all UNBUMPED.
+
+### The closing ladder (all sandbox-measured this session, `--disable all`)
+
+| variant | structural change | score | insns | slots 10/11/12 |
+|---|---|---|---|---|
+| baseline (s1/s2 candidate.c) | — | 2 | 66 | `lw v0,0xC` / `lw a1,0x10` / `lw a0,0xC` |
+| v40 | copies 2+3 share one `cp` scratch (`reg_n_sets(cp) == 2`), staged 0x10 read placed AFTER copy 2 | 2 | 66 | `lw a0,0xC` / `lw v0,0xC` / **`lw a1,0x10`** — slot 12 now CORRECT, slots 10/11 newly swapped |
+| v41 | as v40 but `cp` shared with the first 0x10 read instead of copy 3 | 9 | 67 | shape broken |
+| **v42** | v40 + copy 1 staged through a fresh multiply-set `d1` (`d1 = *(s32*)(outer+0xC); d1 = *(s32*)(d1+0); store d1`) | **0** | 66 | exact |
+| v43 | all three copies through one `cp` (3 sets), stage after copy 2 | 3 | 65 | cse folds two address loads |
+| v44 | v42 with BOTH stagings borrowing pre-existing locals (`result` for copy 1, `idx` for copies 2+3) | 11 | 67 | `idx` borrow forces the wrong hard register |
+| **v45** | copy 1 borrows the pre-existing `result`; copies 2+3 keep the fresh `cp` | **0** | 66 | exact |
+| v46 | copy 1 through fresh `d1`; copies 2+3 borrow `idx` | 11 | 67 | isolates the failure to the `idx` borrow, not to `result` |
+| **v47** | v45 with `cp` renamed `src` and the three FAKE annotations written in | **0** | 66 | exact — this is the banked candidate |
+
+v40 is the decisive measurement: it was PREDICTED from the mechanism (remove copy 2's
+bump, move the staged read below it so the LUID tie-break can order the two unbumped
+loads) and it produced exactly the predicted one-slot correction, leaving a NEW
+adjacent swap one slot earlier — which the same mechanism then names (copy 1's
+address load is still bumped) and v42/v45 fix.
+
+### Why the final form is shaped the way it is
+
+Target's own register flow is the tell, and it is consistent with the fix: `$v0`
+carries copy 1's source pointer and is then overwritten by the loaded word (slot 10
+`lw v0,0xC($v1)`, slot 13 `lw v0,0($v0)`) — a self-overwriting staged variable;
+`$a0` carries copies 2 and 3's source pointer (slots 11 and 17) — one scratch, two
+assignments; `$a1` carries the 0x10 pointer and is overwritten by the halfword read
+through it (slot 12 `lw a1,0x10($v1)`, slot 29 `lhu a1,4($a1)`) — the s1 staging.
+All three are multiply-assigned, i.e. all three are unbumped, which is exactly the
+condition under which the LUID order (source order) survives into the emitted code.
+
+- [s3] Chassis re-measured with the inherited candidate.c: sandbox func_80060A68 --disable all = score 2, build 66 / target 66, reproducing the s1/s2 floor for the third session.
+
+- [s3] ROOT CAUSE of the two-instruction residual, read out of tools/gcc-2.7.2/sched.c and confirmed against a fresh -da dump: GCC 2.7.2's adjust_priority (sched.c:2540-2592) raises an insn's INSN_PRIORITY to LAUNCH_PRIORITY (0x7f000001, sched.c:187) when it becomes ready, provided it kills no register and birthing_insn_p (sched.c:2504-2535) is true - and birthing_insn_p's test is literally 'return (reg_n_sets[i] == 1);' on the destination pseudo. Blocks are scheduled backward and the pick is ready[0], so a bumped insn is picked early and therefore EMITTED LATE.
+
+- [s3] In the floor-2 body, copy2's address load (insn 35) set a single-set compiler temp and was bumped to 0x7f000001 (emitted slot 12), while the staged 0x10 load (insn 25) set the twice-assigned temp_a1, was never bumped, sat in the ready list at honest priority 3 for eighteen cycles (T-29..T-47) and was emitted first (slot 11). Target wants the opposite order.
+
+- [s3] This supersedes s2's attribution: the sched2 LUID fall-through at sched.c:2464 only decides between insns that are all UNBUMPED. It is a downstream symptom, not the lever. The lever is reg_n_sets on each load's destination.
+
+- [s3] v40 (copies 2+3 share one two-set scratch, staged 0x10 read moved below copy 2) was predicted from that mechanism and measured exactly as predicted: slot 12 became correct and a NEW adjacent swap appeared at slots 10/11 (copy 1's address load is still single-set and therefore still bumped). Score stayed 2 with 66 insns.
+
+- [s3] v42 and v45 close it: additionally staging copy 1's source pointer and loaded word through a multiply-assigned local removes the last bump, and all three address/stage loads then emit in LUID (source) order. sandbox --disable all = 0, build 66 / target 66. v47 is v45 with the scratch renamed `src` and the three FAKE annotations written in; it also measures 0 and is the banked candidate.
+
+- [s3] The copies-2+3 scratch could NOT be turned into a borrow of a pre-existing local: v44 and v46 both borrow `idx` for those two copies and both score 11 with 67 insns, because `idx` is needed in a different hard register at that point. Copy 1's staging DOES borrow a pre-existing local (`result`, which the dispatch call assigns later) - v45 vs v42 shows the borrow is free there.
+
+- [s3] INTEGRATION HANDOFF (unchanged and now blocking): asmfix.txt:109 deletes this function's body with a delete_between anchored on '^lhu\t\$4,0\(\$3\)$' and asmfix.txt:110 splices a 43-instruction insert_before in its place. The matched C emits 'lhu $2,0($3)' as its first body instruction, so the anchor no longer matches and a full build would duplicate the body. Both rules must be retired in the same change as the C (engine retire func_80060A68, then verify-oracle). A grind session may not touch asmfix.txt, so this is handed to the driver/operator.

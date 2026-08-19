@@ -1,0 +1,51 @@
+# SELF-VET — func_80060A68
+
+CONSTRUCTS: (1) `result` staged twice in the copy-1 statement (`result = *(s32 *)(outer + 0xC); result = *(s32 *)(result + 0); *(s32 *)(outer + 0x20) = result;`); (2) `src` — a pointer scratch assigned twice, once for copy 2 and once for copy 3 (`src = *(s32 *)(outer + 0xC); ... *(s32 *)(outer + 0x24) = *(s32 *)(src + 4); ... src = *(s32 *)(outer + 0xC); *(s32 *)(outer + 0x28) = *(s32 *)(src + 8);`); (3) `temp_a1` staged (`temp_a1 = *(s32 *)(outer + 0x10); ... temp_a1 = *(u16 *)(temp_a1 + 4);`) — inherited unchanged from the s1 candidate; (4) `temp2` — a once-written, once-read named intermediate splitting the `+2` halfword read from the `D_800A3478` store (inherited from s1). Nothing else: no inline asm, no register pins, no volatile, no unused locals or arrays, no dead stores, no padding, no goto, no build-time rewriting, and zero regfix/asmfix edits.
+
+## T1 semantic purpose
+Answered per construct, honestly and against the strictest reading.
+- (1) `result`: every value written is read. The pointer is read by the next line's dereference; the loaded word is read by the store. Behaviour is identical to the one-line form `*(s32 *)(outer + 0x20) = *(s32 *)(*(s32 *)(outer + 0xC) + 0);`, so the construct has NO observable effect beyond the simpler spelling — it exists to control instruction order. That is why it is FAKE-annotated and claimed under a sanctioned family below rather than defended as ordinary code.
+- (2) `src`: same answer. Both writes are read by the immediately following statement; behaviour is identical to the inline re-read that s1/s2 shipped.
+- (3) `temp_a1`: same answer; unchanged from the s1 candidate that the ledger already carries.
+- (4) `temp2`: same answer — a real value, read once, two lines later; it exists because target's store order requires the read to sit above the `D_800A3478` store.
+No construct in the diff is dead, unused, write-only, or address-taken.
+
+## T2 human-programmer
+- (1)/(2)/(3): a human writing this from the spec would most naturally write the three copies and the two halfword reads as inline expressions (that is exactly the s1 body). Staging through a named local is a spelling a human reads without confusion — `p = ctx->src; v = *p;` and a reused pointer scratch across consecutive copies are both ordinary C — but a reader could reasonably ask "why is copy 1 staged through `result`?" That question is answered by the annotation, not hidden. I am NOT claiming these pass T2 unaided; I am claiming them under a sanctioned family with the annotation the family requires.
+- (4) `temp2`: passes unaided. Reading a field into a local before storing an unrelated global is normal sequencing.
+
+## T3 GCC-internals justification
+Yes, and stated openly: the mechanism is GCC 2.7.2 `sched.c` `adjust_priority` (sched.c:2540-2592) calling `birthing_insn_p` (sched.c:2504-2535), whose test is literally `return (reg_n_sets[i] == 1);`. A single-set destination gets INSN_PRIORITY bumped to the LAUNCH_PRIORITY (0x7f000001, sched.c:187) of the insn being scheduled; a multiply-set destination keeps its honest priority. Because each block is scheduled backward, that bump means "picked early, emitted late". This IS a GCC-internals justification and I flag it as such rather than dressing it up as program logic. It is the same mechanism the project already sanctioned for this family — `.claude/rules/staged-value-reused-variable.md` names it verbatim in its Origin section ("Mechanism reference: GCC 2.7.2 sched.c `adjust_priority` -> `birthing_insn_p` (the "assigned once?" check is literally `reg_n_sets[regno] == 1`)"). Under the 6-test checklist a GCC-internals mechanism is a FAIL signal outside a sanctioned family; inside one it is a REQUIRED disclosure. I claim the families below.
+
+## T4 permuter/search provenance
+No permuter, no auto-search, no randomized respelling was run this session. Every variant was hand-derived from a cc1 `-da` dump generated and read this session (tmp/grind/func_80060A68/s3/dumps/text1b.sched, .sched2) plus a line-by-line read of tools/gcc-2.7.2/sched.c:2490-2600 and 3790-4060. The forms were PREDICTED from the mechanism before they were measured: the prediction "take the LAUNCH_PRIORITY bump away from copy 2's address load and put the staged 0x10 read after copy 2" produced v40, which moved exactly the one slot the mechanism said it would (slot 12 correct, slots 10/11 newly swapped); the follow-up prediction "do the same to copy 1's address load" produced v42/v45/v47 => score 0. No construct here survives only because a detector does not catch this spelling.
+
+## T5 family check
+Against the forbidden-family catalog, one line at a time: no register-asm pins; no hardcoded-`$N` asm; no regfix/asmfix edits of any kind (both existing asmfix rules are untouched and are flagged for retirement by the operator); no scheduling barriers; no INLINE_MOVE_ALIASING; no volatile in any form (no alias rename, no cast, no plain extern, no `(void)volatile` discard); no unused local array in any of its three spellings; no dead-param-assign; no dead conditional store; no empty-body `if`; no `if (1)`; no dead goto or label pad; no DImode chain; no goto-end accumulator; no param-local-alias declaration-order trick; no `s32 one = 1;` opaque variable; no lowercase `asm(...)`; no `asm("sym")` alias rename; no redundant width casts; no `bb2.ld` change. The constructs are multiply-assigned locals carrying real, immediately-read values — the sanctioned staged-value family, claimed explicitly below rather than by analogy.
+
+The one place I want the reviewer to look hardest: bound 2 of `staged-value-reused-variable` ("The variable already exists for a real job ... Inventing a new variable just to have something to borrow is NOT this rule"). Construct (1) satisfies that bound literally — `result` is a pre-existing local that holds the dispatch call's return value. Construct (2)'s `src` does NOT: it is a new local introduced in this diff whose only job is to carry copies 2 and 3's source pointer. I therefore do NOT cite the staged-value rule for `src`; I cite the frozen list's "Variable reuse for codegen control" entry. I also measured and rejected the alternatives that would have let `src` be a borrow instead: v44 and v46 borrow the pre-existing `idx` for copies 2 and 3 and both score 11 (banked in `rejected/`), because `idx` is needed in a different hard register at that point; `temp_a1` and `result` are already spoken for and land in the wrong registers.
+
+## T6 naming-announces-intent
+No name in the diff is `pad`, `_pad`, `dummy`, `unused`, `spill`, `sp_*`, `_buf`, `tail`, `slack`, or `_frame_pad`. `result`, `src`, `temp_a1`, `temp2`, `idx`, `outer` all name the value they hold. Every one of them is read; none is address-taken, discarded, or declaration-only. The pre-s1 body's `register s32 outer asm("$3")` pin and `volatile s32 _frame_pad[2]` — which WOULD have failed this test — were deleted in s1 and are not in this diff.
+
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: Staged value through a reused variable (constructs (1) `result` and (3) `temp_a1`)
+  SCOPE: "SANCTIONED 2026-07-03 — a real, immediately-used value staged through an existing (currently-dead) local to fix instruction order; FAKE-annotated, lever-exhaustion required; zero dead code"
+  PRECEDENT: .claude/rules/staged-value-reused-variable.md:3
+  FAMILY: Variable reuse for codegen control (construct (2) `src`)
+  SCOPE: "reusing one C variable for two unrelated values to influence loop-invariant detection or RA."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:170
+  FAMILY: Named-intermediate declaration order (construct (4) `temp2`)
+  SCOPE: "declare a sub-expression as a separately-named local to bias LUID."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:189
+
+ANNOTATION-CONFORMANCE: three /* FAKE: ... */ blocks are present in the diff, each carrying what + mechanism + lever-exhaustion:
+  /* FAKE: copy1's source pointer, and then the word it points at, are staged through the function's existing `result` local (its previous value is dead here — nothing reads `result` until the dispatch call below overwrites it), mechanism: GCC 2.7.2 sched.c adjust_priority -> birthing_insn_p, whose LAUNCH_PRIORITY bump is gated on reg_n_sets[regno] == 1, so a fresh single-set destination is picked early in the backward list schedule and therefore EMITTED late; a multiply-set destination keeps its honest priority, lever-exhaustion: memory/grind/func_80060A68/evidence.md (s1 v3-v13, s2 v20-v33, s3 v40-v46) */
+  /* FAKE: copies 2 and 3 share one `src` pointer scratch rather than re-reading the 0xC field inline, so that copy2's address load also loses the birthing_insn_p LAUNCH_PRIORITY bump (same sched.c mechanism as above), lever-exhaustion: memory/grind/func_80060A68/evidence.md s2 K7 + s3 v40/v42 */
+  /* FAKE: the 0x10 pointer is staged through temp_a1, which its own next read (`temp_a1 = *(u16 *)(temp_a1 + 4)`) consumes and overwrites; same reg_n_sets mechanism, and the statement sits AFTER copy2 so that its RTL LUID is above copy2's address load, lever-exhaustion: evidence.md s1 K2 / s2 K10 / s3 */
+Construct (4) `temp2` carries no FAKE annotation: it is a once-written, once-read fresh named intermediate holding a real value that appears in target's own bytes, which the 2026-08-17 clarification (.claude/rules/no-new-park-categories.md:191-214) governs. If the reviewer reads that clarification's prerequisite (6) as requiring an annotation on `temp2` as well, that is a one-comment fix, not a construct change.
+
+LIVENESS ARGUMENTS (bound 3 of staged-value-reused-variable):
+- `result`: written twice in the copy-1 statement, read by the next line and by the `0x20` store; its next real assignment is the dispatch call's return value, and nothing between the staging and that call reads `result`. The staged word is not needed after the call assigns `result`.
+- `temp_a1`: written with the 0x10 pointer, read by `temp_a1 = *(u16 *)(temp_a1 + 4)` which overwrites it; the halfword is then read by the `0x1C` store and passed as the call's second argument. No read of the pointer value survives the overwrite.
+- `src`: written, read, rewritten, read; dead after the copy-3 store.

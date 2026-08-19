@@ -34,9 +34,14 @@
    "next_probe": "s2 has already localised the tie to one line and proved both insns identical in every field rank_for_schedule inspects; what is still MISSING is a demonstration that no honest C shape can make sched1 emit insn 25 after insn 35. Do not claim exhaustion until the permuter and priority axes are measured - the floor moved 39 to 2 in a single session and both remaining hypotheses are live."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The `src` scratch is a freshly-invented multiply-set local built solely to defeat sched.c's birthing_insn_p LAUNCH_PRIORITY test, which is exactly the shape staged-value-reused-variable's bound 2 forbids ('inventing a new variable just to have something to borrow is NOT this rule') \u2014 the worker relabels the identical mechanism under a mismatched family to route around that bound; construct (4) `temp2` is also missing its required FAKE annotation. Next action: Do not commit. For `src`: either (a) find an honest pre-existing local the function already uses for a real"
+ ],
+ "banned_constructs": [
+  "s32 src; src = *(s32 *)(outer + 0xC); ...; src = *(s32 *)(outer + 0xC); *(s32 *)(outer + 0x28) = *(s32 *)(src + 8);",
+  "u16 temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2);  (unannotated)"
+ ],
+ "ladder_skip": 1,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-19T12:58:09.910403+00:00"
