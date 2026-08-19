@@ -1,7 +1,7 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 11,
    "modality": "permuter",
    "headline": "Permuter campaign dropped the floor 13 -> 11 (a FAKE-annotated constant holder closes the trailing ==1 test) and TWO s3 frontier hypotheses were killed with direct compiler witnesses: denying local-al"
+  },
+  {
+   "session": 5,
+   "floor": 11,
+   "modality": "permuter",
+   "headline": "Floor held at 11/135; permuter modality declared SPENT for this function (3 chassis, 60k+ iterations, zero byte-moving finds) and s4's frontier item 1 CLOSED \u2014 naming the symbol base is 5 insns worse "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "$a1 must be made to CONFLICT with `off`'s live range, not merely be un-preferred \u2014 preference removal is measured dead in both allocators.",
-   "mechanism": "find_free_reg unions regs_live_at[ins] over [born_index, dead_index) into its `used` set (local-alloc.c:2168-2171), and global.c's find_reg does the analogous conflict-set exclusion. A form in which $a1 is LIVE strictly between `off`'s birth (the `idx << 5` shift) and its death (the `addu a1,...`) excludes $a1 for `off` in both passes, which is the only mechanism left that both allocators respect.",
-   "next_probe": "Attack the SYMBOL pseudo (139), not `off`. Read the .loop movable log for regno 139 first (`pwsh tools/grinder/dump.ps1 func_80041BF4`) and find what would make move_movables decline to hoist `(set rN (symbol_ref D_800A9A24))` out of the loop body \u2014 this is a loop.c question of the same shape as the axis s2 closed one level out for D_80094DF0. If the symbol stays block-local it carries the same $a1 suggestion, and qty_sugg_compare ordering can give it $a1 first, forcing `off` to $v0 exactly as target has it. Confirm any candidate in ONE build with BB2_SUGG_DEBUG/BB2_QTY_DEBUG rather than sweeping spellings."
+   "hypothesis": "The only route s4 named that s5 did not close is the loop.c one: make move_movables DECLINE to hoist the UNNAMED (set rN (symbol_ref D_800A9A24)) out of the loop body, so pseudo 139 stays a short-lived in-loop allocno carrying the $a1 preference and takes $a1 ahead of `off` (target's exact shape).",
+   "mechanism": "loop.c's move_movables currently hoists 139 out of both loops (confirmed on the s3 and s4 .loop dumps), after which global.c leaves it unallocated and reload rematerializes it into $t0 while `off` holds $a1. s5 proved the naming route to un-hoisting is self-defeating (any C name lengthens the live range to whole-function and costs 5 insns), so the change must come from a movable-classification field, not from a declaration.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80041BF4` and read the .loop movable log for regno 139: identify which field (m->global, m->done, m->partial, the threading/matches test, or the force flag) would have to differ for move_movables to decline it, then look for a C form that changes THAT field without introducing a named long-lived pointer. This is forensics modality and is the highest-value remaining axis."
   },
   {
-   "hypothesis": "The banked floor-11 constant holder is a sanctioned-family construct but is UNVETTED and must not be treated as accepted.",
-   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md, scalars only, FAKE required) whose FAKE prerequisites include the full modality ladder being demonstrably spent. The ladder is NOT spent for this function \u2014 permuter is only the fourth modality and the loop.c axis above is untried.",
-   "next_probe": "Do not spend it prematurely. If a later session closes the $a1 item and reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim, and cite a precedent file:line. If the ladder is still unspent at that point, prefer re-deriving the trailing test in ordinary C over submitting on the holder."
+   "hypothesis": "Permuter is spent for func_80041BF4 and a future permuter mandate should be redirected rather than re-run as free randomization.",
+   "mechanism": "Three structurally distinct chassis (s4's floor-11 form, s5's integer-arithmetic form, s5's pointer-temp form), 60k+ total iterations, every find inside the first 32 seconds, every find measured inert or already banked. The remaining gap is a single register-allocation decision that random C perturbation demonstrably cannot express.",
+   "next_probe": "If permuter is mandated again, do NOT free-randomize. Author explicit PERM_ directives over the loop.c movable question (alternative spellings of the loop body that change whether the symbol_ref is classified as a hoistable movable) and run a directed campaign, or switch modality."
   },
   {
-   "hypothesis": "Random permuter sampling on this basin is now spent; the remaining gap is a single allocation decision that random C perturbation is unlikely to hit.",
-   "mechanism": "The campaign found both of its novel forms within 32 seconds and produced nothing in the following ~11 minutes across 21428 iterations, which is the fresh-seed signature of an exhausted basin.",
-   "next_probe": "If permuter is mandated again, reseed from a STRUCTURALLY different chassis rather than the floor-11 form \u2014 specifically one in which the LoadImage source address is built without a standalone loop-invariant symbol_ref \u2014 instead of re-sampling this one. Otherwise switch modality (forensics on the .loop dump is the highest-value next axis)."
+   "hypothesis": "The banked floor-11 constant holder for the trailing `func_8003E2A0() == 1` test is a sanctioned-family construct but is still UNVETTED and its FAKE prerequisites are still unmet.",
+   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md, scalars only, FAKE required) whose prerequisites include the full modality ladder being demonstrably spent. Permuter is now spent, but forensics and rederive are not, so the ladder is still open.",
+   "next_probe": "Do not spend it. If a later session closes the $a1 item and reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim, and cite a precedent file:line. Prefer re-deriving the trailing test in ordinary C if the ladder is still unspent at that point."
   }
  ],
  "judge_constraints": [],

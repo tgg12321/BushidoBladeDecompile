@@ -1,17 +1,3 @@
-/* [s5] permuter session: floor UNCHANGED at 11. This form is still the best
- * known. s5 killed three things and banked seven rejected forms: (a) naming
- * the D_800A9A24 base in a block-local pointer inside the loop body is 5 insns
- * WORSE in both declaration orders (loop.c hoists the named pointer to a
- * whole-function pseudo; the pressure evicts fp_ptr from $s8, frame 96 vs 88)
- * - that closes s4's frontier item 1; (b) interposing a named address
- * intermediate between `off` and the hard-$a1 argument is exactly inert in all
- * three spellings (the copy is coalesced before allocation); (c) random
- * permuter sampling is SPENT - two more chassis-faithful campaigns (20303 and
- * 18966 iterations) each yielded one find inside 10 seconds and nothing after,
- * and both finds re-measure inert at 11. The only route s4 named that remains
- * open is the loop.c one: make move_movables decline to hoist the unnamed
- * (set rN (symbol_ref D_800A9A24)). That is forensics modality.
- */
 /* saTan4FireDisp (func_80041BF4) - GRIND candidate, s4 (2026-08-19).
  * sandbox --disable all == 11 (s3 banked 13, s2 17, s1 22, s0 29, HEAD form 41).
  * frame 88 / 135 insns, both exactly target's.
@@ -101,7 +87,8 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
     rect[2] = 0x10;
     rect[3] = 1;
-    LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
+    { u8 *addr = ((u8 *)(&D_800A9A24)) - (-off);
+    LoadImage((s32)rect, (s32)addr); }
     DrawSync(0);
     tbl += 2;
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
