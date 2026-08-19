@@ -549,3 +549,129 @@ the hard fact right. It is the frontier.
 - probe: Instruction-by-instruction diff of the sandbox object against asm/funcs/func_80041BF4.s (both 135 insns), plus a direct read of the .lreg and .greg dumps produced by pwsh tools/grinder/dump.ps1 func_80041BF4.
 - result: CONFIRMED from the dumps, not inferred. .lreg insn 327 = (set (reg:SI 140) (symbol_ref/v:SI ("D_800A9A24"))) with REG_EQUIV, sitting BEFORE (note 129 ... NOTE_INSN_LOOP_BEG), alongside the hoisted REG_EQUIV constants 137 (0x10) and 138 (1). .greg prints ';; 140 conflicts: ... 2 4 5 6 7 29' - hard regs 4 5 6 7 are $a0-$a3. `off` is reg 130, absent from global.c's 24-reg allocate list, and .lreg insn 229 is (set (reg:SI 5 a1) (plus (reg/v:SI 130) (reg:SI 140))). Every one of the 11 differing instructions is that swap or its cascade (y into $v1 not $v0; the 0x10/1 rect constants into $v0 not $t0).
 - verdict: CONFIRMED
+
+---
+
+## [s9] REDERIVE (2026-08-19)
+
+### H-s9-1 - KILLED (with a confirmed sub-mechanism)
+**Statement:** loop.c can be made to decline the hoist of the
+`(set reg (symbol_ref "D_800A9A24"))` without goto-spelling, via scan_loop's
+three-way safety test rather than its cost gate (inherited frontier item 3).
+
+**Mechanism:** `tools/gcc-2.7.2/loop.c:686-700` considers a loop-invariant set
+for hoisting if ANY of (1) `!maybe_never && !loop_reg_used_before_p`,
+(2) the dest is neither a user variable nor the loop-test reg,
+(3) `reg_in_basic_block_p`. Making the base a named function-scope `u8 *`
+assigned in the OUTER loop body AFTER the `if (outer == 0)` branch falsifies all
+three at once.
+
+**Probe / result:** four variants measured (v03/v04/v05/v07). The SUB-mechANISM
+is **CONFIRMED** - the assignment placed after the if/else blocks the hoist
+(42 @ 136) while the identical assignment placed before it does not (11 @ 135,
+`maybe_never` still 0). But the OUTCOME is **KILLED**: with the hoist blocked,
+`src_base` is a ninth long-lived value in a function whose target already
+occupies `$s0`-`$s7` and `$fp`, so `fp_ptr` is evicted to the stack - frame 96
+vs 88, 136 insns vs 135, score 42 vs 11. There is no register to pay with, and
+no placement changes that. This also retro-explains s5's uniform "+5 insns" for
+every naming placement.
+
+**Verdict: KILLED.** With the cost gate already dead (s7) and the
+delete-and-substitute bypass structurally unavailable (H-s9-2), the loop.c hoist
+CANNOT be removed from the while/do-while basin. Floor 11 there is structural.
+
+### H-s9-2 - KILLED
+**Statement:** loop.c's `reg_single_usage` delete-and-substitute bypass
+(`loop.c:733-755`) can remove the symbol set at zero cost, since our set is
+used exactly once inside a loop with calls.
+
+**Mechanism:** the bypass requires
+`validate_replace_rtx (SET_DEST, SET_SRC, single_use_insn)` to succeed.
+
+**Probe / result:** the single use is `(set (reg) (plus (reg off) (reg sym)))`;
+substituting yields `(plus (reg) (symbol_ref))`, for which MIPS has no non-MEM
+pattern (`addsi3`'s second operand is `arith_operand`). The `%hi`/`%lo` +
+base-register form that accepts a symbol operand exists only inside a MEM. This
+function passes the address as a call argument and never dereferences it, so the
+bypass can never fire. Corroborated by the set surviving in every measured
+variant. **Verdict: KILLED.**
+
+### H-s9-3 - KILLED
+**Statement (inherited frontier item 2):** the goto-spelled basin's residual is
+the same problem class s1 solved in the while basin, so re-running s1's rotation
+levers (declaration order of xoff/yoff/tbl/idx, colour birth order, presence of
+a `do { } while (0)` yoff wrap) there should collapse the score.
+
+**Probe / result:** seven goto-basin variants measured on today's HEAD.
+**Declaration order is completely inert in that basin** - xoff/yoff first,
+tbl/idx first and rect-first all score exactly 43 @ 136, identical to the
+baseline. The rotation levers do NOT transfer. Only the
+`do { yoff = 0; } while (0);` wrap moved anything (43 -> 40). **The
+"declaration order re-rotates the goto basin" hypothesis is KILLED.**
+
+### H-s9-4 - KILLED
+**Statement:** the goto basin's 8-byte frame shortfall (80 vs target's 88) can
+be bought with declared locals, per the phantom-frame-slot lever.
+
+**Probe / result:** two extra LIVE `s32` locals (assigned and read) left the
+frame at exactly 80 and the insn count at exactly 136. **Verdict: KILLED** -
+the phantom-slot lever does not apply to this basin.
+
+### H-s9-5 - KILLED (inert)
+**Statement:** re-spelling the address arithmetic changes how combine/loop see
+the symbol.
+
+**Probe / result:** `(s32)&D_800A9A24 + off` (integer add) and
+`(s32)(off + (u8 *)&D_800A9A24)` (operand order reversed) are both exactly
+11 @ 135. Inline `(u8 *)&D_800A9A24 + (idx << 5)` with `idx++` at the end of
+the body is 16 @ 137. **Verdict: KILLED (inert / worse).**
+
+### Frontier after s9
+1. **The goto basin's +1 instruction has a named cause** - cse2 merges the loop
+   test's signed `lh $v0,0($s0)` with the next iteration's unsigned
+   `lhu $v1,0($s0)` into `lh` + `move $v1,$v0`; dbr then fills the `bgez` delay
+   slot with that move instead of `sll $v0,$s1,5` and a load-delay `nop` is the
+   net extra insn. Target emits BOTH loads. Attack: SYNTHESIS - find an ordinary-C
+   spelling of the loop condition that defeats the sign/zero-extend merge
+   (e.g. reading the test value through a differently-typed lvalue, or reading
+   `rect[0]`'s source before the test in program order). Read the `.cse2` dump
+   for the merge decision rather than only the score.
+2. **The goto basin's callee-save permutation is NOT declaration-order driven**
+   (measured dead this session). It has xoff=$s8 yoff=$s7 r=$s5 g=$s4 fp_ptr=$s6
+   where target has xoff=$s5 yoff=$s4 r=$s7 g=$s6 fp_ptr=$fp. Attack: FORENSICS -
+   read `.greg` allocno priorities for both basins side by side and find what
+   actually orders the s4..s8 pool, rather than guessing another source-level lever.
+3. **The trailing `func_8003E2A0() == 1` test** (unchanged, still worth exactly 2
+   in both basins, still carried by the unvetted `one` constant-holder). SYNTHESIS
+   modality; see the s8 frontier entry for the specific shapes to try and the
+   instruction to read the reload dump for the offered spill register.
+
+## [s9] loop.c can be made to decline the hoist of the (set reg (symbol_ref "D_800A9A24")) without goto-spelling, via scan_loop's three-way safety test rather than its cost gate (inherited frontier item 3).
+- mechanism: tools/gcc-2.7.2/loop.c:686-700 considers a loop-invariant set for hoisting if ANY of (1) !maybe_never && !loop_reg_used_before_p, (2) the dest is neither a user variable nor the loop-test reg, (3) reg_in_basic_block_p. Declaring `u8 *src_base;` at function scope and assigning it inside the OUTER loop body but OUTSIDE the inner loop falsifies all three at once: REG_USERVAR_P is set, the assignment sits after the `if (outer == 0)` branch so maybe_never is 1, and the use is inside the inner loop with the inner loop's entry jump and label in between.
+- probe: Four A/B variants measured with sandbox --disable all: v05 (assignment BEFORE the if/else), v03 (AFTER the if/else), v04 (after the tbl load), v07 (same as v03 with s32 instead of u8*). Then disassembled v03 against asm/funcs/func_80041BF4.s.
+- result: The SUB-MECHANISM is confirmed: v05 scores 11 @ 135 (identical to the unnamed form - maybe_never still 0, movable created and hoisted), while v03/v04/v07 all score 42 @ 136 because the hoist is genuinely blocked. The only difference between v05 and v03 is which side of the `if (outer == 0)` branch the assignment sits on. But the outcome is a kill: with the hoist blocked, src_base is a ninth long-lived value, and target already occupies $s0-$s7 and $fp (tbl, idx, outer, b, yoff, xoff, g, r, fp_ptr), so the allocator evicts fp_ptr to the stack - frame 96 vs target's 88, 136 insns vs 135. This also retro-explains s5's uniform +5-insn result for every other naming placement: the cost is register pressure, not spelling.
+- verdict: KILLED
+
+## [s9] loop.c's reg_single_usage delete-and-substitute bypass can remove the symbol set at zero cost, since our set is used exactly once inside a loop with calls.
+- mechanism: tools/gcc-2.7.2/loop.c:733-755 deletes an invariant set outright (instead of hoisting it) when reg_single_usage[regno] is the reg's only use and validate_replace_rtx (SET_DEST, SET_SRC, use_insn) succeeds.
+- probe: Read the bypass's preconditions against our RTL shape (the single use is (set (reg) (plus (reg off) (reg sym)))) and against the MIPS backend's operand predicates.
+- result: Substituting gives (plus (reg) (symbol_ref)), for which MIPS has no non-MEM pattern - addsi3's second operand is arith_operand (register or 16-bit constant). The %hi/%lo + base-register form that does accept a symbol operand exists only inside a MEM (target insns 26-28 are exactly that shape for D_80094E08). This function passes the address as a call argument and never dereferences it, so validate_replace_rtx can never succeed and the bypass can never fire. Corroborated by the set surviving in every variant measured across s6-s9.
+- verdict: KILLED
+
+## [s9] The goto-spelled basin's residual is the same problem class s1 solved in the while basin, so re-running s1's rotation levers there (declaration order of xoff/yoff/tbl/idx, colour birth order, do-while(0) yoff wrap) should collapse the score (inherited frontier item 2).
+- mechanism: s1 flipped the s2/s3/s4 callee-save trio to target's allocation in the while basin by changing declaration order and removing a do-while(0) wrap; the goto basin has target's entire inner-loop body already and differs only in the callee-save permutation, the frame and one instruction.
+- probe: Seven goto-basin variants measured on today's HEAD after cleaning s7's v_goto2 of the two constructs s8 proved inert: baseline, do-while(0) yoff wrap, xoff/yoff declared first, tbl/idx declared first, rect declared first, outer-as-do-while + goto inner, and two extra live s32 locals.
+- result: Declaration order is COMPLETELY INERT in the goto basin - xoff/yoff-first, tbl/idx-first and rect-first all score exactly 43 @ 136, identical to the baseline. The rotation levers do not transfer between basins. outer-as-real-do-while with a goto inner loop is worse (46 @ 136, and the hoist returns). The only lever that moved anything is restoring the `do { yoff = 0; } while (0);` wrap in the else arm: 43 -> 40.
+- verdict: KILLED
+
+## [s9] The goto basin's 8-byte frame shortfall (80 vs target's 88) can be bought with declared locals, per the phantom-frame-slot lever.
+- mechanism: GCC 2.7.2 reserves frame bytes for ordinary LIVE locals even when no instruction touches their stack slot (memory/project/phantom-frame-slots-gcc272).
+- probe: Added two extra live s32 locals (both assigned and read) to the goto-basin baseline and re-measured score, insn count and the prologue's stack adjustment.
+- result: Frame stayed at exactly 80, insn count at exactly 136, score at exactly 43. The phantom-slot lever does not apply to this function's goto basin.
+- verdict: KILLED
+
+## [s9] Re-spelling the address arithmetic (integer add instead of pointer add, reversed operand order, inline shift without the `off` local) changes how combine/loop see the symbol.
+- mechanism: Rederive modality - a structurally different expression tree for the LoadImage source address could avoid the bare (set reg (symbol_ref)) or change its operand preferences.
+- probe: Three variants measured with sandbox --disable all against the banked candidate's 11 @ 135.
+- result: `(s32)&D_800A9A24 + off` is exactly 11 @ 135. `(s32)(off + (u8 *)&D_800A9A24)` is exactly 11 @ 135. Inline `(u8 *)&D_800A9A24 + (idx << 5)` with `idx++` moved to the end of the body is 16 @ 137 (worse, same family as s8's idx++-relocation result).
+- verdict: KILLED

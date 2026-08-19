@@ -53,6 +53,30 @@
  * image: symbol in $a1 (reloaded straight into the destination), off in $v0.
  * All eleven differing instructions are that one swap plus its cascade
  * (y into $v1 not $v0; the 0x10/1 rect constants into $v0 not $t0).
+ *
+ * [s9] REDERIVE session. Floor held at 11 @ 135; the FORM is unchanged from s8.
+ * What changed is the standing of the residual: the loop.c hoist that causes all
+ * eleven differing instructions is now proven UNREMOVABLE from this basin.
+ * scan_loop has exactly three ways not to hoist an invariant set, and all three
+ * are dead here:
+ *   (a) the cost gate - killed s7 (threshold 61-62 vs insn_count 37, needs +19
+ *       insns in a 37-insn loop);
+ *   (b) the three-way safety test at loop.c:686-700 - REACHABLE (naming the base
+ *       as a function-scope `u8 *src_base` assigned in the OUTER loop body AFTER
+ *       the `if (outer == 0)` branch does block the hoist, confirmed by an A/B
+ *       against the same assignment placed BEFORE the branch, which does not),
+ *       but UNAFFORDABLE: src_base becomes a ninth long-lived value and target
+ *       already uses $s0-$s7 and $fp, so fp_ptr is evicted to the stack
+ *       (frame 96 vs 88, 136 insns, score 42);
+ *   (c) the reg_single_usage delete-and-substitute bypass at loop.c:733-755 -
+ *       needs validate_replace_rtx to accept `(plus (reg) (symbol_ref))`, which
+ *       MIPS only has a pattern for inside a MEM; this function passes the
+ *       address as a call argument and never dereferences it.
+ * Therefore floor 11 is STRUCTURAL in the while/do-while basin and the goto
+ * basin (banked separately as goto_basin_best.c, 40 @ 136) is the only route to
+ * 0. s9 also measured the goto basin's rotation levers dead: declaration order
+ * is completely inert there (43 for every permutation), and its 8-byte frame
+ * shortfall cannot be bought with declared locals.
  */
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
