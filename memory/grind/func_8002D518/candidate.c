@@ -1,61 +1,52 @@
-/* func_8002D518 - best form as of s7 (forensics). Honest floor 4,
- * build_insns 144 == target_insns 144. This exact text is IN PLACE in
- * src/code6cac_b.c at end of s7 (re-measured: score 4).
+/* func_8002D518 - MATCHED FORM (s8, rederive). Honest sandbox distance 0
+ * with all 33 regfix/asmfix rules dropped and cheat-asm stripped;
+ * build_insns 144 == target_insns 144.
  *
- * CHASSIS WARNING (now confirmed a SEVENTH time): src/code6cac_b.c at s7
- * dispatch did NOT carry the s6 candidate - HEAD held a hybrid `sq` +
- * `[(u32)disc >> shift]` form. ALWAYS re-apply this file and re-measure.
- * tmp/grind/func_8002D518/s7/apply.py splices a form file into src/ by brace
- * matching; tmp/grind/func_8002D518/s7/align3.py prints a normalised
- * (reg-name / pseudo-mnemonic / nop / reloc insensitive) target-vs-build diff.
+ * s8 inherited the s7 form (floor 4) and closed the last two residual items
+ * with two ordinary-C edits. The full derivation is in evidence.md (E14-E17).
  *
- * WHAT s7 CHANGED (floor 7 -> 4, insn parity held at 144 == 144). TWO edits,
- * both ordinary C, both in already-sanctioned families:
+ *  EDIT 1 - the `ud` copy (3 slots, the frontier head since s1).
+ *    Target keeps TWO registers for the discriminant across the LZCS island:
+ *    $a2 (read by `bltz $a2,.L8002D6BC`) and $a0 (`addu $a0,$a2,$zero` at
+ *    0x8002D680, read by the island and by the slow-path `srlv`). Seven
+ *    sessions measured every plain-C placement of `u32 ud = disc;` folding
+ *    away. MEASURED MECHANISM (tmp/grind/func_8002D518/s8/dumps_*): with a
+ *    SINGLE assignment, cse.c's make_regs_eqv puts ud and disc in one quantity
+ *    and rewrites every read to disc, then DELETES the copy insn - the .cse
+ *    dump of the single-assignment control (v6_nodup) has no copy at all and
+ *    the block runs code_label 240 -> insn 248 directly. Writing the
+ *    assignment a SECOND time inside the `if (disc >= 0)` guard arm makes the
+ *    pseudo multiply-defined across the join: the equivalence is invalidated,
+ *    the post-join `ud >> shift` read keeps its own pseudo, and BOTH copies
+ *    survive cse as `(set (reg 131) (reg 117))`. global_alloc then lands
+ *    117 -> $a2 and 131 -> $a0 (target's pair) and the redundant second copy
+ *    is dropped before final output, so insn parity holds at 144. This is the
+ *    sanctioned duplicated-statement-into-arms family
+ *    (.claude/rules/duplicated-statement-into-arms.md) and carries the
+ *    required /* FAKE *\/ annotation at the duplicated copy.
  *
- *   1. VARIABLE REUSE: `sqrt_val` was deleted as a separate local and `disc`
- *      carries the square-root value too (`disc = table[disc] >> 3;`,
- *      `disc = (u32)(tval << 16) >> (0x13 - half);`, `disc <<= 9;`,
- *      `num1 = (neg_b + disc) << 8;`, `t2_val = ((neg_b - disc) << 8) / denom`).
- *      This is exactly what target's register file shows: $a2 holds the
- *      discriminant AND the square root AND the <<9 result. It is the same
- *      lever s3 used for `sqrt_val <<= 9` in place, applied one level up.
- *      EFFECT (the s5/E4 mechanism, corrected - see evidence E12): merging the
- *      two variables into one pseudo makes allocno 117 live across the whole
- *      lzcs/table region, which picks up HARD-REG conflicts from the
- *      local_alloc'd block-locals living there:
- *        base  `;; 117 conflicts: 108 116 117 2 29`
- *        s7    `;; 117 conflicts: 108 116 117 122 131 2 3 4 5 12 29 64 65 66`
- *      With hard regs 2,3,4,5 all blocked, global.c find_reg has no choice but
- *      $6 = $a2 = TARGET'S REGISTER, and 117 is still allocno position 1 so
- *      nothing else in the order has to move. All six `disc` slots close.
+ *  EDIT 2 - slot 74 (1 slot). Target's `disc < 0` arm writes the RETURN
+ *    register directly (`j .L8002D774` + `addu $v0,$zero,$zero` in the delay
+ *    slot) and jumps PAST the join's `addu $v0,$a1,$zero`, whereas ours wrote
+ *    $a1 and jumped INTO the join. Spelling the arm `return 0;` does not work
+ *    (measured twice, s7 and s8/v5: jump.c cross-jumps the block into an
+ *    earlier return-0 site and then inverts `bgez`->`bltz`, losing 2 insns,
+ *    score 5/142). The fix is that `result` and the comparison flag are two
+ *    DIFFERENT locals: the flag is computed in $a1 and copied into `result`
+ *    ($v0) at the join, so the `disc < 0` arm's `result = 0` is already a
+ *    write of $v0 and its `j` targets the epilogue. Ordinary named-
+ *    intermediate C, no annotation needed.
  *
- *   2. The inner LZCS guard is now the INIT-THEN-CONDITIONALLY-OVERWRITE shape
- *      (`lzcr = 0; if (disc >= 0) { island; lzcr = sp_tmp; }`), i.e. literally
- *      what target's `bltz $a2,.L8002D6BC` + fall-through island reads like.
- *      s2/s3 had rejected this shape because it deletes the `u32 ud = disc;`
- *      copy - and it still does (see the residual below) - but on the s7
- *      chassis it is worth 2 slots net: score 6/146 with the if/else guard,
- *      score 4/144 with the init guard.
- *
- * THE REMAINING RESIDUAL IS 4 SLOTS = TWO INDEPENDENT ITEMS:
- *   (a) 3 slots - the `u32 ud = disc;` copy. Target keeps TWO registers
- *       (`addu $a0,$a2,$zero` at 0x8002D680, then the island reads $a0 and the
- *       slow-path `srlv` reads $a0); we fold to one, so we are 1 insn short and
- *       the island's `addu $t4,%1,$zero` + the `srlv` read $6 instead of $4.
- *       s6/E7 + s7 re-confirmation: with a plain C copy cse's make_regs_eqv is
- *       strictly either/or, so this is NOT a C-level `u32 ud = disc;`.
- *       Hoisting the copy above the 0x400 test on the s7 chassis is
- *       score-NEUTRAL (4/144) - measured, banked as rejected.
- *   (b) 1 slot - slot 88 (`addu $v0,$zero,$zero` + jump to the epilogue label
- *       vs our `addu $a1,$zero,$zero` + jump to the join). Spelling the arm
- *       `return 0;` still loses 2 insns to jump2 cross-jumping on the s7
- *       chassis: score 8 / 142. Unchanged verdict from s6/E10-E11: this is a
- *       reorg.c delay-slot re-materialisation question, read .dbr for it.
- *
- * INHERITED AND STILL LOAD-BEARING (do not undo): the island is the
- * func_800274BC-accepted canonical form (single __asm__ volatile, "=m"(sp_tmp),
- * "r"(ud), "$12" clobber); s3's named numerator `num1` assigned BEFORE `denom`;
- * the outer `if (disc < 0) { result = 0; } else { ... }` join shape.
+ * ALSO LOAD-BEARING (inherited from s1-s7, do not undo):
+ *   - the `ud = disc; lzcr = 0;` ORDER (s8/v3 had them reversed: the two
+ *     delay slots come out swapped, score 3);
+ *   - s7's variable reuse - `disc` carries the discriminant, the square root
+ *     and the <<9 result (target's $a2 does exactly that);
+ *   - s3's named numerator `num1` assigned BEFORE `denom`;
+ *   - the canonical GTE LZCS island in the func_800274BC-accepted form
+ *     (single __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber);
+ *     cluster .claude/rules/cop2-addressing-preamble-cluster.md:74;
+ *   - the outer `if (disc < 0) { result = 0; } else { ... }` join shape.
  */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
@@ -115,12 +106,21 @@ dist_calc:
             } else {
                 s32 sp_tmp;
                 s32 lzcr;
-                u32 ud = disc;
+                u32 ud;
+                ud = disc;
                 lzcr = 0;
                 if (disc >= 0) {
-                    /* Hand-written GTE leading-zero-count block (LZCS in,
-                     * LZCR out) — same island as authorized siblings
-                     * func_8001A67C / func_800274BC. */
+                    /* FAKE: duplicated `ud = disc;` into the LZCS-guard arm,
+                     * mechanism: cse.c make_regs_eqv - the second def makes
+                     * pseudo `ud` multiply-defined, so the equivalence
+                     * ud == disc established at the first copy is invalidated
+                     * and cse can no longer rewrite the post-join `ud >> shift`
+                     * read to disc's register; without it cse DELETES the copy
+                     * outright (measured: v6_nodup, score 3, no `addu $a0,$a2`).
+                     * lever-exhaustion: memory/grind/func_8002D518/hypotheses.md
+                     * (s1-s7: 22 rejected forms, 33,881 permuter iterations,
+                     * every plain-C copy placement measured folding). */
+                    ud = disc;
                     __asm__ volatile(
                         "addu   $t4, %1, $zero\n"
                         "mtc2   $t4, $30\n"
@@ -140,7 +140,6 @@ dist_calc:
                     disc = (u32)(tval << 16) >> (0x13 - half);
                 }
             }
-
             {
                 s32 neg_b = -dot2;
                 s32 num1;
@@ -153,9 +152,12 @@ dist_calc:
                 t1_val = num1 / denom;
                 t2_val = ((neg_b - disc) << 8) / denom;
 
-                result = 0;
-                if (t1_val >= 0) {
-                    result = t2_val < 0x101;
+                {
+                    s32 flag = 0;
+                    if (t1_val >= 0) {
+                        flag = t2_val < 0x101;
+                    }
+                    result = flag;
                 }
             }
         }

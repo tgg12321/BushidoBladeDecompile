@@ -6513,3 +6513,7 @@ spelling dead, s5/s6/s7 swept the sched2 priority lattice dead three times, and
 GCC 2.7.2 predates alias sets so the gp store can never be the
 dependence-suppressed side — the pointee type is the only lever, and it lives in
 the header.
+
+## 2026-08-19 07:16 — func_8002D518 — layer-1 review — **FAIL**
+
+The load-bearing FAKE-annotated `ud = disc;` duplicate is cited under the wrong sanctioned family (duplicated-statement-into-arms) whose scope does not match the actual code shape; the correct family (dead-store-fake-exception) was never invoked or checked against its own prerequisites.

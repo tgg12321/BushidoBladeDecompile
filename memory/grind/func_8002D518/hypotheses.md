@@ -622,3 +622,27 @@ question; read `.dbr`, never `.jump2`.
 - probe: Re-measure the `return 0;` arm on the s7 variable-reuse chassis.
 - result: Score 8 / build_insns 142 - still 2 insns short, jump2 cross-jump unchanged. Verdict identical to s6 despite the completely different allocation.
 - verdict: KILLED
+
+## [s8] The target's `addu $a0,$a2,$zero` survives because the `ud` pseudo is MULTIPLY DEFINED across the LZCS guard, not because of where a single copy is placed.
+- mechanism: cse.c make_regs_eqv establishes ud == disc at the copy and rewrites later reads to qty_first_reg, then the copy is deleted as dead. A SECOND assignment of the same pseudo inside the guard arm invalidates that equivalence for the post-join read (`(&D_8008D118)[ud >> shift]`), so cse must keep `ud` as its own pseudo and both copy insns survive to global_alloc.
+- probe: Write `ud = disc;` once before the guard and again as the first statement of the `if (disc >= 0)` arm; rebuild; read .cse/.greg of both the duplicated form and a single-assignment control.
+- result: CONFIRMED and it is the whole 3-slot item. Single assignment: .cse has no copy insn at all, all reads rewritten to reg 117, score 3. Duplicated: .cse keeps `(set (reg 131) (reg 117))` twice, .greg renders both as `(set (reg 4 a0) (reg 6 a2))` with the asm input on $a0, one copy is dropped before output, insn parity 144, and the survivor is reorg-hoisted into the beqz delay slot = target's insn at 0x8002D680. Score 4 -> 1 (with the order fix).
+- verdict: CONFIRMED
+
+## [s8] Target's `addu $v0,$a1,$zero` at 0x8002D770 means the returned value and the `t2_val < 0x101` flag are two DIFFERENT C locals, and that alone fixes slot 88.
+- mechanism: with one local, GCC keeps `result` in $a1 and the `disc < 0` arm writes $a1 and jumps INTO the join. With two, the flag lives in $a1, `result` is a separate pseudo that gets $v0, and the arm's `result = 0` is a direct write of the return register whose `j` therefore targets the epilogue past the join move. No cross-jump is involved, which is why every `return 0;` spelling failed.
+- probe: Replace `result = 0; if (t1_val >= 0) result = t2_val < 0x101;` with `s32 flag = 0; if (t1_val >= 0) flag = t2_val < 0x101; result = flag;` on the score-1 chassis.
+- result: CONFIRMED. Score 1 -> 0, insn parity 144 == 144, honest sandbox distance 0 with all 33 rules dropped and cheat-asm stripped.
+- verdict: CONFIRMED
+
+## [s8] `if (disc < 0) return 0;` can be made to produce target's `j .L8002D774` + `addu $v0,$zero,$zero` pair on the s8 chassis.
+- mechanism: s6/E10-E11 attributed the pair to reorg.c re-materialising a shared return-0 block into the `j`'s delay slot.
+- probe: Re-measure the `return 0;` arm on the score-1 (copy-surviving) chassis and disassemble the arm.
+- result: KILLED for the third time, and now with the actual reason. Score 5 / build_insns 142. The disassembly shows `bltz $6, 1930` - jump.c cross-jumped the arm's `$v0=0; j epilogue` block into an earlier return-0 site, leaving the conditional branch and the unconditional jump adjacent, and then inverted them into one branch. The 2 lost insns are that inversion, not a missed delay-slot fill. The correct spelling is the two-locals form (see above), which keeps `result = 0` as a real store between the `bgez` and the `j` so no inversion is possible.
+- verdict: KILLED
+
+## [s8] Assigning `ud` in both arms of an explicit if/else LZCS guard reproduces the copy more cheaply than the duplicate-plus-fallthrough form.
+- mechanism: two defs in two arms is the textbook shape for forcing a join pseudo; if jump2 cross-jumps the arms the second copy costs nothing.
+- probe: Build `if (disc >= 0) { ud = disc; island; lzcr = sp_tmp; } else { ud = disc; lzcr = 0; }` with the island reading `ud` (v1) and reading `disc` (v2).
+- result: KILLED, both. Score 6 / build_insns 147 in both cases - the arms do not cross-jump, so BOTH copies plus the extra branch structure materialise (+3 insns). The fallthrough form (one copy before the guard, one inside it) is the only spelling that is byte-neutral.
+- verdict: KILLED
