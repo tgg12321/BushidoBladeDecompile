@@ -830,3 +830,173 @@ sugg_base.txt, sugg_vA.txt, sugg_vB.txt, ws/campaign.log, ws/output-*).
 - [s7] Three forms banked in rejected/ this session: goto-spelled-inner-loop-plus1-insn-still-hoisted.c (46 at 136), goto-spelled-both-loops-target-alloc-but-frame-80.c (43 at 136, frame 80 vs 88), dead-invariant-pad-deleted-by-cse-before-loop.c (measurement probe, not a proposed form).
 
 - [s7] NET: with s3 (declaration order, body shape), s4/s5 (permuter, naming, named intermediates), s6 (live-range conflict, operand order) and now s7 (the loop.c hoist) all closed, the register-allocation axis for func_80041BF4 is exhausted. The residual 11 must now be attacked by re-deriving the body, not by more allocation work.
+
+---
+
+## [s8] REDERIVE session (2026-08-19) - floor 11 held; frontier item 1 KILLED by a cc1 crash; two dead constructs deleted from the candidate
+
+Chassis re-measurement at session start: applying s7's banked `candidate.c` to
+`src/text1a_post.c` reproduces **score 11 at 135/135 insns** on today's HEAD.
+The ledger floor of 11 is therefore chassis-current, and every conclusion below
+is measured against it.
+
+### E-s8-1 - the full 11-instruction residual is ONE register swap plus its cascade
+Instruction-by-instruction diff of the sandbox object against
+`asm/funcs/func_80041BF4.s` (both 135 insns; artifacts
+`tmp/grind/func_80041BF4/s8/mine.txt` and `target.txt`): the prologue, the three
+`/255` divides, the `func_800486FC` branch, the `if (outer == 0)` arms, the
+table reload, the loop-back test, the epilogue and every stack offset are
+already byte-identical. All differences are inside the inner-loop body plus
+the trailing test:
+
+| idx | target | s8 candidate |
+|---|---|---|
+| 84-85 | `lui $a1,%hi(D_800A9A24)` / `addiu $a1,$a1,%lo` | `lui $t0` / `addiu $t0` |
+| 86 | `addu $a1, $v0, $a1` | `addu $a1, $a1, $t0` |
+| 89 | `lhu $v1, 0x2($s0)` | `lhu $v0, 2($s0)` |
+| 91-94 | `li $v0,0x10` / `sh $v0` / `li $v0,1` / `sh $v0` | `li $t0,...` / `sh $t0,...` |
+| 95/97 | `addu $v1,$v1,$s4` / `sh $v1,0x1A($sp)` | `addu $v0,$v0,$s4` / `sh $v0` |
+| 110 | `sll $v0, $s1, 5` | `sll $a1, $s1, 5` |
+| 117 | `addiu $t0, $zero, 0x1` | matches only because of the `one` holder |
+
+i.e. target has **the symbol in `$a1` and `off` in `$v0`**; we have **`off` in
+`$a1` and the symbol re-materialised into `$t0`**. Everything else in the loop
+is that cascade.
+
+### E-s8-2 - the hoist is now READ, not inferred (.greg / .lreg dumps)
+`pwsh tools/grinder/dump.ps1 func_80041BF4` on the s8 candidate:
+
+- `.lreg` insn **327** is `(set (reg:SI 140) (symbol_ref/v:SI ("D_800A9A24")))`
+  carrying `REG_EQUIV`, and it sits **before `(note 129 ... NOTE_INSN_LOOP_BEG)`**:
+  loop.c hoisted it out of BOTH loops, to ahead of the OUTER loop, next to the
+  two other REG_EQUIV movables `(set (reg:HI 137) (const_int 16))` and
+  `(set (reg:HI 138) (const_int 1))` (insns 323 / 325 - the `rect[2]` / `rect[3]`
+  constants).
+- `.greg` for func_80041BF4 lists `;; 140 conflicts: 75 76 77 78 79 80 81 82 83
+  84 86 127 137 138 140 2 4 5 6 7 29` - **hard regs 4 5 6 7 are `$a0`-`$a3`**.
+  Because the hoist makes reg 140 live across the whole outer loop (hence across
+  `LoadImage` / `DrawSync` / `func_80048A7C`), it structurally conflicts with
+  `$a1` and can never be allocated there.
+- `off` is **reg 130** and it is NOT in global.c's `;; 24 regs to allocate`
+  list - local-alloc keeps it and hands it `$a1` off the hard-reg suggestion on
+  `.lreg` insn **229** = `(set (reg:SI 5 a1) (plus (reg/v:SI 130) (reg:SI 140)))`.
+
+This confirms s6/s7's attribution from the dumps themselves: the hoist is the
+sole cause and everything downstream is forced.
+
+### E-s8-3 - KILL (mechanical): the array / scaled-pointer rederive family SEGFAULTS cc1
+Frontier item 1's flagship probe was "declare D_800A9A24 as an array type and
+index it, so the address is a single `(plus (symbol) (mult))` tree". Three
+spellings were tried:
+
+    LoadImage((s32)rect, (s32)((u16 *)&D_800A9A24 + (idx << 4)));       /* u16 stride 0x10 */
+    LoadImage((s32)rect, (s32)((u8 (*)[32])&D_800A9A24)[idx - 1]);      /* array of 32-byte rows */
+    LoadImage((s32)rect, (s32)&((u16 (*)[16])&D_800A9A24)[idx - 1][0]); /* array of 16 u16 rows */
+
+**All three make GCC 2.7.2 `cc1` terminate with SIGSEGV (exit 139)** on
+`src/text1a_post.c`. The sandbox surfaces this as `C build failed` with a
+cascade of `.size expression ... does not evaluate to a constant` assembler
+errors (the truncated asm stream) - that is the signature to recognise.
+Flag bisection on the identical preprocessed input
+(`tmp/grind/func_80041BF4/s8/v04.i`, script `crashtest.sh`):
+
+| flag | result |
+|---|---|
+| (none) | **139 (SIGSEGV)** |
+| `-fno-strength-reduce` | no segfault |
+| `-fno-schedule-insns` | 139 (SIGSEGV) |
+| `-fno-schedule-insns2` | 139 (SIGSEGV) |
+| `-fno-rerun-cse-after-loop` | 139 (SIGSEGV) |
+
+The crash is therefore in **loop.c's strength reduction**, triggered by a scaled
+(element size > 1) pointer add on a loop-variant index against this symbol
+inside the inner loop. `CC_FLAGS` is frozen, so this family is **unavailable**,
+not merely worse. It is also the wrong shape on the evidence: target
+strength-reduces nothing here - it re-emits `sll $v0,$s1,5` and re-materialises
+the symbol on every iteration, which is the signature of an UNSCALED
+byte-pointer add (`(u8 *)&D_800A9A24 + off`), i.e. exactly the form the
+candidate already uses. Corroboration from the same file: the sibling
+`func_80041AC8` DOES walk a `u16 *` by `+= 0x10` and compiles to a biv
+(`.loop:1895` - `Biv 74 initialized at insn 119: initial value
+(symbol_ref ("D_800A9A24"))`), which func_80041BF4's target asm plainly is not.
+
+### E-s8-4 - WIN (cheat-surface, not floor): two candidate constructs are EXACTLY INERT and are now deleted
+
+- **`int new_var; new_var = 5;`** - an UNANNOTATED opaque constant-holder used
+  as the shift amount in `idx << new_var`, carried since s0. Measured worth
+  **zero**: literal `idx << 5` scores 11 at 135 insns, and `idx * 32` also
+  scores 11 at 135 insns. It was a standing layer-1 liability (a constant-holder
+  with no `/* FAKE */` annotation and no lever-exhaustion record) that bought
+  nothing. Deleted from `candidate.c`.
+- **`s32 sent;` with `while ((sent = tbl[0]) >= 0)`** - measured worth zero:
+  plain `while (tbl[0] >= 0)` scores 11 at 135 insns. Deleted.
+
+The s8 candidate therefore carries exactly ONE non-ordinary construct (the
+`one` constant-holder), down from three.
+
+### E-s8-5 - the `one` holder is an INDEPENDENT 2-instruction divergence, not a cascade of the loop residual
+
+| chassis | with `one` holder | with literal `1` |
+|---|---|---|
+| while / do-while (the candidate) | 11 @ 135 | 13 @ 135 |
+| goto-spelled (s7 `v_goto2`) | 43 @ 136 | 45 @ 136 |
+
+Fixing the loop allocation will NOT fix the trailing test for free. The
+divergence is `li $v1,1 / bne $v0,$v1` (ours) vs `li $t0,1 / bne $v0,$t0`
+(target) - a reload scratch-register choice for the rematerialised `const_int 1`.
+
+### E-s8-6 - direct confirmation that the goto chassis already has target's ENTIRE loop body
+Disassembling the goto chassis WITHOUT the holder (`g2_goto2_lit1`, 45 @ 136),
+the inner-loop body is target's register-for-register:
+
+    addiu s1,s1,1 / addiu a0,sp,24 / lui a1 / addiu a1 / addu a1,v0,a1
+    addu v0,v1,s8 / sh v0,24(sp) / lhu v1,2(s0) / addiu s0,s0,4
+    li v0,16 / sh v0,28(sp) / li v0,1 / sh v0,30(sp)
+
+Every one of E-s8-1's loop rows is fixed there (`addu a1,v0,a1`, `lhu v1`,
+`li v0,16`, `li v0,1`). Its remaining cost is entirely OUTSIDE the loop body:
+frame 80 vs 88, the callee-save rotation (`$s8` where target has `$s5`), one
+extra instruction, and the same trailing-test divergence. That is exactly the
+problem class s1 solved in the while basin, and it makes frontier item 2 the
+strongest remaining lead by a wide margin.
+
+### E-s8-7 - inert rederive spellings (all measured 11 @ 135, no effect)
+`u32 off` - `&((u8 *)&D_800A9A24)[off]` - `(char *)&D_800A9A24 + off` -
+`off` declared at function scope instead of block scope -
+`rect[3] = 1;` stored before `rect[2] = 0x10;` -
+`LoadImage((s32)&rect[0], ...)` instead of `(s32)rect` -
+outer loop spelled `for (outer = 0; outer < 2; outer++)` instead of do-while -
+`rect` declared as `struct { s16 x, y, w, h; }` and passed as `&rect` or
+`&rect.x` (the PsyQ-idiomatic RECT rederive - exactly inert).
+
+### E-s8-8 - worse rederive spellings (banked in rejected/)
+`idx++` moved to after `DrawSync()` / `tbl += 2` gives 16 @ 137 - naming the
+LoadImage source address in a block-local declared BEFORE the rect stores gives
+18 @ 138 - `for (idx = 0; tbl[0] >= 0; idx++)` gives 16 @ 137.
+
+### E-s8-9 - tooling note
+`m2c` is NOT installed in `.venv` on this machine (`No module named m2c`), so
+the "fresh m2c decompile" leg of the rederive modality is unavailable. It is
+also redundant here: the build is already 135/135 insns with byte-identical
+control flow, so a fresh m2c pass has no structural information left to add -
+the instruction-level derivation in E-s8-1 is strictly stronger.
+
+- [s8] Chassis re-measured at session start: s7's banked candidate.c applied to src/text1a_post.c reproduces score 11 at 135/135 insns on today's HEAD, so the ledger floor of 11 is chassis-current.
+
+- [s8] The build is already 135/135 insns with byte-identical prologue, /255 divides, func_800486FC branch, if (outer == 0) arms, table reload, loop-back test, epilogue and every stack offset. All 11 differing instructions live in the inner-loop body plus the trailing == 1 test.
+
+- [s8] Target's loop allocation is: symbol in $a1 (reloaded straight into the argument destination), off in $v0, y in $v1, rect constants in $v0. Ours is: off in $a1, symbol re-materialised into $t0, y in $v0, rect constants in $t0.
+
+- [s8] GCC 2.7.2 cc1 SEGFAULTS (exit 139) on src/text1a_post.c for every scaled-pointer / array-typed spelling of the D_800A9A24 address inside the inner loop; -fno-strength-reduce is the only flag that avoids it, so the crash is in loop.c strength reduction and the family is unavailable on the frozen chassis.
+
+- [s8] The sandbox reports that cc1 crash as 'C build failed' with a cascade of '.size expression for <func> does not evaluate to a constant' assembler errors - a truncated asm stream, not a C syntax error. Recognise this signature rather than debugging the C.
+
+- [s8] The `int new_var = 5;` shift holder and the `s32 sent;` loop-condition temp are BOTH measured worth exactly zero (11 at 135 with or without) and have been deleted from candidate.c. The candidate now carries exactly one non-ordinary construct (the `one` constant-holder) instead of three.
+
+- [s8] The `one` constant-holder is worth exactly 2 in BOTH basins (11 vs 13 in the while chassis, 43 vs 45 in the goto chassis), so it is an independent divergence, not a cascade of the loop residual. It remains UNVETTED and its FAKE prerequisites remain unmet (synthesis modality is untried, so the ladder is not spent). Do not spend it.
+
+- [s8] s7's goto-spelled chassis WITHOUT the holder (45 at 136) emits the inner-loop body register-for-register identical to target: addiu s1,s1,1 / addiu a0,sp,24 / lui a1 / addiu a1 / addu a1,v0,a1 / addu v0,v1,s8 / sh v0,24(sp) / lhu v1,2(s0) / addiu s0,s0,4 / li v0,16 / sh v0,28(sp) / li v0,1 / sh v0,30(sp). Its entire remaining cost is OUTSIDE the loop: frame 80 vs 88, the $s8-where-target-has-$s5 callee-save rotation, one extra instruction, and the independent trailing test.
+
+- [s8] The sibling func_80041AC8 in the same file walks a u16 * by += 0x10 over the same D_800A9A24 base and compiles to a biv (.loop:1895, 'Biv 74 initialized at insn 119: initial value (symbol_ref ("D_800A9A24"))'). func_80041BF4's target asm has no biv and no walking pointer - it re-materialises the symbol and re-shifts idx every iteration - so the two functions were NOT written with the same address idiom.
+
+- [s8] m2c is not installed in .venv on this machine ('No module named m2c'), so the fresh-m2c leg of rederive is unavailable; it is also redundant at 135/135 insns with byte-identical control flow.

@@ -1,84 +1,58 @@
-/* [s7] forensics session: floor UNCHANGED at 11 (re-measured on today's HEAD,
- * 135/135 insns, frame 88). This form is still the best known. s7 CLOSED the last
- * open allocation lever: loop.c's hoist of the unnamed (set rN (symbol_ref
- * D_800A9A24)) out of the inner loop. The move_movables log (it IS in the -da set,
- * <dump>.loop) shows the symbol is the THIRD movable moved out of the 37-insn inner
- * loop, and the gate at loop.c:1631 is threshold*savings*lifetime >= insn_count with
- * savings = lifetime = 1 (both already minimal, both only help the hoist if raised)
- * and threshold = 61-62 measured by synthetic bisection, minus 3 per prior move. So
- * the inner loop would have to reach >= 56 real insns: +19 insns of bytes, which the
- * 135-insn budget forbids. In-loop invariant work would be byte-neutral but target's
- * preheaders are bare (its /255 conversions sit BEFORE the func_800486FC call), and
- * dead invariant work is deleted by cse.c before loop.c runs. s7 also MEASURED s6's
- * derivation: with the loops goto-spelled (no NOTE_INSN_LOOP_BEG, so no hoist) the
- * symbol pseudo takes $a1 and `off` takes $v0 - target exactly - but that chassis
- * costs the frame (80 vs 88), the callee-save rotation and one instruction (43@136).
- * The allocation axis is now exhausted; the next attack is a rederive of the body.
- * See hypotheses.md [s7].
- */
-/* [s6] forensics session: floor UNCHANGED at 11 (re-measured on today's HEAD).
- * This form is still the best known. s6 corrected the ledger's pass attribution
- * (combine.c, not local-alloc/global.c, is what makes `off` a direct register
- * source of the hard-$a1 set: .flow has the copy, .combine has it merged), and
- * killed the two remaining allocation-side escapes: (a) making $a1 live inside
- * `off`'s range is impossible - the measured range is exactly three insns and
- * find_free_reg's scan is half-open, so the $a1 set is excluded by construction,
- * and any extension crosses the LoadImage call and loses $v0 too; (b) global.c's
- * set_preference only inspects XEXP(src,0), but the RTL operand order is not
- * C-controllable - both source orders of the address sum produce identical .lreg.
- * s6 also PROVED that the one remaining frontier item would work if reachable:
- * a block-local symbol pseudo beats `off` on qty_sugg_compare's priority key
- * (60000 vs the measured 20000) and would push `off` to $v0 - target exactly.
- * The only obstacle is loop.c's hoist. See hypotheses.md [s6].
- */
-/* [s5] permuter session: floor UNCHANGED at 11. This form is still the best
- * known. s5 killed three things and banked seven rejected forms: (a) naming
- * the D_800A9A24 base in a block-local pointer inside the loop body is 5 insns
- * WORSE in both declaration orders (loop.c hoists the named pointer to a
- * whole-function pseudo; the pressure evicts fp_ptr from $s8, frame 96 vs 88)
- * - that closes s4's frontier item 1; (b) interposing a named address
- * intermediate between `off` and the hard-$a1 argument is exactly inert in all
- * three spellings (the copy is coalesced before allocation); (c) random
- * permuter sampling is SPENT - two more chassis-faithful campaigns (20303 and
- * 18966 iterations) each yielded one find inside 10 seconds and nothing after,
- * and both finds re-measure inert at 11. The only route s4 named that remains
- * open is the loop.c one: make move_movables decline to hoist the unnamed
- * (set rN (symbol_ref D_800A9A24)). That is forensics modality.
- */
-/* saTan4FireDisp (func_80041BF4) - GRIND candidate, s4 (2026-08-19).
- * sandbox --disable all == 11 (s3 banked 13, s2 17, s1 22, s0 29, HEAD form 41).
- * frame 88 / 135 insns, both exactly target's.
+/* saTan4FireDisp (func_80041BF4) - GRIND candidate, s8 (2026-08-19).
+ * sandbox --disable all == 11 at 135/135 insns, frame 88 (floor unchanged;
+ * s7 11, s4 11, s3 13, s2 17, s1 22, s0 29, HEAD form 41).
  *
- * Inherits every s1/s2/s3 structural finding unchanged (real do-while outer
- * loop; byte-pointer spelling of the D_80094DF0 table load; `tbl += 2` moved
- * to the tail of the loop body).  See the s3 header text preserved in
- * memory/grind/func_80041BF4/evidence.md for those three mechanisms in full.
+ * [s8] REDERIVE session. The floor did not move, but the FORM is strictly
+ * simpler than s4-s7's: two constructs carried since s0 are now MEASURED
+ * EXACTLY INERT and have been deleted.
+ *   - `int new_var; new_var = 5;` - an UNANNOTATED opaque constant-holder used
+ *     as the shift amount in `idx << new_var` - is worth ZERO. Literal
+ *     `idx << 5` scores 11 at 135 insns; `idx * 32` also scores 11 at 135.
+ *     It was carried on the assumption it was load-bearing. It is not, and it
+ *     was a layer-1 liability (a constant-holder with no FAKE annotation and
+ *     no lever-exhaustion record). Removed.
+ *   - `s32 sent;` with `while ((sent = tbl[0]) >= 0)` is worth ZERO: plain
+ *     `while (tbl[0] >= 0)` scores 11 at 135 insns. Removed.
+ * The ONLY remaining non-ordinary construct is the `one` constant-holder for
+ * the trailing `func_8003E2A0() == 1` test. s8 re-measured it as still worth
+ * exactly 2 (11 with, 13 without) and, independently, still worth exactly 2 in
+ * the goto-spelled chassis (43 with, 45 without) - so it is NOT a downstream
+ * artifact of the loop residual, it is a genuinely separate 2-instruction
+ * divergence ($v1 vs target $t0 holding the literal 1). It remains UNVETTED
+ * and its FAKE prerequisites are still unmet (the ladder is not spent -
+ * synthesis is untried). Do not spend it.
  *
- * [s4] NEW: the trailing `if (func_8003E2A0() == 1)` test is closed by the
- * opaque constant-holder `one` (found by the s4 permuter campaign as
- * output-70-1, re-measured in the real chassis).  13 -> 11: our `li v1,1 /
- * bne v0,v1` becomes target's `li t0,1 / bne v0,t0`.  THREE ordinary-C
- * spellings of the same test are measured EXACTLY INERT at 13 (result named
- * in a block-local `rc`; named in a function-scope `rc`; Yoda `1 == f()`), so
- * the holder is currently the only measured form - it is a SANCTIONED-FAMILY
- * construct (constant-holder, .claude/rules/named-local-fake-exception.md)
- * carrying a /* FAKE *\/ annotation, and it MUST be re-vetted (layer-1
- * cheat-reviewer + Judge) before any candidate-ready submission.
+ * [s8] Frontier item 1 - "rederive the LoadImage source address so that no
+ * bare (set reg (symbol_ref)) insn is born at all" - is KILLED, and killed
+ * mechanically: EVERY spelling that turns the address into a SCALED
+ * pointer/array access makes GCC 2.7.2 cc1 SEGFAULT (exit 139) on this
+ * translation unit. Measured on three spellings:
+ *     (u16 *)&D_800A9A24 + (idx << 4)
+ *     ((u8 (*)[32])&D_800A9A24)[idx - 1]
+ *     &((u16 (*)[16])&D_800A9A24)[idx - 1][0]
+ * Flag bisection on the identical preprocessed input: -fno-strength-reduce is
+ * the ONLY flag that avoids the crash; -fno-schedule-insns, -fno-schedule-insns2
+ * and -fno-rerun-cse-after-loop all still segfault. The crash is therefore in
+ * loop.c strength reduction, and since CC_FLAGS is frozen the array /
+ * typed-stride rederive family is UNAVAILABLE, not merely worse. It is also
+ * unwanted on the evidence: target strength-reduces nothing here - it re-emits
+ * `sll $v0,$s1,5` every iteration and re-materialises the symbol every
+ * iteration - which is the signature of an UNSCALED byte-pointer add, exactly
+ * the form kept below. A PsyQ-idiomatic `struct { s16 x,y,w,h; }` rect (with
+ * `&rect` or `&rect.x`) is also exactly inert (11 at 135).
  *
- * Residual 11 - ONE mechanism, unchanged in kind from s3 but with a CORRECTED
- * attribution (see hypotheses.md [s4]): `off` (pseudo 129) is given hard reg
- * $a1 because it is a direct register source of `(set (reg:SI 5 a1) (plus
- * (reg/v:SI 129) (reg:SI 139)))`.  BOTH allocators route it there
- * independently - local-alloc via qty_phys_sugg (combine_regs,
- * local-alloc.c:1857-1896) and global.c via hard_reg_preferences
- * (global.c:1728/1747, record_one_conflict).  s4 MEASURED that removing the
- * local-alloc route alone does NOT free $a1: two forms that make `off`
- * cross-block (so reg_qty < 0 and combine_regs bails at local-alloc.c:1826)
- * were verified with the instrumented cc1's BB2_SUGG_DEBUG hook to have NO
- * sugg=5 qty left in block 10, and global.c still put `off` in $a1 in both.
- * The remaining escape is therefore a CONFLICT, not a preference: $a1 must be
- * LIVE somewhere inside [born_index, dead_index) of `off` so that
- * find_free_reg's regs_live_at scan (local-alloc.c:2168-2171) excludes it.
+ * Residual 11 - unchanged root cause, now read directly out of the .greg dump
+ * rather than inferred: the symbol pseudo (reg 140) is hoisted by loop.c out
+ * of BOTH loops to before the OUTER loop - at insn 327, alongside the two
+ * REG_EQUIV constants 137 (0x10) and 138 (1), ahead of NOTE_INSN_LOOP_BEG 129
+ * - so global.c records `140 conflicts: ... 2 4 5 6 7 29`, i.e. it conflicts
+ * with $a0-$a3 and can never take $a1. `off` (reg 130) stays block-local,
+ * local-alloc hands it $a1 from the hard-reg suggestion on
+ * (set (reg:SI 5 a1) (plus (reg/v:SI 130) (reg:SI 140))) at insn 229, and the
+ * symbol is then re-materialised into $t0. Target's allocation is the mirror
+ * image: symbol in $a1 (reloaded straight into the destination), off in $v0.
+ * All eleven differing instructions are that one swap plus its cascade
+ * (y into $v1 not $v0; the 0x10/1 rect constants into $v0 not $t0).
  */
 void func_80041BF4(s32 a0, s32 a1, s32 a2)
 {
@@ -87,12 +61,10 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   s32 g;
   s32 b;
   s32 outer;
-  int new_var;
   s32 xoff;
   s32 yoff;
   s16 *tbl;
   s32 idx;
-  s32 sent;
   int one;
   s16 rect[4];
   extern s32 func_800486FC(void);
@@ -100,13 +72,13 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   if (fp_ptr == 0) { return; }
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
   if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
-  new_var = 5;
   r = (a0 << 12) / 255;
   /* FAKE: opaque constant-holder `one` for the trailing `== 1` test, mechanism:
      local-alloc.c block_alloc/find_free_reg - the literal 1 is rematerialized by
      reload into $v1, while a live pseudo carrying it is allocated $t0 as target does,
      lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s4] (three ordinary-C
-     spellings of the test measured inert at 13) */
+     spellings of the test measured inert at 13). NOT VETTED - the modality ladder is
+     NOT spent (synthesis untried); this construct must not be submitted as-is. */
   one = 1;
   g = (a1 << 12) / 255;
   b = (a2 << 12) / 255;
@@ -126,9 +98,9 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   }
   tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));
   idx = 0;
-  while ((sent = tbl[0]) >= 0)
+  while (tbl[0] >= 0)
   {
-    s32 off = idx << new_var;
+    s32 off = idx << 5;
     idx++;
     rect[0] = (*((u16 *) tbl)) + xoff;
     rect[1] = (*(((u16 *) tbl) + 1)) + yoff;

@@ -438,3 +438,114 @@ func_8004881C block (0xe0-0xfc). VERDICT: KILLED.
 - probe: Compared target's own instruction order around the conversions and the calls (objdump of tmp/grind/func_80041BF4/s5/wsA/target.o).
 - result: Target computes all three conversions at 0x78-0xd8, BEFORE the jal func_800486FC at 0xd8. A hoisted in-loop conversion must land in the loop preheader, i.e. after the func_8004881C block at 0xe0-0xfc. Target's outer preheader (move s2,zero at 0x100) and inner preheader (j 1ac / move s1,zero at 0x140) contain no hoisted invariant at all, so the original had no extra loop-invariant work in either loop.
 - verdict: KILLED
+
+## [s8] rederive modality (2026-08-19) - floor 11 held
+
+### H-s8-A: A source shape exists for the LoadImage source address that never births a bare `(set reg (symbol_ref))` inside the inner loop, because the address is a single `(plus (symbol) (mult idx 32))` tree (array-typed base, struct-typed base, differently-typed global base).
+- mechanism: expand would legitimize an array-index address without force_reg-ing
+  the symbol into its own pseudo ahead of the add, so loop.c would have no
+  invariant movable to hoist, and the symbol would stay block-local and win `$a1`
+  from local-alloc's hard-reg suggestion (target's allocation).
+- probe: three spellings compiled through the real chassis -
+  `(u16 *)&D_800A9A24 + (idx << 4)`, `((u8 (*)[32])&D_800A9A24)[idx - 1]`,
+  `&((u16 (*)[16])&D_800A9A24)[idx - 1][0]`.
+- result: **ALL THREE make GCC 2.7.2 cc1 terminate with SIGSEGV (exit 139)** on
+  `src/text1a_post.c`. Flag bisection on identical preprocessed input:
+  `-fno-strength-reduce` is the ONLY flag that avoids the crash;
+  `-fno-schedule-insns`, `-fno-schedule-insns2` and `-fno-rerun-cse-after-loop`
+  all still segfault. The crash is in loop.c strength reduction, and `CC_FLAGS`
+  is frozen, so the whole family is mechanically unavailable. Independently, the
+  hypothesis was aimed at the wrong shape: target strength-reduces nothing here
+  (it re-emits `sll $v0,$s1,5` and re-materialises the symbol every iteration),
+  which is the signature of an unscaled byte-pointer add - the form already in
+  the candidate. Contrast the sibling `func_80041AC8`, whose genuine walking
+  `u16 *` DOES become a biv in `.loop`.
+- verdict: **KILLED** (this was the ledger's frontier item 1)
+
+### H-s8-B: The `int new_var = 5;` shift holder carried in the candidate since s0 is load-bearing.
+- mechanism: an opaque variable as the shift count was assumed to prevent a
+  single-bit transform / change the `off` computation's RTL shape.
+- probe: three chassis-identical spellings - `idx << new_var` (holder),
+  `idx << 5` (literal), `idx * 32`.
+- result: all three score **11 at 135 insns**. The holder buys exactly nothing.
+- verdict: **KILLED**. The construct has been DELETED from `candidate.c`; it was
+  an unannotated constant-holder (`.claude/rules/named-local-fake-exception.md`
+  family) with no lever-exhaustion record, i.e. a standing layer-1 liability
+  bought at zero value. Ditto `s32 sent;` in `while ((sent = tbl[0]) >= 0)`:
+  plain `while (tbl[0] >= 0)` is also 11 at 135. Both removed.
+
+### H-s8-C: The `one` constant-holder for the trailing `func_8003E2A0() == 1` test is a downstream cascade of the loop residual, so fixing the loop allocation would make it unnecessary.
+- mechanism: in the current form the loop's re-materialised symbol occupies `$t0`,
+  which is the register target uses for the trailing `li 1`; if the loop stopped
+  claiming `$t0`, reload might pick `$t0` for the literal on its own.
+- probe: measured the holder's worth in BOTH basins - the while/do-while chassis
+  and s7's goto-spelled chassis (whose inner loop already has target's exact
+  register assignment, see E-s8-6).
+- result: the holder is worth exactly 2 in BOTH: 11 vs 13 in the while chassis,
+  43 vs 45 in the goto chassis. The goto chassis has `$t0` completely free in the
+  loop and still emits `li $v1,1 / bne $v0,$v1`.
+- verdict: **KILLED**. The trailing test is an INDEPENDENT 2-instruction
+  divergence, and any future distance-0 form must close it separately. This
+  matters for the ladder: it means the `one` holder cannot be justified as
+  "the last two instructions after the real fix" - it needs its own ordinary-C
+  rederive or its own family claim.
+
+### H-s8-D: A structurally different spelling of the loop body or the rect object moves the residual.
+- mechanism: rederive modality - the residual might be sensitive to how the rect
+  is typed, where `off` is declared, or how the loop is spelled, independent of
+  the symbol hoist.
+- probe: fourteen spellings measured (full list in evidence E-s8-7 / E-s8-8),
+  including the PsyQ-idiomatic `struct { s16 x, y, w, h; }` rect passed as
+  `&rect` / `&rect.x`, `u32 off`, `&((u8 *)&D_800A9A24)[off]`,
+  `(char *)&D_800A9A24 + off`, function-scope `off`, reordered rect const stores,
+  `for`-spelled outer loop, `for`-spelled inner loop, late `idx++`, and an early
+  named `src` address local.
+- result: nine are EXACTLY INERT (11 @ 135) and three are WORSE (16 @ 137,
+  16 @ 137, 18 @ 138). Nothing in the body-shape space moves the residual in
+  either direction while the loop notes are present.
+- verdict: **KILLED**. Combined with H-s8-A this closes the rederive modality for
+  the while/do-while basin: the body is already target's, instruction for
+  instruction, and the residual is purely the loop.c hoist's allocation
+  consequence.
+
+### s8 net
+Rederive is now SPENT for this basin. The measured picture is unusually clean:
+135/135 insns, byte-identical control flow and stack layout, and eleven
+differing instructions that are one register swap (`off` in `$a1` vs the symbol
+in `$a1`) plus its forced cascade, driven by a loop.c hoist whose gate s7 already
+measured as unreachable. The ONE basin known to have target's loop allocation
+already is s7's goto-spelled chassis (E-s8-6 shows its inner-loop body is
+target's register-for-register), and its entire remaining cost is outside the
+loop - frame 80 vs 88, the `$s8`/`$s5` callee-save rotation, one instruction, and
+the independent trailing test. That is the s1 problem class, in a basin that has
+the hard fact right. It is the frontier.
+
+## [s8] A source shape exists for the LoadImage source address that never births a bare (set reg (symbol_ref)) inside the inner loop, because the address is a single (plus (symbol) (mult idx 32)) tree - array-typed base, struct-typed base, or a differently-typed global base. (This was the ledger's frontier item 1.)
+- mechanism: Expand would legitimize an array-index address without force_reg-ing the symbol into its own pseudo ahead of the add, so loop.c would have no invariant movable to hoist; the symbol would stay block-local and win $a1 from local-alloc's hard-reg suggestion, which is target's allocation.
+- probe: Three spellings compiled through the real chassis: (u16 *)&D_800A9A24 + (idx << 4); ((u8 (*)[32])&D_800A9A24)[idx - 1]; &((u16 (*)[16])&D_800A9A24)[idx - 1][0]. Then flag bisection on the identical preprocessed input (tmp/grind/func_80041BF4/s8/v04.i) with tmp/grind/func_80041BF4/s8/crashtest.sh.
+- result: All three make GCC 2.7.2 cc1 terminate with SIGSEGV (exit 139) on src/text1a_post.c; the sandbox surfaces it as 'C build failed' plus a cascade of '.size expression ... does not evaluate to a constant' assembler errors. Flag bisection: -fno-strength-reduce is the ONLY flag that avoids the crash; -fno-schedule-insns, -fno-schedule-insns2 and -fno-rerun-cse-after-loop all still segfault, so the crash is in loop.c strength reduction. CC_FLAGS is frozen, so the family is unavailable, not merely worse. It also aims at the wrong shape: target strength-reduces nothing here (it re-emits sll $v0,$s1,5 and re-materialises the symbol every iteration), the signature of an UNSCALED byte-pointer add - the form the candidate already uses. Contrast the sibling func_80041AC8, whose genuine walking u16 * DOES become a biv in the .loop dump (line 1895).
+- verdict: KILLED
+
+## [s8] The `int new_var; new_var = 5;` opaque shift holder carried in the candidate since s0 is load-bearing.
+- mechanism: An opaque variable as the shift count was assumed to prevent a single-bit transform or to change the RTL shape of the `off` computation.
+- probe: Three chassis-identical spellings measured: idx << new_var (holder), idx << 5 (literal), idx * 32.
+- result: All three score 11 at 135 insns. The holder buys exactly nothing. Same for `s32 sent;` in `while ((sent = tbl[0]) >= 0)`: plain `while (tbl[0] >= 0)` is also 11 at 135. BOTH constructs have been DELETED from candidate.c - the shift holder was an unannotated constant-holder (.claude/rules/named-local-fake-exception.md family) with no lever-exhaustion record, i.e. a standing layer-1 liability bought at zero value.
+- verdict: KILLED
+
+## [s8] The `one` constant-holder for the trailing func_8003E2A0() == 1 test is a downstream cascade of the loop residual, so fixing the loop allocation would make it unnecessary.
+- mechanism: In the current form the loop's re-materialised symbol occupies $t0, which is the register target uses for the trailing `li 1`; if the loop stopped claiming $t0, reload might pick $t0 for the literal on its own.
+- probe: Measured the holder's worth in BOTH basins - the while/do-while chassis and s7's goto-spelled chassis, whose inner loop already has target's exact register assignment.
+- result: The holder is worth exactly 2 in BOTH: 11 vs 13 in the while chassis, 43 vs 45 in the goto chassis. The goto chassis has $t0 completely free inside the loop and still emits `li $v1,1 / bne $v0,$v1` where target has `li $t0,1 / bne $v0,$t0`. The trailing test is therefore an INDEPENDENT 2-instruction divergence that any future distance-0 form must close separately - it cannot be justified as 'the last two instructions after the real fix'.
+- verdict: KILLED
+
+## [s8] A structurally different spelling of the loop body, the rect object, or the loop headers moves the residual.
+- mechanism: Rederive modality - the residual might be sensitive to how the rect is typed, where `off` is declared, or how the loops are spelled, independently of the symbol hoist.
+- probe: Fourteen spellings measured through the sandbox: PsyQ-idiomatic struct { s16 x,y,w,h; } rect passed as &rect and as &rect.x; u32 off; &((u8 *)&D_800A9A24)[off]; (char *)&D_800A9A24 + off; function-scope off; rect[3] stored before rect[2]; LoadImage((s32)&rect[0], ...); for-spelled outer loop; for-spelled inner loop; idx++ moved after DrawSync/tbl+=2; an early named `src` address local; idx*32; literal shift.
+- result: Nine are EXACTLY INERT (11 at 135 insns) and three are WORSE (for-spelled inner loop 16 at 137; late idx++ 16 at 137; early named src 18 at 138). Nothing in the body-shape space moves the residual in either direction while the loop notes are present. Combined with the array-family kill this closes the rederive modality for the while/do-while basin.
+- verdict: KILLED
+
+## [s8] The 11-instruction residual is a single register swap (`off` vs the D_800A9A24 symbol competing for $a1) plus its forced cascade, caused by loop.c hoisting the symbol pseudo out of BOTH loops.
+- mechanism: loop.c moves the invariant (set reg (symbol_ref)) ahead of the outer loop; the pseudo is then live across LoadImage/DrawSync/func_80048A7C, so global.c records it as conflicting with $a0-$a3 and it can never take $a1. `off` stays block-local and local-alloc hands it $a1 off the hard-reg suggestion on the argument set, and the symbol is re-materialised into $t0.
+- probe: Instruction-by-instruction diff of the sandbox object against asm/funcs/func_80041BF4.s (both 135 insns), plus a direct read of the .lreg and .greg dumps produced by pwsh tools/grinder/dump.ps1 func_80041BF4.
+- result: CONFIRMED from the dumps, not inferred. .lreg insn 327 = (set (reg:SI 140) (symbol_ref/v:SI ("D_800A9A24"))) with REG_EQUIV, sitting BEFORE (note 129 ... NOTE_INSN_LOOP_BEG), alongside the hoisted REG_EQUIV constants 137 (0x10) and 138 (1). .greg prints ';; 140 conflicts: ... 2 4 5 6 7 29' - hard regs 4 5 6 7 are $a0-$a3. `off` is reg 130, absent from global.c's 24-reg allocate list, and .lreg insn 229 is (set (reg:SI 5 a1) (plus (reg/v:SI 130) (reg:SI 140))). Every one of the 11 differing instructions is that swap or its cascade (y into $v1 not $v0; the 0x10/1 rect constants into $v0 not $t0).
+- verdict: CONFIRMED

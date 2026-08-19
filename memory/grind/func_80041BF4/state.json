@@ -1,8 +1,8 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -51,23 +51,29 @@
    "floor": 11,
    "modality": "forensics",
    "headline": "Forensics: the loop.c hoist frontier item is KILLED with measured numbers (threshold 61-62, gate needs +19 insns in a 37-insn loop), and s6's sufficiency derivation is now MEASURED in situ - suppressi"
+  },
+  {
+   "session": 8,
+   "floor": 11,
+   "modality": "rederive",
+   "headline": "Rederive SPENT for this basin: the array/scaled-pointer address family (frontier item 1) is mechanically dead - it SEGFAULTS cc1 in loop.c strength reduction - and 14 body-shape spellings are inert or"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The body must be re-derived from target's asm: some source shape for the LoadImage source address never produces a hoistable bare (set reg (symbol_ref)) inside the inner loop, so the $a1 suggestion on `off` never arises in the first place.",
-   "mechanism": "Every allocation-side lever is now measured dead, and the ONE fact that produces the residual (combine.c merging the address sum into the hard-$a1 argument set, making `off` a direct register source) is created by the expression tree, not by the allocator. Target's own loop shows lui a1 / addiu a1 / addu a1,v0,a1 at 0x150-0x158 - the symbol materialized in-loop with `off` already in $v0.",
-   "next_probe": "Rederive modality. Enumerate source shapes for the second LoadImage argument that do not force_reg the symbol into its own pseudo ahead of the add: array-of-32-byte-element indexing (D_800A9A24 declared as an array type and indexed, so the address is a single (plus (symbol) (mult)) tree), a struct-typed base, or an index expression whose base is a differently-typed global. For each, read the .cse dump to see whether a separate (set reg (symbol_ref)) insn is born at all - that insn's existence, not its hoisting, is the root of the residual."
+   "hypothesis": "The goto-spelled chassis (s7 v_goto2, 43 at 136) is the winning basin: it ALREADY has target's entire inner-loop body register-for-register (measured this session), and its whole residual is the frame (80 vs 88), the callee-save rotation ($s8 vs $s5) and one instruction - the exact problem class s1 solved in the while basin.",
+   "mechanism": "Removing the loop notes removes loop.c's hoist of the (set reg (symbol_ref)), which is the sole cause of the 11-instruction residual in the while basin. What the goto spelling costs instead is the phantom frame slots and the s2/s3/s4-vs-s3/s4/s2 callee-save rotation that s1's do-while rotation established, plus one instruction in the loop-back shape.",
+   "next_probe": "STRUCTURAL modality on tmp/grind/func_80041BF4/s7/v_goto2.c as the base (NOT on candidate.c). Re-run the s1 rotation levers there (declaration order of xoff/yoff/tbl/idx, colour birth order, presence/absence of a do-while(0) yoff wrap) and the s3 frame levers, tracking FRAME (needs 88) and INSN COUNT (needs 135) rather than raw score - the score is dominated by the rotation and will not move monotonically. If both return, the hard allocation fact is already target's and the score should collapse. Note the human-programmer question a goto-spelled loop faces at layer 1: if that basin reaches 0, raise a ruling-request rather than submitting silently."
   },
   {
-   "hypothesis": "The goto-spelled chassis (43 at 136 insns) is a genuinely different basin that already has target's hard allocation fact right ($a1 = symbol, $v0 = off); its residual is the frame (80 vs 88), the callee-save rotation and one instruction - exactly the two problems s1 solved in the while/do-while basin.",
-   "mechanism": "Removing the loop notes removes the hoist, which is what fixes the allocation; but it also changes the phantom frame slots and the s2/s3/s4-vs-s3/s4/s2 callee-save rotation that s1's do-while rotation established, and costs one instruction in the loop-back shape.",
-   "next_probe": "Structural modality on tmp/grind/func_80041BF4/s7/v_goto2.c as the base (NOT on candidate.c): re-run the s1 rotation levers (do-while(0) yoff wrap presence/absence, colour birth order, declaration order) and the s3 frame levers in THAT basin, tracking frame (needs 88) and insn count (needs 135) rather than raw score. If both return, the allocation is already target's and the score should collapse. Note the human-programmer question a goto-spelled loop would face at layer 1 - if that basin reaches 0, raise it as a ruling-request rather than submitting silently."
+   "hypothesis": "The trailing `func_8003E2A0() == 1` test has an ordinary-C spelling that puts the rematerialised literal 1 in $t0 rather than $v1, closing the last 2 instructions without the `one` constant-holder.",
+   "mechanism": "Reload rematerialises the REG_EQUIV (const_int 1) into a spill register; which one it picks is a function of the spill-reg ordering at that point, which in turn depends on what else is live and on the shape of the comparison. s4 measured three spellings inert (block-local rc, function-scope rc, Yoda) and s8 proved the choice is independent of the loop residual, so the remaining space is the SHAPE of the test itself, not where its result is named.",
+   "next_probe": "SYNTHESIS modality. Try shapes that change what reload sees rather than what the value is named: `if (func_8003E2A0() - 1 == 0)`, `if (!(func_8003E2A0() != 1))`, a switch on the return value, storing the return into an s32 that is also used by a following statement, and calling func_8003E2A0 into a value compared against a loop-carried or otherwise already-live 1. Read the .greg/reload dump for the trailing block in each case and record WHICH spill register reload offers first, rather than only the score."
   },
   {
-   "hypothesis": "The banked floor-11 constant holder for the trailing func_8003E2A0() == 1 test is still UNVETTED and its FAKE prerequisites are still unmet.",
-   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md - scalars only, FAKE required) whose prerequisites include the full modality ladder being demonstrably spent. Permuter is spent, forensics is now spent for the allocation axis, but rederive and synthesis are not, so the ladder is still open.",
-   "next_probe": "Do not spend it. If a later session reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim and cite a precedent file:line. Prefer re-deriving the trailing test in ordinary C while the ladder is still unspent."
+   "hypothesis": "loop.c can be made to decline the hoist of the (set reg (symbol_ref)) without goto-spelling, via scan_loop's safety test rather than its cost gate.",
+   "mechanism": "s7 measured the cost gate (threshold * savings * lifetime >= insn_count, threshold 61-62, needs +19 insns in a 37-insn loop) as unreachable. But scan_loop ALSO refuses to move a set when the register is used outside the basic block containing the set AND the set is not guaranteed to execute every iteration (maybe_never). For the OUTER loop scan maybe_never is already true at the symbol insn (we have passed the if (outer == 0) branch and the inner loop's entry jump), so the only missing condition is that the symbol's def and its use sit in DIFFERENT basic blocks.",
+   "next_probe": "FORENSICS modality, and note the trap: every obvious way to split the def from the use (an if between them, a dead conditional) is a forbidden family and costs instructions target does not have. The probe is to first CONFIRM the mechanism cheaply - instrument or read scan_loop's decision for a synthetic variant that has a branch between the symbol's definition and its use, and verify the hoist is actually declined - and only then look for a byte-neutral, ordinary-C way to produce that block split. If no ordinary-C split exists, record that and close the loop.c axis for good."
   }
  ],
  "judge_constraints": [],
