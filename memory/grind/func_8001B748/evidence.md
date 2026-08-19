@@ -148,3 +148,109 @@ without it).
 - [s1] Inherited and still binding: inverse.py global NEGATIVE on all 4 exchange goals with preference foreclosure (prune_preferences global.c:897); sched 1-nop residual is a consequence of the RA-coupled load placement; measured-inert list in evidence.md must not be re-run.
 
 - [s1] Vanilla .lreg has no suggested-register output; the qty_phys_copy_sugg mechanism can only be observed via the instrumented cc1 at tools/gcc-2.7.2/cc1 (BB2_*_DEBUG).
+
+## s2 addendum (structural, 2026-08-19) — FLOOR 32 -> 14
+
+**Headline: the s1 ledger's "RA component is VALIDATED UNREACHABLE" conclusion is WRONG at the
+structural level and is hereby retracted.** The `ra_solver`/`inverse.py global` NEGATIVE result
+proved only that the exchange is unreachable *within the goal formulation those tools express*
+(refs / live span / birth order / conflicts / preferences / calls-crossed on the EXISTING pseudo
+set). It said nothing about spellings that CHANGE THE PSEUDO SET. Ordinary C-level
+named-intermediate and variable-reuse restructuring moved the honest floor 32 -> 14 in one
+session, closing every one of the $v0/$v1 exchange hunks that the solver had declared foreclosed.
+Future sessions must NOT treat a NEGATIVE `inverse.py` run as an axis kill.
+
+### Winning structural chain (each step measured with `sandbox --disable all`)
+
+| step | change | floor |
+|---|---|---|
+| baseline (s1 form, in src) | — | 32 |
+| V2 | delete the `cur = new_var;` / `dy = cur;` copy chain in the early-exit arm; write `*(dst+8) = new_var >> 12;` directly | **30** |
+| V5 | + delete the dead `inv_s1 = inv_s1;` self-assign (catalog debt; independently inert) | 30 |
+| W3 | + ONE SHARED named intermediate `t` for all three deltas: `t = <expr> >> 12; dX = t - cur;` | **22** |
+| T6 | + tail sum through `t`: `t = target + (inv_s1 * 0x2EE0); dx = (t >> 12) - cur;` | **21** |
+| U3 | + split the tail shift in place and load `cur` after it: `t = t >> 12; cur = *(s32*)(dst+0x18); dx = t - cur;` | **19** |
+| D5 | + a DISTINCT local `dd` (not the reused `dx`) for the final delta | **14** (with plain-multiply arms) |
+
+`candidate.c` is the D5 form with plain-multiply arms (= variant `g_target.c`), floor **14**,
+in place in `src/code6cac.c` at the end of this session.
+
+### Residual at floor 14 (from `tools/pairdiff.py code6cac func_8001B748`)
+1. **store placement, 2 insns** — `sh zero,0(gp)` (`D_800A3310 = 0;`) ours idx 64, target idx 56.
+2. **arms chain register, ~10 insns** — the `frac_s1 * 0x7D0` / `* 0x1F4` synth-mult chain runs in
+   `$v0` for us and `$v1` for target (target reuses the destination register from the first step).
+3. **tail load/sra order + 1 nop, ~2 insns** — target emits `sra v1,v1,0xc` then `lw a0,24(s0)`
+   plus a maspsx load-delay `nop`; ours emits the `lw` one slot earlier and fills the branch delay
+   with `sra v0,v1,0x4`, so we build 230 insns vs target's 231.
+
+### The 4-insn form and why it is NOT the candidate (READ THIS BEFORE RE-DERIVING IT)
+Hand-decomposing the arm multiply into an in-place shift/add accumulator —
+`target = frac_s1 << 5; target = target - frac_s1; target = target << 2;
+target = target + frac_s1; target = target << 4;` (and `<< 2` in the else arm) — reaches
+**floor 4**, closing residuals (2) and (3) above and leaving only the 2-insn store hunk plus the
+tail load/sra swap. It is banked at
+`memory/grind/func_8001B748/rejected/reg-n-refs-chain-extender-arms-F1-unexhausted.c`.
+
+It is NOT submitted, and this is a policy call, not a measurement gap. A write-count gradient was
+measured on an otherwise identical body:
+
+| writes to `target` in the arms | spelling | floor |
+|---|---|---|
+| 1 | `target = frac_s1 * 0x7D0;` | 14 |
+| 2 | `target = frac_s1 * 0x7D; target = target << 4;` | 12 |
+| 3 | `target = frac_s1 * 0x7D; target <<= 2; target <<= 2;` | 12 |
+| 5 | full shift/add decomposition | 4 |
+
+The score is a function of how many times the variable is WRITTEN, not of what is computed — every
+row computes the identical value and GCC's `synth_mult` already emits exactly this shift/add chain
+for `* 0x7D0`. That is the signature of the **combine-foldable chain-extender that bumps
+`reg_n_refs`** — the F1 family (sanctioned by owner ruling 2026-07-01 as a FAKE-annotated LAST
+RESORT only). Its three prerequisites are (a) the full modality ladder demonstrably spent, (b) a
+named GCC-pass mechanism, (c) the `/* FAKE: ... */` annotation. Prerequisite (a) plainly FAILS:
+this is session 2, the modality ladder has barely started, and the honest floor dropped 18 points
+THIS session. It also fails the plain human-programmer test — nobody writes a five-statement
+shift chain to multiply by 2000. Do not submit it; do not respell it. It is recorded here as a
+measured upper bound on what the arms hunk is worth (10 insns) and as the mechanism identification
+for residual (2).
+
+### Measured negatives banked this session (do NOT re-run)
+| lever | result |
+|---|---|
+| declaration-position sweep for `t`, all 12 positions in the decl block | fully INERT (22 at every position) |
+| statement-position sweep for `D_800A3310 = 0;` in the early-exit arm, all 9 slots | positions 0-4 INERT (22); 5,6,7 regress to 27/26/26; 8 gives 24 at 231 insns |
+| split-init accumulation of `new_var` to reposition the gp store (`new_var = frac*a8; D_800A3310 = 0; new_var += inv_frac*b8;`) | REGRESSION on every base measured: 32->34, 30->43, 4->17 |
+| THREE DISTINCT intermediates `t0/t1/t2` for the three deltas | 30 (no gain) — the win requires ONE SHARED reused `t`, not per-delta temps |
+| ONE named intermediate for only dz, or only dy | 30 each (no gain) — must be all three sharing `t` |
+| hoisting `inv_s1 * 0x2EE0` into a local before or after the arms (`w` or `t`) | catastrophic: 33 / 36 / 58 |
+| swapping the tail addend order `((inv_s1*0x2EE0) + target)` | INERT |
+| swapping the arm multiply operand order `0x7D0 * frac_s1` | INERT |
+| tail statement-order permutations (load first / load mid / single-shift form / `>>=` shorthand / `target` as accumulator) | all 4-9 on the C1 base, all >= 14 on the honest base; no honest gain past D5 |
+| distinct local `cc` for the tail load; inline duplicated read + RMW store of `dst+0x18` | INERT at 4 (and at 14) — the load hoist is NOT source-order controllable |
+| inverting the arm condition (`if (!use_high)`), ternary form | 15 / 14 — no gain |
+| reusing `t` / `dd` / `dx` / `dy` / `dz` / `v` / `new_var` / a fresh `tg` as the arm value instead of `target` | 17/22/17/22/22/17/19/17 — all WORSE than reusing `target` (14) |
+
+### Tooling note
+`tools/pairdiff.py` compares `tmp/sandbox/<func>/<stem>.o` against `build/src/<stem>.o`. It reads a
+STALE sandbox object unless you run `sandbox --disable all` AFTER installing the edit — a `make`
+alone does not refresh it (and `make` always reports "OK: bb2 matches!" here because the
+`replace_with_asmfile` asmfix rule substitutes target asm for this function). Also note the
+function is `func_8001B748` to pairdiff, not `DispPracticeMenuTex_A`. Run
+`sandbox` first, then `pairdiff`, or you will diff the previous variant and mis-attribute the result.
+
+- [s2] Honest floor THIS session moved 32 -> 14 (`sandbox func_8001B748 --disable all`, 230 built vs 231 target insns, rules_dropped 1). The 14-floor form is IN PLACE in src/code6cac.c and saved to memory/grind/func_8001B748/candidate.c.
+
+- [s2] The s1 ledger's headline conclusion - 'RA component is VALIDATED UNREACHABLE; further spelling searches on the RA component are provably zero-yield' - is RETRACTED. inverse.py global's NEGATIVE verdict is scoped to the goal formulation it can express over the existing pseudo set; it says nothing about spellings that change the pseudo set. A NEGATIVE inverse.py run must not be banked as an axis kill again.
+
+- [s2] Winning chain, each step measured: V2 delete the `cur = new_var;` / `dy = cur;` copy chain (32->30); V5 also delete the dead `inv_s1 = inv_s1;` self-assign (independently inert, catalog debt); W3 ONE SHARED named intermediate `t` for all three deltas (30->22); T6 route the tail sum through `t` (22->21); U3 split the tail shift in place and load `cur` after it (21->19); D5 a DISTINCT local `dd` for the final delta (19->14).
+
+- [s2] Residual at floor 14 has exactly three components (tools/pairdiff.py code6cac func_8001B748): (1) `sh zero,0(gp)` at ours idx 64 vs target idx 56 = 2 insns; (2) the `frac_s1 * 0x7D0` / `* 0x1F4` synth-mult chain running in $v0 instead of $v1 = ~10 insns; (3) the tail `lw a0,24(s0)` / `sra v1,v1,0xc` swap plus the missing maspsx load-delay nop = ~2 insns.
+
+- [s2] MECHANISM IDENTIFIED for residual (2): the score is a function of how many times the arm destination variable is WRITTEN - 1 write = 14, 2 writes = 12, 3 writes = 12, 5 writes = 4 - while every spelling computes the identical value and GCC's synth_mult already emits that exact shift/add chain for `* 0x7D0`. That is the combine-foldable chain-extender that bumps reg_n_refs (the F1 family).
+
+- [s2] The 5-write form reaches floor 4 and is banked at memory/grind/func_8001B748/rejected/reg-n-refs-chain-extender-arms-F1-unexhausted.c. It is deliberately NOT submitted: F1 is a FAKE-annotated LAST RESORT requiring (a) a demonstrably spent modality ladder, (b) a named GCC pass, (c) the annotation. Prerequisite (a) fails outright - this is session 2, the ladder has barely started, and the honest floor dropped 18 points this session. It also fails the plain human-programmer test (nobody writes a five-statement shift chain to multiply by 2000). It is recorded only as a measured 10-insn upper bound on residual (2) and as the mechanism identification.
+
+- [s2] Every construct in the in-place candidate sits in a FROZEN-list sanctioned family: variable reuse for codegen control (the shared `t`, reusing `target` across both if/else pairs), named-intermediate declaration order (`t`, `dd`), and split-init accumulation (`t = t >> 12;`). The session also DELETED three inherited constructs (`cur = new_var;`, `dy = cur;`, `inv_s1 = inv_s1;`), two of which were load-bearing debt costing 2 insns.
+
+- [s2] Negative results banked so this session's search space is never re-walked: declaration position of `t` inert at all 12 slots; `D_800A3310 = 0;` statement position inert at slots 0-4 and regressive at 5-8; split-init of `new_var` regressive on all three bases; three distinct per-delta intermediates give 30 (only the shared one wins); hoisting `inv_s1 * 0x2EE0` into a local is catastrophic (33 / 36 / 58); tail addend order and arm multiply operand order both inert; distinct `cc` local and inline duplicated-read RMW for the tail load both inert; inverted condition 15 and ternary 14; every alternative holder for the arm value (t/dd/dx/dy/dz/v/new_var/fresh tg) scores 17-22 versus 14 for reusing `target`.
+
+- [s2] TOOLING GOTCHA worth a session to anyone who hits it: tools/pairdiff.py diffs tmp/sandbox/<func>/<stem>.o against build/src/<stem>.o and silently reads a STALE sandbox object unless `sandbox --disable all` is re-run AFTER installing the edit. A bare `make` does not refresh it, and `make` always prints 'OK: bb2 matches!' for this function because the asmfix replace_with_asmfile rule substitutes target asm. Also: pairdiff wants `func_8001B748`, not `DispPracticeMenuTex_A`.

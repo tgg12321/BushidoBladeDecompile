@@ -1,31 +1,37 @@
 {
  "func": "func_8001B748",
  "file": "code6cac",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 32,
    "modality": "recon",
    "headline": "Recon s1: floor re-measured 32 (chassis unchanged, all WIP-imported verdicts spendable); $v0/$v1 exchange confirmed at .greg disposition level (pseudo 100 in $v1, 83/84/98 in $v0); frontier = instrume"
+  },
+  {
+   "session": 2,
+   "floor": 14,
+   "modality": "structural",
+   "headline": "Structural respelling dropped the honest floor 32 -> 14 and RETRACTS the s1 'RA exchange validated unreachable' verdict: every $v0/$v1 hunk inverse.py had foreclosed closed under ordinary shared-named"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The $v0/$v1 exchange is decided by local-alloc's suggested-register machinery (qty_phys_copy_sugg/qty_phys_sugg) \u2014 the one allocation input the ra_solver does not model, explaining the NEGATIVE goal runs.",
-   "mechanism": "pseudos copied to/from hard regs (call args/returns) record phys suggestions biasing local qty allocation and global allocno ordering; C-level copy-structure changes can flip the suggestion without touching refs/span/conflicts",
-   "next_probe": "forensics: run instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_*_DEBUG hooks; capture suggestion tables for pseudos 100/83/84/98; identify the creating copy insn and whether an honest C respelling changes it"
+   "hypothesis": "Residual (2) - the arm synth-mult chain in $v0 instead of $v1, worth ~10 of the remaining 14 - is reachable by an HONEST C shape that raises the destination pseudo's allocno priority without chain-extension.",
+   "mechanism": "local-alloc gives the synth-mult chain temp its own quantity unless the destination pseudo's priority is high enough for combine/regmove to tie them; reg_n_refs (write count) is the measured control knob, but read count and live-range length feed the same priority.",
+   "next_probe": "Look for a formulation where the arm value is genuinely READ more than once or lives longer - e.g. the interpolation expressed so the arm result feeds two consumers, or the `use_high` branch restructured so the value crosses the join with a second use. Do NOT re-derive the 5-write decomposition (banked, policy-blocked until the ladder is spent). Dump-check with tools/grinder/dump.ps1 and read .lreg/.greg for the chain temp's quantity."
   },
   {
-   "hypothesis": "A fresh-seed permuter campaign can find a spelling that flips the exchange even though directed search is closed.",
-   "mechanism": "permuter mutations perturb pseudo birth order and copy structure, feeding the same unmodeled suggestion machinery",
-   "next_probe": "tools/permuter_campaign.py per permuter-fresh-seed-discipline (~20-30k iters), waited in-turn; expectations calibrated per permuter-closability-evaluated"
+   "hypothesis": "Residual (1), the 2-insn `sh zero,0(gp)` placement (ours 64, target 56), is a pure scheduler-priority question with no source-level handle.",
+   "mechanism": "GCC 2.7.2 sched.c list-scheduler priority for a dependence-free store in the early-exit block; measured NOT controllable by statement position (9 slots swept) or by split-init interleaving.",
+   "next_probe": "tools/sched_solver (models sched.c exactly, 6978/6978 per the sched-solver-campaign-2026-08-05 memory) on the early-exit basic block: ask what input change moves the store 8 slots earlier. Forensics modality."
   },
   {
-   "hypothesis": "The 1-nop SCHED residual dissolves with the RA exchange; standalone attack is dead.",
-   "mechanism": "nop is the delay slot of the late lw a0,24(s0) whose placement is RA-coupled; reorders measured inert (scheduler re-hoists)",
-   "next_probe": "none until RA moves; re-diff after any RA win"
+   "hypothesis": "Residual (3), the tail `lw`/`sra` swap plus the missing load-delay nop, is the same scheduler question as residual (1) and is likely coupled to residual (2) since both live in the post-join block.",
+   "mechanism": "The load's INSN_PRIORITY exceeds the sra's due to MIPS load latency; target's build ranked them the other way, eats a maspsx nop, and therefore has 231 insns to our 230.",
+   "next_probe": "Same sched_solver run as residual (1), applied to the post-join block; and re-diff the tail immediately after any residual-(2) win, since an allocation change there may flip the ready-list ranking for free."
   }
  ],
  "judge_constraints": [],

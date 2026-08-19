@@ -78,3 +78,139 @@ instrumented cc1's BB2_*_DEBUG hooks (tools/gcc-2.7.2/cc1 — see
 - probe: grep 8001B748 tmp/duplicates_leads.txt
 - result: no entry
 - verdict: KILLED
+
+## s2 (structural, 2026-08-19) — floor 32 -> 14; the s1 "RA unreachable" verdict RETRACTED
+
+### [s2] The RA $v0/$v1 exchange is unreachable by C-level spelling (inherited s1 conclusion).
+- mechanism: `inverse.py global` NEGATIVE on all four exchange goals at depth 2, with 5-17
+  preference atoms foreclosed by `prune_preferences` (global.c:897)
+- probe: ordinary structural respelling of the function body — shared named intermediates,
+  variable reuse, copy-chain deletion, distinct locals — each measured with `sandbox --disable all`
+- result: floor 32 -> 30 -> 22 -> 21 -> 19 -> 14; EVERY $v0/$v1 exchange hunk the solver had
+  declared foreclosed (asm 112-119, 133-134, 151-152, 186-196, 205-212) closed
+- verdict: **KILLED** — the solver's NEGATIVE result is scoped to the goal formulation it can
+  express over the EXISTING pseudo set. Restructuring the C changes the pseudo set, which the
+  formulation cannot represent. A NEGATIVE `inverse.py` run is NOT an axis kill and must never
+  again be banked as one.
+
+### [s2] A single shared named intermediate is what closes the delta-chain exchanges.
+- statement: rewriting the three `dX = (<mul-sum> >> 12) - cur;` deltas as
+  `t = <mul-sum> >> 12; dX = t - cur;` with ONE reused `t` closes hunks 112-119 / 133-134 / 151-152
+- mechanism: the shared reuse gives the shifted intermediate a single long-lived pseudo that lands
+  in $v1 while the per-delta result lands in $v0 — target's exact disposition. Three DISTINCT
+  temps (`t0/t1/t2`) do not do this (measured 30), so the effect is the SHARING, not the naming.
+- probe: W3 vs W4 vs W1 vs W2, `sandbox --disable all`
+- result: 22 (shared) vs 30 (distinct) vs 30 (single-delta only)
+- verdict: **CONFIRMED**
+
+### [s2] The dead `cur = new_var;` / `dy = cur;` copy chain in the early-exit arm was COSTING 2 insns.
+- mechanism: the copies forced the `new_var >> 12` intermediate through $a0 (`addu a0,a1,t0`)
+  where target uses $v0; deleting them makes GCC compute in place
+- probe: V2, `sandbox --disable all`
+- result: 32 -> 30
+- verdict: **CONFIRMED** — inherited sanctioned-family constructs are not free; audit them.
+
+### [s2] The arms hunk is a `reg_n_refs` write-count effect, not a value/association effect.
+- statement: the `$v0`-vs-`$v1` split on the `frac_s1 * 0x7D0` / `* 0x1F4` synth-mult chain is
+  driven by HOW MANY TIMES the destination variable is written, not by what is computed
+- mechanism: chain-extension bumps `reg_n_refs` for the destination pseudo, raising its allocno
+  priority so local-alloc gives the chain temp the destination's hard reg (in-place accumulation)
+  instead of a separate quantity — the F1 combine-foldable chain-extender family
+- probe: write-count gradient on an otherwise identical body (1/2/3/5 writes to `target`)
+- result: 14 / 12 / 12 / 4 — every row computes the identical value; GCC's `synth_mult` already
+  emits this exact shift/add chain for `* 0x7D0`
+- verdict: **CONFIRMED (mechanism)**, but the 5-write form is NOT SUBMITTABLE: F1 is a
+  FAKE-annotated last resort requiring a spent modality ladder, and this is session 2 with the
+  honest floor still dropping. Banked at
+  `rejected/reg-n-refs-chain-extender-arms-F1-unexhausted.c` as a 10-insn upper bound.
+
+### [s2] Declaration order of the new intermediate steers allocation.
+- probe: all 12 positions for `s32 t;` in the declaration block
+- result: 22 at every single position
+- verdict: **KILLED** — declaration order is fully inert for this function.
+
+### [s2] Source statement position controls where the scheduler places `sh zero,0(gp)`.
+- probe: all 9 slots for `D_800A3310 = 0;` in the early-exit arm
+- result: slots 0-4 identical (22); slots 5-8 regress (27/26/26/24)
+- verdict: **KILLED** — the store's scheduled index (ours 64, target 56) is not source-order
+  controllable. Split-init accumulation of `new_var` to reposition it regresses on every base.
+
+### [s2] The tail `lw a0,24(s0)` hoist is source-order controllable.
+- probe: load first / load mid / load last / distinct local `cc` / inline duplicated read + RMW
+  store, on both the 4-floor and 14-floor bases
+- result: INERT in every spelling — the scheduler places the load one slot before target's
+  position regardless
+- verdict: **KILLED at the structural level.** Target eats a maspsx load-delay `nop` there
+  (231 vs our 230 insns); we fill the branch delay with `sra v0,v1,0x4` instead. This needs a
+  scheduler-priority attack (tools/sched_solver), not a source reorder.
+
+## Frontier (live, for s3+)
+
+### F1 — the arms chain register is worth 10 insns and has a NAMED mechanism
+- **statement:** residual (2) — the `frac_s1 * 0x7D0` chain running in $v0 instead of $v1 — is the
+  single largest remaining component and is decided by allocno priority driven by `reg_n_refs` on
+  the destination pseudo.
+- **mechanism:** local-alloc gives the synth-mult chain temp its own quantity unless the
+  destination pseudo's priority is high enough to make combine/regmove tie them; write-count is the
+  measured control.
+- **next probe:** find an HONEST C shape that raises the same priority without chain-extension —
+  e.g. a genuinely different expression for the interpolation that makes the arm value live longer
+  or be read more than once, or a formulation where the arm value feeds two consumers. Do NOT
+  re-derive the 5-write decomposition; it is banked and policy-blocked until the ladder is spent.
+
+### F2 — the store index (2 insns) is a pure scheduler-priority question
+- **statement:** `sh zero,0(gp)` at ours 64 / target 56 is not reachable by statement reordering.
+- **mechanism:** GCC 2.7.2 `sched.c` list-scheduler priority for a dependence-free store.
+- **next probe:** `tools/sched_solver` (models sched.c exactly, 6978/6978 per
+  [[sched-solver-campaign-2026-08-05]]) on the early-exit block — ask what input change moves the
+  store 8 slots earlier. This is a forensics-modality probe.
+
+### F3 — the tail load/sra swap (2 insns incl. the missing nop) is the same scheduler question
+- **statement:** target emits `sra` then `lw` + load-delay `nop`; we emit `lw` then `sra` and fill
+  the branch delay slot instead. Measured NOT source-order controllable.
+- **mechanism:** the load's `INSN_PRIORITY` exceeds the sra's because of MIPS load latency; target's
+  build ranked them the other way.
+- **next probe:** same `sched_solver` run as F2, on the post-join block; also re-diff after any F1
+  win, since the two are in the same block and may be coupled.
+
+## [s2] The $v0/$v1 RA exchange is unreachable by C-level spelling (inherited s1 conclusion, based on four NEGATIVE inverse.py global runs with preference foreclosure via prune_preferences at global.c:897).
+- mechanism: inverse.py global models refs / live span / birth order / conflicts / preferences / calls-crossed over the EXISTING pseudo set; it cannot express a spelling that changes the pseudo set itself.
+- probe: Ordinary structural respellings of the body, each measured with `sandbox func_8001B748 --disable all`: delete the dead copy chain in the early-exit arm; introduce ONE shared named intermediate `t` for the three delta computations; route the tail sum through `t`; split the tail shift in place; give the final delta a distinct local `dd`.
+- result: Floor moved 32 -> 30 -> 22 -> 21 -> 19 -> 14. Every $v0/$v1 exchange hunk the solver had declared foreclosed (asm 112-119, 133-134, 151-152, 186-196, 205-212) closed or shrank.
+- verdict: KILLED
+
+## [s2] A single SHARED named intermediate (not per-delta temps) is what closes the three delta-chain exchanges.
+- mechanism: Sharing one reused local across the three `t = <mul-sum> >> 12; dX = t - cur;` deltas gives the shifted intermediate one long-lived pseudo that lands in $v1 while each delta result lands in $v0 - target's exact disposition. Three distinct temps do not produce this.
+- probe: W3 (one shared `t`) vs W4 (three distinct `t0/t1/t2`) vs W1/W2 (single-delta only), sandbox --disable all.
+- result: 22 (shared) vs 30 (distinct) vs 30 / 30 (single-delta). The effect is the sharing, not the naming.
+- verdict: CONFIRMED
+
+## [s2] The inherited sanctioned-family copy chain `cur = new_var; dy = cur;` in the early-exit arm was costing 2 instructions.
+- mechanism: The copies forced the `new_var >> 12` intermediate through $a0 (`addu a0,a1,t0`) where target computes in $v0; deleting them lets GCC compute in place.
+- probe: V2 - delete both copies and write `*(s32*)(dst+8) = new_var >> 12;` directly.
+- result: 32 -> 30.
+- verdict: CONFIRMED
+
+## [s2] The remaining arms hunk (frac_s1 * 0x7D0 / * 0x1F4 chain in $v0 instead of $v1) is a value/association effect that an honest reassociation can close.
+- mechanism: Candidate mechanisms were operand order, constant factoring (0x7D0 = 0x7D << 4), and variable choice for the arm value.
+- probe: Write-count gradient on an otherwise identical body: 1 write (`target = frac_s1 * 0x7D0;`), 2 writes (`* 0x7D` then `<< 4`), 3 writes (`* 0x7D` then `<<= 2` twice), 5 writes (full shift/add decomposition). Plus operand-order swap, ternary form, inverted condition, and a nine-way sweep of which local holds the arm value.
+- result: 14 / 12 / 12 / 4. Every row computes the identical value and GCC's synth_mult already emits exactly that shift/add chain for `* 0x7D0`, so the score is a function of WRITE COUNT, not of what is computed. Operand-order swap INERT; ternary 14; inverted condition 15; every alternative holder variable (t/dd/dx/dy/dz/v/new_var/fresh tg) 17-22, all worse than reusing `target`.
+- verdict: KILLED
+
+## [s2] Declaration order of the new intermediate steers allocation for this function.
+- mechanism: Declaration order changes pseudo birth order, which feeds local-alloc quantity numbering.
+- probe: All 12 positions for `s32 t;` in the declaration block, sandbox --disable all each.
+- result: 22 at every single position.
+- verdict: KILLED
+
+## [s2] Source statement position controls where the scheduler places the `sh zero,0(gp)` store (`D_800A3310 = 0;`), currently at ours idx 64 vs target idx 56.
+- mechanism: GCC 2.7.2 sched.c list-scheduler ordering of a dependence-free store; source order sets the tie-breaking LUID.
+- probe: All 9 slots for `D_800A3310 = 0;` in the early-exit arm; plus split-init accumulation of `new_var` to interleave the store into the multiply chain, retried on three different bases.
+- result: Slots 0-4 identical (22); slots 5-8 regress (27 / 26 / 26 / 24). Split-init regressed on every base measured (32->34, 30->43, 4->17).
+- verdict: KILLED
+
+## [s2] The tail `lw a0,24(s0)` hoist (target emits `sra` then `lw` plus a maspsx load-delay nop; we emit `lw` first and fill the branch delay with `sra v0,v1,0x4`) is source-order controllable.
+- mechanism: The load's INSN_PRIORITY exceeds the sra's because of MIPS load latency; source statement order was expected to change the ready-list tie-break.
+- probe: Load first / load mid / load last / single-shift form / `>>=` shorthand / `target` as accumulator / distinct local `cc` for the load / inline duplicated read with RMW store, measured on both the 4-floor and the 14-floor base.
+- result: INERT in every spelling - the load lands one slot before target's position regardless. This is why we build 230 insns against target's 231 (we never get the load-delay nop).
+- verdict: KILLED

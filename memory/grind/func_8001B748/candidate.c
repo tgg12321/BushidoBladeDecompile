@@ -10,6 +10,8 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     s32 target;
     s32 use_high;
     s32 v;
+    s32 t;
+    s32 dd;
     if (dst[0x1F] == 0) {
         dst[0x1F] = 1;
         *((s32 *) (dst + 0)) = ((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12;
@@ -17,12 +19,10 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
         new_var = (frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))));
         D_800A3310 = 0;
         *((s16 *) (dst + 0x12)) = val;
-        cur = new_var;
         *((s16 *) (dst + 0x10)) = 0x80;
         *((s16 *) (dst + 0x14)) = 0;
-        dy = cur;
         *((s32 *) (dst + 0x18)) = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
-        *((s32 *) (dst + 8)) = dy >> 12;
+        *((s32 *) (dst + 8)) = new_var >> 12;
         return;
     }
     {
@@ -34,20 +34,22 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     }
     use_high = ((s16) D_800A3310) >= 0xB;
     cur = *((s32 *) (dst + 0));
-    inv_s1 = inv_s1;
-    dx = (((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12) - cur;
+    t = ((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12;
+    dx = t - cur;
     if (dx < 0) {
         dx += 0xF;
     }
     *((s32 *) (dst + 0)) = cur + (dx >> 4);
     cur = *((s32 *) (dst + 4));
-    dy = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - (cur + 0x12C);
+    t = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - 0x12C;
+    dy = t - cur;
     if (dy < 0) {
         dy += 0xF;
     }
     *((s32 *) (dst + 4)) = cur + (dy >> 4);
     cur = *((s32 *) (dst + 8));
-    dz = (((frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))))) >> 12) - cur;
+    t = ((frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))))) >> 12;
+    dz = t - cur;
     if (dz < 0) {
         dz += 0xF;
     }
@@ -66,12 +68,14 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     } else {
         target = frac_s1 * 0x1F4;
     }
+    t = target + (inv_s1 * 0x2EE0);
+    t = t >> 12;
     cur = *((s32 *) (dst + 0x18));
-    dx = ((target + (inv_s1 * 0x2EE0)) >> 12) - cur;
-    if (dx < 0) {
-        dx += 0xF;
+    dd = t - cur;
+    if (dd < 0) {
+        dd += 0xF;
     }
-    *((s32 *) (dst + 0x18)) = cur + (dx >> 4);
+    *((s32 *) (dst + 0x18)) = cur + (dd >> 4);
     *((s16 *) (dst + 0x30)) = 0x64;
     *((s16 *) (dst + 0x32)) = 0;
     *((s16 *) (dst + 0x34)) = 0x64;
