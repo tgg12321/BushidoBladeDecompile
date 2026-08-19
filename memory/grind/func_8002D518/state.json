@@ -65,7 +65,8 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The load-bearing FAKE-annotated `ud = disc;` duplicate is cited under the wrong sanctioned family (duplicated-statement-into-arms) whose scope does not match the actual code shape; the correct family (dead-store-fake-exception) was never invoked or checked against its own prerequisites. Next action: Re-derive the justification for the `ud = disc;` duplicate under the family it actually matches: dead-store-fake-exception (.claude/rules \u2014 self-assign/redundant-def class), not duplicated-statement-into-arms. Verify against dead-store-fake-exception's own prerequisites"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The load-bearing FAKE-annotated `ud = disc;` duplicate is cited under the wrong sanctioned family (duplicated-statement-into-arms) whose scope does not match the actual code shape; the correct family (dead-store-fake-exception) was never invoked or checked against its own prerequisites. Next action: Re-derive the justification for the `ud = disc;` duplicate under the family it actually matches: dead-store-fake-exception (.claude/rules \u2014 self-assign/redundant-def class), not duplicated-statement-into-arms. Verify against dead-store-fake-exception's own prerequisites",
+  "banned_constructs for func_8002D518 is narrowed to the arms-family CITATION: the `ud = disc;` re-store may be resubmitted only with the in-source /* FAKE */ comment and self-vet re-cited under dead-store-fake-exception (drop every duplicated-statement-into-arms claim), then re-run layer-1 + layer-2."
  ],
  "banned_constructs": [
   "`u32 ud; ud = disc; lzcr = 0; if (disc >= 0) { /* FAKE ... */ ud = disc; <island>; lzcr = sp_tmp; }`"

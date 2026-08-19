@@ -646,3 +646,27 @@ question; read `.dbr`, never `.jump2`.
 - probe: Build `if (disc >= 0) { ud = disc; island; lzcr = sp_tmp; } else { ud = disc; lzcr = 0; }` with the island reading `ud` (v1) and reading `disc` (v2).
 - result: KILLED, both. Score 6 / build_insns 147 in both cases - the arms do not cross-jump, so BOTH copies plus the extra branch structure materialise (+3 insns). The fallthrough form (one copy before the guard, one inside it) is the only spelling that is byte-neutral.
 - verdict: KILLED
+
+## [s9] The target's second disc register is an INLINED helper's parameter copy (the redundant `bltz` is the helper's own internal guard).
+- mechanism: GCC 2.7.2 at -O2 inlines `static inline` bodies via integrate.c, which materialises a fresh pseudo for each parameter and re-emits the callee's own (here provably redundant) `if (x >= 0)` guard. That would explain BOTH residual oddities — the spare register and the dominated `bltz $a2` — with one ordinary-C construct and no annotation.
+- probe: Factor the whole LZCS/mantissa-table tail into `static inline s32 sqrt_lzcs(u32 ud)` and call it as `disc = sqrt_lzcs(disc);`.
+- result: KILLED as a LEVER (may still be historically true). GCC does inline it — no `jal`, no standalone body, parity 144 — but the parameter pseudo is an ordinary pseudo to cse and `make_regs_eqv` folds the argument copy exactly as it folds a plain local copy. Score 3, i.e. identical to the single-assignment control.
+- verdict: KILLED
+
+## [s9] Giving `ud` a consumer in the fall-through (small-path) block as well as the branch-taken block stops cse deleting the copy.
+- mechanism: reorg fills the `beqz` delay slot from the insn preceding the branch, so target's copy predates the 0x400 test; consumers on both sides of the split were never tried (the s7 hoist reject had the small path still indexing with `disc`).
+- probe: `u32 ud = disc; if ((u32)disc < 0x400u) { disc = (&D_8008D118)[ud] >> 3; } else { ...island(ud)...; table[ud >> shift] ... }`.
+- result: KILLED. Score 3, parity 144. cse canonicalises both uses to `disc`; an extra fall-through consumer does not perturb make_regs_eqv.
+- verdict: KILLED
+
+## [s9] Defining `ud` ONLY inside the `if (disc >= 0)` guard arm (a single, genuinely-needed def — not a dead store) leaves the post-join read un-canonicalised because the join has two predecessors.
+- mechanism: s6/E8 — cse's extended block ends at a CODE_LABEL; a def established inside the arm should not be propagatable past a multi-predecessor join.
+- probe: `u32 ud; lzcr = 0; if (disc >= 0) { ud = disc; <island>; lzcr = sp_tmp; }` with the post-join `table[ud >> shift]` read. The only single-def PLACEMENT never previously measured.
+- result: KILLED, and strictly worse than the copy-less baseline: score 8, build_insns 145 — parity lost. The arm-local def materialises an extra insn and still does not survive as target's copy.
+- verdict: KILLED
+
+## [s9] CLOSED FORM — the surviving copy requires a SET of `ud` or `disc` between the island read and the `srlv` read, and every such set that carries a genuinely different value costs bytes; therefore the only zero-cost invalidator is a same-value re-store (the dead-store / self-assign family).
+- mechanism: s6/E7 (make_regs_eqv is strictly either/or) + cse's register tables being invalidated only by a SET (a volatile asm invalidates MEMORY, not registers) + the target's own register file showing `$a2` and `$a0` both unwritten across that window (every intervening write goes to `$v1`/`$v0`), so reusing either variable for `shift`, for the table index, or for `ud >>= shift` forces one pseudo's single hard register to serve two different target registers.
+- probe: E20's three spellings (inline-helper parameter copy, hoisted copy with a fall-through consumer, arm-local single def) plus the eight sessions of prior spellings in `rejected/` — 32 forms now.
+- result: CONFIRMED. Every non-re-store spelling measured lands at score 3 (copy folded) or worse; the s8 same-value re-store is the unique measured closer to score 0.
+- verdict: CONFIRMED
