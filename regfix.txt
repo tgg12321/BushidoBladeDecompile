@@ -1193,64 +1193,33 @@ func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
 # saTan5TakeAnim2: 154-insn line-sphere intersection, compound regfix
 # 152 TEXT instructions (0-151) from dump_text_indices (--expand-div, .word not counted)
 # dist_sq ordering: rotate to after c_val computation
-func_8002D518: reorder 76,77,78,75 @ 75-78
 # dist_sq register a2->a1 (original idx 75 = addu $6,$8,$6)
-func_8002D518: subst "\$6,\$8,\$6" "$5,$8,$6" @ 75
-func_8002D518: subst "\$6," "$5," @ 80
 # disc register a0->a2
-func_8002D518: subst "subu\t\$4" "subu\t$6" @ 84
-func_8002D518: subst "\$4" "$6" @ 85
-func_8002D518: subst ",\$4," ",$6," @ 86
 # result=0 in j delay slot: a2->v0
-func_8002D518: subst "addu\t\$6" "addu\t$2" @ 88
 # beqz delay slot: nop -> move a0,disc(a2)
-func_8002D518: subst "nop.*" "addu\t$4,$6,$zero" @ 90
 # disc in LUT path a0->a2
-func_8002D518: subst ",\$4" ",$6" @ 92
 # sqrt_val v0->a2
-func_8002D518: subst "srl\t\$2" "srl\t$6" @ 95
 # disc in big sqrt path a0->a2
-func_8002D518: subst "bltz\t\$4" "bltz\t$6" @ 96
 # sqrt_val srlv output v0->a2
-func_8002D518: subst "srl\t\$2" "srl\t$6" @ 115
 # sqrt_val << 9: sll a1,v0 -> sll a2,a2
-func_8002D518: subst "\$5,\$2" "$6,$6" @ 116
 # denom: sll a0,a2,1 -> sll v1,a1,1
-func_8002D518: subst "\$4,\$6" "$3,$5" @ 118
 # t1_num: addu v1,v0,a1 -> addu a0,v0,a2
-func_8002D518: subst "\$3,\$2,\$5" "$4,$2,$6" @ 119
 # t1_num shift: sll v1,v1,8 -> sll a0,a0,8
-func_8002D518: subst "\$3,\$3" "$4,$4" @ 120
 # reorder: denom after t1_num pair (target: addu,sll,sll vs our sll,addu,sll)
-func_8002D518: reorder 119,120,118 @ 118-120
 # div1 operand swap: div $zero,v1,a0 -> div $zero,a0,v1
-func_8002D518: subst ",\$3,\$4" ",$4,$3" @ 121
 # div1 expansion: bnez divisor a0->v1
-func_8002D518: subst "\$4" "$3" @ 122
 # div1 expansion: bne divisor a0->v1
-func_8002D518: subst "\$4," "$3," @ 126
 # div1 expansion: bne dividend v1->a0
-func_8002D518: subst "\$3," "$4," @ 128
 # mflo t1_val: v1->a0
-func_8002D518: subst "\$3" "$4" @ 131
 # subu neg_b - sq: a1->a2
-func_8002D518: subst "\$5" "$6" @ 132
 # div2 divisor: a0->v1
-func_8002D518: subst ",\$4" ",$3" @ 134
 # div2 expansion: bnez divisor a0->v1
-func_8002D518: subst "\$4" "$3" @ 135
 # div2 expansion: bne divisor a0->v1
-func_8002D518: subst "\$4," "$3," @ 139
 # mflo t2_val: a0->v1
-func_8002D518: subst "\$4" "$3" @ 144
 # bltz t1_val: v1->a0
-func_8002D518: subst "bltz\t\$3" "bltz\t$4" @ 145
 # result=0: a2->a1
-func_8002D518: subst "addu\t\$6" "addu\t$5" @ 146
 # slt result,t2_val: a2,a0 -> a1,v1
-func_8002D518: subst "\$6,\$4" "$5,$3" @ 147
 # return result: a2->a1
-func_8002D518: subst "\$6" "$5" @ 148
 
 # camera_set_zoom: delay slot fills (fix +8 bytes)
 func_800238C4: subst "nop" "addiu\t$2,$zero,1" @ 24

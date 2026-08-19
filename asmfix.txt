@@ -35,8 +35,6 @@ func_800335D8: replace_first "^beq\\s+\\$3,\\$21,\\.L[0-9]+$" "beq\t$3,$21,.Lmk_
 # shifts local labels enough that this early-out jump starts targeting the
 # value-move instead of the shared epilogue. Retarget the jump back to the
 # epilogue label.
-func_8002D518: insert_before "^addu\t\\$sp,\\$sp,8$" ".LsaTan5TakeAnim2_epilogue:"
-func_8002D518: replace_first "^j\t\\.L[0-9]+(?=\naddu\t\\$2,\\$0,\\$zero\n\n\\.L[0-9]+:\nbeq\t\\$2,\\$0,\\.L[0-9]+$\naddu\t\\$4,\\$6,\\$zero)" "j\t.LsaTan5TakeAnim2_epilogue"
 
 # cpu_set_move_command_and_dir_for_no_action: retarget the final append branch
 # pair after local label renumbering so the 0x04000000 case falls through to the

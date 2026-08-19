@@ -2001,15 +2001,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
     },
     {
-      "func": "func_8002D518",
-      "file": "code6cac_b",
-      "distance": 33,
-      "verdict": "ASM-PARTIAL",
-      "rules": 33,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md 2026-08-19 - func_8002D518 - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven at distance 0; blocked by a stale banned_constructs tripwire in memory/grind/func_8002D518/state.json that no session may edit)"
-    },
-    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2292,11 +2283,11 @@
     }
   ],
   "counts": {
-    "total": 261,
+    "total": 260,
     "active": 228,
     "by_status": {
       "active": 228,
-      "parked": 33
+      "parked": 32
     },
     "by_verdict": {
       "C": 190,
