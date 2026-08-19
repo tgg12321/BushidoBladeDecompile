@@ -351,6 +351,62 @@ proposed exception must clear its own SOTN-master-branch evidence bar
 sanction). Agents must NOT generalize from any single sanctioned
 exception to treat the broader category as relaxed.
 
+**2026-08-18 additions (owner ruling b, evidence: the 2026-08-18 SOTN
+family surveys — full-tree master-branch sweeps at commit 8bd7c777,
+methodology per [[sotn-prototype-struct-precedent-2026-08-10]]; owner
+directive verbatim: "Go ahead with all your recommendations on these").**
+Each is a LAST-RESORT sanction with the standard prerequisites
+(documented lever-exhaustion, named GCC-pass mechanism, mandatory
+annotation, layer-1+2 review):
+
+- **Compound-address duplication across call arg-lists** (F3 survey,
+  ESTABLISHED): writing a compound address expression (`&base[i] + k`
+  class) character-for-character at multiple call argument positions
+  instead of binding it to a pointer local. Routine SOTN style in
+  fully-matched files (`src/dra/5087C.c:559` "ugly casts"; gte_ldrgb
+  dual-position exhibit; up to 14 repetitions of one expression in one
+  function). Prerequisites: the duplicated expression is real (value
+  consumed at each site); annotation at the duplication site.
+- **Semantically-null fabricated statement pairs (cancellation-pair /
+  redundant-condition class)** (F6 survey, ESTABLISHED): an adjacent
+  same-variable increment/decrement pair (`i++; i--;`) or a fabricated
+  redundant condition / empty-if inserted solely for codegen. Direct
+  exhibit `src/saturn/game_3b.c:1450` (SH-2 matched target — owner
+  accepts the cross-ISA caveat); MIPS class-siblings
+  `src/dra/5D5BC.c:770` (`if (!i) { }`, "permuter found it") and
+  `src/st/st0/cutscene.c:203` (`if (prim && prim)`). Sanctions ONLY the
+  exact cancellation pair and empty-condition shapes — the `+= 2 / -= 1`
+  respelling FAILed by the Judge (decisions.md:1833 lineage) remains
+  banned. Prerequisites: `!FAKE`-style annotation; exhaustion ledger.
+- **Unconditional-common-store duplication into both branch arms** (F7
+  survey, ESTABLISHED as construct): duplicating common-tail stores into
+  both if/else arms where cross-jump may or may not re-merge them —
+  sanctioned at the CONSTRUCT level regardless of which GCC pass the
+  duplication feeds (consistent with [[duplicated-statement-into-arms]]'s
+  own note that merge behavior is invisible to the author; SOTN ships 25
+  fully-identical-arm if/else constructs and 1,275 identical-store-in-
+  both-arms sites in matched code). Prerequisites: annotation; the
+  stores' values real and required.
+- **Phantom-frame-slot volatile pad local** (off-brief survey exhibit
+  `src/st/sel/2C048.c:564` `volatile u32 pad; // !FAKE:` in an
+  INCLUDE_ASM=0 file): an unused `volatile` pad local declared solely to
+  reserve target's untouched stack bytes. Supersedes the per-function
+  2026-08-17/18 leading/trailing-pad carve-outs with a general family.
+  FORM CONSTRAINT: applications use the ARRAY form
+  (`volatile u32 pad[N];` — the engine allowlist
+  `engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS` requires it and
+  a per-function row), first-decl position (trailing does not generalize
+  per the 2026-08-17 func_8003CF84 ruling), no `(void)pad;` shims.
+  Prerequisites: `// !FAKE` annotation; ledger frame-forensics showing
+  the target slot genuinely untouched ([[phantom-slot-frame-lever]]
+  procedure); honest producers measured inert first.
+
+Surveyed and NOT extended (2026-08-18, refusals stand): F1
+constant→local→local staging chain (WEAK — genus shipped, species not),
+F2 signedness-split dual read (WEAK), F4 cross-symbol arithmetic idiom
+(ABSENT — SOTN's norm is the struct merge), F5 union-constructor CLOBBER
+(ABSENT).
+
 ## What the SOTN standard accepts
 
 [[community-standard]] is the bar: pure C, or canonical-body asm for code
