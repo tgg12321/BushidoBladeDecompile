@@ -219,6 +219,63 @@
  * direct measurement of an assumption eight sessions made in passing: m2c
  * reflects the SCHEDULED asm, not the source shape, so it is not a chassis seed.
  */
+/* [s15 FORENSICS ADDENDUM - body unchanged, still 3, re-measured on a clean tree.]
+ * The long-running question "which pass makes the preheader copy, and why does
+ * the base add consume it" is now ANSWERED WITH MEASUREMENTS rather than
+ * inference, using the instrumented cc1 (tools/gcc-2.7.2/cc1 - NOT build/cc1),
+ * re-proved codegen-identical to the frozen build/cc1 on this whole TU in every
+ * dump run (tmp/grind/func_80017848/s15/idump.sh).
+ *
+ *  (1) THE PASS IS local-alloc.c's optimize_reg_copy_1 (local-alloc.c:700,
+ *      dispatched at :1006).  Loop 1's base add is `(plus (reg 84) (reg 79))` -
+ *      i.e. it reads the ORIGINAL pointer, not the copy's dest - in .cse, .loop,
+ *      .cse2, .flow, .combine AND .sched, and `(plus (reg 84) (reg 80))` in
+ *      .lreg, with reg79's REG_DEAD note moving from the base add up onto the
+ *      copy.  optimize_reg_copy_1 rewrites SRC to DEST over the range where SRC
+ *      dies "to enable DEST to be tied to SRC"; it does NOT delete the copy, and
+ *      nothing after local-alloc runs DCE, so the copy is emitted.
+ *
+ *  (2) THE COPY SURVIVES COMBINE because flow.c:2102 creates LOG_LINKs only when
+ *      the using insn is in the SAME basic block, and combine only follows
+ *      LOG_LINKs.  Loop 1's copy dest (reg80) has exactly one pre-lreg use -
+ *      `p = q` in the loop-1 exit tail, a different block - so combine never
+ *      gets a link to it.  General rule: a preheader reg-reg copy survives
+ *      combine iff nothing in its own basic block uses its destination.
+ *
+ *  (3) LOOP 2'S PREHEADER IS NOT C-INERT.  s13/s14's frontier said the block
+ *      "has no C-level handle at all"; that is now false.  A loop-INVARIANT
+ *      reg-reg copy written inside loop 2's BODY is hoisted verbatim into the
+ *      preheader by loop.c's move_movables (loop.c:1690-1710) and survives
+ *      combine by (2), because its uses stay in the body.  Cell C1 emits
+ *      `lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2 / move $5,$4` - the copy IS
+ *      there, in target's block, from pure C.  It scores 6 because it copies the
+ *      BASE rather than the ADDEND, so it lands one slot too late.  Hoisting the
+ *      copy together with its consumer (cell D1) puts both in the same block and
+ *      combine deletes the copy again: D1's preheader is byte-identical to this
+ *      body's, at 3.  Both banked in rejected/.
+ *
+ *  (4) THE reuse-p FAMILY IS STRUCTURALLY EXCLUDED, not merely expensive.  s11/
+ *      s12 recorded 8/9/19/28/41 as bare numbers.  The dump of cell A1 shows the
+ *      mechanism: if loop 2's base addend is provably equal to the guard's
+ *      addend, cse merges the guard-address add and the base add into ONE insn
+ *      (`.L171: sll $2,$20,6 / addu $4,$2,$4 / lw $2,32($4)`), while target
+ *      computes sh2+ptr TWICE (0x8001791C and 0x80017938).  A1/A2/A3/A4 all = 8.
+ *      Corollary: loop 2's base addend MUST stay a fresh *(u8 **)(ctx + 0xC)
+ *      read, exactly as written below.  Do not re-probe that family.
+ *
+ * WHAT REMAINS.  Target's loop-2 copy has a destination used exactly ONCE, at
+ * the base add, in the same block, dying there (a3 appears 5 times in the whole
+ * target listing).  By (2) such a copy is deleted by combine if it exists before
+ * combine; by (3) a hoisted one is too; and any copy whose dest is used
+ * out-of-block leaves that use visible in the asm - our loop 1 pays for it with
+ * `move $4,$7` - and target has no such instruction.  So the copy is created, or
+ * made unfoldable, AFTER combine.  The only remaining 2.7.2 candidate is
+ * local-alloc's optimize_reg_copy_2 (local-alloc.c:874), which fires on a copy
+ * whose SRC dies in it when a REVERSE copy `SRC = DEST` appears later in the same
+ * block before any label/jump/LOOP_BEG/LOOP_END note, rewrites the range, and
+ * LEAVES BOTH COPY INSNS IN PLACE because no DCE follows local-alloc.  That
+ * predicate has never been written from C.
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;

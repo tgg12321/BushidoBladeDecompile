@@ -1148,3 +1148,137 @@ as "SHARED-LOCAL loop 2 mirror costs N".
 - probe: `python3 tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c asm/funcs/func_80017848.s`, transcribed into compilable C against the ings.c context (M2C_FIELD expanded to casts) as tmp/grind/func_80017848/s14/chassis_M.c and scored. Then the one placement idea it contributed - `sh` recomputed on loop 1's TAKEN path only, `sh2` deleted - was extracted as cells N1/N2/N3 on the V1 chassis, and campaign s14n (tmp/perm_ings_s14n) was seeded on N1 with whole-function randomization: 34,647 iterations, 11 finds, all engine re-scored.
 - result: The faithful m2c transcription scores 49 - sixteen times the V1 floor - so m2c's output reflects the SCHEDULED, allocated asm rather than the source shape GCC was given and is not a usable chassis seed (a thing eight sessions assumed in passing, now measured). The extracted cells: N1 (`sh = slot_a << 6;` appended after `p = q;`, sh2 deleted) = 3, N3 (dual-path sh2) = 3, N2 (recompute placed before `p = q;`) = 4. N1 is a genuinely NEW spelling at the floor but its residual is BYTE-IDENTICAL to V1's - the same three instructions at insns 52/59/61 - and the campaign seeded on it found nothing below 3 (both engine-3 outputs at perm 405 = the base score).
 - verdict: KILLED
+
+## s15 (2026-08-18, forensics) — hypotheses
+
+### H-s15-1 CONFIRMED — the base-add operand swap is local-alloc's `optimize_reg_copy_1`
+**Statement.** The pass that makes loop 1's base add consume the preheader copy's
+destination (target `addu a0,a1,a3` rather than `addu a0,a1,a0`) is
+`optimize_reg_copy_1` in local-alloc.c, not cse, combine, sched, global-alloc or
+reload.
+**Mechanism.** local-alloc.c:1002-1006 dispatches `optimize_reg_copy_1` for every
+`(set (reg D) (reg S))` where S does NOT have a REG_DEAD note on the copy.  The
+routine (local-alloc.c:700) scans forward inside the SAME basic block; if S dies
+before either S or D is modified it rewrites every mention of S in that range to
+D and moves S's death onto the copy, "to enable DEST to be tied to SRC".  It never
+deletes the copy, and no DCE runs after local-alloc, so the copy is emitted.
+**Probe.** Diff the same insn across the `-da` series for the candidate body
+(`tmp/grind/func_80017848/s15/icand/F_*.txt`): insn 89 is
+`(plus (reg 84) (reg 79))` in `.cse`, `.loop`, `.cse2`, `.flow`, `.combine` and
+`.sched`, and `(plus (reg 84) (reg 80))` in `.lreg`; reg79's REG_DEAD moves from
+insn 89 to insn 83 in the same step.
+**Result.** The swap is localised to the cse→lreg boundary and matches
+`optimize_reg_copy_1`'s precondition exactly (reg79 not dead at insn 83, dead at
+insn 89, same block, nothing modifies either in between).  CONFIRMED.
+
+### H-s15-2 CONFIRMED — a preheader reg-reg copy survives combine iff its destination is unused in that basic block
+**Statement.** combine deletes a preheader copy only when a LOG_LINK reaches it,
+and `flow.c:2102` builds LOG_LINKs only when the using insn is in the same basic
+block as the setting insn (`BLOCK_NUM (y) == blocknum`).
+**Mechanism.** Loop 1's copy (insn 83, `reg80 = reg79`) has one pre-lreg use,
+insn 141 (`p = q`) in the loop-1 exit tail — a different block — so combine has
+no link to it and leaves it alone.  Loop 1's base add still reads reg79 at
+combine time, so it is not even a candidate for substitution.
+**Probe.** F_combine.txt for the candidate (copy intact, base add unchanged) plus
+the two-sided experiment C1/D1 in H-s15-3.
+**Result.** CONFIRMED from both directions.
+
+### H-s15-3 CONFIRMED (mechanism) / KILLED (as a scoring lever) — loop.c's `move_movables` can place a reg-reg copy in loop 2's preheader from pure C
+**Statement.** s13/s14's frontier claim that loop 2's preheader "has no C-level
+handle at all" is false: a loop-INVARIANT reg-reg copy written inside loop 2's
+BODY is hoisted verbatim into the preheader by `move_movables`
+(`tools/gcc-2.7.2/loop.c:1690-1710`), and survives combine by H-s15-2 because its
+uses stay in the body.
+**Mechanism.** loop.c hoists invariants by duplicating the insn before
+`loop_start`; a `b2 = base;` invariant is therefore emitted as `move` into the
+preheader.  Its uses remain inside the loop, in a different basic block, so no
+LOG_LINK reaches the hoisted copy.
+**Probe.** Cell C1 — `b2 = base;` as the first statement of loop 2's body, body
+element read and loop condition rewritten onto `b2`.  Scored with
+`sandbox --disable all` and dumped with the instrumented cc1
+(`tmp/grind/func_80017848/s15/iC1/ings.s`).
+**Result.** The copy IS emitted, in target's block: the preheader becomes
+`lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2 / move $5,$4`.  Score 6 — the copy
+is of the BASE rather than of the ADDEND, so it lands after the base add instead
+of before it and adds an instruction target does not have.  The mechanism is
+CONFIRMED; the specific cell is KILLED.  Banked as
+`rejected/s15_body_invariant_copy_of_base_hoisted_copy_survives_costs_6.c`.
+
+### H-s15-4 KILLED — hoisting the copy AND its consumer together lets combine delete the copy again
+**Statement.** Naming loop 2's addend (`q2`) and making both `b2 = q2;` and
+`base = sh2 + b2;` loop-2-body invariants would reproduce target's
+copy-then-base-add order in the preheader.
+**Mechanism.** loop.c hoists both insns before `loop_start`, so the copy and its
+only use end up in the SAME basic block — H-s15-2's survival condition is
+violated, a LOG_LINK is created, combine substitutes and deletes the copy.
+**Probe.** Cell D1 (both invariants) and D2 (copy invariant only, base add left
+in the preheader).
+**Result.** D1 = 3 with a preheader byte-identical to the candidate's — the copy
+is gone.  D2 = 9.  KILLED; banked as
+`rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c` and
+`rejected/s15_hoisted_copy_body_uses_b2_costs_9.c`.
+
+### H-s15-5 KILLED — "loop 2's base addend is a copy/alias of the carried pointer" is structurally excluded, not merely expensive
+**Statement.** s11/s12 recorded the reuse-p family as costing 8/9/19/28/41 without
+a mechanism; the mechanism is cse merging the guard-address add with the base add.
+**Mechanism.** If the base addend is provably equal to the guard's addend, cse
+CSEs `sh2 + addend` and emits it ONCE; target emits it TWICE (`addu v0,a1,a0` at
+0x8001791C for the guard, `addu a0,a1,a3` at 0x80017938 for the base).  So any
+such spelling deletes an instruction target has.
+**Probe.** Cells A1 (`r = p;` in the join block, guard on p, base on r), A2
+(guard on r, base on p), A3 (base reuses p directly), A4 (`r = p;` inside the
+preheader); A1 additionally dumped with the instrumented cc1.
+**Result.** All four score 8.  A1's asm shows the collapse literally:
+`.L171: sll $2,$20,6 / addu $4,$2,$4 / lw $2,32($4)` where `addu $4,$2,$4` serves
+as both the guard address and the base.  KILLED with a mechanism; banked as
+`rejected/s15_l2_copy_of_p_collapses_guard_and_base_adds_costs_8.c`.
+Corollary for future sessions: **loop 2's base addend must be a value cse cannot
+prove equal to the guard's addend — i.e. a fresh `*(u8 **)(ctx + 0xC)` read.**
+The candidate already does this; do not re-probe the family.
+
+### H-s15-6 OPEN — target's loop-2 copy must be created or made unfoldable AFTER combine, and `optimize_reg_copy_2` is the only remaining 2.7.2 candidate
+**Statement.** Target's `addu a3,a0,zero` has a destination used exactly once, at
+the base add, in the same basic block, dying there (a3 occurs only 5 times in the
+whole target listing, twice per loop plus the prologue).  H-s15-2 says such a copy
+is deleted by combine if it exists before combine; H-s15-4 says a hoisted one is
+too; and any copy whose destination is used OUT of the block leaves that use in the
+asm (our loop 1 pays `move $4,$7`, C1 pays inside the body) and target has no such
+instruction.
+**Mechanism (the untested one).** `optimize_reg_copy_2` (local-alloc.c:874) fires
+on `(set (reg D) (reg S))` where S DIES in the copy, scans forward in the same
+block until a CODE_LABEL / JUMP_INSN / NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END,
+and if it finds a REVERSE copy `(set (reg S) (reg D))` with D dying there, it
+replaces D with S over the whole range and removes both death notes — leaving
+BOTH copy insns physically in place, because nothing after local-alloc deletes
+dead insns.  No session has ever written C aimed at that predicate.
+**Next probe.** See the frontier.
+
+## [s15] The pass that makes loop 1's base add consume the preheader copy's destination (target `addu a0,a1,a3` rather than `addu a0,a1,a0`) is local-alloc.c's optimize_reg_copy_1, not cse, combine, sched, global-alloc or reload.
+- mechanism: local-alloc.c:1002-1006 dispatches optimize_reg_copy_1 (local-alloc.c:700) for every `(set (reg D) (reg S))` where S does NOT carry a REG_DEAD note on the copy. The routine scans forward inside the SAME basic block; if S dies before either S or D is modified, it rewrites every mention of S in that range to D and moves S's death note onto the copy, explicitly 'to enable DEST to be tied to SRC, thus often saving one register in addition to a register-register copy'. It never deletes the copy, and no DCE pass runs after local-alloc, so the copy reaches the assembler.
+- probe: Compiled the candidate body with the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, re-proved codegen-identical to the frozen build/cc1 on the whole TU in the same run) with -da, sliced func_80017848 out of every pass dump, and diffed the same insn across the series: insn 89 is `(set (reg/v 81) (plus (reg/v 84) (reg/v 79)))` in .cse, .loop, .cse2, .flow, .combine AND .sched, and `(plus (reg/v 84) (reg/v 80))` in .lreg; reg79's REG_DEAD note moves from insn 89 to insn 83 in the same step.
+- result: The operand swap is localised to the sched->lreg boundary and matches optimize_reg_copy_1's precondition exactly (reg79 not dead at the copy insn 83, dead at the base add insn 89, same basic block, neither modified in between). Six sessions of inference (s6/s7/s8 'a pass after combine'; s9 'combine survival'; s10-s14 'unidentified origin') are replaced by a named pass and a named routine.
+- verdict: CONFIRMED
+
+## [s15] A reg-reg copy in a loop preheader survives combine if and only if no insn in that same basic block uses the copy's destination.
+- mechanism: combine only ever follows LOG_LINKS, and flow.c:2102 guards LOG_LINK creation with `if (y && (BLOCK_NUM (y) == blocknum) ...)` - links are never built across a basic-block boundary. Loop 1's copy (insn 83, `reg80 = reg79`) has exactly one pre-lreg use, insn 141 (`p = q`) in the loop-1 EXIT TAIL, a different block, so combine gets no link to it and never considers folding it; the base add still reads reg79 at combine time and is not a substitution candidate either.
+- probe: Read flow.c:2085-2106 and combine's LOG_LINK dependence in the shipped 2.7.2 tree, then confirmed against F_combine.txt for the candidate (insn 83 intact, insn 89 unchanged), and tested the rule from both sides with cells C1 (dest used only in the loop body -> copy survives) and D1 (dest's use hoisted into the same block -> copy deleted).
+- result: Confirmed in both directions. This is the general survival law for this whole class of construct and it supersedes s9's narrower 'the dest needs a second use downstream of the base add' formulation - what matters is that the use is in ANOTHER BLOCK, not merely downstream.
+- verdict: CONFIRMED
+
+## [s15] s13/s14's frontier claim that loop 2's preheader 'has no C-level handle at all' is false: loop.c's move_movables can be made to place a genuine reg-reg copy into that exact block from pure C.
+- mechanism: loop.c hoists a loop-invariant insn by duplicating it before loop_start (loop.c:1690-1710), so a loop-invariant reg-reg copy written inside loop 2's BODY is emitted as a `move` into loop 2's preheader. Because its uses stay inside the loop body - a different basic block - the survival law above applies and combine cannot fold it.
+- probe: Cell C1: `b2 = base;` as the first statement of loop 2's body, with the body's element read and the do-while condition rewritten onto b2. Scored with `sandbox --disable all` and dumped with the instrumented cc1.
+- result: The copy IS emitted, in target's block: loop 2's preheader becomes `lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2 / move $5,$4`. Score 6 - the copy is of the BASE rather than of the ADDEND, so it lands one slot after the base add instead of before it and adds an instruction target does not have. Mechanism CONFIRMED; the specific cell is dead and banked.
+- verdict: CONFIRMED
+
+## [s15] Naming loop 2's addend and making BOTH the copy and the base add loop-2-body invariants would reproduce target's copy-then-base-add order in the preheader.
+- mechanism: loop.c hoists both insns before loop_start, so the copy and its only use land in the SAME basic block; the survival law is violated, flow builds a LOG_LINK, and combine substitutes the copy into the base add and deletes it.
+- probe: Cell D1 (`q2 = *(u8 **)(ctx + 0xC);` in the preheader, then `b2 = q2;` and `base = (u8 *)(sh2 + (s32)b2);` both inside the loop body) and cell D2 (copy invariant in the body, base add left in the preheader), scored and D1 additionally dumped.
+- result: D1 = 3 with a loop-2 preheader byte-identical to the candidate's (`lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2`) - the copy is gone, exactly as the law predicts. D2 = 9. C2 (invariant RE-COMPUTE of the base rather than a copy) = 5. KILLED.
+- verdict: KILLED
+
+## [s15] The 'loop 2's base addend is a copy or alias of the carried pointer p' family is merely expensive (s11/s12 recorded 8/9/19/28/41 as bare numbers) and might be recoverable with the right chassis.
+- mechanism: It is structurally excluded, not expensive. If loop 2's base addend is provably equal to the loop-2 guard's addend, cse CSEs `sh2 + addend` and emits it ONCE; target emits it TWICE (`addu v0,a1,a0` at 0x8001791C for the guard, `addu a0,a1,a3` at 0x80017938 for the base). Any such spelling therefore deletes an instruction target has, before register allocation is even reached.
+- probe: Cells A1 (`r = p;` in the join block, guard on p, base on r), A2 (guard on r, base on p), A3 (base reuses p directly), A4 (`r = p;` inside the preheader); A1 additionally dumped with the instrumented cc1.
+- result: All four score exactly 8, and A1's asm shows the collapse literally: `.L171: sll $2,$20,6 / addu $4,$2,$4 / lw $2,32($4)`, where `addu $4,$2,$4` serves as BOTH the guard address and the base. KILLED with a mechanism. Corollary for every future session: loop 2's base addend MUST stay a fresh `*(u8 **)(ctx + 0xC)` read, which is what the candidate already does.
+- verdict: KILLED

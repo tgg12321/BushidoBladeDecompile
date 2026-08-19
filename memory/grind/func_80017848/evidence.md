@@ -1365,3 +1365,160 @@ loop-2 guard consuming loop-1's `q` = 12.
 - [s14] Both campaigns launched through tools/permuter_campaign.py with telemetry, waited on IN-TURN via `permuter_campaign.py wait` in a bounded loop, and harvest --stop'ed before this outcome was written; `permuter_campaign.py status` reports zero alive campaigns.
 
 - [s14] Banked: rejected/s14_m2c_transcribed_rotated_walking_pointer_costs_49.c, rejected/s14_sh_recompute_before_pq_costs_4.c, rejected/s14_sh_recompute_loop1_exit_ties_3_identical_residual.c (the tied-at-3 alternate chassis, kept for a future session that wants a non-V1 seed).
+
+## s15 (2026-08-18, forensics) — the preheader copy's producing pass is NAMED, and loop 2's preheader is no longer "C-inert"
+
+Floor unchanged at 3 (candidate body re-measured on a clean tree = 3).  All work
+done with the INSTRUMENTED cc1 (`tools/gcc-2.7.2/cc1`, the BB2_*_DEBUG binary —
+NOT `build/cc1`), re-proved CODEGEN-IDENTICAL to the frozen `build/cc1` on this
+whole TU in every one of the four dump runs (harness:
+`tmp/grind/func_80017848/s15/idump.sh`, which diffs `shipped.s` vs `ings.s`
+ignoring the `# options` comment before emitting anything).  Per-pass RTL slices
+for func_80017848 are cut out of the full-TU dumps by
+`tmp/grind/func_80017848/s15/icand/ex.py` into `F_<pass>.txt`.
+
+### E-s15-1  THE PASS IS local-alloc.c's `optimize_reg_copy_1` (MEASURED, not inferred)
+
+Loop 1's preheader in the candidate is, after cse (F_cse.txt):
+
+    (insn 83)  (set (reg/v 80) (reg/v 79))                     ; q = p   (cse fold)
+    (insn 86)  (set (reg/v 77) (mem (plus (reg/v 72) 16)))     ; lnk
+    (insn 89)  (set (reg/v 81) (plus (reg/v 84) (reg/v 79)))   ; base = sh + p
+
+Note insn 89 reads **reg79**, the ORIGINAL pointer, not the copy's dest reg80.
+That is still true in `.loop`, `.cse2`, `.flow`, `.combine` and `.sched` — byte
+for byte the same insn.  In `.lreg` it reads **reg80**, and reg79's REG_DEAD note
+has moved from insn 89 up onto insn 83.  So the operand swap that produces
+target's `addu a3,a0,zero` / `addu a0,a1,a3` pair happens inside **local-alloc**,
+in `optimize_reg_copy_1` (`tools/gcc-2.7.2/local-alloc.c:700`, dispatched from
+`local-alloc.c:1006`).  Its documented contract: "INSN is a copy from SRC to
+DEST, both registers, and SRC does not die in INSN.  Search forward to see if SRC
+dies before either it or DEST is modified, but don't scan past the end of a basic
+block.  If so, we can replace SRC with DEST and let SRC die in INSN ... this may
+enable DEST to be tied to SRC, thus often saving one register in addition to a
+register-register copy."  It does NOT delete the copy, and nothing after
+local-alloc runs DCE, so the copy reaches the assembler.
+
+This retires six sessions of inference (s6/s7/s8 said "a pass after combine";
+s9 said combine-survival; s10-s14 said "unidentified origin").  Both halves are
+now measured: combine-survival explains why the copy is still there, and
+`optimize_reg_copy_1` explains why the base add consumes it.
+
+### E-s15-2  WHY THE COPY SURVIVES COMBINE — flow.c makes LOG_LINKS only inside one basic block
+
+`flow.c:2102` guards LOG_LINK creation with `if (y && (BLOCK_NUM (y) ==
+blocknum) ...)`.  combine only ever follows LOG_LINKS.  In loop 1, insn 83's
+destination reg80 has exactly ONE pre-lreg use — insn 141 (`p = q`) — and insn
+141 lives in the loop-1 EXIT TAIL, a different basic block.  So no LOG_LINK
+points at insn 83 and combine never considers folding it.  Confirmed in
+F_combine.txt: insn 83 is untouched and insn 89 still reads reg79.
+**General rule established:** a reg-reg copy in a preheader survives combine iff
+no insn in that same basic block uses its destination.
+
+### E-s15-3  LOOP 2'S PREHEADER LOAD IS A REAL LOAD IN RTL (s10's join argument, confirmed at the RTL level)
+
+F_cse.txt insn 162 is `(set (reg 113) (mem (plus (reg/v 72) 12)))` and insn 164
+is `(set (reg/v 81) (plus (reg/v 85) (reg 113)))`.  cse did not fold the load to
+a copy, exactly as s10 predicted from the CFG (loop 1's `blez` lands on loop 2's
+guard, making it a two-predecessor join outside cse's extended basic block).  In
+`.lreg` insn 162 carries a REG_EQUIV note for the MEM and reg113 is REG_DEAD at
+insn 164 — a dying, single-use load, the opposite of the shape
+`optimize_reg_copy_1` needs.
+
+### E-s15-4  LOOP 2'S PREHEADER IS **NOT** C-INERT — loop.c CAN be made to put a reg-reg copy there
+
+s13/s14's frontier said loop 2's preheader "has no C-level handle at all."  That
+is now false.  Cell C1 (`rejected/s15_body_invariant_copy_of_base_hoisted_copy_survives_costs_6.c`)
+puts a loop-INVARIANT reg-reg copy inside loop 2's body
+(`b2 = base;`, with the body's element read and loop condition using `b2`).
+loop.c's `move_movables` (`loop.c:1690-1710`) hoists it verbatim into the
+preheader, and because its uses stay inside the loop BODY — a different basic
+block — E-s15-2 applies and combine cannot fold it.  The emitted preheader is
+
+    lw   $2,12($18)
+    lw   $6,16($18)
+    addu $4,$5,$2
+    move $5,$4          <-- the hoisted copy, in target's block, from pure C
+
+Score 6 (the copy is of the BASE, not of the addend, so it lands one slot too
+late and adds an instruction).  This is a real, previously unknown C-level lever
+on the exact block eight sessions declared unreachable.
+
+### E-s15-5  KILLED — the hoisted copy dies the moment its use is hoisted with it
+
+Cell D1 (`rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c`)
+names loop 2's addend (`q2 = *(u8 **)(ctx + 0xC);` in the preheader) and puts
+BOTH `b2 = q2;` and `base = (u8 *)(sh2 + (s32)b2);` inside the loop body as
+invariants, aiming at target's copy-then-base-add order.  loop.c hoists both, and
+they land in the SAME basic block, so a LOG_LINK now exists, combine substitutes
+and deletes the copy: D1's preheader is byte-identical to the candidate's
+(`lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2`) and it scores 3, not less.
+D2 (copy invariant in the body, base add left in the preheader) = 9.
+C2 (invariant RE-COMPUTE of the base in the body instead of a copy) = 5.
+So the survival condition of E-s15-2 is confirmed from both sides.
+
+### E-s15-6  KILLED — every "loop-2 addend is a copy/alias of the live pointer p" cell costs 8, and the reason is now mechanical
+
+A1 (`r = p;` in the join block, guard on `p`, base on `r`), A2 (guard on `r`,
+base on `p`), A3 (base reuses `p` directly) and A4 (`r = p;` inside the
+preheader) ALL score 8.  The `-da` dump of A1 shows why, and it is not
+allocation: making the base addend provably equal to the guard's addend lets cse
+merge the guard-address add and the base add into ONE insn —
+
+    .L171:  sll  $2,$20,6
+            addu $4,$2,$4        <-- serves as BOTH the guard address and the base
+            lw   $2,32($4)
+
+whereas target computes `sh2 + ptr` TWICE (`addu v0,a1,a0` for the guard at
+0x8001791C and `addu a0,a1,a3` for the base at 0x80017938).  So the whole
+"reuse the carried pointer" family is structurally excluded, not merely
+expensive: it destroys an instruction target has.  This upgrades s11/s12's bare
+numbers (8 / 9 / 19 / 28 / 41) to a mechanism, and it means loop 2's base addend
+MUST be a value cse cannot prove equal to the guard's addend — i.e. a fresh
+ctx+0xC load, which is exactly what the candidate already does.
+
+### E-s15-7  The residual, restated in RTL terms
+
+Target's loop-2 preheader copy `addu a3,a0,zero` has a destination that is used
+exactly once, at the base add, in the same basic block, and dies there (a3
+appears in the whole target listing only at 0x800178D0/0x800178D8 and
+0x80017930/0x80017938 — `grep a3 asm/funcs/func_80017848.s`).  By E-s15-2 any
+such copy present before combine is deleted by combine; by E-s15-5 a hoisted one
+is deleted too; and any copy whose destination IS used out-of-block leaves that
+use visible in the asm (our loop 1 pays for it with `move $4,$7`, C1 pays for it
+inside the body) and target has no such instruction.  The copy therefore has to
+be created, or made unfoldable, by something that runs AFTER combine.  The only
+remaining candidate identified in the 2.7.2 sources is local-alloc's
+`optimize_reg_copy_2` (`local-alloc.c:874`), which fires on a copy whose SRC dies
+in it when a REVERSE copy `SRC = DEST` appears later in the same block before any
+label / jump / LOOP_BEG / LOOP_END note, replaces DEST with SRC in between, and
+then LEAVES BOTH COPY INSNS IN PLACE because no DCE runs after local-alloc.
+That predicate has never been probed from C.
+
+### s15 artifacts
+
+    tmp/grind/func_80017848/s15/idump.sh          instrumented-cc1 dump harness (+identity proof)
+    tmp/grind/func_80017848/s15/icand/F_*.txt     per-pass RTL slices for the candidate body
+    tmp/grind/func_80017848/s15/icand/cc1.log     PRIODBG/ALLOCDBG/QTYDBG trace, candidate body
+    tmp/grind/func_80017848/s15/iA1/ings.s        A1 asm (guard/base add collapse)
+    tmp/grind/func_80017848/s15/iC1/ings.s        C1 asm (hoisted copy present in loop 2 preheader)
+    tmp/grind/func_80017848/s15/iD1/ings.s        D1 asm (hoisted copy deleted by combine)
+    tmp/grind/func_80017848/s15/scores.txt        cell scores
+
+- [s15] The instrumented cc1 is tools/gcc-2.7.2/cc1 (NOT build/cc1) and was re-proved CODEGEN-IDENTICAL to the frozen build/cc1 on the entire src/ings.c translation unit in all four dump runs this session; harness tmp/grind/func_80017848/s15/idump.sh performs that diff before emitting anything.
+
+- [s15] MEASURED: loop 1's base add reads reg79 (the original pointer pseudo) in .cse, .loop, .cse2, .flow, .combine and .sched, and reg80 (the preheader copy's destination) in .lreg. reg79's REG_DEAD note moves from the base add onto the copy in the same step. The producing routine is optimize_reg_copy_1, tools/gcc-2.7.2/local-alloc.c:700, dispatched at local-alloc.c:1006.
+
+- [s15] MEASURED: flow.c:2102 builds a LOG_LINK only when BLOCK_NUM(y) == blocknum, so combine can never fold a copy whose destination is used in a different basic block. Loop 1's copy dest reg80 has exactly one pre-lreg use, insn 141 (`p = q`) in the loop-1 exit tail, which is why the copy survives combine untouched (F_combine.txt).
+
+- [s15] MEASURED: loop 2's preheader load is a genuine MEM load in RTL (F_cse.txt insn 162, `(set (reg 113) (mem (plus (reg/v 72) 12)))`, REG_EQUIV note in .lreg, reg113 REG_DEAD at the base add insn 164). cse did not fold it - the first RTL-level confirmation of s10's join-block argument.
+
+- [s15] NEW LEVER: a loop-invariant reg-reg copy written inside loop 2's BODY is hoisted verbatim into loop 2's preheader by loop.c's move_movables (loop.c:1690-1710) and survives combine. Cell C1's preheader is `lw $2,12($18) / lw $6,16($18) / addu $4,$5,$2 / move $5,$4`. This refutes s13/s14's frontier statement that the block has no C-level handle.
+
+- [s15] MEASURED KILL: hoisting the copy together with its consumer puts both in one block, so combine deletes the copy - cell D1 scores 3 with a preheader byte-identical to the candidate's. D2 = 9, C2 = 5.
+
+- [s15] MEASURED KILL with mechanism: A1/A2/A3/A4 (every spelling of 'loop 2's base addend is a copy or alias of the carried pointer') all score 8, because cse merges the loop-2 guard-address add and the base add into ONE insn while target emits both. A1 asm: `.L171: sll $2,$20,6 / addu $4,$2,$4 / lw $2,32($4)`.
+
+- [s15] Target's loop-2 copy destination a3 is used exactly once, at the base add, in the same basic block, and dies there: `grep a3 asm/funcs/func_80017848.s` returns only the prologue use plus 0x800178D0/0x800178D8 and 0x80017930/0x80017938.
+
+- [s15] Candidate body re-measured on a clean tree this session: sandbox --disable all = 3. src/ings.c was reverted to HEAD before the session ended; no build-pipeline file was touched.
