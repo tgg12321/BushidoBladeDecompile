@@ -191,3 +191,154 @@ then a pure-PowerShell loop that `Copy-Item`s each into `src/` and runs
 - [s2] TOOLING: PowerShell on this box cannot invoke `bash` — a .ps1 runner that shells out to `bash tools/wsl.sh` exits 127 silently, the edit is never applied, and every measurement in that loop is a stale re-score of whatever was last in src/. s2 lost one probe round to this. Working pattern: generate complete variant .c files from the Bash tool, then a pure-PowerShell loop that Copy-Item's each into src/ and runs tools/wteng.ps1 main sandbox (tmp/grind/func_8002D518/s2/run3.ps1).
 
 - [s2] TOOLING: tools/grinder/dump.ps1 emits WHOLE-FILE dumps for code6cac_b; slice the function with the `;; Function func_8002D518` line numbers (.rtl:9356, .cse:8396, .combine:8565, .lreg:11527).
+
+## [s3] 2026-08-19 — structural: the tail-shape breakthrough (floor 30 -> 7)
+
+**CHASSIS (third consecutive session).** At s3 dispatch `src/code6cac_b.c` again
+did NOT carry the ledger candidate — HEAD still had the pre-s1
+`register s32 t4_v asm("t4")` + `.word 0x488CF000` island and measured floor 33.
+Additionally `memory/grind/func_8002D518/candidate.c` as stored on disk had
+**real newlines inside the `__asm__` string literals** instead of `\n` escapes,
+i.e. it was not compilable C; s3 repaired the file in place before splicing.
+Re-applied and re-measured floor **30 / 144 == 144** before any new work.
+
+**THE RESULT: floor 30 -> 7, at unchanged instruction parity (144 == 144).**
+Two independent edits inside the final divide block, both ordinary C:
+
+1. **`sqrt_val <<= 9;` in place of `s32 sq = sqrt_val << 9;`** — target emits
+   `sll $a2,$a2,9`, i.e. the shifted value occupies sqrt_val's own register.
+   Measured alone: **30 -> 21**.
+2. **Naming the first quotient's numerator** (`num1 = (neg_b + sqrt_val) << 8;`)
+   and assigning it BEFORE `denom = dist_sq * 2;` — target computes the
+   denominator LAST before the div (`addu $a0,$v0,$a2 / sll $a0,8 /
+   sll $v1,$a1,1`). Measured alone (with `sq` still present): **30 -> 19**.
+
+Both together (variant v21): **7**.
+
+**What those two edits fixed — the whole s1 residual cascade.** With v21 the
+full 154-slot alignment (objdump `-dz`, so nop-runs are not elided; script
+`tmp/grind/func_8002D518/s3/align.py`) shows only 15 raw differing words, of
+which 8 are scorer-masked (4 j-targets, 4 `%hi`/`%lo` D_8008D118 relocation
+words). Confirmed against the greg dispositions for v21: `dist_sq` (pseudo 116)
+now allocates **$a1/5** (was $6), `sqrt_val` (122) **$a2/6** (was $2), `result`
+(123) **$a1/5** (was $6); the t1/t2 divide chain, both div/break scaffolds, the
+second numerator, the `mflo` destinations and the final `bltz/slti/move` tail
+are all byte-identical to target. **The 118-122 "tail twin" ordering flip is
+gone**, and so is the 75-78 mult-shadow flip. s2's attribution (post-reload
+sched2 priority, unreachable from statement order) was right about *statement
+reordering* — what moved it was removing one live pseudo from the divide chain
+(variable reuse), which changed allocation and therefore the post-reload
+priorities.
+
+**The entire remaining residual is 7 slots and exactly TWO items:**
+
+- **(a) 6 slots — `disc` allocates `$v1`/3 where target uses `$a2`/6.** Slots
+  84 (`subu`), 85 (`bgez`), 86 (`sltiu`), 90 (the copy's source register), 92
+  (the table-index `addu`), 96 (the `bltz`). Same opcodes, same operand roles,
+  same order — only the register number differs.
+- **(b) 1 slot — slot 88.** Target emits `addu $v0,$zero,$zero` and jumps to
+  `.L8002D774`, the epilogue label *past* `addu $v0,$a1,$zero`; that is a real
+  `return 0;` for the `disc < 0` arm. We emit `move $5,$0` and jump to the join.
+
+**Allocation forensics for (a) (fresh dumps, v21 in src).** greg for
+func_8002D518: `;; 24 regs to allocate: 117 122 72 121 78 79 123 76 77 132 157
+131 105 104 107 75 74 106 118 103 102 116 108 73`. `disc` is pseudo **117** and
+is allocated **FIRST** (highest global.c priority — 5 refs across a 6-insn live
+range), and it carries `;; 117 preferences: 3`, so `find_reg` hands it `$3`
+before any other allocno is considered. Its conflict set is tiny
+(`108 116 117 2 29`). In the target compile `disc` must have had either no `$3`
+preference or a longer live range: target's `bltz` at slot 96 reads **disc**
+($a2) where ours reads the **copy** ($4), so target's `disc` is live ~6 slots
+longer than ours and would sort later in the priority order. `set_preference`
+(tools/gcc-2.7.2/global.c) records the preference from
+`(set (reg 117) (minus ...))` via `XEXP (src, 0)` after `reg_renumber`, so the
+preference tracks which hard register local-alloc gave the first `mflo`.
+
+**Measured and KILLED this session (all complete files, Copy-Item runner):**
+
+- v1 inverted LZCS guard (`if (disc>=0){island} else {lzcr=0}`): **32 / 146** —
+  materialises the dead arm.
+- v2 duplicated `ud = disc;` into both guard arms: **32 / 146** on the floor-30
+  chassis, **9 / 146** as v26 on the v21 chassis. It DOES make the `bltz` read
+  `disc`, but pays 2 instructions for it.
+- v4 `denom` computed immediately after `dist_sq`: **37 / 144**.
+- v6 `ud` hoisted above the 0x400 test with every fast-path use routed through
+  it: **31 / 145** (re-confirms s2 H6 on the new chassis).
+- v7 island reads `disc` instead of `ud` (the asymmetric-operand probe from the
+  s2 frontier): **byte-identical to base** — cse canonicalisation makes the asm
+  operand spelling irrelevant. s2 frontier item 3 is CLOSED, negative.
+- v8/v9/v10 the LITERAL target shape (`u32 ud = disc; s32 lzcr = 0;
+  if (disc >= 0) { island }`): score 30 but the **copy re-folds in combine**
+  (delay slot back to `nop`, disc back to `$4`). The s2 if/else guard is
+  load-bearing and the target's `bltz`-delay-slot `lzcr = 0` is a reorg
+  artefact, not evidence about the source shape.
+- v11 / v24 `if (disc < 0) return 0;`: produces the target shape for slot 88 but
+  **jump2 cross-jumps** the 2-insn block into the entrance return-0 block,
+  giving **142 insns** (score 33 on the floor-30 chassis, **10** on the v21
+  chassis). Blocked by cross-jumping, not by the spelling.
+- v13 split-init accumulation for `disc` was a **C89 declaration-after-statement
+  compile error** (91 "insns") — NOT a measurement, discarded.
+- v14 named `dsq`/`c4` intermediates, v15 `result`/`sqrt_val` declaration swap,
+  v16 `result` declared before `disc`: all **30 / 144 and byte-identical** to
+  base — declaration order remains codegen-neutral here.
+- v22 naming the SECOND numerator as well (with `sq` kept): **19 / 144** — the
+  gain is specifically from `sqrt_val <<= 9` plus naming `num1`, not from naming
+  numerators generally.
+- v23 `if (t1_val < 0) return 0;` in the result tail: **20 / 142**.
+- v25 both products named with the second product first: **27 / 144**.
+- v29 dropping `ud` entirely (island and srlv both read `disc`): **7 / 144** —
+  same score as v21 but slot 90 is a **nop** where target has
+  `addu $a0,$a2,$zero`. Structurally strictly worse; banked as runner-up.
+
+**Tooling banked.** (i) Disassemble with `objdump -dz`, NOT `-d` — plain `-d`
+elides nop runs as `...`, which silently mis-aligns every index-based comparison
+against `asm/funcs/*.s` (cost s3 one confused turn). (ii) The alignment script
+`tmp/grind/func_8002D518/s3/align.py <variant>` prints the 154-slot diff and the
+raw-diff count; the masked classes are j-targets and `%hi`/`%lo` reloc words
+(raw 15 == engine 7 + 8 masked). (iii) The variant runner is
+`tmp/grind/func_8002D518/s3/run.ps1 -Variants a,b,c` and MUST be invoked with
+the call operator (`& tmp/.../run.ps1 -Variants ...`) from the PowerShell tool —
+`pwsh script.ps1 -Variants a,b` uses `-File` semantics, binds the whole list as
+one string, silently copies nothing and re-scores stale src. (iv) Python on this
+box reads repo sources as cp1252, so any variant generator must open/write with
+`encoding='latin-1'` or the em-dash in the island comment breaks every anchor
+match.
+
+- [s3] BREAKTHROUGH: floor 30 -> 7 at unchanged parity 144 == 144, from two ordinary-C tail edits: `sqrt_val <<= 9;` in place (target reuses sqrt_val's register for the shifted value) and naming the first quotient's numerator so `denom = dist_sq * 2` is assigned last. Measured separately 21 and 19; together 7.
+- [s3] Those two edits fixed the ENTIRE s1 cascade: dist_sq now $a1, sqrt_val $a2, result $a1, both div scaffolds and the whole tail byte-identical; the 75-78 mult-shadow flip and its 118-122 tail twin are both GONE. s2 was right that statement REORDERING cannot reach a post-reload sched2 priority — but removing a live pseudo from the divide chain changes allocation and therefore those priorities.
+- [s3] The residual 7 is exactly two items: (a) 6 slots where `disc` is $v1/3 vs target $a2/6 (slots 84, 85, 86, 90, 92, 96), (b) 1 slot (88) where the `disc < 0` arm should be a real `return 0;` writing $v0 and jumping to the epilogue label past the result move.
+- [s3] `disc` = pseudo 117, allocated FIRST of 24 allocnos (5 refs / 6-insn live range) and carries `;; 117 preferences: 3`, so it takes $3 before anything else is considered. Target's disc is live ~6 slots longer (its bltz reads disc, ours reads the copy), which would sort it later in global.c's priority order.
+- [s3] `if (disc < 0) return 0;` gives the exact target shape for slot 88 but jump2 CROSS-JUMPS the 2-insn block into the entrance return-0 block: 142 insns vs target 144, score 10. Blocked by cross-jumping, not by the spelling.
+- [s3] The LITERAL target shape for the LZCS guard (init lzcr = 0 then plain if) re-folds the disc copy in combine every time (v8/v9/v10). The target's bltz-delay-slot lzcr = 0 is a reorg artefact; the s2 if/else spelling is load-bearing.
+- [s3] The asymmetric-operand probe from the s2 frontier (island reads disc, srlv reads ud) is BYTE-IDENTICAL to base — cse canonicalisation makes the asm operand spelling irrelevant. That frontier item is closed, negative.
+- [s3] TOOLING: use `objdump -dz`; plain `-d` elides nop runs as `...` and silently mis-aligns index-based comparison against asm/funcs/*.s. Alignment script: tmp/grind/func_8002D518/s3/align.py.
+- [s3] TOOLING: invoke the variant runner with the call operator (`& tmp/.../run.ps1 -Variants a,b`); `pwsh script.ps1 -Variants a,b` uses -File semantics, binds the list as one string, copies nothing and re-scores stale src.
+- [s3] TOOLING: candidate.c as stored by s2 had REAL newlines inside the __asm__ string literals (not compilable C). s3 repaired it. Verify before splicing.
+
+- [s3] CHASSIS (third consecutive session): src/code6cac_b.c did NOT carry the ledger candidate at dispatch - HEAD still had the pre-s1 register-pin/.word island and measured floor 33. The Grinder commits the ledger, not src/.
+
+- [s3] memory/grind/func_8002D518/candidate.c as stored by s2 contained REAL newlines inside the __asm__ string literals instead of \n escapes - it was not compilable C. s3 repaired the file before splicing; future sessions must check this.
+
+- [s3] Floor is 7 with build_insns 144 == target_insns 144, edits in place in src/code6cac_b.c (candidate.c is the same text).
+
+- [s3] The two edits that did it, both ordinary C: `sqrt_val <<= 9;` in place of `s32 sq = sqrt_val << 9;` (measured alone 30 -> 21) and naming the first quotient's numerator `num1 = (neg_b + sqrt_val) << 8;` assigned BEFORE `denom = dist_sq * 2;` (measured alone 30 -> 19). Together: 7.
+
+- [s3] greg dispositions at floor 7 now match target for the whole tail: pseudo 116 (dist_sq) in 5/$a1, 122 (sqrt_val) in 6/$a2, 123 (result) in 5/$a1. Both div/break scaffolds, both numerators, the mflo destinations and the final bltz/slti/move tail are byte-identical.
+
+- [s3] The 75-78 mult-shadow ordering flip and its 118-122 tail twin are BOTH GONE. s2's attribution was right that statement REORDERING cannot reach a post-reload sched2 priority - but removing one live pseudo from the divide chain changes allocation and therefore those priorities.
+
+- [s3] The entire residual 7 is two items: (a) 6 slots where `disc` is $v1/3 vs target $a2/6 - slots 84 subu, 85 bgez, 86 sltiu, 90 the copy's source, 92 the table-index addu, 96 the bltz - same opcodes, same roles, same order, only the register number differs; (b) 1 slot (88) where the disc < 0 arm should be a real `return 0;` writing $v0 and jumping to the epilogue label past the result move.
+
+- [s3] Allocation forensics: greg prints `;; 24 regs to allocate: 117 122 72 121 78 79 123 76 77 132 157 131 105 104 107 75 74 106 118 103 102 116 108 73` - `disc` is pseudo 117, allocated FIRST (5 refs across a 6-insn live range = highest global.c priority) and carries `;; 117 preferences: 3`, so find_reg hands it $3 before any other allocno is considered. Its conflict set is just `108 116 117 2 29`.
+
+- [s3] Target's `disc` is live ~6 slots longer than ours: target's bltz at slot 96 reads disc ($a2) where ours reads the copy ($4). A longer live range sorts 117 later in global.c's priority order, which is the most likely reason target's disc did not get first pick of $3.
+
+- [s3] set_preference (tools/gcc-2.7.2/global.c) records a hard-reg preference for a pseudo from `(set (reg N) (minus ...))` by taking XEXP(src, 0) after reg_renumber, so 117's $3 preference tracks the hard register local-alloc gave one of the two mflo results.
+
+- [s3] The scorer masks j/branch targets and %hi/%lo relocation words: the v21 alignment shows 15 raw differing words = 7 real + 8 masked (4 j-targets, 4 D_8008D118 reloc words).
+
+- [s3] TOOLING: disassemble with `objdump -dz`, never plain `-d` - plain -d elides nop runs as `...` and silently mis-aligns every index-based comparison against asm/funcs/*.s.
+
+- [s3] TOOLING: invoke the variant runner with the call operator (`& tmp/grind/func_8002D518/s3/run.ps1 -Variants a,b,c`); `pwsh script.ps1 -Variants a,b` uses -File semantics, binds the list as a single string, copies nothing and re-scores stale src.
+
+- [s3] TOOLING: Python on this box reads repo sources as cp1252, so a variant generator must open/write with encoding='latin-1' or the em-dash in the island comment breaks every anchor match.

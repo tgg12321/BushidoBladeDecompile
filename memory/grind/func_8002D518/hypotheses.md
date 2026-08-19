@@ -173,3 +173,123 @@
 - probe: variants N (asm reads ud) and P (asm reads disc, only the srlv reads ud) — complete files, measured and objdump-compared
 - result: both score 30 and are byte-identical to the base build; the copy still folds. In that placement cse's extended block (Processing block from 144 to 289) canonicalises the uses back to disc BEFORE combine runs, so an earlier label buys nothing.
 - verdict: KILLED
+
+## [s3] H7 — the residual cascade is reachable by VARIABLE choice in the divide tail (not by statement order)
+- **statement:** the s1 residual items 2 and 3 (dist_sq $6 vs $a1, sqrt_val $2
+  vs $a2, result $6 vs $a1, the t1/t2 register swap, and both ordering flips)
+  are one coupled allocation cascade whose head is the divide block's live-pseudo
+  count, and it is reachable by choosing which C variables carry the tail values.
+- **mechanism:** target emits `sll $a2,$a2,9` — the `<<9` result occupies
+  sqrt_val's own register, i.e. the source reused the variable rather than
+  introducing a fresh `sq`. A fresh `sq` is one extra simultaneously-live pseudo
+  through the divide chain; it takes $a1, pushes dist_sq to $6 and sqrt_val to
+  $2, and the post-reload sched2 priorities that s2 measured (197 = 0x44 vs
+  200 = 0x18) are computed from THOSE hard-register dependencies. Separately,
+  target computes the denominator LAST before the div; naming the first
+  quotient's numerator and assigning it before `denom` reproduces that order.
+- **probe:** v18/v19 (`sqrt_val <<= 9;` in place, `sq` deleted), v20 (fresh `sq`
+  kept, numerator named `num1` and assigned before `denom`), v21 (both),
+  v22 (both numerators named), each a complete file measured with
+  `& tmp/grind/func_8002D518/s3/run.ps1 -Variants ...` plus a 154-slot
+  `objdump -dz` alignment.
+- **result:** v18/v19 **21 / 144**; v20 **19 / 144**; v22 **19 / 144**;
+  **v21 7 / 144**. greg dispositions for v21: 116 (dist_sq) in 5, 122
+  (sqrt_val) in 6, 123 (result) in 5 — all three now match target. Both ordering
+  flips (75-78 and 118-122) are gone.
+- **verdict: CONFIRMED.** v21 is the new candidate; floor 30 -> 7.
+
+## [s3] H8 — the LZCS guard should be spelled the way target's delay slots read (init lzcr = 0, then plain if)
+- **statement:** target's `bltz $a2` carries `addu $v1,$zero,$zero` (lzcr = 0)
+  in its delay slot, which is the signature of "initialise then conditionally
+  overwrite" rather than s2's if/else; adopting the literal shape should be at
+  least as good.
+- **mechanism claimed:** the delay-slot content reflects the source shape.
+- **probe:** v8 (`u32 ud = disc; s32 lzcr = 0; if (disc >= 0) { island }`), v9
+  (lzcr declared first), v10 (same, island reads `disc`). All complete files,
+  measured and objdump-compared.
+- **result:** all three score 30 but the `u32 ud = disc;` copy **re-folds in
+  combine** — slot 90 goes back to `nop` and `disc` back to `$4`. The if/else
+  form keeps the copy at zero instruction cost.
+- **verdict: KILLED.** The delay-slot `lzcr = 0` is a REORG artefact (reorg
+  fills the branch's delay slot from the preceding insn), not evidence about the
+  source shape. s2's if/else guard stays. Banked at
+  `rejected/target-shaped-init-then-if-refolds-copy.c`.
+
+## [s3] H9 — spelling the asm operand asymmetrically steers cse's canon_reg so the guard branch reads disc (s2 frontier item 3)
+- **statement:** in the M form cse chose the copy (132) as the representative
+  register for the guard branch; spelling the guard operand and the island input
+  asymmetrically should make the branch read `disc` and change disc's live range
+  across the beqz.
+- **probe:** v7 — island reads `disc`, only the `srlv`/table index reads `ud`;
+  complete file, measured and objdump-compared against base.
+- **result:** **byte-identical to base** — same score, same words. The asm
+  operand spelling has no effect on which register cse canonicalises to.
+- **verdict: KILLED.** s2 frontier item 3 is closed, negative.
+
+## [s3] H10 — the `disc < 0` arm is a real `return 0;` (target writes $v0 and jumps past the result move)
+- **statement:** target slot 87/88 is `j .L8002D774 / addu $v0,$zero,$zero`,
+  jumping to the epilogue label PAST `addu $v0,$a1,$zero`; that is what GCC
+  emits for a `return 0;` statement, not for `result = 0;` joining the tail.
+- **mechanism:** a `return` sets the return register and jumps to the function's
+  return label; a `result = 0` assignment writes result's allocated register and
+  falls into the join.
+- **probe:** v11 (`if (disc < 0) return 0;` on the floor-30 chassis) and v24
+  (the same on the v21 chassis); complete files, measured and objdump-compared.
+- **result:** the emitted shape IS right, but **jump2 cross-jumps** the resulting
+  2-insn block `{v0 = 0; j epilogue}` into the identical entrance return-0 block,
+  deleting it: **142 insns** against target's 144. v11 = 33, v24 = **10** (v21
+  base is 7). Note the entrance already contains TWO un-merged copies of that
+  block in both build and target, so cross-jump is selective, not exhaustive.
+- **verdict: KILLED AS SPELLED — the statement is probably TRUE but the
+  construct is blocked by cross-jumping.** This is the live frontier item: find a
+  structural spelling that keeps the block un-merged (see frontier).
+
+## [s3] H11 — declaration order / operand naming around `disc` moves its allocation
+- **statement:** `disc` (pseudo 117) takes `$3` because it is allocated first
+  with `;; 117 preferences: 3`; re-associating or renaming the discriminant's
+  operands, or moving the `result` / `sqrt_val` declarations, changes that.
+- **probe:** v14 (named `dsq`/`c4`), v15 (`result` before `sqrt_val`), v16
+  (`result` before `disc`), v25 (both products named, second product first);
+  complete files, measured and objdump-compared.
+- **result:** v14/v15/v16 all **30 / 144 and byte-identical to base**;
+  v25 **27 / 144** (reorders the mult pair, strictly worse).
+- **verdict: KILLED.** Declaration order and operand naming are codegen-neutral
+  for `disc`; its allocation is driven by global.c's allocno priority (5 refs /
+  6-insn live range = highest, allocated first) and by `set_preference`, not by
+  source order.
+
+## [s3] The s1 residual cascade (dist_sq $6 vs $a1, sqrt_val $2 vs $a2, result $6 vs $a1, the t1/t2 register swap and both ordering flips) is one coupled allocation cascade reachable by choosing which C variables carry the divide-tail values, not by statement order.
+- mechanism: Target emits `sll $a2,$a2,9` - the <<9 result occupies sqrt_val's own register, i.e. the original reused the variable rather than introducing a fresh `sq`. A fresh `sq` is one extra simultaneously-live pseudo through the divide chain: it takes $a1, pushes dist_sq to $6 and sqrt_val to $2, and the post-reload sched2 priorities s2 measured (197=0x44 vs 200=0x18) are computed from exactly those hard-register dependencies. Separately, target computes the denominator LAST before the div, which naming the first numerator and assigning it before `denom` reproduces.
+- probe: v18/v19 (`sqrt_val <<= 9;` in place, `sq` deleted), v20 (fresh `sq` kept, numerator named `num1` assigned before `denom`), v21 (both), v22 (both numerators named) - each a complete file measured with the Copy-Item runner plus a 154-slot objdump -dz alignment against asm/funcs/func_8002D518.s, and greg dispositions read from fresh cc1 dumps.
+- result: v18/v19 = 21/144; v20 = 19/144; v22 = 19/144; v21 = 7/144. greg for v21: pseudo 116 (dist_sq) in 5, 122 (sqrt_val) in 6, 123 (result) in 5 - all three now match target. Both ordering flips (75-78 mult shadow and its 118-122 tail twin) are gone, and the whole divide/break scaffold plus the final bltz/slti/move tail are byte-identical.
+- verdict: CONFIRMED
+
+## [s3] The LZCS guard should be spelled the way target's delay slots read - initialise lzcr = 0 then a plain if - rather than s2's real if/else.
+- mechanism: Claimed: target's `bltz $a2` carries `addu $v1,$zero,$zero` (lzcr = 0) in its delay slot, which is the signature of init-then-conditionally-overwrite.
+- probe: v8 (`u32 ud = disc; s32 lzcr = 0; if (disc >= 0) { island }`), v9 (lzcr declared first), v10 (same, island reads disc) - complete files, measured and objdump-compared.
+- result: All three score 30 but the `u32 ud = disc;` copy RE-FOLDS in combine: slot 90 goes back to nop and disc back to $4. The delay-slot lzcr = 0 is a reorg artefact (reorg fills the branch's delay slot from the preceding insn), not evidence about the source shape. s2's if/else guard is load-bearing.
+- verdict: KILLED
+
+## [s3] Spelling the asm operand and the guard operand asymmetrically steers cse's canon_reg so the guard branch reads disc instead of the copy (s2 frontier item 3).
+- mechanism: Claimed: cse's canon_reg picks the quantity's representative register; making the island read disc while only the srlv reads ud would leave the branch on disc and change disc's live range across the beqz.
+- probe: v7 - island reads disc, only the srlv/table index reads ud; complete file, measured and objdump-compared against base.
+- result: Byte-identical to base - same score, same words. The asm operand spelling has no effect on which register cse canonicalises to.
+- verdict: KILLED
+
+## [s3] The disc < 0 arm is a real `return 0;` - target writes $v0 and jumps to the epilogue label past the result move.
+- mechanism: A `return` sets the return register and jumps to the function's return label; `result = 0;` writes result's allocated register and falls into the join. Target slots 87/88 are `j .L8002D774 / addu $v0,$zero,$zero`, jumping PAST `addu $v0,$a1,$zero` at .L8002D770.
+- probe: v11 (`if (disc < 0) return 0;` on the floor-30 chassis) and v24 (the same on the v21 chassis); complete files, measured and objdump-compared.
+- result: The emitted shape IS right, but jump2 CROSS-JUMPS the resulting 2-insn block {v0 = 0; j epilogue} into the identical entrance return-0 block, deleting it: 142 insns against target's 144. v11 = 33, v24 = 10 (v21 base is 7). Note both build and target already carry TWO un-merged copies of that block in the entrance chain, so cross-jump is selective, not exhaustive - the merge is defeatable in principle.
+- verdict: KILLED
+
+## [s3] Declaration order or operand naming around `disc` moves its allocation off $v1.
+- mechanism: Claimed: source order feeds LUIDs and therefore allocno ordering.
+- probe: v14 (named dsq/c4 intermediates), v15 (result declared before sqrt_val), v16 (result declared before disc), v25 (both products named, second product first) - complete files, measured and objdump-compared.
+- result: v14/v15/v16 all 30/144 AND byte-identical to base; v25 = 27/144 (reorders the mult pair, strictly worse). disc's allocation is driven by global.c allocno priority (5 refs / 6-insn live range = highest of 24, allocated first) and by set_preference, not by source order.
+- verdict: KILLED
+
+## [s3] Structural variants of the guard/copy that make the bltz read disc are free.
+- mechanism: Claimed: an inverted guard or a copy duplicated into both arms puts disc on the branch without cost.
+- probe: v1 (inverted guard: if (disc >= 0) { island } else { lzcr = 0; }), v2/v26 (`ud = disc;` duplicated into both arms), v4 (denom computed right after dist_sq), v6 (ud hoisted above the 0x400 test with all fast-path uses routed through it), v29 (ud dropped entirely).
+- result: v1 = 32/146 (materialises the dead arm); v2 = 32/146 on the floor-30 chassis and v26 = 9/146 on the v21 chassis - it DOES put disc on the bltz but pays 2 instructions; v4 = 37/144; v6 = 31/145; v29 = 7/144 but with a NOP at slot 90 where target has `addu $a0,$a2,$zero` (the copy simply absent), so structurally strictly worse than v21 at the same score.
+- verdict: KILLED

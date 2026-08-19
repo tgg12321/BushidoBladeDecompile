@@ -1,42 +1,61 @@
-/* func_8002D518 — best form as of s2 (structural). Honest floor 30,
+/* func_8002D518 - best form as of s3 (structural). Honest floor 7,
  * build_insns 144 == target_insns 144. This exact text is IN PLACE in
- * src/code6cac_b.c at end of s2. Future sessions: s1's edits were NOT in src at
- * s2 dispatch (HEAD carried the old .word/register-pin island) — ALWAYS verify
- * src actually carries this text before trusting the ledger floor, and re-apply
- * from here if it does not.
+ * src/code6cac_b.c at end of s3.
  *
- * Load-bearing s2 finding (the frontier head from s1 is RESOLVED):
- *   The LZCS guard is spelled as a real if/else
- *     `if (disc < 0) { lzcr = 0; } else { <island>; lzcr = sp_tmp; }`
- *   rather than s1's "initialise lzcr = 0, then conditionally overwrite".
- *   In the plain-if shape GCC's *combine* pass deletes the `u32 ud = disc;`
- *   copy (combine's blocks are CODE_LABEL-bounded, and in the plain-if shape
- *   the copy and both of its uses sit in one label-to-label region). The
- *   if/else shape puts a CODE_LABEL between the copy and the island, combine
- *   can no longer propagate, and the copy SURVIVES — reorg then places it in
- *   the beqz delay slot exactly as target does:
- *       build idx 90  `move $4,$3`   ==  target 8002D680 `addu $a0,$a2,$zero`
- *   The copy lands in $a0, target's own register, and feeds BOTH the island
- *   input (idx 98) and the `srlv` (idx 109) exactly as target does. Cost: ZERO
- *   extra instructions (still 144). This is the free if/else escape documented
- *   in .claude/rules/cse-block-extension-controls-fold-span.md ("Spell the
- *   conditional as a real if/else rather than initialise-to-a-default, then
- *   conditionally overwrite ... ordinary C with a semantic reading"), not a
- *   coercion.
+ * CHASSIS WARNING (confirmed a THIRD time at s3 dispatch): src/code6cac_b.c did
+ * NOT carry the previous session's candidate - HEAD still had the pre-s1
+ * `register s32 t4_v asm("t4")` + `.word` island and measured floor 33. The
+ * Grinder commits the ledger, not src/. ALWAYS re-apply this file to
+ * src/code6cac_b.c and re-measure before trusting any ledger floor.
+ * (Also: memory/grind/func_8002D518/candidate.c had been written with REAL
+ * newlines inside the __asm__ string literals instead of \n escapes - i.e. it
+ * was not compilable C as stored. s3 repaired it. Check that before splicing.)
  *
- *   The island itself is the func_800274BC-accepted canonical form (single
- *   __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber); the sandbox does
- *   NOT strip this form, which is what restores insn parity 144 == 144.
- *   Function is a member of the 2026-08-17 cop2-addressing-preamble cluster
- *   ruling (.claude/rules/cop2-addressing-preamble-cluster.md:74, LZCS
- *   sub-family, 1 site) — at sandbox 0 the island takes the driver-executed
- *   authorization path; do NOT re-escalate.
+ * WHAT s3 CHANGED (floor 30 -> 7, at unchanged insn parity 144 == 144). Two
+ * independent tail-shape edits, both ordinary C:
+ *   1. `sqrt_val <<= 9;` IN PLACE instead of `s32 sq = sqrt_val << 9;`
+ *      Target does `sll $a2,$a2,9` - the shifted value occupies sqrt_val's own
+ *      register. Reusing the variable reproduces that; a fresh `sq` local does
+ *      not (it lands in $a1/$5 and drags the whole divide chain with it).
+ *   2. The first quotient's numerator is named (`num1 = (neg_b + sqrt_val) << 8;`
+ *      assigned BEFORE `denom = dist_sq * 2;`). Target computes the denominator
+ *      LAST before the div (`addu $a0,$v0,$a2 / sll $a0,8 / sll $v1,$a1,1`);
+ *      naming the numerator and assigning it first puts the denom sll last.
+ *   Measured separately: edit 1 alone = 21, edit 2 alone = 19, both = 7.
+ *   These two between them fixed the ENTIRE downstream cascade the s1 residual
+ *   map listed as items 2 and 3: dist_sq now allocates $a1 (was $6), sqrt_val
+ *   $a2 (was $2), result $a1 (was $6), t1/t2 and both div scaffolds match, and
+ *   the tail-twin ordering flip at 118-122 is GONE. The s2 attribution that
+ *   said those were unreachable from source was correct about *statement
+ *   reordering*; it was the VARIABLE (one fewer live pseudo in the divide
+ *   chain) that moved them, not the order.
  *
- * Remaining residual at floor 30 (see evidence.md [s2] for the full 154-line
- * alignment): indices 0-74 byte-identical incl. registers; the divergence head
- * is now (a) `disc` allocated to $3 where target uses $a2/$6, and (b) the
- * sched2 mult-shadow ordering flip at 75-78 (sched2 priorities 197=0x44 vs
- * 200=0x18; sched1 had them tied at 13).
+ * INHERITED AND STILL LOAD-BEARING (do not undo):
+ *   - The LZCS guard is a real if/else (`if (disc < 0) { lzcr = 0; } else
+ *     { island; lzcr = sp_tmp; }`). In the "init lzcr = 0 then conditionally
+ *     overwrite" shape - which is what the target's delay-slot layout literally
+ *     looks like - GCC's *combine* deletes the `u32 ud = disc;` copy (combine's
+ *     blocks are CODE_LABEL-bounded). s3 re-measured that literal target shape
+ *     (v8/v9/v10) and the copy re-folds every time. The if/else is the free
+ *     escape from .claude/rules/cse-block-extension-controls-fold-span.md.
+ *   - The island is the func_800274BC-accepted canonical form (single
+ *     __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber). The sandbox does
+ *     not strip this form, which is what holds insn parity at 144.
+ *     Cluster: .claude/rules/cop2-addressing-preamble-cluster.md:74 (LZCS
+ *     sub-family, 1 site) - at sandbox 0 the island takes the driver-executed
+ *     authorization path; do NOT re-escalate.
+ *
+ * THE ENTIRE REMAINING RESIDUAL IS 7 SLOTS, and it is TWO items:
+ *   (a) 6 slots: `disc` is allocated $v1/$3 where target uses $a2/$6
+ *       (slots 84 subu, 85 bgez, 86 sltiu, 90 the copy's source, 92 the table
+ *       index addu, 96 the bltz). Nothing else about those instructions
+ *       differs - same opcodes, same operand roles, same order.
+ *   (b) 1 slot: slot 88. Target emits `addu $v0,$zero,$zero` and jumps to the
+ *       epilogue LABEL (.L8002D774, past `addu $v0,$a1,$zero`) - i.e. the
+ *       disc < 0 arm is a real `return 0;`. We emit `move $5,$0` and jump to
+ *       the join. Spelling it `if (disc < 0) return 0;` produces exactly the
+ *       target shape but jump2 CROSS-JUMPS the resulting 2-insn block into the
+ *       entrance return-0 block at 1930, dropping to 142 insns (score 10).
  */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
@@ -105,18 +124,12 @@ dist_calc:
                      * LZCR out) — same island as authorized siblings
                      * func_8001A67C / func_800274BC. */
                     __asm__ volatile(
-                        "addu   $t4, %1, $zero
-"
-                        "mtc2   $t4, $30
-"
-                        "nop
-"
-                        "nop
-"
-                        "addu   $t4, $sp, $zero
-"
-                        "swc2   $31, 0($t4)
-"
+                        "addu   $t4, %1, $zero\n"
+                        "mtc2   $t4, $30\n"
+                        "nop\n"
+                        "nop\n"
+                        "addu   $t4, $sp, $zero\n"
+                        "swc2   $31, 0($t4)\n"
                         : "=m"(sp_tmp)
                         : "r"(ud)
                         : "$12");
@@ -131,11 +144,16 @@ dist_calc:
             }
 
             {
-                s32 sq = sqrt_val << 9;
                 s32 neg_b = -dot2;
-                s32 denom = dist_sq * 2;
-                s32 t1_val = ((neg_b + sq) << 8) / denom;
-                s32 t2_val = ((neg_b - sq) << 8) / denom;
+                s32 num1;
+                s32 denom;
+                s32 t1_val;
+                s32 t2_val;
+                sqrt_val <<= 9;
+                num1 = (neg_b + sqrt_val) << 8;
+                denom = dist_sq * 2;
+                t1_val = num1 / denom;
+                t2_val = ((neg_b - sqrt_val) << 8) / denom;
 
                 result = 0;
                 if (t1_val >= 0) {

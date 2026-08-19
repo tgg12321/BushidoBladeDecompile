@@ -1,7 +1,7 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 30,
    "modality": "structural",
    "headline": "s1 frontier head CLOSED: combine (not cse) folds the disc copy; an if/else-spelled LZCS guard makes it survive at zero insn cost, landing in $a0 (target's register) in the beqz delay slot. Floor still"
+  },
+  {
+   "session": 3,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Floor 30 -> 7 at unchanged parity 144==144: reusing sqrt_val in place for the <<9 and naming the first quotient's numerator fixed the entire downstream allocation cascade; residual is 6 slots of disc-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Getting disc allocated to $a2/$6 (target) instead of $3 collapses most of the remaining 30 \u2014 it is the last head-of-cascade item now that the copy survives in $a0",
-   "mechanism": "with the copy occupying $a0 (achieved by variant M), disc's own allocation is the only remaining occupancy difference at the beqz; slots 84-92 and the bltz at 96 are direct reads of it, and the downstream sqrt_val/t1/t2/result assignments re-run their tie-breaks under different occupancy",
-   "next_probe": "this is an ALLOCATION question, not a structural one \u2014 read tmp/grind/func_8002D518/dumps/code6cac_b.lreg and .greg for the allocno covering disc (reg/v:SI 117) and for what currently occupies $6 across the beqz; check local-alloc's allocno priority/ordering against the copy's allocno. Only then propose a source change. Note that M's bltz reads the COPY ($4) where target reads disc ($a2) \u2014 check whether that cse canonicalisation is what pins disc low."
+   "hypothesis": "Getting `disc` allocated to $a2/$6 instead of $v1/$3 closes 6 of the remaining 7 slots and is the head of everything left.",
+   "mechanism": "disc is pseudo 117, allocated FIRST of 24 allocnos because global.c's priority is roughly log2(n_refs)*n_refs/live_length and its range is only 6 insns with 5 refs; it then takes its recorded preference $3. In target, disc's bltz read (slot 96) keeps it live ~6 slots longer, which both lowers its priority (so it is not allocated first) and removes the early pick of $3. The lever is therefore to lengthen disc's live range past the copy WITHOUT adding an instruction.",
+   "next_probe": "v2/v26 already proves that duplicating `ud = disc;` into both guard arms makes the bltz read disc - it just costs 2 insns because the copy is emitted twice. Probe spellings that put the copy in exactly one arm while leaving the branch on disc: (i) hoist ONLY the fast-path/slow-path split so the copy is the first statement of the slow block but the guard is evaluated before it (measure the RTL insn order in .rtl, not just the score); (ii) give disc one extra honest read AFTER the copy (e.g. route the 0x400 fast-path table index through disc while the slow path uses ud) and check whether 117 drops out of first place in the greg `regs to allocate` list; (iii) if 117 still gets $3, read set_preference's input by checking which mflo pseudo local-alloc put in $3 (dispositions line) and try re-associating the discriminant so that operand lands elsewhere."
   },
   {
-   "hypothesis": "The 75-78 mult-shadow flip and its tail twin at 118-122 are reachable only by changing what reload produces, i.e. they will fall out of the disc-allocation fix rather than needing their own lever",
-   "mechanism": "sched2 priorities (197=0x44 vs 200=0x18) are computed AFTER reload from hard-register dependencies; in target, dist_sq lands in $a1 (x1_sq's register), creating the WAR edge that forces its addu after slot 75. Different allocation, different priorities, different order.",
-   "next_probe": "do NOT spend more source-reordering spellings here \u2014 A/H/K/C/G are all measured byte-identical and banked in rejected/. Re-measure the whole 154-slot alignment immediately after any allocation-moving change and attack this only if it survives."
+   "hypothesis": "Slot 88 needs `if (disc < 0) return 0;`, and the only thing stopping it is jump2 cross-jumping the resulting 2-insn block into the entrance return-0 block.",
+   "mechanism": "GCC emits `(set (reg 2) 0); (jump epilogue)` for a `return 0;` statement, which is exactly target slots 87/88. jump.c's cross-jump finds the identical tail in the entrance chain and redirects the conditional branch there, deleting the block and dropping build_insns from 144 to 142. Crucially both target AND our build already carry TWO un-merged copies of that same block in the entrance chain, so cross-jump here is selective rather than exhaustive - something about the third instance makes it mergeable.",
+   "next_probe": "Recompile v24 with `pwsh tools/grinder/dump.ps1 func_8002D518` and read .jump2 to see WHICH pair find_cross_jump matched and why the two existing entrance copies are not merged with each other. Then try structural spellings that change the entrance chain's exit shape only where it is already byte-identical to target (it must stay byte-identical - slots 0-83 currently match), or spellings that change the disc<0 block's position relative to the entrance copies. Do NOT spend probes on respelling `return 0` itself - the emitted shape is already correct."
   },
   {
-   "hypothesis": "M's bltz reading the copy ($4) where target reads disc ($a2) is a cse canon_reg choice that may itself be steerable, and steering it may be what fixes disc's register",
-   "mechanism": "cse's canon_reg picks the quantity's representative register; in the M layout it chose the copy (132) for the guard branch (jump_insn 251). If the guard's operand is spelled so cse cannot equate it to the copy, the branch reads disc and disc's live range across the beqz changes shape.",
-   "next_probe": "in the M form, spell the guard operand and the island input asymmetrically (guard on disc with island+srlv on ud, and the converse) and measure each as a complete file via run3.ps1; read .cse's canon_reg choice for jump_insn 251 in each. Two variants, cheap, and it directly tests the disc-register question."
+   "hypothesis": "There is no third residual item - once (a) and (b) land the function is at 0.",
+   "mechanism": "The v21 alignment is a complete 154-slot comparison with only 15 raw differing words, 8 of them scorer-masked classes (j-targets, %hi/%lo relocs). Every remaining word is accounted for by (a) or (b). No ordering difference, no instruction-count difference, no missing or extra instruction anywhere.",
+   "next_probe": "After any change, re-run `tmp/grind/func_8002D518/s3/align.py <variant>` on an `objdump -dz` listing and confirm the raw-diff count equals engine score + 8; if it does not, a new masked class has appeared and must be identified before drawing conclusions."
   }
  ],
  "judge_constraints": [],
