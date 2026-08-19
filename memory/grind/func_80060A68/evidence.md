@@ -1445,3 +1445,118 @@ The v2 statement order is a strict local optimum: every single-statement move of
 - [s6] A dead first write to p10 (`p10 = outer;` then the real load) is removed by flow.c before sched1, leaves reg_n_sets == 1 and measures 5/67 byte-identical to v2 - so the banned carrier has no harmless spelling.
 
 - [s6] Eleven single-statement / declaration-level seats on the v2 body: five inert at 5/67 (including the sibling func_80060B70 `dst_u16` pointer-local idiom), six regressive at 7-8.
+
+## s7 (2026-08-19) — synthesis
+
+CHASSIS RE-MEASURED FIRST.  candidate.c applied to src/text1b.c: **score 2 / build 66 /
+target 66** on today's HEAD.  The ledger floor of 2 is current, not stale.  Every number
+below was measured this session with `sandbox func_80060A68 --disable all`.
+
+### The merge: what the six prior sessions actually add up to
+
+Target's own stream (asm/funcs/func_80060A68.s) contains THREE `lw ?,0x10($v1)` loads:
+slot 11 into `$a1` (consumed 17 slots later at slot 28, `lhu $a1,0x4($a1)` — the +4 read),
+slot 19 into `$a0` (consumed at slot 21, the +0 read), slot 22 into `$a0` (consumed at
+slot 24, the +2 read).  So the target's C is: ONE pointer local (`p10`) whose ONLY consumer
+is the +4 read, plus two fresh in-line reads for +0 and +2.  That is exactly the
+candidate.c / v2 / cb shape — the shape question is settled and s5/s6's derivation is
+correct.  What separates the bodies is only WHERE the p10 statement and its consumer sit.
+
+### NEW THIS SESSION — a strictly better forensic seat than v2: `cb`, 4 / 66
+
+s6 worked from v2 (p10 above the copy-3 store, consumer left at its candidate.c seat) =
+5 / 67.  s7 swept the CONSUMER position — an axis no session had moved (s6's w-series moved
+`p10`, never `temp_a1 = *(u16 *)(p10 + 4)`).  Seats measured on the v2 body, consumer placed:
+  ca  immediately after the copy triple, above the 0x18 store      -> 8 / 66
+  cb  immediately after the 0x18 store, above the +2 read          -> **4 / 66**
+  cc  after the +2 read, above the D_800A3478 store                -> 7 / 66
+  cd  after the D_800A3478 store, above the 0x1A store             -> 8 / 67
+  v2  after the 0x1A store (the inherited seat)                    -> 5 / 67
+  ce  after the `idx` read                                         -> 7 / 67
+  (y1, after the D_800A347C store, was already 8 / 68 in s6.)
+
+`cb` is the best non-candidate body the campaign has produced and is a better seat than v2
+on every axis: 66 instructions (correct count, no stray nop), all THREE 0x10 loads present,
+and a single localised defect.  Normalised diff vs target (tmp/grind/func_80060A68/s7/cb.dis):
+the entire stream matches with a ONE-SLOT SHIFT from slot 11 onward, because p10's load is
+emitted at slot 23 as `lw $v0,0x10($v1)` (consumed at slot 25, `lhu $a1,0x4($v0)`) instead of
+at slot 11 as `lw $a1,0x10($v1)`.  ONE instruction in the wrong place, in the wrong register.
+
+p10's SOURCE position is irrelevant once the consumer is at the cb seat: cb1 (p10 above
+copy 1) = 4 / 66, cb2 (above copy 2) = 4 / 66, cb (above copy 3) = 4 / 66; only cb4 (p10
+below the copy triple, which lets cse fold the +0 read onto p10 again) regresses to 6 / 66.
+
+### The cb defect has the SAME single cause s6 named, now proven on a second body
+
+`pwsh tools/grinder/dump.ps1 func_80060A68` with cb applied; text1b.sched, sched1 trace for
+block 0 (dump line 34035 ff.):
+    ;; launching 39 before 59 with no stalls at T-32
+    ;; ready list at T-32: 53 (8) 39 (7f000001), now 39 53
+insn 39 = p10's load, insn 59 = its consumer (the +4 lhu), insn 53 = the 0x18 store
+(honest priority 8).  Structurally identical to s6's v2 trace at T-31.  0x7f000001 is
+LAUNCH_PRIORITY; insn 39 is RELEASED by its own consumer being scheduled and, because the
+birthing bump makes it outrank everything, it takes that very cycle.  **Under the bump a
+single-set pointer load can NEVER be separated from its consumer in sched1** — it is always
+placed at the first cycle it becomes ready, which is the cycle adjacent to its consumer.
+
+That is a body-independent geometric argument, and it is new: the target has p10's load and
+its consumer SEVENTEEN slots apart.  sched1 cannot produce that under the bump.  The only
+pass that can is sched2, which runs with `reload_completed == 1` and therefore never bumps
+(sched.c:2509) — but sched2 can only hoist the load if its hard register is free across the
+gap.  In target the register is `$a1` (free from slot 11 to slot 28).  In cb, local-alloc
+gives the short-lived pseudo `$v0`, which is written at slot 20 and read at slot 22, so the
+hoist is blocked.  Chain: bump -> load pinned adjacent to consumer -> short live range ->
+`$v0` -> sched2 hoist blocked -> slot 23 instead of slot 11.
+
+### Frontier item 2 (birthing_insn_p's `bb_live_regs` gate) is KILLED — measured, not argued
+
+sched.c:2524-2531 tests `bb_live_regs[offset] & bit` BEFORE `reg_n_sets[i] == 1` and returns
+0 outright if the bit is clear.  s6 left this unprobed.  s7 probed it with the instrumented
+cc1 (tools/gcc-2.7.2/cc1, BB2_SCHED_DEBUG=1; harness tmp/grind/func_80060A68/s7/adjpri.sh,
+log tmp/grind/func_80060A68/s7/adjpri.log, 6620 ADJPRI records TU-wide, 3611 birth=0 /
+3009 birth=1 so the flag is genuinely discriminating).  For our block (identified by
+`SCHEDDBG block=0 n_insns=44 n_ready=1` at log line 55776 plus the matching per-insn
+priority list, i.e. insn 9 pri 1 / insn 39 pri 3 / insn 133 pri 2147483528):
+    SCHEDDBG ADJPRI insn=56 deaths=0 birth=1 maxpri=2130706433 pri=8
+    SCHEDDBG ADJPRI insn=59 deaths=0 birth=1 maxpri=2130706433 pri=3
+    SCHEDDBG ADJPRI insn=53 deaths=0 birth=0 maxpri=2130706433 pri=8
+    SCHEDDBG ADJPRI insn=39 deaths=0 birth=1 maxpri=2130706433 pri=3
+insn 39 is birth=1: its destination IS in bb_live_regs.  This is inevitable rather than
+incidental — sched.c schedules backward, so insn 39 is only released once a consumer that
+READS its destination has been scheduled, and that read is exactly what puts the bit in
+bb_live_regs.  A load whose dest is not live is a dead load and is deleted by flow.c.  The
+`bb_live_regs` door is therefore closed for every C shape, not just for cb.  `reg_n_sets[i]
+== 1` is the sole remaining C-visible gate, and it is the Judge-banned multiply-written
+carrier.
+
+### Also killed this session (all inert on the cb body — the dressing axes are dead there too)
+
+Declaration order (a sanctioned family, never before measured on a 3-load body): p10 first
+(cbd1), p10 last (cbd2), p10 second (cbd3), full permutation with temp_a1 first (cbd4) —
+all 4 / 66, i.e. pseudo-numbering has no effect on the allocation of p10.  Type level:
+`s32 temp_a1` (cbt1), `u16 *p10` with `p10[2]` for the +4 read (cbt2), `s32 temp2` (cbt3) —
+all 4 / 66.  Separator level: the `D_800A347C = outer + 0x20;` gp store hoisted to sit
+between p10 and the +0 read as an alternative cse separator (g1) = 8 / 68, and with the
+D_800A3478 store used the same way (g2) = 11 / 68 — the gp stores are absolute scheduling
+barriers, so using one as the separator wrecks the whole prefix.  This closes "is there any
+separator other than a copy store" as an open question.
+
+- [s7] Chassis re-measured at session start: candidate.c applied to src/text1b.c gives score 2 / build 66 / target 66 on today's HEAD. The ledger floor of 2 is current, not stale.
+
+- [s7] The target's own stream contains THREE lw ?,0x10($v1) loads - slot 11 into $a1 (consumed seventeen slots later at slot 28, lhu $a1,0x4($a1)), slot 19 into $a0 (consumed slot 21, the +0 read), slot 22 into $a0 (consumed slot 24, the +2 read). The target's C is therefore one pointer local consumed only by the +4 read plus two fresh in-line reads, which is exactly the candidate.c / v2 / cb shape. The shape question is settled; only statement placement differs between bodies.
+
+- [s7] NEW BEST NON-CANDIDATE BODY: cb = 4/66, banked at memory/grind/func_80060A68/rejected/s7-consumer-after-0x18-store-3-loads-p10-load-pinned-adjacent-to-consumer-score4-66insns.c. Correct instruction count, all three 0x10 loads present, one defect - p10's load at slot 23 in $v0 rather than slot 11 in $a1, shifting slots 11+ by one. It is a better forensic seat than v2 (5/67) on every axis and should replace v2 as the dump-reading base.
+
+- [s7] Consumer-seat sweep on the v2 body: ca 8/66, cb 4/66, cc 7/66, cd 8/67, v2 5/67, ce 7/67 (s6's y1 was 8/68). p10's own position is inert once the consumer sits at the cb seat: cb1 4/66, cb2 4/66, cb 4/66, cb4 6/66.
+
+- [s7] cb's sched1 trace (tmp/grind/func_80060A68/dumps/text1b.sched, block 0 at line 34035 ff.): 'launching 39 before 59 with no stalls at T-32' / 'ready list at T-32: 53 (8) 39 (7f000001), now 39 53' - structurally identical to s6's v2 trace at T-31. Under the birthing bump a single-set pointer load is always emitted adjacent to its consumer, because it becomes ready exactly when the consumer is scheduled and then outranks everything.
+
+- [s7] GEOMETRIC PROOF (new this session): the target has p10's load and its consumer seventeen slots apart, which sched1 cannot produce under the bump. Only sched2 can open that gap (reload_completed == 1 disables birthing_insn_p at sched.c:2509), and only when the hard register is free across it - $a1 in the target, $v0 in cb (written slot 20, read slot 22). So the target's compile did not bump its insn-39 equivalent, on any body. This is independent of s6's source-level argument and reaches the same conclusion.
+
+- [s7] birthing_insn_p's bb_live_regs gate measured with the instrumented cc1: SCHEDDBG ADJPRI insn=39 deaths=0 birth=1 maxpri=2130706433 pri=3. The gate passes, and it must pass for any live load under backward scheduling. reg_n_sets[i] == 1 is now the only C-visible input to the bump, and making it 2 is the multiply-written pointer-staging carrier the Judge banned for this function on 2026-08-19.
+
+- [s7] Sanctioned-dressing families measured dead on the cb body as well as on candidate.c: four declaration orders and three local-type variants are all byte-inert at 4/66.
+
+- [s7] gp stores cannot substitute for copy stores as cse separators between p10 and the +0 read: g1 = 8/68, g2 = 11/68, because a (mem (symbol_ref)) store is an absolute scheduling barrier for sched.c and destroys the matched prefix.
+
+- [s7] src/text1b.c was reverted to HEAD before this session finished; no build-pipeline file was touched. The asmfix.txt:109-110 integration hazard recorded by s10 is unchanged and still applies to any future body swap.

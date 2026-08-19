@@ -995,3 +995,51 @@ loads on target �" at the price of a new, different 2-instruction gap.
 - probe: Eleven seats on the v2 body: w1 (+0 value in its own local), w2 (`u16 *dst = (u16 *)(outer + 0x18)` carrying the 0x18/0x1A/0x1C stores and the gp-3478 value - the sibling idiom), w3 (a second early pointer local for the +2 read), w6/w7 (p10 between copy 1 and copy 2 / above the copy triple), w4 (idx above the +4 read), w5 (0x1C store above the gp-347C store), y1 (+4 read below the gp-347C store), y5/y6 (idx read hoisted into the halfword group).
 - result: w1, w2, w3, w6, w7 are byte-identical to v2 at 5/67 (inert); w4 = 7/67, w5 = 8/67, y1 = 8/68, y5 = 8/67, y6 = 8/67. Every single-statement move off the v2 order costs 2-8 points. The sibling `dst_u16` transplant is dead on the v2 body as well as on candidate.c.
 - verdict: KILLED
+
+## [s7] Moving the CONSUMER statement (`temp_a1 = *(u16 *)(p10 + 4)`) rather than the p10 statement finds a strictly better body than v2
+- mechanism: sched1 releases p10's load only when its consumer is scheduled, so the consumer's SOURCE position (not p10's) sets the cycle at which the load enters the ready list. No prior session moved the consumer; s6's w-series moved p10 and left the consumer fixed.
+- probe: seven consumer seats on the v2 body (ca/cb/cc/cd/v2/ce plus s6's y1), sandbox --disable all each.
+- result: ca 8/66, cb **4/66**, cc 7/66, cd 8/67, v2 5/67, ce 7/67, y1 8/68. cb (consumer immediately after the 0x18 store) is the best non-candidate body on record: 66 instructions, all three `lw ?,0x10($v1)` loads present, and a single defect. p10's own position is inert at that seat (cb1/cb2/cb = 4/66; only cb4, which re-enables the cse fold, regresses to 6/66).
+- verdict: CONFIRMED
+
+## [s7] cb's single defect is the SAME insn-39 LAUNCH_PRIORITY bump s6 named, and the target's stream geometry proves sched1 cannot produce the target under that bump
+- mechanism: sched1 trace for cb: `launching 39 before 59 with no stalls at T-32` / `ready list at T-32: 53 (8) 39 (7f000001), now 39 53`. The bumped load always takes the FIRST cycle at which it is ready, and it becomes ready exactly when its consumer is scheduled — so a bumped single-set pointer load is ALWAYS emitted adjacent to its consumer. Target has p10's load at slot 11 and its consumer at slot 28, seventeen slots apart, which sched1 cannot do. Only sched2 (reload_completed == 1, never bumps, sched.c:2509) can open that gap, and only if the hard register is free across it: target's p10 is `$a1`; cb's is `$v0`, written at slot 20 and read at slot 22, so the hoist is blocked.
+- probe: `pwsh tools/grinder/dump.ps1 func_80060A68` with cb applied; text1b.sched line 34035 ff.; normalised disassembly diff tmp/grind/func_80060A68/s7/cb.dis vs target.
+- result: cb = 4/66 with a one-slot shift from slot 11 onward; p10's load emitted at slot 23 as `lw $v0,0x10($v1)` (consumer `lhu $a1,0x4($v0)` at slot 25) instead of slot 11 `lw $a1,0x10($v1)`. Confirms the s6 causal chain on an independent, better body, and adds the geometric proof that the target's compile did NOT bump its equivalent of insn 39.
+- verdict: CONFIRMED
+
+## [s7] birthing_insn_p's `bb_live_regs` gate (the last unprobed door, s6 frontier item 2) is CLOSED for every C shape
+- mechanism: sched.c:2524-2531 returns 0 without consulting reg_n_sets when the destination bit is clear in bb_live_regs. But sched.c schedules BACKWARD: insn 39 is released only after an insn that READS its destination has been scheduled, and that read is precisely what sets the bit. A load whose destination is never live is dead and is removed by flow.c before sched1 counts anything.
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 over the cb body; harness tmp/grind/func_80060A68/s7/adjpri.sh, log tmp/grind/func_80060A68/s7/adjpri.log; our block located via `SCHEDDBG block=0 n_insns=44 n_ready=1` (log line 55776) cross-checked against the per-insn priority list.
+- result: `SCHEDDBG ADJPRI insn=39 deaths=0 birth=1 maxpri=2130706433 pri=3`. birth=1. (The flag is discriminating TU-wide — 3611 birth=0 vs 3009 birth=1 across 6620 records — and insn 53, a store, correctly reports birth=0, so this is a real reading, not a stuck flag.) `reg_n_sets[i] == 1` is now the ONLY C-visible input to the bump, and it is the banned multiply-written carrier.
+- verdict: KILLED
+
+## [s7] Declaration order, local types, and non-copy separators are all inert on the 3-load (cb) body
+- mechanism: n/a (measurement sweep, closing the sanctioned-dressing families on the new seat).
+- probe: cbd1/cbd2/cbd3/cbd4 (four declaration orders incl. p10 first and p10 last), cbt1 (`s32 temp_a1`), cbt2 (`u16 *p10` with `p10[2]`), cbt3 (`s32 temp2`), g1 (`D_800A347C` gp store hoisted between p10 and the +0 read as the cse separator), g2 (same with `D_800A3478`).
+- result: cbd1-4 and cbt1-3 are all 4/66, i.e. byte-inert; g1 = 8/68 and g2 = 11/68, because a `(mem (symbol_ref))` store is an absolute scheduling barrier and destroys the whole matched prefix. The sanctioned declaration-order and named-intermediate-type families are therefore measured dead on the 3-load body as well as on candidate.c, and the copy stores are the only usable cse separators.
+- verdict: KILLED
+
+## [s7] Moving the CONSUMER statement (temp_a1 = *(u16 *)(p10 + 4)) rather than the p10 statement is an unexplored axis that finds a better body than v2.
+- mechanism: sched1 releases p10's load only when its consumer is scheduled, so the CONSUMER's source position - not p10's - sets the cycle at which the load enters the ready list. Every prior session (s6's w-series, s10's r-series) moved p10 and left the consumer fixed.
+- probe: Seven consumer seats on the v2 body (ca after the copy triple, cb after the 0x18 store, cc after the +2 read, cd after the D_800A3478 store, v2 after the 0x1A store, ce after the idx read, plus s6's y1 after the D_800A347C store); sandbox func_80060A68 --disable all on each.
+- result: ca 8/66, cb 4/66, cc 7/66, cd 8/67, v2 5/67, ce 7/67, y1 8/68. cb is the best non-candidate body on record: 66 instructions (correct count), all three lw ?,0x10($v1) loads present, one defect. p10's own position is inert at that seat (cb1 4/66, cb2 4/66, cb 4/66); only cb4, which re-enables the cse fold of the +0 read, regresses to 6/66.
+- verdict: CONFIRMED
+
+## [s7] cb's single defect has the same cause s6 named on v2, and the target's stream geometry proves sched1 cannot have produced the target under the insn-39 LAUNCH_PRIORITY bump.
+- mechanism: cb's sched1 trace: 'launching 39 before 59 with no stalls at T-32' then 'ready list at T-32: 53 (8) 39 (7f000001), now 39 53'. A bumped insn always takes the FIRST cycle at which it is ready, and it becomes ready exactly when its consumer is scheduled - so a bumped single-set pointer load is ALWAYS emitted adjacent to its consumer. The target puts p10's load at slot 11 and its consumer at slot 28, seventeen slots apart; only sched2 (reload_completed == 1, sched.c:2509, never bumps) can open that gap, and only when the hard register is free across it - $a1 in the target, $v0 in cb (written slot 20, read slot 22, so the hoist is blocked).
+- probe: pwsh tools/grinder/dump.ps1 func_80060A68 with cb applied; read text1b.sched block-0 trace at dump line 34035 ff.; normalised disassembly diff tmp/grind/func_80060A68/s7/cb.dis against the target stream.
+- result: cb = 4/66. The stream matches target exactly with a one-slot shift from slot 11 onward: p10's load emitted at slot 23 as lw $v0,0x10($v1) (consumer lhu $a1,0x4($v0) at slot 25) rather than slot 11 lw $a1,0x10($v1). Independent confirmation of the s6 causal chain on a better body, plus a body-independent argument that the target's compile did NOT bump its insn-39 equivalent.
+- verdict: CONFIRMED
+
+## [s7] s6 frontier item 2 - birthing_insn_p's bb_live_regs test could clear the bump without a second write - is false for every C shape.
+- mechanism: sched.c:2524-2531 returns 0 without consulting reg_n_sets when the destination's bit is clear in bb_live_regs. But sched.c schedules BACKWARD: insn 39 is released only after an insn that READS its destination has been scheduled, and that read is exactly what sets the bit. A load whose destination is never live is a dead load and is deleted by flow.c before sched1 runs.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 over the cb body via tmp/grind/func_80060A68/s7/adjpri.sh; block located in tmp/grind/func_80060A68/s7/adjpri.log by 'SCHEDDBG block=0 n_insns=44 n_ready=1' (line 55776) cross-checked against the per-insn priority list (insn 9 pri 1, insn 39 pri 3, insn 133 pri 2147483528).
+- result: SCHEDDBG ADJPRI insn=39 deaths=0 birth=1 maxpri=2130706433 pri=3. birth=1. The flag is discriminating TU-wide (3611 birth=0 vs 3009 birth=1 across 6620 records) and insn 53, a store, correctly reports birth=0 - so this is a real reading, not a stuck flag. The gate is closed; reg_n_sets[i] == 1 is the sole remaining C-visible input to the bump.
+- verdict: KILLED
+
+## [s7] Sanctioned declaration-order / local-type dressing, and non-copy cse separators, might work on the 3-load (cb) body even though they were inert on candidate.c.
+- mechanism: n/a - measurement sweep to close the sanctioned-dressing families on the new seat before the next session inherits it.
+- probe: cbd1 (p10 declared first), cbd2 (p10 last), cbd3 (p10 second), cbd4 (temp_a1 first, full permutation); cbt1 (s32 temp_a1), cbt2 (u16 *p10 with p10[2] for the +4 read), cbt3 (s32 temp2); g1 (D_800A347C gp store hoisted between p10 and the +0 read as the cse separator), g2 (same with D_800A3478).
+- result: cbd1-cbd4 and cbt1-cbt3 are all 4/66 - byte-inert, so pseudo numbering and local typing have no effect on p10's allocation. g1 = 8/68, g2 = 11/68: a (mem (symbol_ref)) store is an absolute scheduling barrier and destroys the matched prefix, so the copy stores remain the only usable cse separators.
+- verdict: KILLED

@@ -1,3 +1,47 @@
+/* [s7 2026-08-19 - synthesis.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's HEAD.]
+ *
+ * s7's job was to merge six sessions into one attack and reset the frontier.  It did not
+ * change this body (still the floor at 2), but it moved the campaign forward in three ways.
+ *
+ * 1. A NEW AXIS, AND A BETTER SEAT THAN v2.  Every prior session moved the `p10` statement.
+ *    None moved its CONSUMER (`temp_a1 = *(u16 *)(p10 + 4)`), which is what actually decides
+ *    when sched1 releases p10's load.  Sweeping the seven consumer seats gives
+ *    ca 8/66, cb 4/66, cc 7/66, cd 8/67, v2 5/67, ce 7/67, y1 8/68.  `cb` (consumer placed
+ *    immediately after the 0x18 store, above the +2 read) is the best non-candidate body the
+ *    campaign has produced: 66 instructions, ALL THREE `lw ?,0x10($v1)` loads present, and a
+ *    single defect - p10's load emitted at slot 23 as `lw $v0,0x10($v1)` instead of slot 11
+ *    as `lw $a1,0x10($v1)`, shifting everything from slot 11 on by one.  It is banked at
+ *    rejected/s7-consumer-after-0x18-store-3-loads-p10-load-pinned-adjacent-to-consumer-score4-66insns.c
+ *    and is the seat the next session should read dumps against, NOT v2.
+ *
+ * 2. A GEOMETRIC PROOF THAT THE TARGET'S COMPILE DID NOT BUMP INSN 39.  Under the
+ *    birthing_insn_p LAUNCH_PRIORITY bump, a single-set pointer load is ALWAYS emitted
+ *    adjacent to its consumer: the bump makes it outrank everything, and it becomes ready
+ *    exactly when its consumer is scheduled (cb trace: `launching 39 before 59 ... at T-32`
+ *    then `ready list at T-32: 53 (8) 39 (7f000001), now 39 53`).  The target puts p10's load
+ *    at slot 11 and its consumer at slot 28 - SEVENTEEN slots apart.  sched1 cannot do that.
+ *    Only sched2 can (reload_completed == 1, so no bump), and only if the hard register is
+ *    free across the gap: target's p10 is `$a1`; cb's is `$v0`, written at slot 20 and read
+ *    at slot 22, so the hoist is blocked.  This is independent of any particular body and
+ *    strengthens s6's conclusion rather than replacing it.
+ *
+ * 3. THE LAST UNPROBED GATE IS CLOSED.  s6 left birthing_insn_p's `bb_live_regs` test
+ *    (sched.c:2524-2531) unmeasured.  s7 measured it with the instrumented cc1 and
+ *    BB2_SCHED_DEBUG=1: `SCHEDDBG ADJPRI insn=39 deaths=0 birth=1 maxpri=2130706433 pri=3`.
+ *    birth=1.  It cannot be otherwise: backward scheduling releases insn 39 only after an
+ *    insn that READS its destination is scheduled, and that read is what sets the bit.  So
+ *    `reg_n_sets[i] == 1` is now the SOLE C-visible input to the bump, and that is the
+ *    multiply-written carrier the Judge banned for this function on 2026-08-19.
+ *
+ * Also killed on the cb body: declaration order (four permutations, all 4/66 byte-inert),
+ * local types (`s32 temp_a1`, `u16 *p10` with `p10[2]`, `s32 temp2`, all 4/66), and using a
+ * gp store as the cse separator instead of a copy store (g1 8/68, g2 11/68 - a
+ * `(mem (symbol_ref))` store is an absolute scheduling barrier).
+ *
+ * DISPOSITION.  The function is ACTIVE.  s7 is a `progress` outcome; src/text1b.c was
+ * reverted to HEAD before finishing.  The INTEGRATION HAZARD in the s10 note below
+ * (asmfix.txt:109-110 must be retired in the same change as any body swap) is unchanged.
+ */
 /* [s6 2026-08-19 - rederive.  BODY UNCHANGED from s5/s10.  Read this note first.]
  *
  * s6 re-measured this body on today's HEAD: score 2 / build 66 / target 66.  The floor is

@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "rederive",
+ "session_count": 7,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive proves the v2 shape is FORCED (separator enumeration) and reduces the whole residual to ONE gate: sched.c birthing_insn_p's reg_n_sets==1 test on p10's load, whose only C-visible lever is the"
+  },
+  {
+   "session": 7,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: the unexplored consumer-position axis yields cb (4/66 - all three 0x10 loads present, one misplaced instruction), a strictly better seat than v2; and the last unprobed gate (birthing_insn_p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function's residual is now reducible, with a source-level proof, to a single GCC gate whose only C-visible lever is a construct the Judge has already banned for this function. That is the endgame-lock shape, and the ladder has now spent recon, structural, forensics (x2) and rederive (x2) with the floor flat at 2.",
-   "mechanism": "sched.c:2536 `return (reg_n_sets[i] == 1);` inside birthing_insn_p is the ONLY condition in the LAUNCH_PRIORITY path that C source can change (reload_completed, the (set (reg) ...) pattern shape and bb_live_regs are all fixed by the program's meaning). Setting it to 2 means two live writes of the p10 local = the banned multiply-assigned pointer-staging carrier, which is also the construct that reaches score 0 (rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c).",
-   "next_probe": "The driver should consider assigning `escalation` modality. If it does, the endgame-lock entry can be written directly against this session: gate (1) canonical-asm fails (scan_hand_coded LOW 1/8, banked s1); gate (2) a sanctioned-family precedent for a live-twice pointer carrier does not exist and has been refused twice by the Judge - so the 2026-07-27 standing auto-ruling (REFUSED / OWNER-ACCEPTED INCOMPLETE) applies, with the integration note that asmfix.txt:109-110 must be retired in the same change as any body swap."
+   "hypothesis": "The campaign's residual is a single, now doubly-proven GCC gate whose only C-visible lever is a construct the Judge has banned for this function. s7 added a body-independent stream-geometry proof on top of s6's source-level proof, and closed the last unprobed door. Six modalities (recon, structural, forensics x2, rederive x2, synthesis) have now run with the honest floor flat at 2.",
+   "mechanism": "sched.c:2536 `return (reg_n_sets[i] == 1);` inside birthing_insn_p is the ONLY remaining condition in the LAUNCH_PRIORITY path that C source can change: reload_completed is fixed by which scheduling pass is running, the (set (reg) ...) pattern shape is fixed by the program's meaning, and bb_live_regs is now MEASURED to be unconditionally set for a live load (s7, birth=1). Setting reg_n_sets to 2 requires two live writes of the p10 local - the banned carrier, which is also the construct that reaches score 0 (rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c).",
+   "next_probe": "If the driver assigns `escalation`, the endgame-lock entry can be written directly from this session: gate (1) canonical-asm fails (scan_hand_coded LOW 1/8, banked s1); gate (2) no sanctioned-family precedent exists for a live-twice pointer carrier and the Judge has refused it twice - so the 2026-07-27 standing auto-ruling (REFUSED / OWNER-ACCEPTED INCOMPLETE) applies, with the integration note that asmfix.txt:109-110 must be retired in the same change as any body swap. If the driver does NOT assign escalation, work frontier item 2 below - it is a genuinely different gate and it has never been attacked directly."
   },
   {
-   "hypothesis": "One gate on birthing_insn_p has never been probed: `bb_live_regs[offset] & bit` - if p10's destination register is NOT live in sched1's backward live set at the moment insn 39 is released, birthing_insn_p returns 0 and no bump happens, with no second write anywhere.",
-   "mechanism": "sched.c:2524-2529 tests the dest against bb_live_regs BEFORE it tests reg_n_sets, and returns 0 outright if the bit is clear. Backward scheduling releases insn 39 only after its consumer is scheduled, which normally makes the bit set - but a C shape in which p10's value reaches its consumer through a different register (e.g. a copy that combine leaves in place, or a consumer in a different basic block) could clear it.",
-   "next_probe": "Set BB2_SCHED_DEBUG=1 (the instrumented cc1 at tools/gcc-2.7.2/cc1 prints `SCHEDDBG ADJPRI insn=... birth=...` from sched.c:2574) and confirm birth=1 for insn 39 on the v2 body; then look for any honest C shape - not a second write - in which insn 39's dest is not in bb_live_regs when it is released. If the debug output shows birth=1 unconditionally for every shape tried, this gate is closed too and the escalation in frontier item 1 is unconditional."
+   "hypothesis": "cb's defect can be closed from the REGISTER-ALLOCATION side rather than the scheduling side: if local-alloc/global-alloc gave p10's pseudo $a1 instead of $v0, sched2 - which never bumps - could hoist the load from slot 23 to slot 11 and cb would match, with no second write anywhere.",
+   "mechanism": "sched2 runs with reload_completed == 1, so birthing_insn_p returns 0 at sched.c:2509 and the bump is absent; the only thing preventing the hoist in cb is that $v0 is written at slot 20 and read at slot 22, straddling the gap. In the target the same load sits in $a1, which is dead from slot 11 to slot 28, so the hoist is legal there. This is a DIFFERENT gate from reg_n_sets: s10 raised the v0-vs-a0 question, but s6 folded it into the scheduling story and no session has read .lreg/.greg for a 3-load body.",
+   "next_probe": "With cb applied, read tmp/grind/func_80060A68/dumps/text1b.lreg (function at line 29591) and text1b.greg (line 25167) to identify p10's pseudo and the quantity/preference that hands it $v0 rather than $a1 - in particular whether local_alloc's copy preference from the chained `lhu dest,4(p10)` (which in the target produces `lhu $a1,0x4($a1)`) is being outbid, and by what. Then look for honest C that changes register PRESSURE or the argument-register preference chain around temp_a1 (the call's second argument, which the target also puts in $a1) rather than changing the number of writes. s7 has already measured that declaration order and local types do NOT move this allocation, so the lever, if one exists, is pressure/liveness-shaped."
   },
   {
    "hypothesis": "Closed axes - do not re-open.",
-   "mechanism": "Killed with measurements across s1-s6: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8); the m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address locals in the 3-load body; sinking either gp store; early-consumed p10; and now from s6: the +0-value-hoisted-above-a-copy-store partition family (x1/x2/x6/x7/x8, 9-13), the v6 priority-hoist idea (absolute alias barrier), the `u16 *dst` sibling idiom on the v2 body, a second early pointer local for the +2 read, and every single-statement move off the v2 order (7-8).",
-   "next_probe": "None. Any future claim must be written against the s6 CAUSAL CHAIN - insn 39's birthing_insn_p LAUNCH_PRIORITY bump is the single cause of both v2 defects - and must state which of frontier items 1 and 2 it addresses."
+   "mechanism": "Killed with measurements across s1-s7: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8); the m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address locals; sinking either gp store; early-consumed p10; the +0-value-hoisted-above-a-copy-store partition family (x1/x2/x6/x7/x8); the v6 priority-hoist idea (absolute alias barrier); the u16 *dst sibling idiom; a second early pointer local for the +2 read; every single-statement move off the v2 order; and now from s7: the full consumer-seat sweep (only cb improves, to 4/66), declaration order and local types on the 3-load body, gp stores as cse separators, and birthing_insn_p's bb_live_regs gate.",
+   "next_probe": "None. Any future claim must be written against the s6/s7 CAUSAL CHAIN - insn 39's birthing_insn_p LAUNCH_PRIORITY bump pins p10's load adjacent to its consumer, which shortens its live range, which costs it $a1, which blocks sched2's hoist - and must state which of frontier items 1 and 2 it addresses."
   }
  ],
  "judge_constraints": [
