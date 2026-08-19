@@ -180,6 +180,45 @@
  * order of the file's preceding declarations) - the only surface left that can
  * move GCC 2.7.2's allocno ordering without changing a single statement.
  */
+/* [s14 PERMUTER ADDENDUM - body unchanged, still 3.]  Two things closed.
+ *
+ * (1) THE TRANSLATION-UNIT AXIS IS DEAD.  s13's frontier named it "the only
+ * named axis in thirteen sessions that has never been probed" and the highest-
+ * yield remaining item.  Five mutations, all on top of this exact body, all
+ * score 3: 40 extern decls immediately above the function; 200 extern decls at
+ * the top of the file; the math_Distance3D / math_Distance3D_16 DEFINITIONS
+ * moved below func_80017848 and replaced by prototypes; an extra whole function
+ * definition immediately above; ten file-scope static consts immediately above.
+ * GCC 2.7.2 resets pseudo numbering, cse's hash tables and local-alloc's allocno
+ * arrays per FUNCTION - the only TU-accumulating state is label_num and varasm
+ * bookkeeping, neither of which feeds allocation or scheduling.  The
+ * cc1-first-pass-scheduler-bug analogy does not transfer (that is a crash
+ * pathology, not a codegen-selection channel).  Cost: six sandbox runs.
+ *
+ * (2) TWO MORE PERMUTER CAMPAIGNS, 81,868 iterations, nothing below 3.  s14a
+ * was the first DIRECTED campaign on this function: a PERM_GENERAL cross-product
+ * over the levers s11/s12 had each measured at exactly 3 (top-guard shape,
+ * loop 1's element read, loop 2's block form) layered on PERM_RANDOMIZE - aimed
+ * squarely at the compound space s12 could only sample 8 cells of by hand.
+ * 47,221 iterations, 14 finds, nothing below 3.  s14n was seeded on a chassis
+ * that did not exist before this session (N1, below), whole-function randomized:
+ * 34,647 iterations, 11 finds, nothing below 3.  The perm-score / engine-distance
+ * ANTI-CORRELATION reproduced on both (perm 315 -> engine 5 twice, while every
+ * engine-3 output sits at perm 405 = the base score); that is five campaigns and
+ * 180,472 iterations agreeing.
+ *
+ * THE ONE NEW STRUCTURAL FACT: cell N1, `sh` RECOMPUTED ON LOOP 1'S TAKEN PATH.
+ * Take m2c's reading of the target, which puts `var_a1 = temp_s4 << 6` on loop
+ * 1's exit EDGE rather than in loop 2's preheader: delete `sh2` entirely, append
+ * `sh = slot_a << 6;` as the last statement of loop 1's guarded block (after
+ * `p = q;`), and let loop 2's guard and base both read `sh`.  That scores 3 with
+ * a residual BYTE-IDENTICAL to this body's - same three instructions, same
+ * positions.  Placing the recompute BEFORE `p = q;` costs 4.  Both banked in
+ * rejected/.  A faithful transcription of m2c's whole output (rotated loops,
+ * walking element pointer, carried copy-source local) scores 49, which is the
+ * direct measurement of an assumption eight sessions made in passing: m2c
+ * reflects the SCHEDULED asm, not the source shape, so it is not a chassis seed.
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;
