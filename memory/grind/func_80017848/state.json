@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 17,
- "current_modality": "escalation",
+ "session_count": 18,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,24 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Floor holds at 3 and the LAST open axis is closed: combine.c's can_combine_p has exactly seven refusal paths for target's loop-2 preheader copy, all seven now dead (2 forbidden cheat families, 3 struc"
+  },
+  {
+   "session": 18,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Floor holds at 3 (re-measured 127/127); the rederive modality's last leg dies - no BB2 sibling body exists (max 5-gram overlap 0.120 over all 1,437 functions), the residual's seam idiom occurs in only"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "If the function is ever re-opened, the ONE remaining unnamed link is the cse canonicalisation rule behind E-s16-2: why a downstream re-definition of reg79 changes which member of the reg79/reg80 equivalence class cse names at the UPSTREAM base add (insn 89). Naming it would turn every loop-2 preheader spelling from a blind guess into a checkable predicate. It is banked as UNRESOLVED, not as a live lever, because s17 proved that even a confirmed predicate has no affordable C carrier.",
-   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg); qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and insert / merge_equiv_classes decides membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM.",
-   "next_probe": "Add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) for pseudos in the 72-120 range, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1), re-prove codegen identity with tmp/grind/func_80017848/s16/idump.sh, and diff the candidate's trace against cell E2's at insn 83 and insn 89."
+   "hypothesis": "The residual is reachable only through a combine refusal whose C carrier is a CALL boundary (s17's R4 leg), which func_80017848 cannot supply without changing semantics - so if any lever remains it is not at the C-statement level but at the level of what GCC 2.7.2's cse does with the reg79/reg80 equivalence class at insn 89 (E-s16-2). Naming that canonicalisation rule would turn every loop-2 preheader spelling from a blind guess into a checkable predicate.",
+   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg); qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and insert / merge_equiv_classes decides membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM, and that single difference decides whether loop 1's copy survives combine.",
+   "next_probe": "Add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) for pseudos in the 72-120 range, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1), re-prove codegen identity with tmp/grind/func_80017848/s16/idump.sh, and diff the candidate's trace against cell E2's and cell X1's at insn 83 and insn 89. Note that even a confirmed predicate has no affordable C carrier (s17), so this is a naming exercise, not a lever."
   },
   {
-   "hypothesis": "The residual's 3 instructions may be reachable only by a whole-function chassis that no session has authored - one derived from a different source-level decomposition of the two scan loops rather than from mutations of the s8/s9 lineage. Every chassis measured to date descends from that single lineage plus the s14 m2c-derived N1 variant.",
-   "mechanism": "The candidate's 3 residual instructions sit at the seam between loop 1's exit tail and loop 2's preheader, and s17's P7/P8 show that spelling that seam the way target's asm reads costs 12. That is the signature of a chassis-relative optimum: the whole surrounding shape, not the seam, is what fixes cse's equivalence classes at the seam.",
-   "next_probe": "Re-derive the function from asm with m2c under a different structuring configuration than s14's N1, take the FIRST compilable output without hand-tuning, score it, and only then apply the ledger's individually-measured levers. If the raw re-derivation is worse than 12 the lineage question is settled negatively and this frontier closes too."
-  },
-  {
-   "hypothesis": "Nothing else. All other axes named by sessions 1-16 are recorded CLOSED in memory/grind/func_80017848/evidence.md and hypotheses.md, and s17 closed the last of them (the combine.c enumeration).",
-   "mechanism": "n/a - bookkeeping entry so a future reader does not mistake the two items above for a live ladder.",
-   "next_probe": "Read E-s17-1 and E-s17-2 before proposing any loop-2 preheader construct; 123 forms are already banked as rejected."
+   "hypothesis": "All three legs of the rederive modality are now spent (fresh m2c re-derivation = H-s18-1, external decomp.me corpus = H-s18-3, sibling/Kengo transplant = H-s18-4), joining structural (s11/s12), permuter (s13/s14, 180,472 iterations over five campaigns on four chassis) and forensics (s15/s16/s17). No untried modality with a distinct search space remains on the ladder for this function.",
+   "mechanism": "Bookkeeping entry, so the next session does not re-open a spent leg: the modality ladder's coverage is now recorded per-leg rather than per-modality, and the rederive modality's three legs each have their own KILLED hypothesis with measurements.",
+   "next_probe": "Read E-s17-1, E-s16-1/E-s16-2 and E-s18-5..8 before proposing ANY loop-2 preheader construct - 128 forms are banked as rejected. If the driver dispatches a further modality, the only genuinely unspent surface is instrumented-cc1 tracing of the cse equivalence class (frontier item 1), which is a forensics probe rather than a spelling probe."
   }
  ],
  "judge_constraints": [],

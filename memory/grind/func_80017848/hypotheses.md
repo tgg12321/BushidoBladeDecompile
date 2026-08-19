@@ -1514,3 +1514,129 @@ analytically dead.
 - probe: Cells P7 and P8: loop-1 exit tail written as `p = *(u8 **)(ctx + 0xC);` (target's re-read) combined with a loop-2 preheader copy plus the links re-set.
 - result: P7 = 12, P8 = 12, against the candidate's 3.
 - verdict: KILLED
+
+## s18 (modality `rederive`)
+
+### H-s18-1 — KILLED
+**Statement.** A different m2c structuring configuration yields a source-level
+decomposition of the two scan loops that is not a descendant of the s8/s9
+lineage, and that raw re-derivation scores at or below 12 (the s17 frontier's
+own threshold for keeping the lineage question open).
+**Mechanism.** m2c's structuring stage (control-flow reconstruction, &&/||
+detection, pass count, register-variable mode) is configuration-driven, so a
+different configuration should re-associate the loops and the guards differently
+and hand us a whole-function chassis nobody has authored.
+**Probe.** Five configurations run (`tmp/grind/func_80017848/s18/m2c.sh`):
+default, `--no-andor`, `--passes 2`, `--gotos-only`, `--reg-vars`. Outputs
+diffed against each other; the `--no-andor` output transcribed faithfully into
+compilable BB2 C (cell R1) and scored; the CFG half and the loop-form half
+isolated as cells R2 and R3.
+**Result.** `--passes 2` is byte-identical to default; `--no-andor` and
+`--gotos-only` differ only in guard/exit spelling; `--reg-vars` is semantically
+broken. R1 = **53**, R2 = **15**, R3 = **49**, against the candidate's 3. The
+50-point gap is +12 (goto-structured single exit) and +46 (walking-pointer
+rotated loops), essentially additive.
+**Verdict. KILLED** — and with it s17 frontier item #2. There is no second m2c
+reading, and the one reading there is is 4-18x worse than the lineage chassis on
+two independently priced axes.
+
+### H-s18-2 — KILLED
+**Statement.** Writing target's own walking element pointer explicitly at loop 2
+(`e = base + i`, initialised in the preheader and updated after `i++`) fixes the
+preheader's register identities, because target's preheader literally ends with
+`addu $v0,$a0,$v1` and its loop closes with the same insn in the delay slot.
+**Mechanism.** loop.c strength-reduces the candidate's `base + i + 0x2C`
+addressing into exactly that walking pointer; hoisting the initialisation into C
+should make the preheader's insn order match target's rather than being
+scheduled from the folded form.
+**Probe.** Cell W2 — candidate chassis, loop 2 only, explicit `u8 *e`.
+**Result.** **14**, at the correct instruction count 127/127. All 11 points are
+register identity, so the explicit pointer changes allocation, not shape.
+**Verdict. KILLED.** With s12's loop-1 measurement (13) and this session's R3
+(both loops, 49) the explicit-element-pointer family is closed at every site.
+
+### H-s18-3 — CONFIRMED (prior art), but with no carrier here
+**Statement.** The residual's idiom — a preheader reg-reg copy whose destination
+is consumed by the following base add, with the source dead — is producible from
+ordinary pure C by this compiler class, and a matched example exists in the
+decomp.me corpus that names its origin.
+**Mechanism.** Mine the 3,754-scratch local corpus for matched (score 0)
+scratches whose target asm contains the copy→add pair, then read their C.
+**Probe.** `tmp/grind/func_80017848/s18/mine_copy_idiom.py` and `mine_exact.py`.
+**Result.** 163 copy→add hits in matched scratches, 50 with the source dead, 28
+with target's exact copy-then-redefine-source pair. Most are call-return staging
+or constant-multiply expansions. The structural twin is scratch **19TpT**
+(`func_8009C6D8`, gcc2.7.2-cdk `-O2 -G0 -g2`, matching): the copy is an INNER
+loop's induction-base initialised from an OUTER loop's live row-base, inside a
+plain `for (row) for (col)` nest. The consumer is in the inner loop body — a
+different block — so it survives combine by s16's out-of-block leg, and it is
+free because the outer loop keeps the source live regardless.
+**Verdict. CONFIRMED as prior art / NO CARRIER HERE.** func_80017848 has no
+nested loop and nothing live across loop 2 (s11: three fresh `ctx+0xC` re-reads
+in the tail; routing any of them through a live local = 19-22). Manufacturing an
+enclosing loop is the duplicated-region family, priced at 35 by s12. The
+positive value of this result is evidentiary: the idiom is compiler-producible
+pure C, which independently corroborates `scan_hand_coded` = LOW 0/8 and rules
+out "this is hand asm" as an explanation of the residual.
+
+### H-s18-4 - KILLED
+**Statement.** A transplantable sibling exists: either another BB2 function whose
+whole shape is close enough to func_80017848's that its already-matched C can be
+adapted, or a Kengo (PS2, shared "Marionation" engine) equivalent whose source
+decomposition can be re-derived from. This is the third and last leg of the
+rederive modality (fresh m2c = H-s18-1, external corpus = H-s18-3).
+**Mechanism.** Sibling functions compiled from sibling source in the same TU
+share the programmer's decomposition, so a matched sibling's spelling of the same
+seam is proven-good C on this exact chassis; and Kengo, sharing the engine, would
+carry the original source shape of the same routine.
+**Probe.** (a) 5-gram opcode-sequence census of all 1,437 `asm/funcs/*.s` bodies
+in the 0.6x-1.8x size band (`tmp/grind/func_80017848/s18b/sibling_scan.py`).
+(b) Whole-binary scan for the residual's exact seam fingerprint, filtered to
+functions that are pure-C-defined, rule-free and not queue-active (`fp_scan.py`,
+`fp_exact.py`, `fp_exact2.py`). (c) Kengo channel: inspect `Kengo/`,
+`kengo_matches.csv`, `Kengo/kengo_functions_full.txt`, and
+`tools/kengo_match.py --bb2 func_80017848`.
+**Result.** (a) Maximum whole-function overlap **0.120**; no sibling body exists.
+(b) The exact fingerprint occurs in **3 of 1,437** functions - func_80017848
+(both loops), func_800200DC (call-return staging, 14 regfix RA rules) and
+func_8005E54C (still asm, distance 799). Widened to any consumer over matched
+rule-free pure-C functions: 31 hits, every one call-return or shift staging, none
+a loop preheader. (c) Kengo ships debug SYMBOLS ONLY - no C source anywhere in
+the tree - and has no symbol resembling a pair/link registration in the plausible
+modules; `kengo_matches.csv` has no row for this function.
+**Verdict. KILLED**, and the rederive modality is now spent on all three of its
+legs. The one positive by-product is evidentiary: the only in-tree spelling of
+the seam idiom that a compiler demonstrably produces from pure C depends on a
+preceding CALL, which is s17's R4 refusal leg - so the census independently
+confirms E-s17-1's R4 classification instead of opening an eighth path.
+
+### H-s18-5 - KILLED
+**Statement.** Writing target's loop-1 exit edge exactly as target materialises
+it - BOTH `lw $a0,0xC($s2)` and `sll $a1,$s4,6`, i.e. a fresh `ctx + 0xC` read
+AND the shift recomputed on the exit edge, with `sh2` deleted so loop 2's guard
+and base share the recomputed `sh` - puts the join block's inputs in target's
+registers and lets loop 2's preheader emit target's copy.
+**Mechanism.** The join `.L8001791C` is reached from two predecessors and its
+guard address add reads whatever the exit edge left live. If both live values are
+produced on that edge in target's order, the register identities entering the
+copy/base pair should follow.
+**Probe.** Cell X1 (`tmp/grind/func_80017848/s18b/X1.c`).
+**Result.** **4 at 126/127 instructions** - loop 1 one instruction SHORT, the
+E-s16-2 signature (a fresh read downstream of loop 1's base add makes cse
+canonicalise the base add onto the copy dest; combine then deletes the copy).
+Identical to s12's symmetric chassis (4/126).
+**Verdict. KILLED**, with a durable side-result: the shift's PLACEMENT is inert
+(exit edge vs just before loop 2's guard scores the same), so the symmetric
+chassis's +1 over the candidate is entirely its tail read, never the shift site.
+
+## [s18] A transplantable sibling exists for func_80017848: either another BB2 function whose whole shape is close enough that its already-matched pure C can be adapted, or a Kengo (PS2, shared Marionation engine) equivalent whose source decomposition can be re-derived. This is the third and last leg of the rederive modality (fresh m2c and the external decomp.me corpus were the first two, both spent).
+- mechanism: Sibling functions compiled from sibling source in the same translation unit share the programmer's decomposition, so a matched sibling's spelling of the same seam would be proven-good C on this exact chassis; and Kengo, sharing the engine, would carry the original source shape of the same routine.
+- probe: (a) 5-gram opcode-sequence census of all 1,437 asm/funcs/*.s bodies in the 0.6x-1.8x instruction-count band (tmp/grind/func_80017848/s18b/sibling_scan.py). (b) Whole-binary scan for the residual's exact seam fingerprint - `addu D,S,$zero` followed within three insns and no label by a three-register `addu` consuming D and redefining S - filtered to functions that are pure-C-defined, rule-free and not queue-active (fp_scan.py, fp_exact.py, fp_exact2.py). (c) Kengo channel: inspect Kengo/, kengo_matches.csv, Kengo/kengo_functions_full.txt, and tools/kengo_match.py --bb2 func_80017848.
+- result: (a) Maximum whole-function overlap 0.120 (func_8005BA8C, func_8006BD28); the top fifteen all sit between 0.096 and 0.120 - no near-duplicate body exists in the game. (b) The exact fingerprint occurs in exactly 3 of 1,437 functions: func_80017848 itself (twice, once per scan loop), func_800200DC (NOT a preheader - call-return staging in the shadow of `jal SquareRoot0`, and it carries 14 register-allocation regfix rules at regfix.txt:628) and func_8005E54C (still an asmfix replace_with_asmfile body, honest distance 799, queue-active, so no C exists to transplant). Widened to any consumer of the copy over matched, rule-free, pure-C-defined functions: 31 hits, every one call-return staging ($s0 = $v0 after a jal, then $v0 reused) or shift staging, NOT ONE a loop-preheader base copy. (c) Kengo ships the retail PS2 disc plus debug SYMBOLS only (name + size + source path in kengo_functions_full.txt) - there is no Kengo C source anywhere in the tree; kengo_matches.csv has no row for func_80017848; and grepping the whole Kengo symbol table for link|pair|near|regist, plus reading the 32-symbol src/ishito/is_coli.c list, finds nothing resembling a pair/link registration in the 120-150-instruction band.
+- verdict: KILLED
+
+## [s18] Writing target's loop-1 exit edge exactly as target materialises it - BOTH `lw $a0,0xC($s2)` and `sll $a1,$s4,6`, i.e. a fresh ctx+0xC read AND the shift recomputed on the exit edge, with sh2 deleted so loop 2's guard and base share the recomputed sh - puts the join block's inputs in target's registers and lets loop 2's preheader emit target's copy.
+- mechanism: The join .L8001791C has two predecessors and its guard address add reads whatever the loop-1 exit edge left live; if both live values are produced on that edge in target's own order, the register identities entering the copy/base pair should follow.
+- probe: Cell X1 (tmp/grind/func_80017848/s18b/X1.c), one sandbox --disable all run.
+- result: 4 at 126/127 instructions - loop 1 comes out one instruction SHORT, which is precisely E-s16-2's signature: a fresh read downstream of loop 1's base add makes cse canonicalise the base add onto the copy dest, combine then deletes the copy, and loop 1 loses target's `addu $a3,$a0,$zero`. The score is identical to s12's symmetric chassis (4/126), which isolates a variable s12 could not measure: the shift's PLACEMENT is inert (exit edge vs just before loop 2's guard), so the symmetric chassis's +1 over the candidate is entirely its tail read.
+- verdict: KILLED

@@ -416,3 +416,80 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * function was disposed under the owner's standing ruling (2026-07-27) — see
  * docs/grind/decisions.md.
  */
+/* [s18 REDERIVE ADDENDUM — body unchanged, still 3, re-measured twice this
+ * session on a clean tree (HEAD's committed src/ings.c body scores 16; this body
+ * scores 3 at 127/127).]  s18 closed s17's frontier item #2 — "a whole-function
+ * chassis derived from a different source-level decomposition" — negatively, and
+ * added the first external prior art this function has ever had.
+ *
+ *  (1) THERE IS NO SECOND m2c READING.  Five structuring configurations
+ *      (default, --no-andor, --passes 2, --gotos-only, --reg-vars) collapse to
+ *      ONE decomposition: --passes 2 is byte-identical to default, --no-andor and
+ *      --gotos-only differ only in how the top guard and the shared exit are
+ *      spelled, and --reg-vars emits semantically broken C.  The frontier's
+ *      premise was false for this function.
+ *
+ *  (2) THE RAW RE-DERIVATION IS 53, AND THE GAP IS NOW ATTRIBUTED.  R1 (faithful
+ *      --no-andor transcription) = 53; R2 (m2c's goto-structured single-exit CFG
+ *      + this body's loops) = 15; R3 (this body's CFG + m2c's walking-pointer
+ *      rotated loops) = 49.  So m2c's control flow costs +12 and its loop form
+ *      costs +46, additively.  The s8/s9 lineage is not a historical accident.
+ *
+ *  (3) THE EXPLICIT WALKING ELEMENT POINTER IS DEAD AT EVERY SITE.  Target's own
+ *      preheader ends with `addu $v0,$a0,$v1` and its loop closes with the same
+ *      insn, but writing that pointer in C costs 13 (loop 1, s12), 14 (loop 2,
+ *      cell W2 this session, at the correct 127/127 count — all of it register
+ *      identity) or 49 (both).  GCC already strength-reduces this body's
+ *      index addressing into that pointer.
+ *
+ *  (4) PRIOR ART FOR THE RESIDUAL IDIOM EXISTS AND IT IS PURE C.  Mining the
+ *      3,754-scratch decomp.me corpus for matched scratches containing the
+ *      copy→add pair found 163 hits, 50 target-shaped, 28 with the exact
+ *      copy-then-redefine-source pattern.  The structural twin is scratch 19TpT
+ *      (func_8009C6D8, gcc2.7.2-cdk -O2, matching): its copy is an INNER loop's
+ *      induction base initialised from an OUTER loop's live row-base in a plain
+ *      `for (row) for (col)` nest — the consumer sits in the inner loop body, a
+ *      different block, so it survives combine (s16's out-of-block leg) and is
+ *      free because the outer loop keeps the source live anyway.  That is the
+ *      precondition func_80017848 does not have and cannot buy: no nested loop,
+ *      nothing live across loop 2, and every tail re-read routed through a live
+ *      local is 19-22 (s9/s11).  Evidentiary value: the residual idiom IS
+ *      compiler-producible pure C, corroborating scan_hand_coded = LOW 0/8.
+ */
+/* [s18 SECOND-DISPATCH ADDENDUM (rederive) - body unchanged, still 3, re-measured
+ * at 127/127 at the start of the session; HEAD's committed body is 16.]  The one
+ * rederive leg the first s18 dispatch had not run - SIBLING / KENGO TRANSPLANT -
+ * is now closed three independent ways, and one new cell was measured.
+ *
+ *  (1) NO WHOLE-FUNCTION SIBLING EXISTS IN BB2.  A 5-gram opcode-sequence census
+ *      of all 1,437 asm/funcs bodies in the 0.6x-1.8x size band tops out at
+ *      0.120 overlap with this function.  Nothing in the game is shaped like it.
+ *
+ *  (2) THE RESIDUAL'S SEAM IDIOM IS UNIQUE IN THE BINARY.  Target's exact
+ *      fingerprint - `addu D,S,$zero` then, within three insns and no label, a
+ *      three-register `addu` consuming D and redefining S - occurs in exactly 3
+ *      of 1,437 functions: this one (both loops), func_800200DC (call-return
+ *      staging after `jal SquareRoot0`, and it carries 14 regfix RA rules) and
+ *      func_8005E54C (still an asmfix asm body, distance 799).  Widened to any
+ *      consumer over matched, rule-free, pure-C functions: 31 hits, every one
+ *      call-return or shift staging, NOT ONE a loop preheader.  So the only
+ *      in-tree spelling a compiler demonstrably produces needs a preceding CALL
+ *      - s17's R4 refusal leg - which is not C-reachable here without changing
+ *      semantics.  The census confirms E-s17-1's R4 classification; it does not
+ *      open an eighth path.
+ *
+ *  (3) A KENGO TRANSPLANT IS STRUCTURALLY IMPOSSIBLE - FOR EVERY BB2 FUNCTION.
+ *      Kengo/ ships the retail PS2 disc plus debug SYMBOLS only (name + size +
+ *      source path).  There is no Kengo C source in the tree, so that channel can
+ *      supply names and module attribution and never a source shape.  No symbol
+ *      in the plausible modules (is_coli / hi_landhit / nm_cpu, where this
+ *      function's ings.c neighbours map) reads as a pair/link registration.
+ *
+ *  (4) CELL X1 - target's OWN exit-edge spelling is 4.  Writing both of target's
+ *      loop-1 exit-edge instructions (`lw $a0,0xC($s2)` / `sll $a1,$s4,6`) as
+ *      `p = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` with sh2 deleted scores 4 at
+ *      126/127 - loop 1 one insn SHORT, the E-s16-2 cse-canonicalisation
+ *      signature.  Equal to s12's symmetric chassis, which isolates a variable
+ *      s12 could not: THE SHIFT'S PLACEMENT IS INERT, and the symmetric chassis's
+ *      +1 is entirely its tail read.
+ */

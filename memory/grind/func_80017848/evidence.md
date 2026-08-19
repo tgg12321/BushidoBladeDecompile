@@ -1846,3 +1846,253 @@ is not simultaneously an 11-point regression elsewhere.
 - [s17] Exhaustion: 17 sessions, 6 distinct modalities (recon/structural/permuter/rederive/synthesis/forensics), floor flat at 3 for the last 8; 5 permuter campaigns totalling 180,472 iterations with 41 finds and ZERO engine-scored improvements on four chassis (including the directed cross-product campaign s14a); ~150 hand-built structural cells; 123 rejected forms banked in memory/grind/func_80017848/rejected/.
 
 - [s17] Disposition filed THIS session in docs/grind/decisions.md under the heading '2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. Terminal; nothing pending on the owner. src/ings.c was restored to HEAD, so the working tree carries no source edits from this session.
+
+## s18 (2026-08-18, modality `rederive`) — the re-derivation frontier closes; a matched prior-art twin for the residual idiom is found in the decomp.me corpus
+
+Chassis re-measured first: HEAD's committed `src/ings.c` body scores **16**
+(`sandbox --disable all`, 125/127 insns); applying
+`memory/grind/func_80017848/candidate.c` verbatim re-measures at **3** (127/127),
+twice this session (once at the start, once after restoring it at the end). The
+floor is unchanged and every number below is on that chassis.
+
+### E-s18-1 — m2c has exactly ONE structural reading of this function; the "different structuring configuration" the s17 frontier asked for does not exist
+Five m2c configurations were run on `asm/funcs/func_80017848.s`
+(`tmp/grind/func_80017848/s18/m2c.sh`, outputs `m2c_*.c` in the same directory):
+`--valid-syntax` alone (default), `--no-andor`, `--passes 2`, `--gotos-only`,
+and `--reg-vars v0,v1,a0..a3,s0..s4`.
+
+  * `--passes 2` is **byte-identical** to the default output (`diff` empty).
+  * `--no-andor` and `--gotos-only` differ from the default **only** in how the
+    top guard and the shared `return 0` exit are spelled (`&&`/`||` fused
+    expression + `goto block_3` vs. nested `if` + `goto block_4`/`block_3`). The
+    loop decomposition, the local set, the read placement and the preheader
+    contents are character-identical.
+  * `--reg-vars` produces semantically BROKEN C (`var_v0 = var_v1 < var_v0;`
+    immediately overwritten by `var_v0 = var_a0 + var_v1;`, and the loop test
+    reads `if (var_v0 == 0)` on an address) — it is not a compilable chassis at
+    all, so it cannot be "the first compilable output" of anything.
+
+So the s17 frontier's premise — that a different m2c structuring configuration
+would yield a different source-level decomposition — is **false for this
+function**. m2c's reading is invariant: rotated do/while loops, an explicit
+walking element pointer (`e = base + i` recomputed at the bottom of each loop),
+the index increment hoisted above the element test, and a fresh `ctx+0xC` read at
+loop 2's guard.
+
+### E-s18-2 — the raw re-derivation scores 53, and the 50-point gap decomposes cleanly into TWO independent costs
+The frontier's own closing predicate was "if the raw re-derivation is worse than
+12 the lineage question is settled negatively." Three cells settle it and also
+attribute the loss, so a future session never has to re-measure the parts:
+
+| cell | shape | score |
+|---|---|---|
+| **R1** | faithful transcription of m2c `--no-andor`, no hand-tuning beyond the 2-arg `math_Distance3D` prototype and BB2 pointer types | **53** (121/127 insns) |
+| **R2** | m2c's CONTROL FLOW (single `block_3:` exit reached by `goto`, whole body inside `if (slot_a != slot_b)`) + the candidate's loop bodies | **15** (125/127) |
+| **R3** | the candidate's control flow (four inline `return 0`s) + m2c's walking-pointer rotated loop bodies | **49** (124/127) |
+
+Reading: m2c's goto-structured single-exit CFG costs **+12** (R2 vs the
+candidate's 3 — consistent with s12's independently measured "all-goto = 15"),
+and m2c's walking-pointer loop form costs **+46** (R3 vs 3). The two are
+essentially additive (12 + 46 ≈ 53 - 3 = 50). Banked as
+`rejected/s18_m2c_noandor_faithful_rederivation_costs_53.c`,
+`rejected/s18_m2c_goto_cfg_single_exit_costs_15.c`,
+`rejected/s18_m2c_walking_ptr_both_loops_costs_49.c`.
+
+**Consequence: s17 frontier item #2 is CLOSED negatively.** The s8/s9 lineage is
+not an accident of search history — every non-lineage whole-function chassis
+derivable from the asm by machine is 12 to 50 points worse, and the two
+independent axes on which it is worse are now priced separately.
+
+### E-s18-3 — the walking element pointer is target's own shape, and writing it in C costs 11 at loop 2
+Target's loop 2 preheader/body (asm/funcs/func_80017848.s:63-81) literally
+contains `addu $v0,$a0,$v1` (e = base + i) in the preheader and again in the
+loop-closing delay slot, i.e. GCC's own strength reduction produces the walking
+pointer from the candidate's index-addressed C. Writing that pointer explicitly
+in C at loop 2 ONLY (cell **W2**, `e = base + i;` initialised in the preheader and
+updated after `i++`) scores **14** with the correct instruction COUNT (127/127) —
+so it is 11 points of pure register-identity loss, not a shape difference.
+Banked as `rejected/s18_loop2_walking_element_ptr_costs_14.c`. Do not re-probe
+the explicit-element-pointer family in either loop: 13 (s12, loop 1), 14 (here,
+loop 2), 49 (both).
+
+### E-s18-4 — CORPUS PRIOR ART: 3,754 decomp.me scratches mined; a MATCHED twin of the residual idiom exists, and its origin is a nested-loop induction-variable initialisation
+The local decomp.me corpus (`tmp/decomp_me_corpus/`, 3,754 scratches for the
+three BB2-toolchain compilers) was mined for the exact idiom the residual needs:
+a reg-reg copy whose destination is consumed by an immediately following `addu`.
+Scripts: `tmp/grind/func_80017848/s18/mine_copy_idiom.py` (copy → add within 2
+insns, source dead afterwards) and `mine_exact.py` (target's exact
+copy-then-redefine-the-source pattern `$X = $Y; $Y = $Z + $X`).
+
+  * 163 copy→add hits in MATCHED (`is_matching`, score 0) scratches; **50** have
+    the source register dead afterwards, i.e. are target-shaped redundant copies.
+  * **28** matched scratches contain target's exact copy-then-redefine-source
+    pair. Of those, the overwhelming majority are *call-return* moves
+    (`jal f; addu $sN,$v0,$zero; addu $v0,$sN,$zero` — a return-value staging
+    idiom that has no bearing here) or *constant-multiply expansions*
+    (`addu $a0,$v0,$zero; sll $v0,$a0,3; addu $v0,$v0,$a0` — the operand is
+    copied because the accumulator reuses its register).
+  * The one genuine STRUCTURAL twin is scratch **19TpT** (`func_8009C6D8`,
+    compiler `gcc2.7.2-cdk`, flags `-O2 -G0 -g2`, score 0 / matching). Its target
+    asm contains, at a loop preheader reached by a join:
+
+        .L8009C704:
+        addu $s0, $zero, $zero
+        addu $v1, $a0, $zero     <- the preheader copy, source dead after
+        .L8009C70C:
+        addu $v0, $v1, $a1       <- the base add consuming the copy
+
+    which is the same three-instruction fingerprint as our residual
+    (`addu $a3,$a0,$zero` / `lw $a2,0x10($s2)` / `addu $a0,$a1,$a3`). Its C is a
+    plain **nested loop** — `for (row = 0; row < 5; row++) for (col = 0; col < 5;
+    col++) D_801D3398.cells[row][col].flags = 0;` — where `$a0` is the OUTER
+    loop's row-base address (live across the whole inner loop, incremented once
+    per outer iteration) and `$v1` is the inner loop's induction base copied from
+    it at the inner preheader. The copy survives because its consumer sits in the
+    inner loop BODY, a different basic block (s16's out-of-block leg of the
+    survival trichotomy), and it costs nothing because the outer loop needs the
+    original to stay live anyway.
+
+**What this proves and what it does not.** It proves the idiom is producible from
+ordinary pure C under this exact compiler — the residual is not evidence of hand
+asm (consistent with `scan_hand_coded` = LOW 0/8). It does NOT give this function
+a carrier: the prior art's precondition is a live outer-loop value that the inner
+loop copies, and func_80017848 has no nested loop and no value live across loop 2
+(s11: target re-reads `ctx+0xC` three times in the tail; s9/s11: routing any tail
+read through a live local costs 19-22). Fabricating an enclosing loop to
+manufacture the precondition is the duplicated-region family s12 already priced
+at 35 and is a structural cheat smell besides.
+
+## s18 second dispatch (2026-08-18, modality `rederive`) - the sibling/Kengo transplant leg closes; the residual's seam idiom is unique in the binary
+
+Chassis re-measured FIRST, before any probe: the ledger candidate body applied to
+`src/ings.c` scores **3 at 127/127 instructions** (`sandbox func_80017848
+--disable all`, `rules_dropped: 2`, `cheat_asm_stripped: 49`). The dispatch brief
+reported the HEAD chassis measurement as unavailable; it is 3 with the candidate
+in place, unchanged from s9-s18, so every banked spelling conclusion is still
+chassis-valid.
+
+### E-s18-5  No whole-function sibling exists in BB2 (the transplant leg's first prong)
+
+`tmp/grind/func_80017848/s18b/sibling_scan.py` extracts the opcode sequence of
+every one of the 1,437 `asm/funcs/*.s` bodies, keeps those in the 0.6x-1.8x
+instruction-count band around func_80017848's 127, and scores each by the
+fraction of func_80017848's 5-gram opcode multiset it reproduces. The maximum
+over the whole binary is **0.120** (func_8005BA8C and func_8006BD28); the top
+fifteen all sit between 0.096 and 0.120. There is no near-duplicate body in the
+game whose whole-function shape could be transplanted onto this function, so the
+"sibling transplant" leg of the rederive modality has no source material at the
+function level.
+
+### E-s18-6  The residual's seam idiom occurs exactly three times in 1,437 functions, and never in matched pure C at a loop preheader
+
+`tmp/grind/func_80017848/s18b/fp_exact.py` scans every function for target's
+exact seam fingerprint: `addu D,S,$zero` (a plain register copy) followed within
+three instructions, with no intervening label, by a THREE-REGISTER `addu` that
+consumes `D` and writes `S` (i.e. the copy's source register is redefined by the
+consumer). The complete result set for the whole binary:
+
+  - **func_80017848** - twice, `addu $a3,$a0,$zero` -> `addu $a0,$a1,$a3`, once
+    per scan loop (asm/funcs/func_80017848.s:39-40 and :64-66). Both loops carry
+    the SAME construct; the candidate reproduces loop 1's and pays one
+    instruction for it in the exit tail.
+  - **func_800200DC** (src/code6cac.c) - `addu $v1,$v0,$zero` ->
+    `addu $v0,$a2,$v1` at asm/funcs/func_800200DC.s:94-96. NOT a loop preheader:
+    it is call-return staging, `$v1 = $v0` in the shadow of `jal SquareRoot0`
+    (:92) with `sll $a2,$s3,5` between. The function also carries 14
+    register-allocation regfix rules (regfix.txt:628), so it is not a clean
+    pure-C precedent for anything.
+  - **func_8005E54C** - `addu $s0,$v0,$zero` -> `addu $v0,$s3,$s0`. Body is still
+    asm (`asmfix replace_with_asmfile`), queue-active at honest distance 799,
+    `hand_coded_tier: LOW`. No C exists to transplant. (The first version of the
+    scan mis-attributed this one to `src/code6cac_c2.c`; that file only carries
+    its `extern` prototype at :109. `fp_exact2.py` fixes the detector to require
+    a real definition with a body.)
+
+Widening the filter to any consumer of the copy (`addu`/`addiu`/`sll`/`subu`/
+load/store) over functions that are pure-C-defined, rule-free and NOT in
+`engine/queue.json` yields 31 hits (`fp_exact2.py`). Every one is call-return
+staging (`$s0 = $v0` after a `jal`, then `$v0` reused) or shift staging
+(`$s0 = $v0` then `sll $v0,$s0,16`). **Not one is a loop-preheader base copy.**
+
+Consequence: the idiom the residual needs has NO in-tree pure-C precedent to
+copy, and the one in-tree spelling that a compiler demonstrably does produce
+depends on a preceding CALL - which is s17's R4 refusal leg (combine.c's
+`INSN_CUID (insn) < last_call_cuid`), already recorded as not C-reachable here
+without changing the function's semantics. The in-tree census is therefore an
+independent empirical confirmation of E-s17-1's R4 classification rather than a
+new lever.
+
+### E-s18-7  A Kengo transplant is structurally impossible - Kengo supplies symbols, not source
+
+The `Kengo/` tree (889 MB) contains the retail PS2 disc image
+(`Kengo - Master of Bushido (USA).bin/.cue`), an extracted `disc/`, and the debug
+symbol dumps `kengo_functions_full.txt` / `kengo_globals_full.txt` - which give
+per-function NAME + SIZE + originating source path (`// FILE -- src/ishito/
+is_coli.c`) and nothing else. **There is no Kengo C source in the repository.**
+So the Kengo channel can only ever supply names, sizes and module attribution; it
+cannot supply a source shape to transplant, for this or any other BB2 function.
+That is a permanent property of the artifact, not a gap to be filled later, and
+it generalises the two prior negative results in [[slog-kengo-dead-end]] from "no
+equivalent for these two functions" to "no source-shape channel at all".
+
+Supporting detail: `kengo_matches.csv` has zero rows for func_80017848.
+`tools/kengo_match.py --bb2 func_80017848` cannot run from the Windows side
+(`objdump` is not on PATH; it is a WSL toolchain binary). The `ings.c` rows that
+DO exist map its neighbours to `src/hide/hi_landhit.c` (func_800164AC ->
+gnd_land_hit_char, func_80016A8C -> gnd_land_hit_char_poly2),
+`src/ishito/is_coli.c` (func_80017A44 -> coli_MakeKatanaVec, the immediately
+following function) and `src/numata/nm_cpu.c` (func_80016E60 ->
+cpu_check_kamaekae). Reading the full `is_coli.c` symbol list (32 functions) and
+grepping the whole Kengo symbol table for `link|pair|near|regist` finds nothing
+that reads as a pair/link registration in the 120-150-instruction band. Kengo's
+collision module was restructured for the PS2 title; there is no equivalent
+symbol to even name this function after.
+
+### E-s18-8  Cell X1 - the fully target-shaped loop-1 exit tail is 4 at 126/127, and the shift site is inert
+
+Target re-materialises BOTH values the join block needs on loop 1's exit edge:
+`lw $a0,0xC($s2)` then `sll $a1,$s4,6` (asm/funcs/func_80017848.s:56-57), and the
+join `.L8001791C` then computes loop 2's guard address from them before the copy.
+Cell X1 writes exactly that shape: loop 1's exit tail becomes
+`p = *(u8 **)(ctx + 0xC); sh = slot_a << 6;`, `sh2` is deleted, and loop 2's
+guard and base both read the recomputed `sh`.
+
+X1 = **4 at 126/127 instructions** - loop 1 one instruction SHORT, which is
+precisely E-s16-2's signature: with a fresh read instead of the candidate's
+`p = q` downstream of loop 1's base add, cse canonicalises the base add onto the
+COPY DEST, combine deletes the copy, and loop 1 loses target's
+`addu $a3,$a0,$zero`.
+
+The value of the cell is that it isolates a variable s12 could not: s12's
+symmetric chassis (fresh-read tail, `sh2` recomputed just before loop 2's guard)
+is also 4/126. Moving the recompute up onto the exit edge so it sits exactly
+where target's `sll $a1,$s4,6` is changes NOTHING. **The +1 of the symmetric
+chassis is entirely the tail read; the shift's placement is inert.** Banked as
+`rejected/s18b_target_shaped_tail_fresh_read_plus_sh_recompute_costs_4.c`.
+
+### Durable one-liners from the s18 second dispatch
+
+- [s18b] Honest floor re-measured at 3 (127/127) with the ledger candidate in place; HEAD's committed body is 16. Chassis unchanged.
+- [s18b] Whole-binary 5-gram similarity census: max overlap with func_80017848 is 0.120 over all 1,437 functions in the size band. No sibling body exists.
+- [s18b] The exact seam fingerprint (copy + three-register add consuming it and redefining its source) occurs in exactly 3 of 1,437 functions; the only non-func_80017848 instances are call-return staging in a 14-regfix-rule function and an unmatched asm body. Zero matched pure-C loop-preheader precedents in the tree.
+- [s18b] Every in-tree matched pure-C instance of copy-then-consume (31 hits) is call-return or shift staging - i.e. the combine refusal that makes the idiom free in-tree is R4 (call boundary), which is not C-reachable here. The census empirically confirms E-s17-1's R4 leg.
+- [s18b] Kengo ships debug SYMBOLS only (name/size/source-path); no Kengo C source exists in the tree, so the Kengo transplant channel cannot supply a source shape for ANY BB2 function. Generalises [[slog-kengo-dead-end]].
+- [s18b] Cell X1 (target-shaped exit tail: fresh ctx+0xC read AND the shift recomputed on loop 1's exit edge, sh2 deleted) = 4 at 126/127. Equal to s12's symmetric chassis, so the shift site is inert and the symmetric chassis's +1 is the tail read alone.
+
+- [s18] Honest floor re-measured at the start of the session with the ledger candidate applied to src/ings.c: score 3, target_insns 127, build_insns 127, rules_dropped 2, cheat_asm_stripped 49. HEAD's committed body scores 16. The chassis is unchanged from s9-s18, so every banked spelling conclusion is still chassis-valid.
+
+- [s18] Whole-binary 5-gram opcode-sequence census: the maximum similarity to func_80017848 among all 1,437 asm/funcs bodies in the 0.6x-1.8x size band is 0.120. No sibling body exists to transplant at the function level.
+
+- [s18] The residual's exact seam fingerprint (register copy followed within three insns by a three-register addu that consumes the copy's dest and redefines its source) occurs in exactly 3 of 1,437 functions: func_80017848 (both loops), func_800200DC (call-return staging, 14 regfix RA rules) and func_8005E54C (unmatched asm body, distance 799). Zero matched pure-C loop-preheader precedents exist anywhere in the tree.
+
+- [s18] All 31 in-tree instances of the wider copy-then-consume pattern in matched, rule-free, pure-C functions are call-return staging or shift staging - i.e. the combine refusal that makes the idiom free in this codebase is s17's R4 leg (combine.c's INSN_CUID (insn) < last_call_cuid, a call between the copy and the consumer), which is not C-reachable in func_80017848 without changing its semantics. The census is an independent empirical confirmation of E-s17-1's R4 classification, not an eighth refusal path.
+
+- [s18] Kengo/ contains the retail PS2 disc plus debug SYMBOLS only (per-function name + size + source path); there is no Kengo C source in the repository, so the Kengo channel can supply names and module attribution but never a source shape - for func_80017848 or any other BB2 function. This generalises the two prior per-function negatives in memory/project/slog-kengo-dead-end.md to the whole channel.
+
+- [s18] func_80017848's ings.c neighbours map to Kengo's src/hide/hi_landhit.c (func_800164AC -> gnd_land_hit_char, func_80016A8C -> gnd_land_hit_char_poly2), src/ishito/is_coli.c (func_80017A44 -> coli_MakeKatanaVec, the immediately following function) and src/numata/nm_cpu.c (func_80016E60 -> cpu_check_kamaekae); no symbol in those modules reads as a pair/link registration, and kengo_matches.csv has no row for func_80017848 at all.
+
+- [s18] Cell X1 (target's own exit-edge spelling: fresh ctx+0xC read AND the shift recomputed on loop 1's exit edge, sh2 deleted, loop 2's guard and base sharing sh) = 4 at 126/127, equal to s12's symmetric chassis. The shift's placement is therefore inert and the symmetric chassis's +1 is entirely its tail read.
+
+- [s18] Fresh read of the target listing this session pinned the seam's block structure precisely: loop 1's exit edge is `lw $a0,0xC($s2)` / `sll $a1,$s4,6` (asm/funcs/func_80017848.s:56-57), the join .L8001791C computes the guard address `addu $v0,$a1,$a0` then `lw $v0,0x20($v0)` / `blez`, and loop 2's preheader is `addu $a3,$a0,$zero` / `lw $a2,0x10($s2)` / `addu $a0,$a1,$a3` / `addu $v0,$a0,$v1` - so both loops carry the SAME copy+add construct and the copy sits AFTER the guard's branch, in a single-predecessor block whose predecessor is the join.
+
+- [s18] Process note: the previous dispatch of this session was discarded by the validator for returning owner-gated under `rederive` modality. Its ledger work (H-s18-1..3, E-s18-1..4, four rejected forms) was on disk and is preserved; this dispatch corrected the disposition claim in docs/grind/decisions.md so the s18 addendum no longer asserts a terminal disposition, and returns `progress`.
