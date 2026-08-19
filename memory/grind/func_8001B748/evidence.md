@@ -727,3 +727,188 @@ dependences with no override; nothing else in the ordering needs to change.**
 - [s6] Splitting new_var into its two products around the gp store - the C shape that literally mirrors target's emitted interleave - scores 28 @ 231 because it re-allocates the a+8 load from $v0 to $a0 and cascades through the mflo pair. Mimicking target's schedule at source level destroys target's register assignment.
 
 - [s6] Additional negatives banked: split-init accumulation of the 0x18 expression into the shared t (110 @ 231 either operand order); deferring the dst+4 store behind a named intermediate (63 and 71 @ 230); deferring the dst+0 store to the end (91 @ 230).
+
+## == s7 (forensics modality, 2026-08-19) — THE PRIORITY ARITHMETIC IS NOW EXACT, AND THE RESIDUAL SHRANK 9 SLOTS -> 6 ==
+
+### Chassis
+`src/code6cac.c` carried the s6 floor-2 body at session start (no drift this time). Re-measured
+`sandbox func_8001B748 --disable all` = `{"score": 2, "target_insns": 231, "build_insns": 231,
+"rules_dropped": 1}` on the inherited body, and again = 2 on the NEW body left in src/ at session end.
+
+### HEADLINE 1 — pass attribution nailed to cc1's own output, not maspsx/dbr
+`tmp/grind/func_8001B748/s7/d_c1/dumps/b.s` (cc1 -da, instrumented) already emits
+`sll $3,$17,2 ... addu $3,$3,$17 / sh $0,D_800A3310 / lh $4,8($6)`. The gp store is misplaced
+BEFORE maspsx, before `as`, before the delay-slot filler. The residual is created by cc1's SECOND
+scheduling pass (sched2, `schedule_block` in tools/gcc-2.7.2/sched.c) and by nothing else.
+
+### HEADLINE 2 — the exact priority arithmetic (sched.c `priority()`, the `- 1` line)
+
+    prev_priority = priority (pred) + insn_cost (pred, link, insn) - 1;
+
+and `insn_cost` floors the cost at 1 (`if (ncost <= 1) LINK_COST_FREE (link) = ncost = 1;`) AFTER
+`ADJUST_COST` zeroes anti/output deps. Therefore, exactly:
+  * an ANTI or OUTPUT dep contributes `pred_pri + 0`;
+  * a TRUE dep contributes `pred_pri + (result_ready_cost(pred) - 1)`, i.e. **+0 from a store or an
+    mflo, +1 from a load (memory unit latency 2), +11 from a mult (imuldiv latency 12)**.
+This is why the block's lattice is {1,24,36,47,48,59,70}: the six mults build the mflo ladder
+13/24/36/47/59/70, and every value downstream of the 4th mflo is 47 unless it hangs off a load or a
+mult. **48 in this block is reachable ONLY as `47 + (load latency - 1)` or as an anti/output dep on
+an already-48 insn.** s6's "the store can never be 46" stands, and now has its proof.
+
+### HEADLINE 3 — the gp store's emitted slot is EXACTLY "immediately before its earliest-emitted memory successor", because sched2 runs BACKWARD
+sched2 picks insns from the end of the block toward the start (`PICK clock=1` is the block's LAST
+insn). An insn is ready once ALL its successors are picked, so the gp store becomes ready at
+`(highest successor clock) + 1` = one clock after its EARLIEST-EMITTED memory successor. It then
+always wins its priority group on `potential_hazard` (it is a unit-0 movhi; every chain insn is a
+unit -1 sll/addu with hazard identically 0). This single rule explains every measurement in the s3
+and s6 relocation sweeps, base included, without any further hypothesis.
+
+### HEADLINE 4 — SPLITTING THE dst+8 PRODUCT WITH A NAMED INTERMEDIATE MOVES THE STORE 3 SLOTS CLOSER AND MAKES OUR PROGRAM ORDER MATCH TARGET'S (new best form, banked as candidate.c)
+
+    s32 pa;                              /* declared with the other locals */
+    ...
+    pa = frac * (*((s16 *) (a + 8)));
+    D_800A3310 = 0;
+    new_var = pa + (inv_frac * (*((s16 *) (b + 8))));
+
+Score stays 2 (still one displaced insn) but the RESIDUAL CHANGES: the store moves from
+"after `lh a0,8(a2)` and `sll v1,v1,0x2`" (9 slots too late) to "after `addu v1,v1,s1`, immediately
+before `lh a0,8(a2)`" (6 slots too late). Mechanism, from the dep dump: in the s6 base the b+8 load
+PRECEDED the store in program order, so it was an ANTI predecessor of the store and the store's
+earliest memory successor was `sh s4,18(s0)`; with the split the b+8 load FOLLOWS the store, becomes
+a TRUE successor (store->load), and the store now lands immediately before it — which is target's
+program order. **Target also has the gp store before the b+8 load** (`sh zero,0(gp)` at 0xe0,
+`lh a0,8(a2)` at 0xfc), so this split is a structural correction, not a lateral move.
+Six independent spellings all reach the identical 6-late residual at 231 insns: `c1_pa_inline`
+(block-scoped `pa`), `c2_pa_top` (`pa` declared after `new_var`), `c6_pa_first` (`pa` declared
+first), `e1_a8_local` / `e2_a8_local_first` / `e3_a8_b8_locals` (naming the `*(s16 *)(a + 8)` load
+instead of the product). Register allocation is UNCHANGED from base in all of them
+(`lh v0,8(a1)` / `mult t0,v0` / `lh a0,8(a2)` / `mult a3,a0`, all as target) — this is what s6's
+`new_var`-reassignment split (b1/b2/b3/b4, score 28) destroyed. The difference is that reassigning
+`new_var` gives the first product a long live range across the store; a distinct single-def local
+does not.
+
+### HEADLINE 5 — s6 frontier item F2 (force the a+8 load off $v0) is KILLED BY THE TARGET BYTES
+F2 proposed pushing the a+8 load out of `$v0` so the mult would read `$v1` and hand chain-1 a pri-48
+WAR partner. Target's own bytes are `lh v0,8(a1)` / `mult t0,v0` — the a+8 load IS in `$v0` in
+target. Any spelling that moves it breaks two bytes to fix one. Dead by contradiction, no measurement
+needed. (s6's note also misidentified the a+8 load as QTYDBG qty 14; qty 14 is the dst+4 chain
+{reg125,reg126,reg127}, birth 28 death 34 refs 6. The a+8 load is qty 15, reg1=129, birth 36,
+death 40, refs 2, got=2.)
+
+### HEADLINE 6 — THE EXACT CONFIGURATION TARGET REQUIRES, DERIVED FROM ITS OWN INSTRUCTION ORDER
+Reading target's emitted window backwards gives its sched2 clocks unambiguously:
+`mflo a1`@20, `sh s4,18(s0)`@21, `sll v1,v1,0x2`@22, `lh a0,8(a2)`@23, `addu v1,v1,s1`@24,
+`sll v1,v1,0x4`@25, `subu v1,v1,s1`@26, `sll v1,v1,0x3`@27, `addu v1,v1,s1`@28,
+`sll v1,s1,0x2`@29, **`sh zero,0(gp)`@30**, `mult t0,v0`@32, `lh v0,8(a1)`@34.
+Ours (candidate.c) is identical except the store is at clock 24 and everything between shifts by one.
+The store is READY at 24 in both (its true-dep successor, the b+8 load, is picked at 23; cost 1).
+So in target the store is ready and LOSES for six consecutive clocks. Under `schedule_select`
+(sched.c:2660-2745) that is possible only by priority-group exclusion — `potential_hazard` cannot do
+it (a unit-0 store always beats a unit -1 sll; s6 HEADLINE 2) and `actual_hazard` cannot do it (the
+MIPS "memory" unit's blockage is at most 3 cycles — mips.md:153-163 — and no memory insn issues at
+clocks 24..29 to re-block it). Simulating the two partial configurations against target:
+  * chain-1 at 48, b+8 load at 47  ->  `lh a0,8(a2)` moves ABOVE the whole chain. WRONG.
+  * chain-1 at 47, b+8 load at 48  ->  no change; the store still wins at clock 24. WRONG.
+  * **chain-1 (insns 135,137,138,140,141,143,144) AND the b+8 load BOTH at 48, gp store at 47 ->
+    reproduces target's clocks 20..34 exactly.** That is the unique surviving configuration.
+
+### HEADLINE 7 — what each of those two promotions costs, in dep terms
+  * **b+8 load to 48** is CHEAP and reachable: its only predecessor today is the gp store (TRUE dep,
+    +0). A TRUE dep on the already-48 `sh v0,16(s0)` (insn 128) would give it `48 + 1 - 1 = 48`.
+    That means program-ordering `*((s16 *)(dst + 0x10)) = 0x80;` BEFORE the b+8 load. (Insn 128 is 48
+    because `li v0,128` anti-depends on the pri-48 `mult t0,v0` through `$v0`.) NOTE: the d1..d3
+    sweep moved the second-product statement DOWN past those stores and scored 6/14/14 — that is the
+    wrong direction; what is untried is moving the 0x10/0x12/0x14 stores UP above the second product
+    while leaving `new_var`'s definition where it is.
+  * **chain-1 to 48** is the hard half. Its head `sll v1,s1,0x2` has exactly two predecessors: an
+    OUTPUT dep on the mflo that last wrote `$v1` (pri 36, +0) and an ANTI dep on insn 93
+    `addu v0,v1,t2`, the dst+4 sum, which reads `$v1` (pri 47, +0). Its only data input is `$s1`
+    (the `frac_s1` parameter), live from the prologue, so **no TRUE dep on a load is available** and
+    the +1 route is closed. The only remaining route is to place a pri-48 insn that READS or WRITES
+    `$v1` between insn 93 and the chain head. The block's pri-48 insns are `mult t0,v0` (reads
+    $t0/$v0), `li v0,128` (writes $v0), `sh v0,16(s0)` (reads $v0/$s0) and chain-2 (writes $v0) —
+    **none of them touches `$v1` today, and all four of their registers are byte-fixed by target.**
+    The s6 F1 axis (win local-alloc's `qty_compare_1` so the 0x9C4 chain takes `$v0`) is the same
+    question asked from the allocator side and remains the live one, but s7 sharpens WHY it matters:
+    it is not that `$v0` is intrinsically better, it is that a `$v0`-resident chain-1 would anti-depend
+    on the pri-48 `mult t0,v0` / `sh v0,16(s0)` instead of the pri-47 dst+4 sum.
+
+### Measured negative this session (all at 231 insns unless noted; banked in rejected/)
+- `d1..d5` — sweeping the placement of the second-product statement through the five remaining
+  early-exit statements: 6 / 14 / 14 / 26 / 58 (d5 also loses an instruction, 223 insns).
+- `c3_reuse_t` / `c4_reuse_t_rev` — doing the split by reusing the shared `t` local instead of a
+  fresh one: 74 / 74. The shared local ties the first product into `t`'s quantity and wrecks the
+  later arm.
+- `c5_pa_top_rev` / `e4_pa_then_stores` — reversing the final sum's operand order: 4 each
+  (`addu v0,a1,t0` vs target's `addu v0,t0,a1`).
+- `e5_a8_s16local` (10), `e6_pa_nv_direct` (26 — folding the second product into the dst+8 store).
+
+### Artifacts / recipe
+- `tmp/grind/func_8001B748/s7/d_base/`, `.../d_c1/` — instrumented cc1 dumps (full.log + the -da set)
+  for the inherited base and for the new candidate form. sched2's block 1 is the 21st
+  `SCHEDDBG insn priorities:` header in full.log (19 blocks per pass, sched then sched2).
+- `tmp/grind/func_8001B748/s7/v/*.c` — all 23 variants scored this session.
+- s6's `dump6.sh`, s4's `score.py` and s6's `pd.py` harnesses are all still valid and were used
+  unchanged. `score.py` takes a BODY file (it prepends `s4/base_head.c`); `dump6.sh` takes a FULL
+  file (head + body concatenated).
+
+### HEADLINE 8 — THE MECHANISM IS NOW CONFIRMED BY CONSTRUCTION, AND ITS PRICE IS NAMED
+Hoisting `*((s16 *)(dst + 0x10)) = 0x80;` above the second product (variant `g1`,
+`tmp/grind/func_8001B748/s7/v/g1.c`, banked as
+`rejected/hoist-0x10-store-chain48-but-a8load-to-v1-24.c`) produced the FIRST compile in this
+function's history in which **chain-1 sits at priority 48** — the sched2 dump shows insns
+132/134/135/137/138/140/141 all `pri=48` — and, exactly as HEADLINE 6 predicted, the gp store is no
+longer emitted below the chain: `g1` emits `... mult t0,v1 / li v0,128 / sh zero,0(gp) / ... /
+sll v1,s1,0x2 ...`. **The priority-promotion mechanism is therefore real and sufficient, not a
+theory.**
+
+Its price, read straight off the pairdiff, is that `g1` gets chain-1 to 48 by putting the a+8 load in
+`$v1` (`lh v1,8(a1)` / `mult t0,v1`), so the chain's head anti-depends on the pri-48 mult through
+`$v1`. That is precisely the s6 F2 mechanism — and target's bytes are `lh v0,8(a1)` / `mult t0,v0`.
+Score 24. So:
+
+  **chain-1 at 48, in every spelling reached so far, is the SAME EVENT as the a+8 load moving to
+  `$v1` — and target forbids that move.**
+
+That is the sharpest statement of the wall available today, and it also constrains s6's F1: F1
+proposed making the 0x9C4 chain take `$v0` so it would anti-depend on the pri-48 `mult t0,v0` /
+`sh v0,16(s0)`. **F1 as literally stated is dead too** — target's chain-1 is `sll v1,s1,0x2`,
+`addu v1,v1,s1`, ..., i.e. chain-1 is in `$v1` in TARGET. Whatever target does, it keeps chain-1 in
+`$v1` AND the a+8 load in `$v0` AND still gets the store above the chain. So the surviving question
+for s8 is narrower and better posed than F1/F2 ever were:
+
+  **What gives target's `sll v1,s1,0x2` a priority-48 predecessor (or the gp store a ready clock of
+  31) while `$v1` holds chain-1 and `$v0` holds the a+8 load?** The only pri-48 insns in the block
+  are `mult t0,v0`, `li v0,128`, `sh v0,16(s0)` and chain-2 — none touches `$v1`. Either one of them
+  touches `$v1` in target (which would require a fifth pri-48 insn we have not produced), or the
+  block's mflo ladder is offset in target so that a DIFFERENT insn is the 48, or the gp store's
+  successor set in target contains something ours does not.
+
+### Also measured negative this session (batch g, all 231 insns)
+`g1` (0x10 hoisted, second product after) 24 · `g3` (0x10, 0x12 hoisted) 24 · `g4` (0x10, 0x14
+hoisted) 24 · `g5` (0x14 hoisted only) 10 · `g6` (0x10, 0x12, 0x14 hoisted) 14 · `g7` (0x14, 0x10
+hoisted) 14. Every hoist of the 0x10 store costs the a+8 load's register; the 0x14-only hoist (`g5`,
+10) does not promote chain-1 at all.
+
+- [s7] Chassis re-measured twice this session: sandbox func_8001B748 --disable all = {"score": 2, "target_insns": 231, "build_insns": 231, "rules_dropped": 1} on the inherited s6 body and again on the new candidate body left in src/code6cac.c.
+
+- [s7] Pass attribution is settled: cc1's own -da assembly (tmp/grind/func_8001B748/s7/d_c1/dumps/b.s:85-96) already emits the gp store six slots late, so maspsx, as, prologue_fix and the delay-slot filler are all exonerated. The residual is a cc1 sched2 (schedule_block) decision.
+
+- [s7] The priority recurrence is exact: sched.c priority() computes prev_priority = priority(pred) + insn_cost(pred, link, insn) - 1, and insn_cost floors at 1 after ADJUST_COST zeroes anti/output deps. So an ANTI/OUTPUT dep contributes pred_pri + 0 and a TRUE dep contributes pred_pri + (latency - 1): +0 from a store or an mflo, +1 from a load, +11 from a mult. This proves s6's lattice {1,24,36,47,48,59,70} rather than just observing it, and proves 46 is unreachable.
+
+- [s7] sched2 schedules BACKWARD (PICK clock=1 is the block's last insn), so an insn becomes ready one clock after its EARLIEST-EMITTED successor is picked. Combined with potential_hazard always favouring the unit-0 store over the unit -1 chain insns, this gives the single rule that explains every relocation measurement in s3, s6 and s7: the gp store is emitted immediately before its earliest-emitted memory successor.
+
+- [s7] NEW BEST FORM (candidate.c, floor 2): declaring 's32 pa;' with the other locals and writing 'pa = frac * (*((s16 *)(a + 8))); D_800A3310 = 0; new_var = pa + (inv_frac * (*((s16 *)(b + 8))));' puts the gp store BEFORE the b+8 load, matching target's program order. Residual shrinks from 9 slots late to 6 slots late at the same score of 2 and the same 231 insns, with register allocation unchanged (lh v0,8(a1) / mult t0,v0 / lh a0,8(a2) / mult a3,a0 all as target).
+
+- [s7] Six independent spellings of that split (c1_pa_inline, c2_pa_top, c6_pa_first, e1_a8_local, e2_a8_local_first, e3_a8_b8_locals) all reach the identical 6-late residual, so the effect is the dependence reversal and not any one declaration's incidental codegen. By contrast s6's new_var-reassignment split (b1..b4) scored 28 because reassigning new_var stretches the first product's live range across the store and re-allocates the a+8 load to $a0.
+
+- [s7] Target's sched2 clocks are now known exactly, read backwards off its emitted window: mflo a1 @20, sh s4,18(s0) @21, sll v1,v1,0x2 @22, lh a0,8(a2) @23, chain-1 @24..29, sh zero,0(gp) @30, mult t0,v0 @32, lh v0,8(a1) @34. Ours is identical except the store is at clock 24.
+
+- [s7] Variant g1 (hoisting the dst+0x10 store above the second product) produced the FIRST compile in this function's grind history with chain-1 at priority 48 (sched2 dump shows insns 132,134,135,137,138,140,141 all pri=48) and, exactly as predicted, emitted 'sh zero,0(gp)' ABOVE the chain. The promotion mechanism is therefore confirmed by construction, not merely hypothesised.
+
+- [s7] g1's price is that it promotes chain-1 by allocating the a+8 load to $v1 ('lh v1,8(a1)' / 'mult t0,v1'), which target forbids. Score 24. Both of s6's surviving register-side frontier items are therefore dead: F2 because target's a+8 load is in $v0, F1 because target's chain-1 is in $v1.
+
+- [s7] Corrected an s6 misattribution: QTYDBG qty 14 (birth 28, death 34, refs 6) is the dst+4 chain {reg125,reg126,reg127}, not the a+8 load. The a+8 load is qty 15, reg1=129, birth 36, death 40, refs 2, got=2 ($v0).
+
+- [s7] The full two-dimensional statement-placement space around the second product is now measured dead: d0..d5 (second product moved down) = 2/6/14/14/26/58 and g1,g3..g7 (0x10/0x12/0x14 stores hoisted up) = 24/24/24/10/14/14.

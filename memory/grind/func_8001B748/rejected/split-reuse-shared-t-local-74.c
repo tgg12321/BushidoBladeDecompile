@@ -2,7 +2,6 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
     int new_var;
-    s32 pa;
     s32 dx;
     s32 dy;
     u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
@@ -16,9 +15,9 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
         dst[0x1F] = 1;
         *((s32 *) (dst + 0)) = ((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12;
         *((s32 *) (dst + 4)) = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - 0x12C;
-        pa = frac * (*((s16 *) (a + 8)));
+        t = frac * (*((s16 *) (a + 8)));
         D_800A3310 = 0;
-        new_var = pa + (inv_frac * (*((s16 *) (b + 8))));
+        new_var = t + (inv_frac * (*((s16 *) (b + 8))));
         *((s16 *) (dst + 0x12)) = val;
         *((s16 *) (dst + 0x10)) = 0x80;
         *((s16 *) (dst + 0x14)) = 0;

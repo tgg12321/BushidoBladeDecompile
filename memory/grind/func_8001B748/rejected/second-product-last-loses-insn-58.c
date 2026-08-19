@@ -18,12 +18,12 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
         *((s32 *) (dst + 4)) = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - 0x12C;
         pa = frac * (*((s16 *) (a + 8)));
         D_800A3310 = 0;
-        new_var = pa + (inv_frac * (*((s16 *) (b + 8))));
         *((s16 *) (dst + 0x12)) = val;
         *((s16 *) (dst + 0x10)) = 0x80;
         *((s16 *) (dst + 0x14)) = 0;
         *((s32 *) (dst + 0x18)) = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
         *((s32 *) (dst + 8)) = new_var >> 12;
+        new_var = pa + (inv_frac * (*((s16 *) (b + 8))));
         return;
     }
     {
