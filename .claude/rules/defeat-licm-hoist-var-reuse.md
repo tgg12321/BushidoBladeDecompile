@@ -82,6 +82,110 @@ The hoist had looked like a "compiler-fork wall"; it was not — see
 [[difficult-is-not-impossible]]. The matching C existed; it just required reading the
 target's exact register reuse and the loop.c movable rules.
 
+### The threshold, priced (measured, not inferred)
+
+`move_movables` (loop.c:1631) moves a movable when
+
+    already_moved || (threshold * savings * m->lifetime) >= insn_count
+                  || (m->forces && m->forces->done && n_times_used[...] == 1)
+
+with `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532).
+
+**The number on this target: `n_non_fixed_regs == 60`.** `FIRST_PSEUDO_REGISTER` is 68
+(mips.h:1181) and `FIXED_REGISTERS` (mips.h:1188) has exactly 8 ones — `$0`, `$at`,
+`$k0`, `$k1`, `$gp`, `$sp`, `$ra`, and reg 67 (fp status). `n_non_fixed_regs` is counted
+in `init_reg_sets_1` (regclass.c:380-387) as `FIRST_PSEUDO_REGISTER` minus the fixed
+count, **after** `CONDITIONAL_REGISTER_USAGE`. That macro (mips.h:524-535) would fix the
+32 FP registers under `!TARGET_HARD_FLOAT` — but our build never passes `-msoft-float`
+and `TARGET_CPU_DEFAULT=16` is `MASK_GAS` only, so **hard float is on and the 32 unused
+FP regs are counted as allocatable**. Nothing else moves `fixed_regs` (regclass.c:499 is
+`-ffixed-REG`, :529 is `globalize_reg`; neither fires here).
+
+So:
+
+| loop | threshold |
+|---|---|
+| call-free   | `2 * (1 + 60)` = **122** |
+| with a call | `1 * (1 + 60)` = **61**  |
+
+(The separate giv threshold at loop.c:3241 uses `(3 + n_non_fixed_regs)` → **126 / 63**.)
+
+**Measured confirmation** — `func_800335D8`
+(`tmp/grind/func_800335D8/dumps/code6cac_b.loop`) brackets the with-call number from both
+sides in one dump:
+
+    Loop from 199 to 423: 71 real insns.
+    Insn 216: regno 129 (life 1), move-insn savings 1 not desirable      <- 61*1*1 < 71
+    Loop from 25 to 176: 46 real insns.
+    Insn  52: regno  91 (life 1), move-insn savings 1  moved to 434      <- 61*1*1 >= 46
+
+Both loops contain calls. A `savings 1, life 1` movable is refused at 71 insns and taken
+at 46, so the with-call threshold is in `[46, 71)` — **61 fits; the ~31 of the earlier
+draft is refuted by the 46-insn loop.**
+
+### Direction matters: hoisting is defeated by a BIGGER loop, not a smaller one
+
+The test fires when `insn_count` is **small**. Removing insns from the loop body makes
+the inequality *more* true and hoists *more*. The only size-based way to suppress a hoist
+is to push the body **past** `threshold * savings * lifetime` — and with a call-free
+threshold of 122 and `lifetime` typically well above 1, that product is normally in the
+hundreds. **Treat the desirability test as unwinnable and use the multi-set-reuse lever
+(below), which attacks movable *admission* in `scan_loop`, not desirability.**
+
+Two things still worth knowing:
+
+1. **`savings` and `lifetime` multiply the threshold**, so the practical bound is far
+   above 122. `life 1, savings 1` is the weakest possible movable and is the only case
+   where the raw threshold is the bound.
+2. **`insn_count` doubles — cumulatively — once any movable's regno was already moved**
+   (loop.c:1612, dumped as `halved since already moved`; the local `insn_count` is never
+   restored, so the doubling persists across the remaining movables in that pass). This
+   is the one mechanism that can flip a marginal decision, and it is not under your
+   control from C.
+
+### Read the pass's own decisions instead of inferring them
+
+`cc1 -da` emits `<dumpbase>.loop` with one line per movable:
+
+    Loop from A to B: N real insns.
+    Insn N: regno R (life L), [move-insn] savings S  moved to M      <- taken
+    Insn N: regno R (life L), [move-insn] savings S  not desirable   <- refused
+
+`pwsh tools/grinder/dump.ps1 <func>` produces it under `tmp/grind/<func>/dumps/<tu>.loop`
+using the project's exact flags. To read one function's decisions:
+
+    awk '/;; Function <func>/{s=1} s&&/^;; Function/&&!/<func>/{exit} s' \
+        tmp/grind/<func>/dumps/<tu>.loop | grep -E '^(Loop from|Insn [0-9]+:)'
+
+(`tmp/loopdec.py` is the older equivalent, hardcoded to `tmp/dump_<tag>/pre.i.loop`.)
+Grep the same slice for `call_insn` to settle `loop_has_call` — do not assume it from the
+target asm, since inlining and the C's current shape decide it.
+
+Corollary — hoists cost **callee-saved registers**, and that is usually the real diff.
+`func_8003EB84` was saving `s0`-`s4` (frame 0xA0) against a target that is a leaf with
+`.mask 0x0` (frame 0x88), because loop.c hoisted five invariants out of the innermost
+loop where the target hoists three; the extra symbol addresses, a constant `1`, and a
+`t4 << 5` giv became function-long lives and pushed the allocator into `s0`-`s4`. Three
+applied multi-set-reuse levers took the score 98 -> 86 -> 83 -> **81**, freeing `s4` and
+`s3` in turn:
+
+  1. one `u8 *base` reused for the variant `&D_800A87E0[vidx]` and then for both
+     table bases, so the two `lui/addiu` pairs are emitted INSIDE the loop as the
+     target has them (98 -> 86, `s4` freed);
+  2. `vflag = 1; e2[0x58] = vflag;` — kills the hoisted constant (86 -> 83, `s3` freed);
+  3. `v1 = t4 << 5; a3 = D_800A8FB0[v1 + t1];` — kills the giv hoist (83 -> 81).
+
+Note what did the work: each lever made the pseudo **multi-set** so `scan_loop` never
+admitted it as a movable. None of them changed the loop's size decision — the loop is
+call-free at 61 insns against a threshold of 122, i.e. the desirability test was never
+close.
+
+The residual there is a *different* mechanism and should not be attacked with this
+lever: two hoisted bases land in `s0`/`s1` instead of the target's `t8`/`t7` because MIPS
+defines no `REG_ALLOC_ORDER`, so `s0`-`s7` are tried before `t8`/`t9` — closing it needs
+~2 more concurrently-live registers in the loop nest, not fewer hoists. See
+[[local-alloc-death-count-class-wall]] for the ascending-scan machinery.
+
 ## Related
 - [[difficult-is-not-impossible]] — this is the case study; "hard" ≠ "impossible"
 - [[register-alloc-pure-c]] — companion RA levers (dead store, block-local split)
@@ -89,3 +193,5 @@ target's exact register reuse and the loop.c movable rules.
   defeated by branch-duplication. This rule is the *non-trapping* case (register
   arithmetic), defeated by multi-set var reuse.
 - [[inline-asm-policy]] — why the `__asm__` barrier alternative is cheat-asm, not a match
+- [[local-alloc-death-count-class-wall]] — the ascending first-free scan that
+  decides WHICH register a hoisted invariant lands in once it is hoisted.
