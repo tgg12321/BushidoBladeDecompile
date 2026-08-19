@@ -1,3 +1,59 @@
+/* [s9 2026-08-19 - escalation/disposition.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's
+ * HEAD (HEAD's own body measures 39 / 64).  Read this note before spending anything the s6/s7/s8
+ * notes below say about WHY the last two instructions are missing.]
+ *
+ * 1. THE RESIDUAL IS READY-LIST STARVATION IN sched2, NOT reg_n_sets AND NOT REGISTER OCCUPANCY.
+ *    s9 built a body (d8, banked at
+ *    rejected/s9-three-loads-66insns-plus4-address-load-adjacent-to-consumer-slot24-v0-score4.c)
+ *    with all THREE `lw ?,0x10($v1)` loads at 66 instructions whose slots 30-63 are byte-identical
+ *    to target.  Its ENTIRE residual is one placement: target emits the +4 read's address load at
+ *    slot 12 as `lw $a1,0x10($v1)`, SEVENTEEN slots above its consumer (`lhu $a1,0x4($a1)` at slot
+ *    29); every body that reads `*(s32 *)(outer + 0x10)` into a local used ONLY for the +4 read
+ *    emits that load at slot 24-25, immediately above its consumer.  Everything between 12 and 24
+ *    is target's stream shifted by exactly one, which is why the count comes out at 66 either way
+ *    (target's slot-23 load-delay slot is a nop in the two-load bodies).
+ *
+ * 2. DUMP-ATTRIBUTED, NOT INFERRED.  `pwsh tools/grinder/dump.ps1 func_80060A68` with b1 applied,
+ *    tmp/grind/func_80060A68/dumps/text1b.sched2:36617 (function) and its trace:
+ *        ;; ready list at T-30: 39 (3), now 39
+ *        ;; launching 56 before 39 with no stalls at T-31
+ *    insn 39 is the +4 address load, priority 3.  sched.c schedules BACKWARD and never idles a
+ *    cycle while anything is ready; insn 39 becomes ready only when its single consumer is
+ *    scheduled at T-29, and it is then the ONLY ready insn, so it is forced into T-30 (= forward
+ *    slot ~25).  THE LAW: a 0x10 load with exactly ONE consumer cannot be hoisted - it is pinned
+ *    adjacent to that consumer by ready-list starvation.  Every body in the campaign that DOES
+ *    reach `lw $a1,0x10($v1)` at slot 12 (this candidate, s8's f3, s5's q5, s9's g1) gives that
+ *    load a SECOND consumer (the +0 or the +2 read) - and paying that second consumer is exactly
+ *    what costs the third load.  This supersedes the s6/s7 `reg_n_sets` framing AND refines s8's:
+ *    $v0/$a0 occupancy decides the REGISTER the load gets, ready-list starvation decides its SLOT.
+ *
+ * 3. WHAT WAS MEASURED AGAINST IT (28 bodies, all single-write locals, all in
+ *    tmp/grind/func_80060A68/s9/).  Pressure sources on the three-load orders: the `idx` read
+ *    (g1 8/66 - reaches $a1 at slot 12 but its own load then takes target's slot-23 load-delay
+ *    slot; c1/c2/d5 over-pressure the pseudo to $a2 at 67 insns); a named `gp18 = outer + 0x18`
+ *    (a2 6/66, c3 5/67, g3 4/66 - inert on the slot); a named `gp20 = outer + 0x20` (d4 5/67);
+ *    copy 2 split into a `c2` local (a3 11/65, c5 5/67); copy 3 split into a `c3` local (c4 8/66 -
+ *    reaches $a1 at slot 12, but the split lets cse keep copy 2's base in $a0, so the copy triple
+ *    loses target's `lw $a0,0xC($v1)` reload); the gp-347C store hoisted above the halfword group
+ *    (d1 8/68 - also reaches $a1 at slot 12, at the price of two extra instructions); the +2
+ *    read's own read hoisted (a1 11/64, a5 10/64, a6 13/64).  The +4 read spelled as a fresh
+ *    in-line read seated early is not better (e1 10/67, e2 7/65, e3 11/67), nor is pushing the +4
+ *    read as late as the source allows (e5 7/67, e6 8/68).  The v2 shape itself re-measured at
+ *    b1 = b2 = b3 = 5/67 (source position of the p10 read is inert, as banked since s1).
+ *
+ * 4. FRONTIER IF THIS FUNCTION IS EVER RE-ACTIVATED.  Find a C form in which the +4 address load
+ *    has a SECOND, EARLY consumer that does not consume one of the other two 0x10 reads - or one
+ *    in which some other insn is ready at sched2's T-30 whose own emission slot is not 23.  Every
+ *    pressure source tried so far is either dependence-free (and therefore the best filler for
+ *    slot 23, which target gives to the third 0x10 load) or inert on the slot.
+ *
+ * 5. DISPOSITION.  s9 was dispatched in `escalation` modality; the floor did not move (2), both
+ *    endgame gates fail again (scan_hand_coded --single func_80060A68 = tier LOW 1/8, S4 only; no
+ *    SOTN-master precedent is even in play, since no coercion construct is proposed - the
+ *    remaining gap is an ordinary scheduling placement), so the 2026-07-27 standing auto-ruling
+ *    applies and the docs/grind/decisions.md entry was updated with the corrected mechanism.
+ *    src/text1b.c was reverted to HEAD; no rules touched, no commits.
+ */
 /* [s8 2026-08-19 - structural.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's HEAD.]
  *
  * s8 did not change this body, but it overturns the causal story the s6/s7 notes below tell,

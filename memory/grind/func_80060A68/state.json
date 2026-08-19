@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "structural",
+ "session_count": 9,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural s8 overturns the s6/s7 endgame story: the residual is NOT gated on birthing_insn_p's reg_n_sets test but on which hard register local-alloc gives p10's pseudo, and 20 pure-C bodies with a s"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s9 corrects the endgame mechanism (sched2 ready-list starvation, dump-attributed) and builds the first 66-insn three-load body (d8, 4/66, slots 30-63 target-identical); floor stays 2, both endgame gat"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pressure source whose OWN emission slot is not 23 closes the f3 family. f3 (exact in slots 1-22) and u5 (exact in slots 26-34) bracket target from opposite ends and their correct regions are complementary; the union of the two is the target body.",
-   "mechanism": "The $v0 occupancy across insns 39..56 is what buys `lw $a1,0x10($v1)` at slot 12. In f3 it is bought with the idx load, which is dependence-free and therefore also the best filler for the load-delay slot at 23 - the slot target gives to the third `lw $a0,0x10($v1)`. A pressure source that is itself dependent on something late in the block cannot compete for slot 23 and should leave slots 23-31 alone.",
-   "next_probe": "Apply f3 (memory/grind/func_80060A68/rejected/s8-idx-hoisted-above-p10-consumer-...-score8.c) and run `pwsh tools/grinder/dump.ps1 func_80060A68`; read text1b.sched2 for this function at the cycle that emits slot 23 and record the ready list and the INSN_PRIORITY of the idx load versus the third 0x10 load. Then look for a pressure-supplying value whose priority at that cycle is lower - candidates that were NOT tried this session: the 0x1A halfword value (temp2) read earlier but stored at its current place, the `outer + 0x18` gp value computed into a named local, and copy 2's value carried in a `c2` local (only copy 3 was split this session)."
+   "hypothesis": "A C form in which the +4 address load has a SECOND, EARLY consumer that does not consume either of the other two 0x10 reads would put it at slot 12 in $a1 while keeping all three loads.",
+   "mechanism": "A second consumer makes the load ready before its +4 consumer is scheduled, so sched2 is not starved into pinning it adjacent; but every second consumer tried so far (the +0 read, the +2 read) is itself one of the three loads, which is why paying for it costs the third load.",
+   "next_probe": "Look for a use of the 0x10 pointer that target's own stream contains but the campaign has never bound to p10 - e.g. an address-arithmetic use, or a use inside the call-argument computation - and seat it early on the d8 order; measure with tmp/grind/func_80060A68/s9/run2.ps1 and diff with s9/cmp.py."
   },
   {
-   "hypothesis": "A winning body must occupy BOTH $v0 and $a0 across p10's sched1 live range, not just $v0.",
-   "mechanism": "Every body in the k-family (p10 read and its consumer moved into or above the copy triple) puts the load at slot 10 or 11 but in $a0, because local-alloc's scan finds $a0 free there. Target's copy triple holds the copy base in $a0 (`lw $a0,0xC($v1)`) across exactly the slots where p10's load sits, so target's compile had both busy.",
-   "next_probe": "Take kd or kg (8/66, load at slot 10-11 in $a0) and add a second pressure source that pins $a0 - e.g. keep copy 2's base alive in a named local across the p10 read - then re-measure and re-check the load's hard register with tmp/grind/func_80060A68/s8/run2.ps1, which prints the slot and register of every `lw ?,0x10($v1)` automatically."
+   "hypothesis": "A pressure source that is dependent on something late in the block but consumed early would be ready at sched2's T-30 without being schedulable into forward slot 23.",
+   "mechanism": "Slot 23 is a load-delay slot; any dependence-free value (idx, outer+0x18, outer+0x20) is the cheapest filler for it and takes it, which is exactly f3's and g1's 8-point cost. A value that depends on a late computation cannot be placed there.",
+   "next_probe": "On the d8 order, seat a local holding a value derived from the +2 or +4 halfword (already read late) and consumed by an early store, then re-check the slot and register of every lw ?,0x10($v1) with run2.ps1."
   },
   {
    "hypothesis": "Closed axes - do not re-open.",
-   "mechanism": "Killed with measurements across s1-s8: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19, banned); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8); the m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address locals; sinking either gp store; early-consumed p10; the +0-value-hoisted-above-a-copy-store partition family (x1/x2/x6/x7/x8 and this session's e1..e5); the v6 priority-hoist idea; the u16 *dst sibling idiom; a second early pointer local for the +2 read; the full consumer-seat sweep (ca..ce, y1); declaration order and local types on the 3-load body; gp stores as cse separators; birthing_insn_p's bb_live_regs gate; and now from s8 the twelve-seat idx sweep, the LUID re-association family (r1..r6), the k-family consumer-into-the-copy-triple sweep, and the p10-position and halfword-permutation sweeps on the cb order.",
-   "next_probe": "None. Any future claim must be written against the s8 CAUSAL CHAIN - sched1's birthing_insn_p bump fixes the ORDER of p10's load, local-alloc then hands its pseudo $v0 because $v0 is free across that short range, and sched2 cannot hoist the load past a live $v0 - and must state which of frontier items 1 and 2 it addresses. The s6/s7 'only lever is reg_n_sets' framing is retired and must not be re-quoted."
+   "mechanism": "Killed with measurements across s1-s9: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned carrier in all three partition seats (banned, Judge 2026-08-19); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8, re-run s9); the m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address locals; sinking either gp store; early-consumed p10; the +0-value-hoist partition family; the u16 *dst sibling idiom; the full consumer-seat sweep; declaration order and local types; gp stores as cse separators; birthing_insn_p's bb_live_regs gate; the twelve-seat idx sweep; the LUID re-association family; the k-family sweep; and from s9 the b1/d8 three-load order family with seven outside pressure sources.",
+   "next_probe": "None. Any future claim must be written against the s9 causal chain (one-consumer loads are pinned by sched2 ready-list starvation; occupancy only decides the register) and must say which of frontier items 1 and 2 it addresses. The s6/s7 reg_n_sets framing is retired and must not be re-quoted."
   }
  ],
  "judge_constraints": [

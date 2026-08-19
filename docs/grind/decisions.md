@@ -6886,3 +6886,75 @@ The citation was the defect, not the grant: the operative class is RULING 4 (gro
 ## 2026-08-19 — func_8002D518 — operator integration (manual path) — layer-2 review — **PASS — COMPLETED-C**
 
 Owner-directed integration of the 2026-08-19 OWNER-ESCALATION INTEGRATION HANDOFF (decisions.md:6525). Operator cleared the single stale banned_constructs entry in memory/grind/func_8002D518/state.json (superseded by the Judge's own 07:34 narrowing PASS at decisions.md:6521, which authorized resubmission under dead-store-fake-exception) and applied the banked candidate. Fresh layer-2 cheat-reviewer PASSed after independent verification: dead-store-fake-exception citation correct against the rule's own scope (self-assignment sub-scope), exhaustion real (37 measured-negative rejected forms + E20/E21/E23-E25 measured alternatives — the same-value re-store is the unique zero-cost cse invalidation), GTE LZCS island byte-identical to the accepted sibling islands (cop2-addressing-preamble-cluster membership line 74), and the diff DELETES two register-asm t4 pins and two .word cop2 encodings while adding no cheat. Measured: sandbox 0 (144/144); retire dropped 33 rules (31 regfix + 2 asmfix) with SHA1 == oracle; queue done OK.
+
+## 2026-08-19 — func_80060A68 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (s9 — supersedes and CORRECTS the earlier 2026-08-19 entry for this function)
+
+**Why this entry exists.** The earlier 2026-08-19 entry for func_80060A68 reached the right
+disposition on the wrong mechanism. It stated that "closing the function REQUIRES a C variable
+assigned more than once to carry copy 2's source pointer" — a reduction inherited from sessions
+s6/s7. Sessions s8 and s9 falsified that reduction with measurements, and the audit trail should
+not carry a false necessity claim about a banned construct. The disposition is unchanged and
+still terminal; only the mechanism section below is authoritative.
+
+**Function.** func_80060A68 (src/text1b.c:3321, 66 target instructions, 2 asmfix rules at
+asmfix.txt:105/106 that splice the entire body in from rule text).
+
+**State of the work after nine sessions** (recon, structural x2, permuter x2, forensics x2,
+rederive x2, synthesis, escalation). Honest floor moved 39 -> 2 in s1 and has been flat at 2
+since. Re-measured this session on today's HEAD: HEAD's own body = score 39 / build 64;
+memory/grind/func_80060A68/candidate.c = score 2 / build 66 / target 66, carrying no rule, no
+register pin, no volatile, no inline asm, no dead local and no multiply-written local.
+
+**Corrected mechanism (dump-attributed this session, superseding the s6/s7 `reg_n_sets` story).**
+s9 built `d8` — the first body with all three `lw ?,0x10($v1)` loads at 66 instructions, whose
+slots 30-63 are byte-identical to target (banked at
+memory/grind/func_80060A68/rejected/s9-three-loads-66insns-plus4-address-load-adjacent-to-consumer-slot24-v0-score4.c).
+Its whole residual is ONE placement: target emits the +4 read's address load at slot 12 as
+`lw $a1,0x10($v1)`, seventeen slots above its consumer `lhu $a1,0x4($a1)` at slot 29; every
+one-consumer body emits it at slot 24-25 adjacent to that consumer, and slots 12-24 are then
+target's stream shifted by one. `pwsh tools/grinder/dump.ps1 func_80060A68` with that body in
+place gives the reason in the post-reload scheduler, not in `birthing_insn_p`:
+tmp/grind/func_80060A68/dumps/text1b.sched2:36617 prints
+`;; ready list at T-30: 39 (3), now 39` — insn 39 is that load, priority 3, and it is the ONLY
+ready insn at that cycle. sched.c schedules backward and never idles a cycle while anything is
+ready, so a load whose single consumer has just been scheduled is forced into the next cycle.
+**The law:** a 0x10 load with exactly one consumer cannot be hoisted; every body that does reach
+slot 12 in $a1 either gives that load a second consumer (candidate.c, s5's q5 — which costs the
+third load) or adds an outside pressure source (s8's f3, s9's g1/c4/d1 — which costs either
+target's slot-23 load-delay slot, the copy triple's `lw $a0,0xC($v1)` reload, or instructions).
+Register occupancy (s8's framing) decides WHICH hard register the load gets; ready-list starvation
+decides its SLOT. No construct of any kind — banned, sanctioned or novel — has been shown to be
+necessary to close this function; what is missing is a C body nobody has found.
+
+**Gate 1 — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80060A68`,
+re-run this session, returns `tier=LOW score=1/8`, S4 (6 loads in an 8-insn window @ insn 9) the
+only signal; S1/S2/S6 all clear. Per .claude/rules/endgame-lock-disposition.md a LOW tier is
+dispositive against canonical-asm, and this function is exactly the case that rule describes — a
+fully-matching compiled body with a scheduling-placement residual.
+
+**Gate 2 — a cited SOTN-master precedent for a closing construct: FAILS, and is not even in
+play.** s9 proposed no coercion construct at all: all 28 bodies measured this session are plain C
+with every local written exactly once. There is therefore no family to cite a precedent for. The
+two standing bans (the multiply-assigned pointer-staging carrier in all three partition seats, and
+temp2's dual role) remain in force and were not approached.
+
+**Exhaustion record.** Nine sessions, six distinct modalities, floor flat at 2 since s1. 65,445
+permuter iterations across two structurally different chassis with zero finds. 66 disproven bodies
+banked in memory/grind/func_80060A68/rejected/. Closed axes: statement permutation of the staged
+read; the DImode/SUBREG door; the multiply-assigned carrier (banned, Judge 2026-08-19); the
+m2c-literal no-outer-local family; struct/array-typed member access; named or retyped address
+locals; sinking either gp store; early-consumed p10; the +0-value-hoist partition family; the u16
+*dst sibling idiom; the full consumer-seat sweep; declaration order and local types; gp stores as
+cse separators; birthing_insn_p's bb_live_regs gate; the twelve-seat idx sweep; the LUID
+re-association family; the k-family consumer-into-copy-triple sweep; and, from s9, the three-load
+b1/d8 order family with seven distinct outside pressure sources in two to four seats each.
+
+**Disposition.** Both gates fail, which is the owner's pre-decided case, so the 2026-07-27
+standing auto-ruling applies immediately and with no owner wait: **REFUSED / OWNER-ACCEPTED
+INCOMPLETE, terminal.** Nothing is pending on the owner. The function stays at its HEAD form (2
+asmfix rules). If it is ever re-activated, the single frontier question is stated in
+memory/grind/func_80060A68/candidate.c's s9 header: find a C form in which the +4 address load has
+a second, early consumer that does not consume one of the other two 0x10 reads, or in which some
+other insn is ready at sched2's T-30 whose own emission slot is not 23. The integration hazard is
+unchanged: asmfix.txt:105 and :106 must be retired in the same change as any body swap, because
+their `delete_between` anchor `lhu $4,0($3)` is written against the HEAD body.

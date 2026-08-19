@@ -1655,3 +1655,68 @@ separator other than a copy store" as an open question.
 - [s8] No banned construct was used or proposed this session: every body measured has each local written exactly once, and the two named locals introduced (`t0` for the +0 halfword value, `c3` for copy 3's value) are single-write single-read intermediates in bodies that were all REJECTED on score, not submitted.
 
 - [s8] src/text1b.c was reverted to HEAD before finishing; `git status` shows no build-file dirt. No rules touched, no commits, no queue/retire calls.
+
+- [s9] CHASSIS. Re-measured on today's HEAD: HEAD's own body = score 39 / build 64; candidate.c
+  (the ban-free floor body) = score 2 / build 66 / target 66. The floor is 2 and is not stale.
+  `python3 tools/scan_hand_coded.py --single func_80060A68` re-run this session: tier=LOW
+  score=1/8, S4 (6 loads in an 8-insn window @ insn 9) the only signal.
+- [s9] NEW BEST STRUCTURAL SEAT (d8, 4 / 66): source order copy1; copy2; `p10 = *(s32 *)(outer +
+  0x10)`; copy3; `*(u16 *)(outer + 0x18) = *(u16 *)(*(s32 *)(outer + 0x10) + 0)`;
+  `temp_a1 = *(u16 *)(p10 + 4)`; `temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2)`; gp-3478 store;
+  0x1A store; idx read; gp-347C store; 0x1C store. This is the FIRST body with all three
+  `lw ?,0x10($v1)` loads at 66 instructions AND slots 30-63 byte-identical to target. Its entire
+  residual is one placement: target emits the +4 read's address load at slot 12 as
+  `lw $a1,0x10($v1)`; d8 emits it at slot 24 as `lw $v0,0x10($v1)`, adjacent to its consumer, and
+  everything from 12 to 24 is target's stream shifted by one.
+- [s9] PASS ATTRIBUTION (dump-verified, not inferred). With b1 applied,
+  `pwsh tools/grinder/dump.ps1 func_80060A68`; tmp/grind/func_80060A68/dumps/text1b.sched2:36617
+  is this function; its trace reads `;; ready list at T-30: 39 (3), now 39` /
+  `;; launching 56 before 39 with no stalls at T-31`. insn 39 is the +4 address load with
+  priority 3. sched.c schedules backward and never idles while anything is ready, so a load whose
+  ONLY consumer has just been scheduled is the only ready insn and is forced into that cycle.
+- [s9] THE CONSERVATION LAW, RESTATED CORRECTLY. A `*(s32 *)(outer + 0x10)` load with exactly ONE
+  consumer is pinned adjacent to that consumer by sched2 ready-list starvation and cannot reach
+  slot 12. Every body in the campaign that reaches `lw $a1,0x10($v1)` at slot 12 (candidate.c,
+  s8's f3, s5's q5, s9's g1, c4, d1) gives the load a SECOND consumer or adds an outside pressure
+  source; paying for that second consumer is what costs either the third load or extra
+  instructions. This supersedes the s6/s7 `reg_n_sets` reduction (retired by s8) and refines s8's
+  occupancy story: $v0/$a0 occupancy decides which HARD REGISTER the load gets, ready-list
+  starvation decides its SLOT.
+- [s9] PRESSURE SWEEP ON THE THREE-LOAD ORDERS (28 bodies, every local written exactly once):
+  `idx` read hoisted (g1 8/66 - $a1 at slot 12 but the idx load then takes target's slot-23
+  load-delay slot; c1 8/67, c2 8/67, d5 8/67 all over-pressure the pseudo to $a2); named
+  `gp18 = outer + 0x18` (a2 6/66, c3 5/67, g3 4/66 - inert on the slot); named
+  `gp20 = outer + 0x20` (d4 5/67); copy 2 split into `c2` (a3 11/65, c5 5/67); copy 3 split into
+  `c3` (c4 8/66 - $a1 at slot 12, but cse then keeps copy 2's base in $a0 and the copy triple
+  loses target's `lw $a0,0xC($v1)` reload); gp-347C store hoisted above the halfword group
+  (d1 8/68 - $a1 at slot 12 for two extra instructions); +2 read hoisted (a1 11/64, a5 10/64,
+  a6 13/64); +4 read spelled fresh in-line and seated early (e1 10/67, e2 7/65, e3 11/67);
+  +4 read pushed as late as the source allows (e5 7/67, e6 8/68); v2 shape re-measured
+  (b1 = b2 = b3 = 5/67, p10's source position inert, as banked since s1); d2 9/67, d6 8/67,
+  d7 7/66, g2 9/66, g4 8/66, g5 7/66, b5 7/67, b6 8/68, b4 = candidate 2/66.
+- [s9] TOOLING. tmp/grind/func_80060A68/s9/ holds gen.py (statement-token body generator, 28
+  bodies in bodies/), apply.py, run2.ps1 (apply + sandbox + disassemble + report the slot and
+  register of every `lw ?,0x10($v1)`), dis.sh, target.txt (the target instruction stream,
+  normalised) and cmp.py (slot-by-slot target-vs-build diff). cmp.py is new this session and is
+  what makes "which slot is wrong" a one-command question.
+- [s9] No banned construct was used or proposed: every body measured has each local written
+  exactly once, and no volatile, pin, inline asm, dead local or FAKE annotation appears anywhere.
+  src/text1b.c was reverted to HEAD before finishing; `git status` shows no build-file dirt.
+
+- [s9] CHASSIS: on today's HEAD, HEAD's own body = score 39 / build 64; memory/grind/func_80060A68/candidate.c = score 2 / build 66 / target 66. Floor 2 confirmed, not stale.
+
+- [s9] The earlier 2026-08-19 OWNER-ESCALATION entry's central claim - 'closing the function REQUIRES a C variable assigned more than once to carry copy 2's source pointer' - is FALSE and is corrected by the s9 entry filed this session. s8 already showed single-write bodies reaching lw $a1,0x10($v1) at slot 12; s9 shows single-write bodies with all three 0x10 loads at 66 instructions. No construct of any kind has been shown necessary; what is missing is a C body nobody has found.
+
+- [s9] Dump-attributed mechanism (tmp/grind/func_80060A68/dumps/text1b.sched2:36617, b1 applied): ';; ready list at T-30: 39 (3), now 39'. insn 39 is the +4 read's address load; it is the only ready insn at that cycle, so backward scheduling forces it adjacent to its consumer. Occupancy decides the load's hard REGISTER (s8); ready-list starvation decides its SLOT (s9).
+
+- [s9] d8 (banked at rejected/s9-three-loads-66insns-plus4-address-load-adjacent-to-consumer-slot24-v0-score4.c) is the campaign's cleanest structure: 66 instructions, three 0x10 loads, slots 30-63 byte-identical to target, one placement wrong.
+
+- [s9] 28 bodies measured this session, every local written exactly once; no volatile, pin, inline asm, dead local, FAKE annotation or multiply-written local was used or proposed. The two standing bans were not approached.
+
+- [s9] GATE 1 canonical-asm FAILS: python3 tools/scan_hand_coded.py --single func_80060A68 = tier LOW score 1/8, S4 only (6 loads in an 8-insn window @ insn 9); S1/S2/S6 clear.
+
+- [s9] GATE 2 SOTN precedent FAILS and is not in play: s9 proposes no coercion construct, so there is no family to cite a precedent for.
+
+- [s9] New tooling: tmp/grind/func_80060A68/s9/cmp.py + target.txt give a one-command slot-by-slot target-vs-build diff (normalised registers/offsets), which is what turned 'the score is 4' into 'slot 24 vs slot 12, register $v0 vs $a1'.
+
+- [s9] src/text1b.c was reverted to HEAD before finishing; git status shows no build-file dirt. No rules touched, no commits, no queue/retire calls.

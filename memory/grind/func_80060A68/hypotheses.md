@@ -1127,3 +1127,54 @@ loads on target â€" at the price of a new, different 2-instruction gap.
 - probe: Twelve source seats for the idx read on the cb order (i0..i11); LUID re-association putting the +2 read above the consumer so the idx read's LUID exceeds the third load's (r1..r6); consumer-and-p10 moved into or above the copy triple (ka..kh); +0 halfword value hoisted into a `t0` local with the 0x18 store delayed (e1..e5); copy-3 sinks (m1..m5); `c3` splits (o4..o8, u1..u9, ua, ub); p10-position sweep (pa, pb, pd, pe); halfword-group permutations (h1..h8); n1..n6.
 - result: KILLED for every spelling tried. LUID re-association does not move the idx load (r1 is byte-identical to f3, 8/66). idx seats 0 and 1 over-pressure and give p10 $a2 (9/66); seats 2-5 give $a1 (8/66, the f3 family); seats 6+ fall back to $v0 (cb, seat 9, is the 4/66 floor seat). Moving the p10 consumer into the copy triple (ka 9/66, kb 11/67, kc 10/67, kd 8/66, ke 11/67, kf 10/67, kg 8/66, kh 10/67) does put the load at slot 10 or 11 but in $a0, because $a0 is free there too - a winning body must occupy $v0 AND $a0 across p10's sched1 range. Delaying the 0x18 store through a `t0` local (e1 8/66, e2 7/65, e3 7/65, e4 7/65, e5 9/65) never reaches $a1 and usually costs a load, because the delayed store stops separating the two 0x10 reads.
 - verdict: KILLED
+
+## [s9] The three-load structure and the $a1-at-slot-12 hoist are NOT mutually exclusive at 66 instructions; the residual is a single sched2 placement of the +4 address load
+- mechanism: d8's order gets all three `lw ?,0x10($v1)` loads at 66 insns with slots 30-63
+  byte-identical to target, leaving one defect: the +4 read's address load sits at slot 24 in $v0
+  instead of slot 12 in $a1.
+- probe: 28 bodies measured with tmp/grind/func_80060A68/s9/run2.ps1 + cmp.py; d8 = 4/66.
+- result: CONFIRMED as a structure (d8 is the cleanest 66-instruction three-load body the campaign
+  has produced) but it does NOT lower the floor: candidate.c remains 2/66.
+- verdict: CONFIRMED (structure) / the floor stays at 2.
+
+## [s9] A `*(s32 *)(outer + 0x10)` load whose only consumer is the +4 read cannot be hoisted to slot 12 - sched2 ready-list starvation pins it adjacent to that consumer
+- mechanism: sched.c schedules backward and never idles a cycle while any insn is ready. The load
+  becomes ready exactly when its single consumer is scheduled, and it is then the only ready insn.
+  text1b.sched2 (b1 applied) prints `;; ready list at T-30: 39 (3), now 39`.
+- probe: `pwsh tools/grinder/dump.ps1 func_80060A68` with b1 in place; read
+  tmp/grind/func_80060A68/dumps/text1b.sched2 from line 36617.
+- result: every one-consumer body measures the load at slot 24-25 (b1/b2/b3 5/67, d8 4/66, e5 7/67,
+  e6 8/68, d2 9/67, d6 8/67); every body that reaches slot 12 in $a1 either gives the load a second
+  consumer (candidate.c, q5) or adds an outside pressure source (f3, g1, c4, d1).
+- verdict: CONFIRMED. This retires the s6/s7 `reg_n_sets` framing for good and refines s8's:
+  occupancy decides the REGISTER, ready-list starvation decides the SLOT.
+
+## [s9] An outside pressure source can supply the missing ready insn without stealing target's slot-23 load-delay slot
+- mechanism: the pressure source must be ready at sched2's T-30 but must not be the cheapest filler
+  for the load-delay slot at forward slot 23, which target gives to the third 0x10 load.
+- probe: seven distinct sources measured on the b1 and d8 orders (idx read, `gp18 = outer + 0x18`,
+  `gp20 = outer + 0x20`, the copy-2 split, the copy-3 split, the gp-347C store hoist, the +2 read
+  hoist), each in two to four seats.
+- result: dependence-free sources (idx, gp18, gp20) either steal slot 23 (g1 8/66, f3 8/66) or are
+  inert on the placement (a2 6/66, g3 4/66, d4 5/67); sources with a dependence either break the
+  copy triple (c4 8/66) or cost instructions (d1 8/68, c5 5/67).
+- verdict: KILLED for every source tried. The frontier is a source that is BOTH dependent on
+  something late in the block AND consumed early enough to be ready at T-30.
+
+## [s9] The three-load structure and the $a1-at-slot-12 hoist are not mutually exclusive at 66 instructions; a body exists whose whole residual is the placement of the +4 read's address load.
+- mechanism: Reading *(s32*)(outer+0x10) into p10 ABOVE the copy-3 store makes the copy-3 store a cse separator, so the +0 and +2 reads each get a fresh load and p10 serves only the +4 read; the 0x18 store separates +0 from +2.
+- probe: d8 = copy1; copy2; p10; copy3; 0x18 store(+0 fresh); temp_a1=*(p10+4); temp2(+2 fresh); gp3478; 0x1A; idx; gp347C; 0x1C. Measured with tmp/grind/func_80060A68/s9/run2.ps1 and diffed slot-by-slot with s9/cmp.py.
+- result: d8 = score 4 / build 66 / target 66, all three lw ?,0x10($v1) loads present, slots 30-63 byte-identical to target; sole defect is the +4 address load at slot 24 in $v0 instead of slot 12 in $a1, with slots 12-24 being target's stream shifted by one. It does NOT beat the floor (candidate.c stays 2/66).
+- verdict: CONFIRMED
+
+## [s9] A *(s32*)(outer+0x10) load whose only consumer is the +4 read cannot be hoisted to slot 12; sched2 pins it adjacent to that consumer by ready-list starvation.
+- mechanism: sched.c schedules backward and never idles a cycle while any insn is ready. The load becomes ready exactly when its single consumer is scheduled, and it is then the only ready insn, so it is forced into the next cycle (= adjacent in forward order).
+- probe: pwsh tools/grinder/dump.ps1 func_80060A68 with b1 applied; read tmp/grind/func_80060A68/dumps/text1b.sched2 from line 36617: ';; ready list at T-30: 39 (3), now 39' then ';; launching 56 before 39 with no stalls at T-31'. Cross-checked against every one-consumer body measured.
+- result: Every one-consumer body puts the load at slot 24-25 (b1/b2/b3 5/67, d8 4/66, d2 9/67, d6 8/67, e5 7/67, e6 8/68); every body that reaches slot 12 in $a1 either gives the load a second consumer (candidate.c, q5) or adds an outside pressure source (f3, g1, c4, d1).
+- verdict: CONFIRMED
+
+## [s9] An outside pressure source can supply the missing ready insn at sched2's T-30 without stealing target's slot-23 load-delay slot.
+- mechanism: The source must be ready at that cycle but must not be the cheapest filler for forward slot 23, which target gives to the third 0x10 load.
+- probe: Seven sources measured on the b1 and d8 orders in two to four seats each: the idx read, a named gp18 = outer+0x18, a named gp20 = outer+0x20, copy 2 split into a c2 local, copy 3 split into a c3 local, the gp-347C store hoisted above the halfword group, and the +2 read hoisted (28 bodies total).
+- result: Dependence-free sources either steal slot 23 (g1 8/66, f3 8/66) or are inert on the placement (a2 6/66, g3 4/66, d4 5/67); dependent sources break the copy triple (c4 8/66 - cse keeps copy 2's base in $a0 so target's lw $a0,0xC($v1) reload is lost) or cost instructions (d1 8/68, c5 5/67, a3 11/65). No source both supplies the ready insn and leaves slots 23-31 alone.
+- verdict: KILLED

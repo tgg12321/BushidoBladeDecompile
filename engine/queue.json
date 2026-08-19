@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 39,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_80041BF4",
       "file": "text1a_post",
       "distance": 41,
@@ -2001,6 +1993,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
     },
     {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 39,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-19 - func_80060A68 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (s9 - supersedes and CORRECTS the earlier 2026-08-19 entry for this function)'"
+    },
+    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2284,13 +2285,13 @@
   ],
   "counts": {
     "total": 260,
-    "active": 228,
+    "active": 227,
     "by_status": {
-      "active": 228,
-      "parked": 32
+      "active": 227,
+      "parked": 33
     },
     "by_verdict": {
-      "C": 190,
+      "C": 189,
       "ASM-PARTIAL": 38
     }
   }
