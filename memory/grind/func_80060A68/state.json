@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "forensics",
+ "session_count": 5,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "The s2-s9 residual is GONE: a single-set p10 placed after the copy-3 store reproduces target slots 10/11/12 exactly (score 2, 66 insns, prefix byte-identical through slot 20); priority(insn 39)=4 is K"
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Rederive DERIVES the target's C from its own stream (the store-separator law forces the v2 body), kills four axes -- m2c-literal no-outer-local, struct-typed member access, named address locals, and t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Steering insn 56 (the 0x1A read's address load) from v0 to a0 in the 3-load body closes the function.",
-   "mechanism": "The r4/t1 family already has target's three independent 16(v1) loads and the correct CSE structure and fails only because sched2's T-30 pin forces insn 39 to slot 25; that pin exists solely because insn 53 (sh v0,24(v1)) reads v0 and reload gave insn 56 v0, creating a write-after-read anti-dependence that delays 53 past T-30. With insn 56 in a0 (as in target and in the prior staged body) insn 53 is ready at T-30 and beats insn 39 on priority 8 vs 3.",
-   "next_probe": "Dump .lreg and .greg for t1 (rejected/s10-split-copy3-restores-3-loads-and-the-T30-pin-score5.c) and for prior-floor2-staged-temp_a1.c, identify the pseudo that becomes insn 56's destination in each, and read WHY local-alloc gives it v0 in one and a0 in the other (conflict set, allocno order, reg_n_refs). Then look for an honest C change that alters that pseudo's LIVE RANGE rather than its type -- the three type-level attempts (u1 s32 temp2, u3 s32 temp_a1, u2 fresh q local) are already dead at 5/67."
+   "hypothesis": "The whole function reduces to one register-allocation decision in the DERIVED v2 body: reload assigns the +2 read's address pseudo $v0 where target assigns $a0. Since the target's C shape is now derived rather than guessed, nothing else needs searching.",
+   "mechanism": "With that pseudo in v0, `sh v0,0x18($v1)` carries a write-after-read anti-dependence on it, so sched2 cannot release the store until the load is scheduled; T-30 then holds only insn 39 and the p10 load is forced into it, costing both the slot-23 delay-slot fill and the slot-12 hoist (v2 = 5 / 67). With it in a0 the store is ready at T-30 and wins on priority 8 vs 3.",
+   "next_probe": "Run `pwsh tools/grinder/dump.ps1 func_80060A68` with v2 applied and again with q5 applied, and read .lreg/.greg for BOTH side by side. q5 is the better control than candidate.c because it already gets slot 22's register right, so the two bodies differ in exactly the pseudo under investigation. Identify the allocno for the +2 read's address in each, and compare (a) its conflict set, (b) its position in the allocno ordering, (c) reg_n_refs. Declaration-level and type-level changes are dead from seven seats, so the only remaining honest lever is one that changes WHAT ELSE IS LIVE across the +2 read -- name the specific live value the dumps show is holding a0 in v2 but not in target, then look for a C change that shortens or lengthens THAT value's range."
   },
   {
-   "hypothesis": "The missing third 16(v1) load can be restored in the r5 family without re-pinning insn 39.",
-   "mechanism": "r5 needs lw a0,16(v1) where it emits a nop, i.e. the 0x18 read must stop CSE-folding onto p10 while p10 keeps an early consumer that holds insn 39 off sched1's late chain position. Every store-based separator measured so far (t1, t2) restores the fold barrier and the pin together.",
-   "next_probe": "Read .cse for the r5 body to see the exact expression-equivalence that folds the 0x18 read onto p10, and determine whether any honest spelling of that read is a distinct expression to GCC 2.7.2's cse without a store between; separately, look for a use of p10's value that target also performs before slot 25 and could serve as the early consumer instead of a halfword read. If neither exists, KILL the r5 family with that argument and fall back to frontier item 1."
+   "hypothesis": "The v6 family (3 fresh in-line reads, 3 loads, 66 insns, score 3) closes if the +4 read's load can be given enough list-scheduling priority to hoist from slot 27 to slot 12, without moving any store.",
+   "mechanism": "The +4 load's priority is the critical-path distance from it to the end of the block through its sole consumer `lhu a1,4(...)`. The gp store is proven NOT to be the binding barrier (w1). If the +4 value's consumer chain were longer -- e.g. if the value reached the call argument through one more dependent insn that target also has -- the load's INSN_PRIORITY would rise and sched2 could place it early.",
+   "next_probe": "Dump .sched for v6 and read the computed INSN_PRIORITY of the +4 address load and of the insns occupying slots 12-20, to find out how large the priority gap actually is. If the gap is 1-2, look for an honest C spelling of the 0x1C store / call argument that lengthens the +4 value's dependent chain; if the gap is large, KILL the v6 family with that number and fall back to frontier item 1."
   },
   {
    "hypothesis": "Closed axes -- do not re-open.",
-   "mechanism": "priority(insn 39) = 4 (killed this session from the PRIODBG stream); statement permutation of the UNBUMPED staged read (s9, named mechanism); the DImode/SUBREG door (s8, costs 4 insns); the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19 10:21/10:48/11:07); the permuter (65,445 iterations across two chassis, zero finds); canonical-asm (scan_hand_coded LOW 1/8).",
-   "next_probe": "None -- any exhaustion claim must be written against the s10 attribution (reload's v0-vs-a0 choice for insn 56) and must state which of frontier items 1 and 2 was measured dead and how."
+   "mechanism": "Killed with measurements across s1-s5: statement permutation of the staged read; the DImode/SUBREG door; the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19); the permuter (65,445 iterations, zero finds); canonical-asm (scan_hand_coded LOW 1/8); priority(insn 39) = 4; and now, from s5: the m2c-literal no-outer-local family, struct/array-typed member access, named or retyped address locals in the 3-load body, sinking the gp store, and early-consumed p10.",
+   "next_probe": "None. Any future exhaustion claim must be written against the s5 DERIVATION -- that v2 is provably the target's C and the residual is purely reload's v0-vs-a0 choice for one pseudo -- and must state which of frontier items 1 and 2 was measured dead and how."
   }
  ],
  "judge_constraints": [

@@ -1,3 +1,39 @@
+/* [s5 2026-08-19 - rederive.  BODY UNCHANGED from s10; read this note first.]
+ *
+ * s5 re-measured this body on today's HEAD: score 2 / build 66 / target 66.  The floor is
+ * confirmed, not stale.  s5 kept this body as the candidate but banked TWO new same-or-near
+ * floor attractors that a future session should prefer as forensic seats:
+ *
+ *   rejected/s5-p10-early-feeds-plus2-and-plus4-plus0-fresh-score2-66insns.c   (q5)
+ *      Same floor (2 / 66) but a STRICTLY CLEANER residual: it gets target's slot 22
+ *      `lhu $v0,0($a0)` right, where THIS body emits `lhu v0,0(a1)`.  Its only two wrong
+ *      slots are 23 (nop vs `lw $a0,0x10($v1)`) and 25 (register).  If you are going to read
+ *      .lreg/.greg for anything, read it for q5 and for v2 side by side.
+ *
+ *   rejected/s5-three-fresh-inline-reads-no-p10-load-lands-slot27-v0-score3-66insns.c   (v6)
+ *      Score 3 / 66 with NO p10 local at all - the plainest body the campaign has produced.
+ *      It emits all three `lw ?,0x10($v1)` loads at 66 instructions; it is short one HOIST,
+ *      not one load.  q1 and q3 (p10 early with an early consumer) compile byte-identically
+ *      to it, so "give p10 an early consumer" is not a distinct body.
+ *
+ * s5's main result is a DERIVATION, not a search: applying the store-separator law (cse.c does
+ * not disambiguate two (plus pseudo const) addresses, so an intervening store forces a fresh
+ * load; sched.c does disambiguate them, so loads may hoist across those same stores) to the
+ * target's own instruction stream proves that the target's +4 pointer cannot be a third in-line
+ * read - there is no store available to separate it from the +2 read, and GCC never reorders
+ * two non-disambiguable stores.  The target's C is therefore the v2 body (p10 read before the
+ * copy-3 store; +0 and +2 read fresh in-line; +4 read through p10), which measures 5 / 67.
+ * The entire remaining gap is v2's REGISTER ALLOCATION - reload gives the +2 read's address
+ * pseudo $v0 where target gives it $a0.  s5 killed the declaration-level levers on that pseudo
+ * from four more seats (named address locals p0 / p2 / both, and a u16*-typed p10, all 5 / 67
+ * and byte-identical to v2), on top of s10's three type-level attempts.  See evidence.md and
+ * hypotheses.md, both appended this session.
+ *
+ * Also killed this session: the m2c-literal "no `outer` local" family (26-29 / 68-70 insns) and
+ * struct-typed member access via MEM_IN_STRUCT_P (regresses 3 -> 6, 2 -> 8).
+ *
+ * The INTEGRATION HAZARD below is unchanged and still load-bearing.
+ */
 /* [s10 2026-08-19 — forensics.  READ THIS FIRST: THE BODY IN THIS FILE CHANGED.]
  *
  * WHAT CHANGED.  Until s9 this file held the "staged temp_a1" body (temp_a1 written

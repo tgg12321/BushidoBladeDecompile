@@ -851,3 +851,87 @@ loads on target — at the price of a new, different 2-instruction gap.
 - probe: t1 = split copy 3 into a named local so its store falls between the p10 statement and the 0x18 read; t2 = hoist the D_800A3478 gp store above the 0x1A read to break CSE there instead; t5 = write the 0x18 read explicitly through p10. All measured with sandbox --disable all and diffed against target.
 - result: t1 restores the three loads and the T-30 pin returns with them, score 5 / 67. t2 scores 8 / 68 (the store-order fence drags the gp store forward out of target's slot 27). t5 is byte-identical to r5 at score 2 / 66, confirming r5's fold is genuine CSE and not a spelling artifact. With r1-r9 this traces a conservation law: three independent loads implies p10 has no early consumer implies sched1 chains insn 39 between insns 56 and 58 implies the sched2 T-30 pin; an early consumer unpins insn 39 onto slot 12 but costs one of the three loads.
 - verdict: KILLED
+
+## [s5] A fresh m2c decompile yields a structurally different, viable body (no local for the context pointer).
+- mechanism: m2c renders every access as M2C_FIELD(D_800A3468, ...), i.e. re-reads the gp-relative global at every use instead of caching it in a local; if GCC 2.7.2 keeps the global in one register across the body, that spelling is equivalent to the `outer` local and its different liveness might move the +2 read's address pseudo off v0.
+- probe: tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax on asm/funcs/func_80060A68.s, then four faithful transcriptions with `outer` deleted and `D_800A3468` inlined at every use, in m2c's own order and in the v6/candidate/v2 orders (g1-g4 in tmp/grind/func_80060A68/s5/v/), each measured with sandbox --disable all.
+- result: 26 / 68, 26 / 68, 28 / 69, 29 / 70. GCC does NOT keep the global in one register: each interleaved store forces a reload of the gp word, adding 2-4 instructions and wrecking the whole prefix. The identical orderings WITH the `outer` local score 9, 3, 2 and 5. The no-local spelling is a decompiler artefact, not the original source. m2c's statement ORDER, by contrast, matches the campaign's order exactly (and independently corroborates it), except that m2c stores the +2 read directly with no temp2 -- measured as z1 at 9 / 68, so temp2 is load-bearing and honest.
+- verdict: KILLED
+
+## [s5] Struct-typed member access changes GCC's alias handling of the inner halfword reads and could break the CSE fold the campaign is fighting.
+- mechanism: spelling the reads as (*(struct S3 **)(outer + 0x10))->a sets MEM_IN_STRUCT_P on the halfword MEMs, which GCC 2.7.2's true_dependence / cse invalidation treat differently from plain scalar MEMs; if struct MEMs survive an intervening store the fold pattern changes.
+- probe: struct S3 { u16 a, b, c; } declared function-locally; four seats measured (x1 = v6 order with struct source reads; x2 = candidate order with a struct S3 *p10; x3 = both source and destination struct-typed; x4 = the u16* array-index spelling (*(u16 **)(outer + 0x10))[0..2]).
+- result: x1 = 6 (the byte-identical raw-cast body v6 = 3), x2 = 2 (neutral), x3 = 8, x4 = 6. MEM_IN_STRUCT_P is not codegen-neutral here, and every seat that moves is a REGRESSION -- it makes GCC more willing to fold, not less. The struct-typing axis is dead in both the source-side and destination-side seats.
+- verdict: KILLED
+
+## [s5] Naming the +0 and/or +2 read's address in an explicit local alters that pseudo's live range and can move reload off v0 (s10's frontier item 1).
+- mechanism: s10 established that in every 3-load body reload gives the +2 read's address pseudo hard register v0, creating a write-after-read anti-dependence against `sh v0,24(v1)` that forces insn 39 into the sched2 T-30 slot; s10 asked for an honest C change that alters the pseudo's LIVE RANGE rather than its type, since three type-level attempts were already dead.
+- probe: four fresh seats on the v2 (3-load) body: r1 = named `s32 p0` for the +0 read's address; r2 = named `s32 p2` for the +2 read's address; r5 = both named; r8 = p10 typed `u16 *` and the +4 read spelled p10[2].
+- result: all four score 5 / 67 and are byte-identical to the unnamed v2 body. Declaring a named C local for an address GCC already holds in a single-def/single-use pseudo does not change that pseudo's live range at all -- cse and local-alloc see exactly the same allocno. With s10's three type-level attempts this closes the declaration-level lever on insn 56's destination from seven seats. Anything that moves it must change WHAT ELSE IS LIVE across the +2 read, not how the address is spelled.
+- verdict: KILLED
+
+## [s5] In the three-fresh-inline-reads body the third 16(v1) load sits at slot 27 because the D_800A3478 gp store blocks it from hoisting.
+- mechanism: a load may not be hoisted above a store whose address GCC cannot disambiguate; `sw v0,%gp_rel(D_800A3478)(gp)` and `lw ?,0x10($v1)` have different base registers, so sched.c must assume they conflict. Sinking the gp store below the +4 read should let the load hoist to target's slot 12.
+- probe: w1 = the v6 body with the D_800A3478 assignment moved below the +4 read; also w3, w6 and x5 as three further placements of the same sink.
+- result: w1 = 7 / 66. The load moved only from slot 27 to slot 25 -- not to slot 12 -- and sinking the gp store swapped it past `sh a0,0x1A($v1)`, which target emits AFTER it (GCC 2.7.2 never reorders two stores whose bases it cannot disambiguate, so the swap is permanent). w3 = 7 / 67, w6 = 7 / 66, x5 = 7 / 67. The gp store is a real barrier but not the binding one: the +4 load's list-scheduling priority, set by the distance from its sole consumer to the end of the block, is what keeps it low.
+- verdict: KILLED
+
+## [s5] Giving p10 an early consumer in a 3-load body yields a body distinct from both candidate.c and v6.
+- mechanism: the s4 conservation law says three independent loads implies p10 has no early consumer implies the sched2 T-30 pin; if p10 is read early AND explicitly consumed by the +0 (or +2) read while the other two reads stay fresh in-line, both halves might hold at once.
+- probe: q1 (p10 early, consumed by the +0 read; +2 and +4 fresh in-line) and q3 (p10 early, consumed by the +2 read; +0 and +4 fresh in-line), both measured and disassembled.
+- result: both score 3 / 66 and are BYTE-IDENTICAL to v6, the body with no p10 local at all. cse propagates p10 forward into whichever read consumes it and then the load schedules with that read, so an early-consumed p10 is not a distinct body -- the local disappears entirely. Two more seats of "give p10 an early consumer" collapse onto the same output. The conservation law survives intact.
+- verdict: KILLED
+
+## [s5] The target's C shape can be DERIVED from its own instruction stream via the store-separator law, rather than searched for.
+- mechanism: cse.c does not disambiguate two (plus pseudo const) addresses, so any intervening store forces a fresh load, while sched.c DOES disambiguate them (memrefs_conflict_p), so a load may be hoisted across those same stores. That asymmetry means a read of *(s32 *)(outer + 0x10) folds onto the previous one iff and only iff no store separates them in SOURCE order. Reading the target's stream under that law fixes the source.
+- probe: apply the law to target's three 0x10 address loads (slots 12, 20, 23) and their consumers (slots 29, 22, 25) together with the fact that GCC never reorders two non-disambiguable stores; cross-check the conclusion by measuring every ordering the law admits (34 bodies, tmp/grind/func_80060A68/s5/v/).
+- result: the +0 and +2 reads are separated by `sh v0,0x18(v1)` and are therefore two in-line reads; but the only stores following the +2 load are the gp store (slot 27) and `sh a0,0x1A(v1)` (slot 28), and since stores never reorder, both are also after the +2 read in source -- so NO store is available to separate the +2 read from the +4 read. The +4 pointer therefore cannot be a third in-line read; it must be an early, separately-read local surviving to slot 29. That body is exactly v2, which measures 5 / 67. The target's C is now derived, not guessed, and the entire remaining gap is v2's register allocation.
+- verdict: CONFIRMED
+
+## [s5] q5 is a same-floor body whose residual is strictly cleaner than candidate.c's.
+- mechanism: candidate.c loses BOTH the slot-23 load and the register of the slot-22 lhu (it reads a1 where target reads a0); a body where p10 feeds the +2 and +4 reads while the +0 read stays fresh should get slot 22 right and isolate the residual to the missing load alone.
+- probe: q5 = p10 read before the copy-3 store, +0 read fresh in-line, temp2 = *(u16 *)(p10 + 2), temp_a1 = *(u16 *)(p10 + 4); sandbox --disable all plus a full disassembly diff.
+- result: score 2 / 66, same floor as candidate.c, but slot 22 is `lhu v0,0(a0)` -- matching target exactly where candidate.c emits `lhu v0,0(a1)`. The only differing slots are 23 (nop vs `lw a0,0x10(v1)`) and 25 (`lhu a0,2(a1)` vs `lhu a0,0x2(a0)`). Banked at rejected/s5-p10-early-feeds-plus2-and-plus4-plus0-fresh-score2-66insns.c as the better forensic seat for the next .lreg/.greg read, since its single missing insn is the same one v2 has and mis-allocates.
+- verdict: CONFIRMED
+
+## [s5] A fresh m2c decompile yields a structurally different, viable body (no local for the context pointer; every access re-reads the gp-relative global D_800A3468).
+- mechanism: m2c renders every access as M2C_FIELD(D_800A3468, ...). If GCC 2.7.2 keeps the global in one register across the body that spelling is equivalent to the `outer` local, and its different liveness might move the +2 read's address pseudo off v0.
+- probe: tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax on asm/funcs/func_80060A68.s, then four faithful transcriptions with `outer` deleted (g1-g4 in tmp/grind/func_80060A68/s5/v/), in m2c's own order and in the v6 / candidate / v2 orders, each measured with sandbox --disable all.
+- result: 26/68, 26/68, 28/69, 29/70. GCC does NOT keep the global in one register: each interleaved store forces a reload of the gp word. The identical orderings WITH the `outer` local score 9, 3, 2 and 5. m2c's statement ORDER independently corroborates the campaign's order, except that m2c has no temp2 (stores the +2 read directly) -- measured as z1 at 9/68, so temp2 is load-bearing and honest.
+- verdict: KILLED
+
+## [s5] Struct-typed member access changes GCC's alias handling of the inner halfword reads (MEM_IN_STRUCT_P) and could break the CSE fold the campaign is fighting.
+- mechanism: Spelling the reads as (*(struct S3 **)(outer + 0x10))->a sets MEM_IN_STRUCT_P on the halfword MEMs, which GCC 2.7.2's true_dependence / cse invalidation treat differently from plain scalar MEMs.
+- probe: Function-local struct S3 { u16 a, b, c; }; four seats: x1 (v6 order, struct source reads), x2 (candidate order, struct S3 *p10), x3 (source AND destination struct-typed), x4 (u16* array-index spelling (*(u16 **)(outer + 0x10))[0..2]).
+- result: x1 = 6 where the byte-identical raw-cast body v6 = 3; x2 = 2 (neutral); x3 = 8; x4 = 6. MEM_IN_STRUCT_P is not codegen-neutral here and every seat that moves is a REGRESSION -- it makes GCC more willing to fold, not less.
+- verdict: KILLED
+
+## [s5] Naming the +0 and/or +2 read's address in an explicit C local alters that pseudo's live range and can move reload off v0 (s10 frontier item 1).
+- mechanism: s10 established that in every 3-load body reload gives the +2 read's address pseudo hard register v0, creating a write-after-read anti-dependence against `sh v0,24(v1)` that forces insn 39 into the sched2 T-30 slot; s10 asked for a change to the pseudo's LIVE RANGE rather than its type.
+- probe: Four fresh seats on the v2 (3-load) body: r1 (named s32 p0 for the +0 read's address), r2 (named s32 p2 for the +2 read's address), r5 (both named), r8 (p10 typed u16 * and the +4 read spelled p10[2]).
+- result: All four score 5 / 67 and are byte-identical to the unnamed v2 body. Declaring a named local for an address GCC already holds in a single-def/single-use pseudo does not change that pseudo's live range at all. With s10's three type-level attempts this closes the declaration-level lever on insn 56's destination from seven seats.
+- verdict: KILLED
+
+## [s5] In the three-fresh-inline-reads body (v6) the third 16(v1) load sits at slot 27 because the D_800A3478 gp store blocks it from hoisting to target's slot 12.
+- mechanism: A load may not be hoisted above a store whose address GCC cannot disambiguate; sw v0,%gp_rel(D_800A3478)(gp) and lw ?,0x10($v1) have different base registers, so sched.c must assume they conflict.
+- probe: w1 = the v6 body with the D_800A3478 assignment sunk below the +4 read; w3, w6 and x5 as three further placements of the same sink.
+- result: w1 = 7/66: the load moved only from slot 27 to slot 25, NOT to slot 12, and sinking the gp store swapped it past `sh a0,0x1A(v1)` permanently (GCC 2.7.2 never reorders two stores whose bases it cannot disambiguate). w3 = 7/67, w6 = 7/66, x5 = 7/67. The gp store is a real barrier but not the binding one -- the +4 load's list-scheduling priority is.
+- verdict: KILLED
+
+## [s5] Giving p10 an early consumer while keeping three independent 0x10 loads yields a body distinct from both candidate.c and v6, breaking the s4 conservation law.
+- mechanism: The s4 law says three independent loads implies p10 has no early consumer implies the sched2 T-30 pin. If p10 is read early AND explicitly consumed by the +0 (or +2) read while the other two reads stay fresh in-line, both halves might hold at once.
+- probe: q1 (p10 early, consumed by the +0 read; +2 and +4 fresh in-line) and q3 (p10 early, consumed by the +2 read; +0 and +4 fresh in-line), measured and disassembled.
+- result: Both score 3 / 66 and are BYTE-IDENTICAL to v6, the body with no p10 local at all -- cse propagates p10 forward into whichever read consumes it and the local disappears. Two more seats of 'give p10 an early consumer' collapse onto the same output; the conservation law survives intact.
+- verdict: KILLED
+
+## [s5] The target's C shape can be DERIVED from its own instruction stream via the store-separator law, rather than searched for.
+- mechanism: cse.c does not disambiguate two (plus pseudo const) addresses, so any intervening store forces a fresh load, while sched.c DOES disambiguate them (memrefs_conflict_p), so a load may be hoisted across those same stores. A read of *(s32 *)(outer + 0x10) therefore folds onto the previous one if and only if no store separates them in SOURCE order.
+- probe: Apply the law to target's three 0x10 address loads (slots 12, 20, 23) and their consumers (slots 29, 22, 25), together with the fact that GCC never reorders two non-disambiguable stores; cross-check by measuring every ordering the law admits (34 bodies in tmp/grind/func_80060A68/s5/v/).
+- result: The +0 and +2 reads are separated by `sh v0,0x18(v1)` and are two in-line reads; but the only stores after the +2 load are the gp store (slot 27) and `sh a0,0x1A(v1)` (slot 28), and since stores never reorder, both follow the +2 read in source too -- so NO store is available to separate the +2 read from the +4 read. The +4 pointer cannot be a third in-line read; it must be an early, separately-read local surviving to slot 29. That body is exactly v2, which measures 5 / 67. The target's C is derived, not guessed, and the entire remaining gap is v2's register allocation.
+- verdict: CONFIRMED
+
+## [s5] q5 is a same-floor body whose residual is strictly cleaner than candidate.c's and is the better forensic seat for the next session.
+- mechanism: candidate.c loses BOTH the slot-23 load and the register of the slot-22 lhu (a1 where target reads a0); a body where p10 feeds the +2 and +4 reads while the +0 read stays fresh should get slot 22 right and isolate the residual to the missing load alone.
+- probe: q5 = p10 read before the copy-3 store, +0 read fresh in-line, temp2 = *(u16 *)(p10 + 2), temp_a1 = *(u16 *)(p10 + 4); sandbox --disable all plus a full disassembly diff against target.
+- result: score 2 / 66, same floor as candidate.c, but slot 22 is `lhu v0,0(a0)` -- matching target exactly where candidate.c emits `lhu v0,0(a1)`. The only differing slots are 23 (nop vs `lw a0,0x10(v1)`) and 25 (register). Banked as the better seat for the next .lreg/.greg read, since its single missing insn is the same one v2 has and mis-allocates.
+- verdict: CONFIRMED
