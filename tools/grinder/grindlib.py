@@ -251,6 +251,82 @@ def add_banned_construct(root, func, text):
     return True
 
 
+def unban_construct(root, func, needle):
+    """Clear banned_constructs entries containing `needle` — driver-invoked
+    ONLY, on a Judge verdict that explicitly narrows/supersedes the ban
+    (integration-handoff-self-serve, owner ruling 2026-08-19). The narrowing
+    itself stays in judge_constraints; this clears just the mechanical
+    tripwire so a Judge-authorized resubmission is not auto-discarded
+    (func_8002D518 deadlocked twice on exactly that). Returns entries removed."""
+    st = load_state(root, func)
+    if not st:
+        return 0
+    before = st.get("banned_constructs") or []
+    kept = [b for b in before if needle not in b]
+    removed = len(before) - len(kept)
+    if removed:
+        st["banned_constructs"] = kept
+        save_state(root, func, st)
+    return removed
+
+
+# integration-handoff-self-serve (owner ruling 2026-08-19): path classes the
+# driver may grant into scope_allow.txt. Everything else — and the explicit
+# denylist — stays owner-only (the "most severe blockers" list).
+_SCOPE_GRANT_ALLOWED_RE = re.compile(r"^(include/[\w.\-/]+\.h|src/[\w.\-/]+\.c|[\w\-]+\.txt)$")
+_SCOPE_GRANT_DENY = {
+    "inline_asm_canonical.txt",       # has its own evidence-gated grant path
+    "maspsx_label_nop_funcs.txt",     # assembler fidelity gates: substrate-adjacent,
+    "expand_lb_funcs.txt",            # owner-only
+    "expand_dest_funcs.txt",
+    "multu_funcs.txt",
+    "multu_pad_funcs.txt",
+}
+
+
+def add_scope_allow(root, func, paths, date):
+    """Driver-written per-function scope_allow.txt grant on a Judge
+    ESCALATE(integration-handoff) verdict (integration-handoff-self-serve,
+    owner ruling 2026-08-19). Widens scope, never standards: every granted
+    path is BOTH scope-checked and staged into the Match commit, and the fix
+    still passes layer-1 + Judge + full-build SHA1. Refuses (returns None) any
+    path outside the allowed classes or on the denylist. Merges with an
+    existing line for the function. LF-enforced."""
+    clean = []
+    for p in paths:
+        p = str(p).strip().replace("\\", "/").lstrip("./")
+        if not p:
+            continue
+        if p in _SCOPE_GRANT_DENY or not _SCOPE_GRANT_ALLOWED_RE.match(p):
+            return None
+        clean.append(p)
+    if not clean:
+        return None
+    fpath = os.path.join(root, "tools", "grinder", "scope_allow.txt")
+    with open(fpath, encoding="utf-8") as f:
+        lines = f.read().split("\n")
+    merged = list(dict.fromkeys(clean))
+    out, replaced = [], False
+    for ln in lines:
+        t = ln.strip()
+        if t and not t.startswith("#") and t.split()[0] == func:
+            prior = t.split()[1:]
+            merged = list(dict.fromkeys(prior + merged))
+            replaced = True
+            continue
+        out.append(ln)
+    while out and out[-1] == "":
+        out.pop()
+    out.append(f"# {func}: pipeline scope grant {date} (judge ESCALATE integration-handoff,")
+    out.append("# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).")
+    entry = f"{func} " + " ".join(merged)
+    out.append(entry)
+    out.append("")
+    with open(fpath, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(out))
+    return entry if not replaced else entry + "  (merged with prior line)"
+
+
 def set_pending_fixup(root, func, kind, detail):
     """Queue a tiny-scope fix-up brief for the NEXT session (one-shot)."""
     st = load_state(root, func)
@@ -1121,6 +1197,17 @@ if __name__ == "__main__":
         # log-borderline <root> <func> <category> <evidence> <disposition> <date>
         log_borderline(sys.argv[2], sys.argv[3], sys.argv[4],
                        sys.argv[5], sys.argv[6], sys.argv[7])
+    elif cmd == "unban":
+        # unban <root> <func> <needle>  -> prints number of entries removed
+        print(unban_construct(sys.argv[2], sys.argv[3], sys.argv[4]))
+    elif cmd == "add-scope-allow":
+        # add-scope-allow <root> <func> <date> <path> [more paths...]
+        line = add_scope_allow(sys.argv[2], sys.argv[3], sys.argv[5:], sys.argv[4])
+        if line is None:
+            print("scope grant REFUSED (path class or denylist — "
+                  "integration-handoff-self-serve)")
+            sys.exit(1)
+        print(line)
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)

@@ -417,6 +417,35 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
         # Tier not STRONG — the grant claim fails on evidence; log-and-refuse below.
         $ekind = 'canonical-asm-grant (REFUSED: tier ' + $tier + ', not STRONG-class)'
     }
+    if ($ekind -eq 'integration-handoff') {
+        # integration-handoff-self-serve (owner ruling 2026-08-19): a bytes-proven
+        # handoff's remedy — a scope_allow.txt widening and/or a Judge-superseded
+        # ban clearance — is executed by the DRIVER on the Judge's verdict. The
+        # function STAYS ACTIVE; the fix still passes every normal gate (scope
+        # check, layer-1, Judge, full-build SHA1). Path classes are enforced by
+        # grindlib add-scope-allow (denylist = the severe-blocker list).
+        $did = @()
+        if ($v.scope_paths) {
+            $paths = @($v.scope_paths | ForEach-Object { [string]$_ })
+            $line = (python tools/grinder/grindlib.py add-scope-allow . $func $date @paths | Out-String).Trim()
+            if ($LASTEXITCODE -eq 0) { $did += "scope grant: $line" }
+            else { Log "${func}: integration-handoff scope grant REFUSED ($line)." }
+        }
+        if ($v.unban_construct) {
+            $n = (python tools/grinder/grindlib.py unban . $func ([string]$v.unban_construct) | Out-String).Trim()
+            if ([int]$n -gt 0) { $did += "cleared $n superseded ban(s)" }
+        }
+        if ($did.Count) {
+            python tools/grinder/grindlib.py constrain . $func ("integration-handoff EXECUTED (pipeline, $date): $($did -join '; '). Land the banked form through the normal gates; the widened paths are scope-checked AND staged.") | Out-Null
+            python tools/grinder/grindlib.py log-borderline . $func 'integration-handoff' "judge ESCALATE packet in docs/grind/decisions.md ($ref)" ("driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): $($did -join '; '); function stays ACTIVE.") $date | Out-Null
+            Journal "$func JUDGE ESCALATE (integration-handoff) — EXECUTED by driver ($($did -join '; ')), function stays active."
+            Log "${func}: judge ESCALATE — integration-handoff executed ($($did -join '; ')); staying active."
+            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl tools/grinder/scope_allow.txt 2>$null
+            git -C $Root commit -m "grind: $func integration-handoff executed (judge ESCALATE, ruling 2026-08-19) [skip-park-src-guard]" 2>$null | Out-Null
+            return
+        }
+        $ekind = 'integration-handoff (REFUSED: no executable remedy in verdict)'
+    }
     $evid = "judge ESCALATE packet in docs/grind/decisions.md ($ref)"
     $disp = "REFUSED under the current frozen policy (endgame-lock standing ruling 2026-07-27, extended by judge-sole-gate 2026-08-18); terminal OWNER-ACCEPTED INCOMPLETE park; candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
     python tools/grinder/grindlib.py log-borderline . $func $ekind $evid $disp $date | Out-Null
@@ -478,6 +507,14 @@ Write your verdict JSON to the exact path given below.
     }
     Add-Decision $func "ruling: $qShort" $v.verdict $v.justification
     if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
+    if ($v.unban_construct) {
+        # integration-handoff-self-serve (owner ruling 2026-08-19): a ruling that
+        # explicitly narrows/supersedes an earlier ban clears the mechanical
+        # tripwire, so the authorized resubmission is not auto-discarded
+        # (func_8002D518 burned two sessions exactly this way).
+        $n = (python tools/grinder/grindlib.py unban . $func ([string]$v.unban_construct) | Out-String).Trim()
+        if ([int]$n -gt 0) { Log "${func}: $n superseded ban(s) cleared per judge narrowing." }
+    }
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
     git -C $Root commit -m "grind: $func judge ruling [skip-park-src-guard]" 2>$null | Out-Null
     Log "${func}: judge ruling $($v.verdict) recorded."
@@ -1007,6 +1044,14 @@ while ($true) {
                 Journal "$func s$sessionN [$modality] canonical-asm grant path — stays active: $($o.headline)"
                 git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
                 git -C $Root commit -m "grind: $func canonical-asm grant path filed (stays active) [skip-park-src-guard]" 2>$null | Out-Null
+            } elseif ($escRef -match 'INTEGRATION HANDOFF') {
+                # integration-handoff-self-serve (owner ruling 2026-08-19): a
+                # bytes-proven handoff is pipeline-executable, never a terminal
+                # park. Route the filed packet to the Judge; on its
+                # ESCALATE(integration-handoff) verdict the driver widens scope /
+                # clears the superseded ban and the function STAYS ACTIVE.
+                Invoke-JudgeRuling $func ("INTEGRATION HANDOFF filed for $func : $escRef`n" +
+                    "Read the escalation entry in docs/grind/decisions.md and the ledger, and verify its bytes claim yourself (the banked form + measurements). If the claim is sound and the remedy is a scope widening and/or a superseded-ban clearance per .claude/rules/integration-handoff-self-serve.md, return ESCALATE with escalate_kind=integration-handoff plus scope_paths=[...] (allowed classes: include/*.h, src/*.c, root-level rule/allowlist *.txt; the denylist is refused mechanically) and/or unban_construct=<substring>. If the claim does not hold, FAIL with the defect.")
             } else {
                 # Legacy pending-shaped ref (pre-2026-08-18). No pending states exist
                 # anymore: log to the borderline ledger and park terminally.

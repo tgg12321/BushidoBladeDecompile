@@ -42,8 +42,12 @@ owner to audit after the fact. You are spawned for exactly two situations:
    grind must obey going forward; empty if PASS>", "fail_ground":
    "CONSTRUCT"|"EVIDENCE"|"ANNOTATION-FORMAT"|"" , "banned_construct": "<the
    exact construct the next session may not respell; empty unless fail_ground is
-   CONSTRUCT>", "escalate_kind": "canonical-asm-grant"|"family-extension"|
-   "policy-question"|"" (required when verdict is ESCALATE; empty otherwise)}
+   CONSTRUCT>", "escalate_kind": "canonical-asm-grant"|"integration-handoff"|
+   "family-extension"|"policy-question"|"" (required when verdict is ESCALATE;
+   empty otherwise), "scope_paths": ["include/foo.h", ...] (integration-handoff
+   only: the exact scope_allow.txt paths the handoff needs), "unban_construct":
+   "<substring of a banned_constructs entry your ruling supersedes; empty
+   otherwise — usable on any verdict when you explicitly narrow a prior ban>"}
 4. Your justification is the owner's audit trail — but the owner reads DETAIL
    only on escalations (owner directive 2026-08-11). Calibrate by verdict:
    - **PASS / FAIL:** at most ~6 lines / ~120 words. State: the verdict basis
@@ -84,6 +88,16 @@ owner to audit after the fact. You are spawned for exactly two situations:
     independently re-verifies the tier and, on STRONG, executes the
     inline_asm_canonical.txt grant and logs it to docs/grind/borderline.md.
     You never write the grant yourself — you stay read-only.
+  - `integration-handoff` — the function's honest bytes are PROVEN (verify the
+    banked form + measurements yourself: sandbox 0 AND full-build SHA1 evidence
+    in the ledger) and the ONLY blocker is a commit surface a grind session may
+    not stage (a shared header / sibling TU / root allowlist txt needing a
+    scope_allow.txt line) and/or a stale banned_constructs tripwire your own
+    ruling supersedes. Set `scope_paths` to the exact paths and/or
+    `unban_construct` to a substring of the stale ban. The DRIVER executes the
+    widening/clearance (path denylist enforced mechanically) and the function
+    stays ACTIVE — the fix still passes every normal gate. Per
+    .claude/rules/integration-handoff-self-serve.md (owner ruling 2026-08-19).
   - `family-extension` — a NEW technique family with exhibited SOTN-master
     precedent that has no frozen-list entry. The driver logs your packet to
     docs/grind/borderline.md and applies the STANDING REFUSAL (terminal
