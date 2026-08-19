@@ -368,3 +368,120 @@ spelling can succeed; stop proposing them.
 - probe: Changed src/main.c:3431 to extern volatile s32 D_800F1AEC; and scored BOTH consumers of the symbol, then reverted. Separately traced the IRQ writer through asm/funcs/_comb_control.s.
 - result: SioSyncroWrite 1 -> 1 (158/159) and the already-matched sibling SioAnsyncWrite 0 -> 0 (25/25) — score-neutral, no regression on a COMPLETED function. Two-prong evidence complete: HandleSio materialises $a0 = &D_800F1AEC at 0x8008CC78 (_comb_control.s:549-550) and stores sw $zero,0x0($a0) at 0x8008CCD4, clearing D_800F1AEC itself; use-site constructs are double-read-across-sequence-point (st[1] += 1; st[1];) and IRQ-mutated-loop-bound (the +8 countdown drives the outer loop). Reverted in-session because filing the allowlist entry needs the layer-2 cheat-reviewer plus commit-audit block that a grind session cannot produce; the draft entry text is banked in evidence.md.
 - verdict: CONFIRMED
+
+---
+
+# s4 (2026-08-19) — modality: permuter. FLOOR 1 -> 0. THE FUNCTION IS MATCHED.
+
+Chassis at dispatch: candidate.c (s2/s3 form) re-applied to src/main.c;
+`sandbox SioSyncroWrite --disable all` = 1 (159 target / 158 build).
+NOTE for future sessions: at dispatch src/main.c still held the STALE s1-era
+body (register pin `asm("s4")` + `__asm__("la %0, D_800F1AE2")` + goto-loops).
+The ledger candidate.c was never re-applied by s3, which is why the driver's
+chassis probe reported "measurement unavailable". Re-apply candidate.c FIRST.
+
+## Standalone permuter workspace is codegen-faithful [s4-W1] — CONFIRMED
+`tmp/perm_sio_s4a` (setup script: tmp/grind/SioSyncroWrite/s4/setup_ws.sh)
+builds a ~20-line standalone TU (six typedefs + eight externs + the body)
+through the real pipeline (cc1 -O2 -G0 -mel | prologue_fix | maspsx 2.34 |
+multu_pad | as). Its object is INSTRUCTION-FOR-INSTRUCTION IDENTICAL to the
+sandbox's src/main.c object for this function (verified by objdump diff: only
+branch-target absolute addresses differ). Consequence: a full main.c compile is
+NOT needed to evaluate a spelling — a variant costs ~2 s instead of a full-file
+build. Every [s4-*] measurement below used it; the final forms were re-confirmed
+through the real engine sandbox.
+
+## [s4-P1] Random permutation of the s3 chassis is dry — KILLED
+Campaign s4a, label `s4a-candidate-chassis`, -j8, base score 105 (= 1 missing
+instruction x100 + one register difference x5). 63,579 iterations / 28.2 min /
+ZERO finds (not "no zero" — no output at ANY score below base). Harvested and
+stopped. The permuter cannot reach the answer from this chassis by
+randomization; the residual was a *structural* property, not a spelling
+perturbation.
+
+## [s4-P2] Directed PERM_GENERAL at the exit test — KILLED as a search, but it
+##         produced the session's decisive MEASUREMENT
+Campaign s4b, label `s4b-directed-exit-test`, base 105, 24,099 iterations, 0
+finds; harvested and stopped. Its VALUE was the deterministic evaluation of the
+alternatives themselves (tmp/grind/SioSyncroWrite/s4/sweep.py):
+
+  while-condition spelling                    insns   (target = 159)
+  D_800F1AF4 != 0                     (s3)    158
+  *(volatile s32 *)&D_800F1AF4 != 0           160
+  (&D_800F1AF4)[0] != 0                       160
+  ({volatile s32 *q=&D_800F1AF4; *q!=0;})     157
+  ({volatile s32 *volatile q=...})            160
+
+The 160s are the key. Reading the objdump diff for the cast form showed the
+extra instruction is NOT at the loop bottom only — the address is materialised
+un-folded at BOTH the loop-bottom test AND the duplicated loop-TOP test.
+
+## [s4-H1] Target's two exit tests cannot be two copies of one `while`
+##         condition — CONFIRMED, and this kills the entire s1-s3 chassis
+`expand_end_loop` copies a `while` condition VERBATIM to the loop top, so both
+copies always have the same folded/un-folded shape. Target does not:
+  top    (0x8008C2A4): `lui $v0,%hi; lw $v0,%lo($v0)`             <- FOLDED
+  bottom (0x8008C410): `lui $v0,%hi; addiu $v0,%lo; lw 0($v0)`    <- UN-FOLDED
+  final  (0x8008C428): same un-folded form again
+Therefore no spelling of a `while (...)` condition can ever reproduce target,
+and the three sessions of pointer/hoist/allocation theory (s3's global.c
+find_reg / REG_EQUIV rematerialisation hypothesis) were attacking a problem
+that does not exist. The correct reading is much simpler: the top test and the
+bottom test are DIFFERENT SOURCE CONSTRUCTS.
+
+## [s4-H2] Guard + bottom-tested loop + BLOCK-SCOPED alias — CONFIRMED (0)
+    if (D_800F1AF4 == 0) goto done;      /* direct global read -> folds */
+    for (;;) {
+        ... body ...
+        { volatile s32 *remaining = &D_800F1AF4;
+          if (*remaining == 0) break; }  /* alias -> un-folds */
+    }
+Five loop shapes were measured and ALL produce a byte-exact 159-instruction
+match (0 differing lines): for(;;)+break, while(1)+break, for(;;)+goto done,
+do{...}while(1)+break, do{...}while(stmt-expr). `for (;;)` is the banked form.
+The load-bearing element is the BLOCK SCOPE, not the loop keyword: the alias
+dies at the closing brace, so its live range never reaches the
+DeliverEvent/callback region and global.c never considers it for a callee-save
+register. The same alias declared at FUNCTION scope is 161i (rejected/
+s4-fnscope-ptr-in-dowhile-still-hoisted-161i.c) and at LOOP-BODY-TOP scope is
+151i — exactly the failure s2/s3 kept hitting.
+
+## [s4-H3] The two discarded read-backs are natural C, not padding — CONFIRMED
+s2 spelled them `st[1] += 1; st[1];` (a bare discarded volatile read).
+Measured this session:
+  st[1] += 1; st[1]; ...     159i, 0 diff   (s2 form)
+  st[1]++;  / st[2]--;       159i, 0 diff   <- banked
+  ++st[1];  / --st[2];       159i, 0 diff
+  st[1] = st[1] + 1; ...     157i, 18 diff  (no read-back at all)
+  no read-back statements    157i, 18 diff
+  only one of the two        158i, 17 diff
+GCC 2.7.2 re-loads a volatile lvalue after a discarded-result post/pre
+increment; the explicit read-modify-write spelling does not. Target contains
+both re-loads (`lw $v0,0x4($s3)` and `lw $v0,0x8($s3)`,
+asm/funcs/SioSyncroWrite.s:107 and :111), so they are original behaviour.
+This removes the last construct in the body that had no C-level reason.
+
+## [s4-M1..M5] Every pointer alias is load-bearing — CONFIRMED
+Direct-global replacement measured for each (target 159):
+  drop p_ae2  (&D_800F1AE2) -> 158i, 27 differing lines   [s4-M1]
+  drop p_af8  (&D_800F1AF8) -> 158i, 23                   [s4-M2]
+  drop p_af4b (&D_800F1AF4) -> 158i, 29                   [s4-M3]
+  drop p_af4  (&D_800F1AF4) -> 158i,  5                   [s4-M4]
+  drop st, use flag[]       -> 158i, 51                   [s4-M5]
+This is the lever-exhaustion record the pointer-alias-fake-exception rule
+requires; the five single-global aliases now carry /* FAKE */ annotations.
+
+## [s4-M6] `extern volatile s32 D_800F1AEC;` is score-neutral — CONFIRMED
+Re-measured on the 0-distance chassis: 159i, 0 differing lines. It is the
+natural spelling that would remove the last qualifier-adding construct
+(`volatile s32 *flag` over a non-volatile extern). BLOCKED ONLY by scope:
+it needs a volatile_extern_allowlist.txt entry, and grind candidates may edit
+only src/main.c (tools/grinder/grind.ps1:540). Two-prong evidence is complete
+in evidence.md. This is an integration handoff, not a matching problem.
+The in-scope alternative `(volatile s32 *)flag` also matches (159i/0) but is an
+explicit volatile CAST and was rejected by the self-vet as forbidden.
+
+## [s4-K1] Re-basing the control-block pointer onto D_800F1AF0 — KILLED
+`s32 *flag = &D_800F1AEC; volatile s32 *st = &D_800F1AF0;` with st[0..2]:
+158i, 57 differing lines. Target keeps ONE base ($s3 = &D_800F1AEC, offsets
+0x4/0x8/0xC), so any re-basing diverges across the whole block.

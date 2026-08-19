@@ -419,3 +419,56 @@ files it:
 - [s3] Classification of the remaining block-local volatile pointer reads is now mostly resolved: p_ae2, p_af8, p_af4b and p_af4 all point at globals that are ALREADY extern volatile at file scope, so they add no qualifier and are pure address-materialisation spellings. Only flag was adding a qualifier, and the allowlist entry above is the sanctioned fix for it.
 
 - [s3] Twin SioSyncroRead (src/main.c:3337) is unchanged and still carries regfix $19<->$20 @ 0-134 and $16<->$17 @ 68-121 — the identical rotation the s2 loop-note rewrite dissolves here. Highest-value transfer of this ledger, out of scope for a SioSyncroWrite session.
+
+---
+
+# s4 (2026-08-19) — MATCHED. Honest floor 0.
+
+`& tools/wteng.ps1 main sandbox SioSyncroWrite --disable all` with the s4 body
+in src/main.c: score 0, target_insns 159, build_insns 159, rules_dropped 1,
+cheat_asm_stripped 66. Zero pins, zero inline asm, zero rules, src/main.c only.
+
+## The structural fact that closed it
+Target's outer loop has three reads of D_800F1AF4 with two different shapes:
+  0x8008C2A4  lui $v0,%hi(D_800F1AF4); lw $v0,%lo(D_800F1AF4)($v0)   FOLDED
+  0x8008C410  lui $v0,%hi; addiu $v0,%lo; lw $v0,0($v0)              UN-FOLDED
+  0x8008C428  lui $v0,%hi; addiu $v0,%lo; lw $v0,0($v0)              UN-FOLDED
+GCC copies a `while` condition verbatim to the loop top (expand_end_loop), so
+the first two can never differ if they come from one `while`. They come from
+two different constructs: a plain-global entry guard and a block-scoped pointer
+alias tested at the loop bottom. See hypotheses.md [s4-H1]/[s4-H2].
+
+## Tooling fact worth reusing on any main.c function
+A ~20-line standalone TU compiled through the real pipeline reproduces the
+sandbox object INSTRUCTION-FOR-INSTRUCTION for this function (only branch
+absolute addresses differ). tmp/grind/SioSyncroWrite/s4/setup_ws.sh builds it;
+a variant costs ~2 s instead of a full main.c build. This is what made the
+40-odd measurements in [s4-*] affordable.
+
+## Permuter telemetry (both campaigns harvested + stopped in-session)
+  s4a  s4a-candidate-chassis    base 105   63,579 iters   28.2 min   0 finds
+  s4b  s4b-directed-exit-test   base 105   24,099 iters   ~9 min     0 finds
+Random search over this function is dry at the 1-instruction level. The value
+came from evaluating the DIRECTED alternatives deterministically, not from the
+search itself.
+
+## OPEN INTEGRATION HANDOFF for the operator (does NOT block the byte match)
+The body still spells the control-block volatility at the pointer
+(`volatile s32 *flag = &D_800F1AEC;`) because the file-scope declaration is
+`extern s32 D_800F1AEC;`. The natural spelling is `extern volatile s32
+D_800F1AEC;` and it is measured SCORE-NEUTRAL for SioSyncroWrite (s4, on the
+0-distance chassis: 159i / 0 differing lines) and for SioAnsyncWrite (s3).
+To apply it:
+  1. Add to volatile_extern_allowlist.txt, after the D_800F1AF8 line:
+     D_800F1AEC    # SioSyncroWrite + SioAnsyncWrite in-use flag - IRQ writer: HandleSio sw $zero,0x0($a0) @0x8008CCD4 (block base $a0=&D_800F1AEC loaded @0x8008CC78, asm/funcs/_comb_control.s). Same Ruling-4 class grant as its three block members D_800F1AF0/AF4/AF8.
+  2. src/main.c: `extern s32 D_800F1AEC;` -> `extern volatile s32 D_800F1AEC;`
+  3. src/main.c SioAnsyncWrite: `s32 *flag = &D_800F1AEC;` ->
+     `volatile s32 *flag = &D_800F1AEC;` (forced by 2; score-neutral, s3).
+  4. src/main.c SioSyncroWrite: `flag` and `st` keep their `volatile s32 *`
+     type, which then MATCHES the object exactly - no qualifier is added
+     anywhere in the function and the construct leaves the diff entirely.
+  5. Commit-message audit block per the allowlist file header (prong (a) IRQ
+     writer + prong (b) use-site: IRQ-mutated-loop-bound and spin-wait), plus
+     a fresh layer-2 cheat-reviewer.
+Grind candidates may only edit src/main.c (tools/grinder/grind.ps1:540 and
+tools/grinder/scope_allow.txt), which is why s4 did not do it.

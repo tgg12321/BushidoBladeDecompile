@@ -6115,3 +6115,7 @@ exists for the closing construct, and the decomp.me structural twin (scratch
 `src/ings.c` was restored to its committed HEAD body. The disposition stands:
 **REFUSED / OWNER-ACCEPTED INCOMPLETE**, terminal, nothing pending on the owner.
 
+
+## 2026-08-19 00:25 — SioSyncroWrite — layer-1 review — **FAIL**
+
+The body still declares `volatile s32 *flag = &D_800F1AEC;` (and its loop-local copy `st`), adding a volatile qualifier over a non-volatile `extern s32 D_800F1AEC;` via pointer-type coercion — the exact non-scalar-extern spelling the legitimate-volatile-interrupt-touched carve-out explicitly excludes, and D_800F1AEC is not present in volatile_extern_allowlist.txt at all.

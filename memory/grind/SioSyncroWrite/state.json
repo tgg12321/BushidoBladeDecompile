@@ -40,9 +40,14 @@
    "next_probe": "Diff SioSyncroWrite against SioAnsyncWrite/SioSyncroRead and against any psyz LIBCOMB body for a while-countdown routine whose exit test compiles un-folded, and copy the source spelling verbatim rather than inventing one."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The body still declares `volatile s32 *flag = &D_800F1AEC;` (and its loop-local copy `st`), adding a volatile qualifier over a non-volatile `extern s32 D_800F1AEC;` via pointer-type coercion \u2014 the exact non-scalar-extern spelling the legitimate-volatile-interrupt-touched carve-out explicitly excludes, and D_800F1AEC is not present in volatile_extern_allowlist.txt at all. Next action: Do not commit this body as COMPLETED-C. Either (a) land the volatile_extern_allowlist.txt entry for D_800F1AEC (with the IRQ-writer citation already drafted in evidence.md) plus the fi"
+ ],
+ "banned_constructs": [
+  "volatile s32 *flag = &D_800F1AEC; (src/main.c:3452) and its loop-body copy volatile s32 *st = flag;",
+  "self-vet's own OPEN-HANDOFF section"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-19T00:51:51.740832+00:00"
