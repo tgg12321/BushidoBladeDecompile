@@ -683,3 +683,103 @@ inert, is a signature of a **missing type declaration**, not of a scheduler wall
 byte-offset casts while the instruction that will not move is a scalar global: that is exactly the
 configuration `sched.c:832-839` refuses to disambiguate, and declaring the record type deletes the
 dependence outright.
+
+
+## s8 (SYNTHESIS, 2026-08-19) — merged attack + frontier RESET
+
+### [s8-syn] The previous session's t5 "record-typed PARAMETERS scores 4" was a real ceiling on that axis.
+- **mechanism claimed:** typed parameters differ from cast-at-use in some codegen-relevant way.
+- **probe:** rebuilt t5 from the score-0 `u8_final.c` body, replacing the two leftover
+  `*((u16 *)(dst + 0x10/0x12))` byte-offset reads (which scale by `sizeof(DST)` under a `DST *`
+  parameter and emit `lhu v1,1024(s0)`) with `u16`-typed `h10`/`h12` members and `(s16)` casts at
+  the two signed use sites. Scored with `tmp/grind/func_8001B748/s4/score.py` and then in place in
+  `src/code6cac.c` via `sandbox --disable all`.
+- **result:** score **0**, 231/231, both scorers. Zero casts on `dst`/`a`/`b` remain in the body.
+- **verdict: KILLED.** The 4 was entirely the rewrite bug. Typed parameters and cast-at-use are
+  codegen-equivalent; the record TYPE is what matters, the spelling that carries it does not.
+
+### [s8-syn] Record-typed parameters force call-site edits and are therefore out of a grind session's scope (the previous session's stated reason for dropping t5).
+- **mechanism claimed:** `func_8001B748(DST *, AB *, AB *, ...)` cannot be called from
+  `src/code6cac.c:1046,1051` without casts added at those lines.
+- **probe:** applied t6 in place with the call sites untouched and ran the sandbox, which compiles
+  the entire `code6cac.c` translation unit.
+- **result:** builds and scores 0. The two call sites already pass mismatched pointer types today
+  (`(s32 *)&D_800F5328` into a `u8 *` parameter; `(s32 *)arg2` into an `s32` parameter), so GCC
+  2.7.2 emits the same incompatible-pointer warning it already emits and compiles unchanged.
+- **verdict: KILLED.** The scope objection does not hold.
+
+### [s8-syn] There exists independent, program-logic-first evidence — discoverable without reading any GCC internal — that `dst`'s pointee is a record in the original source.
+- **mechanism:** if the offset layout `func_8001B748` uses is corroborated by unrelated functions
+  operating on the same two objects, the record declaration is a restoration of the original type,
+  not a coercion introduced to move a dependence edge.
+- **probe:** `grep -rn "D_800F6608\|D_800F5328" src/ include/`.
+- **result:** THREE independent corroborations. (i) `src/code6cac.c:1058-1077` — two already-matched
+  siblings in the same file declare `typedef struct { s32 x, y, z; } Vec3;` and view
+  `&D_800F6608` through it (`*(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);`); `Vec3` is exactly
+  `DST`'s `w0/w4/w8`. (ii) `func_8001B294` (`:818`) initialises the `D_800F6608` object field-by-field
+  at `+0x00/04/08/10/12/14/18/1E/30/32/34/38/3A/3C`. (iii) `func_8001B3C0` (`:819`) does the same for
+  `D_800F5328` at `+0x00/04/08/30/32/34/38/3A/3C/40`. Those are the same offsets `func_8001B748`
+  touches. `a`/`b` are corroborated at `:1051`, which reads `*(s16 *)((u8 *)arg1 + 4)` / `+ 8` on
+  the same pointers it passes in — matching `AB`'s `h4/h6/h8`.
+- **verdict: CONFIRMED.** This is the evidence the layer-1 FAIL said was missing (it FAILed the
+  construct as "found by reading GCC's `MEM_IN_STRUCT_P` clause ... not a program-logic-first record
+  declaration"). It does not by itself lift the ban — that is a ruling, not a measurement — but the
+  ban's stated ground is now answerable on its own terms.
+
+### [s8-syn] Some non-type C-level lever can still delete the gp store's dependence edges.
+- **mechanism searched:** the suppression at `tools/gcc-2.7.2/sched.c:817-882` is symmetric, so it
+  could in principle fire with the gp store as the in-struct/varying side instead of the pointee
+  accesses; and a second aliasing lever could exist.
+- **probe:** read the clause's operands against the gp store's RTL. `D_800A3310` is a scalar extern
+  at a SYMBOL_REF address: `MEM_IN_STRUCT_P` = 0 and `rtx_addr_varies_p` = 0 unconditionally, with
+  no C spelling that changes either (its address contains no REG). GCC 2.7.2 predates alias sets
+  (introduced in 2.8/egcs), so `memrefs_conflict_p` has no second discriminator.
+- **verdict: KILLED.** The pointee side is the only side, and the type is the only lever. Combined
+  with the previous session's "statement order cannot delete a dependence edge, only reorder the
+  insns that carry it", this closes the entire non-type search space that s3/s4/s6/s7 swept.
+
+## Frontier (live, RESET for s9+) — three hypotheses, in priority order
+
+**F1 (blocking, not a measurement — this is what the session filed a ruling on).**
+A record-typed SIGNATURE (`void func_8001B748(DST *dst, AB *a, AB *b, ...)`), with the record's
+offsets corroborated by three independent sibling functions and with no cast on `dst`/`a`/`b`
+anywhere in the body, is an ordinary type declaration rather than the banned cast-at-use
+reinterpretation. *Mechanism:* the ban as written names "typedef struct AB/DST ... **and casting
+dst/a/b through them at every access site**"; t6 has zero such casts, and the type is carried by the
+prototype the way every PS1 decomp in the ecosystem carries it. *Next probe:* none — this is not
+measurable. It is `memory/grind/func_8001B748/pending_ruling_typed_params.c`, measured at 0, waiting
+on the ruling this session requested. If the ruling is YES, applying that file and writing the
+self-vet is the entire remaining work. If NO, F2/F3 are all that is left and both are weak.
+
+**F2 (only if F1 is refused).** The record type could be introduced at the two OBJECTS rather than
+at the parameters — i.e. declare the `D_800F6608` / `D_800F5328` bases as struct globals (the SOTN
+per-word-`D_`-symbol-to-struct merge that
+`memory/reference/sotn-prototype-struct-precedent-2026-08-10.md` documents as "standard, encouraged,
+ongoing") and let `func_8001B748` take `DST *` naturally from the callers. *Mechanism:* identical
+`MEM_IN_STRUCT_P` effect, but the declaration then lives at the data definition and is justified by
+`func_8001B294`/`func_8001B3C0`'s field-by-field initialisers rather than by anything inside
+`func_8001B748`. *Next probe:* this touches `include/code6cac.h`, `undefined_syms_auto.txt` and
+several other functions in `code6cac.c` and `code6cac_c2.c`, so it is an operator/multi-function
+change, not a grind-session change — scope it as a handoff, do not attempt it in-session. Note it
+is also arguably the SAME family as F1 and would need the same ruling.
+
+**F3 (only if F1 and F2 are both refused).** If no record type is admissible for this function, then
+by FINDING 4 there is no C-level lever left and the honest floor is 2, permanently. *Mechanism:*
+the exhaustive elimination in FINDING 4 (order swept dead by s3/s4/s7; priority lattice swept dead
+by s5/s6/s7; the gp store can never be the suppressed side; 2.7.2 has no alias sets). *Next probe:*
+that is an `escalation`-modality question for the driver to assign, not a probe. Do NOT spend
+another forensics session re-measuring the sched2 lattice; s5-s7 measured it three times and the
+answer did not change.
+
+## Dead / do-not-re-run, added by s8-syn
+- Do not re-derive the sched2 priority lattice, the potential-hazard override, or the 48/48/47
+  configuration. Measured three times (s5, s6, s7), consistent, and now known to be a CONSEQUENCE of
+  the pointee types rather than a fixed property of the block.
+- Do not re-run statement-placement or control-flow-spelling sweeps. s3 (d-sweep), s4 (permuter,
+  ~35k iters, 3 chassis), s6 and s7 (g-batch) all plateaued at exactly 2, and FINDING 4 explains why
+  they must.
+- Do not re-try typed LOCAL pointers (`DST *d = (DST *)dst;`): measured 4 extra insns, score 56,
+  `rejected/struct-form-typed-local-pointers-cost-4-insns-56.c`.
+- Do not re-try inlining `zval`/`new_var` into the `w8` store: score 44,
+  `rejected/struct-form-inline-second-product-no-zval-44.c`.
+- Do not re-try typing only `a`/`b` (score 2) or only `dst` (score 2). Both objects are required.

@@ -998,3 +998,105 @@ s4's `score.py` and s6's `pd.py` harnesses were reused unchanged against `tmp/pe
 - [s8] asmfix.txt:50 still carries `func_8001B748: replace_with_asmfile "asm/funcs/func_8001B748.s"`
   (the 137 stripped cheat-asm insns the sandbox reports). That surface is not editable by a grind
   session; the operator/driver retire step removes it.
+
+
+## == s8 (SYNTHESIS modality, 2026-08-19) — THE MERGED ATTACK, AND A SCORE-0 FORM WITH NO CASTS ==
+
+### Chassis re-measurement (do not quote older floors)
+The driver dispatched with `src/code6cac.c` again holding the PRE-s7 body (the same regression the
+previous session reported). Every number below was re-measured this session on the current chassis:
+
+| form | file | s4 scorer | in-place sandbox |
+|---|---|---|---|
+| s7 candidate (no record type) | `tmp/grind/func_8001B748/s8/v/s8base.c` | 2 / 231 insns | **2** / 231 / 231 |
+| struct cast-at-use (BANNED, layer-1 FAIL) | `tmp/grind/func_8001B748/s8/v/u8_final.c` | 0 / 231 | (not re-run in place) |
+| struct params, previous session's buggy version | `tmp/grind/func_8001B748/s8/v/t5_structparams.c` | 4 / 231 | — |
+| **struct params, corrected (`t6`)** | `tmp/grind/func_8001B748/s8/syn/t6_params_u16.c` | **0** / 231 | **0** / 231 / 231 |
+
+`src/code6cac.c` was left reverted to the s7 body (re-verified in place: score 2) so the tree
+carries no banned construct. The t6 body is parked unapplied at
+`memory/grind/func_8001B748/pending_ruling_typed_params.c`.
+
+### FINDING 1 — the t5 "score 4" was purely a rewrite bug, and correcting it reaches 0
+The previous session recorded t5 (record-typed PARAMETERS rather than casts at use) as "score 4, a
+measurement artefact — a corrected version would very plausibly also reach 0" and did not pursue it.
+That is now MEASURED, not plausible. The whole of the 4 was two leftover byte-offset casts,
+`*((u16 *)(dst + 0x10))` and `*((u16 *)(dst + 0x12))`, which under a `DST *` parameter scale by the
+element stride (`+0x10` becomes 0x10 * sizeof(DST) = 1024 bytes) and emit `lhu v1,1024(s0)` instead
+of `lhu v1,16(s0)`. Declaring `h10`/`h12` as `u16` members (the previous session's own
+`u9_u16fields` variant, which measured 0 in cast-at-use form) removes the need for those two raw
+reads entirely; the two remaining signed use sites take an ordinary `(s16)` cast. Result: **score 0,
+231/231, with ZERO casts on `dst`, `a` or `b` anywhere in the function** — grep over the body
+returns 0 hits for `(DST *)`, `(AB *)` and `u16 *`.
+
+This matters because it separates two things the previous session had welded together. The score-0
+codegen requires a RECORD TYPE over the pointees. It does NOT require the cast-at-every-access-site
+spelling that layer-1 FAILed. The signature carries the type instead.
+
+### FINDING 2 — no call-site edits are needed, and none were made
+The two call sites (`src/code6cac.c:1046,1051`) already pass mismatched pointer types TODAY —
+`func_8001B748((s32 *)&D_800F5328, ...)` into a `u8 *` parameter, and `(s32 *)arg2` into an `s32`
+parameter. GCC 2.7.2 warns and compiles. The in-place sandbox run of t6 built the entire
+`code6cac.c` translation unit with no edit outside `func_8001B748` and produced 231 insns, score 0.
+So a record-typed signature is inside a grind session's scope; it does not force the "editing
+functions other than this one" problem the previous session cited as its reason for dropping t5.
+
+### FINDING 3 — INDEPENDENT, PROGRAM-LOGIC-FIRST EVIDENCE THAT `dst` IS A RECORD
+This is the axis no prior session looked at, and it is the axis that decides whether a record
+declaration here is a RESTORATION or a COERCION. All of it was found by grepping the two objects the
+function is actually called on, with no reference to any GCC internal:
+
+* **An already-matched sibling in the SAME FILE already declares a record over the SAME object.**
+  `src/code6cac.c:1058-1069` and `src/code6cac.c:1071-1077` (`func_8001BCF0`) each carry a local
+  `typedef struct { s32 x, y, z; } Vec3;` and do `dst = (Vec3 *)&D_800F6608; ... *dst = *src;` and
+  `*(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);`. `Vec3`'s three words are exactly `DST`'s
+  `w0`/`w4`/`w8`. A record view of this exact object is therefore already SHIPPED and accepted in
+  this codebase; it is not a new idea introduced to chase a residual.
+* **Two sibling initialisers write the same objects field-by-field at exactly `DST`'s offsets.**
+  `func_8001B294` (`src/code6cac.c:818`) initialises the `D_800F6608` object via the per-word splat
+  symbols `D_800F6608/660C/6610/6618/661A/661C/6620/6626/6638/663A/663C/6640/6642/6644` — offsets
+  `+0x00/+0x04/+0x08/+0x10/+0x12/+0x14/+0x18/+0x1E/+0x30/+0x32/+0x34/+0x38/+0x3A/+0x3C`.
+  `func_8001B3C0` (`src/code6cac.c:819`) does the same for the `D_800F5328` object at
+  `+0x00/+0x04/+0x08/+0x30/+0x32/+0x34/+0x38/+0x3A/+0x3C/+0x40`. Those offset sets are the SAME set
+  `func_8001B748` touches (`w0 w4 w8 h10 h12 h14 w18 b1E/b1F h30 h32 h34 h38 h3A h3C`). Three
+  independent functions agreeing on one offset layout over two different base addresses is exactly
+  the "independent use-site evidence" standard `.claude/rules/header-type-correction-from-use-sites.md`
+  prong (a) asks for — applied here to a parameter's pointee type rather than to a global's type.
+* The `a`/`b` parameters are equally corroborated: `src/code6cac.c:1051` reads
+  `*(s16 *)((u8 *)arg1 + 4)` and `+ 8` on the very pointers it then hands to `func_8001B748`,
+  matching `AB`'s `h4`/`h6`/`h8`.
+
+The `u8 *` + byte-offset-cast body is m2c's rendering, not the original source's shape. Every piece
+of evidence above was available without opening `sched.c`.
+
+### FINDING 4 — THE MERGED ATTACK: WHY EVERY NON-TYPE AXIS IS DEAD, IN ONE PARAGRAPH
+Merging s1-s8: the residual is two instructions caused by `sched2` picking the `sh zero,0(gp)` store
+at clock 24 instead of chain-1. s5/s6/s7 proved the pick is `schedule_select`'s potential-hazard
+override, that the block's priority lattice has no 46 and no 48-in-`$v1`, and that the required
+configuration is chain-1 AND the b+8 load at 48 with the gp store at 47. s3's d-sweep, s7's g-batch
+and s4's ~35k-iteration permuter campaign then swept the whole statement-placement and
+control-flow-spelling space and all plateaued at exactly 2. The previous session supplied the reason
+those HAD to plateau, and it is the most load-bearing sentence in this ledger: **statement order
+cannot DELETE a dependence edge, only reorder the insns that carry it** — and the gp store's
+priority is pinned by its dependence edges onto every `dst` store and every `a`/`b` load in the
+block. The only C-level lever that deletes those edges is `MEM_IN_STRUCT_P` on the pointee accesses
+(`tools/gcc-2.7.2/sched.c:817-882`), and `MEM_IN_STRUCT_P` is set by the TYPE of the access, not by
+its position. The gp store itself can never be the suppressed side (a scalar extern at a SYMBOL_REF:
+`MEM_IN_STRUCT_P` = 0 and `rtx_addr_varies_p` = 0, unconditionally). GCC 2.7.2 has no alias sets
+(that is 2.8/egcs), so there is no second aliasing lever. Therefore: **a record type over the
+pointees is not one option among several. It is the only remaining C-level axis, and whether it is
+admissible is the whole of the remaining work on this function.**
+
+### FINDING 5 — what this session did NOT do
+Did not apply t6 to the tree (reverted; src is at score 2, re-measured). Did not edit call sites.
+Did not re-derive any s3-s7 measurement. Did not re-propose the banned cast-at-use form; it was
+moved out of `candidate.c` — where the previous session had left it as a landmine for the next
+session's "apply candidate.c as your starting point" instruction — into
+`rejected/layer1-fail-struct-cast-at-use-score0-BANNED.c`.
+
+### Artifacts
+* `tmp/grind/func_8001B748/s8/syn/t6_params_u16.c` — the score-0 typed-parameter body.
+* `tmp/grind/func_8001B748/s8/syn/mk_t6.py` — the scripted derivation of t6 from `u8_final.c`.
+* `memory/grind/func_8001B748/pending_ruling_typed_params.c` — same body with a provenance header.
+* `memory/grind/func_8001B748/candidate.c` — now the s7 score-2 body, with a warning header.
+* `memory/grind/func_8001B748/rejected/layer1-fail-struct-cast-at-use-score0-BANNED.c`.
