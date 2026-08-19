@@ -904,6 +904,14 @@ while ($true) {
     if (-not $item -or -not $item.func) { Log "queue empty — nothing to grind."; break }
     $func = [string]$item.func; $stem = [string]$item.file
 
+    # Snapshot the owner audit file so a discarded session's decisions.md append
+    # can be stamped (2026-08-19 phantom-ruling audit: an invalidated session
+    # left a terminal-sounding ruling in decisions.md — Revert-SessionEdits
+    # covers src/include only and docs/ is allowed-dirty by design, so the
+    # append survived with nothing marking it as thrown away).
+    $script:decisionsLines = 0
+    try { $script:decisionsLines = @(Get-Content $Decisions -ErrorAction SilentlyContinue).Count } catch { }
+
     # 2) ensure ledger (convert WIP on first contact)
     $state = Join-Path $Root "memory\grind\$func\state.json"
     if (-not (Test-Path $state)) {
@@ -1045,6 +1053,23 @@ while ($true) {
         Log "${func}: INVALID session output ($invalidReason) — discarded, src reverted, respawning."
         $script:lastDiscardReason = $invalidReason
         Revert-SessionEdits
+        # Stamp any decisions.md append the discarded session left behind — a
+        # thrown-away session must not leave ruling-shaped text in the owner
+        # audit surface with nothing marking it void (2026-08-19 audit). Only
+        # the session itself can have appended between the loop-top snapshot
+        # and here: driver appends (rulings, escalations) happen strictly after
+        # validation, which this session failed.
+        if ($script:decisionsLines) {
+            $nowLines = 0
+            try { $nowLines = @(Get-Content $Decisions -ErrorAction SilentlyContinue).Count } catch { }
+            if ($nowLines -gt $script:decisionsLines) {
+                @("", "## $(Get-Date -Format 'yyyy-MM-dd HH:mm') — $func — DISCARDED-SESSION MARKER (driver-stamped)", "",
+                  "Text appended above by session s$sessionN of $func, which the driver DISCARDED as invalid ($invalidReason). It is not a ruling and carries no standing; terminal-sounding language in that span is void.") | Add-Content $Decisions
+                git -C $Root add -- docs/grind metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func discarded-session marker stamped in decisions.md [skip-park-src-guard]" 2>$null | Out-Null
+                Log "${func}: discarded session's decisions.md append stamped void."
+            }
+        }
         $script:consecutiveInvalid++
         if ($script:consecutiveInvalid -ge 3) { Circuit-Break "3 consecutive invalid sessions on $func" }
         if ($Once) { break } else { continue }

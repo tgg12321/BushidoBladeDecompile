@@ -582,6 +582,13 @@ def mark_done(func: str) -> dict:
                         else "COMPLETED-C")
     result = {"ok": True, "func": func, "completion": completion_state,
               "sha1": v.get("build_sha1")}
+    if item.get("status") == "parked":
+        # Transparency, not refusal (2026-08-19 audit): completing a parked
+        # item OVERRIDES a terminal owner disposition. That is usually strictly
+        # good — every completion gate above still applied — but the override
+        # must be loud in the done record, not silent, so the park's audit
+        # trail (borderline.md / decisions.md) can be reconciled.
+        result["park_overridden"] = item.get("park_reason") or "(no reason recorded)"
     if gates:
         # Transparency, not refusal: fidelity-class gates model the original
         # assembler (no C spelling exists) — record the dependency so the
@@ -604,6 +611,30 @@ def mark_parked(func: str, reason: str = "") -> dict:
         q["counts"] = _counts(q["items"])
         save(q, expect=tok)
     return {"ok": True, "func": func, "park_reason": reason}
+
+
+def mark_unparked(func: str, reason: str = "") -> dict:
+    """Lift a park: status back to active, with the spending ruling recorded.
+    A park is a terminal disposition 're-attemptable if a later owner ruling
+    spends this entry' — this is the mechanism that spends it (2026-08-19
+    stale-park audit: six refusal grounds were superseded by families the
+    owner sanctioned 2026-08-17/18). The old park_reason is preserved in
+    `unparked_from` so the audit chain stays walkable."""
+    with _locked():
+        q = load()
+        tok = _fingerprint()
+        item = next((it for it in q.get("items", []) if it["func"] == func), None)
+        if item is None:
+            return {"ok": False, "func": func, "reason": "not in queue"}
+        if item.get("status") != "parked":
+            return {"ok": False, "func": func, "reason": "not parked"}
+        item["status"] = "active"
+        item["unparked_from"] = item.pop("park_reason", "")
+        item["unpark_reason"] = (reason or "")[:400]
+        q["items"].sort(key=_sort_key)
+        q["counts"] = _counts(q["items"])
+        save(q, expect=tok)
+    return {"ok": True, "func": func, "unpark_reason": reason}
 
 
 def reopen(func: str, file: str, reason: str = "", origin: str = "regression") -> dict:
