@@ -2425,3 +2425,166 @@ predicate named.
 - [s20] The s20 restatement of the residual (supersedes s19's two-clause theorem): a preheader `addu DST,SRC,$zero` exists iff (i) the folded read's destination has a use in a LATER EBB (materialisation - costs exactly one instruction) and (ii) the guard is written self-clobbering so the base add survives (free, and now available for both loops). Loop 1 pays (i) into a slot target also fills; loop 2 has no such slot. Target satisfies (i) with no visible consumer anywhere in its 127-instruction listing - that single fact is the whole remaining mystery, now narrowed from 'a pass after combine creates the copy' (s15) and 'a combine refusal' (s17) to 'cse declined to substitute reg79 at the base add', i.e. E-s16-2's canonicalisation question with the cse-side predicate named.
 
 - [s20] 16 cells measured this session, all banked (13 new files in memory/grind/func_80017848/rejected/, bringing the bank to 146 entries). No cell scored below 3; no cheat-family construct was written or proposed.
+
+## s21 (2026-08-18, STRUCTURAL) — floor 3, re-measured at 127/127 this session
+
+Chassis check at dispatch: cell W1 (`memory/grind/func_80017848/rejected/
+s20_t2_clobber_guard_two_step_inert_3.c` — the V1 body plus loop 2's guard
+written as the same self-clobbering two-step `t2 = sh2 + (s32)p; t2 =
+*(s32 *)(t2 + 0x20);` that loop 1 uses) re-measures at **score 3, 127/127**,
+and the canonical V1 body of `candidate.c` re-measures at **score 3, 127/127**
+at the end of the session. Both numbers were taken with
+`sandbox func_80017848 --disable all` (rules_dropped 2, cheat_asm_stripped 49).
+19 cells this session, plus objdump-normalised residual diffs for the cells that
+changed the residual's SHAPE rather than only its score.
+
+### E-s21-1 (KILLS s20 frontier item #1). A later-EBB use of loop 2's PREHEADER
+ADDEND does NOT materialise a copy of the addend — it materialises a copy of
+`base`, one slot AFTER the base add, even on the W1 chassis where the base add
+provably survives.
+
+s20's frontier item #1 was this session's designated highest-yield probe: name
+loop 2's preheader addend (`q2 = *(u8 **)(ctx + 0xC); base = (u8 *)(sh2 +
+(s32)q2);`) and give `q2` a use inside loop 2's BODY, which is a later extended
+basic block (the loop top is a branch target, so cse starts a fresh EBB there and
+cannot rewrite the use). The prediction was that cse would then be forced to
+leave `DST = SRC` in the preheader, and that E-s20-2 — satisfied for free by W1's
+self-clobbering guard two-step — would keep the base add alive so the copy landed
+in FRONT of it, which is target's exact shape. Five cells were built on W1:
+
+  A1  element read as `*(u8 *)((s32)q2 + sh2 + i + 0x2C)` (i-varying body use)
+      -> score 6, 128 insns
+  A2  back-edge limit as `*(s32 *)((s32)q2 + sh2 + 0x20)` (invariant body use)
+      -> score 5, 128 insns
+  A3  element associated pointer-first, `*(u8 *)(q2 + i + sh2 + 0x2C)`
+      -> score 10, 128 insns
+  A4  BOTH body uses via q2, so `base` is dead and the base add disappears
+      -> score 3, 127 insns (inert — GCC re-derives identical addressing)
+  A5  A1 with the base add itself associated pointer-first
+      -> score 6, 128 insns
+
+The residual diff for A1 and A2 is the same shape and it is decisive. Loop 2's
+preheader comes out as
+
+    lw   v0,12(s2)        <- the addend read, NOT folded away
+    lw   a2,16(s2)
+    addu a0,a1,v0         <- base add
+    addu a1,a0,zero       <- THE COPY: its source is a0 = BASE, not the addend
+    addu v0,a1,v1         <- element pointer, now taken off the copy
+
+against target's
+
+    addu a3,a0,zero       <- copy of the ADDEND
+    lw   a2,16(s2)
+    addu a0,a1,a3         <- base add consumes the copy
+    addu v0,a0,v1
+
+i.e. the copy IS created and DOES survive, but it is a copy of `base` sitting one
+slot too late — byte-for-byte the same failure s15's cell C1 and s19's cells
+Z1/Z2 produced on the INLINE-guard chassis. The W1 chassis was the one variable
+those measurements had not controlled for, and it changes nothing; the extra
+instruction (128 vs 127) is the un-folded addend load target does not have.
+
+MECHANISM. This is s19's CLAUSE A re-confirmed, and it survives s20's refutation
+of the CFG half of that clause. Whatever the EBB boundary does, by the time a
+copy is placed the body's `q2 + sh2 + <offset>` address has already been
+re-expressed in terms of `base` (loop.c's strength reduction plus cse2 find the
+two equal, because `base` IS `sh2 + q2`), so the value that needs a later-EBB
+carrier is `base`, never the addend. A body use can therefore never be the
+clause-B consumer target uses. The only way to make the ADDEND the carried value
+is a use that is not expressible as `base + constant` — and every such site lies
+outside the loop, where E-s21-3 prices it.
+
+### E-s21-2 (NEW, and the session's sharpest positive result). s15's standing
+instruction "loop 2's base addend MUST stay a fresh `*(u8 **)(ctx + 0xC)` read;
+do not re-probe that family" is CHASSIS-RELATIVE and is now superseded: on the W1
+two-step chassis the reuse-p family scores 5, not 8, and one of its cells reaches
+4 at the correct 127/127 with the residual's SHAPE changed for the first time
+since s9.
+
+s15 (4) measured cells A1..A4 — loop 2's base addend reusing the carried pointer
+`p` instead of a fresh read — at a uniform 8, and attributed it to a mechanism:
+if the base addend is provably equal to the GUARD's addend, cse merges the
+guard-address add and the base add into one insn, whereas target computes
+`sh2 + ptr` twice. But E-s20-2 established that loop 1's self-clobbering guard
+two-step is exactly what prevents that merge (the address pseudo is dead, so cse
+has nothing to reuse). W1 makes that two-step available for loop 2, which makes
+s15's stated mechanism inapplicable — and the measurements follow:
+
+  D1  W1 + loop 2's base addend reuses carried `p`     -> score 5, **126 insns**
+  D2  D1 + body element read via `p`                   -> score 7, 127 insns
+  D3  D1 + back-edge limit read via `p`                -> score 4, **127 insns**
+  D4  D3 with the base add associated pointer-first    -> score 4, 127 insns
+  D5  D3 with the limit read associated pointer-first  -> score 4, 127 insns
+  D7  D3 + a named `lnk` local for loop 2's links      -> score 11, 127 insns
+
+D1 is exactly ONE instruction short of target, and what is missing is exactly the
+preheader copy: the fresh `lw v0,12(s2)` that the V1 chassis emits in that slot
+is gone entirely. D3's residual is 4 and its loop-2 preheader is
+
+    addu a0,a1,a0        <- base add, reusing the addend's own register in place
+    addu a1,a0,zero      <- copy of base
+
+against target's `addu a3,a0,zero / addu a0,a1,a3`. So on this chassis the
+preheader contains the RIGHT TWO INSTRUCTION KINDS in the wrong order with the
+wrong operands, rather than a load where target has a copy. That is a strictly
+better structural description of the residual than V1's, at a cost of one point.
+D4/D5 show the association order is inert on this chassis (both 4), matching s11.
+
+### E-s21-3. Post-loop (exit-block) clause-B consumers are dead on the reuse-p
+chassis as well, and for the reason s20 (4) found on V1: consuming the pointer
+from a live local DELETES a reload target performs.
+
+  E1  D1 + both math_Distance3D args derived from `p`   -> 21, 123 insns
+  E2  D1 + `rec_a` derived from `p`                     -> 31, 126 insns
+  E3  D3 + both math_Distance3D args derived from `p`   -> 20, 124 insns
+  E4  D1 + math args AND `rec_a` derived from `p`       -> 15, **121 insns**
+
+The instruction counts are the whole story: every post-loop consumer removes one
+to six `lw ...,12(s2)` reloads that target keeps. There is no free clause-B slot
+after loop 2 on any chassis measured to date (V1: 7/11/14/21/26 per s20 (4);
+reuse-p: 15/20/21/31 here).
+
+### E-s21-4. Making loop 2's GUARD the clause-B consumer costs BOTH copies —
+and the cells isolate the direction of E-s20-1's materialisation predicate.
+The one construction that would make loop 1's clause-B consumer free is to let
+loop 2's guard address add — an instruction target already emits — be the
+later-EBB use of loop 1's copy, instead of paying for it with the `p = q;` exit
+tail. Two spellings:
+
+  B1  outer/inner names swapped (`q` read at the top and used by loop 1's guard,
+      `p` re-read inside loop 1's block as the addend), `p = q;` tail deleted,
+      loop 2's guard two-step reading `q`                -> 12, **125 insns**
+  B2  W1 with `q = p;` inserted before loop 1's guard so `q` is defined on the
+      skip path, `p = q;` tail deleted, loop 2's guard on `q` -> 12, 125 insns
+
+Both land at 125 — TWO instructions short, i.e. NEITHER preheader copy survives.
+The reason is visible in the construction: in both cells the later-EBB use is a
+use of the copy's SOURCE, not of its DESTINATION, so E-s20-1's predicate is not
+triggered at all and cse deletes the redundant read outright. Useful negative: it
+is the DESTINATION's later-EBB use that creates the copy, and no renaming of the
+outer/inner pair changes which of the two loop 2's guard consumes.
+
+### E-s21-5. s20 frontier item #3 is dead. Folding the clause-B consumer onto the
+strength-reduced element pointer `addu v0,a0,v1` that target already emits at
+loop 2's exit does not happen: cell C1 (named `q2`, plus a post-loop
+`end = (u8 *)((s32)q2 + sh2 + i);` whose only consumer is the immediately
+following math-arg base derivation) scores 20 at 127 insns. GCC does not fold the
+post-loop expression onto the induction-variable update; it rebuilds the address
+and the surrounding reload pattern changes wholesale.
+
+- [s21] Floor re-measured twice this session on a clean tree: cell W1 (the s20 t2-two-step chassis) = 3 at 127/127 at dispatch, and the canonical V1 body of candidate.c = 3 at 127/127 at the end (rules_dropped 2, cheat_asm_stripped 49 in both runs).
+
+- [s21] E-s21-1: a later-EBB use of loop 2's preheader ADDEND materialises a copy of BASE one slot AFTER the base add, never a copy of the addend before it — A1 6 / A2 5 / A3 10 / A5 6, all at 128 insns, control A4 inert at 3. The W1 chassis (base add kept alive by E-s20-2) was the one variable s15's C1 and s19's Z1/Z2 had not controlled for; it changes nothing. Mechanism: loop.c's strength reduction plus cse2 re-express any body address as `base + constant` before a copy is placed, so the value needing a later-EBB carrier is always `base`.
+
+- [s21] E-s21-2: s15 (4)'s prohibition on reusing the carried pointer as loop 2's base addend is retracted as chassis-relative. On W1 the family is 5, not 8, and the guard/base merge s15 cited does not occur. D1 = 5 at 126 insns — one instruction short, and the missing instruction is exactly loop 2's preheader copy; the fresh `lw v0,12(s2)` that V1 emits in that slot is gone entirely.
+
+- [s21] E-s21-2 (continued): D3 (D1 + the back-edge limit read taken via `p`) = 4 at the correct 127 insns, with loop 2's preheader `addu a0,a1,a0 / addu a1,a0,zero` against target's `addu a3,a0,zero / addu a0,a1,a3`. For the first time since s9 the preheader contains the right two instruction KINDS (an add and a reg-reg copy) rather than a load where target has a copy — wrong order, wrong operands, one point off the floor. D4/D5 confirm association order is inert on this chassis (both 4); D2 = 7; D7 (named loop-2 links local) = 11.
+
+- [s21] E-s21-3: post-loop clause-B consumers are dead on the reuse-p chassis exactly as on V1 — E1 21 / E2 31 / E3 20 / E4 15, at 123 / 126 / 124 / 121 insns. Each one deletes reloads target keeps, so the purchase is net NEGATIVE in instruction count. Nine such consumers now measured across two chassis (V1: 7/11/14/21/26 per s20 (4)), none free.
+
+- [s21] E-s21-4: making loop 2's guard the free clause-B consumer for loop 1 costs BOTH copies — B1 and B2 are both 12 at 125 insns, two short. The cells isolate the direction of E-s20-1's materialisation predicate: only a later-EBB use of the copy's DESTINATION creates a copy; a use of its SOURCE lets cse delete the redundant read outright. No renaming of the outer/inner pointer pair changes which of the two loop 2's guard consumes, because the guard necessarily consumes whichever name is live across the join.
+
+- [s21] E-s21-5: s20 frontier item #3 is dead — cell C1 (post-loop `end` pointer derived from loop 2's addend, feeding the math-arg base) = 20 at 127 insns; GCC does not fold the expression onto the existing `addu v0,a0,v1` induction-variable update.
+
+- [s21] Bookkeeping: 18 new forms banked in memory/grind/func_80017848/rejected/ (bank now 164 files); src/ings.c restored to its committed HEAD body at the end of the session; no build-pipeline file, rule file or engine file was touched.

@@ -602,3 +602,61 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * declined to substitute reg79 at the base add", i.e. E-s16-2's canonicalisation
  * question with the cse-side predicate finally named.
  */
+/* [s21 STRUCTURAL ADDENDUM — body unchanged, still 3, re-measured at the END of
+ * the session on a clean tree (127/127, rules_dropped 2, cheat_asm_stripped 49).
+ * The W1 chassis (this body + loop 2's guard written as loop 1's self-clobbering
+ * two-step) was also re-measured at 3 / 127 at dispatch.]  s21 spent 19 cells
+ * closing ALL THREE of s20's frontier items and, in the process, found the first
+ * change in the residual's SHAPE since s9.
+ *
+ *  (1) s20 FRONTIER #1 IS DEAD (E-s21-1).  A later-EBB use of loop 2's named
+ *      preheader ADDEND does not materialise a copy of the addend; it
+ *      materialises a copy of BASE, one slot AFTER the base add — even on the W1
+ *      chassis, whose whole point was that E-s20-2 keeps the base add alive for
+ *      free.  A1 (i-varying element read) = 6, A2 (invariant limit read) = 5, A3
+ *      (pointer-first element) = 10, A5 (pointer-first base add) = 6, all at 128
+ *      insns; A4 (both body uses via the addend, so `base` dies) is inert at 3.
+ *      A1/A2 emit `lw v0,12(s2) / lw a2,16(s2) / addu a0,a1,v0 / addu a1,a0,zero`
+ *      against target's `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3`.  The
+ *      reason is structural: loop.c's strength reduction and cse2 re-express any
+ *      body address as `base + constant` before a copy is placed, so the value
+ *      that needs a later-EBB carrier is always `base`.  Body uses can never be
+ *      target's clause-B consumer, on any chassis.
+ *
+ *  (2) s20 FRONTIER #3 IS DEAD (E-s21-5).  Cell C1 — a post-loop
+ *      `end = (u8 *)((s32)q2 + sh2 + i);` whose only consumer is the math-arg base
+ *      derivation, aimed at folding the clause-B purchase onto the `addu v0,a0,v1`
+ *      target already emits at loop 2's exit — scores 20 at 127.  GCC rebuilds the
+ *      address instead of folding it onto the induction-variable update.
+ *
+ *  (3) THE ONE POSITIVE RESULT, AND THE CHASSIS THE NEXT SESSION SHOULD BUILD ON
+ *      (E-s21-2).  s15 (4) ordered "loop 2's base addend MUST stay a fresh
+ *      *(u8 **)(ctx + 0xC) read — do not re-probe that family", on the strength of
+ *      cells A1..A4 = 8 and a stated mechanism: cse merges the guard-address add
+ *      into the base add when the two addends are provably equal.  E-s20-2 shows
+ *      the self-clobbering guard two-step is exactly what prevents that merge, so
+ *      s15's prohibition was chassis-relative and is now retracted.  On W1:
+ *        D1 = loop 2's base addend reuses the carried `p`  ->  5 at **126 insns**
+ *        D3 = D1 + the back-edge limit read taken via `p`  ->  4 at **127 insns**
+ *        D2 (element via p) 7, D4/D5 (association variants) 4/4, D7 (named links
+ *        local) 11.
+ *      D1 is ONE instruction short and the missing instruction is precisely loop
+ *      2's preheader copy: the fresh `lw v0,12(s2)` that THIS body emits in that
+ *      slot is gone entirely.  D3's preheader is `addu a0,a1,a0 / addu a1,a0,zero`
+ *      against target's `addu a3,a0,zero / addu a0,a1,a3` — the right two
+ *      instruction KINDS, in the wrong order, with the wrong operands.  That is a
+ *      strictly better structural description of the residual than this body's
+ *      (which still has a LOAD where target has a COPY), at a cost of one point.
+ *      Banked as rejected/s21_reuse_p_plus_body_limit_use_costs_4_127insns.c and
+ *      rejected/s21_two_step_guard_l2_base_reuses_p_costs_5_126insns.c.
+ *
+ *  (4) TWO MORE CLAUSE-B FAMILIES CLOSED.  Post-loop consumers on the reuse-p
+ *      chassis are as dead as they are on V1 — E1 21 / E2 31 / E3 20 / E4 15, at
+ *      123 / 126 / 124 / 121 insns; every one DELETES reloads target keeps, so the
+ *      purchase is net negative (E-s21-3).  And making loop 2's GUARD the free
+ *      clause-B consumer for loop 1 (B1, B2) is 12 at **125 insns** — two short,
+ *      BOTH copies gone — because in every spelling the guard consumes the copy's
+ *      SOURCE, not its DESTINATION, so E-s20-1's predicate never fires (E-s21-4).
+ *      The predicate's direction is now pinned: only a later-EBB use of the
+ *      DESTINATION creates a copy.
+ */

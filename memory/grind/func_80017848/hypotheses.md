@@ -1817,3 +1817,110 @@ load — U7, residual 2 short), never both.
 - probe: Twelve cells: U1, U2 (math args inline), U3 (loop-2 preheader read left inline), U4 (loop-2 guard two-step through the SHARED `t`), U5, U6 (loop-1 `p = q;` restored), U7 (loop-2 guard two-step through a fresh `t2`), U9 (shift recomputed for loop 2's base), U10 (+ loop-2 exit tail `p = q;`), U11 (both exit tails), plus controls T0 (symmetric chassis) and S1/S2 (fully target-shaped both loops).
 - result: 11, 13, 11, 37, 36, 37, 10, 11, 12, 12, 4, 22 - all worse than 3. U7 is the sharpest: 125 instructions, exactly two SHORT, both preheader copies missing and nothing else wrong. The join-block read and the clause-B purchase compete for the SAME instruction slot (target's `lw a0,0xC($s2)`): it can be loop 1's purchase (a move - the V1 candidate at 3) or loop 2's fold-enabler (a load - U7 at two short), never both.
 - verdict: KILLED
+
+## s21 (2026-08-18, STRUCTURAL)
+
+### H-s21-1 — KILLED
+STATEMENT: On the W1 chassis (loop 2's guard written as loop 1's self-clobbering
+two-step, so the base add survives per E-s20-2), a use of loop 2's named
+preheader ADDEND inside loop 2's BODY — a later extended basic block, because the
+loop top is a branch target — forces cse to materialise `DST = SRC` in the
+preheader in front of the base add, i.e. target's shape.
+MECHANISM PROBED: E-s20-1 (cse can only rewrite uses inside the EBB it is
+processing) combined with E-s20-2 (the two-step keeps the base add alive).
+PROBE: cells A1/A2/A3/A5 on W1 — element read, back-edge limit read, pointer-first
+element read, pointer-first base add — plus control A4 (both body uses via the
+addend so `base` dies).
+RESULT: 6 / 5 / 10 / 6, all at 128 insns; A4 inert at 3 / 127.
+VERDICT: KILLED. The copy is created and survives, but it is a copy of `base`
+placed one slot AFTER the base add (A1/A2 residual diffs), reproducing s15's C1
+and s19's Z1/Z2 on a chassis those cells never controlled for. By the time a copy
+is placed, loop.c's strength reduction plus cse2 have re-expressed the body
+address as `base + constant`, so the value needing a later-EBB carrier is always
+`base`, never the addend. Body uses can never be target's clause-B consumer.
+
+### H-s21-2 — CONFIRMED (partially; a chassis-relative retraction of s15 (4))
+STATEMENT: s15's blanket prohibition "loop 2's base addend MUST stay a fresh
+ctx+0xC read" was conditioned on a mechanism (cse merging the guard-address add
+with the base add) that E-s20-2's self-clobbering two-step removes, so the
+reuse-p family should score better on W1 than the 8 s15 recorded.
+PROBE: cells D1 (reuse `p` as loop 2's base addend on W1), D2/D3 (plus a body
+element / back-edge limit use of `p`), D4/D5 (association variants), D7 (named
+links local).
+RESULT: D1 = 5 at 126 insns; D3 = 4 at 127; D4 = D5 = 4; D2 = 7; D7 = 11.
+VERDICT: CONFIRMED. The family improves from 8 to 5 and the guard/base merge does
+not occur. D1 is one instruction SHORT and the missing instruction is exactly
+loop 2's preheader copy — the fresh `lw v0,12(s2)` in that slot is gone. D3's
+preheader is `addu a0,a1,a0 / addu a1,a0,zero` against target's
+`addu a3,a0,zero / addu a0,a1,a3`: right instruction kinds, wrong order and
+operands. This is the first change in the residual's SHAPE since s9 and it is one
+point off the floor, so it is the chassis the next session should build on.
+
+### H-s21-3 — KILLED
+STATEMENT: On the reuse-p chassis (D1/D3), a post-loop consumer of `p` supplies
+loop 2's clause-B use for free, because target reloads ctx+0xC after loop 2 for
+the math_Distance3D arguments anyway.
+PROBE: cells E1 (both math args from `p` on D1), E2 (`rec_a` from `p`), E3 (both
+math args on D3), E4 (math args AND `rec_a`).
+RESULT: 21 / 31 / 20 / 15, at 123 / 126 / 124 / **121** insns.
+VERDICT: KILLED. Identical failure mode to s20 (4) on V1: consuming the pointer
+from a live local deletes the reloads target keeps, so the purchase is net
+NEGATIVE in instruction count. Across both chassis, nine post-loop consumers now
+measure 7..31 and not one is free.
+
+### H-s21-4 — KILLED
+STATEMENT: Loop 1's clause-B consumer can be made FREE by letting loop 2's guard
+address add — an instruction target already emits — be the later-EBB use, in
+place of the `p = q;` exit-tail move that currently costs one point.
+PROBE: cells B1 (outer/inner names swapped, tail deleted, loop 2's guard on the
+top-level pointer) and B2 (`q = p;` pre-init before loop 1's guard so the name is
+defined on the skip path, tail deleted, loop 2's guard on `q`).
+RESULT: both 12, both at 125 insns — TWO instructions short, i.e. neither
+preheader copy survives.
+VERDICT: KILLED, with a clarifying corollary: in both cells the later-EBB use is a
+use of the copy's SOURCE rather than its DESTINATION, so E-s20-1's predicate is
+never triggered and cse deletes the redundant read outright. Renaming the
+outer/inner pair cannot change which of the two the guard consumes; the guard
+consumes whichever name is live across the join, and that name is always the
+source.
+
+### H-s21-5 — KILLED
+STATEMENT (s20 frontier item #3): a post-loop expression reading loop 2's addend
+can be folded onto the strength-reduced element pointer `addu v0,a0,v1` that
+target already emits at loop 2's exit, making the clause-B purchase free.
+PROBE: cell C1 — named `q2` for loop 2's addend plus
+`end = (u8 *)((s32)q2 + sh2 + i);` after the loop, consumed only by the
+immediately following math-arg base derivation.
+RESULT: 20 at 127 insns.
+VERDICT: KILLED. GCC rebuilds the address rather than folding it onto the
+induction-variable update, and the surrounding reload pattern changes wholesale.
+
+## [s21] On the W1 chassis (loop 2's guard written as loop 1's self-clobbering two-step, so E-s20-2 keeps the base add alive for free), a use of loop 2's named preheader ADDEND inside loop 2's BODY — a later extended basic block, because the loop top is a branch target — forces cse to materialise DST = SRC in the preheader in front of the base add, i.e. target's exact shape.
+- mechanism: E-s20-1: cse can only rewrite uses inside the EBB it is processing, so a body use of the addend is un-rewritable and the copy must be left behind; E-s20-2 supplies the add-survival half so the copy lands before the base add rather than being merged away.
+- probe: Cells A1 (element read as *(u8 *)((s32)q2 + sh2 + i + 0x2C)), A2 (back-edge limit as *(s32 *)((s32)q2 + sh2 + 0x20)), A3 (pointer-first element), A5 (pointer-first base add), plus control A4 (both body uses via the addend so `base` dies), all built on W1 and scored with sandbox --disable all; objdump-normalised residual diffs read for A1 and A2.
+- result: A1 = 6, A2 = 5, A3 = 10, A5 = 6, all at 128 insns; A4 inert at 3 / 127. A1 and A2 emit `lw v0,12(s2) / lw a2,16(s2) / addu a0,a1,v0 / addu a1,a0,zero` where target has `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3` — the copy is created and survives combine, but it is a copy of BASE placed one slot AFTER the base add, and the un-folded addend load is the 128th instruction.
+- verdict: KILLED
+
+## [s21] s15 (4)'s standing prohibition — 'loop 2's base addend MUST stay a fresh *(u8 **)(ctx + 0xC) read, do not re-probe that family' — is chassis-relative and false on the W1 two-step chassis, because the mechanism s15 cited (cse merging the guard-address add into the base add when the two addends are provably equal) is exactly what the self-clobbering two-step prevents.
+- mechanism: E-s20-2: writing the guard as `t2 = sh2 + (s32)p; t2 = *(s32 *)(t2 + 0x20);` makes the guard's address pseudo dead, so cse has no live address to reuse for the base add and cannot merge the two adds. s15's A1..A4 = 8 were all measured on the INLINE-guard chassis where the merge does happen.
+- probe: Cells D1 (W1 + loop 2's base addend reuses the carried pointer `p`), D2 (D1 + body element read via `p`), D3 (D1 + back-edge limit read via `p`), D4/D5 (association variants of D3), D7 (D3 + a named links local); sandbox --disable all on each, residual diff read for D3.
+- result: D1 = 5 at 126 insns (exactly one short, and the missing instruction is precisely loop 2's preheader copy — the fresh `lw v0,12(s2)` this chassis normally emits there is gone); D3 = 4 at 127 with preheader `addu a0,a1,a0 / addu a1,a0,zero` against target's `addu a3,a0,zero / addu a0,a1,a3`; D2 = 7, D4 = D5 = 4 (association inert), D7 = 11.
+- verdict: CONFIRMED
+
+## [s21] On the reuse-p chassis (D1/D3), a post-loop consumer of `p` supplies loop 2's clause-B use for free, because target reloads ctx+0xC after loop 2 for the math_Distance3D arguments anyway.
+- mechanism: E-s20-1 requires only that some later-EBB insn read the copy's destination; loop 2's exit block is a later EBB and target already emits `lw a1,12(s2)` there, so routing the math args through the live pointer should trade that load for the copy at zero net cost.
+- probe: Cells E1 (both math_Distance3D args derived from `p` on D1), E2 (`rec_a` derived from `p`), E3 (both math args on D3), E4 (math args AND `rec_a`); sandbox --disable all on each, instruction counts recorded.
+- result: E1 = 21 at 123 insns, E2 = 31 at 126, E3 = 20 at 124, E4 = 15 at 121. Every post-loop consumer DELETES one to six `lw ...,12(s2)` reloads that target keeps, so the purchase is net negative in instruction count — the same failure mode s20 (4) measured on V1 (7/11/14/21/26). Nine post-loop consumers now measured across two chassis, none free.
+- verdict: KILLED
+
+## [s21] Loop 1's clause-B consumer can be made FREE by letting loop 2's guard address add — an instruction target already emits — be the later-EBB use of loop 1's copy, in place of the `p = q;` exit-tail move that currently costs one of the three residual points.
+- mechanism: Target's loop-1 exit region contains `lw a0,12(s2) / sll a1,s4,6 / addu v0,a1,a0` — loop 2's guard address computation. If that add consumed loop 1's copy destination instead of a fresh read, E-s20-1's materialisation would be paid by an instruction target already has.
+- probe: Cells B1 (outer/inner names swapped so `q` is read at the top and used by loop 1's guard while `p` is the redundant re-read inside loop 1's block, `p = q;` tail deleted, loop 2's guard two-step reading `q`) and B2 (W1 with `q = p;` inserted before loop 1's guard so the name is defined on the skip path, tail deleted, loop 2's guard on `q`).
+- result: Both 12, both at 125 insns — TWO instructions short, i.e. NEITHER preheader copy survives. In both spellings the later-EBB use is a use of the copy's SOURCE rather than its DESTINATION, so cse simply deletes the redundant read and no copy is ever created. Renaming the outer/inner pair cannot change which of the two the guard consumes: the guard consumes whichever name is live across the join, and that is always the source.
+- verdict: KILLED
+
+## [s21] s20 frontier item #3: the clause-B purchase for loop 2 can be folded onto the strength-reduced element pointer `addu v0,a0,v1` that target already emits at loop 2's exit, by writing a post-loop expression that reads the preheader addend and feeds the math-arg base derivation.
+- mechanism: GCC already materialises `base + i` at loop 2's exit; if the C expresses that exit value in terms of the preheader addend rather than base, the existing insn becomes the un-rewritable later-EBB use and no new instruction is needed.
+- probe: Cell C1 — W1 plus a named `q2` for loop 2's addend (pre-initialised from `p` so it is defined on the skipped path) plus `end = (u8 *)((s32)q2 + sh2 + i);` after the loop, consumed only by the immediately following math_Distance3D first-argument base derivation.
+- result: 20 at 127 insns. GCC rebuilds the address rather than folding it onto the induction-variable update, and the surrounding reload pattern changes wholesale.
+- verdict: KILLED
