@@ -278,3 +278,17 @@ ledgers, `docs/closer/`, `regfix.txt`, `src/system.c`, `asm/funcs/*.s`, and the 
 under `tools/gcc-2.7.2/`. The `-ffixed-30` mechanism is read from the compiler source, not
 executed. All scoring claims are quoted from the banked ledgers, which were measured
 pre-`-mel`.
+
+## ADDENDUM — -ffixed-30 experiment RESULT (2026-08-18 boundary, owner-authorized)
+
+MEASURED: a file-scoped `-ffixed-30` for src/system.c built to a GREEN oracle
+(SHA1 == 62efab4f..., full make, then reverted — the flag is NOT currently
+adopted). This proves the forensics §5 byte-safety claim: no function in
+system.c's range uses $fp, so fixing it changes nothing in current code.
+CONSEQUENCE for this function: the flag lowers loop.c move_movables'
+threshold ((loop_has_call?1:2)*(1+n_non_fixed_regs)) exactly as the Sony
+library build's register config would — when the faithful in-context port is
+applied and the &CD_comstr hoist is the sole residual, request adoption via
+an owner election recorded a la -mel/-G8 (Makefile: add `system` to a
+FFIXED30_FILES list wired into cc_flags_for; mirror engine/buildconfig.py).
+Do NOT hand-add the flag mid-session; it is a build-config election.
