@@ -75,3 +75,134 @@ retires both asmfix rules together with the C swap (operator/driver surface).
 - [s1] INTEGRATION HAZARD CONFIRMED: candidate changes first body insn lhu $4,0($3) -> lhu $2,0($3); both asmfix rules anchor delete_between on ^lhu\t\$4,0\(\$3\)$ - applying candidate to src without retiring/re-anchoring both rules in the same change silently duplicates the body in the full build (func_800393C8 failure mode); this is why src was reverted
 
 - [s1] One sanctioned-family construct in candidate.c: staged-value-reused-variable (FAKE-annotated, rule read this session, exhaustion grid in evidence.md); no other constructs beyond plain C
+
+## [s2] 2026-08-19 — structural. Floor stays 2; the residual pair is now attributed to an EXACT line of GCC source.
+
+Chassis re-measured at session start with candidate.c applied over src/text1b.c:
+`sandbox func_80060A68 --disable all` = **score 2, build 66 / target 66** — the s1
+ledger floor reproduces exactly on today's chassis. src/text1b.c was reverted to HEAD
+before finishing (the s1 integration hazard is unchanged: the candidate's first body
+instruction is `lhu $2,0($3)` while both asmfix rules anchor `delete_between` on
+`^lhu\t\$4,0\(\$3\)$`).
+
+### The residual, stated precisely (unchanged from s1, re-verified)
+
+    ours   slot 10 lw $2,0xC($3)   slot 11 lw $5,0x10($3)  slot 12 lw $4,0xC($3)
+    target slot 10 lw $2,0xC($3)   slot 11 lw $4,0xC($3)   slot 12 lw $5,0x10($3)
+
+RTL identities read out of `tmp/grind/func_80060A68/s2/dumps/text1b.sched` (NOT guessed
+— s1's attribution was one insn off and is corrected here):
+  * **insn 28** = `(set (reg 83) (mem (plus (reg/v 72) 12)))` — copy1's address load → slot 10
+  * **insn 25** = `(set (reg/v 75) (mem (plus (reg/v 72) 16)))` — the STAGE load → slot 11
+  * **insn 30** = `(set (reg 84) (mem (reg 83)))` — copy1's data load
+  * **insn 35** = `(set (reg 85) (mem (plus (reg/v 72) 12)))` — copy2's address load → slot 12
+(s1's evidence.md called 25 "the stage load" and 35 "copy2 addr" — that half is right;
+it called slot 10 insn 25's neighbour without naming insn 28. The corrected map is above.)
+
+### THE MECHANISM, LOCALISED TO A LINE (this is the durable result of s2)
+
+The final order is decided by the **post-reload scheduler (sched2)**, not sched1, and
+the decision is `rank_for_schedule`'s LAST tie-break:
+
+    tools/gcc-2.7.2/sched.c:2464   return INSN_LUID (tmp) - INSN_LUID (tmp2);
+
+Trace, `dumps/text1b.sched2`, backward cycle T-45 (GCC 2.7.2 schedules each block
+BACKWARD — first insn picked becomes the block TAIL, so pick order reversed = emission
+order):
+
+    ;; ready list at T-44: 25 (3) 35 (3) 30 (4), now 30 35 25
+    ;; ready list at T-45: 35 (3) 25 (3), now 35 25
+
+At T-45 insns 25 and 35 are BOTH `INSN_PRIORITY == 3`, so sched.c:2418 (priority) does
+not decide. Both are independent of `last_scheduled_insn` (= insn 30), so both classify
+`tmp_class == 3` at sched.c:2429/2439 and sched.c:2457 (class) does not decide either —
+25 and 35 are *structurally identical insns*: same mode, same base register (reg/v 72),
+same LOG_LINKS `{insn 9, insn 22}`, same dependence depth. The sort therefore falls
+through to LUID, `ready[0]` becomes the higher-LUID insn (35), 35 is picked at T-45 and
+25 at T-46 — and because the pass runs backward, the LATER-picked insn (25) is emitted
+EARLIER. Hence our slot 11 = 25 / slot 12 = 35; target needs the reverse.
+
+**LUID at sched2 is NOT source order** — it is the position in the insn chain that
+sched1 emitted. sched1's output chain (dumps/text1b.sched RTL listing) is
+`28 → 25 → 30 → 35`, so `LUID(25) < LUID(35)` and sched2 can only ever produce our
+order. To match, sched1 must emit 25 *after* 35.
+
+### Why sched1 cannot be steered here (dumps/text1b.sched, T-29 … T-47)
+
+    ;; ready list at T-43: 25 (3) 32 (5), now 32 25
+    ;; launching 35 before 32 with no stalls at T-44
+    ;; ready list at T-44: 25 (3) 35 (7f000001)
+    ;; ready list at T-45: 25 (3) 35 (7f000001) 30 (7f000001), now 35 30 25
+    ;; ready list at T-46: 30 (7f000001) 25 (3), now 30 25
+    ;; ready list at T-47: 25 (3), now 25
+
+insn 25 becomes ready at **T-29** — as soon as its single consumer (insn 70, the
+`lhu $5,4($5)` staged read) is scheduled — and then sits in the ready list for
+EIGHTEEN cycles carrying its honest `INSN_PRIORITY == 3`. Every insn it competes with
+arrives through `insn_queue` and is displayed with `0x7f000001` = `LAUNCH_PRIORITY`
+(sched.c:187, assigned at sched.c:4049), which is ~2^31 and beats priority 3 at
+sched.c:2418 unconditionally. So at sched1, 25 is *never* picked while any other insn
+is ready; it is picked at T-47 only because it is then alone, and is therefore emitted
+before both 30 and 35. LUID/source order is never consulted at sched1 for this pair,
+which is exactly why s1's K6 (three source positions for the stage statement → byte-
+identical emit) came out the way it did. **K6 is not a fluke of those three positions;
+it is a consequence of LAUNCH_PRIORITY dominance, and it therefore generalises to every
+source position of that statement.**
+
+### The s2 measurement grid (14 variants, all sandbox-measured, all at floor 2 or worse)
+
+| variant | structural change | score | insns | slots 10/11/12 |
+|---|---|---|---|---|
+| baseline (candidate.c) | — | **2** | 66 | 28 / 25 / 35 |
+| v20 | all three 0xC copies via one reused `cp` temp | 3 | 65 | CSE folds copy1+copy2 addr into one `lw a0` |
+| v21 | copy2+copy3 via reused `cp`, copy1 inline | 2 | 66 | stage load moves EARLIER (slot 10) — wrong way |
+| v22 | copy1's DATA load split into named temp `d1` (H1's literal next-probe) | 2 | 66 | identical to baseline |
+| v23 | address AND data both through one reused `cp`, per copy | 13 | 69 | shape destroyed |
+| v24 | copy1 only via reused `cp` | 2 | 66 | identical to baseline |
+| v25 | copy2 only via reused `cp` | 2 | 66 | identical to baseline |
+| v26 | copy3 only via reused `cp` | 2 | 66 | identical to baseline |
+| v27 | v21 spelling + stage stmt after the whole copy triple | 4 | 66 | worse |
+| v28 | v21 spelling + stage stmt after copy1 | 2 | 66 | stage load at slot 10 |
+| v29 | baseline copies + stage stmt between copy2 and copy3 (the 4th source position K6 never tried) | 2 | 66 | identical to baseline |
+| v30 | `idx = *(u16*)outer` read moved above the staged `+4` read | 2 | 66 | identical to baseline |
+| v31 | `*(u16*)(outer+0x1C)` store moved above the `D_800A347C` gp store | 5 | 66 | worse (store-order fence) |
+| v32 | stage read hoisted ABOVE the `D_800F10D0` store | 2 | **65** | see below — the interesting one |
+| v33 | v30 + v31 | 5 | 66 | worse |
+
+### v32 — the one genuinely new shape, and why it is still not the answer
+
+Hoisting the stage read above the `sw $0, %lo(D_800F10D0)` store removes insn 25's
+anti-dependence on that store, freeing it to schedule anywhere. Result: **slots 10-33
+become byte-identical to target** (`lw v0,0xC / lw a0,0xC / lw v0,0(v0) / nop / sw 0x20
+/ lw v0,4(a0) / lw a0,0xC / sw 0x24 / lw v0,8(a0) / lw a0,0x10 / sw 0x28 / lhu v0,0(a0)
+/ lw a0,0x10 / sh 0x18 / lhu a0,2(a0) / addiu 0x18 / sw gp / sh 0x1A / lhu a1,4(a1) /
+lhu a0,0(v1) / addiu 0x20 / sw gp / sh 0x1C`) — but the stage load lands in **slot 5**,
+the load-use delay slot after `lhu $2,0($3)`, where target has a `nop`. Insn count drops
+to 65 because the freed load consumed the nop.
+
+That completes the position lattice for this load. The `sw $0, %lo(D_800F10D0)` store is
+the ONLY memory fence in the block, so the stage read has exactly two honest source
+positions and exactly two emitted positions:
+  * **above the store** → slot 5 (delay-slot fill, 65 insns) — v32
+  * **below the store** → slot 11 (sched2 LUID tie loss, 66 insns) — baseline
+There is no third position, and **target's slot 12 is neither**. s1's K2 established
+this lattice for a *fresh single-set* local; s2 establishes that it holds identically
+for the *multi-set staged* variable, which was the only untested half.
+
+- [s2] [s2] Chassis re-measured with candidate.c applied over src/text1b.c: sandbox func_80060A68 --disable all = score 2, build 66 / target 66. The s1 ledger floor reproduces exactly on today's chassis.
+
+- [s2] [s2] RTL identities read out of the cc1 dump, correcting s1's insn map (which named 25 and 35 but never named slot 10's insn): insn 28 = (set (reg 83) (mem (plus (reg/v 72) 12))) = copy1's address load = slot 10; insn 25 = (set (reg/v 75) (mem (plus (reg/v 72) 16))) = the stage load = slot 11; insn 30 = (set (reg 84) (mem (reg 83))) = copy1's data load; insn 35 = (set (reg 85) (mem (plus (reg/v 72) 12))) = copy2's address load = slot 12. Target wants insn 35 at slot 11 and insn 25 at slot 12.
+
+- [s2] [s2] The deciding line is tools/gcc-2.7.2/sched.c:2464, rank_for_schedule's LUID fall-through. Insns 25 and 35 tie at sched.c:2418 (both INSN_PRIORITY 3) and at sched.c:2457 (both dependence class 3 relative to last_scheduled_insn 30) because they are structurally identical loads with identical LOG_LINKS {insn 9, insn 22}.
+
+- [s2] [s2] The LUID that breaks that tie is NOT source order - it is the position in the insn chain that sched1 emitted (28 -> 25 -> 30 -> 35). That is the mechanical reason s1's K6 (three stage-statement source positions producing byte-identical emit) came out as it did, and it upgrades K6 from a three-sample observation to a general result.
+
+- [s2] [s2] At sched1 the pair is decided by LAUNCH_PRIORITY dominance rather than by rank: insn 25 becomes ready at T-29, as soon as its only consumer (insn 70, the 'lhu $5,4($5)' staged read) is scheduled, and then sits in the ready list for 18 cycles carrying its honest priority 3, while every competing insn arrives through insn_queue displaying 0x7f000001 = LAUNCH_PRIORITY (sched.c:187, assigned at sched.c:4049). Insn 25 is finally picked at T-47 only because it is then the sole ready insn, and backward scheduling turns 'picked last' into 'emitted first'.
+
+- [s2] [s2] 14 structural variants were sandbox-measured this session and none beat floor 2. Byte-identical to baseline: v22 (copy1's data load split into a named temp - s1's H1 literal next-probe), v24 / v25 / v26 (reused temp for copy1, copy2, copy3 alone), v29 (stage statement between copy2 and copy3), v30 (idx read hoisted above the staged +4 read). Wrong direction while still at floor 2: v21 and v28 (stage load moves to slot 10). Regressions: v20 = 3 (65 insns, two address loads CSE-folded), v27 = 4, v31 = 5, v33 = 5, v23 = 13 (69 insns).
+
+- [s2] [s2] v32 (stage read hoisted above the D_800F10D0 store) makes slots 10 through 33 byte-identical to target but puts the stage load into slot 5's load-use delay slot, consuming target's nop and dropping to 65 insns. Since that store is the block's only memory fence, the honest emitted-position lattice for this load is exactly {slot 5, slot 11}, and target's slot 12 is unreachable by repositioning alone.
+
+- [s2] [s2] src/text1b.c was reverted to HEAD before finishing. The s1 integration hazard is unchanged and re-confirmed: the candidate's first body instruction is 'lhu $2,0($3)' while both asmfix rules anchor delete_between on '^lhu\t\$4,0\(\$3\)$', so applying the candidate without retiring or re-anchoring those rules in the same change silently duplicates the body in the full build.
+
+- [s2] [s2] No new construct was introduced this session. candidate.c is unchanged apart from a header comment recording the s2 result, and the only sanctioned-family construct in it remains s1's staged-value-reused-variable.

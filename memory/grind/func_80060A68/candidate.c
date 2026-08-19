@@ -20,6 +20,17 @@
  * +452-byte failure mode). Session s1 therefore reverted src to HEAD after
  * measuring; re-apply from here.
  *
+ * [s2 2026-08-19, structural] RE-MEASURED on today's chassis: still score 2,
+ * build 66 / target 66. This body remains the best known form; s2 measured 14
+ * structural respellings (copy-triple spelling x5, copy1 data-load split, stage
+ * statement position x2 more, tail-block statement order x3, stage read hoisted
+ * above the D_800F10D0 store) and NONE beat it. The residual is now localised to
+ * one line of GCC: rank_for_schedule's LUID fall-through, sched.c:2464 — insns 25
+ * (stage load) and 35 (copy2 addr load) are structurally identical, tie on both
+ * INSN_PRIORITY (3) and dependence class (3), and the LUID that breaks the tie is
+ * the chain order sched1 already emitted (28->25->30->35), not source order. See
+ * evidence.md [s2]. Do NOT re-spend the position or copy-spelling axes.
+ *
  * Contains ONE sanctioned-family construct: the staged-value load through
  * temp_a1 ([[staged-value-reused-variable]], SANCTIONED 2026-07-03), FAKE-
  * annotated below; exhaustion grid in evidence.md.

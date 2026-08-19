@@ -1,31 +1,37 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 2,
    "modality": "recon",
    "headline": "Recon s1: floor 39 -> 2 in one session; clean sibling-idiom rewrite banked in candidate.c; residual is one equal-priority load swap (sched rank tie)"
+  },
+  {
+   "session": 2,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor holds at 2; the structural axis (14 respellings) is KILLED and the residual is localised to one GCC line - rank_for_schedule's LUID fall-through at sched.c:2464, seeded by sched1's emitted chain"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Respell copy1/copy2 chains so copy2's address load loses its stall-filler jump (schedules at backward T-47) and the stage load lands slot 12",
-   "mechanism": "sched.c launch-before-stall mechanics: insn 35 jumps ahead only because copy1-store's stall window opens at T-44; removing/moving that stall re-ranks the pair",
-   "next_probe": "named-temp split of copy1's data load; per-statement fresh temps for copy2's address read; sandbox each + check .sched trace for 'launching 35 before 32'"
+   "hypothesis": "A permuter campaign from the floor-2 seed closes the last two. The residual is a pure two-insn ordering swap with every register, the frame, and 64 of 66 instructions already correct. This axis is untouched by both s1 and s2.",
+   "mechanism": "Tiny ordering search space around the copy block. s2's analysis sharpens the target: a closing form must change the insn CHAIN ORDER that sched1 emits (insn 25 after insn 35), so forms that merely permute statements are predicted dead, and forms that alter insn 25's or insn 35's dependence structure are the only live candidates.",
+   "next_probe": "tools/permuter_campaign.py with a single-function target.o built from asm/funcs/func_80060A68.s (offset-0 discipline), seeded with memory/grind/func_80060A68/candidate.c; honour the fresh-seed stopping rule ([[permuter-fresh-seed-discipline]]); wait for the campaign IN-TURN and run harvest --stop before finishing. Vet any closing form against the 6-test checklist before banking it."
   },
   {
-   "hypothesis": "Permuter closes the last 2 from the floor-2 seed",
-   "mechanism": "pure ordering residual, tiny search space around the copy block",
-   "next_probe": "tools/permuter_campaign.py with single-function target.o built from asm/funcs/func_80060A68.s (offset-0 discipline); vet any closing form against the cheat checklist"
+   "hypothesis": "Insn 25's INSN_PRIORITY can be raised honestly so that sched.c:2418 decides the pair before the LUID fall-through is ever reached.",
+   "mechanism": "rank_for_schedule tests INSN_PRIORITY first (sched.c:2418); insns 25 and 35 currently tie at 3 because their LOG_LINKS depth is identical. Raising 25's dependence depth changes the sort before class or LUID matter.",
+   "next_probe": "Enumerate honest C shapes that deepen insn 25's LOG_LINKS without adding an instruction, and check each against the trace's predicted pick order BEFORE spending a sandbox run. s2 already worked the naive case: priority(25) = 4 yields emission 28/35/30/25, which is close but NOT target (28/35/25/30), because at T-44 the class test prefers the independent insn 25 over the data-dependent insn 30. What is actually needed is for insn 30 to win T-44 and insn 25 to win T-45."
   },
   {
-   "hypothesis": "If both above measure dead: the pair is a sched-rank-class tie wall and needs the sched.c:2399-2456 line-level closure argument before any exhaustion claim",
-   "mechanism": "rank_for_schedule dependence-class decision on equal priority ([[sched-rank-class-tie-wall]])",
-   "next_probe": "map insns 25/35 dependence classes in the .sched dump against rank_for_schedule's comparison order"
+   "hypothesis": "If the permuter and the priority axis both measure dead, this is a sched.c:2464 tie wall and needs the line-level closure argument written out before any exhaustion claim.",
+   "mechanism": "[[sched-rank-class-tie-wall]] - equal priority and equal dependence class leaving rank_for_schedule to fall through to a LUID that pure C does not control.",
+   "next_probe": "s2 has already localised the tie to one line and proved both insns identical in every field rank_for_schedule inspects; what is still MISSING is a demonstration that no honest C shape can make sched1 emit insn 25 after insn 35. Do not claim exhaustion until the permuter and priority axes are measured - the floor moved 39 to 2 in a single session and both remaining hypotheses are live."
   }
  ],
  "judge_constraints": [],
