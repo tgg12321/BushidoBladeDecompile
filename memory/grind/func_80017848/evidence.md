@@ -2741,3 +2741,173 @@ serve without a pre-init, and the pre-init itself costs.
 - [s22] Correction to candidate.c's s9 header: it attributes the preheader copy's survival to combine's can_combine_p refusal. The dumps show the copy already exists at .cse and is unchanged through .combine; combine only decides whether a copy with an IN-BLOCK use is folded away (s16's trichotomy). The ORDER is decided later, in local-alloc.
 
 - [s22] One new cell measured and banked (G1 = 13 at 126); bank now 165 files. src/ings.c restored to its committed HEAD body; no build-pipeline, rule, engine or tools file touched; nothing committed.
+
+## s23 (2026-08-18, FORENSICS) — floor 3; the loop-2 preheader copy is BUILT for the first time, and the family is killed at RTL by an allocation conflict
+
+Chassis check at dispatch, on a clean tree, all `sandbox func_80017848 --disable all`
+(rules_dropped 2, cheat_asm_stripped 49): **V1 (`candidate.c`) = 3 at 127/127**,
+**W1 (loop-2 guard two-step, `tmp/grind/func_80017848/s21/W1.c`) = 3 at 127/127**,
+**D3 = 4 at 127/127**. Identical to s21/s22 — the chassis has not moved. All s23
+cells are built on W1, whose loop-2 guard two-step E-s20-2 showed keeps the
+loop-2 base add alive for free.
+
+### E-s23-1 (NEW, POSITIVE — the largest structural result since s9). `use_crosses_set_p` DOES fire from pure C, and it produces target's ENTIRE instruction stream: both preheader copies AND the loop-1 exit fresh read, at 127/127.
+
+s17's H-s17-A tested the `use_crosses_set_p` combine-refusal path on the V1
+chassis (loop-2 guard inline) and priced it dead at 12-14. s20/s21 then changed
+the chassis (W1's self-clobbering loop-2 guard), so — exactly as s15's addend
+prohibition had to be retracted after W1 — the s17 numbers were re-measured here.
+They reproduce (Q1 = 14, Q2 = 14, Q3 = 12, control Q4 = 14, control Q6 = 5), so
+s17's *scores* stand. What s17 never did was look at the RESIDUAL, and the
+residual is a different animal from its score.
+
+The winning shape is the mechanism applied SYMMETRICALLY to both loops
+(cell Q10, banked as
+`rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c`):
+
+    if (i < t) {
+        q = p;                       /* the copy: (set q p)                  */
+        p = *(u8 **)(ctx + 0x10);    /* SETS the copy's source between i2/i3 */
+        base = (u8 *)(sh + (s32)q);  /* the base add — combine must refuse   */
+        do { ... (s32)p ... } while (i < *(s32 *)(base + 0x1C));
+        p = *(u8 **)(ctx + 0xC);     /* p was clobbered -> HONEST re-read    */
+    }
+    ... identical construct for loop 2 ...
+
+Because `p` is reused to hold the loop's links pointer, (a) cse cannot
+canonicalise the base add's operand back to `p` (p has been invalidated),
+(b) combine's `can_combine_p` hits `use_crosses_set_p` and declines to fold the
+copy, and (c) the carried pointer is genuinely dead at the loop exit, so loop 1's
+tail MUST re-read `ctx + 0xC` — which is target's `lw $a0,0xC($s2)` at
+`asm/funcs/func_80017848.s:56`, the instruction eight sessions bought with a
+`move` and called mismatch #1.
+
+Q10's objdump-normalised residual (`tmp/grind/func_80017848/s23/T.txt` vs
+`B.txt`) contains **no instruction-kind, no instruction-count and no ordering
+difference anywhere in the function** — 127/127, and every one of the following
+lines up:
+
+    loop-1 preheader  ours   addu v0,a1,zero / lw a1,16(s2) / addu a0,a0,v0
+                      target addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3
+    loop-1 exit tail  ours   lw a1,12(s2) / sll a0,s4,6
+                      target lw a0,12(s2) / sll a1,s4,6
+    loop-2 preheader  ours   addu v0,a1,zero / lw a1,16(s2) / addu a0,a0,v0
+                      target addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3
+
+This is the first cell in 23 sessions in which loop 2's preheader contains a
+reg-reg copy OF THE ADDEND placed BEFORE the base add with the base add reading
+it — s22's cheap `.cse` diagnostic asked exactly that question, and every prior
+cell that produced a loop-2 copy produced a copy of BASE (loop.c), which E-s22-2
+proved terminal. The score is 14 and it is **100% register identity**.
+
+### E-s23-2 (KILLED, with the RTL that proves it). The `use_crosses_set_p` family can NEVER reach 0: it fuses the carried pointer and the links pointer into ONE pseudo, and target's own allocation proves they are two.
+
+The mechanism's precondition is a set of the copy's SOURCE between the copy and
+the base add. The only value target computes there is the links pointer
+(`lw $a2,0x10($s2)`), so the C must assign it to the carried pointer variable —
+one C local, therefore one pseudo, therefore ONE hard register for both roles.
+Target's allocation is incompatible with that:
+
+    target: pointer  = $a0, dies AT the base add  ->  base REUSES $a0
+            links    = $a2, live through the body
+            copy dst = $a3        shift = $a1        i = $v1
+
+A single pseudo cannot be `$a0` before the base add and `$a2` through the body.
+In our dumps the consequence is visible as a conflict: with `p` carrying links,
+`p` is live through the loop body, so `p` CONFLICTS with `base` and `base` can
+never be given `p`'s register. `.greg` for cell S1 shows `78 in 4  80 in 5
+81 in 5` — the pointer gets `$a0` correctly, and both bases are pushed to `$a1`.
+The family's floor is therefore the register-identity residual (measured 12-16
+across 21 cells), not 0. Do NOT spend another session tuning it.
+
+### E-s23-3 (NEW, CONFIRMED and PREDICTIVE — a general lever, not just for this function). GCC 2.7.2's global-alloc priority is `floor_log2(n_refs) * n_refs / live_length`, it is computable from the `.lreg` header, and moving a C variable across it flips hard-register assignment as predicted.
+
+`tools/gcc-2.7.2/global.c`'s `allocno_compare` sorts allocnos by
+
+    pri = (floor_log2(n_refs) * n_refs / live_length) * 10000 * size
+
+and `.lreg`'s per-register header line (`Register N used R times across L insns`)
+gives R and L directly, so the ORDER printed in `.greg`'s `;; N regs to allocate:`
+line is predictable by hand. For Q10:
+
+    88 (i)      26/40 -> 2.60      80 (base)  10/22 -> 1.364
+    79 (q)       4/6  -> 1.333     78 (p)     12/39 -> 0.923
+    72 (ctx)    15/89 -> 0.506     84/85 (sh)  3/8  -> 0.375
+
+and `.greg` prints `;; 13 regs to allocate: 87 97 109 80 79 78 72 77 75 83 84 74
+73` — base before p, so base takes `$a0` and p is pushed to `$a1`, which is the
+a0/a1 swap that dominates Q10's 14 points.
+
+PREDICTION AND CONFIRMATION: splitting `base` into `base1`/`base2` (one per loop)
+halves its refs and live length to 5/11, giving priority `log2(5)*5/11 = 0.909`,
+just BELOW p's 0.923 — so p should be allocated first and take `$a0`. Cell S1's
+`.greg` prints `;; 14 regs to allocate: 88 98 110 79 78 80 81 ...` (p now ahead
+of both bases) and dispositions `78 in 4` (`$a0`, target's register for the
+pointer) with `80 in 5  81 in 5`. The prediction held exactly. The score did not
+move (14) because the gain at the pointer is paid back at `base`, per E-s23-2.
+
+This makes allocno priority a MEASURABLE, C-STEERABLE quantity for the first
+time in this ledger: any variable's hard register can be moved earlier or later
+in the allocation order by splitting it (fewer refs / shorter live range, lower
+priority) or by fusing it (more refs, higher priority), and the `.lreg` header
+gives the numbers without a sandbox run. Register-identity residuals elsewhere in
+the queue should be attacked this way rather than by blind spelling sweeps.
+
+### E-s23-4. Twenty-one allocation-tuning cells on the exact-instruction-stream chassis, all 12-16.
+
+    Q10 symmetric both loops                              14 @127
+    Q11 separate copy dests q/r                           14 @127
+    Q12 loop 1 only                                       14 @127
+    Q13 pointer-first base association (both loops)       14 @127
+    Q14 pointer-first guard association (both loops)      12 @127
+    Q1/Q2/Q3 loop-2-only, copy into r / q / lnk    14 / 14 / 12 (Q3 @125)
+    Q4 CONTROL links-reuse alone, no copy                 14 @127
+    Q5 + body limit read via the copy dest                16 @128
+    Q6 CONTROL bare source copy, links left inline         5 @126
+    R1 shift assigned before the pointer                  14 @127
+    R2 pointer-first guards AND bases                     12 @127
+    R3 R2 + shift-first creation order                    12 @127
+    R4 single shift local for both loops                  14 @127
+    R5 loop-1 mechanism + loop-2 named links local        12 @126
+    R6 inline (non two-step) guards                       14 @127
+    R8 `i = 0` after the shift in the join block          14 @127
+    S1 split base1/base2                                  14 @127
+    S2 S1 + separate copy dests                           14 @127
+    S3 separate copy dests only                           14 @127
+    S4/S5 S1/S2 + pointer-first guards               16 / 16 @127
+
+The family is flat: no association, creation-order, splitting or guard-shape
+change moves it below 12, and every cell keeps the instruction stream exact.
+That flatness is E-s23-2 showing through — the mismatches are a fixed
+consequence of the pointer/links pseudo fusion, not of any spelling.
+
+- [s23] Floor unchanged at 3 (V1 re-measured 127/127 at dispatch; W1 = 3, D3 = 4).
+  src/ings.c restored to its committed HEAD body at the end of the session; no
+  build-pipeline, rule, engine or tools file touched; nothing committed.
+- [s23] E-s23-1: the `use_crosses_set_p` construct (carried pointer reused to hold
+  the loop's links pointer) reproduces target's ENTIRE instruction stream at
+  127/127 — both preheader copies and the loop-1 exit `lw` — for the first time
+  in 23 sessions. Score 14, all of it register identity.
+- [s23] E-s23-2: that family is structurally incapable of reaching 0 — it forces
+  the carried pointer and links into one pseudo, while target keeps them in `$a0`
+  (dying at the base add, its register reused by `base`) and `$a2`. Confirmed by
+  S1's `.greg` conflicts/dispositions.
+- [s23] E-s23-3: `allocno_compare` priority = floor_log2(n_refs)*n_refs/live_length
+  is computable from `.lreg` headers and predicted, correctly, that splitting
+  `base` moves the pointer from `$a1` to `$a0`. Allocation order is now a
+  steerable, cheaply-measurable C-level quantity.
+- [s23] Bank now 170 files (5 new). Artifacts: `tmp/grind/func_80017848/s23/`.
+
+- [s23] Chassis re-measured at dispatch on a clean tree: V1 (candidate.c) = 3 at 127/127, W1 (loop-2 two-step guard) = 3 at 127/127, D3 = 4 at 127/127; rules_dropped 2, cheat_asm_stripped 49. Unchanged from s21/s22.
+
+- [s23] E-s23-1: cell Q10 - the carried pointer local reused to hold each loop's links pointer - reproduces target's ENTIRE instruction stream at 127/127, including both preheader copies (addu copy / links lw / base add reading the copy) and loop 1's exit-tail fresh ctx+0xC read that eight sessions bought with a move. First cell in 23 sessions whose loop-2 preheader contains a copy OF THE ADDEND before the base add; every previous loop-2 copy was a copy of BASE created by loop.c (E-s22-2, terminal).
+
+- [s23] E-s23-2 (the kill): the mechanism forces the carried pointer and the links pointer into ONE C local, hence one pseudo and one hard register, while target's allocation needs the pointer in $a0 dying at the base add (base reuses $a0) and links in $a2 live through the body. p-as-links is live through the body, conflicts with base, and base can never inherit its register - S1's .greg dispositions ('78 in 4  80 in 5  81 in 5') show it directly. The family's floor is the register-identity residual (12-16 over 21 cells), not 0.
+
+- [s23] E-s23-3: global.c allocno_compare priority = floor_log2(n_refs)*n_refs/live_length, both inputs printed by .lreg; it reproduced .greg's allocation order for Q10 and correctly predicted that splitting base into base1/base2 flips the pointer from $a1 to $a0 (cell S1). Hard-register identity is now a steerable, sandbox-free measurable for this compiler - applicable to any register-identity residual in the queue.
+
+- [s23] E-s23-4: 21 allocation-tuning cells all score 12-16 at 125-128 insns; best of family 12 (pointer-first guards Q14/R2/R3, loop-1-only mechanism with a named loop-2 links local R5). The flatness is the pseudo fusion showing through, not a spelling gap.
+
+- [s23] s17's H-s17-A scores reproduce on the W1 chassis (Q1 = 14 vs P1 = 14, Q3 = 12 vs P3 = 12, control Q4 = 14 vs P5 = 14), so the s17 kill was chassis-independent in PRICE - but s17 never read the residual, which is why the construct's structural exactness went unnoticed for six sessions.
+
+- [s23] src/ings.c restored to its committed HEAD body at the end of the session; no build-pipeline, rule, engine or tools file touched; nothing committed. Rejected bank now 170 files (5 new).

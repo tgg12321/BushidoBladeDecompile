@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -135,23 +135,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Floor holds at 3 (V1 re-measured 127/127); the preheader-copy question is moved from behaviour to RTL - .cse-vs-.lreg dumps prove the copy/base-add ORDER is local-alloc's optimize_reg_copy_1 under a t"
+  },
+  {
+   "session": 23,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Floor holds at 3 (V1 re-measured 127/127), but a pure-C construct that emits target's ENTIRE instruction stream at 127/127 - both preheader copies and loop 1's exit lw - was built for the first time i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The site-swap (E-s22-3) plus E-s22-1's condition (ii) names one untried chassis: loop 1's exit tail is a FRESH READ (target's lw) into a SECOND carried name `r`, and `r` is used ONLY as loop 2's base addend, so that `r` dies exactly at loop 2's preheader copy. Every chassis measured so far keeps a single carried name `p` that is still live into the post-loop-2 re-reads, so a copy of it would not have a dying source and optimize_reg_copy_1 would not re-point the base add.",
-   "mechanism": "E-s22-1: target's order needs (i) a copy insn before the base add and (ii) REG_DEAD on the copy's SOURCE at that copy. Splitting the carried pointer into two names makes (ii) satisfiable for loop 2 for the first time, while the loop-1 exit re-read supplies target's lw at the site where we currently emit a move.",
-   "next_probe": "Build on V1: keep loop 1 exactly as-is except the tail, which becomes `r = *(u8 **)(ctx + 0xC);` (a fresh read, defined on both paths - also insert the same read on the skip path by hoisting it above loop 1's guard ONLY if the skip path needs it, and measure both spellings). Loop 2's guard reads `r`; loop 2's preheader writes an explicit C copy `s = r;` with `base = (u8 *)(sh2 + (s32)s);` and NO further use of `r` anywhere after (the post-loop math args, rec_a and rec_b keep their own re-reads, so `r` dies at the copy). Then, before scoring, run pwsh tools/grinder/dump.ps1 and check the ONE diagnostic from E-s22-2: does .cse's loop-2 preheader contain (set (reg X) (reg Y)) with Y the addend? Score with sandbox --disable all and record build_insns."
+   "hypothesis": "A THIRD producer of a surviving loop-2 preheader copy exists whose blocking condition is NOT a set of the copy's source - that assumption is the single thing both measured families share, and it is exactly what costs the pointer/links pseudo fusion (E-s23-2) or the out-of-block use instruction (V1's loop 1).",
+   "mechanism": "combine's can_combine_p has seven refusal paths (s17's E-s17-1). Only use_crosses_set_p has now been built. The remaining live question is whether any of the three s17 called 'structurally unreachable' becomes reachable on the Q10 chassis, where the preheader's insn stream is already exact - s17 evaluated them on V1, whose loop-2 preheader had no copy at all, so 'unreachable' was judged against a different block shape.",
+   "next_probe": "Re-read tools/gcc-2.7.2/combine.c:803-970 with Q10's .combine dump open (tmp/grind/func_80017848/dumps/ings.combine, cell Q10 is the one whose insn stream is exact) and identify WHICH path actually fired for each preheader copy - this session inferred use_crosses_set_p from behaviour and did not read the refusal. If a different path fired, s17's enumeration was priced against the wrong predicate and the three 'unreachable' paths must be re-scored on this chassis."
   },
   {
-   "hypothesis": "The s16 trichotomy's 'in-block use -> combine deletes the copy' branch has never been read in a dump, only inferred behaviourally. If the deletion is done by flow rather than combine, or if the copy survives to .lreg in some spelling, the branch is not closed and s17's abstract can_combine_p enumeration may have priced the wrong pass.",
-   "mechanism": "combine.c substitutes and deletes a copy whose single use it can fold; flow.c deletes copies whose destination is dead. The two have different escape hatches, and s17 enumerated only the former.",
-   "next_probe": "Take V1 and build the minimal in-block-use cell (loop 1's `q` used only by the base add, i.e. delete the `p = q;` tail), dump with pwsh tools/grinder/dump.ps1, and locate the copy insn number in .cse, then check its presence in .combine and .flow. Record which dump first lacks it. That single fact decides whether s17's can_combine_p ladder is the right ladder."
+   "hypothesis": "The links value can be given its own pseudo while still supplying the set of the copy's source, if the set's value is consumed inside the PREHEADER (not the body), so the carried pointer dies before the loop and stops conflicting with base.",
+   "mechanism": "The conflict that kills the family (E-s23-2) is p's liveness through the loop body. If p is set to links and links is consumed into a separate local inside the preheader, p dies at that consumption, base can reuse its register, and the loop body reads the separate local. The cost is one extra insn unless the consumption folds onto target's fourth preheader instruction (addu v0,a0,v1, the base+i element pointer).",
+   "next_probe": "On the Q10 chassis, write the preheader as `q = p; p = *(u8 **)(ctx + 0x10); lnk = p; base = (u8 *)(sh + (s32)q);` with the body reading lnk, and measure; then the variant with the element-pointer expression written so GCC's strength reduction has to place the copy consumption on target's `addu v0,a0,v1` slot. Read .lreg's per-register header for p and base to confirm whether the conflict disappeared before scoring."
   },
   {
-   "hypothesis": "Because target's two loop preheaders are byte-identical to each other apart from body offsets, the original C almost certainly used the SAME construct twice; the reason our second copy dies may be that our second construct is written differently from our first rather than that the site is structurally poorer.",
-   "mechanism": "E-s22-3 established loop 1's construct (redundant ctx+0xC read folded by cse into a copy, destination used past the join) reproduces target byte-for-byte including hard registers. Symmetry says the same shape must be reachable at loop 2 with a use past loop 2's join.",
-   "next_probe": "Enumerate the sites past loop 2's exit that are NOT reload-deleters (E-s21-3 killed math-args, rec_a, rec_b, and the end-pointer derivation - nine cells across two chassis). The one class never tried: a use on the SHARED return-0 path or in the *(s16 *)(ctx + 0x6) increment chain that mentions the pointer without replacing any existing ctx+0xC read. Build one such cell only if a semantically honest spelling exists; otherwise record the enumeration as complete and close the axis."
+   "hypothesis": "The allocno-priority instrument (E-s23-3) can close residuals whose ONLY defect is register identity, on this function's siblings and elsewhere in the queue, without any spelling search.",
+   "mechanism": "floor_log2(n_refs)*n_refs/live_length is computed from .lreg's per-register header; splitting a variable lowers its priority (fewer refs, shorter range) and fusing uses raises it, moving find_reg's assignment order deterministically.",
+   "next_probe": "Before any further cell sweep on this function, compute the priority table for V1 (the floor body) from a .lreg dump and check whether ANY split/fuse changes the allocation at all - V1's registers already match target, so the expected answer is no, and confirming that cheaply tells the next session the instrument is only useful on the Q10-family chassis. Then carry the instrument to the next queue item with a register-identity-only residual."
   }
  ],
  "judge_constraints": [],

@@ -2039,3 +2039,68 @@ pre-init and the pre-init is itself the cost.
 - probe: Cell G1 built on V1, measured with sandbox --disable all, residual diffed.
 - result: 13 at 126 insns. The pre-init `q = p;` relocates loop 1's copy (it becomes `addu a0,a2,zero` under a shifted register assignment), loop 2 still gets NO copy at all, and the added definition perturbs block ordering (a blez/j pair moves), losing one instruction net. Banked as rejected/s22_q_preinit_tail_reread_l2_addend_q_costs_13.c.
 - verdict: KILLED
+
+## s23 (2026-08-18, forensics)
+
+### H-s23-1 (CONFIRMED). `use_crosses_set_p` is reachable from honest C and produces target's exact instruction stream.
+Mechanism: combine's `can_combine_p` refuses to substitute a copy's source into a
+later insn when that source is SET in between (`use_crosses_set_p`). The only
+value target computes between the preheader copy and the base add is the links
+pointer, so assigning it to the carried pointer local supplies the required set;
+cse is likewise blocked from canonicalising the base add's operand back to the
+original, because the original has been invalidated.
+Probe: cell Q10 (both loops), plus Q1/Q2/Q3 (loop 2 only) and controls Q4/Q6, all
+on the W1 chassis; residual read with objdump normalisation.
+Result: Q10 = 14 at 127/127 with NO instruction-kind, count or ordering
+difference anywhere in the function — both preheader copies present in target's
+slot, base adds reading the copy, and loop 1's exit tail an honest
+`lw a0,0xC(s2)` re-read for the first time in 23 sessions. The whole score is
+register identity.
+Verdict: CONFIRMED.
+
+### H-s23-2 (KILLED). The same family can be tuned to 0 by allocation-level C changes.
+Mechanism: if the residual is only register identity, association order, variable
+splitting, creation order and guard shape should be able to move the allocation
+onto target's.
+Probe: 21 cells (Q1-Q15, R1-R8, S1-S5) sweeping association, split/fuse of `base`
+and of the copy destination, guard two-step vs inline, creation and statement
+order; plus `.greg`/`.lreg` dumps of Q10 and S1.
+Result: floor of the family is 12 (Q14/R2/R3/R5), and the RTL says why: the
+mechanism requires the carried pointer and the links pointer to be the SAME C
+local, hence one pseudo and one hard register, while target keeps the pointer in
+`$a0` (dead at the base add, register reused by `base`) and links in `$a2`. Our
+`p` is live through the loop body, so it conflicts with `base` and `base` can
+never inherit its register. No spelling can unfuse them, because the set of the
+copy's source is the mechanism.
+Verdict: KILLED — structurally, not merely by price.
+
+### H-s23-3 (CONFIRMED). Global-alloc priority is computable from `.lreg` and steerable from C.
+Mechanism: `global.c:allocno_compare` sorts by
+`floor_log2(n_refs) * n_refs / live_length`; `.lreg`'s `Register N used R times
+across L insns` gives both inputs.
+Probe: compute the priorities for Q10's allocnos, predict that splitting `base`
+into `base1`/`base2` (10/22 -> 5/11, priority 1.364 -> 0.909) drops it below `p`
+(0.923) and moves `p` from `$a1` to `$a0`; build cell S1 and read `.greg`.
+Result: `.greg` order changed exactly as predicted (`88 98 110 79 78 80 81 ...`,
+p ahead of both bases) and dispositions show `78 in 4` = `$a0`. Score unchanged
+at 14 because the win is paid back at `base` (H-s23-2).
+Verdict: CONFIRMED — and it generalises to any register-identity residual in the
+queue.
+
+## [s23] combine's use_crosses_set_p refusal is reachable from honest C and yields target's preheader shape at BOTH loops, including loop 1's exit fresh read.
+- mechanism: can_combine_p declines to substitute a copy's source into a later insn when that source is SET in between; the only value target computes between the preheader copy and the base add is the links pointer, so assigning it to the carried pointer local supplies the set. cse is blocked from canonicalising the base add's operand back to the original for the same reason, and the clobbered pointer forces an honest ctx+0xC re-read at the loop exit.
+- probe: Cell Q10 (mechanism applied to both loops, built on the W1 two-step-guard chassis) plus Q1/Q2/Q3 (loop 2 only), controls Q4 (links reuse without the copy) and Q6 (copy without the set); objdump-normalised residual diff against asm/funcs/func_80017848.s.
+- result: Q10 = 14 at 127/127 with NO instruction-kind, count or ordering difference anywhere in the function: both preheaders emit 'copy / links load / base add reading the copy' in target's slots, and loop 1's exit tail is 'lw a1,12(s2) / sll a0,s4,6' against target's 'lw a0,12(s2) / sll a1,s4,6'. Every one of the 14 points is register identity. Controls: Q4 = 14 (same register cascade, no copy), Q6 = 5 at 126 (copy deleted, as the s16 trichotomy predicts).
+- verdict: CONFIRMED
+
+## [s23] The use_crosses_set_p family can be tuned to distance 0 by C-level allocation changes, since its residual is purely register identity.
+- mechanism: association order, variable splitting/fusing, creation order, statement order and guard shape all move GCC 2.7.2's allocno priority and hence hard-register assignment.
+- probe: 21 cells (Q1-Q15, R1-R8, S1-S5) sweeping every one of those axes on the exact-instruction-stream chassis, plus .greg/.lreg dumps of Q10 and S1 read for conflicts and dispositions.
+- result: Family floor is 12 (Q14/R2/R3/R5); nothing below. The RTL gives the reason: the mechanism REQUIRES a set of the copy's source, the only available value is links, so the carried pointer and links are one C local, one pseudo, one hard register. Target keeps the pointer in $a0 (dead at the base add, its register reused by base) and links in $a2 - impossible for one pseudo. With p carrying links it is live through the body, conflicts with base, and base can never inherit its register (S1 .greg: '78 in 4  80 in 5  81 in 5').
+- verdict: KILLED
+
+## [s23] GCC 2.7.2's global-alloc priority is computable from the .lreg dump header and is steerable from C, so hard-register identity is a predictable quantity rather than a black box.
+- mechanism: global.c's allocno_compare sorts allocnos by floor_log2(n_refs) * n_refs / live_length (times size); .lreg prints 'Register N used R times across L insns' for every pseudo, giving both inputs.
+- probe: Computed priorities for Q10's allocnos (base 10/22 = 1.364, q 4/6 = 1.333, p 12/39 = 0.923, sh 3/8 = 0.375), checked them against .greg's ';; 13 regs to allocate:' order, then PREDICTED that splitting base into base1/base2 (5/11 = 0.909, below p) would move p ahead of base and hand p target's $a0; built cell S1 and read .greg.
+- result: The printed order matched the computed priorities exactly, and S1's order became '88 98 110 79 78 80 81 ...' with dispositions '78 in 4' - p in $a0 as predicted, first try. Score unchanged at 14 because the win is paid back at base (see the kill above).
+- verdict: CONFIRMED

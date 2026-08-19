@@ -660,3 +660,61 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *      The predicate's direction is now pinned: only a later-EBB use of the
  *      DESTINATION creates a copy.
  */
+/* [s23 FORENSICS ADDENDUM — body unchanged, still 3, re-measured at dispatch on a
+ * clean tree (V1 = 3 at 127/127, W1 = 3 at 127/127, D3 = 4 at 127/127;
+ * rules_dropped 2, cheat_asm_stripped 49).]  s23 built the loop-2 preheader copy
+ * — the thing fourteen sessions could not produce — and then killed the family
+ * that produces it, at RTL, with the register allocator's own numbers.
+ *
+ *  (1) THE CONSTRUCT THAT WORKS (E-s23-1).  Reuse the carried pointer local to
+ *      hold the loop's LINKS pointer, which sets the copy's source between the
+ *      copy and the base add:
+ *
+ *          if (i < t) {
+ *              q = p;                       // the copy
+ *              p = *(u8 **)(ctx + 0x10);    // sets the copy's SOURCE
+ *              base = (u8 *)(sh + (s32)q);  // combine hits use_crosses_set_p
+ *              do { ... (s32)p ... } while (i < *(s32 *)(base + 0x1C));
+ *              p = *(u8 **)(ctx + 0xC);     // p is clobbered -> honest re-read
+ *          }
+ *
+ *      Applied to BOTH loops (cell Q10) this emits target's ENTIRE instruction
+ *      stream at 127/127: both preheaders as `copy / links load / base add
+ *      reading the copy`, and loop 1's exit tail as target's `lw a0,0xC(s2)`
+ *      instead of our `move`.  There is no instruction-kind, count or ordering
+ *      difference left anywhere in the function.  Score 14 — every point of it
+ *      register identity (ours pointer=$a1, shift=$a0, copy=$v0, links=$a1;
+ *      target $a0/$a1/$a3/$a2).
+ *
+ *  (2) WHY IT CANNOT REACH 0 (E-s23-2, the kill).  The mechanism REQUIRES the
+ *      set of the copy's source, and the only value target computes at that
+ *      point is the links pointer — so the carried pointer and links must be the
+ *      same C local, hence one pseudo, hence one hard register.  Target's
+ *      allocation proves they are two: the pointer is $a0 and DIES at the base
+ *      add (so `base` reuses $a0), while links lives in $a2 through the body.
+ *      With `p` carrying links it is live through the body, conflicts with
+ *      `base`, and `base` can never inherit its register.  S1's `.greg` shows it
+ *      directly (`78 in 4  80 in 5  81 in 5`).  21 tuning cells confirm the
+ *      family is flat at 12-16.  Do not re-open it.
+ *
+ *  (3) THE TRANSFERABLE TOOL (E-s23-3).  global.c's `allocno_compare` priority is
+ *      floor_log2(n_refs) * n_refs / live_length, and BOTH inputs are printed in
+ *      `.lreg`'s per-register header.  Predicting from those numbers that
+ *      splitting `base` into base1/base2 (10/22 -> 5/11) would drop it below `p`
+ *      and hand `p` the $a0 it lacks was CORRECT on the first try (cell S1).
+ *      Hard-register identity on this compiler is therefore steerable and cheap
+ *      to measure — split a variable to lower its priority, fuse uses to raise
+ *      it — and that is the right instrument for any register-identity residual,
+ *      here or elsewhere in the queue.
+ *
+ *  WHAT THIS LEAVES.  V1 (this body) is still the floor at 3.  The residual's
+ *  description is now sharper than at any point in the ledger: there exists a
+ *  pure-C construct that emits target's exact instructions (Q10) and a different
+ *  pure-C construct that emits target's exact registers for 124 of 127
+ *  instructions (this body).  Neither can be both, because Q10's mechanism costs
+ *  the pointer/links pseudo split and V1's mechanism costs the loop-2 copy.  The
+ *  next probe should look for a THIRD producer of a surviving preheader copy
+ *  whose blocking set is NOT the copy's source — i.e. a combine refusal that does
+ *  not need `p` to be re-defined — since that is the single assumption both
+ *  measured families share.
+ */
