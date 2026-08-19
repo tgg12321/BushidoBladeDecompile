@@ -1,8 +1,8 @@
 {
  "func": "func_8001B748",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural session: honest floor 14 -> 2 and build_insns now 231 == target 231; duplicating the tail addend and the >>12 into both use_high arms (sanctioned duplicated-statement-into-arms, merged back"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "permuter",
+   "headline": "Permuter measured dead on the floor-2 residual (3 chassis, ~45 min, ~35k iters, zero sub-60 finds) and control-flow exit forms proven inert; in exchange the divergence is now pinned exactly to sched2'"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last 2 insns - sh zero,0(gp) at ours idx 64 vs target idx 56 - are a pure sched.c list-scheduler priority question with no remaining source-order handle, and are reachable only by changing the store's INSN_PRIORITY or the ready-list rank relative to the (frac_s1*0x9C4)+(inv_s1*0x2710) synth-mult chain.",
-   "mechanism": "A dependence-free store has no forward LOG_LINKS, so priority() gives it the floor value and rank_for_schedule sinks it below every chain insn in the ready list; target's build ranked it above them. Statement order is now exhaustively eliminated (85 moves, 19 ties at 2), and expression-shape changes in the same block only regress.",
-   "next_probe": "FORENSICS modality: run tools/sched_solver (models sched.c exactly per sched-solver-campaign-2026-08-05) on the early-exit basic block of the floor-2 form and ask what input property moves the store 8 slots earlier - specifically whether the gap is priority, the rank_for_schedule tie-break, or a memory anti-dependence edge against the dst stores. The block is small (indices ~53-67), so an exact model run should be decisive."
+   "hypothesis": "The only remaining handle on the sched.c:2461 tie-break is to make INSN_LUID(116) EXCEED INSN_LUID(140) in sched2's input stream (.greg order) WITHOUT changing the relative order of any memory operation - and since sched1 is the pass that normalises the chain below the three halfword stores, the lever is sched1's own ready-list decision, not source statement order.",
+   "mechanism": "sched2 recomputes LUIDs from the .greg stream, which is sched1's output as re-registered by reload/global-alloc. s4 proved that moving the C expression does not change that stream because sched1 re-sinks the chain. So the question becomes: what property of the RTL makes sched1 rank the synth chain BELOW insns 116/119/122/124/127, and is that property source-reachable?",
+   "next_probe": "FORENSICS modality: re-run `BB2_RANK_DEBUG=1 tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel tmp/grind/func_8001B748/s4/base.c -o /dev/null 2> rank.log` and read the FULL 145-line log (s4 only grepped for 116/140). Separate the sched1 decisions from the sched2 decisions, find every decision that places the synth chain relative to insn 116, and record whether each was decided by INSN_PRIORITY, by the class test, or by LUID. If a sched1 decision turns on PRIORITY, the lever is the chain's forward dependence length, which IS source-reachable; if it also turns on LUID, the whole displacement is LUID-locked and the function is a genuine sched-rank-class-tie wall (see .claude/rules/sched-rank-class-tie-wall.md)."
   },
   {
-   "hypothesis": "If the scheduler answer needs a different RTL shape rather than a different order, the lever is which BLOCK the D_800A3310 store lives in - the same block-membership lever that closed the two residuals this session.",
-   "mechanism": "Duplicating a statement into branch arms (or otherwise changing which basic block an expression is emitted in) changed both the local-alloc quantity structure and the scheduler's ready list this session, where pure statement order was inert. The early-exit arm is currently one straight-line block, so the store has nowhere else to go without a new control-flow shape.",
-   "next_probe": "Look for an honest control-flow spelling of the early-exit arm that puts the D_800A3310 store in a different basic block from the 0x9C4/0x2710 chain - e.g. the sanctioned do { ... } while (0) wrap, or an early return restructure - and measure each with sandbox. Do NOT re-run any statement-order permutation; that space is exhausted."
+   "hypothesis": "Give insn 116 a strictly HIGHER INSN_PRIORITY than insn 140 so the sched2 comparator returns at its first test and never reaches the class test or the LUID tie-break.",
+   "mechanism": "priority() in sched.c is the longest path to the end of the block through INSN_DEPEND forward links. Insn 116's forward path runs through the anti/output-dependent memory chain (119 -> 531 -> 127 -> 122/124 -> the dst+0x18 store). If the store had a longer forward dependence chain - or the synth chain a shorter one - the priority comparison would decide the pair and LUID would never be consulted. This is the one axis s4 did NOT probe: s4's variants only moved source position, which changes LUID and live ranges but not the dependence graph's shape.",
+   "next_probe": "Enumerate honest C changes that LENGTHEN the gp store's forward memory-dependence chain without changing emitted memory order - e.g. a read-back of D_800A3310 somewhere the function already needs its value, or reordering only among the dst halfword stores that follow it - and score each with tmp/grind/func_8001B748/s4/score.py (~2 s per variant). If the source-level sweep is inconclusive, instrument priority() the same way rank_for_schedule already is (a BB2_PRIO_DEBUG print of INSN_UID/INSN_PRIORITY per insn); that reveals the exact priority gap to close and whether it is 1 or 10."
   },
   {
-   "hypothesis": "With the floor at 2 and insn count matching, the function is now close enough that a directed permuter campaign seeded on the floor-2 candidate could find the last spelling.",
-   "mechanism": "decomp-permuter's randomised source transforms explore block-membership and expression-shape moves that a hand sweep does not enumerate; the search space is now tiny (one 2-insn hunk in one block).",
-   "next_probe": "PERMUTER modality: import the floor-2 candidate with tools/permuter_campaign.py (mind the nonmatchings scope-break note in memory), run fresh-seed windows per the permuter-fresh-seed-discipline rule, and harvest in-turn. Any find must still pass the 6-test cheat checklist before it is banked."
+   "hypothesis": "The residual is a two-insn ORDERING-ONLY difference at build_insns == target_insns == 231 with every other byte matching, which makes it the archetype of the frozen sched-rank-class-tie wall - so if both probes above come back LUID-locked, the correct next step is a disposition entry, not more spelling search.",
+   "mechanism": "Four distinct axes have now measured this hunk dead: s2/s3 statement order (85 orders, min 2, 19 ties), s3 expression shape, s4 randomised permuter search (~35k iterations, 3 chassis), and s4 control-flow form. s4 attributes the divergence to a single comparator line whose deciding term is INSN_LUID - a quantity source order provably cannot move here, because sched1 normalises it before sched2 sees it.",
+   "next_probe": "Do NOT spend a session re-measuring the four dead axes. Run the two forensics probes above first. Only if BOTH confirm the LUID lock should a session consider the endgame-lock gates - and note that scan_hand_coded's tier for this function has NOT been measured in this grind, so it must be measured before it can be cited, and the owner's standing 2026-07-27 ruling requires the DRIVER to have declared exhaustion (escalation modality) before any disposition is written."
   }
  ],
  "judge_constraints": [],
