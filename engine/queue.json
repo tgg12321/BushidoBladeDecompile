@@ -4,6 +4,15 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 2,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger"
+    },
+    {
       "func": "func_8008C1E8",
       "file": "main",
       "distance": 28,
@@ -113,6 +122,96 @@
       "rules": 15,
       "status": "active",
       "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_80047FBC",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); array form + allowlist row required"
+    },
+    {
+      "func": "func_8002BEA0",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "ASM-PARTIAL",
+      "rules": 7,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: stale set-aside park (digest audit); unspent 2026-07-28 clobber grant decisions.md:1843 likely closes half the residual"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 7,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: F3 compound-address duplication sanctioned (ruling b); closure brief banked"
+    },
+    {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); no (void) shim, first-decl position"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 9,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: F7 store-duplication construct sanctioned (ruling b)"
+    },
+    {
+      "func": "func_80017FA0",
+      "file": "code6cac",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 6,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); frame-forensics prerequisite NOT yet satisfied - honest producers first"
+    },
+    {
+      "func": "func_80044098",
+      "file": "text1a_c",
+      "distance": 13,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: F6 cancellation-pair family sanctioned (ruling b); exact-shape only"
+    },
+    {
+      "func": "file_LoadSectors",
+      "file": "ings",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); banked if(0) candidate is separately REFUSED - do not apply"
+    },
+    {
+      "func": "func_80047EE8",
+      "file": "text1b",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); REDERIVE per brief"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 18,
+      "verdict": "ASM-PARTIAL",
+      "rules": 10,
+      "status": "active",
+      "unpark_note": "UNPARKED 2026-08-18: 2026-08-06/07 rulings supersede the 2026-07-30 park; cop2-cluster membership established (28-member list)"
     },
     {
       "func": "func_80032314",
@@ -1925,15 +2024,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -1941,15 +2031,6 @@
       "rules": 1,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
-    },
-    {
-      "func": "func_80047FBC",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (buf[8]); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80045294",
@@ -1989,15 +2070,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_8002BEA0",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "ASM-PARTIAL",
-      "rules": 7,
-      "status": "parked",
-      "park_reason": "WIP floor 9->4 (worker 670a62bb, reviewer PASS; memory/wip/func_8002BEA0/). GTE-LZCS cluster sibling (func_8001A67C/func_800274BC authorized 2026-06-10); the GTE block is canonical inline asm and matches. Residual floor-4 is a pure-C RA/strength-reduce diff in the /100 division subtree (mfhi  vs target ; delay-slot li vs addiu) -- NOT in the GTE block, so this is compiled C that should match. Same wall class as cpu_check_tubazeri_2. Parked per 50-item-goal set-aside; floor-4 WIP preserved. Resume: pure-C lever for the /100 strength-reduce mfhi-reg + delay-slot, or directed permuter from candidate.c."
-    },
-    {
       "func": "func_800307D0",
       "file": "code6cac_b",
       "distance": 9,
@@ -2023,15 +2095,6 @@
       "rules": 4,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent) across 40 sessions/6 modalities/258k permuter iters; cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 7,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): compound-address duplication refused (no SOTN precedent); 7 rules retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
       "func": "func_800611A4",
@@ -2115,15 +2178,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
     },
     {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +8B (dummy[2]); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 12,
@@ -2131,24 +2185,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): col-a partial-CSE closable only via same-lvalue dual-spelling (refused, no precedent); NO cheat on main, clean floor-4 candidate retained; both endgame-lock gates fail (scan LOW 0/8)"
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27): store-scheduling duplication outside duplicated-statement-into-arms scope (Judge FAIL 2026-07-24 upheld); NO cheat on main, clean floor-4 candidate retained"
-    },
-    {
-      "func": "func_80017FA0",
-      "file": "code6cac",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 6,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 8-byte zero-store phantom leaf frame; fully-dead-pad carrier NOT sanctioned; 6 regfix + _frame/val barriers retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
       "func": "func_80037A20",
@@ -2160,15 +2196,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
-      "func": "func_80044098",
-      "file": "text1a_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): endgame-lock per docs/grind/decisions.md line 1789 \u2014 both gates fail (scan LOW, no SOTN precedent for the fabricated cancellation-pair increment split); terminal park, re-attempt eligible"
-    },
-    {
       "func": "func_80038170",
       "file": "code6cac_c_mid",
       "distance": 14,
@@ -2177,15 +2204,6 @@
       "status": "parked",
       "prologue_fix": 1,
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28): layer-2 cheat-reviewer FAILED both closing constructs (reverse-order zero-inits = order-steering; one-symbol table pair = phantom-frame carrier via addressing expression). Bytes ARE 0-reachable (integration verified, SHA1==oracle) but only via refused families; both endgame-lock gates fail. Cheat retained to hold byte-match, not sanctioned; re-attempt eligible on a non-order-steering, non-frame-trick lever"
-    },
-    {
-      "func": "file_LoadSectors",
-      "file": "ings",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28, option c): SOTN census NEGATIVE on the deleted-call/args-area mechanism; OVERSIZED-LOCALS carve-out satisfied only trivially (partition argument, same defect as func_80017FA0). Both closing families refused; _pad[2] retained to hold byte-match, not sanctioned"
     },
     {
       "func": "func_800481E8",
@@ -2213,24 +2231,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
-      "func": "func_80047EE8",
-      "file": "text1b",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): phantom-frame +32B (sibling); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 10,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-30 \u2014 func_8002EA24 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
       "func": "CD_datasync",
@@ -2307,14 +2307,14 @@
   ],
   "counts": {
     "total": 263,
-    "active": 221,
+    "active": 232,
     "by_status": {
-      "active": 221,
-      "parked": 42
+      "active": 232,
+      "parked": 31
     },
     "by_verdict": {
-      "C": 184,
-      "ASM-PARTIAL": 37
+      "C": 193,
+      "ASM-PARTIAL": 39
     }
   }
 }
