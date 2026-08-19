@@ -287,3 +287,96 @@ and `*(ptr + i)` spellings of the D_80094DF0 load (they keep the hoist).
 - probe: Campaign A `s5-intaddr` on the integer-arithmetic address chassis (base = v2, 6 jobs, 20303 iterations / 664 s, base weighted score 70) and campaign B `s5-ptrtemp` on the pointer-temp chassis (base = v6, 8 jobs, 18966 iterations / 563 s, base weighted score 70), both launched and harvested through tools/permuter_campaign.py with telemetry, both waited on IN-turn via `wait`, both STOPPED in-session under the fresh-seed rule. Every find re-measured in the real chassis with `sandbox --disable all`.
 - result: Each campaign produced exactly ONE find, both inside the first 10 seconds (A: output-65-1 at 7.4 s; B: output-65-1 at 9.9 s), then nothing for the remaining ~9 minutes — the fresh-seed exhaustion signature. Both finds are EXACTLY INERT at 11 / 135 in the real chassis: A's is the function-scope `s32 sym_base = (s32)&D_800A9A24;` consumed as `sym_base + off` (the s32 twin of the `u8 *` form s4 already killed), B's is the artifact spelling `((u8 *)(&D_800A9A24)) - (-off)`. As in s4 the weighted-score gain (70 -> 65) is an artifact of the permuter's own scorer, not a byte change.
 - verdict: KILLED
+
+## [s6] forensics — hypothesis log
+
+### H-s6-1 — "the $a1 theft can be broken by making $a1 LIVE inside `off`'s range"
+(inherited from s3 frontier item 1, restated by s4 as "the remaining escape is a
+CONFLICT, not a preference")
+- Probe: instrumented cc1 (BB2_SUGG_DEBUG/BB2_QTY_DEBUG) on the floor-11 chassis +
+  read of find_free_reg (local-alloc.c:2168-2172).
+- Result: `off` (pseudo 130) has born=6 dead=12, i.e. exactly three RTL insns —
+  189 (`sll`), 192 (`idx++`), 227 (`a0 = fp+24`). The conflict scan is half-open, so
+  the $a1-setting insn at index 12 is excluded by construction, and `used` comes back
+  {0,1,4,26..67} with reg 5 absent. Inserting an $a1 use into that window costs an
+  instruction target does not have; extending `off` past index 12 crosses the
+  LoadImage call and flips `used` to call_used_reg_set, which excludes $v0 too.
+- Verdict: **KILLED.** Both ends of the conflict route are closed.
+
+### H-s6-2 — "in a cross-block regime, commuting the address sum moves global.c's
+hard-reg preference off `off` (set_preference only looks at XEXP(src,0))"
+- Probe: read global.c:1680-1745, then build `off + (u8 *)&D_800A9A24` and dump
+  .lreg with the canonical cc1 (tmp/grind/func_80041BF4/s6/rtlord.sh).
+- Result: the premise about set_preference is TRUE (it reduces a non-REG src to its
+  first operand), but the lever is unreachable: the RTL is byte-identical for both C
+  operand orders — `(plus:SI (reg/v:SI 130) (reg:SI 140))`, `;; Register 130 in 5.`
+  The symbol is force_reg'd into its own pseudo by expand in a separate preceding
+  insn (.cse insn 223), so `off` is always operand 0 of the sum regardless of how the
+  C is written.
+- Verdict: **KILLED.** This also supplies the missing mechanism for s4's observation
+  that global.c re-derives the same preference in every cross-block form.
+
+### H-s6-3 — "combine.c is the pass that produces the divergence-causing fact"
+- Probe: side-by-side of the .flow and .combine dumps at insn 225/229.
+- Result: CONFIRMED. .flow carries `(set (reg 139) (plus 130 140))` +
+  `(set (reg 5 a1) (reg 139))`; .combine carries the single merged
+  `(set (reg 5 a1) (plus (reg 130) (reg 140)))`. local-alloc and global.c are
+  consumers of that fact, not its authors.
+- Verdict: **CONFIRMED** (pass attribution corrected for the whole ledger).
+
+### H-s6-4 — "even if pseudo 140 were block-local it would lose the race for $a1"
+- Probe: read qty_sugg_compare (local-alloc.c) and apply it to the measured numbers.
+- Result: FALSIFIED — 140 would WIN. Both qtys would carry nsugg=1 (first sort key a
+  tie), and the priority key `floor_log2(n_refs)*n_refs*size/(death-birth)*10000`
+  gives a short-lived 140 60000 against `off`'s measured 20000; higher priority is
+  allocated first. 140 takes $a1, `off` falls to the plain REG_ALLOC_ORDER pass and
+  its first free register is $v0 — target exactly, including the
+  `addu $a1,$v0,$a1` operand shape.
+- Verdict: **KILLED as an objection**; the frontier item survives with a numeric
+  prediction a future session can check in one build.
+
+### Frontier after s6 — ONE item, unchanged in target but now fully instrumented
+Stop loop.c's move_movables from hoisting insn 327,
+`(set (reg:SI 140) (symbol_ref/v:SI ("D_800A9A24")))`, out of the inner loop body.
+Everything downstream of that is now measured or derived (H-s6-4). s5 closed the
+NAMING route (any C name for the loop-invariant address lengthens its live range to
+whole-function and costs 5 insns via $s8 eviction), so the change must come from the
+movable's CLASSIFICATION, not from a declaration. Unprobed sub-questions, in order:
+  (a) loop.c's own dump (`-dL` / the loop_dump_stream "savings N" lines) is NOT in the
+      -da set that tools/grinder/dump.ps1 produces; getting move_movables' per-movable
+      log for this loop is the single highest-value unread artifact left. Check
+      whether cc1 can be invoked with the loop dump enabled without editing tools/.
+  (b) the gate is `already_moved[regno] || (threshold * savings * m->lifetime) >=
+      insn_count || (m->forces && m->forces->done && n_times_used[...] == 1)`
+      (loop.c:1631) with threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs);
+      the inner loop HAS calls, so threshold is ~31 and the product dwarfs
+      insn_count=37. The reachable-from-C fields are `savings` and `lifetime`, not
+      `threshold`.
+  (c) whether any C form makes the address non-invariant WITHOUT an opaque-arithmetic
+      construct. If the honest answer is no, this axis is dead and the function
+      should move to the `rederive` / `synthesis` modality rather than more
+      allocation work.
+
+## [s6] The $a1 theft from `off` can be broken by making $a1 LIVE inside `off`'s live range (s3 frontier item 1, restated by s4 as 'the remaining escape is a CONFLICT, not a preference').
+- mechanism: find_free_reg excludes any hard reg present in regs_live_at[ins] for ins in [born_index, dead_index) (local-alloc.c:2168-2172); if $a1 were live in that window the just_try_suggested pass would fail and `off` would fall through to the plain REG_ALLOC_ORDER pass.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1) on the floor-11 chassis, plus a read of find_free_reg. Raw output: tmp/grind/func_80041BF4/s6/sugg_base.txt.
+- result: SUGGDBG-QTY blk=10 qty=0 reg1=130 birth=6 death=12 refs=6 nsugg=1 sugg=5, ncopysugg=0; SUGGDBG-FFR used=0,1,4,26..67 (hard reg 5 ABSENT); QTYDBG-SUGG ord=5 got=5. `off`'s range is exactly three RTL insns (189 sll, 192 idx++, 227 a0=fp+24); the $a1-setting insn is the death insn at index 12 and the scan is half-open, so $a1 can never appear in `used`. Adding an $a1 use inside that window costs an instruction target does not have; extending the death past index 12 necessarily crosses the LoadImage call, which flips `used` to call_used_reg_set and excludes $v0 as well.
+- verdict: KILLED
+
+## [s6] In a cross-block regime for `off`, commuting the address sum in C moves global.c's hard-reg preference off `off`, because set_preference inspects only the FIRST operand of a non-REG src.
+- mechanism: global.c:1680 `if (GET_RTX_FORMAT (GET_CODE (src))[0] == 'e') src = XEXP (src, 0), copy = 0;` — for a (plus A B) only A can receive the preference toward the hard destination.
+- probe: Read global.c:1660-1745, then built `off + (u8 *)&D_800A9A24` (banked as rejected/loadimage-address-commuted-c-order-does-not-reach-rtl.c) and dumped .lreg with the canonical cc1 via tmp/grind/func_80041BF4/s6/rtlord.sh.
+- result: The premise about set_preference is TRUE but the lever is unreachable: both C operand orders give byte-identical RTL — `(plus:SI (reg/v:SI 130) (reg:SI 140))` with `;; Register 130 in 5.` The symbol is force_reg'd into its own pseudo by expand in a separate preceding insn (visible as insn 223 in .cse), so `off` is always operand 0 of the sum however the C is written. This also supplies the missing mechanism behind s4's observation that global.c re-derives the same preference in every cross-block form.
+- verdict: KILLED
+
+## [s6] combine.c — not local-alloc.c or global.c — is the pass that produces the fact both allocators consume (`off` is a direct register source of a set whose destination is hard reg $a1).
+- mechanism: combine propagates the address-sum pseudo into the following hard-register argument move and deletes the intermediate copy.
+- probe: Side-by-side read of tmp/grind/func_80041BF4/dumps/text1a_post.flow and .combine at insns 225/229.
+- result: CONFIRMED. .flow carries `(insn 225 (set (reg:SI 139) (plus (reg/v:SI 130) (reg:SI 140))))` plus `(insn 229 (set (reg:SI 5 a1) (reg:SI 139)))`; .combine carries the single merged `(insn 229 (set (reg:SI 5 a1) (plus (reg/v:SI 130) (reg:SI 140))))` with insn 225 deleted. Every prior session attributed this to the allocators, which are only consumers of the fact.
+- verdict: CONFIRMED
+
+## [s6] Even if pseudo 140 (the D_800A9A24 symbol_ref) were made block-local, it would lose the race for $a1 against `off`, so the surviving loop.c frontier item is not worth pursuing.
+- mechanism: block_alloc orders quantities with qty_sugg_compare: fewer suggestions first (sugg = ncopysugg ? ncopysugg : nsugg * FIRST_PSEUDO_REGISTER), then priority = floor_log2(n_refs) * n_refs * size / (death - birth) * 10000, higher priority allocated first.
+- probe: Read qty_sugg_compare in local-alloc.c and applied it to the measured block-10 numbers (`off`: refs=6, death-birth=6; a block-local symbol pseudo would carry the same loop-depth-weighted refs=6 over a 2-index range).
+- result: FALSIFIED — 140 would WIN. Both tie at nsugg=1 on the first key; on the priority key 140 scores floor_log2(6)*6/2*10000 = 60000 against `off`'s measured floor_log2(6)*6/6*10000 = 20000. 140 takes $a1, `off` then fails the just_try_suggested pass and the plain REG_ALLOC_ORDER pass hands it the first free register, $v0 — target's assignment exactly, and it also reproduces target's `lui $a1 / addiu $a1 / addu $a1,$v0,$a1` operand shape.
+- verdict: KILLED

@@ -1,18 +1,3 @@
-/* [s6] forensics session: floor UNCHANGED at 11 (re-measured on today's HEAD).
- * This form is still the best known. s6 corrected the ledger's pass attribution
- * (combine.c, not local-alloc/global.c, is what makes `off` a direct register
- * source of the hard-$a1 set: .flow has the copy, .combine has it merged), and
- * killed the two remaining allocation-side escapes: (a) making $a1 live inside
- * `off`'s range is impossible - the measured range is exactly three insns and
- * find_free_reg's scan is half-open, so the $a1 set is excluded by construction,
- * and any extension crosses the LoadImage call and loses $v0 too; (b) global.c's
- * set_preference only inspects XEXP(src,0), but the RTL operand order is not
- * C-controllable - both source orders of the address sum produce identical .lreg.
- * s6 also PROVED that the one remaining frontier item would work if reachable:
- * a block-local symbol pseudo beats `off` on qty_sugg_compare's priority key
- * (60000 vs the measured 20000) and would push `off` to $v0 - target exactly.
- * The only obstacle is loop.c's hoist. See hypotheses.md [s6].
- */
 /* [s5] permuter session: floor UNCHANGED at 11. This form is still the best
  * known. s5 killed three things and banked seven rejected forms: (a) naming
  * the D_800A9A24 base in a block-local pointer inside the loop body is 5 insns
@@ -116,7 +101,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
     rect[2] = 0x10;
     rect[3] = 1;
-    LoadImage((s32)rect, (s32)((u8 *)&D_800A9A24 + off));
+    LoadImage((s32)rect, (s32)(off + (u8 *)&D_800A9A24));
     DrawSync(0);
     tbl += 2;
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);

@@ -576,3 +576,131 @@ sugg_base.txt, sugg_vA.txt, sugg_vB.txt, ws/campaign.log, ws/output-*).
 - [s5] Reusable infra now exists at tmp/grind/func_80041BF4/s5/: mkwsA.sh / mkwsB.sh build chassis-faithful permuter workspaces from whatever is in src/text1a_post.c; apply.py splices a candidate .c body into src (LF-safe, strips the candidate header comment so no prose lands in src); cmp.sh emits the normalized objdump diff against target.o.
 
 - [s5] The residual 11 is unchanged in kind from s4: `off` (pseudo 129) in $a1 plus four downstream renames, with zero ordering divergence. The banked floor-11 constant holder for the trailing `== 1` test remains UNVETTED and was NOT spent this session.
+
+## [s6] forensics modality — floor UNCHANGED at 11 (135/135), three hypotheses killed, the frontier item numerically sharpened
+
+- [s6] CHASSIS RE-MEASURED at dispatch AND at the end of the session: applying
+  memory/grind/func_80041BF4/candidate.c to src/text1a_post.c gives
+  `sandbox --disable all` = 11 at 135/135 insns, frame 88. The dispatch brief
+  reported "measurement unavailable"; the real number is 11, identical to the s4/s5
+  ledger floor. Nothing in the chassis moved.
+
+- [s6] PASS ATTRIBUTION CORRECTED — the pass that creates the divergence-producing
+  fact is **combine.c**, not local-alloc/global.c (which are only its consumers).
+  Read from the -da dumps in tmp/grind/func_80041BF4/dumps/:
+  `.flow` still has TWO insns — `(insn 225 (set (reg:SI 139) (plus (reg/v:SI 130)
+  (reg:SI 140))))` and `(insn 229 (set (reg:SI 5 a1) (reg:SI 139)))`;
+  `.combine` has ONE — `(insn 229 (set (reg:SI 5 a1) (plus (reg/v:SI 130)
+  (reg:SI 140))))`, insn 225 deleted. So combine.c propagates the address sum
+  directly into the hard-register argument set, and THAT is what makes `off`
+  (pseudo 130) a direct register source of a set whose destination is $a1 —
+  the single fact both allocators consume. Every prior session attributed this to
+  local-alloc.c/global.c.
+
+- [s6] Pseudo map on the floor-11 chassis (differs from the s3/s4 numbering — always
+  re-read it, never quote the old numbers): 130 = `off`, 140 = the D_800A9A24
+  symbol_ref pseudo (hoisted out of BOTH loops by loop.c as insn 327, left
+  unallocated, rematerialized by reload via its REG_EQUIV), 139 = the pre-combine
+  address sum (deleted by combine), 84 = `idx`, 142/145 = the func_80048A7C
+  arg temps.
+
+- [s6] Instrumented-cc1 measurement on the floor-11 chassis (tools/gcc-2.7.2/cc1,
+  BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1; raw in tmp/grind/func_80041BF4/s6/sugg_base.txt):
+    SUGGDBG-QTY blk=10 qty=0 reg1=130 birth=6 death=12 refs=6 nsugg=1 sugg=5, ncopysugg=0
+    SUGGDBG-FFR qty=0 class=1 jts=1 born=6 dead=12 used=0,1,4,26..67
+    QTYDBG-SUGG blk=10 ord=5 qty=0 reg1=130 got=5
+  `used` for `off` does NOT contain hard reg 5, so the $a1 suggestion is honored on
+  the just_try_suggested pass. The only other suggested qtys in block 10 are
+  reg 142 (copysugg $a0, birth 36) and reg 145 (copysugg $a1, birth 38) — the
+  func_80048A7C argument temps — and their ranges are disjoint from `off`'s, which
+  is why they do not block it.
+
+- [s6] KILLED — the "make $a1 LIVE inside `off`'s range" escape (s3 frontier item 1,
+  restated by s4 as "the remaining escape is a CONFLICT, not a preference").
+  find_free_reg's conflict scan is `for (ins = born_index; ins < dead_index; ins++)`
+  (local-alloc.c:2170) and `off`'s measured range is [6,12) = exactly three RTL
+  insns: 189 (`sll` computing off), 192 (`idx++`), 227 (`a0 = fp+24`). The insn that
+  sets $a1 IS the death insn (index 12) and the scan is half-open, so it is excluded
+  by construction. Closing the escape therefore requires either (a) inserting a real
+  $a1-touching instruction between the shift and the LoadImage argument setup — target
+  has no such instruction, so any such form is >= +1 insn — or (b) extending `off`'s
+  death past insn 229, which necessarily puts it across the LoadImage call, flipping
+  `used` from fixed_reg_set to call_used_reg_set (local-alloc.c:2166-2168) and
+  excluding $v0 as well as $a1. Both ends are closed; this axis is dead.
+
+- [s6] KILLED — the global.c operand-order escape, and with it the mechanism behind
+  s4's "global.c re-derives the same preference independently". global.c's
+  set_preference (global.c:1680) begins
+  `if (GET_RTX_FORMAT (GET_CODE (src))[0] == 'e') src = XEXP (src, 0), copy = 0;`
+  — for a PLUS it looks at the FIRST operand ONLY. So in any cross-block regime the
+  hard-reg preference attaches to whichever pseudo is operand 0 of the plus, and
+  putting the symbol pseudo there would move the preference off `off`. MEASURED: the
+  RTL operand order is NOT C-controllable. Writing `off + (u8 *)&D_800A9A24` instead
+  of `(u8 *)&D_800A9A24 + off` yields a byte-identical .lreg — still
+  `(plus:SI (reg/v:SI 130) (reg:SI 140))` and still `;; Register 130 in 5.` The
+  symbol is force_reg'd by expand into its own pseudo in a separate preceding insn
+  (visible as insn 223 in the .cse dump, before loop.c hoists it), so `off` is always
+  operand 0 of the sum. Banked as
+  rejected/loadimage-address-commuted-c-order-does-not-reach-rtl.c.
+
+- [s6] Local-alloc is operand-order-IMMUNE for the same question, independently:
+  block_alloc's tying loop (local-alloc.c:1240-1298) scans i = 1..n_operands and
+  combine_regs RETURNS 0 on the hard-reg-suggestion path (local-alloc.c:1880-1882),
+  so `win` never breaks the loop and every register operand of the plus is offered a
+  suggestion. Pseudo 140 escapes only because it is hoisted and therefore has
+  reg_qty < 0, which combine_regs rejects at local-alloc.c:1826.
+
+- [s6] MECHANISM for why every s5 named-intermediate form measured exactly inert:
+  combine_regs ties two pseudos only when
+  `(already_dead || find_regno_note (insn, REG_DEAD, ureg))` (local-alloc.c:1917).
+  `off` always carries a REG_DEAD note at the address sum, so an interposed
+  intermediate is tied into `off`'s quantity, and a quantity's suggestions are shared
+  by every register in it. Naming the sum can therefore never separate `off` from the
+  $a1 suggestion.
+
+- [s6] FRONTIER ITEM SHARPENED WITH NUMBERS — "make pseudo 140 block-local so it
+  competes for $a1" is now known to WIN if it can be achieved. block_alloc orders
+  quantities with qty_sugg_compare (local-alloc.c): fewer suggestions first
+  (`sugg = ncopysugg ? ncopysugg : nsugg * FIRST_PSEUDO_REGISTER`), then
+  `pri = floor_log2(n_refs) * n_refs * size / (death - birth) * 10000`, higher first.
+  A block-local 140 would carry nsugg=1 (tie with `off` on the first key) and its
+  refs would be weighted the same way `off`'s are (measured refs=6 for two textual
+  references, i.e. flow.c's loop-depth weighting at depth 3), giving
+  pri = floor_log2(6)*6/2 * 10000 = 60000 against `off`'s
+  floor_log2(6)*6/6 * 10000 = 20000. 140 would be allocated FIRST, take $a1, and
+  `off` would then fail the just_try_suggested pass and fall to the plain
+  REG_ALLOC_ORDER pass whose first free register (used = {0,1,4,5,26..67}) is $v0 —
+  which is target's assignment exactly, and it also reproduces target's
+  `lui $a1 / addiu $a1 / addu $a1,$v0,$a1` operand shape. The ONLY thing standing in
+  the way is loop.c's hoist of insn 327; everything downstream of un-hoisting is now
+  measured or derived rather than hoped for.
+
+- [s6] Artifacts: tmp/grind/func_80041BF4/s6/ (ex.sh dump-region extractor, sugg.sh
+  instrumented-cc1 runner, rtlord.sh per-variant .lreg operand-order dumper,
+  sugg_base.txt, loop.txt, lreg.txt, combine.txt, flow.txt, cse.txt,
+  lreg_commute.txt, v_commute.c) plus the full -da set in
+  tmp/grind/func_80041BF4/dumps/.
+
+- [s6] Chassis re-measured at dispatch AND again at the end of the session: memory/grind/func_80041BF4/candidate.c applied to src/text1a_post.c scores `sandbox --disable all` = 11 at 135/135 insns, frame 88. The dispatch brief reported 'measurement unavailable'; the real HEAD floor is 11, identical to the s4/s5 ledger.
+
+- [s6] Pass attribution for this function is now READ rather than guessed: combine.c merges the address-sum copy into the hard-$a1 argument set (.flow has two insns, .combine has one). local-alloc.c and global.c consume that fact; they do not create it.
+
+- [s6] Pseudo map on the floor-11 chassis (DIFFERENT from the s3/s4 numbering — always re-read it): 130 = `off`, 140 = the D_800A9A24 symbol_ref pseudo (hoisted out of both loops by loop.c as insn 327, left unallocated, rematerialized by reload via REG_EQUIV), 139 = the pre-combine address sum (deleted by combine), 84 = `idx`, 142/145 = the func_80048A7C argument temps.
+
+- [s6] Measured block-10 suggestion table on the floor-11 chassis: qty0 reg1=130 birth=6 death=12 refs=6 nsugg=1 sugg={5} ncopysugg=0, allocated at ord=5, got=5. The only other suggested qtys in that block are reg 142 (copysugg $a0, birth 36) and reg 145 (copysugg $a1, birth 38) — the func_80048A7C argument temps — and their ranges are disjoint from `off`'s, which is why they do not block it.
+
+- [s6] find_free_reg's conflict set for `off` came back used={0,1,4,26..67} — hard reg 5 is absent, so the $a1 suggestion is honored on the first (just_try_suggested) pass.
+
+- [s6] `off`'s live range is exactly three RTL insns — 189 (`sll` computing off), 192 (`idx++`), 227 (`a0 = fp+24`) — and find_free_reg's scan `for (ins = born_index; ins < dead_index; ins++)` is half-open, so the $a1-setting insn is excluded by construction. The conflict route is therefore closed at both ends.
+
+- [s6] The RTL operand order of the address sum is NOT C-controllable: `off + (u8 *)&D_800A9A24` and `(u8 *)&D_800A9A24 + off` produce byte-identical .lreg — `(plus:SI (reg/v:SI 130) (reg:SI 140))` and `;; Register 130 in 5.` The symbol is force_reg'd by expand into its own pseudo in a separate preceding insn (insn 223 in .cse), so `off` is always operand 0.
+
+- [s6] Both allocators are operand-order-immune for this question: local-alloc's block_alloc scans every register operand (combine_regs returns 0 on the hard-reg-suggestion path at local-alloc.c:1880-1882, so `win` never breaks the loop), and global.c's order is fixed by the expand-time RTL shape just measured. Pseudo 140 escapes the suggestion only because it is hoisted and therefore has reg_qty < 0, rejected at local-alloc.c:1826.
+
+- [s6] MECHANISM for s5's inert named-intermediate results: combine_regs ties two pseudos only when `(already_dead || find_regno_note (insn, REG_DEAD, ureg))` (local-alloc.c:1917). `off` always carries a REG_DEAD note at the address sum, so any interposed intermediate is tied into `off`'s quantity, and a quantity's suggestions are shared by every register in it. Naming the sum can never separate `off` from the $a1 suggestion.
+
+- [s6] The surviving frontier item is now numerically PROVEN sufficient rather than hoped for: a block-local symbol pseudo beats `off` on qty_sugg_compare's priority key (60000 vs the measured 20000) after tying on the suggestion-count key, takes $a1, and pushes `off` to $v0 — target's exact allocation.
+
+- [s6] loop.c's move_movables per-movable log is NOT in the -da dump set that tools/grinder/dump.ps1 produces (loop_dump_stream is the separate -dL stream). It is the single highest-value unread artifact left for this function.
+
+- [s6] One form banked this session: rejected/loadimage-address-commuted-c-order-does-not-reach-rtl.c (the C operand order of the address sum does not reach the RTL).
