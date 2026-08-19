@@ -96,7 +96,79 @@ def validate_self_vet(root, func):
             if not _CITATION.search(pr):
                 return False, (f"self_vet.md PRECEDENT {pr.strip()!r} is not a citation — "
                                "give file:line or a commit hash ('same spirit' does not count)")
+        # Citation hygiene (2026-08-19 audit: 1/3 of layer-1 FAILs were
+        # right-construct/wrong-paperwork; func_800453E0 FAILed purely on a
+        # nonexistent rule file). Cheap, deterministic, pre-Judge:
+        # (a) every repo-path citation must resolve to a real file;
+        for pr in precs:
+            for m in _CITATION.finditer(pr):
+                if not m.group(1):
+                    continue  # commit hash — skip
+                path = m.group(1).rsplit(":", 1)[0].replace("\\", "/")
+                while path.startswith("./"):
+                    path = path[2:]
+                if _is_repo_shaped_citation(path) and \
+                        not os.path.isfile(os.path.join(root, path)):
+                    return False, (f"self_vet.md PRECEDENT cites {path!r}, which does not "
+                                   "exist in the repo — an unresolvable citation is an "
+                                   "automatic FAIL at review; fix the citation (or cite a "
+                                   "commit hash) before candidate-ready")
+        # (b) a claimed family whose rule mandates a /* FAKE */ annotation
+        #     cannot ship with ANNOTATION-CONFORMANCE "n/a" (func_80034F88
+        #     FAILed exactly this way, asserting the family had no requirement).
+        ann = _ANNOTATION_LINE.search(txt)
+        ann_txt = ann.group(1).strip().lower() if ann else ""
+        if ann_txt.startswith("n/a"):
+            for fam in fams:
+                fl = fam.lower()
+                hit = next((slug for slug, keys in _FAKE_MANDATORY_FAMILIES.items()
+                            if any(k in fl for k in keys)), None)
+                if hit:
+                    return False, (f"self_vet.md claims family {fam.strip()!r}, whose rule "
+                                   f"({hit}) MANDATES a /* FAKE: ... */ annotation, but "
+                                   "ANNOTATION-CONFORMANCE says 'n/a' — annotate the "
+                                   "construct (what + mechanism + lever-exhaustion) or drop "
+                                   "the family claim")
     return True, ""
+
+
+_REPO_TOPDIRS = {".claude", "docs", "memory", "tools", "engine", "asm"}
+
+
+def _is_repo_shaped_citation(path):
+    """True only for paths that are unambiguously THIS repo's — never for
+    external-project precedents (SOTN cites like src/main/psxsdk/... or
+    src/dra/42398.c are legitimate and must not be existence-checked).
+    BB2's src/ and include/ are FLAT, so a src|include path counts as
+    repo-shaped only with exactly one path segment after the topdir."""
+    parts = path.split("/")
+    top = parts[0]
+    if top in _REPO_TOPDIRS:
+        return True
+    if top in ("src", "include"):
+        return len(parts) == 2
+    return False
+# Families whose rule files mandate a /* FAKE */ annotation, keyed by rule slug,
+# matched against the vet's FAMILY: line by keyword (family names are free
+# text). Sourced from .claude/rules/no-new-park-categories.md prerequisites —
+# update BOTH places if a family's annotation requirement ever changes.
+_FAKE_MANDATORY_FAMILIES = {
+    "dead-store-fake-exception": ("dead-store", "dead store", "self-assign"),
+    "named-local-fake-exception": ("named-local", "constant-holder",
+                                   "constant holder", "dead scalar"),
+    "pointer-alias-fake-exception": ("pointer-alias", "pointer alias"),
+    "duplicated-statement-into-arms": ("duplicated-statement",
+                                       "duplicated statement"),
+    "dead-vars-local-array": ("local array", "dead-vars", "written-never-read",
+                              "pad local", "frame pad"),
+    "do-while-zero-exception": ("do-while", "do while", "while (0)", "while(0)"),
+    "staged-value-reused-variable": ("staged-value", "staged value"),
+    "defeat-licm-hoist-var-reuse": ("variable reuse", "variable-reuse",
+                                    "var-reuse", "licm"),
+    "narrow-byte-args-packed-call": ("named-intermediate",
+                                     "named intermediate"),
+}
+_ANNOTATION_LINE = re.compile(r"(?im)^\s*ANNOTATION-CONFORMANCE\s*:\s*(.+)$")
 
 
 def _declared_constructs(root, func):

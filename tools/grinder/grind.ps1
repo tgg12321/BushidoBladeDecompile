@@ -310,6 +310,15 @@ that does not check out is a FAIL, not a rounding error.
 Write your verdict JSON (the schema in your role prompt: decision / function /
 summary / evidence / next_action) to the exact path below. Write NOTHING else to
 disk — you are read-only on the repo.
+
+One additional field: if your decision is FAIL and the ONLY defect is a
+resolvable citation error — the construct itself genuinely sits inside a
+sanctioned family YOU verified, but the vet filed it under the wrong family,
+cited the wrong precedent line, or cited a dead path — add "citation_only":
+true and name the CORRECT citation in next_action. That routes the worker to a
+one-comment re-cite instead of a full re-grind, with no construct ban. Use it
+ONLY when you verified the correct family's own prerequisites hold for the
+construct as written; a construct you actually object to is a normal FAIL.
 "@
     Set-Content $briefPath -Value $task -Encoding utf8
     $v = $null
@@ -471,6 +480,18 @@ function Set-FailRouting([string]$func, $v) {
         Log "${func}: FAIL ground = ANNOTATION-FORMAT — next session routed to the fix-up brief (comment only)."
         return 'annotation'
     }
+    if ($ground -eq 'CITATION') {
+        # 2026-08-19 audit: 1/3 of layer-1 FAILs were right-construct/wrong-
+        # citation. A construct the reviewer VERIFIED sits in a sanctioned
+        # family, mis-filed under a neighbor, costs a one-brief re-cite, not a
+        # re-grind. No construct ban (the construct is fine), no modality
+        # advance (the attack was right).
+        $detail = if ($v.constraint) { [string]$v.constraint } else { [string]$v.justification }
+        $detail = $detail.Substring(0, [Math]::Min(600, $detail.Length))
+        python tools/grinder/grindlib.py fixup . $func 'citation' $detail | Out-Null
+        Log "${func}: FAIL ground = CITATION — next session routed to the fix-up brief (re-cite only)."
+        return 'citation'
+    }
     $banned = ''
     if ($v.banned_construct) { $banned = [string]$v.banned_construct }
     elseif ($ground -eq 'CONSTRUCT' -and $v.constraint) { $banned = [string]$v.constraint }
@@ -607,6 +628,24 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     # banned and the modality advanced. Sandbox has already proven the honest
     # distance is 0, so nothing about the bytes is lost by rejecting here.
     $l1 = Invoke-Layer1 $func $stem ((git -C $Root diff -- "src/$stem.c" | Out-String))
+    if ($l1 -and $l1.decision -eq 'FAIL' -and $l1.citation_only) {
+        # Right construct, wrong paperwork (2026-08-19 audit). One-brief re-cite:
+        # no construct ban, no modality advance, no Judge cycle. The candidate
+        # source is reverted like any FAIL — the fix-up session re-emits it with
+        # the corrected citation and the full gate chain re-runs.
+        $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'citation defect' }
+        Record-Review $func 'layer1' 'FAIL' 'citation'
+        Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-citation-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
+        Revert-SessionEdits
+        $detail = "$l1Summary $(if ($l1.next_action) { [string]$l1.next_action })"
+        python tools/grinder/grindlib.py fixup . $func 'citation' $detail.Substring(0, [Math]::Min(600, $detail.Length)) | Out-Null
+        Add-Decision $func 'layer-1 review' 'FAIL (citation-only)' $l1Summary
+        Journal "${func}: LAYER-1 citation-only FAIL — routed to re-cite fix-up (no ban, no Judge cycle): $l1Summary"
+        Log "${func}: LAYER-1 citation-only FAIL — fix-up brief queued."
+        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root commit -m "grind: $func layer-1 citation fix-up queued [skip-park-src-guard]" 2>$null | Out-Null
+        return
+    }
     if ($l1 -and $l1.decision -eq 'FAIL') {
         $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'layer-1 cheat-reviewer FAIL' }
         $l1Constructs = @($l1.evidence | ForEach-Object { [string]$_.construct } | Where-Object { $_ })

@@ -97,6 +97,36 @@ written-never-read local array · type-level MMIO volatile (0x1F801000-0x1F802FF
 > (`for (i=0;i<1;i++)`, `while(1){...;break;}`, `if (1) { }` for the do-while(0)
 > carve-out) are NOT sanctioned by that carve-out's existence.
 
+### Family-selection table (pick the RIGHT file BEFORE writing the vet)
+One-third of recent layer-1 FAILs were right-construct/wrong-citation (audit
+2026-08-19). Match your construct's SHAPE to the row, then read THAT rule file
+end-to-end — the scope sentence you must quote and the prerequisites live
+there, and neighboring families are NOT interchangeable:
+
+| Your construct's shape | Family + rule file | Hard bounds (read the file — this column is not exhaustive) |
+|---|---|---|
+| Borrow an EXISTING local for a second unrelated value | variable-reuse — `.claude/rules/defeat-licm-hoist-var-reuse.md`; borrows gated by `.claude/rules/staged-value-reused-variable.md` | bound 2: INVENTING a local to borrow is NOT this family — excluded quadrant, no last-carrier escape. FAKE required. |
+| FRESH local, once-written once-read, real consumed value | named-intermediate — `.claude/rules/narrow-byte-args-packed-call.md` + 2026-08-17 clarification in `no-new-park-categories.md` | 6 prongs: once-written/once-read (multi-write = NOT this), real value in target's bytes, byte-neutral, fresh not borrowed, dest not live-pre-initialized, FAKE + dumps. |
+| Same-value re-store / self-assign of a LOCAL or PARAM | dead-store — `.claude/rules/dead-store-fake-exception.md` | LOCALS/PARAMS only; dropped before final; FAKE required; do NOT cite duplicated-statement-into-arms for this shape. |
+| `s32 three = 3;`-style constant holder / dead scalar | constant-holder — `.claude/rules/named-local-fake-exception.md` | scalars only, arrays/frame coercion forbidden; FAKE required. |
+| Pointer local to a global (`T *p = &D_x;`) | pointer-alias — `.claude/rules/pointer-alias-fake-exception.md` | FAKE required on EVERY alias (prereq 3); `asm("Sym")` renames remain forbidden. |
+| A REAL statement duplicated into 2+ arms | duplicated-statement — `.claude/rules/duplicated-statement-into-arms.md` | statement must be real + byte-neutral re-merge; a same-value re-store is dead-store, not this. FAKE required. |
+| Local array written-never-read / leading pad | dead array/pad — `.claude/rules/dead-vars-local-array.md` (+ 2026-08-17 re-scope: unwritten volatile leading pad) | target bytes must contain the dead stores (oracle-enforced); volatile + FAKE; `(void)&local` forbidden. |
+| `do { } while (0);` wrap | `.claude/rules/do-while-zero-exception.md` | LABEL_OUTSIDE_LOOP_P / reorg.c interaction ONLY; FAKE required; for/while/if equivalents NOT sanctioned. |
+| Merging splat per-word `D_x` scalars into a struct | aggregate merge — `no-new-park-categories.md` 2026-08-17 entry | 5 prongs; prong (a) needs base-register or stride evidence, NOT adjacency (splat-symbol-names-are-not-evidence); header-canonical, complete, never TU-local. |
+| Sub-word read of a local/param | `.claude/rules/narrow-stack-param-subword-offset.md` | ordinary C; no FAKE needed. |
+| `goto endK` mixed with inline `return` | `.claude/rules/cross-jump-store-tail-merge.md` | ordinary C; no FAKE needed. |
+| Duplicate READ into branch arms | `.claude/rules/split-read-defeats-hoist.md` | reads, not stores; stores go to dead-store. |
+| `volatile` on a global | MMIO range → `.claude/rules/mmio-volatile-type-level.md` (no annotation). Game-state RAM → `.claude/rules/legitimate-volatile-interrupt-touched.md` (two-prong + EXACT use-site shape from its list). Sony census module state measured unreachable without volatile → Ruling 4, `docs/closer/rulings.md:68`. | every volatile-extern spelling needs its `volatile_extern_allowlist.txt` grant; cite the class matching the SYMBOL'S OWN use sites, never a sibling's shape. |
+
+Citation hygiene (mechanically enforced by the self-vet validator):
+- Every PRECEDENT file:line must EXIST in this repo — a dead path is an
+  automatic invalid session, not a Judge question.
+- If your claimed family's rule mandates a `/* FAKE */` annotation, an
+  ANNOTATION-CONFORMANCE of "n/a" is an automatic invalid session.
+- Torn between two adjacent families? That is what `ruling-request` is for —
+  one ruling is cheaper than a FAILed candidate.
+
 ### The FAKE annotation template + its prerequisites
     /* FAKE: <what>, mechanism: <named GCC pass>, lever-exhaustion: <where> */
 Owner policy, verbatim: "Any /* FAKE */ construct requires all three: (a) the full

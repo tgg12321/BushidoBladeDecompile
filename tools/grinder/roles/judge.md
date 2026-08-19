@@ -40,7 +40,7 @@ owner to audit after the fact. You are spawned for exactly two situations:
    {"verdict": "PASS"|"FAIL"|"ESCALATE", "justification": "<plain-English, cite
    the ledger lines and rule files you relied on>", "constraint": "<one line the
    grind must obey going forward; empty if PASS>", "fail_ground":
-   "CONSTRUCT"|"EVIDENCE"|"ANNOTATION-FORMAT"|"" , "banned_construct": "<the
+   "CONSTRUCT"|"EVIDENCE"|"CITATION"|"ANNOTATION-FORMAT"|"" , "banned_construct": "<the
    exact construct the next session may not respell; empty unless fail_ground is
    CONSTRUCT>", "escalate_kind": "canonical-asm-grant"|"integration-handoff"|
    "family-extension"|"policy-question"|"" (required when verdict is ESCALATE;
@@ -72,6 +72,14 @@ owner to audit after the fact. You are spawned for exactly two situations:
     (the next session may not respell it) and forces a modality change.
   - `EVIDENCE` — the construct could be sanctioned but the exhaustion ledger,
     scope citation, or precedent is missing or unverifiable.
+  - `CITATION` — **the construct is legitimate and you VERIFIED it sits inside
+    a sanctioned family whose own prerequisites hold — the only defect is that
+    the vet filed it under the wrong (typically neighboring) family, cited the
+    wrong precedent line, or cited a dead path.** Name the correct citation in
+    your justification. Routes to a one-comment re-cite fix-up (no construct
+    ban, no modality change). Use ONLY after verifying the correct family
+    yourself; if you have not verified it, that is `EVIDENCE`, and a construct
+    you actually object to is `CONSTRUCT`.
   - `ANNOTATION-FORMAT` — **the work itself is fine and the only defect is the
     `/* FAKE: ... */` comment's presence or wording.** This routes the next
     session to a one-comment fix-up brief, so use it ONLY when nothing but the
