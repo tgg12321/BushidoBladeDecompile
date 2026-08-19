@@ -276,6 +276,52 @@
  * LEAVES BOTH COPY INSNS IN PLACE because no DCE follows local-alloc.  That
  * predicate has never been written from C.
  */
+/* [s16 FORENSICS ADDENDUM - body unchanged, still 3, re-measured on a clean tree
+ * as cell A_base.]  20 cells, three instrumented-cc1 dump runs (all re-proved
+ * CODEGEN-IDENTICAL to the frozen build/cc1 on the whole TU).  Four hypotheses
+ * killed, one confirmed, and the residual is now traced to a SINGLE cse decision.
+ *
+ *  (1) THE SURVIVAL TRICHOTOMY IS COMPLETE.  A preheader reg-reg copy written
+ *      from C meets exactly one of three fates, decided by where its DESTINATION
+ *      is used: unused -> deleted by CSE (not flow - cell I1's copy disappears
+ *      between .jump and .cse, three passes before flow, and the cell is inert at
+ *      3); used in the SAME basic block -> deleted by combine (cell E2, insn 83
+ *      -> NOTE_INSN_DELETED); used in a DIFFERENT block -> survives, and the use
+ *      costs an instruction (this body's loop 1, `move $4,$7`).  Target's loop-2
+ *      copy fits none of them: its dest a3 is used once, in the same block, and
+ *      is not deleted.
+ *
+ *  (2) THE CENTRAL NEW MEASUREMENT - THE cse CANONICALISATION FLIP.  Loop 1's
+ *      preheader C is character-identical in this body and in cell E2, insn
+ *      numbering is identical, and insn 83 is `(set (reg/v 80) (reg/v 79))` in
+ *      both.  But .cse insn 89 (the base add) reads reg79 - the ORIGINAL - here
+ *      (s15/icand/F_cse.txt:177) and reg80 - the COPY DEST - in E2
+ *      (s16/iE2/F_cse.txt:178).  The only C difference is the loop-1 EXIT TAIL,
+ *      which is DOWNSTREAM of insn 89.  When cse leaves the original, the copy is
+ *      orphaned, gets no LOG_LINK, survives combine, and optimize_reg_copy_1
+ *      re-points the base add onto it (target's bytes).  When cse substitutes the
+ *      copy dest, combine deletes the copy and loop 1 comes out one instruction
+ *      SHORT (E2's preheader: `lw $6,16($18) / addu $4,$5,$4 / addu $2,$4,$3`).
+ *      So `p = q;` below is not merely "the second use" - it is the C handle on
+ *      ONE cse canonicalisation, and that canonicalisation is the whole residual.
+ *
+ *  (3) FOUR KILLS.  reg_n_sets>1 does NOT protect a copy from combine (E2 has `q`
+ *      set in both preheaders; combine deleted it anyway) - so target's a3 being
+ *      multiply-set is an allocation coincidence, not the mechanism.
+ *      optimize_reg_copy_2, s15's sole remaining producer candidate, is dead both
+ *      analytically (local-alloc.c:874-935 leaves BOTH copies, so it always emits
+ *      two moves where target has one) and by measurement (G1 = G2 = 13).  The
+ *      hoisted-addend-copy lever is dead (F1 = 15, F2 = 16).  And loop 1's
+ *      guard-clobber trick does not transplant to loop 2: K1/K2/K3/K5 = 35/32/32
+ *      /36 with the CONTROL K4 (guard change alone) = 36.
+ *
+ *  (4) CONSEQUENCE FOR EVERY FUTURE HYPOTHESIS.  No named 2.7.2 routine creates a
+ *      redundant reg-reg copy after combine.  Target's loop-2 copy is therefore a
+ *      PRE-combine copy that combine DECLINED to fold.  Any future proposal must
+ *      explain a combine REFUSAL on an in-block use - not a post-combine creation,
+ *      and not an out-of-block use (which would show up as an instruction target
+ *      does not have).
+ */
 s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     u8 *link;
     u8 *lnk;
