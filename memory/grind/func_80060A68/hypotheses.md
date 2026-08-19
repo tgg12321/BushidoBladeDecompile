@@ -1043,3 +1043,87 @@ loads on target â€" at the price of a new, different 2-instruction gap.
 - probe: cbd1 (p10 declared first), cbd2 (p10 last), cbd3 (p10 second), cbd4 (temp_a1 first, full permutation); cbt1 (s32 temp_a1), cbt2 (u16 *p10 with p10[2] for the +4 read), cbt3 (s32 temp2); g1 (D_800A347C gp store hoisted between p10 and the +0 read as the cse separator), g2 (same with D_800A3478).
 - result: cbd1-cbd4 and cbt1-cbt3 are all 4/66 - byte-inert, so pseudo numbering and local typing have no effect on p10's allocation. g1 = 8/68, g2 = 11/68: a (mem (symbol_ref)) store is an absolute scheduling barrier and destroys the matched prefix, so the copy stores remain the only usable cse separators.
 - verdict: KILLED
+
+## [s8 2026-08-19 - structural] The residual is NOT gated on birthing_insn_p's reg_n_sets test; it is gated on which HARD REGISTER local-alloc gives p10's pseudo, and that is movable by honest statement order.
+
+- statement: s10's "conservation law" (three independent `lw ?,0x10($v1)` loads XOR an
+  un-pinned p10 load) is false, and s6/s7's reduction of the whole residual to
+  birthing_insn_p's `reg_n_sets[i] == 1` test is an over-reduction. The C-visible lever that
+  actually decides the byte is REGISTER PRESSURE at local-alloc time: whether some pseudo is
+  live in $v0 across p10's sched1 live range.
+- mechanism: dump-verified this session against tmp/grind/func_80060A68/dumps/ with the cb
+  body applied. text1b.lreg line 29591 shows p10 is pseudo 75 (`Register 75 used 2 times
+  across 6 insns in block 0`), set by insn 39 `(set (reg/v:SI 75) (mem:SI (plus (reg 72)
+  (const_int 16))))` and read by insn 56. text1b.greg line 25167 shows `;; 1 regs to
+  allocate: 83` - so pseudo 75 is assigned by LOCAL-ALLOC, not global-alloc - and the
+  dispositions line reads `75 in 2`, i.e. $v0. sched1's emitted order around it is
+  51, 53, 39, 59, 56, 61, 64; $v0 is killed at insn 53 (`sh $v0,0x18($v1)`, REG_DEAD v0) and
+  not re-born until insn 64, so $v0 is free across reg75's entire range and local-alloc's
+  lowest-numbered-free-hard-reg scan takes it. In the final schedule $v0 is written at slot 20
+  and read at slot 22, straddling slots 12..28, so sched2 cannot hoist the load out of slot 23.
+  Keep ANY value live in $v0 across insns 39..56 and reg75 goes to $a1 - which is dead from
+  slot 12 to slot 28 - and sched2 hoists the load to slot 12, `lw $a1,0x10($v1)`, exactly as
+  in target. birthing_insn_p is not bypassed by any of this: p10 stays single-set, the bump
+  still fires, sched1 still chains insn 39 next to insn 56. The bump decides sched1's ORDER;
+  the register decides whether sched2 can undo it. They are separable, and s6/s7 fused them.
+- probe: (1) read text1b.lreg / text1b.greg for the cb body and identify pseudo 75 and its
+  disposition; (2) read sched.c:2505-2593 directly to confirm birthing_insn_p's gates and that
+  adjust_priority's n_deaths switch is dead (REG_DEAD notes stripped before sched); (3) sweep
+  59 statement orders on the cb and cand bodies through `sandbox --disable all`, disassembling
+  each and recording the slot and hard register of every `lw ?,0x10($v1)`.
+- result: `lw $a1,0x10($v1)` at target's slot 12 was produced in TWENTY distinct pure-C bodies
+  with a single-set p10, by three independent pressure sources:
+    (a) hoisting the `idx = *(u16 *)outer;` read above the p10 consumer statement - f3, f4,
+        i3, i4, r1 (all 8 / 66) and r3 (10 / 66), r6 (7 / 67);
+    (b) sinking copy 3's store below the +2 halfword read - m1 (9 / 66, two loads), n2
+        (10 / 67, three loads), o4 / o5 (10 / 66, two loads), o7 (10 / 67, three loads);
+    (c) splitting copy 3 into a named `c3` local whose store becomes the p10/0x18 separator -
+        u5 (8 / 66, three loads), u9 (10 / 66), ua (8 / 66); and with the gp stores as the
+        separator, u1 (8 / 68) and u2 (11 / 68).
+  The f3 family is the strongest: three 0x10 loads, 66 instructions, and a prefix
+  BYTE-IDENTICAL TO TARGET THROUGH SLOT 22 - eleven slots deeper than cb's, covering the whole
+  copy triple. u5 is its complement: slots 26-34 byte-identical to target, including
+  `lhu $a1,0x4($a1)` at slot 29 (p10's consumer, seventeen slots after its load, in $a1) and
+  the late `lhu $a0,0x0($v1)` idx read at slot 30 - the first time the campaign has produced
+  either. Neither beats the floor: the honest floor is unchanged at 2 (candidate.c, re-measured
+  this session at score 2 / build 66 / target 66 on today's HEAD).
+- verdict: CONFIRMED (the pressure lever exists and is honest); s10's conservation law and the
+  s6/s7 "only lever is reg_n_sets" framing are both KILLED.
+
+## [s8 2026-08-19 - structural] What still costs f3 its eight slots is scheduling, not allocation: the hoisted `idx` load takes slot 23, the slot target gives to the third 0x10 load.
+
+- statement: in the f3 family the ONLY remaining defect is that the pressure-supplying
+  instruction is itself schedulable into the load-delay slot at 23.
+- mechanism: `idx = *(u16 *)outer;` compiles to `lhu $a0,0x0($v1)` and depends on nothing but
+  $v1, which is live from slot 0. sched2 therefore has it ready at the cycle that fills the
+  load-delay slot after `lhu $v0,0x0($a0)` at slot 22, and it wins that slot over the third
+  `lw $a0,0x10($v1)`. Target puts the 0x10 load there and the idx load at slot 30. Everything
+  in slots 23..31 is then a permutation of target and the score is 8.
+- probe: twelve seats for the idx read on the cb order (i0..i11); re-association of the
+  consumer and the +2 read to lower the idx read's LUID below the third load's (r1, r2, r3,
+  r4, r5, r6); consumer-position family with both the p10 read and its consumer moved into or
+  above the copy triple (ka, kb, kc, kd, ke, kf, kg); hoisting the +0 halfword VALUE into a
+  `t0` local with the 0x18 store delayed (e1..e5); sinking copy 3 (m1..m5); `c3` splits
+  (o4..o8, u1..u9, ua, ub); p10-position sweep on the cb order (pa, pb, pd, pe); halfword
+  group permutations (h1..h8); n1..n6.
+- result: KILLED for every source-level respelling tried. LUID re-association does not move the
+  idx load (r1 = f3 exactly, 8 / 66). Seats 0 and 1 over-pressure and give p10 $a2 (9 / 66).
+  Seats 6 and later drop back to $v0 (cb itself, seat 9, is the 4 / 66 floor seat). Moving the
+  p10 consumer into the copy triple (ka 9/66, kb 11/67, kc 10/67, kd 8/66, ke 11/67, kf 10/67,
+  kg 8/66) puts the load at slot 10 or 11 but in $a0, because $a0 is also free there -
+  pressure has to cover $a0 as well as $v0. Delaying the 0x18 store through a `t0` local
+  (e1 8/66, e2 7/65, e3 7/65, e4 7/65, e5 9/65) never reaches $a1 and usually costs a load.
+- verdict: KILLED (no source spelling found that supplies the $v0 pressure without emitting an
+  extra early-schedulable instruction into slot 23).
+
+## [s8] s6/s7 are wrong that sched.c:2536 `return (reg_n_sets[i] == 1);` is the sole remaining C-visible input to the residual, and s10 is wrong that three independent `lw ?,0x10($v1)` loads and an un-pinned p10 load are mutually exclusive. The real lever is register pressure at local-alloc time.
+- mechanism: Dump-verified, not guessed. tmp/grind/func_80060A68/dumps/text1b.lreg:29591 identifies p10 as pseudo 75 (insn 39 sets it from `(mem:SI (plus (reg 72) (const_int 16)))`, insn 56 is its only reader). text1b.greg:25167 says `;; 1 regs to allocate: 83`, so reg 75 is assigned by LOCAL-ALLOC, and the dispositions line reads `75 in 2` = $v0 (reg 76, temp_a1, is `76 in 5` = $a1). In sched1's emitted order (49, 46, 51, 53, 39, 59, 56, 61, 64, 66) $v0 is killed at insn 53 (`sh $v0,0x18($v1)`) and re-born at insn 64, so it is free across reg 75's whole range and local-alloc's lowest-numbered-free-hard-reg scan takes it; in the final schedule $v0 is written at slot 20 and read at slot 22, straddling 12..28, so sched2 cannot hoist the load out of slot 23. birthing_insn_p still fires and still pins insn 39 next to insn 56 in SCHED1's order - but sched2 runs with reload_completed == 1 and never bumps, so it is free to undo that adjacency whenever the hard register is dead across the gap. Two separable gates; only the register one has to move.
+- probe: Read tools/gcc-2.7.2/sched.c:2495-2600 (birthing_insn_p + adjust_priority + schedule_insn) directly; read text1b.lreg / text1b.greg for the cb body; then sweep 59 statement orders through `sandbox func_80060A68 --disable all`, disassembling each and recording the slot and hard register of every `lw ?,0x10($v1)` (harness in tmp/grind/func_80060A68/s8/).
+- result: Target's `lw $a1,0x10($v1)` at slot 12 was produced in TWENTY distinct pure-C bodies, p10 single-set in every one, by three independent honest pressure sources: (a) hoisting the `idx = *(u16 *)outer;` read above the p10 consumer statement - f3/f4/i3/i4/r1 all 8/66 with THREE 0x10 loads and a prefix byte-identical to target through slot 22 (cb diverges at 11), plus r3 10/66 and r6 7/67; (b) sinking copy 3's store below the +2 halfword read - n2 10/67 (three loads), m1 9/66, o4/o5 10/66, o7 10/67; (c) splitting copy 3 into a named `c3` local whose store becomes the p10/0x18 cse separator - u5 8/66 (three loads), ua 8/66, u9 10/66, u1 8/68, u2 11/68. u5 additionally reproduces target's slots 26-34 EXACTLY, including `lhu $a1,0x4($a1)` at slot 29 (p10's consumer, seventeen slots after its load, in $a1) and the late `lhu $a0,0x0($v1)` idx read at slot 30 - both campaign firsts. Floor unchanged: candidate.c re-measured 2 / 66 / 66 on today's HEAD.
+- verdict: CONFIRMED
+
+## [s8] The remaining 8-slot cost of the f3 family can be removed by re-seating or re-associating the pressure-supplying statement so that the third `lw $a0,0x10($v1)` wins slot 23 instead of the hoisted idx load.
+- mechanism: `idx = *(u16 *)outer;` compiles to `lhu $a0,0x0($v1)` and depends on nothing but $v1, live from slot 0, so sched2 has it ready at the cycle that fills the load-delay slot after `lhu $v0,0x0($a0)` at slot 22 and it beats the third 0x10 load to slot 23. Target puts the 0x10 load at 23 and the idx load at 30. Slots 1-22 and 32-66 of f3 are already correct; 23-31 are a permutation.
+- probe: Twelve source seats for the idx read on the cb order (i0..i11); LUID re-association putting the +2 read above the consumer so the idx read's LUID exceeds the third load's (r1..r6); consumer-and-p10 moved into or above the copy triple (ka..kh); +0 halfword value hoisted into a `t0` local with the 0x18 store delayed (e1..e5); copy-3 sinks (m1..m5); `c3` splits (o4..o8, u1..u9, ua, ub); p10-position sweep (pa, pb, pd, pe); halfword-group permutations (h1..h8); n1..n6.
+- result: KILLED for every spelling tried. LUID re-association does not move the idx load (r1 is byte-identical to f3, 8/66). idx seats 0 and 1 over-pressure and give p10 $a2 (9/66); seats 2-5 give $a1 (8/66, the f3 family); seats 6+ fall back to $v0 (cb, seat 9, is the 4/66 floor seat). Moving the p10 consumer into the copy triple (ka 9/66, kb 11/67, kc 10/67, kd 8/66, ke 11/67, kf 10/67, kg 8/66, kh 10/67) does put the load at slot 10 or 11 but in $a0, because $a0 is free there too - a winning body must occupy $v0 AND $a0 across p10's sched1 range. Delaying the 0x18 store through a `t0` local (e1 8/66, e2 7/65, e3 7/65, e4 7/65, e5 9/65) never reaches $a1 and usually costs a load, because the delayed store stops separating the two 0x10 reads.
+- verdict: KILLED

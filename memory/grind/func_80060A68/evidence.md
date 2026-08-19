@@ -1560,3 +1560,98 @@ separator other than a copy store" as an open question.
 - [s7] gp stores cannot substitute for copy stores as cse separators between p10 and the +0 read: g1 = 8/68, g2 = 11/68, because a (mem (symbol_ref)) store is an absolute scheduling barrier for sched.c and destroys the matched prefix.
 
 - [s7] src/text1b.c was reverted to HEAD before this session finished; no build-pipeline file was touched. The asmfix.txt:109-110 integration hazard recorded by s10 is unchanged and still applies to any future body swap.
+
+## s8 2026-08-19 - structural
+
+- [s8] CHASSIS. candidate.c re-measured on today's HEAD with the s8 harness
+  (tmp/grind/func_80060A68/s8/apply.py + `sandbox func_80060A68 --disable all`):
+  score 2, build 66, target 66. The honest floor is unchanged at 2 and is NOT stale.
+  cb re-measured at 4 / 66 / 66, matching the s7 ledger exactly.
+- [s8] candidate.c ALREADY emits `lw $a1,0x10($v1)` at slot 12 (1-based) - the instruction the
+  campaign calls "the missing hoist". Its two 0x10 loads sit at slots 12 ($a1) and 20 ($a0);
+  its residual is the ABSENT third load (a nop at slot 24) and one register. cb, by contrast,
+  has all three loads but the third is `lw $v0,0x10($v1)` at slot 24 instead of
+  `lw $a1,0x10($v1)` at slot 12. The two floor bodies fail on opposite halves of the same pair.
+- [s8] DUMP FACTS (tmp/grind/func_80060A68/dumps/, generated with cb applied):
+    text1b.lreg:29591  `;; Function func_80060A68` ... `Register 75 used 2 times across 6 insns
+                       in block 0; GR_REGS or none.`  reg 75 is `p10`; insn 39 sets it from
+                       `(mem:SI (plus (reg 72) (const_int 16)))`, insn 56 is its only reader.
+                       Note reg 75 is NOT flagged `pointer` while regs 90 / 92 (the other two
+                       0x10 loads) are.
+    text1b.greg:25167  `;; 1 regs to allocate: 83` - every other pseudo, including 75, is
+                       assigned by LOCAL-ALLOC. `;; Register dispositions: ... 75 in 2 ...`
+                       ( = $v0), `76 in 5` ( = $a1, `temp_a1`). `;; Hard regs used: 2 3 4 5 31`.
+    sched1 order at the residual: 49, 46, 51, 53, 39, 59, 56, 61, 64, 66. $v0 dies at insn 53
+    (`sh $v0,0x18($v1)`) and is re-born at insn 64 (`addiu $v0,$v1,0x18`), so it is free across
+    reg 75's whole range - which is why local-alloc's lowest-free scan takes it.
+- [s8] sched.c read directly (tools/gcc-2.7.2/sched.c): birthing_insn_p at 2505-2536 has
+  exactly four gates - `reload_completed == 1` returns 0; pattern must be `SET` with a `REG`
+  dest; `bb_live_regs[offset] & bit`; `reg_n_sets[i] == 1`. adjust_priority at 2544-2593 only
+  bumps in the `case 0:` arm of the n_deaths switch, and the REG_DEAD notes it counts are
+  stripped before sched runs (GCC's own `??? This code has no effect` comment at 2555), so the
+  n_deaths arms are unreachable - the s6 reading is correct on this point. What s6 and s7 got
+  wrong is the INFERENCE: the bump fixes sched1's ORDER, but the byte that is actually missing
+  is decided later, by which hard register local-alloc hands reg 75, and sched2 (which never
+  bumps) is free to undo sched1's adjacency if the register permits. Those are two separable
+  gates and only the second one has to move.
+- [s8] THE PRESSURE LEVER IS REAL AND HONEST. Twenty bodies with a single-set `p10` emit
+  target's `lw $a1,0x10($v1)` at slot 12. Best of them:
+    f3 / f4 / i3 / i4 / r1  8 / 66  three 0x10 loads, prefix byte-identical to target
+                                    THROUGH SLOT 22 (cb diverges at 11). Banked at
+      rejected/s8-idx-hoisted-above-p10-consumer-3-loads-plus-a1-slot12-prefix-identical-thru-22-idx-read-steals-slot23-score8.c
+    u5                      8 / 66  slots 26-34 byte-identical to target, including
+                                    `lhu $a1,0x4($a1)` at 29 and `lhu $a0,0x0($v1)` at 30.
+      rejected/s8-copy3-hoisted-into-c3-local-store-as-separator-target-tail-slots-26-34-exact-score8.c
+    n2                     10 / 67  three loads, $a1 at slot 12, no named local at all - the
+                                    cleanest proof that plain statement order is sufficient.
+      rejected/s8-copy3-store-sunk-below-plus2-read-a1-slot12-three-loads-67insns-score10.c
+- [s8] f3's residual, slot by slot (f3 left, target right):
+    23  lhu $a0,0x0($v1)   |  lw  $a0,0x10($v1)
+    24  sh  $v0,0x18($v1)  |  sh  $v0,0x18($v1)
+    25  lw  $v0,0x10($v1)  |  lhu $a0,0x2($a0)
+    26  lhu $a1,0x4($a1)   |  addiu $v0,$v1,0x18
+    27  lhu $a2,0x2($v0)   |  sw  $v0,%gp_rel(D_800A3478)($gp)
+    28  addiu $v0,$v1,0x18 |  sh  $a0,0x1A($v1)
+    29  sw  $v0,gp         |  lhu $a1,0x4($a1)
+    30  addiu $v0,$v1,0x20 |  lhu $a0,0x0($v1)
+    31  sh  $a2,0x1A($v1)  |  addiu $v0,$v1,0x20
+  i.e. the hoisted idx load takes slot 23 from the third 0x10 load and everything after it is a
+  permutation. Slots 1-22 and 32-66 are already right.
+- [s8] SEAT SWEEP, `idx` read, twelve seats on the cb order (i0..i11): $a1 at slot 12 appears
+  ONLY at seats 2, 3, 4, 5 - the seats strictly before the p10 consumer statement. i0 / i1
+  over-pressure to $a2 (9 / 66). i7 (8), i8 (4), i10 (7), i11 (7) and cb itself (seat 9, 4) all
+  leave p10 in $v0.
+- [s8] Consumer-and-p10 moved INTO or ABOVE the copy triple (ka 9/66, kb 11/67, kc 10/67,
+  kd 8/66, ke 11/67, kf 10/67, kg 8/66, kh 10/67): the load does reach slot 10 or 11, but in
+  $a0, because $a0 is free there too. Any winning body has to occupy $v0 AND $a0 across p10's
+  sched1 range, not just $v0.
+- [s8] Also measured and dead on the cb order: hoisting the +0 halfword VALUE into a `t0` local
+  with the 0x18 store delayed (e1 8/66, e2 7/65, e3 7/65, e4 7/65, e5 9/65 - the delayed store
+  stops separating the two 0x10 reads and a load folds); p10-position sweep (pa 4, pb 4 - both
+  byte-identical to cb; pd 6; pe 3/65); halfword-group permutations (h1 3/65, h2 7, h3 7/67,
+  h4 8/67, h5 7, h6 8, h7 9, h8 7); n1 11/66, n3 11/66, n4 12/67, n5 14/67, n6 12/67;
+  m2 11/67, m3 12/66, m4 14/67, m5 12/66; o6 10/67, o8 10/67; u4 5/67, u7 5/67, u8 7/67,
+  ub 7/67, u9 10/66.
+- [s8] TOOLING. tmp/grind/func_80060A68/s8/ holds a reusable harness: apply.py (splices a body
+  file into src/text1b.c by name), gen*.py (statement-token bodies), run.ps1 / run2.ps1
+  (apply + sandbox + disassemble + report the slot and register of every `lw ?,0x10($v1)`),
+  dis.sh. 59 bodies were measured this session; every .dis is on disk.
+- [s8] src/text1b.c was reverted to HEAD before this session finished. No rules, no commits.
+
+- [s8] CHASSIS: candidate.c re-measured on today's HEAD = score 2, build 66, target 66. cb re-measured = 4 / 66 / 66, matching the s7 ledger. The floor is 2 and is not stale.
+
+- [s8] candidate.c (the floor-2 body) ALREADY emits `lw $a1,0x10($v1)` at slot 12; its residual is the ABSENT third 0x10 load (a nop at slot 24). cb has all three loads but the third is `lw $v0,0x10($v1)` at slot 24. The two floor bodies fail on opposite halves of the same pair - which is why 'the missing hoist' and 'the missing load' were being conflated.
+
+- [s8] text1b.greg:25167 `;; 1 regs to allocate: 83` proves p10's pseudo (reg 75) is a LOCAL-ALLOC decision, not global-alloc; `;; Register dispositions: ... 75 in 2 ... 76 in 5 ...` gives p10 $v0 and temp_a1 $a1; `;; Hard regs used: 2 3 4 5 31`.
+
+- [s8] text1b.lreg:29591 shows reg 75 as `used 2 times across 6 insns in block 0; GR_REGS or none` - and, unlike regs 90 and 92 (the other two 0x10 loads), it is NOT flagged `pointer`.
+
+- [s8] sched.c:2505-2536 birthing_insn_p has exactly four gates (reload_completed==1 -> 0; SET with REG dest; bb_live_regs bit; reg_n_sets[i]==1) and adjust_priority (2544-2593) only bumps in the `case 0:` arm, whose REG_DEAD notes are stripped before sched runs (GCC's own `??? This code has no effect` comment at 2555). s6's reading of the pass is correct; s6/s7's INFERENCE that this is the last C-visible lever is not.
+
+- [s8] f3 residual, slot by slot: 23 `lhu $a0,0x0($v1)` vs target `lw $a0,0x10($v1)`; 24 both `sh $v0,0x18($v1)`; 25 `lw $v0,0x10($v1)` vs `lhu $a0,0x2($a0)`; 26 `lhu $a1,0x4($a1)` vs `addiu $v0,$v1,0x18`; 27 `lhu $a2,0x2($v0)` vs the gp-3478 store; 28-31 the same four instructions in a different order. Slots 1-22 and 32-66 already match.
+
+- [s8] u5 residual is complementary: all eight wrong slots are in 17-25 (hoisting the c3 read above copy 2 lets cse keep copy 2's base in $a0, so copy 3 emits `lw $a0,0x8($a0)` instead of target's `lw $a0,0xC($v1)` / `lw $v0,0x8($a0)`, plus one extra `lw $a1,0x10($v1)` at 24). Keeping the c3 read BELOW copy 2 repairs the triple but costs a 67th instruction (u4 5/67, u7 5/67, u8 7/67, ub 7/67).
+
+- [s8] No banned construct was used or proposed this session: every body measured has each local written exactly once, and the two named locals introduced (`t0` for the +0 halfword value, `c3` for copy 3's value) are single-write single-read intermediates in bodies that were all REJECTED on score, not submitted.
+
+- [s8] src/text1b.c was reverted to HEAD before finishing; `git status` shows no build-file dirt. No rules touched, no commits, no queue/retire calls.

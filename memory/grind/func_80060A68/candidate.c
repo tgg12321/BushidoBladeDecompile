@@ -1,3 +1,46 @@
+/* [s8 2026-08-19 - structural.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's HEAD.]
+ *
+ * s8 did not change this body, but it overturns the causal story the s6/s7 notes below tell,
+ * so read this note before spending anything they say.
+ *
+ * 1. THE RESIDUAL IS NOT GATED ON birthing_insn_p.  s6 and s7 concluded that the only
+ *    C-visible input left was sched.c:2536 `return (reg_n_sets[i] == 1);` - i.e. the
+ *    multiply-written carrier the Judge banned.  That reduction is wrong.  The bump does fire,
+ *    and it does pin p10's load next to its consumer IN SCHED1's ORDER - but the byte that is
+ *    actually missing is decided AFTER that, by which hard register local-alloc gives p10's
+ *    pseudo, and sched2 (which never bumps, reload_completed == 1) is free to undo sched1's
+ *    adjacency whenever the register is dead across the gap.  Two separable gates; only the
+ *    second one has to move, and it moves under ordinary statement order.
+ *
+ * 2. DUMP-VERIFIED MECHANISM.  text1b.greg for this function says `;; 1 regs to allocate: 83`,
+ *    so p10's pseudo (reg 75, set by insn 39) is assigned by LOCAL-ALLOC, and the dispositions
+ *    line reads `75 in 2` = $v0.  In sched1's order (... 51, 53, 39, 59, 56, 61, 64 ...) $v0 is
+ *    killed at insn 53 (`sh $v0,0x18($v1)`) and re-born at insn 64, so it is free across reg
+ *    75's entire range and local-alloc's lowest-free-hard-reg scan takes it.  Keep any value
+ *    live in $v0 across insns 39..56 and reg 75 lands in $a1 - dead from slot 12 to slot 28 -
+ *    and sched2 hoists the load to slot 12 as `lw $a1,0x10($v1)`, exactly as in target.
+ *
+ * 3. TWENTY BODIES PROVE IT, WITH p10 SINGLE-SET THROUGHOUT.  Three independent honest
+ *    pressure sources reach $a1 at slot 12: hoisting the `idx` read above the p10 consumer
+ *    (f3 / f4 / i3 / i4 / r1, 8 / 66); sinking copy 3's store below the +2 read (n2 10 / 67,
+ *    m1 9 / 66, o4 / o5 10 / 66); and splitting copy 3 into a named `c3` local whose store
+ *    becomes the p10/0x18 cse separator (u5 8 / 66, ua 8 / 66).  s10's "conservation law"
+ *    (three 0x10 loads XOR an un-pinned p10 load) is falsified: f3 has BOTH, at 66
+ *    instructions, with a prefix byte-identical to target THROUGH SLOT 22 - eleven slots
+ *    deeper than cb and covering the whole copy triple.
+ *
+ * 4. WHAT IS LEFT.  f3 and u5 bracket the answer from opposite ends and their correct regions
+ *    are complementary: f3 is exact in slots 1-22, u5 is exact in slots 26-34 (including
+ *    `lhu $a1,0x4($a1)` at 29 and the late `lhu $a0,0x0($v1)` idx read at 30, both campaign
+ *    firsts).  f3's whole 8-slot cost is that the hoisted `idx` load, which depends on nothing
+ *    but $v1, is schedulable into the load-delay slot at 23 - the slot target gives to the
+ *    third `lw $a0,0x10($v1)`.  The next session's job is a pressure source whose OWN emission
+ *    slot is not 23.  Both banked bodies and the full 59-body sweep are in
+ *    memory/grind/func_80060A68/rejected/ and tmp/grind/func_80060A68/s8/.
+ *
+ * The INTEGRATION HAZARD in the s10 note below (asmfix.txt:109-110 must be retired in the same
+ * change as any body swap) is unchanged.  src/text1b.c was reverted to HEAD before finishing.
+ */
 /* [s7 2026-08-19 - synthesis.  BODY UNCHANGED.  Re-measured 2 / 66 / 66 on today's HEAD.]
  *
  * s7's job was to merge six sessions into one attack and reset the frontier.  It did not
