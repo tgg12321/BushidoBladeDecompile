@@ -1,7 +1,7 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 11,
    "modality": "forensics",
    "headline": "Forensics: pass attribution corrected to combine.c, both allocation-side escapes KILLED with instrumented measurements, and the surviving loop.c frontier item proven numerically sufficient (a block-lo"
+  },
+  {
+   "session": 7,
+   "floor": 11,
+   "modality": "forensics",
+   "headline": "Forensics: the loop.c hoist frontier item is KILLED with measured numbers (threshold 61-62, gate needs +19 insns in a 37-insn loop), and s6's sufficiency derivation is now MEASURED in situ - suppressi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Stopping loop.c's move_movables from hoisting insn 327, `(set (reg:SI 140) (symbol_ref/v:SI (\"D_800A9A24\")))`, out of the inner loop body is SUFFICIENT to close this axis \u2014 s6 measured or derived every step downstream of it.",
-   "mechanism": "A block-local 140 receives the same nsugg=1 $a1 suggestion `off` has (block_alloc scans all register operands of insn 229), ties `off` on qty_sugg_compare's first key, and wins the priority key 60000 vs 20000 because its live range would be 2 index units against `off`'s measured 6 at the same loop-depth-weighted refs=6. It takes $a1; `off` then fails the just_try_suggested pass and the plain pass hands it $v0 (first free in REG_ALLOC_ORDER given used={0,1,4,5,26..67}).",
-   "next_probe": "Get move_movables' per-movable log for this loop. cc1's loop dump is the -dL stream, which tools/grinder/dump.ps1 does not request; invoke the existing cc1 binary directly with the loop dump enabled from a scratch script (pattern: tmp/grind/func_80041BF4/s6/rtlord.sh) \u2014 do NOT edit anything under tools/. Read the `savings N` line for regno 140, then identify which of m->savings / m->lifetime / already_moved / m->forces would have to differ for the gate at loop.c:1631 to fail, and ask whether any honest C form changes that field. s5 already closed the naming route (a C name lengthens the live range to whole-function and costs 5 insns via $s8 eviction), so a declaration is not the answer."
+   "hypothesis": "The body must be re-derived from target's asm: some source shape for the LoadImage source address never produces a hoistable bare (set reg (symbol_ref)) inside the inner loop, so the $a1 suggestion on `off` never arises in the first place.",
+   "mechanism": "Every allocation-side lever is now measured dead, and the ONE fact that produces the residual (combine.c merging the address sum into the hard-$a1 argument set, making `off` a direct register source) is created by the expression tree, not by the allocator. Target's own loop shows lui a1 / addiu a1 / addu a1,v0,a1 at 0x150-0x158 - the symbol materialized in-loop with `off` already in $v0.",
+   "next_probe": "Rederive modality. Enumerate source shapes for the second LoadImage argument that do not force_reg the symbol into its own pseudo ahead of the add: array-of-32-byte-element indexing (D_800A9A24 declared as an array type and indexed, so the address is a single (plus (symbol) (mult)) tree), a struct-typed base, or an index expression whose base is a differently-typed global. For each, read the .cse dump to see whether a separate (set reg (symbol_ref)) insn is born at all - that insn's existence, not its hoisting, is the root of the residual."
   },
   {
-   "hypothesis": "If the loop.c hoist is not C-reachable without an opaque-arithmetic construct, the register-allocation axis for this function is exhausted and the residual must be attacked from a different direction (rederive / synthesis) rather than with more allocation work.",
-   "mechanism": "s3 closed declaration order (15 permutations, 2 chassis) and inner-body expression shape (33 spellings); s4/s5 closed permuter (60k+ iterations, 3 chassis) and the naming routes; s6 closed the live-range-conflict route and the operand-order route. The hoist itself is the only untried lever left inside the allocator.",
-   "next_probe": "Before spending another allocation session, re-derive the function body from target's asm independently of the current chassis \u2014 in particular test whether the original source computed the LoadImage source address from a different expression tree (e.g. an index into an array of 32-byte elements) that never produces a bare `(set reg (symbol_ref))` inside the loop at all."
+   "hypothesis": "The goto-spelled chassis (43 at 136 insns) is a genuinely different basin that already has target's hard allocation fact right ($a1 = symbol, $v0 = off); its residual is the frame (80 vs 88), the callee-save rotation and one instruction - exactly the two problems s1 solved in the while/do-while basin.",
+   "mechanism": "Removing the loop notes removes the hoist, which is what fixes the allocation; but it also changes the phantom frame slots and the s2/s3/s4-vs-s3/s4/s2 callee-save rotation that s1's do-while rotation established, and costs one instruction in the loop-back shape.",
+   "next_probe": "Structural modality on tmp/grind/func_80041BF4/s7/v_goto2.c as the base (NOT on candidate.c): re-run the s1 rotation levers (do-while(0) yoff wrap presence/absence, colour birth order, declaration order) and the s3 frame levers in THAT basin, tracking frame (needs 88) and insn count (needs 135) rather than raw score. If both return, the allocation is already target's and the score should collapse. Note the human-programmer question a goto-spelled loop would face at layer 1 - if that basin reaches 0, raise it as a ruling-request rather than submitting silently."
   },
   {
-   "hypothesis": "The banked floor-11 constant holder for the trailing `func_8003E2A0() == 1` test is still UNVETTED and its FAKE prerequisites are still unmet.",
-   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md \u2014 scalars only, FAKE required) whose prerequisites include the full modality ladder being demonstrably spent. Permuter is spent and forensics is now spent for the allocation axis, but rederive and synthesis are not, so the ladder is still open.",
-   "next_probe": "Do not spend it. If a later session closes the loop.c item and reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim, and cite a precedent file:line. Prefer re-deriving the trailing test in ordinary C if the ladder is still unspent at that point."
+   "hypothesis": "The banked floor-11 constant holder for the trailing func_8003E2A0() == 1 test is still UNVETTED and its FAKE prerequisites are still unmet.",
+   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md - scalars only, FAKE required) whose prerequisites include the full modality ladder being demonstrably spent. Permuter is spent, forensics is now spent for the allocation axis, but rederive and synthesis are not, so the ladder is still open.",
+   "next_probe": "Do not spend it. If a later session reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim and cite a precedent file:line. Prefer re-deriving the trailing test in ordinary C while the ladder is still unspent."
   }
  ],
  "judge_constraints": [],

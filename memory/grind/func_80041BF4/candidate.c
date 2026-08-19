@@ -1,3 +1,21 @@
+/* [s7] forensics session: floor UNCHANGED at 11 (re-measured on today's HEAD,
+ * 135/135 insns, frame 88). This form is still the best known. s7 CLOSED the last
+ * open allocation lever: loop.c's hoist of the unnamed (set rN (symbol_ref
+ * D_800A9A24)) out of the inner loop. The move_movables log (it IS in the -da set,
+ * <dump>.loop) shows the symbol is the THIRD movable moved out of the 37-insn inner
+ * loop, and the gate at loop.c:1631 is threshold*savings*lifetime >= insn_count with
+ * savings = lifetime = 1 (both already minimal, both only help the hoist if raised)
+ * and threshold = 61-62 measured by synthetic bisection, minus 3 per prior move. So
+ * the inner loop would have to reach >= 56 real insns: +19 insns of bytes, which the
+ * 135-insn budget forbids. In-loop invariant work would be byte-neutral but target's
+ * preheaders are bare (its /255 conversions sit BEFORE the func_800486FC call), and
+ * dead invariant work is deleted by cse.c before loop.c runs. s7 also MEASURED s6's
+ * derivation: with the loops goto-spelled (no NOTE_INSN_LOOP_BEG, so no hoist) the
+ * symbol pseudo takes $a1 and `off` takes $v0 - target exactly - but that chassis
+ * costs the frame (80 vs 88), the callee-save rotation and one instruction (43@136).
+ * The allocation axis is now exhausted; the next attack is a rederive of the body.
+ * See hypotheses.md [s7].
+ */
 /* [s6] forensics session: floor UNCHANGED at 11 (re-measured on today's HEAD).
  * This form is still the best known. s6 corrected the ledger's pass attribution
  * (combine.c, not local-alloc/global.c, is what makes `off` a direct register

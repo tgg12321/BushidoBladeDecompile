@@ -704,3 +704,129 @@ sugg_base.txt, sugg_vA.txt, sugg_vB.txt, ws/campaign.log, ws/output-*).
 - [s6] loop.c's move_movables per-movable log is NOT in the -da dump set that tools/grinder/dump.ps1 produces (loop_dump_stream is the separate -dL stream). It is the single highest-value unread artifact left for this function.
 
 - [s6] One form banked this session: rejected/loadimage-address-commuted-c-order-does-not-reach-rtl.c (the C operand order of the address sum does not reach the RTL).
+
+## [s7] forensics modality — floor UNCHANGED at 11 (135/135, frame 88); the loop.c hoist frontier item is KILLED with numbers, and s6's sufficiency derivation is now MEASURED
+
+- [s7] CHASSIS RE-MEASURED at dispatch AND at the end of the session: candidate.c
+  applied to src/text1a_post.c gives `sandbox --disable all` = 11 at 135/135 insns,
+  frame 88. The dispatch brief again said "measurement unavailable"; the real HEAD
+  floor is 11. Nothing in the chassis moved between s5, s6 and s7.
+
+- [s7] CORRECTION to an s6 ledger claim: loop.c's move_movables per-movable log IS
+  in the -da dump set. It is in `tmp/grind/func_80041BF4/dumps/text1a_post.loop`
+  (11 `savings` lines across the TU; func_80041BF4 occupies lines 2246-2963). s6
+  recorded it as "the single highest-value unread artifact"; it was already on disk.
+  Read it with `grep -n "real insns|savings" <dump>.loop`.
+
+- [s7] The full movable log for func_80041BF4 on the floor-11 chassis:
+    Loop from 174 to 271: 37 real insns.        <- INNER loop
+      Insn 213: regno 137 (life 1), move-insn savings 1  moved to 317
+      Insn 218: regno 138 (life 1), move-insn savings 1  moved to 319
+      Insn 223: regno 140 (life 1), move-insn savings 1  moved to 321   <- the symbol
+    Loop from 129 to 287: 59 real insns.        <- OUTER loop
+      Insn 321: regno 140 (life 43), ... halved since already moved  moved to 327
+  So the symbol pseudo is the THIRD movable moved out of the inner loop, and the
+  outer-loop move is forced by already_moved[] (set at loop.c:1909).
+
+- [s7] THE GATE, read from source: loop.c:1631
+  `if (already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count || ...)`
+  with `m->savings = n_times_used[regno]` (loop.c:793), `m->lifetime = luid(last use)
+  - luid(first use)`, `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+  (loop.c:532), and `threshold -= 3` after EVERY moved movable (loop.c:1719/1904).
+  For the symbol movable savings = 1 and lifetime = 1 — both already at their MINIMUM,
+  and both make hoisting MORE likely if increased. already_moved and m->forces only
+  ever FORCE a move. **insn_count is the only field in the gate whose sign can help.**
+
+- [s7] THRESHOLD MEASURED, not assumed: a synthetic TU (tmp/grind/func_80041BF4/s7/
+  gen_thr.py + gen_thr2.py + thr.sh/thr2.sh) with one call-containing loop and a single
+  `(set (reg) (symbol_ref))` movable was bisected on loop size. 61 real insns -> "moved";
+  63 real insns -> "not desirable". So **threshold = 61 or 62** for a call-containing
+  loop under this cc1 configuration (i.e. n_non_fixed_regs = 60 or 61). An independent
+  in-compile datapoint agrees: func_80041EB0's 83-insn loop declines its FIRST movable.
+
+- [s7] THE PRICE OF SUPPRESSING THE HOIST in the real chassis: the symbol movable is
+  tested with threshold already decremented twice (137, 138 moved first), i.e. 55 or 56,
+  against insn_count = 37. To make the gate fail the INNER loop must reach >= 56 real RTL
+  insns — **+19 insns on a 37-insn loop, inside a 135-insn function** — or 7 further
+  movables must be moved ahead of it (3 threshold points each). Measured in situ by
+  padding the inner loop body (tmp/grind/func_80041BF4/s7/pad.py): pad=8 -> 46 insns,
+  still moved; pad=16 -> 54 insns, **"not desirable"**; pad=24 -> 62 insns, not desirable.
+
+- [s7] MEASURED (not derived): s6's frontier claim is CORRECT. At pad=16 the symbol
+  pseudo (156) is left in the inner loop and takes **hard reg 5 = $a1** (`;; Register 156
+  in 5.`), displacing `off` (130) off $a1. With BOTH loops goto-spelled so loop.c sees no
+  loop in this function at all, the .lreg reads `;; Register 137 in 5.` (symbol -> $a1)
+  and `;; Register 127 in 2.` (`off` -> **$v0**) — **target's exact allocation**, and the
+  address insn is `(set (reg:SI 5 a1) (plus (reg/v:SI 127) (reg:SI 137)))`. The
+  qty_sugg_compare priority story s6 derived is therefore confirmed end-to-end.
+
+- [s7] KILLED — the goto-spelled loop route, the ONLY C-level way found to suppress the
+  hoist. Two forms measured:
+    * inner loop goto-spelled, outer left as the real do-while: **46 at 136 insns**.
+      loop.c then sees ONE loop (the outer, 54 real insns) and STILL hoists the symbol —
+      54 < the effective threshold 55/56, missing by TWO insns.
+    * both loops goto-spelled: **43 at 136 insns**, allocation exactly target's, but the
+      frame collapses to **80 vs target's 88** and the callee-save rotation is lost
+      (s4/s5/s6/s7 permuted vs target), plus a `nop` where target has `lhu v1,0(s0)`.
+  Banked as rejected/goto-spelled-inner-loop-plus1-insn-still-hoisted.c and
+  rejected/goto-spelled-both-loops-target-alloc-but-frame-80.c.
+
+- [s7] MECHANISM MEASURED — loop-invariant work written INSIDE a loop is
+  instruction-count-neutral and is the one thing that raises insn_count for free:
+  tmp/grind/func_80041BF4/s7/licm_out.c vs licm_in.c (identical but for where
+  `t = (a0 << 12) / 255;` is written) compile to the same instructions in a different
+  order/allocation, while the in-loop spelling raises insn_count 13 -> 20 and adds SEVEN
+  extra movables ahead of the symbol movable (-21 threshold). That is exactly the size of
+  lever this function needs.
+
+- [s7] ...and it is REFUTED FOR THIS FUNCTION BY TARGET'S OWN BYTES. A hoisted in-loop
+  invariant lands in the loop PREHEADER. In target (objdump of
+  tmp/grind/func_80041BF4/s5/wsA/target.o) the three /255 conversions sit at 0x78-0xd8,
+  BEFORE the `jal func_800486FC` at 0xd8, whereas a hoisted in-loop conversion would have
+  to land after the func_8004881C block (0xe0-0xfc). Target's outer-loop preheader is bare
+  (`move s2,zero` at 0x100) and its inner-loop preheader is bare (`j 1ac / move s1,zero`
+  at 0x140-0x144) — **there is no hoisted invariant computation anywhere in target's
+  preheaders**, so the original source had no extra loop-invariant work inside either loop.
+
+- [s7] KILLED — using DEAD invariant work to raise insn_count. Four dead `(aN << k) / c`
+  computations written into the inner loop leave the loop dump's insn_count at exactly 37:
+  cse.c deletes dead pseudo sets BEFORE loop.c ever scans the loop. Banked as
+  rejected/dead-invariant-pad-deleted-by-cse-before-loop.c.
+
+- [s7] NET: on the 135-insn / frame-88 chassis, loop.c's hoist of the D_800A9A24 symbol
+  pseudo is NOT suppressible by any C form — the gate's only usable field is insn_count,
+  raising it requires either +19 real insns (bytes) or in-loop invariant work (refuted by
+  target's preheaders) or dead work (deleted before loop.c), and the loop-note-removal
+  route costs the frame and one instruction. With s3 (declaration order, body shape),
+  s4/s5 (permuter, naming), s6 (live-range conflict, operand order) and now s7 (the hoist)
+  all closed, **the register-allocation axis for this function is exhausted**; the residual
+  must now be attacked by rederiving the body from target's asm.
+
+- [s7] Artifacts: tmp/grind/func_80041BF4/s7/ — loopdump.sh (movable-log dumper for the
+  current src), gen_thr.py/gen_thr2.py/thr.sh/thr2.sh (synthetic threshold bisection),
+  pad.py/padrun.sh (in-situ inner-loop padding), licm_out.c/licm_in.c/licm.sh (the
+  in-loop-invariant byte-neutrality measurement), v_goto.c, v_goto2.c, v_invpad.c,
+  d_base.loop, d_p8/p16/p24.loop, d_goto.loop, d_goto2.loop, lreg_p16.txt,
+  lreg_goto2.txt.
+
+- [s7] Chassis re-measured at dispatch and again at the end of the session: candidate.c applied to src/text1a_post.c scores sandbox --disable all = 11 at 135/135 insns, frame 88. The dispatch brief said 'measurement unavailable'; the real HEAD floor is 11, unchanged since s4.
+
+- [s7] CORRECTION to the s6 ledger: loop.c's move_movables per-movable log IS in the -da dump set - tmp/grind/func_80041BF4/dumps/text1a_post.loop, 11 'savings' lines across the TU, func_80041BF4 at lines 2246-2963. s6 recorded it as the highest-value UNREAD artifact; it was already on disk.
+
+- [s7] The movable log for this function: inner loop 174->271 is 37 real insns and moves regno 137 (insn 213), 138 (insn 218) and 140 (insn 223, the D_800A9A24 symbol) in that order; the outer loop 129->287 is 59 real insns and re-moves all three under already_moved[] with insn_count halved.
+
+- [s7] The desirability gate is loop.c:1631 `already_moved[regno] || (threshold*savings*m->lifetime) >= insn_count`; m->savings = n_times_used[regno] (loop.c:793), threshold = (loop_has_call ? 1 : 2)*(1 + n_non_fixed_regs) (loop.c:532), threshold -= 3 after each moved movable (loop.c:1719 and 1904).
+
+- [s7] Threshold MEASURED by synthetic bisection under this exact cc1 configuration: a call-containing loop of 61 real insns still moves its first savings-1/life-1 symbol movable; 63 real insns declines it. threshold = 61 or 62 (n_non_fixed_regs = 60 or 61). Independent agreement in the same compile: func_80041EB0's 83-insn loop declines its FIRST movable.
+
+- [s7] Because the symbol movable is third, its effective threshold is 55-56 against insn_count 37: suppressing the hoist needs +19 real RTL insns in the inner loop of a 135-instruction function. In-situ padding confirms the flip point (pad=8 -> 46 insns moved; pad=16 -> 54 insns 'not desirable').
+
+- [s7] MEASURED, not derived: with the hoist suppressed the symbol pseudo takes hard reg 5 ($a1) and `off` takes hard reg 2 ($v0) - target's exact assignment - in the goto-spelled chassis where loop.c sees no loop at all.
+
+- [s7] Loop-invariant work written INSIDE a loop is instruction-count-neutral (licm_in.c vs licm_out.c compile to the same instructions in a different order/allocation) and is the only free way to raise insn_count: it added 7 insn_count and SEVEN extra movables (-21 threshold) in the synthetic. It is refuted for this function by target's bare preheaders.
+
+- [s7] Dead invariant work cannot raise insn_count: four dead (aN<<k)/c computations placed in the inner loop left the loop dump's insn_count at exactly 37, because cse.c deletes dead pseudo sets before loop.c scans the loop.
+
+- [s7] Three forms banked in rejected/ this session: goto-spelled-inner-loop-plus1-insn-still-hoisted.c (46 at 136), goto-spelled-both-loops-target-alloc-but-frame-80.c (43 at 136, frame 80 vs 88), dead-invariant-pad-deleted-by-cse-before-loop.c (measurement probe, not a proposed form).
+
+- [s7] NET: with s3 (declaration order, body shape), s4/s5 (permuter, naming, named intermediates), s6 (live-range conflict, operand order) and now s7 (the loop.c hoist) all closed, the register-allocation axis for func_80041BF4 is exhausted. The residual 11 must now be attacked by re-deriving the body, not by more allocation work.

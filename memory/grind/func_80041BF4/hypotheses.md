@@ -380,3 +380,61 @@ movable's CLASSIFICATION, not from a declaration. Unprobed sub-questions, in ord
 - probe: Read qty_sugg_compare in local-alloc.c and applied it to the measured block-10 numbers (`off`: refs=6, death-birth=6; a block-local symbol pseudo would carry the same loop-depth-weighted refs=6 over a 2-index range).
 - result: FALSIFIED — 140 would WIN. Both tie at nsugg=1 on the first key; on the priority key 140 scores floor_log2(6)*6/2*10000 = 60000 against `off`'s measured floor_log2(6)*6/6*10000 = 20000. 140 takes $a1, `off` then fails the just_try_suggested pass and the plain REG_ALLOC_ORDER pass hands it the first free register, $v0 — target's assignment exactly, and it also reproduces target's `lui $a1 / addiu $a1 / addu $a1,$v0,$a1` operand shape.
 - verdict: KILLED
+
+## [s7] forensics — the loop.c hoist item, KILLED
+
+**H-s7-1 (KILLED).** "Stopping loop.c's move_movables from hoisting the
+`(set (reg) (symbol_ref D_800A9A24))` out of the inner loop is reachable from C."
+Mechanism read from source and measured: the only gate field (loop.c:1631) with a usable
+sign is insn_count — savings and lifetime are already 1 and only help the hoist if raised;
+already_moved / m->forces only ever force moves. Threshold measured at 61-62 by synthetic
+bisection, minus 3 per prior moved movable (loop.c:1719/1904), so the inner loop would
+have to reach >= 56 real RTL insns against its actual 37. Every way of getting there is
+closed: real insns cost bytes (+19 on a 135-insn function); in-loop invariant work is
+byte-neutral but would leave hoisted insns in a preheader, and target's preheaders are
+bare; dead invariant work is deleted by cse.c before loop.c sees the loop.
+VERDICT: KILLED.
+
+**H-s7-2 (CONFIRMED).** "If the hoist were suppressed, the symbol pseudo takes $a1 and
+`off` falls to $v0 — target's allocation." s6 derived this from qty_sugg_compare; s7
+MEASURED it twice: once by padding the inner loop past the threshold (symbol pseudo 156
+-> $a1) and once with both loops goto-spelled (symbol 137 -> $a1 AND `off` 127 -> $v0,
+exactly target). VERDICT: CONFIRMED — but only reachable in chassis that cost bytes or
+the frame.
+
+**H-s7-3 (KILLED).** "A goto-spelled loop, which carries no NOTE_INSN_LOOP_BEG, removes
+the loop from loop.c's view for free." Measured: inner-only goto = 46 at 136 insns and the
+symbol is still hoisted out of the remaining outer loop (54 insns vs an effective threshold
+of 55/56 — short by two); both-loops goto = 43 at 136 insns with target's allocation but
+frame 80 vs 88 and the callee-save rotation lost. VERDICT: KILLED as a floor-improving
+form on this chassis.
+
+**H-s7-4 (KILLED).** "The original wrote the r/g/b /255 conversions inside the loop, which
+would be byte-neutral after hoisting and would supply the 7 extra movables the gate needs."
+Refuted by target's bytes: the conversions are at 0x78-0xd8, BEFORE the `jal func_800486FC`
+at 0xd8; a hoisted in-loop conversion must land in the loop preheader, i.e. after the
+func_8004881C block (0xe0-0xfc). VERDICT: KILLED.
+
+## [s7] Stopping loop.c's move_movables from hoisting the unnamed (set rN (symbol_ref D_800A9A24)) out of the inner loop is reachable from honest C.
+- mechanism: The gate is loop.c:1631 `already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count`, with m->savings = n_times_used (loop.c:793) and threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) (loop.c:532), decremented by 3 after every moved movable (loop.c:1719/1904). For this movable savings = 1 and lifetime = 1, both already minimal and both only making the hoist MORE likely if raised; already_moved and m->forces can only force a move. insn_count is the only field whose sign can help.
+- probe: Read the move_movables per-movable log in the -da .loop dump (it IS in the -da set, contrary to the s6 ledger note). Bisected the threshold on a synthetic call-containing loop carrying one symbol_ref movable (tmp/grind/func_80041BF4/s7/gen_thr*.py + thr*.sh): 61 real insns -> moved, 63 -> not desirable. Then padded the real inner loop (s7/pad.py): 46 insns -> moved, 54 -> not desirable, 62 -> not desirable.
+- result: The symbol is the THIRD movable moved out of the 37-insn inner loop, so it is tested against an effective threshold of 55-56. Making the gate fail needs the inner loop at >= 56 real RTL insns, i.e. +19 instructions inside a 135-instruction function. Byte-neutral ways to raise insn_count are both closed: in-loop loop-invariant work is byte-neutral (measured on licm_in.c vs licm_out.c: same instructions, +7 insn_count, +7 movables = -21 threshold) but would leave hoisted insns in a preheader, and target's preheaders are bare (its three /255 conversions sit at 0x78-0xd8, BEFORE the jal func_800486FC at 0xd8, not after the func_8004881C block); dead invariant work never reaches loop.c at all (four dead divisions in the inner loop left insn_count at exactly 37 - cse.c deletes them first).
+- verdict: KILLED
+
+## [s7] If the hoist were suppressed, the symbol pseudo would take $a1 first and push `off` down REG_ALLOC_ORDER to $v0 - target's exact allocation (s6 derived this from qty_sugg_compare's priority key).
+- mechanism: A block-local symbol pseudo ties `off` on qty_sugg_compare's suggestion-count key and wins the priority key (60000 vs the measured 20000), takes $a1 on the just_try_suggested pass, and leaves $v0 as the first free register for `off`.
+- probe: Two independent in-situ measurements of the instrumented/plain cc1's .lreg: (a) inner loop padded to 54 insns so the movable is declined; (b) both loops goto-spelled so loop.c sees no loop in this function at all.
+- result: (a) `;; Register 156 in 5.` - the symbol pseudo takes $a1 and displaces `off`. (b) `;; Register 137 in 5.` and `;; Register 127 in 2.` with the address insn reading (set (reg:SI 5 a1) (plus (reg/v:SI 127) (reg:SI 137))): symbol in $a1, `off` in $v0 - target's allocation exactly. s6's derivation is confirmed end-to-end.
+- verdict: CONFIRMED
+
+## [s7] A goto-spelled loop carries no NOTE_INSN_LOOP_BEG, so loop.c never scans it and the hoist disappears for free.
+- mechanism: loop.c enumerates loops from the front end's loop notes; a label+goto backedge produces none, so scan_loop/move_movables never see the body.
+- probe: Two forms built and measured with sandbox --disable all plus the .loop and .lreg dumps: inner loop goto-spelled with the outer left as the real do-while; and both loops goto-spelled.
+- result: Inner-only goto = 46 at 136 insns: loop.c then sees ONE loop (the outer, 54 real insns) and STILL hoists the symbol, missing the 55-56 effective threshold by exactly two insns. Both-loops goto = 43 at 136 insns: allocation is target's, but the frame collapses to 80 vs target's 88, the callee-save rotation is lost (s4/s5/s6/s7 permuted) and a nop appears where target has lhu v1,0(s0). Both banked in rejected/.
+- verdict: KILLED
+
+## [s7] The original source wrote the r/g/b (aN<<12)/255 conversions inside the loop; hoisting would put them back byte-identically while supplying the extra movables and insn_count the gate needs.
+- mechanism: loop.c hoists an invariant to the loop preheader, so an in-loop spelling and a pre-loop spelling emit the same instructions; the in-loop spelling additionally raises insn_count and decrements threshold by 3 per hoisted movable (measured: one such division adds 7 movables, -21 threshold).
+- probe: Compared target's own instruction order around the conversions and the calls (objdump of tmp/grind/func_80041BF4/s5/wsA/target.o).
+- result: Target computes all three conversions at 0x78-0xd8, BEFORE the jal func_800486FC at 0xd8. A hoisted in-loop conversion must land in the loop preheader, i.e. after the func_8004881C block at 0xe0-0xfc. Target's outer preheader (move s2,zero at 0x100) and inner preheader (j 1ac / move s1,zero at 0x140) contain no hoisted invariant at all, so the original had no extra loop-invariant work in either loop.
+- verdict: KILLED
