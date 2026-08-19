@@ -1,8 +1,8 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Floor 17 -> 13: moving `tbl += 2` out of the middle of the loop body removes a REG_DEP_ANTI that stranded the LoadImage arg-setup block, and the inner-loop SCHEDULE is now byte-for-byte target's; the "
+  },
+  {
+   "session": 4,
+   "floor": 11,
+   "modality": "permuter",
+   "headline": "Permuter campaign dropped the floor 13 -> 11 (a FAKE-annotated constant holder closes the trailing ==1 test) and TWO s3 frontier hypotheses were killed with direct compiler witnesses: denying local-al"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Denying hard reg $a1 to the `off` pseudo (129) collapses the entire residual 13 to 0 - every differing insn is downstream of that one allocation, and the instruction stream is otherwise byte-for-byte target's in target's order.",
-   "mechanism": "local-alloc.c:1240-1300 calls combine_regs(operand, recog_operand[0]) on the sources of `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`; combine_regs (local-alloc.c:1884-1896) sees the hard setreg and records $a1 in qty_phys_sugg[qty(129)], and find_free_reg's just_try_suggested pass honours it. $a1 taken forces reload to $t0 for the three loop-hoisted, globally-unallocated invariants 136/137/139, and the y-temp and trailing-constant renames follow. Target has `off` in $v0 = no suggestion, first reg in REG_ALLOC_ORDER.",
-   "next_probe": "Two independent, source-visible escapes, both OUTSIDE the loop body (which is the one region s3 could not reach and which is now measured closed): (a) make `off` NOT block-local so reg_qty < 0 and combine_regs bails at local-alloc.c:1826, handing it to global.c - i.e. a form in which `off`'s birth insn sits in a different basic block from its use, e.g. the shift computed in the loop-condition block or under the outer-loop rotation rather than at the top of the body; (b) make $a1 LIVE somewhere inside [born_index, dead_index) so find_free_reg's regs_live_at scan (local-alloc.c:2170) excludes it. Confirm any candidate in ONE build with the instrumented cc1's BB2_SUGG_DEBUG env hook (tools/gcc-2.7.2/cc1, prints the `used` and `first_used` hard-reg sets per find_free_reg call) rather than inferring from the score - the hook names the decision directly."
+   "hypothesis": "$a1 must be made to CONFLICT with `off`'s live range, not merely be un-preferred \u2014 preference removal is measured dead in both allocators.",
+   "mechanism": "find_free_reg unions regs_live_at[ins] over [born_index, dead_index) into its `used` set (local-alloc.c:2168-2171), and global.c's find_reg does the analogous conflict-set exclusion. A form in which $a1 is LIVE strictly between `off`'s birth (the `idx << 5` shift) and its death (the `addu a1,...`) excludes $a1 for `off` in both passes, which is the only mechanism left that both allocators respect.",
+   "next_probe": "Attack the SYMBOL pseudo (139), not `off`. Read the .loop movable log for regno 139 first (`pwsh tools/grinder/dump.ps1 func_80041BF4`) and find what would make move_movables decline to hoist `(set rN (symbol_ref D_800A9A24))` out of the loop body \u2014 this is a loop.c question of the same shape as the axis s2 closed one level out for D_80094DF0. If the symbol stays block-local it carries the same $a1 suggestion, and qty_sugg_compare ordering can give it $a1 first, forcing `off` to $v0 exactly as target has it. Confirm any candidate in ONE build with BB2_SUGG_DEBUG/BB2_QTY_DEBUG rather than sweeping spellings."
   },
   {
-   "hypothesis": "The trailing `li v1,1 / bne v0,v1` (vs target `li t0,1 / bne v0,t0`) in the `func_8003E2A0() == 1` test is the same global.c allocno-ordering difference as item 1, not an independent divergence.",
-   "mechanism": "It is the exact mirror image: ours ALLOCATES the constant 1 to $v1 where target rematerializes it into $t0, while inside the loop ours rematerializes into $t0 where target allocates $v0. One allocno-ordering shift would flip both.",
-   "next_probe": "Re-measure only after item 1 lands. If it survives, read .greg's allocno ordering and priorities for the constant-1 pseudo before inventing any lever - do not tune it independently."
+   "hypothesis": "The banked floor-11 constant holder is a sanctioned-family construct but is UNVETTED and must not be treated as accepted.",
+   "mechanism": "It is a constant-holder (.claude/rules/named-local-fake-exception.md, scalars only, FAKE required) whose FAKE prerequisites include the full modality ladder being demonstrably spent. The ladder is NOT spent for this function \u2014 permuter is only the fourth modality and the loop.c axis above is untried.",
+   "next_probe": "Do not spend it prematurely. If a later session closes the $a1 item and reaches distance 0, the self-vet must claim the constant-holder family explicitly, quote that rule's scope sentence verbatim, and cite a precedent file:line. If the ladder is still unspent at that point, prefer re-deriving the trailing test in ordinary C over submitting on the holder."
   },
   {
-   "hypothesis": "The next modality should be register-allocation-focused rather than structural: the structural axes this function exposes are now measured exhausted.",
-   "mechanism": "s2 closed the LICM/combine axis, s3 closed the schedule axis (zero ordering divergence remains), declaration order (15 forms) and inner-body expression shape (33 forms across s2+s3) are both dead. What is left is a single hard-register assignment whose decision procedure is fully named down to the source line.",
-   "next_probe": "Drive from the dump, not the score: build once with BB2_SUGG_DEBUG set, read the find_free_reg trace for qty(129), and design the C form against the two documented escape conditions instead of sweeping spellings."
+   "hypothesis": "Random permuter sampling on this basin is now spent; the remaining gap is a single allocation decision that random C perturbation is unlikely to hit.",
+   "mechanism": "The campaign found both of its novel forms within 32 seconds and produced nothing in the following ~11 minutes across 21428 iterations, which is the fresh-seed signature of an exhausted basin.",
+   "next_probe": "If permuter is mandated again, reseed from a STRUCTURALLY different chassis rather than the floor-11 form \u2014 specifically one in which the LoadImage source address is built without a standalone loop-invariant symbol_ref \u2014 instead of re-sampling this one. Otherwise switch modality (forensics on the .loop dump is the highest-value next axis)."
   }
  ],
  "judge_constraints": [],

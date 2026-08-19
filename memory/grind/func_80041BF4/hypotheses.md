@@ -171,3 +171,78 @@ and `*(ptr + i)` spellings of the D_80094DF0 load (they keep the hoist).
 - probe: Read .lreg and .greg for func_80041BF4 on the floor-13 form (`;; Register 129 in 5.`, the insn-229 RTL, the register-dispositions table showing 136/137/139 absent) plus the .loop movable log; cross-read tools/gcc-2.7.2/local-alloc.c and loop.c for the exact code paths; then commuted the address add to test the operand-position prediction.
 - result: Confirmed on both the floor-17 and floor-13 dumps: `;; Register 129 in 5.`, dispositions list has no entry for 136/137/139, and the .loop log still shows all three hoisted out of the 37-insn inner loop and then out of the 59-insn outer loop. The commuted-address form is exactly inert (13), exactly as the `combine_regs` return-0 reading predicts. Target has `off` in $v0 (no suggestion -> first reg in REG_ALLOC_ORDER) and the rematerialized symbol in $a1.
 - verdict: CONFIRMED
+
+## [s4] The `off`-in-$a1 residual is caused SOLELY by local-alloc's qty_phys_sugg path, so any C form that makes `off` non-block-local (reg_qty < 0) frees $a1 and collapses the residual
+- mechanism: s3's frontier item 1 named combine_regs (local-alloc.c:1857-1896) recording $a1 in `qty_phys_sugg[qty(129)]` from `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`, and combine_regs' early bail at local-alloc.c:1826 (`reg_qty[ureg] < 0` when the pseudo is not local to the block or dies more than once) as the escape. The prediction was that a cross-block `off` would be handed to global.c, which allocates from REG_ALLOC_ORDER ($v0 first), reproducing target.
+- probe: Two forms that make `off` cross-block, each verified DIRECTLY with the instrumented compiler (tools/gcc-2.7.2/cc1, `BB2_SUGG_DEBUG=1`, which prints the complete per-qty suggestion table at block-alloc time) rather than inferred from the score: (A) `off` as a loop-carried induction variable declared at function scope, initialised to 0 before the inner loop and re-computed as `off = idx << new_var;` at the BOTTOM of the loop body; (B) `off` computed in the loop-CONDITION block via a comma operator, `while (off = idx << new_var, (sent = tbl[0]) >= 0)`. Baseline block-10 table for reference: `blk=10 qty=0 reg1=129 birth=6 death=12 refs=6 nsugg=1 sugg=5,` — the only qty in the whole function carrying a plain suggestion.
+- result: BOTH forms remove the suggestion exactly as predicted — in vA and vB the block-10 table has NO qty with `sugg=5` at all (only the two unrelated `copysugg=4,` / `copysugg=5,` argument qtys remain) — and BOTH are WORSE, not better: vA = 19, vB = 17, both at 135 insns. A normalized objdump of vB against target shows `sll a1,s1,5` and `addu a1,a1,t0` still present: global.c put `off` in $a1 anyway. Reading global.c confirms the second, independent route — record_one_conflict (global.c:1728 and :1747) does `SET_REGBIT (hard_reg_preferences, reg_allocno[src_regno], dest_regno)` for exactly this hard-dest/pseudo-source relation, and find_reg consumes hard_reg_preferences at global.c:1133-1140.
+- verdict: KILLED. Denying the local-alloc SUGGESTION is not sufficient and is not the lever. `off` is pushed to $a1 by the set-to-hard-$a1 relation itself, in BOTH allocators, and any C form that only changes block-locality changes which allocator does it, not the outcome. The only remaining mechanical escape is a CONFLICT: $a1 must be live somewhere inside `off`'s [born_index, dead_index) so that find_free_reg's `for (ins = born_index; ins < dead_index; ins++) IOR_HARD_REG_SET (used, regs_live_at[ins]);` (local-alloc.c:2168-2171) excludes it, and the analogous conflict set excludes it in global.c.
+
+## [s4] Frontier item 2 (the trailing `li v1,1 / bne v0,v1` in the `func_8003E2A0() == 1` test) is the mirror image of the `off`/$a1 residual and will only move when item 1 moves
+- mechanism: s3 argued that ours ALLOCATES the constant 1 where target rematerializes it and vice versa inside the loop, so a single global.c allocno-ordering shift would flip both, and that the item must not be tuned independently.
+- probe: The s4 permuter campaign (tools/permuter_campaign.py, workspace tmp/grind/func_80041BF4/s4/ws, 21428 iterations / 714 s, base weighted score 80) returned output-70-1, which is exactly an independent attack on this item: an `int new_var2 = 1;` constant holder consumed as `func_8003E2A0() == new_var2`. Re-measured in the real chassis with `sandbox --disable all`, plus three ORDINARY-C spellings of the same test as controls (result named in a block-local `rc`; result named in a function-scope `rc`; Yoda form `1 == func_8003E2A0()`).
+- result: The constant holder alone takes the floor 13 -> 11 at 135 insns, and a normalized objdump against target shows the ONLY change is `li v1,1 / bne v0,v1` -> target's `li t0,1 / bne v0,t0`; the loop-body `off`/$a1 divergence is completely untouched. All three ordinary-C spellings are EXACTLY inert at 13 and are banked in rejected/.
+- verdict: KILLED (the coupling claim). The two items are independent: item 2 is closable on its own and its closure buys nothing for item 1. The residual 11 is now PURELY the `off`-in-$a1 allocation and its four downstream renames.
+
+## [s4] The permuter can reach the residual by respelling the LoadImage source-address expression
+- mechanism: The campaign's other novel find, output-75-1, hoists the symbol base into a function-scope pointer (`u8 *new_var2 = (u8 *)&D_800A9A24;` assigned immediately after the func_8004153C call) and consumes it as `new_var2 + off` — a plausible route to changing whether loop.c hoists the `(set rN (symbol_ref D_800A9A24))` and therefore whether the symbol pseudo is a block-10 qty competing for $a1.
+- probe: Re-measured in the real chassis with `sandbox --disable all` (the permuter's weighted score 75-vs-base-80 is not the project metric).
+- result: EXACTLY INERT — 13 at 135 insns, byte-identical to the s3 base. Banked in rejected/symbol-base-named-in-function-scope-local.c. The weighted-score improvement was entirely an artifact of the permuter's own scoring.
+- verdict: KILLED
+
+## Frontier after s4 (floor 11)
+1. **Make $a1 CONFLICT with `off` rather than merely un-preferred.** This is now the
+   whole residual: all eleven differing insns are `off` sitting in $a1 plus the
+   $t0/$v0/$v1 renames downstream of it, and the instruction stream is otherwise
+   byte-for-byte target's in target's order. Mechanism (MEASURED this session, not
+   inferred): `off` is a direct register source of `(set (reg:SI 5 a1) (plus
+   (reg/v:SI 129) (reg:SI 139)))`, and BOTH allocators independently route it to
+   $a1 from that one relation — local-alloc via combine_regs -> qty_phys_sugg
+   (local-alloc.c:1857-1896) and global.c via record_one_conflict ->
+   hard_reg_preferences (global.c:1728/1747, consumed at global.c:1133-1140).
+   Preference-removal is measured dead (see the [s4] KILL above). A conflict is not:
+   find_free_reg unions `regs_live_at[ins]` over [born_index, dead_index) into its
+   `used` set (local-alloc.c:2168-2171), so a form in which $a1 is LIVE strictly
+   between `off`'s birth (the `idx << 5` shift) and its death (the `addu a1,...`)
+   excludes $a1 for `off`. Next probe: note target's own shape is `lui a1,%hi /
+   addiu a1,a1,%lo / addu a1,v0,a1` — in TARGET the SYMBOL value is the thing living
+   in $a1 while `off` lives in $v0. So the sharpest question is: what makes the
+   symbol pseudo (139) the $a1 winner? It is currently hoisted out of both loops by
+   loop.c and left unallocated by global.c, so it never competes; if it were
+   block-local to the loop body it would carry the same $a1 suggestion and, by
+   qty_sugg_compare ordering, could take $a1 first and force `off` down
+   REG_ALLOC_ORDER to $v0. Read the `.loop` movable log for regno 139 FIRST and find
+   what would make move_movables decline it — that is a loop.c question, not an
+   allocation question, and it is the same shape as the axis s2 closed one level out
+   for D_80094DF0.
+2. **The constant holder for the trailing test is banked but NOT vetted.** The floor-11
+   candidate carries a `/* FAKE */`-annotated `int one = 1;` (constant-holder family,
+   .claude/rules/named-local-fake-exception.md). Three ordinary-C spellings are
+   measured inert, so it is the only known form — but it has never been through a
+   layer-1 cheat-reviewer or the Judge, and the FAKE prerequisites demand the full
+   modality ladder be spent BEFORE it is spent. Do not treat it as accepted. If a
+   later session closes item 1 and reaches distance 0, the self-vet must claim the
+   constant-holder family explicitly and quote that rule's scope sentence verbatim.
+3. **Do NOT reopen**: everything in the s1/s2/s3 do-not-reopen lists, plus (s4) any
+   form whose whole theory is "make `off` non-block-local so local-alloc stops
+   suggesting $a1" — measured dead twice with the compiler's own suggestion table as
+   the witness — plus the function-scope symbol-base pointer, plus the three
+   ordinary-C spellings of the trailing `== 1` test.
+
+## [s4] The `off`-in-$a1 residual is caused solely by local-alloc's qty_phys_sugg path, so any C form making `off` non-block-local (reg_qty < 0, combine_regs bails at local-alloc.c:1826) frees $a1 and collapses the residual. (s3 frontier item 1.)
+- mechanism: combine_regs (local-alloc.c:1857-1896) records $a1 in qty_phys_sugg[qty(129)] from `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`; find_free_reg's just_try_suggested pass honours it. Making `off` cross-block was predicted to hand it to global.c, which allocates from REG_ALLOC_ORDER ($v0 first) as target does.
+- probe: Two cross-block forms built and verified DIRECTLY against the instrumented cc1's per-qty suggestion table (tools/gcc-2.7.2/cc1 with BB2_SUGG_DEBUG=1) rather than inferred from the score: (A) `off` as a function-scope loop-carried induction variable, initialised before the inner loop and recomputed at the BOTTOM of the body; (B) `off` computed in the loop-condition block via `while (off = idx << new_var, (sent = tbl[0]) >= 0)`. Baseline block-10 row: `blk=10 qty=0 reg1=129 birth=6 death=12 refs=6 nsugg=1 sugg=5,` — the only suggested qty in the function. Then sandbox --disable all and a normalized objdump against target.
+- result: Both forms remove the suggestion exactly as predicted (no `sugg=5,` qty remains in block 10 in either dump), and both are WORSE: 19 and 17 at 135 insns. The vB objdump still shows `sll a1,s1,5` / `addu a1,a1,t0` — global.c put `off` in $a1 anyway. Reading global.c names the second, independent route: record_one_conflict does SET_REGBIT(hard_reg_preferences, reg_allocno[src], dest) at global.c:1728 and :1747 for exactly this hard-dest/pseudo-source relation, consumed by find_reg at global.c:1133-1140.
+- verdict: KILLED
+
+## [s4] The trailing `li v1,1 / bne v0,v1` in the `func_8003E2A0() == 1` test is the mirror image of the `off`/$a1 residual, so one allocno-ordering shift would flip both and it must not be tuned independently. (s3 frontier item 2.)
+- mechanism: s3 read it as ours ALLOCATING the constant 1 where target rematerializes it and vice versa inside the loop — a single global.c allocno-ordering difference expressed twice.
+- probe: The s4 permuter campaign returned output-70-1, an independent attack on this item alone: an `int new_var2 = 1;` constant holder consumed as `func_8003E2A0() == new_var2`. Re-measured in the real chassis with sandbox --disable all plus a normalized objdump, alongside three ordinary-C controls (result named in a block-local `rc`; named in a function-scope `rc`; Yoda `1 == func_8003E2A0()`).
+- result: The constant holder alone takes 13 -> 11 at 135 insns and the objdump shows the ONLY change is `li v1,1 / bne v0,v1` -> target's `li t0,1 / bne v0,t0`; the loop-body $a1 divergence is untouched. All three ordinary-C controls are exactly inert at 13.
+- verdict: KILLED
+
+## [s4] The permuter can reach the residual by respelling the LoadImage source-address expression (the campaign's other novel find, output-75-1: a function-scope `u8 *` symbol base consumed as `base + off`).
+- mechanism: Hoisting the symbol base into a named function-scope pointer could change whether loop.c hoists the `(set rN (symbol_ref D_800A9A24))` and therefore whether the symbol pseudo is a block-10 qty competing for $a1.
+- probe: Re-measured in the real chassis with sandbox --disable all (the permuter's weighted 75-vs-base-80 is not the project metric).
+- result: Exactly inert — 13 at 135 insns, byte-identical to the s3 base. The permuter-metric gain was an artifact of its own weighted scorer.
+- verdict: KILLED

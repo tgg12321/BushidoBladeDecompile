@@ -486,3 +486,67 @@ score.
 - [s3] Inner-body expression shape is closed: 33 measured spellings across s2 and s3 with exactly one winner, and that winner was a statement MOVE rather than a respelling.
 
 - [s3] Reusable tooling banked in tmp/grind/func_80041BF4/s3/: sbs.py (normalized side-by-side built on engine.score.normalized_insns - a raw objdump diff is unusable here, drowned in pseudo-op and format noise) and sweep.py + setbase.py, which measure every v_*.c variant in the scratch dir in one invocation, so a 14-form round costs one turn.
+
+
+## [s4] permuter modality — floor 13 -> 11
+
+Workspace: `tmp/grind/func_80041BF4/s4/ws` (hand-built, full-TU compile with a
+per-function extraction so the permuter metric is the real per-function diff).
+It replicates the production pipeline for this file exactly — `-G8` (text1a_post
+is in GP_FILES), `-mel`, prologue_fix, maspsx with MASPSX_FLAGS_GP, the
+`.align 3 -> .align 2` rodata sed, multu_pad — and its base build reproduces the
+known s3 residual insn-for-insn, so finds are chassis-faithful.
+Campaign: 21428 iterations / 714 s / 6 jobs, base weighted score 80, TWO novel
+finds (output-75-1 at 75 after 6.7 s, output-70-1 at 70 after 31.8 s), harvested
+and stopped in-session.
+
+FLOOR: 13 -> 11 at 135/135 insns, from output-70-1 re-measured in the real
+chassis: an opaque constant holder for the trailing `func_8003E2A0() == 1` test.
+It converts our `li v1,1 / bne v0,v1` into target's `li t0,1 / bne v0,t0` and
+changes nothing else. It is a `/* FAKE */`-annotated constant-holder-family
+construct and is NOT yet vetted by a cheat-reviewer or the Judge.
+
+Controls measured EXACTLY INERT at 13 (so the holder is currently the only known
+form, and the item is not reachable by ordinary C): the call result named in a
+block-local `rc`; named in a function-scope `rc`; the Yoda spelling
+`1 == func_8003E2A0()`. All three banked in rejected/.
+
+The other novel find (output-75-1, the function-scope `u8 *` symbol base) is
+EXACTLY INERT at 13 in the real chassis — its permuter-metric gain was an
+artifact of the permuter's own weighted scorer.
+
+TWO HYPOTHESES KILLED WITH DIRECT COMPILER WITNESSES (details in hypotheses.md):
+
+1. s3's frontier item 1 — "deny $a1 to `off` by making it non-block-local so
+   local-alloc's combine_regs suggestion path bails" — is FALSIFIED. Two
+   cross-block forms were built and checked against the instrumented cc1's
+   `BB2_SUGG_DEBUG` per-qty table: in both, block 10 loses its `sugg=5,` entry
+   entirely (baseline: `blk=10 qty=0 reg1=129 birth=6 death=12 refs=6 nsugg=1
+   sugg=5,`). Both are WORSE (19 and 17), and `off` is STILL in $a1 in the
+   objdump. global.c re-derives the same preference independently via
+   record_one_conflict -> hard_reg_preferences (global.c:1728/1747), consumed by
+   find_reg at global.c:1133-1140. The lever is therefore a LIVE-RANGE CONFLICT
+   on $a1, not a preference.
+
+2. s3's frontier item 2 — "the trailing `li v1,1` is the mirror image of item 1;
+   one allocno-ordering shift would flip both; do not tune it independently" —
+   is FALSIFIED. It closed on its own and bought nothing for item 1.
+
+Artifacts: tmp/grind/func_80041BF4/s4/ (mkws.sh, measure.ps1, sugg.sh, cmp.sh,
+sugg_base.txt, sugg_vA.txt, sugg_vB.txt, ws/campaign.log, ws/output-*).
+
+- [s4] FLOOR 13 -> 11 at 135/135 insns. The improvement is one construct: a `/* FAKE */`-annotated `int one = 1;` constant holder consumed by the trailing `func_8003E2A0() == one` test. It is NOT vetted â€” no cheat-reviewer, no Judge has seen it â€” and the outcome is deliberately `progress`, not `candidate-ready`.
+
+- [s4] A chassis-faithful permuter workspace for this function now exists at tmp/grind/func_80041BF4/s4/ws (built by tmp/grind/func_80041BF4/s4/mkws.sh): full-TU compile with per-function extraction, -G8 (text1a_post is in GP_FILES), -mel, prologue_fix, MASPSX_FLAGS_GP, the .align 3 -> .align 2 rodata sed, multu_pad. Its base build reproduces the known s3 residual insn-for-insn. Reuse it rather than rebuilding.
+
+- [s4] Campaign telemetry: 21428 iterations / 714 s / 6 jobs, base weighted score 80, two novel finds (75 at 6.7 s, 70 at 31.8 s), harvested and stopped in-session. Consistent with the fresh-seed rule: this basin yielded within the first 30 seconds and produced nothing further in the remaining ~11 minutes.
+
+- [s4] The instrumented compiler is tools/gcc-2.7.2/cc1 (NOT tools/gcc-2.7.2/build/cc1, which the Makefile uses and which has no instrumentation). BB2_SUGG_DEBUG=1 prints a `SUGGDBG-QTY` row per qty per block at block-alloc time and a `SUGGDBG-FFR` row per find_free_reg call; BB2_QTY_DEBUG=1 adds `QTYDBG-SUGG` rows showing which reg each suggested qty actually got. This is the fastest way to settle an allocation question in ONE build.
+
+- [s4] Baseline block-10 suggestion table (floor-13 form): `blk=10 qty=0 reg1=129 birth=6 death=12 refs=6 nsugg=1 sugg=5,` â€” pseudo 129 (`off`) is the ONLY qty in the entire function carrying a plain arithmetic suggestion, and it suggests $a1.
+
+- [s4] `off` is routed to $a1 by TWO independent mechanisms, not one: local-alloc's combine_regs -> qty_phys_sugg (local-alloc.c:1857-1896) and global.c's record_one_conflict -> hard_reg_preferences (global.c:1728/1747, consumed at global.c:1133-1140). Both fire from the same fact â€” `off` is a direct register source of a set whose destination is hard reg $a1 â€” so a C form that only changes WHICH allocator handles `off` changes nothing.
+
+- [s4] The residual 11 is now entirely the `off`-in-$a1 allocation and its downstream renames: `lui/addiu t0 + addu a1,a1,t0` vs target `lui/addiu a1 + addu a1,v0,a1`; `lhu v0` vs `lhu v1` for the y temp; `li t0,16 / li t0,1` vs `li v0,16 / li v0,1`; `sll a1,s1,5` vs `sll v0,s1,5`. Zero ordering divergence remains (s3's schedule result holds).
+
+- [s4] Target's own shape puts the SYMBOL value in $a1 and `off` in $v0. Since the symbol pseudo (139) is currently hoisted out of both loops by loop.c and left unallocated by global.c, it never competes for $a1 at all â€” making it block-local to the loop body is the one untried route by which it could take $a1 first and push `off` down REG_ALLOC_ORDER to $v0.
