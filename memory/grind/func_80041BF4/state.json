@@ -1,0 +1,38 @@
+{
+ "func": "func_80041BF4",
+ "file": "text1a_post",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 29,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 22,
+   "modality": "recon",
+   "headline": "Rotation SOLVED: real do-while outer loop + removing the do-while(0) yoff wrap flips the s2/s3/s4 trio to target's exact allocation; floor 29 -> 22"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The in-loop D_80094DF0 symbol-address form (full address in t0 vs %hi/%lo indexed) is a loop.c/cse invariant-handling divergence fixable by restructuring the index expression",
+   "mechanism": "under the new loop notes, the loop-invariant symbol_ref address becomes a movable/CSE candidate and stays materialized in a pseudo; target recomputes %hi per iteration with %lo folded into the lw",
+   "next_probe": "dump.ps1 on the candidate form; read .loop movables and .cse for the address pseudo; compare RTL against sibling func_80041AC8's matched form; then probe index-naming spellings"
+  },
+  {
+   "hypothesis": "The LoadImage arg-setup scheduling diff and the v0/v1/t0 renames collapse once the address form is fixed",
+   "mechanism": "the a1 argument is the same D_800A9A24 symbol chain; sched1 order and caller-save assignment ride on the address pseudos",
+   "next_probe": "re-diff after frontier item 1 lands; only if diffs survive, read .lreg/.sched for the specific pseudos"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T19:33:08.428401+00:00"
+}
