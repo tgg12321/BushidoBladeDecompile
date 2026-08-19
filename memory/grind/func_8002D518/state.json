@@ -1,8 +1,8 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,22 +21,28 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Floor 30 -> 7 at unchanged parity 144==144: reusing sqrt_val in place for the <<9 and naming the first quotient's numerator fixed the entire downstream allocation cascade; residual is 6 slots of disc-"
+  },
+  {
+   "session": 4,
+   "floor": 7,
+   "modality": "permuter",
+   "headline": "Permuter modality exhausted on the v21 chassis: 33,881 random iterations (zero finds, base never beaten) plus an exhaustive 24-point directed PERM cross-product (none below base) prove floor 7 is a st"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Getting `disc` allocated to $a2/$6 instead of $v1/$3 closes 6 of the remaining 7 slots and is the head of everything left.",
-   "mechanism": "disc is pseudo 117, allocated FIRST of 24 allocnos because global.c's priority is roughly log2(n_refs)*n_refs/live_length and its range is only 6 insns with 5 refs; it then takes its recorded preference $3. In target, disc's bltz read (slot 96) keeps it live ~6 slots longer, which both lowers its priority (so it is not allocated first) and removes the early pick of $3. The lever is therefore to lengthen disc's live range past the copy WITHOUT adding an instruction.",
-   "next_probe": "v2/v26 already proves that duplicating `ud = disc;` into both guard arms makes the bltz read disc - it just costs 2 insns because the copy is emitted twice. Probe spellings that put the copy in exactly one arm while leaving the branch on disc: (i) hoist ONLY the fast-path/slow-path split so the copy is the first statement of the slow block but the guard is evaluated before it (measure the RTL insn order in .rtl, not just the score); (ii) give disc one extra honest read AFTER the copy (e.g. route the 0x400 fast-path table index through disc while the slow path uses ud) and check whether 117 drops out of first place in the greg `regs to allocate` list; (iii) if 117 still gets $3, read set_preference's input by checking which mflo pseudo local-alloc put in $3 (dispositions line) and try re-associating the discriminant so that operand lands elsewhere."
+   "hypothesis": "Getting `disc` (pseudo 117) allocated to $a2/$6 instead of $v1/$3 closes 6 of the remaining 7 slots and is still the head of everything left - but it is now proven NOT reachable by respelling the guard region, so the attack must be on the allocno ORDER itself.",
+   "mechanism": "global.c sorts allocnos by roughly log2(n_refs)*n_refs/live_length. 117 has 5 refs across a 6-insn live range, which makes it the FIRST of 24 allocated, and `;; 117 preferences: 3` then hands it $3 before any other allocno is considered. Target's disc is live ~6 slots longer (its bltz reads disc where ours reads the copy), which both lowers its priority and removes the early pick of $3. s4 proved the live-range lengthening cannot be bought by any spelling of the guard/exit/index axes at zero instruction cost.",
+   "next_probe": "FORENSICS, not search. Run `pwsh tools/grinder/dump.ps1 func_8002D518` on the v21 chassis and read .greg: (i) print the full sorted allocno list with each one's n_refs and live_length, and compute by hand which single perturbation of 117's live_length or n_refs would sort it below the allocno that currently takes $6; (ii) then work BACKWARDS from that number to what source-visible property would produce it, instead of forwards from spellings. (iii) Separately read set_preference's input: identify WHICH mflo pseudo local-alloc put in $3 (the dispositions line) and whether re-associating the discriminant so that operand lands elsewhere removes 117's $3 preference outright - that is a different lever from live-range length and has never been measured."
   },
   {
-   "hypothesis": "Slot 88 needs `if (disc < 0) return 0;`, and the only thing stopping it is jump2 cross-jumping the resulting 2-insn block into the entrance return-0 block.",
-   "mechanism": "GCC emits `(set (reg 2) 0); (jump epilogue)` for a `return 0;` statement, which is exactly target slots 87/88. jump.c's cross-jump finds the identical tail in the entrance chain and redirects the conditional branch there, deleting the block and dropping build_insns from 144 to 142. Crucially both target AND our build already carry TWO un-merged copies of that same block in the entrance chain, so cross-jump here is selective rather than exhaustive - something about the third instance makes it mergeable.",
-   "next_probe": "Recompile v24 with `pwsh tools/grinder/dump.ps1 func_8002D518` and read .jump2 to see WHICH pair find_cross_jump matched and why the two existing entrance copies are not merged with each other. Then try structural spellings that change the entrance chain's exit shape only where it is already byte-identical to target (it must stay byte-identical - slots 0-83 currently match), or spellings that change the disc<0 block's position relative to the entrance copies. Do NOT spend probes on respelling `return 0` itself - the emitted shape is already correct."
+   "hypothesis": "Slot 88 needs `if (disc < 0) return 0;` and the only thing stopping it is jump2 cross-jumping the resulting 2-insn block into the entrance return-0 block (142 insns vs target's 144).",
+   "mechanism": "GCC emits `(set (reg 2) 0); (jump epilogue)` for a `return 0;` statement, which is exactly target slots 87/88. jump.c's cross-jump finds the identical tail in the entrance chain and redirects the conditional branch there, deleting the block. Both target AND our build already carry TWO un-merged copies of that same block in the entrance chain, so cross-jump here is SELECTIVE rather than exhaustive - something about the third instance makes it mergeable. s4 added the `goto`-a-shared-end spelling to the measured set and it is no better than `result = 0;`.",
+   "next_probe": "Recompile the v21 chassis with `pwsh tools/grinder/dump.ps1 func_8002D518` and read .jump2 to see WHICH pair find_cross_jump matched and why the two existing entrance copies are not merged with each other. The productive question is what property distinguishes the surviving pair - once that is known, spell the disc<0 arm so it acquires the same property. Do NOT spend further probes on respelling `return 0` itself; the emitted shape is already correct and the exit-shape axis is now exhausted (s4 H13)."
   },
   {
-   "hypothesis": "There is no third residual item - once (a) and (b) land the function is at 0.",
-   "mechanism": "The v21 alignment is a complete 154-slot comparison with only 15 raw differing words, 8 of them scorer-masked classes (j-targets, %hi/%lo relocs). Every remaining word is accounted for by (a) or (b). No ordering difference, no instruction-count difference, no missing or extra instruction anywhere.",
+   "hypothesis": "There is no third residual item - once the two above land the function is at 0.",
+   "mechanism": "The v21 alignment is a complete 154-slot comparison with only 15 raw differing words, 8 of them scorer-masked classes (4 j-targets, 4 %hi/%lo D_8008D118 reloc words). Every remaining word is accounted for by the two items above. No ordering difference, no instruction-count difference, no missing or extra instruction anywhere - and the s4 workspace validation independently reproduced exactly that diff from a completely separate build path.",
    "next_probe": "After any change, re-run `tmp/grind/func_8002D518/s3/align.py <variant>` on an `objdump -dz` listing and confirm the raw-diff count equals engine score + 8; if it does not, a new masked class has appeared and must be identified before drawing conclusions."
   }
  ],

@@ -293,3 +293,73 @@
 - probe: v1 (inverted guard: if (disc >= 0) { island } else { lzcr = 0; }), v2/v26 (`ud = disc;` duplicated into both arms), v4 (denom computed right after dist_sq), v6 (ud hoisted above the 0x400 test with all fast-path uses routed through it), v29 (ud dropped entirely).
 - result: v1 = 32/146 (materialises the dead arm); v2 = 32/146 on the floor-30 chassis and v26 = 9/146 on the v21 chassis - it DOES put disc on the bltz but pays 2 instructions; v4 = 37/144; v6 = 31/145; v29 = 7/144 but with a NOP at slot 90 where target has `addu $a0,$a2,$zero` (the copy simply absent), so structurally strictly worse than v21 at the same score.
 - verdict: KILLED
+
+## [s4] H12 — decomp-permuter random restructuring of the v21 chassis reaches the disc-allocation residual
+- **statement:** the residual 7 is a single-pseudo allocation difference (`disc`
+  in $v1/$3 where target uses $a2/$6) plus one slot-88 exit-shape difference.
+  decomp-permuter's random pass mutates statement/expression structure far more
+  aggressively than a human enumerates, so if ANY ordinary-C restructuring of
+  the function moves `disc` off $3 without costing an instruction, a long random
+  campaign on the v21 chassis should surface it.
+- **mechanism:** permuter's randomizer performs (among others) temp-variable
+  introduction/removal, expression re-association, statement reordering,
+  conditional inversion, and block splitting — exactly the class of edits that
+  s3 proved CAN move this function's allocation (the `sqrt_val <<= 9` /
+  `num1` edits were of that class and moved the floor 30 -> 7). If the class is
+  productive at all beyond v21, sampling it densely finds a member.
+- **probe:** a full-TU permuter workspace was built for this function
+  (`tmp/perm_d518`, recipe banked below) whose base.c is the preprocessed
+  `src/code6cac_b.c` carrying the v21 candidate; its validation diff reproduces
+  EXACTLY the known 7-slot residual (154 insns == 154, differing words only at
+  slots 85-89/91/93/97). Campaign
+  `tools/permuter_campaign.py launch --func func_8002D518 --dir tmp/perm_d518
+  --label s4-v21-chassis -j 6`, permuter base score 35. Ran 1132 s wall,
+  **33,881 iterations**, two `wait` windows, harvested with `--stop`.
+- **result:** **ZERO finds.** Best score across all 33,881 samples is exactly the
+  base 35 (8,286 samples tie it; the next distinct scores up are 39 x21,
+  40 x11, 45 x347, 50 x54 — i.e. the neighbourhood is strictly uphill).
+  Nothing ever scored below base.
+- **verdict: KILLED.** The v21 chassis is a strict local minimum for
+  decomp-permuter's random pass. Random restructuring is not the lever for the
+  `disc` allocation; the remaining 7 is not reachable by generic mutation and
+  needs a targeted structural insight (frontier items (a)/(b) below).
+
+## [s4] H13 — the cross-product of guard-shape x exit-shape x table-index-operand spellings contains a winner
+- **statement:** s2/s3 measured those three axes ONE AT A TIME. Their
+  interaction is untested, and the `disc` allocation is a whole-block property,
+  so a combination could win where each single change is neutral or worse.
+- **mechanism:** the three sites are (1) the outer `disc < 0` arm's exit shape
+  (`result = 0;` fall-through vs `goto` the shared end vs a real `return 0;`),
+  which controls whether jump2 cross-jumps and therefore the insn count; (2) the
+  inner LZCS guard shape (`if (disc < 0) {lzcr=0;} else {island(ud);}` vs the
+  same tested on `(s32)ud` vs the inverted `if (disc >= 0)` form vs the island
+  reading `disc` instead of `ud`), which controls which pseudo the bltz reads
+  and hence `disc`'s live range; (3) the slow-path table index reading `ud` vs
+  `(u32)disc`, which controls whether `disc` has a use after the copy.
+  Together they determine `disc`'s live length and therefore its global.c
+  allocno priority.
+- **probe:** a directed PERM chassis (`tmp/perm_d518b/base.c`, banked at
+  `tmp/grind/func_8002D518/s4/directed_chassis_base.c`) encoding site 1 as a
+  3-way `PERM_GENERAL`, site 2 as a 4-way `PERM_GENERAL` and site 3 as a 2-way
+  `PERM_GENERAL` — the exhaustive 3x4x2 = 24-point cross-product. Campaign
+  `--label s4-directed-guard-perm`; permuter enumerated all 24 and exited.
+- **result:** **all 24 combinations measured, none below base 35.** The
+  distribution is 35 (x6, the base-equivalent set), 230/235 (x7), 430 (x2),
+  545 (x3), 605, 740 (x3), 800. Per-iteration scores banked at
+  `tmp/grind/func_8002D518/s4/campaign_directed_scores.txt`.
+- **verdict: KILLED.** The guard/exit/index spelling space is exhausted as a
+  cross-product, not merely one axis at a time. Six spellings are exactly
+  base-equivalent and eighteen are strictly worse; no interaction effect exists.
+  Do NOT re-open any of these three axes.
+
+## [s4] decomp-permuter's random pass, run long on the v21 chassis, reaches the residual 7 (the disc-in-$v1-vs-$a2 allocation plus the slot-88 exit shape).
+- mechanism: permuter's randomizer performs temp-variable introduction/removal, expression re-association, statement reordering, conditional inversion and block splitting - exactly the edit class that s3 proved CAN move this function's allocation (the `sqrt_val <<= 9` and `num1` edits were of that class and took the floor 30 -> 7). If that class is productive anywhere beyond v21, dense sampling should find a member.
+- probe: Built and VALIDATED a full-TU permuter workspace (tmp/perm_d518): base.c = preprocessed src/code6cac_b.c carrying the v21 candidate; compile.sh mirrors engine/buildconfig.py exactly (cc1 -O2 -G0 -mel, prologue_fix, maspsx with --expand-lb, multu_pad) and extracts the func_8002D518 region; target.o assembled from asm/funcs/func_8002D518.s plus the r3000-patched permuter prelude. Self-validation prints 'base insns: 154  target: 154' and a diff that is EXACTLY the known 7-slot residual, so the permuter metric is the honest residual. Campaign `permuter_campaign.py launch --func func_8002D518 --dir tmp/perm_d518 --label s4-v21-chassis -j 6`, permuter base score 35, two in-turn `wait` windows, harvested with --stop.
+- result: 33,881 iterations / 1,132 s wall / ZERO finds. Best score across the entire run equals the base 35 (8,286 samples tie it). The next distinct scores upward are 39 x21, 40 x11, 45 x347, 50 x54 - the neighbourhood is strictly uphill in every direction the randomizer can reach. Nothing ever scored below base.
+- verdict: KILLED
+
+## [s4] The INTERACTION of the three guard-region axes contains a winner even though each axis is neutral or worse alone: {outer `disc < 0` arm exit shape} x {inner LZCS guard shape} x {slow-path table-index operand}.
+- mechanism: s2 and s3 measured these three axes one at a time. `disc`'s live range - and therefore its global.c allocno priority, which s3 identified as the reason pseudo 117 is allocated first and takes its recorded $3 preference - is a whole-block property, so a combination could in principle win where each single change does not. Site 1 controls whether jump2 cross-jumps the return-0 block (the insn-count risk); site 2 controls which pseudo the inner bltz reads and hence how far past the copy disc stays live; site 3 controls whether disc has any use after the copy at all.
+- probe: Directed PERM chassis tmp/perm_d518b/base.c: site 1 a 3-way PERM_GENERAL (`result = 0;` | `{ result = 0; goto done; }` | `return 0;`), site 2 a 4-way PERM_GENERAL (`if (disc < 0) {lzcr=0;} else {island(ud);}` | the same tested on `(s32)ud` | the inverted `if (disc >= 0)` form | the island reading `disc` instead of `ud`), site 3 a 2-way PERM_GENERAL (`ud` | `(u32)disc`). Campaign label s4-directed-guard-perm; permuter enumerated the full 3x4x2 = 24-point cross-product and exited.
+- result: All 24 combinations measured; NONE below the base 35. Six are exactly base-equivalent, eighteen strictly worse (230, 235, 430, 545, 605, 740, 800). Per-iteration scores banked at tmp/grind/func_8002D518/s4/campaign_directed_scores.txt; the chassis itself is banked as a rejected form.
+- verdict: KILLED

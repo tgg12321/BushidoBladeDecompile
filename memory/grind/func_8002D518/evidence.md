@@ -342,3 +342,65 @@ match.
 - [s3] TOOLING: invoke the variant runner with the call operator (`& tmp/grind/func_8002D518/s3/run.ps1 -Variants a,b,c`); `pwsh script.ps1 -Variants a,b` uses -File semantics, binds the list as a single string, copies nothing and re-scores stale src.
 
 - [s3] TOOLING: Python on this box reads repo sources as cp1252, so a variant generator must open/write with encoding='latin-1' or the em-dash in the island comment breaks every anchor match.
+
+## [s4] permuter modality — the v21 chassis is a strict local minimum
+
+- [s4] CHASSIS (fourth consecutive session): `src/code6cac_b.c` at dispatch did
+  NOT carry the ledger candidate — HEAD still had the pre-s1 register-pin/.word
+  island. Re-applied `candidate.c` with
+  `tmp/grind/func_8002D518/s4/splice.py memory/grind/func_8002D518/candidate.c`
+  and re-measured: **score 7, build_insns 144 == target_insns 144**. The floor
+  is unchanged from s3; s4 did not lower it.
+- [s4] A REUSABLE full-TU permuter workspace now exists and is validated:
+  `tmp/grind/func_8002D518/s4/mkws.sh` builds `tmp/perm_d518/` from scratch
+  (preprocessed `src/code6cac_b.c` as base.c, an engine-faithful compile.sh, and
+  target.o assembled from `asm/funcs/func_8002D518.s` + the r3000-patched
+  permuter prelude). Its self-validation prints `base insns: 154  target: 154`
+  and a diff that is EXACTLY the known 7-slot residual — so the permuter metric
+  here is the honest residual, not an artefact.
+  - Two gotchas cost turns and are banked: (i) maspsx emits `.ent`/`.end` at
+    COLUMN 0 (no leading tab), so a `/^\t\.ent\tfunc/` extraction awk silently
+    produces an empty object — match `/^\.ent\tfunc_8002D518$/`; (ii) the Bash
+    tool's quoted heredoc COLLAPSES `\n` to `\n` when writing a generator
+    script, which turns the island's `"...\n"` escapes into real newlines and
+    makes base.c unparseable ("missing terminating \" character"). Write
+    generator scripts with the Write tool, or repair afterwards with
+    `tmp/grind/func_8002D518/s4/mkperm2b.py`.
+- [s4] RANDOM CAMPAIGN (`tmp/perm_d518`, label `s4-v21-chassis`, -j 6):
+  **33,881 iterations / 1,132 s wall / ZERO finds.** permuter base score 35.
+  Score histogram of the whole run: **35 x8,286 (the base, never beaten)**,
+  39 x21, 40 x11, 45 x347, 50 x54, everything else higher. The v21 chassis is a
+  STRICT LOCAL MINIMUM under decomp-permuter's random pass — every mutation the
+  randomizer can make is neutral or uphill. Per-iteration scores banked at
+  `tmp/grind/func_8002D518/s4/campaign_random_scores.txt`.
+- [s4] DIRECTED CAMPAIGN (`tmp/perm_d518b`, label `s4-directed-guard-perm`):
+  the exhaustive 3x4x2 = **24-point cross-product** of {outer `disc < 0` exit
+  shape} x {inner LZCS guard shape} x {slow-path table-index operand} —
+  i.e. the interaction of the three axes s2/s3 had only measured one at a time.
+  permuter enumerated all 24 and exited. **None below base 35**; six are exactly
+  base-equivalent, eighteen strictly worse (230/235/430/545/605/740/800). There
+  is no interaction effect on these axes; they are closed as a space, not just
+  as individual probes.
+- [s4] CONSEQUENCE FOR THE FRONTIER: the residual 7 is NOT reachable by generic
+  restructuring of this function. 33,881 random samples plus a 24-point directed
+  cross-product all bottom out at the base. The `disc`-in-$v1 allocation must be
+  attacked through the mechanism s3 named (global.c allocno priority / live-range
+  length), not by respelling the block. The next productive modality is
+  forensics on `.greg` (which allocno ordering change would flip 117 off $3, and
+  what source-visible property produces it), not more sampling.
+
+- [s4] [s4] CHASSIS, fourth consecutive session: src/code6cac_b.c at dispatch did NOT carry the ledger candidate (HEAD still had the pre-s1 register-pin/.word island). Re-applied candidate.c via tmp/grind/func_8002D518/s4/splice.py and re-measured with `sandbox func_8002D518 --disable all`: score 7, build_insns 144 == target_insns 144. Confirmed again at end of session with the edits still in place.
+
+- [s4] [s4] A reusable, VALIDATED full-TU permuter workspace recipe for this function now exists: tmp/grind/func_8002D518/s4/mkws.sh builds tmp/perm_d518/ from scratch and self-validates by printing 'base insns: 154  target: 154' plus a diff that is exactly the known 7-slot residual (slots 85-89 subu/bgez/sltiu/j/move, 91 the copy source, 93 the table-index addu, 97 the bltz). Any future session can rebuild it in one command.
+
+- [s4] [s4] TOOLING GOTCHA A: maspsx emits `.ent` / `.end` at COLUMN 0 (no leading tab), unlike raw cc1 output. An extraction awk written as /^\t\.ent\tfunc_.../ silently produces an EMPTY object and the workspace validation then fails with a bare grep exit-1 and no message. Match /^\.ent\tfunc_8002D518$/.
+
+- [s4] [s4] TOOLING GOTCHA B: the Bash tool's QUOTED heredoc still collapses `\\n` to `\n` when writing a generator script, which turns the LZCS island's `"...\n"` escapes into real newlines and makes the generated base.c unparseable ('missing terminating " character'). Write generator scripts with the Write tool; the repair pass is tmp/grind/func_8002D518/s4/mkperm2b.py. This is the same class of corruption that hit candidate.c between s2 and s3.
+
+- [s4] [s4] RANDOM CAMPAIGN measurement: 33,881 iterations, 1,132 s wall, -j 6, ZERO finds. Full score histogram bottom: 35 x8,286 (the base, never beaten), 39 x21, 40 x11, 45 x347, 50 x54. The v21 chassis is a STRICT LOCAL MINIMUM under decomp-permuter's random pass.
+
+- [s4] [s4] DIRECTED CAMPAIGN measurement: the exhaustive 24-point cross-product of the three guard-region axes returned nothing below base. Six spellings are exactly base-equivalent (so the base spelling is not uniquely privileged, merely tied) and eighteen are strictly worse. There is NO interaction effect between the three axes; they are now closed as a SPACE, not merely as individual probes.
+
+- [s4] [s4] CONSEQUENCE: the residual 7 is not reachable by generic restructuring of this function. Two independent searches - 33,881 random samples and a complete directed enumeration - bottom out at the base. The `disc`-in-$v1 allocation must be attacked through the mechanism s3 already named (global.c allocno priority for pseudo 117: 5 refs over a 6-insn live range makes it the FIRST of 24 allocnos, and `;; 117 preferences: 3` then hands it $3), not by respelling the block.
+
+- [s4] [s4] Both campaigns were harvested with --stop inside this turn; `pgrep -af permuter.py` returns nothing, so no campaign outlives the session.

@@ -1,3 +1,17 @@
+/* [s4 ADDENDUM - permuter modality, floor UNCHANGED at 7]
+ * This form was re-applied to src/code6cac_b.c at s4 dispatch (HEAD did NOT
+ * carry it, for the fourth consecutive session) and re-measured: score 7,
+ * build_insns 144 == target_insns 144.
+ * s4 then proved it is a STRICT LOCAL MINIMUM for decomp-permuter:
+ *   - 33,881 random iterations on a validated full-TU workspace: ZERO finds,
+ *     best-ever score == base (permuter metric 35). Neighbourhood is uphill.
+ *   - an exhaustive 24-point directed PERM cross-product over {outer disc<0
+ *     exit shape} x {inner LZCS guard shape} x {slow-path index operand}:
+ *     none below base; six base-equivalent, eighteen worse.
+ * So do NOT spend another session sampling this chassis. The residual 7 needs
+ * the allocation mechanism attacked directly (global.c allocno priority for
+ * pseudo 117), i.e. forensics, not search.
+ */
 /* func_8002D518 - best form as of s3 (structural). Honest floor 7,
  * build_insns 144 == target_insns 144. This exact text is IN PLACE in
  * src/code6cac_b.c at end of s3.
