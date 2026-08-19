@@ -503,3 +503,61 @@ which deliberately omits the LAUNCH_PRIORITY assignment.
    of pseudos entirely.
 3. Do NOT re-open: the SCHED_GROUP_P bump path (H-s6-5), the {c,f} sharing (H-s6-2), the
    permuter (65,445 iterations, two chassis, zero finds), canonical-asm (LOW 1/8).
+
+## [s7] 2026-08-19 — forensics. Two hypotheses measured; the function is NOT exhausted.
+
+**H-s7-1 — CONFIRMED.** The residual is decided by the BUMP STATE of the two contested
+loads' destination pseudos, and only the all-unbumped cell reproduces target's order; the
+identity of the hosting local is downstream of that.
+  mechanism: adjust_priority/birthing_insn_p (tools/gcc-2.7.2/sched.c:2504-2592) bumps a
+  ready insn to LAUNCH_PRIORITY iff its destination pseudo has reg_n_sets == 1; blocks are
+  scheduled backward, so bumped = picked when ready = emitted late, and unbumped = lingers
+  in the ready list = emitted early, ordered among themselves by the LUID (source-order)
+  fall-through at sched.c:2464.
+  probe: completed the 2x2 by measuring the missing cell. z1 = y3 with the stage split
+  into two single-set locals (p10 pointer, h4 halfword), everything else identical.
+  result: score 9, 66 insns. Copy 2's address load lands at target's slot 11 (unbumped,
+  correct) while the bumped stage load drifts to slot ~19. The other three cells were
+  already measured: (bumped, bumped) 8-10 in s1 K2, (bumped, unbumped) 2 at baseline,
+  (unbumped, unbumped) 0 in v42/v45/v47/y3. Banked as
+  rejected/z1-copy2-unbumped-stage-singleset-bumped-stage-drifts-to-slot19-score9.c.
+  This retires s6 frontier item 2: no differently-shaped body can reach the same 66
+  instructions with a different pair of pseudos, because the requirement is a property of
+  the bump state, not of the pseudo.
+
+**H-s7-2 — CONFIRMED (unruled).** `reg_n_sets > 1` on copy 2's address-load destination
+can be obtained WITHOUT banned construct 1's redundant reload, by same-variable split-init
+accumulation on a pointer that is loaded exactly once.
+  mechanism: `cp = *(s32*)(outer+0xC); cp += 4;` is the shape the owner sanctioned
+  provisionally on 2026-06-13 ([[split-init-accumulation-sanctioned]], commit ad11a8c8,
+  func_80049C24 in this same file). combine folds the `+= 4` into the load displacement so
+  the emitted code is unchanged (66 insns, `lw $v0,4($a0)`), but the pseudo still behaves
+  as multiply-set for birthing_insn_p - the stale-count behaviour the sanction documents
+  for reg_n_refs, observed here on reg_n_sets.
+  probe: z2 (split-init block alone on top of candidate.c) = score 2, 66 insns, stage load
+  at target slot 12 for the first time, residual now copy1-vs-copy2 address loads. z3 (z2 +
+  copy 1 staged through the pre-existing `result`) = **score 0, build 66 / target 66**,
+  measured twice, disassembly and -da dump set banked. z6 (control: same `cp` local, split
+  line removed, offset folded back into the deref) = score 2, isolating the split-init line
+  as the entire lever. z5 (split-init hosted on the pre-existing `idx`) = score 9 / 67
+  insns, so a fresh local is required for this seat.
+  NOT SUBMITTED: `cp` is a fresh local written twice, which the Judge's 2026-08-19 10:21
+  ruling calls an excluded quadrant, and the split-init sanction is not on the frozen SOTN
+  family list. Session returns ruling-request.
+
+### Frontier after s7
+1. **The ruling on z3's `cp`.** If same-variable split-init accumulation on a
+   once-loaded pointer is admissible here, the function is DONE at score 0 today and needs
+   only the standing asmfix.txt:109/:110 integration step. If it is refused, then combined
+   with H-s7-1 the C axis really is closed - and the closure argument to record is the
+   bump-state truth table, not s4's carrier enumeration.
+2. If `cp` is refused but copy 1's `result` staging is not, the only unexplored question
+   left is whether ANY once-loaded, twice-written spelling of copy 2's pointer exists on a
+   PRE-EXISTING local. s7 measured `idx` (score 9, global-alloc $a0 conflict, same failure
+   as s4 K15) and s4 measured `result` (taken by copy 1) and `temp_a1` (taken by the
+   stage); `temp2` is banned and `outer` is live throughout. That enumeration is complete,
+   so the honest answer is probably no - but it has not been written out as a partition
+   under the split-init spelling.
+3. Do NOT re-open: the carrier-identity enumeration (s4), the SCHED_GROUP_P bump path
+   (H-s6-5), the permuter (65,445 iterations, two chassis, zero finds), canonical-asm
+   (LOW 1/8), and every cell of the H-s7-1 truth table.

@@ -6764,3 +6764,105 @@ than on s5's carrier enumeration, which was incomplete.
 ## 2026-08-19 10:48 — func_80060A68 — ruling: func_80060A68's two-instruction residual closes (sandbox --disable all = 0, buil — **FAIL**
 
 y3 is not a pure permutation of pre-existing jobs. I diffed ruling-y3-role-permutation-score0.c against candidate.c: in the ban-free floor-2 body NO local carries copy 1/2/3's source pointer at all (all three are inline expressions, candidate.c copy block). y3 CREATES that staging role and hosts it in existing identifiers - idx gets the identical pointer loaded twice from outer+0xC with no intervening write, which is banned construct 1 verbatim with the name changed, and result gets the same self-overwrite lever (result = ptr; result = *ptr). Layer-1 remedy (a) required an honest pre-existing JOB, not a pre-existing NAME. Cheat tests 2 and 3 fail on the session's own stated mechanism (evidence.md [s6]): the double assignment exists solely to strip birthing_insn_p's LAUNCH_PRIORITY bump via reg_n_sets>1 - GCC-steering is its only function, and no human writes a redundant reload of an unchanged pointer from spec. Separately, temp2 is widened u16->s32 and made a multi-write carrier (0x1A halfword, then the late index), which is banned_constructs entries 3/4 with the second value swapped. Bytes (sandbox 0, 66/66) are not in dispute; legitimacy is, and default-FAIL governs.
+
+## 2026-08-19 — func_80060A68 — **RULING REQUEST — split-init accumulation as the unbump lever**
+
+**This is a ruling request, not a submission, and it is not an exhaustion claim.** The
+function is NOT exhausted: a score-0 body exists today whose closing lever is a different
+construct family from every previously banned form, and a grind session may not
+self-approve the family question it raises.
+
+**Status of the prior entries.** The 2026-08-19 `OWNER-ESCALATION — RESOLVED BY STANDING
+RULING` entry remains retracted (s6). s6's alternative, y3, was ruled **FAIL** at 10:48
+for two named reasons: `idx` reloading the identical pointer from `outer + 0xC` twice with
+no intervening write (banned construct 1 with the identifier changed), and `temp2` widened
+u16->s32 into a multi-write carrier (banned constructs 3/4). **The body below contains
+neither.**
+
+**What s7 measured (forensics modality; all `sandbox func_80060A68 --disable all`).**
+
+1. *The residual is a bump-state problem, and the truth table is now complete.* The only
+   degree of freedom GCC 2.7.2's `adjust_priority`/`birthing_insn_p`
+   (tools/gcc-2.7.2/sched.c:2504-2592) exposes is whether each contested load's
+   destination pseudo has `reg_n_sets == 1` (bumped to LAUNCH_PRIORITY, and because blocks
+   are scheduled backward, emitted LATE) or `> 1` (unbumped, emitted early in
+   source/LUID order via the sched.c:2464 fall-through). Two loads, two states, four cells:
+
+   | copy 2 address load | stage (0x10) load | body | score |
+   |---|---|---|---|
+   | bumped | bumped | s1 K2 / v3 | 8-10 (stage overshoots to slot 23/26) |
+   | bumped | unbumped | candidate.c baseline | 2 (stage@11, copy2@12 — swapped) |
+   | unbumped | bumped | **z1, NEW this session** | **9** (copy2@11 correct, stage drifts to slot ~19) |
+   | unbumped | unbumped | v42/v45/v47/y3/z3 | 0 |
+
+   z1 was the unmeasured cell. This retires s6's remaining frontier item ("maybe a
+   differently-shaped body reaches 66 instructions with a different pair of pseudos"):
+   the requirement is a property of the bump state, not of which local hosts the value.
+
+2. *A multiply-assigned destination does not require the banned redundant reload.*
+
+       cp = *(s32 *)(outer + 0xC);      /* ONE load of the pointer */
+       cp += 4;                         /* combine folds this into the displacement */
+       *(s32 *)(outer + 0x24) = *(s32 *)cp;
+
+   This is the same-variable **split-init accumulation** shape (`var = a; var += b;`
+   instead of `var = a + b;`) the owner sanctioned provisionally on 2026-06-13
+   ([[split-init-accumulation-sanctioned]]), which closed func_80049C24 in this same file
+   (commit `ad11a8c8`). `combine` folds the `+= 4` into the load's displacement: the
+   emitted instruction is `lw $v0,4($a0)`, the count stays at **66**, and the split is
+   invisible in the object code. Confirmed in the RTL —
+   `tmp/grind/func_80060A68/s3/z3dumps/text1b.sched` shows exactly one surviving set of
+   `reg/v 77` (insn 34) with the consumer at `(mem (plus (reg/v 77) 4))` (insn 40), yet
+   the pseudo still behaves as multiply-set for `birthing_insn_p` — the same stale-count
+   behaviour the 2026-06-13 sanction documents for `reg_n_refs` in global.c, here on
+   `reg_n_sets` in sched.c.
+
+   * **z2** (that block alone on candidate.c): score 2, 66 insns — but the stage load
+     reaches target's slot 12 for the first time with no banned construct present.
+   * **z3** (z2 + copy 1 staged through the pre-existing `result`): **score 0, build 66 /
+     target 66**, measured twice. Slots 10/11/12 = `lw v0,12(v1)` / `lw a0,12(v1)` /
+     `lw a1,16(v1)` = target. Body:
+     `memory/grind/func_80060A68/ruling-z3-split-init-accumulation-score0.c`.
+   * **z6** (control: same `cp` local, `cp += 4;` deleted and the offset folded back into
+     the deref so `cp` is single-set): score 2. The zero-instruction split line is worth
+     exactly the two-instruction residual.
+   * **z5** (split-init hosted on the pre-existing `idx` instead of a fresh `cp`): score
+     9 / 67 insns — global-alloc's $a0 conflict, the same failure s4 recorded as K15, so
+     it is a property of `idx`, not of the spelling. No pre-existing local is available
+     for this seat (`outer` live throughout, `temp_a1` holds the stage, `result` holds
+     copy 1, `temp2` banned).
+
+**The question.** z3 contains exactly two constructs:
+
+* **(a) `cp` — a FRESH local written twice** (`cp = ptr; cp += 4;`), read once, its second
+  write folded away by `combine`. The SHAPE is verbatim the 2026-06-13 sanctioned
+  split-init accumulation; the GCC pass it steers is different (sched.c `reg_n_sets`
+  rather than global.c `reg_n_refs`), and that sanction's own text says adjacent spellings
+  need their own ruling. It is also "fresh AND multi-write", which the 2026-08-19 10:21
+  ruling called an excluded quadrant for the named-intermediate / staged-value families.
+  **Is split-init accumulation available here, or does the excluded-quadrant rule override
+  the 2026-06-13 sanction?**
+* **(b) copy 1 staged through the pre-existing `result`** (`result = ptr; result = *ptr;
+  store result;`). This is the staged-value-reused-variable form already present and
+  unbanned in candidate.c (where `temp_a1` does the identical thing for the 0x10 pointer),
+  hosted on a pre-existing local whose real job is the dispatch call's return value, and
+  it mirrors target's own `$v0` self-overwrite (`lw v0,12(v1)` then `lw v0,0(v0)`). The
+  10:48 ruling mentioned this construct while failing y3, but y3's decisive defects were
+  `idx` and `temp2`. **Does (b) stand on its own?**
+
+If both are admissible the function is finished today and needs only the standing
+integration step: retire `asmfix.txt:109` and `asmfix.txt:110` in the same change as the
+C swap (both anchor `delete_between` on the old first body instruction `lhu $4,0($3)`,
+while this body emits `lhu $2,0($3)`), then `verify-oracle`. If (a) is refused, the
+closure argument to record is the bump-state truth table above, not s4's carrier
+enumeration.
+
+**Evidence:** memory/grind/func_80060A68/evidence.md [s7] and hypotheses.md [s7]
+(H-s7-1, H-s7-2); bodies in tmp/grind/func_80060A68/s3/bodies/ (z1, z2, z3, z5, z6);
+disassembly tmp/grind/func_80060A68/s3/{z1,z3}_disasm.txt; cc1 `-da` dump set
+tmp/grind/func_80060A68/s3/z3dumps/; rejected forms banked under
+memory/grind/func_80060A68/rejected/.
+
+## 2026-08-19 11:07 — func_80060A68 — ruling: func_80060A68 reaches sandbox --disable all = 0 (build 66 / target 66, measured  — **FAIL**
+
+(a) FAILS. `cp` is a fresh local written twice whose second write (`cp += 4`) combine folds away entirely -- zero semantic purpose, zero bytes, sole function is holding reg_n_sets at 2 (the ledger's own z3 header says so). That is the multiply-assigned pointer-staging carrier state.json judge_constraints[3] bans for this function 'regardless of which identifier hosts it'; the label changed, the construct did not (fourth respelling after src/temp2/idx). The decisive fact: split-init-accumulation-sanctioned is NOT on the frozen SOTN list (verified: no entry in .claude/rules/no-new-park-categories.md), is provisional, and its own text requires a fresh ruling for adjacent spellings -- and this IS adjacent: the sanctioned exemplar (func_80049C24) splits a real pre-existing a+b, while here the local is invented purely to host the split (control z6, cp single-set = 2, proves cp itself is not the lever). Fresh + multi-write remains the excluded quadrant of the 10:21 ruling (decisions.md:6622-6624), not a gap. (b) is moot and independently unavailable: `result = ptr; result = *ptr;` makes `result` a multiply-assigned pointer-staging carrier for copy 1's address load -- the same closed axis -- and z6 shows the body scores 2 without (a) anyway. Verified myself: sched.c:2504-2535 mechanism reads as claimed; frozen list grepped; z6 and z3 bodies diffed. Evidence lives in memory/grind/func_80060A68/evidence.md [s7], hypotheses.md, rejected/z6-*, ruling-z3-*.

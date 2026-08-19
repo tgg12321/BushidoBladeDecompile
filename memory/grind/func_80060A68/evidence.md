@@ -632,3 +632,112 @@ not self-approve that call, so this session returns `ruling-request`.
 - tmp/grind/func_80060A68/s3/f2/{y1,y2,y3}.c — the three probe bodies
 - tmp/grind/func_80060A68/s3/f2/canddump/ — full `-da` set + sched.log for the floor-2 body
 - tmp/grind/func_80060A68/s3/f2/y1dump/, y3dump/ — same for y1 and the score-0 y3
+
+## [s7] 2026-08-19 — forensics. The bump-state truth table is COMPLETE, and a score-0 body exists whose copy-2 lever is NOT the banned redundant reload.
+
+Chassis re-measured at session start with candidate.c applied over src/text1b.c:
+`sandbox func_80060A68 --disable all` = **score 2, build 66 / target 66** — the ledger
+floor reproduces again. src/text1b.c was restored byte-for-byte to HEAD before finishing
+(`git status` clean apart from metrics/events.jsonl).
+
+### 1. The residual is a BUMP-STATE problem, not a carrier-identity problem (new framing)
+
+s4/s5/s6 enumerated CARRIERS (which local hosts copy 2's pointer). s7 re-frames the
+search over the only degree of freedom the mechanism actually exposes: the birthing_insn_p
+bump state of each contested load's destination pseudo. Two loads, two binary states,
+four cells — and all four are now measured:
+
+| copy2 addr load | stage (0x10) load | body | score | where the loads land |
+|---|---|---|---|---|
+| BUMPED (single-set) | BUMPED (single-set) | s1 K2 / v3 | 8-10 | stage overshoots to slot 23/26 |
+| BUMPED | UNBUMPED (multi-set) | candidate.c baseline | 2 | stage@11, copy2@12 — swapped |
+| UNBUMPED | BUMPED | **z1 (NEW this session)** | **9** | copy2@11 CORRECT, stage drifts to slot 19 |
+| UNBUMPED | UNBUMPED | v42/v45/v47/y3/z3 | 0 | source/LUID order = target order |
+
+z1 is the cell nobody had measured. It is y3 with the stage split back into two
+single-set locals (`p10` pointer + `h4` halfword) and nothing else changed, so it isolates
+the stage's bump state as a single variable. Result: 9, 66 insns, and the disassembly
+(tmp/grind/func_80060A68/s3/z1_disasm.txt) shows exactly the predicted behaviour —
+`lw a0,12(v1)` reaches target's slot 11 because copy 2 is unbumped, while the 0x10 load,
+now bumped, is picked the instant it becomes ready (T-29, its consumer being the far-away
+`lhu a1,4(a0)`) and is therefore emitted late, at slot ~19 instead of target's slot 12.
+Banked as rejected/z1-copy2-unbumped-stage-singleset-bumped-stage-drifts-to-slot19-score9.c.
+
+**Consequence — this closes s6's frontier item 2.** A "different target register flow"
+cannot help: the target bytes fix three loads (`lw v0,0xC`, `lw a0,0xC`, `lw a1,0x10`)
+in that order, whichever pseudos host them, and the table shows the ONLY cell that
+produces that order is the all-unbumped one. Since `birthing_insn_p` has no fourth door
+(s4's code reading, re-verified this session), closing this function requires copy 1's and
+copy 2's address-load destinations to be multiply-assigned C variables. That is now a
+proved structural requirement rather than an enumeration over locals.
+
+### 2. A multiply-assigned destination does NOT require the banned redundant reload
+
+Every previously known score-0 body got `reg_n_sets > 1` by loading the same pointer
+twice from `outer + 0xC` with no intervening write (banned construct 1, under the names
+`src`, `temp2` and y3's `idx`). s7 measured a different spelling — the same-variable
+SPLIT-INIT ACCUMULATION shape the owner sanctioned provisionally on 2026-06-13
+([[split-init-accumulation-sanctioned]], which closed func_80049C24 in this same file,
+commit ad11a8c8):
+
+    cp = *(s32 *)(outer + 0xC);      /* ONE load of the pointer, not two */
+    cp += 4;                         /* combine folds this into the displacement */
+    *(s32 *)(outer + 0x24) = *(s32 *)cp;
+
+- **z2** = candidate.c + that block alone: **score 2, 66 insns**, but with a DIFFERENT
+  residual from the baseline — slots 10/11/12 become `lw a0,12` / `lw v0,12` / `lw a1,16`.
+  The stage load reaches target's slot 12 for the first time without any banned
+  construct; the remaining swap is copy 1's address load against copy 2's, because copy
+  1's destination is still a single-set compiler temp and is therefore still bumped.
+- **z3** = z2 + copy 1 staged through the pre-existing `result`
+  (`result = ptr; result = *ptr; store result;`, the same staged-value-reused-variable
+  form candidate.c already uses, unbanned, for `temp_a1`): **score 0, build 66 / target
+  66**, re-measured twice. Slots 10/11/12 = `lw v0,12(v1)` / `lw a0,12(v1)` /
+  `lw a1,16(v1)` — target. Banked at
+  memory/grind/func_80060A68/ruling-z3-split-init-accumulation-score0.c.
+- **z6 (the control that isolates the lever)** = z3 with ONLY the `cp += 4;` line removed
+  and the offset written back into the deref (`*(s32 *)(cp + 4)`), so `cp` stays a named
+  local but becomes single-set: **score 2, 66 insns**. The split-init line — which
+  contributes zero instructions to the object code — is worth exactly the last two.
+  Banked as rejected/z6-control-cp-without-split-init-single-set-still-bumped-score2.c.
+- **z5** = z3 with the split-init hosted on the pre-existing `idx` instead of a fresh
+  `cp`: **score 9, 67 insns**. This generalises s4's K15 from the redundant-reload
+  spelling to the split-init spelling: `idx` cannot host copy 2's pointer under ANY
+  spelling, because the failure is global-alloc's $a0 conflict, not the scheduler.
+  Banked as rejected/z5-idx-hosts-split-init-global-alloc-a0-conflict-score9-67insns.c.
+
+### 3. The RTL forensics behind the split-init lever
+
+`tmp/grind/func_80060A68/s3/z3dumps/text1b.sched` (fresh `-da` set for the z3 body):
+the emitted chain for the contested group is **22 -> 25 -> 34 -> 45 -> 28**, i.e.
+insn 25 `(set (reg/v 76) (mem (plus (reg/v 72) 12)))` = copy 1's address load into
+`result`; insn 34 `(set (reg/v 77) (mem (plus (reg/v 72) 12)))` = copy 2's address load
+into `cp`; insn 45 `(set (reg/v 75) (mem (plus (reg/v 72) 16)))` = the stage load into
+`temp_a1`. All three are `reg/v` (user variables) and all three emit in source order.
+Copy 3's address load (insn 48, `reg 85`, an ordinary single-set compiler temp) is still
+bumped and still lands late, exactly as target wants.
+
+Note the mechanism detail that makes the split-init cost nothing: the dump shows only
+ONE surviving set of `reg/v 77` (insn 34) and the consumer as `(mem (plus (reg/v 77) 4))`
+(insn 40) — combine folded the `+= 4` into the load displacement, yet the pseudo still
+behaves as multiply-set for `birthing_insn_p`. That is the same stale-count behaviour the
+2026-06-13 sanction documents for `reg_n_refs` in global.c, here observed on
+`reg_n_sets` in sched.c.
+
+### 4. What this session did NOT settle
+
+Whether `cp` is admissible. It is a FRESH local written twice, which the Judge's
+2026-08-19 10:21 ruling calls an excluded quadrant; the split-init sanction is a
+2026-06-13 owner directive that is not on the frozen SOTN family list and whose own text
+says adjacent spellings need their own ruling (here the SHAPE is identical to the
+sanctioned one — `var = a; var += b;`, combine folds it back, zero emitted difference —
+but the GCC mechanism it exploits is sched.c's `reg_n_sets` rather than global.c's
+`reg_n_refs`). s7 therefore returns `ruling-request` rather than a submission.
+
+- [s7] Chassis re-measured with candidate.c: sandbox func_80060A68 --disable all = score 2, build 66 / target 66. src/text1b.c restored to HEAD before finishing.
+- [s7] The bump-state truth table over {copy 2 address load, stage load} x {bumped, unbumped} is now complete: (B,B) = 8-10 (s1 K2), (B,U) = 2 (baseline), (U,B) = 9 (z1, NEW), (U,U) = 0. Only the all-unbumped cell produces target's load order, so closing the function requires two multiply-assigned C variables, whichever locals host them. This closes s6 frontier item 2 (a different register flow cannot help).
+- [s7] z1 (y3 with the stage split into two single-set locals) scores 9/66 and its disassembly shows copy 2's address load correctly at slot 11 while the now-bumped stage load drifts to slot ~19 - a bumped insn is picked the instant it becomes ready, and the stage's consumer is 18 cycles away.
+- [s7] A multiply-assigned destination does NOT require banned construct 1: the same-variable split-init accumulation `cp = *(s32*)(outer+0xC); cp += 4;` loads the pointer once, is folded back by combine (66 insns, `lw $v0,4($a0)`), and unbumps copy 2's address load. z2 (that block alone) = score 2 with the stage load reaching target slot 12 for the first time; z3 (z2 + copy 1 staged through the pre-existing `result`) = score 0, build 66 / target 66, re-measured twice.
+- [s7] Control z6 - z3 with only the `cp += 4;` line removed and the offset folded back into the deref, so `cp` is single-set - scores 2. The split-init line emits zero instructions and is worth exactly the two-instruction residual.
+- [s7] z5 (split-init hosted on the pre-existing `idx` instead of a fresh `cp`) scores 9/67, generalising s4 K15: `idx` cannot host copy 2's pointer under any spelling, because the failure is global-alloc's $a0 conflict, not the scheduler.
+- [s7] RTL forensics for z3 (tmp/grind/func_80060A68/s3/z3dumps/text1b.sched): emitted chain 22 -> 25 -> 34 -> 45 -> 28, with insns 25/34/45 all setting reg/v user pseudos and emitting in source order, while copy 3's single-set compiler temp (insn 48, reg 85) stays bumped and lands late. The dump also shows only one surviving set of reg/v 77 with the consumer at (mem (plus (reg/v 77) 4)), i.e. combine folded the split away while the pseudo still behaves as multiply-set for birthing_insn_p.

@@ -1,3 +1,35 @@
+/* [s7 2026-08-19 - READ THIS FIRST, IT SUPERSEDES BOTH NOTES BELOW]
+ * This file is STILL the ban-free floor-2 body and is still the right starting point to
+ * apply. What changed in s7 is the frontier, twice over:
+ *
+ * (1) The residual is now framed over the only degree of freedom the mechanism exposes -
+ *     the birthing_insn_p bump state of the two contested loads' destination pseudos -
+ *     and all four cells of that 2x2 are measured (evidence.md [s7] section 1). Only the
+ *     all-unbumped cell reproduces target's load order, so closing this function requires
+ *     copy 1's and copy 2's address-load destinations to be multiply-assigned C
+ *     variables, whichever locals host them. That retires the "maybe a different register
+ *     flow works" frontier item s6 left open.
+ *
+ * (2) A multiply-assigned destination does NOT have to be the banned redundant reload.
+ *     `cp = *(s32 *)(outer + 0xC); cp += 4;` loads the pointer ONCE and gets its second
+ *     set from same-variable split-init accumulation, the shape the owner sanctioned
+ *     provisionally on 2026-06-13 ([[split-init-accumulation-sanctioned]], commit
+ *     ad11a8c8, func_80049C24 in this same file). combine folds the `+= 4` back into the
+ *     load displacement, so the emitted code is unchanged at 66 instructions. With copy 1
+ *     additionally staged through the pre-existing `result` (the same staged-value form
+ *     `temp_a1` already uses in the body below), that body measures
+ *     **score 0, build 66 / target 66** on the 2026-08-19 chassis, measured twice. It is
+ *     memory/grind/func_80060A68/ruling-z3-split-init-accumulation-score0.c and it is
+ *     UNRULED: `cp` is a fresh local written twice, which the 10:21 Judge ruling calls an
+ *     excluded quadrant, while the split-init sanction is a 2026-06-13 owner directive
+ *     that is not on the frozen SOTN family list. s7 returned ruling-request rather than
+ *     self-approving. The control z6 (same `cp`, split line removed) scores 2, so the
+ *     zero-instruction `cp += 4;` line is worth exactly the residual.
+ *
+ * The "terminal / carrier axis closed" paragraphs further down are therefore still
+ * SUPERSEDED, and s6's y3 note below is superseded too (y3 was ruled FAIL on 2026-08-19
+ * 10:48 for the `idx` redundant reload and the `temp2` multi-write; z3 contains neither).
+ */
 /* [s6 2026-08-19 — READ THIS FIRST] This file is still the ban-free floor-2 body and it
  * is still the right thing to apply as a starting point, but the paragraphs below that
  * say the carrier axis is closed and the function is terminal are SUPERSEDED. s6
