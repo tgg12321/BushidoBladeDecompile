@@ -31,6 +31,8 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **divmod-coalesce-reuse-var** (memory/reference/) — GCC's quotient→move→var divmod allocation.
 - **staged-value-reused-variable** — SANCTIONED 2026-07-03: a load places too LATE (fresh single-set dest gets the scheduler's load-late LAUNCH priority) → stage the value through an EXISTING currently-dead local (`v0 = idx[1]; arg5 = tbl[v0];`), FAKE-annotated + lever-exhaustion; live code only (zero dead stores); SOTN ships the shape ("fake reuse of i", 6 files).
 
+- **local-alloc-death-count-class-wall** — a clean `$v0`<->`$v1` swap between a variable reused across several loads and a short constant/mask beside it; every reorder / decl-order / split measured flat or worse. NOT a priority tie: `local-alloc.c:472` gates local allocation on `reg_n_deaths == 1`, so the multi-death temp is unconditionally punted to global and the single-death constant takes `$v0` by ascending first-free. Read the `.lreg` "dies in D places" line BEFORE applying any lever from register-alloc-pure-c. Three exits, all measured dead; the only flip is an invented staging local (a cheat).
+- **reload-spill-reg-reveals-asm-clobbers** — target emits a compiler-generated scratch at an unexpected regno near an asm island (`mfhi $t8` where you get `mfhi $13`) → `reload1.c` puts explicitly-mentioned hard regs into `bad_spill_regs` and picks spill regs ascending, so the skipped registers PROVE the original source named them in an asm block. Reconstruct as a clobber list on the already-authorized island; never as a regfix `subst`. Carries the UNSPENT 2026-07-28 grant for `func_8002BEA0`.
 ## Cross-jump / merged-tail diffs (target has MORE instructions than you)
 
 - **cross-jump-call-merge** — target has more call sites than your build (jump2 merged identical CALL suffixes) → vary the arg counts.
@@ -53,6 +55,7 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **goto-end-prologue-delay-slot** — ARCHIVED/FORBIDDEN tombstone.
 - **dead-branch-scheduling** — ARCHIVED/FORBIDDEN tombstone (manufactured dead-branch insns).
 
+- **sched-rank-class-tie-wall** — a load lands one slot off and the whole downstream allocation shifts; operand-order / association-order / decl-order sweeps all score identical. If the two contended insns are the two inputs of the SAME nearest successor, `priority()` gives them EQUAL height, so `rank_for_schedule` (sched.c:2399-2456) decides on dependence CLASS and the independent insn always wins. Read `priority = N` in the `.sched` dump: equal priority means the compare-operand-order lever class is structurally closed for that pair. Also: `schedule_block` is a BACKWARD scheduler — reason about the trace in that direction.
 ## Optimizer-fold diffs (CSE / combine / LICM / strength-reduce)
 
 - **defeat-licm-hoist-var-reuse** — GCC hoists a loop-invariant the target recomputes inline → reuse a scratch variable.
@@ -64,6 +67,11 @@ difficult-is-not-impossible — still auto-load and are not listed here.)
 - **loop-rotation-two-shift** — two `sllv` from loop rotation; opaque-`one` arithmetic (SOTN-sanctioned) replaces the initial-mask asm.
 - **strength-reduce-defeat** — ARCHIVED/FORBIDDEN tombstone.
 - **or-tree-shape-shift** — FORBIDDEN: parenthesization-axis mutations in associative/commutative expressions.
+- **cse-block-extension-controls-fold-span** — the target rematerializes an address in each arm while your build forwards one copy (or the reverse). A join label does NOT end cse1's basic block: `cse_end_of_basic_block` (cse.c:8102-8184) follows any conditional branch whose target has `LABEL_NUSES == 1`. Exactly three escapes; the only free one is a real `if/else` whose arm ends in jump+BARRIER (closed a 7-insn shortfall on func_8003B9D0). The `&&` boundary and `thread_jumps` are measured net-negative; carrier copies are reverted by `canon_reg` before combine.
+
+## Canonical-asm cluster dispositions
+
+- **cop2-addressing-preamble-cluster** — you are on a function in the 0x8001-0x8003 band whose tail carries `addu $t4,$aN,$zero` feeding `mtc2`/`ctc2`/`lwc2`/`swc2`. The 2026-08-17 owner cluster ruling covers 28 such functions; the membership list (never enumerated in the ruling itself) is in this file, with the four mechanical inheritance conditions. NOTE: membership is not a shortcut — most members are hundreds of instructions from `sandbox --disable all == 0`, and the grant only settles the tail island.
 
 ## Width / addressing / layout diffs
 

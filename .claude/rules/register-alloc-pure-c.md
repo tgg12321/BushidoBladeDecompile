@@ -188,6 +188,21 @@ cluster (unused ARRAYS / frame coercion) is NOT covered — see
 
 ## Confirmed limits — do NOT re-derive (full logs in [[register-alloc-deep-dive]])
 
+### First: which wall class is it?
+
+There are three measured RA wall classes and they take different levers. Run the
+`-da` dumps and read the `.lreg` line for each contended pseudo
+(`Register N used K times across M insns in block B; dies in D places`) before
+choosing:
+
+| tell | class | where to go |
+|---|---|---|
+| one pseudo has `dies in D places` with `D > 1`, and it is the one that loses | **local-vs-global CLASS wall** (`local-alloc.c:472`) | [[local-alloc-death-count-class-wall]] — the levers in THIS file will not move it |
+| both pseudos are in the `.greg` "N regs to allocate" list, near-tied | **allocno-priority tiebreaker** (`global.c:624`) | the entries below + [[register-alloc-deep-dive]] |
+| the register diff is downstream of an insn that scheduled in the wrong slot | **not an RA wall at all** | [[sched-rank-class-tie-wall]] — fix the schedule, the registers follow |
+
+### Class 2 — allocno-priority tiebreaker (`global.c:624`)
+
 Two functions hit a measured wall behind GCC 2.7.2's `global.c:624`
 allocno-priority tiebreaker coupled with the `sched.c:2385` list-scheduler
 priority — every named lever plus large permuter runs were executed and
@@ -205,7 +220,29 @@ Read the deep dive BEFORE attempting either function or re-testing any lever
 it names. Remaining avenues there are non-local/policy-grade (directed
 PERM_* permuter; rodata-reorder policy question).
 
+Two more functions were later attributed to this same class and should be read
+as part of it rather than re-diagnosed: **`func_80037A20`** (`src/code6cac_c.c`,
+"confirmed limit class" per its `evidence.md:62`) and
+**`special_camera_get_rot_dir`** (`src/code6cac_b2_post.c`, `evidence.md:41,128,158`
+— the dead axis there is `copy_end` def/use placement and live length, not the
+function). `func_80042504` and `func_8006E10C` carry `notes.md` pointers into the
+same class. All four are `REFUSED / OWNER-ACCEPTED INCOMPLETE`.
+
+### Class 3 — local-vs-global class wall (`local-alloc.c:472`)
+
+`func_800611A4`, `func_80061658`, `func_80061710`, `func_80057CC8` (all
+`src/text1b.c`). A reused multi-load temp can never be local-allocated
+(`reg_n_deaths > 1`), so the short single-death constant beside it wins `$v0` by
+ascending first-free scan. **Not a tie — a gate.** Reordering, declaration order
+and block-local splits are all measured dead; the one construct that flips it is
+an invented staging local, which is a cheat. Full mechanism, diagnosis recipe and
+the three-exit kill list: [[local-alloc-death-count-class-wall]].
+
 ## Related
+- [[local-alloc-death-count-class-wall]] — the OTHER RA wall class; check the
+  `.lreg` death count before applying any lever in this file.
+- [[sched-rank-class-tie-wall]] — register diffs that are really scheduling
+  diffs; `rank_for_schedule`'s class compare decides them, not the allocator.
 - [[register-alloc-deep-dive]] (`memory/project/register-alloc-deep-dive.md`) —
   the full instrumented session logs (ALLOCDBG / SCHEDDBG / PRIODBG, per-lever
   measurements) behind this rule.

@@ -1,6 +1,6 @@
 ---
 name: hoist-shared-arm-computation-defeats-copy-pref
-description: When two branches duplicate the same `sum = X + Y` expression and residual is register-choice ($v1 vs $a0) on the sum, hoist the shared computation OUT of both arms. GCC's jump2 duplicates it back into arms during codegen, but the single-pseudo RA now picks the right register.
+description: When two branches duplicate the same `sum = X + Y` expression and residual is register-choice ($v1 vs $a0) on the sum, hoist the shared computation OUT of both arms. GCC's jump2 duplicates it back into arms during codegen, but the single-pseudo RA now picks the right register. Includes the feasibility test — a hard-reg preference exists only from a reg<->hard-reg copy, and a pseudo live from entry cannot keep a preference for an argument register (prune_preferences strips it).
 paths: [".claude/rules/hoist-shared-arm-computation-defeats-copy-pref.md"]
 ---
 
@@ -160,6 +160,63 @@ standard codegen; the RA-mechanism is post-hoc explanation of why the
 natural form happens to match, not the primary justification. SANCTIONED
 as a project pure-C lever.
 
+## Feasibility test — can this pseudo hold that preference at all?
+
+Two structural facts decide it, and both are cheap to check before you write any
+C. Measured with the `BB2_FINDREG_DEBUG` / ALLOCDBG hooks in the instrumented cc1
+(`tools/gcc-2.7.2/cc1` — see [[instrumented-cc1-location]]).
+
+**1. A hard-register preference is created ONLY by a reg<->hard-reg COPY insn.**
+`set_preference` (global.c:1671) is called from `mark_reg_store` on every SET
+during `global_conflicts`; when `SET_SRC` is an expression it walks
+`src = XEXP (src, 0)` — the FIRST operand only — and sets `copy = 0`. So a pseudo
+defined by an `sll` and consumed by an `addu` has **no** hard-reg preference and
+no C rewrite gives it one. If the register you want has no ABI anchor in the
+function (not an argument, not a return value, no copy to/from it), the
+preference you are trying to create **does not exist as an object**.
+`func_80056FE8`: `$a1` has no anchor in that 1-argument leaf; FINDREGDBG confirms
+neither contended pseudo carries any preference at all. KILLED.
+
+**2. Any pseudo live from function entry conflicts with the argument registers,
+and therefore cannot KEEP a preference for one.** `prune_preferences`
+(global.c:882 ff.) first strips from every allocno's preference set the registers
+that allocno itself conflicts with (the strip at global.c:896-907). `func_8002EA24`: the `obj` pseudo
+*does* start with an `$a0` copy preference from the prologue
+`addu $t0,$a0,$zero`, and pruning deletes it because `obj`'s conflicts include
+`$a0`. Any long-lived pointer-to-argument is in this position. KILLED.
+
+Two more facts worth knowing when you read a `.greg` dump against this rule:
+
+- **`find_reg` is not plain first-fit.** `find_reg` (global.c:952 ff.) runs two passes;
+  pass 0 additionally excludes `regs_someone_prefers[allocno]`, and
+  `regs_used_so_far` is vacuous on MIPS because `global.c:353-355` pre-marks every
+  call-used register. With no `REG_ALLOC_ORDER` the scan is ascending regno. After
+  the pass loop, `find_reg` **overrides** `best_reg` with a free same-class
+  register from the allocno's own copy/full preferences (`global.c:1057-1080`) —
+  that override is the only route by which a preference beats the ascending scan.
+- **`prune_preferences` propagates preferences you did not ask for.**
+  `regs_someone_prefers[A]` is built from the full preferences of allocnos that
+  CONFLICT with A and are **lower priority** than A. So giving a low-priority
+  neighbour a preference for `$aN` **excludes** `$aN` from the higher-priority
+  allocno in pass 0. That is the indirect lever, and it needs a real
+  preference-carrying pseudo that both conflicts with the target allocno and
+  ranks below it — not a construct invented for the purpose.
+  `expand_preferences` (global.c:798-841) runs BEFORE pruning and spreads
+  preferences across **any** `single_set` insn carrying a `REG_DEAD` note for a
+  non-conflicting allocno — not only reg-reg copies — which is how an inherited
+  preference can survive on a pseudo where the original owner's conflict would
+  have killed it. That is the mechanism this rule's hoist lever rides.
+
+**The allocno priority formula**, for the coloring-order half of the question
+(`allocno_compare`): `floor_log2(n_refs) * n_refs / live_length * 10000 * size`.
+`func_80056FE8` measured a2local at 8571 (6 refs / length 14) against base at 3809
+(4 refs / length 21). Note the trap it also measured: cutting refs can RAISE
+priority by shrinking live_length more than it shrinks the numerator
+(refs 6->5 but length 14->11 took priority 8571 -> 9090). Compute before you edit.
+
+*(Citations verified/corrected against tools/gcc-2.7.2 source by the layer-2
+review, 2026-08-18.)*
+
 ## Related
 
 - [[register-alloc-pure-c]] — the parent RA-lever playbook; this is a
@@ -173,3 +230,5 @@ as a project pure-C lever.
 - [[compare-operand-order-register]] — sibling register-choice lever
   (RTL operand-order steering); this rule is source-structure-level, that
   one is expression-level.
+- [[local-alloc-death-count-class-wall]] — if one of your contended pseudos never
+  reaches global alloc at all, none of the preference machinery above applies.
