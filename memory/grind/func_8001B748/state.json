@@ -1,0 +1,37 @@
+{
+ "func": "func_8001B748",
+ "file": "code6cac",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 32,
+   "modality": "recon",
+   "headline": "Recon s1: floor re-measured 32 (chassis unchanged, all WIP-imported verdicts spendable); $v0/$v1 exchange confirmed at .greg disposition level (pseudo 100 in $v1, 83/84/98 in $v0); frontier = instrume"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The $v0/$v1 exchange is decided by local-alloc's suggested-register machinery (qty_phys_copy_sugg/qty_phys_sugg) \u2014 the one allocation input the ra_solver does not model, explaining the NEGATIVE goal runs.",
+   "mechanism": "pseudos copied to/from hard regs (call args/returns) record phys suggestions biasing local qty allocation and global allocno ordering; C-level copy-structure changes can flip the suggestion without touching refs/span/conflicts",
+   "next_probe": "forensics: run instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_*_DEBUG hooks; capture suggestion tables for pseudos 100/83/84/98; identify the creating copy insn and whether an honest C respelling changes it"
+  },
+  {
+   "hypothesis": "A fresh-seed permuter campaign can find a spelling that flips the exchange even though directed search is closed.",
+   "mechanism": "permuter mutations perturb pseudo birth order and copy structure, feeding the same unmodeled suggestion machinery",
+   "next_probe": "tools/permuter_campaign.py per permuter-fresh-seed-discipline (~20-30k iters), waited in-turn; expectations calibrated per permuter-closability-evaluated"
+  },
+  {
+   "hypothesis": "The 1-nop SCHED residual dissolves with the RA exchange; standalone attack is dead.",
+   "mechanism": "nop is the delay slot of the late lw a0,24(s0) whose placement is RA-coupled; reorders measured inert (scheduler re-hoists)",
+   "next_probe": "none until RA moves; re-diff after any RA win"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T05:46:57.381958+00:00"
+}
