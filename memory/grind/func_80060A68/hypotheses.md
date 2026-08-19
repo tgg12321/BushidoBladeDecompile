@@ -561,3 +561,201 @@ accumulation on a pointer that is loaded exactly once.
 3. Do NOT re-open: the carrier-identity enumeration (s4), the SCHED_GROUP_P bump path
    (H-s6-5), the permuter (65,445 iterations, two chassis, zero finds), canonical-asm
    (LOW 1/8), and every cell of the H-s7-1 truth table.
+
+## [s8] 2026-08-19 — forensics. One hypothesis measured and KILLED; the mechanism space is
+## now closed at the GCC-source level.
+
+### KILLED this session (do NOT re-derive)
+
+**H-s8-1 — `birthing_insn_p`'s SUBREG exit closes the function without a multiply-assigned
+carrier.** Mechanism: sched.c:2510-2517 tests `GET_CODE (SET_DEST (pat)) == REG` BEFORE it
+ever reaches `reg_n_sets[i] == 1`, so a load whose destination is only part of a multi-word
+pseudo escapes the LAUNCH_PRIORITY bump for a reason that has nothing to do with how many
+times the C variable is written — which would sidestep the entire banned carrier axis.
+Probe: d1 = candidate.c with copy 2's source pointer hosted in a `long long`
+(`cpq = (long long)(u32)*(s32 *)(outer + 0xC); *(s32 *)(outer + 0x24) = *(s32 *)((s32)cpq + 4);`),
+measured with `sandbox func_80060A68 --disable all`. Result: **score 31, build 70 /
+target 66**. The door fires (tmp/grind/func_80060A68/s3/d1_disasm.txt: copy 2's
+`lw a0,12(a2)` is hoisted to slot 10, ahead of the stage load `lw a1,16(a2)` — the exact
+reordering the carrier axis was chasing) but the DImode local materialises four
+instructions that no pass folds away: `move v0,a0` (low half), `move v1,zero` (high half,
+which flow keeps although it is never read), `addiu v0,v0,4`, and a reloaded
+`lw a0,12(a2)`. VERDICT: KILLED, and killed on BYTES rather than on rules — every
+wide-typed spelling (long long, double, two-word struct or union) pays the identical cost,
+because the cost is the multi-word representation that creates the SUBREG.
+
+### CONFIRMED this session
+
+- The chassis is unchanged: candidate.c = score 2, build 66 / target 66, and the residual
+  is the same adjacent load swap it has been since s1.
+- `birthing_insn_p` has THREE exits, not the single one the ledger recorded through s7.
+  Two are now closed by measurement/argument (SUBREG: costs 4 instructions;
+  dest-not-live: reachable only for a dead dest, which flow deletes). The third,
+  `reg_n_sets[i] == 1`, is the banned carrier axis.
+
+### Frontier after s8
+
+There is no un-measured mechanism cell left. The remaining route to score 0 is known and
+reproducible (s7's z3 and s6's y3 both measured score 0, build 66 / target 66) and it is
+banned by ruling, not blocked by ignorance: it requires copy 1's and copy 2's address-load
+destinations to be multiply-assigned C variables, which the Judge closed on 2026-08-19 at
+10:21, 10:48 and 11:07 "under any name, family label, or second-write spelling".
+Canonical-asm is refused (`scan_hand_coded --single func_80060A68` = tier LOW 1/8, S4
+only). Both endgame-lock gates therefore fail and the owner's 2026-07-27 standing
+auto-ruling applies: terminal OWNER-ACCEPTED INCOMPLETE, filed in docs/grind/decisions.md
+by this session.
+
+## [s9] 2026-08-19 — forensics. The divergence is RE-ATTRIBUTED from sched1 to **sched2**,
+## and the closure argument is now anchored on a different GCC line than the ledger recorded.
+
+*(Driver session index 3 of the current dispatch; ledger-local index s9. The prior session
+was DISCARDED by the driver validator — it returned `owner-gated` from `forensics`
+modality, which the validator rejects — so nothing it filed in docs/grind/decisions.md
+survives, and this session reverted that uncommitted entry. Its MEASUREMENTS, banked in
+the [s7]/[s8] sections above and in rejected/, are unaffected and were not re-run.)*
+
+### Chassis re-measured this session
+`sandbox func_80060A68 --disable all` with candidate.c applied to src/text1b.c:3321 =
+**score 2, build 66 / target 66**. Residual is the same adjacent pair it has been since
+s1: target emits `lw v0,12(v1)` / `lw a0,12(v1)` / `lw a1,16(v1)`; we emit
+`lw v0,12(v1)` / `lw a1,16(v1)` / `lw a0,12(v1)`.
+
+### CONFIRMED — H-s9-1: the final emission order is decided by **sched2**, not sched1.
+Mechanism: `birthing_insn_p` returns 0 immediately when `reload_completed == 1`
+(tools/gcc-2.7.2/sched.c:2508-2509), so the LAUNCH_PRIORITY bump the ledger has blamed
+since s2 exists ONLY in sched1. sched2 re-runs `schedule_block` on the post-reload chain
+with every insn at its natural depth priority, and it is sched2's pick order that reaches
+the assembler.
+Probe: full instrumented-cc1 `-da` dump set for the candidate.c body
+(tmp/grind/func_80060A68/s3/n9/, cc1 = tools/gcc-2.7.2/cc1, BB2_SCHED_DEBUG=1
+BB2_RANK_DEBUG=1), reading `.sched` and `.sched2` side by side.
+Result, verbatim from the traces:
+  * `.sched` (sched1) emits the chain `22, 25, 39, 27, 32, 29, ...`
+    (trace_sched.txt: T-49=22, T-48=25, T-47=39, T-46=27, T-45=32; larger T-n = earlier in
+    emission). At sched1's T-45 the ready list is `39 (3) 32 (7f000001) 27 (7f000001)` —
+    insns 32 and 27 carry the birthing bump, insn 39 does not, so 39 loses every contest
+    and is chained near the front.
+  * `.sched2` emits `..., 25, 39, 32, 27, ...` — **a different order from sched1's**, and it
+    is this order that the assembler gets (it matches the objdump exactly). At sched2's
+    T-45 the ready list is `32 (3) 39 (3)`: NO bump anywhere, both insns at natural
+    priority 3.
+Insn identities (from the .sched RTL; same numbering in both dumps):
+  * insn 25 = `(set (reg 83) (mem (plus (reg/v 72) (const_int 12))))` — copy 1's address
+    load, `lw v0,12(v1)`.
+  * insn 32 = `(set (reg 85) (mem (plus (reg/v 72) (const_int 12))))` — copy 2's address
+    load, `lw a0,12(v1)`.
+  * insn 39 = `(set (reg/v 75) (mem (plus (reg/v 72) (const_int 16))))` — the staged
+    `temp_a1 = *(s32 *)(outer + 0x10)` load, `lw a1,16(v1)`.
+  * insn 27 = `(set (reg 84) (mem (reg 83)))` — copy 1's value load, `lw v0,0(v0)`.
+VERDICT: CONFIRMED. The ledger's line-level attribution ("rank_for_schedule's LUID
+fall-through at sched.c:2464, seeded by sched1's emitted chain") is right about the LINE and
+wrong about the PASS: the fall-through that decides the bytes is the one taken in **sched2**,
+and sched1's bump reaches it only indirectly, by fixing the INSN_LUID order sched2 inherits.
+
+### CONFIRMED — H-s9-2: at sched2's deciding tie, all three tests above the LUID
+### fall-through are exactly tied, and each is structurally pinned.
+Mechanism, read off `rank_for_schedule` (sched.c:2408-2465) against the T-45 state:
+  1. **INSN_PRIORITY (sched.c:2418).** Both 32 and 39 are priority 3. GCC 2.7.2's
+     `priority()` is a BACKWARD depth: `priority(insn) = max over LOG_LINKS producers of
+     (priority(producer) + insn_cost(producer, link, insn))`. Insns 25, 32 and 39 have
+     IDENTICAL producer sets — `{9, 22}`, i.e. `lw v1,0(gp)` (priority 1) and the
+     `sw zero,0(at)` D_800F10D0 store (priority 3) — and the store→load memory link costs
+     0 (proved by insn 25 also landing on 3, while insn 27, a load→load address use of
+     insn 25, costs 1 and lands on 4). So 25, 32 and 39 are locked together at 3: anything
+     that deepens insn 22 lifts all three equally and changes no order.
+  2. **Dependence class (sched.c:2426-2444).** `last_scheduled_insn` at T-45 is insn 27
+     (it takes T-44 on priority 4). The class test asks whether the candidate appears in
+     `LOG_LINKS (27)`; `LOG_LINKS (27) = {22, 25}`. Neither 32 nor 39 is a producer of 27
+     — and neither CAN be, because 27 precedes both in the sched1 chain that sched2's
+     dependence graph is built over. Both score class 3.
+  3. **INSN_LUID (sched.c:2464).** The comparator returns `LUID(y) - LUID(x)`, so under
+     qsort the HIGHER LUID sorts to ready[0] and is scheduled first — i.e. emitted LAST.
+     The sched1 chain gives LUID(39) < LUID(32), so 32 takes T-45 and is emitted after 39.
+     Target needs the opposite.
+VERDICT: CONFIRMED by trace. To flip the pair, sched2 needs EITHER priority(39) = 4
+(structurally blocked by (1): 39's only reachable deeper producers are insns 27 and 29,
+both of which target emits AFTER insn 39, so depending on either would force the wrong
+order anyway), OR `LUID(39) > LUID(32)`, i.e. **sched1 must chain insn 32 before insn 39**.
+
+### KILLED — H-s9-3: source-statement position of the staged read can supply that LUID order.
+Mechanism under test: if sched1's chain order tracked C statement order, moving
+`temp_a1 = *(s32 *)(outer + 0x10);` would move insn 39's LUID and flip the sched2 tie.
+Probe: p1 = candidate.c with that statement moved from between copy 2 and copy 3 to
+immediately after copy 1 (tmp/grind/func_80060A68/s3/n9/p1_stage_after_copy1.c, banked at
+rejected/p1-stage-after-copy1-byte-identical-source-position-inert-score2.c).
+Result: **score 2, build 66 / target 66, and the objdump is BYTE-IDENTICAL to candidate.c**
+(tmp/grind/func_80060A68/s3/n9/p1_disasm.txt — the only diff against target is still the
+same one adjacent pair).
+VERDICT: KILLED, and it kills the whole statement-permutation family with a named
+mechanism rather than by enumeration. In sched1 insn 39 is the ONLY unbumped insn in its
+contest window; a priority-3 insn is picked only when the ready list holds nothing else,
+which happens at T-47, so its chain position is set by READINESS, not by LUID and therefore
+not by source order. This is the mechanism behind s2's 14 dead structural respellings and
+it retires that axis by argument instead of by sampling.
+
+### CONFIRMED — H-s9-4: the "bump the staged load instead" escape fails inside sched2, and
+### the reason is now named (it was previously banked only as a score).
+Probe: re-ran rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c (a fresh
+single-set local `p10` holds the 0x10 pointer, so insn 39's destination is single-set and
+DOES take sched1's bump) with the full dump set (tmp/grind/func_80060A68/s3/n9b/).
+Result: **score 5, build 67 / target 66**, and the disassembly shows the intended half of
+the effect actually landing: slots 10-11 are `lw v0,12(v1)` / `lw a0,12(v1)`, i.e. copy 2's
+address load reaches TARGET'S SLOT 11 for the first time. What breaks is the staged load
+itself — it lands at slot 25 instead of slot 12, which also strands a load-delay `nop` at
+slot 22 that target fills with `lw a0,16(v1)`, hence 67 instructions.
+Mechanism (tmp/grind/func_80060A68/s3/n9b/trace_sched2.txt): with the bump, sched1 picks
+insn 39 at its first ready cycle and chains it between insns 56 and 58, far from the front.
+sched2 then reaches T-30 with insn 39 as the ONLY ready insn — insns 56, 53, 51, 46, 44,
+36, 34, 32, 29, 27, 25 and 22 are all still blocked, and the trace shows insn 56 being
+launched only once 39 is scheduled. So sched2 has no choice at T-30 and cannot float the
+staged load back toward the front the way it does in the unbumped body. The overshoot is a
+sched2 READINESS PIN created by sched1's placement, not a sched1 priority artifact.
+VERDICT: CONFIRMED (the axis stays dead as spelled, but for a newly named reason, and with
+the valuable half-result recorded: the bumped-stage family is the ONLY measured family that
+puts copy 2's address load on target's slot 11 without a banned carrier).
+
+### Frontier after s9
+1. **Bumped stage + break the sched2 readiness pin.** The bumped-stage body already wins
+   slots 10-11 (target) and loses only the staged load's own slot. The pin is
+   `sched2 T-30, insn 39 sole ready insn`. Any honest change that leaves insn 39 with a
+   live competitor at T-30 lets sched2 sink it back toward slot 12. Next probe: from
+   rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c, dump `.greg` and read
+   which hard register `p10` gets, and which insn's release the sched2 trace attributes to
+   insn 39 at T-30/T-31; then look for a spelling of the 0x1A halfword read that removes
+   insn 56's `lw v0,16(v1)` from between insns 53 and 58 (target reuses ONE `lw a0,16(v1)`
+   there). This is the first frontier item on this function that is NOT a carrier construct.
+2. **priority(39) = 4 in sched2.** Blocked only by the fact that every priority-4-or-deeper
+   producer available to insn 39 (insns 27 and 29) is emitted AFTER it in target. Next
+   probe: check whether any priority-3 producer can reach insn 39 through a link whose
+   `insn_cost` is 1 rather than 0 — i.e. a load→address-use link like 25→27 rather than a
+   store→load memory link like 22→39. That needs the staged read's ADDRESS to be a loaded
+   value, which the semantics do not obviously allow; confirm or kill in one read of
+   `insn_cost` (sched.c) plus one probe.
+3. Do NOT re-open: statement permutation (killed above with a mechanism, superseding s2's
+   sampling), the DImode/SUBREG door (s8, costs 4 insns), the carrier axis in all three
+   partition seats (banned by Judge 2026-08-19 10:21/10:48/11:07), the permuter (65,445
+   iterations, two chassis, zero finds), canonical-asm (`scan_hand_coded` LOW 1/8).
+
+## [s3] The final emission order of the two contested loads is decided by sched1's birthing_insn_p LAUNCH_PRIORITY bump, as every ledger section from s2 onward records.
+- mechanism: birthing_insn_p (tools/gcc-2.7.2/sched.c:2503-2535) bumps a single-set destination's INSN_PRIORITY to max_priority; the ledger's model is that this pushes copy 2's address load past the staged 0x10 load, with rank_for_schedule's LUID fall-through (sched.c:2464) as the tiebreak inside sched1.
+- probe: Full instrumented-cc1 -da dump set for the candidate.c body (cc1 = tools/gcc-2.7.2/cc1, BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1) written to tmp/grind/func_80060A68/s3/n9/, then .sched and .sched2 traces read side by side against the objdump.
+- result: sched1's post-pass chain is 22, 25, 39, 27, 32, 29 ... while sched2 emits ..., 25, 39, 32, 27, ... and it is sched2's order that matches objdump exactly. birthing_insn_p returns 0 at its first statement once reload_completed == 1 (sched.c:2508-2509), so the bump exists only in sched1: sched1's ready lists carry (7f000001) priorities on insns 25/27/32/34/42/44/49/51/56, sched2's carry only natural depth priorities. The bump therefore reaches the bytes only indirectly, by fixing the INSN_LUID order sched2 inherits.
+- verdict: KILLED
+
+## [s3] The byte-deciding comparison is sched2's rank_for_schedule at T-45 between insn 32 (copy 2's address load, lw a0,12(v1)) and insn 39 (the staged temp_a1 = *(s32 *)(outer+0x10) load, lw a1,16(v1)), and all three tests above the LUID fall-through are exactly tied and structurally pinned.
+- mechanism: sched.c:2418 compares INSN_PRIORITY; sched.c:2426-2444 compares dependence class against last_scheduled_insn; sched.c:2464 falls through to INSN_LUID, whose comparator returns LUID(y)-LUID(x) so the HIGHER LUID sorts to ready[0], is scheduled first in the backward pass, and is therefore emitted LAST.
+- probe: Read the sched2 trace state at T-45 (tmp/grind/func_80060A68/s3/n9/trace_sched2.txt) plus the post-sched RTL for insns 25/27/29/32/39, and calibrated GCC 2.7.2's priority() as a backward depth against the block's own numbers.
+- result: At sched2 T-45 the ready list is '32 (3) 39 (3)' with last_scheduled_insn = insn 27. (1) INSN_PRIORITY 3 == 3: insns 25, 32 and 39 have IDENTICAL producer sets {9 = lw v1,0(gp) at priority 1, 22 = sw zero,0(at) at priority 3} and the store-to-load memory link costs 0 (calibrated by insn 27, a load-to-address-use of insn 25, costing 1 and landing on 4), so they are locked together and deepening insn 22 lifts all three equally. (2) class 3 == 3: LOG_LINKS(27) = {22, 25} contains neither candidate, and neither can, since 27 precedes both in the chain sched2's dependence graph is built over. (3) LUID(39) < LUID(32) from the sched1 chain, so 32 takes T-45 and is emitted after 39. Flipping the pair requires priority(39) = 4 -- blocked, because the only priority-4-or-deeper producers reachable by insn 39 are insns 27 and 29, both emitted AFTER it in target -- or LUID(39) > LUID(32), i.e. sched1 must chain insn 32 before insn 39.
+- verdict: CONFIRMED
+
+## [s3] Source-statement position of the staged read can supply the LUID order sched2 needs.
+- mechanism: If sched1's chain order tracked C statement order, moving the staged read would move insn 39's LUID and flip sched2's T-45 tie.
+- probe: p1 = candidate.c with 'temp_a1 = *(s32 *)(outer + 0x10);' moved from between copy 2 and copy 3 to immediately after copy 1; measured with sandbox func_80060A68 --disable all and diffed against target (tmp/grind/func_80060A68/s3/n9/p1_stage_after_copy1.c, n9/p1_disasm.txt).
+- result: score 2, build 66 / target 66, and the objdump is BYTE-IDENTICAL to candidate.c -- the only diff against target is still the same adjacent pair. Mechanism: in sched1 insn 39 is the only UNBUMPED insn in its contest window, and a priority-3 insn is picked only when the ready list is otherwise empty (T-47), so its chain position is fixed by READINESS, not by LUID and therefore not by source order. This kills the whole statement-permutation family with a named mechanism and supersedes s2's 14-respelling sampling argument.
+- verdict: KILLED
+
+## [s3] The 'bump the staged load instead of unbumping copy 2' escape fails for a sched1 priority reason (the ledger banked it only as a score: 'overshoots to slot 22, score 5').
+- mechanism: Making the 0x10 pointer live in a fresh single-set local gives insn 39's destination reg_n_sets == 1, so it takes sched1's LAUNCH_PRIORITY bump; the ledger's model was that the bump alone carries it too far.
+- probe: Re-ran rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c with the full dump set (tmp/grind/func_80060A68/s3/n9b/) and read sched2's trace.
+- result: score 5, build 67 / target 66 -- but slots 10-11 are exactly target's 'lw v0,12(v1)' / 'lw a0,12(v1)', the FIRST measured body on this function to place copy 2's address load correctly without a multiply-assigned carrier. The failure is the staged load's own slot (25 instead of 12), which also strands a load-delay nop at slot 22 that target fills with 'lw a0,16(v1)'. Named mechanism: sched2 reaches T-30 with insn 39 as the SOLE ready insn (';; ready list at T-30: 39 (3), now 39'; insns 56, 53, 51, 46, 44, 36, 34, 32, 29, 27, 25, 22 all still blocked, and insn 56 is launched only after 39 is scheduled). sched1's bump had chained insn 39 between insns 56 and 58 and the post-reload dependence graph pins it there. So the overshoot is a sched2 READINESS pin created by sched1's placement, attackable by changing what sits between insns 53 and 58, not by changing insn 39's priority.
+- verdict: CONFIRMED

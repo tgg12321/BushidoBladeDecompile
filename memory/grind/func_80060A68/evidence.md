@@ -741,3 +741,167 @@ but the GCC mechanism it exploits is sched.c's `reg_n_sets` rather than global.c
 - [s7] Control z6 - z3 with only the `cp += 4;` line removed and the offset folded back into the deref, so `cp` is single-set - scores 2. The split-init line emits zero instructions and is worth exactly the two-instruction residual.
 - [s7] z5 (split-init hosted on the pre-existing `idx` instead of a fresh `cp`) scores 9/67, generalising s4 K15: `idx` cannot host copy 2's pointer under any spelling, because the failure is global-alloc's $a0 conflict, not the scheduler.
 - [s7] RTL forensics for z3 (tmp/grind/func_80060A68/s3/z3dumps/text1b.sched): emitted chain 22 -> 25 -> 34 -> 45 -> 28, with insns 25/34/45 all setting reg/v user pseudos and emitting in source order, while copy 3's single-set compiler temp (insn 48, reg 85) stays bumped and lands late. The dump also shows only one surviving set of reg/v 77 with the consumer at (mem (plus (reg/v 77) 4)), i.e. combine folded the split away while the pseudo still behaves as multiply-set for birthing_insn_p.
+
+## [s8] 2026-08-19 — forensics. The SECOND exit of `birthing_insn_p` is measured dead on
+## bytes, so the only exit that can close this function is the banned carrier axis.
+
+### Chassis (re-measured this session; quote these, not older numbers)
+
+- candidate.c applied verbatim over src/text1b.c:3321-3358 →
+  `sandbox func_80060A68 --disable all` = **score 2, build 66 / target 66**. The ban-free
+  floor reproduces on today's chassis for the fourth consecutive session.
+- Baseline disassembly banked at tmp/grind/func_80060A68/s3/base_disasm.txt. Slots 10/11/12
+  are `lw v0,12(v1)` / `lw a1,16(v1)` / `lw a0,12(v1)`; target wants
+  `lw v0,12` / `lw a0,12` / `lw a1,16`. The residual is the single adjacent swap of the
+  stage load (`a1`, from `outer + 0x10`) against copy 2's address load (`a0`), unchanged
+  since s1.
+- src/text1b.c restored to HEAD (`git checkout --`) before finishing; the tree is clean
+  apart from metrics/events.jsonl.
+
+### The durable result: `birthing_insn_p`'s door (b) costs four instructions
+
+`tools/gcc-2.7.2/sched.c:2504-2535`, re-read this session rather than inherited, gives a
+load insn exactly three ways to escape the LAUNCH_PRIORITY bump:
+
+  (a) `reload_completed == 1` — true only in sched2, which is not the pass that orders
+      this block (s3's attribution, unchanged);
+  (b) `GET_CODE (SET_DEST (pat)) != REG` — the SUBREG door: the load writes only part of a
+      multi-word pseudo, so the `bb_live_regs` / `reg_n_sets` test is never reached;
+  (c) the dest bit not being set in `bb_live_regs` — reachable only for a dest that is not
+      live, i.e. a dead load, which flow deletes before sched1 ever sees it.
+
+Every previous session (s3-s7) attacked the fall-through of (a) — `reg_n_sets[i] == 1`,
+the multiply-assigned carrier axis — and dismissed door (b) on RULES grounds only
+("the forbidden DImode family", candidate.c's own header). s8 MEASURED it:
+
+- **d1** = candidate.c with copy 2's source pointer routed through a `long long`
+  (`cpq = (long long)(u32)*(s32 *)(outer + 0xC); *(s32 *)(outer + 0x24) = *(s32 *)((s32)cpq + 4);`)
+  so that the pointer load is `(set (subreg:SI (reg:DI cpq) 0) (mem ...))`:
+  **score 31, build 70 / target 66**.
+- The door FIRES exactly as the model predicts — tmp/grind/func_80060A68/s3/d1_disasm.txt
+  shows copy 2's `lw a0,12(a2)` hoisted to slot 10, AHEAD of the stage load
+  `lw a1,16(a2)`, which is precisely the reordering the whole carrier axis was chasing.
+- But the DImode local materialises four instructions no later pass folds away:
+  `move v0,a0` (low half), `move v1,zero` (high half — flow does NOT delete it although
+  the high half is never read), `addiu v0,v0,4`, plus a reloaded `lw a0,12(a2)`. 70
+  instructions against a 66-instruction target.
+
+**Consequence.** Door (b) is not a policy-blocked route, it is an arithmetically
+impossible one: any wide-typed carrier (long long, double, two-word struct or union) pays
+the same unconditional materialisation cost, because the cost IS the multi-word
+representation that creates the SUBREG in the first place. Door (c) is unreachable for a
+live dest. Therefore the ONLY exit of `birthing_insn_p` that can produce target's load
+order is `reg_n_sets[i] == 1` — a multiply-assigned C variable hosting copy 1's and copy
+2's address loads — which is exactly the axis the Judge banned for this function under
+every spelling and every host identifier (decisions.md 10:21, 10:48, 11:07).
+
+Combined with s7's completed bump-state truth table (only the all-unbumped cell reproduces
+target's load order), the mechanism space is now closed at the GCC-source level with no
+un-measured cell: two of the three exits are measured or proved unreachable, and the third
+is closed by ruling rather than by search.
+
+### Artifacts
+
+- tmp/grind/func_80060A68/s3/bodies/base.c, bodies/d1.c
+- tmp/grind/func_80060A68/s3/base_disasm.txt, d1_disasm.txt
+- tmp/grind/func_80060A68/s3/apply.py, disasm.sh
+- memory/grind/func_80060A68/rejected/dimode-subreg-door-costs-4-insns-score31-70insns.c
+
+- [s8] Chassis re-measured: candidate.c = score 2, build 66 / target 66; residual is still the adjacent swap of the stage load against copy 2's address load (base_disasm.txt slots 10/11/12 = v0,12 / a1,16 / a0,12 vs target v0,12 / a0,12 / a1,16).
+- [s8] birthing_insn_p (sched.c:2504-2535) has three exits, not one: reload_completed (sched2 only), a non-REG SET_DEST (the SUBREG door), and a dest absent from bb_live_regs (dead dest only). Prior sessions recorded reg_n_sets==1 as "the only live exit"; that was one exit short.
+- [s8] The SUBREG door is measured DEAD ON BYTES: d1 (copy 2's pointer through a `long long`) scores 31 at 70 instructions. The door fires — copy 2's `lw a0,12` reaches slot 10 ahead of the stage load — but the DImode local costs four unfoldable instructions (`move` low half, `move v1,zero` high half that flow does not delete, `addiu`, and a reloaded `lw`). Any wide-typed carrier pays the same cost because the cost is the multi-word representation itself.
+- [s8] With door (b) dead on bytes and door (c) unreachable for a live dest, the only mechanism that can close func_80060A68 is a multiply-assigned carrier (reg_n_sets > 1) — the axis banned by the 2026-08-19 Judge rulings under every spelling and host. The mechanism space is closed with no un-measured cell.
+
+## [s9] 2026-08-19 — forensics (instrumented cc1, full `-da` dump sets)
+
+Artifacts, all under `tmp/grind/func_80060A68/s3/`:
+  * `n9/` — dump set + `dbg.txt` (BB2_SCHED_DEBUG / BB2_RANK_DEBUG stderr) for the
+    candidate.c body. Trace excerpts: `n9/trace_sched.txt`, `n9/trace_sched2.txt`.
+  * `n9b/` — same for rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c.
+    Trace excerpts: `n9b/trace_sched.txt`, `n9b/trace_sched2.txt`.
+  * `n9/p1_stage_after_copy1.c` + `n9/p1_disasm.txt` — the killed statement-position probe.
+  * `n9/tgt.txt` — target's 66 instructions, numbered, for slot references below.
+
+### Facts established this session
+
+1. **Chassis (re-measured, not inherited).** candidate.c applied at src/text1b.c:3321 gives
+   `sandbox func_80060A68 --disable all` = score 2, build 66 / target 66. The residual is
+   one adjacent swap: target slots 10-12 are `lw v0,12(v1)` / `lw a0,12(v1)` /
+   `lw a1,16(v1)`; we emit `lw v0,12(v1)` / `lw a1,16(v1)` / `lw a0,12(v1)`.
+
+2. **sched1 and sched2 emit DIFFERENT orders for this function, and sched2's is the one
+   that ships.** sched1's post-pass chain is `22, 25, 39, 27, 32, 29, ...`; sched2's is
+   `..., 25, 39, 32, 27, ...`, which is what objdump shows. Anyone reasoning about this
+   function from the `.sched` dump alone is reading a chain that no longer exists by the
+   time the assembler runs.
+
+3. **The birthing_insn_p LAUNCH_PRIORITY bump is a sched1-only phenomenon.**
+   `birthing_insn_p` (tools/gcc-2.7.2/sched.c:2503-2535) returns 0 at its first statement
+   when `reload_completed == 1`. sched1's ready lists show `(7f000001)` priorities on insns
+   25/27/32/34/42/44/49/51/56; sched2's show only natural depth priorities (max 17 plus the
+   sentinel on the block-end insn). The bump therefore cannot be "the reason the bytes are
+   wrong" directly — it is the reason sched1 chains insn 39 ahead of insn 32, which is the
+   INSN_LUID order sched2 then inherits.
+
+4. **The deciding comparison, at GCC-line level.** sched2, T-45, ready list `32 (3) 39 (3)`,
+   `last_scheduled_insn` = insn 27.
+     - `sched.c:2418` INSN_PRIORITY: 3 == 3, tied.
+     - `sched.c:2426-2444` class: `LOG_LINKS (27) = {22, 25}` contains neither candidate,
+       so both are class 3, tied.
+     - `sched.c:2464` `INSN_LUID (tmp) - INSN_LUID (tmp2)`: LUID(39) < LUID(32) from the
+       sched1 chain, so 32 sorts to ready[0], is scheduled at T-45 and therefore EMITTED
+       AFTER insn 39. Target requires the reverse.
+   Note on direction (this has been mis-stated in earlier ledger sections): schedule_block
+   runs BACKWARD, so a larger T-n means EARLIER in emission, and the comparator's
+   higher-LUID-first ordering means the higher-LUID insn is scheduled first and emitted
+   last.
+
+5. **INSN_PRIORITY here is a backward depth and it locks 25, 32 and 39 together.**
+   `priority(insn) = max over LOG_LINKS producers of (priority(producer) + insn_cost)`.
+   All three have producer set `{9, 22}` = `lw v1,0(gp)` (priority 1) and the
+   `sw zero,0(at)` D_800F10D0 store (priority 3), and the store→load memory link costs 0.
+   Calibration inside the same block: insn 27 (`lw v0,0(v0)`) has producers `{22, 25}` and
+   lands on 4, so a load→address-use link costs 1. Consequence: any change that deepens
+   insn 22 raises 25, 32 and 39 by the same amount and changes nothing. The only
+   priority-4-or-deeper insns insn 39 could depend on are insns 27 (4) and 29 (5), and
+   target emits BOTH after insn 39 (slots 13 and 15 vs slot 12), so acquiring either as a
+   producer would force the wrong order by itself.
+
+6. **Source statement position is codegen-INERT for the staged read.** Moving
+   `temp_a1 = *(s32 *)(outer + 0x10);` from between copy 2 and copy 3 to immediately after
+   copy 1 produces a BYTE-IDENTICAL function (score 2, build 66). Mechanism: in sched1
+   insn 39 is the only unbumped insn in its window, and a priority-3 insn is picked only
+   when the ready list is otherwise empty (T-47), so its chain position is fixed by
+   readiness, not by LUID. This is the general reason s2's 14 structural respellings were
+   all neutral, and it retires statement-permutation as an axis.
+
+7. **The bumped-stage body reaches target's slot 11 for copy 2's address load.** With a
+   fresh single-set `p10` holding the 0x10 pointer, the emitted slots 10-11 are exactly
+   target's `lw v0,12(v1)` / `lw a0,12(v1)`. That is the first measured body on this
+   function to place copy 2's address load correctly WITHOUT a multiply-assigned carrier.
+   The cost is the staged load's own slot: it lands at 25 instead of 12, which leaves a
+   load-delay `nop` at slot 22 (target fills that slot with `lw a0,16(v1)`), so the body is
+   67 instructions and scores 5.
+
+8. **Why the bumped stage overshoots — named.** sched2's trace reaches T-30 with insn 39
+   as the SOLE ready insn (`;; ready list at T-30: 39 (3), now 39`); insns 56, 53, 51, 46,
+   44, 36, 34, 32, 29, 27, 25 and 22 are all still blocked, and insn 56 is launched only
+   after 39 is scheduled (`;; launching 56 before 39 with no stalls at T-31`). sched1's
+   bump had chained insn 39 between insns 56 and 58, and the post-reload dependence graph
+   built over that chain pins it there. So the overshoot is a sched2 readiness pin, not a
+   sched1 priority artifact — which means it is attackable by changing what sits between
+   insns 53 and 58, not by changing insn 39's own priority.
+
+- [s3] Chassis re-measured, not inherited: candidate.c applied at src/text1b.c:3321 gives sandbox func_80060A68 --disable all = score 2, build 66 / target 66. Residual is one adjacent swap at target slots 10-12 (lw v0,12(v1) / lw a0,12(v1) / lw a1,16(v1) vs our lw v0,12(v1) / lw a1,16(v1) / lw a0,12(v1)).
+
+- [s3] sched1 and sched2 emit DIFFERENT chains for this function and sched2's is the one that ships; any reasoning done from the .sched dump alone (which is what the ledger did through s8) is reading a chain that no longer exists at assembly time.
+
+- [s3] Insn identities, stable across both dump sets: insn 25 = (set (reg 83) (mem (plus (reg/v 72) 12))) copy 1's address load; insn 32 = (set (reg 85) (mem (plus (reg/v 72) 12))) copy 2's address load; insn 39 = (set (reg/v 75) (mem (plus (reg/v 72) 16))) the staged 0x10 load; insn 27 = (set (reg 84) (mem (reg 83))) copy 1's value load.
+
+- [s3] GCC 2.7.2's priority() is a BACKWARD depth (max over LOG_LINKS producers of priority + insn_cost), calibrated inside this block: store-to-load memory links cost 0, load-to-address-use links cost 1. Insns 25, 32 and 39 share the producer set {9, 22} and are therefore locked together at priority 3 -- no honest change that deepens insn 22 can separate them.
+
+- [s3] Direction correction for the ledger: schedule_block runs backward, so a larger T-n means EARLIER in emission, and rank_for_schedule's comparator puts the HIGHER INSN_LUID at ready[0], scheduling it first and emitting it last. Earlier ledger sections state this the other way round.
+
+- [s3] The bumped-stage family is the only measured family that puts copy 2's address load on target's slot 11 without a banned carrier construct, and its remaining defect is localised to one named sched2 state (T-30, insn 39 sole ready insn).
+
+- [s3] Housekeeping: the previous session's uncommitted docs/grind/decisions.md OWNER-ESCALATION entry was reverted, because the driver discarded that session (owner-gated is not a valid outcome from forensics modality) and the function is active, not parked. src/text1b.c was restored to HEAD at end of session; no build-pipeline file was touched.

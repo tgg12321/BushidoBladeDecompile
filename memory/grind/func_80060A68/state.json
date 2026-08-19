@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor holds at 2; the structural axis (14 respellings) is KILLED and the residual is localised to one GCC line - rank_for_schedule's LUID fall-through at sched.c:2464, seeded by sched1's emitted chain"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics re-attributes the residual from sched1 to sched2: the byte-deciding tie is rank_for_schedule's LUID fall-through taken in the POST-RELOAD pass, statement permutation is killed with a mechani"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter campaign from the floor-2 seed closes the last two. The residual is a pure two-insn ordering swap with every register, the frame, and 64 of 66 instructions already correct. This axis is untouched by both s1 and s2.",
-   "mechanism": "Tiny ordering search space around the copy block. s2's analysis sharpens the target: a closing form must change the insn CHAIN ORDER that sched1 emits (insn 25 after insn 35), so forms that merely permute statements are predicted dead, and forms that alter insn 25's or insn 35's dependence structure are the only live candidates.",
-   "next_probe": "tools/permuter_campaign.py with a single-function target.o built from asm/funcs/func_80060A68.s (offset-0 discipline), seeded with memory/grind/func_80060A68/candidate.c; honour the fresh-seed stopping rule ([[permuter-fresh-seed-discipline]]); wait for the campaign IN-TURN and run harvest --stop before finishing. Vet any closing form against the 6-test checklist before banking it."
+   "hypothesis": "The bumped-stage body (already correct at target slots 10-11) can be completed by breaking sched2's T-30 readiness pin on the staged load, with no carrier construct anywhere in the diff.",
+   "mechanism": "sched1's bump chains insn 39 between insns 56 and 58; the post-reload dependence graph built over that chain leaves insn 39 as the SOLE ready insn at sched2 T-30, so sched2 must place it there and cannot sink it back toward slot 12. Give insn 39 a live competitor at T-30 and sched2 regains the choice.",
+   "next_probe": "From rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c: dump .greg and read which hard register p10 receives and which insn's release the sched2 trace attributes to insn 39 at T-30/T-31; then enumerate honest spellings of the 0x1A halfword read that remove insn 56's 'lw v0,16(v1)' from between insns 53 and 58 (target reuses ONE 'lw a0,16(v1)' at slot 23 for both the slot-22 delay fill and the halfword). Measure each with sandbox --disable all and diff slots 20-26 against tmp/grind/func_80060A68/s3/n9/tgt.txt."
   },
   {
-   "hypothesis": "Insn 25's INSN_PRIORITY can be raised honestly so that sched.c:2418 decides the pair before the LUID fall-through is ever reached.",
-   "mechanism": "rank_for_schedule tests INSN_PRIORITY first (sched.c:2418); insns 25 and 35 currently tie at 3 because their LOG_LINKS depth is identical. Raising 25's dependence depth changes the sort before class or LUID matter.",
-   "next_probe": "Enumerate honest C shapes that deepen insn 25's LOG_LINKS without adding an instruction, and check each against the trace's predicted pick order BEFORE spending a sandbox run. s2 already worked the naive case: priority(25) = 4 yields emission 28/35/30/25, which is close but NOT target (28/35/25/30), because at T-44 the class test prefers the independent insn 25 over the data-dependent insn 30. What is actually needed is for insn 30 to win T-44 and insn 25 to win T-45."
+   "hypothesis": "priority(insn 39) = 4 in sched2 wins the T-45 tie outright and closes the function.",
+   "mechanism": "rank_for_schedule tests INSN_PRIORITY first (sched.c:2418); insn 32 is pinned at 3 by its producer set {9, 22}. Raising insn 39 to 4 -- and only to 4, since 5 would make it contest insns 29/34/42 -- makes it win T-45, be scheduled first and therefore emitted after insn 32, which is target.",
+   "next_probe": "Read insn_cost in tools/gcc-2.7.2/sched.c and determine whether any priority-3 producer can reach insn 39 over a cost-1 link (a load-to-address-use link like 25->27) rather than the cost-0 store-to-load link 22->39. That requires the staged read's ADDRESS to be a loaded value; if no honest C form supplies one, KILL the axis with that argument plus one confirming probe rather than leaving it open."
   },
   {
-   "hypothesis": "If the permuter and the priority axis both measure dead, this is a sched.c:2464 tie wall and needs the line-level closure argument written out before any exhaustion claim.",
-   "mechanism": "[[sched-rank-class-tie-wall]] - equal priority and equal dependence class leaving rank_for_schedule to fall through to a LUID that pure C does not control.",
-   "next_probe": "s2 has already localised the tie to one line and proved both insns identical in every field rank_for_schedule inspects; what is still MISSING is a demonstration that no honest C shape can make sched1 emit insn 25 after insn 35. Do not claim exhaustion until the permuter and priority axes are measured - the floor moved 39 to 2 in a single session and both remaining hypotheses are live."
+   "hypothesis": "If both of the above measure dead, the closure argument to write is the sched2 T-45 three-test pin, not the sched1 birthing-bump story the ledger has carried since s2.",
+   "mechanism": "sched.c:2418 priority tied and locked by a shared producer set; sched.c:2426-2444 class tied and unbreakable because last_scheduled_insn 27 precedes both candidates in the chain; sched.c:2464 LUID inherited from a sched1 chain whose order is set by readiness, not by any C-visible quantity.",
+   "next_probe": "Do NOT re-open statement permutation (killed this session with a mechanism), the DImode/SUBREG door (s8), the carrier axis in any of its three partition seats (Judge 2026-08-19 10:21/10:48/11:07), the permuter (65,445 iterations across two chassis, zero finds), or canonical-asm (scan_hand_coded LOW 1/8). Any exhaustion claim must be written against the sched2 attribution above and must state which of frontier items 1 and 2 was measured dead and how."
   }
  ],
  "judge_constraints": [
