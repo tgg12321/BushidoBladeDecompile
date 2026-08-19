@@ -1,0 +1,37 @@
+{
+ "func": "func_8002D518",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 30,
+   "modality": "recon",
+   "headline": "Recon s1: canonical island respell (func_800274BC form) lowered floor 33->30 with insn parity 144==144; full residual map banked; disc-copy survival is the frontier head."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The disc copy can survive to reorg under an honest spelling once the folding pass is identified",
+   "mechanism": "either cse1 canon_reg replaces ud's uses with disc inside the beqz-extended block (LABEL_NUSES==1 extension), or combine folds the then-single-use copy; target proves the original copy reached reorg (it sits in the delay slot)",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_8002D518; read .cse and .combine for the ud pseudo; then try the cse-block-extension escape (if/else arm ending in jump+BARRIER per cse-block-extension-controls-fold-span.md); only after honest spellings die, evaluate staged-value-reused-variable / param-reuse (threshold dead after entrance chains) / duplicated-statement-into-arms with their rules' prerequisites"
+  },
+  {
+   "hypothesis": "The remaining register cascade (dist_sq/sqrt_val/t1-t2/result) is coupled to the disc-copy allocation and largely collapses once the copy takes $a0 and disc moves to $a2",
+   "mechanism": "the copy occupying $a0 forces disc to $a2 in local/global alloc; downstream tie-breaks then re-run with different occupancy",
+   "next_probe": "re-run sandbox + full objdump diff immediately after any surviving-copy form; only attack residuals that remain"
+  },
+  {
+   "hypothesis": "The two ordering flips (dist_sq addu placement in the mult cascade; denom sll placement before div) are independent scheduler items needing their own levers",
+   "mechanism": "sched1 rank/priority on the mult-shadow filler insns; possibly sensitive to declaration/use order of dist_sq, c_val, denom",
+   "next_probe": "after frontier-1/2 settle: try moving dist_sq computation after c_val in source and denom decl after t1 numerator; read .sched dump before attributing"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T09:30:08.972114+00:00"
+}
