@@ -1,59 +1,66 @@
-/* candidate.c — func_8008C1E8 (SetPacketData), grind session s2 (2026-08-18)
+/* candidate.c — SioSyncroWrite (formerly func_8008C1E8), grind session s3 (2026-08-18)
  *
  * Honest floor with this body IN PLACE in src/main.c: sandbox 1
- * (was 23 at s1 start-of-session; target_insns 159, build_insns 158).
+ * (target_insns 159, build_insns 158). UNCHANGED from s2 — s3 measured eight
+ * further spellings of the last instruction and every one was worse, so the s2
+ * body remains the best known form.
  *
- * THE s2 BREAKTHROUGH — real C loops instead of goto-loops.
- * Every prior body spelled the three loops with labels + goto. GCC 2.7.2 only
- * emits NOTE_INSN_LOOP_BEG/END for FRONT-END loop constructs (while / do-while
- * / for); a goto-loop is invisible to loop.c and to flow.c's loop_depth
- * weighting of reg_n_refs. Consequences, all measured:
- *   - global.c allocno_compare priority = floor_log2(n_refs)*n_refs/live_length,
- *     and flow.c weights n_refs by loop depth. With no loop notes every ref
- *     counted once, so the callee-save order came out
- *     loop_flag->s0, i->s1, retries->s2, arg1->s3, wait_val->s4 instead of
- *     target's retries->s0, i->s1, (const 5)->s2, st->s3, arg1->s4.
- *     With real loops the order is EXACTLY target's — the whole 4-pseudo
- *     rotation that s1 called "the dominant ~20-point cluster" vanished.
- *   - loop.c invariant motion now creates, in the loop preheaders, the two
- *     pseudos we previously had to hand-spell: the constant 5 of the
- *     `(x & 5) != 5` wait loop (target `addiu $s2,$zero,5`) and the copy
- *     `st = flag` (target `addu $s3,$v1,$zero`). The old explicit `wait_val`
- *     local is GONE — it was never a source variable, it is loop.c's hoist.
- *   - jump.c/expand_end_loop's duplicated top exit test reproduces target's
- *     `if (D_800F1AF4 == 0)` guard for free.
+ * === s2 finding (still the load-bearing one) =========================
+ * Real C loops instead of goto-loops. GCC 2.7.2 emits NOTE_INSN_LOOP_BEG/END
+ * only for front-end loop constructs; a label+goto loop is invisible to loop.c
+ * AND to flow.c's loop_depth weighting of reg_n_refs, which is what drove
+ * global.c's allocno_compare to the wrong callee-save order. With real loops
+ * the order is exactly target's (retries->s0, i->s1, const5->s2, st->s3,
+ * arg1->s4, pkt_len->s5) and loop.c supplies target's two preheader hoists
+ * (addiu s2,zero,5 and addu s3,v1,zero) plus expand_end_loop's duplicated top
+ * exit test. `retries = 0;` must sit BEFORE the *flag early-return guard
+ * (reorg then fills the entry beqz delay with it, leaving the a1 home at
+ * prologue position 3), and `volatile s32 *st = flag;` must be declared INSIDE
+ * the loop body so loop.c's hoist lands after the duplicated top test.
  *
- * Two further structural placements, each measured:
- *   - `retries = 0;` must sit BEFORE the `*flag` early-return test (23->8->3):
- *     reorg then fills the entry `beqz` delay slot with `addu s0,zero,zero`
- *     exactly like target, which frees the arg-home `addu s4,a1,zero` to stay
- *     at prologue position 3 and hoists `sw s4,0x20(sp)` to the front of the
- *     save block. This is the s1 "entry cluster is coupled to the arg-home"
- *     frontier item — it resolves itself once the allocation is right.
- *   - `volatile s32 *st = flag;` must be declared INSIDE the loop body (3->1),
- *     so loop.c hoists the copy into the preheader AFTER the duplicated top
- *     test. Declared before the loop it sits before the test and steals the
- *     `beqz` delay slot from `i = 0`.
+ * === s3 finding: the last instruction is NOT reachable by a C pointer =====
+ * The residual is the outer-loop exit test: ours `lui;lw %lo(D_800F1AF4)`
+ * (2 insns), target `lui;addiu %lo;lw 0(v0)` (3 insns). The un-folded form is
+ * produced when the ADDRESS is materialised into a pseudo, which in C means a
+ * named pointer local — that is how our three other 3-insn sites work.
+ * s3 read tools/gcc-2.7.2/loop.c:688-701 and pinned the wall exactly:
+ * scan_loop only treats an invariant set as movable if ONE of
+ *   (1) reg_in_basic_block_p — set and all uses in the same basic block,
+ *   (2) ! REG_USERVAR_P && ! REG_LOOP_TEST_P,
+ *   (3) ! maybe_never && ! loop_reg_used_before_p.
+ * A named pointer fails (2) by construction, so the ONLY way to stop the hoist
+ * is to also fail (1) — i.e. put the set in a DIFFERENT basic block from the
+ * load. Measured (s3): doing that does keep the `la` in the loop, but the
+ * pointer is then live across the if (i == pkt_len) block, which contains the
+ * DeliverEvent/callback calls, so it takes a callee-save (it stole s2 from the
+ * const-5 hoist) — score 6. Target's address register is $v0, dead one insn
+ * later, which only happens when the set is adjacent to the load — and that is
+ * exactly case (1), which loop.c always hoists. The two requirements are
+ * mutually exclusive for any C pointer variable. See hypotheses.md [s3-H1..H4].
  *
- * REMAINING RESIDUAL (the only one): the outer loop's own exit test compiles to
- * `lui v0,%hi(D_800F1AF4); lw v0,%lo(D_800F1AF4)(v0)` (combine folded the
- * lo_sum into the load) where target has the un-folded 3-insn
- * `lui; addiu; lw 0(v0)`. See hypotheses.md [s2-H6] for the four spellings
- * measured against it and why each is worse.
+ * === COMPLETED-C gating (s3 advanced this) ============================
+ * The D_800F1AEC two-prong evidence is now COMPLETE (evidence.md): HandleSio
+ * (@0x8008C9F4..0x8008CD8C, asm/funcs/_comb_control.s:549+) loads the block base
+ * into $a0 at 0x8008CC78 and stores `sw $zero, 0x0($a0)` at 0x8008CCD4 — the
+ * IRQ writer of D_800F1AEC itself. s3 also measured that changing the file-scope
+ * decl to `extern volatile s32 D_800F1AEC;` is SCORE-NEUTRAL for this function
+ * (1 -> 1) AND for its struct-sharing sibling SioAnsyncWrite (0 -> 0), so the
+ * pointer-level `volatile s32 *flag = &D_800F1AEC;` (which reads as a
+ * volatile-coercion-by-pointer-type) can be replaced by the natural declaration
+ * under the existing legitimate-volatile-interrupt-touched carve-out, at zero
+ * cost, once volatile_extern_allowlist.txt carries the entry (draft text in
+ * evidence.md). NOT applied here: adding that entry needs the layer-2
+ * cheat-reviewer + operator commit-audit block that the file's header mandates.
  *
- * Cheat state: zero pins, zero inline asm, zero rules touched. Volatile
- * surfaces are all inherited (see evidence.md HAZARD/BLOCKER notes): the
- * D_800F1AEC block still needs the two-prong legitimate-volatile-interrupt
- * finding, and the p_af8/p_af4b/p_af4/p_ae2 block-local pointers still need a
- * classification pass, BEFORE any candidate-ready.
+ * Cheat state: zero pins, zero inline asm, zero rules touched.
  *
- * Depends on file-scope decls already in src/main.c (~3331-3435):
+ * Depends on file-scope decls in src/main.c (~3427-3435):
  *   extern volatile u16 D_800F1AE2; extern s32 (*D_800F1AE8)(s32, s32);
  *   extern s16 D_800A3074[4]; extern s32 D_800F1AEC;
  *   extern volatile s32 D_800F1AF0, D_800F1AF4, D_800F1AF8;
  *   extern s32 D_800A3044;
  */
-s32 func_8008C1E8(u8 *arg0, s32 arg1) {
+s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
     volatile s32 *flag = &D_800F1AEC;
     s32 retries;
     s32 pkt_len;

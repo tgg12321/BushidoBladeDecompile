@@ -260,3 +260,162 @@ all are worse — see hypotheses.md [s2-H6].
 - [s2] [s2] Unchanged cautions: do NOT de-volatilize D_800F1AF4 (breaks COMPLETED-C func_8008C184) or the D_800F1AEC pointers. COMPLETED-C still needs the two-prong ISR finding for the D_800F1AEC block and a classification pass on the four block-local volatile-pointer reads. No self_vet.md was written this session because the session is not candidate-ready.
 
 - [s2] [s2] Verification note: the aligned diff must be read through tmp/grind/func_8008C1E8/s2/norm2.py, which normalises objdump's move/li aliases against the target listing's addu/addiu spellings; those hunks are display artifacts, not real differences.
+
+## == s3 (2026-08-18, structural) — floor 1 -> 1 (held); last-insn pointer family CLOSED, volatile gate OPENED ==
+
+### FIRST: the s2 src edits were LOST AGAIN (third consecutive session)
+src/main.c at s3 start still carried the pre-2026-08-06 body — the
+`register s32 r_arg1 asm("s4")` pin and the `__asm__("la %0, D_800F1AE2")`
+block. Note the function has been RENAMED since s2: it is `SioSyncroWrite`
+(src/main.c:3451), not `func_8008C1E8`, and the twin is `SioSyncroRead`
+(src/main.c:3337). The ledger directory is `memory/grind/SioSyncroWrite/`.
+Re-applying candidate.c restored floor 1. Note also that a stale `build/`
+makes `sandbox` fail outright with "not found in any build/src/*.o" — run
+`engine build` once at session start.
+`tmp/grind/SioSyncroWrite/s3/probe.py <bodyfile>` does the body swap (locates
+the function by name, brace-matches the end, survives line drift);
+`tmp/grind/SioSyncroWrite/s3/batch.sh vX vY ...` applies+scores a list of
+variant bodies in ONE WSL round trip and now flags compile errors explicitly.
+
+### GOTCHA that cost three measurements — silent stale objects
+Three s3 variants (vA/vB/vD2) put a declaration after a statement, or referenced
+a do-block-scoped name in the `while` condition. cc1 errors, the sandbox does
+NOT fail loudly, and a stale object is scored instead: those runs reported
+30/151, 30/151 and 43/142 insns — plausible-looking numbers that mean nothing.
+ALWAYS check for a compile error before believing a score whose build_insns
+moved by more than a couple. batch.sh now greps the captured stderr.
+
+### THE s3 FINDING — the last instruction is unreachable by any C pointer
+Residual (unchanged): the outer-loop exit test compiles to
+`lui v0,%hi(D_800F1AF4); lw v0,%lo(D_800F1AF4)(v0)` where target has
+`lui v0,%hi; addiu v0,v0,%lo; lw v0,0(v0)` (asm/funcs/SioSyncroWrite.s:151-153).
+The un-folded form appears exactly when the ADDRESS is materialised into a
+pseudo, which at C level means a named pointer local. s3 read the actual pass
+source, tools/gcc-2.7.2/loop.c:688-701, instead of guessing. scan_loop treats a
+loop-invariant set as movable if ANY ONE of these holds:
+  (1) `reg_in_basic_block_p (p, SET_DEST (set))` — the set and ALL uses are in
+      the same basic block;
+  (2) `! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)`;
+  (3) `! maybe_never && ! loop_reg_used_before_p (...)`.
+A named C pointer is a uservar, so (2) is false by construction. Therefore the
+only way to stop the hoist is to make (1) false as well — put the pointer's
+assignment in a DIFFERENT basic block from the load.
+  * s3 did exactly that (assignment before `if (i == pkt_len)`, and again
+    directly after the inner wait loop; declaration placed in the function's
+    declaration block so the do-while condition can see it). The `la` DID stay
+    in the loop — mechanism confirmed by disassembly,
+    tmp/grind/SioSyncroWrite/s3/vA2.fn.txt offsets 0x5bc4/0x5bc8:
+    `lui s2,%hi(D_800F1AF4); addiu s2,s2,%lo(D_800F1AF4)`.
+  * But it landed in **s2, a callee-save**, displacing loop.c's const-5 hoist,
+    because the pointer is then live across the `if (i == pkt_len)` block, which
+    contains the DeliverEvent/callback calls. Score 6 (build_insns still 158).
+Target's address register is `$v0`, dead one instruction later — that only
+happens when the set is ADJACENT to the load, which is precisely loop.c case
+(1), which always hoists. **The two requirements are mutually exclusive for any
+C pointer variable in this loop.** The pointer-idiom family is now closed from
+both ends: s2 killed the same-BB placements (hoisted; 9 / 11 / 22), s3 killed
+the different-BB placements (kept in the loop, but buys a callee-save; 6 / 6).
+
+The remaining live theory for target's form is reload REMATERIALISATION: one
+`&D_800F1AF4` pseudo, hoisted by loop.c, denied a hard register by global.c
+(a 7th callee-save is not worth its save/restore cost), and rematerialised from
+its REG_EQUIV symbol_ref at each of its three uses — which would explain all
+three of target's un-folded sites (cleanup_B 0x8008C244, exit test 0x8008C410,
+final return 0x8008C428) coming from ONE source pointer, while the top guard
+stays folded because it is a hand-written direct global read. s3 measured four
+ref-count / live-range configurations of that shared pointer, trying to make
+global.c decline the callee-save; it always won one:
+  * exit test + final return (2 refs):            16, build_insns 159
+  * exit test only (1 ref):                       11, build_insns 161
+  * all three sites, decl before the loop:        19, build_insns 157
+  * all three sites, decl at function top:        22, build_insns 157
+    (reproduces s2's banked 22 exactly — chassis consistency check passed)
+Whether that pseudo wins or loses a hard register is a global.c cost decision
+on which the C source exposes no lever. The next modality for this instruction
+is forensics on .greg/.lreg (is target's pointer allocno spilled with a
+REG_EQUIV?), NOT more spellings.
+
+Neutral chassis control re-measured: hand-written top guard +
+`if (D_800F1AF4 != 0) do { ... } while (D_800F1AF4 != 0);` scores 1 with 158
+insns, identical to the plain `while` — confirming s2's note that the do-while
+chassis is free, so it stays available as a carrier for any future exit-test
+idea.
+
+### STYLE EVIDENCE from the original Sony object
+Every single reference to D_800F1AEC inside the verbatim-linked LIBCOMB COMB
+blob (asm/funcs/_comb_control.s lines 84, 258, 356, 549, 670, 723) is the
+UN-FOLDED `lui;addiu %lo` form. Sony's LIBCOMB C holds the block base in a
+pointer variable everywhere. That is independent support for the shared-pointer
+reading of the target codegen, and against any "the loop test reads the global
+directly" reading.
+
+### FRONTIER ITEM 2 ADVANCED — the D_800F1AEC two-prong evidence is COMPLETE
+Prong (a), IRQ writer, cited exactly: HandleSio (the static COMB.OBJ IRQ8/SIO
+handler @0x8008C9F4..0x8008CD8C, installed via bios_SysEnqIntRP(3,&D_800A304C)
+from r_sioinit) materialises the block base at asm/funcs/_comb_control.s:549-550
+(`lui/addiu %lo(D_800F1AEC)` into $a0, address 0x8008CC78) and stores
+**`sw $zero, 0x0($a0)` at 0x8008CCD4** — i.e. it clears D_800F1AEC ITSELF, not
+merely the +4/+8/+0xC words. It also does the already-granted
+`sw $v0,0x8($a0)` @0x8008CD48 (D_800F1AF4 countdown) and `sw $v0,0xC($a0)`
+@0x8008CCFC (D_800F1AF8 latch).
+Prong (b), use-site construct: SioSyncroWrite reads the block through
+`volatile s32 *st` with double-read-across-sequence-point (`st[1] += 1; st[1];`
+and `st[2] -= 1; st[2];`) and an IRQ-mutated-loop-bound (the D_800F1AF4
+countdown drives the outer loop). Both are named constructs in
+.claude/rules/legitimate-volatile-interrupt-touched.md, and the four sibling
+words of the SAME struct (D_800F1AF0/AF4/AF8 and D_800F1B00/04) already carry
+the operator-audited 2026-07-10 grant at volatile_extern_allowlist.txt:41-45.
+
+MEASURED, and this is the point: changing the file-scope declaration from
+`extern s32 D_800F1AEC;` (src/main.c:3431) to `extern volatile s32 D_800F1AEC;`
+is **score-neutral for BOTH functions that share it** — SioSyncroWrite 1 -> 1
+(158/159) and the already-matched sibling SioAnsyncWrite 0 -> 0 (25/25). So the
+body's `volatile s32 *flag = &D_800F1AEC;`, which today reads as a
+volatile-coercion-by-pointer-type on a non-volatile extern, can be replaced by
+the natural declaration at ZERO cost. NOT applied in s3: the allowlist file's
+own header requires a layer-2 cheat-reviewer confirmation plus a commit audit
+block, neither of which a grind session may produce. Draft entry for whoever
+files it:
+
+    D_800F1AEC    # SioSyncroWrite (double-read-across-sequence-point via
+    # `volatile s32 *st` + IRQ-mutated-loop-bound on the +8 countdown) and
+    # SioAnsyncWrite busy flag — IRQ writer: HandleSio `sw $zero,0x0($a0)`
+    # @0x8008CCD4 with $a0 = &D_800F1AEC materialised @0x8008CC78
+    # (asm/funcs/_comb_control.s:549-550). Same Ruling-4 class grant and same
+    # struct as D_800F1AF0/AF4/AF8 (allowlist lines 43-45).
+
+### Standing cautions carried forward (unchanged)
+- Do NOT de-volatilize D_800F1AF4 (breaks COMPLETED-C func_8008C184) nor the
+  D_800F1AEC flag/st pointers (27 -> 39, 2026-08-06).
+- Still needed before candidate-ready: the classification pass on the
+  p_ae2 / p_af8 / p_af4b / p_af4 block-local `volatile T *p = &GLOBAL;` reads
+  (natural read spelling vs a coercion family) and self_vet.md. The D_800F1AEC
+  finding above materially helps: p_af8 / p_af4b / p_af4 all point at globals
+  that are ALREADY `extern volatile` at file scope, so those three add no
+  qualifier and are pure address-materialisation spellings; p_ae2 likewise
+  (D_800F1AE2 is `extern volatile u16`). Only `flag` was adding a qualifier,
+  and that is exactly what the allowlist entry above fixes.
+- Twin SioSyncroRead (src/main.c:3337, formerly func_8008BF04) is still written
+  in the goto-loop style and still carries the identical rotation as regfix
+  ($19<->$20 @ 0-134, $16<->$17 @ 68-121). The s2 loop-note rewrite should
+  retire those rules outright — highest-value transfer in the whole queue.
+
+- [s3] Floor at session end: 1 (sandbox SioSyncroWrite --disable all; build_insns 158 vs target_insns 159), s2 body in place in src/main.c and saved to memory/grind/SioSyncroWrite/candidate.c.
+
+- [s3] The s2 src edits were LOST AGAIN — third consecutive session that had to re-apply candidate.c before any new work. The function has also been RENAMED: it is SioSyncroWrite (src/main.c:3451), the twin is SioSyncroRead (src/main.c:3337). A stale build/ additionally makes sandbox fail outright with 'not found in any build/src/*.o' — run engine build once at session start.
+
+- [s3] PASS ATTRIBUTION, read from source not guessed: tools/gcc-2.7.2/loop.c:688-701 lists the three alternative conditions under which scan_loop treats a loop-invariant set as movable. A named C pointer is a uservar so condition (2) never applies to it, which is the whole reason the exit-test address behaves differently from the three sites that already match.
+
+- [s3] Disassembly proof that the different-basic-block placement works mechanically: tmp/grind/SioSyncroWrite/s3/vA2.fn.txt offsets 0x5bc4/0x5bc8 carry lui s2,%hi(D_800F1AF4); addiu s2,s2,%lo INSIDE the loop. It fails only on register class — s2 is a callee-save and it evicts loop.c's const-5 hoist.
+
+- [s3] Six distinct pointer spellings for the exit test are now banked as rejected forms (s2: 9 / 11 / 22 / 1; s3: 6 / 6 / 16 / 11 / 19). Do not re-propose a pointer-idiom spelling for this instruction.
+
+- [s3] Every reference to D_800F1AEC inside the verbatim-linked Sony LIBCOMB COMB object (asm/funcs/_comb_control.s lines 84, 258, 356, 549, 670, 723) uses the un-folded lui;addiu %lo form — Sony's C holds block bases in pointer variables, which supports the shared-pointer reading of target's codegen.
+
+- [s3] MEASUREMENT HYGIENE: three s3 variants silently scored a STALE object because cc1 rejected them (C89 declaration-after-statement, and a do-block-scoped name referenced in the while condition). They reported 30/151, 30/151 and 43/142 — plausible numbers that mean nothing. tmp/grind/SioSyncroWrite/s3/batch.sh now captures cc1 stderr and flags COMPILE-ERROR; distrust any score whose build_insns jumps by more than a couple.
+
+- [s3] D_800F1AEC two-prong volatile evidence is COMPLETE and cited to the instruction: IRQ writer HandleSio (static COMB.OBJ handler @0x8008C9F4..0x8008CD8C, installed via bios_SysEnqIntRP(3,&D_800A304C) from r_sioinit) stores sw $zero,0x0($a0) @0x8008CCD4 with $a0 = &D_800F1AEC materialised @0x8008CC78; use-site constructs are double-read-across-sequence-point and IRQ-mutated-loop-bound. The natural extern volatile declaration is score-neutral for both consumers. Draft allowlist entry is in evidence.md; NOT filed in-session (the file's header mandates a layer-2 cheat-reviewer confirmation and a commit audit block).
+
+- [s3] Classification of the remaining block-local volatile pointer reads is now mostly resolved: p_ae2, p_af8, p_af4b and p_af4 all point at globals that are ALREADY extern volatile at file scope, so they add no qualifier and are pure address-materialisation spellings. Only flag was adding a qualifier, and the allowlist entry above is the sanctioned fix for it.
+
+- [s3] Twin SioSyncroRead (src/main.c:3337) is unchanged and still carries regfix $19<->$20 @ 0-134 and $16<->$17 @ 68-121 — the identical rotation the s2 loop-note rewrite dissolves here. Highest-value transfer of this ledger, out of scope for a SioSyncroWrite session.

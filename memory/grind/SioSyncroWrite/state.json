@@ -1,7 +1,7 @@
 {
  "func": "func_8008C1E8",
  "file": "main",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Structural: goto-loops rewritten as real C loops restored GCC's loop notes; the whole 4-pseudo callee-save rotation and the entry cluster collapsed. Floor 23 -> 1 (158 vs 159 insns, one addiu left)."
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor held at 1; the exit-test pointer family is now closed from BOTH ends (loop.c:688-701 proves adjacency and non-hoisting are mutually exclusive), and the D_800F1AEC two-prong volatile evidence is "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The one missing addiu is the un-folded address materialisation of the outer-loop exit test, and target's C spells that test differently from its top guard.",
-   "mechanism": "combine folds (set r (lo_sum (high sym) sym)) into the following MEM unless the register is a named user variable (REG_USERVAR_P); loop.c's scan_loop then hoists any such pointer out of a loop unless it is set in a not-guaranteed-executed basic block. The four pointer placements that satisfy neither constraint were measured this session (9 / 11 / 22 / no-change).",
-   "next_probe": "Forensics: cc1 -dL (loop) and -dc (combine) dumps on the sandbox .i, tracing the two D_800F1AF4 test insns from RTL expansion through combine to see which property differs. In parallel (re-derive modality): find a sibling PsyQ/Marionation while(countdown) routine whose exit test compiles un-folded and copy its C spelling; and test whether an alternative file-scope declaration form for D_800F1AF4 blocks the fold at the loop test but not at the top guard and the store."
+   "hypothesis": "The single missing addiu is decided in register allocation, not in C spelling: target's &D_800F1AF4 pseudo is hoisted but denied a hard register, so reload rematerialises it from REG_EQUIV at each of its three uses.",
+   "mechanism": "global.c find_reg weighs an allocno's benefit against the save/restore cost of claiming a fresh callee-save register; a 3-reference pointer with a function-long live range sits right at that boundary. In our builds it always wins the register (157-159 insns, scores 11-22); in target it evidently loses it.",
+   "next_probe": "FORENSICS modality: pwsh tools/grinder/dump.ps1 SioSyncroWrite with rejected/s3-shared-pointer-three-sites-do-while-19.c applied, then read the SioSyncroWrite slice of main.lreg and main.greg \u2014 find the allocno for the &D_800F1AF4 pseudo, read its priority, its live_length and which hard reg find_reg assigned, and determine what property would have to differ for it to be spilled with its REG_EQUIV intact. Every C-level spelling is already dead (s2: 4, s3: 6), so do not spend the session on more spellings."
   },
   {
-   "hypothesis": "func_8008BF04, the queued receive-side twin, carries the same rotation for the same reason and its two regfix rules are retirable by the same rewrite.",
-   "mechanism": "Same (u8*, s32) signature, same goto-loop body shape, regfix $19<->$20 @ 0-134 (arg1 s3<->s4) and $16<->$17 @ 68-121, which is the exact rotation the loop notes fixed here.",
-   "next_probe": "Rewrite func_8008BF04's loops as real C loops and measure with sandbox --disable all before touching any rule."
+   "hypothesis": "COMPLETED-C for SioSyncroWrite is gated on a volatile_extern_allowlist.txt entry for D_800F1AEC plus self_vet.md, not on further score work.",
+   "mechanism": "The body's volatile s32 *flag = &D_800F1AEC; over a non-volatile extern is the only qualifier-adding construct left in the diff; the natural extern volatile s32 spelling is score-neutral for both consumers and is exactly what the legitimate-volatile-interrupt-touched carve-out grants, with the two prongs now cited to the instruction.",
+   "next_probe": "Route the drafted allowlist entry (text in evidence.md) through the layer-2 cheat-reviewer and the operator commit-audit block the file's header mandates; then switch the body to the natural declaration, re-measure both SioSyncroWrite and SioAnsyncWrite, and write memory/grind/SioSyncroWrite/self_vet.md covering flag, st, p_ae2, p_af8, p_af4b and p_af4."
   },
   {
-   "hypothesis": "COMPLETED-C for func_8008C1E8 is now gated on classification work rather than on score.",
-   "mechanism": "The D_800F1AEC flag/state volatile is load-bearing (de-volatilizing measured 27 -> 39 on 2026-08-06) and needs the two-prong legitimate-volatile-interrupt-touched finding; the p_ae2 / p_af8 / p_af4b / p_af4 block-local pointers need to be ruled natural read spelling versus a coercion family.",
-   "next_probe": "Trace writers of D_800F1AEC/+4/+8/+0xC across the codebase and the DeliverEvent 0xF000000B callback registration to name the ISR; document the finding in evidence.md and write memory/grind/func_8008C1E8/self_vet.md before any candidate-ready."
+   "hypothesis": "Re-derive modality can still supply target's exit-test spelling from a sibling PsyQ LIBCOMB routine that was compiled from the same Sony source style.",
+   "mechanism": "SioSyncroWrite is verbatim-linked Sony LIBCOMB code; the same source file's other routines are present in asm/funcs/_comb_control.s and in the psyz PsyQ 4.0 decomp, and Sony's style of holding block bases in pointer variables is already visible in the un-folded address forms throughout that blob.",
+   "next_probe": "Diff SioSyncroWrite against SioAnsyncWrite/SioSyncroRead and against any psyz LIBCOMB body for a while-countdown routine whose exit test compiles un-folded, and copy the source spelling verbatim rather than inventing one."
   }
  ],
  "judge_constraints": [],
