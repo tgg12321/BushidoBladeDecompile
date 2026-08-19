@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8001B748",
-      "file": "code6cac",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active"
-    },
-    {
       "func": "func_8002D518",
       "file": "code6cac_b",
       "distance": 33,
@@ -2026,6 +2018,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:6202 - 2026-08-19 - SioSyncroWrite - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven; blocked by a commit surface a grind session may not stage). Requested action: add `SioSyncroWrite volatile_extern_allowlist.txt` to tools/grinder/scope_allow.txt (precedent scope_allow.txt:22-26), or land the D_800F1AEC allowlist grant directly per the six operator steps in the entry."
     },
     {
+      "func": "func_8001B748",
+      "file": "code6cac",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): 2026-08-19 - func_8001B748 - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven at 0; blocked only by grind-session file scope) - docs/grind/decisions.md:6426"
+    },
+    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2309,14 +2310,14 @@
   ],
   "counts": {
     "total": 263,
-    "active": 230,
+    "active": 229,
     "by_status": {
-      "active": 230,
-      "parked": 33
+      "active": 229,
+      "parked": 34
     },
     "by_verdict": {
-      "C": 191,
-      "ASM-PARTIAL": 39
+      "ASM-PARTIAL": 39,
+      "C": 190
     }
   }
 }

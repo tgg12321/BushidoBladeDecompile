@@ -1,8 +1,8 @@
 {
  "func": "func_8001B748",
  "file": "code6cac",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: pass attribution pinned to cc1 sched2 (cc1's own .s already misplaces the store); the priority recurrence and the backward-scheduling readiness rule are now exact; a named-intermediate spli"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: re-ran the handoff's three claims from scratch (floor 2 in-scope; score 0 + full-build SHA1 MATCH with the banked aggregate-merge patch) and re-filed the escalation under a title the driver"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target gives chain-1's head ('sll v1,s1,0x2') a priority-48 predecessor while keeping chain-1 in $v1 and the a+8 load in $v0 - a configuration no spelling has yet produced. Find the fifth pri-48 insn, or the offset in the mflo ladder, that makes it possible.",
-   "mechanism": "priority(insn) = max over LOG_LINKS of priority(pred) + insn_cost - 1, with anti/output deps contributing +0 and a TRUE dep on a load contributing +1. Chain-1's head has exactly two predecessors: an OUTPUT dep on the mflo that last wrote $v1 (pri 36) and an ANTI dep on insn 93 'addu v0,v1,t2', the dst+4 sum, which reads $v1 (pri 47). Its only data input is the prologue-live $s1, so the TRUE-dep +1 route is closed. The block's four pri-48 insns are 'mult t0,v0', 'li v0,128', 'sh v0,16(s0)' and chain-2 - none touches $v1.",
-   "next_probe": "Two concrete sub-probes, both cheap with the s7 harness. (a) Attack the mflo that writes $v1 (currently pri 36, the third mflo): if the dst+0 / dst+4 / dst+8 sums were re-associated so that the $v1-writing mflo is the FOURTH or FIFTH rung of the ladder, its priority becomes 47 or 59 and chain-1's OUTPUT-dep predecessor rises with it. Grade by 'PRIODBG SET final_pri' on the chain head and by whether the a+8 load stays in $v0 (the pairdiff must keep 'lh v0,8(a1)' / 'mult t0,v0'). (b) Look for a spelling that makes insn 93 (the dst+4 sum) itself pri 48 - it is 47 via TRUE deps on the third and fourth mflos, each contributing +0; a form in which one of its operands arrives from a LOAD rather than an mflo would contribute +1. Both are re-associations of the existing arithmetic, not new constructs."
+   "hypothesis": "The entire remaining work is one line in tools/grinder/scope_allow.txt; with it, the banked patch closes func_8001B748 to COMPLETED-C on the next session with no further searching.",
+   "mechanism": "None needed \u2014 the bytes are measured, now by two independent sessions: sandbox score 0 (231/231) and full-build SHA1 MATCH with the complete patch applied. The only obstruction is the driver's per-function file-scope check at grind.ps1:522-524 / 904, which cannot be widened from inside a session because the widening file lives under tools/.",
+   "next_probe": "Not a probe \u2014 an operator step. Append 'func_8001B748 include/code6cac.h src/code6cac_c2.c src/text1b.c' to tools/grinder/scope_allow.txt (mirroring the owner-approved replay_camera_Init entry), then the next session runs 'git apply memory/grind/func_8001B748/aggregate_merge_score0.patch', writes memory/grind/func_8001B748/self_vet.md claiming the frozen aggregate-merge family with the five prongs banked in evidence.md, and returns candidate-ready for the Judge."
   },
   {
-   "hypothesis": "The gp store's ready clock, not its priority, is what differs in target: target's store has a dependence successor scheduled at clock 29-30 that ours lacks, so it enters ready[] only at clock 30/31 and is picked unopposed.",
-   "mechanism": "An insn's ready clock in backward sched2 is (highest successor clock) + insn_cost. Ours is pinned to the b+8 load at clock 23. Every candidate successor between clocks 24 and 29 in target's window is a pure sll/addu with no memory and no register overlap with 'sh zero,0(gp)' (which reads only $zero and $gp), so no dependence is visible - but the s7 analysis of schedule_select leaves this and the priority route as the only two possibilities, and the priority route is now blocked on both register axes.",
-   "next_probe": "Re-run sched_analyze's alias reasoning explicitly: dump the full 'SCHEDDBG node insn=<gp store>' successor list for the candidate and enumerate which memory operations in the function could, under a DIFFERENT C spelling of D_800A3310's type or of the dst pointer, acquire a dependence with the gp store that ours lacks. In particular check whether declaring D_800A3310 with a type that changes its MEM alias set (it is currently 'extern u16') alters the dep set without changing the emitted 'sh zero,0(gp)'. Grade first by the dep list, only then by score."
-  },
-  {
-   "hypothesis": "The b+8 load half of the required 48/48/47 configuration is independently reachable and worth banking even though it does not move the score alone, because it halves the work left for whichever session solves the chain-1 half.",
-   "mechanism": "The b+8 load's only predecessor today is the gp store (TRUE dep, +0), so it sits at 47. A TRUE dep on the already-pri-48 'sh v0,16(s0)' would give it 48 + 1 - 1 = 48. That requires program-ordering the dst+0x10 store before the b+8 load - which in the g-batch also dragged the a+8 load into $v1.",
-   "next_probe": "Separate the two effects: find a spelling that program-orders the 0x10 store before the b+8 load WITHOUT hoisting the 0x10 store's constant materialisation above the a+8 mult (for example by keeping 'li v0,128' downstream of the mult via a named intermediate for the 0x10 value, or by moving only the STORE and not the constant). Grade by 'PRIODBG SET final_pri' on the b+8 load reaching 48 while the pairdiff still shows 'lh v0,8(a1)' / 'mult t0,v0'; record the result even if the score does not improve, since the composite fix needs both halves."
+   "hypothesis": "If the scope line is refused, the honest in-scope floor is 2 and permanent \u2014 but that is a disposition, not an open matching question.",
+   "mechanism": "Exhaustive elimination: statement order and control-flow spelling swept dead by s3 (d-sweep), s4 (permuter, ~35k iterations, 3 chassis, zero sub-60 finds) and s6/s7 (g-batch); the sched2 priority lattice measured dead three times (s5, s6, s7); the TU-local record banned twice (03:50 layer-1 FAIL, 04:03 ruling); and the gp store can never be the MEM_IN_STRUCT_P-suppressed side because 2.7.2 has no alias sets.",
+   "next_probe": "None. Do NOT re-open the sched2 lattice or re-sweep statement placement \u2014 that would be the fifth identical measurement. If the scope line is refused, the function's disposition is the terminal borderline park this entry already routes to."
   }
  ],
  "judge_constraints": [

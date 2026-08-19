@@ -1,13 +1,20 @@
-/* candidate.c — func_8001B748 — BEST NON-BANNED FORM, honest sandbox score 2 (231/231 insns).
- * Re-measured in place in src/code6cac.c on 2026-08-19 by the s8 SYNTHESIS session: score 2.
+/* candidate.c - func_8001B748 - BEST IN-SCOPE FORM, honest sandbox score 2 (231/231 insns).
+ * Re-measured in place in src/code6cac.c on 2026-08-19 by the s8 SYNTHESIS session: score 2
+ * (231/231). That session also independently reproduced the score-0 patch below: sandbox 0
+ * and a full-build SHA1 MATCH. Raw log: tmp/grind/func_8001B748/s8/measurements.txt.
+ * NOTE: src/code6cac.c at HEAD is NOT this body - HEAD measures 32. Splice this file in before
+ * you measure anything.
+ *
  * This is the s7 floor-2 body. It carries NO struct/record declaration and NO banned construct.
  *
- * WARNING TO THE NEXT SESSION: the previous contents of this file were the layer-1-FAILED
- * struct-cast-at-use form (score 0). That form is now BANNED and has been moved to
- * rejected/layer1-fail-struct-cast-at-use-score0-BANNED.c. Do NOT resurrect it.
- *
- * The score-0 TYPED-PARAMETER form (no casts anywhere) is parked, unapplied, at
- * memory/grind/func_8001B748/pending_ruling_typed_params.c pending the ruling this session filed.
+ * THE SCORE-0 FORM IS SOLVED AND BANKED, but it is out of a grind session's scope:
+ * memory/grind/func_8001B748/aggregate_merge_score0.patch reaches score 0 (231/231) with a
+ * full-build SHA1 MATCH, using the frozen "per-word splat symbol -> aggregate merge" family
+ * with all five prongs measured (see evidence.md FINDINGS 2-5 and the 2026-08-19 INTEGRATION
+ * HANDOFF entry in docs/grind/decisions.md). It touches include/code6cac.h,
+ * src/code6cac_c2.c and src/text1b.c, which tools/grinder/scope_allow.txt does not yet allow
+ * for this function. Do NOT try to respell it TU-locally - that spelling is BANNED
+ * (rejected/layer1-fail-struct-cast-at-use-score0-BANNED.c and the 2026-08-19 04:03 ruling).
  */
 void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;

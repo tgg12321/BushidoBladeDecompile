@@ -6329,3 +6329,187 @@ The struct-cast reinterpretation of dst/a/b (typedef AB/DST + ->wN/hN/bN access)
 ## 2026-08-19 04:03 — func_8001B748 — ruling: Does the standing ban on 'typedef struct AB {...}; typedef struct DST {...}; and — **FAIL**
 
 NOT a blanket ban on record types over these pointees — the family IS on the frozen list (no-new-park-categories.md § 'Per-word splat symbol → aggregate merge', owner ruling 2026-08-17), but this spelling misses its mandatory prongs (c) and (d). Verified independently: the three cited witnesses are real and do corroborate the layout (code6cac.c:818 D_800F6608 at +0/4/8/10/12/14/18/30..3C, :819 the same over D_800F5328, :1057/1070 Vec3 = w0/w4/w8) — that satisfies prong (a). But pending_ruling_typed_params.c declares the record TU-locally on ONE function's signature while every per-word D_800F66xx / D_800F53xx symbol survives in include/code6cac.h and in those same siblings, leaving two C handles per storage location. Prong (d) forbids exactly that by name: 'spelled at the canonical declaration in the shared header, never TU-local, never a per-use pointer pun.' Moving the type from a cast to the prototype changes where the pun is written, not that it is one, so the layer-1 ground survives. AB is weaker still: a 5-halfword window onto a larger caller entity with no schema evidence (prong (b)). Floor 2 is NOT permanent and this is NOT escalation modality — the session's own F2 (hypotheses.md:757-768) is the sanctioned path and its prong-(a) evidence is already banked; 'multi-function, not a grind-session change' is not a disposition under the no-deferral policy. Not re-measured: src/code6cac.c is correctly reverted to the s7 form and the score is moot at this ground.
+
+## 2026-08-19 — func_8001B748 — **INTEGRATION HANDOFF (bytes proven; blocked only by session scope)**
+
+**Not an endgame lock and not exhaustion.** `func_8001B748` reaches an honest
+`sandbox --disable all` score of **0** (231/231 insns) and the full tree still
+links to the oracle SHA1, using the frozen **"per-word splat symbol → aggregate
+merge"** family (`.claude/rules/no-new-park-categories.md`, owner ruling
+2026-08-17) with **all five prongs now satisfied and measured**. The only thing
+standing between the repo and a COMPLETED-C for this function is that three of
+the four files the fix touches are outside a grind session's allowed surface.
+
+**The form** is banked verbatim at
+`memory/grind/func_8001B748/aggregate_merge_score0.patch` (356 lines). It declares
+`Rec44` (0x44 bytes) and `Rec1C` (0x1C bytes) in `include/code6cac.h` at the
+canonical extern site, deletes all 27 per-word externs `D_800F532C..D_800F5368` /
+`D_800F660C..D_800F6644`, rewrites their 45 use sites across `src/code6cac.c`,
+`src/code6cac_c2.c` and `src/text1b.c`, types the prototype
+`func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32)`, and drops the now-
+redundant `(s32 *)` cast at the `&D_800F5328` call site. **There is not one cast
+on `dst`/`a`/`b` anywhere in the body** — the banned construct
+(2026-08-19 03:50 layer-1 FAIL) was "typedef struct AB/DST … *and casting
+dst/a/b through them at every access site*", and the 04:03 ruling refused the
+follow-up only because it was TU-local (prong d) and lacked `a`/`b` schema
+evidence (prong b). Both defects are now fixed at the source rather than
+respelled.
+
+**Prong evidence, all verified this session, none of it from a GCC internal.**
+* **(a) layout** — `src/code6cac.c:818` (`func_8001B294`) initialises the
+  0x800F6608 object field-by-field at +0x00/04/08/10/12/14/18/1E/30/32/34/38/3A/3C;
+  `:819` (`func_8001B3C0`) does the same for 0x800F5328 at
+  +0x00/04/08/30/32/34/38/3A/3C/40; `:1058-1077` already assigns +0/4/8 of the same
+  object through an existing `typedef struct { s32 x, y, z; } Vec3;`.
+* **(b) the `a`/`b` pointee** — `asm/funcs/func_8003993C.s:57-89`, the sole caller
+  of the sole two callers, computes both arguments as
+  `D_800A36EC + i*0x38 + d*0x1C` (with a `+0x1C` fixup when `d == 0`): an array of
+  **0x1C-byte** elements in pairs. This is the schema evidence the 04:03 ruling
+  said was missing.
+* **(c) byte-neutrality** — measured, not asserted. With the merge applied to the
+  header and all three consumer TUs and `func_8001B748` left at its HEAD body,
+  `engine build` returns
+  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH`. None of the
+  fifteen consumer functions carries a regfix/asmfix rule, so the build genuinely
+  exercises their C. **Important correction for the record:** the per-function
+  `sandbox` scorer reports 13/9/6/5/5/4/2/1/1/1/1 on ten of those consumers after
+  the merge. Every one of those is FALSE — the emitted code is identical (15 `lui`
+  in both the merged build and target for `func_8001B294`, same sequence); only the
+  R_MIPS_LO16 addend moves (`%hi(D_800F6608)`+0x30 vs `%hi(D_800F6638)`+0), which
+  `engine/score.py` does not mask ([[sandbox-lo16-text-addend-false-distance]]).
+  This artifact is very likely what has made the aggregate-merge family look
+  destructive in earlier sessions.
+* **(d) declaration site** — in the shared header at the canonical extern, every
+  merged per-word symbol deleted from C, never TU-local, never a per-use pointer
+  pun. `undefined_syms_auto.txt:610,660` keep only the two base symbols
+  `D_800F5328` / `D_800F6608`, which the merged declarations use; the 27 deleted
+  names are no longer referenced from any C file.
+* **(e) oracle** — `engine build` MATCH with the complete patch applied, including
+  the record-typed `func_8001B748` body.
+
+**Why this is a handoff and not something the pipeline can finish.**
+`tools/grinder/scope_allow.txt` has no `func_8001B748` entry, so
+`grind.ps1:540/904` discards any session touching anything but
+`src/code6cac.c`, and `closer.ps1` stages only that file. Three of the four
+required files are unreachable from inside a session and the widening file is
+itself under `tools/`. The tree was reverted to the s7 floor-2 candidate before
+this session ended; nothing is applied.
+
+**The autonomous remedy (preferred, one line).** Append to
+`tools/grinder/scope_allow.txt`:
+
+    func_8001B748 include/code6cac.h src/code6cac_c2.c src/text1b.c
+
+and the next session applies the banked patch, writes the self-vet claiming the
+frozen aggregate-merge family with the five prongs above, and the Judge rules on
+the C as normal. This mirrors the owner-approved
+`replay_camera_Init include/code6cac.h` entry already in that file (2026-08-01,
+same "the honest declaration lives in the shared header" ground).
+
+**Exact operator steps if done by hand instead.**
+1. `git apply memory/grind/func_8001B748/aggregate_merge_score0.patch`
+   (touches `include/code6cac.h`, `src/code6cac.c`, `src/code6cac_c2.c`,
+   `src/text1b.c`).
+2. `engine sandbox func_8001B748 --disable all` → expect score 0, 231/231.
+3. `engine build` → expect SHA1 MATCH.
+4. Fresh layer-2 `cheat-reviewer` on the C **and** on the aggregate-merge family
+   claim. A measured score of 0 is not an acceptance.
+5. `engine retire func_8001B748` (drops `asmfix.txt:50
+   func_8001B748: replace_with_asmfile "asm/funcs/func_8001B748.s"`) then
+   `engine verify-oracle --rebuild`.
+6. `engine queue done func_8001B748`.
+
+Nothing about this is a matching problem, and nothing here is pending an owner
+decision on technique — the family is already sanctioned. If the driver parks the
+function on this entry, the park is re-attemptable the moment the scope line lands.
+
+## 2026-08-19 — func_8001B748 — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven at 0; blocked only by grind-session file scope)**
+
+**This is not exhaustion and not an endgame lock, and nothing here is a matching
+problem.** It is a one-line scope decision. Re-titled from the 2026-08-19
+"INTEGRATION HANDOFF" entry above so the driver's owner-gated validator can see
+it (that validator matches a single line containing both `OWNER-ESCALATION` and
+the function name; the earlier title carried neither marker and the session that
+cited it was discarded).
+
+### What this session (s8, synthesis) added: independent re-measurement
+
+The preceding session's three load-bearing claims were re-run from scratch here,
+not taken on trust ([[verify-opus-handoff-claims]]). All three reproduce exactly:
+
+| # | measurement | result |
+|---|---|---|
+| 1 | `sandbox func_8001B748 --disable all` on the untouched HEAD tree | score **32** (230/231) — HEAD's body is *not* the ledger candidate |
+| 2 | same, with `memory/grind/func_8001B748/candidate.c` spliced into `src/code6cac.c:942-1023` | score **2** (231/231) — **the chassis floor is 2** |
+| 3 | same, after `git apply memory/grind/func_8001B748/aggregate_merge_score0.patch` (applies clean on HEAD) | score **0** (231/231) |
+| 4 | `engine build` with that patch applied | `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, **MATCH**` |
+
+Raw log: `tmp/grind/func_8001B748/s8/measurements.txt`. The tree was restored to
+the in-scope floor-2 candidate afterwards; the merge is **not** applied.
+
+### The form and why it is not the banned construct
+
+`memory/grind/func_8001B748/aggregate_merge_score0.patch` (356 lines) is the
+frozen **"per-word splat symbol → aggregate merge"** family
+(`.claude/rules/no-new-park-categories.md`, owner ruling 2026-08-17). It declares
+`Rec44` / `Rec1C` in `include/code6cac.h` **at the canonical extern site**, deletes
+the 27 per-word externs `D_800F532C..D_800F5368` / `D_800F660C..D_800F6644`,
+rewrites their 45 use sites across `src/code6cac.c`, `src/code6cac_c2.c` and
+`src/text1b.c`, and types the prototype
+`func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32)`. **There is no cast on
+`dst`/`a`/`b` anywhere in the body.** The banned construct (2026-08-19 03:50
+layer-1 FAIL) is "typedef struct AB/DST … *and casting dst/a/b through them at
+every access site*"; the 04:03 ruling refused the follow-up only because it was
+TU-local (prong d) and lacked `a`/`b` schema evidence (prong b). Both defects are
+fixed at the source, not respelled — the record is carried by the declaration.
+
+Prong evidence, none of it from a GCC internal: **(a)** `src/code6cac.c:818`
+(`func_8001B294`) and `:819` (`func_8001B3C0`) initialise the two objects
+field-by-field at exactly the offsets `func_8001B748` touches, and `:1058-1077`
+already views `&D_800F6608` through an existing `typedef struct { s32 x, y, z; }
+Vec3;`. **(b)** `asm/funcs/func_8003993C.s:57-89` computes both pointer arguments
+as `D_800A36EC + i*0x38 + d*0x1C` — an array of 0x1C-byte elements in pairs.
+**(c)** full-build SHA1 MATCH, measured above; the per-function scorer's apparent
+13/9/6/5/… regressions on ten consumers are the unmasked R_MIPS_LO16 addend
+artifact ([[sandbox-lo16-text-addend-false-distance]]), not byte damage.
+**(d)** shared-header declaration, every merged per-word symbol deleted, never
+TU-local. **(e)** oracle MATCH with the complete patch applied.
+
+### Why the pipeline cannot finish it
+
+`tools/grinder/scope_allow.txt` has no `func_8001B748` entry, so
+`grind.ps1:540/904` discards any session touching anything but `src/code6cac.c`,
+and `closer.ps1` stages only that file. Three of the four required files are
+unreachable from inside a session, and the widening file is itself under `tools/`.
+
+### The remedy — one line
+
+Append to `tools/grinder/scope_allow.txt`:
+
+    func_8001B748 include/code6cac.h src/code6cac_c2.c src/text1b.c
+
+mirroring the owner-approved `replay_camera_Init include/code6cac.h` entry
+(2026-08-01, same "the honest declaration lives in the shared header" ground).
+The next session then applies the banked patch, writes the self-vet claiming the
+frozen aggregate-merge family with the five prongs above, and the Judge rules on
+the C as normal.
+
+### Exact operator steps if done by hand instead
+
+1. `git apply memory/grind/func_8001B748/aggregate_merge_score0.patch`
+2. `engine sandbox func_8001B748 --disable all` → expect score 0, 231/231.
+3. `engine build` → expect SHA1 MATCH.
+4. Fresh layer-2 `cheat-reviewer` on the C **and** on the aggregate-merge family
+   claim. A measured score of 0 is not an acceptance.
+5. `engine retire func_8001B748` (drops `asmfix.txt:50
+   func_8001B748: replace_with_asmfile "asm/funcs/func_8001B748.s"`), then
+   `engine verify-oracle --rebuild`.
+6. `engine queue done func_8001B748`.
+
+If the driver parks the function on this entry, the park is re-attemptable the
+moment the scope line lands. The in-scope floor stays 2 and the remaining
+in-scope axis inventory is empty: s3/s4/s7 swept statement order and control-flow
+spelling dead, s5/s6/s7 swept the sched2 priority lattice dead three times, and
+GCC 2.7.2 predates alias sets so the gp store can never be the
+dependence-suppressed side — the pointee type is the only lever, and it lives in
+the header.

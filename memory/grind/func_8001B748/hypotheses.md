@@ -783,3 +783,132 @@ answer did not change.
 - Do not re-try inlining `zval`/`new_var` into the `w8` store: score 44,
   `rejected/struct-form-inline-second-product-no-zval-44.c`.
 - Do not re-try typing only `a`/`b` (score 2) or only `dst` (score 2). Both objects are required.
+
+## s9 (synthesis, 2026-08-19) — the record axis resolved on BYTES; frontier reset to a scope handoff
+
+## [s9] The chassis floor is 2.
+- mechanism: chassis check; the ledger floor is candidate-relative, HEAD is not.
+- probe: `sandbox func_8001B748 --disable all` on the untouched tree, then again after splicing candidate.c into src/code6cac.c.
+- result: HEAD = 32 (230/231); with candidate.c = 2 (231/231). The function's only pipeline rule is `asmfix.txt:50 replace_with_asmfile`, so a full build never exercises its C.
+- verdict: CONFIRMED
+
+## [s9] Prong (b) — there is schema evidence for the `a`/`b` pointee that is independent of any GCC internal.
+- mechanism: if the caller indexes an ARRAY of the pointee, the element size is a hard fact about the original type, discoverable from the shipped asm alone.
+- probe: read `asm/funcs/func_8003993C.s:57-89`, the sole caller of func_8001BAE4/func_8001BBD8, which are the sole callers of func_8001B748.
+- result: both pointer arguments are `D_800A36EC + i*0x38 + d*0x1C` (with a `+0x1C` fixup when `d == 0`) — an array of **0x1C-byte** elements grouped in pairs. func_8001B748 reads +4/+6/+8 of it; func_8001BAE4/BBD8 read +4/+8 of the same objects. No per-word `D_` symbols exist for it, so nothing needs merging or deleting — it is a plain record declaration.
+- verdict: CONFIRMED — the layer-1 ruling's stated prong-(b) gap for `AB` is closed.
+
+## [s9] The aggregate merge regresses ten already-matching sibling functions (the reading that has blocked this axis).
+- mechanism: struct-member access could change addressing or scheduling in the consumers, breaking bytes that currently match.
+- probe: score all fifteen consumers with `sandbox --disable all` before and after the merge; repeat with member types set exactly to the original extern types; then read the built object for the worst offender (func_8001B294, 13) against `asm/funcs/func_8001B294.s`.
+- result: **KILLED.** The scores do regress (13/9/6/5/5/4/2/1/1/1/1) but the emitted code is identical — 15 `lui` in both, same sequence; the merged form relocates `%hi(D_800F6608)` + a 0x30 addend where target relocates `%hi(D_800F6638)` + 0. Identical linked bytes, different R_MIPS_LO16 addend, which `engine/score.py` does not mask ([[sandbox-lo16-text-addend-false-distance]]). Signedness is not involved: exact-original member types reproduce the identical numbers.
+- verdict: KILLED (the regression is a scorer artifact, not a byte regression)
+
+## [s9] Prong (c) — the aggregate merge is byte-neutral for every consumer.
+- mechanism: the only trustworthy neutrality test for a symbol+addend reloc change is the full link, not the per-function scorer.
+- probe: apply the merge to `include/code6cac.h`, `src/code6cac.c`, `src/code6cac_c2.c`, `src/text1b.c` with func_8001B748 left at its HEAD body, then `engine build`. (None of the fifteen consumers carries a regfix/asmfix rule, so the build genuinely exercises their C.)
+- result: `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**.
+- verdict: CONFIRMED
+
+## [s9] The fully prong-compliant aggregate merge closes func_8001B748.
+- mechanism: with `Rec44`/`Rec1C` declared at the canonical extern site, every per-word symbol deleted, all 45 use sites rewritten and the prototype typed, func_8001B748's accesses become component refs with no cast anywhere — the record is carried by the declaration, not by the function.
+- probe: apply `memory/grind/func_8001B748/aggregate_merge_score0.patch` in full and run `sandbox func_8001B748 --disable all` plus `engine build`.
+- result: **{"score": 0, "target_insns": 231, "build_insns": 231}** and full-build SHA1 MATCH.
+- verdict: CONFIRMED
+
+## [s9] The remaining blocker is a matching problem.
+- mechanism: n/a.
+- probe: read `tools/grinder/scope_allow.txt` and `tools/grinder/grind.ps1:540,904`.
+- result: **KILLED.** A grind session may edit only `src/code6cac.c`; three of the four files this fix needs are outside that surface and the widening file is itself under `tools/`. There is nothing left to grind — only an operator step. Precedent for the exact remedy is already in that file (`replay_camera_Init include/code6cac.h`, owner-approved 2026-08-01).
+- verdict: KILLED — this is an INTEGRATION HANDOFF, not an endgame lock.
+
+## Frontier (live, RESET for s10+) — one item, and it is not a probe
+
+**F1 (the whole remaining work).** Widen this function's scope by one line —
+`func_8001B748 include/code6cac.h src/code6cac_c2.c src/text1b.c` in
+`tools/grinder/scope_allow.txt` — and the next session lands
+`memory/grind/func_8001B748/aggregate_merge_score0.patch` verbatim, writes the self-vet
+claiming the frozen "per-word splat symbol -> aggregate merge" family with all five prongs
+now evidenced (a: func_8001B294/func_8001B3C0 field-by-field initialisers + the existing
+`Vec3` assignments at code6cac.c:1058-1077; b: the 0x1C array stride in
+asm/funcs/func_8003993C.s:57-89; c: full-build SHA1 MATCH, measured; d: declared in
+include/code6cac.h with every per-word symbol deleted, never TU-local, zero casts on
+dst/a/b; e: verify-oracle --rebuild), and the Judge rules on it.
+*Mechanism:* none needed — the bytes are measured. *Next probe:* none. This is an operator
+step, filed as an integration handoff in `docs/grind/decisions.md`.
+
+**If F1 is refused**, the honest floor is 2 and the axis inventory is empty: s3/s4/s7 swept
+statement order and control-flow spelling dead, s5/s6/s7 swept the sched2 priority lattice dead
+three times, the gp store can never be the dependence-suppressed side (GCC 2.7.2 predates alias
+sets), and the pointee type is the only remaining lever. Do NOT re-open the sched2 lattice.
+
+## Dead / do-not-re-run, added by s9
+- Do not trust a `sandbox` score regression on a function whose only change is scalar-extern ->
+  struct-member. Full-build first: the LO16 addend artifact makes it read as up to 13
+  instructions of damage that does not exist.
+- Do not re-derive prong (b) for `a`/`b`; the 0x1C stride is banked above with its citation.
+- Do not re-attempt a TU-local record, a cast-at-use record, or typed local pointers. All three
+  are banned or measured worse, and the object-level merge supersedes all of them.
+
+## s8 (synthesis, 2026-08-19) — verification pass; frontier unchanged
+
+## [s8] The banked score-0 handoff is real and not a stale or over-claimed result.
+- mechanism: an out-of-session claim of "score 0 + oracle MATCH" is worth exactly its
+  reproduction; the prior session was discarded before anyone reviewed its evidence.
+- probe: re-ran all three measurements independently — HEAD sandbox, candidate.c sandbox,
+  patch-applied sandbox, patch-applied `engine build`.
+- result: 32 / 2 / 0 / SHA1 MATCH, exactly as banked. See evidence.md FINDINGS s8-1..s8-3.
+- verdict: CONFIRMED
+
+## [s8] There is a remaining in-scope lever that the s3-s7 sweeps missed.
+- mechanism: if any C-level construct confined to `src/code6cac.c` could move the gp store's
+  sched2 position, the handoff would be premature.
+- probe: re-read the complete ledger (evidence.md, hypotheses.md, all 29 rejected forms) against
+  the frontier. The three live frontier items (chain-1 pri-48 predecessor; the gp store's ready
+  clock; the b+8 load half) all resolve through the pointee's `MEM_IN_STRUCT_P` state, which
+  s8-syn proved is settable ONLY by the pointee type — and GCC 2.7.2 predates alias sets, so the
+  gp store (a SYMBOL_REF scalar, `MEM_IN_STRUCT_P` = 0, `rtx_addr_varies_p` = 0 unconditionally)
+  can never be the suppressed side.
+- result: KILLED. Every in-scope spelling axis is measured dead: statement order and control-flow
+  spelling (s3 d-sweep, s4 permuter ~35k iters over 3 chassis, s6/s7 g-batch — all plateau at
+  exactly 2), the sched2 priority lattice (s5, s6, s7 — measured three times, consistent), and
+  the TU-local record (BANNED 2026-08-19 03:50, and refused again at 04:03 on prong d).
+- verdict: KILLED — no in-scope probe remains. This session deliberately did not re-open the
+  sched2 lattice; doing so would be a fourth identical measurement.
+
+## Frontier (live, for s9+) — one item, and it is still not a probe
+
+**F1 (the whole remaining work, unchanged from s9's reset and now independently verified).**
+Append `func_8001B748 include/code6cac.h src/code6cac_c2.c src/text1b.c` to
+`tools/grinder/scope_allow.txt`; the next session applies
+`memory/grind/func_8001B748/aggregate_merge_score0.patch` verbatim, writes the self-vet claiming
+the frozen "per-word splat symbol -> aggregate merge" family with all five prongs (evidence.md
+FINDINGS 2-5 and s8-1..s8-3), and the Judge rules on it. *Mechanism:* none needed — the bytes are
+measured twice by two independent sessions. *Next probe:* none; it is an operator step, filed as
+`docs/grind/decisions.md:6426` (**OWNER-ESCALATION — INTEGRATION HANDOFF**).
+
+## Dead / do-not-re-run, added by s8
+- Do NOT measure this function without first splicing candidate.c into src/code6cac.c. HEAD
+  reads 32.
+- Do NOT re-open the sched2 priority lattice, statement placement, or control-flow spelling.
+  Four sessions, four identical answers.
+- Do NOT re-file the handoff under a title lacking the literal `OWNER-ESCALATION` marker on the
+  same line as the function name — that is precisely what discarded the previous session.
+
+## [s8] The banked score-0 handoff (aggregate_merge_score0.patch) is real, current, and not an over-claimed or stale out-of-session result.
+- mechanism: An out-of-session claim of 'score 0 + oracle MATCH' is worth exactly its reproduction; the previous session was discarded on a title-format defect before any of its evidence was reviewed, so nothing about it had been checked by a second party.
+- probe: Ran four measurements in sequence: (1) sandbox func_8001B748 --disable all on the untouched HEAD tree; (2) same after splicing memory/grind/func_8001B748/candidate.c into src/code6cac.c:942-1023; (3) same after git apply memory/grind/func_8001B748/aggregate_merge_score0.patch; (4) engine build with that patch applied.
+- result: (1) score 32, 230/231, rules_dropped 1. (2) score 2, 231/231. (3) score 0, 231/231. (4) sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. Raw log at tmp/grind/func_8001B748/s8/measurements.txt.
+- verdict: CONFIRMED
+
+## [s8] Some in-scope C lever (confined to src/code6cac.c) can still move the gp store's sched2 position and drop the floor below 2.
+- mechanism: All three live frontier items (giving chain-1's head a pri-48 predecessor, changing the gp store's ready clock, and reaching 48 on the b+8 load) resolve through the dependence edges around 'sh zero,0(gp)'. Those edges are governed by GCC 2.7.2 sched.c:817-882, whose only discriminators are MEM_IN_STRUCT_P and rtx_addr_varies_p on the two MEMs.
+- probe: Re-read the entire ledger (evidence.md, hypotheses.md, all 29 rejected forms) against the live frontier instead of running a fourth identical lattice measurement. D_800A3310 is a scalar extern at a SYMBOL_REF address, so MEM_IN_STRUCT_P = 0 and rtx_addr_varies_p = 0 unconditionally with no C spelling that changes either; GCC 2.7.2 predates alias sets (2.8/egcs), so memrefs_conflict_p has no second discriminator.
+- result: No in-scope axis survives. The gp store can never be the suppressed side, leaving the pointee type as the sole lever — and the pointee type is declared in include/code6cac.h, outside session scope. Statement order and control-flow spelling are dead (s3 d-sweep; s4 permuter ~35k iterations over 3 chassis with zero sub-60 finds; s6/s7 g-batch — every one plateaus at exactly 2). The sched2 priority lattice is dead, measured three times (s5, s6, s7), consistent. The TU-local record spelling is BANNED (layer-1 FAIL 2026-08-19 03:50) and was refused again at 04:03 on prong (d).
+- verdict: KILLED
+
+## [s8] The previous session's disposition failed on substance — i.e. the handoff claim itself was wrong or premature and the correct answer is more grinding.
+- mechanism: If the discard reason were substantive, re-filing the same disposition would simply be discarded again.
+- probe: Read grindlib.py:376-408 and grind.ps1:930-1018. The owner-gated validator requires a non-empty escalation_ref; grind.ps1:943 then requires ONE LINE of docs/grind/decisions.md to contain both a marker (OWNER-ESCALATION or CANONICAL-ASM GRANT PATH) and the function name. The previous entry's title line read '## 2026-08-19 - func_8001B748 - **INTEGRATION HANDOFF ...**' — the function name but no marker.
+- result: KILLED — purely a title-format rejection, not a substantive one. Fixed this session by filing docs/grind/decisions.md:6426 titled '**OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven at 0; blocked only by grind-session file scope)**', which carries both strings on the same line. A ref matching neither RESOLVED BY STANDING RULING nor CANONICAL-ASM GRANT PATH routes to grind.ps1:1010-1018 — borderline-logged as a policy question and parked terminally, explicitly re-attemptable once a later owner ruling spends the entry.
+- verdict: KILLED
