@@ -92,6 +92,26 @@
       "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); array form + allowlist row required"
     },
     {
+      "func": "func_80033550",
+      "file": "code6cac_b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA $a1-vs-$a3 (asm pin); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
+      "unpark_reason": "plausibly spent by 2026-08-18 F6 (fabricated empty-condition/cancellation shapes) + F7 (arm duplication at construct level, 25 SOTN exhibits); seam case - session must verify the exact shape sits inside one entry, else ruling-request"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt",
+      "unpark_reason": "spent by 2026-08-17 aggregate-merge family: merge D_800A1494/95 (already g_cd_status_a/b in symbol_addrs.txt) makes &status[1] honest; also fixes live prong-(c) dual-handle violation at src/system.c:374/648"
+    },
+    {
       "func": "func_8002BEA0",
       "file": "code6cac_b",
       "distance": 9,
@@ -101,6 +121,16 @@
       "unpark_note": "UNPARKED 2026-08-18: stale set-aside park (digest audit); unspent 2026-07-28 clobber grant decisions.md:1843 likely closes half the residual"
     },
     {
+      "func": "get_alarm",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 4,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent) across 40 sessions/6 modalities/258k permuter iters; cheat retained only to hold byte-match, not sanctioned",
+      "unpark_reason": "spent by Ruling 4 (docs/closer/rulings.md:68) for axis-B volatile-order lock: 2026-08-18 naming census CONFIRMS Sony LIBGPU/SYS identity (naming-verification-2026-08-18.md:58); axis-A addr-fold coverable by aggregate merge into the GpuCtx block"
+    },
+    {
       "func": "func_80057CC8",
       "file": "text1b",
       "distance": 9,
@@ -108,6 +138,16 @@
       "rules": 7,
       "status": "active",
       "unpark_note": "UNPARKED 2026-08-18: F3 compound-address duplication sanctioned (ruling b); closure brief banked"
+    },
+    {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): v0<->v1 RA swap (local-alloc.c:472 + find_free_reg); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)",
+      "unpark_reason": "spent by 2026-08-17 named-intermediate clarification: FRESH once-written/once-read intermediate qualifies under any GCC pass (the refusal ground was the pre-clarification mis-scoping); session must clear prongs 1/2/5 before claiming"
     },
     {
       "func": "func_80049A2C",
@@ -146,6 +186,17 @@
       "unpark_note": "UNPARKED 2026-08-18: F6 cancellation-pair family sanctioned (ruling b); exact-shape only"
     },
     {
+      "func": "func_80038170",
+      "file": "code6cac_c_mid",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "prologue_fix": 1,
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28): layer-2 cheat-reviewer FAILED both closing constructs (reverse-order zero-inits = order-steering; one-symbol table pair = phantom-frame carrier via addressing expression). Bytes ARE 0-reachable (integration verified, SHA1==oracle) but only via refused families; both endgame-lock gates fail. Cheat retained to hold byte-match, not sanctioned; re-attempt eligible on a non-order-steering, non-frame-trick lever",
+      "unpark_reason": "spent by 2026-08-18 phantom-pad family (the array form it was accused of evading is now sanctioned; respell construct 2 as volatile pad) + judge-sole-gate (construct 1 was Judge-PASSed 07-28, overturned only by layer-2)"
+    },
+    {
       "func": "file_LoadSectors",
       "file": "ings",
       "distance": 14,
@@ -153,6 +204,16 @@
       "rules": 0,
       "status": "active",
       "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); banked if(0) candidate is separately REFUSED - do not apply"
+    },
+    {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 14,
+      "verdict": "C",
+      "rules": 12,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-28 \u2014 func_800481E8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'",
+      "unpark_reason": "spent by 2026-08-18 phantom-frame-slot volatile pad family (no-new-park-categories.md 08-18 section); ledger's own permuter campaign found volatile decls are the only vars=32 forms; re-verify form constraint (first-decl array vs tail region) in session"
     },
     {
       "func": "func_80047EE8",
@@ -2021,24 +2082,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
-      "func": "func_80033550",
-      "file": "code6cac_b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA $a1-vs-$a3 (asm pin); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 5,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt"
-    },
-    {
       "func": "func_80041688",
       "file": "text1a_post",
       "distance": 8,
@@ -2064,24 +2107,6 @@
       "rules": 8,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "get_alarm",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 4,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent) across 40 sessions/6 modalities/258k permuter iters; cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "func_800611A4",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): v0<->v1 RA swap (local-alloc.c:472 + find_free_reg); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
       "func": "func_80061658",
@@ -2172,25 +2197,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): s0<->s1 allocno-priority swap + cse REG_WAS_0 fold (cc1psx-identical); 2 pins + opt-barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
-    },
-    {
-      "func": "func_80038170",
-      "file": "code6cac_c_mid",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "prologue_fix": 1,
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28): layer-2 cheat-reviewer FAILED both closing constructs (reverse-order zero-inits = order-steering; one-symbol table pair = phantom-frame carrier via addressing expression). Bytes ARE 0-reachable (integration verified, SHA1==oracle) but only via refused families; both endgame-lock gates fail. Cheat retained to hold byte-match, not sanctioned; re-attempt eligible on a non-order-steering, non-frame-trick lever"
-    },
-    {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 12,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-28 \u2014 func_800481E8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
       "func": "func_80037B00",
@@ -2285,13 +2291,13 @@
   ],
   "counts": {
     "total": 260,
-    "active": 227,
+    "active": 233,
     "by_status": {
-      "active": 227,
-      "parked": 33
+      "active": 233,
+      "parked": 27
     },
     "by_verdict": {
-      "C": 189,
+      "C": 195,
       "ASM-PARTIAL": 38
     }
   }
