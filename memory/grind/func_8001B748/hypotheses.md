@@ -446,3 +446,75 @@ come back dead, and only in the form "make the gp store's whole memory-dep set l
 - probe: tmp/grind/func_8001B748/s5/v_two_live.c - defer the dst+0 value into t and store it after the dst+0x18 store so that t and new_var are both live across the chain; scored with the s4 fast harness, then dumped with the instrumented cc1.
 - result: score=127 insns=230 (catastrophic) AND the dump shows the chain still in $v1 (insn 129: (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))) with PRIODBG SET insn=138 final_pri=47 - register and priority both unchanged. One extra deferred local does not evict $v1.
 - verdict: KILLED
+
+## [s6] Equalising potential_hazard between the chain tail and the gp store can flip schedule_select's pick (s5 frontier F-B).
+- mechanism: schedule_select scans the priority group with a STRICTLY-greater test over ready[], which rank_for_schedule sorted DESCENDING by LUID within the group, so the chain tail (luid 38) is scanned before the gp store (luid 25) and an EQUAL hazard suffices for it to keep the pick.
+- probe: read potential_hazard verbatim at tools/gcc-2.7.2/sched.c:1326-1365 and the caller at 2706-2721, plus clear_units/prepare_unit at 1169-1192, to determine what a C-level change could move.
+- result: potential_hazard(unit, insn, 0) is a pure function of (a) insn_unit(insn), (b) blockage_range(unit, insn), and (c) unit_n_insns[unit]. unit_n_insns[] is bzero'd once per basic block by clear_units() and only incremented by prepare_unit() during sched_analyze — it is the STATIC count of unit-0 insns in the block and is NEVER decremented while scheduling. The chain tail is an sll with insn_unit == -1, whose potential_hazard is identically 0 by the `if (unit >= 0)` guard; the gp store is movhi_internal2 with unit 0 and blockage 1..3, giving (1*0x40+3) * ((n-1)*0x1000) which is strictly positive for any block with two or more memory insns (ours has ~18). Equality is therefore reachable ONLY by making the chain tail a unit-0 (memory-class) insn, and the chain's instructions are byte-fixed by the 231/231 match. No C spelling can do it.
+- verdict: KILLED
+
+## [s6] The $v0/$v1 assignment of the two synth-mult chains is value-determined (which constant is in which chain), so swapping the addends moves the 0x9C4 chain into the pri-48 register.
+- mechanism: the 0x2710 chain is allocated $v0 and reaches final_pri 48 via a WAR anti-dep on the $v0 readers (mult 105 / store 124); if the 0x9C4 chain took that role it would inherit 48 and leave schedule_select's group entirely.
+- probe: tmp/grind/func_8001B748/s6/v/a1_swap.c — `*((s32 *)(dst + 0x18)) = ((inv_s1 * 0x2710) + (frac_s1 * 0x9C4)) >> 12;` — scored with the s4 harness and dumped with the instrumented cc1 (tmp/grind/func_8001B748/s6/d_a1_swap).
+- result: score=22 @ 231 insns. The .greg shows the constants swapped between chains but the structure invariant: the positionally-FIRST chain (insns 131..140) is still $v1 at final_pri 47 and the positionally-SECOND (143..152) is still $v0 at 48. The split is POSITIONAL, not value-determined; the 20-point cost is purely the two chains being emitted in the wrong order versus target. Banked rejected/swap-addends-positional-not-value-22.c.
+- verdict: KILLED
+
+## [s6] The chain lands in $v1 because local-alloc's qty_compare_1 always ranks the SECOND chain higher, and find_free_reg hands out $v0 first.
+- mechanism: local-alloc.c:1563 qsorts quantities by floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth)*10000 descending, then find_free_reg takes the lowest-numbered free hard reg (MIPS defines no REG_ALLOC_ORDER). Chain-1 is born first and dies at the same add as chain-2, so it is structurally the longer-lived quantity.
+- probe: new instrumentation this session — BB2_QTY_DEBUG=1 (local-alloc.c:1581) via tmp/grind/func_8001B748/s6/dump6.sh, reading the blk=1 QTYDBG lines.
+- result: CONFIRMED with numbers. ord=0 qty=23 reg1=152 birth=68 death=82 refs=14 got=2 ($v0) is chain-2 at priority 3*14/14 = 30000; ord=1 qty=20 reg1=154 birth=52 death=86 refs=18 got=3 ($v1) is chain-1 at priority 4*18/34 = 21176. The b+8 load (qty 16, birth 38 death 64) is pushed all the way to $a0 at ord=12 because both $v0 and $v1 are already taken. The numeric bar for a fix: chain-1 must reach 30000 — refs > 25 at length 34, or length < 24 at refs 18, or chain-2's length must grow past ~19 at refs 14. A TIE also wins, because qty_compare_1 breaks ties by lower qty number and chain-1 is qty 20 vs chain-2's qty 23.
+- verdict: CONFIRMED
+
+## [s6] Splitting new_var into its two products around the gp store reproduces target's emitted interleave (lh/mult, store, chain, lh/mult) and therefore closes the residual.
+- mechanism: target emits `lh v0,8(a1); nop; mult t0,v0` BEFORE `sh zero,0(gp)` and the second load/mult pair AFTER the chain, so a C source that computes the first product, stores the global, then accumulates the second product mirrors target's dependence structure exactly.
+- probe: tmp/grind/func_8001B748/s6/v/b1_split.c, b3_splitrev.c, b2_split_late.c, b4_split_after18.c — `new_var = frac * (*((s16 *)(a + 8))); D_800A3310 = 0; new_var += inv_frac * (*((s16 *)(b + 8)));` and three placement/order variants — scored with the s4 harness and pairdiffed.
+- result: 28 / 28 / 28 / 54 @ 231 insns. The pairdiff shows the split re-allocates the a+8 load from $v0 to $a0 and cascades through the whole mflo pair (`mult t0,a0`, `mflo a0`, `mult a3,a1`), so the C shape that mimics target's SCHEDULE destroys target's REGISTER assignment. Banked rejected/split-newvar-around-gp-store-regs-change-28.c.
+- verdict: KILLED
+
+## [s6] Some single-statement relocation of the early-exit arm reaches target's store position (re-run of the s3 sweep graded by the DIRECT observable rather than by score).
+- mechanism: the store's emitted slot is set by its dependence edges (which memory ops precede it) plus its priority group; a statement move changes both, so the 85-variant relocation space might contain a form with base's dependences and no SELBEST override.
+- probe: tmp/grind/func_8001B748/s6/sweep.sh — all 85 single-statement relocations of the ten early-exit statements, each run through the instrumented cc1 and graded by obs.py on (final_pri of the gp store, final_pri of both chain tails, presence of a SELBEST line naming the store); the override=False survivors were then scored and pairdiffed.
+- result: no variant reaches target, but the space is now BRACKETED. base = override YES, store pri 47, emitted 9 slots too LATE. m4_3 == m3_4 (gp store moved one statement earlier, ahead of new_var) = override NO, store pri 47, alone in ready[] (`PICK clock=35 picked=101 (pri=47 luid=21)`), emitted 3 slots too EARLY — immediately before `lh v0,8(a1)` — score 6. m4_2 / m4_1 = store pri 24 / 1, far too early, score 2 each but with a completely different residual. m6_0..m6_3 = store pri 48, score 16. m1_4..m1_7 / m2_4..m2_7 = store pri 24, score 52..80. Because the store's emitted slot is pinned immediately before its earliest-emitted memory successor, base's dependence structure (a8/b8 loads ABOVE the store) is exactly target's; only the override has to go.
+- verdict: KILLED (as a search space) / CONFIRMED (as the bracket)
+
+## [s6] The gp store can be dropped to priority 46 so it falls out of the chain's priority group.
+- mechanism: schedule_select only ever compares insns inside one priority group, so store at 46 versus chain at 47 removes the comparison and the chain is picked first, emitting the store ahead of it.
+- probe: read every PRIODBG SET final_pri in the sched2 half of the block and enumerate the reachable values, then check the sweep for any variant landing between 24 and 47.
+- result: the block's priority lattice is COARSE — priority() only rises across latency>1 edges (load +1, mult +11) and the mflo ladder is 13/24/36/47/59/70, so the only values any insn in this block takes are {1, 24, 36, 47, 48, 59, 70}. The gp store measures 47, 24 or 1 across the whole 85-variant sweep and NEVER 46; the chain measures 47 or 36 and never 48 while it is in $v1. 46 does not exist in this block. The s5 frontier item F-C is therefore dead in the form "lower the store by one".
+- verdict: KILLED
+
+## [s6] Equalising potential_hazard between the chain tail and the gp store can flip schedule_select's pick (s5 frontier F-B).
+- mechanism: schedule_select scans the priority group with a STRICTLY-greater test over ready[], which rank_for_schedule sorted DESCENDING by LUID within the group, so the chain tail (luid 38) is scanned before the gp store (luid 25) and an EQUAL hazard suffices for it to keep the pick.
+- probe: Read potential_hazard verbatim at tools/gcc-2.7.2/sched.c:1326-1365, its caller at 2706-2721, and clear_units/prepare_unit at 1169-1192, to determine what a C-level change could possibly move.
+- result: potential_hazard(unit, insn, 0) is a pure function of insn_unit(insn), blockage_range(unit, insn) and unit_n_insns[unit]. unit_n_insns[] is bzero'd once per basic block by clear_units() and only incremented by prepare_unit() during sched_analyze - it is the STATIC count of unit-0 insns in the block and is never decremented while scheduling. The chain tail is an sll with insn_unit == -1, whose potential_hazard is identically 0 by the `if (unit >= 0)` guard; the gp store is movhi_internal2 with unit 0 and blockage 1..3, giving (1*0x40+3) * ((n-1)*0x1000), strictly positive for any block with two or more memory insns (ours has about 18). Equality is reachable ONLY by making the chain tail a unit-0 memory-class insn, and the chain's instructions are byte-fixed by the 231/231 match.
+- verdict: KILLED
+
+## [s6] The gp store can be dropped to priority 46 so it falls out of the chain's priority group (s5 frontier F-C).
+- mechanism: schedule_select only ever compares insns inside one priority group, so store at 46 versus chain at 47 removes the comparison entirely and the chain is picked first, emitting the store ahead of it.
+- probe: Read every PRIODBG SET final_pri in the sched2 half of the block, enumerate the reachable values, and check all 85 single-statement-relocation variants for any store priority between 24 and 47.
+- result: The block's priority lattice is COARSE: priority() only rises across latency>1 edges (load +1, mult +11) and the mflo ladder is 13/24/36/47/59/70, so every insn in the block takes a value from {1, 24, 36, 47, 48, 59, 70}. Across the whole 85-variant sweep the gp store measures 47, 24 or 1 and NEVER 46; the chain measures 47 or 36 and never 48 while it is in $v1. 46 does not exist in this block.
+- verdict: KILLED
+
+## [s6] The $v0/$v1 assignment of the two synth-mult chains is value-determined, so swapping the addends moves the 0x9C4 chain into the pri-48 register.
+- mechanism: The 0x2710 chain is allocated $v0 and reaches final_pri 48 via a WAR anti-dep on the $v0 readers (mult 105 / store 124); if the 0x9C4 chain took that role it would inherit 48 and leave schedule_select's comparison group.
+- probe: tmp/grind/func_8001B748/s6/v/a1_swap.c - `*((s32 *)(dst + 0x18)) = ((inv_s1 * 0x2710) + (frac_s1 * 0x9C4)) >> 12;` - scored with the s4 fast harness and dumped with the instrumented cc1 (tmp/grind/func_8001B748/s6/d_a1_swap).
+- result: score=22 @ 231 insns. The .greg shows the constants swapped between chains but the structure invariant: the positionally-FIRST chain (131..140) is still $v1 at final_pri 47 and the positionally-SECOND (143..152) is still $v0 at 48. The split is POSITIONAL, not value-determined; the 20-point cost is purely the two chains being emitted in the wrong order versus target.
+- verdict: KILLED
+
+## [s6] The chain lands in $v1 because local-alloc's qty_compare_1 always ranks the SECOND chain higher and find_free_reg hands out $v0 first.
+- mechanism: local-alloc.c:1563 qsorts quantities by floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth)*10000 DESCENDING, then find_free_reg takes the lowest-numbered free hard reg (MIPS defines no REG_ALLOC_ORDER). Chain-1 is born first and dies at the same add as chain-2, so it is structurally the longer-lived quantity and always loses the sort.
+- probe: New instrumentation this session: BB2_QTY_DEBUG=1 (local-alloc.c:1581) via tmp/grind/func_8001B748/s6/dump6.sh, reading the blk=1 QTYDBG lines.
+- result: CONFIRMED with numbers. ord=0 qty=23 reg1=152 birth=68 death=82 refs=14 got=2 ($v0) is chain-2 at priority 3*14/14 = 30000; ord=1 qty=20 reg1=154 birth=52 death=86 refs=18 got=3 ($v1) is chain-1 at priority 4*18/34 = 21176. The b+8 load (qty 16, birth 38 death 64) is pushed to $a0 at ord=12 because $v0 and $v1 are both already taken.
+- verdict: CONFIRMED
+
+## [s6] Splitting new_var into its two products around the gp store reproduces target's emitted interleave and therefore closes the residual.
+- mechanism: Target emits `lh v0,8(a1); nop; mult t0,v0` BEFORE `sh zero,0(gp)` and the second load/mult pair AFTER the chain, so C that computes the first product, stores the global, then accumulates the second product mirrors target's dependence structure exactly.
+- probe: tmp/grind/func_8001B748/s6/v/b1_split.c, b3_splitrev.c, b2_split_late.c, b4_split_after18.c - scored with the s4 harness and pairdiffed with tmp/grind/func_8001B748/s6/pd.py.
+- result: 28 / 28 / 28 / 54 @ 231 insns. The pairdiff shows the split re-allocates the a+8 load from $v0 to $a0 and cascades through the whole mflo pair (mult t0,a0 / mflo a0 / mult a3,a1), so the C shape that mimics target's SCHEDULE destroys target's REGISTER assignment.
+- verdict: KILLED
+
+## [s6] Some single-statement relocation of the early-exit arm reaches target's store position (the s3 sweep re-run and graded by the DIRECT observable instead of by score).
+- mechanism: The store's emitted slot is set by its dependence edges (which memory ops precede it) plus its priority group; a statement move changes both, so the 85-variant relocation space might contain a form with base's dependences and no SELBEST override.
+- probe: tmp/grind/func_8001B748/s6/sweep.sh - all 85 single-statement relocations, each through the instrumented cc1, graded by obs.py on (gp-store final_pri, both chain-tail final_pri, presence of a SELBEST line naming the store); every override=False survivor then scored and pairdiffed.
+- result: No variant reaches target, but the space is now BRACKETED. base = override YES, store pri 47, emitted 9 slots too LATE. m4_3 == m3_4 (gp store moved one statement earlier, ahead of new_var) = override NO, store pri 47, ALONE in ready[] (PICK clock=35 picked=101 pri=47 luid=21), emitted 3 slots too EARLY, immediately before `lh v0,8(a1)`, score 6. m4_1 / m4_2 = store pri 1 / 24, far too early (score 2 each but a completely different residual). m6_0..m6_3 = store pri 48, score 16. m1_4..m1_7 / m2_4..m2_7 = store pri 24, score 52..80. Because the store's emitted slot is pinned immediately before its earliest-emitted memory successor, base's dependence structure is already exactly target's; ONLY the override has to go.
+- verdict: KILLED

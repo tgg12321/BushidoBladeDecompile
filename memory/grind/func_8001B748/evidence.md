@@ -567,3 +567,163 @@ otherwise equalises `potential_hazard`, flips the pick without touching prioriti
 - [s5] Measured negative: the two-live-values spelling (defer dst+0 into t, store it after the 0x18 store) scores 127 @ 230 insns and leaves the chain in $v1 at final_pri=47 - banked as rejected/two-live-values-across-chain-reg-unmoved-127.c.
 
 - [s5] Reusable recipe: tmp/grind/func_8001B748/s5/dump.sh <src.c> <outdir> runs the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, not build/cc1) with BB2_PRIO_DEBUG + BB2_RANK_DEBUG + BB2_SCHED_DEBUG and -da. In full.log the 38 'SCHEDDBG insn priorities:' headers are 19 blocks x 2 passes: sched1 = lines 40..1962, sched2 = lines 2133..4289; our block's sched2 header is line 2611 and the decision window is lines 2915-2975. A SELBEST line with pos>0 IS the potential-hazard override.
+
+## == s6 (forensics modality, 2026-08-19) — THE COUNTERFACTUAL IS PROVEN AND THE LATTICE IS MAPPED ==
+
+### Chassis
+`src/code6cac.c` had drifted back to the s2-era body for the FOURTH consecutive session
+(`inv_s1 = inv_s1;`, `cur`/`dy` relay, `s32 target;`). Re-installing
+`memory/grind/func_8001B748/candidate.c` verbatim over lines 943..1023 re-measured the floor
+exactly: `sandbox func_8001B748 --disable all` = `{"score": 2, "target_insns": 231,
+"build_insns": 231, "rules_dropped": 1}`. The floor-2 form is in src/ at session end.
+
+### HEADLINE 1 — the residual is ONE decision, and the counterfactual is now proven by construction
+The full objdump pairdiff of the floor-2 base is a single displaced line: `sh zero,0(gp)` sits at
+our index 64, target index 55, i.e. our store is emitted **9 slots too LATE — below the whole
+0x9C4 synth-mult chain**. Target's exact neighbourhood is
+
+    ... nop / mult t0,v0 / **sh zero,0(gp)** / sll v1,s1,0x2 / addu v1,v1,s1 / ...
+
+The s5 SELBEST override is not one swap: because `schedule_select` re-fires at every subsequent
+clock (the next chain insn becomes ready each time and the store keeps winning the
+potential-hazard test), the single mechanism sinks the store past all nine chain slots. If the
+override never fired, the store would be picked immediately after the chain head and emitted at
+exactly target's slot. **Defeating that one override IS the whole remaining match.**
+
+### HEADLINE 2 — potential_hazard is a UNIT-CLASS + BLOCK-COUNT function; F-B (hazard equality) is DEAD
+Read at `tools/gcc-2.7.2/sched.c:1326-1365` and `2706-2721`:
+
+    best_cost = -1;
+    for (k = i; k < j; k++) { if ((cost = potential_hazard (insn_unit (ready[k]), ready[k], 0))
+                                  > best_cost) { best_cost = cost; best_insn = k; } }
+    /* potential_hazard: */
+    if (unit >= 0) { minb = maxb = function_units[unit].max_blockage;
+      if (maxb > 1) { maxb = minb = blockage_range (unit, insn); ...
+        if (maxb > 1) { ncost = minb * 0x40 + maxb;
+                        ncost *= (unit_n_insns[unit] - 1) * 0x1000 + unit; ... } } }
+    else /* unit == -1 */ ... returns cost unchanged (0)
+
+`unit_n_insns[]` is zeroed by `clear_units()` once per basic block and only ever incremented by
+`prepare_unit()` during `sched_analyze` — it is the STATIC count of unit-0 insns in the block and
+is never decremented as insns are scheduled. So `potential_hazard` for a given insn is a constant
+of (its function unit, its blockage range, the block's memory-insn count). The chain tail is an
+`sll` with `insn_unit == -1` so its hazard is IDENTICALLY 0, forever; the store is
+`movhi_internal2` with unit 0 and blockage 1..3, giving `(1*0x40+3) * ((n-1)*0x1000)`, strictly
+positive for any block holding two or more memory insns (ours holds about 18). **No C spelling can
+equalise them without changing the chain's instructions, which are byte-fixed by the match. s5's
+"equal hazard suffices" frontier item (F-B) is KILLED at the source level.**
+
+### HEADLINE 3 — the priority lattice in this block is COARSE, and 46 and 48 are not on it
+Measured `PRIODBG SET ... final_pri` in the sched2 half of the log, floor-2 base:
+
+    mflo ladder 519=13  522=24  525=36  528=47  531=59  534=70   (six mults, +11/12 per mult)
+    dst+4 sum   93=47 (pred = mflo 528)        dst+4 store 98=47
+    a8/b8 loads 103=47 109=47 (preds = store 98)
+    gp store   116=47 (OUTPUT-dep 98; ANTI-deps 103/109 — ALL three are 47)
+    chain-1    131..140 = 47 (pred = ANTI on 93 via hard $v1)
+    chain-2    143..152 = 48 (pred = ANTI on 124 / mult 105 via hard $v0)
+    sum/shift  154,155 = 48
+
+`priority()` only rises across latency>1 edges (load +1, mult +11), so the whole block sits on a
+plateau and the reachable values are {1, 24, 36, 47, 48, 59, 70}. The gp store can be made 47 or
+24 or 1 by statement placement, **never 46**; chain-1 can be made 47 or 36, **never 48 while it is
+in $v1**. That is why the two always land in the same group.
+
+### HEADLINE 4 — the $v0/$v1 split of the two synth chains is POSITIONAL, not value-determined
+`a1_swap` (`((inv_s1 * 0x2710) + (frac_s1 * 0x9C4)) >> 12`, score 22 @ 231 insns) proves it: the
+constants swap chains but the structure is invariant — the positionally-FIRST chain is still in
+`$v1` at final_pri 47 and the SECOND still in `$v0` at 48; the 20-point cost is purely the two
+chains being emitted in the wrong order versus target. Banked
+`rejected/swap-addends-positional-not-value-22.c`.
+
+### HEADLINE 5 — WHY $v1, quantified from local-alloc (BB2_QTY_DEBUG, new instrumentation this session)
+`tools/gcc-2.7.2/local-alloc.c:1563` sorts quantities with `qty_compare_1`, whose key is
+`floor_log2(qty_n_refs) * qty_n_refs * qty_size / (qty_death - qty_birth) * 10000`, DESCENDING;
+`find_free_reg` then takes the lowest-numbered free hard reg (MIPS defines no `REG_ALLOC_ORDER`),
+i.e. `$v0` first. `QTYDBG` for our block (blk=1) reads:
+
+    ord=0  qty=23 reg1=152 birth=68 death=82 refs=14 got=2 ($v0)   <- chain-2 (0x2710)
+    ord=1  qty=20 reg1=154 birth=52 death=86 refs=18 got=3 ($v1)   <- chain-1 (0x9C4) + sum + >>12
+    ord=12 qty=16 reg1=133 birth=38 death=64 refs=2  got=4 ($a0)   <- b+8 load, pushed off $v0/$v1
+
+    chain-2 priority = floor_log2(14)*14/(82-68) = 3*14/14 = 3.0000 -> 30000
+    chain-1 priority = floor_log2(18)*18/(86-52) = 4*18/34 = 2.1176 -> 21176
+
+chain-1 spans chain-2 by construction (it is born first and dies at the same add), so it is
+ALWAYS the longer-lived quantity and ALWAYS loses the sort — hence `$v1`, hence the ANTI-dep on
+insn 93 (`v0 = v1 + t2`, pri 47) rather than on the mult 105 / store 124 ($v0 readers, pri 48).
+**The exact numeric bar for the next session: chain-1 must clear 30000. At length 34 that needs
+refs > 25; at refs 18 it needs length < 24; alternatively chain-2's length must grow past ~19
+while its refs stay 14.** A tie is also a win — `qty_compare_1` breaks ties by LOWER qty number
+and chain-1 is qty 20 vs chain-2's qty 23.
+
+### HEADLINE 6 — the bracket: the store's emitted position is pinned to its earliest memory successor
+An 85-variant single-statement-relocation sweep over the ten early-exit statements, graded by the
+DIRECT observable (`PRIODBG SET` for the gp store and both chain tails, plus presence/absence of a
+`SELBEST` line naming the store) rather than by score — `tmp/grind/func_8001B748/s6/sweep/`:
+
+| variant | what moved | store pri | chain pri | SELBEST override | score |
+|---|---|---|---|---|---|
+| base | — | 47 | 47 / 48 | **YES** | **2** (9 slots too late) |
+| m4_3 == m3_4 | gp store one statement earlier (before `new_var`) | 47 | 47 / 48 | no | 6 (3 slots too EARLY) |
+| m4_2 | gp store before the dst+4 store | 24 | 47 / 48 | no | 2 (far too early) |
+| m4_1 | gp store immediately after `dst[0x1F]=1` | 1 | 47 / 48 | no | 2 (far too early) |
+| m6_0..m6_3 | dst+0x10 store hoisted | 48 | 47 / 59 | no | 16 |
+| m1_4..m1_7 / m2_4..m2_7 | dst+0 or dst+4 store sunk | 24 | 24..47 | no | 52..80 |
+
+`m4_3` is decisive: with the a8/b8 loads moved BELOW the gp store the store loses its ANTI-deps,
+is alone in `ready[]` (`PICK clock=35 picked=101 (pri=47 luid=21)`, ready = `[101]`) and is emitted
+3 slots too early — immediately before `lh v0,8(a1)`. base's dependence structure (loads before
+the store) is therefore exactly right and target sits between the two. **Target = base's
+dependences with no override; nothing else in the ordering needs to change.**
+
+### Also measured negative this session (all banked in rejected/)
+- `a2_accum` / `a3_accum_rev` — split-init accumulation of the 0x18 expression into the shared
+  `t` (`t = A; t += B;`): 110 @ 231 insns either way.
+- `b1_split` / `b3_splitrev` / `b2_split_late` / `b4_split_after18` — splitting `new_var` into its
+  two products around the gp store, which is exactly target's emitted interleave: 28/28/28/54 @
+  231. The dump shows why it cannot work: the split re-allocates the a8 load from `$v0` to `$a0`
+  and cascades through the mflo pair, so the C-level shape that mimics target's schedule destroys
+  target's register assignment.
+- `a4_defer_dst4` (63 @ 230), `a5_defer_dst4_mid` (71 @ 230), `a6_defer_dst0_end` (91 @ 230) —
+  deferring the dst+0 / dst+4 stores behind a named intermediate; all lose an instruction.
+
+### Artifacts / recipe (reusable, cheap)
+- `tmp/grind/func_8001B748/s6/dump6.sh <src.c> <outdir>` — instrumented cc1 with
+  `BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 BB2_PRIO_DEBUG=1 BB2_SCHED_DEBUG=1` plus `-da`.
+  **`BB2_QTY_DEBUG` (local-alloc.c:1581) is the new lever this session: it prints
+  `QTYDBG blk= ord= qty= reg1= birth= death= refs= got=` — the allocation order and the hard reg
+  each quantity received.**
+- `tmp/grind/func_8001B748/s6/probe.sh <body.c> <tag>` — one-shot dump of a body into
+  `tmp/grind/func_8001B748/s6/d_<tag>/` (src.c, full.log, dumps/b.*).
+- `tmp/grind/func_8001B748/s6/sweep.sh` plus `obs.py` — the 85-variant sweep graded by the direct
+  observable; `list.txt` names every variant, about 90 s total.
+- `tmp/grind/func_8001B748/s6/an2.py <dir>...` — prints the `.greg` window around the gp store with
+  each insn's final_pri; the fastest way to see the register/priority split.
+- `tmp/grind/func_8001B748/s6/pd.py <tag>...` — objdump pairdiff of an already-scored variant
+  against target.o (uses `tmp/grind/func_8001B748/s4/_t_<tag>.o` left behind by `score.py`).
+- s4's `score.py` harness is intact and still validated (`base score=2 insns=231`).
+
+- [s6] Chassis: src/code6cac.c had drifted back to the s2-era body for the FOURTH consecutive session. Re-installing memory/grind/func_8001B748/candidate.c verbatim over lines 943..1023 re-measured the floor exactly - sandbox func_8001B748 --disable all = {score 2, target_insns 231, build_insns 231, rules_dropped 1}. The floor-2 form is in src/ at session end.
+
+- [s6] The residual is a single displaced instruction: sh zero,0(gp) at our index 64 versus target index 55. Target's neighbourhood is ... nop / mult t0,v0 / sh zero,0(gp) / sll v1,s1,0x2 / addu v1,v1,s1 ... - i.e. the store belongs immediately ABOVE the whole 0x9C4 synth-mult chain.
+
+- [s6] The s5 SELBEST override is not a single swap: schedule_select re-fires at every subsequent clock as the next chain insn becomes ready, and the store wins the potential-hazard test each time, which is why one mechanism sinks it past all nine chain slots. Absent the override the store would be picked right after the chain head and emitted at exactly target's slot - so defeating that one override IS the entire remaining match.
+
+- [s6] potential_hazard (sched.c:1326-1365) is a pure function of the insn's function unit, its blockage range, and unit_n_insns[unit]; unit_n_insns[] is a per-block STATIC count set by prepare_unit() during sched_analyze and never decremented. An insn_unit == -1 ALU insn has hazard identically 0; a unit-0 store with blockage 1..3 has (1*0x40+3)*((n-1)*0x1000) > 0 for any block with two or more memory insns. Hazard equality is unreachable without changing the chain's instructions, which are byte-fixed.
+
+- [s6] The block's INSN_PRIORITY lattice is coarse - {1, 24, 36, 47, 48, 59, 70} - because priority() only rises across latency>1 edges (load +1, mult +11) and the mflo ladder is 519=13, 522=24, 525=36, 528=47, 531=59, 534=70. The gp store measures 47, 24 or 1 across the whole relocation sweep and never 46; the chain measures 47 or 36 and never 48 while allocated $v1.
+
+- [s6] The gp store's 47 has three contributors and all three are 47: an OUTPUT-dep on the dst+4 store (98) and ANTI-deps on the a+8 / b+8 loads (103/109). Everything hangs off insn 93 (the dst+4 sum) whose 47 comes from the 4th mflo (528), so no dependence-preserving edit can shave it by one.
+
+- [s6] BB2_QTY_DEBUG (local-alloc.c:1581) is the new forensic lever: QTYDBG blk=1 shows ord=0 qty=23 reg1=152 birth=68 death=82 refs=14 got=2 ($v0, chain-2, qty_compare_1 priority 3*14/14 = 30000) and ord=1 qty=20 reg1=154 birth=52 death=86 refs=18 got=3 ($v1, chain-1, priority 4*18/34 = 21176). Chain-1 spans chain-2 by construction, so it is always the longer-lived quantity and always loses the sort.
+
+- [s6] The numeric bar for the surviving axis: chain-1's qty_compare_1 key must reach chain-2's 30000 - refs > 25 at length 34, or length < 24 at refs 18, or chain-2's length must grow past ~19 while its refs stay 14. A TIE is also a win, because qty_compare_1 falls back to the LOWER qty number and chain-1 is qty 20 versus chain-2's qty 23.
+
+- [s6] The two synth chains' $v0/$v1 split is POSITIONAL, not value-determined: a1_swap (addends swapped) scores 22 @ 231 with the positionally-first chain still $v1/47 and the second still $v0/48.
+
+- [s6] The m4_3 / m3_4 relocation (gp store one statement earlier, ahead of new_var) is the tight lower bracket - override=False, store pri 47, alone in ready[], emitted 3 slots too EARLY, score 6 - proving base's dependence structure (a8/b8 loads above the store) is already target's and that the store's emitted slot is pinned immediately before its earliest-emitted memory successor.
+
+- [s6] Splitting new_var into its two products around the gp store - the C shape that literally mirrors target's emitted interleave - scores 28 @ 231 because it re-allocates the a+8 load from $v0 to $a0 and cascades through the mflo pair. Mimicking target's schedule at source level destroys target's register assignment.
+
+- [s6] Additional negatives banked: split-init accumulation of the 0x18 expression into the shared t (110 @ 231 either operand order); deferring the dst+4 store behind a named intermediate (63 and 71 @ 230); deferring the dst+0 store to the end (91 @ 230).

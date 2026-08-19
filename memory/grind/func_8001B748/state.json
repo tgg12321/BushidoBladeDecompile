@@ -1,7 +1,7 @@
 {
  "func": "func_8001B748",
  "file": "code6cac",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -33,23 +33,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics RETRACTS s4's LUID-lock verdict: the LUID tie-break already yields target's order and is overridden by schedule_select's potential-hazard rule (sched.c:2707-2723); the chain's pri-47 is a $v"
+  },
+  {
+   "session": 6,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: the whole residual is ONE schedule_select potential-hazard override, proven to be a unit-class constant (F-B killed at source level), the block's priority lattice has no 46 and no 48-in-$v1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Lifting the synth-mult chain into priority group 48 (from 47) removes it from schedule_select's comparison with the pri-47 gp store entirely, and produces target's emitted order.",
-   "mechanism": "The only thing pinning the chain at 47 is the $v1 WAR anti-dependence on insn 93. If the chain's first insn anti/output-depends on a pri->=48 insn instead (the mult 105, or the mflos 111/531/534), the whole chain inherits >= 48; schedule_select processes priority groups in descending order, so the chain is picked first and the store is emitted ahead of it. This is a register-allocation property - the same axis that took the floor 14 -> 2 in s3 - not a value property.",
-   "next_probe": "Sweep the s3 lever family (which local carries the 0x9C4/0x2710 value, declaration order, variable reuse, where its consumer sits) but grade each variant by the DIRECT observable rather than the score: run tmp/grind/func_8001B748/s5/dump.sh on it and read PRIODBG SET insn=<chain tail> final_pri (win = >= 48 while the gp store stays 47). tools/ra_solver (inverse.py global, pseudo_scope.py) can test reachability of the register goal 'the early-exit synth chain lands in any hard register whose previous reader/writer has pri >= 48'."
+   "hypothesis": "The ONLY surviving axis is making the 0x9C4 chain's quantity win local-alloc's qty_compare_1 sort so it takes $v0 (or is displaced to $a0) instead of $v1; then its WAR partner becomes the mult 105 / store 124 rather than insn 93, its whole chain inherits final_pri 48, it leaves the gp store's priority group, and schedule_select never compares them.",
+   "mechanism": "local-alloc.c:1563 sorts quantities by floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth) DESCENDING and find_free_reg then takes the lowest free hard reg. Measured: chain-1 = 4*18/34 = 21176, chain-2 = 3*14/14 = 30000. Chain-1 must reach 30000 (refs > 25 at length 34, or length < 24 at refs 18, or chain-2's length > ~19 at refs 14); a tie also wins since qty_compare_1 breaks ties by lower qty number and chain-1 is qty 20 versus chain-2's 23.",
+   "next_probe": "Sweep spellings that lengthen chain-2's live range or shorten chain-1's WITHOUT changing the instruction set - e.g. forms in which the final add ties to chain-2's pseudo rather than chain-1's (so the >>12 and the store hang off $v0), or in which an existing block value is made to overlap chain-2's 68..82 window. Grade every variant with `bash tools/wsl.sh 'bash tmp/grind/func_8001B748/s6/dump6.sh <src> <out>'` and read the blk=1 QTYDBG lines directly (win = the 0x9C4 chain's `got=` is 2 or 4, not 3), then confirm with PRIODBG SET final_pri >= 48 on its tail and the ABSENCE of a SELBEST line naming the gp store. Only then score."
   },
   {
-   "hypothesis": "Equalising potential_hazard between the chain tail and the gp store flips the pick without touching priorities at all.",
-   "mechanism": "schedule_select scans the priority group with a STRICTLY-greater test (if ((cost = potential_hazard(...)) > best_cost)) over ready[], which rank_for_schedule sorted DESCENDING by LUID within the group - so the chain tail (luid 38) is scanned BEFORE the gp store (luid 25) and wins any tie. It therefore needs only an EQUAL hazard, which any unit-0 memory-class insn (codes 125/159/163) has, versus 0 for a unit-less ALU insn (codes 3/16/181).",
-   "next_probe": "Shape the 0x9C4/0x2710 sequence so its LAST insn before the store comparison is memory-class (e.g. the >> 12 and the store fused so the final insn is the sh/sw or a move) rather than an sll/addu. Confirm by the ABSENCE of a SELBEST line at that clock in full.log - a SELBEST ... pos>0 line is exactly the override - then score with tmp/grind/func_8001B748/s4/score.py (~2 s per variant)."
+   "hypothesis": "Forcing the a+8 load off $v0 makes mult 105 read $v1, which hands the chain a pri-48 WAR partner without moving the chain out of $v1 at all - a strictly smaller perturbation than relocating the chain.",
+   "mechanism": "The chain head is `(set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))`; its priority is inherited from the last earlier insn that touches $v1, currently insn 93 at 47. If the mult's operand register were $v1 instead of $v0, the chain would anti-depend on mult 105 (pri 48) exactly as the 0x2710 chain anti-depends on store 124. The a+8 load's quantity is short-lived (QTYDBG birth 28 death 34) and takes $v0 purely by scan order because nothing occupies $v0 over that window.",
+   "next_probe": "Find a spelling that keeps a value live in $v0 across the a+8 load's 28..34 window without adding an instruction - the natural candidate is arranging the dst+4 sum (insn 93, currently `v0 = v1 + t2` dying at store 98) to stay live one step longer, or changing which of the three store expressions consumes which mflo pair. Grade with QTYDBG (`got=` for the a+8 load quantity) before scoring; the sanctioned families in play are variable reuse and named-intermediate declaration order."
   },
   {
-   "hypothesis": "Lowering the gp store below priority 47 is the weakest of the three axes because the a8/b8 loads pin it.",
-   "mechanism": "final_pri(116)=47 has three contributors all at 47: an OUTPUT-dep on the dst+4 store (98) and ANTI-deps on the a+8 / b+8 loads (103/109). Reassociating the multiply pairs can move the store term, but the loads stay at 47 and re-pin it.",
-   "next_probe": "Only if F-A and F-B both come back dead: probe the single form that could work - make the gp store's ENTIRE memory-dependence set live upstream of the 4th mflo (528), i.e. have the a8/b8 loads issue before the a4/a6 multiplies - and read PRIODBG SET insn=<gp store> final_pri to check for 46 or lower."
+   "hypothesis": "Putting the gp store in a DIFFERENT basic block from the chain removes the schedule_select comparison entirely, since schedule_select only ever ranks insns within one block's ready list.",
+   "mechanism": "sched2 schedules block by block; two insns in different blocks are never in the same ready[]. s4 measured if/else, do-while(0), goto-end and inverted-guard spellings of the early-exit arm as byte-INERT (all score 2), but none of those created a block boundary BETWEEN the store and the chain - they only re-spelled the arm's entry/exit, and jump/jump2 folded them back into one block.",
+   "next_probe": "Check the .jump2 dump (the pass that decides the final block structure) for the floor-2 base to see what would have to survive to split the arm, then look for a semantics-preserving form whose block boundary survives jump2 - and verify by counting `SCHEDDBG insn priorities:` block headers in the sched2 half of full.log (currently 19 blocks per pass; a win shows 20 with the store and the chain in different headers). If nothing survives jump2, kill this axis explicitly so s8 does not re-walk it."
   }
  ],
  "judge_constraints": [],
