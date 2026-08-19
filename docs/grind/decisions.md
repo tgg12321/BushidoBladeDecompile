@@ -5847,3 +5847,38 @@ advances. Nothing is pending on the owner. The best pure-C form (distance 3) is
 preserved at `memory/grind/func_80017848/candidate.c` with the full derivation in
 its header, and the ledger records every dead axis so that no future session
 re-spends the search.
+
+## 2026-08-18 — WORKFLOW — **OWNER-DIRECTED CHEAT AUDIT: three findings, zero-tolerance review — no false completions found; documentation/detector/record corrections applied**
+
+Owner (Trenton), verbatim: *"we have a zero tolerance policy for cheats here so ensure this is
+documented and flagged, then returned to its proper status."* All findings verified first-hand
+against the tree before recording (one agent claim — a wrong definition-site line — did not
+reproduce and was corrected here rather than repeated).
+
+1. **func_8002FC80 (src/code6cac_b.c) — FALSE "canonical" documentation.** An in-body comment
+   blessed its hardcoded-address `__asm__` sw/lw islands + `$2`/`$3` pins as "the canonical
+   scratchpad-write idiom." False on three counts: the construct is the ARCHIVED-FORBIDDEN
+   scratchpad-gte shape; the cited exhibit is inapposite (code6cac.c:3095 is a COMPLETED-C
+   counter-exhibit); "canonical" is gate-decided and the function has no allowlist entry.
+   STATUS: was always active INCOMPLETE — the sandbox strips the islands, so the cheat was
+   score-inert and never credited. CORRECTED: comment replaced with an honest CHEAT annotation.
+
+2. **tools/prologue_config.json — a 29-instruction verbatim splice exceeding prologue_fix's
+   contract, invisible to the manual detector.** The func_8002304C entry includes 5 BODY
+   instructions (lw/lw/nop/bne/nop), beyond "reordering cc1's OWN prologue insns." Engine
+   coverage verified SOUND: all 6 entries count as cheats (cheats.func_prologue_count), queue
+   done refuses carriers, no false completion was possible. GAPS: audit_asm_cheats.py never
+   scanned this file (fixed this boundary — splice-class detection added); the queue's per-item
+   rules column excludes prologue entries (display only); parked rows carry stale snapshots
+   (func_80047EE8's entry was invisible — display only, gate re-checks live).
+
+3. **func_800858D0 — contradictory prototypes + stale records.** src/text1b.c carried
+   `extern s32 func_800858D0(s32)` twice against the void(void) definition (main.c:857) and
+   many void(s32) locals. Bytes decide: no caller consumes a result, so the two s32-return
+   outliers are unified to void (oracle-verified this boundary); the void-vs-(s32) PARAMETER
+   mismatch is bytes-decided and stays per sotn-prototype-struct-precedent-2026-08-10. The
+   queue's distance 27 is stale vs the banked 22 candidate, which additionally uses
+   naming-reset-dead symbols and must be translated before application (ledger annotated).
+
+Conclusion: the by-construction defenses held — no cheat was credited as complete anywhere.
+The corrected debt was mis-documentation, detector coverage, and record rot.

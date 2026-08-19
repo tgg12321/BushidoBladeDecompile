@@ -1786,11 +1786,13 @@ s32 func_8002FC80(s32 *a0, s32 *a1, s32 *a2) {
     s32 *vb;
     s32 *out;
     s32 ret;
-    /* Diff (a1 - a0) into scratchpad SCR[0x60..0x68].
-     * Inline-asm sw with absolute addr is the canonical scratchpad-write
-     * idiom in this codebase (see code6cac.c:417); the natural-C
-     * `*(volatile s32 *)0x1F800360 = expr` would compile to lui+ori+sw 0(reg)
-     * which doesn't match target's lui+sw offset(at) pattern. */
+    /* CHEAT (audit 2026-08-18): the hardcoded-address __asm__ sw/lw islands
+     * and $2/$3 register pins below are the ARCHIVED-FORBIDDEN scratchpad-gte
+     * shape — NOT canonical (no inline_asm_canonical.txt entry; only cop2 ops
+     * qualify). The prior comment here claiming this as "the canonical
+     * scratchpad-write idiom" was false: the pure-C exhibit for the same
+     * store is code6cac.c:3095 (COMPLETED-C). Everything in this block must
+     * reach zero for COMPLETED-C. */
     {
         volatile s32 *va0 = (volatile s32 *)a0;
         volatile s32 *va1 = (volatile s32 *)a1;

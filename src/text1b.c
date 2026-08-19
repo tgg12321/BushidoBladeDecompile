@@ -1925,7 +1925,7 @@ extern void SsStart(void);
 extern s32 SsSetTickMode(s32);
 extern s32 SsSetReservedVoice(s32);
 extern s32 SsInit(void);
-extern s32 func_800858D0(s32);
+extern void func_800858D0(s32);
 extern s32 SsUtSetReverbDepth(s32, s32);
 extern s32 SsUtSetReverbType(s32);
 extern s32 SsUtReverbOff(void);
@@ -2544,7 +2544,7 @@ void func_8005BDF0(void) {
     } while ((s32)s0 < (s32)s1);
 }
 extern s16 D_8009AD1C[][2];
-extern s32 func_800858D0(s32);
+extern void func_800858D0(s32);
 extern s32 SsUtReverbOff();
 extern s32 SsUtSetReverbType(s16);
 extern s32 SsUtSetReverbDepth(s16, s16);
