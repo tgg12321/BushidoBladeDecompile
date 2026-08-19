@@ -1,0 +1,37 @@
+{
+ "func": "func_80060A68",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "Recon s1: floor 39 -> 2 in one session; clean sibling-idiom rewrite banked in candidate.c; residual is one equal-priority load swap (sched rank tie)"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Respell copy1/copy2 chains so copy2's address load loses its stall-filler jump (schedules at backward T-47) and the stage load lands slot 12",
+   "mechanism": "sched.c launch-before-stall mechanics: insn 35 jumps ahead only because copy1-store's stall window opens at T-44; removing/moving that stall re-ranks the pair",
+   "next_probe": "named-temp split of copy1's data load; per-statement fresh temps for copy2's address read; sandbox each + check .sched trace for 'launching 35 before 32'"
+  },
+  {
+   "hypothesis": "Permuter closes the last 2 from the floor-2 seed",
+   "mechanism": "pure ordering residual, tiny search space around the copy block",
+   "next_probe": "tools/permuter_campaign.py with single-function target.o built from asm/funcs/func_80060A68.s (offset-0 discipline); vet any closing form against the cheat checklist"
+  },
+  {
+   "hypothesis": "If both above measure dead: the pair is a sched-rank-class tie wall and needs the sched.c:2399-2456 line-level closure argument before any exhaustion claim",
+   "mechanism": "rank_for_schedule dependence-class decision on equal priority ([[sched-rank-class-tie-wall]])",
+   "next_probe": "map insns 25/35 dependence classes in the .sched dump against rank_for_schedule's comparison order"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T12:58:09.910403+00:00"
+}
