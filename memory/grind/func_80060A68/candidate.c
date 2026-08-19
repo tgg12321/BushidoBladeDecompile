@@ -103,6 +103,23 @@
  * is read to exclude borrowing a grind-introduced local, this body has no honest
  * closing form and the disposition is a ruling, not a respelling.  That fork is
  * argued in full under T5 of memory/grind/func_80060A68/self_vet.md.
+ *
+ * SESSION s4 (forensics, 2026-08-19) — BODY UNCHANGED, re-verified score 0 on the
+ * current chassis (twice), and the carrier space behind it CLOSED by measurement.
+ * s4 read tools/gcc-2.7.2/sched.c:2504-2592 line by line and established that
+ * `birthing_insn_p` has no honest exit other than `reg_n_sets[dest] > 1` (the
+ * SUBREG exit is a DImode spelling, a forbidden family; the `bb_live_regs` exit is
+ * unreachable because `attach_deaths_insn` makes the destination live before the
+ * next `adjust_priority`; the death-count arms of `adjust_priority` are dead code
+ * per GCC's own comment at sched.c:2551). It then measured every pre-existing local
+ * of the ORIGINAL (pre-s1) body as copy 2's carrier: `idx` = 9/67 — the schedule is
+ * CORRECT but global.c prints `73 conflicts: 73 2 3 4 5 29`, a conflict with $a0, so
+ * the pseudo gets $a2; `result` = 4/67 — $v0 anti-dependence, the load is not hoisted
+ * at all; `temp_a1` = 7/66 — live-range overlap; `outer` is live throughout. All five
+ * probes are banked under rejected/. The closing lever is therefore unique up to
+ * naming, and whether a purpose-introduced multiply-assigned carrier is a sanctioned
+ * family or the banned invented-scratch is a RULES question no further measurement
+ * can settle — s4 returned `ruling-request` on exactly that.
  */
 void func_80060A68(void) {
     extern s32 D_800A3468;

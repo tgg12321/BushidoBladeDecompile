@@ -466,3 +466,56 @@ that choice disclosed inside the vet itself.
   emits lhu $2,0($3) first, so the anchor no longer matches and a full build would
   duplicate the body. Both rules must be retired in the same change as the C
   (engine retire func_80060A68, then verify-oracle).
+
+## [s4] 2026-08-19 — forensics modality: chassis re-measurement, the sched.c three-exit
+## reading, and the closed carrier space
+
+### Chassis (re-measured this session, do not quote older numbers)
+- `memory/grind/func_80060A68/candidate.c` applied over src/text1b.c:3321 →
+  `sandbox func_80060A68 --disable all` = **score 0, build 66 / target 66**
+  (rules_dropped 2, cheat_asm_stripped 315). Measured at the start of the session and
+  again at the end, unchanged. The chassis has NOT moved since s3b.
+
+### The deciding GCC code, read rather than inferred (tools/gcc-2.7.2/sched.c)
+- `birthing_insn_p` (sched.c:2504-2535) is reached only from `adjust_priority`
+  (sched.c:2540-2592) and only in its `case 0:` (n_deaths == 0) arm. GCC's own comment
+  at sched.c:2551 ("This code has no effect, because REG_DEAD notes are removed before
+  we ever get here") means the other arms — the `>>= 1/2/3` priority *reductions* — are
+  dead code in this compiler, so "lower the competitor's priority by making it kill
+  registers" is not an available lever.
+- `birthing_insn_p` returns nonzero only when ALL of: the pattern is a `SET`; the
+  `SET_DEST` is a bare `REG` (not a SUBREG — the SUBREG escape is a DImode/paired-mode
+  spelling, which is a forbidden family here); the dest's bit is set in `bb_live_regs`;
+  and `reg_n_sets[dest] == 1`.
+- The `bb_live_regs` exit cannot be reached honestly. An insn becomes ready exactly when
+  its consumer is scheduled, and the emission loop calls `attach_deaths_insn`
+  (sched.c:3955) on that consumer, which makes every register it uses — including this
+  insn's destination — live before the next `adjust_priority` call. The bit is clear
+  only if a LATER set of the same pseudo was already scheduled, which is the
+  multiply-set case restated.
+- Therefore: `reg_n_sets[dest] > 1` is the ONLY door, and `reg_n_sets` counts sets of a
+  pseudo, i.e. assignments to a C variable.
+
+### The three constraints on a carrier, and the measured fate of every pre-existing local
+A carrier for copy 2's address load must be (a) multiply-assigned, (b) dead across
+target slots 11-15, (c) allocatable to $a0. HEAD's body (before s1) declares exactly
+`outer`, `idx`, `temp_a1`, `result`; `outer` is live for the whole body.
+| probe | carrier | score / insns | why it fails |
+|---|---|---|---|
+| x1 | `idx`, copy 2 only | 9 / 67 | schedule CORRECT (`lw v0,12` `lw a2,12` `lw a1,16` `lw a0,12`); global.c prints `73 conflicts: 73 2 3 4 5 29` → conflicts with hard reg 4 ($a0) → assigned reg 6 ($a2) |
+| x2 | `idx`, + the top D_800F10D0 index job | 11 / 67 | second semantic job lengthens the pseudo and pulls it toward $v0 |
+| x6 | `idx`, copy 1 left inline | 10 / 67 | same $a2 allocation, plus copy 1's own bump |
+| x3 | `temp_a1` | 7 / 66 | its staged 0x10 pointer must stay live slots 12-29 → constraint (b) |
+| x4 | `result` | 4 / 67 | `result` is $v0; copy 1's word is live in $v0 until the 0x20 store, so copy 2's address load is not hoisted at all (it lands at slot 14) → constraint (b) |
+In the score-0 candidate the corresponding pseudo 73 is allocated by LOCAL-alloc
+directly to $a0 (`73 in 4` in text1b.greg's dispositions) and the pseudo that goes to
+global-alloc is 74, whose conflict set `74 2 3 5 29` does not contain 4. That contrast —
+same function, one line of C different — is the cleanest available demonstration that
+the carrier constraint is a register-allocation constraint, not a scheduling one.
+
+### Artifacts
+- tmp/grind/func_80060A68/s4/cand/  — full `-da` dump set + 8 MB BB2_SCHED_DEBUG/
+  BB2_RANK_DEBUG stderr log for the score-0 candidate body
+- tmp/grind/func_80060A68/s4/x1/    — the same dump set for the `idx`-carrier body
+- tmp/grind/func_80060A68/s4/{x1,x2,x3,x4,x6}.c, {x1,x4}.o, apply.py, run.ps1, run2.ps1,
+  dis.sh, dumpsched.sh

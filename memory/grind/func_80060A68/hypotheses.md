@@ -309,3 +309,84 @@ then a fresh layer-2 cheat-reviewer on the C before `queue done`.
   pre-existing local in this function.
   NEXT PROBE if this returns for another session: none in the measurement space —
   the next move is layer-1's ruling on construct (2), not another probe.
+
+## [s4] 2026-08-19 — forensics modality. The carrier space is now CLOSED by measurement + code reading.
+
+s4 did not look for a new closing form (two are already known and both are BANNED for
+this function). It answered the question the ruling actually turns on: **is there any
+pure-C shape at all that closes this function without introducing a local, and if not,
+exactly why not.** Answer: no, and the "why not" is now attributed to two named GCC
+passes rather than argued.
+
+### CONFIRMED (code reading of tools/gcc-2.7.2/sched.c:2504-2535, not inference)
+`birthing_insn_p` has THREE exits, not one, and s3 only documented the third:
+  1. `if (GET_CODE (pat) == SET && GET_CODE (SET_DEST (pat)) == REG)` — a destination
+     that is not a bare REG (a SUBREG, i.e. a DImode/paired-mode spelling) never
+     reaches the test at all. That escape is the forbidden "DImode chain for
+     scheduling" family, so it is not available.
+  2. `if (bb_live_regs[offset] & bit)` — the dest must be LIVE at the moment the insn
+     becomes ready. It always is: an insn becomes ready only when its consumer has just
+     been scheduled, and the emission loop's `attach_deaths_insn` (sched.c:3955) makes
+     every register used by the just-scheduled insn live before the next `adjust_priority`
+     runs. The only way the bit is clear is that a LATER set of the same pseudo was
+     already scheduled — which is the multiply-set case again.
+  3. `return (reg_n_sets[i] == 1);` — the documented lever.
+  Also note `adjust_priority` only consults `birthing_insn_p` in the `n_deaths == 0`
+  arm, and GCC's own comment at sched.c:2551 says REG_DEAD notes are gone by then, so
+  the death-count arms are unreachable and cannot be used as an alternative lever.
+  CONCLUSION: unbumping copy 2's address load requires `reg_n_sets[dest] > 1`, i.e. a C
+  variable assigned more than once. There is no fourth door.
+
+### CONFIRMED — the carrier must satisfy THREE constraints simultaneously
+A carrier for copy 2's address load must be (a) multiply-assigned, (b) dead across the
+window from copy 2's address load to copy 2's data load (target slots 11-15), and
+(c) allocatable to $a0, which is where target holds that pointer.
+
+### KILLED this session — every pre-existing local, measured
+The function's pre-existing locals (HEAD body, src/text1b.c:3321 before s1 touched it)
+are exactly `outer`, `idx`, `temp_a1`, `result`. `outer` is live for the whole body.
+The other three are now each measured as copy-2 carriers:
+- **K15: `idx` — fails in global-alloc, not in the scheduler (probe x1, score 9/67).**
+  The schedule comes out RIGHT (slots 10-13 = `lw v0,12` / `lw a2,12` / `lw a1,16` /
+  `lw a0,12`): copy 2's address load is unbumped and precedes the staged 0x10 read
+  exactly as the birthing_insn_p model predicts. The failure is allocation. Merging
+  copy 2's pointer into `idx` makes pseudo 73 span the copy block to the call
+  ("used 6 times across 17 insns ... dies in 2 places" in text1b.lreg), local-alloc
+  declines it, and global.c records `73 conflicts: 73 2 3 4 5 29` — a conflict with
+  hard reg 4 = $a0 — so it gets reg 6 = $a2 and the body costs one extra insn. In the
+  score-0 candidate the same pseudo 73 is local-alloc'd straight to $a0 (`73 in 4`) and
+  the conflicting global pseudo is 74, whose conflict set `74 2 3 5 29` does NOT include
+  4. This upgrades s3's K11 from "idx is needed in a different hard register" to a named
+  pass and a printed conflict set.
+  Variants also killed: x2 (idx additionally carries the top D_800F10D0 index — 11/67),
+  x6 (idx carrier with copy 1 left inline — 10/67).
+- **K16: `result` — dies on an anti-dependence, score 4/67 (probe x4).** `result` is
+  $v0 (the dispatch call's return value coalesces it there, and copy 1's staged word
+  is in $v0 too). Copy 2's address load is then NOT HOISTED AT ALL — slots 10-12 emit
+  `lw v0,12` / `lw a1,16` / `lw v0,0(v0)` and copy 2's address load appears at slot 14 —
+  because copy 1's word is still live in $v0 until the 0x20 store, so the second set of
+  `result` cannot cross it. Constraint (b) fails.
+- **K17: `temp_a1` — score 7/66 (probe x3).** Its staged 0x10 pointer must stay live from
+  target slot 12 to slot 29, so it violates constraint (b) as well.
+
+### The residue — a RULES question, not a search question
+Every measured score-0 form (s3's `src`, s3-permuter/s3b's `temp2`) closes the function
+by introducing or extending a local that the ORIGINAL body did not have, and both are
+now BANNED for this function. s4's measurements show that is not a failure of
+imagination: of the four pre-existing locals, one is live throughout and the other three
+are each measured non-viable, with the failure mechanism named (global-alloc $a0
+conflict for `idx`; $v0 anti-dependence for `result`; live-range overlap for `temp_a1`).
+So the closing lever is unique up to naming, and the question of whether it is a
+sanctioned family or a cheat cannot be settled by any further measurement. s4 therefore
+returns `ruling-request` rather than another respelling.
+
+### Frontier after s4
+No measurable frontier remains on the carrier axis; do not re-run carrier probes. If the
+ruling comes back "a purpose-introduced multiply-assigned carrier is NOT sanctioned
+here", the remaining honest dispositions are the canonical-asm grant path or
+owner-accepted-incomplete, and the evidence for that entry is already complete in this
+ledger (s2's sched trace, s3's mechanism, s3b's 65,445 permuter iterations across two
+chassis with zero finds, s4's carrier-space closure). If it comes back "sanctioned",
+memory/grind/func_80060A68/candidate.c is a measured score-0 body on the current chassis
+(re-verified twice this session) and the only remaining work is the asmfix.txt:109/110
+integration handoff described at the end of the s3 section.
