@@ -372,3 +372,11 @@ python3 tools/diff_naming_proposals.py OLD.csv NEW.csv
 - **Address-suffixed names indicate uncertainty.** A proposed `foo_8001ABCD` means "best
   candidate, not a promise." Drop the suffix only after body inspection.
 - **Per-function evidence files are the source of truth** for why a proposal exists.
+
+## Sony-static names (owner ruling 2026-08-18 c)
+
+MODULE_LOCAL_STATIC identities from verbatim-placed PsyQ modules are applied
+ONLY after an adversarial default-refute verification pass (see
+manifest_report.md addendum + naming-verification-2026-08-18.md). The
+verified names live in rename_manifest.csv `proposed_name`; the census
+re-derives the RENAME actions from there on regen.

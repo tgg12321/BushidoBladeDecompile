@@ -162,3 +162,41 @@ Function names are KEYS in `regfix.txt`, `asmfix.txt`, `inline_asm_canonical.txt
 - `tmp/libscan/libsyms.json` — every XDEF/local placement with lib, module, offset
 - `tmp/libscan/anomalies.txt` — the mid-function XDEF list
 - `tmp/libscan/manifest.py` — the generator
+
+---
+
+## ADDENDUM — OWNER RULING 2026-08-18 (c): recommendation 7 REVERSED for adversarially re-verified statics
+
+Recommendation 7 above ("do not propose names for MODULE_LOCAL_STATIC rows;
+`libspu_static_8008XXXX` is the ceiling") is REVERSED, scoped as follows.
+
+The evidence chain for a module-local static is byte-identical to an XDEF's:
+a uniquely-placed, masked-verbatim module plus the OBJ symbol table at
+`module_base + offset`. Linker scope affects whether the NAME was exported,
+not what Sony called the function. The original caution survives in the one
+place it bites — cross-module static name collisions (the `memclr` x3 case)
+— and in the confidence bar below.
+
+Owner's standing constraint (2026-08-18, verbatim): "we want to avoid
+false-positives as much as possible, they can be very misleading. Be
+extremely confident before applying any names." Therefore:
+
+1. A static name is applied ONLY after an ADVERSARIAL default-refute
+   re-verification: exhaustive unique-placement re-derivation (every
+   word-aligned position, not just anchor candidates), exact-offset symbol
+   check, disassembly body reads for a substantial sample, and a fresh
+   whole-word collision scan. The 2026-08-18 pass (48/48 CONFIRM, 0 REFUTE;
+   method + per-row evidence: docs/naming/naming-verification-2026-08-18.md)
+   is the template.
+2. Held regardless of verification: the `memclr` x3 collision trio (needs a
+   disambiguation-convention decision; `memclr_<ADDR>` is the convention the
+   registries support); `callback` @0x80081F1C (the current
+   `cdrom_IrqHandler` is strictly more informative — Sony identity recorded
+   in a source comment instead); func_800871D4 `_SsVmKeyOffNow`
+   (STRUCTURAL/MED grade — below the bar; 4/52 words differ, no verbatim
+   module, the chain cannot be re-derived).
+3. `rename_manifest.csv` now carries the verified names in `proposed_name`
+   (this is the ruling's durable record — the census re-derives the renames
+   from it on every regen). NOTE for the next `tools/libscan/manifest.py`
+   regeneration: its rec-7 filter must be updated to preserve
+   verified-static proposals, or the regen will strip them.
