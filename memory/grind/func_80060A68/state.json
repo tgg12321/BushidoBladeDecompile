@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 3,
+ "session_count": 4,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics re-attributes the residual from sched1 to sched2: the byte-deciding tie is rank_for_schedule's LUID fall-through taken in the POST-RELOAD pass, statement permutation is killed with a mechani"
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "The s2-s9 residual is GONE: a single-set p10 placed after the copy-3 store reproduces target slots 10/11/12 exactly (score 2, 66 insns, prefix byte-identical through slot 20); priority(insn 39)=4 is K"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The bumped-stage body (already correct at target slots 10-11) can be completed by breaking sched2's T-30 readiness pin on the staged load, with no carrier construct anywhere in the diff.",
-   "mechanism": "sched1's bump chains insn 39 between insns 56 and 58; the post-reload dependence graph built over that chain leaves insn 39 as the SOLE ready insn at sched2 T-30, so sched2 must place it there and cannot sink it back toward slot 12. Give insn 39 a live competitor at T-30 and sched2 regains the choice.",
-   "next_probe": "From rejected/split-stage-single-set-bumped-overshoots-slot22-score5.c: dump .greg and read which hard register p10 receives and which insn's release the sched2 trace attributes to insn 39 at T-30/T-31; then enumerate honest spellings of the 0x1A halfword read that remove insn 56's 'lw v0,16(v1)' from between insns 53 and 58 (target reuses ONE 'lw a0,16(v1)' at slot 23 for both the slot-22 delay fill and the halfword). Measure each with sandbox --disable all and diff slots 20-26 against tmp/grind/func_80060A68/s3/n9/tgt.txt."
+   "hypothesis": "Steering insn 56 (the 0x1A read's address load) from v0 to a0 in the 3-load body closes the function.",
+   "mechanism": "The r4/t1 family already has target's three independent 16(v1) loads and the correct CSE structure and fails only because sched2's T-30 pin forces insn 39 to slot 25; that pin exists solely because insn 53 (sh v0,24(v1)) reads v0 and reload gave insn 56 v0, creating a write-after-read anti-dependence that delays 53 past T-30. With insn 56 in a0 (as in target and in the prior staged body) insn 53 is ready at T-30 and beats insn 39 on priority 8 vs 3.",
+   "next_probe": "Dump .lreg and .greg for t1 (rejected/s10-split-copy3-restores-3-loads-and-the-T30-pin-score5.c) and for prior-floor2-staged-temp_a1.c, identify the pseudo that becomes insn 56's destination in each, and read WHY local-alloc gives it v0 in one and a0 in the other (conflict set, allocno order, reg_n_refs). Then look for an honest C change that alters that pseudo's LIVE RANGE rather than its type -- the three type-level attempts (u1 s32 temp2, u3 s32 temp_a1, u2 fresh q local) are already dead at 5/67."
   },
   {
-   "hypothesis": "priority(insn 39) = 4 in sched2 wins the T-45 tie outright and closes the function.",
-   "mechanism": "rank_for_schedule tests INSN_PRIORITY first (sched.c:2418); insn 32 is pinned at 3 by its producer set {9, 22}. Raising insn 39 to 4 -- and only to 4, since 5 would make it contest insns 29/34/42 -- makes it win T-45, be scheduled first and therefore emitted after insn 32, which is target.",
-   "next_probe": "Read insn_cost in tools/gcc-2.7.2/sched.c and determine whether any priority-3 producer can reach insn 39 over a cost-1 link (a load-to-address-use link like 25->27) rather than the cost-0 store-to-load link 22->39. That requires the staged read's ADDRESS to be a loaded value; if no honest C form supplies one, KILL the axis with that argument plus one confirming probe rather than leaving it open."
+   "hypothesis": "The missing third 16(v1) load can be restored in the r5 family without re-pinning insn 39.",
+   "mechanism": "r5 needs lw a0,16(v1) where it emits a nop, i.e. the 0x18 read must stop CSE-folding onto p10 while p10 keeps an early consumer that holds insn 39 off sched1's late chain position. Every store-based separator measured so far (t1, t2) restores the fold barrier and the pin together.",
+   "next_probe": "Read .cse for the r5 body to see the exact expression-equivalence that folds the 0x18 read onto p10, and determine whether any honest spelling of that read is a distinct expression to GCC 2.7.2's cse without a store between; separately, look for a use of p10's value that target also performs before slot 25 and could serve as the early consumer instead of a halfword read. If neither exists, KILL the r5 family with that argument and fall back to frontier item 1."
   },
   {
-   "hypothesis": "If both of the above measure dead, the closure argument to write is the sched2 T-45 three-test pin, not the sched1 birthing-bump story the ledger has carried since s2.",
-   "mechanism": "sched.c:2418 priority tied and locked by a shared producer set; sched.c:2426-2444 class tied and unbreakable because last_scheduled_insn 27 precedes both candidates in the chain; sched.c:2464 LUID inherited from a sched1 chain whose order is set by readiness, not by any C-visible quantity.",
-   "next_probe": "Do NOT re-open statement permutation (killed this session with a mechanism), the DImode/SUBREG door (s8), the carrier axis in any of its three partition seats (Judge 2026-08-19 10:21/10:48/11:07), the permuter (65,445 iterations across two chassis, zero finds), or canonical-asm (scan_hand_coded LOW 1/8). Any exhaustion claim must be written against the sched2 attribution above and must state which of frontier items 1 and 2 was measured dead and how."
+   "hypothesis": "Closed axes -- do not re-open.",
+   "mechanism": "priority(insn 39) = 4 (killed this session from the PRIODBG stream); statement permutation of the UNBUMPED staged read (s9, named mechanism); the DImode/SUBREG door (s8, costs 4 insns); the multiply-assigned pointer-staging carrier in all three partition seats (Judge 2026-08-19 10:21/10:48/11:07); the permuter (65,445 iterations across two chassis, zero finds); canonical-asm (scan_hand_coded LOW 1/8).",
+   "next_probe": "None -- any exhaustion claim must be written against the s10 attribution (reload's v0-vs-a0 choice for insn 56) and must state which of frontier items 1 and 2 was measured dead and how."
   }
  ],
  "judge_constraints": [

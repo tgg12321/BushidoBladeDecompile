@@ -905,3 +905,182 @@ Artifacts, all under `tmp/grind/func_80060A68/s3/`:
 - [s3] The bumped-stage family is the only measured family that puts copy 2's address load on target's slot 11 without a banned carrier construct, and its remaining defect is localised to one named sched2 state (T-30, insn 39 sole ready insn).
 
 - [s3] Housekeeping: the previous session's uncommitted docs/grind/decisions.md OWNER-ESCALATION entry was reverted, because the driver discarded that session (owner-gated is not a valid outcome from forensics modality) and the function is active, not parked. src/text1b.c was restored to HEAD at end of session; no build-pipeline file was touched.
+
+## [s10] 2026-08-19 — forensics (instrumented cc1, PRIODBG/RANKDBG/SCHEDDBG). The sched2 LUID tie is SOLVED; the residual moved to a new place.
+
+*(Driver session index 4 of the current dispatch; ledger-local index s10.)*
+
+### Chassis re-measured this session
+`sandbox func_80060A68 --disable all` with the previous candidate body (staged `temp_a1`,
+now preserved verbatim at `memory/grind/func_80060A68/prior-floor2-staged-temp_a1.c`)
+applied to `src/text1b.c:3321` = **score 2, build 66 / target 66**. Same floor as s1-s9.
+`src/text1b.c` was reverted to HEAD before finishing (the asmfix.txt:109-110 integration
+hazard is unchanged).
+
+### 1. KILLED — `priority(insn 39) = 4` (the s9 frontier item 2), with the compiler's own numbers
+
+Probe: full instrumented `-da` dump of the floor-2 body with `BB2_PRIO_DEBUG=1` added to
+the s9 recipe (`tmp/grind/func_80060A68/s4/n1/`, split into `pass1.txt` / `pass2.txt` by
+the `SCHEDDBG FUNC func=func_80060A68 pass=N` markers). `priority()` at sched.c:1497 is
+`max over LOG_LINKS producers x of (priority(x) + insn_cost(x, link, insn) - 1)`, so a
+cost-1 link contributes +0 and a cost-2 link contributes +1. The sched2 (pass=2) stream for
+the four insns that matter, verbatim:
+
+    PRIODBG insn=25 pred=9  kind=0 pred_pri=1 cost=2 contrib=2 (max=3)
+    PRIODBG insn=25 pred=22 kind=0 pred_pri=3 cost=1 contrib=3 (max=3)   -> SET 25 = 3
+    PRIODBG insn=27 pred=25 kind=0 pred_pri=3 cost=2 contrib=4 (max=4)   -> SET 27 = 4
+    PRIODBG insn=32 pred=9  kind=0 pred_pri=1 cost=2 contrib=2 (max=2)
+    PRIODBG insn=32 pred=22 kind=0 pred_pri=3 cost=1 contrib=3 (max=3)   -> SET 32 = 3
+    PRIODBG insn=39 pred=9  kind=0 pred_pri=1 cost=2 contrib=2 (max=2)
+    PRIODBG insn=39 pred=22 kind=0 pred_pri=3 cost=1 contrib=3 (max=3)   -> SET 39 = 3
+
+This closes s9's frontier item 2 by exhaustion over the actual producer sets rather than by
+argument:
+  * insn 39 has exactly two producers in sched2 — insn 9 (`lw v1,0(gp)`, priority 1, cost 2)
+    and insn 22 (the `sw zero,0(at)` D_800F10D0 store, priority 3, cost 1). Max = 3.
+  * `priority(39) = 4` needs either a cost-2 (load-result) link from a priority-3 producer
+    or a cost-1 link from a priority-4 producer.
+  * Every producer must be EMITTED BEFORE insn 39, and target emits insn 39 at slot 12, so
+    the candidate producer pool is exactly target slots 1-11: insns 9 (pri 1), 13 (2),
+    18 (3), 22 (3), 25 (3), 32 (3). **There is no priority-4 insn in the pool at all**, so
+    the cost-1 route is empty.
+  * The cost-2 route needs insn 39's ADDRESS operand to be the RESULT of insn 25 or insn 32
+    — the only priority-3 loads in the pool. Both load `*(s32 *)(outer + 0xC)`; insn 39's
+    address is `outer + 0x10`. No honest C form makes one the other.
+  * Deepening insn 22 (the only shared lever) lifts 25, 32 AND 39 by exactly the same
+    amount — the dump shows all three take their max from the identical `pred=22 cost=1`
+    link — so the tie survives any change to the store's depth.
+
+VERDICT: KILLED. Priority is not a reachable lever on this pair.
+
+### 2. THE BREAK — a bumped single-set `p10` placed BELOW the copy-3 store puts all three contested loads on target
+
+Nine source positions of a single-set `s32 p10 = *(s32 *)(outer + 0x10);` were measured
+(r1-r9; the s9 rejected body `split-stage-single-set-bumped-overshoots-slot22-score5.c` is
+position r4):
+
+| variant | p10 statement placed after | score | insns |
+|---|---|---|---|
+| r1 | `outer = D_800A3468;` (above the D_800F10D0 store) | 2 | **65** |
+| r2 | the D_800F10D0 store | 5 | 67 |
+| r3 | copy 1 (`+0x20`) | 5 | 67 |
+| r4 | copy 2 (`+0x24`) — the s9 body | 5 | 67 |
+| **r5** | **copy 3 (`+0x28`)** | **2** | **66** |
+| r6 | the `+0x18` store statement | 2 | 66 |
+| r7 | the `temp2` read | 2 | 66 |
+| r8 | the `D_800A3478` gp store | 3 | 66 |
+| r9 | the `+0x1A` store | 3 | 66 |
+
+**r5 is a new shape, and it is the first body on this function whose whole prefix through
+slot 20 is byte-identical to target — slots 10/11/12 included:**
+
+    target  slot 10 lw v0,12(v1)   slot 11 lw a0,12(v1)   slot 12 lw a1,16(v1)
+    r5      slot 10 lw v0,12(v1)   slot 11 lw a0,12(v1)   slot 12 lw a1,16(v1)
+
+Every session from s1 to s9 recorded that pair as the residual and attributed it to
+`rank_for_schedule`'s LUID fall-through at sched.c:2464 in sched2. **That residual no
+longer exists.** r5's remaining 2-instruction gap is somewhere else entirely:
+
+    target  ... lw a0,16(v1) / sw v0,40(v1) / lhu v0,0(a0) / lw a0,16(v1) / sh v0,24(v1) / lhu a0,2(a0) ...
+    r5      ... lw a0,16(v1) / sw v0,40(v1) / lhu v0,0(a1) / nop          / sh v0,24(v1) / lhu a0,2(a0) ...
+
+i.e. the `*(u16 *)(outer + 0x18)` read is CSE-folded onto p10's register (a1) instead of
+re-loading `16(v1)`, so target's slot-23 load — which also fills the load-delay slot after
+`lhu v0,0(a0)` — is missing and shows as a `nop`. r6 and r7 are the same defect displaced
+by one read (there the `+0x2` read folds onto a1 instead: `lhu a0,2(a1)`). r5 was promoted
+to `memory/grind/func_80060A68/candidate.c` this session; it carries NO multiply-assigned
+local at all, so unlike the prior body it needs no staged-value-reused-variable claim.
+
+### 3. The conservation law that r1-r9 / t1 / t2 trace out
+
+`p10` is single-set, so its load (insn 39) takes sched1's `birthing_insn_p`
+LAUNCH_PRIORITY bump and is chained late — which is exactly what supplies the
+`LUID(39) > LUID(32)` that sched2 needs. But a bumped load is chained next to its FIRST
+consumer, so:
+
+  * **Three independent `16(v1)` loads** (target's count) means p10's only consumer is the
+    `+4` read at target slot 29, sched1 chains insn 39 between insns 56 and 58, and sched2
+    hits the T-30 pin — the load overshoots to slot 25 and strands a nop: r2, r3, r4 and
+    t1, all score 5 / 67 insns.
+  * **p10 with an early consumer** (one of the halfword reads CSE-folded onto it) unpins
+    insn 39 and lands it on target's slot 12 — at the cost of one of the three loads:
+    r5, r6, r7, all score 2 / 66 insns with a nop where the third load belongs.
+
+Attempts to have both, measured and dead:
+  * **t1** — split copy 3 into a named local so its store falls BETWEEN the p10 statement
+    and the `+0x18` read, restoring three independent loads: score 5 / 67. The pin returns
+    the moment the third load does.
+    (`rejected/s10-split-copy3-restores-3-loads-and-the-T30-pin-score5.c`)
+  * **t2** — hoist the `D_800A3478` gp store above the `+0x2` read to break CSE there
+    instead: score 8 / 68 (the store-order fence drags the gp store forward).
+    (`rejected/s10-gp3478-store-hoisted-above-temp2-read-score8.c`)
+  * **t5** — write the `+0x18` read explicitly through `p10`: byte-identical to r5, score 2
+    / 66. Confirms r5's fold is genuinely CSE and not an artifact of the spelling.
+
+### 4. The proximate cause of the 3-load pin is REGISTER ALLOCATION, not scheduling
+
+Reading the two sched2 traces side by side (`s3/n9/trace_sched2.txt` = prior staged body,
+`s3/n9b/trace_sched2.txt` = the r4 3-load body) at the deciding cycle:
+
+    n9  (works)  ;; ready list at T-30: 39 (3) 53 (8), now 53 39      <- 53 wins on priority
+    n9b (pins)   ;; ready list at T-30: 39 (3), now 39                <- 39 forced in
+                 ;; launching 56 before 39 with no stalls at T-31
+
+Insn 53 is `sh v0,24(v1)` (the `+0x18` store) and insn 56 is the `+0x2` read's address
+load. In n9b reload gives insn 56 the hard register **v0**, which insn 53 READS, so 53
+carries a write-after-read anti-dependence on 56 and sched2 cannot release 53 until 56 is
+scheduled — T-30 then comes up with insn 39 as the sole ready insn and the scheduler takes
+it rather than stall. In the prior body and in target, insn 56 gets **a0**
+(`lw a0,16(v1)` / `lhu a0,2(a0)`, a self-overwrite), there is no anti-dependence, 53 is
+ready at T-30 and beats insn 39 on priority 8 vs 3. So the 3-load family closes the
+function iff insn 56's destination can be steered from v0 to a0 by honest C.
+
+Three attempts this session, all score 5 / 67, i.e. none moved insn 56 off v0:
+  * `s32 temp2` instead of `u16 temp2` (u1)
+  * `s32 temp_a1` instead of `u16 temp_a1` (u3)
+  * a fresh single-set `s32 q = *(s32 *)(outer + 0x10);` hosting the `+0x2` read's address,
+    forcing the address into its own pseudo (u2)
+    (`rejected/s10-fresh-q-local-for-0x1A-address-does-not-move-insn56-off-v0-score5.c`)
+
+`.greg` for both bodies shows the same five hard regs used (2 3 4 5 31) and a single
+globally-allocated pseudo; the v0-vs-a0 choice is made before sched2 runs, in
+local-alloc/reload, and is the next thing to read out rather than guess.
+
+### Artifacts
+- `tmp/grind/func_80060A68/s4/n1/` — full instrumented `-da` dump set for the floor-2 body
+  with `BB2_PRIO_DEBUG=1`, plus `pass1.txt` / `pass2.txt` (this function's sched1 and
+  sched2 debug streams, split out of the 10 MB `dbg.txt` by the `SCHEDDBG FUNC` markers)
+- `tmp/grind/func_80060A68/s4/{r1..r9,t1,t2,t5,u1,u2,u3,q1,q3}.c` — the measured variants
+- `tmp/grind/func_80060A68/s4/{apply.py,m.sh,split.py,run1.sh}` — the harness used
+
+- [s10] Chassis re-measured: sandbox func_80060A68 --disable all = score 2, build 66 / target 66 with the ledger's floor-2 body; src/text1b.c reverted to HEAD before finishing.
+
+- [s10] priority(insn 39) = 4 is UNREACHABLE, proved from the compiler's own PRIODBG stream rather than by argument: in sched2 insn 39's only producers are insn 9 (priority 1, cost 2) and insn 22 (priority 3, cost 1), giving max 3; a producer must be emitted before insn 39, and target's slots 1-11 contain no priority-4 insn at all, so the cost-1 route is empty; the cost-2 route needs insn 39's address to be the result of insn 25 or 32, both of which load *(s32 *)(outer + 0xC) rather than outer + 0x10; and deepening the shared producer insn 22 lifts 25, 32 and 39 identically.
+
+- [s10] NEW SHAPE r5 (single-set s32 p10 = *(s32 *)(outer + 0x10); placed immediately AFTER the copy-3 store): score 2, build 66 / target 66, and the entire prefix through slot 20 is byte-identical to target INCLUDING slots 10/11/12 (lw v0,12(v1) / lw a0,12(v1) / lw a1,16(v1)). The sched2 rank_for_schedule LUID tie at sched.c:2464 that s2-s9 recorded as THE residual is absent from this body. Promoted to candidate.c; it carries no multiply-assigned local of any kind.
+
+- [s10] r5's residual is a different defect: the *(u16 *)(outer + 0x18) read is CSE-folded onto p10's register (lhu v0,0(a1) instead of lw a0,16(v1) + lhu v0,0(a0)), so target's slot-23 load is missing and shows as a nop. r6 and r7 are the same defect displaced onto the +0x2 read (lhu a0,2(a1)).
+
+- [s10] Conservation law measured across nine p10 source positions (r1-r9) plus t1/t2/t5: three independent 16(v1) loads implies p10 has no early consumer implies sched1 chains the bumped insn 39 between insns 56 and 58 and sched2's T-30 pin forces it to slot 25 (score 5 / 67 insns); giving p10 an early consumer unpins it onto target's slot 12 but CSE-folds one of the three loads away (score 2 / 66 insns with a nop). t1 (split copy 3 so its store re-separates the loads) restores the 3 loads AND the pin, score 5.
+
+- [s10] The 3-load pin's proximate cause is REGISTER ALLOCATION, not scheduling: reload gives insn 56 (the +0x2 read's address load) hard register v0, and insn 53 is sh v0,24(v1), so 53 carries a write-after-read anti-dependence on 56 and sched2 cannot release 53 until 56 is scheduled; T-30 then holds insn 39 alone (n9b trace: ready list at T-30: 39 (3)) and the scheduler takes it. In target and in the prior staged body insn 56 gets a0 (self-overwrite lw a0,16(v1) / lhu a0,2(a0)), 53 IS ready at T-30 (n9 trace: ready list at T-30: 39 (3) 53 (8), now 53) and wins on priority 8 vs 3.
+
+- [s10] Three honest attempts to move insn 56 off v0 all failed at score 5 / 67: s32 temp2, s32 temp_a1, and a fresh single-set s32 q local hosting the +0x2 read's address. The v0-vs-a0 decision is made in local-alloc/reload before sched2 runs and must be read out of .lreg/.greg next.
+
+- [s4] Chassis re-measured this session: sandbox func_80060A68 --disable all = score 2, build 66 / target 66 with the ledger's floor-2 body applied at src/text1b.c:3321; src/text1b.c was reverted to HEAD before finishing (the asmfix.txt:109-110 integration hazard is unchanged).
+
+- [s4] priority(insn 39) = 4 is unreachable, from the compiler's own PRIODBG stream: insn 39's producers in sched2 are exactly insn 9 (priority 1, cost 2) and insn 22 (priority 3, cost 1), max 3; target's slots 1-11 (the only legal producer pool, since a producer must be emitted before insn 39) contain no priority-4 insn; the only priority-3 loads in that pool are insns 25 and 32, which load *(s32 *)(outer + 0xC) and cannot supply insn 39's outer + 0x10 address; and the shared producer insn 22 lifts insns 25, 32 and 39 identically.
+
+- [s4] NEW SHAPE r5 (single-set s32 p10 = *(s32 *)(outer + 0x10); placed immediately after the copy-3 store): score 2, build 66 / target 66, prefix byte-identical to target through slot 20 INCLUDING slots 10/11/12 (lw v0,12(v1) / lw a0,12(v1) / lw a1,16(v1)). The sched2 LUID tie at sched.c:2464 that s2-s9 recorded as THE residual does not occur in this body. Promoted to candidate.c; the prior staged-temp_a1 floor-2 body is preserved verbatim at memory/grind/func_80060A68/prior-floor2-staged-temp_a1.c (not rejected -- it still measures 2).
+
+- [s4] r5's residual is a different defect: the *(u16 *)(outer + 0x18) read is CSE-folded onto p10's register, giving lhu v0,0(a1) where target has lw a0,16(v1) + lhu v0,0(a0), so target's slot-23 load (which also fills the load-delay slot after lhu v0,0(a0)) is missing and shows as a nop. r6 and r7 are the same defect displaced onto the +0x2 read (lhu a0,2(a1)).
+
+- [s4] Nine p10 source positions measured: r1 = 2/65, r2 = 5/67, r3 = 5/67, r4 = 5/67 (the s9 body), r5 = 2/66, r6 = 2/66, r7 = 2/66, r8 = 3/66, r9 = 3/66. Position is NOT inert for a bumped local -- moving the statement changes which insns exist (CSE), which is what moves the score.
+
+- [s4] Conservation law: three independent 16(v1) loads implies p10 has no early consumer implies sched1 chains the bumped insn 39 between insns 56 and 58 implies the sched2 T-30 pin (slot 25, score 5 / 67); giving p10 an early consumer unpins insn 39 onto target's slot 12 but CSE-folds one of the three loads away (score 2 / 66 with a nop). t1 (split copy 3 so its store re-separates the loads) restores both the three loads and the pin, score 5 / 67; t2 (hoist the gp store above the 0x1A read) scores 8 / 68.
+
+- [s4] The 3-load pin's proximate cause is REGISTER ALLOCATION, not scheduling: reload gives insn 56 (the 0x1A read's address load) hard register v0, insn 53 is sh v0,24(v1), so 53 carries a write-after-read anti-dependence on 56 and sched2 cannot release 53 until 56 is scheduled; T-30 then holds insn 39 alone and the scheduler takes it. In target and in the prior staged body insn 56 gets a0 (self-overwrite lw a0,16(v1) / lhu a0,2(a0)), 53 IS ready at T-30 and wins on priority 8 vs 3.
+
+- [s4] Three honest attempts to move insn 56 off v0 all measured 5 / 67: s32 temp2 (u1), s32 temp_a1 (u3), and a fresh single-set s32 q local hosting the 0x1A read's address (u2). The v0-vs-a0 decision is made in local-alloc/reload before sched2 runs and must be read out of .lreg/.greg rather than guessed.
+
+- [s4] No banned construct appears in any body measured this session: every local in candidate.c (outer, idx, temp2, p10, temp_a1, result) is written exactly once and read for a real job. There is no multiply-assigned carrier, no staged-value-reused-variable claim, and no FAKE annotation in the new candidate.
