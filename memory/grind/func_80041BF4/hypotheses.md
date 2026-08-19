@@ -93,3 +93,81 @@ and `*(ptr + i)` spellings of the D_80094DF0 load (they keep the hoist).
 - probe: 13 inner-body forms measured with sandbox --disable all: source address named in a block-local; (s32)&D_800A9A24 + off without the u8* cast; tbl += 2 moved; idx++ folded into the shift; computed address assigned back into off; rect[0] add commuted; rect[1] add commuted; both commuted; x read named in a block-local; y read named in a block-local; rect[2]/rect[3] order swapped; rect[2]/rect[3] stores hoisted above the coordinate stores.
 - result: Twelve are EXACTLY inert (17 at 135 insns). The thirteenth (constant stores above the coordinate stores) is 46 at 139 insns and is banked in rejected/rect-const-stores-before-coords.c. The residual does not move with inner-body spelling.
 - verdict: KILLED
+
+## [s3] Declaration order of the function's locals is a live lever for this function
+- mechanism: pseudo birth order feeds local-alloc's quantity numbering and global.c's allocno ordering, so permuting declarations should shuffle the v0/v1/t0/a1 assignments in the inner loop.
+- probe: 12 forms measured with sandbox --disable all on the floor-17 base: sent first, rect first, tbl/idx before xoff/yoff, idx before tbl, sent before tbl, rect after outer, yoff before xoff, fp_ptr last, new_var last, new_var deleted (literal shift), `off` hoisted to function scope in two positions.
+- result: ALL TWELVE are exactly inert - 17 at 135 insns, byte-identical output. Re-measured on the floor-13 base (three more permutations): still exactly inert at 13.
+- verdict: KILLED - declaration order does not move anything in this function. Do not spend another session on it.
+
+## [s3] The LoadImage argument-setup block is stranded mid-body by an anti-dependence from the `tbl += 2` pointer bump, and moving the bump to the tail of the loop body frees sched1 to issue the args first
+- mechanism: In the floor-17 form the body order was `off/idx++ | x-store | y-load | tbl+=2 | a0/a1 setup | rect[2]/rect[3] | y-store | jal`. The .greg RTL showed `(insn 210 (set tbl (plus tbl 4)) ... (insn_list:REG_DEP_ANTI 201))` - an anti-dependence against the y-coordinate load at insn 201 - sitting directly between the coordinate work and the argument-setup chain (insns 227 `a0=sp+24`, 343 `la`, 229 `addu a1`). sched1 could not lift the arg-setup block above that anti-dependence, so the a0/a1 chain stayed mid-body while target issues it as the first thing in the loop body. Moving the pointer bump past DrawSync removes the anti-dependence from between them.
+- probe: `tbl += 2;` relocated from between the rect[1] store and the rect[2] store to immediately after `DrawSync(0)` (i.e. just before the func_80048A7C call); sandbox --disable all, then a normalized objdump side-by-side against build/src/text1a_post.o.
+- result: 17 -> 13 at 135/135 insns. The side-by-side now shows ZERO ordering divergence: target insns 82..118 and ours are in identical positions, and the only remaining differences are register names. Moving the bump further (before DrawSync, or after func_80048A7C) is equally good (13); leaving it mid-body is 17.
+- verdict: CONFIRMED
+
+## [s3] The residual 13 is an expression-shape problem inside the loop body
+- mechanism: if the surviving t0-vs-v0/a1 renames rode on how the address, the coordinates or the loop condition are spelled, respelling would move them.
+- probe: 20 further forms on the floor-13 base: source address named in a block-local; address add commuted; `idx * 32`; literal `idx << 5` with new_var deleted; `off` inlined into the call (two increment placements); `off` at function scope; rect[2]/rect[3] swapped; rect[2]/rect[3] moved after the LoadImage args; `&rect[0]` for `rect`; `sent` deleted; `*tbl` for `tbl[0]`; u16* tbl with tbl[0]/tbl[1]; coordinates named in block-locals; rect[1] stored before rect[0]; DrawSync before LoadImage; idx++ at the body end; three more declaration permutations; `tbl += 2` in two further positions.
+- result: fourteen are exactly inert (13 at 135). Six are WORSE and are banked in rejected/: rect[1]-before-rect[0] 45/139, DrawSync-before-LoadImage 73/136, idx++-at-end 16, coordinates-in-block-locals 15, rect[2]/rect[3]-after-args 15, off-inlined 15. Nothing improves on 13.
+- verdict: KILLED - the residual is not reachable by inner-body expression shape.
+
+## Frontier after s3 (floor 13)
+1. **Deny hard reg $a1 to the `off` pseudo (129).** This is the WHOLE residual - all
+   thirteen differing insns are downstream of it, and the instruction stream is
+   otherwise byte-for-byte target's in target's order. Mechanism (read from .lreg +
+   the gcc-2.7.2 sources, not inferred): `off` is block-local to the loop body
+   (block 10) and dies in `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`.
+   local-alloc.c:1240-1300 walks that insn's source operands calling
+   combine_regs(operand, recog_operand[0]); combine_regs at local-alloc.c:1884-1896
+   sees a HARD setreg and unconditionally records a1 in qty_phys_sugg[qty(129)]
+   (returning 0, so the operand loop does not break - putting the symbol first does
+   NOT help, and that was measured). find_free_reg's just_try_suggested pass then
+   honours it: ";; Register 129 in 5". With a1 taken, reload has nothing better than
+   $t0 for the three loop-hoisted invariants 136/137/139 that global.c left
+   unallocated. Target has off in $v0 - i.e. NO suggestion, so find_free_reg took the
+   first reg in REG_ALLOC_ORDER. Next probe: find_free_reg excludes any hard reg that
+   appears in `regs_live_at[ins]` for ins in [born_index, dead_index)
+   (local-alloc.c:2170). So the lever is to make a1 LIVE somewhere inside off's live
+   range, or to make off NOT block-local (reg_qty < 0 kills the suggestion path at
+   local-alloc.c:1826 and hands the pseudo to global.c, which allocates from
+   REG_ALLOC_ORDER = $v0 first). Both are structural questions about where `off` is
+   born relative to the basic-block boundary at the top of the loop body - the one
+   axis s3 could not reach from inside the body. The instrumented cc1 has a
+   `BB2_SUGG_DEBUG` env hook (local-alloc.c, prints the `used`/`first_used` hard-reg
+   sets per find_free_reg call) - use it to confirm any candidate form in one build
+   instead of guessing from the score.
+2. **The trailing `li v1,1 / bne v0,v1` vs target `li t0,1 / bne v0,t0`** (the
+   `func_8003E2A0() == 1` test, outside both loops). Ours ALLOCATES the constant 1 to
+   $v1; target rematerializes it into $t0. This is the mirror image of item 1 (ours
+   allocates where target rematerializes and vice versa), which suggests a single
+   global.c allocno-ordering difference rather than two independent problems.
+   Re-measure only after item 1; read .greg's allocno order if it survives.
+3. **Do NOT reopen**: declaration order (12+3 forms, exactly inert), inner-body
+   expression shape (13 forms in s2 + 20 in s3, nothing improves), the plain
+   array-index / `*(ptr+i)` spellings of the D_80094DF0 load, the a2-param-reuse
+   outer counter, the do-while(0) yoff wrap.
+
+## [s3] Declaration order of the function's twelve locals is a live lever for this function (pseudo birth order -> local-alloc quantity numbering -> the v0/v1/t0/a1 renames in the inner loop).
+- mechanism: Pseudo numbers are assigned in declaration order; local-alloc numbers quantities by birth order within a block and global.c orders allocnos by priority, so permuting declarations should shuffle which short-lived inner-loop temp wins $v0.
+- probe: Twelve permutations measured with `sandbox --disable all` on the floor-17 base (sent first, rect first, tbl/idx before xoff/yoff, idx before tbl, sent before tbl, rect after outer, yoff before xoff, fp_ptr last, new_var last, new_var deleted with a literal shift, `off` hoisted to function scope in two positions); three more permutations re-measured on the floor-13 base.
+- result: ALL FIFTEEN are exactly inert - 17/135 on the floor-17 base and 13/135 on the floor-13 base, with byte-identical output in every case.
+- verdict: KILLED
+
+## [s3] The LoadImage argument-setup block is stranded in mid-body by an anti-dependence from the `tbl += 2` pointer bump, and relocating the bump to the tail of the loop body lets sched1 issue the arg setup first, as target does.
+- mechanism: .greg on the floor-17 form shows `(insn 210 (set tbl (plus tbl 4)) (insn_list:REG_DEP_ANTI 201))` - an anti-dependence against insn 201, the y-coordinate load - sitting directly between the coordinate work and the arg-setup chain (insns 227 `a0=sp+24`, 343 the `la`, 229 `addu a1`). sched1 cannot lift the arg-setup above that anti-dependence, so the a0/a1 block lands mid-body while target issues it as the first thing in the loop body.
+- probe: `tbl += 2;` moved from between the rect[1] store and the rect[2] store to immediately after `DrawSync(0)`; `sandbox --disable all`, then a normalized objdump side-by-side (tmp/grind/func_80041BF4/s3/sbs.py, built on engine.score.normalized_insns) against build/src/text1a_post.o.
+- result: 17 -> 13 at 135/135 insns. The side-by-side reports ZERO ordering divergence afterwards: target insns 82..118 and ours occupy identical positions and only register names differ. Moving the bump further along the tail (before DrawSync, or after func_80048A7C) is equally good at 13; leaving it mid-body is 17.
+- verdict: CONFIRMED
+
+## [s3] The residual 13 is an expression-shape problem inside the loop body, reachable by respelling the address, the coordinates, or the loop condition.
+- mechanism: If the surviving $t0-vs-$v0/$a1 renames rode on how the LoadImage source address, the coordinate arithmetic or the sentinel test are spelled, re-association or naming would move sched1 priorities and local-alloc order.
+- probe: Twenty forms measured on the floor-13 base: source address named in a block-local; address add commuted; `idx * 32`; literal `idx << 5` with new_var deleted; the `off` expression inlined into the call (two increment placements); `off` at function scope; rect[2]/rect[3] swapped; rect[2]/rect[3] moved after the LoadImage args; `&rect[0]` for `rect`; `sent` deleted; `*tbl` for `tbl[0]`; u16* tbl with tbl[0]/tbl[1] reads; coordinates named in block-locals; rect[1] stored before rect[0]; DrawSync before LoadImage; idx++ at the body end; three declaration permutations; `tbl += 2` in two further tail positions.
+- result: Fourteen are exactly inert (13 at 135 insns). Six are WORSE and are banked in rejected/: rect[1]-before-rect[0] 45/139, DrawSync-before-LoadImage 73/136, idx++-at-body-end 16, coordinates-in-block-locals 15, rect[2]/rect[3]-after-args 15, off-expression-inlined 15. Nothing improves on 13. With s2's thirteen forms that is 33 measured inner-body spellings whose only winner was a STATEMENT MOVE, not a respelling.
+- verdict: KILLED
+
+## [s3] The entire residual 13 is downstream of a single local-alloc decision: `off` (pseudo 129) is handed hard reg $a1 by the qty_phys_sugg path, which denies $a1 to reload's rematerialization of the three loop-hoisted invariants.
+- mechanism: `off` is block-local to the loop body (block 10) and dies in `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`. local-alloc.c:1240-1300 walks that insn's source operands calling combine_regs(operand, recog_operand[0]); combine_regs at local-alloc.c:1884-1896 sees a HARD setreg and unconditionally records a1 in qty_phys_sugg[reg_qty[129]], returning 0 (so the operand loop does not break - operand POSITION is irrelevant). find_free_reg's just_try_suggested pass (local-alloc.c:2208-2215) then restricts the candidate set to that suggestion. With $a1 taken, reload has nothing better than $t0 for regnos 136 (const 16), 137 (const 1) and 139 (symbol_ref D_800A9A24), which loop.c hoisted out of both loops and global.c left unallocated.
+- probe: Read .lreg and .greg for func_80041BF4 on the floor-13 form (`;; Register 129 in 5.`, the insn-229 RTL, the register-dispositions table showing 136/137/139 absent) plus the .loop movable log; cross-read tools/gcc-2.7.2/local-alloc.c and loop.c for the exact code paths; then commuted the address add to test the operand-position prediction.
+- result: Confirmed on both the floor-17 and floor-13 dumps: `;; Register 129 in 5.`, dispositions list has no entry for 136/137/139, and the .loop log still shows all three hoisted out of the 37-insn inner loop and then out of the 59-insn outer loop. The commuted-address form is exactly inert (13), exactly as the `combine_regs` return-0 reading predicts. Target has `off` in $v0 (no suggestion -> first reg in REG_ALLOC_ORDER) and the rematerialized symbol in $a1.
+- verdict: CONFIRMED

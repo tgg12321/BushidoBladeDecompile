@@ -1,7 +1,7 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 17,
    "modality": "structural",
    "headline": "Named the residual's mechanism from the .loop dump (loop.c LICM hoist breaks combine's symbol-into-MEM fold) and killed it for D_80094DF0 with byte-pointer indexing: floor 22 -> 17 at 135/135 insns."
+  },
+  {
+   "session": 3,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Floor 17 -> 13: moving `tbl += 2` out of the middle of the loop body removes a REG_DEP_ANTI that stranded the LoadImage arg-setup block, and the inner-loop SCHEDULE is now byte-for-byte target's; the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The inner-loop LICM hoist of regnos 136/137/139 ((const_int 16), (const_int 1), (symbol_ref D_800A9A24)) is the whole residual 17 - the same mechanism solved one level out this session.",
-   "mechanism": "move_movables hoists all three out of the 37-insn inner loop and then out of the outer loop; reload rematerializes them count-neutrally but into $t0 instead of target's $v0/$a1, and the LoadImage arg-setup block (addiu a0,sp,24 + the D_800A9A24 la + addu a1) loses its top-of-loop-body schedule slot.",
-   "next_probe": "The D_800A9A24 address is consumed as a call ARGUMENT (a value), not as a MEM address, so the scale trick does not transfer directly. Look for a spelling in which the address is consumed by a MEM - that is the case in which loop.c's reg_single_usage substitute-and-delete path (loop.c:735-767) can validate the replacement and DELETE the movable instead of hoisting it. After each form run dump.ps1 and grep the .loop movable log for 'regno 139': its presence/absence is a sharper and faster signal than the sandbox score."
+   "hypothesis": "Denying hard reg $a1 to the `off` pseudo (129) collapses the entire residual 13 to 0 - every differing insn is downstream of that one allocation, and the instruction stream is otherwise byte-for-byte target's in target's order.",
+   "mechanism": "local-alloc.c:1240-1300 calls combine_regs(operand, recog_operand[0]) on the sources of `(set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139)))`; combine_regs (local-alloc.c:1884-1896) sees the hard setreg and records $a1 in qty_phys_sugg[qty(129)], and find_free_reg's just_try_suggested pass honours it. $a1 taken forces reload to $t0 for the three loop-hoisted, globally-unallocated invariants 136/137/139, and the y-temp and trailing-constant renames follow. Target has `off` in $v0 = no suggestion, first reg in REG_ALLOC_ORDER.",
+   "next_probe": "Two independent, source-visible escapes, both OUTSIDE the loop body (which is the one region s3 could not reach and which is now measured closed): (a) make `off` NOT block-local so reg_qty < 0 and combine_regs bails at local-alloc.c:1826, handing it to global.c - i.e. a form in which `off`'s birth insn sits in a different basic block from its use, e.g. the shift computed in the loop-condition block or under the outer-loop rotation rather than at the top of the body; (b) make $a1 LIVE somewhere inside [born_index, dead_index) so find_free_reg's regs_live_at scan (local-alloc.c:2170) excludes it. Confirm any candidate in ONE build with the instrumented cc1's BB2_SUGG_DEBUG env hook (tools/gcc-2.7.2/cc1, prints the `used` and `first_used` hard-reg sets per find_free_reg call) rather than inferring from the score - the hook names the decision directly."
   },
   {
-   "hypothesis": "The y-coordinate temp taking $v0 (target: $v1) is what denies $v0 to the two rematerialized constants, and it is separable from item 1.",
-   "mechanism": "local-alloc assignment order for the short-lived coordinate temps in the inner loop; ours reuses $v0 for both the x store and the y read, target uses $v0 then $v1.",
-   "next_probe": "Only if item 1 does not collapse it. Inner-body respellings are already measured dead (the s2 KILLED entry), so the lever must come from outside the body - the loop-bottom sll, the sentinel read pair (lh/lhu of tbl[0]), or the while-condition spelling. Read .lreg for the y-temp pseudo before inventing anything."
+   "hypothesis": "The trailing `li v1,1 / bne v0,v1` (vs target `li t0,1 / bne v0,t0`) in the `func_8003E2A0() == 1` test is the same global.c allocno-ordering difference as item 1, not an independent divergence.",
+   "mechanism": "It is the exact mirror image: ours ALLOCATES the constant 1 to $v1 where target rematerializes it into $t0, while inside the loop ours rematerializes into $t0 where target allocates $v0. One allocno-ordering shift would flip both.",
+   "next_probe": "Re-measure only after item 1 lands. If it survives, read .greg's allocno ordering and priorities for the constant-1 pseudo before inventing any lever - do not tune it independently."
   },
   {
-   "hypothesis": "The LoadImage arg-setup schedule position is a consequence of item 1, not an independent divergence.",
-   "mechanism": "The rematerialized la insns are inserted by reload AFTER sched1, so only sched2 can move them; with the hoist gone they would be born before sched1 and could take target's top-of-body slot.",
-   "next_probe": "Re-diff after item 1 lands. Only if it survives, read .sched/.sched2 for the arg pseudos - do not tune it independently first."
+   "hypothesis": "The next modality should be register-allocation-focused rather than structural: the structural axes this function exposes are now measured exhausted.",
+   "mechanism": "s2 closed the LICM/combine axis, s3 closed the schedule axis (zero ordering divergence remains), declaration order (15 forms) and inner-body expression shape (33 forms across s2+s3) are both dead. What is left is a single hard-register assignment whose decision procedure is fully named down to the source line.",
+   "next_probe": "Drive from the dump, not the score: build once with BB2_SUGG_DEBUG set, read the find_free_reg trace for qty(129), and design the C form against the two documented escape conditions instead of sweeping spellings."
   }
  ],
  "judge_constraints": [],

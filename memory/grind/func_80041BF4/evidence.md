@@ -353,3 +353,136 @@ consequences of the remat. Do not re-run inner-body respellings.
 - [s2] Residual 17 is a single family: .loop on the 17-form still hoists regno 136 (const_int 16 -> rect[2]), 137 (const_int 1 -> rect[3]) and 139 (symbol_ref D_800A9A24 -> the LoadImage source address) out of the inner loop and then out of the outer loop. Count-neutral, but the remat scratch is $t0 where target uses $v0/$a1, the y-coordinate temp takes $v0 where target takes $v1, and the LoadImage arg-setup block loses its top-of-body schedule slot.
 
 - [s2] src/text1a_post.c was REVERTED to HEAD at session end (s1 precedent): the 33 regfix + 2 asmfix rules anchor on the old instruction stream and the do-while renumbers cc1 {lbl#N} slots, so applying the candidate stays a ledger-only operation until the function closes and the rules retire in the same change. The 17-form lives in memory/grind/func_80041BF4/candidate.c.
+
+---
+
+## [s3] 2026-08-19 — structural modality — floor 17 -> 13
+
+### Chassis
+HEAD floor re-measured at dispatch with the s2 `candidate.c` applied to
+`src/text1a_post.c`: **17 at 135/135 insns, frame 88** — identical to the
+ledger's recorded floor, so every s1/s2 spelling conclusion is still valid on
+this chassis.
+
+### Tooling built this session (reusable)
+- `tmp/grind/func_80041BF4/s3/sbs.py` — normalized side-by-side divergence
+  report built on `engine.score.normalized_insns` against
+  `build/src/text1a_post.o`. This is the right tool for this function: a raw
+  `objdump` diff is drowned in pseudo-op/format noise (`move` vs `addu ...,zero`,
+  decimal vs hex, `fp` vs `s8`), and `engine.score` already normalizes exactly
+  what the scorer normalizes. Prints only the differing insns plus their index.
+- `tmp/grind/func_80041BF4/s3/sweep.py` + `setbase.py` — splice a variant body
+  into `src/text1a_post.c`, run `engine.cli sandbox --disable all`, harvest
+  `score`/`build_insns`, restore the base. Sweeps every `v_*.c` in the scratch
+  dir in one invocation, so a 14-form round costs ONE turn.
+
+### The 17 -> 13 win: `tbl += 2` is a scheduling barrier where it stood
+At floor 17 the divergence was six groups; four of them were pure ORDERING —
+target issues the LoadImage argument-setup block (`addiu a0,sp,24`, the
+`lui/addiu` of `D_800A9A24`, `addu a1`) as the FIRST thing in the loop body,
+right after `addiu s1,s1,1`, while ours issued it in the middle, after the
+rect[0] store and the y-coordinate load.
+
+`.greg` on the floor-17 form shows why: the pointer bump
+
+    (insn 210 (set (reg/v:SI 16 s0) (plus (reg/v:SI 16 s0) (const_int 4)))
+              (insn_list:REG_DEP_ANTI 201 (nil)))
+
+carries an anti-dependence against insn 201, the y-coordinate load
+`(set (reg:HI 133) (mem (plus (reg/v 83) (const_int 2))))`, and it sat directly
+between the coordinate work and the argument-setup chain (insns 227 / 343 / 229).
+sched1 could not lift the arg-setup above it. Moving `tbl += 2;` out of the
+middle of the body — to immediately after `DrawSync(0)` — takes the
+anti-dependence out from between them.
+
+Result: **17 -> 13 at 135/135 insns, and the ordering divergence goes to ZERO.**
+The side-by-side now reports only register renames; target insns 82..118 and
+ours occupy identical positions. Moving the bump further along the tail (before
+`DrawSync`, or after the `func_80048A7C` call) is equally good at 13; leaving it
+mid-body is 17. This is the same class of finding as s2's LICM result — a
+statement whose PLACEMENT, not whose content, was the whole divergence.
+
+### The residual 13, named to a single line of local-alloc.c
+Every one of the thirteen differing insns is downstream of ONE allocation
+decision. From `.lreg` on the floor-13 form:
+
+    Register 129 used 6 times across 4 insns in block 10; GR_REGS or none.
+    ;; Register 129 in 5.                                  <- $a1
+    (insn 229 (set (reg:SI 5 a1) (plus (reg/v:SI 129) (reg:SI 139))))
+
+`off` is pseudo 129, block-local to the loop body, and it dies in an insn whose
+DEST IS THE HARD ARGUMENT REGISTER `$a1`. local-alloc.c:1240-1300 walks that
+insn's source operands calling `combine_regs (operand, recog_operand[0])`;
+`combine_regs` at local-alloc.c:1884-1896 sees a hard `setreg` and
+*unconditionally* records `a1` in `qty_phys_sugg[reg_qty[129]]`, then returns 0.
+Two consequences worth writing down, because both were probed and both matter:
+  - returning 0 means the operand loop does NOT break, so the suggestion is
+    recorded no matter which operand position `off` occupies. Commuting the
+    address add was measured and is exactly inert (13), as predicted.
+  - `find_free_reg`'s `just_try_suggested` pass (local-alloc.c:2208-2215) then
+    restricts the candidate set to the suggestion, so `off` gets `$a1`.
+
+With `$a1` taken, reload — which must rematerialize the three loop-hoisted
+invariants that global.c left unallocated (regno 136 = `(const_int 16)`,
+137 = `(const_int 1)`, 139 = `(symbol_ref D_800A9A24)`; the `.loop` movable log
+is unchanged from s2 and still hoists all three out of the inner loop and then
+out of the outer loop) — has nothing better than `$t0` for all three. Target
+instead has `off` in `$v0`, i.e. it had NO suggestion and `find_free_reg` simply
+took the first register in `REG_ALLOC_ORDER`.
+
+The y-temp rename (`lhu v0,2(s0)` vs target `lhu v1,2(s0)`, and the matching
+`addu`/`sh` pair) is a knock-on of the same theft, and the trailing
+`li v1,1 / bne v0,v1` vs target `li t0,1 / bne v0,t0` is its mirror image
+outside both loops: ours ALLOCATES the constant where target rematerializes it.
+
+### Structural axes measured DEAD this session
+- **Declaration order — completely inert.** Twelve permutations of the twelve
+  locals on the floor-17 base (sent first, rect first, tbl/idx before the
+  offsets, idx before tbl, sent before tbl, rect after outer, yoff before xoff,
+  fp_ptr last, new_var last, new_var deleted, `off` at function scope in two
+  positions) all scored exactly 17/135; three more on the floor-13 base all
+  scored exactly 13/135. This axis is closed for this function.
+- **Inner-body expression shape — closed.** Twenty further forms on the
+  floor-13 base (listed in hypotheses.md) produce fourteen exact ties and six
+  regressions; nothing improves. Combined with s2's thirteen forms that is
+  33 measured inner-body spellings with a single winner (`tbl += 2` placement),
+  and that winner was a STATEMENT MOVE, not a respelling.
+
+### What the next session should do
+The whole residual is one register: deny `$a1` to `off`. `find_free_reg`
+excludes any hard reg that appears in `regs_live_at[ins]` for
+`ins` in `[born_index, dead_index)` (local-alloc.c:2170), and the suggestion
+path is skipped entirely for a pseudo with `reg_qty < 0`
+(local-alloc.c:1826) — i.e. one that is NOT block-local, which is handed to
+global.c and allocated from `REG_ALLOC_ORDER` (`$v0` first, which is exactly
+target). So the two live levers are (a) make `$a1` live somewhere inside
+`off`'s range, or (b) move `off`'s birth across the basic-block boundary at the
+top of the loop body. Both are outside the body, which is precisely the region
+s3 could not reach. The instrumented cc1 carries a `BB2_SUGG_DEBUG` env hook in
+`find_free_reg` that prints the `used` and `first_used` hard-reg sets per call —
+use it to confirm a candidate form in one build rather than inferring from the
+score.
+
+- [s3] Chassis re-measured at dispatch: the s2 candidate applied to src/text1a_post.c scores exactly 17 at 135/135 insns, frame 88 - identical to the ledger's recorded floor, so all s1/s2 spelling conclusions remain valid on this chassis.
+
+- [s3] New floor is 13 at 135/135 insns, carried by ONE structural change on top of the s2 form: `tbl += 2;` moved from the middle of the inner-loop body to immediately after `DrawSync(0)`.
+
+- [s3] After that move the inner-loop SCHEDULE is byte-for-byte target's: the normalized side-by-side reports zero ordering divergence, and all thirteen remaining differences are register renames at identical instruction positions.
+
+- [s3] The thirteen residual insns are: `lui/addiu` of D_800A9A24 into $t0 instead of $a1 and the consequent `addu a1,a1,t0` instead of target's `addu a1,v0,a1`; `li t0,16 / sh t0,28(sp) / li t0,1 / sh t0,30(sp)` instead of the same four with $v0; the y-coordinate temp in $v0 instead of $v1 (`lhu`, `addu`, `sh`); `sll a1,s1,5` instead of `sll v0,s1,5` in the loop-bottom delay slot; and `li v1,1 / bne v0,v1` instead of `li t0,1 / bne v0,t0` after both loops.
+
+- [s3] Named to the source line: `off` is pseudo 129, block-local, and .lreg says `;; Register 129 in 5.` ($a1). It is given that hard reg by combine_regs' qty_phys_sugg path (local-alloc.c:1884-1896) because it dies in an insn whose DEST is the hard argument register $a1. combine_regs returns 0 there, so the operand loop does not break and the suggestion is recorded regardless of operand position - which is why commuting the address add is measured exactly inert.
+
+- [s3] Because combine_regs is skipped entirely for a pseudo with reg_qty < 0 (local-alloc.c:1826) - i.e. one that is NOT block-local - a form in which `off` is born outside the loop body's basic block would be handed to global.c and allocated from REG_ALLOC_ORDER, whose first GR entry is $v0: exactly target's assignment.
+
+- [s3] find_free_reg also excludes any hard reg present in regs_live_at[ins] for ins in [born_index, dead_index) (local-alloc.c:2170), so making $a1 live somewhere inside `off`'s range is the second independent way to deny the suggestion.
+
+- [s3] loop.c's hoist of regnos 136/137/139 out of the 37-insn inner loop and then out of the 59-insn outer loop is UNCHANGED from s2 and is not itself the problem: it is count-neutral (135/135) because reload rematerializes all three via REG_EQUIV. The gate is `threshold * savings * lifetime >= insn_count` (loop.c:1631) with threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) (loop.c:532), which is ~61 against an insn_count of 37 - unreachable from C without changing the loop's instruction count. The frontier item is the REGISTER, not the hoist.
+
+- [s3] loop.c's substitute-and-delete escape (loop.c:735-767) cannot fire for any of the three: it requires validate_replace_rtx to succeed at the single use, and neither `(plus reg (symbol_ref))` as an addsi3 operand nor `(set (mem:HI) (const_int))` as a MIPS halfword store is a valid insn.
+
+- [s3] Declaration order is COMPLETELY DEAD for this function: fifteen permutations across two chassis, every one byte-identical to its base. Do not spend a session on it.
+
+- [s3] Inner-body expression shape is closed: 33 measured spellings across s2 and s3 with exactly one winner, and that winner was a statement MOVE rather than a respelling.
+
+- [s3] Reusable tooling banked in tmp/grind/func_80041BF4/s3/: sbs.py (normalized side-by-side built on engine.score.normalized_insns - a raw objdump diff is unusable here, drowned in pseudo-op and format noise) and sweep.py + setbase.py, which measure every v_*.c variant in the scratch dir in one invocation, so a 14-form round costs one turn.
