@@ -254,3 +254,147 @@ function is `func_8001B748` to pairdiff, not `DispPracticeMenuTex_A`. Run
 - [s2] Negative results banked so this session's search space is never re-walked: declaration position of `t` inert at all 12 slots; `D_800A3310 = 0;` statement position inert at slots 0-4 and regressive at 5-8; split-init of `new_var` regressive on all three bases; three distinct per-delta intermediates give 30 (only the shared one wins); hoisting `inv_s1 * 0x2EE0` into a local is catastrophic (33 / 36 / 58); tail addend order and arm multiply operand order both inert; distinct `cc` local and inline duplicated-read RMW for the tail load both inert; inverted condition 15 and ternary 14; every alternative holder for the arm value (t/dd/dx/dy/dz/v/new_var/fresh tg) scores 17-22 versus 14 for reusing `target`.
 
 - [s2] TOOLING GOTCHA worth a session to anyone who hits it: tools/pairdiff.py diffs tmp/sandbox/<func>/<stem>.o against build/src/<stem>.o and silently reads a STALE sandbox object unless `sandbox --disable all` is re-run AFTER installing the edit. A bare `make` does not refresh it, and `make` always prints 'OK: bb2 matches!' for this function because the asmfix replace_with_asmfile rule substitutes target asm. Also: pairdiff wants `func_8001B748`, not `DispPracticeMenuTex_A`.
+
+## s3 addendum (structural, 2026-08-19) — FLOOR 14 -> 2
+
+**Headline: two sanctioned structural moves closed BOTH open register/scheduler residuals.
+The remaining gap is a single 2-insn hunk: the `sh zero,0(gp)` placement.**
+
+### Chassis at dispatch
+src/code6cac.c held the s1 form (floor 32), NOT the s2 candidate — the driver had not
+committed s2's edit. s2's `candidate.c` was re-installed and re-measured: **floor 14**,
+230 built vs 231 target insns, `rules_dropped: 1`. Ledger floor confirmed, every s2 verdict
+spendable.
+
+### THE MECHANISM, read out of the compiler source and confirmed with the instrumented cc1
+Residual (2) — the arm synth-mult chain living in `$v0` where target wants `$v1` — was
+attributed EXACTLY, and the attribution kills the s2 "reg_n_refs / chain-extender" framing:
+
+1. `tools/gcc-2.7.2/local-alloc.c:combine_regs` refuses to tie the chain temp to the
+   destination pseudo because of this guard (verbatim):
+   `/* Can't combine if SREG is not a register we can allocate.  */ || (sreg >= FIRST_PSEUDO_REGISTER && reg_qty[sreg] == -1)`
+   `reg_qty[sreg] == -1` means "not local to this block". The arm-destination variable is
+   assigned in the arm and read after the join, so it is ALWAYS multi-block and the tie can
+   NEVER fire for any spelling that keeps a shared destination variable.
+2. With the tie impossible, the chain is its own block-local quantity. `find_free_reg`
+   (local-alloc.c:2135) scans hard regs in `reg_alloc_order`; **MIPS defines no
+   `REG_ALLOC_ORDER`**, so the scan is plain 0,1,2,... and `$v0` (=2) wins whenever it is
+   free and there is no suggestion.
+3. Instrumented cc1 (`BB2_SUGG_DEBUG=1 tools/gcc-2.7.2/cc1`, log at
+   `tmp/grind/func_8001B748/s3/sugg.log`) prints, for the true arm (block 14):
+   `SUGGDBG-QTY func=func_8001B748 blk=14 qty=0 reg1=234 birth=2 death=10 refs=8 ... ncopysugg=0 nsugg=0 copysugg= sugg=`
+   `SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=10 used=0,1,26,...,67 first_used=<same>`
+   `used` contains NEITHER 2 nor 3 — **both `$v0` and `$v1` were free and there were zero
+   suggestions**, so `$v0` was taken purely by scan order. The s2 write-count gradient
+   (1 write=14, 2=12, 3=12, 5 writes=4) is therefore NOT a `reg_n_refs` priority effect at
+   all: each extra write moves one more chain step OUT of the block-local temp quantity and
+   INTO the global destination pseudo, which global-alloc puts in `$v1`.
+
+**Consequence for policy:** the F1 chain-extender form was never the mechanism this residual
+needed; it was a crude way of emptying the local quantity. The real fix is structural and is
+described next. The banked `reg-n-refs-chain-extender-arms-F1-unexhausted.c` stays rejected
+and is now also SUPERSEDED — the honest form beats it (2 vs 4).
+
+### Winning structural chain this session (each step measured with `sandbox --disable all`)
+
+| step | change | floor |
+|---|---|---|
+| s2 candidate re-installed | — | 14 |
+| **G** | duplicate the tail addend into BOTH arms: `if (use_high) t = (frac_s1*0x7D0) + (inv_s1*0x2EE0); else t = (frac_s1*0x1F4) + (inv_s1*0x2EE0);` and delete the shared `t = target + (inv_s1*0x2EE0);` | **7** |
+| **L_t** | + the FIRST `use_high` if/else also writes the shared `t` instead of `target` (the arm-value hunk had simply moved one level up: ours `addiu v0,v0,128`, target `addiu v1,v0,128`) | **4** |
+| **N** | + delete the now-unused `s32 target;` declaration (score-neutral, removes dead-local debt) | 4 |
+| **T4** | + duplicate the `>> 12` into both arms too: `t = ((frac_s1*0x7D0) + (inv_s1*0x2EE0)) >> 12;` — this puts the `sra` ahead of the `lw a0,24(s0)` exactly as target has it, and buys the missing maspsx load-delay `nop`: **231 built insns, first time we match target's insn COUNT** | **2** |
+
+`candidate.c` is the T4 form (floor **2**), in place in `src/code6cac.c` at end of session.
+Why G works: `jump2` cross-jumping (post-reload) merges the identical duplicated tails back
+into ONE copy, so the duplication costs nothing in the output while giving the arms their own
+in-block destination for the chain.
+
+### Residual at floor 2 — ONE hunk, 2 insns
+`tools/pairdiff.py code6cac func_8001B748`:
+
+    @@ ours[56:56] -> target[56:57]  (insert)     +  56  sh zero,0(gp)
+    @@ ours[64:65] -> target[65:65]  (delete)     -  64  sh zero,0(gp)
+
+`D_800A3310 = 0;` in the early-exit arm: target issues it at index 56 (immediately after
+`mult t0,v0`), we issue it at 64 (after the `(frac_s1*0x9C4)+(inv_s1*0x2710)` synth-mult
+chain). Everything else in the function is byte-identical, insn count matches (231/231).
+
+### Measured negatives banked this session (do NOT re-run)
+| lever | result |
+|---|---|
+| defer the consumer of the `func_8001A4F0` result past the arms, to keep hard `$v0` live across them (A/B/C) | 23 / 26 / 102 — and pairdiff CONFIRMS the arm chain stayed in `$v0`: the pseudo copy happens at the call, so hard `$v0` never lives across the arm block. The "make `$v0` busy" route is DEAD. |
+| `t = target; t = t + (inv_s1*0x2EE0);` split accumulation | 14 (inert) |
+| swap the `dst+0x14` / `dst+0x12` store order | 16 |
+| ternary form of the second arm | 14 (inert) |
+| `target = frac_s1*0x1F4; if (use_high) target = target*4;` (single chain + scale) | 21 @ 225 insns |
+| merge the second arm's multiply into the FIRST `use_high` if/else (longer live range) | 123 @ 224 insns — catastrophic |
+| duplicate the `- dst[0x10]` subtraction into the first if/else's arms | 13 @ 232 insns |
+| holder sweep for the FIRST if/else value on the G base (`t`/`dx` = 4; `dd`/`dy`/`dz`/`v`/`new_var` = 7; `cur` = 41) | only `t` and `dx` win; `t` chosen (already the shared intermediate) |
+| **85-variant single-statement-move sweep of the whole early-exit arm** (every statement to every legal position, `new_var` def-before-use enforced) on the T4 base | **minimum is 2, reached by 19 distinct orders; nothing below.** Statement order CANNOT move the `sh zero,0(gp)`. This supersedes and generalises s2's 9-slot gp-store sweep. |
+| named intermediate for the `dst+0x18` early-exit store (`t = ...; *(dst+0x18) = t >> 12;`) | 9 |
+| named intermediates for the first two early-exit stores | 6 |
+| swap the addends of the `dst+0x18` early-exit expression | 12 |
+| swap the multiply operand order there (`0x9C4 * frac_s1`) | 2 (inert) |
+| delete `new_var` and spell the `dst+8` early-exit store like its siblings | 20 @ 232 insns — **`new_var` is load-bearing, not debt** |
+
+### Constructs in the floor-2 candidate (all FROZEN-list sanctioned families)
+- **duplicated statement into branch arms** — the `(inv_s1 * 0x2EE0)` addend and the `>> 12`
+  appear in both arms; `jump2` cross-jumping merges them, so the output carries one copy.
+- **variable reuse for codegen control** — one shared `t` carries all three delta
+  intermediates, the first `use_high` value, and the tail sum.
+- **named-intermediate declaration order** — `t`, `dd`.
+There is no dead code, no dead store, no self-assign, no volatile, no `__asm__`, no register
+pin, and the `s32 target;` declaration was DELETED once it became unused. Every construct is
+something a human writing this interpolation routine would plausibly write.
+
+### Tooling notes
+- `tools/pairdiff.py` must be run through WSL (`bash tools/wsl.sh 'python3 tools/pairdiff.py ...'`);
+  the Windows Python cannot find `objdump`. And it still reads a STALE sandbox object unless
+  `sandbox --disable all` is re-run after installing the edit (s2's gotcha, re-confirmed).
+- Variant harness for this function: `tmp/grind/func_8001B748/s3/install.py <body.c>` splices a
+  body file into `src/code6cac.c` at the function's line span; `tmp/grind/func_8001B748/s3/run.ps1
+  -Files <list>` installs + sandboxes each and prints `score`/`build_insns`. 100+ variants were
+  measured this session at roughly 4 s each.
+- Instrumented-cc1 recipe: `tmp/grind/func_8001B748/s3/sugg.sh` (cpp -> `BB2_SUGG_DEBUG=1
+  tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -mel -mcpu=3000 -mips1 ...`). Grep the log for
+  `func=func_8001B748` and the `SUGGDBG-FFR` line that FOLLOWS the block's `SUGGDBG-QTY` line.
+  Do NOT `grep -A3` the whole log — the FFR lines are enormous.
+
+- [s3] Honest floor THIS session moved 14 -> 2 (`sandbox func_8001B748 --disable all`, 231 built vs 231 target insns, rules_dropped 1). The floor-2 form is IN PLACE in src/code6cac.c and saved to memory/grind/func_8001B748/candidate.c.
+
+- [s3] MECHANISM for the $v0/$v1 arm-chain residual, read out of tools/gcc-2.7.2/local-alloc.c and confirmed with the instrumented cc1: combine_regs cannot tie the synth-mult chain temp to the arm's destination pseudo because that pseudo is multi-block (`reg_qty[sreg] == -1` guard), so the chain is its own block-local quantity; MIPS defines no REG_ALLOC_ORDER, so find_free_reg takes $v0 by plain scan order. BB2_SUGG_DEBUG shows blk=14 qty=0 with ncopysugg=0 nsugg=0 and `used` containing neither 2 nor 3 — both registers free, zero suggestions.
+
+- [s3] That attribution RETRACTS s2's characterisation of the write-count gradient as a reg_n_refs / F1 chain-extender effect. Extra writes did not raise an allocno priority; they moved chain steps out of the block-local temp quantity into the global destination pseudo. The honest structural fix (duplicate the addend into both arms) beats the 5-write F1 form outright: floor 2 vs floor 4.
+
+- [s3] Duplicating the tail addend AND the `>> 12` into both use_high arms is free in the output because jump2 cross-jumping (post-reload) merges the identical tails back into one copy. This is the sanctioned duplicated-statement-into-arms family and it closed BOTH the arm-register residual (14->7) and the tail lw/sra + missing-nop residual (4->2, and it is what finally made build_insns 231 == target 231).
+
+- [s3] The first use_high if/else had the SAME divergence one level up (ours `addiu v0,v0,128`, target `addiu v1,v0,128`); routing its value through the shared `t` instead of a dedicated `target` closed it (7->4) and made `s32 target;` dead, so the declaration was deleted.
+
+- [s3] The "make hard $v0 live across the arm block" route is DEAD: deferring the consumer of the func_8001A4F0 return value past the arms scores 23/26/102 and pairdiff confirms the chain stayed in $v0 — the hard-reg copy happens at the call, so hard $v0 never spans the arm block.
+
+- [s3] The remaining 2-insn hunk is `sh zero,0(gp)` (`D_800A3310 = 0;`) at ours index 64 vs target 56 in the early-exit arm. An 85-variant sweep moving EVERY statement of that arm to EVERY legal position bottoms out at 2 (19 distinct orders tie), so source statement order cannot move it. Expression-shape variants for the same block (named intermediates, addend swap, operand swap, dropping new_var) score 9 / 6 / 12 / 2 / 20 — none better.
+
+- [s3] `new_var` in the early-exit arm is LOAD-BEARING, not catalog debt: deleting it and spelling the `dst+8` store like its siblings costs 18 points (2 -> 20, 232 insns).
+
+- [s3] Chassis at dispatch: src/code6cac.c held the s1 form (floor 32), not the s2 candidate; re-installing memory/grind/func_8001B748/candidate.c re-measured the ledger floor of 14 exactly (230 built vs 231 target insns, rules_dropped 1).
+
+- [s3] Honest floor THIS session: 2 (sandbox func_8001B748 --disable all), with 231 built insns == 231 target insns for the first time in this function's history. The floor-2 form is in place in src/code6cac.c and saved to memory/grind/func_8001B748/candidate.c.
+
+- [s3] Winning chain, each step measured: G duplicate the tail addend into both use_high arms (14 -> 7); L_t route the first use_high if/else through the shared t (7 -> 4); N delete the now-unused 's32 target;' declaration (4, score-neutral); T4 duplicate the >>12 into both arms (4 -> 2, and 230 -> 231 insns).
+
+- [s3] MECHANISM for the $v0/$v1 arm-chain residual, read out of tools/gcc-2.7.2/local-alloc.c and confirmed with the instrumented cc1: combine_regs cannot tie the chain temp to a multi-block destination pseudo (reg_qty[sreg] == -1 guard), so the chain is its own block-local quantity, and with MIPS defining no REG_ALLOC_ORDER find_free_reg takes $v0 by plain scan order. BB2_SUGG_DEBUG confirms ncopysugg=0, nsugg=0 and both $v0 and $v1 free in 'used'.
+
+- [s3] s2's characterisation of the write-count gradient as a reg_n_refs / F1 chain-extender effect is RETRACTED. The honest structural form beats the banked 5-write F1 form outright (floor 2 vs floor 4), so that rejected form is now superseded as well as unsanctioned.
+
+- [s3] The duplication is free in the output because jump2 cross-jumping (post-reload) merges the identical duplicated tails back into a single copy - the arms gain their own in-block destination without paying for a second chain.
+
+- [s3] Remaining residual is ONE hunk of 2 insns: sh zero,0(gp) (D_800A3310 = 0;) issued at our index 64 vs target 56 in the early-exit arm, i.e. target places it immediately after 'mult t0,v0' and ahead of the (frac_s1*0x9C4)+(inv_s1*0x2710) synth-mult chain. Everything else in the function is byte-identical.
+
+- [s3] Dead axes banked so they are never re-walked: deferring the call-result consumer to free $v0 (23/26/102, chain confirmed still in $v0); t = target then t += ... split accumulation (14, inert); dst+0x14 / dst+0x12 store swap (16); ternary second arm (14); single chain plus scale-in-arm (21 @ 225); merging the second arm into the first if/else (123 @ 224); duplicating the subtraction into the first if/else arms (13 @ 232); the exhaustive 85-variant statement-move sweep (min 2, 19 ties).
+
+- [s3] new_var in the early-exit arm is LOAD-BEARING, not catalog debt: deleting it and spelling the dst+8 store like its siblings costs 18 points (2 -> 20, 232 insns).
+
+- [s3] Constructs in the floor-2 candidate, all FROZEN-list sanctioned families: duplicated statement into branch arms; variable reuse for codegen control (one shared t); named-intermediate declaration order (t, dd). No dead code, no dead store, no self-assign, no volatile, no __asm__, no register pin; the dead 's32 target;' declaration was removed.
+
+- [s3] Tooling: tools/pairdiff.py must be run under WSL (bash tools/wsl.sh) because the Windows Python cannot find objdump, and it still reads a stale sandbox object unless sandbox --disable all is re-run after installing the edit.

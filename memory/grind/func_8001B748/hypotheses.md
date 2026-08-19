@@ -214,3 +214,75 @@ instrumented cc1's BB2_*_DEBUG hooks (tools/gcc-2.7.2/cc1 — see
 - probe: Load first / load mid / load last / single-shift form / `>>=` shorthand / `target` as accumulator / distinct local `cc` for the load / inline duplicated read with RMW store, measured on both the 4-floor and the 14-floor base.
 - result: INERT in every spelling - the load lands one slot before target's position regardless. This is why we build 230 insns against target's 231 (we never get the load-delay nop).
 - verdict: KILLED
+
+## [s3] The arm synth-mult chain lands in $v0 because local-alloc's find_free_reg takes the first free hard reg in scan order, not because of any allocno priority / reg_n_refs effect.
+- mechanism: `tools/gcc-2.7.2/local-alloc.c:combine_regs` cannot tie the chain temp to the arm's destination pseudo — the guard `(sreg >= FIRST_PSEUDO_REGISTER && reg_qty[sreg] == -1)` rejects any destination that is not local to the block, and an arm-assigned / join-read variable is always multi-block. The chain therefore forms its own block-local quantity, and `find_free_reg` (local-alloc.c:2135) scans `reg_alloc_order`, which for MIPS is undefined and therefore plain 0,1,2,... so `$v0` wins whenever free.
+- probe: Read the two functions in local-alloc.c, then ran the instrumented cc1 (`BB2_SUGG_DEBUG=1 tools/gcc-2.7.2/cc1`, script tmp/grind/func_8001B748/s3/sugg.sh) and read the block-14 lines.
+- result: `SUGGDBG-QTY ... blk=14 qty=0 reg1=234 refs=8 ncopysugg=0 nsugg=0 copysugg= sugg=` and `SUGGDBG-FFR qty=0 ... used=0,1,26,...,67` — hard regs 2 and 3 BOTH absent from `used` (both free), zero suggestions. $v0 was taken purely by scan order.
+- verdict: CONFIRMED. This RETRACTS s2's reading of the write-count gradient as a reg_n_refs/F1 chain-extender effect: extra writes simply move chain steps out of the block-local quantity into the global destination pseudo.
+
+## [s3] Making hard $v0 live across the arm block (so find_free_reg is forced onto $v1) is reachable by deferring the consumer of the func_8001A4F0 return value past the arms.
+- mechanism: `find_free_reg` ORs `regs_live_at[ins]` over [born,dead] into `used`; a hard $v0 live range spanning the arm block would exclude reg 2 from the scan.
+- probe: Three variants — defer the `dst+0x12` store past the arms; defer both the `dst+0x14` and `dst+0x12` stores; defer the whole call. Sandbox each, then pairdiff the best.
+- result: 23 / 26 / 102 (base 14). pairdiff on the 23 variant shows the arm chain STILL in $v0 (`sll v0,s1,0x5`) — the RTL copies the return value out of hard $v0 at the call insn, so the hard reg's live range never spans the arm block no matter where the pseudo is consumed.
+- verdict: KILLED
+
+## [s3] Duplicating the tail addend into both use_high arms (the sanctioned duplicated-statement-into-arms family) gives the chain an in-block destination and closes the arm-register residual.
+- mechanism: With `t = (frac_s1*K) + (inv_s1*0x2EE0);` written inside each arm, the whole expression is computed in the arm block; jump2 cross-jumping (post-reload) then merges the two identical tails back into a single copy, so the duplication is free in the output.
+- probe: Variant G on the floor-14 base, sandbox --disable all, then pairdiff.
+- result: 14 -> 7. The entire `sll/subu/sll/addu/sll` arm hunk disappears; the residual moves one level up to the FIRST use_high if/else (ours `addiu v0,v0,128`, target `addiu v1,v0,128`).
+- verdict: CONFIRMED
+
+## [s3] The same fix applies to the first use_high if/else by routing its value through the shared intermediate `t` instead of a dedicated `target` variable.
+- mechanism: Same allocation question one level up; the holder variable's identity decides which pseudo the value lives in and therefore which hard reg global-alloc gives it.
+- probe: Eight-way holder sweep on the G base (t, dd, dx, dy, dz, v, new_var, cur), plus a variant duplicating the `- dst[0x10]` subtraction into the arms.
+- result: `t` = 4, `dx` = 4, `dd`/`dy`/`dz`/`v`/`new_var` = 7, `cur` = 41, duplicated-subtraction = 13 @ 232 insns. Chose `t`. `s32 target;` became unused and was deleted (score-neutral).
+- verdict: CONFIRMED
+
+## [s3] Duplicating the `>> 12` into both arms as well fixes the tail lw/sra order and the missing maspsx load-delay nop.
+- mechanism: With the shift inside the arms, the `sra` is emitted ahead of `lw a0,24(s0)` (target's order); maspsx then has to insert the load-delay nop that target carries, which is exactly the insn we were short.
+- probe: Variant T4 on the floor-4 base; also T5 (shift AND load duplicated) and T1/T2 (fold the shift into the subtraction / load first).
+- result: T4 = 2 at 231 built insns (first time build_insns == target_insns), T5 = 2 at 231, T1 = 5, T2 = 4. This REOPENS and closes s2's "tail lw hoist is not source-order controllable" KILL — it was not controllable by ORDER, but it is controllable by which BLOCK the shift lives in.
+- verdict: CONFIRMED
+
+## [s3] Source statement order in the early-exit arm can move the `sh zero,0(gp)` store (ours idx 64, target idx 56).
+- mechanism: GCC 2.7.2 sched.c list-scheduler placement of a dependence-free store; source order was the last remaining tie-break hypothesis.
+- probe: Exhaustive 85-variant sweep — every statement of the early-exit arm moved to every legal position (def-before-use enforced for `new_var`) — on the floor-2 T4 base, each measured with sandbox --disable all.
+- result: minimum 2, reached by 19 distinct orders; no order reaches 1 or 0. Also swept expression shapes in the same block: named intermediate for the `dst+0x18` store = 9, named intermediates for the first two stores = 6, addend swap = 12, multiply-operand swap = 2 (inert), deleting `new_var` = 20 @ 232.
+- verdict: KILLED — decisively, and this generalises s2's narrower 9-slot sweep.
+
+## [s3] The arm synth-mult chain lands in $v0 because local-alloc's find_free_reg takes the first free hard reg in scan order, not because of any allocno-priority / reg_n_refs effect.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:combine_regs cannot tie the chain temp to the arm's destination pseudo - the guard '(sreg >= FIRST_PSEUDO_REGISTER && reg_qty[sreg] == -1)' rejects any destination not local to the block, and a variable assigned in an arm and read after the join is always multi-block. The chain therefore forms its own block-local quantity, and find_free_reg (local-alloc.c:2135) scans reg_alloc_order, which MIPS does not define, so the scan is plain 0,1,2,... and $v0 (reg 2) wins whenever free.
+- probe: Read combine_regs and find_free_reg in local-alloc.c, then ran the instrumented cc1 (BB2_SUGG_DEBUG=1 tools/gcc-2.7.2/cc1 via tmp/grind/func_8001B748/s3/sugg.sh) and read the block-14 SUGGDBG lines.
+- result: SUGGDBG-QTY blk=14 qty=0 reg1=234 refs=8 ncopysugg=0 nsugg=0 copysugg= sugg= ; SUGGDBG-FFR qty=0 born=2 dead=10 used=0,1,26,...,67 - hard regs 2 AND 3 both absent from 'used' (both free) with zero suggestions, so $v0 was taken purely by scan order. This retracts s2's reading of the write-count gradient (1w=14, 2w=12, 3w=12, 5w=4) as a reg_n_refs effect: extra writes merely move chain steps out of the block-local quantity into the global destination pseudo.
+- verdict: CONFIRMED
+
+## [s3] Making hard $v0 live across the arm block (forcing find_free_reg onto $v1) is reachable by deferring the consumer of the func_8001A4F0 return value past the arms.
+- mechanism: find_free_reg ORs regs_live_at[ins] over [born,dead] into 'used'; a hard-$v0 live range spanning the arm block would exclude reg 2 from the scan.
+- probe: Three variants on the floor-14 base: defer the dst+0x12 store past the arms; defer both the dst+0x14 and dst+0x12 stores; defer the whole call. Sandboxed each, then pairdiffed the best.
+- result: 23 / 26 / 102. pairdiff on the 23 variant shows the arm chain STILL in $v0 (sll v0,s1,0x5) - the RTL copies the return value out of hard $v0 at the call insn, so the hard reg's live range never spans the arm block regardless of where the pseudo is consumed.
+- verdict: KILLED
+
+## [s3] Duplicating the tail addend into both use_high arms gives the synth-mult chain an in-block destination and closes the arm-register residual.
+- mechanism: With 't = (frac_s1*K) + (inv_s1*0x2EE0);' written inside each arm the whole expression is computed in the arm block; jump2 cross-jumping (post-reload) then merges the two identical tails back into a single copy, so the duplication costs nothing in the output.
+- probe: Variant G on the floor-14 base: sandbox --disable all, then pairdiff.
+- result: 14 -> 7. The entire sll/subu/sll/addu/sll arm hunk disappears; the residual moves one level up to the FIRST use_high if/else (ours addiu v0,v0,128 vs target addiu v1,v0,128).
+- verdict: CONFIRMED
+
+## [s3] The same fix applies to the first use_high if/else by routing its value through the shared intermediate t instead of a dedicated target variable.
+- mechanism: Same allocation question one level up: the holder variable's identity decides which pseudo carries the value and therefore which hard reg global-alloc assigns it.
+- probe: Eight-way holder sweep on the G base (t, dd, dx, dy, dz, v, new_var, cur) plus a variant duplicating the '- dst[0x10]' subtraction into the arms.
+- result: t = 4, dx = 4, dd/dy/dz/v/new_var = 7, cur = 41, duplicated-subtraction = 13 @ 232 insns. Chose t; 's32 target;' became unused and was deleted (score-neutral).
+- verdict: CONFIRMED
+
+## [s3] Duplicating the >>12 into both arms as well fixes the tail lw/sra order and the missing maspsx load-delay nop.
+- mechanism: With the shift inside the arms the sra is emitted ahead of lw a0,24(s0) (target's order); maspsx then must insert the load-delay nop that target carries, which is exactly the instruction we were short.
+- probe: Variant T4 on the floor-4 base, plus T5 (shift AND load duplicated), T1 (fold the shift into the subtraction) and T2 (load first).
+- result: T4 = 2 at 231 built insns (first time build_insns == target_insns), T5 = 2 at 231, T1 = 5, T2 = 4. This reopens and closes s2's 'tail lw hoist is not source-order controllable' KILL: it is not controllable by ORDER, but it is controllable by which BLOCK the shift lives in.
+- verdict: CONFIRMED
+
+## [s3] Source statement order in the early-exit arm can move the sh zero,0(gp) store (ours idx 64, target idx 56).
+- mechanism: GCC 2.7.2 sched.c list-scheduler placement of a dependence-free store; source order sets the tie-breaking LUID.
+- probe: Exhaustive 85-variant sweep - every statement of the early-exit arm moved to every legal position, def-before-use enforced for new_var - on the floor-2 T4 base, each measured with sandbox --disable all; plus expression-shape variants in the same block.
+- result: Minimum 2, reached by 19 distinct orders; nothing reaches 1 or 0. Expression shapes: named intermediate for the dst+0x18 store = 9, named intermediates for the first two stores = 6, addend swap = 12, multiply-operand swap = 2 (inert), deleting new_var = 20 @ 232 insns (new_var is load-bearing). This generalises and supersedes s2's narrower 9-slot sweep.
+- verdict: KILLED

@@ -7,7 +7,6 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
     s32 dz;
     s32 cur;
-    s32 target;
     s32 use_high;
     s32 v;
     s32 t;
@@ -55,21 +54,19 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     }
     *((s32 *) (dst + 8)) = cur + (dz >> 4);
     if (use_high) {
-        target = ((frac_s1 * 0x180) >> 12) + 0x80;
+        t = ((frac_s1 * 0x180) >> 12) + 0x80;
     } else {
-        target = 0x80 - ((frac_s1 << 8) >> 12);
+        t = 0x80 - ((frac_s1 << 8) >> 12);
     }
-    *((s16 *) (dst + 0x10)) = (*((u16 *) (dst + 0x10))) + func_8001A4F0(target - (*((s16 *) (dst + 0x10))), 0x10);
+    *((s16 *) (dst + 0x10)) = (*((u16 *) (dst + 0x10))) + func_8001A4F0(t - (*((s16 *) (dst + 0x10))), 0x10);
     v = func_8001A4F0(val - (*((s16 *) (dst + 0x12))), 0x10);
     *((s16 *) (dst + 0x14)) = 0;
     *((s16 *) (dst + 0x12)) = (*((u16 *) (dst + 0x12))) + v;
     if (use_high) {
-        target = frac_s1 * 0x7D0;
+        t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
-        target = frac_s1 * 0x1F4;
+        t = ((frac_s1 * 0x1F4) + (inv_s1 * 0x2EE0)) >> 12;
     }
-    t = target + (inv_s1 * 0x2EE0);
-    t = t >> 12;
     cur = *((s32 *) (dst + 0x18));
     dd = t - cur;
     if (dd < 0) {
@@ -83,3 +80,5 @@ void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
     *((s16 *) (dst + 0x3A)) = 0;
     *((s16 *) (dst + 0x3C)) = 0x64;
 }
+
+

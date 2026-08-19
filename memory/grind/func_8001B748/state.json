@@ -1,7 +1,7 @@
 {
  "func": "func_8001B748",
  "file": "code6cac",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 14,
    "modality": "structural",
    "headline": "Structural respelling dropped the honest floor 32 -> 14 and RETRACTS the s1 'RA exchange validated unreachable' verdict: every $v0/$v1 hunk inverse.py had foreclosed closed under ordinary shared-named"
+  },
+  {
+   "session": 3,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural session: honest floor 14 -> 2 and build_insns now 231 == target 231; duplicating the tail addend and the >>12 into both use_high arms (sanctioned duplicated-statement-into-arms, merged back"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Residual (2) - the arm synth-mult chain in $v0 instead of $v1, worth ~10 of the remaining 14 - is reachable by an HONEST C shape that raises the destination pseudo's allocno priority without chain-extension.",
-   "mechanism": "local-alloc gives the synth-mult chain temp its own quantity unless the destination pseudo's priority is high enough for combine/regmove to tie them; reg_n_refs (write count) is the measured control knob, but read count and live-range length feed the same priority.",
-   "next_probe": "Look for a formulation where the arm value is genuinely READ more than once or lives longer - e.g. the interpolation expressed so the arm result feeds two consumers, or the `use_high` branch restructured so the value crosses the join with a second use. Do NOT re-derive the 5-write decomposition (banked, policy-blocked until the ladder is spent). Dump-check with tools/grinder/dump.ps1 and read .lreg/.greg for the chain temp's quantity."
+   "hypothesis": "The last 2 insns - sh zero,0(gp) at ours idx 64 vs target idx 56 - are a pure sched.c list-scheduler priority question with no remaining source-order handle, and are reachable only by changing the store's INSN_PRIORITY or the ready-list rank relative to the (frac_s1*0x9C4)+(inv_s1*0x2710) synth-mult chain.",
+   "mechanism": "A dependence-free store has no forward LOG_LINKS, so priority() gives it the floor value and rank_for_schedule sinks it below every chain insn in the ready list; target's build ranked it above them. Statement order is now exhaustively eliminated (85 moves, 19 ties at 2), and expression-shape changes in the same block only regress.",
+   "next_probe": "FORENSICS modality: run tools/sched_solver (models sched.c exactly per sched-solver-campaign-2026-08-05) on the early-exit basic block of the floor-2 form and ask what input property moves the store 8 slots earlier - specifically whether the gap is priority, the rank_for_schedule tie-break, or a memory anti-dependence edge against the dst stores. The block is small (indices ~53-67), so an exact model run should be decisive."
   },
   {
-   "hypothesis": "Residual (1), the 2-insn `sh zero,0(gp)` placement (ours 64, target 56), is a pure scheduler-priority question with no source-level handle.",
-   "mechanism": "GCC 2.7.2 sched.c list-scheduler priority for a dependence-free store in the early-exit block; measured NOT controllable by statement position (9 slots swept) or by split-init interleaving.",
-   "next_probe": "tools/sched_solver (models sched.c exactly, 6978/6978 per the sched-solver-campaign-2026-08-05 memory) on the early-exit basic block: ask what input change moves the store 8 slots earlier. Forensics modality."
+   "hypothesis": "If the scheduler answer needs a different RTL shape rather than a different order, the lever is which BLOCK the D_800A3310 store lives in - the same block-membership lever that closed the two residuals this session.",
+   "mechanism": "Duplicating a statement into branch arms (or otherwise changing which basic block an expression is emitted in) changed both the local-alloc quantity structure and the scheduler's ready list this session, where pure statement order was inert. The early-exit arm is currently one straight-line block, so the store has nowhere else to go without a new control-flow shape.",
+   "next_probe": "Look for an honest control-flow spelling of the early-exit arm that puts the D_800A3310 store in a different basic block from the 0x9C4/0x2710 chain - e.g. the sanctioned do { ... } while (0) wrap, or an early return restructure - and measure each with sandbox. Do NOT re-run any statement-order permutation; that space is exhausted."
   },
   {
-   "hypothesis": "Residual (3), the tail `lw`/`sra` swap plus the missing load-delay nop, is the same scheduler question as residual (1) and is likely coupled to residual (2) since both live in the post-join block.",
-   "mechanism": "The load's INSN_PRIORITY exceeds the sra's due to MIPS load latency; target's build ranked them the other way, eats a maspsx nop, and therefore has 231 insns to our 230.",
-   "next_probe": "Same sched_solver run as residual (1), applied to the post-join block; and re-diff the tail immediately after any residual-(2) win, since an allocation change there may flip the ready-list ranking for free."
+   "hypothesis": "With the floor at 2 and insn count matching, the function is now close enough that a directed permuter campaign seeded on the floor-2 candidate could find the last spelling.",
+   "mechanism": "decomp-permuter's randomised source transforms explore block-membership and expression-shape moves that a hand sweep does not enumerate; the search space is now tiny (one 2-insn hunk in one block).",
+   "next_probe": "PERMUTER modality: import the floor-2 candidate with tools/permuter_campaign.py (mind the nonmatchings scope-break note in memory), run fresh-seed windows per the permuter-fresh-seed-discipline rule, and harvest in-turn. Any find must still pass the 6-test cheat checklist before it is banked."
   }
  ],
  "judge_constraints": [],
