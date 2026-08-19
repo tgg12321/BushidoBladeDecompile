@@ -7,7 +7,7 @@ glabel StoreImage
     /* 6BE78 8007B678 0180043C */  lui        $a0, %hi(D_80015F68)
     /* 6BE7C 8007B67C 685F8424 */  addiu      $a0, $a0, %lo(D_80015F68)
     /* 6BE80 8007B680 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6BE84 8007B684 EAEC010C */  jal        func_8007B3A8
+    /* 6BE84 8007B684 EAEC010C */  jal        checkRECT
     /* 6BE88 8007B688 21280002 */   addu      $a1, $s0, $zero
     /* 6BE8C 8007B68C 21280002 */  addu       $a1, $s0, $zero
     /* 6BE90 8007B690 0A80023C */  lui        $v0, %hi(D_8009BE6C)

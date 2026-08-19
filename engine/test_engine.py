@@ -1626,10 +1626,10 @@ def test_include_asm_whole_body() -> None:
     # 3b. Body-span shapes that used to be misparsed as "no C body", which left
     #     a real function's cheat count UNKNOWN and its cheats unpoliced.
     brace_prefixed = ('void prev(void) {\n    int a;\n'
-                      '}s32 func_8007DE08(s32 arg0) {\n'
+                      '}s32 _version(s32 arg0) {\n'
                       '    __asm__ volatile("addu $8,$3,$0");\n    return arg0;\n}\n')
     eq("body-span: definition sharing a line with the previous `}`",
-       inlineasm.func_cheat_asm_count(brace_prefixed, "func_8007DE08"), 1)
+       inlineasm.func_cheat_asm_count(brace_prefixed, "_version"), 1)
     knr = ('void func_8004A1FC(arg0) s16 *arg0; {\n'
            '    __asm__ volatile("addu $8,$3,$0");\n}\n')
     eq("body-span: K&R parameter declarations between `)` and `{`",
@@ -1643,8 +1643,8 @@ def test_include_asm_whole_body() -> None:
     # same two functions policed by one detector and invisible to the other.
     # One implementation, so the two can never diverge again.
     check("body-span: volatile_cheats delegates to the single implementation",
-          volatile_cheats._func_body_span(brace_prefixed, "func_8007DE08")
-          == inlineasm._func_body_span(brace_prefixed, "func_8007DE08")
+          volatile_cheats._func_body_span(brace_prefixed, "_version")
+          == inlineasm._func_body_span(brace_prefixed, "_version")
           is not None)
     check("body-span: volatile_cheats sees the K&R shape too",
           volatile_cheats._func_body_span(knr, "func_8004A1FC") is not None)

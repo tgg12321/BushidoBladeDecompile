@@ -1,7 +1,7 @@
 glabel SsStart
     /* 7469C 80083E9C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 746A0 80083EA0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 746A4 80083EA4 0D0F020C */  jal        func_80083C34
+    /* 746A4 80083EA4 0D0F020C */  jal        _SsStart
     /* 746A8 80083EA8 01000424 */   addiu     $a0, $zero, 0x1
     /* 746AC 80083EAC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 746B0 80083EB0 1800BD27 */  addiu      $sp, $sp, 0x18
@@ -9,7 +9,7 @@ glabel SsStart
     /* 746B8 80083EB8 00000000 */   nop
     /* 746BC 80083EBC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 746C0 80083EC0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 746C4 80083EC4 0D0F020C */  jal        func_80083C34
+    /* 746C4 80083EC4 0D0F020C */  jal        _SsStart
     /* 746C8 80083EC8 21200000 */   addu      $a0, $zero, $zero
     /* 746CC 80083ECC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 746D0 80083ED0 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -748,7 +748,7 @@ glabel _comb_control
     /* 7D788 8008CF88 00000000 */   nop
     /* 7D78C 8008CF8C 0800048E */  lw         $a0, 0x8($s0)
     /* 7D790 8008CF90 0C00058E */  lw         $a1, 0xC($s0)
-    /* 7D794 8008CF94 A92F020C */  jal        func_8008BEA4
+    /* 7D794 8008CF94 A92F020C */  jal        SioAnsyncRead
     /* 7D798 8008CF98 00000000 */   nop
     /* 7D79C 8008CF9C 17004010 */  beqz       $v0, .L8008CFFC
     /* 7D7A0 8008CFA0 10000224 */   addiu     $v0, $zero, 0x10
@@ -757,7 +757,7 @@ glabel _comb_control
   .L8008CFAC:
     /* 7D7AC 8008CFAC 0800048E */  lw         $a0, 0x8($s0)
     /* 7D7B0 8008CFB0 0C00058E */  lw         $a1, 0xC($s0)
-    /* 7D7B4 8008CFB4 C12F020C */  jal        func_8008BF04
+    /* 7D7B4 8008CFB4 C12F020C */  jal        SioSyncroRead
     /* 7D7B8 8008CFB8 00000000 */   nop
     /* 7D7BC 8008CFBC 06340208 */  j          .L8008D018
     /* 7D7C0 8008CFC0 21184000 */   addu      $v1, $v0, $zero
@@ -772,7 +772,7 @@ glabel _comb_control
     /* 7D7E0 8008CFE0 00000000 */   nop
     /* 7D7E4 8008CFE4 0800048E */  lw         $a0, 0x8($s0)
     /* 7D7E8 8008CFE8 0C00058E */  lw         $a1, 0xC($s0)
-    /* 7D7EC 8008CFEC 6130020C */  jal        func_8008C184
+    /* 7D7EC 8008CFEC 6130020C */  jal        SioAnsyncWrite
     /* 7D7F0 8008CFF0 00000000 */   nop
     /* 7D7F4 8008CFF4 0D004014 */  bnez       $v0, .L8008D02C
     /* 7D7F8 8008CFF8 10000224 */   addiu     $v0, $zero, 0x10
@@ -782,7 +782,7 @@ glabel _comb_control
   .L8008D004:
     /* 7D804 8008D004 0800048E */  lw         $a0, 0x8($s0)
     /* 7D808 8008D008 0C00058E */  lw         $a1, 0xC($s0)
-    /* 7D80C 8008D00C 7A30020C */  jal        func_8008C1E8
+    /* 7D80C 8008D00C 7A30020C */  jal        SioSyncroWrite
     /* 7D810 8008D010 00000000 */   nop
     /* 7D814 8008D014 21184000 */  addu       $v1, $v0, $zero
   .L8008D018:

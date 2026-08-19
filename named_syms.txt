@@ -514,9 +514,6 @@ SetSemiTrans                       = 0x8007A968;
 SetDrawMove                           = 0x8007ABB8;
 SetGraphDebug                       = 0x8007B114;
 SetDrawMode                             = 0x8007C248;
-gpu_SendData_8007D308                            = 0x8007D308;
-gpu_StartDmaList_8007D358                        = 0x8007D358;
-gpu_GetInfo_8007D3A4                             = 0x8007D3A4;
 /* GTE COP2 wrappers (8) */
 SetRotMatrix                        = 0x8007EEEC;  /* ctc2 to COP2 control regs 0-4 (3x3 rotation matrix) */
 SetColorMatrix                      = 0x8007EF1C;  /* ctc2 to color matrix regs */
@@ -526,7 +523,6 @@ ReadSZfifo3                         = 0x8007EF6C;
 SetFarColor                         = 0x8007EFBC;
 SetGeomOffset                     = 0x8007EFDC;
 /* Math (4) */
-bb2_memset_8007DEE4                              = 0x8007DEE4;
 rsin                                = 0x8007DF20;
 sin_1                          = 0x8007DF5C;
 rcos                                = 0x8007DFEC;
@@ -1144,7 +1140,7 @@ g_practice_lesson_char_id                               = 0x8010277C;  /* charac
 marionation_GetFrameOffset                              = 0x80044FA0;  /* fetches byte offset for an animation frame; infinite-loops on "Marionation over flow" (Marionation = BB2's engine) */
 eff_FrameUpdate                                         = 0x80061064;  /* per-frame effect-system update: processes 28 effect slots, reports "eff prim over" if primitive budget (~450) exceeded */
 /* RENAME 0x80088740: retired name 'spu_FlushVoiceChannels' — preserved note: clears SPU control regs, polls voice-status (mask 0x7FF) with timeout, prints "SPU:T/O" on failure */
-gpu_DrawTimeoutCheck                                    = 0x8007DC9C;  /* checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
+/* RENAME 0x8007DC9C: retired name 'gpu_DrawTimeoutCheck' — preserved note: checks if GPU draw exceeded vsync window (>0xF0000 cycles); prints g_str_gpu_timeout + "func=(%08x)(%08x,%08x)" + recovers state */
 
 /* === Wrapper/curried function names (2026-05-17) -- 6 highs === */
 /* Functions whose body is a clear single-purpose wrapper around a */
@@ -1157,7 +1153,7 @@ snd_ClearAllSeBuffer                                    = 0x8002906C;  /* walks 
 /* RESET 0x8008A904: retired name 'coli_HitPauseKatana_3' — preserved note: coli_HitPauseKatana_2(a0, a1, 0xCC, 0xCD) -- sibling wrapper with motion-ID constants */
 
 /* === More GPU/display wrapper functions (2026-05-17) -- 2 highs === */
-gpu_DebugCheckRect                                      = 0x8007B3A8;  /* PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
+/* RENAME 0x8007B3A8: retired name 'gpu_DebugCheckRect' — preserved note: PSX-style rect validator: at debug-level 1 validates against D_8009BE78/7A (screen w/h); logs "%s:bad RECT" + "(%d,%d)-(%d,%d)" via g_gpu_debug_func */
 /* RENAME 0x8007BAB4: retired name 'gpu_DrawOTagEnv' — preserved note: PSX libgpu DrawOTagEnv: copies _drawenv_q struct, submits via g_gpu_dev_table cmd 0x40; logs "DrawOTagEnv(%08x,%08x)" */
 
 /* === Practice-lesson state struct continued (2026-05-17) -- 5 highs === */
@@ -2353,12 +2349,12 @@ func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data;
 func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
 func_80037F08                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
 func_8005B98C                         = 0x8005B98C;  /* MISNAMED: not motion-pre-calc; calls saFidLoad(a0, 8) then saFidLoad(a0, 4) */
-func_8007DC68                         = 0x8007DC68;  /* MISNAMED: not motion-pre-calc; sets g_gpu_vcount = sys_VSync(-1) + 0xF0 */
+set_alarm                         = 0x8007DC68;  /* MISNAMED: not motion-pre-calc; sets g_gpu_vcount = sys_VSync(-1) + 0xF0 */
 func_8003A3F0                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
 func_8003A574                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
-func_80080014                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
-func_8008003C                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
-func_80080064                         = 0x80080064;  /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
+def_cbsync                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
+def_cbready                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
+def_cbread                         = 0x80080064;  /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
 func_80077B20                                = 0x80077B20;  /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
 func_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
 func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80044E74(a0+0x4D, a1) */
@@ -3029,7 +3025,6 @@ cpu_apply_move_input_scaling_80054884 = 0x80054884;
 cpu_attenuate_character_damage_800550E8 = 0x800550E8;
 cpu_render_stage_geometry_8005C8A8 = 0x8005C8A8;
 cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
-pad_interrupt_dequeue_80078E20 = 0x80078E20;
 
 /* === Cluster naming pass 2 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
@@ -3058,7 +3053,6 @@ replay_camera_decode_player_bits_80077940 = 0x80077940;
 replay_camera_init_framebuffer_80077A28 = 0x80077A28;
 replay_camera_apply_transform_and_flip_80077A80 = 0x80077A80;
 camera_ptr_array_apply_offset_80077D10 = 0x80077D10;
-motion_exception_handler_init_80082D34 = 0x80082D34;
 satan_voice_init_80084A7C = 0x80084A7C;
 
 /* === Cluster naming pass 3 aliases (2026-05-18) === */
@@ -3393,18 +3387,18 @@ mode_helper_80077B30                               = 0x80077B30;  /* first-pass 
 gpu_helper_80077D94                                = 0x80077D94;  /* first-pass subsystem tag (gpu); ->gpu_LoadImage;->gpu_DrawSync */
 mode_helper_8007855C                               = 0x8007855C;  /* first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
 disp_helper_80078628                               = 0x80078628;  /* first-pass subsystem tag (disp); <-disp_init_video_overlay_80078824 */
-gpu_helper_8007C4B8                                = 0x8007C4B8;  /* first-pass subsystem tag (gpu); <-gpu_copy_draw_packet_8007B9B0;<-gpu_DrawOTagEnv */
-inittexpage_helper_8007C748                        = 0x8007C748;  /* first-pass subsystem tag (inittexpage); <-initTexPage_8007C248 */
-initdrawarea_helper_8007C7A0                       = 0x8007C7A0;  /* first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
-initdrawarea_helper_8007C86C                       = 0x8007C86C;  /* first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
-initdrawoffset_helper_8007C938                     = 0x8007C938;  /* first-pass subsystem tag (initdrawoffset); <-initDrawOffset_8007C1D8 */
-cpu_helper_8007CA00                                = 0x8007CA00;  /* first-pass subsystem tag (cpu); <-cpu_copy_display_buffer_and_sync_8007BC08 */
-gpu_helper_8007CAC8                                = 0x8007CAC8;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
-gpu_helper_8007CE0C                                = 0x8007CE0C;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
-gpu_helper_8007D048                                = 0x8007D048;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
-gpu_helper_8007D3F8                                = 0x8007D3F8;  /* first-pass subsystem tag (gpu); ->gpu_vcount_init_8007DC68;->gpu_DrawTimeoutCheck */
-gpu_helper_8007D9C4                                = 0x8007D9C4;  /* first-pass subsystem tag (gpu); <-gpu_SetMode_8007AE7C */
-gpu_helper_8007DB20                                = 0x8007DB20;  /* first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+/* RENAME 0x8007C4B8: retired name 'gpu_helper_8007C4B8' — preserved note: first-pass subsystem tag (gpu); <-gpu_copy_draw_packet_8007B9B0;<-gpu_DrawOTagEnv */
+/* RENAME 0x8007C748: retired name 'inittexpage_helper_8007C748' — preserved note: first-pass subsystem tag (inittexpage); <-initTexPage_8007C248 */
+/* RENAME 0x8007C7A0: retired name 'initdrawarea_helper_8007C7A0' — preserved note: first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
+/* RENAME 0x8007C86C: retired name 'initdrawarea_helper_8007C86C' — preserved note: first-pass subsystem tag (initdrawarea); <-initDrawArea_8007C154 */
+/* RENAME 0x8007C938: retired name 'initdrawoffset_helper_8007C938' — preserved note: first-pass subsystem tag (initdrawoffset); <-initDrawOffset_8007C1D8 */
+/* RENAME 0x8007CA00: retired name 'cpu_helper_8007CA00' — preserved note: first-pass subsystem tag (cpu); <-cpu_copy_display_buffer_and_sync_8007BC08 */
+/* RENAME 0x8007CAC8: retired name 'gpu_helper_8007CAC8' — preserved note: first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+/* RENAME 0x8007CE0C: retired name 'gpu_helper_8007CE0C' — preserved note: first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+/* RENAME 0x8007D048: retired name 'gpu_helper_8007D048' — preserved note: first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
+/* RENAME 0x8007D3F8: retired name 'gpu_helper_8007D3F8' — preserved note: first-pass subsystem tag (gpu); ->gpu_vcount_init_8007DC68;->gpu_DrawTimeoutCheck */
+/* RENAME 0x8007D9C4: retired name 'gpu_helper_8007D9C4' — preserved note: first-pass subsystem tag (gpu); <-gpu_SetMode_8007AE7C */
+/* RENAME 0x8007DB20: retired name 'gpu_helper_8007DB20' — preserved note: first-pass subsystem tag (gpu); ->gpu_DrawTimeoutCheck;->gpu_vcount_init_8007DC68 */
 /* RENAME 0x8007E43C: retired name 'math_helper_8007E43C' — preserved note: first-pass subsystem tag (math); <-math_Distance3D_80017748;<-math_Distance3D_16_800177C8 */
 /* RENAME 0x8007FBBC: retired name 'md_game_helper_8007FBBC' — preserved note: first-pass subsystem tag (md_game); <-md_game_rob_anim_offset_8002F770 */
 /* RENAME 0x800826CC: retired name 'special_camera_helper_800826CC' — preserved note: first-pass subsystem tag (special_camera); <-special_camera_load_cdrom_wait_800372F4 */
@@ -3495,17 +3489,17 @@ mode_helper_800788B0                               = 0x800788B0;  /* first-pass 
 /* RENAME 0x80078C00: retired name 'bios_helper_80078C00' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_OutdatedPadInitAndStart'] */
 /* RENAME 0x80078C9C: retired name 'bios_helper_80078C9C' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_InitPad'] */
 /* RENAME 0x80078D38: retired name 'bios_helper_80078D38' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_StartPad'] */
-bios_helper_80078DA0                               = 0x80078DA0;  /* first-pass tag(clean-anchor); bios: <-[] ->['EnterCriticalSection'] */
-get_field0x4_80078EC0                              = 0x80078EC0;  /* structural role; n=16 */
+/* RENAME 0x80078DA0: retired name 'bios_helper_80078DA0' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['EnterCriticalSection'] */
+/* RENAME 0x80078EC0: retired name 'get_field0x4_80078EC0' — preserved note: structural role; n=16 */
 /* RENAME 0x80078F60: retired name 'get_global_80078F60' — preserved note: structural role; n=5 */
 /* RENAME 0x80078FF0: retired name 'copy_80078FF0' — preserved note: structural role; n=14 */
 stub_800790A4                                      = 0x800790A4;  /* structural role; n=1 */
 /* RENAME 0x800791D8: retired name 'dispsleepmenutex_helper_800791D8' — preserved note: first-pass tag(clean-anchor); dispsleepmenutex: <-['DispSleepMenuTex'] ->[] */
 /* RENAME 0x80079A30: retired name 'dispsleepmenutex_helper_80079A30' — preserved note: first-pass tag(clean-anchor); dispsleepmenutex: <-['_CardCheckPulled2', 'DispSleepMenuTex'] ->['bb2_memchr'] */
 /* RENAME 0x8007A318: retired name 'bios_helper_8007A318' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios__new_card'] */
-get_field0x0_8007CAB0                              = 0x8007CAB0;  /* structural role; n=6 */
-copy_8007D2CC                                      = 0x8007D2CC;  /* structural role; n=10 */
-get_global_8007D2F4                                = 0x8007D2F4;  /* structural role; n=5 */
+/* RENAME 0x8007CAB0: retired name 'get_field0x0_8007CAB0' — preserved note: structural role; n=6 */
+/* RENAME 0x8007D2CC: retired name 'copy_8007D2CC' — preserved note: structural role; n=10 */
+/* RENAME 0x8007D2F4: retired name 'get_global_8007D2F4' — preserved note: structural role; n=5 */
 /* RENAME 0x8007E4DC: retired name 'tanren_helper_8007E4DC' — preserved note: first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
 /* RENAME 0x8007E74C: retired name 'replay_camera_helper_8007E74C' — preserved note: first-pass tag(clean-anchor); replay_camera: <-['replay_camera_rob_back_win_near'] ->[] */
 /* RENAME 0x8007ED6C: retired name 'tanren_helper_8007ED6C' — preserved note: first-pass tag(clean-anchor); tanren: <-['tanren_get_bamboo_anim_info'] ->[] */
@@ -3527,8 +3521,8 @@ get_global_8007D2F4                                = 0x8007D2F4;  /* structural 
 /* RESET 0x80080828: retired name 'tsltm2loadimage_helper_80080828' — preserved note: first-pass tag(clean-anchor); tsltm2loadimage: <-['cpu_side_move_dir_4', 'tslTm2LoadImage'] ->['tslTm2LoadImage_2'] */
 CD_init                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body is CD-ROM init (called by cdrom_CheckReady) -- see cdrom_Initialize */
 set_global_800863CC                                = 0x800863CC;  /* structural role; n=4 */
-copy_80089214                                      = 0x80089214;  /* structural role; n=11 */
-copy_80089240                                      = 0x80089240;  /* structural role; n=11 */
+/* RENAME 0x80089214: retired name 'copy_80089214' — preserved note: structural role; n=11 */
+/* RENAME 0x80089240: retired name 'copy_80089240' — preserved note: structural role; n=11 */
 /* RENAME 0x800892F8: retired name 'bios_helper_800892F8' — preserved note: first-pass tag(clean-anchor); bios: <-[] ->['bios_DisableEvent'] */
 /* RENAME 0x8008AE7C: retired name 'set_global_8008AE7C' — preserved note: structural role; n=13 */
 gte_mvmva_80019310                                 = 0x80019310;  /* GTE: mvmva matrix*vector(+translation) */
@@ -3694,7 +3688,7 @@ gpu_SetTexAttr_800485EC = 0x800485EC;  /* parses src prim header (type 0x10), fi
 /* RENAME 0x800790C0: retired name 'bios_ClearTable_800790C0' — preserved note: EnterCS + BIOS B-call, zeros 9 entries at BIOS table +0x62C */
 /* RENAME 0x8007A458: retired name 'bios_PatchTable_8007A458' — preserved note: EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
 /* RENAME 0x8007FF7C: retired name 'cdrom_InitCallbacks_8007FF7C' — preserved note: waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
-gpu_PutDrawEnv_8007CBB0 = 0x8007CBB0;  /* clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
+/* RENAME 0x8007CBB0: retired name 'gpu_PutDrawEnv_8007CBB0' — preserved note: clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
 calc_dirvec_from_angles_8004A1FC = 0x8004A1FC;  /* for 3 entries: build vec3s @+0x18 from angle pair via math_Cos/Sin scaled by mag [base+0x5C] */
 /* RENAME 0x8007E11C: retired name 'math_Sqrt_8007E11C' — preserved note: fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
 calc_dir_from_points_8001A67C = 0x8001A67C;  /* dx/dz between pts A/B, distance via sqrt (LUT D_8008D118 + GTE LZC), normalize, per-comp angle via func_8001A62C -> [out+0]/[out+4] */

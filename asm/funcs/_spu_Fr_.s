@@ -18,7 +18,7 @@ glabel _spu_Fr_
     /* 794A0 80088CA0 AA0162A4 */  sh         $v0, 0x1AA($v1)
     /* 794A4 80088CA4 9B24020C */  jal        _spu_Fw1ts
     /* 794A8 80088CA8 00841000 */   sll       $s0, $s0, 16
-    /* 794AC 80088CAC 9024020C */  jal        spu_ReadReg
+    /* 794AC 80088CAC 9024020C */  jal        _spu_FsetDelayR
     /* 794B0 80088CB0 00000000 */   nop
     /* 794B4 80088CB4 0001043C */  lui        $a0, (0x1000200 >> 16)
     /* 794B8 80088CB8 00028434 */  ori        $a0, $a0, (0x1000200 & 0xFFFF)

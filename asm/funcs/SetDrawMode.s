@@ -9,10 +9,10 @@ glabel SetDrawMode
     /* 6CA64 8007C264 3000B18F */  lw         $s1, 0x30($sp)
     /* 6CA68 8007C268 FFFFE630 */  andi       $a2, $a3, 0xFFFF
     /* 6CA6C 8007C26C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6CA70 8007C270 D2F1010C */  jal        func_8007C748
+    /* 6CA70 8007C270 D2F1010C */  jal        get_mode
     /* 6CA74 8007C274 030002A2 */   sb        $v0, 0x3($s0)
     /* 6CA78 8007C278 040002AE */  sw         $v0, 0x4($s0)
-    /* 6CA7C 8007C27C 5FF2010C */  jal        func_8007C97C
+    /* 6CA7C 8007C27C 5FF2010C */  jal        get_tw
     /* 6CA80 8007C280 21202002 */   addu      $a0, $s1, $zero
     /* 6CA84 8007C284 080002AE */  sw         $v0, 0x8($s0)
     /* 6CA88 8007C288 1800BF8F */  lw         $ra, 0x18($sp)

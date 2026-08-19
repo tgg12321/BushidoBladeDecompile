@@ -24,7 +24,7 @@ glabel DrawOTagEnv
   .L8007BB0C:
     /* 6C30C 8007BB0C 1C003026 */  addiu      $s0, $s1, 0x1C
     /* 6C310 8007BB10 21200002 */  addu       $a0, $s0, $zero
-    /* 6C314 8007BB14 2EF1010C */  jal        func_8007C4B8
+    /* 6C314 8007BB14 2EF1010C */  jal        SetDrawEnv2
     /* 6C318 8007BB18 21282002 */   addu      $a1, $s1, $zero
     /* 6C31C 8007BB1C FF00043C */  lui        $a0, (0xFFFFFF >> 16)
     /* 6C320 8007BB20 FFFF8434 */  ori        $a0, $a0, (0xFFFFFF & 0xFFFF)

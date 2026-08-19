@@ -997,17 +997,17 @@ func_80027640: insert "nop" @ 88
 # cpu_side_move_dir_3: target swaps r_arg1 (s4<->s3) and loop counter/flag (s1<->s0)
 # r_arg1 in s3 instead of s4; chunk_size in s4 instead of s3
 # Range [0,134] = body+prologue saves; epilogue restores at [136-140] keep their slots
-func_8008BF04: $19 <-> $20 @ 0-134
+SioSyncroRead: $19 <-> $20 @ 0-134
 # Loop counter in s0 instead of s1; loop_flag pointer in s1 instead of s0
-func_8008BF04: $16 <-> $17 @ 68-121
+SioSyncroRead: $16 <-> $17 @ 68-121
 # After s3<->s4 swap, prologue saves have wrong offsets:
-func_8008BF04: subst "32" "28" @ 1
-func_8008BF04: subst "28" "32" @ 5
+SioSyncroRead: subst "32" "28" @ 1
+SioSyncroRead: subst "28" "32" @ 5
 # Fill beqz delay slot (idx 67 nop) with loop counter init (idx 68 = addu $16,$0,$zero after swap)
-func_8008BF04: fill_delay @ 66 <- 68
+SioSyncroRead: fill_delay @ 66 <- 68
 # cleanup_B uses $v1 for D_800A3044 pointer; GCC picks $a2 (carried over from main_work).
 # Range [39,44] covers cleanup_B's lw/lhu/sh uses; cleanup_A and loop_top still use $a2.
-func_8008BF04: $3 <-> $6 @ 39-44
+SioSyncroRead: $3 <-> $6 @ 39-44
 
 # func_8003B9D0: target schedules andi ,,0x0010 into beqz delay slot of &0x30 check.
 # GCC put nop in delay because asm constraint (=r/0 on eda) blocks scheduling past la.
@@ -2440,12 +2440,12 @@ func_8007526C: subst "\$8(?!\d)" "$2" @ 19
 func_8007526C: insert "addiu $2,$0,3" @ 13
 func_8007526C: insert "nop" @ 3
 func_8007526C: reorder 0,2,1,3 @ 0-3
-func_8007DC9C: subst "lw\s+\$5,D_8009BF68" "la	$2,D_8009BF68" @ 31
-func_8007DC9C: insert_after "lw	$5, 0($2)" @ 31
+get_alarm: subst "lw\s+\$5,D_8009BF68" "la	$2,D_8009BF68" @ 31
+get_alarm: insert_after "lw	$5, 0($2)" @ 31
 # Fix dead load register: $4 -> $2 at idx 20
-func_8007DC9C: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
+get_alarm: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
 # Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
-func_8007DC9C: reorder 21,20,19,18 @ 18-21
+get_alarm: reorder 21,20,19,18 @ 18-21
 func_80073060: $19 <-> $20 @ 27-89
 func_80073060: $23 <-> $fp @ 27-71
 func_80073060: $17 <-> $18 @ 72-89
@@ -2982,42 +2982,42 @@ func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,1
 func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
 func_8005D554: insert_label ".L_loopfix:" @ 62
 func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
-func_8007D3F8: reorder 41,38,39,40,37 @ 37-41
-func_8007D3F8: $2 <-> $3 @ 49-54
-func_8007D3F8: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60
-func_8007D3F8: insert_after "sw	$19,0($2)" @ 60
-func_8007D3F8: insert_after "addiu	$2,$2,%lo(D_8009BF68)" @ 60
-func_8007D3F8: reorder 52,51,50,53 @ 50-53
-func_8007D3F8: subst "lui\s+\$3,\(67108864" "lui	$4,(67108864" @ 52
-func_8007D3F8: subst "and\s+\$2,\$2,\$3" "and	$2,$2,$4" @ 53
-func_8007D3F8: insert_label ".LD3F8_loop:" @ 50
-func_8007D3F8: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LD3F8_loop" @ 54
-func_8007D3F8: subst "addu\s+\$7,\$0,\$zero" "addu	$6,$0,$zero" @ 71
-func_8007D3F8: insert_after "addiu	$8,$8,%lo(D_8010368C)" @ 71
-func_8007D3F8: insert_after "lui	$8,%hi(D_8010368C)" @ 71
-func_8007D3F8: subst "addu\s+\$5,\$16,\$zero" "addu	$7,$16,$zero" @ 72
-func_8007D3F8: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 73
-func_8007D3F8: subst "bgez\s+\$6,\s*\.L\d+" "bgez	$2,.LD3F8_pos" @ 74
-func_8007D3F8: insert_label ".LD3F8_pos:" @ 80
-func_8007D3F8: subst "sra\s+\$2,\$6,2" "nop" @ 75
-func_8007D3F8: subst "addu\s+\$6,\$6,3" "addu	$2,$2,3" @ 76
-func_8007D3F8: subst "sra\s+\$2,\$6,2" "sra	$2,$2,2" @ 77
-func_8007D3F8: subst "slt\s+\$2,\$7,\$2" "slt	$2,$6,$2" @ 78
-func_8007D3F8: subst "sll\s+\$8,\$7,2" "sll	$4,$6,2" @ 80
-func_8007D3F8: subst "lw\s+\$4,0\(\$5\)" "lw	$5,0($7)" @ 81
-func_8007D3F8: subst "addu\s+\$5,\$5,4" "addu	$7,$7,4" @ 82
-func_8007D3F8: subst "addu\s+\$7,\$7,1" "addu	$6,$6,1" @ 83
-func_8007D3F8: delete @ 85
-func_8007D3F8: reorder 88,87 @ 87-88
-func_8007D3F8: insert_after "addu	$4,$4,$2" @ 88
-func_8007D3F8: subst "sw\s+\$4,D_8010368C\(\$2\)" "sw	$5,0($4)" @ 90
-func_8007D3F8: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 92
-func_8007D3F8: subst "la\s+\$3,D_8009BF78" "lui	$2,%hi(D_8009BF78)" @ 93
-func_8007D3F8: subst "lw\s+\$2,0\(\$3\)" "lw	$2,%lo(D_8009BF78)($2)" @ 94
-func_8007D3F8: subst "lw\s+\$3,0\(\$3\)" "lw	$3,D_8009BF78" @ 95
-func_8007D3F8: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
-func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
-func_8007D3F8: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120
+_addque2: reorder 41,38,39,40,37 @ 37-41
+_addque2: $2 <-> $3 @ 49-54
+_addque2: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60
+_addque2: insert_after "sw	$19,0($2)" @ 60
+_addque2: insert_after "addiu	$2,$2,%lo(D_8009BF68)" @ 60
+_addque2: reorder 52,51,50,53 @ 50-53
+_addque2: subst "lui\s+\$3,\(67108864" "lui	$4,(67108864" @ 52
+_addque2: subst "and\s+\$2,\$2,\$3" "and	$2,$2,$4" @ 53
+_addque2: insert_label ".LD3F8_loop:" @ 50
+_addque2: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LD3F8_loop" @ 54
+_addque2: subst "addu\s+\$7,\$0,\$zero" "addu	$6,$0,$zero" @ 71
+_addque2: insert_after "addiu	$8,$8,%lo(D_8010368C)" @ 71
+_addque2: insert_after "lui	$8,%hi(D_8010368C)" @ 71
+_addque2: subst "addu\s+\$5,\$16,\$zero" "addu	$7,$16,$zero" @ 72
+_addque2: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 73
+_addque2: subst "bgez\s+\$6,\s*\.L\d+" "bgez	$2,.LD3F8_pos" @ 74
+_addque2: insert_label ".LD3F8_pos:" @ 80
+_addque2: subst "sra\s+\$2,\$6,2" "nop" @ 75
+_addque2: subst "addu\s+\$6,\$6,3" "addu	$2,$2,3" @ 76
+_addque2: subst "sra\s+\$2,\$6,2" "sra	$2,$2,2" @ 77
+_addque2: subst "slt\s+\$2,\$7,\$2" "slt	$2,$6,$2" @ 78
+_addque2: subst "sll\s+\$8,\$7,2" "sll	$4,$6,2" @ 80
+_addque2: subst "lw\s+\$4,0\(\$5\)" "lw	$5,0($7)" @ 81
+_addque2: subst "addu\s+\$5,\$5,4" "addu	$7,$7,4" @ 82
+_addque2: subst "addu\s+\$7,\$7,1" "addu	$6,$6,1" @ 83
+_addque2: delete @ 85
+_addque2: reorder 88,87 @ 87-88
+_addque2: insert_after "addu	$4,$4,$2" @ 88
+_addque2: subst "sw\s+\$4,D_8010368C\(\$2\)" "sw	$5,0($4)" @ 90
+_addque2: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 92
+_addque2: subst "la\s+\$3,D_8009BF78" "lui	$2,%hi(D_8009BF78)" @ 93
+_addque2: subst "lw\s+\$2,0\(\$3\)" "lw	$2,%lo(D_8009BF78)($2)" @ 94
+_addque2: subst "lw\s+\$3,0\(\$3\)" "lw	$3,D_8009BF78" @ 95
+_addque2: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
+_addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
+_addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120
 
 func_80070C70: $16 <-> $17 @ 1-187
 func_80070C70: $18 <-> $19 @ 1-187
@@ -3117,29 +3117,29 @@ func_8002EA24: subst "srl\s+\$4,\$2,\$4" "srl\t$4,$4,$2" @ 82
 func_8002EA24: subst "slt\s+\$5,\$5,\$2" "slt\t$2,$5,$2" @ 94
 func_8002EA24: subst "bne\s+\$5,\$0," "bne\t$2,$0," @ 95
 func_8002EA24: subst_multi "xori\s+\$2,\$2,0x0001" "bne\t$2,$0,{lbl#6}" "addu\t$2,$0,$zero" "addiu\t$2,$0,1" @ 99
-func_8007CE0C: splice 11..23 "lh\t$5,4($17)" "addu\t$21,$0,$zero" "bltz\t$5,{lbl#1}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE78)" "lh\t$2,%lo(D_8009BE78)($2)" "nop" "addu\t$4,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#2}" "nop" "j\t{lbl#2}" "addu\t$3,$4,$zero"
-func_8007CE0C: subst "addu\s+\$4,\$0,\$zero" "addu\t$3,$0,$zero" @ 24
-func_8007CE0C: splice 25..37 "lh\t$5,6($17)" "sh\t$3,4($17)" "bltz\t$5,{lbl#3}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE7A)" "lh\t$2,%lo(D_8009BE7A)($2)" "addu\t$4,$3,$zero" "addu\t$3,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#5}" "sll\t$2,$4,16" "j\t{lbl#4}" "addu\t$4,$3,$zero"
-func_8007CE0C: subst "sll\s+\$5,\$4,16" "sll\t$2,$4,16" @ 39
-func_8007CE0C: splice 40..52 "lh\t$3,4($17)" "sra\t$2,$2,16" "mult\t$3,$2" "sh\t$4,6($17)" "mflo\t$6" "addiu\t$3,$6,1" "srl\t$2,$3,31" "addu\t$3,$3,$2" "sra\t$4,$3,1" "bgtz\t$4,{lbl#6}" "sra\t$16,$3,5" "j\t{lbl#13}" "addiu\t$2,$zero,-1"
-func_8007CE0C: splice 53..56 "addu\t$3,$16,$zero" "sll\t$2,$3,4" "subu\t$16,$4,$2" "lui\t$2,%hi(D_8009BF48)" "lw\t$2,%lo(D_8009BF48)($2)" "addu\t$20,$3,$zero" "lw\t$2,0($2)"
-func_8007CE0C: subst "subu\s+\$sp,\$sp,64" "addiu\t$29,$29,-80" @ 0
-func_8007CE0C: subst "sw\s+\$17,36\(\$sp\)" "sw\t$17,52($29)" @ 1
-func_8007CE0C: subst "sw\s+\$18,40\(\$sp\)" "sw\t$18,56($29)" @ 3
-func_8007CE0C: subst "sw\s+\$31,56\(\$sp\)" "sw\t$31,72($29)" @ 5
-func_8007CE0C: subst "sw\s+\$21,52\(\$sp\)" "sw\t$21,68($29)" @ 6
-func_8007CE0C: subst "sw\s+\$20,48\(\$sp\)" "sw\t$20,64($29)" @ 7
-func_8007CE0C: subst "sw\s+\$19,44\(\$sp\)" "sw\t$19,60($29)" @ 8
-func_8007CE0C: subst "sw\s+\$16,32\(\$sp\)" "sw\t$16,48($29)" @ 10
-func_8007CE0C: subst "lw\s+\$31,56\(\$sp\)" "lw\t$31,72($29)" @ 119
-func_8007CE0C: subst "lw\s+\$21,52\(\$sp\)" "lw\t$21,68($29)" @ 120
-func_8007CE0C: subst "lw\s+\$20,48\(\$sp\)" "lw\t$20,64($29)" @ 121
-func_8007CE0C: subst "lw\s+\$19,44\(\$sp\)" "lw\t$19,60($29)" @ 122
-func_8007CE0C: subst "lw\s+\$18,40\(\$sp\)" "lw\t$18,56($29)" @ 123
-func_8007CE0C: subst "lw\s+\$17,36\(\$sp\)" "lw\t$17,52($29)" @ 124
-func_8007CE0C: subst "lw\s+\$16,32\(\$sp\)" "lw\t$16,48($29)" @ 125
-func_8007CE0C: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
-func_8007CE0C: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
+_dws: splice 11..23 "lh\t$5,4($17)" "addu\t$21,$0,$zero" "bltz\t$5,{lbl#1}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE78)" "lh\t$2,%lo(D_8009BE78)($2)" "nop" "addu\t$4,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#2}" "nop" "j\t{lbl#2}" "addu\t$3,$4,$zero"
+_dws: subst "addu\s+\$4,\$0,\$zero" "addu\t$3,$0,$zero" @ 24
+_dws: splice 25..37 "lh\t$5,6($17)" "sh\t$3,4($17)" "bltz\t$5,{lbl#3}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE7A)" "lh\t$2,%lo(D_8009BE7A)($2)" "addu\t$4,$3,$zero" "addu\t$3,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#5}" "sll\t$2,$4,16" "j\t{lbl#4}" "addu\t$4,$3,$zero"
+_dws: subst "sll\s+\$5,\$4,16" "sll\t$2,$4,16" @ 39
+_dws: splice 40..52 "lh\t$3,4($17)" "sra\t$2,$2,16" "mult\t$3,$2" "sh\t$4,6($17)" "mflo\t$6" "addiu\t$3,$6,1" "srl\t$2,$3,31" "addu\t$3,$3,$2" "sra\t$4,$3,1" "bgtz\t$4,{lbl#6}" "sra\t$16,$3,5" "j\t{lbl#13}" "addiu\t$2,$zero,-1"
+_dws: splice 53..56 "addu\t$3,$16,$zero" "sll\t$2,$3,4" "subu\t$16,$4,$2" "lui\t$2,%hi(D_8009BF48)" "lw\t$2,%lo(D_8009BF48)($2)" "addu\t$20,$3,$zero" "lw\t$2,0($2)"
+_dws: subst "subu\s+\$sp,\$sp,64" "addiu\t$29,$29,-80" @ 0
+_dws: subst "sw\s+\$17,36\(\$sp\)" "sw\t$17,52($29)" @ 1
+_dws: subst "sw\s+\$18,40\(\$sp\)" "sw\t$18,56($29)" @ 3
+_dws: subst "sw\s+\$31,56\(\$sp\)" "sw\t$31,72($29)" @ 5
+_dws: subst "sw\s+\$21,52\(\$sp\)" "sw\t$21,68($29)" @ 6
+_dws: subst "sw\s+\$20,48\(\$sp\)" "sw\t$20,64($29)" @ 7
+_dws: subst "sw\s+\$19,44\(\$sp\)" "sw\t$19,60($29)" @ 8
+_dws: subst "sw\s+\$16,32\(\$sp\)" "sw\t$16,48($29)" @ 10
+_dws: subst "lw\s+\$31,56\(\$sp\)" "lw\t$31,72($29)" @ 119
+_dws: subst "lw\s+\$21,52\(\$sp\)" "lw\t$21,68($29)" @ 120
+_dws: subst "lw\s+\$20,48\(\$sp\)" "lw\t$20,64($29)" @ 121
+_dws: subst "lw\s+\$19,44\(\$sp\)" "lw\t$19,60($29)" @ 122
+_dws: subst "lw\s+\$18,40\(\$sp\)" "lw\t$18,56($29)" @ 123
+_dws: subst "lw\s+\$17,36\(\$sp\)" "lw\t$17,52($29)" @ 124
+_dws: subst "lw\s+\$16,32\(\$sp\)" "lw\t$16,48($29)" @ 125
+_dws: subst "addu\s+\$sp,\$sp,64" "addiu\t$29,$29,80" @ 126
+_dws: subst "lui\s+\$4,\(-1610612736 >> 16\) & 0xFFFF" "nop" @ 63
 
 # exec_game phase 1
 _spu_gcSPU: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2

@@ -349,12 +349,12 @@ s32 CdPosToInt(u8 *a0) {
         return total - 150;
     }
 }
-INCLUDE_ASM("asm/funcs", func_80080828);
+INCLUDE_ASM("asm/funcs", getintr);
 extern s32 VSync(s32);
 extern void puts(void *);
 extern void printf(void *, void *, s32, s32, s32);
 extern s32 CheckCallback(void);
-extern s32 func_80080828(void);
+extern s32 getintr(void);
 extern u8 *D_800A147C;
 extern s32 D_800A11B4;
 extern s32 D_800A11B8;
@@ -433,7 +433,7 @@ s32 CD_sync(s32 a0, u8 *a1)
   {
     saved = (*D_800A147C) & 3;
     poll:
-    status = func_80080828();
+    status = getintr();
 
     if (status != 0)
     {
@@ -545,7 +545,7 @@ s32 CD_ready(s32 a0, u8 *a1)
   {
     saved = (*D_800A147C_2) & 3;
     poll:
-    status = func_80080828();
+    status = getintr();
 
     if (status != 0)
     {
@@ -901,7 +901,7 @@ extern s32 g_cd_callback_a;
 extern s32 g_cd_callback_b;
 extern void D_800F19A8;
 extern void D_800F19A0;
-extern s32 func_80080828(void);
+extern s32 getintr(void);
 
 __asm__(
     ".set noreorder
@@ -923,7 +923,7 @@ void cdrom_IrqHandler(void) {
     s32 s0;
     s2 = *g_cd_index_reg & 3;
     do {
-        s0 = func_80080828();
+        s0 = getintr();
         if (s0 == 0) break;
         if (s0 & 4) {
             if (g_cd_callback_b != 0) {
@@ -1067,7 +1067,7 @@ static void D_80082050(u8 intr, u8 *result) {
     }
     D_800A14E8 = VSync(-1);
     if (D_800A14E4 < 0) {
-        func_8008241C(1);
+        cd_read_retry(1);
     }
     if (VSync(-1) > D_800A14EC + 1200) {
         D_800A14E4 = -1;
@@ -1106,7 +1106,7 @@ void D_80082320(void) {
     }
 }
 
-s32 func_8008241C(s32 arg0) {
+s32 cd_read_retry(s32 arg0) {
     u8 sp10;
     s32 temp_s0;
     /* FAKE: second C handle for D_800A1500 / D_800A14DC. Target materializes
@@ -1227,7 +1227,7 @@ s32 CdRead(s32 sectors, s32 buf, s32 mode) {
     if (CdStatus() & 0xE0) {
         CdControlB(9, 0, 0);
     }
-    return func_8008241C(0) > 0;
+    return cd_read_retry(0) > 0;
 }
 
 /* PsyQ 4.0 LIBCD cdread.c: CdReadSync — verbatim-linked Sony object (census
@@ -1245,7 +1245,7 @@ s32 CdReadSync(s32 mode, s32 result) {
         if (VSync(-1) <= D_800A14D0.t1 + 1200) {
             if (D_800A14D0.cnt < 0 ||
                 VSync(-1) > D_800A14D0.t2 + 60) {
-                func_8008241C(1);
+                cd_read_retry(1);
                 var_s0 = D_800A14D0.sectors;
             } else {
                 var_s0 = D_800A14D0.cnt;

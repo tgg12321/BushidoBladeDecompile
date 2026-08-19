@@ -9,16 +9,16 @@ glabel CdInit
     /* 70794 8007FF94 01000324 */  addiu      $v1, $zero, 0x1
     /* 70798 8007FF98 11004314 */  bne        $v0, $v1, .L8007FFE0
     /* 7079C 8007FF9C FFFF1026 */   addiu     $s0, $s0, -0x1
-    /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(D_80080014)
-    /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(D_80080014)
+    /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(def_cbsync)
+    /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(def_cbsync)
     /* 707A8 8007FFA8 8A00020C */  jal        CdSyncCallback
     /* 707AC 8007FFAC 00000000 */   nop
-    /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(D_8008003C)
-    /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(D_8008003C)
+    /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(def_cbready)
+    /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(def_cbready)
     /* 707B8 8007FFB8 9000020C */  jal        CdReadyCallback
     /* 707BC 8007FFBC 00000000 */   nop
-    /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
-    /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)
+    /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(def_cbread)
+    /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(def_cbread)
     /* 707C8 8007FFC8 270A020C */  jal        CdReadCallback
     /* 707CC 8007FFCC 00000000 */   nop
     /* 707D0 8007FFD0 2D0A020C */  jal        CdReadMode

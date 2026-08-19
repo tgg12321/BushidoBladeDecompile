@@ -581,16 +581,16 @@ u32 ResetGraph(s32 a0) {
         /* fallthrough */
     case 5:
         s0 = (GpuConfig *)&g_gpu_type;
-        bb2_memset(s0, 0, 0x80);
+        memset(s0, 0, 0x80);
         ResetCallback();
         GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
-        s0->mode = (idx = func_8007D9C4(a0));
+        s0->mode = (idx = _reset(a0));
         idx = (u8)idx;
         s0->active = 1;
         s0->width = D_8009BEF4[idx];
         s0->height = D_8009BF08[idx];
-        bb2_memset((u8 *)s0 + 0x10, -1, 0x5C);
-        bb2_memset((u8 *)s0 + 0x6C, -1, 0x14);
+        memset((u8 *)s0 + 0x10, -1, 0x5C);
+        memset((u8 *)s0 + 0x6C, -1, 0x14);
         return s0->mode;
     default:
         if (g_gpu_debug_level >= 2) {

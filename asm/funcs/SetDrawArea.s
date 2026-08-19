@@ -9,7 +9,7 @@ glabel SetDrawArea
     /* 6C970 8007C170 030022A2 */  sb         $v0, 0x3($s1)
     /* 6C974 8007C174 00000486 */  lh         $a0, 0x0($s0)
     /* 6C978 8007C178 02000586 */  lh         $a1, 0x2($s0)
-    /* 6C97C 8007C17C E8F1010C */  jal        func_8007C7A0
+    /* 6C97C 8007C17C E8F1010C */  jal        get_cs
     /* 6C980 8007C180 00000000 */   nop
     /* 6C984 8007C184 040022AE */  sw         $v0, 0x4($s1)
     /* 6C988 8007C188 00000496 */  lhu        $a0, 0x0($s0)
@@ -23,7 +23,7 @@ glabel SetDrawArea
     /* 6C9A8 8007C1A8 2128A200 */  addu       $a1, $a1, $v0
     /* 6C9AC 8007C1AC FFFFA524 */  addiu      $a1, $a1, -0x1
     /* 6C9B0 8007C1B0 002C0500 */  sll        $a1, $a1, 16
-    /* 6C9B4 8007C1B4 1BF2010C */  jal        func_8007C86C
+    /* 6C9B4 8007C1B4 1BF2010C */  jal        get_ce
     /* 6C9B8 8007C1B8 032C0500 */   sra       $a1, $a1, 16
     /* 6C9BC 8007C1BC 080022AE */  sw         $v0, 0x8($s1)
     /* 6C9C0 8007C1C0 1800BF8F */  lw         $ra, 0x18($sp)

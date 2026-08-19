@@ -18,7 +18,7 @@ glabel PAD_init
     /* 69440 80078C40 00000000 */   nop
     /* 69444 80078C44 96E2010C */  jal        ChangeClearPAD
     /* 69448 80078C48 21200000 */   addu      $a0, $zero, $zero
-    /* 6944C 80078C4C 68E3010C */  jal        func_80078DA0
+    /* 6944C 80078C4C 68E3010C */  jal        SetPatchPad
     /* 69450 80078C50 00000000 */   nop
     /* 69454 80078C54 21200002 */  addu       $a0, $s0, $zero
     /* 69458 80078C58 21282002 */  addu       $a1, $s1, $zero

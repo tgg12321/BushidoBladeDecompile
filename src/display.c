@@ -74,7 +74,7 @@ void SetDispMask(s32 a0) {
         g_gpu_debug_func(&g_str_setdispmask, a0);
     }
     if (!a0) {
-        bb2_memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
+        memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
     }
     {
         u32 cmd = GP1_DISP_ENABLE;
@@ -94,7 +94,7 @@ void DrawSync(s32 a0) {
         ((void (*)(s32))v0[15])(a0);
     }
 }
-void func_8007B3A8(u8 *str, s16 *rect) {
+void checkRECT(u8 *str, s16 *rect) {
     s16 w, x, y, h;
     if (g_gpu_debug_level == 1) goto level_1;
     if (g_gpu_debug_level == 2) goto level_2;
@@ -123,12 +123,12 @@ end:
     ;
 }
 extern u8 g_str_clearimage;
-extern void func_8007B3A8(u8 *, s16 *);
+extern void checkRECT(u8 *, s16 *);
 
 void ClearImage(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     s32 *p;
     void (*fn)();
-    func_8007B3A8(&g_str_clearimage, arg0);
+    checkRECT(&g_str_clearimage, arg0);
     p = (s32 *)g_gpu_dev_table;
     fn = (void (*)())p[2];
     fn(p[3], arg0, 8, ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
@@ -137,7 +137,7 @@ void ClearImage2(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
     s32 *p;
     void (*fn)();
     u32 hi, lo;
-    func_8007B3A8(&g_str_clearimage, arg0);
+    checkRECT(&g_str_clearimage, arg0);
     hi = (u32)arg3 << 16;
     lo = ((u32)arg2 << 8) | 0x80000000;
     p = (s32 *)g_gpu_dev_table;
@@ -148,7 +148,7 @@ extern u32 g_str_loadimage;
 
 void LoadImage(s32 a0, s32 a1) {
     u32 *v0;
-    func_8007B3A8(&g_str_loadimage, a0);
+    checkRECT(&g_str_loadimage, a0);
     v0 = (u32 *)g_gpu_dev_table;
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[8], a0, 8, a1);
 }
@@ -156,7 +156,7 @@ extern u32 g_str_storeimage;
 
 void StoreImage(s32 a0, s32 a1) {
     u32 *v0;
-    func_8007B3A8(&g_str_storeimage, a0);
+    checkRECT(&g_str_storeimage, a0);
     v0 = (u32 *)g_gpu_dev_table;
     ((void (*)(u32, s32, s32, s32))v0[2])(v0[7], a0, 8, a1);
 }
@@ -166,7 +166,7 @@ extern u32 g_gpu_move_param[5];
 s32 MoveImage(s32 *arg0, s16 arg1, s16 arg2) {
     s32 packed;
 
-    func_8007B3A8(&D_80015F74, (s32)arg0);
+    checkRECT(&D_80015F74, (s32)arg0);
     if (((s16 *)arg0)[2] == 0 || ((s16 *)arg0)[3] == 0) {
         return -1;
     }
@@ -234,7 +234,7 @@ void DrawOTag(s32 a0) {
     }
 }
 extern u32 g_str_putdrawenv;
-extern s32 func_8007C4B8(s32 *, s32 *);
+extern s32 SetDrawEnv2(s32 *, s32 *);
 
 typedef struct { s32 a, b, c, d; } _drawenv_q;
 typedef struct { s32 a, b, c; } _drawenv_t;
@@ -251,7 +251,7 @@ s32 *PutDrawEnv(s32 *arg0) {
         g_gpu_debug_func(&g_str_putdrawenv, arg0);
     }
     p = arg0 + 7;
-    func_8007C4B8(p, arg0);
+    SetDrawEnv2(p, arg0);
     arg0[7] |= 0xFFFFFF;
     dev = (u32 *)g_gpu_dev_table;
     ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
@@ -279,7 +279,7 @@ void DrawOTagEnv(s32 arg0, s32 *arg1) {
         g_gpu_debug_func(&D_80015FDC, arg0, arg1);
     }
     p = arg1 + 7;
-    func_8007C4B8(p, arg1);
+    SetDrawEnv2(p, arg1);
     arg1[7] = (arg1[7] & 0xFF000000) | (arg0 & 0xFFFFFF);
     dev = (u32 *)g_gpu_dev_table;
     ((s32 (*)(u32, s32 *, s32, s32))dev[2])(dev[6], p, 0x40, 0);
@@ -309,17 +309,17 @@ u32 GetODE(void) {
 }
 void SetTexWindow(u8 *a0, s32 a1) {
     a0[3] = 2;
-    *(u32 *)(a0 + 4) = func_8007C97C(a1);
+    *(u32 *)(a0 + 4) = get_tw(a1);
     *(u32 *)(a0 + 8) = 0;
 }
 void SetDrawArea(u8 *a0, s16 *a1) {
     a0[3] = 2;
-    *(u32 *)(a0 + 4) = func_8007C7A0(a1[0], a1[1]);
-    *(u32 *)(a0 + 8) = func_8007C86C((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
+    *(u32 *)(a0 + 4) = get_cs(a1[0], a1[1]);
+    *(u32 *)(a0 + 8) = get_ce((s32)(s16)((u16)a1[0] + (u16)a1[2] - 1), (s32)(s16)((u16)a1[1] + (u16)a1[3] - 1));
 }
 void SetDrawOffset(u8 *a0, s16 *a1) {
     a0[3] = 2;
-    *(u32 *)(a0 + 4) = func_8007C938(a1[0], a1[1]);
+    *(u32 *)(a0 + 4) = get_ofs(a1[0], a1[1]);
     *(u32 *)(a0 + 8) = 0;
 }
 void SetPriority(u8 *a0, s32 a1, s32 a2) {
@@ -337,8 +337,8 @@ void SetPriority(u8 *a0, s32 a1, s32 a2) {
 }
 void SetDrawMode(u8 *a0, s32 a1, s32 a2, u16 a3, s32 a4) {
     a0[3] = 2;
-    *(u32 *)(a0 + 4) = func_8007C748(a1, a2, a3);
-    *(u32 *)(a0 + 8) = func_8007C97C(a4);
+    *(u32 *)(a0 + 4) = get_mode(a1, a2, a3);
+    *(u32 *)(a0 + 8) = get_tw(a4);
 }
 typedef struct {
     s16 x;
@@ -377,11 +377,11 @@ void SetDrawEnv(s32 *out, Rect *r)
   s16 var_v0_2;
   s16 new_var;
   s32 var_a3;
-  o[1] = func_8007C7A0(r->x, r->y);
-  o[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
-  o[3] = func_8007C938(r->u, r->v);
-  o[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
-  o[5] = func_8007C97C(((u8 *) r) + 12);
+  o[1] = get_cs(r->x, r->y);
+  o[2] = get_ce((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  o[3] = get_ofs(r->u, r->v);
+  o[4] = get_mode(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  o[5] = get_tw(((u8 *) r) + 12);
   o[6] = (s32) 0xE6000000;
   var_a3 = 7;
   if (r->flag != 0)
@@ -433,7 +433,7 @@ void SetDrawEnv(s32 *out, Rect *r)
   }
   *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
 }
-void func_8007C4B8(s32 *out, Rect *r)
+void SetDrawEnv2(s32 *out, Rect *r)
 {
   s32 *o = out; /* FAKE: prologue pair order — owner ruling 2026-07-17
                    (decisions.md 10:35), tombstone narrowed to sanction a
@@ -453,11 +453,11 @@ void func_8007C4B8(s32 *out, Rect *r)
   s16 var_v0_2;
   s16 new_var;
   s32 var_a3;
-  o[1] = func_8007C7A0(r->x, r->y);
-  o[2] = func_8007C86C((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
-  o[3] = func_8007C938(r->u, r->v);
-  o[4] = func_8007C748(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
-  o[5] = func_8007C97C(((u8 *) r) + 12);
+  o[1] = get_cs(r->x, r->y);
+  o[2] = get_ce((s16) ((((u16) r->w) + ((u16) r->x)) - 1), (s16) ((((u16) r->y) + ((u16) r->h)) - 1));
+  o[3] = get_ofs(r->u, r->v);
+  o[4] = get_mode(*(((u8 *) r) + 23), *(((u8 *) r) + 22), *((u16 *) (((u8 *) r) + 20)));
+  o[5] = get_tw(((u8 *) r) + 12);
   o[6] = (s32) 0xE6000000;
   var_a3 = 7;
   if (r->flag != 0)
@@ -518,7 +518,7 @@ void func_8007C4B8(s32 *out, Rect *r)
   }
   *(((s8 *) o) + 3) = (s8) (var_a3 - 1);
 }
-s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
+s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_v1;
     s32 var_v0;
 
@@ -553,7 +553,7 @@ s32 func_8007C748(s32 arg0, s32 arg1, s32 arg2) {
  * dispatches on a boolean global (different library build, per ledger H2).
  * Adopted under the 2026-08-10 owner ruling because it uniquely measures
  * 0/51. */
-s32 func_8007C7A0(s16 x, s16 y)
+s32 get_cs(s16 x, s16 y)
 {
     x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
     y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
@@ -571,7 +571,7 @@ s32 func_8007C7A0(s16 x, s16 y)
  * symmetric. Not SOTN's get_ce verbatim — different library build, per ledger
  * H2. Adopted under the 2026-08-10 owner ruling because it uniquely measures
  * 0/51. */
-s32 func_8007C86C(s16 x, s16 y)
+s32 get_ce(s16 x, s16 y)
 {
     x = x < 0 ? 0 : (x > D_8009BE78 - 1 ? D_8009BE78 - 1 : x);
     y = y < 0 ? 0 : (y > D_8009BE7A - 1 ? D_8009BE7A - 1 : y);
@@ -582,7 +582,7 @@ s32 func_8007C86C(s16 x, s16 y)
     }
 }
 extern u8 g_gpu_type;
-s32 func_8007C938(s32 arg0, s32 arg1) {
+s32 get_ofs(s32 arg0, s32 arg1) {
     s32 var_v0;
     s32 var_v1;
     int new_var2;
@@ -599,7 +599,7 @@ s32 func_8007C938(s32 arg0, s32 arg1) {
     new_var2 = 0xE5000000;
     return var_v1 | (var_v0 | new_var2);
 }
-s32 func_8007C97C(u8 *arg0) {
+s32 get_tw(u8 *arg0) {
     if (arg0 != 0) {
         u32 tmp[4]; /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
                        dead-vars-local-array carve-out 2026-07-01) */
@@ -623,7 +623,7 @@ s32 func_8007C97C(u8 *arg0) {
 }
 extern u8 D_8009BE74;
 extern u8 D_8009BE77;
-s32 func_8007CA00(s16 *arg0) {
+s32 get_dx(s16 *arg0) {
     s32 v1, a, t;
     switch (D_8009BE74) {
     case 1:
@@ -654,39 +654,39 @@ s32 func_8007CA00(s16 *arg0) {
         return t;
     }
 }
-u32 func_8007CAB0(void) {
+u32 _status(void) {
     return *g_gpu_stat_reg;
 }
-extern s32 func_8007DC68();
-extern s32 func_8007DC9C();
+extern s32 set_alarm();
+extern s32 get_alarm();
 extern volatile s32 *D_8009BF58;
 extern volatile s32 *D_8009BF5C;
 extern volatile s32 *D_8009BF60;
 extern volatile s32 *D_8009BF64;
-s32 func_8007CAC8(s32 arg0, s32 arg1) {
+s32 _otc(s32 arg0, s32 arg1) {
     *D_8009BF64 |= 0x08000000;
     *D_8009BF60 = 0;
     *D_8009BF58 = (arg0 - 4) + (arg1 * 4);
     *D_8009BF5C = arg1;
     *D_8009BF60 = 0x11000002;
-    func_8007DC68();
+    set_alarm();
     if (*D_8009BF60 & 0x01000000) {
         do {
-            if (func_8007DC9C() != 0) {
+            if (get_alarm() != 0) {
                 return -1;
             }
         } while (*D_8009BF60 & 0x01000000);
     }
     return arg1;
 }
-INCLUDE_ASM("asm/funcs", func_8007CBB0);
+INCLUDE_ASM("asm/funcs", _clr);
 typedef struct {
     s32 unk0;
     s16 x;
     s16 y;
 } _GpuChunkHdr_CE0C;
 
-s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
+s32 _dws(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     register s32 var_s5 asm("s5");
     s16 coord;
     s32 half_size;
@@ -696,7 +696,7 @@ s32 func_8007CE0C(_GpuChunkHdr_CE0C *arg0, s32 *arg1) {
     u16 a0_tmp;
     s32 v0_ext;
 
-    func_8007DC68();
+    set_alarm();
 
     coord = (v1_tmp = arg0->x);
     var_s5 = 0;
@@ -743,7 +743,7 @@ y_done:
 
     if (!((*g_gpu_stat_reg) & 0x04000000)) {
         do {
-            if (func_8007DC9C((u32 *)0xA0000000) != 0) {
+            if (get_alarm((u32 *)0xA0000000) != 0) {
                 return -1;
             }
         } while (!((*g_gpu_stat_reg) & 0x04000000));
@@ -769,15 +769,15 @@ y_done:
     return 0;
 }
 
-INCLUDE_ASM("asm/funcs", func_8007D048);
-void func_8007D2CC(u32 a0) {
+INCLUDE_ASM("asm/funcs", _drs);
+void _ctl(u32 a0) {
     *g_gpu_stat_reg = a0;
     g_gpu_color_table[a0 >> 24] = a0;
 }
-u32 func_8007D2F4(s32 a0) {
+u32 _getctl(s32 a0) {
     return g_gpu_color_table[a0];
 }
-s32 gpu_SendData(u32 *a0, s32 a1) {
+s32 _cwb(u32 *a0, s32 a1) {
     s32 i;
     *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR;
     for (i = a1 - 1; i != -1; i--) {
@@ -785,26 +785,26 @@ s32 gpu_SendData(u32 *a0, s32 a1) {
     }
     return 0;
 }
-void gpu_StartDmaList(u32 a0) {
+void _cwc(u32 a0) {
     *(volatile u32 *)g_gpu_stat_reg = GP1_DMA_DIR_FIFO;
     *(volatile u32 *)g_gpu_dma_madr = a0;
     *(volatile u32 *)g_gpu_dma_bcr = 0;
     *(volatile u32 *)g_gpu_dma_chcr = DMA_GPU_LINKED_LIST;
 }
-u32 gpu_GetInfo(u32 a0) {
+u32 _param(u32 a0) {
     *g_gpu_stat_reg = a0 | GP1_GPU_INFO;
     return *g_gpu_data_reg & OT_ADDR_MASK;
 }
-void func_8007D3D4(s32 a0, s32 a1, s32 a2) {
-    func_8007D3F8(a0, a1, 0, a2);
+void _addque(s32 a0, s32 a1, s32 a2) {
+    _addque2(a0, a1, 0, a2);
 }
 extern s32 *D_8009BF48;
 extern s32 D_8009BF78;
 extern s32 D_8009BF7C;
-extern s32 func_8007DC68();
+extern s32 set_alarm();
 
-void func_8007D6D8();                           /* extern */
-s32 func_8007DC9C();                                /* extern */
+void _exeque();                           /* extern */
+s32 get_alarm();                                /* extern */
 s32 DMACallback(s32, s32 (*)()); /* extern */
 s32 SetIntrMask(s32);                         /* extern */
 extern u8 D_8009BE75;
@@ -820,7 +820,7 @@ extern s32 D_80103684;
 extern s32 D_80103688;
 extern s32 D_8010368C;
 
-s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
+s32 _addque2(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
     s32 *var_a3;
     s32 temp_a0;
     s32 temp_a1;
@@ -828,13 +828,13 @@ s32 func_8007D3F8(s32 (*arg0)(s32 *, s32), s32 *arg1, s32 arg2, s32 arg3) {
     s32 var_v0;
     s32 var_v0_2;
 
-    func_8007DC68();
+    set_alarm();
     goto check_top;
 err_loop:
-    if (func_8007DC9C() != 0) {
+    if (get_alarm() != 0) {
         return -1;
     }
-    func_8007D6D8();
+    _exeque();
 check_top:
     if (((D_8009BF78 + 1) & 0x3F) == D_8009BF7C) {
         goto err_loop;
@@ -852,7 +852,7 @@ check_top:
             SetIntrMask(D_8009BF80);
             return 0;
         }
-        DMACallback(2, func_8007D6D8);
+        DMACallback(2, _exeque);
         var_a2 = 0;
         if (arg2 != 0) {
             s32 v_shift;
@@ -880,15 +880,15 @@ loop_13:
         *(s32 (**)(s32 *, s32))((s32)&D_80103680 + (*(volatile s32 *)&D_8009BF78 * 0x60)) = arg0;
         D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
         SetIntrMask(D_8009BF80);
-        func_8007D6D8();
+        _exeque();
         var_v0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
         return var_v0;
     }
 }
-INCLUDE_ASM("asm/funcs", func_8007D6D8);
-extern void bb2_memset(u8 *a0, u8 a1, s32 a2);
+INCLUDE_ASM("asm/funcs", _exeque);
+extern void memset(u8 *a0, u8 a1, s32 a2);
 extern s32 SetIntrMask(s32);
-extern s32 func_8007DE08(s32);
+extern s32 _version(s32);
 extern volatile s32 *D_8009BF48;
 extern s32 *D_8009BF54;
 extern volatile s32 D_8009BF7C;
@@ -904,7 +904,7 @@ extern s32 D_8009BF68[];
 extern s32 D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 printf();
-s32 func_8007D9C4(s32 arg0) {
+s32 _reset(s32 arg0) {
     D_8009BF88 = SetIntrMask(0);
     D_8009BF7C = 0;
     D_8009BF78 = D_8009BF7C;
@@ -914,8 +914,8 @@ s32 func_8007D9C4(s32 arg0) {
         *D_8009BF54 = 0x401;
         *D_8009BF64 |= 0x800;
         *D_8009BF48 = 0;
-        bb2_memset(D_800F189C, 0, 0x100);
-        bb2_memset(D_80103680, 0, 0x1800);
+        memset(D_800F189C, 0, 0x100);
+        memset(D_80103680, 0, 0x1800);
         break;
     case 1:
     case 3:
@@ -929,27 +929,27 @@ s32 func_8007D9C4(s32 arg0) {
     if (arg0 & 7) {
         return 0;
     }
-    return func_8007DE08(arg0);
+    return _version(arg0);
 }
-extern void func_8007D6D8();
-s32 func_8007DB20(s32 arg0) {
+extern void _exeque();
+s32 _sync(s32 arg0) {
     s32 temp_s0;
     s32 ret;
 
     if (arg0 == 0) {
-        func_8007DC68();
+        set_alarm();
         while (D_8009BF78 != D_8009BF7C) {
-            func_8007D6D8();
-            if (func_8007DC9C() != 0) return -1;
+            _exeque();
+            if (get_alarm() != 0) return -1;
         }
         while ((*g_gpu_dma_chcr & 0x01000000) || !(*g_gpu_stat_reg & 0x04000000)) {
-            if (func_8007DC9C() != 0) return -1;
+            if (get_alarm() != 0) return -1;
         }
         return 0;
     }
     temp_s0 = (D_8009BF78 - D_8009BF7C) & 0x3F;
     if (temp_s0 != 0) {
-        func_8007D6D8();
+        _exeque();
     }
     if (!(*g_gpu_dma_chcr & 0x01000000) && (*g_gpu_stat_reg & 0x04000000)) {
         ret = temp_s0;
@@ -962,11 +962,11 @@ s32 func_8007DB20(s32 arg0) {
     }
     return ret;
 }
-void func_8007DC68(void) {
+void set_alarm(void) {
     g_gpu_vcount = VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
-s32 func_8007DC9C(void) {
+s32 get_alarm(void) {
     volatile s32 *new_var2;
     s32 temp_v0;
     s32 temp_v1;
@@ -989,7 +989,7 @@ s32 func_8007DC9C(void) {
         return -1;
     }
     return 0;
-}s32 func_8007DE08(s32 arg0) {
+}s32 _version(s32 arg0) {
     *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
     if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {
         *(volatile s32 *)g_gpu_data_reg = (*(volatile s32 *)g_gpu_stat_reg & 0x3FFF) | 0xE1001000;
@@ -1009,7 +1009,7 @@ s32 func_8007DC9C(void) {
     *(volatile s32 *)g_gpu_stat_reg = 0x09000001;
     return 4;
 }
-void bb2_memset(u8 *a0, u8 a1, s32 a2) {
+void memset(u8 *a0, u8 a1, s32 a2) {
     s32 i;
     for (i = a2 - 1; i != -1; i--) {
         *a0++ = a1;
@@ -3653,9 +3653,9 @@ extern s32 CdReset(s32);
 extern s32 CdSyncCallback(s32);
 extern s32 CdReadCallback(s32);
 extern s32 CdReadMode(s32);
-extern s32 D_80080014;
-extern s32 D_8008003C;
-extern s32 D_80080064;
+extern s32 def_cbsync;
+extern s32 def_cbready;
+extern s32 def_cbread;
 extern u32 g_str_cdinit_fail;
 
 s32 CdInit(void) {
@@ -3667,21 +3667,21 @@ loop:
         printf(&g_str_cdinit_fail);
         return 0;
     }
-    CdSyncCallback((s32)&D_80080014);
-    CdReadyCallback((s32)&D_8008003C);
-    CdReadCallback((s32)&D_80080064);
+    CdSyncCallback((s32)&def_cbsync);
+    CdReadyCallback((s32)&def_cbready);
+    CdReadCallback((s32)&def_cbread);
     CdReadMode(0);
     return 1;
 }
 
-void func_80080014(void) {
+void def_cbsync(void) {
     DeliverEvent(0xF0000003, 0x20);
 }
 
-void func_8008003C(void) {
+void def_cbready(void) {
     DeliverEvent(0xF0000003, 0x40);
 }
 
-void func_80080064(void) {
+void def_cbread(void) {
     DeliverEvent(0xF0000003, 0x40);
 }

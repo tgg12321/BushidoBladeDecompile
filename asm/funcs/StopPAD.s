@@ -5,7 +5,7 @@ glabel StopPAD
     /* 69574 80078D74 00000000 */   nop
     /* 69578 80078D78 C8E3010C */  jal        StopPAD2
     /* 6957C 80078D7C 00000000 */   nop
-    /* 69580 80078D80 88E3010C */  jal        func_80078E20
+    /* 69580 80078D80 88E3010C */  jal        RemovePatchPad
     /* 69584 80078D84 00000000 */   nop
     /* 69588 80078D88 0A80013C */  lui        $at, %hi(D_8009BD80)
     /* 6958C 80078D8C 80BD20AC */  sw         $zero, %lo(D_8009BD80)($at)

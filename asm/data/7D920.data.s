@@ -24002,21 +24002,21 @@ nonmatching D_8009BE2C
 
 dlabel D_8009BE2C
     /* 8C62C 8009BE2C 285E0180 */ .word 0x80015E28
-    /* 8C630 8009BE30 D4D30780 */ .word func_8007D3D4
-    /* 8C634 8009BE34 F8D30780 */ .word func_8007D3F8
-    /* 8C638 8009BE38 B0CB0780 */ .word func_8007CBB0
-    /* 8C63C 8009BE3C CCD20780 */ .word func_8007D2CC
-    /* 8C640 8009BE40 08D30780 */ .word gpu_SendData
-    /* 8C644 8009BE44 58D30780 */ .word gpu_StartDmaList
-    /* 8C648 8009BE48 48D00780 */ .word func_8007D048
-    /* 8C64C 8009BE4C 0CCE0780 */ .word func_8007CE0C
-    /* 8C650 8009BE50 D8D60780 */ .word func_8007D6D8
-    /* 8C654 8009BE54 F4D20780 */ .word func_8007D2F4
-    /* 8C658 8009BE58 C8CA0780 */ .word func_8007CAC8
-    /* 8C65C 8009BE5C A4D30780 */ .word gpu_GetInfo
-    /* 8C660 8009BE60 C4D90780 */ .word func_8007D9C4
-    /* 8C664 8009BE64 B0CA0780 */ .word func_8007CAB0
-    /* 8C668 8009BE68 20DB0780 */ .word func_8007DB20
+    /* 8C630 8009BE30 D4D30780 */ .word _addque
+    /* 8C634 8009BE34 F8D30780 */ .word _addque2
+    /* 8C638 8009BE38 B0CB0780 */ .word _clr
+    /* 8C63C 8009BE3C CCD20780 */ .word _ctl
+    /* 8C640 8009BE40 08D30780 */ .word _cwb
+    /* 8C644 8009BE44 58D30780 */ .word _cwc
+    /* 8C648 8009BE48 48D00780 */ .word _drs
+    /* 8C64C 8009BE4C 0CCE0780 */ .word _dws
+    /* 8C650 8009BE50 D8D60780 */ .word _exeque
+    /* 8C654 8009BE54 F4D20780 */ .word _getctl
+    /* 8C658 8009BE58 C8CA0780 */ .word _otc
+    /* 8C65C 8009BE5C A4D30780 */ .word _param
+    /* 8C660 8009BE60 C4D90780 */ .word _reset
+    /* 8C664 8009BE64 B0CA0780 */ .word _status
+    /* 8C668 8009BE68 20DB0780 */ .word _sync
 enddlabel D_8009BE2C
 
 nonmatching D_8009BE6C

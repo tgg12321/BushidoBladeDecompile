@@ -13,7 +13,7 @@
       "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger"
     },
     {
-      "func": "func_8008C1E8",
+      "func": "SioSyncroWrite",
       "file": "main",
       "distance": 28,
       "verdict": "C",
@@ -544,7 +544,7 @@
       "status": "active"
     },
     {
-      "func": "func_8008BF04",
+      "func": "SioSyncroRead",
       "file": "main",
       "distance": 41,
       "verdict": "C",
@@ -560,7 +560,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007D3F8",
+      "func": "_addque2",
       "file": "display",
       "distance": 43,
       "verdict": "C",
@@ -616,7 +616,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007CE0C",
+      "func": "_dws",
       "file": "display",
       "distance": 48,
       "verdict": "C",
@@ -804,7 +804,7 @@
       "status": "active"
     },
     {
-      "func": "func_800889D4",
+      "func": "_spu_FwriteByIO",
       "file": "main",
       "distance": 115,
       "verdict": "C",
@@ -902,7 +902,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007CBB0",
+      "func": "_clr",
       "file": "display",
       "distance": 151,
       "verdict": "C",
@@ -918,7 +918,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007D048",
+      "func": "_drs",
       "file": "display",
       "distance": 161,
       "verdict": "C",
@@ -958,7 +958,7 @@
       "status": "active"
     },
     {
-      "func": "func_8007D6D8",
+      "func": "_exeque",
       "file": "display",
       "distance": 187,
       "verdict": "C",
@@ -1462,7 +1462,7 @@
       "status": "active"
     },
     {
-      "func": "func_80080828",
+      "func": "getintr",
       "file": "system",
       "distance": 354,
       "verdict": "C",
@@ -2088,7 +2088,7 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_8007DC9C",
+      "func": "get_alarm",
       "file": "display",
       "distance": 9,
       "verdict": "C",

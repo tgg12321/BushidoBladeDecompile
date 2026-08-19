@@ -5,7 +5,7 @@ glabel SetTexWindow
     /* 6C924 8007C124 02000224 */  addiu      $v0, $zero, 0x2
     /* 6C928 8007C128 2120A000 */  addu       $a0, $a1, $zero
     /* 6C92C 8007C12C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6C930 8007C130 5FF2010C */  jal        func_8007C97C
+    /* 6C930 8007C130 5FF2010C */  jal        get_tw
     /* 6C934 8007C134 030002A2 */   sb        $v0, 0x3($s0)
     /* 6C938 8007C138 040002AE */  sw         $v0, 0x4($s0)
     /* 6C93C 8007C13C 080000AE */  sw         $zero, 0x8($s0)

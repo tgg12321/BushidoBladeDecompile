@@ -34,7 +34,7 @@ glabel ResetGraph
     /* 6B6F0 8007AEF0 74BE1026 */  addiu      $s0, $s0, %lo(D_8009BE74)
     /* 6B6F4 8007AEF4 21200002 */  addu       $a0, $s0, $zero
     /* 6B6F8 8007AEF8 21280000 */  addu       $a1, $zero, $zero
-    /* 6B6FC 8007AEFC B9F7010C */  jal        bb2_memset
+    /* 6B6FC 8007AEFC B9F7010C */  jal        memset
     /* 6B700 8007AF00 80000624 */   addiu     $a2, $zero, 0x80
     /* 6B704 8007AF04 B00A020C */  jal        ResetCallback
     /* 6B708 8007AF08 00000000 */   nop
@@ -44,7 +44,7 @@ glabel ResetGraph
     /* 6B718 8007AF18 FFFF4234 */  ori        $v0, $v0, (0xFFFFFF & 0xFFFF)
     /* 6B71C 8007AF1C C4F7010C */  jal        GPU_cw
     /* 6B720 8007AF20 24208200 */   and       $a0, $a0, $v0
-    /* 6B724 8007AF24 71F6010C */  jal        func_8007D9C4
+    /* 6B724 8007AF24 71F6010C */  jal        _reset
     /* 6B728 8007AF28 21202002 */   addu      $a0, $s1, $zero
     /* 6B72C 8007AF2C 10000426 */  addiu      $a0, $s0, 0x10
     /* 6B730 8007AF30 01000324 */  addiu      $v1, $zero, 0x1
@@ -64,11 +64,11 @@ glabel ResetGraph
     /* 6B768 8007AF68 08BF228C */  lw         $v0, %lo(D_8009BF08)($at)
     /* 6B76C 8007AF6C 0A80013C */  lui        $at, %hi(D_8009BE7A)
     /* 6B770 8007AF70 7ABE22A4 */  sh         $v0, %lo(D_8009BE7A)($at)
-    /* 6B774 8007AF74 B9F7010C */  jal        bb2_memset
+    /* 6B774 8007AF74 B9F7010C */  jal        memset
     /* 6B778 8007AF78 5C000624 */   addiu     $a2, $zero, 0x5C
     /* 6B77C 8007AF7C 6C000426 */  addiu      $a0, $s0, 0x6C
     /* 6B780 8007AF80 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 6B784 8007AF84 B9F7010C */  jal        bb2_memset
+    /* 6B784 8007AF84 B9F7010C */  jal        memset
     /* 6B788 8007AF88 14000624 */   addiu     $a2, $zero, 0x14
     /* 6B78C 8007AF8C 00000292 */  lbu        $v0, 0x0($s0)
     /* 6B790 8007AF90 FAEB0108 */  j          .L8007AFE8

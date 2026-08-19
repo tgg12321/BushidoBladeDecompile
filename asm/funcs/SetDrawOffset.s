@@ -7,7 +7,7 @@ glabel SetDrawOffset
     /* 6C9EC 8007C1EC 030002A2 */  sb         $v0, 0x3($s0)
     /* 6C9F0 8007C1F0 0000A484 */  lh         $a0, 0x0($a1)
     /* 6C9F4 8007C1F4 0200A584 */  lh         $a1, 0x2($a1)
-    /* 6C9F8 8007C1F8 4EF2010C */  jal        func_8007C938
+    /* 6C9F8 8007C1F8 4EF2010C */  jal        get_ofs
     /* 6C9FC 8007C1FC 00000000 */   nop
     /* 6CA00 8007C200 040002AE */  sw         $v0, 0x4($s0)
     /* 6CA04 8007C204 080000AE */  sw         $zero, 0x8($s0)

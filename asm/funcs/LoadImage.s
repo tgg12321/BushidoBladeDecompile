@@ -7,7 +7,7 @@ glabel LoadImage
     /* 6BE14 8007B614 0180043C */  lui        $a0, %hi(D_80015F5C)
     /* 6BE18 8007B618 5C5F8424 */  addiu      $a0, $a0, %lo(D_80015F5C)
     /* 6BE1C 8007B61C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6BE20 8007B620 EAEC010C */  jal        func_8007B3A8
+    /* 6BE20 8007B620 EAEC010C */  jal        checkRECT
     /* 6BE24 8007B624 21280002 */   addu      $a1, $s0, $zero
     /* 6BE28 8007B628 21280002 */  addu       $a1, $s0, $zero
     /* 6BE2C 8007B62C 0A80023C */  lui        $v0, %hi(D_8009BE6C)

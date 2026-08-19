@@ -11,7 +11,7 @@ glabel ClearImage2
     /* 6BD88 8007B588 2180C000 */  addu       $s0, $a2, $zero
     /* 6BD8C 8007B58C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BD90 8007B590 2000BFAF */  sw         $ra, 0x20($sp)
-    /* 6BD94 8007B594 EAEC010C */  jal        func_8007B3A8
+    /* 6BD94 8007B594 EAEC010C */  jal        checkRECT
     /* 6BD98 8007B598 2188E000 */   addu      $s1, $a3, $zero
     /* 6BD9C 8007B59C 21286002 */  addu       $a1, $s3, $zero
     /* 6BDA0 8007B5A0 FF003132 */  andi       $s1, $s1, 0xFF

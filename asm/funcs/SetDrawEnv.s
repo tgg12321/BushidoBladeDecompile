@@ -7,7 +7,7 @@ glabel SetDrawEnv
     /* 6CAB4 8007C2B4 3800BFAF */  sw         $ra, 0x38($sp)
     /* 6CAB8 8007C2B8 00000486 */  lh         $a0, 0x0($s0)
     /* 6CABC 8007C2BC 02000586 */  lh         $a1, 0x2($s0)
-    /* 6CAC0 8007C2C0 E8F1010C */  jal        func_8007C7A0
+    /* 6CAC0 8007C2C0 E8F1010C */  jal        get_cs
     /* 6CAC4 8007C2C4 00000000 */   nop
     /* 6CAC8 8007C2C8 040022AE */  sw         $v0, 0x4($s1)
     /* 6CACC 8007C2CC 04000496 */  lhu        $a0, 0x4($s0)
@@ -21,21 +21,21 @@ glabel SetDrawEnv
     /* 6CAEC 8007C2EC 2128A200 */  addu       $a1, $a1, $v0
     /* 6CAF0 8007C2F0 FFFFA524 */  addiu      $a1, $a1, -0x1
     /* 6CAF4 8007C2F4 002C0500 */  sll        $a1, $a1, 16
-    /* 6CAF8 8007C2F8 1BF2010C */  jal        func_8007C86C
+    /* 6CAF8 8007C2F8 1BF2010C */  jal        get_ce
     /* 6CAFC 8007C2FC 032C0500 */   sra       $a1, $a1, 16
     /* 6CB00 8007C300 080022AE */  sw         $v0, 0x8($s1)
     /* 6CB04 8007C304 08000486 */  lh         $a0, 0x8($s0)
     /* 6CB08 8007C308 0A000586 */  lh         $a1, 0xA($s0)
-    /* 6CB0C 8007C30C 4EF2010C */  jal        func_8007C938
+    /* 6CB0C 8007C30C 4EF2010C */  jal        get_ofs
     /* 6CB10 8007C310 00000000 */   nop
     /* 6CB14 8007C314 0C0022AE */  sw         $v0, 0xC($s1)
     /* 6CB18 8007C318 17000492 */  lbu        $a0, 0x17($s0)
     /* 6CB1C 8007C31C 16000592 */  lbu        $a1, 0x16($s0)
     /* 6CB20 8007C320 14000696 */  lhu        $a2, 0x14($s0)
-    /* 6CB24 8007C324 D2F1010C */  jal        func_8007C748
+    /* 6CB24 8007C324 D2F1010C */  jal        get_mode
     /* 6CB28 8007C328 00000000 */   nop
     /* 6CB2C 8007C32C 0C000426 */  addiu      $a0, $s0, 0xC
-    /* 6CB30 8007C330 5FF2010C */  jal        func_8007C97C
+    /* 6CB30 8007C330 5FF2010C */  jal        get_tw
     /* 6CB34 8007C334 100022AE */   sw        $v0, 0x10($s1)
     /* 6CB38 8007C338 140022AE */  sw         $v0, 0x14($s1)
     /* 6CB3C 8007C33C 00E6023C */  lui        $v0, (0xE6000000 >> 16)

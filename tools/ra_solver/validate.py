@@ -9,9 +9,9 @@ CASES = [
     ("func_80041BF4", "text1a"),
     ("func_800861BC", "main"),
     ("func_800858D0", "main"),
-    ("func_8007C7A0", "display"),
-    ("func_8007C86C", "display"),
-    ("func_8007CE0C", "display"),
+    ("get_cs", "display"),
+    ("get_ce", "display"),
+    ("_dws", "display"),
     # completed controls
     ("func_8003D9A0", "code6cac_c2"),
     ("func_8003DBE4", "code6cac_c2"),

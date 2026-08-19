@@ -59,7 +59,7 @@ glabel SetDispMask
     /* 6BAE8 8007B2E8 04000016 */  bnez       $s0, .L8007B2FC
     /* 6BAEC 8007B2EC 6A002426 */   addiu     $a0, $s1, 0x6A
     /* 6BAF0 8007B2F0 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 6BAF4 8007B2F4 B9F7010C */  jal        bb2_memset
+    /* 6BAF4 8007B2F4 B9F7010C */  jal        memset
     /* 6BAF8 8007B2F8 14000624 */   addiu     $a2, $zero, 0x14
   .L8007B2FC:
     /* 6BAFC 8007B2FC 0003043C */  lui        $a0, (0x3000001 >> 16)
@@ -114,9 +114,9 @@ glabel DrawSync
     /* 6BBA4 8007B3A4 00000000 */   nop
 endlabel DrawSync
 
-nonmatching func_8007B3A8, 0x128
+nonmatching checkRECT, 0x128
 
-glabel func_8007B3A8
+glabel checkRECT
     /* 6BBA8 8007B3A8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6BBAC 8007B3AC 21408000 */  addu       $t0, $a0, $zero
     /* 6BBB0 8007B3B0 1800B0AF */  sw         $s0, 0x18($sp)
@@ -196,7 +196,7 @@ glabel func_8007B3A8
     /* 6BCC4 8007B4C4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6BCC8 8007B4C8 0800E003 */  jr         $ra
     /* 6BCCC 8007B4CC 00000000 */   nop
-endlabel func_8007B3A8
+endlabel checkRECT
 
 nonmatching ClearImage, 0x94
 
@@ -213,7 +213,7 @@ glabel ClearImage
     /* 6BCF4 8007B4F4 2188C000 */  addu       $s1, $a2, $zero
     /* 6BCF8 8007B4F8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6BCFC 8007B4FC 2000BFAF */  sw         $ra, 0x20($sp)
-    /* 6BD00 8007B500 EAEC010C */  jal        func_8007B3A8
+    /* 6BD00 8007B500 EAEC010C */  jal        checkRECT
     /* 6BD04 8007B504 2180E000 */   addu      $s0, $a3, $zero
     /* 6BD08 8007B508 21286002 */  addu       $a1, $s3, $zero
     /* 6BD0C 8007B50C FF001032 */  andi       $s0, $s0, 0xFF
@@ -255,7 +255,7 @@ glabel ClearImage2
     /* 6BD88 8007B588 2180C000 */  addu       $s0, $a2, $zero
     /* 6BD8C 8007B58C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BD90 8007B590 2000BFAF */  sw         $ra, 0x20($sp)
-    /* 6BD94 8007B594 EAEC010C */  jal        func_8007B3A8
+    /* 6BD94 8007B594 EAEC010C */  jal        checkRECT
     /* 6BD98 8007B598 2188E000 */   addu      $s1, $a3, $zero
     /* 6BD9C 8007B59C 21286002 */  addu       $a1, $s3, $zero
     /* 6BDA0 8007B5A0 FF003132 */  andi       $s1, $s1, 0xFF
@@ -295,7 +295,7 @@ glabel LoadImage
     /* 6BE14 8007B614 0180043C */  lui        $a0, %hi(D_80015F5C)
     /* 6BE18 8007B618 5C5F8424 */  addiu      $a0, $a0, %lo(D_80015F5C)
     /* 6BE1C 8007B61C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6BE20 8007B620 EAEC010C */  jal        func_8007B3A8
+    /* 6BE20 8007B620 EAEC010C */  jal        checkRECT
     /* 6BE24 8007B624 21280002 */   addu      $a1, $s0, $zero
     /* 6BE28 8007B628 21280002 */  addu       $a1, $s0, $zero
     /* 6BE2C 8007B62C 0A80023C */  lui        $v0, %hi(D_8009BE6C)
@@ -325,7 +325,7 @@ glabel StoreImage
     /* 6BE78 8007B678 0180043C */  lui        $a0, %hi(D_80015F68)
     /* 6BE7C 8007B67C 685F8424 */  addiu      $a0, $a0, %lo(D_80015F68)
     /* 6BE80 8007B680 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6BE84 8007B684 EAEC010C */  jal        func_8007B3A8
+    /* 6BE84 8007B684 EAEC010C */  jal        checkRECT
     /* 6BE88 8007B688 21280002 */   addu      $a1, $s0, $zero
     /* 6BE8C 8007B68C 21280002 */  addu       $a1, $s0, $zero
     /* 6BE90 8007B690 0A80023C */  lui        $v0, %hi(D_8009BE6C)
@@ -357,7 +357,7 @@ glabel MoveImage
     /* 6BEE4 8007B6E4 0180043C */  lui        $a0, %hi(D_80015F74)
     /* 6BEE8 8007B6E8 745F8424 */  addiu      $a0, $a0, %lo(D_80015F74)
     /* 6BEEC 8007B6EC 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 6BEF0 8007B6F0 EAEC010C */  jal        func_8007B3A8
+    /* 6BEF0 8007B6F0 EAEC010C */  jal        checkRECT
     /* 6BEF4 8007B6F4 21280002 */   addu      $a1, $s0, $zero
     /* 6BEF8 8007B6F8 04000286 */  lh         $v0, 0x4($s0)
     /* 6BEFC 8007B6FC 00000000 */  nop
@@ -587,7 +587,7 @@ glabel PutDrawEnv
   .L8007B9FC:
     /* 6C1FC 8007B9FC 1C003026 */  addiu      $s0, $s1, 0x1C
     /* 6C200 8007BA00 21200002 */  addu       $a0, $s0, $zero
-    /* 6C204 8007BA04 2EF1010C */  jal        func_8007C4B8
+    /* 6C204 8007BA04 2EF1010C */  jal        SetDrawEnv2
     /* 6C208 8007BA08 21282002 */   addu      $a1, $s1, $zero
     /* 6C20C 8007BA0C FF00043C */  lui        $a0, (0xFFFFFF >> 16)
     /* 6C210 8007BA10 FFFF8434 */  ori        $a0, $a0, (0xFFFFFF & 0xFFFF)
@@ -662,7 +662,7 @@ glabel DrawOTagEnv
   .L8007BB0C:
     /* 6C30C 8007BB0C 1C003026 */  addiu      $s0, $s1, 0x1C
     /* 6C310 8007BB10 21200002 */  addu       $a0, $s0, $zero
-    /* 6C314 8007BB14 2EF1010C */  jal        func_8007C4B8
+    /* 6C314 8007BB14 2EF1010C */  jal        SetDrawEnv2
     /* 6C318 8007BB18 21282002 */   addu      $a1, $s1, $zero
     /* 6C31C 8007BB1C FF00043C */  lui        $a0, (0xFFFFFF >> 16)
     /* 6C320 8007BB20 FFFF8434 */  ori        $a0, $a0, (0xFFFFFF & 0xFFFF)
@@ -761,7 +761,7 @@ glabel PutDispEnv
     /* 6C464 8007BC64 0200422C */  sltiu      $v0, $v0, 0x2
     /* 6C468 8007BC68 0A004010 */  beqz       $v0, .L8007BC94
     /* 6C46C 8007BC6C 00000000 */   nop
-    /* 6C470 8007BC70 80F2010C */  jal        func_8007CA00
+    /* 6C470 8007BC70 80F2010C */  jal        get_dx
     /* 6C474 8007BC74 21200002 */   addu      $a0, $s0, $zero
     /* 6C478 8007BC78 02000396 */  lhu        $v1, 0x2($s0)
     /* 6C47C 8007BC7C FF0F4230 */  andi       $v0, $v0, 0xFFF
@@ -1114,7 +1114,7 @@ glabel SetTexWindow
     /* 6C924 8007C124 02000224 */  addiu      $v0, $zero, 0x2
     /* 6C928 8007C128 2120A000 */  addu       $a0, $a1, $zero
     /* 6C92C 8007C12C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 6C930 8007C130 5FF2010C */  jal        func_8007C97C
+    /* 6C930 8007C130 5FF2010C */  jal        get_tw
     /* 6C934 8007C134 030002A2 */   sb        $v0, 0x3($s0)
     /* 6C938 8007C138 040002AE */  sw         $v0, 0x4($s0)
     /* 6C93C 8007C13C 080000AE */  sw         $zero, 0x8($s0)
@@ -1138,7 +1138,7 @@ glabel SetDrawArea
     /* 6C970 8007C170 030022A2 */  sb         $v0, 0x3($s1)
     /* 6C974 8007C174 00000486 */  lh         $a0, 0x0($s0)
     /* 6C978 8007C178 02000586 */  lh         $a1, 0x2($s0)
-    /* 6C97C 8007C17C E8F1010C */  jal        func_8007C7A0
+    /* 6C97C 8007C17C E8F1010C */  jal        get_cs
     /* 6C980 8007C180 00000000 */   nop
     /* 6C984 8007C184 040022AE */  sw         $v0, 0x4($s1)
     /* 6C988 8007C188 00000496 */  lhu        $a0, 0x0($s0)
@@ -1152,7 +1152,7 @@ glabel SetDrawArea
     /* 6C9A8 8007C1A8 2128A200 */  addu       $a1, $a1, $v0
     /* 6C9AC 8007C1AC FFFFA524 */  addiu      $a1, $a1, -0x1
     /* 6C9B0 8007C1B0 002C0500 */  sll        $a1, $a1, 16
-    /* 6C9B4 8007C1B4 1BF2010C */  jal        func_8007C86C
+    /* 6C9B4 8007C1B4 1BF2010C */  jal        get_ce
     /* 6C9B8 8007C1B8 032C0500 */   sra       $a1, $a1, 16
     /* 6C9BC 8007C1BC 080022AE */  sw         $v0, 0x8($s1)
     /* 6C9C0 8007C1C0 1800BF8F */  lw         $ra, 0x18($sp)
@@ -1174,7 +1174,7 @@ glabel SetDrawOffset
     /* 6C9EC 8007C1EC 030002A2 */  sb         $v0, 0x3($s0)
     /* 6C9F0 8007C1F0 0000A484 */  lh         $a0, 0x0($a1)
     /* 6C9F4 8007C1F4 0200A584 */  lh         $a1, 0x2($a1)
-    /* 6C9F8 8007C1F8 4EF2010C */  jal        func_8007C938
+    /* 6C9F8 8007C1F8 4EF2010C */  jal        get_ofs
     /* 6C9FC 8007C1FC 00000000 */   nop
     /* 6CA00 8007C200 040002AE */  sw         $v0, 0x4($s0)
     /* 6CA04 8007C204 080000AE */  sw         $zero, 0x8($s0)
@@ -1216,10 +1216,10 @@ glabel SetDrawMode
     /* 6CA64 8007C264 3000B18F */  lw         $s1, 0x30($sp)
     /* 6CA68 8007C268 FFFFE630 */  andi       $a2, $a3, 0xFFFF
     /* 6CA6C 8007C26C 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 6CA70 8007C270 D2F1010C */  jal        func_8007C748
+    /* 6CA70 8007C270 D2F1010C */  jal        get_mode
     /* 6CA74 8007C274 030002A2 */   sb        $v0, 0x3($s0)
     /* 6CA78 8007C278 040002AE */  sw         $v0, 0x4($s0)
-    /* 6CA7C 8007C27C 5FF2010C */  jal        func_8007C97C
+    /* 6CA7C 8007C27C 5FF2010C */  jal        get_tw
     /* 6CA80 8007C280 21202002 */   addu      $a0, $s1, $zero
     /* 6CA84 8007C284 080002AE */  sw         $v0, 0x8($s0)
     /* 6CA88 8007C288 1800BF8F */  lw         $ra, 0x18($sp)
@@ -1241,7 +1241,7 @@ glabel SetDrawEnv
     /* 6CAB4 8007C2B4 3800BFAF */  sw         $ra, 0x38($sp)
     /* 6CAB8 8007C2B8 00000486 */  lh         $a0, 0x0($s0)
     /* 6CABC 8007C2BC 02000586 */  lh         $a1, 0x2($s0)
-    /* 6CAC0 8007C2C0 E8F1010C */  jal        func_8007C7A0
+    /* 6CAC0 8007C2C0 E8F1010C */  jal        get_cs
     /* 6CAC4 8007C2C4 00000000 */   nop
     /* 6CAC8 8007C2C8 040022AE */  sw         $v0, 0x4($s1)
     /* 6CACC 8007C2CC 04000496 */  lhu        $a0, 0x4($s0)
@@ -1255,21 +1255,21 @@ glabel SetDrawEnv
     /* 6CAEC 8007C2EC 2128A200 */  addu       $a1, $a1, $v0
     /* 6CAF0 8007C2F0 FFFFA524 */  addiu      $a1, $a1, -0x1
     /* 6CAF4 8007C2F4 002C0500 */  sll        $a1, $a1, 16
-    /* 6CAF8 8007C2F8 1BF2010C */  jal        func_8007C86C
+    /* 6CAF8 8007C2F8 1BF2010C */  jal        get_ce
     /* 6CAFC 8007C2FC 032C0500 */   sra       $a1, $a1, 16
     /* 6CB00 8007C300 080022AE */  sw         $v0, 0x8($s1)
     /* 6CB04 8007C304 08000486 */  lh         $a0, 0x8($s0)
     /* 6CB08 8007C308 0A000586 */  lh         $a1, 0xA($s0)
-    /* 6CB0C 8007C30C 4EF2010C */  jal        func_8007C938
+    /* 6CB0C 8007C30C 4EF2010C */  jal        get_ofs
     /* 6CB10 8007C310 00000000 */   nop
     /* 6CB14 8007C314 0C0022AE */  sw         $v0, 0xC($s1)
     /* 6CB18 8007C318 17000492 */  lbu        $a0, 0x17($s0)
     /* 6CB1C 8007C31C 16000592 */  lbu        $a1, 0x16($s0)
     /* 6CB20 8007C320 14000696 */  lhu        $a2, 0x14($s0)
-    /* 6CB24 8007C324 D2F1010C */  jal        func_8007C748
+    /* 6CB24 8007C324 D2F1010C */  jal        get_mode
     /* 6CB28 8007C328 00000000 */   nop
     /* 6CB2C 8007C32C 0C000426 */  addiu      $a0, $s0, 0xC
-    /* 6CB30 8007C330 5FF2010C */  jal        func_8007C97C
+    /* 6CB30 8007C330 5FF2010C */  jal        get_tw
     /* 6CB34 8007C334 100022AE */   sw        $v0, 0x10($s1)
     /* 6CB38 8007C338 140022AE */  sw         $v0, 0x14($s1)
     /* 6CB3C 8007C33C 00E6023C */  lui        $v0, (0xE6000000 >> 16)
@@ -1373,9 +1373,9 @@ glabel SetDrawEnv
     /* 6CCB4 8007C4B4 00000000 */   nop
 endlabel SetDrawEnv
 
-nonmatching func_8007C4B8, 0x290
+nonmatching SetDrawEnv2, 0x290
 
-glabel func_8007C4B8
+glabel SetDrawEnv2
     /* 6CCB8 8007C4B8 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 6CCBC 8007C4BC 3000B0AF */  sw         $s0, 0x30($sp)
     /* 6CCC0 8007C4C0 2180A000 */  addu       $s0, $a1, $zero
@@ -1384,7 +1384,7 @@ glabel func_8007C4B8
     /* 6CCCC 8007C4CC 3800BFAF */  sw         $ra, 0x38($sp)
     /* 6CCD0 8007C4D0 00000486 */  lh         $a0, 0x0($s0)
     /* 6CCD4 8007C4D4 02000586 */  lh         $a1, 0x2($s0)
-    /* 6CCD8 8007C4D8 E8F1010C */  jal        func_8007C7A0
+    /* 6CCD8 8007C4D8 E8F1010C */  jal        get_cs
     /* 6CCDC 8007C4DC 00000000 */   nop
     /* 6CCE0 8007C4E0 040022AE */  sw         $v0, 0x4($s1)
     /* 6CCE4 8007C4E4 04000496 */  lhu        $a0, 0x4($s0)
@@ -1398,21 +1398,21 @@ glabel func_8007C4B8
     /* 6CD04 8007C504 2128A200 */  addu       $a1, $a1, $v0
     /* 6CD08 8007C508 FFFFA524 */  addiu      $a1, $a1, -0x1
     /* 6CD0C 8007C50C 002C0500 */  sll        $a1, $a1, 16
-    /* 6CD10 8007C510 1BF2010C */  jal        func_8007C86C
+    /* 6CD10 8007C510 1BF2010C */  jal        get_ce
     /* 6CD14 8007C514 032C0500 */   sra       $a1, $a1, 16
     /* 6CD18 8007C518 080022AE */  sw         $v0, 0x8($s1)
     /* 6CD1C 8007C51C 08000486 */  lh         $a0, 0x8($s0)
     /* 6CD20 8007C520 0A000586 */  lh         $a1, 0xA($s0)
-    /* 6CD24 8007C524 4EF2010C */  jal        func_8007C938
+    /* 6CD24 8007C524 4EF2010C */  jal        get_ofs
     /* 6CD28 8007C528 00000000 */   nop
     /* 6CD2C 8007C52C 0C0022AE */  sw         $v0, 0xC($s1)
     /* 6CD30 8007C530 17000492 */  lbu        $a0, 0x17($s0)
     /* 6CD34 8007C534 16000592 */  lbu        $a1, 0x16($s0)
     /* 6CD38 8007C538 14000696 */  lhu        $a2, 0x14($s0)
-    /* 6CD3C 8007C53C D2F1010C */  jal        func_8007C748
+    /* 6CD3C 8007C53C D2F1010C */  jal        get_mode
     /* 6CD40 8007C540 00000000 */   nop
     /* 6CD44 8007C544 0C000426 */  addiu      $a0, $s0, 0xC
-    /* 6CD48 8007C548 5FF2010C */  jal        func_8007C97C
+    /* 6CD48 8007C548 5FF2010C */  jal        get_tw
     /* 6CD4C 8007C54C 100022AE */   sw        $v0, 0x10($s1)
     /* 6CD50 8007C550 140022AE */  sw         $v0, 0x14($s1)
     /* 6CD54 8007C554 00E6023C */  lui        $v0, (0xE6000000 >> 16)
@@ -1546,11 +1546,11 @@ glabel func_8007C4B8
     /* 6CF3C 8007C73C 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 6CF40 8007C740 0800E003 */  jr         $ra
     /* 6CF44 8007C744 00000000 */   nop
-endlabel func_8007C4B8
+endlabel SetDrawEnv2
 
-nonmatching func_8007C748, 0x58
+nonmatching get_mode, 0x58
 
-glabel func_8007C748
+glabel get_mode
     /* 6CF48 8007C748 0A80023C */  lui        $v0, %hi(D_8009BE74)
     /* 6CF4C 8007C74C 74BE4290 */  lbu        $v0, %lo(D_8009BE74)($v0)
     /* 6CF50 8007C750 00000000 */  nop
@@ -1577,11 +1577,11 @@ glabel func_8007C748
   .L8007C798:
     /* 6CF98 8007C798 0800E003 */  jr         $ra
     /* 6CF9C 8007C79C 25106200 */   or        $v0, $v1, $v0
-endlabel func_8007C748
+endlabel get_mode
 
-nonmatching func_8007C7A0, 0xCC
+nonmatching get_cs, 0xCC
 
-glabel func_8007C7A0
+glabel get_cs
     /* 6CFA0 8007C7A0 21388000 */  addu       $a3, $a0, $zero
     /* 6CFA4 8007C7A4 00240400 */  sll        $a0, $a0, 16
     /* 6CFA8 8007C7A8 03240400 */  sra        $a0, $a0, 16
@@ -1639,11 +1639,11 @@ glabel func_8007C7A0
     /* 6D060 8007C860 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 6D064 8007C864 0800E003 */  jr         $ra
     /* 6D068 8007C868 00000000 */   nop
-endlabel func_8007C7A0
+endlabel get_cs
 
-nonmatching func_8007C86C, 0xCC
+nonmatching get_ce, 0xCC
 
-glabel func_8007C86C
+glabel get_ce
     /* 6D06C 8007C86C 21388000 */  addu       $a3, $a0, $zero
     /* 6D070 8007C870 00240400 */  sll        $a0, $a0, 16
     /* 6D074 8007C874 03240400 */  sra        $a0, $a0, 16
@@ -1701,11 +1701,11 @@ glabel func_8007C86C
     /* 6D12C 8007C92C 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 6D130 8007C930 0800E003 */  jr         $ra
     /* 6D134 8007C934 00000000 */   nop
-endlabel func_8007C86C
+endlabel get_ce
 
-nonmatching func_8007C938, 0x44
+nonmatching get_ofs, 0x44
 
-glabel func_8007C938
+glabel get_ofs
     /* 6D138 8007C938 0A80023C */  lui        $v0, %hi(D_8009BE74)
     /* 6D13C 8007C93C 74BE4290 */  lbu        $v0, %lo(D_8009BE74)($v0)
     /* 6D140 8007C940 00000000 */  nop
@@ -1725,11 +1725,11 @@ glabel func_8007C938
     /* 6D170 8007C970 25104400 */  or         $v0, $v0, $a0
     /* 6D174 8007C974 0800E003 */  jr         $ra
     /* 6D178 8007C978 25106200 */   or        $v0, $v1, $v0
-endlabel func_8007C938
+endlabel get_ofs
 
-nonmatching func_8007C97C, 0x84
+nonmatching get_tw, 0x84
 
-glabel func_8007C97C
+glabel get_tw
     /* 6D17C 8007C97C 03008014 */  bnez       $a0, .L8007C98C
     /* 6D180 8007C980 F0FFBD27 */   addiu     $sp, $sp, -0x10
     /* 6D184 8007C984 7DF20108 */  j          .L8007C9F4
@@ -1765,11 +1765,11 @@ glabel func_8007C97C
     /* 6D1F4 8007C9F4 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 6D1F8 8007C9F8 0800E003 */  jr         $ra
     /* 6D1FC 8007C9FC 00000000 */   nop
-endlabel func_8007C97C
+endlabel get_tw
 
-nonmatching func_8007CA00, 0xB0
+nonmatching get_dx, 0xB0
 
-glabel func_8007CA00
+glabel get_dx
     /* 6D200 8007CA00 0A80033C */  lui        $v1, %hi(D_8009BE74)
     /* 6D204 8007CA04 74BE6390 */  lbu        $v1, %lo(D_8009BE74)($v1)
     /* 6D208 8007CA08 01000224 */  addiu      $v0, $zero, 0x1
@@ -1820,22 +1820,22 @@ glabel func_8007CA00
   .L8007CAA8:
     /* 6D2A8 8007CAA8 0800E003 */  jr         $ra
     /* 6D2AC 8007CAAC 00000000 */   nop
-endlabel func_8007CA00
+endlabel get_dx
 
-nonmatching func_8007CAB0, 0x18
+nonmatching _status, 0x18
 
-glabel func_8007CAB0
+glabel _status
     /* 6D2B0 8007CAB0 0A80023C */  lui        $v0, %hi(D_8009BF48)
     /* 6D2B4 8007CAB4 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6D2B8 8007CAB8 00000000 */  nop
     /* 6D2BC 8007CABC 0000428C */  lw         $v0, 0x0($v0)
     /* 6D2C0 8007CAC0 0800E003 */  jr         $ra
     /* 6D2C4 8007CAC4 00000000 */   nop
-endlabel func_8007CAB0
+endlabel _status
 
-nonmatching func_8007CAC8, 0xE8
+nonmatching _otc, 0xE8
 
-glabel func_8007CAC8
+glabel _otc
     /* 6D2C8 8007CAC8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6D2CC 8007CACC 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6D2D0 8007CAD0 2180A000 */  addu       $s0, $a1, $zero
@@ -1865,7 +1865,7 @@ glabel func_8007CAC8
     /* 6D330 8007CB30 60BF428C */  lw         $v0, %lo(D_8009BF60)($v0)
     /* 6D334 8007CB34 02006334 */  ori        $v1, $v1, (0x11000002 & 0xFFFF)
     /* 6D338 8007CB38 000043AC */  sw         $v1, 0x0($v0)
-    /* 6D33C 8007CB3C 1AF7010C */  jal        func_8007DC68
+    /* 6D33C 8007CB3C 1AF7010C */  jal        set_alarm
     /* 6D340 8007CB40 00000000 */   nop
     /* 6D344 8007CB44 0A80023C */  lui        $v0, %hi(D_8009BF60)
     /* 6D348 8007CB48 60BF428C */  lw         $v0, %lo(D_8009BF60)($v0)
@@ -1877,7 +1877,7 @@ glabel func_8007CAC8
     /* 6D360 8007CB60 21100002 */   addu      $v0, $s0, $zero
     /* 6D364 8007CB64 0001113C */  lui        $s1, (0x1000000 >> 16)
   .L8007CB68:
-    /* 6D368 8007CB68 27F7010C */  jal        func_8007DC9C
+    /* 6D368 8007CB68 27F7010C */  jal        get_alarm
     /* 6D36C 8007CB6C 00000000 */   nop
     /* 6D370 8007CB70 09004014 */  bnez       $v0, .L8007CB98
     /* 6D374 8007CB74 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -1896,11 +1896,11 @@ glabel func_8007CAC8
     /* 6D3A4 8007CBA4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6D3A8 8007CBA8 0800E003 */  jr         $ra
     /* 6D3AC 8007CBAC 00000000 */   nop
-endlabel func_8007CAC8
+endlabel _otc
 
-nonmatching func_8007CBB0, 0x25C
+nonmatching _clr, 0x25C
 
-glabel func_8007CBB0
+glabel _clr
     /* 6D3B0 8007CBB0 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 6D3B4 8007CBB4 21408000 */  addu       $t0, $a0, $zero
     /* 6D3B8 8007CBB8 3800BFAF */  sw         $ra, 0x38($sp)
@@ -1998,18 +1998,18 @@ glabel func_8007CBB0
     /* 6D514 8007CD14 0000C7AC */  sw         $a3, 0x0($a2)
     /* 6D518 8007CD18 0F80013C */  lui        $at, %hi(D_800F1878)
     /* 6D51C 8007CD1C 781822AC */  sw         $v0, %lo(D_800F1878)($at)
-    /* 6D520 8007CD20 E9F4010C */  jal        gpu_GetInfo
+    /* 6D520 8007CD20 E9F4010C */  jal        _param
     /* 6D524 8007CD24 03000424 */   addiu     $a0, $zero, 0x3
     /* 6D528 8007CD28 25105000 */  or         $v0, $v0, $s0
     /* 6D52C 8007CD2C 0F80013C */  lui        $at, %hi(D_800F1880)
     /* 6D530 8007CD30 801822AC */  sw         $v0, %lo(D_800F1880)($at)
-    /* 6D534 8007CD34 E9F4010C */  jal        gpu_GetInfo
+    /* 6D534 8007CD34 E9F4010C */  jal        _param
     /* 6D538 8007CD38 04000424 */   addiu     $a0, $zero, 0x4
     /* 6D53C 8007CD3C 00E4033C */  lui        $v1, (0xE4000000 >> 16)
     /* 6D540 8007CD40 25104300 */  or         $v0, $v0, $v1
     /* 6D544 8007CD44 0F80013C */  lui        $at, %hi(D_800F1884)
     /* 6D548 8007CD48 841822AC */  sw         $v0, %lo(D_800F1884)($at)
-    /* 6D54C 8007CD4C E9F4010C */  jal        gpu_GetInfo
+    /* 6D54C 8007CD4C E9F4010C */  jal        _param
     /* 6D550 8007CD50 05000424 */   addiu     $a0, $zero, 0x5
     /* 6D554 8007CD54 25105100 */  or         $v0, $v0, $s1
     /* 6D558 8007CD58 0F80013C */  lui        $at, %hi(D_800F1888)
@@ -2050,7 +2050,7 @@ glabel func_8007CBB0
   .L8007CDE0:
     /* 6D5E0 8007CDE0 0F80043C */  lui        $a0, %hi(D_800F1858)
     /* 6D5E4 8007CDE4 58188424 */  addiu      $a0, $a0, %lo(D_800F1858)
-    /* 6D5E8 8007CDE8 D6F4010C */  jal        gpu_StartDmaList
+    /* 6D5E8 8007CDE8 D6F4010C */  jal        _cwc
     /* 6D5EC 8007CDEC 00000000 */   nop
     /* 6D5F0 8007CDF0 21100000 */  addu       $v0, $zero, $zero
     /* 6D5F4 8007CDF4 3800BF8F */  lw         $ra, 0x38($sp)
@@ -2059,11 +2059,11 @@ glabel func_8007CBB0
     /* 6D600 8007CE00 4000BD27 */  addiu      $sp, $sp, 0x40
     /* 6D604 8007CE04 0800E003 */  jr         $ra
     /* 6D608 8007CE08 00000000 */   nop
-endlabel func_8007CBB0
+endlabel _clr
 
-nonmatching func_8007CE0C, 0x23C
+nonmatching _dws, 0x23C
 
-glabel func_8007CE0C
+glabel _dws
     /* 6D60C 8007CE0C B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 6D610 8007CE10 3400B1AF */  sw         $s1, 0x34($sp)
     /* 6D614 8007CE14 21888000 */  addu       $s1, $a0, $zero
@@ -2073,7 +2073,7 @@ glabel func_8007CE0C
     /* 6D624 8007CE24 4400B5AF */  sw         $s5, 0x44($sp)
     /* 6D628 8007CE28 4000B4AF */  sw         $s4, 0x40($sp)
     /* 6D62C 8007CE2C 3C00B3AF */  sw         $s3, 0x3C($sp)
-    /* 6D630 8007CE30 1AF7010C */  jal        func_8007DC68
+    /* 6D630 8007CE30 1AF7010C */  jal        set_alarm
     /* 6D634 8007CE34 3000B0AF */   sw        $s0, 0x30($sp)
     /* 6D638 8007CE38 04002586 */  lh         $a1, 0x4($s1)
     /* 6D63C 8007CE3C 21A80000 */  addu       $s5, $zero, $zero
@@ -2136,7 +2136,7 @@ glabel func_8007CE0C
     /* 6D708 8007CF08 00A0043C */   lui       $a0, (0xA0000000 >> 16)
     /* 6D70C 8007CF0C 0004133C */  lui        $s3, (0x4000000 >> 16)
   .L8007CF10:
-    /* 6D710 8007CF10 27F7010C */  jal        func_8007DC9C
+    /* 6D710 8007CF10 27F7010C */  jal        get_alarm
     /* 6D714 8007CF14 00000000 */   nop
     /* 6D718 8007CF18 41004014 */  bnez       $v0, .L8007D020
     /* 6D71C 8007CF1C FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -2220,11 +2220,11 @@ glabel func_8007CE0C
     /* 6D83C 8007D03C 5000BD27 */  addiu      $sp, $sp, 0x50
     /* 6D840 8007D040 0800E003 */  jr         $ra
     /* 6D844 8007D044 00000000 */   nop
-endlabel func_8007CE0C
+endlabel _dws
 
-nonmatching func_8007D048, 0x284
+nonmatching _drs, 0x284
 
-glabel func_8007D048
+glabel _drs
     /* 6D848 8007D048 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 6D84C 8007D04C 3400B1AF */  sw         $s1, 0x34($sp)
     /* 6D850 8007D050 21888000 */  addu       $s1, $a0, $zero
@@ -2233,7 +2233,7 @@ glabel func_8007D048
     /* 6D85C 8007D05C 4400BFAF */  sw         $ra, 0x44($sp)
     /* 6D860 8007D060 4000B4AF */  sw         $s4, 0x40($sp)
     /* 6D864 8007D064 3C00B3AF */  sw         $s3, 0x3C($sp)
-    /* 6D868 8007D068 1AF7010C */  jal        func_8007DC68
+    /* 6D868 8007D068 1AF7010C */  jal        set_alarm
     /* 6D86C 8007D06C 3000B0AF */   sw        $s0, 0x30($sp)
     /* 6D870 8007D070 04002586 */  lh         $a1, 0x4($s1)
     /* 6D874 8007D074 00000000 */  nop
@@ -2296,7 +2296,7 @@ glabel func_8007D048
     /* 6D940 8007D140 00000000 */   nop
     /* 6D944 8007D144 0004133C */  lui        $s3, (0x4000000 >> 16)
   .L8007D148:
-    /* 6D948 8007D148 27F7010C */  jal        func_8007DC9C
+    /* 6D948 8007D148 27F7010C */  jal        get_alarm
     /* 6D94C 8007D14C 00000000 */   nop
     /* 6D950 8007D150 55004014 */  bnez       $v0, .L8007D2A8
     /* 6D954 8007D154 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -2341,7 +2341,7 @@ glabel func_8007D048
     /* 6D9EC 8007D1EC 00000000 */   nop
     /* 6D9F0 8007D1F0 0008113C */  lui        $s1, (0x8000000 >> 16)
   .L8007D1F4:
-    /* 6D9F4 8007D1F4 27F7010C */  jal        func_8007DC9C
+    /* 6D9F4 8007D1F4 27F7010C */  jal        get_alarm
     /* 6D9F8 8007D1F8 00000000 */   nop
     /* 6D9FC 8007D1FC 2A004014 */  bnez       $v0, .L8007D2A8
     /* 6DA00 8007D200 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -2400,11 +2400,11 @@ glabel func_8007D048
     /* 6DAC0 8007D2C0 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 6DAC4 8007D2C4 0800E003 */  jr         $ra
     /* 6DAC8 8007D2C8 00000000 */   nop
-endlabel func_8007D048
+endlabel _drs
 
-nonmatching func_8007D2CC, 0x28
+nonmatching _ctl, 0x28
 
-glabel func_8007D2CC
+glabel _ctl
     /* 6DACC 8007D2CC 0A80023C */  lui        $v0, %hi(D_8009BF48)
     /* 6DAD0 8007D2D0 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6DAD4 8007D2D4 00000000 */  nop
@@ -2415,21 +2415,21 @@ glabel func_8007D2CC
     /* 6DAE8 8007D2E8 9C1824A0 */  sb         $a0, %lo(D_800F189C)($at)
     /* 6DAEC 8007D2EC 0800E003 */  jr         $ra
     /* 6DAF0 8007D2F0 00000000 */   nop
-endlabel func_8007D2CC
+endlabel _ctl
 
-nonmatching func_8007D2F4, 0x14
+nonmatching _getctl, 0x14
 
-glabel func_8007D2F4
+glabel _getctl
     /* 6DAF4 8007D2F4 0F80013C */  lui        $at, %hi(D_800F189C)
     /* 6DAF8 8007D2F8 21082400 */  addu       $at, $at, $a0
     /* 6DAFC 8007D2FC 9C182290 */  lbu        $v0, %lo(D_800F189C)($at)
     /* 6DB00 8007D300 0800E003 */  jr         $ra
     /* 6DB04 8007D304 00000000 */   nop
-endlabel func_8007D2F4
+endlabel _getctl
 
-nonmatching gpu_SendData, 0x50
+nonmatching _cwb, 0x50
 
-glabel func_8007D308
+glabel _cwb
     /* 6DB08 8007D308 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 6DB0C 8007D30C FFFFA624 */  addiu      $a2, $a1, -0x1
     /* 6DB10 8007D310 0A80033C */  lui        $v1, %hi(D_8009BF48)
@@ -2452,11 +2452,11 @@ glabel func_8007D308
     /* 6DB4C 8007D34C 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 6DB50 8007D350 0800E003 */  jr         $ra
     /* 6DB54 8007D354 00000000 */   nop
-endlabel func_8007D308
+endlabel _cwb
 
-nonmatching gpu_StartDmaList, 0x4C
+nonmatching _cwc, 0x4C
 
-glabel func_8007D358
+glabel _cwc
     /* 6DB58 8007D358 0004033C */  lui        $v1, (0x4000002 >> 16)
     /* 6DB5C 8007D35C 0A80023C */  lui        $v0, %hi(D_8009BF48)
     /* 6DB60 8007D360 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
@@ -2476,11 +2476,11 @@ glabel func_8007D358
     /* 6DB98 8007D398 000043AC */  sw         $v1, 0x0($v0)
     /* 6DB9C 8007D39C 0800E003 */  jr         $ra
     /* 6DBA0 8007D3A0 00000000 */   nop
-endlabel func_8007D358
+endlabel _cwc
 
-nonmatching gpu_GetInfo, 0x30
+nonmatching _param, 0x30
 
-glabel func_8007D3A4
+glabel _param
     /* 6DBA4 8007D3A4 0010023C */  lui        $v0, (0x10000000 >> 16)
     /* 6DBA8 8007D3A8 0A80033C */  lui        $v1, %hi(D_8009BF48)
     /* 6DBAC 8007D3AC 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
@@ -2493,25 +2493,25 @@ glabel func_8007D3A4
     /* 6DBC8 8007D3C8 FFFF6334 */  ori        $v1, $v1, (0xFFFFFF & 0xFFFF)
     /* 6DBCC 8007D3CC 0800E003 */  jr         $ra
     /* 6DBD0 8007D3D0 24104300 */   and       $v0, $v0, $v1
-endlabel func_8007D3A4
+endlabel _param
 
-nonmatching func_8007D3D4, 0x24
+nonmatching _addque, 0x24
 
-glabel func_8007D3D4
+glabel _addque
     /* 6DBD4 8007D3D4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6DBD8 8007D3D8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6DBDC 8007D3DC 2138C000 */  addu       $a3, $a2, $zero
-    /* 6DBE0 8007D3E0 FEF4010C */  jal        func_8007D3F8
+    /* 6DBE0 8007D3E0 FEF4010C */  jal        _addque2
     /* 6DBE4 8007D3E4 21300000 */   addu      $a2, $zero, $zero
     /* 6DBE8 8007D3E8 1000BF8F */  lw         $ra, 0x10($sp)
     /* 6DBEC 8007D3EC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6DBF0 8007D3F0 0800E003 */  jr         $ra
     /* 6DBF4 8007D3F4 00000000 */   nop
-endlabel func_8007D3D4
+endlabel _addque
 
-nonmatching func_8007D3F8, 0x2E0
+nonmatching _addque2, 0x2E0
 
-glabel func_8007D3F8
+glabel _addque2
     /* 6DBF8 8007D3F8 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 6DBFC 8007D3FC 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 6DC00 8007D400 21988000 */  addu       $s3, $a0, $zero
@@ -2521,16 +2521,16 @@ glabel func_8007D3F8
     /* 6DC10 8007D410 2188C000 */  addu       $s1, $a2, $zero
     /* 6DC14 8007D414 1800B2AF */  sw         $s2, 0x18($sp)
     /* 6DC18 8007D418 2000BFAF */  sw         $ra, 0x20($sp)
-    /* 6DC1C 8007D41C 1AF7010C */  jal        func_8007DC68
+    /* 6DC1C 8007D41C 1AF7010C */  jal        set_alarm
     /* 6DC20 8007D420 2190E000 */   addu      $s2, $a3, $zero
     /* 6DC24 8007D424 11F50108 */  j          .L8007D444
     /* 6DC28 8007D428 00000000 */   nop
   .L8007D42C:
-    /* 6DC2C 8007D42C 27F7010C */  jal        func_8007DC9C
+    /* 6DC2C 8007D42C 27F7010C */  jal        get_alarm
     /* 6DC30 8007D430 00000000 */   nop
     /* 6DC34 8007D434 A0004014 */  bnez       $v0, .L8007D6B8
     /* 6DC38 8007D438 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 6DC3C 8007D43C B6F5010C */  jal        func_8007D6D8
+    /* 6DC3C 8007D43C B6F5010C */  jal        _exeque
     /* 6DC40 8007D440 00000000 */   nop
   .L8007D444:
     /* 6DC44 8007D444 0A80023C */  lui        $v0, %hi(D_8009BF78)
@@ -2599,8 +2599,8 @@ glabel func_8007D3F8
     /* 6DD38 8007D538 AEF50108 */  j          .L8007D6B8
     /* 6DD3C 8007D53C 21100000 */   addu      $v0, $zero, $zero
   .L8007D540:
-    /* 6DD40 8007D540 0880053C */  lui        $a1, %hi(func_8007D6D8)
-    /* 6DD44 8007D544 D8D6A524 */  addiu      $a1, $a1, %lo(func_8007D6D8)
+    /* 6DD40 8007D540 0880053C */  lui        $a1, %hi(_exeque)
+    /* 6DD44 8007D544 D8D6A524 */  addiu      $a1, $a1, %lo(_exeque)
     /* 6DD48 8007D548 C80A020C */  jal        DMACallback
     /* 6DD4C 8007D54C 02000424 */   addiu     $a0, $zero, 0x2
     /* 6DD50 8007D550 2B002012 */  beqz       $s1, .L8007D600
@@ -2689,7 +2689,7 @@ glabel func_8007D3F8
     /* 6DE88 8007D688 78BF22AC */  sw         $v0, %lo(D_8009BF78)($at)
     /* 6DE8C 8007D68C 0F0B020C */  jal        SetIntrMask
     /* 6DE90 8007D690 00000000 */   nop
-    /* 6DE94 8007D694 B6F5010C */  jal        func_8007D6D8
+    /* 6DE94 8007D694 B6F5010C */  jal        _exeque
     /* 6DE98 8007D698 00000000 */   nop
     /* 6DE9C 8007D69C 0A80023C */  lui        $v0, %hi(D_8009BF78)
     /* 6DEA0 8007D6A0 78BF428C */  lw         $v0, %lo(D_8009BF78)($v0)
@@ -2707,11 +2707,11 @@ glabel func_8007D3F8
     /* 6DECC 8007D6CC 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 6DED0 8007D6D0 0800E003 */  jr         $ra
     /* 6DED4 8007D6D4 00000000 */   nop
-endlabel func_8007D3F8
+endlabel _addque2
 
-nonmatching func_8007D6D8, 0x2EC
+nonmatching _exeque, 0x2EC
 
-glabel func_8007D6D8
+glabel _exeque
     /* 6DED8 8007D6D8 0A80023C */  lui        $v0, %hi(D_8009BF54)
     /* 6DEDC 8007D6DC 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
     /* 6DEE0 8007D6E0 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -2906,11 +2906,11 @@ glabel func_8007D6D8
     /* 6E1B8 8007D9B8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6E1BC 8007D9BC 0800E003 */  jr         $ra
     /* 6E1C0 8007D9C0 00000000 */   nop
-endlabel func_8007D6D8
+endlabel _exeque
 
-nonmatching func_8007D9C4, 0x15C
+nonmatching _reset, 0x15C
 
-glabel func_8007D9C4
+glabel _reset
     /* 6E1C4 8007D9C4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E1C8 8007D9C8 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6E1CC 8007D9CC 21808000 */  addu       $s0, $a0, $zero
@@ -2958,12 +2958,12 @@ glabel func_8007D9C4
     /* 6E26C 8007DA6C 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6E270 8007DA70 00010624 */  addiu      $a2, $zero, 0x100
     /* 6E274 8007DA74 000040AC */  sw         $zero, 0x0($v0)
-    /* 6E278 8007DA78 B9F7010C */  jal        bb2_memset
+    /* 6E278 8007DA78 B9F7010C */  jal        memset
     /* 6E27C 8007DA7C 00000000 */   nop
     /* 6E280 8007DA80 1080043C */  lui        $a0, %hi(D_80103680)
     /* 6E284 8007DA84 80368424 */  addiu      $a0, $a0, %lo(D_80103680)
     /* 6E288 8007DA88 21280000 */  addu       $a1, $zero, $zero
-    /* 6E28C 8007DA8C B9F7010C */  jal        bb2_memset
+    /* 6E28C 8007DA8C B9F7010C */  jal        memset
     /* 6E290 8007DA90 00180624 */   addiu     $a2, $zero, 0x1800
     /* 6E294 8007DA94 BAF60108 */  j          .L8007DAE8
     /* 6E298 8007DA98 00000000 */   nop
@@ -2995,7 +2995,7 @@ glabel func_8007D9C4
     /* 6E2F8 8007DAF8 07000232 */  andi       $v0, $s0, 0x7
     /* 6E2FC 8007DAFC 03004014 */  bnez       $v0, .L8007DB0C
     /* 6E300 8007DB00 21100000 */   addu      $v0, $zero, $zero
-    /* 6E304 8007DB04 82F7010C */  jal        func_8007DE08
+    /* 6E304 8007DB04 82F7010C */  jal        _version
     /* 6E308 8007DB08 21200002 */   addu      $a0, $s0, $zero
   .L8007DB0C:
     /* 6E30C 8007DB0C 1400BF8F */  lw         $ra, 0x14($sp)
@@ -3003,23 +3003,23 @@ glabel func_8007D9C4
     /* 6E314 8007DB14 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6E318 8007DB18 0800E003 */  jr         $ra
     /* 6E31C 8007DB1C 00000000 */   nop
-endlabel func_8007D9C4
+endlabel _reset
 
-nonmatching func_8007DB20, 0x148
+nonmatching _sync, 0x148
 
-glabel func_8007DB20
+glabel _sync
     /* 6E320 8007DB20 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E324 8007DB24 1400BFAF */  sw         $ra, 0x14($sp)
     /* 6E328 8007DB28 2A008014 */  bnez       $a0, .L8007DBD4
     /* 6E32C 8007DB2C 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 6E330 8007DB30 1AF7010C */  jal        func_8007DC68
+    /* 6E330 8007DB30 1AF7010C */  jal        set_alarm
     /* 6E334 8007DB34 00000000 */   nop
     /* 6E338 8007DB38 D6F60108 */  j          .L8007DB58
     /* 6E33C 8007DB3C 00000000 */   nop
   .L8007DB40:
-    /* 6E340 8007DB40 B6F5010C */  jal        func_8007D6D8
+    /* 6E340 8007DB40 B6F5010C */  jal        _exeque
     /* 6E344 8007DB44 00000000 */   nop
-    /* 6E348 8007DB48 27F7010C */  jal        func_8007DC9C
+    /* 6E348 8007DB48 27F7010C */  jal        get_alarm
     /* 6E34C 8007DB4C 00000000 */   nop
     /* 6E350 8007DB50 40004014 */  bnez       $v0, .L8007DC54
     /* 6E354 8007DB54 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -3034,7 +3034,7 @@ glabel func_8007DB20
     /* 6E374 8007DB74 D0F60108 */  j          .L8007DB40
     /* 6E378 8007DB78 00000000 */   nop
   .L8007DB7C:
-    /* 6E37C 8007DB7C 27F7010C */  jal        func_8007DC9C
+    /* 6E37C 8007DB7C 27F7010C */  jal        get_alarm
     /* 6E380 8007DB80 00000000 */   nop
     /* 6E384 8007DB84 33004014 */  bnez       $v0, .L8007DC54
     /* 6E388 8007DB88 FFFF0224 */   addiu     $v0, $zero, -0x1
@@ -3067,7 +3067,7 @@ glabel func_8007DB20
     /* 6E3EC 8007DBEC 3F005030 */  andi       $s0, $v0, 0x3F
     /* 6E3F0 8007DBF0 03000012 */  beqz       $s0, .L8007DC00
     /* 6E3F4 8007DBF4 00000000 */   nop
-    /* 6E3F8 8007DBF8 B6F5010C */  jal        func_8007D6D8
+    /* 6E3F8 8007DBF8 B6F5010C */  jal        _exeque
     /* 6E3FC 8007DBFC 00000000 */   nop
   .L8007DC00:
     /* 6E400 8007DC00 0A80023C */  lui        $v0, %hi(D_8009BF54)
@@ -3099,11 +3099,11 @@ glabel func_8007DB20
     /* 6E45C 8007DC5C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6E460 8007DC60 0800E003 */  jr         $ra
     /* 6E464 8007DC64 00000000 */   nop
-endlabel func_8007DB20
+endlabel _sync
 
-nonmatching func_8007DC68, 0x34
+nonmatching set_alarm, 0x34
 
-glabel func_8007DC68
+glabel set_alarm
     /* 6E468 8007DC68 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6E46C 8007DC6C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6E470 8007DC70 330A020C */  jal        VSync
@@ -3117,11 +3117,11 @@ glabel func_8007DC68
     /* 6E490 8007DC90 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 6E494 8007DC94 0800E003 */  jr         $ra
     /* 6E498 8007DC98 00000000 */   nop
-endlabel func_8007DC68
+endlabel set_alarm
 
-nonmatching func_8007DC9C, 0x16C
+nonmatching get_alarm, 0x16C
 
-glabel func_8007DC9C
+glabel get_alarm
     /* 6E49C 8007DC9C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 6E4A0 8007DCA0 1800BFAF */  sw         $ra, 0x18($sp)
     /* 6E4A4 8007DCA4 330A020C */  jal        VSync
@@ -3216,11 +3216,11 @@ glabel func_8007DC9C
     /* 6E5FC 8007DDFC 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 6E600 8007DE00 0800E003 */  jr         $ra
     /* 6E604 8007DE04 00000000 */   nop
-endlabel func_8007DC9C
+endlabel get_alarm
 
-nonmatching func_8007DE08, 0xDC
+nonmatching _version, 0xDC
 
-glabel func_8007DE08
+glabel _version
     /* 6E608 8007DE08 0010033C */  lui        $v1, (0x10000007 >> 16)
     /* 6E60C 8007DE0C 0A80023C */  lui        $v0, %hi(D_8009BF48)
     /* 6E610 8007DE10 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
@@ -3281,11 +3281,11 @@ glabel func_8007DE08
   .L8007DEDC:
     /* 6E6DC 8007DEDC 0800E003 */  jr         $ra
     /* 6E6E0 8007DEE0 00000000 */   nop
-endlabel func_8007DE08
+endlabel _version
 
-nonmatching bb2_memset, 0x2C
+nonmatching memset, 0x2C
 
-glabel func_8007DEE4
+glabel memset
     /* 6E6E4 8007DEE4 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 6E6E8 8007DEE8 0600C010 */  beqz       $a2, .L8007DF04
     /* 6E6EC 8007DEEC FFFFC224 */   addiu     $v0, $a2, -0x1
@@ -3299,7 +3299,7 @@ glabel func_8007DEE4
     /* 6E704 8007DF04 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 6E708 8007DF08 0800E003 */  jr         $ra
     /* 6E70C 8007DF0C 00000000 */   nop
-endlabel func_8007DEE4
+endlabel memset
 
 nonmatching GPU_cw, 0xC
 
@@ -5705,16 +5705,16 @@ glabel CdInit
     /* 70794 8007FF94 01000324 */  addiu      $v1, $zero, 0x1
     /* 70798 8007FF98 11004314 */  bne        $v0, $v1, .L8007FFE0
     /* 7079C 8007FF9C FFFF1026 */   addiu     $s0, $s0, -0x1
-    /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(D_80080014)
-    /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(D_80080014)
+    /* 707A0 8007FFA0 0880043C */  lui        $a0, %hi(def_cbsync)
+    /* 707A4 8007FFA4 14008424 */  addiu      $a0, $a0, %lo(def_cbsync)
     /* 707A8 8007FFA8 8A00020C */  jal        CdSyncCallback
     /* 707AC 8007FFAC 00000000 */   nop
-    /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(D_8008003C)
-    /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(D_8008003C)
+    /* 707B0 8007FFB0 0880043C */  lui        $a0, %hi(def_cbready)
+    /* 707B4 8007FFB4 3C008424 */  addiu      $a0, $a0, %lo(def_cbready)
     /* 707B8 8007FFB8 9000020C */  jal        CdReadyCallback
     /* 707BC 8007FFBC 00000000 */   nop
-    /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(D_80080064)
-    /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(D_80080064)
+    /* 707C0 8007FFC0 0880043C */  lui        $a0, %hi(def_cbread)
+    /* 707C4 8007FFC4 64008424 */  addiu      $a0, $a0, %lo(def_cbread)
     /* 707C8 8007FFC8 270A020C */  jal        CdReadCallback
     /* 707CC 8007FFCC 00000000 */   nop
     /* 707D0 8007FFD0 2D0A020C */  jal        CdReadMode
@@ -5736,7 +5736,7 @@ glabel CdInit
     /* 70808 80080008 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7080C 8008000C 0800E003 */  jr         $ra
     /* 70810 80080010 00000000 */   nop
-  alabel D_80080014
+  alabel def_cbsync
     /* 70814 80080014 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70818 80080018 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7081C 8008001C 00F0043C */  lui        $a0, (0xF0000003 >> 16)
@@ -5747,7 +5747,7 @@ glabel CdInit
     /* 70830 80080030 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 70834 80080034 0800E003 */  jr         $ra
     /* 70838 80080038 00000000 */   nop
-  alabel D_8008003C
+  alabel def_cbready
     /* 7083C 8008003C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70840 80080040 1000BFAF */  sw         $ra, 0x10($sp)
     /* 70844 80080044 00F0043C */  lui        $a0, (0xF0000003 >> 16)
@@ -5758,7 +5758,7 @@ glabel CdInit
     /* 70858 80080058 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7085C 8008005C 0800E003 */  jr         $ra
     /* 70860 80080060 00000000 */   nop
-  alabel D_80080064
+  alabel def_cbread
     /* 70864 80080064 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 70868 80080068 1000BFAF */  sw         $ra, 0x10($sp)
     /* 7086C 8008006C 00F0043C */  lui        $a0, (0xF0000003 >> 16)

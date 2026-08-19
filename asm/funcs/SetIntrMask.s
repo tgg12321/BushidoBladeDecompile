@@ -34,7 +34,7 @@ glabel SetIntrMask
     /* 734BC 80082CBC 38000426 */   addiu     $a0, $s0, 0x38
     /* 734C0 80082CC0 03004010 */  beqz       $v0, .L80082CD0
     /* 734C4 80082CC4 00000000 */   nop
-    /* 734C8 80082CC8 4D0B020C */  jal        func_80082D34
+    /* 734C8 80082CC8 4D0B020C */  jal        trapIntr
     /* 734CC 80082CCC 00000000 */   nop
   .L80082CD0:
     /* 734D0 80082CD0 0A80103C */  lui        $s0, %hi(D_800A15B4)

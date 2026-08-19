@@ -1446,7 +1446,7 @@ void EnterCriticalSection(void);
 void _patch_pad(void);
 void ExitCriticalSection(void);
 void ChangeClearPAD(s32);
-s32 func_80078DA0(void);
+s32 SetPatchPad(void);
 void PAD_init2(s32, s32, s32, s32);
 void _send_pad(void);
 extern s32 D_8009BD80;
@@ -1456,7 +1456,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
     _patch_pad();
     ExitCriticalSection();
     ChangeClearPAD(0);
-    func_80078DA0();
+    SetPatchPad();
     PAD_init2(a0, a1, a2, a3);
     _send_pad();
     D_8009BD80 = 1;
@@ -1466,7 +1466,7 @@ void EnterCriticalSection(void);
 void _patch_pad(void);
 void ExitCriticalSection(void);
 void ChangeClearPAD(s32);
-s32 func_80078DA0(void);
+s32 SetPatchPad(void);
 void InitPAD2(s32, s32, s32, s32);
 void _send_pad(void);
 extern s32 D_8009BD80;
@@ -1476,7 +1476,7 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
     _patch_pad();
     ExitCriticalSection();
     ChangeClearPAD(0);
-    func_80078DA0();
+    SetPatchPad();
     InitPAD2(a0, a1, a2, a3);
     _send_pad();
     D_8009BD80 = 1;
@@ -1492,29 +1492,29 @@ void StartPAD(void) {
 extern s32 D_8009BD80;
 void DisablePAD(void);
 void StopPAD2(void);
-s32 func_80078E20(void);
+s32 RemovePatchPad(void);
 void StopPAD(void) {
     DisablePAD();
     StopPAD2();
-    func_80078E20();
+    RemovePatchPad();
     D_8009BD80 = 0;
 }
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void SysDeqIntRP(s32, u32 *);
 extern void SysEnqIntRP(s32, u32 *);
-extern void func_80078E58(void);
-extern s32 func_80078EC0(void);
+extern void _Pad1(void);
+extern s32 _IsVSync(void);
 extern u32 D_800F183C;
 extern u32 D_800F1840;
 extern u32 D_800F1838;
 extern u32 D_800F1844;
-s32 func_80078DA0(void) {
+s32 SetPatchPad(void) {
     u32 *v1 = &D_800F183C;
     u32 *s0 = v1 - 1;
     EnterCriticalSection();
-    *v1 = (u32)func_80078E58;
-    D_800F1840 = (u32)func_80078EC0;
+    *v1 = (u32)_Pad1;
+    D_800F1840 = (u32)_IsVSync;
     D_800F1838 = 0;
     D_800F1844 = 0;
     SysDeqIntRP(1, s0);
@@ -1526,7 +1526,7 @@ void EnterCriticalSection(void);
 void SysDeqIntRP(s32, s16*);
 void ExitCriticalSection(void);
 extern s16 D_800F1838;
-s32 func_80078E20(void) {
+s32 RemovePatchPad(void) {
     EnterCriticalSection();
     SysDeqIntRP(1, &D_800F1838);
     ExitCriticalSection();
@@ -1536,7 +1536,7 @@ s32 func_80078E20(void) {
    (census 2026-07-09). FAKE(partial-use volatile array, Ruling 3
    2026-07-10): volatile delay-counter array, only [0] used (frame 16 =
    i[3]) — SOTN vsync.c precedent; original author idiom. */
-s32 func_80078E58(void) {
+s32 _Pad1(void) {
     volatile s32 i[3];
     *(s16 *)((u8 *)D_8009BD84 + 0xA) = 0;
     i[0] = 10;
@@ -1548,7 +1548,7 @@ s32 func_80078E58(void) {
     }
     return 0;
 }
-s32 func_80078EC0(void) {
+s32 _IsVSync(void) {
     s32 *p = (s32 *)D_8009BD88;
     s32 ret;
     if ((p[1] & 1) == 0) return 0;

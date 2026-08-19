@@ -21,7 +21,7 @@ glabel PutDrawEnv
   .L8007B9FC:
     /* 6C1FC 8007B9FC 1C003026 */  addiu      $s0, $s1, 0x1C
     /* 6C200 8007BA00 21200002 */  addu       $a0, $s0, $zero
-    /* 6C204 8007BA04 2EF1010C */  jal        func_8007C4B8
+    /* 6C204 8007BA04 2EF1010C */  jal        SetDrawEnv2
     /* 6C208 8007BA08 21282002 */   addu      $a1, $s1, $zero
     /* 6C20C 8007BA0C FF00043C */  lui        $a0, (0xFFFFFF >> 16)
     /* 6C210 8007BA10 FFFF8434 */  ori        $a0, $a0, (0xFFFFFF & 0xFFFF)

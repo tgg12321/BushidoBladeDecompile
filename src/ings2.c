@@ -54,7 +54,7 @@ extern volatile s32 *D_800A1510;
 extern volatile s32 *D_800A1514;
 extern s32 D_800A1518;
 extern s32 D_800A151C;
-void func_80082A14(s32 a0, s32 a1);
+void v_wait(s32 a0, s32 a1);
 
 s32 VSync(s32 a0) {
     s32 s0_val;
@@ -84,11 +84,11 @@ s32 VSync(s32 a0) {
         if (a0 > 0) {
             count = a0 - 1;
         }
-        func_80082A14(frame, count);
+        v_wait(frame, count);
     }
 
     s0_val = *D_800A1510;
-    func_80082A14(g_sys_dma_region + 1, 1);
+    v_wait(g_sys_dma_region + 1, 1);
 
     if (s0_val & 0x400000) {
         volatile s32 *ptr = D_800A1510;
@@ -113,7 +113,7 @@ extern void ChangeClearRCnt(s32, s32);
    FAKE(partial-use volatile array, Ruling 3 2026-07-10): only [0] is
    referenced — SOTN ships the identical `volatile s32 timeout[2]` shape;
    original author idiom. */
-void func_80082A14(s32 a0, s32 a1) {
+void v_wait(s32 a0, s32 a1) {
     volatile s32 timeout[2];
 
     timeout[0] = a1 << 0xF;
@@ -190,7 +190,7 @@ extern volatile s32 *D_800A260C;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 extern s32 func_800831A4(u16 *, s32);
 extern s32 setjmp(u16 *);
-extern void func_80082D34(void);
+extern void trapIntr(void);
 extern void HookEntryInt(s32 *);
 extern s32 startIntrVSync();
 extern s32 startIntrDMA();
@@ -203,7 +203,7 @@ u16 SetIntrMask(u16 arg0) {
 }
 
 /* startIntr (LIBETC intr.c static) */
-u16 *func_80082C58(void) {
+u16 *startIntr(void) {
     if (D_800A1578.interruptsInitialized) {
         return 0;
     }
@@ -212,7 +212,7 @@ u16 *func_80082C58(void) {
     *D_800A260C = 0x33333333;
     func_800831A4((u16 *)&D_800A1578, 0x41A);
     if (setjmp((u16 *)D_800A1578.buf) != 0) {
-        func_80082D34();
+        trapIntr();
     }
     D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
     HookEntryInt(D_800A1578.buf);
@@ -244,7 +244,7 @@ extern void ReturnFromException(void);
 extern void ResetEntryInt(void);
 
 /* trapIntr */
-void func_80082D34(void) {
+void trapIntr(void) {
     s32 i;
     u16 mask;
 

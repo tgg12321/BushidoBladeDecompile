@@ -9,7 +9,7 @@ glabel MoveImage
     /* 6BEE4 8007B6E4 0180043C */  lui        $a0, %hi(D_80015F74)
     /* 6BEE8 8007B6E8 745F8424 */  addiu      $a0, $a0, %lo(D_80015F74)
     /* 6BEEC 8007B6EC 1C00BFAF */  sw         $ra, 0x1C($sp)
-    /* 6BEF0 8007B6F0 EAEC010C */  jal        func_8007B3A8
+    /* 6BEF0 8007B6F0 EAEC010C */  jal        checkRECT
     /* 6BEF4 8007B6F4 21280002 */   addu      $a1, $s0, $zero
     /* 6BEF8 8007B6F8 04000286 */  lh         $v0, 0x4($s0)
     /* 6BEFC 8007B6FC 00000000 */  nop

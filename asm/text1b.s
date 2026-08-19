@@ -54681,7 +54681,7 @@ glabel PAD_init
     /* 69440 80078C40 00000000 */   nop
     /* 69444 80078C44 96E2010C */  jal        ChangeClearPAD
     /* 69448 80078C48 21200000 */   addu      $a0, $zero, $zero
-    /* 6944C 80078C4C 68E3010C */  jal        func_80078DA0
+    /* 6944C 80078C4C 68E3010C */  jal        SetPatchPad
     /* 69450 80078C50 00000000 */   nop
     /* 69454 80078C54 21200002 */  addu       $a0, $s0, $zero
     /* 69458 80078C58 21282002 */  addu       $a1, $s1, $zero
@@ -54725,7 +54725,7 @@ glabel InitPAD
     /* 694DC 80078CDC 00000000 */   nop
     /* 694E0 80078CE0 96E2010C */  jal        ChangeClearPAD
     /* 694E4 80078CE4 21200000 */   addu      $a0, $zero, $zero
-    /* 694E8 80078CE8 68E3010C */  jal        func_80078DA0
+    /* 694E8 80078CE8 68E3010C */  jal        SetPatchPad
     /* 694EC 80078CEC 00000000 */   nop
     /* 694F0 80078CF0 21200002 */  addu       $a0, $s0, $zero
     /* 694F4 80078CF4 21282002 */  addu       $a1, $s1, $zero
@@ -54773,7 +54773,7 @@ glabel StopPAD
     /* 69574 80078D74 00000000 */   nop
     /* 69578 80078D78 C8E3010C */  jal        StopPAD2
     /* 6957C 80078D7C 00000000 */   nop
-    /* 69580 80078D80 88E3010C */  jal        func_80078E20
+    /* 69580 80078D80 88E3010C */  jal        RemovePatchPad
     /* 69584 80078D84 00000000 */   nop
     /* 69588 80078D88 0A80013C */  lui        $at, %hi(D_8009BD80)
     /* 6958C 80078D8C 80BD20AC */  sw         $zero, %lo(D_8009BD80)($at)
@@ -54783,9 +54783,9 @@ glabel StopPAD
     /* 6959C 80078D9C 00000000 */   nop
 endlabel StopPAD
 
-nonmatching func_80078DA0, 0x80
+nonmatching SetPatchPad, 0x80
 
-glabel func_80078DA0
+glabel SetPatchPad
     /* 695A0 80078DA0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 695A4 80078DA4 1400BFAF */  sw         $ra, 0x14($sp)
     /* 695A8 80078DA8 6EE2010C */  jal        EnterCriticalSection
@@ -54794,11 +54794,11 @@ glabel func_80078DA0
     /* 695B4 80078DB4 0F80033C */  lui        $v1, %hi(D_800F183C)
     /* 695B8 80078DB8 3C186324 */  addiu      $v1, $v1, %lo(D_800F183C)
     /* 695BC 80078DBC FCFF7024 */  addiu      $s0, $v1, -0x4
-    /* 695C0 80078DC0 0880023C */  lui        $v0, %hi(func_80078E58)
-    /* 695C4 80078DC4 588E4224 */  addiu      $v0, $v0, %lo(func_80078E58)
+    /* 695C0 80078DC0 0880023C */  lui        $v0, %hi(_Pad1)
+    /* 695C4 80078DC4 588E4224 */  addiu      $v0, $v0, %lo(_Pad1)
     /* 695C8 80078DC8 000062AC */  sw         $v0, 0x0($v1)
-    /* 695CC 80078DCC 0880023C */  lui        $v0, %hi(func_80078EC0)
-    /* 695D0 80078DD0 C08E4224 */  addiu      $v0, $v0, %lo(func_80078EC0)
+    /* 695CC 80078DCC 0880023C */  lui        $v0, %hi(_IsVSync)
+    /* 695D0 80078DD0 C08E4224 */  addiu      $v0, $v0, %lo(_IsVSync)
     /* 695D4 80078DD4 0F80013C */  lui        $at, %hi(D_800F1840)
     /* 695D8 80078DD8 401822AC */  sw         $v0, %lo(D_800F1840)($at)
     /* 695DC 80078DDC 0F80013C */  lui        $at, %hi(D_800F1838)
@@ -54818,11 +54818,11 @@ glabel func_80078DA0
     /* 69614 80078E14 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 69618 80078E18 0800E003 */  jr         $ra
     /* 6961C 80078E1C 00000000 */   nop
-endlabel func_80078DA0
+endlabel SetPatchPad
 
-nonmatching func_80078E20, 0x38
+nonmatching RemovePatchPad, 0x38
 
-glabel func_80078E20
+glabel RemovePatchPad
     /* 69620 80078E20 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 69624 80078E24 1000BFAF */  sw         $ra, 0x10($sp)
     /* 69628 80078E28 6EE2010C */  jal        EnterCriticalSection
@@ -54837,11 +54837,11 @@ glabel func_80078E20
     /* 6964C 80078E4C 01000224 */  addiu      $v0, $zero, 0x1
     /* 69650 80078E50 0800E003 */  jr         $ra
     /* 69654 80078E54 1800BD27 */   addiu     $sp, $sp, 0x18
-endlabel func_80078E20
+endlabel RemovePatchPad
 
-nonmatching func_80078E58, 0x68
+nonmatching _Pad1, 0x68
 
-glabel func_80078E58
+glabel _Pad1
     /* 69658 80078E58 0A80023C */  lui        $v0, %hi(D_8009BD84)
     /* 6965C 80078E5C 84BD428C */  lw         $v0, %lo(D_8009BD84)($v0)
     /* 69660 80078E60 F0FFBD27 */  addiu      $sp, $sp, -0x10
@@ -54870,11 +54870,11 @@ glabel func_80078E58
     /* 696B4 80078EB4 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 696B8 80078EB8 0800E003 */  jr         $ra
     /* 696BC 80078EBC 00000000 */   nop
-endlabel func_80078E58
+endlabel _Pad1
 
-nonmatching func_80078EC0, 0x40
+nonmatching _IsVSync, 0x40
 
-glabel func_80078EC0
+glabel _IsVSync
     /* 696C0 80078EC0 0A80033C */  lui        $v1, %hi(D_8009BD88)
     /* 696C4 80078EC4 88BD638C */  lw         $v1, %lo(D_8009BD88)($v1)
     /* 696C8 80078EC8 00000000 */  nop
@@ -54892,7 +54892,7 @@ glabel func_80078EC0
   .L80078EF8:
     /* 696F8 80078EF8 0800E003 */  jr         $ra
     /* 696FC 80078EFC 00000000 */   nop
-endlabel func_80078EC0
+endlabel _IsVSync
 
 nonmatching InitPAD2, 0xC
 

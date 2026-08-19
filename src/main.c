@@ -9,7 +9,7 @@ extern void SpuSetReverb(s32);
 extern void spu_InitEx(s32);
 extern s32 SpuIsTransferCompleted(s32);
 extern void _SsSeqPlay(s16, s16);
-extern s16 func_800880E8(u8 *, s16, s16, u32);
+extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
 extern s32 func_80089A48(s32, u32, s32, s32);
 
 /* Externs for globals */
@@ -128,7 +128,7 @@ typedef struct {
 } SndSeqTickEnv;
 extern SndSeqTickEnv D_800A26CC;
 
-void func_80083C34(s32 arg0) {
+void _SsStart(s32 arg0) {
     u16 rcnt_target;
     u32 rcnt_spec;
 
@@ -226,10 +226,10 @@ void spu_SetMotionActive(s32 a0, s16 a1);   /* _SsSndReplay */
 void _SsSndStop(s16 a0, s16 a1);         /* _SsSndStop */
 
 void SsStart(void) {
-    func_80083C34(1);
+    _SsStart(1);
 }
 static void SsStart2(void) {
-    func_80083C34(0);
+    _SsStart(0);
 }
 static void D_80083EDC(void) {
     if (D_800A26CC.unk12 != 0) {
@@ -1315,15 +1315,15 @@ s16 SsVabFakeBody(s16 a0) {
 }
 
 s16 SsVabOpenHead(s32 a0, s16 a1) {
-    return func_800880E8((u8 *)a0, a1, 0, 0);
+    return SsVabOpenHeadWithMode((u8 *)a0, a1, 0, 0);
 }
 
 s16 SsVabOpenHeadSticky(s32 a0, s16 a1, s32 a2) {
-    return func_800880E8((u8 *)a0, a1, 1, (u32)a2);
+    return SsVabOpenHeadWithMode((u8 *)a0, a1, 1, (u32)a2);
 }
 
 s16 SsVabFakeHead(s32 a0, s16 a1, s32 a2) {
-    return func_800880E8((u8 *)a0, a1, 1, (u32)a2);
+    return SsVabOpenHeadWithMode((u8 *)a0, a1, 1, (u32)a2);
 }
 /* PsyQ VabHdr (libsnd) — VAB bank header */
 typedef struct {
@@ -1360,7 +1360,7 @@ extern s32 D_801077C8[];
 extern s32 SpuMalloc(s32);
 /* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
-s16 func_800880E8(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
+s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
     int vagLens[256];
     s32 i;
     s32 var_s0;
@@ -1644,7 +1644,7 @@ s32 _spu_init(s32 a0) {
         *(volatile u16 *)(D_800A2CDC + 0x1B2) = 0;
         *(volatile u16 *)(D_800A2CDC + 0x1B4) = 0;
         *(volatile u16 *)(D_800A2CDC + 0x1B6) = 0;
-        func_800889D4((s32)&D_800A2D1C, 0x10);
+        _spu_FwriteByIO((s32)&D_800A2D1C, 0x10);
 
         vp = (volatile u16 *)D_800A2CDC;
         for (channel = 0; channel < 0x18; channel++) {
@@ -1679,7 +1679,7 @@ s32 _spu_init(s32 a0) {
     D_800A2D18 = 0;
     return 0;
 }
-INCLUDE_ASM("asm/funcs", func_800889D4);
+INCLUDE_ASM("asm/funcs", _spu_FwriteByIO);
 /* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
    points that splat merged into func_800889D4. Split out 2026-08-10
    (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
@@ -1763,9 +1763,9 @@ s32 _spu_t(s32 mode, ...) {
             }
         }
         if (D_800A2D2C == 1) {
-            spu_ReadReg();
+            _spu_FsetDelayR();
         } else {
-            spu_ReadStatus();
+            _spu_FsetDelayW();
         }
         count = va_arg(args, u32);
         D_800A2D30 = count;
@@ -1785,14 +1785,14 @@ s32 _spu_t(s32 mode, ...) {
     return 0;
 }
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
-extern void func_800889D4(s32, s32);
+extern void _spu_FwriteByIO(s32, s32);
 s32 spu_TransferData(s32 a0, s32 a1) {
     if (g_spu_reverb_mode == 0) {
         _spu_t(2, g_spu_xfer_addr << g_spu_addr_shift);
         _spu_t(1);
         _spu_t(3, a0, a1);
     } else {
-        func_800889D4(a0, a1);
+        _spu_FwriteByIO(a0, a1);
     }
     return a1;
 }
@@ -1844,10 +1844,10 @@ void _spu_FsetPCR(s32 arg0) {
     }
 }
 extern volatile u32 *g_spu_dma_ctrl;
-void spu_ReadStatus(void) {
+void _spu_FsetDelayW(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
 }
-void spu_ReadReg(void) {
+void _spu_FsetDelayR(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
 }
 void _spu_Fw1ts(void) {
@@ -3309,7 +3309,7 @@ extern s32 D_800F1AFC;
 extern volatile s32 D_800F1B00;
 extern volatile s32 D_800F1B04;
 extern s32 D_800A3044;
-s32 func_8008BEA4(int a0, int a1) {
+s32 SioAnsyncRead(int a0, int a1) {
     s32 *flag = &D_800F1AFC;
     if (*flag != 0) {
         return -1;
@@ -3334,7 +3334,7 @@ extern s32 (*D_800F1AE8)(s32, s32);
 extern s16 D_800A3074[4];
 extern void DeliverEvent(s32, s32);
 
-s32 func_8008BF04(u8 *arg0, s32 arg1) {
+s32 SioSyncroRead(u8 *arg0, s32 arg1) {
     s32 r_arg1 = arg1;
     volatile s32 *flag = &D_800F1AFC;
     s32 s0;
@@ -3433,7 +3433,7 @@ extern volatile s32 D_800F1AF0;
 extern volatile s32 D_800F1AF4;
 extern volatile s32 D_800F1AF8;
 extern s32 D_800A3044;
-s32 func_8008C184(int a0, int a1) {
+s32 SioAnsyncWrite(int a0, int a1) {
     s32 *flag = &D_800F1AEC;
     if (*flag != 0) {
         return -1;
@@ -3448,7 +3448,7 @@ s32 func_8008C184(int a0, int a1) {
     }
     return 0;
 }
-s32 func_8008C1E8(u8 *arg0, s32 arg1) {
+s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
     register s32 r_arg1 asm("s4") = arg1;
     volatile s32 *flag = &D_800F1AEC;
     s32 s0;
