@@ -1,0 +1,37 @@
+{
+ "func": "func_8008C1E8",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 23,
+   "modality": "recon",
+   "headline": "Recon s1: floor 28 -> 23 (lost WIP re-applied + two structural corrections); full diff map banked \u2014 one coupled arg-home/s-reg-rotation cluster remains, twin func_8008BF04 shares it"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The 4-pseudo s-register rotation (dominant ~20 pts) flips via a C lever visible in the allocno priority order",
+   "mechanism": "GCC 2.7.2 global.c allocates callee-saves in allocno priority order (reg_n_refs/live-length); target's order is counter->s0, wait_val->s2, loop_flag->s3, arg1->s4 vs ours loop_flag->s0, counter->s2, arg1->s3, wait_val->s4",
+   "next_probe": "Forensics: -da greg dump via instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG) on the sandbox .i; read the four pseudos' priorities/conflicts; then sweep ref-count/live-range levers (declaration order, split reads, named intermediates) toward target's order"
+  },
+  {
+   "hypothesis": "Entry trampoline (j main_work; move s2,zero) collapses only TOGETHER with the arg-home fix",
+   "mechanism": "Target's beqz delay slot holds s0=0 because move s4,a1 already happened at prologue insn 3; ours occupies that slot with the arg-home. Standalone s0-placement probes measured 31 (s1) and 33 (2026-08-06)",
+   "next_probe": "Re-sweep s0=0 placements ONLY after arg1 allocates to s4 and homes early; then check whether prologue_fix/maspsx reproduce target's sw-s4-first save order naturally"
+  },
+  {
+   "hypothesis": "D_800F1AEC block qualifies for the legitimate-volatile-interrupt-touched two-prong carve-out",
+   "mechanism": "Same packet-state block as D_800F1AF4 whose extern volatile is load-bearing in COMPLETED-C func_8008C184; sibling grant comment at main.c:3430; missing piece is identifying the SPU/serial ISR that mutates D_800F1AEC/+4/+8/+0xC",
+   "next_probe": "Trace writers of the D_800F1AE0-1AFC block across the codebase (grep + callback registration via DeliverEvent 0xF000000B) to name the ISR; document the two-prong finding in evidence.md before any candidate-ready"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T00:51:51.740832+00:00"
+}
