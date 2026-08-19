@@ -1717,3 +1717,103 @@ measured dead.
 - probe: Re-derivation over the whole ledger (E-s15-1..7, E-s16-1..7, E-s17-1..2, E-s18-5..8) plus this session's five cells; the model was required to predict Z1..Z5 before they were run.
 - result: The model predicted all five outcomes correctly (copy created, copy of `base`, one slot late, +1 instruction each, and an inert control), and it accounts for the whole rejected bank: every form is a failure of CLAUSE A (position) or CLAUSE B (price), including the previously unexplained spread 8/9/13/19/28/32/35/41/52.
 - verdict: CONFIRMED
+
+---
+
+## s20 (structural) — hypotheses
+
+**H-s20-1 — s19 frontier (b): a clause-B consumer for loop 2's addend that lands
+on an instruction target already has (the single post-loop-2 `lw a1,0xC($s2)`
+that feeds both `math_Distance3D` arguments).**
+*Mechanism proposed by s19:* E-s16-1 arm (c) — an out-of-block use makes the
+preheader copy survive combine, and `optimize_reg_copy_1` re-points the base add
+onto the copy's destination; the purchase is free if the use site is an
+instruction target already emits.
+*Probe:* six cells on the V1 chassis — S3 (named `r2`, both math args derived from
+it, `r2 = p` pre-init for the skip path), T1, T2, T3, W2, W3.
+*Result:* 7 / 11 / 26 / 21 / 21 / 14. Best is S3 = 7 at 127/127.
+**KILLED.** The consumer is not free: routing the math base through a live local
+DELETES target's `lw a1,0xC($s2)`, so the purchase is +1 move and -1 load, and the
+move lands in loop 2's exit block where target emits nothing. In W2 the move is
+coalesced away entirely, so even the +1 does not appear (124 insns).
+
+**H-s20-2 — s19 frontier (a): loop 2's preheader can be made cse-reachable by a
+control-flow spelling that gives loop 2's guard exactly one predecessor.**
+*Mechanism proposed by s19:* `cse_end_of_basic_block` terminates an EBB at any
+label that can be branched to; loop 2's guard is such a label only because loop
+1's skip branch targets it.
+*Probe:* cell U1 — put a statement (`p = *(u8 **)(ctx + 0xC);`) between the two
+loops so it occupies the join block, then read the `-da` `.jump` and `.cse`
+dumps for the actual EBB behaviour before scoring.
+*Result:* the premise is FALSE. The join label opens a new EBB, but loop 2's
+guard block and its fall-through preheader are both INSIDE that EBB — `.cse`
+shows the preheader read (insn 162) eliminated. **KILLED as stated (E-s20-3).**
+The predecessor count is not the blocker, so no CFG enumeration is warranted.
+
+**H-s20-3 (NEW, CONFIRMED) — cse deletes a folded redundant read outright and
+only materialises a reg-reg copy when the destination has a use in a LATER EBB.**
+*Mechanism:* cse substitutes the canonical pseudo at every use it can rewrite,
+which is every use inside the EBB it is processing; a use in a later EBB cannot be
+rewritten, so the destination must be materialised and cse leaves `DST = SRC`.
+*Probe:* U1 `.jump` insn 83 `reg80 = mem(reg72+12)` → `.cse` insn 83 absent and
+insn 89 rewritten to `reg81 = reg84 + reg79`.
+**CONFIRMED.** This reframes clause B: it is not combine-survival insurance, it is
+the sole reason the copy insn exists. Corollary: any future proposal must name a
+later-EBB use, and that use always materialises as one instruction.
+
+**H-s20-4 (NEW, CONFIRMED) — the guard's self-clobbering two-step
+(`t = sh + p; t = *(s32 *)(t + K);`) is a necessary condition for the base add to
+survive cse.**
+*Mechanism:* when the guard load writes the SAME pseudo that held the guard
+address, the address value is dead and cse cannot reuse it for the base add; when
+the guard is written inline GCC picks a fresh destination, the address stays
+available, and cse merges the base add into the guard add.
+*Probe:* U1 `.jump` loop 2, insns 151/155/168 → `.cse` shows 162 and 168 both
+gone; contrast loop 1 (insn 75 clobbers reg86) where insn 89 survives. Control
+cell W1 (V1 + loop-2 guard two-step through a fresh `t2`) = 3 at 127/127.
+**CONFIRMED.** This is the mechanism behind s15's bare "A1..A4 = 8" numbers and
+behind the whole reuse-p exclusion. It is free, and W1 is the first loop-2 guard
+spelling that is structurally symmetric with loop 1's rather than merely tied.
+
+**H-s20-5 — the fully target-shaped spelling (join-block read feeding loop 2's
+guard, redundant preheader read, source re-set downstream) reproduces target's
+preheader in both loops.**
+*Mechanism:* combining H-s20-3 and H-s20-4 with s16's E-s16-2 canonicalisation
+flip (the copy's source re-set from the copy's destination downstream).
+*Probe:* twelve cells U1..U11, S1, S2, T0.
+*Result:* 10-37, all worse than 3; U7 (both guards two-step, join-block read) is
+125 insns — exactly two short, i.e. both copies missing and nothing else wrong.
+**KILLED.** The join-block read and the clause-B purchase compete for the same
+instruction slot (target's `lw a0,0xC($s2)` at T.txt:52): it can be loop 1's
+purchase (a move — the V1 candidate, residual 3) or loop 2's fold-enabler (a
+load — U7, residual 2 short), never both.
+
+## [s20] s19 frontier (b): loop 2's named preheader addend, carried out of the loop and used to derive BOTH math_Distance3D arguments the way target does from one base, is a clause-B consumer that costs zero net instructions and takes the residual to 1.
+- mechanism: E-s16-1 arm (c) - a preheader copy whose destination is used in a different basic block survives combine, and local-alloc's optimize_reg_copy_1 then re-points the base add onto the copy's destination. The purchase price is one instruction at the use site; it is free only if the use site is an instruction target already emits (target's post-loop-2 `lw a1,0xC($s2)` feeds both math args).
+- probe: Six cells on the V1 chassis (never tested there; s9's 19-point measurement predates it): S3 (loop-2 addend named `r2`, pre-initialised `r2 = p` so the skip path stays defined, both math args derived from r2), T1 (symmetric loop-1 tail + clause-B into math args), T2 (clause-B consumer = rec_a's base), T3 (V1 tail + clause-B into math args), W2 (self-clobbering loop-2 guard + named q2 + `p = q2;` exit tail + math args from p), W3 (W1 + q2 consumed by rec_a). Each scored with `sandbox --disable all`; S3 also diffed against target.
+- result: S3 = 7 (127/127), T1 = 11 (125), T2 = 26 (128), T3 = 21 (124), W2 = 21 (124), W3 = 14 (127/127). Best is 7, against a floor of 3. S3's diff shows loop 1's exit tail expanded to `addu a0,a3,zero / addu a1,a0,zero`, target's tail `lw a1,12(s2)` deleted, and loop 2's preheader still emitting `lw a1,12(s2)` where target has the copy. In W2 the purchased move is coalesced away entirely, so even the +1 never appears.
+- verdict: KILLED
+
+## [s20] s19 frontier (a): loop 2's preheader can be made cse-reachable by a control-flow spelling in which loop 2's guard block has exactly one predecessor, because cse_end_of_basic_block terminates an extended basic block at any label that can be branched to.
+- mechanism: The join label .L8001791C exists solely because loop 1's `blez` skip edge targets it; removing that join would let the extended basic block containing loop 1's exit tail extend into loop 2's preheader so the redundant ctx+0xC read there folds to a copy.
+- probe: Cell U1 places a statement (`p = *(u8 **)(ctx + 0xC);`) between the two loops so it occupies the join block, then `pwsh tools/grinder/dump.ps1 func_80017848` and a direct read of the `.jump` and `.cse` RTL for func_80017848 (block boundaries and per-insn survival) BEFORE scoring, as the brief's pass-attribution rule requires.
+- result: The premise is false. The join label opens a new EBB, but loop 2's guard block AND its fall-through preheader are both inside that EBB: `.jump` insn 162 `reg80 = mem(reg72+12)` (loop 2's preheader read) is ABSENT in `.cse`, i.e. cse did reach and eliminate it. Target's own listing has the same shape - `lw a0,0xC($s2)` at T.txt:52 is after the join label, in the guard block, not in loop 1's exit tail. The predecessor count of the guard label is not the blocker, so the CFG enumeration s19 specified is unnecessary.
+- verdict: KILLED
+
+## [s20] cse does not fold a redundant preheader read into a reg-reg copy; it DELETES the read and substitutes the original pseudo, and a copy insn is materialised only when the destination has a use in an extended basic block LATER than the one containing the preheader.
+- mechanism: cse rewrites every use it can reach, which is every use inside the EBB currently being processed. A use in a later EBB cannot be rewritten, so the destination must be materialised and cse leaves `DST = SRC` behind.
+- probe: Cell U1's `.jump` dump: insn 83 `(set (reg/v 80) (mem (plus (reg/v 72) (const_int 12))))` with base add insn 89 `(set (reg/v 81) (plus (reg/v 84) (reg/v 80)))`. Compare the same range in `.cse`.
+- result: In `.cse` insn 83 is gone outright (not converted to a copy) and insn 89 reads reg79 - the ORIGINAL pseudo. In the V1 candidate, where the loop-1 exit tail `p = q;` puts a use of the destination in a later EBB, s16 already recorded insn 83 surviving as `(set (reg/v 80) (reg/v 79))`. This reframes s15/s16's clause B: it is not combine-survival insurance, it is the sole reason the copy insn exists, and it always costs exactly one instruction.
+- verdict: CONFIRMED
+
+## [s20] The base add survives cse only when the guard is written as a SELF-CLOBBERING two-step (`t = sh + p; t = *(s32 *)(t + K);`); with an inline guard, cse merges the base add into the guard's address add.
+- mechanism: When the guard load writes the same pseudo that held the guard address, that address value is dead and cse cannot reuse it for the base add. With an inline guard GCC gives the load a fresh destination, the address pseudo stays available, and cse eliminates the base add as redundant.
+- probe: U1's `.jump` loop 2: insn 151 `reg109 = reg85 + reg79` (guard address), insn 155 `reg111 = mem(reg109+32)` (fresh destination), insn 168 `reg81 = reg85 + reg80` (base add) - versus loop 1 where insn 75 `reg86 = mem(reg86+28)` clobbers the address. Then control cell W1 = the V1 body plus a loop-2 guard two-step through a FRESH local `t2`.
+- result: In `.cse` loop 2's insns 162 AND 168 are both gone (add merged), while loop 1's insn 89 survives. W1 scores exactly 3 at 127/127 - the two-step is free for loop 2. This names the mechanism behind s15's bare 'A1/A2/A3/A4 all = 8' reuse-p exclusion, and gives the first loop-2 guard spelling that is structurally symmetric with loop 1's rather than merely tied.
+- verdict: CONFIRMED
+
+## [s20] Writing the ctx+0xC read into the join block between the two loops (target's own T.txt:52 position), so loop 2's preheader read folds, reproduces target's loop-2 preheader.
+- mechanism: Combines the fold (a read earlier in the same EBB) with s16's E-s16-2 canonicalisation flip (re-setting the copy's source downstream from the copy's destination).
+- probe: Twelve cells: U1, U2 (math args inline), U3 (loop-2 preheader read left inline), U4 (loop-2 guard two-step through the SHARED `t`), U5, U6 (loop-1 `p = q;` restored), U7 (loop-2 guard two-step through a fresh `t2`), U9 (shift recomputed for loop 2's base), U10 (+ loop-2 exit tail `p = q;`), U11 (both exit tails), plus controls T0 (symmetric chassis) and S1/S2 (fully target-shaped both loops).
+- result: 11, 13, 11, 37, 36, 37, 10, 11, 12, 12, 4, 22 - all worse than 3. U7 is the sharpest: 125 instructions, exactly two SHORT, both preheader copies missing and nothing else wrong. The join-block read and the clause-B purchase compete for the SAME instruction slot (target's `lw a0,0xC($s2)`): it can be loop 1's purchase (a move - the V1 candidate at 3) or loop 2's fold-enabler (a load - U7 at two short), never both.
+- verdict: KILLED

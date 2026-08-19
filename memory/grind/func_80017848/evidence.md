@@ -2241,3 +2241,187 @@ Any future proposal must break one of exactly three clauses; there is no fourth:
 - [s19] Exactly three exits remain from the theorem, and two are already measured dead: (a) kill the join so cse's extended basic block reaches loop 2's preheader - the only known attempt is duplicating loop 2 into both arms of loop 1's guard, 35, because jump2 does not re-merge the copies; (b) find a clause-B consumer that lands on an instruction target already has - the single candidate site is the post-loop-2 `lw $a1,0xC($s2)` from which target derives BOTH math_Distance3D arguments, measured at 19 by s9 but on the pre-V1 chassis and with both args routed as separate expressions; (c) a combine refusal on an in-block single use - all seven can_combine_p paths enumerated and dead (s17).
 
 - [s19] The post-loop-2 tail block has never been swept on the V1 chassis: only three isolated cells exist across the whole ledger (s12 link-store order = 9, s12 loop-2 base written into rec_a = 41, s16 rec_b derived from rec_a = 44), so exit (b) is the only remaining region whose spelling space is genuinely unenumerated.
+
+---
+
+## s20 (structural, 2026-08-18) — the copy-materialisation predicate, measured at RTL
+
+Chassis re-measured at dispatch: V1 body = **3** at 127/127 (rules_dropped 2,
+cheat_asm_stripped 49). 16 new cells, one instrumented `-da` dump run
+(`pwsh tools/grinder/dump.ps1`, cell U1). Artefacts: `tmp/grind/func_80017848/s20/`.
+
+### E-s20-1 (CONFIRMED, from the U1 `.jump` vs `.cse` dumps) — cse DELETES a redundant preheader read; it only leaves a COPY when the destination has a use in a LATER extended basic block.
+
+The U1 dump is the first direct RTL observation of what cse does to the
+preheader redundant `*(u8 **)(ctx + 0xC)` read:
+
+* loop 1 (`.jump` label 61 block): insn 64 `reg79 = mem(reg72+12)` (the guard
+  read), insn 72 `reg86 = reg84 + reg79` (guard address), insn 75
+  `reg86 = mem(reg86+28)` (guard load, **clobbering the address register**),
+  insn 83 `reg80 = mem(reg72+12)` (preheader redundant read), insn 89
+  `reg81 = reg84 + reg80` (base add).
+* in `.cse`: **insn 83 is GONE — not turned into a copy, deleted outright** —
+  and insn 89 has been rewritten to `reg81 = reg84 + reg79`, i.e. cse
+  substituted the ORIGINAL pseudo at every use inside the same EBB.
+
+So the "cse folds the redundant read to a reg-reg copy" model that sessions
+s9-s19 worked from is only half right. cse folds the read; whether an insn
+survives is decided by whether reg80 still has a use cse could NOT rewrite —
+and cse can only rewrite uses inside the EBB it is currently processing. A use
+in a later EBB forces cse to materialise `reg80 = reg79`, which is exactly the
+`p = q;` loop-1 exit tail of the V1 candidate. **Clause B is not a way to make
+an existing copy survive combine — it is the only reason a copy insn exists at
+all.** This supersedes the s15/s16 wording (which described clause B as
+combine-survival) without contradicting any of its measurements.
+
+### E-s20-2 (CONFIRMED, same dump) — the guard SELF-CLOBBERING two-step is what keeps the base add alive; without it cse merges the two address adds.
+
+Same dump, loop 2 (`.jump` label 140 block): insn 143 `reg79 = mem(reg72+12)`,
+insn 151 `reg109 = reg85 + reg79` (guard address), insn 155
+`reg111 = mem(reg109+32)` — the guard load writes a **different** pseudo, so
+reg109 stays available — insn 162 preheader read, insn 168 `reg81 = reg85 +
+reg80` (base add). In `.cse` **both insn 162 AND insn 168 are gone**: the base
+add was merged into the guard add.
+
+The discriminator is purely the guard spelling. Loop 1's guard in the V1
+candidate is the two-step `t = sh + (s32)p; t = *(s32 *)(t + 0x1C);` — the SAME
+local receives the address and the loaded value, so the address pseudo is
+clobbered and cse cannot reuse it. Loop 2's guard is written inline, GCC picks
+a fresh destination for the load, and the address survives to be reused. This
+is the mechanism behind s15's E-4 ("A1/A2/A3/A4 all = 8, cse merges the guard
+address add and the base add"), which s15 recorded as a bare number.
+
+Direct consequence: the two-step is a *necessary* condition for loop 2 to even
+have a base add of its own, and it is cheaply available — cell **W1** (V1 plus a
+loop-2 guard two-step through a fresh local `t2`) scores exactly **3**, tying the
+floor at 127/127. It is banked as `rejected/s20_t2_clobber_guard_two_step_inert_3.c`
+because it does not improve, but it is the first loop-2 guard spelling that is
+structurally equivalent to loop 1's rather than merely tied.
+
+### E-s20-3 (KILLED) — s19's CLAUSE A is REFUTED as stated: cse *does* reach loop 2's preheader.
+
+s19's theorem said loop 2's preheader can never be folded because it sits
+downstream of the join `.L8001791C` that loop 1's `blez` creates. That is false.
+The join label opens a NEW extended basic block, but loop 2's guard block and its
+fall-through preheader are both *inside* that EBB, so a ctx+0xC read placed in
+the guard block does make the preheader read redundant and cse does eliminate it
+(measured: U1's `.cse` insn 162 deleted). Target's own asm is exactly this
+shape — `lw a0,12(s2)` at T.txt:52 is **after** the join label, in the guard
+block, not in loop 1's exit tail.
+
+What actually blocks loop 2 is E-s20-2 + E-s20-1 in combination, and the two
+pull in opposite directions:
+
+* to fold the preheader read you must put a ctx+0xC read in the guard block;
+* the guard block read is necessarily the guard's own addend, so the guard
+  address `sh2 + <addend>` is available, and unless the guard is written in the
+  self-clobbering two-step form cse eats the base add too (E-s20-2);
+* and even with the two-step, cse *deletes* the folded read rather than leaving
+  a copy unless the destination has a later-EBB use (E-s20-1), which costs an
+  instruction.
+
+### E-s20-4 (KILLED) — the whole "read in the join block" family is 10-37, uniformly worse than V1's 3.
+
+Twelve cells, all banked in `rejected/`:
+
+| cell | shape | score | insns |
+|---|---|---|---|
+| U1 | join-block `p = *(u8 **)(ctx + 0xC);` between the loops, `q` preheader addend in both loops, p reused for the math args | 11 | 124 |
+| U2 | U1, math args back to inline double reads | 13 | 124 |
+| U3 | U1, loop-2 preheader read left inline | 11 | 124 |
+| U4 | U1 + loop-2 guard two-step through the SHARED `t` | 37 | 125 |
+| U5 | U4, math args inline | 36 | 125 |
+| U6 | U4 + loop-1 exit tail `p = q;` restored | 37 | 125 |
+| U7 | U1 + loop-2 guard two-step through a FRESH `t2` | 10 | 125 |
+| U9 | U1 + shift recomputed for loop 2's base | 11 | 124 |
+| U10 | U1 + loop-2 exit tail `p = q;` (the canonicalisation flip) | 12 | 123 |
+| U11 | U10 + loop-1 exit tail `p = q;` as well | 12 | 123 |
+| T0 | symmetric chassis control (`p = *(u8 **)(ctx + 0xC);` as loop-1 exit tail, named loop-2 addend) | 4 | 126 |
+| S1/S2 | fully target-shaped both loops, loop-2 clause-B `q2 = r2` + math args from q2 | 22 | 124 |
+
+U7 is the sharpest of the family: with both guards self-clobbering, both base
+adds survive, both preheader reads are folded away, and the result is exactly
+two instructions SHORT (125) — the two missing copies. That is the cleanest
+possible statement that the copies are the entire residual and that clause B is
+their only C-level source.
+
+### E-s20-5 (KILLED) — every clause-B consumer for loop 2 is self-cancelling, re-measured on the V1 chassis.
+
+s19's frontier item (b) predicted that routing both `math_Distance3D` arguments
+off loop 2's named preheader addend would be a free clause-B consumer, because
+target derives both arguments from ONE `lw a1,12(s2)` (T.txt:77-82). It is not
+free: consuming a live local there **deletes** that `lw`, so the purchase is
++1 (the materialised copy/move) and -1 (target's tail load), and the move lands
+in loop 2's exit block where target has nothing. Measured on V1:
+
+* **S3** (loop-2 addend named `r2`, carried to both math args, pre-initialised
+  `r2 = p` so the skip path stays defined) = **7** at 127/127. Its diff shows
+  loop 1's exit tail expanded to `addu a0,a3,zero / addu a1,a0,zero`, the tail
+  `lw a1,12(s2)` gone, and loop 2's preheader still `lw a1,12(s2)`.
+* **T1** (symmetric loop-1 tail + loop-2 clause-B into the math args) = 11 (125).
+* **T2** (clause-B consumer = `rec_a` base) = 26 (128).
+* **T3** (V1 tail + clause-B into the math args) = 21 (124).
+* **W2** (W1's two-step chassis + named `q2` + `p = q2;` loop-2 exit tail + math
+  args from p) = 21 (124) — the move is coalesced away entirely, so even the +1
+  never materialises.
+* **W3** (W1 + `q2` consumed by `rec_a`) = 14 at 127/127.
+
+Frontier item (b) is therefore closed with six independent measurements, on the
+V1 chassis it was never tested on.
+
+### E-s20-6 (KILLED) — frontier item (a) is closed by construction, not by enumeration.
+
+The probe s19 specified ("enumerate control-flow spellings that give loop 2's
+guard exactly one predecessor") is unnecessary: U1 shows that a statement placed
+between the two loops *is* the join block, loop 2's guard sits in the same basic
+block as that statement, and cse's EBB therefore already covers loop 2's
+preheader. The predecessor count of the guard label is not the blocker; the
+add-merge (E-s20-2) and the copy-materialisation predicate (E-s20-1) are. No
+CFG spelling changes either of those, because both are decided inside a single
+EBB that already contains the preheader.
+
+### The s20 restatement of the residual (supersedes the s19 two-clause theorem)
+
+A preheader `addu DST,SRC,$zero` exists in GCC 2.7.2 output iff BOTH hold:
+
+1. **(materialisation)** the redundant ctx+0xC read whose destination is DST has
+   at least one use that cse cannot rewrite — i.e. a use in an EBB later than the
+   one containing the preheader. Uses inside the same EBB are substituted and the
+   read is deleted (E-s20-1).
+2. **(add survival)** the guard block's own address computation must be dead by
+   the time the base add is reached, which requires the guard to be written as a
+   self-clobbering two-step (`t = sh + p; t = *(s32 *)(t + K);`). Otherwise cse
+   merges the base add into the guard add (E-s20-2).
+
+Condition 2 is free and now available for both loops (W1 = 3). Condition 1 costs
+exactly one instruction, and the price is paid where the later-EBB use sits.
+Loop 1 pays it in its exit tail, which is a slot target also fills (with a load
+rather than a move) — hence loop 1 nets 1 mismatch instead of 2. Loop 2's only
+later-EBB sites are the post-loop-2 tail, and every one of them either deletes an
+instruction target has (the math base load) or adds one target does not have
+(rec_a / rec_b staging). **Target's own bytes satisfy condition 1 with no visible
+consumer at all**, which after twenty sessions remains the single unexplained
+fact; s20 narrows it from "some pass creates a copy after combine" (s15) or "a
+combine refusal" (s17) to "cse declined to substitute reg79 at the base add",
+i.e. exactly E-s16-2's canonicalisation question, now with the cse-side
+predicate named.
+
+- [s20] Chassis re-measured at dispatch on a clean tree: the V1 candidate body scores 3 at 127/127 (rules_dropped 2, cheat_asm_stripped 49); HEAD's committed src/ings.c body still scores 16. src/ings.c was reverted to HEAD at the end of the session.
+
+- [s20] E-s20-1 (CONFIRMED, RTL): in cell U1's dumps, loop 1's preheader redundant read `.jump` insn 83 `(set (reg/v 80) (mem (plus (reg/v 72) (const_int 12))))` is ABSENT from `.cse`, and the base add insn 89 has been rewritten from `(plus (reg/v 84) (reg/v 80))` to `(plus (reg/v 84) (reg/v 79))`. cse deletes the folded read and substitutes the original pseudo at every use it can rewrite; a copy insn appears only when the destination has a use in a LATER extended basic block.
+
+- [s20] E-s20-2 (CONFIRMED, RTL): in the same dumps, loop 2's guard address `.jump` insn 151 `(set (reg 109) (plus (reg/v 85) (reg/v 79)))` is followed by insn 155 writing a DIFFERENT pseudo (reg111), so the address stays available and `.cse` deletes BOTH the preheader read (insn 162) and the base add (insn 168). Loop 1's guard load (insn 75) writes back into the address pseudo reg86, so loop 1's base add insn 89 survives. The discriminator is the guard's two-step self-clobbering spelling, nothing else.
+
+- [s20] Cell W1 - the V1 candidate plus a loop-2 guard two-step through a fresh local `t2` (`t2 = sh2 + (s32)p; t2 = *(s32 *)(t2 + 0x20); if (i < t2)`) - scores 3 at 127/127. It is the first loop-2 guard spelling that satisfies the add-survival half of the predicate for free, and is the recommended chassis for future work. Banked at memory/grind/func_80017848/rejected/s20_t2_clobber_guard_two_step_inert_3.c.
+
+- [s20] E-s20-3 (KILLED): s19's CLAUSE A ('loop 2's preheader is downstream of the join so cse can never fold it') is refuted. The join label opens a new EBB, but loop 2's guard block and its fall-through preheader are both inside that EBB; a ctx+0xC read in the guard block does make the preheader read redundant and cse does eliminate it. Target's `lw a0,0xC($s2)` (T.txt:52) is AFTER the join label, in the guard block, not in loop 1's exit tail.
+
+- [s20] E-s20-4 (KILLED): the join-block-read family scores 10-37 across twelve cells (U1 11, U2 13, U3 11, U4 37, U5 36, U6 37, U7 10, U9 11, U10 12, U11 12, T0 4, S1/S2 22). U7 lands at 125 instructions - exactly two short, both copies missing and nothing else wrong.
+
+- [s20] E-s20-5 (KILLED): s19's frontier item (b) is closed with six V1-chassis measurements (S3 7, T1 11, T2 26, T3 21, W2 21, W3 14). Consuming the post-loop-2 math base from a live local DELETES target's `lw a1,0xC($s2)`, so a clause-B purchase there is +1 move / -1 load with the move in a slot target leaves empty; in W2 the move is coalesced away entirely.
+
+- [s20] E-s20-6 (KILLED): s19's frontier item (a) needs no CFG enumeration - a statement placed between the loops IS the join block and loop 2's guard sits in the same basic block as it, so the EBB already covers the preheader. Predecessor count is not the blocker.
+
+- [s20] The s20 restatement of the residual (supersedes s19's two-clause theorem): a preheader `addu DST,SRC,$zero` exists iff (i) the folded read's destination has a use in a LATER EBB (materialisation - costs exactly one instruction) and (ii) the guard is written self-clobbering so the base add survives (free, and now available for both loops). Loop 1 pays (i) into a slot target also fills; loop 2 has no such slot. Target satisfies (i) with no visible consumer anywhere in its 127-instruction listing - that single fact is the whole remaining mystery, now narrowed from 'a pass after combine creates the copy' (s15) and 'a combine refusal' (s17) to 'cse declined to substitute reg79 at the base add', i.e. E-s16-2's canonicalisation question with the cse-side predicate named.
+
+- [s20] 16 cells measured this session, all banked (13 new files in memory/grind/func_80017848/rejected/, bringing the bank to 146 entries). No cell scored below 3; no cheat-family construct was written or proposed.
