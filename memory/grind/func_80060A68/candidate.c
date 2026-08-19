@@ -1,3 +1,49 @@
+/* [s6 2026-08-19 - rederive.  BODY UNCHANGED from s5/s10.  Read this note first.]
+ *
+ * s6 re-measured this body on today's HEAD: score 2 / build 66 / target 66.  The floor is
+ * confirmed again.  s6 did NOT change the body; it closed the shape question and named the
+ * exact GCC gate that the whole remaining residual hangs on.
+ *
+ * 1. THE SHAPE IS FORCED.  s6 re-derived the target's C independently of s5 by enumerating
+ *    every store that can act as a cse separator (cse.c will not disambiguate two
+ *    `(plus (reg) (const_int))` addresses; sched.c will, off a common base, but never across
+ *    a `(mem (symbol_ref))` gp store).  Target needs three `lw ?,0x10($v1)` loads and the +2
+ *    read must sit ABOVE the gp-3478 store, which leaves exactly one legal separator
+ *    assignment: the +4 pointer read first into a local, separated from the +0 read by a copy
+ *    store, and the +0/+2 pair separated by the 0x18 store.  That is v2 (5 / 67).  The one
+ *    partition s5 never tried -- hoisting the +0 VALUE into its own local above the copy-3
+ *    store -- was measured from five seats (x1/x2/x6/x7/x8) and scores 9..13.
+ *
+ * 2. THE v6 FAMILY IS DEAD.  v6 (3 fresh in-line reads, 3 / 66) differs from target by
+ *    exactly ONE instruction position: the third 0x10 load sits at slot 26 instead of 11.
+ *    It cannot be hoisted at any priority -- `sw $v0,%gp_rel(D_800A3478)($gp)` sits at slot 25
+ *    and sched.c cannot disambiguate a symbol_ref store from a (reg + const) load.  s5's
+ *    frontier item 2 ("raise its INSN_PRIORITY") is therefore impossible, not merely hard.
+ *
+ * 3. THE RESIDUAL IS ONE GATE.  With v2 applied, tools/grinder/dump.ps1 gives sched1's trace:
+ *        ;; ready list at T-31: 39 (7f000001) 53 (8), now 39 53
+ *    insn 39 is p10's load, insn 53 the 0x18 store, insn 56 the +2 read's address load.
+ *    0x7f000001 is LAUNCH_PRIORITY (sched.c:187): sched.c:4049 puts it on the insn being
+ *    scheduled, and adjust_priority (sched.c:2541-2590) copies that max_priority onto every
+ *    released insn for which birthing_insn_p is true -- and birthing_insn_p (sched.c:2505)
+ *    is true for any live single-set pseudo birth, because its only real gate is
+ *    `reg_n_sets[i] == 1` (the n_deaths switch above it is dead code; GCC says so itself at
+ *    sched.c:2551).  So insn 39 takes T-31, insn 53 is pushed to T-33 and insn 56 to T-32;
+ *    since sched.c schedules BACKWARD that emits the 0x18 store BEFORE the +2 address load,
+ *    so reg91 (the +0 value, $v0) is already dead when reg92 is born and local-alloc hands
+ *    reg92 $v0 -- where target, having 56 before 53, is forced onto $a0.  The "missing load"
+ *    and the "wrong register" are ONE defect with ONE cause: insn 39's bump.
+ *
+ * 4. THE ONLY LEVER IS BANNED.  The sole C-visible input to that gate is reg_n_sets[p10] != 1,
+ *    i.e. writing p10 twice with both writes live -- the multiply-assigned pointer-staging
+ *    carrier the Judge banned for this function on 2026-08-19.  A dead first write does not
+ *    work (flow.c deletes it; measured inert at 5 / 67).  Next session should expect the
+ *    driver to move this function to `escalation`; if it does not, the remaining unmeasured
+ *    gate is birthing_insn_p's `bb_live_regs` test, which no one has probed.
+ *
+ * The s5 and s10 notes below are unchanged and still accurate, INCLUDING the integration
+ * hazard about asmfix.txt:109-110.
+ */
 /* [s5 2026-08-19 - rederive.  BODY UNCHANGED from s10; read this note first.]
  *
  * s5 re-measured this body on today's HEAD: score 2 / build 66 / target 66.  The floor is
