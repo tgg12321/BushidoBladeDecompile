@@ -434,3 +434,136 @@ something a human writing this interpolation routine would plausibly write.
 - [s4] sched2's INPUT (.greg) already holds TARGET's order for the store - 531 mflo, 116 sh zero,gp, 119 sh18, 122/124 sh16, 127 sh20, then 131..140. Everything upstream of sched2 (sched1, local-alloc, global-alloc) is therefore already correct for this hunk; only sched2 diverges.
 
 - [s4] The obvious source-level LUID lever does not exist: six early-computation variants of the 0x9C4/0x2710 expression score 8/8/8/18/12/8 @ 231 insns, and the best one leaves the sh zero,0(gp) hunk completely unchanged while adding four new divergences elsewhere. sched1 normalises the chain back below the three halfword stores no matter where the C source computes it.
+
+## == s5 (forensics modality, 2026-08-19) — PASS ATTRIBUTION CORRECTED ==
+
+### Chassis
+`src/code6cac.c` had AGAIN drifted back to the s2-era body (`inv_s1 = inv_s1;`, `cur`/`dy`
+relay, `s32 target;`) — the third session in a row to find this, because the ledger commits do
+not carry src. Re-installing `memory/grind/func_8001B748/candidate.c` verbatim re-measured the
+floor exactly: `sandbox func_8001B748 --disable all` = `{"score": 2, "target_insns": 231,
+"build_insns": 231, "rules_dropped": 1}`. The floor-2 form is in place in src/ at session end.
+
+### THE HEADLINE: s4's attribution is WRONG. The LUID tie-break is NOT the deciding term.
+s4 concluded the residual is decided by `INSN_LUID(116) - INSN_LUID(140)` at
+`tools/gcc-2.7.2/sched.c:2461` and therefore LUID-locked (a frozen sched-rank-class-tie wall).
+The full instrumented log (`BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1 BB2_SCHED_DEBUG=1`, 4372 lines,
+`tmp/grind/func_8001B748/s5/full.log`) shows the opposite:
+
+    SCHEDDBG SELBEST clock=22 insn=116 pos=1
+    SCHEDDBG PICK    clock=22 picked=116 (pri=47 luid=25)
+    SCHEDDBG   ready was: [ 116(p=47,l=25) 140(p=47,l=38) ]     <- printed POST-swap
+
+`SELBEST ... pos=1` means `best_insn == 1`, i.e. BEFORE `schedule_select` moved its choice to
+the front the ready array was `[ 140, 116 ]`. **`rank_for_schedule`'s LUID tie-break put insn
+140 at ready[0] — that IS target's order.** The divergence is created one level down, in
+`schedule_select` (`tools/gcc-2.7.2/sched.c:2707-2723`): "If more than one remains, select the
+first one with the largest potential hazard" — and it overrode the sort:
+
+| insn | what | unit | bmin/bmax | pri | luid |
+|---|---|---|---|---|---|
+| 116 | `sh zero,D_800A3310` (code 163) | **0** (memory) | 1/3 | 47 | 25 |
+| 140 | `sll v1,v1,2` — synth-mult tail (code 181) | **-1** (none) | -1/-1 | 47 | 38 |
+
+`potential_hazard(unit 0, blockage 1..3) > potential_hazard(unit -1) == 0`, so the unit-0 store
+wins the pick — and sched schedules BACKWARDS, so picked-first = emitted-LAST. The same override
+fired three times against the chain tail in this block: `SELBEST clock=19 insn=127 pos=1`,
+`SELBEST clock=21 insn=119 pos=1`, `SELBEST clock=22 insn=116 pos=1` — every unit-0 halfword
+store in priority group 47 beat the unit-less chain tail.
+
+**Consequence: the "LUID-locked / sched-rank-class-tie wall" verdict is RETRACTED.** An
+owner-gated disposition on that basis would have been wrong. `schedule_select` only ever
+compares insns *inside one priority group*, so the live lever is INSN_PRIORITY grouping.
+
+### The priority arithmetic, with numbers (from PRIODBG, same log)
+`priority()` (sched.c:1497) accumulates `priority(pred) + insn_cost(pred,link,insn) - 1`, so a
+cost-1 edge adds NOTHING. Priority only rises across latency>1 edges: a load (`icost=2`) adds
++1, a `mult` (`icost=12`) adds +11. That is why this whole block sits on a flat plateau of 47:
+
+    PRIODBG SET insn=116 final_pri=47   <- max of: OUTPUT-dep on store 98 (pri 47, cost 1),
+                                           ANTI-deps on loads 103/109 (pri 47, cost 1)
+    PRIODBG SET insn=131 final_pri=47   <- max of: OUTPUT-dep on mflo 525 (pri 36) and
+                                           **ANTI-dep on insn 93 (pri 47, cost 1)**
+    PRIODBG SET insn=140 final_pri=47   <- data-dep on 139 (pri 47, cost 1); 131..139 all 47
+    PRIODBG SET insn=122 final_pri=48   <- ANTI-dep on the mult insn 105 (pri 48, cost 1)
+    PRIODBG SET insn=124 final_pri=48 / 143 final_pri=48 (inherited from 122)
+
+The mflo ladder in this block is 519=13, 522=24, 525=36, 528=47, 531=59, 534=70 (six mults:
+a4/b4, a6/b6, a8/b8), so 47 == "downstream of the 4th mult".
+
+### WHERE THE CHAIN'S 47 COMES FROM — and why that is the lever
+From `.greg` (`tmp/grind/func_8001B748/s5/dumps/b.greg`):
+
+    (insn  93 ... (set (reg:SI 2 v0) (plus:SI (reg:SI 3 v1) (reg:SI 10 t2))) ...)   pri 47
+    (insn 131 ... (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2))) ...) chain head
+    (insn 140 ... (set (reg:SI 3 v1) (ashift:SI (reg:SI 3 v1) (const_int 2))) ...)   chain tail
+    (insn 116 ... (set (mem:HI (symbol_ref ("D_800A3310"))) (const_int 0)) ...)
+
+The synth chain's priority is inherited **entirely from a hard-register WAR anti-dependence on
+insn 93, because the chain is allocated `$v1` and insn 93 reads `$v1`.** It is therefore a
+REGISTER-ALLOCATION-determined quantity, not a value-determined one — i.e. exactly the class of
+thing s3 proved is source-reachable for this function. Compare insn 122, which reaches pri 48
+purely by having its WAR partner be the mult 105 instead of a plateau insn.
+
+Win condition, stated exactly: **make the chain tail's `final_pri >= 48` while the gp store
+stays at 47.** Then group 48 is processed before group 47, the chain is picked first, and the gp
+store is emitted ahead of it — target's order. This needs the chain's WAR/output partner to be
+an insn of pri >= 48 (the mult 105 / mflo 111 / 531 / 534 side of the block), i.e. the chain
+must land in a different hard register than `$v1`.
+
+### Measured negative this session
+- **"Make two values live across the chain to push local-alloc past $v0/$v1"**: variant
+  `tmp/grind/func_8001B748/s5/v_two_live.c` (defer the `dst+0` value into `t`, store it after the
+  0x18 store, alongside the existing deferred `new_var`) — `score=127 insns=230`, and the dump
+  proves the mechanism did NOT move: the chain still lands in `$v1` (insns 129..138, `(set
+  (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))`) and `PRIODBG SET insn=138
+  final_pri=47`. Banked as `rejected/two-live-values-across-chain-reg-unmoved-127.c`.
+  A second live local is NOT enough to displace the chain's register.
+
+### A subtlety worth spending: EQUAL hazard is enough
+`schedule_select` scans the group with `if ((cost = potential_hazard(...)) > best_cost)` —
+STRICTLY greater — over `ready[]`, which `rank_for_schedule` has sorted DESCENDING by LUID
+within a priority group (140 luid 38 sits before 116 luid 25). So the chain tail does not need a
+*larger* potential hazard than the store; **equal is sufficient**, because it is scanned first
+and ties are kept. Any spelling that gives the chain tail a unit-0 (memory-class) final insn, or
+otherwise equalises `potential_hazard`, flips the pick without touching priorities at all.
+
+### Artifacts / recipe (all reusable)
+- `tmp/grind/func_8001B748/s5/dump.sh <src.c> <outdir>` — the instrumented cc1 with
+  `BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1 BB2_SCHED_DEBUG=1` plus `-da`; writes `<outdir>/full.log`
+  and `<outdir>/dumps/b.*`. Run it via `bash tools/wsl.sh 'bash tmp/.../s5/dump.sh ...'`.
+  IMPORTANT: it uses `tools/gcc-2.7.2/cc1` (the instrumented binary), NOT `build/cc1`.
+- `tmp/grind/func_8001B748/s5/full.log` (4372 lines: 3210 SCHEDDBG / 1017 PRIODBG / 145 RANKDBG).
+  38 `SCHEDDBG insn priorities:` block headers = 19 blocks x 2 passes; **sched1 = headers 1..19
+  (log lines 40..1962), sched2 = headers 20..38 (lines 2133..4289)**. Our block in sched2 is the
+  one whose header is at line 2611; the decision window is lines 2915-2975. Do NOT cat the log —
+  `awk 'NR>2611 && NR<3096'` plus a pattern.
+- The useful print families: `SCHEDDBG node insn=.. luid=.. unit=.. icost=.. pri=.. bmin/bmax`
+  (per-insn dependence node), `SCHEDDBG dep insn=.. pred=.. kind=` (0=data, 14=ANTI, 15=OUTPUT),
+  `PRIODBG insn=.. pred=.. pred_pri=.. cost=.. contrib=..` + `PRIODBG SET insn=.. final_pri=..`,
+  `SCHEDDBG ready was: [...]` (POST-swap), `SCHEDDBG SELBEST clock=.. insn=.. pos=..` (the
+  potential-hazard override — pos>0 means the sort was overridden), `SCHEDDBG PICK`.
+- Also measured: in sched1 the same block's decisions (log lines 542-798) never compare 116
+  against 140 at all (`RANKDBG last=140 y=119 x=124`, `last=116 y=105 x=109`, ...), which is
+  consistent with s4's finding that `.greg` (sched1's output as re-registered by reload) already
+  holds TARGET's order for the store. sched1 is NOT the pass to attack.
+
+- [s5] Chassis: src/code6cac.c had AGAIN drifted back to the s2-era body (inv_s1 = inv_s1;, cur/dy relay, s32 target;) - the third session running, because ledger commits do not carry src. Re-installing memory/grind/func_8001B748/candidate.c verbatim re-measured the floor exactly: sandbox func_8001B748 --disable all = score 2, target_insns 231, build_insns 231, rules_dropped 1. The floor-2 form is in place in src/ at session end.
+
+- [s5] PASS ATTRIBUTION CORRECTED: the divergence is created by schedule_select (tools/gcc-2.7.2/sched.c:2707-2723, 'select the first one with the largest potential hazard'), NOT by the rank_for_schedule LUID tie-break at sched.c:2461. rank_for_schedule put insn 140 at ready[0] - target's order - and schedule_select overrode it: SELBEST clock=22 insn=116 pos=1. Because sched schedules the block BACKWARDS, picked-first == emitted-LAST, so the store sinks below the chain.
+
+- [s5] The override is a function-unit property: insn 116 (sh zero,D_800A3310, code 163) has unit=0 with blockage range 1..3; insn 140 (sll v1,v1,2, code 181) has unit=-1 with bmin/bmax -1. potential_hazard(unit 0) > potential_hazard(unit -1) == 0. The same override beat the chain tail three times in this block: SELBEST clock=19 insn=127 pos=1, clock=21 insn=119 pos=1, clock=22 insn=116 pos=1.
+
+- [s5] The 'sched-rank-class-tie wall / LUID-locked' verdict inherited from s4 is RETRACTED. schedule_select only ever compares insns INSIDE one priority group, so the live axis is the INSN_PRIORITY grouping, and that is not LUID-derived.
+
+- [s5] Priority arithmetic measured exactly: priority() only rises across latency>1 edges (load icost=2 -> +1, mult icost=12 -> +11), so the block is a flat plateau at 47. final_pri: 116=47, 131..140=47, 122=48, 124=48, 143=48, mflos 519=13 522=24 525=36 528=47 531=59 534=70. The gap to close is exactly 1.
+
+- [s5] The chain's 47 is inherited ENTIRELY from a hard-$v1 WAR anti-dependence on insn 93 (set v0 = v1 + t2), i.e. it is register-allocation-determined; insn 122 gets 48 by the same route with the mult 105 as its WAR partner. Win condition: chain tail final_pri >= 48 while the gp store stays 47.
+
+- [s5] EQUALITY SUFFICES on the hazard axis: schedule_select keeps the FIRST insn with a STRICTLY greater potential_hazard, and ready[] is sorted DESCENDING by LUID inside a priority group, so the chain tail (luid 38) is scanned before the gp store (luid 25). A chain tail that is a unit-0 memory-class insn (codes 125/159/163) rather than a unit-less ALU insn (codes 3/16/181) wins the pick without any priority change.
+
+- [s5] sched1 is confirmed NOT the pass to attack: in the sched1 half of the log (lines 542-798) no decision ever compares 116 against 140; .greg already holds target's order for the store, corroborating s4.
+
+- [s5] Measured negative: the two-live-values spelling (defer dst+0 into t, store it after the 0x18 store) scores 127 @ 230 insns and leaves the chain in $v1 at final_pri=47 - banked as rejected/two-live-values-across-chain-reg-unmoved-127.c.
+
+- [s5] Reusable recipe: tmp/grind/func_8001B748/s5/dump.sh <src.c> <outdir> runs the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, not build/cc1) with BB2_PRIO_DEBUG + BB2_RANK_DEBUG + BB2_SCHED_DEBUG and -da. In full.log the 38 'SCHEDDBG insn priorities:' headers are 19 blocks x 2 passes: sched1 = lines 40..1962, sched2 = lines 2133..4289; our block's sched2 header is line 2611 and the decision window is lines 2915-2975. A SELBEST line with pos>0 IS the potential-hazard override.

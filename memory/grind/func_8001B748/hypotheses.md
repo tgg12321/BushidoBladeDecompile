@@ -334,3 +334,115 @@ instrumented cc1's BB2_*_DEBUG hooks (tools/gcc-2.7.2/cc1 — see
 - probe: Six variants on the floor-2 candidate, each computing ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12 into an EXISTING local (no new declarations, since s3 measured new vars as a regression): `t` at the top of the arm / immediately before `D_800A3310 = 0;` / immediately after it, plus `dd`, `cur` and `dx` at the top.
 - result: 8 / 8 / 8 / 18 / 12 / 8, all @ 231 insns - every variant WORSE than the floor of 2. Pairdiff of the best (t-at-top, 8) shows the sh zero,0(gp) hunk COMPLETELY UNCHANGED plus four new divergences in the dst+0x10/0x12 region (li v0,128 / mult a3,a0 / sh v0,16(s0) reordered). sched1 re-sinks the synth chain below the three halfword stores regardless of source position, so .greg order - and therefore sched2's LUIDs - is identical to the unhoisted form.
 - verdict: KILLED
+
+## [s5] The `sh zero,0(gp)` displacement is decided by `INSN_LUID` at sched.c:2461 (inherited s4 verdict).
+- **mechanism claimed by s4:** `rank_for_schedule` ties on INSN_PRIORITY and on rank class (3/3), so
+  the comparator falls through to `INSN_LUID(116) - INSN_LUID(140)`, and since sched1 normalises the
+  `.greg` stream before sched2 recomputes LUIDs, source order cannot move it => LUID-locked wall.
+- **probe:** read the FULL instrumented log rather than grepping it — `BB2_PRIO_DEBUG=1
+  BB2_RANK_DEBUG=1 BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1 ... -da` on the validated standalone
+  base.c (`tmp/grind/func_8001B748/s5/dump.sh`), then read the sched2 decision window
+  (`full.log` lines 2915-2975) including the `SELBEST` / `ready was:` / `PICK` prints.
+- **result:** `SCHEDDBG SELBEST clock=22 insn=116 pos=1` — `schedule_select` chose ready index 1,
+  so the array BEFORE its swap was `[140, 116]`: the LUID tie-break had already put insn 140 at
+  ready[0], which is TARGET's order. The pick was then overridden by
+  `schedule_select`'s largest-`potential_hazard` rule (sched.c:2707-2723) because insn 116 is a
+  unit-0 memory insn (bmin 1 / bmax 3) and insn 140 is unit -1 (no function unit, `sll v1,v1,2`).
+  The same override fired at clock 19 (127) and clock 21 (119).
+- **verdict:** KILLED. The LUID tie-break is not the deciding term; it produces the RIGHT answer and
+  is overridden downstream. s4's "sched-rank-class-tie wall / LUID-locked" characterisation is
+  RETRACTED, and an owner-gated disposition resting on it would have been wrong.
+
+## [s5] INSN_PRIORITY(116) and INSN_PRIORITY(140) are equal, and the gap to close is exactly 1.
+- **mechanism:** `priority()` (sched.c:1497) takes the max over LOG_LINKS of
+  `priority(pred) + insn_cost(pred,link,insn) - 1`, so cost-1 edges add nothing and only
+  latency>1 edges raise priority (load `icost=2` -> +1, `mult` `icost=12` -> +11).
+- **probe:** `PRIODBG SET insn=... final_pri=...` lines for every insn of the sched2 block.
+- **result:** CONFIRMED with numbers. 116 = 47 (from an OUTPUT-dep on store 98 and ANTI-deps on
+  loads 103/109, all pri 47 / cost 1); 140 = 47 (data-dep on 139; the whole chain 131..139 is 47);
+  122/124/143 = 48 (from an ANTI-dep on the `mult` insn 105, pri 48). The block's mflo ladder is
+  519=13, 522=24, 525=36, 528=47, 531=59, 534=70, so "47" means "downstream of the 4th mult".
+- **verdict:** CONFIRMED. Because `schedule_select` only ever compares within ONE priority group,
+  moving the chain tail to pri >= 48 (or the gp store to <= 46) removes the store from the
+  comparison entirely — that is the live axis.
+
+## [s5] The synth-mult chain's priority is register-allocation-determined, not value-determined.
+- **mechanism:** the chain head is `(insn 131 (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1)
+  (const_int 2))))`; its only pri-47 predecessor edge is `dep insn=131 pred=93 kind=14` — a WAR
+  anti-dependence on `(insn 93 (set (reg:SI 2 v0) (plus:SI (reg:SI 3 v1) (reg:SI 10 t2))))`, which
+  READS `$v1`. So the chain's 47 comes from *which hard register the chain was allocated*, not from
+  the values it computes. Insn 122 reaches 48 the same way, with the mult 105 as its WAR partner.
+- **probe:** `.greg` RTL for insns 93/131/140/116 + the `PRIODBG insn=131 pred=...` contribution
+  lines (`pred=525 kind=15 pred_pri=36 contrib=36`, `pred=93 kind=14 pred_pri=47 contrib=47`).
+- **result:** CONFIRMED. `final_pri(131) = 47` is entirely the insn-93 WAR term; the mflo-525
+  output-dep term only contributes 36.
+- **verdict:** CONFIRMED — and this re-opens the function on a register-allocation axis, the same
+  axis that took the floor 14 -> 2 in s3.
+
+## [s5] Forcing a second value live across the chain pushes local-alloc's `find_free_reg` past $v0/$v1.
+- **mechanism:** s3 established that the chain is a block-local quantity and MIPS defines no
+  REG_ALLOC_ORDER, so `find_free_reg` takes the first free hard reg in scan order. If both $v0 and
+  $v1 were occupied across the chain's live range the chain would land on a later register, whose
+  WAR partner could be a pri->=48 insn (the mult/mflo side).
+- **probe:** `tmp/grind/func_8001B748/s5/v_two_live.c` — defer the `dst+0` value into `t` and store
+  it after the `dst+0x18` store, so `t` and `new_var` are both live across the chain. Scored with
+  the s4 fast harness, then dumped with the instrumented cc1.
+- **result:** `score=127 insns=230` (catastrophic), and the dump shows the chain STILL in `$v1`
+  (`insn 129: (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))`) with
+  `PRIODBG SET insn=138 final_pri=47` — the register and the priority are both unchanged.
+- **verdict:** KILLED for this spelling. One extra live local does not evict $v1; the deferred value
+  did not occupy a register across the chain. Banked as
+  `rejected/two-live-values-across-chain-reg-unmoved-127.c`.
+
+## Frontier (live, for s6+)
+
+### F-A — put the chain tail in priority group 48 by changing its WAR partner
+The ONLY thing pinning the chain at 47 is the `$v1` WAR on insn 93. Anything that makes the chain's
+first insn anti/output-depend on a pri->=48 insn instead (the `mult` 105, the mflos 111/531/534)
+lifts the whole chain to >= 48, and `schedule_select` then never compares it with the pri-47 gp
+store at all. The observable is DIRECT and needs no score improvement to read:
+`PRIODBG SET insn=<chain tail> final_pri`. Sweep the s3 lever family (which local carries the
+0x9C4/0x2710 value, declaration order, variable reuse, where its consumer sits) and grade every
+variant by that number, not by the score. Note `tools/ra_solver` (`inverse.py global`,
+`pseudo_scope.py`) exists to test reachability of a register goal for this function — the goal here
+is "the early-exit synth chain lands in any register whose previous reader/writer has pri >= 48".
+
+### F-B — equalise `potential_hazard` instead of the priority (cheaper, and equality suffices)
+`schedule_select` keeps the FIRST insn with a STRICTLY greater `potential_hazard`, and `ready[]` is
+sorted descending by LUID inside a priority group, so the chain tail (luid 38) is scanned BEFORE the
+gp store (luid 25). It therefore only needs an EQUAL potential hazard, not a bigger one. Any spelling
+whose chain tail is a unit-0 (memory-class: load/store/move, codes 125/159/163) insn rather than a
+unit-less ALU insn (codes 3/16/181) wins the pick outright. Probe: shape the `>> 12` / final scale so
+the last insn of the 0x9C4/0x2710 sequence is the store itself or a move, and confirm with the
+absence of a `SELBEST` line at that clock (a `SELBEST ... pos>0` line IS the override).
+
+### F-C — lower the gp store below 47 (weakest of the three; the loads pin it)
+`final_pri(116) = 47` has THREE contributors at 47: an OUTPUT-dep on the `dst+4` store (98) and
+ANTI-deps on the `a+8`/`b+8` loads (103/109). Even a full reassociation of the multiply pairs leaves
+the a8/b8 loads at 47, so the store stays pinned; this axis is only worth probing if F-A and F-B both
+come back dead, and only in the form "make the gp store's whole memory-dep set live upstream of the
+4th mflo".
+
+## [s5] The sh zero,0(gp) displacement is decided by INSN_LUID(116)-INSN_LUID(140) at tools/gcc-2.7.2/sched.c:2461, and is therefore LUID-locked (s4's inherited verdict).
+- mechanism: rank_for_schedule ties on INSN_PRIORITY and on rank class (3/3) and falls through to the LUID tie-break; sched1 normalises the .greg stream before sched2 recomputes LUIDs, so source order cannot move it.
+- probe: Read the FULL instrumented log instead of grepping it: BB2_PRIO_DEBUG=1 BB2_RANK_DEBUG=1 BB2_SCHED_DEBUG=1 tools/gcc-2.7.2/cc1 -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -da on the validated standalone base.c (tmp/grind/func_8001B748/s5/dump.sh), then read the sched2 decision window (full.log lines 2915-2975) including the SELBEST / 'ready was:' / PICK prints, which s4 never looked at.
+- result: SCHEDDBG SELBEST clock=22 insn=116 pos=1 -> schedule_select picked ready index 1, so the array BEFORE its swap was [140, 116]: the LUID tie-break had ALREADY put insn 140 at ready[0], which is target's order. The pick was overridden by schedule_select's largest-potential_hazard rule (sched.c:2707-2723) because insn 116 is unit 0 (memory, bmin 1 / bmax 3) and insn 140 is unit -1 (sll v1,v1,2, no function unit). The same override fired at clock 19 (insn 127) and clock 21 (insn 119).
+- verdict: KILLED
+
+## [s5] INSN_PRIORITY(116) equals INSN_PRIORITY(140) and the gap that must be closed is exactly 1.
+- mechanism: priority() (sched.c:1497) takes max over LOG_LINKS of priority(pred) + insn_cost(pred,link,insn) - 1, so cost-1 edges add nothing; only latency>1 edges raise priority (load icost=2 -> +1, mult icost=12 -> +11). The block therefore sits on a flat plateau.
+- probe: PRIODBG SET insn=... final_pri=... for every insn of the sched2 block (full.log, block header at line 2611).
+- result: 116 = 47 (OUTPUT-dep on store 98 plus ANTI-deps on loads 103/109, all pri 47 cost 1); 140 = 47 (data-dep on 139; whole chain 131..139 = 47); 122/124/143 = 48, obtained purely from an ANTI-dep on the mult insn 105 (pri 48). mflo ladder: 519=13, 522=24, 525=36, 528=47, 531=59, 534=70.
+- verdict: CONFIRMED
+
+## [s5] The synth-mult chain's priority is register-allocation-determined, not value-determined.
+- mechanism: The chain head is (insn 131 (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))). Its only pri-47 predecessor edge is dep insn=131 pred=93 kind=14, a WAR anti-dependence on (insn 93 (set (reg:SI 2 v0) (plus:SI (reg:SI 3 v1) (reg:SI 10 t2)))), which READS $v1. So the chain's 47 is inherited from WHICH HARD REGISTER the chain was allocated. Insn 122 reaches 48 by exactly the same route with the mult 105 as its WAR partner.
+- probe: .greg RTL for insns 93/131/140/116 plus the PRIODBG contribution lines for 131 (pred=525 kind=15 pred_pri=36 contrib=36; pred=93 kind=14 pred_pri=47 contrib=47).
+- result: final_pri(131)=47 is entirely the insn-93 WAR term; the mflo-525 output-dep term contributes only 36. Register choice, not the computed value, sets the chain's priority group.
+- verdict: CONFIRMED
+
+## [s5] Forcing a second value live across the chain pushes local-alloc's find_free_reg past $v0/$v1, giving the chain a WAR partner of pri >= 48.
+- mechanism: s3 established the chain is a block-local quantity and MIPS defines no REG_ALLOC_ORDER, so find_free_reg takes the first free hard reg in scan order; occupying both $v0 and $v1 across the chain's live range should push it onto a later register.
+- probe: tmp/grind/func_8001B748/s5/v_two_live.c - defer the dst+0 value into t and store it after the dst+0x18 store so that t and new_var are both live across the chain; scored with the s4 fast harness, then dumped with the instrumented cc1.
+- result: score=127 insns=230 (catastrophic) AND the dump shows the chain still in $v1 (insn 129: (set (reg:SI 3 v1) (ashift:SI (reg/v:SI 17 s1) (const_int 2)))) with PRIODBG SET insn=138 final_pri=47 - register and priority both unchanged. One extra deferred local does not evict $v1.
+- verdict: KILLED
