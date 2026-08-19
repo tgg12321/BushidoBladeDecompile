@@ -1,87 +1,99 @@
-/* candidate.c — SioSyncroWrite (formerly func_8008C1E8), grind session s4 (2026-08-19)
+/* candidate.c - SioSyncroWrite (formerly func_8008C1E8), grind session s5 [forensics], 2026-08-19
  *
- * HONEST FLOOR WITH THIS BODY IN PLACE IN src/main.c: sandbox --disable all = 0
- * (target_insns 159, build_insns 159, rules_dropped 1, cheat_asm_stripped 66).
+ * RE-VERIFIED on the live chassis by the following [forensics] session
+ * (2026-08-19, the one that filed the OWNER-ESCALATION - INTEGRATION HANDOFF
+ * entry in docs/grind/decisions.md): identical numbers, and the expand_increment
+ * attribution below was re-derived from that session own dumps
+ * (tmp/grind/SioSyncroWrite/s4/s4.SioSyncroWrite.{rtl,flow,combine,greg}.slice;
+ * volatile post-increment insns 161/163/165/167 and 173/175/177/179, both dead
+ * reloads still present after combine and flow). cheat_asm_stripped read 67 on
+ * the re-measurement (66 previously) - a whole-file count, not a property of
+ * this body.
+ *
+ * MEASURED on the live chassis, with this body + the file-scope
+ * declaration change below in place in src/main.c:
+ *     sandbox SioSyncroWrite --disable all -> "score": 0
+ *         (target_insns 159, build_insns 159, rules_dropped 1, cheat_asm_stripped 66)
+ *     sandbox SioAnsyncWrite --disable all -> "score": 0
+ *         (target_insns 25, build_insns 25)   <- the struct-sharing sibling is unharmed
  * Zero register pins, zero inline asm, zero rules touched, src/main.c only.
  *
- * === What s4 changed, and why it worked ===============================
- * s1-s3 left a single missing `addiu $v0,$v0,%lo(D_800F1AF4)` at the OUTER-LOOP
- * BOTTOM exit test: ours folded to `lui;lw`, target has the un-folded
- * `lui;addiu;lw`. s3 proved (loop.c:688-701) that a named pointer local in a
- * `while (cond)` loop can never produce it, because scan_loop hoists the
- * address set out of the loop, and the hoisted pseudo then takes a callee-save.
+ * ===== THE ONE CHANGE s5 MADE TO THE s4 BODY ==========================
+ * s4's body reached 0 but was BOUNCED by the layer-1 cheat-reviewer
+ * (docs/grind/decisions.md, 2026-08-19 00:25) for declaring
+ *     volatile s32 *flag = &D_800F1AEC;      (+ its loop copy `st`)
+ * over a non-volatile `extern s32 D_800F1AEC;` - a volatile qualifier added
+ * by pointer-type coercion, which the legitimate-volatile-interrupt-touched
+ * carve-out explicitly excludes. That construct is now BANNED for this
+ * function.
  *
- * s4 ran the permuter (mandated modality) on the s3 chassis: 63.6k iterations,
- * ZERO finds — the basin is dry (banked). A second, DIRECTED campaign with
- * PERM_GENERAL alternatives spelled out at exactly that test produced the
- * structural insight the random search could not: the cast form
- * `*(volatile s32 *)&D_800F1AF4 != 0` un-folds BOTH copies of the test, because
- * expand_end_loop duplicates a `while` condition verbatim to the loop top. In
- * TARGET the top copy is FOLDED (`lui;lw`) and only the bottom copy is
- * un-folded. Two copies of one `while` condition cannot differ — therefore
- * target's two tests are NOT one duplicated `while` condition.
+ * s5 removes the coercion entirely by declaring the symbol honestly:
  *
- * That kills the whole `while (D_800F1AF4 != 0) { ... }` chassis that s1-s3
- * were grinding, and replaces it with:
+ *     src/main.c:3431   - extern s32 D_800F1AEC;
+ *                       + extern volatile s32 D_800F1AEC;
+ *     src/main.c:3437   SioAnsyncWrite's local becomes
+ *                       volatile s32 *flag = &D_800F1AEC;   (type now FOLLOWS
+ *                       the declaration; nothing is added to it)
  *
- *     if (D_800F1AF4 == 0) goto done;    <- plain global read, FOLDS  (top)
- *     for (;;) {
- *         ... body ...
- *         { volatile s32 *remaining = &D_800F1AF4;
- *           if (*remaining == 0) break; }   <- pointer alias, UN-FOLDS (bottom)
- *     }
+ * With that decl in place, `volatile s32 *flag = &D_800F1AEC;` in this body
+ * adds NO qualifier - it is simply the type of `&D_800F1AEC`. Both consumers
+ * were re-measured at 0 (above). The C is entirely inside src/main.c.
  *
- * The block scope is load-bearing: the alias dies at the closing brace, so its
- * live range never crosses the DeliverEvent/callback region and it is never a
- * candidate for a callee-save register (that was s3's rejected form, score 6);
- * and because the loop is `for (;;)` there is no condition for scan_loop to
- * duplicate to the top, so the top test keeps its folded, direct-global form.
- * Five equivalent loop shapes were measured and ALL match at 159/0 diff lines
- * (for(;;)+break, while(1)+break, for(;;)+goto done, do{}while(1)+break,
- * do{}while(stmt-expr)) — see hypotheses.md [s4-H2]; `for (;;)` is the one
- * banked here as the most ordinary C.
+ * ===== WHY VOLATILE IS ORIGINAL SEMANTICS, NOT A COERCION (s5 forensics) =
+ * Dump-grounded, from tmp/grind/SioSyncroWrite/s4/{vol,nonvol}.rtl.slice
+ * (cc1 -da, project flags via tools/grinder/dump.ps1):
  *
- * === s4's second cleanup: the discarded read-backs are natural C ========
- * s2 spelled target's `sw` -> `lw` read-back pairs as `st[1] += 1; st[1];`
- * (a bare discarded volatile read — a construct a reader would question).
- * s4 measured that plain `st[1]++;` / `st[2]--;` emit exactly the same
- * load/modify/store/load, because GCC 2.7.2 re-loads a volatile lvalue after a
- * discarded-result post-increment. The bare read statements are GONE from the
- * body; the target really does contain those two `lw`s (asm/funcs/
- * SioSyncroWrite.s:107,111 — `lw $v0,0x4($s3)` / `lw $v0,0x8($s3)`).
- * Dropping them entirely costs 2 insns (157i) — they are load-bearing and
- * semantically real, not padding. See hypotheses.md [s4-H3].
+ * `expand_increment` (gcc/expr.c) emits a DIFFERENT insn sequence for a
+ * post-increment whose value is discarded, depending on MEM_VOLATILE_P:
  *
- * === Every pointer alias in the body is measured load-bearing ==========
- * s4 swept the direct-global form of each one (hypotheses.md [s4-M1..M5]):
- *   drop p_ae2   -> 158i, 27 differing lines
- *   drop p_af8   -> 158i, 23
- *   drop p_af4b  -> 158i, 29
- *   drop p_af4   -> 158i,  5
- *   drop st      -> 158i, 51
- * so each carries a /* FAKE */ annotation naming the pass (combine.c symbol
- * fold) and the exhaustion record, per pointer-alias-fake-exception.md.
- * `flag` / `st` are NOT annotated: they are the LIBCOMB control-block BASE
- * pointer, which target itself holds in $s3 and indexes at 0x4/0x8/0xC
- * (asm/funcs/SioSyncroWrite.s:106-115) — genuine program structure, not a
- * redundant second handle.
+ *   non-volatile MEM   insn 161 (set r104 (mem/s   (plus r89 4)))   load
+ *                      insn 163 (set r105 (plus r104 1))            add
+ *                      insn 165 (set r106 r105)                     copy
+ *                      insn 167 (set (mem/s (plus r89 4)) r106)     store
+ *                      -> the expression's value is the PRE-increment temp;
+ *                         the copy dies in cse/flow. Machine: lw/addiu/sw.
  *
- * === OPEN INTEGRATION HANDOFF (not a blocker; bytes are already 0) ======
- * `volatile s32 *flag = &D_800F1AEC;` adds a volatile qualifier the file-scope
- * `extern s32 D_800F1AEC;` does not carry. The natural spelling is
- * `extern volatile s32 D_800F1AEC;`, and s4 re-measured on THIS chassis that
- * it is score-neutral (159i, 0 diff lines — hypotheses.md [s4-M6]); s3 also
- * measured it score-neutral for the struct-sharing sibling SioAnsyncWrite.
- * Applying it needs a volatile_extern_allowlist.txt entry (two-prong evidence
- * already complete in evidence.md: IRQ writer HandleSio `sw $zero,0x0($a0)`
- * @0x8008CCD4, block base $a0=&D_800F1AEC loaded @0x8008CC78), and that file
- * is OUT OF SCOPE for a grind candidate (tools/grinder/grind.ps1:540 — only
- * src/main.c is allowed, tools/grinder/scope_allow.txt has no entry for this
- * function). Operator steps are listed in the s4 outcome JSON and evidence.md.
+ *   volatile MEM       insn 161 (set r104 (mem/s/v (plus r89 4)))   load
+ *                      insn 163 (set r105 (plus r104 1))            add
+ *                      insn 165 (set (mem/s/v (plus r89 4)) r105)   store
+ *                      insn 167 (set r106 (mem/s/v (plus r89 4)))   RELOAD
+ *                      -> a volatile lvalue's post-value cannot be taken from
+ *                         the temp, so expansion re-reads memory. r106 is dead
+ *                         immediately, but flow.c's insn_dead_p refuses to
+ *                         delete an insn whose source has side_effects_p
+ *                         (MEM_VOLATILE_P), so the dead `lw` survives to final.
+ *                         Machine: lw/addiu/sw/lw.
+ *
+ * TARGET HAS THE VOLATILE SEQUENCE, twice:
+ *     asm/funcs/SioSyncroWrite.s:106-111
+ *       lw $v0,0x4($s3); nop; addiu $v0,$v0,0x1; sw $v0,0x4($s3); lw $v0,0x4($s3)
+ *     asm/funcs/SioSyncroWrite.s:112-117
+ *       lw $v0,0x8($s3); addiu $v0,$v0,-0x1;     sw $v0,0x8($s3); lw $v0,0x8($s3)
+ *
+ * The whole-body non-volatile spelling was measured this session:
+ *     rejected/s4b-nonvolatile-block-pointer-154i.c -> score 10, 154 insns
+ *     (5 short: the two dead reloads, plus the $s3 base pointer collapsing
+ *      back into lui/%lo forms once its MEMs are foldable).
+ * So no non-volatile spelling of this block can reach the target bytes. The
+ * volatile qualifier is a byte-visible property of Sony's original LIBCOMB
+ * source, not a codegen coercion.
+ *
+ * ===== THE ONE REMAINING GATE (out of a grind session's reach) =========
+ * `extern volatile s32 D_800F1AEC;` is pattern-3 of engine/volatile_cheats.py
+ * and is only legal for symbols listed in volatile_extern_allowlist.txt.
+ * D_800F1AEC is not listed; its three block-mates ARE
+ * (volatile_extern_allowlist.txt:43-45, D_800F1AF0/AF4/AF8, "Ruling-4 class
+ * grant"). A grind session cannot land the entry: tools/grinder/grind.ps1:685
+ * stages only src/<stem>.c + scope_allow paths into the Match commit, so an
+ * allowlist edit is silently dropped and `queue done` then refuses the
+ * function. Operator steps + the verified two-prong evidence are in
+ * memory/grind/SioSyncroWrite/evidence.md and in the INTEGRATION HANDOFF
+ * entry in docs/grind/decisions.md (2026-08-19, s5).
  *
  * Depends on file-scope decls in src/main.c (~3427-3435):
  *   extern volatile u16 D_800F1AE2; extern s32 (*D_800F1AE8)(s32, s32);
- *   extern s16 D_800A3074[4]; extern s32 D_800F1AEC;
+ *   extern s16 D_800A3074[4];
+ *   extern volatile s32 D_800F1AEC;      <-- CHANGED by s5 (was non-volatile)
  *   extern volatile s32 D_800F1AF0, D_800F1AF4, D_800F1AF8;
  *   extern s32 D_800A3044;
  */

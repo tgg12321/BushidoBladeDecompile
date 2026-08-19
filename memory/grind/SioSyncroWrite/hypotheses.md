@@ -485,3 +485,84 @@ explicit volatile CAST and was rejected by the self-vet as forbidden.
 `s32 *flag = &D_800F1AEC; volatile s32 *st = &D_800F1AF0;` with st[0..2]:
 158i, 57 differing lines. Target keeps ONE base ($s3 = &D_800F1AEC, offsets
 0x4/0x8/0xC), so any re-basing diverges across the whole block.
+
+## [s5-F1] volatile on the D_800F1AEC block is ORIGINAL SEMANTICS, not a coercion — CONFIRMED (dump-grounded)
+Modality: forensics (cc1 -da via `pwsh tools/grinder/dump.ps1 SioSyncroWrite`).
+Artifacts: tmp/grind/SioSyncroWrite/s4/vol.rtl.slice, .../nonvol.rtl.slice,
+.../vol.sio.s, .../nonvol.sio.s.
+
+PASS NAMED: `expand_increment` in gcc/expr.c, at RTL-generation time (the
+`.rtl` dump, BEFORE jump/cse/loop). It emits two different sequences for a
+post-increment whose value is discarded, keyed on MEM_VOLATILE_P:
+
+  non-volatile (nonvol.rtl.slice, insns 161-167):
+    161 (set r104 (mem/s   (plus r89 4)))       load
+    163 (set r105 (plus r104 1))                add
+    165 (set r106 r105)                         copy  <- the expression value
+    167 (set (mem/s (plus r89 4)) r106)         store
+  volatile (vol.rtl.slice, insns 161-167):
+    161 (set r104 (mem/s/v (plus r89 4)))       load
+    163 (set r105 (plus r104 1))                add
+    165 (set (mem/s/v (plus r89 4)) r105)       store
+    167 (set r106 (mem/s/v (plus r89 4)))       RELOAD <- the expression value
+
+In the volatile form the post-increment's value cannot be taken from the
+pre-increment temp (the lvalue has side effects), so expansion re-reads
+memory. r106 is dead the instant it is set, but flow.c's insn_dead_p will not
+delete an insn whose SET_SRC satisfies side_effects_p (MEM_VOLATILE_P), so the
+dead `lw` survives every later pass and reaches final. Same story at offset 8
+(insns 173-179).
+
+TARGET CONTAINS THE VOLATILE SEQUENCE, twice, verbatim:
+  asm/funcs/SioSyncroWrite.s:106-111  lw 0x4($s3) / nop / addiu 1 / sw 0x4($s3) / lw 0x4($s3)
+  asm/funcs/SioSyncroWrite.s:112-117  lw 0x8($s3) / addiu -1 / sw 0x8($s3) / lw 0x8($s3)
+
+## [s5-K1] Any non-volatile spelling of the control block — KILLED
+rejected/s4b-nonvolatile-block-pointer-154i.c (`s32 *flag` + `s32 *st`, plain
+non-volatile extern, everything else identical to the 0-distance body):
+  sandbox SioSyncroWrite --disable all -> "score": 10, build_insns 154 vs 159.
+Five instructions short. Two are the dead reloads above (visible in the .s
+diff: `lw $2,4($19)` and `lw $2,8($19)` present only in the volatile build);
+the remaining three are the $s3/$19 base pointer collapsing back into
+lui/%lo-folded load bases once its MEMs become foldable. Because the reload is
+never EMITTED in the non-volatile case, there is no later pass that could
+preserve it — this is not a scheduling or allocation question and no C-level
+restructuring can recover it. The block must be volatile-typed.
+
+## [s5-M1] Natural spelling re-measured on the LIVE chassis — CONFIRMED
+`extern volatile s32 D_800F1AEC;` at src/main.c:3431 + `volatile s32 *flag`
+in BOTH consumers (the local's type now simply follows the declaration; no
+qualifier is added anywhere):
+  sandbox SioSyncroWrite --disable all -> "score": 0  (159/159)
+  sandbox SioAnsyncWrite --disable all -> "score": 0  ( 25/25)
+This supersedes s4-M6 (which was measured before the layer-1 bounce) and is
+the form banked in candidate.c.
+
+## [s5-M2] The allowlist file is mechanically unreachable from a grind session
+Not just the scope check: tools/grinder/grind.ps1:685 stages exactly
+`src/<stem>.c $extraScope engine/queue.json regfix.txt regfix_stage2.txt
+asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt
+tools/delay_slot_ra_funcs.txt memory/grind/<func>` into the Match commit.
+volatile_extern_allowlist.txt is not in that list, so a session edit to it is
+DROPPED from the commit; the committed tree would then carry
+`extern volatile s32 D_800F1AEC;` with no grant and `queue done` would refuse
+(engine/inlineasm.py:490 -> volatile_cheats.func_volatile_cheat_count).
+This is an integration handoff, not a matching problem.
+
+## [s4] The banked s4 result (honest pure-C distance 0 for SioSyncroWrite with the candidate body plus the honest `extern volatile s32 D_800F1AEC;` declaration, and no regression for the struct-sharing sibling SioAnsyncWrite) still holds on the CURRENT chassis, i.e. the ledger's floor=1 entry is stale rather than the s4 measurement being wrong.
+- mechanism: Every banked spelling conclusion is chassis-relative. The dispatch brief reported the HEAD honest floor as 'measurement unavailable' and the ledger's last recorded floor as 1, while the s4 decisions.md entry claimed 0 - so the claim had to be re-measured with the edits actually in place rather than quoted.
+- probe: Applied memory/grind/SioSyncroWrite/candidate.c to src/main.c (lines 3451-3542) together with the two declaration changes it depends on (src/main.c:3431 `extern s32 D_800F1AEC;` -> `extern volatile s32 D_800F1AEC;`, src/main.c:3437 SioAnsyncWrite's local `s32 *flag` -> `volatile s32 *flag`), via tmp/grind/SioSyncroWrite/s4/apply.py; then `sandbox SioSyncroWrite --disable all` and `sandbox SioAnsyncWrite --disable all`.
+- result: SioSyncroWrite: score 0, target_insns 159, build_insns 159, scorable true, rules_dropped 1, cheat_asm_stripped 67. SioAnsyncWrite: score 0, 25/25, rules_dropped 0. Both reproduce the s4 numbers exactly (the only delta is cheat_asm_stripped 67 vs 66, a whole-file count unrelated to this body). src/main.c was then restored to its committed HEAD body.
+- verdict: CONFIRMED
+
+## [s4] The two extra `lw` instructions that separate our best non-volatile spelling (154 insns) from target (159 insns) are produced at RTL generation by expand_increment's volatile path, and survive to final because flow.c's insn_dead_p will not delete an insn whose SET_SRC has side_effects_p - i.e. the volatility of the 0x800F1AEC block is a byte-visible property of Sony's original source, not a codegen coercion.
+- mechanism: gcc/expr.c expand_increment: for a post-increment whose value is discarded on a non-volatile MEM it emits load/add/copy/store and hands back the pre-increment temp (the copy dies in cse/flow -> lw/addiu/sw). On a MEM with MEM_VOLATILE_P set, the post-value may not be taken from the temp, so expansion re-reads memory after the store; the reloaded pseudo is dead at birth, but flow.c's insn_dead_p refuses to delete an insn whose source has side_effects_p, so the dead lw reaches final -> lw/addiu/sw/lw.
+- probe: `pwsh tools/grinder/dump.ps1 SioSyncroWrite` with the candidate body in place, then sliced the SioSyncroWrite region out of main.rtl / main.combine / main.flow / main.greg into tmp/grind/SioSyncroWrite/s4/s4.SioSyncroWrite.*.slice and read the increment region directly (this session's own dumps, not s4's).
+- result: rtl slice lines 338-380: insn 161 (set (reg:SI 104) (mem/s/v:SI (plus (reg/v:SI 89) (const_int 4)))) / insn 163 (plus reg104 1) / insn 165 store / insn 167 (set (reg:SI 106) (mem/s/v:SI ... 4)) = the dead reload; identical shape at offset 8 as insns 173/175/177/179 with (const_int -1). Both reloads are still present in the combine slice (lines 432, 460) and the flow slice (lines 680, 708), i.e. neither combine nor flow's DCE removes them. Target carries the same 4-insn sequence twice at asm/funcs/SioSyncroWrite.s:106-111 and 112-117; the whole-body non-volatile spelling measures 154 insns / score 10 (rejected/s4b-nonvolatile-block-pointer-154i.c). 159 - 154 = 5, of which 2 are these reloads.
+- verdict: CONFIRMED
+
+## [s4] There is no remaining in-scope (src/main.c-only) route to a committable 0: the honest declaration `extern volatile s32 D_800F1AEC;` requires an entry in volatile_extern_allowlist.txt, and the only alternative spelling - the pointer-level volatile coercion - is already a banned construct for this function.
+- mechanism: engine/volatile_cheats.py pattern-3 makes `extern volatile T G;` legal only for allowlisted symbols; tools/grinder/grind.ps1:685 stages only src/<stem>.c, tools/grinder/scope_allow.txt paths, engine/queue.json, the regfix/asmfix family and memory/grind/<func> into the Match commit, so a session edit to volatile_extern_allowlist.txt is silently dropped and the committed tree would carry an ungranted volatile extern that `queue done` refuses.
+- probe: Read volatile_extern_allowlist.txt (D_800F1AF0/AF4/AF8 present at lines 43-45 as 'Same Ruling-4 class grant', D_800F1AEC absent), tools/grinder/scope_allow.txt (only replay_camera_Init include/code6cac.h, owner-approved 2026-08-01), and the driver's staging list + owner-gated routing in tools/grinder/grind.ps1.
+- result: D_800F1AEC is 1 of the 4 words in the 0x800F1AEC LIBCOMB control block and the only one not granted; 3 of 4 block-mates are granted at volatile_extern_allowlist.txt:43-45. scope_allow.txt carries exactly 1 entry. Both surfaces are outside a grind session's allowed edit set, so the in-scope search space for this function is empty at floor 0.
+- verdict: CONFIRMED

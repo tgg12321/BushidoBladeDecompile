@@ -472,3 +472,63 @@ To apply it:
      a fresh layer-2 cheat-reviewer.
 Grind candidates may only edit src/main.c (tools/grinder/grind.ps1:540 and
 tools/grinder/scope_allow.txt), which is why s4 did not do it.
+
+## s5 (2026-08-19, forensics) — two-prong evidence INDEPENDENTLY RE-VERIFIED
+
+Prong (a) — IRQ writer of D_800F1AEC. Read directly out of the asm this
+session, not carried over from the ledger:
+  asm/funcs/_comb_control.s:549-550   lui $a0,%hi(D_800F1AEC)
+                                      addiu $a0,$a0,%lo(D_800F1AEC)   @0x8008CC78
+  asm/funcs/_comb_control.s:551       lw  $v0,0x0($a0)                @0x8008CC80
+  asm/funcs/_comb_control.s:572       sw  $zero,0x0($a0)              @0x8008CCD4
+  (immediately followed by jal DeliverEvent(0xF000000B, 0x800) @0x8008CCE0)
+That code is inside HandleSio, the static COMB.OBJ symbol @0x8008C9F4..0x8008CD8C
+installed as the IRQ8/SIO handler via bios_SysEnqIntRP(3, &D_800A304C) from
+r_sioinit @0x8008CE1C (InterruptElement D_800A304C = {0, 0x8008C9F4=HandleSio,
+0x8008C978=EvalpSio, 0} at asm/data/7D920.data.s:33468). The same handler writes
+the block's other three words at 0x8008CCFC (0xC) and 0x8008CD48 (0x8) — the
+citations already granted at volatile_extern_allowlist.txt:43-45. So the fourth
+word is written by the *same* ISR through the *same* base register.
+
+Prong (b) — use-site construct. Two of the three named constructs apply:
+  * IRQ-mutated-loop-bound: the 0x8 word (D_800F1AF4, the remaining-length
+    counter) is decremented by the loop body (`st[2]--`) AND by HandleSio
+    (`sw $v0,0x8($a0)` @0x8008CD48), and the outer loop's exit test reads it.
+  * double-read-across-sequence-point: offsets 0x4 and 0x8 are stored and then
+    immediately re-read (asm/funcs/SioSyncroWrite.s:106-117), which is exactly
+    what a volatile lvalue post-increment expands to — see hypotheses.md
+    [s5-F1] for the RTL proof.
+  * the 0x0 word itself is the in-use flag: read at function entry
+    (`if (*flag != 0) return -1;`) in both SioSyncroWrite and SioAnsyncWrite,
+    set by the transfer path, and cleared asynchronously by the ISR at
+    0x8008CCD4. Its value can change between two reads with no intervening
+    store in this TU.
+
+## s5 — why the grant, not a respelling, is the remaining work
+[s5-K1] measured the fully non-volatile block at 154/159 insns (score 10) and
+[s5-F1] shows the missing instructions are never emitted at RTL expansion
+without MEM_VOLATILE_P. There is therefore NO non-volatile C spelling of this
+function that can reach the target bytes. Every volatile-adding spelling that
+is confined to src/main.c alone (pointer-to-volatile over a non-volatile
+extern; an explicit `(volatile s32 *)` cast) is a qualifier-adding coercion the
+carve-out excludes — and the pointer form is now BANNED for this function by
+the 2026-08-19 00:25 layer-1 FAIL. The only non-coercive spelling is the honest
+declaration, which needs the allowlist grant.
+
+Operator steps are unchanged from the s4 list above, with one correction:
+the blocker is not only the candidate scope check (grind.ps1:540) but the Match
+commit's staging list (grind.ps1:685), which does not include
+volatile_extern_allowlist.txt — so a session edit to it is dropped and
+`queue done` then refuses the function.
+
+- [s4] Live-chassis re-measurement with the candidate body + honest declaration in src/main.c: `sandbox SioSyncroWrite --disable all` -> score 0 (159/159, rules_dropped 1, cheat_asm_stripped 67); `sandbox SioAnsyncWrite --disable all` -> score 0 (25/25). The ledger's floor=1 was stale; the honest pure-C distance is 0.
+
+- [s4] This session's own cc1 -da dumps reproduce the expand_increment volatile path exactly: rtl insns 161/163/165/167 (offset 4, +1) and 173/175/177/179 (offset 8, -1), each load/add/store/dead-reload on a mem/s/v MEM. Both dead reloads survive combine (slice lines 432/460) and flow (slice lines 680/708) because insn_dead_p refuses to delete a SET whose source has side_effects_p.
+
+- [s4] Target carries that 4-insn volatile sequence twice (asm/funcs/SioSyncroWrite.s:106-111 and 112-117), and the fully non-volatile body measures 154 insns / score 10 - so no non-volatile C spelling of this block can reach target bytes. The volatile qualifier is original Sony LIBCOMB semantics, not a coercion.
+
+- [s4] The remaining blocker is purely a commit surface: `extern volatile s32 D_800F1AEC;` is volatile_cheats.py pattern-3 and needs a volatile_extern_allowlist.txt entry (its 3 block-mates D_800F1AF0/AF4/AF8 are granted at volatile_extern_allowlist.txt:43-45); that file is not in the driver's Match-commit staging set (tools/grinder/grind.ps1:685) and is not in tools/grinder/scope_allow.txt.
+
+- [s4] Filed docs/grind/decisions.md:6202 - `## 2026-08-19 - SioSyncroWrite - **OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven; blocked by a commit surface a grind session may not stage)**` - superseding the 2026-08-19 INTEGRATION HANDOFF entry whose heading lacked the literal OWNER-ESCALATION token the driver's escalation check greps for (the reason the previous session was discarded). It carries the re-measured numbers, the pass attribution, the two-prong grant evidence, the six operator steps, and the single-line autonomous alternative (`SioSyncroWrite volatile_extern_allowlist.txt` in tools/grinder/scope_allow.txt, precedent scope_allow.txt:22-26 replay_camera_Init).
+
+- [s4] src/main.c was restored to its committed HEAD body after measurement; the session leaves no build-input dirt.

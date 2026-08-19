@@ -42,3 +42,8 @@ disposition taken: alias table recorded here; no policy change.
   func_80041688 = gnd_init_80041688 · func_800307D0 = cpu_check_tubazeri_2 ·
   func_8003800C = damage_DebugDisp · func_80056FE8 = ang_hosei_80056FE8 ·
   func_80047EE8 = AddTbpOfst_80047EE8
+
+## 2026-08-19 — SioSyncroWrite — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:6202 - 2026-08-19 - SioSyncroWrite - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven; blocked by a commit surface a grind session may not stage). Requested action: add `SioSyncroWrite volatile_extern_allowlist.txt` to tools/grinder/scope_allow.txt (precedent scope_allow.txt:22-26), or land the D_800F1AEC allowlist grant directly per the six operator steps in the entry.
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

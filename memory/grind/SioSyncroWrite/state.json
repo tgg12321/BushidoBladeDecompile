@@ -1,8 +1,8 @@
 {
  "func": "func_8008C1E8",
  "file": "main",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor held at 1; the exit-test pointer family is now closed from BOTH ends (loop.c:688-701 proves adjacency and non-hoisting are mutually exclusive), and the D_800F1AEC two-prong volatile evidence is "
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "Re-verified floor 0 on the live chassis (159/159, sibling 25/25) and re-derived the expand_increment volatile-post-increment attribution from this session's own dumps; re-filed the integration handoff"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The single missing addiu is decided in register allocation, not in C spelling: target's &D_800F1AF4 pseudo is hoisted but denied a hard register, so reload rematerialises it from REG_EQUIV at each of its three uses.",
-   "mechanism": "global.c find_reg weighs an allocno's benefit against the save/restore cost of claiming a fresh callee-save register; a 3-reference pointer with a function-long live range sits right at that boundary. In our builds it always wins the register (157-159 insns, scores 11-22); in target it evidently loses it.",
-   "next_probe": "FORENSICS modality: pwsh tools/grinder/dump.ps1 SioSyncroWrite with rejected/s3-shared-pointer-three-sites-do-while-19.c applied, then read the SioSyncroWrite slice of main.lreg and main.greg \u2014 find the allocno for the &D_800F1AF4 pseudo, read its priority, its live_length and which hard reg find_reg assigned, and determine what property would have to differ for it to be spilled with its REG_EQUIV intact. Every C-level spelling is already dead (s2: 4, s3: 6), so do not spend the session on more spellings."
+   "hypothesis": "Once volatile_extern_allowlist.txt carries D_800F1AEC (or scope_allow.txt carries `SioSyncroWrite volatile_extern_allowlist.txt`), memory/grind/SioSyncroWrite/candidate.c plus the two declaration edits is a complete COMPLETED-C candidate needing only a self_vet and a Judge cycle.",
+   "mechanism": "The body is score-0 with zero rules, zero pins and zero inline asm; the only qualifier-adding construct was the banned pointer coercion, which the honest declaration removes entirely (both consumers' locals then merely take the type of &D_800F1AEC).",
+   "next_probe": "With the grant in place: re-apply candidate.c + the src/main.c:3431/3437 declaration edits, re-measure both consumers, write memory/grind/SioSyncroWrite/self_vet.md covering flag, st, p_ae2, p_af8, p_af4b, p_af4/remaining, and submit candidate-ready."
   },
   {
-   "hypothesis": "COMPLETED-C for SioSyncroWrite is gated on a volatile_extern_allowlist.txt entry for D_800F1AEC plus self_vet.md, not on further score work.",
-   "mechanism": "The body's volatile s32 *flag = &D_800F1AEC; over a non-volatile extern is the only qualifier-adding construct left in the diff; the natural extern volatile s32 spelling is score-neutral for both consumers and is exactly what the legitimate-volatile-interrupt-touched carve-out grants, with the two prongs now cited to the instruction.",
-   "next_probe": "Route the drafted allowlist entry (text in evidence.md) through the layer-2 cheat-reviewer and the operator commit-audit block the file's header mandates; then switch the body to the natural declaration, re-measure both SioSyncroWrite and SioAnsyncWrite, and write memory/grind/SioSyncroWrite/self_vet.md covering flag, st, p_ae2, p_af8, p_af4b and p_af4."
+   "hypothesis": "The four /* FAKE */-annotated pointer-alias-to-a-global handles in the candidate (p_ae2, p_af8, p_af4b, p_af4/remaining) are the next acceptance risk after the volatile question, and at least some of them may be retirable now that the block base is honestly volatile-typed.",
+   "mechanism": "They exist to defeat combine.c's lui/%lo symbol fold so the address stays in a pseudo; a volatile-typed base may already force the un-folded form for some of the sites, making the extra handle redundant.",
+   "next_probe": "With the honest declaration in place, drop each of the four handles one at a time (direct global reference instead) and re-measure `sandbox SioSyncroWrite --disable all`; any handle whose removal keeps score 0 should be deleted from candidate.c before it ever reaches a reviewer."
   },
   {
-   "hypothesis": "Re-derive modality can still supply target's exit-test spelling from a sibling PsyQ LIBCOMB routine that was compiled from the same Sony source style.",
-   "mechanism": "SioSyncroWrite is verbatim-linked Sony LIBCOMB code; the same source file's other routines are present in asm/funcs/_comb_control.s and in the psyz PsyQ 4.0 decomp, and Sony's style of holding block bases in pointer variables is already visible in the un-folded address forms throughout that blob.",
-   "next_probe": "Diff SioSyncroWrite against SioAnsyncWrite/SioSyncroRead and against any psyz LIBCOMB body for a while-countdown routine whose exit test compiles un-folded, and copy the source spelling verbatim rather than inventing one."
+   "hypothesis": "The sibling LIBCOMB consumers of the same control block (SioAnsyncRead / SioSyncroRead / _comb_control) will need the same D_800F1AEC grant, so the allowlist entry is worth landing once for the whole family rather than per function.",
+   "mechanism": "0x800F1AEC is the shared in-use flag of the LIBCOMB block; every routine in the verbatim-linked COMB object reads it at entry and HandleSio clears it asynchronously.",
+   "next_probe": "Grep src/main.c and asm/funcs for D_800F1AEC consumers and record in the ledger which queue items inherit the same grant, so the operator lands one entry instead of several."
   }
  ],
  "judge_constraints": [
