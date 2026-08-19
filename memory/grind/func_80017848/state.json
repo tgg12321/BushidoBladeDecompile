@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 18,
- "current_modality": "rederive",
+ "session_count": 19,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -111,18 +111,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Floor holds at 3 (re-measured 127/127); the rederive modality's last leg dies - no BB2 sibling body exists (max 5-gram overlap 0.120 over all 1,437 functions), the residual's seam idiom occurs in only"
+  },
+  {
+   "session": 19,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor holds at 3 (re-measured 127/127); nineteen sessions merge into a two-clause theorem that subsumes all 133 rejected forms, and the last untried preheader-copy carrier (an induction-variable-depen"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is reachable only through a combine refusal whose C carrier is a CALL boundary (s17's R4 leg), which func_80017848 cannot supply without changing semantics - so if any lever remains it is not at the C-statement level but at the level of what GCC 2.7.2's cse does with the reg79/reg80 equivalence class at insn 89 (E-s16-2). Naming that canonicalisation rule would turn every loop-2 preheader spelling from a blind guess into a checkable predicate.",
-   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg); qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and insert / merge_equiv_classes decides membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM, and that single difference decides whether loop 1's copy survives combine.",
-   "next_probe": "Add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) for pseudos in the 72-120 range, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1), re-prove codegen identity with tmp/grind/func_80017848/s16/idump.sh, and diff the candidate's trace against cell E2's and cell X1's at insn 83 and insn 89. Note that even a confirmed predicate has no affordable C carrier (s17), so this is a naming exercise, not a lever."
+   "hypothesis": "Exit (b): a clause-B consumer for loop 2's addend that lands on an instruction target already has. Target's post-loop-2 block reads ctx+0xC exactly ONCE (`lw $a1,0xC($s2)`) and derives both math_Distance3D arguments from it by adding two shifts (`sll $s0,$s4,6` / `sll $s1,$s3,6` / `addu $a0,$a1,$s0` / `addu $a1,$a1,$s1`). If loop 2's named preheader addend q2 is carried out of the loop and IS that single read - with the tail spelled exactly as target derives the two args from one base - the clause-B consumer costs zero net instructions and loop 2 gets its preheader copy, taking the residual to 1.",
+   "mechanism": "E-s16-1 arm (c): a preheader copy whose destination is used in a different basic block survives combine, and local-alloc's optimize_reg_copy_1 then re-points the base add onto the copy's destination (E-s15-1). The purchase price is one instruction at the use site; it is free only if the use site is an instruction target already emits. s9's 19-point measurement of this family predates the V1 chassis and routed both math args through separate live-local expressions, so it did not test the one-read-two-derivations shape.",
+   "next_probe": "On the V1 candidate, name loop 2's preheader addend (q2 = *(u8 **)(ctx + 0xC); base = (u8 *)(sh2 + (s32)q2);) and rewrite ONLY the tail so both call arguments derive from q2: dist = math_Distance3D((s32 *)(q2 + (slot_a << 6)), (s32 *)(q2 + (slot_b << 6))); then sweep the tail's remaining three ctx+0xC readers (link store block, rec_a, rec_b) independently - inline fresh read vs q2 - as a 2x2x2 grid, and score each with sandbox --disable all. Watch build_insns: any cell at 127 that still emits `addu $a3,$a0,$zero` in loop 2's preheader is the win. Diff with tmp/grind/func_80017848/s19/dis.sh."
   },
   {
-   "hypothesis": "All three legs of the rederive modality are now spent (fresh m2c re-derivation = H-s18-1, external decomp.me corpus = H-s18-3, sibling/Kengo transplant = H-s18-4), joining structural (s11/s12), permuter (s13/s14, 180,472 iterations over five campaigns on four chassis) and forensics (s15/s16/s17). No untried modality with a distinct search space remains on the ladder for this function.",
-   "mechanism": "Bookkeeping entry, so the next session does not re-open a spent leg: the modality ladder's coverage is now recorded per-leg rather than per-modality, and the rederive modality's three legs each have their own KILLED hypothesis with measurements.",
-   "next_probe": "Read E-s17-1, E-s16-1/E-s16-2 and E-s18-5..8 before proposing ANY loop-2 preheader construct - 128 forms are banked as rejected. If the driver dispatches a further modality, the only genuinely unspent surface is instrumented-cc1 tracing of the cse equivalence class (frontier item 1), which is a forensics probe rather than a spelling probe."
+   "hypothesis": "Exit (a): loop 2's preheader can be made cse-reachable without duplicating the loop, by removing the join that loop 1's skip branch creates - i.e. by a control-flow spelling in which loop 2's guard block has exactly one predecessor.",
+   "mechanism": "cse_end_of_basic_block terminates an extended basic block at any label that can be branched to; loop 2's guard is such a label solely because loop 1's guard branches to it. If loop 1's skip edge instead lands on a label that is NOT loop 2's guard (or if loop 1 is spelled so that no skip edge exists), the extended basic block containing loop 1's exit tail extends into loop 2's preheader and the redundant ctx+0xC read there folds to a copy - clause A satisfied, which is the residual's structural blocker.",
+   "next_probe": "Enumerate the legal control-flow spellings that change the predecessor count of loop 2's guard without duplicating loop 2 (s10/s12's duplication = 35): loop 1 as a bottom-tested loop with an internal early continue, loop 1's guard inverted with the skip path routed through a distinct statement block that then falls through, and loop 1's guard fused with the top-block guards. For each, confirm the CFG change in the -da .jump dump (block predecessors of loop 2's guard label) BEFORE scoring, so a cell that does not actually remove the join is not counted as a spelling kill."
+  },
+  {
+   "hypothesis": "Inherited from s18 and unchanged: naming the cse canonicalisation rule that decides whether insn 89's addend is the original pseudo or the copy's destination (E-s16-2) would turn every loop-1 exit-tail spelling from a guess into a checkable predicate. It is a naming exercise, not a lever - the theorem above shows loop 2 fails clause A regardless of how loop 1's canonicalisation goes.",
+   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg); qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and insert / merge_equiv_classes decides membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM, and that single difference decides whether loop 1's copy survives combine.",
+   "next_probe": "Add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) for pseudos in the 72-120 range, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1), re-prove codegen identity with tmp/grind/func_80017848/s16/idump.sh, and diff the candidate's trace against cell E2's and cell X1's at insn 83 and insn 89. Deprioritise below exits (b) and (a): a confirmed predicate has no affordable C carrier (s17)."
   }
  ],
  "judge_constraints": [],

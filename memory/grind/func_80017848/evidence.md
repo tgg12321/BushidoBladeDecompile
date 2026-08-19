@@ -2096,3 +2096,148 @@ chassis is entirely the tail read; the shift's placement is inert.** Banked as
 - [s18] Fresh read of the target listing this session pinned the seam's block structure precisely: loop 1's exit edge is `lw $a0,0xC($s2)` / `sll $a1,$s4,6` (asm/funcs/func_80017848.s:56-57), the join .L8001791C computes the guard address `addu $v0,$a1,$a0` then `lw $v0,0x20($v0)` / `blez`, and loop 2's preheader is `addu $a3,$a0,$zero` / `lw $a2,0x10($s2)` / `addu $a0,$a1,$a3` / `addu $v0,$a0,$v1` - so both loops carry the SAME copy+add construct and the copy sits AFTER the guard's branch, in a single-predecessor block whose predecessor is the join.
 
 - [s18] Process note: the previous dispatch of this session was discarded by the validator for returning owner-gated under `rederive` modality. Its ledger work (H-s18-1..3, E-s18-1..4, four rejected forms) was on disk and is preserved; this dispatch corrected the disposition claim in docs/grind/decisions.md so the s18 addendum no longer asserts a terminal disposition, and returns `progress`.
+
+## s19 (2026-08-18, modality `synthesis`) — the residual is reduced to a TWO-CLAUSE theorem, and the last two copy carriers are killed
+
+Chassis re-measured at dispatch with `memory/grind/func_80017848/candidate.c`
+applied to `src/ings.c`: **score 3, target_insns 127, build_insns 127, scorable,
+rules_dropped 2, cheat_asm_stripped 49** — identical to s9..s18, so every banked
+spelling conclusion remains chassis-valid. HEAD's committed body still scores 16.
+
+### E-s19-1  THE MERGED MODEL — target's preheader pair needs TWO clauses at once, and only loop 1 can pay for both
+
+Target's construct, once per loop, is
+
+    COPY:  dest = addend            (`addu $a3,$a0,$zero`)
+    BASE:  base = sh + dest         (`addu $a0,$a1,$a3`)
+
+with `dest` used exactly once, at BASE, in the same basic block, dying there
+(E-s15-7). Merging E-s15-1, E-s15-2, E-s16-1 and E-s16-2, the only production
+path for this pair in GCC 2.7.2 is: a reg-reg copy insn exists before combine and
+survives it, and then local-alloc's `optimize_reg_copy_1` re-points BASE's addend
+from the copy's SRC onto its DEST. For a C-written preheader that requires two
+independent clauses to hold simultaneously:
+
+**CLAUSE A (POSITION).** The copy insn must be emitted BEFORE the base add. The
+only construct that does that is a *redundant memory read at the addend's own
+read point* which cse folds to a copy in place. A copy written as a C statement,
+or hoisted into the preheader by `loop.c`'s `move_movables`, is emitted where its
+consumer's operand becomes available — and for every semantically legal carrier
+in this function that is AFTER the base add, because the only preheader value the
+loop body can legally consume is `base` itself (cse rewrites every addend-based
+body address back to `base + i`).
+
+**CLAUSE B (SURVIVAL).** The copy's destination needs a consumer OUTSIDE the
+preheader block (E-s16-1's arm (c)); that consumer always materialises as one
+instruction.
+
+Loop 1 pays for both: A via the redundant `q = *(u8 **)(ctx + 0xC);` read that
+cse folds (its extended basic block reaches back to the top block's read of the
+same address), B via `p = q;` in the exit tail — whose single instruction lands
+where target has `lw $a0,0xC($s2)`, so the region nets ONE mismatch instead of
+two. Loop 2 can pay for neither:
+
+- **A is structurally impossible.** Loop 2's preheader is downstream of the join
+  `.L8001791C` (loop 1's `blez $v0,.L8001791C`, `asm/funcs/func_80017848.s:62`),
+  cse's extended basic block therefore *starts* at the join, and the redundant
+  `ctx + 0xC` read in the preheader is never folded — it stays `lw $v0,12($s2)`,
+  which is literally residual instruction #2.
+- **B has no free carrier.** Every out-of-block consumer ever measured adds an
+  instruction target does not have: post-loop math_Distance3D args 19 (s9),
+  `rec_a` 32 / `rec_a`+`rec_b` 52 (s10), in-body carriers 5..16 (s15 C1 = 6,
+  s16 F1/F2 = 15/16, and this session's Z2 = 6 / Z4 = 5).
+
+So **residual 3 = 1 (loop 1's clause-B purchase) + 2 (loop 2's missing copy and
+its base add's addend register)**, and it is a fixed point of two proven
+constraints rather than an unfound spelling. This single statement subsumes all
+133 banked rejected forms.
+
+### E-s19-2  KILLED — the last two untried clause-A carriers (a NON-INVARIANT body use of the addend, and an invariant limit read through the addend)
+
+The one carrier class the ledger had never written is a body use of the *addend*
+that `loop.c` cannot hoist because it varies with `i`. Five cells, all measured on
+the V1 chassis:
+
+| cell | construct | score | build_insns |
+|---|---|---|---|
+| Z1 | loop 1's body element read via `(s32)q + sh + i + 0x24` | 6 | 128 |
+| Z2 | loop 2: named addend `q2`, body element read via `(s32)q2 + sh2 + i + 0x2C` | 6 | 128 |
+| Z3 | Z1 + Z2 together | 9 | 129 |
+| Z4 | loop 2: named addend `q2`, loop limit read via `(s32)q2 + sh2 + 0x20` (invariant) | 5 | 128 |
+| Z5 | loop 2: named addend `q2` only (control) | 3 | 127 |
+
+The disassembly diffs are the point, not the scores. Z2's loop-2 preheader emits
+
+    lw   $v0,12($s2)
+    lw   $a2,16($s2)
+    addu $a0,$a1,$v0        <- base add
+    addu $a1,$a0,$zero      <- THE COPY, one slot LATE
+    addu $v0,$a1,$v1
+
+and Z4 emits the same shape with the copy again after the base add. cse rewrites
+the body's `q2 + sh2 + i` address back into `base + i` (the loop-invariant part is
+common with the base add), so the value the body actually consumes is `base`, not
+`q2` — and the surviving copy is therefore a copy of `base`. This reproduces s15's
+cell C1 (copy of the BASE, one slot too late, 6) from a completely different C
+construct, which upgrades C1 from an isolated result to the general rule stated as
+CLAUSE A above: **every body-anchored preheader copy in this function is a copy of
+`base`, and `base` is defined after the addend, so the copy can never precede the
+base add.**
+
+Banked as `rejected/s19_l1_body_elem_via_addend_and_shift_costs_6.c`,
+`rejected/s19_l2_body_elem_via_addend_and_shift_copy_lands_after_base_costs_6.c`,
+`rejected/s19_both_loops_body_elem_via_addend_costs_9.c`,
+`rejected/s19_l2_limit_via_addend_licm_hoisted_copy_after_base_costs_5.c`,
+`rejected/s19_l2_named_addend_local_alone_inert_3.c`.
+
+### E-s19-3  The three exits the theorem leaves, and their measured state
+
+Any future proposal must break one of exactly three clauses; there is no fourth:
+
+- **(α) Kill the join** so cse's extended basic block reaches loop 2's preheader.
+  The only C-level attempt in nineteen sessions is duplicating loop 2 into both
+  arms of loop 1's guard (s10/s12, = 35; `jump2` does not re-merge the copies).
+  No other legal restructure of `if (g1) {loop1} if (g2) {loop2}` removes the
+  second `if`'s two predecessors.
+- **(β) Find a clause-B consumer that lands on an instruction target already
+  has.** Exactly one site exists: target's post-loop-2 block reads
+  `lw $a1,0xC($s2)` ONCE and derives both `math_Distance3D` arguments from it
+  (`sll $s0,$s4,6 / lw $a1,0xC($s2) / sll $s1,$s3,6 / addu $a0,$a1,$s0 / jal /
+  addu $a1,$a1,$s1`). s9 measured "math args via a live local" at 19, but on the
+  pre-V1 chassis and routing BOTH args through the local as separate expressions;
+  the tail block's own spelling has never been swept on V1 (three isolated cells
+  only: s12 link-store order 9, s12 `rec_a` base 41, s16 `rec_b` derived from
+  `rec_a` 44).
+- **(γ) A combine refusal on an in-block single use.** s17 enumerated all seven
+  `can_combine_p` paths; two are forbidden cheat families, three are structurally
+  unreachable, one is loop 1's own out-of-block lever, and the last
+  (`use_crosses_set_p`) was built and killed with two controls.
+
+### s19 artifacts
+
+    tmp/grind/func_80017848/s19/apply.py     body-swap harness (LF-safe)
+    tmp/grind/func_80017848/s19/gen.py       cell generator (Z1..Z5)
+    tmp/grind/func_80017848/s19/dis.sh       normalised target-vs-build diff
+    tmp/grind/func_80017848/s19/z1.c .. z5.c the five measured cells
+    tmp/grind/func_80017848/s19/T.txt, B.txt normalised listings (last cell run)
+
+### Durable one-liners from s19
+
+- [s19] Honest floor re-measured at dispatch: 3 (127/127) with the ledger candidate applied; HEAD's committed body 16. Chassis unchanged from s9.
+- [s19] THE TWO-CLAUSE THEOREM: target's preheader copy needs (A) to be emitted before the base add — only a cse-folded redundant read at the addend's read point does that — and (B) an out-of-block consumer for its destination, which always costs one instruction. Loop 1 pays both (its clause-B instruction lands on one target has); loop 2 fails A structurally (its preheader is downstream of the join, so cse cannot fold) and has no free clause-B site.
+- [s19] Every body-anchored preheader copy in this function is a copy of `base`, never of the addend, because cse rewrites addend-based body addresses back to `base + i`; therefore it always lands one slot AFTER the base add. Measured on a non-invariant element read (Z2 = 6) and an invariant limit read (Z4 = 5), independently reproducing s15's C1 = 6.
+- [s19] Exactly three exits remain from the theorem — kill the join (only known attempt 35), find a clause-B consumer landing on an instruction target already has (only candidate site: the post-loop-2 `lw $a1,0xC($s2)` feeding both math_Distance3D args, measured 19 on a pre-V1 chassis), or a combine refusal on an in-block single use (all seven paths enumerated and dead in s17).
+
+- [s19] Chassis check: with memory/grind/func_80017848/candidate.c applied to src/ings.c the honest floor is 3 at 127 target / 127 build insns, scorable, rules_dropped 2, cheat_asm_stripped 49 - unchanged from s9 through s18, so every banked spelling conclusion remains chassis-valid. HEAD's committed body scores 16.
+
+- [s19] THE TWO-CLAUSE THEOREM (E-s19-1): target's preheader pair (copy then base add consuming it) requires (A) the copy to be emitted before the base add, which only a cse-folded redundant read at the addend's read point achieves, and (B) an out-of-block consumer for the copy's destination, which always costs one instruction. Loop 1 pays both and nets 1 mismatch because its clause-B instruction lands where target has `lw $a0,0xC($s2)`; loop 2 fails clause A structurally and has no free clause-B site, so it pays 2.
+
+- [s19] Residual 3 decomposes exactly as 1 (loop 1's clause-B purchase, `addu $a0,$a3,$zero` where target has `lw $a0,12($s2)`) + 2 (loop 2's missing copy and its base add's addend register).
+
+- [s19] Every body-anchored preheader copy in this function is a copy of `base`, never of the addend, because cse rewrites addend-based body addresses back to `base + i`; it therefore always lands one slot AFTER the base add. Measured this session on a non-invariant element read (Z2 = 6, 128 insns) and an invariant limit read (Z4 = 5, 128 insns), independently reproducing s15's cell C1 = 6 from a structurally different construct.
+
+- [s19] Five new cells banked in memory/grind/func_80017848/rejected/ (133 forms total): Z1 = 6, Z2 = 6, Z3 = 9, Z4 = 5, Z5 = 3 (inert control confirming that a named loop-2 addend local by itself changes nothing).
+
+- [s19] Exactly three exits remain from the theorem, and two are already measured dead: (a) kill the join so cse's extended basic block reaches loop 2's preheader - the only known attempt is duplicating loop 2 into both arms of loop 1's guard, 35, because jump2 does not re-merge the copies; (b) find a clause-B consumer that lands on an instruction target already has - the single candidate site is the post-loop-2 `lw $a1,0xC($s2)` from which target derives BOTH math_Distance3D arguments, measured at 19 by s9 but on the pre-V1 chassis and with both args routed as separate expressions; (c) a combine refusal on an in-block single use - all seven can_combine_p paths enumerated and dead (s17).
+
+- [s19] The post-loop-2 tail block has never been swept on the V1 chassis: only three isolated cells exist across the whole ledger (s12 link-store order = 9, s12 loop-2 base written into rec_a = 41, s16 rec_b derived from rec_a = 44), so exit (b) is the only remaining region whose spelling space is genuinely unenumerated.

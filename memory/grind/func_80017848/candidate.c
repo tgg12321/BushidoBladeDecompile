@@ -493,3 +493,45 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *      s12 could not: THE SHIFT'S PLACEMENT IS INERT, and the symmetric chassis's
  *      +1 is entirely its tail read.
  */
+/* [s19 SYNTHESIS ADDENDUM - body unchanged, still 3, re-measured at dispatch on a
+ * clean tree (127/127, rules_dropped 2, cheat_asm_stripped 49).]  s19's job was to
+ * merge nineteen sessions into one model and reset the frontier.  The model is a
+ * TWO-CLAUSE THEOREM (evidence.md E-s19-1) that subsumes all 133 banked rejected
+ * forms:
+ *
+ *   CLAUSE A (POSITION).  A preheader reg-reg copy is emitted BEFORE the base add
+ *     only when it is a cse fold of a redundant memory read at the addend's own
+ *     read point.  A copy written as a C statement, or hoisted by loop.c's
+ *     move_movables, is emitted where its consumer's operand becomes available -
+ *     and the only preheader value a loop body can legally consume here is `base`,
+ *     because cse rewrites every addend-based body address back to `base + i`.
+ *     So every body-anchored copy is a copy of BASE, one slot too late.
+ *   CLAUSE B (SURVIVAL).  The copy's destination needs a consumer OUTSIDE the
+ *     preheader block, and that consumer always materialises as one instruction.
+ *
+ * Loop 1 pays both clauses: A via the redundant `q = *(u8 **)(ctx + 0xC);` read
+ * that cse folds, B via `p = q;` in the exit tail, whose instruction lands where
+ * target has `lw $a0,0xC($s2)` - so loop 1 nets ONE mismatch instead of two.
+ * Loop 2 fails A STRUCTURALLY (its preheader is downstream of the join
+ * .L8001791C that loop 1's `blez` skip branch creates, so cse's extended basic
+ * block starts there and can never fold the redundant read - that unfolded read
+ * IS residual instruction #2) and has no free clause-B consumer (post-loop math
+ * args 19, rec_a 32, rec_a+rec_b 52, in-body 5..16).
+ *
+ * s19's five new cells closed the last untried clause-A carrier - a body use of
+ * the ADDEND that varies with `i`, so loop.c cannot hoist it: Z1 (loop 1) = 6,
+ * Z2 (loop 2) = 6, Z3 (both) = 9, Z4 (invariant limit read through the addend)
+ * = 5, Z5 (named addend alone, control) = 3.  Z2's preheader emits
+ * `addu $a0,$a1,$v0 / addu $a1,$a0,$zero` - the copy is created and DOES survive
+ * combine, but it is a copy of `base` and sits one slot after the base add,
+ * reproducing s15's C1 from a structurally different construct.
+ *
+ * EXACTLY THREE EXITS REMAIN, and two are measured dead: (a) kill the join so
+ * cse reaches loop 2's preheader (only known attempt: duplicating loop 2 into
+ * both guard arms = 35, jump2 does not re-merge); (b) find a clause-B consumer
+ * that lands on an instruction target already has - the single candidate site is
+ * the post-loop-2 `lw $a1,0xC($s2)` that target uses for BOTH math_Distance3D
+ * arguments, measured at 19 by s9 but on the pre-V1 chassis and never swept on
+ * V1; (c) a combine refusal on an in-block single use - all seven can_combine_p
+ * paths enumerated and dead (s17).
+ */

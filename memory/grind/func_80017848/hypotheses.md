@@ -1640,3 +1640,80 @@ chassis's +1 over the candidate is entirely its tail read, never the shift site.
 - probe: Cell X1 (tmp/grind/func_80017848/s18b/X1.c), one sandbox --disable all run.
 - result: 4 at 126/127 instructions - loop 1 comes out one instruction SHORT, which is precisely E-s16-2's signature: a fresh read downstream of loop 1's base add makes cse canonicalise the base add onto the copy dest, combine then deletes the copy, and loop 1 loses target's `addu $a3,$a0,$zero`. The score is identical to s12's symmetric chassis (4/126), which isolates a variable s12 could not measure: the shift's PLACEMENT is inert (exit edge vs just before loop 2's guard), so the symmetric chassis's +1 over the candidate is entirely its tail read.
 - verdict: KILLED
+
+## s19 (modality `synthesis`) — hypotheses
+
+### H-s19-1 — KILLED (with a control)
+
+**Statement.** A body use of loop 2's ADDEND that `loop.c` cannot hoist (because
+it varies with the induction variable `i`) creates a preheader reg-reg copy of the
+addend that survives combine by E-s16-1's arm (c), and therefore reproduces
+target's `addu $a3,$a0,$zero` in the one block eighteen sessions could not reach.
+This is the only clause-A carrier the ledger had never written: s15's C1 copied the
+BASE, s15's D1 and s16's F1/F2 used loop-INVARIANT expressions that `move_movables`
+hoisted into the preheader (same block ⇒ combine deletes, or the address changes).
+
+**Mechanism.** `loop.c`'s `move_movables` only hoists loop-invariant sets, so an
+`i`-dependent use of the addend must stay in the loop body — a different basic
+block from the preheader — which by flow.c:2102 gives the copy no LOG_LINK and by
+E-s16-1 makes it survive combine. `optimize_reg_copy_1` would then re-point the
+base add onto the copy's destination, exactly as it does for loop 1.
+
+**Probe.** Cells Z2 (loop-2 body element read written as
+`*(u8 *)((s32)q2 + sh2 + i + 0x2C)` with a named preheader addend `q2`) and Z1 (the
+same construct in loop 1), Z3 (both), plus controls Z4 (an INVARIANT limit read
+through `q2`) and Z5 (the named addend alone). Each applied to the V1 candidate
+body and scored with `sandbox func_80017848 --disable all`; Z2 and Z4 additionally
+disassembled and diffed against the normalised target listing.
+
+**Result.** Z1 = 6 (128 insns), Z2 = 6 (128), Z3 = 9 (129), Z4 = 5 (128),
+Z5 = 3 (127, inert control). The copy IS created and DOES survive — but it is a
+copy of `base`, not of the addend, and it lands one slot AFTER the base add:
+`addu $a0,$a1,$v0 / addu $a1,$a0,$zero`. cse folds the loop-invariant part of
+`q2 + sh2 + i` back into the base add, so the value the body consumes is `base`;
+the addend itself has no surviving body use to anchor a copy to.
+
+**Verdict.** KILLED. And the kill generalises: it reproduces s15's C1 from a
+structurally different C construct, which is what licences E-s19-1's CLAUSE A as a
+general rule rather than a per-cell observation.
+
+### H-s19-2 — CONFIRMED (analytic synthesis over the whole ledger, no new measurement of its own)
+
+**Statement.** The 3-instruction residual is the fixed point of two independently
+proven constraints (E-s19-1's CLAUSE A and CLAUSE B), not an unfound spelling:
+loop 1 can satisfy both clauses and does, at a net cost of 1; loop 2 fails CLAUSE A
+structurally (its preheader is downstream of the join `.L8001791C`, so cse's
+extended basic block cannot fold the redundant `ctx + 0xC` read there) and has no
+CLAUSE B consumer that lands on an instruction target already has.
+
+**Mechanism.** cse's extended basic blocks terminate at any label that can be
+branched to (`cse_end_of_basic_block`); loop 1's skip branch `blez $v0,.L8001791C`
+makes loop 2's guard exactly such a label. Combined with E-s16-1's trichotomy and
+E-s15-1's `optimize_reg_copy_1` re-pointing, this fixes both the position and the
+survival condition of any preheader copy writable from C.
+
+**Probe.** Re-derivation over the full ledger (E-s15-1..7, E-s16-1..7, E-s17-1..2,
+E-s18-5..8) plus this session's five cells; the model was required to predict Z1..Z5
+before they were run, and it predicted all five (copy created, copy of `base`, one
+slot late, +1 instruction each, inert control).
+
+**Verdict.** CONFIRMED. Its operational value is the exit list in E-s19-3: exactly
+three clauses can be broken (kill the join, find a free clause-B consumer, or find a
+combine refusal on an in-block single use), and two of the three are already
+measured dead.
+
+## [s19] A body use of loop 2's addend that varies with the induction variable creates a surviving preheader copy — but cse rewrites the address back through `base`, so it is a copy of `base` and lands one slot after the base add (Z2 = 6, Z4 = 5, control Z5 = 3), independently reproducing s15's C1.
+
+## [s19] The residual is a fixed point of two proven constraints (CLAUSE A: only a cse-folded redundant read at the addend's read point emits a copy BEFORE the base add; CLAUSE B: the copy's destination needs an out-of-block consumer, which always costs one instruction), and loop 2 fails CLAUSE A structurally because its preheader sits downstream of the join that loop 1's skip branch creates.
+
+## [s19] A body use of loop 2's ADDEND that loop.c cannot hoist (because it varies with the induction variable i) creates a preheader reg-reg copy of the addend that survives combine by E-s16-1's arm (c), reproducing target's `addu $a3,$a0,$zero` in the one block eighteen sessions could not reach. This is the only clause-A carrier never written: s15's C1 copied the BASE, and s15's D1 / s16's F1-F2 used loop-INVARIANT expressions that move_movables hoisted into the preheader (same block, so combine deletes them).
+- mechanism: loop.c's move_movables only hoists loop-invariant sets, so an i-dependent use of the addend must stay in the loop body - a different basic block from the preheader - which by flow.c:2102 gives the copy no LOG_LINK and by E-s16-1 makes it survive combine; local-alloc's optimize_reg_copy_1 would then re-point the base add onto the copy's destination, exactly as it does for loop 1.
+- probe: Cells Z2 (loop-2 body element read as *(u8 *)((s32)q2 + sh2 + i + 0x2C) with a named preheader addend q2), Z1 (same in loop 1), Z3 (both), Z4 (control: an INVARIANT limit read through q2), Z5 (control: the named addend alone), each applied to the V1 candidate body and scored with `sandbox func_80017848 --disable all`; Z2 and Z4 also disassembled and diffed against the normalised target listing.
+- result: Z1 = 6 (128 insns), Z2 = 6 (128), Z3 = 9 (129), Z4 = 5 (128), Z5 = 3 (127, inert). The copy IS created and DOES survive combine, but it is a copy of `base`, not of the addend, and lands one slot AFTER the base add: Z2's preheader emits `lw $v0,12($s2) / lw $a2,16($s2) / addu $a0,$a1,$v0 / addu $a1,$a0,$zero / addu $v0,$a1,$v1`. cse folds the loop-invariant part of q2 + sh2 + i back into the base add, so the value the body consumes is `base` and the addend has no surviving body use to anchor a copy to.
+- verdict: KILLED
+
+## [s19] The 3-instruction residual is the fixed point of two independently proven constraints, not an unfound spelling. CLAUSE A (POSITION): a preheader copy is emitted BEFORE the base add only when it is a cse fold of a redundant memory read at the addend's own read point. CLAUSE B (SURVIVAL): the copy's destination needs a consumer outside the preheader block, which always materialises as one instruction. Loop 1 satisfies both at a net cost of 1; loop 2 fails CLAUSE A structurally and has no free CLAUSE B site.
+- mechanism: cse's extended basic blocks terminate at any label that can be branched to (cse_end_of_basic_block), and loop 1's skip branch `blez $v0,.L8001791C` (asm/funcs/func_80017848.s:62) makes loop 2's guard exactly such a label - so the redundant ctx+0xC read in loop 2's preheader can never be folded and stays `lw $v0,12($s2)`, which is literally residual instruction #2. Combined with E-s16-1's survival trichotomy and E-s15-1's optimize_reg_copy_1 re-pointing, this fixes both the position and the survival condition of every preheader copy writable from C.
+- probe: Re-derivation over the whole ledger (E-s15-1..7, E-s16-1..7, E-s17-1..2, E-s18-5..8) plus this session's five cells; the model was required to predict Z1..Z5 before they were run.
+- result: The model predicted all five outcomes correctly (copy created, copy of `base`, one slot late, +1 instruction each, and an inert control), and it accounts for the whole rejected bank: every form is a failure of CLAUSE A (position) or CLAUSE B (price), including the previously unexplained spread 8/9/13/19/28/32/35/41/52.
+- verdict: CONFIRMED
