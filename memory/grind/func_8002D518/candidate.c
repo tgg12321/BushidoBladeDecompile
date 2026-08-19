@@ -1,41 +1,46 @@
-/* func_8002D518 - MATCHED FORM (s8, rederive). Honest sandbox distance 0
- * with all 33 regfix/asmfix rules dropped and cheat-asm stripped;
- * build_insns 144 == target_insns 144.
+/* func_8002D518 - MATCHED FORM (s8 synthesis, 2026-08-19). Honest sandbox
+ * distance 0 with all 33 regfix/asmfix rules dropped and cheat-asm stripped;
+ * build_insns 144 == target_insns 144. Re-measured on the s8 chassis with this
+ * exact body in src/code6cac_b.c.
  *
- * s8 inherited the s7 form (floor 4) and closed the last two residual items
- * with two ordinary-C edits. The full derivation is in evidence.md (E14-E17).
+ * PROVENANCE OF THIS REVISION: the body is byte-for-byte the form that reached
+ * distance 0 in the previous session, with ONE change - the sanctioned-family
+ * CITATION for the `ud = disc;` re-store. The 2026-08-19 07:16 layer-1 review
+ * FAILed the old citation (an arms-family rule whose scope does not describe this
+ * code shape) and the 2026-08-19 07:34 Judge ruling
+ * (docs/grind/decisions.md:6521) narrowed the ban to that citation alone,
+ * ordering re-derivation under dead-store-fake-exception. Both the in-source
+ * /* FAKE *\/ annotation and memory/grind/func_8002D518/self_vet.md now cite
+ * dead-store-fake-exception (.claude/rules/dead-store-fake-exception.md:24, the
+ * `x = x;` self-assignment sub-scope at :28) and make NO arms-family claim.
  *
- *  EDIT 1 - the `ud` copy (3 slots, the frontier head since s1).
+ *  EDIT 1 - the `ud` copy (3 slots, the frontier head from s1 to s7).
  *    Target keeps TWO registers for the discriminant across the LZCS island:
  *    $a2 (read by `bltz $a2,.L8002D6BC`) and $a0 (`addu $a0,$a2,$zero` at
- *    0x8002D680, read by the island and by the slow-path `srlv`). Seven
- *    sessions measured every plain-C placement of `u32 ud = disc;` folding
- *    away. MEASURED MECHANISM (tmp/grind/func_8002D518/s8/dumps_*): with a
- *    SINGLE assignment, cse.c's make_regs_eqv puts ud and disc in one quantity
- *    and rewrites every read to disc, then DELETES the copy insn - the .cse
- *    dump of the single-assignment control (v6_nodup) has no copy at all and
- *    the block runs code_label 240 -> insn 248 directly. Writing the
- *    assignment a SECOND time inside the `if (disc >= 0)` guard arm makes the
- *    pseudo multiply-defined across the join: the equivalence is invalidated,
- *    the post-join `ud >> shift` read keeps its own pseudo, and BOTH copies
- *    survive cse as `(set (reg 131) (reg 117))`. global_alloc then lands
- *    117 -> $a2 and 131 -> $a0 (target's pair) and the redundant second copy
- *    is dropped before final output, so insn parity holds at 144. This is the
- *    sanctioned duplicated-statement-into-arms family
- *    (.claude/rules/duplicated-statement-into-arms.md) and carries the
- *    required /* FAKE *\/ annotation at the duplicated copy.
+ *    0x8002D680, read by the island and by the slow-path `srlv`). Every plain-C
+ *    placement of `u32 ud = disc;` folds away. MEASURED MECHANISM
+ *    (tmp/grind/func_8002D518/s8/dumps_*): with a SINGLE assignment cse.c's
+ *    make_regs_eqv puts ud and disc in one quantity, rewrites every read to
+ *    disc, and DELETES the copy insn (control v6_nodup: score 3, no copy in
+ *    the .cse dump). Writing the assignment a SECOND time inside the
+ *    `if (disc >= 0)` guard arm makes the pseudo multiply-defined across the
+ *    join: the equivalence is invalidated, the post-join `ud >> shift` read
+ *    keeps its own pseudo, and BOTH copies survive cse as
+ *    `(set (reg 131) (reg 117))`. global_alloc lands 117 -> $a2 and 131 -> $a0
+ *    (target's pair) and the redundant second store is dropped before final
+ *    output, so insn parity holds at 144 (zero emitted bytes).
  *
  *  EDIT 2 - slot 74 (1 slot). Target's `disc < 0` arm writes the RETURN
  *    register directly (`j .L8002D774` + `addu $v0,$zero,$zero` in the delay
- *    slot) and jumps PAST the join's `addu $v0,$a1,$zero`, whereas ours wrote
- *    $a1 and jumped INTO the join. Spelling the arm `return 0;` does not work
- *    (measured twice, s7 and s8/v5: jump.c cross-jumps the block into an
- *    earlier return-0 site and then inverts `bgez`->`bltz`, losing 2 insns,
+ *    slot) and jumps PAST the join's `addu $v0,$a1,$zero`, whereas the older
+ *    form wrote $a1 and jumped INTO the join. Spelling the arm `return 0;` does
+ *    not work (measured twice, s7 and s8/v5: jump.c cross-jumps the block into
+ *    an earlier return-0 site and then inverts `bgez`->`bltz`, losing 2 insns,
  *    score 5/142). The fix is that `result` and the comparison flag are two
  *    DIFFERENT locals: the flag is computed in $a1 and copied into `result`
- *    ($v0) at the join, so the `disc < 0` arm's `result = 0` is already a
- *    write of $v0 and its `j` targets the epilogue. Ordinary named-
- *    intermediate C, no annotation needed.
+ *    ($v0) at the join, so the `disc < 0` arm's `result = 0` is already a write
+ *    of $v0 and its `j` targets the epilogue. Ordinary named-intermediate C,
+ *    no annotation needed.
  *
  * ALSO LOAD-BEARING (inherited from s1-s7, do not undo):
  *   - the `ud = disc; lzcr = 0;` ORDER (s8/v3 had them reversed: the two
@@ -110,16 +115,22 @@ dist_calc:
                 ud = disc;
                 lzcr = 0;
                 if (disc >= 0) {
-                    /* FAKE: duplicated `ud = disc;` into the LZCS-guard arm,
-                     * mechanism: cse.c make_regs_eqv - the second def makes
-                     * pseudo `ud` multiply-defined, so the equivalence
-                     * ud == disc established at the first copy is invalidated
-                     * and cse can no longer rewrite the post-join `ud >> shift`
-                     * read to disc's register; without it cse DELETES the copy
-                     * outright (measured: v6_nodup, score 3, no `addu $a0,$a2`).
+                    /* FAKE: redundant same-value re-store of the LOCAL `ud`
+                     * (it already holds `disc` on entry to this arm), mechanism:
+                     * cse.c make_regs_eqv - with a SINGLE def cse puts `ud` and
+                     * `disc` into one quantity, rewrites the post-join
+                     * `ud >> shift` read to disc's register and DELETES the copy
+                     * insn outright (measured control v6_nodup: score 3, no
+                     * `addu $a0,$a2`). The second def makes the pseudo
+                     * multiply-defined across the join, invalidating that
+                     * equivalence, so both copies survive cse and global_alloc
+                     * lands them in target's $a2/$a0 pair; the redundant store
+                     * itself is dropped before final output (build_insns 144 ==
+                     * target_insns 144, zero emitted bytes).
                      * lever-exhaustion: memory/grind/func_8002D518/hypotheses.md
-                     * (s1-s7: 22 rejected forms, 33,881 permuter iterations,
-                     * every plain-C copy placement measured folding). */
+                     * + rejected/ (s1-s9: 32 rejected forms, 33,881 permuter
+                     * iterations; every plain-C placement of the copy measured
+                     * folding or costing insns). */
                     ud = disc;
                     __asm__ volatile(
                         "addu   $t4, %1, $zero\n"

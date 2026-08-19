@@ -6521,3 +6521,92 @@ The load-bearing FAKE-annotated `ud = disc;` duplicate is cited under the wrong 
 ## 2026-08-19 07:34 — func_8002D518 — ruling: func_8002D518 measures honest sandbox distance 0 (build_insns 144 == target 144, — **PASS**
 
 RULING: the ban is NOT a substantive rejection of the construct; it is narrowed to 'this construct cited under duplicated-statement-into-arms'. I read tmp/grind/layer1_func_8002D518.json verbatim: its sole confirmed defect is the family citation, and its own next_action orders re-derivation under dead-store-fake-exception and resubmission. Decisive fact: the construct (redundant same-value re-store of a LOCAL, `/* FAKE */`-annotated, dropped before final output) sits inside dead-store-fake-exception's stated scope, which is on the frozen SOTN-accepted list. Independently verified: candidate.c carries NO `register T x asm("$N")` pin (only the in-tree-accepted GTE island with "r"(ud), sibling code6cac_b.c:760), so the rule's pin exclusion does not bite; target asm/funcs/func_8002D518.s:104 does carry the redundant `bltz $a2`, so the guard is target-shaped, not invented; exhaustion is real, not asserted (hypotheses.md s9/H-lines + evidence.md E20/E21 kill the three remaining non-dead alternatives by measurement: inlined helper score 3, hoist+small-path use score 3, arm-only single def score 8/145). Prerequisites 1-3 hold; prerequisite 4 (fresh layer-1 + layer-2) is still owed. Bytes remain unproven on main, so this PASS authorizes RESUBMISSION ONLY, not merge; the final call comes after sandbox 0 / rules retired / SHA1 == oracle. Do NOT route to the canonical-asm grant path.
+
+## 2026-08-19 — func_8002D518 — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven at distance 0; blocked by a stale driver-state tripwire a session may not edit)** — func_8002D518
+
+**This is NOT an exhaustion claim and NOT a policy question.** The function is
+solved. It is filed here because the last step is an operator/owner edit to
+driver state, which a grind session is not allowed to make, and because two
+consecutive sessions have already been discarded attempting the resubmission the
+Judge itself authorised (a third discard trips the driver's circuit breaker).
+
+### Measured this session (synthesis, s11), current chassis
+
+    & tools/wteng.ps1 main sandbox func_8002D518 --disable all
+    memory/grind/func_8002D518/candidate.c  -> score 0, build_insns 144 == target_insns 144,
+                                               rules_dropped 33, cheat_asm_stripped 289
+    same body minus the annotated re-store  -> score 3, build_insns 144 == target_insns 144
+
+The distance-0 body also DELETES the two `register s32 t4_v asm("t4")` pins and
+the two `.word`-encoded cop2 instructions the tree carries for this function
+today, replacing them with the constraint-bound GTE LZCS island in the
+`func_800274BC`-accepted shape (`.claude/rules/cop2-addressing-preamble-cluster.md:74`).
+
+### Why the pipeline cannot finish it
+
+1. 2026-08-19 07:16 (decisions.md:6517) layer-1 FAILed the distance-0 candidate
+   on ONE ground: the load-bearing FAKE-annotated `ud = disc;` re-store was cited
+   under `duplicated-statement-into-arms`, a family whose scope does not describe
+   the code shape. A citation defect, not a construct rejection.
+2. `Set-FailRouting` (tools/grinder/grind.ps1:446) banked the CONSTRUCT text into
+   `memory/grind/func_8002D518/state.json` `banned_constructs`.
+3. 2026-08-19 07:34 (decisions.md:6521) the Judge ruled **PASS** and narrowed the
+   ban to "this construct cited under duplicated-statement-into-arms",
+   explicitly authorising resubmission re-cited under
+   `dead-store-fake-exception` (whose class — dead stores / self-assigns to
+   LOCALS or PARAMS — is on the frozen SOTN-accepted list,
+   `.claude/rules/no-new-park-categories.md`).
+4. The narrowing was recorded in `judge_constraints` only. `grindlib.py` exposes
+   `ban` and `constrain` but **no un-ban command**, and
+   `check_banned_constructs` is a term-overlap tripwire over the self-vet's
+   `CONSTRUCTS:` block. So the authorised resubmission is discarded as an
+   INVALID SESSION before any reviewer sees it — which is exactly what happened
+   to the session before this one (tripped on `disc, (disc, disc, island)`).
+   Re-wording the `CONSTRUCTS:` line to stay under the tripwire's 4-hit
+   threshold while still using the construct would be evading a mechanical gate,
+   so no session should do it.
+
+### Evidence that the construct is necessary (upgraded this session from deduction to measurement)
+
+s9/E21 argued by deduction that the cse `ud ≡ disc` quantity must be invalidated
+and that only a same-value re-store can do it for free. s11 built and measured
+the value-carrying alternatives instead of assuming:
+
+* reusing `ud` for the mantissa-table value (target's `$a0` does exactly that),
+  reusing `shift` for `half` (target's `srl $v1,$v1,1`), and hoisting the copy
+  above the `0x400` test — all exactly neutral, score 3, byte-identical residual;
+* reusing `disc` as the `shift` carrier — a REAL second definition inside the
+  window — **does** make target's `addu $a0,$a2,$zero` survive with no dead store
+  (first time in 11 sessions): score 10 alone, **score 4** combined with the `ud`
+  reuse, with the copy in target's delay slot and target's registers;
+* but the value it carries must then live in `$a2`, where target holds the shift
+  chain in `$v1` — a measured 3-slot price for the 3 slots it buys (net 4 > 3),
+  and the island's operand slot cannot be bought at all, because the window
+  between the copy and the island contains only the `bltz` guard, which defines
+  nothing.
+
+So the same-value re-store is the UNIQUE zero-cost invalidation, not a
+convenience. Full numbers: `memory/grind/func_8002D518/evidence.md` E23-E25;
+forms banked under `memory/grind/func_8002D518/rejected/s11-*.c`.
+
+### Exact operator steps to finish (nothing here is speculative)
+
+1. Delete the single entry in `memory/grind/func_8002D518/state.json`
+   `banned_constructs` (it is superseded by the Judge's own narrowing at
+   decisions.md:6521); leave `judge_constraints` intact.
+2. Apply `memory/grind/func_8002D518/candidate.c` to `src/code6cac_b.c`
+   (`python3 tmp/grind/func_8002D518/s8b/apply.py memory/grind/func_8002D518/candidate.c`
+   splices it brace-matched, LF-safe).
+3. `& tools/wteng.ps1 main sandbox func_8002D518 --disable all` → expect score 0.
+4. Fresh layer-2 `cheat-reviewer` on the diff (the in-source `/* FAKE */`
+   annotation and `memory/grind/func_8002D518/self_vet.md` are already re-derived
+   under `dead-store-fake-exception` with verbatim scope sentences and file:line
+   precedents; no arms-family claim survives anywhere).
+5. `engine build` (SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa),
+   `engine retire func_8002D518` (drops all 33 regfix/asmfix rules),
+   `engine verify-oracle --rebuild`, `engine queue done func_8002D518`.
+
+If the owner instead REFUSES the construct on review, the terminal cheat-free
+form is the score-3 body (`memory/grind/func_8002D518/rejected/s11-ud-reused-for-tval-copy-still-folds-score3.c`
+class) and the function should be logged incomplete on that body — further
+spelling search is measured dead (E24).

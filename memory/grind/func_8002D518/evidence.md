@@ -966,3 +966,184 @@ the driver's `banned_constructs` tripwire now mechanically rejects, because the
 layer-1 FAIL that created the ban was a FAMILY-CITATION defect and the ban text
 was minted from the construct rather than from the defect. See s9 hypotheses and
 the outcome's `ruling_question`.
+
+## E22 (s10, synthesis) — the s8 match is chassis-stable, and the block was a citation, not the construct
+
+The chassis check at dispatch reported "measurement unavailable" and the ledger's
+last recorded floor was 4, so the s8 result was treated as unproven and
+re-measured from scratch. The s8 body was applied verbatim to
+`src/code6cac_b.c` (it had NOT been left in the tree — HEAD still carried the
+pre-s8 form with two `register s32 t4_v asm("t4")` pins and `.word`-encoded cop2
+instructions), and the only edit made to it was to the FAKE annotation's
+family reasoning.
+
+MEASURED, this session, current chassis:
+
+    & tools/wteng.ps1 main sandbox func_8002D518 --disable all
+    { "score": 0, "target_insns": 144, "build_insns": 144, "scorable": true,
+      "rules_dropped": 33, "cheat_asm_stripped": 289 }
+
+So the honest floor is **0**, not 4: the 3-slot `ud`-copy closer and the 1-slot
+`flag`/`result` split both reproduce on this chassis. Note what else that number
+says — the applied form ALSO deletes the two register pins and the two `.word`
+cop2 encodings the tree had been carrying for this function, replacing them with
+the constraint-bound island in the `func_800274BC`-accepted shape.
+
+**The block was never substantive.** docs/grind/decisions.md:6517 records the
+layer-1 FAIL, whose single confirmed defect is the FAMILY CITATION
+(duplicated-statement-into-arms, whose scope does not describe this code shape);
+decisions.md:6521 records the Judge narrowing the ban to exactly
+"this construct cited under duplicated-statement-into-arms" and authorising
+resubmission under dead-store-fake-exception. This session therefore did the one
+thing the ledger's own s9 conclusion asked for: re-derived the justification
+under the family the construct actually matches, checked that family's four
+strict prerequisites one at a time against the source and the ledger, and
+rewrote both the in-source annotation and `self_vet.md` with verbatim scope
+sentences and file:line precedents
+(`.claude/rules/dead-store-fake-exception.md:24` for the scope block, `:28` for
+the `x = x;` self-assignment sub-scope, `.claude/rules/no-new-park-categories.md:260`
+for the frozen-list confirmation, `docs/grind/decisions.md:6521` for the Judge's
+own reading of this exact construct). No duplicated-statement-into-arms claim
+survives anywhere in the source or the vet.
+
+**One correction to the previous vet's family bookkeeping, worth inheriting.**
+The named-intermediate frozen-list entry
+(`.claude/rules/no-new-park-categories.md:189`) qualifies only ONCE-WRITTEN,
+ONCE-READ intermediates (`:196-:204`; multi-write carriers are explicitly not
+that entry — the `y1` FAIL at decisions.md:1833 stands). Of the three
+intermediates the old vet claimed under it, only `num1` fits. `ud` has two live
+reads and `flag` has two writes — so neither is claimed as a matching lever at
+all; both stand as ordinary C on their own semantics (`ud` is the island's
+operand and the table index; `flag` is a default-0 boolean the join copies into
+the return value). Claiming a family you do not need is how the previous
+submission failed layer-1; the narrower claim is the durable one.
+
+**Remaining work is entirely process.** Bytes are proven cheat-free at distance
+0 with all 33 rules dropped. What is still owed is: a fresh layer-1 review of
+this diff, the Judge, then the operator path — `engine build` (SHA1 == oracle),
+`engine retire func_8002D518` (drops all 33 regfix/asmfix rules),
+`engine verify-oracle --rebuild`, `engine queue done func_8002D518`.
+
+## [s11] 2026-08-19 — synthesis: the copy CAN survive with no dead store (first time in 11 sessions), and the exact price of that is measured
+
+Chassis re-verified from scratch at dispatch. `src/code6cac_b.c` again did NOT
+carry `candidate.c` (HEAD still had the pre-s8 `register s32 t4_v asm("t4")` +
+`.word` form — the eleventh consecutive session to find that). Applied the
+copy-less control and the distance-0 form and measured BOTH this session:
+
+    v_nodup  (candidate minus the FAKE re-store)  -> score 3, build_insns 144 == target 144
+    base_dup (candidate.c verbatim)               -> score 0, build_insns 144 == target 144
+                                                     rules_dropped 33, cheat_asm_stripped 289
+
+So the ledger's two numbers are both chassis-accurate right now: the honest
+cheat-free floor of a form with NO annotated construct is **3**, and the
+distance-0 form is real and reproducible.
+
+### E23 — five new spellings measured; the ud/tval and shift/half variable reuses are exactly codegen-neutral
+
+All five are cheat-free ordinary C (variable reuse only), all at parity 144.
+Target's own register file motivates each: `$a0` carries BOTH `ud` and the
+mantissa-table value (`lbu $a0` at 0x8002D6D8, `sll $a0,$a0,16`), and `$v1`
+carries `lzcr`, then `shift`, then `half` (`srl $v1,$v1,1` at 0x8002D6DC).
+
+* **s11-A — `ud` reused for the table value** (`ud = (&D_8008D118)[ud >> shift];`
+  then `disc = (ud << 16) >> (0x13 - ((u32)shift >> 1))`): **score 3**, byte-
+  identical residual to the control. The reuse is exactly neutral: it does NOT
+  invalidate the cse quantity, because the second def of `ud` sits AFTER `ud`'s
+  last read.
+* **s11-C — A + `shift` reused for `half`** (target's `srl $v1,$v1,1` shape):
+  **score 3**, again byte-identical. Neutral.
+* **s11-B — C + the `u32 ud = disc;` copy hoisted above the `(u32)disc < 0x400u`
+  test** (target's insn ORDER — the copy is in the `beqz` delay slot, i.e. it
+  precedes the branch in RTL): **score 3**. Neutral. Confirms s7/E16 and s9-B on
+  the reuse chassis.
+* **s11-D — `disc` itself reused as the `shift` carrier**, i.e. a REAL
+  value-carrying second definition of `disc` between the island's read of `ud`
+  and the `srlv`'s read of `ud`
+  (`disc = 0x16 - (lzcr & ~1); tval = tbl[ud >> disc]; disc = (tval<<16) >> (0x13 - ((u32)disc>>1));`):
+  **score 10 — AND THE COPY SURVIVES.** The aligned diff
+  (`tmp/grind/func_8002D518/s11` + `s7/v/vD.dis`) shows `addu $4,$6,$0` present
+  in the build for the first time without any dead store; it lands in the `bltz`
+  delay slot instead of the `beqz` slot (swapped with `lzcr = 0`), and the
+  separate `tval` local takes `$v1`/`$a0` in the wrong order.
+* **s11-E — D + A (`disc` as the shift carrier AND `ud` reused for the table
+  value): score 4**, and the aligned diff is only FOUR real slots:
+
+      T[ 84] addu $12,$4,$0     B addu $12,$6,$0   <- island operand reads disc, not ud
+      T[ 92] subu $3,$3,$2      B subu $6,$3,$2    <- shift lives in $a2, target $v1
+      T[ 93] srlv $2,$4,$3      B srlv $2,$4,$6    <- ditto (index source $4 is CORRECT)
+      T[ 97] srl $3,$3,1        B srl $3,$6,1      <- ditto
+
+  The copy `addu $4,$6,$0` is present, in target's slot, in target's registers,
+  and the slow-path `srlv` reads it — i.e. two of the three copy slots that have
+  been the frontier head since s1 are CLOSED by ordinary C with no annotated
+  construct at all.
+  Banked `rejected/s11-disc-as-shift-copy-SURVIVES-but-shift-reg-wrong-score4.c`.
+
+### E24 — CLOSED FORM (upgrade of s9/E21 from deduction to measurement): every value-carrying invalidation costs strictly more than it buys
+
+E23-D/E identify the mechanism precisely: the cse equivalence `ud ≡ disc` is
+broken by ANY second definition of `disc` in the window, and a real
+value-carrying one works just as well as a same-value re-store. So the question
+is no longer "does an honest invalidation exist" (it does) but "can the value it
+carries live in the hard register target uses". Reading target's register file:
+
+* `$a2` (`disc`) is read at 0x8002D66C `bgez`, 0x8002D670 `sltiu`, 0x8002D688
+  (small-path table index) and 0x8002D698 `bltz`, and is next WRITTEN only at
+  0x8002D694 (small path) / 0x8002D6EC (slow-path result). In the whole window
+  between the copy and the `srlv`, target writes `$v1` and `$v0` only.
+* Therefore any C that invalidates by writing `disc` forces `disc`'s single
+  pseudo to carry a value target holds in `$v1` — measured cost exactly 3 slots
+  (E23-E: T92/T93/T97).
+* The island's operand can only read the COPY's register if the equivalence is
+  already broken BEFORE the island, and the only insn between the copy and the
+  island in target is the `bltz` guard test, which reads `disc` and defines
+  nothing. The window therefore admits no value-carrying write at all — which is
+  why E23-E still emits `addu $12,$6,$0` (T84).
+* Writing `ud` instead is not available: `ud` must still hold `disc` at the
+  island and at the `srlv`, so any write to it is by definition same-valued.
+
+**Conclusion (measured, not deduced).** The three-slot copy residual is closable
+in exactly one way: a redundant same-value re-store of `ud` in the guard arm
+(the s8 form, distance 0). Every alternative invalidation is now measured, and
+each one pays 3 or more slots for the 3 it buys. This retires the s1-s10
+frontier item "find an honest spelling of the copy" as CLOSED-NEGATIVE, and it
+is the strongest available evidence for the construct's necessity: it is not a
+convenience, it is the unique zero-cost invalidation.
+
+### E25 — the remaining blocker is a driver-state artifact, not codegen
+
+`memory/grind/func_8002D518/state.json` still carries
+`banned_constructs = ["`u32 ud; ud = disc; lzcr = 0; if (disc >= 0) { /* FAKE ... */ ud = disc; <island>; lzcr = sp_tmp; }`"]`,
+banked by `Set-FailRouting` from the 2026-08-19 07:16 layer-1 FAIL
+(docs/grind/decisions.md:6517), whose ONE confirmed defect was the sanctioned-
+family CITATION (duplicated-statement-into-arms). The Judge then ruled PASS at
+07:34 (decisions.md:6521) and narrowed the ban to "this construct cited under
+duplicated-statement-into-arms", authorising resubmission under
+dead-store-fake-exception. The narrowing landed in `judge_constraints` only:
+`grindlib.py` has `ban` / `constrain` but **no un-ban path**, and
+`check_banned_constructs` is a term-overlap tripwire over the self-vet's
+`CONSTRUCTS:` block, so the authorised resubmission is mechanically discarded
+before any reviewer sees it. That is what happened to the session immediately
+before this one (its self-vet tripped on `disc, (disc, disc, island)`), and a
+third consecutive discard on this function trips `Circuit-Break`.
+
+The only honest dispositions available to a session are therefore (a) worsening
+the form to avoid the construct (floor 3 instead of 0), or (b) an INTEGRATION
+HANDOFF. Wording a `CONSTRUCTS:` line to stay under the tripwire's 4-hit
+threshold while still using the construct would be evading a mechanical gate, so
+it was not done. This session takes (b).
+
+- [s8] Chassis re-verified from scratch: src/code6cac_b.c did NOT carry candidate.c at dispatch (eleventh consecutive session) - HEAD still had the two register-asm t4 pins plus .word cop2 encodings. Applied forms measure: candidate.c -> score 0, build_insns 144 == target_insns 144, rules_dropped 33, cheat_asm_stripped 289; the same body minus the annotated re-store -> score 3 / 144.
+
+- [s8] The distance-0 body also REMOVES the two register pins and the two .word cop2 encodings the tree carries for this function, replacing them with the constraint-bound GTE LZCS island in the func_800274BC-accepted shape (.claude/rules/cop2-addressing-preamble-cluster.md:74).
+
+- [s8] s11-A/B/C (ud reused for the table value; shift reused for half; copy hoisted above the 0x400 test) are exactly codegen-NEUTRAL: score 3, parity 144, byte-identical residual. A second def placed after the variable's last read cannot invalidate a cse quantity.
+
+- [s8] s11-D (disc reused as the shift carrier) makes target's `addu $a0,$a2,$zero` survive with NO dead store - score 10, copy present but in the bltz delay slot; s11-E (D + ud reused for tval) is score 4 with the copy in target's slot and registers and the slow-path srlv reading it. First honest materialisation of that copy in 11 sessions.
+
+- [s8] Closed form (evidence.md E24, now measured rather than deduced): every value-carrying invalidation forces disc's pseudo to also carry a value target holds in $v1 (measured 3-slot price for a 3-slot gain), and no invalidation can precede the island read because target emits only the `bltz` guard between the copy and the island. The same-value re-store of `ud` is therefore the unique zero-cost invalidation.
+
+- [s8] The remaining blocker is driver state, not codegen: state.json banned_constructs still holds the construct text banked by Set-FailRouting from the 2026-08-19 07:16 layer-1 CITATION FAIL (docs/grind/decisions.md:6517), while the 07:34 Judge ruling (decisions.md:6521) PASSED and narrowed the ban to that citation alone and authorised resubmission under dead-store-fake-exception. grindlib.py exposes `ban` and `constrain` but no un-ban command, and check_banned_constructs is a term-overlap tripwire over the self-vet CONSTRUCTS: block - so the authorised resubmission is discarded as INVALID before any reviewer sees it (exactly how the previous session died, matched on `disc, (disc, disc, island)`).
+
+- [s8] Wording a CONSTRUCTS: line to stay under the tripwire's 4-hit threshold while still using the construct would be evasion of a mechanical gate, so it was not attempted; the honest alternatives were a deliberately worse form (floor 3) or this integration handoff.

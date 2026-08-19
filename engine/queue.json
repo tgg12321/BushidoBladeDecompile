@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002D518",
-      "file": "code6cac_b",
-      "distance": 33,
-      "verdict": "ASM-PARTIAL",
-      "rules": 33,
-      "status": "active"
-    },
-    {
       "func": "func_80060A68",
       "file": "text1b",
       "distance": 39,
@@ -2027,6 +2019,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): 2026-08-19 - func_8001B748 - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven at 0; blocked only by grind-session file scope) - docs/grind/decisions.md:6426"
     },
     {
+      "func": "func_8002D518",
+      "file": "code6cac_b",
+      "distance": 33,
+      "verdict": "ASM-PARTIAL",
+      "rules": 33,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md 2026-08-19 - func_8002D518 - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven at distance 0; blocked by a stale banned_constructs tripwire in memory/grind/func_8002D518/state.json that no session may edit)"
+    },
+    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2310,14 +2311,14 @@
   ],
   "counts": {
     "total": 263,
-    "active": 229,
+    "active": 228,
     "by_status": {
-      "active": 229,
-      "parked": 34
+      "active": 228,
+      "parked": 35
     },
     "by_verdict": {
-      "ASM-PARTIAL": 39,
-      "C": 190
+      "C": 190,
+      "ASM-PARTIAL": 38
     }
   }
 }

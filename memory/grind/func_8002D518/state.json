@@ -1,8 +1,8 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "Floor 7 -> 4 at held parity 144==144: s5/E4's find_reg model was missing a third blocker channel (local_alloc block-locals feed a global allocno's HARD-reg conflict set), and merging disc+sqrt_val int"
+  },
+  {
+   "session": 8,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "func_8002D518 is SOLVED (score 0 / 144==144 re-measured this session); s11 upgraded the construct's necessity from deduction to measurement (an honest value-carrying invalidation DOES rescue target's "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target's `addu $a0,$a2,$zero` (the surviving `ud` register) is created AFTER cse - by reload satisfying the island asm's \"r\" input operand, or by a local_alloc range split - which is why no plain-C `u32 ud = disc;` spelling can reproduce it (three independent spellings now measured: base if/else, init guard, and hoisted-above-0x400; all either fold the copy or cost the `j`).",
-   "mechanism": "s6/E7 + s7/H7.4: cse's make_regs_eqv puts disc and ud in ONE quantity and rewrites every in-block read to qty_first_reg, so exactly one of them keeps consumers. Target has BOTH $a2 (read by the bltz at 0x8002D698) and $a0 (read by the island at 0x8002D6A0 and by the slow-path srlv) carrying live consumers, which no cell of the cse predicate produces. Therefore the second register is post-cse.",
-   "next_probe": "On the s7 chassis, dump and read .greg / .dbr (NOT .cse, NOT .jump2) for the slow-path region and locate every copy insn that exists after global_alloc; then read tools/gcc-2.7.2/reload1.c's handling of an asm \"r\" input whose pseudo is also live across the asm's $12 clobber and across the join, and ask what makes reload allocate a SECOND register for it rather than reading the pseudo's own. If reload is the source, the C-level question becomes what makes the asm operand un-shareable with disc's register - not how to spell a copy."
+   "hypothesis": "The only live item is process: clear the single stale banned_constructs entry in memory/grind/func_8002D518/state.json so the resubmission the Judge already authorised (decisions.md:6521) can reach layer-1/layer-2. Everything else is done.",
+   "mechanism": "Set-FailRouting banked the CONSTRUCT text on a citation-ground FAIL; the Judge's narrowing landed in judge_constraints only, and no pipeline path removes a banned entry, so check_banned_constructs discards every honest resubmission.",
+   "next_probe": "Operator edit (a session may not make it): delete the entry, apply candidate.c via tmp/grind/func_8002D518/s8b/apply.py, confirm sandbox score 0, run a fresh layer-2 cheat-reviewer, then engine build / retire func_8002D518 / verify-oracle --rebuild / queue done."
   },
   {
-   "hypothesis": "Slot 88 (the disc<0 arm) is a reorg.c delay-slot-filling decision, not a jump.c/jump2 one - unchanged from s6, and now the ONLY remaining item besides the ud copy.",
-   "mechanism": "s6/E11: .jump carries 9 return-0 blocks and .jump2 carries 1 in every build measured; the 9 copies in both the target and our build are re-materialised by reorg.c filling each `j <label>` delay slot with the instruction at the jump target and redirecting the jump past it. Whether the disc<0 arm gets its own re-materialised copy is therefore a fill_slots_from_thread / relax_delay_slots decision.",
-   "next_probe": "Dump the s7 `if (disc < 0) return 0;` variant (banked as rejected/s7-disc-lt0-return0-still-crossjumps-score8-142insns.c) and read its .dbr function region against the s7 base .dbr: find the `j` whose delay slot was NOT filled from the return-0 target (the 2 missing insns) and name the fill_slots_from_thread / relax_delay_slots condition that rejected it."
+   "hypothesis": "If the construct is REFUSED on review, the terminal cheat-free form is the score-3 body and further spelling search is measured dead; reopening would need a mechanism nobody has named - a way to break the ud/disc cse quantity BEFORE the island read using an insn target already emits in that window.",
+   "mechanism": "Target emits nothing between the copy (0x8002D680, beqz delay slot) and the island's operand read (0x8002D6A0) except `bltz $a2` (0x8002D698), which defines no register.",
+   "next_probe": "Treat as a proof obligation, not a probe: any future claim here must name the defining insn in that window before a build is run."
   },
   {
-   "hypothesis": "E12's law (hard-reg conflict sets are source-controllable through local_alloc block-locals) generalises to the other two residual registers, i.e. `ud` wanting $a0/$4 and `result` wanting $v0/$2 in the disc<0 arm are also conflict-set problems rather than order problems.",
-   "mechanism": "global.c global_conflicts counts local_alloc-placed pseudos as live hard regs; find_reg then returns the first hard reg in reg_alloc_order that is neither hard-conflicted nor held by a conflicting allocno. Lengthening or shortening a global's live range over specific block-locals therefore selects its register directly.",
-   "next_probe": "For whichever pseudo must land in $a0 once the ud copy survives, compute the REQUIRED hard-conflict set ({2,3} blocked, $4 free) from the .lreg ';; Register N in H.' map BEFORE building, exactly as E12/E13 did for $a2. The whole allocation is now predictable from one .lreg read - use that instead of sampling spellings."
+   "hypothesis": "Only if the construct is refused: the 3 shift slots of s11-E are a register-assignment problem of the s7/E12-E13 kind (local_alloc block-locals feeding a global allocno's hard-reg conflict set), so score 4 could be driven toward 1.",
+   "mechanism": "global.c global_conflicts counts local_alloc-placed pseudos as live hard regs; find_reg then takes the first reg_alloc_order register that is neither hard-conflicted nor held by a conflicting allocno, so live-range length over specific block-locals selects the register.",
+   "next_probe": "Build s11-E with -da, read `;; Register N in H.` from the .lreg, and compute the required hard-conflict set for the shift carrier ($v1 free, {2,4,5,6} blocked) BEFORE sampling any further spelling. Ceiling is 1 - the island operand slot is unbuyable per E24."
   }
  ],
  "judge_constraints": [

@@ -670,3 +670,99 @@ question; read `.dbr`, never `.jump2`.
 - probe: E20's three spellings (inline-helper parameter copy, hoisted copy with a fall-through consumer, arm-local single def) plus the eight sessions of prior spellings in `rejected/` — 32 forms now.
 - result: CONFIRMED. Every non-re-store spelling measured lands at score 3 (copy folded) or worse; the s8 same-value re-store is the unique measured closer to score 0.
 - verdict: CONFIRMED
+
+## [s10] The ban that blocked resubmission is a CITATION defect, not a construct defect, and re-citing the same-value re-store under dead-store-fake-exception (dropping every duplicated-statement-into-arms claim) reproduces distance 0 on the current chassis and clears the tripwire.
+- mechanism: the driver's `banned_constructs` entry was minted from the layer-1 FAIL text, and that FAIL's sole confirmed defect (tmp/grind/layer1_func_8002D518.json, quoted in docs/grind/decisions.md:6517) was "cited under the wrong sanctioned family ... the correct family (dead-store-fake-exception) was never invoked". The 2026-08-19 07:34 Judge ruling (decisions.md:6521) then narrowed the ban explicitly to "this construct cited under duplicated-statement-into-arms" and authorised resubmission under dead-store-fake-exception after a fresh layer-1 + layer-2.
+- probe: apply the banked s8 body to src/code6cac_b.c verbatim, replace ONLY the annotation's family reasoning with the dead-store-fake-exception derivation, re-measure `sandbox func_8002D518 --disable all` on the current chassis, and re-derive self_vet.md against dead-store-fake-exception's own four prerequisites with verbatim scope + file:line precedents.
+- result: CONFIRMED. `score: 0`, `target_insns 144 == build_insns 144`, `scorable: true`, `rules_dropped: 33`, `cheat_asm_stripped: 289` — i.e. the s8 result is chassis-stable and was not an artefact of the chassis it was found on. The floor is 0, down from the ledger's last recorded 4.
+- verdict: CONFIRMED
+
+## [s10] The re-store fits dead-store-fake-exception's `x = x;` self-assignment sub-scope, not merely its "dead conditional store" sub-scope.
+- mechanism: `ud` is assigned `disc` on the line above the guard and NEITHER variable is modified between that assignment and the re-store, so the re-store's stored value is provably identical to the value already in `ud`. Syntactically `ud = disc;`, semantically `ud = ud;` — the rule's first listed sub-scope (.claude/rules/dead-store-fake-exception.md:28), which is the cleanest fit and avoids relying on the "dead conditional store" bullet whose `if (c) { v = e; } ...; v = e;` ordering is the mirror image of ours.
+- probe: read the rule's scope block (:22-:46) and its four strict prerequisites (:60-:80) against the actual source and the ledger; check each prerequisite individually rather than asserting the family.
+- result: CONFIRMED, all four prerequisites hold: (1) lever-exhaustion — 32 rejected forms + 33,881 permuter iterations, and s9/E20-E21 killed the three remaining non-dead alternatives by measurement; (2) GCC-pass named — cse.c make_regs_eqv, attributed from the .cse dumps, not guessed; (3) `/* FAKE */` annotation present ON the statement, carrying what + mechanism + lever-exhaustion; (4) layer-1 + layer-2 review — owed, this submission is their input. The rule's two explicit exclusions also do not bite: the store targets a LOCAL (not a global), and the diff carries NO `register T x asm("$N")` pin (the only asm is the constraint-bound GTE island).
+- verdict: CONFIRMED
+
+## [s11] 2026-08-19 — synthesis: merged attack, results, and the reset frontier
+
+### The merged attack this session ran (from the whole ledger, not one axis)
+
+s1-s10 had converged on one open question — "is there an honest spelling of
+target's `addu $a0,$a2,$zero`?" — with s9/E21 answering it by DEDUCTION (the cse
+quantity must be invalidated; the invalidating set must be same-valued; therefore
+a dead store). The synthesis read the deduction's weak link: step 4 asserted
+without measurement that a value-carrying invalidation "costs slots elsewhere".
+So the attack was to build the value-carrying invalidations the target's own
+register file suggests (variable reuse — the s3/s7 winning lever family), and
+measure the price instead of assuming it.
+
+* **H11.1 — reusing `ud` for the mantissa-table value (target's `$a0` does
+  exactly that) invalidates the quantity and rescues the copy.** KILLED. Score 3,
+  byte-identical residual: the second def sits after `ud`'s last read, so it
+  cannot invalidate anything (s11-A). Same for reusing `shift` for `half`
+  (s11-C) and for both plus the copy hoisted above the 0x400 test (s11-B).
+* **H11.2 — reusing `disc` as the `shift` carrier puts a REAL second definition
+  of `disc` inside the window between the island read and the `srlv` read, so the
+  copy survives with no dead store.** CONFIRMED, and this is the session's
+  finding: score 10 alone (s11-D) and **score 4** when combined with the `ud`
+  reuse (s11-E), with `addu $4,$6,$0` present in target's delay slot and the
+  slow-path `srlv $2,$4,...` reading it. Two of the three copy slots close with
+  ordinary C.
+* **H11.3 — such an invalidation can be made free.** KILLED, in closed form
+  (E24). The value it carries must live in `$a2` for the rest of the function
+  (`sltiu`, small-path index, `bltz`, then the `<<9` result), but target holds the
+  shift chain in `$v1` — so the price is exactly the 3 slots s11-E pays (T92,
+  T93, T97), and the island operand slot (T84) cannot be bought at all, because
+  the window between the copy and the island contains only the `bltz` guard,
+  which defines nothing. Net: 4 > 3. The same-value re-store remains the unique
+  zero-cost invalidation.
+
+### RESET FRONTIER (strongest 1-3 for the next ladder pass)
+
+The codegen question on this function is CLOSED at both ends: the distance-0 form
+exists and is reproducible (measured again this session), and the best form
+containing no annotated construct is measured at 3 with every alternative
+invalidation now priced. The frontier below is therefore deliberately NOT a list
+of new spellings to sample — sampling is exhausted and each item says what would
+have to be TRUE for it to reopen.
+
+1. **The only live item is process: clear the stale `banned_constructs` entry in
+   `memory/grind/func_8002D518/state.json` so the resubmission the Judge already
+   authorised (decisions.md:6521) can reach layer-1/layer-2.** There is no
+   pipeline path that removes a banned entry (`grindlib.py` has `ban` and
+   `constrain` only), so no session can do this; it is an operator edit.
+   Everything else is done: `candidate.c` measures 0 with 33 rules dropped and
+   289 cheat-asm lines stripped.
+2. **If the operator instead REFUSES the construct**, the terminal cheat-free
+   form for this function is `rejected/s11-...-score4.c`-class or the score-3
+   control, and the correct disposition is a borderline/incomplete park with the
+   score-3 body — NOT further spelling search. Reopening would require a
+   mechanism nobody has named yet: a way to break the `ud ≡ disc` cse quantity
+   BEFORE the island's read using an insn target already emits in that window.
+   Target emits nothing there but the `bltz`, so this is a proof obligation, not
+   a probe.
+3. **Only if 2 is taken:** the 3 shift slots of s11-E are a register-assignment
+   problem of the kind s7/E12-E13 solved (local_alloc block-locals feeding a
+   global allocno's hard-reg conflict set). Required set for the shift carrier:
+   `$v1` free, `{2,4,5,6}` blocked. Read `;; Register N in H.` from the s11-E
+   `.lreg` and compute it BEFORE building, exactly as E12/E13 did for `$a2`.
+   This is the only axis with any remaining measurable slack, and it can at best
+   reach 1 (the island operand slot is unbuyable per E24).
+
+## [s8] Reusing `ud` for the mantissa-table value (target's $a0 carries both), reusing `shift` for `half` (target's `srl $v1,$v1,1`), and hoisting the `u32 ud = disc;` copy above the `(u32)disc < 0x400u` test each invalidate the cse ud/disc quantity and rescue target's `addu $a0,$a2,$zero`.
+- mechanism: cse.c make_regs_eqv puts ud and disc in one quantity and rewrites reads to qty_first_reg; a second definition of either register inside the window between the island's read of ud and the slow-path srlv's read of ud would invalidate the quantity and force the copy to be materialised.
+- probe: Built three cheat-free variable-reuse forms on the s11 chassis (s11-A ud->tval, s11-C +shift->half, s11-B +copy hoisted above the 0x400 test) and measured each with `sandbox func_8002D518 --disable all`, plus an aligned target-vs-build disassembly diff.
+- result: All three: score 3, build_insns 144 == target_insns 144, residual byte-identical to the copy-less control. The second def of `ud` lands AFTER ud's last read, so it invalidates nothing.
+- verdict: KILLED
+
+## [s8] Reusing `disc` itself as the `shift` carrier places a REAL value-carrying second definition of `disc` inside the window, so target's copy survives with no dead store at all.
+- mechanism: The write `disc = 0x16 - (lzcr & ~1);` sits between the island's read of ud and the srlv's read of ud, invalidating the ud/disc quantity, so the post-invalidation read of ud can no longer be rewritten to disc's register and the copy insn must be emitted.
+- probe: Built s11-D (disc as shift, separate tval) and s11-E (disc as shift + ud reused for tval); measured both and produced aligned disassembly diffs (tmp/grind/func_8002D518/s7/v/vD.dis, vE.dis via s11/dis_align.sh).
+- result: CONFIRMED at the RTL level for the first time in 11 sessions: s11-D score 10 with `addu $4,$6,$0` present (in the bltz delay slot, swapped with `lzcr = 0`); s11-E score 4 with the copy in target's beqz delay slot, in target's registers ($4 from $6), and the slow-path `srlv $2,$4,..` reading it. Two of the three copy slots close with ordinary C.
+- verdict: CONFIRMED
+
+## [s8] A value-carrying invalidation can be made free, i.e. some second definition of `disc` in the window carries a value target also keeps in $a2.
+- mechanism: find_reg/global_alloc give one pseudo one hard register, so a pseudo that carries both `disc` (target $a2: sltiu 0x400, small-path index, bltz, then the <<9 result) and the invalidating value must pick one register for both roles.
+- probe: Read target's register file over the whole window 0x8002D680-0x8002D6EC and compared it against the measured s11-E residual.
+- result: KILLED. In that window target writes only $v1 (lzcr -> shift -> half) and $v0, so the invalidating value is one target holds in $v1, and s11-E pays exactly the 3 slots that costs (T92 `subu $3,$3,$2`, T93 `srlv $2,$4,$3`, T97 `srl $3,$3,1`) for the 3 it buys - net 4 > 3. The island's operand slot (T84) is unbuyable outright: the only insn between the copy and the island is the `bltz` guard, which defines nothing, so no invalidation can precede the island read.
+- verdict: KILLED
