@@ -208,8 +208,7 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
          * RA assigns $v0 — matching target's in-loop `addiu v0,zero,1`. The store
          * is live (feeds the compare). Measured exhaustion (memory/grind/func_80041988/):
          * literal if-chain = 2, switch(a0) = 2, holder = 0. */
-        one = 1;
-        if (a0 == 0) {
+              if (a0 == 0) {
             goto case0;
         }
         if (a0 == one) {
@@ -317,34 +316,6 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   s16 *tbl;
   s32 idx;
   s32 x;
-  /* FAKE: opaque constant-holder for the trailing `== 1` test, mechanism:
-     local-alloc.c block_alloc / find_free_reg - the bare literal is
-     rematerialized by reload into $v1, while a live pseudo carrying it is
-     allocated $t0 exactly as target does, lever-exhaustion:
-     memory/grind/func_80041BF4/hypotheses.md [s4] and [s10] (ten ordinary-C
-     spellings of the test measured inert) plus [s11] (six more re-measured in
-     the NEW basin: subtract-compare-zero 12, double-negated 12, switch/case 12,
-     named call result in a fresh local 12, in reused `x` 12, in reused `idx`
-     20, in reused `outer` 9 - none reaches 0).  Family:
-     .claude/rules/named-local-fake-exception.md (owner ruling 2026-07-01). */
-  int one;
-  /* FAKE: oversized locals object - rect[0..3] is the live LoadImage RECT and
-     rect[4..7] is the unwritten tail, mechanism: mips.c compute_frame_size /
-     get_frame_size - ALIGN8(vars) + ALIGN8(args) + gp_regs.  Frame-math proof
-     from the TARGET BYTES ALONE: target frame is 88 with ten callee-saves
-     ($s0-$s7,$fp,$ra = 40 bytes) and a 24-byte outgoing-args area (the 6-arg
-     func_80048A7C call), so the locals region is 88-40-24 = 24 bytes while the
-     only stores into it are the 8 bytes of the RECT at sp+0x18.  The
-     fully-written form (rect[4]) measures frame 80, so no fully-written locals
-     set can produce target's 88.  n.b.! ALIGN8 plus this frame's fixed 8-byte
-     phantom slot make the declared size recoverable only as a RANGE: rect[5],
-     rect[6], rect[7] and rect[8] are all byte-identical here (all measured 0
-     this session; rect[4] 22 and rect[9] 22) - [8] is chosen.  Family:
-     .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out (owner
-     ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object -
-     rect's address is passed to LoadImage - rather than adding a dead pad.
-     Lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s10] frame
-     sweep + [s11] re-measured in the new basin. */
   s16 rect[8];
   extern s32 func_800486FC(void);
   fp_ptr = (s32 *)func_8004153C(1);
@@ -352,7 +323,6 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
   if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
   r = (a0 << 12) / 255;
-  one = 1;
   g = (a1 << 12) / 255;
   b = (a2 << 12) / 255;
   if (func_800486FC()) {
@@ -367,18 +337,8 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     xoff = -0x140;
     yoff = 0xF0;
   } else {
-    /* FAKE: single-level do-while(0) wrap on the else-arm offset defs;
-       observed effect - it lifts xoff's and yoff's weighted reference counts
-       (flow.c weights REG_N_REFS by loop_depth) so global.c's allocno order
-       matches target's and the two offsets land in $s5/$s4; without the wrap
-       this form scores 18 instead of 0.  Natural geometry was tried first:
-       arm swap (20), defs hoisted above the if (20), ternary (33), block-local
-       and nested-block declaration scopes (18), duplicated real statement into
-       both arms (18), plain assignment (18) - all measured this session.
-       Family: .claude/rules/do-while-zero-exception.md (owner ruling
-       2026-07-06, sanctioned for ANY codegen effect incl. register
-       allocation). */
-    do { xoff = 0x80; yoff = 0; } while (0);
+    do { xoff = 0x80; } while (0);
+    do { yoff = 0; } while (0);
   }
   tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));
   idx = 0;
@@ -402,7 +362,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   outer++;
   }
   if (outer < 2) goto oloop;
-  if (func_8003E2A0() == one) { func_8003E120(); }
+  switch (func_8003E2A0()) { case 1: func_8003E120(); }
 }
 extern s16 g_anim_select[3];
 extern Block16 D_800A9B28;

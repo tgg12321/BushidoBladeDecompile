@@ -316,35 +316,18 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   s32 yoff;
   s16 *tbl;
   s32 idx;
-  s32 x;
-  /* FAKE: opaque constant-holder for the trailing `== 1` test, mechanism:
-     local-alloc.c block_alloc / find_free_reg - the bare literal is
-     rematerialized by reload into $v1, while a live pseudo carrying it is
-     allocated $t0 exactly as target does, lever-exhaustion:
-     memory/grind/func_80041BF4/hypotheses.md [s4] and [s10] (ten ordinary-C
-     spellings of the test measured inert) plus [s11] (six more re-measured in
-     the NEW basin: subtract-compare-zero 12, double-negated 12, switch/case 12,
-     named call result in a fresh local 12, in reused `x` 12, in reused `idx`
-     20, in reused `outer` 9 - none reaches 0).  Family:
-     .claude/rules/named-local-fake-exception.md (owner ruling 2026-07-01). */
   int one;
-  /* FAKE: oversized locals object - rect[0..3] is the live LoadImage RECT and
-     rect[4..7] is the unwritten tail, mechanism: mips.c compute_frame_size /
-     get_frame_size - ALIGN8(vars) + ALIGN8(args) + gp_regs.  Frame-math proof
-     from the TARGET BYTES ALONE: target frame is 88 with ten callee-saves
-     ($s0-$s7,$fp,$ra = 40 bytes) and a 24-byte outgoing-args area (the 6-arg
-     func_80048A7C call), so the locals region is 88-40-24 = 24 bytes while the
-     only stores into it are the 8 bytes of the RECT at sp+0x18.  The
-     fully-written form (rect[4]) measures frame 80, so no fully-written locals
-     set can produce target's 88.  n.b.! ALIGN8 plus this frame's fixed 8-byte
-     phantom slot make the declared size recoverable only as a RANGE: rect[5],
-     rect[6], rect[7] and rect[8] are all byte-identical here (all measured 0
-     this session; rect[4] 22 and rect[9] 22) - [8] is chosen.  Family:
-     .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out (owner
-     ruling 2026-07-13); prong 2 is satisfied by extending the LIVE object -
-     rect's address is passed to LoadImage - rather than adding a dead pad.
-     Lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s10] frame
-     sweep + [s11] re-measured in the new basin. */
+  /* FAKE: oversized locals object (rect[4] is the live RECT; rect[4..7] is the
+     unwritten tail), mechanism: mips.c compute_frame_size / get_frame_size -
+     ALIGN8(vars)+ALIGN8(args)+gp_regs; target frame 88 = ALIGN8(vars)+24+40
+     forces vars in (16,24] while the locals region stores only the 8 rect
+     bytes, lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s10]
+     (frame sweep: separate pad locals, function-scope off, s16/s32/u16 coord
+     temps, named width temp - all measured, none reaches vars=24 with rect at
+     sp+24).  n.b.! ALIGN8 makes the declared size recoverable only as a
+     RANGE: rect[5]..rect[8] are byte-identical here; [8] chosen.  Family:
+     .claude/rules/dead-vars-local-array.md OVERSIZED-LOCALS carve-out
+     (owner ruling 2026-07-13).  NOT VETTED - do not submit as-is. */
   s16 rect[8];
   extern s32 func_800486FC(void);
   fp_ptr = (s32 *)func_8004153C(1);
@@ -352,6 +335,11 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
   if ((*(((s16 *) fp_ptr) + 4)) != D_800A9A20) { return; }
   if (D_80094E08[*(((s16 *) fp_ptr) + 4)] == 0xFF) { return; }
   r = (a0 << 12) / 255;
+  /* FAKE: opaque constant-holder `one` for the trailing `== 1` test, mechanism:
+     local-alloc.c block_alloc/find_free_reg - the literal 1 is rematerialized by
+     reload into $v1, while a live pseudo carrying it is allocated $t0 as target does,
+     lever-exhaustion: memory/grind/func_80041BF4/hypotheses.md [s4] (three ordinary-C
+     spellings of the test measured inert at 13) */
   one = 1;
   g = (a1 << 12) / 255;
   b = (a2 << 12) / 255;
@@ -367,27 +355,27 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     xoff = -0x140;
     yoff = 0xF0;
   } else {
-    /* FAKE: single-level do-while(0) wrap on the else-arm offset defs;
-       observed effect - it lifts xoff's and yoff's weighted reference counts
-       (flow.c weights REG_N_REFS by loop_depth) so global.c's allocno order
-       matches target's and the two offsets land in $s5/$s4; without the wrap
-       this form scores 18 instead of 0.  Natural geometry was tried first:
-       arm swap (20), defs hoisted above the if (20), ternary (33), block-local
-       and nested-block declaration scopes (18), duplicated real statement into
-       both arms (18), plain assignment (18) - all measured this session.
-       Family: .claude/rules/do-while-zero-exception.md (owner ruling
-       2026-07-06, sanctioned for ANY codegen effect incl. register
-       allocation). */
-    do { xoff = 0x80; yoff = 0; } while (0);
+    /* FAKE: do-while(0) wraps on the else-arm offset defs, mechanism: flow.c
+       weights REG_N_REFS by loop_depth, so the wrap lifts each def's weighted
+       ref count and restores global.c's allocno order to target's
+       (xoff -> $s5, yoff -> $s4); without both wraps this goto-spelled basin
+       scores 40/43 instead of 25, lever-exhaustion:
+       memory/grind/func_80041BF4/hypotheses.md [s9] (declaration order is
+       completely inert in this basin - three permutations + rect-first all
+       score 43) and [s10] (arm swap and intra-arm assignment order both
+       inert/worse).  Family: .claude/rules/do-while-zero-exception.md - SCOPE
+       NOT YET VERIFIED for a ref-weighting effect.  NOT VETTED. */
+    do { xoff = 0x80; } while (0);
+    do { yoff = 0; } while (0);
   }
   tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));
   idx = 0;
-  goto test;
+  do { goto test; } while (0);
   again:
   {
     s32 off = idx << 5;
     idx++;
-    rect[0] = x + xoff;
+    rect[0] = (*((u16 *) tbl)) + xoff;
     rect[1] = (*(((u16 *) tbl) + 1)) + yoff;
     rect[2] = 0x10;
     rect[3] = 1;
@@ -397,8 +385,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2)
     func_80048A7C(rect[0], rect[1], 0x10, r, g, b);
   }
   test:
-  x = *(u16 *) tbl;
-  if ((s16) x >= 0) goto again;
+  if (tbl[0] >= 0) goto again;
   outer++;
   }
   if (outer < 2) goto oloop;

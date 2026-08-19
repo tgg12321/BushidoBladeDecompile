@@ -764,3 +764,39 @@ the body is 16 @ 137. **Verdict: KILLED (inert / worse).**
 - probe: Seven more ordinary-C spellings on top of s4's three: `x - 1 == 0`, `(x ^ 1) == 0`, `!(x != 1)`, `switch (x) { case 1: ... }`, and naming the call RESULT in a reused `idx` and in a reused `outer`.
 - result: All seven exactly inert at 13/135. The two variable-reuse forms are inert too - reusing a live pseudo for the RESULT does nothing; only a pseudo holding the CONSTANT (the s4 `one` holder) moves it, and it is worth exactly 2. Ten spellings measured across s4+s10.
 - verdict: KILLED
+
+## [s11] The remaining single-instruction residual is defeatable by changing WHERE the equivalent load is written (s10's frontier item 1).
+- mechanism: cse merges the body's `lhu` into the test block's `lh`; s10 read this as a cse2 equivalence-class question.
+- probe: (a) re-read the pass attribution in the .jump/.cse/.cse2 dumps; (b) write the x read into the test block AFTER the condition load (`t = tbl[0]; x = *(u16 *)tbl; if (t >= 0) goto again;`).
+- result: (a) the substitution is cse1, not cse2 - the .jump dump still has both loads, the .cse dump already has the merge. (b) Writing the read into the test block gives `andi v1,v0,0xffff` in the bgez delay slot and STILL leaves a load-delay nop: 3 @ 136, identical to s10. The merged copy is data-dependent on the `lh`, so it can never fill the `lh`'s own load-delay slot; target fills that slot with an INDEPENDENT insn. Every "where do I write the second read" spelling is therefore one insn short by construction.
+- verdict: KILLED (the direction, not the residual - see the next two entries)
+
+## [s11] cse's extended-basic-block follow (cse.c cse_end_of_basic_block) is what merges the two loads, and it can be blocked structurally.
+- mechanism: at -O2 cse appends the branch target's block to the current path when flag_cse_follow_jumps is on, `LABEL_NUSES (JUMP_LABEL (p)) == 1`, and the backward scan from the target label lands on a BARRIER (the scan skips NOTEs that are not LOOP_END/SETJMP and CODE_LABELs with zero uses). Our preheader `goto test;` supplies the BARRIER, so the test block and the loop body are one cse path and the second load is folded away.
+- probe: put a NOTE_INSN_LOOP_END immediately before the `again:` label by wrapping the preheader's `goto test;` in `do { ... } while (0);`, then read the emitted asm for a body-local `lhu`.
+- result: CONFIRMED - the body regains its own `lhu $2,0($16)` and the test block keeps its `lh`. The form scores 27 @ 136 because the extra loop notes drop vars from 24 to 16 (frame 88 -> 80), so it does not close the function by itself, but the lever is real and general. Banked as rejected/s11-dowhile0-around-goto-test-breaks-cse-block-27at136.c.
+- verdict: CONFIRMED
+
+## [s11] Reading the halfword ONCE (unsigned) in the loop condition and testing its sign with a cast lets combine.c rebuild the sign-extending load AFTER cse, producing target's two-load test block.
+- mechanism: with `x = *(u16 *) tbl; if ((s16) x >= 0) goto again;` there is a single `(mem:HI ...)` for cse to record, so no merge is possible. combine.c then folds `(ashiftrt (ashift (zero_extend (mem:HI ...)) 16) 16)` into `(sign_extend (mem:HI ...))`, MANUFACTURING a second memory reference at a point where cse can no longer unify the two. sched then has an independent insn (`lhu`) for the `lh`'s load-delay slot and dbr keeps `sll v0,s1,5` for the bgez delay slot.
+- probe: apply the spelling to memory/grind/func_80041BF4/candidate.c and measure.
+- result: sandbox --disable all == 0 at 135/135 instructions, frame 88 / vars=24. THE FUNCTION MATCHES.
+- verdict: CONFIRMED
+
+## [s11] The `int one = 1;` constant holder has an ordinary-C substitute in the NEW basin.
+- mechanism: reload rematerialises the literal into $v1 while target keeps it in $t0; s4/s10 measured ten spellings inert in the OLD basin, and the basin has since changed twice.
+- probe: eight more spellings re-measured against the matching form: `- 1 == 0`, `!(x != 1)`, `switch/case 1`, call result named in a fresh local, in reused `x`, in reused `idx`, in reused `outer`, and the holder assigned after the outer loop instead of before it.
+- result: 12, 12, 12, 12, 12, 20, 9, 12 - none reaches 0. Removing the holder outright costs 12. Sixteen spellings across s4+s10+s11.
+- verdict: KILLED
+
+## [s11] The do-while(0) offset wrap has an ordinary-C substitute in the NEW basin (s10 frontier item 3).
+- mechanism: flow.c weights REG_N_REFS by loop_depth and that weighting orders global.c's allocnos; the wrap supplies depth the offset defs otherwise lack, seating xoff/yoff in $s5/$s4.
+- probe: ten geometries measured against the matching form - plain assignment, arm swap, defs hoisted above the if, ternary, block-local declaration scope, nested-block declaration scope, block-local with initialisers, a duplicated real statement into both arms, wrapping both arms, wrapping the THEN arm instead.
+- result: 18, 20, 20, 33(@134), 18, 18, 20(@134), 18, 19, 0. Only a single-level wrap on ONE arm reaches 0 (either arm works). The scope question s10 flagged is RESOLVED: .claude/rules/do-while-zero-exception.md:23 sanctions the construct for ANY codegen effect INCLUDING register allocation (owner ruling 2026-07-06, which explicitly abolished the reorg.c scoping the role brief still paraphrases), and s10 needed two wraps where this basin needs one.
+- verdict: KILLED (no ordinary substitute; the construct is in-scope and single-level)
+
+## [s11] The `s16 rect[8]` oversized-locals construct has an ordinary source in the NEW basin (s10 frontier item 2).
+- mechanism: per [[phantom-frame-slots-gcc272]] a register-allocated-away temp can own frame bytes without emitting stores, so the 8 bytes might come from an ordinary local.
+- probe: measure the whole declared-size band in the matching form and read cc1's `.frame ... # vars=` for the fully-written form.
+- result: rect[4] 22 (frame 80 / vars=16), rect[5] 0, rect[6] 0, rect[7] 0, rect[8] 0, rect[9] 22 (frame 96). Target is frame 88 / vars=24 with only 8 bytes ever stored into the 24-byte locals region, so no fully-written locals set can produce the target frame - the slack is attested by the oracle-checked frame itself. The carve-out's prong 1 is discharged from the target bytes alone and prong 3's range is MEASURED as rect[5]..rect[8].
+- verdict: KILLED (no ordinary source exists; the OVERSIZED-LOCALS carve-out is the correct disposition, and its five prongs are discharged in memory/grind/func_80041BF4/self_vet.md)

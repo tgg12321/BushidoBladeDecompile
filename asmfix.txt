@@ -21,8 +21,6 @@ func_800393C8: insert_before "^addu\\s+\\$sp,\\$sp,8$" ".LsaSeInit2_loop:\nlh $8
 #   2026-06-07  save_vc_ctrl retired to canonical asm -> counter -7  (.L279 -> .L272)
 #   2026-08-06  text1a split into text1a_pre/_post (Wave 7) -> the function landed in
 #               a fresh TU, counter -186 (.L272 -> .L93). Slot 6 of 7 either way.
-func_80041BF4: delete_between "#nop.*'{lbl#6}:'" "^bgez"
-func_80041BF4: insert_before "^lh\t\$2,0\(\$16\)" "{lbl#6}:"
 
 # AllocRobRmd: fix .L61 label position (regfix reorder moved it with rmd[3] load)
 # 1. remove .L61: from its wrong position (after lh $5,20($18))

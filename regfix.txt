@@ -733,48 +733,15 @@ func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 97
 func_80041188: subst "\$5,\$22,\$zero" "$5,$19,$zero" @ 109
 
 # saTan4FireDisp: 3-way register cycle ($23/$fp/$21) for fp_ptr/r/xoff
-func_80041BF4: $23 <-> $fp @ 16-119
-func_80041BF4: $23 <-> $21 @ 44-102
 # saTan4FireDisp: frame size 72->88 (all save/restore offsets +16)
-func_80041BF4: subst ",72" ",88" @ 0
-func_80041BF4: subst ",32\(" ",48(" @ 1
-func_80041BF4: subst ",36\(" ",52(" @ 3
-func_80041BF4: subst ",40\(" ",56(" @ 5
-func_80041BF4: subst ",68\(" ",84(" @ 8
-func_80041BF4: subst ",64\(" ",80(" @ 9
-func_80041BF4: subst ",60\(" ",76(" @ 10
-func_80041BF4: subst ",56\(" ",72(" @ 11
-func_80041BF4: subst ",52\(" ",68(" @ 12
-func_80041BF4: subst ",48\(" ",64(" @ 13
-func_80041BF4: subst ",44\(" ",60(" @ 15
-func_80041BF4: subst ",68\(" ",84(" @ 120
-func_80041BF4: subst ",64\(" ",80(" @ 121
-func_80041BF4: subst ",60\(" ",76(" @ 122
-func_80041BF4: subst ",56\(" ",72(" @ 123
-func_80041BF4: subst ",52\(" ",68(" @ 124
-func_80041BF4: subst ",48\(" ",64(" @ 125
-func_80041BF4: subst ",44\(" ",60(" @ 126
-func_80041BF4: subst ",40\(" ",56(" @ 127
-func_80041BF4: subst ",36\(" ",52(" @ 128
-func_80041BF4: subst ",32\(" ",48(" @ 129
-func_80041BF4: subst ",72" ",88" @ 130
 # saTan4FireDisp: inner loop - off register v1->v0
-func_80041BF4: subst "\$3,\$5" "$2,$5" @ 85
 # saTan4FireDisp: inner loop - lhu source from check (v1) + xoff (s5)
-func_80041BF4: subst "\$2,\$2,\$21" "$2,$3,$21" @ 86
 # saTan4FireDisp: inner check - lh dest s5->v0
-func_80041BF4: subst "\$21,0" "$2,0" @ 106
 # saTan4FireDisp: inner check - bgez source s5->v0
-func_80041BF4: subst "\$21" "$2" @ 107
 # saTan4FireDisp: delay slot sll - off dest v1->v0
-func_80041BF4: subst "\$3," "$2," @ 108
 # saTan4FireDisp: epilogue - comparison constant v1->t0
-func_80041BF4: subst "\$3," "$8," @ 115
-func_80041BF4: subst ",\$3" ",$8" @ 116
 # saTan4FireDisp: delete body lhu (moved to check)
-func_80041BF4: delete @ 84
 # saTan4FireDisp: insert lhu at check point (post-delete idx 105)
-func_80041BF4: insert_after "lhu $3,0($16)" @ 105
 
 # decBs0: compound regfix — frame 64→72, dead move delete, both args to stack,
 # s2↔s3 swap, store block reorder+nop, loop top restructure (~50 rules)
