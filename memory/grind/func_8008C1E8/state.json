@@ -1,31 +1,37 @@
 {
  "func": "func_8008C1E8",
  "file": "main",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 23,
    "modality": "recon",
    "headline": "Recon s1: floor 28 -> 23 (lost WIP re-applied + two structural corrections); full diff map banked \u2014 one coupled arg-home/s-reg-rotation cluster remains, twin func_8008BF04 shares it"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural: goto-loops rewritten as real C loops restored GCC's loop notes; the whole 4-pseudo callee-save rotation and the entry cluster collapsed. Floor 23 -> 1 (158 vs 159 insns, one addiu left)."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 4-pseudo s-register rotation (dominant ~20 pts) flips via a C lever visible in the allocno priority order",
-   "mechanism": "GCC 2.7.2 global.c allocates callee-saves in allocno priority order (reg_n_refs/live-length); target's order is counter->s0, wait_val->s2, loop_flag->s3, arg1->s4 vs ours loop_flag->s0, counter->s2, arg1->s3, wait_val->s4",
-   "next_probe": "Forensics: -da greg dump via instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG) on the sandbox .i; read the four pseudos' priorities/conflicts; then sweep ref-count/live-range levers (declaration order, split reads, named intermediates) toward target's order"
+   "hypothesis": "The one missing addiu is the un-folded address materialisation of the outer-loop exit test, and target's C spells that test differently from its top guard.",
+   "mechanism": "combine folds (set r (lo_sum (high sym) sym)) into the following MEM unless the register is a named user variable (REG_USERVAR_P); loop.c's scan_loop then hoists any such pointer out of a loop unless it is set in a not-guaranteed-executed basic block. The four pointer placements that satisfy neither constraint were measured this session (9 / 11 / 22 / no-change).",
+   "next_probe": "Forensics: cc1 -dL (loop) and -dc (combine) dumps on the sandbox .i, tracing the two D_800F1AF4 test insns from RTL expansion through combine to see which property differs. In parallel (re-derive modality): find a sibling PsyQ/Marionation while(countdown) routine whose exit test compiles un-folded and copy its C spelling; and test whether an alternative file-scope declaration form for D_800F1AF4 blocks the fold at the loop test but not at the top guard and the store."
   },
   {
-   "hypothesis": "Entry trampoline (j main_work; move s2,zero) collapses only TOGETHER with the arg-home fix",
-   "mechanism": "Target's beqz delay slot holds s0=0 because move s4,a1 already happened at prologue insn 3; ours occupies that slot with the arg-home. Standalone s0-placement probes measured 31 (s1) and 33 (2026-08-06)",
-   "next_probe": "Re-sweep s0=0 placements ONLY after arg1 allocates to s4 and homes early; then check whether prologue_fix/maspsx reproduce target's sw-s4-first save order naturally"
+   "hypothesis": "func_8008BF04, the queued receive-side twin, carries the same rotation for the same reason and its two regfix rules are retirable by the same rewrite.",
+   "mechanism": "Same (u8*, s32) signature, same goto-loop body shape, regfix $19<->$20 @ 0-134 (arg1 s3<->s4) and $16<->$17 @ 68-121, which is the exact rotation the loop notes fixed here.",
+   "next_probe": "Rewrite func_8008BF04's loops as real C loops and measure with sandbox --disable all before touching any rule."
   },
   {
-   "hypothesis": "D_800F1AEC block qualifies for the legitimate-volatile-interrupt-touched two-prong carve-out",
-   "mechanism": "Same packet-state block as D_800F1AF4 whose extern volatile is load-bearing in COMPLETED-C func_8008C184; sibling grant comment at main.c:3430; missing piece is identifying the SPU/serial ISR that mutates D_800F1AEC/+4/+8/+0xC",
-   "next_probe": "Trace writers of the D_800F1AE0-1AFC block across the codebase (grep + callback registration via DeliverEvent 0xF000000B) to name the ISR; document the two-prong finding in evidence.md before any candidate-ready"
+   "hypothesis": "COMPLETED-C for func_8008C1E8 is now gated on classification work rather than on score.",
+   "mechanism": "The D_800F1AEC flag/state volatile is load-bearing (de-volatilizing measured 27 -> 39 on 2026-08-06) and needs the two-prong legitimate-volatile-interrupt-touched finding; the p_ae2 / p_af8 / p_af4b / p_af4 block-local pointers need to be ruled natural read spelling versus a coercion family.",
+   "next_probe": "Trace writers of D_800F1AEC/+4/+8/+0xC across the codebase and the DeliverEvent 0xF000000B callback registration to name the ISR; document the finding in evidence.md and write memory/grind/func_8008C1E8/self_vet.md before any candidate-ready."
   }
  ],
  "judge_constraints": [],
