@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active"
-    },
-    {
       "func": "func_8008C1E8",
       "file": "main",
       "distance": 28,
@@ -1933,6 +1925,15 @@
       "hand_coded_tier": "LOW"
     },
     {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2306,13 +2307,13 @@
   ],
   "counts": {
     "total": 263,
-    "active": 222,
+    "active": 221,
     "by_status": {
-      "active": 222,
-      "parked": 41
+      "active": 221,
+      "parked": 42
     },
     "by_verdict": {
-      "C": 185,
+      "C": 184,
       "ASM-PARTIAL": 37
     }
   }

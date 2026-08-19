@@ -401,3 +401,18 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
     *(s16 *)(ctx + 0x6) = *(u16 *)(ctx + 0x6) + 1;
     return 1;
 }
+/* [s17 ESCALATION ADDENDUM — body unchanged, still 3, re-measured as A_base.]
+ * s17 closed s16's frontier item #2 by reading tools/gcc-2.7.2/combine.c:803-970
+ * end to end and enumerating EVERY `can_combine_p` refusal path for this copy
+ * (E-s17-1).  Seven paths exist; two are forbidden cheat families, three are
+ * structurally unreachable, one (out-of-block use) is the candidate's own loop-1
+ * lever and is priced dead for loop 2, and the last — `use_crosses_set_p`, the
+ * only un-tried one — was built and killed with two controls (E-s17-2): the
+ * only zero-cost carrier for re-setting the copy's source is hoisting loop 2's
+ * links read into a pointer local, and that hoist alone is -11 (P5 = 14) against
+ * a maximum return of +2.  P7/P8 also measured the FULLY target-shaped C (fresh
+ * ctx+0xC re-read as loop 1's exit tail + a loop-2 preheader copy) at 12.
+ * Gate (a) scan_hand_coded = LOW 0/8.  Both endgame-lock gates fail; the
+ * function was disposed under the owner's standing ruling (2026-07-27) — see
+ * docs/grind/decisions.md.
+ */

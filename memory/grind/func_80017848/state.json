@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 16,
- "current_modality": "forensics",
+ "session_count": 17,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -99,23 +99,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Floor holds at 3, but the residual is now traced to ONE cse canonicalisation: the preheader-copy survival trichotomy is complete (unused -> cse deletes; in-block use -> combine deletes; out-of-block u"
+  },
+  {
+   "session": 17,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Floor holds at 3 and the LAST open axis is closed: combine.c's can_combine_p has exactly seven refusal paths for target's loop-2 preheader copy, all seven now dead (2 forbidden cheat families, 3 struc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The cse sub-rule behind E-s16-2 is the last unexplained link in the chain, and naming it names the exact C-level control over whether a preheader copy survives - which is the entire remaining 3-instruction residual. Something about a DOWNSTREAM re-definition of reg79 changes which member of the reg79/reg80 equivalence class cse names at the UPSTREAM base add (insn 89). Until that rule is named, every loop-2 spelling is a blind guess; once it is named, the requirement on loop 2's preheader becomes a checkable predicate rather than a search.",
-   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg). qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and cse's insert/merge_equiv_classes decides class membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM, which is the likeliest input to that ordering.",
-   "next_probe": "Instrument cse.c the way local-alloc.c was instrumented for s15: add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) whenever a pseudo in the 72-120 range is canonicalised, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1 - see instrumented-cc1-location), re-prove codegen-identity with tmp/grind/func_80017848/s16/idump.sh, and run it on the candidate and on cell E2 (rejected/s16_sym_shared_addend_local_reg_n_sets_2_costs_4.c). Diff the two traces at insn 83 and insn 89. Then write the loop-2 preheader C that satisfies whatever predicate the trace reveals."
+   "hypothesis": "If the function is ever re-opened, the ONE remaining unnamed link is the cse canonicalisation rule behind E-s16-2: why a downstream re-definition of reg79 changes which member of the reg79/reg80 equivalence class cse names at the UPSTREAM base add (insn 89). Naming it would turn every loop-2 preheader spelling from a blind guess into a checkable predicate. It is banked as UNRESOLVED, not as a live lever, because s17 proved that even a confirmed predicate has no affordable C carrier.",
+   "mechanism": "cse.c canonicalises a register operand to qty_first_reg[reg_qty[regno]] (canon_reg); qty_first_reg can MOVE when a class member is invalidated (delete_reg_equiv / invalidate), and insert / merge_equiv_classes decides membership order. The candidate's tail `p = q;` and cell E2's tail `p = *(u8 **)(ctx + 0xC);` differ only in whether reg79 is re-set from a class member or from a MEM.",
+   "next_probe": "Add a BB2_CSE_DEBUG trace in canon_reg / insert / merge_equiv_classes / invalidate printing (insn uid, regno, reg_qty, qty_first_reg) for pseudos in the 72-120 range, rebuild ONLY tools/gcc-2.7.2/cc1 (never build/cc1), re-prove codegen identity with tmp/grind/func_80017848/s16/idump.sh, and diff the candidate's trace against cell E2's at insn 83 and insn 89."
   },
   {
-   "hypothesis": "Target's loop-2 copy is a PRE-combine copy that combine REFUSED to fold, and the refusal reason is enumerable directly from combine.c rather than guessed from C. This is now forced: E-s16-4 proves no post-combine routine can create it, and E-s16-1 proves the unused and out-of-block arms are both excluded by target's own asm.",
-   "mechanism": "combine only acts through LOG_LINKS (flow.c:2102). A same-block copy therefore escapes deletion only if (a) flow built no LOG_LINK for it (the all_needed guard at flow.c:2091, or the copy's dest not being the next use), or (b) can_combine_p / try_combine rejected the substitution (combine.c has rejection paths keyed on REG_USERVAR_P, multi-set dests, volatile MEMs, and insns whose result is used before being set). Cell E2 already rules out the reg_n_sets>1 path and the REG_USERVAR_P path (reg/v:SI 80 is a user variable and was still folded).",
-   "next_probe": "Read can_combine_p and the early-return paths of try_combine in tools/gcc-2.7.2/combine.c and enumerate EVERY condition under which a (set D S) reg-reg copy with an in-block use of D is not folded. For each surviving condition, ask what C-level property would produce it, and build one cell per condition on the V1 chassis. Score each with tmp/grind/func_80017848/s16/score.sh; dump any cell that emits a move in loop 2's preheader with s16/dump.sh and confirm the refusal in F_combine.txt."
+   "hypothesis": "The residual's 3 instructions may be reachable only by a whole-function chassis that no session has authored - one derived from a different source-level decomposition of the two scan loops rather than from mutations of the s8/s9 lineage. Every chassis measured to date descends from that single lineage plus the s14 m2c-derived N1 variant.",
+   "mechanism": "The candidate's 3 residual instructions sit at the seam between loop 1's exit tail and loop 2's preheader, and s17's P7/P8 show that spelling that seam the way target's asm reads costs 12. That is the signature of a chassis-relative optimum: the whole surrounding shape, not the seam, is what fixes cse's equivalence classes at the seam.",
+   "next_probe": "Re-derive the function from asm with m2c under a different structuring configuration than s14's N1, take the FIRST compilable output without hand-tuning, score it, and only then apply the ledger's individually-measured levers. If the raw re-derivation is worse than 12 the lineage question is settled negatively and this frontier closes too."
   },
   {
-   "hypothesis": "The tail ctx+0xC read-count sweep (carried from the s14 and s15 frontiers) is only two cells deep and its INERT result on cell H1 is the more interesting half: adding a fourth tail read changed nothing, so reg_n_refs on the ctx+0xC pseudo is NOT the allocno-ordering input the s15 frontier believed. The remaining cells of that sweep would settle it either way.",
-   "mechanism": "local-alloc orders allocnos by a priority computed from reg_n_refs and live length, and optimize_reg_copy_1/2 explicitly adjust reg_n_refs by loop_depth for every mention they rewrite (local-alloc.c:770-790, :909-912). If varying the tail's read count by +1 (H1) moves nothing, either the ctx+0xC pseudo is not near a priority tie or the tail's reads are not counted into the deciding pseudo at all - and the instrumented cc1's ALLOCDBG/PRIODBG trace can distinguish those two.",
-   "next_probe": "Run the remaining cells the s15 frontier listed - (c) each of the four tail sites reading freshly, and (d) the same sweep on the ctx+0x10 links pointer - with tmp/grind/func_80017848/s16/score.sh, then dump H1 (which is inert at 3, so it is a clean matched pair against A_base) and diff the PRIODBG/ALLOCDBG sections of cc1.log against the s15 candidate trace to see whether the allocno priorities moved at all. If they did not move, close the axis in the ledger; if they moved without changing the output, record the tie margin."
+   "hypothesis": "Nothing else. All other axes named by sessions 1-16 are recorded CLOSED in memory/grind/func_80017848/evidence.md and hypotheses.md, and s17 closed the last of them (the combine.c enumeration).",
+   "mechanism": "n/a - bookkeeping entry so a future reader does not mistake the two items above for a live ladder.",
+   "next_probe": "Read E-s17-1 and E-s17-2 before proposing any loop-2 preheader construct; 123 forms are already banked as rejected."
   }
  ],
  "judge_constraints": [],

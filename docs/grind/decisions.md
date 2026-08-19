@@ -5741,3 +5741,109 @@ STRONG S1/S2/S6 evidence + Judge PASS (driver writes inline_asm_canonical.txt, l
 NEEDS_USER maps to FAIL + borderline-ledger entry. The standards themselves are unchanged and
 permanent: no cheats, SOTN standard, 100% C or hard evidence for inline asm. Pre-existing
 "awaiting owner ruling" filings re-process under this ruling as next touched.
+
+## 2026-08-18 — func_80017848 (src/ings.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 17 (modality `escalation`, assigned by the driver after the
+honest pure-C floor stayed FLAT at 3 across eight consecutive sessions and six
+distinct modalities). Disposed under the owner's standing auto-ruling of
+2026-07-27 (`.claude/rules/endgame-lock-disposition.md`): BOTH endgame-lock gates
+fail, so no owner action is pending and the driver parks the function terminally.
+
+### What holds the byte-match today
+Two `asmfix.txt` rules, lines 60-61: a `delete_between "^\.frame"
+"^\.end\s+func_80017848$"` followed by an `insert_before` whose payload is the
+ENTIRE 127-instruction function body as rule text. This is the maximal form of
+the debt category the owner ruled on in `.claude/rules/asmfix-all-debt-end-state.md`
+— the bytes come from the rule, not from compilation. Zero regfix rules, zero
+cheat-asm in `src/ings.c`. The function is therefore INCOMPLETE by the completion
+standard and stays that way.
+
+### The honest pure-C state
+`sandbox func_80017848 --disable all` = **3** (127 target insns / 127 build insns,
+scorable), re-measured this session with `memory/grind/func_80017848/candidate.c`
+applied. The residual is three instructions, all in loop 1's exit tail and loop
+2's preheader:
+
+    loop-1 exit tail:  target `lw a0,12(s2)`     ours `addu a0,a3,zero`
+    loop-2 preheader:  target `addu a3,a0,zero`  ours `lw v0,12(s2)`
+                       target `addu a0,a1,a3`    ours `addu a0,a1,v0`
+
+The floor came down 16 -> 14 -> 12 -> 11 -> 5 -> 3 over sessions 1-9 and has not
+moved since, across s10 (synthesis), s11 + s12 (structural), s13 + s14 (permuter),
+s15 + s16 (forensics) and s17 (escalation).
+
+### GATE (a) — canonical-asm evidence: **FAILED**
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+        Reason: no strong hand-coded indicators
+        [ ] S1 multu pacing   0 multu/mflo pairs
+        [ ] S2 empty branch   no empty-body branches
+        [ ] S3 no spills      127 insns, 7 spills, 12 distinct regs
+        [ ] S4 front loads    max load burst 3 in any 8-insn window
+        [ ] S5 cluster        no high-similarity siblings (jaccard < 0.5)
+        [ ] S6 BIOS jumptable no BIOS jumptable call pattern
+        [ ] S7 unsaved $sN    all callee-save uses have $sp saves
+        [ ] S8 redundant mask no redundant mask-before-shift
+Not STRONG, not even a single signal. This is ordinary GCC 2.7.2 output — which
+the 124-of-127-instruction pure-C reconstruction independently confirms. The
+canonical-asm grant path does not apply.
+
+### GATE (b) — in-hand SOTN-master precedent for the closing construct: **FAILED**
+There is no closing construct to cite a precedent FOR. The residual is not a
+coercion or a spelling family awaiting sanction; it is an unexplained
+cse/combine/local-alloc interaction with no identified C-level handle. Every
+construct that WAS identified as a possible handle has been measured dead (below).
+No SOTN-master file:line or commit hash is offered, because none exists — and per
+the owner's wording a partition/elimination argument, "only lever left", and
+"measured to work" explicitly do not qualify.
+
+### Exhaustion evidence (from `memory/grind/func_80017848/`)
+- **17 sessions**, **6 distinct modalities** (recon, structural, permuter,
+  rederive, synthesis, forensics), floor flat at 3 for the last **8** of them.
+- **5 permuter campaigns, 180,472 total iterations**, 41 distinct finds, **zero**
+  engine-scored improvements on any of four chassis — including the first
+  DIRECTED cross-product campaign (s14a, 47,221 iters over the three lever axes
+  the ledger had individually measured at exactly 3). The permuter's own ranking
+  is measurably ANTI-CORRELATED with engine distance on this function, reproduced
+  five times: perm 315 (ninety points "better" than base) re-scores to engine 5,
+  while every engine-3 output sits at perm 405 = the base score.
+- **~150 hand-built structural cells** across s11/s12/s16/s17 covering parameter
+  and prologue homing, loop body, exit form and loop shape, base-destination
+  variable identity, declaration order, and their compounds. **123 rejected forms**
+  are banked in `memory/grind/func_80017848/rejected/`.
+- Two instrumented-cc1 forensics sessions (s15, s16) traced the residual to a
+  single cse canonicalisation and established the preheader-copy survival
+  trichotomy with per-pass RTL dumps: dest unused -> cse deletes it; dest used in
+  the same block -> combine deletes it; dest used out of block -> it survives but
+  the out-of-block use costs exactly the instruction it saves. Target's copy fits
+  none of the three.
+- s16 KILLED `optimize_reg_copy_2` analytically AND by measurement
+  (local-alloc.c:874-935 always leaves BOTH copies, so it can never produce
+  target's single move), closing the last named 2.7.2 routine that could
+  manufacture a redundant copy after combine.
+- **s17 (this session) closed the final open axis**: `can_combine_p`
+  (`tools/gcc-2.7.2/combine.c:803-970`) was read end to end and all seven refusal
+  paths for this copy were enumerated. Two are forbidden cheat families (volatile
+  coercion; REG_NO_CONFLICT / DImode chains), three are structurally unreachable
+  (no CALL in the preheader region, no autoinc on MIPS, no hard-reg / PARALLEL /
+  libcall forms for a plain pointer copy), one (out-of-block use) is the
+  candidate's own loop-1 lever and is priced dead for loop 2 at 2-points-spent
+  for 2-points-returned with no free use site, and the last —
+  `use_crosses_set_p`, the only one never tried — was built and killed with two
+  controls this session: cells P1/P2/P3 = 14/14/12, control P4 (copy alone) = 8,
+  control P5 (the carrier alone) = 14. The carrier costs 11 points against a
+  maximum return of 2, so the mechanism is unbuyable regardless of whether it
+  fires. There is no eighth path.
+- s17 also measured the FULLY target-shaped C — loop-1 exit tail as a fresh
+  `*(u8 **)(ctx + 0xC)` re-read (target's `lw $a0,0xC($s2)`) plus a loop-2
+  preheader copy, mirroring target's instruction sequence one for one — at **12**
+  (cells P7/P8), four times worse than the candidate's 3.
+
+### Disposition
+Both gates fail. Per the standing ruling this is **REFUSED / OWNER-ACCEPTED
+INCOMPLETE** and is terminal: the driver parks func_80017848 so the queue
+advances. Nothing is pending on the owner. The best pure-C form (distance 3) is
+preserved at `memory/grind/func_80017848/candidate.c` with the full derivation in
+its header, and the ledger records every dead axis so that no future session
+re-spends the search.

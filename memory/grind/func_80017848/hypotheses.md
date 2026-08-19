@@ -1461,3 +1461,56 @@ cse-internal reason is the next forensics question.
 - probe: Diff of two instrumented-cc1 dumps with identical insn numbering and character-identical loop-1 preheader C: tmp/grind/func_80017848/s15/icand/F_cse.txt:177 (tail `p = q;`) vs tmp/grind/func_80017848/s16/iE2/F_cse.txt:178 (tail `p = *(u8 **)(ctx + 0xC);`), with the downstream consequence read out of s16/iE2/F_combine.txt:196-210.
 - result: Candidate: insn 89 = (set (reg 81) (plus (reg 84) (reg 79))) - the ORIGINAL - and the copy survives to the assembler as target's addu $a3,$a0,$zero. E2: insn 89 = (plus (reg 84) (reg 80)) - the COPY DEST - insn 83 becomes NOTE_INSN_DELETED, and loop 1 emits one instruction FEWER than target (lw $6,16($18) / addu $4,$5,$4 / addu $2,$4,$3), which is exactly s12's unexplained 126-vs-127 observation, now with the producing pass named.
 - verdict: CONFIRMED
+
+## s17 (escalation modality) — the last un-tried combine refusal path
+
+### H-s17-A  KILLED (with two controls)
+STATEMENT: target's loop-2 preheader copy survives combine because the copy's
+SOURCE pseudo is re-set between the copy and the base add, tripping
+`can_combine_p`'s `use_crosses_set_p (src, INSN_CUID (insn))` guard — a refusal
+path never enumerated in sixteen prior sessions. The zero-cost C carrier is to
+reuse the pointer local `p` to hold loop 2's links pointer, since the links load
+(`lw $a2,0x10($s2)`) is the one instruction target already has between the copy
+and the base add.
+MECHANISM: combine.c:910-916. For a non-adjacent i2/i3 pair, combine refuses the
+substitution if any register mentioned in i2's source is set between i2 and i3,
+because the substituted value would no longer be the value that was copied.
+PROBE: cells P1/P2/P3 (copy into `r` / `q` / `lnk`, each with `p` reused for the
+links pointer) plus controls P4 (copy alone) and P5 (p-reuse alone), scored with
+tmp/grind/func_80017848/s17/score.sh against a re-measured A_base = 3.
+RESULT: P1 14, P2 14, P3 12, P4 8, P5 14, P7 12, P8 12.
+VERDICT: **KILLED.** The control P5 shows the carrier alone costs 11 points; the
+lever's maximum return is 2. The mechanism may well fire, but it can never be
+bought on this chassis. Same failure shape as E-s16-6's guard-clobber transplant.
+
+### H-s17-B  CONFIRMED (analytic, exhaustive)
+STATEMENT: the combine.c refusal set for this copy is finite, enumerable, and now
+fully classified — there is no eighth path for a future session to try.
+MECHANISM / RESULT: see E-s17-1. Two paths are forbidden cheat families (volatile
+coercion; REG_NO_CONFLICT/DImode chains), three are structurally unreachable (no
+CALL in the preheader region, no autoinc on MIPS, no hard-reg/PARALLEL/libcall
+forms for a plain pointer copy), one (out-of-block use) is priced dead at 2-for-2
+with no free use site, and the last is H-s17-A.
+VERDICT: **CONFIRMED.** s16 frontier item #2 is closed. Combined with E-s16-4
+(no post-combine routine can create the copy) and E-s16-1 (the unused and
+out-of-block arms are excluded by target's own asm), every named producer and
+every named protector of target's loop-2 preheader copy is now measured or
+analytically dead.
+
+## [s17] Target's loop-2 preheader copy survives combine because the copy's SOURCE pseudo is re-set between the copy and the base add, tripping can_combine_p's use_crosses_set_p guard - a refusal path never enumerated in sixteen prior sessions. The zero-cost C carrier is to reuse the pointer local `p` to hold loop 2's links pointer, since the links load `lw $a2,0x10($s2)` is the one instruction target already has between the copy and the base add.
+- mechanism: tools/gcc-2.7.2/combine.c:910-916. For a non-adjacent i2/i3 pair, can_combine_p returns 0 when use_crosses_set_p(src, INSN_CUID(insn)) holds, i.e. when any register mentioned in the copy's source is set between the copy and the insn being combined into - the substituted value would no longer be the value that was copied. E-s16-1(b) had shown combine otherwise ALWAYS deletes a same-block copy here.
+- probe: Cells P1 (copy into a fresh local `r` + p reused for links), P2 (copy into `q`), P3 (copy into `lnk`), plus controls P4 (source copy alone, links left inline in the body) and P5 (p reused for links alone, fresh-read addend), and compounds P7/P8 (target-shaped loop-1 exit tail + the P1/P2 loop 2). Scored with tmp/grind/func_80017848/s17/score.sh against a re-measured A_base = 3.
+- result: A_base 3, P1 14, P2 14, P3 12, P4 8, P5 14, P7 12, P8 12.
+- verdict: KILLED
+
+## [s17] The combine.c refusal set for this copy is finite, enumerable and exhaustively classifiable - there is no eighth path left for a future session to try.
+- mechanism: can_combine_p (combine.c:803-970) was read end to end; every early `return 0` was classified against the shape (set D S) with D and S pseudos and D's only use the same-block base add.
+- probe: Source enumeration cross-checked against target's own asm (asm/funcs/func_80017848.s:64-67 - copy / lw links / base add, no call, no autoinc, no multiword op) and against the ledger's priced measurements for the out-of-block-use arm.
+- result: Seven paths. R5 (volatile src / ASM_OPERANDS / volatile insn between) and R6 (REG_NO_CONFLICT, emitted only for DImode multiword ops) are forbidden cheat families and would also add instructions target lacks. R4 (INSN_CUID < last_call_cuid) needs a CALL in the preheader - none exists and one is not C-reachable without changing semantics. R7 (PARALLEL/CLOBBER, FIND_REG_INC_NOTE, REG_RETVAL libcall, ZERO_EXTRACT/STRICT_LOW_PART, stack-pointer dest, hard-reg/REG_USERVAR_P) is unreachable for a plain pointer copy pre-RA. R1 degenerates to R2. R2 (dest live after i3) is the candidate's own loop-1 lever, priced dead for loop 2 across s9/s10/s16 at 2-spent-for-2-returned with every post-loop-2 use site measured at 19-22. R3 is the killed hypothesis above.
+- verdict: CONFIRMED
+
+## [s17] Writing C that mirrors target's instruction sequence one-for-one in the residual region is closer to the target bytes than the candidate.
+- mechanism: Target's loop-1 exit tail is a fresh `lw $a0,0xC($s2)` (asm/funcs/func_80017848.s:56) and its loop-2 preheader is copy / lw links / base add. The candidate instead spends the loop-1 tail on an out-of-block use (`p = q` -> `move $4,$7`) and reads ctx+0xC freshly in loop 2's preheader.
+- probe: Cells P7 and P8: loop-1 exit tail written as `p = *(u8 **)(ctx + 0xC);` (target's re-read) combined with a loop-2 preheader copy plus the links re-set.
+- result: P7 = 12, P8 = 12, against the candidate's 3.
+- verdict: KILLED

@@ -1724,3 +1724,125 @@ guard must stay the inline one-expression form; the s8 lever is loop-1-only.
 - [s16] Tail ctx+0xC read-count sweep (the s14/s15 frontier item #3), first two cells: 4 tail reads, one per math_Distance3D argument (H1) = 3, INERT; 2 tail reads, rec_b's address derived from rec_a (H2) = 44.
 
 - [s16] 11 new rejected forms banked under memory/grind/func_80017848/rejected/ (bank is now 116 entries), each named for the reason it is dead.
+
+## s17 (2026-08-18, escalation) — the combine.c refusal set is ENUMERATED and every C-reachable member is dead
+
+### E-s17-1  can_combine_p's COMPLETE refusal enumeration for a reg-reg copy (s16 frontier item #2, now CLOSED)
+
+`tools/gcc-2.7.2/combine.c:803-970` (`can_combine_p`) was read end to end and every
+early `return 0` path was classified against the shape that matters here: a
+pre-combine copy `(set D S)` with D a pseudo, S a pseudo, whose only use is the
+loop-2 base add `i3 = (set X (plus sh2 D))` in the SAME basic block. The refusal
+set is finite and is now fully enumerated:
+
+  R1  `succ && ! all_adjacent && reg_used_between_p (dest, succ, i3)`
+      — needs a three-insn i1/i2/i3 combine; degenerates to "D used again", = R2.
+  R2  D still live after i3 (the out-of-block-use arm of E-s16-1(c)).
+      MEASURED DEAD across s9/s10/s16: buying the second use costs 2 points and
+      returns 2, and loop 2 has no free site for it (every post-loop-2 use site
+      was priced at 19-22 in s9, and target re-reads ctx+0xC three more times).
+  R3  `! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn))`
+      (combine.c:910-916) — the copy's SOURCE pseudo is re-set between the copy
+      and the base add. THE ONLY UN-TRIED MEMBER, and the one this session
+      built. See E-s17-2. MEASURED DEAD: no free carrier exists.
+  R4  `INSN_CUID (insn) < last_call_cuid && ! CONSTANT_P (src)` — needs a CALL
+      between the copy and the base add. Target's loop-2 preheader
+      (asm/funcs/func_80017848.s:64-67) is `addu $a3,$a0,$zero / lw $a2,0x10($s2)
+      / addu $a0,$a1,$a3` — no call, and inserting one is not C-reachable
+      without changing the function's semantics. DEAD.
+  R5  volatile src / ASM_OPERANDS / volatile insn between (combine.c:963-985)
+      — reachable only through the volatile-coercion cheat family. FORBIDDEN.
+  R6  `find_reg_note (i3, REG_NO_CONFLICT, dest)` — REG_NO_CONFLICT sequences are
+      emitted only for multi-word (DImode) operations, which is the banned
+      "DImode chain for scheduling" family AND would add instructions target does
+      not have. FORBIDDEN + arithmetically impossible.
+  R7  PARALLEL/CLOBBER patterns, `FIND_REG_INC_NOTE` (no autoinc on MIPS),
+      REG_RETVAL libcall ends, ZERO_EXTRACT/STRICT_LOW_PART dests, stack-pointer
+      dests, `dest == stack_pointer_rtx`, hard-register / `REG_USERVAR_P` paths
+      (pre-RA pseudos only, so unreachable) — NOT C-reachable at all for a plain
+      pointer copy in this position.
+
+So: of seven refusal paths, two (R5, R6) are forbidden cheat families, three
+(R4, R7 twice over) are structurally unreachable, one (R2) is measured dead with
+a priced cost, and the last (R3) is measured dead this session. There is no
+eighth path — the function is a single flat `if (...) return 0;` chain and this
+enumeration is exhaustive by construction, not by sampling.
+
+### E-s17-2  KILLED with two controls — R3 (`use_crosses_set_p`) has no free carrier
+
+H-s17-A: write a C-level copy of the carried pointer into loop 2's preheader AND
+re-set the copy's SOURCE between the copy and the base add, so that
+`use_crosses_set_p` fires and combine refuses the substitution that E-s16-1(b)
+showed it otherwise always makes. The only instruction target has between the
+copy and the base add is `lw $a2,0x10($s2)` (the links pointer), so the only
+zero-cost carrier for the re-set is to REUSE the pointer local `p` to hold loop
+2's links pointer (sanctioned "variable reuse for codegen control" shape):
+
+    if (i < *(s32 *)(sh2 + (s32)p + 0x20)) {
+        r = p;                       /* the copy: (set D S), S = p        */
+        p = *(u8 **)(ctx + 0x10);    /* SETS S between the copy and i3    */
+        base = (u8 *)(sh2 + (s32)r); /* i3 — combine must now refuse      */
+        do { ... (s32)p ... } while (...);
+    }
+
+Measured on the V1 chassis (A_base re-measured at 3 this session, so the numbers
+are directly comparable):
+
+    A_base  candidate, unchanged                                    =  3
+    P1      copy into a fresh local `r` + p reused for links        = 14
+    P2      copy into `q` + p reused for links                      = 14
+    P3      copy into `lnk` + p reused for links                    = 12
+    P4      CONTROL — source copy alone, links left inline in body  =  8
+    P5      CONTROL — p reused for links alone, fresh-read addend   = 14
+    P7      target-shaped loop-1 tail (fresh `lw a0,12(s2)` re-read)
+            + P1's loop 2                                           = 12
+    P8      P7 with the copy into `q`                               = 12
+
+The controls isolate it exactly, and the failure mode is the SAME one E-s16-6
+found for the guard-clobber transplant: the CARRIER costs more than the lever
+can possibly return. P5 shows that hoisting loop 2's links read into a local at
+all — even reusing an existing pointer local rather than declaring a new one —
+is worth -11 by itself, matching s16's J1 (a separate `lnk` local in loop 2's
+preheader = 12). The maximum the copy can return is +2 (it replaces
+`lw v0,12(s2)` with `addu a3,a0,zero` and re-points the base add). -11 + 2 can
+never reach 0, so R3 is unbuyable on this chassis regardless of whether the
+mechanism fires. P4 additionally re-confirms s10's "source copy 8-9" number on a
+freshly measured chassis.
+
+Note P7/P8: the FULLY target-shaped spelling — loop-1 exit tail as a fresh
+`*(u8 **)(ctx + 0xC)` re-read (target's `lw $a0,0xC($s2)` at
+asm/funcs/func_80017848.s:56) plus a loop-2 preheader copy — is 12, i.e. writing
+C that mirrors target's instruction sequence one-for-one is FOUR TIMES WORSE
+than the candidate. This is the clearest statement yet of why this function is
+locked: the 3-instruction residual is not a spelling the C can express, it is a
+cse/combine/local-alloc interaction whose input predicate has no C handle that
+is not simultaneously an 11-point regression elsewhere.
+
+### s17 artifacts
+
+    tmp/grind/func_80017848/s17/v/{A_base,P1,P2,P3,P4,P5,P7,P8}.c   cells
+    tmp/grind/func_80017848/s17/scores.txt                          measured scores
+    tmp/grind/func_80017848/s17/{score.sh,apply.py}                 harness
+
+- [s17] ENUMERATED AND CLOSED (s16 frontier item #2): combine.c's `can_combine_p` has exactly seven refusal paths for a same-block reg-reg copy; two are forbidden cheat families (volatile, REG_NO_CONFLICT/DImode), three are structurally unreachable (no call in the region, no autoinc on MIPS, no hard-reg/PARALLEL forms), one (out-of-block use) is priced dead at 2-for-2 with no free site, and the last (`use_crosses_set_p`) is killed this session. There is no eighth path.
+- [s17] KILLED with two controls: making the copy's source re-set between the copy and the base add (the `use_crosses_set_p` refusal) requires hoisting loop 2's links read into a pointer local, and that hoist alone is -11 (P5 = 14, matching s16's J1 = 12) against a maximum return of +2. P1/P2/P3 = 14/14/12.
+- [s17] MEASURED: the fully target-shaped C — loop-1 exit tail as a fresh ctx+0xC re-read plus a loop-2 preheader copy, mirroring target's instruction sequence one-for-one — is 12 (P7/P8), four times worse than the candidate's 3.
+- [s17] GATE (a) FAILED: `python3 tools/scan_hand_coded.py --single func_80017848` = tier LOW, score 0/8, no strong hand-coded indicators (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 127 insns / 7 spills / 12 distinct regs, S6 no BIOS jumptable). This is ordinary compiler output, not hand-written asm.
+
+- [s17] sandbox func_80017848 --disable all = 3 (127 target insns / 127 build insns, scorable, rules_dropped 2, cheat_asm_stripped 49), re-measured this session with memory/grind/func_80017848/candidate.c applied to src/ings.c.
+
+- [s17] GATE (a) FAILED: tools/scan_hand_coded.py --single func_80017848 = tier LOW, score 0/8, 'no strong hand-coded indicators' - S1 0 multu/mflo pairs, S2 no empty-body branches, S3 127 insns / 7 spills / 12 distinct regs, S4 max load burst 3, S5 jaccard < 0.5, S6 no BIOS jumptable, S7 all callee-saves saved, S8 no redundant mask. Not STRONG, not a single signal; the canonical-asm grant path does not apply.
+
+- [s17] GATE (b) FAILED: there is no closing construct to cite a precedent for. The residual is an unexplained cse/combine/local-alloc interaction, not a coercion or spelling family awaiting sanction; no SOTN-master file:line or commit hash exists and none is offered.
+
+- [s17] The byte-match is currently held by asmfix.txt lines 60-61: a delete_between over the whole body plus an insert_before whose payload is the ENTIRE 127-instruction function as rule text - the maximal form of the debt category in .claude/rules/asmfix-all-debt-end-state.md. Zero regfix rules, zero cheat-asm in src/ings.c.
+
+- [s17] combine.c refusal enumeration (E-s17-1): of seven paths, R5/R6 are forbidden cheat families, R4/R7 are structurally unreachable, R1 degenerates to R2, R2 is priced dead, R3 is killed this session. The function is a single flat if/return chain, so the enumeration is exhaustive by construction rather than by sampling.
+
+- [s17] The R3 carrier is priced by controls: P5 (reusing p for loop 2's links pointer, no copy) = 14, i.e. -11 by itself, matching s16's J1 (a separate lnk local in loop 2's preheader) = 12. The lever's maximum return is +2 (replace `lw v0,12(s2)` with `addu a3,a0,zero` and re-point the base add). -11 + 2 can never reach 0, so R3 is unbuyable on this chassis regardless of whether the mechanism fires - the same failure shape as s16's E-s16-6 guard-clobber transplant.
+
+- [s17] P4 (a plain source copy in loop 2's preheader, links left inline) = 8, re-confirming s10's 'source copy 8-9' number on a freshly measured chassis.
+
+- [s17] Exhaustion: 17 sessions, 6 distinct modalities (recon/structural/permuter/rederive/synthesis/forensics), floor flat at 3 for the last 8; 5 permuter campaigns totalling 180,472 iterations with 41 finds and ZERO engine-scored improvements on four chassis (including the directed cross-product campaign s14a); ~150 hand-built structural cells; 123 rejected forms banked in memory/grind/func_80017848/rejected/.
+
+- [s17] Disposition filed THIS session in docs/grind/decisions.md under the heading '2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. Terminal; nothing pending on the owner. src/ings.c was restored to HEAD, so the working tree carries no source edits from this session.
