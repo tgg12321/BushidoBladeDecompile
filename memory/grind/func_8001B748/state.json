@@ -64,9 +64,13 @@
    "next_probe": "Separate the two effects: find a spelling that program-orders the 0x10 store before the b+8 load WITHOUT hoisting the 0x10 store's constant materialisation above the a+8 mult (for example by keeping 'li v0,128' downstream of the mult via a named intermediate for the 0x10 value, or by moving only the STORE and not the constant). Grade by 'PRIODBG SET final_pri' on the b+8 load reaching 48 while the pairdiff still shows 'lh v0,8(a1)' / 'mult t0,v0'; record the result even if the score does not improve, since the composite fix needs both halves."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The struct-cast reinterpretation of dst/a/b (typedef AB/DST + ->wN/hN/bN access) is a new, unsanctioned spelling of alias/dependence coercion: it was found by reading GCC 2.7.2's MEM_IN_STRUCT_P dependence-suppression clause in sched.c and hand-validated (t1/t2/t3 split) purely to determine which minimal combination silences the exact dependence edges pinning one store's priority \u2014 that is the GCC-internals justification test's textbook failure case, not a program-logic-first record declaration. Next action: Do not commit. Revert src/code6cac.c to the s7 candidate "
+ ],
+ "banned_constructs": [
+  "typedef struct AB {...}; typedef struct DST {...}; and casting dst/a/b through them at every access site (((DST *)dst)->w0, ->w4, ->w8, ->w18, ->h10, ->h12, ->h14, ->b1F, ((AB *)a)->h4/h6/h8, etc.)"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-19T05:46:57.381958+00:00"

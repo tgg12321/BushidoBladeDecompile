@@ -620,3 +620,66 @@ come back dead, and only in the form "make the gp store's whole memory-dep set l
 - probe: tmp/grind/func_8001B748/s7/v/d0..d5 (second product at each of the six positions after the gp store) and g1,g3,g4,g5,g6,g7 (every hoist permutation of the 0x10/0x12/0x14 stores), all scored with the s4 harness and pairdiffed.
 - result: d0..d5 = 2 / 6 / 14 / 14 / 26 / 58 (d5 also drops to 223 insns). g1/g3/g4 = 24, g5 = 10, g6/g7 = 14. Every hoist of the 0x10 store costs the a+8 load's register; the 0x14-only hoist does not promote chain-1 at all. The whole two-dimensional statement-placement space around the second product is now measured and none of it improves on the candidate.
 - verdict: KILLED
+
+## SESSION 8 (rederive) — the function is SOLVED at honest distance 0
+
+### H8.1 — CONFIRMED. Declaring the two pointee record layouts as C structs empties the gp store's
+memory-dependence set and rebuilds the sched2 priority lattice, placing `sh zero,0(gp)` where target
+has it.
+  * Mechanism: `sched.c:817-882`. `true_dependence` / `anti_dependence` / `output_dependence` each
+    suppress a `memrefs_conflict_p` hit when one MEM is `MEM_IN_STRUCT_P && rtx_addr_varies_p &&
+    mode != QImode` and the other is neither. `D_800A3310` is a SYMBOL_REF scalar (neither);
+    COMPONENT_REF accesses on `dst`/`a`/`b` are both. Byte-offset casts (`*((s32 *)(dst + N))`) are
+    NOT `MEM_IN_STRUCT_P`, so the s1..s7 spellings kept every dependence alive.
+  * Probe: scripted type-rewrite of the s7 body into three variants and scored against target.o.
+  * Result: `t1_ab_struct` 2, `t2_dst_struct` 2, `t3_both_struct` **0**. Confirmed in-place by
+    `sandbox func_8001B748 --disable all` -> score 0, build_insns 231 == target_insns 231.
+
+### H8.2 — KILLED (as a framing, not as a measurement). The s7 frontier "find a fifth pri-48 insn
+that touches `$v1`, or the offset in the mflo ladder" was unnecessary.
+  * Mechanism: the priority lattice {1,24,36,47,48,59,70} that s6/s7 proved is a function of the
+    dependence graph, and the dependence graph is a function of the C's TYPES, not only of its
+    statement order. s6/s7 held types fixed and searched order, so the lattice looked like a
+    constant of the problem. It was not.
+  * Probe: solve the function without ever producing a fifth pri-48 insn.
+  * Result: solved. Both s7 frontier items 1 and 3 (chain-1 to 48 / b+8 load to 48) are moot; s7
+    frontier item 2 (change D_800A3310's declared type to alter its dep set) was directionally
+    right about WHICH dependence mattered but wrong about which side to change — the fix is to
+    change the *other* operand's type, and `D_800A3310` keeps its `u16` declaration unchanged.
+
+### H8.3 — KILLED. Typed LOCAL pointers are not an equivalent spelling of cast-at-use.
+  * Mechanism: GCC 2.7.2 does not fold `DST *d = (DST *)dst;` away here; the copies survive to
+    codegen.
+  * Probe: `t4_localptr` (three typed local pointers, all uses via them).
+  * Result: score 56, 235 insns (+4). Banked
+    `rejected/struct-form-typed-local-pointers-cost-4-insns-56.c`.
+
+### H8.4 — CONFIRMED. The s7 `pa` split and the m2c `& 0xFFFFFFFF` mask are artefacts of the
+untyped form and are not needed once the types are declared.
+  * Probe: remove each, and both, from the typed body; also normalise `int` -> `s32` and hoist the
+    `base` initialiser into declaration order.
+  * Result: `u1_nomask` 0, `u2_int2s32` 0, `u3_both` 0, `u4_nopa` 0, `u5_declorder` 0, `u6_clean` 0.
+    The matching form is simpler than the non-matching form it replaces.
+
+### H8.5 — CONFIRMED. The named intermediate holding the +8 product sum IS load-bearing.
+  * Probe: `u7_nonewvar` — inline the sum directly into the `->w8` store and delete the local.
+  * Result: score 44 at 231 insns. Banked
+    `rejected/struct-form-inline-second-product-no-zval-44.c`. The local is retained as `zval` and
+    is claimed under the sanctioned Named-intermediate-declaration-order family
+    (`.claude/rules/no-new-park-categories.md:189`): once-written, once-read, real value present in
+    target's bytes.
+
+### Open (not needed for the match, recorded for whoever generalises this)
+Declaring the PARAMETERS as `DST *` / `AB *` rather than `u8 *` with cast-at-use was not properly
+measured — `t5_structparams` scored 4 only because the mechanical rewrite left two
+`*((u16 *)(dst + 0x10))` casts that then scaled by `sizeof(DST)`. Adopting struct parameters would
+require casts at `src/code6cac.c:1046,1051`, i.e. edits to a different function, so it was out of
+scope. Anyone doing a file-wide typing pass should retest it.
+
+### THE GENERALISABLE LESSON (for other plateaued functions)
+A plateau whose residual is ONE misplaced memory instruction, where every statement-order probe is
+inert, is a signature of a **missing type declaration**, not of a scheduler wall. Before modelling
+`sched2` priorities, check whether the function's pointer parameters are being dereferenced through
+byte-offset casts while the instruction that will not move is a scalar global: that is exactly the
+configuration `sched.c:832-839` refuses to disambiguate, and declaring the record type deletes the
+dependence outright.

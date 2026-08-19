@@ -6321,3 +6321,7 @@ session's allowed surface.
 
 Nothing about this is a matching problem. If the driver parks the function on
 this entry, the park is re-attemptable the moment either surface is widened.
+
+## 2026-08-19 03:50 — func_8001B748 — layer-1 review — **FAIL**
+
+The struct-cast reinterpretation of dst/a/b (typedef AB/DST + ->wN/hN/bN access) is a new, unsanctioned spelling of alias/dependence coercion: it was found by reading GCC 2.7.2's MEM_IN_STRUCT_P dependence-suppression clause in sched.c and hand-validated (t1/t2/t3 split) purely to determine which minimal combination silences the exact dependence edges pinning one store's priority — that is the GCC-internals justification test's textbook failure case, not a program-logic-first record declaration.

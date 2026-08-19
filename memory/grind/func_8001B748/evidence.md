@@ -912,3 +912,89 @@ hoisted) 14. Every hoist of the 0x10 store costs the a+8 load's register; the 0x
 - [s7] Corrected an s6 misattribution: QTYDBG qty 14 (birth 28, death 34, refs 6) is the dst+4 chain {reg125,reg126,reg127}, not the a+8 load. The a+8 load is qty 15, reg1=129, birth 36, death 40, refs 2, got=2 ($v0).
 
 - [s7] The full two-dimensional statement-placement space around the second product is now measured dead: d0..d5 (second product moved down) = 2/6/14/14/26/58 and g1,g3..g7 (0x10/0x12/0x14 stores hoisted up) = 24/24/24/10/14/14.
+
+## SESSION 8 (rederive) — SOLVED, honest floor 2 -> 0
+
+### HEADLINE 1 — THE RESIDUAL WAS A TYPE-DECLARATION PROBLEM, NOT A SCHEDULER PROBLEM
+Seven sessions modelled this function's last two instructions as a `sched2` priority/ready-clock
+puzzle and searched the statement-placement space exhaustively (s3 d-sweep, s7 g-batch, s4 permuter,
+s5/s6/s7 forensics). The frontier s7 handed s8 was "find a fifth pri-48 insn that touches `$v1`".
+That frontier was answerable, but it was the wrong question: the priority lattice s6/s7 derived was
+itself a CONSEQUENCE of the C's *types*, not a fixed property of the block. Declaring the two
+pointer parameters' pointees as C structs and accessing them by member changes the dependence GRAPH
+that feeds `priority()`, so the lattice is rebuilt and the store lands where target has it. Floor
+went 2 -> 0 on the first typed variant that covered BOTH objects.
+
+### HEADLINE 2 — THE MECHANISM, READ STRAIGHT OUT OF GCC 2.7.2's OWN SOURCE
+`tools/gcc-2.7.2/sched.c:817-882` defines `true_dependence`, `anti_dependence` and
+`output_dependence`. All three have the SAME final clause: a conflict reported by
+`memrefs_conflict_p` is **suppressed** when
+
+    MEM_IN_STRUCT_P(one) && rtx_addr_varies_p(one) && GET_MODE(one) != QImode
+      && !MEM_IN_STRUCT_P(other) && !rtx_addr_varies_p(other)
+
+(or the symmetric form). Applied to this block:
+  * `sh zero, %gp_rel(D_800A3310)($gp)` — a scalar extern at a SYMBOL_REF address. `MEM_IN_STRUCT_P`
+    = 0 and `rtx_addr_varies_p` = 0 (no REG in the address). It is the "other" side of the rule.
+  * `*((s32 *)(dst + 0x18))` as written through s7 — a plain INDIRECT_REF on a cast pointer.
+    `MEM_IN_STRUCT_P` = 0. **No suppression**: the gp store anti/output-depends on every dst store
+    and every a/b load in the block, which is what pinned it to its high priority and made it win
+    `schedule_select` at clock 24.
+  * `((DST *)dst)->w18` — a COMPONENT_REF. `MEM_IN_STRUCT_P` = 1, address varies (base REG), mode
+    SImode != QImode. **Suppressed**: the dependence disappears.
+The QImode carve-out is why `->b1F` (the `dst[0x1F]` flag) keeps its dependences — and it must, since
+target's ordering of that byte's load/store is unchanged.
+
+### HEADLINE 3 — BOTH OBJECTS ARE REQUIRED; NEITHER ALONE MOVES THE SCORE
+Measured, all at 231 insns:
+  * `t1_ab_struct` — only `a`/`b` typed (struct AB, s16 members at +4/+6/+8): **score 2** (unchanged).
+  * `t2_dst_struct` — only `dst` typed (struct DST): **score 2** (unchanged).
+  * `t3_both_struct` — both typed: **score 0**.
+So the gp store's surviving dependence set had to be emptied of BOTH the a/b half-word loads and the
+dst word/half stores before its priority dropped below chain-1's. This also retroactively explains
+why every s3/s7 statement-placement probe plateaued at 2: statement order cannot delete a
+dependence, only reorder the insns that carry it.
+
+### HEADLINE 4 — THE TYPED FORM MADE THE INHERITED CODEGEN CONSTRUCTS UNNECESSARY
+The s7 candidate carried two artefacts that existed only to steer codegen: the `pa` split
+(`pa = frac * a->h8; D_800A3310 = 0; new_var = pa + ...;`, s7's floor-2 discovery) and a no-op
+`(0x1A8 & 0xFFFFFFFF)` mask inherited from m2c. Both were removed and the score stayed 0
+(`u1_nomask` 0, `u3_both` 0, `u4_nopa` 0). Local declaration order was also normalised (`base`
+hoisted up next to the other initialised locals) with no effect (`u5_declorder` 0). **The matching
+form is strictly SIMPLER and more natural than the non-matching one it replaces** — the clearest
+possible signal that the type declaration, not a coercion, is what the original source had.
+
+### HEADLINE 5 — what is still load-bearing, and what is not
+Load-bearing (measured):
+  * The named intermediate `zval` (s7's `new_var`) computing the +8 product sum before the
+    0x12/0x10/0x14/0x18 stores. Inlining it into the `->w8` store scores **44**
+    (`rejected/struct-form-inline-second-product-no-zval-44.c`).
+  * The cast-at-use spelling `((DST *)dst)->w0`. Introducing typed LOCAL pointers
+    (`DST *d = (DST *)dst;` etc.) costs 4 extra instructions and scores **56**
+    (`rejected/struct-form-typed-local-pointers-cost-4-insns-56.c`) — GCC 2.7.2 does not fold the
+    pointer copies here.
+Not load-bearing (all measured 0): the `& 0xFFFFFFFF` mask, the `pa` split, `int` vs `s32` on the
+intermediate, local declaration order, and whether the 0x10/0x12 members are declared `s16` (with
+raw `*(u16 *)` reads at the two unsigned use sites) or `u16` (with `(s16)` casts at the two signed
+use sites). The final form uses `u16` members so that no raw byte-offset cast on `dst` remains
+anywhere in the function.
+
+### Not pursued, and why
+`t5_structparams` (declaring the parameters themselves as `DST *` / `AB *`) scored 4, but that number
+is a measurement artefact, not evidence: the mechanical rewrite left two `*((u16 *)(dst + 0x10))`
+casts in place, which under a `DST *` parameter scale to element strides (`lhu v1,1024(s0)` instead
+of `lhu v1,16(s0)`). A corrected version would very plausibly also reach 0, but adopting it requires
+casts at the two call sites (`src/code6cac.c:1046,1051`), i.e. editing functions other than this
+one — out of scope for a grind session. The `u8 *` signature with cast-at-use was kept.
+
+### Artifacts
+`tmp/grind/func_8001B748/s8/v/*.c` — 12 variants scored this session (t1..t5, u1..u9).
+`tmp/grind/func_8001B748/s8/mk.py` — the scripted type-rewrite that generated t1/t2/t3.
+s4's `score.py` and s6's `pd.py` harnesses were reused unchanged against `tmp/perm_1B748_s4a`.
+
+- [s8] Chassis: the driver dispatched with src/code6cac.c holding a PRE-s7 body scoring 32; applying
+  memory/grind/func_8001B748/candidate.c restored floor 2 before any s8 work began. Final in-place
+  sandbox: {"score": 0, "target_insns": 231, "build_insns": 231, "rules_dropped": 1}.
+- [s8] asmfix.txt:50 still carries `func_8001B748: replace_with_asmfile "asm/funcs/func_8001B748.s"`
+  (the 137 stripped cheat-asm insns the sandbox reports). That surface is not editable by a grind
+  session; the operator/driver retire step removes it.
