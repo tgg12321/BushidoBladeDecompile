@@ -482,6 +482,14 @@ def _exhaustion_ready(state):
     by something the scorer can't see (byte residual, freeze), not matching."""
     if not state:
         return False
+    # Owner continue-directive (2026-08-18): an explicit
+    # `owner_continue_until_session: N` in state.json suppresses the exhaustion
+    # trigger until session N — used when the owner reverses a park with a
+    # continue directive (e.g. func_80017848: mechanism fully named, one
+    # spelling short; re-parking on the old flat history would waste the arc).
+    cont = state.get("owner_continue_until_session")
+    if isinstance(cont, int) and int(state.get("session_count", 0)) < cont:
+        return False
     hist = state.get("floor_history", [])
     if len(hist) < ESCALATION_FLAT_SESSIONS:
         return False
@@ -520,7 +528,26 @@ def assign_modality(session_count, state=None):
     if _exhaustion_ready(state):
         return "escalation"
     skip = int(st.get("ladder_skip") or 0) if isinstance(st, dict) else 0
-    return LADDER[(session_count - 1 + skip) % len(LADDER)]
+    mod = LADDER[(session_count - 1 + skip) % len(LADDER)]
+    # Permuter gating (process improvement #5, 2026-08-18): never mandate a
+    # SECOND permuter session after a zero-yield one — the remaining population
+    # is measured not-permuter-closable (permuter-closability-evaluated;
+    # 58k-iteration zero-yield exhibit s5 func_80017848). The FIRST permuter
+    # session per function still runs.
+    if mod == "permuter" and isinstance(st, dict):
+        fh = st.get("floor_history") or []
+        for i, e in enumerate(fh):
+            if e.get("modality") == "permuter":
+                prev = fh[i - 1].get("floor") if i else None
+                cur = e.get("floor")
+                if isinstance(prev, int) and isinstance(cur, int) and cur >= prev:
+                    # walk past ALL consecutive permuter slots (the ladder holds two)
+                    step = session_count + skip
+                    while LADDER[step % len(LADDER)] == "permuter":
+                        step += 1
+                    mod = LADDER[step % len(LADDER)]
+                    break
+    return mod
 
 
 def apply_outcome(root, func, o, modality):
@@ -839,7 +866,46 @@ def psyq_identity(root, func):
     return "\n".join(out)
 
 
-def build_brief(root, func, modality, outcome_path):
+def knowledge_sweep(root, func, limit=40):
+    """file:line hits for `func` across durable knowledge surfaces OUTSIDE the
+    function's own ledger (process improvement #3, 2026-08-18 — the libcd-twins
+    failure class: memory/closer/ solved CD_ready while its grind ledger never
+    heard of it). Read-only; any failure degrades to ''."""
+    import glob as _glob
+    surfaces = (_glob.glob(os.path.join(root, "memory", "**", "*.md"), recursive=True)
+                + [os.path.join(root, "docs", "grind", "decisions.md"),
+                   os.path.join(root, "docs", "grind", "borderline.md")]
+                + _glob.glob(os.path.join(root, ".claude", "rules", "*.md")))
+    own = os.path.join("memory", "grind", func) + os.sep
+    hits = []
+    pat = re.compile(r"\b" + re.escape(func) + r"\b")
+    try:
+        for p in surfaces:
+            if own in p or not os.path.isfile(p):
+                continue
+            try:
+                with open(p, encoding="utf-8", errors="replace") as fh:
+                    for i, ln in enumerate(fh, 1):
+                        if pat.search(ln):
+                            rel = os.path.relpath(p, root)
+                            hits.append(f"  {rel}:{i}: {ln.strip()[:160]}")
+                            if len(hits) >= limit:
+                                raise StopIteration
+            except OSError:
+                continue
+    except StopIteration:
+        pass
+    except Exception:
+        return ""
+    if not hits:
+        return ""
+    return ("\n## CROSS-KNOWLEDGE HITS (auto-swept — READ the cited files before probing)\n"
+            "Knowledge about this function exists OUTSIDE your ledger. Prior campaigns\n"
+            "have solved functions whose grind ledgers never heard about it.\n"
+            + "\n".join(hits) + "\n")
+
+
+def build_brief(root, func, modality, outcome_path, head_floor=""):
     st = load_state(root, func)
     d = ledger_dir(root, func)
     rejected = sorted(os.listdir(os.path.join(d, "rejected"))) if os.path.isdir(
@@ -877,12 +943,22 @@ def build_brief(root, func, modality, outcome_path):
     # library code with published reference C, that changes what the session
     # should DO, so it must be read before the playbook frames the work.
     psyq = psyq_identity(root, func)
+    ksweep = knowledge_sweep(root, func)
+    last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
+                       if isinstance(e.get("floor"), int)), None)
+    chassis = (f"\n## CHASSIS CHECK (driver-measured at dispatch — trust THIS number)\n"
+               f"HEAD honest floor right now: {head_floor or 'measurement unavailable'}\n"
+               f"Ledger's last recorded floor: {last_floor if last_floor is not None else '(none)'}\n"
+               f"If these differ, the chassis has changed since the ledger entry: every banked\n"
+               f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
+               f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
 modality for THIS session is: **{modality}**
 
 {psyq}
+{ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
 {fixup}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
@@ -904,6 +980,12 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - Work ONLY {func} in src/{st['file']}.c. Engine commands: `& tools/wteng.ps1 main sandbox {func} --disable all` (your gradient), canonical, diagnose. NEVER edit regfix.txt/asmfix.txt/.claude/rules/engine/tools/Makefile/*.ld; NEVER run queue done/retire; NEVER commit.
 - Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
 - Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
+- PASS ATTRIBUTION: before hypothesizing WHICH GCC pass produced a divergence, run
+  `pwsh tools/grinder/dump.ps1 {func}` and READ the relevant dump in tmp/grind/{func}/dumps/
+  (.combine for fold/copy survival, .lreg/.greg for allocation, .sched for ordering, .loop
+  for LICM). Guessing pass attribution across sessions is the failure mode this exists to
+  kill (s6-s8 of func_80017848 mis-attributed one copy for three sessions; the dump names
+  the pass in one read). The instrumented cc1 is tools/gcc-2.7.2/cc1.
 - TURN BUDGET ~35, self-paced. By turn 30 stop probing and write your outcome. This is not a cap you are punished for approaching — it is how the pipeline is designed to work: the LEDGER is the continuation mechanism, so a hypothesis KILLED with a measurement and banked at turn 30 is a FULL success that the next session inherits for free. A 100-turn session is fighting that design, and it is the expensive failure mode: cost grows with the SQUARE of turns (every turn re-reads everything before it), and if the 90-minute timeout kills you mid-probe you write no outcome, the driver discards the session as INVALID, and every token you spent is lost. Bank early, return, let the next session pick up the frontier.
 - CONTEXT DISCIPLINE — a fat tool result is not paid once, it is re-read on EVERY later turn in this session. So: NEVER Read a whole src/*.c file (src/text1b.c alone is ~125k tokens — half a context window in one call); Grep to locate, then Read with offset/limit around the hit. Never `cat` a cc1 -da dump, permuter log, or asm/funcs/*.s — grep/tail the part you need. Never re-Read a file you already read this session; scroll back. Prefer one targeted Grep over three exploratory Reads.
 - NARRATION vs ARTIFACTS. Keep your own prose terse: fragments over sentences, no preamble, no recap of what a tool result already shows, no restating the plan each turn. This does NOT apply to what you WRITE: evidence.md, hypotheses.md, candidate.c header comments, any docs/grind/decisions.md entry, and the outcome JSON stay full, precise, self-contained prose — they are the owner's audit trail and the next session's entire inheritance, and a terse ledger costs far more than it saves by forcing re-derivation.
@@ -984,7 +1066,8 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding="utf-8")
     cmd = sys.argv[1]
     if cmd == "brief":
-        print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
+        hf = sys.argv[6] if len(sys.argv) > 6 else ""
+        print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], hf))
     elif cmd == "validate":
         o = json.load(open(sys.argv[3], encoding="utf-8"))
         ok, why = validate_outcome(o, sys.argv[4], sys.argv[2],

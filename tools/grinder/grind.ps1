@@ -716,6 +716,20 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
 }
 
 # ── session spawn (pattern from tools/fleet/_fleet_common.ps1:132-170) ────────
+function Test-AgentApiError([string]$AgentLog) {
+    # Process improvement #1 (2026-08-18): the last line of the agent log is the
+    # harness result JSON; terminal_reason 'api_error' with a 5xx/429 status is
+    # environmental (server overload / rate limit), not a bad session. The
+    # 2026-08-18 circuit-break was three 192-second 529 deaths that outran the
+    # 120s spawn-failure window and were miscounted as invalid sessions.
+    if (-not (Test-Path $AgentLog)) { return $false }
+    $last = Get-Content $AgentLog -Tail 1 -ErrorAction SilentlyContinue
+    try { $j = $last | ConvertFrom-Json } catch { return $false }
+    if ([string]$j.terminal_reason -ne 'api_error') { return $false }
+    $code = 0; try { $code = [int]$j.api_error_status } catch { }
+    return ($code -ge 500 -or $code -eq 429)
+}
+
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
                            [string]$MockScript, [string]$Func,
@@ -830,7 +844,18 @@ while ($true) {
     $modality = (python tools/grinder/grindlib.py modality . $func).Trim()
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
     $briefPath = Join-Path $GrindTmp "brief_$func.md"
-    python tools/grinder/grindlib.py brief . $func $modality $outPath | Set-Content $briefPath -Encoding utf8
+    # Process improvement #2 (2026-08-18): measure the HEAD honest floor at
+    # dispatch and inject it as the brief's CHASSIS CHECK — stale ledger floors
+    # and contaminated templates cost whole sessions (s5 func_80017848; the
+    # 27-vs-22 / 57-vs-26 stale-queue exhibits). Best-effort: a failed
+    # measurement degrades to 'unavailable', never blocks dispatch.
+    $headFloor = ''
+    try {
+        $sb = (& tools/wteng.ps1 main sandbox $func --disable all 2>&1 | Out-String)
+        if ($sb -match '"distance"\s*:\s*(\d+)') { $headFloor = $Matches[1] }
+        elseif ($sb -match 'distance[^0-9]*([0-9]+)') { $headFloor = $Matches[1] }
+    } catch { }
+    python tools/grinder/grindlib.py brief . $func $modality $outPath $headFloor | Set-Content $briefPath -Encoding utf8
     # Respawn feedback (2026-08-07 circuit-break class fix): a discarded session's
     # validator reason is appended to the next brief. Without it, fresh sessions
     # re-read the same ledger and deterministically repeat the same rejected
@@ -928,10 +953,10 @@ while ($true) {
         # environmental — back off and retry instead of feeding the circuit
         # breaker (2026-07-17 incident: three 4-second spawn deaths during a
         # usage-limit window circuit-broke an otherwise healthy grind).
-        if (-not $o -and $script:LastAgentSeconds -lt 120) {
+        if (-not $o -and ($script:LastAgentSeconds -lt 120 -or (Test-AgentApiError "$outPath.agent.log"))) {
             $script:spawnFails++
             $delay = [int][Math]::Min(1800, 60 * [Math]::Pow(2, $script:spawnFails - 1))
-            Log "${func}: agent SPAWN FAILURE ($([int]$script:LastAgentSeconds)s, no outcome — likely usage-limit/API; see $outPath.agent.log) — attempt $($script:spawnFails), retrying in ${delay}s."
+            Log "${func}: agent SPAWN/API FAILURE ($([int]$script:LastAgentSeconds)s, no outcome — usage-limit/API-error per agent.log; see $outPath.agent.log) — attempt $($script:spawnFails), retrying in ${delay}s."
             Revert-SessionEdits
             Start-Sleep -Seconds $delay
             if ($Once) { break } else { continue }
