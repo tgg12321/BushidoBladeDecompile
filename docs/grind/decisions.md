@@ -5905,7 +5905,7 @@ part A) the exhaustion question is the driver's and session 18 returns
 `memory/grind/func_80017848/rejected/` (128 total).
 
 Session 18's second dispatch (same day, same `rederive` modality) closed the one
-re-derivation leg the first dispatch had not run � **sibling / Kengo transplant** �
+re-derivation leg the first dispatch had not run — **sibling / Kengo transplant** —
 and it is dead three independent ways:
 
 - **No whole-function sibling exists in BB2.** A 5-gram opcode-sequence census of
@@ -5914,8 +5914,8 @@ and it is dead three independent ways:
   (`tmp/grind/func_80017848/s18b/sibling_scan.py`), so there is no in-tree
   function whose whole shape could be transplanted.
 - **The residual's seam idiom is unique in the binary.** Scanning every function
-  for target's exact fingerprint � `addu D,S,$zero` followed within three insns
-  by a three-register `addu` that consumes `D` and redefines `S` � returns
+  for target's exact fingerprint — `addu D,S,$zero` followed within three insns
+  by a three-register `addu` that consumes `D` and redefines `S` — returns
   exactly three functions out of 1,437: func_80017848 itself (twice, once per
   loop), func_800200DC (which carries 14 register-allocation regfix rules and
   whose instance is call-return staging: `$v1 = $v0` right after
@@ -5929,16 +5929,16 @@ and it is dead three independent ways:
   function.** `Kengo/` ships the retail PS2 disc plus debug SYMBOLS only
   (`kengo_functions_full.txt`: name + size + source path). There is no Kengo C
   source anywhere in the tree, so the Kengo channel can supply names and module
-  attribution � never a source shape to transplant. `kengo_matches.csv` has no
+  attribution — never a source shape to transplant. `kengo_matches.csv` has no
   row for func_80017848, and no Kengo symbol in the plausible modules
-  (`src/ishito/is_coli.c`, `src/hide/hi_landhit.c`, `src/numata/nm_cpu.c` � the
+  (`src/ishito/is_coli.c`, `src/hide/hi_landhit.c`, `src/numata/nm_cpu.c` — the
   modules its `ings.c` neighbours map to) reads as a pair/link registration.
 
 One new cell was measured (X1, banked as
 `rejected/s18b_target_shaped_tail_fresh_read_plus_sh_recompute_costs_4.c`): the
-fully target-shaped loop-1 exit tail � both of target's exit-edge instructions,
+fully target-shaped loop-1 exit tail — both of target's exit-edge instructions,
 `lw $a0,0xC($s2)` and `sll $a1,$s4,6`, written as `p = *(u8 **)(ctx + 0xC);
-sh = slot_a << 6;` with `sh2` deleted � scores **4 at 126/127 instructions**,
+sh = slot_a << 6;` with `sh2` deleted — scores **4 at 126/127 instructions**,
 identical to s12's symmetric chassis. So the shift's placement is inert and the
 symmetric chassis's +1 is entirely its tail read. The honest floor was
 re-measured at **3** at the start and it is unchanged.
@@ -5977,3 +5977,141 @@ reproduce and was corrected here rather than repeated).
 
 Conclusion: the by-construction defenses held — no cheat was credited as complete anywhere.
 The corrected debt was mis-documentation, detector coverage, and record rot.
+
+## 2026-08-18 — func_80017848 (src/ings.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (session 24, modality `escalation`; re-affirms and closes the 2026-08-18 entry above)
+
+The driver re-dispatched func_80017848 six more times after the first disposition
+entry (sessions 18-23, modalities `rederive` / `synthesis` / `structural` ×3 /
+`forensics` ×2) and then assigned `escalation` again for session 24. Session 24
+closed the last three named frontier items with measurements and re-ran both
+endgame-lock gates. **Both gates still fail. The disposition is unchanged and
+terminal; nothing is pending on the owner.**
+
+### What holds the byte-match
+Two `asmfix.txt` rules, `asmfix.txt:60-61`: a
+`delete_between "^\.frame" "^\.end\s+func_80017848$"` followed by an
+`insert_before` whose payload is the entire 127-instruction function body as rule
+text. Zero regfix rules; the C body carries no cheat-asm.
+
+### The honest pure-C floor (re-measured this session, twice, on a clean tree)
+`sandbox func_80017848 --disable all` = **3** (127 target insns / 127 build insns,
+scorable; rules_dropped 2, cheat_asm_stripped 49) with
+`memory/grind/func_80017848/candidate.c` applied to `src/ings.c` — measured at
+dispatch and again after the session's cells were reverted. Identical to sessions
+9 through 23. The residual is two instruction-KIND differences plus one operand:
+
+    loop-1 exit tail  target `lw   $a0,0xC($s2)`     ours `addu $a0,$a3,$zero`
+    loop-2 preheader  target `addu $a3,$a0,$zero`    ours `lw   $v0,0xC($s2)`
+                      target `addu $a0,$a1,$a3`      ours `addu $a0,$a1,$v0`
+
+### Gate (a) — canonical-asm: FAIL
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+All eight signals unset: 0 multu/mflo pairs (S1), no empty-body branches (S2),
+127 insns / 7 spills / 12 distinct regs (S3), max load burst 3 in any 8-insn
+window (S4), no high-similarity sibling, jaccard < 0.5 (S5), no BIOS jumptable
+call pattern (S6), every callee-save use has an `$sp` save (S7), no redundant
+mask-before-shift (S8). Unchanged from session 17. This is ordinary compiled C —
+which is exactly what makes it grindable in principle and why 24 sessions were
+spent on it — not hand-written assembly.
+
+### Gate (b) — in-hand SOTN-master precedent for the closing construct: FAIL
+No SOTN-master file:line or commit hash exists for any construct that would close
+the residual. Session 18's decomp.me corpus mining (3,754 scratches; 163 hits
+containing the copy→add pair, 50 target-shaped, 28 with the exact
+copy-then-redefine-source pattern; structural twin scratch 19TpT =
+`func_8009C6D8`, gcc2.7.2-cdk -O2, matching) is genuine external prior art that
+the residual idiom IS compiler-producible pure C — it corroborates gate (a)'s LOW
+verdict — but it is not a SOTN-master citation, and it documents that the twin's
+enabling precondition (a nested loop whose outer body keeps the copy's source live
+for free) is a precondition **func_80017848 cannot buy**: it has no nested loop
+and nothing live across loop 2, and every attempt to route a tail re-read through
+a live local costs 19-22. "Structural twin in a different project's corpus" is not
+a precedent citation and is not claimed as one.
+
+### Exhaustion evidence (from `memory/grind/func_80017848/`)
+- **24 sessions**, floor flat at 3 since session 9, across modalities
+  `rederive`, `synthesis`, `structural`, `forensics`, `permuter`, `escalation`.
+- **172 rejected forms banked** in `memory/grind/func_80017848/rejected/`.
+- **~180,000 permuter iterations** across five telemetried campaigns on two
+  chassis, zero engine-scored improvements (session 13/14; the permuter's own
+  weighted metric is anti-correlated with engine distance on this function).
+- Whole-function axes closed with measurements: translation-unit context (s14),
+  m2c re-derivation (s18: R1 53 / R2 15 / R3 49), BB2 sibling transplant (s18:
+  max 5-gram overlap 0.120 over all 1,437 functions; the residual's seam idiom
+  occurs in only 3 functions binary-wide and never as a loop preheader), Kengo
+  transplant (structurally impossible — symbols only, no source).
+
+### What session 24 added (the last three frontier items, all closed)
+1. **s23 frontier #2 — KILLED with measurements.** Giving the links pointer its
+   own local, consumed inside the preheader so the carried pointer dies before the
+   loop body, was the proposed escape from session 23's pointer/links pseudo
+   fusion. Cells F2 (reusing loop 1's links local) = **8 at 126/127 insns** and F3
+   (a fresh distinct local) = **9 at 126/127 insns** — both ONE INSTRUCTION SHORT,
+   with the preheader copy gone entirely. Copy propagation folds `lnk = p` back
+   into a single pseudo, the SET that `use_crosses_set_p` requires no longer
+   separates the copy from the base add, and combine substitutes and deletes the
+   copy. Banked as
+   `rejected/s24_split_links_local_preheader_consumed_copy_dies_costs_8_126insns.c`
+   and `rejected/s24_split_links_distinct_local_lnk2_copy_dies_costs_9_126insns.c`.
+2. **s23 frontier #1 — answered negatively by a complete dichotomy.** The only
+   known producer of a surviving loop-2 preheader copy needs an RTL set of the
+   copy's SOURCE between the copy and the base add; the only value target computes
+   there is the links pointer; so the carried-pointer local must receive it.
+   Either the loop body reads that same local (one pseudo, live through the body,
+   conflicts with `base`, which can therefore never inherit the register the
+   pointer dies in — 12-16 across 23 cells) **or** the value is copied out so the
+   pointer dies early (copy-prop refolds, the copy dies — 8-9 at 126 insns).
+   There is no third position. Combined with session 17's enumeration of all seven
+   `can_combine_p` refusal paths and session 20's cse-side predicate (a copy exists
+   only when the folded read's destination has a use in a LATER extended basic
+   block — every clause-B consumer site for loop 2 measured dead at 5-32), no
+   pure-C producer of that copy remains reachable on this chassis.
+3. **s23 frontier #3 — retired by construction.** The allocno-priority instrument
+   (`floor_log2(n_refs) * n_refs / live_length`, read off `.lreg`'s per-register
+   header) steers HARD-REGISTER identity. The floor body's residual is two
+   instruction-KIND differences; no allocation order turns a `lw` into an `addu`.
+   The instrument is real, validated, and transferable — it belongs to the next
+   queue item with a register-identity-only residual, not to this function.
+
+### Disposition
+Both gates fail. Per the owner's standing ruling (2026-07-27,
+`.claude/rules/endgame-lock-disposition.md`) this is **REFUSED / OWNER-ACCEPTED
+INCOMPLETE** and terminal: the driver parks func_80017848 so the queue advances.
+Nothing is pending on the owner and no sign-off is awaited. The best pure-C form
+(honest distance 3 at 127/127) is preserved at
+`memory/grind/func_80017848/candidate.c` with the full 24-session derivation in
+its header; `memory/grind/func_80017848/evidence.md` (E-s24-1 .. E-s24-4) and
+`hypotheses.md` (H-s24-A .. H-s24-C) record every dead axis so no future session
+re-spends the search.
+
+### Re-dispatch addendum (same day) — the entry above is INDEPENDENTLY RE-VERIFIED
+The first session-24 run was discarded by the outcome validator, not on merit: it
+had written 8 cp1252 `0x97` em-dash bytes into this file (first at byte offset
+1237144, inside the 2026-08-18 `rederive` entry), and
+`tools/grinder/grindlib.py:388` reads `docs/grind/decisions.md` as UTF-8, so
+`validate_outcome` raised `UnicodeDecodeError` before it could confirm the
+escalation entry. The 8 bytes have been re-encoded to UTF-8 U+2014 and the file
+now decodes cleanly; nothing else about the entry changed.
+
+The re-dispatched session re-measured every number this disposition rests on,
+from scratch, rather than trusting the discarded run's prose
+(`tmp/grind/func_80017848/s24/reverify_s24r.txt`):
+
+- committed HEAD body: `sandbox func_80017848 --disable all` = **16** (127 target
+  / 125 build, rules_dropped 2, cheat_asm_stripped 49);
+- `memory/grind/func_80017848/candidate.c` spliced into `src/ings.c`:
+  `sandbox func_80017848 --disable all` = **3** (127/127, rules_dropped 2,
+  cheat_asm_stripped 49) — the ledger floor reproduces exactly;
+- `python3 tools/scan_hand_coded.py --single func_80017848` =
+  `tier=LOW score=0/8`, all eight signals unset — gate (a) fails, as recorded;
+- the byte-match is held by exactly two `asmfix.txt` rules, lines 60-61
+  (`delete_between` + a whole-body `insert_before` payload); zero regfix rules,
+  no cheat-asm in the C.
+
+Gate (b) is unchanged and still fails: no SOTN-master `file:line` or commit hash
+exists for the closing construct, and the decomp.me structural twin (scratch
+19TpT / `func_8009C6D8`) is external corpus evidence, not a precedent citation.
+`src/ings.c` was restored to its committed HEAD body. The disposition stands:
+**REFUSED / OWNER-ACCEPTED INCOMPLETE**, terminal, nothing pending on the owner.
+

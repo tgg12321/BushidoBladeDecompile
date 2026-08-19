@@ -2104,3 +2104,69 @@ queue.
 - probe: Computed priorities for Q10's allocnos (base 10/22 = 1.364, q 4/6 = 1.333, p 12/39 = 0.923, sh 3/8 = 0.375), checked them against .greg's ';; 13 regs to allocate:' order, then PREDICTED that splitting base into base1/base2 (5/11 = 0.909, below p) would move p ahead of base and hand p target's $a0; built cell S1 and read .greg.
 - result: The printed order matched the computed priorities exactly, and S1's order became '88 98 110 79 78 80 81 ...' with dispositions '78 in 4' - p in $a0 as predicted, first try. Score unchanged at 14 because the win is paid back at base (see the kill above).
 - verdict: CONFIRMED
+
+## s24 (2026-08-18, escalation/disposition)
+
+### H-s24-A — KILLED
+**Statement.** The links value can be given its own pseudo while still supplying
+the SET of the copy's source that `use_crosses_set_p` needs, if the set's value is
+consumed into a separate local inside the PREHEADER — so the carried pointer dies
+before the loop body, `base` stops conflicting with it, and E-s23-2's register
+conflict disappears while the copy still survives combine.
+**Mechanism (predicted).** `p = *(u8 **)(ctx + 0x10); lnk = p;` gives `p` a live
+range that ends inside the preheader; `base` may then reuse `p`'s hard register
+exactly as target does, while `lnk` carries links through the body in its own
+register.
+**Probe.** Cells F2 (reusing loop 1's `lnk`) and F3 (a fresh `lnk2`), both on the
+V1 chassis so loop 1's bytes stay exact and only loop 2 carries the construct.
+`sandbox func_80017848 --disable all`.
+**Result.** F2 = 8 at 126/127 insns; F3 = 9 at 126/127 insns. Both are one
+instruction SHORT and the missing instruction is the preheader copy itself.
+**Verdict. KILLED.** Copy propagation folds `lnk = p` back into a single pseudo,
+so the required SET no longer separates the copy from the base add,
+`use_crosses_set_p` never fires, and combine substitutes and deletes the copy.
+The premise ("a second local can hold links without fusing with the pointer") is
+false at RTL.
+
+### H-s24-B — CONFIRMED (negative, and it closes s23's frontier #1)
+**Statement.** The `use_crosses_set_p` family admits exactly two positions and
+both are measured dead, so no third variant of it exists.
+**Mechanism.** The refusal requires an RTL set of the copy's SOURCE between the
+copy and the base add; the only value target computes there is the links pointer;
+therefore the carried-pointer local must receive it. Either the body reads that
+same local (one pseudo, live through the body, conflicts with `base` — E-s23-2,
+12-16 over 23 cells) or the value is copied out so the pointer dies early
+(copy-prop refolds, the set vanishes, the copy dies — H-s24-A, 8-9 at 126 insns).
+**Probe.** The two branches are the union of s23's 21 tuning cells and this
+session's F2/F3.
+**Verdict. CONFIRMED.** Combined with s17's E-s17-1 (all seven `can_combine_p`
+refusal paths enumerated) and E-s20-1 (the cse-side later-EBB-use predicate, whose
+every consumer site for loop 2 is measured dead), there is no remaining producer
+of a surviving loop-2 preheader copy reachable from pure C on this chassis.
+
+### H-s24-C — CONFIRMED by construction (s23 frontier #3 retired)
+**Statement.** The allocno-priority instrument (E-s23-3) cannot move V1's floor.
+**Mechanism.** The instrument reorders HARD-REGISTER assignment. V1's residual is
+two instruction-KIND differences (a load where target has a copy, and a copy where
+target has a load) plus the base add's operand; allocation order cannot convert a
+`lw` into an `addu`.
+**Verdict. CONFIRMED** — the instrument is transferable to other queue items with
+register-identity-only residuals, not to this one.
+
+## [s24] The ledger's floor of 3 for func_80017848 is reproducible on the current chassis with memory/grind/func_80017848/candidate.c applied to src/ings.c (i.e. the disposition entry is not quoting a stale number).
+- mechanism: engine sandbox with --disable all strips both asmfix rules (rules_dropped 2) and 49 cheat-asm instructions, so the printed score is the honest pure-C distance for whatever body is in src/ings.c at measurement time.
+- probe: Measured the committed HEAD body, then spliced candidate.c's body (candidate.c:325-403) over src/ings.c:816-872 preserving LF, and measured again.
+- result: HEAD body: score 16, target_insns 127 / build_insns 125, scorable true, rules_dropped 2, cheat_asm_stripped 49. candidate.c body: score 3, target_insns 127 / build_insns 127, same rules_dropped/cheat_asm_stripped. Floor 3 reproduced exactly; identical to sessions 9-23.
+- verdict: CONFIRMED
+
+## [s24] Endgame-lock gate (a) (canonical-asm via STRONG hand-coded signals) still fails for func_80017848 on the current tree.
+- mechanism: tools/scan_hand_coded.py scores eight structural signals (S1 multu pacing, S2 empty-body branches, S3 spill/reg profile, S4 front-loaded loads, S5 sibling cluster, S6 BIOS jumptable, S7 unsaved callee-saves, S8 redundant mask-before-shift) over the target's 127 instructions; STRONG requires S1/S2/S6.
+- probe: python3 tools/scan_hand_coded.py --single func_80017848
+- result: HAND_CODED: tier=LOW score=0/8 (127 insns). All eight signals unset: 0 multu/mflo pairs, no empty-body branches, 127 insns / 7 spills / 12 distinct regs, max load burst 3 in any 8-insn window, no high-similarity sibling (jaccard < 0.5), no BIOS jumptable pattern, every callee-save use has an $sp save, no redundant mask-before-shift. Unchanged from session 17.
+- verdict: KILLED
+
+## [s24] The previous session-24 run was discarded for a mechanical encoding defect rather than on the merits of its findings, and that defect is in a file this session may repair.
+- mechanism: tools/grinder/grindlib.py:388 opens docs/grind/decisions.md with encoding='utf-8' inside validate_outcome's owner-gated branch; any cp1252 byte in that file raises UnicodeDecodeError before the OWNER-ESCALATION entry can be confirmed, discarding the session.
+- probe: Byte-scanned docs/grind/decisions.md for non-UTF-8 sequences, re-encoded each offending byte via cp1252 -> UTF-8, then re-read the file as UTF-8; separately confirmed the s24 ledger writes (evidence.md E-s24-1..4, hypotheses.md H-s24-A..C, 2 new rejected forms, the decisions.md entry) were intact on disk.
+- result: 8 offending bytes found, all 0x97 (cp1252 em dash), first at byte offset 1237144 inside the 2026-08-18 rederive entry; all re-encoded to UTF-8 U+2014 and the 1,249,661-byte file now decodes cleanly. All s24 ledger artifacts present and unmodified; rejected bank stands at 172 files.
+- verdict: CONFIRMED

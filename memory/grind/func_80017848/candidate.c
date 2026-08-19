@@ -718,3 +718,37 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *  not need `p` to be re-defined — since that is the single assumption both
  *  measured families share.
  */
+/* [s24 ESCALATION/DISPOSITION ADDENDUM — body unchanged, still 3, re-measured
+ * twice this session on a clean tree (127/127, rules_dropped 2,
+ * cheat_asm_stripped 49).]  s24 closed s23's frontier and disposed the function.
+ *
+ *  (1) s23 FRONTIER #2 IS DEAD (E-s24-1).  Giving the links value its own local
+ *      consumed inside the preheader — the proposed escape from E-s23-2's
+ *      pointer/links pseudo fusion — does not work: F2 = 8 and F3 = 9, both at
+ *      **126** insns, i.e. ONE SHORT, with the preheader copy gone entirely.
+ *      Copy propagation folds `lnk = p` straight back into one pseudo, so the
+ *      SET that `use_crosses_set_p` needs no longer sits between the copy and the
+ *      base add, and combine substitutes and deletes the copy.
+ *
+ *  (2) s23 FRONTIER #1 IS ANSWERED, NEGATIVELY (E-s24-2).  The family admits
+ *      exactly two positions and both are measured: the pointer either carries
+ *      links into the loop body (one pseudo, conflicts with `base`, 12-16 across
+ *      23 cells) or the value is copied out so it dies early (copy-prop refolds,
+ *      the copy dies, 8-9 at 126).  There is no third position.  With s17's
+ *      seven-path can_combine_p enumeration and E-s20-1's cse-side predicate
+ *      (whose every clause-B consumer site for loop 2 is priced dead), no pure-C
+ *      producer of a surviving loop-2 preheader copy remains on this chassis.
+ *
+ *  (3) s23 FRONTIER #3 IS RETIRED BY CONSTRUCTION (E-s24-3).  The allocno-priority
+ *      instrument acts on hard-register identity; V1's residual is two
+ *      instruction-KIND differences.  The instrument is valid and should be
+ *      carried to the next queue item with a register-identity-only residual — it
+ *      has no purchase here.
+ *
+ *  DISPOSITION.  Both endgame-lock gates fail — scan_hand_coded tier=LOW 0/8
+ *  (re-run this session) and no in-hand SOTN-master precedent for the closing
+ *  construct — so the owner's standing ruling (2026-07-27) applies and the
+ *  function is disposed REFUSED / OWNER-ACCEPTED INCOMPLETE.  See
+ *  docs/grind/decisions.md, the 2026-08-18 func_80017848 entry and its s24
+ *  addendum.  This body (floor 3 at 127/127) is the preserved best pure-C form.
+ */

@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger"
-    },
-    {
       "func": "SioSyncroWrite",
       "file": "main",
       "distance": 28,
@@ -2024,6 +2015,16 @@
       "hand_coded_tier": "LOW"
     },
     {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 16,
+      "verdict": "C",
+      "rules": 2,
+      "status": "parked",
+      "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
+    },
+    {
       "func": "func_80038C70",
       "file": "code6cac_c_mid",
       "distance": 1,
@@ -2307,13 +2308,13 @@
   ],
   "counts": {
     "total": 263,
-    "active": 232,
+    "active": 231,
     "by_status": {
-      "active": 232,
-      "parked": 31
+      "active": 231,
+      "parked": 32
     },
     "by_verdict": {
-      "C": 193,
+      "C": 192,
       "ASM-PARTIAL": 39
     }
   }

@@ -2911,3 +2911,132 @@ consequence of the pointer/links pseudo fusion, not of any spelling.
 - [s23] s17's H-s17-A scores reproduce on the W1 chassis (Q1 = 14 vs P1 = 14, Q3 = 12 vs P3 = 12, control Q4 = 14 vs P5 = 14), so the s17 kill was chassis-independent in PRICE - but s17 never read the residual, which is why the construct's structural exactness went unnoticed for six sessions.
 
 - [s23] src/ings.c restored to its committed HEAD body at the end of the session; no build-pipeline, rule, engine or tools file touched; nothing committed. Rejected bank now 170 files (5 new).
+
+## s24 (2026-08-18, ESCALATION / DISPOSITION) — floor 3; the last named frontier item is killed and the `use_crosses_set_p` family is closed by a COMPLETE DICHOTOMY
+
+Chassis check at dispatch and again at the end of the session, on a clean tree,
+`sandbox func_80017848 --disable all` (rules_dropped 2, cheat_asm_stripped 49):
+**V1 (`memory/grind/func_80017848/candidate.c`) = 3 at 127/127**, both times.
+The chassis has not moved since s21.
+
+### E-s24-1 (KILLED — s23's frontier item #2, the "give links its own pseudo, consumed inside the preheader" exit).
+
+s23's frontier #2 proposed escaping E-s23-2's pointer/links pseudo fusion by
+keeping the SET of the copy's source (which the `use_crosses_set_p` refusal
+requires) while immediately consuming it into a separate local inside the
+preheader, so the carried pointer dies before the loop body and stops conflicting
+with `base`.  Two cells, both built on the V1 chassis (loop 1 unchanged, so loop
+1's bytes stay exact and only loop 2 carries the new construct):
+
+    F2  q = p; p = *(u8 **)(ctx + 0x10); lnk  = p; base = (u8 *)(sh2 + (s32)q);
+        body reads (s32)lnk                                   ->  8 at **126** insns
+    F3  same, but into a freshly declared local `lnk2`
+        (so the loop-1 links local is not reused)              ->  9 at **126** insns
+
+Both are ONE INSTRUCTION SHORT of target, and the missing instruction is the
+copy itself: the preheader copy does not materialise at all.  The reason is
+mechanical and complete — `lnk = p` immediately after `p = <load>` is a plain
+register copy that copy-propagation folds, so `lnk` and `p` collapse back to ONE
+pseudo whose set is the load.  The set therefore no longer sits BETWEEN the copy
+and the base add (it IS the pseudo the base add's operand was folded against),
+`use_crosses_set_p` never fires, and combine substitutes `q := p` into the base
+add and deletes the copy.  Banked as
+`rejected/s24_split_links_local_preheader_consumed_copy_dies_costs_8_126insns.c`
+and `rejected/s24_split_links_distinct_local_lnk2_copy_dies_costs_9_126insns.c`.
+
+### E-s24-2 (the DICHOTOMY — this is the general statement s23's frontier #1 was asking for, and it is negative).
+
+Combining E-s23-2 with E-s24-1 gives an exhaustive two-way split over the ONLY
+mechanism known to produce a surviving loop-2 preheader copy:
+
+  * The refusal requires an RTL SET of the copy's SOURCE pseudo between the copy
+    insn and the base add (that is what `use_crosses_set_p` tests).
+  * The only value target computes at that point is the links pointer
+    (`lw $a2,0x10($s2)`), so in C the carried-pointer local must receive it.
+  * EITHER the loop body then reads that same local — one pseudo carries both
+    roles, it is live through the body, it conflicts with `base`, and `base` can
+    never inherit the register the pointer dies in.  Measured floor of that
+    branch: **12-16 across 21 cells (s23) + 2 more here**, 100% register identity.
+  * OR the value is copied out into a second local so the pointer can die early —
+    copy propagation refolds the two pseudos into one, the required SET vanishes,
+    and the copy is deleted.  Measured: **8-9 at 126 insns (E-s24-1)**.
+
+There is no third position: the pointer either carries links into the body or it
+does not.  s23's frontier #1 ("a THIRD producer whose blocking condition is NOT a
+set of the copy's source") is therefore not a gap in this family — it is a request
+for a DIFFERENT combine refusal, and s17's E-s17-1 already enumerated all seven
+`can_combine_p` refusal paths (2 forbidden cheat families, 3 structurally
+unreachable, 1 = V1's own loop-1 out-of-block-use lever priced dead for loop 2,
+1 = `use_crosses_set_p`, closed here).  E-s20-1 further supersedes the combine
+framing with the cse-side predicate (a copy exists ONLY when the folded read's
+destination has a use in a LATER EBB), and every clause-B consumer site for loop
+2 is measured dead (post-loop 15-32, in-body 5-16, guard 12 at 125 insns,
+math-arg 7-26).
+
+### E-s24-3 (s23's frontier item #3 answered by construction — no measurement needed).
+
+The allocno-priority instrument (E-s23-3) acts on HARD-REGISTER IDENTITY.  V1's
+residual is not a register-identity residual: it is two instruction-KIND
+differences (`lw $a0,0xC($s2)` vs our `addu a0,a3,zero` in loop 1's exit tail;
+`addu $a3,$a0,$zero` vs our `lw v0,12(s2)` in loop 2's preheader) plus the
+operand of the following base add.  No allocation order can turn a load into a
+copy, so the instrument has no purchase on the floor body; it is only meaningful
+on the Q10-family chassis, where E-s23-2 has already priced its ceiling.  The
+instrument remains valid and transferable — it belongs to the QUEUE, not to this
+function.
+
+### E-s24-4 (disposition gates, re-measured this session).
+
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+      S1..S8 all unset (0 multu pairs, no empty-body branches, 7 spills /
+      12 distinct regs, max load burst 3/8, jaccard < 0.5 vs all siblings,
+      no BIOS jumptable, all callee-saves saved, no redundant mask-before-shift)
+
+  Gate (a) canonical-asm: **FAIL** (LOW, 0/8 — unchanged from s17).
+  Gate (b) in-hand SOTN-master precedent for the closing construct: **FAIL** —
+  no citation exists.  s18's decomp.me corpus mining (163 hits, structural twin
+  scratch 19TpT) is prior art that the IDIOM is compiler-producible pure C, which
+  is why the scanner is correctly LOW, but it is not a SOTN-master file:line and
+  it explicitly documents that the twin's enabling precondition (a nested loop
+  whose outer body keeps the copy's source live for free) does not exist here.
+  What holds the byte-match: **2 asmfix.txt rules** (`asmfix.txt:60-61` — a
+  `delete_between "^\.frame" "^\.end func_80017848$"` plus an `insert_before`
+  carrying the entire 127-instruction body as rule text).
+
+### E-s24-5 (re-dispatch verification — the disposition's numbers are reproduced, and the discard cause is repaired).
+
+The first s24 run was discarded by the outcome validator on a
+`UnicodeDecodeError` (`grindlib.py:388` reads `docs/grind/decisions.md` as UTF-8;
+the run had written 8 cp1252 `0x97` em-dashes into it, first at byte offset
+1237144). The bytes are repaired (UTF-8 U+2014, file decodes cleanly) and every
+load-bearing measurement was re-run independently rather than inherited:
+
+    committed HEAD body        sandbox --disable all = 16   (127 target / 125 build)
+    candidate.c in src/ings.c  sandbox --disable all =  3   (127 / 127)
+    scan_hand_coded --single   tier=LOW score=0/8, S1..S8 all unset
+    byte-match holder          asmfix.txt:60-61 (delete_between + whole-body insert_before)
+
+Raw capture: `tmp/grind/func_80017848/s24/reverify_s24r.txt`. `src/ings.c` was
+restored to its committed HEAD body; no build-pipeline, rule, engine or tools file
+was touched. The disposition (both endgame-lock gates fail; owner's standing
+ruling 2026-07-27 applies) is unchanged and terminal.
+
+
+- [s24] Re-measured this session: committed HEAD src/ings.c gives sandbox --disable all = 16 (127 target / 125 build); memory/grind/func_80017848/candidate.c applied gives 3 (127/127), rules_dropped 2, cheat_asm_stripped 49 in both. The ledger floor of 3 is current, not stale.
+
+- [s24] Gate (a) FAILS: scan_hand_coded --single func_80017848 = tier=LOW score=0/8 with all eight signals unset. This is ordinary compiled C, not hand-written assembly.
+
+- [s24] Gate (b) FAILS: no SOTN-master file:line or commit hash exists for any construct that would close the residual. Session 18's decomp.me corpus mining (3,754 scratches, structural twin scratch 19TpT = func_8009C6D8, gcc2.7.2-cdk -O2) is external prior art that the idiom is compiler-producible, and it corroborates gate (a)'s LOW verdict, but it is not a precedent citation and is not claimed as one; the twin's enabling precondition (a nested loop keeping the copy's source live for free) is one func_80017848 cannot buy.
+
+- [s24] The byte-match is held by exactly two asmfix.txt rules, lines 60-61: a delete_between of the .frame/.end region plus an insert_before whose payload is the entire 127-instruction body as rule text. Zero regfix rules; the C body carries no cheat-asm.
+
+- [s24] Exhaustion (from the ledger, unchanged): 24 sessions, floor flat at 3 since session 9, modalities rederive / synthesis / structural / forensics / permuter / escalation; 172 rejected forms banked; ~180,000 permuter iterations across five telemetried campaigns on two chassis with zero engine-scored improvements; translation-unit context, m2c re-derivation, BB2 sibling transplant (max 5-gram overlap 0.120 over 1,437 functions) and Kengo transplant all closed with measurements.
+
+- [s24] The residual is two instruction-KIND differences plus one operand: loop-1 exit tail target `lw $a0,0xC($s2)` vs ours `addu $a0,$a3,$zero`; loop-2 preheader target `addu $a3,$a0,$zero` / `addu $a0,$a1,$a3` vs ours `lw $v0,0xC($s2)` / `addu $a0,$a1,$v0`.
+
+- [s24] s24's dichotomy (E-s24-2) stands and is the reason no further spelling search is warranted: a surviving loop-2 preheader copy needs an RTL set of the copy's SOURCE between the copy and the base add, the only value target computes there is the links pointer, so either the body reads that same local (one pseudo, live through the body, conflicts with base - 12-16 across 23 cells) or the value is copied out so the pointer dies early (copy propagation refolds it, combine deletes the copy - 8-9 at 126 insns). No third position exists.
+
+- [s24] Repaired the defect that discarded the previous run: 8 cp1252 0x97 bytes in docs/grind/decisions.md (first at offset 1237144) made grindlib.py:388's UTF-8 read raise UnicodeDecodeError inside validate_outcome's owner-gated branch. Re-encoded to UTF-8 U+2014; the file decodes cleanly and every subsequent owner-gated outcome on any function can now validate.
+
+- [s24] src/ings.c was restored to its committed HEAD body at the end of the session (git checkout -- src/ings.c). No build-pipeline, rule, engine or tools file was touched; nothing was committed.
