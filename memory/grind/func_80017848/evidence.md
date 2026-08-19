@@ -2588,3 +2588,156 @@ and the surrounding reload pattern changes wholesale.
 - [s21] E-s21-5: s20 frontier item #3 is dead — cell C1 (post-loop `end` pointer derived from loop 2's addend, feeding the math-arg base) = 20 at 127 insns; GCC does not fold the expression onto the existing `addu v0,a0,v1` induction-variable update.
 
 - [s21] Bookkeeping: 18 new forms banked in memory/grind/func_80017848/rejected/ (bank now 164 files); src/ings.c restored to its committed HEAD body at the end of the session; no build-pipeline file, rule file or engine file was touched.
+
+## s22 (2026-08-18, FORENSICS) — floor 3, re-measured 127/127; the preheader-copy question moves from behaviour to RTL
+
+Chassis check at dispatch: the D3 cell (`memory/grind/func_80017848/rejected/
+s21_reuse_p_plus_body_limit_use_costs_4_127insns.c`) re-measures at **score 4,
+127/127**, and the canonical V1 body of `candidate.c` re-measures at **score 3,
+127/127** (both `sandbox func_80017848 --disable all`, rules_dropped 2,
+cheat_asm_stripped 49). The floor is unchanged at 3. Two full `-da` dump sets
+were captured with the CANONICAL cc1 (`tools/gcc-2.7.2/build/cc1`, via
+`pwsh tools/grinder/dump.ps1 func_80017848`, no `-Instrumented` flag, so no
+codegen-identity question arises) — one for D3 and one for V1 — and the
+per-function RTL regions were extracted to `tmp/grind/func_80017848/s22/*.rtl`.
+
+### E-s22-1 (CONFIRMS s15 (1) at RTL level, and sharpens it into a two-condition predicate). The copy-before-base-add ORDER is produced by local-alloc's `optimize_reg_copy_1`, and the two conditions it needs are now readable.
+
+In the D3 dumps, loop 1's preheader is (insn numbers are stable across passes):
+
+    .cse   insn 83  (set (reg/v:SI 80) (reg/v:SI 79))            <- the copy
+           insn 86  (set (reg/v:SI 77) (mem (plus reg72 16)))    <- lnk load
+           insn 89  (set (reg/v:SI 81) (plus (reg 84) (reg 79))) <- base add
+                                                       ^^^^^^^^ reads the ORIGINAL
+
+    .lreg  insn 83  (set (reg 80) (reg 79))  REG_DEAD reg79      <- unchanged
+           insn 86  ... unchanged ...
+           insn 89  (set (reg 81) (plus (reg 84) (reg 80)))
+                                                       ^^^^^^^^ reads the COPY
+
+Nothing between cse and lreg (loop, cse2, combine, flow) touches insn 89's
+operand; the rewrite happens inside local-alloc. That is exactly
+`optimize_reg_copy_1` (local-alloc.c:700, dispatched :1006): when a copy's SOURCE
+dies at the copy (`REG_DEAD reg79` is present on insn 83 in `.lreg`), the pass
+re-points every subsequent use of SRC onto DEST. So target's shape
+`addu a3,a0,zero / addu a0,a1,a3` requires BOTH of:
+
+  (i) a copy insn `DEST = SRC` sitting textually BEFORE the base add, and
+  (ii) SRC dying at that copy (no later use of SRC).
+
+This closes s21's frontier item #2 question ("does the base add read the original
+or the copy?") with the dump instead of a sandbox sweep: at cse it reads the
+ORIGINAL in every cell; the order is never a cse decision.
+
+### E-s22-2 (KILLS s21 frontier item #2 outright). D3's loop-2 preheader copy is NOT a cse-materialised copy at all — it is created by **loop.c**, one slot too late, and it copies BASE. `optimize_reg_copy_1` provably cannot reorder it.
+
+D3's loop-2 preheader in `.cse` contains exactly ONE insn:
+
+    insn 162 (set (reg/v:SI 81) (plus (reg 85) (reg 79)))   <- the base add
+
+In `.loop` (and thereafter in `.cse2`, `.combine`, `.lreg`) two further insns
+have appeared AFTER it, both absent from `.cse`:
+
+    insn 337 (set (reg:SI 116) (mem (plus reg72 16)))   <- LICM'd ctx+0x10 load
+    insn 338 (set (reg:SI 122) (reg/v:SI 81))           <- THE COPY: of BASE
+
+i.e. the copy is loop.c's own invariant-hoisting temporary for the back-edge
+limit read, born after the base add. Condition (ii) of E-s22-1 cannot hold for
+it: its SRC is `reg81`, defined by the immediately preceding base add, so SRC
+does not die *before* the base add and there are no earlier uses to re-point.
+No variation of what D3's body-limit use looks like — s21's proposed (a) offset
+split, (b) second named local, (c) `while` instead of `do/while` — can change
+that, because all three keep the copy's source equal to base. **s21 frontier
+item #2 is dead: D3's preheader order is not a tunable.**
+
+### E-s22-3 (NEW, positive). Loop 1's preheader is byte-exact with target INCLUDING hard-register assignment, so the construct itself is proven; the residual is now a pure SITE-SWAP.
+
+D3's and V1's loop-1 preheader assemble as
+
+    addu $7,$4,$0 / lw $6,16($18) / addu $4,$5,$7 / addu $2,$4,$3
+
+which is target's `addu a3,a0,zero / lw a2,0x10(s2) / addu a0,a1,a3 /
+addu v0,a0,v1` register-for-register ($7=a3, $4=a0, $5=a1, $6=a2, $2=v0, $3=v1).
+Target's two loop preheaders are themselves byte-identical to each other apart
+from the body offsets, so the original C used the SAME construct for both loops.
+
+The objdump-normalised residual of V1 (re-taken this session; the three
+branch/jal lines in the raw diff are relocation-normalisation noise) is exactly
+three instructions, and they form a SWAP of two sites:
+
+    loop-1 exit      target `lw a0,12(s2)`       ours `addu a0,a3,zero`
+    loop-2 preheader target `addu a3,a0,zero`    ours `lw v0,12(s2)`
+    loop-2 base add  target `addu a0,a1,a3`      ours `addu a0,a1,v0`
+
+Target RE-READS where we COPY, and COPIES where we READ. In `.lreg` the V1
+loop-2 preheader is `insn 162 (set (reg 113) (mem (plus reg72 12)))` carrying a
+`REG_EQUIV` note, feeding `insn 164` the base add — target's copy occupies insn
+162's slot exactly. So the whole remaining gap is: make loop 2's addend arrive as
+a reg-reg copy and loop 1's exit tail arrive as a fresh load.
+
+### E-s22-4. Why cse cannot fold loop 2's fresh read into a copy (the structural reason V1's site is a `lw`), and why the obvious swap costs 13.
+
+cse works per extended basic block. Loop 2's guard label has two predecessors
+(loop 1's skip branch and loop 1's fall-through exit), so cse starts a fresh EBB
+there with no mem->reg equivalences; a `*(u8 **)(ctx + 0xC)` read in that block
+is therefore always a real load (V1's insn 162 even carries `REG_EQUIV`, the
+signature of an unfolded load). The same argument explains target's loop-1 exit
+`lw a0,12(s2)`: the exit block is likewise a fresh EBB, so a C-level re-read
+there is a load — which is precisely what target has and what our `p = q;` copy
+is not.
+
+The direct attempt at the swap was built and measured:
+
+  G1  V1 + `q = p;` pre-init before loop 1's guard, loop-1 tail rewritten as a
+      fresh `p = *(u8 **)(ctx + 0xC);` re-read, loop 2's base addend reading `q`
+      (so `q`'s later-EBB use keeps loop 1's copy alive)   -> **13 at 126 insns**
+
+banked as `rejected/s22_q_preinit_tail_reread_l2_addend_q_costs_13.c`. Its
+residual shows why: the pre-init `q = p;` relocates loop 1's copy (it becomes
+`addu a0,a2,zero` under a shifted register assignment) and loop 2 still gets NO
+copy, while the added definition perturbs block ordering (a `blez`/`j` pair
+moves), losing one instruction net. The definedness requirement is structural:
+loop 2's addend must be defined on BOTH paths into the join, so it can only be
+the carried variable or a fresh read — a loop-1-local copy destination can never
+serve without a pre-init, and the pre-init itself costs.
+
+- [s22] Floor re-measured 3 (V1, 127/127) and D3 re-measured 4 (127/127) on a
+  clean tree; chassis unchanged. src/ings.c restored to its committed HEAD body
+  at the end of the session; no build-pipeline, rule or engine file touched.
+- [s22] E-s22-1: `.cse` vs `.lreg` prove the copy/base-add ORDER is local-alloc's
+  `optimize_reg_copy_1` rewrite, gated on (i) a copy textually before the base
+  add and (ii) REG_DEAD on the copy's source. At cse the base add ALWAYS reads
+  the original — the order is never a cse decision.
+- [s22] E-s22-2: D3's loop-2 copy (insn 338) is created by loop.c, copies BASE,
+  and sits after the base add — provably outside `optimize_reg_copy_1`'s
+  precondition. s21 frontier item #2 (vary the body-limit use to flip the order)
+  is dead without further sweeps.
+- [s22] E-s22-3: loop 1's preheader is byte-exact with target including hard
+  registers; V1's 3-instruction residual is a pure SITE-SWAP (target re-reads at
+  loop 1's exit and copies at loop 2's preheader; we do the opposite).
+- [s22] E-s22-4: cse cannot fold a read in loop 2's guard block because that
+  label has two predecessors and starts a fresh EBB (V1's insn 162 carries
+  REG_EQUIV). The direct swap cell G1 = 13 at 126; the pre-init needed to make a
+  loop-1-local name defined on both paths is itself the cost.
+- [s22] Correction to candidate.c's s9 header: that header attributes the
+  preheader copy's survival to combine's `can_combine_p` refusal. The dumps show
+  the copy is already present at `.cse` and unchanged through `.combine`; what
+  combine decides is only whether a copy with an in-block use is folded away
+  (s16's trichotomy). The ORDER — the part that matters for target's shape — is
+  decided later, in local-alloc.
+
+- [s22] Floor re-measured this session on a clean tree: V1 (candidate.c) = 3 at 127/127; D3 = 4 at 127/127 (rules_dropped 2, cheat_asm_stripped 49). Chassis unchanged from s21.
+
+- [s22] E-s22-1: .cse vs .lreg prove the copy/base-add ORDER is local-alloc's optimize_reg_copy_1 rewrite, gated on (i) a copy textually before the base add and (ii) REG_DEAD on the copy's source. At cse the base add ALWAYS reads the original.
+
+- [s22] E-s22-2: D3's loop-2 copy (insn 338) is created by loop.c, copies BASE, and sits after the base add - provably outside optimize_reg_copy_1's precondition. s21 frontier item #2 dies without any sandbox sweep.
+
+- [s22] E-s22-3: loop 1's preheader is byte-exact with target including hard-register assignment; V1's 3-instruction residual is a pure SITE-SWAP (target re-reads at loop 1's exit and copies at loop 2's preheader; we do the opposite).
+
+- [s22] E-s22-4: cse cannot fold a ctx+0xC read placed in loop 2's guard block because that label has two predecessors and starts a fresh EBB - V1's insn 162 carries REG_EQUIV, the signature of an unfolded load. The same argument explains target's own `lw a0,12(s2)` at loop 1's exit.
+
+- [s22] Cheapest future diagnostic (new): for any cell, one .cse read answers whether it can ever reach target - does the loop-2 preheader contain (set (reg X) (reg Y)) with Y the ADDEND? Every cell to date that produced a loop-2 preheader copy produced a copy of BASE (loop.c), which E-s22-2 shows is terminal.
+
+- [s22] Correction to candidate.c's s9 header: it attributes the preheader copy's survival to combine's can_combine_p refusal. The dumps show the copy already exists at .cse and is unchanged through .combine; combine only decides whether a copy with an IN-BLOCK use is folded away (s16's trichotomy). The ORDER is decided later, in local-alloc.
+
+- [s22] One new cell measured and banked (G1 = 13 at 126); bank now 165 files. src/ings.c restored to its committed HEAD body; no build-pipeline, rule, engine or tools file touched; nothing committed.

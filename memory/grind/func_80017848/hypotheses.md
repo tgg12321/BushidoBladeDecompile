@@ -1924,3 +1924,118 @@ induction-variable update, and the surrounding reload pattern changes wholesale.
 - probe: Cell C1 — W1 plus a named `q2` for loop 2's addend (pre-initialised from `p` so it is defined on the skipped path) plus `end = (u8 *)((s32)q2 + sh2 + i);` after the loop, consumed only by the immediately following math_Distance3D first-argument base derivation.
 - result: 20 at 127 insns. GCC rebuilds the address rather than folding it onto the induction-variable update, and the surrounding reload pattern changes wholesale.
 - verdict: KILLED
+
+## s22 (2026-08-18, FORENSICS)
+
+### H-s22-A — KILLED
+**Statement.** s21 frontier item #2: on the D3 chassis the loop-2 preheader
+already contains target's two instruction KINDS (a base add and a reg-reg copy)
+in the wrong order, so varying what the body-limit use looks like (offset split /
+second named local / `while` instead of `do/while`) can flip the order into
+target's `copy-then-add`.
+**Probe.** Applied D3 (re-measured 4 at 127/127), ran `pwsh tools/grinder/dump.ps1
+func_80017848` (canonical cc1, not instrumented), extracted the function region
+from `.cse`, `.loop`, `.cse2`, `.combine`, `.lreg` and read the loop-2 preheader
+insn chain.
+**Result.** D3's loop-2 copy is `insn 338 (set (reg 122) (reg 81))`, ABSENT from
+`.cse` and first present in `.loop`, placed after the LICM'd `ctx+0x10` load
+(insn 337) and after the base add (insn 162). It is loop.c's own invariant
+temporary and it copies BASE. Its source is defined by the immediately preceding
+insn, so `optimize_reg_copy_1`'s precondition (source dies at the copy, earlier
+uses to re-point) cannot hold for it under ANY spelling of the body-limit use.
+**Verdict.** KILLED. The order is not a tunable on this chassis; all three
+proposed variants would have been wasted sweeps.
+
+### H-s22-B — CONFIRMED
+**Statement.** The copy-before-base-add order that target has is produced by
+local-alloc's `optimize_reg_copy_1`, not by cse or combine, and it needs exactly
+two conditions: a copy insn textually before the base add, and the copy's SOURCE
+dying at that copy.
+**Probe.** Same dump set, loop 1 (which reproduces target's preheader byte-for-
+byte): compared insn 89's operand across passes.
+**Result.** `.cse` insn 89 = `(plus (reg 84) (reg 79))` — the ORIGINAL;
+`.lreg` insn 89 = `(plus (reg 84) (reg 80))` — the COPY, with `REG_DEAD reg79`
+carried on the copy insn 83. No intervening pass touches the operand.
+**Verdict.** CONFIRMED. s15 (1)'s attribution is now RTL-proven and upgraded from
+"the pass re-points the base add when the copy is orphaned" to the two-condition
+predicate above. Any future cell that wants target's order must satisfy (i) and
+(ii); a copy of BASE never can.
+
+### H-s22-C — CONFIRMED (structural, and it renames the residual)
+**Statement.** The V1 residual is a SITE-SWAP, not two independent defects:
+target re-reads `ctx+0xC` where we emit a copy (loop 1's exit) and emits a copy
+where we re-read (loop 2's preheader).
+**Probe.** objdump-normalised diff of V1 against target, plus the `.lreg` slot
+identification (V1's insn 162 is the loop-2 preheader load, carrying REG_EQUIV;
+target's `addu a3,a0,zero` occupies that exact slot).
+**Result.** Exactly three real instruction differences, listed in E-s22-3. Loop
+1's preheader — including target's long-unexplained dead copy — is byte-exact
+including hard-register assignment ($7/$4/$5/$6/$2/$3 = a3/a0/a1/a2/v0/v1).
+**Verdict.** CONFIRMED.
+
+### H-s22-D — KILLED
+**Statement.** Performing the swap directly closes the gap: make loop 1's exit
+tail a fresh `p = *(u8 **)(ctx + 0xC);` re-read (giving target's `lw`), and give
+loop 2's base addend the loop-1 copy destination `q` (so `q` keeps its later-EBB
+use and loop 1's copy survives), with `q = p;` pre-initialised before loop 1's
+guard so `q` is defined when loop 1 is skipped.
+**Probe.** Cell G1, built on V1, measured with `sandbox --disable all`; residual
+diffed.
+**Result.** 13 at 126 insns (banked
+`rejected/s22_q_preinit_tail_reread_l2_addend_q_costs_13.c`). The pre-init
+relocates loop 1's copy under a shifted register assignment, loop 2 still gets
+NO copy, and block ordering is perturbed (`blez`/`j` pair moves), net -1 insn.
+**Verdict.** KILLED. Combined with E-s22-4's EBB argument, loop 2's addend can
+only be the carried variable or a fresh read; a loop-1-local name requires a
+pre-init and the pre-init is itself the cost.
+
+### Frontier after s22
+
+1. The site-swap statement (H-s22-C) is the sharpest description of the residual
+   in 22 sessions, and it makes ONE construction the obvious next target: a
+   chassis where loop 1's exit tail is a FRESH READ (target's `lw`) and loop 2's
+   preheader contains a C-LEVEL copy whose source dies there. E-s22-1's condition
+   (ii) is the new discriminator: the copy's SOURCE must have no later use. In
+   V1/D3 the carried pointer `p` is live into the post-loop-2 math args (via the
+   re-reads), so a copy of `p` in loop 2's preheader would NOT have a dying
+   source — unless loop 2's preheader is the LAST use of that particular name.
+   Concretely untried: two DISTINCT carried names, `p` used only up to loop 2's
+   guard and a second name `r` defined by loop 1's exit re-read and used only as
+   loop 2's base addend, so that `r` dies exactly at loop 2's copy.
+2. E-s22-2 says a copy of BASE can never be reordered; E-s22-1 says a copy of the
+   ADDEND can. Every cell measured to date that produced a preheader copy in loop
+   2 produced a copy of BASE (loop.c). No cell has yet produced a copy of the
+   ADDEND in loop 2 at `.cse`. The single cheapest diagnostic for any future cell
+   is therefore not the sandbox score but one `.cse` read: does the loop-2
+   preheader contain `(set (reg X) (reg Y))` where Y is the addend? If not, the
+   cell cannot reach target regardless of its score.
+3. Not yet dumped: the `.lreg`/`.greg` of a cell in which loop 1's copy is
+   DELETED (the s16 trichotomy's "in-block use" branch). Knowing whether combine
+   or flow removes it, and whether local-alloc would have re-pointed it, would
+   tell us whether the in-block-use branch is recoverable by making the use one
+   `can_combine_p` refuses — s17 enumerated the refusals abstractly but never
+   read a dump of the deletion itself.
+
+## [s22] s21 frontier item #2: D3's loop-2 preheader already holds target's two instruction KINDS in the wrong order, so varying the body-limit use (offset split / second named local / while-instead-of-do-while) can flip it into target's copy-then-add order.
+- mechanism: s15 (1) attributed the order to local-alloc's optimize_reg_copy_1 re-pointing the base add onto the copy when the copy is orphaned; D3's copy is not orphaned (its use is the body limit read), so removing/reshaping that use should flip it.
+- probe: Applied D3 (re-measured 4 at 127/127), ran pwsh tools/grinder/dump.ps1 func_80017848 with the CANONICAL cc1, extracted the func region from .cse/.loop/.cse2/.combine/.lreg and read the loop-2 preheader insn chain.
+- result: D3's loop-2 copy is insn 338 (set (reg 122) (reg/v 81)) - ABSENT from .cse, first present in .loop, placed after the LICM'd ctx+0x10 load (insn 337) and after the base add (insn 162). It is loop.c's invariant temporary and it copies BASE, whose defining insn immediately precedes it; optimize_reg_copy_1's precondition (source dies at the copy, earlier uses to re-point) can never hold for it under any spelling of the body-limit use.
+- verdict: KILLED
+
+## [s22] The copy-before-base-add order target has is produced by local-alloc's optimize_reg_copy_1, not by cse or combine, and requires exactly (i) a copy insn textually before the base add and (ii) the copy's SOURCE dying at that copy.
+- mechanism: optimize_reg_copy_1 (local-alloc.c:700, dispatched :1006) rewrites SRC to DEST over the range where SRC dies; nothing after local-alloc runs DCE, so the now-redundant copy stays.
+- probe: Same dump set, loop 1 (which reproduces target's preheader byte-for-byte): compared insn 89's operand across passes.
+- result: .cse insn 89 = (plus (reg 84) (reg 79)) - the ORIGINAL. .lreg insn 89 = (plus (reg 84) (reg 80)) - the COPY, with REG_DEAD reg79 carried on the copy insn 83. No intervening pass (loop, cse2, combine, flow) touches the operand. At cse the base add always reads the original, so the order is never a cse decision.
+- verdict: CONFIRMED
+
+## [s22] The V1 residual is a SITE-SWAP, not two independent defects: target re-reads ctx+0xC where we emit a copy (loop 1's exit) and emits a copy where we re-read (loop 2's preheader).
+- mechanism: cse works per extended basic block; loop 2's guard label has two predecessors and loop 1's exit block follows the loop labels, so both sites start fresh EBBs with no mem->reg equivalence - a C-level read there is always a real load and a C-level copy is always a move.
+- probe: objdump-normalised diff of V1 (score 3, 127/127) against asm/funcs/func_80017848.s, plus .lreg slot identification.
+- result: Exactly three real instruction differences: loop-1 exit target `lw a0,12(s2)` vs ours `addu a0,a3,zero`; loop-2 preheader target `addu a3,a0,zero` vs ours `lw v0,12(s2)`; loop-2 base add target `addu a0,a1,a3` vs ours `addu a0,a1,v0`. V1's insn 162 is the loop-2 preheader load carrying REG_EQUIV, occupying exactly target's copy slot. Loop 1's preheader is byte-exact with target INCLUDING hard registers ($7/$4/$5/$6/$2/$3 = a3/a0/a1/a2/v0/v1), and target's two loop preheaders are byte-identical to each other apart from body offsets.
+- verdict: CONFIRMED
+
+## [s22] Performing the swap directly closes the gap: loop 1's exit tail becomes a fresh `p = *(u8 **)(ctx + 0xC);` re-read (giving target's lw) while loop 2's base addend reads the loop-1 copy destination `q` (keeping q's later-EBB use so loop 1's copy survives), with `q = p;` pre-initialised before loop 1's guard for definedness on the skip path.
+- mechanism: E-s20-1/E-s21-4's materialisation predicate (a preheader copy exists iff the copy's DESTINATION has a later-EBB use) combined with E-s22-3's site-swap: giving q a use past the join should keep loop 1's copy while the tail re-read supplies target's lw.
+- probe: Cell G1 built on V1, measured with sandbox --disable all, residual diffed.
+- result: 13 at 126 insns. The pre-init `q = p;` relocates loop 1's copy (it becomes `addu a0,a2,zero` under a shifted register assignment), loop 2 still gets NO copy at all, and the added definition perturbs block ordering (a blez/j pair moves), losing one instruction net. Banked as rejected/s22_q_preinit_tail_reread_l2_addend_q_costs_13.c.
+- verdict: KILLED
