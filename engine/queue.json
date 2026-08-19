@@ -2001,15 +2001,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
     },
     {
-      "func": "SioSyncroWrite",
-      "file": "main",
-      "distance": 28,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:6202 - 2026-08-19 - SioSyncroWrite - OWNER-ESCALATION - INTEGRATION HANDOFF (bytes proven; blocked by a commit surface a grind session may not stage). Requested action: add `SioSyncroWrite volatile_extern_allowlist.txt` to tools/grinder/scope_allow.txt (precedent scope_allow.txt:22-26), or land the D_800F1AEC allowlist grant directly per the six operator steps in the entry."
-    },
-    {
       "func": "func_8002D518",
       "file": "code6cac_b",
       "distance": 33,
@@ -2301,11 +2292,11 @@
     }
   ],
   "counts": {
-    "total": 262,
+    "total": 261,
     "active": 228,
     "by_status": {
       "active": 228,
-      "parked": 34
+      "parked": 33
     },
     "by_verdict": {
       "C": 190,

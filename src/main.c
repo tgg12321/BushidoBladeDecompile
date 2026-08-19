@@ -3428,13 +3428,13 @@ return_val:
 /* PsyQ LIBCOMB comb: SioAnsyncWrite (static) — verbatim-linked Sony object.
    D_800F1AF0/AF4/AF8 are mutated at interrupt time by HandleSio — volatile
    is original semantics (operator-audited grant 2026-07-10). */
-extern s32 D_800F1AEC;
+extern volatile s32 D_800F1AEC;
 extern volatile s32 D_800F1AF0;
 extern volatile s32 D_800F1AF4;
 extern volatile s32 D_800F1AF8;
 extern s32 D_800A3044;
 s32 SioAnsyncWrite(int a0, int a1) {
-    s32 *flag = &D_800F1AEC;
+    volatile s32 *flag = &D_800F1AEC;
     if (*flag != 0) {
         return -1;
     }
@@ -3449,95 +3449,78 @@ s32 SioAnsyncWrite(int a0, int a1) {
     return 0;
 }
 s32 SioSyncroWrite(u8 *arg0, s32 arg1) {
-    register s32 r_arg1 asm("s4") = arg1;
     volatile s32 *flag = &D_800F1AEC;
-    s32 s0;
-    s32 s5;
-    s32 s1;
-    void *spu;
-    s32 (*fn)(s32, s32);
-    s32 wait_val;
+    s32 retries;
+    s32 pkt_len;
+    s32 i;
+    s32 (*cb)(s32, s32);
 
+    retries = 0;
     if (*flag != 0) return -1;
-    s0 = 0;
-    goto main_work;
-
-cleanup_A:
-    DeliverEvent(0xF000000B, 0x100);
-    goto return_val;
-
-cleanup_B:
-    DeliverEvent(0xF000000B, 0x100);
     {
-        volatile s32 *p_af4 = &D_800F1AF4;
-        return (r_arg1 - *p_af4) - 1;
+        /* FAKE: redundant second handle to D_800F1AE2, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: memory/grind/SioSyncroWrite/hypotheses.md [s4-M1] (direct-global form measured 158i/mismatch) */
+        volatile u16 *p_ae2 = &D_800F1AE2;
+        u32 mode;
+        mode = *p_ae2;
+        pkt_len = *(s16 *)((s32)D_800A3074 + ((mode & 0x300) >> 7));
     }
-
-main_work:
-    {
-        volatile u16 *p_ae2;
-        u32 ae2_val;
-        __asm__ ("la %0, D_800F1AE2" : "=r"(p_ae2));
-        ae2_val = *p_ae2;
-        s5 = *(s16 *)((s32)D_800A3074 + ((ae2_val & 0x300) >> 7));
-    }
-    D_800F1AF4 = r_arg1;
+    D_800F1AF4 = arg1;
     D_800F1AF0 = (s32)arg0;
-    s1 = 0;
-    if (D_800F1AF4 == 0) goto return_val;
+    i = 0;
+    if (D_800F1AF4 == 0) goto done;
+    for (;;) {
+        volatile s32 *st = flag;
 
-    {
-        volatile s32 *loop_flag = flag;
-
-outer_top:
-        spu = (void *)D_800A3044;
-        if ((*((volatile u16 *)(((s32)spu) + 4)) & 5) == 5) goto check_first;
-        wait_val = 5;
-
-inner_wait:
-        fn = D_800F1AE8;
-        if (fn != 0) {
-            s32 prev = s0;
-            s0 += 1;
-            if (fn(2, prev) == 0) goto cleanup_A;
-        }
-        if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 5) != wait_val) goto inner_wait;
-
-check_first:
-        if (s1 != 0) goto send_byte;
-        D_800F1AF8 = (*((volatile u16 *)(((s32)D_800A3044) + 4))) & 0x80;
-
-send_byte:
-        *((u8 *)D_800A3044) = *((u8 *)D_800F1AF0);
-        loop_flag[1] += 1;
-        loop_flag[1];
-        s1 += 1;
-        loop_flag[2] -= 1;
-        loop_flag[2];
-        if (s1 != s5) goto loop_continue;
-        if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) != loop_flag[3]) goto loop_continue;
-        s1 = 0;
-        {
-            volatile s32 *p_af8 = &D_800F1AF8;
-inner_wait2:
-            fn = D_800F1AE8;
-            if (fn != 0) {
-                s32 prev = s0;
-                s0 += 1;
-                if (fn(2, prev) == 0) goto cleanup_B;
+        while ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 5) != 5) {
+            cb = D_800F1AE8;
+            if (cb != 0) {
+                s32 prev = retries;
+                retries += 1;
+                if (cb(2, prev) == 0) {
+                    DeliverEvent(0xF000000B, 0x100);
+                    goto done;
+                }
             }
-            if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) == *p_af8) goto inner_wait2;
         }
-        s1 = 0;
-
-loop_continue:
-        if (D_800F1AF4 != 0) goto outer_top;
+        if (i == 0) {
+            D_800F1AF8 = (*((volatile u16 *)(((s32)D_800A3044) + 4))) & 0x80;
+        }
+        *((u8 *)D_800A3044) = *((u8 *)D_800F1AF0);
+        st[1]++;
+        i += 1;
+        st[2]--;
+        if (i == pkt_len) {
+            if ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) == st[3]) {
+                /* FAKE: redundant second handle to D_800F1AF8, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M2] (direct-global form measured 158i/mismatch) */
+                volatile s32 *p_af8 = &D_800F1AF8;
+                do {
+                    cb = D_800F1AE8;
+                    if (cb != 0) {
+                        s32 prev = retries;
+                        retries += 1;
+                        if (cb(2, prev) == 0) {
+                            /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M3] (direct-global form measured 158i/mismatch) */
+                            volatile s32 *p_af4b = &D_800F1AF4;
+                            DeliverEvent(0xF000000B, 0x100);
+                            return (arg1 - *p_af4b) - 1;
+                        }
+                    }
+                } while ((*((volatile u16 *)(((s32)D_800A3044) + 4)) & 0x80) == *p_af8);
+            }
+            i = 0;
+        }
+        {
+            /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-H1/H2] (plain-global and function-scope-pointer forms both measured negative) */
+            volatile s32 *remaining = &D_800F1AF4;
+            if (*remaining == 0) break;
+        }
     }
 
-return_val:
+done:
     {
+        /* FAKE: redundant second handle to D_800F1AF4, mechanism: combine.c symbol-fold defeat (address forced into a pseudo, so lui/%lo is not folded into the load base), lever-exhaustion: hypotheses.md [s4-M4] (direct-global form measured 158i/mismatch) */
         volatile s32 *p_af4 = &D_800F1AF4;
-        return r_arg1 - *p_af4;
+        return arg1 - *p_af4;
     }
 }
 /* kengo:MED  |  am_rmd/SetPacketData  |  159i */
