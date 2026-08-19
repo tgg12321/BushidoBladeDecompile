@@ -686,12 +686,12 @@ void func_8003C9A4(void) {
 
     game_SetControllerPorts(0);
     a0[0] = 0;
-    D_800F660C = -0xBB8;
-    D_800F6610 = 0;
+    D_800F6608.w4 = -0xBB8;
+    D_800F6608.w8 = 0;
     *a1 = 0x20;
-    D_800F661C = 0;
-    D_800F6620 = 0x2710;
-    D_800F661A = (s16)(D_800A36AC << 2);
+    D_800F6608.h14 = 0;
+    D_800F6608.w18 = 0x2710;
+    D_800F6608.h12 = (s16)(D_800A36AC << 2);
     func_80046BF4((s16 *)a0, a1, 0x2710);
     game_StageInit(1);
 
@@ -768,12 +768,12 @@ void func_8003CD10(void) {
 
     game_SetControllerPorts(0);
     a0[0] = 0;
-    D_800F660C = -0xBB8;
-    D_800F6610 = 0;
+    D_800F6608.w4 = -0xBB8;
+    D_800F6608.w8 = 0;
     *a1 = 0x20;
-    D_800F661C = 0;
-    D_800F6620 = 0x2710;
-    D_800F661A = (s16)(D_800A36AC << 2);
+    D_800F6608.h14 = 0;
+    D_800F6608.w18 = 0x2710;
+    D_800F6608.h12 = (s16)(D_800A36AC << 2);
     func_80046BF4((s16 *)a0, a1, 0x2710);
     game_StageInit(1);
 

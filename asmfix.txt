@@ -47,7 +47,6 @@ func_8002D518: replace_first "^j\t\\.L[0-9]+(?=\naddu\t\\$2,\\$0,\\$zero\n\n\\.L
 
 # Stub replacement helper path: keep a real C symbol in the source tree while
 # swapping the emitted function block back to the exact split asm file.
-func_8001B748: replace_with_asmfile "asm/funcs/func_8001B748.s"
 func_800283D0: replace_with_asmfile "asm/funcs/func_800283D0.s"
 SioSyncroWrite: replace_with_asmfile "asm/funcs/SioSyncroWrite.s"
 

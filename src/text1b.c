@@ -1830,7 +1830,7 @@ s32 func_80057094(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = ratan2(D_800F6608 - *(s32 *)((s32)arg0 + 0xF4), D_800F6610 - *(s32 *)((s32)arg0 + 0xFC));
+    temp_s0 = ratan2(D_800F6608.w0 - *(s32 *)((s32)arg0 + 0xF4), D_800F6608.w8 - *(s32 *)((s32)arg0 + 0xFC));
     var_v0 = temp_s0 - ratan2(arg1 - *(s32 *)((s32)arg0 + 0xF4), arg2 - *(s32 *)((s32)arg0 + 0xFC));
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;

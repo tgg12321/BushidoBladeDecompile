@@ -245,34 +245,32 @@ extern u8 D_800A3920;
 extern u8 D_800A3928;
 extern u8 D_800A3929;
 extern s32 D_800A3D40;
-extern s32 D_800F5328;
-extern s32 D_800F532C;
-extern s32 D_800F5330;
-extern s16 D_800F5344;
-extern u8 D_800F5347;
-extern s16 D_800F5358;
-extern s16 D_800F535A;
-extern s16 D_800F535C;
-extern s16 D_800F5360;
-extern s16 D_800F5362;
-extern s16 D_800F5364;
-extern u8 D_800F5368;
+/* 0x44-byte record shared by the two camera-target objects at 0x800F5328 and
+ * 0x800F6608. Field span evidenced by func_8001B294 (initialises +0x00/04/08/10/12/14/
+ * 18/1E/30/32/34/38/3A/3C on the 0x800F6608 object) and func_8001B3C0 (the same
+ * treatment of 0x800F5328 at +0x00/04/08/30/32/34/38/3A/3C/40); +0x00/04/08 are the
+ * Vec3 that func_8001BC70/func_8001BCF0 already copy through a struct assignment.
+ * Replaces the per-word splat symbols D_800F532C..D_800F5368 / D_800F660C..D_800F6644. */
+typedef struct Rec44 {
+    s32 w0; s32 w4; s32 w8; s32 wC;
+    s16 h10; s16 h12; s16 h14; s16 h16;
+    s32 w18;
+    s16 h1C; u8 b1E; u8 b1F;
+    s32 w20; s32 w24; s32 w28; s32 w2C;
+    s16 h30; s16 h32; s16 h34; s16 h36;
+    s16 h38; s16 h3A; s16 h3C; s16 h3E;
+    u8 b40; u8 b41; u8 b42; u8 b43;
+} Rec44;
+/* 0x1C-byte record: func_8003993C walks an array of these at D_800A36EC with element
+ * stride 0x1C (base + i*0x38 + {0,0x1C} + D_800A3748*0x1C, asm/funcs/func_8003993C.s:57-89)
+ * and passes two of them to func_8001BAE4 / func_8001BBD8. */
+typedef struct Rec1C {
+    s16 h0; s16 h2; s16 h4; s16 h6; s16 h8; s16 hA; s16 hC; s16 hE;
+    s32 w10; s32 w14; s32 w18;
+} Rec1C;
+extern Rec44 D_800F5328;
+extern Rec44 D_800F6608;
 extern u8 D_800F65F9;
-extern s32 D_800F6608;
-extern s32 D_800F660C;
-extern s32 D_800F6610;
-extern s16 D_800F6618;
-extern s16 D_800F661A;
-extern s16 D_800F661C;
-extern s32 D_800F6620;
-extern u8 D_800F6626;
-extern u8 D_800F6627;
-extern s16 D_800F6638;
-extern s16 D_800F663A;
-extern s16 D_800F663C;
-extern s16 D_800F6640;
-extern s16 D_800F6642;
-extern s16 D_800F6644;
 extern s16 D_800F68E0[];
 extern s32 D_800FF584;
 extern s32 D_800FF5A4;
@@ -483,7 +481,7 @@ extern s32 D_80107854;
 extern s32 D_80107858;
 
 /* Functions */
-extern void func_8001B748(u8 *, u8 *, u8 *, s32, s32, s32);
+extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void func_8003D52C(s32, s32, s32, s32);
 extern void func_80021A98(s32, u8 *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);

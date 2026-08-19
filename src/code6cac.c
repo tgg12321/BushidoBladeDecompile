@@ -815,8 +815,8 @@ void func_8001B138(s32 *arg0) {
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
-void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6638 = 0x64;    D_800F663A = 0;    D_800F663C = 0x64;    D_800F6640 = 0x64;    D_800F6642 = 0;    D_800F6644 = 0x64;    game_SetControllerPorts(0);    D_800F6608 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F660C = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6618 = 0;        D_800F6610 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F661A = 0x400 - v0;    D_800F661C = 0;    D_800F6620 = 0x1388;    D_800F6626 = 0;}
-void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5358 = 0x64;    D_800F535A = 0;    D_800F535C = 0x64;    D_800F5360 = 0x64;    D_800F5362 = 0;    D_800F5364 = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5330 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5368 = 0;        D_800F532C = v;    }}
+void func_8001B294(s32 *a0, s32 *a1) {    s32 v0;    D_800A36FA = 0;    D_800F6608.h30 = 0x64;    D_800F6608.h32 = 0;    D_800F6608.h34 = 0x64;    D_800F6608.h38 = 0x64;    D_800F6608.h3A = 0;    D_800F6608.h3C = 0x64;    game_SetControllerPorts(0);    D_800F6608.w0 = (*(s32 *)((u8 *)a0 + 0xF4) + *(s32 *)((u8 *)a1 + 0xF4)) / 2;    D_800F6608.w4 = (*(s32 *)((u8 *)a0 + 0xF8) + *(s32 *)((u8 *)a1 + 0xF8)) / 2;    {        s32 t1 = *(s32 *)((u8 *)a0 + 0xFC);        s32 t2 = *(s32 *)((u8 *)a1 + 0xFC);        D_800F6608.h10 = 0;        D_800F6608.w8 = (t1 + t2) / 2;    }    {        s32 dx = *(s32 *)((u8 *)a1 + 0xF4) - *(s32 *)((u8 *)a0 + 0xF4);        s32 dy = *(s32 *)((u8 *)a1 + 0xFC) - *(s32 *)((u8 *)a0 + 0xFC);        v0 = ratan2(dx, dy);    }    D_800F6608.h12 = 0x400 - v0;    D_800F6608.h14 = 0;    D_800F6608.w18 = 0x1388;    D_800F6608.b1E = 0;}
+void func_8001B3C0(s32 *a0, s32 *a1) {    D_800A36FA = 0;    D_800F5328.h30 = 0x64;    D_800F5328.h32 = 0;    D_800F5328.h34 = 0x64;    D_800F5328.h38 = 0x64;    D_800F5328.h3A = 0;    D_800F5328.h3C = 0x64;    game_SetControllerPorts(0);    if (D_800A36F6 != 0) {        a0 = a1;    }    D_800F5328.w0 = *(s32 *)((u8 *)a0 + 0x180);    D_800F5328.w8 = *(s32 *)((u8 *)a0 + 0x188);    {        s32 v = *(s32 *)((u8 *)a0 + 0x184);        D_800F5328.b40 = 0;        D_800F5328.w4 = v;    }}
 void func_8001B478(s32 arg0) {
     u8 *obj = (u8 *)arg0;
     u8 *s2 = (u8 *)&D_800F5328;
@@ -833,7 +833,7 @@ void func_8001B478(s32 arg0) {
         val = 0x200;
     } else {
         *(s32 *)s2 = *(s32 *)(obj + 0x180);
-        D_800F5330 = *(s32 *)(obj + 0x188);
+        D_800F5328.w8 = *(s32 *)(obj + 0x188);
         val = *(s32 *)(obj + 0x184);
 
         if (!far) {
@@ -929,97 +929,98 @@ void func_8001B690(s32 arg0, s32 arg1) {
     }
     if (arg1 >= 0x401) {
         D_800A36FC = 0x19;
-        D_800F5344 = 0x800;
+        D_800F5328.h1C = 0x800;
     }
 }
 void func_8001B6F4(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     D_800A36FA = 1;
-    D_800F6627 = 0;
-    D_800F5347 = 0;
+    D_800F6608.b1F = 0;
+    D_800F5328.b1F = 0;
     game_SetControllerPorts(0);
 }
-void func_8001B748(u8 *dst, u8 *a, u8 *b, s32 frac_s1, s32 frac, s32 val) {
+void func_8001B748(Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
-    int new_var;
+    u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
+    s32 zval;
     s32 dx;
     s32 dy;
-    u8 *base = (u8 *)&D_80101EC8 + D_800A3748 * 0x44C;
     s32 dz;
     s32 cur;
-    s32 target;
     s32 use_high;
     s32 v;
-    if (dst[0x1F] == 0) {
-        dst[0x1F] = 1;
-        *((s32 *) (dst + 0)) = ((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12;
-        *((s32 *) (dst + 4)) = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - 0x12C;
-        new_var = (frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))));
+    s32 t;
+    s32 dd;
+    if (dst->b1F == 0) {
+        dst->b1F = 1;
+        dst->w0 = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+        dst->w4 = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
         D_800A3310 = 0;
-        *((s16 *) (dst + 0x12)) = val;
-        cur = new_var;
-        *((s16 *) (dst + 0x10)) = 0x80;
-        *((s16 *) (dst + 0x14)) = 0;
-        dy = cur;
-        *((s32 *) (dst + 0x18)) = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
-        *((s32 *) (dst + 8)) = dy >> 12;
+        zval = (frac * (a->h8)) + (inv_frac * (b->h8));
+        dst->h12 = val;
+        dst->h10 = 0x80;
+        dst->h14 = 0;
+        dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
+        dst->w8 = zval >> 12;
         return;
     }
     {
-        s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + (0x1A8 & 0xFFFFFFFF))));
+        s32 sum = (*((s32 *) (base + 0x19C))) + (*((s32 *) (base + 0x1A8)));
         s32 avg = ((s32) (sum + (((u32) sum) >> 31))) >> 1;
         if ((avg - (*((s32 *) (base + 0x184)))) < 0xC8) {
             D_800A3310 += 1;
         }
     }
     use_high = ((s16) D_800A3310) >= 0xB;
-    cur = *((s32 *) (dst + 0));
-    inv_s1 = inv_s1;
-    dx = (((frac * (*((s16 *) (a + 4)))) + (inv_frac * (*((s16 *) (b + 4))))) >> 12) - cur;
+    cur = dst->w0;
+    t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
+    dx = t - cur;
     if (dx < 0) {
         dx += 0xF;
     }
-    *((s32 *) (dst + 0)) = cur + (dx >> 4);
-    cur = *((s32 *) (dst + 4));
-    dy = (((frac * (*((s16 *) (a + 6)))) + (inv_frac * (*((s16 *) (b + 6))))) >> 12) - (cur + 0x12C);
+    dst->w0 = cur + (dx >> 4);
+    cur = dst->w4;
+    t = (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
+    dy = t - cur;
     if (dy < 0) {
         dy += 0xF;
     }
-    *((s32 *) (dst + 4)) = cur + (dy >> 4);
-    cur = *((s32 *) (dst + 8));
-    dz = (((frac * (*((s16 *) (a + 8)))) + (inv_frac * (*((s16 *) (b + 8))))) >> 12) - cur;
+    dst->w4 = cur + (dy >> 4);
+    cur = dst->w8;
+    t = ((frac * (a->h8)) + (inv_frac * (b->h8))) >> 12;
+    dz = t - cur;
     if (dz < 0) {
         dz += 0xF;
     }
-    *((s32 *) (dst + 8)) = cur + (dz >> 4);
+    dst->w8 = cur + (dz >> 4);
     if (use_high) {
-        target = ((frac_s1 * 0x180) >> 12) + 0x80;
+        t = ((frac_s1 * 0x180) >> 12) + 0x80;
     } else {
-        target = 0x80 - ((frac_s1 << 8) >> 12);
+        t = 0x80 - ((frac_s1 << 8) >> 12);
     }
-    *((s16 *) (dst + 0x10)) = (*((u16 *) (dst + 0x10))) + func_8001A4F0(target - (*((s16 *) (dst + 0x10))), 0x10);
-    v = func_8001A4F0(val - (*((s16 *) (dst + 0x12))), 0x10);
-    *((s16 *) (dst + 0x14)) = 0;
-    *((s16 *) (dst + 0x12)) = (*((u16 *) (dst + 0x12))) + v;
+    dst->h10 = dst->h10 + func_8001A4F0(t - (s16)dst->h10, 0x10);
+    v = func_8001A4F0(val - (s16)dst->h12, 0x10);
+    dst->h14 = 0;
+    dst->h12 = dst->h12 + v;
     if (use_high) {
-        target = frac_s1 * 0x7D0;
+        t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
-        target = frac_s1 * 0x1F4;
+        t = ((frac_s1 * 0x1F4) + (inv_s1 * 0x2EE0)) >> 12;
     }
-    cur = *((s32 *) (dst + 0x18));
-    dx = ((target + (inv_s1 * 0x2EE0)) >> 12) - cur;
-    if (dx < 0) {
-        dx += 0xF;
+    cur = dst->w18;
+    dd = t - cur;
+    if (dd < 0) {
+        dd += 0xF;
     }
-    *((s32 *) (dst + 0x18)) = cur + (dx >> 4);
-    *((s16 *) (dst + 0x30)) = 0x64;
-    *((s16 *) (dst + 0x32)) = 0;
-    *((s16 *) (dst + 0x34)) = 0x64;
-    *((s16 *) (dst + 0x38)) = 0x64;
-    *((s16 *) (dst + 0x3A)) = 0;
-    *((s16 *) (dst + 0x3C)) = 0x64;
+    dst->w18 = cur + (dd >> 4);
+    dst->h30 = 0x64;
+    dst->h32 = 0;
+    dst->h34 = 0x64;
+    dst->h38 = 0x64;
+    dst->h3A = 0;
+    dst->h3C = 0x64;
 }
 /* kengo:LOW  |  su_menu_tuto/_DispPracticeMenuTex  |  231i  |  PS2 UI — size coincidence, different stack frames */
 void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
@@ -1048,7 +1049,7 @@ void func_8001BAE4(s32 *arg0, s32 *arg1, s32 arg2) {
 void func_8001BBD8(s32 *arg0, s32 *arg1, s32 *arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    func_8001B748((s32 *)&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
+    func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0, -0x200 - ratan2(*(s16 *)((u8 *)arg1 + 4) - *(s16 *)((u8 *)arg0 + 4), *(s16 *)((u8 *)arg1 + 8) - *(s16 *)((u8 *)arg0 + 8)));
 }
 void func_8001BC70(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
@@ -1058,10 +1059,10 @@ void func_8001BC70(u8 *arg0, s32 arg1) {
     dst = (Vec3 *)&D_800F6608;
     src = (Vec3 *)(arg0 + 0x174);
     *dst = *src;
-    D_800F6618 = 0x120;
-    D_800F661A = arg1;
-    D_800F661C = 0;
-    D_800F6620 = 0x1162;
+    D_800F6608.h10 = 0x120;
+    D_800F6608.h12 = arg1;
+    D_800F6608.h14 = 0;
+    D_800F6608.w18 = 0x1162;
 }
 void func_8001BCF0(u8 *arg0, s32 arg1) {
     typedef struct { s32 x, y, z; } Vec3;
@@ -1071,19 +1072,19 @@ void func_8001BCF0(u8 *arg0, s32 arg1) {
 
     *(Vec3 *)&D_800F6608 = *(Vec3 *)(arg0 + 0xB8);
 
-    D_800F660C -= 0x44C;
+    D_800F6608.w4 -= 0x44C;
 
-    D_800F6618 = 0x100 - (arg1 * 288) / 4096;
+    D_800F6608.h10 = 0x100 - (arg1 * 288) / 4096;
 
     {
         s32 div4 = arg1 / 4;
         s32 sum = arg1 * 3000 + diff * 8000;
         u16 lhu_val = *(u16 *)(arg0 + 0x1CA);
         s32 val;
-        D_800F6620 = sum >> 12;
+        D_800F6608.w18 = sum >> 12;
         val = 0xB00 - div4;
-        D_800F661C = 0;
-        D_800F661A = val - lhu_val;
+        D_800F6608.h14 = 0;
+        D_800F6608.h12 = val - lhu_val;
     }
 }
 void func_8001BE08(s32 *arg0) {
@@ -1523,7 +1524,7 @@ void func_8001E800(void) {
     }
     {
         u32 flags = ptr[0x62] & 4;
-        func_80048BA4(D_800F5344, a1, flags > 0);
+        func_80048BA4(D_800F5328.h1C, a1, flags > 0);
     }
 }
 void func_8001E878(void) {
