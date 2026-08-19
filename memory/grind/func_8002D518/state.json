@@ -1,7 +1,7 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -33,26 +33,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Forensics closed the s1-s4 frontier head in closed form: `disc` cannot reach $a2/$6 by allocno priority (would need live_length > 132 in a 144-insn function); the guard's register is chosen by cse.c m"
+  },
+  {
+   "session": 6,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Forensics closed BOTH s5 frontier items in closed form: cse's make_regs_eqv canonicalisation is strictly either/or (so target's disc/ud split cannot be a C-level copy and the 'untested 2x2 cell' does "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 6-slot `disc` residual now needs a NEW CONFLICT EDGE from disc to an early-allocated $5 holder (allocno 123 `result`, or 76/77), simultaneously with keeping allocno 132 (`ud`) alive as the $4 blocker and getting pri(117) below 7273. The priority/live-range axis alone is dead (s5 H5.5); do not re-open it.",
-   "mechanism": "global.c find_reg blocks a hard reg only via 117's own hard-reg conflict set or via a reg already held by a CONFLICTING allocno. $2 is already a hard conflict; $3 becomes one once disc is live across the lzcr region (observed in the s5 M1 dump: `;; 117 conflicts: 108 116 117 131 2 3 12 29`); $4 can only come from allocno 132; $5 can only come from 123/76/77 because the one $5 holder disc already conflicts with (116 dist_sq) sits at position 22 and would need live_length > 132.",
-   "next_probe": "Attack allocno 123 (`result`). Note that target's `disc < 0` arm is a REAL `return 0;` (`addu $v0,$zero,$zero` + j to the epilogue label past `addu $v0,$a1,$zero`) \u2014 i.e. in the original build there is probably NO `result` pseudo on that arm at all, which changes 123's refs/live_length and hence its position AND the disc-vs-result liveness overlap. This makes frontier items (a) and (b) ONE problem, not two: solving slot 88 may be what creates the $5 blocker. Concretely: re-measure the `if (disc < 0) return 0;` spelling (s3 measured it as score 10 via jump2 cross-jump, 142 insns) but this time DUMP it and read (i) the new `;; N regs to allocate` order and 117's conflict set, and (ii) .jump2's find_cross_jump decision, before judging it by score alone. A +3 score that fixes the allocation is a better platform than a flat 7.",
-   "_": ""
+   "hypothesis": "The $6 allocation for `disc` is reachable by REDUCING the reference count of the pseudo that must occupy $a2 rather than by lengthening its live range. s5 closed the priority axis assuming 5-6 refs (floor_log2 = 2, requiring live_length > 132); with 2-3 refs the floor_log2 factor halves and the requirement collapses to live_length > 22-33, which is entirely reachable in a 144-insn function.",
+   "mechanism": "global.c allocno_compare sorts descending by floor_log2(n_refs)*n_refs/live_length (x10000). Allocno 117 is currently position 1 of 24 at 5 refs/6 insns = 16667, so nothing at all is allocated before it and only its own HARD-reg conflict set ({2,29}) can block a register - which is the real reason it takes $3. Dropping it below 116 (`dist_sq`, pri 909, allocated $5, ALREADY in 117's conflict set) blocks $5 with no new edge needed at all; 132 (`ud`, pri 7273, $4) then also precedes it, though an edge to 132 is still required for $4 - see the second frontier item.",
+   "next_probe": "Look for a spelling in which target's six $a2 references (slots 90 def, 91 bgez, 92 sltiu, 97 copy source, 99 table index, 104 bltz) are carried by TWO pseudos instead of one - e.g. the fast-path table index taken from a separately-named value - so that the pseudo which must land in $a2 shows `Register N used 3 times across L insns` in .lreg. Read the .lreg refs/live_length line BEFORE judging by score: the s5/E3 priority model is validated and predictive, so the whole allocno order can be computed from one dump."
   },
   {
-   "hypothesis": "Slot 88: `if (disc < 0) return 0;` produces exactly target's 2-insn block but jump2 cross-jumps it into the entrance return-0 block (142 insns vs target 144), while target and our build BOTH already carry two UN-merged copies of that same block in the entrance chain \u2014 so find_cross_jump is selective here and something distinguishes the surviving pair.",
-   "mechanism": "jump.c find_cross_jump matches identical instruction tails and redirects the conditional branch to the earlier copy, deleting the block. Whatever property keeps the two entrance copies separate is the property the disc<0 arm must acquire.",
-   "next_probe": "The .jump2 slice for the base chassis is ALREADY captured at tmp/grind/func_8002D518/s5/jump2.func.txt (function region, 785 lines) \u2014 start there rather than re-dumping. Identify which pair find_cross_jump matched and why the two entrance copies are not merged with each other. Then re-dump with the `if (disc < 0) return 0;` variant applied and diff the two .jump2 regions. Per s4 H13 do NOT spend probes respelling `return 0` itself; the emitted shape is already correct.",
-   "_": ""
+   "hypothesis": "The `addu $a0,$a2,$zero` copy at target slot 97 is emitted by reload / asm-operand satisfaction, not by a C-level `u32 ud = disc;`. If so the correct source form is the no-`ud` one (s5 M1) and the attack surface moves from cse to reload.",
+   "mechanism": "s6/E7 proves cse cannot leave both registers with consumers, yet target has `disc` read by the bltz at slot 104 and `ud` read by the island at 106 and the srlv at 118. Two registers with live consumers therefore cannot both be members of one cse quantity, so one of them must be created after cse - reload copies for an asm input operand, or a local-alloc split, are the candidates. s5's M1 build is the existing datapoint: allocno 132 vanished yet build_insns stayed at 144, so a copy instruction still reached the output from some later pass.",
+   "next_probe": "Rebuild the s5 M1 form (`(&D_8008D118)[(u32)disc >> shift]`, keeping `ud` only as the asm input), dump, and locate the surviving `addu` copy across .greg / .jump2 / .dbr to NAME the pass that emits it. If it is reload, read reload1.c's handling of the `\"r\"(ud)` input operand and ask what would make reload pick a different register for it - that is the mechanism that produces target's two-register split."
   },
   {
-   "hypothesis": "cse.c's make_regs_eqv is now a named, quantified lever for this function and should be consulted BEFORE proposing any spelling that touches the disc/ud pair.",
-   "mechanism": "`ud` becomes the quantity's canonical register (and therefore the register every later consumer reads) iff its last use is later than `disc`'s AND it outlives the cse extended basic block. Making `ud`'s last use earlier does not merely change the guard's operand \u2014 it deletes allocno 132 outright, because then all of ud's uses are rewritten to disc and the copy has no surviving consumer of its own.",
-   "next_probe": "Any future disc/ud spelling must be checked against BOTH conditions before it is built: it must keep `ud`'s last use later than `disc`'s (to preserve allocno 132 as the $4 blocker) while somehow keeping the bltz on `disc`. The only remaining degree of freedom is condition (a) \u2014 the cse EXTENDED basic block extent (cse_basic_block_start/end, set by cse_end_of_basic_block under flag_cse_follow_jumps + flag_cse_skip_blocks). If `ud`'s last use can be brought INSIDE the same extended block as the copy while still being later than disc's, the predicate fails on (a) and disc stays canonical WITHOUT losing allocno 132. That is the one untested cell of the 2x2 and it is the highest-value next forensic probe: instrument or read cse.c's block-extent computation for this function and find where the extended block actually ends.",
-   "_": ""
+   "hypothesis": "Slot 88 (target `addu $v0,$zero,$zero` + `j .L8002D774` vs our `move $5,$0` + join jump) is decided in reorg.c, not in jump.c.",
+   "mechanism": "s6/E11: jump2 merges all 9 return-0 blocks into 1 in every build measured; the 9 copies present in both the target and our 144-insn base build are re-materialised by reorg.c filling each `j <label>` delay slot with the instruction at the jump target and redirecting the jump past it. Whether the disc<0 arm gets its own re-materialised copy is therefore a delay-slot-filling decision.",
+   "next_probe": "Dump the `if (disc < 0) return 0;` variant and read its .dbr function region against the base .dbr: find the `j` whose delay slot was NOT filled from the return-0 target (the 2 missing insns) and identify which fill_slots_from_thread / relax_delay_slots condition rejected it. Do NOT re-read .jump2 for this."
   }
  ],
  "judge_constraints": [],

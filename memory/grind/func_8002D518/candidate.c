@@ -1,3 +1,46 @@
+/* [s6 ADDENDUM - forensics modality, floor UNCHANGED at 7]
+ * Re-applied to src/code6cac_b.c at s6 dispatch (HEAD did NOT carry it, for the
+ * SIXTH consecutive session - HEAD held a hybrid pre-s3 form) and re-measured:
+ * score 7, build_insns 144 == target_insns 144. Restored to exactly this text
+ * at end of session. Still the best known form.
+ *
+ * s6 was pass-attribution forensics and it CLOSED BOTH remaining frontier items
+ * from s5 - neither is a live axis any more:
+ *
+ * (1) cse's canonicalisation is STRICTLY EITHER/OR (evidence.md E7/E8, read from
+ *     cse.c:826 make_regs_eqv + cse.c:8008 cse_end_of_basic_block). Both `disc`
+ *     and `ud` go into ONE quantity and every later read is rewritten to
+ *     qty_first_reg, so the loser has zero consumers and its copy is dead.
+ *     The s5 "untested 2x2 cell" is therefore not a free cell - winning the
+ *     extended-block extent only flips WHICH register survives. s5/E4
+ *     requirement 1 (disc live past the copy WHILE allocno 132 still exists) is
+ *     unreachable from any plain-copy spelling. IMPLICATION: target's
+ *     `addu $a0,$a2,$zero` at slot 97 is NOT a C-level `u32 ud = disc;`.
+ *     Do NOT spend another session respelling that copy.
+ *
+ * (2) s5/E4 requirement 2 IS reachable - hoisting `s32 result = 0;` above the
+ *     discriminant does create `;; 117 conflicts: ... 123 ...` - but it is
+ *     arithmetically self-defeating: stretching the $5 holder over disc's range
+ *     divides its allocno priority by the same length (pri 8889 -> 811,
+ *     position 7 -> 23 of 24), so it is allocated after 117 and blocks nothing.
+ *     Score 11 / 143 insns. And the `if (disc < 0) return 0;` spelling is
+ *     allocation-NEUTRAL (117 bit-for-bit identical; 123 moves DOWN to position
+ *     13), so slot 88 and the disc register are INDEPENDENT problems, not one.
+ *     Score 10 / 142 insns. Both banked under rejected/.
+ *
+ * (3) Slot 88 is NOT a jump2 cross-jump question. `.jump` carries 9 return-0
+ *     blocks and `.jump2` carries 1 in BOTH our base and every variant; the 9
+ *     copies in the final (and in the target) asm are re-materialised by
+ *     reorg.c delay-slot filling. Read .dbr, never .jump2, for slot 88.
+ *
+ * THE ONE ARITHMETIC OPENING s6 LEAVES (see hypotheses.md frontier): allocno
+ * priority is floor_log2(refs)*refs/live_length. s5 closed this axis using
+ * disc's CURRENT 5-6 refs, where floor_log2 = 2 and the required live_length is
+ * > 132 insns. But floor_log2(2) = floor_log2(3) = 1, so a 3-ref disc needs only
+ * live_length > 33 to sort below 116 (`dist_sq`, pri 909, already holding $5 and
+ * ALREADY conflicting with 117), and a 2-ref disc needs only > 22. Reducing the
+ * reference count on the pseudo that must land in $a2 is the untried axis.
+ */
 /* [s5 ADDENDUM - forensics modality, floor UNCHANGED at 7]
  * Re-applied to src/code6cac_b.c at s5 dispatch (HEAD did NOT carry it, for the
  * FIFTH consecutive session) and re-measured: score 7, build_insns 144 ==

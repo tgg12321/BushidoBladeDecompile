@@ -604,3 +604,117 @@ hard conflict rather than by allocno 132, M1 becomes the better starting chassis
 - [s5] The M1 variant (slow-path index on disc) is an equal-score-7 but STRUCTURALLY DIFFERENT chassis with disc in $4 and no separate `ud` allocno. Recorded as a fallback: if a later session ever finds a way to block $4 by a HARD conflict (rather than via allocno 132), M1 becomes the better starting chassis.
 
 - [s5] NOT analysed this session: the slot-88 / jump2 cross-jump residual (frontier item b). Its .jump2 slice was captured anyway and is banked at tmp/grind/func_8002D518/s5/jump2.func.txt as a free head start.
+
+---
+
+## s6 (forensics) — floor UNCHANGED at 7 (re-measured on the re-applied candidate; 144 == 144)
+
+Chassis note, SIXTH consecutive session: `src/code6cac_b.c` at dispatch did NOT
+carry `memory/grind/func_8002D518/candidate.c`. HEAD held a hybrid pre-s3 form
+(`register s32 t4_v asm("t4")` island + `s32 sq = sqrt_val << 9;` divide tail).
+The candidate was re-applied and re-measured at score 7 / 144 insns before any
+probe, and restored to that exact state at end of session.
+
+### E7 — cse's register canonicalisation is STRICTLY EITHER/OR. The target's two-register `disc`/`ud` split CANNOT come from a source-level plain copy. (closed form; KILLS the s5 frontier item 3)
+
+Read from `tools/gcc-2.7.2/cse.c:826` (`make_regs_eqv`) and
+`cse.c:8008` (`cse_end_of_basic_block`), not hypothesised:
+
+* `make_regs_eqv(new=132 ud, old=117 disc)` places BOTH regs in ONE quantity `q`
+  and sets `qty_first_reg[q]` to exactly one of them. Every subsequent *read* of
+  that quantity anywhere in the extended block is rewritten to `qty_first_reg`.
+* Therefore whichever register loses canonicality has **zero surviving
+  consumers**, and its defining copy is dead. There is no cell of the predicate
+  in which both `disc` and `ud` keep consumers.
+* Both halves are already measured:
+  - base / if-else guard (shape A): `ud` wins → the bltz reads `ud`, `disc`'s
+    live range collapses to 6 insns (`Register 117 used 5 times across 6 insns`).
+  - s5 M1 / `[(u32)disc >> shift]` and the s3 v8/v9/v10 "init lzcr then if"
+    shape (shape B): `disc` wins → allocno **132 disappears entirely**
+    (`;; 23 regs to allocate`), i.e. the copy is deleted.
+* **Consequence.** The s5 frontier's "untested 2×2 cell" (win the cse extended
+  block extent so that condition (a) fails while (b) still holds) is **not a
+  free cell**: winning it only flips WHICH register survives. It can never
+  satisfy s5/E4 requirement 1 (`disc` live past the copy *while* allocno 132
+  still exists). Requirement 1 is unreachable from any plain-copy spelling.
+  The target's `addu $a0,$a2,$zero` at slot 97 must therefore come from
+  something other than a C-level `u32 ud = disc;` — a reload/asm-operand copy or
+  a source in which the two values are not cse-equivalent.
+
+### E8 — the exact extended-block mechanism (source-attributed, so later sessions need not re-derive it)
+
+`cse_end_of_basic_block` (cse.c:8039) scans `while (p && GET_CODE (p) != CODE_LABEL)`
+— the block ends at the first CODE_LABEL — with exactly two escapes:
+* **TAKEN** (cse.c:8100): follow a conditional jump when
+  `LABEL_NUSES (JUMP_LABEL (p)) == 1` **and the target label is preceded by a
+  BARRIER**. Our if/else guard compiles to `bgez disc,L_else / <then> / j L_join /
+  L_else: <island> / L_join:` — `L_else` *is* barrier-preceded, so cse follows it,
+  scans the island, and then stops dead at `L_join`. `ud`'s last use (the
+  `srlv` after `L_join`) is therefore OUTSIDE the block → predicate (a)
+  `uid_cuid[regno_last_uid[132]] > cse_basic_block_end` is TRUE → `ud` promoted.
+  That is the whole reason the base has `ud` canonical.
+* **AROUND** (cse.c:8149): follow a conditional jump that branches *around* a
+  block, i.e. the target label is NOT barrier-preceded (fall-through). The
+  "init `lzcr = 0` then plain `if`" spelling — which is literally what target's
+  `bltz $a2,.L8002D6BC` + fall-through island reads like — takes this path, so
+  the block extends PAST the join label and over the `srlv`, predicate (a) goes
+  FALSE and `disc` stays canonical. Which is exactly the shape that s3 measured
+  as losing the copy, and E7 explains why: keeping `disc` canonical *is* what
+  deletes `ud`.
+
+### E9 — s5/E4 requirement 2 IS reachable in ordinary C, but it is ANTI-CORRELATED with the allocation order (measured, score 11)
+
+Probe: hoist the default value — `s32 result = 0;` before the discriminant, guard
+spelled `if (disc >= 0) { ... }`, inner `result = 0;` dropped.
+* Result: **the new conflict edge appears** —
+  `;; 117 conflicts: 108 116 117 123 2 29` (123 = `result`, the $5 holder).
+  s5's "requirement 2 has no current mechanism at all" is superseded.
+* But the same edit is what makes the edge: `result` must be live across `disc`,
+  so `Register 123` goes 4 refs/9 insns → **3 refs/37 insns**, pri 8889 → **811**,
+  allocno position **7 → 23 of 24**. It is now allocated long AFTER 117 and
+  blocks nothing; it took `$8`. Score 11, build_insns 143 (parity lost).
+* **General law for this function:** any edit that lengthens a $5 holder's live
+  range enough to overlap `disc`'s 6-insn range simultaneously divides that
+  holder's `allocno_compare` priority by the same length. Creating the edge and
+  keeping the blocker early are in direct arithmetic tension.
+
+### E10 — slot 88 is ALLOCATION-NEUTRAL; the s5 frontier's "(a) and (b) are one problem" is FALSE (measured, score 10, dumps read)
+
+Probe: `if (disc < 0) return 0;` (the s3 form) re-measured **with dumps**.
+* `.greg`: `;; 117 conflicts: 108 116 117 2 29` — **unchanged**; no 123 edge.
+* `.lreg`: 117 unchanged bit-for-bit (5 refs/6 insns, pri 16667, position 1,
+  `;; 117 preferences: 3`, gets `$3`). 123 goes 4 refs/9 → 3 refs/7, pri
+  8889 → 4286, position 7 → **13**: it moves DOWN the order, i.e. *further* from
+  being able to block `$5`.
+* So solving slot 88 does not and cannot create the `$5` blocker. Frontier
+  items (a) and (b) are independent.
+
+### E11 — the slot-88 loss is NOT a `find_cross_jump` selectivity question (the s5 frontier's premise is refuted)
+
+Counted directly in the dumps for both the base chassis and the `return 0;` variant:
+* `.jump` (pre-reload) carries **9** distinct `(set (reg/i:SI 2 v0) (const_int 0))`
+  return-0 blocks; `.jump2` (post-reload) carries **1** — in BOTH builds.
+  jump2's cross-jumper is not selective at all: it merges every one of them.
+* The final target asm nevertheless contains **9** `addu $v0, $zero, $zero`
+  instructions, and so does our 144-insn base build. Those 9 copies are
+  RE-MATERIALISED after jump2, by `reorg.c` filling each `j <label>` delay slot
+  with the instruction at the jump target (and redirecting the jump past it).
+* **Consequence.** The s5 frontier statement "target and our build BOTH already
+  carry two UN-merged copies … so find_cross_jump is selective here" is wrong.
+  Slot 88 is a **reorg/delay-slot** question (which `j`+`addu` pairs reorg
+  re-expands), not a jump2 cross-jump question. Any future probe on slot 88
+  should read `.dbr`, not `.jump2`.
+
+- [s6] CHASSIS, sixth consecutive session: src/code6cac_b.c at dispatch did NOT carry memory/grind/func_8002D518/candidate.c (HEAD held a hybrid pre-s3 form: `register s32 t4_v asm("t4")` island + `s32 sq = sqrt_val << 9;` divide tail). The candidate was re-applied and re-measured at score 7 / build_insns 144 == target_insns 144 before any probe, and restored to exactly that state at end of session (re-verified score 7 / 144).
+
+- [s6] cse.c:826 make_regs_eqv puts pseudo 132 (`ud`) and pseudo 117 (`disc`) into ONE quantity and rewrites every later read of that quantity to qty_first_reg - so exactly one of the two ever has consumers, and the other's defining copy is dead. Both halves are already measured (base: ud canonical, 117 = 5 refs/6 insns; s5 M1 and s3 v8-v10: disc canonical, `;; 23 regs to allocate`, allocno 132 gone).
+
+- [s6] cse.c:8008 cse_end_of_basic_block scans `while (p && GET_CODE (p) != CODE_LABEL)` with exactly two escapes: TAKEN (cse.c:8100 - needs LABEL_NUSES(JUMP_LABEL)==1 AND the target label BARRIER-preceded) and AROUND (cse.c:8149 - needs the target label NOT barrier-preceded). Our if/else LZCS guard takes the TAKEN path, which ends the block at the inner join label and leaves `ud`'s last use (the srlv) outside it, so make_regs_eqv condition (a) holds and `ud` is promoted. The init-lzcr-then-if shape takes the AROUND path, which extends the block past the join over the srlv, so `disc` stays canonical - and that is exactly why that shape loses the copy.
+
+- [s6] MEASURED: hoisting `s32 result = 0;` above the discriminant DOES create the conflict edge that s5/E4 called mechanism-less - `;; 117 conflicts: 108 116 117 123 2 29`. score 11, build_insns 143. But `Register 123` goes 4 refs/9 insns (pri 8889, allocno position 7) to 3 refs/37 insns (pri 811, position 23 of 24) and takes $8 instead of $5.
+
+- [s6] MEASURED: `if (disc < 0) return 0;` gives score 10 / build_insns 142 with allocno 117 bit-for-bit unchanged (5 refs/6 insns, pri 16667, position 1, preference 3, gets $3) and conflicts unchanged at `108 116 117 2 29`; 123 goes 4 refs/9 to 3 refs/7 (pri 8889 to 4286, position 7 to 13).
+
+- [s6] MEASURED: .jump = 9 return-0 blocks, .jump2 = 1, in both the base chassis and the return-0 variant; the target asm and our 144-insn base build each contain 9 `addu $v0, $zero, $zero`. The duplication is reorg.c delay-slot filling, not surviving jump2 blocks.
+
+- [s6] NEW ARITHMETIC OPENING (not yet probed): global.c allocno_compare priority is floor_log2(refs)*refs/live_length. s5 closed the priority axis using disc's current 5-6 refs, where floor_log2 = 2 and beating 116 (`dist_sq`, pri 909, holds $5, and ALREADY conflicts with 117) needs live_length > 132. But floor_log2(2) = floor_log2(3) = 1, so a 3-ref disc needs only live_length > 33 and a 2-ref disc only > 22. The reference COUNT on the pseudo that must land in $a2, not its live length alone, is the untried variable.

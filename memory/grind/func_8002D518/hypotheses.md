@@ -473,3 +473,73 @@ This is the s1–s4 frontier head. It is now closed in closed form.
 - probe: Reproduced allocno_compare's ranking by hand from the .lreg 'Register N used R times across L insns' lines; it matches the printed `;; 24 regs to allocate: 117 122 72 121 78 79 123 76 77 132 157 131 105 104 107 75 74 106 118 103 102 116 108 73` EXACTLY, including the 8889 (78/79/123) and 8000 (76/77) ties broken by ascending allocno index — so the model is validated. Then solved for the live_length that would put 117 below the $5 holder it conflicts with.
 - result: KILLED in closed form. The ONLY $5-holding allocno that conflicts with 117 is 116 (`dist_sq`), at position 22 of 24 with priority 909 (3 refs / 33 insns). Putting 117 below it requires floor_log2(6)*6/L < 3/33, i.e. live_length > 132 insns, in a 144-insn function whose `disc` is not even computed until slot ~84. Unreachable by any spelling, any permuter find, any statement reordering. Priority is the wrong axis entirely.
 - verdict: KILLED
+
+## s6 hypotheses (forensics modality) — 3 KILLED, 1 CONFIRMED
+
+### H6.1 — KILLED. The s5 "untested 2x2 cell" (win cse's extended-block extent so `ud`'s last use lands inside the block) keeps `disc` canonical WITHOUT losing allocno 132.
+* **Mechanism examined.** `cse.c:826 make_regs_eqv` + `cse.c:8008 cse_end_of_basic_block`, read in source.
+* **Probe.** Source read, no build needed: `make_regs_eqv` puts 117 and 132 in ONE quantity and rewrites every later read of that quantity to `qty_first_reg`. Cross-checked against the two already-measured halves (base = `ud` canonical, bltz reads 132; s5 M1 / s3 v8-v10 = `disc` canonical, `;; 23 regs to allocate`, allocno 132 gone).
+* **Result.** KILLED in closed form. Winning the extent only flips WHICH of the two registers keeps consumers; the loser's copy is always dead. s5/E4 requirement 1 ("`disc` live past the copy while 132 still exists") is unreachable from ANY plain-copy spelling of `u32 ud = disc;`. Full derivation: evidence.md E7 + E8.
+* **Corollary for later sessions.** Target's `addu $a0,$a2,$zero` (slot 97) cannot be a C-level copy of `disc`. If the 6-slot residual is ever to close, the copy has to arise from something cse does not see as an equivalence — a reload/asm-operand copy, or two values that are not cse-equal.
+
+### H6.2 — CONFIRMED (mechanism) but KILLED (as a lever). s5/E4 requirement 2 — a NEW conflict edge from `disc` to an early-allocated $5 holder — is creatable with ordinary C.
+* **Mechanism.** Hoisting `result`'s default initialisation above the discriminant makes `result` (allocno 123, the $5 holder) live across `disc`'s whole range, so `global_conflicts` records the 117<->123 edge.
+* **Probe.** `s32 result = 0;` before `disc`, guard respelled `if (disc >= 0) { ... }`, inner `result = 0;` dropped. `sandbox --disable all` + `dump.ps1`, `.greg`/`.lreg` read.
+* **Result.** The edge appears exactly as predicted: `;; 117 conflicts: 108 116 117 123 2 29`. **But** the same lengthening divides pri(123) by the new live length: 4 refs/9 insns (pri 8889, position 7) becomes 3 refs/37 insns (pri 811, position 23 of 24). 123 is then allocated AFTER 117, blocks nothing, and takes `$8`. Score **11**, build_insns **143** (parity lost). Banked `rejected/hoisted-result-init-creates-117x123-edge-but-kills-pri123-score11.c`.
+* **Standing law.** Edge-creation and blocker-earliness are arithmetically anti-correlated in this function: any edit that stretches a $5 holder over `disc`'s 6-insn range divides that holder's `allocno_compare` priority by the same factor.
+
+### H6.3 — KILLED. Solving slot 88 (`if (disc < 0) return 0;`) also creates the $5 blocker, so frontier items (a) and (b) are one problem.
+* **Probe.** The s3 form re-measured WITH dumps (which s3 never did).
+* **Result.** score 10, build_insns 142. `.greg` `;; 117 conflicts: 108 116 117 2 29` — unchanged, no 123 edge; 117 identical (5 refs/6 insns, pri 16667, position 1, preference 3, `$3`). 123 goes 4 refs/9 -> 3 refs/7, pri 8889 -> 4286, position 7 -> 13 — i.e. it moves FURTHER from being a blocker. KILLED: slot 88 is allocation-neutral, the two items are independent. Banked `rejected/disc-lt0-return0-does-not-create-dollar5-blocker-score10.c`.
+
+### H6.4 — KILLED. The slot-88 shortfall is a `jump.c find_cross_jump` selectivity question (s5 frontier item 2's premise).
+* **Probe.** Counted `(set (reg/i:SI 2 v0) (const_int 0))` blocks in the sliced `.jump` and `.jump2` dumps for BOTH the base chassis and the `return 0;` variant, and counted `addu $v0, $zero, $zero` in target asm.
+* **Result.** `.jump` = 9 blocks, `.jump2` = 1 block, in BOTH builds — the cross-jumper is not selective, it merges all nine. Target's asm nonetheless has 9 such instructions and so does our 144-insn base. The 9 copies are re-materialised AFTER jump2 by `reorg.c` delay-slot filling from the jump target. KILLED: slot 88 is a reorg/`.dbr` question, not a jump2 question. Read `.dbr`, not `.jump2`, for any future slot-88 probe.
+
+## [s6] cse's make_regs_eqv canonicalisation is strictly either/or, so the target's two-register disc/ud split cannot come from a C-level `u32 ud = disc;`.
+- mechanism: cse.c:826 make_regs_eqv places new(132) and old(117) in ONE quantity and sets qty_first_reg to exactly one of them; every later read of that quantity in the extended block is rewritten to qty_first_reg, leaving the other register with zero consumers and its defining copy dead. cse.c:8008 cse_end_of_basic_block determines the extent: it stops at the first CODE_LABEL unless it can follow the conditional jump TAKEN (LABEL_NUSES==1 AND a BARRIER before the target label — our if/else shape) or AROUND (target label not barrier-preceded — the init-then-if shape).
+- probe: Source read of tools/gcc-2.7.2/cse.c, cross-checked against the two already-measured halves: base if/else = ud canonical + 117 at 5 refs/6 insns; s5 M1 and s3 v8-v10 = disc canonical + `;; 23 regs to allocate` (allocno 132 deleted).
+- result: The s5 frontier's "untested 2x2 cell" does not exist as a free cell — winning the extent only flips which register survives. s5/E4 requirement 1 is unreachable from any plain-copy spelling.
+- verdict: KILLED
+
+## [s6] s5/E4 requirement 2 (a new conflict edge from disc to an early-allocated $5 holder) is creatable in ordinary C by hoisting `result`'s default initialisation above the discriminant.
+- mechanism: making `result` live across `disc`'s range makes global.c global_conflicts record the 117<->123 edge.
+- probe: `s32 result = 0;` before disc + `if (disc >= 0) {...}`; sandbox --disable all, dump.ps1, .greg/.lreg read.
+- result: Edge CONFIRMED present (`;; 117 conflicts: 108 116 117 123 2 29`), but pri(123) collapses 8889 -> 811 and its allocno position 7 -> 23 of 24, so it is allocated after 117 and blocks nothing ($8, not $5). Score 11, build_insns 143. Edge-creation and blocker-earliness are arithmetically anti-correlated.
+- verdict: KILLED (as a lever); CONFIRMED (as a mechanism)
+
+## [s6] Solving slot 88 with `if (disc < 0) return 0;` also creates the $5 blocker (s5 frontier: "(a) and (b) are ONE problem").
+- mechanism claimed: removing `result`'s assignment on the disc<0 arm changes 123's refs/live_length and the disc-vs-result liveness overlap.
+- probe: s3's form re-measured with dumps; .greg conflicts + .lreg refs/live_length read for 117 and 123.
+- result: score 10, 142 insns. 117 bit-for-bit unchanged (5/6, pri 16667, position 1, pref 3, $3); no 123 edge; 123 moves DOWN the order (pri 8889 -> 4286, position 7 -> 13). Slot 88 is allocation-neutral; the two frontier items are independent.
+- verdict: KILLED
+
+## [s6] The slot-88 shortfall (142 vs 144 insns) is caused by jump.c find_cross_jump being selective about which return-0 blocks it merges.
+- mechanism claimed: find_cross_jump matches identical tails and deletes one copy; something distinguishes the two entrance copies that survive.
+- probe: counted `(set (reg/i:SI 2 v0) (const_int 0))` blocks in sliced .jump vs .jump2 for base AND for the `return 0;` variant; counted `addu $v0,$zero,$zero` in asm/funcs/func_8002D518.s.
+- result: .jump = 9, .jump2 = 1, in BOTH builds — the cross-jumper merges ALL of them, it is not selective. Target's asm has 9 copies and our 144-insn base build reproduces them, so the 9 are re-materialised after jump2 by reorg.c filling each `j <label>` delay slot from the jump target. The s5 frontier premise ("both already carry two UN-merged copies") is refuted. Future slot-88 probes must read .dbr, not .jump2.
+- verdict: KILLED
+
+## [s6] The s5 'untested 2x2 cell' - win cse's extended-basic-block extent so ud's last use lands inside the block - keeps `disc` canonical WITHOUT losing allocno 132, satisfying s5/E4 requirement 1.
+- mechanism: cse.c:826 make_regs_eqv places new(132 ud) and old(117 disc) in ONE quantity and sets qty_first_reg to exactly one of them; every later read of that quantity inside the extended block is rewritten to qty_first_reg. cse.c:8008 cse_end_of_basic_block sets the extent: it stops at the first CODE_LABEL unless it can follow the conditional jump TAKEN (cse.c:8100 - needs LABEL_NUSES(JUMP_LABEL)==1 AND the target label BARRIER-preceded, which is our if/else guard) or AROUND (cse.c:8149 - needs the target label NOT barrier-preceded, which is the init-lzcr-then-if shape).
+- probe: Source read of tools/gcc-2.7.2/cse.c (the make_regs_eqv predicate and the cse_end_of_basic_block scan loop with both escapes), cross-checked against the two already-measured halves: base if/else = ud canonical with `Register 117 used 5 times across 6 insns`; s5 M1 and s3 v8-v10 = disc canonical with `;; 23 regs to allocate` (allocno 132 deleted).
+- result: Winning the extent only flips WHICH of the two registers keeps consumers. The loser always has zero reads left, so its defining copy is dead. There is no cell in which both disc and ud keep consumers, hence s5/E4 requirement 1 (disc live past the copy WHILE allocno 132 still exists) is unreachable from any plain-copy spelling of `u32 ud = disc;`. Corollary: target's `addu $a0,$a2,$zero` at slot 97 is not a C-level copy of disc.
+- verdict: KILLED
+
+## [s6] s5/E4 requirement 2 - a NEW conflict edge from `disc` (allocno 117) to an early-allocated $5 holder - is creatable with ordinary C by hoisting `result`'s default initialisation above the discriminant.
+- mechanism: global.c global_conflicts records an allocno-allocno edge when two live ranges overlap; making `result` (allocno 123, the $5 holder) live from before disc's definition through to the return makes it overlap disc's 6-insn range.
+- probe: `s32 result = 0;` moved above the discriminant, guard respelled `if (disc >= 0) { ... }`, inner `result = 0;` dropped. `wteng main sandbox func_8002D518 --disable all`, then `pwsh tools/grinder/dump.ps1 func_8002D518`; .greg conflict sets and .lreg refs/live_length lines read.
+- result: The edge appears exactly as predicted: `;; 117 conflicts: 108 116 117 123 2 29` (was `108 116 117 2 29`). But the same lengthening divides pri(123) by the new live length: `Register 123` goes 4 refs/9 insns (pri 8889, allocno position 7) to 3 refs/37 insns (pri 811, position 23 of 24). 123 is then allocated long AFTER 117, blocks nothing, and takes $8. score 11, build_insns 143 vs target 144. Mechanism CONFIRMED, lever KILLED: edge-creation and blocker-earliness are arithmetically anti-correlated in this function.
+- verdict: KILLED
+
+## [s6] Solving slot 88 with `if (disc < 0) return 0;` also creates the $5 blocker - i.e. s5 frontier items (a) and (b) are ONE problem, so a +3 score that fixes the allocation would be a better platform than a flat 7.
+- mechanism: Removing `result`'s assignment on the disc<0 arm was expected to change allocno 123's refs/live_length and the disc-vs-result liveness overlap, hence 123's position AND the conflict graph.
+- probe: The s3 form re-measured, this time WITH dumps (s3 judged it by score alone): sandbox + dump.ps1, then .greg `;; 117 conflicts` / `;; 24 regs to allocate` and .lreg `Register N used R times across L insns` for 117 and 123.
+- result: score 10, build_insns 142. Allocno 117 is bit-for-bit unchanged (5 refs/6 insns, pri 16667, allocno position 1, `;; 117 preferences: 3`, allocated $3) and its conflict set is unchanged at `108 116 117 2 29` - no 123 edge. 123 goes 4 refs/9 to 3 refs/7, pri 8889 to 4286, position 7 to 13: it moves FURTHER from being able to block $5. Slot 88 is allocation-neutral; the two frontier items are independent.
+- verdict: KILLED
+
+## [s6] The slot-88 shortfall (142 vs 144 insns) is a jump.c find_cross_jump selectivity question - something distinguishes the two entrance return-0 copies that survive un-merged.
+- mechanism: jump.c find_cross_jump matches identical instruction tails and redirects the conditional branch to the earlier copy, deleting the block.
+- probe: Counted `(set (reg/i:SI 2 v0) (const_int 0))` return-0 blocks in the function-sliced .jump (pre-reload) and .jump2 (post-reload) dumps for BOTH the base chassis and the `if (disc < 0) return 0;` variant, and counted `addu $v0, $zero, $zero` in asm/funcs/func_8002D518.s.
+- result: .jump carries 9 such blocks and .jump2 carries 1, in BOTH builds - the cross-jumper is not selective, it merges every one of them. Yet the target asm has 9 `addu $v0,$zero,$zero` and our 144-insn base build reproduces all 9, so those copies are re-materialised AFTER jump2 by reorg.c filling each `j <label>` delay slot from the jump target. The s5 frontier premise ('target and our build BOTH already carry two UN-merged copies of that same block') is refuted. Slot 88 is a reorg/.dbr question.
+- verdict: KILLED
