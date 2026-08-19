@@ -242,3 +242,114 @@ the rules can retire in the same change.
 - [s1] duplicates scan: no near-clone of func_80041BF4 at 0.5 threshold in tmp/duplicates_leads.txt
 
 - [s1] src/text1a_post.c reverted to HEAD at session end: the 33 regfix + 2 asmfix rules anchor on the old instruction stream ({lbl#N} slot-ordinal anchors, brief fragile-carrier warning); the 22-form lives in memory/grind/func_80041BF4/candidate.c
+
+## [s2] 2026-08-19 — structural — FLOOR 22 -> 17; the LICM/symbol-fold mechanism is NAMED
+
+Chassis check at dispatch: candidate.c (s1 form) re-measured **22** on this
+chassis, 135/135 insns, canonical verdict C. Ledger floor confirmed, not stale.
+
+### The mechanism, read from dumps (not inferred)
+`pwsh tools/grinder/dump.ps1 func_80041BF4` -> tmp/grind/func_80041BF4/dumps/.
+The `.loop` dump carries loop.c's own decision log:
+
+    Loop from 175 to 272: 37 real insns.
+      Insn 217: regno 138 (life 1), move-insn savings 1  moved to 319
+      Insn 222: regno 139 (life 1), move-insn savings 1  moved to 321
+      Insn 227: regno 141 (life 1), move-insn savings 1  moved to 323
+    Loop from 126 to 288: 61 real insns.
+      Insn 163: regno 124 (life 2), move-insn savings 1  moved to 325
+      Insn 319: regno 138 (life 43), ... halved since already moved  moved to 327
+      ... (321 -> 329, 323 -> 331)
+
+- regno 124 = `(set r124 (symbol_ref "D_80094DF0"))`, hoisted out of the OUTER
+  loop into its preheader by `move_movables` (loop.c:1631, the
+  `threshold * savings * m->lifetime >= insn_count` test; threshold =
+  `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`, loop.c:532 — measured to
+  sit in [37,82] on this chassis, so ANY life-1 invariant in a <=37-insn
+  call-carrying loop is hoisted).
+- Hoisting moves the def to a DIFFERENT basic block from its use, so `combine`
+  (which runs after loop) can no longer fold the symbol into the MEM. That is
+  the entire cause of residual item 1: ours emitted
+  `lui t0,%hi; addiu t0,t0,%lo; addu v0,v0,t0; lw s0,0(v0)` where target has
+  `lui at,%hi(D_80094DF0); addu at,at,v0; lw s0,%lo(D_80094DF0)(at)`.
+- WHY there was a separable `(set reg symbol_ref)` at all: `.rtl` insn 163/165/
+  166/168 show that for the scale-4 array index `D_80094DF0[k]` expand emits a
+  standalone symbol load PLUS an explicit `(set r127 (plus r126 r124))` add.
+  For the scale-1 array `D_80094E08[k]` (same function, two lines up) expand
+  keeps the sum un-emitted and produces `(mem (plus (reg) (symbol_ref)))`
+  directly — which is why that access already matched. The MULT node from the
+  scale-4 index is what forces the sum out of EXPAND_SUM into a real insn.
+- loop.c's own escape (the `reg_single_usage` substitute-and-delete path,
+  loop.c:735-767) cannot fire for the array-index form: substituting the
+  symbol into `(set r127 (plus r126 SYM))` yields an invalid MIPS `addsi3`
+  (operand 2 must be `arith_operand`), so `validate_replace_rtx` fails and the
+  insn becomes a movable instead. It DOES fire when the use is the MEM itself.
+- Sibling func_80041AC8 (same TU, byte-identical expression, MATCHED) gets
+  target's form from the plain array-index spelling only because it is not in
+  a loop: nothing hoists, so combine folds the symbol in-block. The s1 note
+  "loop-context divergence, not expression spelling" was HALF right — it is a
+  loop-context divergence that IS repairable by expression spelling.
+
+### The fix (22 -> 17)
+    tbl = *(s16 **)((u8 *) D_80094DF0 + (D_80094E08[*(((s16 *) fp_ptr) + 4)] << 2));
+Byte-pointer arithmetic removes the MULT from the address tree, so expand
+keeps the address as an un-emitted sum, no `(set reg symbol_ref)` insn exists,
+loop.c has nothing to hoist, and the load prints target's `%hi/%lo`-indexed
+form. `.loop` after the change no longer lists regno 124. 135/135 insns.
+
+Spelling sweep (all 135 insns): array index `D_80094DF0[k]` = 22 (baseline);
+`*(D_80094DF0 + k)` = 22; `(s16*)*(s32*)((u8*)D_80094DF0 + (k*4))` = 22;
+`*(s16**)((u8*)D_80094DF0 + (k<<2))` = **17**;
+`*(s16**)((s32)D_80094DF0 + (k<<2))` = **17**.
+So the win needs BOTH the byte-granular base cast AND the explicit `<< 2`;
+writing the scale as `* 4` on a `(s32 *)` deref reintroduces the MULT and the
+hoist.
+
+### Residual 17 — one family, the same LICM mechanism one level in
+`.loop` on the 17-form still shows regnos 136 `(const_int 16)`, 137
+`(const_int 1)` and 139 `(symbol_ref D_800A9A24)` hoisted out of the inner
+loop (37 insns) and then out of the outer. reload rematerializes all three
+(REG_EQUIV), so the instruction COUNT is unaffected (135/135) but:
+  - the rematerialized scratch is `$t0` where target uses `$v0`/`$a1`;
+  - the LoadImage arg-setup block (`addiu a0,sp,24` + the D_800A9A24 la +
+    `addu a1,...`) lands mid-body instead of at the top of the loop body;
+  - the y-coordinate temp takes `$v0` (target `$v1`), which is what leaves
+    `$v0` unavailable for the two rematerialized constants;
+  - riders: `sll a1,s1,5` (target `sll v0,s1,5`), `li v1,1 / bne v0,v1`
+    (target `li t0,1 / bne v0,t0`).
+Full opcode-normalized diff: tmp/grind/func_80041BF4/s2/diff17.txt
+(normalizer tmp/grind/func_80041BF4/s2/norm2.py, disasm ours.txt).
+
+### [s2] KILLED — inner-loop body spelling does not touch the residual
+Thirteen forms measured, ALL 17 at 135 insns (i.e. exactly inert), except one
+that is worse: name the LoadImage source in a block-local; drop the `u8*` cast
+(`(s32)&D_800A9A24 + off`); move `tbl += 2` after the constant stores; fold
+`idx++` into the shift; assign the computed source address back into `off`;
+commute `rect[0]`'s add; commute `rect[1]`'s add; commute both; name the x
+read in a block-local; name the y read in a block-local; swap the
+`rect[2]`/`rect[3]` order. WORSE: hoisting `rect[2]/rect[3]` above the two
+coordinate stores = 46 at 139 insns (rejected/rect-const-stores-before-coords.c).
+CONCLUSION: the residual is NOT an expression-shape problem in the inner body;
+it is the inner-loop LICM hoist of the three invariants plus the register
+consequences of the remat. Do not re-run inner-body respellings.
+
+- [s2] loop.c decision log lives in the .loop dump ("Insn N: regno R (life L), move-insn savings S  moved to M" / "not desirable") — read it instead of guessing whether LICM fired
+- [s2] threshold in loop.c:532/1631 measured to lie in [37,82] on this chassis (a life-1 savings-1 invariant hoists from a 37-insn call-carrying loop but is "not desirable" in an 83-insn one), so no realistic BB2 inner loop is big enough to defeat the hoist by size — the movable has to not be RECORDED
+- [s2] a hoisted invariant is usually instruction-count-NEUTRAL because reload rematerializes it from REG_EQUIV; what it costs is the scratch register choice and the schedule position, which is exactly the shape of this function's residual 17
+- [s2] scale-1 array indexing folds the symbol into the MEM at expand; scale-N (N>1) does not, because the MULT node forces the address sum out of EXPAND_SUM into a real add insn — byte-pointer arithmetic with an explicit shift restores the scale-1 behaviour
+
+- [s2] Chassis check: the s1 candidate re-measured 22 on this chassis (135/135 insns, canonical verdict C) before any edit - the ledger floor was current, not stale.
+
+- [s2] loop.c writes its own decision log into the .loop dump ('Insn N: regno R (life L), move-insn savings S  moved to M' and 'not desirable'). Reading it names LICM in one grep instead of inferring it from asm shape.
+
+- [s2] On this chassis loop.c's move_movables threshold (loop.c:532, (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)) measures into [37,82]: a life-1 savings-1 invariant is hoisted out of a 37-insn call-carrying loop but is 'not desirable' in an 83-insn one. No realistic BB2 inner loop is large enough to defeat the hoist by size, so the movable has to be prevented from being RECORDED, not made undesirable.
+
+- [s2] A hoisted invariant is normally instruction-count-NEUTRAL, because reload rematerializes it from its REG_EQUIV note at the use. What the hoist actually costs is (a) combine's ability to fold a symbol_ref into a MEM (def and use end up in different basic blocks) and (b) the scratch register / schedule slot the rematerialized copy gets. Both cost shapes are present in this function.
+
+- [s2] Expand folds a symbol into (mem (plus (reg) (symbol_ref))) for a scale-1 array index but not for scale-4: the MULT node forces the address sum out of EXPAND_SUM into a real add insn. Byte-pointer arithmetic with an explicit shift restores the scale-1 behaviour. This is a general BB2 lever for any array-of-word load inside a loop.
+
+- [s2] The matched sibling func_80041AC8 in the same TU emits target's %hi/%lo-indexed form from the plain array-index spelling only because it is not inside a loop - nothing hoists, so combine folds in-block. s1's 'loop-context divergence, not expression spelling' was half right: it is a loop-context divergence that IS repairable by expression spelling.
+
+- [s2] Residual 17 is a single family: .loop on the 17-form still hoists regno 136 (const_int 16 -> rect[2]), 137 (const_int 1 -> rect[3]) and 139 (symbol_ref D_800A9A24 -> the LoadImage source address) out of the inner loop and then out of the outer loop. Count-neutral, but the remat scratch is $t0 where target uses $v0/$a1, the y-coordinate temp takes $v0 where target takes $v1, and the LoadImage arg-setup block loses its top-of-body schedule slot.
+
+- [s2] src/text1a_post.c was REVERTED to HEAD at session end (s1 precedent): the 33 regfix + 2 asmfix rules anchor on the old instruction stream and the do-while renumbers cc1 {lbl#N} slots, so applying the candidate stays a ledger-only operation until the function closes and the rules retire in the same change. The 17-form lives in memory/grind/func_80041BF4/candidate.c.

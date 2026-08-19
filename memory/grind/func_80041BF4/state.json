@@ -1,8 +1,8 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,18 +15,29 @@
    "floor": 22,
    "modality": "recon",
    "headline": "Rotation SOLVED: real do-while outer loop + removing the do-while(0) yoff wrap flips the s2/s3/s4 trio to target's exact allocation; floor 29 -> 22"
+  },
+  {
+   "session": 2,
+   "floor": 17,
+   "modality": "structural",
+   "headline": "Named the residual's mechanism from the .loop dump (loop.c LICM hoist breaks combine's symbol-into-MEM fold) and killed it for D_80094DF0 with byte-pointer indexing: floor 22 -> 17 at 135/135 insns."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The in-loop D_80094DF0 symbol-address form (full address in t0 vs %hi/%lo indexed) is a loop.c/cse invariant-handling divergence fixable by restructuring the index expression",
-   "mechanism": "under the new loop notes, the loop-invariant symbol_ref address becomes a movable/CSE candidate and stays materialized in a pseudo; target recomputes %hi per iteration with %lo folded into the lw",
-   "next_probe": "dump.ps1 on the candidate form; read .loop movables and .cse for the address pseudo; compare RTL against sibling func_80041AC8's matched form; then probe index-naming spellings"
+   "hypothesis": "The inner-loop LICM hoist of regnos 136/137/139 ((const_int 16), (const_int 1), (symbol_ref D_800A9A24)) is the whole residual 17 - the same mechanism solved one level out this session.",
+   "mechanism": "move_movables hoists all three out of the 37-insn inner loop and then out of the outer loop; reload rematerializes them count-neutrally but into $t0 instead of target's $v0/$a1, and the LoadImage arg-setup block (addiu a0,sp,24 + the D_800A9A24 la + addu a1) loses its top-of-loop-body schedule slot.",
+   "next_probe": "The D_800A9A24 address is consumed as a call ARGUMENT (a value), not as a MEM address, so the scale trick does not transfer directly. Look for a spelling in which the address is consumed by a MEM - that is the case in which loop.c's reg_single_usage substitute-and-delete path (loop.c:735-767) can validate the replacement and DELETE the movable instead of hoisting it. After each form run dump.ps1 and grep the .loop movable log for 'regno 139': its presence/absence is a sharper and faster signal than the sandbox score."
   },
   {
-   "hypothesis": "The LoadImage arg-setup scheduling diff and the v0/v1/t0 renames collapse once the address form is fixed",
-   "mechanism": "the a1 argument is the same D_800A9A24 symbol chain; sched1 order and caller-save assignment ride on the address pseudos",
-   "next_probe": "re-diff after frontier item 1 lands; only if diffs survive, read .lreg/.sched for the specific pseudos"
+   "hypothesis": "The y-coordinate temp taking $v0 (target: $v1) is what denies $v0 to the two rematerialized constants, and it is separable from item 1.",
+   "mechanism": "local-alloc assignment order for the short-lived coordinate temps in the inner loop; ours reuses $v0 for both the x store and the y read, target uses $v0 then $v1.",
+   "next_probe": "Only if item 1 does not collapse it. Inner-body respellings are already measured dead (the s2 KILLED entry), so the lever must come from outside the body - the loop-bottom sll, the sentinel read pair (lh/lhu of tbl[0]), or the while-condition spelling. Read .lreg for the y-temp pseudo before inventing anything."
+  },
+  {
+   "hypothesis": "The LoadImage arg-setup schedule position is a consequence of item 1, not an independent divergence.",
+   "mechanism": "The rematerialized la insns are inserted by reload AFTER sched1, so only sched2 can move them; with the hoist gone they would be born before sched1 and could take target's top-of-body slot.",
+   "next_probe": "Re-diff after item 1 lands. Only if it survives, read .sched/.sched2 for the arg pseudos - do not tune it independently first."
   }
  ],
  "judge_constraints": [],
