@@ -363,3 +363,113 @@
 - probe: Directed PERM chassis tmp/perm_d518b/base.c: site 1 a 3-way PERM_GENERAL (`result = 0;` | `{ result = 0; goto done; }` | `return 0;`), site 2 a 4-way PERM_GENERAL (`if (disc < 0) {lzcr=0;} else {island(ud);}` | the same tested on `(s32)ud` | the inverted `if (disc >= 0)` form | the island reading `disc` instead of `ud`), site 3 a 2-way PERM_GENERAL (`ud` | `(u32)disc`). Campaign label s4-directed-guard-perm; permuter enumerated the full 3x4x2 = 24-point cross-product and exited.
 - result: All 24 combinations measured; NONE below the base 35. Six are exactly base-equivalent, eighteen strictly worse (230, 235, 430, 545, 605, 740, 800). Per-iteration scores banked at tmp/grind/func_8002D518/s4/campaign_directed_scores.txt; the chassis itself is banked as a rejected form.
 - verdict: KILLED
+
+---
+
+## s5 hypotheses (forensics modality) — 3 KILLED, 1 CONFIRMED
+
+### H5.1 — CONFIRMED. `disc`'s `$3` preference is inherited from the discriminant's second multiply via global.c set_preference + expand_preferences.
+* **Mechanism.** `set_preference` (global.c:1671, called at global.c:1484) reduces
+  a non-copy SET's source with `src = XEXP (src, 0)` when the RHS format starts
+  with `'e'`. For `(set (reg 121) (mult (reg 119) (reg 120)))` that is reg 119 —
+  `dist_sq >> 9` — which local-alloc had placed in $3. So allocno 121 gets a
+  preference for $3. `expand_preferences` (global.c:829) then unions 121's
+  preference into 117 because the defining subu `(set (reg 117) (minus (reg 118)
+  (reg 121)))` carries `REG_DEAD (reg 121)` and 117/121 do not conflict.
+* **Probe.** Read `.rtl`/`.lreg`/`.greg` for the base chassis; matched the
+  `;; 117 preferences: 3` line to the `;; Register 119 in 3.` local-alloc
+  disposition and to the two global.c routines' source.
+* **Result.** Confirmed, and immediately demoted to irrelevant by H5.2.
+
+### H5.2 — KILLED. Removing 117's `$3` preference moves `disc` off `$3`.
+(This was s4 frontier item (iii), the "re-associate the discriminant" probe,
+never previously measured.)
+* **Mechanism claimed.** Swap the multiply operands so `set_preference` picks up
+  reg 120 (`c_val << 2`, in $2) instead of reg 119 ($3). $2 is in 117's
+  hard-conflict set, so `prune_preferences` would drop it and 117 would allocate
+  with no preference at all.
+* **Probe.** `s32 disc = (dot2_9 * dot2_9) - ((c_val << 2) * (dist_sq >> 9));`
+  applied to src/code6cac_b.c; `sandbox func_8002D518 --disable all`.
+* **Result.** **score 10** (base 7), build_insns 144 == target 144. KILLED, and
+  killed *structurally*, not just empirically: `config/mips/mips.h` defines no
+  `REG_ALLOC_ORDER`, so `find_reg`'s no-preference fallback is the ascending
+  hard-reg scan, which — with $2 hard-conflicted — also yields $3. The
+  preference and the default scan agree; the preference axis cannot move disc.
+  Banked `rejected/mult-operand-swap-score10.c`.
+
+### H5.3 — CONFIRMED (pass attribution). The pass that kills `disc`'s live range is **cse.c**, via `make_regs_eqv`'s `qty_first_reg` canonicalisation — not global.c, not combine, not flow.
+* **Mechanism.** `make_regs_eqv(new=132 ud, old=117 disc)` promotes `ud` to the
+  quantity's canonical register when `ud` outlives the current cse extended basic
+  block AND `uid_cuid[regno_last_uid[ud]] > uid_cuid[regno_last_uid[disc]]`. Both
+  hold (ud feeds the `__asm__` island and `ud >> shift` in the join block; disc's
+  last pre-cse use is the bltz), so every subsequent reference to the quantity —
+  including the inner LZCS guard — is rewritten to `ud`.
+* **Probe.** `.rtl` line 9946 has `(ge:SI (reg/v:SI 117))`; `.cse` line 8943 has
+  `(ge:SI (reg/v:SI 132))`. Per-pass reference counts pin the change to cse
+  exactly (117: 30→27, 132: 11→12 at rtl/jump → cse; flat before and after).
+* **Result.** Confirmed. This supersedes the s1/s2 attribution of this region to
+  *combine* — combine folds the *copy insn* when the guard is spelled as an
+  init-then-overwrite, which is a different (already-solved) question. The
+  register that the surviving copy's CONSUMERS read is chosen by cse.
+
+### H5.4 — KILLED. Making `disc` outlive `ud` (so cse keeps `disc` canonical) buys the longer live range the frontier wanted.
+* **Mechanism claimed.** Flip cse's `make_regs_eqv` predicate by shortening
+  `ud`'s last use, so `disc` stays `qty_first_reg`, the bltz keeps reading disc,
+  and disc's live range grows past the copy → lower allocno priority → later
+  allocation → a better register.
+* **Probe.** `(&D_8008D118)[(u32)disc >> shift]` instead of `[ud >> shift]`
+  (so `ud`'s last use is the island). Measured, then dumped and read.
+* **Result.** **score 7** — a tie, no gain — and a strictly worse platform.
+  The predicate did flip, but cse then rewrote *every* `ud` use back to `disc`
+  and allocno **132 disappeared** (`;; 23 regs to allocate`, not 24). 117 absorbed
+  its refs (7/15, pri 9333, position 4 instead of 1) and moved $3 → $4.
+  Since allocno 132 is the *only* allocno in this function that can ever block
+  hard reg $4 for disc (see E4), deleting it forecloses $6 permanently.
+  Banked `rejected/srlv-reads-disc-merges-away-ud-allocno-score7.c`.
+
+### H5.5 — KILLED (arithmetic, no build needed). `disc` can be driven into `$6` by lowering its allocno priority / lengthening its live range.
+This is the s1–s4 frontier head. It is now closed in closed form.
+* **Mechanism.** `find_reg` blocks a hard reg only via 117's own hard-reg
+  conflicts or via a hard reg already held by a CONFLICTING allocno.
+  $6 needs 2,3,4,5 all blocked. The only $5-holding allocno that conflicts with
+  117 is **116 (`dist_sq`)**, at position **22 of 24** with priority 909.
+* **Probe.** Reproduced `allocno_compare`'s
+  `floor_log2(refs)*refs/live_length` ranking by hand from `.lreg`; it matches
+  the printed `;; 24 regs to allocate:` order exactly, ties included, so the
+  model is validated. Then solved for the live_length that would put 117 below
+  116: with 6 refs, `floor_log2(6)*6/L < 3/33` → **L > 132 insns**.
+* **Result.** KILLED. A live range of 132+ insns is unreachable in a 144-insn
+  function whose `disc` is computed at slot ~84. No spelling, no permuter find,
+  no statement reordering can satisfy it. Priority is therefore the WRONG axis;
+  the requirement is a new CONFLICT EDGE from disc to an early $5 holder
+  (allocno 123 `result`, or 76/77), which no current source shape produces.
+
+## [s5] pseudo 117 (`disc`) gets `;; 117 preferences: 3` by inheritance from the discriminant's second multiply, not from any direct copy.
+- mechanism: global.c:set_preference (called at global.c:1484) reduces a non-copy SET source with `src = XEXP (src, 0)` when the RHS rtx format starts with 'e'. For `(set (reg 121) (mult (reg 119) (reg 120)))` that is reg 119 = `dist_sq >> 9`, which local-alloc placed in $3 (`.lreg`: `;; Register 119 in 3.`). global.c:expand_preferences (global.c:829) then unions allocno 121's preference into 117, because the defining subu `(set (reg 117) (minus (reg 118) (reg 121)))` carries `REG_DEAD (reg 121)` and 117/121 do not conflict.
+- probe: pwsh tools/grinder/dump.ps1 func_8002D518; read .lreg (pseudo RTL + local-alloc dispositions) and .greg (allocno list, conflicts, preferences) slices, cross-checked against tools/gcc-2.7.2/global.c source.
+- result: Confirmed exactly: the $3 preference chain is set_preference(121 <- reg119@$3) -> expand_preferences(121 -> 117) -> find_reg allocates 117 first and takes $3.
+- verdict: CONFIRMED
+
+## [s5] Removing 117's $3 preference (by re-associating the discriminant so the multiply's FIRST operand is the $2-resident pseudo) moves `disc` off $3. This was s4 frontier item (iii), never previously measured.
+- mechanism: Swapping the operands makes set_preference pick reg 120 (`c_val << 2`, local-allocated to $2) instead of reg 119 ($3). $2 is already in 117's hard-conflict set, so prune_preferences drops it and 117 allocates with no preference at all.
+- probe: `s32 disc = (dot2_9 * dot2_9) - ((c_val << 2) * (dist_sq >> 9));` applied to src/code6cac_b.c:1122ff; `wteng main sandbox func_8002D518 --disable all`.
+- result: score 10 (base 7), build_insns 144 == target_insns 144. WORSE. And killed structurally, not just empirically: config/mips/mips.h defines no REG_ALLOC_ORDER, so find_reg's no-preference fallback is the ascending hard-reg scan, which with $2 hard-conflicted also yields $3. The preference and the default scan agree, so the preference axis can never move disc. Banked memory/grind/func_8002D518/rejected/mult-operand-swap-score10.c.
+- verdict: KILLED
+
+## [s5] The pass that makes the inner LZCS guard read `ud` (pseudo 132) instead of `disc` (pseudo 117) — thereby collapsing disc's live range to 6 insns — is cse.c, via make_regs_eqv's qty_first_reg canonicalisation. It is NOT combine (which s1/s2 attributed this region to), not flow, not global.
+- mechanism: cse.c:make_regs_eqv(new=132, old=117) promotes `ud` to the quantity's canonical register when `uid_cuid[regno_last_uid[132]] > cse_basic_block_end` (or its first use precedes the block) AND `uid_cuid[regno_last_uid[132]] > uid_cuid[regno_last_uid[117]]`. Both hold: `ud` feeds the __asm__ island and `ud >> shift` in the join block, while `disc`'s last pre-cse use is the bltz. cse then rewrites every later reference to the quantity, including the guard's jump_insn.
+- probe: Diffed the guard insn across dumps: .rtl line 9946 `(if_then_else (ge:SI (reg/v:SI 117)) ...)` vs .cse line 8943 `(ge:SI (reg/v:SI 132))`. Per-pass reference counts pin the single substitution to cse (117: 30 -> 27 and 132: 11 -> 12 between .rtl/.jump and .cse; flat through loop/cse2/flow/combine/sched/lreg).
+- result: Confirmed. Supersedes the s1/s2 attribution: combine folds the COPY INSN when the guard is spelled init-then-overwrite (already-solved, different question); which register the surviving copy's CONSUMERS read is chosen by cse.
+- verdict: CONFIRMED
+
+## [s5] Flipping cse's make_regs_eqv predicate — so `disc` stays canonical and the bltz keeps reading it — buys the longer live range the s1-s4 frontier wanted.
+- mechanism: Shorten `ud`'s last use below `disc`'s by indexing the slow-path table with disc, so condition (b) of make_regs_eqv fails and 117 remains qty_first_reg; disc then stays live past the copy, lowering its allocno priority and pushing it later in allocno_order.
+- probe: `s32 tval = (&D_8008D118)[(u32)disc >> shift];` instead of `[ud >> shift]`; sandbox measure, then re-dump and read .greg/.lreg.
+- result: score 7 — a TIE, no gain — and a strictly worse platform. The predicate did flip, but cse then rewrote every `ud` use back to disc and allocno 132 DISAPPEARED (`;; 23 regs to allocate`, not 24). 117 absorbed its refs (7 refs / 15 insns, priority 9333, position 4 instead of 1) and moved $3 -> $4; its conflict set grew to `108 116 117 131 2 3 12 29`. Since allocno 132 is the only allocno in this function that can ever block hard reg $4 for disc, deleting it forecloses $6 permanently. Banked memory/grind/func_8002D518/rejected/srlv-reads-disc-merges-away-ud-allocno-score7.c.
+- verdict: KILLED
+
+## [s5] THE s1-s4 FRONTIER HEAD: `disc` can be driven into $a2/$6 by lowering its allocno priority / lengthening its live range so it sorts below the allocnos that take $3/$4/$5.
+- mechanism: global.c:allocno_compare sorts descending by floor_log2(n_refs)*n_refs/live_length. global.c:find_reg blocks a hard reg for allocno A only via A's own hard-reg conflict set or via a hard reg already assigned to an allocno that CONFLICTS with A (non-conflicting allocnos freely share a reg). $6 therefore requires $2,$3,$4,$5 all blocked at the moment 117 is allocated.
+- probe: Reproduced allocno_compare's ranking by hand from the .lreg 'Register N used R times across L insns' lines; it matches the printed `;; 24 regs to allocate: 117 122 72 121 78 79 123 76 77 132 157 131 105 104 107 75 74 106 118 103 102 116 108 73` EXACTLY, including the 8889 (78/79/123) and 8000 (76/77) ties broken by ascending allocno index — so the model is validated. Then solved for the live_length that would put 117 below the $5 holder it conflicts with.
+- result: KILLED in closed form. The ONLY $5-holding allocno that conflicts with 117 is 116 (`dist_sq`), at position 22 of 24 with priority 909 (3 refs / 33 insns). Putting 117 below it requires floor_log2(6)*6/L < 3/33, i.e. live_length > 132 insns, in a 144-insn function whose `disc` is not even computed until slot ~84. Unreachable by any spelling, any permuter find, any statement reordering. Priority is the wrong axis entirely.
+- verdict: KILLED

@@ -404,3 +404,203 @@ match.
 - [s4] [s4] CONSEQUENCE: the residual 7 is not reachable by generic restructuring of this function. Two independent searches - 33,881 random samples and a complete directed enumeration - bottom out at the base. The `disc`-in-$v1 allocation must be attacked through the mechanism s3 already named (global.c allocno priority for pseudo 117: 5 refs over a 6-insn live range makes it the FIRST of 24 allocnos, and `;; 117 preferences: 3` then hands it $3), not by respelling the block.
 
 - [s4] [s4] Both campaigns were harvested with --stop inside this turn; `pgrep -af permuter.py` returns nothing, so no campaign outlives the session.
+
+---
+
+## s5 (forensics) — the `disc`→$6 question is now CLOSED ARITHMETICALLY
+
+Chassis re-measured at dispatch: HEAD src/code6cac_b.c **again** did not carry
+candidate.c (FIFTH consecutive session — the Grinder commits the ledger, not
+src/). Re-applied candidate.c verbatim → `sandbox --disable all` score **7**,
+build_insns 144 == target_insns 144. All s5 numbers are on that chassis.
+
+Dumps: `pwsh tools/grinder/dump.ps1 func_8002D518` (canonical cc1; the stock
+`-da` dumps named every pass involved, so no BB2_*_DEBUG instrumented run was
+needed). Saved slices in `tmp/grind/func_8002D518/s5/`.
+
+### E1 — WHERE disc's `$3` actually comes from (three passes, named)
+
+`.greg` header for func_8002D518 (base chassis):
+
+    ;; 24 regs to allocate: 117 122 72 121 78 79 123 76 77 132 157 131 105 104 107 75 74 106 118 103 102 116 108 73
+    ;; 117 conflicts: 108 116 117 2 29
+    ;; 117 preferences: 3
+
+pseudo 117 == `disc` (confirmed in `.lreg`: insn 209 `(set (reg/v:SI 117)
+(minus (reg 118) (reg 121)))`, then bgez 212, sltiu 224, table index 234, copy
+245 `(set (reg 132) (reg 117))`).
+
+The `preferences: 3` is INHERITED, not direct:
+
+1. `.lreg` insn 207 `(set (reg 121) (mult (reg 119) (reg 120)))`.
+   `global.c:set_preference` (called from `mark_reg_store`, global.c:1484) does
+   `if (GET_RTX_FORMAT(GET_CODE(src))[0] == 'e') src = XEXP (src, 0)`, i.e. for
+   a non-copy SET it takes the **first operand** of the RHS — reg 119.
+   Local-alloc had already placed 119 (`dist_sq >> 9`) in $3
+   (`.lreg` → `;; Register 119 in 3.`), so allocno 121 gets
+   `hard_reg_preferences |= {3}`.
+2. `global.c:expand_preferences` then merges 121's preference into 117: the subu
+   (insn 209) is a `single_set` whose dest is 117 and which carries
+   `REG_DEAD (reg 121)`, and 117/121 do not conflict → preferences OR'd both ways.
+3. `global.c:find_reg` allocates 117 **first** (see E3) and takes $3.
+
+**This preference is NOT the cause of the divergence.** mips.h defines no
+`REG_ALLOC_ORDER`, so find_reg's fallback is the ascending hard-reg scan; with
+$2 in 117's hard-conflict set the first free reg is $3 regardless. Measured:
+swapping the multiply operands (`(c_val << 2) * (dist_sq >> 9)`) → score **10**,
+worse (`rejected/mult-operand-swap-score10.c`). Frontier item (iii) from s4 —
+"re-associate the discriminant so the $3-preference source lands elsewhere" — is
+therefore **KILLED**. Only CONFLICTS can move disc.
+
+### E2 — WHY disc dies at the copy: cse.c, not global.c
+
+`.rtl` (pre-cse) line 9946: the inner LZCS guard is
+`(if_then_else (ge:SI (reg/v:SI 117)) ...)` — it reads **disc**.
+`.cse` line 8943: the same jump_insn now reads `(ge:SI (reg/v:SI 132))` — **ud**.
+Ref counts across passes confirm the single substitution happens exactly at cse
+(117: 30→27, 132: 11→12 between `.rtl`/`.jump` and `.cse`; unchanged thereafter).
+
+The predicate is `cse.c:make_regs_eqv (new=132, old=117)`. 132 replaces 117 as
+`qty_first_reg` (the canonical register cse substitutes for the whole quantity)
+iff BOTH:
+
+* `uid_cuid[regno_last_uid[132]] > cse_basic_block_end`
+  (or `uid_cuid[regno_first_uid[132]] < cse_basic_block_start`), and
+* `uid_cuid[regno_last_uid[132]] > uid_cuid[regno_last_uid[117]]`
+  — i.e. **`ud`'s last use is later than `disc`'s last use**.
+
+Both hold: `ud` is used by the `__asm__` island and by `ud >> shift` in the join
+block, while `disc`'s last pre-cse use is the bltz. So cse rewrites the bltz to
+read `ud`, `disc` dies at the copy, and its live range collapses to 6 insns.
+Target keeps `bltz $a2` on `disc` (asm/funcs/func_8002D518.s, 0x8002D698) while
+the island and the `srlv` use `$a0` (= `ud`) — so in the original build the same
+two pseudos exist but cse did NOT canonicalise onto `ud`.
+
+Emitted asm (base chassis, `tmp/grind/func_8002D518/dumps/code6cac_b.s`) confirms
+the copy lands in the beqz delay slot exactly like target
+(`beq $2,$0,.L276 / move $4,$3` vs target `beqz $v0,.L8002D698 /
+addu $a0,$a2,$zero`); the ONLY difference in that whole region is that our
+`bltz $4` reads ud where target's `bltz $a2` reads disc.
+
+### E3 — the exact allocno priority table (reproduced by hand, model validated)
+
+`global.c:allocno_compare` sorts descending by
+`floor_log2(n_refs) * n_refs / live_length` (×10000×size). From `.lreg`
+("Register N used R times across L insns"), base chassis:
+
+| pos | allocno | refs/len | pri | gets |
+|----|----|----|----|----|
+| 1 | **117 disc** | 5/6 | 16667 | $3 |
+| 2 | 122 | 6/11 | 10909 | $6 |
+| 3 | 72 threshold | 9/26 | 10385 | $4 |
+| 4 | 121 | 2/2 | 10000 | $3 |
+| 5 | 78 | 4/9 | 8889 | $3 |
+| 6 | 79 | 4/9 | 8889 | $3 |
+| 7 | 123 result | 4/9 | 8889 | $5 |
+| 8 | 76 | 4/10 | 8000 | $5 |
+| 9 | 77 | 4/10 | 8000 | $5 |
+| 10 | **132 ud** | 4/11 | 7273 | $4 |
+| 11 | 157 | 2/3 | 6667 | $3 |
+| 12 | 131 lzcr | 3/5 | 6000 | $3 |
+| 13-21 | 105 104 107 75 74 106 118 103 102 | | | |
+| 22 | **116 dist_sq** | 3/33 | 909 | $5 |
+| 23 | 108 | 3/36 | 833 | $7 |
+| 24 | 73 r_sq | 2/46 | 435 | $9 |
+
+This reproduces the printed `;; 24 regs to allocate:` order exactly, including
+the 8889 and 8000 ties (broken by ascending allocno index). The model is
+therefore validated and can be used PREDICTIVELY by later sessions — compute
+`floor_log2(refs)*refs/len` from any `.lreg` and you know the allocation order
+before you build.
+
+### E4 — what `disc` in $6 would REQUIRE (closed form)
+
+`find_reg` blocks a hard reg for allocno A only via (a) A's hard-reg conflict
+set, or (b) a hard reg already assigned to an allocno that CONFLICTS with A.
+Non-conflicting allocnos freely share a hard reg, so "who else already has $6"
+is irrelevant. $6 is reachable for 117 only when 2, 3, 4 and 5 are all blocked.
+In this function:
+
+* **$2** — permanent hard conflict of 117. Free.
+* **$3** — becomes a hard conflict of 117 as soon as disc is live across the
+  lzcr region (observed directly in the s5 M1 variant:
+  `;; 117 conflicts: 108 116 117 131 2 3 12 29`). Reachable.
+* **$4** — the ONLY conflicting-allocno candidate is **132 (`ud`)**, pri 7273,
+  position 10. So 117 must (i) conflict with 132 — i.e. `disc` must still be
+  live at/after the copy — and (ii) sort BELOW 132, i.e. pri(117) < 7273.
+* **$5** — candidates holding $5 are 123 (pri 8889, pos 7), 76/77 (8000, pos
+  8/9) and 116 `dist_sq` (909, pos 22). 117 already conflicts with 116, but 116
+  is 22nd, so using it needs pri(117) < 909. With 6 refs
+  (`floor_log2(6)=2`) that means `12/L < 0.0909` → **live_length > 132 insns** in
+  a 144-insn function. **Impossible.** So the $5 blocker must be 123, 76 or 77,
+  none of which currently conflicts with disc.
+
+Combining the $4 and $5 constraints, the target allocation requires
+**simultaneously**:
+
+1. `disc` live past the `ud` copy (conflict with 132) — so `ud` must still exist
+   as its own allocno; and
+2. `disc` conflicting with one of 123 / 76 / 77 (an early-allocated $5 holder); and
+3. `pri(117) < 7273` — with 6 refs `live_length >= 17`, with 7 refs `live_length >= 20`.
+
+Requirement 1 is in direct tension with cse (E2): the only measured way to keep
+117 alive past the copy is to make `ud`'s last use earlier, and that makes cse
+merge 132 away entirely (E5). Requirement 2 has no current mechanism at all —
+123 (`result`) is only live on the `disc < 0` arm and at the join, where disc is
+dead; 76/77 are the early z-range locals.
+
+**Standing conclusion for later sessions: "get disc into $6 by lowering its
+allocno priority / lengthening its live range" — the s1..s4 frontier head — is
+DEAD as a single-axis attack.** Priority alone can never do it, because the only
+$5 holder disc conflicts with (116) sits at position 22 and would need
+live_length > 132. Any future attempt must produce a NEW conflict edge from disc
+to an early $5 holder, which is a different (and currently unmechanised) axis.
+
+### E5 — the M1 measurement (equal score, strictly worse platform)
+
+Variant: slow-path index spelled `(&D_8008D118)[(u32)disc >> shift]` instead of
+`[ud >> shift]`, so `ud`'s last use becomes the `__asm__` island.
+Measured: **score 7**, 144 == 144 (a tie, not a gain).
+
+Forensics on the M1 dumps: `;; 23 regs to allocate: 122 72 121 117 78 79 …` —
+allocno **132 is gone**. cse's E2 predicate flipped, 117 stayed canonical, every
+`ud` use was rewritten to 117, and 117 absorbed the refs
+(`Register 117 used 7 times across 15 insns`, pri = 2*7/15 = 9333, position 4).
+Its conflict set grew to `108 116 117 131 2 3 12 29` (note the new hard 3, and
+hard 12 from the island's `"$12"` clobber), and disc moved **$3 → $4**.
+
+That is one hard reg closer in raw terms but structurally a dead end: it deletes
+the only allocno (132) that can ever block $4 for disc. Banked as
+`rejected/srlv-reads-disc-merges-away-ud-allocno-score7.c`.
+
+Side note worth keeping: the M1 variant is an equal-score, *different* 7-slot
+residual with disc in $4. If a later session ever finds a way to block $4 by a
+hard conflict rather than by allocno 132, M1 becomes the better starting chassis.
+
+### E6 — artifacts
+
+* `tmp/grind/func_8002D518/s5/greg.func.txt` — base `.greg` slice (allocno list,
+  conflicts, preferences, dispositions, post-reload RTL).
+* `tmp/grind/func_8002D518/s5/lreg.func.txt` — base `.lreg` slice (pseudo RTL,
+  per-register refs/live-length, local-alloc dispositions incl. `Register 119 in 3`).
+* `tmp/grind/func_8002D518/s5/jump2.func.txt` — base `.jump2` slice, captured for
+  the frontier's slot-88 cross-jump item. NOT analysed this session (the s5 turn
+  budget went entirely to the allocation item); it is a free head start for s6.
+* `tmp/grind/func_8002D518/s5/base.c`, `m1_src.c` — the two measured TU states.
+* `tmp/grind/func_8002D518/s5/evidence_s5.md` — this text.
+
+- [s5] CHASSIS: HEAD src/code6cac_b.c did NOT carry candidate.c for the FIFTH consecutive session (the Grinder commits the ledger, not src/). Re-applied it verbatim; sandbox --disable all = score 7, build_insns 144 == target_insns 144. All s5 numbers are on that chassis, and it is the state src/ is left in.
+
+- [s5] pseudo 117 == `disc`, confirmed from .lreg RTL: def at insn 209 `(set (reg/v:SI 117) (minus (reg 118) (reg 121)))`, then bgez 212, sltiu 224, table index 234, and copy 245 `(set (reg 132) (reg 117))` (== `u32 ud = disc;`). Base stats: 5 refs across 6 insns.
+
+- [s5] VALIDATED ALLOCNO PRIORITY TABLE (base chassis; pri = floor_log2(refs)*refs/live_length x10000), reproduces the printed allocation order exactly: 117 disc 5/6 = 16667 -> $3 (pos 1) | 122 6/11 = 10909 -> $6 | 72 threshold 9/26 = 10385 -> $4 | 121 2/2 = 10000 -> $3 | 78 4/9 = 8889 -> $3 | 79 4/9 = 8889 -> $3 | 123 result 4/9 = 8889 -> $5 | 76 4/10 = 8000 -> $5 | 77 4/10 = 8000 -> $5 | 132 ud 4/11 = 7273 -> $4 (pos 10) | 157 2/3 = 6667 -> $3 | 131 lzcr 3/5 = 6000 -> $3 | ... | 116 dist_sq 3/33 = 909 -> $5 (pos 22) | 108 3/36 = 833 -> $7 | 73 r_sq 2/46 = 435 -> $9. Later sessions can use this predictively: compute the ratio from any .lreg and you know the order before you build.
+
+- [s5] `;; 117 conflicts: 108 116 117 2 29` on the base chassis — disc conflicts with NOTHING that holds $3, $4 or $5 at the time it is allocated, and it is allocated FIRST of 24. That, not the preference, is why it takes $3.
+
+- [s5] CLOSED-FORM REQUIREMENT for disc -> $6 (evidence.md E4): (1) disc must be live past the `ud` copy so it conflicts with allocno 132 ($4, position 10) — which means `ud` must SURVIVE as its own allocno; AND (2) disc must conflict with an early-allocated $5 holder, i.e. allocno 123 (`result`, pos 7) or 76/77 (pos 8/9) — 116 `dist_sq` is unusable because it sits at position 22; AND (3) pri(117) < 7273, i.e. live_length >= 17 at 6 refs or >= 20 at 7 refs. Requirements (1) and (3) are in direct tension with cse (see the cse.c finding), and (2) has no known mechanism at all.
+
+- [s5] The emitted asm already matches target everywhere in this region EXCEPT the register: our `beq $2,$0,.L276 / move $4,$3` is the exact analogue of target's `beqz $v0,.L8002D698 / addu $a0,$a2,$zero` (the ud copy in the beqz delay slot, stolen from the branch target by reorg's fill_slots_from_thread, which is why the label advanced past it in BOTH builds). The single structural difference is `bltz $4` (ud) vs target `bltz $a2` (disc).
+
+- [s5] The M1 variant (slow-path index on disc) is an equal-score-7 but STRUCTURALLY DIFFERENT chassis with disc in $4 and no separate `ud` allocno. Recorded as a fallback: if a later session ever finds a way to block $4 by a HARD conflict (rather than via allocno 132), M1 becomes the better starting chassis.
+
+- [s5] NOT analysed this session: the slot-88 / jump2 cross-jump residual (frontier item b). Its .jump2 slice was captured anyway and is banked at tmp/grind/func_8002D518/s5/jump2.func.txt as a free head start.

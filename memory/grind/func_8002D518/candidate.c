@@ -1,3 +1,25 @@
+/* [s5 ADDENDUM - forensics modality, floor UNCHANGED at 7]
+ * Re-applied to src/code6cac_b.c at s5 dispatch (HEAD did NOT carry it, for the
+ * FIFTH consecutive session) and re-measured: score 7, build_insns 144 ==
+ * target_insns 144. This file is still the best known form.
+ *
+ * s5 was pure pass-attribution forensics on the 6-slot `disc` residual. Result:
+ * the s1-s4 frontier head ("get pseudo 117 / `disc` into $a2/$6 by lowering its
+ * allocno priority") is KILLED IN CLOSED FORM. global.c find_reg blocks a hard
+ * reg only via 117's own hard-reg conflicts or via a reg already held by a
+ * CONFLICTING allocno; the only $5-holding allocno that conflicts with 117 is
+ * 116 (`dist_sq`) at position 22 of 24 with priority 909, so reaching $6 by
+ * order alone would need 117's live_length > 132 insns in a 144-insn function.
+ * Two source probes were measured and banked as rejected:
+ *   - multiply-operand swap (kills the $3 preference): score 10, WORSE.
+ *   - `[(u32)disc >> shift]` instead of `[ud >> shift]`: score 7 (tie) but it
+ *     makes cse merge allocno 132 (`ud`) away entirely, deleting the only
+ *     allocno that can ever block $4 for disc. Strictly worse platform.
+ * Also newly attributed: the pass that makes the inner LZCS guard read `ud`
+ * instead of `disc` is cse.c's make_regs_eqv/qty_first_reg canonicalisation
+ * (.rtl has `ge:SI (reg 117)`, .cse has `ge:SI (reg 132)`), NOT combine.
+ * Full derivation incl. the validated allocno-priority table: evidence.md E1-E6.
+ */
 /* [s4 ADDENDUM - permuter modality, floor UNCHANGED at 7]
  * This form was re-applied to src/code6cac_b.c at s4 dispatch (HEAD did NOT
  * carry it, for the fourth consecutive session) and re-measured: score 7,

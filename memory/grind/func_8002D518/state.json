@@ -1,8 +1,8 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,32 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "Permuter modality exhausted on the v21 chassis: 33,881 random iterations (zero finds, base never beaten) plus an exhaustive 24-point directed PERM cross-product (none below base) prove floor 7 is a st"
+  },
+  {
+   "session": 5,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Forensics closed the s1-s4 frontier head in closed form: `disc` cannot reach $a2/$6 by allocno priority (would need live_length > 132 in a 144-insn function); the guard's register is chosen by cse.c m"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Getting `disc` (pseudo 117) allocated to $a2/$6 instead of $v1/$3 closes 6 of the remaining 7 slots and is still the head of everything left - but it is now proven NOT reachable by respelling the guard region, so the attack must be on the allocno ORDER itself.",
-   "mechanism": "global.c sorts allocnos by roughly log2(n_refs)*n_refs/live_length. 117 has 5 refs across a 6-insn live range, which makes it the FIRST of 24 allocated, and `;; 117 preferences: 3` then hands it $3 before any other allocno is considered. Target's disc is live ~6 slots longer (its bltz reads disc where ours reads the copy), which both lowers its priority and removes the early pick of $3. s4 proved the live-range lengthening cannot be bought by any spelling of the guard/exit/index axes at zero instruction cost.",
-   "next_probe": "FORENSICS, not search. Run `pwsh tools/grinder/dump.ps1 func_8002D518` on the v21 chassis and read .greg: (i) print the full sorted allocno list with each one's n_refs and live_length, and compute by hand which single perturbation of 117's live_length or n_refs would sort it below the allocno that currently takes $6; (ii) then work BACKWARDS from that number to what source-visible property would produce it, instead of forwards from spellings. (iii) Separately read set_preference's input: identify WHICH mflo pseudo local-alloc put in $3 (the dispositions line) and whether re-associating the discriminant so that operand lands elsewhere removes 117's $3 preference outright - that is a different lever from live-range length and has never been measured."
+   "hypothesis": "The 6-slot `disc` residual now needs a NEW CONFLICT EDGE from disc to an early-allocated $5 holder (allocno 123 `result`, or 76/77), simultaneously with keeping allocno 132 (`ud`) alive as the $4 blocker and getting pri(117) below 7273. The priority/live-range axis alone is dead (s5 H5.5); do not re-open it.",
+   "mechanism": "global.c find_reg blocks a hard reg only via 117's own hard-reg conflict set or via a reg already held by a CONFLICTING allocno. $2 is already a hard conflict; $3 becomes one once disc is live across the lzcr region (observed in the s5 M1 dump: `;; 117 conflicts: 108 116 117 131 2 3 12 29`); $4 can only come from allocno 132; $5 can only come from 123/76/77 because the one $5 holder disc already conflicts with (116 dist_sq) sits at position 22 and would need live_length > 132.",
+   "next_probe": "Attack allocno 123 (`result`). Note that target's `disc < 0` arm is a REAL `return 0;` (`addu $v0,$zero,$zero` + j to the epilogue label past `addu $v0,$a1,$zero`) \u2014 i.e. in the original build there is probably NO `result` pseudo on that arm at all, which changes 123's refs/live_length and hence its position AND the disc-vs-result liveness overlap. This makes frontier items (a) and (b) ONE problem, not two: solving slot 88 may be what creates the $5 blocker. Concretely: re-measure the `if (disc < 0) return 0;` spelling (s3 measured it as score 10 via jump2 cross-jump, 142 insns) but this time DUMP it and read (i) the new `;; N regs to allocate` order and 117's conflict set, and (ii) .jump2's find_cross_jump decision, before judging it by score alone. A +3 score that fixes the allocation is a better platform than a flat 7.",
+   "_": ""
   },
   {
-   "hypothesis": "Slot 88 needs `if (disc < 0) return 0;` and the only thing stopping it is jump2 cross-jumping the resulting 2-insn block into the entrance return-0 block (142 insns vs target's 144).",
-   "mechanism": "GCC emits `(set (reg 2) 0); (jump epilogue)` for a `return 0;` statement, which is exactly target slots 87/88. jump.c's cross-jump finds the identical tail in the entrance chain and redirects the conditional branch there, deleting the block. Both target AND our build already carry TWO un-merged copies of that same block in the entrance chain, so cross-jump here is SELECTIVE rather than exhaustive - something about the third instance makes it mergeable. s4 added the `goto`-a-shared-end spelling to the measured set and it is no better than `result = 0;`.",
-   "next_probe": "Recompile the v21 chassis with `pwsh tools/grinder/dump.ps1 func_8002D518` and read .jump2 to see WHICH pair find_cross_jump matched and why the two existing entrance copies are not merged with each other. The productive question is what property distinguishes the surviving pair - once that is known, spell the disc<0 arm so it acquires the same property. Do NOT spend further probes on respelling `return 0` itself; the emitted shape is already correct and the exit-shape axis is now exhausted (s4 H13)."
+   "hypothesis": "Slot 88: `if (disc < 0) return 0;` produces exactly target's 2-insn block but jump2 cross-jumps it into the entrance return-0 block (142 insns vs target 144), while target and our build BOTH already carry two UN-merged copies of that same block in the entrance chain \u2014 so find_cross_jump is selective here and something distinguishes the surviving pair.",
+   "mechanism": "jump.c find_cross_jump matches identical instruction tails and redirects the conditional branch to the earlier copy, deleting the block. Whatever property keeps the two entrance copies separate is the property the disc<0 arm must acquire.",
+   "next_probe": "The .jump2 slice for the base chassis is ALREADY captured at tmp/grind/func_8002D518/s5/jump2.func.txt (function region, 785 lines) \u2014 start there rather than re-dumping. Identify which pair find_cross_jump matched and why the two entrance copies are not merged with each other. Then re-dump with the `if (disc < 0) return 0;` variant applied and diff the two .jump2 regions. Per s4 H13 do NOT spend probes respelling `return 0` itself; the emitted shape is already correct.",
+   "_": ""
   },
   {
-   "hypothesis": "There is no third residual item - once the two above land the function is at 0.",
-   "mechanism": "The v21 alignment is a complete 154-slot comparison with only 15 raw differing words, 8 of them scorer-masked classes (4 j-targets, 4 %hi/%lo D_8008D118 reloc words). Every remaining word is accounted for by the two items above. No ordering difference, no instruction-count difference, no missing or extra instruction anywhere - and the s4 workspace validation independently reproduced exactly that diff from a completely separate build path.",
-   "next_probe": "After any change, re-run `tmp/grind/func_8002D518/s3/align.py <variant>` on an `objdump -dz` listing and confirm the raw-diff count equals engine score + 8; if it does not, a new masked class has appeared and must be identified before drawing conclusions."
+   "hypothesis": "cse.c's make_regs_eqv is now a named, quantified lever for this function and should be consulted BEFORE proposing any spelling that touches the disc/ud pair.",
+   "mechanism": "`ud` becomes the quantity's canonical register (and therefore the register every later consumer reads) iff its last use is later than `disc`'s AND it outlives the cse extended basic block. Making `ud`'s last use earlier does not merely change the guard's operand \u2014 it deletes allocno 132 outright, because then all of ud's uses are rewritten to disc and the copy has no surviving consumer of its own.",
+   "next_probe": "Any future disc/ud spelling must be checked against BOTH conditions before it is built: it must keep `ud`'s last use later than `disc`'s (to preserve allocno 132 as the $4 blocker) while somehow keeping the bltz on `disc`. The only remaining degree of freedom is condition (a) \u2014 the cse EXTENDED basic block extent (cse_basic_block_start/end, set by cse_end_of_basic_block under flag_cse_follow_jumps + flag_cse_skip_blocks). If `ud`'s last use can be brought INSIDE the same extended block as the copy while still being later than disc's, the predicate fails on (a) and disc stays canonical WITHOUT losing allocno 132. That is the one untested cell of the 2x2 and it is the highest-value next forensic probe: instrument or read cse.c's block-extent computation for this function and find where the extended block actually ends.",
+   "_": ""
   }
  ],
  "judge_constraints": [],
