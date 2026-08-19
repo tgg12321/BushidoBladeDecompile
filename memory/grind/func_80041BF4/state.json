@@ -1,8 +1,8 @@
 {
  "func": "func_80041BF4",
  "file": "text1a_post",
- "session_count": 9,
- "current_modality": "rederive",
+ "session_count": 10,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -63,23 +63,32 @@
    "floor": 11,
    "modality": "rederive",
    "headline": "Rederive s9: the loop.c hoist is proven UNREMOVABLE from the while basin (all three scan_loop escapes dead - cost gate s7, safety test reachable-but-costs-a-callee-save-the-function-doesn't-have, sing"
+  },
+  {
+   "session": 10,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor 11 -> 3: the function changed basin. Inner-loop loop notes are simultaneously required (global.c allocno order) and fatal (loop.c hoist); buying the ref weighting back with do-while(0) in the no"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The goto basin's single extra instruction is removable by an ordinary-C spelling of the inner loop's exit test that defeats cse2's merge of the signed `lh` with the next iteration's unsigned `lhu` of the same address.",
-   "mechanism": "cse2 sees `lh $v0,0($s0)` in the test block and `lhu $v1,0($s0)` at the top of the body and, because only the low 16 bits are consumed (the value is immediately `sh`-stored into rect[0]), replaces the lhu with `move $v1,$v0`. dbr then uses that move as the bgez delay filler instead of `sll $v0,$s1,5`, which is displaced to the top of the body, and the load-delay `nop` after the `lh` becomes the net +1. Target performs no such merge: it emits both loads and puts the sll in the delay slot.",
-   "next_probe": "SYNTHESIS modality on memory/grind/func_80041BF4/goto_basin_best.c (40 @ 136) as the base. Try spellings that change what cse2 sees rather than what the values are: read the test value through a differently-typed lvalue than rect[0]'s source, read rect[0]'s source BEFORE the test in program order, spell the test as `if (tbl[0] < 0) goto done;` at the top of the body, and make the test read `*tbl` while rect[0] reads `tbl[0]` (or vice versa). Read the `.cse2` dump for the merge decision in each case (pwsh tools/grinder/dump.ps1 func_80041BF4) rather than only the score - the score in this basin is dominated by the callee-save permutation and will not move monotonically. Track INSN COUNT (needs 135) as the primary signal."
+   "hypothesis": "The cse2 substitution of the body's `lhu 0(tbl)` by the test block's `lh 0(tbl)` - the ONLY remaining instruction - is defeatable by changing what cse2 considers EQUIVALENT rather than where the load is written.",
+   "mechanism": "cse2 proves the two reads deliver the same low 16 bits (the sum is immediately sh-stored), replaces the second with `move v1,v0`, and dbr then steals that move for the bgez delay slot instead of `sll v0,s1,5`, leaving a load-delay nop as the net +1. The WHILE basin performs no such merge, which points at cse's extended-basic-block boundary being bounded by loop notes (.claude/rules/cse-block-extension-controls-fold-span.md).",
+   "next_probe": "FORENSICS or SYNTHESIS on memory/grind/func_80041BF4/candidate.c (3 @ 136). Run `pwsh tools/grinder/dump.ps1 func_80041BF4` and read `.cse2` for the equivalence class of the (mem:HI (reg tbl)) value: find the exact substitution record, then look for a spelling in which the body's value is consumed where its high bits matter, or in which the two reads are not provably the same address (e.g. the test reading through a different lvalue chain than the body's). Also read why the while basin never merges - if it is the loop-note block boundary, test whether any note-free construct re-establishes it. Track INSN COUNT (needs 135) as the primary signal, not the score.",
+   "artifacts_hint": "tmp/grind/func_80041BF4/s10/v6/ holds the four already-dead spellings."
   },
   {
-   "hypothesis": "The goto basin's callee-save permutation (xoff=$s8 yoff=$s7 r=$s5 g=$s4 fp_ptr=$s6 vs target's xoff=$s5 yoff=$s4 r=$s7 g=$s6 fp_ptr=$fp) is driven by global.c's allocno priority ordering, not by any source-level lever.",
-   "mechanism": "s9 measured every declaration-order permutation inert in this basin (43 across the board), which rules out the s1/s3 lever that worked in the while basin. What orders the s4..s8 pool must therefore be allocno priority (live length x reference count), which the goto spelling changes because it changes every LUID in the function.",
-   "next_probe": "FORENSICS modality. Dump `.greg` for the goto basin and for the while-basin candidate side by side (pwsh tools/grinder/dump.ps1 func_80041BF4 on each) and read the `;; N regs to allocate` list, each allocno's priority, and the conflict sets for the pseudos holding xoff/yoff/r/g/fp_ptr. The question to answer with numbers is WHICH quantity differs between the two basins for those five pseudos - live length, n_refs, or the order they enter the allocation loop. Do not propose another source-level rotation lever until that number is in hand; s9 already measured the obvious ones dead."
+   "hypothesis": "The 8 bytes of get_frame_size() that `s16 rect[8]` buys have an ORDINARY source in this basin, because the WHILE basin reaches vars=24 with a 4-element rect.",
+   "mechanism": "Per [[phantom-frame-slots-gcc272]], GCC 2.7.2 allocates a stack temp for a computation it later register-allocates away and counts it in get_frame_size() without emitting any store. The while basin has such a temp (vars=24 with rect[4]); the note-free goto basin does not (vars=16).",
+   "next_probe": "REDERIVE/FORENSICS. Diff the while-basin and goto-basin `.greg`/`.lreg` stack-slot assignments (`;; Register dispositions` plus reload's assign_stack_local records) to identify WHICH pseudo owns the extra 8 bytes in the while basin, then look for a construct that creates the same temp without loop notes. If no ordinary source exists, discharge the OVERSIZED-LOCALS carve-out prongs 3-5 of .claude/rules/dead-vars-local-array.md (the prong-1 frame-math proof and the prong-2 live-object preference are already written into candidate.c). Fallback form without the construct: memory/grind/func_80041BF4/goto_basin_no_oversize.c (25 @ 136).",
+   "artifacts_hint": "cc1's `.frame ... # vars=` comment is the gradient - use it, not the score."
   },
   {
-   "hypothesis": "The trailing `func_8003E2A0() == 1` test has an ordinary-C spelling that puts the rematerialised literal 1 in $t0 rather than $v1, closing the last 2 instructions without the `one` constant-holder (carried unchanged from s8).",
-   "mechanism": "Reload rematerialises the REG_EQUIV (const_int 1) into a spill register; which one it picks is a function of the spill-reg ordering at that point. s4 measured three spellings inert (block-local rc, function-scope rc, Yoda) and s8 proved the choice is independent of the loop residual (worth exactly 2 in BOTH basins), so the remaining space is the SHAPE of the test itself, not where its result is named.",
-   "next_probe": "SYNTHESIS modality. Try `if (func_8003E2A0() - 1 == 0)`, `if (!(func_8003E2A0() != 1))`, a switch on the return value, storing the return into an s32 that a following statement also uses, and comparing against a loop-carried or otherwise already-live 1. Read the `.greg`/reload dump for the trailing block in each case and record WHICH spill register reload offers first, rather than only the score."
+   "hypothesis": "The two `do { ... } while (0);` wraps (worth 18: 43 -> 25) either fall inside .claude/rules/do-while-zero-exception.md's scope or have an ordinary-C substitute that raises xoff's and yoff's weighted ref counts.",
+   "mechanism": "flow.c's REG_N_REFS loop_depth weighting is what orders global.c's allocnos; the wrap supplies the depth the missing NOTE_INSN_LOOP_BEG used to supply. That is an allocation effect, not the LABEL_OUTSIDE_LOOP_P / reorg.c interaction the role brief names as the rule's scope.",
+   "next_probe": "Read .claude/rules/do-while-zero-exception.md end to end and quote its scope sentence verbatim before spending the construct; the memory index records a 2026-07-06 FINAL ruling that may have widened it to ANY codegen effect, and the two readings differ. In parallel, hunt an ordinary-C way to raise the two offset defs' weighted ref counts - arm swap, intra-arm assignment order and declaration order are all already measured dead, so the remaining space is the SHAPE of the offset defs themselves (e.g. a form in which each offset is referenced a second time in a way target's bytes already contain).",
+   "artifacts_hint": "rejected/s10-goto-basin-no-dowhile0-wraps-43at136.c is the unwrapped baseline."
   }
  ],
  "judge_constraints": [],

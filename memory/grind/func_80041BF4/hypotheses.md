@@ -675,3 +675,92 @@ the body is 16 @ 137. **Verdict: KILLED (inert / worse).**
 - probe: Three variants measured with sandbox --disable all against the banked candidate's 11 @ 135.
 - result: `(s32)&D_800A9A24 + off` is exactly 11 @ 135. `(s32)(off + (u8 *)&D_800A9A24)` is exactly 11 @ 135. Inline `(u8 *)&D_800A9A24 + (idx << 5)` with `idx++` moved to the end of the body is 16 @ 137 (worse, same family as s8's idx++-relocation result).
 - verdict: KILLED
+
+## [s10] The inner loop's NOTE_INSN_LOOP_BEG is simultaneously required (for global.c's allocno order) and fatal (for loop.c's hoist of the symbol_ref), so the while basin's floor-11 residual and the goto basin's callee-save permutation are the SAME lever seen from two sides
+- mechanism: flow.c weights REG_N_REFS by loop_depth and global.c orders allocnos by priority = f(weighted refs, live length); the inner-body references of xoff/yoff/r/g/fp_ptr therefore rank differently with and without loop notes. The same note makes scan_loop/move_movables hoist the `(set reg (symbol_ref "D_800A9A24"))`, after which global.c leaves it unallocated and reload rematerialises it into $t0 while local-alloc's qty_phys_sugg hands $a1 to `off`.
+- probe: completed the 2x2 loop-spelling matrix with `sandbox --disable all` (the missing corner, outer-goto/inner-while, is new this session) and read the `;; N regs to allocate` allocation order out of the `.greg` dump for both the while basin and the goto basin.
+- result: matrix = while/do-while 11 [135], goto/do-while 23 [135], while/goto 48 [136], goto/goto 40 [136]. The 23 corner's diff is the while basin's eleven loop diffs plus exactly the outer/b callee-save swap, proving the hoist needs only the inner loop. The two .greg allocation orders differ in exactly ONE position: pseudo 80 (xoff) falls from 6th to last in the goto basin.
+- verdict: CONFIRMED
+
+## [s10] The loop-depth ref weighting that the goto basin loses can be bought back at the source level, and doing so makes every register in the function match target
+- mechanism: a `do { X; } while (0);` wrap raises the wrapped def's loop_depth by one in flow.c's REG_N_REFS weighting, which is the same quantity the missing NOTE_INSN_LOOP_BEG used to supply.
+- probe: five spellings of the outer-loop if/else arms measured with `sandbox --disable all` on the goto basin, plus three ordinary-C substitutes (arm swap, intra-arm assignment order, both).
+- result: no wrap 43, yoff wrapped 40, xoff wrapped 43, BOTH wrapped 25, both THEN-arm defs wrapped 25; arm swap 45, yoff-first 43, both 45. At 25 the normalized side-by-side has ZERO register differences - callee-saves, the inner loop's $a1/$v0/$v1 and the trailing $t0 all match; the entire 25 is 22 frame-offset diffs plus the 3-diff cse2 merge.
+- verdict: CONFIRMED
+
+## [s10] The goto basin's 8-byte frame shortfall is a locals-size question with a frame-math proof, and closing it takes the floor to 3
+- mechanism: mips.c compute_frame_size, frame = ALIGN8(get_frame_size()) + ALIGN8(args) + gp_regs. Target's 88 with 24 bytes of outgoing args and 40 bytes of callee saves forces vars in (16,24]; the locals region stores only the 8 bytes of the LoadImage rect, so the original declared a locals object strictly larger than the bytes it writes.
+- probe: `.frame ... # vars=` read out of the cc1 -da assembly for every frame candidate (a far sharper gradient than the score): separate pad arrays declared after rect, `off` at function scope, coordinates named in s16 / s32 / u16 locals, a named s16 width temp, function-scope s16 scalars, and finally extending the live rect to `s16 rect[8]`.
+- result: `s16 rect[8]` gives vars=24 / frame 88 and score 3 at 136 insns. A separate `s16 pad[4]` or `s16 pad[2]` also reaches vars=24 but scores 25, because GCC 2.7.2 assigns locals in REVERSE declaration order and the pad takes rect's sp+24 slot. Every other candidate leaves vars at 16 or drops it to 8.
+- verdict: CONFIRMED (the codegen effect). The CONSTRUCT is unvetted: it is the OVERSIZED-LOCALS carve-out of .claude/rules/dead-vars-local-array.md (owner ruling 2026-07-13), whose prong 1 (frame-math proof) and prong 2 (extend the LIVE object, not a dead pad) are satisfied above; prongs 3-5 are not yet discharged.
+
+## [s10] The last instruction is a cse2 substitution of the body's `lhu` by the test block's `lh`, and it is not reachable by where the read is written in C
+- mechanism: cse2 sees `lh $v0,0($s0)` in the test block and `lhu $v1,0($s0)` at the top of the body, and because only the low 16 bits survive (the sum is immediately `sh`-stored) replaces the second load with `move $v1,$v0`. dbr then uses that move as the bgez delay filler instead of `sll $v0,$s1,5`, the sll is displaced to the top of the body, and the load-delay `nop` after the `lh` is the net +1.
+- probe: four spellings on the floor-3 base - the x read written explicitly INTO the test block immediately before the `if` (target's own block layout), the same without the preheader copy, the same with the temp typed s32, and the `tbl += 2` bump moved above the rect constant stores.
+- result: 3, 3, 26 at 137, 11. Inert or worse; the merge survives even when the C puts the load exactly where target's asm has it.
+- verdict: KILLED (the write-it-where-target-has-it family). The merge must be attacked at what cse2 CONSIDERS EQUIVALENT, not at where the load is written.
+
+## [s10] The trailing `func_8003E2A0() == 1` divergence is a reload spill-register choice, not a property of the test's shape
+- mechanism: reload rematerialises the REG_EQUIV (const_int 1) into a spill register; ours is $v1, target's is $t0.
+- probe: seven more ordinary-C spellings measured with `sandbox --disable all` on top of s4's three - `x - 1 == 0`, `(x ^ 1) == 0`, `!(x != 1)`, `switch (x) { case 1: ... }`, and naming the call RESULT in a reused `idx` and a reused `outer`.
+- result: all seven exactly inert at 13/135. Notably the two variable-reuse forms are inert too: reusing a live pseudo for the RESULT does nothing; only a pseudo holding the CONSTANT (the s4 `one` holder) moves it, and that is worth exactly 2.
+- verdict: KILLED (ten spellings). Do not spend another session respelling the test.
+
+## Frontier after s10 (floor 3, goto basin + do-while(0) wraps + `s16 rect[8]`)
+1. **Close the cse2 lh/lhu merge - the ONLY remaining instruction.** Attack what
+   cse2 considers equivalent, not where the load is written (that family is
+   killed above). Next probe: read `.cse2` for the equivalence class of the
+   `(mem:HI (reg tbl))` value and find what would make the body's unsigned read
+   NOT a legal substitution of the test's signed one - e.g. a spelling in which
+   the body's value is consumed somewhere its high bits matter, or in which the
+   two reads are not provably the same address. Also worth one read: why the
+   WHILE basin does not perform this merge at all (loop notes bound cse's
+   extended basic block - see
+   .claude/rules/cse-block-extension-controls-fold-span.md), and whether any
+   note-free construct re-establishes that boundary.
+2. **Discharge or replace the `s16 rect[8]` oversized-locals construct.** The
+   frame-math proof (prong 1) and the live-object preference (prong 2) are in
+   hand and written into candidate.c; what is missing is prongs 3-5 and, ideally,
+   an ORDINARY source of the 8 bytes. Next probe: the while basin reaches
+   vars=24 with a 4-element rect, so those 8 bytes exist there as a compiler
+   temp (see [[phantom-frame-slots-gcc272]]); find what creates that temp and
+   whether a note-free construct can create it too. Fallback form banked as
+   goto_basin_no_oversize.c (25 at 136).
+3. **Verify the do-while(0) wraps' sanction scope, or replace them.** They are
+   worth 18 (43 -> 25) and are used here for a flow.c loop_depth ref-weighting
+   effect, not the LABEL_OUTSIDE_LOOP_P / reorg.c interaction the role brief
+   names as the rule's scope. Next probe: read
+   .claude/rules/do-while-zero-exception.md end to end and quote its scope
+   sentence; if ref weighting is out of scope, emit a ruling-request rather than
+   a submission, and in parallel hunt an ordinary-C way to raise xoff's and
+   yoff's weighted ref counts (arm swap and intra-arm order are already dead).
+
+## [s10] The inner loop's NOTE_INSN_LOOP_BEG is simultaneously REQUIRED (it supplies the loop_depth weighting of REG_N_REFS that orders global.c's allocnos) and FATAL (it lets loop.c's move_movables hoist the (set reg (symbol_ref D_800A9A24)) out of the loop), so the while basin's floor-11 residual and the goto basin's callee-save permutation are one lever seen from two sides.
+- mechanism: flow.c weights REG_N_REFS by loop_depth; global.c orders allocnos by priority = f(weighted refs, live length). The same note drives scan_loop/move_movables, after which global.c never allocates the symbol pseudo and reload rematerialises it into $t0 while local-alloc's qty_phys_sugg hands $a1 to `off`.
+- probe: Completed the 2x2 loop-spelling matrix with sandbox --disable all (the missing corner - outer goto, inner while - is new this session) and read the `;; N regs to allocate` allocation orders out of the .greg dumps of both basins.
+- result: Matrix (with the s4 `one` holder): while/do-while 11 [135], goto/do-while 23 [135], while-inner-goto/do-while 48 [136], goto/goto 40 [136]. The 23 corner's normalized diff is EXACTLY the while basin's eleven loop diffs plus the outer/b callee-save swap, so the hoist needs only the INNER loop. The two .greg allocation orders differ in exactly one position: pseudo 80 (xoff) falls from 6th to last in the goto basin.
+- verdict: CONFIRMED
+
+## [s10] The loop-depth ref weighting the goto basin loses can be bought back at the source level with do-while(0) wraps on the offset defs, and doing so makes every register in the function match target.
+- mechanism: A `do { X; } while (0);` wrap raises the wrapped def's loop_depth by one in flow.c's REG_N_REFS weighting - the same quantity the missing NOTE_INSN_LOOP_BEG supplied.
+- probe: Five wrap spellings of the outer-loop if/else arms plus three ordinary-C substitutes (arm swap, intra-arm assignment order, both), all measured with sandbox --disable all on the goto basin.
+- result: no wrap 43, yoff wrapped 40 (s9's banked form), xoff wrapped 43, BOTH wrapped 25, both THEN-arm defs wrapped 25; arm swap 45, yoff-first 43, both 45. At 25 the normalized side-by-side has ZERO register differences: callee-saves, the inner loop's $a1/$v0/$v1 (symbol in $a1, off in $v0 - target's) and the trailing $t0 all match.
+- verdict: CONFIRMED
+
+## [s10] The goto basin's remaining 22 diffs were pure frame offsets, and the 8-byte shortfall is a locals-size question with a frame-math proof from the target bytes alone.
+- mechanism: mips.c compute_frame_size: frame = ALIGN8(get_frame_size()) + ALIGN8(args) + gp_regs. Target 88 with args=24 and 40 bytes of callee saves forces vars in (16,24], while the locals region stores only the 8 bytes of the LoadImage rect.
+- probe: Read `.frame $sp,N,$31 # vars= X` out of the cc1 -da assembly for every frame candidate (a sharper gradient than the score): separate pad arrays, `off` at function scope, coordinates named in s16/s32/u16 locals, a named s16 width temp, function-scope s16 scalars, and extending the live rect to `s16 rect[8]`.
+- result: `s16 rect[8]` gives vars=24 / frame 88 and score 25 -> 3 at 136 insns. A separate `s16 pad[4]`/`pad[2]` also reaches vars=24 but scores 25, because GCC 2.7.2 assigns locals in REVERSE declaration order and the pad steals rect's sp+24 slot. Every other candidate leaves vars at 16 or drops it to 8.
+- verdict: CONFIRMED
+
+## [s10] The last remaining instruction (a cse2 substitution of the body's `lhu 0(tbl)` by the test block's `lh 0(tbl)`) is reachable by writing the x read into the test block, i.e. by reproducing target's own block layout in the C.
+- mechanism: cse2 sees both reads of the same address, only the low 16 bits survive (the sum is immediately sh-stored), so it emits `move v1,v0`; dbr then fills the bgez delay slot with that move instead of `sll v0,s1,5`, the sll is displaced to the top of the body, and the load-delay nop after the lh is the net +1.
+- probe: Four spellings on the floor-3 base: `px = *(u16 *)tbl;` written immediately before the `if` in the test block (with and without a preheader copy), the same with px typed s32, and the `tbl += 2` bump moved above the rect constant stores.
+- result: 3, 3, 26 at 137, 11. Exactly inert or worse - the merge survives even when the C puts the load exactly where target's asm has it.
+- verdict: KILLED
+
+## [s10] The trailing `func_8003E2A0() == 1` divergence ($v1 vs target's $t0 holding the rematerialised literal 1) has an ordinary-C spelling of the TEST that closes it.
+- mechanism: Reload rematerialises the REG_EQUIV (const_int 1) into a spill register; the choice is a function of the spill ordering, not of the comparison's shape.
+- probe: Seven more ordinary-C spellings on top of s4's three: `x - 1 == 0`, `(x ^ 1) == 0`, `!(x != 1)`, `switch (x) { case 1: ... }`, and naming the call RESULT in a reused `idx` and in a reused `outer`.
+- result: All seven exactly inert at 13/135. The two variable-reuse forms are inert too - reusing a live pseudo for the RESULT does nothing; only a pseudo holding the CONSTANT (the s4 `one` holder) moves it, and it is worth exactly 2. Ten spellings measured across s4+s10.
+- verdict: KILLED
