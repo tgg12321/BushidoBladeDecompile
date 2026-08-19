@@ -543,3 +543,82 @@ This is the s1–s4 frontier head. It is now closed in closed form.
 - probe: Counted `(set (reg/i:SI 2 v0) (const_int 0))` return-0 blocks in the function-sliced .jump (pre-reload) and .jump2 (post-reload) dumps for BOTH the base chassis and the `if (disc < 0) return 0;` variant, and counted `addu $v0, $zero, $zero` in asm/funcs/func_8002D518.s.
 - result: .jump carries 9 such blocks and .jump2 carries 1, in BOTH builds - the cross-jumper is not selective, it merges every one of them. Yet the target asm has 9 `addu $v0,$zero,$zero` and our 144-insn base build reproduces all 9, so those copies are re-materialised AFTER jump2 by reorg.c filling each `j <label>` delay slot from the jump target. The s5 frontier premise ('target and our build BOTH already carry two UN-merged copies of that same block') is refuted. Slot 88 is a reorg/.dbr question.
 - verdict: KILLED
+
+## s7 hypotheses (forensics modality) — 2 CONFIRMED (floor 7 -> 4), 3 KILLED
+
+### H7.1 — CONFIRMED. `disc`'s hard-reg conflict set — not the allocno order — is what decides its register, and it is source-controllable through `local_alloc`'s block-local assignments.
+Mechanism: `global.c global_conflicts` counts every pseudo with `reg_renumber >= 0`
+(a `local_alloc`-placed block-local) as a live HARD REG, so a global allocno's
+`;; N conflicts:` hard set is the union of the hard regs of all block-locals its
+live range spans. Probe: read `;; Register N in H.` out of `.lreg` and compare
+allocno 122 (`sqrt_val`, hard conflicts {2,3,4,5}, gets `$6`) with base allocno
+117 (`disc`, hard conflicts {2}, gets `$3`). Result: 122's `$6` is fully
+explained with no reference to allocno order. Verdict: **CONFIRMED** —
+s5/E4's two-channel model of `find_reg` blockers was incomplete; see E12.
+
+### H7.2 — CONFIRMED. Making `disc` and `sqrt_val` ONE C variable lengthens allocno 117 over the lzcs/table block-locals and forces it onto `$a2`.
+Mechanism: H7.1's channel. Probe: delete the `sqrt_val` local, assign the square
+root back into `disc`. Result: `Register 117 used 13 times across 19 insns`,
+`;; 117 conflicts: ... 2 3 4 5 12 29 64 65 66`, still allocno position 1, gets
+`$6`. All six `disc` slots close. Score 7 -> 6 (146 insns), and 7 -> **4** at
+144 insns once combined with H7.3. Verdict: **CONFIRMED**.
+
+### H7.3 — CONFIRMED. On the variable-reuse chassis the init-then-overwrite LZCS guard (`lzcr = 0; if (disc >= 0) {...}`) is 2 slots BETTER than s2/s3's if/else, reversing the standing instruction.
+Mechanism: the if/else needs a `j` past the else arm; the init guard is a single
+`bltz`-skip, which is literally target's shape. It costs the `u32 ud = disc;`
+copy (cse AROUND escape, E8) but that is 1 insn, not 2. Probe: measure both on
+the reuse chassis. Result: if/else 6 / 146; init guard **4 / 144**.
+Verdict: **CONFIRMED**.
+
+### H7.4 — KILLED. Hoisting `u32 ud = disc;` above the `(u32)disc < 0x400u` test puts the island read and the `srlv` read into a later cse extended block, so the copy survives with consumers.
+Mechanism: E8's `cse_end_of_basic_block` extent argument. Probe: measured on the
+s7 chassis. Result: **score 4 / 144 — exactly neutral, byte-identical residual**;
+`disc` is still canonical and the copy is still deleted. Verdict: **KILLED**.
+s6/E7's either-or law survives the chassis change: the target's simultaneous
+`$a2`-with-consumers + `$a0`-with-consumers split cannot come from a plain C copy.
+
+### H7.5 — KILLED (re-kill on the new chassis). Slot 88 is spellable as `if (disc < 0) return 0;`.
+Probe: measured on the s7 chassis. Result: **score 8 / 142 insns** — jump2 still
+cross-jumps the 2-insn return-0 block away, exactly as s6/E10-E11 described.
+Verdict: **KILLED**. The item is a reorg.c delay-slot re-materialisation
+question; read `.dbr`, never `.jump2`.
+
+## [s7] A global allocno's hard-reg conflict set is fed by local_alloc's block-local assignments, so it is source-controllable by live-range length — the third find_reg blocker channel s5/E4 never modelled. CONFIRMED (E12).
+
+## [s7] Merging `disc` and `sqrt_val` into one C variable (sanctioned variable-reuse) forces allocno 117 onto $a2 = target's register, closing all six disc slots. CONFIRMED (E13).
+
+## [s7] On the variable-reuse chassis the init-then-overwrite LZCS guard beats s2/s3's if/else by 2 slots and restores parity 144 == 144. CONFIRMED (E14).
+
+## [s7] Hoisting `u32 ud = disc;` above the 0x400 test makes the copy survive cse. KILLED — exactly neutral, score 4/144, copy still deleted (E16).
+
+## [s7] Slot 88 is spellable as `if (disc < 0) return 0;` on the reuse chassis. KILLED — score 8 / 142 insns, jump2 cross-jump unchanged (E16).
+
+## [s7] A global allocno's hard-reg conflict set is fed by local_alloc's block-local assignments, so it is source-controllable by live-range length - a third find_reg blocker channel that s5/E4's closed-form impossibility proof never modelled.
+- mechanism: global.c global_conflicts treats every pseudo with reg_renumber >= 0 (a local_alloc-placed block-local) as a live HARD REG, so a global allocno's ';; N conflicts:' hard set is the union of the hard regs of every block-local its live range spans.
+- probe: Read ';; Register N in H.' out of the base .lreg and compare allocno 122 (sqrt_val: hard conflicts {2,3,4,5}, gets $6) against allocno 117 (disc: hard conflicts {2}, gets $3); verify by scanning the .lreg RTL that the function contains NO RTL hard reg 3/4/5 outside insns 4/6/8/10 (incoming args), the returns ($2), $29/$30, HI/LO and the island's $12 clobber.
+- result: 122's $6 is fully explained by its hard-conflict set with no reference to allocno order; base 117's 6-insn live range spans only $2-assigned locals (124 in block 20, 128 in block 21), which is exactly why it takes its $3 preference at allocation position 1.
+- verdict: CONFIRMED
+
+## [s7] Making disc and sqrt_val ONE C variable (sanctioned variable-reuse) lengthens allocno 117 over the lzcs/table block-locals and forces it onto $a2 = target's register.
+- mechanism: The merged pseudo's live range spans block-25/26 locals that local_alloc placed in $3, $4 and $5, so 117's hard-conflict set becomes {2,3,4,5,...}; global.c find_reg can then only return $6. Priority is untouched (117 is still allocno position 1 of 23), so no other allocation moves.
+- probe: Delete the sqrt_val local; assign the square root, the <<9 and the numerator operands back into disc. Rebuild, dump, read .lreg/.greg, measure sandbox --disable all.
+- result: Register 117 used 13 times across 19 insns; ';; 117 conflicts: 108 116 117 122 131 2 3 4 5 12 29 64 65 66'; disc gets $6. All six disc register slots close. Score 7 -> 6 (build_insns 146, +2).
+- verdict: CONFIRMED
+
+## [s7] On the variable-reuse chassis the init-then-conditionally-overwrite LZCS guard (lzcr = 0; if (disc >= 0) { island; lzcr = sp_tmp; }) beats s2/s3's if/else guard, reversing the standing 'do not undo the if/else' instruction.
+- mechanism: The if/else needs a `j` past the else arm; the init guard is a single bltz-skip - literally target's 0x8002D698 shape. It costs the `u32 ud = disc;` copy via cse's AROUND escape (s6/E8), but that is 1 insn against the if/else's 2.
+- probe: Measure both guard shapes on the reuse chassis with sandbox --disable all plus a normalised target-vs-build diff (tmp/grind/func_8002D518/s7/align3.py).
+- result: if/else guard 6 / 146 insns; init guard 4 / 144 insns. Parity restored and the residual drops to 4 slots.
+- verdict: CONFIRMED
+
+## [s7] Hoisting `u32 ud = disc;` above the `(u32)disc < 0x400u` test puts the island read and the slow-path srlv read into a later cse extended block, so the copy survives with consumers and target's two-register $a2/$a0 split appears.
+- mechanism: s6/E8's cse_end_of_basic_block extent argument - a copy in an earlier extended block cannot have its later-block reads rewritten to qty_first_reg.
+- probe: Move the declaration above the 0x400 test on the s7 chassis; rebuild and re-diff.
+- result: Score 4 / 144 - EXACTLY NEUTRAL, byte-identical residual. disc is still cse-canonical and the copy is still deleted. s6/E7's strictly-either-or law survives the chassis change.
+- verdict: KILLED
+
+## [s7] Slot 88 (target `addu $v0,$zero,$zero` + jump to the epilogue label) is spellable as `if (disc < 0) return 0;` on the new chassis.
+- mechanism: s6/E10-E11: the 9 return-0 copies are re-materialised by reorg.c delay-slot filling after jump2 has merged them all into one; whether the disc<0 arm gets its own copy is a delay-slot decision, not a cross-jump-selectivity one.
+- probe: Re-measure the `return 0;` arm on the s7 variable-reuse chassis.
+- result: Score 8 / build_insns 142 - still 2 insns short, jump2 cross-jump unchanged. Verdict identical to s6 despite the completely different allocation.
+- verdict: KILLED

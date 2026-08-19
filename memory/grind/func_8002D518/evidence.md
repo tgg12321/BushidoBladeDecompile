@@ -718,3 +718,127 @@ Counted directly in the dumps for both the base chassis and the `return 0;` vari
 - [s6] MEASURED: .jump = 9 return-0 blocks, .jump2 = 1, in both the base chassis and the return-0 variant; the target asm and our 144-insn base build each contain 9 `addu $v0, $zero, $zero`. The duplication is reorg.c delay-slot filling, not surviving jump2 blocks.
 
 - [s6] NEW ARITHMETIC OPENING (not yet probed): global.c allocno_compare priority is floor_log2(refs)*refs/live_length. s5 closed the priority axis using disc's current 5-6 refs, where floor_log2 = 2 and beating 116 (`dist_sq`, pri 909, holds $5, and ALREADY conflicts with 117) needs live_length > 132. But floor_log2(2) = floor_log2(3) = 1, so a 3-ref disc needs only live_length > 33 and a 2-ref disc only > 22. The reference COUNT on the pseudo that must land in $a2, not its live length alone, is the untried variable.
+
+## s7 (forensics) — FLOOR 7 -> 4 at held parity 144 == 144. s5/E4's closed-form "impossible" was based on an INCOMPLETE model of find_reg's blockers.
+
+Chassis at dispatch: src/code6cac_b.c did NOT carry the s6 candidate (7th time).
+Re-applied `memory/grind/func_8002D518/candidate.c` and re-measured: score 7,
+144 == 144. All s7 numbers below are relative to that re-measured base.
+
+### E12 — THE CORRECTION. A pseudo's hard-reg conflict set is fed by `local_alloc`'s block-local assignments, not only by RTL hard regs. This is the third blocker channel s5/E4 never modelled, and it is the one that opens `$a2`.
+
+s5/E4 stated: "`find_reg` blocks a hard reg for allocno A only via (a) A's
+hard-reg conflict set, or (b) a hard reg already assigned to an allocno that
+CONFLICTS with A", and then derived requirement 2 (a NEW conflict edge from
+`disc` to an early-allocated `$5` holder) as the only route. Channel (a) was
+treated as fixed. It is not — it is a **source-controllable function of the live
+range**, because `global.c`'s `global_conflicts` treats every pseudo with
+`reg_renumber >= 0` (i.e. every pseudo `local_alloc` already placed) as a live
+HARD REG. Read directly out of the base `.lreg`:
+
+    ;; Register 94 in 4.   ;; Register 95 in 4.   ;; Register 96 in 5.
+    ;; Register 100 in 3.  ;; Register 119 in 3.  ;; Register 124 in 2.
+    ;; Register 128 in 2.  ;; Register 133 in 3.  ;; Register 137 in 4.
+    ;; Register 141 in 3.  ;; Register 142 in 4.  ;; Register 154 in 5.  (etc.)
+
+The proof that this is the operative channel is allocno **122** (`sqrt_val`) in
+the base: `;; 122 conflicts: 108 116 122 123 2 3 4 5 29 64 65 66` — hard 2,3,4,5
+all blocked, and 122 duly gets **$6**, while there is no RTL hard reg 3/4/5
+anywhere in the function's RTL (the only RTL hard regs are `$4..$7` at insns
+4/6/8/10 (incoming args), `$2` at each `return`, `$29/$30`, HI/LO, and `$12`
+from the island's clobber — verified by scanning the `.lreg` RTL). Base `disc`
+(117) had `;; 117 conflicts: 108 116 117 2 29` purely because its live range was
+6 insns (209 def, 212 bgez, 224 sltiu, 234 fast-path index, 245 copy) and only
+`$2`-assigned locals (124 in block 20, 128 in block 21) overlapped it.
+
+**LAW for this function:** to move a global allocno onto a specific hard reg,
+lengthen its live range so it spans block-locals that `local_alloc` has already
+placed in the registers you want blocked. Priority/order is not the only lever
+and, per E9, is the arithmetically self-defeating one.
+
+### E13 — the lever that does it: `disc` and `sqrt_val` are ONE C variable (sanctioned variable-reuse), which is what target's register file literally shows
+
+Target keeps the discriminant, the square root and `sqrt<<9` all in `$a2`
+(0x8002D668 `subu $a2,$a0,$v1` … 0x8002D694 `srl $a2,$v0,3` … `sll $a2,$a2,9`).
+Deleting the separate `sqrt_val` local and reusing `disc` merges the two pseudos
+into one:
+
+    base : Register 117 used  5 times across  6 insns; ;; 117 conflicts: 108 116 117 2 29
+    s7   : Register 117 used 13 times across 19 insns;
+           ;; 117 conflicts: 108 116 117 122 131 2 3 4 5 12 29 64 65 66
+
+117 stays allocno **position 1 of 23** (pri floor_log2(13)*13/19 = 20526), so
+nothing else in the allocation order moves — but with hard 2,3,4,5 blocked
+`find_reg` can only return **$6 = $a2 = target's register**. All six `disc`
+slots close in one edit. Measured: score 7 -> 6 (build_insns 146, +2).
+
+### E14 — the second edit: on the s7 chassis the init-then-overwrite LZCS guard is worth 2 slots, reversing the s2/s3 verdict
+
+`lzcr = 0; if (disc >= 0) { island; lzcr = sp_tmp; }` — the shape s2/s3 rejected
+because cse's AROUND escape (E8) keeps `disc` canonical and deletes the
+`u32 ud = disc;` copy. On the s7 chassis that deletion is cheaper than the
+if/else's extra `j`: **score 6 / 146 insns (if/else) -> score 4 / 144 insns
+(init guard)**. Parity is restored and the diff drops to 4 slots. The s3
+candidate-header instruction "the LZCS guard is a real if/else — do not undo" is
+SUPERSEDED for the variable-reuse chassis.
+
+### E15 — the 4-slot residual, normalised (tmp/grind/func_8002D518/s7/align3.py)
+
+    T[ 74] addu $2,$0,$0     B addu $5,$0,$0     <- slot 88, the disc<0 arm
+    T[ 76] addu $4,$6,$0     B --                <- the `ud` copy is folded away
+    T[ 84] addu $12,$4,$0    B addu $12,$6,$0    <- island input reads $6 not $4
+    T[ 93] srlv $2,$4,$3     B srlv $2,$6,$3     <- slow-path index reads $6 not $4
+
+(The two `lui $1,%hi(...)` entries the script also prints are unlinked-reloc
+noise, not real diffs.) So the residual is exactly TWO items: the `ud` copy
+(3 slots) and slot 88 (1 slot) — the same two items s3 named, minus the six
+`disc` register slots.
+
+### E16 — both residual items re-measured on the s7 chassis; both verdicts UNCHANGED from s6
+
+* **`ud` hoisted above the `(u32)disc < 0x400u` test** (E8's idea of moving the
+  copy into an earlier extended block so the island read and the `srlv` read
+  both fall outside it): **score 4 / 144 — exactly neutral**, byte-identical
+  residual. cse still makes `disc` canonical and still deletes the copy. s6/E7's
+  either-or law holds on the new chassis: with a plain C copy, target's
+  simultaneous `$a2`-with-consumers + `$a0`-with-consumers split is unreachable.
+  Banked `rejected/s7-ud-hoist-over-0x400-neutral-score4.c`.
+* **`if (disc < 0) return 0;`** for slot 88: **score 8 / 142 insns** — still 2
+  insns short, still the jump2 cross-jump of the 2-insn return-0 block (s6/E10,
+  E11). Banked `rejected/s7-disc-lt0-return0-still-crossjumps-score8-142insns.c`.
+
+### E17 — artifacts
+
+`tmp/grind/func_8002D518/s7/`: `apply.py` (brace-matched form splicer),
+`align3.py` (normalised target-vs-build diff), `dis.sh`, `base.lreg.txt`,
+`base.greg.txt` (re-measured floor-7 chassis), `m1.lreg.txt`, `m1.greg.txt`
+(the `[(u32)disc >> shift]` control: 117 = 7 refs/15 insns, hard conflicts
+{2,3,12,29} only — no 4, no 5, which is why M1 never reached $6),
+`vr.lreg.txt`, `vr.greg.txt` (the variable-reuse build showing the
+{2,3,4,5} hard-conflict set), `base_src.c`, `m1.c`, `v_reuse.c`,
+`v_reuse_initguard.c` (= the new candidate), `v_ig_udhoist.c`, `v_ig_ret0.c`,
+`v/*.dis`.
+
+- [s7] Chassis re-check at s7 dispatch: src/code6cac_b.c did NOT carry the s6 candidate for the SEVENTH consecutive session (HEAD held a hybrid `sq` + `[(u32)disc >> shift]` form). Re-applied candidate.c and re-measured the stated base: score 7, build_insns 144 == target_insns 144.
+
+- [s7] END-OF-SESSION STATE: src/code6cac_b.c carries the new s7 form and re-measures score 4, build_insns 144 == target_insns 144. memory/grind/func_8002D518/candidate.c is that exact text with a full s7 header.
+
+- [s7] s5/E4's standing conclusion ('get disc into $6' is DEAD; find_reg blocks a hard reg only via the allocno's own hard-reg conflict set or via a conflicting allocno that already holds it) was CORRECT about the two channels it listed but WRONG to treat channel (a) as fixed: global.c counts local_alloc-placed block-locals (reg_renumber >= 0) as live hard regs, so channel (a) is a source-controllable function of live-range length. This is E12 and it is the whole session.
+
+- [s7] Direct proof in the base .lreg: ';; Register 94 in 4. ;; Register 95 in 4. ;; Register 96 in 5. ;; Register 100 in 3. ;; Register 124 in 2. ;; Register 128 in 2. ;; Register 133 in 3. ;; Register 137 in 4. ;; Register 141 in 3. ;; Register 142 in 4.' - and allocno 122 (sqrt_val), whose range spans the $3/$4/$5 ones, carries ';; 122 conflicts: ... 2 3 4 5 ...' and is assigned $6.
+
+- [s7] The function's RTL contains NO hard reg 3, 4 or 5 outside insns 4/6/8/10 (the incoming-arg copies), so 122's hard conflicts with 3/4/5 cannot come from RTL hard regs - only from local_alloc.
+
+- [s7] Base allocno table re-validated bit-for-bit against s5/E3: 117 = 5 refs/6 insns (pri 16667, position 1 of 24, ';; 117 preferences: 3', gets $3); ';; 117 conflicts: 108 116 117 2 29'. Its refs are insn 209 (subu def), 212 (bgez), 224 (sltiu), 234 (fast-path table index), 245 (the ud copy).
+
+- [s7] The M1 control ('[(u32)disc >> shift]', no reuse) measured this session: 117 = 7 refs/15 insns, allocno position 4, ';; 117 conflicts: 108 116 117 131 2 3 12 29' - hard 3 present but NOT 4 and NOT 5, which is the precise reason M1 never reached $6 despite the longer range. Score 7 / 144.
+
+- [s7] s7 form: 117 = 13 refs/19 insns, still allocno position 1 of 23, ';; 117 conflicts: 108 116 117 122 131 2 3 4 5 12 29 64 65 66' -> $6 = $a2 = target.
+
+- [s7] Target's register file corroborates the variable-reuse reading directly: $a2 carries the discriminant (0x8002D668 `subu $a2,$a0,$v1`), the square root (0x8002D694 `srl $a2,$v0,3`) and the <<9 result (`sll $a2,$a2,9`) - one register, one C variable.
+
+- [s7] The 4-slot residual, normalised (nop / reg-name / pseudo-mnemonic / reloc insensitive): T[74] `addu $2,$0,$0` vs `addu $5,$0,$0` (slot 88); T[76] target's `addu $4,$6,$0` MISSING in our build (the folded ud copy); T[84] `addu $12,$4,$0` vs `addu $12,$6,$0` (island input); T[93] `srlv $2,$4,$3` vs `srlv $2,$6,$3` (slow-path index). Two independent items: the ud copy = 3 slots, slot 88 = 1 slot.
+
+- [s7] Both residual items were re-measured on the new chassis and both s6 verdicts held: ud-hoist-above-0x400 is exactly neutral (4/144, identical residual), and `if (disc < 0) return 0;` still loses 2 insns to jump2 (8/142).
+
+- [s7] Reusable tooling written this session and worth inheriting: tmp/grind/func_8002D518/s7/apply.py (brace-matched splice of a form file into src/code6cac_b.c - removes the chronic re-apply friction) and tmp/grind/func_8002D518/s7/align3.py (normalised target-vs-build diff that survives the sandbox's dropped multu_pad nops, so the residual is readable without the engine's scorer).

@@ -1,7 +1,7 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -39,23 +39,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Forensics closed BOTH s5 frontier items in closed form: cse's make_regs_eqv canonicalisation is strictly either/or (so target's disc/ud split cannot be a C-level copy and the 'untested 2x2 cell' does "
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Floor 7 -> 4 at held parity 144==144: s5/E4's find_reg model was missing a third blocker channel (local_alloc block-locals feed a global allocno's HARD-reg conflict set), and merging disc+sqrt_val int"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The $6 allocation for `disc` is reachable by REDUCING the reference count of the pseudo that must occupy $a2 rather than by lengthening its live range. s5 closed the priority axis assuming 5-6 refs (floor_log2 = 2, requiring live_length > 132); with 2-3 refs the floor_log2 factor halves and the requirement collapses to live_length > 22-33, which is entirely reachable in a 144-insn function.",
-   "mechanism": "global.c allocno_compare sorts descending by floor_log2(n_refs)*n_refs/live_length (x10000). Allocno 117 is currently position 1 of 24 at 5 refs/6 insns = 16667, so nothing at all is allocated before it and only its own HARD-reg conflict set ({2,29}) can block a register - which is the real reason it takes $3. Dropping it below 116 (`dist_sq`, pri 909, allocated $5, ALREADY in 117's conflict set) blocks $5 with no new edge needed at all; 132 (`ud`, pri 7273, $4) then also precedes it, though an edge to 132 is still required for $4 - see the second frontier item.",
-   "next_probe": "Look for a spelling in which target's six $a2 references (slots 90 def, 91 bgez, 92 sltiu, 97 copy source, 99 table index, 104 bltz) are carried by TWO pseudos instead of one - e.g. the fast-path table index taken from a separately-named value - so that the pseudo which must land in $a2 shows `Register N used 3 times across L insns` in .lreg. Read the .lreg refs/live_length line BEFORE judging by score: the s5/E3 priority model is validated and predictive, so the whole allocno order can be computed from one dump."
+   "hypothesis": "Target's `addu $a0,$a2,$zero` (the surviving `ud` register) is created AFTER cse - by reload satisfying the island asm's \"r\" input operand, or by a local_alloc range split - which is why no plain-C `u32 ud = disc;` spelling can reproduce it (three independent spellings now measured: base if/else, init guard, and hoisted-above-0x400; all either fold the copy or cost the `j`).",
+   "mechanism": "s6/E7 + s7/H7.4: cse's make_regs_eqv puts disc and ud in ONE quantity and rewrites every in-block read to qty_first_reg, so exactly one of them keeps consumers. Target has BOTH $a2 (read by the bltz at 0x8002D698) and $a0 (read by the island at 0x8002D6A0 and by the slow-path srlv) carrying live consumers, which no cell of the cse predicate produces. Therefore the second register is post-cse.",
+   "next_probe": "On the s7 chassis, dump and read .greg / .dbr (NOT .cse, NOT .jump2) for the slow-path region and locate every copy insn that exists after global_alloc; then read tools/gcc-2.7.2/reload1.c's handling of an asm \"r\" input whose pseudo is also live across the asm's $12 clobber and across the join, and ask what makes reload allocate a SECOND register for it rather than reading the pseudo's own. If reload is the source, the C-level question becomes what makes the asm operand un-shareable with disc's register - not how to spell a copy."
   },
   {
-   "hypothesis": "The `addu $a0,$a2,$zero` copy at target slot 97 is emitted by reload / asm-operand satisfaction, not by a C-level `u32 ud = disc;`. If so the correct source form is the no-`ud` one (s5 M1) and the attack surface moves from cse to reload.",
-   "mechanism": "s6/E7 proves cse cannot leave both registers with consumers, yet target has `disc` read by the bltz at slot 104 and `ud` read by the island at 106 and the srlv at 118. Two registers with live consumers therefore cannot both be members of one cse quantity, so one of them must be created after cse - reload copies for an asm input operand, or a local-alloc split, are the candidates. s5's M1 build is the existing datapoint: allocno 132 vanished yet build_insns stayed at 144, so a copy instruction still reached the output from some later pass.",
-   "next_probe": "Rebuild the s5 M1 form (`(&D_8008D118)[(u32)disc >> shift]`, keeping `ud` only as the asm input), dump, and locate the surviving `addu` copy across .greg / .jump2 / .dbr to NAME the pass that emits it. If it is reload, read reload1.c's handling of the `\"r\"(ud)` input operand and ask what would make reload pick a different register for it - that is the mechanism that produces target's two-register split."
+   "hypothesis": "Slot 88 (the disc<0 arm) is a reorg.c delay-slot-filling decision, not a jump.c/jump2 one - unchanged from s6, and now the ONLY remaining item besides the ud copy.",
+   "mechanism": "s6/E11: .jump carries 9 return-0 blocks and .jump2 carries 1 in every build measured; the 9 copies in both the target and our build are re-materialised by reorg.c filling each `j <label>` delay slot with the instruction at the jump target and redirecting the jump past it. Whether the disc<0 arm gets its own re-materialised copy is therefore a fill_slots_from_thread / relax_delay_slots decision.",
+   "next_probe": "Dump the s7 `if (disc < 0) return 0;` variant (banked as rejected/s7-disc-lt0-return0-still-crossjumps-score8-142insns.c) and read its .dbr function region against the s7 base .dbr: find the `j` whose delay slot was NOT filled from the return-0 target (the 2 missing insns) and name the fill_slots_from_thread / relax_delay_slots condition that rejected it."
   },
   {
-   "hypothesis": "Slot 88 (target `addu $v0,$zero,$zero` + `j .L8002D774` vs our `move $5,$0` + join jump) is decided in reorg.c, not in jump.c.",
-   "mechanism": "s6/E11: jump2 merges all 9 return-0 blocks into 1 in every build measured; the 9 copies present in both the target and our 144-insn base build are re-materialised by reorg.c filling each `j <label>` delay slot with the instruction at the jump target and redirecting the jump past it. Whether the disc<0 arm gets its own re-materialised copy is therefore a delay-slot-filling decision.",
-   "next_probe": "Dump the `if (disc < 0) return 0;` variant and read its .dbr function region against the base .dbr: find the `j` whose delay slot was NOT filled from the return-0 target (the 2 missing insns) and identify which fill_slots_from_thread / relax_delay_slots condition rejected it. Do NOT re-read .jump2 for this."
+   "hypothesis": "E12's law (hard-reg conflict sets are source-controllable through local_alloc block-locals) generalises to the other two residual registers, i.e. `ud` wanting $a0/$4 and `result` wanting $v0/$2 in the disc<0 arm are also conflict-set problems rather than order problems.",
+   "mechanism": "global.c global_conflicts counts local_alloc-placed pseudos as live hard regs; find_reg then returns the first hard reg in reg_alloc_order that is neither hard-conflicted nor held by a conflicting allocno. Lengthening or shortening a global's live range over specific block-locals therefore selects its register directly.",
+   "next_probe": "For whichever pseudo must land in $a0 once the ud copy survives, compute the REQUIRED hard-conflict set ({2,3} blocked, $4 free) from the .lreg ';; Register N in H.' map BEFORE building, exactly as E12/E13 did for $a2. The whole allocation is now predictable from one .lreg read - use that instead of sampling spellings."
   }
  ],
  "judge_constraints": [],
