@@ -6614,3 +6614,7 @@ spelling search is measured dead (E24).
 ## 2026-08-19 08:56 — func_80060A68 — layer-1 review — **FAIL**
 
 The `src` scratch is a freshly-invented multiply-set local built solely to defeat sched.c's birthing_insn_p LAUNCH_PRIORITY test, which is exactly the shape staged-value-reused-variable's bound 2 forbids ('inventing a new variable just to have something to borrow is NOT this rule') — the worker relabels the identical mechanism under a mismatched family to route around that bound; construct (4) `temp2` is also missing its required FAKE annotation.
+
+## 2026-08-19 10:01 — func_80060A68 — layer-1 review — **FAIL**
+
+temp2's dual role (construct 2 + construct 4) cites a mismatched loop-only family and violates the named-intermediate family's own multi-write prohibition, and fails staged-value-reused-variable's bound 2 because temp2's only 'real job' is itself a prior session's codegen-only invention -- this is the banned invented-scratch pattern one layer removed, not a legitimate borrow.

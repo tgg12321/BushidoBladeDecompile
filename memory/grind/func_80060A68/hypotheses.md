@@ -237,3 +237,75 @@ fresh layer-2 cheat-reviewer on the C before `queue done`.
 - probe: v42 (fresh two-set local 'd1'), v45 (borrowing the pre-existing 'result' local instead), v47 (v45 renamed 'src' and FAKE-annotated); sandbox --disable all for each, plus v43/v44/v46 as controls.
 - result: CONFIRMED. v42, v45 and v47 all print score 0, build 66 / target 66. Controls: v43 (three sets of one scratch) = 3 at 65 insns, cse folds two address loads; v44 and v46 (borrowing 'idx' for copies 2+3) = 11 at 67 insns. v47 is banked as candidate.c and is the body currently in src/text1b.c.
 - verdict: CONFIRMED
+
+## [s3-permuter] A permuter campaign from the floor-2 seed closes the last two instructions.
+- mechanism: the residual is a pure two-insn ordering swap with every register, the frame, and 64 of 66 instructions already correct, so the ordering search space around the copy block is tiny and a basin search should reach it.
+- probe: built and VALIDATED a minimal-TU permuter workspace (tmp/grind/func_80060A68/s3/perm; its extracted function region is byte-identical to the sandbox's full-TU text1b.o region for the same body), then ran campaign s3-min-tu-floor2 with -j 8 --stop-on-zero --stack-diffs from the floor-2 seed, and harvested it with --stop inside the session.
+- result: KILLED. 27,212 iterations in 973 s, base score 20, ZERO finds at any score. Random mutation does not reach the closing form, because closing requires a specific reg_n_sets change on one load's destination rather than any statement permutation the randomizer emits.
+- verdict: KILLED
+
+## [s3-permuter] Making BOTH contested loads single-set (hence both bumped) lets the LUID tie-break order them by source position.
+- mechanism: birthing_insn_p bumps only single-set destinations; if both competitors are bumped they tie at 0x7f000001, so rank_for_schedule falls through to the sched.c:2464 LUID comparison, which is RTL / source order.
+- probe: w2 - split the 0x10 staging into a fresh single-set local p10 (temp_a1 then holds only the halfword), leaving copy 2's address load single-set; sandbox --disable all plus a target disassembly diff.
+- result: KILLED. Score 5 at 67 insns. Slots 10/11 do become correct, but a bumped insn is picked the instant it becomes READY, not according to its LUID, and the stage load becomes ready ~18 cycles early (s2's trace), so it overshoots to ~slot 22 and costs an extra reload of 0x10 plus a nop.
+- verdict: KILLED
+
+## [s3-permuter] Copy 2's address load can be unbumped by a PRE-EXISTING local, so the banned `src` scratch is not necessary.
+- mechanism: reg_n_sets[dest] > 1 disables the birthing_insn_p bump. The borrowing local must be allocatable to $a0 at that point, which is the constraint that killed the `idx` borrow (K11) and rules out `result` (pinned to $v0 by the dispatch call's return value). `temp2` satisfies it, because its own later value - the 0x1A halfword - lives in $a0 in target (lhu a0,2(a0) -> sh a0,26(v1)).
+- probe: w3 - widen temp2 from u16 to s32 and let it carry copy 2's source pointer before it is rewritten with the halfword; then w4 - w3 plus copy 1 staged through the pre-existing `result` local. Controls: w1 (sibling destination-local idiom) and w5 (copy 2 self-overwriting).
+- result: CONFIRMED. w3 = 2 at 66 insns with the stage load at target's slot 12 and a new swap at 10/11, exactly as predicted; w4 = 0, build 66 / target 66. Controls: w1 = 2 (byte-identical to baseline), w5 = 4 (target puts copy 2's loaded word in $v0, not in temp2's $a0).
+- verdict: CONFIRMED
+
+## Frontier after s3-permuter
+None for the C. The function is bytes-matched in the cheat-invisible sandbox with a
+body that contains no new local, no pin, no volatile, no asm and no banned
+construct. What remains is an INTEGRATION step on a surface a grind session may not
+touch: asmfix.txt:109 (delete_between anchored on the old first body instruction
+lhu $4,0($3)) and asmfix.txt:110 (a 43-instruction insert_before that splices the
+whole target body) must be retired in the same change as the C, because the matched
+C's first body instruction is lhu $2,0($3) and the stale anchor would otherwise
+mis-fire and duplicate the body in a full build. Operator / driver steps: apply the
+C (already in src/text1b.c), `engine retire func_80060A68`, `engine verify-oracle`,
+then a fresh layer-2 cheat-reviewer on the C before `queue done`.
+
+## [s3b] 2026-08-19 — permuter modality, second pass
+
+- **KILLED (definitively, on two chassis): "a permuter campaign from the floor-2
+  seed closes the last two instructions."** This was the ledger's headline live
+  frontier. It is now measured dead: 27,212 iterations from the floor-2 seed (s3,
+  base score 20) and 38,233 iterations from the w3 seed one adjacent swap from the
+  match (s3b, base score 10) produced ZERO outputs between them — 65,445
+  iterations, two structurally different basins, no find at all. Mechanism for the
+  negative result: the residual is decided by GCC 2.7.2's birthing_insn_p
+  (sched.c:2504-2535), a per-pseudo reg_n_sets[regno] == 1 predicate. The only C
+  edit that moves that predicate is "route this value through a DIFFERENT EXISTING
+  local", which is not in the stock permuter's mutation vocabulary — it reshapes
+  expressions, splits and merges temporaries and permutes statements, all of which
+  either leave the predicate alone or introduce a fresh single-set temporary (the
+  wrong direction). Do not spend another campaign on this function; a search-based
+  attack here would need a mutation that rebinds values onto the function's
+  existing locals.
+
+- **CONFIRMED: temp2 holds an independent, load-bearing job, so the closing borrow
+  is not resting on a manufactured pretext.** Probe w6 — the candidate with the
+  0x1A halfword read inlined, i.e. temp2 reduced to nothing but copy 2's pointer
+  carrier — scores 10 at 68 insns against the candidate's 0 at 66. This is the
+  measured answer to bound 2 of staged-value-reused-variable, and it is the reason
+  the s3b vet can argue construct (2) on evidence rather than on assertion.
+
+- **OPEN, and the only genuinely undecided thing left — a rules question, not a
+  search question.** temp2 is pre-existing with respect to the floor-2 body but was
+  introduced by session s1 as the named intermediate that forces the 0x1A halfword
+  read above the D_800A3478 store. Bound 2 of staged-value-reused-variable forbids
+  "inventing a new variable just to have something to borrow"; temp2 was not
+  invented to be borrowed (it predates the borrow, and w6 shows it earns its keep),
+  but it was introduced by a grind session rather than shipped in the original
+  body. If a reviewer reads bound 2 to exclude any grind-introduced local, then
+  every honest closing form for this function is excluded and the correct
+  disposition is a ruling. The alternatives are already measured dead: idx as the
+  carrier scores 11 at 67 insns (K11, v44, v46); result is unavailable for copies
+  2/3 because the dispatch call's return value pins it to the wrong register; the
+  both-loads-bumped alternative (w2) scores 5 at 67. There is no fourth
+  pre-existing local in this function.
+  NEXT PROBE if this returns for another session: none in the measurement space —
+  the next move is layer-1's ruling on construct (2), not another probe.
