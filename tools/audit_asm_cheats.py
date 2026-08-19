@@ -571,7 +571,58 @@ def _classify_insert_body(body):
             return "lost_codegen"
     if norm == "nop":
         return "nop"
-    return "other"
+    # Any other single real instruction (la/lui/addiu/ori/lw/sw/...) is the
+    # same act as the named lost-codegen move — bytes from rule text, not from
+    # compilation — with a larger payload vocabulary (audit 2026-08-18: 70 such
+    # rules were invisible while only the addu-move spelling was counted).
+    return "injection"
+
+
+NOP_FILL_SUBST_RE = re.compile(
+    r'^(\w+):\s+subst\s+"nop"\s+"([^"]+)"\s+@\s+\d+\s*$', re.MULTILINE)
+
+
+def scan_regfix_nop_fill_substs(content):
+    """{func: count} for `subst "nop" "<real insn>"` rules — the nop-fill
+    spelling of lost-codegen injection: a compiler-never-emitted instruction
+    written over a nop slot (audit 2026-08-18: 40 such rules were invisible
+    to the insert-keyed detector). The inverse direction (`subst "X" "nop"`)
+    is suppression, not injection, and is NOT counted here."""
+    from collections import defaultdict
+    out = defaultdict(int)
+    for m in NOP_FILL_SUBST_RE.finditer(content):
+        body = m.group(2).replace("\\t", " ").replace("\\n", "\n")
+        if body.strip() == "nop":
+            continue
+        out[m.group(1)] += 1
+    return dict(out)
+
+
+PROLOGUE_BODY_INSN_RE = re.compile(
+    r"^\s*(b\w*|j\w*|lw|lh|lhu|lb|lbu)\b", re.MULTILINE)
+
+
+def scan_prologue_config_splices(config_text):
+    """Functions whose tools/prologue_config.json entry contains BODY-class
+    instructions (loads/branches) — beyond prologue_fix's contract of
+    reordering cc1's OWN prologue insns (audit 2026-08-18: func_8002304C's
+    29-line entry carried 5 body instructions with no detector coverage).
+    `config_text` is the raw JSON text (current file or a git-show of HEAD)."""
+    import json as _json
+    out = set()
+    try:
+        cfg = _json.loads(config_text)
+    except (ValueError, TypeError):
+        return out
+    if not isinstance(cfg, dict):
+        return out
+    for func, lines in cfg.items():
+        if not isinstance(lines, list):
+            continue
+        body = "\n".join(str(l) for l in lines)
+        if PROLOGUE_BODY_INSN_RE.search(body):
+            out.add(func)
+    return out
 
 
 def scan_regfix_cumulative(content):
@@ -925,9 +976,18 @@ def get_current_cheats(auth):
             if func in auth:
                 continue
             lost = sum(1 for _op, body, _ln in entries
-                       if _classify_insert_body(body) == "lost_codegen")
+                       if _classify_insert_body(body) in ("lost_codegen", "injection"))
             if lost > 0:
                 instruction_insert_funcs[func] = lost
+        for func, n in scan_regfix_nop_fill_substs(regfix_content).items():
+            if func not in auth:
+                instruction_insert_funcs[func] = instruction_insert_funcs.get(func, 0) + n
+
+    try:
+        _pcfg = Path("tools/prologue_config.json").read_text(encoding="utf-8")
+        splice_funcs |= (scan_prologue_config_splices(_pcfg) - auth)
+    except OSError:
+        pass
 
     for src in sorted(Path("src").glob("*.c")):
         text = src.read_text(encoding="utf-8")
@@ -985,9 +1045,21 @@ def get_head_cheats(auth):
             if func in auth:
                 continue
             lost = sum(1 for _op, body, _ln in entries
-                       if _classify_insert_body(body) == "lost_codegen")
+                       if _classify_insert_body(body) in ("lost_codegen", "injection"))
             if lost > 0:
                 instruction_insert_funcs[func] = lost
+        for func, n in scan_regfix_nop_fill_substs(head_regfix).items():
+            if func not in auth:
+                instruction_insert_funcs[func] = instruction_insert_funcs.get(func, 0) + n
+
+    try:
+        head_pcfg = subprocess.run(
+            ["git", "show", "HEAD:tools/prologue_config.json"],
+            capture_output=True, text=True, check=True, encoding="utf-8", errors="replace",
+        ).stdout
+        splice_funcs |= (scan_prologue_config_splices(head_pcfg) - auth)
+    except subprocess.CalledProcessError:
+        pass
 
     # All .c files tracked at HEAD
     src_list = subprocess.run(
@@ -1358,7 +1430,8 @@ def cmd_check_new(commit_msg=None):
     for fn in sorted(new_splices):
         violations.append(("regfix_injection",
             f"new regfix injection for `{fn}` (large splice / subst_multi / "
-            f"cumulative ≥ {CUMULATIVE_RULE_LINES} lines / wildcard substs)"))
+            f"cumulative ≥ {CUMULATIVE_RULE_LINES} lines / wildcard substs / "
+            f"prologue_config.json body-instruction splice)"))
     for fn in sorted(new_inline - new_auth_names):
         violations.append(("inline_asm_glabel",
             f"new inline `__asm__(\".section .text\\n... glabel {fn} ...\")` "
