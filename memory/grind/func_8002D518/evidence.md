@@ -77,3 +77,117 @@ Function spans src/code6cac_b.c:1122-~1225. Caller cluster at :1324-1333
 - [s1] diagnose SKIPs on this function (stale tmp/scan purec.o); use sandbox .o + tmp/grind/func_8002D518/s1/dis.sh instead
 
 - [s1] s1 edits are IN PLACE in src/code6cac_b.c (floor-30 form == memory/grind/func_8002D518/candidate.c)
+
+## [s2] 2026-08-19 — structural: copy-fold pass attributed to combine; if/else escape lands the copy
+
+**CHASSIS WARNING (load-bearing for every future session).** At s2 dispatch
+`src/code6cac_b.c` did **not** carry s1's edits — HEAD still had the old
+`register s32 t4_v asm("t4")` + `.word 0x488CF000` / `.word 0xE99F0000` island,
+and the honest floor measured **33**, not the ledger's 30. The Grinder commits
+the ledger, not `src/`. s2 re-applied the s1 island respell from
+`candidate.c` and re-measured floor **30 / build_insns 144 == target 144**
+before doing any new work. ALWAYS verify `src/` actually carries `candidate.c`
+before quoting a ledger floor.
+
+**Pass attribution for the folded `u32 ud = disc;` copy (s1 frontier item 1) —
+SETTLED, do not re-derive.** Dumps in `tmp/grind/func_8002D518/dumps/`
+(`pwsh tools/grinder/dump.ps1 func_8002D518`; whole-file dumps, function region
+starts at `;; Function func_8002D518`: .rtl:9356, .cse:8396, .combine:8565,
+.lreg:11527).
+- In the pre-optimisation `.rtl`, `disc` = `reg/v:SI 117`, `ud` = `reg/v:SI 132`,
+  and the copy is `insn 248: (set (reg/v:SI 132) (reg/v:SI 117))`.
+- In `.cse` the copy **survives**. cse's block extension is real here
+  (`;; Processing block from 242 to 289` spans past the join `code_label 259`),
+  and `canon_reg` rewrites only the FAR use — `insn 270`, the `srlv`, already
+  reads 117 in `.cse` — while `jump_insn 251` and the island `insn 254` still
+  read 132.
+- In `.combine` the copy is **`(note 248 ... NOTE_INSN_DELETED)`** and every
+  remaining use has been rewritten to 117. **The fold is combine's, not cse's.**
+  Combine's blocks are CODE_LABEL-bounded (a conditional jump does not end
+  them), so in the plain-if shape the copy at 248, the branch at 251 and the
+  island at 254 all sit inside one label-to-label region and combine propagates
+  across them freely.
+
+**THE ESCAPE THAT WORKS (variant M — now the candidate, in src).** Respelling
+the LZCS guard from "initialise then conditionally overwrite"
+
+    s32 lzcr = 0;  u32 ud = disc;  if (disc >= 0) { <island>; lzcr = sp_tmp; }
+
+to a real if/else
+
+    s32 lzcr;  u32 ud = disc;
+    if (disc < 0) { lzcr = 0; } else { <island>; lzcr = sp_tmp; }
+
+puts a CODE_LABEL between the copy and the island, combine can no longer reach
+it, and **the copy survives to reorg**. Measured: score still 30 but
+`build_insns` still 144 — **zero instruction cost** — and the emitted code now
+carries `move $4,$3` in the `beqz` delay slot, i.e. build idx 90 vs target
+`8002D680 addu $a0,$a2,$zero`. The copy is allocated **$a0 — target's own
+register** — and feeds BOTH the island input (idx 98 `move $12,$4` vs target
+`addu $t4,$a0,$zero`) and the `srlv` (idx 109 `srlv $2,$4,$3` vs target
+`srlv $v0,$a0,$v1`), exactly the target use-pattern. This is the free if/else
+escape named verbatim in
+`.claude/rules/cse-block-extension-controls-fold-span.md` ("Spell the
+conditional as a real **if/else** rather than 'initialise to a default, then
+conditionally overwrite' ... ordinary C with a semantic reading"), NOT a
+coercion. **s1 frontier item 1 is CLOSED.**
+
+**Full 154-slot alignment (target vs build) at floor 30, both base and M.**
+Slots **0-74 are byte-identical including register numbers** — the whole
+entrance chain, both `x < -threshold` / `threshold < x` ladders, both `z`
+ladders, all six `mult`/`mflo` pairs and their register mapping
+($t0=ax_sq, $a2=az_sq, $a0=cx, $t3=cz, $a1=x1_sq, $v1=z1_sq — identical in
+build). Divergence begins at slot 75 and the residual is now exactly two
+coupled items:
+1. **`disc`'s register.** Build M puts `disc` in `$3`, target in `$a2`/`$6`.
+   Everything from slot 84 (`subu`) through 92 and the `bltz` at 96 follows
+   from this. Note M's `bltz` tests the COPY (`bltz $4`) where target tests
+   `disc` (`bltz $a2`) — a cse canonicalisation choice, not an extra insn.
+2. **The sched2 mult-shadow ordering flip at 75-78.** The four insns in the
+   `mult`(74) -> `mflo`(79) shadow are the same set in both; target orders them
+   `addu x1_sq+z1_sq / subu r_sq / sra c_val / addu dist_sq`, build orders
+   `addu dist_sq / addu / subu / sra`. **Attributed:** sched1 gets this RIGHT
+   (`.sched` log: all of 194/196/197/200 have `priority = 13`, and the backward
+   ready lists pick `T-20:194, T-19:196, T-18:197, T-17:200` = target order).
+   **sched2 flips it** (`.sched2` log: `ready list at T-19: 197 (44) 200 (18),
+   now 197 200` — post-reload priorities are no longer tied, 197=0x44 beats
+   200=0x18, 197 is taken at T-19 so 200 lands EARLIER in the block). The flip
+   is therefore a POST-RELOAD priority effect, i.e. downstream of allocation,
+   which is why every source-level reordering measured neutral (below).
+   The tail flip at 118-122 (denom `sll` placement) has the same signature.
+
+**Tooling fact banked:** `tools/grinder/dump.ps1` emits WHOLE-FILE dumps for
+`code6cac_b`; slice the function with the `;; Function func_8002D518` line
+numbers above. Also: **PowerShell on this box cannot invoke `bash`** — a runner
+script that shells out to `bash tools/wsl.sh` from a `.ps1` silently exits 127
+and the edit is NEVER applied, so every "measurement" in that loop is a stale
+re-score of whatever was last in `src/`. s2 lost one probe round to this. The
+working pattern is: generate complete variant `.c` files from the Bash tool,
+then a pure-PowerShell loop that `Copy-Item`s each into `src/` and runs
+`tools/wteng.ps1 main sandbox`. Runner:
+`tmp/grind/func_8002D518/s2/run3.ps1`.
+
+- [s2] Chassis: src did NOT carry s1's candidate at dispatch (floor was 33, not 30); re-applying candidate.c restored 30/144==144. Always verify src before quoting a ledger floor.
+- [s2] The `u32 ud = disc;` copy is deleted by COMBINE (insn 248 alive in .cse, NOTE_INSN_DELETED in .combine), not by cse. cse's block does extend past the join (242->289) and canon_reg rewrites only the far `srlv` use.
+- [s2] SOLVED: spelling the LZCS guard as a real if/else (`if (disc < 0) lzcr = 0; else { island }`) instead of init-then-overwrite makes the copy survive combine at ZERO instruction cost — copy emitted in the beqz delay slot, allocated $a0 (target's register), feeding both the island input and the srlv exactly as target.
+- [s2] Slots 0-74 of the 154-slot alignment are byte-identical including registers; the entire residual 30 is downstream of (a) disc allocated $3 vs target $a2/$6 and (b) the sched2 mult-shadow ordering flip at 75-78.
+- [s2] The 75-78 ordering flip is SCHED2's, not sched1's: sched1 ties all four at priority 13 and produces TARGET order; sched2's post-reload priorities (197=0x44 vs 200=0x18) invert it. It is downstream of register allocation, so source-level statement reordering cannot reach it.
+- [s2] PowerShell cannot invoke `bash` on this box (exit 127) — .ps1 runners that call `bash tools/wsl.sh` silently skip the edit and re-score stale src. Use pre-generated variant .c files + Copy-Item.
+
+- [s2] CHASSIS: src/code6cac_b.c did NOT carry s1's candidate at s2 dispatch — HEAD still had the register-pin/.word island and measured floor 33. The Grinder commits the ledger, not src/. s2 re-applied candidate.c and re-measured 30 / build_insns 144 == target_insns 144 before doing any new work. Future sessions must verify src before quoting a ledger floor.
+
+- [s2] The disc-copy fold is COMBINE's: insn 248 (set (reg/v:SI 132) (reg/v:SI 117)) is alive in .cse and NOTE_INSN_DELETED in .combine. cse's block DOES extend past the join (Processing block from 242 to 289) but canon_reg rewrites only the far srlv use (insn 270); the guard branch (251) and the island (254) still read 132 after cse.
+
+- [s2] SOLVED (s1 frontier item 1): the if/else-spelled LZCS guard makes the copy survive at zero instruction cost. It is emitted as `move $4,$3` in the beqz delay slot (build idx 90) against target `addu $a0,$a2,$zero` at 8002D680, allocated $a0 = target's register, feeding both the island input and the srlv exactly as target.
+
+- [s2] Full 154-slot alignment: slots 0-74 are byte-identical INCLUDING register numbers — the entire entrance ladder, both x and z chains, all six mult/mflo pairs and their register mapping ($t0=ax_sq, $a2=az_sq, $a0=cx, $t3=cz, $a1=x1_sq, $v1=z1_sq). The whole residual 30 is downstream of slot 75.
+
+- [s2] The residual now reduces to exactly two coupled items: (a) disc allocated to $3 where target uses $a2/$6 — everything at slots 84-92 and the bltz at 96 follows from it; (b) the mult-shadow ordering flip at 75-78 and its tail twin at 118-122 (the denom sll placement).
+
+- [s2] The 75-78 flip is SCHED2's, not sched1's. sched1 ties all four shadow insns at priority 13 and its backward ready lists produce TARGET order (T-20:194, T-19:196, T-18:197, T-17:200). sched2's post-reload priorities are 197=0x44 vs 200=0x18, so 197 is taken at T-19 and 200 lands earlier. Post-reload priority is downstream of allocation — source statement order cannot reach it (A/H/K measured byte-identical).
+
+- [s2] Variable-reuse as an allocation lever for dist_sq is measured NEGATIVE: reusing x1_sq scores 43 (145 insns), reusing z1_sq scores 57 (145 insns). Both add an instruction.
+
+- [s2] TOOLING: PowerShell on this box cannot invoke `bash` — a .ps1 runner that shells out to `bash tools/wsl.sh` exits 127 silently, the edit is never applied, and every measurement in that loop is a stale re-score of whatever was last in src/. s2 lost one probe round to this. Working pattern: generate complete variant .c files from the Bash tool, then a pure-PowerShell loop that Copy-Item's each into src/ and runs tools/wteng.ps1 main sandbox (tmp/grind/func_8002D518/s2/run3.ps1).
+
+- [s2] TOOLING: tools/grinder/dump.ps1 emits WHOLE-FILE dumps for code6cac_b; slice the function with the `;; Function func_8002D518` line numbers (.rtl:9356, .cse:8396, .combine:8565, .lreg:11527).

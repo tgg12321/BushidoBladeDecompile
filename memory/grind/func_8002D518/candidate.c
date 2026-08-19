@@ -1,21 +1,42 @@
-/* func_8002D518 — best form as of s1 (recon). Honest floor 30 (from 33 at
- * dispatch), build_insns 144 == target_insns 144. This exact text is IN PLACE
- * in src/code6cac_b.c at end of s1 — future sessions: verify src still carries
- * it before re-applying.
+/* func_8002D518 — best form as of s2 (structural). Honest floor 30,
+ * build_insns 144 == target_insns 144. This exact text is IN PLACE in
+ * src/code6cac_b.c at end of s2. Future sessions: s1's edits were NOT in src at
+ * s2 dispatch (HEAD carried the old .word/register-pin island) — ALWAYS verify
+ * src actually carries this text before trusting the ledger floor, and re-apply
+ * from here if it does not.
  *
- * Load-bearing s1 findings (details in evidence.md):
- *  - The LZCS/LZCR island is spelled in the func_800274BC-accepted canonical
- *    form (single __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber).
- *    In this form the sandbox does NOT strip it and the island's 7 insns
- *    byte-match target (addu $t4 encodings verified word-for-word).
- *    Function is a member of the 2026-08-17 cop2-addressing-preamble cluster
- *    ruling (.claude/rules/cop2-addressing-preamble-cluster.md:74, LZCS
- *    sub-family, 1 site) — at sandbox 0 the island takes the driver-executed
- *    authorization path; do NOT re-escalate.
- *  - `u32 ud = disc;` reproduces target's intent (target has a second register
- *    $a0 = copy of disc feeding the island + srlv) but GCC folds the copy
- *    (uses coalesce back to disc's register). Keeping the copy ALIVE is
- *    frontier item 1.
+ * Load-bearing s2 finding (the frontier head from s1 is RESOLVED):
+ *   The LZCS guard is spelled as a real if/else
+ *     `if (disc < 0) { lzcr = 0; } else { <island>; lzcr = sp_tmp; }`
+ *   rather than s1's "initialise lzcr = 0, then conditionally overwrite".
+ *   In the plain-if shape GCC's *combine* pass deletes the `u32 ud = disc;`
+ *   copy (combine's blocks are CODE_LABEL-bounded, and in the plain-if shape
+ *   the copy and both of its uses sit in one label-to-label region). The
+ *   if/else shape puts a CODE_LABEL between the copy and the island, combine
+ *   can no longer propagate, and the copy SURVIVES — reorg then places it in
+ *   the beqz delay slot exactly as target does:
+ *       build idx 90  `move $4,$3`   ==  target 8002D680 `addu $a0,$a2,$zero`
+ *   The copy lands in $a0, target's own register, and feeds BOTH the island
+ *   input (idx 98) and the `srlv` (idx 109) exactly as target does. Cost: ZERO
+ *   extra instructions (still 144). This is the free if/else escape documented
+ *   in .claude/rules/cse-block-extension-controls-fold-span.md ("Spell the
+ *   conditional as a real if/else rather than initialise-to-a-default, then
+ *   conditionally overwrite ... ordinary C with a semantic reading"), not a
+ *   coercion.
+ *
+ *   The island itself is the func_800274BC-accepted canonical form (single
+ *   __asm__ volatile, "=m"(sp_tmp), "r"(ud), "$12" clobber); the sandbox does
+ *   NOT strip this form, which is what restores insn parity 144 == 144.
+ *   Function is a member of the 2026-08-17 cop2-addressing-preamble cluster
+ *   ruling (.claude/rules/cop2-addressing-preamble-cluster.md:74, LZCS
+ *   sub-family, 1 site) — at sandbox 0 the island takes the driver-executed
+ *   authorization path; do NOT re-escalate.
+ *
+ * Remaining residual at floor 30 (see evidence.md [s2] for the full 154-line
+ * alignment): indices 0-74 byte-identical incl. registers; the divergence head
+ * is now (a) `disc` allocated to $3 where target uses $a2/$6, and (b) the
+ * sched2 mult-shadow ordering flip at 75-78 (sched2 priorities 197=0x44 vs
+ * 200=0x18; sched1 had them tied at 13).
  */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
@@ -75,21 +96,27 @@ dist_calc:
                 sqrt_val = (&D_8008D118)[disc] >> 3;
             } else {
                 s32 sp_tmp;
-                s32 lzcr = 0;
+                s32 lzcr;
                 u32 ud = disc;
-                if (disc >= 0) {
+                if (disc < 0) {
+                    lzcr = 0;
+                } else {
                     /* Hand-written GTE leading-zero-count block (LZCS in,
                      * LZCR out) — same island as authorized siblings
-                     * func_8001A67C / func_800274BC: $t4 reused back-to-back
-                     * for two unrelated values, 2 unfilled GTE delay nops,
-                     * splat tags the cop2 ops "handwritten instruction". */
+                     * func_8001A67C / func_800274BC. */
                     __asm__ volatile(
-                        "addu   $t4, %1, $zero\n"
-                        "mtc2   $t4, $30\n"        /* LZCS <- disc */
-                        "nop\n"
-                        "nop\n"
-                        "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
-                        "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
+                        "addu   $t4, %1, $zero
+"
+                        "mtc2   $t4, $30
+"
+                        "nop
+"
+                        "nop
+"
+                        "addu   $t4, $sp, $zero
+"
+                        "swc2   $31, 0($t4)
+"
                         : "=m"(sp_tmp)
                         : "r"(ud)
                         : "$12");

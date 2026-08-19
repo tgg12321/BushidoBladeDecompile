@@ -1,31 +1,37 @@
 {
  "func": "func_8002D518",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 30,
    "modality": "recon",
    "headline": "Recon s1: canonical island respell (func_800274BC form) lowered floor 33->30 with insn parity 144==144; full residual map banked; disc-copy survival is the frontier head."
+  },
+  {
+   "session": 2,
+   "floor": 30,
+   "modality": "structural",
+   "headline": "s1 frontier head CLOSED: combine (not cse) folds the disc copy; an if/else-spelled LZCS guard makes it survive at zero insn cost, landing in $a0 (target's register) in the beqz delay slot. Floor still"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The disc copy can survive to reorg under an honest spelling once the folding pass is identified",
-   "mechanism": "either cse1 canon_reg replaces ud's uses with disc inside the beqz-extended block (LABEL_NUSES==1 extension), or combine folds the then-single-use copy; target proves the original copy reached reorg (it sits in the delay slot)",
-   "next_probe": "pwsh tools/grinder/dump.ps1 func_8002D518; read .cse and .combine for the ud pseudo; then try the cse-block-extension escape (if/else arm ending in jump+BARRIER per cse-block-extension-controls-fold-span.md); only after honest spellings die, evaluate staged-value-reused-variable / param-reuse (threshold dead after entrance chains) / duplicated-statement-into-arms with their rules' prerequisites"
+   "hypothesis": "Getting disc allocated to $a2/$6 (target) instead of $3 collapses most of the remaining 30 \u2014 it is the last head-of-cascade item now that the copy survives in $a0",
+   "mechanism": "with the copy occupying $a0 (achieved by variant M), disc's own allocation is the only remaining occupancy difference at the beqz; slots 84-92 and the bltz at 96 are direct reads of it, and the downstream sqrt_val/t1/t2/result assignments re-run their tie-breaks under different occupancy",
+   "next_probe": "this is an ALLOCATION question, not a structural one \u2014 read tmp/grind/func_8002D518/dumps/code6cac_b.lreg and .greg for the allocno covering disc (reg/v:SI 117) and for what currently occupies $6 across the beqz; check local-alloc's allocno priority/ordering against the copy's allocno. Only then propose a source change. Note that M's bltz reads the COPY ($4) where target reads disc ($a2) \u2014 check whether that cse canonicalisation is what pins disc low."
   },
   {
-   "hypothesis": "The remaining register cascade (dist_sq/sqrt_val/t1-t2/result) is coupled to the disc-copy allocation and largely collapses once the copy takes $a0 and disc moves to $a2",
-   "mechanism": "the copy occupying $a0 forces disc to $a2 in local/global alloc; downstream tie-breaks then re-run with different occupancy",
-   "next_probe": "re-run sandbox + full objdump diff immediately after any surviving-copy form; only attack residuals that remain"
+   "hypothesis": "The 75-78 mult-shadow flip and its tail twin at 118-122 are reachable only by changing what reload produces, i.e. they will fall out of the disc-allocation fix rather than needing their own lever",
+   "mechanism": "sched2 priorities (197=0x44 vs 200=0x18) are computed AFTER reload from hard-register dependencies; in target, dist_sq lands in $a1 (x1_sq's register), creating the WAR edge that forces its addu after slot 75. Different allocation, different priorities, different order.",
+   "next_probe": "do NOT spend more source-reordering spellings here \u2014 A/H/K/C/G are all measured byte-identical and banked in rejected/. Re-measure the whole 154-slot alignment immediately after any allocation-moving change and attack this only if it survives."
   },
   {
-   "hypothesis": "The two ordering flips (dist_sq addu placement in the mult cascade; denom sll placement before div) are independent scheduler items needing their own levers",
-   "mechanism": "sched1 rank/priority on the mult-shadow filler insns; possibly sensitive to declaration/use order of dist_sq, c_val, denom",
-   "next_probe": "after frontier-1/2 settle: try moving dist_sq computation after c_val in source and denom decl after t1 numerator; read .sched dump before attributing"
+   "hypothesis": "M's bltz reading the copy ($4) where target reads disc ($a2) is a cse canon_reg choice that may itself be steerable, and steering it may be what fixes disc's register",
+   "mechanism": "cse's canon_reg picks the quantity's representative register; in the M layout it chose the copy (132) for the guard branch (jump_insn 251). If the guard's operand is spelled so cse cannot equate it to the copy, the branch reads disc and disc's live range across the beqz changes shape.",
+   "next_probe": "in the M form, spell the guard operand and the island input asymmetrically (guard on disc with island+srlv on ud, and the converse) and measure each as a complete file via run3.ps1; read .cse's canon_reg choice for jump_insn 251 in each. Two variants, cheap, and it directly tests the disc-register question."
   }
  ],
  "judge_constraints": [],
