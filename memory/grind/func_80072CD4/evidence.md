@@ -756,3 +756,68 @@ now measured closed on both chassis (per-arm floor-4 and cross-block) and on bot
 - [s7] TOOLING WARNING banked to evidence.md: removing the POLY_G4 typedef from src/text1b.c with a lazy-body regex matches from the file's FIRST `typedef struct {` and silently deletes ~3.5k lines; the symptom is a nonsense sandbox result (this session briefly saw 31/63 with the inner `if` absent from the build). Always `git checkout -- src/text1b.c` between candidate applications; tmp/grind/func_80072CD4/s7/apply.py is safe on a clean file. All reported measurements here were re-taken on a verified-clean file.
 
 - [s7] src/text1b.c is left exactly as dispatched - `INCLUDE_ASM("asm/funcs", func_80072CD4);` at line 5865 (git status clean for src/); no build-pipeline surface was touched.
+
+## [s8-synthesis 2026-08-20] — facts established this session
+
+**Chassis control.** `memory/grind/func_80072CD4/candidate.c` -> `sandbox func_80072CD4
+--disable all` = score **4**, target_insns 79, build_insns 79, rules_dropped 0. Measured before any
+probe; the dispatch brief reported the chassis measurement as unavailable.
+
+**E-S8-1 (target bytes, no compilation).** In target (asm/funcs/func_80072CD4.s, banked verbatim at
+tmp/grind/func_80072CD4/s8/target_merge_proof.txt) the merge block at .L80072D64 begins
+`sb $v1,0x4($s1)` / `sb $v1,0xC($s1)` / `sb $v0,0xE($s1)`. `$v1` is defined at 0x80072D24
+(`addiu $v1,$zero,0xFC`, in the inner `beqz` delay slot) and `$v0` at 0x80072D44 / 0x80072D60
+(`addiu $v0,$zero,0x32` / `0x46`, one per arm) — all three definitions are in PREDECESSOR blocks,
+so all three stores are producer-less inside the merge block. In the SAME block, the equally
+producer-less `sb $zero,0x16($s1)` at 0x80072D94 sits at the TAIL, sunk past four complete li/sb
+pairs (@0x14, @0x15, @0x1C, @0x1D). Producer-less merge-block stores sink (L1); these three did not;
+therefore they were not in the merge block when sched2 ran, and the only pass that can insert
+already-scheduled insns at a join label after sched2 is `jump_optimize(cross_jump=1)` (L2,
+toplev.c: sched2 :3117, cross_jump :3142). Conclusion: the ORIGINAL source wrote @4, @0xC and @0xE
+inside BOTH inner arms. This is the first derivation of that conclusion from the shipped executable
+rather than from a grind-pipeline build.
+
+**E-S8-2 (duplication dial, now complete).** Measured settings of the only dial this function has:
+0 duplicated shared components -> 4/79 (candidate.c); 1 duplicated shared red -> 6/80 (r0 only) and
+9/80 (r1 only) [s7]; 2 duplicated shared reds -> 0/79 [banned construct]; the 6 rgb2+rgb3 components
+duplicated instead -> **17/89** [this session, rejected/s8_rgb23_perarm_dup_17_89.c]. No setting is
+unmeasured.
+
+**E-S8-3 (COMPLETED-C sibling func_80072BC4, src/text1b.c:5822).** Same file, same shape, byte-
+matched, zero rules. Two facts drawn from it:
+  (a) Its accepted C DUPLICATES a store across both inner arms —
+      `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` at src/text1b.c:5840 and :5843 — and its target bytes
+      keep both `sb $v0,0x1D($s1)` (0x80072C44 and .L80072C4C) with the shared `addiu $v0,$zero,0xC3`
+      hoisted into the `beqz` delay slot. So a cross-arm duplicated constant store is an accepted,
+      in-repo, COMPLETED-C spelling on its own terms.
+  (b) Its cross-block carrier `u8 var_v0` keeps its `li` at the ARM BOTTOM
+      (`sb $v0,0x1D` then `addiu $v0,$zero,0x50`), i.e. sched1 does not hoist it there. The reason
+      is the arm's internal content, not the declaration: the sibling's arm holds ONE store whose
+      value register is defined in the predecessor, so there is no li/sb pair for the cross-block
+      `li` to lose `schedule_select` to. func_80072CD4's arms hold THREE li/sb pairs (@5, @6, @0xD),
+      each boosted by `adjust_priority`, so its cross-block `li` is always picked last bottom-up and
+      emitted at the arm top.
+  Transplanting the sibling's chassis verbatim measures **17/77** (fc_const shared with @0x14, as
+  the sibling shares it) and **14/78** (with @0x14 as a distinct 0xFC literal, which
+  func_80072CD4's target requires and the sibling's does not) — the second landing exactly in the
+  banked 13/78-14/78 cross-block attractor, one insn short of target's 79.
+  Banked at rejected/s8_sibling_chassis_fcshared14_17_77.c and
+  rejected/s8_sibling_chassis_distinctlit_14_78.c.
+
+**E-S8-4 (scope hygiene).** src/text1b.c was restored to `INCLUDE_ASM("asm/funcs", func_80072CD4);`
+(line 5865) after the last probe; the only tracked file left modified by this session is
+metrics/events.jsonl (engine-written).
+
+- [s8] Chassis control, measured before any probe (the dispatch brief again reported the chassis measurement as unavailable): memory/grind/func_80072CD4/candidate.c applied to src/text1b.c -> sandbox func_80072CD4 --disable all = score 4, target_insns 79, build_insns 79, rules_dropped 0. The banked floor reproduces exactly; every number in this outcome is chassis-current.
+
+- [s8] The duplication dial - this function's only dial - is now measured at EVERY setting: 0 duplicated shared components -> 4/79 (candidate.c); 1 duplicated shared red -> 6/80 (r0 only) and 9/80 (r1 only) [s7]; 2 duplicated shared reds -> 0/79 [banned construct, not re-run and not re-submitted this session]; the six rgb2+rgb3 components duplicated instead -> 17/89 [this session]. No arrangement is unmeasured.
+
+- [s8] PROOF FROM THE SHIPPED BYTES (new this session, no compilation): in target's merge block, sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE are all producer-less (their value registers are defined in predecessor blocks: $v1 at 0x80072D24 in the inner beqz delay slot, $v0 at 0x80072D44 / 0x80072D60 one per arm) yet occupy merge positions 0/1/2, while the equally producer-less sb $zero,0x16 at 0x80072D94 in the SAME block sits at the tail, sunk past four li/sb pairs. Producer-less merge stores sink (L1); these three did not; only jump_optimize(cross_jump=1), which runs after sched2 (toplev.c :3142 vs :3117), can place already-scheduled insns at a join label. Therefore the ORIGINAL source wrote @4, @0xC and @0xE inside BOTH inner arms.
+
+- [s8] Consequence of that proof, recorded without re-litigating it: the construct listed in banned_constructs is not one candidate spelling among several - it is the only source shape that produces target's bytes. The ban and the proposition 'func_80072CD4 has no pure-C match under the current review standard' are co-extensive. That is a DISPOSITION question, not a codegen question; this session neither re-derived the banned spelling nor submitted it.
+
+- [s8] The COMPLETED-C sibling func_80072BC4 (src/text1b.c:5822, zero rules, byte-matched, absent from engine/queue.json) itself carries a cross-arm DUPLICATED constant store in its accepted C: *(u8 *)((s32)(arg1) + 0x1D) = 0xC3; appears at src/text1b.c:5840 and :5843, and both sb $v0,0x1D($s1) survive in its target bytes with the shared addiu $v0,$zero,0xC3 hoisted into the beqz delay slot. In-repo precedent for the spelling, independent of anything the grind pipeline wrote.
+
+- [s8] Why the sibling's chassis nevertheless does not transfer: its inner arms contain exactly ONE store, whose value register is defined in the predecessor's delay slot, so the arm holds no li/sb pair for the cross-block li to lose sched.c schedule_select to; func_80072CD4's arms contain THREE li/sb pairs (@5, @6, @0xD), each dragged upward by adjust_priority's birth boost, so its cross-block li is always picked last bottom-up and emitted at the arm top. The arms' internal content is fixed by the function's constants.
+
+- [s8] Scope hygiene: src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80072CD4); at line 5865 after the final probe. The only tracked file this session leaves modified is metrics/events.jsonl (engine-written). Three new rejected forms and the ledger updates are the session's additions under memory/grind/func_80072CD4/.

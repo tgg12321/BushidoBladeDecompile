@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "SYNTHESIS: floor re-measured 4/79 on the current chassis; the previously-unmeasured middle setting of this function's only dial is KILLED (half-duplication of one shared 0xFC red = 6/80 and 9/80, one "
+  },
+  {
+   "session": 8,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "SYNTHESIS: floor re-measured 4/79 on the current chassis; the last unmeasured duplication-dial setting (rgb2/rgb3 into the arms) is KILLED at 17/89 and the COMPLETED-C sibling func_80072BC4's chassis "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing codegen-shaped is open; the only open question for func_80072CD4 is its DISPOSITION - whether the banned_constructs entry (per-arm rgb0/rgb1 triples) stands, given that this session proves the ban is co-extensive with 'this function has no pure-C match'.",
-   "mechanism": "L1 + L2 (s5-forensics, dump level) bound the merge head to a jump2-spliced common tail, which requires @4/@0xC in both arms; the s7 lattice shows there is no partial or alternative arrangement. Both endgame-lock gates fail, so the owner's standing 2026-07-27 ruling on this exact function pre-decides the outcome.",
-   "next_probe": "dispatch `escalation`. That session files a fresh `## <date> - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry in docs/grind/decisions.md carrying the three-point lattice and both gates' evidence, then returns owner-gated with escalation_ref pointing at the NEW entry (the s5 entry at :8312 is void per the DISCARDED-SESSION MARKER at :8386). Terminal: INCLUDE_ASM stays on main, candidate.c (floor 4) stays in the ledger."
+   "hypothesis": "DISPOSITION is the only open item for func_80072CD4. No codegen question remains: the duplication dial is measured at every setting, the cross-block chassis is dead by a compiler rule AND by a failed verbatim transplant from the one COMPLETED-C sibling that shares its shape, and target's own bytes now prove the original source used the arrangement that is banned for this function.",
+   "mechanism": "Both endgame-lock AND-gates were already evaluated and both fail: canonical-asm scan tier is not STRONG (tools/scan_hand_coded.py --single func_80072CD4, recorded at docs/grind/decisions.md:8361), and no SOTN-master precedent exists for the family. The owner's standing 2026-07-27 ruling on this exact function therefore pre-decides the outcome.",
+   "next_probe": "Dispatch `escalation`. That session files a fresh `## <date> - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry in docs/grind/decisions.md carrying the s8 target-bytes proof (H2) plus both gates' evidence, then returns owner-gated with escalation_ref pointing at that NEW entry - the s5 entry at decisions.md:8312 is void per the DISCARDED-SESSION MARKER at :8386. Terminal: INCLUDE_ASM stays on main, candidate.c (clean floor 4) stays in the ledger."
   },
   {
-   "hypothesis": "The one unbanked, never-measured codegen arrangement left is duplicating the rgb2/rgb3 triples (@0x14 and @0x1C groups) into the arms instead of the rgb0/rgb1 reds.",
-   "mechanism": "it touches neither @4 nor @0xC, so it is outside the ban; but by L2 whatever is duplicated becomes the cross-jumped tail and therefore occupies merge position 0, and target's merge position 0 is @4, not @0x14 - so it should move the head to the wrong field and score worse.",
-   "next_probe": "one structural/rederive probe: write the arms with their own complete rgb2/rgb3 triples (rgb0/rgb1 shared as in the floor-4 body) and `sandbox func_80072CD4 --disable all`. Expected worse than 4; cheap, and it is the only remaining probe that is not a re-run of a banked kill."
+   "hypothesis": "Do NOT re-run any setting of the duplication dial; all four are banked with chassis-current measurements.",
+   "mechanism": "0 dups 4/79; 1 dup 6/80 and 9/80; 2 dups 0/79 (banned); 6 dups (rgb2/rgb3) 17/89. The lattice is closed and every point has a measured score and build_insns count.",
+   "next_probe": "None. Any session that proposes a duplication-dial variant should read hypotheses.md [s7-synthesis] and [s8-synthesis] first and spend its turns elsewhere."
   },
   {
-   "hypothesis": "Do NOT dispatch the s6 frontier's third item ('arms made tail-distinct by real semantic content') - it is killed by inspection this session.",
-   "mechanism": "the two arms differ only in three literal colour components (b0, g1, b1); no semantic content exists to differentiate their tails.",
-   "next_probe": "none - banked as KILLED in hypotheses.md [s7-synthesis] FRONTIER item 3."
+   "hypothesis": "Do NOT re-run the cross-block chassis in any declaration spelling.",
+   "mechanism": "s32 carrier, u8 carrier, fc_const inside the outer if, fc_const outside the outer if, var-first ordering, alias base pointer, POLY_G4 struct spelling, and now the verbatim COMPLETED-C-sibling transplant are all banked at scores 11-24 with build_insns 77-80. The attractor is sched1's priority rule (the lone cross-block li has no in-block consumer and loses schedule_select to three boosted li/sb pairs), not a search gap.",
+   "next_probe": "None. rejected/rederive_xblock_*.c, rejected/xblock_*.c and rejected/s8_sibling_chassis_*.c hold the full set."
   }
  ],
  "judge_constraints": [

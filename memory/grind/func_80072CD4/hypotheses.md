@@ -734,3 +734,142 @@ and this session's exhaustion of the duplication dial. Nothing that remains is a
 - probe: inspection of asm/funcs/func_80072CD4.s (no build needed, as the s6 frontier itself directed).
 - result: the two arms differ only in three literal colour components - b0 0x1E vs 0x50, g1 0xC8 vs 0xDC, b1 0x32 vs 0x46. There is no semantic content in this function available to differentiate the arm tails with; the only differentiator is the arm-final li that target already carries.
 - verdict: KILLED
+
+## [s8-synthesis 2026-08-20] — MERGED ATTACK: the corollary is now proved from TARGET'S OWN
+## BYTES, and the last two un-run arrangements are measured dead
+
+**Chassis control re-measured first** (the dispatch brief again reported the chassis measurement as
+unavailable, so nothing was taken on trust): `memory/grind/func_80072CD4/candidate.c` applied to
+src/text1b.c -> `sandbox func_80072CD4 --disable all` = **score 4, target_insns 79, build_insns 79,
+rules_dropped 0**. The banked floor reproduces exactly. Every number below is chassis-current.
+
+### [s8] H1 (KILLED) — duplicating the rgb2/rgb3 triples into the arms instead of rgb0/rgb1
+- statement: the s7 frontier's one unbanked, never-measured arrangement. Writing the @0x14/@0x15/
+  @0x16 and @0x1C/@0x1D/@0x1E groups inside BOTH inner arms (leaving @4/@0xC/@0xE in the merge
+  block, hoisted) touches neither @4 nor @0xC, so it sits outside the banned_constructs entry; if
+  jump2 spliced that group at the merge head it would at least test whether the head slot is
+  reachable by a tail the ban does not cover.
+- mechanism: L2 (toplev.c pass order sched2 :3117 -> jump_optimize(cross_jump=1) :3142) says
+  whatever is duplicated becomes the cross-jumped common tail and therefore occupies merge
+  position 0. Target's merge position 0 is @4, not @0x14, so the predicted outcome was "worse
+  than 4, wrong field at the head".
+- probe: tmp/grind/func_80072CD4/s8/probeA_rgb23_perarm.c, applied with
+  tmp/grind/func_80072CD4/s5/apply.py, then `sandbox func_80072CD4 --disable all`.
+- result: **score 17, build_insns 89** (ten insns OVER target's 79). The six duplicated stores cost
+  twelve insns across the two arms and jump2 recovers only two of them.
+- verdict: KILLED. This was the last arrangement of this function's duplication dial that had never
+  been measured. The dial is now complete at every setting: 0 dups -> 4/79 (candidate.c);
+  1 dup of one shared red -> 6/80 and 9/80 (s7); 2 dups of the shared reds -> 0/79 (banned);
+  6 dups of the rgb2/rgb3 groups -> 17/89 (this session).
+- banked at rejected/s8_rgb23_perarm_dup_17_89.c
+
+### [s8] H2 (CONFIRMED — the session's main result) — target's merge head is a jump2 splice,
+### PROVED from the shipped bytes alone, with no reference to any build we produce
+- statement: `sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE` at 0x80072D64-0x80072D6C cannot have been
+  present in the merge block when sched2 scheduled it; it can only be a common tail that
+  jump_optimize spliced in at the join label after sched2 ran. Therefore the ORIGINAL source wrote
+  @4, @0xC and @0xE inside BOTH inner arms.
+- mechanism: L1 (s5-forensics, sched.c bottom-up `schedule_block` + `schedule_select`) says a
+  merge-block store whose value register is defined in a PREDECESSOR block is producer-less inside
+  the block, is ready in the first bottom-up round, loses SELBEST only to other unit=0 insns, and
+  is therefore emitted at the block TAIL. L2 says a jump2 common tail is spliced at the join label
+  after sched2 and is never re-scheduled, so it keeps the head slot.
+- probe: read asm/funcs/func_80072CD4.s in full (banked verbatim at
+  tmp/grind/func_80072CD4/s8/target_merge_proof.txt). No compilation involved.
+- result: target's own merge block contains BOTH cases and they behave oppositely.
+  * `$v1` is defined at 0x80072D24 — `addiu $v1,$zero,0xFC` in the inner `beqz` delay slot, i.e. in
+    a PREDECESSOR block. `$v0` is defined at 0x80072D44 / 0x80072D60 — `addiu $v0,$zero,0x32` and
+    `addiu $v0,$zero,0x46`, one per arm, also predecessors. All three of `sb $v1,4`, `sb $v1,0xC`,
+    `sb $v0,0xE` are therefore producer-less in the merge block, and all three sit at merge
+    positions 0/1/2 — the HEAD.
+  * `sb $zero,0x16` at 0x80072D94 is equally producer-less ($zero needs no producer) and sits at
+    the merge TAIL, second-to-last before the `j`, having been sunk past four complete li/sb pairs
+    (@0x14, @0x15, @0x1C, @0x1D).
+  Same block, same pass, same producer-less property, opposite placement. The only structural
+  difference available is which block the source wrote them in: `sb $zero,0x16` was a native merge
+  statement and obeyed L1; the @4/@0xC/@0xE group was not a native merge statement and did not.
+- verdict: **CONFIRMED**. This upgrades the s5-forensics corollary from an inference about our own
+  builds ("no source that writes @4/@0xC in the merge block reaches target's order") to a positive
+  statement about the original source ("the original wrote r0 and r1 per-arm"), and it is derived
+  from the shipped executable, not from anything the grind pipeline compiled. It is therefore
+  immune to the objection that our chassis is unrepresentative.
+- corollary, stated plainly for the record: the construct in banned_constructs is not one candidate
+  spelling among several — it is the ONLY source shape that produces target's bytes. The ban and
+  the proposition "func_80072CD4 has no pure-C match under the current review standard" are
+  co-extensive. That is a disposition question, not a codegen question, and this session does not
+  re-litigate it and does not re-submit the banned body in any spelling.
+
+### [s8] H3 (KILLED) — transplant the COMPLETED-C sibling func_80072BC4's exact chassis
+- statement: func_80072BC4 sits immediately above func_80072CD4 in src/text1b.c (line 5822), is
+  COMPLETED-C, zero-rule, byte-matched, and is the same shape: SetPolyG4/SetSemiTrans, an
+  `arg0 < 4` outer split, an inner `D_800A35C4->x8 & 4` split, four RGB triples, AddPrim. Its
+  accepted body uses `u8 var_v0;` as a cross-block carrier for the arm-varying byte plus
+  `int fc_const;` assigned OUTSIDE the outer `if`. If that exact chassis is what the original
+  programmer used for both functions, transplanting it verbatim onto func_80072CD4's constants
+  should close the residual without any duplication of @4/@0xC.
+- mechanism: the sibling's arms are one store plus a cross-block `li`, and in its target bytes
+  (tmp/grind/func_80072CD4/s8/sibling_80072BC4_target.txt) the cross-block `li` sits at the arm
+  BOTTOM (block .L80072C4C: `sb $v0,0x1D` then `addiu $v0,$zero,0x50`), NOT hoisted to the arm top
+  — which is precisely the behaviour the s3/s5-forensics sessions found unreachable for
+  func_80072CD4's cross-block chassis. Worth testing whether the sibling's declaration shape buys it.
+- probe: two spellings, both applied to src/text1b.c and measured with
+  `sandbox func_80072CD4 --disable all`:
+  (a) tmp/grind/func_80072CD4/s8/probeB_sibling_shape.c — verbatim sibling chassis, `fc_const`
+      shared for @4, @0xC AND @0x14 exactly as the sibling shares it -> **score 17, build_insns 77**.
+  (b) tmp/grind/func_80072CD4/s8/probeB2_sibling_distinctlit.c — same, but @0x14 written as a
+      distinct `0xFC` literal (s1's H1 re-materialisation finding, which func_80072CD4's target
+      needs and the sibling's does not) -> **score 14, build_insns 78**.
+- result: (b) lands exactly in the banked cross-block attractor (13/78, 14/78 — see
+  rejected/rederive_xblock_*.c), one insn SHORT of target's 79: sched1 still hoists the cross-block
+  `li` to the arm top, the two arm tails become the identical `sb $v0,0xD`, and jump2 cross-jumps it
+  out of the arms. (a) is worse still because sharing `fc_const` with @0x14 removes target's second,
+  independent `addiu $v0,$zero,0xFC` materialisation.
+- verdict: KILLED. The sibling's chassis does NOT transfer, and the reason is visible in the two
+  functions' target bytes side by side: the sibling's arms contain exactly ONE store, whose value
+  register `$v0`=0xC3 is defined in the delay slot of the predecessor `beqz`, so the arm holds no
+  li/sb pair for the cross-block `li` to lose priority against; func_80072CD4's arms contain THREE
+  li/sb pairs (@5, @6, @0xD), each dragged upward by `adjust_priority`'s birth boost, so the lone
+  cross-block `li` loses SELBEST to all three and is emitted first. The difference is the arms'
+  internal content, which is fixed by the function's constants and cannot be spelled away.
+  The sibling remains a valuable in-repo precedent for the DUPLICATED-STORE SPELLING itself
+  (`*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` written in BOTH of its arms at src/text1b.c:5840 and
+  :5843, in a function that is COMPLETED-C, zero-rule and byte-matched) — but it is not a chassis
+  func_80072CD4 can borrow.
+- banked at rejected/s8_sibling_chassis_fcshared14_17_77.c and
+  rejected/s8_sibling_chassis_distinctlit_14_78.c
+
+### [s8-synthesis] FRONTIER RESET
+1. **DISPOSITION is the only open item.** No codegen question remains: the duplication dial is
+   measured at every setting, the cross-block chassis is dead by a compiler rule AND by a failed
+   transplant from the one COMPLETED-C sibling that shares its shape, and target's own bytes now
+   prove the original source used the banned arrangement. Both endgame-lock AND-gates were already
+   evaluated and both fail (canonical-asm scan tier is not STRONG, per decisions.md:8361; no
+   SOTN-master precedent for the family). Next probe: dispatch `escalation`, which files a fresh
+   `OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED
+   INCOMPLETE` entry in docs/grind/decisions.md carrying the H2 target-bytes proof and both gates'
+   evidence, and returns owner-gated with escalation_ref pointing at that NEW entry (the s5 entry
+   at decisions.md:8312 is void per the DISCARDED-SESSION MARKER at :8386).
+2. **Do NOT re-run any duplication-dial setting.** All four settings are banked with measurements
+   (0 dups 4/79; 1 dup 6/80 and 9/80; 2 dups 0/79, banned; 6 dups 17/89).
+3. **Do NOT re-run the cross-block chassis in any declaration spelling.** s32, u8, fc_const inside
+   the outer if, fc_const outside the outer if, var-first, alias-pointer, POLY_G4 struct, and now
+   the verbatim COMPLETED-C-sibling transplant, are all banked at 11-24 scores with 77-80
+   build_insns; the attractor is a compiler rule (sched1 priority), not a search gap.
+
+## [s8] Duplicating the rgb2/rgb3 triples (@0x14/@0x15/@0x16 and @0x1C/@0x1D/@0x1E) into both inner arms - instead of the rgb0/rgb1 reds - reaches target's merge head while staying outside the banned_constructs entry, because it touches neither @4 nor @0xC.
+- mechanism: L2 (toplev.c pass order: sched2 :3117 -> jump_optimize(cross_jump=1) :3142 -> dbr :3167) makes whatever is duplicated the cross-jumped common tail, which is spliced at the new join label ahead of everything sched2 emitted and therefore occupies merge position 0. Target's merge position 0 is @4, so the predicted outcome was a wrong-field head and a worse score; this was the one arrangement of the dial that had never been measured.
+- probe: tmp/grind/func_80072CD4/s8/probeA_rgb23_perarm.c applied to src/text1b.c via tmp/grind/func_80072CD4/s5/apply.py, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- result: score 17, build_insns 89 (ten insns OVER target's 79): the six duplicated stores cost twelve insns across the two arms and jump2 recovers only two. Banked at memory/grind/func_80072CD4/rejected/s8_rgb23_perarm_dup_17_89.c.
+- verdict: KILLED
+
+## [s8] Target's merge-block head `sb $v1,0x4 / sb $v1,0xC / sb $v0,0xE` cannot have been present in the merge block when sched2 scheduled it; it can only be a common tail spliced there by jump_optimize after sched2. Therefore the ORIGINAL source wrote @4, @0xC and @0xE inside BOTH inner arms.
+- mechanism: L1 (s5-forensics, dump level): a merge-block store whose value register is defined in a PREDECESSOR block is producer-less inside the block, is ready in sched.c's first bottom-up round, loses schedule_select only to other unit=0 insns, and is therefore emitted at the block TAIL. L2: a jump2 common tail is spliced at the join label after sched2 and is never re-scheduled, so it keeps the head slot. Target contains BOTH cases in the same block, so the two rules can be applied against each other with no compilation.
+- probe: Read asm/funcs/func_80072CD4.s in full (banked verbatim at tmp/grind/func_80072CD4/s8/target_merge_proof.txt). No build involved.
+- result: $v1 is defined at 0x80072D24 (addiu $v1,$zero,0xFC in the inner beqz delay slot) and $v0 at 0x80072D44 / 0x80072D60 (addiu $v0,$zero,0x32 / 0x46, one per arm) - all predecessors - so sb $v1,4 / sb $v1,0xC / sb $v0,0xE are all producer-less in the merge block, yet they sit at merge positions 0/1/2. In the SAME block the equally producer-less sb $zero,0x16 (0x80072D94) sits at the TAIL, sunk past four complete li/sb pairs (@0x14, @0x15, @0x1C, @0x1D). Same pass, same property, opposite placement; the only available difference is which block the source wrote them in.
+- verdict: CONFIRMED
+
+## [s8] Transplanting the exact chassis of func_80072BC4 - the COMPLETED-C, zero-rule, byte-matched sibling that sits immediately above func_80072CD4 in src/text1b.c (line 5822) and has the identical shape (SetPolyG4/SetSemiTrans, arg0<4 outer split, D_800A35C4->x8 & 4 inner split, four RGB triples, AddPrim) - closes the residual without duplicating @4/@0xC, because that sibling's cross-block `u8 var_v0` carrier keeps its `li` at the ARM BOTTOM, which is exactly the behaviour func_80072CD4's cross-block chassis has never been able to reach.
+- mechanism: The sibling's accepted body uses `u8 var_v0;` plus `int fc_const;` assigned OUTSIDE the outer if, and in its target bytes (tmp/grind/func_80072CD4/s8/sibling_80072BC4_target.txt) block .L80072C4C emits `sb $v0,0x1D` THEN `addiu $v0,$zero,0x50` - no sched1 hoist. If the declaration shape were what buys that, it would transfer.
+- probe: Two spellings measured with `sandbox func_80072CD4 --disable all`: (a) tmp/grind/func_80072CD4/s8/probeB_sibling_shape.c (verbatim sibling chassis, fc_const shared for @4, @0xC AND @0x14 as the sibling shares it); (b) tmp/grind/func_80072CD4/s8/probeB2_sibling_distinctlit.c (same, but @0x14 as a distinct 0xFC literal, which func_80072CD4's target needs and the sibling's does not).
+- result: (a) score 17, build_insns 77. (b) score 14, build_insns 78 - exactly the banked cross-block attractor (13/78, 14/78), one insn SHORT of target's 79, i.e. sched1 still hoists the cross-block li to the arm top, the arm tails become the identical `sb $v0,0xD`, and jump2 cross-jumps it out. The chassis does not transfer because the sibling's arms hold ONE store (its value register defined in the predecessor's delay slot) while func_80072CD4's arms hold THREE li/sb pairs, each boosted by adjust_priority, so its lone cross-block li always loses schedule_select and is emitted first. That difference is fixed by the function's constants and cannot be spelled away. Banked at rejected/s8_sibling_chassis_fcshared14_17_77.c and rejected/s8_sibling_chassis_distinctlit_14_78.c.
+- verdict: KILLED

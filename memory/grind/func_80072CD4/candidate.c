@@ -41,6 +41,19 @@
  * the banned per-arm body does) measures 6/80 and 9/80 - one insn OVER target in both spellings. The pure-C space is a three-point lattice
  * (0 dups -> 4/79, 1 dup -> 6/80 or 9/80, 2 dups -> 0/79 but banned); there is no fourth arrangement.
  * See hypotheses.md [s7-synthesis].
+ *
+ * s8-synthesis (2026-08-20) re-measured this body at 4 / 79 on the current chassis and added two
+ * kills plus one proof. KILLS: (1) duplicating the rgb2/rgb3 groups into the arms instead of the
+ * rgb0/rgb1 reds - the only arrangement of the duplication dial that had never been measured -
+ * scores 17/89; (2) transplanting the COMPLETED-C sibling func_80072BC4's exact chassis
+ * (u8 var_v0 carrier + fc_const outside the outer if) scores 17/77 and 14/78, i.e. it lands back
+ * in the banked cross-block attractor because func_80072CD4's arms hold three li/sb pairs the
+ * sibling's arms do not. PROOF: target's merge head is a jump2 splice, derived from the SHIPPED
+ * BYTES alone - `sb $v1,4 / sb $v1,0xC / sb $v0,0xE` are all producer-less in the merge block yet
+ * sit at positions 0/1/2, while the equally producer-less `sb $zero,0x16` in the same block sits
+ * at the tail. Producer-less merge stores sink (L1); these did not; only jump2 (which runs after
+ * sched2) can place already-scheduled insns at a join label. So the ORIGINAL source wrote @4, @0xC
+ * and @0xE inside BOTH arms. See hypotheses.md [s8-synthesis] and evidence.md [s8-synthesis].
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int fc_const;
