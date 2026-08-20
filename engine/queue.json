@@ -1,16 +1,24 @@
 {
-  "generated_at": "2026-08-19T20:41:56",
+  "generated_at": "2026-08-20T00:38:37",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
     {
       "func": "func_80038170",
       "file": "code6cac_c_mid",
-      "distance": 1,
+      "distance": 0,
       "verdict": "C",
       "rules": 0,
       "status": "active",
       "prologue_fix": 1
+    },
+    {
+      "func": "file_LoadSectors",
+      "file": "ings",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_80047FBC",
@@ -121,14 +129,6 @@
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "file_LoadSectors",
-      "file": "ings",
-      "distance": 14,
       "verdict": "C",
       "rules": 0,
       "status": "active"

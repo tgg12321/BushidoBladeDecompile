@@ -1115,6 +1115,30 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                f"If these differ, the chassis has changed since the ledger entry: every banked\n"
                f"spelling conclusion is chassis-relative and MUST be re-measured before it is\n"
                f"spent. Do not quote the ledger floor to the Judge; quote this one.\n")
+    # asm-until-matched (owner ruling 2026-08-19): a target still carrying
+    # regfix/asmfix rules is one of the 68 byte-coupling deferred functions —
+    # its committed C body predates the migration and was CALIBRATED TO ITS
+    # RULES, not to honesty. Warn the session before it inherits that shape
+    # (CD_datasync burned s1-s6 on rule-era constructs the reference later
+    # indicted).
+    nrules = 0
+    for _rf in ("regfix.txt", "regfix_stage2.txt", "asmfix.txt"):
+        _p = os.path.join(root, _rf)
+        if os.path.isfile(_p):
+            with open(_p, encoding="utf-8", errors="replace") as _f:
+                nrules += sum(1 for _ln in _f
+                              if re.match(r"^" + re.escape(func) + r"\s*:", _ln.strip()))
+    if nrules:
+        chassis += (
+            f"\n## RULE-ERA CHASSIS WARNING (asm-until-matched deferred function)\n"
+            f"This function still carries {nrules} regfix/asmfix rule(s) — it is one of the\n"
+            f"68 byte-coupling deferred functions (its body emits jtbl/rodata or is\n"
+            f"position-coupled, so it could not be converted to INCLUDE_ASM). The committed\n"
+            f"C body's SHAPE was calibrated to those rules, not to honesty: named\n"
+            f"intermediates, split statements, and declaration order in it may be rule-era\n"
+            f"inventions the original never had. Weigh the ledger candidate and a fresh\n"
+            f"derivation (m2c + target asm + sibling idioms) over the committed shape; do\n"
+            f"not treat the committed body as evidence of original structure.\n")
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 
 You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
