@@ -9320,3 +9320,145 @@ IF THE OWNER GRANTS THE ROW the remaining steps are routine and fully gated: add
 ## 2026-08-20 13:14 — func_80048530 — final call — **PASS**
 
 Body is clean pure C: all 3 inline-move __asm__ blocks, 2 "" barriers, 3 register pins and 5 regfix rules are gone (git diff regfix.txt: only this function's 5 lines removed). Sole sanctioned construct is `arg0 = off + base` under the or-tree-shape-shift carve-out (.claude/rules/or-tree-shape-shift.md 'Owner ruling 2026-08-20'), family correct (+ is listed) and all five prerequisites hold: exhaustion s1-s4 (hypotheses.md H6/H7/H8/H9 + 6 rejected/ forms), mechanism named AND dump-proven, E1-style FAKE annotation at the site, commutative semantics with 47==47 insns, layer-1 self_vet + this layer-2. Decisive fact I verified myself: the mechanism is not post-hoc permuter rationalization -- I read tmp/grind/func_80048530/dumps/text1b.rtl insn 28 (plus reg83, reg76 = off-first, source order preserved by expand), .combine (unswapped), .greg 2096 (plus $v0,$v1 -> target's addu $v1,$v0,$v1), and the order was structurally derived in s3 before the s4 permuter merely corroborated it. src/text1b.c is LF-clean.
+
+## 2026-08-20 — func_80049A2C (src/text1b.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF: BYTES PROVEN (full-build SHA1 == oracle), needs one `_SANCTIONED_UNWRITTEN_PADS` row (supersedes the 2026-07-20 OWNER-ESCALATION at :954)**
+
+Grind s10 (rederive modality). **This function is byte-matched by pure C plus ONE
+FAKE-annotated construct from the already-sanctioned, already-thrice-granted
+phantom-frame-slot volatile pad family.** Nothing about it is exhausted; the 2026-07-20
+OWNER-ESCALATION above (:954) rested on the premise "no SOTN precedent exists for a
+fully-dead pad", which the 2026-08-20 operator precedent-research pass proved factually
+wrong (correction recorded at the tail of `memory/grind/func_80049A2C/evidence.md`), and
+is superseded by this entry.
+
+**The proof.** `memory/grind/func_80049A2C/candidate.c` — the s8/s9 body (all four
+constructs named by the 2026-07-19/20 Judge FAILs retired by measurement: `dummy[2]`,
+`new_var4`, the empty `if`, the inline-assign, plus the `new_var3` holder) — with ONE
+added first declaration,
+`volatile u32 pre_pad[2]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md): target reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals`,
+applied over `INCLUDE_ASM("asm/funcs", func_80049A2C);` at src/text1b.c:868, gives a
+FULL DRIVER BUILD with SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle
+(`tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log`). Object-level word diff vs
+`asm/funcs/func_80049A2C.s`: 0 real diffs of 126 instructions with relocation fields
+masked (`tmp/grind/func_80049A2C/s10/bytediff_P1.log`). cc1 frame:
+`.frame $sp,48 # vars= 8, regs= 5/0, args= 16` — target's exact signature. First
+attempt with the sanctioned form, no search. (One rename was needed on the fresh
+chassis: the callee at 0x80052C10 is `func_80052C10`; the old `InitFadePanel` spelling
+fails at link, invisibly to the jal-masking sandbox.)
+
+**Sandbox attribution** (`sandbox func_80049A2C --disable all`,
+`tmp/grind/func_80049A2C/s10/sandbox_P1_final.log`): score **12** (126/126 insns,
+0 rules dropped, `cheat_asm_stripped: 266`) — vs 265 for the same body without the pad.
+The stripper removes the pad declaration because func_80049A2C has no row in
+`engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`; the 12 is exactly the frame
+delta (1 prologue adjust + 5 saves + 5 restores + 1 epilogue adjust, frame 0x28 vs
+0x30). With the pad honoured the build is byte-identical (the SHA1 proof above). This is
+the identical situation the owner granted for func_80047FBC on 2026-08-20.
+
+**Gate 2 (cited precedent) PASSES, on precedent in hand:**
+- `.claude/rules/no-new-park-categories.md:390` — the 2026-08-18 general family ruling
+  (ARRAY form, first-decl position, volatile, `// !FAKE`, no `(void)` shim — all
+  satisfied; name `pre_pad` matching the allowlist convention).
+- SOTN-master PSX exhibits: `docs/reference/sotn-construct-index.md:84`
+  (`src/st/e_background_bushes_trees.h:160 volatile char pad[8]; //! FAKE` — the exact
+  8-byte shape), `:101` (`src/st/sel/2C048.c:564 volatile u32 pad; // !FAKE:`), `:103`
+  (`src/st/sel/stream.c:80 volatile u32 pad[4]; // FAKE`).
+- The 2026-08-20 OWNER RULING (this file, :8967) granting `("pre_pad", 8)` rows to the
+  two text1b.c siblings func_80047EE8 / func_80047FBC
+  (`engine/volatile_cheats.py:757-758`), and the same-day func_800481E8 INTEGRATION
+  HANDOFF (:9001) — same file, same family, same first-decl vars-region shape.
+
+**Prerequisites of the family, per the ruling's scope sentence:**
+- `// !FAKE` annotation: present (what + mechanism on the declaration line).
+- Ledger frame-forensics (target slot genuinely untouched): s7 census +
+  compute_frame_size solve — target frame 0x30; the ONLY sp traffic is the five
+  callee-saves at 0x18..0x28 (`.mask 0x800f0000`); the untouched span is sp+0x10..0x17,
+  the vars region where a first-declared local lands; decomposition vars=8/args=16
+  (args=24 needs a 5th-argument store at 0x10($sp), absent).
+- Honest producers measured inert FIRST — ten sessions, mechanistic, not exhaustion:
+  s8's trigger law (minimal 9-function repro) + s9's exclusion law from cc1 `-da` dumps
+  (.combine identical, .sched divergent — the only fold-capable symbol D_80099D3C
+  cannot host the reload-orphan slot because the fold that creates it shortens the arg1
+  index chain, flips sched1's hoist, and costs a SIXTH callee-saved register where
+  target has five); D_800EF980 / D_80099CC8 are single-index, so CSE merges every
+  respelling (s8 B/C/I/K/O, s9 S1/S2/S3); the function is loopless, so no back-edge
+  carrier exists (s9 in-TU census); and s10 measured the five remaining non-array
+  single-use carriers dead (C_A1/C_A2/C_B1/C_C1/C_D1/C_E1 — all `vars= 0`). Across ten
+  sessions no honest variant has ever produced `vars= 8` together with `regs= 5/0`.
+- Six-test self-vet: `memory/grind/func_80049A2C/self_vet.md` (scope sentence quoted
+  verbatim; precedents as live file:line).
+
+**The single blocker (owner-class surface, forbidden to grind sessions and denylisted
+from `add-scope-allow` per `.claude/rules/integration-handoff-self-serve.md`):** one row
+in `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`:
+
+```python
+    # 2026-08-20 func_80049A2C INTEGRATION HANDOFF (bytes proven: full-build
+    # SHA1 == oracle; gate (b) passes). decisions.md entry of this date.
+    "func_80049A2C": frozenset({("pre_pad", 2)}),
+```
+
+**Authorized integration steps (operator):**
+1. Apply `memory/grind/func_80049A2C/candidate.c` (body only; header comment optional)
+   to `src/text1b.c`, replacing line 868's `INCLUDE_ASM("asm/funcs", func_80049A2C);`.
+   LF endings.
+2. Add the allowlist row above; `engine test` green.
+3. `sandbox func_80049A2C --disable all` must print `"score": 0` (it prints 12 without
+   the row — the pad is stripped).
+4. `verify-oracle --rebuild` == oracle SHA1 (already proven this session:
+   `tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log`).
+5. Fresh layer-2 adversarial `cheat-reviewer` on the composite diff (default-FAIL, this
+   session's endorsement not credited). If it FAILs, revert and this entry's disposition
+   reverts to the standing 2026-07-20 escalation state.
+6. `queue done func_80049A2C` once the oracle and the review both pass.
+
+**Record corrections:** the 2026-07-20 OWNER-ESCALATION (:954) presented canonical-asm
+vs OWNER-ACCEPTED INCOMPLETE as the only options because it believed no SOTN precedent
+existed; both options are moot — the function is SOLVED under the current sanctioned
+list. `scan_hand_coded` remains LOW 0/8 (canonical-asm stays refused, correctly).
+
+**Artifacts:** `memory/grind/func_80049A2C/candidate.c` (the handoff form),
+`memory/grind/func_80049A2C/self_vet.md`, `evidence.md` / `hypotheses.md` [s10],
+`tmp/grind/func_80049A2C/s10/` (run.sh measurement matrix, build_P1_oracle_match.log,
+bytediff_P1.log, sandbox_P1_final.log, v_*/ cc1 outputs).
+
+## 2026-08-20 13:35 — func_80049A2C — ruling: INTEGRATION HANDOFF filed for func_80049A2C : docs/grind/decisions.md:9324 — '20 — **ESCALATE**
+
+WORK IS SOUND AND THE BYTES ARE PROVEN — VERIFIED INDEPENDENTLY, NOT ON THE SESSION'S WORD. I did not credit the ledger's SHA1 log. I rebuilt src/text1b.c myself in tmp/judge49A2C/ (tracked files untouched) with memory/grind/func_80049A2C/candidate.c substituted for the INCLUDE_ASM line at src/text1b.c:868, through this file's exact Makefile pipeline (cpp | cc1 -O2 -G0 -mel | prologue_fix | maspsx | multu_pad | regfix | regfix_stage2 | asmfix | as; text1b is not a GP file, not a rodata-align file, not expand-lb). I built the committed tree the same way as a reference and compared func_80049A2C word-for-word out of the two objects: 126 instructions against 126, ZERO differing words, and 21 of 21 relocation records identical. That is a byte match at the object level, which is the part a stale full-build log could not have faked. The session's own full-build log (tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log, SHA1 62efab4f... == oracle) is corroborated, not relied upon.
+
+THE FRAME CLAIM CHECKS OUT. Reading asm/funcs/func_80049A2C.s directly: the function reserves 48 bytes (addiu sp,sp,-0x30) and the ONLY sp-relative traffic in the whole body is the five callee-saves and their restores — s0/s1/s2/s3/ra at 0x18/0x1C/0x20/0x24/0x28. Bytes 0x00-0x0F are the outgoing-argument area; 0x10-0x17 are reserved and never touched by any instruction, and they sit BETWEEN the argument area and the saved registers. In this compiler's frame layout that middle region is where local variables live, so it is a LEADING vars-region slot — the sanctioned shape — not a trailing pad above the saved registers (the shape that has no precedent, and the mislabel that got func_800481E8 wrongly refused twice). My compiled candidate emits `.frame $sp,48 # vars= 8, regs= 5/0, args= 16`, target's exact decomposition, and 8 bytes is exactly `volatile u32 pre_pad[2]`.
+
+THE CONSTRUCT IS IN A SANCTIONED FAMILY AND EVERY PREREQUISITE HOLDS. There is exactly ONE non-semantic construct in the body: `volatile u32 pre_pad[2];` as the first declaration, FAKE-annotated. It is the phantom-frame-slot volatile pad local family (.claude/rules/no-new-park-categories.md:390, owner ruling 2026-08-18). I checked each constraint the family names against the actual candidate text: ARRAY form yes; volatile yes; first declaration in the body yes; no `(void)pre_pad;` shim (the only `(void)` string in the file sits inside the header comment, not the body); `// !FAKE` annotation present on the declaration line naming both the target slot and the compiler mechanism; frame forensics in the ledger and re-derived by me above; and honest producers measured inert FIRST — that last prerequisite is the one a Judge refused func_80041688 on this morning for unripeness, and here it is genuinely discharged. I opened tmp/grind/func_80049A2C/s10/v_C_A1..v_C_E1/f.s myself: every one of the five remaining non-array single-use carriers compiles to `vars= 0` (C_C1 additionally costs a sixth callee-saved register), against baseline v_BASE0 `vars= 0` and the pad form v_P1 `vars= 8, regs= 5/0`. That sits on top of s7-s9's mechanistic exclusion law (the +8 slot is a combine-orphaned reload spill; the only fold-capable symbol D_80099D3C cannot host it without flipping sched1's hoist and adding a sixth save; D_800EF980/D_80099CC8 are single-index so CSE merges every respelling; the function is loopless so no back-edge carrier exists). The cited SOTN-master precedent is real and PSX-path: docs/reference/sotn-construct-index.md lines 84/101/103 (and their duplicates at 620/626/627, which the candidate's header cites instead — both spellings are live, so this is not a dead-citation defect) read `src/st/e_background_bushes_trees.h:160 volatile char pad[8]; //! FAKE`, `src/st/sel/2C048.c:564 volatile u32 pad; // !FAKE:`, `src/st/sel/stream.c:80 volatile u32 pad[4]; // FAKE`. The four constructs the 2026-07-19/20 Judge FAILs banned — `dummy[2]`, `new_var4`, the empty `if (a1_val) { }`, and the `(new_var = new_var3)` inline-assign — are all genuinely GONE from this body, not respelled; I read the candidate line by line to confirm it, and the pad is not a respelling of `dummy[2]` (that one lacked volatile, annotation, family and precedent, and needed a `(void)` shim). No register pins, no `__asm__`, no alias renames, no regfix/asmfix rules. On the merits I would PASS this.
+
+WHY I AM NOT PASSING IT, AND WHY IT IS NOT AN INTEGRATION HANDOFF. Finishing the function requires one line of ENGINE source: `"func_80049A2C": frozenset({("pre_pad", 2)}),` in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS (currently lines 746-759). Until that row exists `_is_sanctioned_pad` returns False, the stripper deletes the declaration before scoring, and `sandbox --disable all` reads 12 — exactly the frame delta (1 prologue adjust + 5 saves + 5 restores + 1 epilogue adjust, 0x28 vs 0x30) — so `queue done` refuses. I am declining the session's `integration-handoff` filing for the same two mechanical reasons two Judges gave today on the identical func_800481E8 (decisions.md:9101) and func_80041688 (decisions.md:9291) cases. First, .claude/rules/integration-handoff-self-serve.md denylists "anything under tools/, engine/, .claude/, docs/, memory/, asm/, disc/" as severe-blocker class, enforced by a path-class regex — a scope_paths entry naming engine/volatile_cheats.py would be mechanically refused and the function would deadlock with nobody having said so out loud. Second, that rule's own entry condition is "sandbox == 0 AND full-build SHA1 == oracle", and sandbox cannot read 0 here precisely because the row is missing. Routing it as a handoff would trade an honest question for a silent stall. The func_80041688 ruling also recorded a standing constraint forbidding exactly this re-filing; I am honoring it.
+
+THE PRECISE QUESTION — and this is now the THIRD function asking it in one day. The pad family is already sanctioned in general terms (2026-08-18). What is owner-only is the PER-FUNCTION allowlist row. The owner hand-granted such rows for the two text1b.c siblings func_80047EE8 / func_80047FBC this morning (decisions.md:8967, engine/volatile_cheats.py:757-758) on materially identical packets, and three earlier rows exist (func_8001E404, func_8001E6E4, func_8003CF84). So: when a function's bytes are PROVEN and its pad demonstrably satisfies every prerequisite of the already-sanctioned family, may the pipeline add the per-function allowlist row itself — treating the row as bookkeeping that registers an APPLICATION of existing policy rather than an extension of it — or does each row remain an owner-only ruling? The case for self-serve: nothing about this row decides an open policy question, and func_800481E8, func_80041688 and now func_80049A2C are all proven-and-parked on one line each, which is exactly the latency the 2026-08-19 ruling set out to remove. The case against: the allowlist is the enforcement surface of a cheat detector, and a pipeline that can add rows to its own detector allowlist can in principle sanction its own constructs — the hazard the denylist exists to prevent. A middle option the owner may prefer: allow self-serve rows ONLY for the pad family, ONLY on a Judge verdict that names the row verbatim, each committed as its own auditable line.
+
+ONE THING THE OWNER SHOULD NOTE ABOUT THIS PARTICULAR FUNCTION. Its 2026-07-20 OWNER-ESCALATION (decisions.md:954) presented canonical-asm vs OWNER-ACCEPTED INCOMPLETE as the only options, on the premise that no SOTN precedent existed for a fully-dead pad. That premise is factually wrong under the 2026-08-18 family ruling and the index exhibits above, so that entry is correctly superseded — this function is not exhausted, it is solved. `scan_hand_coded` remains LOW 0/8, so canonical-asm stays refused, correctly.
+
+IF THE ROW IS GRANTED the remaining steps are routine and fully gated: add the row; apply candidate.c over src/text1b.c:868 (LF endings); `engine test` green; `sandbox func_80049A2C --disable all` == 0; `verify-oracle --rebuild` == oracle SHA1 (my object-level rebuild says it will); fresh layer-2 cheat-reviewer on the composite diff; then `queue done`.
+
+## 2026-08-20 — func_80049A2C — JUDGE ESCALATE on ruling request (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-20)** — verdict ESCALATE (policy-question): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WORK IS SOUND AND THE BYTES ARE PROVEN — VERIFIED INDEPENDENTLY, NOT ON THE SESSION'S WORD. I did not credit the ledger's SHA1 log. I rebuilt src/text1b.c myself in tmp/judge49A2C/ (tracked files untouched) with memory/grind/func_80049A2C/candidate.c substituted for the INCLUDE_ASM line at src/text1b.c:868, through this file's exact Makefile pipeline (cpp | cc1 -O2 -G0 -mel | prologue_fix | maspsx | multu_pad | regfix | regfix_stage2 | asmfix | as; text1b is not a GP file, not a rodata-align file, not expand-lb). I built the committed tree the same way as a reference and compared func_80049A2C word-for-word out of the two objects: 126 instructions against 126, ZERO differing words, and 21 of 21 relocation records identical. That is a byte match at the object level, which is the part a stale full-build log could not have faked. The session's own full-build log (tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log, SHA1 62efab4f... == oracle) is corroborated, not relied upon.
+
+THE FRAME CLAIM CHECKS OUT. Reading asm/funcs/func_80049A2C.s directly: the function reserves 48 bytes (addiu sp,sp,-0x30) and the ONLY sp-relative traffic in the whole body is the five callee-saves and their restores — s0/s1/s2/s3/ra at 0x18/0x1C/0x20/0x24/0x28. Bytes 0x00-0x0F are the outgoing-argument area; 0x10-0x17 are reserved and never touched by any instruction, and they sit BETWEEN the argument area and the saved registers. In this compiler's frame layout that middle region is where local variables live, so it is a LEADING vars-region slot — the sanctioned shape — not a trailing pad above the saved registers (the shape that has no precedent, and the mislabel that got func_800481E8 wrongly refused twice). My compiled candidate emits `.frame $sp,48 # vars= 8, regs= 5/0, args= 16`, target's exact decomposition, and 8 bytes is exactly `volatile u32 pre_pad[2]`.
+
+THE CONSTRUCT IS IN A SANCTIONED FAMILY AND EVERY PREREQUISITE HOLDS. There is exactly ONE non-semantic construct in the body: `volatile u32 pre_pad[2];` as the first declaration, FAKE-annotated. It is the phantom-frame-slot volatile pad local family (.claude/rules/no-new-park-categories.md:390, owner ruling 2026-08-18). I checked each constraint the family names against the actual candidate text: ARRAY form yes; volatile yes; first declaration in the body yes; no `(void)pre_pad;` shim (the only `(void)` string in the file sits inside the header comment, not the body); `// !FAKE` annotation present on the declaration line naming both the target slot and the compiler mechanism; frame forensics in the ledger and re-derived by me above; and honest producers measured inert FIRST — that last prerequisite is the one a Judge refused func_80041688 on this morning for unripeness, and here it is genuinely discharged. I opened tmp/grind/func_80049A2C/s10/v_C_A1..v_C_E1/f.s myself: every one of the five remaining non-array single-use carriers compiles to `vars= 0` (C_C1 additionally costs a sixth callee-saved register), against baseline v_BASE0 `vars= 0` and the pad form v_P1 `vars= 8, regs= 5/0`. That sits on top of s7-s9's mechanistic exclusion law (the +8 slot is a combine-orphaned reload spill; the only fold-capable symbol D_80099D3C cannot host it without flipping sched1's hoist and adding a sixth save; D_800EF980/D_80099CC8 are single-index so CSE merges every respelling; the function is loopless so no back-edge carrier exists). The cited SOTN-master precedent is real and PSX-path: docs/reference/sotn-construct-index.md lines 84/101/103 (and their duplicates at 620/626/627, which the candidate's header cites instead — both spellings are live, so this is not a dead-citation defect) read `src/st/e_background_bushes_trees.h:160 volatile char pad[8]; //! FAKE`, `src/st/sel/2C048.c:564 volatile u32 pad; // !FAKE:`, `src/st/sel/stream.c:80 volatile u32 pad[4]; // FAKE`. The four constructs the 2026-07-19/20 Judge FAILs banned — `dummy[2]`, `new_var4`, the empty `if (a1_val) { }`, and the `(new_var = new_var3)` inline-assign — are all genuinely GONE from this body, not respelled; I read the candidate line by line to confirm it, and the pad is not a respelling of `dummy[2]` (that one lacked volatile, annotation, family and precedent, and needed a `(void)` shim). No register pins, no `__asm__`, no alias renames, no regfix/asmfix rules. On the merits I would PASS this.
+
+WHY I AM NOT PASSING IT, AND WHY IT IS NOT AN INTEGRATION HANDOFF. Finishing the function requires one line of ENGINE source: `"func_80049A2C": frozenset({("pre_pad", 2)}),` in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS (currently lines 746-759). Until that row exists `_is_sanctioned_pad` returns False, the stripper deletes the declaration before scoring, and `sandbox --disable all` reads 12 — exactly the frame delta (1 prologue adjust + 5 saves + 5 restores + 1 epilogue adjust, 0x28 vs 0x30) — so `queue done` refuses. I am declining the session's `integration-handoff` filing for the same two mechanical reasons two Judges gave today on the identical func_800481E8 (decisions.md:9101) and func_80041688 (decisions.md:9291) cases. First, .claude/rules/integration-handoff-self-serve.md denylists "anything under tools/, engine/, .claude/, docs/, memory/, asm/, disc/" as severe-blocker class, enforced by a path-class regex — a scope_paths entry naming engine/volatile_cheats.py would be mechanically refused and the function would deadlock with nobody having said so out loud. Second, that rule's own entry condition is "sandbox == 0 AND full-build SHA1 == oracle", and sandbox cannot read 0 here precisely because the row is missing. Routing it as a handoff would trade an honest question for a silent stall. The func_80041688 ruling also recorded a standing constraint forbidding exactly this re-filing; I am honoring it.
+
+THE PRECISE QUESTION — and this is now the THIRD function asking it in one day. The pad family is already sanctioned in general terms (2026-08-18). What is owner-only is the PER-FUNCTION allowlist row. The owner hand-granted such rows for the two text1b.c siblings func_80047EE8 / func_80047FBC this morning (decisions.md:8967, engine/volatile_cheats.py:757-758) on materially identical packets, and three earlier rows exist (func_8001E404, func_8001E6E4, func_8003CF84). So: when a function's bytes are PROVEN and its pad demonstrably satisfies every prerequisite of the already-sanctioned family, may the pipeline add the per-function allowlist row itself — treating the row as bookkeeping that registers an APPLICATION of existing policy rather than an extension of it — or does each row remain an owner-only ruling? The case for self-serve: nothing about this row decides an open policy question, and func_800481E8, func_80041688 and now func_80049A2C are all proven-and-parked on one line each, which is exactly the latency the 2026-08-19 ruling set out to remove. The case against: the allowlist is the enforcement surface of a cheat detector, and a pipeline that can add rows to its own detector allowlist can in principle sanction its own constructs — the hazard the denylist exists to prevent. A middle option the owner may prefer: allow self-serve rows ONLY for the pad family, ONLY on a Judge verdict that names the row verbatim, each committed as its own auditable line.
+
+ONE THING THE OWNER SHOULD NOTE ABOUT THIS PARTICULAR FUNCTION. Its 2026-07-20 OWNER-ESCALATION (decisions.md:954) presented canonical-asm vs OWNER-ACCEPTED INCOMPLETE as the only options, on the premise that no SOTN precedent existed for a fully-dead pad. That premise is factually wrong under the 2026-08-18 family ruling and the index exhibits above, so that entry is correctly superseded — this function is not exhausted, it is solved. `scan_hand_coded` remains LOW 0/8, so canonical-asm stays refused, correctly.
+
+IF THE ROW IS GRANTED the remaining steps are routine and fully gated: add the row; apply candidate.c over src/text1b.c:868 (LF endings); `engine test` green; `sandbox func_80049A2C --disable all` == 0; `verify-oracle --rebuild` == oracle SHA1 (my object-level rebuild says it will); fresh layer-2 cheat-reviewer on the composite diff; then `queue done`.
+
+**Constraint recorded for any future session:** Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[2];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row — no function-scope volatile scalar, no (void) shim, no non-volatile array, no size change, and no re-filing as escalate_kind=integration-handoff (engine/ is denylisted and sandbox cannot read 0 without the row). The four 2026-07-19/20-banned constructs (dummy[2], new_var4, the empty if, the inline-assign) stay retired.

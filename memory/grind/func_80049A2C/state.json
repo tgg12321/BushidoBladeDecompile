@@ -1,7 +1,7 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -57,28 +57,25 @@
    "floor": 12,
    "modality": "rederive",
    "headline": "rederive: G1 and G2 both KILLED mechanistically - combine's fold is what creates the +8 orphan AND what shortens the arg1 index chain, so sched1 stops hoisting it and a sixth callee-saved register app"
+  },
+  {
+   "session": 10,
+   "floor": 12,
+   "modality": "rederive",
+   "headline": "BYTES PROVEN: full driver build SHA1 == oracle with the sanctioned volatile-pad form (P1) applied; H-S9C/H-S9D killed (all five non-array carriers vars=0); INTEGRATION HANDOFF filed - blocked only by "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H-S9C - the phantom +8 slot in this function must come from a NON-array single-use value that combine folds into a consumer separated from its def by one of the EXISTING beq / bgez / jal boundaries.",
-   "mechanism": "All three of the function's global symbols are now measured dead as orphan carriers (D_80099D3C by the sched1 exclusion law, D_800EF980 and D_80099CC8 by single-index CSE merging). The in-TU census proves the orphan does not require a global array at all: func_8004954C produces one from a loop back-edge with no array anywhere. func_80049A2C has no loop, but it DOES have three jump boundaries already present in target's stream (the beq at 80049A60, the bgez at 80049A80, and the two jal call boundaries), and several genuinely single-use values that combine could fold.",
-   "next_probe": "Take each single-use value that already exists in target's instruction stream and move its computation across one of the three jump boundaries by ordinary statement placement, measuring .frame each time with tmp/grind/func_80049A2C/s9/run.sh: (a) the `vehicle + 0x50C` address (addiu $v0,$s1,0x50C at 80049B64) computed before the func_800417D0 call and stored after; (b) the `obj - 0x68` address (addiu $v0,$s0,-0x68 at 80049BA4) computed before the same call; (c) the `ot + 4` bump (addiu $v0,$v1,0x4, two independent single-use instances); (d) the `temp_v1 * 2` scale (sll $v1,$v1,1 at 80049A70) computed BEFORE the temp_v1==0xFF beq; (e) the `(s16)(a1_val + 1)` chain at 80049BC4-BC8. None requires inventing a construct - each is an ordinary statement-order change - and any that yields vars=8 with regs=5/0 is an immediate match candidate."
-  },
-  {
-   "hypothesis": "H-S9D - the fold-shortening penalty can be paid back by a DIFFERENT six-insn dependence chain, restoring sched1's hoist of the arg1 index chain without adding an instruction.",
-   "mechanism": "sched1's decision is a relative-priority comparison between the arg1 index chain and the call-return copy. The baseline wins because its chain is the longest path to the first rotation load. If some OTHER already-present computation could be made to depend on the shortened chain (extending its path length back to six) without emitting a new instruction, the hoist would be restored while the fold - and therefore the orphan - survives.",
-   "next_probe": "Start from tmp/grind/func_80049A2C/s9/bodies/F3.c (vars=8, regs=6/0, 107 insns - already the same instruction COUNT as the matching baseline, so only the allocation differs). Look in the .sched dump for computations currently scheduled between the call and the first rotation load (the D_800A38B4 load, the li 6, the li 4, the two sb, the lh 0($s3)) and try re-expressing the rotation index so it consumes one of them - e.g. deriving kidx through a value that is already on that path - then re-measure .frame and diff the emitted stream against asm/funcs/func_80049A2C.s. Abandon immediately if any variant needs an instruction that target does not have."
-  },
-  {
-   "hypothesis": "H-S9E (formal, low priority) - the alternative frame decomposition vars=0 / args=24 remains open only in principle.",
-   "mechanism": "Target's byte layout (saves at 0x18..0x28 in a 0x30 frame) is equally consistent with vars=8/args=16 and with vars=0/args=24. current_function_outgoing_args_size is written only from a call's own argument size, and any fifth argument word is STORED at 0x10($sp); target has zero non-save sp traffic, so a 24-byte outgoing-args block would have to come from a call whose fifth-word store is later eliminated.",
-   "next_probe": "None recommended until H-S9C and H-S9D are spent. s9's M2 measurement is a relevant partial datum: giving func_800417D0 a second argument costs +2 instructions and leaves args=16, confirming that adding register-passed arguments does not move this field."
+   "hypothesis": "Integration: the operator executes the decisions.md:9324 steps (allowlist row + candidate application + gates).",
+   "mechanism": "Bytes are proven (full-build SHA1 == oracle); the sole blocker is the owner-class engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS row, denylisted from add-scope-allow per integration-handoff-self-serve.md, mirroring the granted func_80047EE8/func_80047FBC path.",
+   "next_probe": "None for grind sessions - s8-s10 constitute a mechanistic proof (exclusion law + single-index closure + looplessness + five dead data-carriers) that no honest producer of the +8 slot is compatible with target's stream. Further honest-producer probing would re-measure proven-dead space."
   }
  ],
  "judge_constraints": [
   "Grind must retire dummy[2], new_var4, the empty `if (a1_val) { }`, and the inline-assign `(new_var = new_var3)` \u2014 reach the same target bytes with pure C where every local has a semantic role and no un-annotated dead-store/dead-declaration constructs remain; if any construct proves genuinely unavoidable it must land as a documented FAKE carve-out with full lever-exhaustion evidence in the ledger and layer-2 review.",
-  "To close via the OVERSIZED-LOCALS carve-out fully-dead-pad case: first wire the prerequisite-aware `find_unused_local_arrays` allowlist through the engine (annotation-recognizing, engine test green) so the pad can stand WITHOUT a `(void) _pad;` shim; drop the void-cast reference in the candidate; and fix the annotation's frame arithmetic (5 saves = 20 bytes + 4 alignment pad, not `24 gp-saves`). Alternatively, keep grinding for a lever that eliminates the pad entirely (H4 cc1 -da instrumentation on the working baseline is still open in state.json.frontier)."
+  "To close via the OVERSIZED-LOCALS carve-out fully-dead-pad case: first wire the prerequisite-aware `find_unused_local_arrays` allowlist through the engine (annotation-recognizing, engine test green) so the pad can stand WITHOUT a `(void) _pad;` shim; drop the void-cast reference in the candidate; and fix the annotation's frame arithmetic (5 saves = 20 bytes + 4 alignment pad, not `24 gp-saves`). Alternatively, keep grinding for a lever that eliminates the pad entirely (H4 cc1 -da instrumentation on the working baseline is still open in state.json.frontier).",
+  "Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[2];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row \u2014 no function-scope volatile scalar, no (void) shim, no non-volatile array, no size change, and no re-filing as escalate_kind=integration-handoff (engine/ is denylisted and sandbox cannot read 0 without the row). The four 2026-07-19/20-banned constructs (dummy[2], new_var4, the empty if, the inline-assign) stay retired."
  ],
  "origin": "queue",
  "created": "2026-07-20T04:41:36.948250+00:00"

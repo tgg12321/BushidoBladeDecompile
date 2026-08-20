@@ -462,3 +462,46 @@ Also: every historical score-0 on this function was an artifact of a
 cheat-stripper spelling hole (`_ORPHAN_DECL_RE` anchored `;[ \t]*$` — a
 trailing comment defeats it). Engine hygiene item filed in the 2026-08-20
 research dossier; do not rely on pre-2026-08 score-0 records.
+
+## [s10] Chassis change detected and absorbed: HEAD text1b.c gained func_80048530's completed C since s9.
+- mechanism: the s9 splice base was stale vs HEAD (140 diff lines, all in func_80048530's region, committed 9b1eedd0). Every s10 measurement was taken on a rebuilt base spliced from the CURRENT HEAD src/text1b.c.
+- probe: diff of git show HEAD:src/text1b.c vs the s9 base; base rebuilt; BASE0 re-measured.
+- result: BASE0 on the fresh chassis: .frame $sp,40 # vars= 0, regs= 5/0, 107 cc1 insns; sandbox --disable all = 12 (126/126, cheat_asm_stripped 265). The floor and every frame-relative conclusion carry over unchanged. Also fixed: the body's callee at 0x80052C10 must now be spelled func_80052C10 (InitFadePanel is a comment-only name; the old spelling fails the LINK stage, invisible to the jal-masking sandbox).
+- verdict: CONFIRMED
+
+## [s10] H-S9C KILLED: all five non-array single-use carriers measured dead - none produces the phantom slot.
+- mechanism: the s8/s9 trigger law needs combine to DELETE a def by folding it into a consumer. All five H-S9C candidates are DATA producers (their values are stored as data, not folded into a mem addressing mode), so combine has no fold to make; naming them or moving them across the beq/jal boundaries leaves the def alive and the frame empty.
+- probe: C_A1 (pQ = vehicle+0x50C named right after the vehicle call, consumed at the original store site), C_A2 (same def, store moved AFTER the func_800417D0 jal), C_B1 (prev = obj named before the jal, consumed as the second block's back-pointer after obj += 0x68), C_C1 (first ot load hoisted above the jal, bump+stores after), C_D1 (t2 = temp_v1*2 hoisted above the temp_v1==0xFF early return, p_anim formed from it after), C_E1 ((s16)(a1_val+1) as a named intermediate). tmp/grind/func_80049A2C/s10/run.sh, instrumented cc1 on the full fresh-chassis TU.
+- result: C_A1/C_A2/C_B1/C_D1/C_E1: vars=0, regs=5/0, 107 insns. C_C1: vars=0, regs=6/0, 109 insns (the ot hoist also costs a sixth register). Zero phantom slots anywhere. Combined with s9 (D_80099D3C exclusion law, D_800EF980/D_80099CC8 single-index closure, loopless = no back-edge carrier), there is NO honest producer of target's +8 slot compatible with target's 126-instruction stream.
+- verdict: KILLED (frontier H-S9C; H-S9D is subsumed - the exclusion law already proved the fold cannot be compensated, and no s10 carrier even reached the fold stage)
+
+## [s10] BYTES PROVEN: the sanctioned volatile-pad form (P1) is a full-oracle byte match.
+- mechanism: the phantom-frame-slot volatile pad family (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390) reserves target's untouched vars bytes via get_frame_size on a declared BLKmode local - the sanctioned FAKE respelling of what ten sessions proved unreachable honestly. Form: volatile u32 pre_pad[2]; // !FAKE..., FIRST declaration, no shim, name matching the _SANCTIONED_UNWRITTEN_PADS convention.
+- probe: P1 = the banked candidate body + the pad declaration. (1) instrumented cc1: .frame $sp,48 # vars= 8, regs= 5/0, args= 16 at 107 insns - target's exact frame signature, the FIRST time in ten sessions vars=8 and regs=5/0 coexist (every honest orphan variant was vars=8/regs=6). (2) applied to src/text1b.c:868 and full driver build: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH (tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log). (3) object-level word diff vs asm/funcs/func_80049A2C.s: 0 real diffs of 126 (relocation fields masked; tmp/grind/func_80049A2C/s10/bytediff_P1.log). (4) sandbox --disable all = 12 with cheat_asm_stripped 266 (one more than BASE0's 265): the stripper removes the pad because func_80049A2C has no _SANCTIONED_UNWRITTEN_PADS row - the EXACT func_80047FBC s14 situation.
+- verdict: CONFIRMED
+
+## [s10] Disposition: INTEGRATION HANDOFF filed (supersedes the stale 2026-07-20 OWNER-ESCALATION).
+- mechanism: bytes proven; the sole blocker is the owner-class engine allowlist row "func_80049A2C": frozenset({("pre_pad", 2)}) in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS - a surface a grind session may not touch. Gate (b) (cited SOTN-master precedent) PASSES: docs/reference/sotn-construct-index.md:101/:103 + :84 (PSX provenance), plus the 2026-08-20 OWNER RULING granting the same rows to text1b.c siblings func_80047EE8/func_80047FBC and the same-day func_800481E8 INTEGRATION HANDOFF. The 2026-07-20 escalation's premise ("no SOTN precedent for a dead pad") was corrected by the 2026-08-20 operator research pass recorded at the tail of this file.
+- probe: entry appended to docs/grind/decisions.md (2026-08-20, names func_80049A2C, INTEGRATION HANDOFF with exact operator steps); candidate.c updated to the P1 form; self_vet.md written with the family scope sentence quoted verbatim and live precedents.
+- result: outcome owner-gated with escalation_ref = the new decisions.md entry.
+- verdict: CONFIRMED
+
+- [s10] SCOPE: build-surface files touched: src/text1b.c only (restored at end of session to its committed INCLUDE_ASM("asm/funcs", func_80049A2C); content). docs/grind/decisions.md appended (allowed surface). All other writes under memory/grind/func_80049A2C/ and tmp/grind/func_80049A2C/s10/.
+
+- [s10] CHASSIS: HEAD text1b.c changed since s9 (func_80048530 completed, commit 9b1eedd0); s10 rebuilt the splice base from HEAD before measuring. BASE0 re-verified: sandbox 12, 126/126, cc1 vars=0/regs=5/0/107 insns - floor unchanged.
+
+- [s10] RENAME REQUIRED ON THIS CHASSIS: the callee at 0x80052C10 must be spelled func_80052C10 (InitFadePanel is comment-only); the old spelling fails at LINK, invisible to the jal-masking sandbox. Candidate updated.
+
+- [s10] FULL DRIVER BUILD with candidate.c (P1 form) applied at src/text1b.c:868: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH (tmp/grind/func_80049A2C/s10/build_P1_oracle_match.log). Object word diff vs target: 0 real diffs of 126, relocation fields masked (bytediff_P1.log).
+
+- [s10] Sandbox attribution: P1 scores 12 with cheat_asm_stripped 266 (BASE0: 265) - the ONLY delta is the stripper removing the pad absent the per-function allowlist row. With the pad honoured the bytes are oracle-proven.
+
+- [s10] The 2026-07-20 OWNER-ESCALATION (decisions.md:954) premise 'no SOTN precedent for a dead pad' was corrected by the 2026-08-20 operator research pass (evidence.md tail): SOTN master ships three PSX volatile pads including the exact 8-byte shape; the family was sanctioned generally 2026-08-18 and granted to text1b.c siblings func_80047EE8/func_80047FBC on 2026-08-20.
+
+- [s10] INTEGRATION HANDOFF filed at docs/grind/decisions.md:9324 with the exact operator steps (apply candidate, add the row 'func_80049A2C': frozenset({('pre_pad', 2)}) to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS, engine test, sandbox 0, verify-oracle, layer-2 cheat-reviewer, queue done).
+
+- [s10] self_vet.md written: six tests answered for the single construct, family scope sentence quoted verbatim from no-new-park-categories.md:390-402, precedents as live file:line (no-new-park-categories.md:390, sotn-construct-index.md:101, engine/volatile_cheats.py:757), prerequisite evidence (frame forensics s7, honest-producers-inert s8-s10) itemized.
+
+- [s10] Six killed s10 forms banked in rejected/ (s10-vehicle-50C-named-early, s10-vehicle-50C-store-across-jal, s10-prev-obj-pointer-across-jal, s10-ot-load-hoisted-above-jal, s10-tempv1x2-across-early-return-beq, s10-a1val-plus1-named-intermediate).
+
+- [s10] SCOPE: src/text1b.c restored to committed INCLUDE_ASM content (git checkout, src clean); docs/grind/decisions.md appended (allowed surface); everything else under memory/grind/func_80049A2C/ and tmp/grind/func_80049A2C/s10/.

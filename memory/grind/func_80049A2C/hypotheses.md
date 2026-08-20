@@ -505,3 +505,41 @@ PRESSURE problem worth exactly 3 instructions.
 - probe: sandbox func_80049A2C --disable all with memory/grind/func_80049A2C/candidate.c applied at src/text1b.c.
 - result: score 12, target_insns 126, build_insns 126, rules_dropped 0. The chassis has not changed.
 - verdict: CONFIRMED
+
+## [s10] H-S9C - the phantom slot can come from a NON-array single-use value moved across an existing beq/bgez/jal boundary.
+- mechanism: all five frontier carriers are DATA producers - their values are consumed as stored data, not as a mem address - so combine has no fold to make, the def survives, no REG_DEAD note strands, and alter_reg never fires. Boundary-crossing is irrelevant without a fold (already shown by s9's S3).
+- probe: C_A1, C_A2 (vehicle+0x50C named early / store moved across the jal), C_B1 (prev-obj pointer across the jal), C_C1 (ot load hoisted above the jal), C_D1 (temp_v1*2 across the early-return beq), C_E1 (a1_val+1 named intermediate) - instrumented cc1 on the fresh-chassis full TU.
+- result: all vars=0 (C_C1 additionally regs=6/0, 109 insns). No carrier produced a slot.
+- verdict: KILLED
+
+## [s10] H-S9D - a different six-insn dependence chain can pay back the fold's shortening.
+- mechanism: subsumed by the s9 exclusion law plus the s10 carrier kills: the fold IS the shortening (chain length IS instruction count), and no s10 variant even reached the fold stage without the already-killed D_80099D3C respelling. No honest chain-extension exists that does not emit the two instructions back.
+- probe: none beyond the C-series - the law makes the probe class empty.
+- verdict: KILLED (by subsumption; recorded so the frontier is explicitly closed)
+
+## [s10] P1 - the owner-sanctioned volatile pad (volatile u32 pre_pad[2]; // !FAKE, first decl) reproduces target exactly.
+- mechanism: get_frame_size reserves the declared BLKmode local's 8 bytes (vars=8) without touching the instruction stream; regs stay 5/0 because no pseudo, no fold, no schedule change is involved - the pad decouples the frame from the register problem that killed every honest variant.
+- probe: cc1 .frame + full driver build + masked object diff + sandbox (see evidence.md [s10]).
+- result: .frame $sp,48 vars=8 regs=5/0 @107 insns; full-build SHA1 == oracle; 0/126 real object diffs; sandbox 12 only because the pad is stripped absent the per-function allowlist row.
+- verdict: CONFIRMED
+
+## FRONTIER after s10
+The search is CLOSED, not open: bytes are proven (full-build SHA1 == oracle) with the sanctioned P1 form. The only remaining step is the owner-class engine allowlist row ("func_80049A2C": frozenset({("pre_pad", 2)}) in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS) plus the standard integration gates - see the 2026-08-20 INTEGRATION HANDOFF entry in docs/grind/decisions.md. No further grind sessions should probe for an honest producer: s8-s10 constitute a mechanistic proof (exclusion law + single-index closure + looplessness + five dead data-carriers) that none exists compatible with target's stream.
+
+## [s10] H-S9C: the phantom +8 slot can come from a NON-array single-use value moved across an existing beq/bgez/jal boundary (five carriers: vehicle+0x50C, prev-obj across the jal, ot+4 hoist, temp_v1*2 across the beq, (s16)(a1_val+1)).
+- mechanism: All five carriers are DATA producers - their values are stored as data, never folded into a mem addressing mode - so combine has no fold to make, the defining insn survives, no REG_DEAD note strands, and reload1.c alter_reg never fires. Boundary-crossing without a fold was already shown useless by s9's S3.
+- probe: C_A1/C_A2/C_B1/C_C1/C_D1/C_E1 built through the real cpp + instrumented cc1 on the FRESH chassis full TU (the s9 base was stale - HEAD gained func_80048530's C; base rebuilt from HEAD before any measurement). tmp/grind/func_80049A2C/s10/run.sh.
+- result: All six vars=0. C_C1 additionally regs=6/0 at 109 insns; the rest regs=5/0 at 107. Zero phantom slots. Combined with s9 (exclusion law on D_80099D3C, single-index closure on D_800EF980/D_80099CC8, loopless = no back-edge carrier), NO honest producer of target's +8 slot is compatible with target's 126-instruction stream.
+- verdict: KILLED
+
+## [s10] H-S9D: a different six-insn dependence chain can pay back the fold's shortening and restore sched1's hoist without adding an instruction.
+- mechanism: Subsumed by the s9 exclusion law (chain length IS instruction count; the fold IS the shortening) plus the s10 carrier kills - no s10 variant even reached a fold without the already-killed D_80099D3C respelling.
+- probe: None beyond the C-series; the law makes the probe class empty.
+- result: Frontier explicitly closed by subsumption.
+- verdict: KILLED
+
+## [s10] P1: the owner-sanctioned phantom-frame-slot volatile pad (volatile u32 pre_pad[2]; // !FAKE, first declaration, no shim) reproduces target byte-exactly.
+- mechanism: GCC 2.7.2 get_frame_size reserves the declared BLKmode local's 8 bytes (vars=8) without touching the instruction stream or the allocation - the pad decouples the frame from the register-pressure problem that killed every honest orphan variant (all vars=8/regs=6). Family: owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390; SOTN PSX exhibits sotn-construct-index.md:84/:101/:103; sibling grants func_80047EE8/func_80047FBC (engine/volatile_cheats.py:757-758).
+- probe: cc1 .frame on the fresh TU; applied to src/text1b.c:868 and FULL DRIVER BUILD; masked object-word diff vs asm/funcs/func_80049A2C.s; sandbox --disable all.
+- result: .frame $sp,48 # vars= 8, regs= 5/0 at 107 insns - target's exact signature, first time in ten sessions vars=8 and regs=5/0 coexist. FULL BUILD SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH. 0 real object diffs of 126. Sandbox 12 (cheat_asm_stripped 266 vs 265) - the stripper removes the pad because no _SANCTIONED_UNWRITTEN_PADS row exists for this function; identical to the granted func_80047FBC situation.
+- verdict: CONFIRMED

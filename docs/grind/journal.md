@@ -1113,3 +1113,4 @@
 - 2026-08-20 11:52 func_80049A2C s9 [rederive] floor=12: rederive: G1 and G2 both KILLED mechanistically - combine's fold is what creates the +8 orphan AND what shortens the arg1 index chain, so sched1 stops hoisting it and a sixth callee-saved register appears; all three global symbols are now closed and a fresh m2c decompile reproduces the banked shape exactly.
 - 2026-08-20 13:01 func_80041688 JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).
 - 2026-08-20 13:14 func_80048530 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
+- 2026-08-20 13:35 func_80049A2C JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).

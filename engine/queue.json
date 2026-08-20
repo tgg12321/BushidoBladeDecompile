@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80032314",
       "file": "code6cac_b",
       "distance": 15,
@@ -2121,6 +2113,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
     },
     {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 12,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_80049A2C \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
       "func": "func_80062020",
       "file": "text1b",
       "distance": 12,
@@ -2195,14 +2196,14 @@
   ],
   "counts": {
     "total": 251,
-    "active": 218,
+    "active": 217,
     "by_status": {
-      "active": 218,
-      "parked": 33
+      "active": 217,
+      "parked": 34
     },
     "by_verdict": {
-      "C": 182,
-      "ASM-PARTIAL": 36
+      "ASM-PARTIAL": 36,
+      "C": 181
     }
   }
 }
