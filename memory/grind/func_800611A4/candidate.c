@@ -1,3 +1,25 @@
+/* s8b (2026-08-20, forensics) -- floor RE-CONFIRMED chassis-current: this exact
+ * form applied to src/text1b.c measures `sandbox func_800611A4 --disable all`
+ * = 6 (target_insns 43 == build_insns 43, rules_dropped 0, 0 regfix/asmfix
+ * rules). Form UNCHANGED -- it is still the best pin-free shape found across
+ * nine sessions. NOTE: the previous session's header claim of an owner-gated
+ * terminal disposition is VOID (driver-discarded as invalid -- a standing-ruling
+ * disposition requires `escalation` modality, not `forensics`; see the
+ * DISCARDED-SESSION MARKER in docs/grind/decisions.md, 2026-08-20 08:28). The
+ * function is still ACTIVE and grindable.
+ *
+ * s8b opened and closed the ONE input to local-alloc's lowest-free-reg scan that
+ * s6/s7/s8 never probed -- find_free_reg's CONFLICT set `used` (local-alloc.c:2170
+ * ORs regs_live_at over the quantity's whole [born,dead) span). A hard register
+ * occupying $v0 across the mask's span DOES evict the mask to $v1 (FORM I: first
+ * non-invented-local mechanism ever measured to do so), but it necessarily evicts
+ * the load web from $v0 too, because in target's own bytes the mask's live range
+ * (0x8006121C..0x80061230) is a STRICT SUBINTERVAL of the web's
+ * (0x8006120C..0x80061238). Also killed: the DImode-return escape (FORM J --
+ * copysugg=2 not 3; removes BOTH $v0 and $v1) and the function-return-value
+ * hard-reg preference (FORM K -- the o32 return copy lands in the epilogue, after
+ * the mask's death index, so local-alloc never sees it; +1 `move'). Ledger:
+ * memory/grind/func_800611A4/hypotheses.md [s8b]. */
 /* func_800611A4 — pin-free pure-C form. Honest sandbox --disable all = 6
  * (s3 lowered from 9). Emitted post-call shape: mask lui/ori/sw D_800A3464
  * ATOMICALLY hoisted to the top of the tail, then 3× {lw arg0[i]; sw ...}.

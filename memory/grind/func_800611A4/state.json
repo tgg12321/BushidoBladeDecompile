@@ -1,7 +1,7 @@
 {
  "func": "func_800611A4",
  "file": "text1b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,13 +51,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "s7 forensics: both live-frontier RA axes + a new aggregate-copy axis KILLED with cc1 -da; v0<->v1 wall is a local-before-global pass-ordering invariant at 43 insns. Every sanctioned axis dead across 4"
+  },
+  {
+   "session": 8,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Opened the last unprobed local-alloc input (find_free_reg's conflict set): hard-reg liveness DOES evict the 0xFFFFEF mask off $v0 without any invented local -- but it necessarily evicts the load web t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The v0<->v1 wall is a local-before-global pass-ordering invariant: at 43 insns no cheat-free C can put the multi-death reused load-web in $v0 while the single-death mask takes $v1, because local-alloc (mask) always precedes global-alloc (web).",
-   "mechanism": "local-alloc.c:472 routes the reused web (deaths=3) to global and the interleaved mask (deaths=1, one block) to local; find_free_reg gives the local mask the lowest free reg ($v0); the global web then conflicts with $v0 and takes $v1. Equalizing the pass (mask->global needs +1 death/store or +1 block/branch; web->local needs no-reuse which breaks the interleave) is impossible at 43 insns.",
-   "next_probe": "Owner ruling on the filed escalation (option a vs b). No cheat-free grindable axis remains across recon/structural/permuter/forensics; if the owner rules (b), retain the $2/$3 pins and park. Any future re-attempt would need a genuinely new whole-function structural idiom (not the reused-t + interleaved-mask topology all 8 sessions assume) or new tooling."
+   "hypothesis": "The wall is now fully characterised on the LOCAL-alloc side (all three inputs to the mask's register choice measured dead), so the only untried surface is the GLOBAL side: making global-alloc's allocno ordering hand the web $v0 BEFORE local-alloc runs is impossible by pass order, but global.c's set_preference / reg_preferred_class path for the web has never been probed for a construct that makes the web's preferred class exclude $v1 (which would force a different resolution rather than the silent fallback).",
+   "mechanism": "global.c set_preference records hard-reg copy preferences per allocno; reg_preferred_class comes from regclass.c's cost model. A web whose preferred class excluded $v1 would have to be resolved by reload rather than by the silent lowest-free fallback, potentially with a different register choice.",
+   "next_probe": "Dump .regclass/.greg for FORM F and read the web allocno's preferred/alternate class and its recorded preferences; then look for any pure-C construct (pointer type, sub-word access, address arithmetic) that changes the web's preferred class without changing insn count."
+  },
+  {
+   "hypothesis": "A whole-function structural idiom other than the reused-temp + interleaved-mask topology that all nine sessions have assumed could produce target's 43 insns with a different pseudo/quantity decomposition entirely.",
+   "mechanism": "Every form measured so far starts from m2c's reused-temp reconstruction; the RA outcome is a function of that decomposition, not of the target bytes per se.",
+   "next_probe": "Re-derive the function from the bytes with a deliberately different decomposition (e.g. the three stores expressed through a single walking destination pointer paired with a single walking source pointer -- distinct from s2's walking-pointer form, which walked only the source and cost +1 insn), then dump .lreg to see whether the mask's live range stops being a subinterval of the web's."
+  },
+  {
+   "hypothesis": "The sibling cluster (func_80061658 / func_80061710 / func_800617C8 / func_80061250, same file, same $2/$3 shape) shares this exact containment invariant, so a solution found for any one of them transfers to all.",
+   "mechanism": "All carry the same reused-load-web + interleaved-constant-mask topology and the same local-before-global pass-ordering resolution.",
+   "next_probe": "Check whether any sibling's target has the mask live range NOT contained in the web's (i.e. mask store after the last web store). Such a sibling would be solvable by the FORM I conflict-set lever and would supply a transferable idiom."
   }
  ],
  "judge_constraints": [],
