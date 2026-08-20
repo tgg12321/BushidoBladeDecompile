@@ -1,0 +1,37 @@
+{
+ "func": "func_800283D0",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 30,
+   "modality": "recon",
+   "headline": "Floor 44 -> 30 with four ordinary-C levers: s32 raw holder revives target's lhu+andi (872C sibling spelling), var_s1-store placement flips the a1/a2 allocno tie, inline return-1 mixed exit, and in-arm"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The tail a0/a1 swap in the Judge-table math is the same global.c allocno_compare margin as the solved a1/a2 swap and can be flipped by a semantics-clean statement placement",
+   "mechanism": "global.c:635-655 priority = floor_log2(refs)*refs*10000*size/live_length with ascending-allocno tiebreak",
+   "next_probe": "Regenerate dumps at floor 30, identify the two pseudos (sll s5,0x4/addu pointer vs the lh table value), redo the priority arithmetic, find the length-equalizing placement"
+  },
+  {
+   "hypothesis": "Diamond 2 (+4): the second var_v0_2=0x19/0xB selection copy must not cross-jump-merge; target's beqz sense suggests the || range-check inverted with the D_800A38A8 block as fallthrough",
+   "mechanism": "jump2 find_cross_jump merges the identical selection+goto suffixes; distinct per-arm spelling or inverted branch sense defeats it",
+   "next_probe": "Read .claude/rules/cross-jump-store-tail-merge.md (coupled-fixpoint warning), then probe the inverted-|| spelling; expect the v0/v1 rename on the 1/-1 stores to follow"
+  },
+  {
+   "hypothesis": "Part of the s2/s3 rotation is downstream of an addu commutativity spelling (temp_s3 = arg0 + X vs X + arg0), not the prologue arg-home wall",
+   "mechanism": "operand order of the plus feeds which pseudo is the addu destination and its coalescing preference",
+   "next_probe": "One measurement: respell temp_s3 = (u8 *)((temp_a1_2 * 2) + arg0) (X + arg0 order) and pairdiff the addu/lh cluster before treating all 12 diffs as the known-hard wall"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-19T23:57:41.566217+00:00"
+}
