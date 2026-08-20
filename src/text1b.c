@@ -16,64 +16,7 @@ void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
 
-void func_80047EE8(s32 arg0, s32 arg1)
-{
-    register s32 cached asm("$16");
-    register s32 saved asm("$18");
-    s32 unused_slack[8];
-    u32 *p;
-    s16 new_var;
-    s32 count;
-    u32 v_off;
-    unsigned int new_var2;
-    (void)unused_slack;
-    cached = arg0;
-    /* INLINE_MOVE_ALIASING: pure-C alternatives failed.
-     *   - technique=plain_copy: `saved = cached;` got DCE'd or rematerialized
-     *     to $a0 since GCC tracks values not vars; lost the addu instruction
-     *   - technique=saved_eq_arg0: `saved = arg0;` same DCE issue, lost insn
-     *   - technique=decl_init: `register s32 saved asm("$18") = arg0;`
-     *     same outcome, GCC treats as alias of $a0
-     *   - technique=volatile_saved: `volatile s32 saved = arg0;` introduced
-     *     sw+lw spill (wrong shape, frame=80 with vars=40)
-     * Per feedback_inline_move_aliasing.md, single-insn escape valve to
-     * keep the redundant addu $s2,$s0,$0 in the emission.
-     */
-    __asm__ volatile("move %0, %1" : "=r"(saved) : "r"(cached));
-    arg1 <<= 16;
-    arg1 >>= 14;
-    cached = cached + arg1;
-    v_off = *(u32 *)cached;
-    cached = saved + ((v_off >> 2) << 2);
-    p = (u32 *) cached;
-    count = *(p++);
-    if (count != 0)
-    {
-        count--;
-        do
-        {
-            u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            s16 v0v;
-            word = *p;
-            p = (u32 *) (((s32) p) + 4);
-            a1v = (s16) (*((u16 *) p));
-            p = (u32 *) (((s32) p) + 2);
-            a2v = (s16) (*((u16 *) p));
-            p = (u32 *) (((s32) p) + 2);
-            a3v = (s16) (*((u16 *) p));
-            p = (u32 *) (((s32) p) + 2);
-            new_var = a1v;
-            new_var2 = word >> 2;
-            v0v = (s16) (*((u16 *) p));
-            p = (u32 *) (((s32) p) + 2);
-            func_800482C8(saved + (new_var2 << 2), new_var, a2v, a3v, v0v);
-        }
-        while ((count--) != 0);
-    }
-}
+INCLUDE_ASM("asm/funcs", func_80047EE8);
 INCLUDE_ASM("asm/funcs", func_80047FBC);
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
@@ -122,71 +65,7 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
         } while ((count--) != 0);
     }
 }
-void func_800481E8(s32 arg0, s32 arg1)
-{
-    register s32 cached asm("$16");
-    s32 saved;
-    u32 *p;
-    s32 count;
-    /* INLINE_MOVE_ALIASING: pure-C alternatives failed.
-     *   - technique=natural_chain: GCC's CSE collapses `cached = arg0; saved = cached`
-     *     to `move $s2, $a0` directly, eliding the intermediate $s0 hold. Verified
-     *     via dc.sh dump-text: idx 2 emits `addu $18, $4, $zero` (1 instruction
-     *     short of target). Even cc1psx (real PsyQ GCC 2.7.2.SN.1) does the same.
-     *   - technique=volatile_temp: `volatile s32 vol = arg0` produces sw+lw spill
-     *     pattern (wrong shape: memory access not reg-reg addu chain).
-     *   - technique=address_take: `s32 *p = &saved` introduces sp-relative load,
-     *     wrong shape.
-     *   - technique=decl_order: reordering decls doesn't affect collapsed prologue.
-     *   - technique=for_loop_restructure: alternate loop shapes (for/while/goto)
-     *     unchanged codegen.
-     *
-     * Per feedback_inline_move_aliasing.md, single-insn escape valve materializes
-     * arg0 into $s0 via reg-reg move. After this, `saved = cached` (plain C var)
-     * naturally chains $s2 = $s0 because $s0 holds the asm-opaque value GCC can't
-     * fold. Then `cached = saved + offset` updates $s0 as the working pointer
-     * (target's `addu $s0, $s0, $a1` shape).
-     */
-    __asm__ volatile("move %0, %1" : "=r"(cached) : "r"(arg0));
-    saved = cached;
-    cached = saved + (((s32)(arg1 << 16)) >> 14);
-    p = (u32 *)cached;
-    cached = saved + (((*p) >> 2) << 2);
-    p = (u32 *)cached;
-    count = *(p++);
-    if (count != 0) {
-        count--;
-        do {
-            u32 word;
-            s16 a1v;
-            s16 a2v;
-            s16 a3v;
-            u16 v0v;
-            s32 a0_for_call;
-            unsigned int new_var2;
-            word = *p;
-            p = (u32 *)(((s32)p) + 4);
-            a1v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            a2v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            a3v = (s16)(*((u16 *)p));
-            p = (u32 *)(((s32)p) + 2);
-            v0v = *((u16 *)p);
-            new_var2 = word >> 2;
-            a0_for_call = saved + (new_var2 << 2);  /* compute early (target sched) */
-            p = (u32 *)(((s32)p) + 2);  /* always advance (target delay slot) */
-            if ((s32)a3v < 0x280) {
-                v0v += 1;
-            }
-            func_800482C8(a0_for_call,
-                          (s32)a1v,
-                          (s32)a2v,
-                          (s32)a3v,
-                          (s32)(s16)v0v);
-        } while ((count--) != 0);
-    }
-}
+INCLUDE_ASM("asm/funcs", func_800481E8);
 void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = *(u16 *)&arg4;
     s16 rect[4];
@@ -877,87 +756,7 @@ extern u8 *D_800A3820;
 extern u8 *D_800A38B4;
 extern s16 D_800EF980[];
 extern void func_800417D0(s32 *);
-void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
-    u8 *new_var6;
-    u8 *new_var5;
-    s16 *new_var7;
-    char new_var4;
-    u8 temp_v1;
-    u8 *new_var8;
-    s16 *p_anim;
-    s16 new_var2;
-    s16 *src;
-    int new_var3;
-    u8 *obj;
-    int new_var;
-    u8 *vehicle;
-    s16 a1_val;
-    u8 *ot;
-    s32 dummy[2];
-
-    new_var6 = D_80099CC8;
-    {
-        u8 *p = new_var6 + (arg0 * 2);
-        temp_v1 = p[arg2];
-    }
-    if (temp_v1 == 0xFF) {
-        return;
-    }
-    new_var3 = 8;
-    new_var8 = (u8 *) D_800EF980;
-    p_anim = (s16 *) (new_var8 + (temp_v1 * 2));
-    if ((*p_anim) < 0) {
-        func_80052C10();
-    }
-    vehicle = (u8 *) func_8004153C(arg1 >> 1);
-    obj = D_800A38B4;
-    obj[0] = 0;
-    obj[1] = 0;
-    a1_val = (*p_anim) * 2;
-    *((s16 *) (obj + 4)) = 6;
-    *((s16 *) (obj + new_var3)) = 0;
-    *((s16 *) (obj + 0xA)) = 4;
-    *((s16 *) (obj + 2)) = a1_val;
-    src = &D_80099D3C[(arg1 & 1) * 6];
-    *((s32 *) (obj + 0x4C)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
-    if (a1_val) {
-    }
-    src++;
-    *((s32 *) (obj + 0x50)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
-    src++;
-    *((s32 *) (obj + 0x54)) = ((s32) ((*src) * (*((s16 *) (vehicle + 0x12))))) >> 12;
-    src++;
-    *((u16 *) (obj + 0x10)) = (u16) (*src);
-    src++;
-    *((u16 *) (obj + 0x12)) = (u16) (*src);
-    new_var2 = src[1];
-    *((s32 *) (obj + 0xC)) = (s32) (vehicle + 0x50C);
-    *((s16 *) (obj + 6)) = 0;
-    *((u16 *) (obj + 0x14)) = (u16) new_var2;
-    func_800417D0((s32 *) obj);
-    ot = D_800A3820;
-    D_800A3820 = ot + 4;
-    *((u8 **) ot) = obj;
-    obj += 0x68;
-    new_var5 = obj + 0xA;
-    a1_val = (*p_anim) * 2;
-    obj[0] = 3;
-    *((s32 *) (obj + 0xC)) = (s32) (obj - 0x68);
-    obj[1] = 0;
-    new_var7 = (s16 *) (obj + 6);
-    *((s16 *) (obj + (new_var = new_var3))) = 0;
-    *new_var7 = 1;
-    *((s16 *) new_var5) = 0;
-    *((s16 *) (obj + 4)) = 6;
-    *((s16 *) (obj + 2)) = (s16) (a1_val + 1);
-    *((s32 *) (obj + 0x58)) = (s32) (*((s16 *) (vehicle + 0x1A84)));
-    ot = D_800A3820;
-    D_800A3820 = ot + 4;
-    *((u8 **) ot) = obj;
-    D_800A38B4 = obj + 0x68;
-    (void) dummy;
-    (void) new_var4;
-}
+INCLUDE_ASM("asm/funcs", func_80049A2C);
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;
     s32 temp_v0;
@@ -1636,82 +1435,7 @@ void func_80055B44(u8 *a0, s32 a1, s32 a2, s32 a3) {
     *(s32 *)(a0 + 0x3CC) = -1;
 }
 INCLUDE_ASM("asm/funcs", func_80055B60);
-void func_80056CB8(s32 arg0) {
-    /* Bind locals to specific callee-save regs to match target's allocation. */
-    register s32 r_arg0 asm("$23") = arg0;     /* $s7 */
-    register s32 var_s6 asm("$22");            /* $s6 - used by asmfix-slice */
-    s32 var_fp;                                 /* GCC picks; clobber forces save */
-    /* Target struct base lands at sp+0x18 (8-byte param-save gap above sp+0x10). */
-    struct {
-        s32 sp18, sp1C, sp20, _g0;
-        s32 sp28, sp2C, sp30, _g1;
-        s32 sp38, sp3C, sp40, _g2;
-        s32 sp48, sp4C, sp50, _g3;
-        s32 sp58, sp5C, sp60, _g4;
-        s32 *sp68;
-        s32 _g5;
-        s32 *sp70;
-        s32 _g6;
-        s32 sp78;
-    } f;
-    s32 var_s0_2;
-    s16 *p_pos1, *p_pos2;
-    s32 angle_val;
-    s32 var_s1;
-    s32 var_s2, var_s3;
-    s32 temp_s0;
-    s32 temp_v1_3;
-    u16 obj_type;
-    s32 r1, r2;
-#define sp18 f.sp18
-#define sp1C f.sp1C
-#define sp20 f.sp20
-#define sp28 f.sp28
-#define sp2C f.sp2C
-#define sp30 f.sp30
-#define sp38 f.sp38
-#define sp3C f.sp3C
-#define sp40 f.sp40
-#define sp48 f.sp48
-#define sp4C f.sp4C
-#define sp50 f.sp50
-#define sp58 f.sp58
-#define sp5C f.sp5C
-#define sp60 f.sp60
-#define sp68 f.sp68
-#define sp70 f.sp70
-#define sp78 f.sp78
-    {
-        register s32 _low2 asm("$3");
-        s32 _guard;
-        s32 _hi3e8 = *(u16 *)(r_arg0 + 0x3E8);
-        __asm__("andi %0,%1,0x3" : "=r"(_low2) : "r"(_hi3e8));
-        var_s6 = _low2 << 1;
-        __asm__ __volatile__("addiu %0,$0,1" : "=r"(_guard));
-        if (_guard != 0) {
-            sp60 = var_s6;
-            sp68 = (s32 *)&sp28;
-            sp70 = (s32 *)&sp58;
-            sp78 = 0x1F8002B8;
-            var_fp = _low2 << 2;
-            do {
-                /* Body replaced wholesale by asmfix-slice. Stub keeps GCC saving
-                 * callee-saves and allocating struct stack slots. */
-                __asm__ volatile ("" : : "r"(var_fp) : "$16","$17","$18","$19","$20","$21","memory");
-                sp18 = 0; sp1C = 0; sp20 = 0;
-                sp28 = 0; sp2C = 0; sp30 = 0;
-                sp38 = 0; sp3C = 0; sp40 = 0;
-                sp48 = 0; sp4C = 0; sp50 = 0;
-                sp58 = 0; sp5C = 0;
-                func_80053614((s32 *)&sp18, sp68, (s32)&sp38, (s32)sp70, var_fp);
-                func_80053614((s32 *)&sp18, sp68, (s32)&sp48, (s32)sp70, sp78);
-                *(s8 *)(r_arg0 + 0x444 + var_s6) = 0;
-                var_s6 += 1;
-                var_fp += 2;
-            } while (var_s6 < sp60 + 2);
-        }
-    }
-}
+INCLUDE_ASM("asm/funcs", func_80056CB8);
 #undef sp18
 #undef sp1C
 #undef sp20
@@ -1797,55 +1521,7 @@ INCLUDE_ASM("asm/funcs", func_8005763C);
 INCLUDE_ASM("asm/funcs", func_80057ACC);
 extern s32 ratan2(s32, s32);
 extern s16 Judge;
-void func_80057CC8(u8 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
-    unsigned short prev_idx;
-    register unsigned short next_idx asm("s3");
-    s32 ang_prev;
-    s32 ang_next;
-    s32 ang_mid;
-    s32 scale;
-    s32 base;
-    s32 half;
-    u16 cx;
-    s16 new_var;
-    s16 *p;
-    u16 cy;
-    s16 *table;
-
-    prev_idx = arg1 - 1;
-    table = *(s16 **)(arg0 + 4);
-    cx = *(u16 *)((s32)table + arg1 * 4 + 0);
-    cy = *(u16 *)((s32)table + arg1 * 4 + 2);
-
-    if ((s16) prev_idx < 0) {
-        prev_idx = arg0[3] - 1;
-    }
-
-    {
-        s32 tmp = arg1 + 1;
-        next_idx = tmp;
-        if ((s16) tmp >= (s32)arg0[3]) {
-            next_idx = 0;
-        }
-    }
-
-    p = (s16 *)((s32)table + (((s32)(prev_idx << 16) >> 16) << 2));
-    ang_prev = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
-    p = (s16 *)((s32)(*(s16 **)(arg0 + 4)) + (((s32)(next_idx << 16) >> 16) << 2));
-    ang_next = ratan2(p[0] - (s16) cx, p[1] - (s16) cy) & 0xFFF;
-
-    if (ang_next < ang_prev) {
-        base = ang_prev + 0x800;
-        half = (s32)(ang_prev - ang_next) / 2;
-        ang_mid = base - half;
-    } else {
-        ang_mid = ((s32)(ang_next - ang_prev) / 2) + ang_prev;
-    }
-
-    scale = arg0[2] * 40;
-    *arg2 = cx + ((scale * (s32)(*(&Judge + (ang_mid & 0xFFF)))) >> 12);
-    *arg3 = cy + ((scale * (s32)(new_var = *(&Judge + (((s16)ang_mid + 0x400) & 0xFFF)))) >> 12);
-}
+INCLUDE_ASM("asm/funcs", func_80057CC8);
 
 INCLUDE_ASM("asm/funcs", func_80057E84);
 INCLUDE_ASM("asm/funcs", func_80058580);
@@ -3550,31 +3226,7 @@ extern u8 D_800F116A;
 extern s32 D_800F116C;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
-void func_800611A4(s32 *arg0, s32 *arg1) {
-    u16 sp[3];
-    u16 new_var;
-    s32 *v1 = (s32 *) (&D_800F116C);
-    register s32 t asm("$2");
-    register s32 mask asm("$3");
-    sp[0] = *((u16 *) (((s32) arg1) + 0));
-    sp[1] = *((u16 *) (((s32) arg1) + 2));
-    D_800A3468 = (s32) v1;
-    new_var = *((u16 *) (((s32) arg1) + 4));
-    D_800F117C = (s32) (&sp[0]);
-    D_800F1178 = (s32) arg0;
-    D_800F1180 = (s32) (&D_800F116A);
-    *v1 = 0x21001A;
-    sp[2] = new_var;
-    func_80060A68();
-    t = arg0[0];
-    D_800F1140 = t;
-    t = arg0[1];
-    D_800F1144 = t;
-    mask = 0xFFFFEF;
-    D_800A3464 = mask;
-    t = arg0[2];
-    D_800F1148 = t;
-}
+INCLUDE_ASM("asm/funcs", func_800611A4);
 extern volatile u8 D_800F1159;
 void func_80061250(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
@@ -6216,93 +5868,7 @@ typedef struct IconC70 {
     s16 sp4E;
 } IconC70;
 
-void func_80070C70(s32 arg0) {
-    register s32 c60 asm("$20") = 0x60;
-    PrimC70 prim;
-    IconC70 icon;
-    s32 ctx_or_var_s2;
-    s32 var_s0;
-    s32 var_s3;
-
-    prim.zero10 = 0;
-    prim.mode = 0;
-    prim.zero1C = 0;
-    prim.width = 0x100;
-    prim.height = 0x100;
-    prim.byte28 = 0;
-    ctx_or_var_s2 = (s32)*(s32 **)(D_800A35A8 + 0x64);
-    prim.zero1C = 0;
-    prim.mode = 0;
-    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 4);
-    var_s0 = 0;
-    prim.p_static = prim.p_geom + 0xC;
-    { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
-    prim.link = *(s32 *)(arg0 + 0x10);
-    *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-    SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
-    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    icon.sp4C = 0xE7;
-    icon.sp48 = 0xCC;
-    icon.sp4A = 0x25;
-    icon.sp4E = 1;
-    func_80069898(arg0, (s32 *)&icon, 1);
-    prim.p_geom = *(s32 *)(ctx_or_var_s2);
-    var_s3 = 0xA;
-    prim.p_static = prim.p_geom + 0x48;
-    do {
-        prim.mode = var_s0 << 6;
-        prim.code = var_s3;
-        prim.link = *(s32 *)(arg0 + 0x10);
-        *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-        var_s0 += 1;
-        prim.p_geom += 0xC;
-    } while (var_s0 < 6);
-    prim.p_geom = *(s32 *)(ctx_or_var_s2);
-    SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 0x28, *(s32 *)(arg0 + 0x18));
-    var_s0 = 0;
-    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    prim.p_geom = *(s32 *)(ctx_or_var_s2 + 8);
-    if ((s32)(D_800A35B0 + ((s16)D_800A3558 + 1)) > 0) {
-        var_s3 = 0x50;
-        ctx_or_var_s2 = 0;
-        do {
-            u8 code = (&D_800A3560)[ctx_or_var_s2];
-            s32 c5, c10, c2;
-            s16 *p3590;
-            __asm__ __volatile__("addiu %0,$0,5" : "=r"(c5));
-            __asm__ __volatile__("addiu %0,$0,16" : "=r"(c10));
-            __asm__ __volatile__("addiu %0,$0,2" : "=r"(c2));
-            __asm__ __volatile__("la %0,D_800A3590" : "=r"(p3590));
-            if ((code != c5) && (code != c10)) {
-                s32 t = prim.p_geom + 0xC;
-                prim.p_static = t;
-                prim.p_static = t + (p3590[var_s0 * 2] << 4);
-                if (((D_800A35B0 + (s16)(u16)D_800A3558) != 0) || (D_800A35BC == c2)) {
-                    prim.mode = var_s3;
-                } else {
-                    s32 c105;
-                    __asm__ __volatile__("addiu %0,$0,261" : "=r"(c105));
-                    prim.mode = c105;
-                }
-                { s32 _c1; __asm__ __volatile__("addiu %0,$0,1" : "=r"(_c1)); prim.code = _c1; }
-                prim.link = *(s32 *)(arg0 + 0x10);
-                *(s32 *)(arg0 + 0x10) = func_8007352C((s32 *)&prim);
-            }
-            var_s3 += 0x16C;
-            var_s0 += 1;
-            ctx_or_var_s2 += 3;
-        } while (var_s0 < (s32)(D_800A35B0 + ((s16)D_800A3558 + 1)));
-    }
-    SetDrawMode(*(s32 *)(arg0 + 0x18), 1, 0, func_8006E480(prim.p_geom, c60), 0);
-    AddPrim(D_800A374C + 4, *(s32 *)(arg0 + 0x18));
-    *(s32 *)(arg0 + 0x18) = *(s32 *)(arg0 + 0x18) + 0xC;
-    func_80070F78(arg0, (s32 *)&prim);
-    func_8006ECF4(arg0);
-    func_80072E10(arg0);
-    func_80073200(arg0);
-}
+INCLUDE_ASM("asm/funcs", func_80070C70);
 INCLUDE_ASM("asm/funcs", func_80070F78);
 extern u8 D_800A3561;
 extern u8 D_8009BC7C[];
@@ -6378,66 +5944,7 @@ s32 func_80072BC4(s32 arg0, GameObj *arg1) {
     AddPrim(D_800A374C + 0x60, arg1);
     return (s32)((u8 *)arg1 + 0x24);
 }
-s32 func_80072CD4(s32 arg0, GameObj *arg1)
-{
-  u8 var_v0;
-  s32 new_var;
-  SetPolyG4(arg1);
-  SetSemiTrans(arg1, 0);
-  if (arg0 < 4)
-  {
-    var_v0 = 0x46;
-    if ((*((s32 *) (((s32) D_800A35C4) + 8))) & 4)
-    {
-      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
-      *((u8 *) (((s32) arg1) + 6)) = 0x1E;
-      *((u8 *) (((s32) arg1) + 0xD)) = 0xC8;
-      do
-      {
-      }
-      while (0);
-      var_v0 = 0x32;
-    }
-    else
-    {
-      *((u8 *) (((s32) arg1) + 5)) = 0xC3;
-      *((u8 *) (((s32) arg1) + 6)) = 0x50;
-      *((u8 *) (((s32) arg1) + 0xD)) = 0xDC;
-    }
-    new_var = 0xFC;
-    *((u8 *) (((s32) arg1) + 0xC)) = new_var;
-    *((u8 *) (((s32) arg1) + 0xE)) = var_v0;
-    *((u8 *) (((s32) arg1) + 0x14)) = new_var;
-    do
-    {
-      *((u8 *) (((s32) arg1) + 4)) = 0xFC;
-    }
-    while (0);
-    *((u8 *) (((s32) arg1) + 0x15)) = 0x82;
-    *((u8 *) (((s32) arg1) + 0x1C)) = 0x32;
-    *((u8 *) (((s32) arg1) + 0x1D)) = 0x28;
-    *((u8 *) (((s32) arg1) + 0x16)) = 0;
-    *((u8 *) (((s32) arg1) + 0x1E)) = 0xA;
-  }
-  else
-  {
-    new_var = (s32) arg1;
-    *((u8 *) (new_var + 4)) = 0x10;
-    *((u8 *) (((s32) arg1) + 5)) = 0x30;
-    *((u8 *) (((s32) arg1) + 6)) = 0x60;
-    *((u8 *) (((s32) arg1) + 0xD)) = 0;
-    *((u8 *) (((s32) arg1) + 0xE)) = 0x40;
-    *((u8 *) (((s32) arg1) + 0x14)) = 0x30;
-    *((u8 *) (((s32) arg1) + 0x15)) = 0;
-    *((u8 *) (((s32) arg1) + 0x16)) = 0x60;
-    *((u8 *) (((s32) arg1) + 0xC)) = 0x18;
-    *((u8 *) (((s32) arg1) + 0x1C)) = 0;
-    *((u8 *) (((s32) arg1) + 0x1D)) = 0;
-    *((u8 *) (((s32) arg1) + 0x1E)) = 0;
-  }
-  AddPrim(D_800A374C + 0x60, arg1);
-  return (s32) (((u8 *) arg1) + 0x24);
-}
+INCLUDE_ASM("asm/funcs", func_80072CD4);
 extern s32 func_80073060(s32);
 extern s32 func_80072CD4(s32, GameObj *);
 extern s16 D_800A3580;

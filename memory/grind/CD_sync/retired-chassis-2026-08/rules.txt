@@ -1,0 +1,5 @@
+regfix.txt:1006: CD_sync: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
+regfix.txt:1007: CD_sync: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
+regfix.txt:1008: CD_sync: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
+regfix.txt:1009: CD_sync: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
+regfix.txt:1010: CD_sync: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53

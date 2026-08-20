@@ -1,0 +1,18 @@
+regfix.txt:141: func_800858D0: $3 <-> $5 @ 26-32
+regfix.txt:142: func_800858D0: subst "104" "96" @ 0
+regfix.txt:143: func_800858D0: subst ",96\(" ",88(" @ 14
+regfix.txt:144: func_800858D0: subst "sll\t\$3,\$18,\$3" "addiu	$3,$zero,24" @ 33
+regfix.txt:145: func_800858D0: subst "\$19," "$3," @ 34
+regfix.txt:146: func_800858D0: subst "sw\t\$3,16" "sw	$2,16" @ 41
+regfix.txt:147: func_800858D0: subst ",96\(" ",88(" @ 53
+regfix.txt:148: func_800858D0: subst "104" "96" @ 58
+regfix.txt:149: func_800858D0: delete @ 15
+regfix.txt:150: func_800858D0: delete @ 16
+regfix.txt:151: func_800858D0: delete @ 23
+regfix.txt:152: func_800858D0: delete @ 24
+regfix.txt:153: func_800858D0: delete @ 54
+regfix.txt:154: func_800858D0: delete @ 55
+regfix.txt:155: func_800858D0: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
+regfix.txt:156: func_800858D0: insert "addiu $2,$zero,1" @ 36
+regfix.txt:157: func_800858D0: reorder 3,4,5,1,2 @ 1-5
+regfix.txt:158: func_800858D0: reorder 17,19,18,16 @ 16-19

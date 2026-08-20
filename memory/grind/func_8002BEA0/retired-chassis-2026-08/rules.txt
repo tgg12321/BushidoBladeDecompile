@@ -1,0 +1,7 @@
+regfix.txt:424: func_8002BEA0: subst "mfhi\s+\$13" "mfhi	$24" @ 52
+regfix.txt:425: func_8002BEA0: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
+regfix.txt:426: func_8002BEA0: delete @ 65
+regfix.txt:427: func_8002BEA0: delete @ 62
+regfix.txt:428: func_8002BEA0: insert_after "addiu\t$2,$zero,1000" @ 63
+regfix.txt:429: func_8002BEA0: reorder 36,33,34,35 @ 33-36
+regfix.txt:430: func_8002BEA0: reorder 44,45,43 @ 43-45

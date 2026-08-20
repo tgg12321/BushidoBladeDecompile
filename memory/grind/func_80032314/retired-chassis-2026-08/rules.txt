@@ -1,0 +1,12 @@
+regfix.txt:396: func_80032314: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
+regfix.txt:397: func_80032314: subst "mflo\s+\$2" "mflo $3" @ 58
+regfix.txt:398: func_80032314: subst "addu\s+\$4,\$4,\$2" "addu $4,$2,$3" @ 59
+regfix.txt:399: func_80032314: subst "and\s+\$3,\$3,\$2" "and $2,$3,$2" @ 76
+regfix.txt:400: func_80032314: subst "addiu\s+\$2,\$zero,22" "addiu $3,$zero,22" @ 77
+regfix.txt:401: func_80032314: subst "subu\s+\$2,\$2,\$3" "subu $3,$3,$2" @ 78
+regfix.txt:402: func_80032314: subst "srl\s+\$4,\$4,\$2" "srl $2,$4,$3" @ 79
+regfix.txt:403: func_80032314: subst "addu\s+\$at,\$at,\$4" "addu $at,$at,$2" @ 81
+regfix.txt:404: func_80032314: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
+regfix.txt:405: func_80032314: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
+regfix.txt:406: func_80032314: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
+regfix.txt:407: func_80032314: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87

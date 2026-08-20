@@ -509,147 +509,7 @@ void func_80027A58(s32 *a0) {
 }
 INCLUDE_RODATA("asm/rodata", jtbl_80010548);
 INCLUDE_ASM("asm/funcs", func_80027AD8);
-s32 func_800283D0(u8 *arg0, u8 *arg1) {
-    u16 temp_a1;
-    u8 *temp_s4;
-    s32 temp_v1;
-    s32 var_s1;
-    s16 var_v0;
-    s32 ret;
-
-    temp_a1 = *(u16 *)(arg0 + 0x6A);
-    temp_s4 = *(u8 **)(arg0);
-    temp_v1 = temp_a1 & 0xFFFF;
-    ret = 1;
-    if (temp_v1 != 4) {
-        if (temp_v1 != 0x14) {
-            u16 temp_v0 = *(u16 *)(temp_s4 + 0x6A);
-            if ((temp_v0 != 4) && (temp_v0 != 0x14)) {
-                s32 d_val;
-                s32 temp_a1_2;
-                s32 temp_s5;
-
-                if (temp_v1 != 0x13) {
-                    var_s1 = 0;
-                    if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) && (temp_v1 != 0x26) && (temp_v1 != 0x1B) && (temp_v1 != 0x15) && (temp_v1 != 0x25) && (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
-                        goto block_13;
-                    }
-                    goto block_15;
-                }
-                var_s1 = 0;
-            block_15:
-                d_val = D_800A3824;
-                temp_a1_2 = (d_val >> *(s16 *)(arg0 + 4)) & 1;
-                temp_s5 = (d_val >> *(s16 *)(temp_s4 + 4)) & 1;
-                if (*(s16 *)(arg0 + 0x8C) != 0) {
-                    var_s1 = temp_a1_2 == 0;
-                }
-                if (var_s1 != 0) {
-                    s16 temp_v1_2 = *(s16 *)(arg0 + 0xC);
-                    if (temp_v1_2 != 0x1D) {
-                        if (temp_v1_2 != 0xE) {
-                            goto block_20;
-                        }
-                        return ret;
-                    }
-                    goto block_49;
-                }
-            block_20:
-                {
-                    s32 temp_v0_2 = temp_a1_2 * 2;
-                    s16 temp_v1_3 = *(s16 *)(temp_s4 + temp_s5 * 2 + 0x288);
-                    if (temp_v1_3 == 0) {
-                        if (*(s16 *)(arg0 + temp_v0_2 + 0x288) > 0) {
-                            var_v0 = 0x19;
-                            if (var_s1 == 0) {
-                            set_0xB:
-                                var_v0 = 0xB;
-                            }
-                        do_store_calls:
-                            *(s16 *)(arg0 + 0x286) = var_v0;
-                        do_calls:
-                            func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
-                            func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
-                            return ret;
-                        }
-                        goto block_49;
-                    }
-                    {
-                        u8 *temp_s3 = arg0 + temp_v0_2;
-                        s16 temp_v0_3 = *(s16 *)(temp_s3 + 0x288);
-                        s16 var_v0_2;
-                        if (temp_v0_3 == temp_v1_3) {
-                            func_80032854(*(s16 *)(arg0 + 4), 1, arg1, (s16 *)0);
-                            func_80032854(*(s16 *)(arg0 + 4), 0x25, arg1, (s16 *)0);
-                            if (*(s16 *)(temp_s3 + 0x288) == 5) {
-                                if (((u32)(*(u16 *)(arg0 + 0xE) - 6) < 2U) || ((u32)(*(u16 *)(temp_s4 + 0xE) - 6) < 2U)) {
-                                    var_v0_2 = 0x19;
-                                    if (var_s1 == 0) {
-                                        var_v0_2 = 0xB;
-                                    }
-                                    goto block_48;
-                                }
-                                D_800A38A8 = 1;
-                                D_800A3876 = -1;
-                                return ret;
-                            }
-                            var_v0_2 = 0x19;
-                            if (var_s1 == 0) {
-                                var_v0_2 = 0xB;
-                            }
-                            goto block_48;
-                        }
-                        if (temp_v1_3 < temp_v0_3) {
-                            if (var_s1 != 0) {
-                                *(s16 *)(arg0 + 0x286) = 0x19;
-                            } else {
-                                goto set_0xB;
-                            }
-                            goto do_calls;
-                        }
-                        func_80032854(*(s16 *)(arg0 + 4), 0x26, arg1, (s16 *)0);
-                        func_80032854(*(s16 *)(arg0 + 4), 0x2D, arg1, (s16 *)0);
-                        var_v0_2 = 0x1A;
-                        if (var_s1 == 0) {
-                            u8 *temp_a0 = temp_s4 + (temp_s5 * 0x10);
-                            s32 temp_v1_4 = -*(s16 *)(arg0 + 0x1CA);
-                            s32 temp_a0_2 = *(s32 *)(temp_a0 + 0x118);
-                            s32 var_a1 = temp_a0_2;
-                            s32 temp_v1_5 = (s32)((&Judge)[((temp_v1_4 + 0x400) & 0xFFF)] * *(s32 *)(temp_a0 + 0x114) + (&Judge)[(temp_v1_4 & 0xFFF)] * *(s32 *)(temp_a0 + 0x11C)) >> 0xC;
-                            s32 var_v0_3;
-                            if (temp_a0_2 < 0) {
-                                var_a1 = -temp_a0_2;
-                            }
-                            var_v0_3 = temp_v1_5;
-                            if (temp_v1_5 < 0) {
-                                var_v0_3 = -temp_v1_5;
-                            }
-                            if (var_v0_3 < var_a1) {
-                                var_v0_2 = 0x14;
-                                if (temp_a0_2 > 0) {
-                                    var_v0_2 = 0x13;
-                                }
-                            } else {
-                                var_v0_2 = 0x15;
-                                if (temp_v1_5 <= 0) {
-                                    var_v0_2 = 0x16;
-                                }
-                            }
-                        }
-                    block_48:
-                        *(s16 *)(arg0 + 0x286) = var_v0_2;
-                    }
-                }
-            block_49:
-                return ret;
-            }
-            goto block_13;
-        }
-        return ret;
-    }
-block_13:
-    return ret;
-}
+INCLUDE_ASM("asm/funcs", func_800283D0);
 /* kengo:MED  |  sa_tan2/saTan2KabutoWareMove  |  215i */
 void func_8002872C(void) {
     s32 i = 0;
@@ -793,60 +653,7 @@ s32 func_8002BC68(s32 arg0) {
     }
     return (s32) var_t0;
 }
-s32 func_8002BEA0(void) {
-    s32 temp_a3;
-    s32 temp_t1;
-    s32 temp_v0;
-    s32 temp_v1_3;
-    s32 var_a0;
-    u32 temp_a0;
-    u32 var_t0;
-    u8 *t2_base;
-    u8 *t3_base;
-
-    temp_a3 = D_80101FBC - D_80102408;
-    temp_t1 = D_80101FC4 - D_80102410;
-    temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
-    t2_base = &D_80101EC8;
-    t3_base = t2_base + 0x44C;
-    if (temp_a0 < 0x400U) {
-        var_t0 = ((u32) (*((&D_8008D118) + temp_a0))) >> 3;
-    } else {
-        s32 sp_tmp;
-        register s32 t4_v asm("t4");
-        t4_v = (s32) temp_a0;
-        __asm__ volatile(".word 0x488CF000" : : "r"(t4_v));
-        __asm__ volatile("nop");
-        __asm__ volatile("nop");
-        t4_v = (s32) (&sp_tmp);
-        __asm__ volatile(".word 0xE99F0000" : : "r"(t4_v));
-        {
-            u32 clz = sp_tmp;
-            u32 v0_m = clz & (-2);
-            u32 v1_m = 0x16 - v0_m;
-            u32 idx = temp_a0 >> v1_m;
-            u32 hi = (u32) ((u8) (*((&D_8008D118) + idx)));
-            do { v0_m = 0x13 - (v1_m >> 1); var_t0 = (hi << 16) >> v0_m; } while (0);
-        }
-    }
-    if (((s32) var_t0) < 0x44C) {
-        var_a0 = ((0x44C - ((s32) var_t0)) * 0x50) / 100;
-    } else {
-        s32 v1_2 = 0x44C - ((s32) var_t0);
-        var_a0 = v1_2 >> 4;
-        if (v1_2 < 0) {
-            var_a0 = (v1_2 + 0xF) >> 4;
-        }
-    }
-    temp_v0 = 0x3E8;
-    __asm__ volatile("" : "=r"(temp_v0) : "0"(temp_v0));
-    temp_v1_3 = -var_a0;
-    *((s32 *) (t2_base + 0x134)) = (temp_a3 * var_a0) / temp_v0;
-    *((s32 *) (t2_base + 0x13C)) = (temp_t1 * var_a0) / temp_v0;
-    *((s32 *) (t3_base + 0x134)) = (temp_a3 * temp_v1_3) / temp_v0;
-    *((s32 *) (t3_base + 0x13C)) = (temp_t1 * temp_v1_3) / temp_v0;
-    return (s32) var_t0 - 0x44C;
-}
+INCLUDE_ASM("asm/funcs", func_8002BEA0);
 
 void func_8002C0DC(void) {
     s32 i;
@@ -1017,11 +824,7 @@ void func_8002C61C(void) {
         }
     }
 }
-void func_8002CA8C(u8 *a0, s32 a1, s32 a2) {
-    (void)a0;
-    (void)a1;
-    (void)a2;
-}
+INCLUDE_ASM("asm/funcs", func_8002CA8C);
 INCLUDE_ASM("asm/funcs", func_8002CD58);
 /* kengo:HIGH  |  nm_special_cam/special_camera_Init  |  370i */
 s32 func_8002D320(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
@@ -1423,36 +1226,7 @@ INCLUDE_ASM("asm/funcs", func_8002DAD0);
 
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
-s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
-    s32 center_x = (arg0[0] + arg1[0] + arg2[0]) / 3;
-    s32 center_z = (arg0[2] + arg1[2] + arg2[2]) / 3;
-    s32 dz;
-    s32 dx;
-    s32 cross_center;
-    s32 cross_point;
-
-    dz = arg1[2] - arg0[2];
-    dx = arg1[0] - arg0[0];
-    cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
-    cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
-    if ((cross_center ^ cross_point) < 0) {
-        return 0;
-    }
-
-    dz = arg2[2] - arg0[2];
-    dx = arg2[0] - arg0[0];
-    cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
-    cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
-    if ((cross_center ^ cross_point) < 0) {
-        return 0;
-    }
-
-    dz = arg2[2] - arg1[2];
-    dx = arg2[0] - arg1[0];
-    cross_point = (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
-    cross_center = (dz * (center_x - arg1[0])) - (dx * (center_z - arg1[2]));
-    return (cross_center ^ cross_point) >= 0;
-}
+INCLUDE_ASM("asm/funcs", func_8002E6B0);
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
 void func_8002E838(u8 *arg0) {
     s32 sp_tmp;
@@ -1572,89 +1346,7 @@ void func_8002E838(u8 *arg0) {
     (void)charId;
 }
 /* kengo:HIGH  |  sa_tan2/saTan2LinePrimInit  |  110i */
-s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
-    *(s16 *)(obj + 0xF8) = pos[0] - (*(s32 **)(obj + 0x60))[0];
-    *(s16 *)(obj + 0xFA) = pos[1] - (*(s32 **)(obj + 0x60))[1];
-    *(s16 *)(obj + 0xFC) = pos[2] - (*(s32 **)(obj + 0x60))[2];
-    __asm__ volatile("" ::: "memory");
-    {
-        register s32 t4 asm("t4");
-        register s32 ptr_tmp asm("v0");
-        ptr_tmp = (s32)(obj + 0xF8);
-        __asm__ volatile("addu %0, %1, $zero" : "=r"(t4) : "r"(ptr_tmp));
-        __asm__ volatile("lwc2 $0, 0($12)" : : "r"(t4));
-        __asm__ volatile("lwc2 $1, 4($12)" : : "r"(t4));
-        __asm__ volatile("nop");
-        __asm__ volatile("nop");
-        __asm__ volatile(".word 0x4A486012");
-        ptr_tmp = (s32)(obj + 0x100);
-        __asm__ volatile("addu %0, %1, $zero" : "=r"(t4) : "r"(ptr_tmp));
-        __asm__ volatile("swc2 $25, 0($12)" : : "r"(t4));
-        __asm__ volatile(".word 0xE99A0004" : : "r"(t4));
-        __asm__ volatile(".word 0xE99B0008" : : "r"(t4));
-    }
-
-    {
-        register s32 x asm("a1") = *(s32 *)(obj + 0x100);
-        register s32 neg_threshold asm("t1") = -threshold;
-        if (x < neg_threshold || threshold < x) return 0;
-    }
-    {
-        s32 z = *(s32 *)(obj + 0x104);
-        register s32 neg_threshold asm("t1") = -threshold;
-        if (z < neg_threshold || threshold < z) return 0;
-    }
-
-    {
-        register s32 x asm("a1") = *(s32 *)(obj + 0x100);
-        s32 z = *(s32 *)(obj + 0x104);
-        register s32 a0_var asm("a0");
-        s32 sp_var;
-        register s32 min_y asm("a2");
-        register s32 max_y asm("a1");
-        s32 y_low;
-        s32 y;
-
-        a0_var = x * x + z * z;
-        if (r_sq < a0_var) return 0;
-        a0_var = r_sq - a0_var;
-
-        if ((u32)a0_var < 0x400) {
-            register s32 tbl_val asm("v0") = *(&D_8008D118 + a0_var);
-            a0_var = (u32)tbl_val >> 3;
-        } else {
-            s32 lzcr = 0;
-            if (a0_var >= 0) {
-                register s32 t4 asm("t4") = a0_var;
-                __asm__ volatile(".word 0x488CF000" : : "r"(t4));
-                __asm__ volatile("nop");
-                __asm__ volatile("nop");
-                t4 = (s32)&sp_var;
-                __asm__ volatile(".word 0xE99F0000" : : "r"(t4));
-                lzcr = sp_var;
-            }
-            {
-                s32 shift = 0x16 - (lzcr & ~1);
-                register s32 shifted asm("v0") = (u32)a0_var >> shift;
-                register s32 tbl asm("a0") = *(&D_8008D118 + shifted);
-                a0_var = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
-            }
-        }
-
-        max_y = 0;
-        min_y = 0;
-        y_low = *(s32 *)(obj + 0xB0);
-        if (y_low < 0) {
-            min_y = y_low;
-        } else {
-            max_y = y_low;
-        }
-        y = *(s32 *)(obj + 0x108);
-        if (max_y < y - a0_var) return 0;
-        if (y + a0_var < min_y) return 0;
-        return 1;
-    }
-}
+INCLUDE_ASM("asm/funcs", func_8002EA24);
 void func_8002EBDC(s16 *arg0, s16 *arg1, s32 *arg2, s32 arg3, s32 arg4) {
     s32 sp_tmp;
     u8 *scr = (u8 *)0x1F8002B8;
@@ -2824,79 +2516,7 @@ void func_800321E8(void) {
 }
 extern u8 D_8008D118;
 extern void func_8005C650(s32, s32, s32);
-void func_80032314(void) {
-    register u8 *t0 asm("t0") = &D_80104E88;
-    register s32 t1 asm("t1") = 0;
-    register u8 *a3 asm("a3") = &D_80104E88 + 2;
-    u8 *ent;
-    s32 state;
-    s32 a0;
-
-loop:
-    if (*t0 == 0) goto next;
-    {
-        s32 v1_v = (*(u8 *)(a3 + 1) == 0);
-        v1_v = v1_v * 0x44C;
-        ent = v1_v + &D_80101EC8;
-    }
-    state = *(u16 *)(ent + 0x6A);
-    a0 = state & 0xFFFF;
-    if (a0 == 4) goto next;
-    if (a0 == 0x14) goto next;
-    if (a0 == 0xF) goto next;
-    if ((u32)(state - 0x1C) < 2) goto next;
-    if ((u32)(state - 0x1E) < 2) goto next;
-    if ((u32)(state - 0x20) < 2) goto next;
-    if (a0 == 0x11) goto next;
-    {
-        s32 dx = *(s32 *)(ent + 0xF4) - *(s32 *)(a3 + 2);
-        s32 dy = *(s32 *)(ent + 0xF8) - *(s32 *)(a3 + 6);
-        s32 dz = *(s32 *)(ent + 0xFC) - *(s32 *)(a3 + 0xA);
-        register u32 dist_sq asm("a0") = (u32)(dx * dx + dy * dy + dz * dz);
-        u32 log2_val;
-        if (dist_sq < 0x400) {
-            log2_val = (u32)(*(&D_8008D118 + dist_sq)) >> 3;
-        } else {
-            s32 clz = 0;
-            s32 sp_tmp;
-            register s32 t4_v asm("t4");
-            if ((s32)dist_sq >= 0) {
-                t4_v = (s32)dist_sq;
-                __asm__ volatile (".word 0x488CF000" :: "r"(t4_v));
-                __asm__ volatile ("nop");
-                __asm__ volatile ("nop");
-                t4_v = (s32)&sp_tmp;
-                __asm__ volatile (".word 0xE99F0000" :: "r"(t4_v));
-                clz = sp_tmp;
-            }
-            {
-                u32 v0_m = (u32)(clz & -2);
-                u32 v1_m = 0x16 - v0_m;
-                u32 hi;
-                u32 idx = dist_sq >> v1_m;
-                hi = (u32)(u8)*(&D_8008D118 + idx);
-                v0_m = 0x13 - (v1_m >> 1);
-                log2_val = (hi << 16) >> v0_m;
-            }
-        }
-        {
-            s32 v1 = *a3;
-            s32 v0 = v1 << 4;
-            v0 = v0 - v1;
-            v0 = v0 << 1;
-            v0 = v0 + 0x1F4;
-            if (log2_val < (u32)v0) {
-                *(s16 *)(ent + 0x286) = 5;
-                *t0 = 0;
-            }
-        }
-    }
-next:
-    t1 += 1;
-    a3 += 0x2C;
-    t0 += 0x2C;
-    if (t1 < 4) goto loop;
-}
+INCLUDE_ASM("asm/funcs", func_80032314);
 /* kengo:HIGH  |  is_pad/Pad_Prs  |  111i */
 void func_800324D0(u8 *a0) {
     register u8 *v1 asm("v1");
@@ -3289,31 +2909,7 @@ void func_80033510(void) {
         } while (i >= 0);
     }
 }
-void func_80033550(s32 *arg0)
-{
-  int new_var;
-  register s32 *a3_arg asm("a3") = arg0;
-  s32 i;
-  s32 w0;
-  s32 w1;
-  s32 w2;
-  s32 idx;
-  i = 0;
-  loop:;
-  if ((*(&D_800A3918 + i)) == 0) goto found;
-  i++;
-  if (i < 6) goto loop;
-  found:;
-  if (i == 6) return;
-  *(&D_800A3918 + i) = 1;
-  new_var = i * 12;
-  do { idx = new_var; w0 = a3_arg[0]; } while (0);
-  w1 = a3_arg[1];
-  w2 = a3_arg[2];
-  *((s32 *) (((u8 *) (&D_80107850)) + idx)) = w0;
-  *((s32 *) (((u8 *) (&D_80107854)) + idx)) = w1;
-  *((s32 *) (((u8 *) (&D_80107858)) + idx)) = w2;
-}
+INCLUDE_ASM("asm/funcs", func_80033550);
 
 INCLUDE_ASM("asm/funcs", func_800335D8);
 void func_80033898(void) {

@@ -35,13 +35,7 @@
 
 # func_80017FA0: lui+ori+sw(0) → lui+sw(offset) for scratchpad writes
 # Prologue 0xB8 write: change $3→$1, delete ori, fix sw offset
-func_80017FA0: subst "\$3" "$1" @ 8
-func_80017FA0: subst "0\(\$3\)" "0xb8($1)" @ 10
-func_80017FA0: delete @ 9
 # Epilogue 0x60 write: lui→nop, ori→lui $at, fix sw offset
-func_80017FA0: subst "lui.*" "nop" @ 55
-func_80017FA0: subst "ori.*" "lui $1,0x1f80" @ 57
-func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
 
 
 # func_8003B10C: merge addu operand order (v0,a0,v0 -> v0,v0,a0)
@@ -144,24 +138,6 @@ func_8003800C: reorder 55,54 @ 54-55
 
 # title_mv_exec2: GCC hoists 0x18 and 1 into s2/s3, target only hoists 0xFF into s1
 # Remove s2/s3 saves, change sign-ext reg $3->$5 in loop, fresh load 0x18 and 1<<a1
-func_800858D0: $3 <-> $5 @ 26-32
-func_800858D0: subst "104" "96" @ 0
-func_800858D0: subst ",96\(" ",88(" @ 14
-func_800858D0: subst "sll\t\$3,\$18,\$3" "addiu	$3,$zero,24" @ 33
-func_800858D0: subst "\$19," "$3," @ 34
-func_800858D0: subst "sw\t\$3,16" "sw	$2,16" @ 41
-func_800858D0: subst ",96\(" ",88(" @ 53
-func_800858D0: subst "104" "96" @ 58
-func_800858D0: delete @ 15
-func_800858D0: delete @ 16
-func_800858D0: delete @ 23
-func_800858D0: delete @ 24
-func_800858D0: delete @ 54
-func_800858D0: delete @ 55
-func_800858D0: insert "sllv $2,$2,$5\n.set	noreorder" @ 36
-func_800858D0: insert "addiu $2,$zero,1" @ 36
-func_800858D0: reorder 3,4,5,1,2 @ 1-5
-func_800858D0: reorder 17,19,18,16 @ 16-19
 
 # coli_hit_body_weapon: addiu $v1,$a3,10 hoisted too early; move from idx 4 to idx 6
 # Target order: move t1, lui hi, addiu lo, move a0, addiu t0=-1, addiu a2=0xff, addiu v1
@@ -399,18 +375,6 @@ func_80035280: reorder 38,39,40,37,41 @ 37-41
 # loop 4 init: reorder 3-way ($v1=$a0 / $a1=0 / $a2=-1) -> ($a1=0 / $a2=-1 / $v1=$a0)
 
 # Pad_Prs: regalloc fixup for multiply chain and log2 shift chain
-func_80032314: subst "addu\s+\$4,\$5,\$4" "addu $2,$5,$4" @ 57
-func_80032314: subst "mflo\s+\$2" "mflo $3" @ 58
-func_80032314: subst "addu\s+\$4,\$4,\$2" "addu $4,$2,$3" @ 59
-func_80032314: subst "and\s+\$3,\$3,\$2" "and $2,$3,$2" @ 76
-func_80032314: subst "addiu\s+\$2,\$zero,22" "addiu $3,$zero,22" @ 77
-func_80032314: subst "subu\s+\$2,\$2,\$3" "subu $3,$3,$2" @ 78
-func_80032314: subst "srl\s+\$4,\$4,\$2" "srl $2,$4,$3" @ 79
-func_80032314: subst "addu\s+\$at,\$at,\$4" "addu $at,$at,$2" @ 81
-func_80032314: subst "srl\s+\$2,\$2,1" "srl $3,$3,1" @ 83
-func_80032314: subst "addiu\s+\$3,\$zero,19" "addiu $2,$zero,19" @ 84
-func_80032314: subst "subu\s+\$3,\$3,\$2" "subu $2,$2,$3" @ 85
-func_80032314: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 
 # func_8001BAE4: GCC optimizes signed shift to srl due to & 0x1FFE mask, target has sra
 # TEXT index 29 = srl ,,1 -> sra ,,1
@@ -421,13 +385,6 @@ func_80032314: subst "srl\s+\$4,\$4,\$3" "srl $4,$4,$2" @ 87
 # func_8002BC68: same srl move (after GTE leading-zero count); reorder magic-mult
 # constant load before its subu; mfhi target $24 (t8) not $13; .L148 path uses $3 (v1) not $2 (v0)
 # func_8002BEA0: srl scheduling, delay-slot reorder, mfhi $24, li/nop scheduling for /1000 divisor
-func_8002BEA0: subst "mfhi\s+\$13" "mfhi	$24" @ 52
-func_8002BEA0: subst "sra\s+\$3,\$13,5" "sra	$3,$24,5" @ 53
-func_8002BEA0: delete @ 65
-func_8002BEA0: delete @ 62
-func_8002BEA0: insert_after "addiu\t$2,$zero,1000" @ 63
-func_8002BEA0: reorder 36,33,34,35 @ 33-36
-func_8002BEA0: reorder 44,45,43 @ 43-45
 
 # func_80086014: add missing -0x8 stack frame (prologue+epilogue addiu sp,sp)
 # RETIRED (targeted-permuter): func_80086014: insert "addiu $29,$29,-8" @ 0
@@ -938,7 +895,6 @@ SioSyncroRead: $3 <-> $6 @ 39-44
 # func_80038170: prologue scheduling — sw ra goes late (right before sllv)
 # Mine: sw_ra(9), addu_a3(10), li_a0(11), li_a2(12), lw_a1(13/la), sllv(14)
 # Want: addu_a3, li_a0, lw_a1, li_a2, sw_ra, sllv
-func_80038170: reorder 10,11,13,12,9 @ 9-13
 
 # func_8003A728: 4 register-allocation/scheduling diff clusters after C-level matching reduced 65->22 bytes
 # (1) Cluster 1: lbu D_800A3916 hoisted before `or $4,$4,$2`; should be after, with $2 not $3
@@ -1003,11 +959,6 @@ func_8003A728: subst "sll\s+\$2,\$2,16" "sll $2,$16,16" @ 133
 # File order=processing order; insert "nop" first, then "lw" -> final layout: sra, lw, nop, subu
 
 # cpu_side_move_dir_4: register + scheduling fix for debug_printf block
-CD_sync: subst "lbu\t\$3,0\(\$18\)" "lbu\t$4,0($18)" @ 39
-CD_sync: subst "sll\t\$3,\$3,2" "sll\t$4,$4,2" @ 41
-CD_sync: subst "addu\t\$3,\$3,\$19" "addu\t$4,$4,$19" @ 42
-CD_sync: subst "lw\t\$7,0\(\$3\)" "lw\t$7,0($4)" @ 45
-CD_sync: reorder 39,40,48,43,44,41,46,47,42,49,50,51,52,53,45 @ 39-53
 
 # marionation_Exec: s-reg rotation (two permutation cycles)
 # 3-cycle: s5($21)→s7($23)→s6($22)→s5
@@ -2290,12 +2241,8 @@ func_8007526C: subst "\$8(?!\d)" "$2" @ 19
 func_8007526C: insert "addiu $2,$0,3" @ 13
 func_8007526C: insert "nop" @ 3
 func_8007526C: reorder 0,2,1,3 @ 0-3
-get_alarm: subst "lw\s+\$5,D_8009BF68" "la	$2,D_8009BF68" @ 31
-get_alarm: insert_after "lw	$5, 0($2)" @ 31
 # Fix dead load register: $4 -> $2 at idx 20
-get_alarm: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
 # Reorder idx 18-21 to match target: la,lw 0(v1),lw a1 BF78,lw v0 BF4C
-get_alarm: reorder 21,20,19,18 @ 18-21
 func_80073060: $19 <-> $20 @ 27-89
 func_80073060: $23 <-> $fp @ 27-71
 func_80073060: $17 <-> $18 @ 72-89
@@ -2307,13 +2254,6 @@ func_80073060: insert_after "addiu	$2,$0,63" @ 81
 func_80073060: subst "sh\s+\$20,14\(\$5\)" "sh	$2,14($5)" @ 85
 
 # func_80057CC8: register-allocation cleanup (computed value/dest renames)
-func_80057CC8: subst "addu\s+\$3,\$6,\$2" "addu	$2,$2,$6" @ 35
-func_80057CC8: subst "lh\s+\$4,0\(\$3\)" "lh	$4,0($2)" @ 40
-func_80057CC8: subst "lh\s+\$5,2\(\$3\)" "lh	$5,2($2)" @ 41
-func_80057CC8: subst "sll\s+\$19,\$19,16" "sll	$3,$19,16" @ 45
-func_80057CC8: subst "lw\s+\$3,4\(\$18\)" "lw	$4,4($18)" @ 46
-func_80057CC8: subst "sra\s+\$19,\$19,14" "sra	$3,$3,14" @ 47
-func_80057CC8: subst "addu\s+\$3,\$3,\$19" "addu	$3,$3,$4" @ 48
 # func_80075670: register naming fixups
 # First reload (idx 0-12): a3<->v1
 # Second reload (idx 27, 29): subst  ->  (target reuses  across these uses)
@@ -2349,22 +2289,14 @@ func_80078654: reorder 110,109 @ 109-110
 #   set at end of ELSE; ELSE is unchanged.
 
 # Step 1: pre-set FC=0xFC (was var_v0=0x46) in inner-beqz delay slot.
-func_80072CD4: subst "addiu\s+\$3,\$zero,70" "addiu\t$3,$zero,252" @ 20
 # Step 2: THEN's j-delay: var_v0=0x32 in $v0 (was $v1).
-func_80072CD4: subst "addiu\s+\$3,\$zero,50" "addiu\t$2,$zero,50" @ 28
 # Step 3: subst @ 36 (orig): sb $2,12 -> sb $3,4 (target's first merge store).
-func_80072CD4: subst "sb\s+\$2,12\(" "sb\t$3,4(" @ 36
 # Step 4: subst @ 37 (orig): sb $3,14 -> sb $3,12.
-func_80072CD4: subst "sb\s+\$3,14\(" "sb\t$3,12(" @ 37
 # Step 5: subst @ 38 (orig): sb $2,20 -> sb $2,14.
-func_80072CD4: subst "sb\s+\$2,20\(" "sb\t$2,14(" @ 38
 # Step 6: subst @ 40 (orig): sb $2,4 -> sb $2,20.
-func_80072CD4: subst "sb\s+\$2,4\(" "sb\t$2,20(" @ 40
 # Step 7: delete redundant FC reload (orig idx 35 = first instr at .L749).
 # After this, .L749 attaches to the next instruction.
-func_80072CD4: delete @ 35
 # Step 8: insert var_v0=0x46 set at end of ELSE block (orig idx 34, before .L749).
-func_80072CD4: insert_after "addiu\t$2,$zero,70" @ 34
 # Step 9: reorder outer-else stores at orig idx 54-63. Target order maps to:
 #   54 <- mine 56 (li 24)
 #   55 <- mine 63 (sb 12)
@@ -2372,7 +2304,6 @@ func_80072CD4: insert_after "addiu\t$2,$zero,70" @ 34
 #   57-59 <- mine 57-59 (unchanged)
 #   60 <- mine 55 (sb 14)
 #   61-63 <- mine 60-62
-func_80072CD4: reorder 56,63,54,57,58,59,55,60,61,62 @ 54-63
 
 # func_800600C8: target schedules sw $v0,48($sp) before addu $a0,$sp,24
 # at the two if-merge points and on the loop iteration. Mine emits the
@@ -2869,52 +2800,13 @@ _addque2: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
 _addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
 _addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120
 
-func_80070C70: $16 <-> $17 @ 1-187
-func_80070C70: $18 <-> $19 @ 1-187
 # Frame size 104 -> 128 (target uses larger frame)
-func_80070C70: subst "subu\s+\$sp,\$sp,104" "subu	$sp,$sp,128" @ 0
-func_80070C70: subst "sw\s+\$17,80\(\$sp\)" "sw	$17,108($sp)" @ 1
-func_80070C70: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,124($sp)" @ 5
-func_80070C70: subst "sw\s+\$20,96\(\$sp\)" "sw	$20,120($sp)" @ 6
-func_80070C70: subst "sw\s+\$18,92\(\$sp\)" "sw	$18,112($sp)" @ 7
-func_80070C70: subst "sw\s+\$19,88\(\$sp\)" "sw	$19,116($sp)" @ 8
-func_80070C70: subst "sw\s+\$16,84\(\$sp\)" "sw	$16,104($sp)" @ 9
-func_80070C70: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,124($sp)" @ 182
-func_80070C70: subst "lw\s+\$20,96\(\$sp\)" "lw	$20,120($sp)" @ 183
-func_80070C70: subst "lw\s+\$18,92\(\$sp\)" "lw	$18,112($sp)" @ 184
-func_80070C70: subst "lw\s+\$19,88\(\$sp\)" "lw	$19,116($sp)" @ 185
-func_80070C70: subst "lw\s+\$16,84\(\$sp\)" "lw	$16,104($sp)" @ 186
-func_80070C70: subst "lw\s+\$17,80\(\$sp\)" "lw	$17,108($sp)" @ 187
-func_80070C70: subst "addu\s+\$sp,\$sp,104" "addu	$sp,$sp,128" @ 188
 # Move $s4 init from idx 21 to idx 4 (target's position)
-func_80070C70: delete @ 21
-func_80070C70: insert "addiu	$20,$zero,96" @ 4
 # Reorder prologue idx 3-9 to match target's scheduling
-func_80070C70: reorder 7,4,3,5,6,9,8 @ 3-9
 # Reorder idx 18-28 to match target's prologue scheduling
-func_80070C70: reorder 28,19,20,21,18,23,22,24,27,25,26 @ 18-28
 # Use $v1 for the +12 chain (matches target's register allocation)
-func_80070C70: subst "addu\s+\$2,\$2,12" "addu	$3,$2,12" @ 23
-func_80070C70: subst "sw\s+\$2,28\(\$sp\)" "sw	$3,28($sp)" @ 24
-func_80070C70: subst "lw\s+\$2,16\(\$17\)" "lw	$3,16($17)" @ 27
-func_80070C70: subst "sw\s+\$2,32\(\$sp\)" "sw	$3,32($sp)" @ 30
 # Reorder idx 62-64 + register fix
-func_80070C70: reorder 63,62,64 @ 62-64
-func_80070C70: subst "addu\s+\$2,\$2,72" "addu	$3,$2,72" @ 63
-func_80070C70: subst "sw\s+\$2,28\(\$sp\)" "sw	$3,28($sp)" @ 64
 # Reorder epilogue idx 183-186 ($s2/$s3 and $s0/$s1 swap)
-func_80070C70: reorder 183,185,184,187,186 @ 183-187
-func_80056CB8: delete @ 27
-func_80056CB8: delete @ 27
-func_80056CB8: delete @ 27
-func_80056CB8: reorder 24,21,22,23,25,18,19,20,26 @ 18-26
-func_80056CB8: subst "lui\s+\$2," "lui	$11," @ 18
-func_80056CB8: subst "ori\s+\$2,\$2," "ori	$11,$11," @ 19
-func_80056CB8: subst "addu\s+\$3,\$sp,40" "addu	$11,$sp,40" @ 21
-func_80056CB8: subst "sw\s+\$3,104\(\$sp\)" "sw	$11,104($sp)" @ 22
-func_80056CB8: subst "addu\s+\$3,\$sp,88" "addu	$11,$sp,88" @ 23
-func_80056CB8: subst "sw\s+\$3,112\(\$sp\)" "sw	$11,112($sp)" @ 25
-func_80056CB8: subst "sw\s+\$2,120\(\$sp\)" "sw	$11,120($sp)" @ 26
 
 # func_8007B844: register-alloc fix for final masking block
 # mine: $3=mask, $2=addr, store via $16, return via $2 (late)
@@ -2957,16 +2849,6 @@ func_8002D320: subst "addu\s+\$2,\$8,\$zero" "addu\t$2,$0,$0" @ 112
 func_8002D320: subst "addu\s+\$2,\$8,\$zero" "addu\t$2,$0,$0" @ 116
 func_8002D320: subst "addiu\s+\$8,\$zero,1" "addiu\t$2,$0,1" @ 117
 func_8002D320: delete @ 118
-func_8002EA24: subst "subu\s+\$4,\$0,\$6" "subu\t$9,$0,$6" @ 29
-func_8002EA24: subst "slt\s+\$2,\$5,\$4" "slt\t$2,$5,$9" @ 30
-func_8002EA24: subst "slt\s+\$2,\$3,\$4" "slt\t$2,$3,$9" @ 38
-func_8002EA24: subst "sll\s+\$2,\$4,16" "addiu\t$2,$0,19" @ 79
-func_8002EA24: subst "addiu\s+\$4,\$zero,19" "subu\t$2,$2,$3" @ 80
-func_8002EA24: subst "subu\s+\$4,\$4,\$3" "sll\t$4,$4,16" @ 81
-func_8002EA24: subst "srl\s+\$4,\$2,\$4" "srl\t$4,$4,$2" @ 82
-func_8002EA24: subst "slt\s+\$5,\$5,\$2" "slt\t$2,$5,$2" @ 94
-func_8002EA24: subst "bne\s+\$5,\$0," "bne\t$2,$0," @ 95
-func_8002EA24: subst_multi "xori\s+\$2,\$2,0x0001" "bne\t$2,$0,{lbl#6}" "addu\t$2,$0,$zero" "addiu\t$2,$0,1" @ 99
 _dws: splice 11..23 "lh\t$5,4($17)" "addu\t$21,$0,$zero" "bltz\t$5,{lbl#1}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE78)" "lh\t$2,%lo(D_8009BE78)($2)" "nop" "addu\t$4,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#2}" "nop" "j\t{lbl#2}" "addu\t$3,$4,$zero"
 _dws: subst "addu\s+\$4,\$0,\$zero" "addu\t$3,$0,$zero" @ 24
 _dws: splice 25..37 "lh\t$5,6($17)" "sh\t$3,4($17)" "bltz\t$5,{lbl#3}" "addu\t$3,$5,$zero" "lui\t$2,%hi(D_8009BE7A)" "lh\t$2,%lo(D_8009BE7A)($2)" "addu\t$4,$3,$zero" "addu\t$3,$2,$zero" "slt\t$2,$2,$5" "beq\t$2,$0,{lbl#5}" "sll\t$2,$4,16" "j\t{lbl#4}" "addu\t$4,$3,$zero"
@@ -3189,18 +3071,6 @@ func_80048530: reorder 28,29,30,31,32,33,27,34,35 @ 27-35
 # v3x body uses single inline_move_aliasing barrier (1 barrier) to produce
 # target chain. Pure-C structurally equivalent; remaining diffs are
 # frame layout + save offset bumps (SUBSTs, no instruction injection).
-func_800481E8: subst "subu\s+\$sp,\$sp,40" "subu	$sp,$sp,72" @ 0
-func_800481E8: subst "sw\s+\$16,24" "sw	$16,56" @ 4
-func_800481E8: subst "sw\s+\$17,28" "sw	$17,60" @ 3
-func_800481E8: subst "sw\s+\$18,32" "sw	$18,64" @ 2
-func_800481E8: subst "sw\s+\$31,36" "sw	$31,68" @ 1
-func_800481E8: subst "addu\s+\$16,\$18,\$5" "addu	$16,$16,$5" @ 9
-func_800481E8: reorder 4,5,2,6,7,8,9,1,3 @ 1-9
-func_800481E8: subst "lw\s+\$31,36" "lw	$31,68" @ 49
-func_800481E8: subst "lw\s+\$18,32" "lw	$18,64" @ 50
-func_800481E8: subst "lw\s+\$17,28" "lw	$17,60" @ 51
-func_800481E8: subst "lw\s+\$16,24" "lw	$16,56" @ 52
-func_800481E8: subst "addu\s+\$sp,\$sp,40" "addu	$sp,$sp,72" @ 53
 
 func_80019568: reorder 7,12,5,8,9,10,11,6 @ 5-12
 func_80019568: reorder 27,26 @ 26-27

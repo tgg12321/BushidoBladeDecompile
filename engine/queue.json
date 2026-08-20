@@ -1,65 +1,77 @@
 {
-  "generated_at": "2026-08-19T19:40:18",
+  "generated_at": "2026-08-19T19:47:20",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
     {
-      "func": "func_800283D0",
-      "file": "code6cac_b",
-      "distance": 44,
+      "func": "_version",
+      "file": "display",
+      "distance": 0,
       "verdict": "C",
-      "rules": 1,
+      "rules": 0,
       "status": "active"
     },
     {
-      "func": "func_8002E6B0",
-      "file": "code6cac_b",
-      "distance": 64,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_8003EB84",
-      "file": "code6cac_c2",
-      "distance": 81,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_80070C70",
+      "func": "func_80049A2C",
       "file": "text1b",
-      "distance": 118,
+      "distance": 0,
       "verdict": "C",
-      "rules": 32,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "rules": 0,
+      "status": "active"
     },
     {
-      "func": "func_8002CA8C",
-      "file": "code6cac_b",
-      "distance": 177,
+      "func": "func_80038170",
+      "file": "code6cac_c_mid",
+      "distance": 1,
       "verdict": "C",
-      "rules": 2,
+      "rules": 0,
       "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_80056CB8",
-      "file": "text1b",
-      "distance": 188,
-      "verdict": "C",
-      "rules": 15,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "prologue_fix": 1
     },
     {
       "func": "func_80047FBC",
       "file": "text1b",
       "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80017FA0",
+      "file": "code6cac",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80044098",
+      "file": "text1a_c",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80057CC8",
+      "file": "text1b",
+      "distance": 3,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -73,11 +85,19 @@
       "status": "active"
     },
     {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 7,
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 4,
       "verdict": "C",
-      "rules": 5,
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_800611A4",
+      "file": "text1b",
+      "distance": 6,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -85,7 +105,7 @@
       "file": "code6cac_b",
       "distance": 9,
       "verdict": "ASM-PARTIAL",
-      "rules": 7,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -93,65 +113,25 @@
       "file": "display",
       "distance": 9,
       "verdict": "C",
-      "rules": 4,
-      "status": "active"
-    },
-    {
-      "func": "func_80057CC8",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 7,
-      "status": "active"
-    },
-    {
-      "func": "func_800611A4",
-      "file": "text1b",
-      "distance": 9,
-      "verdict": "C",
       "rules": 0,
       "status": "active"
     },
     {
-      "func": "func_80049A2C",
+      "func": "func_80047EE8",
       "file": "text1b",
-      "distance": 12,
+      "distance": 10,
       "verdict": "C",
       "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 9,
-      "status": "active"
-    },
-    {
-      "func": "func_80017FA0",
-      "file": "code6cac",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 6,
-      "status": "active"
-    },
-    {
-      "func": "func_80044098",
-      "file": "text1a_c",
-      "distance": 13,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
-      "func": "func_80038170",
-      "file": "code6cac_c_mid",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 1,
       "status": "active",
       "prologue_fix": 1
+    },
+    {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "file_LoadSectors",
@@ -162,36 +142,11 @@
       "status": "active"
     },
     {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 14,
-      "verdict": "C",
-      "rules": 12,
-      "status": "active"
-    },
-    {
-      "func": "func_80047EE8",
-      "file": "text1b",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 18,
-      "verdict": "ASM-PARTIAL",
-      "rules": 10,
-      "status": "active"
-    },
-    {
       "func": "func_80032314",
       "file": "code6cac_b",
-      "distance": 27,
+      "distance": 15,
       "verdict": "ASM-PARTIAL",
-      "rules": 12,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -215,7 +170,7 @@
       "file": "main",
       "distance": 27,
       "verdict": "C",
-      "rules": 18,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -258,6 +213,14 @@
       "distance": 30,
       "verdict": "C",
       "rules": 30,
+      "status": "active"
+    },
+    {
+      "func": "func_800283D0",
+      "file": "code6cac_b",
+      "distance": 30,
+      "verdict": "C",
+      "rules": 0,
       "status": "active"
     },
     {
@@ -725,6 +688,14 @@
       "hand_coded_tier": "LOW"
     },
     {
+      "func": "func_8002E6B0",
+      "file": "code6cac_b",
+      "distance": 64,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "_spu_pitch2note",
       "file": "main",
       "distance": 64,
@@ -758,6 +729,14 @@
       "rules": 29,
       "status": "active",
       "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_8003EB84",
+      "file": "code6cac_c2",
+      "distance": 81,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_80048864",
@@ -810,6 +789,14 @@
     },
     {
       "func": "func_8005C6D0",
+      "file": "text1b",
+      "distance": 118,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80070C70",
       "file": "text1b",
       "distance": 118,
       "verdict": "C",
@@ -947,9 +934,25 @@
       "status": "active"
     },
     {
+      "func": "func_8002CA8C",
+      "file": "code6cac_b",
+      "distance": 177,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "_exeque",
       "file": "display",
       "distance": 187,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80056CB8",
+      "file": "text1b",
+      "distance": 188,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -2259,14 +2262,14 @@
     }
   ],
   "counts": {
-    "total": 259,
-    "active": 232,
+    "total": 260,
+    "active": 233,
     "by_status": {
-      "active": 232,
+      "active": 233,
       "parked": 27
     },
     "by_verdict": {
-      "C": 194,
+      "C": 195,
       "ASM-PARTIAL": 38
     }
   }

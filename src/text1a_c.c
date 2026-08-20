@@ -938,27 +938,7 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-void func_80044098(s16 a0) {
-    register s32 *v1 asm("v1");
-    register s32 a4 asm("a0");
-    s32 *a6;
-
-    v1 = D_80103608[a0];
-    a4 = *(v1 - 1);
-    a6 = v1 - 1;
-    if (a4 & 0x8000) {
-        a4 = a4 & 0x7FFF;
-        *(v1 - 1) = a4;
-        a4 = a4 - 1;
-        if (a4 != -1) {
-            do {
-                *v1 -= (s32)a6;
-                v1++;
-                a4--;
-            } while (a4 != -1);
-        }
-    }
-}
+INCLUDE_ASM("asm/funcs", func_80044098);
 void func_80044100(s32 a0, s32 a1) {
     s32 *ptr = D_80103608[a0];
     s32 count = D_80103658[a0];

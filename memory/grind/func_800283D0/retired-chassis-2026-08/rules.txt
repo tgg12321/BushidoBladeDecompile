@@ -1,0 +1,1 @@
+asmfix.txt:42: func_800283D0: replace_with_asmfile "asm/funcs/func_800283D0.s"
