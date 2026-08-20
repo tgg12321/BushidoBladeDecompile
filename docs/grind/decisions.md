@@ -7035,3 +7035,7 @@ struct-typed local is never stripped; (3) `_VOID_DISCARD_NO_ADDR_RE` covers
 `(void) name;` but not `(void) name[0];`. Until these are closed, any function
 whose sandbox 0 depends on a dead local is suspect; `func_80049A2C` is the
 worked example and held a false 0 across five sessions.
+
+## 2026-08-19 21:02 — func_80038170 — layer-1 review — **FAIL**
+
+Candidate adds a statement-order scheduling lever (standalone i=0 hoist) that the binding Judge ruling explicitly forbade ("no new constructs"), and the two rules cited to justify it don't actually cover this shape.

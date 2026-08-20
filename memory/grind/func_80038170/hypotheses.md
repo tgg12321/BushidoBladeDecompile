@@ -47,3 +47,23 @@
 - probe: temporary src edit to the D_8008F19D-rebased pair; sandbox func_80038170 --disable all
 - result: score 1 at 141/141 — identical floor; the nonzero-addend artifact just moves from out[0x43] (+1) to out[0x42] (-1). Any one-symbol pair carries a nonzero addend on one access while the stale build/ reference has addend 0 on both; two-symbol spellings kill the frame temp (s1). Therefore NO source spelling reaches sandbox 0 before build/ regenerates. Banked rejected/d8008f19d-rebased-pair.c
 - verdict: KILLED
+
+## s4 (2026-08-19, permuter modality — pre-empted by chassis re-measure)
+
+## [s4] The s3 "sandbox 0 unreachable by construction" deadlock is chassis-relative and has been dissolved by the asm-until-matched migration
+- mechanism: the deadlock had two legs — (i) the build/ reference .o was the OLD cheat-form object, so our correct source differed from it by the linker-identical D_8008F19C+1 vs D_8008F19D reloc spelling, and (ii) regfix.txt:1250's `reorder @9-13` would MANGLE the now-correct natural prologue on any real build, so build/ could never be regenerated from the correct source without first retiring a rule no grind session may touch. Commit 4faaa384 retired that rule as part of the asm-until-matched migration and moved the function to INCLUDE_ASM, removing leg (ii) entirely; splicing the banked body over the INCLUDE_ASM line then makes leg (i) self-clearing on the next build.
+- probe: splice the banked candidate body over `INCLUDE_ASM("asm/funcs", func_80038170);` in src/code6cac_c_mid.c; `sandbox func_80038170 --disable all`; `engine build`; re-run the sandbox
+- result: pre-build sandbox 1 (the reloc-spelling artifact only, rules_dropped 0 — confirming the regfix carrier is gone); `engine build` -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH; post-build sandbox 0 at 141/141
+- verdict: CONFIRMED
+
+## [s4] The banked s3 candidate compiles and links as-is on the current chassis
+- mechanism: n/a — assumed inheritance
+- probe: `engine build` with the banked body verbatim
+- result: KILLED — link failure `undefined reference to func_80079194`. The symbol does not exist; 0x80079194 is `strcpy` (asm/funcs/strcpy.s). Corrected to `strcpy(out + 4, D_8008F1C0)` using the prototype already at src/code6cac_c_mid.c:279. Also corrected two `&`-of-array index spellings to plain array indexing (`D_8008F204[i]`, `D_8008F1A8[...]`) to match their `extern u8 X[];` declarations in include/code6cac.h. All three edits are codegen-neutral; the oracle match is unaffected.
+- verdict: KILLED
+
+## [s4] The surviving tools/prologue_config.json func_80038170 entry is load-bearing for the match
+- mechanism: prologue_fix replaces the emitted prologue window with a hardcoded instruction list; if the natural cc1 prologue differed, the entry would be silently carrying the match
+- probe: `sandbox func_80038170 --disable all` (which STRIPS prologue_fix) against a build/ reference produced WITH prologue_fix active
+- result: KILLED — score 0 with prologue_fix stripped. The natural prologue is textually identical to the hardcoded list, so the entry is a measured NO-OP and pure dead weight for `retire func_80038170` to delete.
+- verdict: KILLED

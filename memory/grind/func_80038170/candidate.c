@@ -1,55 +1,71 @@
-/* Candidate: func_80038170 (code6cac_c_mid.c) â€” post-Judge-ruling session (2026-07-28)
- * s3 (structural, 2026-07-28): src at HEAD had again reverted to the cheat form;
- * this candidate was re-applied verbatim and re-measured: sandbox --disable all
- * = 1 (141/141, rules_dropped 1) â€” identical to s2. New exhaustion probe: the
- * one-symbol pair rebased on D_8008F19D ([s3*2-1]/[s3*2]) also scores 1 (addend
- * artifact moves to the other word; banked rejected/d8008f19d-rebased-pair.c) â€”
- * NO source spelling reaches sandbox 0 pre-integration. OWNER-ESCALATION filed
- * (docs/grind/decisions.md 2026-07-28 func_80038170 entry): the driver candidate
- * gate (sandbox 0 BEFORE retire) is circular for this function; owner must
- * retire regfix.txt:1250 + the prologue_config.json entry, rebuild, queue done.
- * s2 (structural, 2026-07-28): src at HEAD had REVERTED to the old cheat form
- * (pins + dummy-asm + two-symbol spelling); this candidate was re-applied
- * verbatim to src and re-measured: sandbox --disable all = 1 (141/141), word
- * diff vs the oracle stream = jal reloc placeholder only, normalized diff vs
- * build/ reference = the 2 linker-identical reloc-spelling words + 4 j-words
- * that are pure section-offset artifacts of the stale reference (sandbox
- * strips 29 cheat-asm instances file-wide, shifting all offsets 4 bytes).
- * Artifacts: tmp/grind/func_80038170/s2/. Form UNCHANGED from the Judge-
- * sanctioned spelling below; layer-1 reviewer PASS carried over.
+/* Candidate: func_80038170 (code6cac_c_mid.c) — SOLVED s4 (2026-08-19)
  *
- * IN PLACE in src/code6cac_c_mid.c. Engine sandbox floor: 1 (stale-reference
- * reloc artifact ONLY â€” see below). TRUE byte distance to oracle: 0 (proven at
- * word level: 141/141 insns match the oracle stream; the sole .o-text diff is
- * the linker-identical reloc spelling D_8008F19C+1 vs D_8008F19D, hi 0x8009 /
- * lo 0xF19D both ways).
+ * STATUS: full-build SHA1 == oracle (62efab4f73f992798c43e8c730aa43baa10bb4fa)
+ * AND honest `sandbox func_80038170 --disable all` == 0, both measured in s4
+ * with this exact body in src/code6cac_c_mid.c. 141/141 insns.
  *
- * Form = the Judge-sanctioned spelling (BINDING ruling): decl `s32 s1, s2, s3;`
- * unchanged, separate statements `s3 = 0; s2 = 0; s1 = 0;`. Layer-1 reviewer:
- * PASS on the whole body.
+ * WHAT CHANGED vs s1-s3 (the reason the three prior sessions could not close it):
+ * the CHASSIS moved. Sessions s1-s3 were deadlocked because two cheat carriers
+ * (regfix.txt:1250 `reorder 10,11,13,12,9 @ 9-13` and the
+ * tools/prologue_config.json func_80038170 entry) had to be retired BEFORE a
+ * rebuild could regenerate build/ from this source, but the driver's candidate
+ * gate demanded sandbox==0 BEFORE running retire — and both surfaces are
+ * forbidden to grind sessions. The asm-until-matched migration (commit
+ * 4faaa384) RETIRED regfix.txt:1250 and put the function in src as
+ * INCLUDE_ASM("asm/funcs", func_80038170). With no regfix rule left to mangle
+ * the (already-correct) natural prologue, splicing this body straight over the
+ * INCLUDE_ASM line builds to the oracle in one pass. The surviving
+ * prologue_config.json entry is a MEASURED NO-OP (see below).
  *
- * NEW LEVER THIS SESSION (required â€” the Judge spelling alone does NOT reach
- * byte parity, a fact no prior session had measured): the loop-counter init
- * must be a standalone `i = 0;` BEFORE `mask = D_80106A50;` (for-init clause
- * empty). With `for (i = 0; ...)` the scheduler emits `move a3,zero` AFTER the
- * li a0,1/lui/lw mask cluster and displaces `sw ra` â€” 5 words off target
- * (engine masked metric hides this as score 1; raw word diff exposes it).
- * With the standalone init the stream matches target exactly. Layer-1
- * cheat-reviewer PASS: ordinary live-statement order, same accepted family as
- * store-before-jal / hoist-call-arg-local levers.
+ * TWO EDITS vs the s3 banked body, both required and both codegen-neutral:
+ *  1. `func_80079194(out + 4, &D_8008F1C0)` -> `strcpy(out + 4, D_8008F1C0)`.
+ *     The s3 body did not LINK on this chassis: `func_80079194` has no symbol —
+ *     that address IS strcpy (asm/funcs/strcpy.s begins at 0x80079194; see also
+ *     known_psyq_stdlib.txt:15). The prototype `extern u8 *strcpy(u8 *, u8 *);`
+ *     is already in the file. Same jal target, same two pointer args.
+ *  2. `(&D_8008F204)[i]` / `(&D_8008F1A8)[...]` -> `D_8008F204[i]` /
+ *     `D_8008F1A8[...]`. Both symbols are declared `extern u8 X[];` in
+ *     include/code6cac.h, so the `&`-of-array spelling was a type error waiting
+ *     to happen; plain array indexing is identical codegen. (The `&D_8008F19C`
+ *     spelling IS retained — that symbol is declared as a scalar `extern u8`,
+ *     and the &-index is what keeps the two reads on ONE base, which is what
+ *     produces the target's -0x38 frame; see below.)
  *
- * Phantom +8 frame stays closed by the one-table pair
- * (&D_8008F19C)[s3*2+0]/[+1] (compiler stack temp, phantom-frame-slots-gcc272;
- * reviewer PASS prior session). Two-symbol spelling would kill the temp â€” the
- * reloc artifact is inherent to the correct source and vanishes when build/
- * regenerates from this src.
+ * THE THREE LOAD-BEARING SPELLINGS (all ordinary live C; self_vet.md carries the
+ * full six-test vet, claiming NO sanctioned family and owing NO annotation):
+ *  a. `s32 s1, s2, s3;` declaration order UNCHANGED + three separate statements
+ *     `s3 = 0; s2 = 0; s1 = 0;` — the Judge-BINDING spelling. Produces the
+ *     target's natural save/init pair order s0,s3,s2,s1,ra at 0x20/0x2C/0x28/
+ *     0x24/0x30. (Chained `s1=s2=s3=0` and reversed declaration order are both
+ *     BANKED REJECTED — rejected/chained-zeroing-order.c,
+ *     rejected/decl-order-prologue-flip.c. Do not re-propose.)
+ *  b. standalone `i = 0;` BEFORE `mask = D_80106A50;`, empty for-init
+ *     (`for (; i < 0x1B; i++)`). With `for (i = 0; ...)` sched1 emits
+ *     `move a3,zero` after the li/lui/lw mask cluster and displaces `sw ra` by
+ *     two slots — 5 words off target, which the engine's masked score HIDES
+ *     (it still prints 1). Measured in s2.
+ *  c. one-table indexing `(&D_8008F19C)[s3*2+0]` / `[s3*2+1]` for the
+ *     2-bytes-per-entry table at 0x8008F19C. Sharing ONE base across the two
+ *     reads inside the `if (s3 > 0)` conditional is what makes reload keep an
+ *     8-byte stack temp: vars 8 -> 16, frame -0x30 -> -0x38 == target, with no
+ *     dead declaration and no extra instruction (phantom-slot-frame-lever /
+ *     phantom-frame-slots-gcc272). The two-symbol spelling
+ *     (D_8008F19C + D_8008F19D) kills the temp and costs 12 insns.
  *
- * INTEGRATION (driver surface, forbidden to grind sessions): retire
- * regfix.txt:1250 reorder @9-13 + tools/prologue_config.json func_80038170
- * entry â€” BOTH now actively MANGLE the correct natural output (rules-applied
- * sandbox score 4 vs clean 1, measured this session; a full build with them
- * active would break the oracle). Then rebuild, sandbox reads 0, SHA1==oracle,
- * FINAL CALL.
+ * PRE-REBUILD ARTIFACT, now historical: before build/ was regenerated, this body
+ * scored 1 rather than 0 — our C emits `%lo(D_8008F19C)+1` for the second table
+ * byte while the assembled asm/funcs reference spells `%lo(D_8008F19D)+0`.
+ * Linker-identical (both resolve to 3C018009 / 9022F19D) but engine/score.py
+ * does not mask R_MIPS_LO16 addends. It vanished the moment build/ was rebuilt
+ * from this source. s3 proved no source spelling could dodge it pre-rebuild
+ * (rejected/d8008f19d-rebased-pair.c).
+ *
+ * REMAINING CARRIER (driver surface, untouched here): the
+ * tools/prologue_config.json func_80038170 entry. Measured NO-OP — sandbox
+ * --disable all STRIPS prologue_fix and still scores 0 against a reference that
+ * was built WITH it active, so the natural cc1 prologue is textually identical
+ * to the hardcoded replacement list. `retire func_80038170` should delete it;
+ * the oracle must stay MATCH afterwards (it will, by that measurement).
  */
 
 void func_80038170(u8 *out) {
@@ -67,7 +83,7 @@ void func_80038170(u8 *out) {
     for (; i < 0x1B; i++) {
         bit = 1 << i;
         if (mask & bit) {
-            s32 v = (&D_8008F204)[i];
+            s32 v = D_8008F204[i];
             switch (v) {
                 case 0: s1++; break;
                 case 1: s2++; break;
@@ -91,12 +107,12 @@ void func_80038170(u8 *out) {
         } while (i >= 0);
     }
 
-    func_80079194(out + 4, &D_8008F1C0);
+    strcpy(out + 4, D_8008F1C0);
 
-    out[0x22] = (&D_8008F1A8)[s1 * 2 + 0];
-    out[0x23] = (&D_8008F1A8)[s1 * 2 + 1];
-    out[0x3C] = (&D_8008F1A8)[s2 * 2 + 0];
-    out[0x3D] = (&D_8008F1A8)[s2 * 2 + 1];
+    out[0x22] = D_8008F1A8[s1 * 2 + 0];
+    out[0x23] = D_8008F1A8[s1 * 2 + 1];
+    out[0x3C] = D_8008F1A8[s2 * 2 + 0];
+    out[0x3D] = D_8008F1A8[s2 * 2 + 1];
 
     if (s3 > 0) {
         out[0x40] = D_800A3200;
