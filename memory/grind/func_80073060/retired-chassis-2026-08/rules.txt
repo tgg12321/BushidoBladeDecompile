@@ -1,0 +1,9 @@
+regfix.txt:2019: func_80073060: $19 <-> $20 @ 27-89
+regfix.txt:2020: func_80073060: $23 <-> $fp @ 27-71
+regfix.txt:2021: func_80073060: $17 <-> $18 @ 72-89
+regfix.txt:2022: func_80073060: $16 <-> $20 @ 72-89
+regfix.txt:2023: func_80073060: reorder 30,27,29,31,28 @ 27-31
+regfix.txt:2024: func_80073060: reorder 75,73,72,74 @ 72-75
+regfix.txt:2025: func_80073060: delete @ 76
+regfix.txt:2026: func_80073060: insert_after "addiu	$2,$0,63" @ 81
+regfix.txt:2027: func_80073060: subst "sh\s+\$20,14\(\$5\)" "sh	$2,14($5)" @ 85

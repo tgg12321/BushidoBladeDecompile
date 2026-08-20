@@ -409,79 +409,7 @@ void func_80042A88(u16 *a0, s16 *a1) {
     a1[7] = (scb_cosC + sinB_sinC) >> 12;
 }
 extern s16 Judge[];
-void func_80042C80(u16 *a0, s16 *a1) {
-    s32 angB, angC;
-    s16 cosB, cosC;
-    s32 cosB_cosC, cosB_negsinC;
-    s32 angA;
-    s16 sinB;
-    s16 sinA;
-    s16 sinC;
-    s32 sab;
-    s32 sab12;
-    s32 sab12_cosC, sab12_negsinC;
-    s32 cosA;
-    s32 cosA_sinC, cosA_cosC;
-    s32 cosA_negsinB;
-    s32 negsinA_cosB;
-    s32 cab12, cab12_cosC;
-    s32 cosA_sinB;
-    s32 sinA_sinC;
-    s32 csb12_sinC;
-    s32 cosA_cosB;
-    s32 sinA_cosC;
-
-    angB = a0[1];
-    angC = a0[2];
-
-    sinB = Judge[angB & 0xFFF];
-    sinC = Judge[angC & 0xFFF];
-    angA = a0[0];
-    sinA = Judge[angA & 0xFFF];
-
-    cosB = Judge[((s16)angB + 0x400) & 0xFFF];
-    cosC = Judge[((s16)angC + 0x400) & 0xFFF];
-
-    cosB_cosC = cosB * cosC;
-
-    sab = sinA * sinB;
-
-    cosB_negsinC = cosB * -sinC;
-    sab12 = sab >> 12;
-
-    sab12_cosC = sab12 * cosC;
-
-    cosA = (s16)*(volatile u16 *)(&Judge[((s16)angA + 0x400) & 0xFFF]);
-
-    cosA_sinC = cosA * sinC;
-    sab12_negsinC = sab12 * -sinC;
-    cosA_cosC = cosA * cosC;
-    cosA_negsinB = cosA * -sinB;
-    negsinA_cosB = -sinA * cosB;
-
-    cab12 = cosA_negsinB >> 12;
-    cab12_cosC = cab12 * cosC;
-
-    cosA_sinB = cosA * sinB;
-    sinA_sinC = sinA * sinC;
-
-    csb12_sinC = (cosA_sinB >> 12) * sinC;
-
-    cosA_cosB = cosA * cosB;
-
-    a1[2] = sinB;
-    a1[0] = cosB_cosC >> 12;
-    a1[1] = cosB_negsinC >> 12;
-    a1[5] = negsinA_cosB >> 12;
-
-    sinA_cosC = sinA * cosC;
-
-    a1[8] = cosA_cosB >> 12;
-    a1[3] = (sab12_cosC + cosA_sinC) >> 12;
-    a1[4] = (sab12_negsinC + cosA_cosC) >> 12;
-    a1[6] = (cab12_cosC + sinA_sinC) >> 12;
-    a1[7] = (csb12_sinC + sinA_cosC) >> 12;
-}
+INCLUDE_ASM("asm/funcs", func_80042C80);
 /* kengo:MED  |  my_hirahira/hirahira_w_ctrl_2  |  132i  |  x2 size collision */
 extern void func_8004A348(s16 *, s32 *);
 extern void func_80042874(void);
@@ -586,32 +514,7 @@ extern s32 D_800951D8;
 extern s32 D_80095280;
 extern s32 D_80095328;
 extern s32 D_800A3828;
-void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
-    s32 *dst = (s32 *)0x1F8003A0;
-    s32 t0;
-
-    t0 = *(s32 *)0x1F800008;
-    *(s32 *)0x1F800008 = 3 - t0;
-
-    *(StructCopy32_800430E4 *)dst = *(StructCopy32_800430E4 *)&D_800FF610;
-
-    D_800A3828 = (s32)(&D_800F62E0 + arg2 * 48);
-
-    *(s16 *)0x1F8003A6 = *(s16 *)0x1F8003A6 >> 1;
-    *(s16 *)0x1F8003A8 = *(s16 *)0x1F8003A8 >> 1;
-    *(s16 *)0x1F8003AA = *(s16 *)0x1F8003AA >> 1;
-    *(s32 *)0x1F8003B8 = *(s32 *)0x1F8003B8 >> 1;
-
-    if (arg3[1] & 1) {
-        *(s32 *)0x1F80001C = (s32)&D_80095280;
-    } else {
-        *(s32 *)0x1F80001C = (s32)&D_800951D8;
-    }
-
-    func_8004DDB4(arg0, arg1, (s32)dst, t0);
-
-    *(s32 *)0x1F80001C = (s32)&D_80095328;
-}
+INCLUDE_ASM("asm/funcs", func_800430E4);
 
 s32 func_80043244(s32 a0) {
     s32 ret;
@@ -1643,53 +1546,7 @@ void func_80045230(s32 a0) {
         func_80052C10();
     }
 }
-void func_80045294(s32 a0, s32 a1) {
-    s32 sum = 0;
-    s32 v1 = a0 << 4;
-    s32 s4 = *(s32 *)((u8 *)&D_800EED14 + v1);
-    s32 i = a0;
-    s32 count = D_800A33AC;
-    s32 s5 = s4 + a1;
-
-    if (i < count) {
-        do {
-            s32 val = *(s32 *)((u8 *)&D_800EED18 + v1);
-            v1 += 0x10;
-            i += 1;
-            sum += val;
-        } while (i < count);
-    }
-
-    if (sum != 0) {
-        s32 *ptr;
-        s32 idx;
-
-        DrawSync(0);
-        func_800520B8(s4, s5, sum);
-
-        i = a0;
-        if (i < D_800A33AC) {
-            v1 = i << 4;
-            ptr = (s32 *)((u8 *)&D_800EED14 + v1);
-            idx = v1;
-            do {
-                *ptr += a1;
-                {
-                    void (*fn)(s16, s32) = (void (*)(s16, s32)) *(s32 *)((u8 *)&D_800EED1C + idx);
-                    if (fn != 0) {
-                        fn(*(s16 *)((u8 *)&D_800EED10 + idx), a1);
-                    }
-                }
-                ptr = (s32 *)((u8 *)ptr + 0x10);
-                idx += 0x10;
-                i += 1;
-            } while (i < D_800A33AC);
-        }
-    }
-
-    D_800A33A0 += a1;
-    D_800A33A4 -= a1;
-}
+INCLUDE_ASM("asm/funcs", func_80045294);
 /* The subtitle/effect slot table is an array of 16-byte records:
    { s16 id; s16 unk2; s32 unk4; s32 amt; void (*fn)(s16, s32); }
    (field offsets 0/2/4/8/0xC), with D_800A33AC live entries. The same layout
@@ -1890,52 +1747,7 @@ extern s32 *func_800455AC(s32);
 extern void func_80045600(s32, s32);
 extern void func_80045AA4(s32, s32);
 
-void func_80045878(s32 a0, s32 a1, s32 a2) {
-    s32 s3 = a0 + 3;
-    s32 *v0;
-    s16 *s1;
-    s32 s0;
-    v0 = func_8004574C(a0);
-    if (v0 != 0) {
-        s1 = (s16 *) v0[1];
-    } else {
-        s1 = (s16 *) func_800455AC(a0);
-        func_80045600(a0, 0x1A88 + ((s32) s1));
-        func_80045230(0);
-        func_80045694(a0, (s32) (&func_80045AA4));
-        s1[4] = -1;
-        s1[3] = 0;
-        s3 = a0 - -3;
-    }
-    if (func_8004574C(s3) != 0) {
-        func_800400F8((s32) s1);
-    }
-    if (((func_8004574C(s3) != 0) && (s1[4] == a1)) && (s1[3] != (-2))) {
-        s1[3] = 0;
-    } else {
-        *((s32 *) (((s32) s1) + 0x20)) = a2;
-        s0 = (s32) func_800455AC(s3);
-        *((s32 *) (((s32) s1) + 0x1C)) = s0;
-        if (a2 != 0) {
-            func_80044ED8(a1, a2);
-        } else {
-            func_80044ED8(a1, s0);
-            s0 = s0 + ((((u32) ((s32 *) s0)[*((s32 *) s0)]) >> 2) << 2);
-            func_80045230(s0);
-        }
-        func_80045600(s3, s0);
-        func_80045694(s3, (s32) (&func_80045AA4));
-        s1[3] = 1;
-        *((s32 *) (((s32) s1) + 0x24)) = 0;
-        *((s32 *) s1) = 0;
-    }
-    s1[11] = a0 + 3;
-    s1[2] = a0;
-    s1[4] = a1;
-    s1[10] = a0;
-    s1[8] = a0;
-    *((s32 *) (((s32) s1) + 0x18)) = 0x8000;
-}
+INCLUDE_ASM("asm/funcs", func_80045878);
 void func_80045A28(s32 a0, s32 a1) {
     func_80045510(a0 + 3, a1);
     func_80045230(0);

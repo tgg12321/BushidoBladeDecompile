@@ -1,0 +1,88 @@
+regfix.txt:2354: func_8005D554: subst "subu\s+\$sp,\$sp,104" "addiu	$29,$29,-120" @ 1  # auto: was `subu	$sp,$sp,104` -> `addiu $29,$29,-120`
+regfix.txt:2355: func_8005D554: subst "sw\s+\$16,64\(\$sp\)" "sw	$16,80($29)" @ 2  # auto: was `sw	$16,64($sp)` -> `sw $16,80($29)`
+regfix.txt:2356: func_8005D554: subst "sw\s+\$31,100\(\$sp\)" "sw	$31,116($29)" @ 4  # auto: was `sw	$31,100($sp)` -> `sw $31,116($29)`
+regfix.txt:2357: func_8005D554: subst "sw\s+\$fp,96\(\$sp\)" "sw	$30,112($29)" @ 5  # auto: was `sw	$fp,96($sp)` -> `sw $30,112($29)`
+regfix.txt:2358: func_8005D554: subst "sw\s+\$23,92\(\$sp\)" "sw	$23,108($29)" @ 6  # auto: was `sw	$23,92($sp)` -> `sw $23,108($29)`
+regfix.txt:2359: func_8005D554: subst "sw\s+\$22,88\(\$sp\)" "sw	$22,104($29)" @ 7  # auto: was `sw	$22,88($sp)` -> `sw $22,104($29)`
+regfix.txt:2360: func_8005D554: subst "sw\s+\$21,84\(\$sp\)" "sw	$21,100($29)" @ 8  # auto: was `sw	$21,84($sp)` -> `sw $21,100($29)`
+regfix.txt:2361: func_8005D554: subst "sw\s+\$20,80\(\$sp\)" "sw	$20,96($29)" @ 9  # auto: was `sw	$20,80($sp)` -> `sw $20,96($29)`
+regfix.txt:2362: func_8005D554: subst "sw\s+\$19,76\(\$sp\)" "sw	$19,92($29)" @ 10  # auto: was `sw	$19,76($sp)` -> `sw $19,92($29)`
+regfix.txt:2363: func_8005D554: subst "sw\s+\$18,72\(\$sp\)" "sw	$18,88($29)" @ 11  # auto: was `sw	$18,72($sp)` -> `sw $18,88($29)`
+regfix.txt:2364: func_8005D554: subst "sw\s+\$17,68\(\$sp\)" "sw	$17,84($29)" @ 12  # auto: was `sw	$17,68($sp)` -> `sw $17,84($29)`
+regfix.txt:2365: func_8005D554: subst "addu\s+\$19,\$0,\$zero" "addu	$18,$0,$0" @ 24  # auto: was `addu	$19,$0,$zero` -> `addu $18,$0,$0`
+regfix.txt:2366: func_8005D554: subst "addiu\s+\$18,\$zero,256" "addiu	$19,$0,256" @ 51  # auto: was `addiu	$18,$zero,256` -> `addiu $19,$0,256`
+regfix.txt:2367: func_8005D554: delete @ 60  # auto (replace): drop `la	$6,D_8009B388`
+regfix.txt:2368: func_8005D554: delete @ 59  # auto (replace): drop `addu	$2,$23,$16`
+regfix.txt:2369: func_8005D554: delete @ 58  # auto (replace): drop `addu	$fp,$2,12`
+regfix.txt:2370: func_8005D554: delete @ 57  # auto (replace): drop `addu	$2,$16,$23`
+regfix.txt:2371: func_8005D554: delete @ 56  # auto (replace): drop `la	$23,D_8009B2E0`
+regfix.txt:2372: func_8005D554: insert_after "addu $2,$16,$30" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2373: func_8005D554: insert_after "addiu $23,$23,%lo(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2374: func_8005D554: insert_after "lui $23,%hi(D_8009B388)" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2375: func_8005D554: insert_after "sw $2,64($29)" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2376: func_8005D554: insert_after "addu $2,$16,$2" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2377: func_8005D554: insert_after "addiu $2,$30,12" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2378: func_8005D554: insert_after "addiu $30,$30,%lo(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2379: func_8005D554: insert_after "lui $30,%hi(D_8009B2E0)" @ 55  # auto (replace): target has after idx 55
+regfix.txt:2380: func_8005D554: subst "sw\s+\$6,20\(\$sp\)" "sw	$23,20($29)" @ 64  # auto: was `sw	$6,20($sp)` -> `sw $23,20($29)`
+regfix.txt:2381: func_8005D554: subst "sw\s+\$18,52\(\$sp\)" "sw	$19,52($29)" @ 66  # auto: was `sw	$18,52($sp)` -> `sw $19,52($29)`
+regfix.txt:2382: func_8005D554: subst "sw\s+\$18,48\(\$sp\)" "sw	$19,48($29)" @ 67  # auto: was `sw	$18,48($sp)` -> `sw $19,48($29)`
+regfix.txt:2383: func_8005D554: subst "addu\s+\$19,\$19,1" "addiu	$18,$18,1" @ 71  # auto: was `addu	$19,$19,1` -> `addiu $18,$18,1`
+regfix.txt:2384: func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-25" @ 73  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-25`
+regfix.txt:2385: func_8005D554: delete @ 82  # auto (replace): drop `addu	$2,$21,$2`
+regfix.txt:2386: func_8005D554: delete @ 81  # auto (replace): drop `addu	$2,$2,-25`
+regfix.txt:2387: func_8005D554: insert_after "addu $4,$4,$2" @ 80  # auto (replace): target has after idx 80
+regfix.txt:2388: func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 85  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+regfix.txt:2389: func_8005D554: insert_after "addu $5,$0,$0" @ 86  # auto: target has this after idx 86
+regfix.txt:2390: func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-12" @ 88  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-12`
+regfix.txt:2391: func_8005D554: delete @ 99  # auto (replace): drop `addu	$2,$20,$2`
+regfix.txt:2392: func_8005D554: delete @ 98  # auto (replace): drop `addu	$2,$2,-12`
+regfix.txt:2393: func_8005D554: insert_after "addu $6,$6,$2" @ 97  # auto (replace): target has after idx 97
+regfix.txt:2394: func_8005D554: delete @ 102  # auto (replace): drop `sw	$2,44($sp)`
+regfix.txt:2395: func_8005D554: insert_after "lw $7,64($29)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2396: func_8005D554: insert_after "sw $7,20($29)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2397: func_8005D554: insert_after "addiu $7,$7,%lo(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2398: func_8005D554: insert_after "lui $7,%hi(D_8009B390)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2399: func_8005D554: insert_after "lw $3,%gp_rel(D_800A3418)($28)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2400: func_8005D554: insert_after "sw $6,44($29)" @ 101  # auto (replace): target has after idx 101
+regfix.txt:2401: func_8005D554: delete @ 105  # auto: extra `la	$2,D_8009B390`
+regfix.txt:2402: func_8005D554: delete @ 104  # auto: extra `lw	$3,%gp_rel(D_800A3418)($gp)`
+regfix.txt:2403: func_8005D554: delete @ 109  # auto (replace): drop `sw	$2,20($sp)`
+regfix.txt:2404: func_8005D554: delete @ 108  # auto (replace): drop `sw	$18,48($sp)`
+regfix.txt:2405: func_8005D554: delete @ 107  # auto (replace): drop `sw	$18,52($sp)`
+regfix.txt:2406: func_8005D554: insert_after "sw $19,48($29)" @ 106  # auto (replace): target has after idx 106
+regfix.txt:2407: func_8005D554: insert_after "sw $19,52($29)" @ 106  # auto (replace): target has after idx 106
+regfix.txt:2408: func_8005D554: subst "addu\s+\$2,\$fp,\$2" "addu	$2,$7,$2" @ 114  # auto: was `addu	$2,$fp,$2` -> `addu $2,$7,$2`
+regfix.txt:2409: func_8005D554: subst "nop\s+#\s+DEBUG:\s+Reuse\s+of\s+'\$3'\.\s+'xor\s+\$3,\$3,\$2'\s+does\s+not\s+use\s+\$at" "addiu	$4,$21,-50" @ 118  # auto: was `nop # DEBUG: Reuse of '$3'. 'xor	$3,$3,$2' does not use $at` -> `addiu $4,$21,-50`
+regfix.txt:2410: func_8005D554: delete @ 127  # auto (replace): drop `addu	$2,$21,$2`
+regfix.txt:2411: func_8005D554: delete @ 126  # auto (replace): drop `addu	$2,$2,-50`
+regfix.txt:2412: func_8005D554: insert_after "addu $4,$4,$2" @ 125  # auto (replace): target has after idx 125
+regfix.txt:2413: func_8005D554: subst "sw\s+\$2,40\(\$sp\)" "sw	$4,40($29)" @ 130  # auto: was `sw	$2,40($sp)` -> `sw $4,40($29)`
+regfix.txt:2414: func_8005D554: insert_after "addu $5,$0,$0" @ 131  # auto: target has this after idx 131
+regfix.txt:2415: func_8005D554: subst "addu\s+\$5,\$0,\$zero" "addiu	$6,$20,-25" @ 133  # auto: was `addu	$5,$0,$zero` -> `addiu $6,$20,-25`
+regfix.txt:2416: func_8005D554: delete @ 145  # auto (replace): drop `addu	$2,$20,$2`
+regfix.txt:2417: func_8005D554: delete @ 144  # auto (replace): drop `addu	$2,$2,-25`
+regfix.txt:2418: func_8005D554: insert_after "addu $6,$6,$2" @ 143  # auto (replace): target has after idx 143
+regfix.txt:2419: func_8005D554: subst "sw\s+\$2,44\(\$sp\)" "sw	$6,44($29)" @ 148  # auto: was `sw	$2,44($sp)` -> `sw $6,44($29)`
+regfix.txt:2420: func_8005D554: subst "slt\s+\$3,\$19,\$3" "slt	$3,$18,$3" @ 153  # auto: was `slt	$3,$19,$3` -> `slt $3,$18,$3`
+regfix.txt:2421: func_8005D554: subst "lw\s+\$31,100\(\$sp\)" "lw	$31,116($29)" @ 160  # auto: was `lw	$31,100($sp)` -> `lw $31,116($29)`
+regfix.txt:2422: func_8005D554: subst "lw\s+\$fp,96\(\$sp\)" "lw	$30,112($29)" @ 161  # auto: was `lw	$fp,96($sp)` -> `lw $30,112($29)`
+regfix.txt:2423: func_8005D554: subst "lw\s+\$23,92\(\$sp\)" "lw	$23,108($29)" @ 162  # auto: was `lw	$23,92($sp)` -> `lw $23,108($29)`
+regfix.txt:2424: func_8005D554: subst "lw\s+\$22,88\(\$sp\)" "lw	$22,104($29)" @ 163  # auto: was `lw	$22,88($sp)` -> `lw $22,104($29)`
+regfix.txt:2425: func_8005D554: subst "lw\s+\$21,84\(\$sp\)" "lw	$21,100($29)" @ 164  # auto: was `lw	$21,84($sp)` -> `lw $21,100($29)`
+regfix.txt:2426: func_8005D554: subst "lw\s+\$20,80\(\$sp\)" "lw	$20,96($29)" @ 165  # auto: was `lw	$20,80($sp)` -> `lw $20,96($29)`
+regfix.txt:2427: func_8005D554: subst "lw\s+\$19,76\(\$sp\)" "lw	$19,92($29)" @ 166  # auto: was `lw	$19,76($sp)` -> `lw $19,92($29)`
+regfix.txt:2428: func_8005D554: subst "lw\s+\$18,72\(\$sp\)" "lw	$18,88($29)" @ 167  # auto: was `lw	$18,72($sp)` -> `lw $18,88($29)`
+regfix.txt:2429: func_8005D554: subst "lw\s+\$17,68\(\$sp\)" "lw	$17,84($29)" @ 168  # auto: was `lw	$17,68($sp)` -> `lw $17,84($29)`
+regfix.txt:2430: func_8005D554: subst "lw\s+\$16,64\(\$sp\)" "lw	$16,80($29)" @ 169  # auto: was `lw	$16,64($sp)` -> `lw $16,80($29)`
+regfix.txt:2431: func_8005D554: subst "addu\s+\$sp,\$sp,104" "addiu	$29,$29,120" @ 170  # auto: was `addu	$sp,$sp,104` -> `addiu $29,$29,120`
+regfix.txt:2432: func_8005D554: reorder 89,84,85,86,87,96,88,90,91,92,93,94,95 @ 84-96
+regfix.txt:2433: func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+regfix.txt:2434: func_8005D554: reorder 165,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164 @ 148-165
+regfix.txt:2435: func_8005D554: reorder 108,101,102,113,114,115,116,117,118,103,104,124,125,105,106,107,109,110,111,112,119,120,121,122,123 @ 101-125
+regfix.txt:2436: func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+regfix.txt:2437: func_8005D554: reorder 153,135,136,137,138,139,140,141,142,143,144,145,146,148,147,149,150,151,152 @ 135-153
+regfix.txt:2438: func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144 @ 130-145
+regfix.txt:2439: func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
+regfix.txt:2440: func_8005D554: insert_label ".L_loopfix:" @ 62
+regfix.txt:2441: func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154

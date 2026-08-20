@@ -1,0 +1,8 @@
+regfix.txt:101: func_8003800C: $4 <-> $5 @ 7-15
+regfix.txt:104: func_8003800C: subst "addu	\$4,\$9,\$zero" "lui $8,0x8000" @ 55
+regfix.txt:105: func_8003800C: subst "addu	\$6,\$4,\$zero" "lui $7,0x001f" @ 56
+regfix.txt:106: func_8003800C: subst "lui	\$8,.*" "ori $7,$7,0xffff" @ 57
+regfix.txt:107: func_8003800C: subst "lui	\$7,.*" "addu $4,$9,$zero" @ 58
+regfix.txt:108: func_8003800C: subst "ori	\$7,\$7,0xffff" "addu $6,$4,$zero" @ 59
+regfix.txt:110: func_8003800C: insert "nop" @ 53
+regfix.txt:112: func_8003800C: reorder 55,54 @ 54-55

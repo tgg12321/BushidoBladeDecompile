@@ -1903,57 +1903,7 @@ found:
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
 extern s32 *func_80030580(s32 *, s32);
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
-s32 func_800307D0(s32 *a0) {
-    s32 count;
-    s32 s1;
-    s32 v0;
-    s32 v1;
-    s32 *s2;
-    s32 s3;
-    s32 *a2;
-
-    count = *(s16 *)((u8 *)a0 + 0x330);
-    if (count == 0) {
-        return -1;
-    }
-    s1 = 0;
-    if (count < 2) {
-        goto do_sll;
-    }
-    if (*(s16 *)((u8 *)a0 + 0x88) == -1) {
-        v0 = s1 << 1;
-        goto after_sll;
-    }
-    v0 = *(s16 *)((u8 *)a0 + 0x332);
-    v1 = *(s16 *)((u8 *)a0 + 0x14);
-    s1 = (u32)(v0 ^ v1) < 1;
-do_sll:
-    v0 = s1 << 1;
-after_sll:
-    s2 = (s32 *)((u8 *)a0 + v0);
-    s3 = *(s16 *)((u8 *)s2 + 0x332);
-    a2 = func_80030580(a0, s3);
-    v0 = s1;
-    if (v0 < *(s16 *)((u8 *)a0 + 0x330) - 1) {
-        s32 *ptr = s2;
-        do {
-            *(u16 *)((u8 *)ptr + 0x332) = *(u16 *)((u8 *)ptr + 0x334);
-            v0++;
-            ptr = (s32 *)((u8 *)ptr + 2);
-        } while (v0 < *(s16 *)((u8 *)a0 + 0x330) - 1);
-    }
-
-    *(u16 *)(0, (u8 *)a0 + 0x330) = *(u16 *)((u8 *)a0 + 0x330) - 1;
-    v1 = *(s16 *)((u8 *)a2 + 2);
-    if (v1 == 0xE) {
-        s32 a0_arg = D_800A36F2 ^ 0xE;
-        func_80032854(a0_arg != 0, 0x2F, (u8 *)a2 + 0x2C, 0);
-    } else {
-        s32 a0_arg = v1 ^ D_800A36F2;
-        func_80032854(a0_arg != 0, 0x2A, (u8 *)a2 + 0x2C, 0);
-    }
-    return s3;
-}
+INCLUDE_ASM("asm/funcs", func_800307D0);
 typedef struct { s32 x, y, z; } Vec3_copy;
 extern s32 rng_Next(void);
 extern s32 *func_80030580(s32 *, s32);
@@ -3348,52 +3298,6 @@ void func_8003504C(void) {
     func_800344B4();
 }
 
-void func_80035280(void) {
-    s32 *p;
-    u8 *src1;
-    u8 *src2;
-    int new_var;
-    u8 *dst;
-    s32 i;
-    s32 j;
-    s32 v;
-    volatile u8 *pbit;
-
-    p = func_80077D00();
-    pbit = &D_80106A73;
-    v = p[8];
-    v = v & (~1);
-    v = v | ((*pbit) & 1);
-    p[8] = v;
-    v = v & (~2);
-    v = v | ((*pbit) & 2);
-    p[8] = v;
-    v = v & (~4);
-    v = v | ((*pbit) & 4);
-    p[8] = v;
-
-    src1 = (&D_80106A73) - 3;
-    for (i = 0; i < 3; i++) {
-        ((u8 *)p)[0x17 + i] = src1[i];
-        ((u8 *)p)[0x1D + i] = src1[i];
-    }
-
-    src2 = (u8 *)(&D_80106A58);
-    dst = (u8 *)p;
-    for (j = 0; j < 3; j++) {
-        dst[0x21] = (*((s32 *)(src2 + 4))) / 1800;
-        new_var = ((*((s32 *)(src2 + 4))) / 30) % 60;
-        v = new_var;
-        dst[0x22] = v;
-        dst[0x23] = (((*((s32 *)(src2 + 4))) % 30) * 100) / 30;
-        dst[0x24] = src2[0];
-        dst += 4;
-        src2++;
-        src2--;
-        src2 += 8;
-        j++;
-        j--;
-    }
-}
+INCLUDE_ASM("asm/funcs", func_80035280);
 void func_80035430(void) {
 }

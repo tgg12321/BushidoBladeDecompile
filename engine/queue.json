@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T19:58:57",
+  "generated_at": "2026-08-19T20:04:54",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -580,7 +580,7 @@
       "file": "code6cac_b",
       "distance": 49,
       "verdict": "C",
-      "rules": 22,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -596,7 +596,7 @@
       "file": "text1b",
       "distance": 50,
       "verdict": "C",
-      "rules": 9,
+      "rules": 0,
       "status": "active"
     },
     {
@@ -612,9 +612,8 @@
       "file": "text1a_c",
       "distance": 52,
       "verdict": "C",
-      "rules": 25,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_8007352C",
@@ -665,9 +664,8 @@
       "file": "text1a_c",
       "distance": 58,
       "verdict": "C",
-      "rules": 63,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_8003F824",
@@ -684,8 +682,7 @@
       "distance": 63,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "status": "active"
     },
     {
       "func": "func_8002E6B0",
@@ -717,9 +714,8 @@
       "file": "text1b",
       "distance": 65,
       "verdict": "C",
-      "rules": 88,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_80074B18",
@@ -817,9 +813,8 @@
       "file": "main",
       "distance": 121,
       "verdict": "C",
-      "rules": 104,
-      "status": "active",
-      "hand_coded_tier": "LOW"
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_8006D3DC",
@@ -2016,16 +2011,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 16,
-      "verdict": "C",
-      "rules": 2,
-      "status": "parked",
-      "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
-    },
-    {
       "func": "func_80060A68",
       "file": "text1b",
       "distance": 39,
@@ -2033,6 +2018,15 @@
       "rules": 2,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-19 - func_80060A68 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (s9 - supersedes and CORRECTS the earlier 2026-08-19 entry for this function)'"
+    },
+    {
+      "func": "func_800307D0",
+      "file": "code6cac_b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): 1-insn addu operand order (cheat-free); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80038C70",
@@ -2044,6 +2038,15 @@
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
     },
     {
+      "func": "func_8003800C",
+      "file": "code6cac_c_mid",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+    },
+    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -2052,6 +2055,25 @@
       "status": "parked",
       "prologue_fix": 1,
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt"
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "unpark_note": "UNPARKED 2026-08-18: owner asmfix-zero campaign mandate + no-park-permanently; mechanism fully named (survival trichotomy, s12-s16), one spelling short; continue-directive set in ledger",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
+    },
+    {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "CD_datasync",
@@ -2072,15 +2094,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_800307D0",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 9,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): 1-insn addu operand order (cheat-free); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
       "func": "func_80034F88",
       "file": "code6cac_b",
       "distance": 9,
@@ -2088,15 +2101,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
-    },
-    {
-      "func": "func_8003800C",
-      "file": "code6cac_c_mid",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 8,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
       "func": "func_80061658",
@@ -2121,7 +2125,7 @@
       "file": "text1a_c",
       "distance": 10,
       "verdict": "C",
-      "rules": 10,
+      "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
@@ -2135,20 +2139,11 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): a1<->a2 find_reg swap, no copy-preference anchor; asm reg-5 pin + sched barrier retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
-      "func": "func_8001F938",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 13,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
-    },
-    {
       "func": "func_80022F34",
       "file": "code6cac",
       "distance": 11,
       "verdict": "C",
-      "rules": 11,
+      "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): +8 phantom slot (combine REG_DEAD strand) \u2014 no C construct can remove a slot; 11 regfix substs retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },

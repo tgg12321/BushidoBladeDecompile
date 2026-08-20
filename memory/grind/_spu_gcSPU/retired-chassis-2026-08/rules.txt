@@ -1,0 +1,104 @@
+regfix.txt:2429: _spu_gcSPU: subst "bltz\s+\$2,\.L\d+" ".word\t0x04400034" @ 2
+regfix.txt:2430: _spu_gcSPU: subst "beq\s+\$2,\$0,\.L\d+" ".word\t0x1040FFF7" @ 67
+regfix.txt:2434: _spu_gcSPU: $10 <-> $11 @ 0-51
+regfix.txt:2435: _spu_gcSPU: $8 <-> $7 @ 0-51
+regfix.txt:2436: _spu_gcSPU: $13 <-> $8 @ 0-51
+regfix.txt:2437: _spu_gcSPU: $5 <-> $3 @ 19-24
+regfix.txt:2438: _spu_gcSPU: delete @ 10
+regfix.txt:2439: _spu_gcSPU: delete @ 12
+regfix.txt:2440: _spu_gcSPU: delete @ 46
+regfix.txt:2441: _spu_gcSPU: subst "lw\s+\$4,0\(\$13\)" "lw\t$4,4($7)" @ 34
+regfix.txt:2442: _spu_gcSPU: subst "lw\s+\$2,0\(\$13\)" "lw\t$2,4($7)" @ 40
+regfix.txt:2443: _spu_gcSPU: subst "sw\s+\$2,0\(\$13\)" "sw\t$2,4($7)" @ 45
+regfix.txt:2444: _spu_gcSPU: subst_multi "slt\s+\$2,\$14,\$9" "lw\t$2,D_800A2D3C" "nop" "slt\t$2,$2,$9" @ 49
+regfix.txt:2445: _spu_gcSPU: subst "addu\s+\$3,\$8,\$2" "addu\t$3,$2,$8" @ 19
+regfix.txt:2446: _spu_gcSPU: subst "addu\s+\$5,\$8,\$2" "addu\t$5,$2,$8" @ 27
+regfix.txt:2447: _spu_gcSPU: delete @ 23
+regfix.txt:2448: _spu_gcSPU: insert "sll\t$2,$6,3" @ 24
+regfix.txt:2449: _spu_gcSPU: reorder 4,6,3,7,8,5,9,10 @ 3-10
+regfix.txt:2451: _spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$2,D_800A2D3C" @ 52
+regfix.txt:2452: _spu_gcSPU: subst "bltz\s+\$11,\.L\d+" ".word\t0x04400010" @ 54
+regfix.txt:2453: _spu_gcSPU: subst "nop" "addu\t$9,$0,$zero" @ 55
+regfix.txt:2454: _spu_gcSPU: subst "addu\s+\$9,\$0,\$zero" "lui\t$5,(805240832 >> 16) & 0xFFFF" @ 56
+regfix.txt:2455: _spu_gcSPU: subst "lw\s+\$5,D_800A2D40" "ori\t$5,$5,0xffff" @ 57
+regfix.txt:2456: _spu_gcSPU: subst "lui\s+\$3,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "addu\t$4,$2,$zero" @ 58
+regfix.txt:2457: _spu_gcSPU: subst_multi "ori\s+\$3,\$3,0xffff" "lw\t$3,D_800A2D40" "nop" @ 59
+regfix.txt:2458: _spu_gcSPU: subst "lw\s+\$2,4\(\$5\)" "lw\t$2,4($3)" @ 60
+regfix.txt:2459: _spu_gcSPU: subst "sw\s+\$3,0\(\$5\)" "sw\t$5,0($3)" @ 64
+regfix.txt:2460: _spu_gcSPU: subst "slt\s+\$2,\$11,\$9" "slt\t$2,$4,$9" @ 66
+regfix.txt:2461: _spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$3,$3,8" @ 68
+regfix.txt:2463: _spu_gcSPU: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" "nop" @ 69
+regfix.txt:2464: _spu_gcSPU: subst "bltz\s+\$11," "bltz\t$3," @ 70
+regfix.txt:2465: _spu_gcSPU: delete @ 71
+regfix.txt:2466: _spu_gcSPU: subst "lui\s+\$24,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$12,(268369920 >> 16) & 0xFFFF" @ 74
+regfix.txt:2467: _spu_gcSPU: subst "lw\s+\$13,D_800A2D40" "lui\t$14,(1073741824 >> 16) & 0xFFFF" @ 73
+regfix.txt:2468: _spu_gcSPU: subst "lui\s+\$15,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$13,D_800A2D40" @ 75
+regfix.txt:2469: _spu_gcSPU: subst "ori\s+\$15,\$15,0xffff" "ori\t$12,$12,0xffff" @ 76
+regfix.txt:2470: _spu_gcSPU: delete @ 77
+regfix.txt:2471: _spu_gcSPU: subst "and\s+\$2,\$2,\$24" "and\t$2,$2,$14" @ 82
+regfix.txt:2472: _spu_gcSPU: subst "slt\s+\$2,\$11,\$6" "slt\t$2,$3,$6" @ 86
+regfix.txt:2473: _spu_gcSPU: insert "addu\t$8,$10,$zero" @ 82
+regfix.txt:2474: _spu_gcSPU: subst "lw\s+\$14,D_800A2D3C" "lw\t$11,D_800A2D3C" @ 89
+regfix.txt:2475: _spu_gcSPU: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$13" @ 90
+regfix.txt:2476: _spu_gcSPU: subst "lw\s+\$4,0\(\$5\)" "lw\t$5,0($4)" @ 92
+regfix.txt:2477: _spu_gcSPU: subst "and\s+\$2,\$4,\$24" "and\t$2,$5,$14" @ 94
+regfix.txt:2478: _spu_gcSPU: subst "and\s+\$2,\$4,\$15" "and\t$2,$5,$12" @ 96
+regfix.txt:2479: _spu_gcSPU: subst "lw\s+\$7,0\(\$10\)" "lw\t$7,0($8)" @ 97
+regfix.txt:2480: _spu_gcSPU: subst "and\s+\$3,\$7,\$15" "and\t$3,$7,$12" @ 99
+regfix.txt:2481: _spu_gcSPU: subst "sw\s+\$4,0\(\$10\)" "sw\t$5,0($8)" @ 103
+regfix.txt:2482: _spu_gcSPU: subst "sw\s+\$7,0\(\$5\)" "sw\t$7,0($4)" @ 107
+regfix.txt:2483: _spu_gcSPU: subst "slt\s+\$2,\$14,\$6" "slt\t$2,$11,$6" @ 111
+regfix.txt:2484: _spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$4,$4,8" @ 113
+regfix.txt:2485: _spu_gcSPU: subst_multi "slt\s+\$2,\$25,\$9" "lw\t$3,D_800A2D3C" "addu\t$t1,$t1,1" "slt\t$2,$3,$9" @ 116
+regfix.txt:2486: _spu_gcSPU: delete @ 79
+regfix.txt:2487: _spu_gcSPU: delete @ 91
+regfix.txt:2488: _spu_gcSPU: delete @ 110
+regfix.txt:2489: _spu_gcSPU: delete @ 115
+regfix.txt:2490: _spu_gcSPU: delete @ 114
+regfix.txt:2491: _spu_gcSPU: subst "lw\s+\$2,0\(\$8\)" "lw\t$2,4($4)" @ 104
+regfix.txt:2492: _spu_gcSPU: subst "lw\s+\$3,0\(\$12\)" "lw\t$3,4($8)" @ 105
+regfix.txt:2493: _spu_gcSPU: subst "sw\s+\$2,0\(\$12\)" "sw\t$2,4($8)" @ 106
+regfix.txt:2494: _spu_gcSPU: subst "sw\s+\$3,0\(\$8\)" "sw\t$3,4($4)" @ 108
+regfix.txt:2496: _spu_gcSPU: subst "lw\s+\$13,D_800A2D40" "lui\t$8,(-2147483648 >> 16) & 0xFFFF" @ 154
+regfix.txt:2497: _spu_gcSPU: subst "lui\s+\$8,\(-2147483648\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$6,(268369920 >> 16) & 0xFFFF" @ 155
+regfix.txt:2498: _spu_gcSPU: subst "lui\s+\$6,\(268369920\s+>>\s+16\)\s+\&\s+0xFFFF" "ori\t$6,$6,0xffff" @ 156
+regfix.txt:2499: _spu_gcSPU: subst "ori\s+\$6,\$6,0xffff" "lui\t$7,(1073741824 >> 16) & 0xFFFF" @ 157
+regfix.txt:2500: _spu_gcSPU: subst_multi "lui\s+\$7,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$5,D_800A2D40" "nop" @ 158
+regfix.txt:2501: _spu_gcSPU: subst "addu\s+\$5,\$13,\$2" "addu\t$4,$2,$5" @ 159
+regfix.txt:2502: _spu_gcSPU: subst "lw\s+\$3,0\(\$5\)" "lw\t$3,0($4)" @ 161
+regfix.txt:2503: _spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$3,D_800A2D3C" @ 166
+regfix.txt:2504: _spu_gcSPU: subst "sw\s+\$9,D_800A2D3C" "or\t$2,$2,$7" @ 167
+regfix.txt:2505: _spu_gcSPU: subst "addu\s+\$9,\$9,-1" "sw\t$2,0($4)" @ 168
+regfix.txt:2506: _spu_gcSPU: subst "or\s+\$2,\$2,\$7" "lw\t$2,4($4)" @ 169
+regfix.txt:2507: _spu_gcSPU: subst "sw\s+\$2,0\(\$5\)" "sw\t$9,D_800A2D3C" @ 170
+regfix.txt:2508: _spu_gcSPU: subst "lw\s+\$3,0\(\$4\)" "sll\t$3,$3,3" @ 171
+regfix.txt:2509: _spu_gcSPU: subst "sll\s+\$2,\$11,3" "addu\t$3,$3,$5" @ 172
+regfix.txt:2510: _spu_gcSPU: subst "addu\s+\$2,\$2,\$13" "lw\t$3,4($3)" @ 173
+regfix.txt:2511: _spu_gcSPU: subst "lw\s+\$2,4\(\$2\)" "addu\t$9,$9,-1" @ 174
+regfix.txt:2512: _spu_gcSPU: subst "addu\s+\$3,\$3,\$2" "addu\t$2,$2,$3" @ 176
+regfix.txt:2513: _spu_gcSPU: delete @ 160
+regfix.txt:2514: _spu_gcSPU: delete @ 175
+regfix.txt:2515: _spu_gcSPU: subst "sw\s+\$3,0\(\$4\)" "sw\t$2,4($4)" @ 177
+regfix.txt:2517: _spu_gcSPU: subst "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" @ 119
+regfix.txt:2518: _spu_gcSPU: subst "bltz\s+\$11," "bltz\t$a1," @ 121
+regfix.txt:2519: _spu_gcSPU: subst "addu\s+\$9,\$0,\$zero" "addu\t$t1,$zero,$zero" @ 122
+regfix.txt:2520: _spu_gcSPU: subst "lw\s+\$5,D_800A2D40" "lui\t$8,(1073741824 >> 16) & 0xFFFF" @ 123
+regfix.txt:2521: _spu_gcSPU: subst "lui\s+\$6,\(1073741824\s+>>\s+16\)\s+\&\s+0xFFFF" "lui\t$7,(805240832 >> 16) & 0xFFFF" @ 124
+regfix.txt:2522: _spu_gcSPU: subst "lui\s+\$4,\(805240832\s+>>\s+16\)\s+\&\s+0xFFFF" "lw\t$6,D_800A2D40" @ 125
+regfix.txt:2523: _spu_gcSPU: subst "ori\s+\$4,\$4,0xffff" "ori\t$a3,$a3,0xffff" @ 126
+regfix.txt:2524: _spu_gcSPU: subst "addu\s+\$13,\$5,\$zero" "addu\t$a0,$a2,$zero" @ 127
+regfix.txt:2525: _spu_gcSPU: subst "lw\s+\$3,0\(\$5\)" "lw\t$v1,0($a0)" @ 128
+regfix.txt:2526: _spu_gcSPU: subst "and\s+\$2,\$3,\$6" "and\t$v0,$v1,$t0" @ 130
+regfix.txt:2527: _spu_gcSPU: subst "bne\s+\$3,\$4," "bne\t$v1,$a3," @ 133
+regfix.txt:2528: _spu_gcSPU: subst "sll\s+\$2,\$11,3" "sll\t$v0,$a1,3" @ 134
+regfix.txt:2529: _spu_gcSPU: subst "addu\s+\$2,\$13,\$2" "addu\t$v0,$v0,$a2" @ 135
+regfix.txt:2530: _spu_gcSPU: subst "lw\s+\$3,0\(\$2\)" "lw\t$v1,0($v0)" @ 136
+regfix.txt:2531: _spu_gcSPU: subst "sw\s+\$3,0\(\$5\)" "sw\t$v1,0($a0)" @ 138
+regfix.txt:2532: _spu_gcSPU: subst "lw\s+\$2,4\(\$2\)" "lw\t$v0,4($v0)" @ 139
+regfix.txt:2533: _spu_gcSPU: subst "sw\s+\$9,D_800A2D3C" "sw\t$t1,D_800A2D3C" @ 140
+regfix.txt:2534: _spu_gcSPU: subst "sw\s+\$2,4\(\$5\)" "sw\t$v0,4($a0)" @ 142
+regfix.txt:2535: _spu_gcSPU: subst_multi "lw\s+\$11,D_800A2D3C" "lw\t$a1,D_800A2D3C" "addu\t$t1,$t1,1" @ 144
+regfix.txt:2536: _spu_gcSPU: delete @ 145
+regfix.txt:2537: _spu_gcSPU: delete @ 143
+regfix.txt:2538: _spu_gcSPU: subst "slt\s+\$2,\$11,\$9" "slt\t$v0,$a1,$t1" @ 146
+regfix.txt:2539: _spu_gcSPU: subst "addu\s+\$5,\$5,8" "addu\t$a0,$a0,8" @ 148
