@@ -349,3 +349,66 @@ the ban should be treated as final rather than re-litigated.
   memory/grind/func_80017FA0/rejected/extern-symbol-addr-wrong-as-expansion-order.c;
   it is superseded, not merely rejected - its integration dependency
   (D_1F800000 in named_syms.txt) is moot.
+
+
+## s6 (2026-08-20, synthesis modality) - the match is REAL and REPRODUCIBLE at the current chassis; the blocker is a mis-banked tripwire, not the C
+
+- **RE-MEASURED THIS SESSION, current chassis.** The s5 form (candidate.c) applied
+  to `src/code6cac.c` gives `sandbox func_80017FA0 --disable all` =
+  `{"score": 0, "target_insns": 61, "build_insns": 61, "scorable": true,
+  "rules_dropped": 0}` and a full `build` prints
+  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa / want ... / MATCH` - the oracle.
+  The honest floor for this function is therefore **0**, not the 2 the ledger
+  carried from s1-s3. Both measurements were re-run AFTER adding the inline
+  `/* FAKE */` annotation, so the annotated form is the measured form.
+- **The 2026-08-20 03:31 layer-1 FAIL is paperwork-only.** Its own text disputes
+  nothing about the construct's honesty: "Rotated outer-loop guard is fine, but
+  the goto-formed inner loop was session-documented as chosen SOLELY to suppress
+  loop.c's NOTE_INSN_LOOP_BEG-gated induction-variable analysis, which ...
+  requires a `/* FAKE: ... */` annotation for ... - the annotation is absent and
+  the self-vet wrongly asserts none is owed." Its `next action` field (visible in
+  state.json `judge_constraints`, truncated by the driver's 400-char cap) begins:
+  **"Next action: Do not treat this as a construct ban - the goto-lo..."**
+- **But the driver banked it as a mechanical ban anyway.** `grind.ps1:495-501`
+  banks `$v.banned_construct` (or the constraint text when `ground -eq
+  'CONSTRUCT'`) unconditionally, and `state.json.banned_constructs` now carries
+  "Inner loop rewritten from `do { ... } while (j < 2);` to `inner: { ... }
+  if (j < 2) goto inner;` (src/code6cac.c, the new func_80017FA0 body)".
+  `grindlib.check_banned_constructs` is a content-word tripwire over the vet's
+  CONSTRUCTS: block (`_ban_trips`, >=50% of significant terms), so ANY honest
+  CONSTRUCTS: line for this form trips it and the candidate-ready session is
+  discarded before layer-1 or the Judge ever runs. That is the exact deadlock
+  `unban_construct` was added for on 2026-08-19 (func_8002D518 burned two
+  sessions on it), and the only lawful exit is a ruling that clears it.
+- **The annotation layer-1 asked for now exists**, inline at the construct site
+  (the `inner:` label), carrying what + mechanism (GCC 2.7.2 loop.c
+  strength_reduce / find_mem_givs / combine_givs, gated on NOTE_INSN_LOOP_BEG)
+  + lever-exhaustion (hypotheses.md H1-H14 / evidence.md). `self_vet.md` was
+  rewritten to match: it declares the goto spelling, claims the
+  do-while-zero-exception ALLOWED-spelling family with the scope sentence quoted
+  verbatim from `.claude/rules/do-while-zero-exception.md:46`, and its
+  ANNOTATION-CONFORMANCE line reproduces the FAKE comment instead of saying
+  "n/a". It is staged, not spent - see the STATUS header in that file.
+- **Citations re-verified in the APPLIED tree this session** (the 02:40 layer-1
+  FAIL was a fabricated-citation FAIL, so every cite was re-checked by reading
+  the file): `.claude/rules/do-while-zero-exception.md:46` is the ALLOWED
+  sentence verbatim; `src/code6cac.c:2125`/`:2143` is `func_800206B0`, a
+  goto-formed counted loop with the same bare-block-around-a-temp shape;
+  `src/code6cac.c:2220`/`:2224` is `func_80021280`; neither appears in
+  `engine/queue.json` (258 items), i.e. both are COMPLETED-C and both ship the
+  construct with NO annotation at all. `docs/reference/sotn-construct-index.md:1015`
+  is `src/dra/5F60C.c:579 - loop_check_equip_id_1: ... goto from line(s) 582`
+  (SOTN master, PSX/GCC). `.claude/rules/phantom-slot-frame-lever.md:37` is
+  producer #1 and names exhibit `func_8003DBE4`; the in-tree rotated-guard
+  instance is `src/code6cac_c2.c:1327` (`if (i < limit) {`) - NOT :1325 as the
+  s5 vet said, which is the `colors` adjustment two lines above. Corrected.
+- **Target-asm re-read corroborates the mechanism claim** (asm/funcs/func_80017FA0.s):
+  the OUTER loop IS strength-reduced (`addiu $t3,$t3,%lo(D_1F800004)` with
+  `sw $v0,(0x1F8000AC & 0xFFFF)($t3)`), while the INNER loop's three stores are
+  NOT (`lui $at,%hi ; addu $at,$a1,$at ; sw $v0,%lo($at)` three times, with
+  `addiu $a1,$a1,0xC` in the exit branch's delay slot). So the original object
+  code was produced by a compiler that ran loop.c over the outer loop and NOT
+  over the inner one - exactly the note-delimitation asymmetry a goto-formed
+  inner loop inside a do-while outer loop produces. That is independent,
+  target-side corroboration that the s5 form is the ORIGINAL shape rather than a
+  coercion that happens to land.

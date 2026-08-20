@@ -254,3 +254,65 @@
 - probe: Case-insensitive grep of docs/reference/sotn-construct-index.md for 0x1F800, 1f8000 and 'scratchpad'.
 - result: Zero matches - a negative census, i.e. a FAILED gate rather than an open question. No SOTN-master precedent exists for volatile on the scratchpad range; the ban should be treated as final.
 - verdict: KILLED
+
+
+## s6 (2026-08-20, synthesis) - frontier RESET
+
+The pre-s6 frontier (H12-H14: a numeric-but-non-giv address spelling, the
+GNU-as expansion-order integration handoff, a declared scratchpad object) is
+**RETIRED WHOLESALE**, and not because it was exhausted - because it answers a
+question that is no longer open. All three were attempts to close a
+3-instruction residual that s5 already closed, and s5's reading of
+`tools/gcc-2.7.2/loop.c` shows the whole family was never viable:
+`combine_givs:5494` merges the three same-biv DEST_ADDR address givs into one
+worth benefit 6 before `strength_reduce:3823` ever applies its leave-alone test,
+and `combine_givs_p:5457`'s MIPS gate always passes
+(`ADDRESS_COST(reg+small)=1 <= ADDRESS_COST(reg+0x1F800068)=2`). H13 in
+particular is affirmatively DEAD: s5 measured
+(`tmp/grind/func_80017FA0/s5/asmorder.sh`) that GNU as emits `addu at,at,base`
+for BOTH numeric and absolute-symbol address expressions, so no symbol
+registration in named_syms.txt / symbol_addrs.txt can ever produce the target's
+`addu at,base,at` - that operand order comes from maspsx's own expander
+(`tools/maspsx/maspsx/__init__.py:1183`), which fires only on a NUMERIC operand.
+There is no integration handoff here.
+
+**The function is SOLVED in pure C. The remaining frontier is procedural, not
+technical**, and is deliberately narrow:
+
+- **H15 (the live one).** The only thing between this ledger and COMPLETED-C is
+  `state.json.banned_constructs[1]` - a mechanical tripwire the driver banked
+  from a layer-1 review whose own next-action field says "Do not treat this as a
+  construct ban". Mechanism: `grindlib.check_banned_constructs` / `_ban_trips`
+  scans the vet's CONSTRUCTS: block for >=50% of the ban phrase's content words,
+  so an HONEST declaration of the goto-formed inner loop auto-discards the
+  session before any reviewer sees it, while a declaration worded to slip past it
+  would be detector evasion (cheat-checklist T4) and is not on the table. Probe:
+  s6 emitted `ruling-request`; the driver's ruling path (`grind.ps1:531-538`)
+  clears the tripwire via `grindlib.py unban . func_80017FA0 <needle>` when the
+  ruling narrows or supersedes the ban. Next session, IF the ban is cleared:
+  apply candidate.c (already annotated), re-measure sandbox (expect 0), return
+  candidate-ready with the staged self_vet.md verbatim. IF the ruling instead
+  upholds the ban as a real construct ban, the next attack is H16.
+- **H16 (fallback attack, only if H15's ruling upholds the ban).** A
+  note-delimited (`do`/`while`/`for`) inner loop whose three store addresses are
+  never FORMED as DEST_ADDR givs, without volatile and without goto. Mechanism:
+  `loop.c:find_mem_givs` requires the address to reduce to `(plus (reg-that-is-a-
+  biv) (const_int))` under `simplify_giv_expr`; semantically-true spellings that
+  break that are (a) an inner-loop address whose variable part is loaded from
+  MEMORY inside the loop rather than carried in a biv, (b) a base whose increment
+  is not a compile-time constant, (c) a shape where the store base also escapes.
+  Probe: build each as a variant against `tmp/perm_17fa0/base.c` with the s4
+  harness (`tmp/grind/func_80017FA0/s4/{mkvar.py,check.sh,batch.sh}`) and read
+  the `.loop` dump each time (`pwsh tools/grinder/dump.ps1 func_80017FA0`) to
+  confirm giv formation is actually ABSENT rather than merely unprofitable. Note
+  in advance: every such spelling is MORE contrived than the goto loop, i.e.
+  worse under the human-programmer test - H16 is a fallback, not an improvement.
+- **H17 (dormant, only if both above fail).** The inner loop is not a loop in the
+  original at all but a two-iteration macro/inline expansion whose second copy is
+  cross-jumped back by jump.c tail-merging, producing a back edge with no loop
+  note and no goto in the source. Mechanism: `jump.c` cross-jumping two identical
+  statement copies creates the same note-free back edge the goto form does.
+  Probe: write the body twice (fully unrolled, 6 stores, identical statement
+  text) and check whether `jump2` merges them into the target's single copy plus
+  back edge; read the `.jump2` dump to confirm. If it does, the match is
+  reachable with NO goto and NO annotation at all.

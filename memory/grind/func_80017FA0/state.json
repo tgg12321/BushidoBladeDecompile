@@ -54,14 +54,14 @@
  ],
  "judge_constraints": [
   "The scratchpad stores must reach target without `volatile`: find a pure-C address expression that makes cc1 re-materialize the 0x1F80 base per store, or bring a two-prong citation (IRQ/DMA writer + a sanctioned use-site shape) that the rules actually grant for 0x1F800000-0x1F8003FF.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: Rotated outer-loop guard is fine, but the goto-formed inner loop was session-documented as chosen SOLELY to suppress loop.c's NOTE_INSN_LOOP_BEG-gated induction-variable analysis, which the project's own current construct-honesty line (do-while-zero-exception.md, owner ruling 2026-07-06) requires a `/* FAKE: ... */` annotation for ('any spelling of semantically-true C ... marked with the FAKE convention when purely-for-matching') \u2014 the annotation is absent and the self-vet wrongly asserts none is owed. Next action: Do not treat this as a construct ban \u2014 the goto-lo"
+  "LAYER-1 CHEAT-REVIEWER FAIL: Rotated outer-loop guard is fine, but the goto-formed inner loop was session-documented as chosen SOLELY to suppress loop.c's NOTE_INSN_LOOP_BEG-gated induction-variable analysis, which the project's own current construct-honesty line (do-while-zero-exception.md, owner ruling 2026-07-06) requires a `/* FAKE: ... */` annotation for ('any spelling of semantically-true C ... marked with the FAKE convention when purely-for-matching') \u2014 the annotation is absent and the self-vet wrongly asserts none is owed. Next action: Do not treat this as a construct ban \u2014 the goto-lo",
+  "Before resubmission, correct the stale candidate.c/src header line claiming \"zero FAKE constructs\" \u2014 the body now carries one annotated FAKE spelling; the header must say so."
  ],
  "origin": "queue",
  "created": "2026-07-24T22:01:20.133719+00:00",
  "pending_fixup": null,
  "banned_constructs": [
-  "volatile-qualified access to scratchpad RAM 0x1F800000-0x1F8003FF (volatile s32 *scr / *ac_base declarations and *(volatile s32 *)(0x1F8000xx + off) store casts) used to defeat CSE of the store address",
-  "Inner loop rewritten from `do { ... } while (j < 2);` to `inner: { ... } if (j < 2) goto inner;` (src/code6cac.c, the new func_80017FA0 body)"
+  "volatile-qualified access to scratchpad RAM 0x1F800000-0x1F8003FF (volatile s32 *scr / *ac_base declarations and *(volatile s32 *)(0x1F8000xx + off) store casts) used to defeat CSE of the store address"
  ],
  "ladder_skip": 1
 }
