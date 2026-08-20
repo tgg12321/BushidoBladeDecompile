@@ -132,15 +132,35 @@ class TestApplyAndLadder(unittest.TestCase):
         self.assertIn("22 -> 20", open(os.path.join(led, "hypotheses.md"), encoding="utf-8").read())
 
     def test_ladder(self):
+        # R2 order (owner ruling asm-until-matched, 2026-08-19): synthesis at s6
+        # (index 5), before forensics/rederive.
         self.assertEqual(G.assign_modality(0), "recon")
         self.assertEqual(G.assign_modality(1), "structural")
         self.assertEqual(G.assign_modality(2), "structural")
         self.assertEqual(G.assign_modality(3), "permuter")
-        self.assertEqual(G.assign_modality(5), "forensics")
-        self.assertEqual(G.assign_modality(7), "rederive")
-        self.assertEqual(G.assign_modality(9), "synthesis")
+        self.assertEqual(G.assign_modality(5), "synthesis")
+        self.assertEqual(G.assign_modality(6), "forensics")
+        self.assertEqual(G.assign_modality(8), "rederive")
         self.assertEqual(G.assign_modality(10), "structural")  # ladder repeats
-        self.assertEqual(G.assign_modality(18), "synthesis")
+        self.assertEqual(G.assign_modality(14), "synthesis")
+
+    def test_permuter_hard_cap(self):
+        # R3: two permuter sessions ever, regardless of yield — a 3rd is never
+        # mandated (measured 0 drops / 64 sessions).
+        st = {"floor_history": [
+            {"floor": 20, "modality": "structural"},
+            {"floor": 15, "modality": "permuter"},   # yielded (15 < 20)
+            {"floor": 12, "modality": "permuter"},   # yielded again
+        ]}
+        # session_count 3 -> LADDER index 3 = permuter slot; cap must walk past
+        self.assertNotEqual(G.assign_modality(3, st), "permuter")
+        # one prior YIELDING permuter does not trip the cap (zero-yield gate
+        # also must not fire: 15 < 20 is a drop)
+        st2 = {"floor_history": [
+            {"floor": 20, "modality": "structural"},
+            {"floor": 15, "modality": "permuter"},
+        ]}
+        self.assertEqual(G.assign_modality(3, st2), "permuter")
 
     def test_add_judge_constraint(self):
         G.add_judge_constraint(self.root, "func_X", "do-while(0) RA-weighting rejected")

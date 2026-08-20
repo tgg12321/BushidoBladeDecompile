@@ -17,8 +17,14 @@ import re
 
 MODALITIES = ["recon", "structural", "permuter", "forensics", "rederive", "synthesis"]
 # Sessions 2..10 cycle through this ladder, then repeat (spec: "ladder repeats from 2").
-LADDER = ["structural", "structural", "permuter", "permuter",
-          "forensics", "forensics", "rederive", "rederive", "synthesis"]
+# R2 (modality-effectiveness 2026-08-19, owner ruling asm-until-matched): the single
+# synthesis pass runs at s6 — it is the only modality with deep-plateau yield (4/44
+# after 3+ flat vs 2% baseline; all three 5+-flat drops in the dataset), its value is
+# entirely in its FIRST pass, and at its old s10 slot it sat OUTSIDE the 8-session
+# flat window, so exhaustion could fire before the one plateau-breaker ever ran.
+# Revert trigger: ~15 early-synthesis sessions with zero drops.
+LADDER = ["structural", "structural", "permuter", "permuter", "synthesis",
+          "forensics", "forensics", "rederive", "rederive"]
 RESULTS = ("progress", "candidate-ready", "ruling-request", "owner-gated")
 MAX_FRONTIER = 3
 
@@ -684,17 +690,26 @@ def assign_modality(session_count, state=None):
     # session per function still runs.
     if mod == "permuter" and isinstance(st, dict):
         fh = st.get("floor_history") or []
-        for i, e in enumerate(fh):
-            if e.get("modality") == "permuter":
-                prev = fh[i - 1].get("floor") if i else None
-                cur = e.get("floor")
-                if isinstance(prev, int) and isinstance(cur, int) and cur >= prev:
-                    # walk past ALL consecutive permuter slots (the ladder holds two)
-                    step = session_count + skip
-                    while LADDER[step % len(LADDER)] == "permuter":
-                        step += 1
-                    mod = LADDER[step % len(LADDER)]
-                    break
+        # R3 hard cap (modality-effectiveness 2026-08-19): at most 2 permuter
+        # sessions per function, EVER — 3rd-or-later permuter measured 0 drops
+        # in 64 sessions. Applies regardless of yield (the zero-yield gate
+        # below already handles the repeat-after-failure case).
+        n_perm = sum(1 for e in fh if e.get("modality") == "permuter")
+        blocked = n_perm >= 2
+        if not blocked:
+            for i, e in enumerate(fh):
+                if e.get("modality") == "permuter":
+                    prev = fh[i - 1].get("floor") if i else None
+                    cur = e.get("floor")
+                    if isinstance(prev, int) and isinstance(cur, int) and cur >= prev:
+                        blocked = True
+                        break
+        if blocked:
+            # walk past ALL consecutive permuter slots (the ladder holds two)
+            step = session_count + skip
+            while LADDER[step % len(LADDER)] == "permuter":
+                step += 1
+            mod = LADDER[step % len(LADDER)]
     return mod
 
 

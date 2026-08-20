@@ -761,7 +761,10 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         git -C $Root add -- "src/$stem.c" $extraScope engine/queue.json regfix.txt regfix_stage2.txt asmfix.txt tools/prologue_config.json tools/frame_fix_funcs.txt tools/delay_slot_ra_funcs.txt "memory/grind/$func" 2>$null
         git -C $Root commit -m "Match: $func — COMPLETED-C (grinder, $sessionsTaken sessions)" | Out-Null
         Add-Decision $func 'final call' 'PASS' $v.justification
-        Journal "$func COMPLETED-C after $sessionsTaken sessions."
+        # R5 (modality-effectiveness 2026-08-19): record the CLOSING modality —
+        # without it the closer is only inferable from the ladder, and the one
+        # discriminator available showed ~1/3 of inferred credit was wrong.
+        Journal "$func COMPLETED-C after $sessionsTaken sessions (closer: s$sessionN [$modality])."
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
         git -C $Root add -A -- memory/grind docs/grind 2>$null
         git -C $Root add -- metrics/events.jsonl 2>$null
