@@ -495,3 +495,72 @@ floor 4, unchanged) and the s1-s5 exhaustion analysis stands as written.
   no longer a classification question the grind can advance: both Judge rulings on the struct
   spelling are PASS, the FINAL CALL is clear, and acceptance now rests with the layer-1/layer-2
   adversarial review of the landed diff.
+
+## [s5-structural 2026-08-20] — structural modality, three hypotheses, all KILLED
+
+- **H-S5S1 (KILLED).** *Composing the alias-serialisation lever with the cross-block chassis
+  escapes L2: with no per-arm `@0xE` store there is no jump2 common tail to splice at merge
+  position 0, so an alias-serialised `q[0]/q[8]/q[0xA]` group can occupy the merge head in source
+  order (= target's order).* Probe: rejected/xblock_q3alias_11_78.c, `sandbox --disable all` = 11,
+  build_insns 78. The alias group DOES reach the merge head in ascending @4/@0xC/@0xE order (no L1
+  sink), but deleting the per-arm store re-arms the sched1 hoist of the cross-block value `li`
+  (producer-less and consumer-less in the arm -> picked last bottom-up -> emitted at arm top),
+  which makes both arm tails end in an identical `sb v0,0xD($s1)`; jump2 cross-jumps THAT instead
+  and it takes merge position 0. **L2's binding insn is replaceable, not removable.**
+
+- **H-S5S2 (KILLED).** *An alias base pointer with no offset bias (`u8 *q = (u8 *)arg1;`, stores
+  written `q[4]`/`q[0xC]`) gets the serialisation effect for free, because there is nothing for
+  the addressing mode to fold and the copy should coalesce with arg1.* Probe:
+  rejected/perarmE_q0alias_7_80.c, score 7, build_insns **80** (one MORE than target). GCC 2.7.2
+  keeps a separate pseudo and emits a plain `$s1 -> $v1` copy; serialisation fires (the @4/@0xC
+  stores leave the merge tail and land immediately behind the cross-jumped `sb v0,0xE`) and the
+  score still regresses from 4 to 7. **The alias lever is never insn-free, and target's merge head
+  uses the `$s1` base with literal offsets, so no alias form can be byte-equal there.**
+
+- **H-S5S3 (KILLED).** *Paying for the alias pointer with the sched1-hoist cross-jump restores
+  target's 79-insn count, and with the `fc_const` holder back in the inner-beqz delay slot (two
+  separate 0xFC materialisations, as target has) the remaining diff is only ordering.* Probe:
+  rejected/xblock_q3alias_fcholder_13_79.c, score **13**, build_insns 79. Matching the count by
+  cancelling a +1 against a -1 puts both insns in the wrong blocks; it is the worst-scoring
+  cross-block variant measured.
+
+**Frontier after s5-structural.** Structural modality is closed: the per-arm floor-4 chassis and
+the cross-block chassis have now both been probed with the alias-serialisation lever and with
+holder placement, and every result is >= the control's 4. The residual is not a search failure —
+L1 ∧ L2 (evidence.md) bound every non-per-arm form away from target's merge head, and the one
+structure that reaches it is the banned per-arm @4/@0xC construct. The remaining untried
+modalities are NOT structural; nothing in the structural catalog (block-local var splits,
+declaration order, type narrowing, statement re-association) has an unspent form left for this
+function.
+
+**Housekeeping done by s5-structural.** `memory/grind/func_80072CD4/candidate.c` had been left
+holding the BANNED sandbox-0 per-arm POLY_G4 body (the one the layer-1 cheat-reviewer FAILed on
+2026-08-20 at 05:53, 06:20 and 07:02). Since the dispatch brief instructs each session to apply
+candidate.c as its starting point, that was a live trap. candidate.c is now the clean floor-4
+body (byte-identical to fallback_floor4.c) with a header that names the ban; the banned body
+remains banked at rejected/rederive_polyg4_struct_perarm_score0_banned_family.c and must not be
+re-submitted in any spelling.
+
+## [s5] Composing the alias-serialisation lever with the cross-block chassis escapes L2: with no per-arm @0xE store there is no jump2 common tail to splice at merge position 0, so an alias-serialised q[0]/q[8]/q[0xA] group can occupy the merge head in source order, which is target's order (@4, @0xC, @0xE).
+- mechanism: GCC 2.7.2 memrefs_conflict_p cannot disambiguate (mem (plus q k)) from (mem (plus s1 k')) once a second base pointer exists, so sched2 serialises the q-group and it cannot sink (defeats L1). Removing the per-arm @0xE store was expected to remove L2's binding insn (the cross-jumped sb v0,0xE).
+- probe: tmp/grind/func_80072CD4/s5b/vA_xblock_q3.c applied to src/text1b.c with tmp/grind/func_80072CD4/s5/apply.py; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; disassembly tmp/grind/func_80072CD4/s5b/vA.dis
+- result: score 11, build_insns 78 (target 79). The q-group DOES reach the merge head in ascending @4/@0xC/@0xE order with no L1 sink (li v0,252 / sb v0,0(v1) / sb v0,8(v1) / sb a0,10(v1)). But deleting the per-arm store re-arms the sched1 hoist of the cross-block value li (producer-less and consumer-less in the arm, picked last bottom-up, emitted at the ARM TOP at 0x8730/0x874c), which makes both arm tails end in an identical sb v0,0xD($s1); jump2 cross-jumps THAT and it takes merge position 0, ahead of the q-group. Banked rejected/xblock_q3alias_11_78.c.
+- verdict: KILLED
+
+## [s5] An alias base pointer with no offset bias (u8 *q = (u8 *)arg1; stores written q[4]/q[0xC]) buys the serialisation effect for free, because there is nothing for the addressing mode to fold and the copy should coalesce with arg1.
+- mechanism: If q coalesces with arg1 the emitted base register stays $s1 (target's base) while the RTL still carries two distinct pseudos, which is all memrefs_conflict_p needs to refuse disambiguation.
+- probe: tmp/grind/func_80072CD4/s5b/vG_perarmE_q0.c on the floor-4 (per-arm @0xE) chassis; sandbox --disable all; disassembly tmp/grind/func_80072CD4/s5b/vG_perarmE_q0.dis
+- result: score 7, build_insns 80 — one MORE than target. GCC 2.7.2 keeps a separate pseudo and emits a plain $s1 -> $v1 copy. Serialisation does fire (sb a0,4(v1) / sb a0,12(v1) at 0x8774-0x8778 immediately follow the cross-jumped sb v0,14(s1) at 0x876c), and the score still regresses from the control's 4 to 7 because of the extra copy plus the base-register mismatch on two stores. Target's merge head uses $s1 with literal offsets 4 and 0xC and contains no alias base register anywhere. Banked rejected/perarmE_q0alias_7_80.c.
+- verdict: KILLED
+
+## [s5] Paying for the alias pointer with the sched1-hoist cross-jump restores target's 79-insn count, and with the int fc_const holder back in the inner-beqz delay slot (two separate 0xFC materialisations, as target has) the remaining diff is only ordering.
+- mechanism: The alias pointer costs +1 insn and the sched1-hoist-induced cross-jump of sb v0,0xD saves -1; the fc_const holder reproduces target's addiu $v1,$zero,0xFC in the inner beqz delay slot while @0x14 keeps a distinct merge-block literal (the s1 H1 distinct-literal re-materialisation effect).
+- probe: tmp/grind/func_80072CD4/s5b/vC_xblock_q_fcholder.c; sandbox --disable all; disassembly tmp/grind/func_80072CD4/s5b/vC_xblock_q_fcholder.dis
+- result: score 13, build_insns 79. Target's insn COUNT is matched exactly and the score is the WORST of the whole cross-block family: cancelling a +1 against a -1 puts both insns in the wrong blocks. Banked rejected/xblock_q3alias_fcholder_13_79.c.
+- verdict: KILLED
+
+## [s5] The banked floor of 4 still reproduces on the current (post asm-until-matched migration) chassis, despite the dispatch brief reporting the chassis measurement as unavailable.
+- mechanism: n/a — direct control measurement of the banked clean body before any probe was run.
+- probe: memory/grind/func_80072CD4/fallback_floor4.c applied to src/text1b.c; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`
+- result: score 4, target_insns 79, build_insns 79, rules_dropped 0, scorable true. Chassis confirmed unchanged; every banked spelling conclusion in the ledger remains chassis-current.
+- verdict: CONFIRMED
