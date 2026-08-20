@@ -582,3 +582,60 @@ Per user 2026-06-22: keep working it; not permanently parked.
   plus the dead `new_var`). The second READ of `arg0 + 4` remains where the baseline always
   had it — inline in `p`'s address expression — and is required by the target bytes.
   Self-vet: memory/grind/func_80057CC8/self_vet.md.
+
+## s29 (2026-08-20) — escalation modality — MATCH REACHED, floor 3 -> 0
+
+- [s29] Dispatch was `escalation` (driver-declared exhaustion at flat floor 3). The
+  disposition was NOT filed, because gate evaluation ran into a genuinely un-tried lever
+  that took the floor to 0. Recorded for the record anyway, since a future session may
+  need the gate evidence: **gate (a) FAILS** — `python3 tools/scan_hand_coded.py --single
+  func_80057CC8` = `tier=LOW score=1/8`, only S4 (front loads) set, no S1/S2/S6; canonical
+  gate verdict was already C. **Gate (b)** was not reached.
+- [s29] Chassis re-measure at dispatch: HEAD carries `INCLUDE_ASM("asm/funcs",
+  func_80057CC8);` at `src/text1b.c:1524` (2026-08-19 asm-until-matched representation), so
+  `sandbox --disable all` reports `no_c_body: true, build_insns: 0`. The banked s29b
+  candidate re-measured on THIS chassis at score 0 / 111 == 111 / rules_dropped 0, i.e. the
+  ledger floor of 3 belongs to the older pointer-local family, not to the function.
+- [s29] **THE FORM THAT MATCHES (and it is the simplest body 29 sessions have produced).**
+  Give the first parameter its real record type and delete BOTH pointer locals:
+
+      typedef struct { u8 unk0; u8 unk1; u8 unk2; u8 nverts; s16 *verts; } VertRing_57CC8;
+      void func_80057CC8(VertRing_57CC8 *ring, s32 arg1, s16 *arg2, s16 *arg3)
+
+  with `ring->verts[(s16) prev_idx * 2]` / `[... + 1]` at the first `ratan2` call and
+  `ring->verts[(s16) next_idx * 2]` / `[... + 1]` at the second. No `table`, no `p`, no
+  `nt`, no cast arithmetic, no `new_var`. Measured: `sandbox func_80057CC8 --disable all`
+  = **0**, target_insns 111 == build_insns 111, rules_dropped 0; full `build` sha1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH**.
+- [s29] **Why 28 sessions missed it.** The whole ledger framed the residual as a question
+  about how to SHARE a base pointer between the two call sites (split it? reload it? alias
+  it?). Every one of those framings presupposes a pointer LOCAL. The actual answer is that
+  the original code had no such local at all: with a struct-typed parameter, each vertex
+  read is an ordinary member+index reference, GCC emits its own anonymous address temp per
+  reference, and there is no user DECL_RTL allocno to mis-place. The two-SET pseudo-86
+  problem (local-alloc.c:472 `reg_n_deaths == 1` bail-out, measured s21/s24) simply does
+  not arise. The mechanism story the ledger built was correct as a diagnosis and useless as
+  a lever, because it was a diagnosis of a construct that should not have existed.
+- [s29] **The struct must be the PARAMETER type, not a cast into a local — measured.**
+  Identical body with `u8 *arg0` retained and `VertRing_57CC8 *poly = (VertRing_57CC8 *)arg0;`
+  as the first statement scores **10** at the same 111 insns. All ten diffs are one register
+  swap: the extra copy makes GCC emit `move s6,a2` before `move s2,a0` in the prologue, so
+  `prev_idx` lands in `$a2` and the post-`sll` base load in `$a0`, where the target has
+  `$a0` / `$a2`. Banked at `rejected/struct-local-cast-from-u8ptr-score10.c`. This is a
+  reusable fact for sibling functions in this cluster: a param->local pointer copy reorders
+  the prologue param-to-callee-save moves and can cost a whole register-assignment class.
+- [s29] **On the two `lw 0x4($s2)` loads (the axis both 2026-08-20 layer-1 FAILs turned
+  on).** They are still in the matching build, but nothing in this body spells a second
+  read: the source references `ring->verts` at each use site and `ratan2` intervenes, so
+  the call clobbers memory and GCC must reload. The prior forms were arguing about how to
+  spell a reload that the compiler was always going to emit on its own. The v7/v9
+  measurements (112 insns when the base is instead kept live across the call) remain the
+  proof that a single-load shape cannot reach the 111-insn target.
+- [s29] Struct evidence is base-register evidence in the shipped bytes, not splat naming:
+  the target reaches offsets 3 and 4 off the one incoming pointer (`lbu 0x3($s2)` at
+  `asm/funcs/func_80057CC8.s:20` and `:31`, `lw 0x4($s2)` at `:17` and `:50`), and the word
+  at +4 points at s16 pairs indexed by a vertex index that wraps modulo the byte at +3.
+  Only `nverts` and `verts` are named; offsets 0-2 stay `unk0`/`unk1`/`unk2`.
+- [s29] Artifacts: `tmp/grind/func_80057CC8/s29/{v13.c,v14.c,v15.c,text1b.c.orig}`;
+  self-vet at `memory/grind/func_80057CC8/self_vet.md`; matching form at
+  `memory/grind/func_80057CC8/candidate.c`.

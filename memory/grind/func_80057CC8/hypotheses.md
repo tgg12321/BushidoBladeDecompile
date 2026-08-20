@@ -461,3 +461,44 @@
 - probe: v7 (prev site indexed, next-site `p` derived from `table`) and v9 (both sites indexed off `table`, no `p` at all) — the two forms that eliminate the re-read; `sandbox --disable all` on each.
 - result: KILLED as alternatives — v7 = 30 with build_insns 112, v9 = 30 with build_insns 112, against target_insns 111. Both are one instruction LONGER than target, so no allocation-level fix can reach 0 from either. The re-read is load-bearing program shape, not a duplicate. Banked as rejected/reload-elimination-p-derived-from-table-score30.c and rejected/both-sites-indexed-no-reload-score30.c.
 - verdict: CONFIRMED (the re-read is necessary) / the reload-free family is KILLED
+
+## s29 (2026-08-20) — escalation modality
+
+- hypothesis: The residual 3 is not a property of "how the vertex-table base is shared
+  between the two call sites" but of the existence of ANY user-declared pointer local for
+  the derived vertex address. If the parameter carries its real record type and both
+  pointer locals are deleted, GCC emits an anonymous address temp per reference, no
+  DECL_RTL allocno exists to be mis-placed, and the allocation matches.
+  mechanism: RTL-expand creates no user pseudo for a member+index reference, so
+  local-alloc.c:472 `reg_n_deaths == 1` (the bail-out measured in s21/s24 that punted
+  pseudo 86 to global-alloc, where pseudo 129's copy preference pinned it to `$v1`) is
+  never consulted for that address; the address temp dies at its single use and coalesces.
+  probe: replace the whole body with a `VertRing_57CC8 *ring` parameter form using
+  `ring->verts[idx * 2]` at all three read sites; `sandbox func_80057CC8 --disable all`,
+  then full `build`.
+  result: score 0, target_insns 111 == build_insns 111, rules_dropped 0; full build sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH.
+  verdict: CONFIRMED
+
+- hypothesis: The record type alone is what matters; it is byte-equivalent whether reached
+  through a typed parameter or a local cast from `u8 *arg0` (this was the s12 finding,
+  which measured the struct as byte-neutral at score 3).
+  mechanism: s12 argued combine.c sees the same addsi3 SET structure regardless of the
+  source-level type, so `arg0->table` and `*(s16 **)(arg0 + 4)` fold identically.
+  probe: same body as the matching form but with `u8 *arg0` retained plus
+  `VertRing_57CC8 *poly = (VertRing_57CC8 *)arg0;` as the first statement.
+  result: score 10 at the same 111 insns. The extra param->local copy reorders the
+  prologue param-to-callee-save moves (`move s6,a2` emitted before `move s2,a0`), so
+  `prev_idx` takes `$a2` and the base load takes `$a0`, the reverse of target. All ten
+  diffs are that swap. Banked at rejected/struct-local-cast-from-u8ptr-score10.c.
+  verdict: KILLED (the s12 byte-neutrality claim holds only for the member-access FOLD; it
+  does not extend to how the parameter itself is spelled)
+
+- hypothesis (inherited frontier, now moot): the escalation gates. Gate (a) canonical-asm
+  needs STRONG scan_hand_coded signals.
+  mechanism: n/a — evidentiary gate.
+  probe: `python3 tools/scan_hand_coded.py --single func_80057CC8`.
+  result: tier=LOW score=1/8, only S4 set, no S1/S2/S6. Gate (a) FAILS. Gate (b) was not
+  reached because the floor dropped to 0; no disposition entry was filed and none is
+  needed.
+  verdict: KILLED (as a disposition path — the function is matched, not exhausted)

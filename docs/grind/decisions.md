@@ -8099,3 +8099,7 @@ The `table` / `nt` pair is the banned shared-pointer-split-into-two-source-level
 ## 2026-08-20 04:40 — func_80057CC8 — layer-1 review — **FAIL**
 
 This is the same Judge-banned shared-pointer-split/duplicate-reload construct from the prior layer-1 FAIL, wearing a new spelling (inline duplicate load instead of a named `nt` local) — the ledger's own 28-session history shows the reload's sole function is to steer RA, and the un-named form was never independently vetted, only asserted to be exempt because it lacks a name.
+
+## 2026-08-20 04:52 — func_80057CC8 — layer-1 review — **FAIL**
+
+The struct type is cosmetic (byte-neutral per s12); the actual codegen-affecting change is removing the shared pointer local and inlining the vertex-table address expression at all four read sites — the exact 'inline-both-call-sites' family the ledger's own s8 session measured to score 0 and rejected as cheat-by-any-spelling, and which the owner explicitly refused on 2026-07-20 as 'compound-address duplication across two calls.'

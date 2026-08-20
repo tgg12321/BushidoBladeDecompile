@@ -1,107 +1,141 @@
 # SELF-VET — func_80057CC8
 
-Diff surface: `src/text1b.c` only — the single line `INCLUDE_ASM("asm/funcs", func_80057CC8);`
-replaced by the C body now saved at `memory/grind/func_80057CC8/candidate.c`.
-Measured this session: `sandbox func_80057CC8 --disable all` = 0, target_insns 111 ==
-build_insns 111, rules_dropped 0; full `build` sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
-== oracle, MATCH. Zero regfix/asmfix rules, zero `__asm__`, zero register pins, zero
-`volatile`, zero `/* FAKE */` constructs, zero dead locals.
+Session 29 (2026-08-20, `escalation` modality). Diff surface: `src/text1b.c` ONLY — the
+single line `INCLUDE_ASM("asm/funcs", func_80057CC8);` at line 1524 replaced by a 5-field
+`typedef struct` plus the function body now banked at
+`memory/grind/func_80057CC8/candidate.c`. No other file touched (`git status`: `src/text1b.c`
+plus the engine's own `metrics/events.jsonl` append).
 
-CONSTRUCTS: (1) `s16 *p` — single-SET pointer local for the NEXT-neighbour vertex pair,
-built as `(s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)(*(s16 **)(arg0 + 4)))`;
-(2) the cast-heavy sign-extend-and-scale idiom `((s32)(x << 16) >> 16) << 2` inside that
-expression; (3) `{ s32 tmp = arg1 + 1; next_idx = tmp; if ((s16) tmp >= (s32)arg0[3])
-next_idx = 0; }` block-scoped temp; (4) byte-offset reads of the current vertex
-`cx = *(u16 *)((s32)table + arg1 * 4 + 0)` / `cy = ... + 2`; (5) direct array indexing of
-the PREV-neighbour vertex pair `table[(s16) prev_idx * 2]` / `[... * 2 + 1]`.
+Measured THIS session, this chassis:
+  `sandbox func_80057CC8 --disable all` -> score 0, target_insns 111 == build_insns 111,
+  rules_dropped 0.
+  full `build` -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.
+Zero regfix/asmfix rules, zero `__asm__`, zero register pins, zero `volatile`, zero
+`/* FAKE */` constructs, zero dead locals, zero dead stores.
 
-Constructs (1)–(4) are inherited VERBATIM from the floor-3 baseline (commit 25af3133) that
-already carries a layer-2 cheat-reviewer PASS in this ledger. Construct (5) is this
-session's only change and it is a REMOVAL: the baseline built a second value into `p` for
-the prev site; the new body reads the vertex pair directly instead. Nothing was added.
-The baseline's `s16 new_var` embedded-assignment carrier is also deleted (measured
-byte-inert), so the body has one fewer local than the PASSed baseline.
+CONSTRUCTS: (1) `VertRing_57CC8` — a TU-local 5-field struct type given to the function's
+first parameter (`u8 *arg0` -> `VertRing_57CC8 *ring`), replacing the byte-offset casts
+`*(s16 **)(arg0 + 4)` / `arg0[3]` / `arg0[2]` with `ring->verts` / `ring->nverts` /
+`ring->unk2`; (2) `{ s32 tmp = arg1 + 1; next_idx = tmp; if ((s16) tmp >= (s32)ring->nverts)
+next_idx = 0; }` — a block-scoped temp; (3) `u16 cx` / `u16 cy` locals holding the current
+vertex; (4) direct array indexing `ring->verts[(s16) prev_idx * 2]` /
+`ring->verts[(s16) next_idx * 2]` (and `+ 1`) at the two `ratan2` call sites.
+
+Constructs (2) and (3) are inherited VERBATIM from the floor-3 baseline (commit 25af3133)
+that already carries a layer-2 cheat-reviewer PASS in this ledger. Constructs (1) and (4)
+are this session's change and, taken together, they are a NET REMOVAL: the two pointer
+locals `table` and `p` are both DELETED, along with every cast in the body's address
+arithmetic and the baseline's byte-inert `s16 new_var` carrier. The body has four fewer
+declarations than the layer-2-PASSed baseline and no cast expressions at all.
 
 ## T1 semantic purpose:
-(1) `p` holds the address of the next-neighbour vertex pair and is dereferenced twice —
-real value, real use. Deleting it is not possible without changing what is read.
-(2) The shift idiom performs the s16 sign-extension of `next_idx` (declared
-`unsigned short`) and the ×4 scale to a 2×s16 vertex pair; both operations are
-semantically required and both appear in the target (`sll/sra/sll` at
-asm/funcs/func_80057CC8.s around the second `lw`).
-(3) `tmp` is read three times (assign, compare, and via `next_idx`) — real value.
-(4) `cx`/`cy` are the current vertex's x/y, consumed in four arithmetic expressions.
-(5) `table[(s16) prev_idx * 2]` is a plain array read whose loaded halfwords are the two
-`ratan2` arguments. Every construct changes the function's output; none is byte-neutral.
-The one construct a reviewer should interrogate is the SECOND read of the vertex-table
-base (`*(s16 **)(arg0 + 4)` inside (1)) while `table` already holds that value: it has
-observable effect and is materialised in the target — `asm/funcs/func_80057CC8.s:17`
-`lw $a2, 0x4($s2)` and `:50` `lw $a0, 0x4($s2)` are two independent loads of that same
-field, on either side of the first `jal ratan2`. Reusing `table` there instead is
-MEASURED strictly worse and structurally impossible to match: score 30 with
-build_insns 112 vs target 111 (variants banked at
-`memory/grind/func_80057CC8/rejected/reload-elimination-p-derived-from-table-score30.c`
-and `both-sites-indexed-no-reload-score30.c`) — GCC must otherwise hold the base live
-across the call. The re-read is the original program's own shape, not a coercion.
+(1) The struct is the parameter's real type. Every one of its named fields is read and
+consumed: `verts` supplies six halfword loads, `nverts` bounds the ring wraparound in two
+places, `unk2` is the radius scale. Removing the type is only possible by re-introducing
+compensating casts that do the identical work — the type is not additive, it is the
+absence of the casts. (2) `tmp` is read three times (assign to `next_idx`, the `(s16)`
+compare, and as the surviving value). (3) `cx`/`cy` are the current vertex's coordinates,
+each consumed in three arithmetic expressions. (4) The two indexed reads ARE the two
+`ratan2` argument pairs. Every construct changes the function's output; none is
+byte-neutral; none can be deleted without changing what the function computes.
+Explicitly: there is NO construct in this diff whose removal leaves behaviour identical.
+
+The thing a reviewer must interrogate — because the two prior layer-1 FAILs turned on it —
+is the TWO loads of the vertex-table base in the target (`asm/funcs/func_80057CC8.s:17`
+`lw $a2, 0x4($s2)` and `:50` `lw $a0, 0x4($s2)`). In THIS body no second read is spelled at
+the source level at all: there is no `table`, no `nt`, no repeated `*(s16 **)(arg0 + 4)`
+expression. The body simply references `ring->verts` at each of its use sites, and `ratan2`
+intervenes between the two groups. A call clobbers memory, so GCC 2.7.2 MUST reload
+`ring->verts` after it — the second `lw` is the compiler's, not the author's. The
+alternative (hold the base in a callee-save across the call) is what the s29 v7/v9 variants
+measured: 112 instructions against a 111-instruction target, i.e. structurally unmatchable,
+banked at `rejected/reload-elimination-p-derived-from-table-score30.c` and
+`rejected/both-sites-indexed-no-reload-score30.c`.
 
 ## T2 human-programmer:
-Yes to all five. This is the natural C for "read my own vertex, read my previous
-neighbour's vertex, read my next neighbour's vertex, take the two angles, bisect them,
-and emit a point on a circle of radius arg0[2]*40 around my vertex". Re-reading a struct
-field at the point of use (construct 1) is what an ordinary 1998 C programmer writes when
-the two lookups are written as independent statements; nothing in the body would make a
-reader ask "why is this here?". The cast idioms (2) and (4) are forced by `arg0` being an
-untyped `u8 *` in this TU — the standing decomp spelling everywhere in src/text1b.c.
+Yes to all four, and this is the first form in 29 sessions where that answer is
+unqualified. Given the spec — "read my own vertex, read my previous and next neighbours'
+vertices around a ring of `nverts`, bisect the two angles, and emit the point at radius
+`unk2 * 40` around my vertex" — the natural C is exactly a struct pointer with
+`ring->verts[i * 2]` accesses. Nothing here would make a reader ask "why is this here?".
+The construct a reader WOULD have asked that about (a second named pointer local holding a
+value another local already holds) is precisely what this session deleted.
 
 ## T3 GCC-internals justification:
-No construct in the diff is justified by a GCC internal. The ledger DOES name a GCC
-mechanism (local-alloc.c:472's `reg_n_deaths == 1` bail-out) but only as the EXPLANATION
-of why the 28 prior sessions' extra `p` SET was harmful — the fix is not an insertion
-aimed at that pass, it is the deletion of an unnecessary pointer construction in favour
-of ordinary array indexing. Take the mechanism story away entirely and the body is still
-the simpler, more natural C of the two. No allocator/scheduler/DCE/combine lever is being
-steered, no barrier, no ordering trick.
+No construct in the diff is justified by a GCC internal. The ledger's mechanism story
+(local-alloc.c:472's `reg_n_deaths == 1` bail-out punting the two-SET pointer pseudo to
+global-alloc, where pseudo 129's copy preference pins it to `$v1`) is the EXPLANATION of
+why 28 sessions of pointer-local forms failed — it is not a lever this body pulls. The fix
+is a deletion, not an insertion aimed at a pass. Strike the mechanism paragraph entirely
+and the body is still the simpler and more idiomatic of the two: fewer locals, no casts.
+No allocator, scheduler, DCE, combine, or reorg behaviour is being steered; no barrier, no
+ordering trick, no width coercion.
 
 ## T4 permuter/search provenance:
-None. No permuter run this session. The form was derived by reading the target's two
-`lw 0x4($s2)` loads and asking whether the function needs a pointer local at the prev
-site at all. Prior permuter output for this function (s4/s5/s13/s14/s16/s22, all
-p1-alias-holder cheat classes) is banked under `rejected/` and none of it is reused here.
+None. No permuter ran this session. The form was derived by reading the target's loads
+first (`:17` / `:50`), asking whether the function needs any pointer local at all, and then
+measuring three typed variants in order: local-cast-from-`u8 *` (score 10, banked at
+`rejected/struct-local-cast-from-u8ptr-score10.c`), typed parameter (score 0), and the same
+with conservative field names (score 0). All prior permuter output for this function
+(s4/s5/s13/s14/s16/s22 — every one a `p1`-alias-holder cheat class) is banked under
+`rejected/` and none of it is reused here.
 
 ## T5 family check:
 No sanctioned-family carve-out is claimed and none is needed — see
-SANCTIONED-FAMILY-CLAIMS. Explicit check against the two BANNED constructs recorded in
-`state.json` judge_constraints and the 2026-08-20 04:30 layer-1 FAIL:
-  - BANNED "two source-level pointer locals both loaded with the identical expression,
-    both denoting the same unchanging vertex-table base" — NOT PRESENT. This body
-    declares exactly ONE base pointer local, `table`. The other pointer local, `p`,
-    denotes a DIFFERENT address (base + next_idx*4), is written once, and is the same
-    single-SET `p` the layer-2-PASSed floor-3 baseline already had.
-  - BANNED "`nt = *(s16 **)(arg0 + 4);` as a second, independent reload of the identical
-    pointer value `table` already holds in scope" — the second *load* is present (inline,
-    inside `p`'s address expression) but the *construct that was banned* — a second named
-    pointer local created to hold it — is NOT. That inline load is not new and is not the
-    lever: it is character-for-character the baseline's, it was in place at every measured
-    floor of 3, and the 3→0 delta comes from the prev-site array indexing alone. I state
-    plainly that a reviewer may still want to rule on whether the ban was intended to
-    reach any second read of that field; the answer the bytes give is that it cannot have
-    been, because the target performs that second load itself (`:17` and `:50` above) and
-    every measured single-load form is 112 instructions against a 111-instruction target,
-    i.e. unmatchable. If the reviewer disagrees, the correct disposition is a ruling, not
-    a respelling — there is no third spelling of "load this field again".
-No other family is approached: no volatile, no alias rename, no register pin, no inline
-asm, no dead store, no dead local, no constant holder, no pad array, no do-while(0), no
-duplicated statement into arms, no goto/label pad, no opaque variable, no `if (1)`.
+SANCTIONED-FAMILY-CLAIMS. Checked against the four BANNED constructs in `state.json`
+judge_constraints and the 2026-08-20 04:30 / 04:40 layer-1 FAILs:
+  - BANNED "two source-level pointer locals both loaded with the identical expression, both
+    denoting the same unchanging vertex-table base" — NOT PRESENT. This body declares ZERO
+    pointer locals.
+  - BANNED "`nt = *(s16 **)(arg0 + 4);` as a second, independent reload" — NOT PRESENT. No
+    such statement, and no local exists that could be reloaded into.
+  - BANNED "`p = (s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)(*(s16 **)(arg0 + 4)));`
+    — a second, independent inline reload while `table` is in scope" — NOT PRESENT. The
+    entire `p` construction is deleted, `table` does not exist, and the expression appears
+    nowhere in the diff. The class the two layer-1 FAILs objected to has been removed rather
+    than respelled: there is no name and no expression left to rename.
+  - BANNED "the self-vet's own T1 argument that removing the reload is 'measured strictly
+    worse and structurally impossible to match'" — NOT RELIED ON as a justification here.
+    The v7/v9 112-insn measurements are cited above only as banked ledger fact explaining
+    why a callee-save-across-the-call shape cannot reach 111; the justification for this
+    body is that it is ordinary C which spells no reload at all.
+Checked against the forbidden-family catalog: no register-asm pin, no hardcoded-`$N` asm,
+no regfix insert, no scheduling barrier, no volatile of any spelling, no alias rename, no
+unused local array or frame pad, no dead-param assign, no dead conditional store, no empty
+`if`, no `if (1)`, no dead goto/label pad, no DImode chain, no goto-end accumulator, no
+opaque constant variable, no redundant width cast, no linker-script reorder.
+
+On the struct type specifically, since it is the only novel element: it is NOT the
+"per-word splat symbol -> aggregate merge" family (`.claude/rules/no-new-park-categories.md`
+2026-08-17) — that family governs merging splat-invented `D_<addr>` GLOBAL scalars into a
+shared-header aggregate, and this diff merges no globals and touches no splat symbol config.
+It is also NOT `.claude/rules/header-type-correction-from-use-sites.md`, whose scope is a
+GLOBAL's declared type at its canonical `extern` declaration in a shared header; this is a
+function parameter with no `extern` declaration anywhere in the build (the only prototype in
+the tree, `include/m2c_context.h:782`, is m2c decompiler context and is not compiled).
+Declaring a decompiled function's pointer parameter with its actual record type is ordinary
+decomp practice, and this very file already carries five TU-local typedefs of the same shape
+(`src/text1b.c:658`, `:1151`, `:1184`, `:1217`, `:1225`).
+The object model is supported by base-register evidence in the ORIGINAL BYTES, not by splat
+naming (cf. [[splat-symbol-names-are-not-evidence]]): the target reaches offsets 3 and 4 off
+ONE base register that is the incoming `$a0` (`lbu 0x3($s2)` at `asm/funcs/func_80057CC8.s:20`
+and `:31`, `lw 0x4($s2)` at `:17` and `:50`), and the word at +4 is a pointer to s16 pairs
+indexed by a vertex index that wraps modulo the byte at +3. Field names are claimed only
+where the code proves them — `nverts` (the ring bound: `prev = n - 1` on underflow,
+`next = 0` at `>= n`) and `verts` (s16 pairs consumed as x/y by `ratan2`); offsets 0-2 are
+left `unk0`/`unk1`/`unk2` rather than guessed, per [[names-require-evidence]].
 
 ## T6 naming-announces-intent:
-All identifiers are semantic: `table`, `p`, `prev_idx`, `next_idx`, `ang_prev`,
-`ang_next`, `ang_mid`, `scale`, `base`, `half`, `cx`, `cy`, `tmp`. No `pad`, `dummy`,
-`unused`, `spill`, `_buf`, `slack`, `new_var`-style carriers — the baseline's one such
-name (`s16 new_var`) was DELETED by this session after measuring it byte-inert. Every
-declared local is both written and read.
+All identifiers are semantic: `ring`, `verts`, `nverts`, `unk0`/`unk1`/`unk2`, `prev_idx`,
+`next_idx`, `ang_prev`, `ang_next`, `ang_mid`, `scale`, `base`, `half`, `cx`, `cy`, `tmp`.
+No `pad`, `dummy`, `unused`, `spill`, `_buf`, `slack`, or `new_var`-style carrier exists —
+the baseline's one such name (`s16 new_var`) was deleted after measuring it byte-inert, and
+the `unk*` field names denote genuinely unidentified storage rather than filler (they are
+real bytes of the record, not padding invented to move the frame). Every declared local is
+both written and read; every named struct field except `unk0`/`unk1` is read.
 
-SANCTIONED-FAMILY-CLAIMS: none — the body is ordinary C with no exception claimed. No
-`/* FAKE */` construct exists in the diff, so no family scope sentence or precedent
-citation is required or offered.
+SANCTIONED-FAMILY-CLAIMS: none — the body is ordinary C and no exception is claimed. No
+`/* FAKE */` construct exists in the diff, so no family scope sentence or precedent citation
+is required or offered.
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct.
