@@ -23,4 +23,6 @@
 replay_camera_Init include/code6cac.h
 # func_80038170: pipeline scope grant 2026-08-19 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
-func_80038170 include/code6cac.h
+# func_80038170: pipeline scope grant 2026-08-20 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80038170 include/code6cac.h undefined_syms_auto.txt

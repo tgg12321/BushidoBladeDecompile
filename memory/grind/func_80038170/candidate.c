@@ -11,15 +11,19 @@
  * 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, and
  * `sandbox func_80038170 --disable all` = **0** (141/141 insns).
  *
- * CHASSIS GOTCHA measured this session and worth inheriting: the FIRST sandbox
- * run after applying the edits reported score 1, not 0. That residual is a STALE
- * build/ REFERENCE, not a code difference — the sandbox scores the fresh .o
- * against the reference objects in build/, which still held the pre-edit
- * `D_8008F19D` relocation spelling. A full `build` regenerates build/ and the
- * very next identical sandbox invocation returns 0 with no source change at all.
- * This is exactly the "floor 1" that s1-s3 recorded and could not dissolve; it
- * was never a property of the C. ORDER OF OPERATIONS for any future session
- * touching this function: apply -> `build` -> `sandbox`, never sandbox first.
+ * !! CORRECTED BY s5 (2026-08-20) — the s4 "ORDER OF OPERATIONS" advice that
+ * stood here (apply -> `build` -> `sandbox`, never sandbox first) IS THE
+ * FALSE-ZERO RECIPE. The sandbox scores the freshly compiled .o against the
+ * reference objects in build/; a full `build` with the candidate applied
+ * overwrites those references with the candidate's OWN output, so the next
+ * sandbox run compares the candidate against itself and returns 0 however wrong
+ * the bytes are. Measured s5 on the same source, order the only variable:
+ *     apply 2-D form -> `build` (SHA1 MISMATCH, 12 bytes off) -> sandbox = 0
+ *     apply 2-D form -> sandbox against a clean build/          -> sandbox = 12
+ * CORRECT ORDER: apply -> `sandbox` (clean reference) -> then full `build` for
+ * the SHA1 oracle. After any candidate build, ONLY the full-build SHA1 is
+ * trustworthy. (The s1-s3 "floor 1 stale reference" story is the same effect
+ * seen from the other side.)
  *
  * The src-only spelling of the same reads is a BANNED construct
  * (state.json banned_constructs[2], layer-1 FAIL 2026-08-19 21:23) and must not
@@ -84,6 +88,39 @@
  * ([[splat-symbol-names-are-not-evidence]]); the sibling table one entry later,
  * D_8008F1A8, is ALREADY declared `extern u8 D_8008F1A8[];` in the same header
  * and is read with the identical `[sN*2+0]` / `[sN*2+1]` stride-2 shape.
+ *
+ * ============================================================================
+ * s5 ADDENDUM (2026-08-20, rederive) — CODEGEN-INDEPENDENT EVIDENCE that the
+ * header declaration is factually wrong. This is the evidence the 2026-08-20
+ * layer-1 FAIL said did not exist; it references no pass, no frame, no slot.
+ * ============================================================================
+ * Bytes read directly out of the shipped disc/SLUS_006.63:
+ *   0x8008f19c  82 4F 82 50 82 51 82 52 82 53 00 00
+ *   0x8008f1a8  82 4F 82 50 82 51 82 52 82 53 82 54 82 55 82 56 82 57 82 58 00 00 00 00
+ * 0x824F..0x8258 are the Shift-JIS full-width digits 0..9. So D_8008F19C is a
+ * 12-byte table of FIVE 2-byte Shift-JIS characters (full-width "01234") plus a
+ * 2-byte terminator, and D_8008F1A8 is the identically-constructed ten-entry
+ * table that include/code6cac.h:82 ALREADY declares `extern u8 D_8008F1A8[];`
+ * and that this same function already reads with the identical `[sN*2+0]` /
+ * `[sN*2+1]` stride-2 shape. D_8008F1C0, strcpy'd into out+4 here, is likewise
+ * Shift-JIS text, so `out` is an SJIS text buffer and out[0x42]/out[0x43] are
+ * the two bytes of ONE full-width character.
+ *
+ * splat's `D_8008F19D` therefore names the LOW BYTE of the character at
+ * 0x8008F19C (0x82 0x4F). `extern u8 D_8008F19D;` does not merely obscure the
+ * data model, it declares the second byte of a multibyte character as an
+ * independent object — which the original source cannot have done.
+ * ([[splat-symbol-names-are-not-evidence]]: per-byte D_8008xxxx names carry zero
+ * evidentiary weight about the original object model.)
+ *
+ * s5 also KILLED the one remaining alternative declaration shape: `extern u8
+ * D_8008F19C[][2];` with `D_8008F19C[s3][0]` / `[s3][1]` — the spelling a human
+ * would reach for once the 2-byte-character model is known — builds to SHA1
+ * e3ae7aae... with 12 frame bytes wrong (vars= 8 / frame 48 vs the target's
+ * vars= 16 / frame 56), because the row-address form never builds a
+ * `symbol_ref + 1` const addend. See rejected/2d-array-index-no-addend.c. The
+ * `[s3 * 2 + 1]` spelling below is thus not one of several working spellings; it
+ * is the only one found across five sessions.
  *
  * The body below is plain C: no dead local, no volatile, no inline asm, no
  * register pin, no frame coercion, no scheduling construct, no pointer pun, no

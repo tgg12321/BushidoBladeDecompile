@@ -297,3 +297,106 @@ as indefinitely parked INCOMPLETE). Do NOT attempt any dead-array or declaration
 - [s5] Scope-completeness re-verified independently this session (tmp/grind/func_80038170/s5/symbol_refs.txt): after the header correction, `D_8008F19C` appears in exactly three places among build inputs — src/code6cac_c_mid.c:329, :330 and include/code6cac.h:80 — and `D_8008F19D` appears in NO build input at all. The remaining hits are tools/decomp-permuter/nonmatchings/func_80037A20/* (a gitignored scratch workspace, not a build input) and undefined_syms_auto.txt:46, which merely defines the address of a now-unreferenced symbol and is harmless (the full build SHA1-matches with it present). Zero TU-external fallout, confirming the s4 finding on the post-edit tree.
 
 - [s5] self_vet.md was rewritten from scratch for the ACTUAL submitted diff (the s4 file described the banned src-only pointer-pun spelling and was stale). It declares CONSTRUCTS: none, answers T1-T6 for both the body and the header line, claims no sanctioned family, and owes no annotation. Verified mechanically against tools/grinder/grindlib.py before submission: `validate_self_vet` returns (True, '') and `_ban_trips` returns False for all three entries in state.json banned_constructs — including banned_constructs[2], the trap the Judge's 2026-08-19 packet warned would auto-discard any honest vet of this form.
+
+
+---
+
+## [s5] rederive (2026-08-20) -- the header correction now has CODEGEN-INDEPENDENT evidence; the 2-D array shape is KILLED; and the "sandbox 0" proof method used by s1-s5 is a FALSE-ZERO generator
+
+### 1. DECISIVE new evidence: what is actually stored at 0x8008F19C (zero codegen reasoning)
+
+Read straight out of the shipped executable (`disc/SLUS_006.63`, vaddr -> file
+offset = v - 0x80010000 + 0x800):
+
+    0x8008f190  5C 76 00 00 20 03 00 00 EC A9 00 00 82 4F 82 50
+    0x8008f1a0  82 51 82 52 82 53 00 00 82 4F 82 50 82 51 82 52
+    0x8008f1b0  82 53 82 54 82 55 82 56 82 57 82 58 00 00 00 00
+    0x8008f1c0  82 61 82 61 82 51 81 40 82 6D 82 81 82 92 82 95
+
+0x824F..0x8258 are the Shift-JIS full-width digits '0'..'9'; 0x8140 is the
+full-width space; 0x8261 is full-width 'a'. So:
+
+  * **D_8008F19C = 12 bytes = the five full-width digits 0-4 + a 2-byte NUL** --
+    five 2-byte Shift-JIS characters, stride 2, terminated.
+  * **D_8008F1A8 = 24 bytes = the ten full-width digits 0-9 + terminator** -- the
+    identically-constructed sibling table, ALREADY declared
+    `extern u8 D_8008F1A8[];` at include/code6cac.h:82 and already read with the
+    identical `[sN*2+0]` / `[sN*2+1]` stride-2 shape in this same function.
+  * D_8008F1C0 (strcpy'd into `out+4` by this function) is likewise Shift-JIS
+    text, so `out` is an SJIS text buffer and `out[0x42]`/`out[0x43]` are the two
+    bytes of ONE full-width character.
+
+**splat's `D_8008F19D` names the LOW BYTE of the first Shift-JIS character
+(0x82 0x4F).** A standalone `extern u8 D_8008F19D;` is not merely suboptimal, it
+is semantically impossible: it declares "the second byte of a multibyte
+character" as an independent object.
+
+This is precisely the evidence the 2026-08-20 layer-1 FAIL said did not exist
+("not, by itself, evidence that D_8008F19C is genuinely a 2-byte-stride array in
+the original source"). It is content-level, derived from the shipped data bytes
+and from the sibling declaration the repo already ships -- it contains no
+reference to frames, spill slots, combine, reload, or any other codegen fact. It
+stands whether or not the header change moves a single byte. Cross-check:
+[[splat-symbol-names-are-not-evidence]] -- per-word/per-byte `D_8008xxxx` names
+carry ZERO evidentiary weight about the original object model.
+
+### 2. KILLED -- the 2-D array shape `extern u8 D_8008F19C[][2];` + `D_8008F19C[s3][0..1]`
+
+The natural human spelling ONCE the SJIS data model above is known. Measured
+this session with both edits applied:
+
+  * full `build` SHA1 = `e3ae7aae6692ef268d22344bf0e7bd8c8001f34b` != oracle.
+  * exactly 12 differing bytes, ALL frame words: `addiu $sp,$sp,-0x30` (target
+    `-0x38`), all five `sw`/`lw $sN` save offsets 8 lower, epilogue
+    `addiu $sp,$sp,0x30`. Function body instructions are otherwise identical.
+  * `sandbox --disable all` against a CLEAN build/ reference = **12**.
+
+Mechanism (consistent with s4's forensics, and it SHARPENS them): `x[i][j]` on a
+`u8[][2]` makes GCC form the row address `&D_8008F19C[s3]` in a pseudo and emit
+the two loads as displacements 0/1 off that register. No `symbol_ref + 1`
+constant addend is ever built, so combine has no address-fold to do, no dead
+`(use (reg 120))` residue survives, global.c forms no SET-less pseudo, and
+reload1.c:2403 `alter_reg` never reserves the extra 8-byte slot -> vars= 8 /
+frame 48 instead of the target's vars= 16 / frame 56.
+
+**Corollary (new constraint on the original source):** the target frame is
+reachable ONLY if the second read is spelled as a `+1` addend on the SAME
+symbol, i.e. literally `D_8008F19C[s3 * 2 + 1]`. Neither the two-symbol form
+(s1-s4: frame 48) nor the 2-D row form (this session: frame 48) produces it.
+The banked candidate form is not one of several spellings that happen to work --
+as far as the ladder has been pushed, it is the ONLY one.
+
+### 3. METHODOLOGICAL FINDING -- `build` before `sandbox` manufactures a FALSE ZERO
+
+Measured, same source, same session, nothing changed but the order:
+
+    apply 2-D form -> full `build` (SHA1 MISMATCH, 12 bytes off) -> sandbox = **0**
+    apply 2-D form -> sandbox with build/ holding correct objects  -> sandbox = **12**
+
+The sandbox scores the freshly compiled `.o` against the reference objects in
+`build/`. A full `build` with the candidate applied overwrites those reference
+objects WITH THE CANDIDATE'S OWN OUTPUT, so the next sandbox run compares the
+candidate against itself and returns 0 no matter how wrong the bytes are.
+
+This invalidates the "ORDER OF OPERATIONS" advice s4 wrote into
+`memory/grind/func_80038170/candidate.c` ("apply -> `build` -> `sandbox`, never
+sandbox first") -- that recipe is exactly the false-zero recipe, and the
+"floor 1 was a stale build/ reference" story of s1-s3 is the same effect seen
+from the other side. **Correct order: apply -> `sandbox` (clean reference) ->
+then full `build` for the SHA1 oracle.** Only the full-build SHA1 is trustworthy
+once the tree has been built with a candidate in place.
+
+### 4. Re-measured on THIS chassis (the only trustworthy oracle)
+
+The banked candidate form (`include/code6cac.h`: `extern u8 D_8008F19C[];`
+replacing the scalar pair; src body verbatim from
+`memory/grind/func_80038170/candidate.c`) full `build` SHA1 =
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE**. Re-confirmed this
+session on the post-migration chassis, with no rules and no cheat-asm added
+(regfix.txt:655 is a comment only; the `tools/prologue_config.json:45`
+func_80038170 entry is present but does NOT fire -- the 2-D form's wrong frame
+reached the linked image unaltered, which proves the entry is inert for this
+codegen shape).
+
+The tree was restored to HEAD and rebuilt (SHA1 == oracle) before this session
+ended, so `build/` is a clean, uncontaminated reference for the next session.

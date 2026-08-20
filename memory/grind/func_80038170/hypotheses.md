@@ -206,3 +206,48 @@
 - probe: sandbox immediately after applying the edits (no intervening build), then `build`, then the identical sandbox command again, with zero source changes between the two sandbox runs
 - result: 1 -> (build, SHA1 == oracle) -> 0. Same source, same command, different reference freshness. Three sessions' worth of "unreachable by construction" framing traces to this.
 - verdict: CONFIRMED
+
+
+## [s5] rederive (2026-08-20)
+
+- **H-s5-1: a structurally different declaration shape (`extern u8 D_8008F19C[][2];`
+  + `D_8008F19C[s3][0]` / `[s3][1]`) reproduces the target while stating the
+  Shift-JIS 2-byte-character data model explicitly.**
+  - mechanism probed: whether GCC 2.7.2 still produces the `symbol_ref + 1`
+    address-fold residue (and therefore the 8-byte phantom frame slot) when the
+    two bytes are addressed as row/column of a 2-D array instead of as
+    `base[i*2]` / `base[i*2+1]`.
+  - probe: applied both edits, full `build`, byte-diffed the linked image against
+    `disc/SLUS_006.63`, then re-ran `sandbox --disable all` against a clean
+    `build/`.
+  - result: SHA1 `e3ae7aae...` != oracle; 12 differing bytes, all frame words
+    (`-0x30` vs `-0x38`, all save offsets 8 lower); clean-reference sandbox 12.
+    GCC forms the row address in a pseudo and uses displacements 0/1, so no const
+    addend, no combine fold residue, no alter_reg slot, vars= 8.
+  - verdict: **KILLED**. Banked as
+    `memory/grind/func_80038170/rejected/2d-array-index-no-addend.c`.
+
+- **H-s5-2: the `extern u8 D_8008F19C[];` header correction has evidence
+  independent of codegen, contrary to the 2026-08-20 layer-1 FAIL.**
+  - mechanism: the claim is a data-model claim, so it must be settled from the
+    shipped DATA bytes and from sibling declarations, not from frame sizes.
+  - probe: dumped 0x8008F190-0x8008F1CF out of `disc/SLUS_006.63`; decoded as
+    Shift-JIS; compared against the already-array-declared sibling D_8008F1A8.
+  - result: 0x8008F19C holds `82 4F 82 50 82 51 82 52 82 53 00 00` = the
+    full-width digits 0-4 + 2-byte terminator -- five 2-byte characters, stride
+    2; D_8008F1A8 is the same construction with ten entries and is already
+    `extern u8 D_8008F1A8[];`. splat's `D_8008F19D` names the LOW BYTE of the
+    first character.
+  - verdict: **CONFIRMED** (data-content proof, zero codegen reasoning).
+
+- **H-s5-3: `sandbox --disable all` run AFTER a full `build` with the candidate
+  applied is self-referential and returns a false 0.**
+  - mechanism: the sandbox scores the fresh `.o` against the reference objects in
+    `build/`; a full build overwrites those references with the candidate's own
+    output.
+  - probe: the same 2-D source measured both ways in the same session.
+  - result: build-then-sandbox = 0 while the linked image was 12 bytes wrong;
+    sandbox-against-clean-reference = 12.
+  - verdict: **CONFIRMED**. The s4 candidate.c "apply -> build -> sandbox" recipe
+    is the false-zero recipe and must not be followed; only the full-build SHA1
+    is trustworthy after a candidate build.
