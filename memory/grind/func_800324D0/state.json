@@ -1,0 +1,19 @@
+{
+ "func": "func_800324D0",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The base/ff local split is engineered purely to steer GCC's set_preference/find_reg register-allocation cascade to a specific hard register, not to express program semantics \u2014 a Test-3 GCC-internals-justification cheat regardless of the self-vet's program-logic framing. Next action: Revert to the pin-free single-variable spelling (or any spelling reached without instrumented-cc1 RA forensics) and accept the honest sandbox distance if no clean form closes it; do not restructure locals specifically to steer set_preference/find_reg. If genuinely no clean-C path closes"
+ ],
+ "banned_constructs": [
+  "`base = *(u8 **)(pad + 0x58); ff = 0xFF;` declared as two block-0 locals with deliberately overlapping live ranges, immediately followed by `ptr = base + 5;`",
+  "Splitting `base`/`ff` as a 'new' natural two-consumer intermediate spelling, framed as ordinary C rather than a named/cited borderline family"
+ ],
+ "ladder_skip": 9,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-20T20:23:43.713548+00:00"
+}

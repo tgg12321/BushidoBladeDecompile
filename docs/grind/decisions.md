@@ -9538,3 +9538,7 @@ parked terminally. The two reopening routes remain owner-only policy calls: (a) 
 for the one remaining construct class — an empty statement-level loop note at the inner-loop top
 (the permuter's unique closing device), which the or-tree carve-out does NOT cover — against its
 own SOTN-master evidence bar; or (b) canonical-asm authorization despite the LOW scan tier.
+
+## 2026-08-20 15:48 — func_800324D0 — layer-1 review — **FAIL**
+
+The base/ff local split is engineered purely to steer GCC's set_preference/find_reg register-allocation cascade to a specific hard register, not to express program semantics — a Test-3 GCC-internals-justification cheat regardless of the self-vet's program-logic framing.
