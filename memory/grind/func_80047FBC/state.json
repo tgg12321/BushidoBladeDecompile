@@ -1,8 +1,8 @@
 {
  "func": "InitHiraRmd_80047FBC",
  "file": "text1b",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -75,18 +75,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "s12 escalation modality: OWNER-ESCALATION filed at docs/grind/decisions.md:985 per s11 F2 frontier; every sanctioned pure-C axis measured dead across s1-s11; species criteria of endgame-lock-dispositi"
+  },
+  {
+   "session": 13,
+   "floor": 14,
+   "modality": "escalation",
+   "headline": "Bytes proven at 0 (65/65) with two sanctioned-family constructs; AND-gate (b) PASSES on cited SOTN precedent, gate (a) LOW 1/8; only blocker is the owner-class _SANCTIONED_UNWRITTEN_PADS row in engine"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner ruling on the escalation. Predicted (per 6-case precedent since 2026-07-20 endgame-lock-disposition): option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE. If option (a) sanctioned (unlikely given zero SOTN precedent for unwritten frame carrier), apply composite_candidate.c to src/text1b.c in-tree and route to fresh layer-2 adversarial cheat-reviewer on the composite before commit.",
-   "mechanism": "Standing 2026-07-20 policy: RA/scheduler-locked cheat-matched with LOW hand-coded certification and no SOTN precedent for the residual construct routes to INCOMPLETE-owner-accepted.",
-   "next_probe": "Driver parks the function on owner-gated; queue advances. No further grind sessions on InitHiraRmd_80047FBC until an owner ruling appears in docs/grind/decisions.md."
+   "hypothesis": "With the per-function row \"func_80047FBC\": frozenset({(\"pre_pad\", 8)}) present in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS, the banked candidate returns sandbox --disable all = 0 and a full build reaches SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa.",
+   "mechanism": "The row makes _is_sanctioned_pad exempt the declaration from find_unused_local_arrays, so cc1 sees it and get_frame_size reserves target's 32 untouched locals bytes; the rest of the body is already byte-proven at 65/65.",
+   "next_probe": "Operator (not a grind session): add the row, apply memory/grind/func_80047FBC/candidate.c to src/text1b.c:20, run sandbox (expect 0) then verify-oracle --rebuild, then a fresh layer-2 cheat-reviewer on BOTH constructs together, then queue done."
   },
   {
-   "hypothesis": "F3 (LOW-priority, CONDITIONAL on owner declining INCOMPLETE): wider phantom-frame-slots-gcc272 trigger survey \u2014 struct-typed local with 32-byte internal padding, fn-pointer-table alignment forcing, tail-call/sibcall shapes changing get_frame_size accounting.",
-   "mechanism": "s7's 5-variant probe was scalar-typed. Struct types with dead padding + extern-help escape patterns unmeasured. Likely fail either target-zero-writes constraint (GCC would tail-store) or cheat-by-any-spelling naming test \u2014 but genuinely unmeasured.",
-   "next_probe": "IF owner declines INCOMPLETE: compile 3-4 struct-typed variants with instrumented cc1 (BB2_ALLOC_DEBUG); check .frame + sp-store count; abort at first sw at sp+0x18+ or first naming-announces-intent variant."
+   "hypothesis": "If the owner DECLINES the allowlist extension, the function's disposition reverts to the 2026-07-22 standing-ruling refusal (REFUSED / OWNER-ACCEPTED INCOMPLETE) with honest floor 14, not to further grinding.",
+   "mechanism": "Without the pad the frame is 0x48 and 14 instructions diverge; every other sanctioned axis is measured dead across 13 sessions and 5 modalities, and gate (a) is LOW 1/8 so canonical-asm is unsupportable.",
+   "next_probe": "None for a grind session - the decision is binary and recorded in the escalation entry. Do not re-dispatch to re-measure: four cycles have now re-proved the same bytes."
+  },
+  {
+   "hypothesis": "The find_unused_local_arrays comment-span bug is a live false-negative in the honest-floor scorer for any function whose pad annotation repeats the pad's identifier.",
+   "mechanism": "The reference check scans raw body text including comments, so an identifier recurring in its own trailing annotation makes the declaration look referenced and skips detection entirely - producing a falsely-honest score anywhere in the queue, not just here.",
+   "next_probe": "Operator/engine change: make the reference scan strip comment spans before counting identifier occurrences, then re-run engine test and spot-check the three allowlisted pad functions."
   }
  ],
  "judge_constraints": [

@@ -1076,3 +1076,4 @@
 - 2026-08-20 01:15 func_80038170 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80038170 include/code6cac.h undefined_syms_auto.txt  (merged with prior line); cleared 1 superseded ban(s)), function stays active.
 - 2026-08-20 01:43 func_80038170 JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).
 - 2026-08-20 02:02 file_LoadSectors COMPLETED-C after 2 sessions (closer: s2 [structural]).
+- 2026-08-20 02:19 func_80047FBC s13 [escalation] OWNER-GATED — borderline-logged, terminal park: Bytes proven at 0 (65/65) with two sanctioned-family constructs; AND-gate (b) PASSES on cited SOTN precedent, gate (a) LOW 1/8; only blocker is the owner-class _SANCTIONED_UNWRITTEN_PADS row in engine/ — OWNER-ESCALATION filed at docs/grind/decisions.md:7530 (fixes s13's mis-titled handoff).

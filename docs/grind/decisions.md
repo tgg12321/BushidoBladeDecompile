@@ -7526,3 +7526,140 @@ composite, now measured 14), logs in `tmp/grind/func_80047FBC/s13/`.
 ## 2026-08-20 02:13 — func_80047FBC — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s13 of func_80047FBC, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_80047FBC). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-20 — func_80047FBC (src/text1b.c) — **OWNER-ESCALATION** — bytes proven at 0; AND-gate (b) PASSES with a cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row
+
+Filed by grind session **s14** (escalation modality). This entry SUPERSEDES the
+2026-08-20 "INTEGRATION HANDOFF" span above it, which the driver discarded on a
+title/format rejection (no `OWNER-ESCALATION` / `CANONICAL-ASM GRANT PATH` heading naming
+the function). The substance below was re-measured from scratch this session; nothing is
+quoted on trust.
+
+### The disposition in one paragraph
+
+This function is NOT an endgame lock. A complete pure-C body exists whose compiled bytes
+are identical to `asm/funcs/func_80047FBC.s`, and it rests on exactly two
+owner-sanctioned families. It cannot be returned `candidate-ready` because the engine's
+sandbox unconditionally strips one of those two constructs until the function is listed in
+`engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` — a per-function row the
+2026-08-18 owner ruling itself mandates, that `engine/volatile_cheats.py:745` says "Any
+extension requires a fresh owner ruling", and that a grind session may not write
+(`engine/` is outside the session surface). That row is the single remaining action, and
+it is owner-class by the engine's own comment. Hence an OWNER-ESCALATION with a PASSING
+gate, not a standing-ruling refusal.
+
+### The two endgame-lock AND-gates, both re-run this session
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80047FBC` → `HAND_CODED: tier=LOW score=1/8 (65 insns)`; only S4 (4 loads in an
+8-insn window @ insn 25) fires. No S1 multu pacing, no S2 empty branch, no S6 BIOS
+jumptable. Canonical-asm is unsupportable and is moot — a pure-C form exists.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: PASSES.** The
+closing construct is an unwritten `volatile` pad array reserving target's untouched frame
+bytes. Owner ruling 2026-08-18 established it as a GENERAL family at
+`.claude/rules/no-new-park-categories.md:390` ("Phantom-frame-slot volatile pad local …
+Supersedes the per-function 2026-08-17/18 leading/trailing-pad carve-outs with a general
+family"). Its SOTN-master exhibits, verified present in this repo's construct index this
+session: `docs/reference/sotn-construct-index.md:101` (`src/st/sel/2C048.c:564` —
+`volatile u32 pad; // !FAKE:`) and `docs/reference/sotn-construct-index.md:103`
+(`src/st/sel/stream.c:80` — `volatile u32 pad[4]; // FAKE`). Both are PSX entries in
+fully matched code. This is the gate the 2026-07-22 ruling (decisions.md:1280) refused the
+function on; it is no longer failing.
+
+The family's FORM CONSTRAINTS are each satisfied by the candidate: ARRAY form
+(`volatile u32 pre_pad[8];`), first-declaration position, `// !FAKE` annotation, no
+`(void)pad;` shim. Its PREREQUISITES are satisfied from the banked ledger: frame forensics
+proving the slot is untouched (s7 — zero `sw` anywhere in `sp+0x18..sp+0x37` in
+`asm/funcs/func_80047FBC.s`; the only six sp-stores are the 5-arg outgoing area at
+`sp+0x00..0x17` and six register saves at `sp+0x38..0x4C`), and honest producers measured
+inert first (13 sessions, 5 modalities, 14 banked rejected forms, ~3k permuter iterations —
+`memory/grind/func_80047FBC/hypotheses.md`).
+
+### Bytes, re-measured this session (2026-08-20 chassis, s14 logs)
+
+Candidate body applied to `src/text1b.c` line 20 in place of the `INCLUDE_ASM` line, then
+`sandbox func_80047FBC --disable all` via `tools/wteng.ps1`:
+
+| body applied | score | log |
+|---|---|---|
+| candidate as banked (`pre_pad`, pad STRIPPED by the detector) | 14 (65/65 insns, 0 rules dropped, `cheat_asm_stripped: 280`) | `tmp/grind/func_80047FBC/s14/sandbox_bodyE.log` |
+| same C, pad HONOURED by the build | **0** (65/65 insns, 0 rules dropped, `cheat_asm_stripped: 279`) | `tmp/grind/func_80047FBC/s14/sandbox_bodyB.log` |
+
+The two bodies are byte-identical C apart from the pad's IDENTIFIER and its comment text
+(`diff tmp/grind/func_80047FBC/s13/bodyB_volatile_pad.c
+tmp/grind/func_80047FBC/s13/bodyE_prepad.c` = one line, the declaration). cpp strips the
+comment before cc1, and an identifier rename is codegen-neutral, so the score-0 run is
+honest evidence that the CANDIDATE's compiled bytes equal target's 65 instructions; the
+14 is purely the scorer deleting the pad declaration before compiling. The one-instruction
+delta in `cheat_asm_stripped` (280 vs 279) is exactly that deleted declaration.
+
+Per-construct attribution ladder (s13, unchanged): clean body (no pad, no FAKE store) =
+15; `+ arg0 = 0; /* FAKE */` only = 14; `+ pre_pad[8]` only = 1; both = 0. The pad closes
+14 of 15 residual instructions (frame `0x48` → `0x50`); the `arg0 = 0; /* FAKE */`
+dead-store-fake-exception lever — whose legitimacy ON THIS FUNCTION was already
+**Judge-PASSed 2026-07-20** (decisions.md:981) — closes the last one, target insn #18
+`addu $s0,$s4,$v0`, by defeating the cse2 canonical-register fold proven at s6.
+
+Also standing: the ledger's historical floor of **1 is dead**. The s11 composite
+(`s32 buf[8]; … (void)buf;`) now measures 14, because the stripper has since grown
+`find_void_discard_unused_locals`. Every pre-2026-08 conclusion quoting floor=1 was
+chassis-relative and is retired
+(`memory/grind/func_80047FBC/rejected/s13_bufvoid_chassis_dead_score14.c`).
+
+### What the owner is being asked for (ONE decision)
+
+Add the per-function row to `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`:
+
+```
+    # 2026-08-18 general phantom-frame-slot family; see docs/grind/decisions.md
+    # 2026-08-20 func_80047FBC OWNER-ESCALATION (bytes proven 0, gate (b) passes).
+    "func_80047FBC": frozenset({("pre_pad", 8)}),
+```
+
+That is an extension of the allowlist, which `engine/volatile_cheats.py:745` reserves to a
+fresh owner ruling; it is not a workaround and not something a Judge or the driver may
+self-serve. If the owner declines the extension, the correct disposition reverts to the
+2026-07-22 standing-ruling refusal (REFUSED / OWNER-ACCEPTED INCOMPLETE) — the honest floor
+without the pad is 14 and every other sanctioned axis is measured dead.
+
+### Operator steps once the row is granted
+
+1. Apply `memory/grind/func_80047FBC/candidate.c` (body only, header comment optional) to
+   `src/text1b.c`, replacing line 20's `INCLUDE_ASM("asm/funcs", func_80047FBC);`. LF
+   endings.
+2. Add the allowlist row above. Keep `engine test` green.
+3. `sandbox func_80047FBC --disable all` must print `"score": 0` (it prints 14 without
+   the row).
+4. `verify-oracle --rebuild` → SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`. (No grind
+   session can run this: the CLI correctly refuses `--rebuild` with dirty build inputs and
+   a session may not commit.)
+5. Fresh **layer-2 adversarial cheat-reviewer** on the composite diff per
+   `.claude/rules/review-discipline-before-commit.md`, auditing BOTH constructs together
+   (`pre_pad[8]` under the 2026-08-18 phantom-frame-slot family; `arg0 = 0; /* FAKE */`
+   under dead-store-fake-exception). The session's verdict is not credited, and the
+   2026-07-20 Judge PASS was scoped to the `arg0 = 0` lever in isolation, not to a commit.
+6. `queue done func_80047FBC` once the oracle and the review both pass.
+
+### Status of the byte-match on main
+
+Nothing holds it. Since the 2026-08-19 asm-until-matched migration the function ships as
+`INCLUDE_ASM("asm/funcs", func_80047FBC);` with zero regfix/asmfix rules and zero
+cheat-asm. There is no cheat to retire; integration is purely "apply C + allowlist row +
+review".
+
+### Engine hygiene finding (reported, NOT exploited — re-confirmed s14)
+
+`find_unused_local_arrays`' reference check counts any later occurrence of the
+declaration's identifier token in the body text, INCLUDING inside the declaration's own
+trailing comment. A pad named `pad` whose annotation contains the word "pad" is therefore
+silently undetected and the sandbox prints a falsely-honest `score: 0` with no allowlist
+row (that is precisely why `bodyB` above scores 0). The banked candidate was deliberately
+re-spelled `pre_pad` — the convention the three already-allowlisted functions use — with
+the token absent from its annotation, so the detector flags it correctly and the honest
+floor reads its true 14. Recommend tightening the reference scan to ignore comment spans.
+
+**Artifacts:** `memory/grind/func_80047FBC/candidate.c`,
+`memory/grind/func_80047FBC/evidence.md` + `hypotheses.md` (s13/s14 entries),
+`memory/grind/func_80047FBC/rejected/`, logs in `tmp/grind/func_80047FBC/s13/` and
+`tmp/grind/func_80047FBC/s14/`. `src/text1b.c` was reverted to HEAD at end of session.

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80047FBC",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80017FA0",
       "file": "code6cac",
       "distance": 2,
@@ -2032,6 +2024,15 @@
       "park_reason": "OWNER-ACCEPTED EXCEPTION (ruling b, 2026-07-19): CLOBBER family refused; byte-correct form + regfix.txt:2190 kept on main; INCOMPLETE-owner-accepted, no further grinding"
     },
     {
+      "func": "func_80047FBC",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:7530 \u2014 ## 2026-08-20 \u2014 func_80047FBC (src/text1b.c) \u2014 **OWNER-ESCALATION** \u2014 bytes proven at 0; AND-gate (b) PASSES with a cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row"
+    },
+    {
       "func": "func_8003800C",
       "file": "code6cac_c_mid",
       "distance": 2,
@@ -2243,13 +2244,13 @@
   ],
   "counts": {
     "total": 258,
-    "active": 230,
+    "active": 229,
     "by_status": {
-      "active": 230,
-      "parked": 28
+      "active": 229,
+      "parked": 29
     },
     "by_verdict": {
-      "C": 192,
+      "C": 191,
       "ASM-PARTIAL": 38
     }
   }
