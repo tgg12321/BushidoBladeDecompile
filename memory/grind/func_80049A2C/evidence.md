@@ -97,3 +97,144 @@ load-bearing cheat; three of the four judge-flagged items can just be deleted.
 - [s5] [s5] End-of-session src state: unchanged from session start (s1-recon candidate form; sandbox = 0, 126/126). No src edits attempted this session because the mandated modality (permuter) is infrastructure-blocked and every C-reachable axis was measured dead by s1..s4. candidate.c comment header updated to include the s5 note; no rejected form to bank (no new form probed on src).
 
 - [s5] [s5] Contract satisfaction for 'owner-gated' verdict: (1) OWNER-ESCALATION for func_80049A2C exists at docs/grind/decisions.md:954 — CHECK; (2) every remaining sanctioned axis measured dead across the ledger (phantom-firing H4 KILL s3, phantom-injection H1/H2/H3 KILL s2, scalar-widening KILL s2, scalar-dummy H6 KILL rejected/, struct-aggregate H8 KILL s4, canonical-asm scan_hand_coded LOW 0/8 s4, permuter infrastructure-blocked s4 + INDEPENDENTLY-RECONFIRMED s5) — CHECK; (3) escalation_ref set below to the exact header line — CHECK.
+
+## Session s6 (synthesis, 2026-08-19) — THE BANKED FLOOR OF 0 WAS AN ARTIFACT
+
+- [s6] **CHASSIS RE-MEASURE.** src/text1b.c on main now carries
+  `INCLUDE_ASM("asm/funcs", func_80049A2C);` (asm-until-matched migration,
+  owner ruling 2026-08-19). Applying the s1..s5 candidate body verbatim to
+  src and running `sandbox func_80049A2C --disable all` reproduces score 0,
+  126/126 insns, cheat_asm_stripped=280 (was 397 pre-migration). So the
+  "0" is reproducible on the new chassis — and s6 then established that the
+  0 is not a byte match.
+
+- [s6] **ROOT CAUSE OF THE FALSE 0 — a cheat-stripper spelling hole.** The
+  s1 candidate declares `s32 dummy[2];    /* LOAD-BEARING: +8 byte frame
+  slot; +12 score if removed */`. Deleting ONLY that trailing comment
+  (byte-identical C otherwise, same declaration, same `(void) dummy;` sink,
+  same position) flips the sandbox score from 0 to 12. Reproduced twice,
+  alternating base/no-comment in one batch. Proof by inspection of the
+  source the sandbox actually compiles
+  (`tmp/sandbox/func_80049A2C/src/text1b.c`): with the comment, the
+  `(void) dummy;` statement is blanked but the DECLARATION SURVIVES; without
+  it, both are blanked. Mechanism named from the engine source (read-only):
+  `engine/volatile_cheats.py:_ORPHAN_DECL_RE` is anchored `;[ \t]*$`, so a
+  trailing comment on the declaration line makes the orphaned-declaration
+  closure miss it, while `find_void_discard_unused_locals` still strips the
+  `(void) dummy;`. The dead 8-byte local therefore survived into the
+  "cheat-invisible" build and produced target's `addiu $sp,-0x30`.
+
+- [s6] **THE HONEST FLOOR IS 12, NOT 0.** The clean body (no `dummy` in any
+  spelling) measures `sandbox --disable all` = 12, target_insns 126,
+  build_insns 126 — the entire residual is sp-relative offset shift from
+  frame 0x28 vs target 0x30. This matches
+  `memory/grind/func_80049A2C/migration_pin.json` ("floor": 12) exactly. The
+  s1..s5 floor_history entries of 0 are hereby superseded; every conclusion
+  in this ledger that was drawn from a *score* of 0 must be re-read as
+  "scored 0 through the stripper hole", and every conclusion drawn from a
+  *score of 12* on a strippable spelling is an artifact of the strip, not a
+  codegen fact (see the matrix below).
+
+- [s6] **TWO MORE SPELLING HOLES CONFIRMED (both give real frame 48 AND
+  sandbox 0).** (a) `struct { s16 a; s16 b; } dummy;` with ZERO references —
+  no detector covers a zero-reference struct-typed local
+  (`find_unused_local_arrays` matches array declarators only;
+  `find_orphaned_local_decls` requires >=1 reference inside a stripped span
+  and its type alternation has no `struct`). This is the same construct as
+  s4's H8, so **s4's "H8 sandbox = 0" is an artifact of the same class**.
+  (b) `s32 dummy[2];` + `(void) dummy[0];` — `_VOID_DISCARD_NO_ADDR_RE`
+  matches only `(void) name;`, not an indexed read, so nothing is stripped;
+  additionally a dead read of an uninitialized local (UB). Banked as
+  rejected/struct-zero-ref-detector-hole.c and
+  rejected/void-discard-indexed-read-hole.c. Under checklist test T4 these
+  pass detectors ONLY because the detectors miss the spelling — automatic
+  FAIL, not candidates.
+
+- [s6] **FRAME-SLOT MECHANISM LAW (10 real-build measurements; frames read
+  from `make build/src/text1b.o` + objdump, which the stripper cannot touch;
+  full matrix at tmp/grind/func_80049A2C/s6/matrix.md).** Baseline frame
+  with no locals = 40; target = 48. The +8 appears iff the local aggregate is
+  BLKmode, i.e. its (size, alignment) does NOT admit a scalar integer machine
+  mode:
+    * `char dummy[1]` (QImode), `s16 x[1]` (HImode), `s32 dummy[1]` (SImode)
+      -> promoted to a pseudo, ZERO frame bytes -> frame 40.
+    * `char dummy[2]`, `char dummy[3]`, `char dummy[4]`, `s32 dummy[2]`,
+      `struct { s16 a; s16 b; }` -> BLKmode -> assign_stack_local ->
+      get_frame_size() 2..8 -> ALIGN8 -> 8 -> frame 48 = target.
+  **ALIGNMENT decides, not size**: `char dummy[4]` reaches 48 while
+  `s32 dummy[1]` (also 4 bytes) does not. Frame equation corrected:
+  48 = ALIGN8(vars=2..8) + 16 outgoing-args + 20 gp-saves.
+
+- [s6] **`(void) dummy;` IS NOT LOAD-BEARING — s1's reading was inverted.**
+  A zero-reference BLKmode local ALONE reaches frame 48 (`s32 dummy[2];`,
+  `char dummy[2];`, `char dummy[3];`, `struct{s16;s16;}` all measured 48 with
+  no reference of any kind). The reason s1 believed the sink was required is
+  that removing the sink also removed the comment's protection in some
+  variants and, for arrays with 2<=n<=64 and zero references,
+  `find_unused_local_arrays` strips the declaration outright. So the Judge's
+  constraint-2 note ("wire the `find_unused_local_arrays` allowlist so the
+  pad can stand WITHOUT a `(void) _pad;` shim") is achievable at the CODEGEN
+  level today — the shim was never needed — but it remains blocked at the
+  POLICY level (the pad is still a wholly dead local) and at the ENGINE level
+  (engine/ is outside the grind-session surface).
+
+- [s6] **LIVE-AGGREGATE AXIS KILLED (new).** The only way an aggregate could
+  have a semantic role and still hold the slot is if it is BLKmode *and* its
+  live uses cost zero instructions. Measured counterexample: `s16
+  a1_val_a[1];` genuinely carrying `a1_val` (written twice, read twice — a
+  real semantic role, no dead declaration) gives real frame 40, sandbox 12,
+  build_insns 126 — GCC promotes the HImode-able one-element array to a
+  pseudo, so it reserves no frame bytes and emits no stack traffic. Push it
+  to BLKmode (>= 2 elements or misaligned) and its live uses necessarily emit
+  `sw`/`lw` at 0x00..0x14($sp); `asm/funcs/func_80049A2C.s` contains ZERO
+  such accesses (only the five s0/s1/s2/s3/ra saves at 0x18..0x28) and is
+  exactly 126 instructions with no slack. Banked as
+  rejected/live-one-element-array-no-slot.c.
+
+- [s6] **CLOSURE.** Combining s3's cc1 -da proof (no reload/alter_reg phantom
+  slot fires anywhere in this function's RTL pipeline) with the s6 BLKmode
+  law and the live-aggregate kill: target's +8 locals area is reachable ONLY
+  through a wholly dead, memory-resident local declaration — i.e. the
+  `unused-local-array frame coercion` forbidden family. There is no pure-C
+  form in which every local has a semantic role and the frame is 0x30.
+  Every 0 this function has ever scored was one of those constructs hidden
+  from the stripper by a spelling hole.
+
+- [s6] Target-asm re-verification (fresh grep of asm/funcs/func_80049A2C.s):
+  126 instructions; sp-relative accesses are exactly `sw s1,0x1C` `sw ra,0x28`
+  `sw s3,0x24` `sw s2,0x20` `sw s0,0x18` and the five matching `lw`s; three
+  calls (func_80052C10 = InitFadePanel, func_8004153C, func_800417D0), all
+  with <= 1 argument, so outgoing_args_size is pinned at the 16-byte
+  REG_PARM_STACK_SPACE minimum and cannot absorb the +8.
+
+- [s6] End-of-session src state: src/text1b.c restored EXACTLY to its
+  session-start content (`INCLUDE_ASM("asm/funcs", func_80049A2C);`);
+  `git status` shows no src dirt. candidate.c replaced with the honest clean
+  body (floor 12, no `dummy` in any spelling) carrying the full s6 law in its
+  header.
+
+- [s6] CHASSIS: src/text1b.c on main carries INCLUDE_ASM("asm/funcs", func_80049A2C) after the 2026-08-19 asm-until-matched migration. Applying the s1-s5 candidate body reproduces sandbox 0 (126/126, cheat_asm_stripped 280), so the historical number is reproducible on the new chassis - and s6 proved it is not a byte match.
+
+- [s6] THE FALSE 0: deleting only the trailing comment from `s32 dummy[2];    /* LOAD-BEARING ... */` (byte-identical C otherwise) flips sandbox --disable all from 0 to 12. Reproduced twice alternating in one batch. Post-strip source at tmp/sandbox/func_80049A2C/src/text1b.c shows `(void) dummy;` blanked but the declaration KEPT when the comment is present, and both blanked when it is absent.
+
+- [s6] MECHANISM (read-only from engine source): engine/volatile_cheats.py:_ORPHAN_DECL_RE ends `;[ \t]*$`, so a trailing comment on a declaration line defeats the orphaned-declaration closure while find_void_discard_unused_locals still removes the `(void) dummy;` sink.
+
+- [s6] HONEST FLOOR = 12: the clean body (no `dummy` in any spelling) measures sandbox --disable all = 12, target_insns 126, build_insns 126, real frame 0x28 vs target 0x30 - the whole residual is sp-relative offset shift. This equals memory/grind/func_80049A2C/migration_pin.json's independently recorded floor of 12. The s1-s5 floor_history entries of 0 are superseded.
+
+- [s6] TWO MORE SPELLING HOLES (real frame 48, sandbox 0 each): `struct { s16 a; s16 b; } dummy;` with zero references (no detector has a struct/union arm), and `s32 dummy[2];` + `(void) dummy[0];` (_VOID_DISCARD_NO_ADDR_RE matches only `(void) name;`, not an indexed read; it is also a dead read of an uninitialized local). The first means session s4's H8 zero is an artifact of the same class.
+
+- [s6] FRAME-SLOT LAW (10 real unstripped builds, tmp/grind/func_80049A2C/s6/matrix.md): frame is 40 with no locals and 48 with any BLKmode local. char[1] (QI), s16[1] (HI), s32[1] (SI) are promoted to pseudos and reserve NOTHING; char[2], char[3], char[4], s32[2], struct{s16;s16;} are BLKmode, go through assign_stack_local, and reserve 8 after ALIGN8. ALIGNMENT decides, not size (char[4] -> 48, s32[1] -> 40, both 4 bytes).
+
+- [s6] CORRECTED FRAME EQUATION: 48 = ALIGN8(vars in 2..8) + 16 outgoing-args + 20 gp-saves. Session s1's `vars in [1..8]` reading is tightened by measurement: a 1-byte local yields frame 40 because it is QImode-promotable, not because 1 byte is too small.
+
+- [s6] `(void) dummy;` IS NOT LOAD-BEARING - a zero-reference BLKmode local reaches frame 48 on its own (measured for s32[2], char[2], char[3], struct{s16;s16;}). Session s1's opposite reading was an artifact of the stripper. The Judge's constraint-2 note about standing the pad WITHOUT a shim is therefore already true at the codegen level; it remains blocked at the policy level (still a wholly dead local) and at the engine level (engine/ is outside the grind-session surface).
+
+- [s6] LIVE-AGGREGATE KILL: `s16 a1_val_a[1];` carrying a1_val with every use real gives real frame 40, sandbox 12, 126 insns - register-allocated, zero stack traffic. Any BLKmode-sized live aggregate emits sw/lw at 0x00..0x14($sp), which target lacks entirely.
+
+- [s6] TARGET RE-VERIFIED by fresh grep of asm/funcs/func_80049A2C.s: 126 instructions; the only sp-relative accesses are the five saves at 0x18/0x1C/0x20/0x24/0x28 and their matching loads; three calls (func_80052C10, func_8004153C, func_800417D0), all with <= 1 argument, so outgoing_args_size is pinned at the 16-byte REG_PARM_STACK_SPACE minimum and cannot absorb the +8.
+
+- [s6] CLOSURE: combining session s3's cc1 -da proof (no reload/alter_reg phantom slot fires in this function's RTL pipeline) with the s6 BLKmode law and the live-aggregate kill, target's +8 locals area is reachable ONLY through a wholly dead memory-resident local declaration - the unused-local-array frame-coercion forbidden family. Every 0 this function has ever scored was such a construct hidden from the stripper by a spelling hole.
+
+- [s6] DISPOSITION NOTE: no owner-gated claim is made this session. The pre-existing 2026-07-20 OWNER-ESCALATION rests on the now-disproved 'bytes proven, blocked only by policy' premise; a correction entry was filed at the tail of docs/grind/decisions.md (2026-08-19) rather than a terminal ruling, and the driver has not assigned escalation modality.
+
+- [s6] SCOPE: src/text1b.c was restored EXACTLY to its session-start INCLUDE_ASM content; git status shows changes only in memory/grind/func_80049A2C/, docs/grind/decisions.md and the engine's own metrics/events.jsonl.

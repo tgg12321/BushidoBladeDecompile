@@ -131,3 +131,117 @@
 - probe: Append an OWNER-ESCALATION entry (in the hirahira_w_frie / saTan0Init / cpu_side_move_dir_4 format) to docs/grind/decisions.md presenting: (a) canonical-asm authorization option and its plainly-stated cost under the owner's 2026-07-20 criterion; (b) INCOMPLETE-owner-accepted option per endgame-lock-disposition; complete s1..s5 lever-exhaustion ledger; plain statement of no-SOTN-precedent for a fully-dead 8-byte pad; reference the .claude/rules/endgame-lock-disposition.md 2026-07-20 standing policy. Verify grep-able. Draft banked at tmp/grind/func_80049A2C/s5/escalation-entry.md.
 - result: Entry appended at docs/grind/decisions.md:954 (file grew 951 → 975 lines). Verified: grep '## 2026-07-20 — func_80049A2C.*OWNER-ESCALATION' matches once, at line 954. The escalation cites the 2026-07-19 23:46 + 2026-07-20 00:36 Judge FAILs, presents both options honestly, includes the full s1..s5 exhaustion ledger with pass/probe/result quotations, plainly acknowledges no SOTN precedent for a fully-dead 8-byte pad, references the 2026-07-20 endgame-lock-disposition rule, notes precedent saTan0Init + cpu_side_move_dir_4 both ruled option (b) on 2026-07-20, and does NOT self-resolve. Baseline reconfirmed post-file: sandbox --disable all = 0, target_insns=126, build_insns=126.
 - verdict: CONFIRMED
+
+## Session s6 (synthesis, 2026-08-19)
+
+### H-S6-A — "The banked sandbox=0 is a real cheat-free byte match."
+- mechanism: s1..s5 all recorded `sandbox --disable all = 0` with
+  `s32 dummy[2];` + `(void) dummy;` in place and read that as "bytes proven,
+  blocked only by policy".
+- probe: apply the s1 candidate to src, measure; then delete ONLY the trailing
+  comment on the declaration line and re-measure; then read the post-strip
+  source the sandbox actually compiles.
+- result: 0 with the comment, 12 without it (reproduced 2x, alternating).
+  Post-strip source shows the `(void) dummy;` blanked and the declaration
+  KEPT when the comment is present, both blanked when it is absent.
+  `engine/volatile_cheats.py:_ORPHAN_DECL_RE` is anchored `;[ \t]*$`.
+- verdict: **KILLED.** The 0 was stripper evasion by a trailing comment. The
+  honest floor is 12 and always was (agrees with migration_pin.json).
+
+### H-S6-B — "The +8 frame slot needs an 8-byte local and the `(void)` sink."
+- mechanism: s1's frame decomposition 48 = ALIGN8(vars) + 16 + 24 with the
+  sink assumed necessary to keep the declaration alive through DCE.
+- probe: 10 real (unstripped) builds of `build/src/text1b.o`, objdump the
+  prologue: char[1..4], s16[1], s16[4], s32[1], s32[2], s32[3],
+  struct{s16;s16;}, with and without the sink.
+- result: sink NEVER required — zero-reference BLKmode locals reach 48 on
+  their own. Size is not the criterion, ALIGNMENT is: char[4] -> 48 but
+  s32[1] -> 40 (both 4 bytes). Scalar-integer-mode-able aggregates
+  (char[1]/s16[1]/s32[1]) become pseudos and reserve nothing.
+- verdict: **KILLED (hypothesis corrected).** Law: BLKmode local <=> +8 slot.
+  Frame equation: 48 = ALIGN8(vars in 2..8) + 16 args + 20 gp-saves.
+
+### H-S6-C — "A semantically LIVE aggregate can hold the slot." (new axis)
+- mechanism: if the aggregate carries a real value, it is not a dead
+  declaration and clears cheat-checklist T1/T2/T6; the frame slot would then
+  be an honest consequence of ordinary C.
+- probe: replace scalar `s16 a1_val` with `s16 a1_val_a[1]` (written twice,
+  read twice — every use real); real build + sandbox.
+- result: real frame 40, sandbox 12, build_insns 126. GCC 2.7.2 promotes the
+  HImode-able one-element array to a pseudo: no frame bytes, no stack
+  traffic. Forcing BLKmode (>=2 elements / misalignment) necessarily emits
+  `sw`/`lw` at 0x00..0x14($sp); target has ZERO such accesses and is exactly
+  126 insns with no slack.
+- verdict: **KILLED.** No live aggregate can produce the slot.
+
+### H-S6-D — "s4's struct-aggregate H8 (sandbox 0) is a distinct closing form."
+- mechanism: `struct { s32 a; s32 b; } dummy;` scored 0 in s4 and was banked
+  as "same defect, not a distinct form" — but the 0 itself was never audited.
+- probe: `struct { s16 a; s16 b; } dummy;` with ZERO references; real build +
+  sandbox + engine detector source read.
+- result: real frame 48, sandbox 0 — because NO detector covers a
+  zero-reference struct-typed local. Third hole of the same class:
+  `(void) dummy[0];` (indexed read) also yields 48/0.
+- verdict: **KILLED.** Three independent spelling holes, all checklist-T4
+  automatic FAILs; none is a candidate.
+
+## FRONTIER RESET after s6 (strongest first)
+
+1. **F1 — Detector-complete re-audit of every "0" in this ledger, then decide
+   the disposition on the corrected floor of 12.** Mechanism: every score in
+   s1..s5 was taken through a stripper that silently removes some spellings
+   and misses others, so both the 0s (holes) and some of the 12s (over-strip)
+   are artifacts; only unstripped real builds are codegen evidence. Next
+   probe: for each banked form in rejected/, record BOTH the real frame
+   (`make build/src/text1b.o` + objdump) and the sandbox score, and mark which
+   rows are artifacts — the s6 matrix
+   (tmp/grind/func_80049A2C/s6/matrix.md) already does this for 10 rows and
+   is the template.
+
+2. **F2 — The only remaining un-probed route to frame 0x30 without a dead
+   local: raise `current_function_outgoing_args_size` from 16 to 24 with
+   vars = 0 (0 + 24 + 20 -> ALIGN8 -> 48).** Mechanism: MIPS
+   compute_frame_size takes args_size from the widest call in the function;
+   REG_PARM_STACK_SPACE pins the floor at 16 and all three calls here take
+   <= 1 argument. Next probe: enumerate the constructs that bump
+   outgoing_args_size WITHOUT emitting an argument store (library calls
+   emitted by the back end for 64-bit shifts / division / soft-float,
+   `alloca`, `__builtin_apply`), and check whether any of them can be reached
+   from a semantic rewrite of this body that keeps build_insns at 126.
+   Prior expectation is negative (a 5th integer argument stores at
+   0x10($sp), which target lacks) — but this is the last decomposition of
+   the frame equation that has never been measured, and s6 proved the
+   equation itself had been mis-derived once already.
+
+3. **F3 — Report the three stripper spelling holes to the operator.**
+   Mechanism: `_ORPHAN_DECL_RE`'s `;[ \t]*$` anchor (trailing comment),
+   the absent struct/union arm in both the orphan-decl and unused-array
+   detectors, and `_VOID_DISCARD_NO_ADDR_RE` not covering indexed discards
+   let a dead frame-coercion local score 0 in the cheat-invisible sandbox.
+   Grind sessions may not touch `engine/`, so this is an operator item, not a
+   probe — but until it is closed, ANY function's sandbox 0 that depends on a
+   dead local is suspect, and this function is the worked example.
+
+## [s6] The sandbox --disable all = 0 recorded by sessions s1-s5 is a real cheat-free byte match.
+- mechanism: engine/volatile_cheats.py's orphaned-declaration closure (_ORPHAN_DECL_RE) is anchored ';[ \t]*$', so the trailing comment on `s32 dummy[2];    /* LOAD-BEARING ... */` hides the declaration from the stripper while find_void_discard_unused_locals still strips `(void) dummy;`. The dead 8-byte local survives into the 'cheat-invisible' build and produces target's addiu $sp,-0x30.
+- probe: Applied the s1 candidate to src and measured (0); deleted ONLY the trailing comment, byte-identical C otherwise, and re-measured (12); reproduced twice alternating base/no-comment in one batch; read the post-strip source the sandbox actually compiles (tmp/sandbox/func_80049A2C/src/text1b.c) and confirmed the declaration survives with the comment and is blanked without it.
+- result: 0 with the comment, 12 without it, reproducible; post-strip source confirms the mechanism. Honest floor is 12, agreeing with migration_pin.json's independently recorded floor of 12.
+- verdict: KILLED
+
+## [s6] Target's +8 locals area requires an 8-byte local plus a `(void) dummy;` sink to survive DCE (session s1's frame reading).
+- mechanism: GCC 2.7.2 expand_decl: an aggregate whose (size, alignment) admits a scalar integer machine mode becomes a pseudo; otherwise it is BLKmode and goes through assign_stack_local, making get_frame_size() nonzero. compute_frame_size then yields 48 = ALIGN8(vars 2..8) + 16 outgoing-args + 20 gp-saves.
+- probe: 10 real unstripped builds (`make build/src/text1b.o` + objdump of the prologue, which the cheat-stripper cannot touch): char[1], char[2], char[3], char[4], live s16[1], s16[4], s32[1], s32[2], s32[3], struct{s16;s16;}, with and without the sink. Matrix at tmp/grind/func_80049A2C/s6/matrix.md.
+- result: Sink never required - zero-reference BLKmode locals reach frame 48 alone. Alignment decides, not size: char[4] -> 48 but s32[1] (also 4 bytes) -> 40. char[1]/s16[1]/s32[1] are promoted to pseudos and reserve nothing; char[2..4]/s32[2]/struct{s16;s16;} are BLKmode and reserve 8.
+- verdict: KILLED
+
+## [s6] A semantically LIVE aggregate can hold the +8 slot, giving a form where every local has a real role (clears cheat-checklist T1/T2/T6).
+- mechanism: If the aggregate carries a real value the declaration is not dead and the frame slot would be an ordinary consequence of C. That requires the aggregate to be BLKmode AND its live uses to cost zero instructions.
+- probe: Replaced scalar `s16 a1_val` with `s16 a1_val_a[1]` (written twice, read twice, every use real); measured real frame and sandbox score; cross-checked target's sp-relative accesses by fresh grep of asm/funcs/func_80049A2C.s.
+- result: Real frame 40, sandbox 12, build_insns 126 - GCC promotes the HImode-able one-element array to a pseudo, reserving no frame bytes. Pushing it to BLKmode necessarily emits sw/lw at 0x00..0x14($sp); target contains ZERO such accesses (only the five s0-s3/ra saves at 0x18..0x28) and is exactly 126 instructions with no slack.
+- verdict: KILLED
+
+## [s6] Session s4's struct-aggregate H8 (`struct { s32 a; s32 b; } dummy;`, sandbox 0) is a distinct closing form worth re-examining.
+- mechanism: Neither find_unused_local_arrays (array declarators only) nor find_orphaned_local_decls (requires >=1 reference inside a stripped span; its type alternation has no `struct`) covers a zero-reference struct-typed local, so it is never stripped and scores 0 while still reserving the frame slot.
+- probe: Built `struct { s16 a; s16 b; } dummy;` with ZERO references and `s32 dummy[2];` + `(void) dummy[0];`; measured real frame and sandbox for both; read the detector source in engine/volatile_cheats.py.
+- result: Both give real frame 48 and sandbox 0 - two further spelling holes of the same class as the trailing-comment hole. Session s4's H8 zero is therefore an artifact. Under cheat-checklist T4 (passes only because the detectors miss this spelling) all three are automatic FAILs, not candidates.
+- verdict: KILLED

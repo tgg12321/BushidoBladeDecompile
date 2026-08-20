@@ -1,59 +1,59 @@
-/* Session s1 recon best form: three of the four judge-flagged constructs
- * are NOISE (contribute nothing to codegen — verified by isolated
- * removal, each still sandbox=0). Only `dummy[2]` is load-bearing
- * (+12 score when removed alone) — it reserves the 8-byte locals frame
- * slot the target prologue has (frame=0x30 = ALIGN8(vars=1..8) + 16 args
- * + 24 gp-regs).
+/* func_80049A2C — session s6 (synthesis) BEST HONEST FORM.
  *
- * This candidate DROPS the three noise constructs but KEEPS dummy[2].
- * Sandbox = 0 (verified). Judge FAILs on dummy[2] as an
- * [[inline-asm-policy]] unused-fixed-size-local-array cheat (rulings
- * 2026-07-19 23:46 + 2026-07-20 00:36 in docs/grind/decisions.md).
+ * sandbox --disable all = 12 (frame 0x28 vs target 0x30; 126/126 insns, the
+ * whole residual is sp-relative offset shift). This is the TRUE cheat-free
+ * floor and it matches memory/grind/func_80049A2C/migration_pin.json (12).
  *
- * Cumulative lever exhaustion across s1..s4 on the aggregate-only
- * conclusion:
- *   s1 — 3-of-4 noise KILLED, dummy[2] SOLE load-bearing.
- *   s2 — phantom-slot mechanism (H1/H2/H3) KILLED via dead-HImode-bitwise
- *        variants and scalar-widening; recomputation H3 KILLED (target
- *        insn count depends on real recomputation).
- *   s3 — cc1 -da greg dump on working baseline vs counterfactual proves
- *        phantom-slot mechanism DOES NOT FIRE anywhere in this function's
- *        RTL pipeline (7 pseudos, all hard-reg allocated, delta between
- *        dummy-in and dummy-out greg passes = ZERO).
- *   s4 — H8 KILLED: struct-typed aggregate `struct { s32 a; s32 b; } dummy;`
- *        also sandbox=0 (same +8 slot; GCC 2.7.2 does not scalarize the
- *        two-field struct) and has the same reviewer-visible "no semantic
- *        purpose / fully-dead aggregate" defect as dummy[2]. Not a
- *        sanctioned distinct closing form. scan_hand_coded --single =
- *        LOW 0/8 (no canonical-asm signals). Permuter modality blocked
- *        by text1b.c INCLUDE_ASM sibling func_8004A348 tripping both
- *        the permuter parser and the workspace maspsx pipeline —
- *        banked as tmp/grind/func_80049A2C/s4/permuter-blocked-summary.txt.
- *   s5 — permuter (mandated modality) INDEPENDENTLY reconfirmed the s4
- *        infrastructure blocker: fresh `import.py` warned on the
- *        _permuter_ignore_line __asm__(...) sibling parse; fresh
- *        `bash compile.sh base.c` on the generated workspace died at
- *        `MASPSX: too many values to unpack (expected 2)`. Both are
- *        project-tooling fixes outside grind-session scope. Filed
- *        OWNER-ESCALATION to docs/grind/decisions.md (line 954,
- *        2026-07-20 header) presenting options (a) canonical-asm
- *        authorization without hand-coded evidence — not supportable
- *        under owner's 2026-07-20 criterion — and (b) INCOMPLETE-
- *        owner-accepted per endgame-lock-disposition. Precedent:
- *        saTan0Init + cpu_side_move_dir_4 both ruled option (b) on
- *        2026-07-20. Outcome: owner-gated.
+ * ===================================================================
+ * s6 CORRECTION — the banked "sandbox = 0" of sessions s1..s5 was an
+ * ARTIFACT of a cheat-stripper spelling hole, not a byte match.
+ * ===================================================================
+ * s1's candidate carried `s32 dummy[2];    /* LOAD-BEARING ... *[/]` with a
+ * TRAILING COMMENT on the declaration line. engine/volatile_cheats.py's
+ * orphaned-declaration closure (`_ORPHAN_DECL_RE`) is anchored `;[ 	]*$`,
+ * so the trailing comment made the declaration invisible to the stripper
+ * while `(void) dummy;` WAS stripped. The dead 8-byte local therefore
+ * survived into the "cheat-invisible" build and produced target's
+ * `addiu $sp,-0x30`. Removing only the comment (identical C otherwise)
+ * scores 12. Verified reproducible 2x, and by reading the post-strip
+ * source the sandbox actually compiles
+ * (tmp/sandbox/func_80049A2C/src/text1b.c).
  *
- * Standing disposition per rules:
- *   Every sanctioned pure-C axis (phantom-firing H4, phantom-injection
- *   H1/H2, scalar-widening, scalar-dummy H6, struct-aggregate H8) is
- *   measured dead. Canonical-asm route certified LOW by scan_hand_coded.
- *   [[endgame-lock-disposition]] (2026-07-20) codifies this species:
- *   INCOMPLETE-owner-accepted with cheat retained solely to hold the
- *   byte match, OR canonical-asm ONLY with hand-coded evidence
- *   (unavailable here), OR coercion families ONLY with SOTN precedent
- *   (none found for a fully-dead 8-byte pad). Next session should file
- *   docs/grind/decisions.md OWNER-ESCALATION to trigger "owner-gated"
- *   disposition.
+ * The same applies to s4's H8 `struct { s32 a; s32 b; } dummy;` "sandbox=0":
+ * NO detector covers a zero-reference struct-typed local, so it is a second
+ * spelling hole (checklist test T4 — passes only because the detectors do
+ * not catch THIS spelling).
+ *
+ * ===================================================================
+ * s6 MECHANISM LAW for target's +8 frame slot (10 real-build measurements,
+ * tmp/grind/func_80049A2C/s6/matrix.md)
+ * ===================================================================
+ * Frame = 40 with no locals; target = 48. The +8 appears iff a local
+ * aggregate is BLKmode, i.e. its (size, alignment) does NOT admit a scalar
+ * integer machine mode:
+ *   char[1] (QI) / s16[1] (HI) / s32[1] (SI)  -> pseudo, NO frame bytes -> 40
+ *   char[2] / char[3] / char[4] / s32[2] / struct{s16;s16;} -> BLKmode,
+ *      assign_stack_local, get_frame_size()=2..8 -> ALIGN8 -> 8 -> 48
+ * ALIGNMENT decides, not size (char[4] -> 48 but s32[1] -> 40, both 4 bytes).
+ * `(void) dummy;` is NOT needed: a zero-reference BLKmode local alone gives 48.
+ *
+ * CONSEQUENCE (the closure this session establishes):
+ *  - Any BLKmode local that is SEMANTICALLY LIVE emits stack traffic. Target
+ *    is exactly 126 insns with ZERO `sw/lw` to 0x00..0x14($sp) (only the five
+ *    s0-s3/ra saves). So a live one cannot exist.
+ *  - Any aggregate small/aligned enough to avoid stack traffic is promoted to
+ *    a pseudo and reserves NO frame bytes (measured: live `s16 a1_val_a[1]`
+ *    carrying a1_val = 126 insns, frame 40).
+ *  - Therefore the +8 slot is reachable ONLY through a wholly dead,
+ *    memory-resident local — the `unused-local-array frame coercion` family
+ *    in the forbidden catalog. Every "0" this function has ever scored came
+ *    from one of those, hidden from the stripper by a spelling hole.
+ *
+ * Ladder status: phantom-slot mechanism KILLED with cc1 -da (s3, still valid —
+ * it was a dump-level, not score-level, measurement); scalar widening KILLED
+ * (s2); recomputation H3 KILLED (s2); canonical-asm certified LOW 0/8 (s4);
+ * permuter infrastructure-blocked and independently reconfirmed (s4, s5);
+ * BLKmode/mode-promotion law established and live-aggregate axis KILLED (s6).
  */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 *new_var6;
@@ -69,7 +69,6 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 *vehicle;
     s16 a1_val;
     u8 *ot;
-    s32 dummy[2];    /* LOAD-BEARING: +8 byte frame slot; +12 score if removed */
 
     new_var6 = D_80099CC8;
     {
@@ -129,5 +128,4 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     D_800A3820 = ot + 4;
     *((u8 **) ot) = obj;
     D_800A38B4 = obj + 0x68;
-    (void) dummy;
 }

@@ -1,8 +1,8 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,13 +33,29 @@
    "floor": 0,
    "modality": "permuter",
    "headline": "s5 permuter (mandated modality) independently reconfirmed the s4 workspace blocker (import.py __asm__ parse + maspsx TU exception, both project-tooling fixes out of scope); every sanctioned axis measu"
+  },
+  {
+   "session": 6,
+   "floor": 12,
+   "modality": "synthesis",
+   "headline": "The banked floor of 0 was cheat-stripper evasion by a trailing comment: honest floor is 12; established the BLKmode alignment law for target's +8 frame slot and killed the live-aggregate axis."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner rules on the 2026-07-20 func_80049A2C OWNER-ESCALATION.",
-   "mechanism": "The escalation presents two mutually exclusive options: (a) authorize canonical-asm for func_80049A2C despite scan_hand_coded LOW 0/8 \u2014 not supportable under the owner's 2026-07-20 governing criterion (asm allowed only where evidence the original was hand-written); (b) refuse canonical-asm and accept INCOMPLETE-owner-accepted per endgame-lock-disposition \u2014 precedent saTan0Init 2026-07-20 + cpu_side_move_dir_4 2026-07-20 both went (b).",
-   "next_probe": "Owner audits docs/grind/decisions.md:954 escalation entry, rules in decisions.md via an `auth:` commit (the reserved commit class for owner rulings), driver un-parks or accepts the ruling per queue-side machinery. No further grind-session action required until then; the driver advances the queue past func_80049A2C automatically per the 'owner-gated' contract."
+   "hypothesis": "Every score banked in this ledger must be re-audited detector-complete before any of it is spent: the cheat-stripper silently removes some spellings (making a 12 an artifact of the strip, not a codegen fact) and misses others (making a 0 an artifact of a hole).",
+   "mechanism": "engine/volatile_cheats.py strips find_unused_local_arrays matches (array declarators, 2 <= n <= 64, zero references), find_void_discard_unused_locals matches, and find_orphaned_local_decls matches; anything outside those regexes compiles as written. Only a real unstripped build (`make build/src/text1b.o` + objdump) is codegen evidence.",
+   "next_probe": "For each form in memory/grind/func_80049A2C/rejected/, record BOTH the real frame from an unstripped build AND the sandbox score, and mark which rows are strip artifacts. tmp/grind/func_80049A2C/s6/matrix.md already does this for 10 rows and is the template; the pre-s6 rows (scalar-dummy-no-frame.c, struct-dummy-h8-same-frame-same-defect.c, the s2 phantom-injection variants) have never been measured this way."
+  },
+  {
+   "hypothesis": "Frame 0x30 is reachable with vars = 0 by raising current_function_outgoing_args_size from 16 to 24 (0 + 24 + 20 -> ALIGN8 -> 48), which needs no local at all and therefore no dead declaration.",
+   "mechanism": "MIPS compute_frame_size takes args_size from the widest call in the function, floored at REG_PARM_STACK_SPACE = 16. All three calls here take <= 1 argument. Some back-end-emitted library calls, alloca, and __builtin_apply bump outgoing_args_size by paths other than an explicit fifth argument.",
+   "next_probe": "Enumerate the constructs that bump outgoing_args_size WITHOUT emitting an argument store (64-bit shift/divide/soft-float helpers, alloca, __builtin_apply) and test whether any is reachable from a semantic rewrite of this body that keeps build_insns at 126. Prior expectation is negative (a fifth integer argument stores at 0x10($sp), which target lacks), but this is the last decomposition of the frame equation never measured, and s6 proved the equation had been mis-derived once already."
+  },
+  {
+   "hypothesis": "The three cheat-stripper spelling holes are an operator-side defect that makes any function's sandbox 0 suspect when it depends on a dead local.",
+   "mechanism": "(1) _ORPHAN_DECL_RE's `;[ \\t]*$` anchor is defeated by a trailing comment on the declaration line; (2) neither find_unused_local_arrays nor find_orphaned_local_decls has a struct/union arm, so a zero-reference struct-typed local is never stripped; (3) _VOID_DISCARD_NO_ADDR_RE covers `(void) name;` but not `(void) name[0];`.",
+   "next_probe": "Operator item, not a grind probe - engine/ is outside the grind-session surface. Filed in the 2026-08-19 correction entry at the tail of docs/grind/decisions.md. Until it is closed, treat any dead-local-dependent 0 elsewhere in the queue as unverified."
   }
  ],
  "judge_constraints": [

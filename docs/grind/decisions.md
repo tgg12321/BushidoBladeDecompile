@@ -6962,3 +6962,76 @@ their `delete_between` anchor `lhu $4,0($3)` is written against the HEAD body.
 ## 2026-08-19 18:57 — func_80041BF4 — final call — **PASS**
 
 Three FAKE constructs, each inside a sanctioned family with prerequisites verified, plus ordinary C. (1) `int one` constant-holder = named-local-fake-exception.md:24 shape (live across calls, read at the test); 16 spellings measured inert, banked rejected/s11-one-*.c. (2) single-level do-while(0) on one else-arm = do-while-zero-exception.md:23, whose 2026-07-06 FINAL ruling covers ANY codegen effect incl. RA (I read the rule end-to-end; s10 frontier item 3 is thereby resolved); ten geometries measured 18-33, only the wrap reaches 0. (3) `s16 rect[8]` = dead-vars-local-array.md OVERSIZED-LOCALS carve-out, live-object branch (prong 2). Decisive fact I verified myself from asm/funcs/func_80041BF4.s alone: frame 0x58=88, ten callee-saves at 0x30-0x54 (40B), outgoing-args 24B (sw 0x10/0x14), so locals = 24B at sp+0x18, and the ONLY stores there are four sh at 0x18/0x1A/0x1C/0x1E = 8B; rect[4] measures frame 80, so no fully-written locals set yields 88 - prong 1 discharged from target bytes, range rect[5]..[8] measured (prong 3), exhaustion in hypotheses.md [s10]/[s11] with rejected/s11-rect4-frame-80-22.c and -rect9-frame-96-22.c banked. Also checked: `x = *(u16*)tbl; if ((s16)x >= 0)` is semantically faithful, not a coercion - target itself reads 0($s0) as BOTH lh and lhu (asm lines 115-116); the byte-pointer table load `*(s16**)((u8*)D_80094DF0 + (k<<2))` is same address/width/value, no false assertion, and is the project's established unannotated idiom (997 such spellings in src/*.c, e.g. code6cac.c:2323 `*(s32*)((u8*)&D_800A3860 + v0*4)`), so it needs no family or FAKE mark. Diff scope clean: only func_80041BF4's body; all 35 retired regfix/asmfix lines are keyed to this function. Full evidence: memory/grind/func_80041BF4/self_vet.md, hypotheses.md [s10]/[s11], evidence.md, rejected/.
+
+## 2026-08-19 — func_80049A2C (src/text1b.c) — **CORRECTION TO THE 2026-07-20 OWNER-ESCALATION** (filed by grind s6, synthesis modality)
+
+The OWNER-ESCALATION for `func_80049A2C` filed on 2026-07-20 (this file, the
+`## 2026-07-20 — func_80049A2C (src/text1b.c) — **OWNER-ESCALATION**` entry)
+rests on a factual claim that session s6 has now DISPROVED, and the record must
+not be ruled on as written.
+
+**The claim:** "sandbox --disable all = 0" — i.e. the function's bytes were
+proven cheat-free and only policy stood between it and completion, so the
+question put to the owner was purely "authorize the construct or accept
+INCOMPLETE".
+
+**The measurement:** that 0 was cheat-stripper evasion, not a byte match. The
+candidate declared
+
+    s32 dummy[2];    /* LOAD-BEARING: +8 byte frame slot; +12 score if removed */
+
+Deleting ONLY the trailing comment — byte-identical C otherwise, same
+declaration, same `(void) dummy;` sink, same position — flips the score from 0
+to 12. Reproduced twice in one alternating batch. Reading the post-strip source
+the sandbox actually compiles (`tmp/sandbox/func_80049A2C/src/text1b.c`) shows
+the `(void) dummy;` statement blanked while the DECLARATION survives when the
+comment is present, and both blanked when it is absent. The mechanism is in the
+engine source: `engine/volatile_cheats.py:_ORPHAN_DECL_RE` is anchored
+`;[ \t]*$`, so a trailing comment on the declaration line hides the declaration
+from the orphaned-declaration closure. The dead 8-byte local therefore survived
+into the "cheat-invisible" build and produced target's `addiu $sp,-0x30`.
+
+**Corrected floor:** 12 (126/126 instructions; the entire residual is
+sp-relative offset shift, frame 0x28 vs target 0x30). This agrees with
+`memory/grind/func_80049A2C/migration_pin.json` ("floor": 12), which the
+asm-until-matched migration had recorded independently.
+
+**Two further spelling holes found, same class, both real-frame 48 / sandbox 0:**
+`struct { s16 a; s16 b; } dummy;` with zero references (no detector covers a
+zero-reference struct-typed local), and `s32 dummy[2];` + `(void) dummy[0];`
+(the discard detector matches only `(void) name;`, not an indexed read). The
+first of these means session s4's "H8 struct-aggregate sandbox = 0" is an
+artifact of the same class.
+
+**What s6 established positively** (10 real, unstripped builds — frames read
+from `make build/src/text1b.o` + objdump; matrix at
+`tmp/grind/func_80049A2C/s6/matrix.md`): target's +8 locals area appears iff a
+local aggregate is BLKmode. Scalar-integer-mode-able aggregates
+(`char[1]`/`s16[1]`/`s32[1]`) are promoted to pseudos and reserve nothing;
+`char[2..4]`, `s32[2]`, `struct{s16;s16;}` are BLKmode and reserve 8 after
+ALIGN8. Alignment decides, not size. A `(void)` sink is NOT required — a
+zero-reference BLKmode local reaches frame 48 on its own, which is contrary to
+what session s1 recorded. And a semantically LIVE aggregate cannot hold the
+slot: a one-element array carrying a real value is register-allocated (measured
+frame 40, 126 insns), while any BLKmode-sized one emits `sw`/`lw` at
+0x00..0x14($sp) that the 126-instruction target does not contain.
+
+**Disposition — NOT owner-gated this session.** The pre-existing escalation is
+not ruled on here and no new terminal entry is filed, because the premise the
+owner would have been ruling on (bytes proven) was false, and because the driver
+has not assigned `escalation` modality. The function returns to the ladder with
+an honest floor of 12 and the frontier reset in
+`memory/grind/func_80049A2C/hypotheses.md` (F1 detector-complete re-audit of
+every banked score; F2 the never-measured `outgoing_args_size` 16 -> 24
+decomposition of the frame equation; F3 the operator-side detector report).
+
+**Operator item (outside the grind-session surface — `engine/` may not be
+touched by a grind session).** Three cheat-stripper spelling holes let a dead
+frame-coercion local score 0 in the cheat-invisible sandbox:
+(1) `_ORPHAN_DECL_RE`'s `;[ \t]*$` anchor is defeated by a trailing comment on
+the declaration line; (2) neither `find_unused_local_arrays` nor
+`find_orphaned_local_decls` has a `struct`/`union` arm, so a zero-reference
+struct-typed local is never stripped; (3) `_VOID_DISCARD_NO_ADDR_RE` covers
+`(void) name;` but not `(void) name[0];`. Until these are closed, any function
+whose sandbox 0 depends on a dead local is suspect; `func_80049A2C` is the
+worked example and held a false 0 across five sessions.
