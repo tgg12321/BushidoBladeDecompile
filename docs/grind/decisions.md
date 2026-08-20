@@ -8480,3 +8480,108 @@ Question (2) is YES: per-arm complete rgb0/rgb1 POLY_G4 triples are ORDINARY C f
 ## 2026-08-20 08:00 — func_80072CD4 — layer-1 review — **FAIL**
 
 Same banned dup4_0xc_into_arms store-schedule duplication, re-spelled as POLY_G4 per-arm RGB triples and laundered a fifth time through a self-issued decisions.md 'judge ruling' that judge-sole-gate.md rule 4 explicitly forbids any agent (including the Judge) from issuing.
+
+## 2026-08-20 — func_80072CD4 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s10, dispatched in the driver's `escalation` modality (driver-declared
+exhaustion: honest floor FLAT at 4 across sessions s2–s9 and five distinct modalities — recon,
+structural, permuter, synthesis, forensics). This entry is the terminal disposition for
+func_80072CD4. Nothing is pending on the owner; the driver may park the function and advance the
+queue. It supersedes and replaces the s5-authored entry at decisions.md:8312, which the driver
+voided with a DISCARDED-SESSION MARKER (decisions.md:8386) because s5 filed it from `synthesis`
+modality rather than `escalation`.
+
+**Chassis-current measurement (re-measured THIS session, not quoted from the ledger).**
+`python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c` then
+`& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` →
+`{"score": 4, "target_insns": 79, "build_insns": 79, "scorable": true, "rules_dropped": 0}`
+(artifact `tmp/grind/func_80072CD4/s10/sandbox_candidate.json`). The instruction COUNT is exact; the
+residual 4 is entirely the merge block's store ORDER. src/text1b.c was restored to
+`INCLUDE_ASM("asm/funcs", func_80072CD4);` immediately after the measurement (`git diff src/` clean),
+per asm-until-matched; the clean floor-4 pure-C body stays banked at
+memory/grind/func_80072CD4/candidate.c.
+
+**The residual, in one paragraph (established at dump level by s9, not by hypothesis).** Target's
+merge block is `sb v1,4 / sb v1,0xC / sb v0,0xE / li v0,0xFC / …`; ours is `sb v0,0xE / li v0,0xFC / …`
+with the two `$v1` stores deferred to the block tail. jump2 splices the arms' cross-jumped common tail
+(`sb v0,0xE`) at the join label, and sched2 then defers the two `@4`/`@0xC` stores because their datum
+is produced in a predecessor block and they earn no launch pairing. s9's `-da` sched2 trace named the
+governing rule: `INSN_PRIORITY` is flat at 1 across the whole merge block, so `rank_for_schedule`'s
+priority clause is a permanent tie; the `$v0` `REG_DEP_OUTPUT`/`ANTI` chain keeps only one chain member
+ready at a time; and `schedule_select`'s `potential_hazard` override forces every ready store ahead of
+the ready `li`. Source statement order reaches only the LUID tiebreak, which permutes tail slots among
+themselves — which is exactly why s4's directed PERM_LINESWAP permuter over the full 8-store merge
+permutation space (15,825 iterations) returned zero finds below base-4, and why s9's extreme-LUID
+setting banked at 5/79, i.e. worse.
+
+**Every pure-C axis is measured dead, each banked as a rejected form.** 35 disproven bodies in
+memory/grind/func_80072CD4/rejected/. The axes and their floors: merge-block statement order
+(permuter, 15.8k iters, no find < 4); cross-block `var_v0` chassis (13/78 — target's own source shape,
+killed by a deterministic sched1 hoist of the lone constant `li` to the arm top, which rotates the
+value to `$v1`); shared-constant-holder "Lever A" (inert at 4/79 per-arm, 11/78 cross-block);
+hoisting `@4`/`@0xC` above the inner `if` (8/78); base-pointer/walking-pointer spellings (17/82,
+13/82, 24/80, 6/79); control-flow spelling — branch polarity and arm order, all three insertions
+(11/79, 39/79, 46/79); half-duplication of one shared 0xFC channel (6/80, 9/80); rgb2/rgb3 per-arm
+duplication (17/89); the COMPLETED-C sibling func_80072BC4's chassis transplanted wholesale (14/78,
+17/77); alias serialisation (6/79, 11/78, 13/79); register sharing (6/77, 17/77 — collapses the two
+distinct 0xFC materialisations target keeps). s9 additionally enumerated and closed the "give
+`@4`/`@0xC` an in-block dependence successor" axis analytically: all three dependence kinds sched.c
+can create for a store are either non-head-reaching, already measured dead, or not byte-neutral.
+s10 found no un-tried lever to add to that list.
+
+**AND-gate (i) — canonical asm: FAILS.** Re-run this session:
+`python3 tools/scan_hand_coded.py --single func_80072CD4` → **tier LOW, score 0/8**, S1–S8 all
+negative (79 insns, 3 spills, 6 distinct regs; no multu pacing, no empty-body branch, max load burst
+2, no high-similarity sibling cluster, no BIOS jumptable, no unsaved `$sN`, no redundant
+mask-before-shift). The engine's canonical gate verdict is C. This is ordinary compiled C carrying an
+ordinary scheduler/cross-jump artifact — it is not hand-written asm and must not be granted a
+canonical-asm authorization.
+
+**AND-gate (ii) — a sanctioned family with an in-hand SOTN-master precedent: FAILS.** The only
+sandbox-0 body ever found for this function (banked at
+rejected/rederive_polyg4_struct_perarm_score0_banned_family.c, and in its earlier fc_const-holder
+spelling at rejected/dup4_0xc_into_arms.c) writes the `@4`/`@0xC` = 0xFC stores inside BOTH inner
+arms, where jump2 deletes the cross-jump-dead second copy; its only effect is the store schedule at
+the merge head. The Judge FAILed that construct on 2026-07-24 16:38 as outside the evidenced
+`reg_n_refs`-RA-priority scope of the duplicated-statement-into-arms sanction, the owner refused to
+extend the carve-out on 2026-07-27, and five successive fresh layer-1 cheat-reviewers FAILed it again
+today (2026-08-20 at 05:53, 06:20, 07:02, 08:00 and the 0553-banked body) across every respelling
+tried — bare offsets, struct-member casts, POLY_G4 RGB triples, with and without a holder local. It is
+recorded in state.json's `banned_constructs`, so the driver rejects it before a Judge ever sees it.
+**Precedent search, reported in full including the closest hit so the owner can batch-review it:**
+`docs/reference/sotn-construct-index.md:887` lists the `dup_if_else_arm` family with 958 hits, and the
+nearest exhibit is `docs/reference/sotn-construct-index.md:899` →
+`src/boss/bo4/unk_46E7C.c:2865` — `prim->x2 = prim->x3 =` duplicated into both arms of one if/else,
+untagged (PSX / GCC 2.7.2), i.e. a duplicated store into GPU-primitive fields. That citation is
+**not sufficient** and the gate is scored FAILED: the index states its own scan quality as
+"HEURISTIC SAMPLE - single-line textual match only", and a textual duplicate-in-both-arms hit
+exhibits none of the operative property at issue here — an UNCONDITIONAL common-tail statement lifted
+into both arms whose second copy is CROSS-JUMP-DEAD and whose sole observable effect is the merge
+block's store schedule. Per the standing bar, "same spirit" and genre-adjacency do not qualify; a
+census that returns no exhibit of the shape is a failed gate, not an open question. The citation is
+recorded here only so the driver's borderline log carries it into the owner's batch review, should
+the owner ever wish to reconsider extending the frozen list. Until then the construct stays banned.
+
+**Disposition (per the owner's standing 2026-07-27 both-gates-fail auto-ruling,
+.claude/rules/endgame-lock-disposition.md).** **REFUSED / OWNER-ACCEPTED INCOMPLETE.** No cheat is
+present anywhere: main carries `INCLUDE_ASM("asm/funcs", func_80072CD4);` with zero regfix rules, zero
+asmfix rules and zero cheat-asm, and the clean floor-4 pure-C body — one `int fc_const` local, no
+pins, no `__asm__`, no volatile, no barrier, no do-while(0), no dead store, no duplication — is banked
+at memory/grind/func_80072CD4/candidate.c. The function is parked terminally, out of active grind,
+classified NOT COMPLETED-C and NOT canonical-asm. Nothing waits on the owner.
+
+**Re-attempt conditions (a future unpark MUST name one of these; the ground already worked is spent
+and must not be re-cited).** (a) A genuine in-scope pure-C lever that pins the cross-block `var_v0`
+`li` at the arm tail WITHOUT an arm-local `sb` — i.e. defeats the sched1 hoist by some mechanism not in
+the 35 banked rejects; (b) a lever that moves jump2's cross-jumped tail off the merge-block head;
+(c) an actually-exhibited SOTN-master file+function citation of a cross-jump-dead common-tail
+duplication used for store scheduling (not a textual dup_if_else_arm index hit); or (d) an explicit
+owner extension of the frozen sanctioned-family list to cover it. Re-deriving the per-arm duplication
+through a sixth C spelling is NOT a new lever, and no docs/grind/decisions.md "ruling: … PASS" entry
+authored inside the grind pipeline can authorize it (judge-sole-gate.md rule 4).
+
+**Precedent (same RA/scheduler-locked, hand-coded-LOW, no-SOTN-precedent species, all ruled the same
+way):** func_80072CD4's own 2026-07-27 owner ruling (decisions.md:1759), motion_SetMotion
+(2026-07-19 FAMILY REFUSED), saTan0Init, cpu_side_move_dir_4, func_80057CC8 (2026-07-20),
+func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / AddTbpOfst_80047EE8 /
+cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22), func_80033550 (2026-08-20).

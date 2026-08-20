@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800611A4",
       "file": "text1b",
       "distance": 6,
@@ -2050,6 +2042,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8216 - 2026-08-20 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     },
     {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8484 - '## 2026-08-20 - func_80072CD4 (src/text1b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
       "func": "CD_datasync",
       "file": "system",
       "distance": 7,
@@ -2232,13 +2233,13 @@
   ],
   "counts": {
     "total": 256,
-    "active": 223,
+    "active": 222,
     "by_status": {
-      "active": 223,
-      "parked": 33
+      "active": 222,
+      "parked": 34
     },
     "by_verdict": {
-      "C": 186,
+      "C": 185,
       "ASM-PARTIAL": 37
     }
   }

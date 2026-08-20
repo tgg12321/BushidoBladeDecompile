@@ -1094,3 +1094,42 @@ function and should not re-open any axis listed above.
 - probe: Enumerated all three against the existing measurement bank rather than re-measuring already-dead forms.
 - result: (a) only defers the stores to the slot before the $v1 redefinition, never to the head, and would need RA coercion on top; (b) is the alias-serialisation axis, already banked dead at 6/79 (rederive_walkptr_alias_serialize_6_79.c), 11/78 (xblock_q3alias_11_78.c) and 13/79 (xblock_q3alias_fcholder_13_79.c), and sharing $v0 with the merge block's own li 0xFC instead collapses the two 0xFC materialisations that target keeps distinct and loses insns (6/77, 17/77); (c) requires a load target does not have, so it cannot be byte-neutral. No un-measured member of the axis exists.
 - verdict: KILLED
+
+## [s10-escalation] 2026-08-20
+
+- **H1 — "the honest floor of 4 still holds on the current chassis."** CONFIRMED. Re-measured
+  directly (4/79 == 79, rules_dropped 0), not quoted from the ledger. No chassis drift since s9.
+- **H2 — "some un-tried pure-C lever remains that drops the floor below 4."** KILLED for the
+  purposes of this disposition: the 35-form rejected/ bank plus s9 analytic enumeration of the
+  store-dependence axis leaves no candidate lever that is not already measured dead, and s10 found
+  no new one. Any future unpark must NAME a specific new lever (see the escalation entry
+  re-attempt conditions (a)-(d)); re-spelling the per-arm duplication a sixth time is not one.
+- **H3 — "either endgame-lock AND-gate passes."** KILLED, both gates re-evaluated this session:
+  canonical-asm scan is LOW 0/8, and the SOTN precedent census returns only a heuristic textual
+  dup_if_else_arm hit that does not exhibit the operative property. Both fail, so the owner
+  standing 2026-07-27 auto-ruling applies and the disposition is terminal REFUSED /
+  OWNER-ACCEPTED INCOMPLETE. Nothing is pending on the owner.
+
+## [s10] The honest pure-C floor of 4 still holds on the current chassis (it is not a stale ledger number).
+- mechanism: candidate.c is the clean floor-4 body (one `int fc_const` local, zero cheat constructs); the residual is the merge block's store ORDER, with instruction count already exact at 79.
+- probe: python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; src/text1b.c reverted to INCLUDE_ASM immediately after.
+- result: score 4, target_insns 79, build_insns 79, scorable true, rules_dropped 0 (tmp/grind/func_80072CD4/s10/sandbox_candidate.json). git status src/ clean afterwards.
+- verdict: CONFIRMED
+
+## [s10] AND-gate (i): func_80072CD4 qualifies for the canonical-asm grant path (hand-written-asm origin).
+- mechanism: scan_hand_coded's STRONG tier requires S1/S2/S6 signals (multu pacing, empty-body branch, BIOS jumptable) that mark hand-written asm rather than compiled C.
+- probe: python3 tools/scan_hand_coded.py --single func_80072CD4 (tmp/grind/func_80072CD4/s10/scan_hand_coded.txt).
+- result: tier LOW, score 0/8, S1-S8 all negative (79 insns, 3 spills, 6 distinct regs, max load burst 2, no sibling cluster). Engine canonical verdict is C.
+- verdict: KILLED
+
+## [s10] AND-gate (ii): an in-hand SOTN-master precedent exists for the closing construct (the cross-jump-dead per-arm duplication of the @4/@0xC 0xFC stores).
+- mechanism: A sanctioned-family claim needs an actually-exhibited file+line SOTN-master exhibit of THIS shape - an unconditional common-tail statement lifted into both arms whose second copy jump2 deletes, used purely to steer the merge-block store schedule.
+- probe: Census against docs/reference/sotn-construct-index.md (dup_if_else_arm family, :887, 958 hits) with the nearest exhibit read at :899.
+- result: Nearest exhibit is src/boss/bo4/unk_46E7C.c:2865 (`prim->x2 = prim->x3 =`, untagged/PSX, duplicated store into GPU-primitive fields). Insufficient: the index self-declares 'HEURISTIC SAMPLE - single-line textual match only', and the hit exhibits none of the operative property (cross-jump-dead second copy, schedule-only effect). Scored FAILED; citation recorded in the escalation entry for the driver's borderline log.
+- verdict: KILLED
+
+## [s10] An un-tried pure-C lever remains that would drop the floor below 4 and reset the exhaustion counter.
+- mechanism: The driver dispatches escalation only after a flat floor across >=4 modalities; a genuine new lever would have to defeat either the sched1 hoist of the cross-block var_v0 li or jump2's placement of the cross-jumped common tail at the merge head.
+- probe: Reviewed the 35-form rejected/ bank plus s9's analytic enumeration of the three dependence kinds sched.c can create for a store; searched for any axis not represented.
+- result: No un-tried lever found. Every axis (merge order via 15.8k-iteration directed permuter, cross-block chassis, shared-constant holder, pre-branch hoist, base-pointer/walking-pointer spellings, branch polarity and arm order, half-duplication, rgb2/rgb3 duplication, sibling-chassis transplant, alias serialisation, register sharing) is measured dead and banked with its floor.
+- verdict: KILLED

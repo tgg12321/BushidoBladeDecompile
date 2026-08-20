@@ -996,3 +996,41 @@ merge head from the merge block) was right; its stated mechanism was not.
 - [s9] CORRECTION to a banked s5 claim: s5 attributed the sinking of @4/@0xC to an adjust_priority 'birth boost' of 0x7F000001 pulling the li/sb pairs headward. The block-4 trace disproves that - no boost occurs in this block, every ready-list entry prints (1) throughout. s5's conclusion was right; its stated mechanism was not. The real mechanism is flat priority + $v0 chain serialisation + the potential_hazard override.
 
 - [s9] Also read off the trace: @0x16 (insn 115) is likewise a chain-independent store and is emitted AFTER li v0,0xA in BOTH our build and target - the same rule, agreeing with target there. So the rule is not 'our scheduler is wrong'; it is that target's @4/@0xC were not in the merge block when sched2 ran.
+
+## [s10-escalation] 2026-08-20 — disposition session
+
+- **E1 (floor, chassis-current).** candidate.c applied over the INCLUDE_ASM line →
+  `sandbox func_80072CD4 --disable all` = **4**, target_insns 79 == build_insns 79, rules_dropped 0
+  (artifact tmp/grind/func_80072CD4/s10/sandbox_candidate.json). The floor is unmoved by anything
+  that has happened to the tree since s9. src/text1b.c restored to
+  `INCLUDE_ASM("asm/funcs", func_80072CD4);` immediately after; `git status src/` clean.
+- **E2 (AND-gate i, re-run).** `python3 tools/scan_hand_coded.py --single func_80072CD4` = tier
+  **LOW, score 0/8**, S1–S8 all negative (artifact tmp/grind/func_80072CD4/s10/scan_hand_coded.txt).
+  The canonical-asm grant path is closed for this function; it is ordinary compiled C.
+- **E3 (AND-gate ii, precedent search reported in full).** The closest in-index exhibit for the
+  banned closing construct is docs/reference/sotn-construct-index.md:899 →
+  `src/boss/bo4/unk_46E7C.c:2865` (`prim->x2 = prim->x3 =`, dup_if_else_arm, untagged/PSX, a
+  duplicated store into GPU-primitive fields). Scored FAILED: the index self-declares
+  "HEURISTIC SAMPLE - single-line textual match only" and the hit exhibits none of the operative
+  property (an unconditional common-tail statement lifted into both arms whose second copy is
+  cross-jump-dead and whose only effect is the merge-block store schedule). Recorded in the
+  escalation entry so the driver's borderline log carries it to owner batch review.
+- **E4 (disposition filed).** `## 2026-08-20 — func_80072CD4 (src/text1b.c) — **OWNER-ESCALATION —
+  RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` appended to
+  docs/grind/decisions.md. It explicitly supersedes the voided s5 entry at decisions.md:8312
+  (DISCARDED-SESSION MARKER at :8386). Terminal: INCLUDE_ASM stays on main, candidate.c (clean
+  floor 4, one `int fc_const` local, zero cheat constructs) stays banked in the ledger.
+
+- [s10] Floor re-measured THIS session on the current chassis: sandbox func_80072CD4 --disable all = 4, target_insns 79 == build_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s10/sandbox_candidate.json). Instruction count is exact; the entire residual is the merge block's store order.
+
+- [s10] src/text1b.c carries INCLUDE_ASM("asm/funcs", func_80072CD4); before and after this session - the candidate was applied only for the measurement and reverted immediately; git status shows src/ clean. Zero regfix rules, zero asmfix rules, zero cheat-asm anywhere.
+
+- [s10] AND-gate (i) FAILS: tools/scan_hand_coded.py --single func_80072CD4 = tier LOW, score 0/8, S1-S8 all negative (tmp/grind/func_80072CD4/s10/scan_hand_coded.txt). No canonical-asm grant path.
+
+- [s10] AND-gate (ii) FAILS: the only sandbox-0 body is the per-arm duplication of the @4/@0xC 0xFC stores, Judge-FAILed 2026-07-24, owner-refused 2026-07-27, and FAILed by five successive fresh layer-1 cheat-reviewers on 2026-08-20 (05:53, 06:20, 07:02, 08:00 plus the 0553-banked body) across every respelling tried. The nearest SOTN index exhibit (docs/reference/sotn-construct-index.md:899 -> src/boss/bo4/unk_46E7C.c:2865) is a heuristic single-line textual dup_if_else_arm hit that does not exhibit the cross-jump-dead / schedule-only property, so the gate is scored FAILED with the citation recorded for the borderline log.
+
+- [s10] Exhaustion record: floor FLAT at 4 from s2 through s9 (9 sessions) across five distinct modalities - recon, structural (x4), permuter, synthesis (x2), forensics - including a directed PERM_LINESWAP campaign of 15,825 iterations over the full 8-store merge permutation space with zero finds below base-4, and 35 disproven bodies banked in memory/grind/func_80072CD4/rejected/.
+
+- [s10] Terminal disposition FILED this session at docs/grind/decisions.md:8484 - '## 2026-08-20 - func_80072CD4 (src/text1b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'. It explicitly supersedes the voided s5 entry at decisions.md:8312 (driver DISCARDED-SESSION MARKER at :8386) and names four specific re-attempt conditions for any future unpark.
+
+- [s10] candidate.c is unchanged and remains the clean, reviewer-passable floor-4 body (one `int fc_const` local; no pins, __asm__, volatile, barrier, do-while(0), dead store or duplication). The banned per-arm duplication forms stay in rejected/ and in state.json's banned_constructs.
