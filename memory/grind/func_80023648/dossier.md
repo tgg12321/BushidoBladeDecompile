@@ -80,3 +80,12 @@ applicable — this is close to the ideal input for it (validated model, single-
 - The `(&Judge)[(x & 0xFFF)]` / `(&Judge)[((x + 0x400) & 0xFFF)]` sin/cos pair appears in several matched movement
   functions in `src/code6cac.c`; grep for `&Judge)[` to find one that already matches and compare which locals it
   gives the `mflo` products — that is direct evidence for hypothesis 3 without any solver work.
+
+## [2026-08-20 operator correction — precedent-research pass]
+
+Two stale references in this dossier: the body is at src/code6cac.c:2810
+(not 2785), and the rules are at regfix.txt:573-609 (not 601-635). The
+30 regfix rules are ALL pure register renames — a clean 4-register RA
+permutation ({v1,a0,a1,a2} -> {a2,v1,a0,a3}), equal 110 / replace 49 /
+delete 0 / insert 0, identical schedule and frame. Ideal ra_solver input
+(no schedule noise); no coercion construct in play.

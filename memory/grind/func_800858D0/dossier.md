@@ -107,3 +107,15 @@ the 18 regfix rules are calibrated to HEAD's emission shape, so they must be ret
   solved first supplies the spelling for the other.
 - `memory/wip/_frame_census_2026-08-04.md` and `memory/wip/_g8_census_2026-08-05.md` contain the cross-function
   frame/save-count survey this function's analysis came out of.
+
+## [2026-08-20 operator correction — precedent-research pass]
+
+- The queue distance 27 is STALE: the banked candidate floor is 22
+  (matching frame/saves/insn-count). Sessions should trust the ledger
+  floor, not the queue number.
+- WARNING (re-confirmed): applying the banked candidate WITHOUT
+  simultaneously retiring its 18 rules BREAKS THE ORACLE (observed SHA1
+  31fe8c21). 2 of the 18 are the forbidden lost-codegen-insert family.
+- SOTN-index leads for the multi-set scratch: new_var_temp
+  (sotn-construct-index L649, 20 hits, PSX incl. dra/cd.c:520-522);
+  const_holder L935 (dra/menu.c:2744, PSX).

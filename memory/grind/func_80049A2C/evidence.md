@@ -439,3 +439,26 @@ load-bearing cheat; three of the four judge-flagged items can just be deleted.
 - [s9] IN-TU ORPHAN CENSUS: grep ctx=spill_new over the BB2_FRAME_DEBUG stderr of the whole text1b.c compile gives 20 alter_reg records over six functions - func_8004876C, func_800493E4, func_8004954C, func_80049584, func_80060E38 (9 slots), func_80074B18 (5), func_800770B8 (2). Every one except func_800493E4 is LOOP-shaped, and func_8004954C reaches reload1.c alter_reg with NO global array in its body at all - a loop back-edge alone supplies the JUMP_INSN that strands the note. func_80049A2C has no loop, which is why its only array-based carrier was the one this session closed.
 
 - [s9] SCOPE: the only build-surface file touched was src/text1b.c, restored at end of session to its committed INCLUDE_ASM("asm/funcs", func_80049A2C); content (git status src/ clean). All other writes are under memory/grind/func_80049A2C/ and tmp/grind/func_80049A2C/s9/.
+
+## [2026-08-20 operator correction — precedent-research pass]
+
+The banked conclusion "no SOTN precedent exists for a fully-dead frame pad"
+is FACTUALLY WRONG and must not be quoted as live. The construct index
+carries three PSX-provenance dead volatile pads, including the exact 8-byte
+BLKmode shape this function needs:
+- docs/reference/sotn-construct-index.md L620 —
+  `src/st/e_background_bushes_trees.h:160  volatile char pad[8]; //! FAKE` (PSX)
+- L626 — `src/st/sel/2C048.c:564  volatile u32 pad;` (PSX)
+- L627 — `src/st/sel/stream.c:80  volatile u32 pad[4]; // FAKE` (PSX)
+The 2026-07-20 escalation and any Judge reasoning resting on "no precedent"
+are stale. The phantom-frame-slot volatile pad family (owner ruling
+2026-08-18, no-new-park-categories.md:390) plus a per-function
+_SANCTIONED_UNWRITTEN_PADS row is the applicable route IF the frame
+forensics prerequisites hold; the sibling grants func_80047EE8 /
+func_80047FBC (2026-08-20, decisions.md OWNER RULING) are the working
+precedent for the integration path.
+
+Also: every historical score-0 on this function was an artifact of a
+cheat-stripper spelling hole (`_ORPHAN_DECL_RE` anchored `;[ \t]*$` — a
+trailing comment defeats it). Engine hygiene item filed in the 2026-08-20
+research dossier; do not rely on pre-2026-08 score-0 records.
