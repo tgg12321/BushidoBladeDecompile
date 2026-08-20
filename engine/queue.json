@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "get_alarm",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80047EE8",
       "file": "text1b",
       "distance": 10,
@@ -2062,6 +2054,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
+      "func": "get_alarm",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:8621 \u2014 ## 2026-08-20 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**"
+    },
+    {
       "func": "func_80061658",
       "file": "text1b",
       "distance": 9,
@@ -2217,13 +2218,13 @@
   ],
   "counts": {
     "total": 254,
-    "active": 220,
+    "active": 219,
     "by_status": {
-      "active": 220,
-      "parked": 34
+      "active": 219,
+      "parked": 35
     },
     "by_verdict": {
-      "C": 184,
+      "C": 183,
       "ASM-PARTIAL": 36
     }
   }

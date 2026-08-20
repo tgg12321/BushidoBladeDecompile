@@ -525,3 +525,27 @@ is the OWNER filing the escalation entry.
 - probe: permuter_campaign launch --dir tmp/perm_dc9c_s40 --label s40-chassis10-longlive-argtemps -j8 (base_score 695); 18,527 iters over ~10 min of in-turn wait windows; inspected every novel output; harvest --stop in-turn.
 - result: No legitimate sub-floor find. Legitimate reordering ceiling = 630 (== floor 9, recovers floor by inlining the diff temp), NEVER below 630 legitimately. The only sub-floor find (565) = extern volatile int D_8009BF68[] = the banked volatile-BF68 coercion (s4 axisA-permuter-volatile-bf68.c), closes axis A only via volatile-prevents-combine-fold; stripped by engine.volatile_cheats, forbidden by legitimate-volatile-interrupt-touched crit#2 (single printf-arg read). Axis B 8-op sched1 cluster NEVER legitimately reordered (arg_a=*stat split of the dead read is a rename, no schedule change). Harvested --stop in-turn; alive:false, registered_active:false; 0 orphan permuter procs.
 - verdict: KILLED
+
+## [s41] DISPOSITION: both endgame-lock AND-gates re-measured FAILED; standing-ruling entry filed at docs/grind/decisions.md:8621.
+- mechanism: gate #1 scan_hand_coded LOW 1/8 (S1/S2/S6 all absent); gate #2 sotn-construct-index negative for both closing constructs (extern-volatile-on-arg-read-global; dead second address-use vs combine.c:1458 fold).
+- probe: re-ran scan_hand_coded --single get_alarm; re-measured the banked candidate on the post-migration chassis (score 9, rules_dropped 0); grepped docs/reference/sotn-construct-index.md for the two closing constructs.
+- result: floor chassis-current at 9; both gates FAIL; owner standing auto-ruling (2026-07-27) applies; entry filed; outcome owner-gated.
+- verdict: CONFIRMED
+
+## [s41] The ledger floor of 9 is chassis-current after the 2026-08-19 asm-until-matched migration, i.e. the migration changed the representation (4 regfix rules -> zero rules + INCLUDE_ASM) but not the honest pure-C distance.
+- mechanism: The regfix rules were score-inert under the cheat-invisible sandbox in the first place (--disable all dropped them), so retiring them cannot move the honest distance; the residual is entirely the two compiler-internal axes (combine fold + sched1 order).
+- probe: Applied memory/grind/get_alarm/candidate.c (symbol names refreshed for the current src/display.c naming: sys_VSync->VSync, debug_printf->printf, motion_make_table->SetIntrMask, func_8007DC9C->get_alarm) in place of the INCLUDE_ASM line and ran `sandbox get_alarm --disable all`.
+- result: score 9, target_insns 91, build_insns 90, rules_dropped 0, cheat_asm_stripped 149 (all from unrelated functions in the TU). Identical fingerprint to every session since s1. src/display.c restored to INCLUDE_ASM afterwards.
+- verdict: CONFIRMED
+
+## [s41] AND-gate #1 (canonical-asm grant path) passes for get_alarm, i.e. scan_hand_coded reports STRONG tier with S1/S2/S6 evidence.
+- mechanism: A hand-written-asm original leaves signature artifacts (multu pacing, empty-body branches, BIOS jumptable dispatch) that the scanner detects; only those STRONG signals authorize the canonical-asm grant path.
+- probe: python3 tools/scan_hand_coded.py --single get_alarm
+- result: tier=LOW score=1/8 (91 insns). Only S4 fires (5 loads in an 8-insn window @ insn 24). S1 = 0 multu/mflo pairs; S2 = no empty-body branches; S6 = no BIOS jumptable pattern; S3 (91 insns, 2 spills, 7 distinct regs), S5, S7, S8 all absent. Ordinary GCC 2.7.2 output for a GPU-timeout debug reporter.
+- verdict: KILLED
+
+## [s41] AND-gate #2 passes, i.e. an in-hand SOTN-master precedent exists for one of the two closing constructs (an `extern volatile` coercion of a game-state global whose only use is an ordinary argument read; or a fabricated dead second address-use to defeat combine's single-use symbol fold).
+- mechanism: The frozen sanctioned-family list requires exhibited SOTN-master evidence (file+line) for any coercion/spelling family; 'same spirit' and elimination arguments do not qualify.
+- probe: Grepped docs/reference/sotn-construct-index.md (sotn-decomp master aa53500, 1911 files scanned, PSX entries only) for volatile/alias/combine-fold constructs and read the class table + relevant sections.
+- result: NEGATIVE. Every `volatile` hit is either a FAKE-annotated LOCAL pad declaration (src/st/sel/stream.c:80, src/st/sel/2C048.c:564, src/st/e_background_bushes_trees.h:160) or a `volatile StHEADER*` local pointer alias (src/main/psxsdk/libcd/c_009.c:12). No entry is an extern-volatile coercion of a global read only as an ordinary argument, and no entry is a dead second address-use inserted to defeat a combine fold. Neither closing construct has SOTN-master precedent.
+- verdict: KILLED
