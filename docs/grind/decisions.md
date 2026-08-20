@@ -8103,3 +8103,112 @@ This is the same Judge-banned shared-pointer-split/duplicate-reload construct fr
 ## 2026-08-20 04:52 — func_80057CC8 — layer-1 review — **FAIL**
 
 The struct type is cosmetic (byte-neutral per s12); the actual codegen-affecting change is removing the shared pointer local and inlining the vertex-table address expression at all four read sites — the exact 'inline-both-call-sites' family the ledger's own s8 session measured to score 0 and rejected as cheat-by-any-spelling, and which the owner explicitly refused on 2026-07-20 as 'compound-address duplication across two calls.'
+
+## 2026-08-20 — func_80057CC8 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 29 (mandated modality: **escalation**) under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`). **Both endgame-lock
+AND-gates FAIL**, which is the pre-decided case: this entry is terminal, the driver parks the
+function, and **nothing is pending on the owner**. No options packet is offered and none is
+wanted — the owner already ruled this exact function on 2026-07-20 (option b, decisions.md
+above at the 2026-07-20 `func_80057CC8` entry) and the 2026-08-20 re-attempts have only
+re-confirmed that ruling three times over.
+
+### Gate (a) — canonical-asm: **FAILS**
+`python3 tools/scan_hand_coded.py --single func_80057CC8` → **HAND_CODED tier=LOW, score=1/8**
+(111 insns). The single set bit is **S4 front-loads** (4 loads in an 8-insn window at insn 15).
+Every STRONG signal is absent: S1 multu pacing (0 multu/mflo pairs), S2 empty-body branches
+(none), S3 no-spills (9 spills / 15 distinct regs — squarely in compiled range), S5 sibling
+cluster (jaccard < 0.5), S6 BIOS jumptable (none), S7 unsaved `$sN` (all callee-saves are
+`$sp`-saved), S8 redundant mask-before-shift (none). The `canonical` gate independently routes
+this function **C** (verdict recorded in the 2026-07-20 ruling, unchanged). S4 alone is not a
+STRONG tier and never has been; a canonical-asm grant here would be an asm authorization with
+no hand-coded evidence, which the owner's 2026-07-20 governing criterion forbids.
+
+### Gate (b) — in-hand SOTN-master precedent for the closing construct: **FAILS**
+The closing construct is a **second source-level materialization of the vertex-table base
+pointer** — in every spelling the 29 sessions have produced: two pointer locals (`table`/`nt`,
+`prev_p`/`next_p`, `p1`/`p2`), one local plus an inline re-dereference of `*(s16 **)(arg0 + 4)`,
+one local reassigned between the two calls, or no local at all with `ring->verts[...]` written
+at all four read sites. `docs/reference/sotn-construct-index.md` (1,365 entries, sotn-decomp
+master `aa53500226ee84be763f3e8702b27de06456b3a7`) has **no class and no entry** covering a
+duplicated base-address materialization used to steer register allocation across an intervening
+call: searched for reload / duplicate-load / second-read / repeated-member-deref / redundant
+pointer-local shapes — **zero PSX hits**. The nearest sanctioned family, `dup_if_else_arm`
+(`.claude/rules/duplicated-statement-into-arms.md`, 958 SOTN hits), covers duplication of a real
+statement into the two arms of ONE control-flow diamond; it does not reach duplication across two
+independent, sequential call argument lists — which is precisely the distinction the owner drew
+on 2026-07-20 when refusing this family for this function. A census that comes back negative is a
+FAILED gate, not an open question, and it is stated plainly here rather than argued around.
+
+### What holds the byte-match on main
+**Nothing does.** Since the 2026-08-19 asm-until-matched migration the function ships as
+`INCLUDE_ASM("asm/funcs", func_80057CC8);` at `src/text1b.c:1524` with **zero regfix rules, zero
+asmfix rules, zero cheat-asm**. There is no rule stack to retain and no coercion construct sitting
+on main. `sandbox func_80057CC8 --disable all` on HEAD returns `no_c_body: true`, target_insns 111,
+rules_dropped 0. This is therefore a clean park, not a debt park: the disposition retains no cheat.
+
+### The measurement that closes it (new this session — the decisive datum)
+Prior sessions framed the residual as "3 instructions of register allocation." That framing was
+chassis-relative and is now superseded. Session 29 measured, on the current chassis, the **only
+form in the entire 42-entry rejected bank that contains zero instance of any Judge-banned
+construct** — one `table` local, loaded exactly once, both `ratan2` call sites indexed off it
+(`table[pi*2]`, `table[ni*2]`), no second load, no second pointer local, no reassignment
+(`memory/grind/func_80057CC8/rejected/s29-ban-compliant-single-table-no-reload-score30.c`):
+
+    sandbox func_80057CC8 --disable all  ->  score 30, target_insns 111, build_insns 112
+
+**build_insns 112 against a 111-insn target.** The ban-compliant form is not a near-miss that
+better allocation could close; it is one instruction too long, structurally. The cause is visible
+in the target: `asm/funcs/func_80057CC8.s:17` `lw $a2,0x4($s2)` and `:50` `lw $a0,0x4($s2)` — the
+target **reloads** the vertex-table base after the intervening `ratan2` call rather than holding it
+live. Any C form that caches the base in a local across that call pays a callee-save
+materialization the target does not have. Every form that instead reaches distance <= 6 does so by
+re-materializing the base at the second site, i.e. by re-entering the refused family. The honest,
+ban-compliant pure-C floor for func_80057CC8 on this chassis is therefore **30**, not 3.
+
+For completeness and audit only: `memory/grind/func_80057CC8/candidate.c` (struct-typed parameter,
+no base local, `ring->verts[...]` at each read site) still measures **score 0, 111/111 insns,
+0 rules dropped** on the current chassis — bytes reproduce. It is **not** resubmittable: three
+independent layer-1 cheat-reviewer passes on 2026-08-20 (04:30, 04:40, 04:52) FAILed it and its two
+sibling spellings as the owner-refused inline-both-call-sites family, and `state.json`
+`banned_constructs` names all three spellings. It is recorded so that a future session does not
+mistake "bytes reproduce" for "a lever remains."
+
+### Exhaustion ledger (29 sessions, 8 distinct modalities — do not re-derive)
+- **Sessions:** 29 (s1–s29), driver-tracked; `ladder_skip` 27, i.e. the modality ladder has been
+  walked to its end and wrapped.
+- **Modalities spent:** recon, structural, permuter, forensics, rederive, synthesis, escalation —
+  well beyond the >=4-distinct-modalities exhaustion threshold.
+- **Permuter:** six independent chassis (s4, s5, s13, s14, s16, s22, s23), deepest run to iter
+  4265 (s22). Every score-0 convergence landed in the same p1-alias-holder cheat class and was
+  correctly rejected and banked. s23 additionally killed the block-scope-narrowing family as a
+  byte-neutral null lever (delta 0).
+- **Forensics (s6, s7, s15, s16, s24, s25):** instrumented cc1 `-da` dumps named the mechanism
+  chain end-to-end — pseudo 86's `local-alloc.c:472 reg_n_deaths == 1` unconditional bail-out
+  (s21, semantic not heuristic), pseudo-86 preference propagation bottomed out with direct
+  ALLOCDBG/QTYDBG measurement (s24), pseudo 79 identified as the `ang_next` DECL_RTL and the
+  cx/cy base `addu` confirmed already target-identical (s25, killing the "extra early addu"
+  hypothesis). The divergence is single-pseudo and allocation-only.
+- **Rederive (s26, s27):** reused-`p` walking-pointer form regresses to 12/+1 insn; call-order
+  swap (next-first) regresses to 16/+1 insn; a broadened decomp.me corpus sweep (11 hits) found no
+  structural match. Target shape is not freely permutable across the two call sites.
+- **Rejected bank:** 42 forms, each banked with the measurement that killed it.
+- **Judge/reviewer history:** one Judge FAIL (2026-07-19 17:09), one owner ruling (2026-07-20,
+  option b REFUSED / OWNER-ACCEPTED INCOMPLETE), three layer-1 cheat-reviewer FAILs (2026-08-20).
+
+### Disposition
+**REFUSED / OWNER-ACCEPTED INCOMPLETE**, terminal park under the 2026-07-27 standing ruling.
+The function remains `INCLUDE_ASM` on main with zero rules and zero cheat-asm — no debt is
+retained. Not COMPLETED-C, not canonical-asm, no new coercion family sanctioned, no engine
+detector weakened, no precedent created for any other function. Eligible for re-attempt only if a
+genuinely new pure-C lever emerges — and the bar such a lever must clear is now concrete and
+measurable: **it must produce 111 build_insns without a second source-level materialization of the
+vertex-table base.** Nothing in this entry is pending on the owner.
+
+**Artifacts:** `tmp/grind/func_80057CC8/s29/measurements.log`,
+`tmp/grind/func_80057CC8/s29/formB.c`,
+`memory/grind/func_80057CC8/rejected/s29-ban-compliant-single-table-no-reload-score30.c`.
+**References:** owner ruling 2026-07-20 (this file, `func_80057CC8` entry); layer-1 FAILs
+2026-08-20 04:30 / 04:40 / 04:52 (this file); `.claude/rules/endgame-lock-disposition.md`;
+`.claude/rules/judge-sole-gate.md`; ledger `memory/grind/func_80057CC8/`.

@@ -1,3 +1,23 @@
+/* ============================ DO NOT RESUBMIT ============================
+ * STATUS 2026-08-20 (grind s29, escalation modality): this form is BANNED and
+ * the function is TERMINALLY PARKED as REFUSED / OWNER-ACCEPTED INCOMPLETE
+ * (docs/grind/decisions.md:8107, standing ruling 2026-07-27).
+ *
+ * It is retained ONLY as audit evidence that bytes reproduce. Re-verified on
+ * the current chassis: sandbox --disable all = 0, 111/111 insns, 0 rules.
+ * Three independent layer-1 cheat-reviewer passes FAILed this form and its two
+ * sibling spellings on 2026-08-20 (04:30 / 04:40 / 04:52): removing the base
+ * local and materializing `ring->verts[...]` at all four read sites IS the
+ * "inline-both-call-sites / compound-address duplication across two calls"
+ * family the owner refused on 2026-07-20. The struct typing is cosmetic
+ * (byte-neutral per s12); the codegen-affecting change is the duplication.
+ *
+ * The only ban-compliant form measures 30 with build_insns 112 against a
+ * 111-insn target (rejected/s29-ban-compliant-single-table-no-reload-score30.c)
+ * -- i.e. structurally unmatchable, not a near-miss. Re-attempt bar: produce
+ * 111 build_insns WITHOUT a second source-level materialization of the vertex-
+ * table base. Nothing else reopens this function.
+ * ======================================================================== */
 /* MATCHING form (s29, 2026-08-20): `sandbox func_80057CC8 --disable all` = 0,
  * target_insns 111 == build_insns 111, rules_dropped 0; full `build` sha1
  * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.

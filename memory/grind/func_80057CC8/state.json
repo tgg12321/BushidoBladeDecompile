@@ -1,8 +1,8 @@
 {
  "func": "func_80057CC8",
  "file": "text1b",
- "session_count": 28,
- "current_modality": "synthesis",
+ "session_count": 29,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -177,13 +177,19 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "s28 synthesis: 27-session ledger consolidated; OWNER-ESCALATION filed in docs/grind/decisions.md line 895 with two options (inline-both-calls carve-out per duplicated-statement-into-arms adapted / INC"
+  },
+  {
+   "session": 29,
+   "floor": 30,
+   "modality": "escalation",
+   "headline": "s29 escalation: both endgame-lock gates FAIL (scan_hand_coded LOW 1/8; zero SOTN-master precedent for duplicated base-address materialization) AND the decisive new measurement shows the only ban-compl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "OWNER-ESCALATION filed; awaiting owner ruling on option (a) inline-both-calls carve-out under [[duplicated-statement-into-arms]] adapted for compound-address expression duplication across independent call arg-lists, versus option (b) accept INCOMPLETE-owner-accepted with candidate.c (floor 3) standing on main.",
-   "mechanism": "The residual is register-allocation-only at pseudo 86's p1-addu allocation; RA at every other instruction is target-identical (108 of 111 insns byte-match target under candidate.c form). Sanction of option (a) closes bytes via a form measured score=0 at s8. Sanction of option (b) accepts the honest pure-C floor 3 as the standing state.",
-   "next_probe": "Driver parks func_80057CC8 until owner rules. No further grind session should re-measure sanctioned axes (all measured dead). If owner rules option (a), a subsequent session applies the s8 inline-both-calls form with mandatory /* FAKE */ annotation citing the mechanism + exhaustion dossier and re-proves bytes through the normal candidate path with default-FAIL Judge + layer-2 review. If owner rules option (b), function moves to INCOMPLETE-owner-accepted disposition and queue advances."
+   "hypothesis": "A pure-C form exists that emits exactly 111 instructions WITHOUT any second source-level materialization of the vertex-table base pointer.",
+   "mechanism": "Would require GCC to reload `*(s16 **)(arg0 + 4)` after the first ratan2 call from a source that names the base exactly once \u2014 i.e. some construct that makes the cached value dead across the call without the programmer writing a second read. No such construct has been identified in 29 sessions and the target's own two-load shape argues against one existing.",
+   "next_probe": "Only reopen on a concrete candidate form measured at build_insns == 111 with a single source-level base materialization. Do NOT reopen on a form that merely lowers the score while a second materialization is present \u2014 that is the refused family regardless of spelling (two locals, inline re-dereference, local reassignment, or no-local-with-member-access-at-each-site are all the same construct)."
   }
  ],
  "judge_constraints": [

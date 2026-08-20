@@ -639,3 +639,87 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s29] Artifacts: `tmp/grind/func_80057CC8/s29/{v13.c,v14.c,v15.c,text1b.c.orig}`;
   self-vet at `memory/grind/func_80057CC8/self_vet.md`; matching form at
   `memory/grind/func_80057CC8/candidate.c`.
+
+## s29 (2026-08-20) — escalation / disposition modality
+
+- [s29] CHASSIS RE-MEASURED. HEAD ships `INCLUDE_ASM("asm/funcs", func_80057CC8);` at
+  src/text1b.c:1524 (2026-08-19 asm-until-matched migration). `sandbox func_80057CC8
+  --disable all` on HEAD returns `no_c_body: true`, target_insns 111, build_insns 0,
+  rules_dropped 0. ZERO regfix rules, ZERO asmfix rules, ZERO cheat-asm on main — nothing
+  is holding a byte-match, so this is a clean park, not a debt park. The historical
+  "HEAD floor 9" and "candidate floor 3" numbers in the s1-s28 ledger are pre-migration
+  chassis artifacts and must not be quoted forward.
+
+- [s29] **THE DECISIVE MEASUREMENT — the ban-compliant form is STRUCTURALLY short, not
+  allocation-short.** Measured on the current chassis the only form in the (now 42-entry)
+  rejected bank that contains ZERO instance of any Judge-banned construct: one `table`
+  local, loaded exactly once from `*(s16 **)(arg0 + 4)`, both ratan2 call sites indexed
+  off it as `table[pi*2]` / `table[pi*2+1]` and `table[ni*2]` / `table[ni*2+1]`; no second
+  load, no second pointer local, no reassignment of `table`, no inline re-dereference.
+  Result: **score 30, target_insns 111, build_insns 112, rules_dropped 0.**
+  Banked at rejected/s29-ban-compliant-single-table-no-reload-score30.c; raw source at
+  tmp/grind/func_80057CC8/s29/formB.c; log at tmp/grind/func_80057CC8/s29/measurements.log.
+  This reframes 28 sessions of work: the residual was never "3 instructions of register
+  allocation." Once every banned spelling is removed the build is **one instruction LONGER
+  than the target** (112 vs 111), and no amount of allocation or scheduling steering can
+  delete an instruction. The 3 was a property of forms that already contained the refused
+  construct.
+
+- [s29] **MECHANISM, from the target itself (not inferred).** `asm/funcs/func_80057CC8.s:17`
+  emits `lw $a2,0x4($s2)` and `:50` emits `lw $a0,0x4($s2)` — the target LOADS the vertex-
+  table base twice, once before each ratan2 call, because the intervening call clobbers
+  memory. A C form that caches the base in a local across that call must instead materialize
+  it into a callee-save register and keep it live, which is the +1 insn. So the target's
+  own shape requires the base to be re-materialized at the second site; and re-materializing
+  it at the second site is exactly the construct the owner refused on 2026-07-20 and that
+  three layer-1 cheat-reviewer passes FAILed on 2026-08-20 (04:30 / 04:40 / 04:52). The
+  function is caught between the target's shape and the policy, with no third option
+  measured or hypothesized in 29 sessions.
+
+- [s29] candidate.c (struct-typed parameter `VertRing_57CC8 *ring`, NO base local, with
+  `ring->verts[...]` written at each of the four read sites) RE-VERIFIED on the current
+  chassis: **score 0, target_insns 111, build_insns 111, rules_dropped 0.** Bytes still
+  reproduce. This is recorded as audit evidence ONLY — the form is banned
+  (state.json banned_constructs, three 2026-08-20 layer-1 FAILs) and is NOT resubmittable.
+  Future sessions: "bytes reproduce" is not "a lever remains."
+
+- [s29] GATE (a) canonical-asm: `tools/scan_hand_coded.py --single func_80057CC8` →
+  **tier=LOW score=1/8** (111 insns). Only S4 front-loads set (4 loads in an 8-insn window
+  at insn 15). S1 multu pacing 0 pairs; S2 no empty-body branches; S3 9 spills / 15 distinct
+  regs (compiled range); S5 jaccard < 0.5 no sibling cluster; S6 no BIOS jumptable; S7 all
+  callee-saves $sp-saved; S8 no redundant mask-before-shift. No STRONG signal → gate FAILS.
+
+- [s29] GATE (b) SOTN-master precedent: `docs/reference/sotn-construct-index.md` (1,365
+  entries at sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7) has NO class and
+  NO entry for a duplicated base-address materialization used to steer allocation across an
+  intervening call — searched reload / duplicate-load / second-read / repeated-member-deref
+  / redundant-pointer-local shapes, zero PSX hits. The nearest family `dup_if_else_arm`
+  (958 hits) is per-arm-of-one-diamond duplication, not per-independent-call duplication —
+  the exact distinction the owner drew on 2026-07-20. Gate FAILS.
+
+- [s29] DISPOSITION FILED: docs/grind/decisions.md:8107 —
+  `## 2026-08-20 — func_80057CC8 (src/text1b.c) — OWNER-ESCALATION — RESOLVED BY STANDING
+  RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`. Terminal; nothing pending on
+  the owner. Re-attempt bar is now concrete and measurable: **produce 111 build_insns
+  without a second source-level materialization of the vertex-table base.**
+
+- [s29] src/text1b.c restored byte-for-byte to HEAD after all measurements; `git status`
+  shows no src dirt.
+
+- [s29] CHASSIS: HEAD ships `INCLUDE_ASM("asm/funcs", func_80057CC8);` at src/text1b.c:1524 (2026-08-19 asm-until-matched migration). `sandbox func_80057CC8 --disable all` on HEAD returns no_c_body=true, target_insns 111, build_insns 0, rules_dropped 0. ZERO regfix rules, ZERO asmfix rules, ZERO cheat-asm on main — nothing holds a byte-match, so this is a CLEAN park, not a debt park. The s1-s28 'HEAD floor 9 / candidate floor 3' numbers are pre-migration chassis artifacts and must not be quoted forward.
+
+- [s29] DECISIVE MEASUREMENT: the only form in the (now 42-entry) rejected bank containing zero instance of any Judge-banned construct — one `table` local loaded exactly once from *(s16 **)(arg0 + 4), both ratan2 call sites indexed off it (table[pi*2], table[ni*2]), no second load, no second pointer local, no reassignment — measures score 30, target_insns 111, build_insns 112, rules_dropped 0 on the current chassis. One instruction LONGER than target: structurally unmatchable, not a near-miss.
+
+- [s29] MECHANISM READ FROM THE TARGET (not inferred): asm/funcs/func_80057CC8.s:17 `lw $a2,0x4($s2)` and :50 `lw $a0,0x4($s2)` — the target loads the vertex-table base twice, once per call site, because the intervening ratan2 call clobbers memory. Caching the base in a local across that call costs exactly +1 insn (callee-save materialization the target lacks). Reaching 111 therefore REQUIRES re-materializing the base at the second site — which is precisely the family the owner refused 2026-07-20 and layer-1 FAILed three times 2026-08-20.
+
+- [s29] AUDIT-ONLY: memory/grind/func_80057CC8/candidate.c (struct-typed parameter, no base local, `ring->verts[...]` at each of the four read sites) re-verified on the current chassis at score 0, 111/111 insns, 0 rules dropped. Bytes reproduce — but the form is banned (state.json banned_constructs; layer-1 FAILs 2026-08-20 04:30/04:40/04:52) and is NOT resubmittable. Its header now carries a DO-NOT-RESUBMIT block so no future session mistakes 'bytes reproduce' for 'a lever remains'.
+
+- [s29] GATE (a) FAILS: scan_hand_coded.py --single func_80057CC8 → tier=LOW score=1/8; only S4 set; no S1/S2/S6 STRONG signal; canonical gate verdict=C.
+
+- [s29] GATE (b) FAILS: docs/reference/sotn-construct-index.md has no class and no entry for duplicated base-address materialization across an intervening call; zero PSX hits on every searched shape.
+
+- [s29] EXHAUSTION: 29 sessions, 8 distinct modalities (recon/structural/permuter/forensics/rederive/synthesis/escalation), ladder_skip 27 (ladder walked to the end and wrapped); six permuter chassis (s4/s5/s13/s14/s16/s22/s23) with the deepest run to iter 4265 and every score-0 convergence landing in the same p1-alias-holder cheat class; six forensics sessions with instrumented cc1 -da dumps that bottomed out the pseudo-86 mechanism chain; 42 rejected forms banked with the measurement that killed each; one Judge FAIL, one owner ruling (2026-07-20 option b), three layer-1 cheat-reviewer FAILs.
+
+- [s29] DISPOSITION FILED THIS SESSION at docs/grind/decisions.md:8107 — `## 2026-08-20 — func_80057CC8 (src/text1b.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`. Terminal; nothing pending on the owner; no new family sanctioned, no detector weakened, no precedent created.
+
+- [s29] src/text1b.c restored byte-for-byte to HEAD after all measurements; git status shows no src dirt (only the intended ledger/decisions edits plus pre-existing metrics/events.jsonl churn).

@@ -502,3 +502,70 @@
   reached because the floor dropped to 0; no disposition entry was filed and none is
   needed.
   verdict: KILLED (as a disposition path — the function is matched, not exhausted)
+
+## s29 (2026-08-20) — escalation / disposition
+
+### H-s29-1 — "the ban-compliant single-`table` form is a floor-3-class near-miss whose gap is register allocation"
+- mechanism claimed by s1-s28: pseudo 86's p1 `addu` fails to coalesce (`addu v1,v0,a2` vs
+  target `addu v0,v0,a2`), a pure allocation divergence, therefore closable by steering.
+- probe: apply the ban-compliant form (one `table` local loaded once, both call sites
+  indexed off it, no second load / no second local / no reassignment) and run
+  `sandbox func_80057CC8 --disable all` on the current chassis.
+- result: **score 30, target_insns 111, build_insns 112, rules_dropped 0.** The build is one
+  instruction LONGER than the target. Allocation steering cannot delete an instruction.
+- verdict: **KILLED.** The floor-3 framing was an artifact of forms that already contained a
+  banned construct. The ban-compliant floor is 30 and the gap is structural, not allocative.
+
+### H-s29-2 — "the target's two base loads are a compiler artifact, so a single-load C form can still reach 111 insns"
+- mechanism: if the second `lw $a2/$a0,0x4($s2)` in the target were merely GCC re-materializing
+  a value it could equally have kept live, a single-load C form would be reachable.
+- probe: read the target directly (asm/funcs/func_80057CC8.s:17 and :50) and compare insn
+  counts of held-live (H-s29-1, 112) versus re-materialized (candidate.c, 111) forms.
+- result: the target genuinely loads the base twice, once per call site, because the
+  intervening `ratan2` call clobbers memory. The held-live form pays exactly +1 insn for the
+  callee-save materialization; the re-materialized form is exactly 111.
+- verdict: **KILLED.** The two loads are load-bearing target shape, not artifact. Reaching 111
+  requires re-materializing the base at the second site — which is the refused family.
+
+### H-s29-3 — endgame-lock gate evaluation (the disposition question itself)
+- probe (a): `tools/scan_hand_coded.py --single func_80057CC8`.
+- result (a): tier=LOW score=1/8, only S4 set; every STRONG signal (S1/S2/S6) absent. **FAILS.**
+- probe (b): grep `docs/reference/sotn-construct-index.md` (1,365 entries, sotn master
+  aa53500226ee84be763f3e8702b27de06456b3a7) for reload / duplicate-load / second-read /
+  repeated-member-deref / redundant-pointer-local classes.
+- result (b): zero PSX hits; no class covers duplicated base-address materialization across an
+  intervening call. Nearest family `dup_if_else_arm` is per-arm-of-one-diamond. **FAILS.**
+- verdict: **CONFIRMED both-gates-fail** — the pre-decided case under the owner's 2026-07-27
+  standing ruling. Disposition filed at docs/grind/decisions.md:8107; terminal park; nothing
+  pending on the owner.
+
+### Open frontier for any future re-attempt (single, concrete, measurable)
+A lever qualifies only if it produces **build_insns == 111 without a second source-level
+materialization of the vertex-table base**. Nothing in 29 sessions has produced such a form,
+and the target's own two-load shape argues one may not exist. Do not re-open on a form that
+merely lowers the score with a second materialization present — that is the refused family
+regardless of spelling.
+
+## [s29] The ban-compliant single-`table` form (one pointer local loaded once, both ratan2 call sites indexed off it, no second load / no second local / no reassignment) is a floor-3-class near-miss whose residual is pure register allocation and is therefore closable by steering pseudo 86's p1 addu coalescing.
+- mechanism: s1-s28 attributed the gap to local-alloc.c:472's reg_n_deaths==1 bail-out on pseudo 86 punting its DECL_RTL pseudo to global-alloc, where pseudo 129's copy preference pins it to $v1 (addu v1,v0,a2) instead of target's coalesced $v0 (addu v0,v0,a2) — an allocation-only divergence with all other instructions target-identical.
+- probe: Applied the ban-compliant form (tmp/grind/func_80057CC8/s29/formB.c) to src/text1b.c:1524 in place of the INCLUDE_ASM line and ran `sandbox func_80057CC8 --disable all` on the current chassis.
+- result: score 30, target_insns 111, build_insns 112, rules_dropped 0. The build is ONE INSTRUCTION LONGER than the target. No allocation or scheduling steering can delete an instruction, so the residual is not allocative. The floor-3 framing was an artifact of forms that already contained a Judge-banned construct (every one of them re-materializes the base at the second call site).
+- verdict: KILLED
+
+## [s29] The target's two loads of the vertex-table base are a compiler artifact of a single-load source, so a C form that loads the base once can still reach 111 instructions.
+- mechanism: If GCC merely re-materialized a value it could equally have kept live in a callee-save, then the held-live source form and the re-materialized source form would emit the same instruction count and differ only in allocation.
+- probe: Read the target directly (asm/funcs/func_80057CC8.s:17 `lw $a2,0x4($s2)`, :50 `lw $a0,0x4($s2)`) and compared build_insns between the held-live form (H1, 112) and the no-base-local form (candidate.c, 111) on the current chassis.
+- result: The target genuinely loads the base twice, once before each ratan2 call, because the intervening call clobbers memory. The held-live source form pays exactly +1 insn for the callee-save materialization the target does not have; the re-materialized form is exactly 111/111. The two loads are load-bearing target shape, not artifact.
+- verdict: KILLED
+
+## [s29] Endgame-lock gate (a): func_80057CC8 shows STRONG hand-coded-asm signals and qualifies for the canonical-asm grant path.
+- mechanism: The 2026-07-27 standing ruling grants canonical-asm only on STRONG scan_hand_coded signals (S1 multu pacing / S2 empty-body branches / S6 BIOS jumptable).
+- probe: python3 tools/scan_hand_coded.py --single func_80057CC8
+- result: HAND_CODED tier=LOW score=1/8 (111 insns). Only S4 front-loads is set (4 loads in an 8-insn window at insn 15). S1 0 multu/mflo pairs; S2 no empty-body branches; S3 9 spills / 15 distinct regs (compiled range); S5 jaccard < 0.5 no sibling cluster; S6 no BIOS jumptable; S7 all callee-saves $sp-saved; S8 no redundant mask-before-shift. Canonical gate independently routes verdict=C. Gate FAILS.
+- verdict: CONFIRMED
+
+## [s29] Endgame-lock gate (b): an in-hand SOTN-master precedent exists for the closing construct (a second source-level materialization of a base pointer across an intervening call, used to steer register allocation).
+- mechanism: The 2026-07-27 standing ruling grants a coercion/spelling family only on a citable SOTN-master precedent (file+line or commit); 'same spirit' does not qualify.
+- probe: Grepped docs/reference/sotn-construct-index.md (1,365 entries, sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7) for reload / duplicate-load / second-read / repeated-member-deref / redundant-pointer-local shapes, and reviewed the class table for any covering class.
+- result: Zero PSX hits; no indexed class covers duplicated base-address materialization across an intervening call. The nearest family, dup_if_else_arm (958 hits, .claude/rules/duplicated-statement-into-arms.md), is duplication into the two arms of ONE control-flow diamond, not duplication across two independent sequential call argument lists — the exact distinction the owner drew when refusing this family for this function on 2026-07-20. Gate FAILS.
+- verdict: CONFIRMED
