@@ -328,3 +328,14 @@
   `sandbox gnd_init_80041688 --disable all` reports **8** directly — the recorded
   claim verified, no correction needed. The queue's recorded distance for this
   function (2) is stale until the next `queue regen`.
+
+## s16 (2026-08-20, escalation modality) — chassis re-baselined; residual decomposed; two owner gates
+
+- CHASSIS: src/text1a_post.c now; honest baseline = 8 (NOT the ledger's 2). Decomposition: 6 = stripped frame pad (sp10 has no _SANCTIONED_UNWRITTEN_PADS row) + 2 = the lbu order.
+- KILLED: the 2026-08-20 or-tree carve-out's own axis — `(b|(r<<16))|(g<<8)` = 16/80insns; `((r<<16)|(g<<8))|b` = 9 (final-or operand flip only; lbu's are statement insns, unreachable from the expression tree). rejected/or-tree-carveout-groupings.c.
+- KILLED: v-borrow blue-byte carrier = 12/80insns ($v0 home → identical tails → cross-jump merge). rejected/v-borrow-blue-byte.c.
+- CONFIRMED (measurement): staged loop1 guard `b = *(s16 *)(p+2) >= 0; if (b)` → sandbox 6, FALSE arm byte-exact; residual = exactly the six pad-dependent frame immediates. Mechanism dump-proven on current chassis (s16 scheddbg.log block=18): birthing_insn_p reg_n_sets==1 launch-boost gate.
+- FRONTIER (both owner-surface, ruling-request filed s16):
+  1. Classification of the staged-guard spelling: rejected-bank s4/s5 "variable-reuse-with-dead-store" vs [[staged-value-reused-variable]] (whose Origin cites this exact reg_n_sets mechanism; value consumed by the branch). If in-family → honest floor 6.
+  2. Pad allowlist row `"func_80041688": frozenset({("pre_pad", 8)})` (owner-only, engine surface; func_800481E8-identical state) + sp10 → first-declared `volatile u32 pre_pad[8];` respell. With both granted candidate.c should measure 0; integration retires regfix.txt:477-479 in the same step (they subst the lbu operands and would corrupt the already-correct stream).
+- NO further in-session sanctioned lever exists: every non-owner-gated axis is measurement-dead across s1-s16.
