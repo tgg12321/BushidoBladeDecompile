@@ -326,6 +326,34 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                         scorable = True
                     except KeyError:
                         pass
+                    # asm-until-matched (owner ruling 2026-08-19): a migrated
+                    # function's TRUE frontier is its last measured honest
+                    # floor, banked at migration (migration_pin.json) or in the
+                    # grind ledger's floor_history — not the whole-function
+                    # length. Use the lowest credible record so easiest-first
+                    # ordering survives the INCLUDE_ASM representation.
+                    pins = []
+                    pin_p = Path(f"memory/grind/{func}/migration_pin.json")
+                    if pin_p.is_file():
+                        try:
+                            v = json.loads(pin_p.read_text()).get("floor")
+                            if isinstance(v, int):
+                                pins.append(v)
+                        except (OSError, ValueError):
+                            pass
+                    st_p = Path(f"memory/grind/{func}/state.json")
+                    if st_p.is_file():
+                        try:
+                            fh = json.loads(st_p.read_text()).get("floor_history") or []
+                            lows = [e.get("floor") for e in fh
+                                    if isinstance(e.get("floor"), int)]
+                            if lows:
+                                pins.append(min(lows))
+                        except (OSError, ValueError):
+                            pass
+                    if pins and (dist < 0 or min(pins) < dist):
+                        dist = min(pins)
+                        scorable = True
             cheat_count = inlineasm.file_func_cheat_asm_count(stem, func)
             if rules == 0 and prologue == 0:
                 # COMPLETED-INLINE-ASM-CANONICAL: function is in inline_asm_canonical.txt
