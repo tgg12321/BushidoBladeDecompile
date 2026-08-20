@@ -194,3 +194,21 @@
 - probe: base-random-classify campaign WITHOUT stop-on-zero (25,262 iters / 26 min, every 0-find classified) + hand decomposition of the one novel topology (score-10 mask-fold) via pB1/pB3/pB4 workspace probes
 - result: only 0-attractor is the Judge-banned cancellation-pair class (2 independent re-finds, output-0-1/output-0-2); the score-10 mask-fold topology is semantics-divergent (counter runs unmasked, 0x8000 extra iterations; mask temp in $v0) and its only semantics-correct spelling is the s1 guard-fold kill (17 @ 25 insns); a6 split-init and dw0 measured inert alone and combined (26 stripped-diff lines = base)
 - verdict: KILLED
+
+## s5 (synthesis, 2026-08-20)
+## [s5] The s4 "only reopening path" (an exhibited SOTN-master citation of the adjacent-cancellation shape) has already been satisfied on main, making the banned-by-2026-07-27 pair form landable
+- mechanism: owner ruling 2026-08-18 (F6 survey) placed the cancellation-pair / redundant-condition class on the frozen SOTN-accepted list (.claude/rules/no-new-park-categories.md:370-380) with a direct exhibit and two MIPS class-siblings; the 17:57 Judge FAIL was explicitly "gate (ii) fails by the request's own admission" for want of exactly that citation
+- probe: read .claude/rules/no-new-park-categories.md:355-380 and docs/reference/sotn-construct-index.md; transplanted the s4 permuter output-0-2 spelling (`v1++; v1--;` adjacent to the real `v1++`) into src/text1a_c.c in place of the INCLUDE_ASM line, with the mandated /* FAKE: */ annotation; `sandbox func_80044098 --disable all`
+- result: score 0, 26/26 insns, 0 rules dropped, 0 pins, 0 volatile. Floor 3 -> 0.
+- verdict: CONFIRMED
+
+## [s5] The F6 sanction covers the 17:57 spelling but not the 16:14 spelling, so the ban in judge_constraints[0] survives intact
+- mechanism: F6 sanctions "an adjacent same-variable increment/decrement pair (`i++; i--;`)" whose net effect is nothing, and re-bans the `+= 2 / -= 1` respelling by name in its own text; the 16:14 form is a fabricated DECOMPOSITION of the real `+1` (nothing cancels), not a cancellation pair
+- probe: side-by-side read of the F6 rule text, decisions.md:1783/1785, rejected/judge-fail-0727-1613.c:890-895, and tmp/grind/func_80044098/s4/perm_base/output-0-2/source.c
+- result: the two constructs are distinct; only the pair form is used; output-0-1's do-while(0) wrapper is deliberately NOT used (it would drag a second FAKE family in for no measured benefit)
+- verdict: CONFIRMED
+
+## Live frontier (end of s5) — floor 0, candidate-ready
+1. NONE grindable — the function byte-matches at sandbox 0 with zero rules and zero pins. Remaining work is verification/acceptance, not search: layer-1 cheat-reviewer on the diff, then the Judge, then the driver's full build+link SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa and `queue done`.
+2. If layer-1 or the Judge rejects the F6 construct despite the 2026-08-18 ruling, the correct next step is a `ruling-request` naming the contradiction (frozen-list entry vs. the stale 2026-07-27 judge_constraints in state.json), NOT a respelling — the pair class has exactly one sanctioned spelling and it is the one in src.
+3. Fallback if F6 is ever withdrawn: pY at floor 3 (rejected/pY-peel-hdr-borrow-floor3.c), still 3-locked by the s3 theorem.

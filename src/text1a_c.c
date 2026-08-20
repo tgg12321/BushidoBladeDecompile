@@ -841,7 +841,44 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-INCLUDE_ASM("asm/funcs", func_80044098);
+void func_80044098(s16 a0) {
+    s32 *v1;
+    s32 a4;
+    s32 *a6;
+
+    v1 = D_80103608[a0];
+    a4 = *(v1 - 1);
+    a6 = v1 - 1;
+    if (a4 & 0x8000) {
+        a4 = a4 & 0x7FFF;
+        *(v1 - 1) = a4;
+        a4 = a4 - 1;
+        if (a4 != -1) {
+            do {
+                *v1 -= (s32)a6;
+                /* FAKE: semantically-null cancellation pair `v1++; v1--;`
+                   adjacent to the real `v1++` (owner ruling 2026-08-18, F6
+                   survey; .claude/rules/no-new-park-categories.md, SOTN-
+                   accepted techniques). what: the pair nets zero and emits no
+                   bytes. mechanism: flow.c reg_n_refs counts the extra
+                   loop-weighted pointer refs before combine.c re-merges the
+                   chain into the single target addiu (combine.c:52-57 -
+                   reg_n_refs is never adjusted afterwards), so global.c's
+                   allocno priority for the pointer overtakes the counter's
+                   and the pointer lands $v1 / the counter $a0 as target has
+                   them. lever-exhaustion: memory/grind/func_80044098
+                   evidence.md + hypotheses.md s1-s4 (counter-split guard-fold,
+                   8/8 same-path decorations cse-folded pre-flow, peel+holder
+                   family proven 3-locked from sched.c/flow.c source, ~105k
+                   permuter iterations over 4 basins). */
+                v1++;
+                v1--;
+                v1++;
+                a4--;
+            } while (a4 != -1);
+        }
+    }
+}
 void func_80044100(s32 a0, s32 a1) {
     s32 *ptr = D_80103608[a0];
     s32 count = D_80103658[a0];
