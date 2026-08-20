@@ -412,3 +412,45 @@ the ban should be treated as final rather than re-litigated.
   inner loop inside a do-while outer loop produces. That is independent,
   target-side corroboration that the s5 form is the ORIGINAL shape rather than a
   coercion that happens to land.
+
+## s5 (synthesis, 2026-08-20) — resubmission verified end-to-end
+
+- The 2026-08-20 03:43 Judge ruling (docs/grind/decisions.md:7835) PASSED the
+  goto-formed inner loop on the merits and cleared the `banned_constructs`
+  tripwire via `unban_construct`. Confirmed at dispatch: `state.json`'s
+  `banned_constructs` now holds ONE entry only — the s4 volatile-scratchpad
+  construct — which this body does not use (`volatile` does not occur in the
+  function). Nothing on the frontier's H15/H16/H17 axes needed re-probing: the
+  remaining work the Judge named was a single false line of file-header prose.
+
+- Applied `memory/grind/func_80017FA0/candidate.c` verbatim into
+  `src/code6cac.c` in place of `INCLUDE_ASM("asm/funcs", func_80017FA0);`, plus
+  the two mechanical fixes the body requires (`extern void func_80017FA0(void);`
+  -> `extern void func_80017FA0(s32 *);` at src/code6cac.c:166 and
+  `func_80017FA0();` -> `func_80017FA0(p0);` at the func_80018094 call site).
+  Fixed the header defect the Judge required: line 5 no longer claims "zero FAKE
+  constructs"; it names the one FAKE-annotated construct and points at the
+  `inner:` label.
+
+- MEASURED THIS SESSION at the current chassis (this is the number to quote, not
+  the ledger's stale floor 2): `sandbox func_80017FA0 --disable all` =
+  {"score": 0, "target_insns": 61, "build_insns": 61, "rules_dropped": 0,
+  "scorable": true, "cheat_asm_stripped": 138}. Full `build` = SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle. Floor 2 -> 0.
+
+- NEW TOOLING FACT worth carrying to any function (cost this session one wasted
+  sandbox cycle + one manual cc1 repro): writing the literal token `/* FAKE */`
+  inside a C block comment TERMINATES that comment at the inner `*/`, dumping the
+  rest of the comment prose into the token stream. The failure does not surface
+  as a compile error from the engine — the sandbox reports
+  `"error": "score unavailable: 'func_80017FA0 not found in
+  tmp/sandbox/func_80017FA0/code6cac.o'. ... pipeline likely truncated by a
+  sibling index-based reorder rule after cheat-asm strip"`, which points at the
+  wrong subsystem entirely. Diagnosis path that worked in one shot: run cpp+cc1
+  by hand on `tmp/sandbox/<func>/src/<file>.c`
+  (`tmp/grind/func_80017FA0/s5/mancc.sh`) and read `cc1.err` — it showed
+  `parse error before ':'` / `character constant too long` at the comment's own
+  line numbers (173-225), i.e. prose being parsed as code. When referring to the
+  annotation convention inside a comment, write "FAKE-annotated" or `FAKE:`,
+  never the delimiter pair.
+

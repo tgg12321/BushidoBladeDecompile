@@ -2,8 +2,9 @@
  *
  * `sandbox func_80017FA0 --disable all` = 0; objdump of the built object is
  * instruction-for-instruction identical to asm/funcs/func_80017FA0.s (61/61).
- * Zero regfix/asmfix rules, zero inline asm, zero volatile, zero FAKE
- * constructs, no dead locals, no aliases.
+ * Zero regfix/asmfix rules, zero inline asm, zero volatile, no dead locals,
+ * no aliases. Exactly ONE FAKE-annotated construct: the goto-formed spelling of
+ * the inner counted loop (annotated inline at the `inner:` label below).
  *
  * TWO LEVERS, both ordinary C control flow / ordinary C expressions:
  *

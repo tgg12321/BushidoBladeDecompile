@@ -316,3 +316,19 @@ technical**, and is deliberately narrow:
   text) and check whether `jump2` merges them into the target's single copy plus
   back edge; read the `.jump2` dump to confirm. If it does, the match is
   reachable with NO goto and NO annotation at all.
+
+## s5 (synthesis, 2026-08-20) — frontier resolved, function CLOSED
+
+H15 (goto-formed inner loop defeats loop.c giv formation and closes the last 3
+instructions) is CONFIRMED and now shipped: score 0 / 61 of 61 / oracle SHA1
+re-measured this session. H16 (a numeric-address spelling that is not a
+recognised giv) and H17 (a declared scratchpad object / an assembler-surface
+expansion-order fix) are both MOOT — they were alternative routes to the same
+three instructions that H15 already closes; the Judge ruled H16 "NOT required and
+would be strictly more contrived" (docs/grind/decisions.md:7835). They are not
+killed by measurement, they are simply unnecessary, and should NOT be revived
+unless the H15 form is ever rejected on grounds other than paperwork.
+
+No live hypotheses remain. The frontier for this function is empty; the only
+outstanding step is acceptance of the resubmitted candidate (layer-1 + Judge).
+

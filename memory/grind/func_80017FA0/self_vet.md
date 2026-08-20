@@ -1,21 +1,29 @@
 # SELF-VET â€” func_80017FA0
 
-STATUS (s6, 2026-08-20, synthesis modality): this vet is the CORRECTED, annotated
-resubmission form demanded by the 2026-08-20 03:31 layer-1 review. It is STAGED,
-not submitted: `banned_constructs` in state.json currently carries an entry for
-the goto-formed inner loop, so an honest CONSTRUCTS: line trips the driver's
-mechanical tripwire (grindlib.check_banned_constructs) and would discard the
-session before any reviewer saw it. s6 therefore emitted `ruling-request` asking
-for that tripwire to be cleared (`unban_construct`), because the layer-1 review
-that produced it says in its own next-action field: "Do not treat this as a
-construct ban". Once cleared, this file is the vet for the resubmission verbatim.
+STATUS (s5-synthesis, 2026-08-20): SUBMITTED. The tripwire that blocked the
+previous staging is gone: the 2026-08-20 03:43 Judge ruling (docs/grind/decisions.md:7835)
+explicitly cleared the goto-formed-inner-loop entry via `unban_construct`, ruling
+it "NOT a cheat and the banned_constructs[1] entry is a mis-banked paperwork FAIL,
+not a construct ban". `state.json.banned_constructs` now carries ONLY the s4
+volatile-scratchpad entry, which this body does not contain (the word `volatile`
+does not occur anywhere in the function). The one defect the Judge required fixed
+before resubmission — candidate.c's file-header line claiming "zero volatile, zero
+FAKE constructs", which the annotation made false — is fixed: the header now reads
+"zero volatile, no dead locals, no aliases. Exactly ONE FAKE-annotated construct:
+the goto-formed spelling of the inner counted loop (annotated inline at the
+`inner:` label below)." Nothing else about the form changed.
+
+Re-measured THIS session (s5-synthesis) with the body in src/code6cac.c:
+`sandbox func_80017FA0 --disable all` = {"score": 0, "target_insns": 61,
+"build_insns": 61, "rules_dropped": 0, "scorable": true} and a full `build` gives
+SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle.
 
 Diff under vet: `src/code6cac.c` only â€” `INCLUDE_ASM("asm/funcs", func_80017FA0);`
 replaced by the body in `memory/grind/func_80017FA0/candidate.c`, plus the two
 mechanical call-site/prototype fixes the body requires
 (`extern void func_80017FA0(void);` -> `extern void func_80017FA0(s32 *);` and
 `func_80017FA0();` -> `func_80017FA0(p0);`). No other file in the build pipeline
-is touched. Measured THIS session (s6) with the annotated body in place:
+is touched. Measured THIS session (s5-synthesis, 2026-08-20) with the annotated body in place:
 `sandbox func_80017FA0 --disable all` = {"score": 0, "target_insns": 61,
 "build_insns": 61, "rules_dropped": 0} and a full `build` SHA1 =
 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle).
