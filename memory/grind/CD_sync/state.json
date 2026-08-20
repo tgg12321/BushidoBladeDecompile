@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 103,
- "current_modality": "permuter",
+ "session_count": 104,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -627,13 +627,19 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "s103 files OWNER-ESCALATION per F3 activation: every sanctioned pure-C axis measured dead across 102 sessions; residual is theorem-locked 2-insn pair {sll4@54<->addu5@55} at sched.c LUID tiebreak; onl"
+  },
+  {
+   "session": 104,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "s104 escalation: floor re-measured at 2 on the post-migration chassis (160/160, 0 rules); both endgame-lock gates FAIL (scan_hand_coded LOW 2/8, no S1/S2/S6; SOTN construct-index census for the cross-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "F3 (contingent, now activated): every remaining sanctioned pure-C axis is measured dead \u2014 F1 pointer-alias-fake-exception KILLED s101 5 shapes; F2 livelen-shortening structural KILLED s102 6 shapes. File OWNER-ESCALATION entry in docs/grind/decisions.md citing the full closure inventory and emit owner-gated on next session citing escalation_ref.",
-   "mechanism": "Per Judge constraint (2026-07-09 FAIL, judge_constraints[0]): canonical-asm authorization is settled-FAIL; agent must SHIFT MODALITY to un-run sanctioned axes. Both F1 and F2 (the only two axes the ledger identified as un-run and sanctioned) are now empirically closed with measurements. Per task-brief owner-gated contract: emit only when a filed OWNER-ESCALATION exists AND every sanctioned axis is measured dead \u2014 F3 is the driver-sanctioned path to reach that state.",
-   "next_probe": "s103 files the OWNER-ESCALATION entry in docs/grind/decisions.md in hirahira_w_frie format with full closure inventory: structural 46+ probes (s3/s4/s5/s11/s12/s13/s21/s27/s29/s30/s38/s39/s47/s48/s56/s57/s65/s66/s74/s75/s83/s84/s85/s93/s101/s102), do-while(0) at all scopes s4/s5/s48/s85/s93, carriers s4/s5, named dispatch s5, fn-body hoists s13/s31, marionation transplants s9/s2/s4, m2c KILLED s8, spelling variants s90/s98/s99, POLL 9-probe sweep s93, permuter 6 chassis (s5/s13/s14/s86/s94/s95, ~81k+ aggregate iters, 0 novel basin closures), F97a-refined analytic closure s100, F97b/c empirical s90/s98, s101 pointer-alias-fake-exception 5-shape empirical, s102 livelen-shortening structural 6-shape empirical. Present both options honestly: (a) sanction cross-symbol arithmetic idiom as SOTN-family carve-out contingent on evidence (would close via existing h5 candidate.c on candidate-ready path), (b) owner accepts function as permanent INCOMPLETE (no-park-permanently forbids agent-side, requires owner disposition). Then emit owner-gated citing docs/grind/decisions.md entry."
+   "hypothesis": "A pure-C lever reorders {sll@54, addu@55} at the sched.c LUID tiebreak without paying the p106/val5 allocno tie (cost 6). This is the ONLY thing that would justify unparking CD_sync.",
+   "mechanism": "GCC 2.7.2 sched.c list scheduler: both insns launch in the same cycle with equal INSN_PRIORITY, so LUID (source emission order) decides; every in-family source reordering measured so far shifts allocno priorities into the p106/val5 tie in global.c, costing 6 instead of 2.",
+   "next_probe": "Do NOT re-run the closed space (structural / forensics / rederive / synthesis / transplant / permuter are all spent and banked). A re-attempt is only warranted if a NEW sanctioned family lands in .claude/rules/ or a new SOTN-master precedent appears in docs/reference/sotn-construct-index.md for the cross-symbol arithmetic idiom; re-run the two AND-gates first."
   }
  ],
  "judge_constraints": [

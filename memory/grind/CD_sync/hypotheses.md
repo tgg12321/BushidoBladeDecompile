@@ -1541,3 +1541,66 @@
 - probe: s103 filed OWNER-ESCALATION entry at docs/grind/decisions.md:848 in hirahira_w_frie / motion_SetMotion format with (a) full closure inventory across all 102 sessions, (b) both owner options presented honestly — sanction cross-symbol arithmetic idiom as SOTN-family carve-out contingent on evidence (would close via existing h5 candidate.c on candidate-ready path) vs owner-signed permanent-INCOMPLETE disposition — and (c) explicit statement that no further C-reachable axis remains within the sanctioned set. No new src/system.c edits: candidate.c preserved unchanged as h5 masked=2/raw=2 form. Emitting owner-gated citing escalation_ref.
 - result: OWNER-ESCALATION filed at docs/grind/decisions.md:848. Both dispositions presented honestly; agent does not self-resolve.
 - verdict: CONFIRMED
+
+## s104 — escalation modality — DISPOSITION REACHED (terminal)
+
+**Chassis re-measured, not quoted.** The 2026-08-19 asm-until-matched migration changed this
+function's representation on main: `src/system.c:376` is now `INCLUDE_ASM("asm/funcs", CD_sync);`
+with 0 regfix/asmfix rules holding a byte match (the 5 rules cited in the 2026-07-20 owner ruling are
+gone; `regfix.txt` retains a single non-load-bearing reference). To confirm the ledger's floor is
+still valid on THIS chassis, s104 substituted `memory/grind/CD_sync/candidate.c` (symbol renamed
+`cpu_side_move_dir_4` -> `CD_sync`) for the INCLUDE_ASM line and ran the gradient:
+**score=2, target_insns=160, build_insns=160, rules_dropped=0** — identical to the s103 floor.
+`src/system.c` was reverted to HEAD immediately (working tree clean apart from the ledger, the
+decisions.md entry, and the untracked scratch dir). CONCLUSION: the migration is floor-neutral for
+CD_sync; every s1–s103 spelling conclusion remains chassis-valid and must not be re-derived.
+`memory/grind/CD_sync/candidate.c` has been rewritten with the `CD_sync` symbol name so a future
+re-attempt can apply it directly.
+
+**Gate (a) canonical-asm — FAILS (re-run this session, not inherited).**
+`tools/scan_hand_coded.py --single CD_sync` = `tier=LOW score=2/8 (160 insns)`. Only S4 (4 loads in
+an 8-insn window @ insn 49) and S5 (1 approx-sibling `CD_ready`, jaccard=0.64) fire. The STRONG
+signals S1/S2/S6 are all absent (0 multu/mflo pairs, no empty-body branches, no BIOS jumptable
+pattern); S3/S7/S8 negative. Artifact: `tmp/grind/CD_sync/s104/scan_hand_coded.txt`. Note this is a
+score CHANGE from the 2026-07-20 ruling's cited "2/8" under the old name — same tier, same verdict.
+Independently barred by the 2026-07-09 Judge constraint.
+
+**Gate (b) SOTN precedent — FAILS (fresh census this session).**
+Closing construct is the cross-symbol arithmetic idiom
+`idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)`. Searched
+`docs/reference/sotn-construct-index.md` for cross-symbol / symbol-difference / `&D_xxxx[1]` shapes:
+**zero hits**. This is the first time the machine-generated SOTN construct index (added after the
+2026-07-20 ruling) has been searched for this idiom, and it reproduces the s98 manual survey's
+negative rather than opening a new question. A negative census is a FAILED gate.
+
+**Disposition filed:** `docs/grind/decisions.md:7993` —
+`## 2026-08-20 — CD_sync (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING
+(2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**`. Both AND-gates fail, which is the owner's
+pre-decided case; the disposition is terminal and nothing is pending on the owner. Session outcome
+`owner-gated` with that entry as `escalation_ref`.
+
+**What a future re-attempt would need (do not re-run the closed space):** a pure-C lever that
+reorders `{sll@54, addu@55}` at the `sched.c` LUID tiebreak WITHOUT paying the p106/val5 allocno tie
+(cost 6). Every axis the ledger identified as sanctioned and un-run is now empirically closed:
+F1 pointer-alias-fake-exception (s101, 5 shapes), F2 livelen-shortening (s102, 6 shapes),
+F3 conflict-graph attribution (s96/s97), F97a analytic closure (s100), F97b/c (s90/s98), permuter
+across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transplant (s98), and the
+~40 in-family decompositions banked as 112 rejected forms.
+
+## [s104] The 2026-08-19 asm-until-matched migration (5 regfix/asmfix rules removed, src/system.c:376 now INCLUDE_ASM) changed CD_sync's honest pure-C floor.
+- mechanism: Rule removal alters the sandbox chassis; a rules-dropped delta or a different TU compilation context could shift the residual pair {sll@54, addu@55}.
+- probe: Substituted memory/grind/CD_sync/candidate.c (symbol renamed cpu_side_move_dir_4 -> CD_sync) for the INCLUDE_ASM line at src/system.c:376 and ran `sandbox CD_sync --disable all`; reverted src/system.c immediately after.
+- result: score=2, target_insns=160, build_insns=160, scorable=true, rules_dropped=0 - bit-for-bit the s103 floor.
+- verdict: KILLED
+
+## [s104] Gate (a): CD_sync qualifies for the canonical-asm grant path (STRONG scan_hand_coded tier).
+- mechanism: endgame-lock-disposition AND-gate 1 requires STRONG hand-coded signals S1/S2/S6 from tools/scan_hand_coded.py.
+- probe: python3 tools/scan_hand_coded.py --single CD_sync (artifact tmp/grind/CD_sync/s104/scan_hand_coded.txt).
+- result: tier=LOW score=2/8. Only S4 (4 loads in an 8-insn window @ insn 49) and S5 (approx-sibling CD_ready, jaccard=0.64) fire. S1 (0 multu/mflo pairs), S2 (no empty-body branches), S6 (no BIOS jumptable pattern) all absent; S3/S7/S8 negative. Independently barred by the 2026-07-09 Judge constraint against re-surfacing canonical-asm for this function or its twins.
+- verdict: KILLED
+
+## [s104] Gate (b): an in-hand SOTN-master precedent exists for the closing construct (the cross-symbol arithmetic idiom idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)).
+- mechanism: endgame-lock-disposition AND-gate 2 requires a citable file:line precedent from SOTN master; docs/reference/sotn-construct-index.md is the machine-generated census of every match-hack construct SOTN ships.
+- probe: Grepped docs/reference/sotn-construct-index.md for cross-symbol / symbol-difference / &D_xxxx[1] / 'symbol' shapes (first search of this index for this idiom - the index post-dates the 2026-07-20 ruling).
+- result: Zero hits. Reproduces the s98 manual SOTN/Vagrant Story/ESA survey negative and the s98 in-repo transplant kill (idiom unique to this function in the entire BB2 tree). The owner already REFUSED this exact family on 2026-07-20 as an unsanctioned coercion family.
+- verdict: KILLED

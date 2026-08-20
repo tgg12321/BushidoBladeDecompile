@@ -1,4 +1,4 @@
-s32 cpu_side_move_dir_4(s32 a0, u8 *a1)
+s32 CD_sync(s32 a0, u8 *a1)
 {
   int new_var;
   s32 v0;

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80044098",
       "file": "text1a_c",
       "distance": 3,
@@ -2035,6 +2027,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): preheader emit-order (8 rules); both endgame-lock gates fail (scan 2/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
     },
     {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:7993 \u2014 ## 2026-08-20 \u2014 CD_sync (src/system.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**"
+    },
+    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 2,
@@ -2237,13 +2238,13 @@
   ],
   "counts": {
     "total": 257,
-    "active": 227,
+    "active": 226,
     "by_status": {
-      "active": 227,
-      "parked": 30
+      "active": 226,
+      "parked": 31
     },
     "by_verdict": {
-      "C": 190,
+      "C": 189,
       "ASM-PARTIAL": 37
     }
   }

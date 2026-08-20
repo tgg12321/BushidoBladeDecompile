@@ -7989,3 +7989,101 @@ rederive / synthesis / permuter modalities — all are spent and their negatives
 are banked in `memory/grind/func_8002EA24/`.
 
 [skip-park-src-guard]
+
+## 2026-08-20 — CD_sync (src/system.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+**Identity note (why this entry exists despite the 2026-07-20 ruling):** this is the function
+formerly named `cpu_side_move_dir_4` (0x80080DB0, PsyQ libcd `bios.c` v1.86 `CD_sync`, name string
+`"CD_sync"` @ 0x80016240 — see `memory/closer/libcd-identity.md:5`). It was ruled **option (b)
+REFUSED / OWNER-ACCEPTED INCOMPLETE** on 2026-07-20 (this file, line 941) under its old name, then
+renamed by the naming wave and re-entered the active queue with a NEW chassis: the 2026-08-19
+asm-until-matched migration removed the 5 regfix/asmfix rules that formerly held the byte match, so
+`src/system.c:376` now carries `INCLUDE_ASM("asm/funcs", CD_sync);` and `regfix.txt` retains only a
+single non-load-bearing reference. This entry re-files the disposition under the current name and
+current chassis so the driver can park the item; the substance is unchanged from 2026-07-20.
+
+**Chassis re-measurement (this session, s104 — the ledger floor is confirmed, not quoted):**
+applied `memory/grind/CD_sync/candidate.c` (renamed to `CD_sync`) to `src/system.c` in place of the
+INCLUDE_ASM line and ran `sandbox CD_sync --disable all`: **score=2, target_insns=160,
+build_insns=160, rules_dropped=0**. The honest pure-C floor is still exactly 2 after the migration —
+the rule removal changed nothing about the residual, and every banked spelling conclusion from
+s1–s103 remains chassis-valid. `src/system.c` was reverted to HEAD immediately after measurement.
+
+**The residual (unchanged across 103 sessions):** ONE instruction pair, `{sll@54 <-> addu@55}`,
+theorem-locked at GCC 2.7.2 `sched.c` LUID tiebreak — both insns LAUNCH in the same cycle with
+equal priority, so LUID order decides, and every in-family decomposition that reorders them hits the
+p106/val5 allocno tie at cost 6 instead. ~40 decompositions measured; 112 rejected forms banked in
+`memory/grind/CD_sync/rejected/`.
+
+**Gate (a) — canonical-asm / hand-coded evidence: FAILS.**
+`python3 tools/scan_hand_coded.py --single CD_sync` (run this session):
+`HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) — no strong hand-coded indicators`.
+Signals present: S4 (4 loads in an 8-insn window @ insn 49) and S5 (1 approx-sibling, `CD_ready`,
+jaccard=0.64). **None of the STRONG signals S1 / S2 / S6 fire** (0 multu/mflo pairs; no empty-body
+branches; no BIOS jumptable call pattern), and S3/S7/S8 are all negative (160 insns / 9 spills / 13
+distinct regs is squarely within compiled range; every callee-save has an `$sp` save; no redundant
+mask-before-shift). Independently, the 2026-07-09 Judge ruling (this file, line 10) BARS re-surfacing
+canonical-asm authorization for this function or its twins under any framing, and the canonical gate
+routes it verdict=C. Gate (a) is closed on its own terms and by standing constraint.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAILS.**
+The only measured byte-0 closing construct is the cross-symbol arithmetic idiom
+`idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1)` — a subtraction of two
+distinct global symbol addresses re-added to a third pointer. Searched
+`docs/reference/sotn-construct-index.md` (machine-generated index of every match-hack construct SOTN
+master ships) for cross-symbol / symbol-difference / `&D_xxxx[1]` shapes: **zero hits**. That negative
+reproduces the s98 rederive survey (idiom absent from SOTN / Vagrant Story / ESA) and the s98 in-repo
+transplant kill (the spelling is unique to this function in the entire BB2 tree). The owner already
+REFUSED this exact family on 2026-07-20 as an unsanctioned coercion family with zero community
+precedent, directly parallel to the motion_SetMotion CLOBBER refusal. A censused negative is a FAILED
+gate, not an open question.
+
+**Exhaustion inventory (103 sessions, 6 distinct modalities — do NOT re-run any of these):**
+- **structural (26 sessions:** s3/s4/s5/s11/s12/s13/s21/s27/s29/s30/s38/s39/s47/s48/s56/s57/s65/s66/
+  s74/s75/s83/s84/s85/s93/s101/s102**)** — do-while(0) at all scopes (s4/s5/s48/s85/s93), carriers
+  (s4/s5), named dispatch (s5), function-body hoists (s13/s31), 9-probe POLL sweep (s93),
+  F1 pointer-alias-fake-exception KILLED across 5 probe shapes (s101: block/fn-scope x
+  pass-through/from-global x asymmetric/dual-use — every pass-through form combine-folds byte-neutral
+  INERT), F2 livelen-shortening KILLED across 6 probes (s102: defer-into-do-timeout, block-local,
+  prologue-last, pass-through alias, direct-symref, h5-symref+block-local).
+- **forensics (s96/s97)** — F3 conflict-graph attribution KILLED: h5 vs the +13 basin probe1 have
+  BIT-IDENTICAL `greg` allocno conflict edge sets after 4-pseudo renaming; s97 named the p79
+  nrefs-delta driver as RTL insns 34 (subsi3 SYMBOL_REF-diff) + 38 (addsi3 tbl+delta) emitted by
+  `expr.c::expand_expr` from h5's cross-symbol source spelling, unfoldable in `cse.c`/`combine.c`.
+- **rederive (s8/s90/s98/s99)** — m2c KILLED (s8); in-repo transplant of the idiom KILLED (s98, idiom
+  unique to this function); 2 novel h5 initializer respellings measured masked=15; 3-probe symbolic
+  variant sweep (s99): `D_800A1495` substitution KILLED (+2/+1 insn), arithmetic-equivalent
+  +1-position and sign-flip both INERT. The h5 basin is spelling-fragile at `expr.c::expand_expr`.
+- **synthesis (s100)** — F97a-refined analytically CLOSED with 0 semantic-purpose candidates
+  remaining; F97b/c closed empirically at s90/s98.
+- **transplant (s2/s4/s9)** — marionation twin transplants all KILLED.
+- **permuter (6 chassis: s5/s13/s14/s86/s94/s95, ~81k+ aggregate iterations)** — 0 novel basin
+  closures; fresh-seed stopping rule satisfied on every campaign.
+
+**Disposition applied (owner standing ruling, 2026-07-27, `.claude/rules/endgame-lock-disposition.md`):**
+both AND-gates fail (scan tier LOW 2/8 with no S1/S2/S6; no in-hand SOTN-master precedent for the
+closing construct), which is the pre-decided case. **REFUSED / OWNER-ACCEPTED INCOMPLETE.** Nothing
+is pending on the owner; this is terminal. `src/system.c` keeps `INCLUDE_ASM("asm/funcs", CD_sync);`
+per the 2026-08-19 asm-until-matched migration — there is no cheat on main to retain and nothing to
+clean up. The function is parked out of active grind, NOT COMPLETED-C, no new coercion family is
+sanctioned, and it remains eligible for re-attempt if a genuine pure-C lever emerges that reorders
+`{sll@54, addu@55}` without paying the p106/val5 allocno tie. The floor-2 candidate stays banked at
+`memory/grind/CD_sync/candidate.c`.
+
+**Precedent (same species, all ruled option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE):**
+this same function under its former name (2026-07-20, line 941), motion_SetMotion (2026-07-19 FAMILY
+REFUSED), saTan0Init (2026-07-20), func_80057CC8 (2026-07-20), and the 2026-07-22/23 batches
+(func_800611A4, func_80049A2C, InitHiraRmd_80047FBC, gnd_init_80041688, func_80033550,
+AddTbpOfst_80047EE8, cpu_check_tubazeri_2, damage_DebugDisp, func_8007DC9C, func_80045878,
+ang_hosei_80056FE8, func_8001F938, func_80022F34, func_80048530).
+
+**References:** ledger `memory/grind/CD_sync/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`
+(112 rejected forms); Judge ruling 2026-07-09 01:25 (this file, line 10, canonical-asm barred); owner
+ruling 2026-07-20 (this file, line 941); `memory/closer/libcd-identity.md` (identity proof);
+`memory/grind/CD_ready/closer-reseed-forensics-2026-08-18.md` (twin-residual analysis);
+`docs/reference/sotn-construct-index.md` (precedent census, negative);
+`.claude/rules/endgame-lock-disposition.md`, `.claude/rules/judge-sole-gate.md`,
+`.claude/rules/no-new-park-categories.md`; scan output + sandbox measurement artifacts in
+`tmp/grind/CD_sync/s104/`.
+
+[skip-park-src-guard]
