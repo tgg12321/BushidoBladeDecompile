@@ -1,7 +1,7 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,23 +45,29 @@
    "floor": 12,
    "modality": "forensics",
    "headline": "s6's law is refuted: target's +8 frame slot is a phantom reload spill slot (reload1.c:2404 alter_reg on a combine-orphaned pseudo), a construct 70 oracle-matching functions in this repo already produc"
+  },
+  {
+   "session": 8,
+   "floor": 12,
+   "modality": "forensics",
+   "headline": "Target's +8 phantom frame slot PRODUCED from ordinary C in this body for the first time (variant F2: .frame $sp,48 # vars=8, no dead local); s6's 'dead-local-only' law killed by construction, trigger "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling of this body exists that leaves exactly one combine-absorbed pseudo behind, buying target's 8 phantom frame bytes with no instruction change.",
-   "mechanism": "combine.c:10836 emits `(use (reg:SI N))` after a CODE_LABEL to carry an orphaned REG_DEAD note; the USE costs zero instructions, keeps reg_n_refs > 0, and reload1.c:2404 alter_reg then reserves an 8-byte-rounded slot no insn references (vars=8, zero sp traffic - target's exact shape).",
-   "next_probe": "Diff the combine dump of func_800493E4 (which HAS the USE: tmp/grind/func_80049A2C/s7/da/t.combine, pseudo 98, `(insn 150 (use (reg:SI 98)))` after code_label 83) against func_80049A2C's combine dump to find what prevents the same absorption here, then reshape the corresponding statement. The two candidate carriers in this body are the address-forming pointers p_anim (= D_800EF980 + temp_v1*2) and obj, both live across a label; func_800493E4's carrier is exactly an address-forming pointer for an indexed HImode store."
+   "hypothesis": "G1 - a spelling of 'two distinct variable index expressions on D_80099D3C' exists whose second index does not force a sixth callee-saved register, closing the last 3 instructions.",
+   "mechanism": "F2 already reaches target's exact frame (vars=8) but reports regs=6/0 against target's 5/0; the extra sw/lw pair plus one reshuffled instruction is the entire remaining delta. The frame total is insensitive to the save count (compute_frame_size rounds gp_reg_size to 8), so the fix cannot lose the slot - only the instruction stream is at risk.",
+   "next_probe": "Start from memory/grind/func_80049A2C/s8_variant_F2_frame48.c and sweep: (a) subscript the SECOND rotation read instead of the first, with src walking from kidx and the subscript at kidx+1; (b) derive the second index from arg1 directly (target keeps arg1 in $s1 across the whole body, so `(arg1 & 1) * 6` is recomputable without a new long-lived pseudo); (c) subscript the FINAL `new_var2` read with an index expression CSE cannot equate to `src + 2` (variants E and F5 died precisely because CSE rewrote them as `src[1]`). Measure each with tmp/grind/func_80049A2C/s8/batch.sh (reports .frame + insn count in one WSL call) and score the survivors through the sandbox."
   },
   {
-   "hypothesis": "The 26 loopless phantom-slot precedents share a small trigger vocabulary that can be transplanted into this body.",
-   "mechanism": "They are oracle-proven ordinary C producing precisely the frame signature this function needs, so the trigger shapes are already in the repo and require no new construct family.",
-   "next_probe": "Re-run the census with memory/grind/func_80049A2C/s7_frame_census_sweep.sh (compiles every src/*.c to .s) plus the .frame parser described in the s7 evidence entry, then read the eight smallest loopless hits (func_80042F10, func_80086014, func_80086130, snd_CalcFade, snd_GetFadeCurve, disp_CalcFov, get_cs, get_ce) and classify what combine absorbed in each."
+   "hypothesis": "G2 - the cheapest carrier is a semantically real SECOND index into D_800EF980 or D_80099CC8, whose symbol registers target already materialises.",
+   "mechanism": "Target emits `lui/addiu %lo(D_80099CC8)` at 80049A34 and `lui/addiu %lo(D_800EF980)` at 80049A68, so those symbol registers exist in target's codegen at no extra cost; an address add off one of them is the cheapest possible orphan carrier. The function currently touches each symbol at exactly one index, which is why the s8 trigger law does not fire on them.",
+   "next_probe": "Read the callers of func_80049A2C and the sibling writers of D_800EF980 (func_800493E4 writes it at two indices - temp_v1 and D_80099CC9[idx]) to determine whether this function semantically touches a second slot, e.g. the paired D_80099CC9 entry that func_800493E4 uses. If a real second index exists, it is an ordinary statement and the natural carrier; if the callers show it does not, bank G2 as dead."
   },
   {
-   "hypothesis": "The alternative decomposition vars=0 / args=24 is formally open but almost certainly dead.",
+   "hypothesis": "G3 - the alternative decomposition vars=0 / args=24 remains formally open and almost certainly dead.",
    "mechanism": "current_function_outgoing_args_size is written only in calls.c (1400 / 2400 / 2750) from a call's own argument size; any 5th argument word is STORED at 0x10($sp) and target has zero non-save sp traffic. Bumping it without a store requires expanding a call and then deleting it, which is dead code.",
-   "next_probe": "None recommended before the two frontier items above are spent; if revisited, look for a back-end-emitted library call (64-bit shift/divide) whose argument block is >= 20 bytes and whose insns are later eliminated."
+   "next_probe": "None recommended before G1 and G2 are spent. If revisited, look for a back-end-emitted library call (64-bit shift/divide) whose argument block is >= 20 bytes and whose insns are later eliminated."
   }
  ],
  "judge_constraints": [

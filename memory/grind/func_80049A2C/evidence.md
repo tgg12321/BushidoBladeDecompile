@@ -292,3 +292,80 @@ load-bearing cheat; three of the four judge-flagged items can just be deleted.
 - [s7] Five ordinary-C label-crossing reshapings of this body were measured and all left vars=0; they are banked in memory/grind/func_80049A2C/rejected/phantom-slot-*.c with the measurement in each header.
 
 - [s7] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; no build-surface file was modified.
+
+## [s8] Chassis re-measure (forensics modality): honest floor is 12 and unchanged.
+- mechanism: `sandbox func_80049A2C --disable all` with the s7 candidate applied at src/text1b.c:867.
+- probe: applied memory/grind/func_80049A2C/candidate.c verbatim and ran the sandbox; then re-ran it on the s8 cleaned body.
+- result: score 12, target_insns 126, build_insns 126, rules_dropped 0 for both. The ledger floor of 12 is correct on this chassis; the driver's "measurement unavailable" is not a change.
+- verdict: CONFIRMED
+
+## [s8] The `int new_var3; new_var3 = 8;` constant holder in the candidate is pure noise and is now GONE.
+- mechanism: it was used only as `*((s16 *) (obj + new_var3)) = 0;` twice, i.e. an opaque constant holder of the kind the 2026-07-20 Judge FAIL flagged as needing a FAKE carve-out.
+- probe: three variants - P (second use literal 8), Q (first use literal 8), R (both uses literal 8, declaration and assignment deleted) - built through the real cpp + instrumented cc1 on the full TU, then R re-scored through the sandbox.
+- result: all three report vars=0 and 107 cc1 insns, identical to the baseline. R additionally scores sandbox 12 with build_insns 126 - byte-for-byte the same output as the s6/s7 candidate. The constant holder never bought anything. candidate.c now omits it.
+- verdict: KILLED (the construct is unnecessary; one of the four Judge-named constructs retired by measurement)
+
+## [s8] The func_800493E4 precedent does NOT depend on its `do { } while (0);` FAKE.
+- mechanism: func_800493E4 (same TU) carries a do-while(0) loop-note FAKE, so its phantom-slot precedent value was open to the objection that the slot is an artefact of that construct rather than of ordinary C.
+- probe: deleted the do-while(0) and its comment from src/text1b.c and re-dumped the TU with BB2_FRAME_DEBUG=1.
+- result: unchanged - `.frame $sp,32,$31 # vars= 8, regs= 2/0, args= 16` with `FRAMEDBG func=func_800493E4 ctx=spill_new_p98 mode=4 size=8`. The slot is produced by the ordinary C, not by the FAKE. s7's use of this function as an ordinary-C precedent stands.
+- verdict: CONFIRMED
+
+## [s8] THE TRIGGER LAW for the phantom slot, isolated in a nine-function minimal repro.
+- mechanism: combine puts a global array's `symbol_ref` into a pseudo only when the symbol is accessed at two or more NON-CONSTANT indices; the second access then forms a single-use address add `P = idx + symbol_reg`, combine folds it back into the mem and deletes the def, and combine.c:10836 (distribute_notes) strands the REG_DEAD note on a codegen-free `(use (reg:SI P))`. reg_n_refs[P] stays > 0, regclass reports "ST_REGS or none", global_alloc leaves reg_renumber = -1, and reload1.c:2404 alter_reg reserves the 8-byte-rounded slot no insn references.
+- probe: tmp/grind/func_80049A2C/s8/mini/m.c - nine one-line functions over `extern s16 G[]; extern u8 T[];`, compiled through the project cpp + the instrumented cc1, read back through `.frame` + FRAMEDBG.
+- result: `G[a]=1; t=T[a*2]; if (t!=0xFF) G[t]=1;` gives vars=8. Necessary/sufficient conditions measured:
+  * drop the first access entirely -> vars=0
+  * make the first access a CONSTANT index `G[0]=1` (w2) -> vars=0
+  * make the first access a READ `sink=G[a]` (w3) -> vars=8 (store vs read is irrelevant)
+  * use the SAME index in both accesses (w4) -> vars=0 (CSE merges them)
+  * delete the branch between the accesses (w5) -> vars=8 (no basic-block boundary is needed)
+  * two later accesses `G[t]=1; G[t+1]=1;` (w6) -> vars=8
+  * go through a pointer `p=&G[t]; *p=1;` (w7), or with `p[1]` too (w8) -> vars=8
+  * two distinct index VARIABLES `G[a]=1; ... G[b]=1;` (w9) -> vars=8
+  So the law is: TWO OR MORE ACCESSES TO ONE GLOBAL ARRAY AT TWO OR MORE DISTINCT VARIABLE INDEX EXPRESSIONS. Everything else (store vs load, branch vs straight line, pointer vs subscript) is free.
+- verdict: CONFIRMED
+
+## [s8] The trigger transplants into func_80049A2C and scales 1:1 with the number of single-use indexed accesses.
+- mechanism: the function's rotation-table read `src = &D_80099D3C[(arg1 & 1) * 6]` followed by five `src++` walks is exactly one index expression; respelling the walks as subscripts creates N distinct index expressions.
+- probe: variant D - all six rotation reads spelled `D_80099D3C[k], D_80099D3C[k+1], ... D_80099D3C[k+5]` with `s32 k = (arg1 & 1) * 6;`.
+- result: `.frame $sp,80,$31 # vars= 40, regs= 6/0, args= 16` with FIVE FRAMEDBG records (spill_new_p118/p130/p142/p154/p159, 8 bytes each). Six accesses produced five orphans - one per address add beyond the base. The mechanism is fully controllable from C in this body.
+- verdict: CONFIRMED
+
+## [s8] TARGET'S FRAME REPRODUCED FROM ORDINARY C - variant F2 hits `.frame $sp,48 # vars= 8`.
+- mechanism: keep the walking pointer (which is what reproduces target's `addiu $v1,$v1,0x2` sequence) but make the FIRST rotation read a subscript, so exactly one single-use address add exists to be orphaned.
+- probe: variant F2 - `kidx = (arg1 & 1) * 6; *(s32*)(obj+0x4C) = (D_80099D3C[kidx] * *(s16*)(vehicle+0x12)) >> 12; src = &D_80099D3C[kidx + 1];` with the remaining four `src++` walks unchanged. (Variant F is the same idea with the index expression written out twice instead of named; identical result.)
+- result: `.frame $sp,48,$31 # vars= 8, regs= 6/0, args= 16, extra= 0` - EXACTLY target's 0x30 frame - with `FRAMEDBG ctx=spill_new_p115 mode=4 size=8 align=-1 alignment=8`. No dead local, no pad, no `(void)` discard, no register pin, no inline asm. This is the first time in eight sessions that target's frame has been produced honestly. Banked as memory/grind/func_80049A2C/s8_variant_F2_frame48.c.
+- verdict: CONFIRMED (s6's "reachable ONLY through a dead local" law is now refuted by construction, not just by precedent)
+
+## [s8] F2 is not yet a match: the second index expression costs a SIXTH callee-saved register.
+- mechanism: `regs= 6/0` instead of target's `5/0`. compute_frame_size rounds gp_reg_size to 8 before adding it, so 5 saves (20 B) and 6 saves (24 B) both contribute 24 and the frame TOTAL is still exactly 48 - the 6th save is invisible in the frame but visible in the instruction stream as an extra sw/lw pair.
+- probe: `sandbox func_80049A2C --disable all` on F2 and on F.
+- result: score 50, build_insns 129 vs target 126 (F: same 50/129). The residual is now +3 instructions and a register-allocation reshuffle, NOT a frame-size wall. The problem class changed from "unreachable" to "register pressure".
+- verdict: CONFIRMED
+
+## [s8] Ten other respellings measured dead (all vars=0), banked in rejected/.
+- mechanism: each moves or re-forms one address computation in this body without creating a SECOND distinct variable index on the same symbol - which the s8 trigger law says is the necessary condition.
+- probe: variants B, C, E, F5, H, I, J, K, N, O, P, Q built through the real cpp + instrumented cc1 on the full TU.
+- result: B/C (array-index the D_800EF980 reads) vars=0, 107 insns - CSE merges the two same-index reads. E/F5 (index only the LAST rotation read) vars=0 - CSE rewrites it as `src[1]` because src is already live. H (named rotation index, same access form) vars=0. I (`p_anim = &D_800EF980[temp_v1]`) vars=0, codegen-identical. J (ot store reorder) vars=0. K/O (fold the D_80099CC8 base+index) vars=0. N (a SECOND rotation pointer `&D_80099D3C[k+3]`) vars=0 - both pointers are multi-use so neither address add is single-use. P/Q (single-use constant holder) vars=0.
+- verdict: KILLED (these ten spellings)
+
+- [s8] SCOPE: the only build-surface file touched was src/text1b.c, restored at end of session to its committed `INCLUDE_ASM("asm/funcs", func_80049A2C);` content. All other writes are under memory/grind/func_80049A2C/ and tmp/grind/func_80049A2C/s8/.
+
+- [s8] [s8] Chassis re-measured: `sandbox func_80049A2C --disable all` = 12, target_insns 126, build_insns 126, rules_dropped 0, with the candidate applied at src/text1b.c:867. The ledger floor of 12 is correct on this chassis.
+
+- [s8] [s8] TARGET'S FRAME IS NOW REPRODUCIBLE FROM ORDINARY C. Variant F2 - `kidx = (arg1 & 1) * 6; *(s32*)(obj+0x4C) = (D_80099D3C[kidx] * *(s16*)(vehicle+0x12)) >> 12; src = &D_80099D3C[kidx + 1];` with the remaining four `src++` walks unchanged - emits `.frame $sp,48,$31 # vars= 8, regs= 6/0, args= 16, extra= 0`, exactly target's 0x30 frame, with no dead local, no pad, no `(void)` discard, no register pin and no inline asm. Banked at memory/grind/func_80049A2C/s8_variant_F2_frame48.c.
+
+- [s8] [s8] F2 is not yet a match: it reports `regs= 6/0` where target has `5/0`. sandbox = 50, build_insns 129 vs target 126. The frame TOTAL is insensitive to the sixth save (compute_frame_size rounds gp_reg_size to 8, so 5 and 6 saves both contribute 24), so the remaining delta is purely +3 instructions and a register-allocation reshuffle. The problem class changed from 'frame unreachable' to 'register pressure worth 3 instructions'.
+
+- [s8] [s8] The trigger law, measured in a nine-function minimal repro: two or more accesses to ONE global array at two or more DISTINCT VARIABLE index expressions produce one phantom 8-byte slot per single-use address add beyond the first. Constant index in one of the accesses -> no slot. Same index in both -> no slot (CSE merges). Load vs store, branch vs straight line, subscript vs pointer are all irrelevant. Six subscripted accesses in the real function gave five slots.
+
+- [s8] [s8] s7's belief that the carrier must cross a CODE_LABEL is measured false (minimal repro w5, no branch at all, still vars=8). That is why all five s7 label-crossing variants left vars=0: they moved definitions but never created a second index expression.
+
+- [s8] [s8] The func_800493E4 precedent survives removal of its `do { } while (0);` FAKE (still `vars= 8`, `ctx=spill_new_p98`), so it remains a clean ordinary-C, oracle-proven precedent for this frame signature in this function's own TU.
+
+- [s8] [s8] The candidate's `int new_var3; new_var3 = 8;` constant holder is completely codegen-neutral: replacing both `obj + new_var3` uses with the literal 8 and deleting the local keeps sandbox at 12 with build_insns 126. It has been removed from candidate.c - one of the four constructs named by the 2026-07-20 Judge FAIL is now retired by measurement rather than argument.
+
+- [s8] [s8] RTL mechanism confirmed in the real dump: in func_800493E4 the carrier is pseudo 98 (`98 = 97 + 95`, where 95 holds the CSE'd `symbol_ref D_800EF980`); combine folds the symbol back into the HImode store, deletes insn 109, and emits `(insn 150 (use (reg:SI 98)))` carrying `REG_DEAD (reg:SI 98)` right after `jump_insn 99`. The relevant GCC source is combine.c:10829-10845 (the scan `for (tem = prev_nonnote_insn (i3); ...)` terminates on any non-INSN/CALL_INSN, i.e. a JUMP_INSN as well as a CODE_LABEL) plus reload1.c:2404 alter_reg and mips.c:4444 compute_frame_size.
+
+- [s8] [s8] SCOPE: the only build-surface file touched was src/text1b.c, restored at end of session to its committed `INCLUDE_ASM("asm/funcs", func_80049A2C);` content (git status shows src/ clean). All other writes are under memory/grind/func_80049A2C/ and tmp/grind/func_80049A2C/s8/.

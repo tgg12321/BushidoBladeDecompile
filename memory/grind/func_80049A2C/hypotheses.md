@@ -345,3 +345,106 @@ context, and no dead local anywhere in its body.
 - probe: Read compute_frame_size end to end and solved it against target's measured layout (five saves, highest save 0x28, total 0x30), plus the measured 6-save variant.
 - result: gp_reg_size is rounded to 8 BEFORE entering the total, so 5 saves (20 B) and 6 saves (24 B) both contribute 24 - a 6th callee-save can never move this frame (measured). Target's 0x30 forces vars + args = 24 exactly: either vars=8/args=16 or vars=0/args=24, and the two are byte-indistinguishable. args=24 requires a call whose 5th argument word is stored at 0x10($sp), and target has zero non-save sp traffic, so the live decomposition is vars=8.
 - verdict: CONFIRMED
+
+## [s8] FRONTIER AS OF SESSION 8 (supersedes the s7 frontier list)
+
+The existence question is CLOSED. s6's law ("target's +8 frame slot is reachable
+only through a wholly dead memory-resident local") is refuted by construction:
+s8 produced `.frame $sp,48,$31 # vars= 8` in func_80049A2C from ordinary C with
+no dead local, no pad, no pin and no inline asm (variant F2, banked at
+memory/grind/func_80049A2C/s8_variant_F2_frame48.c). What remains is a REGISTER
+PRESSURE problem worth exactly 3 instructions.
+
+1. **G1 - Buy the orphan without the sixth callee-saved register.**
+   Mechanism: F2 reaches target's frame but reports `regs= 6/0` where target has
+   `5/0`; the extra save/restore pair plus one reshuffled instruction is the
+   whole remaining delta (sandbox 50, 129 insns vs target 126). The frame total
+   is insensitive to the 6th save because compute_frame_size rounds gp_reg_size
+   to 8, so the fix does not risk the frame - only the instruction stream.
+   Next probe: enumerate spellings of "two distinct variable index expressions
+   on D_80099D3C" whose second index does NOT stay live across the remaining
+   stores. Concretely: (a) make the SECOND rotation read the subscript instead
+   of the first, with `src` walking from kidx and the subscript access using
+   `kidx + 1`; (b) derive the second index from a value already live in a
+   callee-saved register (arg1 is in $s1 in target, so `(arg1 & 1) * 6` is
+   recomputable without a new long-lived pseudo); (c) put the subscript access
+   AFTER the walking pointer is dead, i.e. as the final `new_var2` read, but
+   spelled with an index expression CSE cannot rewrite as `src[1]` (variant E
+   and F5 failed exactly because CSE did rewrite it - the index must be
+   textually derived from something CSE cannot equate to `src + 2`).
+
+2. **G2 - Move the trigger onto D_800EF980 or D_80099CC8, whose base registers
+   are already live in target's codegen.**
+   Mechanism: the s8 trigger law needs TWO distinct variable index expressions
+   on ONE symbol. D_800EF980 is currently read at exactly one index (temp_v1)
+   three times; D_80099CC8 at exactly one index (arg0*2 + arg2) once. If a
+   semantically real second index exists on either symbol, its address add is
+   the cheapest possible carrier because the symbol register is already
+   materialized in target's asm (`lui/addiu %lo(D_800EF980)` at 80049A68, and
+   `lui/addiu %lo(D_80099CC8)` at 80049A34).
+   Next probe: read the CALLERS and the sibling initialisers of D_800EF980 (it
+   is the anim-slot table func_800493E4 also writes) to find out whether this
+   function semantically touches a second slot - e.g. a paired entry at
+   `temp_v1 + 1` or at `arg0`. If it does, that is a REAL statement, not a
+   construct, and it is the natural carrier. If it does not, G2 is dead and
+   should be banked as such.
+
+3. **G3 - args=24 / vars=0 remains formally open and is still almost certainly
+   dead.** Unchanged from s7: current_function_outgoing_args_size is written
+   only in calls.c from a call's own argument size, any 5th argument word is
+   STORED at 0x10($sp), and target has zero non-save sp traffic. Do not spend a
+   session on this before G1 and G2 are exhausted.
+
+## [s8] s6's law - the +8 slot is reachable ONLY through a wholly dead, memory-resident local.
+- mechanism: s6 enumerated only expand-time frame allocation; s7 refuted it on precedent grounds (70 oracle-matching functions with vars > 0 and zero stack traffic) but never produced the slot in THIS function.
+- probe: variants D (six subscripted rotation reads) and F/F2 (one subscripted rotation read plus the walking pointer) built through the real cpp + the instrumented cc1 on the full src/text1b.c TU, read back through `.frame` and BB2_FRAME_DEBUG.
+- result: D -> `vars= 40` with five FRAMEDBG spill_new records; F2 -> `vars= 8`, `.frame $sp,48`, exactly target's 0x30 frame, with `ctx=spill_new_p115 size=8`. No dead local anywhere in either body.
+- verdict: KILLED (definitively, by construction)
+
+## [s8] The phantom slot requires a basic-block boundary between the two accesses.
+- mechanism: s7 read combine.c:10836 as needing the note-placement scan to reach a CODE_LABEL, which implied the carrier had to cross one of this function's two labels - the premise behind all five s7 rejected variants.
+- probe: minimal repro w5 - `G[a]=1; t=T[a*2]; G[t]=1;` with no branch at all.
+- result: vars=8. No branch, no label, still a phantom slot. The boundary is not the condition; two distinct variable indices on one symbol is.
+- verdict: KILLED (this narrows why the five s7 label-crossing variants failed - they moved definitions but never created a second index expression)
+
+## [s8] The `8` constant holder (`int new_var3; new_var3 = 8;`) is load-bearing.
+- mechanism: it survived from the s1 candidate as an opaque constant variable used twice as `obj + new_var3`, and the 2026-07-20 Judge FAIL listed it among the constructs that must be retired or FAKE-annotated.
+- probe: variants P (second use literal), Q (first use literal), R (both literal, local deleted); R re-scored through the sandbox.
+- result: all vars=0 / 107 cc1 insns, identical to baseline; R scores sandbox 12 with build_insns 126 - byte-identical output. The holder bought nothing.
+- verdict: KILLED (construct removed from candidate.c)
+
+## [s8] s6's law that target's +8 frame slot is reachable ONLY through a wholly dead, memory-resident (BLKmode) local - i.e. the forbidden unused-local-array frame-coercion family.
+- mechanism: s6 enumerated only expand-time frame allocation (get_frame_size()). The second source is reload1.c:2404 alter_reg, which reserves an 8-byte-rounded stack slot for any pseudo with reg_renumber < 0 and reg_n_refs > 0; combine.c:10836 (distribute_notes) creates exactly such a pseudo by stranding an unplaceable REG_DEAD note on a codegen-free `(use (reg:SI N))`.
+- probe: Variant D (all six D_80099D3C rotation reads respelled as subscripts D_80099D3C[k]..D_80099D3C[k+5]) and variants F/F2 (only the FIRST rotation read subscripted, walking pointer for the rest) built through the real project cpp + the instrumented cc1 on the full src/text1b.c TU, read back through the .frame directive and BB2_FRAME_DEBUG=1.
+- result: D -> `.frame $sp,80 # vars= 40, regs= 6/0, args= 16` with FIVE FRAMEDBG spill_new records (p118/p130/p142/p154/p159, 8 bytes each). F2 -> `.frame $sp,48,$31 # vars= 8, regs= 6/0, args= 16, extra= 0`, EXACTLY target's 0x30 frame, with `ctx=spill_new_p115 mode=4 size=8 align=-1 alignment=8`. Neither body contains a dead local, a pad, a (void) discard, a register pin or inline asm.
+- verdict: KILLED
+
+## [s8] The phantom slot needs a basic-block boundary (CODE_LABEL) between the carrier's definition and its use - the premise behind all five s7 label-crossing variants.
+- mechanism: s7 read combine.c:10836's comment as requiring the note-placement scan to reach a CODE_LABEL, so it reshaped definitions across this function's two labels (the temp_v1 == 0xFF early return and the InitFadePanel branch).
+- probe: Minimal repro w5 in tmp/grind/func_80049A2C/s8/mini/m.c: `void w5(s32 a){ u8 t; G[a]=1; t=T[a*2]; G[t]=1; }` - straight-line, no branch, no label.
+- result: vars=8, FRAMEDBG ctx=spill_new_p77 size=8. The slot appears with no boundary at all. The boundary is not the condition; the condition is two distinct variable index expressions on one symbol. This explains why the five s7 label-crossing variants all failed - they moved definitions but never created a second index expression.
+- verdict: KILLED
+
+## [s8] TRIGGER LAW: a global array accessed at two or more DISTINCT NON-CONSTANT index expressions yields exactly one phantom 8-byte frame slot per single-use address add beyond the first.
+- mechanism: Two or more variable-index accesses force CSE to put the array's symbol_ref in a pseudo. The later access then forms a single-use address add `P = idx + symbol_reg`; combine folds the symbol back into the mem and deletes the def; the REG_DEAD note for P cannot be placed and combine.c:10836 emits `(use (reg:SI P))`, which costs zero instructions but keeps reg_n_refs[P] > 0. regclass reports P as 'ST_REGS or none', global_alloc leaves reg_renumber = -1, and reload1.c:2404 alter_reg reserves the 8-byte-rounded slot no insn references.
+- probe: Nine-function minimal repro (tmp/grind/func_80049A2C/s8/mini/m.c) over `extern s16 G[]; extern u8 T[];`, compiled through the project cpp + the instrumented cc1 with BB2_FRAME_DEBUG=1.
+- result: Baseline `G[a]=1; t=T[a*2]; if(t!=0xFF) G[t]=1;` -> vars=8. Drop the first access -> vars=0. First access at a CONSTANT index `G[0]=1` -> vars=0. First access a READ `sink=G[a]` -> vars=8 (load vs store irrelevant). SAME index in both -> vars=0 (CSE merges). No branch -> vars=8. Two later accesses -> vars=8. Through a pointer `p=&G[t]; *p=1;` (and with `p[1]` too) -> vars=8. Two distinct index variables `G[a]` / `G[b]` -> vars=8. In the real function, six subscripted accesses gave five slots - a 1:1 scaling law.
+- verdict: CONFIRMED
+
+## [s8] The func_800493E4 phantom-slot precedent (s7's strongest, same TU) is an artefact of its `do { } while (0);` FAKE rather than of ordinary C.
+- mechanism: func_800493E4 carries a do-while(0) loop-note FAKE, which emits NOTE_INSN_LOOP_BEG/CONT/END and could plausibly be what leaves a pseudo unallocated.
+- probe: Deleted the do-while(0) and its FAKE comment from src/text1b.c and re-dumped the TU with BB2_FRAME_DEBUG=1.
+- result: Unchanged: `.frame $sp,32,$31 # vars= 8, regs= 2/0, args= 16` with `FRAMEDBG func=func_800493E4 ctx=spill_new_p98 mode=4 size=8`. The slot comes from the ordinary C. s7's use of this function as an ordinary-C, oracle-proven precedent stands.
+- verdict: KILLED
+
+## [s8] The candidate's `int new_var3; new_var3 = 8;` opaque constant holder (used twice as `obj + new_var3`) is load-bearing.
+- mechanism: It survived from the s1 candidate and is one of the four constructs the 2026-07-20 Judge FAIL named as requiring retirement or a FAKE carve-out.
+- probe: Variants P (second use spelled literal 8), Q (first use literal 8), R (both uses literal 8 and the declaration + assignment deleted), built through the real cpp + instrumented cc1; R additionally re-scored through `sandbox func_80049A2C --disable all`.
+- result: All three give vars=0 and 107 cc1 insns, identical to the baseline. R scores sandbox 12 with build_insns 126 - byte-identical output to the s6/s7 candidate. The holder bought nothing and has been deleted from candidate.c.
+- verdict: KILLED
+
+## [s8] Ten other ordinary-C respellings of this body buy the phantom slot.
+- mechanism: Each moves or re-forms one address computation without creating a SECOND distinct variable index on the same symbol, which the s8 trigger law says is necessary.
+- probe: Variants B, C (array-index the D_800EF980 reads), E, F5 (subscript only the LAST rotation read), H (named rotation index), I (`p_anim = &D_800EF980[temp_v1]`), J (ot store reorder), K, O (fold the D_80099CC8 base+index), N (a second rotation pointer `&D_80099D3C[k+3]`) - all built through the real cpp + instrumented cc1 on the full TU.
+- result: All report `vars= 0`. B/C fail because CSE merges the two same-index D_800EF980 reads; E/F5 fail because CSE rewrites the indexed access as `src[1]` once src is live; N fails because both pointers are multi-use so neither address add is single-use. Banked in memory/grind/func_80049A2C/rejected/phantom-slot-*.c.
+- verdict: KILLED
