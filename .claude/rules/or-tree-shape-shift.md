@@ -11,7 +11,10 @@ metadata:
 
 ## Status
 
-**FORBIDDEN as of 2026-06-06.** Codified after the directed-permuter
+**FORBIDDEN as of 2026-06-06** for ENUMERATED orderings; a narrow
+carve-out for a SINGLE justified target-matching order was granted by
+owner ruling 2026-08-20 — see "Owner ruling 2026-08-20" below. Codified
+after the directed-permuter
 campaigns on func_8007CBB0 (round-14, commit `d4872471`) and
 func_8007C97C (round-14, commit `e621af5a`) — run on the same day —
 both independently surfaced sub-baseline forms that achieved
@@ -116,7 +119,9 @@ specifically tests for this family now.
 
 A worker may freely choose ANY of the natural orderings (1) listed
 above. A worker may NOT enumerate orderings looking for the
-score-minimum.
+score-minimum. Additionally, ONE non-natural order/grouping may be
+committed under the strict prerequisites of the 2026-08-20 owner ruling
+below.
 
 When the permuter returns a sub-baseline whose only difference from the
 baseline is operand permutation in an associative+commutative
@@ -134,6 +139,61 @@ reject without surfacing.
 
 Both functions remain INCOMPLETE at their honest pure-C floors
 (CBB0=41, C97C=27).
+
+## Owner ruling 2026-08-20 — single justified target-matching order (narrow carve-out)
+
+Granted after the standard SOTN-master evidence survey
+(`docs/grind/operand-order-survey-2026-08-20.md`, corpus sotn-decomp
+`aa535002`, PSX-provenance files only, verdict **SUPPORTED at family
+level / ABSENT for the exact or-tree shape**). Evidence in brief:
+
+- **E1 (annotated, gold):** `src/st/no3/e_warg.c:433-445` — SOTN-master
+  PSX ships a trial-found reordering of commutative additive terms,
+  `#ifdef VERSION_PSP`-guarded against the port's natural order, with
+  the comment "These are the same code, but compiler instruction
+  reordering is messing it up. There's almost certainly a single
+  solution, but I can't find it."
+- **E2 (annotated):** `src/dra/7E4BC.c:1570` — "// weird RBG assign
+  order, not RGB", kept as-is in matched code.
+- **E3/E4 (silent, 8 sites):** explicit non-left-associative grouping
+  of 3-4-term commutative sums in fully-matched dra files
+  (`src/dra/7E4BC.c:1561-1564`, `src/dra/game_handlers.c:1251-1254`) —
+  the reparenthesization lever itself, accepted without comment.
+- **BB2 in-repo norm:** `get_ofs` (`src/display.c:600`) — a zero-rule
+  COMPLETED-C function already ships the right-grouped or-tree
+  `var_v1 | (var_v0 | new_var2)`.
+
+**The ruling.** A SINGLE committed operand order or parenthesization in
+an associative+commutative expression (`|`, `&`, `^`, `+`), chosen to
+match target, is sanctioned when ALL of the following hold:
+
+1. **Honest orderings measured dead first** — documented lever
+   exhaustion in the function's ledger (structural axes, natural
+   orderings, and any other sanctioned levers tried and measured).
+2. **Named, dump-proven GCC-pass mechanism** for WHY the order matters
+   (e.g. sched1 INSN_PRIORITY chain-length ties) — "the permuter
+   scored it best" is not a mechanism and remains the cheat signal.
+   Enumeration stays FORBIDDEN as a derivation procedure; a permuter
+   find may corroborate a mechanism-derived order, never substitute
+   for one.
+3. **Mandatory E1-style annotation at the site**, e.g.
+   `/* FAKE: operand order chosen to match target; natural orders
+   measured dead (ledger) */`.
+4. **Identical runtime semantics** (associative+commutative only) and
+   instruction-count neutrality (`build_insns == target_insns`).
+5. **Layer-1 + layer-2 adversarial review**, as for every
+   completion-class change.
+
+**Unchanged by this ruling:** the 2026-06-06 rejections of the
+func_8007CBB0 / func_8007C97C round-14 forms STAND — both were
+enumeration-derived with no mechanism and no annotation. Re-attempts on
+those functions must meet the prerequisites above from scratch. The
+"reject enumerated permuter finds without surfacing" discipline is
+unchanged.
+
+**Functions unparked by this ruling** (parks spent per
+`queue unpark`): `func_80041688`, `func_80048530`, `func_800645B0` —
+each re-enters the active queue on its own ledger.
 
 ## Related
 

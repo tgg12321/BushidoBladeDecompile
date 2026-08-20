@@ -9109,3 +9109,60 @@ THE PRECISE QUESTION FOR THE OWNER. The family itself is already sanctioned in g
 If the owner grants the row, the remaining steps are routine and fully gated: apply candidate.c over src/text1b.c:176, re-run sandbox (expect 0), full build (SHA1 already measured == oracle, and corroborated by me at the object level), fresh layer-2 cheat-reviewer, then `queue done`. Also worth the owner's attention: the ledger's second frontier entry notes that other parked 'frame-delta' functions may carry the same mislabel — the discriminator is whether the untouched span lies between the argument area and the saved registers (leading, sanctioned) or above the saved registers (true tail, no precedent). This function was refused twice on that error alone.
 
 **Constraint recorded for any future session:** Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[8];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row — no function-scope volatile scalar, no (void) shim, no non-volatile array.
+
+## 2026-08-20 — OWNER RULING — commutative-operand-order carve-out: single justified target-matching order sanctioned
+
+**Provenance — the verbatim exchange (operator session, 2026-08-20).** The standard
+SOTN-master evidence survey for the `or-tree-shape-shift` family was run this session
+(persisted at `docs/grind/operand-order-survey-2026-08-20.md`; corpus sotn-decomp
+`aa535002`, PSX-provenance only; verdict SUPPORTED at family level / ABSENT for the
+exact or-tree shape). The operator presented it to the owner with this recommendation,
+quoted in full:
+
+> "the evidence supports a ruling permitting a *single justified* target-matching
+> operand order/grouping for the family, with three conditions mirroring how the pad
+> family was scoped — (1) mandatory E1-style annotation (`/* FAKE: term order chosen
+> to match; natural order measured dead */`), (2) prerequisite that honest orderings
+> were measured dead first (func_80041688's ledger already has nine axes + 32k
+> permuter iterations killed), and (3) enumeration remains forbidden — the order must
+> come with a stated mechanism, not a search log. That would put `func_80041688`
+> (floor 1), `func_80048530` (floor ~2), and likely `func_800645B0` back in play."
+
+**Owner (Trenton), verbatim:** "Granted, go ahead"
+
+A first draft of this record carrying only an operator paraphrase was **FAILed by
+layer-2 review** on provenance form (no verbatim owner quote — the
+[[ruling-record-lands-before-code]] bar). The operator surfaced the FAIL to the owner
+with the reviewer's two compliant paths and this proposed grant sentence for path (1):
+
+> "I sanction the or-tree-shape-shift carve-out: a single justified target-matching
+> operand order/grouping, under the five prerequisites in the 2026-08-20 survey
+> recommendation, and I unpark func_80041688, func_80048530, and func_800645B0."
+
+**Owner (Trenton), verbatim:** "go ahead with path 1" — adopting that grant sentence.
+
+The carve-out is codified in `.claude/rules/or-tree-shape-shift.md` ("Owner ruling
+2026-08-20" section); the codification expands the recommendation's three conditions
+into five prerequisites (adding semantics-identity/insn-count-neutrality and the
+standard layer-1+2 review, both implicit in the recommendation's "mirroring how the
+pad family was scoped"). This ruling lands as a standalone `rules:` commit BEFORE any
+commit spends it; the unparks land separately.
+
+**Scope:** ONE committed operand order/grouping per expression, prerequisites ALL
+mandatory — documented exhaustion of natural orderings; named dump-proven GCC-pass
+mechanism (enumeration remains forbidden as derivation); E1-style FAKE annotation;
+semantics-identical + insn-count-neutral; layer-1 + layer-2 review. The 2026-06-06
+rejections (func_8007CBB0 / func_8007C97C round-14 enumerated forms) stand.
+
+**Parks spent by this ruling** (via `queue unpark`, audit chain in `unparked_from`):
+- `func_80041688` (gnd_init_80041688, text1a_post) — the family's cleanest exhibit:
+  82==82 insns, nine structural axes + 32k permuter iterations measured dead, sched1
+  INSN_PRIORITY chain-length mechanism fully characterized; the residual is exactly the
+  lbu emission order [r,g,b] vs target [b,r,g], closable by `(b|r)|g` under this ruling.
+- `func_80048530` (text1b) — same family, honest floor ~1-2.
+- `func_800645B0` (text1b) — scheduling-reorder park whose sole remaining lever is in
+  this family per the 2026-08-20 rule-carrier taxonomy (tmp/research dossier).
+
+Each re-enters the ACTIVE queue on its own ledger and goes through the full normal
+gates; nothing is hand-integrated under this ruling (no proven bytes are banked for
+any of the three).
