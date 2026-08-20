@@ -371,3 +371,31 @@ s32 func_8002EA24(u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         return 1;
     }
 }
+
+/* ---------------------------------------------------------------------------
+ * SESSION 13 (escalation, 2026-08-20) -- BODY UNCHANGED, FLOOR RE-MEASURED ON
+ * THE POST-MIGRATION CHASSIS.
+ *
+ * The 2026-08-19 asm-until-matched migration replaced this function's on-main
+ * representation with INCLUDE_ASM (src/code6cac_b.c:1160) and retired its 10
+ * legacy regfix rules (archived at retired-chassis-2026-08/rules.txt), so every
+ * conclusion banked before that date was chassis-relative and needed a re-read
+ * before it could be spent.  Session 13 applied lines 229-373 of THIS file to
+ * src/code6cac_b.c and measured:
+ *
+ *     sandbox func_8002EA24 --disable all
+ *     {"score": 2, "target_insns": 104, "build_insns": 104, "scorable": true,
+ *      "rules_dropped": 0, "cheat_asm_stripped": 237}
+ *
+ * Floor 2, identical to the pre-migration floor.  The plateau is therefore
+ * chassis-invariant as well as source-shape-invariant, and the whole ledger
+ * (44 rejected forms, ~118k permuter iterations, the find_reg forensics)
+ * carries over intact.  Residual unchanged: slt $a0 vs target's slt $v0.
+ *
+ * DISPOSITION: both endgame-lock gates re-evaluated this session and both FAIL
+ * (scan_hand_coded TIGHT_C 3/8, no S1/S2/S6; SOTN construct index census for
+ * conflict/allocno/find_reg/global_alloc/zero-cost returns ZERO hits).  Filed
+ * as REFUSED / OWNER-ACCEPTED INCOMPLETE per the owner's 2026-07-27 standing
+ * ruling -- docs/grind/decisions.md:7843.  Re-attempt-eligible; on reopening,
+ * start from THIS body, not from HEAD.
+ * ------------------------------------------------------------------------- */

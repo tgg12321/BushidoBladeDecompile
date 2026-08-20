@@ -7839,3 +7839,153 @@ Ruling: the goto-formed inner loop is NOT a cheat and the banned_constructs[1] e
 ## 2026-08-20 03:52 — func_80017FA0 — final call — **PASS**
 
 Pure C, zero rules, zero inline asm, zero pins/aliases/dead locals; the only 'volatile' in the region is prose inside the FAKE comment, so the s4 scratchpad-volatile ban is respected, not respelled. One matching-driven spelling: the goto-formed inner loop, which sits in the do-while-zero-exception.md:46 ALLOWED-spelling family (semantically-true C; the goto IS the back edge) with its sole prerequisite -- an inline /* FAKE */ at the construct site (src/code6cac.c:269, naming mechanism + exhaustion pointers) -- now present; the 03:43 ruling's one required fix (false 'zero FAKE constructs' header) is corrected. Decisive fact: the 2026-08-20 03:31 layer-1 FAIL was paperwork-only and the annotation closes it. Independently verified this session: sandbox --disable all = 0 (61/61, rules_dropped 0) and full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa; SOTN index:1015 and in-tree precedent src/code6cac.c:2143 re-read. Full evidence: memory/grind/func_80017FA0/evidence.md:355-400, hypotheses.md H15-H17, self_vet.md, rejected/.
+
+## 2026-08-20 — func_8002EA24 (src/code6cac_b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+RE-FILED ON THE POST-MIGRATION CHASSIS. This entry supersedes the 2026-07-30
+entry (docs/grind/decisions.md:2457) for func_8002EA24. The disposition is
+unchanged — both endgame-lock gates still FAIL — but the 2026-08-19
+asm-until-matched migration invalidated that entry's gate-(b) factual basis
+(it recorded "byte-matches on main only via a cheat: 10 regfix/asmfix rules"),
+so the record is restated against what is true today. Grind session 13,
+modality `escalation`, driver-declared exhaustion (floor FLAT at 2 across
+sessions 4-13 and six distinct modalities: permuter, forensics, rederive,
+synthesis, structural, escalation).
+
+### Chassis, re-measured THIS session (not quoted from the ledger)
+
+`sandbox func_8002EA24 --disable all` with the banked candidate body
+(`memory/grind/func_8002EA24/candidate.c` lines 229-373) applied to
+`src/code6cac_b.c`:
+
+```
+{"score": 2, "target_insns": 104, "build_insns": 104, "scorable": true,
+ "rules_dropped": 0, "cheat_asm_stripped": 237}
+```
+
+The honest floor is **2** on the current chassis — identical to the floor
+banked before the migration, so every chassis-relative conclusion in
+`memory/grind/func_8002EA24/` (44 rejected forms, ~118k permuter iterations,
+the find_reg forensics) carries over intact. Instruction COUNT and every
+instruction OPCODE match target; the entire residual is two register choices
+on a single compare:
+
+```
+ours     slt $a0, $a1, $t1 ; bnez $a0, <reject>
+target   slt $v0, $a1, $t1 ; bnez $v0, <reject>
+```
+
+### Gate (a) — canonical-asm — **FAILS**
+
+```
+$ python3 tools/scan_hand_coded.py --single func_8002EA24
+HAND_CODED: tier=TIGHT_C  score=3/8  (func_8002EA24, 110 insns)
+  [ ] S1 multu pacing     only 0 multu/mflo pair(s)
+  [ ] S2 empty branch     no empty-body branches
+  [X] S3 no spills        110 insns, 0 spills, 16 distinct regs
+  [X] S4 front loads      5 loads in 8-insn window @ insn 1
+  [X] S5 cluster          1 approx-sibling(s): func_8002D320 (jaccard=0.60)
+  [ ] S6 BIOS jumptable   no BIOS jumptable call pattern
+  [ ] S7 unsaved $sN use  all callee-save uses have $sp save
+  [ ] S8 redundant mask   no redundant mask-before-shift
+```
+
+TIGHT_C, and none of the three STRONG signals (S1 / S2 / S6) fire. S3/S4/S5
+are the weak tier and do not carry a grant. The whole-body canonical-asm path
+is therefore not available, exactly as on 2026-07-30 (same 3/8 score).
+
+Note on the two GTE islands: the LZC island wording is PRE-APPROVED for this
+function by the owner's 2026-08-07 ruling (docs/grind/decisions.md:3906), but
+that pre-approval is expressly "effective ONLY when the function otherwise
+matches." At floor 2 it does not, so the pre-approval cannot be spent, and the
+same ruling explicitly EXCLUDES the vector/MVMVA block from any grant. Neither
+island is where the residual lives — the residual is ordinary register
+allocation in the range-test chain, ~40 instructions away from either island.
+
+### Gate (b) — cited SOTN-master precedent for a closing construct — **FAILS**
+
+Gate (b) fails vacuously, and that is the honest characterization: there is no
+closing construct to cite a precedent FOR. Sessions 6-11 localized the residual
+inside the compiler rather than the source. Pass `global_alloc`
+(`tools/gcc-2.7.2/global.c`), decision point `find_reg` (:1012-1044): the
+`neg_threshold` allocno (pseudo 103) needs hard register 4 ($a0) present in its
+pass-0 exclusion set; with the bit, first-fit hands it $t1 (= target), without
+it, $a0 (= ours). Measured with the `BB2_FINDREG_DEBUG` hook, our body and the
+`plain1` control differ in exactly that one set member. All four GCC generators
+of that bit were enumerated and each measured dead:
+
+  1. hard-reg conflict from live-at-entry — costs instructions (s5: 108 insns);
+  2. assigned conflict from allocno 97 — s7 proved it is an assigned conflict,
+     which killed the entire allocation-priority axis (s6's frontier);
+  3. preference propagation via `expand_preferences` — s10 reopened it, s11
+     closed it by exhaustive recipient enumeration (`z` satisfies every
+     side-condition for the first time and still loses on allocation rank);
+  4. assigned conflict from any other allocno — s8/s9's "seventh zero-cost live
+     value" carrier enumeration, complete in both directions, six new measured
+     bodies, all worse or inert.
+
+Census run THIS session, negative: `docs/reference/sotn-construct-index.md`
+(1,365 entries) contains **zero** matches for `conflict`, `allocno`, `find_reg`,
+`global_alloc`, `zero-cost`, or `costless`. SOTN master ships no indexed
+construct whose purpose is to force a register-allocation conflict at zero
+instruction cost. The two decomp.me corpus censuses run in session 9 were also
+negative. A negative census is a FAILED gate, not an open question.
+
+### Exhaustion record
+
+- 13 sessions; floor 18 → 9 (s2/s3) → 2 (s4 permuter) → **FLAT at 2 for ten
+  consecutive sessions**.
+- Six distinct modalities spent: recon, structural (s2, s3, s11), permuter
+  (s4, s5), forensics (s6, s7), rederive (s8, s9), synthesis (s10),
+  escalation (s12, s13).
+- ~118k permuter iterations across multiple chassis and fresh-seed windows
+  (34.3k directed over the range-test chain in s5 alone; ~84k fresh-seed in s12
+  killing H7); one chassis independently reconstructed the banked form, which
+  is the permuter's own signal that the form is a local optimum.
+- 44 disproven bodies banked in `memory/grind/func_8002EA24/rejected/`, each
+  named for why it is dead.
+- The plateau is proven **source-shape-invariant**: s8 rebuilt the function
+  from a fresh m2c decompile and applied 11 structural rewrites; six distinct
+  bodies, floor 2 on all of them.
+
+### What is true about main right now
+
+Since the 2026-08-19 asm-until-matched migration, `src/code6cac_b.c:1160` is
+`INCLUDE_ASM("asm/funcs", func_8002EA24);`. **There is no cheat on main for
+this function at all** — zero regfix rules, zero asmfix rules, zero cheat-asm,
+and it is not in `inline_asm_canonical.txt`. The 10 legacy regfix rules quoted
+in the 2026-07-30 entry are retired and archived at
+`memory/grind/func_8002EA24/retired-chassis-2026-08/rules.txt`. So this is NOT
+an "accept a cheat as done" request and NOT an integration handoff: nothing is
+blocked on a surface the session may not touch, and no operator step exists
+that would complete it. It is simply an unmatched function whose pure-C levers
+are spent.
+
+### Disposition
+
+Both gates fail. Per the owner's standing ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`) this is **REFUSED /
+OWNER-ACCEPTED INCOMPLETE** — terminal, nothing pending on the owner. The
+driver parks func_8002EA24 so the queue advances.
+
+**Explicitly re-attempt-eligible.** Two named reopening conditions, both from
+outside this function's grind:
+
+1. **New tooling.** The missing capability is an inversion of the mapping from
+   C dataflow to the allocno conflict graph — a tool that answers "which C
+   dataflow produces allocno conflict set X" in the FORWARD direction, instead
+   of the guess-and-measure loop twelve sessions have run. Candidate substrate:
+   `tools/ra_solver` (memory/project/ra-solver-campaign-2026-08-04), which
+   already models GCC 2.7.2's allocation stack and is validated, but does not
+   invert.
+2. **A newly sanctioned pure-C family** carrying its own community precedent
+   that produces an allocator conflict at zero instruction cost. Gate (b) fails
+   today only because nothing is known to close the residual; such a family
+   would reopen the function immediately.
+
+On reopening, start from `memory/grind/func_8002EA24/candidate.c` (score 2,
+104/104 insns), NOT from HEAD, and do NOT re-run the structural / forensics /
+rederive / synthesis / permuter modalities — all are spent and their negatives
+are banked in `memory/grind/func_8002EA24/`.
+
+[skip-park-src-guard]

@@ -1601,3 +1601,69 @@ that bit is enumerated and measured.
 - probe: Identify the closing construct for the residual 2 points and look for its precedent; re-read the session-9 corpus censuses.
 - result: There is no closing construct to cite a precedent FOR. The two coercion constructs already in the body (L1, the returned 0 staged through the dead z, defeating jump.c's store-flag single-set precondition; L3, the first range test's boolean staged through a0_var) belong to the already-sanctioned staged-value-reused-variable family (2026-07-03; SOTN citations src/st/{cen,lib,no3,st0,top,mar}/cutscene.c, src/dra/menu.c x3, src/st/no0/clock_room.c) and are what took the floor 9 -> 2; they do not close the last 2 points, and after twelve sessions no construct of any kind is known that does. The two censuses that were run came back NEGATIVE (session 9, decomp.me: 'negu into $t/$s consumed by an slt' = 0 of 1,751 matching GCC-2.7.2 scratches; 0 of 39 matched unfolded-0/1-diamond scratches has this function's bare return 0 / return 1 shape), which per policy is a failed gate, not an open question.
 - verdict: KILLED
+
+
+## [s13] escalation -- hypotheses
+
+**H-s13a (CONFIRMED).**  *The 2026-08-19 asm-until-matched migration did not
+move the honest floor.*  Mechanism: the migration changes only main's
+REPRESENTATION of the function (rules + draft C -> INCLUDE_ASM); the compiler,
+flags, and surrounding translation-unit context in code6cac_b.c are unchanged,
+and the sandbox already scored with rules disabled, so nothing the migration
+touched is an input to the honest score.  Probe: applied candidate.c:229-373 to
+src/code6cac_b.c and ran `sandbox func_8002EA24 --disable all`.  Result: score
+2, 104/104 insns, rules_dropped 0 -- byte-for-byte the pre-migration floor.
+VERDICT: CONFIRMED.  Consequence: the entire pre-migration ledger is valid on
+the current chassis and needs no re-derivation.
+
+**H-s13b (KILLED).**  *The owner's 2026-08-07 LZC-island pre-approval is a new
+lever that could close func_8002EA24.*  Mechanism (if true): a pre-approved
+inline-asm island would let the GTE region be banked as authorized asm, removing
+it from the pure-C burden.  Probe: read the ruling at docs/grind/decisions.md:
+3906-3915 and located the residual.  Result: the pre-approval is scoped
+"effective ONLY when the function otherwise matches" -- at floor 2 it does not
+-- and it explicitly excludes the vector/MVMVA block.  More decisively, the
+residual is not in either island: the two mismatching instructions are the
+`slt`/`bnez` pair in the range-test chain, ~40 instructions from the nearest
+cop2 op, so authorizing an island cannot move the score.  VERDICT: KILLED.
+
+**H-s13c (KILLED).**  *SOTN master ships a construct family that forces a
+register-allocation conflict at zero instruction cost, which would satisfy
+endgame-lock gate (b).*  Mechanism (if true): such a family, cited by file:line
+from the construct index, would give the neg_threshold allocno its missing $a0
+exclusion bit without paying an instruction, closing the last 2 points.  Probe:
+case-insensitive grep of docs/reference/sotn-construct-index.md (1,365 entries)
+for conflict / allocno / find_reg / global_alloc / zero-cost / costless.
+Result: zero hits on every term.  VERDICT: KILLED -- a negative census is a
+failed gate, not an open question.  This is the in-tree confirmation of session
+9's two negative decomp.me corpus censuses.
+
+Frontier after s13 is UNCHANGED from s12 and is deliberately not a modality:
+re-attempt is gated on new tooling (a forward inversion of the C-dataflow ->
+allocno-conflict-graph mapping, plausibly built on tools/ra_solver) or on a
+newly sanctioned pure-C family arriving from outside this function's grind.  Do
+not re-run structural / forensics / rederive / synthesis / permuter here.
+
+## [s14] The 2026-08-19 asm-until-matched migration did not move func_8002EA24's honest floor, so the pre-migration ledger is valid on the current chassis.
+- mechanism: The migration changes only main's REPRESENTATION of the function (10 regfix rules + draft C -> INCLUDE_ASM). The compiler, flags, and the surrounding translation-unit context in code6cac_b.c are unchanged, and the cheat-invisible sandbox already scored with rules disabled, so nothing the migration touched is an input to the honest score.
+- probe: Applied the banked candidate body (memory/grind/func_8002EA24/candidate.c lines 229-373) to src/code6cac_b.c in place of the INCLUDE_ASM line and ran `sandbox func_8002EA24 --disable all` on the post-migration tree.
+- result: score 2, target_insns 104, build_insns 104, rules_dropped 0, cheat_asm_stripped 237 -- byte-for-byte the pre-migration floor. src restored to INCLUDE_ASM afterwards.
+- verdict: CONFIRMED
+
+## [s14] The owner's 2026-08-07 LZC-island pre-approval (docs/grind/decisions.md:3906) is a genuinely new lever that could close func_8002EA24.
+- mechanism: If a pre-approved inline-asm island removed the GTE region from the pure-C burden, the remaining residual might be reachable by ordinary C.
+- probe: Read the ruling text at docs/grind/decisions.md:3906-3915 and located the residual against the candidate's disassembly.
+- result: The pre-approval is scoped 'effective ONLY when the function otherwise matches' -- at floor 2 it does not -- and it explicitly EXCLUDES the vector/MVMVA block. Decisively, the residual is not in either island: the two mismatching instructions are the slt/bnez pair in the range-test chain, roughly 40 instructions from the nearest cop2 op, so authorizing an island cannot move the score by construction.
+- verdict: KILLED
+
+## [s14] SOTN master ships a construct family that forces a register-allocation conflict at zero instruction cost, which would satisfy endgame-lock gate (b).
+- mechanism: Such a family, citable by file:line from the construct index, would supply the neg_threshold allocno (pseudo 103) its missing hard-reg-4 exclusion bit in find_reg's pass-0 set without paying an instruction, which is the exact and only thing the last 2 points need.
+- probe: Case-insensitive grep of docs/reference/sotn-construct-index.md (1,365 indexed SOTN-master constructs) for conflict / allocno / find_reg / global_alloc / zero-cost / 'no instruction cost' / costless.
+- result: Zero hits on every term. This is the in-tree confirmation of session 9's two negative decomp.me corpus censuses. A negative census is a FAILED gate, not an open question.
+- verdict: KILLED
+
+## [s14] func_8002EA24 clears endgame-lock gate (a) and can take the canonical-asm grant path.
+- mechanism: A STRONG scan_hand_coded tier (S1 multu pacing / S2 empty branch / S6 BIOS jumptable) is the evidence bar for a whole-body canonical-asm grant.
+- probe: python3 tools/scan_hand_coded.py --single func_8002EA24
+- result: tier=TIGHT_C score=3/8 -- only the weak signals S3 (no spills), S4 (front loads), S5 (cluster sibling func_8002D320, jaccard 0.60) fire; all three STRONG signals are clear. Identical to the 2026-07-30 reading.
+- verdict: KILLED

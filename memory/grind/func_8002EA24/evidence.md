@@ -1548,3 +1548,74 @@ that bit is enumerated and measured.
 - [s12] src/code6cac_b.c was restored to HEAD at the end of the session (git checkout), so main keeps its byte match and the full-build oracle stays green; the honest score-2 body remains banked at memory/grind/func_8002EA24/candidate.c with candidate_alt_score3_no_fake.c and candidate_alt_L1_via_ylow.c as fallbacks.
 
 - [s12] All three permuter campaigns were harvested with --stop before this outcome was written; procs_killed 5 on each, no campaign left running.
+
+
+## [s13] 2026-08-20 -- escalation -- chassis re-measurement + disposition re-filed
+
+FACT (measured this session, not inherited).  The banked candidate body
+(candidate.c:229-373) applied to src/code6cac_b.c over the post-migration tree
+scores exactly as it did before the 2026-08-19 asm-until-matched migration:
+
+    sandbox func_8002EA24 --disable all
+    {"score": 2, "target_insns": 104, "build_insns": 104, "scorable": true,
+     "rules_dropped": 0, "cheat_asm_stripped": 237}
+
+This matters because the migration changed the chassis under the whole ledger:
+main's representation for this function is now `INCLUDE_ASM("asm/funcs",
+func_8002EA24);` at src/code6cac_b.c:1160, and the 10 legacy regfix rules that
+the 2026-07-30 escalation entry cited as "what holds the byte-match" are
+retired (archived at retired-chassis-2026-08/rules.txt).  There is now NO cheat
+on main for this function at all -- zero regfix, zero asmfix, zero cheat-asm,
+not in inline_asm_canonical.txt.  Since the floor is unchanged at 2, every
+chassis-relative conclusion in this ledger is confirmed to carry over and does
+not need re-derivation.
+
+FACT.  Gate (a) re-run this session, unchanged from 2026-07-30:
+`scan_hand_coded --single func_8002EA24` -> tier=TIGHT_C score=3/8, with S3
+(no spills), S4 (front loads), S5 (cluster: func_8002D320 jaccard 0.60) set and
+all three STRONG signals (S1 multu pacing, S2 empty branch, S6 BIOS jumptable)
+clear.  No canonical-asm grant path.
+
+FACT.  Gate (b) census run this session, NEGATIVE.  Grepping
+docs/reference/sotn-construct-index.md (1,365 indexed SOTN-master constructs)
+for `conflict`, `allocno`, `find_reg`, `global_alloc`, `zero-cost`, `costless`
+returns zero hits.  SOTN master ships no indexed construct whose purpose is to
+force a register-allocation conflict at zero instruction cost.  This confirms
+in-tree what session 9's two decomp.me corpus censuses found externally.
+
+FACT.  The owner's 2026-08-07 LZC-island pre-approval (decisions.md:3906) is
+NOT spendable here.  It is scoped "effective ONLY when the function otherwise
+matches"; at floor 2 it does not.  The same ruling explicitly excludes the
+vector/MVMVA block.  And neither island is where the residual lives -- the two
+mismatching instructions are ordinary range-test register allocation roughly 40
+instructions away from either GTE island.  This closes the one axis that looked
+NEW since the last escalation.
+
+DISPOSITION.  Both gates fail; filed under the owner's 2026-07-27 standing
+ruling as REFUSED / OWNER-ACCEPTED INCOMPLETE at docs/grind/decisions.md:7843
+(that entry supersedes the 2026-07-30 one at :2457, whose gate-(b) facts the
+migration invalidated).  Terminal, nothing pending on the owner, explicitly
+re-attempt-eligible on either (1) new tooling that inverts the C-dataflow ->
+allocno-conflict-graph mapping, or (2) a newly sanctioned pure-C family with
+its own community precedent that produces an allocator conflict at zero
+instruction cost.
+
+- [s14] Honest floor on the current post-migration chassis is 2, re-measured this session with the banked candidate applied: {"score": 2, "target_insns": 104, "build_insns": 104, "scorable": true, "rules_dropped": 0, "cheat_asm_stripped": 237}. Instruction count and every instruction opcode match target.
+
+- [s14] The entire residual is two register choices on one compare: ours `slt $a0,$a1,$t1 ; bnez $a0,<reject>` vs target `slt $v0,$a1,$t1 ; bnez $v0,<reject>`.
+
+- [s14] The floor is unchanged across the migration, so the 44 rejected forms, ~118k permuter iterations and the find_reg forensics banked in memory/grind/func_8002EA24/ are all valid on today's chassis and need no re-derivation.
+
+- [s14] On main today src/code6cac_b.c:1160 is `INCLUDE_ASM("asm/funcs", func_8002EA24);` -- zero regfix rules, zero asmfix rules, zero cheat-asm, not in inline_asm_canonical.txt. The 10 legacy regfix rules the 2026-07-30 escalation entry cited as 'what holds the byte-match' are retired and archived at memory/grind/func_8002EA24/retired-chassis-2026-08/rules.txt. This is therefore NOT an accept-a-cheat request and NOT an integration handoff: no operator step exists that would complete it.
+
+- [s14] Gate (a) FAILS: scan_hand_coded --single func_8002EA24 -> tier=TIGHT_C score=3/8, no S1/S2/S6.
+
+- [s14] Gate (b) FAILS: there is no closing construct to cite a precedent for, and the SOTN construct-index census (1,365 entries, terms conflict/allocno/find_reg/global_alloc/zero-cost/costless) returns zero hits.
+
+- [s14] The 2026-08-07 LZC-island pre-approval cannot be spent: it is conditioned on the function otherwise matching, it excludes the vector/MVMVA block, and neither island contains the residual.
+
+- [s14] Exhaustion: 13 sessions, floor FLAT at 2 for the last ten, six distinct modalities spent (recon, structural s2/s3/s11, permuter s4/s5, forensics s6/s7, rederive s8/s9, synthesis s10, escalation s12/s13); plateau proven source-shape-invariant by s8's fresh-m2c rebuild plus 11 structural rewrites over six distinct bodies.
+
+- [s14] Residual localized inside the compiler, not the source: pass global_alloc (tools/gcc-2.7.2/global.c), decision point find_reg (:1012-1044), the pass-0 hard-register exclusion set for the neg_threshold allocno (pseudo 103) is missing hard register 4 ($a0); with the bit first-fit yields $t1 (target), without it $a0 (ours). All four GCC generators of that bit are enumerated and each measured dead (s5 live-at-entry costs instructions; s7 assigned-conflict-from-97 killed the priority axis; s11 closed expand_preferences by exhaustive recipient enumeration; s8/s9 completed the seventh-live-value carrier enumeration in both directions).
+
+- [s14] Disposition filed this session at docs/grind/decisions.md:7843, superseding the 2026-07-30 entry at :2457 whose gate-(b) facts the migration invalidated. Terminal per the owner's 2026-07-27 standing ruling; nothing pending on the owner; explicitly re-attempt-eligible.

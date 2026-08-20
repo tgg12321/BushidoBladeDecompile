@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002EA24",
-      "file": "code6cac_b",
-      "distance": 2,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "CD_sync",
       "file": "system",
       "distance": 2,
@@ -2025,6 +2017,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:7530 \u2014 ## 2026-08-20 \u2014 func_80047FBC (src/text1b.c) \u2014 **OWNER-ESCALATION** \u2014 bytes proven at 0; AND-gate (b) PASSES with a cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row"
     },
     {
+      "func": "func_8002EA24",
+      "file": "code6cac_b",
+      "distance": 2,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:7843"
+    },
+    {
       "func": "func_8003800C",
       "file": "code6cac_c_mid",
       "distance": 2,
@@ -2236,14 +2237,14 @@
   ],
   "counts": {
     "total": 257,
-    "active": 228,
+    "active": 227,
     "by_status": {
-      "active": 228,
-      "parked": 29
+      "active": 227,
+      "parked": 30
     },
     "by_verdict": {
-      "ASM-PARTIAL": 38,
-      "C": 190
+      "C": 190,
+      "ASM-PARTIAL": 37
     }
   }
 }

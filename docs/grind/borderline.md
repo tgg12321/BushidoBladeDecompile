@@ -107,3 +107,8 @@ disposition taken: REFUSED under the current frozen policy (endgame-lock standin
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md:7530 — ## 2026-08-20 — func_80047FBC (src/text1b.c) — **OWNER-ESCALATION** — bytes proven at 0; AND-gate (b) PASSES with a cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-20 — func_8002EA24 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:7843
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

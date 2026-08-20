@@ -1,7 +1,7 @@
 {
  "func": "func_8002EA24",
  "file": "code6cac_b",
- "session_count": 12,
+ "session_count": 14,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -75,23 +75,49 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Disposition reached: both endgame-lock gates FAIL (scan_hand_coded TIGHT_C 3/8, no closing construct to cite a precedent for), the last un-tried mechanical axis H7 is killed by ~84k fresh-seed permute"
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Chassis re-measured post-migration: floor is still exactly 2 (104/104 insns, 0 rules on main), so the whole pre-migration ledger carries over; the one axis that looked new -- the owner's 2026-08-07 LZC-island pre-approval -- is killed (scoped to an otherwise-matching function, excludes the vector block, and the residual is 40 insns from either island); both endgame-lock gates re-evaluated and both FAIL (scan_hand_coded TIGHT_C 3/8; SOTN construct-index census for conflict/allocno/find_reg/global_alloc returns zero hits), so the REFUSED / OWNER-ACCEPTED INCOMPLETE disposition is re-filed on current facts at docs/grind/decisions.md:7843."
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Post-migration chassis re-measured (floor still exactly 2, 104/104 insns, zero rules on main); the one axis that looked new since the last escalation -- the owner's 2026-08-07 LZC-island pre-approval "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-attempt is gated on NEW TOOLING, not on another modality: an exhaustive RTL-level search that answers 'which C dataflow produces allocno conflict set X' in the FORWARD direction, instead of the guess-and-measure loop twelve sessions have run.",
-   "mechanism": "The residual is one bit in find_reg's pass-0 exclusion set for pseudo 103, and every C-visible generator of that bit (assigned conflict from 97, preference propagation via expand_preferences, assigned conflict from any other allocno) is enumerated and measured dead. What is missing is not another guess but an inversion of the mapping from C dataflow to conflict graph.",
-   "next_probe": "Only if such a tool is built. Do NOT re-run structural / forensics / rederive / synthesis / permuter modalities on this function - all six are spent and their negatives are banked in memory/grind/func_8002EA24/."
+   "hypothesis": "Re-attempt is gated on NEW TOOLING, not on another modality: a forward inversion of the mapping from C dataflow to the allocno conflict graph.",
+   "mechanism": "The residual is one bit in find_reg's pass-0 exclusion set for pseudo 103, and every C-visible generator of that bit is enumerated and measured dead. What is missing is not another guess but a tool that answers 'which C dataflow produces allocno conflict set X' in the forward direction instead of the guess-and-measure loop thirteen sessions have run. Plausible substrate: tools/ra_solver (memory/project/ra-solver-campaign-2026-08-04), which already models GCC 2.7.2's allocation stack and is validated, but does not invert.",
+   "next_probe": "Only if such a tool is built. Do NOT re-run structural / forensics / rederive / synthesis / permuter modalities on this function -- all are spent and their negatives are banked in memory/grind/func_8002EA24/."
   },
   {
    "hypothesis": "A genuinely new sanctioned pure-C construct family, arriving from outside this function's grind and carrying its own community precedent, could close the last 2 points.",
-   "mechanism": "Gate 2 fails today only because nothing is known to close the residual. A future SOTN/VS/ESA-evidenced family that produces an allocator conflict at zero instruction cost would reopen the function immediately - the park is explicitly re-attempt-eligible.",
-   "next_probe": "Re-open func_8002EA24 when such a family is sanctioned project-wide; apply it on top of memory/grind/func_8002EA24/candidate.c (score 2, 104 insns) rather than starting from HEAD."
+   "mechanism": "Gate (b) fails today only because nothing is known to close the residual. A future SOTN/VS/ESA-evidenced family that produces an allocator conflict at zero instruction cost would reopen the function immediately -- the park is explicitly re-attempt-eligible.",
+   "next_probe": "Re-open func_8002EA24 when such a family is sanctioned project-wide; apply it on top of memory/grind/func_8002EA24/candidate.c (score 2, 104/104 insns) rather than starting from HEAD."
+  },
+  {
+   "hypothesis": "If the function ever reaches an otherwise-match, the LZC island can be banked immediately without a fresh escalation.",
+   "mechanism": "The owner's 2026-08-07 ruling (docs/grind/decisions.md:3906) pre-approves the LZC island WORDING for func_8002EA24, scoped LZC-only and conditioned on the function otherwise matching. The vector/MVMVA block is expressly excluded and would need its own authorization narrowed to `addu $t4, %0, $zero` plus cop2 ops with the address bound as an operand.",
+   "next_probe": "Not actionable at floor 2. Relevant only after condition 1 or 2 above closes the range-test residual."
   }
  ],
  "judge_constraints": [
   "Do not add func_8002EA24 to inline_asm_canonical.txt or retire any regfix rules this session. Keep the LZC block ONLY in the exact func_800274BC-authorized shape; re-spell the vector/mvmva block minimally (operand address computed in C and bound via %N, template limited to the $t4 copy, lwc2/swc2 and the mvmva .word, no hardcoded $v0 addiu and no $2 clobber) and record its measured score; then drive H5/H6 to sandbox 0 on that body. The canonical-asm disposition is re-submitted for a FINAL CALL only once the function is byte-identical on main with zero rules."
  ],
  "origin": "queue",
- "created": "2026-07-30T14:18:37.150771+00:00"
+ "created": "2026-07-30T14:18:37.150771+00:00",
+ "disposition": {
+  "result": "owner-gated",
+  "date": "2026-08-20",
+  "escalation_ref": "docs/grind/decisions.md:7843",
+  "supersedes": "docs/grind/decisions.md:2457",
+  "gate_a": "FAIL - scan_hand_coded TIGHT_C 3/8, no S1/S2/S6",
+  "gate_b": "FAIL - no closing construct exists; SOTN construct-index census negative",
+  "re_attempt_eligible": true
+ }
 }
