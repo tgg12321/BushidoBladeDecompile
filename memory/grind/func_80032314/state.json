@@ -33,11 +33,7 @@
  "judge_constraints": [],
  "banned_constructs": [],
  "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "citation",
-  "detail": "Construct set is legitimate (verbatim-authorized GTE island + single-level FAKE-annotated do-while(0) RA wrap, both matching their sanctioned families with documented lever-exhaustion), but the self-vet's cop2-addressing-preamble-cluster citation resolves to the wrong line. Correct the PRECEDENT line in self_vet.md for the cop2-addressing-preamble-cluster citation from ':86' to ':104' (the 'A member inherits the disposition only when all of these hold...' sentence). No construct is banned and no re-grind is required \u2014 the do-while(0) wrap (single-level, FAKE-annotated per do-while-zero-excepti",
-  "set": "2026-08-20T20:06:47.838312+00:00"
- },
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-17T18:14:48.046563+00:00"
 }

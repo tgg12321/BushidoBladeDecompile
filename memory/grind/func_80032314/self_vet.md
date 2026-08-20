@@ -76,10 +76,14 @@ SANCTIONED-FAMILY-CLAIMS:
 
   FAMILY: canonical GTE cop2 island (cop2-addressing-preamble-cluster membership)
   SCOPE: "A member inherits the disposition only when all of these hold. This is a check, not a lever — it does not lower anyone's distance:"
-  PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:86
+  PRECEDENT: .claude/rules/cop2-addressing-preamble-cluster.md:104
 
 ANNOTATION-CONFORMANCE: the following inline annotation is present at the construct
-site in src/code6cac_b.c (what + mechanism + lever-exhaustion):
+site in src/code6cac_b.c (what + mechanism + lever-exhaustion) — re-verified in the
+s5 annotation-fix session (2026-08-20) with the candidate re-applied to src/ and
+sandbox --disable all re-measured at 0 (109/109 insns, 0 rules); the only ledger
+change this session is the cop2-addressing-preamble-cluster PRECEDENT line
+correction :86 -> :104 per the Judge's citation fix-up notice:
   /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:
    * the wrap's NOTE_INSN_LOOP notes make flow.c weight in-wrap reg_n_refs
    * by loop_depth, re-ranking global.c allocno priorities (walker 4390 <
