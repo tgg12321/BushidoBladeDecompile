@@ -30,6 +30,20 @@
  * filed in docs/grind/decisions.md (2026-07-21); awaiting owner ruling
  * (option (b) precedent: pin retained on main to hold the oracle match,
  * function INCOMPLETE-owner-accepted).
+ * s10 (2026-08-20, forensics, post-unpark): the 2026-07-22 owner ruling is
+ * SPENT - the 2026-08-19 stale-park re-audit (docs/grind/borderline.md:68)
+ * unparked this function on the "F6+F7 seam" ground. Both halves measured
+ * DEAD this session on the post-migration chassis (baseline re-verified 4):
+ * F6 empty-if / redundant-condition = deleted by jump_optimize pass 1
+ * (.rtl 35 -> .jump 24 == baseline), .greg byte-identical, INERT;
+ * F6 cancellation pair = deleted by flow.c DCE when it does not overlap the
+ * pointer's live range (inert), and when it DOES overlap it makes the entry
+ * copy coalescable (.greg gains `72 preferences: 4`, loses the hard-4
+ * conflict) so find_reg seats 72 in $a0 before the numeric scan - 33 insns,
+ * distance 6-7. F7 has no pre-existing if/else arms here (tail is
+ * straight-line; duplicating into the i==6 arm changes semantics). Both
+ * banked seam forms re-measured chassis-invariant at 11 > 4, so the seam is
+ * MOOT. See hypotheses.md [s10] and evidence.md s10.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):

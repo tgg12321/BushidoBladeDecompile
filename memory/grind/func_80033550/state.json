@@ -1,7 +1,7 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,13 +45,29 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "s8 forensics: Judge FAIL closed channel (f); scan_hand_coded LOW 0/8 measured; every sanctioned axis dead -> OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-21), function proceeds to owner-"
+  },
+  {
+   "session": 8,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "s10 forensics: the 2026-08-19 unpark's F6+F7 lever is measured dead in both halves (empty-if deleted in jump1; cancellation pair either flow.c-DCE'd inert or flips the entry copy to coalescable, seati"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner rules on the filed escalation (option (a) canonical-asm vs option (b) INCOMPLETE-owner-accepted)",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; all four ruled same-species precedents chose option (b): pin retained on main solely to hold the match, function parked out of active grind",
-   "next_probe": "none for grind sessions \u2014 awaiting owner ruling; do not self-resolve, do not re-measure dead axes; eligible for re-attempt only if the owner rules otherwise or a genuinely new pure-C lever/tooling emerges"
+   "hypothesis": "Some construct can make pseudo 72 conflict with hard reg 4 AND with an allocno seated in $a1 at the same time - i.e. defeat the (A)/(B) regime flip identified this session.",
+   "mechanism": "global.c set_preference / find_reg: the preferred register is tried before the numeric v0,v1,a0,a1,a2,a3 scan, so any liveness injection reaching 72's range also makes the entry copy coalescable. Breaking the coupling requires a second $a0 reader keeping hard 4 live past 72's birth that itself costs no bytes.",
+   "next_probe": "read .greg's conflict construction for a form where arg0 is read again after the injected pair (e.g. a fourth arg0[k] read folded into an existing store's address expression) and check whether 72 retains the hard-4 conflict while the injected allocno seats $a1; expect a byte cost, measure it."
+  },
+  {
+   "hypothesis": "The phantom-frame-slot volatile pad family (2026-08-18, no-new-park-categories.md) applies here.",
+   "mechanism": "an unused `volatile u32 pad[N];` first-decl local reserving target's untouched stack bytes, changing frame size and allocation pressure.",
+   "next_probe": "PREREQUISITE LIKELY FAILS - the residual is 4 base-register diffs at 34/34 insns with no frame divergence, so there is no untouched target slot to reserve. A session taking this must FIRST produce frame forensics (phantom-slot-frame-lever procedure) showing a genuinely untouched target slot; without that the family's prerequisite is unmet and the construct is a cheat."
+  },
+  {
+   "hypothesis": "A rederive-modality reconstruction (a different overall shape, not a respelling of the current 34-insn geometry) reaches the target seating.",
+   "mechanism": "every axis measured to date operates on the current shape, and the s6 closure theorem is explicitly scoped to 'THIS 34-insn shape'. A structurally different source (different loop form, different table-access idiom) produces a different allocno set and a different entry-copy topology, which is the only thing that could change the (A)/(B) regime analysis.",
+   "next_probe": "rederive from asm/funcs/func_80033550.s without reference to candidate.c, then compare the resulting .greg allocno set and conflict graph against the s10 reference census before scoring."
   }
  ],
  "judge_constraints": [

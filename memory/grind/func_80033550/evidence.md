@@ -487,3 +487,121 @@
 - [s7] Pin-free candidate re-applied to src/code6cac_b.c: sandbox 4 / stripped 369, identical to s2-s7 baselines; left in place at session end (driver restores the pinned form on park to keep the oracle green)
 
 - [s7] OWNER-ESCALATION filed: docs/grind/decisions.md entry '2026-07-21 — func_80033550 (src/code6cac_b.c) — OWNER-ESCALATION (filed by grind s8 forensics...)' with both options honestly stated (option (a) not supportable at LOW 0/8 + cc1psx instruction-identity; option (b) INCOMPLETE-owner-accepted per the 4-for-4 same-species precedent)
+
+## s10 (2026-08-20, forensics — post-unpark, F6/F7 verification)
+
+STATUS CHANGE INHERITED: the 2026-07-22 owner ruling (decisions.md:1292,
+option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE) is SPENT. The 2026-08-19
+owner-directed stale-park re-audit (docs/grind/borderline.md:68) unparked
+func_80033550 explicitly on the ground "F6+F7 seam — session must verify or
+ruling-request". Sessions must NOT cite the 2026-07-21/22 escalation as a
+live disposition: its refusal ground was superseded, and the function is a
+normal active queue item again. This session performed the mandated
+verification.
+
+- [s10] CHASSIS RE-MEASURED (post asm-until-matched migration, 2026-08-19).
+  On main the function is now `INCLUDE_ASM("asm/funcs", func_80033550);`
+  (src/code6cac_b.c:2673); migration_pin.json pins floor 4. Applying
+  memory/grind/func_80033550/candidate.c verbatim scores sandbox
+  --disable all = **4**, 34/34 insns, rules_dropped 0, cheat_asm_stripped
+  237 (the strip count is TU-wide, not this function). The ledger floor is
+  chassis-invariant; every s1-s9 spelling conclusion re-verified below is
+  therefore still valid on this chassis.
+
+- [s10] F6 EMPTY-IF / FABRICATED-REDUNDANT-CONDITION SHAPE — MEASURED INERT,
+  pass named. Five placements (`if (!i) { }` after `found`, after
+  `new_var = i*12`, `if (!w2) { }` after the w2 read, `if (!arg0) { }`, and
+  `if (arg0 && arg0) { }`) all score 4 / 34 insns. Pass attribution from
+  tools/grinder/dump.ps1 output: insn counts per pass are
+  base .rtl=34 .jump=24 .cse=22 .loop=22 .cse2=22 .flow=21 .combine=20
+  .lreg=20 .greg=20; empty-if .rtl=**35** then .jump=**24** and identical
+  thereafter. jump_optimize pass 1 (jump.c) deletes the jump-to-next-insn
+  and the compare dies with it, BEFORE local-alloc. .greg is byte-identical
+  to baseline: `2 regs to allocate: 74 72`, `72 conflicts: 72 74 2 3 4 29`,
+  dispositions `72 in 5` ($a1). Zero conflict-graph effect.
+
+- [s10] F6 CANCELLATION-PAIR SHAPE (`x++; x--;`) — the dichotomy, 16
+  placements. NON-OVERLAPPING pairs (on i, idx, new_var, a fresh staged
+  local `t = i;` cancelled after the loads, w1/w2 after the last arg0 read):
+  .cse2=24 -> .flow=**21** (== baseline) — deleted by flow.c life-analysis
+  DCE pre-RA; .greg identical to baseline; byte-free but INERT. One
+  intermediate case (`w2++; w2--;` right after the w2 read) is byte-free AND
+  promotes a new allocno into global.c (`3 regs to allocate: 77 74 72`,
+  `77 conflicts: 77 2 3 4 29`) but 77 does NOT conflict with 72 (72 is dead
+  after the last arg0 read), so both land in $a1 and nothing moves — the
+  first byte-free allocno injection ever recorded here, and provably
+  useless because it cannot overlap the pointer.
+  OVERLAPPING pairs (w0 before w1, w0 between w1/w2, w1 before w2, w0+w1,
+  w0 twice, w0-before-w1 + w1-after-w2): the pair survives .flow=23 and
+  .combine=21 into RA; the new allocno conflicts with 72 and with hard
+  2,3,4 — but .greg then prints `72 preferences: 4` (NEVER present in
+  baseline) and 72's hard-reg-4 conflict DISAPPEARS, i.e. the entry copy
+  `move a1,a0` became coalescable. global.c find_reg tries the preferred
+  register first, so 72 is seated in $a0, the entry move is deleted (33
+  insns) and the score rises to 6-7. Measured: d1 7, d2 6, d3 6, d4 7,
+  d5 7, d6 6, d8 7, c5 6.
+
+- [s10] THEOREM (refines the s6 closure theorem and s9's preference finding).
+  Pseudo 72 is the destination of the function's ONLY hard-reg copy
+  (`72 <- $a0`; s9 proved $a0 is the only hard GPR anywhere in this
+  call-free single-parameter function's pre-RA RTL, so no $a3 preference is
+  C-reachable). Consequently 72 has exactly two allocation regimes: (A) the
+  copy is NOT coalescable -> 72 conflicts with hard 4 and find_reg's numeric
+  scan v0,v1,a0,a1,a2,a3 gives $a1, and no sanctioned construct can seat an
+  allocno in $a1/$a2 byte-free (F6-inert, dead-store/named-local inert per
+  s7, REG_EQUIV pseudos die pre-RA per s3); or (B) enough liveness is
+  injected that the copy becomes coalescable -> `72 preferences: 4` wins
+  BEFORE the numeric scan and 72 lands in $a0 at a byte cost. Conflict
+  injection is exactly the thing that flips (A) into (B). $a3 is
+  unreachable from either regime. This is why every F6 placement is either
+  inert or $a0-seating, and it predicts the same outcome for any future
+  liveness-only lever.
+
+- [s10] F7 (unconditional-common-store duplication into both branch arms) is
+  INAPPLICABLE on its own prerequisites, not merely unpromising. F7 requires
+  pre-existing if/else arms in which the duplicated stores' values are "real
+  and required". This function's only real branches are the search loop's
+  two exits and `if (i == 6) return;`; all of them merge ABOVE the tail, and
+  the tail (the six lines writing D_800A3918[i] and the three D_801078xx
+  words) is straight-line. Duplicating the tail stores into the i==6 arm
+  would write the table when it is full — a semantic change. There is no
+  legitimate F7 site here. (s7 already measured the sanctioned natural-arms
+  family at honest floor 11.)
+
+- [s10] F6+F7 SEAM IS MOOT, not unruled. Both banked seam forms re-measured
+  on this chassis: dup-arms-bigconst-cond-ptr-a2-w2-a3-stray-li-11.c = 11
+  (36 insns), dup-arms-sw3-attractor-idx-a1-w2-a2-ptr-coalesced-11.c = 11
+  (33 insns) — identical to their s7 numbers. The seam construct (invented
+  identical-arms branch, jump2 cross_jump-merged) is the ONLY thing that has
+  ever homed 72 in $a3, and it costs 11 versus the floor of 4. A ruling that
+  authorized the composition therefore could not close the function, so no
+  ruling-request is filed; the seam is recorded dead on measurement, and the
+  standing Judge constraint (2026-07-21 00:19 FAIL, manufactured branches)
+  is not re-tested.
+
+- [s10] DISPOSITION. Floor holds at 4; the unpark's stated lever is measured
+  dead in both halves with the deleting pass named for each. src/code6cac_b.c
+  was restored to its INCLUDE_ASM line (no source dirt). No escalation entry
+  filed: the mandated modality is forensics, not escalation, and the 2026-07
+  escalation ground is spent — a fresh disposition, if one is ever warranted,
+  must be filed on post-2026-08-19 grounds by an escalation-modality session.
+
+- [s8] The 2026-07-22 owner ruling (docs/grind/decisions.md:1292, option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE) is SPENT: the 2026-08-19 owner-directed stale-park re-audit (docs/grind/borderline.md:68) unparked func_80033550 on the ground 'func_80033550 (F6+F7 seam - session must verify or ruling-request)'. Future sessions must not cite that escalation as a live disposition; the function is a normal active queue item again.
+
+- [s8] Chassis re-measured after the asm-until-matched migration: main carries INCLUDE_ASM("asm/funcs", func_80033550) at src/code6cac_b.c:2673 and migration_pin.json pins floor 4; applying memory/grind/func_80033550/candidate.c verbatim scores sandbox --disable all = 4, 34/34 insns, rules_dropped 0. The floor is chassis-invariant, so the s1-s9 spelling conclusions still hold on this chassis.
+
+- [s8] Per-pass insn census for the baseline candidate (tools/grinder/dump.ps1): .rtl=34 .jump=24 .cse=22 .loop=22 .cse2=22 .flow=21 .combine=20 .lreg=20 .greg=20. This is the reference series a future session should diff any probe against - it localises the deleting pass in one read.
+
+- [s8] F6 empty-if is deleted by jump_optimize pass 1 (jump.c): .rtl 35 -> .jump 24 == baseline 24, and .lreg/.greg are byte-identical to baseline (2 allocnos, 72 conflicts {72 74 2 3 4 29}, 72 in $a1).
+
+- [s8] F6 cancellation pairs are deleted by flow.c life-analysis DCE (.cse2 24 -> .flow 21 == baseline 21) whenever the cancelled value is not consumed across the pointer's live range - byte-free but RA-inert.
+
+- [s8] When an F6 cancellation pair DOES overlap the pointer's live range it survives into global.c as a real conflicting allocno, but .greg then prints `72 preferences: 4` and 72 loses its hard-reg-4 conflict: the entry copy `move a1,a0` becomes coalescable and find_reg takes the preferred $a0 before the numeric scan, deleting the entry move (33 insns) at distance 6-7. Measured across 8 overlapping placements; never byte-free, always toward $a0.
+
+- [s8] THEOREM (refines the s6 closure theorem with s9's preference finding): pseudo 72 is the destination of the function's only hard-reg copy (72 <- $a0; s9 proved $a0 is the only hard GPR anywhere in this call-free single-parameter function's pre-RA RTL, so no $a3 preference is C-reachable). 72 therefore has exactly two allocation regimes - (A) the copy is not coalescable, 72 conflicts with hard 4 and the numeric scan gives $a1, and no sanctioned construct seats an allocno in $a1/$a2 byte-free; or (B) enough liveness is injected that the copy coalesces, `72 preferences: 4` wins before the scan and 72 lands in $a0 at byte cost. Conflict injection is precisely what flips (A) into (B). $a3 is unreachable from either regime, which predicts the same outcome for any future liveness-only lever.
+
+- [s8] F7 has no legitimate site in this function: the only real branches (the search loop's two exits and `if (i == 6) return;`) merge above the straight-line tail, and duplicating the tail stores into the i==6 arm would write the table when it is full - the 'values real and required' prerequisite fails.
+
+- [s8] Both banked F6+F7 seam forms re-measured chassis-invariant at honest 11 (36 and 33 insns) versus the floor of 4, so the seam cannot close the function even if it were sanctioned - which is why this session files no ruling-request.
+
+- [s8] src/code6cac_b.c was restored to its INCLUDE_ASM line at end of session; git status shows no source dirt (only metrics/events.jsonl, engine-written).

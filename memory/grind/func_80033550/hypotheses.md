@@ -417,3 +417,101 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
   PREF_ADD atom for any goal register without checking that the register can
   appear as a hard reg in that function's RTL.
 - verdict: KILLED
+
+## [s10] The 2026-08-19 unpark's F6 lever (empty-if / fabricated redundant condition) injects a byte-free RA conflict here
+- mechanism: F6 (.claude/rules/no-new-park-categories.md:371, ESTABLISHED
+  2026-08-18) sanctions a fabricated redundant condition / empty-if inserted
+  solely for codegen. If such a condition's compare pseudo survived into
+  global.c's conflict graph it would be exactly the byte-free conflict fuel
+  s1-s7 never found, seating $a1/$a2 and pushing arg0's pointer pseudo 72
+  toward the target's $a3.
+- probe: 5 empty-if placements (after `found`, after new_var, after the w2
+  read, `if (!arg0)`, and the `if (arg0 && arg0)` redundant-condition
+  spelling) — tmp/grind/func_80033550/s8/variants/f6_emptyif_*.c; sandbox
+  --disable all on each, plus full -da pass dumps for one.
+- result: KILLED, all five byte-identical to baseline (score 4, 34 insns) and
+  RA-identical. Pass named from the dumps: the compare+branch exists in
+  code6cac_b.rtl (35 insns vs baseline 34) and is GONE by code6cac_b.jump
+  (24 == baseline 24) — jump_optimize pass 1 (jump.c: jump-to-next-insn
+  deletion, then the compare dies as unused). Every dump from .jump onward,
+  .lreg/.greg included, is byte-identical to baseline: 2 allocnos (74 72),
+  72 conflicts {72 74 2 3 4 29}, 72 in 5 ($a1). The F6 empty-if shape shares
+  the fate of the s7 dead-store / named-local family: deleted pre-RA, zero
+  conflict-graph effect.
+- verdict: KILLED
+
+## [s10] The other F6 shape (cancellation pair `x++; x--;`) injects a byte-free conflict that seats $a1/$a2
+- mechanism: same as above; the pair's intermediate pseudo would be a real
+  allocno in global.c's conflict graph while emitting no bytes.
+- probe: 16 placements over every local and both orderings —
+  tmp/grind/func_80033550/s8/variants2/ (i, idx, new_var, w0, w2, a fresh
+  staged local, two-pair combos) and variants3/ (w0/w1 pairs interleaved
+  between the three arg0 reads, plus 2-pair combinations); sandbox on each,
+  -da dumps for the two representative outcomes.
+- result: KILLED by a sharp dichotomy that is itself the finding.
+  (i) Pair on a variable whose live range does NOT overlap pointer pseudo 72
+  (i, idx, new_var, fresh staged local, w1/w2 after the last arg0 read):
+  survives jump/cse/loop/cse2 (24 insns vs baseline 22) and is deleted at
+  .flow (21 == baseline 21) by flow.c life-analysis DCE, pre-RA. Byte-free
+  (4 / 34 insns) but .greg is byte-identical to baseline — INERT.
+  (ii) Pair on a value consumed across 72's live range (w0 before w1, w0
+  between w1/w2, w1 before w2, and both 2-pair combinations): the pair
+  SURVIVES .flow (23) and .combine (21) into global.c as a real allocno that
+  conflicts with 72 AND with hard 2,3,4 — genuine byte-free-looking conflict
+  injection, the first ever from a sanctioned family. BUT the same liveness
+  extension makes the entry copy `move a1,a0` coalescable: .greg prints
+  `72 preferences: 4` (absent in every baseline dump) and 72 LOSES its
+  hard-reg-4 conflict, so global.c find_reg takes the PREFERRED $a0 before
+  the numeric v0,v1,a0,a1,a2,a3 scan runs at all. Result 33 insns (entry move
+  deleted), distance 6 (w0-after-w2, w0-between-w1/w2, w1-before-w2) or 7
+  (w0-before-w1 and both 2-pair forms). Never byte-free, always the wrong
+  direction ($a0, not $a3).
+- verdict: KILLED
+
+## [s10] The F6+F7 seam (fabricated condition carrying duplicated identical arms) is a live path to distance 0
+- mechanism: the 2026-08-19 stale-park re-audit unparked this function citing
+  an "F6+F7 seam": F6 now sanctions fabricating a redundant condition, F7
+  sanctions duplicating common-tail stores into both if/else arms (SOTN ships
+  25 fully-identical-arm if/else constructs), and the s7 channel-(f) forms
+  are exactly that composition — an invented identical-arms branch merged
+  away by jump2 cross_jump, the only construct in 10 sessions that ever
+  homed 72 in $a3.
+- probe: (a) re-measure both banked seam forms on the post-migration chassis
+  (rejected/dup-arms-bigconst-cond-ptr-a2-w2-a3-stray-li-11.c and
+  rejected/dup-arms-sw3-attractor-idx-a1-w2-a2-ptr-coalesced-11.c); (b) test
+  F7's own precondition ("the stores' values real and required" in both arms)
+  against this function's control flow.
+- result: KILLED, and the seam is MOOT rather than merely unruled.
+  (a) Both banked seam forms are chassis-invariant at honest 11 (36 and 33
+  insns) versus the floor-4 candidate — measured this session, same numbers
+  as s7. Even a hypothetical owner ruling that blessed the composition could
+  not close the function: no seam form has ever scored below 11, and the s7
+  22-variant sweep floors the sanctioned (natural-arms) form at 11 too.
+  (b) F7 is inapplicable on its own terms: the only real branches are the
+  search loop's two exits and `if (i == 6) return;`, whose arms merge before
+  the tail; the tail is straight-line, and duplicating the six tail stores
+  into the i==6 arm would write the table when it is full — a semantic
+  change, so the "values real and required" prerequisite fails. F7 has no
+  pre-existing if/else in this function to duplicate into.
+  Therefore no ruling-request is warranted: the seam question cannot change
+  the disposition, because the construct it would authorize is measured 7
+  points WORSE than the honest floor.
+- verdict: KILLED
+
+## [s8] The 2026-08-19 unpark's F6 empty-if / fabricated-redundant-condition shape injects a byte-free RA conflict that seats $a1/$a2 and pushes arg0's pointer pseudo 72 toward the target's $a3.
+- mechanism: F6 (.claude/rules/no-new-park-categories.md:371) sanctions a fabricated redundant condition / empty-if inserted solely for codegen; if its compare pseudo survived into global.c's conflict graph it would be the byte-free conflict fuel s1-s7 never found.
+- probe: 5 placements (if(!i){} after the `found` label, after new_var = i*12, if(!w2){} after the w2 read, if(!arg0){}, if(arg0 && arg0){}) in tmp/grind/func_80033550/s8/variants/; sandbox --disable all on each plus full -da pass dumps on one.
+- result: All five score 4 / 34 insns, byte-identical to baseline. Pass named from the dumps: the compare+branch is present in code6cac_b.rtl (35 insns vs baseline 34) and gone by code6cac_b.jump (24 == baseline 24) - jump_optimize pass 1 (jump.c) deletes the jump-to-next-insn and the compare dies with it, before any allocation pass. Every dump from .jump onward including .lreg/.greg is byte-identical to baseline: 2 allocnos (74 72), 72 conflicts {72 74 2 3 4 29}, dispositions 72 in 5 ($a1). Zero conflict-graph effect - the same fate as the s7 dead-store / named-local family.
+- verdict: KILLED
+
+## [s8] The other F6 shape, the cancellation pair `x++; x--;`, injects a byte-free conflict that seats $a1/$a2.
+- mechanism: the pair's intermediate pseudo would be a real allocno in global.c's conflict graph while emitting no bytes.
+- probe: 16 placements over every local and both orderings: tmp/grind/func_80033550/s8/variants2/ (i, idx, new_var, w0, w2, a fresh staged local, two-pair combos) and variants3/ (w0/w1 pairs interleaved between the three arg0 reads); sandbox on each, -da dumps for the two representative outcomes.
+- result: Sharp dichotomy, both halves dead. (i) Pair NOT overlapping pointer pseudo 72's live range: survives jump/cse/loop/cse2 (24 insns vs baseline 22) but is deleted at .flow (21 == baseline 21) by flow.c life-analysis DCE, pre-RA; .greg byte-identical to baseline - byte-free but INERT. Special case `w2++; w2--;` right after the last arg0 read IS byte-free and does promote a new allocno (`3 regs to allocate: 77 74 72`, 77 conflicts {77 2 3 4 29}), but 77 cannot conflict with 72 (72 is already dead there), so both sit in $a1 and nothing moves. (ii) Pair on a value consumed across 72's range (w0 before w1, w0 between w1/w2, w1 before w2, and both two-pair combos): survives .flow (23) and .combine (21) into RA as a real allocno conflicting with 72 and with hard 2,3,4 - but the same liveness extension makes the entry copy `move a1,a0` coalescable, .greg gains `72 preferences: 4` (never present in baseline) and 72 LOSES its hard-reg-4 conflict, so global.c find_reg takes the preferred $a0 before the numeric v0,v1,a0,a1,a2,a3 scan runs at all. 33 insns (entry move deleted), distance 6 or 7. Measured: c5 6, d1 7, d2 6, d3 6, d4 7, d5 7, d6 6, d8 7.
+- verdict: KILLED
+
+## [s8] The F6+F7 seam (a fabricated F6 condition carrying F7-duplicated identical arms) is a live path to distance 0 and needs an owner ruling.
+- mechanism: F6 now sanctions fabricating a redundant condition and F7 sanctions duplicating common-tail stores into both if/else arms (SOTN ships 25 fully-identical-arm if/else constructs); the s7 channel-(f) forms are exactly that composition - an invented identical-arms branch merged away by jump2 cross_jump, the only construct in 10 sessions that ever homed pseudo 72 in $a3.
+- probe: (a) re-measure both banked seam forms on the post-migration chassis; (b) test F7's own prerequisite (the duplicated stores' values must be real and required in both arms) against this function's actual control flow.
+- result: MOOT, not merely unruled. (a) rejected/dup-arms-bigconst-cond-ptr-a2-w2-a3-stray-li-11.c = 11 (36 insns) and rejected/dup-arms-sw3-attractor-idx-a1-w2-a2-ptr-coalesced-11.c = 11 (33 insns), identical to their s7 numbers - chassis-invariant and 7 points WORSE than the floor-4 candidate, so a ruling authorizing the composition could not close the function. (b) F7 is inapplicable on its own terms: the only real branches are the search loop's two exits and `if (i == 6) return;`, all merging above the tail; the tail is straight-line, and duplicating the tail stores into the i==6 arm would write the table when it is full (a semantic change), so the 'real and required' prerequisite fails and there is no pre-existing if/else to duplicate into. No ruling-request filed; the standing Judge constraint on manufactured branches is not re-tested.
+- verdict: KILLED
