@@ -884,3 +884,115 @@ show both stores un-cross-jumped in the shipped bytes) plus SOTN master's `dup_i
 primitive fields).
 
 **Floor: 0.** The function is a byte match on main with zero rules, zero cheat-asm, zero inline asm.
+
+## [s9-forensics] 2026-08-20 — the merge-block schedule, read out of the sched2 dump (not hypothesised)
+
+Chassis re-measured first with `fallback_floor4.c` applied to src/text1b.c:
+`sandbox func_80072CD4 --disable all` = **4**, build_insns **79** == target_insns 79, rules_dropped 0.
+Dumps regenerated for THIS body with `pwsh tools/grinder/dump.ps1 func_80072CD4`
+(tmp/grind/func_80072CD4/dumps/text1b.*), function region extracted to
+tmp/grind/func_80072CD4/s9c/f.{sched,sched2,jump2,greg}. An instrumented-cc1 run with
+BB2_SCHED_DEBUG / BB2_PRIO_DEBUG / BB2_RANK_DEBUG is at tmp/grind/func_80072CD4/s9c/dbg.log
+(9.3 MB) — but it turned out to be unnecessary: **cc1 `-da` already writes the complete
+scheduler trace (ready lists, per-insn INSN_PRIORITY, every tiebreak decision) into the
+.sched2 dump itself.** Future forensics sessions should read the `^;;` lines of the extracted
+.sched2 region FIRST; the env-gated stderr hooks add nothing for scheduling questions.
+
+### E1. Our RTL is structurally IDENTICAL to target — only the sched2 order of two insns differs
+Post-sched2 the function's four blocks contain exactly target's instructions, in target's
+registers, including both separate materialisations of 0xFC (`insn 30: (set (reg/v:SI 3 v1)
+(const_int 252))` in the pre-inner-if block, and `insn 95: (set (reg:QI 2 v0) (const_int 252))`
+in the merge block). There is no missing insn, no extra insn, no register divergence anywhere.
+The entire residual-4 is the position of two stores inside merge block 4:
+
+  ours   : [sb v0,0xE] 95 97 100 102 105 107 110 112 118 | **89 92** | 115 120 (jump)
+  target : **89 92** [sb v0,0xE] 95 97 100 102 105 107 110 112 118 | 115 120 (jump)
+
+where 89 = `(set (mem:QI (plus (reg s1) (const_int 4))) (subreg:QI (reg/v:SI 3 v1)))`,
+92 = the same to `(const_int 12)`, 115 = `sb $zero,0x16`, 120 = `sb v0,0x1E`.
+Note 115 sits AFTER 118 (`li v0,0xA`) in BOTH our build and target — the same scheduling rule
+below produces that, and there it happens to agree with target.
+
+### E2. THE LAW (sched2 block 4, verbatim from the dump; artifact s9c/sched2_block4_trace.txt)
+```
+;;  -- basic block number 4 from 86 to 122 --
+;; insn[  89]: priority =    1, ref_count =    1        <-- @4    (value reg $v1, cross-block)
+;; insn[  92]: priority =    1, ref_count =    1        <-- @0xC  (value reg $v1, cross-block)
+;; insn[  95]: priority =    1 ... insn[ 118]: priority = 1        <-- the whole li/sb chain
+;; insn[ 115]: priority =    1                          <-- @0x16 (stores $zero)
+;; insn[ 122]: priority = 2147483544                    <-- the block-ending jump
+;; ready list at T-2: 89 (1) 92 (1) 115 (1) 120 (1), now 120 115 92 89
+;; ready list at T-3: 115 (1) 92 (1) 89 (1) 118 (1), now 118 115 92 89
+;; insn 115 has a greater potential hazard, now 115 118 92 89
+;; ready list at T-4: 118 (1) 92 (1) 89 (1), now 118 92 89
+;; insn 92 has a greater potential hazard, now 92 118 89
+;; ready list at T-5: 118 (1) 89 (1), now 118 89
+;; insn 89 has a greater potential hazard, now 89 118
+;; ready list at T-6: 118 (1), now 118      ... T-7..T-14 unwind 112,110,107,105,102,100,97,95
+```
+Three facts, each read directly off that trace:
+
+1. **Every non-jump insn in the block has INSN_PRIORITY 1.** `priority()` (sched.c:1497) is
+   `max over LOG_LINKS of priority(pred) + insn_cost(pred,insn) - 1`; for a `li -> sb` pair
+   insn_cost is 1, so the store inherits 1 and the chain never gains depth. (Contrast block 1,
+   where the two `lw`s cost 2 and priorities climb 1 -> 2 -> 3.) So the FIRST clause of
+   `rank_for_schedule` (sched.c:2416, "highest priority") is a permanent tie in this block and
+   decides nothing.
+2. **The li/sb chain is a single serial chain through $v0.** Each `li` carries
+   `REG_DEP_OUTPUT`/`REG_DEP_ANTI` against the previous pair (visible on insns 47/52/57/100/105/
+   110/118 in s9c/sched2_summary.txt), so at most ONE chain member is ever in the ready list.
+3. **The chain-independent stores always win the tiebreak.** sched.c `schedule_select`
+   (:2705-2721) overrides the sorted ready list with "the first one with the largest potential
+   hazard"; a memory insn's `potential_hazard` beats a `li`'s, so at T-3/T-4/T-5 the dump shows
+   115, then 92, then 89 each displacing 118. Being picked EARLY in this bottom-up walk means
+   being emitted LATE (T-1 is the last slot).
+
+=> **Order-independent consequence.** In merge block 4, @4/@0xC are chain-independent ready
+stores from the first bottom-up round onwards. They are therefore *always* picked in the first
+rounds and *always* emitted in the block's tail slots. Source statement order enters only
+through the last, weakest clause of `rank_for_schedule` (`INSN_LUID(y) - INSN_LUID(x)`, higher
+LUID preferred), which can only permute them *among those tail slots*. **No permutation of the
+merge block's statements can put @4/@0xC at the merge head.** This upgrades s4's empirical
+15.8k-iteration PERM_LINESWAP null result from "the search found nothing" to a proof, and it
+also explains, without new hypotheses, why every cross-block variant s3/s5/s8 measured landed
+in the 11-24 band.
+
+### E3. Prediction test of the law (new measurement this session)
+Moved @4/@0xC to LAST in the merge block's source order (the maximum-LUID setting, the one
+position the law says is the only thing source order controls). Predicted: they stay in the
+tail, sliding one slot later. Measured: **5 / 79** (was 4 / 79). Banked as
+rejected/s9_luid_last_merge_order_5_79.c. Prediction confirmed; the law holds.
+
+### E4. jump2 cross-jump caught in the act, in OUR OWN build (artifact s9c/jump2_summary.txt)
+The .jump2 dump shows jump2 inventing a fresh `214 LABEL` between the else-arm's last insn (82,
+`li v0,0x46`) and the old join label, and hoisting insn 84 (`sb v0,0xE`) to sit immediately
+after it — i.e. the arms' identical one-insn common tail is spliced in at the HEAD of the merge
+region, AFTER sched2 has already run (toplev.c: sched2 -> jump_optimize(cross_jump=1) -> dbr),
+so the spliced insn is never re-scheduled and cannot be sunk by the rule in E2. That is exactly
+and only why `sb v0,0xE` occupies a head slot in our build while @4/@0xC cannot.
+**Target's merge head is the same construction with a THREE-insn common tail
+(`sb v1,4 / sb v1,0xC / sb v0,0xE`) instead of a one-insn one.**
+
+### E5. Correction to a banked s5 claim
+s5 attributed the sinking of @4/@0xC to an `adjust_priority` "birth boost" of 0x7F000001 pulling
+the li/sb pairs headward. The block-4 trace disproves that: **no boost occurs in this block** —
+every ready-list entry prints `(1)` throughout, and the only large priority in the block is the
+jump's sentinel 2147483544. The actual mechanism is the E2 combination (flat priority + $v0
+chain serialisation + the potential_hazard override). The s5 conclusion (@4/@0xC cannot reach the
+merge head from the merge block) was right; its stated mechanism was not.
+
+- [s9] Chassis control this session: fallback_floor4.c applied to src/text1b.c gives sandbox --disable all = 4, build_insns 79 == target_insns 79, rules_dropped 0. src/text1b.c was restored to INCLUDE_ASM("asm/funcs", func_80072CD4) before the session ended.
+
+- [s9] TOOLING FINDING for every future forensics session on this project: cc1 -da already writes the COMPLETE scheduler trace - per-insn INSN_PRIORITY and ref_count, every ready list at every cycle, and every tiebreak decision - into the .sched/.sched2 dump as ';;' lines. Reading the extracted region is strictly better than the env-gated BB2_SCHED_DEBUG/BB2_PRIO_DEBUG/BB2_RANK_DEBUG stderr hooks, which produced a 9.3 MB whole-TU log that added nothing for a scheduling question.
+
+- [s9] sched2 block 4 (the merge block) verbatim: insns 89 (@4), 92 (@0xC), 95..118 (the li/sb chain), 115 (@0x16) and 120 (@0x1E) ALL have priority = 1; only the block-ending jump 122 carries the 2147483544 sentinel. The dump's own tiebreak lines are 'insn 115 has a greater potential hazard', 'insn 92 has a greater potential hazard', 'insn 89 has a greater potential hazard' at T-3/T-4/T-5, each displacing insn 118 (li v0,0xA).
+
+- [s9] THE LAW (order-independent): in the merge block, @4/@0xC are chain-independent ready stores from the first bottom-up round onward, so they are always picked first and always emitted in the block's tail slots; source statement order enters only via rank_for_schedule's last clause (INSN_LUID, higher preferred), which can only permute them among those tail slots. This upgrades s4's 15.8k-iteration PERM_LINESWAP null result from 'the search found nothing' to a proof, and it explains without new hypotheses why every cross-block variant s3/s5/s8 measured landed in the 11-24 band.
+
+- [s9] New measurement: the merge block reordered so @4/@0xC are LAST in source (the maximum-LUID setting) scores 5/79 - a one-slot tail slide, exactly as the law predicts, not a head move. Banked as rejected/s9_luid_last_merge_order_5_79.c.
+
+- [s9] The .jump2 dump shows jump2 creating a new label 214 between the else-arm's li v0,0x46 and the join point and moving insn 84 (sb v0,0xE) to follow it, ahead of insn 95 - i.e. our own build performs exactly the construction that produces target's merge head, but with a one-insn common tail because our source writes only @0xE per-arm. Target's three-insn head requires @4/@0xC written in both arms too.
+
+- [s9] CORRECTION to a banked s5 claim: s5 attributed the sinking of @4/@0xC to an adjust_priority 'birth boost' of 0x7F000001 pulling the li/sb pairs headward. The block-4 trace disproves that - no boost occurs in this block, every ready-list entry prints (1) throughout. s5's conclusion was right; its stated mechanism was not. The real mechanism is flat priority + $v0 chain serialisation + the potential_hazard override.
+
+- [s9] Also read off the trace: @0x16 (insn 115) is likewise a chain-independent store and is emitted AFTER li v0,0xA in BOTH our build and target - the same rule, agreeing with target there. So the rule is not 'our scheduler is wrong'; it is that target's @4/@0xC were not in the merge block when sched2 ran.

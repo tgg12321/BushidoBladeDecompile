@@ -1003,3 +1003,94 @@ on the diff, then the Judge's FINAL CALL, then `queue done` by the driver/operat
 the codegen space is open, and no session should re-open the duplication dial ([s7], [s8]) or the
 cross-block chassis ([s3], [s5], [s8]) — both remain closed with chassis-current measurements, and
 the floor-4 fallback body is preserved at fallback_floor4.c should acceptance be refused again.
+
+## [s9-forensics] 2026-08-20 — modality: forensics (instrumented cc1 / pass attribution)
+
+Chassis control: fallback_floor4.c applied, `sandbox --disable all` = 4, 79 == 79, 0 rules.
+
+### H1 (KILLED, and upgraded from empirical to proved)
+**Statement.** Some ordering of the merge block's statements places the @4/@0xC stores at the
+merge head, and s4's permuter simply did not reach it.
+**Mechanism probed.** sched.c `rank_for_schedule` ends in `INSN_LUID(y) - INSN_LUID(x)` — a
+genuine source-order tiebreak — so source order is *not* a priori irrelevant, which is what made
+this worth re-opening at dump level rather than trusting the s4 null result.
+**Probe.** Read the sched2 trace for block 4 out of the cc1 `-da` dump
+(tmp/grind/func_80072CD4/s9c/sched2_block4_trace.txt), then ran the one source order the trace
+says is the extreme of the LUID axis: @4/@0xC moved to LAST in the merge block.
+**Result.** All 13 non-jump insns in the block carry INSN_PRIORITY 1, so the priority clause of
+rank_for_schedule is a permanent tie; the li/sb chain is serialised through $v0 by
+REG_DEP_OUTPUT/REG_DEP_ANTI so only one member is ever ready; and `schedule_select`'s
+potential_hazard override (sched.c:2705-2721) makes every ready STORE displace the ready `li`
+(the dump prints "insn 115 / 92 / 89 has a greater potential hazard" at T-3/T-4/T-5). Chain-
+independent stores are therefore always picked in the earliest bottom-up rounds and always
+emitted in the block's TAIL. The LUID clause only permutes them among those tail slots. The
+prediction test measured **5/79** (rejected/s9_luid_last_merge_order_5_79.c) — a tail slide, not
+a head move, exactly as predicted.
+**Verdict.** KILLED — by mechanism, not by search. No statement order of the merge block can put
+@4/@0xC at the merge head. Do not re-run any merge-block statement-order variant, and do not
+re-run a permuter over those lines.
+
+### H2 (CONFIRMED)
+**Statement.** The merge head in target is produced by jump2's cross-jump splicing the inner
+arms' common tail in AFTER sched2, and the only structural difference between our build and
+target is the LENGTH of that common tail (1 insn vs 3).
+**Mechanism probed.** toplev.c pass order sched2 -> jump_optimize(cross_jump=1) -> dbr: anything
+spliced at the join label after sched2 is never re-scheduled, so it keeps the head slot that the
+E2 rule denies to merge-block-resident stores.
+**Probe.** Read the .jump2 dump region for this function (s9c/jump2_summary.txt).
+**Result.** jump2 emits a NEW `214 LABEL` after the else-arm's `li v0,0x46` and moves insn 84
+(`sb v0,0xE`) to immediately follow it, ahead of insn 95 — the merged one-insn common tail lands
+at the head of the merge region. Target's head is `sb v1,4 / sb v1,0xC / sb v0,0xE`, i.e. the
+identical construction with the two extra stores also present in both arms.
+**Verdict.** CONFIRMED at RTL-dump level in our own build. Target's byte layout is reachable
+only by a source that writes @4/@0xC in BOTH inner arms — which is precisely the construct in
+state.json's banned_constructs list for this function. This is the same conclusion s8 reached
+from target's bytes; s9 now has it from our own compiler's pass output.
+
+### H3 (KILLED — the escape hatch the law leaves open, enumerated and closed)
+**Statement.** @4/@0xC can be kept in the merge block and still reach the head by giving them an
+in-block dependence SUCCESSOR, so that bottom-up readiness is deferred to the last rounds.
+**Mechanism.** An insn is ready (bottom-up) only when everything depending on it is scheduled.
+To be picked at T-13/T-14 (= emitted first) the two stores would need successors covering nearly
+the whole block. The complete set of dependence kinds sched.c can create for a `sb` is: (a) an
+anti-dep from a later writer of the value register $v1; (b) an output/true memory dep from a
+later store/load that `memrefs_conflict_p` cannot disambiguate; (c) a true dep from a later load
+of the same address.
+**Probe.** Each enumerated against the existing bank rather than re-measured:
+(a) requires $v1 to be redefined near the block end — that only defers them to the slot *before*
+the redefinition, never to the head, and RA would have to be coerced to place it there anyway;
+(b) is the alias-serialisation axis, already banked dead at 6/79
+(rejected/rederive_walkptr_alias_serialize_6_79.c), 11/78 (xblock_q3alias_11_78.c) and
+13/79 (xblock_q3alias_fcholder_13_79.c); sharing the register with the merge block's own
+`li v0,0xFC` instead collapses the two 0xFC materialisations that target keeps distinct and
+loses insns (rederive_merge_literals_no_fcholder_6_77.c = 6/77,
+s8_sibling_chassis_fcshared14_17_77.c = 17/77);
+(c) needs a load target does not have, so it cannot be byte-neutral.
+**Verdict.** KILLED. The merge-block-resident axis is closed by mechanism plus the existing
+measurement bank; there is no un-measured member of it.
+
+### Standing note for the next session
+There is no codegen question left on this function. E2 (the sched2 law), H2 (jump2 cross-jump
+caught in our own build) and s8's target-bytes argument now agree from three independent
+directions that the only source shape reaching target is the per-arm duplication of @4/@0xC,
+which is a BANNED construct here. The open item is DISPOSITION, and the mandated route for it is
+the `escalation` modality — a forensics/synthesis/rederive session cannot dispose of the
+function and should not re-open any axis listed above.
+
+## [s9] Some ordering of the merge block's statements places the @4/@0xC stores at the merge head, and s4's directed permuter simply did not reach it (sched.c rank_for_schedule really does end in an INSN_LUID source-order tiebreak, so source order is not a priori irrelevant).
+- mechanism: sched.c rank_for_schedule (:2408-2464) ranks by INSN_PRIORITY, then by dependence class vs last_scheduled_insn, then by INSN_LUID (higher LUID preferred). If the first two clauses tie, source order alone decides the schedule.
+- probe: Read the complete scheduler trace for basic block 4 out of the cc1 -da .sched2 dump regenerated for this body (tmp/grind/func_80072CD4/s9c/sched2_block4_trace.txt), then measured the extreme setting of the LUID axis the trace identifies: @4/@0xC moved to LAST in the merge block's source order.
+- result: Every non-jump insn in block 4 carries INSN_PRIORITY 1 (li->sb has insn_cost 1, so the chain never gains depth - contrast block 1 where two lw's cost 2 and priorities climb 1->2->3), so the priority clause is a permanent tie. The li/sb chain is serialised through $v0 by REG_DEP_OUTPUT/REG_DEP_ANTI, so at most one chain member is ever ready. schedule_select's potential_hazard override (sched.c:2705-2721) then makes every ready STORE displace the ready li - the dump prints 'insn 115 / 92 / 89 has a greater potential hazard' at T-3/T-4/T-5. Chain-independent stores are therefore always picked in the earliest bottom-up rounds and always emitted in the block TAIL; the LUID clause can only permute them among those tail slots. The prediction test measured 5/79 (a tail slide, not a head move), banked as rejected/s9_luid_last_merge_order_5_79.c.
+- verdict: KILLED
+
+## [s9] Target's merge head is produced by jump2's cross-jump splicing the inner arms' common tail in AFTER sched2, and the only structural difference between our build and target is the LENGTH of that common tail (1 insn vs 3).
+- mechanism: toplev.c pass order is sched2 -> jump_optimize(cross_jump=1) -> dbr, so anything spliced at the join label after sched2 is never re-scheduled and keeps a head slot that the block-4 scheduling rule denies to merge-block-resident stores.
+- probe: Extracted and read the .jump2 dump region for func_80072CD4 (tmp/grind/func_80072CD4/s9c/jump2_summary.txt).
+- result: jump2 invents a fresh '214 LABEL' after the else-arm's li v0,0x46 and hoists insn 84 (sb v0,0xE) to sit immediately after it, ahead of insn 95 - the arms' identical one-insn common tail lands at the HEAD of the merge region, post-sched2. Target's merge head is the same construction with a three-insn common tail (sb v1,4 / sb v1,0xC / sb v0,0xE). Our post-sched2 RTL is otherwise structurally identical to target: same insns, same registers, both separate 0xFC materialisations present (insn 30 -> $v1 in the pre-inner-if block, insn 95 -> $v0 in the merge block); the entire residual 4 is the position of insns 89 and 92.
+- verdict: CONFIRMED
+
+## [s9] @4/@0xC can be kept in the merge block and still reach the head by giving them an in-block dependence SUCCESSOR, deferring their bottom-up readiness to the last rounds.
+- mechanism: Bottom-up readiness requires all dependants scheduled first; the complete set of dependence kinds sched.c can create for a sb is (a) anti-dep from a later writer of the value register $v1, (b) output/true memory dep from a later store/load that memrefs_conflict_p cannot disambiguate, (c) true dep from a later load of the same address.
+- probe: Enumerated all three against the existing measurement bank rather than re-measuring already-dead forms.
+- result: (a) only defers the stores to the slot before the $v1 redefinition, never to the head, and would need RA coercion on top; (b) is the alias-serialisation axis, already banked dead at 6/79 (rederive_walkptr_alias_serialize_6_79.c), 11/78 (xblock_q3alias_11_78.c) and 13/79 (xblock_q3alias_fcholder_13_79.c), and sharing $v0 with the merge block's own li 0xFC instead collapses the two 0xFC materialisations that target keeps distinct and loses insns (6/77, 17/77); (c) requires a load target does not have, so it cannot be byte-neutral. No un-measured member of the axis exists.
+- verdict: KILLED

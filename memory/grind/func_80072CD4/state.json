@@ -1,8 +1,8 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "synthesis",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -57,23 +57,29 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "SYNTHESIS: floor re-measured 4/79 on the current chassis; the last unmeasured duplication-dial setting (rgb2/rgb3 into the arms) is KILLED at 17/89 and the COMPLETED-C sibling func_80072BC4's chassis "
+  },
+  {
+   "session": 9,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "FORENSICS: floor re-measured 4/79 on the current chassis; the sched2 trace in the cc1 -da dump names the exact rule that tail-places the @4/@0xC stores (flat INSN_PRIORITY 1 + $v0-serialised li/sb cha"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "DISPOSITION is the only open item for func_80072CD4. No codegen question remains: the duplication dial is measured at every setting, the cross-block chassis is dead by a compiler rule AND by a failed verbatim transplant from the one COMPLETED-C sibling that shares its shape, and target's own bytes now prove the original source used the arrangement that is banned for this function.",
-   "mechanism": "Both endgame-lock AND-gates were already evaluated and both fail: canonical-asm scan tier is not STRONG (tools/scan_hand_coded.py --single func_80072CD4, recorded at docs/grind/decisions.md:8361), and no SOTN-master precedent exists for the family. The owner's standing 2026-07-27 ruling on this exact function therefore pre-decides the outcome.",
-   "next_probe": "Dispatch `escalation`. That session files a fresh `## <date> - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry in docs/grind/decisions.md carrying the s8 target-bytes proof (H2) plus both gates' evidence, then returns owner-gated with escalation_ref pointing at that NEW entry - the s5 entry at decisions.md:8312 is void per the DISCARDED-SESSION MARKER at :8386. Terminal: INCLUDE_ASM stays on main, candidate.c (clean floor 4) stays in the ledger."
+   "hypothesis": "DISPOSITION is the only open item. No codegen question remains: the sched2 law (E2), jump2 caught in the act in our own build (E4/H2) and s8's target-bytes argument now agree from three independent directions that the only source shape reaching target's bytes is the per-arm duplication of @4/@0xC, which is a BANNED construct for this function.",
+   "mechanism": "Both endgame-lock AND-gates were already evaluated and both fail: the canonical-asm scan tier is not STRONG (tools/scan_hand_coded.py --single func_80072CD4, recorded at docs/grind/decisions.md:8361), and no SOTN-master precedent exists for the family. The owner's standing 2026-07-27 ruling on this exact function therefore pre-decides the outcome.",
+   "next_probe": "Dispatch `escalation`. That session files a fresh '## <date> - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**' entry in docs/grind/decisions.md carrying the s9 dump-level proof plus both gates' evidence, then returns owner-gated with escalation_ref pointing at that NEW entry (the s5 entry at decisions.md:8312 is void per the DISCARDED-SESSION MARKER at :8386). Terminal: INCLUDE_ASM stays on main, candidate.c (clean floor 4) stays in the ledger."
   },
   {
-   "hypothesis": "Do NOT re-run any setting of the duplication dial; all four are banked with chassis-current measurements.",
-   "mechanism": "0 dups 4/79; 1 dup 6/80 and 9/80; 2 dups 0/79 (banned); 6 dups (rgb2/rgb3) 17/89. The lattice is closed and every point has a measured score and build_insns count.",
-   "next_probe": "None. Any session that proposes a duplication-dial variant should read hypotheses.md [s7-synthesis] and [s8-synthesis] first and spend its turns elsewhere."
+   "hypothesis": "Do NOT re-run any merge-block statement-order variant, and do not run a permuter over those lines.",
+   "mechanism": "Proved order-independent this session: flat INSN_PRIORITY 1 across the block makes rank_for_schedule's priority clause a permanent tie, the $v0 REG_DEP_OUTPUT/ANTI chain keeps only one chain member ready at a time, and schedule_select's potential_hazard override forces every ready store ahead of the ready li. Source order reaches only the LUID clause, which permutes tail slots among themselves.",
+   "next_probe": "None. Read evidence.md [s9-forensics] E2/E3 first; the extreme LUID setting is banked at 5/79."
   },
   {
-   "hypothesis": "Do NOT re-run the cross-block chassis in any declaration spelling.",
-   "mechanism": "s32 carrier, u8 carrier, fc_const inside the outer if, fc_const outside the outer if, var-first ordering, alias base pointer, POLY_G4 struct spelling, and now the verbatim COMPLETED-C-sibling transplant are all banked at scores 11-24 with build_insns 77-80. The attractor is sched1's priority rule (the lone cross-block li has no in-block consumer and loses schedule_select to three boosted li/sb pairs), not a search gap.",
-   "next_probe": "None. rejected/rederive_xblock_*.c, rejected/xblock_*.c and rejected/s8_sibling_chassis_*.c hold the full set."
+   "hypothesis": "Do NOT re-open the 'give @4/@0xC an in-block dependence successor' idea; the axis is enumerated and closed.",
+   "mechanism": "The three dependence kinds sched.c can create for a store are all either non-head-reaching (a later $v1 writer), already measured dead (alias serialisation at 6/79, 11/78, 13/79; register sharing at 6/77 and 17/77, which collapses the two distinct 0xFC materialisations target keeps), or not byte-neutral (a load target does not have).",
+   "next_probe": "None. See hypotheses.md [s9-forensics] H3."
   }
  ],
  "judge_constraints": [
