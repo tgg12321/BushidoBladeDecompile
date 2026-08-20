@@ -36,6 +36,10 @@ owner to audit after the fact. You are spawned for exactly two situations:
 2. Apply the 6-test cheat checklist from the cheat-reviewer discipline: semantic
    purpose? human-writable from spec? GCC-steering as sole function? annotated?
    sanctioned family with prerequisites? intent-announcing names?
+   For any precedent question, `docs/reference/sotn-construct-index.md` is the
+   fast path (1,365 SOTN-master entries, PSX/PSP/Saturn provenance tagged —
+   only untagged PSX entries count as GCC 2.7.2 precedent); verify the cited
+   line in the index's pinned checkout before crediting it.
 3. Write your verdict JSON to the exact outcome path given in your task:
    {"verdict": "PASS"|"FAIL"|"ESCALATE", "justification": "<plain-English, cite
    the ledger lines and rule files you relied on>", "constraint": "<one line the

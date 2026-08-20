@@ -119,6 +119,14 @@ there, and neighboring families are NOT interchangeable:
 | Duplicate READ into branch arms | `.claude/rules/split-read-defeats-hoist.md` | reads, not stores; stores go to dead-store. |
 | `volatile` on a global | MMIO range → `.claude/rules/mmio-volatile-type-level.md` (no annotation). Game-state RAM → `.claude/rules/legitimate-volatile-interrupt-touched.md` (two-prong + EXACT use-site shape from its list). Sony census module state measured unreachable without volatile → Ruling 4, `docs/closer/rulings.md:68`. | every volatile-extern spelling needs its `volatile_extern_allowlist.txt` grant; cite the class matching the SYMBOL'S OWN use sites, never a sibling's shape. |
 
+**Precedent lookups:** `docs/reference/sotn-construct-index.md` is a
+machine-generated index of every match-hack construct SOTN master ships
+(1,365 entries at a pinned commit, PSX vs PSP/Saturn provenance tagged). Grep
+it BEFORE claiming a family precedent or writing a ruling-request — a hit is
+citable SOTN-master evidence; an absence after a real search is evidence the
+construct has no precedent. PSX (untagged) entries only; [PSP/mwcc]/[SATURN]
+entries are different compilers and carry no weight for GCC 2.7.2 questions.
+
 Citation hygiene (mechanically enforced by the self-vet validator):
 - Every PRECEDENT file:line must EXIST in this repo — a dead path is an
   automatic invalid session, not a Judge question.
