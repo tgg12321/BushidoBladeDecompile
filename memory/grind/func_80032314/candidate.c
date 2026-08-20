@@ -1,34 +1,45 @@
-/* func_80032314 — best form as of grind session 2 (structural).
- * Honest floor: sandbox --disable all = 1 (was 15 at session start, 27 at s1 start).
- * build_insns == target_insns == 109. NO register pins, no cheats — the only
- * inline asm is the user-authorized canonical GTE-LZC island (verbatim from the
- * matched sibling func_800274BC, src/code6cac_b.c:292, authorized 2026-06-10).
+/* func_80032314 — best form as of grind session 3 (structural).
+ * *** THIS FORM MEASURED sandbox --disable all == 0 (109/109 insns) on 2026-08-20 ***
+ * (artifacts: tmp/grind/func_80032314/s3/{allocdbg.txt,build0.txt}).
  *
- * THE SESSION-2 WIN (15 -> 1): the residual 15 was a 3-cycle rotation on
- * $a1/$a2/$a3 caused by global.c allocno priority order. Priority formula
- * (read from the BB2_ALLOC_DEBUG instrumented cc1, global.c prune_preferences/
- * find_reg block): pri = floor_log2(n_refs) * n_refs / live_length * 10000 *
- * size. Measured at s2 start: walker(p74, 8 refs, len 82) = 2926 > mflo1(p115,
- * 2 refs, len 10) = 2000 > ent(p75, 6 refs, len 63) = 1904 -> allocation order
- * walker,mflo1,ent -> regs 5,6,7 (rotation). Target needs mflo1,ent,walker ->
- * 5,6,7. Removing EXACTLY ONE walker ref drops floor_log2 from 3 to 2:
- * pri 2*7/82 = 1707, landing in the required band (below ent 1904, above
- * t0(p72) which rises to 7 refs = 1666). The C edit: the radius byte read
- * (final compare block) is spelled `*(u8 *)(t0 + 2)` instead of `*a3` — same
- * value (a3 == t0+2 loop-invariantly; invisible to cse across the back-edge).
- * Measured: every register in all 109 insns now matches target; score 1.
+ * IT IS NOT YET SUBMITTABLE. The three lines marked F4 below are the
+ * chain-extender endgame — sanctioned F1 family
+ * (.claude/rules/dead-store-fake-exception.md:32 "combine-foldable
+ * chain-extender", owner ruling 2026-07-01) — which requires (a) the full
+ * modality ladder demonstrably spent per the DRIVER's ledger, (b) the named
+ * GCC-pass mechanism (documented below), (c) /* FAKE *\/ annotations.
+ * At s3 the ladder is NOT spent (recon, structural x2 only), so prong (a)
+ * fails and submission would risk a Judge FAIL that bans the construct.
+ * THE SESSION THAT SUBMITS THIS (once the driver's exhaustion gate opens)
+ * must add the FAKE annotations (template in evidence.md [s3]) and write
+ * self_vet.md citing dead-store-fake-exception.md:32.
  *
- * THE ONE REMAINING DIFF: our `lbu v1,2(t0)` vs target `lbu $v1,0x0($a3)`
- * (the radius read itself). This is ARITHMETICALLY FORCED for pure C: a
- * byte-matching build needs 8 walker appearances (7 insns + dual-ref latch),
- * flow-time n_refs can never be below the final appearance count, and 8 refs
- * -> pri 2926 -> walker allocated first -> rotation. ent (6 refs, len 63
- * byte-pinned) caps at 1904; mflo1 (2 refs, len 10 byte-pinned) at 2000.
- * See evidence.md s2 for the full proof and the sanctioned F1 chain-extender
- * endgame (stale reg_n_refs on ent AND mflo1) with exact arithmetic.
+ * Removing ONLY the three F4 lines (s32 dxs decl becomes inline again:
+ * dist_sq = (u32)(dx*dx + dy*dy + dz*dz); and radius read respelled
+ * *(u8 *)(t0 + 2)) reproduces the s2 pure-C floor-1 form.
  *
- * THE SESSION-1 WIN (do not regress): GTE island as ONE mnemonic block
- * (mtc2/swc2), never `.word` — see evidence.md FINDING 2.
+ * THE MECHANISM (measured, s3): global.c allocno pri =
+ * floor_log2(n_refs)*n_refs/live_length*10000. The fold-away detour pair
+ * `ent += dxs; ent -= dxs;` at the END of the dist_sq<0x400 then-arm gives
+ * stale flow-time refs (combine.c:52-57 documents verbatim that reg_n_refs
+ * is NOT adjusted when a register is no longer required): ent 6->10 refs
+ * (pri 4615), dxs (the first mflo) 2->4 refs len 14 (pri 5714). combine
+ * folds (ent+dxs)-dxs -> ent to a self-move that final.c:1800-1806 elides
+ * (zero bytes). PLACEMENT IS LOAD-BEARING TWICE OVER:
+ *  - dxs pri must sit in the (4687, 6666) window: BELOW the dys mult-temp
+ *    (6666, which must claim LO first via its mflo copy-preference — a
+ *    higher-pri dxs gets captured by LO itself, measured score 23) and
+ *    ABOVE ent. Arm-END placement gives len 14 -> 5714. Placement directly
+ *    after the sum gives len 11 -> 7272 -> LO capture (score 23).
+ *  - resulting allocation order dxs(5714) > ent(4615) > walker(2857) ->
+ *    $a1/$a2/$a3 exactly as target; t0->$t0, t1->$t1.
+ * Verified trace: tmp/grind/func_80032314/s3/allocdbg.txt (p114 dxs->5,
+ * p75 ent->6, p74 walker->7, p72->8, p73->9).
+ *
+ * SESSION-2 WIN preserved: radius read via *a3 restored here (walker at its
+ * byte-forced 8 refs); the *(u8*)(t0+2) respelling is only for the floor-1
+ * no-FAKE form. SESSION-1 WIN preserved: GTE island as ONE mnemonic block
+ * (mtc2/swc2), never .word (see evidence.md FINDING 2).
  */
 void func_80032314(void) {
     u8 *t0 = &D_80104E88;
@@ -58,10 +69,14 @@ loop:
         s32 dx = *(s32 *)(ent + 0xF4) - *(s32 *)(a3 + 2);
         s32 dy = *(s32 *)(ent + 0xF8) - *(s32 *)(a3 + 6);
         s32 dz = *(s32 *)(ent + 0xFC) - *(s32 *)(a3 + 0xA);
-        u32 dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
+        s32 dxs = dx * dx;                       /* F4 (named so the detour can reference it) */
+        u32 dist_sq;
         u32 log2_val;
+        dist_sq = (u32)(dxs + dy * dy + dz * dz);
         if (dist_sq < 0x400) {
             log2_val = (u32)(*(&D_8008D118 + dist_sq)) >> 3;
+            ent = (u8 *)((s32)ent + dxs);        /* F4 detour — folds to zero bytes */
+            ent = (u8 *)((s32)ent - dxs);        /* F4 detour — folds to zero bytes */
         } else {
             s32 clz = 0;
             s32 sp_tmp;
@@ -95,7 +110,7 @@ loop:
             }
         }
         {
-            s32 v1 = *(u8 *)(t0 + 2);
+            s32 v1 = *a3;
             s32 v0 = v1 << 4;
             v0 = v0 - v1;
             v0 = v0 << 1;

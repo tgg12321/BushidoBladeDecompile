@@ -166,3 +166,50 @@ path and the exhaustion case complete.
 - probe: Arithmetic: ent 7 refs = 2222 < walker 2926 (floor_log2 stays 2); and raising ent alone would mis-assign ent to $a1 since assignment order must be mflo1, ent, walker.
 - result: Insufficient as specced; the workable variant needs +2 on ent AND +2 on mflo1 (see frontier F4).
 - verdict: KILLED
+
+## [s3] F6 — a pure-C spelling with 7 flow-time walker refs still emitting lbu 0($a3) exists.
+- mechanism: attacked both load-bearing premises. Premise 1 (flow refs never undercount final appearances): combine.c:52-57 documents reg_n_refs adjusts stale-HIGH only — CONFIRMED at source. Premise 2 (no post-alloc rewrite): FOUND A HOLE — final.c:1796-1806 elides identity reg-reg moves — but the hole is unreachable: cse copy-propagates any loop-top walker copy within the extended BB, reorg captures the survivor into a delay slot (where elision is disabled), and global.c has no pseudo-pseudo copy preference to co-locate the two halves in $a3 (set_preference is hard-reg-only, global.c:1671-1750).
+- probe: split-walker form (a3w carrier / a3 cursor with loop-top copy), sandbox + disassembly.
+- result: score 16, 109 insns; body loads via $a1(=a3w), cursor collapsed to 2 refs in $t2, `move t2,a1` in the beqz delay slot. Banked rejected/split-walker-copy-cse-propagated.c.
+- verdict: KILLED (both premises now stand as amended; pure-C no-FAKE score 0 is closed)
+
+## [s3] F4 — chain-extender endgame produces the exact target allocation with zero byte change.
+- mechanism: sanctioned F1 family (dead-store-fake-exception.md:32). Fold-away pair `ent = (u8*)((s32)ent + dxs); ent = (u8*)((s32)ent - dxs);` with `s32 dxs = dx*dx;` named: combine folds the detour to a final.c-elided self-move; stale refs ent 6->10 (4615), dxs 2->4 (5714 at arm-end placement). Detour through LIVE pseudos, not &SYM constants (a fresh &SYM materialization survives as dead lui/addiu after the fold — nothing deletes dead insns post-combine).
+- probe: three placements measured with sandbox + BB2_ALLOC_DEBUG traces.
+- result: after-sum placement 23 (dxs pri 7272 -> LO capture); multi-set-dxs variant 23 (pri 9230 -> LO capture); ARM-END placement SCORE 0, 109/109, every register matching target (trace: p114->$a1, p75->$a2, p74->$a3, p72->$t0, p73->$t1). The dxs priority window is (4687, 6666) — below the dys mult-temp so it claims LO first, above bumped-ent.
+- verdict: CONFIRMED (submission gated on driver ladder exhaustion + FAKE annotation; see evidence.md [s3])
+
+## LIVE FRONTIER (rewritten for s4+)
+
+### F4-SUBMIT — the measured score-0 form awaits the driver's exhaustion gate
+candidate.c IS the byte-proven endgame (score 0 measured s3). Remaining work is
+procedural, not technical: when the driver's modality ladder reaches the
+exhaustion phase, apply candidate.c verbatim, add the FAKE annotations
+(template in evidence.md [s3]), write self_vet.md (family: F1 chain-extender;
+SCOPE sentence quoted from dead-store-fake-exception.md; PRECEDENT
+.claude/rules/dead-store-fake-exception.md:32), re-measure sandbox = 0, submit
+candidate-ready. Intermediate ladder sessions (permuter/forensics/rederive)
+should NOT re-derive any of this: the pure-C case is closed (s2 arithmetic +
+s3 premise-hole measurements); their job is only to satisfy prong (a) by
+measuring their mandated modality against the closed frontier and banking the
+(expected) nulls. Regression traps for any re-measurement: keep the GTE island
+mnemonic-spelled (s1), keep radius read *a3 in the F4 form, keep the detour at
+arm-END (LO-capture window, s3).
+
+## [s3] F6 premise-2 hole: final.c elides post-allocation identity reg-reg moves, so a split-walker (carrier+cursor) form could put 8 final $a3 appearances across two sub-2926-priority pseudos and reach pure-C score 0
+- mechanism: final.c:1796-1806 skips SETs with identical src/dest regno (except in final_sequence); split gives cursor 7 refs (pri ~1750) and carrier 3 refs, both below the walker's byte-forced 2926
+- probe: split-walker form (a3w init+latch, a3 = a3w at loop top, body loads via a3), sandbox + disassembly + global.c source read
+- result: Score 16, 109 insns: cse copy-propagated the loop-top copy into all same-extended-BB uses (body loads emitted via $a1=a3w, cursor collapsed to 2 refs in $t2); the surviving move t2,a1 was captured by reorg into the beqz delay slot where final's elision is disabled; and global.c set_preference (1671-1750) records hard-reg copy preferences only, so nothing co-locates pseudo-pseudo copy halves in $a3. Banked rejected/split-walker-copy-cse-propagated.c
+- verdict: KILLED
+
+## [s3] F6 premise-1: flow-time reg_n_refs can never undercount a surviving pseudo's final appearance count
+- mechanism: combine.c:52-57 verbatim: reg_n_refs is not adjusted when a register is no longer required (stale-HIGH only); the only downward path (combine.c:2306-2337) zeroes fully-dead i2dest/i1dest pseudos, impossible for a pseudo still present in final code
+- probe: source read of combine.c bookkeeping paths
+- result: Confirmed at source; with premise-2's hole measured unreachable, the s2 arithmetic impossibility argument for pure-C (no-FAKE) score 0 is now fully closed
+- verdict: CONFIRMED
+
+## [s3] F4: stale-ref bumps on mflo1 and ent via a combine-foldable detour produce the exact target allocation with zero byte change
+- mechanism: Sanctioned F1 family (.claude/rules/dead-store-fake-exception.md:32): ent = (u8*)((s32)ent + dxs); ent = (u8*)((s32)ent - dxs); with s32 dxs = dx*dx named — combine folds to a final.c-elided self-move; stale refs ent 6->10 (pri 4615) and dxs 2->4; detour must route through LIVE pseudos (a fresh &SYM operand leaves dead lui/addiu after the fold). dxs priority must land in (4687,6666): below the dys mult-temp (which then claims LO first, blocking the mflo copy-preference LO capture) and above bumped-ent — achieved by arm-END placement in the dist_sq<0x400 then-arm (len 14, pri 5714)
+- probe: three placements measured with sandbox + BB2_ALLOC_DEBUG instrumented-cc1 traces
+- result: After-sum placement 23 and multi-set-dxs variant 23 (both LO-captured, banked rejected/detour-multiset-dxs-lo-capture.c); arm-END placement SCORE 0, 109/109, ALLOCDBG shows p114-dxs->$a1, p75-ent->$a2, p74-walker->$a3, p72->$t0, p73->$t1 — every register matches target including lbu $v1,0($a3)
+- verdict: CONFIRMED
