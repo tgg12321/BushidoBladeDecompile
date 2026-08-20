@@ -158,7 +158,25 @@ s32 file_LoadAll(s32 a0, u8 *dest) {
     func_800836B8(fd);
     return total;
 }
-INCLUDE_ASM("asm/funcs", file_LoadSectors);
+s32 file_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
+    s32 fd;
+    s32 i;
+
+    fd = func_80083698(a0 + 4, 0, 0);
+    if (fd == -1) {
+        return -2;
+    }
+    func_800836C8(fd, sector << 11, 0);
+    for (i = 0; i < count; i++) {
+        if (bios_FileRead(fd, dest, 0x800) != 0x800) {
+            close(fd);
+            return -1;
+        }
+        dest += 0x800;
+    }
+    func_800836B8(fd);
+    return count << 11;
+}
 s32 disp_CalcFov(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
     s32 v1 = tmp / 2;

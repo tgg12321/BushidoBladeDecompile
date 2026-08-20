@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "file_LoadSectors",
-      "file": "ings",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80047FBC",
       "file": "text1b",
       "distance": 1,
@@ -2250,14 +2242,14 @@
     }
   ],
   "counts": {
-    "total": 259,
-    "active": 231,
+    "total": 258,
+    "active": 230,
     "by_status": {
-      "active": 231,
+      "active": 230,
       "parked": 28
     },
     "by_verdict": {
-      "C": 193,
+      "C": 192,
       "ASM-PARTIAL": 38
     }
   }

@@ -148,3 +148,58 @@ empirical evidence?
 - [s1] SOTN census negative on the args-area mechanism, positive on the if(0)-dead-code genre (4 instances with file:line in evidence.md s1b)
 
 - [s1] OWNER-ESCALATION filed in docs/grind/decisions.md presenting options (a) dead-local under carve-out with partition-based prerequisite-1 reading, (b) narrow deleted-call family sanction (honestly census-negative), (c) endgame-lock INCOMPLETE-owner-accepted keeping byte-correct _pad[2] on main
+
+== s2 (structural, 2026-08-20) — MATCH ==
+
+- [s2] **SANDBOX 0 ON ORDINARY C.** Writing the sector-read loop as `for (i = 0; i < count;
+  i++) { ... dest += 0x800; }` instead of the prior sessions' `i = 0; if (count > 0) { do {
+  ... i += 1; } while (i < count); }` gives `sandbox file_LoadSectors --disable all` =
+  **score 0, target_insns 51, build_insns 51, rules_dropped 0** in the REAL TU (body in
+  place of the INCLUDE_ASM at src/ings.c:161). ZERO added constructs: no dead local, no dead
+  call, no volatile, no alias, no FAKE annotation, no sanctioned-family claim. Banked as
+  candidate.c; self-vet in self_vet.md.
+
+- [s2] **MECHANISM (measured, not inferred).** cc1's own `.frame` comment is the instrument:
+    do-while spelling : `.frame $sp,40,$31 # vars= 0, regs= 6/0, args= 16` -> sandbox 14
+    for   spelling    : `.frame $sp,48,$31 # vars= 8, regs= 6/0, args= 16` -> sandbox 0
+  The two cc1 outputs are instruction-for-instruction identical apart from the 14 frame-offset
+  instructions and label numbering (diff of tmp/grind/file_LoadSectors/s2/sweep/v_base.s vs
+  v_for_loop.s: only `.file`, `.frame`, sp +/-40 vs +/-48, the 12 save/restore offsets, and
+  .L3/.L4 -> .L4/.L6). The vars=8 is the documented PHANTOM-FRAME artifact
+  (memory/project/phantom-frame-slots-gcc272.md): GCC 2.7.2 allocates a stack temp while
+  expanding the strength-reduced `for` induction variable, get_frame_size() counts it, and the
+  allocator then keeps the value in a register, so no store is ever emitted. NO SOURCE OBJECT
+  EXISTS for those 8 bytes.
+
+- [s2] **THE s0/s1 PARTITION WAS FALSE.** Three sessions treated "target frame 48, body never
+  touches sp+0..23" as proof that the original source contained a DEAD object, and closed the
+  space to exactly two owner-refused families: (a) dead 1-8B local [vars axis], (b) deleted
+  >=5-arg call [args axis, outgoing_args=24]. The partition omitted the third door — vars=8
+  with NO declared object, produced by an ordinary loop spelling. This is precisely the
+  failure mode phantom-frame-slots-gcc272.md was written to warn about ("the standing
+  intuition ... is invalid reasoning; hunt the live-locals form first"), and it cost this
+  function an owner escalation (docs/grind/decisions.md:1985, standing ruling 2026-07-28,
+  option (c) INCOMPLETE-owner-accepted GRANTED). That disposition is now MOOT — the function
+  matches in clean C. Recommend the operator note this on the decisions.md entry.
+
+- [s2] **13-VARIANT STRUCTURAL SWEEP** (tmp/grind/file_LoadSectors/s2/sweep.py, table in
+  s2/measurements.md). Frame equations measured for: base do-while (40/0/16), s16 local pair
+  (48 via regs=7 — WRONG composition, 58 insns), s16 param pair (same), u16 local pair (48
+  via regs=7, 56 insns), **for-loop (48, vars=8, 50 insns — THE MATCH)**, while-countdown
+  (40), end-pointer walk (40), named intermediates off/len (48 via regs=7, 53 insns),
+  block-scoped `i` inside the `if` (40 — scoping alone does NOT create the slot; the `for`
+  induction expansion does), HImode-bitwise-on-real-data (48 via regs=7, 56 insns), DImode
+  offset local (48 vars=8 but 52 insns — 2 junk insns), real 5-arg call (48 via args=24, 56
+  insns), real 4-arg call with a double 4th arg (48 via args=24, 56 insns).
+
+- [s2] **REAL-CALL ARGS-24 AXIS KILLED BY MEASUREMENT** (previously only argued): both
+  v_real_5arg_call and v_real_double_arg do reach args=24/frame=48, and both cost +6
+  instructions — a REAL >4-word call must store its 5th word at sp+16..23 and the target body
+  has zero references there. Only a DELETED call reaches args=24 for free, which is the
+  refused family (b). Moot now, but the axis is closed with numbers.
+
+- [s2] **REGS=7 IS A FRAME-48 DECOY.** Five narrow-type variants hit frame 48 through regs=7
+  (an extra callee-save), not through vars or args. That composition puts the saves at the
+  wrong offsets AND costs 3-8 extra instructions; the target's 6 saves at sp+0x18..0x2C pin
+  regs=24. Any future frame-48 hunt should read the full `vars/regs/args` triple, never the
+  frame total alone.
