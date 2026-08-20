@@ -8308,3 +8308,81 @@ motion_SetMotion (2026-07-19 FAMILY REFUSED), saTan0Init, cpu_side_move_dir_4, f
 (2026-07-20), func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / AddTbpOfst_80047EE8 /
 cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22), and func_80033550's own
 2026-07-22 ruling (decisions.md:1292) on the pre-migration chassis.
+
+## 2026-08-20 — func_80072CD4 (src/text1b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session s5 (synthesis modality). This entry re-confirms, on the POST-MIGRATION chassis, the
+disposition the owner already gave this function on 2026-07-27 (see the `2026-07-27 — func_80072CD4 —
+OWNER RULING (escalation disposition) — REFUSED / OWNER-ACCEPTED INCOMPLETE` entry above). Nothing is
+pending on the owner; the driver may park the function and advance the queue.
+
+**Why it is being re-filed rather than simply cited:** the 2026-08-19 asm-until-matched migration replaced
+this function's 9-rule main body with `INCLUDE_ASM("asm/funcs", func_80072CD4);`, which invalidates every
+chassis-relative number the earlier escalation quoted. s5 re-measured instead of re-quoting.
+
+**Chassis-current state (measured this session).** candidate.c re-applied over the INCLUDE_ASM line (symbol
+names refreshed to the current naming wave: SetPolyG4 / SetSemiTrans / AddPrim): `sandbox func_80072CD4
+--disable all` = **4**, build_insns **79 == target**, rules_dropped 0, zero pins / zero cheat-asm / zero
+`__asm__` / zero volatile / zero barriers / zero duplication. The floor is unchanged by the migration.
+Per asm-until-matched, src/text1b.c is left carrying `INCLUDE_ASM` and the body stays in
+memory/grind/func_80072CD4/candidate.c.
+
+**Residual, independently re-derived this session by objdump** (tmp/grind/func_80072CD4/s5/base.dis vs
+asm/funcs/func_80072CD4.s): the build is byte-identical to target from the prologue through BOTH inner arms,
+including the inner `beqz v0 / li v1,0xFC` delay slot, the three `li v0,const / sb` pairs in each arm, the
+THEN arm's `j merge / li v0,0x32` delay slot and the ELSE arm's trailing `li v0,0x46`. The ONLY divergence is
+the merge block's store ORDER — target `sb v1,4; sb v1,0xC; sb v0,0xE; li v0,0xFC; ...`, ours
+`sb v0,0xE; li v0,0xFC; ...` with `sb v1,4 / sb v1,0xC` deferred to the block tail. jump2 splices the
+cross-jumped common tail (`sb v0,0xE`, identical in both arms) at the JOIN LABEL, i.e. at the head of the
+merge block, and sched2 then defers the two `$v1` stores because their datum is set in a predecessor block
+and they earn no launch pairing.
+
+**The two-attractor lock (the s5 synthesis).** Five sessions of measurement produce exactly two clean
+attractors and no third: (a) per-arm `@0xE` = 4/79 — correct arms, correct RA (fc_const→$v1, @0xE value→$v0),
+wrong merge order, and that order is source-order-invariant (s4b directed PERM_LINESWAP over the full 8-store
+merge permutation space, 15,825 iters, zero finds below base); (b) cross-block `var_v0` = 13/78 — target's own
+source shape and correct merge order, but sched1 deterministically hoists the lone constant `li` to the arm
+top (no in-arm consumer → no 7f000001 launch boost → loses the potential_hazard tiebreak, sched.c:2683-2699),
+so the value goes live across the `$v0` byte constants and RA rotates it to `$v1`.
+
+**Axes closed by s5 (all previously un-run; each measured, banked in rejected/):**
+- "Lever A" from the 2026-06-14 WIP — route the arm byte constants 0xC3/0x1E/0xC8 through a shared local so
+  they vacate `$v0`: INERT on the per-arm chassis (4/79, the holder folds away) and a WORSE basin on the
+  cross-block chassis (11/78 — the shared holder makes the two arms' `sb v0,0xD` identical so jump2
+  cross-jumps THAT store to the merge head, costing the insn target keeps in-arm, while the RA rotation
+  survives: fc→$a0, var_v0→$v1). Analytically dead as well: target REQUIRES those constants in `$v0`
+  (`addiu $v0,$zero,0xC3` …), so vacating `$v0` is byte-divergent by construction.
+  (rejected/leverA_shared_const_local_xblock.c, rejected/leverA_perarm_inert.c)
+- Hoisting the `@4`/`@0xC` stores above the inner `if` (never measured before; s2's kill moved the fc_const
+  ASSIGNMENT, not the stores): 8/78. (rejected/hoist_4_0xc_prebranch.c)
+- A different whole-function C SPELLING — base pointer local `u8 *p = (u8 *)arg1; p[N] = …` instead of the
+  casted-offset stores used by every s1-s4 form: 17/82. (rejected/base_pointer_local_spelling.c)
+
+**AND-gate (i) — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80072CD4` = tier
+**LOW, score 0/8** (S1-S8 all negative; 79 insns, 3 spills, no multu pacing, no empty branch, no BIOS
+jumptable, no high-similarity cluster). The engine's canonical gate verdict is C. This is ordinary compiled
+C with an ordinary scheduler/cross-jump artifact.
+
+**AND-gate (ii) — sanctioned family with an in-hand SOTN-master precedent: FAILS.** The only sandbox-0 form
+ever found is rejected/dup4_0xc_into_arms.c: duplicating the two UNCONDITIONAL common-tail stores
+(`@4 = fc_const; @0xC = fc_const;`) into both inner arms, where jump2 deletes the second copy — byte-neutral,
+with the store SCHEDULE as its only effect. Judge-FAILed 2026-07-24 16:38 as outside the
+duplicated-statement-into-arms sanction's evidenced reg_n_refs RA-priority scope, and refused by the owner on
+2026-07-27 ("the owner concurs and does not extend the carve-out"). s5 re-ran the precedent census against
+docs/reference/sotn-construct-index.md: the `dup_if_else_arm` family has 958 hits, but the index states its
+own scan quality as "HEURISTIC SAMPLE - single-line textual match only", and a textual duplicate-in-both-arms
+hit carries no evidence of THIS shape — an unconditional common-tail statement lifted into both arms whose
+second copy is cross-jump-dead. No exhibit matching the shape is in hand; a negative census is a failed gate,
+not an open question.
+
+**Disposition (per the standing 2026-07-27 both-gates-fail auto-ruling):** NO cheat is present anywhere —
+main carries `INCLUDE_ASM` (asm-until-matched) and the clean floor-4 pure-C candidate is banked in
+memory/grind/func_80072CD4/candidate.c. **INCOMPLETE-owner-accepted**, terminal park, out of active grind,
+NOT COMPLETED-C and NOT canonical-asm. Re-attempt eligible on exactly one condition: a genuine in-scope pure-C
+lever that either (a) pins the cross-block `var_v0` `li` at the arm tail without an arm-local `sb`, or
+(b) moves jump2's cross-jumped tail off the merge-block head — or an actually-exhibited SOTN-master
+file+function citation of a cross-jump-dead common-tail duplication used for store scheduling.
+
+## 2026-08-20 05:33 — func_80072CD4 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s5 of func_80072CD4, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `synthesis`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
