@@ -902,7 +902,8 @@ void set_alarm(void) {
     g_gpu_vcount = VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
-INCLUDE_ASM("asm/funcs", get_alarm);s32 _version(s32 arg0) {
+INCLUDE_ASM("asm/funcs", get_alarm);
+s32 _version(s32 arg0) {
     *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
     if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {
         *(volatile s32 *)g_gpu_data_reg = (*(volatile s32 *)g_gpu_stat_reg & 0x3FFF) | 0xE1001000;

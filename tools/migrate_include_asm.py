@@ -103,11 +103,28 @@ def migrate_one(func, stem, dry, defer_build=False):
         return "already-migrated", []
     if not os.path.isfile(asm):
         return f"REFUSED: {asm} missing", []
+    if "jtbl_" in rd(asm):
+        # The raw asm references a switch jump table that only exists as
+        # compiler OUTPUT of the C body's switch (rodata cleanup 2026-06-09
+        # moved jtbls out of asm/data). Removing the body would orphan the
+        # symbol at link (observed batch 1: func_800324D0 / jtbl_800105A0).
+        # These keep their current representation until solved honestly.
+        return "REFUSED: asm references a C-generated jtbl_ symbol (deferred)", []
     span = find_body_span(text, func)
     if span is None:
         return f"REFUSED: no C body span for {func} in {src}", []
     lo, hi = span
     body = text[lo:hi]
+    # rodata-emitting bodies: since the 2026-06-09 rodata cleanup, string
+    # literals / const arrays / FP literals in a body are the SOURCE of that
+    # function's .rodata. Removing such a body shifts the section layout and
+    # breaks the byte-match (observed sweep batch 2: MISMATCH). Defer them.
+    stripped = re.sub(r"/\*.*?\*/", "", body, flags=re.S)
+    stripped = re.sub(r"//[^\n]*", "", stripped)
+    if ('"' in stripped or re.search(r"\bconst\b", stripped)
+            or re.search(r"\b\d+\.\d+f?\b", stripped)):
+        return ("REFUSED: body emits .rodata (string/const/FP literal) — "
+                "removal shifts section layout (deferred)"), []
     rules = rule_lines(func)
     if dry:
         return ("DRY: would bank %d-line body + %d rule(s), splice INCLUDE_ASM"
@@ -125,8 +142,15 @@ def migrate_one(func, stem, dry, defer_build=False):
            "banked_body": f"{BANK_DIR}/body.c", "rules_retired": len(rules)}
     wr(os.path.join(led, "migration_pin.json"), json.dumps(pin, indent=2) + "\n")
 
-    # splice
-    new_text = text[:lo] + f'INCLUDE_ASM("asm/funcs", {func});' + text[hi:]
+    # splice — with an explicit trailing newline whenever the tail doesn't
+    # start with one (a body ending "}" flush against the next definition
+    # glued get_alarm/_version on 2026-08-19 and silently dropped a COMPLETED
+    # function from the census parse).
+    line = f'INCLUDE_ASM("asm/funcs", {func});'
+    tail = text[hi:]
+    if not tail.startswith("\n"):
+        line += "\n"
+    new_text = text[:lo] + line + tail
     wr(src, new_text)
     # delete rules (by exact line content, from each file)
     originals = {}
@@ -172,9 +196,15 @@ def main():
     if a.funcs:
         targets = [f.strip() for f in a.funcs.split(",") if f.strip()]
     else:
+        skip = set()
+        if os.path.isfile("tmp/migration-deferred.txt"):
+            skip = {ln.split("\t")[0] for ln in
+                    rd("tmp/migration-deferred.txt").splitlines() if ln.strip()}
         targets = []
         for it in q["items"]:
             if it.get("status") not in ("active", "parked"):
+                continue
+            if it["func"] in skip:
                 continue
             try:
                 if f'INCLUDE_ASM("asm/funcs", {it["func"]});' in rd(f'src/{it["file"]}.c'):
@@ -194,7 +224,7 @@ def main():
             continue
         res, _ = migrate_one(func, it["file"], a.dry_run,
                              defer_build=a.batch_verify)
-        print(f"{func}: {res}")
+        print(f"{func}: {res}", flush=True)
         if res.startswith("EDITED"):
             edited.append(func)
         if res.startswith(("FAILED", "REFUSED")):
