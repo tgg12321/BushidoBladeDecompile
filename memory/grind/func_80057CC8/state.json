@@ -188,8 +188,14 @@
  ],
  "judge_constraints": [
   "Do not re-attempt any shared-pointer split into two source-level locals for func_80057CC8, under any spelling (semantic naming, numeric suffix, block-scope, function-scope, or FAKE-annotated) \u2014 the split-`p` family is closed. Attack the two open axes the ledger itself named: (1) frontier hypothesis #1 \u2014 inline-expression form eliminating the bound `p` local entirely, so RTL-expand emits GCC-anonymous pseudos at each call-arg site rather than a user-declared allocno; (2) frontier hypothesis #2 \u2014 targeted source-side rearrangement of the PLUS operand order at insn 124's p2 addu to redirect pseudo 86's copy-preference propagation away from pseudo 129's v1. Neither axis requires splitting `p` at the source level.",
-  "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Compound-address duplication across two calls refused \u2014 no SOTN precedent (duplicated-statement-into-arms covers per-arm, not per-call), and in-session vetting already flagged it as no-semantic-purpose duplication. Canonical-asm unavailable (gate verdict=C, scan_hand_coded 1/8). INCOMPLETE-owner-accepted, 7 rules retained to hold the match (NOT sanctioned), parked, eligible for re-attempt."
+  "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Compound-address duplication across two calls refused \u2014 no SOTN precedent (duplicated-statement-into-arms covers per-arm, not per-call), and in-session vetting already flagged it as no-semantic-purpose duplication. Canonical-asm unavailable (gate verdict=C, scan_hand_coded 1/8). INCOMPLETE-owner-accepted, 7 rules retained to hold the match (NOT sanctioned), parked, eligible for re-attempt.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The `table` / `nt` pair is the banned shared-pointer-split-into-two-source-level-locals family wearing a new name \u2014 the session's own measurements (V1 reused-table=6 vs V5/V6 split-into-nt=0) prove the split, not the array-indexing spelling, is what closes the gap. Next action: Revert to the parked INCOMPLETE-owner-accepted disposition (2026-07-20 ruling, state.json judge_constraints) \u2014 the queue item stays as-is with the 2026-08-19 asm-until-matched representation. Do not commit the V6 form. If a fresh session wants to pursue the array-indexing insight, it must fi"
  ],
  "origin": "queue",
- "created": "2026-07-19T20:02:22.274925+00:00"
+ "created": "2026-07-19T20:02:22.274925+00:00",
+ "banned_constructs": [
+  "`s16 *table = *(s16 **)(arg0 + 4);` ... `s16 *nt = *(s16 **)(arg0 + 4);` \u2014 two source-level pointer locals, both loaded with the identical expression and both denoting the same unchanging vertex-table base address, used respectively for the prev-neighbour and next-neighbour indexed reads.",
+  "`nt = *(s16 **)(arg0 + 4);` as a second, independent reload of the identical pointer value `table` already holds in scope"
+ ],
+ "ladder_skip": 9
 }
