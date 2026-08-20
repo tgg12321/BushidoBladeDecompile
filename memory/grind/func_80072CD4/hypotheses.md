@@ -475,3 +475,23 @@ floor 4, unchanged) and the s1-s5 exhaustion analysis stands as written.
   directed PERM_LINESWAP over exactly those stores is the empirical companion to the proof); the
   alias-serialisation lever reaches 6 and cannot pass L2. The only remaining question about this
   function is a CLASSIFICATION question about the per-arm body, not a search question.
+
+## [s8 2026-08-20 — rederive] H-S8 (CONFIRMED): the POLY_G4 struct body is a whole-executable match
+- **Statement.** The POLY_G4 struct per-arm body — the spelling the 2026-08-20 06:35 and 06:54
+  Judge rulings PASSED — reaches sandbox 0 on the current chassis AND links a byte-identical
+  executable, i.e. it clears the full FINAL CALL that both standing judge constraints demand and
+  that no prior session had run.
+- **Mechanism.** Not a lever: the offsets are the four POLY_G4 RGB triples, so each arm's colour
+  assignment is complete inside the arm; jump2 then cross-jumps the arms' common tail
+  `sb v1,4 / sb v1,0xC / sb v0,0xE` to the join label, which is precisely target's merge head. The
+  L1/L2 laws (s5-rederive) say no merge-block SOURCE statement can occupy that position, which is
+  why every blob-model spelling of s1-s5 was bounded away from 0 rather than merely unlucky.
+- **Probe.** `python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c`
+  → `sandbox func_80072CD4 --disable all` → `build`.
+- **Result.** score 0, build_insns 79 == target_insns 79, rules_dropped 0
+  (tmp/grind/func_80072CD4/s8/sandbox_struct_s8.json); full build
+  sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.
+- **Verdict.** CONFIRMED. The remaining question about this function is not a search question and
+  no longer a classification question the grind can advance: both Judge rulings on the struct
+  spelling are PASS, the FINAL CALL is clear, and acceptance now rests with the layer-1/layer-2
+  adversarial review of the landed diff.

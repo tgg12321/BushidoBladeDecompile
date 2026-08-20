@@ -546,3 +546,51 @@ non-per-arm form has come; it identifies L2 (not L1) as the binding constraint.
   repeating the same channel value across vertices rather than hoisting it to a shared temporary.
 Both are the same shape the layer-1 reviewer FAILed here (a repeated-value field write present on
 both paths), in accepted, zero-rule, byte-matching BB2 code.
+
+## [s8 2026-08-20, REDERIVE modality] The POLY_G4 struct body is LANDED and the FINAL CALL is CLEAR
+- [s8] Starting state: `src/text1b.c:5865` carried `INCLUDE_ASM("asm/funcs", func_80072CD4);`
+  (asm-until-matched), `git status src/ include/` clean. The two most recent Judge rulings in
+  docs/grind/decisions.md — 2026-08-20 06:35 and 2026-08-20 06:54, both **PASS** — had already
+  examined the POLY_G4 struct per-arm body and issued the standing constraint "Land the POLY_G4
+  per-arm form EXACTLY as measured (no holder local, no intent-named symbol, ascending fields per
+  triple, reusing the src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL". No
+  session had yet DONE that: the s7/s8-era ruling sessions returned ruling-request without
+  submitting, so the form has never been through a layer-1 review in its struct spelling (the two
+  layer-1 FAILs of 05:53 and 06:20 were against the raw `*(u8 *)((s32)arg1 + N)` blob-cast body,
+  submitted alongside a self-issued decisions.md "ruling" — the process defect the 06:35 ruling
+  records as cured).
+- [s8] MEASURED ON THE CURRENT CHASSIS, with the body in place at src/text1b.c:5865:
+  `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` → **score 0, build_insns 79 ==
+  target_insns 79, scorable true, rules_dropped 0, cheat_asm_stripped 279**
+  (tmp/grind/func_80072CD4/s8/sandbox_struct_s8.json; landed body captured verbatim at
+  tmp/grind/func_80072CD4/s8/landed_body.c).
+- [s8] **FINAL CALL CLEARED — the piece no prior session ran.** `& tools/wteng.ps1 main build` →
+  `built build/bb2.exe / sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa / want
+  62efab4f73f992798c43e8c730aa43baa10bb4fa / MATCH`. The whole executable links byte-identical to
+  the oracle with func_80072CD4 compiled from this C, so the match is not an isolated-scorer
+  artefact. src/text1b.c is LF-clean after the edit (CRLF byte count 0).
+- [s8] The landed body is the struct spelling, NOT the twice-FAILed blob-cast spelling: it declares
+  the libgpu `POLY_G4` typedef verbatim from src/code6cac_b2_pre.c:153-162 and writes
+  `((POLY_G4 *)arg1)->r0/g0/b0` etc. per triple in ascending field order. No local of any kind (a
+  `POLY_G4 *g` pointer local was measured and is WORSE — rejected/rederive_polyg4_ptrlocal_perarm_13_82.c
+  = 13/82 — so the repeated cast is the measured form and is landed exactly as measured).
+- [s8] TARGET-SIDE CORROBORATION re-verified by hand this session (not taken on report): the
+  original bytes keep an unmerged cross-arm repeated component — asm/funcs/func_80072CD4.s:23-24
+  (arm A, 0x80072D28-2C) and :32-33 (arm B, 0x80072D48-4C) each emit
+  `addiu $v0, $zero, 0xC3 / sb $v0, 0x5($s1)`. The shipped source therefore wrote per-arm colour
+  components with shared values; @4/@0xC were never "unconditional common-tail statements
+  respelled into arms", which is the premise the 2026-07-24 16:38 constraint was written against.
+  The COMPLETED-C sibling func_80072BC4 does the same thing in C at src/text1b.c:5840 and :5843
+  (`*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in both arms, un-hoisted, zero rules).
+- [s8] Ledger bookkeeping: memory/grind/func_80072CD4/candidate.c is now the POLY_G4 struct body
+  (score 0) with a factual header — field-layout rationale, the two in-repo precedents, the
+  measurement, and the recorded codegen consequence; no pending-ruling narration, per the standing
+  constraint. The clean floor-4 blob body is preserved unchanged as fallback_floor4.c (and a copy
+  of the previous candidate.c at tmp/grind/func_80072CD4/s8/prev_candidate_floor4.c). The banked
+  rejected/rederive_polyg4_struct_perarm_score0_banned_family.c is left in place as history; its
+  filename's "banned_family" suffix was the s5r session's own precaution and is contradicted by
+  the 06:35 and 06:54 Judge rulings — the file's BODY is what is now landed.
+- [s8] This session wrote NO entry in docs/grind/decisions.md and issued no ruling of its own; the
+  authority for landing is the two committed Judge PASS rulings plus this session's own
+  measurements. self_vet.md was rewritten for the struct body: CONSTRUCTS none, all six tests
+  answered against the landed diff, SANCTIONED-FAMILY-CLAIMS none, ANNOTATION-CONFORMANCE n/a.
