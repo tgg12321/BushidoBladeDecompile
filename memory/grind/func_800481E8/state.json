@@ -1,8 +1,8 @@
 {
  "func": "func_800481E8",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,26 +27,34 @@
    "floor": 10,
    "modality": "permuter",
    "headline": "Permuter modality spent: a third, directed hybrid seed (PERM_GENERAL x PERM_LINESWAP spanning both prior chassis) ran 46,124 iterations with ZERO finds; struct/array chassis killed as seeds; floor re-"
+  },
+  {
+   "session": 5,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "BYTES PROVEN: candidate.c + one first-decl `volatile u32 pre_pad[8];` gives full-build SHA1 == oracle; the 32-byte residual is the LEADING vars-region pad (same shape/size as the two siblings granted "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The permuter modality is now exhausted for func_800481E8 (three seeds, ~152k iterations, zero clean sub-base forms, and the directed run proving no legal re-spelling/re-ordering moves the frame). The remaining ladder rungs are forensics / rederive / synthesis, not further sampling.",
-   "mechanism": "The residual is entirely the vars=0 vs vars=32 frame-equation delta (frame 0x48 = ALIGN8(vars 32) + args 24 + regs 16); s2's taxonomy shows it can only come from a DECLARATION, and the permuter's only declaration-inventing mutations are forbidden families.",
-   "next_probe": "Do NOT launch a fourth campaign. Spend the next non-escalation modality on forensics/rederive: re-derive the original source shape from the 8004xxxx cluster (AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC / InitHiraRmd_800480C0 all reserve EXACTLY 32 phantom bytes -- memory/grind/func_80047EE8/evidence.md:154) -- a cluster-wide constant 32 across different register counts and bodies suggests a shared header-level or TU-level declaration idiom, which is a source-archaeology question, not a search question."
+   "hypothesis": "Once `\"func_800481E8\": frozenset({(\"pre_pad\", 8)})` exists in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS, `sandbox func_800481E8 --disable all` reads 0 and the function lands COMPLETED-C with candidate.c applied as-is.",
+   "mechanism": "The bytes are already proven by full-build SHA1; the sandbox's 10 is entirely the stripped pad. Both sibling functions traversed exactly this sequence today after their identical grant.",
+   "next_probe": "Operator/driver: add the row, apply memory/grind/func_800481E8/candidate.c over src/text1b.c:176, re-run sandbox (expect 0) + full build (SHA1 already measured == oracle this session), fresh layer-2 cheat-reviewer, then queue done."
   },
   {
-   "hypothesis": "The cluster-wide constant 32-byte frame delta across all four 8004xxxx siblings is produced by ONE shared original-source construct (a common local declaration or a macro expanded in each body) rather than four independent accidents.",
-   "mechanism": "All four siblings (72B/4regs, 80B/6regs, 88B/8regs, 72B/4regs) reserve exactly 32 untouched vars bytes despite different register counts and different bodies -- a per-function accident would not be constant across the cluster.",
-   "next_probe": "Forensics modality: diff the four targets' prologues and bodies for a shared idiom whose C form declares locals; check whether any sibling STORES into its 32-byte region, which would reveal the aggregate's shape and stride and supply the base-register/stride evidence prong (a) that the aggregate-merge family currently lacks here."
+   "hypothesis": "Other parked frame-delta functions whose ledgers labelled the untouched region a 'tail' pad may be mislabelled the same way and are candidates for the same one-line close.",
+   "mechanism": "The taxonomy label was inherited across sessions rather than re-derived from the frame map; the discriminator is simply whether the untouched span lies between the outgoing-args area and the saved-regs block (vars = leading, sanctioned) or above the saved regs (true tail, no precedent).",
+   "next_probe": "For each parked frame-delta function, enumerate every sp-relative access in its target asm and classify the untouched span by position before trusting any banked taxonomy label."
   },
   {
-   "hypothesis": "If the driver ever assigns escalation modality, both endgame-lock AND-gates fail and the standing 2026-07-27 ruling applies (REFUSED / OWNER-ACCEPTED INCOMPLETE), as already written up at docs/grind/decisions.md:8894.",
-   "mechanism": "Gate 1 (canonical-asm) fails: verdict C, 56/56 insns, only a frame-equation delta -- no STRONG scan_hand_coded signal. Gate 2 (cited SOTN precedent) fails: negative census for the unwritten-tail phantom-frame family, the same negative that terminated file_LoadSectors.",
-   "next_probe": "Only in escalation modality; the entry already exists at docs/grind/decisions.md:8894 and names func_800481E8, so that session confirms the gates against then-current evidence and returns owner-gated citing it. NOT available in this or any other non-escalation modality."
+   "hypothesis": "No honest pure-C-only route (no FAKE construct at all) exists for this function's 32 vars bytes.",
+   "mechanism": "s2's structural work plus ~152k permuter iterations across three independent seeds produced no honest producer of frame growth; every frame-moving mutation the search found was a declaration-inventing forbidden family.",
+   "next_probe": "None warranted - banked as the reason the sanctioned family is the correct disposition rather than continued search."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[8];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row \u2014 no function-scope volatile scalar, no (void) shim, no non-volatile array."
+ ],
  "origin": "queue",
  "created": "2026-07-28T13:50:57.673876+00:00"
 }

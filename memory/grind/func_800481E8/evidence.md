@@ -302,3 +302,35 @@ permuter lever before banking.
 - [s4] No build-surface file was modified: src/text1b.c was returned to its HEAD INCLUDE_ASM state before the session ended, and no permuter process outlived the session (campaign harvested with --stop, 9 procs killed, post-harvest process scan clean).
 
 - [s4] Process note for the ledger: the FIRST s4 session was discarded by the driver validator for returning owner-gated while its mandated modality was permuter (a standing-ruling terminal disposition requires driver-declared escalation modality). Its src/ edits were reverted; its ledger writes survived on disk and are preserved in evidence.md/hypotheses.md above this entry. This re-run re-measured them and banks one further distinct lever as progress.
+
+- [s5] **BYTES PROVEN.** `memory/grind/func_800481E8/candidate.c` with ONE addition -- a first-declaration `volatile u32 pre_pad[8];` -- applied over `INCLUDE_ASM("asm/funcs", func_800481E8);` at src/text1b.c:176 produces a FULL DRIVER BUILD whose SHA1 is 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_800481E8/s5/build_pad.log). The built object's function disassembles at `addiu sp,sp,-72` with all 58 lines matching asm/funcs/func_800481E8.s (tmp/grind/func_800481E8/s5/built_func.txt). No other change to the s1 chassis; first attempt, no search.
+
+- [s5] **The s2 frame taxonomy mislabelled this function's residual.** The 32 untouched bytes are NOT a trailing/tail pad. Frame map decoded from asm/funcs/func_800481E8.s: `.frame $sp,72`; outgoing-args area 0x00-0x17 (the 5th-argument slot at 0x10 IS written -- `sw $v0,0x10($sp)` at 0x80048288); vars 0x18-0x37 with ZERO sw/lw/sh/sb/lh/lb touching it; saved regs 0x38-0x47 (`sw s0,0x38 / s1,0x3C / s2,0x40 / ra,0x44`). The untouched region sits BETWEEN args and regs -- i.e. it is the VARS region, exactly where a FIRST-DECLARED local lands. That is the leading-pad shape, byte-for-byte the same args24/vars32/regs16 = 72 layout as the two granted in-file siblings func_80047EE8 and func_80047FBC, not the tail-pad shape the owner's 2026-08-20 grant entry declined to extend to.
+
+- [s5] Consequence for the standing disposition: the 2026-07-28 / 2026-08-20 "REFUSED / OWNER-ACCEPTED INCOMPLETE" entries rested on gate 2 failing for lack of precedent for an "unwritten-TAIL phantom-frame family". With the shape correctly identified as the LEADING/first-decl form, gate 2 PASSES on precedent the owner has already granted twice in this same file and sanctioned generally on 2026-08-18 (.claude/rules/no-new-park-categories.md:390), with SOTN-master exhibits at docs/reference/sotn-construct-index.md:101 (`src/st/sel/2C048.c:564 volatile u32 pad; // !FAKE:`) and :103 (`src/st/sel/stream.c:80 volatile u32 pad[4]; // FAKE`). Those terminal entries are superseded by measurement.
+
+- [s5] `sandbox func_800481E8 --disable all` after the change still prints score 10 / 56 insns / rules_dropped 0 / cheat_asm_stripped 277 (tmp/grind/func_800481E8/s5/sandbox_pad.log) -- the engine strips the pad because func_800481E8 has no row in `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`. Exactly the sibling situation before the 2026-08-20 grant. The remaining work is the one-line row `"func_800481E8": frozenset({("pre_pad", 8)})`; engine/ is outside a grind session's scope AND on the add-scope-allow denylist, so this is an INTEGRATION HANDOFF, not a codegen question.
+
+- [s5] Cross-knowledge sweep is what unlocked this: the two siblings were completed HOURS earlier (commits 3f995fe9 / b734618d / 33e87423, 2026-08-20) and their evidence (memory/grind/func_80047EE8/evidence.md:154 -- all four cluster members reserve EXACTLY 32 phantom bytes) was already in the brief's cross-knowledge hits. The ledger's own tail-pad label was the only thing keeping this function parked.
+
+- [s5] src/text1b.c was returned to its HEAD `INCLUDE_ASM("asm/funcs", func_800481E8);` state before the session ended; `git status` shows only memory/grind/func_800481E8/ and metrics/events.jsonl modified.
+
+- [s5] Full driver build with candidate.c + `volatile u32 pre_pad[8];` applied over INCLUDE_ASM at src/text1b.c:176 produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_800481E8/s5/build_pad.log). The function is byte-matched by this C.
+
+- [s5] Built object disassembly: `addiu sp,sp,-72` frame, 58 lines identical to asm/funcs/func_800481E8.s (tmp/grind/func_800481E8/s5/built_func.txt).
+
+- [s5] Frame map decoded from target asm: .frame $sp,72 = args 0x00-0x17 (the 5th-arg slot at 0x10 IS written by `sw $v0,0x10($sp)` at 0x80048288) + vars 0x18-0x37 (ZERO accesses of any width) + saved regs 0x38-0x47 (s0/s1/s2/ra). The untouched span is the VARS region between args and regs - the first-declared-local position - not a trailing pad.
+
+- [s5] That layout (args 24 / vars 32 / regs 16 = 72) is byte-for-byte the layout of the two in-file siblings func_80047EE8 and func_80047FBC, whose ('pre_pad', 8) rows the owner granted on 2026-08-20 (engine/volatile_cheats.py:757-758).
+
+- [s5] sandbox func_800481E8 --disable all after the change: score 10, target_insns 56, build_insns 56, rules_dropped 0, cheat_asm_stripped 277 - the engine strips the pad because func_800481E8 has no _SANCTIONED_UNWRITTEN_PADS row. engine/ is outside session scope AND on the add-scope-allow denylist (.claude/rules/integration-handoff-self-serve.md), so this is an INTEGRATION HANDOFF, not an endgame lock.
+
+- [s5] Family conformance: ARRAY form, volatile-qualified, first-declaration position, no `(void)pad;` or `&pad` shim, FAKE-annotated with what + named GCC-pass mechanism + lever-exhaustion - every constraint the 2026-08-18 family names. Six-test vet written to memory/grind/func_800481E8/self_vet.md.
+
+- [s5] The only other FAKE construct in the body is `arg0 = 0;`, the dead-param-assign spelling listed verbatim at .claude/rules/dead-store-fake-exception.md:29 and Judge-PASSed on the in-file sibling func_80047EE8. Zero pins, zero __asm__, zero alias renames, zero regfix/asmfix rules.
+
+- [s5] Provenance is NOT search: s2/s4's ~152k permuter iterations converged instead on the forbidden function-scope `volatile <scalar>` coercion (banked in rejected/). This construct came from the cross-knowledge sweep of the siblings solved hours earlier plus a re-derivation of the frame map.
+
+- [s5] HEAD is unchanged: src/text1b.c was returned to `INCLUDE_ASM("asm/funcs", func_800481E8);` before session end; git status shows only memory/grind/func_800481E8/, docs/grind/decisions.md and metrics/events.jsonl modified.
+
+- [s5] Escalation filed this session at the end of docs/grind/decisions.md, naming func_800481E8, with the exact operator steps (add the row, apply candidate.c, re-sandbox, full build, layer-2 cheat-reviewer, queue done).

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 12,
@@ -2081,6 +2073,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
+      "func": "func_800481E8",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_800481E8 \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
       "func": "func_80056FE8",
       "file": "text1b",
       "distance": 10,
@@ -2200,13 +2201,13 @@
   ],
   "counts": {
     "total": 252,
-    "active": 218,
+    "active": 217,
     "by_status": {
-      "active": 218,
-      "parked": 34
+      "active": 217,
+      "parked": 35
     },
     "by_verdict": {
-      "C": 182,
+      "C": 181,
       "ASM-PARTIAL": 36
     }
   }
