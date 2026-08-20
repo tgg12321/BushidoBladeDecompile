@@ -286,3 +286,26 @@
 - probe: FORM K (tmp/grind/func_800611A4/s8b/formK_return_web_hardreg_pref.c) = FORM F's exact interleaved shape declared `s32` with `return t;` appended; read the mask quantity's `used=` set and the emitted .s under the same harness.
 - result: Mask quantity's conflict set UNCHANGED (`qty=9 reg1=76 born=46 dead=54 ... used=0,1,26,27,...` -- no hard reg 2): GCC emits the return copy in the epilogue, at an insn index after the mask's death index 54, so it never intersects [46,54). Local-alloc still hands the mask $v0 (`li $2,0x00ff0000`), global-alloc still forces the web to $v1 (`lw $3,0($16)`), and the return adds a `move $2,$3` -- 44 insns vs target's 43. The failure is TIMING, not preference strength: a hard-reg tie created at function exit is invisible to the mask's local-alloc scan, which has already run.
 - verdict: KILLED
+
+## [s9] The v0<->v1 wall is a property of the m2c reused-load-temp DECOMPOSITION, not of GCC's allocator — a different whole-function idiom (separate walking-pointer local + mask store written last) reproduces target exactly.
+  - mechanism: with a fresh cursor local seeded from the param after the call, the three loads
+    form a single dependence chain that GCC folds back to constant offsets off the still-live
+    $s0 (no pointer bumps, 43 insns), and the mask — written after the last load in source —
+    is scheduled into the load gaps and allocated $v1, exactly as in target. The reused-temp
+    decomposition every prior session started from cannot produce that quantity layout, which
+    is why all eight sessions of local-alloc/global-alloc forensics found only dead levers.
+  - probe: transplanted the post-call tail of the two COMPLETED-C siblings in the same file
+    (func_8006133C src/text1b.c:3184, func_8006156C src/text1b.c:3248) onto the (already
+    byte-identical) pre-call region; `sandbox func_800611A4 --disable all`.
+  - result: **score 0**, target_insns 43 == build_insns 43, rules_dropped 0, no pins, no rules,
+    no FAKE construct. Reconfirmed after two cosmetic reductions (form_B, form_C).
+  - verdict: CONFIRMED
+
+## [s9] The pre-call halfword reads' CAST SPELLING is load-bearing for the pre-call schedule.
+  - mechanism: `*((u16 *) (((s32) arg1) + N))` and `((u16 *) arg1)[N]` are semantically
+    identical but reach RTL with different address-computation trees, changing the pre-call
+    schedule and register naming.
+  - probe: form_D (indexed reads + `(s32) svec`) vs form_C (byte-offset casts +
+    `(s32) (&svec[0])`), same tail, same 43 insns.
+  - result: form_D = 15, form_C = 0.
+  - verdict: CONFIRMED (do not simplify those casts)

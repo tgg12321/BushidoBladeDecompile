@@ -238,3 +238,52 @@ the canonical finished form for the family) OR a future family-wide RA lever.
 - [s8] A function-exit hard-reg copy (return value) is emitted too late in the insn stream to enter the mask's local-alloc conflict window -- a general fact about this wall: any hard-reg tie must occur INSIDE [mask_born, mask_dead) to matter, and every construct that puts one there also spans the web.
 
 - [s8] Cumulative local-alloc coverage after this session: routing gate (local-alloc.c:472) killed from both directions in s7; suggested-register override (local-alloc.c:2206-2212) killed in s8; conflict set / regs_live_at (local-alloc.c:2170) killed here. All three inputs to the mask's register choice are now measured.
+
+## s9 (2026-08-20, rederive) — SOLVED, honest floor 6 -> 0
+
+- [s9] **`sandbox func_800611A4 --disable all` = 0** with a pin-free, rule-free, FAKE-free
+  pure-C body (target_insns 43 == build_insns 43, rules_dropped 0). Form banked at
+  `memory/grind/func_800611A4/candidate.c` and applied in `src/text1b.c`.
+- [s9] **The nine-session "v0<->v1 RA wall" was a decomposition artifact, not a compiler
+  wall.** Every session s1–s8b inherited m2c's reused-load-temp reconstruction
+  (`t = arg0[0]; D_800F1140 = t; t = arg0[1]; ...`) and searched for a lever that would flip
+  the mask off $v0 inside THAT decomposition. The local-alloc.c:472 / find_free_reg forensics
+  banked in s6–s8b are all correct — and all irrelevant, because the original source never had
+  a reused temp at all.
+- [s9] **The solving idiom was already on disk, matched, in the same file.** `func_8006133C`
+  (src/text1b.c:3184) and `func_8006156C` (src/text1b.c:3248) are COMPLETED-C (no pins, no
+  rules) and share func_800611A4's ENTIRE post-call tail byte-for-byte in shape
+  (`lw $v0,0/4/8($s0)` interleaved with `lui $v1 / ori $v1 / sw $v1 %gp_rel(D_800A3464)`).
+  Their C is:
+      p = a0;
+      D_800F1140 = *p++;
+      D_800F1144 = *p++;
+      D_800F1148 = *p;
+      D_800A3464 = <mask>;
+  Transplanting exactly that onto func_800611A4's (already byte-identical) pre-call region
+  produces distance 0 on the first measurement.
+- [s9] **Why s2's walking-pointer form failed and this one does not** — s2 walked the PARAM
+  (`D_800F1140 = *arg0++;`), which costs +1 `addiu` (44 insns vs target 43) because arg0/$s0
+  must also survive as the value stored to D_800F1178 pre-call. The matched-sibling idiom
+  seeds a SEPARATE local cursor (`p = arg0;`) after the call, so GCC folds p's bumps into
+  constant offsets off the still-live $s0 and emits no bump at all. The second half of the
+  fix is equally load-bearing: the mask store is written LAST in source order (s2 kept it
+  between load 2 and load 3; s3–s8b hoisted it to the top of the tail). Neither half alone was
+  ever tried with the other — that combination is the whole nine-session gap.
+- [s9] Cosmetic reductions measured score-neutral (still 0): dropping the s8b `new_var` staged
+  temp (sp[2] assigned directly) and renaming the `sp` array to `svec`.
+- [s9] KILLED: re-spelling the three pre-call halfword reads as `((u16 *) arg1)[i]` and the
+  buffer address as `(s32) svec` regresses 0 -> 15 at the SAME 43 insns. The byte-offset cast
+  spelling (`*((u16 *) (((s32) arg1) + N))`, `(s32) (&svec[0])`) is load-bearing for the
+  pre-call schedule and must not be "cleaned up". Banked:
+  `rejected/s9_indexed_u16_reads_regress_to_15.c`.
+- [s9] **Cluster transfer (high value, unverified here):** the same reused-temp decomposition
+  is what the pinned/blocked siblings `func_80061250`, `func_80061658`, `func_80061710`,
+  `func_800617C8`, `func_800618B4` are built on (all currently carry
+  `register s32 t asm("$2"); register s32 mask asm("$3");` pins, i.e. cheats), and several
+  carry OWNER-ESCALATION entries in docs/grind/decisions.md filed as "reachability walls" on
+  the strength of func_800611A4's escalation. Those escalations rest on a premise this session
+  DISPROVED. Each of them should be retried with the sibling idiom: replace the pinned
+  reused-temp tail with `p = arg0; D_800F1140 = *p++; D_800F1144 = *p++; D_800F1148 = *p;
+  D_800A3464 = <mask>;` (mask LAST) and re-measure. func_80061250 / func_80061658 /
+  func_80061710 additionally store the mask mid-tail in their current pinned C — write it last.

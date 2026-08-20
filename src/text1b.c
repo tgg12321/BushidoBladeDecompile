@@ -3144,7 +3144,25 @@ extern u8 D_800F116A;
 extern s32 D_800F116C;
 extern s32 D_800A3464;
 extern s32 D_800A3468;
-INCLUDE_ASM("asm/funcs", func_800611A4);
+void func_800611A4(s32 *arg0, s32 *arg1) {
+    u16 svec[3];
+    s32 *p;
+    s32 *v1 = (s32 *) (&D_800F116C);
+    svec[0] = *((u16 *) (((s32) arg1) + 0));
+    svec[1] = *((u16 *) (((s32) arg1) + 2));
+    D_800A3468 = (s32) v1;
+    svec[2] = *((u16 *) (((s32) arg1) + 4));
+    D_800F117C = (s32) (&svec[0]);
+    D_800F1178 = (s32) arg0;
+    D_800F1180 = (s32) (&D_800F116A);
+    *v1 = 0x21001A;
+    func_80060A68();
+    p = arg0;
+    D_800F1140 = *p++;
+    D_800F1144 = *p++;
+    D_800F1148 = *p;
+    D_800A3464 = 0xFFFFEF;
+}
 extern volatile u8 D_800F1159;
 void func_80061250(s32 *arg0) {
     s32 *v1 = (s32 *)&D_800F116C;
