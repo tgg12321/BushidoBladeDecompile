@@ -448,3 +448,60 @@ PRESSURE problem worth exactly 3 instructions.
 - probe: Variants B, C (array-index the D_800EF980 reads), E, F5 (subscript only the LAST rotation read), H (named rotation index), I (`p_anim = &D_800EF980[temp_v1]`), J (ot store reorder), K, O (fold the D_80099CC8 base+index), N (a second rotation pointer `&D_80099D3C[k+3]`) - all built through the real cpp + instrumented cc1 on the full TU.
 - result: All report `vars= 0`. B/C fail because CSE merges the two same-index D_800EF980 reads; E/F5 fail because CSE rewrites the indexed access as `src[1]` once src is live; N fails because both pointers are multi-use so neither address add is single-use. Banked in memory/grind/func_80049A2C/rejected/phantom-slot-*.c.
 - verdict: KILLED
+
+## [s9] rederive modality
+
+- H-G1 (inherited from the s8 frontier): a spelling of "two distinct variable index expressions on D_80099D3C" exists whose second index does not force a sixth callee-saved register.
+  - mechanism tested: seven spellings of the fold (R3, F3, R5, R17, R18, R19, R16) measured for `.frame` + insn count on the full TU, then the divergence attributed with cc1 `-da` dumps of BASE0 vs F3.
+  - result: KILLED, and killed mechanistically rather than by exhaustion. `.combine` is IDENTICAL between BASE0 and F3; sched.c's first (pre-RA) pass is what diverges. The fold shortens the arg1 index chain from six insns to four, dropping its INSN_PRIORITY below the call-return copy, so sched1 stops hoisting it to just after the `jal`; arg1 then outlives the vehicle copy and global.c takes a sixth callee-saved register. The orphan and target's schedule are mutually exclusive on this symbol, because the fold IS the shortening. Ordering law banked as a by-product: the folded access must come FIRST in source order (R18/R19 - once the walking pointer is live, CSE rewrites any later subscript against it).
+  - verdict: KILLED
+
+- H-G2 (inherited from the s8 frontier): the cheapest carrier is a semantically real SECOND index into D_800EF980 or D_80099CC8.
+  - mechanism tested: S1/S2/S3 respellings of the D_800EF980 accesses, including hoisting the symbol materialisation across the early-return JUMP_INSN so the def and its consumer sit on opposite sides of a jump.
+  - result: KILLED. Both symbols are touched at exactly ONE index; CSE merges same-index accesses into a single multi-use address pseudo, which combine never folds, so no def is deleted and no REG_DEAD note strands. S3 also refines the trigger law: crossing a JUMP_INSN is necessary but nowhere near sufficient.
+  - verdict: KILLED
+
+- H-S9A: a fresh m2c decompilation yields a structurally different decomposition of this function.
+  - mechanism tested: full m2c run with `--valid-syntax`, output compared statement-by-statement with the banked candidate; its two liveness-derived prototype guesses turned into measured variants M1/M2/M3/M4/M5.
+  - result: KILLED as a source of new shape - m2c reproduces the candidate exactly (same control flow, same walking-pointer rotation reads with the deferred `+2` chain, same locals). Two by-products banked: InitFadePanel plausibly takes the D_80099CC8 element pointer (M1: zero-instruction cost, byte-neutral, so this is a free prototype refinement whenever the function is finally written), and func_800417D0 does NOT take `a1_val` as a second argument (M2: +2 insns).
+  - verdict: KILLED
+
+- H-S9B: the rotation table is a 2-D array `s16 [2][6]` and the row spelling changes the address arithmetic enough to host the orphan.
+  - mechanism tested: R2D with an `s16 (*)[6]` cast.
+  - result: KILLED - GCC canonicalises the row arithmetic to the same flat address; vars=0, regs=6/0, 105 insns.
+  - verdict: KILLED
+
+- H-S9C (NEW, OPEN - the successor frontier): the phantom slot in this function must come from a NON-global-array carrier, because all three of its global symbols are now measured dead.
+  - mechanism: the in-TU census (`grep ctx=spill_new` on the BB2_FRAME_DEBUG stderr of the whole text1b.c compile) shows all six other spill_new producers in this TU are loop-shaped, and func_8004954C reaches reload1.c alter_reg with NO global array in its body at all - a loop back-edge alone supplies the JUMP_INSN that strands the REG_DEAD note. func_80049A2C has no loop and only three global symbols, all now closed.
+  - open question: which non-array single-use value in this body can combine fold into a consumer that is separated from its def by one of the EXISTING `beq` / `bgez` / `jal` boundaries, without changing the emitted stream? Un-measured candidates, all of which already exist in target's instruction stream: the `vehicle + 0x50C` address (`addiu $v0,$s1,0x50C` at 80049B64, single use), the `obj - 0x68` address (`addiu $v0,$s0,-0x68` at 80049BA4, single use), the `ot + 4` bump (`addiu $v0,$v1,0x4`, twice, single use each), the `temp_v1 * 2` scale (`sll $v1,$v1,1` at 80049A70, single use, feeding an `addu` that crosses no jump), and the `(s16)(a1_val + 1)` chain at 80049BC4-BC8. The probe is to move each of these across one of the three existing jump boundaries by ordinary statement placement and measure `.frame`; none of them requires inventing a construct.
+  - status: OPEN
+
+## [s9] G1 - a spelling of 'two distinct variable index expressions on D_80099D3C' exists whose second index does not force a sixth callee-saved register.
+- mechanism: Attributed from cc1 -da dumps rather than guessed. BASE0 (the 126/126 matching baseline) and F3 (a folding variant) are IDENTICAL in .combine - the arg1 index chain sits at the same position in both. sched.c's FIRST, pre-RA scheduling pass is what diverges: in BASE0 the chain is six insns (andi/sll/addu/sll/la/addu) and is the longest path to the first rotation load, so sched1 hoists it to immediately after the jal, putting arg1's last use BEFORE the call-return copy - exactly target's order, which is what lets $s1 carry arg1 and then be reused for the vehicle pointer (five saves, .mask 0x800f0000). When combine folds the symbol_ref into the load, the chain drops to four insns, its INSN_PRIORITY falls below the call-return copy, sched1 leaves it in place, the live ranges overlap, and global.c takes a sixth callee-saved register ($s4). The fold is the necessary condition for the orphan and is simultaneously the two-instruction shortening that destroys the schedule.
+- probe: Seven new spellings built through the real cpp + instrumented cc1 on the full text1b.c TU (tmp/grind/func_80049A2C/s9/run.sh): R3 (unnamed index, fold on read 0), F3 (fold on reads 0 AND 1, pointer re-based at D_80099D3C+4), R5 (index computed before the call), R17 (index named right after the call), R18 (pointer set up before the folded read), R19 (pointer setup hoisted above the obj header stores), R16 (pointer for the three mults, subscripts for the three tail halfwords). Then full -da dumps of BASE0 and F3 compared at .combine and .sched.
+- result: R3 vars=8/regs=6 (108 insns; sandbox 50, build_insns 129 vs target 126). F3 vars=8/regs=6 at 107 insns - the SAME instruction count as the matching baseline, and still six saves. R5 vars=8/regs=6 (109). R17 vars=8/regs=6 (108). R18 vars=0/regs=6 (109). R19 vars=0/regs=6 (109). R16 vars=0/regs=5 (107). In nine sessions no variant has ever reported vars=8 together with regs=5/0. R18/R19 additionally establish an ordering law: the folded access must come FIRST in source order, because once the walking pointer is live CSE rewrites any later subscript against it and the second symbol_ref use vanishes.
+- verdict: KILLED
+
+## [s9] G2 - the cheapest carrier is a semantically real SECOND index into D_800EF980 or D_80099CC8, whose symbol registers target already materialises.
+- mechanism: The s8 trigger law needs two or more accesses at two or more DISTINCT variable index expressions on one symbol. This function reads D_800EF980 at the single index temp_v1 (three times) and D_80099CC8 at the single address arg0*2+arg2 (once). CSE merges same-index accesses into one address pseudo; a multi-use address pseudo is never folded by combine, so no def is deleted and no REG_DEAD note strands. This is a property of the function's semantics, not of any spelling, so no further spelling search on these two symbols is warranted.
+- probe: S1 (guard read spelled D_800EF980[temp_v1], p_anim formed afterwards), S2 (the LAST anim read spelled as a subscript, guard via p_anim), S3 (the (u8 *) D_800EF980 symbol materialisation hoisted ABOVE the temp_v1==0xFF early return so the def sits on the far side of a JUMP_INSN from its consumer). These join s8's B/C/I on the same symbol and K/O on D_80099CC8.
+- result: All three report .frame $sp,40 # vars= 0, regs= 5/0 at 107 insns - byte-identical to the matching baseline. S3 refines the trigger law: crossing a JUMP_INSN is NECESSARY for the note to strand but useless without a fold.
+- verdict: KILLED
+
+## [s9] H-S9A - a fresh m2c re-derivation yields a structurally different decomposition of this function.
+- mechanism: Mandated rederive modality: run m2c from the target asm and compare against the banked candidate; turn any liveness-derived prototype differences into measured variants.
+- probe: python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80049A2C asm/funcs/func_80049A2C.s; then M1 (InitFadePanel takes the D_80099CC8 element pointer), M2 (func_800417D0 takes a1_val as a second argument), M3 (both), M4/M5 (each combined with the rotation fold).
+- result: m2c reproduces the candidate exactly - same control flow, same locals, and the same walking-pointer rotation reads, emitted as a deferred temp_v1_N = temp_v1_(N-1) + 2 chain that matches target's placement of addiu $v1,$v1,0x2 between the mult and the mflo. No new shape exists to be had from a fresh decompile. By-products: M1 costs ZERO instructions (107, byte-neutral), so InitFadePanel plausibly does take the element pointer - a free prototype refinement; M2 costs +2 (109), so func_800417D0 does NOT take a1_val as a second parameter; M4/M5 still report regs=6/0, so the extra liveness does not change sched1's decision.
+- verdict: KILLED
+
+## [s9] H-S9B - the rotation table is a 2-D array s16 [2][6] and the row spelling changes the address arithmetic enough to host the orphan.
+- mechanism: Target's sll $v1,$a0,1 / addu $v1,$v1,$a0 / sll $v1,$v1,2 index is exactly k * sizeof(s16[6]), so a 2-D declaration was a live hypothesis for the original type.
+- probe: R2D - s16 (*rot)[6] = (s16 (*)[6]) D_80099D3C; with rot[krow][0] and &rot[krow][1].
+- result: .frame $sp,40 # vars= 0, regs= 6/0 at 105 insns. GCC canonicalises the row arithmetic to the same flat address, so no second symbol_ref use survives - and the reshape costs the sixth register anyway.
+- verdict: KILLED
+
+## [s9] The honest floor on this chassis is still 12 with the banked candidate applied.
+- mechanism: The dispatch brief reported 'measurement unavailable' for the HEAD floor, so the ledger's 12 had to be re-verified before any banked conclusion was spent.
+- probe: sandbox func_80049A2C --disable all with memory/grind/func_80049A2C/candidate.c applied at src/text1b.c.
+- result: score 12, target_insns 126, build_insns 126, rules_dropped 0. The chassis has not changed.
+- verdict: CONFIRMED

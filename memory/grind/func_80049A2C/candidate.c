@@ -47,6 +47,20 @@
  * making the `8` constant holder single-use (P, Q).
  *
  * Full record: memory/grind/func_80049A2C/evidence.md + hypotheses.md [s8].
+ *
+ * s9 (rederive) re-measured this body at sandbox 12 / 126 insns and CLOSED the
+ * s8 frontier. The +8 slot and target's schedule are mutually exclusive on
+ * D_80099D3C: combine's fold is what creates the orphan, and that same fold is
+ * what shortens the arg1 index chain from six insns to four, which drops its
+ * sched1 priority below the call-return copy, which makes arg1 outlive the
+ * vehicle pointer, which costs a SIXTH callee-saved register (target saves
+ * five, .mask 0x800f0000). Attributed from cc1 -da dumps (.combine identical,
+ * .sched divergent) - see tmp/grind/func_80049A2C/s9/sched_attribution.txt.
+ * D_800EF980 and D_80099CC8 are each touched at exactly ONE index, so CSE
+ * merges every respelling and they can never host the orphan. A fresh m2c
+ * decompile reproduces this exact shape, so the body below is the natural
+ * decompilation and the remaining carrier must be a NON-array single-use value
+ * folded across one of the existing beq/bgez/jal boundaries (frontier H-S9C).
  */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 *new_var6;

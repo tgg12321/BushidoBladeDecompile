@@ -1,8 +1,8 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 8,
- "current_modality": "forensics",
+ "session_count": 9,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 12,
    "modality": "forensics",
    "headline": "Target's +8 phantom frame slot PRODUCED from ordinary C in this body for the first time (variant F2: .frame $sp,48 # vars=8, no dead local); s6's 'dead-local-only' law killed by construction, trigger "
+  },
+  {
+   "session": 9,
+   "floor": 12,
+   "modality": "rederive",
+   "headline": "rederive: G1 and G2 both KILLED mechanistically - combine's fold is what creates the +8 orphan AND what shortens the arg1 index chain, so sched1 stops hoisting it and a sixth callee-saved register app"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "G1 - a spelling of 'two distinct variable index expressions on D_80099D3C' exists whose second index does not force a sixth callee-saved register, closing the last 3 instructions.",
-   "mechanism": "F2 already reaches target's exact frame (vars=8) but reports regs=6/0 against target's 5/0; the extra sw/lw pair plus one reshuffled instruction is the entire remaining delta. The frame total is insensitive to the save count (compute_frame_size rounds gp_reg_size to 8), so the fix cannot lose the slot - only the instruction stream is at risk.",
-   "next_probe": "Start from memory/grind/func_80049A2C/s8_variant_F2_frame48.c and sweep: (a) subscript the SECOND rotation read instead of the first, with src walking from kidx and the subscript at kidx+1; (b) derive the second index from arg1 directly (target keeps arg1 in $s1 across the whole body, so `(arg1 & 1) * 6` is recomputable without a new long-lived pseudo); (c) subscript the FINAL `new_var2` read with an index expression CSE cannot equate to `src + 2` (variants E and F5 died precisely because CSE rewrote them as `src[1]`). Measure each with tmp/grind/func_80049A2C/s8/batch.sh (reports .frame + insn count in one WSL call) and score the survivors through the sandbox."
+   "hypothesis": "H-S9C - the phantom +8 slot in this function must come from a NON-array single-use value that combine folds into a consumer separated from its def by one of the EXISTING beq / bgez / jal boundaries.",
+   "mechanism": "All three of the function's global symbols are now measured dead as orphan carriers (D_80099D3C by the sched1 exclusion law, D_800EF980 and D_80099CC8 by single-index CSE merging). The in-TU census proves the orphan does not require a global array at all: func_8004954C produces one from a loop back-edge with no array anywhere. func_80049A2C has no loop, but it DOES have three jump boundaries already present in target's stream (the beq at 80049A60, the bgez at 80049A80, and the two jal call boundaries), and several genuinely single-use values that combine could fold.",
+   "next_probe": "Take each single-use value that already exists in target's instruction stream and move its computation across one of the three jump boundaries by ordinary statement placement, measuring .frame each time with tmp/grind/func_80049A2C/s9/run.sh: (a) the `vehicle + 0x50C` address (addiu $v0,$s1,0x50C at 80049B64) computed before the func_800417D0 call and stored after; (b) the `obj - 0x68` address (addiu $v0,$s0,-0x68 at 80049BA4) computed before the same call; (c) the `ot + 4` bump (addiu $v0,$v1,0x4, two independent single-use instances); (d) the `temp_v1 * 2` scale (sll $v1,$v1,1 at 80049A70) computed BEFORE the temp_v1==0xFF beq; (e) the `(s16)(a1_val + 1)` chain at 80049BC4-BC8. None requires inventing a construct - each is an ordinary statement-order change - and any that yields vars=8 with regs=5/0 is an immediate match candidate."
   },
   {
-   "hypothesis": "G2 - the cheapest carrier is a semantically real SECOND index into D_800EF980 or D_80099CC8, whose symbol registers target already materialises.",
-   "mechanism": "Target emits `lui/addiu %lo(D_80099CC8)` at 80049A34 and `lui/addiu %lo(D_800EF980)` at 80049A68, so those symbol registers exist in target's codegen at no extra cost; an address add off one of them is the cheapest possible orphan carrier. The function currently touches each symbol at exactly one index, which is why the s8 trigger law does not fire on them.",
-   "next_probe": "Read the callers of func_80049A2C and the sibling writers of D_800EF980 (func_800493E4 writes it at two indices - temp_v1 and D_80099CC9[idx]) to determine whether this function semantically touches a second slot, e.g. the paired D_80099CC9 entry that func_800493E4 uses. If a real second index exists, it is an ordinary statement and the natural carrier; if the callers show it does not, bank G2 as dead."
+   "hypothesis": "H-S9D - the fold-shortening penalty can be paid back by a DIFFERENT six-insn dependence chain, restoring sched1's hoist of the arg1 index chain without adding an instruction.",
+   "mechanism": "sched1's decision is a relative-priority comparison between the arg1 index chain and the call-return copy. The baseline wins because its chain is the longest path to the first rotation load. If some OTHER already-present computation could be made to depend on the shortened chain (extending its path length back to six) without emitting a new instruction, the hoist would be restored while the fold - and therefore the orphan - survives.",
+   "next_probe": "Start from tmp/grind/func_80049A2C/s9/bodies/F3.c (vars=8, regs=6/0, 107 insns - already the same instruction COUNT as the matching baseline, so only the allocation differs). Look in the .sched dump for computations currently scheduled between the call and the first rotation load (the D_800A38B4 load, the li 6, the li 4, the two sb, the lh 0($s3)) and try re-expressing the rotation index so it consumes one of them - e.g. deriving kidx through a value that is already on that path - then re-measure .frame and diff the emitted stream against asm/funcs/func_80049A2C.s. Abandon immediately if any variant needs an instruction that target does not have."
   },
   {
-   "hypothesis": "G3 - the alternative decomposition vars=0 / args=24 remains formally open and almost certainly dead.",
-   "mechanism": "current_function_outgoing_args_size is written only in calls.c (1400 / 2400 / 2750) from a call's own argument size; any 5th argument word is STORED at 0x10($sp) and target has zero non-save sp traffic. Bumping it without a store requires expanding a call and then deleting it, which is dead code.",
-   "next_probe": "None recommended before G1 and G2 are spent. If revisited, look for a back-end-emitted library call (64-bit shift/divide) whose argument block is >= 20 bytes and whose insns are later eliminated."
+   "hypothesis": "H-S9E (formal, low priority) - the alternative frame decomposition vars=0 / args=24 remains open only in principle.",
+   "mechanism": "Target's byte layout (saves at 0x18..0x28 in a 0x30 frame) is equally consistent with vars=8/args=16 and with vars=0/args=24. current_function_outgoing_args_size is written only from a call's own argument size, and any fifth argument word is STORED at 0x10($sp); target has zero non-save sp traffic, so a 24-byte outgoing-args block would have to come from a call whose fifth-word store is later eliminated.",
+   "next_probe": "None recommended until H-S9C and H-S9D are spent. s9's M2 measurement is a relevant partial datum: giving func_800417D0 a second argument costs +2 instructions and leaves args=16, confirming that adding register-passed arguments does not move this field."
   }
  ],
  "judge_constraints": [
