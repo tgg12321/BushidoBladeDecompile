@@ -8890,3 +8890,76 @@ integration-handoff clause: bytes proven, blocked only by a surface the session 
 `.claude/rules/no-new-park-categories.md:390` (2026-08-18 phantom-frame-slot family);
 `.claude/rules/dead-store-fake-exception.md`; `.claude/rules/integration-handoff-self-serve.md`;
 [[judge-sole-gate]] (2026-08-18). This entry names func_80047EE8 / AddTbpOfst_80047EE8 directly.
+
+## 2026-08-20 -- func_800481E8 (src/text1b.c) -- **OWNER-ESCALATION -- RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (re-affirmed on the post-migration chassis)**
+
+Grind s4 (permuter modality). This RE-AFFIRMS the terminal 2026-07-28 entry for this function
+(above) on the chassis that exists today, and closes the one modality that entry had not yet
+spent from an independent seed. Nothing is pending on the owner.
+
+**Why a re-affirmation was warranted.** The 2026-07-28 disposition described a HEAD that no longer
+exists: it recorded "keep HEAD's byte-correct form (12 regfix rules + `register asm("$16")` pin +
+`__asm__ volatile("move %0,%1")` INLINE_MOVE_ALIASING; honest sandbox floor 14)". The 2026-08-19
+asm-until-matched migration replaced that with `INCLUDE_ASM("asm/funcs", func_800481E8);` at
+src/text1b.c:68 -- regfix.txt now carries only a comment line for this function (regfix.txt:2442)
+and zero rules, asmfix.txt zero. A naming wave separately renamed the callee from
+`efc_buki_draw_zanzou` to `func_800482C8`. Both changes are recorded in the ledger and
+`memory/grind/func_800481E8/candidate.c` has been updated for them. **Re-measured this session:**
+applying candidate.c over the INCLUDE_ASM line gives `sandbox func_800481E8 --disable all` = **10**,
+56/56 instructions, rules_dropped 0, cheat_asm_stripped 278 -- the SAME floor and the SAME residual
+(2x addiu sp + 4x sw + 4x lw at the s0/s1/s2/ra save slots; frame 40 vs 72, vars 0 vs 32) as
+s1-s3 measured. The migration is codegen-neutral here, so every banked s1/s2/s3 spelling conclusion
+carries over unchanged. There is no longer a cheat form on main to "keep": HEAD is honest asm and
+the function is simply INCOMPLETE at floor 10.
+
+**New evidence this session (permuter modality, from an INDEPENDENT seed).** s2's 52k-iteration
+campaign seeded from the candidate chassis (s16 locals for the four stream halfwords). s4 seeded
+from the banked byte-identical **V6** spelling instead (s32 raw holders loaded from `*(u16*)p`,
+narrowed `(s32)(s16)` at the call site and in the `< 0x280` compare) -- validated byte-identical to
+candidate before launch (56 insns, only the 10 frame diffs, base score 266 == s2's base). Honest
+`--stack-diffs` scorer, 8 jobs, `perm_pad_var_decl` weight zeroed, waited in-turn, harvested with
+`--stop` (9 procs killed, 0 orphaned). Result: **54,167 iterations, 3 novel finds, best score 202
+against a base of 266.** All three finds are the identical construct -- a function-scope
+`volatile <T> new_var;` dead frame pad -- differing only in volatile width (unsigned short 212,
+short 207, unsigned char 202). That is the volatile-coercion forbidden family (frame coercion by a
+volatile-typed scalar): score-inert under the sandbox and a layer-1 FAIL on sight. Banked as
+`memory/grind/func_800481E8/rejected/v6-chassis-volatile-pad-permuter-find.c`.
+
+Two independent seeds, two structurally different chassis spellings, ~106k combined iterations,
+converging on the SAME forbidden construct both times -- the basin is a property of THE FUNCTION,
+not of the seed. And even the cheat does not close the gap (202, not 0). This is precisely what s2's
+structural proof predicted: the permuter has no mutation that adds frame bytes except by declaring a
+local, and every local-declaring mutation lands in a forbidden family.
+
+**The two AND-gates, re-evaluated -- both still FAIL:**
+
+- **Canonical-asm gate -- FAILS.** Target is verdict C. 56/56 instructions byte-match except the 10
+  frame-offset instructions; loop body, prologue staging, epilogue order and register allocation are
+  all identical. No S1/S2/S6 STRONG `scan_hand_coded` signals (no redundant-mask-before-discarding-
+  shift, no hand-scheduled cop2 pipeline, no `swc2 $N, K(...)` with a hardcoded register). This is
+  compiled C whose frame equation differs only by vars=0 vs vars=32.
+- **Coercion/spelling family gate -- FAILS.** The five-way frame taxonomy remains CLOSED (s2):
+  (i) written aggregate adds stores the byte-matched target lacks; (ii) volatile = cheat, score-inert
+  -- and s4 has now independently re-derived exactly this construct as the search's only output;
+  (iii) address-escape = cheat + extra insns; (iv) stale-ref phantom measured dead (the orphan needs
+  a combine-deleted 2-insn sll16/sra16 chain, and every deletion route visibly changes target bytes;
+  the target keeps all 4 lhu and all 4 sll/sra live with no low-bit-only halfword consumer);
+  (v) unwritten tail is the forbidden dead-vars-local-array family -- the target has zero stores
+  below offset 56, so the 2026-07-01 written-never-read carve-out does not apply. No SOTN-master
+  precedent exists for an unwritten-tail phantom-frame family; this is the same question resolved
+  terminally on file_LoadSectors option a (an unwritten phantom-frame carrier has no SOTN precedent
+  distinguishing it from frame coercion; partition arguments ruled insufficient).
+
+**Disposition:** unchanged and terminal under the owner's 2026-07-27 standing ruling.
+**INCOMPLETE-owner-accepted**, parked out of active grind, NOT COMPLETED-C and NOT canonical-asm.
+HEAD keeps `INCLUDE_ASM("asm/funcs", func_800481E8);` (honest, no rules, no cheat-asm -- strictly
+better than the pre-migration state the 2026-07-28 entry recorded). Best clean banked form is
+`memory/grind/func_800481E8/candidate.c` at honest floor 10 (pure C, zero pins, zero rules, 56/56
+insns, residual = frame delta only), re-verified against the current chassis this session. Eligible
+for re-attempt only if a genuine pure-C lever emerges, or if a future SOTN census establishes an
+unwritten-tail phantom-frame family on its own evidence. Modalities now spent: recon (s1),
+structural (s2, s3) and permuter from two independent seeds (s2 instrumented, s4 fresh-seed V6).
+
+## 2026-08-20 09:54 — func_800481E8 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s4 of func_800481E8, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `permuter`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
