@@ -46,6 +46,18 @@
  * MOOT. See hypotheses.md [s10] and evidence.md s10.
  * The do-while(0) wrap is sanctioned per do-while-zero-exception (2026-07-06
  * owner ruling, any codegen effect, single-level, FAKE-annotated).
+ * s9 (2026-08-20, ESCALATION modality, DISPOSITION): floor re-measured 4 on
+ * this chassis (34/34 insns, 0 rules). Residual restated as arithmetic from
+ * .greg: pseudo 72 (the pointer) has an EMPTY preference set and hard
+ * conflicts {2,3,4,29}, so find_reg's numeric scan v0,v1,a0,a1,a2,a3 gives
+ * $a1; the target's $a3 requires conflicts superset-of {2,3,4,5,6} = two
+ * byte-free occupants in $a1 AND $a2 while the hard-4 conflict survives -
+ * mutually exclusive per the s8 (A)/(B) regime measurement. Phantom-pad
+ * family KILLED on prerequisite (target has NO stack frame at all). Both
+ * endgame-lock AND-gates fail (scan_hand_coded LOW 0/8; SOTN-master census
+ * negative for a byte-free REGISTER occupant). Standing 2026-07-27 ruling
+ * applied: REFUSED / OWNER-ACCEPTED INCOMPLETE, docs/grind/decisions.md:8216.
+ * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */
 void func_80033550(s32 *arg0)

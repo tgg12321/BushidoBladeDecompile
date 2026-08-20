@@ -8212,3 +8212,99 @@ vertex-table base.** Nothing in this entry is pending on the owner.
 **References:** owner ruling 2026-07-20 (this file, `func_80057CC8` entry); layer-1 FAILs
 2026-08-20 04:30 / 04:40 / 04:52 (this file); `.claude/rules/endgame-lock-disposition.md`;
 `.claude/rules/judge-sole-gate.md`; ledger `memory/grind/func_80057CC8/`.
+
+## 2026-08-20 — func_80033550 (src/code6cac_b.c) — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Filed by grind session 9 (mandated modality `escalation`; the driver declared exhaustion after a
+floor flat at 4 across 8 sessions and 4 distinct modalities — recon, structural ×2, permuter ×2,
+forensics ×3 — with ~138k cumulative permuter iterations across 6 basins). This entry is a FRESH
+disposition on POST-2026-08-19 grounds, not a re-citation of the spent 2026-07-22 ruling
+(decisions.md:1292): the 2026-08-19 owner-directed stale-park re-audit (docs/grind/borderline.md:68)
+unparked this function specifically on the ground "func_80033550 (F6+F7 seam — session must verify
+or ruling-request)". That ground has now been measured dead (s8/s10 forensics, re-confirmed this
+session on the current chassis), so the reason the function was returned to the active queue no
+longer exists.
+
+**Chassis re-measured this session (2026-08-20).** main carries `INCLUDE_ASM("asm/funcs",
+func_80033550);` at src/code6cac_b.c:2673 (asm-until-matched migration). Applying
+memory/grind/func_80033550/candidate.c verbatim: `sandbox func_80033550 --disable all` = **score 4,
+target_insns 34, build_insns 34, rules_dropped 0** (tmp/grind/func_80033550/s9/sandbox_candidate.json).
+Zero regfix/asmfix rules, zero cheat-asm — the honest floor and the committed representation agree,
+and nothing is holding a byte-match on main (there is no cheat to retain; the function is simply four
+instructions short and represented as INCLUDE_ASM).
+
+**Residual mechanism, quantified this session at the exact GCC decision.** The whole residual is the
+home of the incoming pointer: target `addu $a3, $a0, $zero` then `lw` off `$a3`; build homes it in
+`$a1` — 1 copy + 3 `lw` base registers = 4 diffs at 34/34 instructions, no frame divergence, no
+ordering divergence. This session's `.greg` for func_80033550
+(tmp/grind/func_80033550/dumps/code6cac_b.greg:22914, `dump.ps1`) reads:
+
+    ;; 2 regs to allocate: 74 72
+    ;; 72 conflicts: 72 74 2 3 4 29
+    ;; 74 conflicts: 72 74 2 29
+    ;; Register dispositions: 72 in 5  74 in 3  75 in 3  76 in 4  77 in 5 ...
+
+Pseudo 72 is the pointer. Its preference set is EMPTY (no `72 preferences:` line — this is a
+call-free single-parameter function, so `global.c set_preference` never sees a hard-reg SET other
+than the entry copy), so `find_reg` falls through to the numeric scan `$v0,$v1,$a0,$a1,$a2,$a3` and
+the first register outside the hard conflict set {2,3,4,29} is **$a1 (5)**. Seating 72 in **$a3 (7)**
+therefore requires the hard-conflict set to grow to ⊇{2,3,4,**5**,**6**} — i.e. **two additional
+register occupants, seated in $a1 and $a2, live across the pointer's range, that emit no bytes**,
+while the conflict with hard reg 4 is simultaneously PRESERVED. The s8 forensics measured that this
+is self-contradictory under the observed mechanism: any liveness injection that reaches 72's live
+range also makes the entry copy `move a1,a0` coalescable, at which point `.greg` prints
+`72 preferences: 4`, the hard-4 conflict disappears, and `find_reg` takes the preferred `$a0` BEFORE
+the numeric scan — deleting the entry move (33 insns, distance 6-7). Measured across 8 distinct
+overlapping placements; never byte-free, always toward $a0, never toward $a1/$a2/$a3.
+
+**AND-gate #1 (canonical-asm) — FAILS.** `python3 tools/scan_hand_coded.py --single func_80033550`
+re-run this session: **tier=LOW score=0/8** (tmp/grind/func_80033550/s9/scan_hand_coded.txt). No S1
+multu pacing (0 multu/mflo pairs), no S2 empty-body branch, S3/S4 N/A (34 < 40 insns), no S5
+high-similarity sibling cluster (jaccard < 0.5), no S6 BIOS jumptable, no S7 unsaved $sN, no S8
+redundant mask-before-shift. Independently corroborated by s6 forensics: cc1psx (GCC 2.7.2.SN.1,
+the original PsyQ compiler) compiles the candidate C to INSTRUCTION-IDENTICAL bytes, so the target's
+$a3 seating came from different *source*, not from a different compiler and not from hand-written
+asm. This is ordinary GCC register allocation, and canonical-asm is not supportable.
+
+**AND-gate #2 (SOTN-master precedent for the closing construct) — FAILS.** The closing construct
+would have to be a byte-free register occupant (two of them, in $a1 and $a2). Searched
+docs/reference/sotn-construct-index.md (1,365 entries, PSX/master): the only adjacent family is
+`pad_dummy_local` (line 29, "Pad / dummy / unused locals", 816 entries) — a **frame-slot** family,
+and its prerequisite fails outright here: **target func_80033550 has no stack frame at all** (no
+`addiu $sp,$sp,-N`, no save/restore, `jr $ra` + `nop` epilogue across all 34 instructions), so there
+is no untouched target slot to reserve and any pad local would ADD a frame, i.e. add bytes. There is
+no PSX-master entry for a register-only byte-free occupant. The one construct that has ever homed 72
+in $a3 — an invented identical-arms branch cross-jump-merged by `jump2` — was ruled a
+**cheat-by-spelling by the Judge on 2026-07-21 00:19** (decisions.md:1102) and is in any case moot:
+both banked seam forms re-measure at honest distance 11 (36 and 33 insns) versus the floor of 4, so
+even an authorizing ruling could not close the function. No "same spirit" citation is offered in
+place of a real one.
+
+**Exhaustion record (ledger, memory/grind/func_80033550/):** s1 recon (floor 5→4 cheat-free, pin
+removed); s2 structural (24 variants, tail geometry closed); s3 structural (14 variants,
+loop-region census-invariance proven over 6 spellings with identical `.greg`, REG_EQUIV pseudos die
+pre-RA); s4 permuter (4 campaigns, ~104k iters, 4 basins); s5 permuter (2 fresh basins, ~34k iters —
+all 6 basins converge to the score-20 ptr=$a1 attractor, zero sub-20 finds); s6 forensics
+(fork-divergence KILLED via cc1psx; source-level closure theorem); s7 forensics (FAKE-family sweep;
+dead-store / named-local INERT, deleted by jump_optimize pass 1); s8 forensics (Judge FAIL closed
+channel (f); scan LOW 0/8); s8/s10 forensics post-unpark (F6 both halves dead with the deleting pass
+named for each; F7 has no legitimate site — the tail is straight-line and duplicating it into the
+`i == 6` arm writes the table when it is full, a semantic change; both seam forms chassis-invariant
+at 11). 17 rejected forms banked in memory/grind/func_80033550/rejected/.
+
+**Both AND-gates fail → the owner's standing 2026-07-27 auto-ruling
+(.claude/rules/endgame-lock-disposition.md) applies and this disposition is TERMINAL. Nothing is
+pending on the owner.**
+
+**Disposition:** No cheat is retained — the function is cheat-free at honest floor 4 (4 instructions'
+worth of base-register diffs at 34/34) and stays committed as `INCLUDE_ASM("asm/funcs",
+func_80033550);`. **REFUSED / OWNER-ACCEPTED INCOMPLETE**, parked out of active grind, classified NOT
+COMPLETED-C and NOT canonical-asm; eligible for re-attempt only if a genuine pure-C lever or new
+tooling emerges. Any future unpark must state a NEW lever — the F6+F7 seam ground that produced the
+2026-08-19 unpark is spent and must not be re-cited.
+
+**Precedent (same RA-locked, hand-coded-LOW, no-SOTN-precedent species, all ruled option (b)):**
+motion_SetMotion (2026-07-19 FAMILY REFUSED), saTan0Init, cpu_side_move_dir_4, func_80057CC8
+(2026-07-20), func_80049A2C / InitHiraRmd_80047FBC / gnd_init_80041688 / AddTbpOfst_80047EE8 /
+cpu_check_tubazeri_2 / damage_DebugDisp / func_8007DC9C (2026-07-22), and func_80033550's own
+2026-07-22 ruling (decisions.md:1292) on the pre-migration chassis.

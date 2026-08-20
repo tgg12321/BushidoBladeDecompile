@@ -605,3 +605,87 @@ verification.
 - [s8] Both banked F6+F7 seam forms re-measured chassis-invariant at honest 11 (36 and 33 insns) versus the floor of 4, so the seam cannot close the function even if it were sanctioned - which is why this session files no ruling-request.
 
 - [s8] src/code6cac_b.c was restored to its INCLUDE_ASM line at end of session; git status shows no source dirt (only metrics/events.jsonl, engine-written).
+
+- [s9, 2026-08-20, escalation modality] CHASSIS RE-MEASURED. main carries
+  `INCLUDE_ASM("asm/funcs", func_80033550);` at src/code6cac_b.c:2673 and
+  scores 34 with no C body (tmp/grind/func_80033550/s9/sandbox_baseline_include_asm.json).
+  Applying candidate.c verbatim: sandbox --disable all = 4, target_insns 34,
+  build_insns 34, rules_dropped 0, zero cheat-asm
+  (tmp/grind/func_80033550/s9/sandbox_candidate.json). The floor is unchanged
+  at 4 and is chassis-invariant across the asm-until-matched migration.
+  NOTE for future sessions: candidate.c is stored with CRLF line endings, so
+  applying it into src/*.c requires a CRLF->LF normalisation pass afterwards
+  or the toolchain silently sees a CRLF block.
+
+- [s9] THE RESIDUAL, QUANTIFIED AS A REGISTER-NUMBER ARITHMETIC (new framing,
+  measured on this chassis from tmp/grind/func_80033550/dumps/code6cac_b.greg:22914):
+      ;; 2 regs to allocate: 74 72
+      ;; 72 conflicts: 72 74 2 3 4 29        <- NO `72 preferences:` line
+      ;; Register dispositions: 72 in 5  74 in 3  75 in 3  76 in 4  77 in 5
+  Pseudo 72 is the incoming pointer. Preference set EMPTY (call-free,
+  single-parameter -> global.c set_preference never sees a hard-reg SET other
+  than the entry copy), so find_reg falls through to the numeric scan
+  $v0,$v1,$a0,$a1,$a2,$a3 and takes the first register outside {2,3,4,29} =
+  **$a1 (5)**. Target seats it in **$a3 (7)**. Therefore closing this function
+  requires 72's hard-conflict set to grow to a superset of {2,3,4,5,6}: TWO
+  additional register occupants, seated in $a1 AND $a2, live across the
+  pointer's range, emitting ZERO bytes, WHILE the hard-4 conflict is preserved.
+  That is the precise, falsifiable statement of the wall — any future lever
+  must be evaluated against it directly, and s8's (A)/(B) regime measurement
+  shows the two halves of the requirement are mutually exclusive under the
+  observed mechanism (any liveness reaching 72's range makes the entry copy
+  coalescable, `72 preferences: 4` appears, the hard-4 conflict vanishes, and
+  find_reg takes $a0 before the scan — 33 insns, distance 6-7, measured over 8
+  placements).
+
+- [s9] FRONTIER ITEM 2 (phantom-frame-slot volatile pad) is KILLED on its
+  prerequisite, not merely "likely to fail". Target func_80033550 has NO STACK
+  FRAME AT ALL: across all 34 instructions of asm/funcs/func_80033550.s there
+  is no `addiu $sp,$sp,-N`, no callee-save store, and the epilogue is
+  `jr $ra` + `nop`. There is consequently no untouched target stack slot for a
+  pad local to reserve, and any pad local would ADD a frame (prologue +
+  epilogue instructions) = added bytes. The phantom-slot family's prerequisite
+  is unmet by direct inspection of the target; do not re-open it.
+
+- [s9] AND-GATE #1 RE-MEASURED: `tools/scan_hand_coded.py --single
+  func_80033550` = tier=LOW score=0/8 (tmp/grind/func_80033550/s9/scan_hand_coded.txt),
+  every one of S1-S8 negative. Unchanged from s8 on the new chassis.
+
+- [s9] AND-GATE #2 SEARCHED AND NEGATIVE: docs/reference/sotn-construct-index.md
+  (1,365 PSX-master entries) has no entry for a byte-free REGISTER occupant.
+  The only adjacent family is `pad_dummy_local` (index line 29, 816 entries) —
+  a FRAME-SLOT family whose prerequisite fails here per the no-stack-frame
+  finding above. A negative census is a FAILED gate, not an open question.
+
+- [s9] DISPOSITION FILED. Both endgame-lock AND-gates fail, so the owner's
+  standing 2026-07-27 auto-ruling applies: appended
+  `## 2026-08-20 — func_80033550 (src/code6cac_b.c) — **OWNER-ESCALATION —
+  RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED
+  INCOMPLETE**` at docs/grind/decisions.md:8216, filed on POST-2026-08-19
+  grounds (the unpark's stated F6+F7 ground is spent/measured dead), and
+  returned result=owner-gated. TERMINAL — nothing pending on the owner. Any
+  future unpark must name a NEW lever and must clear the {2,3,4,5,6}
+  conflict-set arithmetic above. src/code6cac_b.c restored to its INCLUDE_ASM
+  line; no source dirt.
+
+- [s9] Chassis: main carries INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:2673 and scores 34 with no C body; candidate.c applied verbatim scores sandbox --disable all = 4 with 34/34 insns, 0 rules, 0 cheat-asm. No cheat is holding anything on main - the function is simply four base-register diffs short.
+
+- [s9] The residual is now stated as a falsifiable register-number arithmetic (measured from tmp/grind/func_80033550/dumps/code6cac_b.greg:22914): '2 regs to allocate: 74 72'; '72 conflicts: 72 74 2 3 4 29' with NO '72 preferences:' line; dispositions '72 in 5'. Pseudo 72 is the incoming pointer; its preference set is empty because the function is call-free and single-parameter, so global.c find_reg falls through to the numeric scan v0,v1,a0,a1,a2,a3 and takes the first register outside {2,3,4,29} = $a1.
+
+- [s9] Seating the pointer in target's $a3 (7) therefore requires 72's hard-conflict set to become a superset of {2,3,4,5,6}: TWO additional register occupants, seated in $a1 AND $a2, live across the pointer's range, emitting zero bytes, WHILE the hard-4 conflict is preserved. s8 measured the two halves to be mutually exclusive: any liveness injection reaching 72's range makes the entry copy 'move a1,a0' coalescable, '72 preferences: 4' appears, the hard-4 conflict vanishes, and find_reg takes $a0 before the numeric scan (33 insns, distance 6-7) - measured across 8 placements, never byte-free, never toward $a1/$a2/$a3.
+
+- [s9] Target has no stack frame: no addiu $sp adjustment, no callee-save store, epilogue jr $ra + nop, across all 34 instructions. This kills the phantom-frame-slot pad frontier item on its prerequisite.
+
+- [s9] scan_hand_coded.py --single func_80033550 = tier LOW score 0/8, all of S1-S8 negative (tmp/grind/func_80033550/s9/scan_hand_coded.txt).
+
+- [s9] SOTN-master construct index census negative for a byte-free register occupant; pad_dummy_local (line 29) is a frame-slot family and inapplicable here.
+
+- [s9] The 2026-08-19 unpark ground (docs/grind/borderline.md:68, 'F6+F7 seam - session must verify or ruling-request') is spent: s8/s10 forensics measured F6 dead in both halves (empty-if deleted by jump_optimize pass 1; cancellation pair either flow.c-DCE'd inert or flips the entry copy to coalescable) and F7 inapplicable on prerequisites (the tail is straight-line; duplicating into the i==6 arm writes the table when it is full - a semantic change). Both banked seam forms re-measure chassis-invariant at 11 > 4.
+
+- [s9] Exhaustion: 8 prior sessions, 4 distinct modalities (recon, structural x2, permuter x2, forensics x3), ~138k cumulative permuter iterations across 6 basins all converging on the score-20 ptr=$a1 attractor with zero sub-20 finds, 17 rejected forms banked.
+
+- [s9] Disposition filed this session at docs/grind/decisions.md:8216 as '## 2026-08-20 - func_80033550 (src/code6cac_b.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE', on post-2026-08-19 grounds (not a re-citation of the spent 2026-07-22 ruling at decisions.md:1292). Terminal; nothing pending on the owner.
+
+- [s9] src/code6cac_b.c was restored to its INCLUDE_ASM line at end of session; git status shows only docs/grind/decisions.md (this session's entry) and metrics/events.jsonl (engine-written).
+
+- [s9] Housekeeping for future sessions: memory/grind/func_80033550/candidate.c is stored with CRLF line endings - normalise to LF after pasting it into src/*.c or the toolchain silently sees a CRLF block.

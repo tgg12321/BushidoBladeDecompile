@@ -515,3 +515,59 @@ upward-exposed uses and whether any VALID construct reaches the same channel.
 - probe: (a) re-measure both banked seam forms on the post-migration chassis; (b) test F7's own prerequisite (the duplicated stores' values must be real and required in both arms) against this function's actual control flow.
 - result: MOOT, not merely unruled. (a) rejected/dup-arms-bigconst-cond-ptr-a2-w2-a3-stray-li-11.c = 11 (36 insns) and rejected/dup-arms-sw3-attractor-idx-a1-w2-a2-ptr-coalesced-11.c = 11 (33 insns), identical to their s7 numbers - chassis-invariant and 7 points WORSE than the floor-4 candidate, so a ruling authorizing the composition could not close the function. (b) F7 is inapplicable on its own terms: the only real branches are the search loop's two exits and `if (i == 6) return;`, all merging above the tail; the tail is straight-line, and duplicating the tail stores into the i==6 arm would write the table when it is full (a semantic change), so the 'real and required' prerequisite fails and there is no pre-existing if/else to duplicate into. No ruling-request filed; the standing Judge constraint on manufactured branches is not re-tested.
 - verdict: KILLED
+
+## [s9] 2026-08-20 — escalation modality (disposition session)
+
+- H-s9.1 "The honest floor has moved on the post-migration chassis."
+  KILLED. sandbox --disable all with candidate.c applied = 4 (34/34 insns,
+  0 rules). Identical to s1-s8. Chassis-invariant.
+
+- H-s9.2 "The phantom-frame-slot volatile pad family (2026-08-18) applies —
+  frontier item 2." KILLED ON PREREQUISITE. Target has no stack frame
+  whatsoever (no sp adjustment, no callee-save, `jr $ra`+`nop` epilogue across
+  all 34 insns), so there is no untouched slot to reserve and a pad local can
+  only ADD bytes. Do not re-open.
+
+- H-s9.3 "A rederive-modality reconstruction could reach the target seating —
+  frontier item 3." NOT INDEPENDENTLY MEASURED, but now SUBSUMED by an
+  explicit numeric requirement rather than left open-ended: whatever shape a
+  rederive produces, seating the pointer in $a3 requires pseudo-72's
+  hard-conflict set to contain {2,3,4,5,6} with an empty preference set. The
+  target body carries only FOUR register-carrying values across the pointer's
+  range (const-6/idx in $v0, i-then-w0 in $v1, w1 in $a0, w2 in $a1), so the
+  FIFTH occupant ($a2) must be byte-free — the same closed channel s5/s7/s8
+  measured (uninit-read occupant is UB; F6 pairs are jump1/flow.c-deleted or
+  flip the copy to coalescable; manufactured arms are Judge-FAILed and cost
+  11). A rederive that changes the instruction count pays that change as
+  distance. Recorded so a future session can attack the arithmetic directly
+  instead of re-searching shapes.
+
+- H-s9.4 "An endgame-lock AND-gate passes." KILLED (both). Gate #1
+  scan_hand_coded = LOW 0/8, all of S1-S8 negative. Gate #2 SOTN-master census
+  negative for a byte-free register occupant; `pad_dummy_local` is a frame-slot
+  family with an unmet prerequisite here. -> standing 2026-07-27 ruling applied,
+  disposition entry filed at docs/grind/decisions.md:8216, result=owner-gated.
+
+## [s9] The honest floor has moved on the post-asm-until-matched chassis.
+- mechanism: chassis re-measurement; the ledger's floor conclusions are chassis-relative and must be re-verified before being spent.
+- probe: HEAD (INCLUDE_ASM) sandbox --disable all = 34 (no C body); candidate.c applied verbatim to src/code6cac_b.c (CRLF normalised to LF) = score 4, target_insns 34, build_insns 34, rules_dropped 0, zero cheat-asm.
+- result: floor 4, unchanged from s1-s8; chassis-invariant.
+- verdict: KILLED
+
+## [s9] The phantom-frame-slot volatile pad family (2026-08-18, no-new-park-categories.md) applies here (live frontier item 2).
+- mechanism: an unused volatile pad local reserving target's untouched stack bytes, changing frame size and allocation pressure.
+- probe: direct inspection of all 34 instructions of asm/funcs/func_80033550.s for a frame: no addiu $sp,$sp,-N, no callee-save store, epilogue is jr $ra + nop.
+- result: target func_80033550 has NO stack frame at all, so there is no untouched target slot to reserve and any pad local can only ADD prologue/epilogue bytes. The family's prerequisite is unmet by direct measurement.
+- verdict: KILLED
+
+## [s9] AND-gate #1 (canonical-asm, hand-written-asm evidence) passes for func_80033550.
+- mechanism: tools/scan_hand_coded.py STRONG signals S1/S2/S6 are the owner's criterion for a canonical-asm grant.
+- probe: python3 tools/scan_hand_coded.py --single func_80033550 re-run this session on the current chassis.
+- result: tier=LOW score=0/8; S1-S8 all negative (0 multu/mflo pairs, no empty-body branch, S3/S4 N/A at 34<40 insns, no sibling cluster, no BIOS jumptable, no unsaved $sN, no redundant mask). Corroborated by s6's cc1psx instruction-identical result: the divergence is ordinary GCC RA, not hand-written asm.
+- verdict: KILLED
+
+## [s9] AND-gate #2 (an in-hand SOTN-master precedent for the closing construct) passes.
+- mechanism: the closing construct here would be a byte-free REGISTER occupant seated in $a1 and $a2 across the pointer's live range; the frozen family list is owner-only to extend and needs a cited PSX-master precedent.
+- probe: searched docs/reference/sotn-construct-index.md (1,365 PSX-master entries) for uninitialised/garbage/occupant/pressure/dummy-local constructs.
+- result: no entry for a byte-free register occupant. The only adjacent family is pad_dummy_local (index line 29, 816 entries) which is a FRAME-SLOT family whose prerequisite fails here (no stack frame in target). The one construct that ever homed the pointer in $a3 - an invented identical-arms branch cross-jump-merged by jump2 - was Judge-FAILed 2026-07-21 as a cheat-by-spelling and is moot anyway (both banked seam forms re-measure at distance 11 vs the floor of 4).
+- verdict: KILLED
