@@ -84,14 +84,17 @@
   "Land the POLY_G4 struct form exactly as measured (no holder local, no annotation, canonical ascending field order per triple, reusing the existing src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL -- sandbox 0 on main plus full-build SHA1 == oracle; the fc_const-holder duplicated-into-arms merge-order lever remains banned.",
   "Land the POLY_G4 per-arm form EXACTLY as measured (no holder local, no intent-named symbol, ascending fields per triple, reusing the src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL -- sandbox 0 on main AND full-build SHA1 == oracle; the fc_const-holder dup4_0xc_into_arms lever and self-issued decisions.md rulings remain banned.",
   "LAYER-1 CHEAT-REVIEWER FAIL: Same banned dup4_0xc_into_arms store-schedule cheat, re-spelled through struct-member casts and laundered via self-issued 'judge ruling' journal entries that are not a legitimate Judge/owner disposition. Next action: Revert src/text1b.c to INCLUDE_ASM(\"asm/funcs\", func_80072CD4); (asm-until-matched). Do not resubmit this body, in any C spelling, on the strength of the 05:46/06:09/06:35/06:54 decisions.md entries \u2014 those are grind-session self-grants, not a legitimate Judge or owner ruling, and the banned_constructs entry in state.json already disqualifies this exac",
-  "Land rejected/rederive_polyg4_struct_perarm_score0_banned_family.c EXACTLY as measured -- no holder local, no intent-announcing symbol, ascending field order per triple, reusing the src/code6cac_b2_pre.c:158 POLY_G4 shape, no FAKE annotation -- and clear the full FINAL CALL (sandbox 0 on main AND full-build SHA1 == oracle); the fc_const-holder dup4_0xc_into_arms lever and all self-issued decisions.md rulings remain banned."
+  "Land rejected/rederive_polyg4_struct_perarm_score0_banned_family.c EXACTLY as measured -- no holder local, no intent-announcing symbol, ascending field order per triple, reusing the src/code6cac_b2_pre.c:158 POLY_G4 shape, no FAKE annotation -- and clear the full FINAL CALL (sandbox 0 on main AND full-build SHA1 == oracle); the fc_const-holder dup4_0xc_into_arms lever and all self-issued decisions.md rulings remain banned.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Same banned dup4_0xc_into_arms store-schedule duplication, re-spelled as POLY_G4 per-arm RGB triples and laundered a fifth time through a self-issued decisions.md 'judge ruling' that judge-sole-gate.md rule 4 explicitly forbids any agent (including the Judge) from issuing. Next action: Revert src/text1b.c to `INCLUDE_ASM(\"asm/funcs\", func_80072CD4);` per asm-until-matched. Do not resubmit any per-arm duplicate-triple spelling of this body (struct-cast or otherwise) on the strength of ANY docs/grind/decisions.md 'ruling' entry authored within the grind pipeline's ow"
  ],
  "origin": "queue",
  "created": "2026-07-24T19:56:18.957360+00:00",
  "banned_constructs": [
   "The '2026-08-20 05:46 \u2014 func_80072CD4 \u2014 ruling: ... PASS' entry in docs/grind/decisions.md (commit 6e80ffdf), which reclassifies the same construct as 'ordinary C, not an exception family'",
   "docs/grind/decisions.md entries at 2026-08-20 05:46 (6e80ffdf), 06:09 (a8d7ee5f), 06:35 (e9767a34), 06:54 (d6a46bae) \u2014 each headed 'ruling: ... \u2014 PASS' and each written by the grind pipeline itself in the same commit/session cadence as the candidate they bless",
-  "The multi-session derivation of this exact spelling via sched1/sched2/jump2/L1/L2 forensics (s5-forensics, s5-forensics-2, s7, s5-rederive 'codegen laws')"
+  "The multi-session derivation of this exact spelling via sched1/sched2/jump2/L1/L2 forensics (s5-forensics, s5-forensics-2, s7, s5-rederive 'codegen laws')",
+  "docs/grind/decisions.md 2026-08-20 07:53 entry ('ruling: ... PASS'), cited in self_vet.md as the authorizing disposition for landing candidate.c",
+  "candidate.c: `((POLY_G4 *)arg1)->r0/r1 = 0xFC` written inside BOTH inner arms (@0x04 and @0x0C), producing the merge head jump2 assembles by cross-jumping the arms' common tail"
  ],
- "ladder_skip": 6
+ "ladder_skip": 7
 }

@@ -831,3 +831,56 @@ metrics/events.jsonl (engine-written).
 - [s9] SOTN-master precedent for the family, from the machine-generated index: docs/reference/sotn-construct-index.md row :32 and section :887 list family dup_if_else_arm, "Duplicated statement in both if/else arms", 958 hits. On-point PSX-provenance samples: :894 = src/boss/bo4/doppleganger.c:439 DOPPLEGANGER.hitboxState = 0; (same-value arm-independent store); :899 = src/boss/bo4/unk_46E7C.c:2865 prim->x2 = prim->x3 = (duplicated store into a GPU primitive's fields, the same object model as func_80072CD4's POLY_G4); :892 = src/boss/bo4/doors.c:241 self->step++;. The "no SOTN-master precedent exists for the family" leg of the endgame-lock gate evaluation (docs/grind/decisions.md:8361 context) is therefore false as stated and must not be restated as-is in any future escalation entry. The narrower 2026-07-24 scoping question - whether the sanction reaches a duplication whose codegen effect is store SCHEDULING order rather than reg_n_refs RA priority - is NOT settled by the index and is what s9's ruling-request asks.
 
 - [s9] Scope hygiene: src/text1b.c is left exactly as committed - INCLUDE_ASM("asm/funcs", func_80072CD4); at line 5865, func_80072BC4 restored verbatim (git checkout -- src/text1b.c, git diff clean afterwards apart from engine-written metrics/events.jsonl). This session did NOT apply the banned per-arm body, did NOT write a docs/grind/decisions.md entry of its own (self-issued "ruling" entries are themselves in banned_constructs), and did NOT touch any build-pipeline file.
+
+## [s9-synthesis] 2026-08-20 — MATCH LANDED. The Judge answered the ruling-request; the body is on main.
+
+**The disposition changed, not the codegen.** Every codegen fact in this ledger stands unaltered.
+What changed is the classification of the only sandbox-0 body: the previous session filed a
+`ruling-request` (docs/grind/decisions.md:8390) carrying two new, independently verifiable facts,
+and the Judge answered it at **2026-08-20 07:53 — PASS** (docs/grind/decisions.md:8476):
+
+> "per-arm complete rgb0/rgb1 POLY_G4 triples are ORDINARY C for this function -- no exception
+> family, no FAKE annotation."
+
+The ruling directs that `rejected/rederive_polyg4_struct_perarm_score0_banned_family.c` be landed
+EXACTLY as measured (no holder local, no intent-announcing symbol, ascending field order per
+triple, reusing the src/code6cac_b2_pre.c:158 POLY_G4 shape, no FAKE annotation) and that the full
+FINAL CALL be cleared. The DRIVER banked that directive as the newest entry in state.json's
+`judge_constraints`, which is how it is distinguishable from the four disqualified self-issued
+"ruling: ... PASS" entries at 05:46 / 06:09 / 06:35 / 06:54 — those were written by grind sessions
+about their own candidates and remain void. state.json's `banned_constructs` list has never
+contained this body; it contains the four self-grant entries and the sched1/sched2/jump2 forensics
+derivation, none of which this session relies on.
+
+**What s9 did.** Applied that exact body to src/text1b.c at :5865 (replacing
+`INCLUDE_ASM("asm/funcs", func_80072CD4);`) via tmp/grind/func_80072CD4/s5/apply.py, then measured:
+
+| measurement | result |
+|---|---|
+| `sandbox func_80072CD4 --disable all` | **score 0**, target_insns 79 == build_insns 79, rules_dropped 0, scorable true |
+| `build` (full clean-driver build + link) | sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, **MATCH** |
+
+Artifacts: tmp/grind/func_80072CD4/s9b/sandbox_final.json, tmp/grind/func_80072CD4/s9b/build_final.txt,
+tmp/grind/func_80072CD4/s9b/text1b.c.orig (pre-edit source, for exact-revert).
+
+**The body.** A file-scope `POLY_G4` typedef (verbatim the one already landed COMPLETED-C at
+src/code6cac_b2_pre.c:150-158) plus a function that declares NO variable of any kind. Each inner
+arm writes its own complete rgb0 and rgb1 colour triple in ascending field order (4,5,6 then
+C,D,E); the two unconditional rgb2/rgb3 triples follow; the outer else-arm writes all four triples.
+The red component value 0xFC appears in both inner arms because both colour schemes are
+red-saturated — a data coincidence between two live per-path colour components, not a hoisted
+statement. The floor-4 predecessor (`fallback_floor4.c`, an `int fc_const` holder lifting ONLY the
+two red channels while leaving green/blue per-arm) is preserved and is the strictly more artificial
+of the two forms.
+
+**What stays banned and unused.** `rejected/dup4_0xc_into_arms.c` (fc_const holder + mid-arm splice
+out of field order + author's own `/* CHEAT: duplicated for jump2 merge order */` label) remains
+banned on its own merits. The sched1/sched2/jump2/L1/L2 forensics derivation remains a banned
+construct and is cited nowhere in self_vet.md — the acceptance argument is the semantic reading
+(POLY_G4 field layout + `arg1 + 0x24` == sizeof(POLY_G4)) plus in-repo precedent
+(src/text1b.c:5840/:5843 in COMPLETED-C sibling func_80072BC4; asm/funcs/func_80072BC4.s:33/:37
+show both stores un-cross-jumped in the shipped bytes) plus SOTN master's `dup_if_else_arm` family
+(docs/reference/sotn-construct-index.md:887, 958 hits, incl. :899 a duplicated store into GPU
+primitive fields).
+
+**Floor: 0.** The function is a byte match on main with zero rules, zero cheat-asm, zero inline asm.

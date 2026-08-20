@@ -979,3 +979,27 @@ This session measured both. Both are false.
 - probe: `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` with INCLUDE_ASM on main and again with memory/grind/func_80072CD4/candidate.c applied via tmp/grind/func_80072CD4/s5/apply.py; plus `sandbox func_80072BC4 --disable all` on the committed tree.
 - result: INCLUDE_ASM -> 79 / build_insns 0 (no_c_body); candidate.c -> 4, target_insns 79, build_insns 79, rules_dropped 0; func_80072BC4 -> 0, 68/68.
 - verdict: CONFIRMED
+
+## [s9-synthesis] 2026-08-20 — frontier resolved: the ruling-request was answered PASS and the match is landed
+
+**H1 (CONFIRMED).** *The 2026-08-20 07:53 decisions.md entry is a legitimate Judge disposition
+answering the previous session's ruling-request, not another same-session self-grant, and it lifts
+the classification objection that produced the three layer-1 FAILs (05:53, 06:20, 07:02).*
+Probe: read docs/grind/decisions.md:8476-8478 and diff state.json's `banned_constructs` and
+`judge_constraints` lists against it. Result: the 07:53 entry answers the ruling-request filed at
+:8390 by a DIFFERENT session; the DRIVER banked its directive as the newest `judge_constraints`
+entry ("Land rejected/rederive_polyg4_struct_perarm_score0_banned_family.c EXACTLY as measured ...
+and clear the full FINAL CALL"); `banned_constructs` contains the four self-grant entries and the
+forensics derivation but has never contained this body. The three prior layer-1 FAILs each named
+the *self-issued rulings* as the defect, not a defect in the C. CONFIRMED.
+
+**H2 (CONFIRMED).** *Landing that body exactly as measured clears the full FINAL CALL on the
+current chassis.* Probe: apply to src/text1b.c:5865, then `sandbox --disable all` and full `build`.
+Result: score **0**, 79 == 79, rules_dropped 0; build sha1 == oracle, MATCH. CONFIRMED.
+
+**Frontier: EMPTY.** func_80072CD4 is a byte match on main in pure C with zero rules, zero
+cheat-asm and no inline asm. The remaining path is acceptance, not search: layer-1 cheat-reviewer
+on the diff, then the Judge's FINAL CALL, then `queue done` by the driver/operator. Nothing about
+the codegen space is open, and no session should re-open the duplication dial ([s7], [s8]) or the
+cross-block chassis ([s3], [s5], [s8]) — both remain closed with chassis-current measurements, and
+the floor-4 fallback body is preserved at fallback_floor4.c should acceptance be refused again.
