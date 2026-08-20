@@ -100,8 +100,13 @@ history). Two load-bearing warnings persist:
 2. **`asm/data/*.rodata*.s` are deliberately DELETED** — don't re-create them.
 
 ## The queue IS the worklist (`engine queue`)
-All outstanding work lives in ONE ordered list — `engine/queue.json` — covering every function still
-carrying a cheat (a regfix/asmfix rule OR a load-bearing cheat-asm pin/inline-asm). Every queue item is
+All outstanding work lives in ONE ordered list — `engine/queue.json`. **Since the asm-until-matched
+migration (owner ruling 2026-08-19, [[asm-until-matched]]) an INCOMPLETE function is committed as
+`INCLUDE_ASM("asm/funcs", <func>);`** — no rules, no cheat-asm on main; candidates live in
+`memory/grind/<func>/` and queue distance comes from the pinned/ledger honest floor. 68 deferred
+functions (jtbl-coupled, rodata-emitting, position-coupled — see `docs/grind/borderline.md`
+2026-08-19 migration record) still carry the legacy representation (a regfix/asmfix rule stack OR
+cheat-asm) until solved. Every queue item is
 INCOMPLETE by definition; reaching a COMPLETED state drops it off. The queue is **pre-ordered
 easiest-first** by honest pure-C distance: **no triage, no cherry-picking, NO DEFERRAL (user directive
 2026-06-12)** — work the **top active item** to COMPLETED, however many sessions it takes; a stuck item
