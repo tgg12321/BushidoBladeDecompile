@@ -1,6 +1,6 @@
 # Project Status
 
-**Live snapshot.** Refreshed 2026-08-17. For the live worklist run
+**Live snapshot.** Refreshed 2026-08-19 (post asm-until-matched migration). For the live worklist run
 `& tools/wteng.ps1 main queue next` (and `queue status` for counters); for
 build health run `verify-oracle`. The workflow itself lives in
 [`../CLAUDE.md`](../CLAUDE.md).
@@ -11,10 +11,18 @@ build health run `verify-oracle`. The workflow itself lives in
 |---|---|
 | Branch | `main` |
 | Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
-| Build match | ✅ green — every `Match:` commit re-verifies full-build SHA1; grinder drills GO 2026-08-17 |
+| Build match | ✅ green — every `Match:` commit re-verifies full-build SHA1; grinder drills GO 2026-08-19 |
 | Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
-## Function inventory (2026-08-17)
+**Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
+INCOMPLETE function is committed as `INCLUDE_ASM("asm/funcs", <func>);` — no
+rules, no cheat-asm, no draft C on `main`. Candidates live in
+`memory/grind/<func>/`; queue distance comes from the pinned/ledger honest
+floor. 68 functions are byte-coupling deferred (jtbl/rodata-emitting/position-
+coupled — `docs/grind/borderline.md` 2026-08-19 records) and keep the legacy
+representation until solved.
+
+## Function inventory (2026-08-19)
 
 Counts from `python3 tools/check_completion_integrity.py` (the authority — it
 applies the 2026-08-07 data-as-code structural filter; raw `asm/funcs/*.s` file
@@ -22,36 +30,33 @@ counts do not).
 
 | | Count |
 |---|------:|
-| **COMPLETED-C** | **1,022** |
-| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 178 |
-| **INCOMPLETE** (queue items) | 274 |
-| — active (grinder-eligible) | 227 |
-| — parked (needs owner auth / blocked) | 47 |
+| **COMPLETED-C** | **1,036** |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 179 |
+| **INCOMPLETE** (queue items) | 259 |
+| — active (grinder-eligible) | 232 |
+| — parked (terminal dispositions, re-attemptable by later rulings) | 27 |
 | Data-as-code symbols (excluded by ruling) | 12 |
-| `asm/funcs/*.s` files | 1,434 |
 
-Queue verdict breakdown:
+Queue verdict breakdown (2026-08-19):
 
 | Verdict | Active | Parked | Meaning |
 |---|---:|---:|---|
-| C | 143 | 44 | Pure-C reachable |
-| ASM-PARTIAL | 37 | 3 | Contains canonical GTE/BIOS/HW asm |
-| ASM-SUSPECT | 47 | 0 | Distance >50, no hand-coded signal — try pure-C first |
+| C | 194 | 27 | Pure-C reachable |
+| ASM-PARTIAL | 38 | 0 | Contains canonical GTE/BIOS/HW asm |
 
-(No ASM-STRUCTURAL items remain routed: the 2026-08-07 canonical-gate fix
-relabelled 26 stale ones.)
+Debt indicators — the 2026-08-19 asm-until-matched migration converted 191
+INCOMPLETE functions to `INCLUDE_ASM` and retired their rules wholesale:
 
-Debt indicators — the asmfix column collapsed in Campaign 4 (2026-08-06),
-which retired the whole canonical-extraction wiring class:
+| | Count | Was 2026-08-17 | Was 2026-07-12 |
+|---|------:|------:|------:|
+| Rule-carrying functions (all in the 68 deferred) | 41 | 96 | ~290 |
+| Total regfix+asmfix rules outstanding | 708 | 1,573 | — |
 
-| | Count | Was 2026-07-12 |
-|---|------:|------:|
-| Functions carrying `regfix.txt` rules | 82 | 139 |
-| Functions carrying `asmfix.txt` rules | 14 | 153 |
-| `replace_with_asmfile` bridge splices | 3 | 140 |
-
-Owner ruling 2026-08-06: **all** `asmfix.txt` entries are debt — the end state
-is zero regfix + zero asmfix ([[asmfix-all-debt-end-state]]).
+Owner rulings 2026-08-06/2026-08-19: **all** rules are debt; the end state is
+zero regfix + zero asmfix ([[asmfix-all-debt-end-state]], [[asm-until-matched]]).
+The remaining 708 retire per function at COMPLETED-C (their bodies are
+byte-coupled to the build; the wave-2 mechanical retirement was measured a
+dead end — borderline.md 2026-08-19).
 
 ## Source-file distribution
 

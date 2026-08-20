@@ -148,14 +148,15 @@ naming*. The Grinder ran continuously underneath it all.
 | 2026-08-10 | **XDEF boundary fixes**: `note2pitch`, `_spu_FiDMA` + `_spu_Fr_`, and `_spu_2pitch` split out of the functions they had been glued into, plus an addendum wave of 12 renames. |
 | 2026-08-11 | **Canonical-sweep decision packet** (A=1 / B=4 / C=81) + library xref (25 census-matched) + reference-body measurements. `_SsSeqPlay` closed by reference adoption; owner-ruled ternary grant closed the `get_cs`/`get_ce` twins; `func_80052930` authorized as canonical, completing the gte-3x3 cluster. |
 | 2026-08-14 | **WSL bridge on by default** in `tools/wteng.ps1`, with grinder state reporting — cutting `wsl.exe` invocations (each leaks a kernel Job object — [[wsl-kernel-object-leak-audio]]). |
+| 2026-08-19 | **The self-serve + asm-until-matched day.** (1) Three overnight bytes-proven INTEGRATION HANDOFFs (SioSyncroWrite, func_8001B748, func_8002D518) operator-integrated to COMPLETED-C under two-layer review — then made pipeline-executable forever ([[integration-handoff-self-serve]]: driver widens scope / clears Judge-superseded bans on Judge verdicts; `grindlib unban`, `queue unpark` added). (2) Stale-park re-audit: 6 of 33 parks reclaimed under post-park family rulings. (3) Modality-effectiveness report (`docs/grind/modality-effectiveness-2026-08-19.md`) → ladder retune (synthesis to s6, permuter cap 2, closing-modality instrumentation) + paperwork-FAIL fixes (family-selection table, citation prechecks, CITATION fix-up ground). (4) **asm-until-matched migration** ([[asm-until-matched]]): 191 INCOMPLETE functions converted to `INCLUDE_ASM`, 865 rules retired, oracle-verified per batch; 68 byte-coupling deferred (wave-2 mechanical retirement measured a dead end). Queue distances now pin to ledger honest floors. |
 
 
-## Standing items (2026-08-17)
+## Standing items (2026-08-19)
 
-- **COMPLETED-C**: 1,022 functions (per `tools/check_completion_integrity.py`, the authority).
-- **COMPLETED-INLINE-ASM-CANONICAL**: 178 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
-- **INCOMPLETE queue**: 274 items (227 active, 47 parked). Verdict breakdown: 187 C / 40 ASM-PARTIAL / 47 ASM-SUSPECT / 0 ASM-STRUCTURAL.
-- **Rules**: 82 functions carry `regfix.txt` rules, 14 carry `asmfix.txt` rules, 3 carry `replace_with_asmfile` bridges — all of it debt per the 2026-08-06 ruling.
+- **COMPLETED-C**: 1,036 functions (per `tools/check_completion_integrity.py`, the authority).
+- **COMPLETED-INLINE-ASM-CANONICAL**: 179 functions in `inline_asm_canonical.txt` (BIOS trampolines, GTE primitives, hand-coded math kernels, LIBGTE modules).
+- **INCOMPLETE queue**: 259 items (232 active, 27 parked). Verdict breakdown: 221 C / 38 ASM-PARTIAL. INCOMPLETE = committed as `INCLUDE_ASM("asm/funcs", <func>);` except the 68 byte-coupling deferred ([[asm-until-matched]]).
+- **Rules**: 708 outstanding across 41 functions (all inside the 68 deferred) — down from 1,573 on 2026-08-17; all debt per the 2026-08-06/2026-08-19 rulings, retiring per function at COMPLETED-C.
 - **Retired work streams**: `dc.sh` workflow (2026-05-26), named-recipe library (2026-05-26), multi-agent fleet (2026-07-06), `dc.sh active_func_guard` hook (2026-05-22), Closer Phase 3 (2026-07-13).
 - **Owner escalation shelf**: `docs/escalations/` — incl. the cc1 fork-divergence ruling request (`_spu_FiDMA`: our decompals fork segfaults on Sony's faithful volatile-MMIO wait loop that original cc1psx compiles to target bytes).
 
