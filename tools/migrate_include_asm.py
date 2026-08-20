@@ -25,6 +25,56 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine import inlineasm  # noqa: E402
 
 ORACLE = "62efab4f73f992798c43e8c730aa43baa10bb4fa"
+WITH_JTBL = False  # set by --with-jtbl (wave 2)
+EXE = "disc/SLUS_006.63"
+VRAM0, FILE0 = 0x80010000, 0x800
+
+
+def jtbl_size_from_obj(stem, sym):
+    """Symbol size from the current oracle-green TU object's symtab."""
+    try:
+        r = subprocess.run(["mipsel-linux-gnu-objdump", "-t", f"build/src/{stem}.o"],
+                           capture_output=True, text=True, timeout=120)
+        for ln in r.stdout.split("\n"):
+            if ln.endswith(" " + sym) and ".rodata" in ln:
+                return int(ln.split()[4], 16)
+    except Exception:
+        pass
+    return 0
+
+
+def write_jtbl_rodata(stem, func, sym):
+    """Generate asm/rodata/<sym>.s in the established splat convention:
+    `.word .L<vram>` label refs into the paired function asm. Returns None on
+    success, else a refusal reason."""
+    out = f"asm/rodata/{sym}.s"
+    if os.path.isfile(out):
+        return None
+    # GCC-compiled switch tables are ANONYMOUS locals — no symtab size. The
+    # table is self-terminating instead: every entry MUST be a text address
+    # whose .L<vram> label exists in THIS function's asm (jump tables cannot
+    # target outside the function), so scan words until one fails both tests.
+    # A stray trailing word passing both is ~impossible; the oracle gate
+    # backstops regardless.
+    addr = int(sym.split("_")[1], 16)
+    func_asm = rd(f"asm/funcs/{func}.s")
+    words = []
+    with open(EXE, "rb") as f:
+        f.seek(addr - VRAM0 + FILE0)
+        while True:
+            raw = f.read(4)
+            if len(raw) < 4:
+                break
+            w = int.from_bytes(raw, "little")
+            if not (VRAM0 <= w < 0x80090000) or f".L{w:08X}" not in func_asm:
+                break
+            words.append(w)
+    if len(words) < 2:
+        return f"jtbl {sym}: self-terminating scan found only {len(words)} entries"
+    lines = [f"nonmatching {sym}", "", f"dlabel {sym}"]
+    lines += [f"    .word .L{w:08X}" for w in words]
+    wr(out, "\n".join(lines) + "\n")
+    return None
 RULE_FILES = ["regfix.txt", "regfix_stage2.txt", "asmfix.txt"]
 TODAY = datetime.date.today().isoformat()
 BANK_DIR = "retired-chassis-2026-08"
@@ -103,12 +153,14 @@ def migrate_one(func, stem, dry, defer_build=False):
         return "already-migrated", []
     if not os.path.isfile(asm):
         return f"REFUSED: {asm} missing", []
-    if "jtbl_" in rd(asm):
+    jtbls = sorted(set(re.findall(r"jtbl_[0-9A-F]{8}", rd(asm))))
+    if jtbls and not WITH_JTBL:
         # The raw asm references a switch jump table that only exists as
         # compiler OUTPUT of the C body's switch (rodata cleanup 2026-06-09
         # moved jtbls out of asm/data). Removing the body would orphan the
         # symbol at link (observed batch 1: func_800324D0 / jtbl_800105A0).
-        # These keep their current representation until solved honestly.
+        # Wave-2 (--with-jtbl) supplies them via the established
+        # INCLUDE_RODATA("asm/rodata", jtbl_X) convention.
         return "REFUSED: asm references a C-generated jtbl_ symbol (deferred)", []
     span = find_body_span(text, func)
     if span is None:
@@ -142,11 +194,28 @@ def migrate_one(func, stem, dry, defer_build=False):
            "banked_body": f"{BANK_DIR}/body.c", "rules_retired": len(rules)}
     wr(os.path.join(led, "migration_pin.json"), json.dumps(pin, indent=2) + "\n")
 
+    # Wave 2: supply C-generated jump tables via the established
+    # INCLUDE_RODATA convention (mirrors code6cac_b.c:162's committed pattern:
+    # rodata line(s) directly before the function's text line).
+    created_rodata = []
+    if jtbls and WITH_JTBL:
+        for sym in jtbls:
+            why = write_jtbl_rodata(stem, func, sym)
+            if why:
+                for p in created_rodata:
+                    os.remove(p)
+                return f"REFUSED (wave2): {why}", []
+            if os.path.isfile(f"asm/rodata/{sym}.s"):
+                created_rodata.append(f"asm/rodata/{sym}.s")
+
     # splice — with an explicit trailing newline whenever the tail doesn't
     # start with one (a body ending "}" flush against the next definition
     # glued get_alarm/_version on 2026-08-19 and silently dropped a COMPLETED
     # function from the census parse).
-    line = f'INCLUDE_ASM("asm/funcs", {func});'
+    line = ""
+    if jtbls and WITH_JTBL:
+        line = "".join(f'INCLUDE_RODATA("asm/rodata", {s});\n' for s in jtbls)
+    line += f'INCLUDE_ASM("asm/funcs", {func});'
     tail = text[hi:]
     if not tail.startswith("\n"):
         line += "\n"
@@ -171,6 +240,11 @@ def migrate_one(func, stem, dry, defer_build=False):
         wr(src, text)
         for rf, orig in originals.items():
             wr(rf, orig)
+        for p in created_rodata:
+            try:
+                os.remove(p)
+            except OSError:
+                pass
         shutil.rmtree(bank, ignore_errors=True)
         try:
             os.remove(os.path.join(led, "migration_pin.json"))
@@ -189,7 +263,11 @@ def main():
     ap.add_argument("--batch-verify", action="store_true",
                     help="edit all targets first, then ONE engine build + SHA1 "
                          "gate for the whole batch (git restores on mismatch)")
+    ap.add_argument("--with-jtbl", action="store_true",
+                    help="wave 2: supply C-generated jtbls via INCLUDE_RODATA")
     a = ap.parse_args()
+    global WITH_JTBL
+    WITH_JTBL = a.with_jtbl
 
     q = json.load(open("engine/queue.json"))
     by_func = {it["func"]: it for it in q["items"]}
