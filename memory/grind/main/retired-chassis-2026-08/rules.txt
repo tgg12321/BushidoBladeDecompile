@@ -1,0 +1,25 @@
+regfix.txt:1001: main: subst "jal\tfunc_80016A8C" "ori\t$4,$4,0x8800" @ 20
+regfix.txt:1002: main: subst "ori\t\$4,\$4,0x8800" "addu\t$5,$18,$zero" @ 21
+regfix.txt:1003: main: subst "addu\t\$3,\$3,-128" "addu\t$3,$3,128" @ 84
+regfix.txt:1004: main: subst "jal\tfunc_80016E60" "addu\t$4,$18,$zero" @ 167
+regfix.txt:1005: main: subst "addu\t\$4,\$18,\$zero" "jal\tfunc_80016E60" @ 168
+regfix.txt:1006: main: subst "nop" "addiu\t$5,$zero,4104" @ 170
+regfix.txt:1007: main: subst "nop" "addiu\t$5,$zero,4104" @ 147
+regfix.txt:1008: main: insert "addiu\t$3,$3,-1" @ 83
+regfix.txt:1009: main: insert "addu\t$6,$17,$zero" @ 22
+regfix.txt:1010: main: insert "jal\tfunc_80016A8C" @ 22
+regfix.txt:1011: main: insert_after "addu\t$5,$17,$zero" @ 171
+regfix.txt:1012: main: subst "la\t\$3,D_800F7438" "addiu\t$5,$zero,4104\n.Linner:\n\tlw\t$2,%gp_rel(D_800A36AC)($gp)" @ 27
+regfix.txt:1013: main: subst "lw\t\$2,%gp_rel\(D_800A36AC\)\(\$gp\)" "lui\t$3,%hi(D_800F7438)" @ 28
+regfix.txt:1014: main: subst "addiu\t\$5,\$zero,4104" "addiu\t$3,$3,%lo(D_800F7438)" @ 29
+regfix.txt:1015: main: subst "lui\t\$2" "lui\t$4" @ 104
+regfix.txt:1016: main: subst "lui\t\$2" "lui\t$4" @ 109
+regfix.txt:1017: main: subst "lw\t\$3,%gp_rel\(D_800A38B4\)\(\$gp\)" "ori\t$4,$4,0xcc00" @ 110
+regfix.txt:1018: main: subst "ori\t\$2,\$2,0xcc00" "sll\t$2,$17,2" @ 111
+regfix.txt:1019: main: subst "addu\t\$3,\$3,\$2" "lw\t$3,%gp_rel(D_800A38B4)($gp)" @ 112
+regfix.txt:1020: main: subst "sll\t\$2,\$17,2" "addu\t$2,$2,$20" @ 113
+regfix.txt:1021: main: subst "addu\t\$2,\$2,\$20" "addu\t$3,$3,$4" @ 114
+regfix.txt:1022: main: subst "\.L\d+" ".Linner" @ 146
+regfix.txt:1023: main: subst "\.L\d+" ".Linner" @ 148
+regfix.txt:1024: main: subst "\.L\d+" ".Linner" @ 161
+regfix.txt:1025: main: subst "\.L\d+" ".Linner" @ 169
