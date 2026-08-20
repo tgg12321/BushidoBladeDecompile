@@ -3,14 +3,27 @@
  * chassis: `sandbox func_80038170 --disable all` = **0** (141/141 insns) and a
  * full `build` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE.
  *
- * IT IS NOT SUBMITTABLE AS A GRIND CANDIDATE AS-IS: it requires a ONE-LINE
- * companion edit to include/code6cac.h, which the driver has ruled out of scope
- * for this function's candidates (state.json judge_constraints[2]). The
- * src-only spelling of the same reads — `(&D_8008F19C)[s3*2+n]` — is a BANNED
- * construct (banned_constructs[2], layer-1 FAIL 2026-08-19 21:23). This file is
- * therefore the INTEGRATION-HANDOFF artifact; see the entry
- * `2026-08-19 — func_80038170 — OWNER-ESCALATION — INTEGRATION HANDOFF` in
- * docs/grind/decisions.md for the two-step operator recipe.
+ * STATUS 2026-08-20 (s5, forensics): SUBMITTED as an ordinary candidate-ready.
+ * The pipeline scope grant landed on 2026-08-19 (tools/grinder/scope_allow.txt:26,
+ * `func_80038170 include/code6cac.h`), so the one-line companion declaration fix
+ * below is now IN SCOPE and is staged with the Match commit. Re-measured on the
+ * current chassis this session with both edits in place: full `build` SHA1
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, and
+ * `sandbox func_80038170 --disable all` = **0** (141/141 insns).
+ *
+ * CHASSIS GOTCHA measured this session and worth inheriting: the FIRST sandbox
+ * run after applying the edits reported score 1, not 0. That residual is a STALE
+ * build/ REFERENCE, not a code difference — the sandbox scores the fresh .o
+ * against the reference objects in build/, which still held the pre-edit
+ * `D_8008F19D` relocation spelling. A full `build` regenerates build/ and the
+ * very next identical sandbox invocation returns 0 with no source change at all.
+ * This is exactly the "floor 1" that s1-s3 recorded and could not dissolve; it
+ * was never a property of the C. ORDER OF OPERATIONS for any future session
+ * touching this function: apply -> `build` -> `sandbox`, never sandbox first.
+ *
+ * The src-only spelling of the same reads is a BANNED construct
+ * (state.json banned_constructs[2], layer-1 FAIL 2026-08-19 21:23) and must not
+ * be resurrected: with the header corrected it is not needed.
  *
  * REQUIRED COMPANION EDIT (include/code6cac.h:80-81):
  *     -extern u8 D_8008F19C;

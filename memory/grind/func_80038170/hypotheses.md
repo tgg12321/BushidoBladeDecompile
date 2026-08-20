@@ -194,3 +194,15 @@
 - probe: applied the header one-liner plus the plain-C body, then sandbox func_80038170 --disable all and a full build
 - result: sandbox 0 (141/141) and full build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, MATCH. Both files reverted to HEAD before session end; tree clean.
 - verdict: CONFIRMED
+
+## [s5] With include/code6cac.h granted in scope, the banked s4 form lands as an ordinary candidate-ready with no construct of any kind and no residual floor.
+- mechanism: apply candidate.c's body over src/code6cac_c_mid.c:281 plus the single header declaration correction; both paths are scope-checked AND staged by the driver per tools/grinder/scope_allow.txt:26, so the committed tree is the byte-verified tree
+- probe: applied both edits to the working tree, ran `build` (SHA1 vs oracle) and `sandbox func_80038170 --disable all`, re-ran the -da dumps to confirm the s4 frame mechanism still holds for the submitted form, and validated self_vet.md against grindlib's own validate_self_vet / _ban_trips
+- result: full build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE; sandbox 0 (141/141, rules_dropped 0); .frame $sp,56 vars=16 as required; vet validates clean and trips no ban. Edits left in place in the tree.
+- verdict: CONFIRMED
+
+## [s5] The s1-s3 "floor 1 is a reloc-spelling artifact we cannot dissolve" residual is a stale-build/-reference measurement artifact, dissolved by ordering, not by any source property.
+- mechanism: engine sandbox scores the fresh .o against reference objects in build/; when the candidate changes WHICH relocation a load uses, a build/ predating the edit makes exactly that one word compare unequal
+- probe: sandbox immediately after applying the edits (no intervening build), then `build`, then the identical sandbox command again, with zero source changes between the two sandbox runs
+- result: 1 -> (build, SHA1 == oracle) -> 0. Same source, same command, different reference freshness. Three sessions' worth of "unreachable by construction" framing traces to this.
+- verdict: CONFIRMED
