@@ -1,8 +1,8 @@
 {
  "func": "func_80049A2C",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 12,
    "modality": "synthesis",
    "headline": "The banked floor of 0 was cheat-stripper evasion by a trailing comment: honest floor is 12; established the BLKmode alignment law for target's +8 frame slot and killed the live-aggregate axis."
+  },
+  {
+   "session": 7,
+   "floor": 12,
+   "modality": "forensics",
+   "headline": "s6's law is refuted: target's +8 frame slot is a phantom reload spill slot (reload1.c:2404 alter_reg on a combine-orphaned pseudo), a construct 70 oracle-matching functions in this repo already produc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every score banked in this ledger must be re-audited detector-complete before any of it is spent: the cheat-stripper silently removes some spellings (making a 12 an artifact of the strip, not a codegen fact) and misses others (making a 0 an artifact of a hole).",
-   "mechanism": "engine/volatile_cheats.py strips find_unused_local_arrays matches (array declarators, 2 <= n <= 64, zero references), find_void_discard_unused_locals matches, and find_orphaned_local_decls matches; anything outside those regexes compiles as written. Only a real unstripped build (`make build/src/text1b.o` + objdump) is codegen evidence.",
-   "next_probe": "For each form in memory/grind/func_80049A2C/rejected/, record BOTH the real frame from an unstripped build AND the sandbox score, and mark which rows are strip artifacts. tmp/grind/func_80049A2C/s6/matrix.md already does this for 10 rows and is the template; the pre-s6 rows (scalar-dummy-no-frame.c, struct-dummy-h8-same-frame-same-defect.c, the s2 phantom-injection variants) have never been measured this way."
+   "hypothesis": "An ordinary-C spelling of this body exists that leaves exactly one combine-absorbed pseudo behind, buying target's 8 phantom frame bytes with no instruction change.",
+   "mechanism": "combine.c:10836 emits `(use (reg:SI N))` after a CODE_LABEL to carry an orphaned REG_DEAD note; the USE costs zero instructions, keeps reg_n_refs > 0, and reload1.c:2404 alter_reg then reserves an 8-byte-rounded slot no insn references (vars=8, zero sp traffic - target's exact shape).",
+   "next_probe": "Diff the combine dump of func_800493E4 (which HAS the USE: tmp/grind/func_80049A2C/s7/da/t.combine, pseudo 98, `(insn 150 (use (reg:SI 98)))` after code_label 83) against func_80049A2C's combine dump to find what prevents the same absorption here, then reshape the corresponding statement. The two candidate carriers in this body are the address-forming pointers p_anim (= D_800EF980 + temp_v1*2) and obj, both live across a label; func_800493E4's carrier is exactly an address-forming pointer for an indexed HImode store."
   },
   {
-   "hypothesis": "Frame 0x30 is reachable with vars = 0 by raising current_function_outgoing_args_size from 16 to 24 (0 + 24 + 20 -> ALIGN8 -> 48), which needs no local at all and therefore no dead declaration.",
-   "mechanism": "MIPS compute_frame_size takes args_size from the widest call in the function, floored at REG_PARM_STACK_SPACE = 16. All three calls here take <= 1 argument. Some back-end-emitted library calls, alloca, and __builtin_apply bump outgoing_args_size by paths other than an explicit fifth argument.",
-   "next_probe": "Enumerate the constructs that bump outgoing_args_size WITHOUT emitting an argument store (64-bit shift/divide/soft-float helpers, alloca, __builtin_apply) and test whether any is reachable from a semantic rewrite of this body that keeps build_insns at 126. Prior expectation is negative (a fifth integer argument stores at 0x10($sp), which target lacks), but this is the last decomposition of the frame equation never measured, and s6 proved the equation had been mis-derived once already."
+   "hypothesis": "The 26 loopless phantom-slot precedents share a small trigger vocabulary that can be transplanted into this body.",
+   "mechanism": "They are oracle-proven ordinary C producing precisely the frame signature this function needs, so the trigger shapes are already in the repo and require no new construct family.",
+   "next_probe": "Re-run the census with memory/grind/func_80049A2C/s7_frame_census_sweep.sh (compiles every src/*.c to .s) plus the .frame parser described in the s7 evidence entry, then read the eight smallest loopless hits (func_80042F10, func_80086014, func_80086130, snd_CalcFade, snd_GetFadeCurve, disp_CalcFov, get_cs, get_ce) and classify what combine absorbed in each."
   },
   {
-   "hypothesis": "The three cheat-stripper spelling holes are an operator-side defect that makes any function's sandbox 0 suspect when it depends on a dead local.",
-   "mechanism": "(1) _ORPHAN_DECL_RE's `;[ \\t]*$` anchor is defeated by a trailing comment on the declaration line; (2) neither find_unused_local_arrays nor find_orphaned_local_decls has a struct/union arm, so a zero-reference struct-typed local is never stripped; (3) _VOID_DISCARD_NO_ADDR_RE covers `(void) name;` but not `(void) name[0];`.",
-   "next_probe": "Operator item, not a grind probe - engine/ is outside the grind-session surface. Filed in the 2026-08-19 correction entry at the tail of docs/grind/decisions.md. Until it is closed, treat any dead-local-dependent 0 elsewhere in the queue as unverified."
+   "hypothesis": "The alternative decomposition vars=0 / args=24 is formally open but almost certainly dead.",
+   "mechanism": "current_function_outgoing_args_size is written only in calls.c (1400 / 2400 / 2750) from a call's own argument size; any 5th argument word is STORED at 0x10($sp) and target has zero non-save sp traffic. Bumping it without a store requires expanding a call and then deleting it, which is dead code.",
+   "next_probe": "None recommended before the two frontier items above are spent; if revisited, look for a back-end-emitted library call (64-bit shift/divide) whose argument block is >= 20 bytes and whose insns are later eliminated."
   }
  ],
  "judge_constraints": [

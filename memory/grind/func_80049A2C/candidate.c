@@ -1,3 +1,28 @@
+/* ===================================================================
+ * s7 CORRECTION TO THE s6 HEADER BELOW - READ FIRST
+ * ===================================================================
+ * The s6 "CONSEQUENCE" paragraph below concludes that target's +8 frame
+ * slot "is reachable ONLY through a wholly dead, memory-resident local".
+ * That is FALSE and s7 measured it false. s6 enumerated only ONE of the two
+ * sources of MIPS frame bytes (expand-time locals, get_frame_size()). The
+ * second source is reload1.c:2404 alter_reg, which reserves an 8-byte-rounded
+ * stack slot for any pseudo with reg_renumber < 0 and reg_n_refs > 0 - and a
+ * pseudo whose insns were all absorbed by combine (combine.c:10836 leaves a
+ * codegen-free `(use (reg))` after a CODE_LABEL to carry the orphaned REG_DEAD
+ * note) is never allocated and never referenced. Result: vars=8 with ZERO
+ * stack traffic, which is exactly target's shape.
+ *
+ * 70 functions in this repo's own oracle-matching source have that signature,
+ * 26 of them loopless, including func_800493E4 in THIS FILE - ordinary C, no
+ * dead local. s7 also killed the standing cross-ledger claim that the +8 is a
+ * cc1psx-vs-fork divergence: cc1psx compiles this very body to the same
+ * frame 40. Full record in evidence.md / hypotheses.md under [s7].
+ *
+ * This body is UNCHANGED from s6 and still scores 12 (126/126 insns; the 12
+ * differing instructions are exactly the prologue adjust, five saves, five
+ * restores and the epilogue adjust). It remains the best honest form.
+ * ===================================================================
+ */
 /* func_80049A2C — session s6 (synthesis) BEST HONEST FORM.
  *
  * sandbox --disable all = 12 (frame 0x28 vs target 0x30; 126/126 insns, the

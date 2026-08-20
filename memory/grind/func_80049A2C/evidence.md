@@ -238,3 +238,57 @@ load-bearing cheat; three of the four judge-flagged items can just be deleted.
 - [s6] DISPOSITION NOTE: no owner-gated claim is made this session. The pre-existing 2026-07-20 OWNER-ESCALATION rests on the now-disproved 'bytes proven, blocked only by policy' premise; a correction entry was filed at the tail of docs/grind/decisions.md (2026-08-19) rather than a terminal ruling, and the driver has not assigned escalation modality.
 
 - [s6] SCOPE: src/text1b.c was restored EXACTLY to its session-start INCLUDE_ASM content; git status shows changes only in memory/grind/func_80049A2C/, docs/grind/decisions.md and the engine's own metrics/events.jsonl.
+
+## [s7] Chassis re-measure: honest floor is 12, and the entire residual is the frame size.
+- mechanism: `sandbox func_80049A2C --disable all` with the s6 candidate applied to src/text1b.c.
+- probe: applied memory/grind/func_80049A2C/candidate.c verbatim at src/text1b.c:867 and ran the sandbox.
+- result: score 12, target_insns 126, build_insns 126, rules_dropped 0. Target's five saves sit at 0x18/0x1C/0x20/0x24/0x28 with `addiu $sp,-0x30`; our build emits the identical five saves 8 bytes lower with `addiu $sp,-0x28`. The 12 differing instructions are exactly 1 prologue adjust + 5 saves + 5 restores + 1 epilogue adjust. Nothing else differs.
+- verdict: CONFIRMED
+
+## [s7] The +8 is NOT a cc1psx-vs-fork compiler divergence (kills the standing cross-ledger claim for this function).
+- mechanism: memory/grind/func_80022F34 (brief-2026-08-18:38/44, evidence.md:77/137/296) records the belief that func_80049A2C and func_80037540 "must ADD a slot cc1psx reserves that our fork does not". That claim had never been measured on this function.
+- probe: preprocessed the real src/text1b.c TU with the project cpp flags and fed the SAME .i to both compilers: tools/gcc-2.7.2/build/cc1 (project flags) and tools/cc1psx_wrapper.sh (the original PsyQ GCC 2.7.2.SN.1 via dosemu2, -O2 -G0 -funsigned-char -mcpu=3000 -mips1 -w). Compared the emitted `.frame` directives.
+- result: IDENTICAL frame decision from both compilers - `.frame $sp,40,$31 # vars= 0, regs= 5/0, args= 16, extra= 0`. cc1psx reserves nothing either. (Side observation: our fork hoists `sw $17,20($sp)` away from the other four saves exactly the way target does, while cc1psx emits all five saves contiguously - for this function the fork is the CLOSER compiler, not the further one.) Artifacts: tmp/grind/func_80049A2C/s7/fork.s, tmp/grind/func_80049A2C/s7/psx.s.
+- verdict: KILLED (the compiler-divergence axis is dead; the +8 has to come from the C)
+
+## [s7] Frame equation re-derived from the compiler source instead of from arithmetic guesses.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.c:4444 compute_frame_size. total = MIPS_STACK_ALIGN(get_frame_size()) + MIPS_STACK_ALIGN(current_function_outgoing_args_size) + extra + MIPS_STACK_ALIGN(gp_reg_size) + MIPS_STACK_ALIGN(fp_reg_size); gp_sp_offset = args + extra + vars + gp_reg_size - 4.
+- probe: read the function end to end; cross-checked against target's save offsets (highest save 0x28, five saves) and against a measured 6-save variant (rejected/phantom-slot-hoist-rot-table-ptr.c).
+- result: gp_reg_size is ROUNDED UP TO 8 before it enters the total, so 5 saves (20 B) and 6 saves (24 B) both contribute 24 - a 6th callee-save can never move this frame (measured: 6 saves, frame still 40). Therefore target's 0x30 forces vars + args = 24 exactly, i.e. either vars=8/args=16 or vars=0/args=24, and the two decompositions are byte-indistinguishable in the emitted code. args=24 still requires a call whose 5th argument word is STORED at 0x10($sp), and target has zero non-save sp traffic, so the live decomposition is vars=8.
+- verdict: CONFIRMED
+
+## [s7] s6's law "the +8 slot is reachable ONLY through a wholly dead, memory-resident local" is FALSE. 70 functions in this repo's own oracle-matching source carry a nonzero `vars=` with ZERO stack traffic, and none of them needs a dead local.
+- mechanism: frame bytes also come from reload1.c:2404 `alter_reg`, which gives every pseudo with reg_renumber < 0 and reg_n_refs > 0 a stack slot sized MAX(inherent, reg_max_ref_width) and then rounded up to 8 by assign_stack_local's align == -1 path. A pseudo whose insns were all absorbed by combine keeps a stale reg_n_refs, is never allocated a hard register, and gets an 8-byte slot NO INSTRUCTION EVER TOUCHES.
+- probe: compiled every src/*.c to .s with the project cc1 flags (tmp/grind/func_80049A2C/s7/sweep/), parsed all ~1200 `.frame` directives, and kept the functions whose body has no `($sp)` reference other than the callee-save stores/loads; then re-ran the instrumented cc1 with BB2_FRAME_DEBUG=1 to attribute each allocation.
+- result: 70 such functions, 26 of them LOOPLESS. Every attributed one is `ctx=spill_new_p<N> mode=4 size=8 align=-1 alignment=8` - a phantom reload spill slot, not a local. Clean ordinary-C examples: `memset` (src/display.c:926, a six-line for-loop, frame 8 / vars 8, zero stack traffic) and - decisively - `func_800493E4` in OUR OWN FILE src/text1b.c (loopless, frame 0x20, vars=8, two saves, zero stack traffic, no dead local anywhere in its body). Since the tree SHA1-matches the oracle, all 70 are target-proven constructs.
+- verdict: KILLED (s6's law) / CONFIRMED (the phantom-spill mechanism)
+
+## [s7] Exact GCC pass and line that creates the phantom slot: combine.c distribute_notes' orphaned-REG_DEAD `(use)` insn.
+- mechanism: when combine folds an insn away and the REG_DEAD note for its destination pseudo cannot be placed on any surviving insn, and the placement scan reaches a CODE_LABEL, combine.c:10836-10841 emits `(use (reg:SI N))` after that label to carry the note ("prevents problems with call-state tracking in caller-save.c"). The USE emits no code but keeps reg_n_refs[N] > 0. regclass then never sees a real constraint for N and reports it as "ST_REGS or none"; global_alloc lists it with an empty conflict set and does not allocate it; alter_reg hands it the 8-byte-rounded stack slot that nothing references.
+- probe: minimal repro of `memset` under `cc1 -da` (tmp/grind/func_80049A2C/s7/mini/) - pseudo 79 is the loop-invariant `-1` that combine folded into the branch; lreg prints "Register 79 used 2 times across 2 insns in block 0; ST_REGS or none", greg lists "79 conflicts:" with no entry in Register dispositions, FRAMEDBG reports spill_new_p79. Then the same trace on func_800493E4 in the real text1b dumps (tmp/grind/func_80049A2C/s7/da/): pseudo 98 is an address-forming pointer whose HImode store combine absorbed, and it survives ONLY as `(insn 150 (use (reg:SI 98)))` sitting after code_label 83.
+- result: mechanism named end to end and reproduced in two independent functions, one of them loopless and in this function's own TU.
+- verdict: CONFIRMED
+
+## [s7] Five ordinary-C reshapings of func_80049A2C aimed at orphaning a REG_DEAD across a label all leave vars=0.
+- mechanism: the phantom slot needs a pseudo whose defining insn combine absorbs into a use in another block, with the death note stranded at a label. Each variant moves one definition across one of this function's two labels (the temp_v1 == 0xFF early return and the InitFadePanel branch).
+- probe: five variants built through the real cpp + the instrumented cc1 on the full TU, read back through BB2_FRAME_DEBUG and the `.frame` directive: hoist the D_800EF980 base above the early return; hoist the D_80099D3C rotation-table pointer above the fade branch; pre-read `*p_anim` into a named s16 before the branch; form `obj = D_800A38B4` before the branch; invert the guard to `if (temp_v1 != 0xFF) { ... }`.
+- result: all five report the single `ctx=round_frame frame_offset=0` record - zero frame allocations, frame 0x28. The rotation-table hoist additionally raised the callee-save count to 6 and STILL produced frame 40, independently confirming the gp_reg_rounded law above. Banked as memory/grind/func_80049A2C/rejected/phantom-slot-*.c.
+- verdict: KILLED (these five spellings; the axis itself is wide open)
+
+- [s7] Chassis re-measured this session: sandbox --disable all = 12, target_insns 126, build_insns 126, rules_dropped 0, with the s6 candidate applied at src/text1b.c:867. The 12 differing instructions are exactly 1 prologue adjust + 5 saves + 5 restores + 1 epilogue adjust; target `addiu $sp,-0x30` with saves at 0x18/0x1C/0x20/0x24/0x28 vs our `addiu $sp,-0x28` with the same five saves 8 bytes lower.
+
+- [s7] cc1psx and the project fork produce the IDENTICAL frame decision for this body (vars=0, regs=5/0, args=16, frame 40). The cross-ledger claim in memory/grind/func_80022F34 that func_80049A2C 'must ADD a slot cc1psx reserves that our fork does not' is measured false and should not be repeated.
+
+- [s7] MIPS frame bytes have two sources, not one: expand-time locals/temps (get_frame_size()) AND reload spill slots (reload1.c:2404 alter_reg). The latter rounds every slot up to 8 bytes via assign_stack_local's align == -1 path, so a single unallocated SImode pseudo costs exactly the 8 bytes this function is missing.
+
+- [s7] 70 functions in this repo's oracle-matching source carry vars > 0 with zero non-save sp traffic; 26 are loopless. All attributed instances are phantom reload spill slots (FRAMEDBG ctx=spill_new_p<N>), not dead locals. Loopless examples worth reading next: func_80042F10, func_80086014, func_80086130, snd_CalcFade, snd_GetFadeCurve, disp_CalcFov, get_cs, get_ce, and - same file as the target - func_800493E4 and func_800493E4's neighbours in text1b.c.
+
+- [s7] func_800493E4 (src/text1b.c) is the strongest precedent: loopless, ordinary C, no dead local, no register pin, frame 0x20 with vars=8 and zero stack traffic. Its carrier is pseudo 98, an address-forming pointer for an indexed HImode store; combine absorbed the pointer into the store and left `(insn 150 (use (reg:SI 98)))` after code_label 83.
+
+- [s7] Named mechanism for the ledger: combine.c:10836-10841 distribute_notes emits a codegen-free `(use (reg))` after a CODE_LABEL when an orphaned REG_DEAD note cannot be placed; that USE keeps reg_n_refs > 0, regclass yields 'ST_REGS or none', global_alloc leaves reg_renumber = -1, and alter_reg reserves the phantom 8 bytes.
+
+- [s7] A 6th callee-saved register does NOT change this frame (measured: 6 saves, frame still 40) because compute_frame_size rounds gp_reg_size to 8 before adding it. Any future session proposing to buy the slot with an extra saved register can skip the experiment.
+
+- [s7] Five ordinary-C label-crossing reshapings of this body were measured and all left vars=0; they are banked in memory/grind/func_80049A2C/rejected/phantom-slot-*.c with the measurement in each header.
+
+- [s7] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; no build-surface file was modified.

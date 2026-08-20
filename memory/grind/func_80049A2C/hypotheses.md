@@ -245,3 +245,103 @@
 - probe: Built `struct { s16 a; s16 b; } dummy;` with ZERO references and `s32 dummy[2];` + `(void) dummy[0];`; measured real frame and sandbox for both; read the detector source in engine/volatile_cheats.py.
 - result: Both give real frame 48 and sandbox 0 - two further spelling holes of the same class as the trailing-comment hole. Session s4's H8 zero is therefore an artifact. Under cheat-checklist T4 (passes only because the detectors miss this spelling) all three are automatic FAILs, not candidates.
 - verdict: KILLED
+
+## [s7 FRONTIER RESET] The residual is one phantom reload spill slot, and the mechanism is now named.
+
+s6 closed the ledger on the belief that target's +8 could only come from a dead
+BLKmode local (the forbidden `unused-local-array frame coercion` family), which
+made this function look like an endgame lock. That belief is measured false.
+Frame bytes in GCC 2.7.2 / MIPS have TWO sources, and only the first was ever
+explored here:
+
+  (1) get_frame_size() - locals and temps allocated at expand time. s6's law
+      correctly describes THIS source: a BLKmode aggregate reserves 8 bytes, and
+      any live one emits stack traffic that target does not have.
+  (2) reload1.c:2404 alter_reg - a stack slot for EVERY pseudo with
+      reg_renumber < 0 and reg_n_refs > 0, sized MAX(inherent, max_ref_width)
+      and rounded up to BIGGEST_ALIGNMENT (8) by assign_stack_local's align == -1
+      path. When the pseudo's insns were all absorbed by combine, nothing ever
+      references the slot: vars=8 with zero sp traffic - exactly target's shape.
+
+Source (2) is not a cheat family at all. It fires from completely ordinary C:
+70 functions in this repo's own oracle-matching source have it, 26 of them
+loopless, including func_800493E4 - same file, same TU, same compilation
+context, and no dead local anywhere in its body.
+
+### H-S7-A - "the +8 is a cc1psx-vs-fork divergence" (the standing cross-ledger claim)
+- probe: the same preprocessed TU through build/cc1 and through cc1psx.exe.
+- result: both emit `vars= 0, regs= 5/0, args= 16` - frame 40. cc1psx reserves
+  nothing either.
+- verdict: **KILLED.** The +8 is a property of the C, not of the compiler build.
+
+### H-S7-B - "s6's BLKmode law is the whole truth about this frame"
+- probe: whole-tree `.frame` census plus BB2_FRAME_DEBUG attribution.
+- verdict: **KILLED.** The phantom-spill source was never considered.
+
+### H-S7-C - "moving a definition across one of this function's two labels orphans a REG_DEAD and buys the slot"
+- probe: five ordinary-C reshapings, real cpp + instrumented cc1.
+- verdict: **KILLED for those five spellings** (all vars=0). The axis is not
+  exhausted - these were the five most obvious shapes, not a partition.
+
+## FRONTIER after s7 (strongest first)
+
+1. **F1 - Find the ordinary-C spelling of this body that leaves one
+   combine-absorbed pseudo behind.** Mechanism: combine.c:10836 emits
+   `(use (reg:SI N))` after a CODE_LABEL when a REG_DEAD note for a folded-away
+   pseudo cannot be placed; the USE costs zero instructions, keeps
+   reg_n_refs > 0, regclass reports the pseudo as "ST_REGS or none", global_alloc
+   leaves reg_renumber = -1, and alter_reg reserves the 8 bytes. Next probe:
+   diff the combine dump of func_800493E4 (which HAS the USE - see
+   tmp/grind/func_80049A2C/s7/da/, pseudo 98, `(insn 150 (use (reg:SI 98)))`
+   after code_label 83) against func_80049A2C's combine dump to find what stops
+   the same absorption here, then reshape the corresponding statement. The two
+   candidate carriers in this body are the address-forming pointers `p_anim`
+   (= D_800EF980 + temp_v1*2) and `obj`, both of which live across a label;
+   func_800493E4's carrier is exactly an address-forming pointer for an indexed
+   HImode store.
+
+2. **F2 - Enumerate the 26 loopless phantom-slot precedents' C bodies and
+   extract the shared trigger shape.** Mechanism: they are oracle-proven
+   ordinary C that produces the exact frame signature this function needs, so
+   the trigger vocabulary is already sitting in the repo. Next probe: reproduce
+   the census with tmp/grind/func_80049A2C/s7/sweep.sh plus the parser recorded
+   in the s7 outcome, then read the eight smallest ones (func_80042F10,
+   func_80086014, func_80086130, snd_CalcFade, snd_GetFadeCurve, disp_CalcFov,
+   get_cs, get_ce) and classify what combine absorbed in each.
+
+3. **F3 - args=24 (vars=0) remains formally open but is almost certainly dead.**
+   Mechanism: current_function_outgoing_args_size is written only in calls.c
+   (1400 / 2400 / 2750) from a call's own argument size, and any 5th argument
+   word is STORED at 0x10($sp); target has zero non-save sp traffic. The only
+   way to bump it without a store is to expand a call and then delete it, which
+   is dead code. Next probe: none recommended before F1 and F2 are spent.
+
+## [s7] The +8 frame slot target reserves is a cc1psx-vs-fork compiler divergence (the standing cross-ledger claim recorded in memory/grind/func_80022F34).
+- mechanism: cc1psx (GCC 2.7.2.SN.1) was believed to reserve a locals slot that decompals/mips-gcc-2.7.2 does not, making the residual unreachable from C.
+- probe: Preprocessed the real src/text1b.c TU with the project cpp flags and fed the identical .i to tools/gcc-2.7.2/build/cc1 (project flags) and to tools/cc1psx_wrapper.sh (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -w, via dosemu2); compared the emitted .frame directives.
+- result: Both compilers emit `.frame $sp,40,$31 # vars= 0, regs= 5/0, args= 16, extra= 0`. cc1psx reserves nothing either. Side finding: our fork hoists `sw $17,20($sp)` away from the other four saves exactly as target does, while cc1psx emits all five saves contiguously - for this function the fork is the closer compiler.
+- verdict: KILLED
+
+## [s7] s6's law - the +8 slot is reachable ONLY through a wholly dead, memory-resident (BLKmode) local, i.e. the forbidden unused-local-array frame-coercion family.
+- mechanism: s6 enumerated only expand-time frame allocation (get_frame_size()). GCC 2.7.2/MIPS has a second source: reload1.c:2404 alter_reg reserves a stack slot for every pseudo with reg_renumber < 0 and reg_n_refs > 0, sized MAX(inherent, reg_max_ref_width) and rounded up to BIGGEST_ALIGNMENT (8) by assign_stack_local's align == -1 path. If the pseudo's insns were all absorbed by combine, no instruction ever references the slot.
+- probe: Compiled every src/*.c to .s with the project cc1 flags, parsed all ~1200 .frame directives, and kept every function with vars > 0 whose body has no ($sp) reference other than callee-save stores/loads; re-ran the instrumented cc1 with BB2_FRAME_DEBUG=1 to attribute each allocation.
+- result: 70 such functions, 26 of them loopless. Every attributed one is ctx=spill_new_p<N> mode=4 size=8 align=-1 alignment=8 - a phantom reload spill slot, never a local. Clean ordinary-C examples: memset (src/display.c:926, a six-line for-loop, frame 8/vars 8, zero stack traffic) and func_800493E4 in this function's OWN FILE src/text1b.c (loopless, frame 0x20, vars=8, two saves, zero stack traffic, no dead local in its body). The tree SHA1-matches the oracle, so all 70 are target-proven constructs.
+- verdict: KILLED
+
+## [s7] The GCC pass and decision that produces the phantom slot can be named exactly.
+- mechanism: combine.c:10836-10841 (distribute_notes): when a REG_DEAD note for a folded-away pseudo cannot be placed on any surviving insn and the placement scan reaches a CODE_LABEL, combine emits `(use (reg:SI N))` after that label to carry the note. The USE emits no code but keeps reg_n_refs[N] > 0; regclass then reports the pseudo as 'ST_REGS or none'; global_alloc lists it with an empty conflict set and does not allocate it; reload1.c alter_reg hands it the 8-byte-rounded slot nothing references.
+- probe: cc1 -da minimal repro of memset (pseudo 79, the loop-invariant -1 combine folded into the branch) plus the real text1b -da dumps for func_800493E4 (pseudo 98, an address-forming pointer whose HImode store combine absorbed; it survives only as `(insn 150 (use (reg:SI 98)))` after code_label 83). Cross-read reload1.c alter_reg, mips.c compute_frame_size, and combine.c distribute_notes.
+- result: Mechanism traced end to end and reproduced in two independent functions, one loopless and in this function's own TU. lreg/greg signatures for the orphan pseudo: 'Register N used 2 times ...; ST_REGS or none', 'N conflicts:' (empty), absent from Register dispositions, FRAMEDBG ctx=spill_new_pN.
+- verdict: CONFIRMED
+
+## [s7] Moving a definition across one of this function's two labels orphans a REG_DEAD note and buys the phantom slot.
+- mechanism: The slot needs a pseudo whose defining insn combine absorbs into a use in another block with the death note stranded at a label; this body has two labels (the temp_v1 == 0xFF early return and the InitFadePanel branch).
+- probe: Five ordinary-C reshapings built through the real cpp + instrumented cc1 on the full TU, read back through BB2_FRAME_DEBUG and the .frame directive: hoist the D_800EF980 base above the early return; hoist the D_80099D3C rotation-table pointer above the fade branch; pre-read *p_anim into a named s16 before the branch; form obj = D_800A38B4 before the branch; invert the guard to `if (temp_v1 != 0xFF) { ... }`.
+- result: All five report the single ctx=round_frame frame_offset=0 record - zero frame allocations, frame 0x28. The rotation-table hoist additionally raised the callee-save count from 5 to 6 and STILL produced frame 40, independently confirming the gp_reg_rounded law. Banked as memory/grind/func_80049A2C/rejected/phantom-slot-*.c.
+- verdict: KILLED
+
+## [s7] The frame equation admits decompositions other than vars=8/args=16.
+- mechanism: mips.c:4444 compute_frame_size: total = ALIGN8(vars) + ALIGN8(outgoing_args) + extra + ALIGN8(gp_reg_size) + ALIGN8(fp_reg_size); gp_sp_offset = args + extra + vars + gp_reg_size - 4.
+- probe: Read compute_frame_size end to end and solved it against target's measured layout (five saves, highest save 0x28, total 0x30), plus the measured 6-save variant.
+- result: gp_reg_size is rounded to 8 BEFORE entering the total, so 5 saves (20 B) and 6 saves (24 B) both contribute 24 - a 6th callee-save can never move this frame (measured). Target's 0x30 forces vars + args = 24 exactly: either vars=8/args=16 or vars=0/args=24, and the two are byte-indistinguishable. args=24 requires a call whose 5th argument word is stored at 0x10($sp), and target has zero non-save sp traffic, so the live decomposition is vars=8.
+- verdict: CONFIRMED
