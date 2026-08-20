@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80041688",
-      "file": "text1a_post",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 3,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
-      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park; see decisions.md OWNER RULING entry"
-    },
-    {
       "func": "func_80048530",
       "file": "text1b",
       "distance": 11,
@@ -2049,6 +2039,17 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
     },
     {
+      "func": "func_80041688",
+      "file": "text1a_post",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 3,
+      "status": "parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park; see decisions.md OWNER RULING entry",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_80041688 \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
       "func": "get_alarm",
       "file": "display",
       "distance": 9,
@@ -2204,13 +2205,13 @@
   ],
   "counts": {
     "total": 252,
-    "active": 220,
+    "active": 219,
     "by_status": {
-      "active": 220,
-      "parked": 32
+      "active": 219,
+      "parked": 33
     },
     "by_verdict": {
-      "C": 184,
+      "C": 183,
       "ASM-PARTIAL": 36
     }
   }

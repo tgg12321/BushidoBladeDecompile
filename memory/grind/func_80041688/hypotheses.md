@@ -339,3 +339,15 @@
   1. Classification of the staged-guard spelling: rejected-bank s4/s5 "variable-reuse-with-dead-store" vs [[staged-value-reused-variable]] (whose Origin cites this exact reg_n_sets mechanism; value consumed by the branch). If in-family → honest floor 6.
   2. Pad allowlist row `"func_80041688": frozenset({("pre_pad", 8)})` (owner-only, engine surface; func_800481E8-identical state) + sp10 → first-declared `volatile u32 pre_pad[8];` respell. With both granted candidate.c should measure 0; integration retires regfix.txt:477-479 in the same step (they subst the lbu operands and would corrupt the already-correct stream).
 - NO further in-session sanctioned lever exists: every non-owner-gated axis is measurement-dead across s1-s16.
+
+## [s17] The 0x20 leading frame region has an HONEST producer reachable from this function's own logic
+- mechanism: [[phantom-slot-frame-lever]] — an unallocated pseudo (refs but no hard reg) reaching reload gets a zero-cost stack slot from alter_reg; producers: folded loop-guard compare, combine orphan-USE (second required HImode use), live named locals on multi-read fields.
+- probe: Full recipe run on the honest staged-guard baseline (sandbox 6, 82==82): .frame gradient + greg/combine orphan detector + 5 measured spellings across all three producer classes (evidence.md [s17]; artifacts tmp/grind/func_80041688/s17/).
+- result: vars=0 in every probe; 0 unallocated pseudos, 0 orphan USEs in the dumps; class 1 folds delete the pseudo outright (no limbo), class 2 lacks the required second narrow use in the target's own bytes (exactly one lh), class 3 has no multi-read field to name. Residual needs 32 bytes = 4+ simultaneous orphans; no spelling produced one.
+- verdict: KILLED — the pad region is not honestly producible; the sanctioned phantom-frame-slot pad family (volatile u32 pre_pad[8] + owner allowlist row) is the only remaining closer, and its ripeness prerequisite (Judge 2026-08-20, decisions.md:9174) is now discharged.
+
+## [s16] The prior session's disposition was correct in substance and failed only on entry-title form; re-filing under an OWNER-ESCALATION title with fresh floor measurements makes it validator-valid.
+- mechanism: Driver validator requires a docs/grind/decisions.md entry whose title carries OWNER-ESCALATION or CANONICAL-ASM GRANT PATH and names func_80041688; the s17 entry was titled INTEGRATION HANDOFF only.
+- probe: Re-measured sandbox --disable all on committed baseline (8, cheat_asm_stripped=2) and with memory/grind/func_80041688/candidate.c applied (6, 82==82, cheat_asm_stripped=1 = the un-allowlisted pre_pad); restored src via git checkout; appended the re-filed entry to docs/grind/decisions.md.
+- result: Floor 6 confirmed on current chassis by construction (engine strips the un-allowlisted pad before scoring; residual = exactly the six frame immediates). Entry filed: '2026-08-20 - func_80041688 - OWNER-ESCALATION - INTEGRATION HANDOFF (owner-only surface: engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS row) - floor 6 re-verified s18'.
+- verdict: CONFIRMED

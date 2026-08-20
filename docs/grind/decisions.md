@@ -9203,3 +9203,116 @@ Verified independently: asm/funcs/func_80041688.s has `addiu sp,-0x38` with the 
 ## 2026-08-20 12:52 — func_80041688 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s16 of func_80041688, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_80041688). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-20 — func_80041688 — **OWNER-ESCALATION — INTEGRATION HANDOFF (owner-only surface: engine/volatile_cheats.py `_SANCTIONED_UNWRITTEN_PADS` row) — floor 6 re-verified s18**
+
+Filed by grind session s18 (escalation modality). This RE-FILES the 2026-08-20
+"INTEGRATION HANDOFF — ripeness prerequisite DISCHARGED" record above under the
+escalation-entry title the driver validator requires (the prior session was
+discarded solely because its entry's title carried neither OWNER-ESCALATION nor
+CANONICAL-ASM GRANT PATH). The substance is unchanged; every load-bearing
+measurement was independently re-verified THIS session on the current chassis.
+
+**This is an integration handoff, not an endgame lock, not an exhaustion
+refusal, and not a family-extension request.** Every construct in the closing
+form is inside an already-sanctioned frozen-list family; the single remaining
+step is a surface that is owner-only by design — `engine/` is on the
+add-scope-allow path denylist (severe-blocker class,
+`.claude/rules/integration-handoff-self-serve.md`), so neither a session nor the
+driver may stage the row.
+
+**Endgame-lock AND-gates, evaluated for the record:**
+- Gate (a) canonical-asm: `scan_hand_coded --single` tier **LOW** (score 0/8, s15
+  evidence ledger) — FAIL. Canonical-asm was additionally refused by two Judge
+  rulings (decisions.md:1019 of 2026-07-20; reaffirmed in the 2026-08-20 12:41
+  ruling context). Not requested.
+- Gate (b) precedent: NOT APPLICABLE as an extension request — both closing
+  constructs are already sanctioned: the staged loop1 guard was GRANTED by the
+  Judge 2026-08-20 12:41 (decisions.md:9172) under
+  `.claude/rules/staged-value-reused-variable.md` (all five bounds verified in
+  that ruling), and the pad is the phantom-frame-slot volatile pad local family
+  (`.claude/rules/no-new-park-categories.md` 2026-08-18 additions; SOTN exhibit
+  `src/st/sel/2C048.c:564`; sibling engine allowlist rows owner-granted in
+  commit b734618d).
+
+**State re-measured THIS session (s18, 2026-08-20; artifacts
+tmp/grind/func_80041688/s18/measurements.md):**
+- Committed rule-era baseline: `sandbox func_80041688 --disable all` = **8**
+  (82==82, rules_dropped=3, cheat_asm_stripped=2 — the rule-era `sp10[8]` +
+  `(void)sp10`).
+- `memory/grind/func_80041688/candidate.c` form applied: sandbox = **6**
+  (82==82, cheat_asm_stripped=1 — the un-allowlisted `pre_pad`, stripped before
+  scoring). The residual 6 is exactly the six frame immediates
+  (`addiu sp,-0x18` vs `-0x38`; ra/s0 save+restore at 0x14/0x10 vs 0x34/0x30).
+  The 6 is read BY CONSTRUCTION: no session action can reach 0 while the
+  allowlist row is absent — mechanically identical to the func_800481E8 granted
+  state (this file, GRANT PACKET entry of 2026-08-20, decisions.md:9101).
+- The Judge's ripeness prerequisite (Q2 refusal, decisions.md:9174) is
+  DISCHARGED: the full [[phantom-slot-frame-lever]] honest-producer search was
+  run in s17 on the honest staged-guard baseline — all three producer classes,
+  `.frame` gradient, orphan detector; every probe vars=0, zero unallocated
+  pseudos, zero orphan USEs; the 0x20 leading region (Judge-verified genuinely
+  untouched in target, decisions.md:9176) is not honestly producible on this
+  chassis (evidence.md [s17]; tmp/grind/func_80041688/s17/).
+- src restored to the committed baseline after measurement (`git status` clean
+  for src): regfix.txt:212-214 (the 3 lbu-operand subst rules, Judge-corrected
+  line numbers) would corrupt the already-correct [b,r,g] stream.
+
+**Exact operator steps (one integration, fully gated):**
+1. Add the allowlist row to `engine/volatile_cheats.py`
+   `_SANCTIONED_UNWRITTEN_PADS`: `"func_80041688": frozenset({("pre_pad", 8)}),`
+   — this row is the sole owner surface.
+2. Apply `memory/grind/func_80041688/candidate.c` over `src/text1a_post.c`
+   (replaces the rule-era `sp10[8]`/`(void)sp10` body; staged guard included).
+3. Retire regfix.txt lines 212-214 (the 3 lbu-operand subst rules) in the same
+   step — they would corrupt the already-correct [b,r,g] stream.
+4. Re-run `sandbox func_80041688 --disable all` (expect 0), full build (expect
+   SHA1 == oracle), fresh layer-2 cheat-reviewer, then `queue done`.
+
+**Exhaustion context (audit trail):** 18 sessions, 7 distinct modalities, ~86k
+permuter iterations across 3 chassis, 29 rejected forms; every sanctioned
+in-function axis measurement-dead (ledger s1-s17; s18 added no new axis — it is
+the disposition re-filing plus fresh floor verification).
+
+**Disposition:** owner-gated park under this entry. Nothing pends a live owner
+decision per [[judge-sole-gate]] — the row grant is batch-reviewable at the
+owner's cadence, and integration then follows the four steps above under the
+full normal gates (driver sandbox re-verify, layer-2 cheat-reviewer, oracle
+SHA1).
+
+## 2026-08-20 13:01 — func_80041688 — ruling: INTEGRATION HANDOFF filed for func_80041688 : docs/grind/decisions.md: '## 2026- — **ESCALATE**
+
+WORK IS SOUND AND THE BYTES ARE PROVEN — INDEPENDENTLY, NOT ON THE SESSION'S WORD. I did not accept the ledger's floor-6 claim as evidence of a match. I rebuilt src/text1a_post.c myself in tmp/judge41688/ (tracked files untouched) with memory/grind/func_80041688/candidate.c substituted for the committed body and with regfix.txt lines 212-214 removed, through the exact Makefile pipeline for this file (cpp | cc1 -O2 -G8 -mel | prologue_fix | maspsx GP flags | rodata-align sed | multu_pad | regfix | regfix_stage2 | asmfix | as). The result is 82 instructions against target's 82, and every instruction word equals asm/funcs/func_80041688.s except ten words that are unresolved relocations the linker fills (one %hi/%lo pair for D_800A9A10, five in-section j targets, three jal targets). That is a byte match. In particular the [b,r,g] load order the three regfix rules used to force now comes out of compilation on its own, so the rules are correctly retired rather than replaced.
+
+THE FRAME CLAIM CHECKS OUT. Reading the target assembly directly: the function reserves 56 bytes (addiu sp,sp,-0x38) and the ONLY stack references in the whole body are the save/restore of ra and s0 at 0x34 and 0x30. The 32 bytes from 0x10 to 0x2F are reserved and never touched, and they sit below the saved registers — the leading local-variable region, i.e. the sanctioned shape, not a trailing pad. Our honest C reserves only 24 bytes, and that difference is exactly the six instruction words the sandbox still counts.
+
+THE CONSTRUCTS ARE IN SANCTIONED FAMILIES AND THE PREREQUISITES HOLD. Two non-semantic constructs, both annotated. (1) The staged loop1 guard was GRANTED by the Judge on 2026-08-20 12:41 (decisions.md:9172) under staged-value-reused-variable; I am not reopening it. (2) `volatile u32 pre_pad[8];` is the phantom-frame-slot volatile pad local family (.claude/rules/no-new-park-categories.md:390). I checked each prerequisite the family names: ARRAY form yes, volatile yes, first declaration in the body yes, no `(void)pad;` shim, `!FAKE` annotation present naming the mechanism, frame forensics in the ledger, and — the specific thing the 12:41 ruling refused this request for — honest producers measured inert FIRST. That ripeness gap is now discharged: s17 ran the full phantom-slot-frame-lever recipe on the honest baseline (all three producer classes, the .frame gradient, the orphan detector), artifacts present in tmp/grind/func_80041688/s17/ (cc1 -da dumps, frame_probe.sh, orphan_probe.sh) and written up in evidence.md:302-307; every probe produced vars=0 and no stranded pseudo, while the residual needs 32 bytes' worth of them. On the merits I would PASS this.
+
+WHY I AM NOT PASSING IT, AND WHY IT IS NOT AN INTEGRATION HANDOFF. Making the function finish requires one line of ENGINE source — a per-function row in engine/volatile_cheats.py `_SANCTIONED_UNWRITTEN_PADS`: `"func_80041688": frozenset({("pre_pad", 8)}),`. Until that row exists the engine deletes the pad before scoring, so `sandbox --disable all` reads 6 rather than 0 and `queue done` refuses the function. I deliberately did NOT return escalate_kind=integration-handoff, even though the session filed it that way, for the same two mechanical reasons the Judge gave on the identical func_800481E8 case (decisions.md:9101): .claude/rules/integration-handoff-self-serve.md denylists anything under engine/ as severe-blocker class, so a scope_paths entry naming engine/volatile_cheats.py would be refused by the path regex and the function would deadlock with nobody having said so out loud; and that rule's own entry condition is "sandbox == 0 AND full-build SHA1 == oracle", which cannot be met here precisely because the row is missing. Routing it as a handoff would trade an honest question for a silent stall.
+
+THE PRECISE QUESTION FOR THE OWNER — and it is now the SECOND function asking it. The pad family itself is already sanctioned in general terms (2026-08-18); what is owner-only is the per-function allowlist row, and the owner hand-added three such rows already (func_80047EE8, func_80047FBC in commit b734618d, plus the earlier siblings). So: when a function's bytes are proven and its pad demonstrably satisfies every prerequisite of the already-sanctioned family, may the pipeline add the per-function allowlist row itself — treating the row as bookkeeping that registers an application of an existing policy rather than as an extension of policy — or does each row remain an owner-only ruling? The case for self-serve: nothing about this row decides an open policy question, and func_800481E8 and func_80041688 are now both proven-and-parked on one line each, which is exactly the latency the 2026-08-19 ruling set out to remove. The case against: the allowlist is the enforcement surface of a cheat detector, and a pipeline that can add rows to its own detector allowlist can in principle sanction its own constructs — the hazard the denylist exists to prevent. A middle option the owner may prefer: allow self-serve rows ONLY for the pad family, ONLY on a Judge verdict that names the row verbatim, with each row committed as its own auditable line.
+
+IF THE OWNER GRANTS THE ROW the remaining steps are routine and fully gated: add the row; apply candidate.c over src/text1a_post.c:96 (replacing the rule-era sp10[8]/(void)sp10 body); retire regfix.txt:212-214 in the SAME step (they would corrupt the now-correct [b,r,g] stream); re-run sandbox (expect 0), full build (expect SHA1 == oracle — my object-level rebuild says it will), fresh layer-2 cheat-reviewer, then queue done.
+
+## 2026-08-20 — func_80041688 — JUDGE ESCALATE on ruling request (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-20)** — verdict ESCALATE (policy-question): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WORK IS SOUND AND THE BYTES ARE PROVEN — INDEPENDENTLY, NOT ON THE SESSION'S WORD. I did not accept the ledger's floor-6 claim as evidence of a match. I rebuilt src/text1a_post.c myself in tmp/judge41688/ (tracked files untouched) with memory/grind/func_80041688/candidate.c substituted for the committed body and with regfix.txt lines 212-214 removed, through the exact Makefile pipeline for this file (cpp | cc1 -O2 -G8 -mel | prologue_fix | maspsx GP flags | rodata-align sed | multu_pad | regfix | regfix_stage2 | asmfix | as). The result is 82 instructions against target's 82, and every instruction word equals asm/funcs/func_80041688.s except ten words that are unresolved relocations the linker fills (one %hi/%lo pair for D_800A9A10, five in-section j targets, three jal targets). That is a byte match. In particular the [b,r,g] load order the three regfix rules used to force now comes out of compilation on its own, so the rules are correctly retired rather than replaced.
+
+THE FRAME CLAIM CHECKS OUT. Reading the target assembly directly: the function reserves 56 bytes (addiu sp,sp,-0x38) and the ONLY stack references in the whole body are the save/restore of ra and s0 at 0x34 and 0x30. The 32 bytes from 0x10 to 0x2F are reserved and never touched, and they sit below the saved registers — the leading local-variable region, i.e. the sanctioned shape, not a trailing pad. Our honest C reserves only 24 bytes, and that difference is exactly the six instruction words the sandbox still counts.
+
+THE CONSTRUCTS ARE IN SANCTIONED FAMILIES AND THE PREREQUISITES HOLD. Two non-semantic constructs, both annotated. (1) The staged loop1 guard was GRANTED by the Judge on 2026-08-20 12:41 (decisions.md:9172) under staged-value-reused-variable; I am not reopening it. (2) `volatile u32 pre_pad[8];` is the phantom-frame-slot volatile pad local family (.claude/rules/no-new-park-categories.md:390). I checked each prerequisite the family names: ARRAY form yes, volatile yes, first declaration in the body yes, no `(void)pad;` shim, `!FAKE` annotation present naming the mechanism, frame forensics in the ledger, and — the specific thing the 12:41 ruling refused this request for — honest producers measured inert FIRST. That ripeness gap is now discharged: s17 ran the full phantom-slot-frame-lever recipe on the honest baseline (all three producer classes, the .frame gradient, the orphan detector), artifacts present in tmp/grind/func_80041688/s17/ (cc1 -da dumps, frame_probe.sh, orphan_probe.sh) and written up in evidence.md:302-307; every probe produced vars=0 and no stranded pseudo, while the residual needs 32 bytes' worth of them. On the merits I would PASS this.
+
+WHY I AM NOT PASSING IT, AND WHY IT IS NOT AN INTEGRATION HANDOFF. Making the function finish requires one line of ENGINE source — a per-function row in engine/volatile_cheats.py `_SANCTIONED_UNWRITTEN_PADS`: `"func_80041688": frozenset({("pre_pad", 8)}),`. Until that row exists the engine deletes the pad before scoring, so `sandbox --disable all` reads 6 rather than 0 and `queue done` refuses the function. I deliberately did NOT return escalate_kind=integration-handoff, even though the session filed it that way, for the same two mechanical reasons the Judge gave on the identical func_800481E8 case (decisions.md:9101): .claude/rules/integration-handoff-self-serve.md denylists anything under engine/ as severe-blocker class, so a scope_paths entry naming engine/volatile_cheats.py would be refused by the path regex and the function would deadlock with nobody having said so out loud; and that rule's own entry condition is "sandbox == 0 AND full-build SHA1 == oracle", which cannot be met here precisely because the row is missing. Routing it as a handoff would trade an honest question for a silent stall.
+
+THE PRECISE QUESTION FOR THE OWNER — and it is now the SECOND function asking it. The pad family itself is already sanctioned in general terms (2026-08-18); what is owner-only is the per-function allowlist row, and the owner hand-added three such rows already (func_80047EE8, func_80047FBC in commit b734618d, plus the earlier siblings). So: when a function's bytes are proven and its pad demonstrably satisfies every prerequisite of the already-sanctioned family, may the pipeline add the per-function allowlist row itself — treating the row as bookkeeping that registers an application of an existing policy rather than as an extension of policy — or does each row remain an owner-only ruling? The case for self-serve: nothing about this row decides an open policy question, and func_800481E8 and func_80041688 are now both proven-and-parked on one line each, which is exactly the latency the 2026-08-19 ruling set out to remove. The case against: the allowlist is the enforcement surface of a cheat detector, and a pipeline that can add rows to its own detector allowlist can in principle sanction its own constructs — the hazard the denylist exists to prevent. A middle option the owner may prefer: allow self-serve rows ONLY for the pad family, ONLY on a Judge verdict that names the row verbatim, with each row committed as its own auditable line.
+
+IF THE OWNER GRANTS THE ROW the remaining steps are routine and fully gated: add the row; apply candidate.c over src/text1a_post.c:96 (replacing the rule-era sp10[8]/(void)sp10 body); retire regfix.txt:212-214 in the SAME step (they would corrupt the now-correct [b,r,g] stream); re-run sandbox (expect 0), full build (expect SHA1 == oracle — my object-level rebuild says it will), fresh layer-2 cheat-reviewer, then queue done.
+
+**Constraint recorded for any future session:** Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[8];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row — no function-scope volatile scalar, no (void) shim, no non-volatile array, and no re-filing of this as escalate_kind=integration-handoff (engine/ is denylisted and sandbox cannot read 0 without the row).
