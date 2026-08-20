@@ -137,3 +137,62 @@
 - probe: Reproduced floor 2 (candidate.c applied, sandbox --disable all = 2, 60/61). Decoded frame directly from asm/funcs/func_80017FA0.s (leaf: 0 sw$ra/sw$s?, 0 jal => saves=0 args=0; zero sw/lw ($sp) => 0 written). Ran the carve-out's 5 prerequisites (tmp/grind/func_80017FA0/s3/framemath.md).
 - result: Prerequisite 1 satisfied only TRIVIALLY (0<N holds for ANY zero-store phantom leaf frame => does not distinguish a genuine oversized-locals object like the granted func_80037540 [24B written prefix + live callee buffer, ALIGN8(24)+16+24=0x40!=0x48] from plain frame coercion). No written prefix / no live locals object => fully-dead-pad fallback; no SOTN precedent for an unwritten local array as a phantom-frame carrier; sanctioning requires wiring a prerequisite-aware engine allowlist (forbidden grind surface) + owner ruling.
 - verdict: KILLED
+
+## s5 (2026-08-20)
+
+- **KILLED** — "The s4 candidate only needs a citation/annotation fix." The
+  02:54 Judge FAIL was on the scratchpad `volatile`, a load-bearing construct
+  now on the driver's BANNED list, not on wording. Restoring the candidate would
+  auto-reject. (Citation corrected in self_vet.md regardless; the frame lever's
+  real exhibit is func_8003DBE4 / phantom-slot-frame-lever.md:37-41 and
+  src/code6cac_c2.c:1325, not tslLineG5Init.)
+- **KILLED** — "A numeric-constant scratchpad address can reach target without
+  volatile." Seven spellings measured (vNV, va1, va2, vb1, vb2, vc1, vc4); all
+  are strength-reduced by loop.c into one biased base register. Best 57 insns,
+  worst 63. Mechanism named and measured, not guessed.
+- **CONFIRMED** — "A symbol_ref scratchpad address defeats loop.c strength
+  reduction without any volatile." vb4: 61 insns, 58/61 identical, vars= 8.
+- **CONFIRMED** — "The s4 frame lever is independent of the volatile." Every
+  non-volatile variant still reports `# vars= 8`.
+- **CONFIRMED** — "The remaining 3-instruction residual is a GNU as expansion
+  choice, not a cc1 choice." maspsx emits `sw $2,D_1F800000+108($5)` unexpanded;
+  as picks `addu at,at,base` for symbol expressions and `addu at,base,at` for
+  numeric ones.
+- **KILLED** — "A two-prong volatile grant could be cited for scratchpad."
+  sotn-construct-index.md has zero 0x1F800000-range entries: negative census.
+
+## [s4] The s4 candidate needs only a citation/annotation fix and can be restored and resubmitted this session.
+- mechanism: The fix-up notice quoted the 02:40 layer-1 note ('citation only'). The LATER 02:54 Judge call FAILed the same candidate on the scratchpad volatile - a load-bearing construct the driver has since added to the BANNED list for this function.
+- probe: Read docs/grind/decisions.md:7742-7748 and the brief's BANNED CONSTRUCTS block; compared them against memory/grind/func_80017FA0/candidate.c, which declares volatile s32 *scr / *ac_base and three *(volatile s32*)(0x1F8000xx + off) stores.
+- result: Restoring candidate.c would produce a diff whose self-vet must declare a banned construct, which the driver rejects before the Judge is spawned. src/code6cac.c left untouched (INCLUDE_ASM). The citation itself was corrected in self_vet.md anyway: the s4 vet cited tslLineG5Init, which is producer #2 (combine orphan-USE); the rotated guard's real exhibit is func_8003DBE4 at .claude/rules/phantom-slot-frame-lever.md:37-41 plus the in-tree instance src/code6cac_c2.c:1325.
+- verdict: KILLED
+
+## [s4] The s4 frame lever (rotated guard on the live counter) depends on the volatile and dies with it.
+- mechanism: If the 8-byte phantom frame came from the volatile scratchpad accesses rather than from `i` surviving to frame layout, banning volatile would also cost the frame.
+- probe: Compiled seven non-volatile variants (vNV, va1, va2, vb1, vb2, vb4, vc1) through the project cc1 and read the .frame directive via tmp/grind/func_80017FA0/s4/check.sh.
+- result: Every non-volatile variant reports '.frame $sp,8,$31 # vars= 8, regs= 0/0, args= 0, extra= 0' - identical to target. The frame lever is fully independent of the volatile and survives the ban.
+- verdict: KILLED
+
+## [s4] Some pure-C NUMERIC-constant address expression makes cc1 re-materialize the 0x1F80 base at every inner-loop store (the Judge's binding constraint).
+- mechanism: With a numeric address, cc1 loop.c sees (mem (plus (reg sp_inner) (const_int 0x1F800064))) as a general induction variable, combines the three address givs and hoists one biased base (lui;ori;addu a1,t2,v0) out of the inner loop, collapsing the stores to sw v0,-8(a1)/-4(a1)/0(a1).
+- probe: Seven spellings built and objdump-diffed against asm/funcs/func_80017FA0.s: vNV plain 57 insns; vb1 u32 sp_inner 57; vb2 (u8*)0x1F800064 + sp_inner 57; va2 operand order sp_inner + 0x1F800064 57; va1 sp_off = sp_inner (unbiased value consumed after the inner loop) 57; vc1 named intermediate s32 ad = 0x1F800064 + sp_inner with ad/ad+4/ad+8 60; vc4 no sp_inner, 0x1F800064 + i*0x18 + j*0xC 63 (three separate hoisted bases).
+- result: All seven strength-reduced; target is 61 insns. The numeric-constant address family is dead for this residual.
+- verdict: KILLED
+
+## [s4] An extern-SYMBOL scratchpad address blocks the giv and reproduces target's per-store address materialization with no volatile anywhere.
+- mechanism: A symbol_ref address is not a general induction variable in GCC 2.7.2 loop.c, so the three address givs are never formed or combined; cc1 emits 'sw $2,D_1F800000+100($5)' per store.
+- probe: Variant vb4 = the non-volatile body with the three inner stores written *(s32 *)((u8 *)D_1F800000 + 0x64 + sp_inner) and extern s32 D_1F800000[]; assembled with D_1F800000 = 0x1F800000 and diffed instruction-for-instruction against target.
+- result: 61 insns (target 61), 58 of 61 byte-identical, vars= 8, zero volatile in the function. Banked as the new candidate.c.
+- verdict: CONFIRMED
+
+## [s4] The remaining 3-instruction residual is a cc1 codegen choice reachable from C.
+- mechanism: If cc1 chose the addu operand order, some C spelling could flip it.
+- probe: Ran the cc1 -> prologue_fix -> maspsx pipeline alone (tmp/grind/func_80017FA0/s4/pipe.sh) and inspected the pre-assembler text.
+- result: maspsx passes the store through unexpanded ('sw $2,D_1F800000+108($5)'), so GNU as performs the expansion; as emits 'addu at,base,at' for a NUMERIC address expression and 'addu at,at,base' for a SYMBOL expression. The operand order is an assembler expansion-path artifact, not a cc1 choice.
+- verdict: KILLED
+
+## [s4] A two-prong legitimate-volatile grant could be cited for scratchpad RAM 0x1F800000-0x1F8003FF, reinstating the s4 form.
+- mechanism: legitimate-volatile-interrupt-touched requires an IRQ/DMA writer plus a sanctioned use-site shape; mmio-volatile-type-level.md:44-46 excludes the scratchpad range by name.
+- probe: Case-insensitive grep of docs/reference/sotn-construct-index.md for 0x1F800, 1f8000 and 'scratchpad'.
+- result: Zero matches - a negative census, i.e. a FAILED gate rather than an open question. No SOTN-master precedent exists for volatile on the scratchpad range; the ban should be treated as final.
+- verdict: KILLED

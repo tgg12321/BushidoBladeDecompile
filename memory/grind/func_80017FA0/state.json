@@ -1,8 +1,8 @@
 {
  "func": "func_80017FA0",
  "file": "code6cac",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "annotation-fix",
  "floor_history": [
   {
    "session": 0,
@@ -27,13 +27,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural axis dead incl. the OVERSIZED-LOCALS carve-out s2 never checked; fully-dead-pad family, no distinguishing SOTN precedent \u2014 OWNER-ESCALATION filed, owner-gated."
+  },
+  {
+   "session": 4,
+   "floor": 2,
+   "modality": "annotation-fix",
+   "headline": "Annotation-fix premise void (Judge FAILed a load-bearing, now-BANNED construct, not wording); volatile axis re-opened and near-closed: an extern-symbol scratchpad address defeats loop.c strength reduc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner rules the escalation (options a/b) for func_80017FA0's zero-store 8-byte phantom leaf frame.",
-   "mechanism": "The sole residual is cc1 assign_stack_local reserving an 8-byte frame from a source-level dead local, with all accesses DCE'd (zero frame stores). Every pure-C shape that reproduces it is a forbidden dead local; the OVERSIZED-LOCALS frame-math is trivially (non-distinguishingly) satisfied.",
-   "next_probe": "Await owner ruling. Precedent (AddTbpOfst_80047EE8, InitHiraRmd_80047FBC, +6 same species) all ruled option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE on 2026-07-22; expected disposition is (b) unless the owner elects to open the fully-dead-pad engine-allowlist path. Do NOT re-grind \u2014 all sanctioned axes are dead."
+   "hypothesis": "A pure-C spelling exists that emits a NUMERIC absolute address for the three inner stores (giving GNU as the 'addu at,base,at' expansion path) while still defeating loop.c strength reduction - closing the last 3 instructions.",
+   "mechanism": "loop.c's find_mem_givs/combine_givs form the address giv only for (plus (reg) (const_int)); a symbol_ref is exempt. The needed spelling must be numeric at the RTL level yet not a recognised giv - e.g. a base whose increment is not a compile-time constant, an address whose variable part is not a biv of the inner loop, or a shape where combine_givs judges the replacement unprofitable.",
+   "next_probe": "Run 'pwsh tools/grinder/dump.ps1 func_80017FA0' with the vNV variant in src and read the .loop dump to see exactly which giv is created and what benefit loop.c assigns it; then target that specific test. Harness is ready: tmp/grind/func_80017FA0/s4/{mkvar.py,check.sh,batch.sh,pipe.sh}, base TU tmp/perm_17fa0/base.c."
+  },
+  {
+   "hypothesis": "The extern-symbol candidate is already the correct C and the 3-instruction residual is a BUILD-SURFACE question, not a C question - i.e. an integration handoff rather than an unsolved grind.",
+   "mechanism": "GNU as, not cc1 or maspsx, chooses the addu operand order from the address expression's form. If the symbol resolved to a numeric value before the store is expanded, the target expansion would follow.",
+   "next_probe": "Measure whether an absolute symbol defined via '.set D_1F800000, 0x1F800000' (rather than 'D_1F800000 = 0x1F800000'), or defined in a different assembly unit, changes gas's expansion path; if any spelling flips it to 'addu at,base,at', the residual closes and the remaining work is registering the symbol in named_syms.txt / symbol_addrs.txt (an operator step)."
+  },
+  {
+   "hypothesis": "The scratchpad is addressed in the original source through a declared object (an array or struct at 0x1F800000) rather than through casts, and the correct C reproduces target exactly once that object exists.",
+   "mechanism": "A declared object gives symbol_ref addressing for the inner loop (already measured to defeat the giv) AND changes what cc1 emits for the two outer single stores, which currently need raw-constant casts to avoid being CSE'd into a shared base register (vSYM showed the symbol form CSE-ing the 0x2E store and ac_base into one register: lui v1; ori v1,0xb8; addiu t3,v1,-184).",
+   "next_probe": "Enumerate every scratchpad-touching function in the tree (grep asm/funcs for 'lui .*0x1f80') and check whether their target codegen is jointly consistent with a single declared scratchpad object - a cross-function constraint that would settle the declaration shape without guessing."
   }
  ],
  "judge_constraints": [
@@ -41,11 +57,7 @@
  ],
  "origin": "queue",
  "created": "2026-07-24T22:01:20.133719+00:00",
- "pending_fixup": {
-  "kind": "citation",
-  "detail": "Construct (rotated loop-guard reusing the live counter, if (i < ptr[1]) instead of if (ptr[1] > 0)) is independently verified as a legitimate instance of the phantom-slot-frame-lever family with real in-tree precedent, but the self-vet's own citations for it are fabricated/wrong and must be corrected before commit. Re-cite only \u2014 no re-grind needed. The construct is real and precedented under .claude/rules/phantom-slot-frame-lever.md, producer #1 ('Folded loop-guard compare'), which explicitly names this exact spelling as an exhibit: \"the rotated-while guard `if (i < limit)` re-using the loop'",
-  "set": "2026-08-20T07:40:53.918306+00:00"
- },
+ "pending_fixup": null,
  "banned_constructs": [
   "volatile-qualified access to scratchpad RAM 0x1F800000-0x1F8003FF (volatile s32 *scr / *ac_base declarations and *(volatile s32 *)(0x1F8000xx + off) store casts) used to defeat CSE of the store address"
  ]

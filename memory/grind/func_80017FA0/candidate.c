@@ -1,37 +1,78 @@
-/* func_80017FA0 (code6cac.c) - MATCHED. sandbox --disable all = 0 and full
- * build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (s4, 2026-08-20).
- * ZERO regfix/asmfix rules, ZERO cheat-asm, ZERO FAKE-annotated constructs.
+/* func_80017FA0 (code6cac.c) - BEST FORM, s5 (2026-08-20). NOT YET A MATCH.
  *
- * Two levers, both ordinary C:
- *  1. (s1) The two FIXED scratchpad writes go through a pointer-typed lvalue
- *     (scr[0x2E] / scr[0x18]) rather than a raw *(volatile s32*)0xCONST cast.
- *     The cast form makes cc1 synthesise the address into a register
- *     (lui;ori;sw 0(r) = 3 insns); the pointer lvalue yields a (mem (const_int))
- *     the assembler folds to lui at,0x1f80; sw x,disp(at) = target's 2 insns.
- *     That also removed the v0/v1 cascade the early lui had forced. 13 -> 2.
- *  2. (s4) The outer loop guard is spelled against the LIVE counter,
- *     `if (i < ptr[1])`, not against the literal `ptr[1] > 0`. Semantically the
- *     same test (i is 0 there) and the shape GCC's loop rotation produces from
- *     `for (i = 0; i < ptr[1]; i++)`. Using i in the guard makes i a local that
+ * Status: 61 instructions (target: 61), 58 of 61 byte-identical to
+ * asm/funcs/func_80017FA0.s, frame `.frame $sp,8 # vars= 8` exactly as target.
+ * Residual = 3 instructions, all the same shape (see RESIDUAL below).
+ * Measured with tmp/grind/func_80017FA0/s4/check.sh on tmp/.../vb4.c.
+ *
+ * WHY THIS REPLACED THE s4 DISTANCE-0 FORM: the s4 candidate reached sandbox 0
+ * and a full-build SHA1 match, but the Judge (docs/grind/decisions.md,
+ * 2026-08-20 02:54) FAILed it and the driver BANNED its load-bearing construct
+ * - volatile-qualified access to scratchpad RAM 0x1F800000-0x1F8003FF
+ * (mmio-volatile-type-level.md:44-46 explicitly excludes that range and calls
+ * volatile there coercion absent the two-prong gate). That form is banked at
+ * memory/grind/func_80017FA0/rejected/judge-fail-0820-0254.c and must not be
+ * re-proposed; a candidate-ready self-vet that re-declares it is rejected by
+ * the driver before the Judge ever sees it.
+ *
+ * THE TWO LEVERS THAT SURVIVE, both ordinary C, no volatile anywhere:
+ *
+ *  1. (s4, Judge-endorsed) The outer loop guard is spelled against the LIVE
+ *     counter, `if (i < ptr[1])`, not `if (ptr[1] > 0)`. `i` stays a local that
  *     survives to frame layout, so get_frame_size() reports vars=8 and
- *     mips.c:compute_frame_size emits `addiu sp,sp,-8` (in the beqz delay slot)
- *     / `addiu sp,sp,8` - the target's zero-store 8-byte leaf frame - while i
- *     still lives entirely in a register, so no frame store is ever emitted.
- *     This is the ordinary phantom-frame artifact of GCC 2.7.2 documented in
- *     memory/project/phantom-frame-slots-gcc272.md, NOT a dead local: sessions
- *     s1-s3 concluded only a forbidden dead local could reserve those 8 bytes
- *     and escalated on that basis; the conclusion was wrong. 2 -> 0.
+ *     mips.c:compute_frame_size emits the target's `addiu sp,sp,-8` (in the
+ *     beqz delay slot) / `addiu sp,sp,8` empty leaf frame, while `i` lives
+ *     entirely in a register so no frame store is ever emitted. This is
+ *     producer #1 ("Folded loop-guard compare") of
+ *     .claude/rules/phantom-slot-frame-lever.md:37-41, which names this exact
+ *     spelling - "the rotated-while guard `if (i < limit)` re-using the loop's
+ *     own exit comparison" - with exhibit func_8003DBE4; the same spelling
+ *     already ships in-tree at src/code6cac_c2.c:1325. The Judge verified this
+ *     lever independently and ruled it fine, no annotation owed. It is
+ *     INDEPENDENT of the volatile question: the non-volatile variants below all
+ *     still report vars= 8.
  *
- * The inner double-loop keeps FULL-constant computed addresses
- * *(volatile s32*)(0x1F800064 + sp_inner) so cc1 re-materialises lui 0x1f80
- * every iteration (target does not LICM-hoist it). Routing the inner writes
- * through `scr` hoists the lui and regresses (old idx_base form = 33). */
+ *  2. (s5, NEW) The three inner-loop scratchpad stores address the scratchpad
+ *     through an EXTERN SYMBOL, `(u8 *)D_1F800000 + 0x64 + sp_inner`, instead
+ *     of a numeric constant `0x1F800064 + sp_inner`. Measured mechanism: with a
+ *     numeric address cc1's loop.c treats `(mem (plus (reg sp_inner)
+ *     (const_int 0x1F800064)))` as a general induction variable, combines the
+ *     three address givs and hoists a single biased base
+ *     (`lui;ori;addu a1,t2,v0`) out of the inner loop, collapsing the stores to
+ *     `sw v0,-8(a1)/-4(a1)/0(a1)` - 57 insns, 4 short. A symbol_ref address is
+ *     not a giv, so loop.c leaves it alone and cc1 emits
+ *     `sw $2,D_1F800000+100($5)` per store, which is target's per-store
+ *     re-materialisation. This is what `volatile` was doing in the s4 form, but
+ *     obtained from ordinary typing instead of coercion.
+ *
+ * RESIDUAL (the only 3 differing instructions): target has
+ *     lui at,0x1f80 ; addu at,a1,at ; sw v0,100(at)
+ * and this form emits
+ *     lui at,0x1f80 ; addu at,at,a1 ; sw v0,100(at)
+ * - the addu operands are swapped, x3 (one per inner store). This is NOT a cc1
+ * choice: maspsx passes the store through unexpanded (verified with
+ * tmp/grind/func_80017FA0/s4/pipe.sh - maspsx output still reads
+ * `sw $2,D_1F800000+108($5)`), so GNU as does the expansion and picks
+ * `addu at,base,at` for a NUMERIC address expression and `addu at,at,base` for
+ * a SYMBOL expression. Closing the last 3 insns therefore needs a cc1-level
+ * spelling that emits a numeric absolute address while still defeating loop.c
+ * strength reduction; six numeric spellings are already measured dead and
+ * banked in rejected/nonvolatile-numeric-addr-strength-reduced.c.
+ *
+ * INTEGRATION DEPENDENCY (do not miss this): this form needs the symbol
+ * D_1F800000 = 0x1F800000 to exist for the linker. The scratch harness gets it
+ * from a line prepended in tmp/perm_17fa0/compile.sh; a real build would need
+ * it in named_syms.txt / symbol_addrs.txt / undefined_syms_auto.txt, which are
+ * outside a grind session's allowed surface. If the residual 3 insns are ever
+ * closed, that symbol registration is an operator/integration step. */
 /* Copies scaled fields out of the block at a0[3] into scratchpad RAM
  * (0x1F800000). ptr[0] is written scaled by 128; ptr[1] is the group count,
  * and each group writes three words scaled by 4 at a 0x18 stride plus one
  * word taken from the 0x68 array. Nothing happens when a0[3] is null. */
+extern s32 D_1F800000[];
+
 void func_80017FA0(s32 *a0) {
-    volatile s32 *scr = (volatile s32 *)0x1F800000;
+    s32 *scr = (s32 *)0x1F800000;
     s32 temp;
     s32 *ptr;
 
@@ -41,13 +82,13 @@ void func_80017FA0(s32 *a0) {
     }
     ptr = (s32 *)temp;
 
-    scr[0x2E] = ptr[0] << 7;   /* 0x1F8000B8 */
+    scr[0x2E] = ptr[0] << 7;
 
     {
         s32 i = 0;
         if (i < ptr[1]) {
             s32 *p68 = ptr;
-            volatile s32 *ac_base = (volatile s32 *)0x1F800000;
+            s32 *ac_base = (s32 *)0x1F800000;
             s32 sp_off = 0;
             do {
                 s32 j = 0;
@@ -55,11 +96,11 @@ void func_80017FA0(s32 *a0) {
                 s32 sp_inner = sp_off;
                 do {
                     s32 *dp = (s32 *)((u8 *)ptr + data_off);
-                    *(volatile s32 *)(0x1F800064 + sp_inner) = dp[2] << 2;
+                    *(s32 *)((u8 *)D_1F800000 + 0x64 + sp_inner) = dp[2] << 2;
                     data_off += 0x10;
-                    *(volatile s32 *)(0x1F800068 + sp_inner) = dp[3] << 2;
+                    *(s32 *)((u8 *)D_1F800000 + 0x68 + sp_inner) = dp[3] << 2;
                     j++;
-                    *(volatile s32 *)(0x1F80006C + sp_inner) = dp[4] << 2;
+                    *(s32 *)((u8 *)D_1F800000 + 0x6C + sp_inner) = dp[4] << 2;
                     sp_inner += 0xC;
                 } while (j < 2);
                 ac_base[0x2B] = *(s32 *)((u8 *)p68 + 0x68) << 2;
@@ -71,7 +112,7 @@ void func_80017FA0(s32 *a0) {
         }
     }
 
-    scr[0x18] = ((s32 *)a0[3])[1];   /* 0x1F800060 */
+    scr[0x18] = ((s32 *)a0[3])[1];
 end:
     ;
 }

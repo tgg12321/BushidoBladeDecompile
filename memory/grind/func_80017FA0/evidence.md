@@ -207,3 +207,85 @@ outside worker scope). Blocked on the board with this reason. 24 prior commits
 - [s3] Every sanctioned pure-C axis (s1 fold+cascade lever closed 11/13 diffs; s2 structural frame-shape dichotomy g1-g4; s3 OVERSIZED-LOCALS) and canonical-asm are measured dead. Identical zero-store phantom-frame species to AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC (both REFUSED / OWNER-ACCEPTED INCOMPLETE 2026-07-22).
 
 - [s3] OWNER-ESCALATION filed this session in docs/grind/decisions.md (2026-07-24) naming func_80017FA0, presenting option (a) sanction fully-dead-pad family [no distinguishing SOTN precedent; requires forbidden engine surface] vs (b) refuse + INCOMPLETE-owner-accepted per endgame-lock-disposition (2026-07-20 standing policy).
+
+## s5 (2026-08-20) — annotation-fix dispatch; premise void, volatile axis re-opened and largely solved
+
+**The dispatch premise was wrong, and that is the first durable fact.** s5 was
+sent in `annotation-fix` modality against the layer-1 note of 02:40 ("citation
+only"). But the LATER Judge call at 02:54 FAILed the s4 candidate on a
+load-bearing construct — the scratchpad `volatile` — and the driver has since
+BANNED it. Restoring candidate.c and correcting a citation would therefore have
+produced a diff re-declaring a banned construct, which the driver rejects before
+the Judge is spawned. No src edit was made; src/code6cac.c stays INCLUDE_ASM.
+The citation itself WAS corrected in self_vet.md (the s4 vet cited tslLineG5Init,
+which is producer #2 / combine orphan-USE; the correct exhibit for the rotated
+guard is func_8003DBE4, .claude/rules/phantom-slot-frame-lever.md:37-41, plus
+the in-tree instance at src/code6cac_c2.c:1325).
+
+**The frame lever is independent of the volatile.** Every non-volatile variant
+measured this session still reports `.frame $sp,8 ... # vars= 8`. The s4 frame
+finding survives the ban intact.
+
+**The volatile was doing exactly one job, now named.** With a NUMERIC constant
+address, cc1's loop.c treats `(mem (plus (reg sp_inner) (const_int
+0x1F800064)))` as a general induction variable; it combines the three inner
+address givs and hoists one biased base out of the inner loop —
+`lui v0,0x1f80 ; ori v0,v0,0x6c ; addu a1,t2,v0` — rewriting the stores as
+`sw v0,-8(a1) / -4(a1) / 0(a1)`. Result 57 insns vs target 61. Target keeps
+`move a1,t2` and re-materialises per store (`lui at,0x1f80 ; addu at,a1,at ;
+sw v0,100(at)`). `volatile` blocked the giv. Six numeric-address spellings were
+measured and ALL are strength-reduced (harness tmp/grind/func_80017FA0/s4/):
+vNV plain 57 · vb1 `u32 sp_inner` 57 · vb2 `(u8 *)0x1F800064 + sp_inner` 57 ·
+va2 operand order `sp_inner + 0x1F800064` 57 · va1 `sp_off = sp_inner` so the
+unbiased value is consumed after the inner loop 57 · vc1 named intermediate
+`s32 ad = 0x1F800064 + sp_inner` with ad/ad+4/ad+8 60 · vc4 no sp_inner,
+`0x1F800064 + i*0x18 + j*0xC` 63 (three separate hoisted bases). The
+numeric-constant address family is dead for this residual.
+
+**An EXTERN SYMBOL address blocks the giv with no volatile anywhere.** Writing
+the inner stores as `*(s32 *)((u8 *)D_1F800000 + 0x64 + sp_inner)` with
+`extern s32 D_1F800000[];` yields a `symbol_ref` address, which loop.c does not
+treat as an induction variable. cc1 then emits `sw $2,D_1F800000+100($5)` per
+store. Variant vb4: **61 insns (target 61), 58/61 byte-identical, vars= 8, zero
+`volatile` in the function.** Banked as the new memory/grind/func_80017FA0/candidate.c.
+
+**The residual is 3 instructions and it is a GNU as expansion-path artifact.**
+The only diffs are the three inner stores' middle instruction: target
+`addu at,a1,at`, vb4 `addu at,at,a1`. maspsx does NOT expand these — verified
+with tmp/grind/func_80017FA0/s4/pipe.sh, whose maspsx output still reads
+`sw $2,D_1F800000+108($5)` — so GNU as performs the expansion and chooses
+`addu at,base,at` for a NUMERIC address expression and `addu at,at,base` for a
+SYMBOL expression. Closing the last 3 insns needs a cc1-level spelling that
+emits a numeric absolute address while still defeating loop.c strength
+reduction. Neither maspsx nor as is a surface a grind session may edit.
+
+**Integration dependency of the symbol form:** it needs `D_1F800000 = 0x1F800000`
+to exist for the linker (the scratch harness prepends it in
+tmp/perm_17fa0/compile.sh). A real build would need it in named_syms.txt /
+symbol_addrs.txt / undefined_syms_auto.txt — outside a grind session's surface.
+
+**Two-prong volatile gate for scratchpad: negative census.**
+`docs/reference/sotn-construct-index.md` contains ZERO entries matching
+`0x1F800`, `1f8000` or `scratchpad` (grep, case-insensitive). There is no SOTN
+precedent to cite for volatile on 0x1F800000-0x1F8003FF, so that gate FAILS and
+the ban should be treated as final rather than re-litigated.
+
+- [s4] The fix-up dispatch was based on the 02:40 layer-1 note; the 02:54 Judge FAIL superseded it and the construct it named (volatile on 0x1F800000-0x1F8003FF) is now on the BANNED list, so an annotation/citation-only fix cannot make the s4 candidate submittable. src/code6cac.c was left untouched (INCLUDE_ASM), no scope violation.
+
+- [s4] Citation defect corrected in memory/grind/func_80017FA0/self_vet.md: the rotated-guard construct's family is phantom-slot-frame-lever producer #1 ('Folded loop-guard compare'), scope sentence at .claude/rules/phantom-slot-frame-lever.md:37, exhibit func_8003DBE4 named at lines 40-41, in-tree instance src/code6cac_c2.c:1325. The s4 vet's tslLineG5Init citation was producer #2 (combine orphan-USE) and was wrong. That rule is a DIAGNOSIS RECIPE, explicitly 'NOT a sanction', so no /* FAKE */ annotation is owed - which the Judge stated independently.
+
+- [s4] The 8-byte phantom leaf frame is independent of the volatile: all seven non-volatile variants compile to '.frame $sp,8,$31 # vars= 8', matching target.
+
+- [s4] GCC 2.7.2 loop.c strength reduction is the whole non-volatile shortfall: it combines the three inner scratchpad address givs into one biased base (lui 0x1f80; ori 0x6c; addu a1,t2,v0) hoisted to the outer loop, turning the stores into sw v0,-8(a1)/-4(a1)/0(a1) and the body into 57 insns vs target's 61.
+
+- [s4] Seven numeric-address spellings measured dead (57/57/57/57/57/60/63 insns) - banked with their per-variant results in memory/grind/func_80017FA0/rejected/nonvolatile-numeric-addr-strength-reduced.c.
+
+- [s4] An extern-symbol address (extern s32 D_1F800000[]; stores as *(s32 *)((u8 *)D_1F800000 + 0x64 + sp_inner)) defeats the giv with zero volatile: 61 insns, 58/61 byte-identical to asm/funcs/func_80017FA0.s, vars= 8. This is the new candidate.c.
+
+- [s4] The 3 residual instructions are the same shape three times: target 'addu at,a1,at', candidate 'addu at,at,a1'. maspsx emits the store unexpanded ('sw $2,D_1F800000+108($5)'), so GNU as picks the expansion: 'addu at,base,at' for numeric address expressions, 'addu at,at,base' for symbol expressions. Neither maspsx nor as is an editable surface for a grind session.
+
+- [s4] The symbol form carries an integration dependency: D_1F800000 = 0x1F800000 must exist for the linker (the scratch harness prepends it in tmp/perm_17fa0/compile.sh). In a real build that means named_syms.txt / symbol_addrs.txt / undefined_syms_auto.txt, outside a grind session's allowed surface.
+
+- [s4] docs/reference/sotn-construct-index.md has zero entries for 0x1F800 / 1f8000 / scratchpad - the two-prong volatile route for the scratchpad range is a failed gate, not an open question.
+
+- [s4] Floor reported as the ledger's 2 because no src edit was made this session; note that floor 2 was measured on a form whose volatile is now banned, so the honest floor of any PERMISSIBLE form is the candidate's 3-instruction residual (58/61 identical) until the as-expansion question is closed.
