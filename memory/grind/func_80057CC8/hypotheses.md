@@ -449,3 +449,15 @@
 - probe: V6 = V5 with the `new_var` declaration and the embedded assignment removed (`(s32)(*(&Judge + ...))`), `sandbox --disable all`.
 - result: KILLED as a lever / CONFIRMED as removable — score unchanged at 0. The final committed body carries no dead store, so the candidate needs no dead-store-fake-exception claim and no /* FAKE */ annotation.
 - verdict: CONFIRMED
+
+## [s29b] The floor-3 residual is caused by the PREV-site SET of the pointer local `p`, and the function matches with that SET deleted (prev vertex read by ordinary array indexing) while the next-site `p` and its inline re-read of `*(s16 **)(arg0 + 4)` are kept exactly as the layer-2-PASSed baseline had them.
+- mechanism: `p`'s DECL_RTL pseudo (86) carries one SET per site. With two SETs it fails local-alloc's `reg_n_deaths == 1` hard test (local-alloc.c:472, directly instrumented in s21/s24) and is handed to global-alloc, where the copy preference propagated from pseudo 129 selects $v1, emitting `addu v1,v0,a2` where target has the coalesced `addu v0,v0,a2`; that cascades to the two `lh` base registers = the 3. Reading the prev vertex as `table[(s16) prev_idx * 2]` removes that SET entirely, so pseudo 86 is single-SET, local-alloc keeps it, and it coalesces into $v0 like target.
+- probe: v12 (`tmp/grind/func_80057CC8/s29b/v12.c`) applied to src/text1b.c in place of the INCLUDE_ASM line; `sandbox func_80057CC8 --disable all`, then full `build`.
+- result: CONFIRMED — MATCH. score 0, target_insns 111 == build_insns 111, rules_dropped 0; full build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. Intermediate points: v8 (same but with an `s32 pi` index local) = 0; baseline = 3.
+- verdict: CONFIRMED
+
+## [s29b] The second load of the vertex-table base (`*(s16 **)(arg0 + 4)` inside `p`'s address expression) is required by the target bytes and cannot be replaced by reusing the already-loaded `table`.
+- mechanism: the target itself performs both loads — asm/funcs/func_80057CC8.s:17 `lw $a2, 0x4($s2)` before the first `jal ratan2` and :50 `lw $a0, 0x4($s2)` after it. Reusing `table` across the call forces GCC to keep the base live in a callee-saved register over the call boundary, which changes the instruction count rather than just the allocation.
+- probe: v7 (prev site indexed, next-site `p` derived from `table`) and v9 (both sites indexed off `table`, no `p` at all) — the two forms that eliminate the re-read; `sandbox --disable all` on each.
+- result: KILLED as alternatives — v7 = 30 with build_insns 112, v9 = 30 with build_insns 112, against target_insns 111. Both are one instruction LONGER than target, so no allocation-level fix can reach 0 from either. The re-read is load-bearing program shape, not a duplicate. Banked as rejected/reload-elimination-p-derived-from-table-score30.c and rejected/both-sites-indexed-no-reload-score30.c.
+- verdict: CONFIRMED (the re-read is necessary) / the reload-free family is KILLED

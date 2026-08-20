@@ -8095,3 +8095,7 @@ Body is honest C except one construct: the adjacent cancellation pair `v1++; v1-
 ## 2026-08-20 04:30 — func_80057CC8 — layer-1 review — **FAIL**
 
 The `table` / `nt` pair is the banned shared-pointer-split-into-two-source-level-locals family wearing a new name — the session's own measurements (V1 reused-table=6 vs V5/V6 split-into-nt=0) prove the split, not the array-indexing spelling, is what closes the gap.
+
+## 2026-08-20 04:40 — func_80057CC8 — layer-1 review — **FAIL**
+
+This is the same Judge-banned shared-pointer-split/duplicate-reload construct from the prior layer-1 FAIL, wearing a new spelling (inline duplicate load instead of a named `nt` local) — the ledger's own 28-session history shows the reload's sole function is to steer RA, and the un-named form was never independently vetted, only asserted to be exempt because it lacks a name.

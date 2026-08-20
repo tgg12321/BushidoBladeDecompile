@@ -533,3 +533,52 @@ Per user 2026-06-22: keep working it; not permanently parked.
 - [s29] Final body = V6 with `single_game_getEnemyCharId` corrected to `ratan2` (the actual symbol at the two `jal` targets in asm/funcs/func_80057CC8.s lines 47 and 57 — the stale name in the inherited candidate.c was link-invisible to the sandbox because the scorer masks call targets, and it surfaced only on the first full `build`, which failed to link with "undefined reference to single_game_getEnemyCharId"). Final verification, run twice: `sandbox --disable all` = 0 (build_insns 111 == target_insns 111, rules_dropped 0), full `build` = sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.
 - [s29] Disposition consequence: the escalation path is MOOT and no docs/grind/decisions.md entry was filed. The 2026-07-20 owner ruling (REFUSED / OWNER-ACCEPTED INCOMPLETE) does not need revisiting because the matching form claims no exception it refused — the final body is plain C with zero regfix/asmfix rules, zero inline asm, zero FAKE constructs, and no sanctioned-family claim of any kind. Self-vet at memory/grind/func_80057CC8/self_vet.md.
 - [s29] Process note for the pipeline (cheap, generalisable): the very first V1 attempt scored `null` with a truncated .o because a naive whole-file string replace of the declaration line `s16 *p;` over the 12k-line src/text1b.c also rewrote an UNRELATED sibling function (func_80049584 at src/text1b.c:611), making cc1 segfault after emitting "'p' undeclared". The sandbox reports that as "func not found in .o / pipeline likely truncated by a sibling index-based reorder rule", which points at the wrong cause. Always scope a src edit to the function's own line range (tmp/grind/func_80057CC8/s29/apply.py does this by replacing exactly the INCLUDE_ASM line).
+- [s29b] (This is the session dispatched AFTER the 2026-08-20 04:30 layer-1 FAIL; the prior
+  session also wrote its entries as [s29], so this one is tagged [s29b].) Dispatched in
+  `escalation`/disposition modality. Chassis re-measured first, not assumed: the floor-3
+  baseline restored from commit 25af3133 (the layer-2-PASSed baseline; only edit was the
+  callee name `single_game_getEnemyCharId` -> `ratan2`, the symbol actually at both `jal`
+  targets) scores `sandbox --disable all` = 3, target_insns 111, build_insns 111,
+  rules_dropped 0. Chassis unchanged since s28.
+- [s29b] Endgame-lock gate (a) re-run: `python3 tools/scan_hand_coded.py --single
+  func_80057CC8` = tier LOW, score 1/8 (only S4 front-loads; no S1/S2/S6). Gate (a) FAILS,
+  as in the 2026-07-20 owner ruling. Gate (b): `docs/reference/sotn-construct-index.md`
+  has one pointer-family class, `pointer_alias` (206 hits, "`T* p = &GLOBAL;` local alias
+  of a global") — a global-address alias, not a re-read of a parameter-derived field; no
+  class covers the banned split. Gate (b) FAILS. Both gates dead => the standing-ruling
+  disposition WOULD have applied. It did not need to: an un-tried lever dropped the floor
+  to 0 and the disposition is moot. No decisions.md entry was filed.
+- [s29b] THE LEVER (target-bytes-first, not permuter-first). Read the target's loads
+  before proposing anything: `asm/funcs/func_80057CC8.s:17` `lw $a2, 0x4($s2)` and
+  `:50` `lw $a0, 0x4($s2)` are TWO independent loads of the vertex-table base field, one
+  on each side of the first `jal ratan2`. So the original C re-read that field at the
+  second site — the second read is target-materialised, not a coercion. Everything the
+  ledger had treated as "the shared pointer" was therefore mis-framed: the question was
+  never how to share one base, it was how many SETs the derived pointer local carries.
+- [s29b] Measurements (all `sandbox func_80057CC8 --disable all`, target_insns 111):
+  baseline (p built at BOTH sites, second from the inline re-read) = 3.
+  v7 (prev site array-indexed off `table`; next-site `p` derived from `table`, i.e. the
+  re-read ELIMINATED) = 30, build_insns 112.
+  v9 (both sites array-indexed off `table`, no `p`, no re-read) = 30, build_insns 112.
+  v8 (prev site array-indexed via an `s32 pi` index local; next-site `p` unchanged from
+  baseline, re-read retained) = 0.
+  v12 (= v8 with the `pi` local dropped, indexing written `table[(s16) prev_idx * 2]`
+  inline, and the baseline's byte-inert `s16 new_var` carrier deleted) = 0, build_insns
+  111, rules_dropped 0. Full `build` on v12: sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.
+- [s29b] Interpretation, stated precisely because it corrects a 28-session frame: the 3
+  was caused by the PREV-site `p` SET, not by anything at the next site. With two SETs the
+  DECL_RTL pseudo (86) fails local-alloc's `reg_n_deaths == 1` test (local-alloc.c:472,
+  measured s21/s24) and is punted to global-alloc, where pseudo 129's copy preference pins
+  it to $v1 (`addu v1,v0,a2`) instead of target's coalesced `addu v0,v0,a2`. Deleting the
+  prev-site pointer construction in favour of ordinary array indexing leaves one SET, and
+  the coalesce is target-identical. v7/v9 bound the other side: the re-read is LOAD-BEARING
+  (removing it forces GCC to hold the base live across the call and costs one instruction,
+  112 vs 111) — it is not an optional duplicate.
+- [s29b] Relation to the banned-construct list: the matching body declares exactly ONE
+  base pointer local (`table`). It contains NO `nt`, no second named base local, and no
+  split of a shared pointer into two source-level locals. Its only NEW element vs the
+  layer-2-PASSed 25af3133 baseline is the removal of a construct (the prev-site `p` build,
+  plus the dead `new_var`). The second READ of `arg0 + 4` remains where the baseline always
+  had it — inline in `p`'s address expression — and is required by the target bytes.
+  Self-vet: memory/grind/func_80057CC8/self_vet.md.
