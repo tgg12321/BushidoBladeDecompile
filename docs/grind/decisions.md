@@ -7039,3 +7039,7 @@ worked example and held a false 0 across five sessions.
 ## 2026-08-19 21:02 — func_80038170 — layer-1 review — **FAIL**
 
 Candidate adds a statement-order scheduling lever (standalone i=0 hoist) that the binding Judge ruling explicitly forbade ("no new constructs"), and the two rules cited to justify it don't actually cover this shape.
+
+## 2026-08-19 21:23 — func_80038170 — layer-1 review — **FAIL**
+
+The `(&D_8008F19C)[s3*2+n]` address-of-scalar indexing is a TU-local pointer-pun reintroduced specifically to route around the out-of-scope header fix, and the ledger's own reasoning shows the spelling choice (one shared base vs. two symbols) is driven by its effect on GCC's frame-temp allocation, not by program logic alone.

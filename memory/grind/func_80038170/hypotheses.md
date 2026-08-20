@@ -113,3 +113,17 @@
 - probe: layer-1 cheat-reviewer on the diff, then the Judge; on PASS the operator runs `retire func_80038170` (deletes the no-op tools/prologue_config.json entry) and `queue done func_80038170`
 - result: pending review — no measurement left to take
 - verdict: CONFIRMED (as a frontier statement: search space on this function is empty)
+
+## s5 (2026-08-19, synthesis — post out-of-scope ruling)
+
+## [s5] The companion include/code6cac.h retype is required to reach the solved bytes, so the driver's out-of-scope ruling blocks the solution
+- mechanism: s1-s3 asserted the shared-base spelling was load-bearing for the -0x38 frame, and s4b-s4d expressed that base as an array via a one-line header declaration correction; if the frame really depended on the declaration, no src-only form could exist
+- probe: revert include/code6cac.h to the unmodified `extern u8 D_8008F19C;` and write the two conditional table reads as `(&D_8008F19C)[s3 * 2 + 0]` / `[s3 * 2 + 1]`, changing nothing else in the s4d body; then `sandbox func_80038170 --disable all`, `engine build`, `canonical func_80038170`
+- result: KILLED — sandbox score 0 at 141/141 with rules_dropped 0; build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH; canonical verdict C / asm_insns 0 / distance 0. The header edit was never needed for the bytes; it was a readability change that happened to be out of scope. Only src/code6cac_c_mid.c is touched by the candidate. This is consistent with (and is the other direction of) the s4b kill that the declared type of the shared base is irrelevant — what allocates the compiler temp is sharing ONE base across the two reads inside the conditional arm.
+- verdict: KILLED
+
+## [s5] FRONTIER (synthesis reset): search space on func_80038170 is empty; the only remaining work is acceptance
+- mechanism: all three codegen mechanisms are settled and measured (one-base conditional table pair -> the 8-byte compiler temp and the -0x38 frame; declaration order plus three separate zeroing statements -> the natural save/init pair order; no scheduling construct at all), the honest floor is 0, there are zero regfix/asmfix rules and zero cheat-asm, no sanctioned family is claimed and no annotation is owed, and the candidate is confined to the one in-scope file
+- probe: layer-1 cheat-reviewer on the src-only diff, then the Judge; on PASS the operator runs `retire func_80038170` (deletes the measured-no-op tools/prologue_config.json entry) and `queue done func_80038170`
+- result: pending review — no measurement left to take on this function
+- verdict: CONFIRMED (as a frontier statement)

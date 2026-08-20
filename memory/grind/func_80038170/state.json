@@ -39,13 +39,16 @@
  "judge_constraints": [
   "Use ONLY the separate-statement spelling: keep `s32 s1, s2, s3;` declaration order and write `s3 = 0; s2 = 0; s1 = 0;` (no chained assignment, no decl-order reversal, no new constructs, no annotation \u2014 it is live code). Then retire BOTH remaining cheat carriers (regfix.txt:1250 reorder @9-13 and the tools/prologue_config.json func_80038170 entry), prove sandbox 0 after build/ regenerates from this src (the D_8008F19C+1 vs D_8008F19D floor-1 must vanish at the .o level, not be waived), full-build SHA1 == oracle, then submit for FINAL CALL.",
   "LAYER-1 CHEAT-REVIEWER FAIL: Candidate adds a statement-order scheduling lever (standalone i=0 hoist) that the binding Judge ruling explicitly forbade (\"no new constructs\"), and the two rules cited to justify it don't actually cover this shape. Next action: Revert to the Judge-bound form ONLY (decl `s32 s1, s2, s3;` + separate `s3 = 0; s2 = 0; s1 = 0;`, i left in the for-init clause, no other construct changes) and re-measure honestly. Per evidence.md [s2] that form alone leaves a 5-word scheduling residual the engine's masked score hides \u2014 do NOT paper over it with a newly-invented statement-",
-  "OUT OF SCOPE: candidates for func_80038170 may only edit src/code6cac_c_mid.c. Edits to include/code6cac.h are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac_c_mid.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit."
+  "OUT OF SCOPE: candidates for func_80038170 may only edit src/code6cac_c_mid.c. Edits to include/code6cac.h are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac_c_mid.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The `(&D_8008F19C)[s3*2+n]` address-of-scalar indexing is a TU-local pointer-pun reintroduced specifically to route around the out-of-scope header fix, and the ledger's own reasoning shows the spelling choice (one shared base vs. two symbols) is driven by its effect on GCC's frame-temp allocation, not by program logic alone. Next action: Do not commit this src-only form. File the header correction as an integration-handoff scope-widening request per [[integration-handoff-self-serve]] \u2014 include/code6cac.h is explicitly in the allowed class ('shared headers (include/"
  ],
  "origin": "queue",
  "created": "2026-07-28T11:45:41.842636+00:00",
  "banned_constructs": [
   "state.json judge_constraints[0] binding spelling",
-  "standalone `i = 0;` placed before `mask = D_80106A50;`, empty for-init `for (; i < 0x1B; i++)`"
+  "standalone `i = 0;` placed before `mask = D_80106A50;`, empty for-init `for (; i < 0x1B; i++)`",
+  "`out[0x42] = (&D_8008F19C)[s3 * 2 + 0]; out[0x43] = (&D_8008F19C)[s3 * 2 + 1];` with `include/code6cac.h` still declaring `extern u8 D_8008F19C;` (scalar) and `extern u8 D_8008F19D;` (scalar) \u2014 unchanged in this candidate",
+  "Reversion from the s4b/s4c/s4d form (header corrected to `extern u8 D_8008F19C[];`, plain `D_8008F19C[s3*2+n]` indexing) back to the scalar+`&`-index spelling, done specifically because the driver ruled the header edit out of scope for this function's candidates"
  ],
- "ladder_skip": 2
+ "ladder_skip": 3
 }

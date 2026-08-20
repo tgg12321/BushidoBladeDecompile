@@ -1,62 +1,55 @@
-/* Candidate: func_80038170 (code6cac_c_mid.c) - SOLVED, session s4b, re-measured s4c
- * and again s4d (2026-08-19): third independent reproduction, sandbox 0 at 141/141 with
- * rules_dropped 0 and engine build sha1 == oracle MATCH, canonical verdict C / distance 0.
- * (synthesis, 2026-08-19). s4c reproduced it verbatim from this file on the current
- * chassis: sandbox --disable all = 0 (141/141, rules_dropped 0), engine build sha1 ==
- * oracle MATCH, canonical verdict C / asm_insns 0 / distance 0. The s4b session was
- * discarded by the driver's self-vet ban tripwire (vet wording, not the C); the body
- * below is unchanged from the form that measured 0.
+/* Candidate: func_80038170 (code6cac_c_mid.c) - SOLVED FORM, session s5 (synthesis,
+ * 2026-08-19). CONFINED TO src/code6cac_c_mid.c: no header edit, no rule, no
+ * driver-surface change of any kind.
  *
- * STATUS: with this exact body in src/code6cac_c_mid.c AND the one-line header
- * correction below, `engine build` produces build/bb2.exe with
- * sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (MATCH), and
- * `sandbox func_80038170 --disable all` reports score 0 at 141/141 insns,
- * rules_dropped 0. `canonical func_80038170` -> verdict C, asm_insns 0,
- * distance 0. All measured this session.
+ * WHAT CHANGED vs the s4b/s4c/s4d banked form: those carried a companion one-line
+ * edit to include/code6cac.h (`extern u8 D_8008F19C;` -> `extern u8 D_8008F19C[];`)
+ * so the two conditional table reads could be written `D_8008F19C[s3*2+n]`. The
+ * driver has since ruled that path OUT OF SCOPE - candidates for this function may
+ * only edit src/code6cac_c_mid.c. That header edit was never load-bearing: s4b
+ * already measured that the DECLARED TYPE of the shared base is irrelevant to the
+ * codegen (both spellings compile byte-identically). This candidate therefore
+ * restores the `(&D_8008F19C)[s3*2+n]` spelling, which reads the same table off the
+ * same single base under the unmodified scalar declaration, and touches no file
+ * but the .c.
  *
- * REQUIRED COMPANION EDIT (one line, include/code6cac.h:80):
- *     -extern u8 D_8008F19C;
- *     +extern u8 D_8008F19C[];
- * D_8008F19C is the base of a 2-bytes-per-entry table and is referenced ONLY by
- * this function (whole-tree grep). The scalar declaration was a splat per-byte
- * auto-symbol artifact, not a type claim; the array declaration is what the use
- * sites actually mean (header-type-correction-from-use-sites). The sibling
- * per-byte auto-symbol `extern u8 D_8008F19D;` at line 81 is now unreferenced;
- * it was left in place to keep the diff minimal.
+ * THE THREE SETTLED MECHANISMS (merged s1..s4d record; nothing open):
+ *  1. FRAME. The target's -0x38 (locals 16, not the naive 8) comes from SHARING ONE
+ *     BASE across the two table reads inside the `if (s3 > 0)` arm: GCC 2.7.2 stages
+ *     the shared address into an 8-byte compiler temp inside the conditional scope
+ *     (phantom-frame-slots-gcc272; an outer-scope pair reuses the pre-existing slot,
+ *     a pair inside the conditional allocates a second one). A TWO-symbol spelling
+ *     (D_8008F19C / D_8008F19D as separate bases) kills the temp and reopens the
+ *     +8-byte gap - that is the s1 trigger-matrix result and the reason the two
+ *     halves of the entry are indexed off one base here.
+ *  2. PROLOGUE SAVE/INIT PAIR ORDER. Natural and correct under the declaration
+ *     `s32 s1, s2, s3;` with the three zeroing statements written separately in the
+ *     order s3, s2, s1. No order-steering construct is used or needed: chained
+ *     `s1 = s2 = s3 = 0` and reversed declaration order are both BANKED REJECTED
+ *     (rejected/chained-zeroing-order.c, rejected/decl-order-prologue-flip.c).
+ *  3. SCHEDULE. No lever of any kind is required. The s2-era "5-word scheduling
+ *     residual" (`move a3,zero` emitted late, `sw ra` displaced two slots) was KILLED
+ *     in s4b as an artifact of diffing against a STALE cheat-form build/ reference
+ *     object. The ordinary `for (i = 0; i < 0x1B; i++)` is used. The standalone
+ *     `i = 0;` hoist plus empty for-init that the s4a candidate carried is a BANNED
+ *     construct AND was measured unnecessary; banked at
+ *     rejected/i0-hoist-scheduling-lever-banned.c.
  *
- * WHAT THIS SESSION CHANGED vs the layer-1-FAILed s4a candidate
- * (banked at rejected/i0-hoist-scheduling-lever-banned.c):
- *  - REMOVED the standalone `i = 0;` hoist before `mask = D_80106A50;` and the
- *    empty for-init `for (; i < 0x1B; i++)`. Both are BANNED constructs (Judge
- *    ruling "no new constructs"; layer-1 FAIL 2026-08-19 21:02). The ordinary
- *    `for (i = 0; i < 0x1B; i++)` is restored.
- *    ==> MEASURED: the oracle still MATCHES and sandbox is still 0. The s2-era
- *    hypothesis that the Judge-bound form alone leaves a 5-word scheduling
- *    residual (`move a3,zero` emitted late, `sw ra` displaced two slots) is
- *    KILLED on the current chassis. That residual was an artifact of measuring
- *    against the STALE cheat-form build/ reference, not a property of the
- *    source. NO scheduling lever of any kind is needed for this function.
- *  - REPLACED `(&D_8008F19C)[s3*2+n]` with plain `D_8008F19C[s3*2+n]` (see the
- *    header edit above). Byte-identical codegen; the &-of-scalar spelling was
- *    never load-bearing for the -0x38 frame, contrary to the s1-s3 ledger note.
- *    Sharing ONE base across the two table reads inside the `if (s3 > 0)` arm is
- *    what allocates the 8-byte compiler temp (vars 8 -> 16, frame -0x30 ->
- *    -0x38 == target, phantom-frame-slots-gcc272); the DECLARED TYPE of that
- *    base is irrelevant to it.
+ * Everything the s1-s3 sessions treated as a wall - the reloc-addend "floor 1
+ * unreachable by construction", the circular integration gate, the func_80079194
+ * link failure - was chassis-relative or a symbol-naming mistake (0x80079194 is
+ * strcpy; the prototype is already at src/code6cac_c_mid.c:279).
  *
- * THE ONE LOAD-BEARING SPELLING THAT REMAINS (ordinary live C, no sanctioned
- * family claimed, no annotation owed - see memory/grind/func_80038170/self_vet.md):
- *  - `s32 s1, s2, s3;` declaration order UNCHANGED plus three separate statements
- *    `s3 = 0; s2 = 0; s1 = 0;` - the Judge-BINDING spelling, and live code that
- *    initialises three counters actually read later in the body. Chained
- *    `s1=s2=s3=0` and reversed declaration order are BANKED REJECTED
- *    (rejected/chained-zeroing-order.c, rejected/decl-order-prologue-flip.c).
+ * The body below contains no dead local, no volatile, no inline asm, no register
+ * pin, no frame coercion, no scheduling construct and no rule. It claims NO
+ * sanctioned family and owes NO annotation. Full six-test vet in
+ * memory/grind/func_80038170/self_vet.md.
  *
- * REMAINING CARRIER (driver surface, untouched here): the
- * tools/prologue_config.json func_80038170 entry. Measured a NO-OP in s4a and
- * still one: `sandbox --disable all` STRIPS prologue_fix and scores 0 anyway, so
- * the natural cc1 prologue is textually identical to the hardcoded replacement
- * list. `retire func_80038170` should delete it; the oracle stays MATCH.
+ * REMAINING DRIVER-SURFACE CARRIER (untouched here): the tools/prologue_config.json
+ * func_80038170 entry. Measured a NO-OP in s4a and re-measured one since - the
+ * sandbox STRIPS that stage and still scores 0, so the natural cc1 prologue is
+ * textually identical to the hardcoded replacement list. `retire func_80038170` at
+ * integration deletes it and the oracle stays MATCH.
  */
 
 void func_80038170(u8 *out) {
@@ -107,8 +100,8 @@ void func_80038170(u8 *out) {
     if (s3 > 0) {
         out[0x40] = D_800A3200;
         out[0x41] = D_800A3201;
-        out[0x42] = D_8008F19C[s3 * 2 + 0];
-        out[0x43] = D_8008F19C[s3 * 2 + 1];
+        out[0x42] = (&D_8008F19C)[s3 * 2 + 0];
+        out[0x43] = (&D_8008F19C)[s3 * 2 + 1];
     }
 
     i = 0x1B;
