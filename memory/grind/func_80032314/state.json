@@ -1,31 +1,32 @@
 {
  "func": "func_80032314",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 15,
    "modality": "recon",
    "headline": "Floor 27 -> 15 and build_insns now exactly 109 = target: copying the matched, user-authorized GTE-LZC island from the same-file sibling func_800274BC fixed a 12-point cheat-classifier artifact; the en"
+  },
+  {
+   "session": 2,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 15 -> 1: allocno-priority formula read from instrumented cc1; removing ONE walker ref (radius read via t0+2) resolves the whole $a1/$a2/$a3 rotation \u2014 the last insn is arithmetically closed to p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual 15 closes in one step if the record-walker pseudo is allocated LAST of the three rotating values ($a3) instead of first ($a1) \u2014 mflo1 then falls into $a1 and ent into $a2.",
-   "mechanism": "global.c find_reg scans hard regs in the default ascending order (no REG_ALLOC_ORDER in mips.h); allocnos are served in priority order, priority driven by live_length * n_refs. Lowering the walker's priority below ent's reorders the three assignments as a unit.",
-   "next_probe": "Re-run tmp/grind/func_80032314/s1/greg.sh, but read the ALLOCNO PRIORITY ORDER rather than only the final dispositions \u2014 use the BB2_ALLOC_DEBUG instrumented cc1 at tools/gcc-2.7.2/cc1 (the TOP-LEVEL cc1, not build/cc1, per [[instrumented-cc1-location]]) to print the sorted allocno list, get the actual ranking of pseudos 74 / 75 / 115, then choose the C edit that swaps exactly the walker's and ent's ranks."
+   "hypothesis": "F4 chain-extender endgame: stale reg_n_refs +2 on mflo1 and +2 on ent produce the exact target allocation order with zero byte change (score 0).",
+   "mechanism": "Sanctioned F1 family (.claude/rules/dead-store-fake-exception.md:32): combine folds an algebraically-equivalent detour to zero bytes; the stale flow-time reg_n_refs is the surviving effect. Arithmetic: mflo1 4 refs/len 10 = 8000, ent 8 refs/len 63 = 3809, both above walker 2926, mflo1 above ent; find_reg then yields 5,6,7 = target.",
+   "next_probe": "MEASUREMENT first (legitimate per register-alloc-pure-c: reading the priority table is not the cheat): restore *a3, add +(s32)&SYM...-( s32)&SYM detours through ent's 0x286 store address and mflo1's dx*dx term, confirm via ALLOCDBG that each detour leaves the predicted stale refs (combine bookkeeping is the uncertainty), confirm 109 insns, read score. Submission requires /* FAKE */ + documented ladder exhaustion \u2014 only when the driver's gate opens."
   },
   {
-   "hypothesis": "Re-deriving the `+2` walker view inside the loop body (instead of hoisting it across the whole loop) shortens its live range enough to drop it below ent in allocno priority.",
-   "mechanism": "Same global.c priority = live_length * n_refs. A shorter live range lowers priority without changing the emitted instructions IF the loop optimizer strength-reduces the per-iteration derivation back to the target's single `addiu $a3,$t0,0x2` prologue insn plus single `addiu $a3,$a3,0x2C` latch insn.",
-   "next_probe": "Declare `u8 *w = t0 + 2;` inside the loop body after the `*t0 == 0` guard, drop the hoisted walker, and FIRST confirm build_insns is still 109 before reading the score \u2014 an insn-count change means the strength-reducer did not fold it and the variant is invalid regardless of score."
-  },
-  {
-   "hypothesis": "Raising `ent`'s reference count byte-neutrally lifts it above the walker in allocno priority and resolves the rotation without touching the walker at all.",
-   "mechanism": "The duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md) is the documented byte-free reg_n_refs lift for exactly this class of global-RA priority wall; jump2 cross-jump re-merges the duplicate so the emitted bytes are unchanged.",
-   "next_probe": "ONLY after the two probes above are measured: duplicate the `*(s16 *)(ent + 0x286) = 5;` store (or the `ent + 0x6A` read) into both arms of the `log2_val < v0` test, verify build_insns stays 109 (byte-neutrality), read the score. This is a last-resort sanctioned family requiring documented lever-exhaustion plus a /* FAKE */ annotation \u2014 do not submit it without both."
+   "hypothesis": "F6: a pure-C spelling with 7 flow-time walker refs that still emits lbu 0($a3) exists (believed impossible).",
+   "mechanism": "Would require falsifying one of two premises: (1) flow-time refs can never undercount final appearances; (2) no post-allocation pass rewrites a t0-based load into $a3-based.",
+   "next_probe": "Attack the premises directly (read flow.c mark_used_regs/mark_set_regs counting paths and reload/sched2/jump2 for any reg-rewriting case). Confirming both premises completes the pure-C exhaustion case and makes F4 the sole path."
   }
  ],
  "judge_constraints": [],

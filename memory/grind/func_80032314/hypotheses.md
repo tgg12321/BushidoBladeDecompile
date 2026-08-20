@@ -88,3 +88,81 @@ last-resort family requiring byte-neutrality proof + lever-exhaustion + a
 - probe: `s32 dxs = dx*dx; s32 dys = dy*dy; s32 dzs = dz*dz; dist_sq = (u32)(dxs+dys+dzs);` re-ran sandbox --disable all.
 - result: Floor unchanged at 15; GCC coalesces the named temps back into the same three pseudos. Banked as memory/grind/func_80032314/rejected/named-mult-intermediates.c.
 - verdict: KILLED
+
+## [s2] F1 — the walker must be allocated LAST of the three rotating pseudos; one ref removal achieves it.
+- mechanism: global.c allocno priority = floor_log2(n_refs)*n_refs/live_length*10000*size (read via BB2_ALLOC_DEBUG instrumented cc1, hook at global.c:605). Walker 8 refs/len 82 = 2926; dropping to 7 refs crosses the floor_log2(8)=3 -> floor_log2(7)=2 boundary: pri 1707, below ent (1904) and above t0 (1666). mflo1 (2000) already outranks ent, so ONE ref removal fixes the whole 3-cycle.
+- probe: spelled the radius read `*(u8 *)(t0 + 2)` instead of `*a3` (equal loop-invariantly; cse cannot see it across the back-edge). Re-ran sandbox + ALLOCDBG trace.
+- result: score 15 -> 1; all 109 insns register-match target; trace confirms p115->$a1, p75->$a2, p74->$a3. The single diff is the edited load itself (lbu 2(t0) vs lbu 0(a3)).
+- verdict: CONFIRMED
+
+## [s2] F2 — re-deriving the walker per-iteration lowers its priority.
+- mechanism (as banked in s1): claimed shorter live range lowers priority. WRONG: priority divides by live_length — shortening RAISES it. Also the target's prologue addiu + latch addiu pair cannot come from a per-iteration derivation without loop notes (no strength reduction in goto-form).
+- probe: arithmetic from the measured formula; no build needed.
+- result: dead in both directions.
+- verdict: KILLED
+
+## [s2] F3 — duplicated-statement-into-arms on ent (as specced in s1) resolves the rotation.
+- mechanism: +1 stale ent ref via cross-jump re-merge.
+- probe: arithmetic from the measured formula: ent 7 refs = floor_log2(7)*7/63*10000 = 2222 < walker's 2926. Insufficient; and raising ent alone mis-assigns ent to $a1 anyway (assignment order must be mflo1, ent, walker).
+- result: dead as specced.
+- verdict: KILLED
+
+## [s2] F5 — loop-note spelling (do-while) doubles inside-loop refs into the target order.
+- mechanism: flow.c reg_n_refs += loop_depth; loop notes raise depth to 2 inside.
+- probe: do-while form, sandbox.
+- result: score 59 / 122 insns — loop.c LICM+giv wrecked the body (6+ constant hoists into s-regs). Second-entry invalidation trick dies at jump1. Banked rejected/do-while-loop-notes-licm-explosion.c.
+- verdict: KILLED
+
+## LIVE FRONTIER (rewritten for s3+)
+
+### F4 — chain-extender endgame (sanctioned F1 FAKE family; requires ladder exhaustion first)
+Statement: with the byte-forced walker at 8 refs (pri 2926), stale reg_n_refs
+bumps on BOTH mflo1 (2 -> 4, pri 8000) and ent (6 -> 8, pri 3809) produce the
+target allocation order (mflo1 > ent > locals(3333) > walker) with zero byte
+change. +1 on ent is insufficient (2222); both bumps are required.
+Mechanism: .claude/rules/dead-store-fake-exception.md:32 combine-foldable
+chain-extender (owner ruling 2026-07-01): a live computation routed through an
+algebraically-equivalent detour combine folds to zero bytes; the stale
+flow-time reg_n_refs is the only surviving effect. Detours must use
+link-time-opaque constants (e.g. +(s32)&SYM ... -(s32)&SYM) — tree-level
+fold-const kills +C-C before RTL.
+Next probe (MEASUREMENT ONLY until the driver's exhaustion gate opens): apply
+candidate.c with `*a3` restored, add the two detours, verify via ALLOCDBG that
+each detour actually leaves +2 stale refs (combine's bookkeeping is the
+uncertain part — measure, don't assume), verify 109 insns, read the score.
+If 0: this is a candidate ONLY with /* FAKE */ annotations + documented
+full-ladder exhaustion + self-vet citing dead-store-fake-exception.md:32 —
+at the time of writing (session 2) that gate is NOT open; a premature
+submission FAILs prong (a) of the FAKE policy.
+
+### F6 — any pure-C spelling that yields 7 flow-time walker refs while still
+emitting `lbu 0($a3)` (believed impossible — see the s2 impossibility argument
+in evidence.md; a session attacking this should target the argument's two
+load-bearing premises: (1) flow-refs can never undercount final appearances,
+(2) no post-allocation pass rewrites a t0-based load into an a3-based one).
+Falsifying either premise reopens pure C; confirming both makes F4 the only
+path and the exhaustion case complete.
+
+## [s2] The 3-cycle rotation resolves if the record walker is allocated last of the three rotating pseudos; removing exactly one walker ref achieves it because mflo1 already outranks ent.
+- mechanism: global.c allocno pri = floor_log2(n_refs)*n_refs/live_length*10000*size (BB2_ALLOC_DEBUG trace, hook global.c:605). Walker 8 refs -> pri 2926 (first); 7 refs crosses the floor_log2 boundary -> 1707, into the band below ent (1904) and above t0 (1666).
+- probe: Spelled the radius byte read *(u8*)(t0+2) instead of *a3 (equal loop-invariantly, invisible to cse across the back-edge); sandbox + re-run ALLOCDBG trace.
+- result: Score 15 -> 1, 109/109 insns; trace shows p115->$a1, p75->$a2, p74->$a3, all registers in all 109 insns match target; single diff is the edited lbu itself (2(t0) vs 0(a3)).
+- verdict: CONFIRMED
+
+## [s2] Spelling the loop as do-while doubles inside-loop reg_n_refs (flow.c += loop_depth) into the target priority order.
+- mechanism: flow.c:2081/2329/2515/2725 weight refs by loop_depth, which exists only with NOTE_INSN_LOOP notes; predicted priorities landed in target order.
+- probe: do { } while (t1 < 4) form; sandbox.
+- result: Score 59, 122 insns: the same notes arm loop.c — LICM hoisted ~6 per-iteration constants into s-regs, grew the frame, created a giv. Second-entry loop-invalidation cannot survive jump1 (deletes jump-to-next-insn before loop.c runs). Banked as rejected/do-while-loop-notes-licm-explosion.c.
+- verdict: KILLED
+
+## [s2] F2 (s1 frontier): re-deriving the walker per-iteration lowers its allocno priority.
+- mechanism: Claimed shorter live range lowers priority — inverted: the measured formula DIVIDES by live_length, so shortening raises priority; and goto-form has no loop notes, so no strength reduction can rebuild the target's prologue/latch addiu pair.
+- probe: Arithmetic from the measured formula; no build needed.
+- result: Dead in both directions.
+- verdict: KILLED
+
+## [s2] F3 (s1 frontier): one duplicated ent statement into arms resolves the rotation.
+- mechanism: Cross-jump-remerged duplicate adds +1 stale ent ref.
+- probe: Arithmetic: ent 7 refs = 2222 < walker 2926 (floor_log2 stays 2); and raising ent alone would mis-assign ent to $a1 since assignment order must be mflo1, ent, walker.
+- result: Insufficient as specced; the workable variant needs +2 on ent AND +2 on mflo1 (see frontier F4).
+- verdict: KILLED

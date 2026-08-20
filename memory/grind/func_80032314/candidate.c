@@ -1,35 +1,39 @@
-/* func_80032314 — best form as of grind session 1 (recon).
- * Honest floor: sandbox --disable all = 15 (was 27 at session start).
- * Target/build instruction counts are now EQUAL (109/109); the entire
- * residual is a 3-cycle register rotation on $a1/$a2/$a3 (see evidence.md).
+/* func_80032314 — best form as of grind session 2 (structural).
+ * Honest floor: sandbox --disable all = 1 (was 15 at session start, 27 at s1 start).
+ * build_insns == target_insns == 109. NO register pins, no cheats — the only
+ * inline asm is the user-authorized canonical GTE-LZC island (verbatim from the
+ * matched sibling func_800274BC, src/code6cac_b.c:292, authorized 2026-06-10).
  *
- * NOTE ON PINS: the `register ... asm("tN")` pins below are carried over from
- * the HEAD body and are CHEATS — they are stripped by the cheat-invisible
- * sandbox, so they do not affect the floor of 15 at all. They must be deleted
- * before any candidate-ready submission. They are left in here only so this
- * file is a drop-in replacement for the HEAD body; the next session should
- * delete them first (measured: floor is 15 with or without them).
+ * THE SESSION-2 WIN (15 -> 1): the residual 15 was a 3-cycle rotation on
+ * $a1/$a2/$a3 caused by global.c allocno priority order. Priority formula
+ * (read from the BB2_ALLOC_DEBUG instrumented cc1, global.c prune_preferences/
+ * find_reg block): pri = floor_log2(n_refs) * n_refs / live_length * 10000 *
+ * size. Measured at s2 start: walker(p74, 8 refs, len 82) = 2926 > mflo1(p115,
+ * 2 refs, len 10) = 2000 > ent(p75, 6 refs, len 63) = 1904 -> allocation order
+ * walker,mflo1,ent -> regs 5,6,7 (rotation). Target needs mflo1,ent,walker ->
+ * 5,6,7. Removing EXACTLY ONE walker ref drops floor_log2 from 3 to 2:
+ * pri 2*7/82 = 1707, landing in the required band (below ent 1904, above
+ * t0(p72) which rises to 7 refs = 1666). The C edit: the radius byte read
+ * (final compare block) is spelled `*(u8 *)(t0 + 2)` instead of `*a3` — same
+ * value (a3 == t0+2 loop-invariantly; invisible to cse across the back-edge).
+ * Measured: every register in all 109 insns now matches target; score 1.
  *
- * THE SESSION-1 WIN (do not regress): the GTE leading-zero-count island is
- * written as ONE canonical block copied verbatim from the MATCHED,
- * USER-AUTHORIZED sibling func_800274BC (src/code6cac_b.c:292, authorized
- * 2026-06-10), together with that sibling's tail-arithmetic spelling
- * (v0_m = (u32)-2; v0_m &= clz; ... v1_m >>= 1; (hi<<16) >> (0x13 - v1_m)).
- * The previous HEAD spelling used `.word 0x488CF000` / `.word 0xE99F0000`
- * plus a $t4 pin and two bare `__asm__("nop")` statements; the engine's
- * canonical classifier (tools/classify_inline_asm.py:62,
- * CANONICAL_DOTWORD_RE = /\.word\s*0x4[89A-Fa-f]/) accepts the mtc2 word but
- * classifies the swc2 word 0xE99F.... as CHEAT and strips it, which deleted
- * the LZCR store from the scored build and cost 3 instructions + a broken
- * dataflow. The single-block mnemonic spelling is classified canonical whole
- * (mtc2/swc2 are both in CANONICAL_ASM_OPS) and reproduces the target's
- * `addu $t4,...` feeder moves exactly.
+ * THE ONE REMAINING DIFF: our `lbu v1,2(t0)` vs target `lbu $v1,0x0($a3)`
+ * (the radius read itself). This is ARITHMETICALLY FORCED for pure C: a
+ * byte-matching build needs 8 walker appearances (7 insns + dual-ref latch),
+ * flow-time n_refs can never be below the final appearance count, and 8 refs
+ * -> pri 2926 -> walker allocated first -> rotation. ent (6 refs, len 63
+ * byte-pinned) caps at 1904; mflo1 (2 refs, len 10 byte-pinned) at 2000.
+ * See evidence.md s2 for the full proof and the sanctioned F1 chain-extender
+ * endgame (stale reg_n_refs on ent AND mflo1) with exact arithmetic.
+ *
+ * THE SESSION-1 WIN (do not regress): GTE island as ONE mnemonic block
+ * (mtc2/swc2), never `.word` — see evidence.md FINDING 2.
  */
-extern u8 D_8008D118;
 void func_80032314(void) {
-    register u8 *t0 asm("t0") = &D_80104E88;
-    register s32 t1 asm("t1") = 0;
-    register u8 *a3 asm("a3") = &D_80104E88 + 2;
+    u8 *t0 = &D_80104E88;
+    s32 t1 = 0;
+    u8 *a3 = &D_80104E88 + 2;
     u8 *ent;
     s32 state;
     s32 a0;
@@ -54,7 +58,7 @@ loop:
         s32 dx = *(s32 *)(ent + 0xF4) - *(s32 *)(a3 + 2);
         s32 dy = *(s32 *)(ent + 0xF8) - *(s32 *)(a3 + 6);
         s32 dz = *(s32 *)(ent + 0xFC) - *(s32 *)(a3 + 0xA);
-        register u32 dist_sq asm("a0") = (u32)(dx * dx + dy * dy + dz * dz);
+        u32 dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
         u32 log2_val;
         if (dist_sq < 0x400) {
             log2_val = (u32)(*(&D_8008D118 + dist_sq)) >> 3;
@@ -91,7 +95,7 @@ loop:
             }
         }
         {
-            s32 v1 = *a3;
+            s32 v1 = *(u8 *)(t0 + 2);
             s32 v0 = v1 << 4;
             v0 = v0 - v1;
             v0 = v0 << 1;

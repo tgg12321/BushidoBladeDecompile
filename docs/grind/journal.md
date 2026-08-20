@@ -1114,3 +1114,4 @@
 - 2026-08-20 13:01 func_80041688 JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).
 - 2026-08-20 13:14 func_80048530 COMPLETED-C after 5 sessions (closer: s5 [synthesis]).
 - 2026-08-20 13:35 func_80049A2C JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).
+- 2026-08-20 13:53 func_80032314 s2 [structural] floor=1: Floor 15 -> 1: allocno-priority formula read from instrumented cc1; removing ONE walker ref (radius read via t0+2) resolves the whole $a1/$a2/$a3 rotation — the last insn is arithmetically closed to pure C, sanctioned F1 chain-extender endgame fully specified
