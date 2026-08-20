@@ -236,3 +236,29 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
   construct-free body, the function closes at 0 from memory/grind/func_80072CD4/candidate.c.
   If it says the ban does reach it, fall back to fallback_floor4.c (clean floor 4) and the
   two-attractor exhaustion analysis of s1-s5 stands unchanged.
+
+## [s6] RESOLUTION of the s5b open classification question
+- statement: the 2026-07-24 16:38 duplicated-into-arms constraint reaches the construct-free
+  POLY_G4-triple body.
+- probe: the filed ruling request (docs/grind/decisions.md:8390) was adjudicated.
+- result: **PASS — the constraint does NOT reach it** (docs/grind/decisions.md:8448, on main as
+  6e80ffdf). The ban is a ban on a LEVER (the `int fc_const` holder + merge-order-driven mid-arm
+  injection of rejected/dup4_0xc_into_arms.c), not on the shape of an arm that writes its own
+  complete colour triple. Declining to hoist a common LIVE store is ordinary C.
+- verdict: KILLED (the hypothesis that the constraint blocks this body is false).
+
+## [s6] Re-verification of the byte match on the current chassis
+- statement: the s5b sandbox-0 measurement still holds on the chassis this session was dispatched
+  against (the brief reported "measurement unavailable", so it could not be taken on trust).
+- probe: apply candidate.c to src/text1b.c, `sandbox func_80072CD4 --disable all`.
+- result: score 0, build_insns 79 == target_insns 79, rules_dropped 0
+  (tmp/grind/func_80072CD4/s6/sandbox_s6_reverify.json).
+- verdict: CONFIRMED.
+
+## [s6] FRONTIER RESET
+The frontier is not a search frontier any more — there is nothing left to search. The function
+has a measured, ruled-on, construct-free pure-C byte match sitting in src/text1b.c. The only
+remaining step is acceptance: layer-1 cheat-reviewer on the diff, then the Judge, then the
+operator's oracle build + `queue done`. If (and only if) the Judge overturns the 2026-08-20 05:46
+PASS, the fallback is memory/grind/func_80072CD4/fallback_floor4.c (clean floor 4, unchanged) and
+the s1-s5 exhaustion analysis stands as written.

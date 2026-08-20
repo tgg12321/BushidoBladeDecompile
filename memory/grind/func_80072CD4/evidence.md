@@ -313,3 +313,40 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
 - [s5b] The clean floor-4 form previously in candidate.c is preserved unchanged as
   memory/grind/func_80072CD4/fallback_floor4.c � the fallback if the ruling goes against the
   matching body.
+
+## [s6] SYNTHESIS — the open classification question is CLOSED (PASS) and the match is re-verified
+- [s6] The s5b ruling request was ANSWERED on 2026-08-20 05:46 and the verdict is **PASS**
+  (docs/grind/decisions.md:8448, committed to main as 6e80ffdf). Verbatim core of the ruling:
+  "The 2026-07-24 constraint does NOT reach candidate.c. It banned a LEVER: rejected/
+  dup4_0xc_into_arms.c keeps an `int fc_const` holder and injects `@4=fc_const; @0xC=fc_const`
+  mid-arm in a merge-order-driven sequence (5,6,D,4,C,E) ... candidate.c has no local, no holder,
+  no annotation, no intent-named symbol: each arm writes its own complete POLY_G4 rgb0/rgb1
+  triple in canonical ascending libgpu field order (4,5,6,C,D,E) ... Declining to hoist a common
+  live store is ordinary C, not an exception family, so no frozen-list prerequisite is at issue
+  and no cluster-precedent bar is being lowered."
+- [s6] Consequently the ledger's ENTIRE endgame-lock frame (s2/s3 "two-attractor lock",
+  s4 "all axes dead", the 2026-07-24 and 2026-08-20 05:33 escalations, and the standing
+  2026-07-27 REFUSED/OWNER-ACCEPTED-INCOMPLETE disposition) is superseded by measurement, not by
+  argument: the premise all of them shared — that no pure-C form reaches 0 — is false. Those
+  entries remain historically accurate about the forms they measured; none of them is a live
+  constraint on this body.
+- [s6] RE-VERIFICATION ON THE CURRENT CHASSIS (the s5b measurement was taken before this
+  session's chassis check and had to be re-earned): candidate.c applied in place at
+  src/text1b.c:5865 via `python3 tmp/grind/func_80072CD4/s5/apply.py
+  memory/grind/func_80072CD4/candidate.c`, then `& tools/wteng.ps1 main sandbox func_80072CD4
+  --disable all` → **score 0, build_insns 79 == target_insns 79, scorable true, rules_dropped 0,
+  cheat_asm_stripped 279**. Artifact tmp/grind/func_80072CD4/s6/sandbox_s6_reverify.json; the
+  landed body as it sits in src is tmp/grind/func_80072CD4/s6/landed_body.c, and it was diffed
+  programmatically against candidate.c's body (identical).
+- [s6] JUDGE CONSTRAINT #2 SATISFIED: the body is landed EXACTLY as measured (no holder local,
+  no intent-named symbol, canonical ascending field order per triple — 4,5,6 then C,D,E in each
+  arm; 0x14,0x15,0x16 then 0x1C,0x1D,0x1E unconditionally), and the pending-ruling narration has
+  been trimmed out of candidate.c's header comment, which now records the measurement, the
+  POLY_G4 field-layout rationale and the in-repo sibling precedent only. (`apply.py` strips the
+  header block entirely, so src/text1b.c carries the bare body with no narration at all.)
+- [s6] src/text1b.c is LF-clean after the edit (CRLF count 0, verified by byte scan). Tree scope:
+  src/text1b.c only, plus ledger/scratch files; metrics/events.jsonl churn is engine-generated.
+- [s6] memory/grind/func_80072CD4/self_vet.md was rewritten from the s5b ruling-request form into
+  a candidate-ready vet: CONSTRUCTS none, all six tests answered against the landed diff,
+  SANCTIONED-FAMILY-CLAIMS none (no construct ⇒ no family is being spent), ANNOTATION-CONFORMANCE
+  n/a. fallback_floor4.c is retained untouched.

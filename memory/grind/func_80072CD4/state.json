@@ -44,8 +44,14 @@
  ],
  "judge_constraints": [
   "Do NOT respell the @4/@0xC common-tail stores (or any unconditional common-tail statement) as a duplicated-into-arms store-schedule lever; that mechanism is outside the reg_n_refs-RA-priority scope of the duplicated-statement-into-arms sanction and needs its own SOTN-master evidence to be reconsidered.",
-  "Land the body EXACTLY as measured (no holder local, no intent-named symbol, canonical ascending field order per triple) and trim the pending-ruling narration from the header comment before commit; the fc_const-holder duplicated-into-arms merge-order lever (rejected/dup4_0xc_into_arms.c) remains banned."
+  "Land the body EXACTLY as measured (no holder local, no intent-named symbol, canonical ascending field order per triple) and trim the pending-ruling narration from the header comment before commit; the fc_const-holder duplicated-into-arms merge-order lever (rejected/dup4_0xc_into_arms.c) remains banned.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The candidate re-spells the Judge-FAILed dup4_0xc_into_arms store-schedule cheat (identical @4=0xFC / @0xC=0xFC written in both inner arms solely to steer jump2's cross-jump merge point) without the holder variable or FAKE annotation, and a same-session-adjacent 'ruling' in decisions.md purports to bless it \u2014 that ruling is itself an unauthorized family-extension self-grant, not a legitimate Judge/owner disposition. Next action: Revert src/text1b.c to INCLUDE_ASM for func_80072CD4 (asm-until-matched). The 2026-08-20 05:46 decisions.md entry does not carry standing "
  ],
  "origin": "queue",
- "created": "2026-07-24T19:56:18.957360+00:00"
+ "created": "2026-07-24T19:56:18.957360+00:00",
+ "banned_constructs": [
+  "`*(u8 *)(arg1+4) = 0xFC;` and `*(u8 *)(arg1+0xC) = 0xFC;` written identically in BOTH arms of `if (*(s32*)(D_800A35C4+8) & 4)`",
+  "The '2026-08-20 05:46 \u2014 func_80072CD4 \u2014 ruling: ... PASS' entry in docs/grind/decisions.md (commit 6e80ffdf), which reclassifies the same construct as 'ordinary C, not an exception family'"
+ ],
+ "ladder_skip": 2
 }
