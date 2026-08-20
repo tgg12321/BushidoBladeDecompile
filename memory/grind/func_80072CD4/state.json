@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 5,
+ "session_count": 6,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -39,18 +39,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "STRUCTURAL: floor holds at 4 (re-measured on the current chassis, 79==79); the last un-composed structural pair (alias-serialisation lever x cross-block chassis) is measured dead in three variants (11"
+  },
+  {
+   "session": 6,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "STRUCTURAL: floor holds at 4 (control re-measured 4/79==79 on the current chassis); the last never-probed structural axis - control-flow spelling (branch polarity + arm order) - is killed in three ins"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Structural modality is exhausted for func_80072CD4: both chassis (per-arm floor-4 and cross-block) have now been probed with both remaining structural levers (alias serialisation and holder placement) and every result is >= the control's 4.",
-   "mechanism": "L1 (sched2 bottom-up readiness sinks producer-less merge-block stores) is defeatable but L2 (jump2 splices a common tail ahead of the scheduled merge block, and sched1 always nominates SOME arm-tail insn for that splice) bounds every non-per-arm form away from target's merge head; alias levers additionally cost an insn target does not contain.",
-   "next_probe": "Do not spend another structural session. The un-run modalities are non-structural. If the driver still has ladder left, the only genuinely unspent question is whether target's merge head can be reached with NO cross-jump at all (arms made tail-distinct by real semantic content rather than by a lever) \u2014 but no such content exists in this function's four RGB triples, so expect the driver to move to escalation."
+   "hypothesis": "The structural modality is now closed on three independent axes and should not be dispatched again for this function: alias serialisation and holder placement (s5), the full 8-store merge-block permutation space (s4 directed permuter), and control-flow spelling (s6, this session).",
+   "mechanism": "the arms are byte-identical to target, the insn count is exact (79 == 79), and all four remaining diffs live purely in the merge-block store ORDER; L1 (sched2 sinks producer-less merge-block stores) and L2 (jump2 splices the cross-jumped common tail at the join label ahead of everything sched2 emitted) bound every source shape that does not write @4/@0xC inside the arms.",
+   "next_probe": "none in this modality. Do not re-run a banked kill."
   },
   {
-   "hypothesis": "The disposition question, not the codegen question, is what is actually open: a sandbox-0 pure-C body exists and is banned, and the ledger's remaining path is the endgame-lock escalation already recorded at docs/grind/decisions.md:8312 (2026-08-20, RESOLVED BY STANDING RULING 2026-07-27: REFUSED / OWNER-ACCEPTED INCOMPLETE).",
-   "mechanism": "The 2026-07-27 owner ruling on this exact function plus the 2026-08-19 asm-until-matched migration mean the terminal shape is INCLUDE_ASM on main with candidate.c retained in the ledger; the three 2026-08-20 layer-1 FAILs closed the only sandbox-0 path.",
-   "next_probe": "If and only if the driver assigns `escalation` modality, cite docs/grind/decisions.md:8312 in escalation_ref and return owner-gated. This session's modality was structural, so it does not dispose of the function."
+   "hypothesis": "What is actually open for func_80072CD4 is its DISPOSITION, not its codegen: a pure-C body that measures sandbox 0 / 79 insns exists and is banned, so the terminal shape is INCLUDE_ASM on main with candidate.c retained in the ledger.",
+   "mechanism": "the 2026-07-27 owner ruling on this exact function (docs/grind/decisions.md:1759, REFUSED / OWNER-ACCEPTED INCOMPLETE) plus the 2026-08-19 asm-until-matched migration; the three 2026-08-20 layer-1 FAILs closed the only sandbox-0 path, and the s5 re-filed escalation at docs/grind/decisions.md:8312 was itself voided by the driver's DISCARDED-SESSION MARKER at :8386.",
+   "next_probe": "dispatch `escalation` modality. That session should file a fresh OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27) entry (the s5 one at :8312 is void and cannot be cited) and return owner-gated with escalation_ref pointing at the NEW entry."
+  },
+  {
+   "hypothesis": "If the driver wants one more non-structural probe before escalation, the only genuinely unspent question is whether a merge-head order matching target can arise from a source whose arms are made tail-distinct by REAL semantic content rather than by a lever.",
+   "mechanism": "no such content exists in this function's four POLY_G4 RGB triples - the arms differ only in three literal colour components - so this is expected to be a formality, but it has never been written down as measured.",
+   "next_probe": "a rederive/forensics session may state it dead by inspection of asm/funcs/func_80072CD4.s rather than by a build."
   }
  ],
  "judge_constraints": [

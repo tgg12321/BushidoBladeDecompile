@@ -564,3 +564,81 @@ re-submitted in any spelling.
 - probe: memory/grind/func_80072CD4/fallback_floor4.c applied to src/text1b.c; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`
 - result: score 4, target_insns 79, build_insns 79, rules_dropped 0, scorable true. Chassis confirmed unchanged; every banked spelling conclusion in the ledger remains chassis-current.
 - verdict: CONFIRMED
+
+## [s6-structural 2026-08-20] — branch-polarity / arm-order axis, three hypotheses, all KILLED
+Context: the s5-structural frontier declared the structural modality closed after probing both
+chassis with the alias-serialisation and holder-placement levers. The one structural sub-axis the
+whole s1..s5 ledger never touched is the CONTROL-FLOW SPELLING itself: every form ever measured used
+the same branch polarity (`if (arg0 < 4)`, `if (flags & 4)`) and the same arm ORDER as candidate.c.
+Nobody had ever asked whether that polarity is target's or merely the first one anyone typed.
+Mechanism worth asking about: inverting a condition and swapping the two arm bodies is semantically
+identical C, but it changes which basic block is the FALL-THROUGH and which is the branch target.
+That is load-bearing for exactly the two passes this function's residual lives in — jump_optimize's
+cross_jump picks the tail to splice relative to the join label reached from the fall-through edge,
+and dbr fills the `j`/`beqz` delay slot from the block it falls out of. If the residual-4 merge-head
+ordering were an artefact of WHICH arm supplies the cross-jumped tail, an inversion would move it.
+
+- **H-S6S1 (KILLED).** *Inverting the INNER condition (`if (!(D_800A35C4->x8 & 4))`) and swapping the
+  two colour arms changes which arm supplies jump2's cross-jumped tail, and can therefore move the
+  merge-block head order.*
+  - probe: tmp/grind/func_80072CD4/s6/vA_inner_sense_invert.c, applied with s6/apply.py, `sandbox
+    func_80072CD4 --disable all`.
+  - result: **score 11, build_insns 79** (control 4/79). Strictly worse, and INSN-COUNT NEUTRAL — the
+    inversion costs nothing and buys nothing; it only permutes which literal lands in which register
+    and which arm is the fall-through. Banked rejected/s6_inner_branch_sense_invert_11_79.c.
+  - verdict: KILLED. Corollary: candidate.c's inner branch polarity and arm order ARE target's.
+
+- **H-S6S2 (KILLED).** *Inverting the OUTER condition (`if (arg0 >= 4)` with the big 12-store arm
+  first) re-lays the two top-level blocks, which changes the block order handed to sched2 and could
+  reshape the merge block that follows.*
+  - probe: tmp/grind/func_80072CD4/s6/vB_outer_sense_invert.c; same measurement path.
+  - result: **score 39, build_insns 79.** Massively worse, again at identical insn count: GCC keeps
+    the `slti`+`beqz` shape either way, so the only effect is that the 12-store arm becomes the
+    fall-through and the whole `arg0 < 4` region moves behind it, mis-placing every block.
+    Banked rejected/s6_outer_branch_sense_invert_39_79.c.
+  - verdict: KILLED.
+
+- **H-S6S3 (KILLED).** *The two inversions might compose — the outer inversion's block re-lay could
+  restore the inner arm relationship that the inner inversion breaks.*
+  - probe: tmp/grind/func_80072CD4/s6/vC_both_invert.c; same measurement path.
+  - result: **score 46, build_insns 79** — the worst measurement in the entire structural family.
+    The perturbations add rather than cancel. Banked rejected/s6_both_branch_sense_invert_46_79.c.
+  - verdict: KILLED.
+
+**Chassis control re-measured first, before any probe:** memory/grind/func_80072CD4/candidate.c ->
+score 4, build_insns 79 == target_insns 79, rules_dropped 0, scorable true. The dispatch brief
+reported the chassis measurement as unavailable; it is unchanged, so every banked spelling
+conclusion in this ledger remains chassis-current for a second consecutive session.
+
+**Frontier after s6-structural.** The structural modality is now closed on a THIRD independent axis
+(control-flow spelling), on top of s5's alias-serialisation and holder-placement closures and s4's
+directed permuter over the full 8-store merge-block permutation space. There is no structural lever
+left that has not been measured: the arms are byte-identical to target, the insn count is exact
+(79 == 79), and all four remaining diffs live in the merge-block store ORDER, which H-R5 proved is
+reachable only from a source that writes the shared `0xFC` into both inner arms — the construct
+banned for this function by three layer-1 cheat-reviewer FAILs. No further structural session should
+be dispatched; the only open question about this function is its DISPOSITION, not its codegen.
+
+## [s6] Inverting the INNER condition to `if (!(D_800A35C4->x8 & 4))` and swapping the two colour arms changes which arm supplies jump_optimize's cross-jumped tail, and can therefore move the residual merge-block head order.
+- mechanism: cross_jump splices the merged common tail at the join label reached from the fall-through edge, and dbr fills the delay slot from the block it falls out of; inverting the condition swaps fall-through and branch-target arms, which is the only source-level control over both passes that does not add an instruction.
+- probe: tmp/grind/func_80072CD4/s6/vA_inner_sense_invert.c applied with tmp/grind/func_80072CD4/s6/apply.py; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- result: score 11, build_insns 79, target_insns 79 (control 4/79). Insn-count neutral, strictly worse. Banked rejected/s6_inner_branch_sense_invert_11_79.c.
+- verdict: KILLED
+
+## [s6] Inverting the OUTER condition to `if (arg0 >= 4)` with the 12-store arm written first re-lays the two top-level blocks, changing the block order handed to sched2 and reshaping the merge block that follows it.
+- mechanism: GCC 2.7.2 emits slti+beqz for either polarity, so the inversion cannot change cost; it only changes which top-level block is the fall-through and therefore the order in which schedule_insns pass 2 and jump_optimize see the blocks.
+- probe: tmp/grind/func_80072CD4/s6/vB_outer_sense_invert.c; same apply + sandbox path.
+- result: score 39, build_insns 79, target_insns 79. Insn-count neutral, far worse - the whole arg0<4 region moves behind the 12-store arm. Banked rejected/s6_outer_branch_sense_invert_39_79.c.
+- verdict: KILLED
+
+## [s6] The two inversions compose: the outer inversion's block re-lay could restore the inner-arm relationship the inner inversion breaks.
+- mechanism: if the two perturbations act on the same block-ordering state they could cancel, which would be the only way a control-flow lever reaches target's merge head without touching the arms' store content.
+- probe: tmp/grind/func_80072CD4/s6/vC_both_invert.c; same apply + sandbox path.
+- result: score 46, build_insns 79, target_insns 79 - the worst score in the entire structural family. The perturbations add rather than cancel. Banked rejected/s6_both_branch_sense_invert_46_79.c.
+- verdict: KILLED
+
+## [s6] The banked floor of 4 still reproduces on the chassis this session was dispatched against (the brief reported the chassis measurement as unavailable).
+- mechanism: n/a - direct control measurement of the banked clean body, taken before any probe.
+- probe: memory/grind/func_80072CD4/candidate.c applied via tmp/grind/func_80072CD4/s6/apply.py; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- result: score 4, target_insns 79, build_insns 79, rules_dropped 0, scorable true. Chassis unchanged for a second consecutive session; every banked spelling conclusion remains chassis-current.
+- verdict: CONFIRMED

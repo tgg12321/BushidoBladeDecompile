@@ -676,3 +676,43 @@ now measured closed on both chassis (per-arm floor-4 and cross-block) and on bot
 - [s5] HOUSEKEEPING (trap removed): memory/grind/func_80072CD4/candidate.c had been left holding the BANNED sandbox-0 per-arm POLY_G4 body, while the dispatch brief instructs every session to apply candidate.c as its starting point. candidate.c is now the clean floor-4 body (byte-identical to fallback_floor4.c) with a header naming the ban; the banned body stays banked only at rejected/rederive_polyg4_struct_perarm_score0_banned_family.c.
 
 - [s5] src/text1b.c was restored to `INCLUDE_ASM("asm/funcs", func_80072CD4);` at end of session (git status clean for src/ and include/); no build-pipeline file was touched.
+
+## [s6-structural 2026-08-20] Branch polarity and arm order are target's own (new banked facts)
+
+1. **Chassis control (measured before any probe):** `memory/grind/func_80072CD4/candidate.c` applied
+   to src/text1b.c via `tmp/grind/func_80072CD4/s6/apply.py` -> `& tools/wteng.ps1 main sandbox
+   func_80072CD4 --disable all` = **score 4, target_insns 79, build_insns 79, rules_dropped 0,
+   scorable true**. The chassis has not moved since s5-structural.
+
+2. **Branch-sense inversion is insn-count neutral in this function.** All three inverted forms
+   built to exactly 79 instructions, the same as target and the same as the control. Inverting
+   `if (arg0 < 4)` or `if (flags & 4)` (with the arm bodies swapped to preserve semantics) never
+   changes what GCC 2.7.2 must emit — it keeps `slti`+`beqz` / `andi`+`beqz` either way — so the
+   axis is purely an ordering and register-assignment perturbation. That makes the three scores a
+   clean read of ORDERING distance with cost held constant.
+
+3. **Every inversion is strictly worse than the control:** inner-only 11, outer-only 39, both 46,
+   against the control's 4. The two perturbations ADD rather than cancel. Banked at
+   rejected/s6_inner_branch_sense_invert_11_79.c, rejected/s6_outer_branch_sense_invert_39_79.c,
+   rejected/s6_both_branch_sense_invert_46_79.c; raw table at tmp/grind/func_80072CD4/s6/results.txt.
+
+4. **Consequence for the residual.** The residual-4 merge-head ordering is NOT an artefact of which
+   arm supplies jump_optimize's cross-jumped tail, nor of which top-level block is the fall-through.
+   Both of those are already target's in candidate.c, and both were previously assumed rather than
+   measured. This closes the last control-flow-shaped explanation for the residual and leaves H-R5's
+   reconstruction proof (target's 3-insn cross-jumped tail `sb v1,4 / sb v1,0xC / sb v0,0xE` requires
+   both @4 and @0xC to be present IN the arms for jump2 to merge them) as the sole surviving account.
+
+- [s6] Chassis control re-measured this session: candidate.c = score 4, build_insns 79 == target_insns 79, rules_dropped 0, scorable true.
+
+- [s6] Branch-sense inversion is INSN-COUNT NEUTRAL in this function: all three inverted forms built to exactly 79 instructions, identical to target and to the control, so the three scores are a clean read of ordering distance with cost held constant.
+
+- [s6] Inner-only inversion 11, outer-only inversion 39, both 46 - every one strictly worse than the control's 4, and the two perturbations add rather than cancel.
+
+- [s6] Therefore the residual-4 merge-head order is NOT an artefact of which arm supplies jump2's cross-jumped tail, nor of which top-level block is the fall-through: candidate.c already carries target's own branch polarity and arm order on both branches. Both facts were previously assumed by the whole s1-s5 ledger and had never been measured.
+
+- [s6] This closes the last control-flow-shaped explanation for the residual and leaves H-R5's reconstruction proof as the sole surviving account: target's 3-insn cross-jumped tail `sb v1,4 / sb v1,0xC / sb v0,0xE` requires both the @4 and the @0xC store to be PRESENT IN both arms for jump_optimize's cross_jump to merge them, and that source shape is the construct banned for this function by three layer-1 cheat-reviewer FAILs (2026-08-20 05:53, 06:20, 07:02) and listed in state.json banned_constructs.
+
+- [s6] No src/ change was left behind: src/text1b.c is back to INCLUDE_ASM("asm/funcs", func_80072CD4); per asm-until-matched, and `git status --porcelain src/` is clean.
+
+- [s6] candidate.c is unchanged (the floor-4 body); no probe this session beat it, so the best form on record is the same one s5-structural banked.
