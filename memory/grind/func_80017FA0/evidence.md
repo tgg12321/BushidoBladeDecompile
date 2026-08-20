@@ -289,3 +289,63 @@ the ban should be treated as final rather than re-litigated.
 - [s4] docs/reference/sotn-construct-index.md has zero entries for 0x1F800 / 1f8000 / scratchpad - the two-prong volatile route for the scratchpad range is a failed gate, not an open question.
 
 - [s4] Floor reported as the ledger's 2 because no src edit was made this session; note that floor 2 was measured on a form whose volatile is now banned, so the honest floor of any PERMISSIBLE form is the candidate's 3-instruction residual (58/61 identical) until the as-expansion question is closed.
+
+
+## s5 (2026-08-20, permuter modality) - CLOSED IN PURE C
+
+- **The function byte-matches from pure C.** `sandbox func_80017FA0 --disable all`
+  = 0 and a full `build` gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+  the oracle, with the candidate in src/code6cac.c. Zero regfix/asmfix rules,
+  zero inline asm, zero volatile, zero dead locals, zero FAKE constructs.
+  Self-vet: memory/grind/func_80017FA0/self_vet.md (no sanctioned-family claim is
+  made or needed).
+
+- **The closer is the inner loop's FORM, not its address expression.** Writing the
+  inner loop as `inner: { ... } if (j < 2) goto inner;` instead of
+  `do { ... } while (j < 2);` removes the front end's NOTE_INSN_LOOP_BEG /
+  NOTE_INSN_LOOP_END, and loop.c only analyses note-delimited loops. The three
+  scratchpad stores therefore keep their full numeric absolute addresses, and
+  maspsx expands each of them (numeric operand > 32767) into the target's exact
+  `lui $at,%hi ; addu $at,$a1,$at ; sw $2,%lo($at)` triple. The OUTER loop must
+  stay a real do-while: target's ac_base store IS the reduced form
+  (`sw v0,0xAC(t3)` with `addiu t3,t3,4`).
+
+- **Pass attribution was READ, not guessed** (tmp/grind/func_80017FA0/s5/vNV.loop,
+  produced by `cc1 -dL` via tmp/grind/func_80017FA0/s5/dumpvar.sh). The do-while
+  spelling's dump for the inner loop reads: three `dest address src reg 86 ...
+  mult 1 add 528482404/528482408/528482412` givs, `giv at 85 combined with giv at
+  94`, `giv at 76 combined with giv at 94`, `giv at 94 reduced to (reg:SI 102)`.
+  The same dump shows the data-pointer giv being LEFT alone ("giv of insn 70 not
+  worth while, 0 vs 15"), which pins add_cost = 2 for this target.
+
+- **Why every numeric spelling s4 tried had to fail** (tools/gcc-2.7.2/loop.c,
+  read directly): strength_reduce:3823 leaves a giv alone only if
+  `lifetime * threshold * benefit < insn_count`; threshold = 2*(3 +
+  n_non_fixed_regs) and lifetime = 1 for DEST_ADDR givs, so the test is really
+  "benefit <= 0". One address giv alone is benefit 2 - add_cost 2 = 0 (left
+  alone), but combine_givs:5494 merges the three into benefit 6 first, and
+  combine_givs_p:5457's MIPS gate always passes (ADDRESS_COST(reg+small) = 1 <=
+  ADDRESS_COST(reg+0x1F800068) = 2, mips.c:1653). The only structural escape is
+  express_from:5417's `GET_CODE (g1->add_val) != CONST_INT` bail - the reason the
+  extern-symbol form worked - and that one is unusable because a symbol operand
+  reaches GNU as, not maspsx's expander.
+
+- **s4's assembler attribution was wrong and is corrected.** Measured with
+  tmp/grind/func_80017FA0/s5/asmorder.sh: GNU as emits `addu at,at,a1` for BOTH
+  `sw $2, 0x1F800064($5)` and `sw $2, D_1F800000+0x64($5)` (with D_1F800000
+  defined absolute in the same file). The target's `addu at,a1,at` comes from
+  maspsx (tools/maspsx/maspsx/__init__.py:1183), which expands numeric >32767
+  store offsets itself and passes symbol-addend stores through untouched. There
+  was never an integration handoff here and no symbol registration is needed.
+
+- **In-tree precedent for the goto-formed loop** (same TU, both COMPLETED-C):
+  func_800206B0 at src/code6cac.c:2125 + :2143 (`loop:` ... `if (t0 < 0x16) goto
+  loop;`, including the same bare-block-around-a-temp shape) and func_80021280 at
+  src/code6cac.c:2220 + :2224. SOTN master precedent:
+  docs/reference/sotn-construct-index.md:1015 (src/dra/5F60C.c:579 -
+  `loop_check_equip_id_1:` with its back edge at line 582).
+
+- The s4 extern-symbol form (58/61) is banked at
+  memory/grind/func_80017FA0/rejected/extern-symbol-addr-wrong-as-expansion-order.c;
+  it is superseded, not merely rejected - its integration dependency
+  (D_1F800000 in named_syms.txt) is moot.

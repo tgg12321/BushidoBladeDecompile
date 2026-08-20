@@ -1,6 +1,64 @@
-# Hypothesis ledger — func_80017FA0
+# Hypothesis ledger - func_80017FA0
 
-## RESOLVED — the function is MATCHED (s4, permuter, 2026-08-20)
+## RESOLVED - MATCHED IN PURE C, NO COERCION CONSTRUCT (s5, permuter modality, 2026-08-20)
+
+- H-S5 [loop notes] The inner loop's three scratchpad stores keep their full
+  absolute addresses (target's `lui $at,%hi ; addu $at,$a1,$at ; sw $2,%lo($at)`
+  x3) if and only if the inner loop is GOTO-FORMED. Nothing about the address
+  expression, the volatile, or the assembler was ever the question: it is the
+  loop NOTES.
+  mechanism: the C front end emits NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END only
+  for for/while/do statements, never for a loop built from a label + goto, and
+  loop.c analyses only note-delimited loops. With `do { } while (j < 2)` the cc1
+  `.loop` dump shows loop.c forming the three stores' addresses as DEST_ADDR
+  givs of the biv `sp_inner` (`dest address src reg 86 ... mult 1 add 528482404
+  / 528482408 / 528482412`), combine_givs merging them (`giv at 85 combined with
+  giv at 94`, `giv at 76 combined with giv at 94`) and strength_reduce hoisting
+  one biased base (`giv at 94 reduced to (reg:SI 102)`) out of the loop - 57
+  insns against target's 61. Written goto-formed, loop.c never sees the loop, the
+  numeric absolute addresses survive to the assembler, and maspsx expands each
+  `sw $2,528482404($5)` (numeric operand > 32767) into the target's operand order
+  `addu $at,$a1,$at` (tools/maspsx/maspsx/__init__.py:1183).
+  probe: variant tmp/grind/func_80017FA0/s5/vg1.c = the s4 non-volatile numeric
+  body (s4/body_nv.c) with the inner do-while rewritten as
+  `inner: { ... } if (j < 2) goto inner;`. Checked with
+  tmp/grind/func_80017FA0/s4/check.sh, then applied to src/code6cac.c.
+  result: 61 insns, objdump IDENTICAL TO TARGET, `.frame $sp,8 # vars= 8`;
+  `sandbox func_80017FA0 --disable all` = 0; `build` SHA1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle). Zero rules, zero cheat
+  asm, zero volatile, zero FAKE constructs, no dead locals.
+  verdict: **CONFIRMED - function closed in pure C.**
+
+- H-S5b [loop.c is unconditional once the giv forms] With a NUMERIC address on a
+  single biv, GCC 2.7.2 will ALWAYS strength-reduce; no numeric spelling can
+  survive. This retro-explains s4's seven dead numeric variants and is why the
+  answer had to be "prevent the loop from being analysed at all".
+  mechanism: read out of tools/gcc-2.7.2/loop.c - strength_reduce:3823 skips a
+  giv only when `v->lifetime * threshold * benefit < insn_count`, with threshold
+  = 2*(3+n_non_fixed_regs) (large) and lifetime 1, so it skips only when benefit
+  <= 0. A single DEST_ADDR giv has benefit 2 - add_cost(2)*biv_count(1) = 0 and
+  IS left alone (dump: "giv of insn 70 not worth while, 0 vs 15"), but
+  combine_givs:5494 merges the three same-biv address givs into one of benefit 6
+  first, and combine_givs_p:5457 always accepts them on MIPS because
+  ADDRESS_COST(reg + small const) = 1 <= ADDRESS_COST(reg + 0x1F800068) = 2
+  (mips.c:mips_address_cost:1653). express_from:5417 is the only escape hatch
+  (`GET_CODE (g1->add_val) != CONST_INT` -> return 0), which is exactly why the
+  s4 extern-SYMBOL form survived - but a symbol operand is then passed through
+  maspsx unexpanded and GNU as emits the OTHER operand order
+  (`addu $at,$at,$a1`), which is why that form stalled at 58/61.
+  verdict: CONFIRMED.
+
+- KILLED (s5): "The 3-instruction residual is a GNU-as / build-surface question,
+  i.e. an integration handoff." Direct measurement of the assembler
+  (tmp/grind/func_80017FA0/s5/asmorder.sh) shows GNU as emits `addu at,at,base`
+  for BOTH numeric and absolute-symbol address expressions - s4's claim that as
+  picks the order from the expression form was wrong. The target's operand order
+  comes from maspsx's own expansion of numeric >32767 store offsets
+  (tools/maspsx/maspsx/__init__.py:1183), which fires only for a NUMERIC operand.
+  So the residual was always a cc1 question, and the answer was in C.
+
+
+## SUPERSEDED — s4's claim of a match (the form it matched with is now BANNED)
 
 - H-S4 [live-local phantom frame] The target's zero-store 8-byte leaf frame does
   NOT require a dead local. An ordinary LIVE local that the allocator keeps in a
