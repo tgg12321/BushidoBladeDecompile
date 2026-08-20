@@ -1,8 +1,8 @@
 {
  "func": "func_80038170",
  "file": "code6cac_c_mid",
- "session_count": 4,
- "current_modality": "forensics",
+ "session_count": 5,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -33,13 +33,29 @@
    "floor": 0,
    "modality": "forensics",
    "headline": "SOLVED and bytes-proven this session (sandbox 0, full-build SHA1 == oracle); forensics named the +8-frame mechanism (combine address-fold residue -> reload1.c alter_reg spill slot) and it PROVES the o"
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Bytes re-proven from a pristine reference (full-build SHA1 == oracle, with and without the prong-(c) deletion); the honest sandbox floor is 1 (R_MIPS_LO16 addend artifact, never 0) and the prong-(c) e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Widening this function's candidate scope to include/code6cac.h closes it to COMPLETED-C in one pass, with no construct of any kind in the C.",
-   "mechanism": "apply memory/grind/func_80038170/candidate.c over the INCLUDE_ASM line at src/code6cac_c_mid.c:281 plus the one-line header change extern u8 D_8008F19C;/extern u8 D_8008F19D; -> extern u8 D_8008F19C[]; \u2014 both already measured to give sandbox 0 and full-build SHA1 == oracle",
-   "next_probe": "operator adds include/code6cac.h to tools/grinder/scope_allow.txt for func_80038170 (next session then submits an ordinary candidate-ready), or executes the 4-step recipe in the 2026-08-19 INTEGRATION HANDOFF entry in docs/grind/decisions.md directly"
+   "hypothesis": "An operator applying memory/grind/func_80038170/integration_patch.diff closes this function to COMPLETED-C in one pass, with no construct of any kind in the C.",
+   "mechanism": "The three-file tree in that patch (src body + one-line header array declaration + the prong-(c) undefined_syms_auto.txt:46 deletion) was applied and measured this session: full build SHA1 == oracle.",
+   "next_probe": "git apply memory/grind/func_80038170/integration_patch.diff; `& tools/wteng.ps1 main build` (expect SHA1 == oracle); fresh layer-2 cheat-reviewer on the C; `& tools/wteng.ps1 main queue done func_80038170`."
+  },
+  {
+   "hypothesis": "The pipeline can land this itself once the session scope check honours the grant it already wrote.",
+   "mechanism": "grind.ps1:880's hard-coded $AllowedDirtyPattern is what discards the session; Get-ExtraScope already exists and already returns undefined_syms_auto.txt for this function.",
+   "next_probe": "Make the session scope check at grind.ps1:987 union $AllowedDirtyPattern with Get-ExtraScope for the active function, then re-dispatch; the next session can then leave all three edits in its tree."
+  },
+  {
+   "hypothesis": "The candidate gate's sandbox==0 requirement is the second, independent blocker and needs the LO16-addend gap closed.",
+   "mechanism": "engine/score.py masks branch/jump targets but not section-relative R_MIPS_LO16 addends, so a symbol+addend spelling that links identically scores as a difference (sandbox-lo16-text-addend-false-distance).",
+   "next_probe": "Either mask text-section LO16 addends in engine/score.py (the general fix) or let Invoke-CandidatePath accept a candidate whose full-build SHA1 == oracle when the residual is an addend-only artifact."
   }
  ],
  "judge_constraints": [
@@ -51,7 +67,8 @@
   "integration-handoff EXECUTED (pipeline, 2026-08-19): scope grant: func_80038170 include/code6cac.h; cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
   "LAYER-1 CHEAT-REVIEWER FAIL: The include/code6cac.h scalar-pair -> array declaration change (D_8008F19C) is a header type/shape correction whose only real justification, on the ledger's own record, is that it makes GCC's reload/combine pass allocate the exact 8-byte phantom frame slot the target needs -- self-referential 'evidence' dressed as a data-model fact, not an independently-supported one. Next action: Do not commit. The frame-forensics work is valuable as documentation but is not, by itself, evidence that D_8008F19C is genuinely a 2-byte-stride array in the original source -- it is evi",
   "Resubmit under the frozen 'Per-word splat symbol -> aggregate merge' entry (no-new-park-categories.md:215), citing it explicitly and satisfying prong (c): the header edit MUST be accompanied by deleting `D_8008F19D = 0x8008F19D;` from undefined_syms_auto.txt:46. The `(&D_8008F19C)[...]` pointer-pun spelling (banned_constructs[2]) and the `[][2]` shape both stay off the table; measure sandbox against a clean build/ and trust only the full-build SHA1.",
-  "integration-handoff EXECUTED (pipeline, 2026-08-20): scope grant: func_80038170 include/code6cac.h undefined_syms_auto.txt  (merged with prior line); cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+  "integration-handoff EXECUTED (pipeline, 2026-08-20): scope grant: func_80038170 include/code6cac.h undefined_syms_auto.txt  (merged with prior line); cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
+  "Do NOT re-file this as an integration-handoff and do not re-measure the bytes: tools/grinder/scope_allow.txt:27 already grants both paths and the grant is INERT (grind.ps1:880/989 never reads it), and the candidate gate's sandbox-0 requirement is unreachable honestly (permanent R_MIPS_LO16 addend artifact). The only remedies are an operator applying memory/grind/func_80038170/integration_patch.diff, or the two driver/engine fixes named in the packet - both owner-class."
  ],
  "origin": "queue",
  "created": "2026-07-28T11:45:41.842636+00:00",

@@ -1,3 +1,36 @@
+/* ===========================================================================
+ * s6 STATUS (2026-08-20, rederive) — READ THIS FIRST; it corrects the numbers
+ * in the s4/s5 header below. The BODY is unchanged and is final.
+ *
+ * Measured this session in the only trustworthy order (pristine HEAD `build`
+ * first, so build/'s reference objects ARE the oracle's objects):
+ *   - pristine HEAD build ............ SHA1 62efab4f... == ORACLE
+ *   - apply body + header decl, then
+ *     `sandbox func_80038170 --disable all` .... score **1** (NOT 0),
+ *     target_insns 141, build_insns 141, rules_dropped 0
+ *   - then full `build` .............. SHA1 62efab4f... == ORACLE, MATCH
+ *   - same tree + prong-(c) deletion of undefined_syms_auto.txt:46
+ *     (`D_8008F19D = 0x8008F19D;`), full `build` .. SHA1 62efab4f... == ORACLE
+ *
+ * The honest floor is 1 and can never be 0: our .o relocates
+ * `lbu $2,D_8008F19C+1($3)` where the target .o relocates `lbu $2,D_8008F19D($3)`.
+ * Both resolve to 0x8008F19D; engine/score.py masks branch/jump targets but not
+ * section-relative R_MIPS_LO16 addends ([[sandbox-lo16-text-addend-false-distance]]).
+ * The s4 "sandbox = 0" claim was the false-zero (sandbox run after a candidate
+ * build). Only the full-build SHA1 is trustworthy. Do NOT engineer the 0.
+ *
+ * The complete, verified three-file tree (src + include/code6cac.h +
+ * undefined_syms_auto.txt) is banked as
+ * memory/grind/func_80038170/integration_patch.diff — `git apply` it from the
+ * repo root. A grind session may NOT leave the undefined_syms_auto.txt edit in
+ * its tree (grind.ps1:880 discards the session); see the 2026-08-20 INTEGRATION
+ * HANDOFF entry in docs/grind/decisions.md and self_vet.md prong (c).
+ *
+ * Family claim for the header line: "Per-word splat symbol -> aggregate merge",
+ * .claude/rules/no-new-park-categories.md:215. Prong-by-prong answers are in
+ * memory/grind/func_80038170/self_vet.md (s6 addendum).
+ * ===========================================================================
+ */
 /* Candidate: func_80038170 (src/code6cac_c_mid.c) â€” PROVEN FORM, session s4
  * (forensics, 2026-08-19). Measured THIS session on the post-asm-until-matched
  * chassis: `sandbox func_80038170 --disable all` = **0** (141/141 insns) and a

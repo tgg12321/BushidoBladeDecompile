@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80038170",
-      "file": "code6cac_c_mid",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "file_LoadSectors",
       "file": "ings",
       "distance": 1,
@@ -2012,6 +2003,16 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-19 - func_80060A68 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (s9 - supersedes and CORRECTS the earlier 2026-08-19 entry for this function)'"
     },
     {
+      "func": "func_80038170",
+      "file": "code6cac_c_mid",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "prologue_fix": 1,
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_80038170 \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
+    },
+    {
       "func": "main",
       "file": "ings",
       "distance": 0,
@@ -2250,13 +2251,13 @@
   ],
   "counts": {
     "total": 259,
-    "active": 232,
+    "active": 231,
     "by_status": {
-      "active": 232,
-      "parked": 27
+      "active": 231,
+      "parked": 28
     },
     "by_verdict": {
-      "C": 194,
+      "C": 193,
       "ASM-PARTIAL": 38
     }
   }

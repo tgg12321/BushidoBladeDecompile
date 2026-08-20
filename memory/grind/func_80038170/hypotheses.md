@@ -251,3 +251,74 @@
   - verdict: **CONFIRMED**. The s4 candidate.c "apply -> build -> sandbox" recipe
     is the false-zero recipe and must not be followed; only the full-build SHA1
     is trustworthy after a candidate build.
+
+## s6 (2026-08-20, rederive)
+
+- **H-s6-1: the `scope_allow.txt` grant for `undefined_syms_auto.txt` lets a
+  session make the prong-(c) deletion.**
+  - mechanism: the 2026-08-19/2026-08-20 integration-handoffs wrote
+    `func_80038170 include/code6cac.h undefined_syms_auto.txt` into
+    `tools/grinder/scope_allow.txt:27`, which the driver documents as "BOTH
+    allowed by the candidate scope check AND staged into the Match commit".
+  - probe: read the driver. `Get-ExtraScope` (grind.ps1:544) is called only from
+    `Invoke-CandidatePath`; the *session* scope check (grind.ps1:987) tests the
+    whole dirty tree against the hard-coded literal `$AllowedDirtyPattern`
+    (grind.ps1:880 — `memory/grind/|docs/grind/|tmp/|metrics/events.jsonl|src/|include/`)
+    and never reads `scope_allow.txt`. Corroborated empirically: the previous
+    session was discarded with "SCOPE VIOLATION … ( M undefined_syms_auto.txt)"
+    WITH the grant already in place.
+  - verdict: **KILLED**. No grind session can ever satisfy prong (c); a
+    scope_allow grant for a path outside `src/` / `include/` is inert. Only an
+    operator (or a driver change to grind.ps1:880) can land it.
+
+- **H-s6-2: with a truly pristine `build/` reference, the banked candidate
+  scores sandbox 0 (s4's claim).**
+  - mechanism: s4 reported 0; s5 discovered the false-zero effect but measured it
+    on the *rejected* 2-D form, so the correct form's honest score was never
+    taken against a clean reference.
+  - probe: full `build` at pristine HEAD (INCLUDE_ASM form → reference objects ==
+    oracle objects), then apply the candidate, then `sandbox --disable all`.
+  - result: **score 1** (141/141 insns, rules_dropped 0), then full `build` →
+    SHA1 == ORACLE.
+  - verdict: **KILLED**. The honest floor is 1 and structurally cannot be 0: the
+    scored instruction is the `D_8008F19C+1` vs `D_8008F19D` R_MIPS_LO16 addend
+    spelling, which `engine/score.py` does not mask
+    ([[sandbox-lo16-text-addend-false-distance]]) and which vanishes at link
+    time. The driver's candidate gate (`"score": 0` required) is therefore
+    unpassable for this function by honest means — a second, independent
+    mechanical deadlock on top of H-s6-1.
+
+- **H-s6-3: deleting `undefined_syms_auto.txt:46` (prong (c)) perturbs the
+  image.**
+  - mechanism: `D_8008F19D = 0x8008F19D;` is a linker symbol assignment; if
+    anything still referenced it, or if it contributed to layout, the SHA1 would
+    move.
+  - probe: candidate applied + line 46 deleted → full `build`.
+  - result: SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == ORACLE, MATCH.
+  - verdict: **KILLED** (the perturbation does not happen). The prong-(c) tree is
+    the same image; the operator step is pre-verified and banked as
+    `memory/grind/func_80038170/integration_patch.diff`.
+
+## [s5] The tools/grinder/scope_allow.txt grant for undefined_syms_auto.txt lets a grind session make the prong-(c) deletion the 2026-08-20 Judge constraint demands.
+- mechanism: The 2026-08-19/2026-08-20 integration-handoffs wrote `func_80038170 include/code6cac.h undefined_syms_auto.txt` into tools/grinder/scope_allow.txt:27, which that file's own header documents as 'BOTH allowed by the candidate scope check AND staged into the Match commit'.
+- probe: Read the driver: Get-ExtraScope (tools/grinder/grind.ps1:544) is called only from Invoke-CandidatePath, whose file filter is src/|include/ only; the SESSION scope check (grind.ps1:987) runs first over the whole dirty tree against the hard-coded literal $AllowedDirtyPattern at grind.ps1:880 (memory/grind/|docs/grind/|tmp/|metrics/events.jsonl|src/|include/) and never reads scope_allow.txt. Corroborated empirically: the previous session was discarded with 'SCOPE VIOLATION ... ( M undefined_syms_auto.txt)' WITH the grant already in place.
+- result: No grind session can leave that edit in its tree; a scope_allow.txt grant for any path outside src/ or include/ is inert. Prong (c) of the aggregate-merge family is mechanically unsatisfiable from inside the pipeline.
+- verdict: KILLED
+
+## [s5] With a truly pristine build/ reference, the banked candidate scores sandbox 0 (the s4 claim the ledger floor of 0 rests on).
+- mechanism: s4 reported 0; s5 discovered the false-zero effect but measured it on the REJECTED 2-D form, so the correct form's honest score against a clean reference had never been taken.
+- probe: full `build` at pristine HEAD (INCLUDE_ASM form, so build/'s reference objects are the oracle's own objects) -> apply the banked body + the include/code6cac.h array declaration -> `sandbox func_80038170 --disable all` -> then full `build`.
+- result: sandbox score = 1 (target_insns 141, build_insns 141, rules_dropped 0); the subsequent full build gives SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE. The one scored instruction is our `lbu $2,D_8008F19C+1($3)` vs the target .o's `lbu $2,D_8008F19D($3)` - the same address, an R_MIPS_LO16 addend spelling that engine/score.py does not mask.
+- verdict: KILLED
+
+## [s5] Deleting undefined_syms_auto.txt:46 (`D_8008F19D = 0x8008F19D;`), the prong-(c) completeness step, perturbs the linked image.
+- mechanism: It is an absolute linker-symbol assignment; a surviving reference or any layout contribution would move the SHA1.
+- probe: candidate body + header correction + line 46 deleted -> full `build`.
+- result: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, MATCH. The deletion is byte-neutral; the operator step is pre-verified and the exact three-file tree is banked as memory/grind/func_80038170/integration_patch.diff.
+- verdict: KILLED
+
+## [s5] The rederive modality can find a structurally different C shape for the two odd bytes that avoids the header correction.
+- mechanism: A different declaration/indexing shape (record table, row indexing, TU-local declaration, sibling-table rebasing) might reach the same bytes without touching include/code6cac.h.
+- probe: Enumerated against the ledger's banked measurements: `[][2]` / struct-row spellings build a row address and never form the `symbol_ref + 1` const addend the target's `lbu D_8008F19C+1($3)` requires (rejected/2d-array-index-no-addend.c, SHA1 e3ae7aae..., frame 48 vs the target's 56); the TU-local `(&D_8008F19C)[...]` pointer pun is banned_constructs[2]; a TU-local array declaration is refused by prong (d) of the aggregate-merge entry.
+- result: The flat `extern u8 D_8008F19C[];` + `[s3*2+0]`/`[s3*2+1]` spelling - identical to how this same function already reads its sibling table D_8008F1A8[], declared that way at include/code6cac.h:81 - is the unique surviving shape. The rederive axis is closed; the body is final.
+- verdict: KILLED

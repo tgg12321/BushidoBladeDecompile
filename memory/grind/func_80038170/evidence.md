@@ -400,3 +400,119 @@ codegen shape).
 
 The tree was restored to HEAD and rebuilt (SHA1 == oracle) before this session
 ended, so `build/` is a clean, uncontaminated reference for the next session.
+
+---
+
+## s6 (2026-08-20, `rederive` modality — the session after the discarded one)
+
+The previous session was **DISCARDED by the driver validator** for a SCOPE
+VIOLATION on `undefined_syms_auto.txt` — the file that the 2026-08-20 Judge
+constraint (state.json `judge_constraints[7]`) *requires* the candidate to edit,
+and that the 2026-08-20 integration-handoff grant explicitly added to
+`tools/grinder/scope_allow.txt:27`. This session established why that is not a
+mistake anyone can avoid, and re-measured every byte claim from a genuinely
+pristine reference.
+
+### 1. The two scope checks are DIFFERENT, and only one of them reads the grant
+
+- `Get-ExtraScope` (`tools/grinder/grind.ps1:544-557`) reads
+  `tools/grinder/scope_allow.txt` and is consulted ONLY by
+  `Invoke-CandidatePath` (`grind.ps1:559-...`), whose file filter is itself
+  `^..\s+("?)(src/|include/)` — i.e. the candidate gate never even looks at a
+  root-level `*.txt`.
+- The **session** scope check (`grind.ps1:987-992`) runs FIRST, on the whole
+  working tree, against a hard-coded literal:
+  `$AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'`
+  (`grind.ps1:880`). It does **not** consult `scope_allow.txt` at all.
+
+`undefined_syms_auto.txt` is not in that literal, so ANY session that touches it
+is discarded before its outcome is read — no matter what grant exists. **A
+scope_allow.txt grant for a non-`src/`/`include/` path is therefore inert**, and
+the two integration-handoffs already executed for this function (2026-08-19 and
+2026-08-20) could never have been landable by a session. This is a driver gap,
+not a decomp problem, and it is the reason this function has now burned three
+consecutive cycles.
+
+### 2. The honest sandbox floor for this function is **1**, and can never be 0
+
+Measured this session in the correct order, with `build/` regenerated from a
+pristine HEAD (`INCLUDE_ASM` form) so the reference objects ARE the oracle
+objects:
+
+| step | measurement |
+|---|---|
+| pristine HEAD `build` | SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE** |
+| apply candidate body + `include/code6cac.h` array decl, then `sandbox --disable all` | **score 1**, `target_insns 141`, `build_insns 141`, `rules_dropped 0` |
+| then full `build` | SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE, MATCH** |
+
+The single scored instruction is the known reloc spelling: our `.o` relocates
+`lbu $2, D_8008F19C+1($3)` while the target `.o` (assembled from
+`asm/funcs/func_80038170.s`) relocates `lbu $2, D_8008F19D($3)`. Both resolve to
+0x8008F19D and the linked bytes are identical — which the full-build SHA1
+proves. `engine/score.py` masks branch/jump targets but NOT section-relative
+`R_MIPS_LO16` addends ([[sandbox-lo16-text-addend-false-distance]]), so the
+scorer reports a difference that does not exist in the image.
+
+**Consequence:** the driver's candidate gate (`Invoke-CandidatePath`, which
+rejects unless the sandbox prints `"score": 0`) is UNPASSABLE for this function
+by honest means. The only way it prints 0 is the false-zero recipe (build with
+the candidate applied, then sandbox against the candidate's own objects) that
+H-s5-3 already killed. s1-s3 reported "floor 1, a stale-reference artifact" and
+s4 reported "floor 0"; the correct statement is the union of the two — floor 1
+against a true reference, 0 only against a contaminated one, and the image is
+byte-identical either way.
+
+### 3. Prong (c) of the aggregate-merge family is byte-neutral (verified)
+
+With the candidate applied AND `undefined_syms_auto.txt:46`
+(`D_8008F19D = 0x8008F19D;`) deleted — the complete, prong-(c)-satisfying tree
+the 2026-08-20 Judge constraint demands — a full `build` gives SHA1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE, MATCH**. The line is a
+bare absolute linker-symbol assignment that emits no bytes, and after the header
+correction nothing in C or asm references `D_8008F19D`. The operator's step is
+pre-verified: it is safe, and it completes the merge to exactly one C handle per
+storage location.
+
+The exact three-file tree that was measured is banked verbatim as
+`memory/grind/func_80038170/integration_patch.diff` (also copied to
+`tmp/grind/func_80038170/s5/integration_patch.diff`), applicable with
+`git apply` from the repo root.
+
+### 4. `rederive` axis: no structurally different shape exists
+
+The mandated modality this session was `rederive`. The declaration/indexing
+shape is not a free choice: `[][2]` and struct-row spellings were killed in the
+previous session (`rejected/2d-array-index-no-addend.c`, SHA1 `e3ae7aae…`, frame
+48 vs the target's 56) because a row address never builds the `symbol_ref + 1`
+const addend the target's `lbu D_8008F19C+1($3)` requires; the TU-local
+`(&D_8008F19C)[…]` pointer-pun is banned (`banned_constructs[2]`); a TU-local
+array declaration is forbidden by prong (d) of the aggregate-merge entry
+(`never TU-local, never a per-use pointer pun`). The flat `extern u8
+D_8008F19C[];` + `[s3*2+0]` / `[s3*2+1]` spelling — identical to how the same
+function already reads its sibling table `D_8008F1A8[]`, declared that way at
+`include/code6cac.h:81` — is the unique surviving shape. Five sessions have now
+looked; the axis is closed and the body is final.
+
+### 5. Tree state left behind
+
+`src/code6cac_c_mid.c`, `include/code6cac.h` and `undefined_syms_auto.txt` were
+all restored to HEAD and the tree rebuilt to SHA1 == oracle before this session
+ended, so `build/` is again a clean, uncontaminated reference.
+
+- [s5] Pristine HEAD full `build` (INCLUDE_ASM form) = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, establishing build/ as a reference made of the oracle's own objects before any candidate measurement.
+
+- [s5] Candidate applied (banked body over src/code6cac_c_mid.c:281 + include/code6cac.h:80-81 scalar pair -> `extern u8 D_8008F19C[];`): sandbox --disable all = score 1, target_insns 141, build_insns 141, rules_dropped 0.
+
+- [s5] Same tree, full `build` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, MATCH. The score-1 residual therefore does not exist in the linked image.
+
+- [s5] Same tree PLUS undefined_syms_auto.txt:46 deleted, full `build` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, MATCH - prong (c) of the aggregate-merge family is byte-neutral.
+
+- [s5] The driver's session scope check (tools/grinder/grind.ps1:880 + :987) tests the dirty tree against a hard-coded literal that omits root-level *.txt and never consults tools/grinder/scope_allow.txt; only Invoke-CandidatePath consults the grant (grind.ps1:544), and its own filter is src/|include/ only. The two executed integration-handoff grants were therefore inert, which is why the previous session was discarded.
+
+- [s5] The driver's candidate gate requires sandbox score 0; for this function that is unreachable honestly (permanent LO16-addend artifact) and reachable only via the false-zero recipe already killed in the ledger. This session refused to engineer that 0.
+
+- [s5] Codegen-independent data-model evidence stands unchanged: 0x8008F19C holds 82 4F 82 50 82 51 82 52 82 53 00 00 = five 2-byte Shift-JIS full-width digits plus terminator, so splat's D_8008F19D names the low byte of a multibyte character; the sibling table at 0x8008F1A8 is the same construction, is already declared `extern u8 D_8008F1A8[];` at include/code6cac.h:81, and is read by this same function with the identical stride-2 shape.
+
+- [s5] self_vet.md now carries the s6 addendum claiming the frozen 'Per-word splat symbol -> aggregate merge' family (.claude/rules/no-new-park-categories.md:215) with all five prongs answered, superseding its earlier 'SANCTIONED-FAMILY-CLAIMS: none'.
+
+- [s5] Tree restored to HEAD (src/code6cac_c_mid.c, include/code6cac.h, undefined_syms_auto.txt) and rebuilt to SHA1 == oracle before this session ended, so build/ is a clean uncontaminated reference for the next session.

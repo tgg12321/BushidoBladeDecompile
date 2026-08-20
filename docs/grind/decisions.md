@@ -7248,3 +7248,141 @@ WHY ESCALATE AND NOT PASS. The bytes are proven and the C is legitimate, but two
 NOT ESCALATED to the owner: no family extension is requested. The technique already has a frozen entry; I am placing the work inside it, not enlarging the list.
 
 **Constraint recorded for any future session:** Resubmit under the frozen 'Per-word splat symbol -> aggregate merge' entry (no-new-park-categories.md:215), citing it explicitly and satisfying prong (c): the header edit MUST be accompanied by deleting `D_8008F19D = 0x8008F19D;` from undefined_syms_auto.txt:46. The `(&D_8008F19C)[...]` pointer-pun spelling (banned_constructs[2]) and the `[][2]` shape both stay off the table; measure sandbox against a clean build/ and trust only the full-build SHA1.
+
+## 2026-08-20 — func_80038170 (src/code6cac_c_mid.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (driver-gap: the grant path cannot be executed by a session)**
+
+**Not an endgame lock, not an exhaustion claim, and NOT a request for another
+`scope_allow.txt` grant** — two have already been issued (2026-08-19,
+2026-08-20) and this entry shows why they are inert. The function is SOLVED and
+its bytes were re-proven from a pristine reference this session.
+
+### Bytes (measured this session, in the order that is trustworthy)
+
+1. Pristine HEAD (`INCLUDE_ASM("asm/funcs", func_80038170);`) full `build` →
+   SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE**. `build/` is now
+   a reference made of the oracle's own objects.
+2. Apply the banked body (`memory/grind/func_80038170/candidate.c`) over
+   `src/code6cac_c_mid.c:281` + the one-line header correction
+   `include/code6cac.h:80-81` (`extern u8 D_8008F19C; / extern u8 D_8008F19D;` →
+   `extern u8 D_8008F19C[];`), then `sandbox func_80038170 --disable all` →
+   **score 1**, `target_insns 141`, `build_insns 141`, `rules_dropped 0`,
+   no cheat-asm.
+3. Full `build` → SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+   **ORACLE, MATCH**.
+4. Same tree PLUS the prong-(c) deletion of `undefined_syms_auto.txt:46`
+   (`D_8008F19D = 0x8008F19D;`) → full `build` → SHA1
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE, MATCH**. The deletion
+   is byte-neutral and safe.
+5. All three files restored to HEAD and rebuilt to SHA1 == oracle before the
+   session ended. The exact verified three-file tree is banked as
+   `memory/grind/func_80038170/integration_patch.diff`.
+
+### Why the pipeline cannot land it — two independent mechanical deadlocks
+
+**(A) Prong (c) is unreachable from any session.** The 2026-08-20 Judge
+constraint requires that the header edit be accompanied by deleting
+`undefined_syms_auto.txt:46`, and the handoff duly granted that path in
+`tools/grinder/scope_allow.txt:27`. But there are two different scope checks:
+
+- `Get-ExtraScope` (`tools/grinder/grind.ps1:544`) reads the grant and is called
+  only by `Invoke-CandidatePath`, whose own file filter is `^..\s+("?)(src/|include/)`
+  — a root-level `*.txt` never reaches it.
+- The **session** scope check (`grind.ps1:987`) runs first, over the whole dirty
+  tree, against a hard-coded literal at `grind.ps1:880`:
+  `'^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'`.
+  It never reads `scope_allow.txt`.
+
+So a session that makes the mandated edit is discarded before its outcome is
+read — which is exactly what happened to the previous session ("SCOPE VIOLATION
+… ( M undefined_syms_auto.txt)"), *with the grant already in place*. A
+`scope_allow.txt` entry for any path outside `src/` / `include/` is inert.
+
+**(B) The candidate gate can never print 0 for this function honestly.**
+`Invoke-CandidatePath` rejects a candidate-ready unless `sandbox --disable all`
+prints `"score": 0`. The honest score here is **1**, permanently: our `.o`
+relocates `lbu $2, D_8008F19C+1($3)` where the target `.o` relocates
+`lbu $2, D_8008F19D($3)`. Both resolve to 0x8008F19D and the linked image is
+byte-identical (step 3 above), but `engine/score.py` masks branch/jump targets
+and NOT section-relative `R_MIPS_LO16` addends
+([[sandbox-lo16-text-addend-false-distance]]). The only way the gate prints 0 is
+the false-zero recipe (full-build with the candidate applied, then sandbox
+against the candidate's own objects) that the previous session already killed as
+untrustworthy. This session refuses to engineer that 0.
+
+### Operator steps (each one pre-verified this session)
+
+1. `git apply memory/grind/func_80038170/integration_patch.diff`
+   (touches exactly `src/code6cac_c_mid.c`, `include/code6cac.h`,
+   `undefined_syms_auto.txt`).
+2. `& tools/wteng.ps1 main build` → expect SHA1 == oracle.
+3. `& tools/wteng.ps1 main queue done func_80038170` → COMPLETED-C.
+
+A fresh layer-2 `cheat-reviewer` on the C still applies before acceptance. The C
+body contains no construct of any kind (no volatile, no inline asm, no register
+pin, no dead local, no wrapper, no rule, no annotation); the only reviewable item
+is the header declaration, which is claimed under the frozen **Per-word splat
+symbol → aggregate merge** entry (`.claude/rules/no-new-park-categories.md:215`)
+and whose prong-by-prong answers are in `memory/grind/func_80038170/self_vet.md`,
+including the codegen-independent evidence (the bytes at 0x8008F19C are five
+2-byte Shift-JIS full-width digits `82 4F 82 50 82 51 82 52 82 53 00 00`, so
+splat's `D_8008F19D` names the low byte of a multibyte character).
+
+### If the pipeline is to land it instead of an operator
+
+Two driver changes, either of which suffices:
+1. make the session scope check at `grind.ps1:880` consult `Get-ExtraScope` for
+   the active function instead of the hard-coded literal (this is what the grant
+   mechanism already promises in `scope_allow.txt`'s own header comment); and
+2. for the candidate gate, accept a candidate whose full-build SHA1 == oracle
+   even when the sandbox score is a non-zero `R_MIPS_LO16`-addend artifact — or
+   mask text-section LO16 addends in `engine/score.py`, which is the general fix
+   and is already a known engine gap.
+
+## 2026-08-20 01:43 — func_80038170 — ruling: INTEGRATION HANDOFF filed for func_80038170 : 2026-08-20 - func_80038170 (src/co — **ESCALATE**
+
+THE WORK IS SOUND. THE REMEDY IS NOT MINE (OR THE DRIVER'S) TO GRANT.
+
+WHAT I VERIFIED MYSELF (read-only, not credited from the session):
+1. Data model, independent of any compiler. I dumped disc/SLUS_006.63 at the load-address offset for 0x8008F19C and read back exactly `82 4F 82 50 82 51 82 52 82 53 00 00` - five two-byte Shift-JIS full-width digits plus a two-byte terminator - and at 0x8008F1A8 the same construction with ten digits. So splat's `D_8008F19D` names the SECOND BYTE of one character, not an object anybody wrote. The sibling table 0x8008F1A8 is ALREADY declared `extern u8 D_8008F1A8[];` at include/code6cac.h:82 (committed 2026-08-05, layer-2 PASS, predating this grind), and this same function reads it with the identical stride-2 shape. The header edit is therefore the frozen 'Per-word splat symbol -> aggregate merge' family (.claude/rules/no-new-park-categories.md:215), prongs (a),(b),(d),(e) met exactly as the 2026-08-20 ruling found; prong (c) is the undefined_syms_auto.txt:46 deletion, which the ledger measured byte-neutral.
+2. Scope of use: grep over src/ and include/ finds D_8008F19C / D_8008F19D referenced by nothing else. HEAD src/code6cac_c_mid.c:281 is still `INCLUDE_ASM(...)`; no regfix/asmfix rule exists for this function (regfix.txt:655 is a comment).
+3. The banked candidate.c body and integration_patch.diff are byte-identical (diff'd); the C contains no construct of any kind - no volatile, no inline asm, no register pin, no dead local, no annotation, no pointer pun. The banned `(&D_8008F19C)[...]` spelling is absent.
+4. THE TWO BLOCKERS ARE REAL, AND I CONFIRMED BOTH IN THE DRIVER'S OWN SOURCE, NOT FROM THE SESSION'S CLAIM:
+   (A) tools/grinder/grind.ps1:880 defines $AllowedDirtyPattern as a hard-coded literal covering only memory/grind/, docs/grind/, tmp/, metrics/events.jsonl, src/, include/. Line 989 tests the whole dirty tree against that literal ALONE. Get-ExtraScope (line 544), which reads tools/grinder/scope_allow.txt, is consulted only at lines 579 and 760 (the candidate gate and the Match staging), and the candidate gate's own file filter is `src/|include/`. Consequence: a scope_allow.txt grant for a root-level *.txt is INERT - the session that makes the mandated edit is discarded before its outcome is ever read. tools/grinder/scope_allow.txt:27 already grants BOTH include/code6cac.h and undefined_syms_auto.txt (two handoffs, 2026-08-19 and 2026-08-20). Issuing a third would change nothing; I will not knowingly order a fourth wasted cycle.
+   (B) Invoke-CandidatePath rejects any candidate unless `sandbox --disable all` prints score 0. The honest score for this function is permanently 1: our object relocates `lbu $2, D_8008F19C+1($3)` where the target object relocates `lbu $2, D_8008F19D($3)`. Both resolve to the same address and the LINKED IMAGE IS IDENTICAL (full-build SHA1 == oracle, measured by the session against a pristine reference, and this is the only measurement the stale-reference effect cannot fake). engine/score.py masks branch/jump targets but not section-relative R_MIPS_LO16 addends - the known engine gap [[sandbox-lo16-text-addend-false-distance]]. The only way that gate prints 0 is the false-zero recipe the ledger already killed, and the session correctly refused to engineer it.
+
+WHY NOT integration-handoff. That verdict exists for a commit SURFACE a session may not stage, and the driver's remedy for it is exactly two actions: add-scope-allow and unban. Both have already been executed for this function; neither touches the gates that are actually blocking. The remedy this function needs is a change to the PIPELINE ITSELF - either (1) make the session scope check at grind.ps1:880/989 union Get-ExtraScope for the active function, which is what scope_allow.txt's own header comment already promises, or (2) let the candidate gate accept a candidate whose full-build SHA1 == oracle when the residual is an addend-only artifact, or mask text-section LO16 addends in engine/score.py (the general fix). Everything under tools/ and engine/ is on the add-scope-allow denylist and on the 'what still pends the owner' list in .claude/rules/integration-handoff-self-serve.md. A Judge may not authorise it and the driver may not self-serve it.
+
+WHY NOT PASS AND WHY NOT FAIL. There is no defect to fail: the bytes are proven, the C is clean, the header edit sits inside a frozen family whose prongs I checked one by one, and the shape axis is closed (the `[][2]` and struct-row forms are in rejected/ with recorded SHA1 mismatches; the TU-local pun is banned; a TU-local array is forbidden by prong (d)). And I cannot PASS: nothing is on main, the candidate has never cleared a driver gate, and PASS is the final-call verdict for an already-integrated match.
+
+THE PRECISE QUESTION FOR THE OWNER. A function that is finished - whose complete, construct-free three-file tree builds to the oracle SHA1 - cannot be landed by the pipeline because of two gaps in the pipeline's own gates, not because of anything about the decompilation. Do you want (a) an operator to land it directly (`git apply memory/grind/func_80038170/integration_patch.diff`; `& tools/wteng.ps1 main build` -> SHA1 == oracle; `& tools/wteng.ps1 main queue done func_80038170`; fresh layer-2 cheat-reviewer on the C first), or (b) the two driver/engine fixes above made once, so this and every future addend-artifact or root-txt case lands itself? Either answer spends this entry. Until one is chosen the function must not be re-dispatched: four cycles have now been burned re-proving the same bytes.
+
+Evidence lives at memory/grind/func_80038170/{evidence.md [s5], hypotheses.md, self_vet.md, candidate.c, integration_patch.diff, rejected/}; the prior packet is docs/grind/decisions.md 2026-08-20.
+
+## 2026-08-20 — func_80038170 — JUDGE ESCALATE on ruling request (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-20)** — verdict ESCALATE (policy-question): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+THE WORK IS SOUND. THE REMEDY IS NOT MINE (OR THE DRIVER'S) TO GRANT.
+
+WHAT I VERIFIED MYSELF (read-only, not credited from the session):
+1. Data model, independent of any compiler. I dumped disc/SLUS_006.63 at the load-address offset for 0x8008F19C and read back exactly `82 4F 82 50 82 51 82 52 82 53 00 00` - five two-byte Shift-JIS full-width digits plus a two-byte terminator - and at 0x8008F1A8 the same construction with ten digits. So splat's `D_8008F19D` names the SECOND BYTE of one character, not an object anybody wrote. The sibling table 0x8008F1A8 is ALREADY declared `extern u8 D_8008F1A8[];` at include/code6cac.h:82 (committed 2026-08-05, layer-2 PASS, predating this grind), and this same function reads it with the identical stride-2 shape. The header edit is therefore the frozen 'Per-word splat symbol -> aggregate merge' family (.claude/rules/no-new-park-categories.md:215), prongs (a),(b),(d),(e) met exactly as the 2026-08-20 ruling found; prong (c) is the undefined_syms_auto.txt:46 deletion, which the ledger measured byte-neutral.
+2. Scope of use: grep over src/ and include/ finds D_8008F19C / D_8008F19D referenced by nothing else. HEAD src/code6cac_c_mid.c:281 is still `INCLUDE_ASM(...)`; no regfix/asmfix rule exists for this function (regfix.txt:655 is a comment).
+3. The banked candidate.c body and integration_patch.diff are byte-identical (diff'd); the C contains no construct of any kind - no volatile, no inline asm, no register pin, no dead local, no annotation, no pointer pun. The banned `(&D_8008F19C)[...]` spelling is absent.
+4. THE TWO BLOCKERS ARE REAL, AND I CONFIRMED BOTH IN THE DRIVER'S OWN SOURCE, NOT FROM THE SESSION'S CLAIM:
+   (A) tools/grinder/grind.ps1:880 defines $AllowedDirtyPattern as a hard-coded literal covering only memory/grind/, docs/grind/, tmp/, metrics/events.jsonl, src/, include/. Line 989 tests the whole dirty tree against that literal ALONE. Get-ExtraScope (line 544), which reads tools/grinder/scope_allow.txt, is consulted only at lines 579 and 760 (the candidate gate and the Match staging), and the candidate gate's own file filter is `src/|include/`. Consequence: a scope_allow.txt grant for a root-level *.txt is INERT - the session that makes the mandated edit is discarded before its outcome is ever read. tools/grinder/scope_allow.txt:27 already grants BOTH include/code6cac.h and undefined_syms_auto.txt (two handoffs, 2026-08-19 and 2026-08-20). Issuing a third would change nothing; I will not knowingly order a fourth wasted cycle.
+   (B) Invoke-CandidatePath rejects any candidate unless `sandbox --disable all` prints score 0. The honest score for this function is permanently 1: our object relocates `lbu $2, D_8008F19C+1($3)` where the target object relocates `lbu $2, D_8008F19D($3)`. Both resolve to the same address and the LINKED IMAGE IS IDENTICAL (full-build SHA1 == oracle, measured by the session against a pristine reference, and this is the only measurement the stale-reference effect cannot fake). engine/score.py masks branch/jump targets but not section-relative R_MIPS_LO16 addends - the known engine gap [[sandbox-lo16-text-addend-false-distance]]. The only way that gate prints 0 is the false-zero recipe the ledger already killed, and the session correctly refused to engineer it.
+
+WHY NOT integration-handoff. That verdict exists for a commit SURFACE a session may not stage, and the driver's remedy for it is exactly two actions: add-scope-allow and unban. Both have already been executed for this function; neither touches the gates that are actually blocking. The remedy this function needs is a change to the PIPELINE ITSELF - either (1) make the session scope check at grind.ps1:880/989 union Get-ExtraScope for the active function, which is what scope_allow.txt's own header comment already promises, or (2) let the candidate gate accept a candidate whose full-build SHA1 == oracle when the residual is an addend-only artifact, or mask text-section LO16 addends in engine/score.py (the general fix). Everything under tools/ and engine/ is on the add-scope-allow denylist and on the 'what still pends the owner' list in .claude/rules/integration-handoff-self-serve.md. A Judge may not authorise it and the driver may not self-serve it.
+
+WHY NOT PASS AND WHY NOT FAIL. There is no defect to fail: the bytes are proven, the C is clean, the header edit sits inside a frozen family whose prongs I checked one by one, and the shape axis is closed (the `[][2]` and struct-row forms are in rejected/ with recorded SHA1 mismatches; the TU-local pun is banned; a TU-local array is forbidden by prong (d)). And I cannot PASS: nothing is on main, the candidate has never cleared a driver gate, and PASS is the final-call verdict for an already-integrated match.
+
+THE PRECISE QUESTION FOR THE OWNER. A function that is finished - whose complete, construct-free three-file tree builds to the oracle SHA1 - cannot be landed by the pipeline because of two gaps in the pipeline's own gates, not because of anything about the decompilation. Do you want (a) an operator to land it directly (`git apply memory/grind/func_80038170/integration_patch.diff`; `& tools/wteng.ps1 main build` -> SHA1 == oracle; `& tools/wteng.ps1 main queue done func_80038170`; fresh layer-2 cheat-reviewer on the C first), or (b) the two driver/engine fixes above made once, so this and every future addend-artifact or root-txt case lands itself? Either answer spends this entry. Until one is chosen the function must not be re-dispatched: four cycles have now been burned re-proving the same bytes.
+
+Evidence lives at memory/grind/func_80038170/{evidence.md [s5], hypotheses.md, self_vet.md, candidate.c, integration_patch.diff, rejected/}; the prior packet is docs/grind/decisions.md 2026-08-20.
+
+**Constraint recorded for any future session:** Do NOT re-file this as an integration-handoff and do not re-measure the bytes: tools/grinder/scope_allow.txt:27 already grants both paths and the grant is INERT (grind.ps1:880/989 never reads it), and the candidate gate's sandbox-0 requirement is unreachable honestly (permanent R_MIPS_LO16 addend artifact). The only remedies are an operator applying memory/grind/func_80038170/integration_patch.diff, or the two driver/engine fixes named in the packet - both owner-class.

@@ -117,3 +117,98 @@ itself. No symbol is renamed and no alias name is introduced.
 SANCTIONED-FAMILY-CLAIMS: none
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct
+
+---
+
+# SELF-VET ADDENDUM — s6 (2026-08-20, rederive). SUPERSEDES the
+# `SANCTIONED-FAMILY-CLAIMS: none` line above, and corrects its byte numbers.
+
+This addendum exists because the 2026-08-20 layer-1 FAIL was right that the
+header change needs a declared family and an independent evidentiary basis, and
+because the 2026-08-20 Judge constraint names the family to claim. The C body is
+unchanged and still claims nothing; the claim below is about the ONE header line.
+
+CONSTRUCTS: none in the C body. One shared-header declaration change
+(`include/code6cac.h:80-81`), claimed under a sanctioned family.
+
+## T1 semantic purpose (header line)
+The declaration has no runtime semantics of its own. Its effect is that C can
+name the storage that the linked image already contains as one 12-byte object,
+which is a precondition for indexing it. It is byte-inert as a declaration: the
+emitted instruction for `D_8008F19C[s3*2+1]` is the same instruction the target
+contains (`lbu $2, D_8008F19C+1($3)`, resolving to 0x8008F19D).
+
+## T2 human-programmer
+Yes. The bytes at 0x8008F19C are `82 4F 82 50 82 51 82 52 82 53 00 00` — five
+Shift-JIS full-width digits `０１２３４` plus a 2-byte terminator. A human
+declares that as a byte array and indexes the two bytes of character `n` as
+`[n*2+0]` / `[n*2+1]`. The same function already does exactly that against the
+identically-constructed ten-character sibling table declared at
+`include/code6cac.h:81` as `extern u8 D_8008F1A8[];`. Nobody writes
+`extern u8 D_8008F19D;` for the second byte of a multibyte character.
+
+## T3 GCC-internals justification
+The claim does NOT rest on a GCC pass. The independent basis is the data content
+above (read out of `disc/SLUS_006.63`, no compiler involved) plus the in-tree
+sibling declaration. The frame forensics banked in s4 (combine folds the address
+back into the mem, the orphaned pseudo gets an `alter_reg` stack slot) are
+retained in the ledger as corroboration only; strike them and the SJIS evidence
+still stands on its own.
+
+## T4 permuter/search provenance
+None. No permuter campaign was ever run on this function. The declaration was
+derived from the shipped data bytes.
+
+## T5 family check
+Claimed family below. No forbidden family is matched: no pointer pun (the banned
+`(&D_8008F19C)[…]` spelling is NOT used), nothing TU-local, no volatile, no
+alias rename, no new C handle added — the count of C handles for this storage
+goes DOWN, from two to one.
+
+## T6 naming-announces-intent
+No name changes. `D_8008F19C` keeps splat's own name; `D_8008F19D` disappears.
+
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: Per-word splat symbol → aggregate merge
+  SCOPE: "two or more splat-invented `D_<addr>` scalars may be replaced by a single aggregate declaration."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:215
+  PRONGS:
+    (a) object model established by evidence independent of, and predating, any
+        byte-chasing: the shipped image's own contents (five 2-byte Shift-JIS
+        characters at 0x8008F19C, ten at 0x8008F1A8), and stride-2 indexing of
+        the sibling table already committed in this repo
+        (`include/code6cac.h:81`, read as `[sN*2+0]`/`[sN*2+1]`).
+    (b) the merged declaration reflects that shape: the evidence shows a FLAT
+        byte table (an SJIS character string), so a flat `extern u8
+        D_8008F19C[];` is declared — matching the sibling's existing
+        declaration exactly. The record-shaped `[][2]` spelling is explicitly
+        off the table per the 2026-08-20 Judge constraint and was independently
+        measured wrong (`rejected/2d-array-index-no-addend.c`).
+    (c) completeness — SATISFIED IN THE BANKED PATCH, NOT LANDABLE BY A SESSION:
+        `D_8008F19D` is removed from C (the header) and from the splat symbol
+        config (`undefined_syms_auto.txt:46`), leaving exactly one C handle per
+        storage location. The deletion was applied and measured this session
+        (full `build` → SHA1 == oracle) and is banked in
+        `memory/grind/func_80038170/integration_patch.diff`, but it CANNOT be
+        left in a session's working tree: the driver's session scope check
+        (`tools/grinder/grind.ps1:880`) discards any session that touches a
+        root-level `*.txt`, regardless of the `scope_allow.txt` grant. See the
+        2026-08-20 INTEGRATION HANDOFF entry in `docs/grind/decisions.md`.
+    (d) spelled at the canonical declaration in the shared header
+        (`include/code6cac.h:80`), never TU-local, never a per-use pointer pun.
+    (e) byte-neutral for every other consumer: `D_8008F19C` / `D_8008F19D` are
+        referenced by this function only (grep over `src/` + `include/`), and
+        the full build with all three edits in place is SHA1
+        `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The aggregate-merge entry
+(`.claude/rules/no-new-park-categories.md:215`) is a declaration-correction
+family and does not mandate a `/* FAKE */` annotation; there is no coercion
+construct in the C to annotate.
+
+HONEST BYTE STATUS (correcting the numbers implied above): the honest
+`sandbox func_80038170 --disable all` score against a pristine, oracle-built
+`build/` is **1**, not 0 — one `R_MIPS_LO16` addend spelling
+(`D_8008F19C+1` vs `D_8008F19D`) that `engine/score.py` does not mask and that
+does not exist in the linked image. The trustworthy proof is the full-build
+SHA1, which matches the oracle both with and without the prong-(c) deletion.
