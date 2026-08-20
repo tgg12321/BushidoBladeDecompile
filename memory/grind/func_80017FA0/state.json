@@ -36,12 +36,17 @@
    "next_probe": "Await owner ruling. Precedent (AddTbpOfst_80047EE8, InitHiraRmd_80047FBC, +6 same species) all ruled option (b) REFUSED / OWNER-ACCEPTED INCOMPLETE on 2026-07-22; expected disposition is (b) unless the owner elects to open the fully-dead-pad engine-allowlist path. Do NOT re-grind \u2014 all sanctioned axes are dead."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "The scratchpad stores must reach target without `volatile`: find a pure-C address expression that makes cc1 re-materialize the 0x1F80 base per store, or bring a two-prong citation (IRQ/DMA writer + a sanctioned use-site shape) that the rules actually grant for 0x1F800000-0x1F8003FF."
+ ],
  "origin": "queue",
  "created": "2026-07-24T22:01:20.133719+00:00",
  "pending_fixup": {
   "kind": "citation",
   "detail": "Construct (rotated loop-guard reusing the live counter, if (i < ptr[1]) instead of if (ptr[1] > 0)) is independently verified as a legitimate instance of the phantom-slot-frame-lever family with real in-tree precedent, but the self-vet's own citations for it are fabricated/wrong and must be corrected before commit. Re-cite only \u2014 no re-grind needed. The construct is real and precedented under .claude/rules/phantom-slot-frame-lever.md, producer #1 ('Folded loop-guard compare'), which explicitly names this exact spelling as an exhibit: \"the rotated-while guard `if (i < limit)` re-using the loop'",
   "set": "2026-08-20T07:40:53.918306+00:00"
- }
+ },
+ "banned_constructs": [
+  "volatile-qualified access to scratchpad RAM 0x1F800000-0x1F8003FF (volatile s32 *scr / *ac_base declarations and *(volatile s32 *)(0x1F8000xx + off) store casts) used to defeat CSE of the store address"
+ ]
 }
