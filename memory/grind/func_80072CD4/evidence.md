@@ -350,3 +350,43 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   a candidate-ready vet: CONSTRUCTS none, all six tests answered against the landed diff,
   SANCTIONED-FAMILY-CLAIMS none (no construct ⇒ no family is being spent), ANNOTATION-CONFORMANCE
   n/a. fallback_floor4.c is retained untouched.
+
+- [s5-forensics 2026-08-20, FORENSICS modality] Chassis re-measured first: cross-block body
+  (tmp/grind/func_80072CD4/s5/body_v3_xblock.c) applied over the migrated INCLUDE_ASM line gives
+  `sandbox func_80072CD4 --disable all` = 13, build_insns 78, rules_dropped 0 - matching the s3/s5
+  numbers, so the ledger's attractor measurements are chassis-current.
+- [s5-forensics] PASS ATTRIBUTION SETTLED (instrumented cc1 + BB2_SCHED_DEBUG, artifacts
+  s5/scheddbg_pass1.txt, s5/scheddbg_pass2.txt, s5/f.flow, s5/f.sched): GCC 2.7.2's list scheduler
+  (sched.c `schedule_block`) runs BOTTOM-UP - the SCHEDDBG PICK sequence is the exact reverse of the
+  emitted block. Consequences, both verified against the disassembly:
+    (a) a store whose value register is set in a PREDECESSOR block has no in-block dependence
+        predecessor, is ready in round 1, wins the equal-priority `schedule_select` potential-hazard
+        tiebreak (sched.c:2660-2745; unit=0 beats unit=-1) and is therefore emitted at the block
+        TAIL;
+    (b) a constant `li` whose only consumer is in a SUCCESSOR block (unit=-1, no birth boost from
+        `adjust_priority`) loses every equal-priority tiebreak, is picked last, and is therefore
+        emitted at the block TOP.
+  (a) is the residual-4 merge-store deferral of the per-arm chassis; (b) is the arm hoist of the
+  cross-block chassis. Both attractors are the SAME rule seen from two sides.
+- [s5-forensics] sched1 is NOT the cause of the merge-block deferral: pass1 block=4 keeps the merge
+  block in source order (@4, @0xC, @0xE, then the li/sb chains). sched2 (pass2 block=4) is where the
+  four producer-less stores (85/@4, 88/@0xC, 91/@0xE, 114/@0x16 - all listed with zero dependence
+  preds) are picked at clocks 3-6 and thus emitted last.
+- [s5-forensics] PASS ORDER FACT (toplev.c): sched2 = :3117, `jump_optimize (insns, 1, 1, 0)` (the
+  cross_jump run) = :3142, dbr = :3167. Cross-jumping happens AFTER the second scheduling pass, so a
+  common tail spliced at a join label is never re-scheduled.
+- [s5-forensics] INTERNAL CONTROL, same function, same build (s5/base.dis, the floor-4 per-arm body):
+  `sb v0,0xE` - written per-arm in the source and cross-jumped - occupies the merge HEAD (0x876c);
+  `sb v1,4` and `sb v1,0xC` - written in the merge block - are sunk to the block tail (0x8794,
+  0x8798). Identical instructions, identical block, opposite placement; the discriminator is purely
+  which basic block the SOURCE wrote them in.
+- [s5-forensics] CONCLUSION (mechanism-level, supersedes the s2/s3 "two-attractor" framing as an
+  explanation while contradicting none of its measurements): target's merge head
+  `sb v1,4 / sb v1,0xC / sb v0,0xE` can only be produced by cross-jumping a common tail out of the
+  two arms, therefore the ORIGINAL C wrote those stores inside both arms. No single-write source
+  form can reach it, which is why five sessions of structural + random + directed search never did
+  (s4b's directed permuter was searching a space sched2 provably collapses).
+- [s5-forensics] src/text1b.c left carrying `INCLUDE_ASM("asm/funcs", func_80072CD4);` (reverted
+  after measurement, per asm-until-matched and the layer-1 instruction). candidate.c restored to the
+  CLEAN floor-4 body (formerly fallback_floor4.c) with the forensic header; the banned rgb-triple
+  body remains only in rejected/.

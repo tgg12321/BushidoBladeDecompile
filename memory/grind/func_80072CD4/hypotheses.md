@@ -262,3 +262,58 @@ remaining step is acceptance: layer-1 cheat-reviewer on the diff, then the Judge
 operator's oracle build + `queue done`. If (and only if) the Judge overturns the 2026-08-20 05:46
 PASS, the fallback is memory/grind/func_80072CD4/fallback_floor4.c (clean floor 4, unchanged) and
 the s1-s5 exhaustion analysis stands as written.
+
+
+## [s5-forensics 2026-08-20] Which pass defers `sb v1,4 / sb v1,0xC` to the merge-block tail?
+- statement: the residual-4 store order is set by **sched2** (schedule_insns pass 2), not by
+  jump2's cross-jump splice and not by sched1, and it follows deterministically from the fact that
+  the two stores have ZERO dependence predecessors inside the merge block.
+- mechanism: sched.c `schedule_block` schedules BOTTOM-UP (the PICK trace is the exact reverse of
+  the emitted order). Producer-less stores are ready in the first bottom-up round; among the
+  equal-priority (pri=1) group `schedule_select` (sched.c:2660-2745) picks the one with the largest
+  `potential_hazard`, which memory insns (unit=0) always win over unit=-1 insns. Picked first
+  bottom-up == emitted last. Meanwhile every li->sb pair is dragged upward by `adjust_priority`'s
+  birth boost (pri 0x7F000001) as soon as its consumer is scheduled.
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 over src/text1b.c carrying
+  the cross-block body; SCHEDDBG FUNC/block/node/dep/PICK/SELBEST traces split into
+  tmp/grind/func_80072CD4/s5/scheddbg_pass{1,2}.txt; plus the .flow/.sched RTL dumps
+  (tmp/grind/func_80072CD4/dumps/, extracted to s5/f.flow, s5/f.sched).
+- result: pass1 block=4 (the merge block) has n_ready=1 and picks 121,119,117,...,88,85 - i.e.
+  sched1 leaves the merge block in SOURCE order (@4,@0xC,@0xE first), target-like. pass2 block=4
+  lists NO dependence predecessors for insns 85 (@4), 88 (@0xC), 91 (@0xE), 114 (@0x16) and picks
+  them at clock 3-6 (SELBEST 114, 91, 88, 85) -> they are emitted at the block TAIL. Disassembly
+  agrees exactly.
+- verdict: CONFIRMED (pass attribution settled at dump level; prior sessions attributed the order
+  to jump2 and to "sched2 launch pairing" without a trace).
+
+## [s5-forensics] Can ANY source that writes @4/@0xC once (in the merge block) reach target's order?
+- statement: no. Target's merge head `sb v1,4 / sb v1,0xC / sb v0,0xE` is unreachable from any
+  source that writes those stores in the merge block, in any statement order.
+- mechanism: two facts compose. (1) sched2 sinks producer-less stores (above), and it rebuilds the
+  order from a dependence graph that is identical for every permutation of the source statements -
+  which is why s4b's 15.8k-iteration directed PERM_LINESWAP over exactly those stores found nothing
+  below base. (2) toplev.c pass order: sched2 at :3117, `jump_optimize (insns, 1, 1, 0)` (the
+  cross_jump run) at :3142, dbr at :3167 - cross-jump runs AFTER sched2, so a common tail spliced
+  at the join label is NEVER re-scheduled and keeps the head slot.
+- probe: read toplev.c:3105-3167; internal control in this function's own floor-4 build
+  (tmp/grind/func_80072CD4/s5/base.dis): `sb v0,0xE` - the ONE store this body writes per-arm - sits
+  at the merge head (0x876c) because jump2 cross-jumped it post-sched2, while `sb v1,4`/`sb v1,0xC`,
+  written in the merge block, sink to 0x8794/0x8798. Same block, same passes, opposite placement;
+  the only difference is which block the source wrote them in.
+- verdict: CONFIRMED. Corollary: the only source shape that can produce target's merge head is one
+  that writes @4/@0xC (and @0xE) inside BOTH arms - i.e. the shape the layer-1 reviewer banned. This
+  is a mechanism argument about what the ORIGINAL source must have contained, not a new lever.
+
+## [s5-forensics] Why the cross-block chassis (13/78) cannot be repaired
+- statement: sched1's hoist of the arms' `li var_v0,0x32/0x46` to the arm top is forced by the same
+  bottom-up rule and cannot be undone by statement order.
+- mechanism: scheddbg_pass1.txt block=2: insn 57 `(set (reg/v:QI 75) (const_int 50))` has unit=-1,
+  icost=0, pri=1 and NO in-block consumer (its consumer, insn 91, is in the merge block), so it
+  loses SELBEST to the unit=0 stores at clock 2/4/6 and is picked last (clock 8) => emitted first
+  => arm top. Identical trace for insn 80 in the ELSE arm (block=3).
+- result: hoist makes both arm tails `sb v0,0xD` identical, so jump2 cross-jumps THAT store out of
+  the arms (78 insns, one short of target's 79) and RA rotates (fc_const -> $a0, var_v0 -> $v1).
+  Measured this session at 13/78, chassis-current.
+- verdict: KILLED (attractor b is closed by a compiler rule, not by a search gap). Its only escape
+  would be giving the arm `li` an in-block consumer - which means storing @0xE in the arm, i.e.
+  moving to the per-arm chassis.
