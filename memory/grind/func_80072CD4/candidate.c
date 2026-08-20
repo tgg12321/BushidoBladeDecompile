@@ -34,6 +34,13 @@
  * always materialises its own register copy (+1 insn target does not have), and removing the
  * per-arm `@0xE` store to free the merge head re-triggers sched1 hoist of the cross-block value
  * `li`, which makes the arm tails identical and cross-jumps `sb v0,0xD` out of them (-1 insn).
+ *
+ * s7-synthesis (2026-08-20) re-measured this body at 4 / 79 on the current chassis and closed the
+ * last quadrant of the only dial this function has: duplicating exactly ONE of the two shared 0xFC
+ * red components into the arms (instead of hoisting both, as this body does, or duplicating both, as
+ * the banned per-arm body does) measures 6/80 and 9/80 - one insn OVER target in both spellings. The pure-C space is a three-point lattice
+ * (0 dups -> 4/79, 1 dup -> 6/80 or 9/80, 2 dups -> 0/79 but banned); there is no fourth arrangement.
+ * See hypotheses.md [s7-synthesis].
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int fc_const;

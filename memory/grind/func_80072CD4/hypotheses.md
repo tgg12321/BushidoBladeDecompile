@@ -642,3 +642,95 @@ be dispatched; the only open question about this function is its DISPOSITION, no
 - probe: memory/grind/func_80072CD4/candidate.c applied via tmp/grind/func_80072CD4/s6/apply.py; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
 - result: score 4, target_insns 79, build_insns 79, rules_dropped 0, scorable true. Chassis unchanged for a second consecutive session; every banked spelling conclusion remains chassis-current.
 - verdict: CONFIRMED
+
+## [s7-synthesis 2026-08-20] — MERGED ATTACK: the whole pure-C space of this function is a
+## three-point lattice on ONE dial, and this session measured the previously-empty middle point
+
+- statement: every C form ever measured for func_80072CD4 (s1-s7, 30 banked rejects, one 15.8k-iteration
+  directed permuter campaign, three structural axes) differs on exactly one dial: **how many of the two
+  shared red components — r0 (@4) and r1 (@0xC), both 0xFC — are written INSIDE the two inner colour
+  arms** rather than hoisted into the merge block. The dial has three settings and this session measured
+  the one that had never been run:
+    * **0 duplicated** (both hoisted; either behind the sibling's `int fc_const` holder or as bare
+      merge-block literals): the banked floor. **4 / 79** (control re-measured this session,
+      tmp/grind/func_80072CD4/s7/syn_control_floor4.json — the dispatch brief reported the chassis
+      measurement as unavailable). Insn-exact, both arms byte-exact; the entire residual is the
+      merge-block store ORDER.
+    * **exactly 1 duplicated** — NEW, never measured before s7: r0 in both arms + r1 hoisted =
+      **6 / 80**; r1 in both arms + r0 hoisted = **9 / 80**. Both are one insn OVER target and both
+      score WORSE than the 0-dup floor.
+    * **2 duplicated** (each arm writes its own complete rgb0 and rgb1 triple): **0 / 79** — the byte
+      match, and the construct the driver's banned_constructs list disqualifies.
+- mechanism for the new middle point: with both reds hoisted, the merge block materialises 0xFC once and
+  shares that `li` between the @4 and the @0xC store (one block, one constant); with both reds in the
+  arms, 0xFC is materialised in the inner-beqz delay slot and the pair of stores rides out of the arms on
+  jump2's cross-jumped common tail. Hoisting exactly ONE red destroys both economies: the lone hoisted
+  store still needs a merge-block `li` of its own, while the arm-resident one already has its own
+  materialisation, so the function pays for two constant materialisations where target and both endpoints
+  pay for one — hence 80 insns in both half-dup spellings. The middle setting is not a compromise between
+  the two endpoints; it is strictly dominated by both.
+- probe: tmp/grind/func_80072CD4/s7/syn_halfdup_r0only.c and syn_halfdup_r1only.c (POLY_G4 struct
+  spelling, identical to the banked score-0 body except for which red component is hoisted), applied with
+  tmp/grind/func_80072CD4/s7/apply.py, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`;
+  JSON in syn_halfdup_r0only.json / syn_halfdup_r1only.json. Bodies banked as
+  rejected/syn_halfdup_r0only_6_80.c and rejected/syn_halfdup_r1only_9_80.c.
+- result: 6/80 and 9/80.
+- verdict: KILLED — and the kill is structural, not incidental: it closes the last quadrant of the dial
+  and shows the pure-C solution space of this function contains exactly three arrangements, of which
+  exactly one matches.
+
+## [s7-synthesis] What the lattice means, merged with the s5-forensics dump evidence
+The three-point result composes with the two codegen laws that s5-forensics established at cc1-dump
+level (L1: a merge-block store whose value register is defined in a predecessor block has no in-block
+dependence predecessor, is ready in sched2's first bottom-up round and is therefore emitted LAST;
+L2: toplev.c runs sched2 (:3117) BEFORE jump_optimize(..., cross_jump=1) (:3142), so a cross-jumped
+common tail is spliced at the join label ahead of everything sched2 emitted and is never re-scheduled).
+Target's merge head is `sb v1,4 / sb v1,0xC / sb v0,0xE`. By L1 no merge-block-written store can occupy
+that head; by L2 the only thing that can is a jump2-spliced common tail; and a common tail exists only if
+the stores are written in BOTH arms. So:
+
+  **the set of pure-C bodies that byte-match func_80072CD4 is exactly the set of bodies that write @4 and
+  @0xC inside both inner arms** — which is exactly the set the banned_constructs entry disqualifies. For
+  this function the ban and "no pure-C match exists" are co-extensive.
+
+That conclusion is now supported from three independent directions: dump-level pass attribution
+(s5-forensics), the 15.8k-iteration directed permuter over the full merge-store permutation space (s4b),
+and this session's exhaustion of the duplication dial. Nothing that remains is a codegen question.
+
+## [s7-synthesis] FRONTIER RESET
+1. **Disposition, not codegen.** The only open question is whether the banned_constructs entry stands.
+   The driver should dispatch `escalation`. That entry must be written knowing both endgame-lock gates
+   FAIL (scan_hand_coded is not STRONG for this function per docs/grind/decisions.md:8361; no
+   SOTN-master precedent census hit for the construct), so the standing 2026-07-27 ruling shape applies:
+   `OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE`,
+   terminal, INCLUDE_ASM retained on main, candidate.c (floor 4) retained in the ledger. The entry should
+   carry the three-point lattice above — it is the cleanest available statement of why no fourth
+   arrangement exists.
+2. **The one unbanked, unmeasured codegen arrangement left** is duplicating the rgb2/rgb3 triples
+   (@0x14 and @0x1C groups) into the arms instead of the rgb0/rgb1 reds. It touches neither @4 nor @0xC,
+   so it is outside the ban. Predicted dead by L2: whatever is duplicated becomes the cross-jumped tail
+   and therefore occupies merge position 0, and target's merge position 0 is @4, not @0x14 — so the probe
+   should move the head to the wrong field. Never measured; cheap; the only remaining thing that is not a
+   re-run of a banked kill.
+3. **Closed by inspection** (the s6 frontier's "formality" item): no source can make the two arms
+   tail-distinct by REAL semantic content, because the arms differ only in three literal colour
+   components (b0 0x1E/0x50, g1 0xC8/0xDC, b1 0x32/0x46 — asm/funcs/func_80072CD4.s). There is no
+   semantic content available to differentiate them with. Do not dispatch a session for this.
+
+## [s7] The banked floor-4 body still reproduces on the chassis this session was dispatched against (the brief reported the chassis measurement as unavailable, so it could not be taken on trust).
+- mechanism: control measurement; every banked spelling conclusion in this ledger is chassis-relative.
+- probe: memory/grind/func_80072CD4/candidate.c applied to src/text1b.c via tmp/grind/func_80072CD4/s7/apply.py, then `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- result: score 4, target_insns 79, build_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s7/syn_control_floor4.json).
+- verdict: CONFIRMED
+
+## [s7] Duplicating exactly ONE of the two shared 0xFC red components (r0 @4 or r1 @0xC) into both inner arms, with the other hoisted into the merge block, is a middle setting between the banked floor-4 body (both hoisted) and the banned per-arm body (both duplicated), and could reach target's merge head without the banned two-store duplication.
+- mechanism: target's merge head is `sb v1,4 / sb v1,0xC / sb v0,0xE`; s5-forensics proved (L1) sched2 sinks producer-less merge-block stores to the block tail and (L2) jump2's cross_jump runs AFTER sched2 (toplev.c :3117 vs :3142) so only a cross-jumped common tail can occupy merge position 0. A half-duplication puts ONE of the two stores in that tail, so if the head only needed one of them the arrangement would score better than 4 without duplicating both.
+- probe: tmp/grind/func_80072CD4/s7/syn_halfdup_r0only.c (r0 in both arms, r1 hoisted) and syn_halfdup_r1only.c (r1 in both arms, r0 hoisted) - POLY_G4 struct spelling, otherwise identical to the banked bodies; applied via s7/apply.py; `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`; JSON artifacts syn_halfdup_r0only.json / syn_halfdup_r1only.json.
+- result: 6 / 80 and 9 / 80 - both score WORSE than the floor of 4 and both are one instruction OVER target's 79. The lone hoisted red needs its own merge-block constant materialisation while the arm-resident one already has its own, so a half-dup form pays for two materialisations where target, the 0-dup form (one shared merge-block li) and the 2-dup form (one li in the inner-beqz delay slot, both stores riding jump2's common tail) each pay for one.
+- verdict: KILLED
+
+## [s7] Some source could make the two inner arms tail-distinct by REAL semantic content rather than by a lever, and so reach target's merge order without duplicating @4/@0xC (the last item the s6 frontier left open, flagged there as a probable formality).
+- mechanism: if the arms ended in genuinely different work, jump2's backward common-tail scan would stop at a different point and the spliced head could differ.
+- probe: inspection of asm/funcs/func_80072CD4.s (no build needed, as the s6 frontier itself directed).
+- result: the two arms differ only in three literal colour components - b0 0x1E vs 0x50, g1 0xC8 vs 0xDC, b1 0x32 vs 0x46. There is no semantic content in this function available to differentiate the arm tails with; the only differentiator is the arm-final li that target already carries.
+- verdict: KILLED

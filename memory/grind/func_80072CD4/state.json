@@ -1,8 +1,8 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "structural",
+ "session_count": 7,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -45,23 +45,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "STRUCTURAL: floor holds at 4 (control re-measured 4/79==79 on the current chassis); the last never-probed structural axis - control-flow spelling (branch polarity + arm order) - is killed in three ins"
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "SYNTHESIS: floor re-measured 4/79 on the current chassis; the previously-unmeasured middle setting of this function's only dial is KILLED (half-duplication of one shared 0xFC red = 6/80 and 9/80, one "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The structural modality is now closed on three independent axes and should not be dispatched again for this function: alias serialisation and holder placement (s5), the full 8-store merge-block permutation space (s4 directed permuter), and control-flow spelling (s6, this session).",
-   "mechanism": "the arms are byte-identical to target, the insn count is exact (79 == 79), and all four remaining diffs live purely in the merge-block store ORDER; L1 (sched2 sinks producer-less merge-block stores) and L2 (jump2 splices the cross-jumped common tail at the join label ahead of everything sched2 emitted) bound every source shape that does not write @4/@0xC inside the arms.",
-   "next_probe": "none in this modality. Do not re-run a banked kill."
+   "hypothesis": "Nothing codegen-shaped is open; the only open question for func_80072CD4 is its DISPOSITION - whether the banned_constructs entry (per-arm rgb0/rgb1 triples) stands, given that this session proves the ban is co-extensive with 'this function has no pure-C match'.",
+   "mechanism": "L1 + L2 (s5-forensics, dump level) bound the merge head to a jump2-spliced common tail, which requires @4/@0xC in both arms; the s7 lattice shows there is no partial or alternative arrangement. Both endgame-lock gates fail, so the owner's standing 2026-07-27 ruling on this exact function pre-decides the outcome.",
+   "next_probe": "dispatch `escalation`. That session files a fresh `## <date> - func_80072CD4 (src/text1b.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**` entry in docs/grind/decisions.md carrying the three-point lattice and both gates' evidence, then returns owner-gated with escalation_ref pointing at the NEW entry (the s5 entry at :8312 is void per the DISCARDED-SESSION MARKER at :8386). Terminal: INCLUDE_ASM stays on main, candidate.c (floor 4) stays in the ledger."
   },
   {
-   "hypothesis": "What is actually open for func_80072CD4 is its DISPOSITION, not its codegen: a pure-C body that measures sandbox 0 / 79 insns exists and is banned, so the terminal shape is INCLUDE_ASM on main with candidate.c retained in the ledger.",
-   "mechanism": "the 2026-07-27 owner ruling on this exact function (docs/grind/decisions.md:1759, REFUSED / OWNER-ACCEPTED INCOMPLETE) plus the 2026-08-19 asm-until-matched migration; the three 2026-08-20 layer-1 FAILs closed the only sandbox-0 path, and the s5 re-filed escalation at docs/grind/decisions.md:8312 was itself voided by the driver's DISCARDED-SESSION MARKER at :8386.",
-   "next_probe": "dispatch `escalation` modality. That session should file a fresh OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27) entry (the s5 one at :8312 is void and cannot be cited) and return owner-gated with escalation_ref pointing at the NEW entry."
+   "hypothesis": "The one unbanked, never-measured codegen arrangement left is duplicating the rgb2/rgb3 triples (@0x14 and @0x1C groups) into the arms instead of the rgb0/rgb1 reds.",
+   "mechanism": "it touches neither @4 nor @0xC, so it is outside the ban; but by L2 whatever is duplicated becomes the cross-jumped tail and therefore occupies merge position 0, and target's merge position 0 is @4, not @0x14 - so it should move the head to the wrong field and score worse.",
+   "next_probe": "one structural/rederive probe: write the arms with their own complete rgb2/rgb3 triples (rgb0/rgb1 shared as in the floor-4 body) and `sandbox func_80072CD4 --disable all`. Expected worse than 4; cheap, and it is the only remaining probe that is not a re-run of a banked kill."
   },
   {
-   "hypothesis": "If the driver wants one more non-structural probe before escalation, the only genuinely unspent question is whether a merge-head order matching target can arise from a source whose arms are made tail-distinct by REAL semantic content rather than by a lever.",
-   "mechanism": "no such content exists in this function's four POLY_G4 RGB triples - the arms differ only in three literal colour components - so this is expected to be a formality, but it has never been written down as measured.",
-   "next_probe": "a rederive/forensics session may state it dead by inspection of asm/funcs/func_80072CD4.s rather than by a build."
+   "hypothesis": "Do NOT dispatch the s6 frontier's third item ('arms made tail-distinct by real semantic content') - it is killed by inspection this session.",
+   "mechanism": "the two arms differ only in three literal colour components (b0, g1, b1); no semantic content exists to differentiate their tails.",
+   "next_probe": "none - banked as KILLED in hypotheses.md [s7-synthesis] FRONTIER item 3."
   }
  ],
  "judge_constraints": [

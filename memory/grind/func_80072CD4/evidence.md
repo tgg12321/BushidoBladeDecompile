@@ -716,3 +716,43 @@ now measured closed on both chassis (per-arm floor-4 and cross-block) and on bot
 - [s6] No src/ change was left behind: src/text1b.c is back to INCLUDE_ASM("asm/funcs", func_80072CD4); per asm-until-matched, and `git status --porcelain src/` is clean.
 
 - [s6] candidate.c is unchanged (the floor-4 body); no probe this session beat it, so the best form on record is the same one s5-structural banked.
+
+- s7 [synthesis] CONTROL, chassis-current: the banked floor-4 body (memory/grind/func_80072CD4/candidate.c,
+  `int fc_const` holder, both reds hoisted) still measures **score 4, build_insns 79 == target_insns 79,
+  rules_dropped 0** (tmp/grind/func_80072CD4/s7/syn_control_floor4.json). The dispatch brief reported the
+  chassis measurement as unavailable; it is 4.
+- s7 [synthesis] NEW KILL — the half-duplication quadrant is empty and strictly dominated. Hoisting
+  exactly ONE of the two shared 0xFC red components out of the arms costs an extra instruction in both
+  spellings: r0-in-arms / r1-hoisted = **6 / 80**, r1-in-arms / r0-hoisted = **9 / 80** (target 79).
+  Cause: the 0-dup form shares one merge-block materialisation of 0xFC between the @4 and @0xC stores,
+  and the 2-dup form materialises 0xFC once in the inner-beqz delay slot and rides both stores out on
+  jump2's common tail; a half-dup form gets neither economy and pays for two materialisations. Bodies
+  banked at rejected/syn_halfdup_r0only_6_80.c and rejected/syn_halfdup_r1only_9_80.c; JSON at
+  tmp/grind/func_80072CD4/s7/syn_halfdup_r0only.json and syn_halfdup_r1only.json.
+- s7 [synthesis] MERGED RESULT: the pure-C space of func_80072CD4 is a three-point lattice on the single
+  dial "how many of the two shared reds are written inside the arms" — 0 -> 4/79, 1 -> 6/80 or 9/80,
+  2 -> 0/79. Combined with s5-forensics' L1/L2 dump-level laws (sched2 sinks producer-less merge-block
+  stores; cross_jump runs after sched2 and splices the common tail at the join label), the set of bodies
+  that can reproduce target's merge head `sb v1,4 / sb v1,0xC / sb v0,0xE` is exactly the set that writes
+  @4 and @0xC in BOTH arms. For this function the banned_constructs entry is therefore co-extensive with
+  "no pure-C match exists". What is open is a disposition question, not a search question.
+- s7 [synthesis] TOOLING WARNING for future sessions: do NOT delete the POLY_G4 typedef from src/text1b.c
+  with a lazy-body regex (`typedef struct \{` ... `\} POLY_G4;` with `(?:.*?\n)*?`) — it matches from the
+  FIRST `typedef struct {` in the file and silently deletes ~3.5k lines. Restore with
+  `git checkout -- src/text1b.c` before applying each candidate body instead;
+  tmp/grind/func_80072CD4/s7/apply.py is safe on a clean file. The corrupted-file symptom is a nonsense
+  sandbox result (this session briefly saw 31 / 63 insns with the inner `if` missing from the build).
+
+- [s7] CONTROL (chassis-current, this session): memory/grind/func_80072CD4/candidate.c = score 4, build_insns 79 == target_insns 79, rules_dropped 0. The dispatch brief's 'measurement unavailable' resolves to 4; the ledger floor is unchanged.
+
+- [s7] NEW: the half-duplication quadrant is empty and strictly dominated - r0-in-arms/r1-hoisted = 6/80, r1-in-arms/r0-hoisted = 9/80 (target 79). Banked at memory/grind/func_80072CD4/rejected/syn_halfdup_r0only_6_80.c and rejected/syn_halfdup_r1only_9_80.c.
+
+- [s7] MERGED ATTACK (the synthesis deliverable): every C form measured across s1-s7 - 30 banked rejects, a 15.8k-iteration directed permuter campaign, three structural axes, two spellings (casted byte offsets and POLY_G4 struct members) - varies on exactly ONE dial, how many of the two shared 0xFC red components are written inside the inner arms. The dial now has all three settings measured: 0 dups -> 4/79; 1 dup -> 6/80 or 9/80; 2 dups -> 0/79 (banned construct). There is no fourth arrangement.
+
+- [s7] Composing the lattice with s5-forensics' dump-level laws (L1: a merge-block store whose value register is defined in a predecessor block has no in-block dependence predecessor, is ready in sched2's first bottom-up round and is emitted LAST; L2: toplev.c runs sched2 at :3117 before jump_optimize(cross_jump=1) at :3142, so a cross-jumped common tail is spliced at the join label ahead of everything sched2 emitted and is never re-scheduled) yields: the set of pure-C bodies that can reproduce target's merge head `sb v1,4 / sb v1,0xC / sb v0,0xE` is exactly the set that writes @4 and @0xC inside BOTH arms - which is exactly the set state.json's banned_constructs entry disqualifies. For this function the ban and 'no pure-C match exists' are co-extensive. What remains open is a disposition question, not a search question.
+
+- [s7] Both endgame-lock AND-gates remain FAILED for this function and were not re-litigated this session: canonical-asm scan_hand_coded is not STRONG (docs/grind/decisions.md:8361), and no SOTN-master precedent census hit exists for the construct.
+
+- [s7] TOOLING WARNING banked to evidence.md: removing the POLY_G4 typedef from src/text1b.c with a lazy-body regex matches from the file's FIRST `typedef struct {` and silently deletes ~3.5k lines; the symptom is a nonsense sandbox result (this session briefly saw 31/63 with the inner `if` absent from the build). Always `git checkout -- src/text1b.c` between candidate applications; tmp/grind/func_80072CD4/s7/apply.py is safe on a clean file. All reported measurements here were re-taken on a verified-clean file.
+
+- [s7] src/text1b.c is left exactly as dispatched - `INCLUDE_ASM("asm/funcs", func_80072CD4);` at line 5865 (git status clean for src/); no build-pipeline surface was touched.
