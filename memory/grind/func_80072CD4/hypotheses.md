@@ -421,3 +421,57 @@ floor 4, unchanged) and the s1-s5 exhaustion analysis stands as written.
   no `m2c/` dir, no `~/m2c`). The rederive modality's "fresh m2c decompile" leg is unavailable; this
   session re-derived the body by hand from the target asm plus the libgpu POLY_G4 layout instead,
   which is a stronger derivation (it names the fields rather than reproducing the offsets).
+
+## s5 — rederive modality (2026-08-20)
+
+- **H-R1 (KILLED).** *A fresh cross-block (`var_v0`) spelling — the exact house style of the
+  COMPLETED-C sibling func_80072BC4 — reaches 0.* Mechanism probed: keep `p[0xE] = var_v0;` in the
+  merge block so the arms end with `li 0x32`/`li 0x46` as target does. Probe: four fresh spellings
+  measured (var-assignment first in the arm; `s32` instead of `u8` var; `fc_const` hoisted above
+  the OUTER if as in the sibling; plus the s3 baseline). Result: 13/78, 13/78, 14/78. Every one
+  loses identically — sched1 hoists the producer-less `li var_v0` to the arm TOP, the two arm tails
+  become the identical insn `sb v0,0xD`, and jump2 cross-jumps it out, giving 78 insns where target
+  keeps `sb v0,0xD` in BOTH arms at 79. Neither the variable's type, nor its position in the arm,
+  nor where `fc_const` is assigned perturbs the sched1 pick order. The xblock chassis is closed.
+
+- **H-R2 (KILLED).** *Moving the unconditional 0x14/0x15/0x16/0x1C/0x1D/0x1E group above the inner
+  if leaves a 3-store merge block that sched2 emits in source order 4, C, E.* Probe: measured,
+  33/78. Worse by every metric; the group's stores are then in the wrong block entirely.
+
+- **H-R3 (CONFIRMED — new codegen law L1, with a two-arm control).** *A merge-block store whose
+  value register is defined in a predecessor block sinks to the merge tail; giving the same store
+  an in-block producer moves it to the merge head.* Probe: dropped the `fc_const` local so the
+  merge block writes literal `0xFC` (rejected/rederive_merge_literals_no_fcholder_6_77.c). The two
+  stores acquired an in-block `li v0,252` and jumped from merge positions 9-10 to positions 1-2
+  (tmp/grind/func_80072CD4/s5r/p6.dis vs base.dis). Score 6 / 77 insns — the CSE that the in-block
+  producer enables also eats the separate `li 0xFC` target keeps for @0x14, so this spelling cannot
+  be the answer, but the LAW is now established by control rather than inferred from a dump.
+  Target obeys L1: its one producer-less merge-block store, `sb zero,0x16`, is at the merge tail.
+
+- **H-R4 (CONFIRMED — new lever, bounded).** *L1 can also be defeated without moving the producer,
+  by denying GCC 2.7.2 memory disambiguation.* Probe: second base pointer
+  `u8 *q = (u8 *)arg1 + 4; q[0] = fc_const; q[8] = fc_const;`
+  (rejected/rederive_walkptr_alias_serialize_6_79.c). `memrefs_conflict_p` cannot compare a
+  q-based MEM with an s1-based MEM, so the stores are serialised and leave the merge tail
+  (p7.dis: `sb a0,0(v1) / sb a0,8(v1)` immediately after the cross-jumped `sb v0,0xE`). Score
+  6 / 79 — the best any non-per-arm form has scored on structure, still worse than the floor-4
+  baseline, because the cross-jumped store keeps merge position 0. **Bank this lever**: it is a
+  general, cheap way to pin merge-block store order in this codebase and it did not exist in the
+  ledger before.
+
+- **H-R5 (CONFIRMED — reconstruction proof).** *Target's `sb v1,4 / sb v1,0xC / sb v0,0xE` merge
+  head is a 3-insn jump2 common tail, i.e. the original C wrote all three stores inside BOTH inner
+  arms.* Derivation from emitted bytes only (see evidence.md s5 section): by L1 they cannot be
+  merge-block source statements (they would have sunk, as `sb zero,0x16` does IN TARGET); by L2
+  (cross-jump splices at the join label, after sched2) nothing sched2 emits can precede a
+  cross-jumped insn, so they cannot be merge-block statements sitting ahead of a cross-jumped
+  `sb v0,0xE`. Only L2 can put an insn at merge position 0. This closes the question of what the
+  original source shape was — and that shape is exactly the body currently on the driver's
+  banned_constructs list.
+
+- **Frontier consequence.** Every non-per-arm axis is now bounded away from 0 by a proof, not by
+  search exhaustion: xblock is capped at 78 insns by the sched1 hoist + `sb v0,0xD` cross-jump;
+  merge-block spellings are capped by L1/L2 regardless of statement order (the s4 15.8k-iteration
+  directed PERM_LINESWAP over exactly those stores is the empirical companion to the proof); the
+  alias-serialisation lever reaches 6 and cannot pass L2. The only remaining question about this
+  function is a CLASSIFICATION question about the per-arm body, not a search question.

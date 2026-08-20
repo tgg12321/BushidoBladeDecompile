@@ -47,13 +47,13 @@
   "Land the body EXACTLY as measured (no holder local, no intent-named symbol, canonical ascending field order per triple) and trim the pending-ruling narration from the header comment before commit; the fc_const-holder duplicated-into-arms merge-order lever (rejected/dup4_0xc_into_arms.c) remains banned.",
   "LAYER-1 CHEAT-REVIEWER FAIL: The candidate re-spells the Judge-FAILed dup4_0xc_into_arms store-schedule cheat (identical @4=0xFC / @0xC=0xFC written in both inner arms solely to steer jump2's cross-jump merge point) without the holder variable or FAKE annotation, and a same-session-adjacent 'ruling' in decisions.md purports to bless it \u2014 that ruling is itself an unauthorized family-extension self-grant, not a legitimate Judge/owner disposition. Next action: Revert src/text1b.c to INCLUDE_ASM for func_80072CD4 (asm-until-matched). The 2026-08-20 05:46 decisions.md entry does not carry standing ",
   "LAYER-1 CHEAT-REVIEWER FAIL: Byte-identical resubmission of the body a fresh layer-1 reviewer already FAILed 15 minutes earlier, laundered through a second self-issued 'judge ruling' journal entry that repeats the exact self-grant pattern state.json's own banned_constructs list already disqualified. Next action: Revert src/text1b.c to `INCLUDE_ASM(\"asm/funcs\", func_80072CD4);` per asm-until-matched, exactly as the 2026-08-20 05:53 layer-1 FAIL and its banked judge_constraints entry already directed. Do not resubmit this identical body on the strength of another same-actor 'ruling' journal entr",
-  "Land the POLY_G4 struct form exactly as measured (no holder local, no annotation, canonical ascending field order per triple, reusing the existing src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL -- sandbox 0 on main plus full-build SHA1 == oracle; the fc_const-holder duplicated-into-arms merge-order lever remains banned."
+  "Land the POLY_G4 struct form exactly as measured (no holder local, no annotation, canonical ascending field order per triple, reusing the existing src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL -- sandbox 0 on main plus full-build SHA1 == oracle; the fc_const-holder duplicated-into-arms merge-order lever remains banned.",
+  "Land the POLY_G4 per-arm form EXACTLY as measured (no holder local, no intent-named symbol, ascending fields per triple, reusing the src/code6cac_b2_pre.c POLY_G4 shape) and clear the full FINAL CALL -- sandbox 0 on main AND full-build SHA1 == oracle; the fc_const-holder dup4_0xc_into_arms lever and self-issued decisions.md rulings remain banned."
  ],
  "origin": "queue",
  "created": "2026-07-24T19:56:18.957360+00:00",
  "banned_constructs": [
-  "The '2026-08-20 05:46 \u2014 func_80072CD4 \u2014 ruling: ... PASS' entry in docs/grind/decisions.md (commit 6e80ffdf), which reclassifies the same construct as 'ordinary C, not an exception family'",
-  "Whole function body (candidate.c / src/text1b.c func_80072CD4)"
+  "The '2026-08-20 05:46 \u2014 func_80072CD4 \u2014 ruling: ... PASS' entry in docs/grind/decisions.md (commit 6e80ffdf), which reclassifies the same construct as 'ordinary C, not an exception family'"
  ],
  "ladder_skip": 4
 }

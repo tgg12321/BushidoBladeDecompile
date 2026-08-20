@@ -473,3 +473,76 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   `@0x14`. Disassembly banked at tmp/grind/func_80072CD4/s7/r2b.dis.
 - **src/text1b.c left carrying `INCLUDE_ASM("asm/funcs", func_80072CD4);`** (line 5865), per
   asm-until-matched and the two standing layer-1 FAILs. Nothing was committed.
+
+## s5 (rederive, 2026-08-20) — the residual is reconstructed from EMITTED BYTES, no cc1 dump needed
+
+Chassis re-measured this session (all `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`,
+bodies applied to src/text1b.c with tmp/grind/func_80072CD4/s5/apply.py, src restored to
+`INCLUDE_ASM("asm/funcs", func_80072CD4);` at end of session):
+
+| body | score | build_insns | banked as |
+|---|---|---|---|
+| fallback_floor4.c (clean, `int fc_const`) | **4** | 79 | candidate.c |
+| xblock, `var_v0 = …` FIRST statement in each arm | 13 | 78 | rejected/rederive_xblock_varfirst_13_78.c |
+| xblock, `s32 var_v0` instead of `u8` | 13 | 78 | rejected/rederive_xblock_s32var_13_78.c |
+| xblock, `fc_const = 0xFC;` above the OUTER if (sibling house style) | 14 | 78 | rejected/rederive_xblock_fc_outer_14_78.c |
+| 0x14/0x15/0x16/0x1C/0x1D/0x1E group moved above the inner if | 33 | 78 | rejected/rederive_tailgroup_before_innerif_33_78.c |
+| no fc_const local; literal 0xFC written in the merge block | 6 | 77 | rejected/rederive_merge_literals_no_fcholder_6_77.c |
+| second base pointer `u8 *q = (u8 *)arg1 + 4; q[0]=fc; q[8]=fc;` | 6 | 79 | rejected/rederive_walkptr_alias_serialize_6_79.c |
+| POLY_G4 struct, per-arm complete rgb0/rgb1 triples (BANNED body) | **0** | 79 | rejected/rederive_polyg4_struct_perarm_score0_banned_family.c |
+
+Disassemblies: tmp/grind/func_80072CD4/s5r/base.dis, p6.dis, p7.dis.
+
+### L1 — producer-less merge-block stores sink to the merge tail (two-arm control, this function)
+A store whose value register is defined in a PREDECESSOR block has zero in-block dependence
+predecessors, is ready in sched2's first bottom-up round, and being picked first bottom-up places
+it LAST in the emitted block.
+* Control A — `fallback_floor4.c` (base.dis): `sb v1,4` / `sb v1,0xC` (v1 = fc_const, defined in
+  the delay slot of the inner `beqz`, i.e. a predecessor) are emitted at merge positions 9 and 10,
+  the block tail, immediately before `sb zero,0x16`.
+* Control B — `rederive_merge_literals_no_fcholder_6_77.c` (p6.dis): the ONLY change is dropping
+  the `fc_const` local so the merge block writes literal `0xFC`. The stores acquire an IN-BLOCK
+  `li v0,252` producer and move to the merge head: `sb v0,0xE / li v0,252 / sb v0,4 / sb v0,0xC /
+  sb v0,0x14 / …`. Same stores, same block, same pass — only the producer's block moved.
+* **Target itself obeys L1.** Its one producer-less merge-block store, `sb $zero, 0x16($s1)`, is
+  emitted at 0x80072D94 — at the merge TAIL, out of ascending field order, after `sb v0,0x1D`.
+  That is L1's signature inside the original binary, not an artifact of our source.
+
+### L2 — a jump2 common tail is spliced AHEAD of everything sched2 emitted
+Pass order is sched2 → `jump_optimize(cross_jump=1)` → dbr, so a cross-jumped common tail is
+inserted at the newly created join label, i.e. before the merge block's first scheduled insn, and
+is never re-scheduled. Control (base.dis): `sb v0,0xE`, written per-arm in source and cross-jumped
+by jump2, occupies merge position 0 — ahead of the L1-sunk merge-block stores. No merge-block
+source statement can be emitted ahead of a cross-jumped insn.
+
+### The reconstruction proof (L1 ∧ L2)
+Target's merge block opens `sb v1,4 / sb v1,0xC / sb v0,0xE` with v1 defined in a predecessor and
+v0 defined at the two arm tails.
+1. By L1 these three cannot be merge-block SOURCE statements: they are producer-less there and
+   would have sunk to the tail, exactly as `sb zero,0x16` does in target and as `sb v1,4`/`sb v1,0xC`
+   do in our floor-4 build.
+2. By L2 they cannot be merge-block source statements placed ahead of a cross-jumped `sb v0,0xE`
+   either, because nothing sched2 emits can precede the spliced common tail.
+3. The only remaining producer of a merge-head insn is L2 itself. Therefore all three are ONE
+   3-insn jump2 common tail, and the original C wrote @4, @0xC and @0xE inside BOTH inner arms.
+This is an independent re-derivation of the s2/s5-forensics conclusion from emitted bytes only,
+and it now also explains why every non-per-arm axis is bounded away from 0 rather than merely
+"not yet found".
+
+### The alias-serialisation lever works but is bounded by L2
+`rederive_walkptr_alias_serialize_6_79.c` introduces a second base pointer so that GCC 2.7.2's
+`memrefs_conflict_p` cannot disambiguate `(mem (plus q k))` from `(mem (plus s1 k'))` and therefore
+serialises them. p7.dis confirms the mechanism fires: `sb a0,0(v1)` / `sb a0,8(v1)` leave the merge
+tail and land immediately after the cross-jumped `sb v0,0xE`. It still scores 6, not 0, because
+L2 keeps `sb v0,0xE` at position 0 while target has it at position 2. This is the closest any
+non-per-arm form has come; it identifies L2 (not L1) as the binding constraint.
+
+### In-repo COMPLETED-C precedent for the per-arm spelling (found by this session, not previously cited together)
+* `src/text1b.c:5840` and `src/text1b.c:5843` — the COMPLETED-C sibling `func_80072BC4` (zero rules,
+  absent from engine/queue.json, similarity 0.709 to this function) writes the IDENTICAL statement
+  `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in BOTH arms of its inner if, un-hoisted.
+* `src/code6cac_b2_pre.c:167-176` — the COMPLETED-C `func_8003553C` writes complete per-vertex
+  POLY_G4 triples (`g->r0 = 0; g->g0 = 0; g->b0 = 0x80; g->r1 = 0; g->g1 = 0; g->b1 = 0x80; …`),
+  repeating the same channel value across vertices rather than hoisting it to a shared temporary.
+Both are the same shape the layer-1 reviewer FAILed here (a repeated-value field write present on
+both paths), in accepted, zero-rule, byte-matching BB2 code.
