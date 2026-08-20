@@ -1,0 +1,43 @@
+regfix.txt:1465: func_800335D8: $16 <-> $17 @ 1-71
+regfix.txt:1467: func_800335D8: $16 <-> $20 @ 77-78
+regfix.txt:1469: func_800335D8: subst "sw\t\$16,20" "sw\t$16,16" @ 1
+regfix.txt:1470: func_800335D8: subst "sw\t\$17,16" "sw\t$17,20" @ 13
+regfix.txt:1472: func_800335D8: subst "nop" "addiu\t$2,$zero,1" @ 24
+regfix.txt:1474: func_800335D8: subst "\$21" "$2" @ 25
+regfix.txt:1476: func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 31
+regfix.txt:1478: func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 37
+regfix.txt:1480: func_800335D8: subst "\$2,%lo" "$4,%lo" @ 40
+regfix.txt:1482: func_800335D8: subst "\$2," "$4," @ 42
+regfix.txt:1484: func_800335D8: subst "\$2,%lo" "$4,%lo" @ 51
+regfix.txt:1486: func_800335D8: subst "\$2," "$4," @ 53
+regfix.txt:1488: func_800335D8: subst "addu\t\$5,\$18,\$zero" "nop" @ 55
+regfix.txt:1490: func_800335D8: subst "\$20" "$2" @ 69
+regfix.txt:1492: func_800335D8: subst "addu\t\$18,\$19,1" "addiu\t$21,$zero,1" @ 75
+regfix.txt:1494: func_800335D8: delete @ 6
+regfix.txt:1495: func_800335D8: delete @ 8
+regfix.txt:1497: func_800335D8: insert "la $2,D_800A391E" @ 67
+regfix.txt:1499: func_800335D8: insert_after "addu\t$18,$19,1" @ 74
+regfix.txt:1501: func_800335D8: reorder 7,8,9,5,6 @ 5-9
+regfix.txt:1504: func_800335D8: $5 <-> $3 @ 81-97
+regfix.txt:1505: func_800335D8: $5 <-> $3 @ 136-142
+regfix.txt:1507: func_800335D8: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
+regfix.txt:1511: func_800335D8: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
+regfix.txt:1512: func_800335D8: subst "beq\t\$3,\$2,\.L\d+" "andi\t$6,$2,0x03ff" @ 84
+regfix.txt:1514: func_800335D8: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
+regfix.txt:1516: func_800335D8: subst "lhu\t\$3" "lhu\t$2" @ 98
+regfix.txt:1517: func_800335D8: subst "sll\t\$6,\$2" "sll\t$5,$3" @ 99
+regfix.txt:1518: func_800335D8: subst "addu\t\$3,\$3,1" "addu\t$2,$2,1" @ 100
+regfix.txt:1519: func_800335D8: subst "sh\t\$3" "sh\t$2" @ 101
+regfix.txt:1520: func_800335D8: subst "sll\t\$3,\$3,16" "sll\t$2,$2,16" @ 102
+regfix.txt:1522: func_800335D8: subst ",\$6" ",$5" @ 104
+regfix.txt:1523: func_800335D8: subst ",\$6" ",$5" @ 114
+regfix.txt:1525: func_800335D8: subst "lbu\t\$4," "lbu\t$3," @ 105
+regfix.txt:1526: func_800335D8: subst "sra\t\$3,\$3,16" "sra\t$4,$2,16" @ 106
+regfix.txt:1527: func_800335D8: subst ",\$4," ",$3," @ 107
+regfix.txt:1528: func_800335D8: subst ",\$4" ",$3" @ 108
+regfix.txt:1529: func_800335D8: subst "sll\t\$5" "sll\t$3" @ 109
+regfix.txt:1530: func_800335D8: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
+regfix.txt:1531: func_800335D8: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
+regfix.txt:1533: func_800335D8: subst "\$7,\$3" "$6,$3" @ 132
+asmfix.txt:29: func_800335D8: insert_before "^lh\\s+\\$2,0\\(\\$16\\)$" ".Lmk_leaf_newpos_hit:"
+asmfix.txt:30: func_800335D8: replace_first "^beq\\s+\\$3,\\$21,\\.L[0-9]+$" "beq\t$3,$21,.Lmk_leaf_newpos_hit"

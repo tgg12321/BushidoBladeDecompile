@@ -66,8 +66,13 @@ def sandbox_floor(func):
 
 
 def build_sha1():
-    r = subprocess.run(["make"], capture_output=True, text=True, timeout=1800)
-    m = re.search(r"sha1\s+([0-9a-f]{40})", r.stdout + r.stderr)
+    # Engine clean-driver build, NOT bare make: Windows-side writes leave
+    # future-dated files that make's clock-skew handling treats as up to date,
+    # so make can exit "successfully" having built nothing (observed 2026-08-19
+    # during the prototype run — sha1 never printed, tool saw None).
+    r = subprocess.run(["python3", "-m", "engine.cli", "build"],
+                       capture_output=True, text=True, timeout=3600)
+    m = re.search(r"sha1[\"\s:]+([0-9a-f]{40})", r.stdout + r.stderr)
     if m:
         return m.group(1), r.stdout + r.stderr
     return None, r.stdout + r.stderr
@@ -78,12 +83,19 @@ def find_body_span(text, func):
     if span is None:
         return None
     lo, hi = span
-    # walk back from lo to the start of the definition line (return type etc.)
-    line_start = text.rfind("\n", 0, text.rfind(func, 0, lo)) + 1
-    return line_start, hi + 1  # include closing brace
+    # _func_body_span's lo is the SIGNATURE start; its hi is already one PAST
+    # the closing brace (engine/inlineasm._match_brace contract) — do NOT +1,
+    # that eats the following newline and glues the next definition onto the
+    # INCLUDE_ASM line (observed 2026-08-19: two adjacent functions dropped out
+    # of the COMPLETED census because their signatures no longer sat at line
+    # start). Snap lo to its line start; return hi as-is.
+    line_start = text.rfind("\n", 0, lo) + 1
+    if hi <= line_start:
+        return None  # defensive: never hand back an inverted span
+    return line_start, hi
 
 
-def migrate_one(func, stem, dry):
+def migrate_one(func, stem, dry, defer_build=False):
     src = f"src/{stem}.c"
     asm = f"asm/funcs/{func}.s"
     text = rd(src)
@@ -126,6 +138,9 @@ def migrate_one(func, stem, dry):
                 if not re.match(r"^" + re.escape(func) + r"\s*:", ln.strip())]
         wr(rf, "\n".join(keep))
 
+    if defer_build:
+        return f"EDITED (build deferred): floor-pin {floor}, {len(rules)} rule(s) retired", rules
+
     sha, log = build_sha1()
     if sha != ORACLE:
         # rollback everything
@@ -147,6 +162,9 @@ def main():
     ap.add_argument("--funcs", default="")
     ap.add_argument("--batch", type=int, default=0)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--batch-verify", action="store_true",
+                    help="edit all targets first, then ONE engine build + SHA1 "
+                         "gate for the whole batch (git restores on mismatch)")
     a = ap.parse_args()
 
     q = json.load(open("engine/queue.json"))
@@ -154,21 +172,46 @@ def main():
     if a.funcs:
         targets = [f.strip() for f in a.funcs.split(",") if f.strip()]
     else:
-        targets = [it["func"] for it in q["items"]
-                   if it.get("status") in ("active", "parked")][:a.batch]
+        targets = []
+        for it in q["items"]:
+            if it.get("status") not in ("active", "parked"):
+                continue
+            try:
+                if f'INCLUDE_ASM("asm/funcs", {it["func"]});' in rd(f'src/{it["file"]}.c'):
+                    continue  # already migrated
+            except OSError:
+                continue
+            targets.append(it["func"])
+            if len(targets) >= a.batch:
+                break
 
     failed = []
+    edited = []
     for func in targets:
         it = by_func.get(func)
         if not it:
             print(f"{func}: NOT IN QUEUE — skipped")
             continue
-        res, _ = migrate_one(func, it["file"], a.dry_run)
+        res, _ = migrate_one(func, it["file"], a.dry_run,
+                             defer_build=a.batch_verify)
         print(f"{func}: {res}")
+        if res.startswith("EDITED"):
+            edited.append(func)
         if res.startswith(("FAILED", "REFUSED")):
             failed.append(func)
             with open("tmp/migration-deferred.txt", "a", encoding="utf-8") as f:
                 f.write(f"{func}\t{res.splitlines()[0]}\n")
+    if a.batch_verify and edited and not a.dry_run:
+        sha, log = build_sha1()
+        if sha == ORACLE:
+            print(f"\nBATCH VERIFIED: {len(edited)} function(s), SHA1 MATCH")
+        else:
+            print(f"\nBATCH FAILED: sha1={sha} != oracle. NOT rolling back "
+                  f"automatically in batch mode — use `git checkout -- src "
+                  f"regfix.txt regfix_stage2.txt asmfix.txt` (ledger banks are "
+                  f"additive and safe to keep), or bisect with per-function mode.")
+            print("\n".join(log.split("\n")[-15:]))
+            sys.exit(1)
     if failed:
         print(f"\n{len(failed)} deferred: {', '.join(failed)}")
         sys.exit(1)

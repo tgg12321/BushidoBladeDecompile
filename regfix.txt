@@ -68,28 +68,13 @@ func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
 # jal delay: $5 -> $3 (SpecialCam base)
 
 # saEft01Init: 3-way s-reg rotation (s0->s2, s2->s1, s1->s0)
-CD_datasync: $16 <-> $18
-CD_datasync: $16 <-> $17
 # Fix prologue save offsets after s-reg swap
-CD_datasync: subst ",24\(" ",32(" @ 1
-CD_datasync: subst ",32\(" ",28(" @ 6
-CD_datasync: subst ",28\(" ",24(" @ 8
 # Arg block register fixes: idx[1] path v1->v0 ($3->$2)
-CD_datasync: $2 <-> $3 @ 35-35
-CD_datasync: $2 <-> $3 @ 38-39
 # Arg block register fixes: idx[0] path v0->a0 ($2->$4)
-CD_datasync: $2 <-> $4 @ 36-36
-CD_datasync: $2 <-> $4 @ 40-42
 # Arg block: fix lw source register at insn 44
-CD_datasync: subst "0\(\$3\)" "0($2)" @ 44
 # Arg block reorder to match target evaluation order
-CD_datasync: reorder 36,35,37,38,39,40,44,43,41,45,46,47,48,42 @ 35-48
 # Fix epilogue restore offsets after s-reg swap
-CD_datasync: subst ",32\(" ",28(" @ 70
-CD_datasync: subst ",28\(" ",24(" @ 71
-CD_datasync: subst ",24\(" ",32(" @ 72
 # Reorder epilogue restores to match target order (s2, s1, s0)
-CD_datasync: reorder 72,70,71 @ 70-72
 
 # saEft00Add: fix volatile D_800A14E4 addressing and ASPSX delay slot fills
 
@@ -144,36 +129,6 @@ func_8003800C: reorder 55,54 @ 54-55
 # Fix loop body register allocation: v0/v1 and v1/a0
 # Fix outer loop branch target (.L10 -> .L13)
 # func_80034F88: register alloc + load reorder + address recompute
-func_80034F88: subst "la\t\$5," "la	$3," @ 4
-func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 5
-func_80034F88: subst "\$6,\$2" "$5,$2" @ 6
-func_80034F88: subst "\$3,\$3" "$4,$4" @ 7
-func_80034F88: subst "\$3,0\(\$5\)" "$4,0($3)" @ 8
-func_80034F88: subst "0\(\$5\)" "0($3)" @ 9
-func_80034F88: subst "32\(\$6\)" "32($5)" @ 10
-func_80034F88: subst "\$3,\$4" "$2,$4" @ 14
-func_80034F88: subst "\$3,\$4" "$2,$4" @ 15
-func_80034F88: subst "\$3,0\(\$5\)" "$2,0($3)" @ 16
-func_80034F88: subst "\$4,0\(\$5\)" "$3,0($4)" @ 17
-func_80034F88: subst "32\(\$6\)" "32($5)" @ 18
-func_80034F88: subst "\$3,\$4" "$2,$3" @ 22
-func_80034F88: subst "\$3,\$4" "$2,$3" @ 23
-func_80034F88: subst "\$3,0\(\$5\)" "$2,0($4)" @ 24
-func_80034F88: subst "\$4,0\(\$5\)" "$3,0($4)" @ 25
-func_80034F88: subst "32\(\$6\)" "32($5)" @ 26
-func_80034F88: subst "\$3,\$4" "$2,$3" @ 30
-func_80034F88: subst "\$3,\$4" "$2,$3" @ 31
-func_80034F88: subst "\$3,0\(\$5\)" "$2,0($4)" @ 32
-func_80034F88: subst "\$2,\$3,\$6" "$2,$5,$3" @ 34
-func_80034F88: subst "\$2,\$3,\$6" "$2,$5,$3" @ 40
-func_80034F88: delete @ 27
-func_80034F88: delete @ 19
-func_80034F88: delete @ 11
-func_80034F88: insert "la	$4,D_80106A73" @ 15
-func_80034F88: insert "la	$4,D_80106A73" @ 23
-func_80034F88: reorder 10,9 @ 9-10
-func_80034F88: reorder 18,17 @ 17-18
-func_80034F88: reorder 26,25 @ 25-26
 # mk_g2l (camera_SetMatrix): ptr v1->t0, 6th param t0->v1
 # obj/f86 register rotation in field-check section
 # fix overswapped lh dest at indices 20 and 29
@@ -1507,75 +1462,34 @@ func_800460E4: subst "addu\t\$3,\$16,\$3" "addu\t$3,$3,$16" @ 165
 
 # mk_leaf_newpos: 176-insn leaf spawner — compound regfix (LICM unhoist + reg swap + delay slot fills)
 # Phase 1: s0<->s1 swap for loop 1 (slot/cat register assignment)
-func_800335D8: $16 <-> $17 @ 1-71
 # Phase 1: s0<->s4 swap for loop 2 setup (base load direction)
-func_800335D8: $16 <-> $20 @ 77-78
 # Phase 1.5: Fix save offsets after s0<->s1 swap (s0@0x10, s1@0x14)
-func_800335D8: subst "sw\t\$16,20" "sw\t$16,16" @ 1
-func_800335D8: subst "sw\t\$17,16" "sw\t$17,20" @ 13
 # Phase 1.5: Fill load delay with li v0,1 (replaces nop after lbu in loop 1)
-func_800335D8: subst "nop" "addiu\t$2,$zero,1" @ 24
 # Phase 1.5: bne uses v0(=1) not s5 for comparison
-func_800335D8: subst "\$21" "$2" @ 25
 # Phase 1.5: Fill j delay slot (cur==1 path) with move a1,s2
-func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 31
 # Phase 1.5: Fill bne delay slot (EBFC path) with move a1,s2
-func_800335D8: subst "nop" "addu\t$5,$18,$zero" @ 37
 # Phase 1.5: EBFC EBF4 lookup — lbu v0->a0
-func_800335D8: subst "\$2,%lo" "$4,%lo" @ 40
 # Phase 1.5: EBFC EBF4 lookup — addu source v0->a0
-func_800335D8: subst "\$2," "$4," @ 42
 # Phase 1.5: EBFD EBF4 lookup — lbu v0->a0
-func_800335D8: subst "\$2,%lo" "$4,%lo" @ 51
 # Phase 1.5: EBFD EBF4 lookup — addu source v0->a0
-func_800335D8: subst "\$2," "$4," @ 53
 # Phase 1.5: Clear jal delay slot (move a1,s2 distributed to j/bne delay slots)
-func_800335D8: subst "addu\t\$5,\$18,\$zero" "nop" @ 55
 # Phase 1.5: Loop 1 tail — slt uses v0 not s4 (LICM unhoist)
-func_800335D8: subst "\$20" "$2" @ 69
 # Phase 1.5: Between-loops beq delay slot — li s5,1 instead of data=tbl+1
-func_800335D8: subst "addu\t\$18,\$19,1" "addiu\t$21,$zero,1" @ 75
 # Phase 2: Delete LICM hoists from prologue
-func_800335D8: delete @ 6
-func_800335D8: delete @ 8
 # Phase 3: Insert inline D_800A391E materialization in loop 1 tail (post-delete idx 67)
-func_800335D8: insert "la $2,D_800A391E" @ 67
 # Phase 3.5: Insert data=tbl+1 after between-loops delay slot (post-insert idx 74)
-func_800335D8: insert_after "addu\t$18,$19,1" @ 74
 # Phase 4: Reorder prologue saves — move sw s5,s4 after sw ra (post-delete idx 5-9)
-func_800335D8: reorder 7,8,9,5,6 @ 5-9
 
 # mk_leaf_newpos Phase 5: Loop 2 type register swap (a1->v1)
-func_800335D8: $5 <-> $3 @ 81-97
-func_800335D8: $5 <-> $3 @ 136-142
 # Phase 5: Dispatch restructure — beq uses s5, andi moves to delay slot
-func_800335D8: subst "andi\t\$7,\$2,0x03ff" "nop" @ 82
 # .L631 is a CROSS-FUNCTION reference (label in a different function in
 # code6cac_b.c). `{lbl#N}` is function-local; cross-function refs cannot
 # use it — leave as-is, Phase 2b notes.
-func_800335D8: subst "addiu\t\$2,\$zero,1" "beq\t$3,$21,.L631" @ 83
-func_800335D8: subst "beq\t\$3,\$2,\.L\d+" "andi\t$6,$2,0x03ff" @ 84
 # Phase 5: adj destination v0->v1
-func_800335D8: subst "addu\t\$2,\$3" "addu\t$3,$3" @ 89
 # Phase 5: count register v1->v0
-func_800335D8: subst "lhu\t\$3" "lhu\t$2" @ 98
-func_800335D8: subst "sll\t\$6,\$2" "sll\t$5,$3" @ 99
-func_800335D8: subst "addu\t\$3,\$3,1" "addu\t$2,$2,1" @ 100
-func_800335D8: subst "sh\t\$3" "sh\t$2" @ 101
-func_800335D8: subst "sll\t\$3,\$3,16" "sll\t$2,$2,16" @ 102
 # Phase 5: adj2 register a2->a1
-func_800335D8: subst ",\$6" ",$5" @ 104
-func_800335D8: subst ",\$6" ",$5" @ 114
 # Phase 5: thresh/scount/limit register rotation
-func_800335D8: subst "lbu\t\$4," "lbu\t$3," @ 105
-func_800335D8: subst "sra\t\$3,\$3,16" "sra\t$4,$2,16" @ 106
-func_800335D8: subst ",\$4," ",$3," @ 107
-func_800335D8: subst ",\$4" ",$3" @ 108
-func_800335D8: subst "sll\t\$5" "sll\t$3" @ 109
-func_800335D8: subst "slt\t\$2,\$5,\$3" "slt\t$2,$3,$4" @ 110
-func_800335D8: subst "subu\t\$3,\$3,\$5" "subu\t$3,$4,$3" @ 112
 # Phase 5: rnd register a3->a2
-func_800335D8: subst "\$7,\$3" "$6,$3" @ 132
 
 # marionation_camera_Exec: 155-insn GTE camera — compound regfix
 # INDICES: .word lines are NOT counted by regfix.py (they start with '.')

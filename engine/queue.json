@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-18T01:09:03",
+  "generated_at": "2026-08-19T19:40:18",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
@@ -12,29 +12,11 @@
       "status": "active"
     },
     {
-      "func": "func_800393C8",
-      "file": "code6cac_c_mid",
-      "distance": 57,
-      "verdict": "C",
-      "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
       "func": "func_8002E6B0",
       "file": "code6cac_b",
       "distance": 64,
       "verdict": "C",
       "rules": 2,
-      "status": "active",
-      "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_800335D8",
-      "file": "code6cac_b",
-      "distance": 65,
-      "verdict": "C",
-      "rules": 43,
       "status": "active",
       "hand_coded_tier": "LOW"
     },
@@ -80,8 +62,7 @@
       "distance": 1,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); array form + allowlist row required"
+      "status": "active"
     },
     {
       "func": "func_80033550",
@@ -89,9 +70,7 @@
       "distance": 4,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA $a1-vs-$a3 (asm pin); both endgame-lock gates fail (scan 0/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
-      "unpark_reason": "plausibly spent by 2026-08-18 F6 (fabricated empty-condition/cancellation shapes) + F7 (arm duplication at construct level, 25 SOTN exhibits); seam case - session must verify the exact shape sits inside one entry, else ruling-request"
+      "status": "active"
     },
     {
       "func": "CD_sync",
@@ -99,9 +78,7 @@
       "distance": 7,
       "verdict": "C",
       "rules": 5,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): cross-symbol idiom refused (no SOTN precedent); 5 rules retained to hold match; not sanctioned, eligible for re-attempt",
-      "unpark_reason": "spent by 2026-08-17 aggregate-merge family: merge D_800A1494/95 (already g_cd_status_a/b in symbol_addrs.txt) makes &status[1] honest; also fixes live prong-(c) dual-handle violation at src/system.c:374/648"
+      "status": "active"
     },
     {
       "func": "func_8002BEA0",
@@ -109,8 +86,7 @@
       "distance": 9,
       "verdict": "ASM-PARTIAL",
       "rules": 7,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: stale set-aside park (digest audit); unspent 2026-07-28 clobber grant decisions.md:1843 likely closes half the residual"
+      "status": "active"
     },
     {
       "func": "get_alarm",
@@ -118,9 +94,7 @@
       "distance": 9,
       "verdict": "C",
       "rules": 4,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): RA/sched endgame-lock (axis-A combine offset-0 fold + axis-B sched1 8-op volatile-order lock); held by 4 regfix rules; both endgame-lock gates fail (scan LOW 1/8, no SOTN precedent) across 40 sessions/6 modalities/258k permuter iters; cheat retained only to hold byte-match, not sanctioned",
-      "unpark_reason": "spent by Ruling 4 (docs/closer/rulings.md:68) for axis-B volatile-order lock: 2026-08-18 naming census CONFIRMS Sony LIBGPU/SYS identity (naming-verification-2026-08-18.md:58); axis-A addr-fold coverable by aggregate merge into the GpuCtx block"
+      "status": "active"
     },
     {
       "func": "func_80057CC8",
@@ -128,8 +102,7 @@
       "distance": 9,
       "verdict": "C",
       "rules": 7,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: F3 compound-address duplication sanctioned (ruling b); closure brief banked"
+      "status": "active"
     },
     {
       "func": "func_800611A4",
@@ -137,9 +110,7 @@
       "distance": 9,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): v0<->v1 RA swap (local-alloc.c:472 + find_free_reg); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)",
-      "unpark_reason": "spent by 2026-08-17 named-intermediate clarification: FRESH once-written/once-read intermediate qualifies under any GCC pass (the refusal ground was the pre-clarification mis-scoping); session must clear prongs 1/2/5 before claiming"
+      "status": "active"
     },
     {
       "func": "func_80049A2C",
@@ -147,8 +118,7 @@
       "distance": 12,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); no (void) shim, first-decl position"
+      "status": "active"
     },
     {
       "func": "func_80072CD4",
@@ -156,8 +126,7 @@
       "distance": 12,
       "verdict": "C",
       "rules": 9,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: F7 store-duplication construct sanctioned (ruling b)"
+      "status": "active"
     },
     {
       "func": "func_80017FA0",
@@ -165,8 +134,7 @@
       "distance": 13,
       "verdict": "C",
       "rules": 6,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); frame-forensics prerequisite NOT yet satisfied - honest producers first"
+      "status": "active"
     },
     {
       "func": "func_80044098",
@@ -174,8 +142,7 @@
       "distance": 13,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: F6 cancellation-pair family sanctioned (ruling b); exact-shape only"
+      "status": "active"
     },
     {
       "func": "func_80038170",
@@ -184,9 +151,7 @@
       "verdict": "C",
       "rules": 1,
       "status": "active",
-      "prologue_fix": 1,
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, applied 2026-07-28): layer-2 cheat-reviewer FAILED both closing constructs (reverse-order zero-inits = order-steering; one-symbol table pair = phantom-frame carrier via addressing expression). Bytes ARE 0-reachable (integration verified, SHA1==oracle) but only via refused families; both endgame-lock gates fail. Cheat retained to hold byte-match, not sanctioned; re-attempt eligible on a non-order-steering, non-frame-trick lever",
-      "unpark_reason": "spent by 2026-08-18 phantom-pad family (the array form it was accused of evading is now sanctioned; respell construct 2 as volatile pad) + judge-sole-gate (construct 1 was Judge-PASSed 07-28, overturned only by layer-2)"
+      "prologue_fix": 1
     },
     {
       "func": "file_LoadSectors",
@@ -194,8 +159,7 @@
       "distance": 14,
       "verdict": "C",
       "rules": 0,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); banked if(0) candidate is separately REFUSED - do not apply"
+      "status": "active"
     },
     {
       "func": "func_800481E8",
@@ -203,9 +167,7 @@
       "distance": 14,
       "verdict": "C",
       "rules": 12,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '2026-07-28 \u2014 func_800481E8 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'",
-      "unpark_reason": "spent by 2026-08-18 phantom-frame-slot volatile pad family (no-new-park-categories.md 08-18 section); ledger's own permuter campaign found volatile decls are the only vars=32 forms; re-verify form constraint (first-decl array vs tail region) in session"
+      "status": "active"
     },
     {
       "func": "func_80047EE8",
@@ -214,7 +176,7 @@
       "verdict": "C",
       "rules": 0,
       "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: phantom-slot pad family sanctioned (ruling b); REDERIVE per brief"
+      "prologue_fix": 1
     },
     {
       "func": "func_8002EA24",
@@ -222,8 +184,7 @@
       "distance": 18,
       "verdict": "ASM-PARTIAL",
       "rules": 10,
-      "status": "active",
-      "unpark_note": "UNPARKED 2026-08-18: 2026-08-06/07 rulings supersede the 2026-07-30 park; cop2-cluster membership established (28-member list)"
+      "status": "active"
     },
     {
       "func": "func_80032314",
@@ -729,6 +690,14 @@
       "prologue_fix": 1
     },
     {
+      "func": "func_800393C8",
+      "file": "code6cac_c_mid",
+      "distance": 57,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
       "func": "func_80042C80",
       "file": "text1a_c",
       "distance": 58,
@@ -763,6 +732,14 @@
       "rules": 0,
       "status": "active",
       "hand_coded_tier": "LOW"
+    },
+    {
+      "func": "func_800335D8",
+      "file": "code6cac_b",
+      "distance": 65,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
     },
     {
       "func": "func_8005D554",
@@ -1673,7 +1650,7 @@
     {
       "func": "func_8006F97C",
       "file": "text1b",
-      "distance": 515,
+      "distance": 513,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1686,7 +1663,7 @@
     {
       "func": "func_80055138",
       "file": "text1b",
-      "distance": 516,
+      "distance": 514,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1699,7 +1676,7 @@
     {
       "func": "func_8003993C",
       "file": "code6cac_c_mid",
-      "distance": 526,
+      "distance": 524,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1712,7 +1689,7 @@
     {
       "func": "sprintf",
       "file": "text1b_b",
-      "distance": 535,
+      "distance": 533,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1725,7 +1702,7 @@
     {
       "func": "func_80034708",
       "file": "code6cac_b",
-      "distance": 544,
+      "distance": 542,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1738,7 +1715,7 @@
     {
       "func": "func_8005D814",
       "file": "text1b",
-      "distance": 545,
+      "distance": 544,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1751,7 +1728,7 @@
     {
       "func": "func_8006A880",
       "file": "text1b",
-      "distance": 552,
+      "distance": 550,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1764,7 +1741,7 @@
     {
       "func": "func_8005F1C8",
       "file": "text1b",
-      "distance": 564,
+      "distance": 562,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1777,7 +1754,7 @@
     {
       "func": "func_80027AD8",
       "file": "code6cac_b",
-      "distance": 574,
+      "distance": 572,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1790,7 +1767,7 @@
     {
       "func": "func_8001A820",
       "file": "code6cac",
-      "distance": 576,
+      "distance": 574,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
@@ -1798,7 +1775,7 @@
     {
       "func": "func_8001CE60",
       "file": "code6cac",
-      "distance": 588,
+      "distance": 586,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1811,7 +1788,7 @@
     {
       "func": "func_80022580",
       "file": "code6cac",
-      "distance": 621,
+      "distance": 619,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1824,7 +1801,7 @@
     {
       "func": "func_8006C21C",
       "file": "text1b",
-      "distance": 622,
+      "distance": 620,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1837,7 +1814,7 @@
     {
       "func": "func_800187F4",
       "file": "code6cac",
-      "distance": 644,
+      "distance": 642,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
@@ -1845,7 +1822,7 @@
     {
       "func": "func_80063084",
       "file": "text1b",
-      "distance": 661,
+      "distance": 659,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
@@ -1853,7 +1830,7 @@
     {
       "func": "func_800720FC",
       "file": "text1b",
-      "distance": 690,
+      "distance": 688,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1866,7 +1843,7 @@
     {
       "func": "func_80070188",
       "file": "text1b",
-      "distance": 698,
+      "distance": 696,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1879,7 +1856,7 @@
     {
       "func": "func_80030D7C",
       "file": "code6cac_b",
-      "distance": 709,
+      "distance": 707,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1892,7 +1869,7 @@
     {
       "func": "func_800198D0",
       "file": "code6cac",
-      "distance": 749,
+      "distance": 747,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1905,7 +1882,7 @@
     {
       "func": "func_8005C8A8",
       "file": "text1b",
-      "distance": 753,
+      "distance": 752,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1918,7 +1895,7 @@
     {
       "func": "_comb_control",
       "file": "main",
-      "distance": 763,
+      "distance": 761,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1931,7 +1908,7 @@
     {
       "func": "func_8005E54C",
       "file": "text1b",
-      "distance": 799,
+      "distance": 798,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1944,7 +1921,7 @@
     {
       "func": "func_80070F78",
       "file": "text1b",
-      "distance": 810,
+      "distance": 808,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1957,7 +1934,7 @@
     {
       "func": "func_80029454",
       "file": "code6cac_b",
-      "distance": 1025,
+      "distance": 1024,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1970,7 +1947,7 @@
     {
       "func": "func_80067D14",
       "file": "text1b",
-      "distance": 1047,
+      "distance": 1046,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
@@ -1978,7 +1955,7 @@
     {
       "func": "func_80055B60",
       "file": "text1b",
-      "distance": 1110,
+      "distance": 1108,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -1991,7 +1968,7 @@
     {
       "func": "func_8002AB08",
       "file": "code6cac_b",
-      "distance": 1112,
+      "distance": 1110,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -2004,7 +1981,7 @@
     {
       "func": "func_80065800",
       "file": "text1b",
-      "distance": 1454,
+      "distance": 1453,
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
@@ -2012,7 +1989,7 @@
     {
       "func": "func_80023F08",
       "file": "code6cac",
-      "distance": 2983,
+      "distance": 2981,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -2025,7 +2002,7 @@
     {
       "func": "func_80058580",
       "file": "text1b",
-      "distance": 2991,
+      "distance": 2989,
       "verdict": "C",
       "rules": 0,
       "status": "active",
@@ -2074,6 +2051,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-20): canonical-asm refused (no hand-coded evidence, scan 0/8); prologue_fix retained to hold match; not sanctioned, eligible for re-attempt"
     },
     {
+      "func": "CD_datasync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
+    },
+    {
       "func": "func_80041688",
       "file": "text1a_post",
       "distance": 8,
@@ -2090,6 +2076,15 @@
       "rules": 9,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): 1-insn addu operand order (cheat-free); both endgame-lock gates fail (scan 1/8, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
       "func": "func_8003800C",
@@ -2209,15 +2204,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: 2026-07-28 \u2014 func_800871D4 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
     },
     {
-      "func": "CD_datasync",
-      "file": "system",
-      "distance": 18,
-      "verdict": "C",
-      "rules": 15,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
-    },
-    {
       "func": "func_80048AD0",
       "file": "text1b",
       "distance": 19,
@@ -2270,15 +2256,6 @@
       "rules": 6,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80078654 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
-    },
-    {
-      "func": "func_80034F88",
-      "file": "code6cac_b",
-      "distance": 24,
-      "verdict": "C",
-      "rules": 30,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     }
   ],
   "counts": {
