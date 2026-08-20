@@ -213,3 +213,28 @@ arm-END (LO-capture window, s3).
 - probe: three placements measured with sandbox + BB2_ALLOC_DEBUG instrumented-cc1 traces
 - result: After-sum placement 23 and multi-set-dxs variant 23 (both LO-captured, banked rejected/detour-multiset-dxs-lo-capture.c); arm-END placement SCORE 0, 109/109, ALLOCDBG shows p114-dxs->$a1, p75-ent->$a2, p74-walker->$a3, p72->$t0, p73->$t1 — every register matches target including lbu $v1,0($a3)
 - verdict: CONFIRMED
+
+## [s4] Permuter (mandated modality): random search on the floor-1 natural-geometry chassis finds a pure-C no-FAKE closure
+- mechanism: adversarial test of the s2/s3 impossibility argument — if any ordinary respelling reaches 7 flow-time walker refs while emitting lbu 0($a3), random mutation over the whole body could surface it
+- probe: campaign s4_floor1_random (tmp/grind/func_80032314/s4/perm), base_score 10, -j 8 --stop-on-zero, fresh-seed window honored
+- result: 32,797 iterations / 27 min / ZERO finds of any score; harvested + stopped. The pure-C no-FAKE case stays closed, now with a random-search null on top of the s2 arithmetic + s3 premise-hole measurements
+- verdict: KILLED (the impossibility argument survives its permuter attack)
+
+## [s4] Permuter basin B: random search on the *a3 rotation chassis finds a sanctioned-family score-0 form
+- mechanism: the rotation chassis (walker at its byte-forced 8 refs) is where any ref-weighting construct must act; random mutation includes block wrapping
+- probe: campaign s4_a3rotation_random (tmp/grind/func_80032314/s4/permB), base_score 80, --stop-on-zero
+- result: SCORE 0 at iter ~3,284: single-level do { } while (0) around the post-(a0==4) body (output-0-1). Sandbox-verified 0 (109/109, 0 rules) with the form + FAKE annotation applied to src. ALLOCDBG: loop-note ref weighting gives walker 12w/4390 < ent 10w/4761 < mult-temp 8000 -> target $a1/$a2/$a3. Vetted: do-while-zero-exception.md (2026-07-06 FINAL) sanctions the wrap for ANY codegen effect incl. RA; single-level = no exhaustion hard-gate; FAKE annotation present; provenance + vet in self_vet.md
+- verdict: CONFIRMED (submitted candidate-ready s4)
+
+## LIVE FRONTIER (rewritten for s5+, in case the submission bounces)
+
+### If layer-1/Judge FAILs the do-while wrap on family-scope grounds
+The frozen-list parenthetical in no-new-park-categories.md ("applies only to the
+LABEL_OUTSIDE_LOOP_P / reorg.c interaction") predates and is superseded by the rewritten
+do-while-zero-exception.md (2026-07-06 FINAL, "ANY codegen effect incl. register
+allocation"; supersession confirmed by memory/feedback/do-while0-ra-weighting-not-
+sanctioned.md and the marionation_Exec reinstatement). If a reviewer nevertheless reads
+the stale parenthetical as binding, the correct move is a CITATION-class correction or a
+ruling-request quoting both texts — NOT a respell. The F4-SUBMIT path (evidence.md [s3])
+remains the fallback endgame, gated on the driver's exhaustion phase, which the s4
+basin-A null (32.8k-iter random null on the natural chassis) further advances.

@@ -9462,3 +9462,7 @@ ONE THING THE OWNER SHOULD NOTE ABOUT THIS PARTICULAR FUNCTION. Its 2026-07-20 O
 IF THE ROW IS GRANTED the remaining steps are routine and fully gated: add the row; apply candidate.c over src/text1b.c:868 (LF endings); `engine test` green; `sandbox func_80049A2C --disable all` == 0; `verify-oracle --rebuild` == oracle SHA1 (my object-level rebuild says it will); fresh layer-2 cheat-reviewer on the composite diff; then `queue done`.
 
 **Constraint recorded for any future session:** Do not respell the pad to evade the engine detector: the ONLY authorized form is the first-declared `volatile u32 pre_pad[2];` gated by an owner-granted _SANCTIONED_UNWRITTEN_PADS row — no function-scope volatile scalar, no (void) shim, no non-volatile array, no size change, and no re-filing as escalate_kind=integration-handoff (engine/ is denylisted and sandbox cannot read 0 without the row). The four 2026-07-19/20-banned constructs (dummy[2], new_var4, the empty if, the inline-assign) stay retired.
+
+## 2026-08-20 15:06 — func_80032314 — layer-1 review — **FAIL (citation-only)**
+
+Construct set is legitimate (verbatim-authorized GTE island + single-level FAKE-annotated do-while(0) RA wrap, both matching their sanctioned families with documented lever-exhaustion), but the self-vet's cop2-addressing-preamble-cluster citation resolves to the wrong line.

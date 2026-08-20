@@ -1,45 +1,47 @@
-/* func_80032314 — best form as of grind session 3 (structural).
- * *** THIS FORM MEASURED sandbox --disable all == 0 (109/109 insns) on 2026-08-20 ***
- * (artifacts: tmp/grind/func_80032314/s3/{allocdbg.txt,build0.txt}).
+/* func_80032314 — best form as of grind session 4 (permuter).
+ * *** THIS FORM MEASURED sandbox --disable all == 0 (109/109 insns, 0 rules)
+ * on 2026-08-20, WITH the FAKE annotation in place, edits applied to
+ * src/code6cac_b.c (candidate-ready submission of s4). ***
+ * Artifacts: tmp/grind/func_80032314/s4/{allocdbg.txt,permB/output-0-1/}.
  *
- * IT IS NOT YET SUBMITTABLE. The three lines marked F4 below are the
- * chain-extender endgame — sanctioned F1 family
- * (.claude/rules/dead-store-fake-exception.md:32 "combine-foldable
- * chain-extender", owner ruling 2026-07-01) — which requires (a) the full
- * modality ladder demonstrably spent per the DRIVER's ledger, (b) the named
- * GCC-pass mechanism (documented below), (c) /* FAKE *\/ annotations.
- * At s3 the ladder is NOT spent (recon, structural x2 only), so prong (a)
- * fails and submission would risk a Judge FAIL that bans the construct.
- * THE SESSION THAT SUBMITS THIS (once the driver's exhaustion gate opens)
- * must add the FAKE annotations (template in evidence.md [s3]) and write
- * self_vet.md citing dead-store-fake-exception.md:32.
+ * THE CONSTRUCT: one single-level `do { ... } while (0);` wrap around the
+ * post-(a0==4) body, FAKE-annotated at the construct site. Family:
+ * .claude/rules/do-while-zero-exception.md (owner ruling 2026-07-06 FINAL):
+ * "do { <any body> } while (0); — including empty bodies — is a sanctioned
+ * pure-C match device for ANY codegen effect, including register
+ * allocation." Single-level wraps carry NO exhaustion hard-gate (rule
+ * prereq 2); nested-only gating does not apply here. Confirmed RA-purposed
+ * application precedent: marionation_Exec (rule file line 99).
  *
- * Removing ONLY the three F4 lines (s32 dxs decl becomes inline again:
- * dist_sq = (u32)(dx*dx + dy*dy + dz*dz); and radius read respelled
- * *(u8 *)(t0 + 2)) reproduces the s2 pure-C floor-1 form.
+ * MECHANISM (measured, ALLOCDBG s4): the wrap emits NOTE_INSN_LOOP notes;
+ * flow.c weights reg_n_refs by loop_depth for refs inside them. Weighted
+ * refs: walker p74 = 12 (len 82, pri 4390), ent p75 = 10 (len 63, pri
+ * 4761), mult-temp p116 = 4 (len 10, pri 8000). Allocation order mult-temp
+ * > ent > walker seats them $a1/$a2/$a3 = target exactly; t0->$t0, t1->$t1.
+ * Same end allocation as the s3 F4 chain-extender, reached via loop-note
+ * weighting instead of combine-stale refs. Contrast the s2 do-while form
+ * that FAILED (score 59): that one wrapped the REAL outer loop, arming
+ * loop.c LICM/giv on a genuine back-edge; this wrap is a straight-line
+ * once-through region — loop.c finds nothing to hoist (byte-identical
+ * emission, permuter score 0 and sandbox 0).
  *
- * THE MECHANISM (measured, s3): global.c allocno pri =
- * floor_log2(n_refs)*n_refs/live_length*10000. The fold-away detour pair
- * `ent += dxs; ent -= dxs;` at the END of the dist_sq<0x400 then-arm gives
- * stale flow-time refs (combine.c:52-57 documents verbatim that reg_n_refs
- * is NOT adjusted when a register is no longer required): ent 6->10 refs
- * (pri 4615), dxs (the first mflo) 2->4 refs len 14 (pri 5714). combine
- * folds (ent+dxs)-dxs -> ent to a self-move that final.c:1800-1806 elides
- * (zero bytes). PLACEMENT IS LOAD-BEARING TWICE OVER:
- *  - dxs pri must sit in the (4687, 6666) window: BELOW the dys mult-temp
- *    (6666, which must claim LO first via its mflo copy-preference — a
- *    higher-pri dxs gets captured by LO itself, measured score 23) and
- *    ABOVE ent. Arm-END placement gives len 14 -> 5714. Placement directly
- *    after the sum gives len 11 -> 7272 -> LO capture (score 23).
- *  - resulting allocation order dxs(5714) > ent(4615) > walker(2857) ->
- *    $a1/$a2/$a3 exactly as target; t0->$t0, t1->$t1.
- * Verified trace: tmp/grind/func_80032314/s3/allocdbg.txt (p114 dxs->5,
- * p75 ent->6, p74 walker->7, p72->8, p73->9).
+ * PROVENANCE: found by the s4 permuter campaign (basin B, s4_a3rotation_
+ * random, iter ~3284, tmp/grind/func_80032314/s4/permB/output-0-1/), vetted
+ * against the cheat catalog + the do-while-zero-exception prerequisites,
+ * self-vet in memory/grind/func_80032314/self_vet.md. Basin A (the floor-1
+ * natural-geometry chassis) ran 32,797 iterations / 27 min with ZERO finds
+ * — the pure-C no-FAKE case stays closed (s2 arithmetic + s3 premise-hole
+ * measurements + this null).
  *
- * SESSION-2 WIN preserved: radius read via *a3 restored here (walker at its
- * byte-forced 8 refs); the *(u8*)(t0+2) respelling is only for the floor-1
- * no-FAKE form. SESSION-1 WIN preserved: GTE island as ONE mnemonic block
- * (mtc2/swc2), never .word (see evidence.md FINDING 2).
+ * SESSION-2 WIN preserved: radius read via *a3 (walker at its byte-forced
+ * 8 real refs). SESSION-1 WIN preserved: GTE island as ONE mnemonic block
+ * (mtc2/swc2), never .word (evidence.md FINDING 2).
+ *
+ * ALTERNATIVE ENDGAME (superseded but valid): the s3 F4 chain-extender
+ * form (ent+dxs/-dxs detour) also measures 0 — spec + spelling in
+ * evidence.md [s3] and this file's git history. It needs the driver's
+ * full-ladder exhaustion gate (dead-store-fake-exception prong a); the
+ * do-while single-level wrap does not, which is why s4 submits the wrap.
  */
 void func_80032314(void) {
     u8 *t0 = &D_80104E88;
@@ -59,6 +61,15 @@ loop:
     state = *(u16 *)(ent + 0x6A);
     a0 = state & 0xFFFF;
     if (a0 == 4) goto next;
+    /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:
+     * the wrap's NOTE_INSN_LOOP notes make flow.c weight in-wrap reg_n_refs
+     * by loop_depth, re-ranking global.c allocno priorities (walker 4390 <
+     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating —
+     * ALLOCDBG trace tmp/grind/func_80032314/s4/allocdbg.txt.
+     * lever-exhaustion: memory/grind/func_80032314/hypotheses.md (s2
+     * arithmetic closure of the pure-C rotation + s3 premise-hole
+     * measurements + s4 permuter nulls on the natural-geometry chassis). */
+    do {
     if (a0 == 0x14) goto next;
     if (a0 == 0xF) goto next;
     if ((u32)(state - 0x1C) < 2) goto next;
@@ -69,14 +80,11 @@ loop:
         s32 dx = *(s32 *)(ent + 0xF4) - *(s32 *)(a3 + 2);
         s32 dy = *(s32 *)(ent + 0xF8) - *(s32 *)(a3 + 6);
         s32 dz = *(s32 *)(ent + 0xFC) - *(s32 *)(a3 + 0xA);
-        s32 dxs = dx * dx;                       /* F4 (named so the detour can reference it) */
         u32 dist_sq;
         u32 log2_val;
-        dist_sq = (u32)(dxs + dy * dy + dz * dz);
+        dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
         if (dist_sq < 0x400) {
             log2_val = (u32)(*(&D_8008D118 + dist_sq)) >> 3;
-            ent = (u8 *)((s32)ent + dxs);        /* F4 detour — folds to zero bytes */
-            ent = (u8 *)((s32)ent - dxs);        /* F4 detour — folds to zero bytes */
         } else {
             s32 clz = 0;
             s32 sp_tmp;
@@ -121,6 +129,7 @@ loop:
             }
         }
     }
+    } while (0);
 next:
     t1 += 1;
     a3 += 0x2C;

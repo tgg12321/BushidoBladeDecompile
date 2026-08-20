@@ -206,3 +206,81 @@ structural.
 - [s3] combine.c:52-57 and final.c:1796-1806 are the two load-bearing GCC-source facts banked this session; global.c:1671-1750 (hard-reg-only copy preferences) and the LO-capture window (4687,6666) for mflo-sourced pseudos generalize to other mult-cluster allocation walls.
 
 - [s3] src/code6cac_b.c restored to HEAD; working tree carries no source edits.
+
+## SESSION 4 (permuter) — second score-0 endgame found and SUBMITTED (candidate-ready)
+
+- [s4] Chassis re-confirmed at session start: floor-1 no-FAKE form applied to src measured
+  sandbox --disable all = 1 (109/109, 0 rules) — identical to the s2/s3 exit state. All
+  banked spelling conclusions remained chassis-valid.
+
+- [s4] BASIN A NULL (the mandated-modality measurement against the closed pure-C case):
+  permuter campaign s4_floor1_random on the floor-1 natural-geometry chassis (radius read
+  *(u8*)(t0+2)), pure random, -j 8 --stop-on-zero, base_score 10. Result: **32,797
+  iterations / 27 minutes / ZERO finds of any score** (not even a base-score re-find).
+  Harvested + stopped at the fresh-seed window. This is the permuter-modality null the s3
+  frontier predicted: the pure-C (no-FAKE) closure remains closed — the s2 arithmetic
+  argument and s3 premise-hole measurements now additionally carry a 32.8k-iteration
+  random-search null on the natural chassis.
+
+- [s4] BASIN B FIND: campaign s4_a3rotation_random on the *a3 rotation chassis (score-15
+  form, base_score 80 permuter-metric), pure random, --stop-on-zero. At iteration ~3,284
+  (160 s after launch) the permuter found a **SCORE-0 form**: the rotation chassis with
+  everything after the `a0 == 4` check wrapped in a single-level `do { ... } while (0);`
+  (tmp/grind/func_80032314/s4/permB/output-0-1/source.c). Verified honestly:
+  **sandbox --disable all = 0, 109/109 insns, 0 rules, no pins**, with the form (plus FAKE
+  annotation) applied to src/code6cac_b.c — this is the state at session end (submission).
+
+- [s4] MECHANISM (ALLOCDBG, tmp/grind/func_80032314/s4/allocdbg.txt): the wrap emits
+  NOTE_INSN_LOOP notes; flow.c weights reg_n_refs by loop_depth for refs inside them.
+  Weighted counts: walker p74 nrefs 12 / len 82 -> pri 4390; ent p75 nrefs 10 / len 63 ->
+  pri 4761; mult-temp p116 nrefs 4 / len 10 -> pri 8000. Allocation order mult-temp > ent
+  > walker seats them hardreg 5/6/7 = $a1/$a2/$a3 — every register in all 109 insns
+  matches target (the same end allocation the s3 F4 chain-extender produced by
+  combine-stale refs). t0 p72 (weighted 7, pri 1666) -> $t0, t1 p73 -> $t1 unchanged.
+
+- [s4] WHY THIS DOES NOT CONTRADICT THE s2 do-while KILL: the s2 form spelled the OUTER
+  4-iteration loop as do-while, arming loop.c LICM/giv on a real back-edge (score 59, 122
+  insns). The s4 wrap encloses a straight-line once-through region with no back-edge work:
+  loop.c finds nothing to hoist, emission is byte-identical, and the ONLY surviving effect
+  is the flow.c ref weighting. The s2 kill stands for real-loop respelling; it never
+  covered an inner once-through wrap.
+
+- [s4] POLICY BASIS FOR SUBMITTING (vs. the withheld F4): the construct is the do-while(0)
+  family, .claude/rules/do-while-zero-exception.md — owner ruling 2026-07-06 FINAL, whose
+  sanction sentence reads: "do { <any body> } while (0); — including empty bodies — is a
+  sanctioned pure-C match device for ANY codegen effect, including register allocation."
+  The former reorg.c-only scoping is explicitly abolished by that rule (its lines 26-29),
+  and memory/feedback/do-while0-ra-weighting-not-sanctioned.md records the supersession.
+  Prerequisites for SINGLE-LEVEL wraps: inline FAKE annotation naming the observed effect
+  (present, at the construct site in src) — exhaustion is NOT a hard gate for single-level
+  wraps (rule prereq 2), though this ledger documents it anyway (s2 arithmetic closure, s3
+  premise-hole measurements, s4 basin-A null). Confirmed RA-purposed application:
+  marionation_Exec (rule file "Confirmed applications", line 99). Judge precedent verified:
+  the 2026-07-13 func_8001C624 FAIL (docs/grind/decisions.md:54-70) failed a NESTED pair
+  on an unverifiable exhaustion record while explicitly listing do-while(0) among the
+  frozen-list families; this submission is single-level with a fully verifiable ledger.
+
+- [s4] The F4 chain-extender endgame (s3) remains valid as the ALTERNATIVE score-0 form
+  (spec in [s3]); it stays gated on dead-store-fake-exception prong (a) (driver's
+  exhaustion call). The do-while wrap supersedes it as the submission because its family
+  carries no such gate for single-level use.
+
+- [s4] Permuter telemetry banked in metrics/events.jsonl (permuter-launch/harvest x2).
+  Artifacts: tmp/grind/func_80032314/s4/{allocdbg.txt,base.i.greg,base.i.flow,greg.sh,
+  perm/ (basin A workspace, 0 finds),permB/ (basin B workspace, output-0-1 = the find)}.
+
+- [s4] Session end state: src/code6cac_b.c carries the annotated score-0 form (NOT
+  restored to HEAD — candidate-ready submission); self-vet at
+  memory/grind/func_80032314/self_vet.md.
+
+- [s4-resubmit 2026-08-20] The previous session's candidate-ready was DISCARDED by the
+  driver validator on self_vet.md FORMAT only: the two SCOPE quotes were wrapped across
+  multiple lines, and grindlib.py's _SCOPE_LINE regex (tools/grinder/grindlib.py:57)
+  requires the full quoted sentence on the single SCOPE: line, so it counted 0 verbatim
+  quotes. No technical objection was raised. This session re-applied candidate.c verbatim
+  to src/code6cac_b.c, RE-MEASURED sandbox --disable all = 0 (109/109, 0 rules,
+  cheat_asm_stripped inert), and rewrote self_vet.md with each SCOPE sentence as a
+  single-line verbatim quote plus file:line precedents
+  (.claude/rules/do-while-zero-exception.md:23,
+  .claude/rules/cop2-addressing-preamble-cluster.md:86) — verified against the validator
+  source directly. Content of the vet is unchanged from the discarded session.
