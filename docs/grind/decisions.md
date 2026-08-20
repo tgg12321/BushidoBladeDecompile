@@ -9174,3 +9174,32 @@ Q1 GRANTED. `b = *(s16 *)(p + 2) >= 0; if (b)` sits inside [[staged-value-reused
 Q2 REFUSED on evidence, not on the construct. The phantom-frame-slot pad family's prerequisite is that honest producers were measured inert FIRST — that is exactly what the func_800481E8 grant packet discharged (docs/grind/decisions.md:9101, '~152k permuter iterations plus the s2 structural grid'). This ledger discharges nothing on that axis: s1-s16 are all lbu-order work and the 0x20 frame residual was first noticed today (evidence.md:284; hypotheses.md:319 itself routes it to [[phantom-slot-frame-lever]] and then skips the search). None of the recipe's three producer classes, nor either instrument (.frame gradient, orphan detector), has been run. So no pad-row request is ripe. Secondarily, engine/volatile_cheats.py is on the integration-handoff path denylist, so the row is an owner surface even once ripe.
 
 Verified independently: asm/funcs/func_80041688.s has `addiu sp,-0x38` with the ONLY $sp references at 0x30/0x34 (leading 0x10..0x2F genuinely untouched — diagnosis surface confirmed), and the FALSE-arm lbu order is 0x1A,0x18,0x19 = [b,r,g] as claimed. CORRECTION for the next session: the three subst rules are regfix.txt:212-214, not 477-479 — candidate.c's integration warning and the s16 ledger entries cite dead line numbers.
+
+## 2026-08-20 — func_80041688 — INTEGRATION HANDOFF (owner surface: engine/volatile_cheats.py pad allowlist row) — ripeness prerequisite DISCHARGED
+
+**Filed by grind session s17 (escalation modality) per the Judge's 2026-08-20 12:41 ruling (this file, "Two questions" entry above) and the integration-handoff wording rule in the session contract. This is NOT an endgame lock and NOT a family-extension request: every construct in the closing form is already inside a sanctioned frozen-list family; the sole remaining step is a surface that is owner-only by that family's own design.**
+
+**State (all measured this session, s17):**
+- Honest floor **6** (`sandbox func_80041688 --disable all` = 6, 82==82, cheat_asm_stripped=0) with the Judge-GRANTED staged loop1 guard applied ([[staged-value-reused-variable]], granted in the 12:41 ruling Q1). The residual 6 is exactly the frame immediates: `addiu sp,-0x18` vs `-0x38` and the ra/s0 save/restore offsets (0x14/0x10 vs 0x34/0x30). The Judge independently verified target's leading 0x10..0x2F is genuinely untouched (only $sp refs are the 0x30/0x34 saves).
+- The sandbox reads 6 BY CONSTRUCTION, not because bytes are unproven: the engine strips the un-allowlisted pad before scoring (identical mechanical state to func_800481E8, this file, "GRANT PACKET" entry of 2026-08-20). The committed rule-era body with its pad in source measures `.frame $sp,56 # vars=32` — exactly target's frame; the staged-guard form closes the other 2 diffs byte-exactly (s16 word-diff + bool_staged.dis).
+
+**The ripeness prerequisite the Judge demanded (Q2 refusal) is now discharged.** The full [[phantom-slot-frame-lever]] honest-producer search was run on the honest baseline — the exact scope the Judge named: all three producer classes, .frame gradient, orphan detector. Results (evidence.md [s17]; artifacts tmp/grind/func_80041688/s17/):
+- Orphan detector (cc1 -da, greg+combine dumps): all 31 live pseudos hard-reg-allocated; 0 stack slots from alter_reg; 0 bare `(use (reg))` orphans.
+- Class 1 (folded guard-compare), 3 spellings at the only foldable compare site: all vars=0 — GCC 2.7.2 deletes the folded intermediate outright (zero refs, no limbo pseudo); the `!= 0` shape additionally regresses the score 6→7.
+- Class 2 (combine orphan-USE): the single-narrow-consumer staging folds clean (vars=0); target's own 82 insns contain exactly ONE `lh`, consumed solely by a `bltz` — the required second HImode use does not exist in the algorithm, and introducing one is the recipe's own forbidden class.
+- Class 3 (live named locals on multi-read fields): the function has no multi-read field; the representative naming probe measured vars=0.
+- Bound: the residual is 32 bytes = 4+ simultaneous orphans; no class produced even one. The 0x20 leading region is not honestly producible on this chassis.
+
+**Sanctioned-family basis (no new policy is requested):** phantom-frame-slot volatile pad local family, `.claude/rules/no-new-park-categories.md` 2026-08-18 additions ("Phantom-frame-slot volatile pad local", SOTN exhibit `src/st/sel/2C048.c:564`); form constraint satisfied by candidate.c (`volatile u32 pre_pad[8];`, first-declared, leading, `!FAKE`-annotated, no `(void)` shim). Sibling rows of identical form were owner-granted in commit b734618d. The staged-guard construct is Judge-granted (12:41 ruling Q1) under [[staged-value-reused-variable]].
+
+**Exact operator steps (one integration, fully gated):**
+1. Add the allowlist row to `engine/volatile_cheats.py` `_SANCTIONED_UNWRITTEN_PADS`: `"func_80041688": frozenset({("pre_pad", 8)}),` (engine/ is denylisted for sessions AND for driver add-scope-allow, per the func_800481E8 analysis above — this row is the owner surface).
+2. Apply `memory/grind/func_80041688/candidate.c` over `src/text1a_post.c` (replaces the rule-era `sp10[8]`/`(void)sp10` body; staged guard included).
+3. Retire regfix.txt lines 212-214 (the 3 lbu-operand subst rules — Judge-corrected line numbers; they would corrupt the already-correct [b,r,g] stream) in the same step.
+4. Re-run `sandbox func_80041688 --disable all` (expect 0), full build (expect SHA1 == oracle), fresh layer-2 cheat-reviewer, then `queue done`.
+
+**Exhaustion context (for the audit trail):** 17 sessions, 7 distinct modalities, ~86k permuter iterations across 3 chassis, 29 rejected forms, every sanctioned in-function axis measurement-dead (ledger s1-s17). scan_hand_coded tier LOW (s15) — canonical-asm was refused by two separate Judge rulings and is not requested.
+
+## 2026-08-20 12:52 — func_80041688 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s16 of func_80041688, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_80041688). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
