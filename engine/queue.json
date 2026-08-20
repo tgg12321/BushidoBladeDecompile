@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 5,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 1-insn addu operand order \u2014 only closer is FORBIDDEN or-tree-shape-shift swap; 5 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)",
-      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park"
-    },
-    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 12,
@@ -2204,14 +2194,14 @@
     }
   ],
   "counts": {
-    "total": 252,
-    "active": 219,
+    "total": 251,
+    "active": 218,
     "by_status": {
-      "active": 219,
+      "active": 218,
       "parked": 33
     },
     "by_verdict": {
-      "C": 183,
+      "C": 182,
       "ASM-PARTIAL": 36
     }
   }

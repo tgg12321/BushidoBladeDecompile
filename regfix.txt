@@ -2430,11 +2430,6 @@ func_8002EBDC: reorder 29,28 @ 28-29
 
 # Hoist 0x1000 load before first matrix sh
 func_8002EBDC: reorder 71,67,68,69,70 @ 67-71
-func_80048530: subst "addu\s+\$5,\$5,\$4" "addu $a1,$a1,$v1" @ 6
-func_80048530: subst "addu\s+\$3,\$4,\$2" "addu $v1,$v0,$v1" @ 9
-func_80048530: delete @ 8
-func_80048530: reorder 3,5,6,4,1,2,7,9,8 @ 1-9
-func_80048530: reorder 28,29,30,31,32,33,27,34,35 @ 27-35
 # scheduling: target hoists addiu sp+24 to loop top (GCC scheduler picks different perm)
 # label moves with reordered first insn
 # retarget loop branch to new label after reorder

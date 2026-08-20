@@ -1,6 +1,16 @@
 # Hypothesis ledger — func_80048530
 
 ## CONFIRMED
+- H10 (s5): the 2026-08-20 owner carve-out (or-tree-shape-shift single
+  justified target-matching operand order, .claude/rules/or-tree-shape-shift.md
+  :143-196, commit a5a5c1ec) sanctions the ledger's sole residual closer
+  `arg0 = off + base;` given the s1-s4 exhaustion bank + a dump-proven
+  mechanism + FAKE annotation. Applied with annotation → sandbox 0, 47 == 47.
+  Mechanism dump-proven this session (expand_binop source-order preservation,
+  no downstream swap; tmp/grind/func_80048530/s5/mechanism-proof.md).
+  CANDIDATE-READY. Frontier is now empty pending Judge/driver verification;
+  if the Judge FAILs on annotation FORMAT that is a one-comment fix, not a
+  reopened search.
 - H6 (s3): fresh-assign walker `arg0 = base + off` (NOT `arg0 += off`) + walking-
   pointer c,d reads (`c=*p; p+=2; d=*p;`, (s16) at call) -> FLOOR 1, from 10.
   Clean pure C. c/d emit lhu+sll+sra reusing the dead walker (`lhu v0,0(v1);

@@ -1,5 +1,48 @@
 # Evidence bank — func_80048530
 
+## s5 (synthesis, 2026-08-20) — BYTE-0 REACHED: the 2026-08-20 owner carve-out spends directly on the ledger's sole residual; candidate-ready
+
+- **CONTEXT: the function was unparked THIS DAY specifically to spend owner
+  ruling a5a5c1ec** (or-tree-shape-shift carve-out — "single justified
+  target-matching operand order", .claude/rules/or-tree-shape-shift.md:143-196;
+  unpark commit 04a187a7 names func_80048530). The ledger's s3/s4 conclusion —
+  "the only closer is the forbidden swap `arg0 = off + base`" — is exactly the
+  construct the carve-out sanctions, and the s1-s4 evidence bank IS the
+  carve-out's prerequisite-1 lever-exhaustion ledger. No new search was needed;
+  this session synthesized the banked form + the new ruling.
+- **SANDBOX 0 LIVE THIS SESSION**: replaced the rule-era cheat chassis in
+  src/text1b.c (3 register pins + 3 hardcoded-move `__asm__` + 2 `""` barriers,
+  calibrated to the 5 regfix rules) with the s3 floor-1 candidate spelled with
+  the sanctioned off-first order + mandatory FAKE annotation. Result:
+  `sandbox func_80048530 --disable all` = **score 0, build_insns 47 ==
+  target_insns 47, rules_dropped 5, cheat_asm_stripped 266**.
+- **Mechanism DUMP-PROVEN (carve-out prereq 2)** — tmp/grind/func_80048530/s5/
+  mechanism-proof.md, from this session's text1b.{rtl,combine,greg} dumps
+  (dump.ps1, instrumented cc1): expansion insn 28 = `(plus (reg 83 off)
+  (reg 76 base))` — expand_binop preserves SOURCE order for two
+  equal-precedence commutative pseudos; combine keeps off-first; greg
+  allocates off→$v0, base→$v1 giving `(set v1 (plus v0 v1))` =
+  `addu $v1,$v0,$v1`, target's exact byte. No pass ever swaps; source order is
+  the ONLY control. The permuter s4 zeros corroborate (never substitute for)
+  this mechanism-derived order; provenance is verbatim (cc1psx proof s3 that
+  the ORIGINAL source spelled off-first).
+- **self_vet.md written** (6 tests + family claim quoting the carve-out scope
+  sentence, PRECEDENT .claude/rules/or-tree-shape-shift.md:166, full
+  prerequisite table, annotation conformance). Outcome: candidate-ready.
+- NOTE for integration: the function still carries 5 legacy regfix rules
+  (deferred-representation era); retire/queue-done is the driver's step, not
+  this session's. The committed C now in src/ is the byte-0 form.
+- **PROCESS NOTE (s5 second run, same day):** the first s5 run was DISCARDED
+  by the driver validator on self_vet.md FORMAT only — the SCOPE sentence was
+  quoted across three wrapped lines, but `grindlib.py _SCOPE_LINE` requires
+  `SCOPE: "<sentence>"` on ONE physical line. Nothing substantive was wrong.
+  This run re-applied the identical candidate, re-measured sandbox 0 live
+  (score 0, 47 == 47, rules_dropped 5), regenerated the dumps
+  (text1b.rtl:1983 / text1b.greg:2095 re-confirm the mechanism), and rewrote
+  self_vet.md with the scope quote single-line; `grindlib.py selfvet` now
+  passes mechanically (including the banned-constructs tripwire). Lesson for
+  every future vet: keep the SCOPE quote on one physical line.
+
 ## s4 (permuter, 2026-07-23) — floor held at 1; permuter axis KILLED, all 13 zeros are the forbidden swap; OWNER-ESCALATION filed
 
 - **Floor unchanged = 1** (re-confirmed live: sandbox --disable all = 1, build 47

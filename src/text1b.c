@@ -278,36 +278,37 @@ void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
 }
 extern void func_800485EC(s32, s32, s32, s32, s32, s32);
 s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
-    register u32 v1_init asm("v1");
-    register s32 save asm("t0");
-    register s32 a1_arg3 asm("a1");
-    u8 *p;
-    s32 count;
-    s32 entry_off;
-    s32 a, b, c, d;
-    u32 cv, dv;
-    __asm__ volatile("addu %0, %1, $zero" : "=r"(v1_init) : "r"(arg0));
-    __asm__ volatile("addu %0, %1, $zero" : "=r"(save) : "r"(v1_init));
-    p = (u8 *)arg0 + ((s32 *)arg0)[arg1];
-    __asm__ volatile("addu %0, %1, $zero" : "=r"(a1_arg3) : "r"(arg3));
-    count = *(s32 *)p;
+    s32 base, count, entry, a, b, c, d, off;
+    off = ((s32 *)arg0)[arg1];
+    base = arg0;
+    /* FAKE: operand order chosen to match target (off + base, not base + off);
+     * mechanism: RTL expansion's commutative-operand canonicalization
+     * (expand_binop) keeps two equal-precedence pseudos in source order, and
+     * no later pass (combine/sched) reorders the addu operands — so only the
+     * off-first source spelling emits target's `addu $v1,$v0,$v1`;
+     * lever-exhaustion: memory/grind/func_80048530/ s1-s4 — every natural
+     * ordering and every non-swap off-first spelling measured dead
+     * (natural base+off = 1 insn off; off+=base / mem-inline / fresh-walker
+     * misroute the walker, scores 22/20/12; cc1psx also emits base-first from
+     * the natural order); sanctioned by the 2026-08-20 owner ruling in
+     * .claude/rules/or-tree-shape-shift.md (single justified target-matching
+     * operand order). */
+    arg0 = off + base;
+    count = *(s32 *)arg0;
+    arg0 += 4;
     if (arg2 >= (u32)count) return -1;
-    p += 4;
-    p += arg2 * 0xC;
-    entry_off = *(s32 *)p;
-    p = p + 4;
-    a = (s32)*(u16 *)p;
-    p = p + 2;
-    entry_off = entry_off + save;
-    b = (s32)*(u16 *)p;
-    p = p + 2;
-    cv = *(u16 *)p;
-    dv = *(u16 *)(p + 2);
-    asm volatile("" : "=r"(cv) : "0"(cv));
-    asm volatile("" : "=r"(dv) : "0"(dv));
-    c = (s32)(s16)cv;
-    d = (s32)(s16)dv;
-    func_800485EC(entry_off, a1_arg3, (s16)a, (s16)b, c, d);
+    arg0 += arg2 * 0xC;
+    entry = *(s32 *)arg0;
+    arg0 += 4;
+    a = (s32)*(u16 *)arg0;
+    arg0 += 2;
+    b = (s32)*(u16 *)arg0;
+    arg0 += 2;
+    c = (s32)*(u16 *)arg0;
+    arg0 += 2;
+    d = (s32)*(u16 *)arg0;
+    entry += base;
+    func_800485EC(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
 }
 void func_800485EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5)
