@@ -126,3 +126,120 @@
 - probe: Re-read s1+s2 evidence and hypothesis banks (memory/grind/func_800481E8/evidence.md + hypotheses.md); apply the two-gate lens from the standing 2026-07-27 auto-ruling; cross-check against the parallel file_LoadSectors 2026-07-28 disposition already terminal in docs/grind/decisions.md
 - result: Gate 1 FAILS: target is verdict C, 56/56 insns byte-matched except 10 frame-offset instructions — compiled C with a frame-equation delta (vars=0 vs vars=32), no STRONG hand-coded signals apply. Gate 2 FAILS: s2's 5-way frame taxonomy is CLOSED (written aggregate adds stores target lacks; volatile/address-escape are cheats; phantom-slot mechanism measured dead in 52,043-iter instrumented campaign + 14-case bisect + 11-variant hand grid — no combine-deletable extension can exist in this function's semantics; unwritten-tail forbidden — target has zero stores below offset 56, so 2026-07-01 carve-out does not apply). No SOTN precedent for the unwritten-tail phantom-frame family (same negative census that terminated file_LoadSectors option a).
 - verdict: KILLED
+
+## s4 (permuter, 2026-08-20)
+
+- hypothesis: A permuter campaign seeded from a STRUCTURALLY DIFFERENT but
+  byte-identical chassis (the banked V6 spelling: s32 raw holders + (s32)(s16)
+  narrowing, rather than s2's s16-local candidate chassis) can escape the basin s2
+  measured and reach a clean pure-C form with vars in [25,32] -- i.e. the frame-delta
+  axis is a property of s2's SEED, not of the function.
+  mechanism: decomp-permuter's mutation set (decl reordering, type re-spelling,
+  temp introduction, expression re-association) explores a neighbourhood of the seed;
+  a different seed neighbourhood can in principle contain frame-growing spellings the
+  first neighbourhood did not, since GCC 2.7.2's get_frame_size is sensitive to which
+  pseudos survive to reload.
+  probe: built + validated a V6-seeded workspace byte-identical to candidate
+  (tmp/grind/func_800481E8/s4/mkperm.sh; 56 insns, only the 10 frame diffs, base
+  score 266 == s2's base); launched via tools/permuter_campaign.py with the honest
+  --stack-diffs scorer, 8 jobs, perm_pad_var_decl weight 0; waited in-turn across
+  4 blocking windows (~23 min, 54,167 iterations); inspected the source of every
+  novel find; harvested with --stop.
+  result: **KILLED.** 3 novel finds, all the identical forbidden construct -- a
+  function-scope `volatile <T> new_var;` dead frame pad, varying only in volatile
+  width (unsigned short 212 / short 207 / unsigned char 202). Zero clean forms.
+  Best honest score 202 vs base 266: the cheat does not even close the gap, let
+  alone a legal form. Two independent seeds converging on the same forbidden
+  construct establishes the basin as a property of the FUNCTION. The permuter
+  modality is spent.
+  verdict: KILLED
+
+- hypothesis: The 2026-08-19 asm-until-matched migration (and the callee naming
+  wave) changed the chassis enough that the s1-s3 floor and spelling conclusions
+  must be re-derived.
+  mechanism: HEAD's representation of func_800481E8 changed from a 12-rule +
+  register-pin cheat form to INCLUDE_ASM, and the call target was renamed from
+  efc_buki_draw_zanzou to func_800482C8; either could shift codegen (rule set,
+  prototype visibility, arg promotion).
+  probe: applied candidate.c (callee renamed) over the INCLUDE_ASM line and ran
+  `sandbox func_800481E8 --disable all`.
+  result: **KILLED (no re-derivation needed).** score 10, 56/56 insns,
+  rules_dropped 0, cheat_asm_stripped 278 -- identical floor and identical residual
+  (the same 10 frame-offset instructions) as s1/s2/s3 measured under the old chassis.
+  The migration is codegen-neutral here; the callee is unprototyped at the call site
+  either way, so arg promotion is unchanged. Every banked conclusion carries over.
+  verdict: KILLED
+
+## s4-rerun (permuter, 2026-08-20)
+
+- hypothesis: A DIRECTED hybrid permuter seed — one workspace whose PERM_*
+  directives span both previously-campaigned chassis simultaneously (PERM_GENERAL
+  over the loop-local declaration set and over each halfword stream read,
+  PERM_LINESWAP over the whole 13-statement loop body) — can reach a clean pure-C
+  form with frame vars in [25,32], i.e. the frame-delta axis is reachable by
+  combining spellings that the two single-chassis random campaigns explored only
+  separately.
+  mechanism: decomp-permuter's random mutation walk is a local search from one
+  fixed seed; a directive-driven seed makes the cross-chassis combinations
+  first-class candidates instead of requiring the random walk to invent them, and
+  GCC 2.7.2's get_frame_size is sensitive to which pseudos survive to reload, so a
+  combination that orphans a pseudo could in principle appear only in the hybrid
+  space.
+  probe: built tmp/grind/func_800481E8/s4/perm3 (base score 266, identical to both
+  prior seeds — same 56 bytes, frame-only diffs), perm_pad_var_decl and perm_inline
+  weights 0.0, honest --stack-diffs scorer, 8 jobs; launched via
+  tools/permuter_campaign.py, waited in-turn across 3 blocking windows
+  (544/545/544 s), harvested with --stop.
+  result: **KILLED. 46,124 iterations, 0 finds, best_new_score null** — no
+  output-* directory at all. The hybrid space contains no form that scores below
+  the 266 frame-only base, and unlike the two random campaigns it did not even
+  surface the volatile-pad cheat (the directive space contains no frame-growing
+  declaration). Cumulative across three structurally distinct seeds: ~152k
+  iterations, zero clean sub-base forms. The permuter modality is spent for
+  func_800481E8: no legal mutation of this function's body changes its frame size,
+  which is the search-side confirmation of s2's structural proof that the vars=32
+  delta can only come from a declaration and every such declaration is forbidden.
+  verdict: KILLED
+
+- hypothesis: A struct-typed or array-indexed chassis (Ent struct walk with `e++`,
+  or `h[0..3]` halfword indexing off a base) is a viable alternative seed whose
+  different addressing RTL might carry different frame behaviour.
+  mechanism: aggregate member access and array indexing go through different
+  address-lowering paths than the running-pointer form, so their pseudo lifetimes
+  (and hence reload's slot allocation) differ.
+  probe: compiled both spellings through the real chassis pipeline
+  (tmp/grind/func_800481E8/s4/try.sh) and diffed the body against target.
+  result: **KILLED as seeds.** Struct form = 47 insns / 83 diff lines; array-index
+  form = 49 insns / 71 diff lines. Both collapse the target's four separate
+  `addiu p,p,2` pointer advances into folded displacements, so they lose 7-9 of the
+  56 target instructions before any frame question is reached. The walking-pointer
+  spelling in candidate.c is load-bearing for the body match.
+  verdict: KILLED
+
+- hypothesis (re-measured, carried from the discarded s4): the 2026-08-19
+  asm-until-matched migration changed the chassis enough to invalidate the banked
+  floor.
+  probe: applied candidate.c over `INCLUDE_ASM("asm/funcs", func_800481E8);` at
+  src/text1b.c:68 and ran `sandbox func_800481E8 --disable all`.
+  result: **KILLED.** score 10, 56/56 insns, rules_dropped 0, cheat_asm_stripped
+  278 — identical floor and identical residual to s1/s2/s3. Migration is
+  codegen-neutral here.
+  verdict: KILLED
+
+## [s4] A DIRECTED hybrid permuter seed whose PERM_* directives span both previously-campaigned chassis at once (PERM_GENERAL over the loop-local declaration set and over each halfword stream read; PERM_LINESWAP over the whole 13-statement loop body) can reach a clean pure-C form with frame vars in [25,32] -- i.e. the frame-delta axis is reachable only by COMBINING spellings the two single-chassis random campaigns explored separately.
+- mechanism: decomp-permuter's random walk is a local search from one fixed seed; a directive-driven seed makes cross-chassis combinations first-class candidates instead of requiring the random walk to invent them, and GCC 2.7.2's get_frame_size is sensitive to which pseudos survive to reload, so a combination that orphans a pseudo could in principle exist only in the hybrid space.
+- probe: Built tmp/grind/func_800481E8/s4/perm3 (base.c + settings.toml + compile.sh + target.o) with perm_pad_var_decl and perm_inline weights pinned to 0.0 and the honest --stack-diffs scorer; validated base score 266 -- identical to both prior seeds, re-confirming all three chassis emit the same 56 bytes and differ only in the frame. Launched via tools/permuter_campaign.py (label directed-hybrid-permgeneral, 8 jobs), waited IN-TURN across three blocking wait windows (544 s / 545 s / 544 s), harvested with --stop.
+- result: KILLED. 46,124 iterations / 1,678 s / 0 finds / best_new_score null; not one output-* directory was produced, and all three wait windows returned reason=timeout with novel=[]. The directed seed did not even reproduce the volatile-pad cheat that both random campaigns converged on, because the directive space contains no frame-growing declaration. Cumulative permuter evidence is now THREE structurally distinct seeds and ~152k iterations (s2 instrumented 52,043; s4 V6 random 54,167; s4b directed hybrid 46,124) with zero clean forms below the 266 frame-only base.
+- verdict: KILLED
+
+## [s4] A struct-typed or array-indexed chassis (12-byte Ent struct walked with e++, or h=(u16*)((s32)p+4) with h[0..3]) is a viable alternative permuter seed whose different address-lowering RTL might carry different frame behaviour.
+- mechanism: Aggregate member access and array indexing lower addresses through different paths than a running pointer, so pseudo lifetimes -- and hence reload's slot allocation -- differ.
+- probe: Compiled both spellings through the real chassis pipeline (tmp/grind/func_800481E8/s4/try.sh -> cc1 -O2 -G0 | prologue_fix | maspsx | multu_pad | as) and diffed the disassembled body against asm/funcs/func_800481E8.s.
+- result: KILLED as seeds. Struct form = 47 insns / 83 diff lines; array-index form = 49 insns / 71 diff lines. Both fold the target's four separate `addiu p,p,2` advances into displacements and so lose 7-9 of the 56 target instructions before the frame question is even reached. The walking-pointer spelling in candidate.c is load-bearing for the 56-instruction body match, not a stylistic choice.
+- verdict: KILLED
+
+## [s4] The 2026-08-19 asm-until-matched migration (src/text1b.c:68 now carries INCLUDE_ASM("asm/funcs", func_800481E8);) plus the callee naming wave changed the chassis enough that the banked floor and spelling conclusions must be re-derived.
+- mechanism: HEAD's representation changed from a 12-rule + register-pin cheat form to INCLUDE_ASM and the call target was renamed to func_800482C8; either could shift codegen via rule set, prototype visibility, or argument promotion.
+- probe: Applied memory/grind/func_800481E8/candidate.c over the INCLUDE_ASM line and ran `sandbox func_800481E8 --disable all`.
+- result: KILLED (no re-derivation needed). score 10, target_insns 56, build_insns 56, rules_dropped 0, cheat_asm_stripped 278 -- identical floor and identical residual (the same 10 frame-offset instructions) as s1/s2/s3. The callee is unprototyped at the call site either way, so argument promotion is unchanged; every banked conclusion carries over.
+- verdict: KILLED

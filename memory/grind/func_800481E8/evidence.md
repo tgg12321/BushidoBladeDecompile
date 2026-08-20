@@ -174,3 +174,131 @@ buffer). Blocked. This is a user/orchestrator decision, not worker pure-C work.
 - [s3] s3 filed entry: docs/grind/decisions.md '2026-07-28 — func_800481E8 (src/text1b.c) — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (both-gates-fail terminal disposition; keeps HEAD's byte-correct cheat form; banks candidate.c as best clean form at floor 10).
 
 - [s3] Reusable project-wide byproduct (from s2, not this function's work): B3 minimal phantom trigger characterized — signed halfword compare + low-bit test of the same halfword value; applicable to the 28-function untouched-frame-slack census.
+
+## s4 (permuter, 2026-08-20) -- CHASSIS RE-VERIFIED on the post-migration tree; the permuter modality is MEASURED DEAD
+
+- [s4] CHASSIS CHANGE, IDENTIFIED AND RE-MEASURED. HEAD no longer carries the
+  byte-correct cheat form the s3 escalation entry described. The 2026-08-19
+  asm-until-matched migration replaced it with `INCLUDE_ASM("asm/funcs",
+  func_800481E8);` at src/text1b.c:68; regfix.txt keeps only a COMMENT line
+  (regfix.txt:2442) and zero rules; asmfix.txt has zero. Additionally a naming
+  wave renamed the callee: candidate.c's `efc_buki_draw_zanzou` is now
+  `func_800482C8` (the jal target in asm/funcs/func_800481E8.s:48). candidate.c
+  has been updated in place for both facts.
+- [s4] BANKED FLOOR RE-MEASURED, UNCHANGED. Applying the (renamed) candidate.c
+  over the INCLUDE_ASM line: `sandbox func_800481E8 --disable all` = **10**,
+  target_insns 56 / build_insns 56, rules_dropped 0, cheat_asm_stripped 278.
+  The migration is codegen-neutral for this function -- every s1/s2/s3 spelling
+  conclusion remains valid on the new chassis, and the residual is still exactly
+  the 10 frame-offset instructions (2x addiu sp, 4x sw, 4x lw at the s0/s1/s2/ra
+  save slots: 24/28/32/36 ours vs 56/60/64/68 target; frame 40 vs 72).
+  NOTE the callee is UNPROTOTYPED at the call site (func_800482C8 is defined
+  BELOW func_800481E8 in src/text1b.c and there is no forward declaration), so
+  args are int-promoted -- the same ABI under which the floor was originally
+  measured. Do not "fix" this by adding a prototype without re-measuring.
+- [s4] FRESH-SEED PERMUTER CAMPAIGN ON A STRUCTURALLY DIFFERENT CHASSIS -- the
+  distinguishing work of this session vs s2. s2's 52k campaign seeded from the
+  candidate chassis (s16 locals for the stream halfwords). s4 seeded from the
+  banked byte-identical **V6 spelling** (s32 raw holders `a1w/a2w/a3w/v0w` loaded
+  from `*(u16*)p`, narrowed with `(s32)(s16)` at the call site and in the
+  `< 0x280` compare). Workspace tmp/grind/func_800481E8/s4/perm, built by
+  tmp/grind/func_800481E8/s4/mkperm.sh. The seed was VALIDATED byte-identical to
+  candidate before launch: 56 insns, exactly the same 10 frame-offset diffs and
+  nothing else. Honest `--stack-diffs` scorer, base score 266 (identical to s2's
+  base -- independent confirmation that V6 and the candidate are the same bytes).
+- [s4] CAMPAIGN RESULT (telemetry in metrics/events.jsonl, label `v6-fresh-seed`):
+  **54,167 iterations / 1,402 s / 8 jobs / 3 novel finds / best_new_score 202 /
+  harvested + STOPPED (9 procs killed, 0 orphaned; pgrep clean)**. ALL THREE finds
+  are the SAME construct -- a function-scope `volatile <T> new_var;` dead pad whose
+  only effect is to grow the frame -- differing only in the volatile width:
+  output-212-1 `volatile unsigned short`, output-207-1 `volatile short`,
+  output-202-1 `volatile unsigned char`. That is the volatile-coercion forbidden
+  family (frame coercion by volatile-typed scalar), score-inert under the sandbox
+  and a layer-1 FAIL on sight. Banked
+  rejected/v6-chassis-volatile-pad-permuter-find.c.
+- [s4] **THE KILL (permuter modality).** Two independent seeds, two structurally
+  different chassis spellings, ~106k combined iterations, and the search converges
+  on the identical forbidden construct BOTH times -- so the basin is a property of
+  THE FUNCTION, not of the seed spelling. Stronger still: even the cheat does not
+  close the gap. Best honest score across all 3 finds is 202 against a base of 266;
+  no find reaches or approaches 0. The permuter has no mutation that adds frame
+  bytes except by declaring a local, and every local-declaring mutation lands in a
+  forbidden family (volatile-coercion, address-escape, dead array). This is exactly
+  what s2's structural proof predicted, now confirmed from a second basin.
+  The permuter modality is spent for func_800481E8.
+- [s4] Fresh-seed discipline observed per .claude/rules/permuter-directives.md
+  Campaign discipline: 4 in-turn blocking `wait` windows (30 s / 105 s / 547 s
+  timeout / 89 s / 546 s timeout), ~23 min wall on a single fresh seed, novel finds
+  all in one dead family, then harvest --stop. No campaign outlived the session.
+
+## s4-rerun (permuter, 2026-08-20) — third seed: DIRECTED HYBRID, dry campaign
+
+Context: the first s4 session was DISCARDED by the driver validator (it returned
+`owner-gated` while its mandated modality was `permuter`; a dead axis in a
+non-escalation modality is a `progress` outcome). Its src/ edits were reverted by
+the driver, but its ledger writes survived on disk and are the block above. This
+re-run re-measured the chassis and spent one further, structurally distinct
+permuter lever before banking.
+
+- [s4b] CHASSIS RE-MEASURED on HEAD (which carries `INCLUDE_ASM("asm/funcs",
+  func_800481E8);` at src/text1b.c:68 after the 2026-08-19 asm-until-matched
+  migration): applying memory/grind/func_800481E8/candidate.c over that line gives
+  `sandbox func_800481E8 --disable all` = **10**, target_insns 56, build_insns 56,
+  rules_dropped 0, cheat_asm_stripped 278. Floor is UNCHANGED at 10; residual is
+  still exactly the 10 frame-offset instructions (frame 40 vs 72, vars 0 vs 32).
+- [s4b] THIRD SEED (new lever, not previously tried): a **directed hybrid** base,
+  i.e. one workspace whose PERM_* directives span BOTH previously-campaigned
+  chassis at once instead of one fixed spelling per campaign —
+  `PERM_GENERAL` over the loop-local declaration set (s16/u16 locals ⇄ s32 raw
+  holders, i.e. the s2 candidate chassis ⇄ the V6 chassis), `PERM_GENERAL` over
+  each of the three halfword stream reads (`(s16)(*(u16*)p)` ⇄ `*(u16*)p`), and
+  `PERM_LINESWAP` over the entire 13-statement loop body (word load, four pointer
+  advances, four stream reads, the `>>2<<2` address derivation, the early
+  `a0_for_call` precompute). Workspace tmp/grind/func_800481E8/s4/perm3
+  (base.c/settings.toml/compile.sh/target.o). `perm_pad_var_decl` and
+  `perm_inline` weights pinned to 0.0. Honest `--stack-diffs` scorer.
+  Base score **266** — identical to both prior seeds, independently re-confirming
+  that all three chassis emit the same 56 bytes and differ only in the frame.
+- [s4b] CAMPAIGN RESULT (telemetry label `directed-hybrid-permgeneral`, in
+  metrics/events.jsonl): **46,124 iterations / 1,678 s (28 min) / 8 jobs /
+  0 finds / best_new_score null / harvested + STOPPED (9 procs killed)**.
+  Three in-turn blocking `wait` windows (544 s / 545 s / 544 s), all returning
+  `reason: timeout, novel: []`. Not one output-* directory was produced — the
+  directed seed did not even reproduce the volatile-pad cheat that both random
+  seeds converged on, because the directive-driven mutation space is confined to
+  the spellings and orderings I enumerated and NONE of them changes the frame.
+- [s4b] Cumulative permuter evidence for this function now stands at **THREE
+  structurally distinct seeds and ~152k iterations** (s2 instrumented 52,043;
+  s4 V6 random 54,167; s4b directed hybrid 46,124) with **zero clean forms below
+  the base score of 266** and every non-zero find in a forbidden family. The
+  directed run adds the sharper statement: mutations restricted to legal
+  re-spellings and re-orderings of THIS function's own computations produce no
+  frame change at all, which is the permuter-side confirmation of s2's structural
+  result (the vars=32 delta cannot come from the body; it can only come from a
+  declaration, and every declaration that produces it is a forbidden construct).
+- [s4b] Struct/array chassis measured and rejected as seeds (not campaign-worthy):
+  a 12-byte `Ent` struct walk (`e->ofs/x/y/z/w`, `e++`) compiles to **47 insns**
+  (83 diff lines) and an `h = (u16*)((s32)p+4); h[0..3]` index form compiles to
+  **49 insns** (71 diff lines) — both collapse the target's four separate
+  `addiu p,p,2` advances, so the walking-pointer spelling in candidate.c is
+  load-bearing for the 56-instruction body, not a stylistic choice. Variants
+  banked in tmp/grind/func_800481E8/s4/variants/, harness
+  tmp/grind/func_800481E8/s4/try.sh.
+- [s4b] src/text1b.c was returned to its HEAD state (`INCLUDE_ASM`) before the
+  session ended; no build-surface file was modified.
+
+- [s4] Chassis re-measured THIS session on HEAD: candidate.c applied over src/text1b.c:68 gives sandbox --disable all = 10, 56/56 insns, rules_dropped 0, cheat_asm_stripped 278. Floor unchanged at 10; residual is exactly the 10 frame-offset instructions (frame 40 vs 72, vars 0 vs 32).
+
+- [s4] Third permuter seed built and campaigned: tmp/grind/func_800481E8/s4/perm3, a DIRECTED HYBRID base spanning both prior chassis via PERM_GENERAL (loop-local declaration set s16/u16 <-> s32 raw holders; each halfword read (s16)(*(u16*)p) <-> *(u16*)p) and PERM_LINESWAP over the whole loop body. Base score 266 -- bit-for-bit the same base score as the s2 and V6 seeds, independently re-confirming all three chassis emit the same 56 bytes.
+
+- [s4] Campaign telemetry (metrics/events.jsonl, label directed-hybrid-permgeneral): 46,124 iterations, 1,678 s, 8 jobs, finds_total 0, finds_new 0, best_new_score null, stopped=true, procs_killed 9. Three in-turn blocking wait windows, each reason=timeout with novel=[].
+
+- [s4] The directed seed produced ZERO finds where both random seeds produced volatile-pad cheats -- direct evidence that the permuter's frame-moving finds come exclusively from its declaration-inventing mutations (volatile-typed scalar / address-escape / pad decl), never from re-spelling or re-ordering the function's own computations.
+
+- [s4] Cumulative permuter search on this function: 3 structurally distinct seeds, ~152,334 iterations, 3 finds total, ALL of the identical forbidden volatile dead-pad construct, best honest score 202 against a base of 266 -- the cheat does not even close the gap.
+
+- [s4] Seed-viability measurements: struct-walk chassis = 47 insns (83 diff lines); array-index chassis = 49 insns (71 diff lines) vs target 56. Both collapse the four separate pointer advances the target emits, so the walking-pointer spelling is required for the body match.
+
+- [s4] No build-surface file was modified: src/text1b.c was returned to its HEAD INCLUDE_ASM state before the session ended, and no permuter process outlived the session (campaign harvested with --stop, 9 procs killed, post-harvest process scan clean).
+
+- [s4] Process note for the ledger: the FIRST s4 session was discarded by the driver validator for returning owner-gated while its mandated modality was permuter (a standing-ruling terminal disposition requires driver-declared escalation modality). Its src/ edits were reverted; its ledger writes survived on disk and are preserved in evidence.md/hypotheses.md above this entry. This re-run re-measured them and banks one further distinct lever as progress.

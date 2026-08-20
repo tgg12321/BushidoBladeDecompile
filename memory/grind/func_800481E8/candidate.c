@@ -6,7 +6,33 @@
  * instrumented campaign: 0 clean vars>8 forms) — see evidence.md s2. Frame axis
  * has no sanctioned route left; next step is escalation modality.
  * Byte-identical alt spellings exist for the stream reads (s2 V6/V7):
- * `s32 a1w = *(u16*)p;` + arg `(s32)(s16)a1w`, and the u32/(u16) recast form. */
+ * `s32 a1w = *(u16*)p;` + arg `(s32)(s16)a1w`, and the u32/(u16) recast form.
+ *
+ * s4 (permuter, 2026-08-20) CHASSIS RE-VERIFICATION -- READ THIS FIRST:
+ *   - HEAD changed under this ledger: the 2026-08-19 asm-until-matched migration
+ *     replaced the old 12-regfix-rule + $16-pin + INLINE_MOVE_ALIASING form in
+ *     src/text1b.c with `INCLUDE_ASM("asm/funcs", func_800481E8);`. regfix.txt now
+ *     holds only a COMMENT line for this function (regfix.txt:2442), zero rules.
+ *   - The callee was renamed by a naming wave: the old `efc_buki_draw_zanzou` in
+ *     this file is now `func_800482C8` (the jal target in asm/funcs/func_800481E8.s).
+ *     This file has been updated accordingly. There is NO prototype for it above
+ *     func_800481E8 in src/text1b.c (it is defined below), so the call is
+ *     unprototyped/int-promoted -- the same ABI the banked floor was measured under.
+ *   - MEASURED on the new chassis (s4): applying this file over the INCLUDE_ASM line
+ *     gives sandbox --disable all = 10, 56/56 insns, rules_dropped 0,
+ *     cheat_asm_stripped 278. Floor is UNCHANGED at 10 and the residual is still
+ *     exactly the 10 frame-offset instructions. The migration is codegen-neutral here.
+ *
+ * s4-RERUN (permuter, 2026-08-20) -- RE-MEASURED AGAIN on HEAD after the driver
+ * discarded the first s4 session and reverted its src/ edits: applying this file
+ * over `INCLUDE_ASM("asm/funcs", func_800481E8);` at src/text1b.c:68 gives
+ * sandbox --disable all = 10, 56/56 insns, rules_dropped 0, cheat_asm_stripped 278.
+ * Unchanged. A third permuter seed (directed hybrid, PERM_GENERAL x PERM_LINESWAP
+ * spanning both prior chassis) ran 46,124 iterations with ZERO finds -- banked in
+ * rejected/directed-hybrid-seed-permuter-dry.c. Also measured: struct-walk (47
+ * insns) and array-index (49 insns) chassis LOSE body instructions, so the
+ * walking-pointer spelling below is load-bearing, not stylistic.
+ */
 void func_800481E8(s32 arg0, s32 arg1)
 {
     /* Pure C (s1 recon): the sibling InitHiraRmd_80047FBC prologue technique
@@ -52,7 +78,7 @@ void func_800481E8(s32 arg0, s32 arg1)
             if ((s32)a3v < 0x280) {
                 v0v += 1;
             }
-            efc_buki_draw_zanzou(a0_for_call,
+            func_800482C8(a0_for_call,
                           (s32)a1v,
                           (s32)a2v,
                           (s32)a3v,

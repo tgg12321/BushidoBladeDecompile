@@ -1,8 +1,8 @@
 {
  "func": "func_800481E8",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Both AND-gates fail on s1+s2 evidence; standing-ruling entry filed as terminal REFUSED / OWNER-ACCEPTED INCOMPLETE (frame-delta family, same as file_LoadSectors)."
+  },
+  {
+   "session": 4,
+   "floor": 10,
+   "modality": "permuter",
+   "headline": "Permuter modality spent: a third, directed hybrid seed (PERM_GENERAL x PERM_LINESWAP spanning both prior chassis) ran 46,124 iterations with ZERO finds; struct/array chassis killed as seeds; floor re-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every sanctioned frame route is measured dead; the function is 10 frame-offset instructions from COMPLETED-C with every other byte matching \u2014 this is now an owner-disposition question, not a search problem",
-   "mechanism": "Frame 0x48 <=> vars in [25,32] (mips.c compute_frame_size; args=24 and regs=16 pinned by target bytes); all five routes to vars>0 measured dead or forbidden (s2 taxonomy)",
-   "next_probe": "Escalation modality: file the OWNER-ESCALATION entry in docs/grind/decisions.md citing s1+s2 evidence, the file_LoadSectors pending ruling (same family), and the 2026-07-20 endgame-lock-disposition policy; then owner-gated"
+   "hypothesis": "The permuter modality is now exhausted for func_800481E8 (three seeds, ~152k iterations, zero clean sub-base forms, and the directed run proving no legal re-spelling/re-ordering moves the frame). The remaining ladder rungs are forensics / rederive / synthesis, not further sampling.",
+   "mechanism": "The residual is entirely the vars=0 vs vars=32 frame-equation delta (frame 0x48 = ALIGN8(vars 32) + args 24 + regs 16); s2's taxonomy shows it can only come from a DECLARATION, and the permuter's only declaration-inventing mutations are forbidden families.",
+   "next_probe": "Do NOT launch a fourth campaign. Spend the next non-escalation modality on forensics/rederive: re-derive the original source shape from the 8004xxxx cluster (AddTbpOfst_80047EE8 / InitHiraRmd_80047FBC / InitHiraRmd_800480C0 all reserve EXACTLY 32 phantom bytes -- memory/grind/func_80047EE8/evidence.md:154) -- a cluster-wide constant 32 across different register counts and bodies suggests a shared header-level or TU-level declaration idiom, which is a source-archaeology question, not a search question."
   },
   {
-   "hypothesis": "If the owner sanctions an unwritten-tail-class disposition for this family, candidate.c + an s32 pad[8]-class construct closes at distance 0",
-   "mechanism": "ALIGN8(32)+24+16 = 0x48; the construct is currently the forbidden dead-vars-local-array unwritten form",
-   "next_probe": "FORBIDDEN until a ruling exists \u2014 do not pre-build; only act on an explicit owner ruling"
+   "hypothesis": "The cluster-wide constant 32-byte frame delta across all four 8004xxxx siblings is produced by ONE shared original-source construct (a common local declaration or a macro expanded in each body) rather than four independent accidents.",
+   "mechanism": "All four siblings (72B/4regs, 80B/6regs, 88B/8regs, 72B/4regs) reserve exactly 32 untouched vars bytes despite different register counts and different bodies -- a per-function accident would not be constant across the cluster.",
+   "next_probe": "Forensics modality: diff the four targets' prologues and bodies for a shared idiom whose C form declares locals; check whether any sibling STORES into its 32-byte region, which would reveal the aggregate's shape and stride and supply the base-register/stride evidence prong (a) that the aggregate-merge family currently lacks here."
   },
   {
-   "hypothesis": "Other census functions with untouched frame slack whose targets contain a signed-halfword compare + low-bit test of the same value can dissolve via the B3 minimal trigger (not this function's work)",
-   "mechanism": "B3 trigger characterized this session (CONFIRMED hypothesis 4)",
-   "next_probe": "When such a function reaches queue top: grep its target asm for the compare+andi pair over one halfword value, then apply the B3 spelling"
+   "hypothesis": "If the driver ever assigns escalation modality, both endgame-lock AND-gates fail and the standing 2026-07-27 ruling applies (REFUSED / OWNER-ACCEPTED INCOMPLETE), as already written up at docs/grind/decisions.md:8894.",
+   "mechanism": "Gate 1 (canonical-asm) fails: verdict C, 56/56 insns, only a frame-equation delta -- no STRONG scan_hand_coded signal. Gate 2 (cited SOTN precedent) fails: negative census for the unwritten-tail phantom-frame family, the same negative that terminated file_LoadSectors.",
+   "next_probe": "Only in escalation modality; the entry already exists at docs/grind/decisions.md:8894 and names func_800481E8, so that session confirms the gates against then-current evidence and returns owner-gated citing it. NOT available in this or any other non-escalation modality."
   }
  ],
  "judge_constraints": [],
