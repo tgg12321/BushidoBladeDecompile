@@ -1,8 +1,8 @@
 {
  "func": "func_80038170",
  "file": "code6cac_c_mid",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -27,28 +27,35 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Bytes proven (141/141 words, floor-1 = linker-identical reloc spelling); driver candidate gate is circular for this function (sandbox 0 requires retiring the two driver-only carriers first) \u2014 OWNER-ES"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "forensics",
+   "headline": "SOLVED and bytes-proven this session (sandbox 0, full-build SHA1 == oracle); forensics named the +8-frame mechanism (combine address-fold residue -> reload1.c alter_reg spill slot) and it PROVES the o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner integration closes the function to COMPLETED-C in one pass",
-   "mechanism": "with candidate.c applied and both carriers retired, build/ regenerates from the Judge form: the reloc-spelling word becomes identical, sandbox reads 0, full-build SHA1 == oracle (141/141 words already proven against the oracle stream in s1/s2)",
-   "next_probe": "owner executes the 4-step recipe in the OWNER-ESCALATION entry (docs/grind/decisions.md, 2026-07-28 func_80038170)"
+   "hypothesis": "Widening this function's candidate scope to include/code6cac.h closes it to COMPLETED-C in one pass, with no construct of any kind in the C.",
+   "mechanism": "apply memory/grind/func_80038170/candidate.c over the INCLUDE_ASM line at src/code6cac_c_mid.c:281 plus the one-line header change extern u8 D_8008F19C;/extern u8 D_8008F19D; -> extern u8 D_8008F19C[]; \u2014 both already measured to give sandbox 0 and full-build SHA1 == oracle",
+   "next_probe": "operator adds include/code6cac.h to tools/grinder/scope_allow.txt for func_80038170 (next session then submits an ordinary candidate-ready), or executes the 4-step recipe in the 2026-08-19 INTEGRATION HANDOFF entry in docs/grind/decisions.md directly"
   }
  ],
  "judge_constraints": [
   "Use ONLY the separate-statement spelling: keep `s32 s1, s2, s3;` declaration order and write `s3 = 0; s2 = 0; s1 = 0;` (no chained assignment, no decl-order reversal, no new constructs, no annotation \u2014 it is live code). Then retire BOTH remaining cheat carriers (regfix.txt:1250 reorder @9-13 and the tools/prologue_config.json func_80038170 entry), prove sandbox 0 after build/ regenerates from this src (the D_8008F19C+1 vs D_8008F19D floor-1 must vanish at the .o level, not be waived), full-build SHA1 == oracle, then submit for FINAL CALL.",
   "LAYER-1 CHEAT-REVIEWER FAIL: Candidate adds a statement-order scheduling lever (standalone i=0 hoist) that the binding Judge ruling explicitly forbade (\"no new constructs\"), and the two rules cited to justify it don't actually cover this shape. Next action: Revert to the Judge-bound form ONLY (decl `s32 s1, s2, s3;` + separate `s3 = 0; s2 = 0; s1 = 0;`, i left in the for-init clause, no other construct changes) and re-measure honestly. Per evidence.md [s2] that form alone leaves a 5-word scheduling residual the engine's masked score hides \u2014 do NOT paper over it with a newly-invented statement-",
   "OUT OF SCOPE: candidates for func_80038170 may only edit src/code6cac_c_mid.c. Edits to include/code6cac.h are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac_c_mid.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: The `(&D_8008F19C)[s3*2+n]` address-of-scalar indexing is a TU-local pointer-pun reintroduced specifically to route around the out-of-scope header fix, and the ledger's own reasoning shows the spelling choice (one shared base vs. two symbols) is driven by its effect on GCC's frame-temp allocation, not by program logic alone. Next action: Do not commit this src-only form. File the header correction as an integration-handoff scope-widening request per [[integration-handoff-self-serve]] \u2014 include/code6cac.h is explicitly in the allowed class ('shared headers (include/"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The `(&D_8008F19C)[s3*2+n]` address-of-scalar indexing is a TU-local pointer-pun reintroduced specifically to route around the out-of-scope header fix, and the ledger's own reasoning shows the spelling choice (one shared base vs. two symbols) is driven by its effect on GCC's frame-temp allocation, not by program logic alone. Next action: Do not commit this src-only form. File the header correction as an integration-handoff scope-widening request per [[integration-handoff-self-serve]] \u2014 include/code6cac.h is explicitly in the allowed class ('shared headers (include/",
+  "The ONLY sanctioned form is the banked candidate.c body (identical to tmp/grind/func_80038170/s4/PROVEN_v3_body.c) plus the single header correction include/code6cac.h:80-81 `extern u8 D_8008F19C; / extern u8 D_8008F19D;` -> `extern u8 D_8008F19C[];`. The src-only `(&D_8008F19C)[s3*2+n]` pointer-pun spelling (banned_constructs[2]) remains BANNED and must not be resubmitted; judge_constraints[2] (\"include/code6cac.h out of scope, can never be accepted\") is SUPERSEDED by this ruling for this path only. All normal gates still apply: driver sandbox-0 re-verify, scope check, layer-1 default-FAIL, fresh layer-2 cheat-reviewer, full-build SHA1 == oracle.",
+  "integration-handoff EXECUTED (pipeline, 2026-08-19): scope grant: func_80038170 include/code6cac.h; cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "origin": "queue",
  "created": "2026-07-28T11:45:41.842636+00:00",
  "banned_constructs": [
   "state.json judge_constraints[0] binding spelling",
   "standalone `i = 0;` placed before `mask = D_80106A50;`, empty for-init `for (; i < 0x1B; i++)`",
-  "`out[0x42] = (&D_8008F19C)[s3 * 2 + 0]; out[0x43] = (&D_8008F19C)[s3 * 2 + 1];` with `include/code6cac.h` still declaring `extern u8 D_8008F19C;` (scalar) and `extern u8 D_8008F19D;` (scalar) \u2014 unchanged in this candidate",
-  "Reversion from the s4b/s4c/s4d form (header corrected to `extern u8 D_8008F19C[];`, plain `D_8008F19C[s3*2+n]` indexing) back to the scalar+`&`-index spelling, done specifically because the driver ruled the header edit out of scope for this function's candidates"
+  "`out[0x42] = (&D_8008F19C)[s3 * 2 + 0]; out[0x43] = (&D_8008F19C)[s3 * 2 + 1];` with `include/code6cac.h` still declaring `extern u8 D_8008F19C;` (scalar) and `extern u8 D_8008F19D;` (scalar) \u2014 unchanged in this candidate"
  ],
  "ladder_skip": 3
 }

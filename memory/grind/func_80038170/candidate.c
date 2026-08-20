@@ -1,55 +1,80 @@
-/* Candidate: func_80038170 (code6cac_c_mid.c) - SOLVED FORM, session s5 (synthesis,
- * 2026-08-19). CONFINED TO src/code6cac_c_mid.c: no header edit, no rule, no
- * driver-surface change of any kind.
+/* Candidate: func_80038170 (src/code6cac_c_mid.c) — PROVEN FORM, session s4
+ * (forensics, 2026-08-19). Measured THIS session on the post-asm-until-matched
+ * chassis: `sandbox func_80038170 --disable all` = **0** (141/141 insns) and a
+ * full `build` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE.
  *
- * WHAT CHANGED vs the s4b/s4c/s4d banked form: those carried a companion one-line
- * edit to include/code6cac.h (`extern u8 D_8008F19C;` -> `extern u8 D_8008F19C[];`)
- * so the two conditional table reads could be written `D_8008F19C[s3*2+n]`. The
- * driver has since ruled that path OUT OF SCOPE - candidates for this function may
- * only edit src/code6cac_c_mid.c. That header edit was never load-bearing: s4b
- * already measured that the DECLARED TYPE of the shared base is irrelevant to the
- * codegen (both spellings compile byte-identically). This candidate therefore
- * restores the `(&D_8008F19C)[s3*2+n]` spelling, which reads the same table off the
- * same single base under the unmodified scalar declaration, and touches no file
- * but the .c.
+ * IT IS NOT SUBMITTABLE AS A GRIND CANDIDATE AS-IS: it requires a ONE-LINE
+ * companion edit to include/code6cac.h, which the driver has ruled out of scope
+ * for this function's candidates (state.json judge_constraints[2]). The
+ * src-only spelling of the same reads — `(&D_8008F19C)[s3*2+n]` — is a BANNED
+ * construct (banned_constructs[2], layer-1 FAIL 2026-08-19 21:23). This file is
+ * therefore the INTEGRATION-HANDOFF artifact; see the entry
+ * `2026-08-19 — func_80038170 — OWNER-ESCALATION — INTEGRATION HANDOFF` in
+ * docs/grind/decisions.md for the two-step operator recipe.
  *
- * THE THREE SETTLED MECHANISMS (merged s1..s4d record; nothing open):
- *  1. FRAME. The target's -0x38 (locals 16, not the naive 8) comes from SHARING ONE
- *     BASE across the two table reads inside the `if (s3 > 0)` arm: GCC 2.7.2 stages
- *     the shared address into an 8-byte compiler temp inside the conditional scope
- *     (phantom-frame-slots-gcc272; an outer-scope pair reuses the pre-existing slot,
- *     a pair inside the conditional allocates a second one). A TWO-symbol spelling
- *     (D_8008F19C / D_8008F19D as separate bases) kills the temp and reopens the
- *     +8-byte gap - that is the s1 trigger-matrix result and the reason the two
- *     halves of the entry are indexed off one base here.
- *  2. PROLOGUE SAVE/INIT PAIR ORDER. Natural and correct under the declaration
- *     `s32 s1, s2, s3;` with the three zeroing statements written separately in the
- *     order s3, s2, s1. No order-steering construct is used or needed: chained
- *     `s1 = s2 = s3 = 0` and reversed declaration order are both BANKED REJECTED
- *     (rejected/chained-zeroing-order.c, rejected/decl-order-prologue-flip.c).
- *  3. SCHEDULE. No lever of any kind is required. The s2-era "5-word scheduling
- *     residual" (`move a3,zero` emitted late, `sw ra` displaced two slots) was KILLED
- *     in s4b as an artifact of diffing against a STALE cheat-form build/ reference
- *     object. The ordinary `for (i = 0; i < 0x1B; i++)` is used. The standalone
- *     `i = 0;` hoist plus empty for-init that the s4a candidate carried is a BANNED
- *     construct AND was measured unnecessary; banked at
- *     rejected/i0-hoist-scheduling-lever-banned.c.
+ * REQUIRED COMPANION EDIT (include/code6cac.h:80-81):
+ *     -extern u8 D_8008F19C;
+ *     -extern u8 D_8008F19D;
+ *     +extern u8 D_8008F19C[];
+ * Both symbols are referenced by this function ONLY (verified by grep over
+ * src/ + include/ this session), so the correction is complete and TU-external
+ * fallout is zero.
  *
- * Everything the s1-s3 sessions treated as a wall - the reloc-addend "floor 1
- * unreachable by construction", the circular integration gate, the func_80079194
- * link failure - was chassis-relative or a symbol-naming mistake (0x80079194 is
- * strcpy; the prototype is already at src/code6cac_c_mid.c:279).
+ * ============================================================================
+ * WHY THE HEADER IS FACTUALLY WRONG — the s4 forensic proof (this is the new
+ * result; s1-s3 asserted the shared-base shape mattered but never named the
+ * pass, and the "phantom frame temp inside the conditional scope" story in the
+ * s5-era candidate header is WRONG in its details).
+ * ============================================================================
+ * Target frame is `addiu $sp,$sp,-0x38` => cc1 must report `vars= 16`. Measured
+ * with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_FRAME_DEBUG=1):
  *
- * The body below contains no dead local, no volatile, no inline asm, no register
- * pin, no frame coercion, no scheduling construct and no rule. It claims NO
- * sanctioned family and owes NO annotation. Full six-test vet in
- * memory/grind/func_80038170/self_vet.md.
+ *   ONE base + source-level +1 addend (this file):
+ *     .frame $sp,56 # vars= 16, regs= 5/0, args= 16   <= TARGET
+ *     FRAMEDBG ctx=spill_new_p98  size=8 frame_offset=8
+ *     FRAMEDBG ctx=spill_new_p120 size=8 frame_offset=16
+ *   TWO separate bases (D_8008F19C / D_8008F19D, the pre-migration cheat form):
+ *     .frame $sp,48 # vars=  8, regs= 5/0, args= 16   sandbox 13
+ *     FRAMEDBG ctx=spill_new_p98  size=8 frame_offset=8
  *
- * REMAINING DRIVER-SURFACE CARRIER (untouched here): the tools/prologue_config.json
- * func_80038170 entry. Measured a NO-OP in s4a and re-measured one since - the
- * sandbox STRIPS that stage and still scores 0, so the natural cc1 prologue is
- * textually identical to the hardcoded replacement list. `retire func_80038170` at
- * integration deletes it and the oracle stays MATCH.
+ * The two forms' emitted bodies differ in EXACTLY ONE instruction —
+ * `lbu $2,D_8008F19C+1($3)` vs `lbu $2,D_8008F19D($3)` — plus the frame size
+ * and the save offsets it shifts. Everything else is byte-identical.
+ *
+ * The 8 extra bytes are a reload spill slot for a pseudo that no longer has a
+ * SET. Pass-by-pass, from the -da dumps under tmp/grind/func_80038170/dumps/:
+ *   .rtl/.cse/.flow  insn 238 `(set (reg:SI 120) (plus (reg:SI 119) (reg:SI 117)))`
+ *                    insn 240 `(set (reg:QI 121) (mem (reg:SI 120)))`
+ *                    — expand refused `reg + CONST(PLUS(symbol,1))` as a legal
+ *                      MIPS address, so memory_address() forced the sum into a
+ *                      pseudo. With a bare SYMBOL_REF (the two-base form) it is
+ *                      a legal `lbu sym($r)` operand and no such pseudo exists.
+ *   .combine         try_combine folds the address back INTO the mem operand
+ *                    (`(mem (plus (reg:SI 119) (const (plus (symbol_ref
+ *                    "D_8008F19C") (const_int 1)))))`) and leaves the dead
+ *                    setter behind as a bare `(insn 439 (use (reg:SI 120)))`.
+ *   .greg            global.c sees reg 120 with reg_n_refs > 0 but no SET, so it
+ *                    forms no allocno and reg_renumber[120] stays < 0.
+ *   reload1.c:2403   alter_reg's `from_reg == -1` arm therefore calls
+ *                    assign_stack_local(mode, total_size=8, -1) for it —
+ *                    ctx=spill_new_p120 above — and frame_offset goes 8 -> 16.
+ *                    No spill store or load is ever emitted; the slot is pure
+ *                    reservation. (Same family as [[phantom-frame-slots-gcc272]],
+ *                    but the creator here is named: combine's address-fold
+ *                    residue, not an expand-time temp.)
+ *
+ * CONSEQUENCE — this is program-model evidence, not codegen steering. The
+ * target's own frame size can only be produced if the ORIGINAL source expressed
+ * the second read as a +1 addend on the SAME symbol, i.e. the original C indexed
+ * ONE array `D_8008F19C[]` with stride 2. splat's per-byte D_8008F19C /
+ * D_8008F19D naming is an artifact with no evidentiary weight
+ * ([[splat-symbol-names-are-not-evidence]]); the sibling table one entry later,
+ * D_8008F1A8, is ALREADY declared `extern u8 D_8008F1A8[];` in the same header
+ * and is read with the identical `[sN*2+0]` / `[sN*2+1]` stride-2 shape.
+ *
+ * The body below is plain C: no dead local, no volatile, no inline asm, no
+ * register pin, no frame coercion, no scheduling construct, no pointer pun, no
+ * rule. It claims NO sanctioned family and owes NO annotation.
  */
 
 void func_80038170(u8 *out) {
@@ -100,8 +125,8 @@ void func_80038170(u8 *out) {
     if (s3 > 0) {
         out[0x40] = D_800A3200;
         out[0x41] = D_800A3201;
-        out[0x42] = (&D_8008F19C)[s3 * 2 + 0];
-        out[0x43] = (&D_8008F19C)[s3 * 2 + 1];
+        out[0x42] = D_8008F19C[s3 * 2 + 0];
+        out[0x43] = D_8008F19C[s3 * 2 + 1];
     }
 
     i = 0x1B;

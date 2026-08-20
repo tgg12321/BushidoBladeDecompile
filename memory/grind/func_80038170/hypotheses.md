@@ -127,3 +127,70 @@
 - probe: layer-1 cheat-reviewer on the src-only diff, then the Judge; on PASS the operator runs `retire func_80038170` (deletes the measured-no-op tools/prologue_config.json entry) and `queue done func_80038170`
 - result: pending review — no measurement left to take on this function
 - verdict: CONFIRMED (as a frontier statement)
+
+## [s4 — forensics, 2026-08-19]
+
+- **H-s4a — CONFIRMED.** The target's `vars= 16` (frame 56) is produced by a reload
+  spill slot allocated for a pseudo left SET-less by combine's address fold, and
+  that pseudo exists ONLY when the second table read carries a source-level `+1`
+  addend on the same symbol.
+  - mechanism: expand rejects `reg + CONST(PLUS(sym,1))` as a MIPS address and
+    forces it into pseudo 120; combine folds it back into the mem and leaves
+    `(use (reg:SI 120))`; global.c forms no allocno (no SET); reload1.c:2403
+    `alter_reg` calls `assign_stack_local(..., total_size=8, -1)`; frame_offset
+    8 -> 16. No spill insn is ever emitted.
+  - probe: instrumented cc1 `BB2_FRAME_DEBUG=1` frame census + `-da` dumps for both
+    spellings; asm diff of the two variants.
+  - result: one-base `ctx=spill_new_p120 ... frame_offset=16`, `.frame $sp,56 vars=16`,
+    sandbox 0; two-base has no p120 slot, `.frame $sp,48 vars=8`, sandbox 13. The two
+    bodies differ in exactly one instruction operand.
+
+- **H-s4b — KILLED.** "The two-symbol (D_8008F19C / D_8008F19D) program model can
+  still reach the target." It cannot: it provably cannot produce `vars= 16`, so it
+  cannot produce the target prologue. Banked as
+  rejected/two-base-no-frame-temp.c.
+
+- **H-s4c — KILLED.** "Floor 1 is a reloc-addend artifact that is unreachable-by-
+  construction until the operator retires regfix.txt:1250 + the prologue_config.json
+  entry" (the s1–s3 frontier). Chassis-relative and now false: after the
+  asm-until-matched migration HEAD carries `INCLUDE_ASM` for this function, neither
+  carrier exists, and the one-base form measures sandbox **0** directly. The whole
+  "circular integration gate" framing is retired.
+
+- **H-s4d — CONFIRMED.** The correct fix is a data-model correction, not a codegen
+  construct: `include/code6cac.h:80-81` must declare `extern u8 D_8008F19C[];`
+  (absorbing the dead per-byte `D_8008F19D` auto-name), after which the function
+  body is plain C with no construct of any kind. Proven end to end: sandbox 0 AND
+  full-build SHA1 == oracle in this session.
+
+- **FRONTIER — the only thing left is scope.** The header is out of scope for this
+  function's candidates (judge_constraints[2]) and the src-only pointer-pun spelling
+  of the same reads is a banned construct (banned_constructs[2], layer-1 FAIL
+  2026-08-19 21:23). There is no third in-scope spelling: with `D_8008F19C` declared
+  as a scalar, every way to reach byte `+s3*2` is a pointer pun. Filed as an
+  INTEGRATION HANDOFF / scope-widening request in docs/grind/decisions.md
+  (2026-08-19) and returned `owner-gated`.
+
+## [s4] The target's vars=16 (frame 0x38) comes from a reload spill slot allocated for a pseudo that combine left SET-less, and that pseudo exists ONLY when the second table read carries a source-level +1 addend on the same symbol.
+- mechanism: expand rejects `reg + CONST(PLUS(symbol_ref,1))` as a legal MIPS address, so memory_address() forces the sum into pseudo 120 (.rtl insn 238); combine's try_combine folds the address back into the mem operand and leaves a bare `(insn 439 (use (reg:SI 120)))`; global.c forms no allocno for a SET-less pseudo so reg_renumber[120] stays < 0; reload1.c:2403 alter_reg's from_reg == -1 arm calls assign_stack_local(mode, total_size=8, -1), moving frame_offset 8 -> 16. No spill store or load is ever emitted — the slot is pure reservation.
+- probe: instrumented cc1 tools/gcc-2.7.2/cc1 with BB2_FRAME_DEBUG=1 frame-slot census for both spellings, plus canonical -da pass dumps (.rtl/.cse/.flow/.combine/.greg) and a full asm text diff of the two variants
+- result: one-base: FRAMEDBG ctx=spill_new_p98 frame_offset=8 THEN ctx=spill_new_p120 size=8 frame_offset=16; `.frame $sp,56 # vars= 16, regs= 5/0, args= 16` = target; sandbox 0. two-base: only ctx=spill_new_p98, `.frame $sp,48 # vars= 8`; sandbox 13. The two emitted bodies differ in exactly one instruction operand (lbu $2,D_8008F19C+1($3) vs lbu $2,D_8008F19D($3)) plus the frame size and the five save/restore offsets it shifts.
+- verdict: CONFIRMED
+
+## [s4] The two-symbol program model (D_8008F19C and D_8008F19D as separate bases, the shape the scalar header invites and the pre-migration cheat form used) can still reach the target.
+- mechanism: a bare SYMBOL_REF is already a legal `lbu sym($r)` address operand, so no address pseudo is created, no combine residue exists, and reload never reserves the second 8-byte slot
+- probe: spliced the two-base form into src/code6cac_c_mid.c, read cc1's .frame comment and ran sandbox func_80038170 --disable all
+- result: .frame $sp,48 # vars= 8 (target needs 16); sandbox 13. It provably cannot produce the target prologue. Banked at memory/grind/func_80038170/rejected/two-base-no-frame-temp.c.
+- verdict: KILLED
+
+## [s4] The floor-1 residual is a reloc-addend artifact that is unreachable-by-construction until the operator retires regfix.txt:1250 and the tools/prologue_config.json entry (the entire s1-s3 frontier and the 2026-07-28 OWNER-ESCALATION premise).
+- mechanism: s1-s3 believed the sandbox reference object was the stale two-symbol cheat-form .o whose per-symbol addend is 0, so %lo(D_8008F19C+1) could never compare equal
+- probe: re-measured on the current chassis after the 2026-08-19 asm-until-matched migration, with the one-base form spliced into src
+- result: sandbox --disable all = 0, 141/141. HEAD now carries INCLUDE_ASM for this function; neither named carrier exists any more. The premise is chassis-relative and false; the circular-integration-gate framing is retired.
+- verdict: KILLED
+
+## [s4] The correct fix is a data-model (header) correction, after which the function body is plain C claiming no sanctioned family and owing no annotation.
+- mechanism: include/code6cac.h:80-81 `extern u8 D_8008F19C; extern u8 D_8008F19D;` -> `extern u8 D_8008F19C[];`, letting the body read D_8008F19C[s3*2+0] / [s3*2+1] with no pointer pun
+- probe: applied the header one-liner plus the plain-C body, then sandbox func_80038170 --disable all and a full build
+- result: sandbox 0 (141/141) and full build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == ORACLE, MATCH. Both files reverted to HEAD before session end; tree clean.
+- verdict: CONFIRMED

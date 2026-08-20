@@ -77,3 +77,8 @@ disposition taken: 68 functions deferred with their old representation intact (t
 category: resolution
 evidence: --with-jtbl prototype on both jtbl-only candidates (func_80038C70, func_800460E4): INCLUDE_RODATA-supplied tables land at the wrong TU rodata position (GCC pools compiled rodata in its own order) — SHA1 mismatch, auto-rolled-back. The strings class (~38 functions) faces the same positional coupling, worse. Global rodata reorders to force placement are the forbidden speculative class (no-new-park-categories).
 disposition taken: the 68 deferred functions keep the legacy representation; their 708 rules retire per function at COMPLETED-C (each solve replaces rule-supplied bytes with C-emitted rodata natively). No further mechanical wave planned.
+
+## 2026-08-19 — func_80038170 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-08-19 — func_80038170 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80038170 include/code6cac.h; cleared 1 superseded ban(s); function stays ACTIVE.

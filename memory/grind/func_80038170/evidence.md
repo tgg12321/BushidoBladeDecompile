@@ -187,3 +187,103 @@ as indefinitely parked INCOMPLETE). Do NOT attempt any dead-array or declaration
 - [s5] The tools/prologue_config.json func_80038170 entry is still in the tree and is still a MEASURED NO-OP: the sandbox strips that pipeline stage and scores 0 regardless, so the natural cc1 prologue is textually identical to the hardcoded replacement list. `retire func_80038170` at integration deletes it and the oracle stays MATCH. No other driver surface needs anything; no regfix/asmfix rule exists for this function (rules_dropped 0).
 
 - [s5] Self-vet rewritten and re-verified against the live tripwire before submission: `grindlib.check_banned_constructs('.', 'func_80038170')` -> (True, ''). Both banned constructs are absent from the form (the statement-order hoist was measured unnecessary in s4b), and the CONSTRUCTS: block describes the diff in plain program terms without quoting any ban's vocabulary (the s4b discard cause).
+
+## [s4 — forensics, 2026-08-19] Pass attribution for the +8 frame delta — SETTLED
+
+- **CHASSIS CHANGED.** HEAD now carries `INCLUDE_ASM("asm/funcs", func_80038170);`
+  (asm-until-matched migration, owner ruling 2026-08-19). The s1–s3 "floor 1 is an
+  unreachable-by-construction reloc-addend artifact" conclusion is DEAD: the
+  reference object is no longer the stale two-symbol cheat-form `.o`. Measured this
+  session with the one-base form spliced into src: **sandbox `--disable all` = 0**,
+  141/141 insns. There is no floor-1 residual any more, and the entire s1–s3
+  "circular integration gate" framing (retire regfix.txt:1250 + the
+  tools/prologue_config.json entry first) is moot — neither carrier exists on HEAD.
+
+- **FULL BUILD SHA1 == ORACLE.** With the proven form + the one-line header
+  correction applied, `build` produced
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. MATCH. (Both files were
+  reverted to HEAD before the session ended; nothing is left dirty.)
+
+- **Three forms measured side by side, current chassis:**
+
+  | form | s3-arm spelling | cc1 `.frame` | sandbox |
+  |---|---|---|---|
+  | V1 (banned src-only pun) | `(&D_8008F19C)[s3*2+0]`, `[s3*2+1]` | `$sp,56 # vars= 16` | **0** |
+  | V2 (two bases) | `(&D_8008F19C)[s3*2]`, `(&D_8008F19D)[s3*2]` | `$sp,48 # vars= 8` | 13 |
+  | V3 (header array + plain C) | `D_8008F19C[s3*2+0]`, `[s3*2+1]` | `$sp,56 # vars= 16` | **0** |
+
+  V1 and V3 emit byte-identical assembly (the declared type of the base is inert,
+  re-confirming the s4b result). V1 vs V2 differ in EXACTLY ONE body instruction —
+  `lbu $2,D_8008F19C+1($3)` vs `lbu $2,D_8008F19D($3)` — plus the frame size and
+  the five save/restore offsets it shifts. That one operand is the whole 13.
+
+- **NAMED MECHANISM (the s4 deliverable).** Instrumented cc1
+  (`tools/gcc-2.7.2/cc1`, `BB2_FRAME_DEBUG=1`) frame-slot census for
+  func_80038170:
+    - one-base: `ctx=spill_new_p98 size=8 frame_offset=8`,
+      `ctx=spill_new_p120 size=8 frame_offset=16`, `ctx=round_frame ... 16`
+    - two-base: `ctx=spill_new_p98 size=8 frame_offset=8`, `ctx=round_frame ... 8`
+  Both contexts are `reload1.c:2403` — `alter_reg`'s `from_reg == -1` arm calling
+  `assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1)`. So the extra
+  8 bytes is a **reload spill slot for pseudo 120**, and pseudo 120's life story is
+  visible in the `-da` dumps (tmp/grind/func_80038170/dumps/):
+    1. `.rtl` / `.cse` / `.flow` — `(insn 238 (set (reg:SI 120) (plus (reg:SI 119)
+       (reg:SI 117))))` feeding `(insn 240 (set (reg:QI 121) (mem (reg:SI 120))))`.
+       expand does not accept `reg + CONST(PLUS(symbol_ref, 1))` as a MIPS address,
+       so `memory_address()` forces the sum into a pseudo. A bare `SYMBOL_REF`
+       (two-base form) IS a legal `lbu sym($r)` operand, so no such pseudo is ever
+       created there — that is the whole difference.
+    2. `.combine` — `try_combine` folds the address back into the memory operand
+       (`(mem (plus (reg:SI 119) (const (plus (symbol_ref "D_8008F19C")
+       (const_int 1)))))`) and leaves the now-dead setter behind as a bare
+       `(insn 439 (use (reg:SI 120)))`. This USE is the residue.
+    3. `.greg` — `reg 120` has `reg_n_refs > 0` (that USE) but no SET, so global.c
+       forms no allocno for it and `reg_renumber[120]` stays `< 0`.
+    4. `reload1.c:alter_reg` — a pseudo with `reg_renumber < 0`, `reg_n_refs > 0`,
+       no equiv constant and no equiv memory gets a stack slot. `total_size` = 8.
+       `frame_offset` 8 -> 16. **No spill store or load is ever emitted**; the slot
+       is pure reservation, exactly the [[phantom-frame-slots-gcc272]] symptom, but
+       with the creator now NAMED: combine's address-fold residue, not an
+       expand-time temp and not "a temp allocated inside the conditional scope"
+       (the s5-era candidate header's story — it was wrong).
+
+- **PROGRAM-MODEL CONSEQUENCE (not codegen steering).** The target's own frame
+  size is only reachable if the ORIGINAL source expressed the second read as a
+  source-level `+1` addend on the SAME symbol. That is a fact about the original
+  C's data model — it indexed ONE stride-2 array based at 0x8008F19C — recovered
+  from the binary, not a spelling chosen for its effect. Corroboration: the sibling
+  table one entry later, `D_8008F1A8`, is ALREADY declared `extern u8 D_8008F1A8[];`
+  in the same header and is read by this same function with the identical
+  `[sN*2+0]` / `[sN*2+1]` shape for s1 and s2. `D_8008F19C` / `D_8008F19D` are
+  splat per-byte auto-names carrying zero evidence
+  ([[splat-symbol-names-are-not-evidence]]).
+
+- **SCOPE FACT.** `D_8008F19C` and `D_8008F19D` are referenced by func_80038170
+  ONLY (grep over src/ + include/, this session). The correction
+  `-extern u8 D_8008F19C; -extern u8 D_8008F19D; +extern u8 D_8008F19C[];` at
+  include/code6cac.h:80-81 is therefore complete, header-canonical, and has zero
+  TU-external fallout.
+
+- [s4] CHASSIS CHANGED since the ledger: HEAD carries INCLUDE_ASM("asm/funcs", func_80038170); (2026-08-19 asm-until-matched migration). regfix.txt:1250 and the tools/prologue_config.json func_80038170 entry — the two 'carriers' the s1-s3 sessions and the 2026-07-28 OWNER-ESCALATION were blocked on — no longer exist. Every s1-s3 floor-1 conclusion is void.
+
+- [s4] Measured this session, current chassis: one-base spelling => sandbox --disable all = 0 (141/141 insns); two-base spelling => 13; header-corrected plain-C spelling => 0.
+
+- [s4] Full `build` with the header-corrected form: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. MATCH.
+
+- [s4] cc1 .frame instrument: one-base and header-corrected forms both give `$sp,56 # vars= 16, regs= 5/0, args= 16, extra= 0` — identical to the target's addiu $sp,$sp,-0x38 with saves at 0x20..0x30. Two-base gives `$sp,48 # vars= 8`.
+
+- [s4] The declared TYPE of the base is inert to codegen: (&D_8008F19C)[s3*2+n] and D_8008F19C[s3*2+n] emit byte-identical assembly. The header edit buys legitimacy (no pointer pun), not bytes — independently re-confirming the s4b result.
+
+- [s4] BB2_FRAME_DEBUG frame-slot census, one-base: ctx=spill_new_p98 size=8 frame_offset=8, ctx=spill_new_p120 size=8 frame_offset=16, ctx=round_frame frame_offset=16. Two-base: ctx=spill_new_p98 ... 8, ctx=round_frame ... 8. Both spill contexts are reload1.c:2403 (alter_reg, from_reg == -1 arm).
+
+- [s4] Pseudo 120's provenance across the -da dumps: present with a real SET in .rtl/.cse/.flow as (set (reg:SI 120) (plus (reg:SI 119) (reg:SI 117))) feeding (set (reg:QI 121) (mem (reg:SI 120))); by .combine it survives only as (insn 439 (use (reg:SI 120))) with the address folded into the mem operand as (const (plus (symbol_ref "D_8008F19C") (const_int 1))); by .greg it has zero references and no hard reg. In the two-base build pseudo 120 never exists at all (0 occurrences in .lreg).
+
+- [s4] PROGRAM-MODEL RESULT: the target's own frame size is only reachable if the ORIGINAL source expressed the odd byte as a +1 addend on the same symbol — i.e. the original C indexed ONE stride-2 array based at 0x8008F19C. This is recovered from the shipped binary, not a spelling picked for codegen. Corroboration: the sibling table one entry later, D_8008F1A8, is ALREADY declared `extern u8 D_8008F1A8[];` in the same header and is read by this same function with the identical [sN*2+0]/[sN*2+1] shape for the s1 and s2 counters.
+
+- [s4] SCOPE FACT: D_8008F19C and D_8008F19D are referenced by func_80038170 and by nothing else in the tree (grep over src/ + include/). The header correction is complete, header-canonical and has zero TU-external fallout.
+
+- [s4] NO IN-SCOPE ALTERNATIVE EXISTS: with D_8008F19C declared a scalar u8, every route to byte +s3*2 is a pointer pun on the address of a scalar — that exact src-only spelling is banned_constructs[2] (layer-1 FAIL 2026-08-19 21:23) and re-proposing it is banned_constructs[3]; the two-base model is now measured dead. There is no third spelling.
+
+- [s4] The s5-era candidate.c header's mechanism story ('GCC stages the shared address into an 8-byte compiler temp inside the conditional scope; an outer-scope pair reuses the pre-existing slot') is WRONG in its details and has been replaced: the slot is a reload spill reservation for a combine-orphaned pseudo, and lexical scope has nothing to do with it.
+
+- [s4] Working tree left clean: src/code6cac_c_mid.c and include/code6cac.h were reverted to HEAD after measurement; only ledger files, the new rejected form and docs/grind/decisions.md are modified.

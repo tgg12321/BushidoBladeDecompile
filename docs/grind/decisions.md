@@ -7043,3 +7043,159 @@ Candidate adds a statement-order scheduling lever (standalone i=0 hoist) that th
 ## 2026-08-19 21:23 — func_80038170 — layer-1 review — **FAIL**
 
 The `(&D_8008F19C)[s3*2+n]` address-of-scalar indexing is a TU-local pointer-pun reintroduced specifically to route around the out-of-scope header fix, and the ledger's own reasoning shows the spelling choice (one shared base vs. two symbols) is driven by its effect on GCC's frame-temp allocation, not by program logic alone.
+
+## 2026-08-19 — func_80038170 (src/code6cac_c_mid.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (scope widening: include/code6cac.h)**
+
+**This is NOT an endgame lock and NOT an exhaustion claim.** The function is
+SOLVED. Bytes are proven on main THIS session (s4, forensics modality):
+
+- `sandbox func_80038170 --disable all` = **0** (141/141 insns) with the proven
+  form in `src/code6cac_c_mid.c`.
+- Full `build` → SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == **ORACLE, MATCH**.
+- Both edited files were reverted to HEAD before the session ended; the working
+  tree is clean and the proven body is banked at
+  `memory/grind/func_80038170/candidate.c`.
+
+The only thing blocking acceptance is a surface a grind session may not touch:
+the candidate needs a **one-line correction to `include/code6cac.h`**, which
+`state.json judge_constraints[2]` places out of scope for this function's
+candidates. The Judge's own next-action on the 2026-08-19 21:23 layer-1 FAIL
+directed exactly this filing ("File the header correction as an
+integration-handoff scope-widening request per [[integration-handoff-self-serve]]
+— include/code6cac.h is explicitly in the allowed class").
+
+### The requested change
+
+`include/code6cac.h:80-81`
+
+```diff
+-extern u8 D_8008F19C;
+-extern u8 D_8008F19D;
++extern u8 D_8008F19C[];
+```
+
+`D_8008F19C` and `D_8008F19D` are referenced by `func_80038170` and by nothing
+else in the tree (grep over `src/` + `include/`, this session), so the correction
+is complete, header-canonical, and has zero TU-external fallout.
+
+### Why this is a data-model correction, not a codegen-steering spelling
+
+This is the new s4 result and it is what makes the request evidence-backed rather
+than convenient. The target prologue is `addiu $sp,$sp,-0x38`, i.e. cc1 must
+report `vars= 16`. Measured with the instrumented cc1
+(`tools/gcc-2.7.2/cc1`, `BB2_FRAME_DEBUG=1`) and the `-da` dumps:
+
+| form | s3-arm spelling | cc1 `.frame` | sandbox |
+|---|---|---|---|
+| one base + `+1` addend | `D_8008F19C[s3*2+0]`, `[s3*2+1]` | `$sp,56 # vars= 16` | **0** |
+| two separate bases | `(&D_8008F19C)[s3*2]`, `(&D_8008F19D)[s3*2]` | `$sp,48 # vars= 8` | 13 |
+
+The two forms' emitted bodies differ in **exactly one instruction operand** —
+`lbu $2,D_8008F19C+1($3)` vs `lbu $2,D_8008F19D($3)` — plus the frame size and
+the five register-save offsets that shift with it. The 8-byte frame delta is
+fully attributed:
+
+1. `.rtl`/`.cse`/`.flow` — `(insn 238 (set (reg:SI 120) (plus (reg:SI 119) (reg:SI 117))))`
+   feeding `(insn 240 (set (reg:QI 121) (mem (reg:SI 120))))`. expand does not
+   accept `reg + CONST(PLUS(symbol_ref,1))` as a legal MIPS address, so
+   `memory_address()` forces the sum into pseudo 120. A bare `SYMBOL_REF` is a
+   legal `lbu sym($r)` operand, so the two-base form never creates that pseudo.
+2. `.combine` — `try_combine` folds the address back into the memory operand and
+   leaves the dead setter behind as a bare `(insn 439 (use (reg:SI 120)))`.
+3. `.greg` — reg 120 has `reg_n_refs > 0` (that USE) but no SET, so global.c
+   forms no allocno and `reg_renumber[120]` stays `< 0`.
+4. `reload1.c:2403` — `alter_reg`'s `from_reg == -1` arm calls
+   `assign_stack_local(mode, total_size = 8, -1)` for it (instrumented output:
+   `FRAMEDBG ... ctx=spill_new_p120 size=8 frame_offset=16`). No spill store or
+   load is ever emitted; the slot is pure reservation.
+
+So the **target's own frame size proves the original C indexed a single stride-2
+array based at 0x8008F19C** and expressed the odd byte as a `+1` addend on that
+same symbol. That is a fact recovered from the shipped binary, not a spelling
+chosen for its codegen effect. Corroboration: the sibling table one entry later,
+`D_8008F1A8`, is ALREADY declared `extern u8 D_8008F1A8[];` in this same header
+and is read by this same function with the identical `[sN*2+0]`/`[sN*2+1]`
+stride-2 shape for the s1 and s2 counters. The per-byte `D_8008F19C`/`D_8008F19D`
+names are splat auto-names and carry no evidentiary weight
+([[splat-symbol-names-are-not-evidence]]).
+
+### Why there is no in-scope alternative
+
+With `D_8008F19C` declared as a scalar `u8`, every way to reach byte `+s3*2` off
+it is a pointer pun on the address of a scalar. That exact src-only spelling is
+`banned_constructs[2]` (layer-1 FAIL, 2026-08-19 21:23), and re-proposing it is
+`banned_constructs[3]`. The two-base model is now measured DEAD (it cannot
+produce `vars= 16`, banked at
+`memory/grind/func_80038170/rejected/two-base-no-frame-temp.c`). There is no
+third spelling.
+
+### Operator steps (two edits, then the standard gate)
+
+1. Apply `memory/grind/func_80038170/candidate.c` (body below its comment header)
+   over the `INCLUDE_ASM("asm/funcs", func_80038170);` line at
+   `src/code6cac_c_mid.c:281`.
+2. Apply the `include/code6cac.h:80-81` diff above.
+3. `sandbox func_80038170 --disable all` → expect **0**; full `build` → expect
+   SHA1 == oracle. (Both measured in s4.)
+4. Fresh layer-2 `cheat-reviewer` on the C (the construct inventory is: none —
+   no dead local, no volatile, no inline asm, no pin, no frame coercion, no
+   scheduling construct, no pointer pun, no rule, no `/* FAKE */`, no sanctioned
+   family claimed), then `queue done func_80038170` → COMPLETED-C.
+
+Alternatively, add `include/code6cac.h` to `tools/grinder/scope_allow.txt` for
+this function and let the next grind session submit it as an ordinary
+`candidate-ready`.
+
+### Superseded
+
+This entry supersedes the stale `2026-07-28 — func_80038170 — OWNER-ESCALATION —
+integration-gate deadlock` entry. That entry's 4-step recipe references
+`regfix.txt:1250` and the `tools/prologue_config.json func_80038170` entry as
+carriers to retire; after the 2026-08-19 asm-until-matched migration **neither
+carrier exists on HEAD** (the function is `INCLUDE_ASM`), and its "floor 1 is
+unreachable by construction" premise is measured false — the honest floor is 0.
+
+Artifacts: `tmp/grind/func_80038170/dumps/` (canonical `-da` pass dumps),
+`tmp/grind/func_80038170/s4/` (variants, per-variant `.s`, instrumented
+`framedbg.txt` frame censuses).
+
+## 2026-08-19 21:44 — func_80038170 — ruling: INTEGRATION HANDOFF filed for func_80038170 : docs/grind/decisions.md — '2026-08 — **ESCALATE**
+
+WHAT WAS BUILT. func_80038170 is solved in plain C. The banked body at memory/grind/func_80038170/candidate.c contains no dead local, no volatile, no inline asm, no register pin, no frame-coercion device, no scheduling lever, no regfix/asmfix rule, no /* FAKE */ annotation, and claims no sanctioned family. It needs one companion edit that a grind session may not stage: include/code6cac.h:80-81, replacing the two splat per-byte scalar declarations `extern u8 D_8008F19C;` / `extern u8 D_8008F19D;` with the single `extern u8 D_8008F19C[];`.
+
+WHAT I VERIFIED MYSELF (not taken from the session's prose).
+1. The banked form IS the measured form. Whitespace-normalized, memory/grind/func_80038170/candidate.c's body is byte-identical to tmp/grind/func_80038170/s4/PROVEN_v3_body.c (1209 chars, exact match). The s5 src-only variant differs from it by exactly 6 characters -- the two `(&` / `)` wrappers of the banned pointer-pun spelling -- confirming the V1/V3 relationship the ledger describes.
+2. The measurements are real, from the engine's own telemetry rather than an agent claim. metrics/events.jsonl (committed source of truth, engine-written) records for 2026-08-20T02:1x-02:3x: sandbox func_80038170 score 0 with target_insns 141 / build_insns 141 at 02:13:57, 02:16:19, 02:18:33, 02:33:59 and 02:35:10; `build` sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle at 02:14:10, 02:18:45 and 02:35:30; and the two-base control variant scoring 13 at 02:34:41, exactly as the ledger's trigger matrix states. Bytes are PROVEN on both required axes (sandbox 0 AND full-build SHA1), reproduced independently four times.
+3. The header change is complete and has zero fallout. My own grep over src/ and include/ finds D_8008F19C and D_8008F19D nowhere outside include/code6cac.h:80-81 -- the target function currently sits on main as INCLUDE_ASM (src/code6cac_c_mid.c:281), so no TU references either symbol today, and no other file ever did. Deleting the now-unused D_8008F19D declaration breaks nothing.
+4. The header change is a data-model correction, not a codegen-steering spelling. Two independent supports. (a) FORENSIC: the target prologue is addiu $sp,$sp,-0x38, i.e. cc1 must report vars=16; the instrumented-cc1 census and -da dumps attribute the extra 8 bytes to a reload spill reservation (reload1.c alter_reg, from_reg==-1) for a pseudo that only exists because expand refuses `reg + CONST(PLUS(symbol_ref,1))` as a MIPS address. That pseudo can only arise if the ORIGINAL source expressed the odd byte as a source-level +1 addend on the SAME symbol -- i.e. the original C indexed one stride-2 array based at 0x8008F19C. The frame size is recovered evidence about the original data model. (b) STRUCTURAL: the sibling table one entry later, D_8008F1A8, is already declared `extern u8 D_8008F1A8[];` in this same header and is read by this same function with the identical [sN*2+0]/[sN*2+1] stride-2 shape for the s1 and s2 counters. splat's per-byte auto-names carry no evidentiary weight ([[splat-symbol-names-are-not-evidence]]).
+
+BOTH SIDES. Against the grant: the ledger's own s4b entry states the DECLARED TYPE of the base is inert to codegen -- `(&D_8008F19C)[s3*2+n]` and `D_8008F19C[s3*2+n]` emit byte-identical assembly. So the header edit buys no bytes, and one could argue the src-only form is 'good enough' and the widening unnecessary. That argument fails on legitimacy, not bytes: the src-only form is a pointer pun on the address of a scalar, already layer-1 FAILed and banked as banned_constructs[2], and it is a pun ONLY because the header's scalar declaration is factually wrong about the object. The correct remedy for a wrong declaration is to fix the declaration. Also against: the earlier judge_constraint [2] said this path 'can never be accepted' -- but that constraint predates [[integration-handoff-self-serve]] (owner ruling 2026-08-19), whose own text names shared headers (include/*.h) as the allowed class, and the same header already carries the replay_camera_Init precedent line in tools/grinder/scope_allow.txt for the same reason (an honest array declaration retiring a pointer construct). include/code6cac.h is not on the denylist.
+
+THE UNBAN. banned_constructs[3] bans 'Reversion from the s4b/s4c/s4d form (header corrected to `extern u8 D_8008F19C[];`, plain `D_8008F19C[s3*2+n]` indexing) back to the scalar+&-index spelling.' With the scope widened, that reversion is moot -- but the entry quotes the WANTED form's exact vocabulary, and grindlib._ban_trips fires at 50% content-word overlap against the CONSTRUCTS: block of self_vet.md. Any honest vet describing the corrected form would re-trip it and auto-discard the submission -- the same class of mechanical deadlock the rule file cites as the func_8002D518 root cause, and the same trap that already discarded s4b. I am clearing entry [3] only. banned_constructs[2] (the src-only pointer-pun spelling) STANDS and is the thing the next session must not do.
+
+THE QUESTION THIS ENTRY RECORDS. May include/code6cac.h be added to tools/grinder/scope_allow.txt for func_80038170, so the next session can land the proven body plus the one-line declaration correction through the ordinary gates? The work is complete and sound; the only blocker is a commit surface a grind session may not stage. Evidence lives at memory/grind/func_80038170/evidence.md (s4/s4b/s4c/s4d/s5 blocks), hypotheses.md, rejected/two-base-no-frame-temp.c, tmp/grind/func_80038170/s4/measurements.txt and dumps/, and docs/grind/decisions.md:7047-7160.
+
+## 2026-08-19 — func_80038170 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-19)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT WAS BUILT. func_80038170 is solved in plain C. The banked body at memory/grind/func_80038170/candidate.c contains no dead local, no volatile, no inline asm, no register pin, no frame-coercion device, no scheduling lever, no regfix/asmfix rule, no /* FAKE */ annotation, and claims no sanctioned family. It needs one companion edit that a grind session may not stage: include/code6cac.h:80-81, replacing the two splat per-byte scalar declarations `extern u8 D_8008F19C;` / `extern u8 D_8008F19D;` with the single `extern u8 D_8008F19C[];`.
+
+WHAT I VERIFIED MYSELF (not taken from the session's prose).
+1. The banked form IS the measured form. Whitespace-normalized, memory/grind/func_80038170/candidate.c's body is byte-identical to tmp/grind/func_80038170/s4/PROVEN_v3_body.c (1209 chars, exact match). The s5 src-only variant differs from it by exactly 6 characters -- the two `(&` / `)` wrappers of the banned pointer-pun spelling -- confirming the V1/V3 relationship the ledger describes.
+2. The measurements are real, from the engine's own telemetry rather than an agent claim. metrics/events.jsonl (committed source of truth, engine-written) records for 2026-08-20T02:1x-02:3x: sandbox func_80038170 score 0 with target_insns 141 / build_insns 141 at 02:13:57, 02:16:19, 02:18:33, 02:33:59 and 02:35:10; `build` sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle at 02:14:10, 02:18:45 and 02:35:30; and the two-base control variant scoring 13 at 02:34:41, exactly as the ledger's trigger matrix states. Bytes are PROVEN on both required axes (sandbox 0 AND full-build SHA1), reproduced independently four times.
+3. The header change is complete and has zero fallout. My own grep over src/ and include/ finds D_8008F19C and D_8008F19D nowhere outside include/code6cac.h:80-81 -- the target function currently sits on main as INCLUDE_ASM (src/code6cac_c_mid.c:281), so no TU references either symbol today, and no other file ever did. Deleting the now-unused D_8008F19D declaration breaks nothing.
+4. The header change is a data-model correction, not a codegen-steering spelling. Two independent supports. (a) FORENSIC: the target prologue is addiu $sp,$sp,-0x38, i.e. cc1 must report vars=16; the instrumented-cc1 census and -da dumps attribute the extra 8 bytes to a reload spill reservation (reload1.c alter_reg, from_reg==-1) for a pseudo that only exists because expand refuses `reg + CONST(PLUS(symbol_ref,1))` as a MIPS address. That pseudo can only arise if the ORIGINAL source expressed the odd byte as a source-level +1 addend on the SAME symbol -- i.e. the original C indexed one stride-2 array based at 0x8008F19C. The frame size is recovered evidence about the original data model. (b) STRUCTURAL: the sibling table one entry later, D_8008F1A8, is already declared `extern u8 D_8008F1A8[];` in this same header and is read by this same function with the identical [sN*2+0]/[sN*2+1] stride-2 shape for the s1 and s2 counters. splat's per-byte auto-names carry no evidentiary weight ([[splat-symbol-names-are-not-evidence]]).
+
+BOTH SIDES. Against the grant: the ledger's own s4b entry states the DECLARED TYPE of the base is inert to codegen -- `(&D_8008F19C)[s3*2+n]` and `D_8008F19C[s3*2+n]` emit byte-identical assembly. So the header edit buys no bytes, and one could argue the src-only form is 'good enough' and the widening unnecessary. That argument fails on legitimacy, not bytes: the src-only form is a pointer pun on the address of a scalar, already layer-1 FAILed and banked as banned_constructs[2], and it is a pun ONLY because the header's scalar declaration is factually wrong about the object. The correct remedy for a wrong declaration is to fix the declaration. Also against: the earlier judge_constraint [2] said this path 'can never be accepted' -- but that constraint predates [[integration-handoff-self-serve]] (owner ruling 2026-08-19), whose own text names shared headers (include/*.h) as the allowed class, and the same header already carries the replay_camera_Init precedent line in tools/grinder/scope_allow.txt for the same reason (an honest array declaration retiring a pointer construct). include/code6cac.h is not on the denylist.
+
+THE UNBAN. banned_constructs[3] bans 'Reversion from the s4b/s4c/s4d form (header corrected to `extern u8 D_8008F19C[];`, plain `D_8008F19C[s3*2+n]` indexing) back to the scalar+&-index spelling.' With the scope widened, that reversion is moot -- but the entry quotes the WANTED form's exact vocabulary, and grindlib._ban_trips fires at 50% content-word overlap against the CONSTRUCTS: block of self_vet.md. Any honest vet describing the corrected form would re-trip it and auto-discard the submission -- the same class of mechanical deadlock the rule file cites as the func_8002D518 root cause, and the same trap that already discarded s4b. I am clearing entry [3] only. banned_constructs[2] (the src-only pointer-pun spelling) STANDS and is the thing the next session must not do.
+
+THE QUESTION THIS ENTRY RECORDS. May include/code6cac.h be added to tools/grinder/scope_allow.txt for func_80038170, so the next session can land the proven body plus the one-line declaration correction through the ordinary gates? The work is complete and sound; the only blocker is a commit surface a grind session may not stage. Evidence lives at memory/grind/func_80038170/evidence.md (s4/s4b/s4c/s4d/s5 blocks), hypotheses.md, rejected/two-base-no-frame-temp.c, tmp/grind/func_80038170/s4/measurements.txt and dumps/, and docs/grind/decisions.md:7047-7160.
+
+**Constraint recorded for any future session:** The ONLY sanctioned form is the banked candidate.c body (identical to tmp/grind/func_80038170/s4/PROVEN_v3_body.c) plus the single header correction include/code6cac.h:80-81 `extern u8 D_8008F19C; / extern u8 D_8008F19D;` -> `extern u8 D_8008F19C[];`. The src-only `(&D_8008F19C)[s3*2+n]` pointer-pun spelling (banned_constructs[2]) remains BANNED and must not be resubmitted; judge_constraints[2] ("include/code6cac.h out of scope, can never be accepted") is SUPERSEDED by this ruling for this path only. All normal gates still apply: driver sandbox-0 re-verify, scope check, layer-1 default-FAIL, fresh layer-2 cheat-reviewer, full-build SHA1 == oracle.
