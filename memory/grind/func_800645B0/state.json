@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "escalation",
  "floor_history": [
   {
@@ -63,6 +63,12 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "All three live frontier items measured DEAD (no zero-cost second set of idx exists; the COMPOUND_EXPR store_expr branch is inert; a copy relationship does not move local-alloc), both endgame-lock gate"
+  },
+  {
+   "session": 11,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Post-unpark disposition: the 2026-08-20 or-tree carve-out (the unpark's sole premise) measured DEAD on this function \u2014 sum order is an RTL-expansion invariant, not a policy-blocked choice; both endgam"
   }
  ],
  "frontier": [

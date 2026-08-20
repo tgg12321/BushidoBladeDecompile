@@ -9470,3 +9470,71 @@ Construct set is legitimate (verbatim-authorized GTE island + single-level FAKE-
 ## 2026-08-20 15:16 — func_80032314 — final call — **PASS**
 
 Two non-ordinary constructs, both inside sanctioned families with prerequisites met. (1) Single-level do-while(0) RA wrap: frozen-list entry no-new-park-categories.md:233 delegates prerequisites to do-while-zero-exception.md, whose owner-FINAL 2026-07-06 text (line 23) sanctions the wrap for ANY codegen effect incl. register allocation and drops the exhaustion hard gate for single-level wraps; FAKE annotation present at the construct site naming the flow.c loop_depth / global.c allocno mechanism with an ALLOCDBG trace that I confirmed exists (tmp/grind/func_80032314/s4/allocdbg.txt). Exhaustion is met anyway - hypotheses.md banks the s2 allocno arithmetic closure, the s3 combine.c/final.c premise reads (both KILLED), and the s4 32,797-iteration permuter null on the natural chassis. (2) GTE LZCS/LZCR island: verbatim copy of the owner-authorized func_800274BC block (src/code6cac_b.c:290-299); func_80032314 is an enumerated cluster member (cop2-addressing-preamble-cluster.md:86, LZCS/LZCR sub-family) and the self-vet's corrected PRECEDENT :104 now resolves to the per-function check sentence. I re-verified that check myself: sandbox --disable all = 0 at 109/109 with 0 rules (run this session), zero register pins / move-aliasing blocks / scheduling barriers in the body, and the in-island GPRs limited to the cop2 addressing preamble. Engine confirms 0 cheat-asm constructs and 0 rules keyed to the function. Remaining C is ordinary logic - no dead stores, no volatile or alias handles, no cross-symbol derivation, no intent-announcing names. The prior CITATION defect is repaired and nothing else changed.
+
+## 2026-08-20 — func_800645B0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)**
+
+Filed by grind session 11 (escalation modality) under the owner's standing auto-ruling
+(`.claude/rules/endgame-lock-disposition.md`, 2026-07-27). This re-affirms the 2026-08-13
+disposition (decisions.md:4918) AFTER the 2026-08-20 or-tree-shape-shift unpark: the function was
+re-entered solely on the taxonomy claim that its "sole remaining lever is in this family"
+(decisions.md ~9163), and session 11 measured that claim FALSE. Both endgame-lock AND-gates FAIL
+again; this entry is TERMINAL — nothing is pending on the owner and the driver parks the function.
+
+### The unpark premise, measured dead (the new evidence this entry adds)
+The 2026-08-20 carve-out (`.claude/rules/or-tree-shape-shift.md` § Owner ruling 2026-08-20)
+sanctions ONE committed target-matching operand order/grouping in an associative+commutative
+expression. On func_800645B0 the family has **no committable move** (all measurements this session,
+honest `sandbox --disable all`, SB chassis = `memory/grind/func_800645B0/candidate.c` re-confirmed
+at **1 / 78** on today's tree):
+
+- ***3 sum (`idx = idx2 + idx;`), the 1-instruction residual itself:** the swapped order
+  `idx = idx + idx2;` is **byte-identical** (1/78). Per H24 (s5 forensics, re-confirmed s11),
+  optabs.c `expand_binop` canonicalizes BOTH C orders to `(plus idx idx2)`; the target's
+  `addu $s0,$s1,$s0` (destination == second operand) is an RTL-expansion impossibility for any
+  body whose sum destination is `idx`. The residual was never a policy-blocked order choice —
+  prerequisite 4 of the carve-out (the chosen order actually matches target) is unsatisfiable.
+- **Loop-top sum (`idx = i + j;`):** the swap `idx = j + i;` measures **3/78**, strictly worse —
+  the natural order already emits the target's operand order.
+- **Grouping sub-axis:** the function contains NO 3+-term associative+commutative expression
+  (every multi-term store RHS contains a subtraction; `val | mask` is 2-term and already
+  byte-matched), so reparenthesization has zero application surface.
+
+Measurements: `tmp/grind/func_800645B0/s11/measurements.md`; banked form:
+`memory/grind/func_800645B0/rejected/or-tree-carveout-orders-inert-or-worse.c`;
+ledger: hypotheses.md H55 (KILLED) / H56 (CONFIRMED).
+
+### Gate 1 — canonical-asm (hand-written-asm evidence): **FAIL** (fresh run this session)
+`python3 tools/scan_hand_coded.py --single func_800645B0` → `tier=LOW score=0/8`, "no strong
+hand-coded indicators"; all three STRONG signals negative (S1 0 multu/mflo pairs, S2 no empty-body
+branches, S6 no BIOS jumptable pattern).
+
+### Gate 2 — in-hand SOTN-master precedent for the closing construct: **FAIL** (unchanged + H55)
+Every form ever measured at distance 0 closes with a construct in a forbidden family — the four
+layer-1 FAILs of 2026-08-12 (statement relocation / two staging spellings / dead store: one
+scheduling-steer lever refused under four spellings) and the s9c permuter's 6-of-6 loop-note
+wrapper bodies. No SOTN-master file+line or commit citation exists for any of them. The ONE family
+sanctioned since the prior disposition (the or-tree carve-out) is now measured to have no move on
+this function (above).
+
+### Exhaustion evidence (cumulative)
+11 sessions; honest floor FLAT at 1 since session 3; eight-plus distinct modalities (recon,
+structural, permuter ×2 capped, forensics ×2, rederive ×2, synthesis, escalation ×2); ~148k
+permuter iterations across 6 structurally distinct offset-0 chassis; 35+ numbered hand sweeps,
+>120 measured variants; 32 banked rejected forms; instrumented-cc1 dump forensics at every pass.
+s10 measured all three then-live frontier items DEAD (H51–H53); s11 measured the unpark's carve-out
+family DEAD (H55). The two closing decisions (sum operand order vs birthing_insn_p lift denial)
+are proven mutually exclusive in pure C (s6, re-verified by measurement s10/s11).
+
+### What holds the byte-match on main
+Unchanged from the 2026-08-13 entry: `regfix.txt:2521` (`func_800645B0: reorder 3,1,2 @ 1-3`) plus
+the committed rule-era body's two register pins and goto-based inner loop (this function is one of
+the 68 asm-until-matched byte-coupling deferrals). The honest pure-C floor without them is 1 / 78.
+Best form preserved at `memory/grind/func_800645B0/candidate.c` (SB chassis, ordinary C, zero
+rules, zero cheat-asm, zero FAKE constructs).
+
+### Owner action
+None. The standing ruling applies; `func_800645B0` is REFUSED / OWNER-ACCEPTED INCOMPLETE and
+parked terminally. The two reopening routes remain owner-only policy calls: (a) sanction a family
+for the one remaining construct class — an empty statement-level loop note at the inner-loop top
+(the permuter's unique closing device), which the or-tree carve-out does NOT cover — against its
+own SOTN-master evidence bar; or (b) canonical-asm authorization despite the LOW scan tier.

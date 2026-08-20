@@ -1156,3 +1156,52 @@ only rule.  No campaign was launched, so nothing can outlive the session.
 - [s10] What holds the byte-match on main: regfix.txt:2521 (`func_800645B0: reorder 3,1,2 @ 1-3`) is the function's only rule, plus the HEAD body's two cheat-asm register pins and its goto-based inner loop. The sandbox drops all of them; the honest pure-C distance without them is 1/78.
 
 - [s10] Scope: src/text1b.c (the candidate.c body, function region only), docs/grind/decisions.md (the escalation entry), memory/grind/func_800645B0/{evidence.md, hypotheses.md, two new rejected/ entries}, tmp/grind/func_800645B0/s10/ scratch, and metrics/events.jsonl (engine-written). Nothing under regfix.txt / asmfix.txt / .claude/rules/ / engine/ / tools/ / Makefile / *.ld was touched. No campaign was launched, so nothing can outlive the session.
+
+## [s11] 2026-08-20 (escalation, post-unpark) — or-tree carve-out measured; disposition re-filed
+
+The function was unparked by the 2026-08-20 owner ruling sanctioning the
+or-tree-shape-shift carve-out (docs/grind/decisions.md ~9120-9168;
+.claude/rules/or-tree-shape-shift.md "Owner ruling 2026-08-20"), on the
+taxonomy claim that this function's "sole remaining lever is in this family".
+Session 11 measured that claim FALSE:
+
+1. **Floor re-confirmed on today's chassis:** SB body (candidate.c) applied to
+   src/text1b.c scores **1 / 78** (rules_dropped 1, cheat_asm_stripped 262).
+2. ***3 sum operand swap is inert:** `idx = idx + idx2;` = 1/78 byte-identical
+   to `idx = idx2 + idx;`. H24 stands on today's chassis: optabs.c
+   expand_binop canonicalizes both C orders to (plus idx idx2); the target's
+   `addu $s0,$s1,$s0` (dest == second operand) is unreachable for any body
+   whose sum destination is `idx`. There is no target-matching order for the
+   carve-out to commit — the axis is an RTL-expansion invariant, not a
+   policy barrier, so prerequisite 4 of the ruling (the chosen order actually
+   matches target, byte-neutrally) is unsatisfiable.
+3. **Loop-top operand swap is strictly worse:** `idx = j + i;` = 3/78 (the
+   natural `i + j` already emits the target's operand order).
+4. **No grouping surface:** the function contains NO 3+-term
+   associative+commutative expression (every multi-term store RHS contains a
+   subtraction), so the parenthesization sub-axis of the carve-out has zero
+   application surface.
+5. **Gate (a) fresh:** scan_hand_coded --single → tier=LOW score=0/8, all
+   three STRONG signals (S1/S2/S6) negative. Gate (b): unchanged since s10 —
+   every distance-0 form closes with a layer-1-FAILed construct (one
+   scheduling-steer lever under four spellings) or the permuter's loop-note
+   wrappers; no SOTN-master citation exists.
+
+Disposition entry re-filed:
+`docs/grind/decisions.md` "## 2026-08-20 — func_800645B0 — OWNER-ESCALATION —
+RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE
+(post-unpark re-affirmation)". Artifacts: tmp/grind/func_800645B0/s11/
+measurements.md; banked form:
+rejected/or-tree-carveout-orders-inert-or-worse.c.
+
+- [s11] HEAD honest floor re-measured THIS session: SB chassis (candidate.c) in src/text1b.c scores 1/78 under sandbox --disable all (rules_dropped 1, cheat_asm_stripped 262) — the chassis-check gap is closed, ledger floor 1 stands on today's tree.
+
+- [s11] idx = idx + idx2 is byte-identical to idx = idx2 + idx (both 1/78): the *3 sum's operand order is fixed at RTL expansion (optabs.c target==op1 canonicalization), so or-tree carve-out prerequisite 4 (chosen order actually matches target) is unsatisfiable — the residual instruction is not closable by any committed C-level order.
+
+- [s11] idx = j + i at the loop top scores 3/78 (natural i + j already emits the target's operand order) — the only other 2-term sum is at its unique best order.
+
+- [s11] func_800645B0 contains no 3+-term associative+commutative expression (every multi-term store RHS contains a subtraction), so the carve-out's parenthesization/grouping sub-axis has zero application surface.
+
+- [s11] Fresh scan_hand_coded: tier=LOW 0/8, all three STRONG signals negative — no canonical-asm case.
+
+- [s11] Disposition entry appended: docs/grind/decisions.md '2026-08-20 — func_800645B0 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)'; src/text1b.c restored to HEAD (git checkout), only ledger/docs/scratch dirt remains.

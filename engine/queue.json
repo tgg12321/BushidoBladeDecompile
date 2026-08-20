@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 1,
-      "status": "active",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
-      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park"
-    },
-    {
       "func": "func_800324D0",
       "file": "code6cac_b",
       "distance": 27,
@@ -2168,6 +2158,17 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:4801 - '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "parked",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-20 \u2014 func_800645B0 \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (post-unpark re-affirmation)' (appended this session, at end of file)"
+    },
+    {
       "func": "func_80083794",
       "file": "ings2",
       "distance": 23,
@@ -2188,13 +2189,13 @@
   ],
   "counts": {
     "total": 250,
-    "active": 216,
+    "active": 215,
     "by_status": {
-      "active": 216,
-      "parked": 34
+      "active": 215,
+      "parked": 35
     },
     "by_verdict": {
-      "C": 181,
+      "C": 180,
       "ASM-PARTIAL": 35
     }
   }

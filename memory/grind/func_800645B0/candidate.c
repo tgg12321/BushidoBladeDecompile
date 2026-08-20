@@ -27,6 +27,15 @@
  * be written back into `idx` because that second set of `idx` is what denies
  * sched.c's `birthing_insn_p` priority lift on the loop-top `addu idx,i,j`.
  *
+ * s11 (2026-08-20, escalation post-unpark): floor re-confirmed 1/78 on that
+ * day's tree with this exact body.  The 2026-08-20 or-tree-shape-shift
+ * carve-out has NO move here: the swapped sum `idx = idx + idx2;` is
+ * byte-identical (H24 re-confirmed — the target's operand order is an
+ * RTL-expansion impossibility, not a policy-blocked choice), the loop-top
+ * swap `j + i` is strictly worse (3/78), and no 3+-term assoc+commutative
+ * expression exists for the grouping sub-axis.  See hypotheses.md H55/H56 and
+ * the 2026-08-20 decisions.md disposition entry.
+ *
  * SIBLING CHASSIS (both banked, both 3 away, both structurally distinct):
  *   chassis_jd_inline_index_arith.c — 3 / 78, index arithmetic written inline
  *     with no idx2/wid locals; residual is the three loop-top points only.
