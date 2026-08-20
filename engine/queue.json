@@ -1,16 +1,8 @@
 {
-  "generated_at": "2026-08-19T20:13:51",
+  "generated_at": "2026-08-19T20:41:56",
   "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
   "build_failures": [],
   "items": [
-    {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
     {
       "func": "func_80038170",
       "file": "code6cac_c_mid",
@@ -121,6 +113,14 @@
       "func": "func_800481E8",
       "file": "text1b",
       "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active"
+    },
+    {
+      "func": "func_80049A2C",
+      "file": "text1b",
+      "distance": 12,
       "verdict": "C",
       "rules": 0,
       "status": "active"
@@ -2068,15 +2068,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:5981 - the `2026-08-18 - func_80017848 (src/ings.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE` entry (session 24, modality escalation), plus its same-day re-dispatch addendum recording this session's independent re-verification of both gates and the floor."
     },
     {
-      "func": "func_8001F938",
-      "file": "code6cac",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
-    },
-    {
       "func": "CD_datasync",
       "file": "system",
       "distance": 7,
@@ -2086,6 +2077,15 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:2789 \u2014 '2026-08-01 \u2014 saEft01Init (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE'"
     },
     {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
+    },
+    {
       "func": "func_80041688",
       "file": "text1a_post",
       "distance": 8,
@@ -2093,15 +2093,6 @@
       "rules": 3,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
-      "func": "func_80034F88",
-      "file": "code6cac_b",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
       "func": "func_80061658",
@@ -2120,6 +2111,15 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): same disposition as sibling func_80061658 (constant-staging family REFUSED); reg-2/reg-3 asm pins retained only to hold byte-match, not sanctioned"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
       "func": "func_80045878",

@@ -348,7 +348,14 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                             lows = [e.get("floor") for e in fh
                                     if isinstance(e.get("floor"), int)]
                             if lows:
-                                pins.append(min(lows))
+                                # LAST entry, not historical min: old entries can
+                                # be stale or false (func_80049A2C's banked "0"
+                                # was cheat-stripper evasion; the 2026-08-19
+                                # validation session re-measured 12). The most
+                                # recent measurement is the only chassis-current
+                                # one — same principle as the driver's dispatch
+                                # CHASSIS CHECK.
+                                pins.append(lows[-1])
                         except (OSError, ValueError):
                             pass
                     if pins and (dist < 0 or min(pins) < dist):
