@@ -229,3 +229,87 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
 - [s4] The sole sandbox-0 form (rejected/dup4_0xc_into_arms.c) is a store-SCHEDULING-order duplication of two UNCONDITIONAL common-tail stores into both arms; committed judge ruling 2026-07-24 16:38 FAILed it as outside the duplicated-statement-into-arms sanction (reg_n_refs RA-priority scope) with no SOTN precedent.
 
 - [s4] OWNER-ESCALATION filed in docs/grind/decisions.md (2026-07-24) naming func_80072CD4: endgame-lock, clean floor 4, all pure-C axes (structural s3 + random-permuter prior-s4 x2 + directed-permuter s4b + dup-cheat judge-FAIL) measured/ruled dead.
+
+- [s5] SYNTHESIS modality (2026-08-20), POST-MIGRATION chassis re-measure. The banked candidate was
+  re-applied over the migrated `INCLUDE_ASM("asm/funcs", func_80072CD4);` line in src/text1b.c (with the
+  symbol names updated to the current naming wave: SetPolyG4 / SetSemiTrans / AddPrim replace the
+  header's stale initPolyG4 / gpu_SetSemiTransp / ot_Link) and re-measured: `sandbox func_80072CD4
+  --disable all` = **4**, build_insns 79 == target, rules_dropped 0. The s1-s4 floor of 4 is therefore
+  CHASSIS-CURRENT, not a stale pre-migration number; migration_pin.json's floor=12 refers to the
+  retired 9-rule main body (retired-chassis-2026-08/body.c), not to the candidate.
+- [s5] OBJDUMP RE-CONFIRMATION of the residual (tmp/grind/func_80072CD4/s5/base.dis vs
+  asm/funcs/func_80072CD4.s): the build is byte-identical to target from the prologue through BOTH inner
+  arms - same `beqz v0 / li v1,0xFC` inner delay slot, same `li v0,0xC3 / sb 5 / li v0,0x1E / sb 6 /
+  li v0,0xC8 / sb 0xD`, same THEN `j merge / li v0,0x32` delay slot, same ELSE trailing `li v0,0x46`.
+  The ONLY divergence is merge-block store ORDER: ours `sb v0,0xE` at the merge head then the
+  $v0 li/sb chain (@0x14,@0x15,@0x1C,@0x1D) with `sb v1,4 / sb v1,0xC` deferred to the block tail;
+  target `sb v1,4 / sb v1,0xC / sb v0,0xE` first. Exactly the s2/s3 diagnosis, independently re-derived.
+- [s5] KILLED - "Lever A" (the 2026-06-14 WIP's last never-run lever: route the arm byte constants
+  0xC3/0x1E/0xC8 through a shared local so they vacate $v0 and let a cross-block var_v0 claim it).
+  Measured on BOTH chassis. On the per-arm floor-4 chassis it is completely INERT (4, 79 insns - cse
+  folds the holder back). On the cross-block chassis it moves 13 -> 11 but is NOT a better basin:
+  objdump (tmp/grind/func_80072CD4/s5/v4.dis) shows the shared holder makes the arms' `sb v0,0xD`
+  stores identical, so jump2 cross-jumps THAT store to the merge head instead - build_insns drops to 78
+  (an insn SHORT of target, which keeps `sb v0,0xD` inside each arm) and the RA rotation persists
+  (fc_const -> $a0, var_v0 -> $v1; target wants $v1 / $v0). Lever A trades one cross-jump defect for a
+  worse one. Banked rejected/leverA_shared_const_local_xblock.c + rejected/leverA_perarm_inert.c.
+- [s5] KILLED - hoisting the @4/@0xC stores ABOVE the inner `if` (never measured on any chassis; s2's
+  "fc-before-outer-if" kill moved the ASSIGNMENT of fc_const, not the stores). Result 8, build_insns 78:
+  the two stores leave the merge block entirely and land before the inner branch, which also costs the
+  insn that the merge-block placement provides. Banked rejected/hoist_4_0xc_prebranch.c.
+- [s5] KILLED - base-pointer-local spelling (`u8 *p = (u8 *)arg1;` then `p[N] = ...` for every field
+  write; the one whole-function C SPELLING never tried in s1-s4, all of which used
+  `*(u8 *)((s32)arg1 + N)`). Result 17, build_insns 82: the extra pointer local costs a copy and
+  perturbs the arg1/$s1 handling. Banked rejected/base_pointer_local_spelling.c.
+- [s5] SYNTHESIS CONCLUSION: the merged picture across s1-s5 is a two-attractor lock with no third
+  attractor. (a) per-arm @0xE = 4/79, correct RA + correct arms, wrong merge store order, and the order
+  is set by jump2 splicing the cross-jumped common tail at the JOIN LABEL (head of the merge block) -
+  a position no source-level ordering can move (s4b directed permuter proved the full 8-store
+  permutation space empty). (b) cross-block var_v0 = 13/78 (11/78 with Lever A), target's own source
+  shape, correct merge order, wrong RA because sched1 deterministically hoists the lone constant `li`.
+  Every lever measured across 5 sessions moves between these two attractors or lands outside both;
+  none of them is target, and the single form that reaches 0 is the Judge-FAILed / owner-refused
+  store-schedule duplication.
+
+- [s5b] SYNTHESIS (2026-08-20, respawn). Chassis re-measured first: the banked floor-4 form
+  (now fallback_floor4.c) applied over the migrated INCLUDE_ASM line still gives
+  `sandbox func_80072CD4 --disable all` = 4, build_insns 79, rules_dropped 0. Floor 4 confirmed
+  chassis-current before anything was spent on it.
+- [s5b] **BYTE MATCH FOUND — score 0, build_insns 79 == target, rules_dropped 0**, reproduced
+  twice (tmp/grind/func_80072CD4/s5/sandbox_rgbtriple_noholder.json). The merged reading of s1-s5
+  that produced it: every prior session modelled `arg1` as an opaque byte blob and searched
+  orderings of independent stores. The offsets are actually the canonical PSX libgpu POLY_G4
+  vertex-colour layout — rgb0 = 0x04/0x05/0x06, rgb1 = 0x0C/0x0D/0x0E, rgb2 = 0x14/0x15/0x16,
+  rgb3 = 0x1C/0x1D/0x1E — and the COMPLETED-C sibling func_80072BC4 in the same file
+  (src/text1b.c:5822) is already written in that field order. Rewriting 72CD4 the same way (each
+  inner branch assigns its own complete rgb0+rgb1 triple; the unconditional rgb2/rgb3 triples
+  follow) is byte-exact. Body: tmp/grind/func_80072CD4/s5/v_rgbtriple_noholder.c, banked as
+  memory/grind/func_80072CD4/candidate.c.
+- [s5b] The matching body contains NO construct: no local at all (not even the sibling's
+  `int fc_const`), no volatile, no asm, no barrier, no dead store, no do-while, no annotation.
+  Every statement is a live field write executed on its own path with the value the game shows.
+  A holder-retaining variant that keeps `int fc_const` (tmp/grind/func_80072CD4/s5/v_rgbtriple.c)
+  ALSO measures 0; the holder-free body was preferred as the cleaner of the two.
+- [s5b] MECHANISM (supersedes the s2/s3 "two-attractor lock" as the operative model, without
+  contradicting any of its measurements): with full triples in the arms, jump2 cross-jumps the
+  arms' common tail `sb v1,4 / sb v1,0xC / sb v0,0xE` to the join label — exactly target's merge
+  head. The sched2 deferral that produced the residual 4 never arises, because the `$v1` stores
+  are no longer written into the merge block by the source at all. The s1-s5 attractor analysis
+  was an artefact of the blob model: BOTH of its attractors lift the two red components out of
+  the colour assignments into a shared tail behind `int fc_const`, i.e. both are the ARTIFICIAL
+  spelling; the natural one was never in the search space.
+- [s5b] IN-REPO PRECEDENT for the spelling (independent of any SOTN census): func_80072BC4 is
+  COMPLETED-C — absent from engine/queue.json, pure C on main — and itself carries an identical,
+  hoistable-but-not-hoisted cross-arm duplicate store `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in
+  BOTH arms, at src/text1b.c:5840 and src/text1b.c:5843.
+- [s5b] DISPOSITION: returning **ruling-request**, not candidate-ready. The 2026-07-24 16:38 judge
+  constraint bans respelling the @4/@0xC common-tail stores "as a duplicated-into-arms
+  store-schedule lever"; this body is textually within reach of that wording even though it
+  contains no lever construct, so submitting it would be self-approval against a binding
+  constraint. src/text1b.c was reverted to its committed INCLUDE_ASM state (asm-until-matched);
+  the form reproduces in one command:
+  `python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c` followed by
+  `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`.
+- [s5b] The clean floor-4 form previously in candidate.c is preserved unchanged as
+  memory/grind/func_80072CD4/fallback_floor4.c — the fallback if the ruling goes against the
+  matching body.

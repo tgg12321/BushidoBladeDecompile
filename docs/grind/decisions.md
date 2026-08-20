@@ -8386,3 +8386,65 @@ file+function citation of a cross-jump-dead common-tail duplication used for sto
 ## 2026-08-20 05:33 — func_80072CD4 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s5 of func_80072CD4, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `synthesis`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-20 — func_80072CD4 (src/text1b.c) — **RULING REQUEST (classification) — a BYTE MATCH (sandbox 0 / 79 insns) now exists; is it reached by the 2026-07-24 duplicated-into-arms constraint?**
+
+Filed by grind session s5b (synthesis modality). **This entry supersedes the terminal-sounding
+"RESOLVED BY STANDING RULING / OWNER-ACCEPTED INCOMPLETE" text appended earlier today by the
+discarded s5 session** (see the driver's DISCARDED-SESSION MARKER above — that span is void). The
+premise of every escalation this function has ever carried, that no pure-C form reaches 0, is now
+false: s5b measured a byte match with a body that contains no construct at all. Nothing here is a
+terminal disposition and nothing is parked; the function needs one classification ruling.
+
+**The measurement.** `sandbox func_80072CD4 --disable all` = **0**, build_insns **79** ==
+target_insns 79, rules_dropped 0, reproduced twice (artifact
+tmp/grind/func_80072CD4/s5/sandbox_rgbtriple_noholder.json). Chassis was re-verified first: the
+previously banked floor-4 form still measures 4 on the post-migration chassis.
+
+**What was missed for five sessions.** Every s1-s5 form modelled `arg1` as an opaque byte blob and
+searched for an ORDERING of independent byte stores (structural variants, two random-permuter
+chassis, a directed PERM_LINESWAP over the full merge-store permutation space). The offsets are in
+fact the canonical PSX libgpu POLY_G4 vertex-colour layout: rgb0 = 0x04/0x05/0x06,
+rgb1 = 0x0C/0x0D/0x0E, rgb2 = 0x14/0x15/0x16, rgb3 = 0x1C/0x1D/0x1E — the four setRGB0..setRGB3
+field groups. The COMPLETED-C sibling in the same file, func_80072BC4 (src/text1b.c:5822), is
+already written in exactly that field order. Written the same way — each inner branch assigning its
+OWN complete rgb0 and rgb1 triple, then the two unconditional rgb2/rgb3 triples — func_80072CD4 is
+byte-exact. The red component of rgb0/rgb1 is 0xFC on both branches, so jump2 tail-merges the arms'
+common tail (`sb v1,4 / sb v1,0xC / sb v0,0xE`) at the join label, which is precisely how target's
+merge block begins. The "two-attractor lock" diagnosed in s2/s3 was an artefact of the blob model:
+BOTH of its attractors lift the two red components out of the colour assignments into a shared tail
+behind an `int fc_const` holder — i.e. both are the ARTIFICIAL spelling, and the natural one was
+never inside the searched space.
+
+**The body (memory/grind/func_80072CD4/candidate.c) declares no variable of any kind** — no local,
+no holder, no volatile, no `__asm__`, no pin, no barrier, no do-while, no dead store, no unused
+declaration, no annotation. It is two library calls, two `if`s, twenty-four live field writes, an
+AddPrim call and a return. Full six-test vet in memory/grind/func_80072CD4/self_vet.md.
+
+**Why this is a ruling request and not a candidate submission.** The standing judge constraint of
+2026-07-24 16:38 forbids respelling the @4/@0xC common-tail stores "(or any unconditional
+common-tail statement) as a duplicated-into-arms store-schedule lever". This body does place the
+`= 0xFC` writes to 0x04 and 0x0C inside both arms, so it is textually within reach of that wording —
+even though it contains no lever, no construct, and was arrived at from the primitive's field layout
+rather than from the schedule. The session will not self-answer that.
+
+**QUESTION.** Does the 2026-07-24 duplicated-into-arms constraint reach a body that contains no
+construct at all, in which each branch assigns its own complete POLY_G4 rgb0/rgb1 colour triple in
+canonical libgpu field order (the shared 0xFC being the red component both branches happen to use),
+and where the alternative — lifting only the two red components into a shared tail behind an
+`int fc_const` holder — is the artificial spelling? Supporting in-repo precedent for the spelling:
+func_80072BC4 is COMPLETED-C (absent from engine/queue.json, pure C on main) and itself carries an
+identical, hoistable-but-not-hoisted cross-arm duplicate store
+`*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in BOTH arms, at src/text1b.c:5840 and src/text1b.c:5843.
+
+**If the ruling is that the constraint does NOT reach it:** the function closes at 0 from
+memory/grind/func_80072CD4/candidate.c (reproduce with
+`python3 tmp/grind/func_80072CD4/s5/apply.py memory/grind/func_80072CD4/candidate.c`, then
+`& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`). **If it DOES reach it:** fall back to
+memory/grind/func_80072CD4/fallback_floor4.c (clean floor 4, unchanged) and the s1-s5 exhaustion
+analysis stands. src/text1b.c is left carrying `INCLUDE_ASM("asm/funcs", func_80072CD4);` per
+asm-until-matched.
+
+## 2026-08-20 05:46 — func_80072CD4 — ruling: Does the standing 2026-07-24 16:38 judge constraint ('do NOT respell the @4/@0xC — **PASS**
+
+The 2026-07-24 constraint does NOT reach candidate.c. It banned a LEVER: rejected/dup4_0xc_into_arms.c keeps an `int fc_const` holder and injects `@4=fc_const; @0xC=fc_const` mid-arm in a merge-order-driven sequence (5,6,D,4,C,E) that the author himself annotated '/* CHEAT: duplicated for jump2 merge order */' - statements whose placement had no purpose but the schedule. candidate.c has no local, no holder, no annotation, no intent-named symbol: each arm writes its own complete POLY_G4 rgb0/rgb1 triple in canonical ascending libgpu field order (4,5,6,C,D,E), the shared 0xFC being merely the red component both paths display. Declining to hoist a common live store is ordinary C, not an exception family, so no frozen-list prerequisite is at issue and no cluster-precedent bar is being lowered. Decisive fact I verified myself: the COMPLETED-C sibling func_80072BC4 in the same file (src/text1b.c:5822) carries the identical hoistable-but-not-hoisted cross-arm duplicate `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` at src/text1b.c:5840 and :5843, with zero rules and not in engine/queue.json - the house style is in-repo and already completed. Also verified: candidate.c's body is byte-identical to the measured artifact tmp/grind/func_80072CD4/s5/v_rgbtriple_noholder.c, whose sandbox JSON reads score 0, build_insns 79 == target_insns 79, rules_dropped 0; regfix.txt:1885 for this func is a comment, not a live rule. Note the inversion the alternative would create: fallback_floor4.c is STRICTLY more artificial (it lifts only the two red components behind an `int fc_const` holder) - failing the simpler body while blessing the holder form would invert the policy. Full evidence: memory/grind/func_80072CD4/hypotheses.md H-S1, evidence.md, rejected/dup4_0xc_into_arms.c.

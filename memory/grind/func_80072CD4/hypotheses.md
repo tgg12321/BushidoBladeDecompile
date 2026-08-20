@@ -163,3 +163,76 @@ verify the do-while sanction's NE-invert-peephole prerequisite actually applies 
   pseudo's REFERENCE COUNT (an allocno-priority input) whereas here the binding
   constraint is a scheduler hoist that no naming choice constrains.
 - verdict: KILLED
+
+## [s5] The banked floor-4 candidate still reproduces on the post-migration (asm-until-matched) chassis.
+- mechanism: The 2026-08-19 migration replaced the 9-rule main body with `INCLUDE_ASM("asm/funcs", func_80072CD4);`, so every banked score is chassis-relative and must be re-measured before it is spent.
+- probe: Applied candidate.c over the INCLUDE_ASM line (symbol names refreshed to SetPolyG4 / SetSemiTrans / AddPrim) and ran `sandbox func_80072CD4 --disable all`.
+- result: score 4, build_insns 79 == target, rules_dropped 0. Floor unchanged by the migration.
+- verdict: CONFIRMED
+
+## [s5] "Lever A" (route the arm byte constants through a shared local so they vacate $v0) lets a cross-block var_v0 claim $v0 and reach target's RA.
+- mechanism: 2026-06-14 WIP hypothesis, never measured in s1-s4: the arm constants 0xC3/0x1E/0xC8 occupy $v0 exactly where the sched1-hoisted var_v0 is live; giving them their own pseudo should free $v0 for var_v0 and undo the $v0/$v1 rotation.
+- probe: Shared `int t` holder feeding all three arm byte stores, measured on BOTH chassis (per-arm floor-4 base and cross-block base), plus a chained variant (var_v0 fed from t) and an objdump of the cross-block result.
+- result: per-arm = 4 (inert; the holder is folded away, 79 insns unchanged). cross-block = 11/78, chained variant = 11/78. NOT a better basin: the shared holder makes the two arms' `sb v0,0xD` stores identical, so jump2 cross-jumps @0xD to the merge head - the build loses the insn target keeps inside each arm (78 vs 79) and the rotation survives (fc -> $a0, var_v0 -> $v1). Lever A cannot fix the RA because target REQUIRES those constants in $v0 (`addiu $v0,$zero,0xC3` ...); vacating $v0 is byte-divergent by construction.
+- verdict: KILLED
+
+## [s5] Moving the @4/@0xC stores out of the merge block (above the inner `if`) escapes the cross-jump-imposed store order.
+- mechanism: The residual is that the cross-jumped `sb v0,0xE` tail is spliced at the join label ahead of the native merge stores; emitting @4/@0xC earlier in program order should put them ahead of it.
+- probe: @4 = fc_const, @0xC = fc_const written immediately after `fc_const = 0xFC;` and before the inner `if`, per-arm chassis.
+- result: 8, build_insns 78 - the stores land before the inner branch (target has them at the merge) and the build loses an insn. Strictly worse than the floor.
+- verdict: KILLED
+
+## [s5] A different whole-function C SPELLING (base pointer local instead of casted-offset stores) changes the scheduling/RA outcome.
+- mechanism: Every s1-s4 form used `*(u8 *)((s32)arg1 + N)`; a `u8 *p = (u8 *)arg1; p[N] = ...` spelling gives GCC a different MEM rtx form and an extra pseudo, which could reshape the merge block.
+- probe: Mechanical rewrite of all field writes to `p[N]`; sandbox.
+- result: 17, build_insns 82 (the pointer local costs a copy). Spelling axis is negative.
+- verdict: KILLED
+
+## [s5] SYNTHESIS FRONTIER RESET - the function is a two-attractor lock, and the sanctioned axes are empty.
+- mechanism: (a) per-arm @0xE: 4/79, correct arms + correct RA, wrong merge store order, fixed by jump2's splice of the cross-jumped tail at the JOIN LABEL (source-order-invariant, proven by the s4b directed permuter over the full 8-store permutation space). (b) cross-block var_v0: 13/78 (11/78 with Lever A), target's source shape, correct order, wrong RA from the sched1 hoist of the launch-boost-less lone `li` (sched.c:2683-2699). No lever in 5 sessions produced a third attractor; the only sandbox-0 form is the store-schedule duplication FAILed by the Judge (2026-07-24 16:38) and refused by the owner (2026-07-27).
+- probe: s5 re-measured the chassis, re-derived the residual from objdump, and closed the last three never-run levers (Lever A x2 chassis, @4/@0xC pre-branch hoist, base-pointer spelling).
+- result: All sanctioned axes measured dead on the CURRENT chassis. Nothing grindable remains that is not a re-run of a banked kill.
+- verdict: CONFIRMED
+
+
+## [s5b] SYNTHESIS FRONTIER RESET (2026-08-20, respawn after the s5 owner-gated discard) — the residual is a SEMANTIC-MODEL bug, not a scheduler wall: arg1 is a PSX libgpu POLY_G4 and its offsets are four RGB triples.
+- statement: Every s1-s5 form treated `arg1` as an opaque byte blob and asked which *ordering*
+  of independent byte stores GCC would emit. The offsets say otherwise: 0x04/0x05/0x06,
+  0x0C/0x0D/0x0E, 0x14/0x15/0x16 and 0x1C/0x1D/0x1E are the canonical libgpu POLY_G4 vertex
+  colour triples (rgb0..rgb3, i.e. the four setRGB0..setRGB3 field groups), and the file's own
+  COMPLETED-C sibling func_80072BC4 (src/text1b.c:5822) is already written in exactly that
+  field order. Written the natural way — each inner branch assigning its OWN complete rgb0 and
+  rgb1 triple (whose red component is 0xFC on both branches), then the two unconditional
+  rgb2/rgb3 triples — the function is byte-exact.
+- mechanism: with the arms carrying full triples, GCC's jump2 cross-jump tail-merges the two
+  arms' common tail (`sb v1,4 / sb v1,0xC / sb v0,0xE`) at the join label, which is precisely
+  how target's merge block begins; the previously-diagnosed sched2 deferral of the `$v1` stores
+  never arises because those stores are no longer emitted in the merge block by the source.
+  The s2/s3 "two-attractor lock" was an artefact of the blob model: BOTH attractors lift the
+  red components out of the colour assignments into a shared tail (`int fc_const`), which is
+  the artificial spelling, not the natural one.
+- probe: tmp/grind/func_80072CD4/s5/v_rgbtriple_noholder.c applied to src/text1b.c,
+  `sandbox func_80072CD4 --disable all`.
+- result: **score 0, build_insns 79 == target_insns 79, rules_dropped 0** (artifact
+  tmp/grind/func_80072CD4/s5/sandbox_rgbtriple_noholder.json). The body contains NO local, no
+  holder variable, no volatile, no asm, no barrier, no dead store, no annotation — only live
+  field writes. The holder-retaining variant (tmp/grind/func_80072CD4/s5/v_rgbtriple.c, keeps
+  the sibling's `int fc_const`) also measures 0.
+- verdict: CONFIRMED (bytes measured this session, twice, reproducibly).
+
+## [s5b] OPEN CLASSIFICATION QUESTION (the reason this session returns ruling-request, not candidate-ready)
+- statement: the standing judge constraint of 2026-07-24 16:38 forbids respelling "the @4/@0xC
+  common-tail stores (or any unconditional common-tail statement) as a duplicated-into-arms
+  store-schedule lever". The byte-matching body above does place `= 0xFC` writes to 0x04 and
+  0x0C inside both arms, so it is textually within reach of that ban — but it is not a lever
+  bolted onto a hoisted base: there is no construct in the body at all, the writes are live on
+  their own paths, and the alternative (hoisting only the red components behind an `int
+  fc_const` holder) is the artificial spelling that the ban's own base form uses.
+- probe: a ruling. In-repo precedent offered: func_80072BC4 is COMPLETED-C (absent from
+  engine/queue.json) and carries an identical, hoistable-but-not-hoisted cross-arm duplicate
+  store `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` at src/text1b.c:5840 and src/text1b.c:5843.
+- result: pending.
+- verdict: OPEN — this is the whole frontier now. If the ruling says the ban does not reach a
+  construct-free body, the function closes at 0 from memory/grind/func_80072CD4/candidate.c.
+  If it says the ban does reach it, fall back to fallback_floor4.c (clean floor 4) and the
+  two-attractor exhaustion analysis of s1-s5 stands unchanged.
