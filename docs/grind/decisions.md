@@ -8963,3 +8963,37 @@ structural (s2, s3) and permuter from two independent seeds (s2 instrumented, s4
 ## 2026-08-20 09:54 — func_800481E8 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s4 of func_800481E8, which the driver DISCARDED as invalid (owner-gated: the standing-ruling terminal disposition requires `escalation` modality (driver-declared exhaustion), not `permuter`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-20 — OWNER RULING — `_SANCTIONED_UNWRITTEN_PADS` extended: func_80047EE8 + func_80047FBC, `("pre_pad", 8)` each
+
+The owner reviewed the two 2026-08-20 OWNER-ESCALATIONs in this file (func_80047FBC,
+filed by s14; func_80047EE8, filed by s12 re-run) in an operator session and **GRANTS both
+allowlist rows**. Verified before granting: the 2026-08-18 general phantom-frame-slot
+family ruling and its form constraints (`.claude/rules/no-new-park-categories.md:390`),
+the SOTN-master PSX exhibits (`docs/reference/sotn-construct-index.md:101` / `:103`), the
+three pre-existing rows in `engine/volatile_cheats.py`, and both escalations' byte proofs
+(func_80047EE8: full-build SHA1 == oracle twice with the body applied; func_80047FBC:
+sandbox 0/65 with the pad honoured).
+
+**Scope of this ruling — exactly:**
+
+- `"func_80047EE8": frozenset({("pre_pad", 8)})`
+- `"func_80047FBC": frozenset({("pre_pad", 8)})`
+
+volatile-qualified, ARRAY form, first-declaration position, FAKE-annotated, per the
+general family's constraints. Nothing else is extended. In particular this ruling does
+**NOT** extend the family to trailing/tail-pad shapes — func_800481E8's frontier is
+unaffected and its ladder continues on its own evidence.
+
+**Authorized integration steps** (operator, this session): apply
+`memory/grind/<func>/candidate.c` bodies over the two `INCLUDE_ASM` lines in
+`src/text1b.c` (with the codegen-neutral naming-wave rename `efc_buki_draw_zanzou` →
+`func_800482C8` in the func_80047FBC body); add the two rows; `engine test` green;
+`sandbox <func> --disable all` == 0 for both; `verify-oracle --rebuild` == oracle SHA1;
+fresh layer-2 adversarial cheat-reviewer on the composite diff (default-FAIL, operator's
+endorsement not credited); then `queue done` both. If the reviewer FAILs, the rows are
+revoked and both functions revert to their standing-ruling refusals.
+
+**Record corrections confirmed:** the 2026-07-22 REFUSED / OWNER-ACCEPTED INCOMPLETE
+dispositions on both functions (decisions.md:1298 and the func_80047FBC analog) are
+SUPERSEDED as the escalations state.
