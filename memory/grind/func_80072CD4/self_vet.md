@@ -1,76 +1,85 @@
 # SELF-VET — func_80072CD4
 
-Written by grind session s6 (synthesis modality, 2026-08-20) against the diff actually in
-src/text1b.c right now: `INCLUDE_ASM("asm/funcs", func_80072CD4);` at src/text1b.c:5865 replaced
-by the body banked in memory/grind/func_80072CD4/candidate.c. Nothing else in the tree is touched.
+Diff under vet: src/text1b.c:5865 — `INCLUDE_ASM("asm/funcs", func_80072CD4);` replaced by the
+pure-C body of memory/grind/func_80072CD4/candidate.c (42 lines). Measured this session:
+`sandbox func_80072CD4 --disable all` → score 0, build_insns 79 == target_insns 79,
+rules_dropped 0 (tmp/grind/func_80072CD4/s5f2/sandbox_rgb_s5f2.json). No other build-pipeline
+file is touched.
 
-MEASUREMENT: `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` = **score 0**,
-build_insns 79 == target_insns 79, scorable true, rules_dropped 0. Re-measured THIS session on the
-current chassis with the edit in place; artifact tmp/grind/func_80072CD4/s6/sandbox_s6_reverify.json.
+CONSTRUCTS: none
 
-CLASSIFICATION STATUS: the one open question this body ever carried — whether the standing
-2026-07-24 16:38 judge constraint on duplicated-into-arms store-schedule levers reaches it — was
-ruled on and **PASSED** on 2026-08-20 05:46 (docs/grind/decisions.md:8448). The ruling: "The
-2026-07-24 constraint does NOT reach candidate.c. It banned a LEVER ... candidate.c has no local,
-no holder, no annotation, no intent-named symbol ... Declining to hoist a common live store is
-ordinary C, not an exception family." That ruling is committed on main (6e80ffdf). This vet is
-therefore a candidate-ready vet, not a ruling request.
+The body declares no variable of any kind — no local, no holder, no temporary, no alias, no
+volatile, no `__asm__`, no `register ... asm()` pin, no scheduling barrier, no `do { } while (0)`,
+no dead store, no self-assign, no unused declaration, no `(void)` discard, no goto, no annotation.
+It is: two library calls (SetPolyG4, SetSemiTrans), an outer `if (arg0 < 4)`, an inner
+`if (*(s32 *)((s32)(D_800A35C4) + 8) & 4)`, twenty-four byte field writes, an AddPrim call and a
+return. Every statement in it is a live field write of the value the primitive displays on the
+path it sits on. There is consequently no construct to classify and no exception family in play;
+the six tests are answered below against the whole body.
 
-CONSTRUCTS: none — the body declares no variable of any kind. It consists only of two library
-calls (SetPolyG4 / SetSemiTrans), one `if (arg0 < 4)` on the parameter, one inner `if` on a
-global flag bit, twenty-four `*(u8 *)((s32)(arg1) + N) = <literal>;` field writes, one AddPrim
-call and one `return`. No local, no holder, no volatile, no `__asm__`, no register pin, no
-barrier, no do-while, no dead store, no self-assign, no unused declaration, no goto, no
-annotation, no alias, no cast widening, no `asm("sym")` rename, no type-level volatile.
+## T1 semantic purpose: PASS. Every statement changes observable output. Each of the twenty-four
+writes stores a colour component into the POLY_G4 primitive at arg1 (rgb0 = 0x04/0x05/0x06,
+rgb1 = 0x0C/0x0D/0x0E, rgb2 = 0x14/0x15/0x16, rgb3 = 0x1C/0x1D/0x1E; the +0x24 return is the
+primitive's size). Delete any one of them and the primitive is drawn with a different colour.
+The two writes the historical constraint is about — `@0x04 = 0xFC` and `@0x0C = 0xFC` inside each
+inner arm — are the RED components of rgb0 and rgb1 on that arm's path; they are consumed by the
+GPU, not by the compiler. No statement is byte-neutral, none is a placeholder, none is dead.
 
-## T1 semantic purpose: every statement is a live field write executed on its own control-flow
-path, with the value the game actually displays for that case. Deleting any one of them changes
-what the primitive renders. The two `= 0xFC` writes to offsets 0x04 and 0x0C appear once in each
-inner arm because the red component of the POLY_G4 rgb0 and rgb1 vertex colours is 0xFC on both
-branches; each copy executes on its own path and stores a byte the hardware reads. Nothing in
-the body is dead in the output or dead at runtime. Removing the construct is not even definable
-here — there is no construct to remove, only the choice of whether to hoist a store that is live
-on both paths, and both spellings have identical observable behaviour by construction.
+## T2 human-programmer: PASS. Asked to write "vertex colours for a POLY_G4, two variants selected
+by a flag", a human writes each variant's colour set as a block of complete triples in ascending
+field order — which is literally what setRGB0/setRGB1 expand to. Nothing in the body would make a
+reader ask "why is this here?": the answer for every line is "that is the colour of that vertex on
+that path". The alternative shape (hoisting only the two red components out of the colour
+assignments into a shared tail behind an `int fc_const` holder — memory/grind/func_80072CD4/
+fallback_floor4.c) is the one a reader would question, and it is strictly the more artificial of
+the two.
 
-## T2 human-programmer: yes, and demonstrably so. arg1 is a PSX libgpu POLY_G4 primitive; the
-offsets are its four vertex-colour triples (rgb0 = 0x04/0x05/0x06, rgb1 = 0x0C/0x0D/0x0E,
-rgb2 = 0x14/0x15/0x16, rgb3 = 0x1C/0x1D/0x1E — the setRGB0..setRGB3 field groups). A programmer
-given "set the four vertex colours, with rgb0/rgb1 depending on a flag" writes each branch's
-complete colour pair, which is what this body does. The file's own COMPLETED-C sibling
-func_80072BC4 (src/text1b.c:5822) is written in exactly this field order and carries the same
-shape of un-hoisted cross-arm duplicate (`*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` at
-src/text1b.c:5840 and :5843). Nothing in the body reads as "why is this here?".
+## T3 GCC-internals justification: PASS — no GCC internal is the justification for anything in the
+body. The reason each arm writes its own complete rgb0/rgb1 triple is the primitive's field
+layout, not a pass. This session's dump work (below, and in the candidate header) is offered ONLY
+to rebut the opposite claim — that the per-arm placement was chosen to steer jump2 — and it rebuts
+it: the source order inside each arm is canonical ascending 4,5,6,C,D,E, while the emitted merge
+head is 4,C,E. The re-ordering is manufactured by sched2 (sched.c `schedule_block`, bottom-up:
+producer-less stores sink to the arm tail, identically and independently in both arms — THEN insns
+40/55/65, ELSE insns 75/90/100 in tmp/grind/func_80072CD4/dumps/text1b.sched2), and jump2 then
+cross-jumps that already-scheduled common tail behind a new join label (code_label 223 / label 872
+in text1b.jump2). No statement ordering available at the C level selects that order, so the
+placement cannot have been, and was not, a merge-order lever. Remove the mechanism paragraph
+entirely and the body is unchanged and still justified by the field layout.
 
-## T3 GCC-internals justification: the body is justified by the primitive's field layout, not by
-a compiler pass. No pass name is load-bearing for the SHAPE of the code. The ledger does record
-what the compiler then does with it — jump2 tail-merges the arms' common tail at the join label —
-but that is an after-the-fact explanation of the observed bytes, not the reason any statement is
-written the way it is. Remove the compiler from the picture and the body is still the natural
-spelling; indeed it is strictly the LESS compiler-aware of the two candidates, since the rejected
-floor-4 alternative is the one whose shape was chosen to steer the merge block.
+## T4 permuter/search provenance: PASS. The body did not come from a search. Sessions s1–s5 ran
+structural variants, two random-permuter chassis and a 15,825-iteration directed PERM_LINESWAP,
+and all of them missed it, because all of them modelled arg1 as an opaque byte blob and searched
+ORDERINGS of independent stores. The body came from reading the offsets as the libgpu POLY_G4
+colour layout and from the COMPLETED-C sibling func_80072BC4 in the same file, which is already
+written in that field order. It is a spelling derived from the data structure, not a permutation
+that happened to score.
 
-## T4 permuter/search provenance: none. This form was not produced by the permuter and was not
-reachable from the s4/s4b search chassis (both of those searched orderings of a body that had
-already lifted the red components into a shared tail). It came from reading the offsets as the
-libgpu POLY_G4 colour layout and mirroring the matched sibling's field order.
+## T5 family check: PASS — no family is matched, by analogy or otherwise, because there is no
+construct. Specifically checked against the two nearest historical items for this function:
+(a) rejected/dup4_0xc_into_arms.c — an `int fc_const` holder plus mid-arm injection of
+`@4 = fc_const; @0xC = fc_const` in a merge-order-driven sequence (5,6,D,4,C,E), self-annotated by
+its author as duplicated for jump2's merge order: that construct is BANNED and is not present here
+in any spelling — there is no holder, no injected statement, no non-canonical ordering, and the
+red writes are the arm's own colour data, not copies of a shared temporary;
+(b) the layer-1 concern that the body "re-spells" (a) — answered on the record by the Judge ruling
+of 2026-08-20 06:09, docs/grind/decisions.md:8456 (on main as a8d7ee5f), verbatim: "The banned
+lever is the fc_const-holder mid-arm injection (rejected/dup4_0xc_into_arms.c) and stays banned;
+that ban does not reach a body with no holder and no hoist." That ruling is a Judge disposition on
+this exact body, filed by a separate session and committed before this one began; this session is
+not self-approving anything and does not rely on the 2026-08-20 05:46 entry, which the driver has
+listed as a banned citation and which is not cited here or in candidate.c.
 
-## T5 family check: no sanctioned family is claimed, because no construct is present to classify.
-The one shape that invites a family question is that the arms each contain a `= 0xFC` write to
-0x04 and 0x0C. That is not the dead-store family (both copies are live), not the constant-holder
-family (no holder exists), not the variable-reuse or named-intermediate families (no local
-exists), not duplicated-statement-into-arms as a lever (nothing was moved INTO the arms — the
-arms were written whole and nothing was ever hoisted out), and not a barrier or coercion of any
-kind. Whether the standing 2026-07-24 constraint nonetheless reached it was escalated rather than
-self-answered by session s5b, and the ruling of 2026-08-20 05:46 (docs/grind/decisions.md:8448)
-is **PASS**: the constraint does not reach a body with no lever construct.
+## T6 naming-announces-intent: PASS. There are no names to audit — the body introduces no
+identifier at all. The only symbols it references are the pre-existing externs SetPolyG4,
+SetSemiTrans, AddPrim, D_800A35C4, D_800A374C and its own parameters arg0/arg1.
 
-## T6 naming-announces-intent: no names exist in the body beyond the two parameters `arg0`/`arg1`
-inherited from the surrounding file's convention. Nothing named pad/dummy/unused/spill/tail/slack,
-and no symbol carries an intent name.
+SANCTIONED-FAMILY-CLAIMS: none
 
-SANCTIONED-FAMILY-CLAIMS: none — the diff contains no construct requiring a family, so no scope
-sentence or exception precedent is being spent. (Ordinary-C precedent for the spelling, offered as
-corroboration only and not as a family claim: src/text1b.c:5840 and src/text1b.c:5843, the
-COMPLETED-C sibling func_80072BC4's own un-hoisted cross-arm duplicate store.)
+No exception family is claimed or spent, because the diff contains no construct requiring one.
+Supporting in-repo precedent for the SPELLING (offered as corroboration, not as a family grant):
+the COMPLETED-C sibling func_80072BC4 carries the same un-hoisted cross-arm duplicate store
+`*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in both arms at src/text1b.c:5840 and src/text1b.c:5843,
+with zero rules and absent from engine/queue.json.
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct (no construct of any kind; see CONSTRUCTS).
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct

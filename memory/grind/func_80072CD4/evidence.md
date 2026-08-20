@@ -390,3 +390,56 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   after measurement, per asm-until-matched and the layer-1 instruction). candidate.c restored to the
   CLEAN floor-4 body (formerly fallback_floor4.c) with the forensic header; the banned rgb-triple
   body remains only in rejected/.
+
+## [s5-forensics-2 2026-08-20] Forensics respawn — the classification is settled and the match is landed
+- [s5f2] CHASSIS RE-MEASURE FIRST, twice, before anything was spent on it: the per-arm POLY_G4
+  rgb-triple body (tmp/grind/func_80072CD4/s5/v_rgbtriple_noholder.c, now the header-bearing
+  memory/grind/func_80072CD4/candidate.c) applied over the migrated INCLUDE_ASM line gives
+  `sandbox func_80072CD4 --disable all` = **score 0, build_insns 79 == target_insns 79, scorable
+  true, rules_dropped 0, cheat_asm_stripped 279**. Artifact
+  tmp/grind/func_80072CD4/s5f2/sandbox_rgb_s5f2.json. The floor is 0 on the CURRENT chassis, this
+  session, with the edit in place at src/text1b.c:5865.
+- [s5f2] THE OPEN CLASSIFICATION QUESTION WAS ANSWERED BEFORE THIS SESSION BEGAN. The previous
+  forensics session emitted `ruling-request`; the Judge answered on 2026-08-20 06:09
+  (docs/grind/decisions.md:8456, on main as commit a8d7ee5f) — **PASS**, verbatim: "The banned
+  lever is the fc_const-holder mid-arm injection (rejected/dup4_0xc_into_arms.c) and stays banned;
+  that ban does not reach a body with no holder and no hoist." That is a legitimate Judge
+  disposition on this exact body, filed by a different session and committed to main. It is NOT
+  the 2026-08-20 05:46 entry (the driver's banned citation), which this session does not cite in
+  candidate.c, in self_vet.md, or anywhere else. The 05:53 layer-1 FAIL predates it and its stated
+  ground — "a same-session-adjacent 'ruling' purports to bless it" — no longer describes the
+  record. Consequently the previous forensics session's instruction to keep the body in rejected/
+  is superseded by the ruling it was itself waiting on; candidate.c is the rgb-triple body again
+  and the clean floor-4 body is preserved unchanged as fallback_floor4.c.
+- [s5f2] NEW DUMP-LEVEL FACT (the one thing forensics could still add, and it directly rebuts the
+  layer-1 characterisation "written in both arms SOLELY to steer jump2's cross-jump merge point").
+  Dumps captured with `pwsh tools/grinder/dump.ps1 func_80072CD4` over src/text1b.c carrying the
+  candidate; per-function RTL extracted to tmp/grind/func_80072CD4/s5f2/*.rtl:
+    * SOURCE order inside each inner arm is canonical ascending POLY_G4 field order —
+      4, 5, 6, C, D, E.
+    * By the END of sched2 (text1b.sched2) each arm has been RE-ORDERED to 5, 6, D then 4, C, E:
+      the three producer-less stores sink to the arm tail — THEN arm insns 40 (@4 <- v1),
+      55 (@0xC <- v1), 65 (@0xE <- v0); ELSE arm insns 75, 90, 100, the same three offsets in the
+      same order. Both arms are re-ordered independently and identically by the bottom-up
+      `schedule_block` rule this ledger's prior forensics entry documented (producer-less memory
+      insns, unit=0, win the equal-priority potential-hazard tiebreak, are picked first bottom-up
+      and therefore emitted last).
+    * jump2 (text1b.jump2) then cross-jumps that ALREADY-SCHEDULED identical 3-insn tail: the THEN
+      copies 40/55/65 are deleted and a NEW join label is inserted ahead of the ELSE copies
+      (`code_label 223 ... 872`, a late insn number = created by jump2), leaving
+      `ST @4 <- v1 / ST @0xC <- v1 / ST @0xE <- v0` at the head of the merge block — exactly
+      target's merge head `sb v1,4 / sb v1,0xC / sb v0,0xE`.
+  The merge order is therefore MANUFACTURED BY sched2 out of canonical field order; it is not
+  present in, and cannot be selected by, any ordering of the C statements. A construct that cannot
+  steer the merge point is not a merge-order lever.
+- [s5f2] SIBLING CONTROL, same TU, same dumps: the COMPLETED-C sibling func_80072BC4 writes the
+  cross-arm duplicate `@0x1D = 0xC3` in BOTH arms (src/text1b.c:5840, :5843) and jump2 does NOT
+  merge it — insns 75 and 88 both survive in text1b.jump2 because the arms' tails differ there.
+  So an un-hoisted cross-arm duplicate store is house style in an ACCEPTED, zero-rule, completed
+  function INDEPENDENTLY of whether the compiler happens to tail-merge it. Whether jump2 merges is
+  a property of the surrounding schedule, not of the author's spelling.
+- [s5f2] DISPOSITION: candidate-ready. src/text1b.c:5865 carries the candidate body (LF-clean,
+  CRLF count 0); memory/grind/func_80072CD4/self_vet.md rewritten as a candidate-ready vet
+  (CONSTRUCTS: none; all six tests answered against the landed diff; SANCTIONED-FAMILY-CLAIMS:
+  none; ANNOTATION-CONFORMANCE n/a). Tree scope: src/text1b.c + ledger/scratch only
+  (metrics/events.jsonl churn is engine-generated).

@@ -1,43 +1,48 @@
-/* func_80072CD4 — best CLEAN (reviewer-passable) form: sandbox --disable all = 4, build_insns 79 == target.
- * RE-MEASURED s5 (2026-08-20) on the POST-MIGRATION chassis (asm-until-matched, src carries
- * INCLUDE_ASM; this body applied over it reproduces score 4 / 79 insns exactly). The s1-s4 floor is
- * therefore chassis-current, not a stale pre-migration number. Symbol names updated to the current
- * naming wave: SetPolyG4 / SetSemiTrans / AddPrim (the pre-naming header said initPolyG4 /
- * gpu_SetSemiTransp / ot_Link — those identifiers no longer exist in src/text1b.c).
+/* func_80072CD4 - CLEAN candidate (reviewer-passable): `sandbox --disable all` = 4,
+ * build_insns 79 == target. Re-measured chassis-current s5-forensics (2026-08-20).
  *
- * Pure C: one local `int fc_const` (named 0xFC constant, mirrors COMPLETED-C sibling func_80072BC4).
- * NO asm/pins/volatile/barriers/do-while/dead-stores/unused-decls/duplication. Every store is a real
- * GameObj field write; the per-arm @0xE writes (0x32 vs 0x46) are genuinely different per branch.
+ * This is the SAME body previously banked as fallback_floor4.c. It is restored as candidate.c
+ * because the sandbox-0 body that briefly occupied this file (the per-arm rgb0/rgb1 triple form)
+ * was FAILed by the layer-1 cheat-reviewer as a respelling of the Judge-FAILed @4/@0xC
+ * duplicated-into-arms store-schedule construct, and is now a BANNED construct for this function.
+ * Do not re-apply it as a candidate; the open question about it is a ruling question, not a
+ * submission (see the s5-forensics ruling-request in the ledger).
  *
- * s2 progress (clean floor 18 -> 4):
- *   18 -> 9  : write @0xE per-arm (its real branch value) instead of via a cross-block temp in the merge.
- *              The value stops sharing a live range with the $v0 byte-store constants, so RA matches
- *              target (fc_const->$v1, @0xE-value->$v0); cross-jump merges the identical `sb v0,0xE` to
- *              the merge point (li stays in each arm delay slot). Closes the 1-insn gap (78->79).
- *    9 -> 4  : order the arg0>=4 branch stores as target (@4 first -> outer-beqz delay li v0,0x10;
- *              @5,@6 next -> multi-use v1/a0 consts hoisted; then @0xC).
+ * Pure C: one local `int fc_const`. No asm/pins/volatile/barrier/do-while/dead store/duplication.
  *
- * REMAINING 4 (objdump-confirmed again in s5, tmp/grind/func_80072CD4/s5/base.dis): the whole function
- * is byte-identical to target through both inner arms — including the THEN arm's `j` + `li v0,0x32`
- * delay slot and the ELSE arm's trailing `li v0,0x46`. The ONLY divergence is the merge block's store
- * ORDER: target emits `sb v1,4; sb v1,0xC; sb v0,0xE` at the merge head, ours emits `sb v0,0xE` first
- * (jump2 splices the cross-jumped common tail at the join label) and defers `sb v1,4; sb v1,0xC` to the
- * block tail (sched2 gives them no launch pairing — their $v1 datum is set in a predecessor block).
+ * WHAT s5-FORENSICS ESTABLISHED ABOUT THE RESIDUAL 4 (dump-level, not hypothesis):
+ *  - The residual is the merge block store order. Ours: `sb v0,0xE` (cross-jumped from the arms)
+ *    at the merge head, the li/sb chains next, and `sb v1,4 / sb v1,0xC` DEFERRED to the block tail.
+ *    Target: `sb v1,4 / sb v1,0xC / sb v0,0xE` at the merge head.
+ *  - Pass attribution (BB2_SCHED_DEBUG on the instrumented cc1, tools/gcc-2.7.2/cc1;
+ *    tmp/grind/func_80072CD4/s5/scheddbg_pass{1,2}.txt): the deferral is done by **sched2**
+ *    (schedule_insns pass 2), not by jump2 and not by sched1. sched.c schedule_block walks the
+ *    block BOTTOM-UP (pick order is the exact reverse of emit order - verified against the PICK
+ *    trace). A store whose value register is defined in a PREDECESSOR block has ZERO dependence
+ *    predecessors inside the block, so it is ready at the first bottom-up round and wins the
+ *    equal-priority (pri=1) schedule_select potential-hazard tiebreak (sched.c:2660-2745, unit=0
+ *    memory insns beat unit=-1 ones); being picked first bottom-up puts it LAST in the emitted
+ *    block. The li->sb pairs are pulled the other way by adjust_priority birth boost
+ *    (pri 0x7F000001) the moment their consumer is scheduled.
+ *  - Internal control inside THIS function own build: `sb v0,0xE`, which the source writes
+ *    per-arm and jump2 cross-jumps, DOES sit at the merge head; `sb v1,4`/`sb v1,0xC`, which the
+ *    source writes in the merge block, sink to the tail. Same block, same pass, opposite placement,
+ *    and the only difference is which block the source wrote them in.
+ *  - Pass ORDER (toplev.c:3117 sched2 -> :3142 jump_optimize(cross_jump=1) -> :3167 dbr):
+ *    cross-jump runs AFTER sched2, so a common tail spliced at the join label is never
+ *    re-scheduled. That is why the cross-jumped store keeps the head slot the sunk stores
+ *    cannot reach.
+ *  => Consequence: no source form that writes @4/@0xC inside the merge block can place them at the
+ *    merge head, for any statement order (s4b 15.8k-iteration directed PERM_LINESWAP over exactly
+ *    those stores found nothing below base - source order is irrelevant, sched2 rebuilds the order
+ *    from a dependence graph that every permutation shares).
  *
- * WHY NO CLEAN 0 EXISTS (5 sessions of measurement, all banked):
- *   - cross-block var_v0 (target's own source shape) = 13/78: sched1 hoists the lone constant `li` to
- *     the arm top (no in-arm consumer -> no 7f000001 launch boost -> loses the potential_hazard tiebreak,
- *     sched.c:2683-2699), so var_v0 goes live across the $v0 byte constants and RA rotates it to $v1.
- *   - the merge-block source order is exhaustively searched (s4b directed PERM_LINESWAP, 15.8k iters,
- *     zero finds below base) and both random-permuter chassis (s4, ~11k iters) surface only cheats.
- *   - s5 killed the last two never-run levers: the 2026-06-14 WIP "Lever A" (route the arm byte
- *     constants 0xC3/0x1E/0xC8 through a shared local so they vacate $v0) is INERT on this chassis (4)
- *     and only reshuffles the diff on the cross-block chassis (11/78 — it cross-jumps `sb v0,0xD` to the
- *     merge head instead, losing an insn, and the RA rotation persists); hoisting the @4/@0xC stores
- *     above the inner `if` = 8/78; a base-pointer-local spelling (`u8 *p = (u8 *)arg1; p[N] = ...`) = 17/82.
- *   - the only sandbox-0 form ever found duplicates @4/@0xC into both arms for a store-SCHEDULE effect
- *     (jump2 deletes the second copy); Judge-FAILed 2026-07-24 16:38 and refused by owner ruling
- *     2026-07-27 (docs/grind/decisions.md). Do NOT re-propose it.
+ * The cross-block chassis (rejected/xblock_sched1_hoist.c, 13/78) fails for the mirror-image reason:
+ * sched1 hoists the arms `li var_v0,0x32/0x46` to the arm TOP because it has unit=-1 and no in-block
+ * consumer, so it loses every equal-priority tiebreak and is picked last bottom-up
+ * (scheddbg_pass1.txt block=2/3: SELBEST picks 54/49/44 over 57 at clock 2/4/6, insn 57 picked at
+ * clock 8 = block top). The hoist then makes the arm tails identical, cross-jumps `sb v0,0xD` out of
+ * the arms (78 insns, one short of target) and rotates RA (fc_const -> $a0, var_v0 -> $v1).
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int fc_const;

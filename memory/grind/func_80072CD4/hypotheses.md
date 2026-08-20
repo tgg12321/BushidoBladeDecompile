@@ -317,3 +317,35 @@ the s1-s5 exhaustion analysis stands as written.
 - verdict: KILLED (attractor b is closed by a compiler rule, not by a search gap). Its only escape
   would be giving the arm `li` an in-block consumer - which means storing @0xE in the arm, i.e.
   moving to the per-arm chassis.
+
+## [s5-forensics-2 2026-08-20] Is the per-arm placement a merge-order lever, as layer-1 characterised it?
+- statement: the layer-1 FAIL's factual premise — that `@4 = 0xFC` / `@0xC = 0xFC` sit in both arms
+  "solely to steer jump2's cross-jump merge point" — is false; the C cannot steer that merge order
+  at all.
+- mechanism: the arms' emitted tail order (4, C, E) is produced by sched2's bottom-up sinking of
+  producer-less stores, applied separately to each arm, from a SOURCE order that is canonical
+  ascending POLY_G4 field order (4,5,6,C,D,E). jump2 runs after sched2 (toplev.c: sched2 :3117,
+  cross_jump :3142) and splices the already-scheduled common tail at a newly created join label.
+- probe: `pwsh tools/grinder/dump.ps1 func_80072CD4` with candidate.c applied; per-function RTL in
+  tmp/grind/func_80072CD4/s5f2/func_80072CD4.{sched2,jump2}.rtl.
+- result: sched2 THEN arm ends 45(@5) 50(@6) 60(@0xD) | 40(@4) 55(@0xC) 65(@0xE); ELSE arm ends
+  80(@5) 85(@6) 95(@0xD) | 75(@4) 90(@0xC) 100(@0xE). jump2 deletes 40/55/65, inserts code_label
+  223 (label 872) before 75/90/100 → merge head = target's merge head.
+- verdict: KILLED (the "lever" characterisation is disproved at dump level; the source order and
+  the emitted order are different orders, and only the compiler produces the second).
+
+## [s5-forensics-2] Does a cross-arm duplicate store require jump2 to merge it to be house style?
+- statement: no — the accepted, COMPLETED-C sibling carries one that jump2 declines to merge.
+- probe: same dumps, func_80072BC4 slice (tmp/grind/func_80072CD4/s5f2/func_80072BC4.jump2.rtl).
+- result: `@0x1D = 0xC3` written at src/text1b.c:5840 and :5843 survives as TWO insns (75, 88) in
+  jump2; the function is zero-rule, byte-matched and absent from engine/queue.json.
+- verdict: CONFIRMED (the spelling is accepted in-repo on its own terms).
+
+## [s5-forensics-2] FRONTIER
+Empty as a search frontier. The function has a chassis-current byte match (score 0, 79 == 79,
+rules_dropped 0) landed at src/text1b.c:5865, a Judge PASS on its classification
+(docs/grind/decisions.md:8456, commit a8d7ee5f), a construct-free self-vet, and now a dump-level
+disproof of the only factual objection raised against it. What remains is acceptance: layer-1 on
+the diff, the Judge, then the operator's oracle build + `queue done`. If layer-1 or the Judge
+overturns the 06:09 ruling, the fallback is memory/grind/func_80072CD4/fallback_floor4.c (clean
+floor 4, unchanged) and the s1-s5 exhaustion analysis stands as written.
