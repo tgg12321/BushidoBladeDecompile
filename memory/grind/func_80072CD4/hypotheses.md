@@ -349,3 +349,75 @@ disproof of the only factual objection raised against it. What remains is accept
 the diff, the Judge, then the operator's oracle build + `queue done`. If layer-1 or the Judge
 overturns the 06:09 ruling, the fallback is memory/grind/func_80072CD4/fallback_floor4.c (clean
 floor 4, unchanged) and the s1-s5 exhaustion analysis stands as written.
+
+## [s7-rederive 2026-08-20] arg1 is a PSX libgpu POLY_G4, and the body is four setRGB* triples
+- statement: the function's semantic model is not "byte stores at magic offsets into a GameObj";
+  arg1 is a `POLY_G4` primitive and every store is a named RGB component of one of its four vertex
+  colours. Re-deriving the body from that model (a real `POLY_G4` struct type, named members, no
+  casted byte offsets anywhere in the body, no locals) still byte-matches.
+- mechanism: libgpu's POLY_G4 layout is `u32 tag; u8 r0,g0,b0,code; s16 x0,y0; u8 r1,g1,b1,pad;
+  s16 x1,y1; u8 r2,g2,b2,pad; s16 x2,y2; u8 r3,g3,b3,pad; s16 x3,y3;` = 0x24 bytes. Every offset
+  this function writes (4/5/6, C/D/E, 14/15/16, 1C/1D/1E) is exactly an r/g/b triple, nothing else
+  is touched, and the function's own return value is `arg1 + 0x24` — the primitive's size. The
+  layout is confirmed by the code, independently of any naming census.
+- probe: tmp/grind/func_80072CD4/s7/body_R1b_struct_nolocal_perarm.c applied via s7/apply.py, then
+  `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`
+  (tmp/grind/func_80072CD4/s7/body_R1b_struct_nolocal_perarm.json).
+- result: **score 0, build_insns 79 == target_insns 79, rules_dropped 0.** A structurally different
+  C shape from every s1-s6 form (struct-typed member writes vs `*(u8 *)((s32)(arg1) + N)` casts)
+  reaching the same byte match.
+- verdict: CONFIRMED. Corollary for classification: the per-arm repetition of the shared `0xFC`
+  red component is not a hand-placed store at all in this spelling — it is one component of the
+  `setRGB0(p, 0xFC, 0xC3, 0x1E)` / `setRGB1(p, 0xFC, 0xC8, 0x32)` triple each arm assigns.
+
+## [s7-rederive] TARGET'S OWN BYTES contain a non-merged cross-arm duplicate of a shared constant
+- statement: the original source of THIS function demonstrably wrote a common constant in both
+  inner arms rather than hoisting it — this is readable off the shipped binary, with no appeal to
+  any GCC pass, any lever theory, or any sibling function.
+- probe: asm/funcs/func_80072CD4.s. THEN arm lines 23-24: `addiu $v0,$zero,0xC3` / `sb $v0,0x5($s1)`.
+  ELSE arm lines 32-33: `addiu $v0,$zero,0xC3` / `sb $v0,0x5($s1)`. Same value, same field, both
+  arms, TWO copies in the shipped code — jump2 declines to merge them because the arms' trailing
+  insns differ (THEN ends `j .L80072D64 / addiu $v0,0x32`, ELSE ends `addiu $v0,0x46`).
+- result: if the original source had hoisted the shared green component `@5 = 0xC3` out of the arms
+  (the shape the layer-1 FAIL demands for `@4`/`@0xC`), `sb $v0,0x5` would appear ONCE, in the merge
+  block. It appears twice, in the shipped executable.
+- verdict: CONFIRMED. Cross-arm duplication of a value common to both arms is ORIGINAL-SOURCE
+  behaviour for func_80072CD4, established by the target bytes themselves. Any C that matches this
+  function must contain at least one such duplicate (`@5 = 0xC3`), so "the same constant is written
+  in both arms" cannot by itself be the cheat signature here.
+
+## [s7-rederive] Does a pointer local (`POLY_G4 *p = (POLY_G4 *)arg1;`) change the outcome?
+- statement: no — it strictly costs insns on both chassis, generalising s5's u8*-spelling kill.
+- probe/result: per-arm chassis with `p` = **13 / 82** (three insns worse than the same body written
+  `((POLY_G4 *)arg1)->field`, which is 0/79); cross-block chassis with `p` = **24 / 80** vs 11/77
+  without. Artifacts: s7/body_R1_struct_perarm.json, s7/body_R2_struct_xblock.json.
+- verdict: KILLED (rejected/rederive_polyg4_ptrlocal_perarm_13_82.c,
+  rejected/rederive_polyg4_ptrlocal_xblock_24_80.c). Consistent with s5's
+  base_pointer_local_spelling (17/82): the target keeps `arg1` in `$s1` and addresses every field
+  off it directly; any C-level second handle for the base is byte-divergent.
+
+## [s7-rederive] The cross-block (non-duplicated) attractor re-measured in struct spelling: 11/77
+- statement: struct spelling improves the b-attractor's score (13/78 -> 11/77) but moves it FURTHER
+  from target in insn count, and the two missing insns are now individually attributed.
+- probe: rejected/rederive_polyg4_struct_xblock_11_77.c; disassembly tmp/grind/func_80072CD4/s7/r2b.dis.
+- result: 79 - 77 = 2 missing insns, both identified by reading r2b.dis against
+  asm/funcs/func_80072CD4.s:
+  (1) sched1 hoists the staged `b1` constant to the arm HEAD (`li v1,0x32` in the inner beqz delay
+      slot at 0x872c; `li v1,0x46` at 0x8748), so both arms now END with an identical `sb v0,0xD`,
+      and jump2 cross-jumps THAT store to the merge head (0x8760) — target keeps one copy per arm
+      (:28 and :37) precisely because its arms end with DIFFERENT `li` constants (0x32 / 0x46), so
+      the backward common-tail scan finds nothing to merge.
+  (2) CSE folds `@0x14 = 0xFC` into the same `li v0,0xFC` that feeds `@4` and `@0xC` (one `li` at
+      0x8764 feeding sb 4 / sb 0xC / sb 0x14), where target re-materialises it
+      (`addiu $v0,$zero,0xFC` at 0x80072D70 for `@0x14`). This is the mirror of s1's H1: writing
+      all three 0xFC stores as bare literals in ONE block lets CSE share them.
+- verdict: KILLED, with the mechanism now fully local: repairing (1) requires the arm's staged
+  constant to survive at the arm tail, which requires an in-arm consumer for it, which means storing
+  `@0xE` inside the arm — i.e. leaving the b-attractor entirely. Independent re-derivation of s3/s5's
+  conclusion by a different spelling and a different measurement.
+
+## [s7-rederive] Tooling note
+- m2c is NOT installed in this checkout's WSL venv (`python3 -c "import m2c"` -> ModuleNotFoundError;
+  no `m2c/` dir, no `~/m2c`). The rederive modality's "fresh m2c decompile" leg is unavailable; this
+  session re-derived the body by hand from the target asm plus the libgpu POLY_G4 layout instead,
+  which is a stronger derivation (it names the fields rather than reproducing the offsets).

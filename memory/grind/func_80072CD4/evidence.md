@@ -443,3 +443,33 @@ forms that reached 11 carry empty `do { } while(0)` scheduler barriers
   (CONSTRUCTS: none; all six tests answered against the landed diff; SANCTIONED-FAMILY-CLAIMS:
   none; ANNOTATION-CONFORMANCE n/a). Tree scope: src/text1b.c + ledger/scratch only
   (metrics/events.jsonl churn is engine-generated).
+
+## s7 (rederive, 2026-08-20)
+
+- **Chassis re-measured** (the dispatch brief reported "measurement unavailable"):
+  `memory/grind/func_80072CD4/candidate.c` applied to src/text1b.c -> `sandbox --disable all`
+  = **score 0, build_insns 79, target_insns 79, rules_dropped 0**. The banked byte match still
+  reproduces on the current chassis.
+- **Semantic model settled: arg1 is a PSX libgpu `POLY_G4`.** Layout `u32 tag; u8 r0,g0,b0,code;
+  s16 x0,y0; u8 r1,g1,b1,pad; s16 x1,y1; u8 r2,g2,b2,pad; s16 x2,y2; u8 r3,g3,b3,pad; s16 x3,y3;`
+  = 0x24 bytes. Every offset the function writes is an r/g/b component; the return value is
+  `arg1 + 0x24` = the primitive's size. `GameObj *` in the signature is a decomp artefact, not the
+  real type.
+- **A structurally different C shape also byte-matches**: the body re-expressed as struct-member
+  writes of complete RGB triples — no casted byte offsets, no locals, no holder, no pointer alias —
+  measures **0 / 79** (rejected/rederive_polyg4_struct_perarm_score0_banned_family.c,
+  artifact s7/body_R1b_struct_nolocal_perarm.json). Filed under rejected/ ONLY because it is the
+  same construct family the standing ban names, not because it was disproved.
+- **Target's own bytes contain a non-merged cross-arm duplicate.** `addiu $v0,$zero,0xC3` /
+  `sb $v0,0x5($s1)` appears in BOTH inner arms of asm/funcs/func_80072CD4.s (lines 23-24 and 32-33)
+  and is not cross-jumped, because the arms' trailing insns differ. The original source therefore
+  wrote a value common to both arms inside both arms. Any matching C must reproduce that duplicate.
+- **Pointer locals are strictly harmful here** (generalises s5's u8* result to struct spelling):
+  per-arm chassis 13/82 with `POLY_G4 *p`, 0/79 without; cross-block chassis 24/80 with, 11/77
+  without.
+- **b-attractor residual fully localised at 11/77** (see hypotheses.md): (1) sched1 hoists the
+  staged `b1` li to the arm head -> identical arm tails -> jump2 eats one `sb v0,0xD`; (2) CSE
+  shares the merge block's three `0xFC` literals into one `li` where target re-materialises for
+  `@0x14`. Disassembly banked at tmp/grind/func_80072CD4/s7/r2b.dis.
+- **src/text1b.c left carrying `INCLUDE_ASM("asm/funcs", func_80072CD4);`** (line 5865), per
+  asm-until-matched and the two standing layer-1 FAILs. Nothing was committed.
