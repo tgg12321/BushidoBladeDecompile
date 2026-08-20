@@ -38,5 +38,10 @@
  ],
  "judge_constraints": [],
  "origin": "queue",
- "created": "2026-07-24T22:01:20.133719+00:00"
+ "created": "2026-07-24T22:01:20.133719+00:00",
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Construct (rotated loop-guard reusing the live counter, if (i < ptr[1]) instead of if (ptr[1] > 0)) is independently verified as a legitimate instance of the phantom-slot-frame-lever family with real in-tree precedent, but the self-vet's own citations for it are fabricated/wrong and must be corrected before commit. Re-cite only \u2014 no re-grind needed. The construct is real and precedented under .claude/rules/phantom-slot-frame-lever.md, producer #1 ('Folded loop-guard compare'), which explicitly names this exact spelling as an exhibit: \"the rotated-while guard `if (i < limit)` re-using the loop'",
+  "set": "2026-08-20T07:40:53.918306+00:00"
+ }
 }

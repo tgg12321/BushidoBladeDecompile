@@ -1,26 +1,35 @@
-/* func_80017FA0 (code6cac.c) — BEST honest pure-C candidate. Honest sandbox
- * distance = 2 (s1 recon, 2026-07-24). Was floor 13 (WIP) / 16 (old candidate).
+/* func_80017FA0 (code6cac.c) - MATCHED. sandbox --disable all = 0 and full
+ * build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (s4, 2026-08-20).
+ * ZERO regfix/asmfix rules, ZERO cheat-asm, ZERO FAKE-annotated constructs.
  *
- * KEY LEVER (s1): route the two FIXED scratchpad writes through a pointer-typed
- * lvalue (`scr[idx]`) instead of a raw `*(volatile s32*)0xCONST` cast. A raw
- * integer-constant cast makes GCC synthesize the address into a register
- * (lui+ori) then `sw ...,0(reg)` (3 insns, NO displacement fold). Routing the
- * same store through a pointer variable / struct field makes GCC emit a
- * `(mem (const_int))` that the assembler folds to `lui at,0x1f80; sw ...,0x60(at)`
- * — the 2-insn folded form the target uses. Probe: tmp/grind/func_80017FA0/s1/
- * foldprobe.* (P1 int-cast=3insn; P4 ptr-var / P5 struct-cast = 2-insn folded).
- * This closed 11 of 13 diffs: the fold (both fixed writes) AND the downstream
- * v0<->v1 register cascade (temp was forced to v1 by the early delay-slot lui).
- *
- * RESIDUAL (distance 2): the empty 8-byte stack frame. Target does
- * `addiu sp,-8` (in the beqz delay slot) ... `addiu sp,8` with NOTHING stored
- * to the frame. Our build emits no frame (nop in the delay slot, no teardown).
- * Sole remaining mechanism — see hypotheses.md frontier F1.
+ * Two levers, both ordinary C:
+ *  1. (s1) The two FIXED scratchpad writes go through a pointer-typed lvalue
+ *     (scr[0x2E] / scr[0x18]) rather than a raw *(volatile s32*)0xCONST cast.
+ *     The cast form makes cc1 synthesise the address into a register
+ *     (lui;ori;sw 0(r) = 3 insns); the pointer lvalue yields a (mem (const_int))
+ *     the assembler folds to lui at,0x1f80; sw x,disp(at) = target's 2 insns.
+ *     That also removed the v0/v1 cascade the early lui had forced. 13 -> 2.
+ *  2. (s4) The outer loop guard is spelled against the LIVE counter,
+ *     `if (i < ptr[1])`, not against the literal `ptr[1] > 0`. Semantically the
+ *     same test (i is 0 there) and the shape GCC's loop rotation produces from
+ *     `for (i = 0; i < ptr[1]; i++)`. Using i in the guard makes i a local that
+ *     survives to frame layout, so get_frame_size() reports vars=8 and
+ *     mips.c:compute_frame_size emits `addiu sp,sp,-8` (in the beqz delay slot)
+ *     / `addiu sp,sp,8` - the target's zero-store 8-byte leaf frame - while i
+ *     still lives entirely in a register, so no frame store is ever emitted.
+ *     This is the ordinary phantom-frame artifact of GCC 2.7.2 documented in
+ *     memory/project/phantom-frame-slots-gcc272.md, NOT a dead local: sessions
+ *     s1-s3 concluded only a forbidden dead local could reserve those 8 bytes
+ *     and escalated on that basis; the conclusion was wrong. 2 -> 0.
  *
  * The inner double-loop keeps FULL-constant computed addresses
- * `*(volatile s32*)(0x1F800064 + sp_inner)` so GCC re-materializes lui 0x1f80
- * each iteration (target does NOT LICM-hoist it). Do NOT route the inner writes
- * through `scr` — that hoists the lui and regresses (old idx_base form = 33). */
+ * *(volatile s32*)(0x1F800064 + sp_inner) so cc1 re-materialises lui 0x1f80
+ * every iteration (target does not LICM-hoist it). Routing the inner writes
+ * through `scr` hoists the lui and regresses (old idx_base form = 33). */
+/* Copies scaled fields out of the block at a0[3] into scratchpad RAM
+ * (0x1F800000). ptr[0] is written scaled by 128; ptr[1] is the group count,
+ * and each group writes three words scaled by 4 at a 0x18 stride plus one
+ * word taken from the 0x68 array. Nothing happens when a0[3] is null. */
 void func_80017FA0(s32 *a0) {
     volatile s32 *scr = (volatile s32 *)0x1F800000;
     s32 temp;
@@ -32,11 +41,11 @@ void func_80017FA0(s32 *a0) {
     }
     ptr = (s32 *)temp;
 
-    scr[0x2E] = ptr[0] << 7;   /* 0x1F8000B8 — folds to lui;sw 0xB8 via scr[] */
+    scr[0x2E] = ptr[0] << 7;   /* 0x1F8000B8 */
 
     {
         s32 i = 0;
-        if (ptr[1] > 0) {
+        if (i < ptr[1]) {
             s32 *p68 = ptr;
             volatile s32 *ac_base = (volatile s32 *)0x1F800000;
             s32 sp_off = 0;
@@ -62,7 +71,7 @@ void func_80017FA0(s32 *a0) {
         }
     }
 
-    scr[0x18] = ((s32 *)a0[3])[1];   /* 0x1F800060 — folds to lui;sw 0x60 via scr[] */
+    scr[0x18] = ((s32 *)a0[3])[1];   /* 0x1F800060 */
 end:
     ;
 }

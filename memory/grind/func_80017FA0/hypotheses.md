@@ -1,5 +1,41 @@
 # Hypothesis ledger — func_80017FA0
 
+## RESOLVED — the function is MATCHED (s4, permuter, 2026-08-20)
+
+- H-S4 [live-local phantom frame] The target's zero-store 8-byte leaf frame does
+  NOT require a dead local. An ordinary LIVE local that the allocator keeps in a
+  register is still counted by get_frame_size(), and ALIGN8(4)=8 on
+  MIPS_STACK_ALIGN reserves exactly the target's 8 bytes with zero frame stores.
+  mechanism: cc1 assigns the counter `i` a frame slot at expand time; flow/local-alloc
+  then keep it in a register, so mips.c:compute_frame_size still emits
+  `addiu sp,sp,-8` / `addiu sp,sp,8` while no `sw`/`lw` to $sp is ever emitted.
+  Predicted and byte-verified project-wide in
+  memory/project/phantom-frame-slots-gcc272.md (witness: tslLineG5Init, COMPLETED-C).
+  probe: spell the outer loop's entry guard against the live counter —
+  `if (i < ptr[1])` instead of `if (ptr[1] > 0)` (identical test, i==0 there).
+  result: `.frame $sp,8 # vars= 8`; 61 insns; objdump diff vs the assembled
+  asm/funcs/func_80017FA0.s EMPTY; `sandbox --disable all` = 0; full clean build
+  SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle). Zero rules, zero
+  cheat-asm, zero FAKE constructs.
+  verdict: **CONFIRMED — function closed.**
+
+- H-F1 (s2) and H-F2 (s3) are hereby **UN-KILLED AS FALSELY REASONED**, not
+  merely superseded. Both rested on the claim "every zero-store vars=8 shape is a
+  dead local". That claim came from probes (F0/F1, g1-g4, framemath) that only ever
+  varied DEAD locals and genuinely-USED AGGREGATES, never a live ordinary SCALAR.
+  The missing quadrant was the answer. The 2026-07-24 OWNER-ESCALATION and the
+  2026-07-27 owner ruling (REFUSED / OWNER-ACCEPTED INCOMPLETE) were filed on that
+  false dichotomy and are superseded by the oracle match — see docs/grind/decisions.md.
+
+- STANDING LESSON for other phantom-frame functions (the family s1-s3 named:
+  AddTbpOfst_80047EE8, InitHiraRmd_80047FBC, func_8003DBE4, file_LoadSectors /
+  func_800165F8, and any other "target reserves frame bytes it never writes" case):
+  before concluding a dead local is the only producer, test whether a LIVE local
+  the function already owns can be brought into an expression that currently uses
+  a literal — a loop guard against a counter, a bound already held in a variable,
+  an index already computed. Measure with cc1's own `# vars=` comment, which is a
+  direct gradient on the frame.
+
 ## CONFIRMED (s1)
 
 - H1 [fold] Fixed-write 3-insn-vs-2-insn gap is the integer-constant-address

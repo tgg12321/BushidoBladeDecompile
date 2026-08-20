@@ -1,5 +1,92 @@
 # Evidence bank — func_80017FA0
 
+## s4 (permuter, 2026-08-20) — **SOLVED. floor 2/3 -> 0. Full-build SHA1 == oracle.**
+
+- [s4] **THE CLOSER: `if (i < ptr[1])` instead of `if (ptr[1] > 0)` for the outer
+  loop's entry guard.** One token-level change to candidate.c. Spelling the guard
+  against the LIVE loop counter (which is 0 at that point, so the test is
+  identical) makes `i` a local that survives to frame layout: cc1 prints
+  `.frame $sp,8,$31 # vars= 8, regs= 0/0, args= 0, extra= 0` and mips.c's
+  compute_frame_size emits `addiu sp,sp,-8` (scheduled into the beqz delay slot)
+  and `addiu sp,sp,8` — the target's zero-store 8-byte leaf frame — while `i`
+  itself lives entirely in a register, so NO frame store is emitted. This is the
+  ordinary GCC-2.7.2 phantom-frame artifact recorded in
+  memory/project/phantom-frame-slots-gcc272.md (byte-verified in-tree on the
+  COMPLETED-C function tslLineG5Init), not a dead local.
+  Measured: tmp/grind/func_80017FA0/s4/vB.c -> 61 insns, `diff` against the
+  assembled asm/funcs/func_80017FA0.s = EMPTY (`IDENTICAL TO TARGET`).
+
+- [s4] **s1/s2/s3's central conclusion was WRONG, and this is the correction the
+  ledger must carry.** Three sessions concluded "the only pure-C producer of a
+  zero-store 8-byte frame is a dead <=8-byte local (array/struct/union/addr-taken)
+  = forbidden dead-vars-local-array", killed H-F1 and H-F2 on that basis, and filed
+  an OWNER-ESCALATION that the owner resolved 2026-07-27 as REFUSED /
+  OWNER-ACCEPTED INCOMPLETE. The error was in the frame probes, not the reasoning
+  over them: s1's F0/F1 probes only ever tested locals that were DEAD (`s32 x;`
+  unused -> vars=0 because DCE removes them before frame layout). No session tested
+  a LIVE ordinary scalar. A live scalar DOES get counted by get_frame_size()
+  (ALIGN8(4) = 8 bytes on MIPS_STACK_ALIGN) and still costs zero instructions when
+  the allocator keeps it in a register. The dichotomy "zero-store vars=8 <=> the
+  local is dead" is false.
+
+- [s4] Oracle proof: `verify-oracle` after a full clean rebuild with the C body in
+  src/code6cac.c => `"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"`,
+  `"build_matches": true`, equal to `original_sha1_locked`. ZERO regfix/asmfix rules
+  (`rules_dropped: 0`), ZERO cheat-asm in the function, ZERO FAKE-annotated
+  constructs, no pins. `sandbox func_80017FA0 --disable all` = **0** (61/61).
+
+- [s4] CHASSIS DRIFT explained (ledger said floor 2, dispatch could not measure, s4
+  measured 3 on the inherited candidate): the extra 1 is a scorer artifact, not a
+  codegen gap. `engine/score.py` masks section-relative HI16/LO16 addends but
+  deliberately NOT named-symbol ones, and splat symbolised the loop's literal
+  `addiu $t3,$t3,4` as `addiu $t3,$t3,%lo(D_1F800004)`. While the function shipped
+  as INCLUDE_ASM the reference object carried that named reloc and our compiled
+  literal `4` scored as one substitution. `undefined_syms_auto.txt:2` defines
+  `D_1F800004 = 0x1F800004`, so %lo == 4 and the linked bytes were always equal —
+  which is why the mid-session score of 1 (61/61, objdump diff EMPTY) was
+  immediately followed by an oracle SHA1 match. Same class as
+  memory/sandbox-lo16-text-addend-false-distance.md. Anyone re-measuring this
+  function before the C lands should expect the +1 and check the oracle, not the
+  scorer.
+
+- [s4] Permuter campaign (the mandated modality) — tmp/perm_17fa0, label s4-base,
+  -j 8, --stack-diffs (default), base_score 300, **15,708 iterations, 26 score-0
+  finds**, harvested and STOPPED in-session. Workspace recipe (reusable for any
+  code6cac function): tmp/grind/func_80017FA0/s4/mkws.sh — full-TU cpp of
+  src/code6cac.c as base.c, per-function extraction of the maspsx output in
+  compile.sh, `D_1F800004 = 0x1F800004` defined in both the target prelude and the
+  compile prelude so the fold assembles, and NO `.set noat` prelude (the folded
+  `sw x,0x1F8000B8` expands through $at and dies under noat). Two gotchas cost a
+  cycle each: maspsx emits `.ent`/`.end` with no leading tab (the mar3 awk pattern
+  requires one), and pycparser cannot parse the TU because `GameObj` is used in two
+  prototypes but never declared in it — a codegen-neutral
+  `typedef struct GameObj GameObj;` prepended to base.c fixes it.
+
+- [s4] What the permuter actually found: 26 score-0 forms, of which the large
+  majority close the frame with a DEAD volatile local (`volatile long long pad;`,
+  `volatile unsigned long pad;`, `volatile char new_var;`) = the forbidden
+  dead-vars-local-array family, banked in
+  rejected/perm-dead-volatile-local-frame-coercion.c. Exactly ONE find
+  (output-0-3) used a live variable in the guard (`int new_var = 0;
+  if (ptr[1] > new_var)`), which is the constant-holder shape; the ACCEPTED form is
+  the strictly better re-derivation of it that needs no extra variable at all,
+  because the function already owns a live counter with the value 0 at that point.
+  Findings are proposals: the winning one was re-derived and re-measured by hand
+  before it was applied.
+
+- [s4] Rejected variant vD (tmp/grind/func_80017FA0/s4/vD.c): spelling the loop as
+  a plain `while (i < ptr[1]) { ... }` with the walking-pointer inits hoisted above
+  it does NOT match — GCC emits the inits before the guard (`blez` region reordered,
+  3 insns adrift). The manual-rotation shape (inits INSIDE the guarded block,
+  `do { } while` back-edge) is required and is the shape GCC's own loop rotation
+  produces.
+
+- [s4] Also measured, for the record: variant vC (`s32 zero = 0;` +
+  `if (ptr[1] > zero)`) is likewise vars=8 and byte-identical to target. It was NOT
+  used — it needs a constant-holder local (a sanctioned-but-FAKE-annotated family)
+  where vB needs nothing at all. Recorded so no future session mistakes the
+  constant-holder route for the only one available.
+
 ## s3 (structural, 2026-07-24) — FLOOR HELD 2. NEW axis (OVERSIZED-LOCALS carve-out) measured DEAD → OWNER-ESCALATION filed.
 
 - [s3] Floor=2 REPRODUCED: candidate.c (scr[] fold form) applied to src, `sandbox --disable all` = {"score":2,"target_insns":61,"build_insns":60,"rules_dropped":6,"cheat_asm_stripped":182}. src reverted clean to HEAD cheat-form. (tmp/grind/func_80017FA0/s3/sandbox_candidate.log)

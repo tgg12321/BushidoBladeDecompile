@@ -7663,3 +7663,82 @@ floor reads its true 14. Recommend tightening the reference scan to ignore comme
 `memory/grind/func_80047FBC/evidence.md` + `hypotheses.md` (s13/s14 entries),
 `memory/grind/func_80047FBC/rejected/`, logs in `tmp/grind/func_80047FBC/s13/` and
 `tmp/grind/func_80047FBC/s14/`. `src/text1b.c` was reverted to HEAD at end of session.
+
+
+## 2026-08-20 — func_80017FA0 (src/code6cac.c) — **MATCHED IN PURE C — SUPERSEDES THE 2026-07-27 OWNER RULING (REFUSED / OWNER-ACCEPTED INCOMPLETE)**
+
+Filed by grind s4 (permuter modality). **This entry exists to retract an earlier
+escalation, not to request one.** No owner action is pending.
+
+**Result:** `func_80017FA0` byte-matches from pure C. `sandbox func_80017FA0
+--disable all` = **0** (61/61 instructions), `rules_dropped: 0`, zero cheat-asm in
+the function, zero register pins, zero `/* FAKE */`-annotated constructs, and a
+full clean rebuild verifies `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`
+== the locked oracle. The 6 regfix rules and the `_frame` / `val` asm barriers the
+2026-07-27 ruling allowed the function to keep are not needed and are not present.
+
+**The closer:** one token-level change. The outer loop's entry guard is spelled
+against the live loop counter — `if (i < ptr[1])` — instead of against a literal —
+`if (ptr[1] > 0)`. The two tests are identical (`i` is 0 at that point) and the
+former is the shape GCC's own loop rotation produces from `for (i = 0; i < ptr[1];
+i++)`. Reading `i` in the guard keeps it a local that survives to frame layout, so
+cc1 reports `.frame $sp,8,$31 # vars= 8, regs= 0/0, args= 0, extra= 0` and
+`mips.c:compute_frame_size` emits `addiu sp,sp,-8` (scheduled into the `beqz` delay
+slot) and `addiu sp,sp,8` — the target's zero-store 8-byte leaf frame — while `i`
+still lives entirely in a register, so no frame store is emitted. That is the
+ordinary GCC 2.7.2 phantom-frame artifact documented in
+`memory/project/phantom-frame-slots-gcc272.md` and byte-verified in-tree on the
+COMPLETED-C function `tslLineG5Init`.
+
+**Why the escalation was wrong.** Sessions s1-s3 killed the frame axis on the
+dichotomy "a zero-store `vars=8` frame implies the local is DEAD, and every dead
+local is forbidden `dead-vars-local-array`". Their probes (s1 F0-F3, s2 g1-g4, s3
+framemath) varied dead scalars, dead arrays, dead structs, dead unions,
+address-taken scalars and genuinely-used aggregates — but never a LIVE ordinary
+scalar. A live scalar is exactly the missing quadrant: `get_frame_size()` counts it
+(ALIGN8(4) = 8 under `MIPS_STACK_ALIGN`) and the allocator still keeps it in a
+register, so it reserves the 8 bytes at a cost of zero instructions. The
+2026-07-24 OWNER-ESCALATION and the 2026-07-27 option-(b) ruling both rest on that
+false dichotomy and are superseded by the oracle match. The owner is not being
+asked to revisit anything — the premise simply did not hold.
+
+**Standing lesson for the sibling family.** The same false dichotomy was used to
+escalate or park other "target reserves frame bytes it never writes" functions —
+`AddTbpOfst_80047EE8`, `InitHiraRmd_80047FBC`, `func_8003DBE4`, `file_LoadSectors`
+/ `func_800165F8`. Before any of those is treated as closed, test whether a LIVE
+local the function already owns can be brought into an expression that currently
+uses a literal (a loop guard against its counter, a bound already in a variable, an
+index already computed). cc1's own `# vars=` comment is a direct gradient on the
+frame and is cheaper than the sandbox score.
+
+**Modality note (permuter, as mandated).** Campaign `tmp/perm_17fa0` (label
+`s4-base`, `-j 8`, `--stack-diffs`, base_score 300) ran **15,708 iterations** and
+produced **26 score-0 forms**; it was harvested and stopped in-session. Most of its
+score-0 forms close the frame with a dead volatile local (`volatile long long pad;`
+and relatives) — the forbidden family, banked in
+`memory/grind/func_80017FA0/rejected/perm-dead-volatile-local-frame-coercion.c`.
+One find (`output-0-3`) used a live variable in the guard; the accepted form is the
+hand-re-derived, strictly cleaner version of it that needs no new variable at all.
+The permuter output was treated as a proposal: the winning shape was re-derived,
+re-measured (`vars=`, objdump-vs-target), applied to `src/` and then proven by the
+oracle.
+
+**Scorer caveat worth carrying forward.** Mid-session the sandbox reported 1 at
+61/61 while the objdump diff against the target was already EMPTY. Cause: splat
+symbolised the loop's literal `addiu $t3,$t3,4` as `%lo(D_1F800004)`, and
+`engine/score.py` deliberately does not mask NAMED-symbol HI16/LO16 addends, so the
+INCLUDE_ASM reference object's reloc scored as one substitution against our
+compiled literal. `undefined_syms_auto.txt:2` defines `D_1F800004 = 0x1F800004`, so
+`%lo` == 4 and the linked bytes were always equal. Same class as
+`memory/sandbox-lo16-text-addend-false-distance.md`.
+
+**Artifacts:** `memory/grind/func_80017FA0/candidate.c` (final form),
+`self_vet.md`, `evidence.md` + `hypotheses.md` (s4 entries),
+`rejected/perm-dead-volatile-local-frame-coercion.c`, and
+`tmp/grind/func_80017FA0/s4/` (`mkws.sh` permuter-workspace recipe, `check.sh`
+frame+diff instrument, `vB.c` / `vC.c` / `vD.c` variants, `build_disasm.txt`).
+`src/code6cac.c` is left CARRYING the matched C (candidate-ready).
+
+## 2026-08-20 02:40 — func_80017FA0 — layer-1 review — **FAIL (citation-only)**
+
+Construct (rotated loop-guard reusing the live counter, if (i < ptr[1]) instead of if (ptr[1] > 0)) is independently verified as a legitimate instance of the phantom-slot-frame-lever family with real in-tree precedent, but the self-vet's own citations for it are fabricated/wrong and must be corrected before commit.
