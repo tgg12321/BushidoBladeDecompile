@@ -67,3 +67,49 @@
 - probe: `sandbox func_80038170 --disable all` (which STRIPS prologue_fix) against a build/ reference produced WITH prologue_fix active
 - result: KILLED — score 0 with prologue_fix stripped. The natural prologue is textually identical to the hardcoded list, so the entry is a measured NO-OP and pure dead weight for `retire func_80038170` to delete.
 - verdict: KILLED
+
+## s4b (2026-08-19, synthesis — post layer-1 FAIL)
+
+## [s4b] The layer-1-banned statement-order lever (standalone `i = 0;` + empty for-init) is REQUIRED for byte parity, as s2 concluded
+- mechanism: s2's claim was that GCC 2.7.2 sched1 emits the i-init `move a3,zero` after the li/lui/lw mask cluster when `i = 0` sits in the for-init clause, displacing `sw ra` by two slots — 5 words off target
+- probe: restore the ordinary `for (i = 0; i < 0x1B; i++)`, delete the standalone `i = 0;`, change nothing else; `engine build`; `sandbox func_80038170 --disable all`
+- result: KILLED — build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH, sandbox score 0 at 141/141, rules_dropped 0. The s2 residual was a stale-reference artifact (build/ still held the cheat-form object), never a property of the compiled source. No scheduling lever of any kind is needed for this function.
+- verdict: KILLED
+
+## [s4b] The `(&D_8008F19C)[s3*2+n]` &-of-scalar spelling is load-bearing for the target's -0x38 frame
+- mechanism: s1-s3 ledger asserted that the scalar declaration plus &-indexing was what kept the two table reads on ONE base and thereby allocated the phantom 8-byte compiler temp (vars 8 -> 16)
+- probe: correct include/code6cac.h:80 to `extern u8 D_8008F19C[];` (symbol referenced only by this function) and write plain `D_8008F19C[s3*2+n]`; `engine build`; sandbox; canonical
+- result: KILLED — sha1 == oracle MATCH, sandbox 0 at 141/141, canonical verdict C / asm_insns 0 / distance 0. Byte-identical codegen. The declared TYPE of the base is irrelevant; only SHARING ONE BASE across the two reads inside the `if (s3 > 0)` arm matters for the temp. The header correction is the honest declaration for the use sites and removes the out-of-bounds-index smell.
+- verdict: KILLED
+
+## [s4b] The Judge-bound form alone, with no added construct anywhere, reaches oracle MATCH and honest sandbox 0
+- mechanism: `s32 s1, s2, s3;` declaration order unchanged + separate `s3 = 0; s2 = 0; s1 = 0;` produces the target save/init pair order s0,s3,s2,s1,ra naturally; the one-base conditional table pair produces the -0x38 frame naturally; everything else is ordinary live C
+- probe: full `engine build` + `sandbox --disable all` + `canonical`, with the body in place in src/code6cac_c_mid.c
+- result: CONFIRMED — sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH; sandbox score 0, 141/141, rules_dropped 0, scorable true; canonical verdict C, asm_insns 0, distance 0. Diff carries no dead local, no volatile, no asm, no pin, no rule, claims no sanctioned family, owes no annotation (self_vet.md)
+- verdict: CONFIRMED
+
+## [s4c] The s4b solved form reproduces from candidate.c on the current chassis, so the s4b discard was a paperwork failure and not a code failure
+- mechanism: the driver reverts grind-session src edits between sessions, so candidate.c is the only durable carrier of the form; the discard came from the self-vet ban tripwire (2 content-word hits from `state.json judge_constraints[0] binding spelling`), which reads only the CONSTRUCTS: block and never looks at the C at all
+- probe: splice candidate.c body over the INCLUDE_ASM line + apply the include/code6cac.h:80 array-declaration fix; then sandbox --disable all, engine build, canonical; then rerun grindlib.check_banned_constructs against the rewritten self_vet.md
+- result: sandbox score 0 at 141/141 with rules_dropped 0; full build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH; canonical verdict C / asm_insns 0 / distance 0; check_banned_constructs -> (True, '')
+- verdict: CONFIRMED
+
+## [s4c] FRONTIER RESET (synthesis): no search axis remains open on this function
+- mechanism: every hypothesis on the s1-s3 frontier has been resolved by measurement — frame gap (one-base indexing allocates the 8-byte compiler temp), prologue pair order (natural under the declared order plus three separate zeroing statements), the claimed 5-word scheduling residual (KILLED as a stale-reference artifact), the reloc-addend deadlock (chassis-relative; dissolved by the asm-until-matched migration), and the func_80079194 link failure (it is strcpy)
+- probe: full re-read of evidence.md + hypotheses.md + rejected/ against a fresh measurement of the banked form
+- result: floor 0 with zero rules and zero cheat-asm; the function is byte-matched by natural compilation and the remaining work is acceptance review, not search
+- verdict: CONFIRMED
+
+## s4d (2026-08-19, synthesis — re-dispatch)
+
+## [s4d] The banked solved form still reaches oracle MATCH + honest sandbox 0 on the chassis as it stands at this dispatch (i.e. the s4b/s4c results were not chassis-luck)
+- mechanism: nothing in the tree that this function depends on has moved since s4c — no regfix/asmfix rule exists for it (rules_dropped 0), the body is the natural-compilation form, and the only companion edit is a header declaration correction
+- probe: re-splice candidate.c over the INCLUDE_ASM line + re-apply the include/code6cac.h:80 array declaration; `sandbox func_80038170 --disable all`; `engine build`; `canonical func_80038170`
+- result: CONFIRMED — sandbox score 0, 141/141, rules_dropped 0, scorable true; build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH; canonical verdict C / asm_insns 0 / distance 0
+- verdict: CONFIRMED
+
+## [s4d] FRONTIER (reset, synthesis): the only remaining work on func_80038170 is acceptance, not search
+- mechanism: all three codegen mechanisms are settled and measured (one-base conditional table pair -> the 8-byte compiler temp / -0x38 frame; declared order plus three separate zeroing statements -> the natural save/init pair order; no scheduling construct needed at all), and the honest floor is 0 with zero rules and zero cheat-asm
+- probe: layer-1 cheat-reviewer on the diff, then the Judge; on PASS the operator runs `retire func_80038170` (deletes the no-op tools/prologue_config.json entry) and `queue done func_80038170`
+- result: pending review — no measurement left to take
+- verdict: CONFIRMED (as a frontier statement: search space on this function is empty)
