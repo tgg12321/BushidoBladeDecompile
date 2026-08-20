@@ -4,6 +4,26 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_80041688",
+      "file": "text1a_post",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 3,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park; see decisions.md OWNER RULING entry"
+    },
+    {
+      "func": "func_80048530",
+      "file": "text1b",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 5,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 1-insn addu operand order \u2014 only closer is FORBIDDEN or-tree-shape-shift swap; 5 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park"
+    },
+    {
       "func": "func_80049A2C",
       "file": "text1b",
       "distance": 12,
@@ -18,6 +38,16 @@
       "verdict": "ASM-PARTIAL",
       "rules": 0,
       "status": "active"
+    },
+    {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 21,
+      "verdict": "C",
+      "rules": 1,
+      "status": "active",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**",
+      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park"
     },
     {
       "func": "func_800324D0",
@@ -2019,15 +2049,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_80041688",
-      "file": "text1a_post",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned"
-    },
-    {
       "func": "get_alarm",
       "file": "display",
       "distance": 9,
@@ -2100,15 +2121,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): +8 phantom slot (combine REG_DEAD strand) \u2014 no C construct can remove a slot; 11 regfix substs retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
     },
     {
-      "func": "func_80048530",
-      "file": "text1b",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 5,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): 1-insn addu operand order \u2014 only closer is FORBIDDEN or-tree-shape-shift swap; 5 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 1/8)"
-    },
-    {
       "func": "special_camera_get_rot_dir",
       "file": "code6cac_b2_post",
       "distance": 12,
@@ -2172,15 +2184,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:4801 - '## 2026-08-12 - motion_Close - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
     },
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 21,
-      "verdict": "C",
-      "rules": 1,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 ## 2026-08-13 \u2014 func_800645B0 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**"
-    },
-    {
       "func": "func_80083794",
       "file": "ings2",
       "distance": 23,
@@ -2201,13 +2204,13 @@
   ],
   "counts": {
     "total": 252,
-    "active": 217,
+    "active": 220,
     "by_status": {
-      "active": 217,
-      "parked": 35
+      "active": 220,
+      "parked": 32
     },
     "by_verdict": {
-      "C": 181,
+      "C": 184,
       "ASM-PARTIAL": 36
     }
   }
