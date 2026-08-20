@@ -185,3 +185,63 @@
 - probe: Reviewed the exhausted structural search against the s6/s7 upstream-mechanism proof; re-verified the clean floor by applying candidate.c to src/text1b.c and measuring sandbox --disable all, plus measured the HEAD committed-cheat form for contrast; reverted src via git checkout.
 - result: No un-run structural lever exists; the residual is upstream of every axis structural levers touch. Clean candidate.c = score 10, 53/53 insns (floor re-confirmed). HEAD committed-cheat-stripped form = score 8, 51 insns (2 short of target 53 — a stripped-cheat artifact, not a reachable pure-C floor). Any structural variant leaves vars=0 (floor 10) or requires the forbidden dead local array.
 - verdict: KILLED
+
+## s12 (2026-08-20, escalation)
+
+- **H-s12.1 CONFIRMED.** *The banked floor-10 chassis plus a `volatile u32 pre_pad[8]` first
+  declaration - the 2026-08-18 sanctioned phantom-frame-slot spelling, never compiled on this
+  function - closes the entire 10-instruction frame-offset residual and byte-matches target.*
+  Mechanism: GCC 2.7.2 `function.c assign_stack_local` reserves the array's 32 bytes at RTL-expand
+  from the source DECL and never reclaims `frame_offset` after DCE, reproducing target's
+  allocated-but-untouched vars region 0x18-0x37 (`.frame $sp,72`). Probe: apply the composite to
+  src/text1b.c:19, run the full driver build. Result: SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == oracle, MATCH; built prologue `addiu sp,sp,-72`. This also KILLS the sub-hypothesis that
+  `volatile` might perturb the allocation away from exactly 32 bytes (unpark-brief Judge-risk flag
+  2): it does not.
+
+- **H-s12.2 CONFIRMED.** *The honest floor cannot read 0 from `sandbox` for this function until
+  `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` carries a `func_80047EE8` row.* Probe:
+  read engine/volatile_cheats.py:746-772 (`_is_sanctioned_pad` gates on exact function + name +
+  element count + volatile) and run the sandbox on the composite. Result: 10, cheat_asm_stripped
+  279. The disposition is therefore an INTEGRATION HANDOFF, not an endgame lock.
+
+- **H-s12.3 KILLED (the prior disposition).** *func_80047EE8 is an endgame lock whose gate (b)
+  fails for want of a SOTN-master precedent (2026-07-22 ruling, decisions.md:1298).* Killed by the
+  owner's 2026-08-18 general-family ruling plus the s12 byte proof: the precedent exists
+  (sotn-construct-index.md:101/:103) and the construct closes the function. The 2026-07-22 REFUSED
+  / OWNER-ACCEPTED INCOMPLETE disposition on this function is SUPERSEDED and should not be quoted
+  by future sessions as live.
+
+- **H-s12r.1 CONFIRMED (re-verification, not inheritance).** *The s12 byte proof reproduces on a
+  clean tree; the discarded filing was a paperwork defect, not a measurement defect.* Probe: fresh
+  apply of memory/grind/func_80047EE8/candidate.c over src/text1b.c:19 + full driver build + fresh
+  sandbox on the same tree. Result: build SHA1 == oracle (MATCH), sandbox 10 with 53/53 insn
+  counts, 0 regfix/asmfix rows. Every self-vet citation re-resolved in the live tree. Verdict: the
+  function IS byte-matched by candidate.c; the only thing standing between it and COMPLETED-C is
+  the owner-class row `"func_80047EE8": frozenset({("pre_pad", 8)})` in
+  engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
+
+- **Process note for the next session:** do NOT re-open the pure-C search. Every sanctioned pure-C
+  axis is measured dead (s3-s11) and the closing construct is already compiled and proven. If the
+  owner declines the allowlist row, the disposition reverts to the 2026-07-22 standing-ruling
+  refusal; if the row lands, the remaining work is the layer-2 cheat-reviewer + `queue done`. An
+  escalation entry for this function MUST carry the literal token OWNER-ESCALATION (or
+  CANONICAL-ASM GRANT PATH) in its `## ` heading or the driver discards the session.
+
+## [s12] The s12 byte proof reproduces on a clean tree — the driver's discard of the first s12 filing was a paperwork defect (heading token), not a measurement defect.
+- mechanism: GCC 2.7.2 function.c assign_stack_local reserves the declared-but-untouched volatile u32 pre_pad[8] slot at RTL-expand and never reclaims frame_offset, reproducing target's .frame $sp,72 vars region 0x18-0x37; the arg0=0 dead store to a PARAM defeats cse2 canonical-register substitution over {arg0,p,saved} for target insn #18.
+- probe: Fresh apply of memory/grind/func_80047EE8/candidate.c over src/text1b.c:19 (tmp/grind/func_80047EE8/apply.py), then `& tools/wteng.ps1 main build`, then `sandbox func_80047EE8 --disable all` on the same tree, then a regfix/asmfix row count and a re-read of every self-vet citation in the live tree.
+- result: build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH (build_oracle_s12b.log); sandbox score 10 with target_insns 53 / build_insns 53 / cheat_asm_stripped 279 (sandbox_composite_s12b.log); 0 regfix/asmfix rows naming func_80047EE8; .claude/rules/no-new-park-categories.md:390-402, docs/reference/sotn-construct-index.md:101 and :103, engine/volatile_cheats.py:746-772 all resolve as cited.
+- verdict: CONFIRMED
+
+## [s12] The sandbox cannot read 0 for this function until engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries a func_80047EE8 row, so the residual 10 is a stripping artifact rather than a real byte gap.
+- mechanism: engine/volatile_cheats.py::_is_sanctioned_pad gates the unwritten-pad exemption on exact function name + exact local name + exact element count + volatile; func_80047EE8 has no row (rows today: func_8001E404, func_8001E6E4, func_8003CF84), so the pad is stripped before scoring while the real build honours it.
+- probe: Read engine/volatile_cheats.py:746-772 and compared the sandbox score (pad stripped) against the full driver build (pad honoured) on the identical tree.
+- result: sandbox 10 vs full-build SHA1 MATCH on the same source — the two disagree exactly by the pad. The 2026-08-18 family ruling itself states verbatim that the allowlist 'requires it and a per-function row', so adding the row is the prescribed integration step, and engine/ is outside a grind session's allowed surface.
+- verdict: CONFIRMED
+
+## [s12] func_80047EE8 is an endgame lock whose AND-gate (b) fails for want of a SOTN-master precedent (the 2026-07-22 REFUSED / OWNER-ACCEPTED INCOMPLETE disposition, decisions.md:1298).
+- mechanism: Gate (b) requires an in-hand cited precedent for the closing construct; the 2026-07-22 ruling recorded none for the phantom-frame-slot pad.
+- probe: Re-checked the owner's 2026-08-18 general-family ruling (.claude/rules/no-new-park-categories.md:390) and its SOTN-master exhibits (docs/reference/sotn-construct-index.md:101 src/st/sel/2C048.c:564 `volatile u32 pad; // !FAKE:`; :103 src/st/sel/stream.c:80 `volatile u32 pad[4]; // FAKE`) plus three landed in-repo applications, then compiled the construct and proved the bytes.
+- result: Precedent exists and is citable; the construct compiles and closes the function. Gate (b) now PASSES, so the 2026-07-27 both-gates-fail auto-ruling does not apply.
+- verdict: KILLED

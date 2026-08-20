@@ -8761,3 +8761,132 @@ option (1), a genuinely un-tried lever that closed the floor); `.claude/rules/no
 ## 2026-08-20 09:18 — func_80047EE8 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s12 of func_80047EE8, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_80047EE8). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-08-20 — func_80047EE8 / AddTbpOfst_80047EE8 (src/text1b.c) — **OWNER-ESCALATION** — bytes proven (full-build SHA1 == oracle); AND-gate (b) PASSES with cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row
+
+Filed by grind session s12 (re-run; **escalation** modality). This entry SUPERSEDES the
+`INTEGRATION HANDOFF`-titled span above (decisions.md:8644), which the driver discarded on
+2026-08-20 09:18 purely because its heading carried no `OWNER-ESCALATION` token and therefore did
+not register as an escalation naming this function. Its substance was correct and is re-verified
+below from scratch this session; nothing in it was retracted on merits. This is the identical
+posture, and the identical remedy, as the sibling `func_80047FBC` (decisions.md:7530), whose
+first filing was discarded for the same heading reason on 2026-08-20 02:13.
+
+**What is being escalated is an OPERATOR/OWNER ACTION, not a pending policy question.** The policy
+was already decided by the owner on 2026-08-18. Nothing about this function is undecided, and no
+grind session should re-open the pure-C search on it.
+
+### Re-verification performed THIS session (not inherited)
+
+1. Applied the body of `memory/grind/func_80047EE8/candidate.c` over
+   `INCLUDE_ASM("asm/funcs", func_80047EE8);` at `src/text1b.c:19` (LF preserved;
+   `tmp/grind/func_80047EE8/apply.py`).
+2. Full driver build:
+
+   ```
+   $ & tools/wteng.ps1 main build
+   built build/bb2.exe
+     sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+     want 62efab4f73f992798c43e8c730aa43baa10bb4fa
+     MATCH
+   ```
+
+   (`tmp/grind/func_80047EE8/s12/build_oracle_s12b.log`.) **The function is byte-matched by this
+   C, in a real build, with the pad honoured rather than stripped.**
+3. `sandbox func_80047EE8 --disable all` with the same body in place prints
+   `"score": 10`, `target_insns 53`, `build_insns 53`
+   (`tmp/grind/func_80047EE8/s12/sandbox_composite_s12b.log`) — i.e. the residual is entirely an
+   artifact of the sandbox stripping the sanctioned pad, not a real byte gap.
+4. `regfix.txt` + `asmfix.txt` rows mentioning func_80047EE8: **0** (measured, not asserted).
+   `inline_asm_canonical.txt`: not listed. The body contains no register-asm pin, no `__asm__` of
+   any kind, no alias rename, no `(void)` discard shim.
+5. Citations re-checked against the live tree: `.claude/rules/no-new-park-categories.md:390-402`
+   (the 2026-08-18 **Phantom-frame-slot volatile pad local** general family, incl. its verbatim
+   "the engine allowlist `engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS` requires it and a
+   per-function row"); `docs/reference/sotn-construct-index.md:101` (`src/st/sel/2C048.c:564`
+   `volatile u32 pad; // !FAKE:`) and `:103` (`src/st/sel/stream.c:80` `volatile u32 pad[4]; // FAKE`);
+   `engine/volatile_cheats.py:746-772` (the gate is exact function + exact name + exact element
+   count + `volatile`; rows today are func_8001E404, func_8001E6E4, func_8003CF84 — no
+   func_80047EE8 row).
+
+### The two AND-gates
+
+- **(a) canonical-asm / hand-coded tier: FAILS.** `scan_hand_coded.py --single` measured LOW (1/8)
+  at s10; the function is ordinary compiled C and its 53-instruction stream is reproduced 1:1 by
+  the candidate.
+- **(b) cited precedent for the closing construct: PASSES.** The closing construct is an unwritten
+  `volatile` frame pad in ARRAY form, first-declaration position, `/* FAKE: */`-annotated. It is
+  the owner's own 2026-08-18 general family, with two SOTN-master PSX exhibits cited above and
+  three landed in-repo applications (`src/code6cac.c:1491`, `src/code6cac.c:1570`,
+  `src/code6cac_c2.c:856`). Its prerequisites are discharged from this function's own ledger:
+  frame forensics showing the target slot genuinely untouched (`.frame $sp,72`; args 0x00-0x17,
+  vars 0x18-0x37, regs 0x38-0x47; **ZERO sw/lw anywhere in 0x18-0x37**; decisive negative on the
+  reload-spill hypothesis; positive control reproducing vars=32; cluster-wide 32-byte invariance;
+  cc1 size-pin placing the original aggregate at 7-8 words — evidence.md [s6]/[s7]), and honest
+  producers measured inert FIRST (s3 nine-variant `.frame` grid; s4+s5 ~26,500 permuter iterations
+  across two structurally distinct basins; s6/s7 forensics; s8/s9 rederive across three chassis).
+
+Because gate (b) genuinely passes with an in-hand citation, the 2026-07-27 standing auto-ruling
+(both-gates-fail => REFUSED) does NOT apply here, and this is filed as a live **OWNER-ESCALATION**
+rather than a terminal refusal.
+
+### Record correction (restated so it survives the discarded span)
+
+The 2026-07-22 **REFUSED / OWNER-ACCEPTED INCOMPLETE** disposition on AddTbpOfst_80047EE8
+(decisions.md:1298) is **SUPERSEDED**: its sole ground was "no SOTN-master precedent for the
+closing construct", which the 2026-08-18 general-family ruling falsifies and this session's byte
+proof moots. The 2026-07-21 escalation (decisions.md:1191) and the s11 mirroring escalation are
+closed. Future sessions must NOT quote floor 10, the endgame-lock species, or the 2026-07-22
+refusal for this function as live.
+
+### The ONE decision being asked for
+
+Add the per-function row to `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`:
+
+```
+    # 2026-08-18 general phantom-frame-slot family; see docs/grind/decisions.md
+    # 2026-08-20 func_80047EE8 OWNER-ESCALATION (bytes proven, gate (b) passes).
+    "func_80047EE8": frozenset({("pre_pad", 8)}),
+```
+
+`engine/volatile_cheats.py:745` reserves allowlist extension to a fresh owner ruling, and `engine/`
+is outside a grind session's allowed surface — so this is not something the session, a Judge, or
+the driver may self-serve. If the owner DECLINES the extension, the correct disposition reverts to
+the 2026-07-22 standing-ruling refusal (REFUSED / OWNER-ACCEPTED INCOMPLETE): the honest floor
+without the pad is 10 and every other sanctioned axis is measured dead (s3-s11).
+
+### Operator steps (exact, once the row is authorised)
+
+1. Apply the body of `memory/grind/func_80047EE8/candidate.c` (header comment optional; do NOT
+   paste the header comment verbatim into `src/` — it contains an `INCLUDE_ASM(...)` token that
+   queue generation word-searches) over `src/text1b.c:19`. LF endings. The callee is spelled
+   `func_800482C8` (defined later in the same TU; the sibling calls it identically at
+   `src/text1b.c:60`).
+2. Add the allowlist row above; keep `engine test` green.
+3. `python3 -m engine.cli sandbox func_80047EE8 --disable all` must then print `"score": 0`
+   (it prints 10 without the row).
+4. `python3 -m engine.cli verify-oracle --rebuild` -> SHA1
+   `62efab4f73f992798c43e8c730aa43baa10bb4fa` (session s12 has already run the equivalent full
+   build twice with the body applied: MATCH both times).
+5. Fresh **layer-2 adversarial cheat-reviewer** on the composite diff per
+   `.claude/rules/review-discipline-before-commit.md`, auditing BOTH constructs together
+   (`volatile u32 pre_pad[8];` under the 2026-08-18 phantom-frame-slot family; `arg0 = 0;` under
+   `.claude/rules/dead-store-fake-exception.md`, Judge-PASSed on this cluster 2026-07-20,
+   decisions.md:981). The session's own verdict is not credited; its self-vet is at
+   `memory/grind/func_80047EE8/self_vet.md`.
+6. `queue done func_80047EE8` once the oracle and the review both pass.
+
+**Session state at exit:** `src/text1b.c` was reverted to HEAD
+(`INCLUDE_ASM("asm/funcs", func_80047EE8);`, zero rules, zero cheat-asm) — the candidate lives only
+in `memory/grind/func_80047EE8/candidate.c`, per [[asm-until-matched]].
+
+**Artifacts:** `memory/grind/func_80047EE8/candidate.c`, `self_vet.md`, `evidence.md`,
+`hypotheses.md`, `rejected/`; `tmp/grind/func_80047EE8/s12/build_oracle_s12b.log`,
+`tmp/grind/func_80047EE8/s12/sandbox_composite_s12b.log`,
+`tmp/grind/func_80047EE8/s12/built_func.txt`, `tmp/grind/func_80047EE8/apply.py`.
+
+**Filed under authority of:** the task-brief contract (grind s12, escalation modality —
+integration-handoff clause: bytes proven, blocked only by a surface the session may not touch);
+`.claude/rules/no-new-park-categories.md:390` (2026-08-18 phantom-frame-slot family);
+`.claude/rules/dead-store-fake-exception.md`; `.claude/rules/integration-handoff-self-serve.md`;
+[[judge-sole-gate]] (2026-08-18). This entry names func_80047EE8 / AddTbpOfst_80047EE8 directly.

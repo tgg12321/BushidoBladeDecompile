@@ -112,3 +112,8 @@ disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 �
 category: policy-question
 evidence: session-filed escalation: docs/grind/decisions.md:7843
 disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-08-20 — func_80047EE8 — policy-question
+category: policy-question
+evidence: session-filed escalation: docs/grind/decisions.md:8765 — ## 2026-08-20 — func_80047EE8 / AddTbpOfst_80047EE8 (src/text1b.c) — **OWNER-ESCALATION** — bytes proven (full-build SHA1 == oracle); AND-gate (b) PASSES with cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row
+disposition taken: terminal OWNER-ACCEPTED INCOMPLETE park (ruling 2026-08-18 — no pending states); re-attemptable if a later owner ruling spends this entry.

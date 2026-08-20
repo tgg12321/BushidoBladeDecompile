@@ -4,15 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80047EE8",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "prologue_fix": 1
-    },
-    {
       "func": "func_800481E8",
       "file": "text1b",
       "distance": 10,
@@ -2099,6 +2090,16 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
+      "func": "func_80047EE8",
+      "file": "text1b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "prologue_fix": 1,
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:8765 \u2014 ## 2026-08-20 \u2014 func_80047EE8 / AddTbpOfst_80047EE8 (src/text1b.c) \u2014 **OWNER-ESCALATION** \u2014 bytes proven (full-build SHA1 == oracle); AND-gate (b) PASSES with cited SOTN-master precedent; blocked ONLY on an owner-class engine allowlist row"
+    },
+    {
       "func": "func_80056FE8",
       "file": "text1b",
       "distance": 10,
@@ -2218,13 +2219,13 @@
   ],
   "counts": {
     "total": 254,
-    "active": 219,
+    "active": 218,
     "by_status": {
-      "active": 219,
-      "parked": 35
+      "active": 218,
+      "parked": 36
     },
     "by_verdict": {
-      "C": 183,
+      "C": 182,
       "ASM-PARTIAL": 36
     }
   }

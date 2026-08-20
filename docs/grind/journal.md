@@ -1105,3 +1105,4 @@
 - 2026-08-20 08:46 func_800611A4 COMPLETED-C after 9 sessions (closer: s9 [rederive]).
 - 2026-08-20 09:02 func_8002BEA0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-08-20 09:08 get_alarm s41 [escalation] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: s41 escalation/disposition: floor re-measured chassis-current at 9 (rules_dropped 0); BOTH endgame-lock AND-gates re-measured FAILED (scan_hand_coded LOW 1/8, S1/S2/S6 absent; sotn-construct-index negative for both closing constructs) — standing-ruling REFUSED / OWNER-ACCEPTED INCOMPLETE entry filed at docs/grind/decisions.md:8621.
+- 2026-08-20 09:23 func_80047EE8 s12 [escalation] OWNER-GATED — borderline-logged, terminal park: Byte proof independently reproduced this session (full-build SHA1 == oracle with candidate.c applied); re-filed as a properly-titled OWNER-ESCALATION at decisions.md:8765 — blocked only by the owner-class engine/volatile_cheats.py allowlist row.

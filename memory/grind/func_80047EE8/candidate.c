@@ -1,79 +1,55 @@
-/* AddTbpOfst_80047EE8 (text1b.c) — s1 candidate, sandbox --disable all = 10.
+/* func_80047EE8 (AddTbpOfst_80047EE8) - src/text1b.c - s12 COMPOSITE, BYTES PROVEN.
  *
- * Instruction stream is 53/53 and IDENTICAL to target except the 10
- * frame-offset insns (2x addiu sp: -0x28 vs target -0x48; 8x save/restore
- * offsets shifted by the 32-byte unused vars region). Same terminal species
- * as sibling InitHiraRmd_80047FBC (owner-escalation filed 2026-07-20,
- * awaiting ruling).
+ * STATUS 2026-08-20 (grind s12, escalation modality): this body was applied to
+ * src/text1b.c in place of `INCLUDE_ASM("asm/funcs", func_80047EE8);` and the FULL
+ * DRIVER BUILD produced SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+ * (tmp/grind/func_80047EE8/s12/build_oracle.log). The built object's frame is
+ * `addiu sp,sp,-72`, identical to target (tmp/grind/func_80047EE8/s12/built_func.txt).
+ * The function is byte-matched by this C.
  *
- * Levers that produced this (s1, 2026-07-21):
- *  1. SINGLE-WALKER: one pointer variable `p` carries arg0-copy -> add ->
- *     reload -> loop walker (was split cached/p in the old candidate;
- *     merging them: 16 -> 14).
- *  2. LIVE precompute of the call's first arg into `first` inside the loop
- *     (sibling InitHiraRmd's committed lever 1). This flips whole-function
- *     RA so GCC stages arg0 through $s0 (sw s0; move s0,a0; sw s2;
- *     move s2,s0; addu s0,s0,a1) exactly as target: 14 -> 11, 53/53 insns.
- *     `first` is live code (consumed by the call) — not a FAKE construct.
- *  3. FAKE-annotated arg0 = 0 dead store (dead-store-fake-exception family,
- *     sanctioned 2026-07-01) breaks cse2's {arg0,p,saved} canonical-reg
- *     class so the second pointer binds addu s0,s2,v0 (not a0): 11 -> 10.
- *     Same lever the sibling's s6 Judge-PASSed. PREREQUISITE DISCHARGED
- *     s2 (2026-07-21): 6 pure spellings of the saved/p init chain measured
- *     dead ON THIS BODY (const decl-init, decl-order, split-init reversal,
- *     u32 retype, two-statement rebind = 11; mask offset spelling = 14
- *     byte-diverging; FAKE removed = 11). See rejected/pure-*.c +
- *     tmp/grind/AddTbpOfst_80047EE8/s2/spelling_sweep.md. The FAKE
- *     construct's lever-exhaustion requirement is met on this function.
+ * `sandbox func_80047EE8 --disable all` still prints 10, NOT 0 - the sandbox strips
+ * cheat-asm unconditionally, and the sanctioned unwritten pad is stripped until
+ * func_80047EE8 has its row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS
+ * ("func_80047EE8": frozenset({("pre_pad", 8)})). engine/ is outside a grind session's
+ * allowed surface, so this is an INTEGRATION HANDOFF, not an endgame lock. Operator
+ * steps: docs/grind/decisions.md, 2026-08-20 func_80047EE8 entry.
  *
- * Remaining gap: the 32-byte unused frame (target vars=32 phantom; this form
- * vars=0, cc1 .frame). s3 (2026-07-21, structural) DIRECTLY measured the
- * phantom-frame grid DEAD on this body: 9 variants via the cc1 .frame
- * instrument, NO stream-preserving shape moves vars off 0. Decisive control
- * v08 = the exact tslLineG5Init phantom trigger (s16 pair `(a&~b)&1` guarding a
- * real store) reserves vars=0 here — the mechanism does not fire. Only a
- * written s32 rec[6] reaches vars=24, at +6 diverging stores the target lacks
- * (forbidden dead-array). See tmp/grind/AddTbpOfst_80047EE8/s3/frame_grid.md.
- * Structural axis exhausted; same endgame-lock species as sibling
- * InitHiraRmd_80047FBC (owner-escalation filed 2026-07-20, awaiting ruling).
+ * Two annotated constructs, both in sanctioned families:
+ *  - `volatile u32 pre_pad[8];` - phantom-frame-slot volatile pad local family (owner
+ *    ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390). Supplies target's
+ *    allocated-but-untouched 32-byte vars region (0x18-0x37, ZERO sw/lw). Closes the
+ *    entire 10-instruction frame-offset residual the ledger carried since s1.
+ *  - `arg0 = 0;` - dead-store-fake-exception (dead store to a PARAM), Judge-PASSed on
+ *    the sibling's identical lever; 6 pure spellings measured dead on this body at s2.
  *
- * s4 (2026-07-21, permuter): whole-function campaign on THIS floor-10 chassis
- * (--stack-diffs, base_score 266, 9451 iters, fresh seed) lowered the weighted
- * score to 202 ONLY via a volatile dead-frame local (`volatile long`/`unsigned
- * long long pad`) — a forbidden volatile/dead-vars frame cheat reserving ~8
- * bytes; never reached 0, next novel WORSE (207). No legit pure-C frame-growth
- * form. Permuter modality independently corroborates s3's structural DEAD.
- * See rejected/permuter-volatile-pad-frame-coercion.c.
+ * What this body DELETES from the pre-migration on-main form: 2 register-asm pins
+ * (asm("$16"), asm("$18")), 1 INLINE_MOVE_ALIASING __asm__ block, the unqualified
+ * `s32 unused_slack[8]` and its `(void)unused_slack;` detector shim. Net cheat count
+ * strictly decreases; nothing here is a pin, an __asm__, an alias rename, or a
+ * regfix/asmfix rule.
  *
- * s5 (2026-07-21, permuter): fresh-seed campaign on a STRUCTURALLY DIFFERENT
- * chassis — the no-FAKE floor-11 form (distinct RA basin, base_score 5200 vs
- * s4's 266). 17057 iters, --stack-diffs. Descended 5200 -> 207 and plateaued
- * FLAT at 207 from iter ~12753 to 17057 (zero novel improvement), never 0.
- * The sole frame-growth lever was again a forbidden volatile dead-frame local
- * (`volatile unsigned int pad;`, ~8 bytes). Two structurally-distinct basins
- * + ~26500 combined permuter iters both conclude: the 32-byte phantom frame
- * is reachable ONLY via forbidden dead/volatile-local cheats. Permuter
- * modality now measured DEAD across BOTH chassis basins.
- * See rejected/permuter-volatile-uint-pad-nofake-basin.c.
- *
- * s6 (2026-07-21, forensics): cc1 -da full-pass RTL dump NAMES the exact
- * divergence pass. Candidate get_frame_size()=0 at BOTH .rtl (post-expand)
- * and .greg (post-reload); .greg dispositions put all 22 pseudos in hard regs
- * ("Hard regs used: 2 4 5 6 7 16 17 18 29 31"), ZERO spills. Target vars
- * region 0x18-0x37 has ZERO sw/lw, so it CANNOT be a reload spill slot (spills
- * always emit store+reload) — this FALSIFIES the phantom-frame-slots-gcc272 /
- * tslLineG5Init reload-spill theory s3-s5 operated under. Positive control
- * (s6/control/ctl.c): a declared local `int buf[8]` (addressed ctlA OR unused
- * ctlB) reserves vars=32 with zero stores, byte-shape-identical to target.
- * MECHANISM NAMED: function.c stack-frame layout (assign_stack_local at
- * RTL-EXPAND from a source-level local-aggregate DECL) — UPSTREAM of register
- * allocation, so the entire s3/s4/s5 RA+scheduling search space provably cannot
- * reach it. Only pure-C reproduction is a >=32-byte dead local aggregate =
- * forbidden dead-vars-local-array (WRITTEN carve-out inapplicable, zero region
- * stores). See tmp/grind/AddTbpOfst_80047EE8/s6/ dumps.
+ * Chassis levers that produced the floor-10 base (s1, retained verbatim): single-walker
+ * pointer `p`; LIVE precompute of the call's first arg into `first` inside the loop
+ * (consumed by the call - not a FAKE construct); the arg0=0 FAKE dead store.
+ * Frame forensics naming the mechanism: evidence.md [s6]/[s7].
  */
-void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
+void func_80047EE8(s32 arg0, s32 arg1)
 {
+    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
+     * family, owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390).
+     * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
+     * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
+     * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
+     * 32-byte vars region (.frame $sp,72 - args 0x00-0x17, vars 0x18-0x37, regs
+     * 0x38-0x47; ZERO sw/lw in 0x18-0x37 - frame forensics in
+     * memory/grind/func_80047EE8/evidence.md [s6]/[s7], cc1 size-pin puts the original
+     * aggregate at 7-8 words). Lever-exhaustion: 9 structural .frame variants (s3),
+     * ~26,500 permuter iters across two distinct basins (s4/s5), forensics (s6/s7),
+     * rederive (s8/s9) - every honest producer measured inert; see hypotheses.md.
+     * SOTN-master precedent: volatile u32 pad; // !FAKE: at src/st/sel/2C048.c:564
+     * (docs/reference/sotn-construct-index.md:101); volatile u32 pad[4]; // FAKE at
+     * src/st/sel/stream.c:80 (sotn-construct-index.md:103). */
+    volatile u32 pre_pad[8];
     u32 *p;
     s32 saved;
     s16 new_var;
@@ -82,7 +58,12 @@ void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
     unsigned int new_var2;
     p = (u32 *) arg0;
     saved = (s32) p;
-    arg0 = 0; /* FAKE */
+    arg0 = 0; /* FAKE: dead store to a PARAM (dead-store-fake-exception family,
+               * .claude/rules/dead-store-fake-exception.md). Mechanism: defeats cse2's
+               * canonical-register substitution over the {arg0, p, saved} equivalence
+               * class so the second pointer binds addu $s0,$s2,$v0 rather than $a0.
+               * Lever-exhaustion: 6 pure spellings of this init chain measured dead on
+               * this body at s2 (rejected/pure-*.c). */
     p = (u32 *) ((s32) p + (((s32) (arg1 << 16)) >> 14));
     v_off = *p;
     p = (u32 *) (saved + ((v_off >> 2) << 2));
@@ -111,7 +92,7 @@ void AddTbpOfst_80047EE8(s32 arg0, s32 arg1)
             first = saved + (new_var2 << 2);
             v0v = (s16) (*((u16 *) p));
             p = (u32 *) (((s32) p) + 2);
-            efc_buki_draw_zanzou(first, new_var, a2v, a3v, v0v);
+            func_800482C8(first, new_var, a2v, a3v, v0v);
         }
         while ((count--) != 0);
     }

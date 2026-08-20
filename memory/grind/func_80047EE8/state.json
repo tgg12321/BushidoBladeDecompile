@@ -1,8 +1,8 @@
 {
  "func": "AddTbpOfst_80047EE8",
  "file": "text1b",
- "session_count": 11,
- "current_modality": "structural",
+ "session_count": 12,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -75,13 +75,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural axis measured dead (no un-run lever; mechanism upstream of all C-structure per s6/s7); filed mirroring OWNER-ESCALATION for AddTbpOfst_80047EE8 -> owner-gated."
+  },
+  {
+   "session": 12,
+   "floor": 10,
+   "modality": "escalation",
+   "headline": "Byte proof independently reproduced this session (full-build SHA1 == oracle with candidate.c applied); re-filed as a properly-titled OWNER-ESCALATION at decisions.md:8765 \u2014 blocked only by the owner-c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner rules on the filed AddTbpOfst_80047EE8 OWNER-ESCALATION (decisions.md line 1191): option (a) sanction the buf[] coercion family, or option (b) REFUSE / accept INCOMPLETE-owner-accepted.",
-   "mechanism": "endgame-lock-disposition standing policy 2026-07-20; both AND-gates measured dead directly (s10) + re-confirmed exhaustion (s11). Precedent (motion_SetMotion, saTan0Init, cpu_side_move_dir_4, func_80057CC8) all ruled option (b).",
-   "next_probe": "Await owner ruling. Do NOT re-run any dead axis; the function is parked and the queue advances. If ruled (b), the current cheat form on main is retained solely to hold the oracle; if a genuinely new pure-C lever emerges it becomes eligible for re-attempt."
+   "hypothesis": "Once the owner adds \"func_80047EE8\": frozenset({(\"pre_pad\", 8)}) to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS, sandbox --disable all reads 0 and the function reaches COMPLETED-C after a layer-2 cheat-reviewer PASS.",
+   "mechanism": "_is_sanctioned_pad exempts the exact (function, name, element-count, volatile) tuple from the unused-local-array stripper, so the honest score sees the same frame the real build already produces.",
+   "next_probe": "Operator: apply candidate.c body over src/text1b.c:19, add the row, keep `engine test` green, then sandbox (expect 0) + verify-oracle --rebuild (expect the oracle SHA1) + fresh layer-2 cheat-reviewer + `queue done func_80047EE8`. Steps verbatim in decisions.md:8765."
+  },
+  {
+   "hypothesis": "If the owner DECLINES the allowlist extension, the correct disposition reverts to the 2026-07-22 standing-ruling refusal (REFUSED / OWNER-ACCEPTED INCOMPLETE).",
+   "mechanism": "Without the sanctioned pad the honest floor is 10 and every other sanctioned axis is measured dead (s3-s11: 9-variant .frame grid, ~26,500 permuter iters over two basins, two forensics sessions, two rederive sessions, synthesis, structural).",
+   "next_probe": "None \u2014 do not re-open the pure-C search on a decline; file the terminal refusal entry citing decisions.md:8765 and the s3-s11 exhaustion."
+  },
+  {
+   "hypothesis": "The sibling func_80047FBC (same file, same cluster, same family, same missing row) is blocked on the identical decision and should be batched with this one.",
+   "mechanism": "Both are members of the 32-byte phantom-frame-slot cluster in src/text1b.c; both have bytes proven and both lack only their _SANCTIONED_UNWRITTEN_PADS row.",
+   "next_probe": "Operator: rule on both rows together (decisions.md:7530 and decisions.md:8765) in one engine/volatile_cheats.py edit + one `engine test` run."
   }
  ],
  "judge_constraints": [],

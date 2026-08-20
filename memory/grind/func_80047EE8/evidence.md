@@ -247,3 +247,92 @@ With all three -> SHA1 matches. Without -> sandbox 15 (frame + prologue + 1 move
 - [s11] Sibling InitHiraRmd_80047FBC OWNER-ESCALATION (decisions.md line 985, filed 2026-07-20) still AWAITING RULING; parallel-filing precedent active (func_80049A2C, gnd_init_80041688, func_80033550 all filed while awaiting the family ruling) — this filing need not wait for the sibling ruling.
 
 - [s11] src/text1b.c reverted to HEAD via git checkout after measurement; git status --short = only ' M metrics/events.jsonl' (normal engine capture). The committed 3-cheat form still holds the oracle on main.
+
+## s12 (2026-08-20, escalation modality) - BYTES PROVEN; integration handoff
+
+[s12] CHASSIS RE-BASELINE. On the post-migration tree src/text1b.c:19 is
+`INCLUDE_ASM("asm/funcs", func_80047EE8);` - the pre-migration on-main body (2 register-asm pins
+$16/$18, one INLINE_MOVE_ALIASING `__asm__ volatile("move %0, %1")`, `s32 unused_slack[8]` +
+`(void)unused_slack;`) is GONE from main. The ledger's floor 10 re-measures unchanged on the
+banked candidate chassis.
+
+[s12] THE 2026-07-22 REFUSAL'S GATE (b) IS SUPERSEDED. That ruling (decisions.md:1298) refused
+this function because no SOTN-master precedent existed for an unwritten local acting as a phantom
+frame carrier. The owner's 2026-08-18 ruling establishes exactly that construct as a GENERAL
+family - `.claude/rules/no-new-park-categories.md:390` "Phantom-frame-slot volatile pad local ...
+Supersedes the per-function 2026-08-17/18 leading/trailing-pad carve-outs with a general family."
+SOTN-master exhibits: `volatile u32 pad; // !FAKE:` src/st/sel/2C048.c:564
+(docs/reference/sotn-construct-index.md:101) and `volatile u32 pad[4]; // FAKE` src/st/sel/stream.c:80
+(index:103). In-repo landed applications: src/code6cac.c:1491, src/code6cac.c:1570,
+src/code6cac_c2.c:856. The unpark brief (memory/grind/func_80047EE8/brief-2026-08-18.md) named
+this function among the 11 consequent unparks.
+
+[s12] THE COMPOSITE HAD NEVER BEEN COMPILED. Every volatile pad ever measured ON THIS FUNCTION was
+an 8-byte SCALAR found by permuter (s4/s5, rejected/permuter-volatile-*.c) - the wrong size, and
+correctly rejected. The 32-byte ARRAY form that the size-pin probe [s7] identifies (int[7] or
+int[8] -> vars=32) had only ever been compiled OUTSIDE the function as the s6 positive control
+(ctlB, non-volatile). s12 compiled the sanctioned spelling in situ for the first time:
+`volatile u32 pre_pad[8];` as the first declaration of the banked floor-10 chassis.
+
+[s12] RESULT - FULL DRIVER BUILD SHA1 == ORACLE. With the composite body applied in place of the
+INCLUDE_ASM line, `& tools/wteng.ps1 main build` produced
+`sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `want ... MATCH`
+(tmp/grind/func_80047EE8/s12/build_oracle.log). The built object's prologue is
+`addiu sp,sp,-72` - target's frame exactly, vs the chassis's former -0x28
+(tmp/grind/func_80047EE8/s12/built_func.txt, 53 instructions). The volatile array DOES reach
+vars=32 (Judge-risk flag 2 of the unpark brief - "an inference, not a measurement" - is now a
+MEASUREMENT, and it is positive). The 10-instruction frame-offset residual the ledger carried
+since s1 is CLOSED. func_80047EE8 is byte-matched by pure C plus two annotated,
+sanctioned-family FAKE constructs.
+
+[s12] WHY THE SANDBOX STILL PRINTS 10. `sandbox func_80047EE8 --disable all` with the composite in
+place: score 10, 53/53 insns, rules_dropped 0, cheat_asm_stripped 279
+(tmp/grind/func_80047EE8/s12/sandbox_composite.log). The sandbox strips cheat-asm
+UNCONDITIONALLY, and a sanctioned unwritten pad is only exempted for functions listed in
+`engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` (today func_8001E404, func_8001E6E4,
+func_8003CF84 - verified by reading engine/volatile_cheats.py:746-772). func_80047EE8 has no row,
+so the honest floor reads pad-stripped. The 2026-08-18 ruling itself mandates that row; adding it
+is the prescribed integration step, but engine/ is outside a grind session's allowed surface.
+Identical posture to the sibling func_80047FBC handoff (decisions.md 2026-08-20 entry).
+
+[s12] SRC STATE AT SESSION END. src/text1b.c was reverted to
+`INCLUDE_ASM("asm/funcs", func_80047EE8);` (asm-until-matched, 2026-08-19): committing the
+composite before the allowlist row exists would put a body on main that the engine still scores as
+a cheat carrier and that `queue done` would refuse. The proven body is banked verbatim at
+memory/grind/func_80047EE8/candidate.c with a full header; self-vet at
+memory/grind/func_80047EE8/self_vet.md.
+
+[s12-rerun] BYTE PROOF INDEPENDENTLY REPRODUCED. The first s12 filing was DISCARDED by the driver
+(decisions.md:8761) purely on a heading-token technicality - its entry was titled INTEGRATION
+HANDOFF and carried no OWNER-ESCALATION token, so the validator did not see an escalation naming
+this function. The re-run session re-derived the proof from scratch rather than inheriting it:
+applied the candidate body over src/text1b.c:19 via tmp/grind/func_80047EE8/apply.py, ran
+`wteng main build` -> sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH
+(tmp/grind/func_80047EE8/s12/build_oracle_s12b.log); re-ran `sandbox --disable all` on the same
+tree -> score 10, target_insns 53, build_insns 53, cheat_asm_stripped 279
+(tmp/grind/func_80047EE8/s12/sandbox_composite_s12b.log); measured 0 regfix/asmfix rows naming
+func_80047EE8; re-read .claude/rules/no-new-park-categories.md:390-402,
+docs/reference/sotn-construct-index.md:101/:103 and engine/volatile_cheats.py:746-772 and confirmed
+every citation in the self-vet resolves in the live tree. The 2026-08-18 family text itself says
+verbatim that the engine allowlist "requires it and a per-function row" - i.e. the missing row is
+prescribed by the ruling, not a workaround. src/text1b.c reverted to
+INCLUDE_ASM("asm/funcs", func_80047EE8) at exit. Re-filed as decisions.md:8765
+(**OWNER-ESCALATION**, bytes proven, gate (b) passes).
+
+- [s12] Re-verified THIS session (not inherited): with memory/grind/func_80047EE8/candidate.c applied over src/text1b.c:19, `& tools/wteng.ps1 main build` produced sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH — the function is byte-matched by that C in a real build (tmp/grind/func_80047EE8/s12/build_oracle_s12b.log).
+
+- [s12] On the identical tree, `sandbox func_80047EE8 --disable all` prints score 10 with target_insns 53 and build_insns 53 — the residual is entirely the sandbox stripping the sanctioned unwritten pad, not a byte gap (tmp/grind/func_80047EE8/s12/sandbox_composite_s12b.log).
+
+- [s12] Measured, not asserted: 0 rows in regfix.txt + asmfix.txt name func_80047EE8; the function is not in inline_asm_canonical.txt; the candidate body contains no register-asm pin, no __asm__ of any kind, no alias rename and no (void) discard shim. The pre-migration on-main form carried 2 register-asm pins, 1 INLINE_MOVE_ALIASING __asm__ block, an unqualified s32 unused_slack[8] and a (void)unused_slack; shim — the cheat inventory strictly decreases.
+
+- [s12] engine/volatile_cheats.py:746-772 read directly: _SANCTIONED_UNWRITTEN_PADS holds func_8001E404, func_8001E6E4 and func_8003CF84 only, and _is_sanctioned_pad gates on exact function + exact name + exact element count + volatile. engine/volatile_cheats.py:745 reserves allowlist extension to a fresh owner ruling.
+
+- [s12] .claude/rules/no-new-park-categories.md:390-402 (owner ruling 2026-08-18, 'Phantom-frame-slot volatile pad local') states verbatim that it 'Supersedes the per-function 2026-08-17/18 leading/trailing-pad carve-outs with a general family' and that applications use the ARRAY form because 'the engine allowlist engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS requires it and a per-function row'. Every FORM CONSTRAINT is met by the candidate (array form, first-decl position, volatile, /* FAKE: */ annotation, no (void)pad shim).
+
+- [s12] AND-gate (a) FAILS: scan_hand_coded tier LOW (1/8) at s10 — this is ordinary compiled C. AND-gate (b) PASSES with cited precedent (docs/reference/sotn-construct-index.md:101 and :103 SOTN-master PSX exhibits; in-repo landed applications src/code6cac.c:1491, src/code6cac.c:1570, src/code6cac_c2.c:856). Because a gate genuinely passes, this is a live OWNER-ESCALATION, not the 2026-07-27 terminal refusal.
+
+- [s12] The 2026-07-22 REFUSED / OWNER-ACCEPTED INCOMPLETE disposition (decisions.md:1298) is SUPERSEDED — its sole ground (no SOTN precedent for the closing construct) is falsified. Future sessions must not quote floor 10, the endgame-lock species, or that refusal as live for this function.
+
+- [s12] src/text1b.c was reverted to INCLUDE_ASM("asm/funcs", func_80047EE8); at session exit (asm-until-matched, 2026-08-19); the proven body lives only in memory/grind/func_80047EE8/candidate.c with self-vet at memory/grind/func_80047EE8/self_vet.md.
+
+- [s12] Process lesson banked in hypotheses.md: an escalation entry for this function MUST carry the literal token OWNER-ESCALATION (or CANONICAL-ASM GRANT PATH) in its '## ' heading, or the driver discards the session regardless of merit — the identical discard/re-file cycle happened to the sibling func_80047FBC (decisions.md:7526 then :7530).
