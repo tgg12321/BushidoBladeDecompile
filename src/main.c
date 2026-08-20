@@ -987,52 +987,7 @@ extern s16 D_80102A7E;
 extern s16 D_80102A80;
 extern s16 D_80102A82;
 extern s32 D_80107898[];
-void func_800861BC(void)
-{
-  s32 new_var;
-  s32 i;
-  s32 *p;
-  s16 v;
-  s16 idx;
-  s16 idx2;
-  s32 ofs;
-  u8 *base;
-  s16 *pc;
-  pc = &D_8010280C;
-  p = &D_80107898[0];
-  idx = D_8010280A;
-  *pc = idx * 8;
-  D_8010280E = (s16) (D_801027FC + (D_801027F7 << 4));
-  *((s16 *) (((u8 *) (&D_800F4E1E)) + ((s32) (idx * 54)))) = 0x7FFF;
-  i = 0;
-  do
-  {
-    i += 1;
-    *p &= ~(1 << (*((s16 *) (((u8 *) pc) - 2))));
-    p += 1;
-  }
-  while (i < 16);
-  if (D_80102808 & 1)
-  {
-    v = (s16) D_80102808;
-    ofs = (((s32) (v - 1)) / 2) << 4;
-    *((s16 *) (((u8 *) (&D_80102A7E)) + (D_8010280C * 2))) = *((u16 *) ((((u8 *) D_800FF6A0) + ofs) + 0xC));
-  }
-  else
-  {
-    v = (s16) D_80102808;
-    ofs = (((s32) (v - 1)) / 2) << 4;
-    *((s16 *) (((u8 *) (&D_80102A7E)) + (D_8010280C * 2))) = *((u16 *) ((((u8 *) D_800FF6A0) + ofs) + 0xE));
-  }
-  idx2 = D_8010280A;
-  *(((u8 *) (&D_800F65E0)) + idx2) |= 8;
-  new_var = (s32)D_80101BC8;
-  base = (u8 *) ((((D_801027F7 << 4) + D_801027FC) << 5) + new_var);
-  *((s16 *) (((u8 *) (&D_80102A80)) + (*pc * 2))) = *((u16 *) (base + 0x10));
-  base = (u8 *) ((((D_801027F7 << 4) + D_801027FC) << 5) + new_var);
-  *((s16 *) (((u8 *) (&D_80102A82)) + (*pc * 2))) = (*((u16 *) (base + 0x12))) + D_800F66F8;
-  *(((u8 *) (&D_800F65E0)) + D_8010280A) |= 0x30;
-}
+INCLUDE_ASM("asm/funcs", func_800861BC);
 
 void spu_ResetCounter(void) {
     D_800F66F8 = 0;
@@ -2147,56 +2102,7 @@ void SpuSetNoiseVoice(s32 a0, s32 a1) {
     func_80089A48(a0, a1, 0xCA, 0xCB);
 }
 
-s32 func_80089A48(s32 arg0, u32 arg1, s32 arg2, s32 arg3)
-{
-    s32 mode = arg0;
-    u32 mask = arg1;
-    volatile u16 *base;
-    u32 t2;
-
-    if (D_800A2CD4 & 1) {
-        t2 = ((D_800F7298[arg3] & 0xFF) << 16) | D_800F7298[arg2];
-    } else {
-        base = (volatile u16 *)D_800A2CDC;
-        t2 = ((base[arg3] & 0xFF) << 16) | base[arg2];
-    }
-    switch (mode) {
-    case 1:
-        if (D_800A2CD4 & 1) {
-            D_800F7298[arg2] |= mask;
-            D_800F7298[arg3] |= (mask >> 16) & 0xFF;
-            D_800A28A0 |= 1 << ((arg2 - 0xC6) >> 1);
-        } else {
-            ((volatile u16 *)D_800A2CDC)[arg2] |= mask;
-            ((volatile u16 *)D_800A2CDC)[arg3] |= (mask >> 16) & 0xFF;
-        }
-        t2 |= mask & 0xFFFFFF;
-        break;
-    case 0:
-        if (D_800A2CD4 & 1) {
-            D_800F7298[arg2] &= ~mask;
-            D_800F7298[arg3] &= ~((mask >> 16) & 0xFF);
-            D_800A28A0 |= 1 << ((arg2 - 0xC6) >> 1);
-        } else {
-            ((volatile u16 *)D_800A2CDC)[arg2] &= ~mask;
-            ((volatile u16 *)D_800A2CDC)[arg3] &= ~((mask >> 16) & 0xFF);
-        }
-        t2 &= ~(mask & 0xFFFFFF);
-        break;
-    case 8:
-        if (D_800A2CD4 & 1) {
-            D_800F7298[arg2] = mask;
-            D_800F7298[arg3] = (mask >> 16) & 0xFF;
-            D_800A28A0 |= 1 << ((arg2 - 0xC6) >> 1);
-        } else {
-            ((volatile u16 *)D_800A2CDC)[arg2] = mask;
-            ((volatile u16 *)D_800A2CDC)[arg3] = (mask >> 16) & 0xFF;
-        }
-        t2 = mask & 0xFFFFFF;
-        break;
-    }
-    return t2 & 0xFFFFFF;
-}
+INCLUDE_ASM("asm/funcs", func_80089A48);
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana_2  |  178i  |  x2 size collision */
 s32 SpuSetNoiseClock(s32 a0) {
     s32 val;
@@ -3029,72 +2935,7 @@ INCLUDE_ASM("asm/funcs", func_8008B488);
    boundary_fixes.md); must stay immediately after its former host so the
    link order reproduces the original byte layout. */
 INCLUDE_ASM("asm/funcs", _spu_2pitch);
-s32 _spu_note2pitch(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    volatile s32 sp0;
-    volatile s32 sp4;
-    volatile s32 sp8;
-    s32 diff;
-    s32 abs_diff;
-    s32 quot;
-    s32 rem;
-    s32 base;
-
-    arg0 = ((arg0 & 0xFFFF) << 7) + (arg1 & 0xFFFF);
-    arg2 = ((arg2 & 0xFFFF) << 7) + (arg3 & 0xFFFF);
-    diff = arg2 - arg0;
-    abs_diff = diff;
-    if (diff < 0) {
-        abs_diff = -diff;
-    }
-
-    quot = abs_diff / 1536;
-    rem = abs_diff - (quot * 1536);
-
-    if (diff >= 0) {
-        base = 0x1000 << quot;
-    } else {
-        if (rem != 0) {
-            quot += 1;
-            rem = 0x600 - rem;
-        }
-        base = 0x1000 >> quot;
-    }
-
-    {
-        s32 atten = base & 0xFFFF;
-        s32 mult_const = 0x103B;
-        s32 a3_val = (u32)atten << 12;
-        s32 counter = 0;
-        s32 abs_rem;
-        u32 upper;
-        s32 frac;
-
-        abs_rem = rem;
-        if (rem < 0) {
-            abs_rem = -abs_rem;
-        }
-        upper = (u32)abs_rem >> 5;
-        frac = abs_rem & 0x1F;
-        sp8 = atten * mult_const;
-
-        if (upper != 0) {
-            do {
-                a3_val = atten * mult_const;
-                mult_const = ((u32)mult_const * 0x103B) >> 12;
-                sp8 = atten * mult_const;
-                counter += 1;
-            } while (counter < (s32)upper);
-        }
-
-        {
-            u32 result = (u32)(a3_val + (((u32)(sp8 - a3_val) >> 5) * frac)) >> 12;
-            if (result >= 0x4000U) {
-                result = 0x3FFF;
-            }
-            return result & 0xFFFF;
-        }
-    }
-}
+INCLUDE_ASM("asm/funcs", _spu_note2pitch);
 s32 _spu_pitch2note(s32 arg0, s32 arg1, s32 arg2) {
     register s32 saved_arg0 asm("$24");
     register s32 search asm("$6");

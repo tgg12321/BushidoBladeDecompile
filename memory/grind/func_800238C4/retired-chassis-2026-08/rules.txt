@@ -1,0 +1,47 @@
+regfix.txt:1019: func_800238C4: subst "nop" "addiu\t$2,$zero,1" @ 24
+regfix.txt:1020: func_800238C4: delete @ 25
+regfix.txt:1021: func_800238C4: subst "nop" "addiu\t$2,$zero,40" @ 27
+regfix.txt:1022: func_800238C4: delete @ 28
+regfix.txt:1025: func_800238C4: $17 <-> $18 @ 43-55
+regfix.txt:1026: func_800238C4: $17 <-> $18 @ 88-88
+regfix.txt:1027: func_800238C4: $17 <-> $18 @ 101-101
+regfix.txt:1028: func_800238C4: $17 <-> $18 @ 152-186
+regfix.txt:1031: func_800238C4: subst "\$8" "$3" @ 74
+regfix.txt:1032: func_800238C4: subst "\$8" "$3" @ 76
+regfix.txt:1033: func_800238C4: subst "\.L[0-9]+" ".Lcam_rnd1" @ 76
+regfix.txt:1034: func_800238C4: subst "sra\t\$3,\$8,3" "nop" @ 77
+regfix.txt:1035: func_800238C4: subst "\$8" "$3" @ 78
+regfix.txt:1036: func_800238C4: subst "\$8" "$3" @ 78
+regfix.txt:1037: func_800238C4: subst "\$8" "$3" @ 79
+regfix.txt:1038: func_800238C4: insert ".Lcam_rnd1:" @ 77
+regfix.txt:1041: func_800238C4: subst "\$3" "$4" @ 103
+regfix.txt:1042: func_800238C4: subst "\$17" "$4" @ 106
+regfix.txt:1043: func_800238C4: subst "\$3" "$4" @ 106
+regfix.txt:1044: func_800238C4: subst "sll\t\$4,\$17,16" "sh\t$4,72($sp)" @ 107
+regfix.txt:1045: func_800238C4: subst "sh\t\$17,72\(\$sp\)" "sll\t$4,$4,16" @ 108
+regfix.txt:1046: func_800238C4: subst "\$17" "$4" @ 111
+regfix.txt:1047: func_800238C4: subst "\$17" "$4" @ 114
+regfix.txt:1048: func_800238C4: subst "\$17" "$4" @ 117
+regfix.txt:1051: func_800238C4: subst "\$19" "$3" @ 121
+regfix.txt:1052: func_800238C4: subst "\$19" "$3" @ 123
+regfix.txt:1053: func_800238C4: subst "\$19" "$3" @ 126
+regfix.txt:1056: func_800238C4: subst "\$17" "$19" @ 130
+regfix.txt:1057: func_800238C4: subst "\$19" "$18" @ 131
+regfix.txt:1060: func_800238C4: subst "\$17" "$2" @ 134
+regfix.txt:1061: func_800238C4: subst "\$17" "$2" @ 136
+regfix.txt:1062: func_800238C4: subst "\$17" "$2" @ 138
+regfix.txt:1063: func_800238C4: subst "\$17" "$2" @ 138
+regfix.txt:1066: func_800238C4: subst "\$19" "$3" @ 139
+regfix.txt:1067: func_800238C4: subst "\$19" "$3" @ 141
+regfix.txt:1068: func_800238C4: subst "\$19" "$3" @ 143
+regfix.txt:1069: func_800238C4: subst "\$19" "$3" @ 143
+regfix.txt:1072: func_800238C4: subst "\$17" "$19" @ 142
+regfix.txt:1073: func_800238C4: subst "\$17" "$2" @ 142
+regfix.txt:1074: func_800238C4: subst "\$19" "$18" @ 144
+regfix.txt:1075: func_800238C4: subst "\$19" "$3" @ 144
+regfix.txt:1078: func_800238C4: $2 <-> $3 @ 181-184
+regfix.txt:1081: func_800238C4: subst "sb\t\$2,D_800A3769" "lhu\t$3,4($16)" @ 187
+regfix.txt:1082: func_800238C4: subst "lhu\t\$2,4\(\$16\)" "sb\t$2,D_800A3769" @ 188
+regfix.txt:1083: func_800238C4: subst "\$2" "$3" @ 189
+regfix.txt:1086: func_800238C4: subst "\$17" "$19" @ 206
+regfix.txt:1087: func_800238C4: subst "\$19" "$18" @ 207

@@ -1,0 +1,42 @@
+regfix.txt:1681: func_8002C61C: subst "\$3,\$2" "$4,$2" @ 7
+regfix.txt:1682: func_8002C61C: subst "\$3,\$2" "$4,$2" @ 23
+regfix.txt:1685: func_8002C61C: subst "addiu\t\$2,\$zero,28" "addu\t$9,$0,$zero" @ 122
+regfix.txt:1688: func_8002C61C: subst "\$7" "$2" @ 125
+regfix.txt:1689: func_8002C61C: subst "\$7" "$2" @ 126
+regfix.txt:1692: func_8002C61C: subst "\$7" "$2" @ 147
+regfix.txt:1693: func_8002C61C: subst "\$7" "$2" @ 148
+regfix.txt:1696: func_8002C61C: subst "-24\(\$6\)" "72($6)" @ 152
+regfix.txt:1697: func_8002C61C: subst "-20\(\$6\)" "76($6)" @ 153
+regfix.txt:1698: func_8002C61C: subst "-16\(\$6\)" "80($6)" @ 154
+regfix.txt:1699: func_8002C61C: subst "0\(\$6\)" "96($6)" @ 158
+regfix.txt:1700: func_8002C61C: subst "4\(\$6\)" "100($6)" @ 159
+regfix.txt:1701: func_8002C61C: subst "8\(\$6\)" "104($6)" @ 160
+regfix.txt:1704: func_8002C61C: subst "0x00e0" "0x00ec" @ 177
+regfix.txt:1705: func_8002C61C: subst "-44\(\$5\)" "-56($5)" @ 178
+regfix.txt:1706: func_8002C61C: subst "-32\(\$5\)" "-44($5)" @ 179
+regfix.txt:1707: func_8002C61C: subst "-20\(\$5\)" "-32($5)" @ 180
+regfix.txt:1708: func_8002C61C: subst "-40\(\$5\)" "-52($5)" @ 188
+regfix.txt:1709: func_8002C61C: subst "-28\(\$5\)" "-40($5)" @ 189
+regfix.txt:1710: func_8002C61C: subst "-16\(\$5\)" "-28($5)" @ 190
+regfix.txt:1711: func_8002C61C: subst "-36\(\$5\)" "-48($5)" @ 198
+regfix.txt:1712: func_8002C61C: subst "-24\(\$5\)" "-36($5)" @ 199
+regfix.txt:1713: func_8002C61C: subst "-12\(\$5\)" "-24($5)" @ 200
+regfix.txt:1714: func_8002C61C: subst "-8\(\$5\)" "-20($5)" @ 208
+regfix.txt:1715: func_8002C61C: subst "4\(\$5\)" "-8($5)" @ 209
+regfix.txt:1716: func_8002C61C: subst "-4\(\$5\)" "-16($5)" @ 216
+regfix.txt:1717: func_8002C61C: subst "8\(\$5\)" "-4($5)" @ 217
+regfix.txt:1718: func_8002C61C: subst "0\(\$5\)" "-12($5)" @ 224
+regfix.txt:1720: func_8002C61C: subst "0\(\$8\)" "0($5)" @ 226
+regfix.txt:1724: func_8002C61C: delete @ 128
+regfix.txt:1725: func_8002C61C: delete @ 151
+regfix.txt:1726: func_8002C61C: delete @ 170
+regfix.txt:1727: func_8002C61C: delete @ 171
+regfix.txt:1728: func_8002C61C: delete @ 227
+regfix.txt:1735: func_8002C61C: insert "andi\t$4,$3,0xffff" @ 7
+regfix.txt:1736: func_8002C61C: insert "addiu\t$2,$zero,28" @ 123
+regfix.txt:1746: func_8002C61C: insert_after "addu\t$9,$0,$zero" @ 126
+regfix.txt:1748: func_8002C61C: insert_after "addu\t$7,$2,$0" @ 128
+regfix.txt:1750: func_8002C61C: insert_after "addu\t$7,$2,$0" @ 149
+regfix.txt:1764: func_8002C61C: reorder 153,150,151,152,154 @ 150-154
+regfix.txt:1770: func_8002C61C: reorder 174,175,176,177,178,173 @ 173-178
+regfix.txt:1776: func_8002C61C: reorder 225,227,226 @ 225-227

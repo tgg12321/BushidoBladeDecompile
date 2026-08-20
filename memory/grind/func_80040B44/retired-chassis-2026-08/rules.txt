@@ -1,0 +1,15 @@
+regfix.txt:195: func_80040B44: $10 <-> $11
+regfix.txt:197: func_80040B44: $4 <-> $5 @ 5-12
+regfix.txt:199: func_80040B44: subst "\$5,\$zero" "$4,$zero" @ 13
+regfix.txt:200: func_80040B44: subst "\$5,\$5,-1" "$4,$4,-1" @ 16
+regfix.txt:201: func_80040B44: subst "\$5," "$4," @ 17
+regfix.txt:203: func_80040B44: subst "\$4,\$14" "$2,$14" @ 14
+regfix.txt:204: func_80040B44: subst "6708\(\$4\)" "6708($2)" @ 15
+regfix.txt:205: func_80040B44: subst "\$4,\$4,-4" "$2,$2,-4" @ 18
+regfix.txt:207: func_80040B44: subst "\$5,\$sp,\$2" "$5,$2,$sp" @ 31
+regfix.txt:208: func_80040B44: subst "\$3,\$15,\$3" "$3,$3,$15" @ 41
+regfix.txt:209: func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 43
+regfix.txt:210: func_80040B44: subst "\$6,\$15,\$2" "$6,$2,$15" @ 54
+regfix.txt:211: func_80040B44: subst "\$2,\$14,\$2" "$2,$2,$14" @ 81
+regfix.txt:213: func_80040B44: insert_after "addu $11,$11,-2" @ 87
+regfix.txt:215: func_80040B44: reorder 24,27,25,26 @ 24-27

@@ -1,0 +1,25 @@
+regfix.txt:2131: func_800485EC: subst "\$8" "$3" @ 10
+regfix.txt:2132: func_800485EC: subst "lw\s+\$4," "lhu	$4," @ 11
+regfix.txt:2133: func_800485EC: subst "lw\s+\$6," "lhu	$5," @ 12
+regfix.txt:2134: func_800485EC: subst "\$8" "$3" @ 13
+regfix.txt:2135: func_800485EC: reorder 9,7,5,10,15,6,8,11,12,13,14 @ 5-15
+regfix.txt:2136: func_800485EC: subst "0\(\$5\)" "0($16)" @ 21
+regfix.txt:2137: func_800485EC: subst "\$8" "$3" @ 22
+regfix.txt:2138: func_800485EC: subst "\$8" "$3" @ 23
+regfix.txt:2139: func_800485EC: subst "\$6,12\(\$16\)" "$5,12($16)" @ 26
+regfix.txt:2140: func_800485EC: subst "\$8" "$3" @ 30
+regfix.txt:2141: func_800485EC: subst "\$8" "$3" @ 31
+regfix.txt:2142: func_800485EC: subst "\$8" "$3" @ 31
+regfix.txt:2143: func_800485EC: subst "\$8" "$3" @ 32
+regfix.txt:2144: func_800485EC: subst "\$3,0\(\$8\)" "$2,0($3)" @ 35
+regfix.txt:2145: func_800485EC: subst "\$2,\$8" "$3,$3" @ 36
+regfix.txt:2146: func_800485EC: subst "sw\s+\$2," "sw	$3," @ 37
+regfix.txt:2147: func_800485EC: subst "sh\s+\$3,14" "sh	$2,14" @ 39
+regfix.txt:2148: func_800485EC: subst "addu\s+\$8,\$17,8" "lh	$4,0($16)" @ 43
+regfix.txt:2149: func_800485EC: subst "lh\s+\$4,0\(\$16\)" "addu	$3,$17,8" @ 44
+regfix.txt:2150: func_800485EC: subst "\$8" "$3" @ 47
+regfix.txt:2151: func_800485EC: subst "\$2,\$8" "$3,$3" @ 52
+regfix.txt:2152: func_800485EC: subst "lw\s+\$3,0\(\$8\)" "lw	$2,0($3)" @ 54
+regfix.txt:2153: func_800485EC: reorder 54,52,53 @ 52-54
+regfix.txt:2154: func_800485EC: subst "sw\s+\$2,24" "sw	$3,24" @ 56
+regfix.txt:2155: func_800485EC: subst "sh\s+\$3,6" "sh	$2,6" @ 58

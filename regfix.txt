@@ -484,41 +484,11 @@ func_8003F824: subst "bne.*" "bne\t$3,$2,{lbl#2}" @ 107
 
 # func_80023648: register allocation fixes (36 diffs, score 180->0)
 # Group 1: v1->a2 ($3->$6) - table value + abs_val
-func_80023648: subst "\$3,0\(\$3\)" "$6,0($3)" @ 35
-func_80023648: subst "\$3," "$6," @ 43
-func_80023648: subst ",\$3,\$zero" ",$6,$zero" @ 44
-func_80023648: subst ",\$3,3" ",$6,3" @ 45
-func_80023648: subst ",\$3" ",$6" @ 55
-func_80023648: subst "\$3,336" "$6,336" @ 67
-func_80023648: subst "\$3," "$6," @ 69
-func_80023648: subst ",\$3," ",$6," @ 70
-func_80023648: subst "\$3,\$0,\$3" "$6,$0,$6" @ 71
-func_80023648: subst ",\$3," ",$6," @ 72
-func_80023648: subst "\$3,\$zero" "$6,$zero" @ 75
 # Group 2: a0->v1 ($4->$3) - div16
-func_80023648: subst "\$4,26" "$3,26" @ 77
-func_80023648: subst "\$4," "$3," @ 79
-func_80023648: subst "\$4,\$4,15" "$3,$3,15" @ 81
-func_80023648: subst "\$4,\$4,4" "$3,$3,4" @ 82
 # Group 3: combined a1->a0 + v1->a2 ($5,$2,$3 -> $4,$2,$6)
-func_80023648: subst "\$5,\$2,\$3" "$4,$2,$6" @ 78
 # Group 3b: a1->a0 ($5->$4) - sub_result, reload
-func_80023648: subst "\$5,334" "$4,334" @ 80
-func_80023648: subst ",\$5,\$4" ",$4,$3" @ 84
-func_80023648: subst "\$5,26" "$4,26" @ 89
-func_80023648: subst "\$5,\$2" "$4,$2" @ 95
 # Group 4: a2->a3 ($6->$7) - mflo results
-func_80023648: subst "\$6" "$7" @ 98
-func_80023648: subst "\$6," "$7," @ 99
-func_80023648: subst "\$6" "$7" @ 117
-func_80023648: subst "\$6" "$7" @ 128
-func_80023648: subst "\$6," "$7," @ 129
-func_80023648: subst "\$6" "$7" @ 138
-func_80023648: subst "\$6," "$7," @ 139
 # Group 5: a1->a2 + a2->a3 ($5,$6 -> $6,$7) - speed
-func_80023648: subst "\$5,\$6," "$6,$7," @ 121
-func_80023648: subst ",\$5" ",$6" @ 122
-func_80023648: subst ",\$5" ",$6" @ 136
 
 # func_80022F34: frame size fix (40->32) + load-delay nop
 # GCC allocates 8 bytes of vars for val1 spill that target doesnt have
@@ -552,48 +522,18 @@ func_80022F34: insert "nop" @ 36
 
 # tslGlobalMemFree_800861BC: compound regfix - 30 rules (0-based TEXT indices)
 # Prologue register renames
-func_800861BC: subst "\$8" "$3" @ 4
-func_800861BC: subst "\$9" "$8" @ 2
-func_800861BC: subst "\$8" "$3" @ 6
 # Loop: precomputed pointer offset + register swap
-func_800861BC: subst "-2\(\$8\)" "0($9)" @ 19
-func_800861BC: subst "\$9" "$8" @ 21
 # Branch: beq -> blez
-func_800861BC: subst "beq" "blez" @ 31
-func_800861BC: subst ",\$0" "" @ 31
 # If-branch v0<->v1 swap
-func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 40
-func_800861BC: subst "\$2," "$3," @ 41
-func_800861BC: subst "\$3,12\(\$3\)" "$2,12($2)" @ 42
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 44
 # Else-branch v0<->v1 swap
-func_800861BC: subst "\$3,\$3,\$2" "$2,$2,$3" @ 52
-func_800861BC: subst "\$2," "$3," @ 53
-func_800861BC: subst "\$3,14\(\$3\)" "$2,14($2)" @ 54
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 55
 # Merge point: sh operands v0<->v1
-func_800861BC: subst "\$3,D_80102A7E\(\$2\)" "$2,D_80102A7E($3)" @ 56
 # Tail block 1: base in v0, D_8010280C via a1
-func_800861BC: subst "\$5," "$2," @ 70
-func_800861BC: subst "\$2,0\(\$8\)" "$3,0($5)" @ 71
-func_800861BC: subst "\$3,16\(\$5\)" "$2,16($2)" @ 72
-func_800861BC: subst "\$2,\$2,1" "$3,$3,1" @ 73
-func_800861BC: subst "\$3,D_80102A80\(\$2\)" "$2,D_80102A80($3)" @ 74
 # Tail block 2
-func_800861BC: subst "\$5," "$2," @ 80
-func_800861BC: subst "0\(\$8\)" "0($5)" @ 81
-func_800861BC: subst "18\(\$5\)" "18($2)" @ 82
 # Final D_8010280A: lhu -> lh
-func_800861BC: subst "lhu" "lh" @ 87
 # Prologue/epilogue frame inserts (0-based: first insn=0, last=94)
-func_800861BC: insert "addiu $sp,$sp,-8" @ 0
-func_800861BC: insert "addiu $sp,$sp,8" @ 94
 # Insert precompute t1=v1-2 (post-insert: T4 la shifted to idx 5)
-func_800861BC: insert_after "addiu $9,$3,-2" @ 5
 # Insert tail reload (post-insert: T63 sb shifted to idx 64)
-func_800861BC: insert_after "la $5,D_8010280C" @ 64
 # Reorder prologue (post-all-inserts: indices 1-6)
-func_800861BC: reorder 2,5,6,3,4,1 @ 1-6
 
 # func_80084A7C: 156-insn motion state handler (main.c)
 # Phase 1: swap a2/a3 for base_ptr/offset register assignment
@@ -812,32 +752,13 @@ func_80042C80: insert_after "sra $4,$4,16" @ 40
 # Prologue: la before sra
 # --- cpu_side_move_dir: 25 reg diffs across 3 groups + 1 reload insert + 1 lost-nop insert ---
 # Group A: if-branch division output cascade (target keeps sum in $v1, mfhi to $t1)
-func_80027640: subst "addu\t\$2,\$6,\$3" "addu\t$3,$6,$3" @ 69
-func_80027640: subst "mult\t\$2,\$5" "mult\t$3,$5" @ 71
-func_80027640: subst "sra\t\$2,\$2,31" "sra\t$3,$3,31" @ 72
-func_80027640: subst "mfhi\t\$3" "mfhi\t$9" @ 73
-func_80027640: subst "sra\t\$3,\$3,5" "sra\t$2,$9,5" @ 74
-func_80027640: subst "subu\t\$4,\$3,\$2" "subu\t$2,$2,$3" @ 76
 
 # Group B: else-branch p computation (target keeps p in $a0, lh dest in $v0)
-func_80027640: subst "addu\t\$2,\$4,\$2" "addu\t$4,$4,$2" @ 83
-func_80027640: subst "lh\t\$3,0\(\$2\)" "lh\t$2,0($4)" @ 84
-func_80027640: subst "sw\t\$3,16\(\$sp\)" "sw\t$2,16($sp)" @ 86
-func_80027640: subst "lh\t\$4,4\(\$2\)" "lh\t$2,4($4)" @ 87
 
 # Group C: post-.L7 sp18 store + .L7 join cascade (indices shifted -1 vs prior version)
-func_80027640: subst "sw\t\$4,24\(\$sp\)" "sw\t$2,24($sp)" @ 88
-func_80027640: subst "lw\t\$3,16\(\$sp\)" "lw\t$4,16($sp)" @ 89
-func_80027640: subst "subu\t\$3,\$3,\$2" "subu\t$4,$4,$2" @ 92
-func_80027640: subst "sw\t\$3,16\(\$sp\)" "sw\t$4,16($sp)" @ 93
-func_80027640: subst "lw\t\$2,252\(\$17\)" "lw\t$3,252($17)" @ 94
-func_80027640: subst "subu\t\$2,\$4,\$2" "subu\t$2,$2,$3" @ 96
-func_80027640: subst "addu\t\$2,\$2,\$3" "addu\t$2,$2,$4" @ 100
 
 # Insert lw $v0, sp18 (reload) BEFORE idx 93 (sw sp10)
-func_80027640: insert "lw\t$2,24($sp)" @ 93
 # Insert nop BEFORE idx 88 (load delay for lh $2,4($4) that maspsx wrongly stripped)
-func_80027640: insert "nop" @ 88
 
 # func_80088740 — match attempt (2026-04-18)
 # Region 1 (init): rename cached D_800A2CDC pointer $3->$2 (target uses $v0)
@@ -1095,75 +1016,28 @@ func_80016E60: subst ".*" "addu\t$4,$0,$zero" @ 66
 # return result: a2->a1
 
 # camera_set_zoom: delay slot fills (fix +8 bytes)
-func_800238C4: subst "nop" "addiu\t$2,$zero,1" @ 24
-func_800238C4: delete @ 25
-func_800238C4: subst "nop" "addiu\t$2,$zero,40" @ 27
-func_800238C4: delete @ 28
 
 # camera_set_zoom: s1<->s2 swap (out pointer <-> func result)
-func_800238C4: $17 <-> $18 @ 43-55
-func_800238C4: $17 <-> $18 @ 88-88
-func_800238C4: $17 <-> $18 @ 101-101
-func_800238C4: $17 <-> $18 @ 152-186
 
 # camera_set_zoom: first rounding $8->$3 + undo delay slot fill
-func_800238C4: subst "\$8" "$3" @ 74
-func_800238C4: subst "\$8" "$3" @ 76
-func_800238C4: subst "\.L[0-9]+" ".Lcam_rnd1" @ 76
-func_800238C4: subst "sra\t\$3,\$8,3" "nop" @ 77
-func_800238C4: subst "\$8" "$3" @ 78
-func_800238C4: subst "\$8" "$3" @ 78
-func_800238C4: subst "\$8" "$3" @ 79
-func_800238C4: insert ".Lcam_rnd1:" @ 77
 
 # camera_set_zoom: s1==0 branch dx_delta ($3->$4, $17->$4)
-func_800238C4: subst "\$3" "$4" @ 103
-func_800238C4: subst "\$17" "$4" @ 106
-func_800238C4: subst "\$3" "$4" @ 106
-func_800238C4: subst "sll\t\$4,\$17,16" "sh\t$4,72($sp)" @ 107
-func_800238C4: subst "sh\t\$17,72\(\$sp\)" "sll\t$4,$4,16" @ 108
-func_800238C4: subst "\$17" "$4" @ 111
-func_800238C4: subst "\$17" "$4" @ 114
-func_800238C4: subst "\$17" "$4" @ 117
 
 # camera_set_zoom: s1==0 branch dz_delta ($19->$3)
-func_800238C4: subst "\$19" "$3" @ 121
-func_800238C4: subst "\$19" "$3" @ 123
-func_800238C4: subst "\$19" "$3" @ 126
 
 # camera_set_zoom: s1==0 final loads ($17->$19, $19->$18)
-func_800238C4: subst "\$17" "$19" @ 130
-func_800238C4: subst "\$19" "$18" @ 131
 
 # camera_set_zoom: else branch dx ($17->$2)
-func_800238C4: subst "\$17" "$2" @ 134
-func_800238C4: subst "\$17" "$2" @ 136
-func_800238C4: subst "\$17" "$2" @ 138
-func_800238C4: subst "\$17" "$2" @ 138
 
 # camera_set_zoom: else branch dz ($19->$3)
-func_800238C4: subst "\$19" "$3" @ 139
-func_800238C4: subst "\$19" "$3" @ 141
-func_800238C4: subst "\$19" "$3" @ 143
-func_800238C4: subst "\$19" "$3" @ 143
 
 # camera_set_zoom: else branch sra dest/src splits
-func_800238C4: subst "\$17" "$19" @ 142
-func_800238C4: subst "\$17" "$2" @ 142
-func_800238C4: subst "\$19" "$18" @ 144
-func_800238C4: subst "\$19" "$3" @ 144
 
 # camera_set_zoom: v0<->v1 swap for pointer deref block
-func_800238C4: $2 <-> $3 @ 181-184
 
 # camera_set_zoom: D_800A3758 section (reorder lhu/sb + register fix)
-func_800238C4: subst "sb\t\$2,D_800A3769" "lhu\t$3,4($16)" @ 187
-func_800238C4: subst "lhu\t\$2,4\(\$16\)" "sb\t$2,D_800A3769" @ 188
-func_800238C4: subst "\$2" "$3" @ 189
 
 # camera_set_zoom: final adds dx/dz register fix
-func_800238C4: subst "\$17" "$19" @ 206
-func_800238C4: subst "\$19" "$18" @ 207
 
 # DispSleepMenuTex: insert va_start home store for first_arg
 func_8003D52C: insert "sw	$21,1340($29)" @ 19
@@ -1606,73 +1480,36 @@ func_80040D48: subst "\$5" "$4" @ 236
 # Strategy: delete labeled insns to detach labels, re-insert at correct positions
 #
 # Swaps (Phase 1, original indices)
-_spu_note2pitch: $3 <-> $6 @ 35-62
-_spu_note2pitch: $7 <-> $8 @ 43-69
 #
 # Substs (Phase 2, original indices)
 # abs_diff: a0($4)->a1($5)
-_spu_note2pitch: subst "\$4" "$5" @ 11
-_spu_note2pitch: subst "\$4" "$5" @ 12
-_spu_note2pitch: subst "\$4" "$5" @ 15
-_spu_note2pitch: subst "\$4" "$5" @ 16
-_spu_note2pitch: subst "\$4" "$5" @ 24
 # Division magic constant format
-_spu_note2pitch: subst "lui\t\$2,\(715784192 >> 16\) & 0xFFFF" "lui\t$2,10922" @ 13
-_spu_note2pitch: subst "ori\t\$2,\$2,0xaaab" "ori\t$2,$2,(715827883 & 65535)" @ 14
 # quot: v1($3)->a0($4)
-_spu_note2pitch: subst "\$3" "$4" @ 20
-_spu_note2pitch: subst "\$3" "$4" @ 21
-_spu_note2pitch: subst "\$3" "$4" @ 27
-_spu_note2pitch: subst "\$3" "$4" @ 30
-_spu_note2pitch: subst "\$3" "$4" @ 30
-_spu_note2pitch: subst "\$3" "$4" @ 33
 # rem: a3($7)->v1($3)
-_spu_note2pitch: subst "\$7" "$3" @ 24
-_spu_note2pitch: subst "\$7" "$3" @ 28
-_spu_note2pitch: subst "\$7" "$3" @ 31
-_spu_note2pitch: subst "\$7" "$3" @ 31
 # a3_val: t0($8)->a3($7)
-_spu_note2pitch: subst "\$8" "$7" @ 36
 # abs_rem copy: $7->$3
-_spu_note2pitch: subst "\$7" "$3" @ 37
 # bgez: v0($2)->v1($3)
-_spu_note2pitch: subst "\$2" "$3" @ 38
 # loop subu/srl: v0($2)->a0($4)
-_spu_note2pitch: subst "\$2" "$4" @ 54
-_spu_note2pitch: subst "\$2" "$4" @ 55
 # loop mflo/sw: t2($10)->t1($9)
-_spu_note2pitch: subst "\$10" "$9" @ 59
-_spu_note2pitch: subst "\$10" "$9" @ 60
 # post-loop lw: v0($2)->t1($9)
-_spu_note2pitch: subst "lw\t\$2,8" "lw\t$9,8" @ 63
 # post-loop subu: after $7<->$8 swap $8->$7; need $2,$7 -> $9,$7
-_spu_note2pitch: subst "subu\t\$2,\$2,\$7" "subu\t$2,$9,$7" @ 65
 #
 # Deletes (Phase 4, original indices)
 # Delete li mult_const at orig 34 (.L680 label falls to andi at orig 35)
-_spu_note2pitch: delete @ 34
 # Delete mult at orig 41 (.L682 label falls to srl at orig 42)
-_spu_note2pitch: delete @ 41
 # Delete bnez delay-slot mult at orig 62
-_spu_note2pitch: delete @ 62
 #
 # Inserts (Phase 3, post-delete indices, sorted descending internally)
 # Re-insert mult before sll a3_val (post-delete 35=sll); use final regs ($6 from $3<->$6 swap)
-_spu_note2pitch: insert "mult\t$6,$4" @ 35
 # Insert quot copy (addu $4,$3,$0) at orig 20 position
-_spu_note2pitch: insert "addu\t$4,$3,$0" @ 20
 #
 # Insert_afters (Phase 3.5, post-Phase-3-insert indices)
 # Re-insert li mult_const after andi (post-Phase-3 idx 35 = andi)
-_spu_note2pitch: insert_after "addiu\t$4,$zero,4155" @ 35
 #
 # Reorders (Phase 7, post-all-insert indices)
 # Scheduling: counter(41),bgez(40),abs_rem(39) -> counter,bgez,abs_rem
-_spu_note2pitch: reorder 41,40,39 @ 39-41
 # beq before sw for delay slot fill
-_spu_note2pitch: reorder 47,46 @ 46-47
 # bne before sw for delay slot fill
-_spu_note2pitch: reorder 62,61 @ 61-62
 
 # motion_SetMotion: anti-cross-jump fix
 func_80038C70: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
@@ -1794,62 +1631,26 @@ func_80038C70: subst "addiu\t\$16,\$zero,12" "addiu	$16,$zero,13" @ 149
 # === SUBSTS (ORIGINAL indices) ===
 
 # Phase 1: andi register fix
-func_8002C61C: subst "\$3,\$2" "$4,$2" @ 7
-func_8002C61C: subst "\$3,\$2" "$4,$2" @ 23
 
 # Phase 2: bne delay slot — change addiu to move t1,zero
-func_8002C61C: subst "addiu\t\$2,\$zero,28" "addu\t$9,$0,$zero" @ 122
 
 # Phase 3: Loop 1 header — la $7 -> la $2
-func_8002C61C: subst "\$7" "$2" @ 125
-func_8002C61C: subst "\$7" "$2" @ 126
 
 # Phase 4: Loop 2 header — la $7 -> la $2
-func_8002C61C: subst "\$7" "$2" @ 147
-func_8002C61C: subst "\$7" "$2" @ 148
 
 # Phase 5: Loop 2 load offsets — base 0x1F800060 -> 0x1F800000
-func_8002C61C: subst "-24\(\$6\)" "72($6)" @ 152
-func_8002C61C: subst "-20\(\$6\)" "76($6)" @ 153
-func_8002C61C: subst "-16\(\$6\)" "80($6)" @ 154
-func_8002C61C: subst "0\(\$6\)" "96($6)" @ 158
-func_8002C61C: subst "4\(\$6\)" "100($6)" @ 159
-func_8002C61C: subst "8\(\$6\)" "104($6)" @ 160
 
 # Phase 6: Loop 3 pointer merge — $a1 base 0xE0 -> 0xEC, all offsets -12
-func_8002C61C: subst "0x00e0" "0x00ec" @ 177
-func_8002C61C: subst "-44\(\$5\)" "-56($5)" @ 178
-func_8002C61C: subst "-32\(\$5\)" "-44($5)" @ 179
-func_8002C61C: subst "-20\(\$5\)" "-32($5)" @ 180
-func_8002C61C: subst "-40\(\$5\)" "-52($5)" @ 188
-func_8002C61C: subst "-28\(\$5\)" "-40($5)" @ 189
-func_8002C61C: subst "-16\(\$5\)" "-28($5)" @ 190
-func_8002C61C: subst "-36\(\$5\)" "-48($5)" @ 198
-func_8002C61C: subst "-24\(\$5\)" "-36($5)" @ 199
-func_8002C61C: subst "-12\(\$5\)" "-24($5)" @ 200
-func_8002C61C: subst "-8\(\$5\)" "-20($5)" @ 208
-func_8002C61C: subst "4\(\$5\)" "-8($5)" @ 209
-func_8002C61C: subst "-4\(\$5\)" "-16($5)" @ 216
-func_8002C61C: subst "8\(\$5\)" "-4($5)" @ 217
-func_8002C61C: subst "0\(\$5\)" "-12($5)" @ 224
 # merge $t0 read to $a1
-func_8002C61C: subst "0\(\$8\)" "0($5)" @ 226
 
 # === DELETES (ORIGINAL indices) ===
 
-func_8002C61C: delete @ 128
-func_8002C61C: delete @ 151
-func_8002C61C: delete @ 170
-func_8002C61C: delete @ 171
-func_8002C61C: delete @ 227
 
 # === INSERTS (post-delete indices) ===
 # After 5 deletes at 128,151,170,171,227:
 # post-delete 0-127 = orig 0-127; 128-149 = orig 129-150;
 # 150-167 = orig 152-169; 168-222 = orig 172-226; 223-248 = orig 228-253
 
-func_8002C61C: insert "andi\t$4,$3,0xffff" @ 7
-func_8002C61C: insert "addiu\t$2,$zero,28" @ 123
 
 # === INSERT_AFTERS (post-insert indices) ===
 # After 2 inserts at post-del 7 and 123:
@@ -1859,11 +1660,8 @@ func_8002C61C: insert "addiu\t$2,$zero,28" @ 123
 # orig 148 (addu $8 loop2) -> pd 147 -> pi 149
 
 # move t1 after sh (before .L227 label)
-func_8002C61C: insert_after "addu\t$9,$0,$zero" @ 126
 # move a3,v0 after addu $8 in loop 1
-func_8002C61C: insert_after "addu\t$7,$2,$0" @ 128
 # move a3,v0 after addu $8 in loop 2
-func_8002C61C: insert_after "addu\t$7,$2,$0" @ 149
 
 # === REORDERS (post-all indices) ===
 # After insert_afters at 149(+1), 128(+1), 126(+1):
@@ -1877,19 +1675,16 @@ func_8002C61C: insert_after "addu\t$7,$2,$0" @ 149
 # After ia@149: la=148, addu=149, move_a3=150, move_t1=151, lui=152
 # After ia@128: (>128 shift) la=149, addu=150, move_a3=151, move_t1=152, lui=153
 # After ia@126: (>126 shift) la=150, addu=151, move_a3=152, move_t1=153, lui=154
-func_8002C61C: reorder 153,150,151,152,154 @ 150-154
 
 # Loop 3 preheader: move_a2,move_t1,lui_mag,ori_mag,lui_a1,ori_a1 -> move_t1,lui_mag,ori_mag,lui_a1,ori_a1,move_a2
 # orig 172(move_a2)->pd168->pi170->ia(+3)=173, orig 173(move_t1)->pd169->pi171->ia(+3)=174
 # orig 174(lui_mag)->pd170->pi172->ia(+3)=175, orig 175(ori_mag)->pd171->pi173->ia(+3)=176
 # orig 176(lui_a1)->pd172->pi174->ia(+3)=177, orig 177(ori_a1)->pd173->pi175->ia(+3)=178
-func_8002C61C: reorder 174,175,176,177,178,173 @ 173-178
 
 # Loop 3 body: lw_a,addu_a1,lw_b -> lw_a,lw_b,addu_a1
 # orig 224(lw_a)->pd220->pi222->ia(+3)=225, orig 225(addu_a1)->pd221->pi223->ia(+3)=226
 # orig 226(lw_b,after subst)->pd222->pi224->ia(+3)=227
 # Note: orig 227 was deleted, so orig 226->pd222
-func_8002C61C: reorder 225,227,226 @ 225-227
 
 # saTan0KiWareMoveA: 212-insn collision/triangle test with GTE, div-by-3, sqrt, 3x saTan5TakeAnim2
 # 66-rule compound regfix: GTE 2-insn address patterns (+3), register cycle (5-way + swap),
@@ -2763,42 +2558,6 @@ func_8005D554: reorder 145,130,131,132,133,134,135,136,137,138,139,140,141,142,1
 func_8005D554: reorder 145,130,131,132,133,152,134,135,136,137,138,139,140,141,142,143,144,146,165,147,148,149,150,151,153,154,155,156,157,158,159,160,161,162,163,164 @ 130-165
 func_8005D554: insert_label ".L_loopfix:" @ 62
 func_8005D554: subst "bne\s+\$3,\$0,\.L\d+" "bne	$3,$0,.L_loopfix" @ 154
-_addque2: reorder 41,38,39,40,37 @ 37-41
-_addque2: $2 <-> $3 @ 49-54
-_addque2: subst "sw\s+\$19,D_8009BF68" "lui	$2,%hi(D_8009BF68)" @ 60
-_addque2: insert_after "sw	$19,0($2)" @ 60
-_addque2: insert_after "addiu	$2,$2,%lo(D_8009BF68)" @ 60
-_addque2: reorder 52,51,50,53 @ 50-53
-_addque2: subst "lui\s+\$3,\(67108864" "lui	$4,(67108864" @ 52
-_addque2: subst "and\s+\$2,\$2,\$3" "and	$2,$2,$4" @ 53
-_addque2: insert_label ".LD3F8_loop:" @ 50
-_addque2: subst "beq\s+\$2,\$0,\.L\d+" "beq	$2,$0,.LD3F8_loop" @ 54
-_addque2: subst "addu\s+\$7,\$0,\$zero" "addu	$6,$0,$zero" @ 71
-_addque2: insert_after "addiu	$8,$8,%lo(D_8010368C)" @ 71
-_addque2: insert_after "lui	$8,%hi(D_8010368C)" @ 71
-_addque2: subst "addu\s+\$5,\$16,\$zero" "addu	$7,$16,$zero" @ 72
-_addque2: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 73
-_addque2: subst "bgez\s+\$6,\s*\.L\d+" "bgez	$2,.LD3F8_pos" @ 74
-_addque2: insert_label ".LD3F8_pos:" @ 80
-_addque2: subst "sra\s+\$2,\$6,2" "nop" @ 75
-_addque2: subst "addu\s+\$6,\$6,3" "addu	$2,$2,3" @ 76
-_addque2: subst "sra\s+\$2,\$6,2" "sra	$2,$2,2" @ 77
-_addque2: subst "slt\s+\$2,\$7,\$2" "slt	$2,$6,$2" @ 78
-_addque2: subst "sll\s+\$8,\$7,2" "sll	$4,$6,2" @ 80
-_addque2: subst "lw\s+\$4,0\(\$5\)" "lw	$5,0($7)" @ 81
-_addque2: subst "addu\s+\$5,\$5,4" "addu	$7,$7,4" @ 82
-_addque2: subst "addu\s+\$7,\$7,1" "addu	$6,$6,1" @ 83
-_addque2: delete @ 85
-_addque2: reorder 88,87 @ 87-88
-_addque2: insert_after "addu	$4,$4,$2" @ 88
-_addque2: subst "sw\s+\$4,D_8010368C\(\$2\)" "sw	$5,0($4)" @ 90
-_addque2: subst "addu\s+\$6,\$17,\$zero" "addu	$2,$17,$zero" @ 92
-_addque2: subst "la\s+\$3,D_8009BF78" "lui	$2,%hi(D_8009BF78)" @ 93
-_addque2: subst "lw\s+\$2,0\(\$3\)" "lw	$2,%lo(D_8009BF78)($2)" @ 94
-_addque2: subst "lw\s+\$3,0\(\$3\)" "lw	$3,D_8009BF78" @ 95
-_addque2: subst "la\s+\$4,D_8009BF78" "lui	$3,%hi(D_8009BF78)" @ 113
-_addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,%lo(D_8009BF78)($3)" @ 114
-_addque2: subst "lw\s+\$3,0\(\$4\)" "lw	$3,D_8009BF78" @ 120
 
 # Frame size 104 -> 128 (target uses larger frame)
 # Move $s4 init from idx 21 to idx 4 (target's position)
