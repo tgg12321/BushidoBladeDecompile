@@ -16,8 +16,116 @@ void func_80047ED0(s32 a0) {
     g_snd_volume += a0;
 }
 
-INCLUDE_ASM("asm/funcs", func_80047EE8);
-INCLUDE_ASM("asm/funcs", func_80047FBC);
+void func_80047EE8(s32 arg0, s32 arg1)
+{
+    /* FAKE: unwritten leading frame pad (phantom-frame-slot volatile pad local
+     * family, owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:390).
+     * Mechanism: GCC 2.7.2 function.c assign_stack_local reserves the array slot at
+     * RTL-expand from the source DECL and never reclaims frame_offset after DCE, so a
+     * declared-but-untouched local aggregate reproduces target's allocated-but-unwritten
+     * 32-byte vars region (.frame $sp,72 - args 0x00-0x17, vars 0x18-0x37, regs
+     * 0x38-0x47; ZERO sw/lw in 0x18-0x37 - frame forensics in
+     * memory/grind/func_80047EE8/evidence.md [s6]/[s7], cc1 size-pin puts the original
+     * aggregate at 7-8 words). Lever-exhaustion: 9 structural .frame variants (s3),
+     * ~26,500 permuter iters across two distinct basins (s4/s5), forensics (s6/s7),
+     * rederive (s8/s9) - every honest producer measured inert; see hypotheses.md.
+     * SOTN-master precedent: volatile u32 pad; // !FAKE: at src/st/sel/2C048.c:564
+     * (docs/reference/sotn-construct-index.md:101); volatile u32 pad[4]; // FAKE at
+     * src/st/sel/stream.c:80 (sotn-construct-index.md:103). */
+    volatile u32 pre_pad[8];
+    u32 *p;
+    s32 saved;
+    s16 new_var;
+    s32 count;
+    u32 v_off;
+    unsigned int new_var2;
+    p = (u32 *) arg0;
+    saved = (s32) p;
+    arg0 = 0; /* FAKE: dead store to a PARAM (dead-store-fake-exception family,
+               * .claude/rules/dead-store-fake-exception.md). Mechanism: defeats cse2's
+               * canonical-register substitution over the {arg0, p, saved} equivalence
+               * class so the second pointer binds addu $s0,$s2,$v0 rather than $a0.
+               * Lever-exhaustion: 6 pure spellings of this init chain measured dead on
+               * this body at s2 (rejected/pure-*.c). */
+    p = (u32 *) ((s32) p + (((s32) (arg1 << 16)) >> 14));
+    v_off = *p;
+    p = (u32 *) (saved + ((v_off >> 2) << 2));
+    count = *(p++);
+    if (count != 0)
+    {
+        count--;
+        do
+        {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            s32 first;
+            word = *p;
+            p = (u32 *) (((s32) p) + 4);
+            a1v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            a2v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            a3v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            new_var = a1v;
+            new_var2 = word >> 2;
+            first = saved + (new_var2 << 2);
+            v0v = (s16) (*((u16 *) p));
+            p = (u32 *) (((s32) p) + 2);
+            func_800482C8(first, new_var, a2v, a3v, v0v);
+        }
+        while ((count--) != 0);
+    }
+}
+void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
+{
+    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md): target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches; mechanism: GCC 2.7.2 get_frame_size reserves declared locals
+    u32 *p;
+    s32 base_addr;
+    s32 count;
+    s32 new_var;
+    base_addr = arg0;
+    p = (u32 *)arg0;
+    arg0 = 0; /* FAKE: defeats cse2 canonical-reg substitution
+                 that folds {reg 72 arg0, reg 78 p, reg 79 base_addr}
+                 equivalence class at insn 36 - RTL-proven s6 */
+    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    p = (u32 *)(base_addr + (((*p) >> 2) << 2));
+    count = *(p++);
+    if (count != 0) {
+        s32 sx_arg2;
+        s32 sx_arg3;
+        count--;
+        sx_arg2 = arg2;
+        sx_arg3 = arg3;
+        do {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            word = *p;
+            p = (u32 *)(((s32)p) + 4);
+            a1v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a2v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            new_var = base_addr + (((u32)word >> 2) << 2);
+            a3v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v0v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            func_800482C8(new_var,
+                          (s32)a1v + sx_arg2,
+                          (s32)a2v + sx_arg3,
+                          (s32)a3v + sx_arg2,
+                          (s32)v0v + sx_arg3);
+        } while ((count--) != 0);
+    }
+}
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     register s32 saved_arg0 asm("$18");
