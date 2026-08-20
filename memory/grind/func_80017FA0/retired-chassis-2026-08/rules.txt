@@ -1,6 +1,0 @@
-regfix.txt:38: func_80017FA0: subst "\$3" "$1" @ 8
-regfix.txt:39: func_80017FA0: subst "0\(\$3\)" "0xb8($1)" @ 10
-regfix.txt:40: func_80017FA0: delete @ 9
-regfix.txt:42: func_80017FA0: subst "lui.*" "nop" @ 55
-regfix.txt:43: func_80017FA0: subst "ori.*" "lui $1,0x1f80" @ 57
-regfix.txt:44: func_80017FA0: subst "0\(\$3\)" "0x60($1)" @ 58
