@@ -87,3 +87,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: resolution
 evidence: motion_Close @0x80083804 has no standalone asm file — splat split it fused inside asm/funcs/func_80083794.s (one file spans both census functions; func_80083794 = the paired motion_Open). Splitting the .s buys nothing now: func_80083794 is itself rodata-deferred, so both keep the legacy representation regardless.
 disposition taken: stays deferred with its sibling; the file split happens naturally whenever either function is solved. file_LoadSectors (the other renamed-asm deferral) was migrated this date: asm/funcs/func_800165F8.s renamed to file_LoadSectors.s with glabel/endlabel updated (no pipeline references to the old name), INCLUDE_ASM landed, SHA1 MATCH, floor-pin 14.
+
+## 2026-08-19 — owner decision: no repo-wide rule reset; grind through the 41 rule-carriers
+category: resolution
+evidence: owner Q&A 2026-08-19 (post asm-until-matched). Full TU-resplit reset (spec docs/superpowers/specs/2026-08-06-tu-resplit-campaign.md) evaluated and declined: it costs hand-maintained bb2.ld surgery, invalidates the deepest chassis-relative ledgers, buys nothing toward solving, and its original target population (237 asmfix lines) is down to 2.
+disposition taken: the 33 active rule-carriers (672 rules) retire through normal grinding; the 8 parked (36 rules) stay on the policy track. TU-resplit is held in reserve as a PER-FUNCTION scalpel, only if a specific deferred function livelocks because of its representation, with its ledger re-measured on the new chassis in the same session.
