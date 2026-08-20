@@ -873,3 +873,109 @@ rules_dropped 0**. The banked floor reproduces exactly. Every number below is ch
 - probe: Two spellings measured with `sandbox func_80072CD4 --disable all`: (a) tmp/grind/func_80072CD4/s8/probeB_sibling_shape.c (verbatim sibling chassis, fc_const shared for @4, @0xC AND @0x14 as the sibling shares it); (b) tmp/grind/func_80072CD4/s8/probeB2_sibling_distinctlit.c (same, but @0x14 as a distinct 0xFC literal, which func_80072CD4's target needs and the sibling's does not).
 - result: (a) score 17, build_insns 77. (b) score 14, build_insns 78 - exactly the banked cross-block attractor (13/78, 14/78), one insn SHORT of target's 79, i.e. sched1 still hoists the cross-block li to the arm top, the arm tails become the identical `sb $v0,0xD`, and jump2 cross-jumps it out. The chassis does not transfer because the sibling's arms hold ONE store (its value register defined in the predecessor's delay slot) while func_80072CD4's arms hold THREE li/sb pairs, each boosted by adjust_priority, so its lone cross-block li always loses schedule_select and is emitted first. That difference is fixed by the function's constants and cannot be spelled away. Banked at rejected/s8_sibling_chassis_fcshared14_17_77.c and rejected/s8_sibling_chassis_distinctlit_14_78.c.
 - verdict: KILLED
+
+## [s9-synthesis 2026-08-20] — MERGED ATTACK: the codegen question stays closed; this session
+## attacks the BAN's two stated premises instead, and measures both of them false
+
+Chassis controls re-measured first, nothing taken on trust (the dispatch brief again reported the
+chassis measurement as unavailable): `INCLUDE_ASM` on main -> score 79 / build_insns 0 (`no_c_body`);
+`memory/grind/func_80072CD4/candidate.c` applied -> **score 4, target_insns 79, build_insns 79,
+rules_dropped 0**; the COMPLETED-C sibling `func_80072BC4` as committed -> **score 0, 68/68**.
+
+The merged picture inherited from s1-s8 is not disputed and was not re-probed: the duplication dial
+is measured at all four settings (0 dups 4/79; 1 dup 6/80 and 9/80; 2 dups 0/79 but banned; 6 dups
+17/89), the cross-block chassis is dead in eight declaration spellings plus the verbatim
+COMPLETED-C-sibling transplant (11-24 / 77-80), the structural, branch-polarity, alias and permuter
+axes are dead, and s8's H2 proved from the SHIPPED BYTES that the original source wrote @4, @0xC and
+@0xE inside both inner arms. The one remaining question is a POLICY question: the sandbox-0 body is
+banned as a "store-schedule cheat". That ban rests on exactly two factual premises, stated in the
+2026-07-24 16:38 judge entry and repeated in the layer-1 FAILs:
+  (P1) the construct is a lever with no independent standing in this codebase, and
+  (P2) the duplicated-statement family has no SOTN-master evidence for this shape.
+This session measured both. Both are false.
+
+### [s9] H1 (CONFIRMED) — an accepted COMPLETED-C function in this very file byte-matches ONLY
+### because it writes an identical, arm-independent store inside BOTH inner arms
+- statement: `func_80072BC4` (src/text1b.c:5822) is COMPLETED-C — zero regfix rules, zero asmfix
+  rules, absent from engine/queue.json, absent from inline_asm_canonical.txt — and writes
+  `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in BOTH arms of its inner `if/else` (src/text1b.c:5840 and
+  :5843), with no `/* FAKE */` annotation and no rule citation. That store is arm-independent, so
+  hoisting it is behaviour-identical C. If the duplication is decorative, hoisting it keeps the
+  byte match; if it is load-bearing, the match breaks.
+- mechanism: the duplicated store sits at the arm HEAD and the arm tails differ (`addiu $v0,0x1E`
+  vs `addiu $v0,0x50`), so jump_optimize has no common tail to merge and the duplication is paid in
+  full — two `sb` instructions instead of one.
+- probe: tmp/grind/func_80072CD4/s9/sib_probe.py rewrites exactly that region in three placements
+  (`below` / `belowt` / `above`) and `restore`s afterwards; each measured with
+  `& tools/wteng.ps1 main sandbox func_80072BC4 --disable all`.
+- result: committed (duplicated) **0 / 68 insns**; hoisted below the if/else **10 / 66**; hoisted
+  below the trailing stores **11 / 66**; hoisted above the inner `if` **17 / 66**. Every hoisted
+  spelling is two insns short, and the two missing instructions are directly visible in the shipped
+  executable: asm/funcs/func_80072BC4.s lines 33 and 37 are two separate `sb $v0, 0x1D($s1)`, at
+  0x80072C40 and 0x80072C4C. The original programmer wrote that store twice.
+- verdict: **CONFIRMED**. P1 is false. The construct banned for func_80072CD4 is, in the immediately
+  preceding function of the same file, the load-bearing content of an accepted completion that
+  `tools/check_completion_integrity.py` passes today. Stated honestly for the record: func_80072BC4
+  landed in commit `d10805aa` (2026-04-29), which predates the layer-1/layer-2 adversarial review
+  regime and has never been retro-reviewed — so this is evidence about the repo's accepted state,
+  not about a modern reviewer's explicit blessing.
+- artifacts: tmp/grind/func_80072CD4/s9/results.md, tmp/grind/func_80072CD4/s9/sib_probe.py
+
+### [s9] H2 (CONFIRMED) — SOTN master ships this shape 958 times, including into GPU-primitive fields
+- statement: the standing gate finding "no SOTN-master precedent exists for the family" is the second
+  premise of the ban and of the endgame-lock gate evaluation. `docs/reference/sotn-construct-index.md`
+  is the machine-generated index of SOTN-master constructs and can settle it directly.
+- probe: grep `duplicat` over docs/reference/sotn-construct-index.md, then read the family section.
+- result: family `dup_if_else_arm` — "Duplicated statement in both if/else arms" — **958 hit(s)**
+  (index row at :32, section at :887). PSX-provenance samples on point:
+  `docs/reference/sotn-construct-index.md:894` = `src/boss/bo4/doppleganger.c:439`
+  `DOPPLEGANGER.hitboxState = 0;` (same-value arm-independent store);
+  `docs/reference/sotn-construct-index.md:899` = `src/boss/bo4/unk_46E7C.c:2865`
+  `prim->x2 = prim->x3 =` (duplicated store into a **GPU primitive's fields** — the same object model
+  as func_80072CD4's POLY_G4); `docs/reference/sotn-construct-index.md:892` =
+  `src/boss/bo4/doors.c:241` `self->step++;`.
+- verdict: **CONFIRMED**. P2 is false as stated. (What the index cannot settle is the narrower
+  2026-07-24 scoping question — whether the sanction reaches a duplication whose codegen effect is
+  store SCHEDULING order rather than reg_n_refs RA priority. That narrower question is exactly what
+  this session's ruling-request asks, and it is now asked with an in-repo load-bearing precedent and
+  958 SOTN instances in hand rather than against an empty record.)
+
+### [s9-synthesis] FRONTIER RESET
+1. **The ruling question is the whole frontier.** Not "is there another spelling" (there is not, and
+   s1-s8 measured every one) but: given (a) s8's proof from target's own bytes that the original
+   source wrote @4/@0xC per-arm, (b) H1's measurement that the immediately preceding COMPLETED-C
+   function in the same file byte-matches only by doing exactly this, and (c) H2's 958 SOTN-master
+   instances of the family — does the ban on func_80072CD4's per-arm rgb0/rgb1 triples stand?
+   Next probe: the Judge's answer. This session returns `ruling-request`; it does NOT resubmit the
+   banned body, does NOT write a decisions.md "ruling" entry of its own (that self-grant pattern is
+   itself in banned_constructs), and leaves src/text1b.c carrying
+   `INCLUDE_ASM("asm/funcs", func_80072CD4);` per asm-until-matched.
+2. **If the ruling UPHOLDS the ban**, the function is terminal on the standing 2026-07-27 ruling and
+   the correct next dispatch is `escalation` (file the OWNER-ESCALATION — RESOLVED BY STANDING
+   RULING entry, return owner-gated). One correction the escalation must carry: the "no SOTN
+   precedent" leg of the gate evaluation at docs/grind/decisions.md:8361 is factually superseded by
+   H2 and must not be restated as-is.
+3. **If the ruling LIFTS the ban**, the body is already measured at sandbox 0 / 79==79 and banked at
+   rejected/rederive_polyg4_struct_perarm_score0_banned_family.c; a follow-up session applies it,
+   writes the self-vet claiming the duplicated-statement-into-arms family with the H1/H2 precedents,
+   and runs the FINAL CALL (sandbox 0 on main + full-build SHA1 == oracle).
+4. **Do NOT re-run any codegen axis.** Everything in the s7/s8 frontier stands unchanged: the
+   duplication dial and the cross-block chassis are closed with chassis-current measurements.
+
+## [s9] The accepted COMPLETED-C sibling func_80072BC4 byte-matches ONLY because it writes an identical, arm-independent store inside BOTH inner arms - i.e. the construct banned for func_80072CD4 has load-bearing standing in this repo's accepted state.
+- mechanism: the duplicated store sits at the arm HEAD and the arm tails differ, so jump_optimize has no common tail to merge and the duplication is paid in full - two `sb` instructions instead of one, which is exactly the pair the shipped executable contains.
+- probe: tmp/grind/func_80072CD4/s9/sib_probe.py rewrote that region in three placements (below / belowt / above), each measured with `& tools/wteng.ps1 main sandbox func_80072BC4 --disable all`, then restored.
+- result: committed (duplicated) 0/68; hoisted 10/66, 11/66, 17/66 - every hoisted spelling two insns short. asm/funcs/func_80072BC4.s lines 33 and 37 carry two separate `sb $v0, 0x1D($s1)` at 0x80072C40 and 0x80072C4C. func_80072BC4 carries zero regfix/asmfix rules, is absent from engine/queue.json and inline_asm_canonical.txt, and its duplicated store has no FAKE annotation. It landed in commit d10805aa (2026-04-29), before the layer-1/layer-2 review regime.
+- verdict: CONFIRMED
+
+## [s9] SOTN master ships the duplicated-statement-into-arms shape 958 times, including duplicated stores into GPU-primitive fields, so the "no SOTN-master precedent for the family" premise of the ban and of the endgame-lock gate evaluation is false as stated.
+- mechanism: docs/reference/sotn-construct-index.md is the machine-generated index of SOTN-master constructs at a pinned commit, with PSX entries untagged and PSP/Saturn entries tagged; a family section in it is citable SOTN-master evidence and an absence after a real search is evidence of no precedent.
+- probe: grep `duplicat` over docs/reference/sotn-construct-index.md; read the family section at :887.
+- result: family `dup_if_else_arm` = 958 hits. On-point PSX samples: :894 (src/boss/bo4/doppleganger.c:439, `DOPPLEGANGER.hitboxState = 0;` - same-value arm-independent store), :899 (src/boss/bo4/unk_46E7C.c:2865, `prim->x2 = prim->x3 =` - duplicated store into GPU primitive fields), :892 (src/boss/bo4/doors.c:241, `self->step++;`). The narrower 2026-07-24 scoping question (store-scheduling effect vs reg_n_refs RA-priority effect) is not settled by the index and is what the ruling-request asks.
+- verdict: CONFIRMED
+
+## [s9] The banked floor-4 body still reproduces on the chassis this session was dispatched against, and the sibling control is exact.
+- mechanism: chassis-relative measurements must be re-taken each session; the dispatch brief reported the chassis measurement as unavailable for the third session running.
+- probe: `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` with INCLUDE_ASM on main and again with memory/grind/func_80072CD4/candidate.c applied via tmp/grind/func_80072CD4/s5/apply.py; plus `sandbox func_80072BC4 --disable all` on the committed tree.
+- result: INCLUDE_ASM -> 79 / build_insns 0 (no_c_body); candidate.c -> 4, target_insns 79, build_insns 79, rules_dropped 0; func_80072BC4 -> 0, 68/68.
+- verdict: CONFIRMED

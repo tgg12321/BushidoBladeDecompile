@@ -54,6 +54,20 @@
  * at the tail. Producer-less merge stores sink (L1); these did not; only jump2 (which runs after
  * sched2) can place already-scheduled insns at a join label. So the ORIGINAL source wrote @4, @0xC
  * and @0xE inside BOTH arms. See hypotheses.md [s8-synthesis] and evidence.md [s8-synthesis].
+ *
+ * s9-synthesis (2026-08-20) re-measured this body at 4 / 79 on the current chassis and left it
+ * unchanged; it probed the BAN's two factual premises instead and measured both false.
+ * (1) The COMPLETED-C sibling func_80072BC4 (src/text1b.c:5822, zero rules, absent from the queue
+ *     and from inline_asm_canonical.txt) byte-matches ONLY because it writes the identical,
+ *     arm-independent store `*(u8 *)((s32)(arg1) + 0x1D) = 0xC3;` in BOTH of its inner arms:
+ *     committed 0/68, versus 10/66, 11/66 and 17/66 for the three behaviour-identical hoisted
+ *     spellings. Its target bytes carry both stores (asm/funcs/func_80072BC4.s:33 and :37).
+ * (2) SOTN master ships the family 958 times (docs/reference/sotn-construct-index.md:887,
+ *     `dup_if_else_arm`), including a duplicated store into a GPU primitive's fields
+ *     (:899 = src/boss/bo4/unk_46E7C.c:2865).
+ * s9 returned `ruling-request` on whether the ban survives that evidence; it did NOT re-submit the
+ * banned body and did NOT write a decisions.md ruling of its own. Until a legitimate Judge/owner
+ * ruling says otherwise, THIS file remains the function's best submittable form.
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int fc_const;
