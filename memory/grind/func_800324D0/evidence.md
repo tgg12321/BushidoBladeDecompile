@@ -1,5 +1,48 @@
 # Evidence bank — func_800324D0
 
+## [s2] 2026-08-20 — recon (post layer-1 FAIL of the s1 base/ff candidate)
+
+### Chassis re-verified
+Pin-free single-variable spelling in src (the Judge-directed baseline):
+sandbox `--disable all` = 27, build 68 == target 68. Same numbers as [s1] —
+chassis unchanged; every [s1] RA-forensics conclusion remains spendable.
+Src now carries this clean form (the four legacy register pins are gone from
+the working tree; they were score-inert diagnostics).
+
+### Sibling/duplicate axis: DEAD
+tmp/duplicates_leads.txt's similarity-1.000 lead `cpu_get_dist_2` IS this
+function: commit 2651e2e5 (naming phase-2 reset, 2026-08-07) deleted the stale
+duplicate-address file asm/funcs/cpu_get_dist_2.s and renamed the symbol to
+func_800324D0. The lead is self-vs-self; no matched sibling exists.
+
+### Spelling probes (all measured this session, sandbox --disable all)
+- **Probe A — no `cmd` copy** (test `c` directly; `cmd = c - 0x80` only in the
+  payload arm): 27, 68/68. FLAT. The cmd-copy statement is not load-bearing
+  for the rotation; alternative natural spelling, same floor.
+- **Probe B — literal 0xFF per store** (no named holder; GCC CSEs the constant
+  into a block-local scratch): 27, 68/68. FLAT. The CSE scratch plants no
+  walker preference — the walker's def src is `mem(reg pad)`, untouched.
+- **Probe C — payload arm's `ptr++` moved after the switch**: 30, build 66.
+  WORSE — the arm increment merges with the shared-tail increment and the
+  68-insn shape breaks. Banked at rejected/ptr-inc-after-switch.c. The
+  `val = *ptr; ptr++;` order before the switch is load-bearing.
+
+### Honest-closure analysis (from [s1] find_reg ground truth + this session)
+Target rotation = val skips {3,4} → 5, cmd skips {3,4,(5 held)} → 6, walker
+takes 3. The $4 exclusion already happens honestly (someone_prefers {4}).
+The ONLY missing piece is a $3 exclusion on val and cmd during find_reg
+pass 0. Exclusion routes: (a) `regs_someone_prefers ∋ 3` — requires a
+conflicting allocno carrying a $3 preference; the only preference-planting
+construct found (base/ff overlap) is BANNED, and [s1] killed copies (cse
+coalesces) and priority inversion (arithmetically unreachable). (b) a real
+CONFLICT with $3 during val's AND cmd's live ranges — would need a
+local-allocated block pseudo holding $3 alive through the payload arm; no
+natural statement in this function's semantics has that liveness (probes A-C
+did not create one). Route (b) is the one axis not yet exhaustively measured:
+next session should read the honest .lreg/.greg block-pseudo census for the
+loop body and enumerate which natural reorderings change scratch liveness.
+
+
 ## [s1] 2026-08-20 — recon → sandbox 0 (candidate-ready)
 
 ### Baselines (this chassis)
@@ -95,3 +138,11 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - tmp/grind/func_800324D0/s1/findreg.sh — the sweep script.
 - tmp/grind/func_800324D0/s1/body.i — preprocessed TU used for the cc1 runs.
 - tmp/grind/func_800324D0/dumps/ — .lreg/.greg et al. (pin-free chassis).
+
+- [s1] Chassis unchanged vs s1 ledger: pin-free single-variable spelling = sandbox 27, build 68 == target 68; all s1 RA-forensics conclusions (rotation-only diff, priority-inversion arithmetically dead, walker-pref-$3 sole sufficient condition) remain valid on this chassis.
+
+- [s1] src/code6cac_b.c now carries the clean pin-free form (4 legacy score-inert register pins removed); best form banked at memory/grind/func_800324D0/candidate.c.
+
+- [s1] The banned base/ff family is the ONLY known preference-planting route; the remaining honest route is a find_reg $3 CONFLICT (a naturally-live local-allocated $3 pseudo overlapping val AND cmd live ranges) - unmeasured, next session's forensics target.
+
+- [s1] Probe C proves the val = *ptr; ptr++; order before the switch is load-bearing for the 68-insn shape (rejected/ptr-inc-after-switch.c).

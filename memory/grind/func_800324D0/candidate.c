@@ -1,45 +1,40 @@
-/* func_800324D0 — CANDIDATE (s1, 2026-08-20): sandbox --disable all == 0, 68/68 insns.
- * Pin-free pure C. See evidence.md [s1] for the full RA mechanism chain.
+/* func_800324D0 — BEST CLEAN FORM (s2, 2026-08-20): sandbox --disable all = 27,
+ * build_insns 68 == target 68. Pin-free, zero constructs, ordinary C.
  *
- * The load-bearing structure (do NOT "simplify" these away):
- *  - `base` (stream base pointer): once-written, read twice (base[4] and base+5).
- *    Because it has two real consumers, neither cse1 (it is not a reg-reg copy)
- *    nor combine (not single-use) can delete it, so it survives to local-alloc
- *    as a block-0 pseudo.
- *  - `ff` (the 0xFF default value): block-0 local read by 7 real sb stores.
- *    Local-alloc assigns ff -> $2 first (higher density), so the overlapping
- *    `base` gets $3. set_preference() on `ptr = base + 5` (PLUS lookthrough,
- *    reg_renumber substitution) then plants hard_reg_full_preferences[$3] on
- *    the walker pseudo; prune_preferences puts $3 into regs_someone_prefers of
- *    the higher-priority payload/command allocnos, which skip it in find_reg
- *    pass 0 (val -> $a1, cmd -> $a2), and the walker takes its preferred $v1.
- *  - Splitting `ff` from the stream byte `c` is what makes base/ff overlap in
- *    block 0 (the previous m2c body reused one variable for both).
+ * This is the Judge-directed baseline (layer-1 ruling 2026-08-20 15:48,
+ * docs/grind/decisions.md:9542): the s1 base/ff block-0 split that closed to 0
+ * was FAILed as a Test-3 GCC-internals cheat and is BANNED in any spelling
+ * (banked at rejected/layer1-fail-0820-1548.c). Do not re-derive it.
+ *
+ * The whole 27 is one 3-cycle register rotation across ~27 insns (s1 objdump
+ * proof, evidence.md): walker ours $a2 / target $v1, cmd ours $a1 / target $a2,
+ * val ours $v1 / target $a1. Schedule, shape, andi, sltiu, frame all match.
+ * The single sufficient closing condition is a walker allocno preference for
+ * hard reg 3 (s1 BB2_FINDREG_DEBUG ground truth) — but every known honest
+ * planting route is measured dead or banned; see hypotheses.md frontier.
  */
 void func_800324D0(u8 *pad) {
-    u8 *base;
-    u8 ff;
     u8 *ptr;
     u8 c;
     u32 cmd;
     u8 val;
 
-    base = *(u8 **)(pad + 0x58);
-    ff = 0xFF;
-    pad[0xA1] = ff;
-    pad[0xA3] = ff;
-    pad[0xA2] = ff;
-    pad[0xA4] = ff;
+    ptr = *(u8 **)(pad + 0x58);
+    c = 0xFF;
+    pad[0xA1] = c;
+    pad[0xA3] = c;
+    pad[0xA2] = c;
+    pad[0xA4] = c;
     pad[0xAA] = 0;
     pad[0xA7] = 0;
     pad[0xA8] = 0;
     pad[0xA5] = 0;
-    pad[0xA6] = ff;
-    pad[0xAB] = ff;
-    pad[0xAC] = ff;
+    pad[0xA6] = c;
+    pad[0xAB] = c;
+    pad[0xAC] = c;
 
-    c = base[4];
-    ptr = base + 5;
+    c = ptr[4];
+    ptr += 5;
     if (c == 0) return;
 
     do {
