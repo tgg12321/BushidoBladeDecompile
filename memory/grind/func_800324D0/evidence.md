@@ -1,6 +1,68 @@
 # Evidence bank — func_800324D0
 
-## [s2] 2026-08-20 — recon (post layer-1 FAIL of the s1 base/ff candidate)
+## [s3] 2026-08-20 — structural (mandated modality)
+
+### Chassis
+Applied candidate.c to src (HEAD still carried the pinned s1 chassis; the four
+score-inert pins are again removed from the working tree). Pin-free baseline
+re-measured THIS session: sandbox `--disable all` = 27, build 68 == target 68.
+Chassis unchanged from [s1]/[s2]; all banked conclusions remain valid.
+
+### THE MAIN RESULT — the $3-exclusion-by-CONFLICT route (frontier 1) is
+### PROVABLY DEAD, by liveness arithmetic read from the honest .lreg dump
+Fresh dumps generated on the pin-free chassis (`pwsh tools/grinder/dump.ps1`,
+tmp/grind/func_800324D0/dumps/, census excerpt banked at
+tmp/grind/func_800324D0/s2/lreg_census.txt). Facts:
+- Walker (73) **dies in 0 places** — it is continuously live through the
+  entire loop, and the .lreg block table shows 73 in the live-at-start set of
+  EVERY block where val (76) or cmd (75) is live (bb4, bb6, bb7, bb8, bb9-20).
+  Walker's loop live range is a strict superset of val's and cmd's.
+- Therefore ANY local-allocated $3-holding pseudo that overlaps val AND cmd
+  (the requirement for excluding $3 from both in find_reg pass 0 by CONFLICT)
+  necessarily also overlaps the walker → walker also conflicts with $3 and
+  CANNOT take it. Cascade under that scenario: val→5, cmd→6, walker→7 —
+  NOT the target (walker must take 3). The conflict route cannot produce the
+  target allocation from any statement arrangement, natural or otherwise.
+  This is a structural impossibility, not a sampling result.
+- Corroboration: the current block-local scratch census is 79 (bb4), 80 (bb6),
+  84/85/86 (bb7 jtbl dispatch chain). ALL are local-allocated to hard reg 2
+  ($v0) — each is a die-at-def-of-next chain link (spans 2 insns), so
+  local-alloc reuses $2 for every one; no natural $3 holder exists anywhere.
+- Combined with [s1]: preference route = requires a planting construct, the
+  only known shape is the BANNED base/ff family (walker's own defs are all
+  self-increments `ptr+=k` / the initial `lw` from mem(pad) — set_preference
+  can never derive a hard-reg pref from them); priority-inversion route =
+  arithmetically dead (needs ~61 weighted walker refs vs 24). **All three
+  honest find_reg routes to the target rotation are now measured/proven dead
+  within the matching statement shape.** What remains is search OUTSIDE the
+  hand-enumerated shape space (permuter) and then the ladder.
+
+### Type-axis sweep (frontier 3) — DEAD, all three measured
+- T1 `cmd` as u8: **38, build 69** (extra insn, shape perturbs). WORSE —
+  banked at rejected/cmd-u8-type.c.
+- T2 `val` as u32: flat 27, 68/68.
+- T3 `c` as u32 + explicit `cmd = c & 0xFF`: flat 27, 68/68.
+
+### Shape variants (structural levers) — all FLAT 27, 68/68
+- V1 bare `switch (cmd)` without the `if (cmd < 12)` guard: flat 27. GCC
+  emits the same single sltiu bounds check; alternative spelling, same floor.
+- V2 while-form loop (`while (c != 0) { ... }` replacing the
+  `if (c==0) return; do {...} while (c);` guard+do-while): flat 27 —
+  GCC rotates the while into the identical form.
+- V3 reversed declaration order (val,cmd,c,ptr): flat 27 — as predicted,
+  allocno_compare order is strictly priority-sorted (no ties to perturb).
+- V4 merged single-variable spelling (c and cmd as ONE u32, 0xFF holder =
+  cmd, no copy at loop head): **37, build 67** — the load-bearing `andi`
+  (produced by the u8→u32 promotion at `cmd = c`) disappears and the 68-insn
+  shape breaks. WORSE — banked at rejected/merged-c-cmd.c. Confirms the
+  distinct c/cmd carrier pair is load-bearing, matching target's distinct
+  $v0/$a2 registers.
+
+### Session close
+Baseline re-verified after all probes reverted: 27, 68/68. src carries
+candidate.c verbatim (pin-free clean form). 7 measurements this session,
+7 kills, floor unchanged. Remaining frontier: permuter (R3 0/2 used), then
+the ladder.
 
 ### Chassis re-verified
 Pin-free single-variable spelling in src (the Judge-directed baseline):
@@ -146,3 +208,15 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s1] The banned base/ff family is the ONLY known preference-planting route; the remaining honest route is a find_reg $3 CONFLICT (a naturally-live local-allocated $3 pseudo overlapping val AND cmd live ranges) - unmeasured, next session's forensics target.
 
 - [s1] Probe C proves the val = *ptr; ptr++; order before the switch is load-bearing for the 68-insn shape (rejected/ptr-inc-after-switch.c).
+
+- [s2] Chassis re-verified this session: pin-free candidate.c applied to src/code6cac_b.c, sandbox --disable all = 27, build 68 == target 68 (measured at session start and re-verified after all probes reverted); HEAD had carried the stale pinned s1 chassis
+
+- [s2] Walker liveness superset proof: .lreg shows pseudo 73 dies in 0 places and is in the live-at-start set of every block where val (76) or cmd (75) is live (bb4,bb6,bb7,bb8-20) - the conflict route to the target rotation cannot exist in any statement arrangement
+
+- [s2] All bb7 jtbl-dispatch scratches (84/85/86) and arm scratches (79/80) are 2-insn die-at-def chain links, all local-allocated to hard reg 2; no natural $3 holder exists
+
+- [s2] Walker's defs are exclusively self-increments (ptr+=k) plus the initial lw from mem(pad), so set_preference can never derive a hard-reg preference for it from natural code - the preference route requires an invented intermediate, which is the banned base/ff family
+
+- [s2] Distinct c/cmd carrier pair is load-bearing: merging them loses the target's andi (build 67 vs 68)
+
+- [s2] Census excerpt banked at tmp/grind/func_800324D0/s2/lreg_census.txt; full dumps at tmp/grind/func_800324D0/dumps/

@@ -1,6 +1,44 @@
 # Hypothesis ledger — func_800324D0
 
-## [s2] 2026-08-20 (recon, post layer-1 FAIL)
+## [s3] 2026-08-20 (structural)
+
+9. **H9 — a naturally-live local-allocated $3 pseudo overlapping val AND cmd
+   excludes $3 in find_reg pass 0 by CONFLICT, yielding the target cascade**
+   (the [s2] frontier-1 hypothesis). Probe: fresh .lreg census on the pin-free
+   chassis. Result: walker (73) dies in 0 places and its loop live range is a
+   strict SUPERSET of val's and cmd's — any $3 holder overlapping both also
+   conflicts with the walker, which then cannot take $3 (cascade val→5,
+   cmd→6, walker→7 ≠ target). Structurally impossible for every statement
+   arrangement, not just the ones tried. **KILLED (proof, not sample).**
+10. **H10 — a type-axis change perturbs the lreg census enough to shift
+    find_reg** ([s2] frontier 3). Probe: T1 cmd-u8 (38/69, WORSE —
+    rejected/cmd-u8-type.c), T2 val-u32 (flat 27), T3 c-u32+mask (flat 27).
+    **KILLED.**
+11. **H11 — a switch-guard / loop-form / decl-order respelling changes the
+    pseudo census toward the rotation.** Probe: bare-switch (flat 27),
+    while-form loop (flat 27), reversed decls (flat 27). **KILLED.**
+
+## Frontier (for s4+)
+1. **Permuter campaign** (R3 cap: 2 sessions, 0 used): structural mutation
+   search from the 27-floor seed — the only remaining route to a shape
+   OUTSIDE the hand-enumerated space. NOTE for the vetter: within the current
+   matching shape, ALL three find_reg routes to the rotation are dead
+   (preference = banned family only, walker defs cannot plant a pref;
+   conflict = liveness-impossible, evidence.md [s3]; priority = arithmetic,
+   [s1]) — so any permuter find that closes to 0 while KEEPING the 68-insn
+   shape almost certainly acts through an invented-intermediate preference
+   plant and must be vetted against the banned base/ff family with extreme
+   suspicion. A find that closes via a genuinely DIFFERENT shape (different
+   insn count folding back to 68, different block structure) is the
+   interesting case.
+2. Ladder: after permuter, this function's honest in-shape space is exhausted
+   → forensics/rederive/synthesis modalities per the driver, then escalation.
+
+12. **H12 — merged single-variable loop spelling (c and cmd as ONE u32, no
+    copy at loop head) changes the census toward the rotation.** Probe:
+    sandbox on the merged spelling ([s3]). Result: 37, build 67 — the andi
+    (u8→u32 promotion at the cmd copy) disappears, one insn SHORT, shape
+    breaks. Banked at rejected/merged-c-cmd.c. **KILLED.**
 
 5. **H5 — a matched sibling/duplicate exhibits the natural closing spelling.**
    Probe: tmp/duplicates_leads.txt + git history of cpu_get_dist_2. Result:
@@ -84,4 +122,28 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: statement order changes block-pseudo live ranges in the payload arm
 - probe: sandbox on reordered spelling
 - result: WORSE: 30, build_insns 66 (increment merged, shape broke)
+- verdict: KILLED
+
+## [s2] A naturally-live local-allocated $3 pseudo overlapping val AND cmd excludes $3 in find_reg pass 0 by CONFLICT, yielding the target rotation
+- mechanism: global.c find_reg pass-0 conflict exclusion; local-alloc block-pseudo liveness
+- probe: Fresh .lreg/.greg dumps on the pin-free 27-floor chassis; walker (73) dies in 0 places and is live at the start of every loop block where val (76) or cmd (75) is live, so any $3 holder overlapping both also conflicts with the walker, which then cannot take $3 (cascade val->5, cmd->6, walker->7, not target). All current block scratches (79/80/84/85/86) are die-at-def chain links local-allocated to $2.
+- result: Structurally impossible for every statement arrangement; combined with s1 (preference route = banned family only, walker defs are all self-increments so set_preference can never plant a pref; priority route arithmetically dead), all three honest find_reg routes within the matching 68-insn shape are closed
+- verdict: KILLED
+
+## [s2] A type-axis change (cmd u8 / val u32 / c u32 with explicit mask) perturbs the lreg census enough to shift find_reg
+- mechanism: mode changes alter refs/live density and scratch pseudos
+- probe: sandbox --disable all on each of the three variants
+- result: cmd-u8: 38, build 69 (WORSE, banked rejected/cmd-u8-type.c); val-u32: flat 27 68/68; c-u32 + cmd = c & 0xFF: flat 27 68/68
+- verdict: KILLED
+
+## [s2] A switch-guard / loop-form / declaration-order respelling changes the pseudo census toward the rotation
+- mechanism: flow-graph and RTL-emission-order perturbation of the allocno census
+- probe: sandbox on bare switch (no if(cmd<12)), while-form loop replacing guard+do-while, reversed decl order
+- result: All three flat 27, 68/68 - valid alternative spellings, same floor; allocno_compare order is strictly priority-sorted with no ties
+- verdict: KILLED
+
+## [s2] Merging c and cmd into one u32 loop variable (no copy at loop head) changes the census toward the rotation
+- mechanism: fewer loop-carried pseudos re-seeds allocation
+- probe: sandbox on the merged spelling
+- result: 37, build 67 - the andi from the u8->u32 promotion at cmd=c disappears, one insn short, shape breaks; banked rejected/merged-c-cmd.c
 - verdict: KILLED

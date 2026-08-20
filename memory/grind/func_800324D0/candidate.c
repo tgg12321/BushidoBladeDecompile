@@ -12,6 +12,15 @@
  * The single sufficient closing condition is a walker allocno preference for
  * hard reg 3 (s1 BB2_FINDREG_DEBUG ground truth) — but every known honest
  * planting route is measured dead or banned; see hypotheses.md frontier.
+ *
+ * s3 (2026-08-20, structural): the $3-exclusion-by-CONFLICT route is PROVABLY
+ * dead — the walker's loop live range (dies in 0 places) is a strict superset
+ * of val's and cmd's, so any $3-holding pseudo that would exclude $3 from
+ * val/cmd also excludes it from the walker (evidence.md [s3]). Type axis
+ * (cmd-u8 WORSE 38/69; val-u32, c-u32+mask flat), bare-switch, while-form,
+ * decl-order all flat 27; merged c/cmd single-variable WORSE 37/67 (andi
+ * lost). Within the matching 68-insn shape all three find_reg routes
+ * (preference/conflict/priority) are dead or banned; frontier = permuter.
  */
 void func_800324D0(u8 *pad) {
     u8 *ptr;
