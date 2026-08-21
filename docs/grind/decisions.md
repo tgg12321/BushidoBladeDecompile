@@ -9895,3 +9895,50 @@ FAILs, the row is revoked and the function reverts to its standing-ruling refusa
 **Record correction confirmed:** the 2026-08-21 terminal OWNER-ACCEPTED INCOMPLETE park
 on func_800858D0 (and its `docs/grind/borderline.md` entry of the same date) is
 SUPERSEDED by this ruling.
+
+## 2026-08-21 — func_800858D0 — LAYER-2 REVIEW TRAIL (one FAIL, then PASS on corrected materials)
+
+Recorded in full because the first verdict was a FAIL and must not be invisible in the
+audit trail.
+
+**Review 1 — FAIL.** A fresh `cheat-reviewer` FAILed the composite diff. It PASSED (a) the
+non-closer C constructs, (c) the banned-goto check (confirmed absent, not respelled), and
+(d) the engine scoping (confirmed narrow, no substring/normalization holes). Its FAIL
+rested on two premises, both factually wrong:
+
+1. It ruled the F6 empty-if family unsanctioned, reasoning from an enumerated carve-out
+   list in its own briefing that omits F6. The frozen list
+   (`.claude/rules/no-new-park-categories.md:370-380`) marks F6 **ESTABLISHED** and
+   sanctions precisely "a fabricated redundant condition / empty-if inserted solely for
+   codegen", citing the MIPS sibling `src/dra/5D5BC.c:770` (`if (!i) { }`, "permuter found
+   it"). Three of its five sub-tests ("no semantic purpose", "a human wouldn't write it",
+   "permuter provenance") therefore restated the family's own defining text as
+   disqualifying — an argument that would void the sanctioned family wholesale.
+2. It treated the ruling commit as agent-authored self-authorization. The owner granted it
+   interactively in the live session of 2026-08-21 and chose the strict variant over a
+   looser one; the reviewer had no visibility into that session.
+
+**No override was taken.** The operator did not self-adjudicate around the FAIL: the tree
+was reverted to clean, both errors were put to the owner with the rule text quoted, and the
+owner directed a fresh review on corrected materials.
+
+**Review 2 — PASS.** A fresh reviewer, briefed with the F6 rule text to read itself, the
+corrected provenance, and an explicit instruction NOT to pass merely because a ruling
+exists (and to name the exact rule words excluding the construct if it FAILed again),
+independently re-verified sandbox 0 / build SHA1 == oracle / 332 engine tests, then
+adjudicated: (a) every store and local written and consumed, carrier reuse inside the
+SOTN-accepted variable-reuse family, `D_800F4E28` array-decay cast ordinary given its
+`s16[]` declaration at `src/main.c:851`; (b) the exact sanctioned empty-condition shape,
+`!FAKE`-annotated, with a genuine exhaustion ledger — H9/H10/H11 are three file:line-cited
+analytic kills of the honest noted-loop space that ran BEFORE the F6 find, not
+first-reach, and it is not the banned `+= 2 / -= 1` respelling; (c) do-while genuine, goto
+ban not reintroduced; (d) allowlist keyed per-function AND per-condition AND
+`!FAKE`-gated, no fallback.
+
+**Disposition:** COMPLETED-C. `queue done` re-verified zero rules, zero non-canonical
+cheat-asm, and full-build SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+
+**Standing note for future reviews:** the `cheat-reviewer` briefing's enumerated
+carve-out list is not the frozen family list and omits at least F6. A reviewer reasoning
+only from that list will FAIL sanctioned constructs. Briefs should point reviewers at
+`.claude/rules/no-new-park-categories.md` as ground truth for family membership.

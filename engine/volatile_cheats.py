@@ -778,6 +778,31 @@ def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
     return (name, int(m.group(1))) in _SANCTIONED_UNWRITTEN_PADS[fname]
 
 
+# Owner ruling 2026-08-21 (docs/grind/decisions.md, "OWNER RULING —
+# find_empty_if_dead_reads gains a strictly-keyed F6 allowlist"): the F6
+# empty-if redundant-condition family is ESTABLISHED
+# (.claude/rules/no-new-park-categories.md:370-380), but this detector predates
+# the sanction and had no allowlist hook, so a sanctioned construct could never
+# reach `sandbox --disable all` == 0. Rows are keyed on function name AND exact
+# condition text, and the span must carry the `!FAKE` annotation — the same
+# per-function/exact-shape strictness _SANCTIONED_UNWRITTEN_PADS enforces.
+# Everything else stays a cheat.
+_SANCTIONED_EMPTY_IFS: dict[str, frozenset[str]] = {
+    "func_800858D0": frozenset({"D_80101BCC"}),
+}
+
+
+def _is_sanctioned_empty_if(fname: str | None, text: str, s: int, e: int,
+                            cond_text: str) -> bool:
+    """True iff this empty-if span is an owner-sanctioned F6 construct: exact
+    function, exact condition text, `!FAKE`-annotated."""
+    if not fname or fname not in _SANCTIONED_EMPTY_IFS:
+        return False
+    if cond_text.strip() not in _SANCTIONED_EMPTY_IFS[fname]:
+        return False
+    return "!FAKE" in text[s:e]
+
+
 def _body_base_spans(text: str, body_lo: int, body_hi: int,
                      params: list[str], fname: str | None = None) -> list[tuple[int, int]]:
     """The per-body detector roster, BEFORE the orphaned-declaration closure.
@@ -806,6 +831,8 @@ def _body_base_spans(text: str, body_lo: int, body_hi: int,
     for s, e in find_empty_do_while_zero(text, body_lo, body_hi):
         spans.append((s, e))
     for s, e, _c in find_empty_if_dead_reads(text, body_lo, body_hi):
+        if _is_sanctioned_empty_if(fname, text, s, e, _c):
+            continue
         spans.append((s, e))
     for s, e, _v, _r in find_dead_conditional_stores(text, body_lo, body_hi):
         spans.append((s, e))
