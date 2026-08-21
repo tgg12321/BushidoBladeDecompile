@@ -35,7 +35,8 @@
   }
  ],
  "judge_constraints": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The goto-spelled loop was deliberately chosen to suppress NOTE_INSN_LOOP_BEG/END so loop.c's move_movables and sched.c's birthing_insn_p behave differently \u2014 a GCC-internals-driven construct in a family the project's own playbook treats as a bug to fix, not a technique to exploit, and which is not on the frozen SOTN-sanctioned list. Next action: Do not commit. Revert to a genuine loop statement (while/do-while) per the direction in [[loop-note-fixes-delay-slot-steal]] and continue from the H6 floor-13 form, which already used the sanctioned defeat-licm-hoist-var-re"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The goto-spelled loop was deliberately chosen to suppress NOTE_INSN_LOOP_BEG/END so loop.c's move_movables and sched.c's birthing_insn_p behave differently \u2014 a GCC-internals-driven construct in a family the project's own playbook treats as a bug to fix, not a technique to exploit, and which is not on the frozen SOTN-sanctioned list. Next action: Do not commit. Revert to a genuine loop statement (while/do-while) per the direction in [[loop-note-fixes-delay-slot-steal]] and continue from the H6 floor-13 form, which already used the sanctioned defeat-licm-hoist-var-re",
+  "The F6 empty-if `if (D_80101BCC) { }` is RULED SANCTIONED for func_800858D0 (annotation + exhaustion ledger + named GCC-pass mechanism all independently verified; bytes re-verified against disc/SLUS_006.63 modulo relocs) - do not re-litigate or respell it. The goto-spelled note-suppressing loop remains banned. No grind session may edit engine/ to unblock the sandbox: that grant is owner-only."
  ],
  "banned_constructs": [
   "Loop rewritten from a natural while/do-while form into `loop: ... if (var_s0 < D_80101BCC) goto loop;`",

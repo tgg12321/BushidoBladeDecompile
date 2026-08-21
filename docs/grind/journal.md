@@ -1136,3 +1136,4 @@
 - 2026-08-20 22:58 func_80038658 COMPLETED-C after 1 sessions (closer: s1 [annotation-fix]).
 - 2026-08-20 23:14 func_800858D0 s1 [recon] floor=15: Floor 22 -> 15 (A+B moves folded); loop.c no-hoist profile now matches target; single-set const spellings proven always-hoisted (threshold 61 >= 30); residual mapped to sched1 block-top identity + two-register constant split + idx naming
 - 2026-08-20 23:31 func_800858D0: LAYER-1 FAILED a sandbox-0 candidate — The goto-spelled loop was deliberately chosen to suppress NOTE_INSN_LOOP_BEG/END so loop.c's move_movables and sched.c's birthing_insn_p behave differently — a GCC-internals-driven construct in a family the project's own playbook treats as a bug to fix, not a technique to exploit, and which is not on the frozen SOTN-sanctioned list.
+- 2026-08-21 00:03 func_800858D0 JUDGE ESCALATE (ruling request, policy-question) — logged to borderline ledger, parked terminally (nothing pending).

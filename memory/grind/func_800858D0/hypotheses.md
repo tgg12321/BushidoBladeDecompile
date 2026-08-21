@@ -105,3 +105,53 @@ Result: score 0, 72/72 insns, per-word disassembly identical to target modulo re
 (s16) casts additionally proven inert and removed.
 Verdict: CONFIRMED. The s1 open question ("why does move_movables not hoist target's
 single-set constants?") is answered: there was no loop for loop.c to see.
+
+## s3 (2026-08-20, permuter)
+
+### H9 — KILLED (analytic, loop.c file:line): any single-set user-var constant
+in this noted loop is unconditionally movable; no spelling escapes
+Mechanism: loop.c:692-700 three-case gate. Case 1 (reg_in_basic_block_p,
+loop.c:1062) holds whenever the set is the pseudo's first UID and the consumer
+is in the same block (always true here — the sh is the only consumer, loop body
+is one block); breaking it needs a use with UID before the set, which is
+semantically impossible (iteration 1 reads garbage); case 2 only exempts
+non-user temps (REG_USERVAR_P fails it); case 3's maybe_never needs an in-body
+branch (bytes forbid it). Threshold then always moves (H3: 61 >= 30).
+Probe: read loop.c:640-700, :1062-1100, :3106; cross-checked against the s2
+measured hoists (t-for-24-only 27, single-set sweeps).
+Verdict: KILLED — with H10/H11 this closes the entire honest noted-loop space
+for target's mid-loop li 24.
+
+### H10 — KILLED (analytic, sched.c file:line): a multi-set 24-carrier can
+never be launched adjacent to its consumer
+Mechanism: birthing_insn_p (sched.c:2504-2537) returns reg_n_sets[i]==1 (GLOBAL
+flow count); adjust_priority (sched.c:2584-2590) only launches birthing insns.
+Every anti-hoist carrier is >=2-set by construction.
+Probe: read sched.c:2495-2600. Verdict: KILLED.
+
+### H11 — KILLED (analytic + measured): no statement order flips the block-top
+LUID tiebreak between the li 24 and the a0-set
+Mechanism: rank_for_schedule (sched.c:2407-2464) — priority, then dependence
+class vs last-scheduled (both stragglers class-3/independent; the address chain
+never writes/reads $a0 or u, so no move manufactures a class difference), then
+INSN_LUID: lower LUID lands at block top; u=0x18's LUID is necessarily below
+the call-generated a0-set's because its consumer precedes the call.
+Probe: M1 (u=0x18 above the stride mul) sandbox = 13 inert; class analysis.
+Verdict: KILLED.
+
+### H12 — CONFIRMED (THE FIND, permuter campaign): floor-13 +
+`if (D_80101BCC) { }` before the limit re-read emits target bytes exactly
+Statement: an empty-if redundant-condition (F6 shape) over the live global
+resolves the H9/H10 trilemma through the loop-before-flow pass window.
+Mechanism (dump-proven): jump1 deletes the branch; cse1 folds the limit
+re-read onto the manufactured load leaving u's second set (insn 139) dead;
+loop.c counts reg75 as 2-set pre-DCE (no hoist, main.loop clean); flow deletes
+insn 139 (NOTE_INSN_DELETED); sched1 sees reg_n_sets==1 post-DCE and launches
+li 24 adjacent to its sh (birthing_insn_p); a0-set left at block top; reorg
+steals it; RA Phase-5 two-part requirement lands ($a1 extend, $v1 24/limit).
+Probe: permuter score 0 (18,667 iters); TU pipeline emission word-identical
+72/72 (s3 artifacts).
+Verdict: CONFIRMED as bytes — classification + engine wiring pending ruling:
+the sandbox's find_empty_if_dead_reads (2026-06-02, pre-F6) strips it, so the
+honest floor still reads 13 and candidate-ready is mechanically unreachable
+without an engine F6 allowlist (outside session scope).

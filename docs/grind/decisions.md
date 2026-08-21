@@ -9626,3 +9626,224 @@ Body is ordinary C: switch on D_800A31F4, per-arm result stores, and a shared `f
 ## 2026-08-20 23:31 — func_800858D0 — layer-1 review — **FAIL**
 
 The goto-spelled loop was deliberately chosen to suppress NOTE_INSN_LOOP_BEG/END so loop.c's move_movables and sched.c's birthing_insn_p behave differently — a GCC-internals-driven construct in a family the project's own playbook treats as a bug to fix, not a technique to exploit, and which is not on the frozen SOTN-sanctioned list.
+
+## 2026-08-21 00:03 — func_800858D0 — ruling: func_800858D0's byte-exact closer (permuter-found, TU-verified 72/72) is `if (D_ — **ESCALATE**
+
+RULING (a) - the construct IS sanctioned. `if (D_80101BCC) { }` is the empty-condition shape that the
+owner's 2026-08-18 ruling sanctions verbatim at .claude/rules/no-new-park-categories.md:369-380 (F6,
+"Semantically-null fabricated statement pairs ... a fabricated redundant condition / empty-if inserted
+solely for codegen ... Sanctions ONLY the exact cancellation pair and empty-condition shapes"). The
+2026-06-02 detector docstring at engine/volatile_cheats.py:482 that calls it forbidden is OLDER policy;
+the newer owner ruling governs. I verified this rather than crediting the vet:
+
+  * SOTN precedent, checked in the checkout at C:/Users/Trenton/Desktop/sotn-decomp (HEAD db41b28e -
+    note this is NEWER than the aa535002 pin printed in docs/reference/sotn-construct-index.md, so the
+    cited lines were re-read in source, not trusted from the index). src/dra/5D5BC.c:769-772 carries
+    `// !FAKE, permuter found it` immediately above `if (!i) { }` - a permuter-found empty-if, the exact
+    provenance we have here. Critically, the objection I expected to be decisive - "SOTN's exhibits read
+    LOCALS, ours reads a GLOBAL, and a global read is the dead-read shape the detector was written for"
+    - does not survive: src/maria/pl_steps.c:119 ships `if (PLAYER.step_s) { }` nested INSIDE
+    `if (PLAYER.step_s != 0)`, and src/dra/cd.c:536 ships `if (!g_Cd.D_80137F74 && !g_Cd.D_80137F74) { }`.
+    Both are untagged PSX (GCC 2.7.2) matched code, and pl_steps.c:119 is structurally our construct
+    exactly - an empty-if re-reading the same global the enclosing if just tested. Global-read empty-ifs
+    are inside the family, not outside it.
+  * Six-test checklist: no semantic purpose (that is what F6 sanctions, not a disqualifier here);
+    human-writable from spec (SOTN humans wrote it five times); GCC-steering is its sole function (again,
+    inside the family); annotated - `/* !FAKE: empty-if redundant-condition (F6, ...) */` is present at
+    the site in candidate.c; no intent-announcing fabricated names.
+  * F6 prerequisites, verified against the ledger rather than the claim: annotation present; exhaustion
+    ledger real - hypotheses.md H3/H9/H10/H11 kill the entire in-loop-notes spelling space ANALYTICALLY
+    at file:line (loop.c:692-700 + :1062 movable gate, loop.c:1631/:532 threshold 61 >= 30 insns,
+    sched.c:2504-2537 birthing_insn_p reg_n_sets==1, sched.c:2407-2464 LUID tiebreak), backed by five
+    banked rejects in rejected/ including two permuter finds correctly refused on their own merits
+    (permuter-sh-before-set-semantics-broken-160.c rejected for BREAKING SEMANTICS,
+    permuter-newvar-alias-if1-cheats-30.c rejected as forbidden shapes) - that is a vet rejecting free
+    wins, which raises my confidence in the rest of the ledger; named multi-pass mechanism present and
+    dump-proven (jump1 branch deletion -> cse1 load-CSE -> loop.c counts 2 sets PRE-DCE so no hoist ->
+    flow DCEs the dead set -> sched1 sees reg_n_sets==1 POST-DCE and launches the li 24 adjacent to its
+    consumer). The loop.c-before-flow pass window is a real property of GCC 2.7.2's pass order, not a
+    story.
+  * Layer-1 regression constraint honored. state.json judge_constraints bans the goto-spelled loop
+    (note-suppression family). I grepped candidate.c: zero `goto`, zero labels; the body is a genuine
+    `do { ... } while (var_s0 < u);`. The banned construct is GONE, not respelled - the empty-if works
+    through jump1/cse1/flow, which has nothing to do with NOTE_INSN_LOOP_BEG suppression.
+  * Bytes independently re-verified by me, not taken from the ledger. I extracted the original EXE at
+    disc/SLUS_006.63 file offset 0x760D0 (= 0x800858D0 - 0x80010000 + 0x800) and compared all 72
+    instruction words against tmp/grind/func_800858D0/s3/zero.dis. Every word matches once %lo relocation
+    addends and jal targets are masked; the only 9 residual differences are unresolved relocation addends
+    in the unlinked .o (e.g. `lbu v1,0(v1)` vs `lbu v1,0x1bcc(v1)`), which is what a correct unlinked
+    object is supposed to look like. Register allocation, instruction selection, scheduling and both delay
+    slots are identical to the shipped game. ours_tu.dis (full-Makefile TU context) is word-identical to
+    zero.dis. The bytes are real.
+
+RULING (b) - NOT MY CALL, AND NOT THE DRIVER'S. This is why the verdict is ESCALATE rather than PASS.
+The request is to add an F6 allowlist hook to engine/volatile_cheats.py find_empty_if_dead_reads,
+mirroring _SANCTIONED_UNWRITTEN_PADS (volatile_cheats.py:746). I cannot authorize it and the
+integration-handoff self-serve path cannot execute it, for two independent reasons:
+  1. .claude/rules/integration-handoff-self-serve.md puts "Anything under tools/, engine/, .claude/,
+     docs/, memory/, asm/, disc/" on the add-scope-allow PATH DENYLIST, enforced by path-class regex.
+     engine/volatile_cheats.py is squarely denylisted.
+  2. The same rule's "most severe" owner-only list includes "Retiring or weakening a guard, gate, or the
+     Judge's default-FAIL policy." Punching a hole in a cheat detector is weakening a gate, however
+     well-justified the hole.
+  Nor does this qualify as escalate_kind=integration-handoff: that path requires bytes proven by
+  `sandbox --disable all` == 0 AND full-build SHA1 == oracle banked in the ledger. Neither exists -
+  sandbox reads 13 precisely BECAUSE the stripper removes the closer, and verify-oracle correctly refused
+  on a dirty tree (the session did not override it; good discipline).
+
+WHAT THE OWNER ACTUALLY HAS TO DECIDE (plain English, no assembly required). On 2026-08-18 the owner
+sanctioned a specific last-resort trick: inserting a statement that does nothing - here, an `if` whose
+body is empty - purely to nudge the 1997 compiler into arranging its output the way the original game's
+code was arranged. SOTN's own authors use this trick in code that already matches perfectly. Separately,
+back on 2026-06-02, the project built an automatic detector that finds and DELETES that exact shape from
+the source before scoring it, because at the time it was considered cheating. Those two decisions now
+contradict each other, and the automatic one wins by default because it runs mechanically.
+
+The practical consequence is larger than one function. The pipeline's definition of "ready to commit" is
+"the cheat-invisible sandbox printed 0 this session." For any F6 construct on ANY function, the sandbox
+deletes the construct before scoring, so it can never print 0. That means the owner's 2026-08-18 F6
+sanction is currently unusable in practice - not narrowed, not conditioned, but mechanically dead across
+the whole project. func_800858D0 is simply the first function to walk into it. The 2026-08-18 pad family
+(F5) hit the same wall and was resolved exactly this way, by adding a tightly-keyed per-function allowlist
+row to the same file; there is a working template.
+
+THE CASE AGAINST WIRING IT (stated fairly, because the owner should see both sides). The empty-if detector
+is a real anti-cheat gate, and every hole in a gate is a hole someone can widen later. Sanctioned or not,
+this construct's only function is to steer the compiler; a keyed allowlist means the sandbox is no longer
+telling the unvarnished truth about a function's honest distance - it is telling the truth conditioned on a
+list of approved exceptions. If the key is loose (e.g. per-function only, not per-condition), a future
+session could smuggle a different empty-if in under a granted row. The conservative alternative is to leave
+the gate intact and let the F6 sanction stay theoretical, accepting that func_800858D0 parks as
+OWNER-ACCEPTED INCOMPLETE despite its bytes being proven - which is a real cost: this is a solved function
+being shelved over a tooling gap, the same pattern the 2026-08-19 ruling was written to eliminate.
+
+THE PRECISE QUESTION FOR THE OWNER: Should engine/volatile_cheats.py find_empty_if_dead_reads gain an F6
+allowlist keyed on (function name, exact condition text) - mirroring _SANCTIONED_UNWRITTEN_PADS'
+per-function/exact-shape strictness - with func_800858D0 + `D_80101BCC` as its first row, so that
+sanctioned F6 constructs can reach `sandbox == 0` and the 2026-08-18 F6 sanction becomes usable? If yes,
+func_800858D0's byte-proven candidate passes every other gate today and should go straight to COMPLETED-C.
+If no, the owner should say so explicitly, because F6 should then be marked unusable in practice so no
+future session spends a campaign reaching a construct it can never bank.
+
+I am NOT asking to extend the frozen family list - F6 already exists and I have ruled that this construct
+sits inside it. The question is solely whether the enforcement tooling should be taught the ruling the
+owner already made.
+
+Recommendation, for whatever weight the owner gives it: wire it, keyed on function + exact condition
+symbol, and require the `!FAKE` annotation string to be present in the span (as the pad allowlist requires
+`volatile`), so a granted row cannot cover a different empty-if than the one that was ruled on.
+
+## 2026-08-21 — func_800858D0 — JUDGE ESCALATE on ruling request (policy-question) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-08-21)** — verdict ESCALATE (policy-question): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+RULING (a) - the construct IS sanctioned. `if (D_80101BCC) { }` is the empty-condition shape that the
+owner's 2026-08-18 ruling sanctions verbatim at .claude/rules/no-new-park-categories.md:369-380 (F6,
+"Semantically-null fabricated statement pairs ... a fabricated redundant condition / empty-if inserted
+solely for codegen ... Sanctions ONLY the exact cancellation pair and empty-condition shapes"). The
+2026-06-02 detector docstring at engine/volatile_cheats.py:482 that calls it forbidden is OLDER policy;
+the newer owner ruling governs. I verified this rather than crediting the vet:
+
+  * SOTN precedent, checked in the checkout at C:/Users/Trenton/Desktop/sotn-decomp (HEAD db41b28e -
+    note this is NEWER than the aa535002 pin printed in docs/reference/sotn-construct-index.md, so the
+    cited lines were re-read in source, not trusted from the index). src/dra/5D5BC.c:769-772 carries
+    `// !FAKE, permuter found it` immediately above `if (!i) { }` - a permuter-found empty-if, the exact
+    provenance we have here. Critically, the objection I expected to be decisive - "SOTN's exhibits read
+    LOCALS, ours reads a GLOBAL, and a global read is the dead-read shape the detector was written for"
+    - does not survive: src/maria/pl_steps.c:119 ships `if (PLAYER.step_s) { }` nested INSIDE
+    `if (PLAYER.step_s != 0)`, and src/dra/cd.c:536 ships `if (!g_Cd.D_80137F74 && !g_Cd.D_80137F74) { }`.
+    Both are untagged PSX (GCC 2.7.2) matched code, and pl_steps.c:119 is structurally our construct
+    exactly - an empty-if re-reading the same global the enclosing if just tested. Global-read empty-ifs
+    are inside the family, not outside it.
+  * Six-test checklist: no semantic purpose (that is what F6 sanctions, not a disqualifier here);
+    human-writable from spec (SOTN humans wrote it five times); GCC-steering is its sole function (again,
+    inside the family); annotated - `/* !FAKE: empty-if redundant-condition (F6, ...) */` is present at
+    the site in candidate.c; no intent-announcing fabricated names.
+  * F6 prerequisites, verified against the ledger rather than the claim: annotation present; exhaustion
+    ledger real - hypotheses.md H3/H9/H10/H11 kill the entire in-loop-notes spelling space ANALYTICALLY
+    at file:line (loop.c:692-700 + :1062 movable gate, loop.c:1631/:532 threshold 61 >= 30 insns,
+    sched.c:2504-2537 birthing_insn_p reg_n_sets==1, sched.c:2407-2464 LUID tiebreak), backed by five
+    banked rejects in rejected/ including two permuter finds correctly refused on their own merits
+    (permuter-sh-before-set-semantics-broken-160.c rejected for BREAKING SEMANTICS,
+    permuter-newvar-alias-if1-cheats-30.c rejected as forbidden shapes) - that is a vet rejecting free
+    wins, which raises my confidence in the rest of the ledger; named multi-pass mechanism present and
+    dump-proven (jump1 branch deletion -> cse1 load-CSE -> loop.c counts 2 sets PRE-DCE so no hoist ->
+    flow DCEs the dead set -> sched1 sees reg_n_sets==1 POST-DCE and launches the li 24 adjacent to its
+    consumer). The loop.c-before-flow pass window is a real property of GCC 2.7.2's pass order, not a
+    story.
+  * Layer-1 regression constraint honored. state.json judge_constraints bans the goto-spelled loop
+    (note-suppression family). I grepped candidate.c: zero `goto`, zero labels; the body is a genuine
+    `do { ... } while (var_s0 < u);`. The banned construct is GONE, not respelled - the empty-if works
+    through jump1/cse1/flow, which has nothing to do with NOTE_INSN_LOOP_BEG suppression.
+  * Bytes independently re-verified by me, not taken from the ledger. I extracted the original EXE at
+    disc/SLUS_006.63 file offset 0x760D0 (= 0x800858D0 - 0x80010000 + 0x800) and compared all 72
+    instruction words against tmp/grind/func_800858D0/s3/zero.dis. Every word matches once %lo relocation
+    addends and jal targets are masked; the only 9 residual differences are unresolved relocation addends
+    in the unlinked .o (e.g. `lbu v1,0(v1)` vs `lbu v1,0x1bcc(v1)`), which is what a correct unlinked
+    object is supposed to look like. Register allocation, instruction selection, scheduling and both delay
+    slots are identical to the shipped game. ours_tu.dis (full-Makefile TU context) is word-identical to
+    zero.dis. The bytes are real.
+
+RULING (b) - NOT MY CALL, AND NOT THE DRIVER'S. This is why the verdict is ESCALATE rather than PASS.
+The request is to add an F6 allowlist hook to engine/volatile_cheats.py find_empty_if_dead_reads,
+mirroring _SANCTIONED_UNWRITTEN_PADS (volatile_cheats.py:746). I cannot authorize it and the
+integration-handoff self-serve path cannot execute it, for two independent reasons:
+  1. .claude/rules/integration-handoff-self-serve.md puts "Anything under tools/, engine/, .claude/,
+     docs/, memory/, asm/, disc/" on the add-scope-allow PATH DENYLIST, enforced by path-class regex.
+     engine/volatile_cheats.py is squarely denylisted.
+  2. The same rule's "most severe" owner-only list includes "Retiring or weakening a guard, gate, or the
+     Judge's default-FAIL policy." Punching a hole in a cheat detector is weakening a gate, however
+     well-justified the hole.
+  Nor does this qualify as escalate_kind=integration-handoff: that path requires bytes proven by
+  `sandbox --disable all` == 0 AND full-build SHA1 == oracle banked in the ledger. Neither exists -
+  sandbox reads 13 precisely BECAUSE the stripper removes the closer, and verify-oracle correctly refused
+  on a dirty tree (the session did not override it; good discipline).
+
+WHAT THE OWNER ACTUALLY HAS TO DECIDE (plain English, no assembly required). On 2026-08-18 the owner
+sanctioned a specific last-resort trick: inserting a statement that does nothing - here, an `if` whose
+body is empty - purely to nudge the 1997 compiler into arranging its output the way the original game's
+code was arranged. SOTN's own authors use this trick in code that already matches perfectly. Separately,
+back on 2026-06-02, the project built an automatic detector that finds and DELETES that exact shape from
+the source before scoring it, because at the time it was considered cheating. Those two decisions now
+contradict each other, and the automatic one wins by default because it runs mechanically.
+
+The practical consequence is larger than one function. The pipeline's definition of "ready to commit" is
+"the cheat-invisible sandbox printed 0 this session." For any F6 construct on ANY function, the sandbox
+deletes the construct before scoring, so it can never print 0. That means the owner's 2026-08-18 F6
+sanction is currently unusable in practice - not narrowed, not conditioned, but mechanically dead across
+the whole project. func_800858D0 is simply the first function to walk into it. The 2026-08-18 pad family
+(F5) hit the same wall and was resolved exactly this way, by adding a tightly-keyed per-function allowlist
+row to the same file; there is a working template.
+
+THE CASE AGAINST WIRING IT (stated fairly, because the owner should see both sides). The empty-if detector
+is a real anti-cheat gate, and every hole in a gate is a hole someone can widen later. Sanctioned or not,
+this construct's only function is to steer the compiler; a keyed allowlist means the sandbox is no longer
+telling the unvarnished truth about a function's honest distance - it is telling the truth conditioned on a
+list of approved exceptions. If the key is loose (e.g. per-function only, not per-condition), a future
+session could smuggle a different empty-if in under a granted row. The conservative alternative is to leave
+the gate intact and let the F6 sanction stay theoretical, accepting that func_800858D0 parks as
+OWNER-ACCEPTED INCOMPLETE despite its bytes being proven - which is a real cost: this is a solved function
+being shelved over a tooling gap, the same pattern the 2026-08-19 ruling was written to eliminate.
+
+THE PRECISE QUESTION FOR THE OWNER: Should engine/volatile_cheats.py find_empty_if_dead_reads gain an F6
+allowlist keyed on (function name, exact condition text) - mirroring _SANCTIONED_UNWRITTEN_PADS'
+per-function/exact-shape strictness - with func_800858D0 + `D_80101BCC` as its first row, so that
+sanctioned F6 constructs can reach `sandbox == 0` and the 2026-08-18 F6 sanction becomes usable? If yes,
+func_800858D0's byte-proven candidate passes every other gate today and should go straight to COMPLETED-C.
+If no, the owner should say so explicitly, because F6 should then be marked unusable in practice so no
+future session spends a campaign reaching a construct it can never bank.
+
+I am NOT asking to extend the frozen family list - F6 already exists and I have ruled that this construct
+sits inside it. The question is solely whether the enforcement tooling should be taught the ruling the
+owner already made.
+
+Recommendation, for whatever weight the owner gives it: wire it, keyed on function + exact condition
+symbol, and require the `!FAKE` annotation string to be present in the span (as the pad allowlist requires
+`volatile`), so a granted row cannot cover a different empty-if than the one that was ruled on.
+
+**Constraint recorded for any future session:** The F6 empty-if `if (D_80101BCC) { }` is RULED SANCTIONED for func_800858D0 (annotation + exhaustion ledger + named GCC-pass mechanism all independently verified; bytes re-verified against disc/SLUS_006.63 modulo relocs) - do not re-litigate or respell it. The goto-spelled note-suppressing loop remains banned. No grind session may edit engine/ to unblock the sandbox: that grant is owner-only.

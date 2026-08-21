@@ -265,3 +265,97 @@ instruction order is now proven already correct.
   trace of the floor-13 form showing insn 71 ready T-21 losing every cycle
   and insn 113 losing the LUID tiebreak; ours.dis; dis.sh; sched_slice.py),
   tmp/grind/func_800858D0/dumps/ (regenerated from the floor-13 form).
+
+## s3 (2026-08-20, permuter — BYTES PROVEN via F6 empty-if; sandbox blocked by detector)
+
+- **Floor-13 do-while form RECONSTRUCTED and re-confirmed at 13** (72/72,
+  frame 96, saves 3). The s2 ledger never banked it as a file; the working
+  reconstruction is: u={0x18, limit-reload} carrier, offset={stride, 1} reuse,
+  direct s16 increment, A/B init-block moves. It is now the body of
+  candidate.c (minus the closer). Residual-13 fully mapped
+  (tmp/grind/func_800858D0/s3/ours13.dis): ONE coupled flip — ours steals
+  `li a1,24` into preheader+loop-back delay where target steals
+  `addiu a0,sp,16`, plus the cascading a1<->v1 renames (sign-extend, 24/limit
+  carrier, slt) — 13 diffs, one root cause (block-top identity).
+- **Noted-loop pin trilemma PROVEN analytically (kills the whole honest
+  in-loop-notes spelling space for the mid-loop li 24):**
+  (1) loop.c:692-700 — a movable needs one of three cases;
+      for a SINGLE-SET user-var const all three hold or fail as follows:
+      case 1 (reg_in_basic_block_p, loop.c:1062) requires regno_first_uid ==
+      the set insn — any same-block consumer keeps it true; case 2 requires
+      !REG_USERVAR_P (a named C local always fails it, i.e. case 2 never
+      protects a user var — but never blocks one either); case 3 fails only
+      via maybe_never (impossible: target loop body is branch-free) or
+      used-before-set (semantically impossible: iteration 1 would read
+      garbage; the only consumer is the FIRST sh). So a single-set const in
+      a noted loop is ALWAYS movable, and H3's threshold math (61 >= 30)
+      always moves it. No spelling escapes within loop notes.
+  (2) sched.c:2504-2537 birthing_insn_p requires GLOBAL reg_n_sets == 1 for
+      launch — any multi-set carrier (every anti-hoist spelling) forfeits
+      the adjacent-to-consumer launch that puts li 24 mid-loop.
+  (3) rank_for_schedule (sched.c:2407-2464): the two pri-1 stragglers
+      (li 24, a0-set) are both class-3 (independent) at the deciding cycle,
+      so the LUID tiebreak places the LOWER-LUID insn at block top; li 24's
+      LUID is necessarily below the a0-set's (its consumer sh precedes the
+      call that generates a0=sp+16), so no statement order flips it.
+  Together: "don't hoist" and "launch adjacent" are contradictory for any
+  spelling loop.c can see — CONFIRMING s2's conclusion, now at file:line.
+- **THE HONEST RESOLUTION EXISTS ANYWAY — pass-order window.** Permuter
+  campaign (permuter/func_800858D0_s3, 18,667 iters, ~7 min to zero,
+  --stop-on-zero, --stack-diffs) found score 0: floor-13 form +
+  `if (D_80101BCC) { }` inserted between the increment and the limit
+  re-read. Dump-proven mechanism (dumps regenerated from this form):
+  jump1 deletes the empty branch; the manufactured lbu survives as
+  reg101/reg102; cse1 rewrites the while-compare to read reg102 directly,
+  leaving `u = reg102` (insn 139, main.cse2) DEAD; loop.c runs BEFORE flow
+  and counts reg75(u) as 2-set -> not a movable -> li 24 stays in-loop
+  (main.loop: "Loop from 52 to 154: 32 real insns", zero moved lines);
+  flow deletes insn 139 (main.flow: NOTE_INSN_DELETED 139); sched1 runs
+  AFTER flow, sees reg_n_sets[75]==1, birthing_insn_p approves, the li 24
+  is LAUNCHED adjacent to its sh; the a0-set becomes the lone straggler at
+  block top; reorg steals it (target's rotation identity); hard $a0 across
+  the sign-extend span lands the extend in $a1, the 24/limit class in $v1 —
+  all 13 diffs flip together. loop.c counts sets pre-DCE, sched counts
+  post-DCE: that window is the only honest escape from the trilemma.
+- **Byte proof:** permuter score 0 vs target.o built from
+  asm/funcs/func_800858D0.s + prelude (offset-0, --stack-diffs, honest
+  pipeline: cc1 -mel | prologue_fix | maspsx | as). TU-context emission
+  word-identical 72/72 (tmp/grind/func_800858D0/s3/ours_tu.dis — full
+  Makefile pipeline incl. regfix stages on src/main.c — vs zero.dis; only
+  section-offset branch TEXT differs, instruction words equal).
+  verify-oracle --rebuild correctly REFUSED on dirty src (guard working as
+  designed); not overridden.
+- **BLOCKER: engine/volatile_cheats.py find_empty_if_dead_reads (line 482,
+  written for the 2026-06-02 audit) strips the empty-if before scoring —
+  sandbox reads 13 with cheat_asm_stripped 67->68. The detector PREDATES the
+  2026-08-18 F6 sanction (no-new-park-categories.md:371-383, "Sanctions ONLY
+  the exact cancellation pair and empty-condition shapes") and has NO
+  allowlist hook (unlike _SANCTIONED_UNWRITTEN_PADS for the F7/pad family).
+  candidate-ready ("sandbox printed 0 THIS session") is therefore
+  MECHANICALLY UNREACHABLE for this construct until the engine gains an F6
+  allowlist row — engine/ is outside grind-session scope.**
+- **Classification conflict needing a ruling:** the cheat-reviewer catalog
+  (and the 2026-06-02 detector docstring) list "empty-body if (cond) { }
+  dead-read" as a forbidden family; no-new-park-categories.md:371-383 (owner
+  ruling 2026-08-18, "Go ahead with all your recommendations on these")
+  sanctions the empty-condition shape with SOTN exhibits
+  (docs/reference/sotn-construct-index.md:34 — empty_if family, 17 PSX
+  instances; :63 — dra/5D5BC.c:769 "!FAKE, permuter found it";
+  no-new-park-categories cites dra/5D5BC.c:770 `if (!i) { }` and
+  st/st0/cutscene.c:203 `if (prim && prim)`). Our exhibit is the exact
+  SOTN shape: permuter-found empty-if over a REAL global read, annotated,
+  with a named multi-pass mechanism and a proven-exhausted lever space.
+- Permuter kills banked: rejected/permuter-sh-before-set-semantics-broken-160.c
+  (reorder mutations are NOT semantics-preserving — the sh-above-set family
+  stores a stale/uninitialized u; every such find rejected on correctness),
+  rejected/permuter-newvar-alias-if1-cheats-30.c (invented alias/staging
+  locals + if(1){} wrap — forbidden shapes).
+- Hand probes measured this session (all at 13, inert): u = var_s0*54 staged
+  through u then copied to offset (cse folds the copy — emission identical);
+  `u = 0x18` hoisted above the stride multiply (LUID of the set does not
+  matter, consistent with trilemma lock 3).
+- Artifacts: tmp/grind/func_800858D0/s3/ (ours13.dis, base13.dis, ours_tu.dis,
+  zero.dis, zero-source.c, zero-diff.txt, campaign-tail.txt,
+  campaign_meta.json, tu_build.sh), permuter/func_800858D0_s3/ (workspace,
+  campaign.log, 35 output dirs incl. output-0-1), tmp/grind/func_800858D0/
+  dumps/ (regenerated from the zero form).
