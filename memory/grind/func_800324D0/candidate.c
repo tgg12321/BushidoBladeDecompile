@@ -18,13 +18,15 @@
  * annotation in place at the site; (5) receipts = s1-s4 exhaustion + two dry
  * campaigns. SOTN PSX precedent: the `// fake reuse of i?` staged-load shape,
  * docs/reference/sotn-construct-index.md:51,81,92,97,109 (i = *scriptCur++
- * through an existing variable). OPEN CITATION QUESTION for the submitting
- * session: the rule's origin text names sched.c adjust_priority/birthing_insn_p
- * as its exemplar mechanism; OUR measured mechanism is the global-RA census
- * (the extra cmd set splits cmd into head web 75 + arm web 85 and re-seeds
- * find_reg). Bounds 1-6 of the rule are mechanism-silent, but layer-1 has
- * FAILed right-construct/wrong-citation before — if the submitting session
- * cannot resolve this cleanly, emit ruling-request rather than submit.
+ * through an existing variable). CITATION QUESTION RESOLVED [s7, synthesis]:
+ * the rule's six bounds are mechanism-silent; bound 4 requires naming the
+ * ACTUAL pass (ours: global.c allocno census — the extra cmd set splits cmd
+ * into head web 75 + arm web 85 and re-seeds find_reg); the sched.c
+ * reference is descriptive Origin text, not a bound; the 2026-08-17
+ * clarification (no-new-park-categories.md:193-214) establishes SOTN
+ * acceptance is shape-based, and the SOTN exemplar is literally this shape.
+ * Full argument: tmp/grind/func_800324D0/s6/probes_and_partition.md — quote
+ * it in the submitting session's self-vet.
  *
  * u32 cmd is load-bearing for the staging (borrowing u8 val instead: 27;
  * u8 c for val's load: flat; placement `ptr++` between read and copy: 28/69).

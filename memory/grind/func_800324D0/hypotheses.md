@@ -1,5 +1,56 @@
 # Hypothesis ledger — func_800324D0
 
+## [s7] 2026-08-20 (synthesis, brief-session 6; scratch tmp/grind/func_800324D0/s6/)
+
+18. **H18 — a statement geometry exists where the cmd head web's live length
+    grows enough to drop allocno 75 below val, opening a different find_reg
+    cascade to the target rotation** (the [s6] frontier 1). Probe: G1 (head
+    test on cmd with preheader staging) = 30/70; G2 (loop condition on cmd)
+    = 32/69 — every head-web-lengthening spelling breaks the 68-insn shape
+    (keeping cmd live across the loop-back edge costs 1-2 insns). AND the
+    cascade arithmetic shows the frontier was ill-posed: any order where val
+    reaches find_reg with $3 unheld gives val→$3 (someone_prefers {4} only),
+    not walker→$3 — dropping 75 below val hands $3 to val, never to the
+    walker. **KILLED (measured + arithmetic; the full partition is banked at
+    tmp/grind/func_800324D0/s6/probes_and_partition.md).**
+19. **H19 — the strongest natural reg_n_refs lift (staged tail duplicated
+    into all 3 arms, duplicated-statement-into-arms shape) inverts the
+    allocation order toward walker-first.** Probe: G4 measured FLAT 15,
+    68/68 (cross-jump re-merges byte-neutrally); the lift raises cmd's refs
+    proportionally, so the order never inverts. Walker-first needs ~78
+    weighted walker refs vs 24 — no natural geometry approaches it. G5a/G5b
+    arm reorderings also flat. **KILLED.**
+20. **H20 — the staged-value-reused-variable citation question is resolvable
+    from the rule text without an owner ruling** (the [s6] frontier 2).
+    Probe: read the rule + the 2026-08-17 clarification
+    (no-new-park-categories.md:193-214). The bounds are mechanism-silent,
+    bound 4 asks for the ACTUAL pass (ours names global.c), the sched.c
+    reference is descriptive Origin text, the clarification's interpretive
+    principle is that SOTN acceptance is shape-based, and the SOTN exemplar
+    is literally our shape (`i = *scriptCur++` through an existing
+    variable). **CONFIRMED — citation clean; no ruling-request needed on
+    citation grounds; full argument banked for the eventual self-vet.**
+
+## Frontier (for s8+ — RESET by the synthesis pass)
+1. **Rederive: m2c the TARGET asm** (never explicitly run on this function)
+   and check the CFG/dataflow assumptions the cascade partition rests on.
+   Mechanism: the partition enumerates orders within OUR build's structure;
+   an original-source structural signal (different guard nesting, different
+   walk idiom) is the one remaining honest input that could re-open it.
+   Next probe: m2c asm/funcs/func_800324D0.s, compare structure against
+   candidate.c; any genuinely different semantics-equivalent CFG gets ONE
+   sandbox measurement.
+2. **Forensics-2: verify the residual-15 diff COMPOSITION is identical
+   across the flat-15 spellings** (candidate vs G4-dup vs s5 basin2 text).
+   Mechanism: a differing swap composition at the same score would expose an
+   unexplored seam; expected identical (then the wall is fully uniform).
+   Next probe: objdump side-by-side per spelling, diff the diff-sets against
+   s4/residual15_sbs.txt.
+3. **If 1 and 2 confirm (expected): every honest axis is measured dead.**
+   The ladder's escalation disposition applies (driver's call, not a
+   session's). The submitting/escalating session should carry the H20
+   citation resolution and the s6 partition as its evidence spine.
+
 ## [s6] 2026-08-20 (permuter, brief-session 5; scratch tmp/grind/func_800324D0/s5/)
 
 17. **H17 — the 15-floor staged chassis, never before permuted, has a
@@ -278,3 +329,21 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: Campaign #1 from candidate.c verbatim (tmp/perm_324d0_s5, label s5-staged-15, 8 jobs, --stop-on-zero, base permuter score 105, ~118k iterations over ~31 min); campaign #2 from a genuinely different flat-15 text (s4's flat micro-variants combined: preheader read staged through cmd, guard+do-while loop form, cmd-first decl order; combination measured flat 15 68/68 this session before seeding; tmp/perm_324d0_s5b, ~106k iterations over ~29 min). Both harvested + stopped in-session.
 - result: ZERO improving finds in either basin. The single output in EACH basin is the identical score-neutral (105==base) invented constant-holder 'unsigned short new_var = 0x80;' - noise, and a forbidden invented-local direction besides. Unlike the 27-chassis basins (s3/s4), not even a banned-family carrier scored below base.
 - verdict: KILLED
+
+## [s6] H18: a statement geometry lengthening the cmd head web drops allocno 75 below val and opens a different find_reg cascade to the target rotation
+- mechanism: global.c allocno_compare priority ordering + find_reg pass-0 cascade
+- probe: G1 head test on cmd (preheader staged): sandbox 30, build 70; G2 loop condition on cmd: 32, build 69; plus cascade arithmetic: any order where val reaches find_reg with $3 unheld gives val->$3 (someone_prefers {4} only), never walker->$3
+- result: every head-web-lengthening spelling breaks the 68-insn shape (cmd live across the loop-back edge costs 1-2 insns), and the frontier was arithmetically ill-posed: dropping 75 below val hands $3 to val, not the walker; full partition banked in s6/probes_and_partition.md
+- verdict: KILLED
+
+## [s6] H19: the strongest natural reg_n_refs lift (staged tail duplicated into all 3 arms) inverts allocation order toward walker-first
+- mechanism: flow.c reg_n_refs counting before jump2 cross-jump re-merge (duplicated-statement-into-arms shape)
+- probe: G4 duplication: sandbox 15, build 68 (byte-neutral re-merge confirmed); G5a/G5b payload-arm reorderings: both 15, 68/68
+- result: flat - the lift raises cmd refs proportionally so the order never inverts; walker-first needs ~78 weighted walker refs vs actual 24, unreachable by any natural geometry
+- verdict: KILLED
+
+## [s6] H20: the staged-value-reused-variable citation question (sched.c origin exemplar vs our global-RA mechanism) is resolvable from the rule text without an owner ruling
+- mechanism: the rule's bounds 1-6 are mechanism-silent; the 2026-08-17 named-intermediate clarification establishes SOTN acceptance is shape-based
+- probe: read staged-value-reused-variable.md full text + no-new-park-categories.md:193-214 this session
+- result: citation is CLEAN: bound 4 requires naming the ACTUAL pass (our annotation names global.c), sched.c sits in descriptive Origin text not the bounds, clarification prong (4) confirms the borrow family keeps its own mechanism-silent bounds, and the SOTN exemplar (i = *scriptCur++ staged through an existing variable) is literally our shape; full argument banked for the eventual self-vet
+- verdict: CONFIRMED

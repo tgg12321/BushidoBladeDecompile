@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 15,
    "modality": "permuter",
    "headline": "15-floor chassis's first permuter exposure: two basins (~224k iters) DRY - zero improving finds, only score-neutral invented-constant noise; residual 2-swap confirmed not mutation-reachable; permuter "
+  },
+  {
+   "session": 6,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis: cascade partition proves the honest register space closed within any shape-preserving geometry (head-web lengthening breaks shape, ref-lift census-inert); staged-value citation question RES"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A statement geometry exists where the cmd head web's live length grows enough (>=~10 insns at 10 refs) to drop allocno 75 below val in allocno_compare, opening a different find_reg cascade to the target rotation",
-   "mechanism": "global.c allocno_compare priority ordering + find_reg pass-0 cascade; re-derive the full cascade from the s4 exclusion sets for any new census before spending a build",
-   "next_probe": "rederive/synthesis modality: m2c re-derivation and hand-synthesis of head-web-lengthening geometries (e.g. separating head tests from the arm subtract with intervening real work), measured against s4/findreg exclusion-set arithmetic"
+   "hypothesis": "m2c re-derivation of the TARGET asm (never explicitly run on this function) either exposes an original-source structural signal that re-opens the partition, or confirms the CFG and closes the last honest derivation input",
+   "mechanism": "the cascade partition enumerates orders within OUR build's structure; the target's own decompiled shape is the one remaining independent input",
+   "next_probe": "rederive modality: m2c asm/funcs/func_800324D0.s, compare structure against candidate.c; any genuinely different semantics-equivalent CFG gets one sandbox measurement"
   },
   {
-   "hypothesis": "The staged-value-reused-variable citation question (sched.c exemplar vs our global-RA mechanism) is resolvable from the rule text + the 2026-08-17 named-intermediate mechanism-agnosticism clarification without an owner ruling",
-   "mechanism": "the rule's bounds 1-6 are mechanism-silent; layer-1 has FAILed right-construct/wrong-citation before",
-   "next_probe": "submitting session: re-read staged-value-reused-variable.md + no-new-park-categories.md 2026-08-17 clarification; if not clean, emit ruling-request BEFORE candidate-ready"
+   "hypothesis": "the residual-15 diff composition is identical across all flat-15 spellings (candidate, G4-dup, s5 basin2); a differing composition would expose an unexplored seam",
+   "mechanism": "same score can decompose into different swap sets; uniformity confirms the wall is a single 2-swap everywhere",
+   "next_probe": "forensics-2: objdump side-by-side per flat-15 spelling, diff against s4/residual15_sbs.txt"
   },
   {
-   "hypothesis": "Permuter is mechanically closed for this function (two permuter-modality sessions, second yield flat)",
-   "mechanism": "grindlib.py R3 hard cap + zero-yield gate",
-   "next_probe": "none - do not propose campaigns; the ladder's remaining modalities are synthesis/rederive/forensics-2"
+   "hypothesis": "if both confirm as expected, every honest axis is measured dead and the ladder's escalation disposition applies (driver's call); the escalating/submitting session carries the H20 citation resolution and the s7 partition as its evidence spine",
+   "mechanism": "R1 ladder retune: one full flat cycle => escalation; modalities spent: recon, structural x2, permuter x2 (R3 exhausted), synthesis",
+   "next_probe": "none for this item - it is the disposition rule, not a probe"
   }
  ],
  "judge_constraints": [

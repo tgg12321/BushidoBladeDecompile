@@ -1,5 +1,80 @@
 # Evidence bank — func_800324D0
 
+## [s7] 2026-08-20 — synthesis (brief-session 6; scratch tmp/grind/func_800324D0/s6/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (6th
+consecutive session). candidate.c (15-floor staged form) re-applied to
+src/code6cac_b.c; measured 15, build 68 == target 68 at session start and
+re-verified at session close after all probes were reverted. Chassis
+unchanged from [s5]/[s6]; all banked 15-chassis conclusions remain valid.
+
+### THE MAIN RESULT — the synthesis-level cascade partition: the honest
+### register space within ANY shape-preserving geometry is CLOSED
+Full write-up with the arithmetic: tmp/grind/func_800324D0/s6/
+probes_and_partition.md. Summary of the exhaustive enumeration:
+- Any allocation order in which val (76) reaches find_reg while $3 is unheld
+  gives val→$3 (someone_prefers {4} only) — NOT target. This kills the whole
+  "drop 75 below val by lengthening the head web" frontier as a matter of
+  arithmetic, independent of any measurement: the next allocno in line takes
+  $3 instead of the walker.
+- val skipping $3 needs a $3 preference-carrier or $3 conflict — both proven
+  impossible (s2 proofs, geometry-invariant because the walker's defs are
+  self-increments + one lw from mem(pad) in every semantics-preserving form).
+- The ONLY honest cascade is walker-allocated-FIRST (s4 exclusion sets:
+  75→6, 85→6, 76→5 — complete target, zero constructs). Walker-first on the
+  15-chassis needs floor_log2(r)·r/62 > 7.5 (75's priority) → ~78 weighted
+  walker refs vs the actual 24. The strongest natural ref-lift (G4 below)
+  measured census-inert; a combine-foldable increment-split chain would need
+  ~13 fabricated statements — recorded as arithmetically dead, not proposed
+  (the 2026-08-18 F1 survey refused the staging-chain species anyway).
+
+### Measurements (all sandbox --disable all, this session)
+- G1 head test on cmd (preheader staged + `if (cmd == 0xFF)`): 30, build 70 —
+  shape breaks. Banked rejected/g1-head-test-on-cmd.c.
+- G2 loop condition on cmd (`while (cmd != 0)`): 32, build 69 — shape breaks.
+  Head-web lengthening is shape-incompatible in every spelling: keeping cmd
+  live across the loop-back edge costs 1-2 insns before the census shifts.
+- G4 staged tail duplicated into all 3 arms (duplicated-statement-into-arms
+  shape): FLAT 15, 68/68 — cross-jump re-merges byte-neutrally and the ~2-3x
+  reg_n_refs lift on cmd/c/walker does not move the residual. The ref-lift
+  lever class is measured inert on this wall (it lifts cmd proportionally).
+- G5a/G5b payload-arm orderings (`val=*ptr; cmd=c-0x80; ptr++` and
+  `val=*ptr; ptr++; cmd=c-0x80`): both FLAT 15, 68/68 — the arm-web
+  geometry axis is inert.
+
+### The staged-value citation question ([s5] frontier 2) — RESOLVED
+Read this session: staged-value-reused-variable.md full text +
+no-new-park-categories.md:193-214 (the 2026-08-17 clarification). The rule's
+six bounds are mechanism-silent; bound 4 requires the annotation to name the
+ACTUAL pass, which ours does (global.c allocno census); the sched.c reference
+lives in the descriptive "Origin" section, not the bounds; the 2026-08-17
+clarification establishes the interpretive principle that SOTN acceptance is
+SHAPE-based ("never conditioned on a GCC pass") and its prong (4) confirms
+the borrow family keeps its own (mechanism-silent) bounds; and the SOTN
+exemplar for THIS family is literally our shape (`i = *scriptCur++` staged
+through an existing variable). CONCLUSION: the citation is clean; the
+submitting session needs no ruling-request on citation grounds. Full
+argument in s6/probes_and_partition.md (quote it in the eventual self-vet).
+
+### What remains (honest assessment for the driver's ladder)
+Within pure C on this statement shape the residual-15 2-swap is proven
+unreachable at the synthesis level. Un-run honest derivations: (a) rederive
+modality — m2c the TARGET asm and check the CFG/dataflow assumptions the
+partition rests on (the hand-enumeration has always started from our build's
+structure; m2c has never been explicitly run on this function per the
+ledger); (b) forensics-2 — verify the residual-15 diff COMPOSITION is
+identical across the flat-15 spellings (candidate vs G4-dup vs s5 basin2);
+a differing composition would expose a seam (expected identical). If (a)
+confirms the same CFG and (b) shows the same swap, every honest axis is
+measured dead and the ladder's escalation disposition applies.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s6/probes_and_partition.md,
+memory/grind/func_800324D0/rejected/g1-head-test-on-cmd.c.
+
 ## [s6] 2026-08-20 — permuter (brief-session 5; the 15-floor chassis's FIRST permuter exposure; scratch tmp/grind/func_800324D0/s5/)
 
 ### R3 accounting clarification (read the driver source, not the ledger's count)
@@ -471,3 +546,17 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s5] The s4 flat-15 micro-variants COMPOSE flat: preheader-staged read + guard+do-while + cmd-first decl order together measure 15, 68/68 (new fact; banked as s5/basin2_seed_flat15.c - a valid alternative spelling of the 15-floor)
 
 - [s5] Both basins' only output is the same invented 'unsigned short new_var = 0x80;' constant-holder at score==base - evidence the permuter's best remaining direction on this chassis is score-neutral even before vetting
+
+- [s6] Chassis verified at session start and close: candidate.c (15-floor staged form) applied to src/code6cac_b.c, sandbox --disable all = 15, build 68 == target 68; working tree had carried the stale pinned s1 form at dispatch (6th consecutive session)
+
+- [s6] Synthesis-level cascade partition (s6/probes_and_partition.md): the ONLY honest allocation order yielding the target rotation is walker-allocated-FIRST (s4 exclusion sets verify 75->6, 85->6, 76->5 with zero constructs); walker-first needs ~78 weighted refs vs 24; every other order gives val->$3; preference and conflict routes to a val $3-skip remain impossible per the geometry-invariant s2 proofs
+
+- [s6] Head-web lengthening is shape-incompatible in every spelling: G1 (if (cmd == 0xFF)) = 30/70, G2 (while (cmd != 0)) = 32/69 - banked rejected/g1-head-test-on-cmd.c
+
+- [s6] G4 staged-tail duplication into all 3 arms is byte-neutral (cross-jump re-merges, 15, 68/68) and census-inert at the residual - the reg_n_refs lift lever class is measured dead on this wall
+
+- [s6] G5a/G5b payload-arm statement orderings both flat 15, 68/68 - the arm-web geometry axis is inert
+
+- [s6] F1-style combine-foldable increment-split chain computed arithmetically dead (~13 fabricated statements needed) and not proposed; the 2026-08-18 F1 survey refused the staging-chain species
+
+- [s6] Citation resolution banked: the submitting session should quote s6/probes_and_partition.md's resolution section in its self-vet; no ruling-request needed on citation grounds
