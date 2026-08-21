@@ -1,5 +1,35 @@
 # Hypothesis ledger — func_800324D0
 
+## [s9] 2026-08-20 (forensics/rederive, brief-session 8; scratch tmp/grind/func_800324D0/s8/)
+
+22. **H22 — m2c re-derivation of the TARGET asm exposes an original-source
+    structural signal (different CFG / dataflow) that re-opens the s6
+    cascade partition** (the [s8] frontier 1; expected FALSE). Probe: m2c
+    run on asm/funcs/func_800324D0.s + asm/rodata/jtbl_800105A0.s (first
+    explicit m2c run on this function; output s8/m2c_target.c); structure
+    compared against candidate.c; the one unmeasured respelling axis it
+    surfaced (switch-folded -0x80: casesi emits the subtraction into its
+    own scratch instead of the cmd web) measured three ways. Result: same
+    guard + do-while + 3-arm + jtbl-switch CFG; R1 (switch on c, 0x80
+    cases) = 27 68/68, R2 (cmd = c; switch(cmd), 0x80 cases) = 27 68/68 —
+    both collapse the s4 allocno-85 arm web and restore the 27 rotation;
+    R3 (m2c-verbatim head-copy + RMW subtract + staged tail, target's
+    exact one-web $a2 dataflow) = 15 68/68 and BYTE-IDENTICAL to the
+    candidate's .o (s8/sbs_r3.txt diff-clean vs s4/residual15_sbs.txt).
+    **KILLED — the rederive axis is closed; no structural signal exists;
+    `cmd = c - 0x80` carrying the subtracted value in the cmd web is
+    load-bearing for the 15.**
+
+## Frontier (for the driver — the ladder is spent)
+1. **Every honest axis is measured dead** (recon s1, structural s2-s3,
+   permuter s4-s6 R3-exhausted, synthesis s7, forensics s8, rederive s9).
+   The ladder's escalation disposition applies — the DRIVER's call, not a
+   session's. Evidence spine for the escalating/submitting session: H20
+   citation resolution + s6 cascade partition + s7/s8/s9 uniformity proof
+   (four byte-identical flat-15 spellings) + the s9 rederive closure.
+2. No unmeasured honest probe remains on this chassis. Do not re-measure
+   dead axes; do not propose permuter campaigns (R3 tripped both ways).
+
 ## [s8] 2026-08-20 (forensics, brief-session 7; scratch tmp/grind/func_800324D0/s7/)
 
 21. **H21 — the residual-15 diff COMPOSITION differs across the flat-15
@@ -379,4 +409,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: the same sandbox score can decompose into different swap sets; a differing composition at equal score would mark a different find_reg outcome reachable by spelling
 - probe: each spelling applied to src and sandbox-measured this session (all 15, build 68 == target 68), then objdump side-by-side via tmp/grind/func_800324D0/s4/sbs.py and full-file diff against the banked s4/residual15_sbs.txt
 - result: all three side-by-sides are IDENTICAL over the entire 68-line listing - the spellings emit byte-identical .o code; the residual is the exact same walker ours-$6/target-$3, cmd-webs ours-$3/target-$6 swap at 15 instruction sites in every case
+- verdict: KILLED
+
+## [s8] H22 - m2c re-derivation of the TARGET asm exposes an original-source structural signal (different CFG/dataflow) that re-opens the s6 cascade partition
+- mechanism: the s6 cascade partition enumerates allocation orders within OUR build's structure; the target's own decompiled shape was the one remaining independent derivation input
+- probe: first explicit m2c run on this function (tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c asm/funcs/func_800324D0.s asm/rodata/jtbl_800105A0.s, output s8/m2c_target.c); CFG compared to candidate.c; the surfaced switch-folded-subtract respelling axis measured 3 ways in the sandbox: R1 switch-on-c 0x80-cases = 27 68/68, R2 cmd=c + switch(cmd) 0x80-cases = 27 68/68, R3 m2c-verbatim head-copy + RMW cmd-=0x80 + staged tail = 15 68/68 with s4/sbs.py side-by-side byte-IDENTICAL to s4/residual15_sbs.txt
+- result: same guard+do-while+3-arm+jtbl-switch CFG as candidate.c; R1/R2 collapse the allocno-85 arm web (casesi puts the -0x80 in a die-at-def scratch) and restore the full 27 rotation; R3 is a fourth member of the uniform flat-15 basin, not a new seam; cmd = c - 0x80 carrying the subtracted value in the cmd web is load-bearing for the 15
 - verdict: KILLED

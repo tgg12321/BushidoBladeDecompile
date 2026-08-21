@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -45,18 +45,19 @@
    "floor": 15,
    "modality": "forensics",
    "headline": "Forensics-2 complete: the three flat-15 spellings (candidate, s5 basin2, G4-dup) emit BYTE-IDENTICAL machine code, so the residual 15 is one uniform walker<->cmd 2-swap with no unexplored seam; only t"
+  },
+  {
+   "session": 8,
+   "floor": 15,
+   "modality": "forensics",
+   "headline": "Rederive closed: m2c on target asm confirms the same CFG; the one unmeasured respelling axis (switch-folded -0x80) measured dead (R1/R2 regress to 27, R3 m2c-verbatim geometry is byte-identical flat 1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "m2c re-derivation of the TARGET asm (never explicitly run on this function) either exposes an original-source structural signal that re-opens the cascade partition, or confirms the CFG and closes the last honest derivation input",
-   "mechanism": "the s6 cascade partition enumerates allocation orders within OUR build's structure; the target's own decompiled shape is the one remaining independent input",
-   "next_probe": "rederive modality: m2c asm/funcs/func_800324D0.s, compare structure against candidate.c; any genuinely different semantics-equivalent CFG gets one sandbox measurement"
-  },
-  {
-   "hypothesis": "if rederive confirms the same CFG (expected), every honest axis is measured dead and the ladder's escalation disposition applies (driver's call)",
-   "mechanism": "R1 ladder retune: one full flat cycle => escalation; modalities spent: recon, structural x2, permuter x2 (R3 exhausted both ways), synthesis, forensics (this session); evidence spine for the escalating/submitting session = H20 citation resolution + s6 cascade partition + s7/s8 byte-identical-spellings uniformity proof",
-   "next_probe": "none for this item - it is the disposition rule, not a probe"
+   "hypothesis": "Every honest axis is measured dead; the ladder's escalation disposition applies (driver's call)",
+   "mechanism": "R1 ladder retune: one full flat cycle => escalation. Modalities spent: recon, structural x2, permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive. Evidence spine for the escalating/submitting session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 uniformity proof (four byte-identical flat-15 spellings) + the s9 rederive closure",
+   "next_probe": "none - this is the disposition rule, not a probe; do not re-measure dead axes or propose permuter campaigns"
   }
  ],
  "judge_constraints": [

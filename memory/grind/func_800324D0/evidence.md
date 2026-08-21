@@ -1,5 +1,75 @@
 # Evidence bank — func_800324D0
 
+## [s9] 2026-08-20 — forensics/rederive (brief-session 8; scratch tmp/grind/func_800324D0/s8/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (8th
+consecutive session). candidate.c (15-floor staged form) re-applied to
+src/code6cac_b.c; measured 15, build 68 == target 68 at session start and
+re-verified after all probes were reverted at session close. Chassis
+unchanged; every banked 15-chassis conclusion remains valid. (The brief's
+"HEAD honest floor: measurement unavailable" was again just the stale
+pinned working tree.)
+
+### THE MAIN RESULT — the rederive axis ([s8] frontier 1, the LAST un-run
+### honest derivation input) is now MEASURED CLOSED
+m2c was run on the TARGET asm for the first time on this function
+(tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c
+asm/funcs/func_800324D0.s asm/rodata/jtbl_800105A0.s; output banked at
+s8/m2c_target.c). Findings:
+
+1. **Same CFG, confirmed.** m2c's reconstruction is the guard + do-while +
+   3-arm if/else + jtbl-switch shape — structurally identical to the s1
+   original m2c body and to candidate.c. No different guard nesting, no
+   different walk idiom, no structural signal that re-opens the s6 cascade
+   partition. The one remaining independent derivation input is spent.
+2. **One genuinely unmeasured respelling axis surfaced and measured.** m2c
+   renders the dispatch as `switch (temp_a2) { case 0x80: ... }` with NO
+   source-level subtraction (note: m2c CANNOT distinguish
+   `switch(cmd-0x80) case 0` from `switch(cmd) case 0x80` — casesi
+   normalizes both — so this is a respelling axis, not evidence about the
+   original). Three spellings measured this session (all sandbox
+   --disable all, build 68 == target 68 in every case):
+   - **R1** — staged-tail chassis, arm switches directly on `c` with
+     0x80-based cases (cmd arm web deleted): **27**. The s4 census
+     collapses back to the s1 census; full 27 rotation returns.
+   - **R2** — staged-tail chassis, `cmd = c;` + `switch (cmd)` 0x80-based
+     cases: **27**. Same collapse — casesi emits the -0x80 into a fresh
+     die-at-def scratch, so the cmd arm web shrinks to a copy and the
+     allocno 85 web disappears.
+   - **R3** — m2c-verbatim geometry: head copy `cmd = c;`, head tests on
+     cmd, RMW `cmd -= 0x80;` (one continuous head+arm cmd web — exactly
+     target's $a2 dataflow: andi def → bne → RMW addiu → sll), 0-based
+     switch, staged tail kept: **15**, and the s4/sbs.py side-by-side is
+     byte-IDENTICAL to s4/residual15_sbs.txt (diff clean over the whole
+     68-line listing; banked s8/sbs_r3.txt). A FOURTH member of the
+     uniform flat-15 basin, not a new seam.
+   Conclusion: the source-level `cmd = c - 0x80` (subtracted value carried
+   in the cmd web) is load-bearing for the 15; R1/R2 banked at
+   rejected/switch-folded-subtract-0x80-cases.c; R3 banked at
+   s8/r3_headcopy_rmw_flat15.c.
+
+### Honest-axis status (for the driver's ladder)
+Every honest axis is now measured dead: s1 recon (rotation isolated,
+priority-inversion arithmetic kill), s2-s3 structural (conflict route
+liveness-proof, preference route def-analysis proof, type/guard/loop/decl
+sweeps), s4-s6 permuter (R3 exhausted both ways, ~450k combined iterations,
+two chassis, four basins), s7 synthesis (cascade partition closes the
+register space within any shape-preserving geometry), s8 forensics
+(flat-15 spellings byte-identical), s9 rederive (m2c same CFG + the
+switch-folding respelling axis measured dead). The ladder's escalation
+disposition applies — the DRIVER's call, per the standing rules; this
+session does not dispose. Evidence spine for the escalating/submitting
+session: H20 citation resolution ([s7]) + s6 cascade partition + s7/s8/s9
+byte-identical-spellings uniformity proof + this rederive closure.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s8/{m2c_target.c,sbs_r3.txt,
+r3_headcopy_rmw_flat15.c,run_m2c.sh,run_m2c2.sh};
+memory/grind/func_800324D0/rejected/switch-folded-subtract-0x80-cases.c.
+
 ## [s8] 2026-08-20 — forensics (brief-session 7; scratch tmp/grind/func_800324D0/s7/)
 
 ### Chassis
@@ -625,3 +695,15 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s7] Conclusion: GCC folds every known flat-15 spelling to identical RTL/allocation/schedule; the residual 15 is ONE wall everywhere (the walker<->cmd 2-swap at side-by-side indices 0,13,16,20,21,22,24,26,28,29,30,32,33,62,65) and the 'different spelling, different seam' route is measured dead.
 
 - [s7] src carries candidate.c verbatim at session close, re-verified 15, 68/68; candidate.c and rejected/ bank unchanged (no new rejected forms - the two alternate spellings are equal-floor alternates, not disproven forms; both remain banked in scratch).
+
+- [s8] Chassis re-verified at session start and close: candidate.c (15-floor staged form) re-applied over the stale pinned s1 form found in src at dispatch (8th consecutive session); sandbox --disable all = 15, build 68 == target 68 both times.
+
+- [s8] m2c reconstruction of the target (s8/m2c_target.c) is structurally identical to the s1 original shape: guard if + do-while, head tests on the andi result (temp_a2), 3-arm if/else, jtbl switch, tail lbu direct into v0 - no different guard nesting or walk idiom exists in the original.
+
+- [s8] m2c cannot distinguish switch(cmd-0x80) case 0 from switch(cmd) case 0x80 (casesi normalizes both), so its 0x80-based-case rendering is a respelling axis, not evidence about the original source spelling.
+
+- [s8] Switch-folded subtraction spellings are dead: R1 (arm switches directly on c, cmd arm web deleted) = 27 68/68; R2 (cmd = c; switch(cmd) with 0x80 cases) = 27 68/68 - both banked at rejected/switch-folded-subtract-0x80-cases.c.
+
+- [s8] R3 (head copy cmd = c, head tests on cmd, RMW cmd -= 0x80 - exactly target's one-web $a2 dataflow - plus staged tail) = 15 68/68 and emits BYTE-IDENTICAL machine code to candidate.c (s8/sbs_r3.txt diff-clean against s4/residual15_sbs.txt over the entire 68-line listing); banked s8/r3_headcopy_rmw_flat15.c.
+
+- [s8] Honest-axis status: recon (s1), structural (s2-s3), permuter (s4-s6, R3 tripped both ways, ~450k iterations, four basins), synthesis (s7 cascade partition), forensics (s8 byte-identical spellings), rederive (s9, this session) - ALL measured dead. The ladder's escalation disposition applies; that is the driver's call, not this session's (mandated modality was forensics, not escalation).
