@@ -1,0 +1,43 @@
+{
+ "func": "func_800858D0",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 22,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 15,
+   "modality": "recon",
+   "headline": "Floor 22 -> 15 (A+B moves folded); loop.c no-hoist profile now matches target; single-set const spellings proven always-hoisted (threshold 61 >= 30); residual mapped to sched1 block-top identity + two"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "An honest spelling exists that yields TWO separate non-movable in-loop constant carriers (24 -> v1, 1 -> v0) instead of the shared t's single a1 carrier",
+   "mechanism": "single-set const pseudos are proven always-hoisted here (threshold 61 >= insn_count 30), so each carrier must be multi-set or otherwise not a movable; target's li v1,24 sits adjacent to its store and li v0,1/sllv v0 adjacent to the jal",
+   "next_probe": "m2c the target for the original structure; then sweep honest two-carrier forms (e.g. t1 carrying 24 then the shift RESULT: t1 = 0x18; sh t1; ...; t1 = one << idx; buf[0] = t1; with an honest non-hoistable spelling for one) and measure each with sandbox + main.loop movable count"
+  },
+  {
+   "hypothesis": "The sched1 block-top identity (cluster a) and the li-1/sllv/a0 cluster placement (cluster b) are flippable by spellable statement/LUID changes on the new chassis",
+   "mechanism": "backward list scheduler: priority-1 single-consumer sets drift to block top; the insn at block top becomes reorg's preheader+delay steal",
+   "next_probe": "re-run sched_solver perturb.py --goal-from-target --atoms luid,luid_move against the floor-15 form (this exact tool found the A+B pair); read block-2 priorities for insns 104/108/110/113 in tmp/grind/func_800858D0/dumps/main.sched"
+  },
+  {
+   "hypothesis": "The idx a1-vs-v1 naming still follows the ra_solver Phase 5 two-part requirement (extra qty pri > 22500 overlapping the sign-extend span AND hard a0 live across it), and both parts land together if the two-carrier + a0-at-top forms land",
+   "mechanism": "local-alloc find_free_reg scans ascending; only v0 occupied across the span in ours",
+   "next_probe": "re-run tools/ra_solver Phase 5 local model against the floor-15 form to re-derive the requirement on the new chassis before spending any spelling on it"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-21T03:58:24.238083+00:00"
+}

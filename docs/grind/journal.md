@@ -1134,3 +1134,4 @@
 - 2026-08-20 22:33 func_800324D0 s12 [escalation] STANDING RULING (2026-07-27) applied — OWNER-ACCEPTED INCOMPLETE: Both endgame-lock gates FAIL (scan LOW 0/8; zero SOTN precedent for any closing construct) - standing-ruling entry filed: REFUSED / OWNER-ACCEPTED INCOMPLETE, terminal park
 - 2026-08-20 22:49 func_80038658: LAYER-1 citation-only FAIL — routed to re-cite fix-up (no ban, no Judge cycle): Construct is legitimate ordinary C (the shared-end-label constant-fold-defeat recipe), but the self-vet's T5 family citation is fabricated/misfiled and must be corrected before commit.
 - 2026-08-20 22:58 func_80038658 COMPLETED-C after 1 sessions (closer: s1 [annotation-fix]).
+- 2026-08-20 23:14 func_800858D0 s1 [recon] floor=15: Floor 22 -> 15 (A+B moves folded); loop.c no-hoist profile now matches target; single-set const spellings proven always-hoisted (threshold 61 >= 30); residual mapped to sched1 block-top identity + two-register constant split + idx naming
