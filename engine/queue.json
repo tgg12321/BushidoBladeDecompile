@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800324D0",
-      "file": "code6cac_b",
-      "distance": 27,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80038658",
       "file": "code6cac_c_mid",
       "distance": 27,
@@ -2185,17 +2177,26 @@
       "rules": 6,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-13 \u2014 func_80078654 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_800324D0",
+      "file": "code6cac_b",
+      "distance": 27,
+      "verdict": "C",
+      "rules": 0,
+      "status": "parked",
+      "park_reason": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md 2026-08-20 'func_800324D0 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (appended at file tail, after the 2026-08-20 15:48 layer-1 FAIL entry at line 9542)"
     }
   ],
   "counts": {
     "total": 250,
-    "active": 215,
+    "active": 214,
     "by_status": {
-      "active": 215,
-      "parked": 35
+      "active": 214,
+      "parked": 36
     },
     "by_verdict": {
-      "C": 180,
+      "C": 179,
       "ASM-PARTIAL": 35
     }
   }

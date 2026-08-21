@@ -942,3 +942,13 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s11] No escalation entry exists in docs/grind/decisions.md for func_800324D0 (verified this session: sole grep hit is the 2026-08-20 15:48 layer-1 FAIL at line 9542), so the owner-gated shortcut did not apply and this structural session could not dispose.
 
 - [s11] With this session the post-s4-drop ladder cycle is flat in every modality ON the 15-chassis: permuter s5/s6 (R3 tripped both ways), synthesis s7, forensics s8, rederive s9/s10/s11 (all three inputs plus the index-walk family), structural s12. Ledger updated: evidence.md [s12], hypotheses.md H25 + frontier.
+
+- [s12] Disposition entry appended to docs/grind/decisions.md (tail, dated 2026-08-20): 'func_800324D0 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' with both gates' evidence and the full exhaustion record
+
+- [s12] HEAD byte-match is held by cheat-asm: four register asm("$N") pins (v1/v0/a2/a1) at src/code6cac_b.c:2437-2440, zero regfix/asmfix rules; honest floor of the HEAD body is 27, of the banked candidate 15
+
+- [s12] Exhaustion: 12 sessions, floor 27->15 at s4 then flat through s12; post-drop flat cycle spans permuter x2 (~224k iters, two basins, R3 tripped both ways), synthesis (cascade partition), forensics (byte-identical uniformity proof across four flat-15 spellings), rederive x3 (m2c same-CFG closure, corpus 3754-scratch negative, index-walk family dead), structural (storage class + scope flat)
+
+- [s12] Residual 15 is one uniform walker<->cmd 2-register swap ($6<->$3); all three honest find_reg routes to it are measured dead (preference: walker defs cannot plant, s2 proof; priority: needs ~5x weighted refs, s1 arithmetic; conflict: liveness-impossible, s3 proof)
+
+- [s12] src/code6cac_b.c restored to HEAD after measurement - working tree carries only the decisions.md entry, ledger update, and scratch artifacts

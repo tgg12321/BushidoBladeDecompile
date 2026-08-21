@@ -1,5 +1,23 @@
 # Hypothesis ledger — func_800324D0
 
+## [s13] 2026-08-20 (escalation, brief-session 12; scratch tmp/grind/func_800324D0/s12/) — DISPOSITION FILED
+
+26. **H26 — disposition session bookkeeping, no new probe.** Chassis
+    re-verified: candidate.c applied to src measured **15, build 68 ==
+    target 68** (s12/sandbox_floor15_reverify.log) — unchanged since s4,
+    all banked kills current. Gate (a): `scan_hand_coded --single` =
+    **LOW 0/8** (s12/scan_hand_coded.log) — canonical-asm refused. Gate
+    (b): zero hits in docs/reference/sotn-construct-index.md (1,365
+    entries) for register pins / overlapping-live-range pairs / any
+    RA-steering family; the only measured closer is the layer-1-FAILed,
+    driver-banned base/ff pair (decisions.md:9542) — no citable
+    precedent. **Both AND-gates FAIL → standing ruling 2026-07-27
+    auto-applied: REFUSED / OWNER-ACCEPTED INCOMPLETE, entry appended at
+    docs/grind/decisions.md tail (2026-08-20 func_800324D0
+    OWNER-ESCALATION — RESOLVED BY STANDING RULING). Terminal park; the
+    HEAD 4-pin body stays only to hold the oracle. Src restored to HEAD
+    after measurement.**
+
 ## [s12] 2026-08-20 (structural, brief-session 11; scratch tmp/grind/func_800324D0/s11/)
 
 25. **H25 — one of the two structural axes never measured on any chassis
@@ -535,4 +553,22 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: global.c allocno_compare / find_reg pass-0 cascade: a census or web change from storage class or scope nesting could re-seed the allocation order
 - probe: sandbox --disable all on (a) register on all four locals, no asm() pins; (b) u8 val declared inside the payload-arm block (the only liveness-narrowable local; c/cmd are loop-tail-live, ptr loop-carried); chassis verified 15 68/68 before, between, and after (probe log tmp/grind/func_800324D0/s11/probe_log.md)
 - result: Both FLAT 15, build 68 == target 68. Storage class: GCC 2.7.2 allocno_compare consults only priority (floor_log2(refs)*refs/live), never REG_USERVAR_P. Scope nesting: neither refs/live census nor webs change. The s6 cascade partition's prediction confirmed on both previously-unmeasured axes.
+- verdict: KILLED
+
+## [s12] H26 - the chassis is unchanged: the banked candidate still measures floor 15 on current HEAD
+- mechanism: chassis re-verification mandated by the dispatch brief (HEAD floor was 'measurement unavailable' because the committed body is the legacy 4-pin cheat-asm form)
+- probe: candidate.c applied to src/code6cac_b.c, sandbox func_800324D0 --disable all; src restored from HEAD afterward
+- result: score 15, build_insns 68 == target_insns 68 (tmp/grind/func_800324D0/s12/sandbox_floor15_reverify.log) - identical to the s4-s12 ledger floor; every banked axis-kill is current
+- verdict: CONFIRMED
+
+## [s12] H27 - gate (a): the function shows hand-coded-asm evidence supporting the canonical-asm grant path
+- mechanism: endgame-lock-disposition.md gate 1: STRONG S1/S2/S6 tier required
+- probe: python3 tools/scan_hand_coded.py --single func_800324D0 (tmp/grind/func_800324D0/s12/scan_hand_coded.log)
+- result: tier=LOW score=0/8, 'no strong hand-coded indicators' - all eight signals absent; the residual is a pure register-allocation tiebreak, ordinary GCC output
+- verdict: KILLED
+
+## [s12] H28 - gate (b): an in-hand SOTN-master precedent exists for a construct that closes the residual 15
+- mechanism: endgame-lock-disposition.md gate 2: file+line citation required; the only measured closer is the invented overlapping base/ff local pair (layer-1 FAILed decisions.md:9542, driver-banned in all spellings), and the HEAD body's closer is 4 register-asm pins
+- probe: grep of docs/reference/sotn-construct-index.md (1,365 entries) for register pins / overlapping-live-range pairs / set_preference-find_reg steering families, this session; plus the banked s10 decomp.me corpus sweep (3,754 scratches, best sim 0.090) and the 2026-07-01 community research (zero precedent for register-asm pins)
+- result: ZERO hits - no citable file+line exists for either closing construct; a completed negative search, not an open question
 - verdict: KILLED

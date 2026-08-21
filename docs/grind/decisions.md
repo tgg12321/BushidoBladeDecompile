@@ -9542,3 +9542,75 @@ own SOTN-master evidence bar; or (b) canonical-asm authorization despite the LOW
 ## 2026-08-20 15:48 — func_800324D0 — layer-1 review — **FAIL**
 
 The base/ff local split is engineered purely to steer GCC's set_preference/find_reg register-allocation cascade to a specific hard register, not to express program semantics — a Test-3 GCC-internals-justification cheat regardless of the self-vet's program-logic framing.
+
+## 2026-08-20 — func_800324D0 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+Escalation-modality disposition (grind session 12; driver declared exhaustion after one
+full flat ladder cycle on the 15-chassis per the R1 retune, asm-until-matched.md).
+
+### Function state
+- src/code6cac_b.c:2436 — HEAD body byte-matches ONLY via cheat-asm: **four
+  `register T x asm("$N")` pins** (v1/v0/a2/a1; legacy pre-migration representation).
+  Zero regfix/asmfix rules. Honest pure-C floor of the HEAD body: 27.
+- Best honest form (ledger candidate.c, pin-free, staged-tail
+  staged-value-reused-variable construct, FAKE-annotated): **sandbox --disable all
+  = 15, build_insns 68 == target 68, RE-MEASURED THIS SESSION**
+  (tmp/grind/func_800324D0/s12/sandbox_floor15_reverify.log) — chassis unchanged
+  since the s4 drop (27 → 15), so every banked axis-kill conclusion is current.
+- Residual 15 = one uniform walker↔cmd 2-register swap (ours $6/$3 vs target
+  $3/$6), proven byte-identical across four independent flat-15 spellings
+  (s7/s8/s9 uniformity proof).
+
+### Exhaustion (sessions / modalities / permuter volume)
+12 sessions, floor history 27 (s1) → 15 (s4) → flat 15 through s12. Post-drop flat
+cycle covers EVERY ladder modality on the 15-chassis itself: permuter ×2 (s5/s6,
+~224k iterations across two distinct basins, zero improving finds — R3 tripped both
+ways), synthesis (s7: cascade partition closes the honest register space within any
+shape-preserving geometry), forensics (s8: byte-identical-spellings uniformity
+proof), rederive ×3 (s9 m2c closure — same CFG, the one surfaced respelling axis
+measured dead; s10 decomp.me corpus 3,754 scratches best-sim 0.090 noise floor +
+Kengo sibling misattribution proven; s11 index-walk derivation family dead in 3
+spellings), structural (s12 of the ledger: ISO `register` storage class and
+block-scope placement both flat 15). find_reg ground truth (s4 BB2_FINDREG_DEBUG
+logs): for the walker to take $3, allocnos 75/76/85 must all skip it — requires
+either a preference the walker's defs cannot plant (s2 proof: defs are
+self-increments + lw from mem, set_preference cannot see a hard reg), a priority
+inversion needing ~5× the walker's actual weighted refs (s1 arithmetic), or an
+invented conflicting pref-carrier — the banned construct below.
+
+### Gate (a) — canonical-asm: **FAIL**
+`python3 tools/scan_hand_coded.py --single func_800324D0` (this session,
+tmp/grind/func_800324D0/s12/scan_hand_coded.log): **tier=LOW, score=0/8**, "no
+strong hand-coded indicators" — S1 multu pacing absent, S2 empty branch absent,
+S6 BIOS jumptable absent; 0 spills, no unsaved callee-saves, no redundant masks.
+The residual is a register-allocation tiebreak — by the 2026-07-20 policy,
+ordinary GCC output, never a hand-coded signature. Asm refused.
+
+### Gate (b) — sanctioned-family / SOTN precedent for the closing construct: **FAIL**
+The ONLY construct measured to close the residual 15 is the invented block-0
+overlapping-live-range local pair (`base`/`ff` + `ptr = base + 5;`) planting a $3
+preference through local-alloc/set_preference — ruled a Test-3
+GCC-internals-justification cheat by layer-1 review 2026-08-20 15:48
+(docs/grind/decisions.md:9542) and driver-BANNED in all spellings. No SOTN-master
+precedent exists: grep of docs/reference/sotn-construct-index.md (1,365 entries)
+for register-asm pins, overlapping-live-range pairs, or any
+set_preference/find_reg-steering construct returns ZERO hits (this session); the
+s10 decomp.me corpus sweep (3,754 scratches) found no transplantable sibling; the
+2026-07-01 community research explicitly found zero precedent for register-asm
+pins (no-new-park-categories.md). The HEAD pins likewise have no precedent. No
+citable file+line exists — the gate fails on a real negative search, not an open
+question.
+
+### Disposition (auto-applied per the standing ruling)
+Both AND-gates fail. Per .claude/rules/endgame-lock-disposition.md (owner policy
+2026-07-20, standing auto-ruling 2026-07-27, judge-sole-gate 2026-08-18):
+- The HEAD cheat-asm body (4 pins) stays on main to hold the full-build oracle.
+- func_800324D0 is classified **INCOMPLETE — OWNER-ACCEPTED** (not COMPLETED-C,
+  not canonical); the pins are NOT sanctioned as a technique, they survive only
+  to hold the match, and the function is openly flagged unresolved.
+- Parked out of active grind, terminally, eligible for re-attempt only if a
+  genuine new pure-C lever or tooling emerges. Nothing is pending on the owner.
+- The best honest form (floor 15, one 2-register swap short) is banked at
+  memory/grind/func_800324D0/candidate.c with the full evidence spine in the
+  ledger (hypotheses H1–H25 all measured; s6 cascade partition; s7-s9 uniformity
+  proof; s9-s11 rederive closure).

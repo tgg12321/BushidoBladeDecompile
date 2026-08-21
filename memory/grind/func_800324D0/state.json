@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "structural",
+ "session_count": 12,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -69,6 +69,12 @@
    "floor": 15,
    "modality": "structural",
    "headline": "Structural flat on the 15-chassis: the two never-measured structural axes (ISO register storage class; block-scope placement of val) both measured FLAT 15 68/68 \u2014 post-s4-drop ladder cycle is now flat"
+  },
+  {
+   "session": 12,
+   "floor": 15,
+   "modality": "escalation",
+   "headline": "Both endgame-lock gates FAIL (scan LOW 0/8; zero SOTN precedent for any closing construct) - standing-ruling entry filed: REFUSED / OWNER-ACCEPTED INCOMPLETE, terminal park"
   }
  ],
  "frontier": [
