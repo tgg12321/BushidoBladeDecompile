@@ -1,5 +1,72 @@
 # Evidence bank — func_800324D0
 
+## [s10] 2026-08-20 — rederive (brief-session 9; scratch tmp/grind/func_800324D0/s9/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (9th
+consecutive session). candidate.c (15-floor staged form) re-applied to
+src/code6cac_b.c; measured THIS session: sandbox --disable all = 15,
+build 68 == target 68. Chassis unchanged; every banked 15-chassis
+conclusion remains valid. No src probes were made after the measurement
+(the session's probes were all external-evidence lookups), so the
+measurement stands at session close; src carries candidate.c verbatim.
+
+### THE MAIN RESULT — the two external rederive inputs the ladder had
+### never run on this function are both MEASURED CLEAN NEGATIVES
+The mandated rederive modality names three inputs: fresh m2c (run and
+closed in [s9]), the decomp.me corpus, and sibling/Kengo transplant
+(in-repo duplicate killed in [s1]; external never probed). This session
+ran the remaining two:
+
+1. **decomp.me corpus scrape — NO SIBLING EXISTS.**
+   `tools/decomp_me_scrape.py search --asm-file asm/funcs/func_800324D0.s`
+   against the existing 3,754-scratch corpus (907 gcc2.7.2-cdk, 1,554
+   gcc2.7.2-psx, 1,293 psyq3.5 — all three BB2-relevant compilers). Best
+   similarity 0.090 (noise floor; the [s1] self-duplicate scored 1.000 by
+   comparison), and the 0.090 hits are themselves non-matching scratches
+   (score 180/4300). No transplantable corpus sibling exists. Banked:
+   s9/corpus_search_results.txt.
+2. **Kengo / external-sibling transplant — DEAD, three ways.**
+   (a) kengo_matches.csv row for func_800324D0 is `gnd_init_hit,
+   size-only-ambiguous, 83 candidates, combined_score 0.00` — zero
+   structural evidence. (b) The src banner `/* kengo:HIGH | is_pad/Pad_Prs
+   | 111i */` is MISATTRIBUTED legacy naming residue: Kengo Pad_Prs
+   (0x00113210, 111 insns) maps to BB2 func_80057CC8 per
+   kengo_functions_full.txt (and suspect-list.md:177 ties the name to BB2
+   0x80032314) — not to our 68-insn function. (c) Full is_pad.c family
+   scan via kengo_ref.py: the only size-plausible body (pad_Init, 66
+   insns) is a scePadInit/FlushCache call loop, structurally unrelated;
+   no is_pad.c body is a leaf 12-case-jtbl stream parser. Banked:
+   s9/kengo_family_notes.txt.
+3. **Bonus idiom check (LIBSND family).** Because the function writes
+   0xA1-0xAC byte fields of a struct with a stream pointer at +0x58
+   (score-table-entry smell), the verbatim-Sony LIBSND region of
+   src/main.c and sotn-decomp's libsnd C were checked for an alternative
+   walk idiom. The LIBSND stream walk is memory-resident (`ptr = *base;
+   *base = ptr + 1;` — walker stored back each step): that idiom emits sw
+   instructions the 68-insn target provably lacks (one lw of the pointer,
+   no store-back), so it is dead a priori without a measurement. The
+   dispatch bodies there (seqread.c) are call-heavy MIDI dispatchers, not
+   leaf field-store parsers — no different viable shape surfaced.
+
+### Honest-axis status (for the driver's ladder) — unchanged, now complete
+[s9] declared every honest axis dead with one caveat: the corpus and
+external-sibling rederive inputs had never been explicitly run. They now
+have been, and both are clean negatives. The rederive modality is closed
+on ALL THREE of its inputs (m2c [s9], corpus [s10], sibling/Kengo
+[s1]+[s10]). The ladder's escalation disposition applies — the DRIVER's
+call, per the standing rules; this session does not dispose (mandated
+modality was rederive, not escalation). Evidence spine for the
+escalating/submitting session: H20 citation resolution ([s7]) + s6
+cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof +
+the [s9] m2c closure + this session's corpus/sibling closure.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+measured 15, 68/68 this session. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s9/{run_search.sh,corpus_search_results.txt,
+kengo_family_notes.txt}.
+
 ## [s9] 2026-08-20 — forensics/rederive (brief-session 8; scratch tmp/grind/func_800324D0/s8/)
 
 ### Chassis
@@ -707,3 +774,15 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s8] R3 (head copy cmd = c, head tests on cmd, RMW cmd -= 0x80 - exactly target's one-web $a2 dataflow - plus staged tail) = 15 68/68 and emits BYTE-IDENTICAL machine code to candidate.c (s8/sbs_r3.txt diff-clean against s4/residual15_sbs.txt over the entire 68-line listing); banked s8/r3_headcopy_rmw_flat15.c.
 
 - [s8] Honest-axis status: recon (s1), structural (s2-s3), permuter (s4-s6, R3 tripped both ways, ~450k iterations, four basins), synthesis (s7 cascade partition), forensics (s8 byte-identical spellings), rederive (s9, this session) - ALL measured dead. The ladder's escalation disposition applies; that is the driver's call, not this session's (mandated modality was forensics, not escalation).
+
+- [s9] Chassis re-verified this session: src again carried the stale pinned s1 form at dispatch (9th consecutive session); candidate.c (15-floor staged form) re-applied, sandbox --disable all = 15, build 68 == target 68; no src probes were made after the measurement so it stands at session close
+
+- [s9] decomp.me corpus search is a clean negative: 3,754 scratches spanning all three BB2-relevant compilers, best shingle similarity 0.090, zero matching scratches resembling the function (banked s9/corpus_search_results.txt)
+
+- [s9] Kengo transplant axis is dead three ways: size-only-ambiguous csv match at score 0.00, the is_pad/Pad_Prs src banner proven misattributed (belongs to func_80057CC8/0x80032314), and the full is_pad.c family scan finds no structurally-related body (banked s9/kengo_family_notes.txt)
+
+- [s9] The LIBSND memory-resident stream-walk idiom is excluded without a measurement: it stores the walker back through the struct each step, emitting sw instructions the one-lw-no-store-back 68-insn target provably lacks
+
+- [s9] Rederive modality is now closed on ALL THREE of its inputs: m2c-on-target (s9 ledger entry), decomp.me corpus (this session), sibling/Kengo (s1 in-repo duplicate kill + this session's external kill)
+
+- [s9] Honest-axis status: recon s1, structural s2-s3, permuter s4-s6 (R3 tripped both ways, ~450k iterations, four basins), synthesis s7 (cascade partition), forensics s8 (four byte-identical flat-15 spellings), rederive s9+s10 - every axis measured dead with no remaining caveats; the ladder's escalation disposition applies and is the driver's call, not this session's (mandated modality was rederive)

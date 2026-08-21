@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 8,
- "current_modality": "forensics",
+ "session_count": 9,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -51,12 +51,18 @@
    "floor": 15,
    "modality": "forensics",
    "headline": "Rederive closed: m2c on target asm confirms the same CFG; the one unmeasured respelling axis (switch-folded -0x80) measured dead (R1/R2 regress to 27, R3 m2c-verbatim geometry is byte-identical flat 1"
+  },
+  {
+   "session": 9,
+   "floor": 15,
+   "modality": "rederive",
+   "headline": "Rederive fully closed: decomp.me corpus (3754 scratches, best sim 0.090) and Kengo/external-sibling axes both measured clean negatives; all three rederive inputs now run; every honest axis dead, escal"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every honest axis is measured dead; the ladder's escalation disposition applies (driver's call)",
-   "mechanism": "R1 ladder retune: one full flat cycle => escalation. Modalities spent: recon, structural x2, permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive. Evidence spine for the escalating/submitting session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 uniformity proof (four byte-identical flat-15 spellings) + the s9 rederive closure",
+   "hypothesis": "Every honest axis is measured dead; the ladder's R1 escalation disposition applies (driver's call)",
+   "mechanism": "R1 ladder retune: one full flat cycle => escalation. Modalities spent: recon, structural x2, permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive x2 (all three rederive inputs explicitly run). Evidence spine for the escalating/submitting session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof + s9 m2c closure + s10 corpus/sibling closure",
    "next_probe": "none - this is the disposition rule, not a probe; do not re-measure dead axes or propose permuter campaigns"
   }
  ],

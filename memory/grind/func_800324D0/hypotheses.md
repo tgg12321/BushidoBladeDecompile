@@ -1,5 +1,36 @@
 # Hypothesis ledger — func_800324D0
 
+## [s10] 2026-08-20 (rederive, brief-session 9; scratch tmp/grind/func_800324D0/s9/)
+
+23. **H23 — an external sibling (decomp.me corpus scratch or Kengo
+    equivalent) exhibits a structurally different C shape for this parser
+    that re-opens the closed partition** (the last never-run rederive
+    inputs; expected FALSE). Probe: (a) decomp_me_scrape.py shingle
+    search over the full 3,754-scratch corpus (all three BB2-relevant
+    compilers) — best similarity 0.090 noise floor, zero matching
+    scratches resembling the function; (b) kengo_matches.csv row =
+    size-only-ambiguous among 83 candidates at combined_score 0.00, the
+    "is_pad/Pad_Prs" src banner proven misattributed (Pad_Prs = BB2
+    func_80057CC8 / 0x80032314, 111 insns, not our 68), full is_pad.c
+    family scan finds no leaf stream-parser body; (c) the LIBSND
+    memory-resident walk idiom (`ptr = *base; *base = ptr + 1;`) is dead
+    a priori — it emits store-backs the 68-insn target lacks. Artifacts:
+    s9/corpus_search_results.txt, s9/kengo_family_notes.txt. **KILLED —
+    no external derivation input exists; the rederive modality is closed
+    on all three of its inputs (m2c s9, corpus s10, sibling s1+s10).**
+
+## Frontier (for the driver — the ladder is spent, now with no caveats)
+1. **Every honest axis is measured dead** (recon s1, structural s2-s3,
+   permuter s4-s6 R3-exhausted, synthesis s7, forensics s8, rederive
+   s9+s10 — all three rederive inputs now explicitly run). The ladder's
+   escalation disposition applies — the DRIVER's call, not a session's.
+   Evidence spine for the escalating/submitting session: H20 citation
+   resolution + s6 cascade partition + s7/s8/s9 uniformity proof (four
+   byte-identical flat-15 spellings) + s9 m2c closure + s10
+   corpus/sibling closure.
+2. No unmeasured honest probe remains on this chassis. Do not re-measure
+   dead axes; do not propose permuter campaigns (R3 tripped both ways).
+
 ## [s9] 2026-08-20 (forensics/rederive, brief-session 8; scratch tmp/grind/func_800324D0/s8/)
 
 22. **H22 — m2c re-derivation of the TARGET asm exposes an original-source
@@ -415,4 +446,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: the s6 cascade partition enumerates allocation orders within OUR build's structure; the target's own decompiled shape was the one remaining independent derivation input
 - probe: first explicit m2c run on this function (tools/m2c/m2c.py --valid-syntax --target mipsel-gcc-c asm/funcs/func_800324D0.s asm/rodata/jtbl_800105A0.s, output s8/m2c_target.c); CFG compared to candidate.c; the surfaced switch-folded-subtract respelling axis measured 3 ways in the sandbox: R1 switch-on-c 0x80-cases = 27 68/68, R2 cmd=c + switch(cmd) 0x80-cases = 27 68/68, R3 m2c-verbatim head-copy + RMW cmd-=0x80 + staged tail = 15 68/68 with s4/sbs.py side-by-side byte-IDENTICAL to s4/residual15_sbs.txt
 - result: same guard+do-while+3-arm+jtbl-switch CFG as candidate.c; R1/R2 collapse the allocno-85 arm web (casesi puts the -0x80 in a die-at-def scratch) and restore the full 27 rotation; R3 is a fourth member of the uniform flat-15 basin, not a new seam; cmd = c - 0x80 carrying the subtracted value in the cmd web is load-bearing for the 15
+- verdict: KILLED
+
+## [s9] H23 - an external sibling (decomp.me corpus scratch or Kengo equivalent) exhibits a structurally different C shape for this parser that re-opens the closed partition
+- mechanism: rederive modality's two never-run inputs: corpus transplant and Kengo transplant; a genuinely different semantics-equivalent CFG would get one sandbox measurement
+- probe: decomp_me_scrape.py shingle search over the full 3,754-scratch corpus (907 gcc2.7.2-cdk + 1,554 gcc2.7.2-psx + 1,293 psyq3.5); kengo_matches.csv row audit + kengo_ref.py full is_pad.c family scan + Pad_Prs banner attribution check; LIBSND (src/main.c verbatim-Sony region + sotn-decomp libsnd) walk-idiom comparison
+- result: Corpus: best similarity 0.090 (noise floor; s1's self-duplicate scored 1.000), and those hits are themselves non-matching scratches - no transplantable sibling exists. Kengo: csv row is size-only-ambiguous among 83 candidates at combined_score 0.00; the src 'kengo:HIGH is_pad/Pad_Prs' banner is misattributed legacy residue (Pad_Prs = BB2 func_80057CC8/0x80032314, 111 insns vs our 68); no is_pad.c body is a leaf 12-case-jtbl stream parser. LIBSND's memory-resident walk idiom (ptr = *base; *base = ptr + 1) emits store-backs the 68-insn target provably lacks - dead a priori.
 - verdict: KILLED
