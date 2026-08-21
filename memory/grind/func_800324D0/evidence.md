@@ -1,5 +1,62 @@
 # Evidence bank — func_800324D0
 
+## [s4] 2026-08-20 — structural (permuter campaign; scratch dir tmp/grind/func_800324D0/s3/)
+
+### Chassis
+The working tree carried the stale pinned s1 form again at dispatch; candidate.c
+(pin-free single-variable spelling) re-applied to src/code6cac_b.c and
+re-measured THIS session: sandbox `--disable all` = 27, build 68 == target 68.
+Chassis unchanged from every prior session; all banked conclusions remain valid.
+
+### THE MAIN RESULT — permuter campaign #1 (R3: now 1 of 2 used) is a clean
+### negative: no honest closure exists in the 27-floor seed's basin
+Workspace tmp/perm_324d0 (base.c = preprocessed current TU; target.o assembled
+from asm/funcs/func_800324D0.s + prelude at offset 0; compile.sh = full
+cc1→prologue_fix→maspsx→multu_pad pipeline, same pattern as tmp/perm_d518).
+Launched via tools/permuter_campaign.py, label s3-pinfree-27, 8 jobs,
+--stop-on-zero, --stack-diffs default. Ran ~109k iterations over ~55 min.
+Base permuter score 170 (the 27-insn register rotation under the weighted
+metric). Results:
+- **Zero score-0 finds. Zero finds below 105.** ~400 output dirs, all ≥105.
+- **Best find (105) IS the banned family's direction**: an invented block-0
+  pointer intermediate `new_var = *(u8**)(pad+0x58); ptr = new_var;` — the
+  first half of the banned base/ff invented-intermediate preference plant.
+  Even this only reaches 105/170 (copy gets partially coalesced; a full plant
+  needs the overlapping second local, i.e. the full banned construct).
+  Banked: s3/find_105_banned_carrier.{c,diff}.
+- **Every other sub-170 class sampled is semantics-BREAKING**: mutations like
+  `case 7: pad[0xA2] = cmd;` (stores the case constant instead of val) score
+  better only because the case-constant register coincidentally matches
+  target's register at that store — wrong code, better weighted score. The
+  permuter scorer is bytes-only; these are not candidates. Banked exemplar:
+  s3/find_110_semantics_broken.diff.
+- Histogram: s3/score_histogram.txt; meta: s3/campaign_meta.json; log tail:
+  s3/campaign_log_tail.txt. Campaign harvested + stopped in-session
+  (harvest --stop, reason recorded in metrics/events.jsonl).
+
+Interpretation, combined with [s1]-[s3]: the campaign independently confirms
+the hand-derived partition — within the matching 68-insn shape the ONLY
+byte-moving lever the search can find is the invented-intermediate preference
+plant (banned), and no out-of-shape spelling that folds back to the target
+bytes exists in this basin. The hypotheses.md frontier-1 caveat ("any find
+keeping the 68-insn shape almost certainly acts through the banned plant")
+is now a measured fact, not a prediction.
+
+### What remains (for the vetter and the driver)
+- R3 cap: 1 of 2 permuter sessions used. A second campaign is only worth
+  seeding from a GENUINELY different chassis (different CFG/statement
+  geometry). All hand-enumerated different shapes measured WORSE and
+  shape-breaking (merged c/cmd 37/67, cmd-u8 38/69, ptr-inc-after-switch
+  30/66) — none is a credible seed. A future rederive/synthesis modality
+  could produce a new seed; a second same-seed campaign would be waste.
+- The ladder's remaining modalities (forensics done s1; synthesis/rederive
+  untried) are the path; in-shape honest routes remain exhausted.
+
+### Session close
+src carries candidate.c verbatim (pin-free clean form); floor 27, 68/68.
+1 hypothesis killed with ~109k measurements; R3 half-spent; no floor change.
+
+
 ## [s3] 2026-08-20 — structural (mandated modality)
 
 ### Chassis
@@ -220,3 +277,15 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s2] Distinct c/cmd carrier pair is load-bearing: merging them loses the target's andi (build 67 vs 68)
 
 - [s2] Census excerpt banked at tmp/grind/func_800324D0/s2/lreg_census.txt; full dumps at tmp/grind/func_800324D0/dumps/
+
+- [s3] Chassis verified twice this session (start and close): pin-free candidate.c applied to src/code6cac_b.c, sandbox --disable all = 27, build 68 == target 68 — unchanged from s1/s2/s3; the working tree had again carried the stale pinned s1 form at dispatch and was re-cleaned.
+
+- [s3] The permuter's ONLY byte-moving lever in this basin is the banned invented-intermediate preference plant — the hypotheses.md frontier-1 caveat ('any in-shape find almost certainly acts through the banned plant') is now a measured fact, not a prediction.
+
+- [s3] A bare invented pointer-carrier copy (the banned family's first half alone) reaches only 105/170: cse partially coalesces it, so even the banned direction requires the complete overlapping-pair construct to close — nothing weaker closes either.
+
+- [s3] Sub-base permuter scores are poisoned by semantics-breaking mutations on this function (bytes-only scorer + case-constant register coincidences); only a score-0 find would have been evidentiary, and none occurred.
+
+- [s3] R3 permuter cap now 1 of 2 used. All hand-enumerated alternative shapes measured WORSE and shape-breaking in s2/s3 (merged c/cmd 37/67, cmd-u8 38/69, ptr-inc-after-switch 30/66), so no credible different-shape seed currently exists for the second permuter session.
+
+- [s3] Campaign artifacts banked: tmp/grind/func_800324D0/s3/{campaign_meta.json,score_histogram.txt,find_105_banned_carrier.c,find_105_banned_carrier.diff,find_110_semantics_broken.diff,campaign_log_tail.txt,setup_perm.sh}; workspace tmp/perm_324d0; harvest telemetry in metrics/events.jsonl; campaign stopped in-session (no orphans).

@@ -21,6 +21,13 @@
  * decl-order all flat 27; merged c/cmd single-variable WORSE 37/67 (andi
  * lost). Within the matching 68-insn shape all three find_reg routes
  * (preference/conflict/priority) are dead or banned; frontier = permuter.
+ *
+ * s4 (2026-08-20, structural/permuter, R3 1 of 2 used): campaign tmp/perm_324d0
+ * from THIS seed, ~109k iters — zero score-0 finds; best (105/170) is the
+ * banned invented-intermediate family's direction; all other improvements are
+ * semantics-breaking. The seed's basin is measured dry; a second permuter
+ * session is only worth spending on a genuinely different chassis
+ * (evidence.md [s4]). Frontier = rederive/synthesis for a new shape.
  */
 void func_800324D0(u8 *pad) {
     u8 *ptr;

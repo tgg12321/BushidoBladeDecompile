@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,18 +15,24 @@
    "floor": 27,
    "modality": "structural",
    "headline": "Structural s3: $3-exclusion-by-CONFLICT route proven impossible by walker-liveness superset (dump-read, not sampled); type axis, switch-guard, loop-form, decl-order, and merged c/cmd spellings all mea"
+  },
+  {
+   "session": 3,
+   "floor": 27,
+   "modality": "structural",
+   "headline": "Permuter campaign #1 (R3 1/2) is a clean negative: ~109k iters from the 27-floor seed, zero honest finds; best find IS the banned invented-intermediate family and still only reaches 105/170 \u2014 the seed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The permuter finds a structural spelling outside the hand-enumerated space that closes the rotation honestly (R3 cap: 0 of 2 permuter sessions used)",
-   "mechanism": "structural mutation search from the 27-floor seed; note for the vetter: any find that closes while KEEPING the 68-insn shape almost certainly acts through an invented-intermediate preference plant (all three in-shape find_reg routes are dead/banned) and must be vetted against the banned base/ff family; a find closing via a genuinely different shape is the interesting case",
-   "next_probe": "permuter campaign seeded from candidate.c; vet any find against the 6-test checklist and the banned block-0-intermediate family before surfacing"
+   "hypothesis": "A rederive/synthesis modality produces a genuinely NEW 68-insn chassis (different CFG/statement geometry) whose pseudo census yields the target rotation honestly",
+   "mechanism": "in-shape honest routes are exhausted (s1-s3 proofs) and the current seed's mutation basin is measured dry (s4); only a structurally different derivation of the same bytes remains as a search object",
+   "next_probe": "driver-assigned next modality (synthesis/rederive per the ladder); m2c re-derivation of the target's own structure as a candidate new chassis"
   },
   {
-   "hypothesis": "No honest natural spelling within the matching shape exists; the ladder's remaining modalities (forensics/rederive/synthesis) or escalation are the path",
-   "mechanism": "driver modality ladder",
-   "next_probe": "driver-assigned next modality"
+   "hypothesis": "The last permuter session (R3 1 of 2 remaining) closes from a NEW seed if one is ever produced",
+   "mechanism": "fresh-basin hill-climbing only pays on a genuinely different chassis; re-running the measured-dry 27-floor seed is waste",
+   "next_probe": "spend the final permuter session ONLY after a different-shape 27-or-better chassis exists; otherwise leave R3 unspent and proceed up the ladder"
   }
  ],
  "judge_constraints": [

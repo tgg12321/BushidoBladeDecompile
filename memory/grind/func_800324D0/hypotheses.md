@@ -1,5 +1,30 @@
 # Hypothesis ledger — func_800324D0
 
+## [s4] 2026-08-20 (structural — permuter; scratch tmp/grind/func_800324D0/s3/)
+
+13. **H13 — the permuter finds a structural spelling outside the
+    hand-enumerated space that closes the rotation honestly** (frontier 1).
+    Probe: campaign tmp/perm_324d0 from the 27-floor pin-free seed, ~109k
+    iterations, 8 jobs, --stop-on-zero, --stack-diffs. Result: zero score-0
+    finds; best find 105/170 IS the banned invented-intermediate family's
+    direction (pointer-carrier `new_var` copy of the base-pointer load); every
+    other sub-170 class sampled is semantics-breaking (case-constant stored
+    instead of val, coincidentally matching target's register). The frontier-1
+    caveat is now measured fact: the only byte-moving lever in this basin is
+    the banned plant. **KILLED (for this seed/basin; R3 now 1 of 2 used).**
+
+## Frontier (for s5+)
+1. **Ladder modalities (synthesis/rederive/forensics-2):** in-shape honest
+   routes are exhausted ([s1]-[s3]) and the seed's permuter basin is measured
+   dry ([s4]). A genuinely NEW chassis (different CFG that still emits 68
+   matching insns) is the only remaining structural object; deriving one is
+   rederive/synthesis work, not mutation search.
+2. **Second permuter session (R3 1 of 2 remaining) — ONLY with a new seed.**
+   Re-running from the same 27-floor chassis is measured waste. If a future
+   modality produces a different-shape 27-or-better chassis, spend the last
+   permuter session on it; otherwise escalation per the driver's ladder.
+
+
 ## [s3] 2026-08-20 (structural)
 
 9. **H9 — a naturally-live local-allocated $3 pseudo overlapping val AND cmd
@@ -146,4 +171,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: fewer loop-carried pseudos re-seeds allocation
 - probe: sandbox on the merged spelling
 - result: 37, build 67 - the andi from the u8->u32 promotion at cmd=c disappears, one insn short, shape breaks; banked rejected/merged-c-cmd.c
+- verdict: KILLED
+
+## [s3] H13 — the permuter finds a structural spelling outside the hand-enumerated space that closes the 3-cycle register rotation honestly (ledger frontier 1)
+- mechanism: structural mutation search (decomp-permuter, weighted byte-diff scorer) from the pin-free 27-floor candidate.c seed
+- probe: campaign tmp/perm_324d0 via tools/permuter_campaign.py (label s3-pinfree-27, 8 jobs, --stop-on-zero, --stack-diffs), base permuter score 170, ~109k iterations over ~55 min, harvested and stopped in-session; best-find and exemplar diffs vetted by hand against the 6-test checklist and the banned base/ff family
+- result: Zero score-0 finds and zero finds below 105 across ~400 outputs. Best find (105) is an invented block-0 pointer intermediate 'new_var = *(u8**)(pad+0x58); ptr = new_var;' — the banned base/ff invented-intermediate family's direction, partially cse-coalesced so it cannot close without the full banned overlapping-pair construct. All other sampled sub-170 classes are semantics-breaking mutations (case-constant stored instead of val) that only score better because the constant's register coincidentally matches target at that store.
 - verdict: KILLED
