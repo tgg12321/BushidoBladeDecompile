@@ -1,0 +1,18 @@
+{
+ "func": "func_80038658",
+ "file": "code6cac_c_mid",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Construct is legitimate ordinary C (the shared-end-label constant-fold-defeat recipe), but the self-vet's T5 family citation is fabricated/misfiled and must be corrected before commit. Re-file T5 under the correct citation: `.claude/rules/shared-end-label.md`, precedent func_80077B30 (commit 0f206e5, 2026-05-16, same shared-end-label restructure closing a constant-fold gap with zero regfix rules). Independently verified: the construct itself is ordinary C with no FAKE-exception prerequisites needed (shared-end-label is a plain matching-playbook recipe, not a borderline/FAKE-class family) \u2014 `re",
+  "set": "2026-08-21T03:49:18.977221+00:00"
+ },
+ "origin": "queue",
+ "created": "2026-08-21T03:33:33.799342+00:00"
+}

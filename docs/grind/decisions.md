@@ -9614,3 +9614,7 @@ Both AND-gates fail. Per .claude/rules/endgame-lock-disposition.md (owner policy
   memory/grind/func_800324D0/candidate.c with the full evidence spine in the
   ledger (hypotheses H1–H25 all measured; s6 cascade partition; s7-s9 uniformity
   proof; s9-s11 rederive closure).
+
+## 2026-08-20 22:49 — func_80038658 — layer-1 review — **FAIL (citation-only)**
+
+Construct is legitimate ordinary C (the shared-end-label constant-fold-defeat recipe), but the self-vet's T5 family citation is fabricated/misfiled and must be corrected before commit.
