@@ -9618,3 +9618,7 @@ Both AND-gates fail. Per .claude/rules/endgame-lock-disposition.md (owner policy
 ## 2026-08-20 22:49 — func_80038658 — layer-1 review — **FAIL (citation-only)**
 
 Construct is legitimate ordinary C (the shared-end-label constant-fold-defeat recipe), but the self-vet's T5 family citation is fabricated/misfiled and must be corrected before commit.
+
+## 2026-08-20 22:58 — func_80038658 — final call — **PASS**
+
+Body is ordinary C: switch on D_800A31F4, per-arm result stores, and a shared `fail_store:` error label reached by goto from the two ret==0 arms. No rules (regfix/asmfix/inline_asm_canonical all 0 hits), no __asm__, no pins/volatile/dead stores, no FAKE construct; `ret`/`fail` are both genuinely read and `fail` is set on every path that reaches the label. Decisive fact: the 2026-08-20 22:49 FAIL was CITATION-only (decisions.md:9618) and the sole required fix is made — T5 now files the shape under .claude/rules/shared-end-label.md, and I verified that file exists, line 62 reads exactly as cited, and commit 0f206e59 ('func_80077B30 — pure C, zero regfix rules') is real. Independently verified: candidate.c body == src/code6cac_c_mid.c body (identical); sandbox --disable all = 0 (55/55, tmp/grind/func_80038658/s1/sandbox0.json) and post-retire verify-oracle exit 0 in metrics/events.jsonl; sdata_funcs/sdata_exclude membership is pre-existing (those files are unmodified in the diff). Full measurement ladder and mechanism analysis: memory/grind/func_80038658/evidence.md [s1]; rejected forms in rejected/.
