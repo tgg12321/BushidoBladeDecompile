@@ -1,0 +1,43 @@
+{
+ "func": "func_80041188",
+ "file": "text1a_pre",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 0,
+   "floor": 5,
+   "modality": "wip-import",
+   "headline": "floor imported from memory/wip checkpoint"
+  },
+  {
+   "session": 1,
+   "floor": 5,
+   "modality": "recon",
+   "headline": "recon: chassis re-verified (HEAD 27, candidate 5, residual = same 5-insn loop2 cluster); 3-hypothesis frontier built on the banked ALLOCDBG/RA-solver arithmetic"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Realize one RA-solver sufficient pair on the real split model (out2b for loop2): (86 refs+1 & 86 pref+22) or (79 refs+1 & 86 refs+1) or (77 pref->23 & 86 live-8)",
+   "mechanism": "global.c allocno priority + expand_preferences; the split lands out2b in s3 (model 12/12) but 3-cycles {loop1-out, a4, saved} without the pair",
+   "next_probe": "tmp/hw_split2.sh --keep, extract split-variant allocno table, diagnose why the tested split-init +1 ref did not materialize (copy-prop pre-flow) via .combine/.lreg dumps (tools/grinder/dump.ps1), then spell the next pair"
+  },
+  {
+   "hypothesis": "duplicated-statement-into-arms supplies the missing +1 reg_n_refs on the split out2b (or on tbl, 1666->2083) byte-neutrally",
+   "mechanism": "flow.c counts reg_n_refs before jump2 cross-jump re-merges the duplicate; sanctioned family with FAKE+exhaustion prereqs (.claude/rules/duplicated-statement-into-arms.md)",
+   "next_probe": "read the rule file; construct the duplication around the loop-exit conditionals (only arms available); verify build_insns==132 and read .greg nrefs delta"
+  },
+  {
+   "hypothesis": "Restore move a0,s7 at loop2's func_800523E0 by suppressing the carrier's priority below out2's 1333 WITHOUT the parameter substitution (e.g. derive loop2's out2 from saved/base, which also serves 86 live-8)",
+   "mechanism": "global.c priority: carrier nrefs must stay <= 5; the lw a0,88(sp) reload is the cost of lever 4",
+   "next_probe": "sweep out2-derivation spellings that drop a carrier reference; measure carrier nrefs/pri in .greg"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-08-21T05:03:13.523115+00:00"
+}
