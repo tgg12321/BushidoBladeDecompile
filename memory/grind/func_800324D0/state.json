@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 15,
    "modality": "permuter",
    "headline": "FLOOR 27 -> 15 (68/68): second permuter campaign (R3 2/2, new combined-respelling basin) surfaced a vetted staged tail read `cmd = *ptr; c = cmd;` (staged-value-reused-variable family, FAKE-annotated)"
+  },
+  {
+   "session": 5,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "15-floor chassis's first permuter exposure: two basins (~224k iters) DRY - zero improving finds, only score-neutral invented-constant noise; residual 2-swap confirmed not mutation-reachable; permuter "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A statement geometry exists where the cmd head web's live length grows enough (>=~10 insns at 10 refs) to drop allocno 75 below val in allocno_compare, opening a different cascade to the target rotation",
-   "mechanism": "global.c allocno_compare priority ordering + find_reg pass-0 cascade; the full cascade must be re-derived from the exclusion sets for any new census before spending a build",
-   "next_probe": "rederive/synthesis modality: m2c re-derivation and hand-synthesis of geometries that lengthen the head web (e.g. separating the head tests from the arm subtract with intervening real work) measured against the s4/findreg exclusion-set arithmetic"
+   "hypothesis": "A statement geometry exists where the cmd head web's live length grows enough (>=~10 insns at 10 refs) to drop allocno 75 below val in allocno_compare, opening a different find_reg cascade to the target rotation",
+   "mechanism": "global.c allocno_compare priority ordering + find_reg pass-0 cascade; re-derive the full cascade from the s4 exclusion sets for any new census before spending a build",
+   "next_probe": "rederive/synthesis modality: m2c re-derivation and hand-synthesis of head-web-lengthening geometries (e.g. separating head tests from the arm subtract with intervening real work), measured against s4/findreg exclusion-set arithmetic"
   },
   {
-   "hypothesis": "The staged-value-reused-variable citation question (sched.c exemplar vs our global-RA mechanism) is resolvable from the rule text + SOTN precedent without an owner ruling",
-   "mechanism": "the rule's bounds 1-6 are mechanism-silent and the 2026-08-17 named-intermediate clarification establishes mechanism-agnosticism for its sibling family, but layer-1 has FAILed right-construct/wrong-citation",
-   "next_probe": "submitting session: re-read staged-value-reused-variable.md + no-new-park-categories.md 2026-06-02 census entry; if not clean, emit ruling-request BEFORE candidate-ready"
+   "hypothesis": "The staged-value-reused-variable citation question (sched.c exemplar vs our global-RA mechanism) is resolvable from the rule text + the 2026-08-17 named-intermediate mechanism-agnosticism clarification without an owner ruling",
+   "mechanism": "the rule's bounds 1-6 are mechanism-silent; layer-1 has FAILed right-construct/wrong-citation before",
+   "next_probe": "submitting session: re-read staged-value-reused-variable.md + no-new-park-categories.md 2026-08-17 clarification; if not clean, emit ruling-request BEFORE candidate-ready"
   },
   {
-   "hypothesis": "The last honest route to the residual 2-swap, if any, is OUTSIDE the current shape family (new CFG whose census yields walker-$3 naturally)",
-   "mechanism": "in-shape routes are exhausted on BOTH chassis (s1-s3 proofs carry over to the 15-chassis, re-verified via fresh findreg dumps); only a structurally different derivation remains",
-   "next_probe": "driver ladder: synthesis/rederive; do NOT re-run permuter (R3 2/2 spent)"
+   "hypothesis": "Permuter is mechanically closed for this function (two permuter-modality sessions, second yield flat)",
+   "mechanism": "grindlib.py R3 hard cap + zero-yield gate",
+   "next_probe": "none - do not propose campaigns; the ladder's remaining modalities are synthesis/rederive/forensics-2"
   }
  ],
  "judge_constraints": [

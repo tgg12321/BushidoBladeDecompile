@@ -1,5 +1,77 @@
 # Evidence bank — func_800324D0
 
+## [s6] 2026-08-20 — permuter (brief-session 5; the 15-floor chassis's FIRST permuter exposure; scratch tmp/grind/func_800324D0/s5/)
+
+### R3 accounting clarification (read the driver source, not the ledger's count)
+The [s5] entry's claim "R3 2/2 — permuter modality exhausted" counted
+CAMPAIGNS; the driver's R3 gate (tools/grinder/grindlib.py:693) counts
+floor_history entries with modality=="permuter". Before this session only
+brief-session 4 was recorded as permuter (brief-session 3's campaign ran
+under structural modality), and its floor DROPPED (27->15), so the driver
+legitimately mandated this session as the second-and-final permuter session.
+After this session R3 is mechanically exhausted BOTH ways: two permuter-
+modality floor_history entries will exist, and this one's floor is flat
+(15>=15), tripping the zero-yield gate as well. No future session should
+expect or request permuter modality.
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (5th
+consecutive session; the driver never commits the candidate). candidate.c
+(15-floor staged form) re-applied to src/code6cac_b.c; measured THIS session:
+sandbox `--disable all` = 15, build 68 == target 68. Chassis unchanged from
+[s5]; all banked 15-chassis conclusions (find_reg census, residual-2-swap
+wall) remain valid. Re-verified 15 again at session close with the same text.
+
+### THE MAIN RESULT — the 15-floor chassis's permuter basins are DRY:
+### two campaigns, two basins, ~224k combined iterations, ZERO improving finds
+The 15-floor staged text had NEVER been permuted (both prior campaigns
+seeded from 27-floor texts). Two campaigns this session, both via
+tools/permuter_campaign.py, 8 jobs, --stop-on-zero, base permuter score 105:
+
+- **Campaign #1** (tmp/perm_324d0_s5, label s5-staged-15): seed = candidate.c
+  verbatim. ~118k iterations over ~31 min (4 wait windows). ONE output:
+  output-105-1, score 105 == base — an invented `unsigned short new_var =
+  0x80;` constant-holder replacing the two literal 0x80 uses. SCORE-NEUTRAL
+  noise (and an invented local = forbidden direction anyway). Nothing below
+  base, ever. Banked: s5/campaign1_find_105_newvar_noise.diff.
+- **Campaign #2** (tmp/perm_324d0_s5b, label s5-staged-15-basin2): seed = a
+  genuinely different C text at the same floor (s4's flat-15 micro-variants
+  COMBINED: preheader read staged through cmd `cmd = ptr[4]; c = cmd;`,
+  guard+do-while loop form, cmd-first decl order — combination measured flat
+  15, 68/68 THIS session before seeding; text banked at
+  s5/basin2_seed_flat15.c). ~106k iterations over ~29 min. ONE output: the
+  IDENTICAL new_var=0x80 constant-holder noise at 105 == base. Banked:
+  s5/campaign2_find_105_newvar_noise.diff.
+
+Both campaigns harvested + stopped in-session (procs killed, telemetry in
+metrics/events.jsonl; no orphans).
+
+Interpretation: the residual-15 2-swap (walker $6<->cmd-webs $3) has NO
+permuter-reachable lever in either basin — not even a banned-family carrier
+this time (contrast [s3]/[s5], where the 27-chassis basins at least surfaced
+the banned invented-intermediate direction at sub-base scores). The permuter's
+mutation vocabulary (invented locals, statement reorder, expression respell)
+cannot touch the find_reg pass-0 cascade on this chassis: every byte-moving
+mutation class was already measured dead by hand in s2-s5's sweeps. This
+independently corroborates the [s5] wall analysis — the 2-swap needs a
+STRUCTURALLY different derivation (new CFG whose census yields walker-$3
+naturally), which is rederive/synthesis work, not mutation search.
+
+### Artifacts
+tmp/grind/func_800324D0/s5/: setup_perm.sh, setup_perm_b.sh,
+campaign{1,2}_meta.json, campaign{1,2}_log_tail.txt,
+campaign{1,2}_find_105_newvar_noise.diff, basin2_seed_flat15.c.
+Workspaces tmp/perm_324d0_s5, tmp/perm_324d0_s5b (both stopped).
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Permuter modality now
+exhausted under BOTH R3 counting conventions. Frontier for s7+: the ladder's
+rederive/synthesis modality per the [s5] frontier (statement geometries that
+lengthen the cmd head web's live range past val's allocno priority), and the
+staged-value citation question must be resolved (or ruling-requested) by
+whichever session reaches candidate-ready.
+
 ## [s5] 2026-08-20 — permuter (brief-session 4; R3 2 of 2 used; scratch tmp/grind/func_800324D0/s4/)
 
 ### Chassis
@@ -389,3 +461,13 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s4] Campaign #2 basin behaves like campaign #1: every other byte-moving find is a forbidden family (invented carrier at 120, empty-if/if(1) wraps at 115, unreachable-store semantics breakers at 125/135); R3 is now 2 of 2 - permuter modality exhausted for this function
 
 - [s4] Construct-citation caveat banked for the submitting session: staged-value-reused-variable's origin exemplar mechanism is sched.c adjust_priority/birthing_insn_p, ours is the global-RA census; the rule's six bounds are mechanism-silent; resolve or ruling-request before any candidate-ready
+
+- [s5] Chassis verified twice this session (start and close): candidate.c (15-floor staged form) applied to src/code6cac_b.c, sandbox --disable all = 15, build 68 == target 68; working tree had again carried the stale pinned s1 form at dispatch
+
+- [s5] R3 accounting clarification: the s5 ledger's 'R3 2/2 exhausted' counted CAMPAIGNS, but the driver's gate (tools/grinder/grindlib.py:693) counts permuter-MODALITY floor_history entries; only brief-session 4 was one and its floor dropped, so this session was legitimately the second and final permuter session. After this flat yield the gate is tripped both ways; the driver will not mandate permuter again.
+
+- [s5] The 15-floor residual 2-swap has no permuter-reachable lever: ~224k iterations across two distinct basins produced zero sub-base finds; the mutation vocabulary cannot touch the find_reg pass-0 cascade on this chassis, independently corroborating the s5 wall analysis (walker-pref-$3 impossible from natural defs, walker-first order arithmetically dead, conflict route liveness-impossible)
+
+- [s5] The s4 flat-15 micro-variants COMPOSE flat: preheader-staged read + guard+do-while + cmd-first decl order together measure 15, 68/68 (new fact; banked as s5/basin2_seed_flat15.c - a valid alternative spelling of the 15-floor)
+
+- [s5] Both basins' only output is the same invented 'unsigned short new_var = 0x80;' constant-holder at score==base - evidence the permuter's best remaining direction on this chassis is score-neutral even before vetting

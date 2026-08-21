@@ -1,5 +1,39 @@
 # Hypothesis ledger — func_800324D0
 
+## [s6] 2026-08-20 (permuter, brief-session 5; scratch tmp/grind/func_800324D0/s5/)
+
+17. **H17 — the 15-floor staged chassis, never before permuted, has a
+    permuter-reachable lever for the residual 2-swap (walker $6 <-> cmd-webs
+    $3).** Probe: campaign #1 from candidate.c verbatim (tmp/perm_324d0_s5,
+    ~118k iters, ~31 min, base 105) and campaign #2 from a genuinely
+    different flat-15 text (s4's flat micro-variants combined:
+    preheader-staged read + guard+do-while + cmd-first decls, measured flat
+    15 before seeding; tmp/perm_324d0_s5b, ~106k iters, ~29 min). Result:
+    ZERO improving finds across ~224k iterations in two basins; the only
+    output in EACH basin is the identical score-neutral invented
+    constant-holder `unsigned short new_var = 0x80;` (noise, and a forbidden
+    invented-local direction besides). Unlike the 27-chassis basins, not even
+    a banned-family carrier scored below base. **KILLED — the 2-swap is not
+    mutation-reachable; permuter exhausted under both R3 counting
+    conventions (2 permuter-modality sessions AND flat yield).**
+
+## Frontier (for s7+)
+1. **Unchanged from [s5] frontier 1: the walker-$3 wall needs a rederive/
+   synthesis-derived statement geometry** (lengthen the cmd head web's live
+   range so allocno 75 drops below val in allocno_compare; re-derive the
+   full find_reg cascade from exclusion sets before spending a build).
+   Mechanism: global.c allocno_compare + find_reg pass 0. Next probe: m2c
+   re-derivation + hand-synthesis of head-web-lengthening geometries,
+   measured against s4/findreg exclusion arithmetic.
+2. **Unchanged from [s5] frontier 2: the staged-value-reused-variable
+   citation question** (rule exemplar mechanism sched.c vs our global-RA
+   mechanism; bounds are mechanism-silent) must be resolved from the rule
+   text + no-new-park-categories 2026-08-17 clarification, or
+   ruling-requested, BEFORE any candidate-ready.
+3. **Permuter is now mechanically closed** (two permuter-modality
+   floor_history entries + flat second yield trips grindlib.py's R3 gate).
+   Do not propose campaigns; the driver will not mandate the modality again.
+
 ## [s5] 2026-08-20 (permuter, brief-session 4; scratch tmp/grind/func_800324D0/s4/)
 
 14. **H14 — a second campaign from a genuinely different C text at floor 27
@@ -237,4 +271,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: carrier mode / placement / guard form / decl order perturb the census further
 - probe: seven variants measured: u8 carrier (27), ptr++ between read and copy (28/69), preheader staged (flat 15), arm load staged via c (flat 15), decl-order (flat 15), do-while guard (flat 15), 0xFF-arm pointer-through-cmd borrow (flat 15, copy cse-coalesced)
 - result: no variant moves the swap; the SImode borrow and its exact placement are load-bearing for the 15
+- verdict: KILLED
+
+## [s5] H17 - the 15-floor staged chassis, never before permuted (both prior campaigns seeded from 27-floor texts), has a permuter-reachable lever for the residual walker $6 <-> cmd-webs $3 2-swap
+- mechanism: decomp-permuter structural mutation search over source text; a different C text at the same floor is a different mutation basin (the s4-proven trick)
+- probe: Campaign #1 from candidate.c verbatim (tmp/perm_324d0_s5, label s5-staged-15, 8 jobs, --stop-on-zero, base permuter score 105, ~118k iterations over ~31 min); campaign #2 from a genuinely different flat-15 text (s4's flat micro-variants combined: preheader read staged through cmd, guard+do-while loop form, cmd-first decl order; combination measured flat 15 68/68 this session before seeding; tmp/perm_324d0_s5b, ~106k iterations over ~29 min). Both harvested + stopped in-session.
+- result: ZERO improving finds in either basin. The single output in EACH basin is the identical score-neutral (105==base) invented constant-holder 'unsigned short new_var = 0x80;' - noise, and a forbidden invented-local direction besides. Unlike the 27-chassis basins (s3/s4), not even a banned-family carrier scored below base.
 - verdict: KILLED
