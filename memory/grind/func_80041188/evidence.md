@@ -262,3 +262,103 @@ atom space. Remaining live directions, in order:
 - [s2] 86 live_shrink by def position measured: C statement position moved livelen only 42->41 (-1, not the -8 the insn count suggests) and costs bytes elsewhere (sandbox 18)
 
 - [s2] lever-4-reverted split is the best split-family form (sandbox 15) and removes the stack-reload residual class for free; candidate-5 (floor 5) remains the overall best and is restored + re-verified in src/text1a_pre.c at session end
+
+## s3 (structural, 2026-08-21) — FLOOR 5 -> 1; split-RA axis closed end-to-end; the winning structure found
+
+Chassis: candidate.c (floor-5 form) applied at session start, sandbox 5
+reproduced (132/132). Session ends with the NEW floor-1 form in place in
+src/text1a_pre.c, sandbox 1 verified three times (after each probe restore).
+
+### Frontier-1 KILLED: masked depth-4-6 inverse (artifact s3/masked_inverse_out.txt)
+
+tmp/grind/func_80041188/s3/masked_inverse.py (a tmp-side masked copy of
+tools/ra_solver/inverse.py's search; tools/ untouched) re-solved the FULL
+10-pseudo goal on hw_split.model.json over the SPELLABLE atom inventory only
+(excluded: all 86 atoms, 77 refs_down/live, 75 atoms, all pref atoms;
+included: 79 refs+1/+2, 91 refs+2, 88 refs-2, live +-1/2/4/8 on
+73/74/78/79/88/91, conflict_add on {75,77,86} x goal): depth 1-4 exhaustive
+(137k combos) = ZERO hits. Analytic closure for ALL deeper depths: under the
+mask pri(77)=1052 / pri(75)=800 / pri(86)=714 are constants, so the
+allocation order 77->75->86 is fixed; the goal pins every higher-priority
+pseudo to s0-s5, so s6 is FREE at 77's turn and find_reg's ascending
+first-free scan hands it to 77 (a conflict atom cannot block a register
+nobody holds; callee-saved copy-prefs are unreachable from C). 77->s7 is
+therefore unreachable at ANY depth. **The split-RA axis is dead end-to-end**
+— as frontier-1 anticipated.
+
+### The breakthrough (frontier-2's m2c/structure route, resolved differently)
+
+Candidate-5's greg (dumps/text1a_pre.greg) showed all callee-saved
+dispositions ALREADY matched target; the residual was only that loop2's
+pointer lived in out2's own reg (s6) instead of sharing dead stptr's s3.
+One pseudo = one reg in GCC 2.7.2 => target needs a SECOND pseudo for
+loop2's pointer that lands s3. The winning structure (floor 1):
+
+    /* preamble2, statement order load-bearing: */
+    stptr2 = saved + 0x750;
+    stptr = (s32) out2;          /* REUSE loop1's dead stptr local */
+    /* loop2 calls take (s32 *) stptr; func_800523E0 takes pa4 (lever-4
+       REVERTED) */
+
+Mechanisms, all dump-verified (dumps/text1a_pre.lreg regenerated on the
+floor-1 form):
+- stptr's merged pseudo (10 refs/88) keeps pri 3409 -> allocates 3rd,
+  lands s3; the loop2 range simply shares the register the loop1 walker
+  already owns = target's s3 sharing, with NO second-allocno ordering
+  problem at all (the whole (1052,1666)-window framing of s0-s2 was an
+  artifact of making the loop2 pointer a FRESH low-ref local).
+- The `stptr = (s32) out2` read is out2's 4th flow-counted ref and extends
+  its live range to 47 insns: out2 = 4 refs/47 = pri 1702.13 — EXACTLY
+  tied with tbl (4/47); the tie breaks by allocno number (79 < 86), tbl
+  takes s5, out2 takes s6 = target. Carrier (6 refs/95 = 1263) -> s7,
+  a3 (4/99 = 808) -> fp. All callee-saved = target.
+- Lever-4 reverted (loop2's 523E0 takes pa4): restores `move a0,s7`; the
+  lw a0,88(sp) residual class is gone (consistent with s2's H3).
+- Preamble2 is its own cse basic block (no label between the loop1
+  conditional and loop2's label, but block0's EBB ends at the loop1
+  label), so cse1 has NO qty knowledge of out2 there and the copy
+  survives to flow uncounted-by-no-one: the ref counts.
+
+### Measured kills this session (chassis = floor-1 form unless stated)
+
+- Re-init from the carrier (`stptr = (s32)(((u8*)pa4)+0x20)`): sandbox 15.
+  Emits target's exact addiu s3,s7,32 but loses out2's 4th ref -> out2
+  3/42 = 714 sinks below carrier 1263 and a3 808 -> carrier steals s6,
+  3-cycle returns. rejected/reuse-reinit-from-pa4.c.
+- Statement order swapped (copy before stptr2's init): sandbox 10. out2's
+  live length drops to 46 -> pri 1739 > 1702 -> out2 allocates BEFORE tbl
+  and steals s5. The copy must be the LAST preamble2 statement.
+
+### The single residual insn (artifact s3/residual_floor1.txt)
+
+Slot 71/132: OURS `move s3,s6` vs TGT `addiu s3,s7,32` (the other listed
+lines in the artifact are objdump reloc-name artifacts, not diffs). The
+re-init spelling space is now characterized: out2-read forms emit the move
+(and score 1); carrier-read forms emit the addiu (and score 15). To reach 0
+the build needs BOTH the flow-counted out2 ref AND addiu-from-s7 bytes.
+Analysis of the deletion windows: any out2-read that cancels/folds dies
+PRE-flow (front-end fold within one expression; cse qty-fold + canon_reg
+within the preamble2 block — canon_reg substitutes the older reg and folds
++out2-out2; a dead `d = out2` staging store is deleted by flow UNCOUNTED).
+The only post-flow deleter that leaves no bytes is COMBINE (runs after
+flow), and combine's syntactic cancellation needs an EVEN number of out2
+reads (+2 refs -> 5/47 = 2127 -> out2 allocates 4th and steals s5, dead
+unless the last read also moves INTO loop2: refs 5 needs live 59-79 for
+the (1263,1702) window; a read inside loop2's body extends live to ~88 ->
+909, too low). No spelling found this session that satisfies both; see
+hypotheses s3 frontier for the two surviving directions.
+
+- [s3] floor 1 (from 5): loop2 pointer reuses the dead loop1 stptr local, re-initialized by READING out2 (`stptr = (s32) out2;` as the last preamble2 statement), lever-4 reverted; 132/132; single residual insn: move s3,s6 vs addiu s3,s7,32 at slot 71
+- [s3] split-RA axis (fresh out2b pseudo world) proven dead END-TO-END: masked inverse depth<=4 empty + analytic closure (77->s7 unreachable at any depth under the spellable mask)
+- [s3] out2's floor-1 stats: 4 refs/47 insns = pri 1702.13, EXACT tie with tbl (4/47); tie breaks by allocno number (79<86) -> tbl s5, out2 s6. Knife-edge: live 46 (order swap) scores 10; refs 3 (pa4-read re-init) scores 15
+- [s3] family status of the floor-1 construct: `stptr = (s32) out2` + loop2 uses is VARIABLE-REUSE (borrow of an EXISTING dead local, SOTN frozen-list "variable reuse for codegen control", defeat-licm-hoist-var-reuse; borrows gated by staged-value-reused-variable) — value is real and consumed by both loop2 calls, zero dead stores, live code. FAKE annotation + exhaustion ledger required at submission per the family-selection table; NOT yet annotated in candidate.c (floor is 1, not 0 — no submission this session)
+
+- [s3] Floor 1 verified three times this session with edits in place in src/text1a_pre.c; candidate saved to memory/grind/func_80041188/candidate.c
+
+- [s3] Split-RA axis dead end-to-end: masked inverse depth<=4 empty + analytic closure (artifact s3/masked_inverse_out.txt)
+
+- [s3] out2 floor-1 stats: 4 refs/47 insns = pri 1702.13, exact tie with tbl; knife-edge measured: live 46 (statement-order swap) scores 10, refs 3 (pa4-read re-init, which emits target's exact addiu s3,s7,32) scores 15 (rejected/reuse-reinit-from-pa4.c)
+
+- [s3] Residual deletion-window analysis: any out2-read cancellation dies pre-flow (front-end fold / cse qty-fold + canon_reg in the preamble2 block / flow uncounted dead-store deletion); only COMBINE deletes post-flow, and combine cancellation needs even out2-read parity (+2 refs -> 2127 steals s5 unless live 59-79, positions that don't exist)
+
+- [s3] Floor-1 construct family: variable-reuse (borrow of EXISTING dead local, SOTN frozen list, defeat-licm-hoist-var-reuse; borrow gated by staged-value-reused-variable); value real and consumed, zero dead stores; FAKE annotation + exhaustion ledger required at submission, not yet annotated (no submission at floor 1)

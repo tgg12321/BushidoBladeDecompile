@@ -147,3 +147,83 @@ reference lever**: every spelling found so far moves reg_n_refs by +2
 - probe: lever-4 revert (loop2 func_800523E0 takes pa4) inside the plain split; sandbox + .lreg
 - result: sandbox 15 vs 16, lw a0,88(sp) residual class gone, 77=7refs/1473, same 3-cycle otherwise; lever 4 is NOT load-bearing in the split world
 - verdict: CONFIRMED
+
+## s3 (structural, 2026-08-21) — verdicts + new frontier
+
+### [s3] A depth 4-6 sufficient vector exists over the SPELLABLE atom space (s2 frontier-1)
+- mechanism: global.c priority model, masked atom inventory
+- probe: tmp/grind/func_80041188/s3/masked_inverse.py on hw_split.model.json,
+  full 10-pseudo goal, depth 1-4 exhaustive (137k combos) + analytic closure
+  for depth 5+ (77/75/86 priorities constant under the mask; goal pins all
+  higher-pri pseudos to s0-s5; ascending first-free hands 77 s6)
+- result: ZERO hits; unreachable at any depth
+- verdict: KILLED (split-RA axis dead end-to-end)
+
+### [s3] candidate-5's residual closes from the non-RA side via reload/jump2 (s2 frontier-2, first half)
+- mechanism: reload spill-reg choice / cross-jump on the loop2 preamble
+- probe: candidate-5 .greg read — out2 IS register-allocated (s6), no spill,
+  no reload of 86; the residual is pseudo-identity, not emission
+- result: reload/jump2 cannot re-register a healthy allocated pseudo; the fix
+  was structural (see below). The m2c-rederivation half of frontier-2 led to
+  the winning structure indirectly
+- verdict: KILLED as spelled; superseded by the floor-1 structure
+
+### [s3] loop2's pointer through the REUSED dead stptr local with an out2-read re-init
+- mechanism: merged stptr pseudo (10/88, pri 3409) naturally lands s3 and
+  shares it across loop1-walker + loop2-pointer ranges; the copy read gives
+  out2 its 4th flow ref + live 47 -> pri tie 1702 with tbl, tie breaks
+  our way by allocno number; lever-4 revert restores move a0,s7
+- probe: sandbox + lreg/greg dumps (see evidence s3)
+- result: sandbox 1 (from 5); single residual insn move s3,s6 vs addiu s3,s7,32
+- verdict: CONFIRMED (new floor; construct family: variable-reuse, FAKE
+  annotation required at submission)
+
+## s3 frontier (the last insn: move s3,s6 -> addiu s3,s7,32)
+
+1. Combine-window search: an out2-read pair whose post-flow combine merge
+   emits `stptr := pa4 + 0x20` (addiu s3,s7,32) while flow counts the reads.
+   Constraint map (all measured/derived this session): cancellation must be
+   invisible to front-end fold (cross-statement) AND to cse1 (preamble2 is
+   its own cse block, but canon_reg + qty-fold kill same-block cancellation
+   pairs) AND survive flow's uncounted dead-store deletion; combine needs
+   even out2-read parity, and +2 refs demands live 59-79 (read positions
+   that don't exist: preamble2 ends ~52, loop2-interior reads extend to ~88).
+   Next probe: enumerate 3-insn combine shapes (P1,P2 -> C) where ONE read
+   is in P-chain and the OTHER visible ref count stays 4 by REMOVING a
+   loop1 ref... (loop1 refs are fixed by target bytes: def + 2 call args —
+   check whether a loop1 call arg can be spelled through a fresh
+   once-written-once-read named intermediate (sanctioned family) so the
+   +1/-1 budget rebalances: out2 total stays 4 with one read relocated
+   into the combine-deleted preamble2 pair).
+2. Sub-word/alias respelling of the re-init that still READS out2's reg but
+   emits addiu from s7: none found; likely nonexistent — if (1) dies too,
+   the honest conclusion is that the ORIGINAL's own spelling produced the
+   addiu with different flow arithmetic elsewhere (e.g. a3 or carrier refs
+   differing by one somewhere invisible), and the search should sweep
+   single-ref perturbations of OTHER pseudos' spellings while keeping the
+   floor-1 structure: e.g. tbl's def spelling (sym-K chain, refs+2 banked
+   s2), i's re-init, a1/a2 advance forms — each changes a pri and may open
+   a window where out2 at 3 visible refs still lands s6 (e.g. carrier
+   BELOW 714 needs carrier refs <= 3: impossible; but the TIE mechanics
+   mean small live-length shifts of tbl/out2 via statement placement near
+   the preamble2 boundary are one-insn levers — sweep them).
+3. Permuter is CLOSED for this function (R3 cap, 2 sessions used). Manual
+   sweeps only.
+
+## [s3] A depth 4-6 sufficient vector exists over the spellable atom space of the split model (s2 frontier-1)
+- mechanism: global.c allocno priority + find_reg ascending first-free, masked to spellable atoms only
+- probe: tmp/grind/func_80041188/s3/masked_inverse.py on hw_split.model.json, full 10-pseudo goal, depth 1-4 exhaustive (137k combos) + analytic closure for all deeper depths (77/75/86 priorities constant under the mask, goal pins higher-pri pseudos to s0-s5, so s6 is free at 77's turn and the ascending scan hands it to 77)
+- result: ZERO hits at depth <= 4; analytically unreachable at any depth; split-RA axis dead end-to-end
+- verdict: KILLED
+
+## [s3] candidate-5's residual closes from the reload/jump2 side (s2 frontier-2 first half)
+- mechanism: reload spill-reg choice / cross-jump on the loop2 preamble
+- probe: candidate-5 .greg read: pseudo 86 (out2) is register-allocated in s6, no spill, no reload; residual is pseudo identity, not emission
+- result: reload/jump2 cannot re-register a healthy allocated pseudo
+- verdict: KILLED
+
+## [s3] loop2's pointer through the REUSED dead stptr local with an out2-read re-init (stptr = (s32) out2; as last preamble2 statement, loop2 calls take (s32*)stptr, lever-4 reverted)
+- mechanism: merged stptr pseudo (10 refs/88, pri 3409) naturally shares s3 across the dead loop1-walker range and the loop2-pointer range; the copy read is out2's 4th flow ref extending live to 47 -> pri 1702.13 EXACTLY tied with tbl, tie broken by allocno number (79<86) -> tbl s5, out2 s6; lever-4 revert restores move a0,s7
+- probe: sandbox + regenerated .lreg/.greg dumps; order-swap probe (10) and pa4-read re-init probe (15) bound the knife-edge
+- result: sandbox 1 (from 5), 132/132; residual = one insn: move s3,s6 vs addiu s3,s7,32 at slot 71
+- verdict: CONFIRMED

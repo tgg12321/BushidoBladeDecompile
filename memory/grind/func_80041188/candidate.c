@@ -1,27 +1,26 @@
-/* hirahira_w_ctrl - WIP candidate. sandbox --disable all == 5 (HEAD == 27,
- * previous candidate == 23). 132/132 insns, frame 72 == target 0x48.
- * Pure C: no register pin, no __asm__, no volatile, no dead code.
+/* hirahira_w_ctrl - s3 candidate. sandbox --disable all == 1 (prev best 5).
+ * 132/132 insns, frame 72 == target 0x48. Pure C: no pin, no asm, no
+ * volatile, no dead code, no FAKE constructs.
  *
- * Every remaining difference is FIVE instructions in loop 2 (see notes.md);
- * loop 1, the prologue, the schedule and the epilogue match target exactly.
- *
- * The five levers that took 27 -> 5, in the order they were found:
- *  1. `offset = offset + (s32) a2; p = (u16 *) offset;`  (destination reuse)
- *  2. initialise `i` BEFORE `tbl` -- target emits the s4 init pair before the
- *     s5 pair; same registers, different emission order.            27->23->19
- *  3. `tbl++` AFTER the first func_8004A348 call, not mid-buffer -- sched1 runs
- *     before register allocation, so this also feeds the allocno data.  19->17
- *  4. loop 2's func_800523E0 takes the PARAMETER a4, not the local carrier:
- *     drops the carrier's allocno from nrefs 7 to 5 (pri 1473 -> 1052) so out2
- *     (1333) outranks it and the s6/s7 pair lands target's way.        17->11
- *  5. loop2 stptr as its own local + SPLIT-INIT on the loop1 stptr
- *     (`stptr = base; stptr += 0xFC;`): the split-init raises stptr's nrefs
- *     5 -> 7 (pri 2439 -> 3414) without changing one emitted instruction,
- *     which is what lets the loop2 split keep s3/s4 in target's order. 11->6
- *  6. `(s32)` cast on the first add's pointer operand.                  6->5
- *
- * The lone `a4` at the loop2 func_800523E0 is lever 4 and is load-bearing:
- * spelling it `pa4` there scores 11.
+ * s3 BREAKTHROUGH (on top of the r3-r16 six levers, see git history):
+ *  7. loop2's out-pointer goes through the REUSED loop1 `stptr` local
+ *     (dead after loop1), re-initialized by READING out2
+ *     (`stptr = (s32) out2;`) instead of recomputing pa4+0x20, and
+ *     lever-4 is REVERTED (loop2's func_800523E0 takes pa4 again).
+ *     Effects (all measured in tmp/grind/func_80041188/s3/):
+ *       - stptr's pseudo (merged loop1-walker + loop2-out) lands s3 =
+ *         target (it shares dead loop1 stptr's register naturally);
+ *       - the `stptr = out2` read is out2's 4th flow-counted ref and
+ *         extends its live range into the loop2 preamble, lifting out2's
+ *         global.c priority above the pa4 carrier's => out2 keeps s6,
+ *         carrier keeps s7, a3 keeps fp (all callee-saved == target);
+ *       - reverting lever-4 restores `move a0,s7` at loop2's 523E0
+ *         (the lw a0,88(sp) residual class is gone).
+ *     5-insn residual -> 1: insn 71 `move s3,s6` vs target
+ *     `addiu s3,s7,32`. Spelling the re-init from pa4 instead
+ *     (`stptr = (s32)((u8*)pa4+0x20);`) emits the right bytes but loses
+ *     out2's 4th ref -> out2 falls to pri 714 and the 3-cycle returns
+ *     (see s3 ledger for the measurement).
  */
 void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
@@ -64,8 +63,8 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a1 += 0x6C;
     a2 += 0x6C;
     i = 0x12;
-    out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr2 = saved + 0x750;
+    stptr = (s32) out2;
     loop2:
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
@@ -83,8 +82,8 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 2;
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
-    func_8004A348(buf, out2);
-    func_800523E0(a4, out2, a3, stptr2 + 0x38);
+    func_8004A348(buf, (s32 *) stptr);
+    func_800523E0(pa4, (s32 *) stptr, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;
     i++;

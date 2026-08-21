@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -21,23 +21,29 @@
    "floor": 5,
    "modality": "structural",
    "headline": "Split-model RA vector space CLOSED at depth<=3 with mechanisms: every full-goal solver-sufficient set needs an 86-atom, and 86 refs_up/live-shift are proven unspellable (cse.c:826 make_regs_eqv canoni"
+  },
+  {
+   "session": 3,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Floor 5 -> 1: loop2 pointer reuses the dead loop1 stptr local via an out2-read re-init (variable-reuse family); split-RA axis proven dead end-to-end; single residual insn move s3,s6 vs addiu s3,s7,32"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A depth 4-6 sufficient vector exists over the SPELLABLE atom space only (79 refs+1/+2, 79/88/91/78/73/74 live moves, conflict_add via overlap changes)",
-   "mechanism": "same global.c priority model; the spellable atoms were individually verified this session (79 arm-dup counts; 79 sym-K chain survives cse's cost gate and combine re-merges)",
-   "next_probe": "add an atom-exclusion mask to tools/ra_solver/inverse.py (exclude 86 refs_up, 86 live+-, all pref_add, 77 refs_down), re-solve the full 10-pseudo goal at depth 4-6 from tmp/ra_solver_work/hw_split.model.json; if empty, the split-RA axis is dead end-to-end"
+   "hypothesis": "A 3-insn combine shape (P-chain reading out2 -> re-init C) merges post-flow into stptr := pa4+0x20 (addiu s3,s7,32) while flow counts the reads, with the ref budget rebalanced by relocating one loop1 out2 call-arg through a fresh once-written-once-read named intermediate (sanctioned family) so total stays 4",
+   "mechanism": "combine runs AFTER flow (the only byte-deleting pass past the count); named-intermediate family lets a visible ref relocate without changing bytes",
+   "next_probe": "enumerate P1/P2->C shapes under the constraint map banked in evidence s3 (front-end fold, cse canon_reg/qty-fold in the preamble2 block, flow uncounted deletion all kill same-block cancellation); measure each with sandbox + .lreg refs"
   },
   {
-   "hypothesis": "candidate-5's residual can be closed from the non-RA side: reload/spill or jump2 makes the single-pseudo out2 EMIT addiu s3,s7,32 for loop2 without a second allocno",
-   "mechanism": "reload spill-reg choice / cross-jump shape on the loop2 preamble - never probed in any session; all prior work attacked global-alloc only",
-   "next_probe": "read candidate-5's .greg/reload output for loop2's re-init insn; check whether any spelling makes out2's second range spill-allocated (reload picks s3-class scratch); alternatively m2c-rederive the original variable structure from asm/funcs/func_80041188.s"
+   "hypothesis": "The original reached addiu with only 3 visible out2 refs because some OTHER pseudo's flow stats differed by one; small statement-placement shifts near the preamble2 boundary (tbl def spelling, i re-init, a1/a2 advance forms) move one-insn live-lengths and may open a window where 3-ref out2 still lands s6",
+   "mechanism": "the s5/s6 outcome sits on an exact pri tie (1702.13) - one-insn live shifts are full levers",
+   "next_probe": "keep the floor-1 structure, sweep single-statement placements/spellings of tbl/i/a1/a2/stptr2 with the pa4-read re-init, sandbox each; also re-run the sweep with the banked sym-K tbl refs+2 chain"
   },
   {
-   "hypothesis": "arm-dup byte-neutrality is repairable by forcing fall-in copy contiguity before the loop1 label",
-   "mechanism": "find_cross_jump needs textually identical post-sched2 tails; sched1 currently interleaves the copy with independent preamble insns",
-   "next_probe": "only worth probing if frontier-1 surfaces a 79-using sufficient set; then try dependence-chaining the last preamble insns to the copy so sched cannot interleave"
+   "hypothesis": "If both die, the residual is a one-insn spelling-class question (move vs addiu of the same value) suitable for a precise ruling-request on whether any sanctioned construct may supply the out2 ref",
+   "mechanism": "the constraint map proves the ref and the bytes cannot come from the same honest statement in the preamble2 block",
+   "next_probe": "only after frontier 1-2 are measured dead; cite the s3 constraint map in the ruling question"
   }
  ],
  "judge_constraints": [],
