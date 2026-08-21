@@ -1,4 +1,9 @@
-/* func_80038658 — MATCHED (sandbox --disable all == 0, 55/55 insns, s1 2026-08-20)
+/* func_80038658 — MATCHED (sandbox --disable all == 0, 55/55 insns, s1 2026-08-20;
+ * re-verified 0 in the 2026-08-20 annotation-fix session after the layer-1
+ * citation-only FAIL — self_vet.md T5 re-filed under
+ * .claude/rules/shared-end-label.md, precedent func_80077B30 commit 0f206e59.
+ * Code body unchanged; applied in src/code6cac_c_mid.c with a program-logic
+ * header comment.)
  * Exact body as applied in src/code6cac_c_mid.c. CD-load/save state-machine
  * completion handler: dispatches on D_800A31F4 (state 4 = post-read,
  * state 6 = post-write), reaps func_800378A8()'s status, closes the file

@@ -41,11 +41,21 @@ No permuter or auto-search used. All forms hand-derived from the target asm
 Checked against the forbidden-family catalog: no register pins, no `__asm__`,
 no volatile, no dead stores/self-assigns, no constant-holders, no unused
 locals/arrays/pads, no pointer aliases, no do-while(0), no empty bodies, no
-cancellation pairs, no alias renames. The `goto fail_store` + inline
-`return` mix is the "mixed exit forms" shape — ordinary C on the SOTN
-FROZEN accepted list, and per the family-selection table
-(`.claude/rules/cross-jump-store-tail-merge.md` row: "ordinary C; no FAKE
-needed"). PASS.
+cancellation pairs, no alias renames. The `goto fail_store; ... fail_store:
+D_800A379E = fail;` shape is the **shared-end-label** constant-fold-defeat
+recipe — a plain matching-playbook recipe, ordinary C, not a
+borderline/FAKE-class family: `.claude/rules/shared-end-label.md` ("Route
+all case paths through a single shared `end:` label that does the only
+`return s2;`" — here the shared label does the only error store instead of
+a return, same mechanism: at `fail_store` GCC sees `fail` as potentially 1
+or 4 depending on which case ran, so the per-case `fail = N;` assignments
+stay live and cannot be constant-folded). PRECEDENT:
+`.claude/rules/shared-end-label.md:62` — func_80077B30, commit `0f206e59`
+(2026-05-16), the same shared-end-label restructure closing a
+constant-fold gap with zero regfix rules. (Corrected filing per the
+2026-08-20 22:49 layer-1 FAIL (citation-only), docs/grind/decisions.md:9618
+— the prior vet misfiled this shape under
+`cross-jump-store-tail-merge.md`'s mixed-exit-forms row.) PASS.
 
 ## T6 naming-announces-intent
 Locals are `ret` (call return) and `fail` (failure result code) — both named
@@ -53,10 +63,10 @@ for their program-logic role and both genuinely read. No pad/dummy/spill/
 unused naming. PASS.
 
 SANCTIONED-FAMILY-CLAIMS: none — the body is ordinary C throughout; no
-FAKE-class exception family is claimed or needed. (The mixed
-`goto fail_store` / inline-`return` exit shape is the ordinary-C
-mixed-exit-forms idiom, listed "ordinary C; no FAKE needed" in the
-family-selection table; it is noted here for completeness, not claimed as an
-exception.)
+FAKE-class exception family is claimed or needed. (The shared error-store
+label is the shared-end-label recipe — `.claude/rules/shared-end-label.md`,
+a plain matching-playbook recipe with no FAKE-exception prerequisites;
+precedent func_80077B30, commit `0f206e59`. Noted here for completeness,
+not claimed as an exception.)
 
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct.

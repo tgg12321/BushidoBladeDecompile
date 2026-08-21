@@ -43,3 +43,8 @@ below) runs `func_800383A4(); func_80038658(); return D_800A379E;`.
 **Artifacts:** `tmp/grind/func_80038658/dumps/` (full `-da` dump set for the
 final TU; `.greg` register dispositions cited above), sandbox object at
 `tmp/sandbox/func_80038658/code6cac_c_mid.o`.
+
+## s1-fixup (2026-08-20, annotation-fix modality)
+- Layer-1 FAIL 2026-08-20 22:49 was CITATION-ONLY (docs/grind/decisions.md:9618): the construct (shared error-store label) is legitimate ordinary C, but the prior self-vet T5 misfiled it under cross-jump-store-tail-merge (mixed exit forms). Correct filing: the shared-end-label constant-fold-defeat recipe, .claude/rules/shared-end-label.md, precedent func_80077B30 (commit 0f206e59, 2026-05-16, same restructure, zero regfix rules).
+- Candidate body restored into src/code6cac_c_mid.c UNCHANGED; sandbox func_80038658 --disable all re-measured 0 (55/55) this session (tmp/grind/func_80038658/s1/sandbox0.json).
+- self_vet.md T5 + SANCTIONED-FAMILY-CLAIMS parenthetical re-filed accordingly; ANNOTATION-CONFORMANCE remains "n/a — no FAKE construct" (shared-end-label is a plain recipe with no FAKE prerequisites).

@@ -395,7 +395,55 @@ finish:
 
 /* kengo:HIGH  |  is_pad/pad_FuncAnalog  |  173i */
 extern s32 func_8003800C(s32 *);
-INCLUDE_ASM("asm/funcs", func_80038658);
+/* func_80038658 — CD-load/save state-machine completion handler: dispatches
+ * on D_800A31F4 (state 4 = post-read, state 6 = post-write), reaps
+ * func_800378A8()'s status, closes the file handle, and posts a result code
+ * to D_800A379E. The ret==0 ("still pending") paths route through the shared
+ * fail_store end label (the shared-end-label recipe,
+ * .claude/rules/shared-end-label.md) so GCC cannot constant-fold the
+ * per-state fail codes. */
+void func_80038658(void) {
+    s32 ret;
+    s32 fail;
+
+    switch (D_800A31F4) {
+    case 4:
+        ret = func_800378A8();
+        if (ret == 0) {
+            fail = 1;
+            goto fail_store;
+        }
+        close(D_800A3794);
+        if (ret == 1) {
+            D_800A379E = 2;
+        } else {
+            D_800A379E = 3;
+        }
+        D_800A31F4 = 0;
+        return;
+    case 6:
+        ret = func_800378A8();
+        if (ret == 0) {
+            fail = 4;
+            goto fail_store;
+        }
+        close(D_800A3794);
+        if (ret == 1) {
+            D_800A379E = 5;
+            if (func_8003800C(&D_800F34D8) == 0) {
+                D_800A379E = 0xF;
+            }
+        } else {
+            D_800A379E = 6;
+        }
+        D_800A31F4 = 0;
+        return;
+    }
+    return;
+
+fail_store:
+    D_800A379E = fail;
+}
 s32 func_80038734(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
