@@ -1,5 +1,37 @@
 # Hypothesis ledger — func_800324D0
 
+## [s12] 2026-08-20 (structural, brief-session 11; scratch tmp/grind/func_800324D0/s11/)
+
+25. **H25 — one of the two structural axes never measured on any chassis
+    (plain ISO `register` storage class; block-scope placement of a local)
+    perturbs the find_reg census toward the target rotation** (expected
+    FALSE per the s6 cascade partition — but both were genuine coverage
+    holes: the s2-s3 structural sweeps predate the 15-chassis and never
+    touched storage class or scope nesting). Probe: (a) `register` on all
+    four locals (no asm() pins), (b) `u8 val;` moved into the payload-arm
+    block (the only liveness-narrowable local). Both sandbox-measured this
+    session: **FLAT 15, 68/68 each** (probe log
+    tmp/grind/func_800324D0/s11/probe_log.md). Neither axis touches
+    refs/live census or webs; allocno_compare never consults
+    REG_USERVAR_P. **KILLED — both axes measured shut; the partition's
+    coverage now includes them explicitly.**
+
+## Frontier (for the driver — the ladder is spent, flat in every modality ON the 15-chassis)
+1. **Every honest axis is measured dead**, and with this session the
+   post-s4-drop cycle is flat in every modality on the 15-chassis itself:
+   permuter (s5/s6, R3 tripped both ways), synthesis (s7), forensics
+   (s8), rederive (s9/s10/s11 — all three inputs + index-walk family),
+   structural (s12). The ladder's R1 escalation disposition applies — the
+   DRIVER's call, not a session's. No escalation entry exists yet in
+   docs/grind/decisions.md (verified s12; sole hit is the layer-1 FAIL at
+   line 9542), so the escalation-modality session must FILE it. Evidence
+   spine for that session: H20 citation resolution (s7) + s6 cascade
+   partition + s7/s8/s9 byte-identical-spellings uniformity proof + s9
+   m2c closure + s10 corpus/sibling closure + s11 index-walk closure +
+   s12 storage-class/scope closure.
+2. No unmeasured honest probe remains on this chassis. Do not re-measure
+   dead axes; do not propose permuter campaigns (R3 tripped both ways).
+
 ## [s11] 2026-08-20 (rederive, brief-session 10; scratch tmp/grind/func_800324D0/s10/)
 
 24. **H24 — the index-based walk (fixed base + integer index, the one
@@ -497,4 +529,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: loop.c strength reduction turns base[i]+increments into a walking-pointer giv with its own header copy; a different pseudo census could re-seed global.c find_reg pass 0
 - probe: three spellings sandbox-measured: plain index (i=5), staged tail (cmd=base[i]; c=cmd), biased base (base+=5; i=0) + staged tail; objdump side-by-sides banked at tmp/grind/func_800324D0/s10/sbs_index_staged14.txt and sbs_biased_index13.txt
 - result: 26/69, 14/69, 13/69 - ALL shape-broken at build 69 vs target 68. GCC rebuilds the pointer form internally (giv), register residual is the SAME walker-cmd 2-swap everywhere. Biased-base form matches the ENTIRE head incl. walker-init addiu $3,$3,5 in the beqz delay slot (target's exact geometry, first spelling ever to reach it); the extra insn is the giv header copy move $6,$3, deletable only if the giv takes $3 (the s2/s6-proven-impossible cmd-webs-skip-$3 condition), and the copy cannot plant a $3 preference because base is a global pseudo live across the beqz edge (set_preference sees no renumbered hard reg). Sub-15 masked scores are alignment-shift accounting on mis-shaped 69-insn bodies, not floor progress.
+- verdict: KILLED
+
+## [s11] H25 — one of the two structural axes never measured on any chassis (plain ISO register storage class on the locals; block-scope placement of the payload local val) perturbs the find_reg census toward the target walker-cmd rotation
+- mechanism: global.c allocno_compare / find_reg pass-0 cascade: a census or web change from storage class or scope nesting could re-seed the allocation order
+- probe: sandbox --disable all on (a) register on all four locals, no asm() pins; (b) u8 val declared inside the payload-arm block (the only liveness-narrowable local; c/cmd are loop-tail-live, ptr loop-carried); chassis verified 15 68/68 before, between, and after (probe log tmp/grind/func_800324D0/s11/probe_log.md)
+- result: Both FLAT 15, build 68 == target 68. Storage class: GCC 2.7.2 allocno_compare consults only priority (floor_log2(refs)*refs/live), never REG_USERVAR_P. Scope nesting: neither refs/live census nor webs change. The s6 cascade partition's prediction confirmed on both previously-unmeasured axes.
 - verdict: KILLED

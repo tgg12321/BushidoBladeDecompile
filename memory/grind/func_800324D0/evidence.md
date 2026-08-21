@@ -1,5 +1,66 @@
 # Evidence bank — func_800324D0
 
+## [s12] 2026-08-20 — structural (brief-session 11; scratch tmp/grind/func_800324D0/s11/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (11th
+consecutive session; the brief's "HEAD honest floor: measurement unavailable"
+is that stale form, as every prior session found). candidate.c (15-floor
+staged form) re-applied to src/code6cac_b.c; measured THIS session:
+sandbox --disable all = 15, build 68 == target 68 — at session start AND
+re-verified after both probes were reverted at session close. Chassis
+unchanged; every banked 15-chassis conclusion remains valid. src carries
+candidate.c verbatim at close.
+
+### Why this session was structural (context for the driver's ladder)
+The driver mandated structural. The last structural sessions (s2-s3) ran on
+the RETIRED 27-chassis; the 15-chassis had never had a structural-modality
+entry, so the post-drop flat cycle had a formal hole even though other
+modalities (synthesis s7, forensics s8, rederive s9-s11) had measured most
+structural levers on it. This session closed the two structural axes NEVER
+measured on any chassis by any modality — no dead axis was re-measured.
+
+### THE MAIN RESULT — the two never-measured structural axes are DEAD
+Probe log with the full table: tmp/grind/func_800324D0/s11/probe_log.md.
+1. **Plain ISO `register` storage class** on all four locals (no asm()
+   pins — the ordinary 1998-idiom keyword): **FLAT 15, 68/68.** As
+   predicted: GCC 2.7.2's allocno_compare consults only priority
+   (floor_log2(refs)*refs/live) and find_reg only conflicts/preferences;
+   REG_USERVAR_P never enters allocation order, so the keyword cannot
+   perturb the pass-0 cascade. The storage-class axis is measured shut.
+2. **Block-scope placement** — `u8 val;` declared inside the payload-arm
+   block instead of function scope (the only local whose liveness permits
+   narrowing; c/cmd are loop-tail-live, ptr is loop-carried). Distinct
+   from the decl-ORDER sweeps (s3 V3, s5 micro-sweep), which kept all
+   decls at function scope: **FLAT 15, 68/68.** Scope nesting changes
+   neither the pseudo's refs/live census nor its web, so the allocation
+   order is unchanged. The scope-placement axis is measured shut.
+
+Both results are the s6 cascade partition's prediction confirmed by
+measurement on previously unmeasured axes — the partition's coverage now
+includes the storage-class and scope-placement dimensions explicitly.
+
+### Honest-axis status (for the driver's ladder) — complete, now with the
+### structural modality itself measured flat on the 15-chassis
+With this session the post-s4-drop ladder cycle is flat in EVERY modality
+ON the 15-chassis: permuter (s5/s6, R3-exhausted), synthesis (s7),
+forensics (s8), rederive (s9/s10/s11 — all three inputs + index-walk),
+structural (s12, this session). No honest axis re-opens; no unmeasured
+honest probe remains. The ladder's R1 escalation disposition applies —
+the DRIVER's call, per the standing rules; this session does not dispose
+(mandated modality was structural, not escalation; no escalation entry
+exists in docs/grind/decisions.md — verified this session, the only hit
+for this function is the 15:48 layer-1 FAIL at line 9542). Evidence spine
+for the escalating/submitting session: H20 citation resolution (s7) + s6
+cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof +
+s9 m2c closure + s10 corpus/sibling closure + s11 index-walk closure +
+s12 storage-class/scope closure.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s11/probe_log.md.
+
 ## [s11] 2026-08-20 — rederive (brief-session 10; scratch tmp/grind/func_800324D0/s10/)
 
 ### Chassis
@@ -871,3 +932,13 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s10] The s7-s10 uniformity proof now also covers the only structurally different walk derivation: every semantics-preserving derivation either breaks the 68-insn shape or folds to the identical flat-15 RTL
 
 - [s10] Every honest axis measured dead with no remaining holes: recon s1, structural s2-s3, permuter s4-s6 (R3 tripped both ways, ~450k iters, four basins), synthesis s7, forensics s8, rederive s9 (m2c) + s10 (corpus/Kengo) + s11 (index walk); the ladder's R1 escalation disposition applies and is the driver's call (this session's mandated modality was rederive, not escalation)
+
+- [s11] Chassis re-verified THIS session: candidate.c (15-floor staged form, FAKE-annotated) applied to src/code6cac_b.c measures sandbox --disable all = 15, build 68 == target 68, at session start and again after all probes reverted; src carries candidate.c verbatim at close. The brief's 'HEAD honest floor: measurement unavailable' was the stale pinned s1 form in the working tree (11th consecutive session), same as every prior session.
+
+- [s11] Plain ISO register storage class on all four locals: FLAT 15, 68/68 — storage-class axis measured shut (no asm() pins involved; ordinary C).
+
+- [s11] u8 val block-scoped into the payload arm: FLAT 15, 68/68 — scope-placement axis measured shut (distinct from the s3/s5 decl-ORDER sweeps, which never varied scope).
+
+- [s11] No escalation entry exists in docs/grind/decisions.md for func_800324D0 (verified this session: sole grep hit is the 2026-08-20 15:48 layer-1 FAIL at line 9542), so the owner-gated shortcut did not apply and this structural session could not dispose.
+
+- [s11] With this session the post-s4-drop ladder cycle is flat in every modality ON the 15-chassis: permuter s5/s6 (R3 tripped both ways), synthesis s7, forensics s8, rederive s9/s10/s11 (all three inputs plus the index-walk family), structural s12. Ledger updated: evidence.md [s12], hypotheses.md H25 + frontier.

@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 10,
- "current_modality": "rederive",
+ "session_count": 11,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -63,13 +63,19 @@
    "floor": 15,
    "modality": "rederive",
    "headline": "Rederive: index-based walk (the last structurally different derivation) measured dead in 3 spellings (26/69, 14/69, 13/69 - all shape-broken, same walker-cmd 2-swap); chassis re-verified 15, 68/68; ev"
+  },
+  {
+   "session": 11,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "Structural flat on the 15-chassis: the two never-measured structural axes (ISO register storage class; block-scope placement of val) both measured FLAT 15 68/68 \u2014 post-s4-drop ladder cycle is now flat"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every honest axis is measured dead; the ladder's R1 escalation disposition applies (driver's call)",
-   "mechanism": "R1 ladder retune: one full flat cycle => escalation. Modalities spent: recon, structural x2, permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive x3 (all three named inputs + the index-walk derivation family). Evidence spine for the escalating/submitting session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof + s9 m2c closure + s10 corpus/sibling closure + s11 index-walk closure",
-   "next_probe": "none - this is the disposition rule, not a probe; do not re-measure dead axes or propose permuter campaigns"
+   "hypothesis": "Every honest axis is measured dead and the flat cycle now includes a structural entry on the 15-chassis itself; the ladder's R1 escalation disposition applies (driver's call)",
+   "mechanism": "R1 ladder retune (asm-until-matched.md): one full flat cycle => escalation. Modalities flat since the s4 drop: permuter x2 (R3 exhausted both ways), synthesis, forensics, rederive x3, structural (this session). Evidence spine for the escalating session: H20 citation resolution (s7) + s6 cascade partition + s7/s8/s9 byte-identical-spellings uniformity proof + s9 m2c closure + s10 corpus/sibling closure + s11 index-walk closure + s12 storage-class/scope closure",
+   "next_probe": "none \u2014 disposition rule, not a probe; the escalation-modality session must FILE the docs/grind/decisions.md entry itself (none exists yet) and evaluate the two endgame-lock AND-gates per the standing 2026-07-27 ruling"
   }
  ],
  "judge_constraints": [
