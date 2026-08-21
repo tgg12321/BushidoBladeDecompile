@@ -1,8 +1,8 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,18 +21,29 @@
    "floor": 27,
    "modality": "structural",
    "headline": "Permuter campaign #1 (R3 1/2) is a clean negative: ~109k iters from the 27-floor seed, zero honest finds; best find IS the banned invented-intermediate family and still only reaches 105/170 \u2014 the seed"
+  },
+  {
+   "session": 4,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "FLOOR 27 -> 15 (68/68): second permuter campaign (R3 2/2, new combined-respelling basin) surfaced a vetted staged tail read `cmd = *ptr; c = cmd;` (staged-value-reused-variable family, FAKE-annotated)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A rederive/synthesis modality produces a genuinely NEW 68-insn chassis (different CFG/statement geometry) whose pseudo census yields the target rotation honestly",
-   "mechanism": "in-shape honest routes are exhausted (s1-s3 proofs) and the current seed's mutation basin is measured dry (s4); only a structurally different derivation of the same bytes remains as a search object",
-   "next_probe": "driver-assigned next modality (synthesis/rederive per the ladder); m2c re-derivation of the target's own structure as a candidate new chassis"
+   "hypothesis": "A statement geometry exists where the cmd head web's live length grows enough (>=~10 insns at 10 refs) to drop allocno 75 below val in allocno_compare, opening a different cascade to the target rotation",
+   "mechanism": "global.c allocno_compare priority ordering + find_reg pass-0 cascade; the full cascade must be re-derived from the exclusion sets for any new census before spending a build",
+   "next_probe": "rederive/synthesis modality: m2c re-derivation and hand-synthesis of geometries that lengthen the head web (e.g. separating the head tests from the arm subtract with intervening real work) measured against the s4/findreg exclusion-set arithmetic"
   },
   {
-   "hypothesis": "The last permuter session (R3 1 of 2 remaining) closes from a NEW seed if one is ever produced",
-   "mechanism": "fresh-basin hill-climbing only pays on a genuinely different chassis; re-running the measured-dry 27-floor seed is waste",
-   "next_probe": "spend the final permuter session ONLY after a different-shape 27-or-better chassis exists; otherwise leave R3 unspent and proceed up the ladder"
+   "hypothesis": "The staged-value-reused-variable citation question (sched.c exemplar vs our global-RA mechanism) is resolvable from the rule text + SOTN precedent without an owner ruling",
+   "mechanism": "the rule's bounds 1-6 are mechanism-silent and the 2026-08-17 named-intermediate clarification establishes mechanism-agnosticism for its sibling family, but layer-1 has FAILed right-construct/wrong-citation",
+   "next_probe": "submitting session: re-read staged-value-reused-variable.md + no-new-park-categories.md 2026-06-02 census entry; if not clean, emit ruling-request BEFORE candidate-ready"
+  },
+  {
+   "hypothesis": "The last honest route to the residual 2-swap, if any, is OUTSIDE the current shape family (new CFG whose census yields walker-$3 naturally)",
+   "mechanism": "in-shape routes are exhausted on BOTH chassis (s1-s3 proofs carry over to the 15-chassis, re-verified via fresh findreg dumps); only a structurally different derivation remains",
+   "next_probe": "driver ladder: synthesis/rederive; do NOT re-run permuter (R3 2/2 spent)"
   }
  ],
  "judge_constraints": [

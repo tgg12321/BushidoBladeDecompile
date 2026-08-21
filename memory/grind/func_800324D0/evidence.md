@@ -1,5 +1,93 @@
 # Evidence bank — func_800324D0
 
+## [s5] 2026-08-20 — permuter (brief-session 4; R3 2 of 2 used; scratch tmp/grind/func_800324D0/s4/)
+
+### Chassis
+Working tree again carried the stale pinned s1 form at dispatch; pin-free
+candidate re-applied and measured 27, 68/68 (unchanged). New measured fact:
+the four flat-27 respellings from s2/s3 (probe-A no-cmd-copy, V1 bare-switch,
+V2 while-form, probe-B literal-0xFF) COMPOSE flat — the combined text is 27,
+68/68. That combined text was used as the second-campaign seed (a genuinely
+different C text at the same floor = a different permuter mutation basin).
+
+### THE MAIN RESULT — FLOOR 27 -> 15 (68/68), via a vetted permuter find:
+### the staged loop-tail read `cmd = *ptr; c = cmd;`
+Campaign #2 (workspace tmp/perm_324d0_s4, label s4-combined-respelling-27,
+8 jobs, --stop-on-zero, base 170, ~12k iters over ~25 min, harvested +
+stopped in-session). Zero score-0 finds; but output-105-1 is a
+SEMANTICS-PRESERVING single mutation: route the loop-tail stream-byte read
+through the existing, currently-dead u32 `cmd` (`c = *ptr` -> `cmd = *ptr;
+c = cmd;`). Hand-measured in the sandbox: **15, build 68 == target 68** —
+the first floor movement since s1. 12 of the 27 rotation diffs resolve:
+val -> $5(a1), byte -> $2(v0), 0xFF-holder -> $8(t0), jtbl base -> $7(a3)
+all land in TARGET registers. Residual 15 = an exact 2-register swap:
+walker ours $6 / target $3, cmd(both webs) ours $3 / target $6
+(side-by-side banked at s4/residual15_sbs.txt).
+
+Provenance note: the staged form also reproduces target's andi provenance —
+on this chassis the head `andi` comes from the u8 truncation `c = cmd`, and
+the tail lbu goes directly into $2($v0) exactly as target's does.
+
+### Construct classification (for the vetter — decided BEFORE banking)
+The staged read is a BORROW of an existing local = the
+staged-value-reused-variable family (SANCTIONED 2026-07-03). Bounds walked:
+value real + consumed next line (1); cmd exists for a real job (2); borrow
+provably safe — cmd's arm value is dead at the tail and re-derived at the
+next arm entry (3); FAKE annotation with mechanism + exhaustion in place at
+the site (4); receipts = s1-s4 + two dry campaigns (5). SOTN PSX precedent:
+`// fake reuse of i?` staged-load shape,
+docs/reference/sotn-construct-index.md:51,81,92,97,109. NOT the banned
+base/ff family: nothing is invented, the borrow stages the TAIL READ (not a
+base-pointer intermediate), and the value is consumed live. OPEN CITATION
+QUESTION: the rule's origin exemplar mechanism is sched.c
+adjust_priority/birthing_insn_p; our measured mechanism is the global-RA
+census (the extra cmd set splits cmd into head web 75 + arm web 85). The
+rule's six bounds are mechanism-silent, but layer-1 has FAILed
+right-construct/wrong-citation before — the submitting session must resolve
+this (or ruling-request) before any candidate-ready.
+
+### Micro-sweep around the staging (all measured this session)
+- u8 carrier instead of u32 (`val = *ptr; c = val;`): **27** — the SImode
+  borrow is load-bearing (rejected/tail-staged-via-val.c).
+- Placement `cmd = *ptr; ptr++; c = cmd;`: **28, build 69** — shape breaks.
+- Preheader read also staged (`cmd = ptr[4]; c = cmd;`): flat 15.
+- val's arm load staged through dead c (`c = *ptr; val = c;`): flat 15.
+- decl-order cmd-first: flat 15. do-while guard form: flat 15.
+- 0xFF-arm walker increment staged through cmd
+  (`cmd = (u32)ptr + 6; ptr = (u8*)cmd;`): flat 15 — reg-reg copy
+  cse-coalesced, plants nothing (consistent with s1 q-alias kill).
+
+### The residual-15 wall (find_reg ground truth, s4/findreg*.log)
+Instrumented BB2_FINDREG_DEBUG on the 15-chassis. Allocation order
+75(cmd-head, 10refs/4insns), 76(val), 85(cmd-arm, 8/7), 72(pad), 74(c),
+73(walker), 91, 86. 75 takes first-free $3; walker (6th) takes $6. For $3
+to survive to the walker, 75 AND 76 AND 85 must ALL skip it in pass 0 —
+the only mechanisms are someone_prefers (needs a conflicting allocno with
+hard-reg-pref $3: only the walker itself conflicts with all three, and the
+s2 proof that set_preference cannot plant a walker pref from its defs is
+UNCHANGED on this chassis) or conflict with a $3 holder (the s2
+walker-liveness-superset impossibility proof also carries over verbatim —
+walker still dies in 0 places). Verified against the exclusion sets:
+walker-allocated-FIRST would yield the complete target cascade with zero
+constructs (75 skips 3-held+4-pref+5-conflict -> 6; 85 -> 6; val -> 5) —
+but that is the s1 priority-inversion route, arithmetically dead (walker
+density 1.55 vs 75's 7.5). The wall is the SAME single sufficient
+condition as s1 (walker gets $3), now one 2-swap short instead of a
+3-cycle.
+
+### Artifacts
+tmp/grind/func_800324D0/s4/: setup_perm.sh, campaign_meta.json,
+score_histogram.txt, campaign_log_tail.txt, find_105_staged_read.diff,
+find_120_banned_carrier.diff (banned invented-carrier direction, for the
+record), findreg{72,73,74,75,76,85,86,91}.log, residual15_sbs.txt,
+sbs.py/diff15.sh, body.i. Campaign workspace tmp/perm_324d0_s4 (stopped;
+harvest telemetry in metrics/events.jsonl; no orphans).
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated);
+floor 27 -> 15, 68/68, re-verified as the final act. R3 permuter cap now
+2 of 2 used — permuter modality is EXHAUSTED for this function.
+
 ## [s4] 2026-08-20 — structural (permuter campaign; scratch dir tmp/grind/func_800324D0/s3/)
 
 ### Chassis
@@ -289,3 +377,15 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s3] R3 permuter cap now 1 of 2 used. All hand-enumerated alternative shapes measured WORSE and shape-breaking in s2/s3 (merged c/cmd 37/67, cmd-u8 38/69, ptr-inc-after-switch 30/66), so no credible different-shape seed currently exists for the second permuter session.
 
 - [s3] Campaign artifacts banked: tmp/grind/func_800324D0/s3/{campaign_meta.json,score_histogram.txt,find_105_banned_carrier.c,find_105_banned_carrier.diff,find_110_semantics_broken.diff,campaign_log_tail.txt,setup_perm.sh}; workspace tmp/perm_324d0; harvest telemetry in metrics/events.jsonl; campaign stopped in-session (no orphans).
+
+- [s4] The four flat-27 respellings from s2/s3 (no-cmd-copy, bare-switch, while-form, literal-0xFF) COMPOSE flat: the combined text measures 27, 68/68 - new fact, was never measured combined
+
+- [s4] Floor 27 -> 15 (68/68) via `cmd = *ptr; c = cmd;` at the loop tail - first floor movement since s1; the staged form also reproduces target's andi provenance (head andi from the u8 truncation c = cmd, tail lbu directly into $v0 as target has)
+
+- [s4] find_reg ground truth on the 15-chassis (s4/findreg*.log): allocation order 75(cmd-head,10refs/4insns), 76(val), 85(cmd-arm,8/7), 72, 74, 73(walker), 91, 86; 75 takes first-free $3, walker takes $6
+
+- [s4] The residual-15 wall is s1's wall: for $3 to survive to the walker, 75+76+85 must all skip it in pass 0; someone_prefers route needs walker-pref-$3 (s2 set_preference impossibility proof carries over verbatim - walker defs unchanged), conflict route stays dead (s2 walker-liveness-superset proof carries over - walker still dies in 0 places), and walker-first order would yield the complete target cascade with zero constructs but is the s1 arithmetic kill (density 1.55 vs 7.5)
+
+- [s4] Campaign #2 basin behaves like campaign #1: every other byte-moving find is a forbidden family (invented carrier at 120, empty-if/if(1) wraps at 115, unreachable-store semantics breakers at 125/135); R3 is now 2 of 2 - permuter modality exhausted for this function
+
+- [s4] Construct-citation caveat banked for the submitting session: staged-value-reused-variable's origin exemplar mechanism is sched.c adjust_priority/birthing_insn_p, ours is the global-RA census; the rule's six bounds are mechanism-silent; resolve or ruling-request before any candidate-ready

@@ -1,33 +1,45 @@
-/* func_800324D0 — BEST CLEAN FORM (s2, 2026-08-20): sandbox --disable all = 27,
- * build_insns 68 == target 68. Pin-free, zero constructs, ordinary C.
+/* func_800324D0 — BEST FORM (s5 ledger entry, brief-session 4, 2026-08-20):
+ * sandbox --disable all = 15, build_insns 68 == target 68. FIRST floor drop
+ * since s1 (27 -> 15).
  *
- * This is the Judge-directed baseline (layer-1 ruling 2026-08-20 15:48,
- * docs/grind/decisions.md:9542): the s1 base/ff block-0 split that closed to 0
- * was FAILed as a Test-3 GCC-internals cheat and is BANNED in any spelling
- * (banked at rejected/layer1-fail-0820-1548.c). Do not re-derive it.
+ * Chassis: the s4 combined respelling (probe-A no-cmd-copy + V1 bare-switch +
+ * V2 while-form + probe-B literal-0xFF — each measured flat 27 individually in
+ * s2/s3, combination measured flat 27 this session) PLUS the load-bearing
+ * staged loop-tail read: `c = *ptr` written as `cmd = *ptr; c = cmd;`.
  *
- * The whole 27 is one 3-cycle register rotation across ~27 insns (s1 objdump
- * proof, evidence.md): walker ours $a2 / target $v1, cmd ours $a1 / target $a2,
- * val ours $v1 / target $a1. Schedule, shape, andi, sltiu, frame all match.
- * The single sufficient closing condition is a walker allocno preference for
- * hard reg 3 (s1 BB2_FINDREG_DEBUG ground truth) — but every known honest
- * planting route is measured dead or banned; see hypotheses.md frontier.
+ * The staged read is a permuter find (campaign #2, output-105-1) vetted and
+ * hand-measured: it borrows the EXISTING, currently-dead u32 `cmd` for the
+ * tail stream byte. Family: staged-value-reused-variable
+ * (.claude/rules/staged-value-reused-variable.md, SANCTIONED 2026-07-03) —
+ * bounds check: (1) value real, consumed next line by `c = cmd`; (2) cmd
+ * exists for a real job (payload command selector); (3) borrow provably safe
+ * (cmd's arm value dead at the tail — it is re-derived from c at the next
+ * arm entry; staged value not needed after cmd's next assignment); (4) FAKE
+ * annotation in place at the site; (5) receipts = s1-s4 exhaustion + two dry
+ * campaigns. SOTN PSX precedent: the `// fake reuse of i?` staged-load shape,
+ * docs/reference/sotn-construct-index.md:51,81,92,97,109 (i = *scriptCur++
+ * through an existing variable). OPEN CITATION QUESTION for the submitting
+ * session: the rule's origin text names sched.c adjust_priority/birthing_insn_p
+ * as its exemplar mechanism; OUR measured mechanism is the global-RA census
+ * (the extra cmd set splits cmd into head web 75 + arm web 85 and re-seeds
+ * find_reg). Bounds 1-6 of the rule are mechanism-silent, but layer-1 has
+ * FAILed right-construct/wrong-citation before — if the submitting session
+ * cannot resolve this cleanly, emit ruling-request rather than submit.
  *
- * s3 (2026-08-20, structural): the $3-exclusion-by-CONFLICT route is PROVABLY
- * dead — the walker's loop live range (dies in 0 places) is a strict superset
- * of val's and cmd's, so any $3-holding pseudo that would exclude $3 from
- * val/cmd also excludes it from the walker (evidence.md [s3]). Type axis
- * (cmd-u8 WORSE 38/69; val-u32, c-u32+mask flat), bare-switch, while-form,
- * decl-order all flat 27; merged c/cmd single-variable WORSE 37/67 (andi
- * lost). Within the matching 68-insn shape all three find_reg routes
- * (preference/conflict/priority) are dead or banned; frontier = permuter.
+ * u32 cmd is load-bearing for the staging (borrowing u8 val instead: 27;
+ * u8 c for val's load: flat; placement `ptr++` between read and copy: 28/69).
  *
- * s4 (2026-08-20, structural/permuter, R3 1 of 2 used): campaign tmp/perm_324d0
- * from THIS seed, ~109k iters — zero score-0 finds; best (105/170) is the
- * banned invented-intermediate family's direction; all other improvements are
- * semantics-breaking. The seed's basin is measured dry; a second permuter
- * session is only worth spending on a genuinely different chassis
- * (evidence.md [s4]). Frontier = rederive/synthesis for a new shape.
+ * Residual 15 = exact 2-register swap: walker ours $6 / target $3($v1), both
+ * cmd webs ours $3 / target $6($a2). find_reg ground truth (s4/findreg*.log):
+ * order 75,76,85,72,74,73,91,86; 75 takes first-free 3. For $3 to survive to
+ * the walker, 75 AND 76 AND 85 must all skip it => a conflicting allocno with
+ * hard-reg-pref $3 => the walker itself (defs are self-increments + lw from
+ * mem(pad): set_preference CANNOT plant — s2 proof unchanged) or an invented
+ * overlapping pair (the BANNED base/ff family). Priority inversion (walker
+ * allocated first WOULD yield the full target cascade with zero constructs —
+ * verified against the exclusion sets) needs walker density ~5x: arithmetically
+ * dead (s1). The wall is the SAME single sufficient condition as s1, one
+ * construct short of it.
  */
 void func_800324D0(u8 *pad) {
     u8 *ptr;
@@ -36,34 +48,30 @@ void func_800324D0(u8 *pad) {
     u8 val;
 
     ptr = *(u8 **)(pad + 0x58);
-    c = 0xFF;
-    pad[0xA1] = c;
-    pad[0xA3] = c;
-    pad[0xA2] = c;
-    pad[0xA4] = c;
+    pad[0xA1] = 0xFF;
+    pad[0xA3] = 0xFF;
+    pad[0xA2] = 0xFF;
+    pad[0xA4] = 0xFF;
     pad[0xAA] = 0;
     pad[0xA7] = 0;
     pad[0xA8] = 0;
     pad[0xA5] = 0;
-    pad[0xA6] = c;
-    pad[0xAB] = c;
-    pad[0xAC] = c;
+    pad[0xA6] = 0xFF;
+    pad[0xAB] = 0xFF;
+    pad[0xAC] = 0xFF;
 
     c = ptr[4];
     ptr += 5;
-    if (c == 0) return;
-
-    do {
-        cmd = c;
-        if (cmd == 0xFF) {
+    while (c != 0) {
+        if (c == 0xFF) {
             ptr += 6;
-        } else if (cmd < 0x80) {
+        } else if (c < 0x80) {
             ptr++;
         } else {
-            cmd -= 0x80;
+            cmd = c - 0x80;
             val = *ptr;
             ptr++;
-            if (cmd < 12) {
+            {
                 switch (cmd) {
                     case 0: pad[0xA1] = val; break;
                     case 1: pad[0xA3] = val; break;
@@ -80,7 +88,14 @@ void func_800324D0(u8 *pad) {
                 }
             }
         }
-        c = *ptr;
+        /* FAKE: loop-tail stream byte staged through the currently-dead cmd
+         * (c = *ptr written as cmd = *ptr; c = cmd), mechanism: global.c
+         * allocno census - the extra cmd set splits cmd into head/arm webs and
+         * re-seeds find_reg (val/byte/holders land in target regs; floor 27->15,
+         * 68/68), lever-exhaustion: memory/grind/func_800324D0/hypotheses.md
+         * s1-s4 + two dry permuter campaigns (evidence.md s4/s5) */
+        cmd = *ptr;
+        c = cmd;
         ptr++;
-    } while (c != 0);
+    }
 }

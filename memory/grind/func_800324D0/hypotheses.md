@@ -1,5 +1,47 @@
 # Hypothesis ledger — func_800324D0
 
+## [s5] 2026-08-20 (permuter, brief-session 4; scratch tmp/grind/func_800324D0/s4/)
+
+14. **H14 — a second campaign from a genuinely different C text at floor 27
+    (the combined s2/s3 flat respellings) finds an honest closure the first
+    basin could not.** Probe: campaign tmp/perm_324d0_s4, ~12k iters, vetted
+    every sub-120 find. Result: zero score-0; 110/115 finds are forbidden
+    families (invented locals, empty-if dead-read, if(1){} wrap); 120 is the
+    banned invented-carrier direction again. BUT output-105-1 is a
+    semantics-preserving staged tail read that hand-measures 15 (H15).
+    **KILLED as a closer; CONFIRMED as a lever source. R3 now 2/2 — permuter
+    exhausted.**
+15. **H15 — staging the loop-tail read through the existing dead u32 cmd
+    (`cmd = *ptr; c = cmd;`) re-seeds the find_reg census toward the target
+    rotation.** Probe: sandbox + BB2_FINDREG_DEBUG + objdump side-by-side.
+    Result: **27 -> 15, 68/68** — val/byte/holders all land in TARGET regs;
+    residual is the exact walker<->cmd 2-swap ($6<->$3). Construct =
+    staged-value-reused-variable family (bounds walked in evidence.md [s5];
+    FAKE-annotated; SOTN precedent sotn-construct-index.md:51 et al.).
+    **CONFIRMED (floor lever, not yet a closer).**
+16. **H16 — micro-variants of the staging close the remaining swap.** Probe:
+    u8 carrier (27), placement after ptr++ (28/69), preheader staged (flat),
+    arm-load staged via c (flat), decl order (flat), do-while (flat),
+    0xFF-arm pointer-through-cmd borrow (flat; copy cse-coalesced).
+    **KILLED — the swap does not move by any measured staging variant.**
+
+## Frontier (for s6+)
+1. **The residual-15 wall is s1's wall in a new coat: walker must get $3.**
+   find_reg ground truth on the 15-chassis (evidence.md [s5]): all three of
+   75/76/85 must skip $3 -> needs walker-pref-$3 (s2 def-analysis proof of
+   impossibility carries over) or walker-first allocation order (s1
+   arithmetic kill carries over) or an invented conflicting pref-carrier
+   (BANNED family). Mechanism: global.c find_reg pass 0. Next probe: a
+   rederive/synthesis modality searching for a statement geometry where the
+   cmd head web's live length grows (10 refs across >=10 insns drops 75
+   below val AND walker... note: order change alone measured insufficient —
+   re-derive the full cascade for any new census before spending a build).
+2. **The submitting session must resolve the staged-value citation question**
+   (rule origin names sched.c; our mechanism is global-RA census; bounds are
+   mechanism-silent). If irresolvable from the rule text + precedent index,
+   emit ruling-request BEFORE any candidate-ready carrying the construct.
+3. **Permuter is exhausted (R3 2/2).** Do not propose further campaigns.
+
 ## [s4] 2026-08-20 (structural — permuter; scratch tmp/grind/func_800324D0/s3/)
 
 13. **H13 — the permuter finds a structural spelling outside the
@@ -177,4 +219,22 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: structural mutation search (decomp-permuter, weighted byte-diff scorer) from the pin-free 27-floor candidate.c seed
 - probe: campaign tmp/perm_324d0 via tools/permuter_campaign.py (label s3-pinfree-27, 8 jobs, --stop-on-zero, --stack-diffs), base permuter score 170, ~109k iterations over ~55 min, harvested and stopped in-session; best-find and exemplar diffs vetted by hand against the 6-test checklist and the banned base/ff family
 - result: Zero score-0 finds and zero finds below 105 across ~400 outputs. Best find (105) is an invented block-0 pointer intermediate 'new_var = *(u8**)(pad+0x58); ptr = new_var;' — the banned base/ff invented-intermediate family's direction, partially cse-coalesced so it cannot close without the full banned overlapping-pair construct. All other sampled sub-170 classes are semantics-breaking mutations (case-constant stored instead of val) that only score better because the constant's register coincidentally matches target at that store.
+- verdict: KILLED
+
+## [s4] H14: a second campaign from a genuinely different C text at floor 27 (the four s2/s3 flat-27 respellings combined, measured flat 27 this session) finds an honest closure the first basin could not
+- mechanism: permuter mutation space is over SOURCE text, so a same-score different-text seed is a different basin
+- probe: campaign tmp/perm_324d0_s4 (label s4-combined-respelling-27, 8 jobs, --stop-on-zero, base 170, ~12k iters, ~25 min, harvested + stopped in-session); every sub-120 find hand-vetted against the cheat catalog
+- result: zero score-0; 110/115/120 finds are forbidden families (invented locals, empty-if dead-read, if(1){} wrap, invented pointer carrier); output-105-1 is a semantics-preserving staged tail read that hand-measures 15
+- verdict: KILLED
+
+## [s4] H15: staging the loop-tail stream-byte read through the existing currently-dead u32 cmd re-seeds the find_reg census toward the target rotation
+- mechanism: global.c allocno census: the extra cmd set splits cmd into head web (75) and arm web (85); val/byte/0xFF-holder/jtbl-base all land in target registers
+- probe: sandbox --disable all + BB2_FINDREG_DEBUG sweep (s4/findreg*.log) + objdump side-by-side (s4/residual15_sbs.txt)
+- result: 27 -> 15, build 68 == target 68, re-verified on the final annotated text; residual is exactly walker ours $6/target $3 and cmd(both webs) ours $3/target $6; construct classified staged-value-reused-variable (bounds walked in evidence.md [s5], SOTN precedent sotn-construct-index.md:51,81,92,97,109), FAKE-annotated in src
+- verdict: CONFIRMED
+
+## [s4] H16: micro-variants of the staging close the remaining 2-swap
+- mechanism: carrier mode / placement / guard form / decl order perturb the census further
+- probe: seven variants measured: u8 carrier (27), ptr++ between read and copy (28/69), preheader staged (flat 15), arm load staged via c (flat 15), decl-order (flat 15), do-while guard (flat 15), 0xFF-arm pointer-through-cmd borrow (flat 15, copy cse-coalesced)
+- result: no variant moves the swap; the SImode borrow and its exact placement are load-bearing for the 15
 - verdict: KILLED
