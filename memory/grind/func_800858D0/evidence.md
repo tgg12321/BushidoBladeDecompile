@@ -197,3 +197,71 @@ instruction order is now proven already correct.
 - [s1] Old-chassis 'scheduling CLOSED / goal == identity' claim is stale: cluster (b) shows in-loop order divergence on the new chassis; sched_solver and ra_solver must be re-run against the floor-15 form
 
 - [s1] The old 'candidate breaks the oracle' warning is moot: the 18 regfix rules are retired, src/main.c:857 is INCLUDE_ASM, sessions apply candidate.c directly
+
+## s2 (2026-08-20, structural — MATCH FOUND, sandbox 0)
+
+- **MATCHED at sandbox --disable all = 0** (72/72 insns, frame 96, saves 3);
+  per-word disassembly of tmp/sandbox/func_800858D0/main.o identical to
+  asm/funcs/func_800858D0.s modulo relocations (checked instruction by
+  instruction, including both delay slots, the increment cluster
+  `addiu v0,s0,1; addu s0,v0,zero`, and the preheader/loop-back
+  `addiu a0,sp,16` pair). Edits in place in src/main.c over the former
+  INCLUDE_ASM line.
+- **The closing lever is the loop SPELLING: label + trailing
+  `if (var_s0 < D_80101BCC) goto loop;` instead of do/while.** A goto-spelled
+  loop emits no NOTE_INSN_LOOP_BEG/END, so loop.c never treats the region as
+  a loop and move_movables never runs. This dissolves the s1 two-carrier
+  puzzle: target's 24 and 1 ARE plain single-set constant pseudos — they were
+  never candidates for hoisting because there was no loop for loop.c to see.
+  H3's kill ("single-set const spellings are dead a priori") was correct ONLY
+  under the hidden assumption of an intact loop-note structure; the goto
+  spelling escapes its premise, not its math.
+- **Launch mechanism (names the pass, read from sched.c):** when a consumer is
+  scheduled, `schedule_insn` (sched.c:4049) temporarily holds it at
+  LAUNCH_PRIORITY (0x7f000001) and `adjust_priority` (sched.c:2584-2590)
+  raises a newly-readied parent to that priority — but ONLY if
+  `birthing_insn_p` (sched.c:2504-2526) approves, which requires the parent's
+  dest pseudo to have **reg_n_sets == 1**. So single-set constant pseudos are
+  launched ADJACENT to their consumers (li v1,24 next to its sh; li v0,1 next
+  to sllv/jal — exactly target's clusters), while ANY multi-set carrier
+  forfeits launch, keeps priority 1, and drifts to sched1 block top. This is
+  why every multi-set-t chassis (floors 27/22/15/13) had a li stolen by reorg
+  into the preheader/delay pair: the anti-hoist trick itself created the
+  block-top identity divergence. The two goals ("don't hoist" and "launch
+  adjacent") are CONTRADICTORY for any spelling loop.c can see — the only
+  resolution is no loop notes.
+- **Rotation identity + RA parts land for free:** with all constants launched,
+  the a0=sp+16 hard-reg set (multi-set hard reg, never launchable, ready from
+  T-12) is the lone priority-1/class-3 straggler; the rank_for_schedule LUID
+  tiebreak (sched.c:2461-2464, higher LUID issues earlier backward) leaves it
+  at block top; reorg steals block-top into preheader + loop-back delay slot
+  (target's identity); hard $a0 is then live across the sign-extend span, and
+  with $v0/$v1 occupied by the launched constants the sign-extend lands in
+  $a1 — BOTH parts of the ra_solver Phase 5 two-part requirement satisfied at
+  once, exactly as the s1 ledger predicted they must land together.
+- **Kill (rejected/two-carrier-incr-temp-sext-save-25.c):** spelling the
+  increment through an int temp (`t = var_s0 + 1; var_s0 = t;`) sign-extends
+  var_s0 BEFORE the add; CSE reuses the loop-top sign-extend, which then
+  lives across both calls -> 4th callee-save, 73 insns, score 25. Target
+  increments the raw register and extends the temp afterwards; only direct
+  `var_s0 = var_s0 + 1;` (s16 arithmetic) reproduces it.
+- Intermediate do-while measurements this session (all superseded): baseline
+  candidate re-confirmed 15; two-carrier t{1,incr}/u{24,lim-reload} with
+  direct increment = 17 (cluster b CLOSED: li v0,1/sllv adjacent to jal;
+  proves the multi-set-u limit-reload pairing puts 24 in $v1 and lbu in the
+  same pseudo, matching target's v1 pairing); + `offset = 1;` reuse as the
+  shift source (anti-dep on the six stores pins the li late) = 13 (new
+  do-while floor). These forms are structurally instructive but the goto
+  spelling makes all carrier machinery unnecessary.
+- The `(s16)` casts on var_s0 reads are byte-inert in the goto form (var_s0
+  is already s16): removed, still 0. Final body has zero redundant casts,
+  zero scratch carriers, zero dead code — every statement is live, consumed
+  program logic.
+- SOTN-master precedent for goto-spelled loops in matched PSX code:
+  docs/reference/sotn-construct-index.md:1033 (src/main/main.c:40
+  `main_search_loop_1:` goto from line 57), :1015 (src/dra/5F60C.c:579
+  `loop_check_equip_id_1:` goto from 582), :1035 (sprintf.c:96 `loop_30:`).
+- Artifacts: tmp/grind/func_800858D0/s2/ (sched_func.txt = block-2 sched1
+  trace of the floor-13 form showing insn 71 ready T-21 losing every cycle
+  and insn 113 losing the LUID tiebreak; ours.dis; dis.sh; sched_slice.py),
+  tmp/grind/func_800858D0/dumps/ (regenerated from the floor-13 form).

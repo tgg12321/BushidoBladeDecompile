@@ -72,3 +72,36 @@ rejected/p-loop-top-block-scope-inert-15.c.
 - probe: applied p at loop top with p[0] store and func_8008B488(p); sandbox
 - result: score 15 unchanged - canon_reg folds the single-set alias before sched1; banked in rejected/p-loop-top-block-scope-inert-15.c
 - verdict: KILLED
+
+## s2 (2026-08-20, structural)
+
+### H6 — CONFIRMED: an honest two-carrier spelling exists (t={1,increment}, u={0x18,limit-reload})
+Statement: pairing each in-loop constant with a naturally loop-variant second set
+(matching target's own register pairings v0={1,shift,incr-temp}, v1={24,lbu limit})
+yields two multi-set, non-hoisted carriers.
+Probe: do-while forms measured 25 -> 17 -> 13 (see evidence.md s2).
+Result: carriers landed (24+lbu shared v1-class pseudo; li v0,1/sllv adjacent to jal
+= cluster b CLOSED at 17; offset-reuse for the 1 pinned it late via store anti-deps = 13).
+Verdict: CONFIRMED — but superseded: the goto spelling makes carriers unnecessary.
+
+### H7 — KILLED: increment through an int temp (t = var_s0 + 1; var_s0 = t)
+Mechanism: reading var_s0 in int context sign-extends BEFORE the add; CSE reuses the
+loop-top sign-extend pseudo across both calls -> 4th callee-save, 73 insns (score 25).
+Only direct s16 arithmetic (var_s0 = var_s0 + 1) gives target's addiu-raw + move + extend-temp.
+Banked: rejected/two-carrier-incr-temp-sext-save-25.c.
+
+### H8 — CONFIRMED (THE MATCH): goto-spelled loop (no loop notes) reproduces the entire
+target emission profile; sandbox = 0
+Statement: spelling the loop as `loop: ... if (var_s0 < D_80101BCC) goto loop;` removes
+NOTE_INSN_LOOP_BEG/END so (a) loop.c/move_movables never hoists the single-set 24/1
+pseudos, (b) birthing_insn_p (sched.c:2504-2526, reg_n_sets==1 gate) lets adjust_priority
+(sched.c:2584-2590) launch each li adjacent to its consumer, (c) the unlaunchable multi-set
+a0=sp+16 hard-reg set is the lone pri-1 straggler at block top per the rank_for_schedule
+LUID tiebreak (sched.c:2461-2464), which reorg steals into preheader + loop-back delay
+slot, holding $a0 live across the sign-extend span so local-alloc assigns the extend $a1
+and the 24 $v1 (both Phase 5 RA parts land together).
+Probe: applied the spelling with all-direct constants, sandbox --disable all.
+Result: score 0, 72/72 insns, per-word disassembly identical to target modulo relocs;
+(s16) casts additionally proven inert and removed.
+Verdict: CONFIRMED. The s1 open question ("why does move_movables not hoist target's
+single-set constants?") is answered: there was no loop for loop.c to see.

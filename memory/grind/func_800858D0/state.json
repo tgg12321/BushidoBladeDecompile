@@ -34,9 +34,14 @@
    "next_probe": "re-run tools/ra_solver Phase 5 local model against the floor-15 form to re-derive the requirement on the new chassis before spending any spelling on it"
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The goto-spelled loop was deliberately chosen to suppress NOTE_INSN_LOOP_BEG/END so loop.c's move_movables and sched.c's birthing_insn_p behave differently \u2014 a GCC-internals-driven construct in a family the project's own playbook treats as a bug to fix, not a technique to exploit, and which is not on the frozen SOTN-sanctioned list. Next action: Do not commit. Revert to a genuine loop statement (while/do-while) per the direction in [[loop-note-fixes-delay-slot-steal]] and continue from the H6 floor-13 form, which already used the sanctioned defeat-licm-hoist-var-re"
+ ],
+ "banned_constructs": [
+  "Loop rewritten from a natural while/do-while form into `loop: ... if (var_s0 < D_80101BCC) goto loop;`",
+  "Same construct, evaluated against the frozen family catalog"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-21T03:58:24.238083+00:00"
