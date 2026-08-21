@@ -9847,3 +9847,51 @@ symbol, and require the `!FAKE` annotation string to be present in the span (as 
 `volatile`), so a granted row cannot cover a different empty-if than the one that was ruled on.
 
 **Constraint recorded for any future session:** The F6 empty-if `if (D_80101BCC) { }` is RULED SANCTIONED for func_800858D0 (annotation + exhaustion ledger + named GCC-pass mechanism all independently verified; bytes re-verified against disc/SLUS_006.63 modulo relocs) - do not re-litigate or respell it. The goto-spelled note-suppressing loop remains banned. No grind session may edit engine/ to unblock the sandbox: that grant is owner-only.
+
+## 2026-08-21 — OWNER RULING — `find_empty_if_dead_reads` gains a strictly-keyed F6 allowlist: func_800858D0, condition `D_80101BCC`
+
+The owner reviewed the 2026-08-21 Judge ESCALATE (ruling request, policy-question) on
+func_800858D0 in an operator session and **GRANTS the allowlist row**.
+
+**The question as the Judge put it:** the 2026-08-18 F6 sanction (empty-if
+redundant-condition) exists and the Judge ruled this construct sits inside it — but
+`engine/volatile_cheats.py::find_empty_if_dead_reads` (written 2026-06-02) predates the
+sanction and has no allowlist hook, unlike `_SANCTIONED_UNWRITTEN_PADS`. So the detector
+strips the closing construct before scoring and `sandbox --disable all` can never reach 0.
+A solved function was being shelved over a tooling gap.
+
+**Verified by the operator BEFORE granting (independent of the ledger's claims):**
+
+- `memory/grind/func_800858D0/candidate.c` applied over the `INCLUDE_ASM` line in
+  `src/main.c` → full clean build → SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+  == oracle. **MATCH.** The bytes are real.
+- Same tree, `sandbox func_800858D0 --disable all` → **13**, `cheat_asm_stripped 68`,
+  72/72 insns scorable — i.e. the residual is entirely the detector stripping the
+  sanctioned empty-if, exactly as the escalation stated.
+- The candidate is the **do-while** (genuine loop statement) form. The goto-spelled
+  note-suppressing loop that layer-1 FAILed on 2026-08-20 is NOT present and STAYS
+  BANNED; this ruling does not disturb that ban.
+
+**Scope of this ruling — exactly:**
+
+- `"func_800858D0": frozenset({"D_80101BCC"})` in a new `_SANCTIONED_EMPTY_IFS` map.
+- Keyed on **function name AND exact condition text**, and the span must carry the
+  `!FAKE` annotation string — the same per-function/exact-shape strictness
+  `_SANCTIONED_UNWRITTEN_PADS` already enforces (the owner declined the looser
+  function-name-only variant precisely so a granted row cannot cover a different
+  empty-if than the one ruled on).
+
+Nothing else is extended. The frozen SOTN family list is unchanged — F6 already existed;
+this teaches the enforcement tooling a ruling the owner had already made, which is the
+whole content of the grant.
+
+**Authorized integration steps** (operator, this session): add the map + the
+`_body_base_spans` guard; `engine test` green; apply `candidate.c` over the `INCLUDE_ASM`
+line in `src/main.c`; `sandbox func_800858D0 --disable all` == 0; full build SHA1 ==
+oracle; fresh layer-2 adversarial `cheat-reviewer` on the composite diff (default-FAIL,
+the operator's endorsement not credited); then unpark + `queue done`. If the reviewer
+FAILs, the row is revoked and the function reverts to its standing-ruling refusal.
+
+**Record correction confirmed:** the 2026-08-21 terminal OWNER-ACCEPTED INCOMPLETE park
+on func_800858D0 (and its `docs/grind/borderline.md` entry of the same date) is
+SUPERSEDED by this ruling.
