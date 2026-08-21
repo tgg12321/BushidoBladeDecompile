@@ -149,3 +149,116 @@ Candidate-5 model validates 11/11. Solver findings:
 - [s1] Untried sanctioned family identified for the +1: duplicated-statement-into-arms (byte-free ref-lift for global-RA priority walls) — hypotheses.md H2, rule must be read end-to-end before use
 
 - [s1] No sibling/duplicate shortcut exists (tmp/duplicates_leads.txt negative; Kengo lead is name-only)
+
+## s2 (structural, 2026-08-21) — split-model RA vector space closed at depth<=3; three normalization walls proven with mechanisms
+
+Chassis: candidate.c re-applied to src/text1a_pre.c, sandbox 5 reproduced
+(132/132) at session start and re-verified at session end; edits in place.
+
+### Real-chassis split-model allocno table (plain split out2b, sandbox 16)
+
+pseudo -> role: 73=a1(16/100,s1) 74=a2(16/100,s2) 75=a3(4/100=800)
+76=a4-param(4/194,memory) 77=pa4-carrier(5/95=1052) 78=i(8/98,s4)
+79=tbl(4/48=1666,s5) 85=saved(2/48,memory) 86=loop1-out2(3/42=714)
+87=out2b(3/48=625,s3 CORRECT already) 88=stptr(7/41,s3) 91=stptr2(6/47,s0).
+Misallocation is EXACTLY a 3-cycle order problem: 77(1052)->s6, 75(800)->s7,
+86(714)->s8; target wants 86->s6 > 77->s7 > 75->s8. 87 lands s3 in every
+variant (conflict-free with 88/79/86) as long as 75/77/86 resolve.
+
+### Full-goal solver result (artifact s2/inverse_fullgoal_depth3.txt)
+
+inverse.py with the FULL 10-pseudo target disposition (earlier ledger pairs
+came from an underspecified 4-pseudo goal — several old "sufficient pairs"
+(e.g. 87refs+1&87pref22) actually scramble tbl/i/out2b and are VOID).
+Depth<=3 sufficient sets, complete list:
+  #1 (77 refs 5->4  & 86 live 42->34)
+  #2 (79 refs 4->5  & 86 refs 3->4)
+  #3 (79 live 48->40 & 86 refs 3->4)
+  #4 (86 refs 3->4  & 86 live 42->50)
+  #5 (77 pref+$s7   & 86 live 42->34)
+  #6+ (86 refs+N & 86 pref+$s6) ladder — all need pref.
+  #7 (75 pref+$fp & 77 pref+$s7)
+Every set contains >=1 atom measured/proven unspellable below.
+
+### Atom spellability verdicts (each with mechanism)
+
+- **86 refs_up: STRUCTURALLY UNSPELLABLE.** Three independent walls, all
+  dump-proven this session:
+  (a) block-0 canon_reg rewrite — cse.c:826 make_regs_eqv: on a copy
+      `new = old`, NEW becomes the qty's canonical (substitution-target)
+      register ONLY if regno_last_uid[new] outlives regno_last_uid[old].
+      out2 dies at loop1's end while pa4/76 lives into loop2, so 76 stays
+      canonical and EVERY arithmetic use of 86 in block 0 is rewritten to
+      76 (verified: 86's def reads 76 in .cse). This is also exactly why
+      stptr's lever-5 split-init worked (+2: stptr outlives base) and why
+      out2's split-init measured 0 in s0 — now explained, not just observed.
+  (b) cse dest-swap normalization — for `A = expr; B = A` where A dies at
+      the copy, cse1 swaps destinations to `B = expr; A = B` (verified
+      .jump vs .cse, insns 164/167); the swapped copy is dead and
+  (c) flow deletes dead stores UNCOUNTED. Both staging directions converge;
+      rejected/split-staged-reinit-cse-destswap.c.
+  The only 86-refs that count are its call-arg copies (plain hard-reg
+  copies escape canon_reg); no third call exists; calls cannot be
+  duplicated (family non-extension).
+- **86 live_shrink -8: UNSPELLABLE by def position.** Moving the def to the
+  last preamble slot moved livelen 42->41 only (-1, not -8) and cost bytes
+  elsewhere (sandbox 18, lever-2/3 emission coupling). No later def
+  position exists; last use is fixed.
+- **86 live_extend +8: unspellable alone** (nothing after loop1 can read
+  out2 without either the dest-swap wall or a materialized move).
+- **79 refs+1 (tbl): SPELLABLE-BUT-BYTES-FAIL as arm-dup.** Back-edge dup of
+  `offset = (*tbl)*6;` DID count (79: 4->5 = pri 2083 in .lreg) — the H2
+  flow-counts-before-jump2 mechanism is real — but cross_jump did not
+  re-merge (sched1 interleaves the fall-in copy with preamble insns; no
+  identical tail), build 134, sandbox 30. rejected/split-armdup-tbl-backedge.c.
+- **79 refs+2: spellable in principle** (`tbl = (s32*)((u8*)D_80094CFC - K);
+  tbl = (s32*)((u8*)tbl + K);` — fold-back to the 2-insn symbol constant is
+  COSTLIER than the 1-insn addiu, so cse's cost gate keeps it; combine
+  re-merges) — but +2 puts tbl at 2500 > i(2448) and breaks s4/s5. Unused.
+- **all pref_add atoms: unspellable** (s6/s7/fp are callee-saved; copy
+  preferences only arise from hard-reg copies = call args/returns).
+- **77 refs_down 5->4: unspellable** — the five 77-refs are def + 3 arg
+  copies + out2b's def; every substitution at those sites was measured to
+  cost an instruction (s0 ledger) or requires the memory-resident param 76
+  (reload materializes an extra lw).
+
+### Lever-4-reverted split world (loop2 523E0 takes pa4): floor 15
+
+sandbox 15 (best split-family score; candidate-5 still 5 overall). 77 goes
+to 7 refs (1473), 76 dies in the preamble (no allocation, no lw a0,88(sp)
+residual class). Same 3-cycle; 86's window TIGHTENS to (1473,1666). The
+canon_reg canonicality flips (77 outlives 76 -> 77 canonical) but the 86
+walls are unchanged (86 still dies before 77). Conclusion: lever 4 is NOT
+load-bearing in the split model (unlike candidate-5 where pa4 there scored
+11); if the 3-cycle is ever resolved, prefer the reverted spelling — it
+also fixes the move a0,s7 residual for free.
+
+### Where this leaves the search
+
+The split-model global-RA approach is CLOSED at depth<=3 over the honest
+atom space. Remaining live directions, in order:
+1. Masked deeper inverse: extend inverse.py to EXCLUDE the dead atoms
+   ({86 refs_up, 86 live +-8, all pref_add, 77 refs_down}) and search
+   depth 4-6 over the spellable space (79 atoms, 73/74/78/88/91 refs/live
+   moves, conflict_add via overlap changes). If empty -> the split-RA
+   axis is dead end-to-end and the function needs a different structural
+   world (jump/sched-side attack on candidate-5's residual, or full m2c
+   rederivation of the original variable structure).
+2. Arm-dup byte-neutrality repair (fall-in copy contiguity) — only worth
+   it if (1) surfaces a 79-using sufficient set.
+3. If both die: this is a local-alloc/priority CLASS wall in the shape of
+   sched-rank-class-tie-wall — but do NOT park; ladder has synthesis/
+   forensics rungs left, and the s6-at-1333 candidate-5 world's residual
+   has never been attacked from the jump2/sched side.
+
+- [s2] cse.c:826 make_regs_eqv gate identified and dump-verified: a copy's dest becomes the qty-canonical (substitution-surviving) register only if regno_last_uid[dest] outlives regno_last_uid[src]; explains lever-5 stptr split-init (+2, stptr outlives base) AND why every out2 split-init measures 0 (out2 never outlives pa4) — the s0 'copy-prop pre-flow' anomaly is now a mechanism, not an observation
+
+- [s2] cse1 dest-swap normalization proven (.jump vs .cse insns 164/167): 'A=expr; B=A' with A dying at the copy is rewritten to 'B=expr; A=B'; flow then deletes the dead copy UNCOUNTED - staging refs onto a dying pseudo is structurally impossible in GCC 2.7.2, both directions converge
+
+- [s2] real-chassis split allocno table banked: 3-cycle is a pure allocation-order problem: 77(1052)->s6, 75(800)->s7, 86(714)->s8 vs target 86->s6>77->s7>75->s8; 87 (out2b) lands s3 correctly in every variant; full-goal depth<=3 sufficient sets are exactly 7 and each carries a dead atom
+
+- [s2] s1's banked sufficient-pair list is VOID (goal underspecification: pairs like 87refs+1&87pref22 scramble tbl/i and pass the 4-pseudo goal while missing target)
+
+- [s2] 86 live_shrink by def position measured: C statement position moved livelen only 42->41 (-1, not the -8 the insn count suggests) and costs bytes elsewhere (sandbox 18)
+
+- [s2] lever-4-reverted split is the best split-family form (sandbox 15) and removes the stack-reload residual class for free; candidate-5 (floor 5) remains the overall best and is restored + re-verified in src/text1a_pre.c at session end

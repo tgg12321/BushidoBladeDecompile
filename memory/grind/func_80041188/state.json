@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -15,23 +15,29 @@
    "floor": 5,
    "modality": "recon",
    "headline": "recon: chassis re-verified (HEAD 27, candidate 5, residual = same 5-insn loop2 cluster); 3-hypothesis frontier built on the banked ALLOCDBG/RA-solver arithmetic"
+  },
+  {
+   "session": 2,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Split-model RA vector space CLOSED at depth<=3 with mechanisms: every full-goal solver-sufficient set needs an 86-atom, and 86 refs_up/live-shift are proven unspellable (cse.c:826 make_regs_eqv canoni"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Realize one RA-solver sufficient pair on the real split model (out2b for loop2): (86 refs+1 & 86 pref+22) or (79 refs+1 & 86 refs+1) or (77 pref->23 & 86 live-8)",
-   "mechanism": "global.c allocno priority + expand_preferences; the split lands out2b in s3 (model 12/12) but 3-cycles {loop1-out, a4, saved} without the pair",
-   "next_probe": "tmp/hw_split2.sh --keep, extract split-variant allocno table, diagnose why the tested split-init +1 ref did not materialize (copy-prop pre-flow) via .combine/.lreg dumps (tools/grinder/dump.ps1), then spell the next pair"
+   "hypothesis": "A depth 4-6 sufficient vector exists over the SPELLABLE atom space only (79 refs+1/+2, 79/88/91/78/73/74 live moves, conflict_add via overlap changes)",
+   "mechanism": "same global.c priority model; the spellable atoms were individually verified this session (79 arm-dup counts; 79 sym-K chain survives cse's cost gate and combine re-merges)",
+   "next_probe": "add an atom-exclusion mask to tools/ra_solver/inverse.py (exclude 86 refs_up, 86 live+-, all pref_add, 77 refs_down), re-solve the full 10-pseudo goal at depth 4-6 from tmp/ra_solver_work/hw_split.model.json; if empty, the split-RA axis is dead end-to-end"
   },
   {
-   "hypothesis": "duplicated-statement-into-arms supplies the missing +1 reg_n_refs on the split out2b (or on tbl, 1666->2083) byte-neutrally",
-   "mechanism": "flow.c counts reg_n_refs before jump2 cross-jump re-merges the duplicate; sanctioned family with FAKE+exhaustion prereqs (.claude/rules/duplicated-statement-into-arms.md)",
-   "next_probe": "read the rule file; construct the duplication around the loop-exit conditionals (only arms available); verify build_insns==132 and read .greg nrefs delta"
+   "hypothesis": "candidate-5's residual can be closed from the non-RA side: reload/spill or jump2 makes the single-pseudo out2 EMIT addiu s3,s7,32 for loop2 without a second allocno",
+   "mechanism": "reload spill-reg choice / cross-jump shape on the loop2 preamble - never probed in any session; all prior work attacked global-alloc only",
+   "next_probe": "read candidate-5's .greg/reload output for loop2's re-init insn; check whether any spelling makes out2's second range spill-allocated (reload picks s3-class scratch); alternatively m2c-rederive the original variable structure from asm/funcs/func_80041188.s"
   },
   {
-   "hypothesis": "Restore move a0,s7 at loop2's func_800523E0 by suppressing the carrier's priority below out2's 1333 WITHOUT the parameter substitution (e.g. derive loop2's out2 from saved/base, which also serves 86 live-8)",
-   "mechanism": "global.c priority: carrier nrefs must stay <= 5; the lw a0,88(sp) reload is the cost of lever 4",
-   "next_probe": "sweep out2-derivation spellings that drop a carrier reference; measure carrier nrefs/pri in .greg"
+   "hypothesis": "arm-dup byte-neutrality is repairable by forcing fall-in copy contiguity before the loop1 label",
+   "mechanism": "find_cross_jump needs textually identical post-sched2 tails; sched1 currently interleaves the copy with independent preamble insns",
+   "next_probe": "only worth probing if frontier-1 surfaces a 79-using sufficient set; then try dependence-chaining the last preamble insns to the copy so sched cannot interleave"
   }
  ],
  "judge_constraints": [],

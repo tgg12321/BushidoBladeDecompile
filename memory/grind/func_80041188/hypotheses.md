@@ -78,3 +78,72 @@ reference lever**: every spelling found so far moves reg_n_refs by +2
 - probe: grep tmp/duplicates_leads.txt for func_80041188; source annotation check
 - result: no entry; only a Kengo naming lead (my_hirahira/hirahira_w_ctrl), no transplantable body
 - verdict: KILLED
+
+## s2 (structural, 2026-08-21) — verdicts on the s1 frontier
+
+### H1 (realize a solver pair on the split model) — KILLED at depth<=3
+- probe: real-chassis split allocno table extracted (.lreg/.greg); full-goal
+  inverse re-run (the s1 pair list was from an underspecified goal and is
+  VOID — several pairs scramble tbl/i/out2b); every depth<=3 sufficient set
+  requires an atom proven unspellable (see evidence.md s2 atom verdicts).
+- result: split-init +1/+2 on 86 impossible (cse.c:826 make_regs_eqv
+  canonicality: dest must outlive source; out2 never outlives pa4);
+  staged re-init impossible (cse dest-swap + flow dead-store deletion);
+  live_shrink -8 impossible (measured -1 max, bytes worsen).
+- verdict: KILLED (as "one of the s1 pairs closes it"). The generalized
+  hypothesis "some deeper spellable-atom vector exists" remains OPEN —
+  requires the masked depth-4+ inverse (frontier).
+
+### H2 (duplicated-statement-into-arms supplies +1) — SPLIT VERDICT
+- probe: back-edge arm-dup of `offset = (*tbl)*6` in the split model.
+- result: the ref-lift mechanism CONFIRMED (79: 4->5 in .lreg, flow counts
+  before jump2) but byte-neutrality FAILED (cross_jump found no identical
+  tail: sched1 interleaves the fall-in copy; build 134). For 86 there is NO
+  dup site at all: target has no out2-referencing insn at any merge-surviving
+  position, and duplicating calls is outside the family.
+- verdict: KILLED for 86 (no site); mechanism CONFIRMED for 79 but
+  bytes-blocked as spelled.
+
+### H3 (restore move a0,s7 without the param substitution) — CONFIRMED, free
+- probe: lever-4 revert inside the split model (loop2 523E0 takes pa4).
+- result: sandbox 15 vs 16; 77 -> 7 refs (1473); param pseudo 76 dies in
+  preamble; the lw a0,88(sp) residual class disappears. Lever 4 is NOT
+  load-bearing in the split world.
+- verdict: CONFIRMED (adopt the reverted spelling in any future split
+  resolution; it does not by itself resolve the 3-cycle).
+
+## s2 frontier
+
+1. Extend tools/ra_solver/inverse.py with an atom-exclusion mask; re-solve
+   full goal at depth 4-6 excluding {86 refs_up, 86 live±, pref_add all,
+   77 refs_down}. Spellable atom inventory for the search: 79 refs+1
+   (arm-dup, needs byte repair), 79 refs+2 (sym-K chain, byte-neutral),
+   79/88/91/78 live moves via def position (each must be measured — the 86
+   def-position probe showed C-position moves livelen far less than insn
+   counting suggests), conflict_add via range overlap changes.
+2. If (1) returns empty: abandon split-RA; attack candidate-5's 5-insn
+   residual from the non-RA side (the s0-s8 assignment there is already
+   target-correct; the diff is WHICH pseudo carries loop2's a4+0x20 —
+   re-examine whether a jump2/cross-jump or sched2 shape could make the
+   single-pseudo spelling EMIT addiu s3 (a fresh reload/spill-reg angle:
+   reload chooses s3 if out2 spills across loop2? never probed)), and/or
+   full m2c rederivation of the original variable structure.
+3. Keep: lever-4-reverted split (floor 15) as the base for any split work.
+
+## [s2] One of the s1 RA-solver sufficient pairs on the split model is spellable and resolves the {77,75,86} 3-cycle
+- mechanism: global.c allocno priority order + find_reg first-free; pri = floor_log2(nrefs)*nrefs/livelen*10000
+- probe: real-chassis split allocno table extracted (.lreg/.greg); inverse.py re-run with the FULL 10-pseudo goal (s1's 4-pseudo goal was underspecified and its pair list is VOID); per-atom spelling probes: split-init on 86 (folded), staged re-init out2b=out2 (dest-swapped+deleted), def-position live_shrink (moved -1 not -8, sandbox 18), arm-dup on 79 (+1 counted, 134 insns)
+- result: complete depth<=3 sufficient-set list banked; every set contains an atom proven unspellable: 86 refs_up blocked by three dump-proven normalization walls, 86 live+-8 unreachable, all pref_add atoms honest-unspellable, 77 refs_down costs an instruction
+- verdict: KILLED
+
+## [s2] duplicated-statement-into-arms supplies the missing +1 reg_n_refs byte-neutrally (H2)
+- mechanism: flow.c counts reg_n_refs before jump2 cross-jump re-merges the duplicate
+- probe: back-edge arm dup of offset=(*tbl)*6 in the split model; .lreg refs + build_insns
+- result: ref-lift REAL (79: 4->5, pri 2083) but cross_jump found no identical tail (sched1 interleaves the fall-in copy with preamble insns): build 134, sandbox 30; for 86 there is NO dup site (no out2-referencing non-call insn at any merge-surviving position)
+- verdict: KILLED
+
+## [s2] move a0,s7 can be restored without the parameter substitution (H3)
+- mechanism: carrier priority stays below the window regs even at nrefs 7 (1473) in the split model; param pseudo dies in preamble
+- probe: lever-4 revert (loop2 func_800523E0 takes pa4) inside the plain split; sandbox + .lreg
+- result: sandbox 15 vs 16, lw a0,88(sp) residual class gone, 77=7refs/1473, same 3-cycle otherwise; lever 4 is NOT load-bearing in the split world
+- verdict: CONFIRMED
