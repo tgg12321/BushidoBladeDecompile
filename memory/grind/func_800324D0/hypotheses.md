@@ -1,5 +1,44 @@
 # Hypothesis ledger — func_800324D0
 
+## [s11] 2026-08-20 (rederive, brief-session 10; scratch tmp/grind/func_800324D0/s10/)
+
+24. **H24 — the index-based walk (fixed base + integer index, the one
+    structurally different derivation of the stream walk never measured in
+    s1-s10) produces a different find_reg census that reaches the target
+    rotation** (expected FALSE — but it was a genuine hole in the
+    "structurally different C shape" coverage, not a respelling). Probe:
+    three spellings sandbox-measured this session — plain index (26,
+    build 69), staged tail (14, build 69), biased base + staged tail (13,
+    build 69; side-by-sides s10/sbs_index_staged14.txt /
+    s10/sbs_biased_index13.txt). Result: ALL shape-broken at 69 insns.
+    loop.c strength-reduces the index into a walking-pointer giv — GCC
+    rebuilds the pointer form internally — and the register residual is
+    the SAME walker↔cmd 2-swap in every spelling. The biased-base form
+    matches the entire head including the walker-init `addiu $3,$3,5` in
+    the beqz delay slot (target's exact geometry, first time reached); its
+    extra insn is the giv header copy `move $6,$3`, deletable only if the
+    giv gets $3 — the s2/s6-proven-impossible cmd-webs-skip-$3 condition —
+    and the copy cannot plant a $3 pref because base is a global pseudo
+    (live across the beqz edge; set_preference sees no renumbered hard
+    reg). The sub-15 masked scores (14/13) are alignment-shift accounting
+    on mis-shaped bodies, not floor progress. Banked:
+    rejected/index-walk-family.c. **KILLED — the index-walk derivation
+    axis is measured shut; the uniformity proof now covers the only
+    structurally different walk derivation.**
+
+## Frontier (for the driver — the ladder is spent, no caveats, no holes)
+1. **Every honest axis is measured dead** (recon s1, structural s2-s3,
+   permuter s4-s6 R3-exhausted, synthesis s7, forensics s8, rederive
+   s9+s10+s11 — all three named rederive inputs run AND the index-walk
+   derivation family closed). The ladder's escalation disposition applies
+   — the DRIVER's call, not a session's. Evidence spine for the
+   escalating/submitting session: H20 citation resolution + s6 cascade
+   partition + s7/s8/s9 uniformity proof (four byte-identical flat-15
+   spellings) + s9 m2c closure + s10 corpus/sibling closure + s11
+   index-walk closure.
+2. No unmeasured honest probe remains on this chassis. Do not re-measure
+   dead axes; do not propose permuter campaigns (R3 tripped both ways).
+
 ## [s10] 2026-08-20 (rederive, brief-session 9; scratch tmp/grind/func_800324D0/s9/)
 
 23. **H23 — an external sibling (decomp.me corpus scratch or Kengo
@@ -452,4 +491,10 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - mechanism: rederive modality's two never-run inputs: corpus transplant and Kengo transplant; a genuinely different semantics-equivalent CFG would get one sandbox measurement
 - probe: decomp_me_scrape.py shingle search over the full 3,754-scratch corpus (907 gcc2.7.2-cdk + 1,554 gcc2.7.2-psx + 1,293 psyq3.5); kengo_matches.csv row audit + kengo_ref.py full is_pad.c family scan + Pad_Prs banner attribution check; LIBSND (src/main.c verbatim-Sony region + sotn-decomp libsnd) walk-idiom comparison
 - result: Corpus: best similarity 0.090 (noise floor; s1's self-duplicate scored 1.000), and those hits are themselves non-matching scratches - no transplantable sibling exists. Kengo: csv row is size-only-ambiguous among 83 candidates at combined_score 0.00; the src 'kengo:HIGH is_pad/Pad_Prs' banner is misattributed legacy residue (Pad_Prs = BB2 func_80057CC8/0x80032314, 111 insns vs our 68); no is_pad.c body is a leaf 12-case-jtbl stream parser. LIBSND's memory-resident walk idiom (ptr = *base; *base = ptr + 1) emits store-backs the 68-insn target provably lacks - dead a priori.
+- verdict: KILLED
+
+## [s10] H24 - the index-based walk (fixed base pointer + integer index, the one structurally different derivation of the stream walk never measured in s1-s10) produces a different find_reg census that reaches the target rotation
+- mechanism: loop.c strength reduction turns base[i]+increments into a walking-pointer giv with its own header copy; a different pseudo census could re-seed global.c find_reg pass 0
+- probe: three spellings sandbox-measured: plain index (i=5), staged tail (cmd=base[i]; c=cmd), biased base (base+=5; i=0) + staged tail; objdump side-by-sides banked at tmp/grind/func_800324D0/s10/sbs_index_staged14.txt and sbs_biased_index13.txt
+- result: 26/69, 14/69, 13/69 - ALL shape-broken at build 69 vs target 68. GCC rebuilds the pointer form internally (giv), register residual is the SAME walker-cmd 2-swap everywhere. Biased-base form matches the ENTIRE head incl. walker-init addiu $3,$3,5 in the beqz delay slot (target's exact geometry, first spelling ever to reach it); the extra insn is the giv header copy move $6,$3, deletable only if the giv takes $3 (the s2/s6-proven-impossible cmd-webs-skip-$3 condition), and the copy cannot plant a $3 preference because base is a global pseudo live across the beqz edge (set_preference sees no renumbered hard reg). Sub-15 masked scores are alignment-shift accounting on mis-shaped 69-insn bodies, not floor progress.
 - verdict: KILLED

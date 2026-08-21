@@ -1,5 +1,80 @@
 # Evidence bank — func_800324D0
 
+## [s11] 2026-08-20 — rederive (brief-session 10; scratch tmp/grind/func_800324D0/s10/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (10th
+consecutive session). candidate.c (15-floor staged form) re-applied to
+src/code6cac_b.c; measured THIS session: sandbox --disable all = 15,
+build 68 == target 68 — at session start AND re-verified after all probes
+were reverted at session close. Chassis unchanged; every banked 15-chassis
+conclusion remains valid. src carries candidate.c verbatim at close.
+
+### THE MAIN RESULT — the index-based walk (the one structurally different
+### derivation of the stream walk never measured in s1-s10) is DEAD, three
+### spellings, and the wall it exposes is the SAME find_reg cascade
+Every prior spelling walked the stream with a self-incrementing pointer.
+This session measured the only remaining semantics-equivalent derivation
+family: fixed base pointer + integer index (`base[i]`, `i += k`). Three
+spellings (all sandbox --disable all this session):
+
+1. **Plain index** (base fixed, `i = 5`, plain tail `c = base[i]`):
+   **26, build 69** — shape breaks.
+2. **+ staged tail** (`cmd = base[i]; c = cmd;`): **14, build 69** —
+   masked score below the 15-floor for the first time, but on a mis-shaped
+   69-insn body (an extra insn can never byte-match; alignment-shift
+   accounting, not progress). Side-by-side banked:
+   s10/sbs_index_staged14.txt. Registers are STILL the exact walker↔cmd
+   2-swap (ours walker=$6/cmd=$3 vs target $3/$6): loop.c strength-reduces
+   the index into a walking-pointer giv, i.e. GCC rebuilds the pointer form
+   internally, and the census is unchanged. The extra insn here is an
+   UNFILLED beqz delay slot: ours materializes the walker as
+   `addiu $6,$3,5` (cross-register, post-preheader, slot-ineligible) where
+   target has the same-register `addiu $v1,$v1,5` in the slot.
+3. **+ biased base** (`base += 5; i = 0;` + staged tail): **13, build 69**
+   — side-by-side banked: s10/sbs_biased_index13.txt. NEW structural fact:
+   this spelling matches the ENTIRE head (lines 0-19), including
+   `addiu $3,$3,5` IN the beqz delay slot with the walker-init in $3 —
+   target's exact $v1 geometry, reached for the first time by any spelling.
+   The extra 69th insn is the strength-reduction header copy `move $6,$3`
+   (the giv initialized from base at loop entry; target's walker is one
+   continuous web with no copy). The copy would be a deletable no-op ONLY
+   if the giv were allocated $3 — which requires the cmd head/arm webs to
+   skip $3 in find_reg pass 0: exactly the condition proven impossible by
+   the s2 set_preference/liveness proofs and the s6 cascade partition (the
+   giv's allocno density matches the pointer-form walker's, so the s1
+   arithmetic kill applies verbatim). Nor can the copy plant a $3
+   preference: base is a GLOBAL pseudo (live across the beqz edge from
+   block 0 into the preheader), so set_preference sees no renumbered hard
+   reg at planting time. The register residual in ALL index spellings is
+   the same walker↔cmd 2-swap — no new seam; the wall relocated into
+   loop.c's giv creation but is the same find_reg cascade.
+
+All three banked at rejected/index-walk-family.c (spelling 3's text + the
+full kill analysis in its header). Conclusion: the index-walk derivation
+axis is measured shut; the s7-s10 uniformity proof now also covers the
+only structurally different walk derivation — every semantics-preserving
+derivation of this function either breaks the 68-insn shape or folds to
+the identical flat-15 RTL.
+
+### Honest-axis status (for the driver's ladder) — unchanged, still complete
+[s10] declared every honest axis dead with rederive closed on all three
+inputs. This session adds the index-walk derivation family to the closed
+set (it was a shape hole in the "structurally different C shape" mandate,
+not one of the three named inputs). Nothing re-opens. The ladder's
+escalation disposition applies — the DRIVER's call, per the standing
+rules; this session does not dispose (mandated modality was rederive, not
+escalation). Evidence spine for the escalating/submitting session: H20
+citation resolution (s7) + s6 cascade partition + s7/s8/s9
+byte-identical-spellings uniformity proof + s9 m2c closure + s10
+corpus/sibling closure + s11 index-walk closure.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s10/{sbs_index_staged14.txt,sbs_biased_index13.txt};
+memory/grind/func_800324D0/rejected/index-walk-family.c.
+
 ## [s10] 2026-08-20 — rederive (brief-session 9; scratch tmp/grind/func_800324D0/s9/)
 
 ### Chassis
@@ -786,3 +861,13 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s9] Rederive modality is now closed on ALL THREE of its inputs: m2c-on-target (s9 ledger entry), decomp.me corpus (this session), sibling/Kengo (s1 in-repo duplicate kill + this session's external kill)
 
 - [s9] Honest-axis status: recon s1, structural s2-s3, permuter s4-s6 (R3 tripped both ways, ~450k iterations, four basins), synthesis s7 (cascade partition), forensics s8 (four byte-identical flat-15 spellings), rederive s9+s10 - every axis measured dead with no remaining caveats; the ladder's escalation disposition applies and is the driver's call, not this session's (mandated modality was rederive)
+
+- [s10] Chassis re-verified twice this session (start and close): candidate.c (15-floor staged form) re-applied over the stale pinned s1 form found in src at dispatch (10th consecutive session); sandbox --disable all = 15, build 68 == target 68 both times; src carries candidate.c verbatim at close
+
+- [s10] Index-walk derivation family measured shut in all three spellings; banked at memory/grind/func_800324D0/rejected/index-walk-family.c with the full kill analysis
+
+- [s10] New structural fact: the biased-base index spelling is the first to reach target's head geometry (walker-init in $3, delay slot filled) - proving that geometry is honestly reachable, and that the wall then relocates intact into loop.c's giv header copy, i.e. it is the same find_reg cascade in every derivation
+
+- [s10] The s7-s10 uniformity proof now also covers the only structurally different walk derivation: every semantics-preserving derivation either breaks the 68-insn shape or folds to the identical flat-15 RTL
+
+- [s10] Every honest axis measured dead with no remaining holes: recon s1, structural s2-s3, permuter s4-s6 (R3 tripped both ways, ~450k iters, four basins), synthesis s7, forensics s8, rederive s9 (m2c) + s10 (corpus/Kengo) + s11 (index walk); the ladder's R1 escalation disposition applies and is the driver's call (this session's mandated modality was rederive, not escalation)
