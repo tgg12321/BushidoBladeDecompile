@@ -1,5 +1,60 @@
 # Evidence bank — func_800324D0
 
+## [s8] 2026-08-20 — forensics (brief-session 7; scratch tmp/grind/func_800324D0/s7/)
+
+### Chassis
+Working tree AGAIN carried the stale pinned s1 form at dispatch (7th
+consecutive session). candidate.c (15-floor staged form) re-applied to
+src/code6cac_b.c; measured 15, build 68 == target 68 at session start and
+re-verified after all probes were reverted at session close. Chassis
+unchanged from [s5]/[s6]/[s7]; every banked 15-chassis conclusion remains
+valid. (The brief's "HEAD honest floor: measurement unavailable" was just
+the driver's inability to measure the stale pinned form; the re-measured
+floor equals the ledger's 15.)
+
+### THE MAIN RESULT — forensics-2 ([s7] frontier 2): the residual-15
+### composition is not merely identical, the three flat-15 spellings emit
+### BYTE-IDENTICAL machine code
+Probe: the three named flat-15 spellings each applied to src, each measured
+sandbox --disable all THIS session, each side-by-sided against the target
+with the s4 tool (s4/sbs.py, objdump numeric-reg disasm vs
+asm/funcs/func_800324D0.s):
+- candidate.c verbatim: 15, 68/68 → s7/sbs_candidate.txt — `diff` vs
+  s4/residual15_sbs.txt: IDENTICAL (expected: same text as s4).
+- s5 basin2 text (preheader read staged through cmd + guard+do-while +
+  cmd-first decl order; s5/basin2_seed_flat15.c): 15, 68/68 →
+  s7/sbs_basin2.txt — diff vs s4 side-by-side: IDENTICAL.
+- G4-dup (staged tail duplicated into all THREE arms, built on the basin2
+  base; text banked s7/g4dup_flat15.c): 15, 68/68 → s7/sbs_g4dup.txt —
+  diff vs s4 side-by-side: IDENTICAL.
+
+The diff command compared the ENTIRE 68-line side-by-side, not just the
+flagged lines — so all three spellings produce the same .o bytes for this
+function, not merely the same distance or the same diff-set. Conclusion:
+the residual 15 is ONE wall everywhere — the exact walker↔cmd 2-swap
+(ours $6/$3 vs target $3/$6) across 15 instruction sites (indices
+0,13,16,20,21,22,24,26,28,29,30,32,33,62,65 of s4/residual15_sbs.txt) —
+and the "different spelling, different seam" hope is dead: GCC folds every
+known flat-15 spelling to the identical RTL/allocation/schedule. There is
+no unexplored seam among the known spellings.
+
+### What remains (honest assessment for the driver's ladder)
+Exactly one un-run honest derivation input: rederive — m2c the TARGET asm
+(never explicitly run on this function) and check whether the original
+source's structure differs from candidate.c's CFG in a way that re-opens
+the [s7] cascade partition. If m2c confirms the same guard/loop/switch
+shape (expected — the target's 68 insns already match our shape 1:1 at
+53/68 sites), every honest axis is measured dead and the ladder's
+escalation disposition applies (driver's call). The escalating/submitting
+session carries: the H20 citation resolution ([s7]), the s6 cascade
+partition, and this session's uniformity proof as its evidence spine.
+
+### Session close
+src carries candidate.c verbatim (15-floor staged form, FAKE-annotated),
+re-verified 15, 68/68 as the final act. Floor unchanged. Artifacts:
+tmp/grind/func_800324D0/s7/{sbs_candidate.txt,sbs_basin2.txt,
+sbs_g4dup.txt,g4dup_flat15.c}.
+
 ## [s7] 2026-08-20 — synthesis (brief-session 6; scratch tmp/grind/func_800324D0/s6/)
 
 ### Chassis
@@ -560,3 +615,13 @@ extra instruction, no moved instruction; 68/68 with score 0.
 - [s6] F1-style combine-foldable increment-split chain computed arithmetically dead (~13 fabricated statements needed) and not proposed; the 2026-08-18 F1 survey refused the staging-chain species
 
 - [s6] Citation resolution banked: the submitting session should quote s6/probes_and_partition.md's resolution section in its self-vet; no ruling-request needed on citation grounds
+
+- [s7] Chassis re-verified this session: candidate.c (15-floor staged form) re-applied over the stale pinned s1 form found in src at dispatch (7th consecutive session); sandbox --disable all = 15, build 68 == target 68 at session start and again after all probes were reverted. The brief's 'HEAD honest floor: measurement unavailable' reflected the stale pinned working tree, not a chassis change; the ledger's banked 15 is confirmed current.
+
+- [s7] s5 basin2 text (preheader read staged through cmd + guard+do-while + cmd-first decls) measured 15, 68/68 and its full objdump side-by-side is byte-identical to candidate's (diff vs s4/residual15_sbs.txt: no differences).
+
+- [s7] G4-dup text (staged tail duplicated into all three arms, built on the basin2 base; banked tmp/grind/func_800324D0/s7/g4dup_flat15.c) measured 15, 68/68 and its side-by-side is also byte-identical - cross-jump re-merges the duplicated tails into the same code, confirming s6's byte-neutrality finding at the byte level.
+
+- [s7] Conclusion: GCC folds every known flat-15 spelling to identical RTL/allocation/schedule; the residual 15 is ONE wall everywhere (the walker<->cmd 2-swap at side-by-side indices 0,13,16,20,21,22,24,26,28,29,30,32,33,62,65) and the 'different spelling, different seam' route is measured dead.
+
+- [s7] src carries candidate.c verbatim at session close, re-verified 15, 68/68; candidate.c and rejected/ bank unchanged (no new rejected forms - the two alternate spellings are equal-floor alternates, not disproven forms; both remain banked in scratch).

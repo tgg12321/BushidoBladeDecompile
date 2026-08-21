@@ -1,5 +1,32 @@
 # Hypothesis ledger — func_800324D0
 
+## [s8] 2026-08-20 (forensics, brief-session 7; scratch tmp/grind/func_800324D0/s7/)
+
+21. **H21 — the residual-15 diff COMPOSITION differs across the flat-15
+    spellings (candidate vs s5 basin2 vs G4-dup), exposing an unexplored
+    seam** (the [s7] frontier 2; expected FALSE). Probe: each spelling
+    applied to src, sandbox-measured (all 15, 68/68), objdump side-by-side
+    via s4/sbs.py, full-file `diff` against s4/residual15_sbs.txt. Result:
+    all three side-by-sides are IDENTICAL over the entire 68-line listing —
+    the three spellings emit byte-identical machine code, so the residual
+    is the SAME single walker↔cmd 2-swap everywhere and no seam exists
+    among known flat-15 spellings. **KILLED (and the wall proven fully
+    uniform — stronger than the expected same-diff-set outcome).**
+
+## Frontier (for s9+ — one honest input remains)
+1. **Rederive: m2c the TARGET asm** (unchanged from [s7] frontier 1 —
+   still never run on this function). Mechanism: the cascade partition
+   enumerates orders within OUR build's structure; the target's own
+   decompiled shape is the one remaining independent derivation input.
+   Next probe: m2c asm/funcs/func_800324D0.s, compare structure against
+   candidate.c; any genuinely different semantics-equivalent CFG gets ONE
+   sandbox measurement.
+2. **If rederive confirms the same CFG (expected): every honest axis is
+   measured dead.** The ladder's escalation disposition applies (driver's
+   call, not a session's). Evidence spine for the escalating/submitting
+   session: H20 citation resolution + s6 cascade partition + s7/s8
+   uniformity proof (byte-identical flat-15 spellings).
+
 ## [s7] 2026-08-20 (synthesis, brief-session 6; scratch tmp/grind/func_800324D0/s6/)
 
 18. **H18 — a statement geometry exists where the cmd head web's live length
@@ -347,3 +374,9 @@ not pursue it in any spelling. Current frontier: see [s2] above.
 - probe: read staged-value-reused-variable.md full text + no-new-park-categories.md:193-214 this session
 - result: citation is CLEAN: bound 4 requires naming the ACTUAL pass (our annotation names global.c), sched.c sits in descriptive Origin text not the bounds, clarification prong (4) confirms the borrow family keeps its own mechanism-silent bounds, and the SOTN exemplar (i = *scriptCur++ staged through an existing variable) is literally our shape; full argument banked for the eventual self-vet
 - verdict: CONFIRMED
+
+## [s7] H21 - the residual-15 diff composition differs across the flat-15 spellings (candidate vs s5 basin2 vs G4-dup), exposing an unexplored seam
+- mechanism: the same sandbox score can decompose into different swap sets; a differing composition at equal score would mark a different find_reg outcome reachable by spelling
+- probe: each spelling applied to src and sandbox-measured this session (all 15, build 68 == target 68), then objdump side-by-side via tmp/grind/func_800324D0/s4/sbs.py and full-file diff against the banked s4/residual15_sbs.txt
+- result: all three side-by-sides are IDENTICAL over the entire 68-line listing - the spellings emit byte-identical .o code; the residual is the exact same walker ours-$6/target-$3, cmd-webs ours-$3/target-$6 swap at 15 instruction sites in every case
+- verdict: KILLED
