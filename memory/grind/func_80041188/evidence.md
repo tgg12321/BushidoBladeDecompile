@@ -1293,3 +1293,99 @@ block so that `out3` can be defined from a4 instead of from out2.
 - [s9] The only surviving-insn spelling found (a separated self-update of `saved`: `saved = base; out2 = ...; saved += 0x94;`) produces exactly that arithmetic but lifts saved from pri 425 to 2083, making it a tenth claimant on nine callee-saved seats; global_alloc seats saved and spills a3. Target spills saved (sw $t0,0x18($sp) / lw $t0,0x18($sp)), so the donor of the surviving insn must be a pseudo that ALREADY holds a callee-saved seat.
 
 - [s9] cse1 survival rule refined to three cases, superseding the looser s8 statement that separation alone suffices: a SELF-update of the same pseudo with a register-valued first step and an intervening statement SURVIVES into flow and is counted; a fresh-intermediate copy is copy-propagated away; a constant two-step is constant-folded. Only the first is counted at flow.c:2081.
+
+## s10 evidence (structural, 2026-08-23)
+
+- **E-s10-0 (chassis).** `memory/grind/func_80041188/candidate.c` re-measures at
+  `sandbox func_80041188 --disable all` = 1, 132 target / 132 build insns, at the start
+  and again at the end of the session; src/text1a_pre.c is left holding it. The s8/s9
+  harness (`tmp/grind/func_80041188/s8/mkfd.py` + `one.sh` + the s9 seat checker) is
+  unchanged; s10 added `tmp/grind/func_80041188/s10/batch.sh`, which runs the priority
+  table + seat verdict for a whole directory of variants in one WSL call (~1 s each),
+  and `tmp/grind/func_80041188/s10/gen.py`, which enumerates the between-loops block.
+
+- **E-s10-1 (112-variant grid over the between-loops block).** Generated every
+  interleaving of `i = 0x12` (I) and the s8 separated out2 restore (O) with the three
+  fixed statements `a1 += 0x6C` (A), `a2 += 0x6C` (B), `stptr2 = saved + 0x750` (P),
+  crossed with sym-K on/off (K1/K0) and `i = 1` first/last in block 0 (L0/L1);
+  `out3 = out2;` always last. 112 variants, all measured. Exactly two families reach
+  SEATS ALL-TARGET: **K0_L0 without O** (that is candidate.c and its three
+  between-block permutations - floor 1, residual `move $s3,$s6`), and **K1_L1 with or
+  without O** (the s9 M1 family - i defined last, so the preamble emits tbl before i,
+  sandbox 4). **No K1_L0 (i-first) variant with O reaches all-target seats**: all 24
+  of them differ from target in exactly one way, i and tbl swapping $s4/$s5.
+  (`tmp/grind/func_80041188/s10/g/`.)
+
+- **E-s10-2 (closed form: why i-first + O is shut for an 8-ref `i`).** In the i-FIRST
+  order every insn of block 0 that lies after tbl's definition is also inside i's live
+  range, and i additionally covers its own definition, the between-block tail and the
+  whole of loop2. Measured across the entire grid the difference is a constant:
+  `reg_live_length(i) = reg_live_length(tbl) + 49`, in every one of the 24 K1_L0
+  variants (tbl 47 / i 96 with `i = 0x12` last; 97, 98, 99 as `i = 0x12` moves earlier).
+  With tbl at 6 refs (floor_log2(6)*6 = 12) and i at 8 (floor_log2(8)*8 = 24) the
+  priority comparison is `24/(L+49) > 12/L`, i.e. **tbl's live length must exceed 49**.
+  With tbl at 5 refs (10/47 = 2127) or 4 refs (8/47 = 1702) tbl instead falls BELOW
+  out2, which in the O-chassis is pinned at 5 refs / live 42-44 = 2272-2380 and cannot
+  be lowered (4 refs needs live > 58, and out2 dies at loop1's exit). So on the
+  O-chassis tbl must have exactly 6 refs, and then i needs tbl live >= 50.
+
+- **E-s10-3 (tbl's live ceiling is 48, not 50 - the escape from E-s10-2 is shut).**
+  The single surviving block-0 insn of E-s9-8 lifts tbl 47 -> 48 and no further:
+  a two-step separated self-update of `saved` gives tbl 6/48, and a THREE-step one
+  (`saved = base; out2 = ...; saved += 0x50; saved += 0x44;`) also gives tbl 6/48 while
+  taking `saved` to 7 refs / 2916 - so the extra steps demonstrably survive cse1 and
+  still do not lengthen tbl. `stptr`'s three-step and four-step splits raise stptr to
+  9 and 10 refs with tbl fixed at 47 in both placements. Combined with s9's nine
+  block-0 mutations, sixteen distinct mutations now bound tbl at <= 48.
+  **Therefore the i-first + O chassis is arithmetically CLOSED for an 8-reference `i`.**
+  (`rejected/saved-three-step-does-not-lift-tbl-live-past-48.c`,
+  `rejected/stptr-three-step-refs-rise-tbl-live-inert.c`.)
+
+- **E-s10-4 (the 9th-reference axis PAYS, and the payoff is exactly one insn).**
+  K1_L0_ABOPI (sym-K tbl, `i = 1` first, the s8 separated out2 restore, `i = 0x12` last)
+  plus ONE extra flow-counted reference to `i` - spelled `stptr2 = saved + 0x750 +
+  (i - 0x12);` placed BEFORE the `i = 0x12;` reset - gives i 9 refs / live 99 = 2727
+  against tbl 6/47 = 2553 and prints **SEATS ALL-TARGET**. This is the first form in
+  the whole ledger in which the i-FIRST definition order (which produces target's
+  preamble emission order, E-s9-2/E-s9-3) and the O-chassis (which produces target's
+  slot-72 `addiu $s3,$s7,0x20`, E-s8) co-exist with every callee-saved seat equal to
+  target. `sandbox --disable all` = **3**, build 133 insns vs target 132: the entire
+  residual is the single extra insn that computes the `(i - 0x12)` zero.
+  A BYTE-FREE 9th flow-counted reference to `i` puts this form at distance 0.
+  The measured spelling is not shippable (semantic no-op arithmetic: T1, T2 and T3 of
+  the cheat checklist all fail), and it is banked as proof that the axis pays, not as
+  a candidate. (`rejected/ninth-i-ref-alltarget-seats-ifirst-ochassis-score3.c`.)
+
+- **E-s10-5 (where a 9th reference to `i` may and may not be placed).**
+  `i = 0x12; stptr2 = saved + (i * 0x68);` is arithmetically exact (18 * 0x68 == 0x750)
+  and register-valued, but cse1 already knows `i == 0x12` there, folds the multiply to
+  the constant, and the .lreg table comes back bit-identical to the unmodified form.
+  The reference must therefore sit BEFORE the `i = 0x12;` reset, reading loop1's exit
+  value, which cse1 does not know is 0x12.
+  (`rejected/i-times-0x68-after-reset-is-cse-folded.c`.)
+
+- **E-s10-6 (the honest reference vector, read off target).** target's own insns fix
+  `i` at 8 references (`li 1`, `addiu +1`, `slti`, `li 0x12`, `addiu +1`, `slti`),
+  `tbl` at 4 (`lui/addiu` pair = one def, `lw 0($s5)`, `addiu $s5,$s5,4`), `out2` at 3
+  and `out3` at 3. Both the sym-K tbl lift (4 -> 6) and any 9th reference to `i` are
+  therefore INVENTIONS relative to the original source, and so is the `stptr = base;
+  stptr += 0xFC;` split (target has a single `addiu $s3,$v0,0xFC`). That is a
+  constraint on the endgame, not on the search: some pseudo in our chassis still
+  differs from the original's, and the 9th-ref result of E-s10-4 says the difference is
+  worth exactly one flow-counted reference on `i`.
+
+- [s10] candidate.c re-measures at sandbox --disable all = 1, 132 target / 132 build insns, at the start and again at the end of s10; src/text1a_pre.c is left holding it.
+
+- [s10] 112-variant grid over the between-loops block x sym-K x `i = 1` position: exactly two families reach SEATS ALL-TARGET - K0_L0 without the separated restore (candidate.c and its three permutations, floor 1, residual `move $s3,$s6`) and K1_L1 with or without it (the s9 M1 family, i defined last so the preamble emits tbl before i, sandbox 4). All 24 i-first variants carrying the separated restore differ from target in exactly one way: i and tbl swap $s4/$s5.
+
+- [s10] reg_live_length(i) = reg_live_length(tbl) + 49 in every i-first variant measured, which turns the i-vs-tbl contest into `tbl live >= 50` for a 6-ref tbl against an 8-ref i.
+
+- [s10] tbl's reg_live_length ceiling is 48, not 47: the two-step separated self-update of `saved` reaches 48, and a THREE-step one also reaches 48 while taking saved to 7 refs - so surviving insns past the first buy nothing. Sixteen distinct block-0 mutations across s9 and s10 now bound it.
+
+- [s10] stptr is not a usable donor for the E-s9-7 lever despite already holding a callee-saved seat: its three- and four-step splits raise stptr to 9 and 10 refs (so they do survive cse1 into flow) with tbl fixed at live 47 in both placements.
+
+- [s10] A ninth flow-counted reference to `i` gives SEATS ALL-TARGET on the i-first + separated-restore chassis at sandbox 3 / 133 insns - one insn more than target, and that insn is the reference itself. A byte-free ninth reference puts the form at distance 0.
+
+- [s10] cse1 folds a ninth-reference spelling whose operand value it already knows (`i * 0x68` after `i = 0x12`), so the reference must be placed before the reset and read loop1's exit value.
+
+- [s10] The honest reference vector read straight off target's insns is i 8, tbl 4, out2 3, out3 3, with a single `addiu $s3,$v0,0xFC` for stptr - so the sym-K tbl lift, the stptr split and any ninth i-reference are all inventions relative to the original source, which bounds what an acceptable endgame form may look like.

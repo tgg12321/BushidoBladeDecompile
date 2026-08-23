@@ -994,3 +994,91 @@ statement, which has never been tried in block 0.
 - probe: `i = 0x10; a2 += 0x6C; i += 2;` in the between-loops block - a separated SELF-update, the shape that survives for register-valued pseudos - measured against the plain `i = 0x12;` in .lreg.
 - result: KILLED for the constant spelling: cse1 constant-folds the pair before flow sees it and i stays at 8 refs / live 97, bit-identical to the plain form. This pins down the third case of the refined cse1 survival rule - self-updates survive only when the first step is REGISTER-valued. The family is not closed: a register-valued self-update of i has never been tried and is now the single highest-value open probe in the ledger.
 - verdict: KILLED
+
+## s10 hypotheses (structural, 2026-08-23)
+
+- **H-s10-1 (KILLED).** *"A surviving block-0 insn whose donor already holds a
+  callee-saved seat (`stptr`, `pa4`) gives the i-FIRST order its single missing insn"*
+  (s9 frontier 2). Probed `stptr` three-step and four-step splits in two placements and
+  a `base` two-step: every one raises the donor's reg_n_refs (stptr 7 -> 9 -> 10, so the
+  insns really do survive cse1 into flow) and leaves tbl's reg_live_length at 47 and i's
+  at 97. `saved` remains the ONLY donor that moves tbl at all, and it moves it to 48 and
+  stops there even at three steps. KILLED - and the reason it could never have been
+  enough is H-s10-2.
+
+- **H-s10-2 (CONFIRMED, and it closes the axis).** *"In the i-FIRST definition order,
+  `reg_live_length(i) - reg_live_length(tbl)` is a constant."* Measured = 49 across all
+  24 K1_L0 grid variants. With tbl 6 refs / i 8 refs that makes the priority test
+  `24/(L+49) > 12/L`, i.e. tbl live >= 50, while sixteen distinct block-0 mutations bound
+  tbl live at <= 48; and tbl at 5 or 4 refs falls below out2 (pinned at 5 refs / <= 44
+  by the O-chassis). So **the i-first + O chassis cannot seat an 8-reference `i` in
+  $s4** by any block-0 mutation. The entire s9 frontier-2 lever family is dead.
+
+- **H-s10-3 (CONFIRMED).** *"A ninth flow-counted reference to `i` closes the i-FIRST
+  order outright"* (s9 frontier 1). Confirmed by direct measurement: i 9/99 = 2727 vs
+  tbl 6/47 = 2553, SEATS ALL-TARGET, and `sandbox --disable all` = 3 at 133 insns - one
+  insn more than target, that insn being the reference itself. The axis pays and the
+  price is now known exactly.
+
+- **H-s10-4 (KILLED).** *"`stptr2 = saved + i * 0x68` after `i = 0x12` supplies the
+  ninth reference for free"* - the arithmetic is exact but cse1 constant-folds it and
+  the reference is never counted. Any ninth reference must be placed where cse1 does not
+  know i's value: BEFORE the `i = 0x12;` reset, i.e. reading loop1's exit value.
+
+### s10 frontier (in priority order)
+
+1. **A BYTE-FREE ninth flow-counted reference to `i`, read before the `i = 0x12` reset,
+   finishes the function.** Mechanism: flow.c:2081 fixes reg_n_refs before combine runs,
+   so a reference that survives cse1 into flow but whose insn combine later deletes costs
+   zero bytes - exactly the way the s8 separated out2 restore already buys out2 its
+   extra reference at no byte cost (E-s8, E-s10-4). Next probe: enumerate spellings in
+   which loop1's exit value of `i` is CONSUMED by an expression combine can fold away -
+   e.g. feeding `i` into an address computation that combine re-associates back to a
+   constant offset, or into a comparison combine merges with loop1's own `slti`. Read
+   `.combine` (`pwsh tools/grinder/dump.ps1 func_80041188`) for each: the test is
+   "reg 78 used 9 times" in `.lreg` AND 132 build insns in the sandbox. The measured
+   base form is `tmp/grind/func_80041188/s10/g/K1_L0_ABOPI.c` at sandbox 3 / 133 insns.
+
+2. **The sym-K tbl lift (4 -> 6 refs) is an invention that a corrected chassis may not
+   need.** Mechanism: E-s10-6 reads the honest reference vector straight off target -
+   i 8, tbl 4, out2 3, out3 3, and a single `addiu $s3,$v0,0xFC` for stptr (our chassis
+   splits it). Every lever the last four sessions have spent exists only to compensate
+   for out2 sitting at 5 refs / 42 in the O-chassis; with tbl at its honest 4 refs the
+   requirement is out2 < 1702, i.e. out2 live > 58, which nothing in the current shape
+   can reach. Next probe: attack out2's live length rather than tbl's priority - find a
+   chassis in which the loop1 pointer is still live at the END of the between-loops
+   block (as it is in candidate.c, 4 refs / 47) WHILE the between-block still emits
+   `addiu $s3,$s7,0x20` rather than `move $s3,$s6`. That is the same one-insn question
+   as frontier 1, asked from the out2 side instead of the i side.
+
+3. **Spelling pa4/out2/out3 through a real PsyQ `MATRIX *` local is byte-neutral and
+   materially reduces layer-1 exposure** (carried from s8/s9, still unspent - it is
+   cosmetic-for-the-Judge, not a floor lever, so it should be applied only once a
+   distance-0 form exists). Mechanism and probe unchanged: a4 addresses two adjacent
+   0x20-byte objects, PsyQ's MATRIX is 0x20 bytes, and `&m[0]` / `&m[1]` reads as
+   ordinary scoping rather than as a re-init. Confirm the .lreg table and seat verdict
+   are unchanged before adopting.
+
+## [s10] A surviving block-0 insn whose donor already holds a callee-saved seat (stptr, pa4, base) supplies the i-FIRST order's single missing insn and lifts tbl to live 48 (s9 frontier 2).
+- mechanism: flow.c:1685 increments reg_live_length once per insn for every pseudo live at that insn, so an insn added after tbl's definition in block 0 should lengthen tbl's range; E-s9-8 required the donor to already hold a seat so as not to create a tenth claimant on nine callee-saved seats.
+- probe: stptr three-step and four-step separated splits in two placements (A1, A2), a base two-step (A3), an out2 two-step (D4) and a saved three-step (D2), each measured through the s8/s9 extraction harness for the full .lreg allocno priority table plus the .greg seat verdict.
+- result: stptr's reg_n_refs rises 7 -> 9 (A1) and 7 -> 10 (A2), proving the extra insns survive cse1 into flow, yet tbl stays at live 47 and i at live 97 in both placements; the base and out2 splits likewise leave tbl at 47 or lower (D4: 46). saved remains the only donor that moves tbl at all, and it moves it to 48 and stops there even with three surviving steps (D2: saved 7 refs / pri 2916, a3 spilled).
+- verdict: KILLED
+
+## [s10] In the i-FIRST definition order, reg_live_length(i) - reg_live_length(tbl) is a constant, so the i-vs-tbl priority contest is decided by tbl's live length alone.
+- mechanism: With i defined before tbl, every block-0 insn after tbl's definition lies inside BOTH live ranges; i additionally covers its own definition insn, the between-block tail and the whole of loop2, and none of those regions overlaps tbl's range, so flow.c:1685 counts a fixed excess for i.
+- probe: 112-variant grid (tmp/grind/func_80041188/s10/gen.py + batch.sh) over every interleaving of `i = 0x12` and the s8 separated out2 restore with a1/a2/stptr2 in the between-loops block, crossed with sym-K on/off and `i = 1` first/last in block 0, reading the allocno priority table and seat verdict for each.
+- result: The difference is exactly 49 in all 24 i-first variants (tbl 47 / i 96 with `i = 0x12` last, rising to 97/98/99 as it moves earlier). With tbl at 6 refs and i at 8 the priority test 24/(L+49) > 12/L requires tbl live >= 50, while sixteen distinct block-0 mutations across s9 and s10 bound tbl live at <= 48. tbl at 5 refs (2127) or 4 refs (1702) instead falls below out2, which the separated-restore chassis pins at 5 refs / live 42-44 = 2272-2380 and which cannot go below 1702 without live > 58. The i-first + separated-restore chassis is therefore arithmetically CLOSED for an 8-reference i.
+- verdict: CONFIRMED
+
+## [s10] A ninth flow-counted reference to `i` closes the i-FIRST order outright and needs no change to tbl, out2, stptr, stptr2, saved, pa4 or a3 (s9 frontier 1).
+- mechanism: floor_log2(9)*9 = 27, so i moves to 27/99 = 2727 against tbl's 6/47 = 2553 ceiling, in the definition order that already produces target's preamble emission (sched.c rank_for_schedule INSN_LUID fallback with backward block scheduling, E-s9-3).
+- probe: K1_L0_ABOPI (sym-K tbl + `i = 1` first + the s8 separated between-loops out2 restore + `i = 0x12` last) with `stptr2 = saved + 0x750 + (i - 0x12);` placed before the reset so cse1 cannot fold it; seat checker plus `sandbox func_80041188 --disable all`.
+- result: i 9 refs / live 99 = 2727 > tbl 6/47 = 2553; SEATS ALL-TARGET - the first form in the ledger where the i-FIRST preamble order and the separated-restore slot-72 `addiu $s3,$s7,0x20` co-exist with every callee-saved seat equal to target. sandbox --disable all = 3 at 133 build insns vs 132 target: the entire residual is the one insn computing the (i - 0x12) zero. The spelling itself is a semantic no-op (cheat-checklist T1/T2/T3 all fail) and is banked as proof the axis pays, not as a candidate.
+- verdict: CONFIRMED
+
+## [s10] `stptr2 = saved + i * 0x68;` written after `i = 0x12;` supplies the ninth reference for free, since 18 * 0x68 == 0x750 exactly.
+- mechanism: A register-valued operand should survive cse1 into flow per the E-s9-9 survival rule and be re-folded by combine before any byte is emitted.
+- probe: Variant E2 through the extraction harness; compared the full .lreg table against the unmodified K1_L0_ABOPI form.
+- result: cse1 already knows i == 0x12 at that point and constant-folds the multiply; the .lreg table comes back bit-identical (i 8/97 = 2474, tbl 6/47 = 2553, i and tbl still swapped on $s4/$s5). The E-s9-9 survival rule does not protect an operand whose VALUE cse knows: any ninth reference must read loop1's exit value, before the `i = 0x12;` reset.
+- verdict: KILLED

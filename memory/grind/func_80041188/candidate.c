@@ -2,7 +2,7 @@
  * --disable all == 1, 132/132 insns, frame 72 == target 0x48.
  *
  * ORDINARY C. No register pin, no inline asm, no volatile, no dead code, no
- * unused local, NO /* FAKE *​/ construct, no variable reuse, no do-while(0)
+ * unused local, NO /* FAKE *â€‹/ construct, no variable reuse, no do-while(0)
  * wrap. Every local is once-declared, written where a human would write it,
  * and read for its real value. This REPLACES the s3/s5/s6 "merged stptr"
  * chassis (loop2's pointer reusing the dead loop1 walker via an out2 read),
@@ -62,6 +62,17 @@
  * sandbox 4) whose entire residual is the preamble emission ORDER, and proved
  * that order and tbl's live length are the same variable (sched.c
  * rank_for_schedule's INSN_LUID fallback + flow.c:1685). See evidence.md s9.
+ *
+ * s10 ADDENDUM (structural, 2026-08-23). Still floor 1, still ALL-TARGET seats.
+ * s10 closed the whole "make i outrank tbl in the i-FIRST order" axis by a
+ * measured identity: with i defined before tbl, reg_live_length(i) is always
+ * reg_live_length(tbl) + 49, so an 8-reference i needs tbl live >= 50, while
+ * sixteen distinct block-0 mutations bound tbl's live length at 48. The escape
+ * is a NINTH flow-counted reference to i: measured, it gives ALL-TARGET seats
+ * on the i-first + separated-restore chassis at sandbox 3 / 133 insns, one insn
+ * over target, that insn being the reference itself. A byte-free ninth
+ * reference (surviving cse1 into flow, deleted by combine) is distance 0.
+ * See evidence.md s10 and hypotheses.md s10 frontier 1.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

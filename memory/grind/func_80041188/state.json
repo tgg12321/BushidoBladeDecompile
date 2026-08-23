@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor holds at 1; s9 produced the first ALL-TARGET-SEATS form on the two-locals chassis (sandbox 4, residual = preamble emission order only), named the GCC mechanism that makes emission order and tbl'"
+  },
+  {
+   "session": 10,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "i-first + separated-restore chassis proven arithmetically closed for an 8-ref `i` (tbl live ceiling 48 vs the required 50); a 9th flow-counted reference to `i` reaches ALL-TARGET seats at sandbox 3 / "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A REGISTER-valued ninth reference for `i` closes the i-FIRST order outright: nine flow-counted references put i at 27/95 = 2842, clear of tbl's 2553 ceiling, in the definition order that already produces target's preamble emission - and it needs no change to tbl, out2, stptr, stptr2, saved, pa4 or a3.",
-   "mechanism": "E-s9-9's refined survival rule - a self-update `i = i OP x` with a REGISTER-valued operand and at least one intervening statement survives cse1 into flow (constants are folded, fresh intermediates are copy-propagated), is counted at flow.c:2081, and is merged back by combine before any byte is emitted. Placed inside i's dead hole in the between-loops block it also costs zero live length.",
-   "next_probe": "Find a register-valued spelling of loop2's starting index. Note loop1 exits with i already equal to 0x12, so `i = 0x12;` is arithmetically a no-op there - look for a derivation from a value live at that point (a1/a2 after their 0x6C advance, stptr, saved) rather than from a literal, and read `Register 78 used N times across M insns` in .lreg. Also try the self-update inside loop1 (an `i++` split with a register operand), which adds +1 to tbl's live length as well and would land the 2500/2500 tie from the other side. tmp/grind/func_80041188/s9/run.sh turns each variant into one ~1s cc1 run and prints both the priority table and the seat verdict."
+   "hypothesis": "A BYTE-FREE ninth flow-counted reference to `i`, reading loop1's exit value before the `i = 0x12;` reset, finishes the function - the rest of the form is already exact (all-target seats, target preamble order, target slot-72 addiu).",
+   "mechanism": "flow.c:2081 fixes reg_n_refs before combine runs, so a reference that survives cse1 into flow but whose insn combine later deletes costs zero bytes - the same free-reference mechanism the s8 separated out2 restore already exploits for out2. The payoff is measured exactly: i 9 refs -> 2727 > tbl's 2553 ceiling -> SEATS ALL-TARGET.",
+   "next_probe": "Start from tmp/grind/func_80041188/s10/g/K1_L0_ABOPI.c (sandbox 3, 133 insns, all-target seats). Enumerate spellings in which loop1's exit value of `i` is consumed by an expression combine folds away: feeding i into an address computation combine re-associates back to a constant offset, or into a comparison combine merges with loop1's own slti. For each read `reg 78 used 9 times` in .lreg (harness: tmp/grind/func_80041188/s10/batch.sh, ~1s per variant) AND the build insn count from `sandbox func_80041188 --disable all`; the winning form is 9 refs at 132 insns. Use `pwsh tools/grinder/dump.ps1 func_80041188` and read .combine to see which candidate insns combine actually deletes."
   },
   {
-   "hypothesis": "A surviving block-0 insn whose donor already holds a callee-saved seat gives the i-FIRST order its single missing insn, without creating a tenth register claimant.",
-   "mechanism": "Same cse1 self-update rule; the requirement from E-s9-7/8 is exactly one insn that survives cse1 into flow and sits after tbl's definition in block 0, and the constraint is that the donor's priority must stay in its target rank band so the seat order is untouched. `saved` is the wrong donor because target spills it; `stptr` (7/41 = 3414, comfortably top of the table) and `pa4` (7/95, seated in $s7) are the right shape of donor.",
-   "next_probe": "Enumerate self-update spellings of `stptr` and `pa4` in block 0 and read tbl's live length for each. stptr's separated split has been measured in three placements and gives +1 ref / +3 live with no added insn - vary the number and identity of the intervening statements, since the survival rule is sensitive to exactly that. Accept a donor whose priority rises but keeps its rank position; reject any that adds a new register claimant (watch for `saved` leaving the spilled state in the seat checker)."
+   "hypothesis": "The same one-insn question asked from the out2 side: find a chassis in which the loop1 pointer is still live at the END of the between-loops block (as in candidate.c, 4 refs / live 47) WHILE the between-block emits `addiu $s3,$s7,0x20` rather than `move $s3,$s6`.",
+   "mechanism": "E-s10-2 shows every lever spent since s7 exists only to compensate for out2 sitting at 5 refs / live 42-44 in the separated-restore chassis, which forces tbl to 6 refs (the sym-K invention) and then shuts the i contest. With tbl at its honest 4 refs (1702) the only requirement is out2 < 1702, i.e. out2 live > 58 at 4 refs - unreachable in the current shape, so the shape itself is what must change.",
+   "next_probe": "Sweep chassis in which out2's live range is extended past loop1's exit WITHOUT gaining a fifth reference: a between-block statement that READS out2 for a real value rather than re-initialising it, out2 consumed by stptr2's or out3's computation, and out2's last read placed as the final statement of the between block. Measure with batch.sh, targeting `r86 = 4/>=48` together with `r79 = 4/47`, and confirm the build still contains `addiu $s3,$s7,0x20` at slot 72."
   },
   {
-   "hypothesis": "Spelling pa4/out2/out3 through a real PsyQ `MATRIX *` local is byte-neutral and materially reduces the layer-1 exposure of every form built on the I2 chassis (carried over from s8, still unspent).",
+   "hypothesis": "Spelling pa4/out2/out3 through a real PsyQ `MATRIX *` local is byte-neutral and materially reduces the layer-1 exposure of every form built on this chassis (carried from s8/s9, still unspent).",
    "mechanism": "a4 addresses two adjacent 0x20-byte objects and PsyQ's MATRIX is 0x20 bytes; func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair, so the natural original source is `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]`, and a second loop that re-takes `&m[1]` before it starts reads as ordinary scoping rather than as a dead-store re-init.",
-   "next_probe": "Re-spell candidate.c and the M1 variant (rejected/m1-i2-symk-ilate-alltarget-seats-preamble-order4.c) with a MATRIX-typed - or equivalent 0x20-byte struct - local and confirm the .lreg table and the seat verdict are unchanged. If they are, adopt that spelling everywhere BEFORE stacking any further construct, because the frontier-1 and frontier-2 forms will otherwise combine a re-init, a sym-K chain and block-0 staging in one diff."
+   "next_probe": "Apply only once a distance-0 form exists - it is Judge-facing cosmetics, not a floor lever. Re-spell candidate.c and the winning form with a MATRIX-typed (or equivalent 0x20-byte struct) local and confirm the .lreg table and the seat verdict are unchanged before adopting."
   }
  ],
  "judge_constraints": [
