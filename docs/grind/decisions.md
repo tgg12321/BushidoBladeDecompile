@@ -9942,3 +9942,171 @@ cheat-asm, and full-build SHA1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
 carve-out list is not the frozen family list and omits at least F6. A reviewer reasoning
 only from that list will FAIL sanctioned constructs. Briefs should point reviewers at
 `.claude/rules/no-new-park-categories.md` as ground truth for family membership.
+
+## 2026-08-22 — OWNER RULING — parked-but-proven audit: three `_SANCTIONED_UNWRITTEN_PADS` rows, the func_80038170 integration, two driver-gate fixes, and a park-label correction
+
+**Provenance — the verbatim exchange (operator session, 2026-08-22).** The owner asked for
+an audit of the recent ruling record:
+
+> **Owner (Trenton), verbatim:** "Evaluate all our recent rulings, look for any decisions
+> you disagree with and investiage further"
+
+The operator read the 2026-08-20/21 decision span, then independently re-verified the
+load-bearing byte claims (four full driver builds from a clean tree, each restored
+afterward — see EVIDENCE below) and reported four disagreements plus two
+checked-and-upheld items. The report closed with this enumerated proposal, quoted in
+full because the grant refers to it:
+
+> "1. Grant the three pad rows (`func_80049A2C` → `("pre_pad",2)`, `func_800481E8` →
+> `("pre_pad",8)`, `func_80041688` → `("pre_pad",8)`), integrate all four functions with
+> fresh layer-2 review each, and drop them off the queue. Bytes are verified; that's ~4
+> completions.
+> 2. Change the candidate gate to accept `full-build SHA1 == oracle` as terminal even at
+> nonzero sandbox score, and make `grind.ps1:880` consult `Get-ExtraScope`. Both are
+> driver edits, so: stop → edit → drill → relaunch.
+> 3. Add a correction note to the `func_800858D0` record retiring the `pl_steps.c` citation.
+> 4. Separately: re-park those four under an accurate disposition, or add a
+> `blocked-on-grant` state — the current label is actively misleading."
+
+> **Owner (Trenton), verbatim:** "Go ahead with your best judgement then"
+
+This ruling record lands as a standalone `rules:` commit BEFORE any commit spends it, per
+[[ruling-record-lands-before-code]].
+
+### EVIDENCE — the four byte proofs, re-verified by the operator on 2026-08-22
+
+Each candidate was applied over `main` from a clean tree, built with
+`& tools/wteng.ps1 main build`, and the tree restored. The engine allowlist was NOT
+touched for these builds: allowlist rows affect only the cheat-invisible SANDBOX score,
+never the real build, so every SHA1 below is independent of any grant.
+
+| Function | Applied | Build SHA1 |
+|---|---|---|
+| `func_80049A2C` | `candidate.c` over `src/text1b.c:868` | `62efab4f…` **== oracle** |
+| `func_800481E8` | `candidate.c` over `src/text1b.c:176` | `62efab4f…` **== oracle** |
+| `func_80041688` | `candidate.c` over `src/text1a_post.c` **+ deletion of `regfix.txt:212-214`** | `62efab4f…` **== oracle** |
+| `func_80038170` | `git apply memory/grind/func_80038170/integration_patch.diff` | `62efab4f…` **== oracle** |
+
+The ledgers' byte claims are therefore confirmed by measurement, not credited.
+
+### Scope of this ruling — exactly
+
+**(1) Three `_SANCTIONED_UNWRITTEN_PADS` rows**, under the EXISTING general
+phantom-frame-slot volatile pad local family (owner ruling 2026-08-18,
+`.claude/rules/no-new-park-categories.md`). **No family extension is granted or implied**
+— that family's own text already requires "a per-function row" in the engine allowlist,
+so these rows apply the family rather than widen it:
+
+- `"func_80049A2C": frozenset({("pre_pad", 2)})`
+- `"func_800481E8": frozenset({("pre_pad", 8)})`
+- `"func_80041688": frozenset({("pre_pad", 8)})`
+
+Each row keyed on function name AND exact pad name AND exact element count, with the
+`volatile` qualifier required in the span — the strictness `_is_sanctioned_pad` already
+enforces. Every form constraint of the family (ARRAY form, first-declaration position, no
+`(void)` shim, `!FAKE` annotation, ledger frame-forensics, honest producers measured
+inert first) must hold at integration or the row is revoked.
+
+`func_800481E8` additionally carries `arg0 = 0;`, an annotated dead store to a parameter —
+already inside the established [[dead-store-fake-exception]] family (2026-07-01 ruling).
+Its escalation's phrase "plus ONE FAKE-annotated construct" undercounts; there are two,
+both sanctioned. Recorded so layer-2 reviews it as two.
+
+**(2) The func_80038170 integration.** `memory/grind/func_80038170/integration_patch.diff`
+is authorized as-is. The C body contains **no construct of any kind** — no volatile, no
+inline asm, no register pin, no dead local, no pad, no annotation. The sole reviewable
+item is the header declaration correction at `include/code6cac.h:80-81`
+(`extern u8 D_8008F19C; / extern u8 D_8008F19D;` → `extern u8 D_8008F19C[];`) plus the
+byte-neutral deletion of `undefined_syms_auto.txt:46`, claimed under the frozen
+**Per-word splat symbol → aggregate merge** family, whose sibling `D_8008F1A8[]` was
+already committed at `include/code6cac.h:82` with a layer-2 PASS on 2026-08-05. The bytes
+at 0x8008F19C are five two-byte Shift-JIS full-width digits, so splat's `D_8008F19D` names
+the low byte of a character — not an object anybody wrote.
+
+**(3) Two driver-gate fixes.**
+
+- *The candidate gate.* `Invoke-CandidatePath` refuses any candidate whose
+  `sandbox --disable all` is non-zero, even when the full-build SHA1 == oracle. This
+  contradicts the project's own non-negotiable #2 (CLAUDE.md: "the oracle is the only
+  truth — intermediate exit codes and isolated scores are hints"). `func_80038170`'s
+  honest score is permanently **1** for a reason unrelated to cheating: our `.o` relocates
+  `lbu $2, D_8008F19C+1($3)` where target relocates `lbu $2, D_8008F19D($3)` — same
+  address, byte-identical linked image. The gate gains an oracle-SHA1 acceptance path.
+
+  **Correction to the escalation's framing, on the record:** that filing attributed the
+  residual to the known [[sandbox-lo16-text-addend-false-distance]] engine gap and
+  proposed masking text-section LO16 addends in `engine/score.py`. **That remedy is
+  refused.** `engine/score.py:57-63` masks *section-relative* HI16/LO16 addends and
+  deliberately does NOT mask *named-symbol* ones, because a named-symbol addend is a
+  source-level fact (`&sym + 2`), not a layout artifact. Masking them would blind the
+  scorer to real source differences. The scorer is correct as written; the gate was wrong
+  to treat its output as terminal.
+
+- *The scope grant.* `scope_allow.txt` grants for any path outside `src/`/`include/` are
+  silently inert: `Get-ExtraScope` (`grind.ps1:544`) is reached only from
+  `Invoke-CandidatePath`, whose filter is `^..\s+("?)(src/|include/)`, while the SESSION
+  scope check (`grind.ps1:987`) runs first against a hard-coded literal at `grind.ps1:880`
+  that never reads the grant file. Two grants were issued for func_80038170 and a session
+  that made the mandated edit was discarded as a scope violation *with the grant in
+  place*. Already recorded in memory as [[grinder-scope-grant-inert-outside-src-include]]
+  and it still burned a session. The session check now consults `Get-ExtraScope`. A grant
+  mechanism that silently no-ops is worse than none.
+
+**(4) Park-label correction.** All four functions were parked `OWNER-ACCEPTED INCOMPLETE`
+— the [[endgame-lock-disposition]] label reserved for functions where BOTH gates FAIL.
+These pass gate (b): the closing construct is inside a sanctioned family in every case,
+and func_80038170 has no construct at all. They were never endgame-locked; they were
+blocked on a one-line grant. Mislabelling solved work as unsolvable is a real cost — the
+queue presented four finished functions as dead ends, and the park reason is the record a
+future session reads. On integration all four leave the queue, so no new park state is
+created by this ruling; the label misuse is recorded so the driver stops reaching for that
+bucket when the real blocker is a grant.
+
+### Base-rate note (why this audit was worth running)
+
+In the seven days to 2026-08-21, FIVE previously-terminal parks were superseded by
+measurement — func_80047EE8, func_80047FBC, func_800481E8, func_80049A2C, func_800858D0.
+The 2026-07-27 standing auto-ruling fires after ONE full flat ladder cycle. The pad-family
+wave shows a flat cycle is not exhaustion; it is exhaustion of the constructs that session
+happened to know about. Terminal parks are being declared roughly a week ahead of the
+evidence. This ruling does not change the standing auto-ruling, but the rate is recorded
+for the owner's later review.
+
+### What is NOT granted
+
+- No extension to the frozen SOTN family list. F-list membership is unchanged.
+- No relaxation of any completion standard: every integration below still requires
+  `sandbox --disable all` == 0 (with the row honoured), full-build SHA1 == oracle, and a
+  fresh layer-2 adversarial `cheat-reviewer` (default-FAIL, the operator's endorsement
+  explicitly not credited). If the reviewer FAILs a function, its row is revoked and it
+  reverts to its prior disposition.
+- No masking change in `engine/score.py` (refused above, with reasons).
+- No change to the 2026-07-27 standing auto-ruling or to `endgame-lock-disposition.md`.
+
+## 2026-08-22 — RECORD CORRECTION — the func_800858D0 F6 packet cites a PSP file as PSX precedent
+
+The 2026-08-21 Judge packet for func_800858D0 (this file, "JUDGE ESCALATE on ruling
+request") defeated the objection *"SOTN's empty-if exhibits read LOCALS, ours reads a
+GLOBAL"* by citing two exhibits and calling both "untagged PSX (GCC 2.7.2) matched code":
+
+- `src/maria/pl_steps.c:119` — **this citation is WITHDRAWN. `src/maria/` is PSP EU, not
+  PSX.** The only splat configs for that directory are `config/splat.pspeu.maria.yaml`
+  (plus `symbols.pspeu.maria.txt` / `symexport.pspeu.maria.txt`); there is no `us` or `hd`
+  config. The body four lines above the cited empty-if references `D_pspeu_092C04B8`. PSP
+  code is compiled by a different, much later toolchain and is not evidence about GCC 2.7.2.
+- `src/dra/cd.c:536` — **this citation STANDS**, and independently carries the point.
+  `if (!g_Cd.D_80137F74 && !g_Cd.D_80137F74) { }` is a global-struct-field-read empty-if.
+  Verified 2026-08-22: the site sits outside every preprocessor guard in the file (nearest
+  preceding `#endif` at :498), and `USE_MICRO_OPTIMIZATIONS` is `0` in `settings.h:4`, so it
+  is compiled for `VERSION_US` — PSX.
+
+**Net effect: none on the disposition.** The 2026-08-21 F6 allowlist row for func_800858D0
+and its COMPLETED-C disposition stand, on `src/dra/cd.c:536` plus `src/dra/5D5BC.c:770`.
+What changes is the citable evidence: any future filing that leans on the global-read
+question must cite `cd.c:536`, never `pl_steps.c:119`.
+
+**Standing note for future surveys:** SOTN-master precedent citations must state the
+version the file builds for. `src/maria/`, `src/servant/`, and any `D_pspeu_*` /
+`D_psp_*` symbol reference are PSP; `src/saturn/` is SH-2 (accepted only with the explicit
+cross-ISA caveat the 2026-08-18 F6 survey applied). A file living under `src/` is not by
+itself PSX provenance — check `config/splat.*.yaml` membership before citing it.
