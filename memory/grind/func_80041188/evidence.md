@@ -896,3 +896,133 @@ i.e. target defines i BEFORE the tbl symbol; this form defines tbl first.
 - [s6] Closing that chassis needs `i` at >= 9 and <= 11 flow references in the i-FIRST order (9 refs = 2783 > tbl's 2553; 12 refs = 3711 would outrank stptr's 3409 and steal s3). Blockers already measured: preamble uses of i are constant-propagated by cse1 (i is the literal 1 there), split-init ref lifts work only on symbol-constant pseudos (s5), and dead stores are deleted uncounted by flow (s2).
 
 - [s6] In-loop statement position is inert for reg_live_length of any loop-carried pseudo (16-variant proof on loop1's `tbl++`), which supersedes the s5 'scheduler-pinned' description with a mechanism.
+
+## s7 (rederive, 2026-08-23) — the two-locals chassis: floor 1 reached with ORDINARY C
+
+Modality: `rederive`. The mandate was to produce a structurally different C shape
+rather than perturb the merged-stptr chassis every session s1–s6 assumed. That is
+what happened, and it retired the FAKE.
+
+### E-s7-1 — target holds `a4 + 0x20` in TWO different callee-saved registers
+Read directly off `asm/funcs/func_80041188.s`: the loop1 output pointer is `$s6`
+(`addiu $s6,$s7,0x20` at 0x800411E4, used at 0x8004125C and 0x80041270) and the
+loop2 output pointer is `$s3` (`addiu $s3,$s7,0x20` at 0x800412A4, used at
+0x80041310 and 0x80041340). Both hold `a4 + 0x20`; `$s7` is a4 throughout.
+GCC 2.7.2 has no live-range splitting, so ONE C variable is ONE pseudo is ONE
+hard register. Two registers therefore mean **two distinct source-level locals**.
+Every ledger session s0–s6 assumed a single `out2` that was reused or re-initialised
+before loop2, and spent itself on making that single pseudo do two jobs. That
+assumption was wrong, and it is the reason the s4 form needed a do-while(0) wrap
+and the s5/s6 form needed a `/* FAKE */` variable-reuse annotation.
+
+### E-s7-2 — GCC does NOT hoist `a4 + 8` out of these goto-loops (LICM is not in play)
+Probe: delete every out-pointer local and write `a4 + 8` inline at all four call
+sites (`rejected/inline-a4plus8-no-licm-hoist.c`). Result: sandbox 63, 132 insns,
+and the expression materialises INSIDE loop1 (`addiu $s1,$s8,32`) and INSIDE loop2
+(`addiu $s0,$s8,32`) — no preheader, no preamble. So neither of target's two
+`addiu ...,$s7,0x20` insns is loop-invariant-motion output; both are statements the
+original programmer wrote. This kills, with a measurement, any hypothesis that
+loop.c placed the between-loops pointer definition.
+
+### E-s7-3 — the two-locals chassis is 1:1 with target and the residual is pure allocation
+`rejected/two-locals-out3-from-a4-seat-permutation.c`: `out2 = a4 + 8` before loop1,
+`out3 = a4 + 8` between the loops, separate `stptr` (loop1 walker) and `stptr2`
+(loop2 walker), no reuse of any local for a second value, no wrap, no FAKE.
+Result: **sandbox 15, 132/132 insns, and every single instruction lines up with
+target 1:1 — same opcode, same offsets, same immediates, same order.** The entire
+residual is a 3-cycle permutation of three callee-saved seats:
+`out2 $fp/$s6`, `a4 $s6/$s7`, `a3 $s7/$fp` (ours/target). Nothing about the C shape
+is wrong any more; only allocno priority is.
+
+### E-s7-4 — the governing priority table, measured end-to-end from .lreg + .greg
+`pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length * 10000`, and the
+`;; Register dispositions:` line of the .greg dump gives the seat directly (no
+inference needed — use it, it is one grep). For the two-locals chassis the four
+contested pseudos are tbl, out2, a4, a3 and target requires the strict order
+`tbl > out2 > a4 > a3` so that ascending `find_free_reg` hands out `$s5, $s6, $s7, $fp`.
+
+| pseudo | refs/live (out3-from-a4) | pri | seat | refs/live (out3-from-out2) | pri | seat |
+|---|---|---|---|---|---|---|
+| tbl  | 4/47 | 1702.1 | $s5 | 4/47 | 1702.1 | $s5 |
+| out2 | 3/42 |  714.3 | $fp | **4/47** | **1702.1** | **$s6** |
+| a4   | 7/95 | 1473.7 | $s6 | 6/95 | 1263.2 | $s7 |
+| a3   | 4/99 |  808.1 | $s7 | 4/99 |  808.1 | $fp |
+| out3 | 3/48 |  625.0 | $s3 | 3/47 |  638.3 | $s3 |
+
+out2 and tbl end up in an **exact numerical tie at 1702.1**, broken by allocno
+number (79 tbl < 86 out2), which is why tbl keeps `$s5` and out2 takes `$s6`.
+This independently confirms the s5/s6 banked window `pri(out2) in (1473.7, 1702.1)`
+— the answer sits on the closed upper endpoint of it.
+
+### E-s7-5 — out2's 4th reference AND its live length both come from one statement
+`out3 = out2;` placed as the LAST statement of the between-loops block gives out2
+its 4th flow-counted reference and extends its live range through that block from
+42 to 47. Position inside the block is load-bearing, because the live range grows
+one insn at a time: sweep of the 5 possible slots for that statement (M0..M4) gave
+scores 12, 12, 11, 10, **1**. Last slot only.
+
+### E-s7-6 — arithmetic proof that out2 MUST have >= 4 references
+a4 carries at least 6 materialised references (2 calls per loop, plus each of the
+two out-pointer definitions) and a live length of ~95, so its pri floor is 1263.2.
+a3 is a parameter with 4 references and live 99 = 808.1, and neither number can be
+reduced (its 3 uses are 3 call arguments). out2 with 3 references and live <= 47
+tops out at 638–714. No 3-reference spelling of out2 can outrank a4. A 4th
+reference is therefore NECESSARY, not merely one option among several.
+
+### E-s7-7 — where a 4th reference can and cannot live (cse1 ebb boundary)
+Block 0 is a cse1 extended basic block in which `out2 = a4 + 0x20` is a known value,
+so ANY out2-derived expression written in block 0 is folded back to a4 by cse1
+before flow runs and never reaches `reg_n_refs` (this is why all four split-init
+spellings — `out2 = a4; out2 += 8;`, `out2 = a4 + 4; out2 += 4;`, the same on out3,
+and out2-from-`a4` instead of from `pa4` — scored an unchanged 15). loop1 begins a
+NEW ebb (2 predecessors), so out2 is only a live-in value there and cse1 can fold
+nothing: an out2-derived expression written in loop1 or later is real and
+materialises an instruction (`rejected/out2-minus-8-loop1-ref-not-byte-free.c`,
+`addiu $a1,$s5,-32` where target has `addu $a1,$s7,$zero`). The two behaviours are
+complementary and leave no room for a "free" out2 expression anywhere.
+
+### E-s7-8 — block-0 statement order is a dead lever
+A 7-permutation sweep of the block-0 statement order (P0..P6, crossed with the
+plain and `out2 - 8` spellings; `rejected/block0-statement-order-live-length-dead.c`)
+produced exactly three score classes — 15, 10 and 18 — with byte-identical `.greg`
+dispositions inside each class. Moving out2's definition to the very first statement
+of the body raised its measured live length from 42 to only 43. Source position
+inside block 0 is worth about one insn of liveness, not the ~8 a naive
+source-order model predicts. Do not spend another session on declaration ordering.
+
+### E-s7-9 — the `pa4 = a4` param-local alias is load-bearing
+Dropping it and using `a4` directly everywhere, with the rest of candidate.c
+unchanged, scores 13 instead of 1 (`rejected/no-pa4-param-alias.c`). It is ordinary
+C — a pointer local initialised from a pointer parameter and read for its real
+value at six sites — but a reviewer should be told up front that it is not
+cosmetic.
+
+### s7 net
+Floor unchanged at 1, but the form that achieves it is now **completely ordinary C**:
+no `/* FAKE */`, no variable reuse, no do-while(0) wrap, no register pin, no
+volatile, no dead local. The single residual instruction is
+`move $s3,$s6` where target has `addiu $s3,$s7,0x20` (slot 72), and the problem is
+now stated exactly: find a byte-free 4th reference to out2 in the between-loops
+block so that `out3` can be defined from a4 instead of from out2.
+
+- [s7] Target holds a4+0x20 in TWO different callee-saved registers - $s6 across loop1 (defined `addiu $s6,$s7,0x20` at 0x800411E4) and $s3 across loop2 (defined `addiu $s3,$s7,0x20` at 0x800412A4). GCC 2.7.2 has no live-range splitting, so this proves the original source has two distinct out-pointer locals, not one reused variable. Every ledger session s0-s6 assumed one.
+
+- [s7] GCC does not hoist `a4 + 8` out of these goto-loops at all: with the locals removed and the expression inline, it materialises inside both loop bodies (sandbox 63). Neither of target's `addiu ...,$s7,0x20` insns is LICM output; both are source-level statements.
+
+- [s7] The two-locals chassis with `out3` defined from a4 is 1:1 with target across all 132 instructions - same opcodes, offsets, immediates and order - and its entire residual is a 3-cycle permutation of three callee-saved seats (ours/target: out2 $fp/$s6, a4 $s6/$s7, a3 $s7/$fp), sandbox 15.
+
+- [s7] Measured priority table for candidate.c (.lreg refs/live -> pri -> .greg seat): tbl 4/47 = 1702.1 -> $s5; out2 4/47 = 1702.1 -> $s6; a4 6/95 = 1263.2 -> $s7; a3 4/99 = 808.1 -> $fp; out3 3/47 = 638.3 -> $s3; stptr 7/41 = 3414.6 -> $s3; stptr2 6/48 = 2553.2 -> $s0; i 8/97 = 2474.2 -> $s4; a1/a2 16/99 = 6464.6 -> $s1/$s2. tbl and out2 tie exactly at 1702.1 and the tie breaks on allocno number.
+
+- [s7] The .greg dump's `;; Register dispositions:` line gives the pseudo-to-hard-register map directly (one grep, no inference) - use it instead of deducing seats from the disassembly.
+
+- [s7] out2's 4th flow-counted reference AND its live-length extension from 42 to 47 both come from the single statement `out3 = out2;`, and only when it is the LAST statement of the between-loops block: the 5-slot position sweep scores 12, 12, 11, 10, 1.
+
+- [s7] cse1 ebb boundary rule for this function: block 0 is an ebb where out2's value is known, so any out2-derived expression written there is folded back to a4 pre-flow and never counted; loop1 and everything after it are in a different ebb where out2 is only a live-in value, so any out2-derived expression there is real and costs an instruction. The two behaviours are complementary and leave no free out2 expression anywhere yet found.
+
+- [s7] A 4th reference on out2 is provably necessary: a4 cannot drop below 6 materialised references at live ~95 (priority floor 1263.2) and a3 is fixed at 4 references / live 99 = 808.1, while out2 with 3 references and live <= 47 tops out at 714.3.
+
+- [s7] Block-0 statement ordering is a dead lever: 7 permutations x 2 spellings collapse to three score classes with identical .greg dispositions, and moving out2's definition to the first statement of the body bought +1 insn of live length (42 -> 43).
+
+- [s7] The `s32 *pa4 = a4;` param-local alias in candidate.c is load-bearing, not cosmetic: dropping it and using `a4` directly scores 13 instead of 1 with everything else identical.
+
+- [s7] candidate.c is now ordinary C at floor 1 - the /* FAKE */ variable-reuse annotation that the s3-s6 chassis required has been retired, which also removes the layer-1 exposure that FAILed the s4 form.

@@ -1,46 +1,58 @@
-/* func_80041188 / hirahira_w_ctrl - s5 candidate. sandbox --disable all == 1.
- * 132/132 insns, frame 72 == target 0x48. Pure C: no register pin, no inline
- * asm, no volatile, no dead code, no unused local.
+/* func_80041188 / hirahira_w_ctrl - s7 (rederive) candidate. sandbox
+ * --disable all == 1, 132/132 insns, frame 72 == target 0x48.
  *
- * This is the s3 floor-1 form, RESTORED as the best legal candidate after the
- * s4 form (distance 0) was rejected at layer-1 review: its closing lever was a
- * do { } while (0) wrapping only loop1's LEADING HALF with the `loop1:` label
- * inside and the back-goto entering from outside - now a BANNED construct for
- * this function (docs/grind/decisions.md 2026-08-22 23:24).
+ * ORDINARY C. No register pin, no inline asm, no volatile, no dead code, no
+ * unused local, NO /* FAKE *​/ construct, no variable reuse, no do-while(0)
+ * wrap. Every local is once-declared, written where a human would write it,
+ * and read for its real value. This REPLACES the s3/s5/s6 "merged stptr"
+ * chassis (loop2's pointer reusing the dead loop1 walker via an out2 read),
+ * which scored the same 1 but only with a FAKE variable-reuse annotation.
  *
- * Single residual insn, slot 71: OURS `move s3,s6` vs TGT `addiu s3,s7,32`.
+ * WHAT s7 CHANGED (the rederive). Every ledger session up to s6 assumed the
+ * committed rule-era shape: ONE `out2` local, reused/re-initialised before
+ * loop2. s7 read the target instead and found that target holds a4+0x20 in
+ * TWO DIFFERENT callee-saved registers - $s6 across loop1, $s3 across loop2 -
+ * which GCC 2.7.2 cannot do with one pseudo (it has no live-range splitting).
+ * Therefore the original source has TWO SEPARATE LOCALS, and the second one
+ * (`out3`) is defined in the between-loops block. Measured corollary (s7):
+ * GCC does NOT hoist `a4 + 8` out of these goto-loops at all (no loop notes),
+ * so both `addiu ...,$s7,0x20` in target are source-level statements, not
+ * LICM output - see rejected/inline-a4plus8-no-licm-hoist.c.
  *
- * s5 (synthesis) corrected the governing arithmetic. GCC 2.7.2 global.c ranks
- * allocnos by pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length *
- * 10000, and floor_log2(3) == 1 (earlier ledger sessions used 2). Consequences,
- * all dump-measured this session:
- *   - the ONLY thing wrong in any of these chassis is the relative order of
- *     tbl (79), out2 (86) and the pa4 carrier (77); every other callee-saved
- *     seat is already target in all of them.
- *   - the MID (between-loops) statement `stptr = <X> + 0x20` is a single
- *     ref-token on a see-saw: reading out2 gives out2 4 refs / pa4 6 refs
- *     (1702.1 vs 1263.2 - correct seats, wrong opcode: `move`); reading pa4
- *     gives out2 3 refs / pa4 7 refs (714.3 vs 1473.7 - correct opcode
- *     `addiu s3,s7,32`, wrong seats). No third spelling of that one statement
- *     exists.
+ * WHY `out3 = out2;` AND NOT `out3 = a4 + 8;`. This is the entire residual.
+ * The GCC 2.7.2 global.c allocno priority is
+ *     pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length * 10000
+ * and the four contested callee-saved seats need the order
+ *     tbl > out2 > a4 > a3   (-> $s5, $s6, $s7, $fp).
+ * Measured this session from .lreg/.greg with this exact body:
+ *     73/74 a1,a2   16 refs / 99  = 6464.6   -> $s1,$s2
+ *     88    stptr    7 refs / 41  = 3414.6   -> $s3 (loop1 only)
+ *     91    stptr2   6 refs / 48  = 2553.2   -> $s0
+ *     78    i        8 refs / 97  = 2474.2   -> $s4
+ *     79    tbl      4 refs / 47  = 1702.1   -> $s5
+ *     86    out2     4 refs / 47  = 1702.1   -> $s6   (EXACT TIE with tbl,
+ *                                                      broken by allocno
+ *                                                      number 79 < 86)
+ *     77    a4       6 refs / 95  = 1263.2   -> $s7
+ *     75    a3       4 refs / 99  =  808.1   -> $fp
+ *     87    out3     3 refs / 47  =  638.3   -> $s3 (loop2, no conflict)
+ * With `out3 = (s32 *)((u8 *)a4 + 0x20);` instead, out2 drops to 3 refs and
+ * live 42 (dead at loop1's exit) -> pri 714.3, which lands it BELOW a4 and a3;
+ * the whole {out2, a4, a3} triple then permutes to {$fp, $s6, $s7} and the
+ * score goes 1 -> 15 (rejected/two-locals-out3-from-a4-seat-permutation.c).
+ * out2's 4th reference AND its live length 47 both come from exactly one
+ * thing: being read in the between-loops block, as its LAST statement.
+ * Position is load-bearing - moving `out3 = out2;` earlier in that block
+ * shortens out2's live range and re-breaks the tie the wrong way
+ * (measured: last=1, 3rd=10, 2nd=11, 1st/0th=12).
  *
- * s6 (forensics, 2026-08-23) re-verified this form at sandbox 1 / 132 insns and
- * instrumented the allocator end-to-end (BB2_ALLOC_DEBUG + BB2_FINDREG_DEBUG):
- * seats are decided by priority order alone (no copy preferences, no
- * someone_prefers, no REG_ALLOC_ORDER on MIPS), so out2 must be processed
- * before the pa4 carrier, i.e. pri(out2) in (1473.7, 1702.1). s6 also closed
- * the entire staged-copy ref-lift family: cse1 either propagates a single-use
- * copy away (flow then deletes it UNCOUNTED) or pulls a second consumer onto it
- * (combine can then never delete it, +1 insn). See evidence.md s6.
- *
- * s7 (forensics, 2026-08-23) re-verified this form at sandbox 1 / 132 insns.
- * It also found a DIFFERENT chassis with ALL-TARGET callee-saved seats at 132
- * insns but sandbox 4 (rejected/tbl-symK-ilate-alltarget-seats-emission-
- * swapped.c): pa4-read re-init + out2 staging + the tbl sym-K ref lift +
- * `i = 1` moved to the last preamble statement. Its residual is a 4-insn
- * preamble emission-order swap that is anti-correlated with the seats; see
- * evidence.md s7 and hypotheses.md frontier 1-2. This file remains the best
- * scoring form (1).
+ * RESIDUAL (slot 72, the ONLY non-formatting diff in 132 insns):
+ *     OURS  move  $s3, $s6            TGT  addiu $s3, $s7, 0x20
+ * i.e. target re-derives loop2's pointer from a4 while STILL giving out2 a
+ * 4th flow-counted reference. Since flow.c fixes reg_n_refs before combine
+ * runs, the original's 4th out2 reference must be an insn in the
+ * between-loops block that combine deleted. Finding a byte-free spelling of
+ * that reference is the whole remaining problem - see hypotheses.md s7.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
@@ -51,6 +63,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     s16 buf[3];
     s32 saved;
     s32 *out2;
+    s32 *out3;
     s32 stptr;
     s32 offset;
     u16 *p;
@@ -84,15 +97,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 0x6C;
     i = 0x12;
     stptr2 = saved + 0x750;
-    /* FAKE: loop2's output pointer reuses the (dead-after-loop1) `stptr` walker
-       local instead of a fresh local, and is re-initialised by READING `out2`,
-       mechanism: GCC 2.7.2 global.c allocno priority
-       (floor_log2(refs)*refs/live*10000) - the merged stptr pseudo scores 3409
-       and lands s3 == target, while the out2 read is out2's 4th flow-counted
-       ref (4/47 = 1702.13, an exact tie with tbl that breaks our way on allocno
-       number) which keeps out2 in s6 == target. lever-exhaustion:
-       memory/grind/func_80041188/evidence.md s3 + s5 */
-    stptr = (s32) out2;
+    out3 = out2;
     loop2:
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
@@ -110,8 +115,8 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 2;
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
-    func_8004A348(buf, (s32 *) stptr);
-    func_800523E0(pa4, (s32 *) stptr, a3, stptr2 + 0x38);
+    func_8004A348(buf, out3);
+    func_800523E0(pa4, out3, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;
     i++;

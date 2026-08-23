@@ -574,3 +574,144 @@ CONFIRMED:
 - probe: 16 positions of loop1's `tbl++` (tmp/grind/func_80041188/s6/t/t01..t16), instrumented-cc1 allocno table for each.
 - result: Bit-identical tables in all 16 (tbl 6 refs / live 47). A pseudo live across the loop back edge is live over the WHOLE body, so in-loop statement position cannot change its live length; only defs/uses outside the loop can. Separately measured: the live length moves by exactly +/-1 with the relative ORDER of the two preamble defs (i-first => i 97 / tbl 47 in every a*i0 and x1-x5 variant; tbl-first => 96 / 48 in every a0i2..a3i5 variant), and sched1 emits the two defs in that same order (equal INSN_PRIORITY, LUID tie-break). The 'advance position' axis is retired.
 - verdict: KILLED
+
+## s7 (rederive, 2026-08-23)
+
+### KILLED
+- **H-s7-1 — "the two `a4 + 0x20` values in target are one variable, and loop.c/LICM
+  placed the second definition."** KILLED. Removing every out-pointer local and
+  writing `a4 + 8` inline at all four call sites makes the expression materialise
+  INSIDE both loops, never in a preheader (sandbox 63). There are no loop notes on
+  these goto-loops, so LICM never runs on them. Both `addiu ...,$s7,0x20` insns in
+  target are source-level statements, and since GCC 2.7.2 cannot split a live range,
+  the two registers ($s6 and $s3) mean two distinct source locals.
+  Evidence E-s7-1/E-s7-2. Artifact `rejected/inline-a4plus8-no-licm-hoist.c`.
+- **H-s7-2 — "declaration/statement order inside block 0 can lengthen out2's
+  reg_live_length enough to move its allocno priority."** KILLED. Seven block-0
+  statement permutations x two out2 spellings collapse into exactly three score
+  classes with identical `.greg` dispositions inside each class; moving out2's
+  definition to the first statement of the body bought +1 insn of live length
+  (42 -> 43), not the ~8 predicted. Evidence E-s7-8.
+  Artifact `rejected/block0-statement-order-live-length-dead.c`.
+- **H-s7-3 — "a split-init (`out2 = a4; out2 += 8;`) buys out2 a flow-counted
+  reference."** KILLED again, now in the new chassis and with the mechanism named:
+  the definition lives in block 0, which is a cse1 extended basic block where out2's
+  value is known, so cse1 folds the pair and flow deletes the remnant UNCOUNTED.
+  All four spellings (on out2, on out3, `+4/+4`, and from `a4` rather than `pa4`)
+  scored an unchanged 15. Evidence E-s7-7.
+- **H-s7-4 — "an out2-derived expression inside loop1 is a byte-free reference."**
+  KILLED. loop1 starts a fresh cse1 ebb (2 preds) where out2 is only a live-in
+  value, so `out2 - 8` cannot be folded back to a4 and materialises
+  `addiu $a1,$s5,-32` against target's `addu $a1,$s7,$zero`. It also overshoots:
+  4 refs / live 42 = 1904.8 > tbl's 1702.1, so out2 steals $s5.
+  Artifact `rejected/out2-minus-8-loop1-ref-not-byte-free.c`.
+- **H-s7-5 — "out2 might reach target's seat with only 3 references."** KILLED by
+  arithmetic, not by search: a4 cannot drop below 6 materialised references (two
+  call arguments per loop plus the two out-pointer definitions) at live ~95, so its
+  priority floor is 1263.2, while out2 with 3 references and live <= 47 tops out at
+  714.3. A 4th reference on out2 is NECESSARY. Evidence E-s7-6.
+
+### CONFIRMED
+- **H-s7-6 — the seat order is decided purely by allocno priority, and target's
+  order is `tbl > out2 > a4 > a3`.** CONFIRMED end-to-end: with
+  `out3 = out2;` last in the between-loops block, `.lreg` gives tbl 4/47 and out2
+  4/47 — an EXACT tie at 1702.1 — broken by allocno number (79 < 86) in tbl's
+  favour, and `.greg` `;; Register dispositions:` shows 79 in 21 ($s5), 86 in 22
+  ($s6), 77 in 23 ($s7), 75 in 30 ($fp), 87 in 19 ($s3). All five seats are target.
+  This confirms the s5/s6 banked window `pri(out2) in (1473.7, 1702.1)` and pins
+  the answer to its closed upper endpoint. Evidence E-s7-4.
+- **H-s7-7 — the whole match is reachable without any sanctioned-exception
+  construct.** CONFIRMED to distance 1: candidate.c is ordinary C throughout
+  (two separate out-pointer locals, two separate loop walkers, every local written
+  once and read for its real value) and scores 1 with 132/132 insns. The
+  `/* FAKE */` variable-reuse annotation the s3–s6 chassis needed is GONE.
+
+## s7 frontier (for s8)
+1. **A byte-free 4th reference to out2 in the BETWEEN-LOOPS block closes the
+   function outright.** Everything else in candidate.c is already target: all
+   five contested seats, all 132 instructions, the frame size. The single residual
+   is slot 72, `move $s3,$s6` vs `addiu $s3,$s7,0x20`, and it exists only because
+   the 4th reference is currently spent as the copy `out3 = out2;`. If out3 is
+   defined from a4 instead, out2 falls to 3 refs / live 42 and the seats permute.
+   *Mechanism:* flow.c fixes `reg_n_refs` and `reg_live_length` BEFORE combine
+   runs, so any out2 mention in that block that combine subsequently deletes is a
+   free +1 reference and a free +5 live length. combine only deletes an insn whose
+   destination is used exactly once and dies in the combining insn, and only within
+   a single basic block — so the consumer must be one of the six insns target
+   actually emits in the between-loops block (`addiu $s1,$s1,0x6C`,
+   `addiu $s2,$s2,0x6C`, `addiu $s4,$zero,0x12`, `lw $t0,0x18($sp)`,
+   `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`).
+   *Next probe:* enumerate C spellings in which one of those six values is written
+   as a single-use function of out2 that combine can fold back to its target form —
+   the most promising is `out3`, written so that the copy from out2 has exactly one
+   consumer at combine time. Dump `.combine` for each and grep for the deleted-insn
+   record before trusting the score.
+2. **Attack the tie from tbl's side instead: shrink tbl's reg_live_length to <= 42
+   so that an out2 with 4 refs / live 42 (a reference inside loop1) still loses the
+   tie to tbl.** tbl measures 4 refs / live 47, of which 41 is loop1's block and 6
+   is a block-0 lead-in from its `lui/addiu` symbol definition. If that lead-in
+   shrinks to <= 1, tbl reaches 4/42 = 1904.8 and ties-or-beats an in-loop1 out2 at
+   the same 1904.8 (allocno 79 < 86 wins), which would let `out3` be defined from a4
+   and emit `addiu $s3,$s7,0x20` directly.
+   *Mechanism:* the 6-insn lead-in is the distance, in the pre-sched insn stream
+   flow sees, between tbl's definition and loop1's label. s7 measured that moving
+   the source statement does NOT move it (E-s7-8), so something else pins it —
+   read `.rtl`/`.loop`/`.cse2` for func_80041188 and find which pass places the
+   `lui/addiu %hi/%lo` pair, rather than guessing.
+   *Next probe:* dump `.rtl` and `.cse2`, locate tbl's definition insn and count
+   insns to the loop1 `code_label`; then look for a source form whose tbl
+   definition is emitted later in that stream (e.g. tbl reached through a different
+   expression, or the D_80094CFC address consumed differently). Confirm with
+   `.lreg` `Register NN used 4 times across NN insns` before scoring.
+3. **The `pa4 = a4` param-local alias is load-bearing and should be understood,
+   not just kept.** Dropping it costs 12 points (1 -> 13) with everything else
+   identical. *Mechanism:* it changes which pseudo carries a4 and hence a4's
+   `reg_n_refs` (6 with the alias, and the parameter's own incoming copy is
+   accounted separately), which is one of the four numbers in the priority table.
+   *Next probe:* diff `.lreg` for candidate.c against `rejected/no-pa4-param-alias.c`
+   and record exactly which pseudo's refs/live changed. If the alias turns out to be
+   equivalent to some natural spelling (e.g. the original taking the pointer through
+   a typed local such as `MATRIX *m = (MATRIX *)a4;`), prefer that spelling — it is
+   the same codegen with a semantics a reviewer can read.
+
+## [s7] The two `a4 + 0x20` values in target are one C variable, and loop.c/LICM placed the second definition in the between-loops block.
+- mechanism: If loop.c recognised loop1 and loop2 it would hoist the loop-invariant `a4 + 8` into each loop's preheader, producing the two `addiu ...,$s7,0x20` insns from a single source expression.
+- probe: Deleted every out-pointer local and wrote `a4 + 8` inline at all four call sites; measured sandbox and disassembled the .o against target.
+- result: sandbox 63, 132 insns. The expression materialises INSIDE loop1 (`addiu $s1,$s8,32`) and INSIDE loop2 (`addiu $s0,$s8,32`) - never in a preheader or the preamble. These goto-loops carry no loop notes, so LICM never runs. Combined with the fact that GCC 2.7.2 has no live-range splitting, target's two DIFFERENT registers ($s6 across loop1, $s3 across loop2) prove two distinct source-level locals.
+- verdict: KILLED
+
+## [s7] Declaration/statement order inside block 0 can lengthen out2's reg_live_length enough to move its allocno priority into target's window.
+- mechanism: reg_live_length is measured by flow.c on the pre-scheduling insn stream, so a definition placed earlier in block 0 should be live across every block-0 insn that follows it.
+- probe: Swept 7 block-0 statement permutations (P0..P6) crossed with two out2 spellings = 14 builds; read reg_n_refs/reg_live_length from .lreg and the seat assignment from the .greg `;; Register dispositions:` line for the extremes.
+- result: Exactly three score classes - 15, 10, 18 - with byte-identical .greg dispositions inside each class. Moving out2's definition to the very first statement of the body raised its live length from 42 to only 43 (+1), not the ~8 a source-order model predicts. Block-0 statement ordering is a dead lever for this function.
+- verdict: KILLED
+
+## [s7] A split-init (`out2 = a4; out2 += 8;`) buys out2 a flow-counted reference.
+- mechanism: Two RTL insns for one value should give the pseudo an extra reference at flow time, with combine merging them back so no byte is spent.
+- probe: Four spellings measured: split-init on out2, split-init on out3, a `+4/+4` two-step, and initialising out2 from the raw `a4` parameter instead of the `pa4` alias.
+- result: All four scored an unchanged 15. Mechanism now named: out2's definition sits in block 0, which is a cse1 extended basic block in which out2's value is known, so cse1 folds the pair pre-flow and flow deletes the remnant UNCOUNTED. This re-kills the family in the new chassis, matching the s6 finding.
+- verdict: KILLED
+
+## [s7] An out2-derived expression inside loop1 (e.g. spelling loop1's first call argument `out2 - 8` instead of `a4`) is a byte-free 4th reference.
+- mechanism: cse1 knows out2 == a4 + 0x20, so `out2 - 8` should fold back to a4 and leave only the extra reference behind.
+- probe: Built that spelling, measured sandbox, disassembled, and read .lreg.
+- result: sandbox 10 - better than 15 but not free. loop1 begins a NEW cse1 ebb (2 predecessors) where out2 is only a live-in value, so cse1 cannot fold and the expression materialises as `addiu $a1,$s5,-32` against target's `addu $a1,$s7,$zero`. It also overshoots the window: 4 refs / live 42 = 1904.8 > tbl's 1702.1, so out2 steals $s5. Generalises with E-s7-7: block-0 out2 expressions are folded away uncounted, non-block-0 ones cost an instruction.
+- verdict: KILLED
+
+## [s7] out2 could reach target's $s6 seat with only 3 references, if a4's or a3's numbers were pushed instead.
+- mechanism: pri = floor_log2(refs)*refs/live*10000, so lowering a4 or a3 would be an alternative to raising out2.
+- probe: Closed-form over the measured .lreg numbers rather than by search: a4 carries at least 6 materialised references (two call arguments per loop plus both out-pointer definitions) at live ~95, and a3 is a parameter with 4 references (3 call arguments) at live 99 that cannot be reduced.
+- result: a4's priority floor is 1263.2 and a3's is fixed at 808.1, while out2 with 3 references and live <= 47 tops out at 714.3. No 3-reference spelling of out2 can outrank a4. A 4th reference on out2 is NECESSARY, not one option among several.
+- verdict: KILLED
+
+## [s7] The seat order is decided purely by allocno priority, and target requires `tbl > out2 > a4 > a3`; giving out2 a 4th reference by reading it in the between-loops block satisfies it.
+- mechanism: global.c ranks allocnos by pri = floor_log2(reg_n_refs)*reg_n_refs/reg_live_length*10000 and find_free_reg scans ascending, so the four contested pseudos must be processed in that order to receive $s5, $s6, $s7, $fp.
+- probe: Placed `out3 = out2;` as the LAST statement of the between-loops block, swept its position across all 5 slots in that block, and read .lreg + the .greg `;; Register dispositions:` line.
+- result: CONFIRMED. Last slot scores 1; slots 3/2/1/0 score 10/11/12/12. At the last slot .lreg gives tbl 4 refs/47 and out2 4 refs/47 - an EXACT tie at 1702.1 - broken by allocno number (79 < 86) in tbl's favour, and .greg shows 79 in 21 ($s5), 86 in 22 ($s6), 77 in 23 ($s7), 75 in 30 ($fp), 87 in 19 ($s3): all five seats target. This confirms the s5/s6 banked window pri(out2) in (1473.7, 1702.1) and pins the answer to its closed upper endpoint.
+- verdict: CONFIRMED
+
+## [s7] Distance 1 on this function is reachable without any sanctioned-exception construct - no /* FAKE */, no variable reuse, no do-while(0) wrap.
+- mechanism: The s3-s6 chassis needed a FAKE only because it forced one pseudo to serve as both loop1's walker and loop2's output pointer; two separate locals remove the need entirely.
+- probe: Built the two-locals form with separate `stptr`/`stptr2` walkers and separate `out2`/`out3` output pointers, every local written once and read for its real value; measured sandbox and disassembled all 132 insns against target.
+- result: CONFIRMED. sandbox 1, 132/132 insns, frame 72 == target 0x48. Every instruction matches target 1:1 except slot 72. candidate.c now carries no register pin, no inline asm, no volatile, no dead local, no annotation.
+- verdict: CONFIRMED
