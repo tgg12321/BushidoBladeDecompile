@@ -756,6 +756,16 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # bytes proven in the escalations before the grant.
     "func_80047EE8": frozenset({("pre_pad", 8)}),
     "func_80047FBC": frozenset({("pre_pad", 8)}),
+    # 2026-08-22 owner ruling (docs/grind/decisions.md, "parked-but-proven
+    # audit"): three functions had been parked OWNER-ACCEPTED INCOMPLETE — the
+    # both-gates-FAIL label — while byte-proven and blocked only on this row.
+    # Each build SHA1 was re-verified == oracle by the operator BEFORE the grant,
+    # independently of the ledgers (the allowlist affects only the sandbox score,
+    # never the real build, so the proof needs no row). Same 2026-08-18 general
+    # phantom-frame-slot family as the rows above; no family extension.
+    "func_80049A2C": frozenset({("pre_pad", 2)}),
+    "func_800481E8": frozenset({("pre_pad", 8)}),
+    "func_80041688": frozenset({("pre_pad", 8)}),
 }
 
 

@@ -1969,17 +1969,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling 2026-07-27, options a+b refused): signedness-split dual-read family REFUSED (F2 census NOT ESTABLISHED); canonical-asm refused (pure-C form exists); 13 regfix rules retained only to hold byte-match, not sanctioned"
     },
     {
-      "func": "func_80041688",
-      "file": "text1a_post",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 3,
-      "status": "parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-22): sched1 lbu emit-order (3 regfix); both endgame-lock gates fail (scan LOW, no SOTN precedent); cheat retained only to hold byte-match, not sanctioned",
-      "unpark_reason": "owner ruling 2026-08-20 (a5a5c1ec): or-tree-shape-shift carve-out spends this park; see decisions.md OWNER RULING entry",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_80041688 \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
-    },
-    {
       "func": "get_alarm",
       "file": "display",
       "distance": 9,
@@ -2025,15 +2014,6 @@
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): Gap A cse fold + Gap B local_alloc join split; 10 regfix rules retained only to hold byte-match, not sanctioned; both endgame-lock gates fail (scan LOW 0/8, no SOTN precedent)"
     },
     {
-      "func": "func_800481E8",
-      "file": "text1b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_800481E8 \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
-    },
-    {
       "func": "func_80056FE8",
       "file": "text1b",
       "distance": 10,
@@ -2059,15 +2039,6 @@
       "rules": 0,
       "status": "parked",
       "park_reason": "OWNER-ACCEPTED INCOMPLETE (ruling b, 2026-07-27): copy_end->s5 rotation reachable only via register pin (refused); NO cheat on main, clean floor-9 candidate retained; both endgame-lock gates fail (scan LOW 2/8, no SOTN precedent)"
-    },
-    {
-      "func": "func_80049A2C",
-      "file": "text1b",
-      "distance": 12,
-      "verdict": "C",
-      "rules": 0,
-      "status": "parked",
-      "park_reason": "OWNER-ACCEPTED INCOMPLETE (judge ESCALATE policy-question, logged to borderline.md per ruling 2026-08-18): 2026-08-20 \u2014 func_80049A2C \u2014 JUDGE ESCALATE on ruling request (policy-question) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     },
     {
       "func": "func_80062020",
@@ -2163,11 +2134,11 @@
     }
   ],
   "counts": {
-    "total": 247,
+    "total": 244,
     "active": 212,
     "by_status": {
       "active": 212,
-      "parked": 35
+      "parked": 32
     },
     "by_verdict": {
       "C": 177,
