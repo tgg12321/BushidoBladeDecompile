@@ -388,3 +388,105 @@ corrected priority formula and closed four levers.
 - probe: six chassis dumped (.lreg refs/live plus .greg dispositions): wrap-0, A_nowrap-9, P2-3, S15-10, R3-15, F1-1; predicted vs actual seating compared each time.
 - result: 6/6 correct. floor_log2(3)=1 means out2 at 3 refs scores 714.3 (not the 1428 the s2/s3 notes assumed) and would need live <= 20 to clear the carrier's 1473.7. out2 therefore needs >= 4 refs unconditionally.
 - verdict: CONFIRMED
+
+## s6 (forensics, 2026-08-23) — results and the new frontier
+
+KILLED (each with the pass named from an instrumented-cc1 dump):
+
+- **H-s6-1 — "a second byte-free, flow-counted out2 read exists in the MID block"
+  (s5 frontier #1).** KILLED. `out2 = pa4+0x20; stptr = (s32) out2;` in MID is
+  dest-swapped by cse1 (cse.c cse_insn) into `stptr = pa4+0x20; out2 = stptr;`,
+  out2 is dead, and flow.c's dead-store elimination deletes the copy before
+  reg_n_refs is counted: allocation bit-identical to the plain pa4 chassis
+  (out2 3/42/714), sandbox 15.
+- **H-s6-2 — "the loop2-top staged copy can be made combine-propagable"
+  (s5 frontier #2).** KILLED as a family, not just as a spelling. cse1 decides
+  the fate of every staged copy: spell the LAST pointer use `out2` and cse1
+  pulls the earlier use onto it too (two consumers -> combine's try_combine
+  cannot delete the producer -> +1 insn, the known 133-insn form); spell any
+  earlier use `out2` and cse1 propagates it back to stptr (dead store -> flow
+  deletes it uncounted). The only byte-free COUNTED position is a def->use span
+  of ~1 insn (5 refs / live 42-44 / pri 2381, sandbox 9); every longer span
+  steps over the second func_8004A348 and flips cse1 into the materialising
+  branch.
+- **H-s6-3 — "the carrier-free V1 world has a reachable target seating"
+  (s5 frontier #3).** KILLED. V1's tail order is a3 808 (s6) > a4 736 (s7) >
+  out2 714 (fp); target needs out2 > a4 > a3, i.e. TWO inversions where the
+  pa4-carrier chassis needs ONE. V1 is strictly harder.
+
+CONFIRMED:
+
+- **H-s6-4 — the seat rule is priority order alone.** BB2_FINDREG_DEBUG on
+  pseudos 73/77/86 shows empty `own_copy_prefs` and empty `someone_prefers`;
+  MIPS defines no REG_ALLOC_ORDER. Seats = lowest-numbered free non-conflicting
+  callee-saved register, taken in allocno_compare order. The s5 window
+  (1473.7, 1702.1) for out2 is therefore exact and complete.
+- **H-s6-5 — the missing out2 reference is post-flow in the ORIGINAL too.**
+  Target's s6 carries only three materialised references and never appears in
+  loop2, so the original C's 4th+ out2 reference was deleted after flow counted
+  it. Only combine.c can do that in this pipeline.
+
+### Frontier for the next session
+
+1. **The one existence proof of a counted-then-deleted out2 copy has never been
+   dumped.** rejected/s4-form-minus-banned-wrap-floor9.c (staging immediately
+   before its single last use) reaches out2 5 refs / live 42 BYTE-FREE — i.e.
+   there cse1 did NOT propagate the single-use copy away, and combine deleted it
+   after flow counted it. That contradicts the cse1 behaviour measured in
+   H-s6-2 for every other position. mechanism: unknown cse.c condition (candidate:
+   the copy's source qty is invalidated, or the use is inside the call-argument
+   setup sequence so cse sees the reg reference after `invalidate_for_call`).
+   next probe: dump .cse/.combine for that form and diff the loop2 region against
+   s5/va/*; if the sparing condition is a reproducible property (rather than
+   adjacency), reproduce it with a ~20-insn def->use span => 5 refs / live 59-67
+   => pri 1481-1666, inside the window, byte-free => match.
+2. **Attack the CONFLICT set instead of the priority order — no ref lift needed.**
+   Every allocno except stptr2 (90) carries a hard-reg conflict with reg 16
+   ($s0) in this function (BB2_FINDREG_DEBUG `conflicts:` lines). If the pa4
+   carrier could be made to conflict with hard reg 22 ($s6) the same way, it
+   would take s7 at its existing pri 1473 and out2 would take s6 at 714 with the
+   C otherwise unchanged — target seats with NO reference lift at all.
+   mechanism: global.c global_conflicts records hard-reg conflicts from hard regs
+   live across the allocno's range. next probe: find WHAT makes reg 16 live in
+   this function (grep the .greg/.flow dumps and global_conflicts' mark_reg_live
+   path), then ask whether any legitimate C construct puts a value in a
+   callee-saved hard reg across the carrier's range (note: `register ... asm()`
+   pins are BANNED — this must be an ordinary-C mechanism or it is not a lever).
+3. **Rederive the source shape under the H-s6-5 constraint.** Every chassis in
+   the ledger assumes the merged `stptr` (loop1 walker re-init as loop2's
+   pointer). The original must additionally have carried a combine-deletable
+   out2 mention; a different loop2 pointer structure (separate local, different
+   loop1/loop2 split, or the a4 store/reload shape) may supply it naturally.
+   next probe: rederive from target asm + m2c with the explicit constraint
+   "out2 has >= 4 flow refs and exactly 3 materialised ones", rather than
+   perturbing the existing body.
+
+## [s5] A second byte-free, flow-counted out2 read exists in the MID basic block (s5 frontier #1): 'out2 = pa4+0x20; stptr = (s32)out2;' gives out2 +2 refs at flow time while combine merges the pair into target's single 'addiu s3,s7,32'.
+- mechanism: cse1 was believed to have no qty knowledge in MID (block 2), so the chain should survive to flow; combine.c would then merge producer+copy.
+- probe: Installed the form, ran the instrumented cc1 (BB2_ALLOC_DEBUG=1) and traced reg 86 through .rtl/.jump/.cse/.loop/.cse2/.flow/.combine (tmp/grind/func_80041188/s5/e1/).
+- result: Bytes are perfect (132 insns, target's addiu s3,s7,32) but the allocation is bit-identical to the plain pa4 chassis: out2 3 refs / live 42 / pri 714, sandbox 15. .rtl has '86 = 77+32' then '87 = 86'; .cse shows cse1 DEST-SWAPPING the pair into '87 = 77+32' then '86 = 87' (cse.c cse_insn rewrites the producer's destination when its original dest dies in the copy); out2 is then dead and flow.c's dead-store elimination removes the copy BEFORE reg_n_refs is counted. The lift is uncounted, not merely byte-free.
+- verdict: KILLED
+
+## [s5] The materialised 'addu s6,s3,zero' of the 6-refs/live-81 loop2-top staging form can be eliminated while keeping out2 inside the priority window (s5 frontier #2), e.g. by letting the staged pointer feed a different loop2 use so the copy becomes combine-deletable.
+- mechanism: combine.c try_combine deletes a producer only when its destination dies at the single use it substitutes into; s5 attributed the survival to the value being live across loop2's back edge.
+- probe: Read the .combine dump of rejected/staging-position-sweep-133insn.c (insn 171 '86 = 87' has a LOG_LINK consumer at insn 254 AND a REG_DEAD consumer at insn 263 = two consumers), then built and dumped the never-tried use-swap variant (copy at loop2 top consumed by the second func_8004A348, func_800523E0 keeping stptr) in tmp/grind/func_80041188/s5/va/.
+- result: The family is closed, not just this spelling. cse1 decides the fate of every staged copy: spell the LAST pointer use 'out2' and cse1 pulls the earlier stptr use onto reg 86 as well (two consumers, combine cannot delete the producer, +1 insn = the known 133-insn form); spell an earlier use 'out2' and cse1 canonicalises it back onto reg 87 (loop2 uses of reg 86 go .rtl 2 -> .cse 1 -> .flow 0), the copy becomes a dead store and flow deletes it uncounted, giving an allocation bit-identical to the pa4 chassis. The only byte-free COUNTED staging position remains the s5 one (def->use span ~1 insn, out2 5 refs / live 42-44 / pri 2381, sandbox 9); every longer span necessarily steps over the second func_8004A348 and flips cse1 into the materialising branch, so 5 refs/live 59-67 and 6 refs/live 71-81 are both unreachable byte-free.
+- verdict: KILLED
+
+## [s5] The carrier-free world (V1: the a4 parameter used at all six sites) has a reachable target seating, since the parameter (736.8) and out2 (714.3) are only ~22 priority points apart (s5 frontier #3).
+- mechanism: Same global.c priority ordering but a different allocno set; a single live-shift or one fewer parameter reference would invert them.
+- probe: Built V1 and ran BB2_ALLOC_DEBUG (tmp/grind/func_80041188/s5/v1/stderr.txt).
+- result: Tail order measured: a3 4 refs/99 = 808 -> s6, a4 7 refs/190 = 736 -> s7, out2 3 refs/42 = 714 -> fp. Target needs out2 -> s6, a4 -> s7, a3 -> fp, i.e. the order out2 > a4 > a3: out2 must pass BOTH, and a4 must additionally pass a3 (it is already 72 points below it). That is TWO inversions where the pa4-carrier chassis needs ONE - V1 is strictly harder, not closer.
+- verdict: KILLED
+
+## [s5] Register seating in this function is decided by something richer than allocno priority order (copy preferences / someone_prefers / an allocation order), which would open a lever axis not requiring any change to out2's reference count.
+- mechanism: global.c find_reg overrides best_reg from hard_reg_copy_preferences / hard_reg_full_preferences and skips regs in regs_someone_prefers or outside regs_used_so_far during pass 0.
+- probe: BB2_FINDREG_DEBUG on pseudos 73 (a1), 77 (carrier) and 86 (out2) on the pa4-read chassis, plus a source read of tools/gcc-2.7.2/global.c (allocno_compare, find_reg) and a check that mips.h defines no REG_ALLOC_ORDER.
+- result: own_copy_prefs and someone_prefers are EMPTY for all three; pass 0 never succeeds (every callee-saved reg is excluded) and pass 1 takes the lowest-numbered non-conflicting register. Seats are therefore a pure function of allocno_compare order, which makes the s5 window pri(out2) in (1473.7, 1702.1) exact and complete. One usable side-fact: every allocno except stptr2 carries a hard-reg CONFLICT with reg 16 ($s0) - conflicts, unlike preferences, do bite in this function.
+- verdict: CONFIRMED
+
+## [s5] The original C's 4th out2 reference was materialised as an instruction we simply have not spelled yet.
+- mechanism: n/a - counting argument against the target's own register file.
+- probe: Counted every $s6 occurrence in asm/funcs/func_80041188.s and mapped the full callee-saved seating.
+- result: Target's s6 carries exactly THREE materialised references (def 'addiu s6,s7,0x20' plus two loop1 'addu a1,s6,zero') and never appears in loop2, so 3 refs at live ~42 = pri 714 would seat it in $fp. Since the seats are pure priority order, the original's out2 must have carried >= 4 flow-counted references of which only 3 survived into the bytes: the extra reference was deleted AFTER flow counted reg_n_refs, and combine.c is the only pass in this pipeline that can do that. The remaining search is precisely 'which combine-deletable out2 mention lands (refs, live) inside the window'.
+- verdict: CONFIRMED

@@ -23,6 +23,15 @@
  *     gives out2 3 refs / pa4 7 refs (714.3 vs 1473.7 - correct opcode
  *     `addiu s3,s7,32`, wrong seats). No third spelling of that one statement
  *     exists.
+ *
+ * s6 (forensics, 2026-08-23) re-verified this form at sandbox 1 / 132 insns and
+ * instrumented the allocator end-to-end (BB2_ALLOC_DEBUG + BB2_FINDREG_DEBUG):
+ * seats are decided by priority order alone (no copy preferences, no
+ * someone_prefers, no REG_ALLOC_ORDER on MIPS), so out2 must be processed
+ * before the pa4 carrier, i.e. pri(out2) in (1473.7, 1702.1). s6 also closed
+ * the entire staged-copy ref-lift family: cse1 either propagates a single-use
+ * copy away (flow then deletes it UNCOUNTED) or pulls a second consumer onto it
+ * (combine can then never delete it, +1 insn). See evidence.md s6.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

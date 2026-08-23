@@ -590,3 +590,147 @@ addiu s3,s7,32 / addiu s0,t0,1872` and none of them can take out2 as an input.
 - [s4] The loop2-top staging form (rejected/staging-position-sweep-133insn.c) is the sharpest negative in the ledger: register dispositions EXACTLY target (out2 6 refs/81 = 1481.5, inside the window) with a single extra insn, addu s6,s3,zero at slot 73. sandbox 3 at 133 insns.
 
 - [s4] The s4 distance-0 form minus the banned wrap scores 9 (banked as rejected/s4-form-minus-banned-wrap-floor9.c); the s3 floor-1 form is restored, re-verified at sandbox 1 / 132 insns, and is in place in src/text1a_pre.c and memory/grind/func_80041188/candidate.c.
+
+## s6 (forensics, 2026-08-23) — the allocation model INSTRUMENTED end-to-end; the whole staged-copy ref-lift family closed with named passes
+
+Chassis at session start: HEAD carries the rule-era body (16 rules) at honest 27;
+candidate.c (the s3 floor-1 form) applied to src/text1a_pre.c re-measures
+**sandbox --disable all == 1, 132/132 insns** — floor re-confirmed THIS session
+and the candidate is in place in src at session end.
+
+### The allocation model is no longer a model — it is instrumented
+
+`tools/gcc-2.7.2/cc1` (instrumented) with `BB2_ALLOC_DEBUG=1` and
+`BB2_FINDREG_DEBUG=<pseudo>`; driver `tmp/grind/func_80041188/s5/idump.sh`
+(runs engine/buildconfig's exact cpp|cc1 with -da into a per-tag dir).
+Measured on the pa4-read chassis (artifact s5/pa4/stderr.txt):
+
+    ord pseudo hardreg refs live pri     role
+    0   73     17 s1    16   99   6464   a1
+    1   74     18 s2    16   99   6464   a2
+    2   87     19 s3    10   88   3409   stptr (merged loop1 walker + loop2 ptr)
+    3   90     16 s0     6   48   2500   stptr2
+    4   78     20 s4     8   97   2474   i
+    5   79     21 s5     4   47   1702   tbl
+    6   77     22 s6     7   95   1473   pa4 carrier      <-- target wants s7
+    7   75     23 s7     4   99    808   a3               <-- target wants fp
+    8   86     30 fp     3   42    714   out2             <-- target wants s6
+    9   85     -1  —      2   47    425   saved (SPILLED; target spills it too:
+                                          `lw t0,0x18(sp)` + `addiu s0,t0,1872`)
+
+`BB2_FINDREG_DEBUG` for pseudos 73 / 77 / 86 shows **`own_copy_prefs` empty,
+`someone_prefers` empty for every one of them**: find_reg's preference-override
+block (global.c ~line 1090) never fires in this function, and MIPS defines no
+REG_ALLOC_ORDER, so the seat is simply *the lowest-numbered non-conflicting
+callee-saved register at the moment the allocno is processed*. The only
+non-obvious datum is that every allocno except 90 carries a hard-reg conflict
+with reg 16 ($s0) — that is why a1 (first) takes s1, not s0.
+
+**Consequence (the model is now closed):** the seats are a pure function of the
+priority ORDER. Target's seats require the last three allocnos to be processed
+out2 -> carrier -> a3, i.e. **pri(out2) must sit strictly inside
+(carrier 1473.7, tbl 1702.1)** — exactly the s5 window, now first-principles
+confirmed rather than inferred.
+
+### The target's OWN register file proves the 4th out2 reference is post-flow
+
+In asm/funcs/func_80041188.s the callee-saved seating is
+s0 stptr2 / s1 a1 / s2 a2 / s3 stptr / s4 i / s5 tbl / s6 out2 / s7 carrier /
+fp a3, and **s6 is referenced exactly three times in the final code** (def
+`addiu s6,s7,0x20`, and the two loop1 `addu a1,s6,zero`); s6 does NOT appear in
+loop2 at all. Three materialised refs at live ~42 is pri 714 — unreachable.
+Therefore the original C carried at least one further out2 reference that was
+deleted AFTER flow.c counted reg_n_refs (only combine.c can do that here), and
+the entire remaining search is: *which byte-free, post-flow-deleted out2
+reference shape lands (refs, live) in the window?*
+Landing zones: 4 refs/live 48-54, 5/59-67, 6/71-81, 7/82-95.
+
+### The staged-copy family is CLOSED — cse1 decides, and both branches lose
+
+Measured this session, each with the pass named from the dumps:
+
+1. **MID re-init chain** `out2 = pa4+0x20; stptr = (s32) out2;`
+   (rejected/mid-chain-out2-reinit-cse1-destswap.c, artifacts s5/e1/*).
+   .rtl has `86 = 77+32` then `87 = 86`; **.cse shows cse1 DEST-SWAPPING the
+   pair into `87 = 77+32` then `86 = 87`** (cse.c cse_insn rewrites the
+   producer's destination when its original dest dies in the copy); out2 is then
+   dead, so flow.c's dead-store elimination removes the copy BEFORE reg_n_refs
+   is taken. Result: byte-perfect MID (`addiu s3,s7,32`, 132 insns) but out2
+   still 3 refs / 42 / 714 — **sandbox 15, allocation bit-identical to the plain
+   pa4 chassis.** The lift is not merely byte-free, it is UNCOUNTED.
+
+2. **Loop2-top stage with the use-swap** (the degree of freedom the s5 sweep
+   never varied): copy at loop2 top, consumed by the *second* func_8004A348,
+   with func_800523E0 keeping stptr
+   (rejected/loop2top-stage-single-use-cse1-propagated.c, artifacts s5/va/*).
+   Uses of reg 86 inside loop2: **.rtl 2 -> .cse 1 -> .flow 0** — cse1
+   canonicalises the out2-spelled use back onto 87, the copy dies, flow deletes
+   it uncounted. Allocation again bit-identical to the pa4 chassis.
+
+3. Contrast with rejected/staging-position-sweep-133insn.c (the 6 refs/81 form
+   with EXACTLY target's seats): there the C spells the LAST pointer use `out2`,
+   and cse1 goes the other way — it pulls the EARLIER stptr use onto 86 as well.
+   The .combine dump for that form shows `insn 171: (set (reg 86) (reg 87))`
+   surviving with **two** consumers (insn 254 carries the LOG_LINK back to 171,
+   insn 263 carries the REG_DEAD). combine's try_combine can only delete a
+   producer whose destination dies at the single use it substitutes into, so the
+   copy materialises: `addu s6,s3,zero`, 133 insns.
+
+**The closure argument.** A staged copy `out2 = stptr` has exactly two fates,
+both decided by cse1: if out2 is spelled at the LAST pointer use in the block,
+cse1 pulls the earlier use onto out2 too => two consumers => combine cannot
+delete it => +1 insn (case 3); otherwise cse1 propagates the use back to stptr
+=> dead store => flow deletes it uncounted (cases 1-2). The only byte-free,
+COUNTED position is the one the s5 sweep already found — copy immediately before
+its single last use — whose def->use span is ~1 insn, pinning out2 at 5 refs /
+live 42-44 = pri 2381 (sandbox 9). Reaching 5 refs/59-67 needs a ~20-insn
+def->use span, and every such span necessarily steps over the second
+func_8004A348 (the other pointer use), which flips cse1 into case 3.
+**Frontier items #1 (a second byte-free out2 read in MID) and #2 (make the
+loop2-top copy propagable) are therefore both dead.**
+
+### Frontier #3 (the carrier-free V1 world) is dead too — it needs TWO inversions
+
+ALLOCDBG on V1 (a4 used at all six sites; artifacts s5/v1/stderr.txt) gives
+a3 4/99 = 808 -> s6, a4 7/190 = 736 -> s7, out2 3/42 = 714 -> fp. Target needs
+out2 -> s6, a4 -> s7, a3 -> fp, i.e. order out2 > a4 > a3: out2 must pass both
+AND a4 must additionally pass a3 (it is already 72 points below it). The
+pa4-carrier chassis needs one inversion; V1 needs two.
+Banked as rejected/v1-carrier-free-two-inversions.c.
+
+- [s6] The seat rule is instrumented, not inferred: no copy preferences and no
+  someone_prefers entries fire in this function, MIPS has no REG_ALLOC_ORDER, so
+  seats = lowest free non-conflicting callee-saved reg in priority order.
+- [s6] Target's own asm has only THREE materialised s6 references, so the 4th+
+  out2 reference the priority window demands must have been deleted post-flow by
+  combine in the original — the search is for a combine-deletable out2 mention.
+- [s6] cse1's dest-swap (cse.c cse_insn) rewrites `A = expr; B = A` into
+  `B = expr; A = B`, so a MID re-init chain on out2 is deleted by flow's
+  dead-store elimination BEFORE reg_n_refs is counted (sandbox 15, allocation
+  identical to the plain pa4 chassis).
+- [s6] Staged-copy closure: cse1 either propagates the copy away (uncounted) or
+  pulls a second consumer onto it (uncounted-> materialised +1 insn). The only
+  byte-free counted position is span~1 (5 refs/42/2381, sandbox 9). No staged
+  copy can reach 5 refs/59-67 or 6 refs/71-81 byte-free.
+- [s6] V1 (carrier-free) requires two priority inversions vs one for the
+  pa4-carrier chassis — strictly harder, axis closed.
+
+- [s5] Floor re-verified THIS session: memory/grind/func_80041188/candidate.c applied to src/text1a_pre.c scores sandbox --disable all == 1 at 132/132 insns, and is in place in src at session end.
+
+- [s5] Instrumented ALLOCDBG for the pa4-read chassis (s5/pa4/stderr.txt): 73 a1 -> s1, 16 refs/99, 6464 | 74 a2 -> s2, 6464 | 87 stptr -> s3, 10/88, 3409 | 90 stptr2 -> s0, 6/48, 2500 | 78 i -> s4, 8/97, 2474 | 79 tbl -> s5, 4/47, 1702 | 77 carrier -> s6, 7/95, 1473 | 75 a3 -> s7, 4/99, 808 | 86 out2 -> fp, 3/42, 714 | 85 saved SPILLED, 2/47, 425 (target spills it too: lw t0,0x18(sp) + addiu s0,t0,1872).
+
+- [s5] BB2_FINDREG_DEBUG (pseudos 73/77/86): own_copy_prefs empty, someone_prefers empty, pass 0 never succeeds; MIPS defines no REG_ALLOC_ORDER, so find_reg returns the lowest-numbered non-conflicting callee-saved register. Seats are a pure function of allocno_compare order.
+
+- [s5] Every allocno except stptr2 (90) carries a hard-reg conflict with reg 16 ($s0) - which is why a1, allocated first, takes s1 rather than s0. Hard-reg conflicts are the one seat-level mechanism in this function that is not priority.
+
+- [s5] Target's callee-saved map read off asm/funcs/func_80041188.s: s0 stptr2, s1 a1, s2 a2, s3 stptr, s4 i, s5 tbl, s6 out2, s7 carrier (a4, lw from 0x58(sp)), fp a3. s6 appears exactly 3 times and never in loop2; s7 appears 7 times.
+
+- [s5] cse.c's cse_insn performs a DEST-SWAP: 'A = expr; B = A' becomes 'B = expr; A = B' (dumped on the MID re-init chain, s5/e1/text1a_pre.cse insns 167/170). flow.c then deletes the resulting dead copy before reg_n_refs is taken.
+
+- [s5] cse1 canonicalises loop2's two pointer uses onto ONE register, and the direction depends on which use the C spells 'out2': last-use spelling -> both uses become reg 86 (the copy survives with two consumers and materialises as addu s6,s3,zero, 133 insns); earlier-use spelling -> the use reverts to reg 87 and the copy is deleted uncounted (s5/va: reg-86 uses inside loop2 go .rtl 2 -> .cse 1 -> .flow 0).
+
+- [s5] combine.c try_combine deletes a copy's producer only when the producer's destination dies at the single use being substituted; the 133-insn form's insn 171 has a LOG_LINK consumer (insn 254) and a later REG_DEAD consumer (insn 263), so it can never be deleted.
+
+- [s5] V1 (carrier-free) ALLOCDBG: a3 4/99 = 808 -> s6, a4 param 7/190 = 736 -> s7, out2 3/42 = 714 -> fp; the target order out2 > a4 > a3 needs two inversions versus one in the pa4-carrier chassis.
+
+- [s5] Reusable tooling banked: tmp/grind/func_80041188/s5/idump.sh runs the instrumented cc1 (tools/gcc-2.7.2/cc1) with engine/buildconfig's exact flags plus -da into a per-tag directory, honouring BB2_ALLOC_DEBUG / BB2_FINDREG_DEBUG; tmp/grind/func_80041188/s5/swap.py swaps any candidate body into src/text1a_pre.c in one command.
