@@ -715,3 +715,179 @@ CONFIRMED:
 - probe: Built the two-locals form with separate `stptr`/`stptr2` walkers and separate `out2`/`out3` output pointers, every local written once and read for its real value; measured sandbox and disassembled all 132 insns against target.
 - result: CONFIRMED. sandbox 1, 132/132 insns, frame 72 == target 0x48. Every instruction matches target 1:1 except slot 72. candidate.c now carries no register pin, no inline asm, no volatile, no dead local, no annotation.
 - verdict: CONFIRMED
+
+## s8 (rederive, 2026-08-23)
+
+Chassis re-verified at dispatch: candidate.c applied to src/text1a_pre.c scores
+`sandbox --disable all` = **1**, 132/132 insns. Every number below was measured
+THIS session against that chassis, using a single-function extraction TU
+(`tmp/grind/func_80041188/s8/fd.c`) that reproduces the full-TU `.lreg` table
+pseudo-for-pseudo (verified identical to the `text1a_pre.c` dump), so each
+variant costs one cc1 run instead of a full sandbox build.
+
+### KILLED
+- **H-s8-1 - "tbl's 6-insn block-0 lead-in (reg_live_length 47 vs loop1's 41)
+  can be shortened by moving `tbl = D_80094CFC;` later in block 0"
+  (s7 frontier #2).** KILLED. Moving the assignment out of the declaration and
+  making it the LAST statement of block 0 produced a `.lreg` table
+  BIT-IDENTICAL to the baseline in every pseudo (tbl still 4 refs / live 47) and
+  the identical sandbox 1. Block-0 source position of tbl's definition is inert.
+  Artifact `rejected/tbl-assign-position-inert-live47.c`.
+- **H-s8-2 - "a dead store of out2 in the between-loops block buys a
+  flow-counted 4th reference."** KILLED with the mechanism named: flow.c counts
+  `reg_n_refs[regno] += loop_depth` only on the *needed* branch of
+  `propagate_block` (flow.c:2081), so a SET whose destination is dead is deleted
+  WITHOUT being counted. Two spellings measured (`out3 = out2;` immediately
+  overwritten by `out3 = pa4+0x20;`, and a store into a separate never-read
+  local): out2 stays 3 refs / live 42 in both, byte-identical to the plain
+  `out3 = pa4+0x20` form. Artifact `rejected/dead-store-out2-uncounted-by-flow.c`.
+- **H-s8-3 - "loop1 and/or loop2 spelled as real `do { } while` loops (which
+  emit NOTE_INSN_LOOP_BEG/END and therefore double every in-loop reference via
+  flow.c's loop_depth weighting) re-open the seating in the s7 TWO-LOCALS
+  chassis."** (s4 measured this in the old single-out2 chassis; the brief's
+  chassis-relative rule required re-measurement.) KILLED again. loop1-real +
+  `out3 = out2` gives the CORRECT priority ORDER for the first time
+  (tbl 7/47=2978 > out2 6/46=2608 > pa4 8/94=2553 > a3 5/99=1010) but scores 5,
+  because loop.c rewrites loop1's induction variables (stptr becomes a new
+  pseudo 125 at 9 refs / live 40) and changes 5 in-loop instructions.
+  loop1-real + `out3 = pa4+0x20` scores 13 and has the WRONG order
+  (pa4 9/94=2872 outranks out2 5/41=2439): `out3 = pa4+0x20` inherently hands pa4
+  another reference, so that chassis can never put out2 above pa4.
+  Both-real was measured at s4 as +3 insns (loop.c preheader) and was not re-run.
+  Artifacts `rejected/loop1-real-do-while-newchassis-score5.c`,
+  `rejected/loop1-real-out3-from-pa4-pa4-outranks-out2.c`.
+- **H-s8-4 - "s7 frontier #1: some out2 reference in the between-loops block is
+  deleted by combine and is therefore byte-free."** KILLED as a CLASS, by
+  mechanism plus a positive control. Positive control (`H_combine_ref_premise`):
+  a separated staging pair `tmp = out2 + 0x10; out3 = tmp - 0x10;` DOES survive
+  cse1/cse2, IS counted by flow (out2 back to 4 refs / live 47, table identical
+  to baseline) and IS deleted by combine - so the counting premise is REAL. But
+  combine only deletes an insn by substituting its value into the surviving
+  consumer, and LOG_LINKS are intra-block, so the consumer must be one of the
+  six insns target emits between the loops
+  (`addiu $s1,$s1,0x6C`, `addiu $s2,$s2,0x6C`, `addiu $s4,$zero,0x12`,
+  `lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`). NONE of the
+  six reads $s6 or any value derived from out2; the only one that could consume
+  out2 is out3's definition, and consuming it produces `move $s3,$s6` - the
+  residual itself. The only escape would be an out2 term that cancels
+  (`out2 - out2`), i.e. forbidden opaque arithmetic. Therefore no byte-free out2
+  reference exists in the between-loops block, and s7 frontier #1 is closed.
+
+### CONFIRMED
+- **H-s8-5 - a between-loops RESTORE of out2 from pa4, SEPARATED from the
+  `out3 = out2` copy by one intervening statement, makes GCC emit target's
+  residual insn `addiu $s3,$s7,0x20` while keeping out2's between-block
+  references flow-counted.** CONFIRMED. Form (`I2`):
+  `out2 = (s32 *)((u8 *)pa4 + 0x20); stptr2 = saved + 0x750; out3 = out2;`
+  Measured: cc1 emits `addu $19,$23,32` (= `addiu $s3,$s7,0x20`) at the
+  between-loops slot - the FIRST time in this ledger that target's slot-72 form
+  has been produced - 132 insns, sandbox **9**. The residual 9 is now PURELY a
+  seat swap: out2 reaches 5 refs / live 42 = 2380.9 and outranks tbl
+  (4/47 = 1702.1), so out2 takes $s5 and tbl takes $s6 (cc1 emits
+  `addu $21,$23,32` for out2's block-0 definition instead of `addu $22,...`).
+  SEPARATION IS LOAD-BEARING and the mechanism is cse1's last-set propagation:
+  with the restore placed IMMEDIATELY before the copy, cse1 substitutes the
+  SET_SRC into the copy, the restore becomes dead and flow deletes it uncounted
+  - out2 falls back to 3 refs / live 42 and the form degenerates into the plain
+  `out3 = pa4 + 0x20` variant (identical table, s7's score-15 class).
+  Artifacts `rejected/i2-separated-restore-emits-target-insn-seatswap9.c`,
+  `rejected/adjacent-restore-folded-by-cse1-equals-plain-pa4.c`.
+
+### The s8 arithmetic (the whole remaining problem, in closed form)
+In the I2 chassis every pseudo except tbl is already where target wants it. The
+measured priorities are
+    88 stptr   7/41 = 3414      91 stptr2 6/48 = 2500     78 i    8/97 = 2474
+    86 out2    5/42 = 2380      79 tbl    4/47 = 1702     77 pa4  7/95 = 1473
+    75 a3      4/99 =  808      87 out3   3/47 =  638     85 saved 2/47 = 425
+and the ONLY unsatisfied constraint is `pri(tbl)` needing to land in
+`[2380.9, 2474.2]` (ties are fine at both ends: tbl's allocno 79 beats out2's 86
+and loses to i's 78, which is exactly what target needs). Enumerating
+`floor_log2(n)*n/L*10000` for tbl:
+  * 4 refs -> L in [32.3, 33.6)  - impossible, loop1's block alone is 41 insns
+  * 5 refs -> L in [40.4, 42.0)  - needs live SHORTENED to 41 AND +1 ref
+  * 6 refs -> L in [48.5, 50.4)  - i.e. **6 refs at live 49 or 50**
+  * 7 refs -> L in [56.6, 58.8)
+The 6-ref lift is already banked (s4's sym-K split-init chain, tbl 4 -> 6 refs,
+byte-neutral, `rejected/tbl-symK-splitinit-refs6-steals-s4.c`) but it pins tbl at
+live 45-47 = 2553-2666, ABOVE i, so it steals $s4. The remaining need is
+therefore +2..+3 on tbl's reg_live_length. Because i is live over the whole
+function while tbl is live over 47 insns, ANY insn added to block 0 after tbl's
+definition raises both: with N insns added, i = 24/(97+N) and tbl = 12/(47+N),
+and tbl <= i requires 97+N <= 2*(47+N), i.e. **N >= 3**. At N = 3 both sit at
+exactly 2400.0 and the tie breaks on allocno 78 < 79 - i keeps $s4, tbl takes
+$s5 - while out2 at 5/42 = 2380 (or 5/45 = 2222 if the added insns follow out2's
+definition) stays below. That is also the i-FIRST preamble order, which is the
+order target emits, so it does NOT reproduce the emission-order residual that
+rejected s6's all-target-seats form
+(`rejected/tbl-symK-ilate-alltarget-seats-emission-swapped.c`, sandbox 4).
+The open question is whether three byte-free block-0 insns exist: H-s8-5's
+separated-staging mechanism produces exactly that (survives cse, counted by flow,
+deleted by combine), but H-s7-3 measured that split-inits inside block 0 are
+folded by cse1 pre-flow - the difference between the two is the intervening
+statement, which has never been tried in block 0.
+
+## s8 frontier (for s9)
+1. **Does the H-s8-5 SEPARATED-staging mechanism work inside block 0?** H-s7-3
+   killed block-0 split-init because cse1 folds it; H-s8-5 showed the fold is
+   cse1's *last-set* propagation and that it disappears when one statement
+   intervenes.
+   *Mechanism:* cse1 substitutes a SET_SRC into the immediately following insn;
+   with an intervening insn the lookup returns the register instead, both insns
+   survive to flow (and are counted), and combine merges them afterwards.
+   *Next probe:* on the I2 chassis, write out2's (or saved's, or stptr's) block-0
+   definition as a SEPARATED two-step placed AFTER tbl's definition, and read
+   tbl's `Register 79 used N times across M insns` line in `.lreg`. Each
+   surviving staging insn should give tbl +1 live. Target state: tbl live 50 with
+   the s4 sym-K 6-ref lift and i live 100, both at 2400.0. Confirm in `.combine`
+   that the staging insn is deleted before trusting the sandbox score.
+2. **Shorten tbl to live 41 and add one reference (the 5-ref window).** tbl at
+   5 refs / live 41 = 2439 also sits in the window and needs no i-side change.
+   Live 41 means tbl's whole live range is loop1's block, i.e. its definition
+   would have to be the last insn before the loop1 label - H-s8-1 proved source
+   position cannot do that, so this needs a different definition SHAPE (tbl
+   reached through a value that is itself computed last in block 0).
+   *Next probe:* dump `.rtl` and `.flow` for the I2 chassis, locate reg 79's
+   definition insn and count the insns between it and loop1's code_label, to
+   find out WHAT the six trailing block-0 insns are and whether any of them can
+   be moved above tbl's definition.
+3. **Watch the construct budget.** The I2 restore is a same-value re-store of a
+   LOCAL (`dead-store-fake-exception` family, FAKE + lever exhaustion required),
+   and the s4 sym-K chain plus any block-0 separated staging are
+   combine-foldable chain-extenders (the F1 family, FAKE-annotated last resort).
+   A form that stacks all three will very likely draw a layer-1 FAIL on
+   aggregate. Before building it, look for a spelling of the between-loops
+   restore that a reader can justify semantically - e.g. the two matrices
+   spelled through a real `MATRIX *` typed local so that `m1 = &m[1]`
+   re-appearing before the second loop reads as ordinary scoping rather than as
+   a re-store. (a4's two 0x20-byte objects are PsyQ `MATRIX`-sized, which is the
+   most likely original spelling and has never been tried.)
+
+## [s8] tbl's 6-insn block-0 lead-in (reg_live_length 47 vs loop1's 41 insns) can be shortened by moving `tbl = D_80094CFC;` later in block 0 (s7 frontier #2).
+- mechanism: flow.c's reg_live_length counts every insn in which a pseudo is live; if tbl's definition were the last block-0 insn its lead-in would be 1 and its live length would fall to 42, letting it tie an out2 that carries its 4th reference inside loop1.
+- probe: Moved the initialiser out of the declaration and made `tbl = D_80094CFC;` the LAST statement of block 0; read the full .lreg allocation table and ran sandbox --disable all.
+- result: The .lreg table is BIT-IDENTICAL to the baseline in every pseudo (tbl still 4 refs / live 47; out2 4/47; pa4 6/95) and the sandbox score is unchanged at 1. Combined with s6's 16-position tbl++ sweep, tbl's reg_live_length is not reachable by source statement position at all.
+- verdict: KILLED
+
+## [s8] A dead store of out2 in the between-loops block buys a flow-counted 4th reference (out2's live length and refs are fixed before combine, so a store that is later deleted should still be counted).
+- mechanism: reg_n_refs and reg_live_length are set by flow_analysis (toplev.c:2983) before combine (toplev.c:3004), so anything deleted after flow is free.
+- probe: Two spellings on the `out3 = pa4 + 0x20` chassis: (a) `out3 = out2;` immediately overwritten by `out3 = (s32*)((u8*)pa4+0x20);`, (b) a store into a separate never-read local `dead`. Read .lreg for both.
+- result: out2 stays at 3 refs / live 42 in both, and both are byte-identical to the plain form. Mechanism read out of the compiler: flow.c:2081 increments reg_n_refs only on the branch where the SET is needed, so propagate_block deletes a dead set WITHOUT counting it. Dead stores are inert here in both directions.
+- verdict: KILLED
+
+## [s8] loop1 and/or loop2 spelled as real `do { } while` loops re-open the seating in the s7 two-locals chassis (s4 measured this only in the retired single-out2 chassis, and the brief's chassis-relative rule requires re-measurement).
+- mechanism: flow.c weights reg_n_refs by loop_depth, which is driven by NOTE_INSN_LOOP_BEG/END; only a real C loop emits those notes, so every in-loop reference counts twice and the whole priority table rescales.
+- probe: Four variants measured (.lreg + sandbox): loop1-real with `out3 = out2`; loop1-real with `out3 = pa4+0x20`; both loops real with `out3 = pa4+0x20`; and the goto-loop control with `out3 = pa4+0x20`.
+- result: loop1-real + `out3 = out2` produces the CORRECT priority order for the first time in the ledger (tbl 7/47=2978 > out2 6/46=2608 > pa4 8/94=2553 > a3 5/99=1010) but scores 5, because loop.c now runs on the note-marked loop and rewrites the induction variables - loop1's walker becomes a NEW pseudo 125 at 9 refs / live 40 and five in-loop instructions change. loop1-real + `out3 = pa4+0x20` scores 13 with the WRONG order, since that spelling hands pa4 a 9th reference (2872) and no 5-reference out2 at live >= 41 can outrank it. Real loops are dead in this chassis too.
+- verdict: KILLED
+
+## [s8] s7 frontier #1: some out2 reference in the BETWEEN-LOOPS block is deleted by combine and is therefore a byte-free 4th reference, letting out3 be defined from pa4 while out2 keeps 4 refs / live 47.
+- mechanism: flow fixes reg_n_refs and reg_live_length before combine runs, so any out2 mention combine subsequently deletes is free; combine deletes an insn whose destination is used exactly once and dies in the combining insn, within one basic block.
+- probe: Positive control first: `tmp = (s32*)((u8*)out2 + 0x10); out3 = (s32*)((u8*)tmp - 0x10);` in the between-loops block, .lreg + sandbox. Then enumerated the consumers combine could possibly have, against the six insns target actually emits in that block (asm/funcs/func_80041188.s:70-75).
+- result: The counting premise is CONFIRMED - the staged pair restores out2 to exactly 4 refs / live 47 (the baseline table) at 132 insns / sandbox 1, i.e. flow counted it and combine folded it away. But the CLASS is dead: combine's LOG_LINKS are intra-block and it deletes an insn only by substituting its value into the surviving consumer, and none of the six surviving between-block insns (`addiu $s1,$s1,0x6C`, `addiu $s2,$s2,0x6C`, `addiu $s4,$zero,0x12`, `lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`) reads $s6 or any out2-derived value. The only possible consumer is out3's own definition, which then emits `move $s3,$s6` - the residual itself. The only escape is a cancelling term (`out2 - out2`), i.e. forbidden opaque arithmetic.
+- verdict: KILLED
+
+## [s8] A between-loops RESTORE of out2 from pa4, SEPARATED from the `out3 = out2` copy by one intervening statement, makes GCC emit target's residual insn `addiu $s3,$s7,0x20` while keeping out2's between-block references flow-counted.
+- mechanism: cse1 propagates a SET_SRC into the immediately following insn (last-set substitution) but falls back to the register when a statement intervenes; both insns then survive to flow and are counted, and combine merges `out2 = pa4+0x20` into `out3 = out2` afterwards - deleting the restore and leaving exactly one insn, `addiu $s3,$s7,0x20`.
+- probe: Built `out2 = (s32*)((u8*)pa4 + 0x20); stptr2 = saved + 0x750; out3 = out2;` (variant I2) and the adjacent control; read .lreg, read the emitted cc1 asm for the between-loops block, and ran sandbox --disable all on both.
+- result: CONFIRMED. I2 emits `addu $19,$23,32` (= `addiu $s3,$s7,0x20`) at the between-loops slot - the first time in this ledger that target's slot-72 form has been produced - at 132 insns and sandbox 9. The nine residual diffs are purely the $s5/$s6 swap: out2 reaches 5 refs / live 42 = 2380.9 and now outranks tbl at 4/47 = 1702.1. The adjacent control degenerates to out2 3 refs / live 42, i.e. to the plain `out3 = pa4+0x20` score-15 class, which also re-explains H-s7-3: block-0 split-inits die from ADJACENCY, not from being in block 0.
+- verdict: CONFIRMED

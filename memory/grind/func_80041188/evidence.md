@@ -1026,3 +1026,121 @@ block so that `out3` can be defined from a4 instead of from out2.
 - [s7] The `s32 *pa4 = a4;` param-local alias in candidate.c is load-bearing, not cosmetic: dropping it and using `a4` directly scores 13 instead of 1 with everything else identical.
 
 - [s7] candidate.c is now ordinary C at floor 1 - the /* FAKE */ variable-reuse annotation that the s3-s6 chassis required has been retired, which also removes the layer-1 exposure that FAILed the s4 form.
+
+## s8 evidence (rederive, 2026-08-23)
+
+- **E-s8-0 (chassis).** `memory/grind/func_80041188/candidate.c` applied to
+  `src/text1a_pre.c` re-measures at `sandbox func_80041188 --disable all` = 1,
+  132 target insns / 132 build insns, at the start AND at the end of the session
+  (src is left holding candidate.c). The s7 floor of 1 is real on today's
+  chassis and no ledger number needed re-basing.
+
+- **E-s8-1 (methodology, reusable).** A single-function extraction TU
+  (`tmp/grind/func_80041188/s8/fd.c`: the five externs plus the function body,
+  built by `tmp/grind/func_80041188/s8/mkfd.py`) reproduces the full-TU `.lreg`
+  allocation table PSEUDO-FOR-PSEUDO - identical register numbers, refs and live
+  lengths. That makes a variant cost one cc1 run (~1s via
+  `tmp/grind/func_80041188/s8/one.sh`) instead of a sandbox build, and it is the
+  reason s8 could sweep the priority arithmetic directly. `one.sh` also accepts a
+  pseudo number and sets `BB2_FLOW_DEBUG`, but that hook fires on every
+  life_analysis iteration, not just the final one, so its per-block counts are
+  NOT comparable to the `.lreg` live length - do not use them as absolute values.
+
+- **E-s8-2 (flow.c, dead sets are free of charge in BOTH directions).**
+  `reg_n_refs[regno] += loop_depth` sits at `tools/gcc-2.7.2/flow.c:2081`, inside
+  the branch taken only when the SET is needed; `reg_live_length[regno]++` is on
+  the next lines with the comment that it exists to count the setting insn. A
+  dead store is deleted by `propagate_block` and contributes NOTHING. Measured:
+  `out3 = out2; out3 = pa4+0x20;` and `dead = out2; out3 = pa4+0x20;` both leave
+  out2 at 3 refs / live 42, byte-identical to the plain form.
+
+- **E-s8-3 (global.c, the exact tie rule).** `allocno_compare`
+  (`tools/gcc-2.7.2/global.c:635-656`) computes
+  `pri = (double)(floor_log2(n_refs) * n_refs) / live_length * 10000 * size`,
+  TRUNCATES it to int, and on equality falls back to `*v1 - *v2` - the LOWER
+  allocno number is ordered first. `allocno_size` is forced to 1 at
+  `global.c:565` for every allocno here, so the size factor is inert. This is the
+  formula the whole ledger has been using; s8 confirms it verbatim including the
+  int truncation and the ascending-allocno tie-break.
+
+- **E-s8-4 (tbl's live length is position-invariant).** Moving
+  `tbl = D_80094CFC;` from the declaration to the LAST statement of block 0
+  leaves the ENTIRE `.lreg` table bit-identical (tbl 4 refs / live 47) and the
+  sandbox score at 1. Combined with s6's 16-position `tbl++` sweep (also
+  bit-identical) and s6's finding that only the i/tbl relative DEF ORDER moves it
+  by +/-1, tbl's reg_live_length is not reachable by statement position at all.
+
+- **E-s8-5 (cse1 last-set propagation is what kills split-inits).** The same
+  two-statement restore of out2 scores completely differently depending on
+  whether one statement intervenes:
+    adjacent  (`out2 = pa4+0x20; out3 = out2;`)        -> out2 3 refs / live 42
+    separated (`out2 = pa4+0x20; stptr2 = ...; out3 = out2;`) -> out2 5 refs / 42
+  Adjacent, cse1 substitutes the SET_SRC directly into the copy, the restore goes
+  dead and flow deletes it uncounted. Separated, the cse table lookup returns the
+  register, both insns reach flow and are counted, and combine merges them
+  afterwards. This is the mechanism behind H-s7-3's "block-0 split-init is folded
+  pre-flow" result and it says that result was about ADJACENCY, not about block 0.
+
+- **E-s8-6 (combine-deleted references ARE counted - positive control).**
+  `tmp = (s32 *)((u8 *)out2 + 0x10); out3 = (s32 *)((u8 *)tmp - 0x10);` in the
+  between-loops block restores out2 to 4 refs / live 47 - the exact baseline
+  table - and still emits 132 insns at sandbox 1, i.e. combine folded the pair
+  back to a single insn. flow counts, combine deletes, the allocator sees the
+  higher number. The premise of s7 frontier #1 is therefore correct.
+
+- **E-s8-7 (but the between-loops block admits no byte-free out2 reference).**
+  combine's candidate pairs come from LOG_LINKS, which `propagate_block` builds
+  only within a basic block, and it deletes an insn by substituting its value
+  into the surviving consumer. Target's between-loops block is exactly six insns
+  (`asm/funcs/func_80041188.s:70-75`): `addiu $s1,$s1,0x6C`,
+  `addiu $s2,$s2,0x6C`, `addiu $s4,$zero,0x12`, `lw $t0,0x18($sp)`,
+  `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`. None of the six contains $s6 or a
+  value derived from out2, and the only one that could consume out2 is out3's
+  definition - which then emits `move $s3,$s6`, the residual itself. s7 frontier
+  #1 is closed by structure, not by search.
+
+- **E-s8-8 (the I2 result - target's slot-72 form, produced for the first time).**
+  With the separated restore, cc1's asm for the between-loops block contains
+  `addu $19,$23,32` = `addiu $s3,$s7,0x20`, character-for-character target's
+  slot 72. 132 insns, sandbox 9. The nine residual diffs are the $s5/$s6 swap
+  between out2 and tbl (out2's block-0 definition emits `addu $21,$23,32`
+  instead of `addu $22,$23,32`), because out2 now measures 5 refs / live 42 =
+  2380.9 against tbl's 4/47 = 1702.1. This relocates the entire remaining problem
+  from "find a byte-free out2 reference" (dead) to "raise pri(tbl) into
+  [2380.9, 2474.2]".
+
+- **E-s8-9 (real C loops remain dead in the two-locals chassis).** loop1 as
+  `do { } while (i < 0x12)` keeps 132 insns and, with `out3 = out2`, produces the
+  correct priority ORDER for the first time in the ledger - but scores 5, because
+  loop.c now runs on the note-marked loop and rewrites the induction variables
+  (loop1's walker becomes a NEW pseudo 125 at 9 refs / live 40, and five in-loop
+  instructions change). With `out3 = pa4+0x20` it scores 13 and the order is
+  wrong, since that spelling gives pa4 a 9th reference (2872) and no 5-reference
+  out2 at live >= 41 can outrank it. s4's measurement that a note-marked loop2
+  costs +3 insns still stands and was not re-run.
+
+- [s8] Chassis re-verified twice this session: candidate.c in src/text1a_pre.c gives sandbox --disable all = 1 at 132/132 insns, at the start and again at the end (src is left holding candidate.c).
+
+- [s8] A single-function extraction TU (tmp/grind/func_80041188/s8/fd.c, built by mkfd.py) reproduces the full-TU .lreg allocation table pseudo-for-pseudo - same register numbers, refs and live lengths - so a priority-table variant costs one cc1 run instead of a sandbox build. tmp/grind/func_80041188/s8/one.sh is the harness.
+
+- [s8] global.c:635-656 allocno_compare computes pri = (double)(floor_log2(n_refs)*n_refs)/live_length*10000*size, truncates to int, and on equality orders the LOWER allocno first; allocno_size is forced to 1 for every allocno here at global.c:565, so the size factor is inert. The ledger's formula is confirmed verbatim.
+
+- [s8] flow.c:2081 increments reg_n_refs only on the branch where a SET is needed, so a dead store is deleted by propagate_block without ever being counted - dead stores cannot buy references in this function.
+
+- [s8] toplev.c pass order confirmed: flow_analysis (2983) -> combine_instructions (3004) -> sched1 (3033) -> regclass+local_alloc (3049) -> global_alloc (3077) -> sched2 -> cross-jumping jump_optimize (3142) -> dbr_schedule. Only combine sits between the reference count and the allocator, which is why combine is the only free-reference mechanism.
+
+- [s8] A combine-deleted reference IS counted: `tmp = out2 + 0x10; out3 = tmp - 0x10;` restores out2 to the baseline 4 refs / live 47 at 132 insns / sandbox 1.
+
+- [s8] But no byte-free out2 reference exists in the between-loops block: target emits exactly six insns there (asm/funcs/func_80041188.s:70-75) and none reads $s6 or an out2-derived value, while combine's LOG_LINKS are intra-block and it deletes an insn only by substituting the value into the survivor.
+
+- [s8] cse1's last-set propagation, not block membership, is what folds a two-step definition: the SAME restore of out2 gives 3 refs when adjacent to its consumer and 5 refs when one statement intervenes.
+
+- [s8] The I2 chassis (separated restore) measures 88 stptr 7/41=3414, 91 stptr2 6/48=2500, 78 i 8/97=2474, 86 out2 5/42=2380, 79 tbl 4/47=1702, 77 pa4 7/95=1473, 75 a3 4/99=808, 87 out3 3/47=638, 85 saved 2/47=425 - every seat is target's except tbl, which must land in [2380.9, 2474.2].
+
+- [s8] Closed-form enumeration for tbl in that window: 4 refs needs live 32-33 (impossible, loop1's block is 41 insns), 5 refs needs live 41, 6 refs needs live 49 or 50, 7 refs needs live 57-58. The banked s4 sym-K chain already supplies 6 refs byte-free but pins live at 45-47 (2553-2666), above i.
+
+- [s8] Because i is live across the whole function (97) and tbl across 47, adding N insns to block 0 after tbl's definition gives i = 24/(97+N) and tbl = 12/(47+N); tbl <= i requires N >= 3, and at N = 3 both are exactly 2400.0 with the tie broken by allocno 78 < 79 - i keeps $s4 and tbl takes $s5, in the i-FIRST preamble order that target emits (so it avoids the emission-order residual that rejected s6's all-target-seats form).
+
+- [s8] Real C loops stay dead in the two-locals chassis: loop1-real scores 5 (loop.c rewrites the induction variables, new pseudo 125 at 9 refs / live 40) and loop1-real with out3 from pa4 scores 13.
+
+- [s8] a4's two 0x20-byte objects are PsyQ MATRIX-sized and func_8004A348(SVECTOR-ish buf, m) / func_800523E0(m0, m1, ...) read as matrix construction - a `MATRIX *` typed spelling of pa4/out2/out3 has never been tried and is the most likely original form.

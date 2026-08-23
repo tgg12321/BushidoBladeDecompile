@@ -1,7 +1,7 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 7,
+ "session_count": 8,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 1,
    "modality": "rederive",
    "headline": "Rederive replaced the single-out2 assumption with a two-separate-locals chassis: floor 1 held with COMPLETELY ORDINARY C (the /* FAKE */ variable-reuse annotation is retired), 132/132 insns, all five "
+  },
+  {
+   "session": 8,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "s7 frontier #1 closed by structure; a SEPARATED between-loops restore emits target's residual insn `addiu $s3,$s7,0x20` for the first time (sandbox 9), reducing the whole problem to raising pri(tbl) i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-free 4th reference to out2 in the BETWEEN-LOOPS block closes the function outright: all five contested seats, all 132 instructions and the frame size are already target, and the single residual (slot 72, `move $s3,$s6` vs `addiu $s3,$s7,0x20`) exists only because that 4th reference is currently spent as the copy `out3 = out2;`.",
-   "mechanism": "flow.c fixes reg_n_refs and reg_live_length BEFORE combine runs, so any out2 mention in that block which combine subsequently deletes is a free +1 reference and a free +5 live length. combine deletes only an insn whose destination is used exactly once and dies in the combining insn, and only within one basic block - so the consumer must be one of the six insns target emits between the loops (`addiu $s1,$s1,0x6C`, `addiu $s2,$s2,0x6C`, `addiu $s4,$zero,0x12`, `lw $t0,0x18($sp)`, `addiu $s3,$s7,0x20`, `addiu $s0,$t0,0x750`).",
-   "next_probe": "Enumerate C spellings in which one of those six values is written as a single-use function of out2 that combine folds back to its target form - the most promising is out3 itself, spelled so the copy from out2 has exactly one consumer at combine time. For each, dump .combine and grep for the deleted-insn record BEFORE trusting the sandbox score, then confirm out2 still reads `4 times across 47 insns` in .lreg."
+   "hypothesis": "The H-s8-5 SEPARATED-staging mechanism works inside block 0 too, and three such staging insns placed after tbl's definition raise tbl's reg_live_length from 47 to 50 byte-free; combined with the banked s4 sym-K 6-reference lift that puts tbl at 12/50 = 2400.0, exactly tied with i at 24/100 = 2400.0 and won by i on allocno 78 < 79, giving every seat target's in the I2 chassis.",
+   "mechanism": "cse1 substitutes a SET_SRC into the immediately following insn but not across an intervening statement; separated two-step definitions therefore survive cse1/cse2 into flow (where reg_n_refs and reg_live_length are fixed) and are merged back by combine afterwards, costing no bytes. Each such surviving insn placed after tbl's definition adds +1 to tbl's live length, and +1 to i's, and i's larger live length means the ratio moves in tbl's favour only from N >= 3.",
+   "next_probe": "On the I2 chassis (rejected/i2-separated-restore-emits-target-insn-seatswap9.c), rewrite out2's / saved's / stptr's block-0 definitions as SEPARATED two-step forms placed after tbl's definition and read `Register 79 used N times across M insns` in .lreg for each count of staging insns; then stack the s4 sym-K chain (rejected/tbl-symK-splitinit-refs6-steals-s4.c). Confirm in .combine that each staging insn is deleted before trusting the sandbox score. Use tmp/grind/func_80041188/s8/one.sh - it turns each variant into one ~1s cc1 run."
   },
   {
-   "hypothesis": "Attack the tie from tbl's side instead: shrink tbl's reg_live_length from 47 to <= 42 so that an out2 carrying its 4th reference INSIDE loop1 (live 42, pri 1904.8) still loses the tie to tbl, which would let out3 be defined from a4 and emit `addiu $s3,$s7,0x20` directly.",
-   "mechanism": "tbl measures 4 refs / live 47, of which 41 is loop1's block and 6 is a block-0 lead-in from its `lui/addiu %hi/%lo` symbol definition. At 4/42 tbl reaches 1904.8 and ties-or-beats an in-loop1 out2 at the same value, with allocno 79 < 86 winning the tie. s7 measured that moving the tbl source statement does NOT move that lead-in, so some pass places it - identify the pass rather than guessing.",
-   "next_probe": "Dump .rtl, .cse2 and .loop for func_80041188, locate tbl's definition insn and count insns from it to loop1's code_label to confirm the 6-insn lead-in, then look for a source form whose tbl definition is emitted later in that stream. Verify with `Register NN used 4 times across NN insns` in .lreg before scoring. Note the `tbl sym-K` chain from s4 is an invention and is NOT the route here - this is about placement, not extra references."
+   "hypothesis": "tbl reaches the same window from the 5-reference side: 5 refs at live 41 = 2439, which needs no change to i at all. Live 41 means tbl's entire live range is loop1's block, i.e. its definition must be the last insn before the loop1 label.",
+   "mechanism": "reg_live_length is the count of insns in which the pseudo is live; H-s8-1 proved the SOURCE position of tbl's assignment cannot move that count, so what pins it is the six block-0 insns that follow tbl's definition in the pre-flow RTL stream, and moving those above the definition is a different lever from moving the definition.",
+   "next_probe": "Dump .rtl and .flow for the I2 chassis and locate reg 79's definition insn, then count and IDENTIFY the six insns between it and loop1's code_label (they are almost certainly base's lui/addu/lw, saved's addiu, saved's spill store, out2's addiu and stptr's addiu). Test whether any of them can be made to precede tbl's definition in the RTL stream, and separately whether a 5th tbl reference exists that is byte-free."
   },
   {
-   "hypothesis": "The `pa4 = a4` param-local alias is load-bearing (dropping it costs 1 -> 13) and should be replaced by a spelling whose semantics a reviewer can read, rather than merely kept.",
-   "mechanism": "The alias changes which pseudo carries a4 and hence a4's reg_n_refs (6 with the alias), which is one of the four numbers in the priority table that decides the contested seats.",
-   "next_probe": "Diff .lreg for candidate.c against rejected/no-pa4-param-alias.c and record exactly which pseudo's refs/live changed. Then test whether a natural typed spelling of the same thing - e.g. taking the pointer through a typed local such as a matrix/vector pointer, consistent with a4 being two 0x20-byte objects - reproduces the same numbers; if it does, prefer it in candidate.c."
+   "hypothesis": "The winning form should be spelled through a real PsyQ `MATRIX *` local rather than as a re-store of a raw `s32 *`, so that the between-loops restore reads as ordinary scoping to a human reviewer instead of as a dead-store coercion.",
+   "mechanism": "a4 addresses two adjacent 0x20-byte objects (MATRIX is 0x20 bytes in PsyQ); func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair, so the natural original source is `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]`, and a second loop that re-takes `&m[1]` before it starts.",
+   "next_probe": "Re-spell candidate.c and the I2 variant with a MATRIX-typed (or equivalently a 0x20-byte struct) local and confirm the .lreg table is unchanged; if it is, prefer that spelling everywhere, because the frontier-1 form will otherwise stack a dead-store re-store, a sym-K chain and block-0 staging in one diff and is very likely to draw a layer-1 FAIL on aggregate."
   }
  ],
  "judge_constraints": [
