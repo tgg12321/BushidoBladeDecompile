@@ -73,6 +73,29 @@
  * over target, that insn being the reference itself. A byte-free ninth
  * reference (surviving cse1 into flow, deleted by combine) is distance 0.
  * See evidence.md s10 and hypotheses.md s10 frontier 1.
+ *
+ * s11 ADDENDUM (escalation, 2026-08-23). Still floor 1 / 132 insns / ALL-TARGET
+ * seats (re-measured this session at the start and again at the end). s11 closed
+ * the block-0 side of the residual, the mirror of s8's between-block kill:
+ * on the only chassis that emits target's `addiu $s3,$s7,0x20` (out3 taken from
+ * pa4), out2's live length CANNOT exceed 43 - measured with its definition made
+ * the first statement of block 0 - while target's seating needs out2's priority
+ * inside (1458, 1702), i.e. live 47..55 at 4 references. The window is empty.
+ * The F1 combine-foldable chain-extender (the last unspent sanctioned byte-free
+ * reg_n_refs family) does buy out2 a 4th reference in block 0, but every spelling
+ * must subtract a pa4-derived term to cancel, which lifts pa4 (8 refs / 2424)
+ * above out2 (1739), AND it materialises two insns (134 vs 132), failing F1's own
+ * zero-bytes prerequisite. See evidence.md E-s11-1/E-s11-2.
+ *
+ * s11 CORRECTION to this header's own claims. `stptr = base; stptr += 0xFC;`
+ * IS a combine-foldable chain-extender: target emits one `addiu $s3,$v0,0xFC`,
+ * the split is byte-neutral (132 insns either way), and its only surviving effect
+ * is stptr's reg_n_refs count - un-splitting it drops stptr from 7/41=3414 to
+ * 5/41=2439, below stptr2, and the floor from 1 to 15. So the "ORDINARY C ... NO
+ * FAKE construct" claim above is WRONG for that one statement. A future
+ * candidate must either carry a FAKE: F1 annotation on it (family:
+ * .claude/rules/dead-store-fake-exception.md:32) or replace it; shipped
+ * un-annotated it is a layer-1 FAIL. See evidence.md E-s11-3.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {

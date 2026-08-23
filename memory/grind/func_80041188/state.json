@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 10,
- "current_modality": "structural",
+ "session_count": 11,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -69,23 +69,24 @@
    "floor": 1,
    "modality": "structural",
    "headline": "i-first + separated-restore chassis proven arithmetically closed for an 8-ref `i` (tbl live ceiling 48 vs the required 50); a 9th flow-counted reference to `i` reaches ALL-TARGET seats at sandbox 3 / "
+  },
+  {
+   "session": 11,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Endgame lock confirmed: both gates fail (scan LOW 0/8; no SOTN precedent) - s11 closed the block-0 side of the residual with an empty priority window and killed the last unspent sanctioned family (F1 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A BYTE-FREE ninth flow-counted reference to `i`, reading loop1's exit value before the `i = 0x12;` reset, finishes the function - the rest of the form is already exact (all-target seats, target preamble order, target slot-72 addiu).",
-   "mechanism": "flow.c:2081 fixes reg_n_refs before combine runs, so a reference that survives cse1 into flow but whose insn combine later deletes costs zero bytes - the same free-reference mechanism the s8 separated out2 restore already exploits for out2. The payoff is measured exactly: i 9 refs -> 2727 > tbl's 2553 ceiling -> SEATS ALL-TARGET.",
-   "next_probe": "Start from tmp/grind/func_80041188/s10/g/K1_L0_ABOPI.c (sandbox 3, 133 insns, all-target seats). Enumerate spellings in which loop1's exit value of `i` is consumed by an expression combine folds away: feeding i into an address computation combine re-associates back to a constant offset, or into a comparison combine merges with loop1's own slti. For each read `reg 78 used 9 times` in .lreg (harness: tmp/grind/func_80041188/s10/batch.sh, ~1s per variant) AND the build insn count from `sandbox func_80041188 --disable all`; the winning form is 9 refs at 132 insns. Use `pwsh tools/grinder/dump.ps1 func_80041188` and read .combine to see which candidate insns combine actually deletes."
+   "hypothesis": "If the function is ever reopened, the only remaining un-falsified direction is a chassis in which the SECOND loop's pointer is not a copy or a re-derivation of the first at all - e.g. both matrices addressed through one real PsyQ `MATRIX *` local with &m[0] / &m[1], so that loop2's &m[1] is an ordinary re-scoped address expression rather than out3 = out2 or out3 = pa4 + 0x20.",
+   "mechanism": "a4 addresses two adjacent 0x20-byte objects and PsyQ's MATRIX is 0x20 bytes; func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair. A MATRIX-typed local changes the RTL address expressions cc1 emits for both pointers (scaled index vs plain plus), which is the one input to the allocno-priority arithmetic that every chassis measured so far holds fixed.",
+   "next_probe": "Re-spell candidate.c with `MATRIX *m = (MATRIX *)a4;` and &m[0] / &m[1] everywhere (including loop2's re-take), then read the .lreg priority table and seat verdict via tmp/grind/func_80041188/s10/batch.sh under WSL. This was carried unspent from s8/s9 as Judge-facing cosmetics; s11's arithmetic makes it the only structural variable left, since it is the only change that can move out2's live-range endpoints rather than just its reference count."
   },
   {
-   "hypothesis": "The same one-insn question asked from the out2 side: find a chassis in which the loop1 pointer is still live at the END of the between-loops block (as in candidate.c, 4 refs / live 47) WHILE the between-block emits `addiu $s3,$s7,0x20` rather than `move $s3,$s6`.",
-   "mechanism": "E-s10-2 shows every lever spent since s7 exists only to compensate for out2 sitting at 5 refs / live 42-44 in the separated-restore chassis, which forces tbl to 6 refs (the sym-K invention) and then shuts the i contest. With tbl at its honest 4 refs (1702) the only requirement is out2 < 1702, i.e. out2 live > 58 at 4 refs - unreachable in the current shape, so the shape itself is what must change.",
-   "next_probe": "Sweep chassis in which out2's live range is extended past loop1's exit WITHOUT gaining a fifth reference: a between-block statement that READS out2 for a real value rather than re-initialising it, out2 consumed by stptr2's or out3's computation, and out2's last read placed as the final statement of the between block. Measure with batch.sh, targeting `r86 = 4/>=48` together with `r79 = 4/47`, and confirm the build still contains `addiu $s3,$s7,0x20` at slot 72."
-  },
-  {
-   "hypothesis": "Spelling pa4/out2/out3 through a real PsyQ `MATRIX *` local is byte-neutral and materially reduces the layer-1 exposure of every form built on this chassis (carried from s8/s9, still unspent).",
-   "mechanism": "a4 addresses two adjacent 0x20-byte objects and PsyQ's MATRIX is 0x20 bytes; func_8004A348(buf, m) builds a rotation matrix and func_800523E0(m0, m1, a3, dst) consumes the pair, so the natural original source is `MATRIX *m = (MATRIX *)a4;` with `&m[0]` / `&m[1]`, and a second loop that re-takes `&m[1]` before it starts reads as ordinary scoping rather than as a dead-store re-init.",
-   "next_probe": "Apply only once a distance-0 form exists - it is Judge-facing cosmetics, not a floor lever. Re-spell candidate.c and the winning form with a MATRIX-typed (or equivalent 0x20-byte struct) local and confirm the .lreg table and the seat verdict are unchanged before adopting."
+   "hypothesis": "candidate.c can be made genuinely FAKE-free by finding a replacement for the load-bearing `stptr = base; stptr += 0xFC;` chain-extender that reaches stptr 7 refs / live 41 without a byte-neutral detour.",
+   "mechanism": "stptr must outrank stptr2 (6 refs / 48 = 2500) to keep $s3; at live 41 that needs >= 7 references, and target emits only a single addiu for its definition, so the extra references have to come from real in-loop uses of stptr rather than from its initialisation.",
+   "next_probe": "Enumerate loop1 spellings in which stptr is read for real values that target already computes from it (stptr + 0x38, stptr + 6, stptr + 0x68) as separate named intermediates or repeated reads instead of folded expressions; measure r88's refs/live in .lreg and require build_insns == 132."
   }
  ],
  "judge_constraints": [

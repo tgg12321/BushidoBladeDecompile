@@ -1082,3 +1082,39 @@ statement, which has never been tried in block 0.
 - probe: Variant E2 through the extraction harness; compared the full .lreg table against the unmodified K1_L0_ABOPI form.
 - result: cse1 already knows i == 0x12 at that point and constant-folds the multiply; the .lreg table comes back bit-identical (i 8/97 = 2474, tbl 6/47 = 2553, i and tbl still swapped on $s4/$s5). The E-s9-9 survival rule does not protect an operand whose VALUE cse knows: any ninth reference must read loop1's exit value, before the `i = 0x12;` reset.
 - verdict: KILLED
+
+## [s11] With `out3 = pa4 + 0x20` (target's slot-72 insn), out2's definition can be moved to the head of block 0 to lengthen its live range into the priority window (1458, 1702) that target's seating requires.
+- mechanism: global.c allocno_compare pri = floor_log2(n_refs)*n_refs/reg_live_length*10000; flow.c:1685 counts one live insn per RTL insn a pseudo spans, so an earlier definition lengthens the range without adding a reference. The window's lower bound is pa4, which gains out3's reference on this chassis (7 refs / 96 = 1458); the upper bound is tbl (4 / 47 = 1702).
+- probe: out2's definition made the FIRST statement of block 0 with `out3 = (s32 *)((u8 *)pa4 + 0x20)`; read the full .lreg priority table via tmp/grind/func_80041188/s10/batch.sh (under WSL) and ran sandbox --disable all.
+- result: out2 measures 3 refs / live 43 - the maximum reachable, since block 0 holds only two insns above out2's definition and out2 dies at loop1's exit. sandbox 18 at 132 insns, seats out2=$fp / pa4=$s6 / a3=$s7. The window needs live in (47.0, 54.9) at 4 refs; 43 gives 1860 (above tbl) and 3 refs gives 697 (below pa4). ARITHMETICALLY EMPTY.
+- verdict: KILLED
+
+## [s11] The F1 combine-foldable chain-extender (dead-store-fake-exception.md:32, owner ruling 2026-07-01) - the last unspent sanctioned byte-free reg_n_refs family - can give out2 a 4th flow-counted reference inside block 0, where (unlike the between-loops block of E-s8) combine CAN see out2's definition and fold the detour away.
+- mechanism: flow.c:2081 fixes reg_n_refs before combine runs (toplev.c:2983 vs 3004), so a detour insn that survives cse1 into flow and is folded by combine costs zero bytes; combine's LOG_LINKS are intra-block, and out2's definition and the detour are both in block 0.
+- probe: `saved = (s32)out2 + (base + 0x94 - 0x20 - (s32)pa4);` replacing `saved = base + 0x94;` (algebraically exact because out2 == pa4 + 0x20), measured with and without the s4/s5 sym-K tbl lift, and with the detour placed both immediately after out2's definition and as the last statement of block 0. .lreg table + sandbox for each.
+- result: out2 does reach 4 refs (live 46 = 1739), so the counting premise holds in block 0. But the detour necessarily references pa4 to cancel - out2 is the only pa4-derived value in scope - taking pa4 to 8 refs / 99 = 2424, ABOVE out2, which permutes exactly the seats it was meant to fix (sym-K on top gives tbl 6/49 = 2448 and does not change that). And it MATERIALIZES: sandbox 27 at 134 build insns vs target's 132, so F1's own zero-bytes prerequisite fails outright. The only pa4-free compensation is the forbidden `out2 - out2` cancellation pair.
+- verdict: KILLED
+
+## [s11] candidate.c is "ordinary C" as its header claims.
+- mechanism: n/a - audit of the shipping candidate against the F1 definition, prompted by E-s10-6's honest-reference-vector finding that target emits a single `addiu $s3,$v0,0xFC` where candidate.c writes `stptr = base; stptr += 0xFC;`.
+- probe: un-split it to `stptr = base + 0xFC;` and measure .lreg + sandbox.
+- result: FALSE. stptr falls from 7 refs / 41 = 3414 to 5 / 41 = 2439, below stptr2's 2500; seats permute and the floor goes 1 -> 15, while the build stays 132 insns either way. The split is byte-neutral and its only surviving effect is the reg_n_refs count - i.e. candidate.c already carries an UN-ANNOTATED F1 combine-foldable chain-extender, which a layer-1 reviewer would FAIL. Any future candidate on this chassis owes a /* FAKE: ... */ annotation on that split (or a replacement for it).
+- verdict: CONFIRMED (as a defect in the candidate, not as a lever)
+
+## [s11] With `out3 = (s32 *)((u8 *)pa4 + 0x20)` (the only chassis that emits target's slot-72 `addiu $s3,$s7,0x20`), out2's definition can be moved to the head of block 0 to lengthen its live range into the priority window (1458, 1702) that target's callee-saved seating requires.
+- mechanism: global.c allocno_compare pri = floor_log2(n_refs)*n_refs/reg_live_length*10000; flow.c:1685 counts one live insn per RTL insn a pseudo spans, so an earlier definition lengthens the range without adding a reference. The window's lower bound is pa4, which gains out3's reference on this chassis (7 refs / 96 = 1458); the upper bound is tbl (4 refs / 47 = 1702).
+- probe: out2's definition made the FIRST statement of block 0 with out3 taken from pa4; full .lreg priority table read via tmp/grind/func_80041188/s10/batch.sh (run under WSL) plus `sandbox func_80041188 --disable all`.
+- result: out2 measures 3 refs / live 43 - the maximum reachable, since only two insns sit above its definition in block 0 and it dies at loop1's exit. sandbox 18 at 132 insns; seats out2=$fp, pa4=$s6, a3=$s7. The window needs live 47..55 at 4 refs; live 43 gives 1860 (above tbl) at 4 refs and 697 (below pa4) at 3 refs.
+- verdict: KILLED
+
+## [s11] The F1 combine-foldable chain-extender (.claude/rules/dead-store-fake-exception.md:32, owner ruling 2026-07-01) - the last unspent sanctioned byte-free reg_n_refs family - can give out2 a 4th flow-counted reference inside block 0, where (unlike the between-loops block killed in s8) combine can see out2's definition and fold the detour away for zero bytes.
+- mechanism: flow.c:2081 fixes reg_n_refs before combine runs (toplev.c:2983 vs 3004), so a detour insn that survives cse1 into flow and is folded by combine costs nothing; combine's LOG_LINKS are intra-block and out2's definition and the detour are both in block 0.
+- probe: `saved = (s32)out2 + (base + 0x94 - 0x20 - (s32)pa4);` replacing `saved = base + 0x94;` (algebraically exact because out2 == pa4 + 0x20), measured with and without the s4/s5 sym-K tbl lift and with the detour both immediately after out2's definition and last in block 0; .lreg table + sandbox for each.
+- result: The counting premise holds - out2 does reach 4 refs / live 46 = 1739. But the detour must subtract a pa4-derived term to cancel (out2 is the only pa4-derived value in scope), taking pa4 to 8 refs / 99 = 2424, ABOVE out2, permuting exactly the seats it was meant to fix; sym-K on top gives tbl 6/49 = 2448 and does not help. And it MATERIALIZES: sandbox 27 at 134 build insns vs target's 132, failing F1's own explicit zero-bytes prerequisite.
+- verdict: KILLED
+
+## [s11] candidate.c is 'ORDINARY C ... no FAKE construct' as its own header claims.
+- mechanism: Audit against the F1 definition, prompted by E-s10-6's honest-reference-vector reading that target emits a single `addiu $s3,$v0,0xFC` (asm/funcs/func_80041188.s:26) where candidate.c writes `stptr = base; stptr += 0xFC;`.
+- probe: Un-split it to `stptr = base + 0xFC;`; .lreg table + sandbox.
+- result: FALSE. stptr falls from 7 refs / 41 = 3414 to 5 / 41 = 2439, below stptr2's 2500; seats permute and the floor goes 1 -> 15 while the build stays 132 insns either way. The split is byte-neutral and its only surviving effect is the reg_n_refs count - i.e. candidate.c already carries an UN-ANNOTATED F1 combine-foldable chain-extender that a layer-1 reviewer would FAIL.
+- verdict: CONFIRMED

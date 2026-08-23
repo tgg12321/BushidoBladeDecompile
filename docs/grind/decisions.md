@@ -10180,3 +10180,82 @@ not as a grant; nothing is authorized by this paragraph.
 ## 2026-08-22 23:24 — func_80041188 — layer-1 review — **FAIL**
 
 The do-while(0) wrap is not the SOTN-evidenced self-contained macro idiom the cited rule sanctions -- it wraps only half of loop1's body and is entered on repeat iterations via an external goto that jumps directly to an interior label, bypassing the do{}'s own entry, a CFG shape with no cited (or found) SOTN precedent; both this and the two variable-reuse citations also point at the wrong line numbers in their rule files.
+
+## 2026-08-23 — func_80041188 — **OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**
+
+`func_80041188` (src/text1a_pre.c, `hirahira_w_ctrl`-class, 132 insns, canonical verdict **C**)
+is a confirmed endgame lock at honest pure-C floor **1**. Filed under the owner's standing
+auto-ruling (2026-07-27, `.claude/rules/endgame-lock-disposition.md`) because BOTH endgame-lock
+AND-gates fail. This is terminal: nothing is pending on the owner.
+
+**What holds the byte-match today.** HEAD's committed body is the RULE-ERA form (this function is
+one of the 68 byte-coupling deferred functions, so it was never converted to `INCLUDE_ASM`). It
+carries a `register s32 *s7_a4 asm("s7")` register pin and is backed by **16 regfix/asmfix rules**
+— `sandbox func_80041188 --disable all` reports `rules_dropped: 16, cheat_asm_stripped: 2`. The
+clean form (`memory/grind/func_80041188/candidate.c`, pin-free, rule-free) re-measures this session
+at **score 1, 132 target / 132 build insns**, with **every callee-saved seat equal to target**.
+
+**The residual, exactly.** One insn, slot 72, in the between-loops block:
+ours `move $s3, $s6` vs target `addiu $s3, $s7, 0x20` (asm/funcs/func_80041188.s:74). target holds
+`a4 + 0x20` in TWO callee-saved registers ($s6 across loop1, $s3 across loop2), which GCC 2.7.2
+cannot do with one pseudo, so the source has two locals; target re-derives the second from `a4`
+while the first still carries a **4th flow-counted reference** that combine deleted (its emitted
+references number 3 — asm/funcs/func_80041188.s:25, 56, 61). Reproducing that free 4th reference is
+the whole remaining problem, and it is now closed on both sides:
+
+- **Between-loops block — closed s8.** combine's LOG_LINKS are intra-block; the six insns target
+  emits in that block read neither `$s6` nor any out2-derived value, so the only possible consumer
+  of an out2 reference there is out3's own definition — which then emits the `move` that IS the
+  residual. The only escape is a cancelling `out2 - out2` term, i.e. forbidden opaque arithmetic.
+- **Block 0 — closed s11 (this session).** On the only chassis that emits target's `addiu`
+  (`out3 = (s32 *)((u8 *)pa4 + 0x20);`) out2 dies at loop1's exit; with its definition moved to the
+  FIRST statement of block 0 its live length maxes at **43** (measured, sandbox 18/132 insns).
+  target's seating (tbl > out2 > pa4 > a3) requires out2's global.c priority strictly inside
+  **(1458, 1702)** — live **47..55** at 4 references. 43 yields 1860 (above tbl) at 4 refs and 697
+  (below pa4) at 3. **The window is arithmetically empty.**
+- **The last unspent sanctioned family — F1, closed s11.** The combine-foldable chain-extender
+  (`.claude/rules/dead-store-fake-exception.md:32`, owner ruling 2026-07-01) DOES buy out2 a 4th
+  flow-counted reference in block 0 (measured 4 refs / live 46 = 1739), but every spelling must
+  subtract a pa4-derived term to cancel — out2 is the only pa4-derived value in scope — which lifts
+  **pa4 to 8 refs / 2424, above out2**, permuting exactly the seats it was meant to fix; and it
+  **materialises two insns (134 vs target's 132)**, failing F1's own explicit zero-bytes
+  prerequisite. Adding the sym-K tbl lift on top (tbl 6/49 = 2448) does not change the pa4 problem.
+
+**GATE (a) — canonical asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80041188` =
+**tier LOW, score 0/8**, "no strong hand-coded indicators": S1 multu pacing 0 pairs, S2 no
+empty-body branches, S3 132 insns with 11 spills / 15 distinct regs, S4 max load burst 3, S5 no
+high-similarity siblings, S6 no BIOS jumptable, S7 all callee-saves have `$sp` saves, S8 no
+redundant mask-before-shift. The canonical gate independently routes this function **C**. A
+GCC allocno-priority artifact is by definition ordinary compiler output, not a hand-coded
+signature.
+
+**GATE (b) — in-hand SOTN-master precedent for the closing construct: FAILS.** The closing
+construct would be a byte-free extra `reg_n_refs` reference on `out2`. Every family that could host
+one is measured dead or out of scope for this shape: dead stores are **inert** here (flow.c:2081
+counts a SET only on the branch where it is needed, so `propagate_block` deletes a dead set without
+counting it — s8 measured both spellings at out2 3 refs / live 42, byte-identical);
+`duplicated-statement-into-arms` has no arms to work with (the function is two `goto` loops with no
+if/else split, and the only out2-referencing statements are CALLs, which that family's
+Non-extension list excludes); the `do { } while (0)` loop-note weighting is **Judge-BANNED for this
+function** (layer-1 FAIL, 2026-08-22 23:24, this file) and separately measured to make loop.c
+rewrite loop1's induction variables (scores 5 and 13); and F1 is measured byte-materializing and
+priority-inverting above. `docs/reference/sotn-construct-index.md` carries no PSX entry exhibiting a
+cancelling-term reference of this shape. Per the standing ruling, "only lever left", "measured to
+work", and a partition argument do not qualify — and no file+line SOTN exhibit is in hand.
+
+**Exhaustion record.** 11 sessions; modalities structural, synthesis, forensics, rederive,
+escalation; **42 banked rejected forms**; the allocator instrumented end-to-end (ALLOCDBG /
+BB2_FLOW_DEBUG) so seats are read, not inferred; a 112-variant mechanical grid over the
+between-loops block × sym-K × `i = 1` position; sixteen distinct block-0 mutations bounding tbl's
+live length at 48; and the two closed-form arithmetic identities
+(`reg_live_length(i) = reg_live_length(tbl) + 49` on the i-first chassis, and this session's empty
+out2 window) that make the remaining chassis provably unreachable rather than merely unfound.
+Full ledger: `memory/grind/func_80041188/evidence.md` + `hypotheses.md`.
+
+**Disposition.** Both gates fail ⇒ the owner's standing auto-ruling applies: **REFUSED /
+OWNER-ACCEPTED INCOMPLETE**. The function stays INCOMPLETE with the rule-era body on main and
+`memory/grind/func_80041188/candidate.c` as the accepted best clean form (floor 1, all-target
+seats, pin-free). Note for any future work: candidate.c's `stptr = base; stptr += 0xFC;` is itself
+a load-bearing **un-annotated F1 chain-extender** (un-splitting it takes the floor 1 → 15 at an
+unchanged 132 insns), so that candidate could not ship as-is without a FAKE annotation on it — a
+further reason the clean-C claim on this chassis is weaker than the floor suggests.

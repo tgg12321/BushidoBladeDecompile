@@ -1389,3 +1389,84 @@ block so that `out3` can be defined from a4 instead of from out2.
 - [s10] cse1 folds a ninth-reference spelling whose operand value it already knows (`i * 0x68` after `i = 0x12`), so the reference must be placed before the reset and read loop1's exit value.
 
 - [s10] The honest reference vector read straight off target's insns is i 8, tbl 4, out2 3, out3 3, with a single `addiu $s3,$v0,0xFC` for stptr - so the sym-K tbl lift, the stptr split and any ninth i-reference are all inventions relative to the original source, which bounds what an acceptable endgame form may look like.
+
+## s11 evidence (escalation / disposition, 2026-08-23)
+
+- **E-s11-0 (chassis, driver-measured).** `src/text1a_pre.c` at HEAD still carries the
+  RULE-ERA body (a `register s32 *s7_a4 asm("s7")` pin, single `out2` re-initialised
+  before loop2); `sandbox func_80041188 --disable all` reports `rules_dropped: 16,
+  cheat_asm_stripped: 2`. Applying `memory/grind/func_80041188/candidate.c` re-measures
+  at **score 1, 132 target / 132 build insns**, and the s10 seat checker
+  (`tmp/grind/func_80041188/s10/batch.sh`, run under WSL) prints **SEATS ALL-TARGET**
+  with the exact s7 priority table (stptr 7/41=3414, stptr2 6/48=2500, i 8/97=2474,
+  out2 4/47=1702, tbl 4/47=1702, pa4 6/95=1263, a3 4/99=808, out3 3/47=638). src is
+  left holding candidate.c. NOTE for future sessions: `batch.sh` must be run through
+  WSL (`bash tools/wsl.sh '... bash tmp/.../batch.sh ...'`); run from Git Bash on the
+  Windows host it silently reports a STALE `fd.greg` seat verdict.
+
+- **E-s11-1 (out2's live-length ceiling on the target-residual chassis is 43 - the
+  4-reference priority window is EMPTY).** The only chassis that emits target's slot-72
+  `addiu $s3,$s7,0x20` is `out3 = (s32 *)((u8 *)pa4 + 0x20);`, which kills out2 at
+  loop1's exit. Moving out2's definition to the FIRST statement of block 0 maximises its
+  live range: measured `r86 = 3 refs / live 43` (score 18, 132 insns,
+  `rejected/out2-live-ceiling-43-out3-from-pa4-window-empty.c`). On that chassis pa4
+  gains out3's reference (`r77 = 7/96 = 1458`) and tbl stays `4/47 = 1702`, so target's
+  seating (tbl > out2 > pa4 > a3 -> $s5,$s6,$s7,$fp) needs out2's priority strictly
+  inside **(1458, 1702)**, i.e. `floor_log2(4)*4/L*10000` with **L in (47.0, 54.9)**.
+  With L capped at 43 the reachable values are 3 refs = 697 (below pa4 -> the measured
+  score-18 seat permutation) and 4 refs = 1860 (above tbl -> the s10 i/tbl swap). **The
+  window is arithmetically empty.** This is the block-0 counterpart of E-s8's
+  between-block kill and closes the last remaining side of the two-locals chassis.
+
+- **E-s11-2 (the F1 combine-foldable chain-extender CAN buy out2's 4th flow-counted
+  reference, and it is dead in both directions anyway).** F1
+  (`.claude/rules/dead-store-fake-exception.md:32`, owner ruling 2026-07-01) is the last
+  sanctioned byte-free `reg_n_refs` family that had never been spent on this function.
+  Probe: route the LIVE block-0 computation `saved = base + 0x94` through out2 -
+  `saved = (s32)out2 + (base + 0x94 - 0x20 - (s32)pa4);` (algebraically exact, since
+  out2 == pa4 + 0x20). Measured: out2 does reach **4 refs / live 46 = 1739**, so the
+  counting premise holds inside block 0 as well. But (i) the detour must mention **pa4**
+  to cancel - out2 is the only pa4-derived value in scope - which takes pa4 to
+  **8 refs / 99 = 2424**, i.e. ABOVE out2, permuting exactly the seats it was meant to
+  fix; and (ii) it **MATERIALIZES**: `sandbox` = 27 at **134 build insns vs target 132**.
+  F1's own prerequisite ("verify the fold actually emits zero bytes ... a chain that
+  MATERIALIZES is a real code change, not this lever") therefore fails on its face.
+  Adding the s4/s5 sym-K tbl lift on top (tbl 6/49 = 2448) does not rescue it: pa4 at
+  2424 still outranks out2 at 1739.
+  (`rejected/block0-chain-extender-lifts-pa4-and-materializes-134.c`,
+  `rejected/symk-plus-block0-detour-pa4-still-outranks-out2.c`.)
+  Generalisation, and the reason no other spelling escapes: any block-0 expression that
+  references out2 once and still computes its own real value must subtract a pa4-derived
+  term, so it ALWAYS hands pa4 the reference it hands out2, and pa4 (6 refs before,
+  7 with out3-from-pa4) crosses out2 at every count. The only pa4-free compensation is
+  `out2 - out2`, the forbidden cancellation-pair / opaque-arithmetic spelling E-s8
+  already named.
+
+- **E-s11-3 (candidate.c's `stptr = base; stptr += 0xFC;` split IS itself a load-bearing,
+  un-annotated F1 chain-extender - a latent layer-1 exposure).** target emits a single
+  `addiu $s3,$v0,0xFC` (asm/funcs/func_80041188.s:26), and our split is byte-neutral
+  (132 insns either way). Un-splitting it to `stptr = base + 0xFC;` drops stptr from
+  **7 refs / 41 = 3414 to 5 / 41 = 2439**, below stptr2's 2500, which permutes
+  stptr/i/out3 and takes the floor from **1 to 15**
+  (`rejected/stptr-unsplit-floor15-proves-split-is-loadbearing-chain-extender.c`).
+  So the split's ONLY surviving effect is the extra `reg_n_refs` count - the exact
+  definition of the F1 family. candidate.c's header claim of "ORDINARY C ... NO /* FAKE */
+  construct" is therefore inaccurate: any future candidate built on this chassis owes
+  either a `/* FAKE: ... */` F1 annotation on that split or a replacement for it, and a
+  layer-1 reviewer would otherwise FAIL it as an un-annotated chain-extender.
+
+- [s11] Chassis re-measured this session: HEAD's committed body is the rule-era form (a register-asm pin on $s7; sandbox reports rules_dropped: 16, cheat_asm_stripped: 2). Applying memory/grind/func_80041188/candidate.c gives sandbox --disable all = 1 at 132 target / 132 build insns with SEATS ALL-TARGET (stptr 7/41=3414, stptr2 6/48=2500, i 8/97=2474, out2 4/47=1702, tbl 4/47=1702, pa4 6/95=1263, a3 4/99=808, out3 3/47=638). src/text1a_pre.c is left holding candidate.c.
+
+- [s11] Harness gotcha for future sessions: tmp/grind/func_80041188/s10/batch.sh MUST be run through WSL (bash tools/wsl.sh with the batch.sh invocation inside). Run from Git Bash on the Windows host, cc1 cannot be spawned and the script silently reports a STALE fd.greg seat verdict - it printed a false 'i=21 tbl=20' for the known-all-target candidate before the mistake was caught.
+
+- [s11] On the out3-from-pa4 chassis (the only one that emits target's slot-72 addiu $s3,$s7,0x20), out2's reg_live_length has a hard ceiling of 43 - measured with its definition made the first statement of block 0 - so the 4-reference priority window (live 47..55) that target's seating requires is arithmetically EMPTY. This is the block-0 mirror of s8's between-block kill and closes the two-locals chassis on both sides.
+
+- [s11] A block-0 F1 chain-extender does buy out2 a 4th flow-counted reference (4 refs / live 46 = 1739), confirming the counting premise inside block 0, but every spelling must reference pa4 to cancel, which lifts pa4 to 8 refs / 2424 above out2 - and the detour materialises two insns (134 vs 132), independently failing F1's zero-bytes prerequisite. The only pa4-free compensation is the forbidden out2 - out2 cancellation pair.
+
+- [s11] candidate.c's `stptr = base; stptr += 0xFC;` is itself a load-bearing, un-annotated F1 combine-foldable chain-extender: byte-neutral (132 insns either way), worth 14 points of floor (un-splitting gives 15), and target emits the single addiu. Any future candidate on this chassis owes a FAKE annotation on it or a replacement.
+
+- [s11] GATE (a) canonical-asm FAILS: tools/scan_hand_coded.py --single func_80041188 = tier LOW, score 0/8, 'no strong hand-coded indicators' (S1 0 multu pairs, S2 none, S3 132 insns/11 spills/15 regs, S4 burst 3, S5 no siblings, S6 none, S7 all saved, S8 none); canonical verdict is C.
+
+- [s11] GATE (b) SOTN precedent FAILS: dead stores are measured inert here (flow.c:2081 counts a SET only on the branch where it is needed); duplicated-statement-into-arms has no arms in this function and its Non-extension list excludes the CALL statements that are out2's only references; the do-while(0) wrap is Judge-BANNED for this function (layer-1 FAIL 2026-08-22 23:24) and separately measured to trigger loop.c induction rewriting; F1 is measured materializing. No PSX entry in docs/reference/sotn-construct-index.md exhibits a cancelling-term reference of this shape.
+
+- [s11] Disposition filed this session as a standing-ruling entry in docs/grind/decisions.md (2026-08-23, func_80041188, REFUSED / OWNER-ACCEPTED INCOMPLETE) with both gates' evidence and the 11-session / 5-modality / 42-rejected-form exhaustion record.
