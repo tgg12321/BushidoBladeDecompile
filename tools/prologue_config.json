@@ -30,27 +30,6 @@
     "bne\t$v1, $v0, .L800230E8",
     "nop"
   ],
-  "func_80038170": [
-    "addiu\t$sp, $sp, -0x38",
-    "sw\t$s0, 0x20($sp)",
-    "addu\t$s0, $a0, $zero",
-    "sw\t$s3, 0x2C($sp)",
-    "addu\t$s3, $zero, $zero",
-    "sw\t$s2, 0x28($sp)",
-    "addu\t$s2, $zero, $zero",
-    "sw\t$s1, 0x24($sp)",
-    "addu\t$s1, $zero, $zero",
-    "addu\t$a3, $zero, $zero",
-    "addiu\t$a0, $zero, 0x1",
-    "lui\t$a1, %hi(D_80106A50)",
-    "lw\t$a1, %lo(D_80106A50)($a1)",
-    "addiu\t$a2, $zero, 0x2",
-    "sw\t$ra, 0x30($sp)",
-    "sllv\t$v0, $a0, $a3",
-    "and\t$v0, $a1, $v0",
-    "beqz\t$v0, .L80038210",
-    "nop"
-  ],
   "CD_ready": [
     "addiu\t$sp, $sp, -0x40",
     "sw\t$s7, 0x34($sp)",
