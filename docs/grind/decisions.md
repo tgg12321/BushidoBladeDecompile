@@ -10110,3 +10110,69 @@ version the file builds for. `src/maria/`, `src/servant/`, and any `D_pspeu_*` /
 `D_psp_*` symbol reference are PSP; `src/saturn/` is SH-2 (accepted only with the explicit
 cross-ISA caveat the 2026-08-18 F6 survey applied). A file living under `src/` is not by
 itself PSX provenance — check `config/splat.*.yaml` membership before citing it.
+
+## 2026-08-22 — OPERATOR REFUSAL — the candidate gate does NOT gain an oracle-SHA1 acceptance path (item 2 of the 2026-08-22 ruling, partially declined on measurement)
+
+The 2026-08-22 owner ruling above authorized two driver-gate fixes. **Fix A (the
+session scope check consulting `Get-ExtraScope`) is implemented. Fix B — "accept a
+candidate whose full-build SHA1 == oracle even when the sandbox score is non-zero" — is
+DECLINED by the operator under the same "best judgement" grant, on two independent
+grounds found while implementing it.** Recorded here because the owner granted it and a
+grant that is not spent must say so.
+
+**Ground 1 — as specified it opens a hole in the anti-cheat spine, which is the one thing
+the grant did not authorize.** `sandbox --disable all == 0` at
+`grind.ps1 Invoke-CandidatePath` is not a duplicate of the oracle check; it is the
+mechanism that makes cheats *unable to help*. The sandbox strips cheat constructs before
+scoring, so a candidate that closes via an un-allowlisted pad / empty-if / dead store /
+coercion scores non-zero **and is rejected** — which is exactly why every such construct
+has had to come to the owner for a keyed allowlist row. A build carrying that same cheat
+still links to SHA1 == oracle; that is precisely the state all four functions in this
+audit were in. So "accept on oracle SHA1 at non-zero score" would newly admit *any*
+un-allowlisted cheat, in any spelling, with no ruling. The downstream gates do not cover
+it: `queue done` re-checks zero rules and zero non-canonical *cheat-asm*, and a volatile
+pad or an empty-if is neither. The 2026-08-22 ruling states in terms that it relaxes no
+completion standard — implementing Fix B literally would have relaxed the central one.
+
+**Ground 2 — the case that motivated it does not reproduce.** The premise was
+func_80038170's "permanently 1" honest score. Measured on the full integration patch this
+session:
+
+```
+& tools/wteng.ps1 main sandbox func_80038170 --disable all
+{"score": 0, "target_insns": 141, "build_insns": 141, "rules_dropped": 0, ...}
+& tools/wteng.ps1 main canonical func_80038170
+{"verdict": "C", "asm_insns": 0, "distance": 0}
+```
+
+**Score 0, not 1.** The obvious explanation — that the escalation measured at its own
+step 2, before prong (c)'s `undefined_syms_auto.txt:46` deletion — was tested and is
+ALSO wrong: with that line stashed back in (C body + header correction only, exactly the
+step-2 tree) the score is **still 0**. Nor is it a scorer change since the filing:
+`engine/score.py`'s section-relative LO16 masking landed 2026-08-07 (`4dfc7223`), two
+weeks BEFORE the escalation.
+
+So the "permanently 1" claim does not reproduce in either configuration and its origin is
+unexplained — most likely a measurement against a different candidate body than the one
+banked in `integration_patch.diff`. The operator did not chase it further: what matters
+is that on the authorized patch the honest score is 0, the gate would have accepted the
+function unmodified, and **no function is currently known to need Fix B.** Consistent
+with [[verify-opus-handoff-claims]] — the byte claims in these handoffs held up under
+re-measurement, the diagnostic claims did not.
+
+**What this leaves.** `engine/score.py` is unchanged (the ruling already refused masking
+named-symbol LO16 addends, for its own reasons — see the entry above). The candidate gate
+is unchanged. If a genuine oracle-green / non-zero-score case appears later, the right
+design is a narrowly-keyed per-function acceptance row carrying the *reason* the residual
+is scorer-artifactual — the same strictness `_SANCTIONED_UNWRITTEN_PADS` and
+`_SANCTIONED_EMPTY_IFS` already use — never a blanket score bypass. Filed as guidance,
+not as a grant; nothing is authorized by this paragraph.
+
+**Fix A, as implemented** (`tools/grinder/grind.ps1`):
+- the session scope check (formerly `$AllowedDirtyPattern` alone) now also honours the
+  active function's `Get-ExtraScope` grant, so a `scope_allow.txt` row outside
+  `src/`/`include/` stops being silently inert;
+- `Revert-SessionEdits` gained the function parameter and reverts granted paths too —
+  without it a rejected candidate could leave a granted root-level file dirty and the
+  NEXT session's scope check would discard an innocent session (the park-queue
+  dirt-deadlock shape).

@@ -561,7 +561,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $sb = Invoke-Eng @('sandbox', $func, '--disable', 'all')
     if ($sb -notmatch '"score"\s*:\s*0\b') {
         Log "${func}: candidate-ready claim FAILED driver sandbox check — treating as invalid session."
-        Revert-SessionEdits
+        Revert-SessionEdits $func
         return
     }
     # Single-stem gate: the ONLY build-input change allowed in a candidate is the
@@ -593,7 +593,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         $script:scopeRejects[$key] = 1 + [int]$script:scopeRejects[$key]
         $n = [int]$script:scopeRejects[$key]
         Log "${func}: candidate touches build inputs beyond src/$stem.c ($($offStem -join ', ')) — rejected as invalid session (repeat $n)."
-        Revert-SessionEdits
+        Revert-SessionEdits $func
         if ($n -eq 2) {
             $c = "OUT OF SCOPE: candidates for $func may only edit src/$stem.c. Edits to " +
                  "$($offStem -join ', ') are rejected by the driver and can never be accepted, " +
@@ -636,7 +636,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'citation defect' }
         Record-Review $func 'layer1' 'FAIL' 'citation'
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-citation-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
-        Revert-SessionEdits
+        Revert-SessionEdits $func
         $detail = "$l1Summary $(if ($l1.next_action) { [string]$l1.next_action })"
         python tools/grinder/grindlib.py fixup . $func 'citation' $detail.Substring(0, [Math]::Min(600, $detail.Length)) | Out-Null
         Add-Decision $func 'layer-1 review' 'FAIL (citation-only)' $l1Summary
@@ -652,7 +652,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         Record-Review $func 'layer1' 'FAIL' 'construct'
         Log "${func}: LAYER-1 FAIL — $l1Summary (no Judge cycle spent)."
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
-        Revert-SessionEdits
+        Revert-SessionEdits $func
         $c = "LAYER-1 CHEAT-REVIEWER FAIL: $l1Summary" +
              $(if ($l1.next_action) { " Next action: $($l1.next_action)" })
         python tools/grinder/grindlib.py constrain . $func $c.Substring(0, [Math]::Min(600, $c.Length)) | Out-Null
@@ -879,13 +879,26 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
 # also wiped concurrent uncommitted ledger work).
 $AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'
 
-function Revert-SessionEdits {
+function Revert-SessionEdits([string]$func = '') {
     # Deliberately does NOT touch metrics/events.jsonl: events are append-only
     # facts about engine/permuter commands that really ran — valid telemetry
     # even from discarded sessions (owner directive 2026-07-07; reverting it
     # here wiped every session's permuter-harvest events). The ledger commits
     # sweep it up each boundary.
     git -C $Root checkout -- src include 2>$null
+    # Granted scope_allow.txt paths must revert too. Once the session scope check
+    # honours a grant (2026-08-22), a rejected candidate can leave a granted
+    # root-level file (e.g. undefined_syms_auto.txt) dirty; src/include-only
+    # reverting would carry that dirt into the NEXT session, whose scope check
+    # flags it and discards an innocent session — the park-queue dirt-deadlock
+    # shape (memory/project/grinder-park-queue-dirt-deadlock.md). Tracked paths
+    # only: checkout cannot restore an untracked file, and the scope-violation
+    # branch already `git clean`s those.
+    if ($func) {
+        foreach ($p in @(Get-ExtraScope $func)) {
+            git -C $Root checkout -- $p 2>$null
+        }
+    }
 }
 
 $script:consecutiveInvalid = 0
@@ -986,7 +999,20 @@ while ($true) {
 
     # 5) scope check — any edit outside the allowed surface invalidates the session
     $dirty = Assert-CleanTree
-    $violations = @($dirty | Where-Object { $_ -notmatch $AllowedDirtyPattern })
+    # A scope_allow.txt grant is honoured HERE too, not only in Invoke-CandidatePath.
+    # Until 2026-08-22 this check consulted $AllowedDirtyPattern alone, so a grant for
+    # ANY path outside src/ or include/ was silently inert: Get-ExtraScope was reached
+    # only from Invoke-CandidatePath, whose own filter is '^..\s+("?)(src/|include/)',
+    # and this check runs FIRST — so a session that made the mandated edit was discarded
+    # before its outcome was ever read, WITH the grant already in place. func_80038170
+    # burned two grants and a session exactly this way (owner ruling 2026-08-22;
+    # memory/grinder-scope-grant-inert-outside-src-include.md documented the shape and
+    # it still cost a session). A grant that silently no-ops is worse than no grant.
+    $granted = @(Get-ExtraScope $func)
+    $violations = @($dirty | Where-Object {
+        $_ -notmatch $AllowedDirtyPattern -and
+        $granted -notcontains ($_.Substring(3).Trim().Trim('"'))
+    })
     if ($violations.Count) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
         $script:lastDiscardReason = "SCOPE VIOLATION: you edited files outside the allowed surface ($($violations -join ' | ')). Touch ONLY your function's src file, memory/grind/<func>/, and tmp/."
@@ -1044,7 +1070,7 @@ while ($true) {
             $script:spawnFails++
             $delay = [int][Math]::Min(1800, 60 * [Math]::Pow(2, $script:spawnFails - 1))
             Log "${func}: agent SPAWN/API FAILURE ($([int]$script:LastAgentSeconds)s, no outcome — usage-limit/API-error per agent.log; see $outPath.agent.log) — attempt $($script:spawnFails), retrying in ${delay}s."
-            Revert-SessionEdits
+            Revert-SessionEdits $func
             Start-Sleep -Seconds $delay
             if ($Once) { break } else { continue }
         }
@@ -1055,7 +1081,7 @@ while ($true) {
         }
         Log "${func}: INVALID session output ($invalidReason) — discarded, src reverted, respawning."
         $script:lastDiscardReason = $invalidReason
-        Revert-SessionEdits
+        Revert-SessionEdits $func
         # Stamp any decisions.md append the discarded session left behind — a
         # thrown-away session must not leave ruling-shaped text in the owner
         # audit surface with nothing marking it void (2026-08-19 audit). Only
@@ -1083,7 +1109,7 @@ while ($true) {
 
     # 7) route by result
     switch ([string]$o.result) {
-        'ruling-request' { Invoke-JudgeRuling $func ([string]$o.ruling_question); Revert-SessionEdits }
+        'ruling-request' { Invoke-JudgeRuling $func ([string]$o.ruling_question); Revert-SessionEdits $func }
         'candidate-ready' { Invoke-CandidatePath $func $stem $modality $o }
         'owner-gated' {
             # A filed escalation entry (verified above to name $func) means every
@@ -1094,7 +1120,7 @@ while ($true) {
             # authoring/integration; any legacy pending-shaped ref is
             # borderline-logged and parked terminally.
             python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
-            Revert-SessionEdits
+            Revert-SessionEdits $func
             $escRef = [string]$o.escalation_ref
             if ($escRef -match 'RESOLVED BY STANDING RULING') {
                 $reason = "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): $escRef"
@@ -1149,7 +1175,7 @@ while ($true) {
                        $null -ne $o.floor -and [int]$o.floor -ge $priorFloor)
             if ($dodged) {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
-                Revert-SessionEdits
+                Revert-SessionEdits $func
                 $tier = 'LOW'
                 try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
                       if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }
@@ -1174,7 +1200,7 @@ while ($true) {
                 }
             } else {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
-                Revert-SessionEdits
+                Revert-SessionEdits $func
                 Log "${func}: progress applied — floor=$($o.floor), '$($o.headline)'"
                 Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
                 git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
