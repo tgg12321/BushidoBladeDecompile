@@ -10176,3 +10176,7 @@ not as a grant; nothing is authorized by this paragraph.
   without it a rejected candidate could leave a granted root-level file dirty and the
   NEXT session's scope check would discard an innocent session (the park-queue
   dirt-deadlock shape).
+
+## 2026-08-22 23:24 — func_80041188 — layer-1 review — **FAIL**
+
+The do-while(0) wrap is not the SOTN-evidenced self-contained macro idiom the cited rule sanctions -- it wraps only half of loop1's body and is entered on repeat iterations via an external goto that jumps directly to an interior label, bypassing the do{}'s own entry, a CFG shape with no cited (or found) SOTN precedent; both this and the two variable-reuse citations also point at the wrong line numbers in their rule files.

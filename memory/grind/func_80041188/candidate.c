@@ -1,28 +1,30 @@
-/* hirahira_w_ctrl - s3 candidate. sandbox --disable all == 1 (prev best 5).
- * 132/132 insns, frame 72 == target 0x48. Pure C: no pin, no asm, no
- * volatile, no dead code, no FAKE constructs.
+/* func_80041188 / hirahira_w_ctrl - s4 candidate. sandbox --disable all == 0
+ * (prev best 1). 132/132 insns, frame 72 == target 0x48. Pure C: no register
+ * pin, no inline asm, no volatile, no dead code, no unused local.
  *
- * s3 BREAKTHROUGH (on top of the r3-r16 six levers, see git history):
- *  7. loop2's out-pointer goes through the REUSED loop1 `stptr` local
- *     (dead after loop1), re-initialized by READING out2
- *     (`stptr = (s32) out2;`) instead of recomputing pa4+0x20, and
- *     lever-4 is REVERTED (loop2's func_800523E0 takes pa4 again).
- *     Effects (all measured in tmp/grind/func_80041188/s3/):
- *       - stptr's pseudo (merged loop1-walker + loop2-out) lands s3 =
- *         target (it shares dead loop1 stptr's register naturally);
- *       - the `stptr = out2` read is out2's 4th flow-counted ref and
- *         extends its live range into the loop2 preamble, lifting out2's
- *         global.c priority above the pa4 carrier's => out2 keeps s6,
- *         carrier keeps s7, a3 keeps fp (all callee-saved == target);
- *       - reverting lever-4 restores `move a0,s7` at loop2's 523E0
- *         (the lw a0,88(sp) residual class is gone).
- *     5-insn residual -> 1: insn 71 `move s3,s6` vs target
- *     `addiu s3,s7,32`. Spelling the re-init from pa4 instead
- *     (`stptr = (s32)((u8*)pa4+0x20);`) emits the right bytes but loses
- *     out2's 4th ref -> out2 falls to pri 714 and the 3-cycle returns
- *     (see s3 ledger for the measurement).
+ * s4 (permuter modality) closed the last insn. The s3 floor-1 form had a
+ * single residual at slot 71 (`move s3,s6` vs target `addiu s3,s7,32`): the
+ * out2-read re-init of the reused stptr bought out2's 4th flow ref (keeping
+ * s6) but emitted the wrong bytes, while the pa4-read re-init emitted target's
+ * exact addiu and lost the ref (sandbox 15). s4's permuter campaign on the
+ * pa4-read chassis (tmp/grind/func_80041188/s4/perm2) produced the two pieces
+ * that decouple the ref from the re-init:
+ *   (a) output-63-1: stage the loop2 out-pointer through the dead `out2`
+ *       local right before func_800523E0 - a real, immediately-consumed
+ *       value that restores out2's loop-weighted ref count.  15 -> 9.
+ *   (b) output-50-1: wrap loop1's leading half (up to the second
+ *       func_8004A348) in do { ... } while (0), with the `loop1:` label
+ *       inside and the back-goto entering from outside.  9 -> 0.
+ * Both are FAKE-annotated in place. Measured decomposition, all this session:
+ *   pa4-read re-init alone .......... 15
+ *   + (a) out2 staging .............. 9
+ *   + (b) loop1 wrap ................ 0
+ *   out2-read re-init + (a) ......... 17   (rejected/floor1-plus-out2-stage.c)
+ *   out2-read re-init + (b) ......... 1    (no change from s3 floor)
+ * i.e. neither piece works on the s3 chassis; both are required on the
+ * pa4-read chassis, which is the one that emits target's addiu s3,s7,32.
  */
-void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
+void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
     s32 *pa4 = a4;
     s32 i = 1;
@@ -39,21 +41,15 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr = base;
     stptr += 0xFC;
-    loop1:
-    offset = (*tbl) * 6;
-    p = (u16 *) (offset + (s32) a1);
-    buf[0] = p[0];
-    buf[1] = -p[1];
-    buf[2] = -p[2];
-    func_8004A348(buf, pa4);
-    tbl++;
-    offset = offset + (s32) a2;
-    p = (u16 *) offset;
-    i++;
-    buf[0] = p[0];
-    buf[1] = -p[1];
-    buf[2] = -p[2];
-    func_8004A348(buf, out2);
+    /* FAKE: do-while(0) wrap of loop1's leading half (the `loop1:` label sits
+       inside it; the back-goto enters from outside), mechanism: the loop note
+       the wrap emits re-weights flow.c's ref counts feeding global.c allocno
+       priority, which seats the callee-saved set exactly as target (out2 s6,
+       pa4-carrier s7, a3 fp); measured effect: identical form without the wrap
+       scores 9, with it 0. lever-exhaustion: memory/grind/func_80041188/
+       hypotheses.md + evidence.md (s1-s4 lever ladder; s4 permuter campaign
+       tmp/grind/func_80041188/s4/perm2/output-50-1) */
+    do { loop1: offset = (*tbl) * 6; p = (u16 *) (offset + (s32) a1); buf[0] = p[0]; buf[1] = -p[1]; buf[2] = -p[2]; func_8004A348(buf, pa4); tbl++; offset = offset + (s32) a2; p = (u16 *) offset; i++; buf[0] = p[0]; buf[1] = -p[1]; buf[2] = -p[2]; func_8004A348(buf, out2); } while (0);
     func_800523E0(pa4, out2, a3, stptr + 0x38);
     *((s16 *) (stptr + 6)) = 2;
     stptr += 0x68;
@@ -64,7 +60,13 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 0x6C;
     i = 0x12;
     stptr2 = saved + 0x750;
-    stptr = (s32) out2;
+    /* FAKE: loop2's output pointer reuses the (dead-after-loop1) `stptr`
+       walker local instead of a fresh local, mechanism: GCC 2.7.2 global.c
+       gives the merged multi-ref pseudo priority 3409 so it allocates 3rd and
+       lands s3 == target (a fresh low-ref local loses the s3 ordering race).
+       Liveness: stptr's loop1 value is dead here - it is overwritten before any
+       later read. lever-exhaustion: memory/grind/func_80041188/evidence.md s3 */
+    stptr = (s32) (((u8 *) pa4) + 0x20);
     loop2:
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
@@ -83,7 +85,16 @@ void hirahira_w_ctrl(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
     func_8004A348(buf, (s32 *) stptr);
-    func_800523E0(pa4, (s32 *) stptr, a3, stptr2 + 0x38);
+    /* FAKE: the loop2 out-pointer is staged through the (dead-after-loop1)
+       `out2` local, whose value is real and consumed by the very next call,
+       mechanism: GCC 2.7.2 flow.c counts the extra loop-weighted ref so out2's
+       global.c allocno priority clears the pa4-carrier's and out2 keeps s6 ==
+       target. Liveness: out2's loop1 value is dead here; the staged value is
+       not needed after. lever-exhaustion: memory/grind/func_80041188/
+       evidence.md s3-s4 (pa4-read re-init alone scores 15, +this ref 9,
+       +the loop1 wrap 0) */
+    out2 = (s32 *) stptr;
+    func_800523E0(pa4, out2, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;
     i++;

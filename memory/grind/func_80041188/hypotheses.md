@@ -227,3 +227,24 @@ reference lever**: every spelling found so far moves reg_n_refs by +2
 - probe: sandbox + regenerated .lreg/.greg dumps; order-swap probe (10) and pa4-read re-init probe (15) bound the knife-edge
 - result: sandbox 1 (from 5), 132/132; residual = one insn: move s3,s6 vs addiu s3,s7,32 at slot 71
 - verdict: CONFIRMED
+
+## s4 frontier (permuter) - RESOLVED
+
+All three s3 frontier entries are now CLOSED by the s4 result:
+1. "3-insn combine shape merging into addiu while flow counts the reads" -
+   OBSOLETE, not needed. The ref and the bytes never had to come from the same
+   statement: the ref can be supplied by a SEPARATE, real, consumed staging
+   assignment (`out2 = (s32 *) stptr;`) in loop2, which is what the pa4-read
+   chassis was missing. The whole "same honest statement" framing was the
+   wrong constraint.
+2. "some OTHER pseudo's flow stats differed by one; sweep statement placement
+   near the preamble2 boundary" - CONFIRMED in substance, resolved by a
+   different instrument: the missing one-insn worth of weighting came from the
+   loop note of a single-level do { } while (0) around loop1's leading half,
+   not from a statement-placement shift.
+3. "one-insn spelling-class ruling-request" - NOT NEEDED. No ruling is
+   required; both closing constructs sit inside pre-existing sanctioned
+   families with quoted scopes and cited precedents (see self_vet.md).
+
+No open hypotheses remain. The function is at honest distance 0 and the next
+step is adversarial review + integration, not further search.

@@ -46,9 +46,16 @@
    "next_probe": "only after frontier 1-2 are measured dead; cite the s3 constraint map in the ruling question"
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "judge_constraints": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The do-while(0) wrap is not the SOTN-evidenced self-contained macro idiom the cited rule sanctions -- it wraps only half of loop1's body and is entered on repeat iterations via an external goto that jumps directly to an interior label, bypassing the do{}'s own entry, a CFG shape with no cited (or found) SOTN precedent; both this and the two variable-reuse citations also point at the wrong line numbers in their rule files. Next action: Revert the do-while(0) construct (src/text1a_pre.c:768-776). The stptr-reuse and out2-staging constructs (both under staged-value-re"
+ ],
+ "banned_constructs": [
+  "do { loop1: ...; func_8004A348(buf, out2); } while (0); (src/text1a_pre.c:776) wrapping only loop1's leading half, with the loop1: label positioned INSIDE the do-while and the repeat-iteration entry via `goto loop1;` (src/text1a_pre.c:781) coming from OUTSIDE the wrap, past the do{}'s own entry point",
+  "SANCTIONED-FAMILY-CLAIMS precedent line do-while-zero-exception.md:99",
+  "SANCTIONED-FAMILY-CLAIMS precedent line staged-value-reused-variable.md:46",
+  "SANCTIONED-FAMILY-CLAIMS precedent line docs/reference/sotn-construct-index.md:582"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-21T05:03:13.523115+00:00"

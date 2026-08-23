@@ -362,3 +362,97 @@ hypotheses s3 frontier for the two surviving directions.
 - [s3] Residual deletion-window analysis: any out2-read cancellation dies pre-flow (front-end fold / cse qty-fold + canon_reg in the preamble2 block / flow uncounted dead-store deletion); only COMBINE deletes post-flow, and combine cancellation needs even out2-read parity (+2 refs -> 2127 steals s5 unless live 59-79, positions that don't exist)
 
 - [s3] Floor-1 construct family: variable-reuse (borrow of EXISTING dead local, SOTN frozen list, defeat-licm-hoist-var-reuse; borrow gated by staged-value-reused-variable); value real and consumed, zero dead stores; FAKE annotation + exhaustion ledger required at submission, not yet annotated (no submission at floor 1)
+
+## s4 (permuter, 2026-08-22) - FLOOR 1 -> 0; the function MATCHES honestly
+
+Chassis at session start: s3's floor-1 form applied to src/text1a_pre.c
+(HEAD carried the stale rule-era body with a `register s32 *s7_a4 asm("s7")`
+pin; that pin is GONE from the candidate and from src as of this session).
+sandbox --disable all reproduced 1, 132/132. Session ends with sandbox 0.
+
+### Permuter infrastructure built this session (reusable)
+
+A minimal-TU permuter workspace reproduces the honest sandbox distance exactly
+- worth knowing for every future text1a_pre grind:
+- base.c = `tmp/grind/func_80041188/s4/mini.c` preprocessed: just
+  `#include "common.h"`, the five externs the function needs, and the function.
+  Codegen is IDENTICAL to the full-TU build (validated: base.o vs target.o
+  diff == the known single residual insn) because nothing in the rest of the
+  TU feeds this function's codegen; maspsx's sdata decisions come from the
+  repo-global `sdata_syms.txt`, not from TU contents.
+- compile.sh replicates engine/pipeline.py exactly for a GP file:
+  cc1 -O2 **-G8** ... -mel | prologue_fix | maspsx MASPSX_FLAGS_GP |
+  `sed s/.align\t3/.align\t2/` (text1a_pre is in RODATA_ALIGN2_FILES) |
+  multu_pad | regfix | regfix_stage2 | asmfix, with PROLOGUE_CONFIG /
+  REGFIX_CONFIG / ASMFIX_CONFIG pointed at the SANDBOX'S FILTERED configs in
+  `tmp/sandbox/func_80041188/cfg/` so the campaign optimises the HONEST
+  distance, not the cheat-assisted one. Two gotchas cost a turn each:
+  (a) maspsx strips the leading tab from directives, so a
+  `/^\t\.ent\tfunc/` extraction awk silently matches nothing - use
+  `/^[ \t]*\.ent[ \t]+func_80041188$/`; (b) extraction must start at
+  `.ent`, not at the bare label, or `as` rejects `.frame` as outside `.ent`.
+- Permuter's own weighted score is NOT the sandbox distance and ranks these
+  chassis in the OPPOSITE order: floor-1 (sandbox 1, one wrong-opcode insn)
+  scored 200, while the pa4-read chassis (sandbox 15, all register
+  permutations) scored 88. That is why seeding the "worse" chassis was the
+  productive move - register diffs are cheap in the permuter metric and it
+  hill-climbs them, whereas the single opcode diff is a cliff.
+
+### Campaign 1 - floor-1 chassis (tmp/grind/func_80041188/s4/perm), KILLED
+
+22,296 iterations / 22.5 min, base 200, 2 finds (best 135), no novel find after
+the first 3 minutes; harvested + stopped. The 135 find is INVALID (semantic
+break: it hoists `stptr2 + 6` out of loop2, which advances 0x68/iteration -
+banked as rejected/permuter-invariant-hoist-stptr2-semantic-break.c). Reading:
+the floor-1 basin is exhausted for the permuter's transform set; its residual
+really is the one-insn spelling-class question s3 characterised, and no
+randomisation of that chassis reaches it.
+
+### Campaign 2 - pa4-read chassis (tmp/grind/func_80041188/s4/perm2), WON
+
+22,317 iterations / ~22 min, base 88, 2 finds (63 then 50). Both finds are
+partial and BOTH are needed; each was hand-re-measured in the honest sandbox
+rather than trusted:
+- output-63-1 => `out2 = (s32 *) stptr;` immediately before loop2's
+  `func_800523E0`, staging the out-pointer through the dead loop1 `out2`
+  local. Sandbox 15 -> 9. This is the piece that DECOUPLES out2's flow ref
+  count from the re-init spelling - the exact obstacle s3 characterised as
+  "the ref and the bytes cannot come from the same honest statement".
+- output-50-1 => `do { loop1: ...second func_8004A348... } while (0);`
+  wrapping loop1's leading half with the label INSIDE the wrap. Sandbox
+  9 -> 0 on the pa4-read chassis.
+
+### The measured lever decomposition (all this session, honest sandbox)
+
+    pa4-read re-init alone (s3's rejected form) ......... 15
+    + out2 staging in loop2 ............................  9
+    + do-while(0) wrap of loop1's leading half .........  0   <== MATCH
+    out2-read re-init (s3 floor-1) + out2 staging ......  17  (rejected/)
+    out2-read re-init (s3 floor-1) + the wrap ..........  1   (no change)
+    chassis2 + wrap, WITHOUT the staging ...............  9
+
+The last three rows are the load-bearing kills: the two levers are
+CHASSIS-EXCLUSIVE. On the out2-read chassis out2 already owns its 4th ref, so
+the staging line over-refs it and it steals tbl's s5 (17); the wrap alone
+changes nothing there (1). Only on the pa4-read chassis - the one that emits
+target's exact `addiu s3,s7,32` - does the pair pay, because the staging line
+REPLACES the ref the pa4 re-init gave up and the wrap then re-weights the
+remaining allocation order into target's callee-saved seating.
+
+### Final form (memory/grind/func_80041188/candidate.c, in src/text1a_pre.c)
+
+132/132 insns, frame 72 == target 0x48, sandbox --disable all == 0. Three
+FAKE-annotated constructs, all inside sanctioned families and all vetted in
+memory/grind/func_80041188/self_vet.md: the single-level do-while(0) wrap
+(.claude/rules/do-while-zero-exception.md - owner ruling 2026-07-06 sanctions
+it for ANY codegen effect incl. RA, single level needs no exhaustion gate),
+the stptr reuse (s3's, staged-value-reused-variable), and the out2 staging
+(staged-value-reused-variable, all six bounds stated in the vet). No register
+pin, no inline asm, no volatile, no dead store, no unused local, no invented
+variable, no regfix/asmfix dependency.
+
+- [s4] FLOOR 1 -> 0. func_80041188 matches honestly with three FAKE-annotated sanctioned-family constructs; self_vet.md written; candidate.c updated; the rule-era `register ... asm("s7")` pin is gone from src
+- [s4] The two closing levers are chassis-exclusive (out2 staging pays ONLY on the pa4-read re-init chassis: 15->9; on the s3 out2-read chassis it scores 17). The do-while(0) wrap is worth 9->0 on the pa4 chassis and 0 on the s3 chassis
+- [s4] Minimal-TU permuter workspace for text1a_pre validated (identical codegen to the full TU) and pointed at the sandbox's FILTERED cheat configs, so campaign score tracks the HONEST distance; recipe + two extraction gotchas banked above
+- [s4] Permuter weighted score inverts the sandbox ranking here (floor-1 chassis 200 vs pa4 chassis 88): seed the chassis whose residual is REGISTER-shaped, not the one with the lowest sandbox distance
+- [s4] Campaign 1 (floor-1 chassis) KILLED: 22.3k iterations, zero valid finds; its only find was a semantics-breaking loop-invariant hoist (banked in rejected/)
