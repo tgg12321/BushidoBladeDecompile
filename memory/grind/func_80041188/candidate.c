@@ -1,28 +1,28 @@
-/* func_80041188 / hirahira_w_ctrl - s4 candidate. sandbox --disable all == 0
- * (prev best 1). 132/132 insns, frame 72 == target 0x48. Pure C: no register
- * pin, no inline asm, no volatile, no dead code, no unused local.
+/* func_80041188 / hirahira_w_ctrl - s5 candidate. sandbox --disable all == 1.
+ * 132/132 insns, frame 72 == target 0x48. Pure C: no register pin, no inline
+ * asm, no volatile, no dead code, no unused local.
  *
- * s4 (permuter modality) closed the last insn. The s3 floor-1 form had a
- * single residual at slot 71 (`move s3,s6` vs target `addiu s3,s7,32`): the
- * out2-read re-init of the reused stptr bought out2's 4th flow ref (keeping
- * s6) but emitted the wrong bytes, while the pa4-read re-init emitted target's
- * exact addiu and lost the ref (sandbox 15). s4's permuter campaign on the
- * pa4-read chassis (tmp/grind/func_80041188/s4/perm2) produced the two pieces
- * that decouple the ref from the re-init:
- *   (a) output-63-1: stage the loop2 out-pointer through the dead `out2`
- *       local right before func_800523E0 - a real, immediately-consumed
- *       value that restores out2's loop-weighted ref count.  15 -> 9.
- *   (b) output-50-1: wrap loop1's leading half (up to the second
- *       func_8004A348) in do { ... } while (0), with the `loop1:` label
- *       inside and the back-goto entering from outside.  9 -> 0.
- * Both are FAKE-annotated in place. Measured decomposition, all this session:
- *   pa4-read re-init alone .......... 15
- *   + (a) out2 staging .............. 9
- *   + (b) loop1 wrap ................ 0
- *   out2-read re-init + (a) ......... 17   (rejected/floor1-plus-out2-stage.c)
- *   out2-read re-init + (b) ......... 1    (no change from s3 floor)
- * i.e. neither piece works on the s3 chassis; both are required on the
- * pa4-read chassis, which is the one that emits target's addiu s3,s7,32.
+ * This is the s3 floor-1 form, RESTORED as the best legal candidate after the
+ * s4 form (distance 0) was rejected at layer-1 review: its closing lever was a
+ * do { } while (0) wrapping only loop1's LEADING HALF with the `loop1:` label
+ * inside and the back-goto entering from outside - now a BANNED construct for
+ * this function (docs/grind/decisions.md 2026-08-22 23:24).
+ *
+ * Single residual insn, slot 71: OURS `move s3,s6` vs TGT `addiu s3,s7,32`.
+ *
+ * s5 (synthesis) corrected the governing arithmetic. GCC 2.7.2 global.c ranks
+ * allocnos by pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length *
+ * 10000, and floor_log2(3) == 1 (earlier ledger sessions used 2). Consequences,
+ * all dump-measured this session:
+ *   - the ONLY thing wrong in any of these chassis is the relative order of
+ *     tbl (79), out2 (86) and the pa4 carrier (77); every other callee-saved
+ *     seat is already target in all of them.
+ *   - the MID (between-loops) statement `stptr = <X> + 0x20` is a single
+ *     ref-token on a see-saw: reading out2 gives out2 4 refs / pa4 6 refs
+ *     (1702.1 vs 1263.2 - correct seats, wrong opcode: `move`); reading pa4
+ *     gives out2 3 refs / pa4 7 refs (714.3 vs 1473.7 - correct opcode
+ *     `addiu s3,s7,32`, wrong seats). No third spelling of that one statement
+ *     exists.
  */
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
 {
@@ -41,15 +41,21 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     out2 = (s32 *) (((u8 *) pa4) + 0x20);
     stptr = base;
     stptr += 0xFC;
-    /* FAKE: do-while(0) wrap of loop1's leading half (the `loop1:` label sits
-       inside it; the back-goto enters from outside), mechanism: the loop note
-       the wrap emits re-weights flow.c's ref counts feeding global.c allocno
-       priority, which seats the callee-saved set exactly as target (out2 s6,
-       pa4-carrier s7, a3 fp); measured effect: identical form without the wrap
-       scores 9, with it 0. lever-exhaustion: memory/grind/func_80041188/
-       hypotheses.md + evidence.md (s1-s4 lever ladder; s4 permuter campaign
-       tmp/grind/func_80041188/s4/perm2/output-50-1) */
-    do { loop1: offset = (*tbl) * 6; p = (u16 *) (offset + (s32) a1); buf[0] = p[0]; buf[1] = -p[1]; buf[2] = -p[2]; func_8004A348(buf, pa4); tbl++; offset = offset + (s32) a2; p = (u16 *) offset; i++; buf[0] = p[0]; buf[1] = -p[1]; buf[2] = -p[2]; func_8004A348(buf, out2); } while (0);
+    loop1:
+    offset = (*tbl) * 6;
+    p = (u16 *) (offset + (s32) a1);
+    buf[0] = p[0];
+    buf[1] = -p[1];
+    buf[2] = -p[2];
+    func_8004A348(buf, pa4);
+    tbl++;
+    offset = offset + (s32) a2;
+    p = (u16 *) offset;
+    i++;
+    buf[0] = p[0];
+    buf[1] = -p[1];
+    buf[2] = -p[2];
+    func_8004A348(buf, out2);
     func_800523E0(pa4, out2, a3, stptr + 0x38);
     *((s16 *) (stptr + 6)) = 2;
     stptr += 0x68;
@@ -60,13 +66,15 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     a2 += 0x6C;
     i = 0x12;
     stptr2 = saved + 0x750;
-    /* FAKE: loop2's output pointer reuses the (dead-after-loop1) `stptr`
-       walker local instead of a fresh local, mechanism: GCC 2.7.2 global.c
-       gives the merged multi-ref pseudo priority 3409 so it allocates 3rd and
-       lands s3 == target (a fresh low-ref local loses the s3 ordering race).
-       Liveness: stptr's loop1 value is dead here - it is overwritten before any
-       later read. lever-exhaustion: memory/grind/func_80041188/evidence.md s3 */
-    stptr = (s32) (((u8 *) pa4) + 0x20);
+    /* FAKE: loop2's output pointer reuses the (dead-after-loop1) `stptr` walker
+       local instead of a fresh local, and is re-initialised by READING `out2`,
+       mechanism: GCC 2.7.2 global.c allocno priority
+       (floor_log2(refs)*refs/live*10000) - the merged stptr pseudo scores 3409
+       and lands s3 == target, while the out2 read is out2's 4th flow-counted
+       ref (4/47 = 1702.13, an exact tie with tbl that breaks our way on allocno
+       number) which keeps out2 in s6 == target. lever-exhaustion:
+       memory/grind/func_80041188/evidence.md s3 + s5 */
+    stptr = (s32) out2;
     loop2:
     func_80044DE4((s16 *) a1, (s16 *) a2, a3, stptr2 + 0x4C);
     a1 += 6;
@@ -85,16 +93,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, s32 *a4)
     buf[2] = -(*((u16 *) a2));
     a2 += 2;
     func_8004A348(buf, (s32 *) stptr);
-    /* FAKE: the loop2 out-pointer is staged through the (dead-after-loop1)
-       `out2` local, whose value is real and consumed by the very next call,
-       mechanism: GCC 2.7.2 flow.c counts the extra loop-weighted ref so out2's
-       global.c allocno priority clears the pa4-carrier's and out2 keeps s6 ==
-       target. Liveness: out2's loop1 value is dead here; the staged value is
-       not needed after. lever-exhaustion: memory/grind/func_80041188/
-       evidence.md s3-s4 (pa4-read re-init alone scores 15, +this ref 9,
-       +the loop1 wrap 0) */
-    out2 = (s32 *) stptr;
-    func_800523E0(pa4, out2, a3, stptr2 + 0x38);
+    func_800523E0(pa4, (s32 *) stptr, a3, stptr2 + 0x38);
     *((s16 *) (stptr2 + 6)) = 1;
     stptr2 += 0x68;
     i++;

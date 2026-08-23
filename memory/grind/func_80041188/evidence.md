@@ -456,3 +456,137 @@ variable, no regfix/asmfix dependency.
 - [s4] Minimal-TU permuter workspace for text1a_pre validated (identical codegen to the full TU) and pointed at the sandbox's FILTERED cheat configs, so campaign score tracks the HONEST distance; recipe + two extraction gotchas banked above
 - [s4] Permuter weighted score inverts the sandbox ranking here (floor-1 chassis 200 vs pa4 chassis 88): seed the chassis whose residual is REGISTER-shaped, not the one with the lowest sandbox distance
 - [s4] Campaign 1 (floor-1 chassis) KILLED: 22.3k iterations, zero valid finds; its only find was a semantics-breaking loop-invariant hoist (banked in rejected/)
+
+## s5 (synthesis, 2026-08-22) — the governing arithmetic CORRECTED; the residual reduced to one see-saw statement
+
+Chassis at session start: HEAD carries the rule-era body (16 regfix rules,
+`register s32 *s7_a4 asm("s7")` pin) at honest 27. The s4 candidate.c (distance
+0) was rejected at layer-1 review on 2026-08-22 23:24; its closing lever — a
+`do { } while (0)` around loop1's LEADING HALF with the `loop1:` label inside
+and the back-goto entering from outside — is now a BANNED construct for this
+function. Session ends with the s3 floor-1 form (sandbox 1, 132/132) restored
+and in place in src/text1a_pre.c, re-verified.
+
+### THE CORRECTION (invalidates several s1–s4 arithmetic conclusions)
+
+`pri = floor_log2(reg_n_refs) * reg_n_refs / reg_live_length * 10000`, and
+**floor_log2(3) == 1**, not 2. Earlier sessions computed a 3-ref pseudo as
+`2*3/L`. The real value is `1*3/L`. Consequence: a 3-reference `out2` scores
+714.3 at live 42 — it can NEVER outrank the pa4 carrier (1473.7) at any
+reachable live length (it would need live <= 20). Every "3-ref out2 needs live
+<= 40" style reasoning in the s2/s3 notes is void. **out2 needs >= 4 refs,
+full stop.**
+
+The formula was re-validated against six measured chassis this session
+(dispositions predicted correctly in all six).
+
+### The complete allocation spec (measured, artifact s5/tbl_*.txt)
+
+Target seating requires this priority ORDER:
+`73 a1 (6464) , 74 a2 (6464) > 87 stptr (3409) > 90 stptr2 (2500) >
+78 i (2474) > 79 tbl > 86 out2 > 77 pa4-carrier > 75 a3 (808)`
+Every chassis measured this session gets a1/a2/stptr/stptr2/i/a3 right; the
+ONLY defect anywhere is the relative order of tbl (79), out2 (86) and the
+carrier (77). Required window: **pri(out2) strictly inside (pri(pa4), pri(tbl))**
+— i.e. (1473.7, 1702.1) on the pa4-read chassis, (1263.2, 1702.1) on the
+out2-read chassis. Reachable out2 (refs/live -> pri): 4/47 = 1702.1 (exact tie
+with tbl, breaks our way on allocno number 79 < 86), 4/48–54 = 1666–1481,
+5/59–67, 6/71–81.
+
+### The see-saw: one statement carries both the ref and the bytes
+
+The between-loops (MID) statement `stptr = <X> + 0x20` is a single
+flow-ref token:
+- `X = out2` -> out2 4 refs/47 = 1702.1, pa4 6 refs/95 = 1263.2. Seats are
+  EXACTLY target; the emitted insn is `move s3,s6`. **sandbox 1** (= the s3
+  floor, restored as candidate.c).
+- `X = pa4` -> out2 3 refs/42 = 714.3, pa4 7 refs/95 = 1473.7. Emits target's
+  exact `addiu s3,s7,32`; seats collapse (out2 falls below a3). **sandbox 15.**
+There is no third spelling of that one statement. Closing the function
+therefore requires a SECOND, byte-free, flow-counted out2 reference somewhere
+in the MID basic block (block 2) — MID's six target insns are
+`addiu s1,s1,108 / addiu s2,s2,108 / addiu s4,zero,18 / lw t0,0x18(sp) /
+addiu s3,s7,32 / addiu s0,t0,1872` and none of them can take out2 as an input.
+
+### Measured kills this session (each with mechanism)
+
+- **Real-loop spellings (the honest source of the banned wrap's loop note).**
+  loop1 as `do { ... } while (i < 0x12)`: 132 insns, **sandbox 28**. flow.c
+  weights refs by `loop_depth`, so a loop note lifts EVERY pseudo referenced
+  inside — and it lifts the carrier faster than out2 (pa4 7 -> 9 refs = 2872;
+  out2 3 -> 7 refs but live drops to 41). loop2 as a real do-while: **135
+  insns** (loop.c runs on a note-marked loop and emits 3 extra insns); both
+  loops real: 28 / 135 insns. The wrap's effect is NOT reachable from any
+  well-formed C loop here. rejected/real-loop-do-while-loop1.c.
+- **tbl (79) refs+2 via the banked sym-K chain — REALISED, byte-neutral, and
+  still dead.** `tbl = (s32*)((u8*)D_80094CFC - 0x10); tbl = (s32*)((u8*)tbl +
+  0x10);` gives tbl 4 -> 6 refs at 132 insns (confirmed in .lreg). But 6 refs
+  at tbl's live 47 = 2553.2 > i (2474.2), so tbl steals s4. The required window
+  is (2381.0, 2474.2) = live 49–50 at 6 refs, and **tbl's live length is
+  scheduler-pinned to 45–47 across all 24 combinations of preamble statement
+  order x advance-statement position** swept this session. sandbox 12.
+  rejected/tbl-symK-splitinit-refs6-steals-s4.c.
+- **The (90 refs+2 & 78 refs+2) route that would re-open tbl's window
+  (order 90 5000 > 87 3409 > 78 3092 > 79 2553 > 86 2381 > 77 1473): both
+  lifts FOLD AWAY PRE-FLOW.** Split-init on stptr2 (`saved+0x700` then `+0x50`)
+  and on i (`0x10` then `+2`) leave reg_n_refs *identical* (6 and 8) in .lreg.
+  Mechanism: cse1's cost gate — the fold-back target is a ONE-insn addiu,
+  cheaper than the chain, so cse folds and flow deletes the dead first store
+  UNCOUNTED. The tbl chain survives ONLY because its fold-back is a TWO-insn
+  lui/addiu symbol constant. **Split-init ref-lifts exist only on
+  symbol-constant-based pseudos.** rejected/splitinit-i-stptr2-folds-preflow.c.
+- **Staging-position sweep (6 positions).** The s4 staging store
+  `out2 = (s32*)stptr;` is byte-free ONLY in the immediately-before-the-call
+  position (out2 5 refs/42 = 2381, sandbox 9 = the s4 form minus the banned
+  wrap). Every earlier position materialises the copy: preamble2 11/133,
+  loop2-top 3/133, after func_80044DE4 3/133, mid-loop2 12/133,
+  preamble2+both-uses 11/132, loop2-top+both-uses 3/133.
+- **rejected/staging-position-sweep-133insn.c is the most informative negative
+  in the ledger:** the loop2-top staging form has **EXACTLY target's register
+  dispositions** (73>s1 74>s2 87>s3 90>s0 78>s4 79>s5 86>s6 77>s7 75>fp,
+  out2 6 refs/81 = 1481.5, inside the window) and its ONLY defect is one extra
+  `addu s6,s3,zero` at slot 73. sandbox 3.
+- **Dropping the pa4 carrier entirely** (use the `a4` parameter at all six
+  sites): 132 insns, sandbox 10, but the allocno world changes completely
+  (out2 absorbs the merged 10-ref pseudo, the param scores 736.8 at live 190).
+  Not closer. **Two carriers** (pa4 for loop1, a4 for loop2): 134 insns.
+- Preamble statement-order sweep on the pa4-read chassis: out2 live moves only
+  42 -> 41 (def last) or 43 (def first); pa4 live 94/95/96. None of these
+  perturbations is large enough to matter now that floor_log2(3) = 1.
+
+- [s5] Priority formula re-validated on six chassis; floor_log2(3)=1 correction
+  invalidates the s2/s3 "3-ref out2" arithmetic. out2 needs >= 4 refs.
+- [s5] The residual is ONE see-saw statement: MID's `stptr = <out2|pa4> + 0x20`
+  supplies either out2's 4th ref (correct seats, `move` bytes, sandbox 1) or
+  target's `addiu s3,s7,32` (correct bytes, collapsed seats, sandbox 15).
+- [s5] Closing requires a SECOND byte-free flow-counted out2 read in MID
+  (block 2); MID's six target insns cannot consume out2.
+- [s5] Loop-note weighting (the banned wrap's mechanism) is NOT reachable from
+  honest C loops: it lifts the carrier faster than out2, and loop2-as-real-loop
+  costs 3 insns.
+- [s5] Split-init ref-lifts work ONLY on symbol-constant-based pseudos (cse1
+  cost gate); i and stptr2 cannot be lifted this way.
+- [s5] tbl +2 refs is byte-neutral and reachable, but tbl's live length is
+  scheduler-pinned to 45-47, and the window needs 49-50.
+
+- [s4] CORRECTION: floor_log2(3) == 1, so a 3-ref out2 scores 714.3 at live 42, not the 1428 assumed in s2/s3. Every 'a 3-ref out2 just needs live <= 40' conclusion in the earlier ledger is void; out2 needs >= 4 refs unconditionally.
+
+- [s4] The priority model was re-validated against six measured chassis this session and predicted the register dispositions correctly in all six (artifacts tmp/grind/func_80041188/s5/tbl_*.txt).
+
+- [s4] Target seating requires the order 73/74 (6464) > 87 stptr (3409) > 90 stptr2 (2500) > 78 i (2474) > 79 tbl > 86 out2 > 77 pa4-carrier > 75 a3 (808). EVERY chassis measured this session already seats a1/a2/stptr/stptr2/i/a3 correctly; the sole defect anywhere is the relative order of tbl, out2 and the carrier.
+
+- [s4] THE SEE-SAW: the between-loops (MID) statement stptr = <X> + 0x20 is one flow-ref token. X = out2 gives out2 4 refs/47 = 1702.1 and pa4 6 refs/95 = 1263.2 (seats EXACTLY target, bytes wrong: move s3,s6, sandbox 1). X = pa4 gives out2 3 refs/42 = 714.3 and pa4 7 refs/95 = 1473.7 (bytes exactly target's addiu s3,s7,32, seats collapse, sandbox 15). No third spelling of that statement exists.
+
+- [s4] Closing the function therefore needs a SECOND byte-free flow-counted out2 read in MID (block 2). MID's six target insns are addiu s1,s1,108 / addiu s2,s2,108 / addiu s4,zero,18 / lw t0,0x18(sp) / addiu s3,s7,32 / addiu s0,t0,1872, and none of them can consume out2.
+
+- [s4] out2's window is (1473.7, 1702.1) on the pa4-read chassis and (1263.2, 1702.1) on the out2-read chassis. Reachable landings: 4 refs/live 47 = 1702.1 (exact tie with tbl, breaks our way on allocno number 79 < 86), 4/48-54, 5/59-67, 6/71-81.
+
+- [s4] Loop-note weighting (the banned wrap's mechanism) is NOT reachable from honest C loops: a real loop1 lifts the carrier (7->9 refs, 2872) faster than out2, and a real loop2 costs 3 instructions because loop.c runs on a note-marked loop.
+
+- [s4] The banked tbl sym-K split-init ref-lift is REAL and byte-neutral (tbl 4->6 refs at 132 insns) - the first confirmed byte-neutral +2 reg_n_refs lever on this function - but tbl's live length is scheduler-pinned to 45-47 across all 24 preamble-order x advance-position combinations, and the needed window is live 49-50.
+
+- [s4] Split-init ref-lifts work ONLY on symbol-constant-based pseudos: the same chain on stptr2 (register+immediate) and i (plain immediate) leaves reg_n_refs untouched because cse1's cost gate prefers the cheaper 1-insn fold-back and flow then deletes the dead store uncounted.
+
+- [s4] The loop2-top staging form (rejected/staging-position-sweep-133insn.c) is the sharpest negative in the ledger: register dispositions EXACTLY target (out2 6 refs/81 = 1481.5, inside the window) with a single extra insn, addu s6,s3,zero at slot 73. sandbox 3 at 133 insns.
+
+- [s4] The s4 distance-0 form minus the banned wrap scores 9 (banked as rejected/s4-form-minus-banned-wrap-floor9.c); the s3 floor-1 form is restored, re-verified at sandbox 1 / 132 insns, and is in place in src/text1a_pre.c and memory/grind/func_80041188/candidate.c.

@@ -1,8 +1,8 @@
 {
  "func": "func_80041188",
  "file": "text1a_pre",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -27,23 +27,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor 5 -> 1: loop2 pointer reuses the dead loop1 stptr local via an out2-read re-init (variable-reuse family); split-RA axis proven dead end-to-end; single residual insn move s3,s6 vs addiu s3,s7,32"
+  },
+  {
+   "session": 4,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Corrected the governing allocno-priority arithmetic (floor_log2(3)=1), proved the residual is ONE see-saw statement, and killed four levers (real-loop notes, tbl sym-K +2, i/stptr2 split-init, staging"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A 3-insn combine shape (P-chain reading out2 -> re-init C) merges post-flow into stptr := pa4+0x20 (addiu s3,s7,32) while flow counts the reads, with the ref budget rebalanced by relocating one loop1 out2 call-arg through a fresh once-written-once-read named intermediate (sanctioned family) so total stays 4",
-   "mechanism": "combine runs AFTER flow (the only byte-deleting pass past the count); named-intermediate family lets a visible ref relocate without changing bytes",
-   "next_probe": "enumerate P1/P2->C shapes under the constraint map banked in evidence s3 (front-end fold, cse canon_reg/qty-fold in the preamble2 block, flow uncounted deletion all kill same-block cancellation); measure each with sandbox + .lreg refs"
+   "hypothesis": "A second byte-free, flow-counted out2 read exists in the MID basic block (block 2), giving out2 4 refs / live 48-54 (pri 1666-1481, inside the window) while MID's stptr init still reads pa4 and emits target's addiu s3,s7,32.",
+   "mechanism": "global.c allocno priority; crucially, MID is its own cse basic block, so cse1 has NO qty knowledge that out2 == pa4+0x20 there (banked s3 evidence) - an out2-reading expression in MID is NOT constant-folded the way the same expression is inside block 0.",
+   "next_probe": "Read .cse/.cse2/.combine for the MID block FIRST (the s3 'everything folds pre-flow' conclusion was drawn on block-0 semantics and has never been re-measured for block 2, nor with the corrected arithmetic). Then enumerate out2-reading MID expressions whose emitted form is one of MID's six target insns."
   },
   {
-   "hypothesis": "The original reached addiu with only 3 visible out2 refs because some OTHER pseudo's flow stats differed by one; small statement-placement shifts near the preamble2 boundary (tbl def spelling, i re-init, a1/a2 advance forms) move one-insn live-lengths and may open a window where 3-ref out2 still lands s6",
-   "mechanism": "the s5/s6 outcome sits on an exact pri tie (1702.13) - one-insn live shifts are full levers",
-   "next_probe": "keep the floor-1 structure, sweep single-statement placements/spellings of tbl/i/a1/a2/stptr2 with the pa4-read re-init, sandbox each; also re-run the sweep with the banked sym-K tbl refs+2 chain"
+   "hypothesis": "The single materialised addu s6,s3,zero at slot 73 in the loop2-top staging form can be eliminated while keeping out2 at 6 refs / live 81 - that form's dispositions are already EXACTLY target, so removing that one insn is a byte match.",
+   "mechanism": "the copy survives because out2's staged value is live across loop2's back edge, so post-flow copy propagation cannot fold it into the single use at func_800523E0.",
+   "next_probe": "Dump .combine/.jump2/.greg for rejected/staging-position-sweep-133insn.c and identify which pass declines the coalesce; then try spellings that keep the long live range but make def and use copy-propagable - e.g. a staging def on the loop2 back edge (the first iteration legitimately uses the preamble value, since out2 and loop2's stptr both hold pa4 + 0x20)."
   },
   {
-   "hypothesis": "If both die, the residual is a one-insn spelling-class question (move vs addiu of the same value) suitable for a precise ruling-request on whether any sanctioned construct may supply the out2 ref",
-   "mechanism": "the constraint map proves the ref and the bytes cannot come from the same honest statement in the preamble2 block",
-   "next_probe": "only after frontier 1-2 are measured dead; cite the s3 constraint map in the ruling question"
+   "hypothesis": "The carrier-free world (V1: the a4 parameter used at all six sites, 132 insns, sandbox 10) has a reachable target seating; there the parameter scores 7 refs / live 190 = 736.8, close to out2's 714.3, so a single live-shift or one fewer param ref inverts them.",
+   "mechanism": "same global.c priority ordering, but the whole allocno set is different (out2 absorbs the 10-ref merged pseudo) - a world s1-s4 never analysed.",
+   "next_probe": "Re-derive the FULL disposition goal for the V1 chassis from scratch with the corrected formula (.lreg/.greg), then solve for the minimal ref/live perturbation set the way s2/s3 did for the split model."
   }
  ],
  "judge_constraints": [

@@ -248,3 +248,143 @@ All three s3 frontier entries are now CLOSED by the s4 result:
 
 No open hypotheses remain. The function is at honest distance 0 and the next
 step is adversarial review + integration, not further search.
+
+## s5 (synthesis, 2026-08-22) — verdicts
+
+The s4 frontier was "RESOLVED"; the layer-1 FAIL on the do-while(0) wrap
+re-opened it. s5 re-derived the whole allocation problem from dumps with a
+corrected priority formula and closed four levers.
+
+### [s5] The banned wrap's loop-note weighting is reachable from a well-formed C loop
+- mechanism: flow.c weights reg_n_refs by loop_depth, which is driven by
+  NOTE_INSN_LOOP_BEG/END; a real do/while/for emits those notes, a goto-loop
+  does not
+- probe: loop1 as `do {...} while (i < 0x12)`; loop2 as `do {...} while
+  (i < 0x14)`; both; sandbox + .lreg for each
+- result: loop1-real 132 insns / sandbox 28 (pa4 carrier 7->9 refs = 2872 rises
+  FASTER than out2 3->7 refs/41; i and tbl swap seats); loop2-real 135 insns
+  (loop.c adds 3 insns on a note-marked loop); both-real 135 insns / 28
+- verdict: KILLED. Loop notes move the allocation AWAY from target here; the
+  wrap worked only because it weighted a HALF-body, which no C loop can express
+  without changing the CFG.
+
+### [s5] tbl (79) refs+2 (the banked sym-K chain) opens the seating
+- mechanism: cse1's cost gate keeps a chain whose fold-back target is a 2-insn
+  lui/addiu symbol constant; flow counts both refs; combine re-merges
+- probe: `tbl = (s32*)((u8*)D_80094CFC - 0x10); tbl = (s32*)((u8*)tbl + 0x10);`
+  on the pa4-read+staging chassis; then 24 variants (6 preamble permutations x
+  4 advance positions)
+- result: the lift is REAL and byte-neutral (132 insns, tbl 4->6 refs in .lreg)
+  but pins tbl at 2553.2 > i (2474.2) so tbl steals s4. Required window
+  (2381.0, 2474.2) = live 49-50; tbl's live is scheduler-pinned to 45-47 in
+  all 24 variants
+- verdict: KILLED as a closer (mechanism CONFIRMED and now banked as a reusable
+  byte-neutral +2 ref-lift for symbol-constant pseudos)
+
+### [s5] i (78) and stptr2 (90) can be ref-lifted to re-open tbl's window
+- mechanism: same split-init accumulation; target order would be
+  90 (8/48=5000) > 87 (3409) > 78 (10/97=3092) > 79 (2553) > 86 (2381) > 77
+- probe: `stptr2 = saved + 0x700; stptr2 = stptr2 + 0x50;` and
+  `i = 0x10; i = i + 2;` on the tbl-lifted chassis; .lreg refs read
+- result: reg_n_refs UNCHANGED (stptr2 still 6, i still 8); both chains fold
+  in cse1 (fold-back is a cheaper 1-insn addiu) and flow deletes the dead
+  first store uncounted. sandbox 12, identical to the unlifted form
+- verdict: KILLED. Split-init ref-lifts are available ONLY on
+  symbol-constant-based pseudos.
+
+### [s5] Some staging position gives out2 a window-landing pri byte-free
+- mechanism: reg_live_length grows with the distance from the staging def to
+  its use; the copy is coalesced away post-flow when def and use are adjacent
+- probe: 6 positions of `out2 = (s32*)stptr;` (preamble2, loop2 top, after
+  func_80044DE4, mid-loop2, and two both-uses variants), sandbox + .lreg
+- result: only the immediately-before-the-call position is byte-free (5/42 =
+  2381, sandbox 9). Every position far enough to lengthen the live range
+  materialises `addu s6,s3,zero` (133 insns). The loop2-top variant reaches
+  out2 6/81 = 1481.5 and **EXACTLY target's register dispositions**, sandbox 3
+- verdict: KILLED as spelled; the 133-insn form is banked as the sharpest
+  statement of what is missing (one free instruction-slot for the copy)
+
+### [s5] Dropping / splitting the pa4 carrier changes the see-saw
+- probe: use the `a4` parameter at all six sites (V1); carrier for loop1 only
+  and the parameter for loop2 (V2)
+- result: V1 132 insns / sandbox 10 but a completely different allocno world
+  (out2 absorbs the 10-ref merged pseudo; param 7/190 = 736.8); V2 134 insns
+- verdict: KILLED
+
+## s5 frontier (the three strongest, for the next ladder pass)
+
+1. **A second byte-free flow-counted `out2` read in the MID block (block 2).**
+   This is now provably the whole remaining problem: with it, out2 reaches
+   4 refs / live 48-54 (pri 1666-1481, inside the (1473.7, 1702.1) window)
+   while MID's `stptr = (s32)(((u8*)pa4)+0x20)` still emits target's
+   `addiu s3,s7,32`.
+   mechanism: global.c allocno priority; MID is its own cse basic block, so
+   cse1 has NO qty knowledge that out2 == pa4+0x20 there (s3 evidence) — which
+   means an `out2`-reading expression in MID will NOT be constant-folded the
+   way the same expression is inside block 0.
+   next probe: enumerate expressions that read out2 in MID and whose emitted
+   form is one of MID's six target insns, exploiting the missing qty knowledge
+   (e.g. spellings where cse's cost gate prefers keeping the out2 read over
+   re-materialising pa4+0x20). Read the .cse/.combine dumps for the MID block
+   FIRST — the s3 "everything folds pre-flow" conclusion was drawn on block 0
+   semantics and has never been re-measured for block 2 with the corrected
+   arithmetic.
+
+2. **Kill the one materialised `addu s6,s3,zero` in the loop2-top staging form
+   (rejected/staging-position-sweep-133insn.c, sandbox 3, dispositions EXACT).**
+   mechanism: the copy survives because out2's staged value is live across
+   loop2's back edge, so post-flow copy propagation cannot fold it into the
+   single use at func_800523E0.
+   next probe: read .combine/.jump2/.greg for that form and identify which pass
+   declines the coalesce; then try spellings that keep the long live range but
+   make the def and the use copy-propagable (e.g. staging a value that loop2
+   already recomputes, or a staging def placed on the loop2 back edge so the
+   first iteration uses the preamble value — semantically identical, since
+   `out2` and loop2's `stptr` hold the same `pa4 + 0x20`).
+
+3. **Widen the window instead of moving out2: lower the pa4 carrier below
+   out2's 3-ref pri.** On the pa4-read chassis out2 sits at 714.3 and the
+   carrier at 1473.7 (7 refs / live 95); the carrier would have to reach
+   <= 714 (live > 196, or refs <= 3 with a short live). Measured carrier
+   variants: 6 refs/95 = 1263 (out2-read chassis), 7/94, 7/96, param-only
+   7/190 = 736.8 (V1, tantalisingly close to out2's 714.3 — one more live-shift
+   or one fewer param ref would invert them).
+   next probe: on the V1 (no-carrier) chassis, re-derive the FULL disposition
+   goal from scratch with the corrected formula — s1-s4 never analysed that
+   world, and V1 already scores 10 at 132 insns.
+
+## [s4] The banned do-while(0) wrap's loop-note ref weighting is reachable from a well-formed C loop (loop1 and/or loop2 spelled as a real do/while).
+- mechanism: flow.c weights reg_n_refs by loop_depth, driven by NOTE_INSN_LOOP_BEG/END, which only a real C loop emits; a goto-loop emits none.
+- probe: loop1 as do{...}while(i<0x12); loop2 as do{...}while(i<0x14); both; sandbox --disable all plus .lreg refs/live for every callee-saved pseudo.
+- result: loop1-real 132 insns / sandbox 28 (carrier 7->9 refs = pri 2872 rises faster than out2 3->7 refs at live 41; i and tbl swap seats). loop2-real 135 insns (loop.c adds 3 insns on a note-marked loop). both-real 135 insns / 28.
+- verdict: KILLED
+
+## [s4] The banked 'tbl (79) refs+2 sym-K chain' opens the tbl-vs-out2 seating.
+- mechanism: cse1's cost gate keeps a chain whose fold-back target is a 2-insn lui/addiu symbol constant; flow counts both refs before combine re-merges them.
+- probe: tbl = (s32*)((u8*)D_80094CFC - 0x10); tbl = (s32*)((u8*)tbl + 0x10); on the pa4-read+staging chassis, then 24 variants (6 preamble permutations x 4 advance positions), .lreg each.
+- result: The lift is REAL and byte-neutral (132 insns, tbl 4->6 refs) but pins tbl at pri 2553.2 > i (2474.2), so tbl steals s4. Required window is (2381.0, 2474.2) = live 49-50 at 6 refs; tbl's live length is scheduler-pinned to 45-47 in all 24 variants. sandbox 12.
+- verdict: KILLED
+
+## [s4] i (78) and stptr2 (90) can be ref-lifted by split-init accumulation to re-open tbl's window (order 90 5000 > 87 3409 > 78 3092 > 79 2553 > 86 2381 > 77 1473).
+- mechanism: same split-init accumulation that lifted tbl; flow counts before combine merges.
+- probe: stptr2 = saved + 0x700; stptr2 = stptr2 + 0x50; and i = 0x10; i = i + 2; on the tbl-lifted chassis; .lreg reg_n_refs read.
+- result: reg_n_refs UNCHANGED (stptr2 still 6, i still 8), sandbox identical (12). Both chains fold in cse1 because the fold-back is a cheaper ONE-insn addiu, and flow then deletes the dead first store UNCOUNTED. Split-init ref-lifts exist only on symbol-constant-based pseudos.
+- verdict: KILLED
+
+## [s4] Some position of the s4 out2 staging store gives out2 a window-landing priority while staying byte-free.
+- mechanism: reg_live_length grows with the def-to-use distance; the copy is coalesced away post-flow only when def and use are adjacent.
+- probe: 6 staging positions (preamble2, loop2 top, after func_80044DE4, mid-loop2, and two both-uses variants); sandbox plus .lreg plus objdump slot diff.
+- result: Only the immediately-before-the-call position is byte-free (out2 5/42 = 2381, sandbox 9). Every position far enough to lengthen the live range materialises one addu s6,s3,zero (133 insns). The loop2-top variant reaches out2 6/81 = 1481.5 and EXACTLY target's register dispositions, sandbox 3, defect = that single extra insn at slot 73.
+- verdict: KILLED
+
+## [s4] Dropping or splitting the pa4 carrier changes the see-saw in our favour.
+- mechanism: the carrier's 7 refs / live 95 = pri 1473.7 is the floor out2 must clear.
+- probe: V1 = use the a4 parameter at all six sites; V2 = carrier for loop1, parameter for loop2.
+- result: V1 132 insns / sandbox 10 but a completely different allocno world (out2 absorbs the 10-ref merged pseudo; the param scores 7/190 = 736.8). V2 134 insns.
+- verdict: KILLED
+
+## [s4] The priority formula pri = floor_log2(reg_n_refs)*reg_n_refs/reg_live_length*10000 with floor_log2(3)=1 predicts the seating on every chassis, so a 3-reference out2 can never outrank the carrier.
+- mechanism: GCC 2.7.2 global.c allocno_compare ordering plus find_reg's ascending first-free scan.
+- probe: six chassis dumped (.lreg refs/live plus .greg dispositions): wrap-0, A_nowrap-9, P2-3, S15-10, R3-15, F1-1; predicted vs actual seating compared each time.
+- result: 6/6 correct. floor_log2(3)=1 means out2 at 3 refs scores 714.3 (not the 1428 the s2/s3 notes assumed) and would need live <= 20 to clear the carrier's 1473.7. out2 therefore needs >= 4 refs unconditionally.
+- verdict: CONFIRMED
